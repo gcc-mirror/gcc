@@ -4,6 +4,7 @@
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
    Broken out to separate file, Zack Weinberg, Mar 2000
+   Single-pass line tokenization by Neil Booth, April 2000
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -54,11 +55,14 @@ static void output_line_command	PARAMS ((cpp_reader *, cpp_printer *,
 					 unsigned int));
 static void bump_column		PARAMS ((cpp_printer *, unsigned int,
 					 unsigned int));
-static void expand_name_space	PARAMS ((cpp_toklist *));
+static void expand_name_space   PARAMS ((cpp_toklist *, unsigned int));
 static void expand_token_space	PARAMS ((cpp_toklist *));
 static void init_token_list	PARAMS ((cpp_reader *, cpp_toklist *, int));
 static void pedantic_whitespace	PARAMS ((cpp_reader *, U_CHAR *,
 					 unsigned int));
+
+#define auto_expand_name_space(list) \
+    expand_name_space ((list), (list)->name_cap / 2)
 
 /* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
 
@@ -431,12 +435,12 @@ cpp_file_buffer (pfile)
 
 /* Expand a token list's string space.  */
 static void
-expand_name_space (list)
+expand_name_space (list, len)
      cpp_toklist *list;
-{  
-  list->name_cap *= 2;
-  list->namebuf = (unsigned char *) xrealloc (list->namebuf,
-					      list->name_cap);
+     unsigned int len;
+{
+  list->name_cap += len;
+  list->namebuf = (unsigned char *) xrealloc (list->namebuf, list->name_cap);
 }
 
 /* Expand the number of tokens in a list.  */
@@ -449,33 +453,38 @@ expand_token_space (list)
     xrealloc (list->tokens, list->tokens_cap * sizeof (cpp_token));
 }
 
-/* Initialise a token list.  */
+/* Initialize a token list.  We leave the first token unused, as this
+   allows us to always peek at the previous token without worrying
+   about underflowing the list.  */
 static void
 init_token_list (pfile, list, recycle)
      cpp_reader *pfile;
      cpp_toklist *list;
      int recycle;
 {
-  /* Recycling a used list saves 2 free-malloc pairs.  */
-  if (recycle)
+  /* Recycling a used list saves 3 free-malloc pairs.  */
+  if (!recycle)
     {
-      list->tokens_used = 0;
-      list->name_used = 0;
-    }
-  else
-    {
-      /* Initialise token space.  */
-      list->tokens_cap = 256;	/* 4K on Intel.	 */
-      list->tokens_used = 0;
+      /* Initialize token space.  */
+      list->tokens_cap = 256;	/* 4K's worth.  */
       list->tokens = (cpp_token *)
 	xmalloc (list->tokens_cap * sizeof (cpp_token));
 
-      /* Initialise name space.	 */
+      /* Initialize name space.  */
       list->name_cap = 1024;
-      list->name_used = 0;
       list->namebuf = (unsigned char *) xmalloc (list->name_cap);
+
+      /* Only create a comment space on demand.  */
+      list->comments_cap = 0;
+      list->comments = 0;
     }
 
+  /* Put a dummy token at the start that will fail matches.  */
+  list->tokens[0].type = CPP_EOF;
+
+  list->tokens_used = 1;
+  list->name_used = 0;
+  list->comments_used = 0;
   if (pfile->buffer)
     list->line = pfile->buffer->lineno;
   list->dir_handler = 0;
@@ -522,7 +531,7 @@ _cpp_scan_line (pfile, list)
       if (list->tokens_used >= list->tokens_cap)
 	expand_token_space (list);
       if (list->name_used + len >= list->name_cap)
-	expand_name_space (list);
+	auto_expand_name_space (list);
 
       if (type == CPP_MACRO)
 	type = CPP_NAME;
@@ -530,7 +539,7 @@ _cpp_scan_line (pfile, list)
       list->tokens_used++;
       list->tokens[i].type = type;
       list->tokens[i].col = col;
-      list->tokens[i].flags = space_before ? HSPACE_BEFORE : 0;
+      list->tokens[i].flags = space_before ? PREV_WHITESPACE : 0;
       
       if (type == CPP_VSPACE)
 	break;
@@ -2037,3 +2046,1334 @@ _cpp_init_input_buffer (pfile)
   pfile->input_buffer = tmp;
   pfile->input_buffer_len = 8192;
 }
+
+#if 0
+
+static void expand_comment_space PARAMS ((cpp_toklist *));
+void init_trigraph_map PARAMS ((void));
+static unsigned char* trigraph_replace PARAMS ((cpp_reader *, unsigned char *,
+						unsigned char *));
+static const unsigned char *backslash_start PARAMS ((cpp_reader *,
+						     const unsigned char *));
+static int skip_block_comment PARAMS ((cpp_reader *));
+static int skip_line_comment PARAMS ((cpp_reader *));
+static void skip_whitespace PARAMS ((cpp_reader *, int));
+static void parse_name PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
+static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
+static void parse_string PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *,
+				  unsigned int));
+static int trigraph_ok PARAMS ((cpp_reader *, const unsigned char *));
+static void copy_comment PARAMS ((cpp_toklist *, const unsigned char *,
+				  unsigned int, unsigned int, unsigned int));
+void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
+
+static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
+
+unsigned int spell_char PARAMS ((unsigned char *, cpp_toklist *,
+				 cpp_token *token));
+unsigned int spell_string PARAMS ((unsigned char *, cpp_toklist *,
+				   cpp_token *token));
+unsigned int spell_comment PARAMS ((unsigned char *, cpp_toklist *,
+				    cpp_token *token));
+unsigned int spell_name PARAMS ((unsigned char *, cpp_toklist *,
+				 cpp_token *token));
+unsigned int spell_other PARAMS ((unsigned char *, cpp_toklist *,
+				  cpp_token *token));
+
+typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
+					  cpp_token *));
+
+/* Macros on a cpp_name.  */
+#define INIT_NAME(list, name) \
+  do {(name).len = 0; (name).offset = (list)->name_used;} while (0)
+
+/* Careful: 1-based.  First token is NTH_TOKEN (1).  */
+#define NTH_TOKEN(list, n) ((list)->tokens[n])
+#define IS_DIRECTIVE(list) (NTH_TOKEN(list, 1).type == CPP_HASH)
+#define COLUMN(cur) ((cur) - buffer->line_base)
+
+/* Maybe put these in the ISTABLE eventually.  */
+#define IS_HSPACE(c) ((c) == ' ' || (c) == '\t')
+#define IS_NEWLINE(c) ((c) == '\n' || (c) == '\r')
+
+/* Handle LF, CR, CR-LF and LF-CR style newlines.  Assumes next
+   character, if any, is in buffer.  */
+#define handle_newline(cur, limit, c) \
+  do {\
+  if ((cur) < (limit) && *(cur) == '\r' + '\n' - c) \
+    (cur)++; \
+  CPP_BUMP_LINE_CUR (pfile, (cur)); \
+  } while (0)
+
+#define IMMED_TOKEN() (!(cur_token->flags & PREV_WHITESPACE))
+#define PREV_TOKEN_TYPE (cur_token[-1].type)
+
+#define SPELL_TEXT     0
+#define SPELL_HANDLER  1
+#define SPELL_NONE     2
+#define SPELL_EOL      3
+
+#define T(e, s) {SPELL_TEXT, s},
+#define H(e, s) {SPELL_HANDLER, s},
+#define N(e, s) {SPELL_NONE, s},
+#define E(e, s) {SPELL_EOL, s},
+
+static const struct token_spelling
+{
+  char type;
+  PTR  speller;
+} token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
+
+#undef T
+#undef H
+#undef N
+#undef E
+
+static const unsigned char *digraph_spellings [] = {"%:", "%:%:", "<:",
+						    ":>", "<%", "%>"};
+
+static void
+expand_comment_space (list)
+     cpp_toklist *list;
+{
+  if (list->comments_cap == 0)
+    {
+      list->comments_cap = 10;
+      list->comments = (cpp_token *)
+	xmalloc (list->comments_cap * sizeof (cpp_token));
+    }
+  else
+    {
+      list->comments_cap *= 2;
+      list->comments = (cpp_token *)
+	xrealloc (list->comments, list->comments_cap);
+    }
+}
+
+void
+cpp_free_token_list (list)
+     cpp_toklist *list;
+{
+  if (list->comments)
+    free (list->comments);
+  free (list->tokens);
+  free (list->namebuf);
+  free (list);
+}
+
+static char trigraph_map[256];
+
+void
+init_trigraph_map ()
+{
+  trigraph_map['='] = '#';
+  trigraph_map['('] = '[';
+  trigraph_map[')'] = ']';
+  trigraph_map['/'] = '\\';
+  trigraph_map['\''] = '^';
+  trigraph_map['<'] = '{';
+  trigraph_map['>'] = '}';
+  trigraph_map['!'] = '|';
+  trigraph_map['-'] = '~';
+}
+
+/* Call when a trigraph is encountered.  It warns if necessary, and
+   returns true if the trigraph should be honoured.  END is the third
+   character of a trigraph in the input stream.  */
+static int
+trigraph_ok (pfile, end)
+     cpp_reader *pfile;
+     const unsigned char *end;
+{
+  int accept = CPP_OPTION (pfile, trigraphs);
+  
+  if (CPP_OPTION (pfile, warn_trigraphs))
+    {
+      unsigned int col = end - 1 - pfile->buffer->line_base;
+      if (accept)
+	cpp_warning_with_line (pfile, pfile->buffer->lineno, col, 
+			       "trigraph ??%c converted to %c",
+			       (int) *end, (int) trigraph_map[*end]);
+      else
+	cpp_warning_with_line (pfile, pfile->buffer->lineno, col,
+			       "trigraph ??%c ignored", (int) *end);
+    }
+  return accept;
+}
+
+/* Scan a string for trigraphs, warning or replacing them inline as
+   appropriate.  When parsing a string, we must call this routine
+   before processing a newline character (if trigraphs are enabled),
+   since the newline might be escaped by a preceding backslash
+   trigraph sequence.  Returns a pointer to the end of the name after
+   replacement.  */
+
+static unsigned char*
+trigraph_replace (pfile, src, limit)
+     cpp_reader *pfile;
+     unsigned char *src;
+     unsigned char* limit;
+{
+  unsigned char *dest;
+
+  /* Starting with src[1], find two consecutive '?'.  The case of no
+     trigraphs is streamlined.  */
+  
+  for (; src + 1 < limit; src += 2)
+    {
+      if (src[0] != '?')
+	continue;
+
+      /* Make src point to the 1st (NOT 2nd) of two consecutive '?'s.  */
+      if (src[-1] == '?')
+	src--;
+      else if (src + 2 == limit || src[1] != '?')
+	continue;
+
+      /* Check if it really is a trigraph.  */
+      if (trigraph_map[src[2]] == 0)
+	continue;
+
+      dest = src;
+      goto trigraph_found;
+    }
+  return limit;
+
+  /* Now we have a trigraph, we need to scan the remaining buffer, and
+     copy-shifting its contents left if replacement is enabled.  */
+  for (; src + 2 < limit; dest++, src++)
+    if ((*dest = *src) == '?' && src[1] == '?' && trigraph_map[src[2]])
+      {
+      trigraph_found:
+	src += 2;
+	if (trigraph_ok (pfile, pfile->buffer->cur - (limit - src)))
+	  *dest = trigraph_map[*src];
+      }
+  
+  /* Copy remaining (at most 2) characters.  */
+  while (src < limit)
+    *dest++ = *src++;
+  return dest;
+}
+
+/* If CUR is a backslash or the end of a trigraphed backslash, return
+   a pointer to its beginning, otherwise NULL.  We don't read beyond
+   the buffer start, because there is the start of the comment in the
+   buffer.  */
+static const unsigned char *
+backslash_start (pfile, cur)
+     cpp_reader *pfile;
+     const unsigned char *cur;
+{
+  if (cur[0] == '\\')
+    return cur;
+  if (cur[0] == '/' && cur[-1] == '?' && cur[-2] == '?'
+      && trigraph_ok (pfile, cur))
+    return cur - 2;
+  return 0;
+}
+
+/* Skip a C-style block comment.  This is probably the trickiest
+   handler.  We find the end of the comment by seeing if an asterisk
+   is before every '/' we encounter.  The nasty complication is that a
+   previous asterisk may be separated by one or more escaped newlines.
+   Returns non-zero if comment terminated by EOF, zero otherwise.  */
+static int
+skip_block_comment (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  const unsigned char *char_after_star = 0;
+  register const unsigned char *cur = buffer->cur;
+  int seen_eof = 0;
+  
+  /* Inner loop would think the comment has ended if the first comment
+     character is a '/'.  Avoid this and keep the inner loop clean by
+     skipping such a character.  */
+  if (cur < buffer->rlimit && cur[0] == '/')
+    cur++;
+
+  for (; cur < buffer->rlimit; )
+    {
+      unsigned char c = *cur++;
+
+      /* People like decorating comments with '*', so check for
+	 '/' instead for efficiency.  */
+      if (c == '/')
+	{
+	  if (cur[-2] == '*' || cur - 1 == char_after_star)
+	    goto out;
+
+	  /* Warn about potential nested comments, but not when
+	     the final character inside the comment is a '/'.
+	     Don't bother to get it right across escaped newlines.  */
+	  if (CPP_OPTION (pfile, warn_comments) && cur + 1 < buffer->rlimit
+	      && cur[0] == '*' && cur[1] != '/') 
+	    {
+	      buffer->cur = cur;
+	      cpp_warning (pfile, "'/*' within comment");
+	    }
+	}
+      else if (IS_NEWLINE(c))
+	{
+	  const unsigned char* bslash = backslash_start (pfile, cur - 2);
+
+	  handle_newline (cur, buffer->rlimit, c);
+	  /* Work correctly if there is an asterisk before an
+	     arbirtrarily long sequence of escaped newlines.  */
+	  if (bslash && (bslash[-1] == '*' || bslash == char_after_star))
+	    char_after_star = cur;
+	  else
+	    char_after_star = 0;
+	}
+    }
+  seen_eof = 1;
+
+ out:
+  buffer->cur = cur;
+  return seen_eof;
+}
+
+/* Skip a C++ or Chill line comment.  Handles escaped newlines.
+   Returns non-zero if a multiline comment.  */
+static int
+skip_line_comment (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  register const unsigned char *cur = buffer->cur;
+  int multiline = 0;
+
+  for (; cur < buffer->rlimit; )
+    {
+      unsigned char c = *cur++;
+
+      if (IS_NEWLINE (c))
+	{
+	  /* Check for a (trigaph?) backslash escaping the newline.  */
+	  if (!backslash_start (pfile, cur - 2))
+	    goto out;
+	  multiline = 1;
+	  handle_newline (cur, buffer->rlimit, c);
+	}
+    }
+  cur++;
+
+ out:
+  buffer->cur = cur - 1;	/* Leave newline for caller.  */
+  return multiline;
+}
+
+/* Skips whitespace, stopping at next non-whitespace character.  */
+static void
+skip_whitespace (pfile, in_directive)
+     cpp_reader *pfile;
+     int in_directive;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  register const unsigned char *cur = buffer->cur;
+  unsigned short null_count = 0;
+
+  for (; cur < buffer->rlimit; )
+    {
+      unsigned char c = *cur++;
+
+      if (IS_HSPACE(c))		/* FIXME: Fix ISTABLE.  */
+	continue;
+      if (!is_space(c) || IS_NEWLINE (c)) /* Main loop handles newlines.  */
+	goto out;
+      if (c == '\0')
+	null_count++;
+      /* Mut be '\f' or '\v' */
+      else if (in_directive && CPP_PEDANTIC (pfile))
+	cpp_pedwarn (pfile, "%s in preprocessing directive",
+		     c == '\f' ? "formfeed" : "vertical tab");
+    }
+  cur++;
+
+ out:
+  buffer->cur = cur - 1;
+  if (null_count)
+    cpp_warning (pfile, null_count > 1 ? "embedded null characters ignored"
+		 : "embedded null character ignored");
+}
+
+/* Parse (append) an identifier.  */
+static void
+parse_name (pfile, list, name)
+     cpp_reader *pfile;
+     cpp_toklist *list;
+     cpp_name *name;
+{
+  const unsigned char *name_limit;
+  unsigned char *namebuf;
+  cpp_buffer *buffer = pfile->buffer;
+  register const unsigned char *cur = buffer->cur;
+
+ expanded:
+  name_limit = list->namebuf + list->name_cap;
+  namebuf = list->namebuf + list->name_used;
+
+  for (; cur < buffer->rlimit && namebuf < name_limit; )
+    {
+      unsigned char c = *namebuf = *cur; /* Copy a single char.  */
+
+      if (! is_idchar(c))
+	goto out;
+      namebuf++;
+      cur++;
+      if (c == '$' && CPP_PEDANTIC (pfile))
+	{
+	  buffer->cur = cur;
+	  cpp_pedwarn (pfile, "'$' character in identifier");
+	}
+    }
+
+  /* Run out of name space?  */
+  if (cur < buffer->rlimit)
+    {
+      list->name_used = namebuf - list->namebuf;
+      auto_expand_name_space (list);
+      goto expanded;
+    }
+
+ out:
+  buffer->cur = cur;
+  name->len = namebuf - (list->namebuf + name->offset);
+  list->name_used = namebuf - list->namebuf;
+}
+
+/* Parse (append) a number.  */
+
+#define VALID_SIGN(c, prevc) \
+  (((c) == '+' || (c) == '-') && \
+   ((prevc) == 'e' || (prevc) == 'E' \
+    || (((prevc) == 'p' || (prevc) == 'P') && !CPP_OPTION (pfile, c89))))
+
+static void
+parse_number (pfile, list, name)
+     cpp_reader *pfile;
+     cpp_toklist *list;
+     cpp_name *name;
+{
+  const unsigned char *name_limit;
+  unsigned char *namebuf;
+  cpp_buffer *buffer = pfile->buffer;
+  register const unsigned char *cur = buffer->cur;
+
+ expanded:
+  name_limit = list->namebuf + list->name_cap;
+  namebuf = list->namebuf + list->name_used;
+
+  for (; cur < buffer->rlimit && namebuf < name_limit; )
+    {
+      unsigned char c = *namebuf = *cur; /* Copy a single char.  */
+
+      /* Perhaps we should accept '$' here if we accept it for
+         identifiers.  We know namebuf[-1] is safe, because for c to
+         be a sign we must have pushed at least one character.  */
+      if (!is_numchar (c) && c != '.' && ! VALID_SIGN (c, namebuf[-1]))
+	goto out;
+
+      namebuf++;
+      cur++;
+    }
+
+  /* Run out of name space?  */
+  if (cur < buffer->rlimit)
+    {
+      list->name_used = namebuf - list->namebuf;
+      auto_expand_name_space (list);
+      goto expanded;
+    }
+  
+ out:
+  buffer->cur = cur;
+  name->len = namebuf - (list->namebuf + name->offset);
+  list->name_used = namebuf - list->namebuf;
+}
+
+/* Places a string terminated by an unescaped TERMINATOR into a
+   cpp_name, which should be expandable and thus at the top of the
+   list's stack.  Handles embedded trigraphs, if necessary, and
+   escaped newlines.
+
+   Can be used for character constants (terminator = '\''), string
+   constants ('"'), angled headers ('>') and assertions (')').  */
+
+static void
+parse_string (pfile, list, name, terminator)
+     cpp_reader *pfile;
+     cpp_toklist *list;
+     cpp_name *name;
+     unsigned int terminator;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  register const unsigned char *cur = buffer->cur;
+  const unsigned char *name_limit;
+  unsigned char *namebuf;
+  unsigned int null_count = 0;
+  int trigraphed_len = 0;
+
+ expanded:
+  name_limit = list->namebuf + list->name_cap;
+  namebuf = list->namebuf + list->name_used;
+
+  for (; cur < buffer->rlimit && namebuf < name_limit; )
+    {
+      unsigned int c = *namebuf++ = *cur++; /* Copy a single char.  */
+
+      if (c == '\0')
+	null_count++;
+      else if (c == terminator || IS_NEWLINE (c))
+	{
+	  unsigned char* name_start = list->namebuf + name->offset;
+
+	  /* Needed for trigraph_replace and multiline string warning.  */
+	  buffer->cur = cur;
+
+	  /* Scan for trigraphs before checking if backslash-escaped.  */
+	  if (CPP_OPTION (pfile, trigraphs)
+	      || CPP_OPTION (pfile, warn_trigraphs))
+	    {
+	      namebuf = trigraph_replace (pfile, name_start + trigraphed_len,
+					    namebuf);
+	      trigraphed_len = namebuf - 2 - (name_start + trigraphed_len);
+	      if (trigraphed_len < 0)
+		trigraphed_len = 0;
+	    }
+
+	  namebuf--;     /* Drop the newline / terminator from the name.  */
+	  if (IS_NEWLINE (c))
+	    {
+	      /* Drop a backslash newline, and continue. */
+	      if (namebuf[-1] == '\\')
+		{
+		  handle_newline (cur, buffer->rlimit, c);
+		  namebuf--;
+		  continue;
+		}
+
+	      cur--;
+
+	      /* In Fortran and assembly language, silently terminate
+		 strings of either variety at end of line.  This is a
+		 kludge around not knowing where comments are in these
+		 languages.  */
+	      if (CPP_OPTION (pfile, lang_fortran)
+		  || CPP_OPTION (pfile, lang_asm))
+		goto out;
+
+	      /* Character constants, headers and asserts may not
+		 extend over multiple lines.  In Standard C, neither
+		 may strings.  We accept multiline strings as an
+		 extension, but not in directives.  */
+	      if (terminator != '"' || IS_DIRECTIVE (list))
+		goto unterminated;
+		
+	      cur++;  /* Move forwards again.  */
+
+	      if (pfile->multiline_string_line == 0)
+		{
+		  pfile->multiline_string_line = list->line;
+		  if (CPP_PEDANTIC (pfile))
+		    cpp_pedwarn (pfile, "multi-line string constant");
+		}
+
+	      *namebuf++ = '\n';
+	      handle_newline (cur, buffer->rlimit, c);
+	    }
+	  else
+	    {
+	      unsigned char *temp;
+
+	      /* An odd number of consecutive backslashes represents
+		 an escaped terminator.  */
+	      temp = namebuf - 1;
+	      while (temp >= name_start && *temp == '\\')
+		temp--;
+
+	      if ((namebuf - temp) & 1)
+		goto out;
+	      namebuf++;
+	    }
+	}
+    }
+
+  /* Run out of name space?  */
+  if (cur < buffer->rlimit)
+    {
+      list->name_used = namebuf - list->namebuf;
+      auto_expand_name_space (list);
+      goto expanded;
+    }
+
+  /* We may not have trigraph-replaced the input for this code path,
+     but as the input is in error by being unterminated we don't
+     bother.  Prevent warnings about no newlines at EOF.  */
+  if (IS_NEWLINE(cur[-1]))
+    cur--;
+
+ unterminated:
+  cpp_error (pfile, "missing terminating %c character", (int) terminator);
+
+  if (terminator == '\"' && pfile->multiline_string_line != list->line
+      && pfile->multiline_string_line != 0)
+    {
+      cpp_error_with_line (pfile, pfile->multiline_string_line, -1,
+			   "possible start of unterminated string literal");
+      pfile->multiline_string_line = 0;
+    }
+  
+ out:
+  buffer->cur = cur;
+  name->len = namebuf - (list->namebuf + name->offset);
+  list->name_used = namebuf - list->namebuf;
+
+  if (null_count > 0)
+    cpp_warning (pfile, (null_count > 1 ? "null characters preserved"
+			 : "null character preserved"));
+}
+
+/* The character C helps us distinguish comment types: '*' = C style,
+   '-' = Chill-style and '/' = C++ style.  For code simplicity, the
+   stored comment includes any C-style comment terminator.  */
+static void
+copy_comment (list, from, len, tok_no, type)
+     cpp_toklist *list;
+     const unsigned char *from;
+     unsigned int len;
+     unsigned int tok_no;
+     unsigned int type;
+{
+  cpp_token *comment;
+
+  if (list->comments_used == list->comments_cap)
+    expand_comment_space (list);
+
+  if (list->name_used + len > list->name_cap)
+    expand_name_space (list, len);
+
+  comment = &list->comments[list->comments_used++];
+  comment->type = type;
+  comment->aux = tok_no;
+  comment->val.name.len = len;
+  comment->val.name.offset = list->name_used;
+
+  memcpy (list->namebuf + list->name_used, from, len);
+  list->name_used += len;
+}
+
+/*
+ *  The tokenizer's main loop.  Returns a token list, representing a
+ *  logical line in the input file, terminated with a CPP_VSPACE
+ *  token.  On EOF, a token list containing the single CPP_EOF token
+ *  is returned.
+ *
+ *  Implementation relies almost entirely on lookback, rather than
+ *  looking forwards.  This means that tokenization requires just
+ *  a single pass of the file, even in the presence of trigraphs and
+ *  escaped newlines, providing significant performance benefits.
+ *  Trigraph overhead is negligible if they are disabled, and low
+ *  even when enabled.
+ */
+
+#define PUSH_TOKEN(ttype) cur_token++->type = ttype
+#define REVISE_TOKEN(ttype) cur_token[-1].type = ttype
+#define BACKUP_TOKEN(ttype) (--cur_token)->type = ttype
+#define BACKUP_DIGRAPH(ttype) do { \
+  BACKUP_TOKEN(ttype); cur_token->flags |= DIGRAPH;} while (0)
+
+void
+_cpp_lex_line (pfile, list)
+     cpp_reader *pfile;
+     cpp_toklist *list;
+{
+  cpp_token *cur_token, *token_limit;
+  cpp_buffer *buffer = pfile->buffer;
+  register const unsigned char *cur = buffer->cur;
+  unsigned char flags = 0;
+
+ expanded:
+  token_limit = list->tokens + list->tokens_cap;
+  cur_token = list->tokens + list->tokens_used;
+
+  for (; cur < buffer->rlimit && cur_token < token_limit;)
+    {
+      unsigned char c = *cur++;
+
+      /* Optimize whitespace skipping, in particular the case of a
+	 single whitespace character, as every other token is probably
+	 whitespace. (' ' '\t' '\v' '\f' '\0').  */
+      if (is_hspace ((unsigned int) c))
+	{
+	  if (c == '\0' || (cur < buffer->rlimit && is_hspace (*cur)))
+	    {
+	      buffer->cur = cur - (c == '\0');	/* Get the null warning.  */
+	      skip_whitespace (pfile, IS_DIRECTIVE (list));
+	      cur = buffer->cur;
+	    }
+	  flags = PREV_WHITESPACE;
+	  if (cur == buffer->rlimit)
+	    break;
+	  c = *cur++;
+	}
+
+      /* Initialize current token.  Its type is set in the switch.  */
+      cur_token->col = COLUMN (cur);
+      cur_token->flags = flags;
+      flags = 0;
+
+      switch (c)
+	{
+	case '0': case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7': case '8': case '9':
+	  /* Prepend an immediately previous CPP_DOT token.  */
+	  if (PREV_TOKEN_TYPE == CPP_DOT && IMMED_TOKEN ())
+	    {
+	      cur_token--;
+	      if (list->name_cap == list->name_used)
+		auto_expand_name_space (list);
+
+	      cur_token->val.name.len = 1;
+	      cur_token->val.name.offset = list->name_used;
+	      list->namebuf[list->name_used++] = '.';
+	    }
+	  else
+	    INIT_NAME (list, cur_token->val.name);
+	  cur--;		/* Backup character.  */
+
+	continue_number:
+	  buffer->cur = cur;
+	  parse_number (pfile, list, &cur_token->val.name);
+	  cur = buffer->cur;
+
+	  PUSH_TOKEN (CPP_NUMBER); /* Number not yet interpreted.  */
+	  break;
+
+	letter:
+	case '_':
+	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+	case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+	case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+	case 'y': case 'z':
+	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+	case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+	case 'Y': case 'Z':
+	  INIT_NAME (list, cur_token->val.name);
+	  cur--;		     /* Backup character.  */
+	  cur_token->type = CPP_NAME; /* Identifier, macro etc.  */
+
+	continue_name:
+	  buffer->cur = cur;
+	  parse_name (pfile, list, &cur_token->val.name);
+	  cur = buffer->cur;
+
+	  /* Find handler for newly created / extended directive.  */
+	  if (IS_DIRECTIVE (list) && cur_token == &NTH_TOKEN (list, 2))
+	    _cpp_check_directive (list, cur_token);
+	  cur_token++;
+	  break;
+
+	case '\'':
+	  /* Fall through.  */
+	case '\"':
+	  cur_token->type = c == '\'' ? CPP_CHAR : CPP_STRING;
+	  /* Do we have a wide string?  */
+	  if (cur_token[-1].type == CPP_NAME && IMMED_TOKEN ()
+	      && cur_token[-1].val.name.len == 1
+	      && TOK_NAME (list, cur_token - 1)[0] == 'L'
+	      && !CPP_TRADITIONAL (pfile))
+	    {
+	      /* No need for 'L' any more.  */
+	      list->name_used--;
+	      (--cur_token)->type = (c == '\'' ? CPP_WCHAR : CPP_WSTRING);
+	    }
+
+	do_parse_string:
+	  /* Here c is one of ' " > or ).  */
+	  INIT_NAME (list, cur_token->val.name);
+	  buffer->cur = cur;
+	  parse_string (pfile, list, &cur_token->val.name, c);
+	  cur = buffer->cur;
+	  cur_token++;
+	  break;
+
+	case '/':
+	  cur_token->type = CPP_DIV;
+	  if (IMMED_TOKEN ())
+	    {
+	      if (PREV_TOKEN_TYPE == CPP_DIV)
+		{
+		  /* We silently allow C++ comments in system headers,
+		     irrespective of conformance mode, because lots of
+		     broken systems do that and trying to clean it up
+		     in fixincludes is a nightmare.  */
+		  if (buffer->system_header_p)
+		    goto do_line_comment;
+		  else if (CPP_OPTION (pfile, cplusplus_comments))
+		    {
+		      if (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
+			  && ! buffer->warned_cplusplus_comments)
+			{
+			  buffer->cur = cur;
+			  cpp_pedwarn (pfile,
+			     "C++ style comments are not allowed in ISO C89");
+			  cpp_pedwarn (pfile,
+			  "(this will be reported only once per input file)");
+			  buffer->warned_cplusplus_comments = 1;
+			}
+		    do_line_comment:
+		      buffer->cur = cur;
+		      if (cur[-2] != c)
+			cpp_warning (pfile,
+				     "comment start split across lines");
+		      if (skip_line_comment (pfile))
+			cpp_error_with_line (pfile, list->line,
+					     cur_token[-1].col,
+					     "multi-line comment");
+		      if (!CPP_OPTION (pfile, discard_comments))
+			copy_comment (list, cur, buffer->cur - cur,
+				      cur_token - 1 - list->tokens, c == '/'
+				      ? CPP_CPP_COMMENT: CPP_CHILL_COMMENT);
+		      cur = buffer->cur;
+
+		      /* Back-up to first '-' or '/'.  */
+		      cur_token -= 2;
+		      if (!CPP_OPTION (pfile, traditional))
+			flags = PREV_WHITESPACE;
+		    }
+		}
+	    }
+	  cur_token++;
+	  break;
+		      
+	case '*':
+	  cur_token->type = CPP_MULT;
+	  if (IMMED_TOKEN ())
+	    {
+	      if (PREV_TOKEN_TYPE == CPP_DIV)
+		{
+		  buffer->cur = cur;
+		  if (cur[-2] != '/')
+		    cpp_warning (pfile,
+				 "comment start '/*' split across lines");
+		  if (skip_block_comment (pfile))
+		    cpp_error_with_line (pfile, list->line, cur_token[-1].col,
+					 "unterminated comment");
+		  else if (buffer->cur[-2] != '*')
+		    cpp_warning (pfile,
+				 "comment end '*/' split across lines");
+		  if (!CPP_OPTION (pfile, discard_comments))
+		    copy_comment (list, cur, buffer->cur - cur,
+				 cur_token - 1 - list->tokens, CPP_C_COMMENT);
+		  cur = buffer->cur;
+
+		  cur_token -= 2;
+		  if (!CPP_OPTION (pfile, traditional))
+		    flags = PREV_WHITESPACE;
+		}
+	      else if (CPP_OPTION (pfile, cplusplus))
+		{
+		  /* In C++, there are .* and ->* operators.  */
+		  if (PREV_TOKEN_TYPE == CPP_DEREF)
+		    BACKUP_TOKEN (CPP_DEREF_STAR);
+		  else if (PREV_TOKEN_TYPE == CPP_DOT)
+		    BACKUP_TOKEN (CPP_DOT_STAR);
+		}
+	    }
+	  cur_token++;
+	  break;
+
+	case '\n':
+	case '\r':
+	  handle_newline (cur, buffer->rlimit, c);
+	  if (PREV_TOKEN_TYPE != CPP_BACKSLASH || !IMMED_TOKEN ())
+	    {
+	      if (PREV_TOKEN_TYPE == CPP_BACKSLASH)
+		{
+		  buffer->cur = cur;
+		  cpp_warning (pfile,
+			       "backslash and newline separated by space");
+		}
+	      PUSH_TOKEN (CPP_VSPACE);
+	      goto out;
+	    }
+	  /* Remove the escaped newline.  Then continue to process
+	     any interrupted name or number.  */
+	  cur_token--;
+	  if (IMMED_TOKEN ())
+	    {
+	      cur_token--;
+	      if (cur_token->type == CPP_NAME)
+		goto continue_name;
+	      else if (cur_token->type == CPP_NUMBER)
+		goto continue_number;
+	      cur_token++;
+	    }
+	  break;
+
+	case '-':
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_MINUS)
+	    {
+	      if (CPP_OPTION (pfile, chill))
+		goto do_line_comment;
+	      REVISE_TOKEN (CPP_MINUS_MINUS);
+	    }
+	  else
+	    PUSH_TOKEN (CPP_MINUS);
+	  break;
+
+	  /* The digraph flag checking ensures that ## and %:%:
+	     are interpreted as CPP_PASTE, but #%: and %:# are not.  */
+	make_hash:
+	case '#':
+	  if (PREV_TOKEN_TYPE == CPP_HASH && IMMED_TOKEN ()
+	      && ((cur_token->flags ^ cur_token[-1].flags) & DIGRAPH) == 0)
+	    REVISE_TOKEN (CPP_PASTE);
+	  else
+	    PUSH_TOKEN (CPP_HASH);
+	  break;
+
+	case ':':
+	  cur_token->type = CPP_COLON;
+	  if (IMMED_TOKEN ())
+	    {
+	      if (PREV_TOKEN_TYPE == CPP_COLON
+		  && CPP_OPTION (pfile, cplusplus))
+		BACKUP_TOKEN (CPP_SCOPE);
+	      /* Digraph: "<:" is a '['  */
+	      else if (PREV_TOKEN_TYPE == CPP_LESS)
+		BACKUP_DIGRAPH (CPP_OPEN_SQUARE);
+	      /* Digraph: "%:" is a '#'  */
+	      else if (PREV_TOKEN_TYPE == CPP_MOD)
+		{
+		  (--cur_token)->flags |= DIGRAPH;
+		  goto make_hash;
+		}
+	    }
+	  cur_token++;
+	  break;
+
+	case '&':
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_AND)
+	    REVISE_TOKEN (CPP_AND_AND);
+	  else
+	    PUSH_TOKEN (CPP_AND);
+	  break;
+
+	make_or:
+	case '|':
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_OR)
+	    REVISE_TOKEN (CPP_OR_OR);
+	  else
+	    PUSH_TOKEN (CPP_OR);
+	  break;
+
+	case '+':
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_PLUS)
+	    REVISE_TOKEN (CPP_PLUS_PLUS);
+	  else
+	    PUSH_TOKEN (CPP_PLUS);
+	  break;
+
+	case '=':
+	    /* This relies on equidistance of "?=" and "?" tokens.  */
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE <= CPP_LAST_EQ)
+	    REVISE_TOKEN (PREV_TOKEN_TYPE + (CPP_EQ_EQ - CPP_EQ));
+	  else
+	    PUSH_TOKEN (CPP_EQ);
+	  break;
+
+	case '>':
+	  cur_token->type = CPP_GREATER;
+	  if (IMMED_TOKEN ())
+	    {
+	      if (PREV_TOKEN_TYPE == CPP_GREATER)
+		BACKUP_TOKEN (CPP_RSHIFT);
+	      else if (PREV_TOKEN_TYPE == CPP_MINUS)
+		BACKUP_TOKEN (CPP_DEREF);
+	      /* Digraph: ":>" is a ']'  */
+	      else if (PREV_TOKEN_TYPE == CPP_COLON)
+		BACKUP_DIGRAPH (CPP_CLOSE_SQUARE);
+	      /* Digraph: "%>" is a '}'  */
+	      else if (PREV_TOKEN_TYPE == CPP_MOD)
+		BACKUP_DIGRAPH (CPP_CLOSE_BRACE);
+	    }
+	  cur_token++;
+	  break;
+	  
+	case '<':
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_LESS)
+	    {
+	      REVISE_TOKEN (CPP_LSHIFT);
+	      break;
+	    }
+	  /* Is this the beginning of a header name?  */
+	  if (list->dir_flags & SYNTAX_INCLUDE)
+	    {
+	      c = '>';	/* Terminator.  */
+	      cur_token->type = CPP_HEADER_NAME;
+	      goto do_parse_string;
+	    }
+	  PUSH_TOKEN (CPP_LESS);
+	  break;
+
+	case '%':
+	  /* Digraph: "<%" is a '{'  */
+	  cur_token->type = CPP_MOD;
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_LESS)
+	    BACKUP_DIGRAPH (CPP_OPEN_BRACE);
+	  cur_token++;
+	  break;
+
+	case ')':
+	  PUSH_TOKEN (CPP_CLOSE_PAREN);
+	  break;
+
+	case '(':
+	  /* Is this the beginning of an assertion string?  */
+	  if (list->dir_flags & SYNTAX_ASSERT)
+	    {
+	      c = ')';	/* Terminator.  */
+	      cur_token->type = CPP_ASSERTION;
+	      goto do_parse_string;
+	    }
+	  PUSH_TOKEN (CPP_OPEN_PAREN);
+	  break;
+
+	make_complement:
+	case '~':
+	  PUSH_TOKEN (CPP_COMPL);
+	  break;
+
+	case '?':
+	  if (cur + 1 < buffer->rlimit && *cur == '?'
+	      && trigraph_map[cur[1]] && trigraph_ok (pfile, cur + 1))
+	    {
+	      /* Handle trigraph.  */
+	      cur++;
+	      switch (*cur++)
+		{
+		case '(': goto make_open_square;
+		case ')': goto make_close_square;
+		case '<': goto make_open_brace;
+		case '>': goto make_close_brace;
+		case '=': goto make_hash;
+		case '!': goto make_or;
+		case '-': goto make_complement;
+		case '/': goto make_backslash;
+		case '\'': goto make_xor;
+		}
+	    }
+	  if (IMMED_TOKEN () && CPP_OPTION (pfile, cplusplus))
+	    {
+	      /* GNU C++ defines <? and >? operators.  */
+	      if (PREV_TOKEN_TYPE == CPP_LESS)
+		{
+		  REVISE_TOKEN (CPP_MIN);
+		  break;
+		}
+	      else if (PREV_TOKEN_TYPE == CPP_GREATER)
+		{
+		  REVISE_TOKEN (CPP_MAX);
+		  break;
+		}
+	    }
+	  PUSH_TOKEN (CPP_QUERY);
+	  break;
+
+	case '.':
+	  if (PREV_TOKEN_TYPE == CPP_DOT && cur_token[-2].type == CPP_DOT
+	      && IMMED_TOKEN ()
+	      && !(cur_token[-1].flags & PREV_WHITESPACE))
+	    {
+	      cur_token -= 2;
+	      PUSH_TOKEN (CPP_ELLIPSIS);
+	    }
+	  else
+	    PUSH_TOKEN (CPP_DOT);
+	  break;
+
+	make_xor:
+	case '^': PUSH_TOKEN (CPP_XOR); break;
+	make_open_brace:
+	case '{': PUSH_TOKEN (CPP_OPEN_BRACE); break;
+	make_close_brace:
+	case '}': PUSH_TOKEN (CPP_CLOSE_BRACE); break;
+	make_open_square:
+	case '[': PUSH_TOKEN (CPP_OPEN_SQUARE); break;
+	make_close_square:
+	case ']': PUSH_TOKEN (CPP_CLOSE_SQUARE); break;
+	make_backslash:
+	case '\\': PUSH_TOKEN (CPP_BACKSLASH); break;
+	case '!': PUSH_TOKEN (CPP_NOT); break;
+	case ',': PUSH_TOKEN (CPP_COMMA); break;
+	case ';': PUSH_TOKEN (CPP_SEMICOLON); break;
+
+	case '$':
+	  if (CPP_OPTION (pfile, dollars_in_ident))
+	    goto letter;
+	  /* Fall through */
+	default:
+	  cur_token->aux = c;
+	  PUSH_TOKEN (CPP_OTHER);
+	  break;
+	}
+    }
+
+  /* Run out of token space?  */
+  if (cur_token == token_limit)
+    {
+      list->tokens_used = cur_token - list->tokens;
+      expand_token_space (list);
+      goto expanded;
+    }
+
+  cur_token->type = CPP_EOF;
+  cur_token->flags = flags;
+
+  if (cur_token != &NTH_TOKEN (list, 1))
+    {
+      /* Next call back will get just a CPP_EOF.  */
+      buffer->cur = cur;
+      cpp_warning (pfile, "no newline at end of file");
+      PUSH_TOKEN (CPP_VSPACE);
+    }
+
+ out:
+  buffer->cur = cur;
+
+  list->tokens_used = cur_token - list->tokens;
+
+  /* FIXME:  take this check out and put it in the caller.
+     list->directive == 0 indicates an unknown directive (but null
+     directive is OK).  This is the first time we can be sure the
+     directive is invalid, and thus warn about it, because it might
+     have been split by escaped newlines.  Also, don't complain about
+     invalid directives in assembly source, we don't know where the
+     comments are, and # may introduce assembler pseudo-ops.  */
+
+  if (IS_DIRECTIVE (list) && list->dir_handler == 0
+      && NTH_TOKEN (list, 2).type != CPP_VSPACE
+      && !CPP_OPTION (pfile, lang_asm))
+    cpp_error_with_line (pfile, list->line, NTH_TOKEN(list, 2).col,
+			 "invalid preprocessing directive");
+}
+
+/* Token spelling functions.  Used for output of a preprocessed file,
+   stringizing and token pasting.  They all assume sufficient buffer
+   is allocated, and return exactly how much they used.  */
+
+/* Needs buffer of 3 + len.  */
+unsigned int
+spell_char (buffer, list, token)
+     unsigned char *buffer;
+     cpp_toklist *list;
+     cpp_token *token;
+{
+  unsigned char* orig_buff = buffer;
+  size_t len;
+
+  if (token->type == CPP_WCHAR)
+    *buffer++ = 'L';
+  *buffer++ = '\'';
+
+  len = token->val.name.len;
+  memcpy (buffer, TOK_NAME (list, token), len);
+  buffer += len;
+  *buffer++ = '\'';
+  return buffer - orig_buff;
+}
+
+/* Needs buffer of 3 + len.  */
+unsigned int
+spell_string (buffer, list, token)
+     unsigned char *buffer;
+     cpp_toklist *list;
+     cpp_token *token;
+{
+  unsigned char* orig_buff = buffer;
+  size_t len;
+
+  if (token->type == CPP_WSTRING)
+    *buffer++ = 'L';
+  *buffer++ = '"';
+
+  len = token->val.name.len;
+  memcpy (buffer, TOK_NAME (list, token), len);
+  buffer += len;
+  *buffer++ = '"';
+  return buffer - orig_buff;
+}
+
+/* Needs buffer of len + 2.  */
+unsigned int
+spell_comment (buffer, list, token)
+     unsigned char *buffer;
+     cpp_toklist *list;
+     cpp_token *token;
+{
+  size_t len;
+
+  if (token->type == CPP_C_COMMENT)
+    {
+      *buffer++ = '/';
+      *buffer++ = '*';
+    }
+  else if (token->type == CPP_CPP_COMMENT)
+    {
+      *buffer++ = '/';
+      *buffer++ = '/';
+    }
+  else 
+    {
+      *buffer++ = '-';
+      *buffer++ = '-';
+    }
+
+  len = token->val.name.len;
+  memcpy (buffer, TOK_NAME (list, token), len);
+
+  return len + 2;
+}
+
+/* Needs buffer of len.  */
+unsigned int
+spell_name (buffer, list, token)
+     unsigned char *buffer;
+     cpp_toklist *list;
+     cpp_token *token;
+{
+  size_t len;
+
+  len = token->val.name.len;
+  memcpy (buffer, TOK_NAME (list, token), len);
+  buffer += len;
+
+  return len;
+}
+
+/* Needs buffer of 1.  */
+unsigned int
+spell_other (buffer, list, token)
+     unsigned char *buffer;
+     cpp_toklist *list ATTRIBUTE_UNUSED;
+     cpp_token *token;
+{
+  *buffer++ = token->aux;
+  return 1;
+}
+
+void
+_cpp_lex_file (pfile)
+     cpp_reader* pfile;
+{
+  int recycle;
+  cpp_toklist* list;
+
+  init_trigraph_map ();
+  list = (cpp_toklist *) xmalloc (sizeof (cpp_toklist));
+
+  for (recycle = 0; ;)
+    {
+      init_token_list (pfile, list, recycle);
+      recycle = 1;
+
+      _cpp_lex_line (pfile, list);
+      if (NTH_TOKEN (list, 1).type == CPP_EOF)
+	break;
+
+      if (list->dir_handler)
+	{
+	  if (list->dir_handler (pfile))
+	    {
+	      list = (cpp_toklist *) xmalloc (sizeof (cpp_toklist));
+	      recycle = 0;
+	    }
+	}
+      else
+	_cpp_output_list (pfile, list);
+    }
+}
+
+static void
+_cpp_output_list (pfile, list)
+     cpp_reader *pfile;
+     cpp_toklist *list;
+{
+  unsigned int comment_no = 0;
+  cpp_token *token, *comment_token = 0;
+
+  if (list->comments_used > 0)
+    comment_token = list->tokens + list->comments[0].aux;
+
+  CPP_RESERVE (pfile, 2);	/* Always have room for " \n".  */
+  for (token = &NTH_TOKEN(list, 1);; token++)
+    {
+      if (token->flags & PREV_WHITESPACE)
+	{
+	  /* Output comments if -C.  Otherwise a space will do.  */
+	  if (token == comment_token)
+	    {
+	      cpp_token *comment = &list->comments[comment_no];
+	      do
+		{
+		  /* Longest wrapper is 4.  */
+		  CPP_RESERVE (pfile, 4 + 2 + comment->val.name.len);
+		  pfile->limit += spell_comment (pfile->limit, list, comment);
+		  comment_no++, comment++;
+		  if (comment_no == list->comments_used)
+		    break;
+		  comment_token = comment->aux + list->tokens;
+		}
+	      while (comment_token == token);
+	    }
+	  else
+	    CPP_PUTC_Q (pfile, ' ');
+	}
+
+      switch (token_spellings[token->type].type)
+	{
+	case SPELL_TEXT:
+	  {
+	    const unsigned char *spelling;
+	    unsigned char c;
+
+	    CPP_RESERVE (pfile, 4 + 2); /* Longest is 4.  */
+	    if (token->flags & DIGRAPH)
+	      spelling = digraph_spellings [token->type - CPP_FIRST_DIGRAPH];
+	    else
+	      spelling = token_spellings[token->type].speller;
+
+	    while ((c = *spelling++) != '\0')
+	      CPP_PUTC_Q (pfile, c);
+	  }
+	  break;
+
+	case SPELL_HANDLER:
+	  {
+	    speller s;
+
+	    s = (speller) token_spellings[token->type].speller;
+	    /* Longest wrapper is 4.  */
+	    CPP_RESERVE (pfile, 4 + 2 + token->val.name.len);
+	    pfile->limit += s (pfile->limit, list, token);
+	  }
+	  break;
+
+	case SPELL_EOL:
+	  CPP_PUTC_Q (pfile, '\n');
+	  return;
+
+	case SPELL_NONE:
+	  cpp_error (pfile, "Unwriteable token");
+	  break;
+	}
+    }
+}
+
+#endif
