@@ -1,3 +1,9 @@
+2002-04-22  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): Revert
+	patch of 2002-04-09 due to binutils issues.
+	(FUNCTION_ARG_REGNO_P): Ensure even numbered float register.
+
 2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.md ("*movv4si_internal"): Change 'm'

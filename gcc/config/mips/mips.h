@@ -2715,11 +2715,14 @@ extern struct mips_frame_info current_frame_info;
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  When FP registers
    are 32 bits, we can't directly reference the odd numbered ones.  */
+/* For o64 we should be checking the mode for SFmode as well.  */
 
 #define FUNCTION_ARG_REGNO_P(N)					\
   ((((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST)			\
-    || ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST))		\
-   && !fixed_regs[N])
+    || ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST		\
+	&& (((N) % FP_INC) == 0					\
+	    && (! mips_abi == ABI_O64)))			\
+   && !fixed_regs[N]))
 
 /* A C expression which can inhibit the returning of certain function
    values in registers, based on the type of value.  A nonzero value says
@@ -4485,11 +4488,8 @@ while (0)
 	    (SIZE));							\
       }									\
     else								\
-      {									\
-	mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u",	\
+	mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n",	\
 	  (SIZE));							\
-	fprintf ((STREAM), "%u\n", ((unsigned)(ALIGN) / BITS_PER_UNIT));\
-      }									\
   } while (0)
 
 
