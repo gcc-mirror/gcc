@@ -5564,9 +5564,9 @@ uninitialized_vars_warning (tree block)
 	     with a nonzero DECL_INITIAL had an initializer, so do not
 	     claim it is potentially uninitialized.
 
-	     We do not care about the actual value in DECL_INITIAL, so we do
-	     not worry that it may be a dangling pointer.  */
-	  && DECL_INITIAL (decl) == NULL_TREE
+	     When the DECL_INITIAL is NULL call the language hook to tell us
+	     if we want to warn.  */
+	  && (DECL_INITIAL (decl) == NULL_TREE || lang_hooks.decl_uninit (decl))
 	  && regno_uninitialized (REGNO (DECL_RTL (decl))))
 	warning ("%H'%D' might be used uninitialized in this function",
                  &DECL_SOURCE_LOCATION (decl), decl);

@@ -475,6 +475,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_format_zero_length = value;
       break;
 
+    case OPT_Winit_self:
+      warn_init_self = value;
+      break;
+
     case OPT_Wimplicit:
       set_Wimplicit (value);
       break;

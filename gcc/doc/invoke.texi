@@ -214,7 +214,7 @@ in the following sections.
 -Wimplicit  -Wimplicit-int  @gol
 -Wimplicit-function-declaration @gol
 -Werror-implicit-function-declaration @gol
--Wimport  -Winline  -Winvalid-pch  -Wno-endif-labels @gol
+-Winit-self Wimport  -Winline  -Winvalid-pch  -Wno-endif-labels @gol
 -Wno-invalid-offsetof @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
 -Wmain  -Wmissing-braces @gol
@@ -2055,6 +2055,24 @@ requiring a non-null value by the @code{nonnull} function attribute.
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
 
+@item -Winit-self @r{(C, C++, and Objective-C only)} 
+@opindex Winit-self
+Enable warning about uninitialized variables which are initalized with themselves.
+Note this option can only be used with the @option{-Wuninitialized} option and 
+that only works with @option{-O}.
+
+For an example, the following code will not warn about i being uninitialized 
+without this option:
+@smallexample
+@group
+int f()
+@{
+  int i = i;
+  return i;
+@}
+@end group
+@end smallexample
+
 @item -Wimplicit-int
 @opindex Wimplicit-int
 Warn when a declaration does not specify a type.
@@ -2264,6 +2282,9 @@ These warnings are possible only in optimizing compilation,
 because they require data flow information that is computed only
 when optimizing.  If you don't specify @option{-O}, you simply won't
 get these warnings.
+
+If you want to warn about code which uses the uninitialized value of the
+variable in its own initializer, use the @option{-Winit-self} option.
 
 These warnings occur only for variables that are candidates for
 register allocation.  Therefore, they do not occur for a variable that
