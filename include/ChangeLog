@@ -1,3 +1,8 @@
+2004-02-23  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* dyn-string.h: Remove test of IN_LIBGCC2 and IN_GLIBCPP_V3 and
+	the associated #defines.
+
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* demangle.h: Instead of checking ANSI_PROTOTYPES, just include
