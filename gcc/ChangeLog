@@ -1,5 +1,11 @@
 2004-01-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* doc/contrib.texi, doc/cppenv.texi, doc/extend.texi,
+	doc/install.texi, doc/invoke.texi, doc/tm.texi: Consistently use
+	"GNU/Linux" and "Microsoft Windows" terminology.
+
+2004-01-18  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* doc/c-tree.texi, doc/compat.texi, doc/cpp.texi,
 	doc/cppopts.texi, doc/extend.texi, doc/install.texi,
 	doc/interface.texi, doc/invoke.texi, doc/libgcc.texi, doc/md.texi,
