@@ -4931,9 +4931,6 @@ static int constructor_simple;
 /* 1 if this constructor is erroneous so far.  */
 static int constructor_erroneous;
 
-/* 1 if have called defer_addressed_constants.  */
-static int constructor_subconstants_deferred;
-
 /* Structure for managing pending initializer elements, organized as an
    AVL tree.  */
 
@@ -5051,7 +5048,6 @@ struct initializer_stack
   char top_level;
   char require_constant_value;
   char require_constant_elements;
-  char deferred;
 };
 
 struct initializer_stack *initializer_stack;
@@ -5082,14 +5078,12 @@ start_init (decl, asmspec_tree, top_level)
   p->spelling = spelling;
   p->spelling_base = spelling_base;
   p->spelling_size = spelling_size;
-  p->deferred = constructor_subconstants_deferred;
   p->top_level = constructor_top_level;
   p->next = initializer_stack;
   initializer_stack = p;
 
   constructor_decl = decl;
   constructor_asmspec = asmspec;
-  constructor_subconstants_deferred = 0;
   constructor_designated = 0;
   constructor_top_level = top_level;
 
@@ -5131,12 +5125,6 @@ finish_init ()
 {
   struct initializer_stack *p = initializer_stack;
 
-  /* Output subconstants (string constants, usually)
-     that were referenced within this initializer and saved up.
-     Must do this if and only if we called defer_addressed_constants.  */
-  if (constructor_subconstants_deferred)
-    output_deferred_addressed_constants ();
-
   /* Free the whole constructor stack of this initializer.  */
   while (constructor_stack)
     {
@@ -5159,7 +5147,6 @@ finish_init ()
   spelling = p->spelling;
   spelling_base = p->spelling_base;
   spelling_size = p->spelling_size;
-  constructor_subconstants_deferred = p->deferred;
   constructor_top_level = p->top_level;
   initializer_stack = p->next;
   free (p);

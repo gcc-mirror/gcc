@@ -1,3 +1,18 @@
+2003-04-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* varasm.c (struct deferred_constant, defer_addressed_constants_flag)
+	(defer_addressed_constants, output_deferred_addressed_constants): Kill.
+	(output_constant_def): Remove code predicated on
+	defer_addressed_constants_flag.
+
+	* output.h: Remove prototypes of deleted functions.
+	* c-typeck.c (constructor_subconstants_deferred): Kill.
+	(struct initializer_stack): Remove 'deferred' field.
+	(start_init): Remove all references to the above.
+	(finish_init): Likewise. Also remove never-executed call to
+	output_deferred_addressed_constants.  Pull assignment to
+	defstr out of if expression.
+
 2003-04-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpphash.h (NOTE_ESC_NL, NOTE_ESC_SPACE_NL, NOTE_TRIGRAPH,
