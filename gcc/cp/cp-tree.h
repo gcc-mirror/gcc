@@ -4166,7 +4166,7 @@ extern tree finish_template_type                (tree, tree, int);
 extern tree finish_base_specifier               (tree, tree, bool);
 extern void finish_member_declaration           (tree);
 extern void check_multiple_declarators          (void);
-extern void qualified_name_lookup_error		(tree, tree);
+extern void qualified_name_lookup_error		(tree, tree, tree);
 extern tree finish_id_expression                (tree, tree, tree,
 						 cp_id_kind *, tree *,
 						 bool, bool, bool *, 

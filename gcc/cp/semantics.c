@@ -2290,15 +2290,21 @@ check_multiple_declarators (void)
     error ("multiple declarators in template declaration");
 }
 
-/* Issue a diagnostic that NAME cannot be found in SCOPE.  */
+/* Issue a diagnostic that NAME cannot be found in SCOPE.  DECL is
+   what we found when we tried to do the lookup.  */
 
 void
-qualified_name_lookup_error (tree scope, tree name)
+qualified_name_lookup_error (tree scope, tree name, tree decl)
 {
   if (TYPE_P (scope))
     {
       if (!COMPLETE_TYPE_P (scope))
 	error ("incomplete type `%T' used in nested name specifier", scope);
+      else if (TREE_CODE (decl) == TREE_LIST)
+	{
+	  error ("reference to `%T::%D' is ambiguous", scope, name);
+	  print_candidates (decl);
+	}
       else
 	error ("`%D' is not a member of `%T'", name, scope);
     }
@@ -2374,7 +2380,7 @@ finish_id_expression (tree id_expression,
 	      /* If the qualifying type is non-dependent (and the name
 		 does not name a conversion operator to a dependent
 		 type), issue an error.  */
-	      qualified_name_lookup_error (scope, id_expression);
+	      qualified_name_lookup_error (scope, id_expression, decl);
 	      return error_mark_node;
 	    }
 	  else if (!scope)

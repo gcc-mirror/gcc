@@ -2953,7 +2953,7 @@ do_class_using_decl (tree decl)
       tree r;
 
       r = lookup_qualified_name (scope, name, false, false);
-      if (r && TREE_CODE (r) != ERROR_MARK)
+      if (r && (DECL_P (r) || TREE_CODE (r) == OVERLOAD))
 	cp_emit_debug_info_for_using (r, scope);
     }
   return value;
@@ -3813,7 +3813,7 @@ unqualified_namespace_lookup (tree name, int flags)
 
    Returns a DECL (or OVERLOAD, or BASELINK) representing the
    declaration found.  If no suitable declaration can be found,
-   ERROR_MARK_NODE is returned.  Iif COMPLAIN is true and SCOPE is
+   ERROR_MARK_NODE is returned.  If COMPLAIN is true and SCOPE is
    neither a class-type nor a namespace a diagnostic is issued.  */
 
 tree
@@ -3834,7 +3834,7 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
   else if (is_aggr_type (scope, complain))
     {
       tree t;
-      t = lookup_member (scope, name, 0, is_type_p);
+      t = lookup_member (scope, name, 2, is_type_p);
       if (t)
 	return t;
     }
