@@ -11,6 +11,9 @@
 }
 @end tex
 
+@set last-up-date 1998-04-20
+@set version-g77 0.5.23
+
 @c %**start of header 
 @setfilename g77.info
 @c @setfilename useg77.info
@@ -102,16 +105,16 @@ was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 @sp 2
 @center James Craig Burley
 @sp 3
-@center Last updated 1998-04-18
+@center Last updated @value{last-up-date}
 @sp 1
 @c The version number appears some more times in this file.
 
-@center for version 0.5.21
+@center for version @value{version-g77}
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1995-1997 Free Software Foundation, Inc.
 @sp 2
-For GNU Fortran Version 0.5.21*
+For GNU Fortran Version @value{version-g77}*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
@@ -156,19 +159,19 @@ original English.
 @ifset USING
 This manual documents how to run, install and port the GNU Fortran
 compiler, as well as its new features and incompatibilities, and how to
-report bugs.  It corresponds to GNU Fortran version 0.5.21.
+report bugs.  It corresponds to GNU Fortran version @value{version-g77}.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
 This manual documents how to run and install the GNU Fortran compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GNU Fortran version 0.5.21.
+bugs.  It corresponds to GNU Fortran version @value{version-g77}.
 @end ifclear
 @ifclear USING
 This manual documents how to port the GNU Fortran compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GNU Fortran version 0.5.21.
+bugs.  It corresponds to GNU Fortran version @value{version-g77}.
 @end ifclear
 
 @end ifinfo
@@ -3288,6 +3291,121 @@ Fortran, retrieve @url{ftp://alpha.gnu.org/g77.plan}
 or, if you cannot do that, email
 @email{fortran@@gnu.org} asking for a recent copy of the
 GNU Fortran @file{.plan} file.
+
+@heading In 0.5.23:
+@itemize @bullet
+@item
+This release contains several regressions against
+version 0.5.22 of @code{g77}, due to using the
+``vanilla'' @code{gcc} back end instead of patching
+it to fix a few bugs and improve performance in a
+few cases.
+
+@xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
+available in plain-text format in @code{gcc/f/BUGS},
+for information on the known bugs in this version,
+including the regressions.
+
+Features that have been dropped from this version
+of @code{g77} due to their being implemented
+via @code{g77}-specific patches to the @code{gcc}
+back end in previous releases include:
+
+@itemize --
+@item
+Support for @code{__restrict__} keyword,
+the options @samp{-fargument-alias}, @samp{-fargument-noalias},
+and @samp{-fargument-noalias-global},
+and the corresponding alias-analysis code.
+
+(Version 1.0.1 of @code{egcs} has the alias-analysis
+code, but not the @code{__restrict__} keyword.
+@code{g77} users benefit from the alias-analysis
+code despite the lack of the @code{__restrict__} keyword,
+which is a C-language construct.)
+
+@item
+Support for the GNU compiler options
+@samp{-fmove-all-movables},
+@samp{-freduce-all-givs},
+and @samp{-frerun-loop-opt}.
+
+(Version 1.0.1 of @code{egcs} supports these options.
+@code{g77} users of @code{egcs} benefit from them even if
+they are not explicitly specified,
+because the defaults are optimized for @code{g77} users.)
+
+@item
+Support for the @samp{-W} option warning about
+integer division by zero.
+@end itemize
+
+@item
+Support @code{gcc} version 2.8,
+and remove support for prior versions of @code{gcc}.
+
+@cindex -@w{}-driver option
+@cindex g77 options, -@w{}-driver
+@cindex options, -@w{}-driver
+@item
+Remove support for the @samp{--driver} option,
+as @code{g77} now does all the driving,
+just like @code{gcc}.
+
+@item
+The @code{g77} command now expects the run-time library
+to be named @code{libg2c.a} instead of @code{libf2c.a},
+to ensure that a version other than the one built and
+installed as part of the same @code{g77} version is picked up.
+@end itemize
+
+@heading In 0.5.22:
+@itemize @bullet
+@item
+Fix @code{SIGNAL} intrinsic so it offers portable
+support for 64-bit systems (such as Digital Alphas
+running GNU/Linux).
+
+@item
+Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
+compile-time constant @code{INTEGER} expression.
+
+@item
+Fix @code{g77} @samp{-g} option so procedures that
+use @samp{ENTRY} can be stepped through, line by line,
+in @code{gdb}.
+
+@item
+Allow any @code{REAL} argument to intrinsics
+@code{Second} and @code{CPU_Time}.
+
+@item
+Allow any numeric argument to intrinsics
+@code{Int2} and @code{Int8}.
+
+@item
+Use @code{tempnam}, if available, to open scratch files
+(as in @samp{OPEN(STATUS='SCRATCH')}
+so that the @code{TMPDIR} environment variable,
+if present, is used.
+
+@item
+Rename the @code{gcc} keyword @code{restrict} to
+@code{__restrict__}, to avoid rejecting valid, existing,
+C programs.
+Support for @code{restrict} is now more like support
+for @code{complex}.
+
+@item
+Fix @samp{-fugly-comma} to affect invocations of
+only external procedures.
+Restore rejection of gratuitous trailing omitted
+arguments to intrinsics, as in @samp{I=MAX(3,4,,)}.
+
+@item
+Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
+@samp{-fbadu77-intrinsics-*} options.
+@end itemize
 
 @heading In 0.5.21:
 @itemize @bullet
@@ -9205,6 +9323,9 @@ savings of resources, such as on systems where @file{/dev/null} or
 @file{/dev/zero} represent bottlenecks in the systems' performance,
 because @code{g77} simply asks for fewer zeros from the operating
 system than @code{f2c}.
+(Avoiding spurious use of zero bytes, each byte typically have
+eight zero bits, also reduces the liabilities in case
+Microsoft's rumored patent on the digits 0 and 1 is upheld.)
 
 @node Block Data and Libraries
 @section Block Data and Libraries
@@ -12138,22 +12259,6 @@ more detail on these and related command-line options.
 Please consider offering useful answers to these questions!
 
 @itemize @bullet
-@item
-How do system administrators and users manage multiple incompatible
-Fortran compilers on their systems?
-How can @code{g77} contribute to this, or at least avoiding
-intefering with it?
-
-Currently, @code{g77} provides rudimentary ways to choose whether to
-overwrite portions of other Fortran compilation systems
-(such as the @code{f77} command and the @code{libf2c} library).
-Is this sufficient?
-What happens when users choose not to overwrite these---does
-@code{g77} work properly in all such installations, picking
-up its own versions, or does it pick up the existing ``alien''
-versions it didn't overwrite with its own, possibly leading
-to subtle bugs?
-
 @item
 @code{LOC()} and other intrinsics are probably somewhat misclassified.
 Is the a need for more precise classification of intrinsics, and if so,
