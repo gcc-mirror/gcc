@@ -55,8 +55,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define DELETED_ENTRY  ((void *) 1)
 
+static unsigned long higher_prime_number PARAMS ((unsigned long));
+
 /* The following function returns the nearest prime number which is
-   greater than given source number. */
+   greater than a given source number. */
 
 static unsigned long
 higher_prime_number (n)
@@ -223,24 +225,30 @@ htab_find_with_hash (htab, element, hash)
 {
   unsigned int index, hash2;
   size_t size;
+  void *entry;
 
   htab->searches++;
   size = htab->size;
-  hash2 = 1 + hash % (size - 2);
   index = hash % size;
+
+  entry = htab->entries[index];
+  if (entry == EMPTY_ENTRY
+      || (entry != DELETED_ENTRY && (*htab->eq_f) (entry, element)))
+    return entry;
+
+  hash2 = 1 + hash % (size - 2);
 
   for (;;)
     {
-      void *entry = htab->entries[index];
-      if (entry == EMPTY_ENTRY)
-	return NULL;
-      else if (entry != DELETED_ENTRY && (*htab->eq_f) (entry, element))
-	return entry;
-
       htab->collisions++;
       index += hash2;
       if (index >= size)
 	index -= size;
+
+      entry = htab->entries[index];
+      if (entry == EMPTY_ENTRY
+	  || (entry != DELETED_ENTRY && (*htab->eq_f) (entry, element)))
+	return entry;
     }
 }
 
