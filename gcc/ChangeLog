@@ -1,3 +1,8 @@
+2004-01-27  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* config/arm/arm.c (output_return_instruction): Only restore IP
+	into SP if frame_pointer_needed.
+
 2004-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_pass_by_reference): Return 1

@@ -8246,15 +8246,25 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	return_reg = reg_names[LR_REGNUM];
 
       if ((live_regs_mask & (1 << IP_REGNUM)) == (1 << IP_REGNUM))
-	/* There are two possible reasons for the IP register being saved.
-	   Either a stack frame was created, in which case IP contains the
-	   old stack pointer, or an ISR routine corrupted it.  If this in an
-	   ISR routine then just restore IP, otherwise restore IP into SP.  */
-	if (! IS_INTERRUPT (func_type))
-	  {
-	    live_regs_mask &= ~ (1 << IP_REGNUM);
-	    live_regs_mask |=   (1 << SP_REGNUM);
-	  }
+	{
+	  /* There are three possible reasons for the IP register
+	     being saved.  1) a stack frame was created, in which case
+	     IP contains the old stack pointer, or 2) an ISR routine
+	     corrupted it, or 3) it was saved to align the stack on
+	     iWMMXt.  In case 1, restore IP into SP, otherwise just
+	     restore IP.  */
+	  if (frame_pointer_needed)
+	    {
+	      live_regs_mask &= ~ (1 << IP_REGNUM);
+	      live_regs_mask |=   (1 << SP_REGNUM);
+	    }
+	  else
+	    {
+	      if (! IS_INTERRUPT (func_type)
+		  && ! TARGET_REALLY_IWMMXT)
+		abort ();
+	    }
+	}
 
       /* On some ARM architectures it is faster to use LDR rather than
 	 LDM to load a single register.  On other architectures, the
