@@ -1,5 +1,9 @@
 2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
 
+	* reload1.c (choose_reload_regs): Don't inherit a reload
+	that crosses multiple registers if registers past the first
+	don't fit in the desired class.
+
 	* ifcvt.c (noce_try_store_flag_constants): Use trunc_int_for_mode
 	when negating constants.
 
