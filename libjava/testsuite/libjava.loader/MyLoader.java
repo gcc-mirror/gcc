@@ -6,4 +6,9 @@ public class MyLoader extends URLClassLoader
   {
     super (urls);
   }
+
+  public MyLoader (URL urls[], ClassLoader parent)
+  {
+    super (urls, parent);
+  }
 }

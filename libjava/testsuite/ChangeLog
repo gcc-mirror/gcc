@@ -1,5 +1,11 @@
 2002-11-04  Anthony Green  <green@redhat.com>
 
+	* libjava.loader/MyLoader.java: New constructor.
+	* libjava.loader/TestParent.java: New file.
+	* libjava.loader/TestParent.out: New file.
+
+2002-11-04  Anthony Green  <green@redhat.com>
+
 	* libjava.loader/TestEarlyGC.java,
 	libjava.loader/TestEarlyGC.out: New files (from
 	Jeff Sturm).
