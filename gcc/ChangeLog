@@ -1,3 +1,8 @@
+2001-03-18  Anthony Green  <green@redhat.com>
+
+	* config/pj/pj.h: Remove some trailing commas.
+	(ASM_SPEC): Use -EB and -EL, not -mb and -ml.
+
 2001-03-17  Anthony Green  <green@redhat.com>
 
 	* config/pj/lib1funcs.S: Fix broken comment.
