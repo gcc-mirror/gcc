@@ -530,7 +530,7 @@ check_init (exp, before)
       {
 	struct alternatives *alt = alternatives;	
 #ifdef ENABLE_CHECKING
-	if (TREE_CODE (alt->block) != CLEANUP_POIN_EXPR)
+	if (TREE_CODE (alt->block) != CLEANUP_POINT_EXPR)
 	  fatal ("internal error in check-init:  WITH_CLEANUP_EXPR not in CLEANUP_POINT_EXPR");
 #endif
 	check_init (TREE_OPERAND (exp, 0), before);
