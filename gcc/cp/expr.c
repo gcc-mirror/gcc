@@ -56,18 +56,6 @@ cplus_expand_constant (cst)
 	  {
 	    /* Find the offset for the field.  */
 	    tree offset = byte_position (member);
-
-	    if (flag_new_abi)
-	      /* Under the new ABI, we use -1 to represent the NULL
-		 pointer; non-NULL values simply contain the offset of
-		 the data member.  */
-	      ;
-	    else
-	      /* We offset all pointer to data members by 1 so that we
-		 can distinguish between a null pointer to data member
-		 and the first data member of a structure.  */
-	      offset = size_binop (PLUS_EXPR, offset, size_one_node);
-
 	    cst = fold (build1 (NOP_EXPR, type, offset));
 	  }
 	else
@@ -75,7 +63,7 @@ cplus_expand_constant (cst)
 	    tree delta, idx, pfn, delta2;
 
 	    expand_ptrmemfunc_cst (cst, &delta, &idx, &pfn, &delta2);
-	    cst = build_ptrmemfunc1 (type, delta, idx, pfn, delta2);
+	    cst = build_ptrmemfunc1 (type, delta, pfn);
 	  }
       }
       break;

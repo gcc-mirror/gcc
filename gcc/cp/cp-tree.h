@@ -213,10 +213,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* ABI control.  */
 
-/* Nonzero to enable experimental ABI changes.  */
-
-extern int flag_new_abi;
-
 /* Nonzero to use __cxa_atexit, rather than atexit, to register
    destructors for local statics and global objects.  */
 
@@ -238,12 +234,12 @@ extern int flag_huge_objects;
 /* Nonzero if virtual base class offsets are stored in the virtual
    function table.  Zero if, instead, a pointer to the virtual base is
    stored in the object itself.  */
-#define vbase_offsets_in_vtable_p() (flag_new_abi)
+#define vbase_offsets_in_vtable_p() (1)
 
 /* Nonzero if displacements to the `this' pointer to use when calling
    virtual functions in a virtual base class are present in the
    vtable.  */
-#define vcall_offsets_in_vtable_p() (flag_new_abi)
+#define vcall_offsets_in_vtable_p() (1)
 
 /* Nonzero if a derived class that needs a vptr should always get one,
    even if a non-primary base class already has one.  For example,
@@ -255,7 +251,7 @@ extern int flag_huge_objects;
    one could either reuse the vptr in `S' for `T', or create a new
    vptr for `T'.  If this flag is nonzero we choose the latter
    alternative; otherwise, we choose the former.  */
-#define vptrs_present_everywhere_p() (flag_new_abi)
+#define vptrs_present_everywhere_p() (1)
 
 /* Nonzero if the vtable for a derived class should contain the
    virtual functions from the primary base and all virtual functions
@@ -263,16 +259,16 @@ extern int flag_huge_objects;
    only those virtual functions from the primary base together with
    the functions declared in the derived class (but not in any base
    class).  */
-#define all_overridden_vfuns_in_vtables_p() (flag_new_abi)
+#define all_overridden_vfuns_in_vtables_p() (1)
 
 /* Nonzero if we use access type_info objects directly, and use the
    cross-vendor layout for them. Zero if we use an accessor function
    to get the type_info object address.  */
-#define new_abi_rtti_p() (flag_new_abi)
+#define new_abi_rtti_p() (1)
 
 /* Nonzero if primary and secondary vtables are combined into a single
    vtable.  */
-#define merge_primary_and_secondary_vtables_p() (flag_new_abi)
+#define merge_primary_and_secondary_vtables_p() (1)
 
 
 /* Language-dependent contents of an identifier.  */
@@ -2681,9 +2677,7 @@ extern int flag_new_for_scope;
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
 #define TYPE_PTRMEMFUNC_FN_TYPE(NODE) \
-  (flag_new_abi                       \
-   ? (TREE_TYPE (TYPE_FIELDS (NODE))) \
-   : (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (NODE))))))))
+  (TREE_TYPE (TYPE_FIELDS (NODE)))
 
 /* Returns `A' for a type like `int (A::*)(double)' */
 #define TYPE_PTRMEMFUNC_OBJECT_TYPE(NODE) \
@@ -3739,7 +3733,6 @@ extern void push_lang_context			PARAMS ((tree));
 extern void pop_lang_context			PARAMS ((void));
 extern tree instantiate_type			PARAMS ((tree, tree, enum instantiate_type_flags));
 extern void print_class_statistics		PARAMS ((void));
-extern int first_vfun_index                     PARAMS ((tree));
 extern void build_self_reference		PARAMS ((void));
 extern void warn_hidden				PARAMS ((tree));
 extern tree get_enclosing_class			PARAMS ((tree));
@@ -4097,22 +4090,13 @@ extern int cp_type_qual_from_rid                PARAMS ((tree));
 
 /* in method.c */
 extern void init_method				PARAMS ((void));
-extern char *build_overload_name		PARAMS ((tree, int, int));
-extern tree build_static_name			PARAMS ((tree, tree));
-extern tree build_decl_overload_real            PARAMS ((tree, tree, tree, tree,
-						       tree, int));
 extern void set_mangled_name_for_decl           PARAMS ((tree));
-extern tree build_typename_overload		PARAMS ((tree));
-extern tree build_overload_with_type		PARAMS ((tree, tree));
-extern tree build_destructor_name		PARAMS ((tree));
 extern tree build_opfncall			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PARAMS ((tree, tree));
 extern tree make_thunk				PARAMS ((tree, tree, tree, int));
 extern void use_thunk				PARAMS ((tree, int));
 extern void synthesize_method			PARAMS ((tree));
-extern tree get_id_2				PARAMS ((const char *, tree));
 extern tree implicitly_declare_fn               PARAMS ((special_function_kind, tree, int));
-extern tree get_ctor_vtbl_name                  PARAMS ((tree, tree));
 
 /* In optimize.c */
 extern void optimize_function                   PARAMS ((tree));
@@ -4191,7 +4175,6 @@ extern tree get_tinfo_decl                      PARAMS((tree));
 extern tree get_typeid				PARAMS((tree));
 extern tree get_typeid_1			PARAMS((tree));
 extern tree build_dynamic_cast			PARAMS((tree, tree));
-extern void synthesize_tinfo_fn			PARAMS((tree));
 extern void emit_support_tinfos                 PARAMS((void));
 extern int tinfo_decl_p                         PARAMS((tree, void *));
 extern int emit_tinfo_decl                      PARAMS((tree *, void *));
@@ -4500,7 +4483,7 @@ extern int cp_type_quals                        PARAMS ((tree));
 extern int cp_has_mutable_p                     PARAMS ((tree));
 extern int at_least_as_qualified_p              PARAMS ((tree, tree));
 extern int more_qualified_p                     PARAMS ((tree, tree));
-extern tree build_ptrmemfunc1                   PARAMS ((tree, tree, tree, tree, tree));
+extern tree build_ptrmemfunc1                   PARAMS ((tree, tree, tree));
 extern void expand_ptrmemfunc_cst               PARAMS ((tree, tree *, tree *, tree *, tree *));
 extern tree delta2_from_ptrmemfunc              PARAMS ((tree));
 extern tree pfn_from_ptrmemfunc                 PARAMS ((tree));

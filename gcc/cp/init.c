@@ -1954,14 +1954,6 @@ resolve_offset_ref (exp)
       addr = convert_pointer_to (basetype, addr);
       member = cp_convert (ptrdiff_type_node, member);
 
-      if (!flag_new_abi)
-	/* Pointer to data members are offset by one, so that a null
-	   pointer with a real value of 0 is distinguishable from an
-	   offset of the first member of a structure.  */
-	member = cp_build_binary_op (MINUS_EXPR, member,
-				     cp_convert (ptrdiff_type_node, 
-						 integer_one_node));
-
       return build1 (INDIRECT_REF, type,
 		     build (PLUS_EXPR, build_pointer_type (type),
 			    addr, member));
@@ -2224,20 +2216,17 @@ build_java_class_ref (type)
     }
 
   /* Mangle the class$ field, new and old ABI */
-  if (flag_new_abi)
-    {
-      tree field;
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	if (DECL_NAME (field) == CL_suffix)
-	  {
-	    name = mangle_decl (field);
-	    break;
-	  }
-      if (!field)
-	internal_error ("Can't find class$");
+  {
+    tree field;
+    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      if (DECL_NAME (field) == CL_suffix)
+	{
+	  name = mangle_decl (field);
+	  break;
+	}
+    if (!field)
+      internal_error ("Can't find class$");
     }
-  else
-    name = build_static_name (type, CL_suffix);
 
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);
   if (class_decl == NULL_TREE)
@@ -2264,27 +2253,17 @@ get_cookie_size (type)
 {
   tree cookie_size;
 
-  if (flag_new_abi)
-    {
-      /* Under the new ABI, we need to allocate an additional max
-	 (sizeof (size_t), alignof (true_type)) bytes.  */
-      tree sizetype_size;
-      tree type_align;
-
-      sizetype_size = size_in_bytes (sizetype);
-      type_align = size_int (TYPE_ALIGN_UNIT (type));
-      if (INT_CST_LT_UNSIGNED (type_align, sizetype_size))
-	cookie_size = sizetype_size;
-      else
-	cookie_size = type_align;
-    }
+  /* Under the new ABI, we need to allocate an additional max
+     (sizeof (size_t), alignof (true_type)) bytes.  */
+  tree sizetype_size;
+  tree type_align;
+  
+  sizetype_size = size_in_bytes (sizetype);
+  type_align = size_int (TYPE_ALIGN_UNIT (type));
+  if (INT_CST_LT_UNSIGNED (type_align, sizetype_size))
+    cookie_size = sizetype_size;
   else
-    {
-      if (TYPE_ALIGN (type) > TYPE_ALIGN (BI_header_type))
-	return size_int (TYPE_ALIGN_UNIT (type));
-      else
-	return size_in_bytes (BI_header_type);
-    }
+    cookie_size = type_align;
 
   return cookie_size;
 }
@@ -2386,7 +2365,7 @@ build_new_1 (exp)
   else if (placement && !TREE_CHAIN (placement) 
 	   && same_type_p (TREE_TYPE (TREE_VALUE (placement)),
 			   ptr_type_node))
-    use_cookie = (!flag_new_abi || !use_global_new);
+    use_cookie = !use_global_new;
   /* Otherwise, we need the cookie.  */
   else
     use_cookie = 1;
@@ -2481,23 +2460,13 @@ build_new_1 (exp)
       tree cookie;
 
       /* Store the number of bytes allocated so that we can know how
-	 many elements to destroy later.  */
-      if (flag_new_abi)
-	{
-	  /* Under the new ABI, we use the last sizeof (size_t) bytes
-	     to store the number of elements.  */
-	  cookie = build (MINUS_EXPR, build_pointer_type (sizetype),
-			  alloc_node, size_in_bytes (sizetype));
-	  cookie = build_indirect_ref (cookie, NULL_PTR);
-	}
-      else
-	{
-	  cookie = build (MINUS_EXPR, build_pointer_type (BI_header_type),
-			  alloc_node, cookie_size);
-	  cookie = build_indirect_ref (cookie, NULL_PTR);
-	  cookie = build_component_ref (cookie, nelts_identifier,
-					NULL_TREE, 0);
-	}
+	 many elements to destroy later.  Under the new ABI, we use
+	 the last sizeof (size_t) bytes to store the number of
+	 elements.  */
+      cookie = build (MINUS_EXPR, build_pointer_type (sizetype),
+		      alloc_node, size_in_bytes (sizetype));
+      cookie = build_indirect_ref (cookie, NULL_PTR);
+
       cookie_expr = build (MODIFY_EXPR, void_type_node, cookie, nelts);
       TREE_SIDE_EFFECTS (cookie_expr) = 1;
     }
@@ -3412,24 +3381,11 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
       tree cookie_addr;
 
       type = strip_array_types (TREE_TYPE (type));
-      if (flag_new_abi)
-	{
-	  cookie_addr = build (MINUS_EXPR,
-			       build_pointer_type (sizetype),
-			       base,
-			       TYPE_SIZE_UNIT (sizetype));
-	  maxindex = build_indirect_ref (cookie_addr, NULL_PTR);
-	}
-      else
-	{
-	  tree cookie;
-
-	  cookie_addr = build (MINUS_EXPR, build_pointer_type (BI_header_type),
-			       base, get_cookie_size (type));
-	  cookie = build_indirect_ref (cookie_addr, NULL_PTR);
-	  maxindex = build_component_ref (cookie, nelts_identifier, 
-					  NULL_TREE, 0);
-	}
+      cookie_addr = build (MINUS_EXPR,
+			   build_pointer_type (sizetype),
+			   base,
+			   TYPE_SIZE_UNIT (sizetype));
+      maxindex = build_indirect_ref (cookie_addr, NULL_PTR);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {

@@ -143,7 +143,7 @@ static void check_field_decl PARAMS ((tree, tree, int *, int *, int *, int *));
 static void check_field_decls PARAMS ((tree, tree *, int *, int *, int *, 
 				     int *));
 static void build_base_field PARAMS ((record_layout_info, tree, int *,
-				      unsigned int *, splay_tree));
+				      splay_tree));
 static void build_base_fields PARAMS ((record_layout_info, int *,
 				       splay_tree));
 static tree build_vbase_pointer_fields PARAMS ((record_layout_info, int *));
@@ -182,7 +182,7 @@ static void layout_empty_base PARAMS ((tree, tree, splay_tree));
 static void accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree, tree));
 static tree dfs_accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree,
 					       tree));
-static void set_vindex PARAMS ((tree, tree, int *));
+static void set_vindex PARAMS ((tree, int *));
 static void build_rtti_vtbl_entries PARAMS ((tree, tree, vtbl_init_data *));
 static void build_vcall_and_vbase_vtbl_entries PARAMS ((tree, 
 							vtbl_init_data *));
@@ -663,11 +663,7 @@ static tree
 get_vtable_name (type)
      tree type;
 {
-  if (flag_new_abi)
-    return mangle_vtbl_for_type (type);
-  else
-    return build_overload_with_type (get_identifier (VTABLE_NAME_PREFIX),
-				     type);
+  return mangle_vtbl_for_type (type);
 }
 
 /* Return an IDENTIFIER_NODE for the name of the virtual table table
@@ -677,11 +673,7 @@ tree
 get_vtt_name (type)
      tree type;
 {
-  if (flag_new_abi)
-    return mangle_vtt_for_type (type);
-  else
-    return build_overload_with_type (get_identifier (VTT_NAME_PREFIX),
-				     type);
+  return mangle_vtt_for_type (type);
 }
 
 /* Return the offset to the main vtable for a given base BINFO.  */
@@ -1086,35 +1078,17 @@ modify_vtable_entry (t, binfo, fndecl, delta, virtuals)
     }
 }
 
-/* Return the index (in the virtual function table) of the first
-   virtual function.  */
-
-int
-first_vfun_index (t)
-     tree t;
-{
-  /* Under the old ABI, the offset-to-top and RTTI entries are at
-     indices zero and one; under the new ABI, the first virtual
-     function is at index zero.  */
-  if (!CLASSTYPE_COM_INTERFACE (t) && !flag_new_abi)
-    return flag_vtable_thunks ? 2 : 1;
-
-  return 0;
-}
-
 /* Set DECL_VINDEX for DECL.  VINDEX_P is the number of virtual
    functions present in the vtable so far.  */
 
 static void
-set_vindex (t, decl, vfuns_p)
-     tree t;
+set_vindex (decl, vfuns_p)
      tree decl;
      int *vfuns_p;
 {
   int vindex;
 
   vindex = (*vfuns_p)++;
-  vindex += first_vfun_index (t);
   DECL_VINDEX (decl) = build_shared_int_cst (vindex);
 }
 
@@ -1158,7 +1132,7 @@ add_virtual_function (new_virtuals_p, overridden_virtuals_p,
       CLASSTYPE_RTTI (t) = t;
 
       /* Now assign virtual dispatch information.  */
-      set_vindex (t, fndecl, vfuns_p);
+      set_vindex (fndecl, vfuns_p);
       DECL_VIRTUAL_CONTEXT (fndecl) = t;
 
       /* Save the state we've computed on the NEW_VIRTUALS list.  */
@@ -1942,9 +1916,6 @@ determine_primary_base (t, vfuns_p)
 		    = tree_cons (base_binfo, 
 				 VF_BASETYPE_VALUE (vfields),
 				 CLASSTYPE_VFIELDS (t));
-
-	      if (!flag_new_abi && *vfuns_p == 0)
-		set_primary_base (t, base_binfo, vfuns_p);
 	    }
 	}
     }
@@ -1994,7 +1965,7 @@ determine_primary_base (t, vfuns_p)
   /* The new ABI allows for the use of a "nearly-empty" virtual base
      class as the primary base class if no non-virtual polymorphic
      base can be found.  */
-  if (flag_new_abi && !CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
     {
       /* If not NULL, this is the best primary base candidate we have
          found so far.  */
@@ -2744,37 +2715,32 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
   /* Under the new ABI, we will convert to an intermediate virtual
      base first, and then use the vcall offset located there to finish
      the conversion.  */
-  if (flag_new_abi)
+  while (b)
     {
-      while (b)
-	{
-	  /* If we find BINFO, then the final overrider is in a class
-	     derived from BINFO, so the thunks can be generated with
-	     the final overrider.  */
-	  if (!virtual_base
-	      && same_type_p (BINFO_TYPE (b), BINFO_TYPE (binfo)))
-	    generate_thunk_with_vtable_p = 0;
+      /* If we find BINFO, then the final overrider is in a class
+	 derived from BINFO, so the thunks can be generated with
+	 the final overrider.  */
+      if (!virtual_base
+	  && same_type_p (BINFO_TYPE (b), BINFO_TYPE (binfo)))
+	generate_thunk_with_vtable_p = 0;
 
 	  /* If we find the final overrider, then we can stop
 	     walking.  */
-	  if (same_type_p (BINFO_TYPE (b), 
-			   BINFO_TYPE (TREE_VALUE (overrider))))
-	    break;
+      if (same_type_p (BINFO_TYPE (b), 
+		       BINFO_TYPE (TREE_VALUE (overrider))))
+	break;
 
 	  /* If we find a virtual base, and we haven't yet found the
 	     overrider, then there is a virtual base between the
 	     declaring base and the final overrider.  */
-	  if (!virtual_base && TREE_VIA_VIRTUAL (b))
-	    {
-	      generate_thunk_with_vtable_p = 1;
-	      virtual_base = b;
-	    }
-
-	  b = BINFO_INHERITANCE_CHAIN (b);
+      if (!virtual_base && TREE_VIA_VIRTUAL (b))
+	{
+	  generate_thunk_with_vtable_p = 1;
+	  virtual_base = b;
 	}
+
+      b = BINFO_INHERITANCE_CHAIN (b);
     }
-  else
-    virtual_base = NULL_TREE;
 
   if (virtual_base)
     /* The `this' pointer needs to be adjusted to the nearest virtual
@@ -2822,8 +2788,7 @@ dfs_modify_vtables (binfo, data)
       /* If we're supporting RTTI then we always need a new vtable to
 	 point to the RTTI information.  Under the new ABI we may need
 	 a new vtable to contain vcall and vbase offsets.  */
-      if (flag_rtti || flag_new_abi)
-	make_new_vtable (t, binfo);
+      make_new_vtable (t, binfo);
       
       /* Now, go through each of the virtual functions in the virtual
 	 function table for BINFO.  Find the final overrider, and
@@ -2884,7 +2849,7 @@ modify_all_vtables (t, vfuns_p, overridden_virtuals)
 	      || !value_member (fn, BINFO_VIRTUALS (binfo)))
 	    {
 	      /* Set the vtable index.  */
-	      set_vindex (t, fn, vfuns_p);
+	      set_vindex (fn, vfuns_p);
 	      /* We don't need to convert to a base class when calling
 		 this function.  */
 	      DECL_VIRTUAL_CONTEXT (fn) = t;
@@ -3954,10 +3919,10 @@ layout_nonempty_base_or_field (rli, decl, binfo, offsets)
 	 empty class, have non-zero size, any overlap can happen only
 	 with a direct or indirect base-class -- it can't happen with
 	 a data member.  */
-      if (flag_new_abi && layout_conflict_p (TREE_TYPE (decl),
-					     offset,
-					     offsets, 
-					     field_p))
+      if (layout_conflict_p (TREE_TYPE (decl),
+			     offset,
+			     offsets, 
+			     field_p))
 	{
 	  /* Strip off the size allocated to this field.  That puts us
 	     at the first place we could have put the field with
@@ -4033,11 +3998,10 @@ layout_empty_base (binfo, eoc, offsets)
    class.  OFFSETS gives the location of empty base subobjects.  */
 
 static void
-build_base_field (rli, binfo, empty_p, base_align, offsets)
+build_base_field (rli, binfo, empty_p, offsets)
      record_layout_info rli;
      tree binfo;
      int *empty_p;
-     unsigned int *base_align;
      splay_tree offsets;
 {
   tree basetype = BINFO_TYPE (binfo);
@@ -4056,20 +4020,6 @@ build_base_field (rli, binfo, empty_p, base_align, offsets)
   DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
   DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
   
-  if (! flag_new_abi)
-    {
-      /* Brain damage for backwards compatibility.  For no good
-	 reason, the old basetype layout made every base have at least
-	 as large as the alignment for the bases up to that point,
-	 gratuitously wasting space.  So we do the same thing here.  */
-      *base_align = MAX (*base_align, DECL_ALIGN (decl));
-      DECL_SIZE (decl)
-	= size_binop (MAX_EXPR, DECL_SIZE (decl), bitsize_int (*base_align));
-      DECL_SIZE_UNIT (decl)
-	= size_binop (MAX_EXPR, DECL_SIZE_UNIT (decl),
-		      size_int (*base_align / BITS_PER_UNIT));
-    }
-
   if (!integer_zerop (DECL_SIZE (decl)))
     {
       /* The containing class is non-empty because it has a non-empty
@@ -4120,13 +4070,12 @@ build_base_fields (rli, empty_p, offsets)
   tree rec = rli->t;
   int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
   int i;
-  unsigned int base_align = 0;
 
   /* Under the new ABI, the primary base class is always allocated
      first.  */
-  if (flag_new_abi && CLASSTYPE_HAS_PRIMARY_BASE_P (rec))
+  if (CLASSTYPE_HAS_PRIMARY_BASE_P (rec))
     build_base_field (rli, CLASSTYPE_PRIMARY_BINFO (rec), 
-		      empty_p, &base_align, offsets);
+		      empty_p, offsets);
 
   /* Now allocate the rest of the bases.  */
   for (i = 0; i < n_baseclasses; ++i)
@@ -4137,7 +4086,7 @@ build_base_fields (rli, empty_p, offsets)
 
       /* Under the new ABI, the primary base was already allocated
 	 above, so we don't need to allocate it again here.  */
-      if (flag_new_abi && base_binfo == CLASSTYPE_PRIMARY_BINFO (rec))
+      if (base_binfo == CLASSTYPE_PRIMARY_BINFO (rec))
 	continue;
 
       /* A primary virtual base class is allocated just like any other
@@ -4147,7 +4096,7 @@ build_base_fields (rli, empty_p, offsets)
 	  && !BINFO_PRIMARY_P (base_binfo))
 	continue;
 
-      build_base_field (rli, base_binfo, empty_p, &base_align, offsets);
+      build_base_field (rli, base_binfo, empty_p, offsets);
     }
 }
 
@@ -4196,18 +4145,13 @@ check_methods (t)
 	     [class.free]) requires that the second argument be set
 	     correctly.  */
 	  second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (x)));
-	  /* This is overly conservative, but we must maintain this
-	     behavior for backwards compatibility.  */
-	  if (!flag_new_abi && second_parm != void_list_node)
-	    TYPE_VEC_DELETE_TAKES_SIZE (t) = 1;
 	  /* Under the new ABI, we choose only those function that are
 	     explicitly declared as `operator delete[] (void *,
 	     size_t)'.  */
-	  else if (flag_new_abi 
-		   && !seen_one_arg_array_delete_p
-		   && second_parm
-		   && TREE_CHAIN (second_parm) == void_list_node
-		   && same_type_p (TREE_VALUE (second_parm), sizetype))
+	  if (!seen_one_arg_array_delete_p
+	      && second_parm
+	      && TREE_CHAIN (second_parm) == void_list_node
+	      && same_type_p (TREE_VALUE (second_parm), sizetype))
 	    TYPE_VEC_DELETE_TAKES_SIZE (t) = 1;
 	  /* If there's no second parameter, then this is the usual
 	     deallocation function.  */
@@ -4351,9 +4295,8 @@ clone_function_decl (fn, update_method_vec_p)
   tree clone;
 
   /* Avoid inappropriate cloning.  */
-  if (! flag_new_abi
-      || (TREE_CHAIN (fn)
-	  && DECL_CLONED_FUNCTION (TREE_CHAIN (fn))))
+  if (TREE_CHAIN (fn)
+      && DECL_CLONED_FUNCTION (TREE_CHAIN (fn)))
     return;
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
@@ -4397,10 +4340,6 @@ clone_constructors_and_destructors (t)
      tree t;
 {
   tree fns;
-
-  /* We only clone constructors and destructors under the new ABI.  */
-  if (!flag_new_abi)
-    return;
 
   /* If for some reason we don't have a CLASSTYPE_METHOD_VEC, we bail
      out now.  */
@@ -4540,8 +4479,7 @@ create_vtable_ptr (t, empty_p, vfuns_p,
   /* Loop over the virtual functions, adding them to our various
      vtables.  */
   for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
-    if (DECL_VINDEX (fn) 
-	&& !(flag_new_abi && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn)))
+    if (DECL_VINDEX (fn) && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
       add_virtual_function (new_virtuals_p, overridden_virtuals_p,
 			    vfuns_p, fn, t);
 
@@ -4580,7 +4518,7 @@ create_vtable_ptr (t, empty_p, vfuns_p,
 				     t,
 				     empty_p);
 
-      if (flag_new_abi && CLASSTYPE_N_BASECLASSES (t))
+      if (CLASSTYPE_N_BASECLASSES (t))
 	/* If there were any baseclasses, they can't possibly be at
 	   offset zero any more, because that's where the vtable
 	   pointer is.  So, converting to a base class is going to
@@ -4755,22 +4693,15 @@ layout_virtual_bases (t, offsets)
      ABI, these are allocated according to a depth-first left-to-right
      postorder traversal; in the new ABI, inheritance graph order is
      used instead.  */
-  for (vbases = (flag_new_abi 
-		 ? TYPE_BINFO (t) 
-		 : CLASSTYPE_VBASECLASSES (t));
+  for (vbases = TYPE_BINFO (t);
        vbases; 
        vbases = TREE_CHAIN (vbases))
     {
       tree vbase;
 
-      if (flag_new_abi)
-	{
-	  if (!TREE_VIA_VIRTUAL (vbases))
-	    continue;
-	  vbase = binfo_for_vbase (BINFO_TYPE (vbases), t);
-	}
-      else
-	vbase = TREE_VALUE (vbases);
+      if (!TREE_VIA_VIRTUAL (vbases))
+	continue;
+      vbase = binfo_for_vbase (BINFO_TYPE (vbases), t);
 
       if (!BINFO_PRIMARY_P (vbase))
 	{
@@ -4781,13 +4712,7 @@ layout_virtual_bases (t, offsets)
 
 	  basetype = BINFO_TYPE (vbase);
 
-	  if (flag_new_abi)
-	    desired_align = CLASSTYPE_ALIGN (basetype);
-	  else
-	    /* Under the old ABI, virtual bases were aligned as for the
-	     entire base object (including its virtual bases).  That's
-	     wasteful, in general.  */
-	    desired_align = TYPE_ALIGN (basetype);
+	  desired_align = CLASSTYPE_ALIGN (basetype);
 	  TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), desired_align);
 
 	  /* Add padding so that we can put the virtual base class at an
@@ -4796,7 +4721,7 @@ layout_virtual_bases (t, offsets)
 
 	  /* Under the new ABI, we try to squish empty virtual bases in
 	     just like ordinary empty bases.  */
-	  if (flag_new_abi && is_empty_class (basetype))
+	  if (is_empty_class (basetype))
 	    layout_empty_base (vbase,
 			       size_int (CEIL (dsize, BITS_PER_UNIT)),
 			       offsets);
@@ -4945,7 +4870,7 @@ layout_class_type (t, empty_p, vfuns_p,
 
   /* Under the new ABI, the vptr is always the first thing in the
      class.  */
-  if (flag_new_abi && vptr)
+  if (vptr)
     {
       TYPE_FIELDS (t) = chainon (vptr, TYPE_FIELDS (t));
       place_field (rli, vptr);
@@ -4986,12 +4911,7 @@ layout_class_type (t, empty_p, vfuns_p,
 	 rules, but the back-end can't handle bitfields longer than a
 	 `long long', so we use the same mechanism.  */
       if (DECL_C_BIT_FIELD (field)
-	  && ((flag_new_abi 
-	       && INT_CST_LT (TYPE_SIZE (type), DECL_SIZE (field)))
-	      || (!flag_new_abi
-		  && 0 < compare_tree_int (DECL_SIZE (field),
-					   TYPE_PRECISION
-					   (long_long_unsigned_type_node)))))
+	  && INT_CST_LT (TYPE_SIZE (type), DECL_SIZE (field)))
 	{
 	  integer_type_kind itk;
 	  tree integer_type;
@@ -5049,10 +4969,6 @@ layout_class_type (t, empty_p, vfuns_p,
   if (TREE_CODE (rli_size_unit_so_far (rli)) == INTEGER_CST
       && compare_tree_int (rli_size_unit_so_far (rli), eoc) < 0)
     {
-      /* We don't handle zero-sized base classes specially under the
-	 old ABI, so if we get here, we had better be operating under
-	 the new ABI rules.  */
-      my_friendly_assert (flag_new_abi, 20000321);
       rli->offset = size_binop (MAX_EXPR, rli->offset, size_int (eoc + 1));
       rli->bitpos = bitsize_zero_node;
     }
@@ -5073,14 +4989,6 @@ layout_class_type (t, empty_p, vfuns_p,
       TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
 
-  /* Under the old ABI, the vptr comes at the very end of the 
-     class.   */
-  if (!flag_new_abi && vptr)
-    {
-      place_field (rli, vptr);
-      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), vptr);
-    }
-  
   /* Let the back-end lay out the type. Note that at this point we
      have only included non-virtual base-classes; we will lay out the
      virtual base classes later.  So, the TYPE_SIZE/TYPE_ALIGN after
@@ -5094,20 +5002,15 @@ layout_class_type (t, empty_p, vfuns_p,
 
   /* Remember the size and alignment of the class before adding
      the virtual bases.  */
-  if (*empty_p && flag_new_abi)
+  if (*empty_p)
     {
       CLASSTYPE_SIZE (t) = bitsize_zero_node;
       CLASSTYPE_SIZE_UNIT (t) = size_zero_node;
     }
-  else if (flag_new_abi)
+  else
     {
       CLASSTYPE_SIZE (t) = TYPE_BINFO_SIZE (t);
       CLASSTYPE_SIZE_UNIT (t) = TYPE_BINFO_SIZE_UNIT (t);
-    }
-  else
-    {
-      CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
-      CLASSTYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (t);
     }
 
   CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
@@ -6493,23 +6396,13 @@ int
 is_empty_class (type)
      tree type;
 {
-  tree t;
-
   if (type == error_mark_node)
     return 0;
 
   if (! IS_AGGR_TYPE (type))
     return 0;
 
-  if (flag_new_abi)
-    return integer_zerop (CLASSTYPE_SIZE (type));
-
-  if (TYPE_BINFO_BASETYPES (type))
-    return 0;
-  t = TYPE_FIELDS (type);
-  while (t && TREE_CODE (t) != FIELD_DECL)
-    t = TREE_CHAIN (t);
-  return (t == NULL_TREE);
+  return integer_zerop (CLASSTYPE_SIZE (type));
 }
 
 /* Find the enclosing class of the given NODE.  NODE can be a *_DECL or
@@ -6894,10 +6787,6 @@ build_vtt (t)
   tree vtt;
   tree index;
 
-  /* Under the old ABI, we don't use VTTs.  */
-  if (!flag_new_abi)
-    return;
-
   /* Build up the initializers for the VTT.  */
   inits = NULL_TREE;
   index = size_zero_node;
@@ -7194,10 +7083,7 @@ build_ctor_vtbl_group (binfo, t)
   tree vbase;
 
   /* See if we've already create this construction vtable group.  */
-  if (flag_new_abi)
-    id = mangle_ctor_vtbl_for_type (t, binfo);
-  else
-    id = get_ctor_vtbl_name (t, binfo);
+  id = mangle_ctor_vtbl_for_type (t, binfo);
   if (IDENTIFIER_GLOBAL_VALUE (id))
     return;
 

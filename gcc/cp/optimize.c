@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
 This file is part of GNU CC.
@@ -913,10 +913,6 @@ maybe_clone_body (fn)
 {
   inline_data id;
   tree clone;
-
-  /* We don't clone constructors and destructors under the old ABI.  */
-  if (!flag_new_abi)
-    return 0;
 
   /* We only clone constructors and destructors.  */
   if (!DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)

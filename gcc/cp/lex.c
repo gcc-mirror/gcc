@@ -339,7 +339,7 @@ init_operators ()
 	 : &operator_name_info[(int) CODE]);				    \
   oni->identifier = identifier;						    \
   oni->name = NAME;							    \
-  oni->mangled_name = flag_new_abi ? NEW_MANGLING : OLD_MANGLING;
+  oni->mangled_name = NEW_MANGLING;
 
 #include "operators.def"
 #undef DEF_OPERATOR

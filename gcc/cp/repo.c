@@ -1,5 +1,5 @@
 /* Code to maintain a C++ template repository.
-   Copyright (C) 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
 This file is part of GNU CC.
@@ -106,25 +106,6 @@ repo_get_id (t)
 	my_friendly_abort (981113);
 
       vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (t));
-
-      /* If we don't have a primary vtable, try looking for a secondary
-	 vtable.  */
-      if (vtable == NULL_TREE && !flag_new_abi
-	  && TYPE_USES_VIRTUAL_BASECLASSES (t))
-	{
-	  tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
-	  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-	  for (i = 0; i < n_baselinks; ++i)
-	    {
-	      tree base_binfo = TREE_VEC_ELT (binfos, i);
-	      if (TREE_VIA_VIRTUAL (base_binfo))
-		{
-		  vtable = get_vtbl_decl_for_binfo (base_binfo);
-		  if (vtable)
-		    break;
-		}
-	    }
-	}
 
       t = vtable;
       if (t == NULL_TREE)
