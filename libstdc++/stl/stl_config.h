@@ -201,6 +201,9 @@
 
 # if defined(__MINGW32__)
 #   define __STL_NO_DRAND48
+#   ifdef _MT
+#     define __STL_WIN32THREADS
+#   endif
 # endif
 
 # if defined(__CYGWIN__)

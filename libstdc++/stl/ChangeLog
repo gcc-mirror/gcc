@@ -1,3 +1,8 @@
+1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* stl_config.h (__MINGW32__): Define __STL_WIN32THREADS for thread
+	safe runtime.
+
 1999-11-10  Benjamin Kosnik  <bkoz@haight.constant.com>
             Matthias Klose  <doko@cs.tu-berlin.de>
 
