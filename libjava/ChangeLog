@@ -1,3 +1,11 @@
+2000-12-12  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GCJ_WITH_FLAGS): New macro, includes --encoding
+	option.
+	(GCJCOMPILE): Use it.
+	(JAVAC): Likewise.
+
 2000-12-11  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/runtime/FirstThread.java (Kcert, Kfile, Khttp, Kjar):
