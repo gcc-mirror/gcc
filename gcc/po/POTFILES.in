@@ -358,6 +358,7 @@ config/i960/vx960-coff.h
 config/i960/vx960.h
 config/i960/xm-i960.h
 config/ia64/elf.h
+config/ia64/freebsd.h
 config/ia64/fde-glibc.c
 config/ia64/hpux.h
 config/ia64/ia64-protos.h
