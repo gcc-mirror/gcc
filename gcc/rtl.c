@@ -264,7 +264,23 @@ copy_rtx (orig)
     case CODE_LABEL:
     case PC:
     case CC0:
+    case SCRATCH:
+      /* SCRATCH must be shared because they represent distinct values. */
       return orig;
+
+    case CONST:
+      /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
+	 a LABEL_REF, it isn't sharable.  */
+      if (GET_CODE (XEXP (orig, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (orig, 0), 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (XEXP (orig, 0), 1)) == CONST_INT)
+	return orig;
+      break;
+
+    case MEM:
+      if (CONSTANT_ADDRESS_P (XEXP (orig, 0)))
+	return orig;
+      break;
     }
 
   copy = rtx_alloc (code);
