@@ -1,3 +1,7 @@
+2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Only regenerate texi files if --enable-maintainer-mode.
+
 2004-01-13  Ed Schonberg  <schonberg@gnat.com>
 
 	* exp_ch3.adb (Build_Assignment): Fix bug in handling of controlled
