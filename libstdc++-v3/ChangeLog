@@ -1,3 +1,8 @@
+2005-03-10  Ben Elliston  <bje@au.ibm.com>
+
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Don't XFAIL
+	on GNU/Linux.
+
 2005-03-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (is_polymorphic): Don't forget
