@@ -870,7 +870,8 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  for (param = DECL_ARGUMENTS (current_function_decl);
 	       param;
 	       param = TREE_CHAIN (param))
-	    if (var_ann (param)
+	    if (is_gimple_reg (param)
+		&& var_ann (param)
 		/* Also parameters that are only defined but never used need not
 		   be copied.  */
 		&& (var_ann (param)->default_def
