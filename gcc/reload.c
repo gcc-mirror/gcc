@@ -2641,8 +2641,16 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  register int regno = REGNO (recog_operand[i]);
 	  if (reg_equiv_constant[regno] != 0
 	      && (set == 0 || &SET_DEST (set) != recog_operand_loc[i]))
-	    substed_operand[i] = recog_operand[i]
-	      = reg_equiv_constant[regno];
+	    {
+	      /* Record the existing mode so that the check if constants are
+	         allowed will work when operand_mode isn't specified. */
+
+	      if (operand_mode[i] == VOIDmode)
+		operand_mode[i] = GET_MODE (recog_operand[i]);
+
+	      substed_operand[i] = recog_operand[i]
+	        = reg_equiv_constant[regno];
+	    }
 #if 0 /* This might screw code in reload1.c to delete prior output-reload
 	 that feeds this insn.  */
 	  if (reg_equiv_mem[regno] != 0)

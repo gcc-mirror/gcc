@@ -1,3 +1,14 @@
+Sun May 31 16:11:41 1998  John Wehle  (john@feith.com)
+
+	* reload.c (find_reloads): Record the existing mode if
+	operand_mode == VOIDmode before replacing a register with
+	a constant.
+	* i386.md (tstsi, tsthi, tstqi, tstsf, tstdf, tstxf): Set
+	i386_compare_op1 to const0_rtx for the benefit of the
+	conditional move patterns.
+	(movsicc, movhicc, movsfcc, movdfcc, movxfcc, movdicc): Rewrite
+	based on suggestions from Jim Wilson.
+
 Sun May 31 00:44:02 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
