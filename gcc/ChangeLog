@@ -1,3 +1,25 @@
+Wed Feb  3 21:56:27 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (hppa1.1-*-*, hppa2*-*): Use symbolic value rather
+	than numeric value for target_cpu_default..
+	* configure: Rebuilt.
+
+Wed Feb  3 21:55:56 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+
+	* pa-gas.h (TARGET_DEFAULT): Use symbolic values rather than numeric
+	values.
+	* pa-hpux.h (LINK_SPEC): Likewise.
+	* pa-hpux10.h (LINK_SPEC): Likewise.
+	* pa-hpux9.h (LINK_SPEC): Likewise.
+	* pa-osf.h: (LINK_SPEC): Likewise.
+	* pa-pro.h (TARGET_DEFAULT): Likewise.
+	* pa1.h (TARGET_DEFAULT): Likewise.
+	* pa.h (MASK_*): New defines.
+	(TARGET_*): Use symbolic values rather than numeric values.
+	(TARGET_SWITCHES): Likewise.
+	(TARGET_DEFAULT): likewise.
+	(CPP_SPEC): likewise.
+
 Wed Feb  3 21:07:38 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* reload1.c (reload_cse_regs_1): Undo Jan 16 patch.

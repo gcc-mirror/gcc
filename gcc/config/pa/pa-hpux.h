@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -Asystem(unix) -Asystem(hpux) -Acpu(hppa) -Amachine(hppa)"
 
 #undef LINK_SPEC
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 1)
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_SNAKE)
 #define LINK_SPEC \
   "%{!mpa-risc-1-0:%{!shared:-L/lib/pa1.1 -L/usr/lib/pa1.1 }}%{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{g*:-a archive} %{shared:-b}"
 #else

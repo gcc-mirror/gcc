@@ -62,14 +62,16 @@ extern int target_flags;
 
 /* compile code for HP-PA 1.1 ("Snake") */
 
-#define TARGET_SNAKE (target_flags & 1)
+#define MASK_SNAKE 1
+#define TARGET_SNAKE (target_flags & MASK_SNAKE)
 
 /* Disable all FP registers (they all become fixed).  This may be necessary
    for compiling kernels which perform lazy context switching of FP regs.
    Note if you use this option and try to perform floating point operations
    the compiler will abort!  */
 
-#define TARGET_DISABLE_FPREGS (target_flags & 2)
+#define MASK_DISABLE_FPREGS 2
+#define TARGET_DISABLE_FPREGS (target_flags & MASK_DISABLE_FPREGS)
 
 /* Generate code which assumes that calls through function pointers will
    never cross a space boundary.  Such assumptions are generally safe for
@@ -78,18 +80,21 @@ extern int target_flags;
    or uses nested functions!
 
    This is also used to trigger aggressive unscaled index addressing.  */
-#define TARGET_NO_SPACE_REGS (target_flags & 4)
+#define MASK_NO_SPACE_REGS 4
+#define TARGET_NO_SPACE_REGS (target_flags & MASK_NO_SPACE_REGS)
 
 /* Allow unconditional jumps in the delay slots of call instructions.  */
-#define TARGET_JUMP_IN_DELAY (target_flags & 8)
+#define MASK_JUMP_IN_DELAY 8
+#define TARGET_JUMP_IN_DELAY (target_flags & MASK_JUMP_IN_DELAY)
 
 /* Optimize for space.  Currently this only turns on out of line
    prologues and epilogues.  */
-#define TARGET_SPACE (target_flags & 16)
+#define MASK_SPACE 16
+#define TARGET_SPACE (target_flags & MASK_SPACE)
 
 /* Disable indexed addressing modes.  */
-
-#define TARGET_DISABLE_INDEXING (target_flags & 32)
+#define MASK_DISABLE_INDEXING 32
+#define TARGET_DISABLE_INDEXING (target_flags & MASK_DISABLE_INDEXING)
 
 /* Emit code which follows the new portable runtime calling conventions
    HP wants everyone to use for ELF objects.  If at all possible you want
@@ -97,29 +102,32 @@ extern int target_flags;
 
    Note TARGET_PORTABLE_RUNTIME also forces all calls to use inline
    long-call stubs which is quite expensive.  */
-
-#define TARGET_PORTABLE_RUNTIME (target_flags & 64)
+#define MASK_PORTABLE_RUNTIME 64
+#define TARGET_PORTABLE_RUNTIME (target_flags & MASK_PORTABLE_RUNTIME)
 
 /* Emit directives only understood by GAS.  This allows parameter
    relocations to work for static functions.  There is no way
    to make them work the HP assembler at this time.  */
-
-#define TARGET_GAS (target_flags & 128)
+#define MASK_GAS 128
+#define TARGET_GAS (target_flags & MASK_GAS)
 
 /* Emit code for processors which do not have an FPU.  */
-
-#define TARGET_SOFT_FLOAT (target_flags & 256)
+#define MASK_SOFT_FLOAT 256
+#define TARGET_SOFT_FLOAT (target_flags & MASK_SOFT_FLOAT)
 
 /* Use 3-insn load/store sequences for access to large data segments
    in shared libraries on hpux10.  */
-#define TARGET_LONG_LOAD_STORE (target_flags & 512)
+#define MASK_LONG_LOAD_STORE 512
+#define TARGET_LONG_LOAD_STORE (target_flags & MASK_LONG_LOAD_STORE)
 
 /* Use a faster sequence for indirect calls.  */
-#define TARGET_FAST_INDIRECT_CALLS (target_flags & 1024)
+#define MASK_FAST_INDIRECT_CALLS 1024
+#define TARGET_FAST_INDIRECT_CALLS (target_flags & MASK_FAST_INDIRECT_CALLS)
 
 /* Generate code with big switch statements to avoid out of range branches
    occurring within the switch table.  */
-#define TARGET_BIG_SWITCH (target_flags & 2048)
+#define MASK_BIG_SWITCH 2048
+#define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -128,37 +136,37 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES \
-  {{"snake", 1},		\
-   {"nosnake", -1},		\
-   {"pa-risc-1-0", -1},		\
-   {"pa-risc-1-1", 1},		\
-   {"disable-fpregs", 2},	\
-   {"no-disable-fpregs", -2},	\
-   {"no-space-regs", 4},	\
-   {"space-regs", -4},		\
-   {"jump-in-delay", 8},	\
-   {"no-jump-in-delay", -8},	\
-   {"space", 16},		\
-   {"no-space", -16},		\
-   {"disable-indexing", 32},	\
-   {"no-disable-indexing", -32},\
-   {"portable-runtime", 64},	\
-   {"no-portable-runtime", -64},\
-   {"gas", 128},		\
-   {"no-gas", -128},		\
-   {"soft-float", 256},		\
-   {"no-soft-float", -256},	\
-   {"long-load-store", 512},	\
-   {"no-long-load-store", -512},\
-   {"fast-indirect-calls", 1024},\
-   {"no-fast-indirect-calls", -1024},\
-   {"big-switch", 2048},	\
-   {"no-big-switch", -2048},	\
+  {{"snake", MASK_SNAKE},		\
+   {"nosnake", -MASK_SNAKE},		\
+   {"pa-risc-1-0", -MASK_SNAKE},		\
+   {"pa-risc-1-1", MASK_SNAKE},		\
+   {"disable-fpregs", MASK_DISABLE_FPREGS},	\
+   {"no-disable-fpregs", -MASK_DISABLE_FPREGS},	\
+   {"no-space-regs", MASK_NO_SPACE_REGS},	\
+   {"space-regs", -MASK_NO_SPACE_REGS},		\
+   {"jump-in-delay", MASK_JUMP_IN_DELAY},	\
+   {"no-jump-in-delay", -MASK_JUMP_IN_DELAY},	\
+   {"space", MASK_SPACE},		\
+   {"no-space", -MASK_SPACE},		\
+   {"disable-indexing", MASK_DISABLE_INDEXING},	\
+   {"no-disable-indexing", -MASK_DISABLE_INDEXING},\
+   {"portable-runtime", MASK_PORTABLE_RUNTIME},	\
+   {"no-portable-runtime", -MASK_PORTABLE_RUNTIME},\
+   {"gas", MASK_GAS},		\
+   {"no-gas", -MASK_GAS},		\
+   {"soft-float", MASK_SOFT_FLOAT},		\
+   {"no-soft-float", -MASK_SOFT_FLOAT},	\
+   {"long-load-store", MASK_LONG_LOAD_STORE},	\
+   {"no-long-load-store", -MASK_LONG_LOAD_STORE},\
+   {"fast-indirect-calls", MASK_FAST_INDIRECT_CALLS},\
+   {"no-fast-indirect-calls", -MASK_FAST_INDIRECT_CALLS},\
+   {"big-switch", MASK_BIG_SWITCH},	\
+   {"no-big-switch", -MASK_BIG_SWITCH},	\
    {"linker-opt", 0},		\
    { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0x88		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
+#define TARGET_DEFAULT (MASK_GAS | MASK_JUMP_IN_DELAY)
 #endif
 
 #ifndef TARGET_CPU_DEFAULT
@@ -238,7 +246,7 @@ extern int target_flags;
   fprintf (FILE,							\
 	   "\t.stabs \"\",%d,0,0,L$text_end0000\nL$text_end0000:\n", N_SO)
 
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 1) == 0
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_SNAKE) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}\
  %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE}\
