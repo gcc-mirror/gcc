@@ -73,6 +73,8 @@ optab abs_optab;
 optab one_cmpl_optab;
 optab ffs_optab;
 optab sqrt_optab;
+optab sin_optab;
+optab cos_optab;
 
 optab cmp_optab;
 optab ucmp_optab;  /* Used only for libcalls for unsigned comparisons.  */
@@ -3355,6 +3357,8 @@ init_optabs ()
   one_cmpl_optab = init_optab (NOT);
   ffs_optab = init_optab (FFS);
   sqrt_optab = init_optab (SQRT);
+  sin_optab = init_optab (UNKNOWN);
+  cos_optab = init_optab (UNKNOWN);
   strlen_optab = init_optab (UNKNOWN);
 
 #ifdef HAVE_addqi3
@@ -4248,6 +4252,36 @@ init_optabs ()
     sqrt_optab->handlers[(int) TFmode].insn_code = CODE_FOR_sqrttf2;
 #endif
   /* No library calls here!  If there is no sqrt instruction expand_builtin
+     should force the library call.  */
+
+#ifdef HAVE_sinsf2
+  if (HAVE_sinsf2)
+    sin_optab->handlers[(int) SFmode].insn_code = CODE_FOR_sinsf2;
+#endif
+#ifdef HAVE_sindf2
+  if (HAVE_sindf2)
+    sin_optab->handlers[(int) DFmode].insn_code = CODE_FOR_sindf2;
+#endif
+#ifdef HAVE_sintf2
+  if (HAVE_sintf2)
+    sin_optab->handlers[(int) TFmode].insn_code = CODE_FOR_sintf2;
+#endif
+  /* No library calls here!  If there is no sin instruction expand_builtin
+     should force the library call.  */
+
+#ifdef HAVE_cossf2
+  if (HAVE_cossf2)
+    cos_optab->handlers[(int) SFmode].insn_code = CODE_FOR_cossf2;
+#endif
+#ifdef HAVE_cosdf2
+  if (HAVE_cosdf2)
+    cos_optab->handlers[(int) DFmode].insn_code = CODE_FOR_cosdf2;
+#endif
+#ifdef HAVE_costf2
+  if (HAVE_costf2)
+    cos_optab->handlers[(int) TFmode].insn_code = CODE_FOR_costf2;
+#endif
+  /* No library calls here!  If there is no cos instruction expand_builtin
      should force the library call.  */
 
 #ifdef HAVE_strlenqi
