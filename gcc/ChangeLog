@@ -1,3 +1,7 @@
+Sun May 2 01:15:06 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Fri Apr 30 13:55:43 1999  Richard Henderson  <rth@cygnus.com>
 
 	* va-ppc.h (__va_start_common): Let __builtin_saveregs do the work.
