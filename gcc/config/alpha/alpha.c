@@ -109,7 +109,8 @@ void
 override_options ()
 {
   alpha_cpu
-    = TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4;
+    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
+      : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
 
   if (alpha_cpu_string)
     {
@@ -117,19 +118,33 @@ override_options ()
 	  || ! strcmp (alpha_cpu_string, "21064"))
 	{
 	  alpha_cpu = PROCESSOR_EV4;
-	  target_flags &= ~ MASK_BYTE_OPS;
+	  target_flags &= ~ (MASK_BWX | MASK_CIX | MASK_MAX);
 	}
       else if (! strcmp (alpha_cpu_string, "ev5")
 	       || ! strcmp (alpha_cpu_string, "21164"))
 	{
 	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags &= ~ MASK_BYTE_OPS;
+	  target_flags &= ~ (MASK_BWX | MASK_CIX | MASK_MAX);
 	}
       else if (! strcmp (alpha_cpu_string, "ev56")
 	       || ! strcmp (alpha_cpu_string, "21164a"))
 	{
 	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags |= MASK_BYTE_OPS;
+	  target_flags |= MASK_BWX;
+	  target_flags &= ~ (MASK_CIX | MASK_MAX);
+	}
+      else if (! strcmp (alpha_cpu_string, "pca56")
+	       || ! strcmp (alpha_cpu_string, "21164PC"))
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags |= MASK_BWX | MASK_MAX;
+	  target_flags &= ~ MASK_CIX;
+	}
+      else if (! strcmp (alpha_cpu_string, "ev6")
+	       || ! strcmp (alpha_cpu_string, "21264"))
+	{
+	  alpha_cpu = PROCESSOR_EV6;
+	  target_flags |= MASK_BWX | MASK_CIX | MASK_MAX;
 	}
       else
 	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
@@ -485,7 +500,7 @@ input_operand (op, mode)
 	return 1;
       /* ... fall through ... */
     case MEM:
-      return ((TARGET_BYTE_OPS || (mode != HImode && mode != QImode))
+      return ((TARGET_BWX || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));
 
     case CONST_DOUBLE:
@@ -1321,12 +1336,12 @@ print_operand (file, x, code)
 
     case ',':
       /* Generates single precision instruction suffix.  */
-      fprintf (file, "%c", (TARGET_FLOAT_VAX?'f':'s'));
+      fprintf (file, "%c", (TARGET_FLOAT_VAX ? 'f' : 's'));
       break;
 
     case '-':
       /* Generates double precision instruction suffix.  */
-      fprintf (file, "%c", (TARGET_FLOAT_VAX?'g':'t'));
+      fprintf (file, "%c", (TARGET_FLOAT_VAX ? 'g' : 't'));
       break;
 
     case 'r':
