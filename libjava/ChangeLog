@@ -1,3 +1,20 @@
+2002-08-27  Michael Koch <konqueror@gmx.de>
+
+	* java/net/BindException.java,
+	java/net/JarURLConnection.java,
+	java/net/FileNameMap.java,
+	java/net/HttpURLConnection.java,
+	java/net/InetSocketAddress.java,
+	java/net/DatagramPacket.java,
+	java/net/DatagramSocket.java,
+	java/net/DatagramSocketImpl.java,
+	java/net/MulticastSocket.java,
+	java/net/PasswordAuthentication.java,
+	java/net/ServerSocket.java,
+	java/net/Socket.java,
+	java/net/URLClassLoader.java,
+	java/net/URLConnection.java: add/update of some @since/@deprecated
+	
 2002-08-27  Tony Kimball <alk@pobox.com>
             Tom Tromey  <tromey@redhat.com>
 

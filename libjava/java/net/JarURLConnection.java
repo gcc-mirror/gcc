@@ -18,6 +18,7 @@ import java.util.Hashtable;
 
 /**
  * @author Kresten Krab Thorup <krab@gnu.org>
+ * @since 1.2
  * @date Aug 10, 1999.
  */
 

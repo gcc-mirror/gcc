@@ -15,6 +15,7 @@ import java.io.*;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>
+ * @since 1.1
  * @date March 29, 1999.
  */
 

@@ -129,6 +129,8 @@ public class ServerSocket
    * @param bindAddr The address to bind to, or null to bind to all addresses
    *
    * @exception IOException If an error occurs
+   *
+   * @since 1.1
    */
   public ServerSocket (int port, int backlog, InetAddress bindAddr)
     throws java.io.IOException
@@ -192,6 +194,8 @@ public class ServerSocket
    * @param socket The socket that is used for the accepted connection
    *
    * @exception IOException If an error occurs
+   *
+   * @since 1.1
    */
   protected final void implAccept (Socket s)  throws IOException
   {
@@ -217,6 +221,8 @@ public class ServerSocket
    * @param timeout The new SO_TIMEOUT value
    *
    * @exception IOException If an error occurs
+   *
+   * @since 1.1
    */
   public void setSoTimeout (int timeout) throws SocketException
   {
@@ -235,6 +241,8 @@ public class ServerSocket
    * @return The value of SO_TIMEOUT
    *
    * @exception IOException If an error occurs
+   *
+   * @since 1.1
    */
   public int getSoTimeout () throws IOException
   {

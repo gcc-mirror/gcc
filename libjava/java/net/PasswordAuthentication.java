@@ -41,6 +41,7 @@ package java.net;
   * This class serves a container for username/password pairs.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @since 1.2
   */
 public final class PasswordAuthentication
 {
