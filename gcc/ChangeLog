@@ -1,3 +1,14 @@
+2004-07-06  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	PR target/1679.
+	* config/m32r/m32r.c (m32r_function_symbol): New function:
+	Generate a symbol name RTX with the correct m32r specific flags
+	set. 
+	(block_move_call): Use new function to generate correct symbol.
+	* config/m32r/m32r-protos.h: Add prototype for new funcion.
+	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Use the new
+	function.
+
 2004-07-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/16357

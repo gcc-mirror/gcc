@@ -2753,6 +2753,29 @@ m32r_not_same_reg (rtx a, rtx b)
 }
 
 
+rtx
+m32r_function_symbol (const char *name)
+{
+  int extra_flags = 0;
+  enum m32r_model model;
+  rtx sym = gen_rtx_SYMBOL_REF (Pmode, name);
+
+  if (TARGET_MODEL_SMALL)
+    model = M32R_MODEL_SMALL;
+  else if (TARGET_MODEL_MEDIUM)
+    model = M32R_MODEL_MEDIUM;
+  else if (TARGET_MODEL_LARGE)
+    model = M32R_MODEL_LARGE;
+  else
+    abort (); /* shouldn't happen */
+  extra_flags |= model << SYMBOL_FLAG_MODEL_SHIFT;
+                                                                                
+  if (extra_flags)
+    SYMBOL_REF_FLAGS (sym) |= extra_flags;
+
+  return sym;
+}
+
 /* Use a library function to move some bytes.  */
 
 static void
@@ -2765,13 +2788,13 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
 #ifdef TARGET_MEM_FUNCTIONS
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "memcpy"), 0,
+  emit_library_call (m32r_function_symbol ("memcpy"), 0,
 		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TREE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
 #else
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "bcopy"), 0,
+  emit_library_call (m32r_function_symbol ("bcopy"), 0,
 		     VOIDmode, 3, src_reg, Pmode, dest_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (integer_type_node), bytes_rtx,
 				      TREE_UNSIGNED (integer_type_node)),
