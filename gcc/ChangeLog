@@ -1,3 +1,7 @@
+2000-04-19  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* avr.c: #include "system.h" instead of <stdio.h> and <stdlib.h>.
+
 2000-04-19  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (special_symbol): Represent an empty macro with
