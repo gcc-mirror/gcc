@@ -32,5 +32,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    directory, our fallback strategy must be to look for these files instead
    in the Sun C 2.0 directory.  */
 
-#undef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX	"/opt/SUNWste/SC2.0/"
+#define MD_STARTFILE_PREFIX_1	"/opt/SUNWste/SC2.0/"
