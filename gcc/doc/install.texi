@@ -944,7 +944,7 @@ Define if you want to use __cxa_atexit, rather than atexit, to
 register C++ destructors for local statics and global objects.
 This is essential for fully standards-compliant handling of
 destructors, but requires __cxa_atexit in libc. This option is currently
-only available on sytems with GNU libc. When enabled, this will cause
+only available on systems with GNU libc. When enabled, this will cause
 @option{-fuse-cxa-exit} to be passed by default.
 
 @item --enable-target-optspace
