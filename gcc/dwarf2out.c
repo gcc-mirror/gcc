@@ -8809,6 +8809,7 @@ loc_descriptor_from_tree (loc, addressp)
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
+    case MODIFY_EXPR:
       return loc_descriptor_from_tree (TREE_OPERAND (loc, 0), addressp);
 
     case COMPONENT_REF:
