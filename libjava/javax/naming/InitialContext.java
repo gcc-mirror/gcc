@@ -185,140 +185,140 @@ public class InitialContext implements Context
     }
 
   public void bind (Name name, Object obj) throws NamingException
-    {
-      getURLOrDefaultInitCtx (name).bind (name, obj);
-    }
+  {
+    getURLOrDefaultInitCtx (name).bind (name, obj);
+  }
 
   public void bind (String name, Object obj) throws NamingException
-    {
-      getURLOrDefaultInitCtx (name).bind (name, obj);
-    }
+  {
+    getURLOrDefaultInitCtx (name).bind (name, obj);
+  }
 
   public Object lookup (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).lookup (name);
   }
 
   public Object lookup (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).lookup (name);
   }
 
   public void rebind (Name name, Object obj) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    getURLOrDefaultInitCtx (name).rebind (name, obj);
   }
 
   public void rebind (String name, Object obj) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    getURLOrDefaultInitCtx (name).rebind (name, obj);
   }
 
   public void unbind (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    getURLOrDefaultInitCtx (name).unbind (name);
   }
 
   public void unbind (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    getURLOrDefaultInitCtx (name).unbind (name);
   }
 
   public void rename (Name oldName, Name newName) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    getURLOrDefaultInitCtx (oldName).rename (oldName, newName);
   }
 
   public void rename (String oldName, String newName) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    getURLOrDefaultInitCtx (oldName).rename (oldName, newName);
   }
 
   public NamingEnumeration list (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).list (name);
   }
 
   public NamingEnumeration list (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).list (name);
   }
 
   public NamingEnumeration listBindings (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).listBindings (name);
   }
 
   public NamingEnumeration listBindings (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).listBindings (name);
   }
 
   public void destroySubcontext (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).destroySubcontext (name);
   }
 
   public void destroySubcontext (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).destroySubcontext (name);
   }
 
   public Context createSubcontext (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).createSubcontext (name);
   }
 
   public Context createSubcontext (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).createSubcontext (name);
   }
 
   public Object lookupLink (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).lookupLink (name);
   }
 
   public Object lookupLink (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).lookupLink (name);
   }
 
   public NameParser getNameParser (Name name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).getNameParser (name);
   }
 
   public NameParser getNameParser (String name) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).getNameParser (name);
   }
 
   public Name composeName (Name name, Name prefix) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).composeName (name, prefix);
   }
 
   public String composeName (String name, 
 			     String prefix) throws NamingException;
   {
-    throw new OperationNotSupportedException ();
+    return getURLOrDefaultInitCtx (name).composeName (name, prefix);
   }
 
   public Object addToEnvironment (String propName, 
 				  Object propVal) throws NamingException;
   {
-    throw new OperationNotSupportedException ();
+    myProps.add (propName, propVal);
   }
 
   public Object removeFromEnvironment (String propName) throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    myProps.remove (propName);
   }
 
   public Hashtable getEnvironment () throws NamingException
   {
-    throw new OperationNotSupportedException ();
+    return myProps;
   }
 
   public void close () throws NamingException

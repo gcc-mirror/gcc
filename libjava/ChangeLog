@@ -1,3 +1,17 @@
+Sun Nov 26 22:35:53 2000  Anthony Green  <green@redhat.com>
+
+	* javax/naming/InitialContext.java (rebind): Implement.
+	(unbind): Implement.
+	(rename): Implement.
+	(list): Implement.
+	(listBindings): Implement.
+	(destroySubcontext): Implement.
+	(createSubcontext): Implement.
+	(lookupLink): Implement.
+	(getNameParser): Implement.
+	(composeName): Implement.
+	(addToEnvironment): Implement.
+
 Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 	* javax/naming/AuthenticationException.java,
