@@ -1,3 +1,7 @@
+Tue Mar 16 15:30:19 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* rtl.h: Rename prototype for free_bb_memory to free_bb_mem. 
+
 Tue Mar 16 23:40:09 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (movsi_i): Move t/r alternative after r/rI alternative.
