@@ -10803,10 +10803,13 @@ finish_function (int flags)
       && !current_function_returns_value && !current_function_returns_null
       /* Don't complain if we abort or throw.  */
       && !current_function_returns_abnormally
-      && !DECL_NAME (DECL_RESULT (fndecl))
+      && !DECL_NAME (DECL_RESULT (fndecl)))
+#if 0
+    /* Enable this for all functions until bug 14107 is fixed properly.  */
       /* Normally, with -Wreturn-type, flow will complain.  Unless we're an
 	 inline function, as we might never be compiled separately.  */
       && (DECL_INLINE (fndecl) || processing_template_decl))
+#endif
     warning ("no return statement in function returning non-void");
 
   /* Store the end of the function, so that we get good line number
