@@ -1,3 +1,9 @@
+2004-06-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR 13334
+	* doc/install.texi: Document non-standard CFLAGS and bootstrap
+	failures and warnings.
+
 2004-06-26  Andrew Haley  <aph@redhat.com>
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Check
