@@ -1,3 +1,17 @@
+2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c: Follow spelling conventions.
+	* cgraph.c: Likewise.
+	* cpplex.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/iwmmxt.md: Likewise.
+	* config/c4x/c4x-modes.def: Likewise.
+	* config/c4x/c4x.c: Likewise.
+	* config/c4x/c4x.h: Likewise.
+	* config/c4x/c4x.md: Likewise.
+	* config/i386/i386-interix.h: Likewise.
+	* config/mips/mips.h: Likewise.
+
 2003-06-28  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Predicate
