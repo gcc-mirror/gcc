@@ -78,9 +78,11 @@ Boston, MA 02111-1307, USA.  */
    but it normally does declare it.  This means that configure thinks we don't
    need to declare it.  Favor using strrchr if it is available.  */
 
+#ifndef strrchr
 #ifndef HAVE_STRRCHR
 #ifdef  HAVE_RINDEX
 #define strrchr rindex
+#endif
 #endif
 #endif
 
