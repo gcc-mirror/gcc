@@ -1,3 +1,8 @@
+Sat Oct 24 09:27:30 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* regclass.c (record_reg_classes): Skip modifiers when looking
+	for constraint that just matches a previous operand.
+
 Fri Oct 23 07:05:52 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold_range_test, fold): Use global_bindings_p,
