@@ -11,7 +11,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
   set options ""
 
 # apple uses a different extension for shared/dynamic libraries
-# so we check against powerpc-apple-darwin and set them to 
+# so we check against powerpc-apple-darwin and set them to
 # dylib, else we assume it's .so
 
   if { [ regexp {powerpc-apple-darwin} $host_triplet] } {
@@ -131,7 +131,15 @@ proc gcj_jni_test_one {file} {
       lappend cxxflaglist "-L$cxxldlibflags"
     }
 
-    lappend cxxflaglist "-lstdc++"
+    # Darwin does not yet have a libgcc_s.dylib library.
+    # So we add it here. If the libgcc_s is installed, the libstdc++
+    # would pick it up.
+    if { [ regexp {powerpc-apple-darwin} $host_triplet] } {
+	lappend cxxflaglist "-lgcc_s -lstdc++"
+    } else {
+	lappend cxxflaglist "-lstdc++"
+    }
+  
     set cxxflags [join $cxxflaglist]
   }
 
