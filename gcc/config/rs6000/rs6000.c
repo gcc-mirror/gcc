@@ -8666,6 +8666,14 @@ rs6000_frame_related (insn, reg, val, reg2, rreg)
 {
   rtx real, temp;
 
+  /* copy_rtx will not make unique copies of registers, so we need to
+     ensure we don't have unwanted sharing here.  */
+  if (reg == reg2)
+    reg = gen_raw_REG (GET_MODE (reg), REGNO (reg));
+
+  if (reg == rreg)
+    reg = gen_raw_REG (GET_MODE (reg), REGNO (reg));
+
   real = copy_rtx (PATTERN (insn));
 
   real = replace_rtx (real, reg, 
