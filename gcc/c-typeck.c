@@ -1766,9 +1766,7 @@ convert_arguments (typelist, values, name, fundecl)
 						fundecl, name, parmnum + 1);
 	      
 	      if (PROMOTE_PROTOTYPES
-		  && (TREE_CODE (type) == INTEGER_TYPE
-		      || TREE_CODE (type) == ENUMERAL_TYPE
-		      || TREE_CODE (type) == BOOLEAN_TYPE)
+		  && INTEGRAL_TYPE_P (type)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		parmval = default_conversion (parmval);
 	    }
