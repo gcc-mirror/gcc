@@ -1,3 +1,20 @@
+2003-12-04  Hosaka Yuji  <hos@tamanegi.org>
+
+	* testsuite/libffi.call/many_win32.c: Include <float.h>.
+	* testsuite/libffi.call/many_win32.c (main): Replace variable
+	int i with unsigned long ul.
+
+	* testsuite/libffi.call/cls_align_uint64.c: New test case.
+	* testsuite/libffi.call/cls_align_sint64.c: Likewise.
+	* testsuite/libffi.call/cls_align_uint32.c: Likewise.
+	* testsuite/libffi.call/cls_align_sint32.c: Likewise.
+	* testsuite/libffi.call/cls_align_uint16.c: Likewise.
+	* testsuite/libffi.call/cls_align_sint16.c: Likewise.
+	* testsuite/libffi.call/cls_align_float.c: Likewise.
+	* testsuite/libffi.call/cls_align_double.c: Likewise.
+	* testsuite/libffi.call/cls_align_longdouble.c: Likewise.
+	* testsuite/libffi.call/cls_align_pointer.c: Likewise.
+
 2003-12-02  Hosaka Yuji  <hos@tamanegi.org>
 
 	PR other/13221
