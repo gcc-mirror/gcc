@@ -1227,8 +1227,8 @@ controlled by @samp{#pragma implementation}.  This will cause linker
 errors if these functions are not inlined everywhere they are called.
 
 @item -fms-extensions
-Disable pedwarns about constructs used in MFC, such as implicit int and
-getting a pointer to member function via non-standard syntax.
+Disable pedantic warnings about constructs used in MFC, such as implicit
+int and getting a pointer to member function via non-standard syntax.
 
 @item -fname-mangling-version-@var{n}
 Control the way in which names are mangled.  Version 0 is compatible
