@@ -1771,7 +1771,7 @@ fix_crossing_unconditional_branches (void)
 		 reference of label, as target for jump.  */
 	      
 	      label = JUMP_LABEL (last_insn);
-	      label_addr = gen_rtx_LABEL_REF (VOIDmode, label);
+	      label_addr = gen_rtx_LABEL_REF (Pmode, label);
 	      LABEL_NUSES (label) += 1;
 	      
 	      /* Get a register to use for the indirect jump.  */
