@@ -239,42 +239,26 @@ DEFUN (main, (argc, argv),
 void
 fatal_error VPARAMS ((const char *s, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *s;
-#endif
-  va_list ap;
-
-  VA_START (ap, s);
-
-#ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, s);
+  VA_FIXEDARG (ap, const char *, s);
 
   fprintf (stderr, "%s: error: ", exec_name);
   vfprintf (stderr, s, ap);
   fputc ('\n', stderr);
-  va_end (ap);
+  VA_CLOSE (ap);
   exit (1);
 }
 
 void
 warning VPARAMS ((const char *s, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *s;
-#endif
-  va_list ap;
-
-  VA_START (ap, s);
-
-#ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, s);
+  VA_FIXEDARG (ap, const char *, s);
 
   fprintf (stderr, "%s: warning: ", exec_name);
   vfprintf (stderr, s, ap);
   fputc ('\n', stderr);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
