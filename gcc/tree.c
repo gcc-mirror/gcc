@@ -1378,14 +1378,21 @@ tree
 save_expr (expr)
      tree expr;
 {
-  tree t = fold (expr);
-  tree inner = skip_simple_arithmetic (t);
+  tree t = expr;
+  tree inner;
+
+  /* Don't fold a COMPONENT_EXPR: if the operand was a CONSTRUCTOR (the
+     only time it will fold), it can cause problems with PLACEHOLDER_EXPRs
+     in Ada.  Moreover, it isn't at all clear why we fold here at all.  */
+  if (TREE_CODE (t) != COMPONENT_REF)
+    t = fold (t);
 
   /* If the tree evaluates to a constant, then we don't want to hide that
      fact (i.e. this allows further folding, and direct checks for constants).
      However, a read-only object that has side effects cannot be bypassed.
      Since it is no problem to reevaluate literals, we just return the
      literal node.  */
+  inner = skip_simple_arithmetic (t);
   if (TREE_CONSTANT (inner)
       || (TREE_READONLY (inner) && ! TREE_SIDE_EFFECTS (inner))
       || TREE_CODE (inner) == SAVE_EXPR
