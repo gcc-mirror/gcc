@@ -500,10 +500,10 @@ void _Jv_ClassReader::read_methods ()
 
       check_tag (name_index, JV_CONSTANT_Utf8);
       prepare_pool_entry (descriptor_index, JV_CONSTANT_Utf8);
-      
+
       handleMethod (i, access_flags, name_index,
 		    descriptor_index);
-      
+
       for (int j = 0; j < attributes_count; j++)
 	{
 	  read_one_method_attribute (i);
@@ -1282,10 +1282,6 @@ void _Jv_ClassReader::handleCodeAttribute
 	  code_length);
 
   def->interpreted_methods[method_index] = method;
-
-  // FIXME: Shouldn't this be done after loading completes?
-//    if (verify)
-//      _Jv_VerifyMethod (method);
 }
 
 void _Jv_ClassReader::handleExceptionTableEntry 
@@ -1332,9 +1328,17 @@ void _Jv_ClassReader::handleMethodsEnd ()
 	{
 	  if (def->interpreted_methods[i] == 0)
 	    throw_class_format_error ("method with no code");
+
+	  if (verify)
+	    {
+	      _Jv_InterpMethod *m;
+	      m = (reinterpret_cast<_Jv_InterpMethod *>
+		   (def->interpreted_methods[i]));
+	      // FIXME: enable once verifier is more fully tested.
+	      // _Jv_VerifyMethod (m);
+	    }
 	}
     }
-
 }
 
 void _Jv_ClassReader::throw_class_format_error (char *msg)

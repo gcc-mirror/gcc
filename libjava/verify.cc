@@ -697,12 +697,12 @@ private:
       subroutine = 0;
     }
 
-    state (const state *copy, int max_stack, int max_locals)
+    state (const state *orig, int max_stack, int max_locals)
     {
       stack = new type[max_stack];
       locals = new type[max_locals];
       local_changed = (bool *) _Jv_Malloc (sizeof (bool) * max_locals);
-      *this = *copy;
+      copy (orig, max_stack, max_locals);
       next = INVALID;
     }
 
