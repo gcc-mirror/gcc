@@ -2496,7 +2496,7 @@ eliminate_regs (x, mem_mode, insn)
 		   We special-case the commonest situation in
 		   eliminate_regs_in_insn, so just replace a PLUS with a
 		   PLUS here, unless inside a MEM.  */
-		if (mem_mode && GET_CODE (XEXP (x, 1)) == CONST_INT
+		if (mem_mode != 0 && GET_CODE (XEXP (x, 1)) == CONST_INT
 		    && INTVAL (XEXP (x, 1)) == - ep->previous_offset)
 		  return ep->to_rtx;
 		else
