@@ -37,27 +37,27 @@ exception statement from your version. */
 
 package java.io;
 
-/**
-  * This class prints Java primitive values and objects to a stream as
-  * text.  None of the methods in this class throw an exception.  However,
-  * errors can be detected by calling the <code>checkError()</code> method.
-  * Additionally, this stream can be designated as "autoflush" when 
-  * created so that any writes are automatically flushed to the underlying
-  * output sink whenever one of the <code>println</code> methods is
-  * called.  (Note that this differs from the <code>PrintStream</code>
-  * class which also auto-flushes when it encounters a newline character
-  * in the chars written).
-  *
-  * @author Per Bothner <bothner@cygnus.com>
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @date April 17, 1998.  
-  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
  * However, should use native methods for conversion.
  */
 
+/**
+ * This class prints Java primitive values and objects to a stream as
+ * text.  None of the methods in this class throw an exception.  However,
+ * errors can be detected by calling the <code>checkError()</code> method.
+ * Additionally, this stream can be designated as "autoflush" when 
+ * created so that any writes are automatically flushed to the underlying
+ * output sink whenever one of the <code>println</code> methods is
+ * called.  (Note that this differs from the <code>PrintStream</code>
+ * class which also auto-flushes when it encounters a newline character
+ * in the chars written).
+ *
+ * @author Per Bothner <bothner@cygnus.com>
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @date April 17, 1998.  
+ */
 public class PrintWriter extends Writer
 {
   /**
