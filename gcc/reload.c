@@ -677,6 +677,7 @@ find_valid_class (m1, n, dest_regno)
   enum reg_class best_class = NO_REGS;
   enum reg_class dest_class = REGNO_REG_CLASS (dest_regno);
   unsigned int best_size = 0;
+  int cost;
 
   for (class = 1; class < N_REG_CLASSES; class++)
     {
@@ -687,9 +688,13 @@ find_valid_class (m1, n, dest_regno)
 	    && ! HARD_REGNO_MODE_OK (regno + n, m1))
 	  bad = 1;
 
-      if (! bad && reg_class_size[class] > best_size
-	  && (best_cost < 0
-	      || best_cost >= REGISTER_MOVE_COST (m1, class, dest_class)))
+      if (bad)
+	continue;
+      cost = REGISTER_MOVE_COST (m1, class, dest_class);
+
+      if ((reg_class_size[class] > best_size
+	   && (best_cost < 0 || best_cost >= cost))
+	  || best_cost > cost)
 	{
 	  best_class = class;
 	  best_size = reg_class_size[class];
