@@ -1,10 +1,10 @@
-;;; texinfo.el--major mode for editing Texinfo files.
+;;; texinfo.el --- major mode for editing Texinfo files
 
 ;; Copyright (C) 1985, '88, '89, '90, '91,
-;;                '92, '93, '96 Free Software Foundation, Inc.
+;;                '92, '93, '96, '97 Free Software Foundation, Inc.
 
-;; Author: Robert J. Chassell          
-;; Date:   6 Sep 1996
+;; Author: Robert J. Chassell
+;; Date:   [Set date below for texinfo-version]
 ;; Maintainer: bug-texinfo@prep.ai.mit.edu
 ;; Keywords: maint, tex, docs
 
@@ -25,6 +25,26 @@
 ;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
+;;; Code:
+
+(defgroup texinfo nil
+  "Texinfo Mode"
+  :group 'docs)
+
+(defvar texinfo-version "2.37 of 24 May 1997")
+
+(defun texinfo-version (&optional here)
+  "Show the version of texinfo.el in the minibuffer.
+If optional argument HERE is non-nil, insert info at point."
+  (interactive "P")
+  (let ((version-string 
+         (format "Version of \`texinfo.el\': %s" texinfo-version)))
+    (if here 
+        (insert version-string)
+      (if (interactive-p)
+          (message "%s" version-string)
+        version-string))))
+
 
 ;;; Autoloads:
 
@@ -41,7 +61,7 @@ command to gain use of `next-error'."
   "makeinfo"
   "Make Info file from current buffer.
 
-Use the \\[next-error] command to move to the next error 
+Use the \\[next-error] command to move to the next error
 \(if there are errors\)."
   t nil)
 
@@ -164,7 +184,7 @@ title of the section containing the menu."
 
 (autoload 'texinfo-indent-menu-description
   "texnfo-upd"
-  "Indent every description in menu following point to COLUMN.  
+  "Indent every description in menu following point to COLUMN.
 Non-nil argument (prefix, if interactive) means indent every
 description in every menu in the region.  Does not indent second and
 subsequent lines of a multi-line description."
@@ -180,7 +200,7 @@ node names in pre-existing @node lines that lack names."
 
 (autoload 'texinfo-start-menu-description
   "texnfo-upd"
-  "In this menu entry, insert the node's section title as a description. 
+  "In this menu entry, insert the node's section title as a description.
 Position point at beginning of description ready for editing.
 Do not insert a title if the line contains an existing description.
 
@@ -191,7 +211,7 @@ complements the node name rather than repeats it as a title does."
 (autoload 'texinfo-multiple-files-update
   "texnfo-upd"
   "Update first node pointers in each file included in OUTER-FILE;
-create or update main menu in the outer file that refers to such nodes. 
+create or update main menu in the outer file that refers to such nodes.
 This does not create or update menus or pointers within the included files.
 
 With optional MAKE-MASTER-MENU argument (prefix arg, if interactive),
@@ -205,7 +225,7 @@ a master menu in OUTER-FILE.
 
 The command also updates the `Top' level node pointers of OUTER-FILE.
 
-Notes: 
+Notes:
 
   * this command does NOT save any files--you must save the
     outer file and any modified, included files.
@@ -217,7 +237,7 @@ Notes:
 Requirements:
 
   * each of the included files must contain exactly one highest
-    hierarchical level node, 
+    hierarchical level node,
   * this highest node must be the first node in the included file,
   * each highest hierarchical level node must be of the same type.
 
@@ -261,11 +281,11 @@ chapter."
     ;; It didn't seem to be any better, and it's slower--simon.
     ("^\\(@c\\|@comment\\)\\>.*" . font-lock-comment-face) ;comments
     ;; Robert J. Chassell <bob@gnu.ai.mit.edu> says remove this line.
-                                        ;("\\$\\([^$]*\\)\\$" 1 font-lock-string-face t)
+    ;;("\\$\\([^$]*\\)\\$" 1 font-lock-string-face t)
     ("@\\([a-zA-Z]+\\|[^ \t\n]\\)" 1 font-lock-keyword-face) ;commands
     ("^\\*\\(.*\\)[\t ]*$" 1 font-lock-function-name-face t) ;menu items
     ("@\\(emph\\|strong\\|b\\|i\\){\\([^}]+\\)" 2 font-lock-comment-face)
-    ("@\\(file\\|kbd\\|key\\){\\([^}]+\\)" 2 font-lock-string-face)
+    ("@\\(file\\|kbd\\|key\\|url\\|email\\){\\([^}]+\\)" 2 font-lock-string-face)
     ("@\\(samp\\|code\\|var\\|math\\){\\([^}]+\\)"
      2 font-lock-variable-name-face)
     ("@\\(cite\\|xref\\|pxref\\){\\([^}]+\\)" 2 font-lock-reference-face)
@@ -300,7 +320,7 @@ chapter."
     (if (bobp)
         0
       (forward-char 1)
-      (let* ((word (buffer-substring-no-properties 
+      (let* ((word (buffer-substring-no-properties
                     (point) (progn (forward-word 1) (point))))
              (entry (assoc word texinfo-section-list)))
         (if entry
@@ -321,12 +341,13 @@ chapter."
   (define-key keymap "\C-c\C-t\C-d"    'texinfo-delete-from-print-queue)
   (define-key keymap "\C-c\C-t\C-q"    'tex-show-print-queue)
   (define-key keymap "\C-c\C-t\C-p"    'texinfo-tex-print)
+  (define-key keymap "\C-c\C-t\C-v"    'texinfo-tex-view)
   (define-key keymap "\C-c\C-t\C-i"    'texinfo-texindex)
 
   (define-key keymap "\C-c\C-t\C-r"    'texinfo-tex-region)
   (define-key keymap "\C-c\C-t\C-b"    'texinfo-tex-buffer))
 
-;; Mode documentation displays commands in reverse order 
+;; Mode documentation displays commands in reverse order
 ;; from how they are listed in the texinfo-mode-map.
 
 (if texinfo-mode-map
@@ -338,7 +359,7 @@ chapter."
 
   ;; bindings for `makeinfo.el'
   (define-key texinfo-mode-map "\C-c\C-m\C-k" 'kill-compilation)
-  (define-key texinfo-mode-map "\C-c\C-m\C-l" 
+  (define-key texinfo-mode-map "\C-c\C-m\C-l"
     'makeinfo-recenter-compilation-buffer)
   (define-key texinfo-mode-map "\C-c\C-m\C-r" 'makeinfo-region)
   (define-key texinfo-mode-map "\C-c\C-m\C-b" 'makeinfo-buffer)
@@ -382,7 +403,7 @@ chapter."
 
 ;;; Texinfo mode
 
-(defvar texinfo-chapter-level-regexp 
+(defvar texinfo-chapter-level-regexp
   "chapter\\|unnumbered \\|appendix \\|majorheading\\|chapheading"
   "Regular expression matching Texinfo chapter-level headings.
 This does not match `@node' and does not match the `@top' command.")
@@ -429,7 +450,7 @@ Here are the functions:
 
     texinfo-update-node                \\[texinfo-update-node]
     texinfo-every-node-update          \\[texinfo-every-node-update]
-    texinfo-sequential-node-update 
+    texinfo-sequential-node-update
 
     texinfo-make-menu                  \\[texinfo-make-menu]
     texinfo-all-menus-update           \\[texinfo-all-menus-update]
@@ -438,7 +459,7 @@ Here are the functions:
     texinfo-indent-menu-description (column &optional region-p)
 
 The `texinfo-column-for-description' variable specifies the column to
-which menu descriptions are indented. 
+which menu descriptions are indented.
 
 Passed an argument (a prefix argument, if interactive), the
 `texinfo-update-node' and `texinfo-make-menu' functions do their jobs
@@ -461,19 +482,20 @@ value of texinfo-mode-hook."
   (use-local-map texinfo-mode-map)
   (set-syntax-table texinfo-mode-syntax-table)
   (make-local-variable 'page-delimiter)
-  (setq page-delimiter 
-        (concat 
-         "^@node [ \t]*[Tt]op\\|^@\\(" 
-         texinfo-chapter-level-regexp 
+  (setq page-delimiter
+        (concat
+         "^@node [ \t]*[Tt]op\\|^@\\("
+         texinfo-chapter-level-regexp
          "\\)"))
   (make-local-variable 'require-final-newline)
   (setq require-final-newline t)
   (make-local-variable 'indent-tabs-mode)
   (setq indent-tabs-mode nil)
   (make-local-variable 'paragraph-separate)
-  (setq paragraph-separate (concat "^\b\\|^@[a-zA-Z]*[ \n]\\|" paragraph-separate))
+  (setq paragraph-separate
+	(concat "\b\\|@[a-zA-Z]*[ \n]\\|" paragraph-separate))
   (make-local-variable 'paragraph-start)
-  (setq paragraph-start (concat "^\b\\|^@[a-zA-Z]*[ \n]\\|" paragraph-start))
+  (setq paragraph-start (concat "\b\\|@[a-zA-Z]*[ \n]\\|" paragraph-start))
   (make-local-variable 'fill-column)
   (setq fill-column 72)
   (make-local-variable 'comment-start)
@@ -487,16 +509,20 @@ value of texinfo-mode-hook."
   (make-local-variable 'font-lock-defaults)
   (setq font-lock-defaults '(texinfo-font-lock-keywords t))
   (make-local-variable 'outline-regexp)
-  (setq outline-regexp 
+  (setq outline-regexp
         (concat "@\\("
                 (mapconcat 'car texinfo-section-list "\\>\\|")
                 "\\>\\)"))
   (make-local-variable 'outline-level)
   (setq outline-level 'texinfo-outline-level)
   (make-local-variable 'tex-start-of-header)
-  (setq tex-start-of-header "%**start")
+  (setq tex-start-of-header "%\\*\\*start")
   (make-local-variable 'tex-end-of-header)
-  (setq tex-end-of-header "%**end")
+  (setq tex-end-of-header "%\\*\\*end")
+  (make-local-variable 'tex-first-line-header-regexp)
+  (setq tex-first-line-header-regexp "^\\\\input")
+  (make-local-variable 'tex-trailer)
+  (setq tex-trailer "@bye\n")
   (run-hooks 'text-mode-hook 'texinfo-mode-hook))
 
 
@@ -543,10 +569,10 @@ value of texinfo-mode-hook."
   (let ((depth 1) string)
     (save-excursion
       (while (and (> depth 0)
-                  (re-search-backward texinfo-environment-regexp nil t)
-                  (if (looking-at "@end")
-                      (setq depth (1+ depth))
-                    (setq depth (1- depth)))))
+                  (re-search-backward texinfo-environment-regexp nil t))
+	(if (looking-at "@end")
+	    (setq depth (1+ depth))
+	  (setq depth (1- depth))))
       (looking-at texinfo-environment-regexp)
       (if (zerop depth)
           (setq string
@@ -564,7 +590,7 @@ value of texinfo-mode-hook."
 
 ;; These commands use texinfo-insert-@-with-arg
 (defun texinfo-insert-@-with-arg (string &optional arg)
-  (if arg 
+  (if arg
       (progn
         (setq arg (prefix-numeric-value arg))
         (if (< arg 0)
@@ -662,14 +688,13 @@ The default is not to surround any existing words with the braces."
 
 ;;; Texinfo file structure
 
-;; These are defined in texnfo-upd.el.
-;; texinfo-section-types-regexp
-;; texinfo-section-level-regexp
-;; texinfo-subsection-level-regexp
-;; texinfo-subsubsection-level-regexp
+;; These are defined in texnfo-upd.el.  defvars here avoid warnings.
+(defvar texinfo-section-types-regexp)
+(defvar texinfo-section-level-regexp)
+(defvar texinfo-subsection-level-regexp)
+(defvar texinfo-subsubsection-level-regexp)
 
-;; `texinfo-show-structure' requires texnfo-upd.el
-(defun texinfo-show-structure (&optional nodes-too) 
+(defun texinfo-show-structure (&optional nodes-too)
   "Show the structure of a Texinfo file.
 List the lines in the file that begin with the @-sign commands for
 @chapter, @section, and the like.
@@ -680,12 +705,12 @@ with @-sign commands for @chapter, @section, and the like, and list
 
 Lines with structuring commands beginning in them are displayed in
 another buffer named `*Occur*'.  In that buffer, you can move point to
-one of those lines and then use \\<occur-mode-map>\\[occur-mode-goto-occurrence], 
+one of those lines and then use \\<occur-mode-map>\\[occur-mode-goto-occurrence],
 to jump to the corresponding spot in the Texinfo source file."
 
   (interactive "P")
   (require 'texnfo-upd)
-  (save-excursion 
+  (save-excursion
     (goto-char (point-min))
     (if nodes-too
         (occur (concat "\\(^@node\\)\\|" texinfo-section-types-regexp))
@@ -716,14 +741,14 @@ to jump to the corresponding spot in the Texinfo source file."
              ;; ((looking-at "@appendixsec ") 9)
              ;; ((looking-at "@heading ") 9)
 
-             ((looking-at 
+             ((looking-at
                (concat "@\\(" texinfo-subsection-level-regexp "\\)")) 13)
              ;; ((looking-at "@subsection ") 13)
              ;; ((looking-at "@unnumberedsubsec ") 13)
              ;; ((looking-at "@appendixsubsec ") 13)
              ;; ((looking-at "@subheading ") 13)
 
-             ((looking-at 
+             ((looking-at
                (concat "@\\(" texinfo-subsubsection-level-regexp "\\)")) 17)
              ;; ((looking-at "@subsubsection ") 17)
              ;; ((looking-at "@unnumberedsubsubsec ") 17)
@@ -735,20 +760,28 @@ to jump to the corresponding spot in the Texinfo source file."
 
 ;;; The  tex  and  print  function definitions:
 
-(defvar texinfo-texi2dvi-command "texi2dvi"
-  "*Command used by `texinfo-tex-buffer' to run TeX and texindex on a buffer.")
+(defcustom texinfo-texi2dvi-command "texi2dvi"
+  "*Command used by `texinfo-tex-buffer' to run TeX and texindex on a buffer."
+  :type 'string
+  :group 'texinfo)
 
-(defvar texinfo-tex-command "tex"
-  "*Command used by `texinfo-tex-region' to run TeX on a region.")
+(defcustom texinfo-tex-command "tex"
+  "*Command used by `texinfo-tex-region' to run TeX on a region."
+  :type 'string
+  :group 'texinfo)
 
-(defvar texinfo-texindex-command "texindex"
-  "*Command used by `texinfo-texindex' to sort unsorted index files.")
+(defcustom texinfo-texindex-command "texindex"
+  "*Command used by `texinfo-texindex' to sort unsorted index files."
+  :type 'string
+  :group 'texinfo)
 
-(defvar texinfo-delete-from-print-queue-command "lprm"
+(defcustom texinfo-delete-from-print-queue-command "lprm"
   "*Command string used to delete a job from the line printer queue.
 Command is used by \\[texinfo-delete-from-print-queue] based on
 number provided by a previous \\[tex-show-print-queue]
-command.")
+command."
+  :type 'string
+  :group 'texinfo)
 
 (defvar texinfo-tex-trailer "@bye"
   "String appended after a region sent to TeX by `texinfo-tex-region'.")
@@ -767,109 +800,16 @@ inclusive.  The header must start in the first 100 lines.
 The value of `texinfo-tex-trailer' is appended to the temporary file after the region."
   (interactive "r")
   (require 'tex-mode)
-  (if (get-buffer "*tex-shell*")
-      (tex-kill-job)
-    (tex-start-shell))
-  (or tex-zap-file (setq tex-zap-file (make-temp-name "#tz")))
-  (let ((tex-out-file (concat tex-zap-file ".tex"))
-        (temp-buffer (get-buffer-create " tex-Output-Buffer"))
-        (zap-directory
-         (file-name-as-directory (expand-file-name tex-directory))))
-    (save-excursion
-      (save-restriction
-        (widen)
-        (goto-char (point-min))
-        (forward-line 100)
-        (let ((search-end (point))
-              (hbeg (point-min)) (hend (point-min))
-              (default-directory zap-directory))
-          (goto-char (point-min))
-          
-          ;; Copy first line, the `\input texinfo' line, to temp file
-          (write-region (point) 
-                        (save-excursion (end-of-line) (point))
-                        tex-out-file nil nil)
-          
-          ;; Don't copy first line twice if region includes it.
-          (forward-line 1)
-          (if (< beg (point)) (setq beg (point)))
-          
-          ;; Initialize the temp file with either the header or nothing
-          (if (search-forward tex-start-of-header search-end t)
-              (progn
-                (beginning-of-line)
-                (setq hbeg (point))     ; Mark beginning of header.
-                (if (search-forward tex-end-of-header nil t)
-                    (progn (beginning-of-line)
-                           (setq hend (point))) ; Mark end of header.
-                  (setq hbeg (point-min))))) ; Else no header.
-          
-          ;; Copy  header  to temp file.
-          (write-region (min hbeg beg) hend tex-out-file t nil)
-          
-          ;; Copy  region  to temp file.
-          (write-region (max beg hend) end tex-out-file t nil))
-        
-        ;; This is  a kludge to insert the tex-trailer into the tex-out-file.
-        ;;  We have to create a special buffer in which to insert
-        ;;  the tex-trailer first because there is no function with
-        ;;  which to append a literal string directly to a file.
-        (let ((local-tex-trailer texinfo-tex-trailer))
-          (set-buffer temp-buffer)
-          (erase-buffer)
-          ;; make sure trailer isn't hidden by a comment
-          (insert-string "\n")
-          (if local-tex-trailer (insert-string local-tex-trailer))
-          (tex-set-buffer-directory temp-buffer zap-directory)
-          (write-region (point-min) (point-max) tex-out-file t nil))
-
-;;; The following is sufficient in Emacs 19.
-;;;     (write-region (concat "\n" texinfo-tex-trailer) nil
-;;;                   tex-out-file t nil)
-        ))
-    
-    (tex-set-buffer-directory "*tex-shell*" zap-directory)
-    (tex-send-command tex-shell-cd-command zap-directory)
-    (tex-send-command texinfo-tex-command tex-out-file)
-    ;; alternatively:
-    ;;    (send-string "tex-shell" (concat tex-shell-cd-command " "
-    ;;                                     zap-directory "\n"))
-    ;;    (send-string "tex-shell" (concat texinfo-tex-command " "
-    ;;                                     tex-out-file "\n"))
-    (tex-recenter-output-buffer 0)))
+  (let ((tex-command texinfo-tex-command)
+	(tex-trailer "@bye\n"))
+    (tex-region beg end)))
 
 (defun texinfo-tex-buffer ()
   "Run TeX on visited file, once or twice, to make a correct `.dvi' file."
   (interactive)
-
-  ;; Make sure TeX shell is running.
   (require 'tex-mode)
-  (if (get-buffer "*tex-shell*")
-      (quit-process (get-process "tex-shell") t)
-    (tex-start-shell))
-
-  (cond ((null buffer-file-name)
-         (error "Buffer not visiting any file!"))
-        ((buffer-modified-p)
-         (error "Buffer has been modified since last saved!")))
-
-  (setq tex-zap-file buffer-file-name)
-
-  (tex-send-command tex-shell-cd-command (file-name-directory tex-zap-file))
-  
-  (tex-send-command texinfo-texi2dvi-command tex-zap-file)
-
-  ;; alternatively:
-  ;;  (send-string "tex-shell"
-  ;;               (concat tex-shell-cd-command 
-  ;;                   " " (file-name-directory tex-zap-file) "\n"))
-  ;;  )
-  ;;
-  ;;  (send-string "tex-shell"
-  ;;           (concat texinfo-texi2dvi-command " " tex-zap-file "\n"))
-
-
-  (tex-recenter-output-buffer 0))
+  (let ((tex-command texinfo-texi2dvi-command))
+    (tex-buffer)))
 
 (defun texinfo-texindex ()
   "Run `texindex' on unsorted index files.
@@ -889,12 +829,14 @@ This runs the shell command defined by `texinfo-texindex-command'."
 This runs the shell command defined by `tex-dvi-print-command'."
   (interactive)
   (require 'tex-mode)
-  (tex-send-command tex-dvi-print-command (concat tex-zap-file ".dvi"))
-  ;; alternatively:
-  ;; (send-string "tex-shell"
-  ;;             (concat tex-dvi-print-command
-  ;;                     " " tex-zap-file ".dvi" "\n"))
-  (tex-recenter-output-buffer nil))
+  (tex-print))
+
+(defun texinfo-tex-view ()
+  "View `.dvi' file made by \\[texinfo-tex-region] or \\[texinfo-tex-buffer].
+This runs the shell command defined by `tex-dvi-view-command'."
+  (interactive)
+  (require 'tex-mode)
+  (tex-view))
 
 (defun texinfo-quit-job ()
   "Quit currently running TeX job, by sending an `x' to it."
@@ -921,7 +863,7 @@ You are prompted for the job number (use a number shown by a previous
   (tex-send-command texinfo-delete-from-print-queue-command job-number)
   ;; alternatively
   ;; (send-string "tex-shell"
-  ;;              (concat 
+  ;;              (concat
   ;;               texinfo-delete-from-print-queue-command
   ;;               " "
   ;;               job-number"\n"))

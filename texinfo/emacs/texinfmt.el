@@ -1,10 +1,8 @@
 ;;; texinfmt.el --- format Texinfo files into Info files.
 
-;; Copyright (C) 1985, 1986, 1988, 1990, 1991,
-;;               1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+;; Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 
+;;               1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
-;; Author: Robert J. Chassell      
-;; Date:   10 Sep 1996
 ;; Maintainer: Robert J. Chassell <bug-texinfo@prep.ai.mit.edu>
 ;; Keywords: maint, tex, docs
 
@@ -29,7 +27,7 @@
 
 ;;; Emacs lisp functions to convert Texinfo files to Info files.
 
-(defvar texinfmt-version "2.35 of 10 September 1996")
+(defvar texinfmt-version "2.37 of 24 May 1997")
 
 (defun texinfmt-version (&optional here)
   "Show the version of texinfmt.el in the minibuffer.
@@ -101,7 +99,7 @@ If optional argument HERE is non-nil, insert info at point."
 (defun texinfo-format-buffer (&optional notagify)
   "Process the current buffer as texinfo code, into an Info file.
 The Info file output is generated in a buffer visiting the Info file
-names specified in the @setfilename command.
+name specified in the @setfilename command.
 
 Non-nil argument (prefix, if interactive) means don't make tag table
 and don't split the file if large.  You can use Info-tagify and
@@ -299,6 +297,33 @@ converted to Info is stored in a temporary buffer."
     
     (message "Done.")))
 
+;;;###autoload
+(defun texi2info (&optional notagify)
+  "Convert the current buffer (written in Texinfo code) into an Info file.
+The Info file output is generated in a buffer visiting the Info file
+names specified in the @setfilename command.
+
+This function automatically updates all node pointers and menus, and
+creates a master menu.  This work is done on a temporary buffer that
+is automatically removed when the Info file is created.  The original
+Texinfo source buffer is not changed.
+
+Non-nil argument (prefix, if interactive) means don't make tag table
+and don't split the file if large.  You can use Info-tagify and
+Info-split to do these manually."
+  (interactive "P")
+  (let ((temp-buffer (concat  "*--" (buffer-name) "--temporary-buffer*" )))
+    (message "First updating nodes and menus, then creating Info file.")
+    ;;  (sit-for 2)
+    (copy-to-buffer temp-buffer (point-min) (point-max))
+    (switch-to-buffer temp-buffer)
+    (texinfo-master-menu t)
+    (message "Now creating Info file.")
+    (sit-for 2)
+    (texinfo-format-buffer notagify)
+    (save-buffer)
+    (kill-buffer temp-buffer)))
+
 
 ;;; Primary internal formatting function for the whole buffer.
 
@@ -476,6 +501,7 @@ converted to Info is stored in a temporary buffer."
    "bullet{\\|"
    "cite{\\|"
    "code{\\|"
+   "email{\\|"
    "emph{\\|"
    "equiv{\\|"
    "error{\\|"
@@ -486,7 +512,6 @@ converted to Info is stored in a temporary buffer."
    "kbd{\\|"
    "key{\\|"
    "lisp{\\|"
-   "email{\\|"
    "minus{\\|"
    "point{\\|"
    "print{\\|"
@@ -1049,12 +1074,10 @@ Leave point after argument."
           (file-name-nondirectory (expand-file-name arg)))
     (insert "Info file: "
             texinfo-format-filename ",    -*-Text-*-\n"
-            ;; Date string removed so that regression testing is easier.
-            ;; "produced on "
-            ;; (substring (current-time-string) 8 10) " "
-            ;; (substring (current-time-string) 4 7) " "
-            ;; (substring (current-time-string) -4)  " "
             "produced by `texinfo-format-buffer'\n"
+            ;; Date string removed so that regression testing is easier.
+            ;; "on "
+            ;; (insert (format-time-string "%e %b %Y")) " "
             "from file"
             (if (buffer-file-name input-buffer)
                 (concat " `"
@@ -1714,7 +1737,7 @@ Used by @refill indenting command to avoid indenting within lists, etc.")
 ;;
 ;; Using the Emacs Lisp formatter, texinfmt.el, 
 ;; the whitespace between columns can be increased by setting
-;; `extra-inter-column-width' to a value greater than 0.  By default,
+;; `texinfo-extra-inter-column-width' to a value greater than 0.  By default,
 ;; there is at least one blank space between columns.
 ;;
 ;; The Emacs Lisp formatter, texinfmt.el, ignores the following four
@@ -1764,12 +1787,11 @@ Used by @refill indenting command to avoid indenting within lists, etc.")
 ;; Note that @tab, the cell separators, are not treated as independent
 ;; Texinfo commands.
 
-(defvar extra-inter-column-width 0
-"*Insert NUMBER of additional columns of whitespace between entries of
-a multi-column table.")
+(defvar texinfo-extra-inter-column-width 0
+  "*Number of extra spaces between entries (columns) in @multitable.")
 
-(defvar multitable-temp-buffer-name "*multitable-temporary-buffer*")
-(defvar multitable-temp-rectangle-name "texinfo-multitable-temp-")
+(defvar texinfo-multitable-buffer-name "*multitable-temporary-buffer*")
+(defvar texinfo-multitable-rectangle-name "texinfo-multitable-temp-")
 
 ;; These commands are defined in texinfo.tex for printed output.
 (put 'multitableparskip 'texinfo-format 'texinfo-discard-line-with-args)
@@ -1778,6 +1800,7 @@ a multi-column table.")
 (put 'multitablelinespace 'texinfo-format 'texinfo-discard-line-with-args)
 
 (put 'multitable 'texinfo-format 'texinfo-multitable)
+
 (defun texinfo-multitable ()
   "Produce multi-column tables.
 
@@ -1806,7 +1829,7 @@ Long lines of text are filled within columns.
 
 Using the Emacs Lisp formatter, texinfmt.el, 
 the whitespace between columns can be increased by setting
-`extra-inter-column-width' to a value greater than 0.  By default,
+`texinfo-extra-inter-column-width' to a value greater than 0.  By default,
 there is at least one blank space between columns.
 
 The Emacs Lisp formatter, texinfmt.el, ignores the following four
@@ -1895,7 +1918,7 @@ commands that are defined in texinfo.tex for printed output.
             ;; between column spaces
             (length texinfo-multitable-width-list)
             ;; additional between column spaces, if any
-            extra-inter-column-width
+            texinfo-extra-inter-column-width
             ;; sum of spaces for each entry
             (apply '+ texinfo-multitable-width-list))))
       (if (> desired-columns fill-column)
@@ -1941,7 +1964,7 @@ This command is executed when texinfmt sees @item inside @multitable."
         ;; extract-row command deletes the source line in the table.
         (unformated-row (texinfo-multitable-extract-row)))
     ;; Use a temporary buffer
-    (set-buffer (get-buffer-create multitable-temp-buffer-name))
+    (set-buffer (get-buffer-create texinfo-multitable-buffer-name))
     (delete-region (point-min) (point-max))
     (insert unformated-row)
     (goto-char (point-min))
@@ -1968,7 +1991,7 @@ This command is executed when texinfmt sees @item inside @multitable."
                   (point)))
       ;; Set fill-column *wider* than needed to produce inter-column space
       (setq fill-column (+ 1
-                           extra-inter-column-width
+                           texinfo-extra-inter-column-width
                            (nth table-column table-widths)))
       (narrow-to-region start end)
       ;; Remove whitespace before and after entry.
@@ -2000,7 +2023,7 @@ This command is executed when texinfmt sees @item inside @multitable."
                  (if (> needed-whitespace 0) needed-whitespace 1)
                  ? )))
       ;; now, put formatted cell into a rectangle
-      (set (intern (concat multitable-temp-rectangle-name
+      (set (intern (concat texinfo-multitable-rectangle-name
                            (int-to-string table-column)))
            (extract-rectangle (point-min) (point)))
       (delete-region (point-min) (point))
@@ -2023,12 +2046,12 @@ This command is executed when texinfmt sees @item inside @multitable."
         (setq here (point))
         (insert-rectangle
          (eval (intern
-                (concat multitable-temp-rectangle-name
+                (concat texinfo-multitable-rectangle-name
                         (int-to-string column-number)))))
         (goto-char here)
         (end-of-line)
         (setq column-number (1+ column-number))))
-    (kill-buffer multitable-temp-buffer-name)
+    (kill-buffer texinfo-multitable-buffer-name)
     (setq fill-column existing-fill-column)))
 
 
@@ -2091,10 +2114,21 @@ This command is executed when texinfmt sees @item inside @multitable."
 ;; The `@today{}' command requires a pair of braces, like `@dots{}'.
 (defun texinfo-format-today ()
   (texinfo-parse-arg-discard)
-  (insert (format "%s %s %s"
-          (substring (current-time-string) 8 10)
-          (substring (current-time-string) 4 7)
-          (substring (current-time-string) -4))))
+  (insert (format-time-string "%e %b %Y")))
+
+
+;;; @timestamp{}
+;; Produce `Day Month Year Hour:Min' style of output.  
+;; eg `1 Jan 1900 13:52'
+
+(put 'timestamp 'texinfo-format 'texinfo-format-timestamp)
+
+;; The `@timestamp{}' command requires a pair of braces, like `@dots{}'.
+(defun texinfo-format-timestamp ()
+  "Insert the current local time and date."
+  (texinfo-parse-arg-discard)
+  ;; For seconds and time zone, replace format string with  "%e %b %Y %T %Z"
+  (insert (format-time-string "%e %b %Y %R")))
 
 
 ;;; @ignore
@@ -2217,8 +2251,9 @@ This command is executed when texinfmt sees @item inside @multitable."
 
 (put 'email 'texinfo-format 'texinfo-format-key)
 (put 'key 'texinfo-format 'texinfo-format-key)
+;; I've decided not want to have angle brackets around these -- rms.
 (defun texinfo-format-key ()
-  (insert "<" (texinfo-parse-arg-discard) ">")
+  (insert (texinfo-parse-arg-discard))
   (goto-char texinfo-command-start))
 
 (put 'bullet 'texinfo-format 'texinfo-format-bullet)
@@ -3705,13 +3740,12 @@ The command  `@value{foo}'  expands to the value."
       ;; In this case flag is neither set nor cleared.  
       ;; Act as if clear, i.e. do nothing.
       ()))))
-
 
 ;;; @ifeq
 
 (put 'ifeq 'texinfo-format 'texinfo-format-ifeq)
 (defun texinfo-format-ifeq ()
-  "If ARG1 and ARG2 caselessly string compare to same string, performs COMMAND.
+  "If ARG1 and ARG2 caselessly string compare to same string, perform COMMAND.
 Otherwise produces no output.
 
 Thus:

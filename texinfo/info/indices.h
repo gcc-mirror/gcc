@@ -1,9 +1,10 @@
-/* indices.h -- Functions defined in indices.c. */
+/* indices.h -- Functions defined in indices.c.
+   $Id: indices.h,v 1.2 1997/07/06 20:50:29 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_INDICES_H_)
-#define _INDICES_H_
+#ifndef INFO_INDICES_H
+#define INFO_INDICES_H
 
 /* User-visible variable controls the output of info-index-next. */
 extern int show_index_match;
@@ -35,5 +36,7 @@ REFERENCE **apropos_in_all_indices ();
 
 /* User visible functions declared in indices.c. */
 extern void info_index_search (), info_next_index_match ();
+extern void do_info_index_search ();
+extern int index_intry_exists ();
 
-#endif /* !_INDICES_H_ */
+#endif /* not INFO_INDICES_H */

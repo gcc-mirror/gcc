@@ -1,9 +1,7 @@
-/* infomap.c -- Keymaps for Info. */
+/* infomap.c -- Keymaps for Info.
+   $Id: infomap.c,v 1.7 1997/07/31 20:37:32 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,10 +19,10 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#include "stdio.h"
-#include "ctype.h"
+#include "info.h"
 #include "infomap.h"
 #include "funs.h"
+#include "terminal.h"
 
 /* Return a new keymap which has all the uppercase letters mapped to run
    the function info_do_lowercase_version (). */
@@ -82,16 +80,63 @@ keymap_discard_keymap (map)
   for (i = 0; i < 256; i++)
     {
       switch (map[i].type)
-	{
-	case ISFUNC:
-	  break;
+        {
+        case ISFUNC:
+          break;
 
-	case ISKMAP:
-	  keymap_discard_keymap ((Keymap)map[i].function);
-	  break;
+        case ISKMAP:
+          keymap_discard_keymap ((Keymap)map[i].function);
+          break;
 
-	}
+        }
     }
+}
+
+/* Conditionally bind key sequence. */
+int
+keymap_bind_keyseq (map, keyseq, keyentry)
+     Keymap map;
+     const unsigned char *keyseq;
+     KEYMAP_ENTRY *keyentry;
+{
+  register Keymap m = map;
+  register const unsigned char *s = keyseq;
+  register int c;
+
+  if (s == NULL || *s == '\0') return 0;
+
+  while ((c = *s++) != '\0')
+    {
+      switch (m[c].type)
+        {
+        case ISFUNC:
+          if (!(m[c].function == NULL ||
+                (m != map && m[c].function == info_do_lowercase_version)))
+            return 0;
+
+          if (*s != '\0')
+            {
+              m[c].type = ISKMAP;
+              m[c].function = (VFunction *)keymap_make_keymap ();
+            }
+          break;
+
+        case ISKMAP:
+          if (*s == '\0')
+            return 0;
+          break;
+        }
+      if (*s != '\0')
+        {
+          m = (Keymap)m[c].function;
+        }
+      else
+        {
+          m[c] = *keyentry;
+        }
+    }
+
+  return 1;
 }
 
 /* Initialize the standard info keymaps. */
@@ -117,15 +162,15 @@ initialize_info_keymaps ()
       echo_area_keymap[ESC].function = (VFunction *)keymap_make_keymap ();
       echo_area_keymap[Control ('x')].type = ISKMAP;
       echo_area_keymap[Control ('x')].function =
-	(VFunction *)keymap_make_keymap ();
+        (VFunction *)keymap_make_keymap ();
     }
 
   /* Bind numeric arg functions for both echo area and info window maps. */
   for (i = '0'; i < '9' + 1; i++)
     {
       ((Keymap) info_keymap[ESC].function)[i].function =
-	((Keymap) echo_area_keymap[ESC].function)[i].function =
-	  info_add_digit_to_numeric_arg;
+        ((Keymap) echo_area_keymap[ESC].function)[i].function =
+          info_add_digit_to_numeric_arg;
     }
   ((Keymap) info_keymap[ESC].function)['-'].function =
     ((Keymap) echo_area_keymap[ESC].function)['-'].function =
@@ -181,6 +226,31 @@ initialize_info_keymaps ()
 
   map['o'].function = info_next_window;
   map[DEL].function = ea_backward_kill_line;
+
+  /* Arrow key bindings for echo area keymaps.  It seems that some
+     terminals do not match their termcap entries, so it's best to just
+     define everything with both of the usual prefixes.  */
+  map = echo_area_keymap;
+  keymap_bind_keyseq (map, term_ku, &map[Control ('p')]); /* up */
+  keymap_bind_keyseq (map, "\033OA", &map[Control ('p')]);
+  keymap_bind_keyseq (map, "\033[A", &map[Control ('p')]);
+  keymap_bind_keyseq (map, term_kd, &map[Control ('n')]); /* down */
+  keymap_bind_keyseq (map, "\033OB", &map[Control ('n')]);
+  keymap_bind_keyseq (map, "\033[B", &map[Control ('n')]);
+  keymap_bind_keyseq (map, term_kr, &map[Control ('f')]); /* right */
+  keymap_bind_keyseq (map, "\033OC", &map[Control ('f')]);
+  keymap_bind_keyseq (map, "\033[C", &map[Control ('f')]);
+  keymap_bind_keyseq (map, term_kl, &map[Control ('b')]); /* left */
+  keymap_bind_keyseq (map, "\033OD", &map[Control ('b')]);
+  keymap_bind_keyseq (map, "\033[D", &map[Control ('b')]);
+
+  map = (Keymap)echo_area_keymap[ESC].function;
+  keymap_bind_keyseq (map, term_kl, &map['b']); /* left */
+  keymap_bind_keyseq (map, "\033OA", &map['b']);
+  keymap_bind_keyseq (map, "\033[A", &map['b']);
+  keymap_bind_keyseq (map, term_kr, &map['f']); /* right */
+  keymap_bind_keyseq (map, "\033OB", &map['f']);
+  keymap_bind_keyseq (map, "\033[B", &map['f']);
 
   /* Bind commands for Info window keymaps. */
   map = info_keymap;
@@ -264,11 +334,35 @@ initialize_info_keymaps ()
   map['o'].function = info_next_window;
   map['t'].function = info_tile_windows;
   map['w'].function = info_toggle_wrap;
+
+  /* Arrow key bindings for Info windows keymap. */
+  map = info_keymap;
+  keymap_bind_keyseq (map, term_kN, &map[Control ('v')]); /* pagedown */
+  keymap_bind_keyseq (map, term_ku, &map[Control ('p')]); /* up */
+  keymap_bind_keyseq (map, "\033OA", &map[Control ('p')]);
+  keymap_bind_keyseq (map, "\033[A", &map[Control ('p')]);
+  keymap_bind_keyseq (map, term_kd, &map[Control ('n')]); /* down */
+  keymap_bind_keyseq (map, "\033OB", &map[Control ('n')]);
+  keymap_bind_keyseq (map, "\033[B", &map[Control ('n')]);
+  keymap_bind_keyseq (map, term_kr, &map[Control ('f')]); /* right */
+  keymap_bind_keyseq (map, "\033OC", &map[Control ('f')]);
+  keymap_bind_keyseq (map, "\033[C", &map[Control ('f')]);
+  keymap_bind_keyseq (map, term_kl, &map[Control ('b')]); /* left */
+  keymap_bind_keyseq (map, "\033OD", &map[Control ('b')]);
+  keymap_bind_keyseq (map, "\033[D", &map[Control ('b')]);
+
+  map = (Keymap)info_keymap[ESC].function;
+  keymap_bind_keyseq (map, term_kl, &map['b']); /* left */
+  keymap_bind_keyseq (map, "\033OA", &map['b']);
+  keymap_bind_keyseq (map, "\033[A", &map['b']);
+  keymap_bind_keyseq (map, term_kr, &map['f']); /* right */
+  keymap_bind_keyseq (map, "\033OB", &map['f']);
+  keymap_bind_keyseq (map, "\033[B", &map['f']);
+  keymap_bind_keyseq (map, term_kN, &map[Control ('v')]); /* pagedown */
+
+  /* The alternative to this definition of a `main map' key in the
+     `ESC map' section, is something like:
+    keymap_bind_keyseq (map, term_kP, &((KeyMap)map[ESC].function).map['v']);
+  */
+  keymap_bind_keyseq (info_keymap/*sic*/, term_kP, &map['v']); /* pageup */
 }
-
-/* Strings which represent the sequence of characters that the arrow keys
-   produce.  If these keys begin with ESC, and the second character of the
-   sequence does not conflict with an existing binding in the Meta keymap,
-   then bind the keys to do what C-p, C-n, C-f, and C-b do. */
-extern char *term_ku, *term_kd, *term_kr, *term_kl;
-

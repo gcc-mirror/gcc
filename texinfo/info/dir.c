@@ -1,9 +1,7 @@
-/* dir.c -- How to build a special "dir" node from "localdir" files. */
+/* dir.c -- How to build a special "dir" node from "localdir" files.
+   $Id: dir.c,v 1.6 1997/07/27 21:09:20 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,13 +19,7 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#if defined (HAVE_SYS_FILE_H)
-#include <sys/file.h>
-#endif /* HAVE_SYS_FILE_H */
-#include <sys/errno.h>
+#include "info.h"
 #include "info-utils.h"
 #include "filesys.h"
 #include "tilde.h"
@@ -37,23 +29,53 @@
    dirs_to_add which are found in INFOPATH. */
 
 static void add_menu_to_file_buffer (), insert_text_into_fb_at_binding ();
-static void build_dir_node_internal ();
 
 static char *dirs_to_add[] = {
   "dir", "localdir", (char *)NULL
 };
 
+
+/* Return zero if the file represented in the stat structure TEST has
+   already been seen, nonzero else.  */
+
+typedef struct
+{
+  unsigned long device;
+  unsigned long inode;
+} dir_file_list_entry_type;
+
+static int
+new_dir_file_p (test)
+    struct stat *test;
+{
+  static unsigned dir_file_list_len = 0;
+  static dir_file_list_entry_type *dir_file_list = NULL;
+  unsigned i;
+  
+  for (i = 0; i < dir_file_list_len; i++)
+    {
+      dir_file_list_entry_type entry;
+      entry = dir_file_list[i];
+      if (entry.device == test->st_dev && entry.inode == test->st_ino)
+        return 0;
+    }
+  
+  dir_file_list_len++;
+  dir_file_list = xrealloc (dir_file_list, 
+                        dir_file_list_len * sizeof (dir_file_list_entry_type));
+  dir_file_list[dir_file_list_len - 1].device = test->st_dev;
+  dir_file_list[dir_file_list_len - 1].inode = test->st_ino;
+  return 1;
+}
+
+
 void
 maybe_build_dir_node (dirname)
      char *dirname;
 {
-  FILE_BUFFER *dir_buffer;
   int path_index, update_tags;
   char *this_dir;
-
-  /* Check to see if the file has already been built.  If so, then
-     do not build it again. */
-  dir_buffer = info_find_file (dirname);
+  FILE_BUFFER *dir_buffer = info_find_file (dirname);
 
   /* If there is no "dir" in the current info path, we cannot build one
      from nothing. */
@@ -64,6 +86,10 @@ maybe_build_dir_node (dirname)
   if (dir_buffer->flags & N_CannotGC)
     return;
 
+  /* Initialize the list we use to avoid reading the same dir file twice
+     with the dir file just found.  */
+  new_dir_file_p (&dir_buffer->finfo);
+  
   path_index = update_tags = 0;
 
   /* Using each element of the path, check for one of the files in
@@ -71,62 +97,56 @@ maybe_build_dir_node (dirname)
      Only files explictly named are eligible.  This is a design decision.
      There can be an info file name "localdir.info" which contains
      information on the setting up of "localdir" files. */
-  while (this_dir = extract_colon_unit (infopath, &path_index))
+  while ((this_dir = extract_colon_unit (infopath, &path_index)))
     {
       register int da_index;
       char *from_file;
 
       /* Expand a leading tilde if one is present. */
       if (*this_dir == '~')
-	{
-	  char *tilde_expanded_dirname;
+        {
+          char *tilde_expanded_dirname;
 
-	  tilde_expanded_dirname = tilde_expand_word (this_dir);
-	  if (tilde_expanded_dirname != this_dir)
-	    {
-	      free (this_dir);
-	      this_dir = tilde_expanded_dirname;
-	    }
-	}
+          tilde_expanded_dirname = tilde_expand_word (this_dir);
+          if (tilde_expanded_dirname != this_dir)
+            {
+              free (this_dir);
+              this_dir = tilde_expanded_dirname;
+            }
+        }
 
-      /* For every file named in DIRS_TO_ADD found in the search path,
-	 add the contents of that file's menu to our "dir" node. */
-      for (da_index = 0; from_file = dirs_to_add[da_index]; da_index++)
-	{
-	  struct stat finfo;
-	  char *fullpath;
-	  int namelen, statable;
+      /* For every different file named in DIRS_TO_ADD found in the
+         search path, add that file's menu to our "dir" node. */
+      for (da_index = 0; (from_file = dirs_to_add[da_index]); da_index++)
+        {
+          struct stat finfo;
+          int statable;
+          int namelen = strlen (from_file);
+          char *fullpath = xmalloc (3 + strlen (this_dir) + namelen);
+          
+          strcpy (fullpath, this_dir);
+          if (fullpath[strlen (fullpath) - 1] != '/')
+            strcat (fullpath, "/");
+          strcat (fullpath, from_file);
 
-	  namelen = strlen (from_file);
+          statable = (stat (fullpath, &finfo) == 0);
 
-	  fullpath = (char *)xmalloc (3 + strlen (this_dir) + namelen);
-	  strcpy (fullpath, this_dir);
-	  if (fullpath[strlen (fullpath) - 1] != '/')
-	    strcat (fullpath, "/");
-	  strcat (fullpath, from_file);
+          /* Only add this file if we have not seen it before.  */
+          if (statable && S_ISREG (finfo.st_mode) && new_dir_file_p (&finfo))
+            {
+              long filesize;
+              char *contents = filesys_read_info_file (fullpath, &filesize,
+                                                       &finfo);
+              if (contents)
+                {
+                  update_tags++;
+                  add_menu_to_file_buffer (contents, filesize, dir_buffer);
+                  free (contents);
+                }
+            }
 
-	  statable = (stat (fullpath, &finfo) == 0);
-
-	  /* Only add the contents of this file if it is not identical to the
-	     file of the DIR buffer. */
-	  if ((statable && S_ISREG (finfo.st_mode)) &&
-	      (strcmp (dir_buffer->fullpath, fullpath) != 0))
-	    {
-	      long filesize;
-	      char *contents;
-
-	      contents = filesys_read_info_file (fullpath, &filesize, &finfo);
-
-	      if (contents)
-		{
-		  update_tags++;
-		  add_menu_to_file_buffer (contents, filesize, dir_buffer);
-		  free (contents);
-		}
-	    }
-
-	  free (fullpath);
-	}
+          free (fullpath);
+        }
       free (this_dir);
     }
 
@@ -176,37 +196,37 @@ add_menu_to_file_buffer (contents, size, fb)
   if (fb_offset == -1)
     {
       /* Find the start of the second node in this file buffer.  If there
-	 is only one node, we will be adding the contents to the end of
-	 this node. */
+         is only one node, we will be adding the contents to the end of
+         this node. */
       fb_offset = find_node_separator (&fb_binding);
 
       /* If not even a single node separator, give up. */
       if (fb_offset == -1)
-	return;
+        return;
 
       fb_binding.start = fb_offset;
       fb_binding.start +=
-	skip_node_separator (fb_binding.buffer + fb_binding.start);
+        skip_node_separator (fb_binding.buffer + fb_binding.start);
 
       /* Try to find the next node separator. */
       fb_offset = find_node_separator (&fb_binding);
 
       /* If found one, consider that the start of the menu.  Otherwise, the
-	 start of this menu is the end of the file buffer (i.e., fb->size). */
+         start of this menu is the end of the file buffer (i.e., fb->size). */
       if (fb_offset != -1)
-	fb_binding.start = fb_offset;
+        fb_binding.start = fb_offset;
       else
-	fb_binding.start = fb_binding.end;
+        fb_binding.start = fb_binding.end;
 
       insert_text_into_fb_at_binding
-	(fb, &fb_binding, INFO_MENU_LABEL, strlen (INFO_MENU_LABEL));
+        (fb, &fb_binding, INFO_MENU_LABEL, strlen (INFO_MENU_LABEL));
 
       fb_binding.buffer = fb->contents;
       fb_binding.start = 0;
       fb_binding.end = fb->filesize;
       fb_offset = search_forward (INFO_MENU_LABEL, &fb_binding);
       if (fb_offset == -1)
-	abort ();
+        abort ();
     }
 
   /* CONTENTS_OFFSET and FB_OFFSET point to the starts of the menus that
@@ -224,23 +244,23 @@ add_menu_to_file_buffer (contents, size, fb)
     int num_found = 0;
 
     while ((fb_binding.start > 0) &&
-	   (whitespace_or_newline (fb_binding.buffer[fb_binding.start - 1])))
+           (whitespace_or_newline (fb_binding.buffer[fb_binding.start - 1])))
       {
-	num_found++;
-	fb_binding.start--;
+        num_found++;
+        fb_binding.start--;
       }
 
     /* Optimize if possible. */
     if (num_found >= 2)
       {
-	fb_binding.buffer[fb_binding.start++] = '\n';
-	fb_binding.buffer[fb_binding.start++] = '\n';
+        fb_binding.buffer[fb_binding.start++] = '\n';
+        fb_binding.buffer[fb_binding.start++] = '\n';
       }
     else
       {
-	/* Do it the hard way. */
-	insert_text_into_fb_at_binding (fb, &fb_binding, "\n\n", 2);
-	fb_binding.start += 2;
+        /* Do it the hard way. */
+        insert_text_into_fb_at_binding (fb, &fb_binding, "\n\n", 2);
+        fb_binding.start += 2;
       }
   }
 

@@ -1,9 +1,7 @@
-/* nodemenu.c -- Produce a menu of all visited nodes. */
+/* nodemenu.c -- Produce a menu of all visited nodes.
+   $Id: nodemenu.c,v 1.7 1997/07/24 21:30:30 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,10 +25,10 @@
 static char *
 nodemenu_format_info ()
 {
-  return ("\n\
+  return (_("\n\
 * Menu:\n\
   (File)Node                        Lines   Size   Containing File\n\
-  ----------                        -----   ----   ---------------");
+  ----------                        -----   ----   ---------------"));
 }
 
 /* Produce a formatted line of information about NODE.  Here is what we want
@@ -41,7 +39,7 @@ nodemenu_format_info ()
   ----------                        -----   ----   ---------------
 * (emacs)Buffers::                  48      2230   /usr/gnu/info/emacs/emacs-1
 * (autoconf)Writing configure.in::  123     58789  /usr/gnu/info/autoconf/autoconf-1
-* (dir)Top::			    40      589    /usr/gnu/info/dir
+* (dir)Top::                        40      589    /usr/gnu/info/dir
 */
 static char *
 format_node_info (node)
@@ -58,7 +56,7 @@ format_node_info (node)
     {
       parent = filename_non_directory (node->parent);
       if (!parent)
-	parent = node->parent;
+        parent = node->parent;
     }
   else
     parent = (char *)NULL;
@@ -72,15 +70,15 @@ format_node_info (node)
       char *file = (char *)NULL;
 
       if (parent)
-	file = parent;
+        file = parent;
       else
-	file = filename_non_directory (containing_file);
+        file = filename_non_directory (containing_file);
 
       if (!file)
-	file = containing_file;
+        file = containing_file;
 
       if (!*file)
-	file = "dir";
+        file = "dir";
 
       sprintf (line_buffer, "* (%s)%s::", file, node->nodename);
     }
@@ -92,13 +90,13 @@ format_node_info (node)
 
     for (i = 0; i < node->nodelen; i++)
       if (node->contents[i] == '\n')
-	lines++;
+        lines++;
 
     sprintf (line_buffer + len, "%d", lines);
   }
 
   len = pad_to (44, line_buffer);
-  sprintf (line_buffer + len, "%d", node->nodelen);
+  sprintf (line_buffer + len, "%ld", node->nodelen);
 
   if (node->filename && *(node->filename))
     {
@@ -106,7 +104,7 @@ format_node_info (node)
       sprintf (line_buffer + len, node->filename);
     }
 
-  return (strdup (line_buffer));
+  return xstrdup (line_buffer);
 }
 
 /* Little string comparison routine for qsort (). */
@@ -137,26 +135,26 @@ get_visited_nodes (filter_func)
   if (!info_windows)
     return ((NODE *)NULL);
 
-  for (iw_index = 0; info_win = info_windows[iw_index]; iw_index++)
+  for (iw_index = 0; (info_win = info_windows[iw_index]); iw_index++)
     {
       for (i = 0; i < info_win->nodes_index; i++)
-	{
-	  node = info_win->nodes[i];
+        {
+          node = info_win->nodes[i];
 
-	  /* We skip mentioning "*Node Menu*" nodes. */
-	  if (internal_info_node_p (node) &&
-	      (strcmp (node->nodename, nodemenu_nodename) == 0))
-	    continue;
+          /* We skip mentioning "*Node Menu*" nodes. */
+          if (internal_info_node_p (node) &&
+              (strcmp (node->nodename, nodemenu_nodename) == 0))
+            continue;
 
-	  if (node && (!filter_func || (*filter_func) (node)))
-	    {
-	      char *line;
+          if (node && (!filter_func || (*filter_func) (node)))
+            {
+              char *line;
 
-	      line = format_node_info (node);
-	      add_pointer_to_array
-		(line, lines_index, lines, lines_slots, 20, char *);
-	    }
-	}
+              line = format_node_info (node);
+              add_pointer_to_array
+                (line, lines_index, lines, lines_slots, 20, char *);
+            }
+        }
     }
 
   /* Sort the array of information lines, if there are any. */
@@ -169,22 +167,22 @@ get_visited_nodes (filter_func)
 
       /* Delete duplicates. */
       for (i = 0, newlen = 1; i < lines_index - 1; i++)
-	{
-	  if (strcmp (lines[i], lines[i + 1]) == 0)
-	    {
-	      free (lines[i]);
-	      lines[i] = (char *)NULL;
-	    }
-	  else
-	    newlen++;
-	}
+        {
+          if (strcmp (lines[i], lines[i + 1]) == 0)
+            {
+              free (lines[i]);
+              lines[i] = (char *)NULL;
+            }
+          else
+            newlen++;
+        }
 
       /* We have free ()'d and marked all of the duplicate slots.
-	 Copy the live slots rather than pruning the dead slots. */
+         Copy the live slots rather than pruning the dead slots. */
       temp = (char **)xmalloc ((1 + newlen) * sizeof (char *));
       for (i = 0, j = 0; i < lines_index; i++)
-	if (lines[i])
-	  temp[j++] = lines[i];
+        if (lines[i])
+          temp[j++] = lines[i];
 
       temp[j] = (char *)NULL;
       free (lines);
@@ -196,8 +194,8 @@ get_visited_nodes (filter_func)
 
   printf_to_message_buffer
     ("%s", replace_in_documentation
-     ("Here is the menu of nodes you have recently visited.\n\
-Select one from this menu, or use `\\[history-node]' in another window.\n"));
+     (_("Here is the menu of nodes you have recently visited.\n\
+Select one from this menu, or use `\\[history-node]' in another window.\n")));
 
   printf_to_message_buffer ("%s\n", nodemenu_format_info ());
 
@@ -216,7 +214,7 @@ Select one from this menu, or use `\\[history-node]' in another window.\n"));
 }
 
 DECLARE_INFO_COMMAND (list_visited_nodes,
-   "Make a window containing a menu of all of the currently visited nodes")
+   _("Make a window containing a menu of all of the currently visited nodes"))
 {
   WINDOW *new;
   NODE *node;
@@ -229,14 +227,20 @@ DECLARE_INFO_COMMAND (list_visited_nodes,
       node = new->node;
 
       if (internal_info_node_p (node) &&
-	  (strcmp (node->nodename, nodemenu_nodename) == 0))
-	break;
+          (strcmp (node->nodename, nodemenu_nodename) == 0))
+        break;
     }
 
   /* If we couldn't find an existing window, try to use the next window
      in the chain. */
-  if (!new && window->next)
-    new = window->next;
+  if (!new)
+    {
+      if (window->next)
+        new = window->next;
+      /* If there is more than one window, wrap around. */
+      else if (window != windows)
+        new = windows;
+    }
 
   /* If we still don't have a window, make a new one to contain the list. */
   if (!new)
@@ -258,10 +262,16 @@ DECLARE_INFO_COMMAND (list_visited_nodes,
   node = get_visited_nodes ((Function *)NULL);
   name_internal_node (node, nodemenu_nodename);
 
+#if 0
   /* Even if this is an internal node, we don't want the window
      system to treat it specially.  So we turn off the internalness
      of it here. */
+  /* Why?  We depend on internal_info_node_p returning true, so we must
+     not remove the flag.  Otherwise, the *Node Menu* nodes themselves
+     appear in the node menu.  --Andreas Schwab
+     <schwab@issan.informatik.uni-dortmund.de>.  */
   node->flags &= ~N_IsInternal;
+#endif
 
   /* If this window is already showing a node menu, reuse the existing node
      slot. */
@@ -270,7 +280,7 @@ DECLARE_INFO_COMMAND (list_visited_nodes,
 
 #if defined (NOTDEF)
     if (internal_info_node_p (new->node) &&
-	(strcmp (new->node->nodename, nodemenu_nodename) == 0))
+        (strcmp (new->node->nodename, nodemenu_nodename) == 0))
       remember_me = 0;
 #endif /* NOTDEF */
 
@@ -284,7 +294,7 @@ DECLARE_INFO_COMMAND (list_visited_nodes,
 }
 
 DECLARE_INFO_COMMAND (select_visited_node,
-      "Select a node which has been previously visited in a visible window")
+      _("Select a node which has been previously visited in a visible window"))
 {
   char *line;
   NODE *node;
@@ -296,7 +306,7 @@ DECLARE_INFO_COMMAND (select_visited_node,
   free (node);
 
   line =
-    info_read_completing_in_echo_area (window, "Select visited node: ", menu);
+    info_read_completing_in_echo_area (window, _("Select visited node: "), menu);
 
   window = active_window;
 
@@ -316,9 +326,9 @@ DECLARE_INFO_COMMAND (select_visited_node,
       entry = info_get_labeled_reference (line, menu);
 
       if (!entry)
-	info_error ("The reference disappeared! (%s).", line);
+        info_error (_("The reference disappeared! (%s)."), line);
       else
-	info_select_reference (window, entry);
+        info_select_reference (window, entry);
     }
 
   free (line);

@@ -47,15 +47,24 @@
 
 (require 'compile)
 
-(defvar makeinfo-run-command "makeinfo"
-  "*Command used to run `makeinfo' subjob.
-The name of the file is appended to this string, separated by a space.")
+(defgroup makeinfo nil
+  "Run makeinfo conveniently"
+  :group 'docs)
 
-(defvar makeinfo-options "--fill-column=70"
+
+(defcustom makeinfo-run-command "makeinfo"
+  "*Command used to run `makeinfo' subjob.
+The name of the file is appended to this string, separated by a space."
+  :type 'string
+  :group 'makeinfo)
+
+(defcustom makeinfo-options "--fill-column=70"
   "*String containing options for running `makeinfo'.  
 Do not include `--footnote-style' or `--paragraph-indent';
 the proper way to specify those is with the Texinfo commands
-`@footnotestyle` and `@paragraphindent'.")
+`@footnotestyle` and `@paragraphindent'."
+  :type 'string
+  :group 'makeinfo)
 
 (require 'texinfo)
 

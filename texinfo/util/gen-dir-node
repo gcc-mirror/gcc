@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: gen-dir-node,v 1.1 1997/08/21 22:58:12 jason Exp $
+# $Id: gen-dir-node,v 1.1 1997/05/22 22:02:43 karl Exp $
 # Generate the top-level Info node, given a directory of Info files
 # and (optionally) a skeleton file.  The output will be suitable for a
 # top-level dir file.  The skeleton file contains info topic names in the
@@ -164,9 +164,14 @@ else
 fi
 
 for file in ${infofiles}; do
+  case $file in
+    *.gz) zcat=zcat; file=`echo $file|sed 's/\.gz$//'`; gz=.gz;;
+    *) zcat=cat; gz=;;
+  esac
   infoname=`echo $file | sed 's/\.info$//'`
-  entry=`sed -e '1,/START-INFO-DIR-ENTRY/d' \
-	-e '/END-INFO-DIR-ENTRY/,$d' ${INFODIR}/${file}`
+  entry=`$zcat ${INFODIR}/${file}$gz \
+           |sed -e '1,/START-INFO-DIR-ENTRY/d' \
+		-e '/END-INFO-DIR-ENTRY/,$d'`
 
   if [ ! -z "${entry}" ] ; then
     echo "${entry}"

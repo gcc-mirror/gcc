@@ -1,9 +1,3 @@
-The file NEWS contains information about what has changed since the last
-release.
-
-The file ../INSTALL contains instructions on how to install Info.
-
-
 Info 2.0 is a complete rewrite of the original standalone Info I wrote in
 1987, the first program I wrote for rms.  That program was something like
 my second Unix program ever, and my die-hard machine language coding habits

@@ -1,5 +1,5 @@
 /* tilde.c -- Tilde expansion code (~/foo := $HOME/foo).
-   $Id: tilde.c,v 1.1 1997/08/21 22:58:05 jason Exp $
+   $Id: tilde.c,v 1.8 1997/07/24 21:49:03 karl Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
@@ -22,6 +22,10 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
+/* Include config.h before doing alloca.  */
+#include "info.h"
+
+#ifndef alloca
 #if defined (__GNUC__)
 #  define alloca __builtin_alloca
 #else /* !__GNUC__ */
@@ -33,28 +37,10 @@
 #    endif /* HAVE_ALLOCA_H */
 #  endif /* !AIX */
 #endif /* !__GNUC__ */
-
-#if defined (HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-
-#include "tilde.h"
-#include <pwd.h>
-
-#if defined (HAVE_STRING_H)
-#include <string.h>
-#endif
-
-#include "clib.h"
-
-#if !defined (NULL)
-#  define NULL 0x0
-#endif
+#endif /* ! defined alloca */
 
 #if defined (TEST) || defined (STATIC_MALLOC)
 static void *xmalloc (), *xrealloc ();
-#else
-extern void *xmalloc (), *xrealloc ();
 #endif /* TEST || STATIC_MALLOC */
 
 /* The default value of tilde_additional_prefixes.  This is set to
@@ -105,16 +91,16 @@ tilde_find_prefix (string, len)
   if (prefixes)
     {
       for (i = 0; i < string_len; i++)
-	{
-	  for (j = 0; prefixes[j]; j++)
-	    {
-	      if (strncmp (string + i, prefixes[j], strlen (prefixes[j])) == 0)
-		{
-		  *len = strlen (prefixes[j]) - 1;
-		  return (i + *len);
-		}
-	    }
-	}
+        {
+          for (j = 0; prefixes[j]; j++)
+            {
+              if (strncmp (string + i, prefixes[j], strlen (prefixes[j])) == 0)
+                {
+                  *len = strlen (prefixes[j]) - 1;
+                  return (i + *len);
+                }
+            }
+        }
     }
   return (string_len);
 }
@@ -133,13 +119,13 @@ tilde_find_suffix (string)
   for (i = 0; i < string_len; i++)
     {
       if (string[i] == '/' || !string[i])
-	break;
+        break;
 
       for (j = 0; suffixes && suffixes[j]; j++)
-	{
-	  if (strncmp (string + i, suffixes[j], strlen (suffixes[j])) == 0)
-	    return (i);
-	}
+        {
+          if (strncmp (string + i, suffixes[j], strlen (suffixes[j])) == 0)
+            return (i);
+        }
     }
   return (i);
 }
@@ -167,7 +153,7 @@ tilde_expand (string)
 
       /* Copy the skipped text into the result. */
       if ((result_index + start + 1) > result_size)
-	result = (char *)xrealloc (result, 1 + (result_size += (start + 20)));
+        result = (char *)xrealloc (result, 1 + (result_size += (start + 20)));
 
       strncpy (result + result_index, string, start);
       result_index += start;
@@ -176,12 +162,12 @@ tilde_expand (string)
       string += start;
 
       /* Make END be the index of one after the last character of the
-	 username. */
+         username. */
       end = tilde_find_suffix (string);
 
       /* If both START and END are zero, we are all done. */
       if (!start && !end)
-	break;
+        break;
 
       /* Expand the entire tilde word, and copy it into RESULT. */
       tilde_word = (char *)xmalloc (1 + end);
@@ -194,7 +180,7 @@ tilde_expand (string)
 
       len = strlen (expansion);
       if ((result_index + len + 1) > result_size)
-	result = (char *)xrealloc (result, 1 + (result_size += (len + 20)));
+        result = (char *)xrealloc (result, 1 + (result_size += (len + 20)));
 
       strcpy (result + result_index, expansion);
       result_index += len;
@@ -214,88 +200,87 @@ tilde_expand_word (filename)
 {
   char *dirname;
 
-  dirname = filename ? strdup (filename) : (char *)NULL;
+  dirname = filename ? xstrdup (filename) : (char *)NULL;
 
   if (dirname && *dirname == '~')
     {
       char *temp_name;
       if (!dirname[1] || dirname[1] == '/')
-	{
-	  /* Prepend $HOME to the rest of the string. */
-	  extern char *getenv ();
-	  char *temp_home = getenv ("HOME");
+        {
+          /* Prepend $HOME to the rest of the string. */
+          char *temp_home = getenv ("HOME");
 
-	  /* If there is no HOME variable, look up the directory in
-	     the password database. */
-	  if (!temp_home)
-	    {
-	      struct passwd *entry;
+          /* If there is no HOME variable, look up the directory in
+             the password database. */
+          if (!temp_home)
+            {
+              struct passwd *entry;
 
-	      entry = (struct passwd *) getpwuid (getuid ());
-	      if (entry)
-		temp_home = entry->pw_dir;
-	    }
+              entry = (struct passwd *) getpwuid (getuid ());
+              if (entry)
+                temp_home = entry->pw_dir;
+            }
 
-	  temp_name = (char *)
-	    alloca (1 + strlen (&dirname[1])
-		    + (temp_home ? strlen (temp_home) : 0));
-	  temp_name[0] = '\0';
-	  if (temp_home)
-	    strcpy (temp_name, temp_home);
-	  strcat (temp_name, &dirname[1]);
-	  free (dirname);
-	  dirname = strdup (temp_name);
-	}
+          temp_name = (char *)
+            alloca (1 + strlen (&dirname[1])
+                    + (temp_home ? strlen (temp_home) : 0));
+          temp_name[0] = '\0';
+          if (temp_home)
+            strcpy (temp_name, temp_home);
+          strcat (temp_name, &dirname[1]);
+          free (dirname);
+          dirname = xstrdup (temp_name);
+        }
       else
-	{
-	  struct passwd *user_entry;
-	  char *username = (char *)alloca (257);
-	  int i, c;
+        {
+          struct passwd *user_entry;
+          char *username = (char *)alloca (257);
+          int i, c;
 
-	  for (i = 1; c = dirname[i]; i++)
-	    {
-	      if (c == '/')
-		break;
-	      else
-		username[i - 1] = c;
-	    }
-	  username[i - 1] = '\0';
+          for (i = 1; (c = dirname[i]); i++)
+            {
+              if (c == '/')
+                break;
+              else
+                username[i - 1] = c;
+            }
+          username[i - 1] = '\0';
 
-	  if (!(user_entry = (struct passwd *) getpwnam (username)))
-	    {
-	      /* If the calling program has a special syntax for
-		 expanding tildes, and we couldn't find a standard
-		 expansion, then let them try. */
-	      if (tilde_expansion_failure_hook)
-		{
-		  char *expansion;
+          if (!(user_entry = (struct passwd *) getpwnam (username)))
+            {
+              /* If the calling program has a special syntax for
+                 expanding tildes, and we couldn't find a standard
+                 expansion, then let them try. */
+              if (tilde_expansion_failure_hook)
+                {
+                  char *expansion;
 
-		  expansion = (*tilde_expansion_failure_hook) (username);
+                  expansion = (*tilde_expansion_failure_hook) (username);
 
-		  if (expansion)
-		    {
-		      temp_name = (char *)alloca
-			(1 + strlen (expansion) + strlen (&dirname[i]));
-		      strcpy (temp_name, expansion);
-		      strcat (temp_name, &dirname[i]);
-		      free (expansion);
-		      goto return_name;
-		    }
-		}
-	      /* We shouldn't report errors. */
-	    }
-	  else
-	    {
-	      temp_name = (char *)alloca
-		(1 + strlen (user_entry->pw_dir) + strlen (&dirname[i]));
-	      strcpy (temp_name, user_entry->pw_dir);
-	      strcat (temp_name, &dirname[i]);
-	    return_name:
-	      free (dirname);
-	      dirname = strdup (temp_name);
-	    }
-	    endpwent ();
-	}
+                  if (expansion)
+                    {
+                      temp_name = (char *)alloca
+                        (1 + strlen (expansion) + strlen (&dirname[i]));
+                      strcpy (temp_name, expansion);
+                      strcat (temp_name, &dirname[i]);
+                      free (expansion);
+                      goto return_name;
+                    }
+                }
+              /* We shouldn't report errors. */
+            }
+          else
+            {
+              temp_name = (char *)alloca
+                (1 + strlen (user_entry->pw_dir) + strlen (&dirname[i]));
+              strcpy (temp_name, user_entry->pw_dir);
+              strcat (temp_name, &dirname[i]);
+            return_name:
+              free (dirname);
+              dirname = xstrdup (temp_name);
+            }
+            endpwent ();
+        }
     }
   return (dirname);
 }
@@ -318,15 +303,15 @@ main (argc, argv)
       fflush (stdout);
 
       if (!gets (line))
-	strcpy (line, "done");
+        strcpy (line, "done");
 
       if ((strcmp (line, "done") == 0) ||
-	  (strcmp (line, "quit") == 0) ||
-	  (strcmp (line, "exit") == 0))
-	{
-	  done = 1;
-	  break;
-	}
+          (strcmp (line, "quit") == 0) ||
+          (strcmp (line, "exit") == 0))
+        {
+          done = 1;
+          break;
+        }
 
       result = tilde_expand (line);
       printf ("  --> %s\n", result);
@@ -369,7 +354,7 @@ xrealloc (pointer, bytes)
 static void
 memory_error_and_abort ()
 {
-  fprintf (stderr, "readline: Out of virtual memory!\n");
+  fprintf (stderr, _("readline: Out of virtual memory!\n"));
   abort ();
 }
 #endif /* TEST */

@@ -1,5 +1,5 @@
 /* info-utils.h -- Exported functions and variables from info-util.c.
-   $Id: info-utils.h,v 1.1 1997/08/21 22:58:02 jason Exp $   
+   $Id: info-utils.h,v 1.3 1997/07/15 18:42:20 karl Exp $   
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
@@ -22,8 +22,8 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_INFO_UTILS_H_)
-#define _INFO_UTILS_H_
+#ifndef INFO_UTILS_H
+#define INFO_UTILS_H
 
 #if !defined (HAVE_STRCHR)
 #  undef strchr
@@ -40,10 +40,10 @@
    cross reference.  Arrays of such references can be built by calling
    info_menus_of_node () or info_xrefs_of_node (). */
 typedef struct {
-  char *label;		/* User Label. */
-  char *filename;	/* File where this node can be found. */
-  char *nodename;	/* Name of the node. */
-  int start, end;	/* Offsets within the containing node of LABEL. */
+  char *label;          /* User Label. */
+  char *filename;       /* File where this node can be found. */
+  char *nodename;       /* Name of the node. */
+  int start, end;       /* Offsets within the containing node of LABEL. */
 } REFERENCE;
 
 /* When non-zero, various display and input functions handle ISO Latin
@@ -137,4 +137,4 @@ extern void info_parse_label (/* label, node */);
       info_parse_label (INFO_ALTPREV_LABEL, n); \
   } while (0)
 
-#endif /* !_INFO_UTILS_H_ */
+#endif /* not INFO_UTILS_H */

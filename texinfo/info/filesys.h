@@ -1,9 +1,10 @@
-/* filesys.h -- External declarations of functions and vars in filesys.c. */
+/* filesys.h -- External declarations of functions and vars in filesys.c.
+   $Id: filesys.h,v 1.3 1997/07/15 18:39:08 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_FILESYS_H_)
-#define _FILESYS_H_
+#ifndef INFO_FILESYS_H
+#define INFO_FILESYS_H
 
 /* The path on which we look for info files.  You can initialize this
    from the environment variable INFOPATH if there is one, or you can
@@ -70,7 +71,7 @@ extern char *extract_colon_unit ();
 
 /* The default value of INFOPATH. */
 #if !defined (DEFAULT_INFOPATH)
-! #  define DEFAULT_INFOPATH "/usr/local/info:/usr/info:/usr/local/lib/info:/usr/lib/info:/usr/local/gnu/info:/usr/local/gnu/lib/info:/usr/gnu/info:/usr/gnu/lib/info:/opt/gnu/info:/usr/share/info:/usr/share/lib/info:/usr/local/share/info:/usr/local/share/lib/info:/usr/gnu/lib/emacs/info:/usr/local/gnu/lib/emacs/info:/usr/local/lib/emacs/info:/usr/local/emacs/info:."
+#  define DEFAULT_INFOPATH "/usr/local/info:/usr/info:/usr/local/lib/info:/usr/lib/info:/usr/local/gnu/info:/usr/local/gnu/lib/info:/usr/gnu/info:/usr/gnu/lib/info:/opt/gnu/info:/usr/share/info:/usr/share/lib/info:/usr/local/share/info:/usr/local/share/lib/info:/usr/gnu/lib/emacs/info:/usr/local/gnu/lib/emacs/info:/usr/local/lib/emacs/info:/usr/local/emacs/info:."
 #endif /* !DEFAULT_INFOPATH */
 
 #if !defined (S_ISREG) && defined (S_IFREG)
@@ -81,4 +82,4 @@ extern char *extract_colon_unit ();
 #  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif /* !S_ISDIR && S_IFDIR */
 
-#endif /* !_FILESYS_H_ */
+#endif /* not INFO_FILESYS_H */

@@ -1,7 +1,7 @@
 /* makeinfo.h -- Declarations for Makeinfo.
-   $Id: makeinfo.h,v 1.1 1997/08/21 22:58:08 jason Exp $
+   $Id: makeinfo.h,v 1.3 1997/07/15 18:28:38 karl Exp $
 
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,12 +35,14 @@
 
 enum insertion_type
 {
-  menu, detailmenu, quotation, lisp, smalllisp, example, smallexample,
-  display, itemize, format, enumerate, cartouche, multitable, table,
-  ftable, vtable, group, ifinfo, flushleft, flushright, ifset,
-  ifclear, deffn, defun, defmac, defspec, defvr, defvar, defopt,
-  deftypefn, deftypefun, deftypevr, deftypevar, defcv, defivar, defop,
-  defmethod, deftypemethod, deftp, direntry, bad_type
+  cartouche, defcv, deffn, defivar, defmac, defmethod,
+  defop, defopt, defspec, deftp, deftypefn, deftypefun,
+  deftypemethod, deftypevar, deftypevr, defun, defvar,
+  defvr, detailmenu, direntry, display, enumerate, example,
+  flushleft, flushright, format, ftable, group, ifclear,
+  ifinfo, ifnothtml, ifnottex, ifset, itemize, lisp, menu,
+  multitable, quotation, smallexample, smalllisp, table, vtable,
+  bad_type
 };
 
 DECLARE (int, insertion_level, 0);
@@ -48,13 +50,13 @@ DECLARE (int, insertion_level, 0);
 #if defined (COMPILING_MAKEINFO)
 char *insertion_type_names[] =
 {
-  "menu", "detailmenu", "quotation", "lisp", "smalllisp", "example",
-  "smallexample", "display", "itemize", "format", "enumerate",
-  "cartouche", "multitable", "table", "ftable", "vtable", "group",
-  "ifinfo", "flushleft", "flushright", "ifset", "ifclear", "deffn",
-  "defun", "defmac", "defspec", "defvr", "defvar", "defopt",
-  "deftypefn", "deftypefun", "deftypevr", "deftypevar", "defcv",
-  "defivar", "defop", "defmethod", "deftypemethod", "deftp", "direntry",
+  "cartouche", "defcv", "deffn", "defivar", "defmac", "defmethod",
+  "defop", "defopt", "defspec", "deftp", "deftypefn", "deftypefun",
+  "deftypemethod", "deftypevar", "deftypevr", "defun", "defvar",
+  "defvr", "detailmenu", "direntry", "display", "enumerate", "example",
+  "flushleft", "flushright", "format", "ftable", "group", "ifclear",
+  "ifinfo", "ifnothtml", "ifnottex", "ifset", "itemize", "lisp", "menu",
+  "multitable", "quotation", "smallexample", "smalllisp", "table", "vtable",
   "bad_type"
 };
 #endif
@@ -107,15 +109,15 @@ DECLARE (int, line_number, 0);
 
 #define curchar() input_text[input_text_offset]
 /* **************************************************************** */
-/*								    */
-/*			      Global Defines  			    */
-/*								    */
+/*                                                                  */
+/*                            Global Defines                        */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Error levels */
 #define NO_ERROR 0
-#define SYNTAX	 2
-#define FATAL	 4
+#define SYNTAX   2
+#define FATAL    4
 
 /* C's standard macros don't check to make sure that the characters being
    changed are within range.  So I have to check explicitly. */
@@ -164,29 +166,29 @@ DECLARE (int, line_number, 0);
 #define SPLIT_SIZE_THRESHOLD 70000  /* What's good enough for Stallman... */
 #define DEFAULT_SPLIT_SIZE 50000    /* Is probably good enough for me. */
 
-DECLARE (int, splitting, 1);	/* Defaults to true for now. */
+DECLARE (int, splitting, 1);    /* Defaults to true for now. */
 
 typedef void COMMAND_FUNCTION (); /* So I can say COMMAND_FUNCTION *foo; */
 
 #define command_char(c) ((!whitespace(c)) && \
-			 ((c) != '\n') && \
-			 ((c) != '{') && \
-			 ((c) != '}') && \
-			 ((c) != '='))
+                         ((c) != '\n') && \
+                         ((c) != '{') && \
+                         ((c) != '}') && \
+                         ((c) != '='))
 
 #define skip_whitespace() \
      while ((input_text_offset != size_of_input_text) && \
-	     whitespace (curchar())) \
+             whitespace (curchar())) \
        input_text_offset++
 
 #define skip_whitespace_and_newlines() \
   do { \
    while ((input_text_offset != size_of_input_text) && \
-	  (whitespace (curchar ()) || (curchar () == '\n'))) \
+          (whitespace (curchar ()) || (curchar () == '\n'))) \
       { \
-	 if (curchar () == '\n') \
-	   line_number++; \
-	 input_text_offset++; \
+         if (curchar () == '\n') \
+           line_number++; \
+         input_text_offset++; \
       } \
    } while (0)
 

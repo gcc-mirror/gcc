@@ -1,9 +1,10 @@
-/* signals.h -- Header to include system dependent signal definitions. */
+/* signals.h -- Header to include system dependent signal definitions.
+   $Id: signals.h,v 1.3 1997/07/15 18:35:59 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,10 +22,16 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_SIGNALS_H_)
-#define _SIGNALS_H_
+#ifndef INFO_SIGNALS_H
+#define INFO_SIGNALS_H
 
+#include <sys/types.h>
 #include <signal.h>
+
+/* For sysV68 --phdm@info.ucl.ac.be.  */
+#if !defined (SIGCHLD) && defined (SIGCLD)
+#define SIGCHLD SIGCLD
+#endif
 
 #if !defined (HAVE_SIGPROCMASK) && !defined (sigmask)
 #  define sigmask(x) (1 << ((x)-1))
@@ -86,4 +93,4 @@
 #  define UNBLOCK_SIGNAL(sig)
 #endif /* !HAVE_SIGPROCMASK && !HAVE_SIGSETMASK */
 
-#endif /* !_SIGNALS_H_ */
+#endif /* not INFO_SIGNALS_H */

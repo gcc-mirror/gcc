@@ -21,18 +21,10 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_DOC_H_)
-#define _DOC_H_
+#if !defined (DOC_H)
+#define DOC_H
 
-#if !defined (NULL)
-#  define NULL 0x0
-#endif /* !NULL */
-
-#if !defined (__FUNCTION_DEF)
-#  define __FUNCTION_DEF
-typedef int Function ();
-typedef void VFunction ();
-#endif /* _FUNCTION_DEF */
+#include "info.h" /* for NAMED_FUNCTIONS, VFunction, etc.  */
 
 typedef struct {
   VFunction *func;
@@ -55,4 +47,4 @@ extern void dump_map_to_message_buffer ();
 extern char *function_name ();
 extern VFunction *named_function ();
 #endif /* NAMED_FUNCTIONS */
-#endif /* !_DOC_H_ */
+#endif /* !DOC_H */

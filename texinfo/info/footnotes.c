@@ -1,9 +1,7 @@
-/* footnotes.c -- Some functions for manipulating footnotes. */
+/* footnotes.c -- Some functions for manipulating footnotes.
+   $Id: footnotes.c,v 1.4 1997/07/24 21:23:33 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,7 +38,7 @@ find_footnotes_window ()
   /* Try to find an existing window first. */
   for (win = windows; win; win = win->next)
     if (internal_info_node_p (win->node) &&
-	(strcmp (win->node->nodename, footnote_nodename) == 0))
+        (strcmp (win->node->nodename, footnote_nodename) == 0))
       break;
 
   return (win);
@@ -72,37 +70,37 @@ make_footnotes_node (node)
       refs = info_xrefs_of_node (node);
 
       if (refs)
-	{
-	  register int i;
-	  char *refname;
+        {
+          register int i;
+          char *refname;
 
-	  refname = (char *)xmalloc
-	    (1 + strlen ("-Footnotes") + strlen (node->nodename));
+          refname = (char *)xmalloc
+            (1 + strlen ("-Footnotes") + strlen (node->nodename));
 
-	  strcpy (refname, node->nodename);
-	  strcat (refname, "-Footnotes");
+          strcpy (refname, node->nodename);
+          strcat (refname, "-Footnotes");
 
-	  for (i = 0; refs[i]; i++)
-	    if ((refs[i]->nodename != (char *)NULL) &&
-		(strcmp (refs[i]->nodename, refname) == 0))
-	      {
-		char *filename;
+          for (i = 0; refs[i]; i++)
+            if ((refs[i]->nodename != (char *)NULL) &&
+                (strcmp (refs[i]->nodename, refname) == 0))
+              {
+                char *filename;
 
-		filename = node->parent;
-		if (!filename)
-		  filename = node->filename;
+                filename = node->parent;
+                if (!filename)
+                  filename = node->filename;
 
-		fn_node = info_get_node (filename, refname);
+                fn_node = info_get_node (filename, refname);
 
-		if (fn_node)
-		  fn_start = 0;
+                if (fn_node)
+                  fn_start = 0;
 
-		break;
-	      }
+                break;
+              }
 
-	  free (refname);
-	  info_free_references (refs);
-	}
+          free (refname);
+          info_free_references (refs);
+        }
     }
 
   /* If we never found the start of a footnotes area, quit now. */
@@ -126,7 +124,7 @@ make_footnotes_node (node)
        This effectively skips either "---- footno...", or "File: foo...". */
     while (text_start < fn_node->nodelen)
       if (fn_node->contents[text_start++] == '\n')
-	break;
+        break;
   
     result->nodelen = strlen (header) + fn_node->nodelen - text_start;
 
@@ -134,7 +132,7 @@ make_footnotes_node (node)
     result->contents = (char *)xmalloc (1 + result->nodelen);
     sprintf (result->contents, "%s", header);
     memcpy (result->contents + strlen (header),
-	    fn_node->contents + text_start, fn_node->nodelen - text_start);
+            fn_node->contents + text_start, fn_node->nodelen - text_start);
 
     name_internal_node (result, footnote_nodename);
     free (header);
@@ -176,7 +174,7 @@ info_get_or_remove_footnotes (window)
   if (fn_win && !new_footnotes)
     {
       if (windows->next)
-	info_delete_window_internal (fn_win);
+        info_delete_window_internal (fn_win);
     }
 
   /* If there are footnotes for this window's node, but no window around
@@ -187,27 +185,27 @@ info_get_or_remove_footnotes (window)
       WINDOW *last, *win;
 
       /* Always make this window be the last one appearing in the list.  Find
-	 the last window in the chain. */
+         the last window in the chain. */
       for (win = windows, last = windows; win; last = win, win = win->next);
 
       /* Try to split this window, and make the split window the one to
-	 contain the footnotes. */
+         contain the footnotes. */
       old_active = active_window;
       active_window = last;
       fn_win = window_make_window (new_footnotes);
       active_window = old_active;
 
       if (!fn_win)
-	{
-	  free (new_footnotes->contents);
-	  free (new_footnotes);
+        {
+          free (new_footnotes->contents);
+          free (new_footnotes);
 
-	  /* If we are hacking automatic footnotes, and there are footnotes
-	     but we couldn't display them, print a message to that effect. */
-	  if (auto_footnotes_p)
-	    inform_in_echo_area ("Footnotes could not be displayed");
-	  return (FN_UNABLE);
-	}
+          /* If we are hacking automatic footnotes, and there are footnotes
+             but we couldn't display them, print a message to that effect. */
+          if (auto_footnotes_p)
+            inform_in_echo_area (_("Footnotes could not be displayed"));
+          return (FN_UNABLE);
+        }
     }
 
   /* If there are footnotes, and there is a window to display them,
@@ -217,7 +215,7 @@ info_get_or_remove_footnotes (window)
       window_set_node_of_window (fn_win, new_footnotes);
 
       window_change_window_height
-	(fn_win, fn_win->line_count - fn_win->height);
+        (fn_win, fn_win->line_count - fn_win->height);
 
       remember_window_and_node (fn_win, new_footnotes);
       add_gcable_pointer (new_footnotes->contents);
@@ -231,19 +229,17 @@ info_get_or_remove_footnotes (window)
 
 /* Show the footnotes associated with this node in another window. */
 DECLARE_INFO_COMMAND (info_show_footnotes,
-   "Show the footnotes associated with this node in another window")
+   _("Show the footnotes associated with this node in another window"))
 {
-  int result;
-
   /* A negative argument means just make the window go away. */
   if (count < 0)
     {
       WINDOW *fn_win = find_footnotes_window ();
 
       /* If there is an old footnotes window, and it isn't the only window
-	 on the screen, delete it. */
+         on the screen, delete it. */
       if (fn_win && windows->next)
-	info_delete_window_internal (fn_win);
+        info_delete_window_internal (fn_win);
     }
   else
     {
@@ -252,14 +248,14 @@ DECLARE_INFO_COMMAND (info_show_footnotes,
       result = info_get_or_remove_footnotes (window);
 
       switch (result)
-	{
-	case FN_UNFOUND:
-	  info_error (NO_FOOT_NODE);
-	  break;
+        {
+        case FN_UNFOUND:
+          info_error (NO_FOOT_NODE);
+          break;
 
-	case FN_UNABLE:
-	  info_error (WIN_TOO_SMALL);
-	  break;
-	}
+        case FN_UNABLE:
+          info_error (WIN_TOO_SMALL);
+          break;
+        }
     }
 }

@@ -1,9 +1,10 @@
-/* window.h -- Structure and flags used in manipulating Info windows. */
+/* window.h -- Structure and flags used in manipulating Info windows.
+   $Id: window.h,v 1.4 1997/07/15 18:45:47 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_WINDOW_H_)
-#define _WINDOW_H_
+#ifndef INFO_WINDOW_H
+#define INFO_WINDOW_H
 
 #include "nodes.h"
 #include "infomap.h"
@@ -44,9 +45,9 @@
    if you need to change window state information, here is where you would
    do it.  NB> The last element does NOT end with a semi-colon. */
 #define WINDOW_STATE_DECL \
-   NODE *node;		/* The node displayed in this window. */ \
-   int pagetop;		/* LINE_STARTS[PAGETOP] is first line in WINDOW. */ \
-   long point		/* Offset within NODE of the cursor position. */
+   NODE *node;          /* The node displayed in this window. */ \
+   int pagetop;         /* LINE_STARTS[PAGETOP] is first line in WINDOW. */ \
+   long point           /* Offset within NODE of the cursor position. */
 
 /* Structure which defines a window.  Windows are doubly linked, next
    and prev. The list of windows is kept on WINDOWS.  The structure member
@@ -54,37 +55,38 @@
    (0, window->height + window->first_row) is the first character of this
    windows modeline.  The number of lines that can be displayed in a window
    is equal to window->height - 1. */
-typedef struct __window__ {
-  struct __window__ *next;	/* Next window in this chain. */
-  struct __window__ *prev;	/* Previous window in this chain. */
-  int width;		/* Width of this window. */
-  int height;		/* Height of this window. */
-  int first_row;	/* Offset of the first line in the_screen. */
-  int goal_column;	/* The column we would like the cursor to appear in. */
-  Keymap keymap;	/* Keymap used to read commands in this window. */
-  WINDOW_STATE_DECL;	/* Node, pagetop and point. */
-  char *modeline;	/* Calculated text of the modeline for this window. */
-  char **line_starts;	/* Array of printed line starts for this node. */
-  int line_count;	/* Number of lines appearing in LINE_STARTS. */
-  int flags;		/* See below for details. */
+typedef struct window_struct
+{
+  struct window_struct *next;      /* Next window in this chain. */
+  struct window_struct *prev;      /* Previous window in this chain. */
+  int width;            /* Width of this window. */
+  int height;           /* Height of this window. */
+  int first_row;        /* Offset of the first line in the_screen. */
+  int goal_column;      /* The column we would like the cursor to appear in. */
+  Keymap keymap;        /* Keymap used to read commands in this window. */
+  WINDOW_STATE_DECL;    /* Node, pagetop and point. */
+  char *modeline;       /* Calculated text of the modeline for this window. */
+  char **line_starts;   /* Array of printed line starts for this node. */
+  int line_count;       /* Number of lines appearing in LINE_STARTS. */
+  int flags;            /* See below for details. */
 } WINDOW;
 
 typedef struct {
-  WINDOW_STATE_DECL;		/* What gets saved. */
+  WINDOW_STATE_DECL;            /* What gets saved. */
 } WINDOW_STATE;
 
-#define W_UpdateWindow	0x01	/* WINDOW needs updating. */
-#define W_WindowIsPerm	0x02	/* This WINDOW is a permanent object. */
-#define W_WindowVisible	0x04	/* This WINDOW is currently visible. */
-#define W_InhibitMode	0x08	/* This WINDOW has no modeline. */
-#define W_NoWrap	0x10	/* Lines do not wrap in this window. */
-#define W_InputWindow	0x20	/* Window accepts input. */
-#define W_TempWindow	0x40	/* Window is less important. */
+#define W_UpdateWindow  0x01    /* WINDOW needs updating. */
+#define W_WindowIsPerm  0x02    /* This WINDOW is a permanent object. */
+#define W_WindowVisible 0x04    /* This WINDOW is currently visible. */
+#define W_InhibitMode   0x08    /* This WINDOW has no modeline. */
+#define W_NoWrap        0x10    /* Lines do not wrap in this window. */
+#define W_InputWindow   0x20    /* Window accepts input. */
+#define W_TempWindow    0x40    /* Window is less important. */
 
-extern WINDOW *windows;		/* List of visible Info windows. */
-extern WINDOW *active_window;	/* The currently active window. */
-extern WINDOW *the_screen;	/* The Info screen is just another window. */
-extern WINDOW *the_echo_area;	/* THE_ECHO_AREA is a window in THE_SCREEN. */
+extern WINDOW *windows;         /* List of visible Info windows. */
+extern WINDOW *active_window;   /* The currently active window. */
+extern WINDOW *the_screen;      /* The Info screen is just another window. */
+extern WINDOW *the_echo_area;   /* THE_ECHO_AREA is a window in THE_SCREEN. */
 
 /* Global variable control redisplay of scrolled windows.  If non-zero, it
    is the desired number of lines to scroll the window in order to make
@@ -226,4 +228,4 @@ extern void window_get_state (), window_set_state ();
    offset of GOAL. */
 extern int window_chars_to_goal ();
 
-#endif /* !_WINDOW_H_ */
+#endif /* not INFO_WINDOW_H */

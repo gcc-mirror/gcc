@@ -3,7 +3,7 @@
 /* This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993, 96 Free Software Foundation, Inc.
+   Copyright (C) 1993, 96, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,15 +21,10 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_TERMINAL_H_)
-#define _TERMINAL_H_
+#if !defined (TERMINAL_H)
+#define TERMINAL_H
 
-/* We use the following data type to talk about pointers to functions. */
-#if !defined (__FUNCTION_DEF)
-#  define __FUNCTION_DEF
-typedef int Function ();
-typedef void VFunction ();
-#endif /* _FUNCTION_DEF */
+#include "info.h"
 
 /* For almost every function externally visible from terminal.c, there is
    a corresponding "hook" function which can be bound in order to replace
@@ -125,5 +120,6 @@ extern VFunction *terminal_ring_bell_hook;
 
 /* The key sequences output by the arrow keys, if this terminal has any. */
 extern char *term_ku, *term_kd, *term_kr, *term_kl;
+extern char *term_kP, *term_kN;
 
-#endif /* !_TERMINAL_H_ */
+#endif /* !TERMINAL_H */
