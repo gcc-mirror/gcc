@@ -10219,9 +10219,9 @@ do_decl_instantiation (tree decl, tree storage)
 	 should handle VAR_DECLs as it currently handles
 	 FUNCTION_DECLs.  */
       result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, 0);
-      if (result && TREE_CODE (result) != VAR_DECL)
+      if (!result || TREE_CODE (result) != VAR_DECL)
 	{
-	  error ("no matching template for `%D' found", result);
+	  error ("no matching template for `%D' found", decl);
 	  return;
 	}
     }

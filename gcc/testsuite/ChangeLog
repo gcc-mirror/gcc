@@ -1,5 +1,8 @@
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9298
+	* g++.dg/parse/template1.C: New test.
+
 	PR c++/9384
 	* g++.dg/parse/using1.C: New test.
 

@@ -1,5 +1,14 @@
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9298
+	* parser.c (cp_parser_consume_semicolon_at_end_of_statement): New
+	function.
+	(cp_parser_expression_statement): Use it.
+	(cp_parser_explicit_instantiation): Likewise.
+	* pt.c (do_decl_instantiation): Improve error handling logic.
+	
+2003-01-22  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/9384
 	* parser.c (cp_parser_using_declaration): Issue error messages
 	about name resolution failures here.
