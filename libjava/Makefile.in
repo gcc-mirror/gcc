@@ -1812,6 +1812,7 @@ java/nio/channels/AsynchronousCloseException.java \
 java/nio/channels/ByteChannel.java \
 java/nio/channels/CancelledKeyException.java \
 java/nio/channels/Channel.java \
+java/nio/channels/Channels.java \
 java/nio/channels/ClosedByInterruptException.java \
 java/nio/channels/ClosedChannelException.java \
 java/nio/channels/ClosedSelectorException.java \
@@ -3129,7 +3130,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/channels/AsynchronousCloseException.P \
 .deps/java/nio/channels/ByteChannel.P \
 .deps/java/nio/channels/CancelledKeyException.P \
-.deps/java/nio/channels/Channel.P \
+.deps/java/nio/channels/Channel.P .deps/java/nio/channels/Channels.P \
 .deps/java/nio/channels/ClosedByInterruptException.P \
 .deps/java/nio/channels/ClosedChannelException.P \
 .deps/java/nio/channels/ClosedSelectorException.P \

@@ -2042,6 +2042,7 @@ java/nio/channels/AsynchronousCloseException.java \
 java/nio/channels/ByteChannel.java \
 java/nio/channels/CancelledKeyException.java \
 java/nio/channels/Channel.java \
+java/nio/channels/Channels.java \
 java/nio/channels/ClosedByInterruptException.java \
 java/nio/channels/ClosedChannelException.java \
 java/nio/channels/ClosedSelectorException.java \
