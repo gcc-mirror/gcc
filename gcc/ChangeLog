@@ -1,3 +1,9 @@
+2005-01-04  Roger Sayle  <roger@eyesopen.com>
+
+	* ifcvt.c (find_if_case_1): Avoid creating an empty forwarder block,
+	if deleting the then-block allows the test-block to fallthru to the
+	else-block.
+
 2005-01-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/19152
