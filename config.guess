@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-timestamp='2003-01-30'
+timestamp='2003-05-09'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -234,9 +234,6 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	exit 0 ;;
     *:OpenBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-openbsd${UNAME_RELEASE}
-	exit 0 ;;
-    *:MicroBSD:*:*)
-	echo ${UNAME_MACHINE}-unknown-microbsd${UNAME_RELEASE}
 	exit 0 ;;
     alpha:OSF1:*:*)
 	if test $UNAME_RELEASE = "V4.0"; then
@@ -747,7 +744,7 @@ EOF
     *:BSD/OS:*:*)
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
-    *:FreeBSD:*:*)
+    *:FreeBSD:*:*|*:GNU/FreeBSD:*:*)
 	# Determine whether the default compiler uses glibc.
 	eval $set_cc_for_build
 	sed 's/^	//' << EOF >$dummy.c
@@ -1036,7 +1033,7 @@ EOF
 	exit 0 ;;
     M68*:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
-    3[34]??:*:4.0:3.0 | 3[34]??A:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 3[34]??/*:*:4.0:3.0 | 4400:*:4.0:3.0 | 4850:*:4.0:3.0 | SKA40:*:4.0:3.0 | SDS2:*:4.0:3.0)
+    3[34]??:*:4.0:3.0 | 3[34]??A:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 3[34]??/*:*:4.0:3.0 | 4400:*:4.0:3.0 | 4850:*:4.0:3.0 | SKA40:*:4.0:3.0 | SDS2:*:4.0:3.0 | SHG2:*:4.0:3.0)
 	OS_REL=''
 	test -r /etc/.relid \
 	&& OS_REL=.`sed -n 's/[^ ]* [^ ]* \([0-9][0-9]\).*/\1/p' < /etc/.relid`
