@@ -237,3 +237,6 @@ Boston, MA 02111-1307, USA.  */
 /* For binary compatibility with 2.95; Darwin C APIs use bool from
    stdbool.h, which was an int-sized enum in 2.95.  */
 #define BOOL_TYPE_SIZE INT_TYPE_SIZE
+
+#undef REGISTER_TARGET_PRAGMAS
+#define REGISTER_TARGET_PRAGMAS DARWIN_REGISTER_TARGET_PRAGMAS
