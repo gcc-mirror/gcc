@@ -1,3 +1,8 @@
+Wed May  3 13:14:49 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* ifcvt.c (noce_try_cmove_arith):  Use may_trap_p to thest
+	whether address may trap.
+
 Tue May  2 23:38:37 2000  Jason Eckhardt  <jle@cygnus.com>
 
         * bb-reorder (chain_reorder_blocks): Changed code to test for
