@@ -49,11 +49,15 @@ extern struct rtx_def *zero_areg;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
+/* Generate code to work around mul/mulq bugs on the mn10300.  */
+#define TARGET_MULT_BUG			(target_flags & 0x1)
 #define TARGET_SWITCHES  \
-  {{ "", TARGET_DEFAULT}}
+  {{ "mult-bug",	0x1},	\
+   { "no-mult-bug", 	-0x1},	\
+   { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT 0x1
 #endif
 
 /* Print subsidiary information on the compiler version in use.  */
