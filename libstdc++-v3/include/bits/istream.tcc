@@ -695,7 +695,7 @@ namespace std
 		    }
 		  if (__n == numeric_limits<streamsize>::max()
 		      && !traits_type::eq_int_type(__c, __eof))
-		    _M_gcount = 0;
+		    _M_gcount = numeric_limits<streamsize>::min();
 		  else
 		    break;
 		}
@@ -742,7 +742,7 @@ namespace std
 		  if (__n == numeric_limits<streamsize>::max()
 		      && !traits_type::eq_int_type(__c, __eof)
 		      && !traits_type::eq_int_type(__c, __delim))
-		    _M_gcount = 0;
+		    _M_gcount = numeric_limits<streamsize>::min();
 		  else
 		    break;
 		}
