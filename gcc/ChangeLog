@@ -1,5 +1,19 @@
 2002-08-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* m68k.c (m68k_output_function_prologue,
+	m68k_output_function_epilogue): Delete versions for DPX2/MOTOROLA
+	and NEWS/MOTOROLA.
+	* genattrtab.c: Remove dpx2 comment.
+	* libgcc2.c (__enable_execute_stack): Delete versions for
+	NeXT/__MACH__, __convex__, __sysV88__, __pyr__ and
+	sony_news/SYSTYPE_BSD.
+	* longlong.h: Delete code for __a29k__, _AM29K, __clipper__,
+	__gmicro__, __i860__, __NeXT__ and __pyr__.
+	* rtl.h: Remove convex comment.
+	* varasm.c: Likewise.
+
+2002-08-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* c-opts.c (lang_flags): Const-ify.
 	* ra-build.c (undef_table): Likewise.
 	* ra.c (eliminables): Likewise.

@@ -1213,7 +1213,6 @@ do {						\
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */
 
-/* Don't continue this line--convex cc version 4.1 would lose.  */
 #if (defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT) || defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT))
 #define FIND_REG_INC_NOTE(INSN, REG)			\
   ((REG) != NULL_RTX && REG_P ((REG))			\
@@ -1226,7 +1225,6 @@ do {						\
 /* Indicate whether the machine has any sort of auto increment addressing.
    If not, we can avoid checking for REG_INC notes.  */
 
-/* Don't continue this line--convex cc version 4.1 would lose.  */
 #if (defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT) || defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT))
 #define AUTO_INC_DEC
 #endif

@@ -390,7 +390,6 @@ static void expand_units	PARAMS ((void));
 static rtx simplify_knowing	PARAMS ((rtx, rtx));
 static rtx encode_units_mask	PARAMS ((rtx));
 static void fill_attr		PARAMS ((struct attr_desc *));
-/* dpx2 compiler chokes if we specify the arg types of the args.  */
 static rtx substitute_address	PARAMS ((rtx, rtx (*) (rtx), rtx (*) (rtx)));
 static void make_length_attrs	PARAMS ((void));
 static rtx identity_fn		PARAMS ((rtx));
