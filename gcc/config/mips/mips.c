@@ -330,9 +330,6 @@ struct mips_arg_info
      would have been if we hadn't run out of registers.  */
   bool fpr_p;
 
-  /* The argument's size, in bytes.  */
-  unsigned int num_bytes;
-
   /* The number of words passed in registers, rounded up.  */
   unsigned int reg_words;
 
@@ -2957,50 +2954,96 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	       tree type, int named, struct mips_arg_info *info)
 {
   bool even_reg_p;
-  unsigned int num_words, max_regs;
+  unsigned int num_bytes, num_words, max_regs;
 
-  /* Decide whether this argument should go in a floating-point register,
-     assuming one is free.  Later code checks for availability.  */
+  /* Work out the size of the argument.  */
+  num_bytes = type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  num_words = (num_bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  info->fpr_p = (GET_MODE_CLASS (mode) == MODE_FLOAT
-		 && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE);
+  /* Decide whether it should go in a floating-point register, assuming
+     one is free.  Later code checks for availability.
 
-  if (info->fpr_p)
-    switch (mips_abi)
-      {
-      case ABI_32:
-      case ABI_O64:
-	info->fpr_p = (!cum->gp_reg_found
-		       && cum->arg_number < 2
-		       && (type == 0 || FLOAT_TYPE_P (type)));
-	break;
-
-      case ABI_N32:
-      case ABI_64:
-	info->fpr_p = (named && (type == 0 || FLOAT_TYPE_P (type)));
-	break;
-      }
-
-  /* Now decide whether the argument must go in an even-numbered register.  */
-
-  even_reg_p = false;
-  if (info->fpr_p)
+     The checks against UNITS_PER_FPVALUE handle the soft-float and
+     single-float cases.  */
+  switch (mips_abi)
     {
-      /* Under the O64 ABI, the second float argument goes in $f13 if it
-	 is a double, but $f14 if it is a single.  Otherwise, on a
-	 32-bit double-float machine, each FP argument must start in a
-	 new register pair.  */
-      even_reg_p = (GET_MODE_SIZE (mode) > UNITS_PER_HWFPVALUE
-		    || (mips_abi == ABI_O64 && mode == SFmode)
-		    || FP_INC > 1);
+    case ABI_EABI:
+      /* The EABI conventions have traditionally been defined in terms
+	 of TYPE_MODE, regardless of the actual type.  */
+      info->fpr_p = (GET_MODE_CLASS (mode) == MODE_FLOAT
+		     && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE);
+      break;
+
+    case ABI_32:
+    case ABI_O64:
+      /* Only leading floating-point scalars are passed in
+	 floating-point registers.  */
+      info->fpr_p = (!cum->gp_reg_found
+		     && cum->arg_number < 2
+		     && (type == 0 || SCALAR_FLOAT_TYPE_P (type))
+		     && GET_MODE_CLASS (mode) == MODE_FLOAT
+		     && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE);
+      break;
+
+    case ABI_N32:
+    case ABI_64:
+      /* Scalar and complex floating-point types are passed in
+	 floating-point registers.  */
+      info->fpr_p = (named
+		     && (type == 0 || FLOAT_TYPE_P (type))
+		     && (GET_MODE_CLASS (mode) == MODE_FLOAT
+			 || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+		     && GET_MODE_UNIT_SIZE (mode) <= UNITS_PER_FPVALUE);
+
+      /* ??? According to the ABI documentation, the real and imaginary
+	 parts of complex floats should be passed in individual registers.
+	 The real and imaginary parts of stack arguments are supposed
+	 to be contiguous and there should be an extra word of padding
+	 at the end.
+
+	 This has two problems.  First, it makes it impossible to use a
+	 single "void *" va_list type, since register and stack arguments
+	 are passed differently.  (At the time of writing, MIPSpro cannot
+	 handle complex float varargs correctly.)  Second, it's unclear
+	 hat should happen when there is only one register free.
+
+	 For now, we assume that named complex floats should go into FPRs
+	 if there are two FPRs free, otherwise they should be passed in the
+	 same way as a struct containing two floats.  */
+      if (info->fpr_p
+	  && GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+	  && GET_MODE_UNIT_SIZE (mode) < UNITS_PER_FPVALUE)
+	{
+	  if (cum->num_gprs >= MAX_ARGS_IN_REGISTERS - 1)
+	    info->fpr_p = false;
+	  else
+	    num_words = 2;
+	}
+      break;
+
+    default:
+      abort ();
     }
-  else if (!TARGET_64BIT || LONG_DOUBLE_TYPE_SIZE == 128)
-    {
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  || GET_MODE_CLASS (mode) == MODE_FLOAT)
-	even_reg_p = (GET_MODE_SIZE (mode) > UNITS_PER_WORD);
 
-      else if (type != NULL_TREE && TYPE_ALIGN (type) > BITS_PER_WORD)
+  /* Now decide whether the argument must go in an even-numbered register.
+     Usually this is determined by type alignment, but there are two
+     exceptions:
+
+     - Under the O64 ABI, the second float argument goes in $f14 if it
+       is single precision (doubles go in $f13 as expected).
+
+     - Floats passed in FPRs must be in an even-numbered register if
+       we're using paired FPRs.  */
+  if (type)
+    even_reg_p = TYPE_ALIGN (type) > BITS_PER_WORD;
+  else
+    even_reg_p = GET_MODE_UNIT_SIZE (mode) > UNITS_PER_WORD;
+
+  if (info->fpr_p)
+    {
+      if (mips_abi == ABI_O64 && mode == SFmode)
+	even_reg_p = true;
+      if (FP_INC > 1)
 	even_reg_p = true;
     }
 
@@ -3019,12 +3062,6 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (even_reg_p)
     info->stack_offset += info->stack_offset & 1;
 
-  if (mode == BLKmode)
-    info->num_bytes = int_size_in_bytes (type);
-  else
-    info->num_bytes = GET_MODE_SIZE (mode);
-
-  num_words = (info->num_bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   max_regs = MAX_ARGS_IN_REGISTERS - info->reg_offset;
 
   /* Partition the argument between registers and stack.  */
@@ -3152,6 +3189,28 @@ function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    }
 	  return ret;
 	}
+    }
+
+  /* Handle the n32/n64 conventions for passing complex floating-point
+     arguments in FPR pairs.  The real part goes in the lower register
+     and the imaginary part goes in the upper register.  */
+  if (TARGET_NEWABI
+      && info.fpr_p
+      && GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+    {
+      rtx real, imag;
+      enum machine_mode inner;
+      int reg;
+
+      inner = GET_MODE_INNER (mode);
+      reg = FP_ARG_FIRST + info.reg_offset;
+      real = gen_rtx_EXPR_LIST (VOIDmode,
+				gen_rtx_REG (inner, reg),
+				const0_rtx);
+      imag = gen_rtx_EXPR_LIST (VOIDmode,
+				gen_rtx_REG (inner, reg + info.reg_words / 2),
+				GEN_INT (GET_MODE_SIZE (inner)));
+      return gen_rtx_PARALLEL (mode, gen_rtvec (2, real, imag));
     }
 
   if (info.fpr_p)
