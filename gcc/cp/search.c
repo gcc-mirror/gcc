@@ -2073,41 +2073,6 @@ convert_pointer_to_single_level (to_type, expr)
 			   last, 1);
 }
 
-/* Like dfs_walk, but only walk until fn returns something, and return
-   that.  We also use the real vbase binfos instead of the placeholders
-   in the normal binfo hierarchy.  START is the most-derived type for this
-   hierarchy, so that we can find the vbase binfos.  */
-
-static tree
-dfs_search (binfo, fn, start)
-     tree binfo, start;
-     tree (*fn) PROTO((tree));
-{
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  tree retval;
-
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-
-      if (TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TYPE_PARM
-	  || TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TEMPLATE_PARM)
-	/* Pass */;
-      else
-	{
-	  if (TREE_VIA_VIRTUAL (base_binfo) && start)
-	    base_binfo = binfo_member (BINFO_TYPE (base_binfo),
-				       CLASSTYPE_VBASECLASSES (start));
-	  retval = dfs_search (base_binfo, fn, start);
-	  if (retval)
-	    return retval;
-	}
-    }
-
-  return fn (binfo);
-}
-
 tree markedp (binfo, data) 
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
@@ -3436,8 +3401,8 @@ dfs_bfv_queue_p (binfo, data)
   return binfo;
 }
 
-/* Passed to dfs_search by binfo_for_vtable; determine if bvtable comes
-   from BINFO.  */
+/* Passed to dfs_walk_real by binfo_for_vtable; determine if bvtable
+   comes from BINFO.  */
 
 static tree
 dfs_bfv_helper (binfo, data)

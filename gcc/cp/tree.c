@@ -640,7 +640,7 @@ layout_basetypes (rec, max)
      TREE_VALUE slot holds the virtual baseclass type.  Note that
      get_vbase_types makes copies of the virtual base BINFOs, so that
      the vbase_types are unshared.  */
-  CLASSTYPE_VBASECLASSES (rec) = vbase_types = get_vbase_types (rec);
+  vbase_types = CLASSTYPE_VBASECLASSES (rec);
 
   my_friendly_assert (TREE_CODE (TYPE_SIZE (rec)) == INTEGER_CST, 19970302);
   const_size = TREE_INT_CST_LOW (TYPE_SIZE (rec));

@@ -1,3 +1,9 @@
+1999-03-15  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (xref_basetypes): Set CLASSTYPE_VBASECLASSES here.
+	* tree.c (layout_basetypes): Not here.
+	* search.c (dfs_search): Remove; no longer used.
+	
 1999-03-12  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl2.c (validate_nonmember_using_decl): Issue sensible
