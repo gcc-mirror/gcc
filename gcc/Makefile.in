@@ -88,6 +88,10 @@ CCLIBFLAGS = -O
 # Version of ar to use when compiling libgcc1.a.
 OLDAR = ar
 
+# Target to use when installing include directory.  Either
+# install-headers-tar or install-headers-cpio.
+INSTALL_HEADERS_DIR = install-headers-tar
+
 # The GCC to use for compiling libgcc2.a, enquire, and cross-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
@@ -209,12 +213,13 @@ LIB1FUNCS_EXTRA =
 # Assembler files should have names ending in `.asm'.
 LIB2FUNCS_EXTRA = 
 
+# Default float.h source to use for cross-compiler.
+CROSS_FLOAT_H=float.h-cross
+
 # Program to convert libraries.
 LIBCONVERT = 
 
 # Control whether header files are installed.
-# We will change this to install-fixincludes eventually.
-# It would be useful for people to try this now.
 INSTALL_HEADERS=install-headers
 
 # Select which version of fixincludes to use (I.E. regular versus SVR4)
@@ -257,7 +262,10 @@ HOST_OBSTACK=$(OBSTACK)
 ALL=all.internal
 
 # Choose the real install target.
-INSTALL_TARGET=install-native
+INSTALL_TARGET=install-normal
+
+# Source for float.h.  Overridden by cross-make.
+FLOAT_H=float.h-nat
 
 # End of variables for you to override.
 
@@ -404,10 +412,6 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 USER_H = va-alpha.h va-i860.h va-i960.h va-mips.h va-m88k.h \
     va-pa.h va-pyr.h va-sparc.h va-spur.h proto.h $(EXTRA_HEADERS)
 
-# All the header files that are installed for users from GCC itself.
-INSTALLED_H = float.h stddef.h stdarg.h varargs.h $(USER_H) limits.h \
-    syslimits.h
-
 # The files that "belong" in CONFIG_H are deliberately omitted
 # because having them there would not be useful in actual practice.
 # All they would do is cause complete recompilation every time
@@ -429,7 +433,7 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
-all.cross: native gcc-cross specs libgcc.a cross-test $(EXTRA_PARTS)
+all.cross: native gcc-cross specs libgcc.a stmp-headers cross-test $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
@@ -437,7 +441,7 @@ start.encap: native xgcc specs $(LIBGCC1) xlimits.h
 # Use this to make a GCC that will be used only to recompile GCC.
 for-bootstrap: start.encap libgcc.a
 # These can't be made, with COFF encapsulation, until after GCC can run.
-rest.encap: libgcc.a float.h  $(EXTRA_PARTS)
+rest.encap: libgcc.a stmp-headers $(EXTRA_PARTS)
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
@@ -500,9 +504,17 @@ cc1plus:$(P) $(CPLUS_OBJS) $(OBJS) $(LIBDEPS)
 cc1obj:$(P) $(OBJC_OBJS) $(OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(LIBS)
 
-float.h: enquire
-	-./enquire -f > tmp-float.h
-	mv tmp-float.h float.h
+# Copy float.h from its source.
+float.h: $(FLOAT_H)
+	cp $(FLOAT_H) float.h
+
+# Create float.h source for the native machine.
+float.h-nat: enquire
+	-./enquire -f > float.h-nat
+
+# Create a dummy float.h source for a cross-compiler.
+float.h-cross:
+	echo "#error float.h values not known for cross-compiler" > float.h-cross
 
 # Used to compile enquire with standard cc, but have forgotten why.
 # Let's try with GCC.
@@ -1240,6 +1252,57 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	diff $(srcdir)/protoize.c tmp-proto.c | cat
 	-rm -f tmp-proto.[cso]
 
+# Build the include directory.  The stamp files are stmp-* rather than
+# stamp-* so that mostlyclean does not force the include directory to
+# be rebuilt.
+
+stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h float.h
+# Copy in the headers provided with gcc.
+# The sed command gets just the last file name component;
+# this is necessary because VPATH could add a dirname.
+# Using basename would be simpler, but some systems don't have it.
+	objdir=`pwd`; \
+	cd $(srcdir); \
+	for file in $(USER_H); do \
+	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	  cp $$realfile $$objdir/include; \
+	  chmod a+r $$objdir/include/$$realfile; \
+	done
+	-cd include; \
+	if [ -f limits.h ]; then \
+	  rm -f syslimits.h; \
+	  mv limits.h syslimits.h; \
+	else \
+	  cp $(srcdir)/gsyslimits.h syslimits.h; \
+	fi
+	chmod a+r include/syslimits.h
+	cp $(srcdir)/gvarargs.h include/varargs.h
+	chmod a+r include/varargs.h
+	cp $(srcdir)/gstdarg.h include/stdarg.h
+	chmod a+r include/stdarg.h
+	cp $(srcdir)/gstddef.h include/stddef.h
+	chmod a+r include/stddef.h
+	cp xlimits.h include/limits.h
+	chmod a+r include/limits.h
+	cp float.h include/float.h
+	chmod a+r include/float.h
+# Install the README
+	cp $(srcdir)/README-fixinc include/README
+	chmod a+r include/README
+	touch stmp-headers
+
+# Build fixed copies of system files.
+stmp-fixincludes: $(srcdir)/$(FIXINCLUDES)
+	rm -rf include
+	mkdir include
+	for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
+	  if [ -d $$dir ]; \
+	  then \
+	    $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir); \
+	  else true; fi; \
+	done
+	touch stmp-fixincludes
+
 # Remake the info files.
 
 doc: $(srcdir)/cpp.info $(srcdir)/gcc.info
@@ -1317,6 +1380,8 @@ clean: mostlyclean
 # but what better way is there?
 	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready libgcc1.null
 	-rm -f *.dvi
+# Delete the include directory.
+	-rm -rf stmp-* include
 
 # Delete all files that users would normally create
 # while building and installing GCC.
@@ -1347,20 +1412,14 @@ realclean: distclean
 	-rm -f gplus.info* gplus.??s gplus.*aux
 
 # Entry points `install' and `uninstall'.
-# Also temporarily `install-fixincludes' could replace `install-headers'.
 # Also use `install-collect2' to install collect2 when the config files don't.
 
 # The semicolon is to prevent the install.sh -> install default rule
 # from doing anything.
 install: $(INSTALL_TARGET) ;
 
-# Copy the files of native compiler into directories where they will be run.
-install-native: install-common install-libgcc $(INSTALL_HEADERS) \
-   install-man
-
-# Copy the files of cross compiler into directories where they will be run.
-install-cross: install-common install-common-headers \
-   install-man install-libgcc
+# Copy the compiler files into directories where they will be run.
+install-normal: install-common install-libgcc $(INSTALL_HEADERS) install-man
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
@@ -1496,37 +1555,41 @@ install-libobjc: libobjc.a install-dir
 	  chmod a-x $(libsubdir)/libobjc.a; \
 	else true; fi
 
-# Install all the header files for native compiler.
-install-headers: install-common-headers install-float-h install-limits-h
+# Install all the header files built in the include subdirectory.
+install-headers: install-include-dir $(INSTALL_HEADERS_DIR) install-assert-h
+# Fix symlinks to absolute paths in the installed include directory to
+# point to the installed directory, not the build directory.
+	-files=`cd $(libsubdir)/include; find . -type l -print 2>/dev/null`; \
+	if [ $$? -eq 0 ]; then \
+	  dir=`cd include; pwd`; \
+	  for i in $$files; do \
+	    dest=`ls -ld $(libsubdir)/include/$$i | sed -n 's/.*-> //p'`; \
+	    if expr "$$dest" : "$$dir.*" > /dev/null; then \
+	      rm -f $(libsubdir)/include/$$i; \
+	      ln -s $(libsubdir)/include`echo "$$dest" | sed "s|$$dir||"` $(libsubdir)/include/$$i; \
+	    fi; \
+	  done; \
+	fi
 
-# Install float.h for native compiler.
-install-float-h: float.h install-dir
-	-rm -f $(libsubdir)/include/float.h
-	$(INSTALL_DATA) float.h $(libsubdir)/include/float.h
-	chmod a-x $(libsubdir)/include/float.h
+# Create or recreate the gcc private include file directory.
+install-include-dir:
+	-rm -rf $(libsubdir)/include
+	mkdir $(libsubdir)/include
+	-chmod a+rx $(libsubdir)/include
 
-# Install limits.h.
-install-limits-h: xlimits.h install-dir
-	-rm -f $(libsubdir)/include/limits.h
-	$(INSTALL_DATA) xlimits.h $(libsubdir)/include/limits.h
-	chmod a-x $(libsubdir)/include/limits.h
+# Install the include directory using tar.
+install-headers-tar: stmp-headers install-include-dir
+	( cd include; tar cf - . ) | (cd $(libsubdir)/include; tar xpBf - )
 
-# Install the fixed headers that are the same for all machines.
-install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h assert.h
-	-if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
-	-chmod ugo+rx $(libsubdir)/include
-# Must compute $(libsubdir) before the cd; the awk script won't work after.
-	shelllibsubdir=$(libsubdir); \
-	cd $(srcdir); \
-	for file in $(USER_H); do \
-	   rm -f $$shelllibsubdir/include/`basename $$file`; \
-	   $(INSTALL_DATA) `basename $$file` $$shelllibsubdir/include/`basename $$file`; \
-	   chmod a-x $$shelllibsubdir/include/`basename $$file`; \
-	done
+# Install the include directory using cpio.
+install-headers-cpio: stmp-headers install-include-dir
+	( cd include; find . -print | cpio -pdum $(libsubdir)/include )
+
 # Put assert.h in /usr/local/include, so it won't override GNU libc's assert.h.
 # Don't replace the assert.h already there if it is not from GCC.
 # This code would be simpler if it tested for -f ... && ! grep ...
 # but supposedly the ! operator is missing in sh on some systems.
+install-assert-h: assert.h install-dir
 	if [ -f $(assertdir)/assert.h ]; \
 	then \
 	  if grep "__eprintf" $(assertdir)/assert.h >/dev/null; \
@@ -1541,67 +1604,6 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h gsy
 	  $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
 	  chmod a-x $(assertdir)/assert.h; \
 	fi
-	-rm -f $(libsubdir)/include/syslimits.h
-	$(INSTALL_DATA) $(srcdir)/gsyslimits.h $(libsubdir)/include/syslimits.h
-	chmod a-x $(libsubdir)/include/syslimits.h
-	-rm -f $(libsubdir)/include/varargs.h
-	$(INSTALL_DATA) $(srcdir)/gvarargs.h $(libsubdir)/include/varargs.h
-	chmod a-x $(libsubdir)/include/varargs.h
-	-rm -f $(libsubdir)/include/stdarg.h
-	$(INSTALL_DATA) $(srcdir)/gstdarg.h $(libsubdir)/include/stdarg.h
-	chmod a-x $(libsubdir)/include/stdarg.h
-	-rm -f $(libsubdir)/include/stddef.h
-	$(INSTALL_DATA) $(srcdir)/gstddef.h $(libsubdir)/include/stddef.h
-	chmod a-x $(libsubdir)/include/stddef.h
-# This is turned off because fixinc.svr4 can now get it directly from srcdir.
-## Copy byteorder.h into the object file directory 
-## so that fixinc.svr4 can get at it if necessary.
-## If the dirs are the same, this won't do anything.
-## Delete file first in case it is read-only
-#	-if [ x`cd $(srcdir);pwd` != x`pwd` ]; then rm -f byteorder.h; else true; fi
-#	-cp $(srcdir)/byteorder.h . > /dev/null 2>&1
-
-# $(libsubdir)/include:
-#	-if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
-#	-chmod ugo+rx $(libsubdir)/include
-
-# This appears not to work.  It isn't clear how to fix it.
-# $(libsubdir)/include/README: $(libsubdir)/include $(srcdir)/$(FIXINCLUDES)
-#	LIB=$(libsubdir)/include $(srcdir)/$(FIXINCLUDES)
-#	$(INSTALL_DATA) $(srcdir)/fixincludes-README $@
-#	chmod a-x $@
-
-# Run fixincludes in the proper directory.
-install-fixincludes: install-headers
-	rm -rf $(libsubdir)/tmp
-	mkdir $(libsubdir)/tmp
-# Move aside the headers that come from GCC; delete all else.
-# The sed command gets just the last file name component;
-# this is necessary because VPATH could add a dirname.
-# Using basename would be simpler, but some systems don't have it.
-	cd $(libsubdir)/include; \
-	for file in $(INSTALLED_H); do \
-	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	  mv $$realfile ../tmp; \
-	done; \
-	rm -rf *
-# Install fixed copies of system files.
-	for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
-	  if [ -d $$dir ]; \
-	  then \
-	    $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $$dir $(srcdir); \
-	  else true; fi; \
-	done
-	-cd $(libsubdir)/include; \
-	if [ -f limits.h ]; then \
-	  rm -f ../tmp/syslimits.h; \
-	  cp limits.h ../tmp/syslimits.h; \
-	else true; fi
-# Bring back gcc's header files.
-	cd $(libsubdir)/include; mv ../tmp/* .; rmdir ../tmp
-# Install the README
-	$(INSTALL_DATA) $(srcdir)/README-fixinc $(libsubdir)/include/README
-	chmod a-x $(libsubdir)/include/README
 
 # Use this target to install the program `collect2' under the name `ld'.
 install-collect2: collect2

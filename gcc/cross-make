@@ -13,11 +13,11 @@ RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
 # Dir to search for system headers.  Normally /usr/include.
 SYSTEM_HEADER_DIR = $(tooldir)/include
 
-# Cause installation using install-cross.
-INSTALL_TARGET = install-cross
-
 # Don't try to compile the things we can't compile.
 ALL = all.cross
+
+# Use cross-compiler version of float.h.
+FLOAT_H = $(CROSS_FLOAT_H)
 
 # Don't install assert.h in /usr/local/include.
 assertdir = $(tooldir)/include
