@@ -83,16 +83,18 @@ g++spec.o: $(srcdir)/cp/g++spec.c
 # It'd be nice if we could find an easier way to do this---rather than have
 # to track changes to the toplevel gcc Makefile as well.
 # We depend on g++.c last, to make it obvious where it came from.
-g++.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g++.c
+g++.o: $(CONFIG_H) gansidecl.h intl.h multilib.h \
+    Makefile $(lang_specs_files) g++.c
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(DRIVER_DEFINES) \
 	-DLANG_SPECIFIC_DRIVER \
   -c g++.c
 
 # Create the compiler driver for g++.
-g++$(exeext): g++.o g++spec.o version.o choose-temp.o pexecute.o prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g++.o g++spec.o prefix.o \
-	  version.o choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
+GXX_OBJS = g++.o g++spec.o choose-temp.o intl.o pexecute.o prefix.o version.o
+g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
 g++-cross$(exeext): g++$(exeext)
