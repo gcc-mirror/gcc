@@ -1,3 +1,7 @@
+Mon Sep  7 23:30:07 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* toplev.c (print_switch_values): Make static to match prototype.
+
 Mon Sep  7 19:13:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: If we are unable to find the "gnatbind" program,

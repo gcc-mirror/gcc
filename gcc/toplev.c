@@ -4962,7 +4962,7 @@ print_single_switch (file, pos, max, indent, sep, term, type, name)
    Each line begins with INDENT and ends with TERM.
    Each switch is separated from the next by SEP.  */
 
-void
+static void
 print_switch_values (file, pos, max, indent, sep, term)
      FILE *file;
      int pos, max;
