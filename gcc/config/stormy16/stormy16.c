@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
+#include "tree-gimple.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);
 static void xstormy16_asm_out_constructor (rtx, int);
@@ -1306,18 +1307,17 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
    of type va_list as a tree, TYPE is the type passed to va_arg.
    Note:  This algorithm is documented in stormy-abi.  */
    
-rtx
-xstormy16_expand_builtin_va_arg (tree valist, tree type)
+static tree
+xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
+				 tree *post_p ATTRIBUTE_UNUSED)
 {
   tree f_base, f_count;
   tree base, count;
-  rtx count_rtx, addr_rtx, r;
-  rtx lab_gotaddr, lab_fromstack;
-  tree t;
+  tree count_tmp, addr, t;
+  tree lab_gotaddr, lab_fromstack;
   int size, size_of_reg_args, must_stack;
-  tree size_tree, count_plus_size;
-  rtx count_plus_size_rtx;
-  
+  tree size_tree;
+
   f_base = TYPE_FIELDS (va_list_type_node);
   f_count = TREE_CHAIN (f_base);
   
@@ -1327,29 +1327,38 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type)
 
   must_stack = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
+  gimplify_expr (&size_tree, pre_p, NULL, is_gimple_val, fb_rvalue);
   
   size_of_reg_args = NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD;
 
-  count_rtx = expand_expr (count, NULL_RTX, HImode, EXPAND_NORMAL);
-  lab_gotaddr = gen_label_rtx ();
-  lab_fromstack = gen_label_rtx ();
-  addr_rtx = gen_reg_rtx (Pmode);
+  count_tmp = get_initialized_tmp_var (count, pre_p, NULL);
+  lab_gotaddr = create_artificial_label ();
+  lab_fromstack = create_artificial_label ();
+  addr = create_tmp_var (ptr_type_node, NULL);
 
   if (!must_stack)
     {
-      count_plus_size = build (PLUS_EXPR, TREE_TYPE (count), count, size_tree);
-      count_plus_size_rtx = expand_expr (count_plus_size, NULL_RTX, HImode, EXPAND_NORMAL);
-      emit_cmp_and_jump_insns (count_plus_size_rtx, GEN_INT (size_of_reg_args),
-			       GTU, const1_rtx, HImode, 1, lab_fromstack);
-  
-      t = build (PLUS_EXPR, ptr_type_node, base, count);
-      r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-      if (r != addr_rtx)
-	emit_move_insn (addr_rtx, r);
+      tree r;
 
-      emit_jump_insn (gen_jump (lab_gotaddr));
-      emit_barrier ();
-      emit_label (lab_fromstack);
+      t = fold_convert (TREE_TYPE (count), size_tree);
+      t = build (PLUS_EXPR, TREE_TYPE (count), count_tmp, t);
+      r = fold_convert (TREE_TYPE (count), size_int (size_of_reg_args));
+      t = build (GT_EXPR, boolean_type_node, t, r);
+      t = build (COND_EXPR, void_type_node, t,
+		 build (GOTO_EXPR, void_type_node, lab_fromstack),
+		 NULL);
+      gimplify_and_add (t, pre_p);
+  
+      t = fold_convert (ptr_type_node, count_tmp);
+      t = build (PLUS_EXPR, ptr_type_node, base, t);
+      t = build (MODIFY_EXPR, void_type_node, addr, t);
+      gimplify_and_add (t, pre_p);
+
+      t = build (GOTO_EXPR, void_type_node, lab_gotaddr);
+      gimplify_and_add (t, pre_p);
+
+      t = build (LABEL_EXPR, void_type_node, lab_fromstack);
+      gimplify_and_add (t, pre_p);
     }
   
   /* Arguments larger than a word might need to skip over some
@@ -1358,37 +1367,38 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type)
   size = PUSH_ROUNDING (int_size_in_bytes (type));
   if (size > 2 || size < 0 || must_stack)
     {
-      rtx lab_notransition = gen_label_rtx ();
-      emit_cmp_and_jump_insns (count_rtx, GEN_INT (NUM_ARGUMENT_REGISTERS 
-						   * UNITS_PER_WORD),
-			       GEU, const1_rtx, HImode, 1, lab_notransition);
-      
-      t = build (MODIFY_EXPR, TREE_TYPE (count), count, 
-		 build_int_2 (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD, 0));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      
-      emit_label (lab_notransition);
+      tree r, u;
+
+      r = size_int (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD);
+      u = build (MODIFY_EXPR, void_type_node, count_tmp, r);
+
+      t = fold_convert (TREE_TYPE (count), r);
+      t = build (GE_EXPR, boolean_type_node, count_tmp, t);
+      t = build (COND_EXPR, void_type_node, t, NULL, u);
+      gimplify_and_add (t, pre_p);
     }
 
-  t = build (PLUS_EXPR, sizetype, size_tree,
-	     build_int_2 ((- NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD
-			   + INCOMING_FRAME_SP_OFFSET),
-			  -1));
-  t = build (PLUS_EXPR, TREE_TYPE (count), count, fold (t));
+  t = size_int (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD
+		- INCOMING_FRAME_SP_OFFSET);
+  t = fold_convert (TREE_TYPE (count), t);
+  t = build (MINUS_EXPR, TREE_TYPE (count), count_tmp, t);
+  t = build (PLUS_EXPR, TREE_TYPE (count), t,
+	     fold_convert (TREE_TYPE (count), size_tree));
+  t = fold_convert (TREE_TYPE (base), fold (t));
   t = build (MINUS_EXPR, TREE_TYPE (base), base, t);
-  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-  if (r != addr_rtx)
-    emit_move_insn (addr_rtx, r);
-	     
-  emit_label (lab_gotaddr);
+  t = build (MODIFY_EXPR, void_type_node, addr, t);
+  gimplify_and_add (t, pre_p);
 
-  count_plus_size = build (PLUS_EXPR, TREE_TYPE (count), count, size_tree);
-  t = build (MODIFY_EXPR, TREE_TYPE (count), count, count_plus_size);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  t = build (LABEL_EXPR, void_type_node, lab_gotaddr);
+  gimplify_and_add (t, pre_p);
 
-  return addr_rtx;
+  t = fold_convert (TREE_TYPE (count), size_tree);
+  t = build (PLUS_EXPR, TREE_TYPE (count), count_tmp, t);
+  t = build (MODIFY_EXPR, TREE_TYPE (count), count, t);
+  gimplify_and_add (t, pre_p);
+  
+  addr = fold_convert (build_pointer_type (type), addr);
+  return build_fold_indirect_ref (addr);
 }
 
 /* Initialize the variable parts of a trampoline.  ADDR is an RTX for
@@ -2198,6 +2208,8 @@ xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST xstormy16_build_builtin_va_list
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR xstormy16_expand_builtin_va_arg
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true

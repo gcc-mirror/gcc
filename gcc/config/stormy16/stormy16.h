@@ -481,11 +481,6 @@ enum reg_class
    implementation will be defined that works for arguments passed on the stack.  */
 #define EXPAND_BUILTIN_VA_START(VALIST, NEXTARG) \
   xstormy16_expand_builtin_va_start (VALIST, NEXTARG)
-
-/* Implement the stdarg/varargs va_arg macro.  VALIST is the variable of type
-   va_list as a tree, TYPE is the type passed to va_arg.  */
-#define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
-  xstormy16_expand_builtin_va_arg (VALIST, TYPE)
 
 /* Trampolines for Nested Functions.  */
 
