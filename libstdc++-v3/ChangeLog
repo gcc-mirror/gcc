@@ -1,3 +1,8 @@
+2001-04-04  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/doxygen/user.cfg.in:  Extract all non-private members;
+	  reduce confusing documentation output.
+
 2001-04-04  Geoffrey Keating  <geoffk@redhat.com>
 
 	* include/backward/fstream.h: Add missing semicolons.
