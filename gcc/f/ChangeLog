@@ -1,5 +1,8 @@
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* lex.c (ffelex_file_pop_): Rename parameter from input_filename.
+	(ffelex_file_push_): Likewise.
+	
 	* ste.c (struct gbe_block): Rename field from input_filename.
 	(ffeste_start_block_, ffeste_start_stmt_): Likewise.
 

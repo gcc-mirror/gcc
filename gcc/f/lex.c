@@ -788,7 +788,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 }
 
 static void
-ffelex_file_pop_ (const char *input_filename)
+ffelex_file_pop_ (const char *filename)
 {
   if (input_file_stack->next)
     {
@@ -804,27 +804,27 @@ ffelex_file_pop_ (const char *input_filename)
   /* Now that we've pushed or popped the input stack,
      update the name in the top element.  */
   if (input_file_stack)
-    input_file_stack->name = input_filename;
+    input_file_stack->name = filename;
 }
 
 static void
-ffelex_file_push_ (int old_lineno, const char *input_filename)
+ffelex_file_push_ (int old_lineno, const char *filename)
 {
   struct file_stack *p
     = (struct file_stack *) xmalloc (sizeof (struct file_stack));
 
   input_file_stack->line = old_lineno;
   p->next = input_file_stack;
-  p->name = input_filename;
+  p->name = filename;
   input_file_stack = p;
   input_file_stack_tick++;
 
-  (*debug_hooks->start_source_file) (0, input_filename);
+  (*debug_hooks->start_source_file) (0, filename);
 
   /* Now that we've pushed or popped the input stack,
      update the name in the top element.  */
   if (input_file_stack)
-    input_file_stack->name = input_filename;
+    input_file_stack->name = filename;
 }
 
 /* Prepare to finish a statement-in-progress by sending the current
