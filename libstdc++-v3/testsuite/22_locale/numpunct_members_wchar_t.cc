@@ -98,6 +98,21 @@ void test02()
     }
 #endif
 }
+
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test03()
+{
+  bool test = true;
+
+  const char* tentLANG = setlocale(LC_ALL, "ja_JP.eucjp");
+  if (tentLANG != NULL)
+    {
+      std::string preLANG = tentLANG;
+      test01();
+      std::string postLANG = setlocale(LC_ALL, NULL);
+      VERIFY( preLANG == postLANG );
+    }
+}
 #endif
 
 int main()
@@ -105,6 +120,7 @@ int main()
 #ifdef _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+  test03();
 #endif
   return 0;
 }

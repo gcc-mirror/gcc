@@ -161,10 +161,27 @@ void test03()
   VERIFY( l1 != l2 );
 }
 
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test04()
+{
+  bool test = true;
+
+  const char* tentLANG = setlocale(LC_ALL, "ja_JP.eucjp");
+  if (tentLANG != NULL)
+    {
+      std::string preLANG = tentLANG;
+      test01();
+      test03();
+      std::string postLANG = setlocale(LC_ALL, NULL);
+      VERIFY( preLANG == postLANG );
+    }
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }

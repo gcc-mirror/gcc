@@ -42,7 +42,7 @@ void test01()
   locale loc_c = locale::classic();
   locale loc_hk("en_HK");
   locale loc_fr("fr_FR@euro");
-  locale loc_de("de_DE");
+  locale loc_de("de_DE@euro");
   VERIFY( loc_c != loc_de );
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
@@ -97,12 +97,12 @@ void test01()
   oss.str(empty);
   iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   wstring result3 = oss.str();
-  VERIFY( result3 == L"7.200.000.000,00 DEM ");
+  VERIFY( result3 == L"7.200.000.000,00 EUR ");
 
   oss.str(empty);
   iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   wstring result4 = oss.str();
-  VERIFY( result4 == L"7.200.000.000,00 DM");
+  VERIFY( result4 == L"7.200.000.000,00 \x20ac");
 
   // intl and non-intl versions should be different.
   VERIFY( result3 != result4 );
@@ -175,7 +175,7 @@ void test02()
   locale loc_c = locale::classic();
   locale loc_hk("en_HK");
   locale loc_fr("fr_FR@euro");
-  locale loc_de("de_DE");
+  locale loc_de("de_DE@euro");
   VERIFY( loc_c != loc_de );
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
@@ -228,12 +228,12 @@ void test02()
   oss.str(empty);
   iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   wstring result3 = oss.str();
-  VERIFY( result3 == L"7.200.000.000,00 DEM ");
+  VERIFY( result3 == L"7.200.000.000,00 EUR ");
 
   oss.str(empty);
   iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   wstring result4 = oss.str();
-  VERIFY( result4 == L"7.200.000.000,00 DM");
+  VERIFY( result4 == L"7.200.000.000,00 \x20ac");
 
   // intl and non-intl versions should be different.
   VERIFY( result3 != result4 );
@@ -288,12 +288,12 @@ void test04()
 {
 #ifdef _GLIBCPP_HAVE_SETENV 
   // Set the global locale to non-"C".
-  std::locale loc_de("de_DE");
+  std::locale loc_de("de_DE@euro");
   std::locale::global(loc_de);
 
-  // Set LANG environment variable to de_DE.
+  // Set LANG environment variable to de_DE@euro.
   const char* oldLANG = getenv("LANG");
-  if (!setenv("LANG", "de_DE", 1))
+  if (!setenv("LANG", "de_DE@euro", 1))
     {
       test01();
       test02();
@@ -367,6 +367,25 @@ void test06()
   mp.put(out,intl,fmt,'*',val);
   VERIFY( fmt );
 }
+
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test07()
+{
+  bool test = true;
+
+  const char* tentLANG = setlocale(LC_ALL, "ja_JP.eucjp");
+  if (tentLANG != NULL)
+    {
+      std::string preLANG = tentLANG;
+      test01();
+      test02();
+      test03();
+      test05();
+      test06();
+      std::string postLANG = setlocale(LC_ALL, NULL);
+      VERIFY( preLANG == postLANG );
+    }
+}
 #endif
 
 int main()
@@ -378,6 +397,7 @@ int main()
   test04();
   test05();
   test06();
+  test07();
 #endif
   return 0;
 }
