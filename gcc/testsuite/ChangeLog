@@ -1,3 +1,9 @@
+1998-09-04  Reid M. Pinchback  <reidmp@MIT.EDU>, Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/explicit72.C: ensure that char and
+	(un)signed char are different types for template specialization
+	purposes.
+
 Thu Sep  3 00:40:32 1998  Ovidiu Predescu  <ovidiu@aracnet.com>
 
 	* lib/{objc.exp,objc-torture.exp}: New files for objc testing harness.
