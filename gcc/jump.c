@@ -2605,7 +2605,19 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 	}
 #endif
 
-      if (lose  || GET_CODE (p1) != GET_CODE (p2)
+      /* Don't allow old-style asm or volatile extended asms to be accepted
+	 for cross jumping purposes.  It is conceptually correct to allow
+	 them, since cross-jumping preserves the dynamic instruction order
+	 even though it is changing the static instruction order.  However,
+	 if an asm is being used to emit an assembler pseudo-op, such as
+	 the MIPS `.set reorder' pseudo-op, then the static instruction order
+	 matters and it must be preserved.  */
+      if (GET_CODE (p1) == ASM_INPUT || GET_CODE (p2) == ASM_INPUT
+	  || (GET_CODE (p1) == ASM_OPERANDS && MEM_VOLATILE_P (p1))
+	  || (GET_CODE (p2) == ASM_OPERANDS && MEM_VOLATILE_P (p2)))
+	lose = 1;
+
+      if (lose || GET_CODE (p1) != GET_CODE (p2)
 	  || ! rtx_renumbered_equal_p (p1, p2))
 	{
 	  /* The following code helps take care of G++ cleanups.  */
