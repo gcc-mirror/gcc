@@ -1449,45 +1449,39 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 	continue;
 
       field_type = TREE_TYPE (f);
-      if (cmp < 0)
-	{
-	  /* Don't care about offsets into the middle of scalars.  */
-	  if (!AGGREGATE_TYPE_P (field_type))
-	    continue;
-
-	  /* Check for array at the end of the struct.  This is often
-	     used as for flexible array members.  We should be able to
-	     turn this into an array access anyway.  */
-	  if (TREE_CODE (field_type) == ARRAY_TYPE)
-	    tail_array_field = f;
-
-	  /* Check the end of the field against the offset.  */
-	  if (!DECL_SIZE_UNIT (f)
-	      || TREE_CODE (DECL_SIZE_UNIT (f)) != INTEGER_CST)
-	    continue;
-	  t = int_const_binop (MINUS_EXPR, offset, DECL_FIELD_OFFSET (f), 1);
-	  if (!tree_int_cst_lt (t, DECL_SIZE_UNIT (f)))
-	    continue;
-
-	  /* If we matched, then set offset to the displacement into
-	     this field.  */
-	  offset = t;
-	}
 
       /* Here we exactly match the offset being checked.  If the types match,
 	 then we can return that field.  */
-      else if (lang_hooks.types_compatible_p (orig_type, field_type))
+      if (cmp == 0
+	  && lang_hooks.types_compatible_p (orig_type, field_type))
 	{
 	  if (base_is_ptr)
 	    base = build1 (INDIRECT_REF, record_type, base);
 	  t = build (COMPONENT_REF, field_type, base, f, NULL_TREE);
 	  return t;
 	}
+      
+      /* Don't care about offsets into the middle of scalars.  */
+      if (!AGGREGATE_TYPE_P (field_type))
+	continue;
 
-      /* Don't care about type-punning of scalars.  */
-      else if (!AGGREGATE_TYPE_P (field_type))
-	return NULL_TREE;
+      /* Check for array at the end of the struct.  This is often
+	 used as for flexible array members.  We should be able to
+	 turn this into an array access anyway.  */
+      if (TREE_CODE (field_type) == ARRAY_TYPE)
+	tail_array_field = f;
 
+      /* Check the end of the field against the offset.  */
+      if (!DECL_SIZE_UNIT (f)
+	  || TREE_CODE (DECL_SIZE_UNIT (f)) != INTEGER_CST)
+	continue;
+      t = int_const_binop (MINUS_EXPR, offset, field_offset, 1);
+      if (!tree_int_cst_lt (t, DECL_SIZE_UNIT (f)))
+	continue;
+
+      /* If we matched, then set offset to the displacement into
+	 this field.  */
+      offset = t;
       goto found;
     }
 
@@ -1496,6 +1490,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 
   f = tail_array_field;
   field_type = TREE_TYPE (f);
+  offset = int_const_binop (MINUS_EXPR, offset, byte_position (f), 1);
 
  found:
   /* If we get here, we've got an aggregate field, and a possibly 

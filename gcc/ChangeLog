@@ -1,3 +1,8 @@
+2005-01-19  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-ccp.c (maybe_fold_offset_to_component_ref): Always subtract
+	the offset of the selected field.
+
 2005-01-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (remove_forwarder_block): Fix the check to
