@@ -1,5 +1,18 @@
 2003-04-11  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (tls_model_chars): Remove.
+	(ix86_encode_section_info, ix86_strip_name_encoding): Remove.
+	(local_symbolic_operand): Use SYMBOL_REF_LOCAL_P.
+	(tls_symbolic_operand): Use SYMBOL_REF_TLS_MODEL.
+	(tls_symbolic_operand_1): Likewise.
+	(legitimate_pic_address_disp_p): Use SYMBOL_REF_LOCAL_P.
+	* config/i386/i386.h (TARGET_ENCODE_SECTION_INFO): Remove.
+	(TARGET_STRIP_NAME_ENCODING, ASM_OUTPUT_LABELREF): Remove.
+	* config/i386/winnt.c (i386_pe_encode_section_info): Replace
+	bits "copied from i386.h" with default_encode_section_info.
+
+2003-04-11  Richard Henderson  <rth@redhat.com>
+
 	* rtl.def (SYMBOL_REF): Add two 0 fields.
 	* gengtype.c (adjust_field_rtx_def): Handle them.
 	* print-rtl.c (print_rtx): Print them.
