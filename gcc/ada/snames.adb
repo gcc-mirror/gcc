@@ -572,27 +572,29 @@ package body Snames is
      "object_dir#" &
      "source_dirs#" &
      "specification#" &
-     "body_part#" &
-     "specification_append#" &
-     "body_append#" &
-     "separate_append#" &
+     "implementation#" &
+     "specification_exceptions#" &
+     "implementation_exceptions#" &
+     "specification_suffix#" &
+     "implementation_suffix#" &
+     "separate_suffix#" &
      "source_files#" &
      "source_list_file#" &
+     "default_switches#" &
      "switches#" &
      "library_dir#" &
      "library_name#" &
      "library_kind#" &
      "library_version#" &
      "library_elaboration#" &
-     "gnatmake#" &
+     "languages#" &
+     "builder#" &
      "gnatls#" &
-     "gnatxref#" &
-     "gnatfind#" &
-     "gnatbind#" &
-     "gnatlink#" &
-     "compiler#" &
+     "cross_reference#" &
+     "finder#" &
      "binder#" &
      "linker#" &
+     "compiler#" &
       "#";
 
    ---------------------
