@@ -6058,6 +6058,7 @@ expand_expr (exp, target, tmode, modifier)
 
     case CONJ_EXPR:
       {
+	enum machine_mode partmode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
 	rtx imag_t;
 	rtx insns;
 	
@@ -6069,11 +6070,12 @@ expand_expr (exp, target, tmode, modifier)
 	start_sequence ();
 
 	/* Store the realpart and the negated imagpart to target.  */
-	emit_move_insn (gen_realpart (mode, target), gen_realpart (mode, op0));
+	emit_move_insn (gen_realpart (partmode, target),
+			gen_realpart (partmode, op0));
 
-	imag_t = gen_imagpart (mode, target);
-	temp = expand_unop (mode, neg_optab,
-			       gen_imagpart (mode, op0), imag_t, 0);
+	imag_t = gen_imagpart (partmode, target);
+	temp = expand_unop (partmode, neg_optab,
+			       gen_imagpart (partmode, op0), imag_t, 0);
 	if (temp != imag_t)
 	  emit_move_insn (imag_t, temp);
 
