@@ -1,3 +1,8 @@
+2002-09-22  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* doc/install.texi: Document behavior of --with-headers and
+	--with-libs when arguments are omitted.
+
 2002-09-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dbxout.c: Follow spelling conventions.

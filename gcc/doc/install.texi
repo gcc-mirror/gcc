@@ -883,18 +883,22 @@ forward to maintain the port.
 
 Some options which only apply to building cross compilers:
 @table @code
-@item --with-headers=@var{dir}
-Specifies a directory
-which has target include files.
-@emph{This option is required} when building a cross
-compiler, if @file{@var{prefix}/@var{target}/sys-include} doesn't pre-exist.
-These include files will be copied into the @file{gcc} install directory.
-@command{fixincludes} will be run on these files to make them compatible with
-GCC.
-@item --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
+@item --with-headers
+@itemx --with-headers=@var{dir}
+Specifies that target headers are available when building a cross compiler.
+The @var{dir} argument specifies a directory which has the target include
+files.  These include files will be copied into the @file{gcc} install
+directory.  @emph{This option with the @var{dir} argument is required} when
+building a cross compiler, if @file{@var{prefix}/@var{target}/sys-include}
+doesn't pre-exist.  If @file{@var{prefix}/@var{target}/sys-include} does
+pre-exist, the @var{dir} argument may be omitted.  @command{fixincludes}
+will be run on these files to make them compatible with GCC.
+@item --with-libs
+@itemx --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
 Specifies a list of directories which contain the target runtime
 libraries.  These libraries will be copied into the @file{gcc} install
-directory.
+directory.  If the directory list is omitted, this option has no
+effect.
 @item --with-newlib
 Specifies that @samp{newlib} is
 being used as the target C library.  This causes @code{__eprintf} to be

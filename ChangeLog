@@ -1,3 +1,8 @@
+2002-09-22  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* configure.in (with_headers): Skip copy if value is "yes".
+	(with_libs): Likewise.
+
 2002-09-20  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in (*-*-netbsd*): Use noconfigdirs, not skipdirs.
