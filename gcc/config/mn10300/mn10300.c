@@ -328,12 +328,7 @@ print_operand_address (file, addr)
       fputc ('+', file);
       break;
     case REG:
-      if (addr == stack_pointer_rtx)
-	print_operand_address (file, gen_rtx_PLUS (SImode,
-						   stack_pointer_rtx,
-						   GEN_INT (0)));
-      else
-	print_operand (file, addr, 0);
+      print_operand (file, addr, 0);
       break;
     case PLUS:
       {
