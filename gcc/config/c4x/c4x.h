@@ -1127,9 +1127,11 @@ extern struct rtx_def *c4x_function_arg();
 
 /* Varargs handling.  */
 
+extern void c4x_va_start ();
 #define	EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
   c4x_va_start (stdarg, valist, nextarg)
 
+extern struct rtx_def *c4x_va_arg ();
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   c4x_va_arg (valist, type)
 
@@ -1142,7 +1144,9 @@ extern struct rtx_def *c4x_function_arg();
 /* Generating Code for Profiling  */
 
 /* Note that the generated assembly uses the ^ operator to load the 16
-   MSBs of the address.  This is not supported by the TI assembler.  */
+   MSBs of the address.  This is not supported by the TI assembler. 
+   The FUNCTION profiler needs a function mcount which gets passed
+   a pointer to the LABELNO.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO) 			\
      if (! TARGET_C3X)						\
@@ -1563,7 +1567,7 @@ extern struct rtx_def *c4x_gen_compare_reg ();
 #define HAVE_POST_MODIFY_DISP 1
 
 /* The number of insns that can be packed into a single opcode.  */
-#define MULTIPACK_INSNS 2
+#define PACK_INSNS 2
 
 /* Recognize any constant value that is a valid address. 
    We could allow arbitrary constant addresses in the large memory
