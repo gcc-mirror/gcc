@@ -979,103 +979,102 @@ dnl If --disable-c-mbchar was given, no wchar_t stuff is enabled.  (This
 dnl must have been previously checked.)
 dnl
 dnl Define _GLIBCPP_USE_WCHAR_T if all the bits are found 
-dnl Define _GLIBCPP_NEED_MBSTATE_T if mbstate_t is not in wchar.h
+dnl Define HAVE_MBSTATE_T if mbstate_t is not in wchar.h
 dnl
 dnl GLIBCPP_CHECK_WCHAR_T_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
-  if test x$enable_c_mbchar != xno; then
 
-    dnl Sanity check for existence of ISO C99 headers for extended encoding.
-    AC_CHECK_HEADER(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
-    AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
-          
-    dnl Only continue checking if the ISO C99 headers exist.
-    if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes; then
+  dnl Test wchar.h for mbstate_t, which is needed for char_traits and
+  dnl others even if wchar_t support is not on.
+  AC_MSG_CHECKING([for mbstate_t])
+  AC_TRY_COMPILE([#include <wchar.h>],
+  [mbstate_t teststate;], 
+  have_mbstate_t=yes, have_mbstate_t=no)
+  AC_MSG_RESULT($have_mbstate_t)
+  if test x"$have_mbstate_t" = xyes; then
+    AC_DEFINE(HAVE_MBSTATE_T)
+  fi
+
+  dnl Sanity check for existence of ISO C99 headers for extended encoding.
+  AC_CHECK_HEADERS(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
+  AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
   
-      dnl Test wchar.h for mbstate_t, which is needed for char_traits
-      dnl and others.
-      AC_MSG_CHECKING([for mbstate_t])
-      AC_TRY_COMPILE([#include <wchar.h>],
-      [mbstate_t teststate;], 
-      use_native_mbstatet=yes, use_native_mbstatet=no)
-      AC_MSG_RESULT($use_native_mbstatet)
+  dnl Only continue checking if the ISO C99 headers exist and support is on.
+  if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes \
+     && test x"$enable_c_mbchar" != xno; then
+      
+    dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
+    dnl numeric_limits can instantiate type_traits<wchar_t>
+    AC_MSG_CHECKING([for WCHAR_MIN and WCHAR_MAX])
+    AC_TRY_COMPILE([#include <wchar.h>],
+    [int i = WCHAR_MIN; int j = WCHAR_MAX;], 
+    has_wchar_minmax=yes, has_wchar_minmax=no)
+    AC_MSG_RESULT($has_wchar_minmax)
     
-      dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
-      dnl numeric_limits can instantiate type_traits<wchar_t>
-      AC_MSG_CHECKING([for WCHAR_MIN and WCHAR_MAX])
-      AC_TRY_COMPILE([#include <wchar.h>],
-      [int i = WCHAR_MIN; int j = WCHAR_MAX;], 
-      has_wchar_minmax=yes, has_wchar_minmax=no)
-      AC_MSG_RESULT($has_wchar_minmax)
-    
-      dnl Test wchar.h for WEOF, which is what we use to determine whether
-      dnl to specialize for char_traits<wchar_t> or not.
-      AC_MSG_CHECKING([for WEOF])
-      AC_TRY_COMPILE([
-        #include <wchar.h>
-        #include <stddef.h>],
-      [wint_t i = WEOF;],
-      has_weof=yes, has_weof=no)
-      AC_MSG_RESULT($has_weof)
+    dnl Test wchar.h for WEOF, which is what we use to determine whether
+    dnl to specialize for char_traits<wchar_t> or not.
+    AC_MSG_CHECKING([for WEOF])
+    AC_TRY_COMPILE([
+      #include <wchar.h>
+      #include <stddef.h>],
+    [wint_t i = WEOF;],
+    has_weof=yes, has_weof=no)
+    AC_MSG_RESULT($has_weof)
   
-      dnl Tests for wide character functions used in char_traits<wchar_t>.
-      AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
-      wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
+    dnl Tests for wide character functions used in char_traits<wchar_t>.
+    AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
+    wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
   
-      AC_MSG_CHECKING([for ISO C99 wchar_t support])
-      if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
-         && test x"$ac_wfuncs" = xyes; then
-        ac_isoC99_wchar_t=yes
-      else
-        ac_isoC99_wchar_t=no
-      fi
-      AC_MSG_RESULT($ac_isoC99_wchar_t)
-  
-      dnl Use iconv for wchar_t to char conversions. As such, check for 
-      dnl X/Open Portability Guide, version 2 features (XPG2).
-      AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
-      AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
-
-      dnl Check for existence of libiconv.a providing XPG2 wchar_t support.
-      AC_CHECK_LIB(iconv, iconv, libiconv="-liconv")
-      ac_save_LIBS="$LIBS"
-      LIBS="$LIBS $libiconv"
-
-      AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
-      ac_XPG2funcs=yes, ac_XPG2funcs=no)
-  
-      LIBS="$ac_save_LIBS"
-
-      AC_MSG_CHECKING([for XPG2 wchar_t support])
-      if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
-         && test x"$ac_XPG2funcs" = xyes; then
-        ac_XPG2_wchar_t=yes
-      else
-        ac_XPG2_wchar_t=no
-      fi
-      AC_MSG_RESULT($ac_XPG2_wchar_t)
-  
-      dnl At the moment, only enable wchar_t specializations if all the
-      dnl above support is present.
-      AC_MSG_CHECKING([for enabled wchar_t specializations])
-      if test x"$ac_isoC99_wchar_t" = xyes \
-         && test x"$ac_XPG2_wchar_t" = xyes; then
-        libinst_wstring_la="libinst-wstring.la"
-        AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
-        AC_MSG_RESULT("yes")
-      else
-        libinst_wstring_la=""
-        AC_MSG_RESULT("no")
-      fi
-      AC_SUBST(libinst_wstring_la)
-  
+    AC_MSG_CHECKING([for ISO C99 wchar_t support])
+    if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
+       && test x"$ac_wfuncs" = xyes; then
+      ac_isoC99_wchar_t=yes
     else
-      AC_MSG_WARN([<wchar.h> not found])
+      ac_isoC99_wchar_t=no
     fi
+    AC_MSG_RESULT($ac_isoC99_wchar_t)
+  
+    dnl Use iconv for wchar_t to char conversions. As such, check for 
+    dnl X/Open Portability Guide, version 2 features (XPG2).
+    AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
+    AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
 
+    dnl Check for existence of libiconv.a providing XPG2 wchar_t support.
+    AC_CHECK_LIB(iconv, iconv, libiconv="-liconv")
+    ac_save_LIBS="$LIBS"
+    LIBS="$LIBS $libiconv"
+
+    AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
+    ac_XPG2funcs=yes, ac_XPG2funcs=no)
+  
+    LIBS="$ac_save_LIBS"
+
+    AC_MSG_CHECKING([for XPG2 wchar_t support])
+    if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
+       && test x"$ac_XPG2funcs" = xyes; then
+      ac_XPG2_wchar_t=yes
+    else
+      ac_XPG2_wchar_t=no
+    fi
+    AC_MSG_RESULT($ac_XPG2_wchar_t)
+  
+    dnl At the moment, only enable wchar_t specializations if all the
+    dnl above support is present.
+    AC_MSG_CHECKING([for enabled wchar_t specializations])
+    if test x"$ac_isoC99_wchar_t" = xyes \
+       && test x"$ac_XPG2_wchar_t" = xyes; then
+      libinst_wstring_la="libinst-wstring.la"
+      AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
+      AC_MSG_RESULT("yes")
+    else
+      libinst_wstring_la=""
+      AC_MSG_RESULT("no")
+    fi
+    AC_SUBST(libinst_wstring_la)
+  
   else
-    dnl Wide characters disabled by the user.  Maybe print a warning?
-    :
+    dnl Wide characters disabled by the user. 
+    AC_MSG_WARN([wchar_t support disabled.])
   fi
 ])
 

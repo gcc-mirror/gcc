@@ -1,6 +1,6 @@
-// 2000-12-20 bkoz
+// 2001-01-01 bkoz
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,25 +20,7 @@
 
 // 17.4.1.2 Headers
 
-// This file tests C inclusion then C++ inclusion.
-
-// "C" headers
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <float.h>
-#include <iso646.h>
-#include <limits.h>
-#include <locale.h>
-#include <math.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+// This file tests C++ inclusion then C inclusion.
 
 // C++ headers
 #include <cassert>
@@ -58,13 +40,31 @@
 #include <cstring>
 #include <ctime>
 
-// "C" headers that might not work if wchar_t support is disabled.
+// "C" headers
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <float.h>
+#include <iso646.h>
+#include <limits.h>
+#include <locale.h>
+#include <math.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// "C++" headers that might not work if wchar_t support is disabled.
 #include <bits/c++config.h>
 #if _GLIBCPP_USE_WCHAR_T
-  #include <wchar.h>
-  #include <wctype.h>
   #include <cwchar>
   #include <cwctype>
+  #include <wchar.h>
+  #include <wctype.h>
 #endif
 
 int main() { }

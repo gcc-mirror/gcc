@@ -3,6 +3,12 @@
 /* Define if you have a working `mmap' system call.  */
 #undef HAVE_MMAP
 
+// Define if GCC support for __complex__ float is buggy.
+#undef _GLIBCPP_BUGGY_FLOAT_COMPLEX
+
+// Define if GCC support for __complex__ is buggy.
+#undef _GLIBCPP_BUGGY_COMPLEX
+
 // Include support for multiple threads, e.g., in the I/O package.
 #undef _GLIBCPP_USE_THREADS
 
@@ -18,10 +24,13 @@
 // Define if lldiv_t exists in stdlib.h.
 #undef HAVE_LLDIV_T
 
-/* Define if you have the modff function.  */
+// Define if mbstate_t exists in wchar.h.  */
+#undef HAVE_MBSTATE_T
+
+// Define if you have the modff function.  */
 #undef HAVE_MODFF
 
-/* Define if you have the modfl function.  */
+// Define if you have the modfl function.  */
 #undef HAVE_MODFL
 
 // Define if the compiler/host combination has __builtin_abs
@@ -65,12 +74,6 @@
 
 // Define if the compiler/host combination has __builtin_sqrtl
 #undef HAVE___BUILTIN_SQRTL
-
-// Define if GCC support for __complex__ float is buggy.
-#undef _GLIBCPP_BUGGY_FLOAT_COMPLEX
-
-// Define if GCC support for __complex__ is buggy.
-#undef _GLIBCPP_BUGGY_COMPLEX
 
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
@@ -530,6 +533,9 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Define if you have the <wchar.h> header file.  */
+#undef HAVE_WCHAR_H
 
 /* Define if you have the m library (-lm).  */
 #undef HAVE_LIBM
