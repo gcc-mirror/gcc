@@ -599,9 +599,15 @@ ggc_alloc_cleared (size)
 }
 
 /* Print statistics that are independent of the collector in use.  */
+#define SCALE(x) ((unsigned long) ((x) < 1024*10 \
+		  ? (x) \
+		  : ((x) < 1024*1024*10 \
+		     ? (x) / 1024 \
+		     : (x) / (1024*1024))))
+#define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 void
-ggc_print_statistics (stream, stats)
+ggc_print_common_statistics (stream, stats)
      FILE *stream;
      ggc_statistics *stats;
 {
@@ -627,43 +633,44 @@ ggc_print_statistics (stream, stats)
     }
 
   /* Print the statistics for trees.  */
-  fprintf (stream, "%-22s%-16s%-16s%-7s\n", "Code", 
+  fprintf (stream, "\n%-17s%10s %16s %10s\n", "Tree", 
 	   "Number", "Bytes", "% Total");
   for (code = 0; code < MAX_TREE_CODES; ++code)
     if (ggc_stats->num_trees[code]) 
       {
-	fprintf (stream, "%s%*s%-15u %-15lu %7.3f\n", 
+	fprintf (stream, "%-17s%10u%16ld%c %10.3f\n",
 		 tree_code_name[code],
-		 22 - (int) strlen (tree_code_name[code]), "",
 		 ggc_stats->num_trees[code],
-		 (unsigned long) ggc_stats->size_trees[code],
+		 SCALE (ggc_stats->size_trees[code]),
+		 LABEL (ggc_stats->size_trees[code]),
 		 (100 * ((double) ggc_stats->size_trees[code]) 
 		  / ggc_stats->total_size_trees));
       }
   fprintf (stream,
-	   "%-22s%-15u %-15lu\n", "Total",
+	   "%-17s%10u%16ld%c\n", "Total",
 	   ggc_stats->total_num_trees,
-	   (unsigned long) ggc_stats->total_size_trees);
+	   SCALE (ggc_stats->total_size_trees),
+	   LABEL (ggc_stats->total_size_trees));
 
   /* Print the statistics for RTL.  */
-  fprintf (stream, "\n%-22s%-16s%-16s%-7s\n", "Code", 
+  fprintf (stream, "\n%-17s%10s %16s %10s\n", "RTX", 
 	   "Number", "Bytes", "% Total");
   for (code = 0; code < NUM_RTX_CODE; ++code)
     if (ggc_stats->num_rtxs[code]) 
       {
-	fprintf (stream, "%s%*s%-15u %-15lu %7.3f\n", 
+	fprintf (stream, "%-17s%10u%16ld%c %10.3f\n",
 		 rtx_name[code],
-		 22 - (int) strlen (rtx_name[code]), "",
 		 ggc_stats->num_rtxs[code],
-		 (unsigned long) ggc_stats->size_rtxs[code],
+		 SCALE (ggc_stats->size_rtxs[code]),
+		 LABEL (ggc_stats->size_rtxs[code]),
 		 (100 * ((double) ggc_stats->size_rtxs[code]) 
 		  / ggc_stats->total_size_rtxs));
       }
   fprintf (stream,
-	   "%-22s%-15u %-15lu\n", "Total",
+	   "%-17s%10u%16ld%c\n", "Total",
 	   ggc_stats->total_num_rtxs,
-	   (unsigned long) ggc_stats->total_size_rtxs);
-
+	   SCALE (ggc_stats->total_size_rtxs),
+	   LABEL (ggc_stats->total_size_rtxs));
 
   /* Don't gather statistics any more.  */
   ggc_stats = NULL;

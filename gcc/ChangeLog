@@ -1,3 +1,25 @@
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* flags.h (time_report, mem_report): New global flags.
+	* toplev.c: Define time_report and mem_report.
+	(f_options): Add -ftime-report and -fmem-report.
+	(compile_file): Turn on time_report if quiet_flag is off.
+	Call ggc_print_statistics at very end if mem_report is on.
+	* timevar.c (TIMEVAR_ENABLE): Examine time_report, not quiet_flag.
+
+	* ggc-common.c (ggc_print_statistics): Rename to
+	ggc_print_common_statistics; all callers changed.  Scale
+	quantities above 10K to kilobytes and above 10M to megabytes.
+	* ggc-page.c (ggc_page_print_statistics): Rename to
+	ggc_print_statistics.  Report memory consumed by internal data
+	structures for each allocation bucket.  Scale quantities above
+	10K to kilobytes and above 10M to megabytes.
+	* ggc-simple.c: Prototype debug_ggc_tree to avoid warning.
+	Cast PTR_KEY(p) to unsigned long in fprintf call to avoid warning.
+	Define tally_leaves always.
+	(ggc_print_statistics): New function.
+	* ggc.h: Adjust for renamed functions.
+
 Wed Aug 30 00:11:42 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md ("*movsf","*movsi"): Pass NULL to

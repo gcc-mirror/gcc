@@ -40,7 +40,7 @@ extern int getrusage PARAMS ((int, struct rusage *));
 /* See timevar.h for an explanation of timing variables.  */
 
 /* This macro evaluates to non-zero if timing variables are enabled. */
-#define TIMEVAR_ENABLE (!quiet_flag)
+#define TIMEVAR_ENABLE (time_report)
 
 /* A timing variable.  */
 

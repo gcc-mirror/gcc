@@ -464,10 +464,19 @@ int pedantic = 0;
 
 int in_system_header = 0;
 
-/* Don't print functions as they are compiled and don't print
-   times taken by the various passes.  -quiet.  */
+/* Don't print functions as they are compiled.  -quiet.  */
 
 int quiet_flag = 0;
+
+/* Print times taken by the various passes.  -ftime-report.  */
+
+int time_report = 0;
+
+/* Print memory still in use at end of compilation (which may have little
+   to do with peak memory consumption).  -fmem-report.  */
+
+int mem_report = 0;
+
 
 /* -f flags.  */
 
@@ -1122,7 +1131,11 @@ lang_independent_options f_options[] =
   {"bounds-check", &flag_bounds_check, 1,
    "Generate code to check bounds before dereferencing pointers and arrays" },
   {"single-precision-constant", &flag_single_precision_constant, 1,
-  "Convert floating point constant to single precision constant"}
+   "Convert floating point constant to single precision constant"},
+  {"time-report", &time_report,
+   "Report time taken by each compiler pass at end of run"},
+  {"mem-report", &mem_report,
+   "Report on permanent memory allocation at end of run"},
 };
 
 /* Table of language-specific options.  */
@@ -2101,6 +2114,9 @@ compile_file (name)
   if (dump_base_name == 0)
     dump_base_name = name ? name : "gccdump";
 
+  if (! quiet_flag)
+    time_report = 1;
+
   /* Start timing total execution time.  */
 
   init_timevar ();
@@ -2463,6 +2479,9 @@ compile_file (name)
 	    free (suffix);
 	  }
     }
+
+  if (mem_report)
+    ggc_print_statistics ();
 
   /* Free up memory for the benefit of leak detectors.  */
   free_reg_info ();

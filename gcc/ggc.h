@@ -206,7 +206,7 @@ size_t ggc_get_size PARAMS ((const void *));
 
 /* Used by the various collectors to gather and print statistics that
    do not depend on the collector in use.  */
-void ggc_print_statistics PARAMS ((FILE *, ggc_statistics *));
+void ggc_print_common_statistics PARAMS ((FILE *, ggc_statistics *));
 
 /* Print allocation statistics.  */
-extern void ggc_page_print_statistics PARAMS ((void));
+extern void ggc_print_statistics PARAMS ((void));
