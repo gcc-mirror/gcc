@@ -1,3 +1,32 @@
+2001-10-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/time_members_gnu.h: Remove.
+	* config/locale/time_members_generic.h: Remove.	
+	* config/locale/time_members_gnu.cc (__timepunct::_M_put_helper): Add.
+	* config/locale/time_members_generic.cc: Same.
+	* include/bits/locale_facets.h: Add data members.
+	(__timepunct::_M_put_helper): Change signature.
+	(__timepunct::_M_date_formats): Same.
+	(__timepunct::_M_time_formats): Same.	
+	(__timepunct::_M_ampm): Add.
+	(__timepunct::_M_date_time_formats): Add.
+	(time_get::_M_extract_via_format): Add.
+	(time_get::_M_extract_time): Change to...
+	(time_get::_M_extract_num): ... this, modify signature.
+	* include/bits/locale_facets.tcc (time_get::do_get_year): Fix.
+	(time_get::do_get_time): Fix.
+	(time_get::do_get_date): Fix.	
+	
+	* acinclude.m4: Remove CTIME_H.
+	* aclocal.m4: Regenerate.
+	* include/Makefile.am: Same.
+	* include/Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+	* testsuite/22_locale/time_get_members_char.cc: Fix.
+	* testsuite/22_locale/time_get_members_wchar_t.cc: Add.
+	* testsuite/22_locale/time_put_members_wchar_t.cc: Add.	
+	
 2001-10-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cpu/cris/bits/atomicity.h: Correct file header.

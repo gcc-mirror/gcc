@@ -1,4 +1,4 @@
-// 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-10-02 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation
 //
@@ -27,11 +27,12 @@
 // XXX This test is not working for non-glibc locale models.
 // { dg-do run { xfail *-*-* } }
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 void test01()
 {
   using namespace std;
   typedef time_base::dateorder dateorder;
-  typedef istreambuf_iterator<char> iterator_type;
+  typedef istreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
 
@@ -44,30 +45,29 @@ void test01()
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
-
   // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<char>& time_c = use_facet<__timepunct<char> >(loc_c); 
-  const __timepunct<char>& time_de = use_facet<__timepunct<char> >(loc_de); 
-  const __timepunct<char>& time_hk = use_facet<__timepunct<char> >(loc_hk); 
-  const __timepunct<char>& time_fr = use_facet<__timepunct<char> >(loc_fr); 
+  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
+  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
+  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
+  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
 
-  const string empty;
+  const wstring empty;
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;
 
-  istringstream iss;
-  const time_get<char>& tim_get = use_facet<time_get<char> >(iss.getloc()); 
+  wistringstream iss;
+  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
   const tm time_bday = { 0, 0, 12, 4, 3, 71 };
-  const char* all = "%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
-                    "%w %W %x %X %y %Y %Z %%";
-  const char* date = "%A, the second of %B";
-  const char* date_ex = "%Ex";
+  const wchar_t* all = L"%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
+                    L"%w %W %x %X %y %Y %Z %%";
+  const wchar_t* date = L"%A, the second of %B";
+  const wchar_t* date_ex = L"%Ex";
 
   // 1
   // dateorder date_order() const
@@ -81,7 +81,7 @@ void test01()
   // get_time(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
-  iss.str("12:00:00");
+  iss.str(L"12:00:00");
   iterator_type is_it01(iss);
   tm time01;
   errorstate = good;
@@ -91,7 +91,7 @@ void test01()
   VERIFY( time01.tm_hour == time_bday.tm_hour );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str("12:00:00 ");
+  iss.str(L"12:00:00 ");
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
@@ -101,7 +101,7 @@ void test01()
   VERIFY( time01.tm_hour == time_bday.tm_hour );
   VERIFY( errorstate == good );
 
-  iss.str("12:61:00 ");
+  iss.str(L"12:61:00 ");
   iterator_type is_it03(iss);
   tm time03;
   errorstate = good;
@@ -109,7 +109,7 @@ void test01()
   VERIFY( time01.tm_hour == time_bday.tm_hour );
   VERIFY( errorstate == ios_base::failbit );
 
-  iss.str("12:a:00 ");
+  iss.str(L"12:a:00 ");
   iterator_type is_it04(iss);
   tm time04;
   errorstate = good;
@@ -120,7 +120,7 @@ void test01()
 
   // inspection of named locales, de_DE
   iss.imbue(loc_de);
-  iss.str("12:00:00");
+  iss.str(L"12:00:00");
   iterator_type is_it10(iss);
   tm time10;
   errorstate = good;
@@ -132,7 +132,7 @@ void test01()
 
   // inspection of named locales, en_HK
   iss.imbue(loc_hk);
-  iss.str("12:00:00 PST"); 
+  iss.str(L"12:00:00 PST"); 
   // Hong Kong in California! Well, they have Paris in Vegas... this
   // is all a little disney-esque anyway. Besides, you can get decent
   // Dim Sum in San Francisco.
@@ -150,7 +150,7 @@ void test02()
 {
   using namespace std;
   typedef time_base::dateorder dateorder;
-  typedef istreambuf_iterator<char> iterator_type;
+  typedef istreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
 
@@ -165,35 +165,35 @@ void test02()
   VERIFY( loc_de != loc_fr );
 
   // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<char>& time_c = use_facet<__timepunct<char> >(loc_c); 
-  const __timepunct<char>& time_de = use_facet<__timepunct<char> >(loc_de); 
-  const __timepunct<char>& time_hk = use_facet<__timepunct<char> >(loc_hk); 
-  const __timepunct<char>& time_fr = use_facet<__timepunct<char> >(loc_fr); 
+  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
+  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
+  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
+  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
 
-  const string empty;
+  const wstring empty;
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;
 
-  istringstream iss;
-  const time_get<char>& tim_get = use_facet<time_get<char> >(iss.getloc()); 
+  wistringstream iss;
+  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
   const tm time_bday = { 0, 0, 12, 4, 3, 71 };
-  const char* all = "%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
-                    "%w %W %x %X %y %Y %Z %%";
-  const char* date = "%A, the second of %B";
-  const char* date_ex = "%Ex";
+  const wchar_t* all = L"%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
+                    L"%w %W %x %X %y %Y %Z %%";
+  const wchar_t* date = L"%A, the second of %B";
+  const wchar_t* date_ex = L"%Ex";
 
   // iter_type 
   // get_weekday(iter_type, iter_type, ios_base&, 
   //             ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
-  iss.str("Sunday");
+  iss.str(L"Sunday");
   iterator_type is_it01(iss);
   tm time01;
   errorstate = good;
@@ -201,7 +201,7 @@ void test02()
   VERIFY( time01.tm_wday == time_bday.tm_wday );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str("Sun");
+  iss.str(L"Sun");
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
@@ -209,7 +209,7 @@ void test02()
   VERIFY( time02.tm_wday == time_bday.tm_wday );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str("Sun ");
+  iss.str(L"Sun ");
   iterator_type is_it03(iss);
   tm time03;
   errorstate = good;
@@ -218,7 +218,7 @@ void test02()
   VERIFY( errorstate == good );
   VERIFY( *is_it03 == ' ');
 
-  iss.str("San");
+  iss.str(L"San");
   iterator_type is_it04(iss);
   tm time04;
   time04.tm_wday = 4;
@@ -228,7 +228,7 @@ void test02()
   VERIFY( *is_it04 == 'n');
   VERIFY( errorstate == ios_base::failbit );
 
-  iss.str("Tuesday ");
+  iss.str(L"Tuesday ");
   iterator_type is_it05(iss);
   tm time05;
   errorstate = good;
@@ -237,7 +237,7 @@ void test02()
   VERIFY( errorstate == good );
   VERIFY( *is_it05 == ' ');
 
-  iss.str("Tuesducky "); // Kind of like Fryday, without the swirls.
+  iss.str(L"Tuesducky "); // Kind of like Fryday, without the swirls.
   iterator_type is_it06(iss);
   tm time06;
   time06.tm_wday = 4;
@@ -249,7 +249,7 @@ void test02()
 
   // inspection of named locales, de_DE
   iss.imbue(loc_de);
-  iss.str("Sonntag");
+  iss.str(L"Sonntag");
   iterator_type is_it10(iss);
   tm time10;
   errorstate = good;
@@ -259,7 +259,7 @@ void test02()
 
   // inspection of named locales, en_HK
   iss.imbue(loc_hk);
-  iss.str("Sunday"); 
+  iss.str(L"Sunday"); 
   iterator_type is_it20(iss);
   tm time20;
   errorstate = good;
@@ -272,7 +272,7 @@ void test03()
 {
   using namespace std;
   typedef time_base::dateorder dateorder;
-  typedef istreambuf_iterator<char> iterator_type;
+  typedef istreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
 
@@ -287,35 +287,35 @@ void test03()
   VERIFY( loc_de != loc_fr );
 
   // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<char>& time_c = use_facet<__timepunct<char> >(loc_c); 
-  const __timepunct<char>& time_de = use_facet<__timepunct<char> >(loc_de); 
-  const __timepunct<char>& time_hk = use_facet<__timepunct<char> >(loc_hk); 
-  const __timepunct<char>& time_fr = use_facet<__timepunct<char> >(loc_fr); 
+  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
+  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
+  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
+  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
 
-  const string empty;
+  const wstring empty;
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;
 
-  istringstream iss;
-  const time_get<char>& tim_get = use_facet<time_get<char> >(iss.getloc()); 
+  wistringstream iss;
+  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
   const tm time_bday = { 0, 0, 12, 4, 3, 71 };
-  const char* all = "%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
-                    "%w %W %x %X %y %Y %Z %%";
-  const char* date = "%A, the second of %B";
-  const char* date_ex = "%Ex";
+  const wchar_t* all = L"%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
+                    L"%w %W %x %X %y %Y %Z %%";
+  const wchar_t* date = L"%A, the second of %B";
+  const wchar_t* date_ex = L"%Ex";
 
   // iter_type 
   // get_monthname(iter_type, iter_type, ios_base&, 
   //               ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
-  iss.str("April");
+  iss.str(L"April");
   iterator_type is_it01(iss);
   tm time01;
   errorstate = good;
@@ -323,7 +323,7 @@ void test03()
   VERIFY( time01.tm_wday == time_bday.tm_wday );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str("Apr");
+  iss.str(L"Apr");
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
@@ -331,7 +331,7 @@ void test03()
   VERIFY( time02.tm_mon == time_bday.tm_mon );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str("Apr ");
+  iss.str(L"Apr ");
   iterator_type is_it03(iss);
   tm time03;
   errorstate = good;
@@ -340,7 +340,7 @@ void test03()
   VERIFY( errorstate == good );
   VERIFY( *is_it03 == ' ');
 
-  iss.str("Aar");
+  iss.str(L"Aar");
   iterator_type is_it04(iss);
   tm time04;
   time04.tm_mon = 5;
@@ -350,7 +350,7 @@ void test03()
   VERIFY( *is_it04 == 'a');
   VERIFY( errorstate == ios_base::failbit );
 
-  iss.str("December ");
+  iss.str(L"December ");
   iterator_type is_it05(iss);
   tm time05;
   errorstate = good;
@@ -359,7 +359,7 @@ void test03()
   VERIFY( errorstate == good );
   VERIFY( *is_it05 == ' ');
 
-  iss.str("Decelember "); 
+  iss.str(L"Decelember "); 
   iterator_type is_it06(iss);
   tm time06;
   time06.tm_mon = 4;
@@ -371,7 +371,7 @@ void test03()
 
   // inspection of named locales, de_DE
   iss.imbue(loc_de);
-  iss.str("April");
+  iss.str(L"April");
   iterator_type is_it10(iss);
   tm time10;
   errorstate = good;
@@ -381,7 +381,7 @@ void test03()
 
   // inspection of named locales, en_HK
   iss.imbue(loc_hk);
-  iss.str("April"); 
+  iss.str(L"April"); 
   iterator_type is_it20(iss);
   tm time20;
   errorstate = good;
@@ -394,7 +394,7 @@ void test04()
 {
   using namespace std;
   typedef time_base::dateorder dateorder;
-  typedef istreambuf_iterator<char> iterator_type;
+  typedef istreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
 
@@ -409,34 +409,34 @@ void test04()
   VERIFY( loc_de != loc_fr );
 
   // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<char>& time_c = use_facet<__timepunct<char> >(loc_c); 
-  const __timepunct<char>& time_de = use_facet<__timepunct<char> >(loc_de); 
-  const __timepunct<char>& time_hk = use_facet<__timepunct<char> >(loc_hk); 
-  const __timepunct<char>& time_fr = use_facet<__timepunct<char> >(loc_fr); 
+  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
+  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
+  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
+  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
 
-  const string empty;
+  const wstring empty;
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;
 
-  istringstream iss;
-  const time_get<char>& tim_get = use_facet<time_get<char> >(iss.getloc()); 
+  wistringstream iss;
+  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
   const tm time_bday = { 0, 0, 12, 4, 3, 71 };
-  const char* all = "%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
-                    "%w %W %x %X %y %Y %Z %%";
-  const char* date = "%A, the second of %B";
-  const char* date_ex = "%Ex";
+  const wchar_t* all = L"%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
+                    L"%w %W %x %X %y %Y %Z %%";
+  const wchar_t* date = L"%A, the second of %B";
+  const wchar_t* date_ex = L"%Ex";
 
   // iter_type 
   // get_year(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
-  iss.str("1971");
+  iss.str(L"1971");
   iterator_type is_it01(iss);
   tm time01;
   errorstate = good;
@@ -444,7 +444,7 @@ void test04()
   VERIFY( time01.tm_year == time_bday.tm_year );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str("1971 ");
+  iss.str(L"1971 ");
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
@@ -453,7 +453,7 @@ void test04()
   VERIFY( errorstate == good );
   VERIFY( *is_it02 == ' ');
 
-  iss.str("197d1 ");
+  iss.str(L"197d1 ");
   iterator_type is_it03(iss);
   tm time03;
   time03.tm_year = 3;
@@ -463,7 +463,7 @@ void test04()
   VERIFY( errorstate == ios_base::failbit );
   VERIFY( *is_it03 == 'd');
 
-  iss.str("71d71");
+  iss.str(L"71d71");
   iterator_type is_it04(iss);
   tm time04;
   errorstate = good;
@@ -472,7 +472,7 @@ void test04()
   VERIFY( errorstate == good );
   VERIFY( *is_it03 == 'd');
 
-  iss.str("71");
+  iss.str(L"71");
   iterator_type is_it05(iss);
   tm time05;
   errorstate = good;
@@ -485,7 +485,7 @@ void test05()
 {
   using namespace std;
   typedef time_base::dateorder dateorder;
-  typedef istreambuf_iterator<char> iterator_type;
+  typedef istreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
 
@@ -500,34 +500,34 @@ void test05()
   VERIFY( loc_de != loc_fr );
 
   // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<char>& time_c = use_facet<__timepunct<char> >(loc_c); 
-  const __timepunct<char>& time_de = use_facet<__timepunct<char> >(loc_de); 
-  const __timepunct<char>& time_hk = use_facet<__timepunct<char> >(loc_hk); 
-  const __timepunct<char>& time_fr = use_facet<__timepunct<char> >(loc_fr); 
+  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
+  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
+  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
+  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
 
-  const string empty;
+  const wstring empty;
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;
 
-  istringstream iss;
-  const time_get<char>& tim_get = use_facet<time_get<char> >(iss.getloc()); 
+  wistringstream iss;
+  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
   const tm time_bday = { 0, 0, 12, 4, 3, 71 };
-  const char* all = "%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
-                    "%w %W %x %X %y %Y %Z %%";
-  const char* date = "%A, the second of %B";
-  const char* date_ex = "%Ex";
+  const wchar_t* all = L"%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
+                    L"%w %W %x %X %y %Y %Z %%";
+  const wchar_t* date = L"%A, the second of %B";
+  const wchar_t* date_ex = L"%Ex";
 
   // iter_type 
   // get_date(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
-  iss.str("04/04/71");
+  iss.str(L"04/04/71");
   iterator_type is_it01(iss);
   tm time01;
   errorstate = good;
@@ -537,7 +537,7 @@ void test05()
   VERIFY( time01.tm_mday == time_bday.tm_mday );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str("04/04/71 ");
+  iss.str(L"04/04/71 ");
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
@@ -548,7 +548,7 @@ void test05()
   VERIFY( errorstate == good );
   VERIFY( *is_it02 == ' ');
 
-  iss.str("04/04d/71 ");
+  iss.str(L"04/04d/71 ");
   iterator_type is_it03(iss);
   tm time03;
   time03.tm_year = 3;
@@ -562,7 +562,7 @@ void test05()
 
   // inspection of named locales, de_DE
   iss.imbue(loc_de);
-  iss.str("04.04.1971");
+  iss.str(L"04.04.1971");
   iterator_type is_it10(iss);
   tm time10;
   errorstate = good;
@@ -574,7 +574,7 @@ void test05()
 
   // inspection of named locales, en_HK
   iss.imbue(loc_hk);
-  iss.str("Sunday, April 04, 1971"); 
+  iss.str(L"Sunday, April 04, 1971"); 
   iterator_type is_it20(iss);
   tm time20;
   errorstate = good;
@@ -584,13 +584,16 @@ void test05()
   VERIFY( time20.tm_year == time_bday.tm_year );
   VERIFY( errorstate == ios_base::eofbit );
 }
+#endif
 
 int main()
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
   test03();
   test04();
   test05();
+#endif
   return 0;
 }

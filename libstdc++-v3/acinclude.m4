@@ -1063,7 +1063,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CMESSAGES_CC=config/locale/messages_members_generic.cc
       CMONEY_CC=config/locale/moneypunct_members_generic.cc
       CNUMERIC_CC=config/locale/numpunct_members_generic.cc
-      CTIME_H=config/locale/time_members_generic.h
       CTIME_CC=config/locale/time_members_generic.cc
       ;;
     xgnu)
@@ -1093,7 +1092,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CMESSAGES_CC=config/locale/messages_members_gnu.cc
       CMONEY_CC=config/locale/moneypunct_members_gnu.cc
       CNUMERIC_CC=config/locale/numpunct_members_gnu.cc
-      CTIME_H=config/locale/time_members_gnu.h
       CTIME_CC=config/locale/time_members_gnu.cc
       ;;
     xieee_1003.1)
@@ -1110,7 +1108,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
       CMONEY_CC=config/locale/moneypunct_members_generic.cc
       CNUMERIC_CC=config/locale/numpunct_members_generic.cc
-      CTIME_H=config/locale/time_members_generic.h
       CTIME_CC=config/locale/time_members_generic.cc
       ;;
     *)
@@ -1128,7 +1125,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_SUBST(CLOCALE_H)
   AC_SUBST(CCODECVT_H)
   AC_SUBST(CMESSAGES_H)
-  AC_SUBST(CTIME_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
   AC_LINK_FILES($CCOLLATE_CC, src/collate.cc)
   AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
