@@ -1,3 +1,8 @@
+Mon Jul  5 12:01:35 1999  Anthony Green  <green@cygnus.com>
+
+	* java/net/URL.java (equals): Compare strings using String.equals.
+	* java/net/URL.java (sameFile): Ditto.
+
 1999-07-02  Warren Levy  <warrenl@cygnus.com>
 
 	* configure: Rebuilt.
