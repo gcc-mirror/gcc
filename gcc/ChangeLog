@@ -1,3 +1,26 @@
+2001-01-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/d30v/d30v.c (d30v_eh_epilogue_sp_ofs): Delete.
+	(d30v_return_addr_rtx): Delete.
+	(d30v_expand_epilogue): Use eh_epilogue_sp_ofs field in the
+	cfun->machine structure.
+	(struct machine_function): Move to d30v.h
+	(d30v_save_machine_status): Delete.
+	(d30v_restore_machine_status): Delete.
+	(d30v_init_machine_status): New Function.
+	(d30v_mark_machine_status): New Function.
+	(d30v_free_machine_status): New Function.
+	(d30v_init_expanders): Use new functions.
+	(d30v_return_addr): Use ra_rtx field in cfun->machine.
+	(d30v_add_gc_roots): Remove d30v_eh_epilogue_sp_ofs and
+	d30v_return_addr_rtx.
+
+	* config/d30v/d30v.h (struct_machine): Move here.
+	Add eh_epilogue_sp_ofs field.
+
+	*config/d30v/d30v.md (epilogue): Initialise eh_epilogue_sp_ofs
+	field in cfun->machine structure.
+
 Tue Jan  9 21:34:57 2001  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa32-regs.h (CONDITIONAL_REGISTER_USAGE): When generating pic code,
