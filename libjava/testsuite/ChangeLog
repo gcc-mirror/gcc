@@ -1,3 +1,9 @@
+2000-04-20  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.jni/throwit.out: Fixed output to be correct.
+
+	* libjava.jni/noclass.java (main): `find_it' throws an exception.
+
 2000-04-16  Anthony Green  <green@redhat.com>
 
 	* libjava.compile/PR209.java: New file.

@@ -11,8 +11,15 @@ public class noclass
 
   public static void main (String[] args)
   {
-    find_it ();
-    // If find_it() causes a crash, we won't be running this next line.
-    System.out.println ("Ok");
+    try
+      {
+	find_it ();
+      }
+    catch (Throwable _)
+      {
+	// If find_it() causes a crash, or doesn't throw an exception,
+	// we won't be running this next line.
+	System.out.println ("Ok");
+      }
   }
 }
