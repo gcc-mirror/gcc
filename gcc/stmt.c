@@ -1183,6 +1183,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* Vector of RTX's of evaluated output operands.  */
   rtx *output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
   int *inout_opnum = (int *) alloca (noutputs * sizeof (int));
+  rtx *real_output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
   enum machine_mode *inout_mode
     = (enum machine_mode *) alloca (noutputs * sizeof (enum machine_mode));
   /* The insn we have emitted.  */
@@ -1360,6 +1361,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 Make the asm insn write into that, then our caller will copy it to
 	 the real output operand.  Likewise for promoted variables.  */
 
+      real_output_rtx[i] = NULL_RTX;
       if ((TREE_CODE (val) == INDIRECT_REF
 	   && allows_mem)
 	  || (TREE_CODE_CLASS (TREE_CODE (val)) == 'd'
@@ -1379,7 +1381,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
 	    error ("output number %d not directly addressable", i);
 	  if (! allows_mem && GET_CODE (output_rtx[i]) == MEM)
-	    error ("output number %d not restored to memory", i);
+	    {
+    	      real_output_rtx[i] = protect_from_queue (output_rtx[i], 1);
+	      output_rtx[i] = gen_reg_rtx (GET_MODE (output_rtx[i]));
+	      if (is_inout)
+		emit_move_insn (output_rtx[i], real_output_rtx[i]);
+	    }
 	}
       else
 	{
@@ -1661,6 +1668,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       insn = emit_insn (body);
     }
+
+  /* For any outputs that needed reloading into registers, spill them
+     back to where they belong.  */
+  for (i = 0; i < noutputs; ++i)
+    if (real_output_rtx[i])
+      emit_move_insn (real_output_rtx[i], output_rtx[i]);
 
   free_temp_slots ();
 }
