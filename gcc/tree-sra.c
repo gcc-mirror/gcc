@@ -828,19 +828,22 @@ static void
 sra_walk_function (const struct sra_walk_fns *fns)
 {
   basic_block bb;
-  block_stmt_iterator si;
+  block_stmt_iterator si, ni;
 
   /* ??? Phase 4 could derive some benefit to walking the function in
      dominator tree order.  */
 
   FOR_EACH_BB (bb)
-    for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+    for (si = bsi_start (bb); !bsi_end_p (si); si = ni)
       {
 	tree stmt, t;
 	stmt_ann_t ann;
 
 	stmt = bsi_stmt (si);
 	ann = stmt_ann (stmt);
+
+	ni = si;
+	bsi_next (&ni);
 
 	/* If the statement has no virtual operands, then it doesn't
 	   make any structure references that we care about.  */
@@ -1616,7 +1619,7 @@ sra_insert_after (block_stmt_iterator *bsi, tree list)
   if (stmt_ends_bb_p (stmt))
     insert_edge_copies (list, bsi->bb);
   else
-    bsi_insert_after (bsi, list, BSI_CONTINUE_LINKING);
+    bsi_insert_after (bsi, list, BSI_SAME_STMT);
 }
 
 /* Similarly, but replace the statement at BSI.  */
