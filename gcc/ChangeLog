@@ -1,3 +1,17 @@
+Tue Jan  4 15:34:34 MET 2000  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.c (ix86_expand_move): Allow pushes of memory, offload to memory
+	all FP constants for constant->reg moves.
+	(ix86_split_to_parts): Try to convert memory address into immediate
+	when available in the constant pool.
+	* i386.h (PREFERRED_RELOAD_CLASS): Allow CONST_DOUBLE->integer reg
+	moves.
+	(LEGITIMATE_CONSTANT_P): Return 1.
+	* i386.md (pushsf): New splitter to convert constant pool memory
+	reference to immediate.
+	(mov?f): Likewise; do not allow CONST_DOUBLE for reg moves before
+	reload.
+
 2000-01-04  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* i386.md (ashlsi3_cmpno): Don't accept variables shifts.

@@ -3690,21 +3690,22 @@ ix86_expand_move (mode, operands)
     }
   else
     {
-      if (GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) == MEM)
+      if (GET_CODE (operands[0]) == MEM
+	  && (GET_MODE (operands[0]) == QImode
+	      || !push_operand (operands[0], mode))
+	  && GET_CODE (operands[1]) == MEM)
 	operands[1] = force_reg (mode, operands[1]);
 
       if (FLOAT_MODE_P (mode))
 	{
-	  /* If we are loading a floating point constant that isn't 0 or 1
-	     into a register, force the value to memory now, since we'll 
-	     get better code out the back end.  */
+	  /* If we are loading a floating point constant to a register,
+	     force the value to memory now, since we'll get better code
+	     out the back end.  */
 
 	  if (strict)
 	    ;
-	  else if (GET_CODE (operands[0]) == MEM)
-	    operands[1] = force_reg (mode, operands[1]);
 	  else if (GET_CODE (operands[1]) == CONST_DOUBLE
-		   && ! standard_80387_constant_p (operands[1]))
+		   && register_operand (operands[0], mode))
 	    operands[1] = validize_mem (force_const_mem (mode, operands[1]));
 	}
     }
@@ -4758,6 +4759,14 @@ ix86_split_to_parts (operand, parts, mode)
 
   if (size < 2 || size > 3)
     abort ();
+
+  /* Optimize constant pool reference to immediates.  This is used by fp moves,
+     that force all constants to memory to allow combining.  */
+
+  if (GET_CODE (operand) == MEM
+      && GET_CODE (XEXP (operand, 0)) == SYMBOL_REF
+      && CONSTANT_POOL_ADDRESS_P (XEXP (operand, 0)))
+    operand = get_pool_constant (XEXP (operand, 0));
 
   if (GET_CODE (operand) == MEM && !offsettable_memref_p (operand))
     {
