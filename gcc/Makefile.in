@@ -753,8 +753,9 @@ stamp-objlist: $(OBJS) $(BC_OBJS)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc: gcc.o version.o choose-temp.o pexecute.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o version.o \
+xgcc: gcc.o version.o choose-temp.o pexecute.o prefix.o version.o \
+   $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o prefix.o version.o \
 	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
@@ -1243,6 +1244,10 @@ version.o: version.c
 obstack.o: obstack.c
 choose-temp.o: choose-temp.c
 pexecute.o: pexecute.c
+prefix.o: prefix.c $(CONFIG_H) Makefile
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	-DPREFIX=\"$(PREFIX)\" \
+	  -c `echo $(srcdir)/prefix.c | sed 's,^\./,,'`
 
 convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h
 
@@ -1715,8 +1720,8 @@ cpp: $(CCCP)
 	-rm -f cpp$(exeext)
 	ln $(CCCP)$(exeext) cpp$(exeext) > /dev/null 2>&1 \
 	 || cp $(CCCP)$(exeext) cpp$(exeext)
-cccp: cccp.o cexp.o version.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o \
+cccp: cccp.o cexp.o version.o prefix.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o prefix.o \
 	  version.o $(LIBS)
 cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
@@ -1736,9 +1741,9 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 cppmain: cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
-  version.o $(LIBDEPS)
+  prefix.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
-	  cppalloc.o cpperror.o cppexp.o version.o $(LIBS)
+	  cppalloc.o cpperror.o cppexp.o prefix.o version.o $(LIBS)
 
 cppmain.o: cppmain.c $(CONFIG_H) cpplib.h
 
@@ -1932,10 +1937,10 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 	rm -rf fixtmp.c
 
 fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
-   cpplib.o cpphash.o cppalloc.o cppexp.o cpperror.o version.o
+   cpplib.o cpphash.o cppalloc.o cppexp.o cpperror.o prefix.o version.o
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
-	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o version.o \
-	   cppexp.o $(HOST_LIBS)
+	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o prefix.o \
+	   version.o cppexp.o $(HOST_LIBS)
 
 fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
