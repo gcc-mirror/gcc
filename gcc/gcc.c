@@ -4516,7 +4516,15 @@ main (argc, argv)
 	 as a unit.  If GCC_EXEC_PREFIX is defined, base
 	 standard_startfile_prefix on that as well.  */
       if (*standard_startfile_prefix == '/'
-	  || *standard_startfile_prefix == DIR_SEPARATOR)
+	  || *standard_startfile_prefix == DIR_SEPARATOR
+	  || *standard_startfile_prefix == '$'
+#ifdef __MSDOS__
+	  /* Check for disk name on MS-DOS-based systems.  */
+          || (standard_startfile_prefix[1] == ':'
+	      && (standard_startfile_prefix[2] == DIR_SEPARATOR
+		  || standard_startfile_prefix[2] == '/'))
+#endif
+	  )
 	add_prefix (&startfile_prefixes, standard_startfile_prefix, "BINUTILS",
 		    0, 0, NULL_PTR);
       else
