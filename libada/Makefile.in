@@ -121,55 +121,80 @@ ADA_TOOLS_FLAGS_TO_PASS=\
 .PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared
 gnatlib: @default_gnatlib_target@
 
-gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared:
+gnatlib-plain:
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
 	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" $@
+	  TRACE="$(TRACE)" \
+	  gnatlib
+
+gnatlib-sjlj:
+	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
+	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
+	  THREAD_KIND="$(THREAD_KIND)" \
+	  TRACE="$(TRACE)" \
+	  gnatlib-sjlj
+
+gnatlib-zcx:
+	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
+	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
+	  THREAD_KIND="$(THREAD_KIND)" \
+	  TRACE="$(TRACE)" \
+	  gnatlib-zcx
+
+gnatlib-shared:
+	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
+	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	  GNATLIBLDFLAGS="$(GNATLIBLDFLAGS)" \
+	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
+	  THREAD_KIND="$(THREAD_KIND)" \
+	  TRACE="$(TRACE)" \
+	  gnatlib-shared
 
 .PHONY: rts-zfp rts-ravenscar
-rts-zfp rts-ravenscar:
+rts-zfp:
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATMAKE=../gnatmake-cross $@
+	  GNATMAKE=../gnatmake-cross \
+	  rts-zfp
+
+rts-ravenscar:
+	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
+	  GNATMAKE=../gnatmake-cross \
+	  rts-ravenscar
 
 # Rules to build gnattools.
-# For cross builds of gnattools,
-# put the host RTS dir first in the PATH to hide the default runtime
-# files that are among the sources
-RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
-
-ifeq ($(build),$(target))
-  GNATTOOLS = gnattools-native
-else
-  GNATTOOLS = gnattools-cross
-endif
-
-.PHONY: gnattools regnattools
-gnattools: $(GNATTOOLS)
+.PHONY: gnattools gnattools-native gnattools-cross regnattools
+gnattools: @default_gnattools_target@
 
 gnattools-native: gnatlib
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 	  ADA_INCLUDES="-I- -I../rts" \
-	  CC="../../xgcc -B../../" STAGE_PREFIX=../../ gnattools1
+	  CC="../../xgcc -B../../" STAGE_PREFIX=../../  gnattools1
 	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
 
-regnattools:
-	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
-	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
-	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
-
+# For cross builds of gnattools,
+# put the host RTS dir first in the PATH to hide the default runtime
+# files that are among the sources
+# FIXME: This should be done in configure.
+RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
 gnattools-cross: gnatlib
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+	$(MAKE)  -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 	  ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
 	  GNATMAKE="gnatmake" \
 	  GNATBIND="gnatbind" \
 	  GNATLINK="gnatlink" \
 	  LIBGNAT="" \
 	  gnattools1-re gnattools2 gnattools4
-	# rename cross tools, as expected by the GCC makefile when installing
+	# Rename cross tools to where the GCC makefile wants them when
+	# installing.  FIXME: installation should be done elsewhere.
 	if [ -f $(GCC_DIR)/gnatbind$(exeext) ] ; then \
 	  mv $(GCC_DIR)/gnatbind$(exeext) $(GCC_DIR)/gnatbind-cross$(exeext); \
 	fi
@@ -222,6 +247,11 @@ gnattools-cross: gnatlib
 	  mv $(GCC_DIR)/gprcmd$(exeext) $(GCC_DIR)/gprcmd-cross$(exeext); \
 	fi
 
+regnattools:
+	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
+	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
+
 # Check uninstalled version.
 check:
 
@@ -261,5 +291,5 @@ Makefile: $(srcdir)/Makefile.in config.status
 config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
-$(srcdir)/configure: @MAINT@ $(srcdir)/configure.in
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
 	cd $(srcdir) && autoconf
