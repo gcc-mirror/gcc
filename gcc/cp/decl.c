@@ -5142,7 +5142,7 @@ define_label (filename, line, name)
   if (DECL_INITIAL (decl) != NULL_TREE)
     {
       error ("duplicate label `%D'", decl);
-      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, 0);
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL);
     }
   else
     {
