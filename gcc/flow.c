@@ -2019,9 +2019,6 @@ mark_set_1 (needed, dead, x, insn, significant)
 	  register rtx y = reg_next_use[regno];
 	  register int blocknum = BLOCK_NUM (insn);
 
-	  /* The next use is no longer "next", since a store intervenes.  */
-	  reg_next_use[regno] = 0;
-
 	  /* If this is a hard reg, record this function uses the reg.  */
 
 	  if (regno < FIRST_PSEUDO_REGISTER)
@@ -2031,12 +2028,20 @@ mark_set_1 (needed, dead, x, insn, significant)
 
 	      for (i = regno; i < endregno; i++)
 		{
+		  /* The next use is no longer "next", since a store
+		     intervenes.  */
+		  reg_next_use[i] = 0;
+
 		  regs_ever_live[i] = 1;
 		  reg_n_sets[i]++;
 		}
 	    }
 	  else
 	    {
+	      /* The next use is no longer "next", since a store
+		 intervenes.  */
+	      reg_next_use[regno] = 0;
+
 	      /* Keep track of which basic blocks each reg appears in.  */
 
 	      if (reg_basic_block[regno] == REG_BLOCK_UNKNOWN)
