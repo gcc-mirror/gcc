@@ -1,3 +1,10 @@
+2004-07-31  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (diagnose_mismatched_decls): Give error for external
+	redeclaration of identifier declared with no linkage, not just
+	warning with -Wtraditional.  Do not check DECL_CONTEXT to give
+	error for redeclaration with no linkage.
+
 2004-07-30  Geoffrey Keating  <geoffk@apple.com>
 	    Fariborz Jahanian <fjahanian@apple.com>
 
