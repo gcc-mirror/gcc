@@ -1,5 +1,9 @@
 2004-10-20  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/rmi/rmic/RMIC.java: Reformatted.
+
+2004-10-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/sql/Timestamp.java,
 	java/text/AttributedCharacterIterator.java,
 	java/text/AttributedString.java,
