@@ -1010,6 +1010,24 @@ default_conversion (exp)
       return convert (type, exp);
     }
 
+  if (TREE_CODE (exp) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
+    {
+    tree width = DECL_SIZE (TREE_OPERAND (exp, 1));
+    HOST_WIDE_INT low = TREE_INT_CST_LOW (width);
+
+    /* If it's thinner than an int, promote it like a
+       C_PROMOTING_INTEGER_TYPE_P, otherwise leave it alone.  */
+
+    if (low < TYPE_PRECISION (integer_type_node))
+      {
+	if ( flag_traditional && TREE_UNSIGNED (type))
+	  return convert (unsigned_type_node, exp);
+	else
+	  return convert (integer_type_node, exp);
+      }
+    }
+
   if (C_PROMOTING_INTEGER_TYPE_P (type))
     {
       /* Traditionally, unsignedness is preserved in default promotions.
