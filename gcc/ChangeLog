@@ -1,3 +1,13 @@
+Mon Jun 14 15:38:43 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/mips/mips.c (mips_secondary_reload_class): Check for
+	(PLUS (SP) (REG)) and return appropriate register class.
+	* config/mips/mips.md (reload_insi): Delete predicate for operand 1.
+	Handle (PLUS (SP) (REG)).
+	(tablejump): In mips16 code, use emit_insn instead of emit_jump_insn.
+	(tablejump_mips161, tablejump_mips162): Use emit_jump_insn instead
+	of emit_insn for tablejump.
+	
 Mon Jun 14 17:26:40 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (output_prolog): RS6000_CALL_GLUE must be
