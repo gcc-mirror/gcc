@@ -1177,12 +1177,12 @@ readonly_data ()							\
   if (TREE_CODE (DECL) == FUNCTION_DECL			\
       && h8300_funcvec_function_p (DECL))		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
-  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
-	   && TREE_CODE (DECL) == VAR_DECL		\
+  else if (TREE_CODE (DECL) == VAR_DECL			\
+	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
 	   && h8300_eightbit_data_p (DECL))		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
-  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
-	   && TREE_CODE (DECL) == VAR_DECL		\
+  else if (TREE_CODE (DECL) == VAR_DECL			\
+	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
 	   && h8300_tiny_data_p (DECL))			\
     h8300_encode_label (DECL);
 
