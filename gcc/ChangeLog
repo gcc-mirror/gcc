@@ -1,3 +1,8 @@
+2003-06-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* vmsdbgout.c (vmsdbgout_finish): Rename parameter to
+	main_input_filename to avoid conflict with input_filename macro.
+
 2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/mips/mips.h (asm_file_name, g_switch_set,
