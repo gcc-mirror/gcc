@@ -173,6 +173,9 @@ case $basic_machine in
 	m88110 | m680[01234]0 | m683?2 | m68360 | z8k | v70 | h8500 | w65) # CYGNUS LOCAL
 		basic_machine=$basic_machine-unknown
 		;;
+	thumb)
+		basic_machine=$basic_machine-unknown
+		;;
 	mips64vr4300 | mips64vr4300el) # CYGNUS LOCAL jsmith/vr4300
 		basic_machine=$basic_machine-unknown
 		;;
@@ -215,6 +218,8 @@ case $basic_machine in
 	      | f301-*)
 		;;
 	m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | h8500-* | d10v-*) # CYGNUS LOCAL
+		;;
+	thumb-*)
 		;;
 	mips64vr4300-* | mips64vr4300el-*) # CYGNUS LOCAL jsmith/vr4300
 		;;

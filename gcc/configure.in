@@ -2485,6 +2485,13 @@ for machine in $build $host $target; do
 #		;;
 #	tahoe-*-bsd*)			# tahoe running BSD
 #		;;
+	thumb-*-coff* | thumbel-*-coff*)
+		tm_file=arm/tcoff.h
+		out_file=arm/thumb.c
+		xm_file=arm/xm-thumb.h
+		md_file=arm/thumb.md
+		tmake_file=arm/t-thumb
+		;;
 # This hasn't been upgraded to GCC 2.
 #	tron-*-*)
 #		cpu_type=gmicro
@@ -2762,7 +2769,8 @@ then extra_headers=; fi
 if [[ x"$xm_file" = x ]]
 then xm_file=$cpu_type/xm-$cpu_type.h; fi
 
-md_file=$cpu_type/$cpu_type.md
+if [[ x$md_file = x ]]
+then md_file=$cpu_type/$cpu_type.md; fi
 
 if [[ x$out_file = x ]]
 then out_file=$cpu_type/$cpu_type.c; fi
