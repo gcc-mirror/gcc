@@ -820,10 +820,13 @@ without royalty; alteration is not permitted.
 @cindex funding improvements
 @cindex improvements, funding
 
-Work on GNU Fortran is still being done mostly by its author,
-James Craig Burley (@email{@value{email-burley}}), who is a volunteer
-for, not an employee of, the Free Software Foundation (FSF).
+James Craig Burley (@email{@value{email-burley}}), the original author
+of g77, stopped working on it in September 1999
 (He has a web page at @uref{@value{www-burley}}.)
+
+GNU Fortran is currently maintained by Toon Moene
+(@email{toon@@moene.indiv.nluug.nl}), with the help of countless other
+volunteers.
 
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
@@ -834,36 +837,6 @@ The FSF provides information on the best way to fund ongoing
 development of GNU software (such as GNU Fortran) in documents
 such as the ``GNUS Bulletin''.
 Email @email{gnu@@gnu.org} for information on funding the FSF.
-
-To fund specific GNU Fortran work in particular, the FSF might
-provide a means for that, but the FSF does not provide direct funding
-to the author of GNU Fortran to continue his work.  The FSF has
-employee salary restrictions that can be incompatible with the
-financial needs of some volunteers, who therefore choose to
-remain volunteers and thus be able to be free to do contract work
-and otherwise make their own schedules for doing GNU work.
-
-Still, funding the FSF at least indirectly benefits work
-on specific projects like GNU Fortran because it ensures the
-continuing operation of the FSF offices, their workstations, their
-network connections, and so on, which are invaluable to volunteers.
-(Similarly, hiring Cygnus Support can help a project like GNU
-Fortran---Cygnus has been a long-time donor of equipment usage to the author
-of GNU Fortran, and this too has been invaluable---see @ref{Contributors}.)
-
-Currently, the only way to directly fund the author of GNU Fortran
-in his work on that project is to hire him for the work you want
-him to do, or donate money to him.
-Several people have done this
-already, with the result that he has not needed to immediately find
-contract work on a few occasions.
-If more people did this, he
-would be able to plan on not doing contract work for many months and
-could thus devote that time to work on projects (such as the planned
-changes for 0.6) that require longer timeframes to complete.
-For the latest information on the status of the author, do
-@kbd{finger -l burley@@gnu.org} on a UNIX system
-(or any system with a command like UNIX @code{finger}).
 
 Another important way to support work on GNU Fortran is to volunteer
 to help out.
@@ -1462,7 +1435,7 @@ by type.  Explanations are in the following sections.
 -fpcc-struct-return  -freg-struct-return
 -fshort-double  -fno-common  -fpack-struct
 -fzeros  -fno-second-underscore
--fdebug-kludge  -femulate-complex
+-femulate-complex
 -falias-check  -fargument-alias
 -fargument-noalias  -fno-argument-noalias-global
 -fno-globals  -fflatten-arrays
@@ -2650,25 +2623,6 @@ either your program or @code{g77}.
 Produce debugging information in the operating system's native format
 (stabs, COFF, XCOFF, or DWARF).  GDB can work with this debugging
 information.
-
-@cindex common blocks
-@cindex equivalence areas
-@cindex missing debug features
-Support for this option in Fortran programs was incomplete up till
-version 0.5.26 of @code{g77}.
-In particular, names of variables and arrays in common blocks
-or that are storage-associated via @code{EQUIVALENCE} were
-unavailable to the debugger.
-
-However, version 0.5.19 of @code{g77} does provide this information
-in a rudimentary way, as controlled by the
-@samp{-fdebug-kludge} option.
-
-Because version 0.5.26 of @code{g77} enables full debug information
-of COMMON BLOCK and EQUIVALENCE items, this option has been disabled.
-
-@xref{Code Gen Options,,Options for Code Generation Conventions},
-for more information.
 @end table
 
 @xref{Debugging Options,,Options for Debugging Your Program or GNU CC,
@@ -3207,82 +3161,6 @@ all initializations, zero or otherwise.
 differently.
 The interpretation changes will affect only non-standard
 programs; standard-conforming programs should not be affected.
-
-@cindex -fdebug-kludge option
-@cindex options, -fdebug-kludge
-@item -fdebug-kludge
-Emit information on @code{COMMON} and @code{EQUIVALENCE} members
-that might help users of debuggers work around lack of proper debugging
-information on such members.
-
-As of version 0.5.19, @code{g77} offers this option to emit
-information on members of aggregate areas to help users while debugging.
-This information consists of establishing the type and contents of each
-such member so that, when a debugger is asked to print the contents,
-the printed information provides rudimentary debugging information.
-This information identifies the name of the aggregate area (either the
-@code{COMMON} block name, or the @code{g77}-assigned name for the
-@code{EQUIVALENCE} name) and the offset, in bytes, of the member from
-the beginning of the area.
-
-Using @code{gdb}, this information is not coherently displayed in the Fortran
-language mode, so temporarily switching to the C language mode to display the
-information is suggested.
-Use @samp{set language c} and @samp{set language fortran} to accomplish this.
-
-As of version 0.5.26 of @code{g77} this option has been disabled, as the
-compiler is now able to emit correct and complete debug information
-for COMMON BLOCK and EQUIVALENCE items.
-
-For example:
-
-@smallexample
-      COMMON /X/A,B
-      EQUIVALENCE (C,D)
-      CHARACTER XX*50
-      EQUIVALENCE (I,XX(20:20))
-      END
-
-GDB is free software and you are welcome to distribute copies of it
- under certain conditions; type "show copying" to see the conditions.
-There is absolutely no warranty for GDB; type "show warranty" for details.
-GDB 4.16 (lm-gnits-dwim), Copyright 1996 Free Software Foundation, Inc...
-(gdb) b MAIN__
-Breakpoint 1 at 0t1200000201120112: file cd.f, line 5.
-(gdb) r
-Starting program: /home/user/a.out
-
-Breakpoint 1, MAIN__ () at cd.f:5
-Current language:  auto; currently fortran
-(gdb) set language c
-Warning: the current language does not match this frame.
-(gdb) p a
-$2 = "At (COMMON) `x_' plus 0 bytes"
-(gdb) p b
-$3 = "At (COMMON) `x_' plus 4 bytes"
-(gdb) p c
-$4 = "At (EQUIVALENCE) `__g77_equiv_c' plus 0 bytes"
-(gdb) p d
-$5 = "At (EQUIVALENCE) `__g77_equiv_c' plus 0 bytes"
-(gdb) p i
-$6 = "At (EQUIVALENCE) `__g77_equiv_xx' plus 20 bytes"
-(gdb) p xx
-$7 = "At (EQUIVALENCE) `__g77_equiv_xx' plus 1 bytes"
-(gdb) set language fortran
-(gdb)
-@end smallexample
-
-@noindent
-Use @samp{-fdebug-kludge} to generate this information,
-which might make some programs noticeably larger.
-
-@emph{Caution:} Future versions of @code{g77} might disregard this option
-(and its negative form).
-Current plans call for this to happen when published versions of @code{g77}
-and @code{gdb} exist that provide proper access to debugging information on
-@code{COMMON} and @code{EQUIVALENCE} members.  This is believed to have
-happened as of version 0.5.26 of @code{g77}, so that this option has been
-disabled starting with this release.
 
 @cindex -femulate-complex option
 @cindex options, -femulate-complex
@@ -8846,54 +8724,6 @@ could be used to inhibit the appending of the underscore to the name.
 the same way @code{f2c} does,
 for compatibility with @code{f2c}.
 
-Currently, @code{g77} does not emit ``true'' debugging information for
-members of a @code{COMMON} area, due to an apparent bug in the GBE.
-
-(As of Version 0.5.19, @code{g77} emits debugging information for such
-members in the form of a constant string specifying the base name of
-the aggregate area and the offset of the member in bytes from the start
-of the area.
-Use the @samp{-fdebug-kludge} option to enable this behavior.
-In @code{gdb}, use @samp{set language c} before printing the value
-of the member, then @samp{set language fortran} to restore the default
-language, since @code{gdb} doesn't provide a way to print a readable
-version of a character string in Fortran language mode.
-
-This kludge will be removed in a future version of @code{g77} that,
-in conjunction with a contemporary version of @code{gdb},
-properly supports Fortran-language debugging, including access
-to members of @code{COMMON} areas.)
-
-Version 0.5.26 of @code{g77} is believed to provide correct and
-complete debug information for COMMON BLOCK and EQUIVALENCE items -
-hence the @samp{-fdebug-kludge} option has been disabled.
-
-@xref{Code Gen Options,,Options for Code Generation Conventions},
-for information on the @samp{-fdebug-kludge} option.
-
-Moreover, @code{g77} currently implements a @code{COMMON} area such that its
-type is an array of the C @code{char} data type.
-
-So, when debugging, you must know the offset into a @code{COMMON} area
-for a particular item in that area, and you have to take into
-account the appropriate multiplier for the respective sizes
-of the types (as declared in your code) for the items preceding
-the item in question as compared to the size of the @code{char} type.
-
-For example, using default implicit typing, the statement
-
-@example
-COMMON I(15), R(20), T
-@end example
-
-@noindent
-results in a public 144-byte @code{char} array named @samp{_BLNK__}
-with @samp{I} placed at @samp{_BLNK__[0]}, @samp{R} at @samp{_BLNK__[60]},
-and @samp{T} at @samp{_BLNK__[140]}.
-(This is assuming that the target machine for
-the compilation has 4-byte @code{INTEGER(KIND=1)} and @code{REAL(KIND=1)}
-types.)
-
 @node Local Equivalence Areas
 @section Local Equivalence Areas (EQUIVALENCE)
 @cindex equivalence areas
@@ -8907,43 +8737,6 @@ block as explained in the section on common blocks.
 A local @code{EQUIVALENCE} area is a collection of variables and arrays
 connected to each other in any way via @code{EQUIVALENCE}, none of which are
 listed in a @code{COMMON} statement.
-
-Currently, @code{g77} does not emit ``true'' debugging information for
-members in a local @code{EQUIVALENCE} area, due to an apparent bug in the GBE.
-
-(As of Version 0.5.19, @code{g77} does emit debugging information for such
-members in the form of a constant string specifying the base name of
-the aggregate area and the offset of the member in bytes from the start
-of the area.
-Use the @samp{-fdebug-kludge} option to enable this behavior.
-In @code{gdb}, use @samp{set language c} before printing the value
-of the member, then @samp{set language fortran} to restore the default
-language, since @code{gdb} doesn't provide a way to print a readable
-version of a character string in Fortran language mode.
-
-This kludge will be removed in a future version of @code{g77} that,
-in conjunction with a contemporary version of @code{gdb},
-properly supports Fortran-language debugging, including access
-to members of @code{EQUIVALENCE} areas.)
-
-@xref{Code Gen Options,,Options for Code Generation Conventions},
-for information on the @samp{-fdebug-kludge} option.
-
-Moreover, @code{g77} implements a local @code{EQUIVALENCE} area such that its
-type is an array of the C @code{char} data type.
-
-The name @code{g77} gives this array of @code{char} type is @samp{__g77_equiv_@var{x}},
-where @var{x} is the name of the item that is placed at the beginning (offset 0)
-of this array.
-If more than one such item is placed at the beginning, @var{x} is
-the name that sorts to the top in an alphabetical sort of the list of
-such items.
-
-When debugging, you must therefore access members of @code{EQUIVALENCE}
-areas by specifying the appropriate @samp{__g77_equiv_@var{x}}
-array section with the appropriate offset.
-See the explanation of debugging @code{COMMON} blocks
-for info applicable to debugging local @code{EQUIVALENCE} areas.
 
 (@emph{Note:} @code{g77} version 0.5.18 and earlier chose the name
 for @var{x} using a different method when more than one name was
