@@ -1,3 +1,8 @@
+2005-02-09  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (vect_set_dump_settings): Check that dump_file 
+	exists.
+
 2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19854
