@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -140,7 +140,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   do { fputs (".globl ", FILE);			\
        assemble_name (FILE, NAME);		\
        fputs ("\n", FILE);			\
-       vms_check_external (NAME);		\
+       vms_check_external (NULL_TREE, NAME, 0); \
      } while (0)
 
 /* Under VMS we write the actual size of the storage to be allocated even
@@ -165,27 +165,38 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    but that causes linker errors sometimes when the variable was initialized
    since the size of its definition was not likewise rounded up.  */
 
+/* Note:  the original ASM_OUTPUT_EXTERNAL code has been moved into
+   vms_check_external and vms_flush_pending_externals.  */
+
 #define ASM_OUTPUT_EXTERNAL(FILE,DECL,NAME)				\
-{ if (DECL_INITIAL (DECL) == 0 && TREE_CODE (DECL) != FUNCTION_DECL	\
-      && ! vms_check_external (NAME))					\
-    {									\
-      if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl))		\
-	const_section ();						\
-      else								\
-	data_section ();						\
-      fputs (".comm ", (FILE));						\
-      assemble_name ((FILE), (NAME));					\
-      if (DECL_SIZE (DECL) == 0)					\
-        fprintf ((FILE), ",0\n");					\
-      else								\
-	{								\
-	  tree size_tree;						\
-	  size_tree = size_binop (CEIL_DIV_EXPR,			\
-	     DECL_SIZE (DECL), size_int (BITS_PER_UNIT));		\
-	  fprintf ((FILE), ",%d\n", TREE_INT_CST_LOW (size_tree));	\
-        }								\
-    }									\
+{ if (DECL_INITIAL (DECL) == 0 && TREE_CODE (DECL) != FUNCTION_DECL)	\
+    vms_check_external ((DECL), (NAME), 1);				\
 }
+
+/* ASM_OUTPUT_EXTERNAL will have wait until after an initializer is
+   completed in order to switch sections for an external object, so
+   use the DECLARE_OBJECT hooks to manage deferred declarations.  */
+
+/* This is the default action for ASM_DECLARE_OBJECT_NAME, but if it
+   is explicitly defined, then ASM_FINISH_DECLARE_OBJECT will be used.  */
+
+#define ASM_DECLARE_OBJECT_NAME(ASM_OUT_FILE,NAME,DECL)		\
+{ if (output_bytecode)						\
+    BC_OUTPUT_LABEL ((ASM_OUT_FILE), (NAME));				\
+  else								\
+    ASM_OUTPUT_LABEL ((ASM_OUT_FILE), (NAME));			\
+}
+
+/* We don't need to do anything special to finish the current object, but it
+   should now be safe to output any deferred external global declarations.  */
+
+#define ASM_FINISH_DECLARE_OBJECT(FILE,DECL,TOPLVL,ATEND)		\
+  vms_flush_pending_externals(FILE)
+
+/* Anything still pending must be flushed at the very end.  */
+
+#define ASM_FILE_END(STREAM)						\
+  vms_flush_pending_externals(STREAM)
 
 /* Here we redefine ASM_OUTPUT_COMMON to select the data_section or the
    const_section before writing the ".const" assembler directive.
