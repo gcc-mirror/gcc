@@ -1,3 +1,9 @@
+2003-02-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* collect2.c (pexecute_pid): Rename to pid.
+	(collect_wait, collect_execute, scan_prog_file, scan_libraries): Use
+	pid.
+
 2003-02-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/extend.texi (Function Attributes): Remove documentation
