@@ -1,3 +1,7 @@
+2005-03-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold_binary): Remove handling of RANGE_EXPR.
+
 2005-03-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (branch_comparison_operator): Remove
