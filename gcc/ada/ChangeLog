@@ -1,3 +1,8 @@
+2001-10-11  Ed Schonberg  <schonber@gnat.com>
+
+	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Bugfix in 
+	renaming of discriminant for mutable record type.
+
 2001-10-11  Robert Dewar  <dewar@gnat.com>
 
 	* validsw.adb: Properly save -gnatVn status.
