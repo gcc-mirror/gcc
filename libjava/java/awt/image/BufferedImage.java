@@ -267,9 +267,16 @@ public class BufferedImage extends Image
       raster.createWritableChild(x, y, w, h, x, y,
 				 null  // same bands
 				 );
-    
-    // Refer to ComponentDataBlitOp for optimized data blitting:
-    ComponentDataBlitOp.INSTANCE.filter(src, dest);
+    if (src.getSampleModel () instanceof ComponentSampleModel
+        && dest.getSampleModel () instanceof ComponentSampleModel)
+      // Refer to ComponentDataBlitOp for optimized data blitting:
+      ComponentDataBlitOp.INSTANCE.filter(src, dest);
+    else
+      {
+        // slower path
+        int samples[] = src.getPixels (x, y, w, h, (int [])null);
+        dest.setPixels (x, y, w, h, samples);
+      }
     return dest;
   }
 
@@ -540,9 +547,18 @@ public class BufferedImage extends Image
       raster.createWritableChild(x, y, w, h, x, y,
 				 null  // same bands
 				 );
-    
-    // Refer to ComponentDataBlitOp for optimized data blitting:
-    ComponentDataBlitOp.INSTANCE.filter(src, dest);
+
+    if (src.getSampleModel () instanceof ComponentSampleModel
+        && dest.getSampleModel () instanceof ComponentSampleModel)
+
+      // Refer to ComponentDataBlitOp for optimized data blitting:
+      ComponentDataBlitOp.INSTANCE.filter(src, dest);
+    else
+      {
+        // slower path
+        int samples[] = src.getPixels (x, y, w, h, (int [])null);
+        dest.setPixels (x, y, w, h, samples);
+      }
   }
 
   public void setRGB(int x, int y, int argb)

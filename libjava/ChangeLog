@@ -1,3 +1,14 @@
+2003-09-16  Graydon Hoare  <graydon@redhat.com>
+
+	* java/awt/BufferedImage.java (setData): Support non-component
+	sample models.
+	(getData): Same.
+
+2003-09-10  Graydon Hoare  <graydon@redhat.com>
+
+	* java/awt/geom/AffineTransform.java(transform): Fix airthmetic bugs.
+	* java/awt/geom/Arc2D.java: Approximate arc segments with cubics.
+
 2003-09-17  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* configure.in: Standardized help text case of

@@ -1089,7 +1089,7 @@ public class AffineTransform implements Cloneable, Serializable
         float x = srcPts[srcOff++];
         float y = srcPts[srcOff++];
         dstPts[dstOff++] = (float) (m00 * x + m01 * y + m02);
-        dstPts[dstOff++] = (float) (m10 * x + m10 * y + m12);
+        dstPts[dstOff++] = (float) (m10 * x + m11 * y + m12);
       }
   }
 
@@ -1123,7 +1123,7 @@ public class AffineTransform implements Cloneable, Serializable
         double x = srcPts[srcOff++];
         double y = srcPts[srcOff++];
         dstPts[dstOff++] = m00 * x + m01 * y + m02;
-        dstPts[dstOff++] = m10 * x + m10 * y + m12;
+        dstPts[dstOff++] = m10 * x + m11 * y + m12;
       }
   }
 
@@ -1148,7 +1148,7 @@ public class AffineTransform implements Cloneable, Serializable
         float x = srcPts[srcOff++];
         float y = srcPts[srcOff++];
         dstPts[dstOff++] = m00 * x + m01 * y + m02;
-        dstPts[dstOff++] = m10 * x + m10 * y + m12;
+        dstPts[dstOff++] = m10 * x + m11 * y + m12;
       }
   }
 
@@ -1173,7 +1173,7 @@ public class AffineTransform implements Cloneable, Serializable
         double x = srcPts[srcOff++];
         double y = srcPts[srcOff++];
         dstPts[dstOff++] = (float) (m00 * x + m01 * y + m02);
-        dstPts[dstOff++] = (float) (m10 * x + m10 * y + m12);
+        dstPts[dstOff++] = (float) (m10 * x + m11 * y + m12);
       }
   }
 
