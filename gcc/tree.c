@@ -3801,6 +3801,31 @@ build_function_type (value_type, arg_types)
   return t;
 }
 
+/* Like build_function_type, but take a vararg list of nodes.  The
+   list of nodes should end with a NULL_TREE.  This is typically used
+   for creating function types for builtins.  */
+
+tree
+build_function_type_list VPARAMS ((tree first, ...))
+{
+  tree t, args, last;
+
+  VA_OPEN (p, first);
+  VA_FIXEDARG (p, tree, first);
+
+  t = va_arg (p, tree);
+  for (args = NULL_TREE; t != NULL_TREE; t = va_arg (p, tree))
+    args = tree_cons (NULL_TREE, t, args);
+
+  last = args;
+  args = nreverse (args);
+  TREE_CHAIN (last) = void_list_node;
+  args = build_function_type (first, args);
+
+  VA_CLOSE (p);
+  return args;
+}
+
 /* Construct, lay out and return the type of methods belonging to class
    BASETYPE and whose arguments and values are described by TYPE.
    If that type exists already, reuse it.

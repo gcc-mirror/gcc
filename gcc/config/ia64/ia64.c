@@ -7506,52 +7506,40 @@ ia64_init_builtins ()
 {
   tree psi_type_node = build_pointer_type (integer_type_node);
   tree pdi_type_node = build_pointer_type (long_integer_type_node);
-  tree endlink = void_list_node;
 
   /* __sync_val_compare_and_swap_si, __sync_bool_compare_and_swap_si */
   tree si_ftype_psi_si_si
-    = build_function_type (integer_type_node,
-                           tree_cons (NULL_TREE, psi_type_node,
-                                      tree_cons (NULL_TREE, integer_type_node,
-                                                 tree_cons (NULL_TREE,
-							    integer_type_node,
-                                                            endlink))));
+    = build_function_type_list (integer_type_node,
+				psi_type_node, integer_type_node,
+				integer_type_node, NULL_TREE);
 
   /* __sync_val_compare_and_swap_di, __sync_bool_compare_and_swap_di */
   tree di_ftype_pdi_di_di
-    = build_function_type (long_integer_type_node,
-                           tree_cons (NULL_TREE, pdi_type_node,
-                                      tree_cons (NULL_TREE,
-						 long_integer_type_node,
-                                                 tree_cons (NULL_TREE,
-							long_integer_type_node,
-							endlink))));
+    = build_function_type_list (long_integer_type_node,
+				pdi_type_node, long_integer_type_node,
+				long_integer_type_node, NULL_TREE);
   /* __sync_synchronize */
   tree void_ftype_void
-    = build_function_type (void_type_node, endlink);
+    = build_function_type (void_type_node, void_list_node);
 
   /* __sync_lock_test_and_set_si */
   tree si_ftype_psi_si
-    = build_function_type (integer_type_node,
-                           tree_cons (NULL_TREE, psi_type_node,
-                           tree_cons (NULL_TREE, integer_type_node, endlink)));
+    = build_function_type_list (integer_type_node,
+				psi_type_node, integer_type_node, NULL_TREE);
 
   /* __sync_lock_test_and_set_di */
   tree di_ftype_pdi_di
-    = build_function_type (long_integer_type_node,
-                           tree_cons (NULL_TREE, pdi_type_node,
-                           tree_cons (NULL_TREE, long_integer_type_node,
-				      endlink)));
+    = build_function_type_list (long_integer_type_node,
+				pdi_type_node, long_integer_type_node,
+				NULL_TREE);
 
   /* __sync_lock_release_si */
   tree void_ftype_psi
-    = build_function_type (void_type_node, tree_cons (NULL_TREE, psi_type_node,
-						      endlink));
+    = build_function_type_list (void_type_node, psi_type_node, NULL_TREE);
 
   /* __sync_lock_release_di */
   tree void_ftype_pdi
-    = build_function_type (void_type_node, tree_cons (NULL_TREE, pdi_type_node,
-						      endlink));
+    = build_function_type_list (void_type_node, pdi_type_node, NULL_TREE);
 
 #define def_builtin(name, type, code) \
   builtin_function ((name), (type), (code), BUILT_IN_MD, NULL)
@@ -7578,11 +7566,11 @@ ia64_init_builtins ()
 	       IA64_BUILTIN_LOCK_RELEASE_DI);
 
   def_builtin ("__builtin_ia64_bsp",
-	       build_function_type (ptr_type_node, endlink),
+	       build_function_type (ptr_type_node, void_list_node),
 	       IA64_BUILTIN_BSP);
 
   def_builtin ("__builtin_ia64_flushrs", 
-	       build_function_type (void_type_node, endlink), 
+	       build_function_type (void_type_node, void_list_node), 
 	       IA64_BUILTIN_FLUSHRS);
 
   def_builtin ("__sync_fetch_and_add_si", si_ftype_psi_si,

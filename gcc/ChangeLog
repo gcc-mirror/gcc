@@ -1,3 +1,20 @@
+2002-06-29  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/i386/i386.c (ix86_init_mmx_sse_builtins): Use
+        build_function_type_list instead of build_function_type.
+
+        * config/ia64/ia64.c (ia64_init_builtins): Same.
+
+        * config/alpha/alpha.c (alpha_init_builtins): Same.
+
+        * config/rs6000/rs6000.c (altivec_init_builtins): Same.
+
+        * config/arm/arm.c (arm_init_builtins): Same.
+
+        * tree.h: Add build_function_type_list prototype.
+
+        * tree.c (build_function_type_list): New.
+
 2002-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (scan_prog_file): Fix typo in message.

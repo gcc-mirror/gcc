@@ -6498,22 +6498,17 @@ alpha_init_builtins ()
     if ((target_flags & p->target_mask) == p->target_mask)
       builtin_function (p->name, ftype, p->code, BUILT_IN_MD, NULL);
 
-  ftype = build_function_type (long_integer_type_node,
-			       tree_cons (NULL_TREE,
-					  long_integer_type_node,
-					  void_list_node));
+  ftype = build_function_type_list (long_integer_type_node,
+				    long_integer_type_node, NULL_TREE);
 
   p = one_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (one_arg_builtins); ++i, ++p)
     if ((target_flags & p->target_mask) == p->target_mask)
       builtin_function (p->name, ftype, p->code, BUILT_IN_MD, NULL);
 
-  ftype = build_function_type (long_integer_type_node,
-			       tree_cons (NULL_TREE,
-					  long_integer_type_node,
-					  tree_cons (NULL_TREE,
-						     long_integer_type_node,
-						     void_list_node)));
+  ftype = build_function_type_list (long_integer_type_node,
+				    long_integer_type_node,
+				    long_integer_type_node, NULL_TREE);
 
   p = two_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (two_arg_builtins); ++i, ++p)
@@ -6524,9 +6519,7 @@ alpha_init_builtins ()
   builtin_function ("__builtin_thread_pointer", ftype,
 		    ALPHA_BUILTIN_THREAD_POINTER, BUILT_IN_MD, NULL);
 
-  ftype = build_function_type (void_type_node, tree_cons (NULL_TREE,
-							  ptr_type_node,
-							  void_list_node));
+  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   builtin_function ("__builtin_set_thread_pointer", ftype,
 		    ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD, NULL);
 }
