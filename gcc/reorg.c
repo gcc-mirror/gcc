@@ -3386,6 +3386,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	      trial = try_split (pat, trial, 0);
 	      if (new_thread == old_trial)
 		new_thread = trial;
+	      if (thread == old_trial)
+		thread = trial;
 	      pat = PATTERN (trial);
 	      if ((thread_if_true
 		   ? eligible_for_annul_false (insn, *pslots_filled, trial, flags)
