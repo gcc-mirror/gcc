@@ -3856,3 +3856,56 @@ h8300_asm_named_section (name, flags)
   fprintf (asm_out_file, "\t.section %s\n", name);
 }
 #endif /* ! OBJECT_FORMAT_ELF */
+
+int
+h8300_eightbit_constant_address_p (x)
+     rtx x;
+{
+  /* The ranges the 8-bit area. */
+  const unsigned HOST_WIDE_INT n1 = trunc_int_for_mode (0x0000ff00, SImode);
+  const unsigned HOST_WIDE_INT n2 = trunc_int_for_mode (0x0000ffff, SImode);
+  const unsigned HOST_WIDE_INT h1 = trunc_int_for_mode (0x00ffff00, SImode);
+  const unsigned HOST_WIDE_INT h2 = trunc_int_for_mode (0x00ffffff, SImode);
+  const unsigned HOST_WIDE_INT s1 = trunc_int_for_mode (0xffffff00, SImode);
+  const unsigned HOST_WIDE_INT s2 = trunc_int_for_mode (0xffffffff, SImode);
+
+  unsigned HOST_WIDE_INT addr;
+
+  if (GET_CODE (x) != CONST_INT)
+    return 0;
+
+  addr = INTVAL (x);
+
+  return (0
+	  || (TARGET_H8300  && IN_RANGE (addr, n1, n2))
+	  || (TARGET_H8300H && IN_RANGE (addr, h1, h2))
+	  || (TARGET_H8300S && IN_RANGE (addr, s1, s2)));
+}
+
+int
+h8300_tiny_constant_address_p (x)
+     rtx x;
+{
+  /* The ranges for the 16-bit area.  */
+  const unsigned HOST_WIDE_INT h1 = trunc_int_for_mode (0x00000000, SImode);
+  const unsigned HOST_WIDE_INT h2 = trunc_int_for_mode (0x00007fff, SImode);
+  const unsigned HOST_WIDE_INT h3 = trunc_int_for_mode (0x00ff8000, SImode);
+  const unsigned HOST_WIDE_INT h4 = trunc_int_for_mode (0x00ffffff, SImode);
+  const unsigned HOST_WIDE_INT s1 = trunc_int_for_mode (0x00000000, SImode);
+  const unsigned HOST_WIDE_INT s2 = trunc_int_for_mode (0x00007fff, SImode);
+  const unsigned HOST_WIDE_INT s3 = trunc_int_for_mode (0xffff8000, SImode);
+  const unsigned HOST_WIDE_INT s4 = trunc_int_for_mode (0xffffffff, SImode);
+
+  unsigned HOST_WIDE_INT addr;
+
+  if (GET_CODE (x) != CONST_INT)
+    return 0;
+
+  addr = INTVAL (x);
+
+  return (0
+	  || (TARGET_H8300H
+	      && IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4))
+	  || (TARGET_H8300S
+	      && IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4)));
+}

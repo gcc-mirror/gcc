@@ -1,5 +1,15 @@
 2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (h8300_eightbit_constant_address_p): New.
+	(h8300_tiny_constant_address_p): Likewise.
+	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Use
+	h8300_eightbit_constant_address_p.
+	(TINY_CONSTANT_ADDRESS_P): Use h8300_tiny_constant_address_p.
+	* config/h8300/h8300-protos.h: Add the prototypes for the two
+	new functions.
+
+2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* reload1.c (update_eliminables): Unconditionally check if
 	frame_pointer_needed has changed.
 
