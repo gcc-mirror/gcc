@@ -1,5 +1,20 @@
 2002-03-16  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11-protos.h (ix_reg): Declare.
+	* config/m68hc11/m68hc11.md ("addsi3"): Use general_operand for sources.
+	(splits): Remove unused add splits.
+	("*addhi3_68hc12"): Tune constraints.
+	("addhi_sp"): Try to use X instead of Y in all cases and if the
+	constant fits in 8-bits and D is dead use abx/aby instructions.
+	("*addhi3"): Remove extern declaration of ix_reg.
+	("*subsi3"): Optimize and provide new split.
+	("subhi3"): Cleanup.
+	("*subhi3_sp"): Avoid saving X if we know it is dead.
+	(arith splits): For 68hc12 save the address register on the stack
+	and do the arithmetic operation with a pop.
+
+2002-03-16  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md ("*movqi_68hc12"): Fix constraints, avoid
 	allocating QImode in address registers.
 	("*movqi_m68hc11"): Likewise.
