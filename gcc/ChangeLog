@@ -1,3 +1,11 @@
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/frontends.texi: Update copyright.
+	* doc/gcov.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/standards.texi: Likewise.
+
 2004-01-24  Herman A.J. ten Brugge  <hermantenbrugge@home.nl>
 
 	PR target/12978
