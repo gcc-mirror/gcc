@@ -1,3 +1,9 @@
+2004-01-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/locale-misc-inst.cc (__convert_from_v(long),
+	__convert_from_v(unsigned long), __convert_from_v(long long),
+	__convert_from_v(unsigned long long)): Remove, unused.
+
 2004-01-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/performance/ifstream_extract_float.cc: New.

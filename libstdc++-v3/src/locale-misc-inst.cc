@@ -44,26 +44,4 @@ namespace std
     int
     __convert_from_v(char*, const int, const char*, long double, 
 		     const __c_locale&, int);
-
-  template
-    int
-    __convert_from_v(char*, const int, const char*, long, 
-		     const __c_locale&, int);
-
-  template
-    int
-    __convert_from_v(char*, const int, const char*, unsigned long, 
-		     const __c_locale&, int);
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template
-    int
-    __convert_from_v(char*, const int, const char*, long long, 
-		     const __c_locale&, int);
-
-  template
-    int
-    __convert_from_v(char*, const int, const char*, unsigned long long, 
-		     const __c_locale&, int);
-#endif
 } // namespace std
