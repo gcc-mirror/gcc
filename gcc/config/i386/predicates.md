@@ -795,6 +795,10 @@
 (define_predicate "div_operator"
   (match_code "div"))
 
+;; Return true if this is a float extend operation.
+(define_predicate "float_operator"
+  (match_code "float"))
+
 ;; Return true for ARITHMETIC_P.
 (define_predicate "arith_or_logical_operator"
   (match_code "PLUS,MULT,AND,IOR,XOR,SMIN,SMAX,UMIN,UMAX,COMPARE,MINUS,DIV,

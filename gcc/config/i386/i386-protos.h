@@ -165,7 +165,8 @@ extern rtx ix86_va_arg (tree, tree);
 
 extern rtx ix86_force_to_memory (enum machine_mode, rtx);
 extern void ix86_free_from_memory (enum machine_mode);
-extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx, rtx, rtx, rtx);
+extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
+				  rtx, rtx, rtx, rtx);
 extern int ix86_hard_regno_mode_ok (int, enum machine_mode);
 extern int ix86_register_move_cost (enum machine_mode, enum reg_class,
 				    enum reg_class);
