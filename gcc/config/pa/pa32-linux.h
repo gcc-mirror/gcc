@@ -24,14 +24,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{mhppa:-D__hppa__} %{posix:-D_POSIX_SOURCE} -D_PA_RISC1_1"
-
-/* We need to link against libgcc.a to resolve millicode references.  */
-#undef LINK_COMMAND_SPEC
-#define LINK_COMMAND_SPEC "\
-%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r} %{s} %{t}\
-    %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-    %{static:} %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
-    %{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
-    %{!nostdlib:%{!nodefaultlibs:%{!static:%{!static-libgcc:-lgcc}}}}\
-    %{T*} }}}}}}"
