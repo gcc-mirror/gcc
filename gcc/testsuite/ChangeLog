@@ -1,5 +1,13 @@
 2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* gcc.c-torture/execute/960312-1.x: New file, must pass -mshort
+	for HC11/HC12 (asm needs two int registers).
+	* gcc.c-torture/compile/20020312-1.x: New file, don't execute on
+	HC11/HC12 because the test uses an asm which needs two 32-bit
+	registers.
+
+2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* gcc.c-torture/compile/920501-12.x: New file, must pass -mshort
 	for HC11/HC12 (array is too large otherwise).
 	* gcc.c-torture/compile/920501-4.x: New file, likewise.
