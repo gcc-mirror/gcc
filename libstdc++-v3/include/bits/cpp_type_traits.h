@@ -378,10 +378,10 @@ namespace std
     };
 
   //
-  // A trivially copyable type is an arithmetic type or a pointer type
+  // A scalar type is an arithmetic type or a pointer type
   // 
   template<typename _Tp>
-    struct __is_trivially_copyable
+    struct __is_scalar
     {
       enum
 	{

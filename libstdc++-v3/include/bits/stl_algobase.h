@@ -274,7 +274,7 @@ namespace std
       typedef typename iterator_traits<_II>::value_type _ValueTypeI;
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
       typedef typename iterator_traits<_II>::iterator_category _Category;
-      const bool __simple = (__is_trivially_copyable<_ValueTypeI>::_M_type
+      const bool __simple = (__is_scalar<_ValueTypeI>::_M_type
 	                     && __is_pointer<_II>::_M_type
 	                     && __is_pointer<_OI>::_M_type
 			     && __are_same<_ValueTypeI, _ValueTypeO>::_M_type);
@@ -399,7 +399,7 @@ namespace std
       typedef typename iterator_traits<_BI1>::value_type _ValueType1;
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
       typedef typename iterator_traits<_BI1>::iterator_category _Category;
-      const bool __simple = (__is_trivially_copyable<_ValueType1>::_M_type
+      const bool __simple = (__is_scalar<_ValueType1>::_M_type
 	                     && __is_pointer<_BI1>::_M_type
 	                     && __is_pointer<_BI2>::_M_type
 			     && __are_same<_ValueType1, _ValueType2>::_M_type);
@@ -529,8 +529,8 @@ namespace std
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      const bool __trivial = __is_trivially_copyable<_Tp>::_M_type;
-      std::__fill<__trivial>::fill(__first, __last, __value);
+      const bool __scalar = __is_scalar<_Tp>::_M_type;
+      std::__fill<__scalar>::fill(__first, __last, __value);
     }
 
   // Specialization: for one-byte types we can use memset.
@@ -603,8 +603,8 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _Tp>)
 
-      const bool __trivial = __is_trivially_copyable<_Tp>::_M_type;
-      return std::__fill_n<__trivial>::fill_n(__first, __n, __value);
+      const bool __scalar = __is_scalar<_Tp>::_M_type;
+      return std::__fill_n<__scalar>::fill_n(__first, __n, __value);
     }
 
   template<typename _Size>
