@@ -44,11 +44,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
-/* Always use ereal_to_decimal, not sprintf, because the system's
-   sprintf is inaccurate on a mips.  */
-
-#define REAL_VALUE_TO_DECIMAL(r, fmt, s) (ereal_to_decimal (r, s))
-
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */
 #include "tm.h"
