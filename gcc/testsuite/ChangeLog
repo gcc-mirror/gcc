@@ -1,3 +1,7 @@
+2003-03-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/warn/implicit-typename1.C: Remove warning.
+
 2003-02-28  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/noreturn-1.c: Move noreturn warning line.
