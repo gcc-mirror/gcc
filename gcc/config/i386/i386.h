@@ -1105,6 +1105,8 @@ do {									\
    : reload_completed ? REGNO (pic_offset_table_rtx)	\
    : REAL_PIC_OFFSET_TABLE_REGNUM)
 
+#define GOT_SYMBOL_NAME "_GLOBAL_OFFSET_TABLE_"
+
 /* Register in which address to store a structure value
    arrives in the function.  On the 386, the prologue
    copies this from the stack to register %eax.  */

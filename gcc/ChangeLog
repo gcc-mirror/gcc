@@ -142,6 +142,14 @@ Thu Sep  5 16:27:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/h8300/h8300.c (asm_file_start): Add a missing
 	semicolon.
 
+2002-09-04  Krister Walfridsson  <cato@df.lth.se>
+
+	* config/i386/i386.h (GOT_SYMBOL_NAME): Define.
+	* config/i386/i386.c (output_set_got): Use GOT_SYMBOL_NAME.
+	(ix86_output_addr_diff_elt) Likewise.
+	(x86_output_mi_thunk) Likewise.
+	* config/i386/netbsd.h (GOT_SYMBOL_NAME): Redefine.
+
 2002-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* frv.c (frv_encode_section_info): Fix error in last change.
