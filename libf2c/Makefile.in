@@ -28,6 +28,7 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 target_alias = @target_alias@
 gcc_version = @gcc_version@
+gcc_version_trigger = @gcc_version_trigger@
 
 bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
@@ -193,7 +194,7 @@ ${srcdir}/libU77/configure: ${srcdir}/libU77/configure.in
 	  cd $(srcdir)/libU77 && autoconf && rm -f config.cache
 g2c.h Makefile: $(srcdir)/g2c.h.in $(srcdir)/Makefile.in config.status
 	$(SHELL) config.status
-config.status: $(srcdir)/configure
+config.status: $(srcdir)/configure $(gcc_version_trigger)
 	$(SHELL) config.status --recheck
 
 info install-info clean-info dvi:

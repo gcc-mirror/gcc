@@ -245,7 +245,10 @@ lang_specs_files=@lang_specs_files@
 lang_options_files=@lang_options_files@
 GCC_THREAD_FILE=@thread_file@
 GTHREAD_FLAGS=@gthread_flags@
-version=@version@
+# Be prepared for gcc2 merges.
+gcc_version=@gcc_version@
+gcc_version_trigger=@gcc_version_trigger@
+version=$(gcc_version)
 mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
 # Common prefix for installation directories.
