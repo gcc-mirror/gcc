@@ -1,5 +1,9 @@
 2000-02-16  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.jni/calls.c: New file.
+	* libjava.jni/calls.out: New file.
+	* libjava.jni/calls.java: New file.
+
 	* libjava.jni/throwit.java: New file.
 	* libjava.jni/throwit.c: New file.
 	* libjava.jni/throwit.out: New file.
