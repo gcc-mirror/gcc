@@ -965,6 +965,9 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       if (target == 0 || GET_CODE (target) != REG)
 	target = gen_reg_rtx (mode);
 
+      /* Indicate for flow that the entire target reg is being set.  */
+      emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+
       for (i = 0; i < nwords; i++)
 	{
 	  /* If I is 0, use the low-order word in both field and target;
