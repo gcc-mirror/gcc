@@ -680,6 +680,19 @@ output_move_double (operands)
   else if (optype0 == REGOP && optype1 != REGOP
 	   && reg_overlap_mentioned_p (operands[0], operands[1]))
     {
+      if (reg_mentioned_p (op0, XEXP (op1, 0))
+	  && reg_mentioned_p (latehalf[0], XEXP (op1, 0)))
+	{
+	  /* If both halves of dest are used in the src memory address,
+	     add the two regs and put them in the low reg (op0).
+	     Then it works to load latehalf first.  */
+	  rtx xops[2];
+	  xops[0] = latehalf[0];
+	  xops[1] = op0;
+	  output_asm_insn ("adds %1,%0,%1", xops);
+	  operands[1] = gen_rtx (MEM, DImode, latehalf[0]);
+	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
+	}
       /* Do the late half first.  */
       output_asm_insn (singlemove_string (latehalf), latehalf);
       /* Then clobber.  */
