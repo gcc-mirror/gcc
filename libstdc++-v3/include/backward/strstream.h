@@ -30,7 +30,7 @@
 #ifndef _CPP_BACKWARD_STRSTREAM_H
 #define _CPP_BACKWARD_STRSTREAM_H 1
 
-#include <backward/strstream>
+#include <strstream>
 
 using std::strstreambuf;
 using std::istrstream;

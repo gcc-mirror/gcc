@@ -17,7 +17,7 @@
 // MAY BE REMOVED in a future standard revision.  You should use the
 // header <sstream> instead.
 
-#include <backward/strstream.h>
+#include <strstream.h>
 #include <algorithm>
 #include <new>
 #include <stdlib.h>

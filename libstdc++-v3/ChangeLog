@@ -1,3 +1,22 @@
+2000-12-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (CSTD_INCLUDES): Change from CSHADOW_INCLUDES.
+	(strstream.cc): Add special rule for deprecated files.
+	* libsupc++/Makefile.am (INCLUDES): Sync.
+	* acinclude.m4 (GLIBCPP_EXPORT_INCLUDES): And here.
+
+	Reported by Fred Fish  <fnf@ninemoons.com>
+	* include/backward/iomanip.h: Remove backward from include
+	* include/backward/strstream.h: Same.
+	* include/backward/stream.h: Same.
+	* include/backward/ostream.h: Same.
+	* include/backward/istream.h: Same.
+	* src/strstream.cc: And here.
+
+	Reported by  Brad Garcia  <bgarcia@laurelnetworks.com>
+	* src/string-inst.cc (_S_find): Use generic template.
+	* include/bits/string.tcc (_S_find): Remove specializations
+	
 2000-12-22  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	Attempt to make locale visible in gdb.

@@ -19781,7 +19781,7 @@ gxx_target_include_dir='$(exec_prefix)/$(target_alias)/include/g++-$(libstdcxx_i
   #  CSHADOW_INCLUDES='-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR) \
   #                   -I$(top_blddir)/cshadow'
   #else
-  CSHADOW_INCLUDES='-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR)'
+  CSTD_INCLUDES='-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR)'
   #endif
 
   # Now, export this to all the little Makefiles....
@@ -20039,7 +20039,7 @@ s%@TOPLEVEL_INCLUDES@%$TOPLEVEL_INCLUDES%g
 s%@LIBMATH_INCLUDES@%$LIBMATH_INCLUDES%g
 s%@LIBSUPCXX_INCLUDES@%$LIBSUPCXX_INCLUDES%g
 s%@LIBIO_INCLUDES@%$LIBIO_INCLUDES%g
-s%@CSHADOW_INCLUDES@%$CSHADOW_INCLUDES%g
+s%@CSTD_INCLUDES@%$CSTD_INCLUDES%g
 s%@OPTIMIZE_CXXFLAGS@%$OPTIMIZE_CXXFLAGS%g
 s%@WARN_FLAGS@%$WARN_FLAGS%g
 

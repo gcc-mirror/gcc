@@ -174,51 +174,28 @@ namespace std
     (S::iterator, S::iterator, const C*, const C*, forward_iterator_tag);
 
   template
-    S::size_type  S::copy(C*, S::size_type, S::size_type) const;
+    S::size_type S::copy(C*, S::size_type, S::size_type) const;
 
   template 
-    C* 
-    S::_S_construct<S::iterator>
-    (S::iterator, S::iterator, const allocator<C>&);
+    C* S::_S_construct<S::iterator>(S::iterator, S::iterator, 
+				    const allocator<C>&);
 
   template 
-    C* 
-    S::_S_construct<S::iterator>
-    (S::iterator, S::iterator, const allocator<C>&, forward_iterator_tag);
+    C* S::_S_construct<S::iterator>(S::iterator, S::iterator, 
+				    const allocator<C>&, forward_iterator_tag);
 
   template 
-    C* 
-    S::_S_construct<C*>
-    (C*, C*, const allocator<C>&, forward_iterator_tag);
+    C* S::_S_construct<C*>(C*, C*, const allocator<C>&, forward_iterator_tag);
 
   template 
-    C* 
-    S::_S_construct<const C*>
-    (const C*, const C*, const allocator<C>&, forward_iterator_tag);
+    C* S::_S_construct<const C*>(const C*, const C*, const allocator<C>&, 
+				 forward_iterator_tag);
 
   template 
-    C* 
-    S::_S_construct(S::size_type, C, S::allocator_type const&);
+    C* S::_S_construct(S::size_type, C, S::allocator_type const&);
 
-  // These members are explicitly specialized, and can only be in one
-  // translation unit or else we get multiple copies. . . 
-#if _GLIBCPP_INSTANTIATING_CHAR
-  template<>
-    const char* 
-    string::_S_find(const char* __beg, const char* __end, char __c)
-    { 
-      const char* __ret = strchr(__beg, __c); 
-      return (__ret ? __ret : __end);
-    }
-#elif defined(_GLIBCPP_USE_WCHAR_T)
-  template<>
-    const wchar_t* 
-    wstring::_S_find(const wchar_t* __beg, const wchar_t* __end, wchar_t __c)
-    {
-      return find_if(__beg, __end, 
-		     _Char_traits_match<wchar_t, traits_type>(__c));
-    }
-#endif
+  template
+    const C* S::_S_find(const C* __beg, const C* __end, C __c);
 
   template
     S::size_type S::find(C, S::size_type) const;
@@ -236,12 +213,12 @@ namespace std
     S::size_type S::find_last_of(C const*, S::size_type, S::size_type) const;
 
   template
-    S::size_type S::find_first_not_of(
-      C const*, S::size_type, S::size_type) const;
+    S::size_type 
+    S::find_first_not_of(C const*, S::size_type, S::size_type) const;
 
   template
-    S::size_type S::find_last_not_of(
-      C const*, S::size_type, S::size_type) const;
+    S::size_type 
+    S::find_last_not_of(C const*, S::size_type, S::size_type) const;
 
   template
     S::size_type S::find_last_not_of(C, S::size_type) const;
@@ -257,8 +234,7 @@ namespace std
     int S::compare(C const*) const;
 
   template
-    int S::compare(
-      S::size_type, S::size_type, C const*, S::size_type) const;
+    int S::compare(S::size_type, S::size_type, C const*, S::size_type) const;
 
   template S operator+(const C*, const S&);
 

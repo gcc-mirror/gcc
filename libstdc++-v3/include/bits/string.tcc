@@ -576,8 +576,6 @@ namespace std
     }
 
   // String operations
-  // NB: This is specialized for the standard char_traits<char>
-  // specialization to use the same optimizations as strchr.
   template<typename _CharT, typename _Traits, typename _Alloc>
     const _CharT*
     basic_string<_CharT, _Traits, _Alloc>::
@@ -585,18 +583,6 @@ namespace std
     {
       return find_if(__beg, __end, _Char_traits_match<_CharT, _Traits>(__c));
     }
-
-  // Specialization for char, definitions in src/string-inst.cc.
-  template<>
-    const char* 
-    string::_S_find(const char* __beg, const char* __end, char __c);
-
-  // Specialization for wchar_t.
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    const wchar_t* 
-    wstring::_S_find(const wchar_t* __beg, const wchar_t* __end, wchar_t __c);
-#endif
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::size_type
