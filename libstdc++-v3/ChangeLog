@@ -1,5 +1,49 @@
 2000-12-08  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove ccosl,
+	cexpl, clog10l, csinhl, ctanhl, ctanl.
+	(EXTRA_DIST): Remove ccos, ccosf, csin, csinf, ccosh, ccoshf,
+	csing, csinhf, clog10, clog10f, ctan, ctanf, ctanh, ctanhf.
+	* libmath/Makefile.in: Regenarate.
+	* libmath/ccos.c: Remove.
+	* libmath/ccosf.c: Likewise.
+	* libmath/ccosl.c: Likewise.
+	* libmath/csin.c: Likewise.
+	* libmath/csinf.c: Likewise.
+	* libmath/csinl.c: Likewise.
+	* libmath/ctan.c: Likewise.
+	* libmath/ctanf.c: Likewise.
+	* libmath/ctanl.c: Likewise.
+	* libmath/ccosh.c: Likewise.
+	* libmath/ccoshf.c: Likewise.
+	* libmath/ccoshl.c: Likewise.
+	* libmath/csinh.c: Likewise.
+	* libmath/csinhf.c: Likewise.
+	* libmath/csinhl.c: Likewise.
+	* libmath/ctanh.c: Likewise.
+	* libmath/ctanhf.c: Likewise.
+	* libmath/ctanhl.c: Likewise.
+	* libmath/cexp.c: Likewise.
+	* libmath/cexpf.c: Likewise.
+	* libmath/cexpl.c: Likewise.
+	* libmath/clog10.c: Likewise.
+	* libmath/clog10f.c: Likewise.
+	* libmath/clog10l.c: Likewise.
+	* libmath/complex-stub.h: Remove forward declaration of functions
+	mentioned above.
+
+	* include/bits/std_complex.h(tan, tanh): Define primary templates. 
+	(complex<>): Remove friend declarations for tan<> and tanh<>.
+	* src/complex.cc(tan, tanh): Remove specializations.
+
+	* acinclude.m4: Remove check for ccos, ccosf, ccosl, ccosh,
+	ccoshf, ccoshl,	csin, csinf, csinl, csinh, csinhf, csinhl, cexp,
+	cexpf, cexpl, ctan, ctanf, ctanl, ctanh, ctanhf, ctanhl.
+	* aclocal.m4: Regenarate.
+	* configure: Regenarate.
+
+2000-12-08  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* acinclude.m4: Don't forget to remove check for cpowl as it is no
 	longer needed, nor is the corresponding stub existent.
 	* aclocal.m4: Regenarate.

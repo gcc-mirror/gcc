@@ -452,6 +452,20 @@ namespace std
 
   template<typename _Tp>
     inline complex<_Tp>
+    tan(const complex<_Tp>& __z)
+    {
+      return sin(__z) / cos(__z);
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    tanh(const complex<_Tp>& __z)
+    {
+      return sinh(__z) / cosh(__z);
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
     pow(const complex<_Tp>& __z, int __n)
     {
       return __pow_helper(__z, __n);
@@ -525,8 +539,6 @@ namespace std
     friend class complex<long double>;
 
     friend complex<float> sqrt<>(const complex<float>&);
-    friend complex<float> tan<>(const complex<float>&);
-    friend complex<float> tanh<>(const complex<float>&);
   };
 
   inline float
@@ -675,8 +687,6 @@ namespace std
     friend class complex<long double>;
 
     friend complex<double> sqrt<>(const complex<double>&);
-    friend complex<double> tan<>(const complex<double>&);
-    friend complex<double> tanh<>(const complex<double>&);
   };
 
   inline double
@@ -825,8 +835,6 @@ namespace std
     friend class complex<double>;
 
     friend complex<long double> sqrt<>(const complex<long double>&);
-    friend complex<long double> tan<>(const complex<long double>&);
-    friend complex<long double> tanh<>(const complex<long double>&);
   };
 
   inline
