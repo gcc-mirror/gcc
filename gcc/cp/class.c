@@ -123,7 +123,7 @@ static void finish_struct_methods (tree);
 static void maybe_warn_about_overly_private_class (tree);
 static int method_name_cmp (const void *, const void *);
 static int resort_method_name_cmp (const void *, const void *);
-static void add_implicitly_declared_members (tree, int, int, int);
+static void add_implicitly_declared_members (tree, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
 static tree resolve_address_of_overloaded_function (tree, tree, tsubst_flags_t,
 						    bool, tree);
@@ -133,13 +133,13 @@ static tree build_vtbl_initializer (tree, tree, tree, tree, int *);
 static int count_fields (tree);
 static int add_fields_to_record_type (tree, struct sorted_fields_type*, int);
 static void check_bitfield_decl (tree);
-static void check_field_decl (tree, tree, int *, int *, int *, int *);
-static void check_field_decls (tree, tree *, int *, int *, int *);
+static void check_field_decl (tree, tree, int *, int *, int *);
+static void check_field_decls (tree, tree *, int *, int *);
 static tree *build_base_field (record_layout_info, tree, splay_tree, tree *);
 static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
 static void remove_zero_width_bit_fields (tree);
-static void check_bases (tree, int *, int *, int *);
+static void check_bases (tree, int *, int *);
 static void check_bases_and_members (tree);
 static tree create_vtable_ptr (tree, tree *);
 static void include_empty_classes (record_layout_info);
@@ -1207,14 +1207,12 @@ handle_using_decl (tree using_decl, tree t)
     alter_access (t, fdecl, access);
 }
 
-/* Run through the base classes of T, updating
-   CANT_HAVE_DEFAULT_CTOR_P, CANT_HAVE_CONST_CTOR_P, and
-   NO_CONST_ASN_REF_P.  Also set flag bits in T based on properties of
-   the bases.  */
+/* Run through the base classes of T, updating CANT_HAVE_CONST_CTOR_P,
+   and NO_CONST_ASN_REF_P.  Also set flag bits in T based on
+   properties of the bases.  */
 
 static void
 check_bases (tree t,
-             int* cant_have_default_ctor_p,
              int* cant_have_const_ctor_p,
              int* no_const_asn_ref_p)
 {
@@ -1247,18 +1245,6 @@ check_bases (tree t,
       if (TYPE_HAS_ASSIGN_REF (basetype)
 	  && !TYPE_HAS_CONST_ASSIGN_REF (basetype))
 	*no_const_asn_ref_p = 1;
-      /* Similarly, if the base class doesn't have a default
-	 constructor, then the derived class won't have an
-	 automatically generated default constructor.  */
-      if (TYPE_HAS_CONSTRUCTOR (basetype)
-	  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype))
-	{
-	  *cant_have_default_ctor_p = 1;
-	  if (! TYPE_HAS_CONSTRUCTOR (t))
-            pedwarn ("base %qT with only non-default constructor in class "
-                     "without a constructor",
-                     basetype);
-	}
 
       if (BINFO_VIRTUAL_P (base_binfo))
 	/* A virtual base does not effect nearly emptiness.  */
@@ -2503,16 +2489,14 @@ maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
 }
 
 /* Create default constructors, assignment operators, and so forth for
-   the type indicated by T, if they are needed.
-   CANT_HAVE_DEFAULT_CTOR, CANT_HAVE_CONST_CTOR, and
-   CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason, the
-   class cannot have a default constructor, copy constructor taking a
-   const reference argument, or an assignment operator taking a const
-   reference, respectively.  */
+   the type indicated by T, if they are needed.  CANT_HAVE_CONST_CTOR,
+   and CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason,
+   the class cannot have a default constructor, copy constructor
+   taking a const reference argument, or an assignment operator taking
+   a const reference, respectively.  */
 
 static void
 add_implicitly_declared_members (tree t, 
-                                 int cant_have_default_ctor,
 				 int cant_have_const_cctor,
 				 int cant_have_const_assignment)
 {
@@ -2565,7 +2549,7 @@ add_implicitly_declared_members (tree t,
     }
 
   /* Default constructor.  */
-  if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor)
+  if (! TYPE_HAS_CONSTRUCTOR (t))
     {
       TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
@@ -2713,7 +2697,6 @@ static void
 check_field_decl (tree field,
                   tree t,
                   int* cant_have_const_ctor,
-		  int* cant_have_default_ctor,
                   int* no_const_asn_ref,
 		  int* any_default_members)
 {
@@ -2732,8 +2715,7 @@ check_field_decl (tree field,
       for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
 	if (TREE_CODE (fields) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
 	  check_field_decl (fields, t, cant_have_const_ctor,
-			    cant_have_default_ctor, no_const_asn_ref,
-			    any_default_members);
+			    no_const_asn_ref, any_default_members);
     }
   /* Check members with class type for constructors, destructors,
      etc.  */
@@ -2769,10 +2751,6 @@ check_field_decl (tree field,
 
       if (!TYPE_HAS_CONST_ASSIGN_REF (type))
 	*no_const_asn_ref = 1;
-
-      if (TYPE_HAS_CONSTRUCTOR (type)
-	  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
-	*cant_have_default_ctor = 1;
     }
   if (DECL_INITIAL (field) != NULL_TREE)
     {
@@ -2795,10 +2773,6 @@ check_field_decl (tree field,
      EMPTY_P
        The class is empty, i.e., contains no non-static data members.
 
-     CANT_HAVE_DEFAULT_CTOR_P
-       This class cannot have an implicitly generated default
-       constructor.
-
      CANT_HAVE_CONST_CTOR_P
        This class cannot have an implicitly generated copy constructor
        taking a const reference.
@@ -2815,7 +2789,6 @@ check_field_decl (tree field,
 
 static void
 check_field_decls (tree t, tree *access_decls,
-		   int *cant_have_default_ctor_p, 
 		   int *cant_have_const_ctor_p,
 		   int *no_const_asn_ref_p)
 {
@@ -2959,7 +2932,6 @@ check_field_decls (tree t, tree *access_decls,
 	     aggregate, initialization by a brace-enclosed list) is the
 	     only way to initialize nonstatic const and reference
 	     members.  */
-	  *cant_have_default_ctor_p = 1;
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
@@ -3007,7 +2979,6 @@ check_field_decls (tree t, tree *access_decls,
 	     aggregate, initialization by a brace-enclosed list) is the
 	     only way to initialize nonstatic const and reference
 	     members.  */
-	  *cant_have_default_ctor_p = 1;
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
@@ -3036,7 +3007,6 @@ check_field_decls (tree t, tree *access_decls,
       else
 	check_field_decl (x, t,
 			  cant_have_const_ctor_p,
-			  cant_have_default_ctor_p, 
 			  no_const_asn_ref_p,
 			  &any_default_members);
     }
@@ -4062,9 +4032,6 @@ type_requires_array_cookie (tree type)
 static void
 check_bases_and_members (tree t)
 {
-  /* Nonzero if we are not allowed to generate a default constructor
-     for this case.  */
-  int cant_have_default_ctor;
   /* Nonzero if the implicitly generated copy constructor should take
      a non-const reference argument.  */
   int cant_have_const_ctor;
@@ -4075,12 +4042,11 @@ check_bases_and_members (tree t)
 
   /* By default, we use const reference arguments and generate default
      constructors.  */
-  cant_have_default_ctor = 0;
   cant_have_const_ctor = 0;
   no_const_asn_ref = 0;
 
   /* Check all the base-classes.  */
-  check_bases (t, &cant_have_default_ctor, &cant_have_const_ctor,
+  check_bases (t, &cant_have_const_ctor,
 	       &no_const_asn_ref);
 
   /* Check all the method declarations.  */
@@ -4091,7 +4057,6 @@ check_bases_and_members (tree t)
      as check_field_decls depends on TYPE_HAS_NONTRIVIAL_DESTRUCTOR
      being set appropriately.  */
   check_field_decls (t, &access_decls,
-		     &cant_have_default_ctor,
 		     &cant_have_const_ctor,
 		     &no_const_asn_ref);
 
@@ -4116,7 +4081,7 @@ check_bases_and_members (tree t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_CONTAINS_VPTR_P (t);
 
   /* Synthesize any needed methods.  */
-  add_implicitly_declared_members (t, cant_have_default_ctor,
+  add_implicitly_declared_members (t,
 				   cant_have_const_ctor,
 				   no_const_asn_ref);
 
