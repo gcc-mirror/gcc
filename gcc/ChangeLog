@@ -1,3 +1,31 @@
+2001-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Special-case tree_decl/tree_list allocations.
+	* ggc-page.c (OBJECT_PER_PAGE): Reimplement.
+	(OBJECT_SIZE): New macro.
+	(NUM_EXTRA_ORDER): Likewise.
+	(extra_order_size_table): New variable.
+	(NUM_ORDERS): New macro.
+	(objects_per_page_table): New variable.
+	(object_size_table): New variable.
+	(G.pages): Use NUM_ORDERS to bound the array.
+	(G.page_tails): Likewise.
+	(DIV_ROUND_UP): Remove.
+	(BITMAP_SIZE): Use CEIL, instead of DIV_ROUND_UP.
+	(alloc_page): Use OBJECT_SIZE.
+	(size_lookup): Don't make it const.
+	(ggc_alloc): Use OBJECT_SIZE.
+	(ggc_set_mark): Likewise.
+	(ggc_get_size): Likewise.
+	(init_ggc): Set up the object_size_table, objects_per_page_table,
+	and adjust size_lookup.
+	(ggc_recalculate_in_use_p): Use CEIL, not DIV_ROUND_UP.
+	(ggc_pop_context): Use NUM_ORDERS.
+	(clear_marks): Likewise.
+	(sweep_pages): Likewise.
+	(poison_pages): Likewise.
+	(ggc_print_statistics): Use OBJECT_SIZE.
+
 Thu Jan  4 15:54:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* varasm.c (output_constructor): Use HOST_WIDE_INT for sizes.

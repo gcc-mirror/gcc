@@ -1,5 +1,5 @@
 /* "Bag-of-pages" garbage collector for the GNU compiler.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -133,6 +133,39 @@ Boston, MA 02111-1307, USA.  */
 #define LOOKUP_L2(p) \
   (((size_t) (p) >> G.lg_pagesize) & ((1 << PAGE_L2_BITS) - 1))
 
+/* The number of objects per allocation page, for objects on a page of
+   the indicated ORDER.  */
+#define OBJECTS_PER_PAGE(ORDER) objects_per_page_table[ORDER]
+
+/* The size of an object on a page of the indicated ORDER.  */
+#define OBJECT_SIZE(ORDER) object_size_table[ORDER]
+
+/* The number of extra orders, not corresponding to power-of-two sized
+   objects.  */
+
+#define NUM_EXTRA_ORDERS \
+  (sizeof (extra_order_size_table) / sizeof (extra_order_size_table[0]))
+
+/* The Ith entry is the maximum size of an object to be stored in the
+   Ith extra order.  Adding a new entry to this array is the *only*
+   thing you need to do to add a new special allocation size.  */
+
+static const size_t extra_order_size_table[] = {
+  sizeof (struct tree_decl),
+  sizeof (struct tree_list)
+};
+
+/* The total number of orders.  */
+
+#define NUM_ORDERS (HOST_BITS_PER_PTR + NUM_EXTRA_ORDERS)
+
+/* The Ith entry is the number of objects on a page or order I.  */
+
+static unsigned objects_per_page_table[NUM_ORDERS];
+
+/* The Ith entry is the size of an object on a page of order I.  */
+
+static size_t object_size_table[NUM_ORDERS];
 
 /* A page_entry records the status of an allocation page.  This
    structure is dynamically sized to fit the bitmap in_use_p.  */
@@ -199,12 +232,12 @@ static struct globals
      If there are any pages with free objects, they will be at the
      head of the list.  NULL if there are no page-entries for this
      object size.  */
-  page_entry *pages[HOST_BITS_PER_PTR];
+  page_entry *pages[NUM_ORDERS];
 
   /* The Nth element in this array is the last page with objects of
      size 2^N.  NULL if there are no page-entries for this object
      size.  */
-  page_entry *page_tails[HOST_BITS_PER_PTR];
+  page_entry *page_tails[NUM_ORDERS];
 
   /* Lookup table for associating allocation pages with object addresses.  */
   page_table lookup;
@@ -237,20 +270,10 @@ static struct globals
   FILE *debug_file;
 } G;
 
-
-/* Compute DIVIDEND / DIVISOR, rounded up.  */
-#define DIV_ROUND_UP(Dividend, Divisor) \
-  (((Dividend) + (Divisor) - 1) / (Divisor))
-
-/* The number of objects per allocation page, for objects of size
-   2^ORDER.  */
-#define OBJECTS_PER_PAGE(Order) \
-  ((Order) >= G.lg_pagesize ? 1 : G.pagesize / ((size_t)1 << (Order)))
-
 /* The size in bytes required to maintain a bitmap for the objects
    on a page-entry.  */
 #define BITMAP_SIZE(Num_objects) \
-  (DIV_ROUND_UP ((Num_objects), HOST_BITS_PER_LONG) * sizeof(long))
+  (CEIL ((Num_objects), HOST_BITS_PER_LONG) * sizeof(long))
 
 /* Skip garbage collection if the current allocation is not at least
    this factor times the allocation at the end of the last collection.
@@ -459,7 +482,7 @@ alloc_page (order)
   num_objects = OBJECTS_PER_PAGE (order);
   bitmap_size = BITMAP_SIZE (num_objects + 1);
   page_entry_size = sizeof (page_entry) - sizeof (long) + bitmap_size;
-  entry_size = num_objects * (1 << order);
+  entry_size = num_objects * OBJECT_SIZE (order);
 
   entry = NULL;
   page = NULL;
@@ -529,7 +552,7 @@ alloc_page (order)
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file, 
 	     "Allocating page at %p, object size=%d, data %p-%p\n",
-	     (PTR) entry, 1 << order, page, page + entry_size - 1);
+	     (PTR) entry, OBJECT_SIZE (order), page, page + entry_size - 1);
 
   return entry;
 }
@@ -603,7 +626,7 @@ release_pages ()
 /* This table provides a fast way to determine ceil(log_2(size)) for
    allocation requests.  The minimum allocation size is four bytes.  */
 
-static unsigned char const size_lookup[257] = 
+static unsigned char size_lookup[257] = 
 { 
   2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 
   4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
@@ -640,7 +663,7 @@ ggc_alloc (size)
   else
     {
       order = 9;
-      while (size > ((size_t) 1 << order))
+      while (size > OBJECT_SIZE (order))
 	order++;
     }
 
@@ -695,7 +718,7 @@ ggc_alloc (size)
       /* Next time, try the next bit.  */
       entry->next_bit_hint = hint + 1;
 
-      object_offset = hint << order;
+      object_offset = hint * OBJECT_SIZE (order);
     }
 
   /* Set the in-use bit.  */
@@ -721,17 +744,17 @@ ggc_alloc (size)
 #ifdef GGC_POISON
   /* `Poison' the entire allocated object, including any padding at
      the end.  */
-  memset (result, 0xaf, 1 << order);
+  memset (result, 0xaf, OBJECT_SIZE (order));
 #endif
 
   /* Keep track of how many bytes are being allocated.  This
      information is used in deciding when to collect.  */
-  G.allocated += (size_t) 1 << order;
+  G.allocated += OBJECT_SIZE (order);
 
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file, 
 	     "Allocating object, requested size=%d, actual=%d at %p on %p\n",
-	     (int) size, 1 << order, result, (PTR) entry);
+	     (int) size, OBJECT_SIZE (order), result, (PTR) entry);
 
   return result;
 }
@@ -758,7 +781,7 @@ ggc_set_mark (p)
 
   /* Calculate the index of the object on the page; this is its bit
      position in the in_use_p bitmap.  */
-  bit = (((const char *) p) - entry->page) >> entry->order;
+  bit = (((const char *) p) - entry->page) / OBJECT_SIZE (entry->order);
   word = bit / HOST_BITS_PER_LONG;
   mask = (unsigned long) 1 << (bit % HOST_BITS_PER_LONG);
   
@@ -793,7 +816,7 @@ ggc_get_size (p)
      const void *p;
 {
   page_entry *pe = lookup_page_table_entry (p);
-  return 1 << pe->order;
+  return OBJECT_SIZE (pe->order);
 }
 
 /* Initialize the ggc-mmap allocator.  */
@@ -801,6 +824,8 @@ ggc_get_size (p)
 void
 init_ggc ()
 {
+  unsigned order;
+
   G.pagesize = getpagesize();
   G.lg_pagesize = exact_log2 (G.pagesize);
 
@@ -837,6 +862,35 @@ init_ggc ()
     munmap (p, G.pagesize);
   }
 #endif
+
+  /* Initialize the object size table.  */
+  for (order = 0; order < HOST_BITS_PER_PTR; ++order)
+    object_size_table[order] = (size_t) 1 << order;
+  for (order = HOST_BITS_PER_PTR; order < NUM_ORDERS; ++order)
+    object_size_table[order] = 
+      extra_order_size_table[order - HOST_BITS_PER_PTR];
+
+  /* Initialize the objects-per-page table.  */
+  for (order = 0; order < NUM_ORDERS; ++order)
+    {
+      objects_per_page_table[order] = G.pagesize / OBJECT_SIZE (order);
+      if (objects_per_page_table[order] == 0)
+	objects_per_page_table[order] = 1;
+    }
+
+  /* Reset the size_lookup array to put appropriately sized objects in
+     the special orders.  All objects bigger than the previous power
+     of two, but no greater than the special size, should go in the
+     new order.  */
+  for (order = HOST_BITS_PER_PTR; order < NUM_ORDERS; ++order)
+    {
+      int o;
+      int i;
+
+      o = size_lookup[OBJECT_SIZE (order)];
+      for (i = OBJECT_SIZE (order); size_lookup [i] == o; --i)
+	size_lookup[i] = order;
+    }
 }
 
 /* Increment the `GC context'.  Objects allocated in an outer context
@@ -871,8 +925,8 @@ ggc_recalculate_in_use_p (p)
 
   /* Combine the IN_USE_P and SAVE_IN_USE_P arrays.  */
   for (i = 0; 
-       i < DIV_ROUND_UP (BITMAP_SIZE (num_objects),
-			 sizeof (*p->in_use_p));
+       i < CEIL (BITMAP_SIZE (num_objects),
+		 sizeof (*p->in_use_p));
        ++i)
     {
       unsigned long j;
@@ -903,7 +957,7 @@ ggc_pop_context ()
   /* Any remaining pages in the popped context are lowered to the new
      current context; i.e. objects allocated in the popped context and
      left over are imported into the previous context.  */
-  for (order = 2; order < HOST_BITS_PER_PTR; order++)
+  for (order = 2; order < NUM_ORDERS; order++)
     {
       page_entry *p;
 
@@ -931,7 +985,7 @@ clear_marks ()
 {
   unsigned order;
 
-  for (order = 2; order < HOST_BITS_PER_PTR; order++)
+  for (order = 2; order < NUM_ORDERS; order++)
     {
       size_t num_objects = OBJECTS_PER_PAGE (order);
       size_t bitmap_size = BITMAP_SIZE (num_objects + 1);
@@ -975,7 +1029,7 @@ sweep_pages ()
 {
   unsigned order;
 
-  for (order = 2; order < HOST_BITS_PER_PTR; order++)
+  for (order = 2; order < NUM_ORDERS; order++)
     {
       /* The last page-entry to consider, regardless of entries
 	 placed at the end of the list.  */
@@ -1002,7 +1056,7 @@ sweep_pages ()
              allocated memory.  */
 	  live_objects = num_objects - p->num_free_objects;
 
-	  G.allocated += ((size_t) 1 << order) * live_objects;
+	  G.allocated += OBJECT_SIZE (order) * live_objects;
 
 	  /* Only objects on pages in the topmost context should get
 	     collected.  */
@@ -1082,10 +1136,10 @@ poison_pages ()
 {
   unsigned order;
 
-  for (order = 2; order < HOST_BITS_PER_PTR; order++)
+  for (order = 2; order < NUM_ORDERS; order++)
     {
       size_t num_objects = OBJECTS_PER_PAGE (order);
-      size_t size = (size_t) 1 << order;
+      size_t size = OBJECT_SIZE (order);
       page_entry *p;
 
       for (p = G.pages[order]; p != NULL; p = p->next)
@@ -1188,7 +1242,7 @@ ggc_print_statistics ()
      allocation.  */
   fprintf (stderr, "\n%-5s %10s  %10s  %10s\n",
 	   "Log", "Allocated", "Used", "Overhead");
-  for (i = 0; i < HOST_BITS_PER_PTR; ++i)
+  for (i = 0; i < NUM_ORDERS; ++i)
     {
       page_entry *p;
       size_t allocated;
@@ -1208,7 +1262,7 @@ ggc_print_statistics ()
 	{
 	  allocated += p->bytes;
 	  in_use += 
-	    (OBJECTS_PER_PAGE (i) - p->num_free_objects) * (1 << i);
+	    (OBJECTS_PER_PAGE (i) - p->num_free_objects) * OBJECT_SIZE (i);
 
 	  overhead += (sizeof (page_entry) - sizeof (long)
 		       + BITMAP_SIZE (OBJECTS_PER_PAGE (i) + 1));
