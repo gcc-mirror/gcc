@@ -1,3 +1,8 @@
+Thu Apr 27 16:11:00 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (store_expr): Use clear_storage instead of direct memset
+	libcall.
+
 Thu Apr 27 10:36:51 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.c (mn10300_address_cost): Test
