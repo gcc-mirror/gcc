@@ -1,5 +1,8 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
+	* lang.c (flag_new_exceptions): Don't declare it.
+	(java_init_options): Or set it.
+
 	* expr.c, parse.h: Use USING_SJLJ_EXCEPTIONS instead of
 	exceptions_via_longjmp.
 
