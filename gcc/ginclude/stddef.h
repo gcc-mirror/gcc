@@ -17,13 +17,28 @@
 /* This avoids lossage on SunOS but only if stdtypes.h comes first.
    There's no way to win with the other order!  Sun lossage.  */
 
-/*  In 4.3bsd-net2, machine/ansi.h defines these symbols for some other
-    purpose.  Undef them to prevent them from confusing this file.  */
-#ifdef _ANSI_H_
-#undef _PTRDIFF_T_
-#undef _SIZE_T_
-#undef _WCHAR_T_
+/* On 4.3bsd-net2, make sure ansi.h is included, so we have
+   one less case to deal with in the following.  */
+#if defined (__BSD_NET2__) || defined (____386BSD____)
+#include <ansi.h>
 #endif
+
+/* In 4.3bsd-net2, machine/ansi.h defines these symbols, which are
+    defined if the corresponding type is *not* defined.  */
+#ifdef _ANSI_H_
+#ifndef _SIZE_T_
+#define _SIZE_T
+#endif
+#ifndef _PTRDIFF_T_
+#define _PTRDIFF_T
+#endif
+#ifndef _WCHAR_T_
+#define _WCHAR_T
+#endif
+#undef _SIZE_T_
+#undef _PTRDIFF_T_
+#undef _WCHAR_T_
+#endif /* _ANSI_H_ */
 
 /* In case nobody has defined these types, but we aren't running under
    GCC 2.00, make sure that __PTRDIFF_TYPE__, __SIZE__TYPE__, and
@@ -146,6 +161,16 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #undef	__need_wchar_t
 #endif /* _STDDEF_H or __need_wchar_t.  */
+
+/*  In 4.3bsd-net2, leave these undefined to indicate that size_t, etc.
+    are already defined.  We need not worry about the case of wanting just
+    one of these types, not on 4.3bsd-net2, because only the GNU libc
+    header files do that.  */
+#ifdef _ANSI_H_
+#undef _PTRDIFF_T_
+#undef _SIZE_T_
+#undef _WCHAR_T_
+#endif
 
 #endif /* __sys_stdtypes_h */
 
