@@ -3849,7 +3849,8 @@ subst (x, from, to, in_dest, unique_copy)
 	 IOR'ed together.  In practice, at most two will be nonzero.  Then
 	 we do the IOR's.  */
 
-      if (GET_CODE (SET_SRC (x)) == IF_THEN_ELSE
+      if (GET_CODE (SET_DEST (x)) != PC
+	  && GET_CODE (SET_SRC (x)) == IF_THEN_ELSE
 	  && (GET_CODE (XEXP (SET_SRC (x), 0)) == EQ
 	      || GET_CODE (XEXP (SET_SRC (x), 0)) == NE)
 	  && XEXP (XEXP (SET_SRC (x), 0), 1) == const0_rtx
