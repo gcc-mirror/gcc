@@ -1304,16 +1304,288 @@ find_barrier (from)
   return found_barrier;
 }
 
+/* See if the only way in which INSN uses REG is by calling it, or by
+   setting it while calling it.  Set *SET to a SET rtx if the register
+   is set by INSN.  */
+
+static int
+noncall_uses_reg (reg, insn, set)
+     rtx reg;
+     rtx insn;
+     rtx *set;
+{
+  rtx pattern;
+
+  *set = NULL_RTX;
+
+  if (GET_CODE (insn) != CALL_INSN)
+    {
+      /* We don't use rtx_equal_p because we don't care if the mode is
+	 different.  */
+      pattern = single_set (insn);
+      if (pattern
+	  && GET_CODE (SET_DEST (pattern)) == REG
+	  && REGNO (reg) == REGNO (SET_DEST (pattern)))
+	{
+	  *set = pattern;
+	  return 0;
+	}
+
+      return 1;
+    }
+
+  pattern = PATTERN (insn);
+
+  if (GET_CODE (pattern) == PARALLEL)
+    {
+      int i;
+
+      for (i = XVECLEN (pattern, 0) - 1; i >= 1; i--)
+	if (reg_mentioned_p (reg, XVECEXP (pattern, 0, i)))
+	  return 1;
+      pattern = XVECEXP (pattern, 0, 0);
+    }
+
+  if (GET_CODE (pattern) == SET)
+    {
+      if (reg_mentioned_p (reg, SET_DEST (pattern)))
+	{
+	  /* We don't use rtx_equal_p, because we don't care if the
+             mode is different.  */
+	  if (GET_CODE (SET_DEST (pattern)) != REG
+	      || REGNO (reg) != REGNO (SET_DEST (pattern)))
+	    return 1;
+
+	  *set = pattern;
+	}
+
+      pattern = SET_SRC (pattern);
+    }
+
+  if (GET_CODE (pattern) != CALL
+      || GET_CODE (XEXP (pattern, 0)) != MEM
+      || ! rtx_equal_p (reg, XEXP (XEXP (pattern, 0), 0)))
+    return 1;
+
+  return 0;
+}
+
 /* Exported to toplev.c.
 
-   Scan the function looking for move instructions which have to be changed to
-   pc-relative loads and insert the literal tables.  */
+   Do a final pass over the function, just before delayed branch
+   scheduling.  */
 
 void
 machine_dependent_reorg (first)
      rtx first;
 {
   rtx insn;
+
+  /* If relaxing, generate pseudo-ops to associate function calls with
+     the symbols they call.  It does no harm to not generate these
+     pseudo-ops.  However, when we can generate them, it enables to
+     linker to potentially relax the jsr to a bsr, and eliminate the
+     register load and, possibly, the constant pool entry.  */
+
+  if (TARGET_RELAX)
+    {
+      /* Remove all REG_LABEL notes.  We want to use them for our own
+	 purposes.  This works because none of the remaining passes
+	 need to look at them.
+
+	 ??? But it may break in the future.  We should use a machine
+	 dependent REG_NOTE, or some other approach entirely.  */
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+	{
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	    {
+	      rtx note;
+
+	      while ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != 0)
+		remove_note (insn, note);
+	    }
+	}
+
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx pattern, reg, link, set, scan, dies, label;
+	  int rescan = 0, foundinsn = 0;
+
+	  if (GET_CODE (insn) != CALL_INSN)
+	    continue;
+
+	  pattern = PATTERN (insn);
+
+	  if (GET_CODE (pattern) == PARALLEL)
+	    pattern = XVECEXP (pattern, 0, 0);
+	  if (GET_CODE (pattern) == SET)
+	    pattern = SET_SRC (pattern);
+
+	  if (GET_CODE (pattern) != CALL
+	      || GET_CODE (XEXP (pattern, 0)) != MEM)
+	    continue;
+
+	  reg = XEXP (XEXP (pattern, 0), 0);
+	  if (GET_CODE (reg) != REG)
+	    continue;
+
+	  /* This is a function call via REG.  If the only uses of REG
+	     between the time that it is set and the time that it dies
+	     are in function calls, then we can associate all the
+	     function calls with the setting of REG.  */
+
+	  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+	    {
+	      set = single_set (XEXP (link, 0));
+	      if (set && rtx_equal_p (reg, SET_DEST (set)))
+		{
+		  link = XEXP (link, 0);
+		  break;
+		}
+	    }
+
+	  if (! link)
+	    {
+	      /* ??? Sometimes global register allocation will have
+                 deleted the insn pointed to by LOG_LINKS.  Try
+                 scanning backward to find where the register is set.  */
+	      for (scan = PREV_INSN (insn);
+		   scan && GET_CODE (scan) != CODE_LABEL;
+		   scan = PREV_INSN (scan))
+		{
+		  if (GET_RTX_CLASS (GET_CODE (scan)) != 'i')
+		    continue;
+
+		  if (! reg_mentioned_p (reg, scan))
+		    continue;
+
+		  if (noncall_uses_reg (reg, scan, &set))
+		    break;
+
+		  if (set)
+		    {
+		      link = scan;
+		      break;
+		    }
+		}
+	    }
+
+	  if (! link)
+	    continue;
+
+	  /* The register is set at LINK.  */
+
+	  /* We can only optimize the function call if the register is
+             being set to a symbol.  In theory, we could sometimes
+             optimize calls to a constant location, but the assembler
+             and linker do not support that at present.  */
+	  if (GET_CODE (SET_SRC (set)) != SYMBOL_REF
+	      && GET_CODE (SET_SRC (set)) != LABEL_REF)
+	    continue;
+
+	  /* Scan forward from LINK to the place where REG dies, and
+             make sure that the only insns which use REG are
+             themselves function calls.  */
+
+	  dies = NULL_RTX;
+	  for (scan = NEXT_INSN (link); scan; scan = NEXT_INSN (scan))
+	    {
+	      rtx scanset;
+
+	      if (GET_RTX_CLASS (GET_CODE (scan)) != 'i')
+		continue;
+
+	      /* Don't try to trace forward past a JUMP.  To optimize
+                 safely, we would have to check that all the
+                 instructions at the jump destination did not use REG.
+                 It should be safe to trace past a CODE_LABEL, because
+                 we will only find the setting insn in LOG_LINKS if it
+                 is in the same basic block (so probably we should
+                 never find a CODE_LABEL anyhow).  */
+
+	      if (GET_CODE (insn) == JUMP_INSN)
+		break;
+
+	      if (! reg_mentioned_p (reg, scan))
+		continue;
+
+	      if (noncall_uses_reg (reg, scan, &scanset))
+		break;
+
+	      if (scan == insn)
+		foundinsn = 1;
+
+	      if (scan != insn && GET_CODE (scan) == CALL_INSN)
+		{
+		  /* There is a function call to this register other
+                     than the one we are checking.  If we optimize
+                     this call, we need to rescan again below.  */
+		  rescan = 1;
+		}
+
+	      /* ??? We shouldn't have to worry about SCANSET here.
+		 We should just be able to check for a REG_DEAD note
+		 on a function call.  However, the REG_DEAD notes are
+		 apparently not dependable around libcalls; c-torture
+		 execute/920501-2 is a test case.  If SCANSET is set,
+		 then this insn sets the register, so it must have
+		 died earlier.  Unfortunately, this will only handle
+		 the cases in which the register is, in fact, set in a
+		 later insn.  */
+
+	      /* ??? We shouldn't have to use FOUNDINSN here.
+		 However, the LOG_LINKS fields are apparently not
+		 entirely reliable around libcalls;
+		 newlib/libm/math/e_pow.c is a test case.  Sometimes
+		 an insn will appear in LOG_LINKS even though it is
+		 not the most recent insn which sets the register. */
+
+	      if (foundinsn
+		  && (scanset
+		      || find_reg_note (scan, REG_DEAD, reg)))
+		{
+		  dies = scan;
+		  break;
+		}
+	    }
+
+	  if (! dies)
+	    {
+	      /* Either there was a branch, or some insn used REG
+                 other than as a function call address.  */
+	      continue;
+	    }
+
+	  /* Create a code label, and put it in a REG_LABEL note on
+             the insn which sets the register, and on each call insn
+             which uses the register.  In final_prescan_insn we look
+             for the REG_LABEL notes, and output the appropriate label
+             or pseudo-op.  */
+
+	  label = gen_label_rtx ();
+	  REG_NOTES (link) = gen_rtx (EXPR_LIST, REG_LABEL, label,
+				      REG_NOTES (link));
+	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, label,
+				      REG_NOTES (insn));
+	  if (rescan)
+	    {
+	      scan = link;
+	      do
+		{
+		  scan = NEXT_INSN (scan);
+		  if (scan != insn
+		      && GET_CODE (scan) == CALL_INSN
+		      && reg_mentioned_p (reg, scan))
+		    REG_NOTES (scan) = gen_rtx (EXPR_LIST, REG_LABEL,
+						label, REG_NOTES (scan));
+		}
+	      while (scan != dies);
+	    }
+	}
+    }
+
+  /* Scan the function looking for move instructions which have to be
+     changed to pc-relative loads and insert the literal tables.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
@@ -1356,7 +1628,8 @@ machine_dependent_reorg (first)
 		  RTX_UNCHANGING_P (newsrc) = 1;
 		  newinsn = emit_insn_after (gen_rtx (SET, VOIDmode,
 						      dst, newsrc), scan);
-
+		  REG_NOTES (newinsn) = REG_NOTES (scan);
+		  REG_NOTES (scan) = NULL_RTX;
 		  delete_insn (scan);
 		  scan = newinsn;
 		}
@@ -1367,7 +1640,10 @@ machine_dependent_reorg (first)
 }
 
 /* Dump out instruction addresses, which is useful for debugging the
-   constant pool table stuff.  */
+   constant pool table stuff.
+
+   If relaxing, output the label and pseudo-ops used to link together
+   calls and the instruction which set the registers.  */
 
 /* ??? This is unnecessary, and probably should be deleted.  This makes
    the insn_addresses declaration above unnecessary.  */
@@ -1385,6 +1661,31 @@ final_prescan_insn (insn, opvec, noperands)
 {
   if (TARGET_DUMPISIZE)
     fprintf (asm_out_file, "\n! at %04x\n", insn_addresses[INSN_UID (insn)]);
+
+  if (TARGET_RELAX)
+    {
+      rtx note;
+
+      note = find_reg_note (insn, REG_LABEL, NULL_RTX);
+      if (note)
+	{
+	  rtx pattern;
+
+	  pattern = PATTERN (insn);
+	  if (GET_CODE (pattern) == PARALLEL)
+	    pattern = XVECEXP (pattern, 0, 0);
+	  if (GET_CODE (pattern) == CALL
+	      || (GET_CODE (pattern) == SET
+		  && GET_CODE (SET_SRC (pattern)) == CALL))
+	    fprintf (asm_out_file, "\t.uses L%d\n",
+		     CODE_LABEL_NUMBER (XEXP (note, 0)));
+	  else if (GET_CODE (pattern) == SET)
+	    ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				       CODE_LABEL_NUMBER (XEXP (note, 0)));
+	  else
+	    abort ();
+	}
+    }
 }
 
 /* Dump out any constants accumulated in the final pass.  These will
