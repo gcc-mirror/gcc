@@ -590,7 +590,10 @@
 	/* Appears to be 0xe0000000 for at least one 2.1.91 kernel.	*/
 	/* Probably needs to be more flexible, but I don't yet 		*/
 	/* fully understand how flexible.				*/
-#	define MPROTECT_VDB
+
+	/* Linux threads don't interact well with the read() wrapper.
+	   Not defining MPROTECT_VDB fixes this.  */
+	/* #	define MPROTECT_VDB*/
 #       ifdef __ELF__
 #            define DYNAMIC_LOADING
 #	     ifdef UNDEFINED	/* includes ro data */
