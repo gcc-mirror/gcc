@@ -8661,6 +8661,16 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 						TREE_INT_CST_LOW (TREE_VALUE (arglist)),
 						hard_frame_pointer_rtx);
 
+	  /* Some ports cannot access arbitrary stack frames.  */
+	  if (tem == NULL)
+	    {
+	      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
+		warning ("unsupported arg to `__builtin_frame_address'");
+	      else
+		warning ("unsupported arg to `__builtin_return_address'");
+	      return const0_rtx;
+	    }
+
 	  /* For __builtin_frame_address, return what we've got.  */
 	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
 	    return tem;
