@@ -1670,7 +1670,7 @@ dump_expr (t, nop)
 
 	      t = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
 	      t = TYPE_METHOD_BASETYPE (t);
-	      virtuals = BINFO_VIRTUALS (TYPE_BINFO (TYPE_MAIN_VARIANT (t)));
+	      virtuals = TYPE_BINFO_VIRTUALS (TYPE_MAIN_VARIANT (t));
 	      
 	      n = TREE_INT_CST_LOW (idx);
 
@@ -1685,7 +1685,7 @@ dump_expr (t, nop)
 		}
 	      if (virtuals)
 		{
-		  dump_expr (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
+		  dump_expr (TREE_VALUE (virtuals), 0);
 		  break;
 		}
 	    }
