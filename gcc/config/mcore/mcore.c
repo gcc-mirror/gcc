@@ -149,6 +149,9 @@ static int        mcore_ior_cost               	(rtx);
 static bool       mcore_rtx_costs		(rtx, int, int, int *);
 static void       mcore_external_libcall	(rtx);
 static bool       mcore_return_in_memory	(tree, tree);
+static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 tree, bool);
 
 
 /* Initialize the GCC target structure.  */
@@ -197,6 +200,8 @@ static bool       mcore_return_in_memory	(tree, tree);
 #define TARGET_MUST_PASS_IN_STACK	must_pass_in_stack_var_size
 #undef  TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE  hook_pass_by_reference_must_pass_in_stack
+#undef  TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES	mcore_arg_partial_bytes
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs
@@ -3107,19 +3112,18 @@ mcore_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
   return 0;
 }
 
-/* Implements the FUNCTION_ARG_PARTIAL_NREGS macro.
-   Returns the number of argument registers required to hold *part* of
-   a parameter of machine mode MODE and type TYPE (which may be NULL if
+/* Returns the number of bytes of argument registers required to hold *part*
+   of a parameter of machine mode MODE and type TYPE (which may be NULL if
    the type is not known).  If the argument fits entirely in the argument
    registers, or entirely on the stack, then 0 is returned.  CUM is the
    number of argument registers already used by earlier parameters to
    the function.  */
 
-int
-mcore_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
-				  tree type, int named)
+static int
+mcore_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			 tree type, bool named)
 {
-  int reg = ROUND_REG (cum, mode);
+  int reg = ROUND_REG (*cum, mode);
 
   if (named == 0)
     return 0;
@@ -3148,7 +3152,7 @@ mcore_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
   reg = NPARM_REGS - reg;
 
   /* Return partially in registers and partially on the stack.  */
-  return reg;
+  return reg * UNITS_PER_WORD;
 }
 
 /* Return nonzero if SYMBOL is marked as being dllexport'd.  */

@@ -762,9 +762,6 @@ typedef struct xtensa_args
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, TRUE)
 
-/* Arguments are never passed partly in memory and partly in registers.  */
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) (0)
-
 /* Specify function argument alignment.  */
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
   ((TYPE) != 0								\

@@ -80,9 +80,6 @@ extern void   v850_output_aligned_bss       (FILE *, tree, const char *, int, in
 extern void   v850_output_common            (FILE *, tree, const char *, int, int);
 extern void   v850_output_local             (FILE *, tree, const char *, int, int);
 extern v850_data_area v850_get_data_area    (tree);
-#ifdef HAVE_MACHINE_MODES
-extern int    function_arg_partial_nregs    (CUMULATIVE_ARGS *, Mmode, tree, int);
-#endif
 #endif
 
 extern void ghs_pragma_section		    (struct cpp_reader *);

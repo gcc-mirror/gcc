@@ -756,6 +756,8 @@ static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    int *, int);
 static bool rs6000_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				      tree, bool);
+static int rs6000_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+				     tree, bool);
 #if TARGET_MACHO
 static void macho_branch_islands (void);
 static void add_compiler_branch_island (tree, tree, int);
@@ -991,6 +993,8 @@ static const char alt_reg_names[][8] =
 #define TARGET_MUST_PASS_IN_STACK rs6000_must_pass_in_stack
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE rs6000_pass_by_reference
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES rs6000_arg_partial_bytes
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST rs6000_build_builtin_va_list
@@ -5306,6 +5310,8 @@ rs6000_mixed_function_arg (enum machine_mode mode, tree type, int align_words)
        In any case, the code to store the whole arg to memory is often
        more efficient than code to store pieces, and we know that space
        is available in the right place for the whole arg.  */
+    /* FIXME: This should be fixed since the conversion to
+       TARGET_ARG_PARTIAL_BYTES.  */
     rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
 
   i = 0;
@@ -5606,11 +5612,11 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    the number of registers used.  For args passed entirely in registers
    or entirely in memory, zero.  When an arg is described by a PARALLEL,
    perhaps using more than one register type, this function returns the
-   number of registers used by the first element of the PARALLEL.  */
+   number of bytes of registers used by the PARALLEL.  */
 
-int
-function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			    tree type, int named)
+static int
+rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  tree type, bool named)
 {
   int ret = 0;
   int align;
@@ -5648,8 +5654,10 @@ function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       && GP_ARG_NUM_REG < align_words + rs6000_arg_size (mode, type))
     ret = GP_ARG_NUM_REG - align_words;
 
+  ret *= (TARGET_32BIT ? 4 : 8);
+
   if (ret != 0 && TARGET_DEBUG_ARG)
-    fprintf (stderr, "function_arg_partial_nregs: %d\n", ret);
+    fprintf (stderr, "rs6000_arg_partial_bytes: %d\n", ret);
 
   return ret;
 }

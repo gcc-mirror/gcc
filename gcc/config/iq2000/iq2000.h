@@ -438,9 +438,6 @@ enum reg_class
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (& CUM, MODE, TYPE, NAMED)
 
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-  function_arg_partial_nregs (& CUM, MODE, TYPE, NAMED)
-
 #define MAX_ARGS_IN_REGISTERS 8
 
 typedef struct iq2000_args

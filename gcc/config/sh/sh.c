@@ -286,6 +286,8 @@ static bool sh_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
 static bool sh_callee_copies (CUMULATIVE_ARGS *, enum machine_mode,
 			      tree, bool);
+static int sh_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+			         tree, bool);
 static int sh_dwarf_calling_convention (tree);
 
 
@@ -444,6 +446,8 @@ static int sh_dwarf_calling_convention (tree);
 #define TARGET_PASS_BY_REFERENCE sh_pass_by_reference
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES sh_callee_copies
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES sh_arg_partial_bytes
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
@@ -6667,6 +6671,30 @@ sh_callee_copies (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  && ((mode == BLKmode ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode))
 	      % SH_MIN_ALIGN_FOR_CALLEE_COPY == 0));
 }
+
+static int
+sh_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		      tree type, bool named ATTRIBUTE_UNUSED)
+{
+  int words = 0;
+
+  if (!TARGET_SH5
+      && PASS_IN_REG_P (*cum, mode, type)
+      && !(TARGET_SH4 || TARGET_SH2A_DOUBLE)
+      && (ROUND_REG (*cum, mode)
+	  + (mode != BLKmode
+	     ? ROUND_ADVANCE (GET_MODE_SIZE (mode))
+	     : ROUND_ADVANCE (int_size_in_bytes (type)))
+	  > NPARM_REGS (mode)))
+    words = NPARM_REGS (mode) - ROUND_REG (*cum, mode);
+
+  else if (!TARGET_SHCOMPACT
+	   && SH5_WOULD_BE_PARTIAL_NREGS (*cum, mode, type, named))
+    words = NPARM_REGS (SImode) - cum->arg_count[SH_ARG_INT];
+
+  return words * UNITS_PER_WORD;
+}
+
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,

@@ -36,7 +36,6 @@ extern int          mcore_naked_function_p       	(void);
 
 #ifdef TREE_CODE
 #ifdef HAVE_MACHINE_MODES
-extern int          mcore_function_arg_partial_nregs	(CUMULATIVE_ARGS, enum machine_mode, tree, int);
 extern int          mcore_num_arg_regs           	(enum machine_mode, tree);
 #endif /* HAVE_MACHINE_MODES */
 

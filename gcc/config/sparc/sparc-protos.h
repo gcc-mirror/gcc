@@ -30,8 +30,6 @@ extern void function_arg_advance (CUMULATIVE_ARGS *,
 				  enum machine_mode, tree, int);
 extern struct rtx_def *function_arg (const CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int, int);
-extern int function_arg_partial_nregs (const CUMULATIVE_ARGS *,
-				       enum machine_mode, tree, int);
 #ifdef RTX_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern void sparc_va_start (tree, rtx);

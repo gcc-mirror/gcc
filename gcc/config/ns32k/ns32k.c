@@ -74,6 +74,8 @@ static void ns32k_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool ns32k_rtx_costs (rtx, int, int, int *);
 static int ns32k_address_cost (rtx);
 static rtx ns32k_struct_value_rtx (tree, int);
+static int ns32k_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+				    tree, bool);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -99,6 +101,9 @@ static rtx ns32k_struct_value_rtx (tree, int);
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX ns32k_struct_value_rtx
+
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES ns32k_arg_partial_bytes
 
 #undef TARGET_ASM_FILE_START_APP_OFF
 #define TARGET_ASM_FILE_START_APP_OFF true
@@ -1638,4 +1643,28 @@ ns32k_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
       && cc_status.value2
       && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
     abort ();
+}
+
+/* Implement TARGET_ARG_PARTIAL_BYTES.  */
+
+static int
+ns32k_arg_partial_bytes (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+			 tree type, bool named ATTRIBUTE_UNUSED)
+{
+  int cum = *pcum;
+
+  if (TARGET_REGPARM && cum < 8)
+    {
+      HOST_WIDE_INT size;
+
+      if (mode == BLKmode)
+	size = int_size_in_bytes (type);
+      else
+	size = GET_MODE_SIZE (mode);
+
+      if (8 < cum + size)
+	return 8 - cum;
+    }
+
+  return 0;
 }

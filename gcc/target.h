@@ -537,6 +537,12 @@ struct gcc_target
        the caller.  It is never called for TYPE requiring constructors.  */
     bool (* callee_copies) (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 			    tree type, bool named);
+
+    /* Return zero for arguments passed entirely on the stack or entirely
+       in registers.  If passed in both, return the number of bytes passed
+       in registers; the balance is therefore passed on the stack.  */
+    int (* arg_partial_bytes) (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+			       tree type, bool named);
   } calls;
 
   /* Functions specific to the C++ frontend.  */

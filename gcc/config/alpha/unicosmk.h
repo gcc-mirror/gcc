@@ -210,11 +210,6 @@ do {								\
   ++(CUM).num_args;						\
 } while(0)
 
-/* An argument is passed either entirely in registers or entirely on stack.  */
- 
-#undef FUNCTION_ARG_PARTIAL_NREGS
-/* #define FUNCTION_ARG_PARTIAL_NREGS(CUM,MODE,TYPE,NAMED) 0 */
-
 /* This ensures that $15 increments/decrements in leaf functions won't get
    eliminated.  */
 

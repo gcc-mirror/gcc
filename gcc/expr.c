@@ -1220,8 +1220,7 @@ block_move_libcall_safe_for_call_parm (void)
 	rtx tmp = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
 	if (!tmp || !REG_P (tmp))
 	  return false;
-	if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode,
-					NULL_TREE, 1))
+	if (targetm.calls.arg_partial_bytes (&args_so_far, mode, NULL, 1))
 	  return false;
 	FUNCTION_ARG_ADVANCE (args_so_far, mode, NULL_TREE, 1);
       }
@@ -3343,9 +3342,8 @@ emit_single_push_insn (enum machine_mode mode, rtx x, tree type)
    ALIGN (in bits) is maximum alignment we can assume.
 
    If PARTIAL and REG are both nonzero, then copy that many of the first
-   words of X into registers starting with REG, and push the rest of X.
-   The amount of space pushed is decreased by PARTIAL words,
-   rounded *down* to a multiple of PARM_BOUNDARY.
+   bytes of X into registers starting with REG, and push the rest of X.
+   The amount of space pushed is decreased by PARTIAL bytes.
    REG must be a hard register in this case.
    If REG is zero but PARTIAL is not, take any all others actions for an
    argument partially in registers, but do not actually load any
@@ -3397,23 +3395,14 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
       /* Copy a block into the stack, entirely or partially.  */
 
       rtx temp;
-      int used = partial * UNITS_PER_WORD;
+      int used;
       int offset;
       int skip;
 
-      if (reg && GET_CODE (reg) == PARALLEL)
-	{
-	  /* Use the size of the elt to compute offset.  */
-	  rtx elt = XEXP (XVECEXP (reg, 0, 0), 0);
-	  used = partial * GET_MODE_SIZE (GET_MODE (elt));
-	  offset = used % (PARM_BOUNDARY / BITS_PER_UNIT);
-	}
-      else
-	offset = used % (PARM_BOUNDARY / BITS_PER_UNIT);
+      offset = partial % (PARM_BOUNDARY / BITS_PER_UNIT);
+      used = partial - offset;
 
       gcc_assert (size);
-
-      used -= offset;
 
       /* USED is now the # of bytes we need not copy to the stack
 	 because registers will take care of them.  */
@@ -3525,7 +3514,7 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
       int size = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
       int i;
       int not_stack;
-      /* # words of start of argument
+      /* # bytes of start of argument
 	 that we must make space for but need not store.  */
       int offset = partial % (PARM_BOUNDARY / BITS_PER_WORD);
       int args_offset = INTVAL (args_so_far);
@@ -3546,7 +3535,7 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 
       /* Now NOT_STACK gets the number of words that we don't need to
 	 allocate on the stack.  */
-      not_stack = partial - offset;
+      not_stack = (partial - offset) / UNITS_PER_WORD;
 
       /* If the partial register-part of the arg counts in its stack size,
 	 skip the part of stack space corresponding to the registers.
@@ -3630,7 +3619,10 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
       if (GET_CODE (reg) == PARALLEL)
 	emit_group_load (reg, x, type, -1);
       else
-	move_block_to_reg (REGNO (reg), x, partial, mode);
+	{
+	  gcc_assert (partial % UNITS_PER_WORD == 0);
+	  move_block_to_reg (REGNO (reg), x, partial / UNITS_PER_WORD, mode);
+	}
     }
 
   if (extra && args_addr == 0 && where_pad == stack_direction)

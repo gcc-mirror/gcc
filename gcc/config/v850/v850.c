@@ -69,6 +69,8 @@ static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static bool v850_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
+static int v850_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+				   tree, bool);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -136,6 +138,9 @@ static int v850_interrupt_p = FALSE;
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS v850_setup_incoming_varargs
+
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES v850_arg_partial_bytes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -257,14 +262,12 @@ function_arg (CUMULATIVE_ARGS * cum,
 }
 
 
-/* Return the number of words which must be put into registers
+/* Return the number of bytes which must be put into registers
    for values which are part in registers and part in memory.  */
 
-int
-function_arg_partial_nregs (CUMULATIVE_ARGS * cum,
-                            enum machine_mode mode,
-                            tree type,
-                            int named)
+static int
+v850_arg_partial_bytes (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+                        tree type, bool named)
 {
   int size, align;
 
@@ -293,7 +296,7 @@ function_arg_partial_nregs (CUMULATIVE_ARGS * cum,
       && cum->nbytes + size > 4 * UNITS_PER_WORD)
     return 0;
 
-  return (4 * UNITS_PER_WORD - cum->nbytes) / UNITS_PER_WORD;
+  return 4 * UNITS_PER_WORD - cum->nbytes;
 }
 
 

@@ -174,6 +174,8 @@ static void iq2000_select_section     (tree, int, unsigned HOST_WIDE_INT);
 static bool iq2000_return_in_memory   (tree, tree);
 static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, bool);
+static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
+				       tree, bool);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -201,6 +203,8 @@ static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_PASS_BY_REFERENCE	iq2000_pass_by_reference
 #undef  TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES		hook_callee_copies_named
+#undef  TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES	iq2000_arg_partial_bytes
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	iq2000_setup_incoming_varargs
@@ -1552,18 +1556,16 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   return ret;
 }
 
-int
-function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			    tree type ATTRIBUTE_UNUSED,
-			    int named ATTRIBUTE_UNUSED)
+static int
+iq2000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  tree type ATTRIBUTE_UNUSED,
+			  bool named ATTRIBUTE_UNUSED)
 {
-  if (mode == DImode
-	   && cum->arg_words == MAX_ARGS_IN_REGISTERS - (unsigned)1)
+  if (mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
     {
       if (TARGET_DEBUG_D_MODE)
-	fprintf (stderr, "function_arg_partial_nregs = 1\n");
-
-      return 1;
+	fprintf (stderr, "iq2000_arg_partial_bytes=%d\n", UNITS_PER_WORD);
+      return UNITS_PER_WORD;
     }
 
   return 0;

@@ -953,13 +953,6 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
   ? gen_rtx_REG (MODE, CRIS_FIRST_ARG_REG + (CUM).regs)		\
   : NULL_RTX)
 
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
- (((CUM).regs == (CRIS_MAX_ARGS_IN_REGS - 1)			\
-   && !targetm.calls.must_pass_in_stack (MODE, TYPE)		\
-   && CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) > 4			\
-   && CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) <= 8)			\
-  ? 1 : 0)
-
 /* Contrary to what you'd believe, defining FUNCTION_ARG_CALLEE_COPIES
    seems like a (small total) loss, at least for gcc-2.7.2 compiling and
    running gcc-2.1 (small win in size, small loss running -- 100.1%),

@@ -614,7 +614,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	DEFAULT_SHORT_ENUMS SPLIT_COMPLEX_ARGS MD_ASM_CLOBBERS		\
 	HANDLE_PRAGMA_REDEFINE_EXTNAME HANDLE_PRAGMA_EXTERN_PREFIX	\
 	MUST_PASS_IN_STACK FUNCTION_ARG_PASS_BY_REFERENCE               \
-        VECTOR_MODE_SUPPORTED_P TARGET_SUPPORTS_HIDDEN
+        VECTOR_MODE_SUPPORTED_P TARGET_SUPPORTS_HIDDEN 			\
+	FUNCTION_ARG_PARTIAL_NREGS
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

@@ -189,16 +189,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
      (CUM).num_args += ALPHA_ARG_SIZE (MODE, TYPE, NAMED);		\
     }
 
-/* For an arg passed partly in registers and partly in memory,
-   this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero.  */
-
-#undef FUNCTION_ARG_PARTIAL_NREGS
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)		\
-((CUM).num_args < 6 && 6 < (CUM).num_args				\
-   + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)					\
- ? 6 - (CUM).num_args : 0)
-
 /* ABI has stack checking, but it's broken.  */
 #undef STACK_CHECK_BUILTIN
 #define STACK_CHECK_BUILTIN 0
