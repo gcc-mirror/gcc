@@ -154,9 +154,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
    for the current function.  As a side effect it fills in the 
    current_frame_info structure, if the data is available.  */
 unsigned int
-fr30_compute_frame_size (from_reg, to_reg)
-     int from_reg;
-     int to_reg;
+fr30_compute_frame_size (int from_reg, int to_reg)
 {
   int 		regno;
   unsigned int 	return_value;
@@ -219,7 +217,7 @@ fr30_compute_frame_size (from_reg, to_reg)
    insn to prevent such scheduling.  */
 
 void
-fr30_expand_prologue ()
+fr30_expand_prologue (void)
 {
   int regno;
   rtx insn;
@@ -347,7 +345,7 @@ fr30_expand_prologue ()
    In some cases, it might be necessary to emit a barrier instruction as the
    first insn to prevent such scheduling.  */
 void
-fr30_expand_epilogue ()
+fr30_expand_epilogue (void)
 {
   int regno;
 
@@ -406,11 +404,10 @@ fr30_expand_epilogue ()
    ARG_REGS_USED_SO_FAR has *not* been updated for the last named argument
    which has type TYPE and mode MODE, and we rely on this fact.  */
 void
-fr30_setup_incoming_varargs (arg_regs_used_so_far, int_mode, type, pretend_size)
-     CUMULATIVE_ARGS arg_regs_used_so_far;
-     int             int_mode;
-     tree            type ATTRIBUTE_UNUSED;
-     int *           pretend_size;
+fr30_setup_incoming_varargs (CUMULATIVE_ARGS arg_regs_used_so_far,
+			     int int_mode,
+			     tree type ATTRIBUTE_UNUSED,
+			     int *pretend_size)
 {
   enum machine_mode mode = (enum machine_mode)int_mode;
   int               size;
@@ -440,9 +437,7 @@ fr30_setup_incoming_varargs (arg_regs_used_so_far, int_mode, type, pretend_size)
 /* Print a memory address as an operand to reference that memory location.  */
 
 void
-fr30_print_operand_address (stream, address)
-     FILE * stream;
-     rtx    address;
+fr30_print_operand_address (FILE *stream, rtx address)
 {
   switch (GET_CODE (address))
     {
@@ -461,10 +456,7 @@ fr30_print_operand_address (stream, address)
 /* Print an operand.  */
 
 void
-fr30_print_operand (file, x, code)
-     FILE * file;
-     rtx    x;
-     int    code;
+fr30_print_operand (FILE *file, rtx x, int code)
 {
   rtx x0;
   
@@ -665,9 +657,7 @@ fr30_print_operand (file, x, code)
 /* Compute the number of word sized registers needed to hold a
    function argument of mode INT_MODE and tree type TYPE.  */
 int
-fr30_num_arg_regs (int_mode, type)
-     int int_mode;
-     tree type;
+fr30_num_arg_regs (int int_mode, tree type)
 {
   enum machine_mode mode = (enum machine_mode) int_mode;
   int size;
@@ -692,11 +682,8 @@ fr30_num_arg_regs (int_mode, type)
    parameters to the function.  */
 
 int
-fr30_function_arg_partial_nregs (cum, int_mode, type, named)
-     CUMULATIVE_ARGS cum;
-     int int_mode;
-     tree type;
-     int named;
+fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, int int_mode,
+				 tree type, int named)
 {
   /* Unnamed arguments, ie those that are prototyped as ...
      are always passed on the stack.
@@ -718,9 +705,7 @@ fr30_function_arg_partial_nregs (cum, int_mode, type, named)
 }
 
 static rtx
-fr30_pass_by_reference (valist, type)
-     tree valist;
-     tree type;
+fr30_pass_by_reference (tree valist, tree type)
 {
   tree type_ptr;
   tree type_ptr_ptr;
@@ -739,9 +724,7 @@ fr30_pass_by_reference (valist, type)
 }
 
 static rtx
-fr30_pass_by_value (valist, type)
-     tree valist;
-     tree type;
+fr30_pass_by_value (tree valist, tree type)
 {
   HOST_WIDE_INT size = int_size_in_bytes (type);
   HOST_WIDE_INT rsize;
@@ -775,9 +758,7 @@ fr30_pass_by_value (valist, type)
 /* Implement `va_arg'.  */
 
 rtx
-fr30_va_arg (valist, type)
-     tree valist;
-     tree type;
+fr30_va_arg (tree valist, tree type)
 {
   HOST_WIDE_INT size;
   
@@ -803,9 +784,7 @@ fr30_va_arg (valist, type)
 /* Returns true if OPERAND is an integer value suitable for use in
    an ADDSP instruction.  */
 int
-stack_add_operand (operand, mode)
-     rtx operand;
-     Mmode mode ATTRIBUTE_UNUSED;
+stack_add_operand (rtx operand, Mmode mode ATTRIBUTE_UNUSED)
 {
   return
     (GET_CODE (operand) == CONST_INT
@@ -817,9 +796,7 @@ stack_add_operand (operand, mode)
 /* Returns true if OPERAND is an integer value suitable for use in
    an ADD por ADD2 instruction, or if it is a register.  */
 int
-add_immediate_operand (operand, mode)
-     rtx operand;
-     Mmode mode ATTRIBUTE_UNUSED;
+add_immediate_operand (rtx operand, Mmode mode ATTRIBUTE_UNUSED)
 {
   return
     (GET_CODE (operand) == REG
@@ -830,9 +807,7 @@ add_immediate_operand (operand, mode)
 
 /* Returns true if OPERAND is hard register in the range 8 - 15.  */
 int
-high_register_operand (operand, mode)
-     rtx operand;
-     Mmode mode ATTRIBUTE_UNUSED;
+high_register_operand (rtx operand, Mmode mode ATTRIBUTE_UNUSED)
 {
   return
     (GET_CODE (operand) == REG
@@ -842,9 +817,7 @@ high_register_operand (operand, mode)
 
 /* Returns true if OPERAND is hard register in the range 0 - 7.  */
 int
-low_register_operand (operand, mode)
-     rtx operand;
-     Mmode mode ATTRIBUTE_UNUSED;
+low_register_operand (rtx operand, Mmode mode ATTRIBUTE_UNUSED)
 {
   return
     (GET_CODE (operand) == REG
@@ -853,9 +826,7 @@ low_register_operand (operand, mode)
 
 /* Returns true if OPERAND is suitable for use in a CALL insn.  */
 int
-call_operand (operand, mode)
-     rtx operand;
-     Mmode mode ATTRIBUTE_UNUSED;
+call_operand (rtx operand, Mmode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (operand) == MEM
 	  && (GET_CODE (XEXP (operand, 0)) == SYMBOL_REF
@@ -864,9 +835,7 @@ call_operand (operand, mode)
 
 /* Returns TRUE if OP is a valid operand of a DImode operation.  */
 int
-di_operand (op, mode)
-     rtx op;
-     Mmode mode;
+di_operand (rtx op, Mmode mode)
 {
   if (register_operand (op, mode))
     return TRUE;
@@ -893,9 +862,7 @@ di_operand (op, mode)
 
 /* Returns TRUE if OP is a DImode register or MEM.  */
 int
-nonimmediate_di_operand (op, mode)
-     rtx op;
-     Mmode mode;
+nonimmediate_di_operand (rtx op, Mmode mode)
 {
   if (register_operand (op, mode))
     return TRUE;
@@ -915,10 +882,7 @@ nonimmediate_di_operand (op, mode)
 /* Returns true iff all the registers in the operands array
    are in descending or ascending order.  */
 int
-fr30_check_multiple_regs (operands, num_operands, descending)
-     rtx * operands;
-     int   num_operands;
-     int   descending;
+fr30_check_multiple_regs (rtx *operands, int num_operands, int descending)
 {
   if (descending)
     {
@@ -955,8 +919,7 @@ fr30_check_multiple_regs (operands, num_operands, descending)
 }
 
 int
-fr30_const_double_is_zero (operand)
-     rtx operand;
+fr30_const_double_is_zero (rtx operand)
 {
   REAL_VALUE_TYPE d;
 
@@ -979,8 +942,7 @@ fr30_const_double_is_zero (operand)
    before we can use it.  */
 
 rtx
-fr30_move_double (operands)
-     rtx * operands;
+fr30_move_double (rtx * operands)
 {
   rtx src  = operands[1];
   rtx dest = operands[0];

@@ -92,7 +92,7 @@ static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
-mn10300_file_start ()
+mn10300_file_start (void)
 {
   default_file_start ();
 
@@ -107,10 +107,7 @@ mn10300_file_start ()
    FILE.  */
 
 void
-print_operand (file, x, code)
-     FILE *file;
-     rtx x;
-     int code;
+print_operand (FILE *file, rtx x, int code)
 {
   switch (code)
     {
@@ -437,9 +434,7 @@ print_operand (file, x, code)
 /* Output assembly language output for the address ADDR to FILE.  */
 
 void
-print_operand_address (file, addr)
-     FILE *file;
-     rtx addr;
+print_operand_address (FILE *file, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -477,7 +472,7 @@ print_operand_address (file, addr)
 
 /* Count the number of FP registers that have to be saved.  */
 static int
-fp_regs_to_save ()
+fp_regs_to_save (void)
 {
   int i, n = 0;
 
@@ -498,9 +493,7 @@ fp_regs_to_save ()
    bits 14 to 17 must have the same value. */
 
 void
-mn10300_print_reg_list (file, mask)
-     FILE *file;
-     int mask;
+mn10300_print_reg_list (FILE *file, int mask)
 {
   int need_comma;
   int i;
@@ -531,7 +524,7 @@ mn10300_print_reg_list (file, mask)
 }
 
 int
-can_use_return_insn ()
+can_use_return_insn (void)
 {
   /* size includes the fixed stack space needed for function calls.  */
   int size = get_frame_size () + current_function_outgoing_args_size;
@@ -558,7 +551,7 @@ can_use_return_insn ()
    all of them will be included in the mask if any one of them is used. */
 
 int
-mn10300_get_live_callee_saved_regs ()
+mn10300_get_live_callee_saved_regs (void)
 {
   int mask;
   int i;
@@ -593,8 +586,7 @@ mn10300_get_live_callee_saved_regs ()
 	      (reg:SI R1))) */
 
 void
-mn10300_gen_multiple_store (mask)
-     int mask;
+mn10300_gen_multiple_store (int mask)
 {
   if (mask != 0)
     {
@@ -642,7 +634,7 @@ mn10300_gen_multiple_store (mask)
 }
 
 void
-expand_prologue ()
+expand_prologue (void)
 {
   HOST_WIDE_INT size;
 
@@ -917,7 +909,7 @@ expand_prologue ()
 }
 
 void
-expand_epilogue ()
+expand_epilogue (void)
 {
   HOST_WIDE_INT size;
 
@@ -1155,9 +1147,7 @@ expand_epilogue ()
 /* Update the condition code from the insn.  */
 
 void
-notice_update_cc (body, insn)
-     rtx body;
-     rtx insn;
+notice_update_cc (rtx body, rtx insn)
 {
   switch (get_attr_cc (insn))
     {
@@ -1220,9 +1210,7 @@ notice_update_cc (body, insn)
    registers it saves.  Return 0 otherwise.  */
 
 int
-store_multiple_operation (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   int count;
   int mask;
@@ -1298,9 +1286,7 @@ store_multiple_operation (op, mode)
 /* Return true if OP is a valid call operand.  */
 
 int
-call_address_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+call_address_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (flag_pic)
     return (EXTRA_CONSTRAINT (op, 'S') || GET_CODE (op) == REG);
@@ -1313,10 +1299,7 @@ call_address_operand (op, mode)
 
    We might be able to simplify this.  */
 enum reg_class
-secondary_reload_class (class, mode, in)
-     enum reg_class class;
-     enum machine_mode mode;
-     rtx in;
+secondary_reload_class (enum reg_class class, enum machine_mode mode, rtx in)
 {
   /* Memory loads less than a full word wide can't have an
      address or stack pointer destination.  They must use
@@ -1372,8 +1355,7 @@ secondary_reload_class (class, mode, in)
 }
 
 int
-initial_offset (from, to)
-     int from, to;
+initial_offset (int from, int to)
 {
   /* The difference between the argument pointer and the frame pointer
      is the size of the callee register save area.  */
@@ -1426,7 +1408,7 @@ initial_offset (from, to)
 /* Flush the argument registers to the stack for a stdarg function;
    return the new argument pointer.  */
 rtx
-mn10300_builtin_saveregs ()
+mn10300_builtin_saveregs (void)
 {
   rtx offset, mem;
   tree fntype = TREE_TYPE (current_function_decl);
@@ -1456,17 +1438,14 @@ mn10300_builtin_saveregs ()
 }
 
 void
-mn10300_va_start (valist, nextarg)
-     tree valist;
-     rtx nextarg;
+mn10300_va_start (tree valist, rtx nextarg)
 {
   nextarg = expand_builtin_saveregs ();
   std_expand_builtin_va_start (valist, nextarg);
 }
 
 rtx
-mn10300_va_arg (valist, type)
-     tree valist, type;
+mn10300_va_arg (tree valist, tree type)
 {
   HOST_WIDE_INT align, rsize;
   tree t, ptr, pptr;
@@ -1505,11 +1484,8 @@ mn10300_va_arg (valist, type)
    from a function.  If the result is 0, the argument is pushed.  */
 
 rtx
-function_arg (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;
-     enum machine_mode mode;
-     tree type;
-     int named ATTRIBUTE_UNUSED;
+function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+	      tree type, int named ATTRIBUTE_UNUSED)
 {
   rtx result = 0;
   int size, align;
@@ -1558,11 +1534,8 @@ function_arg (cum, mode, type, named)
    in registers and partially in memory.  */
 
 int
-function_arg_partial_nregs (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;
-     enum machine_mode mode;
-     tree type;
-     int named ATTRIBUTE_UNUSED;
+function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    tree type, int named ATTRIBUTE_UNUSED)
 {
   int size, align;
 
@@ -1599,8 +1572,7 @@ function_arg_partial_nregs (cum, mode, type, named)
 
 /* Output a tst insn.  */
 const char *
-output_tst (operand, insn)
-     rtx operand, insn;
+output_tst (rtx operand, rtx insn)
 {
   rtx temp;
   int past_call = 0;
@@ -1689,9 +1661,7 @@ output_tst (operand, insn)
 }
 
 int
-impossible_plus_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+impossible_plus_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (op) != PLUS)
     return 0;
@@ -1707,9 +1677,7 @@ impossible_plus_operand (op, mode)
    for the btst insn which may examine memory or a register (the memory
    variant only allows an unsigned 8 bit integer).  */
 int
-const_8bit_operand (op, mode)
-    register rtx op;
-    enum machine_mode mode ATTRIBUTE_UNUSED;
+const_8bit_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT
 	  && INTVAL (op) >= 0
@@ -1718,9 +1686,7 @@ const_8bit_operand (op, mode)
 
 /* Return true if the operand is the 1.0f constant.  */
 int
-const_1f_operand (op, mode)
-    register rtx op;
-    enum machine_mode mode ATTRIBUTE_UNUSED;
+const_1f_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (op == CONST1_RTX (SFmode));
 }
@@ -1728,9 +1694,7 @@ const_1f_operand (op, mode)
 /* Similarly, but when using a zero_extract pattern for a btst where
    the source operand might end up in memory.  */
 int
-mask_ok_for_mem_btst (len, bit)
-     int len;
-     int bit;
+mask_ok_for_mem_btst (int len, int bit)
 {
   unsigned int mask = 0;
 
@@ -1752,9 +1716,7 @@ mask_ok_for_mem_btst (len, bit)
    expressions will have one of a few well defined forms, so
    we need only check those forms.  */
 int
-symbolic_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+symbolic_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (op))
     {
@@ -1787,10 +1749,8 @@ symbolic_operand (op, mode)
    But on a few ports with segmented architectures and indexed addressing
    (mn10300, hppa) it is used to rewrite certain problematical addresses.  */
 rtx
-legitimize_address (x, oldx, mode)
-     rtx x;
-     rtx oldx ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+		    enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (flag_pic && ! legitimate_pic_operand_p (x))
     x = legitimize_pic_address (oldx, NULL_RTX);
@@ -1828,9 +1788,7 @@ legitimize_address (x, oldx, mode)
 /* Convert a non-PIC address in `orig' to a PIC address using @GOT or
    @GOTOFF in `reg'. */
 rtx
-legitimize_pic_address (orig, reg)
-     rtx orig;
-     rtx reg;
+legitimize_pic_address (rtx orig, rtx reg)
 {
   if (GET_CODE (orig) == LABEL_REF
       || (GET_CODE (orig) == SYMBOL_REF
@@ -1857,8 +1815,7 @@ legitimize_pic_address (orig, reg)
 /* Return zero if X references a SYMBOL_REF or LABEL_REF whose symbol
    isn't protected by a PIC unspec; nonzero otherwise.  */
 int
-legitimate_pic_operand_p (x)
-     rtx x;
+legitimate_pic_operand_p (rtx x)
 {
   register const char *fmt;
   register int i;
@@ -1895,9 +1852,7 @@ legitimate_pic_operand_p (x)
 }
 
 static int
-mn10300_address_cost_1 (x, unsig)
-     rtx x;
-     int *unsig;
+mn10300_address_cost_1 (rtx x, int *unsig)
 {
   switch (GET_CODE (x))
     {
@@ -1976,18 +1931,14 @@ mn10300_address_cost_1 (x, unsig)
 }
 
 static int
-mn10300_address_cost (x)
-     rtx x;
+mn10300_address_cost (rtx x)
 {
   int s = 0;
   return mn10300_address_cost_1 (x, &s);
 }
 
 static bool
-mn10300_rtx_costs (x, code, outer_code, total)
-     rtx x;
-     int code, outer_code;
-     int *total;
+mn10300_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   switch (code)
     {
@@ -2039,8 +1990,7 @@ mn10300_rtx_costs (x, code, outer_code, total)
    movdf and movdi.  */
 
 bool
-mn10300_wide_const_load_uses_clr (operands)
-     rtx operands[2];
+mn10300_wide_const_load_uses_clr (rtx operands[2])
 {
   long val[2];
 
@@ -2085,10 +2035,7 @@ mn10300_wide_const_load_uses_clr (operands)
    may access it using GOTOFF instead of GOT.  */
 
 static void
-mn10300_encode_section_info (decl, rtl, first)
-     tree decl;
-     rtx rtl;
-     int first;
+mn10300_encode_section_info (tree decl, rtx rtl, int first)
 {
   rtx symbol;
 
