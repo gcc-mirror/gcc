@@ -5167,7 +5167,11 @@ fold_rtx (x, insn)
 		    /* Indicate this is a constant.  This isn't a 
 		       valid form of CONST, but it will only be used
 		       to fold the next insns and then discarded, so
-		       it should be safe.  */
+		       it should be safe.
+
+		       Note this expression must be explicitly discarded,
+		       by cse_insn, else it may end up in a REG_EQUAL note
+		       and "escape" to cause problems elsewhere.  */
 		    return gen_rtx_CONST (GET_MODE (new), new);
 		  }
 	      }
@@ -5913,7 +5917,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
   /* If OP0 and OP1 are known equal, and either is a paradoxical SUBREG,
      we know that they are also equal in the smaller mode (this is also
      true for all smaller modes whether or not there is a SUBREG, but
-     is not worth testing for with no SUBREG.  */
+     is not worth testing for with no SUBREG).  */
 
   /* Note that GET_MODE (op0) may not equal MODE.  */
   if (code == EQ && GET_CODE (op0) == SUBREG
@@ -7046,9 +7050,18 @@ cse_insn (insn, libcall_insn)
 	 equivalent constant, we want to add a REG_NOTE.   We don't want
 	 to write a REG_EQUAL note for a constant pseudo since verifying that
 	 that pseudo hasn't been eliminated is a pain.  Such a note also
-	 won't help anything.  */
+	 won't help anything. 
+
+	 Avoid a REG_EQUAL note for (CONST (MINUS (LABEL_REF) (LABEL_REF)))
+	 which can be created for a reference to a compile time computable
+	 entry in a jump table.  */
+
       if (n_sets == 1 && src_const && GET_CODE (dest) == REG
-	  && GET_CODE (src_const) != REG)
+	  && GET_CODE (src_const) != REG
+	  && ! (GET_CODE (src_const) == CONST
+		&& GET_CODE (XEXP (src_const, 0)) == MINUS
+		&& GET_CODE (XEXP (XEXP (src_const, 0), 0)) == LABEL_REF
+		&& GET_CODE (XEXP (XEXP (src_const, 0), 1)) == LABEL_REF))
 	{
 	  tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 	  
