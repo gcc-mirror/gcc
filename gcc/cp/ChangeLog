@@ -1,3 +1,23 @@
+1998-05-20  Mark Mitchell  <mmitchell@usa.net>
+
+	* class.c (delete_duplicate_fields_1): Use DECL_DECLARES_TYPE_P
+	to look for type declarations.
+	(finish_struct): Deal with templates on the CLASSTYPE_TAGS list.
+	* cp-tree.h (DECL_DECLARES_TYPE_P): New macro.
+	(finish_member_class_template): Declare.
+	* decl.c (pushtag): Put member class templates on the
+	CLASSTYPE_TAGS list, just as for ordinary member classes.
+	(pushdecl_class_level): Use DECL_DECLARES_TYPE_P.
+	(lookup_tag): Look for IDENTIFIER_CLASS_VALUEs, just as with
+	IDENTIFIER_NAMESPACE_VALUEs. 
+	* parse.y (component_decl): Move code to ...
+	* semantics.c (finish_member_class_template): New function.  
+	Don't put member class templates on the list of components for a
+	class. 
+	* parse.c: Regenerated.
+	* pt.c (classtype_mangled_name): Don't try DECL_CONTEXT on types.
+	In fact, don't use DECL_CONTEXT at all here.
+
 1998-05-20  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (record_unknown_type): New function.
