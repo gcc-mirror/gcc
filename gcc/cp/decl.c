@@ -401,6 +401,11 @@ extern int flag_short_double;
 
 extern int flag_no_builtin;
 
+/* Nonzero means don't recognize the non-ANSI builtin functions.
+   -ansi sets this.  */
+
+extern int flag_no_nonansi_builtin;
+
 /* Nonzero means disable GNU extensions.  */
 
 extern int flag_ansi;
@@ -1743,6 +1748,7 @@ pushtag (name, type, globalize)
 #else
 		  d = build_decl (TYPE_DECL, name, type);
 #endif
+		  SET_DECL_ARTIFICIAL (d);
 #ifdef DWARF_DEBUGGING_INFO
 		  if (write_symbols == DWARF_DEBUG)
 		    {
@@ -1778,6 +1784,7 @@ pushtag (name, type, globalize)
 	      /* Make nested declarations go into class-level scope.  */
 	      newdecl = 1;
 	      d = build_decl (TYPE_DECL, name, type);
+	      SET_DECL_ARTIFICIAL (d);
 #ifdef DWARF_DEBUGGING_INFO
 	      if (write_symbols == DWARF_DEBUG)
 		{
@@ -1981,11 +1988,11 @@ decls_match (newdecl, olddecl)
 	
 	for (i = 0; i < len; i++)
 	  {
-	    tree newarg = TREE_VEC_ELT (newargs, i);
-	    tree oldarg = TREE_VEC_ELT (oldargs, i);
+	    tree newarg = TREE_VALUE (TREE_VEC_ELT (newargs, i));
+	    tree oldarg = TREE_VALUE (TREE_VEC_ELT (oldargs, i));
 	    if (TREE_CODE (newarg) != TREE_CODE (oldarg))
 	      return 0;
-	    else if (TREE_CODE (newarg) == IDENTIFIER_NODE)
+	    else if (TREE_CODE (newarg) == TYPE_DECL)
 	      /* continue */;
 	    else if (! comptypes (TREE_TYPE (newarg), TREE_TYPE (oldarg), 1))
 	      return 0;
@@ -2104,6 +2111,7 @@ duplicate_decls (newdecl, olddecl)
        after implicit decl.  */
     ;
   else if (TREE_CODE (olddecl) == FUNCTION_DECL
+	   && DECL_ARTIFICIAL (olddecl)
 	   && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl)))
     {
       /* If you declare a built-in or predefined function name as static,
@@ -2188,9 +2196,8 @@ duplicate_decls (newdecl, olddecl)
 			newdecl);
 	      cp_error_at ("previous declaration `%#D' here", olddecl);
 	    }
-
-	  if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
-			 TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 2))
+	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
+			      TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 2))
 	    {
 	      cp_error ("new declaration `%#D'", newdecl);
 	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
@@ -2678,7 +2685,8 @@ pushdecl (x)
 	    /* don't do anything just yet */;
 	  else if (TREE_CODE (t) != TREE_CODE (x))
 	    {
-	      if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (x) == TYPE_DECL)
+	      if ((TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t))
+		  || (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)))
 		{
 		  /* We do nothing special here, because C++ does such nasty
 		     things with TYPE_DECLs.  Instead, just let the TYPE_DECL
@@ -4540,14 +4548,31 @@ init_decl_processing ()
 						    sizetype,
 						    endlink)),
 		    BUILT_IN_ALLOCA, "alloca");
-#if 0
-  builtin_function ("alloca",
-		    build_function_type (ptr_type_node,
-					 tree_cons (NULL_TREE,
-						    sizetype,
-						    endlink)),
-		    BUILT_IN_ALLOCA, NULL_PTR);
+  /* Define alloca, ffs as builtins.
+     Declare _exit just to mark it as volatile.  */
+  if (! flag_no_builtin && !flag_no_nonansi_builtin)
+    {
+#if 0				/* Why is this disabled? (jason 8/9/94) */
+      temp = builtin_function ("alloca",
+			       build_function_type (ptr_type_node,
+						    tree_cons (NULL_TREE,
+							       sizetype,
+							       endlink)),
+			       BUILT_IN_ALLOCA, NULL_PTR);
+      /* Suppress error if redefined as a non-function.  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
 #endif
+      temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
+      /* Suppress error if redefined as a non-function.  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+      temp = builtin_function ("_exit", build_function_type (void_type_node,
+							     int_endlink),
+			       NOT_BUILT_IN, NULL_PTR);
+      TREE_THIS_VOLATILE (temp) = 1;
+      TREE_SIDE_EFFECTS (temp) = 1;
+      /* Suppress error if redefined as a non-function.  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+    }
 
   builtin_function ("__builtin_abs", int_ftype_int,
 		    BUILT_IN_ABS, NULL_PTR);
@@ -4647,6 +4672,23 @@ init_decl_processing ()
       builtin_function ("strlen", sizet_ftype_string, BUILT_IN_STRLEN, NULL_PTR);
       builtin_function ("sin", double_ftype_double, BUILT_IN_SIN, NULL_PTR);
       builtin_function ("cos", double_ftype_double, BUILT_IN_COS, NULL_PTR);
+
+      /* Declare these functions volatile
+	 to avoid spurious "control drops through" warnings.  */
+      temp = builtin_function ("abort",
+			       build_function_type (void_type_node, endlink),
+			       NOT_BUILT_IN, NULL_PTR);
+      TREE_THIS_VOLATILE (temp) = 1;
+      TREE_SIDE_EFFECTS (temp) = 1;
+      /* Well, these are actually ANSI, but we can't set DECL_BUILT_IN on
+         them...  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+      temp = builtin_function ("exit", build_function_type (void_type_node,
+							    int_endlink),
+			       NOT_BUILT_IN, NULL_PTR);
+      TREE_THIS_VOLATILE (temp) = 1;
+      TREE_SIDE_EFFECTS (temp) = 1;
+      DECL_BUILT_IN_NONANSI (temp) = 1;
     }
 
 #if 0
@@ -6315,9 +6357,11 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 		  expand_aggr_init (decl, init, 0);
 		}
 
-	      /* Set this to 0 so we can tell whether an aggregate
-		 which was initialized was ever used.  */
-	      if (TYPE_NEEDS_CONSTRUCTING (type))
+	      /* Set this to 0 so we can tell whether an aggregate which
+		 was initialized was ever used.  Don't do this if it has a
+		 destructor, so we don't complain about the 'resource
+		 allocation is initialization' idiom.  */
+	      if (TYPE_NEEDS_CONSTRUCTING (type) && cleanup == NULL_TREE)
 		TREE_USED (decl) = 0;
 
 	      /* Store the cleanup, if there was one.  */
@@ -7283,7 +7327,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      goto found;
 	    }
 
-	  for (i = (int) RID_FIRST_MODIFIER; i < (int) RID_MAX; i++)
+	  for (i = (int) RID_FIRST_MODIFIER; i < (int) RID_LAST_MODIFIER; i++)
 	    {
 	      if (ridpointers[i] == id)
 		{
@@ -8965,14 +9009,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
 					  TREE_TYPE (type), TYPE_ARG_TYPES (type));
 
-	/* Record presence of `static'.  In C++, `inline' is like `static'.
-	   Methods of classes should be public, unless we're dropping them
-	   into some other file, so we don't clear TREE_PUBLIC for them.  */
+	/* Record presence of `static'.  In C++, `inline' is like `static'.  */
 	publicp
-	  = ((ctype
-	      && CLASSTYPE_INTERFACE_KNOWN (ctype))
-	     || !(RIDBIT_SETP (RID_STATIC, specbits)
-		  || RIDBIT_SETP (RID_INLINE, specbits)));
+	  = !(RIDBIT_SETP (RID_STATIC, specbits)
+	      || RIDBIT_SETP (RID_INLINE, specbits));
 
 	decl = grokfndecl (ctype, type, original_name,
 			   virtualp, flags, quals,
@@ -8993,7 +9033,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	       declaring main to be static.  */
 	    if (TREE_CODE (type) == METHOD_TYPE)
 	      {
-		cp_error_at ("cannot declare member function `%D' to have static linkage", decl);
+		cp_pedwarn ("cannot declare member function `%D' to have static linkage", decl);
 		illegal_static = 1;
 	      }
 	    else if (! ctype
@@ -9795,6 +9835,7 @@ xref_defn_tag (code_type_node, name, binfo)
       if (! ANON_AGGRNAME_P (name))
       {
 	register tree type_decl = build_decl (TYPE_DECL, ncp, rv);
+	SET_DECL_ARTIFICIAL (type_decl);
 #ifdef DWARF_DEBUGGING_INFO
 	/* Mark the TYPE_DECL node created just above as a gratuitous one
 	   so that dwarfout.c will know not to generate a TAG_typedef DIE
@@ -9943,9 +9984,7 @@ xref_tag (code_type_node, name, binfo, globalize)
 	}
       else
 	{
-	  extern tree pending_vtables;
 	  struct binding_level *old_b = class_binding_level;
-	  int needs_writing;
 
 	  ref = make_lang_type (code);
 
@@ -9955,35 +9994,9 @@ xref_tag (code_type_node, name, binfo, globalize)
 	    {
 	      SET_SIGNATURE (ref);
 	      CLASSTYPE_INTERFACE_ONLY (ref) = 0;
-	      CLASSTYPE_INTERFACE_UNKNOWN (ref) = 0;
+	      SET_CLASSTYPE_INTERFACE_UNKNOWN (ref);
+	      CLASSTYPE_VTABLE_NEEDS_WRITING (ref) = 0;
 	    }
-
-	  /* Record how to set the access of this class's
-	     virtual functions.  If write_virtuals == 2 or 3, then
-	     inline virtuals are ``extern inline''.  */
-	  switch (write_virtuals)
-	    {
-	    case 0:
-	    case 1:
-	      needs_writing = 1;
-	      break;
-	    case 2:
-	      needs_writing = !! value_member (name, pending_vtables);
-	      break;
-	    case 3:
-	      needs_writing = ! CLASSTYPE_INTERFACE_ONLY (ref)
-		&& CLASSTYPE_INTERFACE_KNOWN (ref);
-	      break;
-	    default:
-	      needs_writing = 0;
-	    }
-
-	  /* Signatures don't have a vtable.  As long as we don't have default
-	     implementations, they behave as if `write_virtuals' were 3.  */
-	  if (tag_code == signature_type)
-	    CLASSTYPE_VTABLE_NEEDS_WRITING (ref) = 0;
-	  else
-	    CLASSTYPE_VTABLE_NEEDS_WRITING (ref) = needs_writing;
 
 #ifdef NONNESTED_CLASSES
 	  /* Class types don't nest the way enums do.  */
@@ -10682,15 +10695,14 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   /* If this function belongs to an interface, it is public.
      If it belongs to someone else's interface, it is also external.
      It doesn't matter whether it's inline or not.  */
-  if (interface_unknown == 0)
+  if (interface_unknown == 0
+      && ! TREE_PUBLIC (decl1))
     {
       TREE_PUBLIC (decl1) = 1;
       DECL_EXTERNAL (decl1)
 	= (interface_only
 	   || (DECL_INLINE (decl1) && ! flag_implement_inlines));
     }
-  else if (DECL_EXPLICIT_INSTANTIATION (decl1))
-    /* PUBLIC and EXTERNAL set by do_*_instantiation */;
   else
     {
       /* This is a definition, not a reference.
@@ -10699,7 +10711,10 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	 defining how to inline.  So set DECL_EXTERNAL in that case.  */
       DECL_EXTERNAL (decl1) = current_extern_inline;
 
-      DECL_DEFER_OUTPUT (decl1) = DECL_INLINE (decl1);
+      DECL_DEFER_OUTPUT (decl1)
+	= DECL_INLINE (decl1) && ! TREE_PUBLIC (decl1)
+	  && (DECL_FUNCTION_MEMBER_P (decl1)
+	      || DECL_TEMPLATE_INSTANTIATION (decl1));
     }
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
@@ -11567,8 +11582,8 @@ finish_function (lineno, call_poplevel)
       rest_of_compilation (fndecl);
     }
 
-  if (DECL_INLINE (fndecl)
-      && !TREE_ASM_WRITTEN (fndecl) && DECL_FUNCTION_MEMBER_P (fndecl))
+  if (DECL_INLINE (fndecl) && !TREE_ASM_WRITTEN (fndecl)
+      && DECL_DEFER_OUTPUT (fndecl))
     {
       mark_inline_for_output (fndecl);
     }

@@ -58,14 +58,16 @@ enum rid
   RID_VOLATILE,
   RID_FRIEND,
   RID_VIRTUAL,
+  RID_SIGNED,
+  RID_AUTO,
+  RID_MUTABLE,
+
+  /* This is where grokdeclarator ends its search when setting the specbits. */
+
   RID_PUBLIC,
   RID_PRIVATE,
   RID_PROTECTED,
-  RID_SIGNED,
   RID_EXCEPTION,
-  RID_RAISES,
-  RID_AUTO,
-  RID_MUTABLE,
   RID_TEMPLATE,
   RID_SIGNATURE,
   /* Before adding enough to get up to 64, the RIDBIT_* macros
@@ -76,6 +78,7 @@ enum rid
 #define NORID RID_UNUSED
 
 #define RID_FIRST_MODIFIER RID_EXTERN
+#define RID_LAST_MODIFIER RID_MUTABLE
 
 /* The type that can represent all values of RIDBIT.  */
 /* We assume that we can stick in at least 32 bits into this. */

@@ -30,6 +30,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 typedef char* cp_printer PROTO((HOST_WIDE_INT, int));
 extern cp_printer * cp_printers[256];
 
+/* Whether or not we should try to be quiet for errors and warnings; this is
+   used to avoid being too talkative about problems with tentative choices
+   when we're computing the conversion costs for a method call.  */
+int cp_silent = 0;
+
 typedef void errorfn ();	/* deliberately vague */
 
 extern char* cp_file_of PROTO((tree));
@@ -150,7 +155,8 @@ cp_error (format, arglist)
      arglist_dcl
 {
   extern errorfn error;
-  cp_thing (error, 0, format, arglist);
+  if (! cp_silent)
+    cp_thing (error, 0, format, arglist);
 }
 
 void
@@ -159,7 +165,8 @@ cp_warning (format, arglist)
      arglist_dcl
 {
   extern errorfn warning;
-  cp_thing (warning, 0, format, arglist);
+  if (! cp_silent)
+    cp_thing (warning, 0, format, arglist);
 }
 
 void
@@ -168,7 +175,8 @@ cp_pedwarn (format, arglist)
      arglist_dcl
 {
   extern errorfn pedwarn;
-  cp_thing (pedwarn, 0, format, arglist);
+  if (! cp_silent)
+    cp_thing (pedwarn, 0, format, arglist);
 }
 
 void
@@ -177,7 +185,8 @@ cp_compiler_error (format, arglist)
      arglist_dcl
 {
   extern errorfn compiler_error;
-  cp_thing (compiler_error, 0, format, arglist);
+  if (! cp_silent)
+    cp_thing (compiler_error, 0, format, arglist);
 }
 
 void
@@ -195,7 +204,8 @@ cp_error_at (format, arglist)
      arglist_dcl
 {
   extern errorfn error_with_file_and_line;
-  cp_thing (error_with_file_and_line, 1, format, arglist);
+  if (! cp_silent)
+    cp_thing (error_with_file_and_line, 1, format, arglist);
 }
 
 void
@@ -204,7 +214,8 @@ cp_warning_at (format, arglist)
      arglist_dcl
 {
   extern errorfn warning_with_file_and_line;
-  cp_thing (warning_with_file_and_line, 1, format, arglist);
+  if (! cp_silent)
+    cp_thing (warning_with_file_and_line, 1, format, arglist);
 }
 
 void
@@ -213,5 +224,6 @@ cp_pedwarn_at (format, arglist)
      arglist_dcl
 {
   extern errorfn pedwarn_with_file_and_line;
-  cp_thing (pedwarn_with_file_and_line, 1, format, arglist);
+  if (! cp_silent)
+    cp_thing (pedwarn_with_file_and_line, 1, format, arglist);
 }

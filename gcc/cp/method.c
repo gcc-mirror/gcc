@@ -852,18 +852,17 @@ build_decl_overload (dname, parms, for_method)
   /* member operators new and delete look like methods at this point.  */
   if (! for_method && parms != NULL_TREE && TREE_CODE (parms) == TREE_LIST)
     {
-      if (TREE_VALUE (parms) == sizetype
-	  && TREE_CHAIN (parms) == void_list_node)
+      if (dname == ansi_opname[(int) DELETE_EXPR])
+	return get_identifier ("__builtin_delete");
+      else if (dname == ansi_opname[(int) VEC_DELETE_EXPR])
+	return get_identifier ("__builtin_vec_delete");
+      else if (TREE_CHAIN (parms) == void_list_node)
 	{
 	  if (dname == ansi_opname[(int) NEW_EXPR])
 	    return get_identifier ("__builtin_new");
 	  else if (dname == ansi_opname[(int) VEC_NEW_EXPR])
 	    return get_identifier ("__builtin_vec_new");
 	}
-      else if (dname == ansi_opname[(int) DELETE_EXPR])
-	return get_identifier ("__builtin_delete");
-      else if (dname == ansi_opname[(int) VEC_DELETE_EXPR])
-	return get_identifier ("__builtin_vec_delete");
     }
 
   OB_INIT ();

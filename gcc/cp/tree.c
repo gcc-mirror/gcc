@@ -1626,6 +1626,31 @@ make_deep_copy (t)
       TREE_OPERAND (t, 0) = make_deep_copy (TREE_OPERAND (t, 0));
       return t;
 
+    case POINTER_TYPE:
+      return build_pointer_type (make_deep_copy (TREE_TYPE (t)));
+    case REFERENCE_TYPE:
+      return build_reference_type (make_deep_copy (TREE_TYPE (t)));
+    case FUNCTION_TYPE:
+      return build_function_type (make_deep_copy (TREE_TYPE (t)),
+				  make_deep_copy (TYPE_ARG_TYPES (t)));
+    case ARRAY_TYPE:
+      return build_array_type (make_deep_copy (TREE_TYPE (t)),
+			       make_deep_copy (TYPE_DOMAIN (t)));
+    case OFFSET_TYPE:
+      return build_offset_type (make_deep_copy (TYPE_OFFSET_BASETYPE (t)),
+				make_deep_copy (TREE_TYPE (t)));
+    case METHOD_TYPE:
+      return build_method_type
+	(make_deep_copy (TYPE_METHOD_BASETYPE (t)),
+	 build_function_type
+	 (make_deep_copy (TREE_TYPE (t)),
+	  make_deep_copy (TREE_CHAIN (TYPE_ARG_TYPES (t)))));
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (t))
+	return build_ptrmemfunc_type
+	  (make_deep_copy (TYPE_PTRMEMFUNC_FN_TYPE (t)));
+      /* else fall through */
+      
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */

@@ -84,6 +84,11 @@ int flag_no_asm;
 
 int flag_no_builtin;
 
+/* Nonzero means don't recognize the non-ANSI builtin functions.
+   -ansi sets this.  */
+
+int flag_no_nonansi_builtin;
+
 /* Nonzero means do some things the same way PCC does.  */
 
 int flag_traditional;
@@ -361,6 +366,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
   {"short-temps", &flag_short_temps, 1},
+  {"nonansi-builtins", &flag_no_nonansi_builtin, 0}
 };
 
 /* Decode the string P as a language-specific option.
@@ -446,6 +452,10 @@ lang_decode_option (p)
 	{
 	  flag_alt_external_templates = 0;
 	  found = 1;
+	}
+      else if (!strcmp (p, "ansi-overloading"))
+	{
+	  warning ("-fansi-overloading is no longer meaningful");
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
@@ -544,7 +554,8 @@ lang_decode_option (p)
       else return 0;
     }
   else if (!strcmp (p, "-ansi"))
-    flag_no_asm = 1, dollars_in_ident = 0, flag_ansi = 1;
+    flag_no_asm = 1, dollars_in_ident = 0, flag_no_nonansi_builtin = 1,
+    flag_ansi = 1;
 #ifdef SPEW_DEBUG
   /* Undocumented, only ever used when you're invoking cc1plus by hand, since
      it's probably safe to assume no sane person would ever want to use this
@@ -983,7 +994,7 @@ grok_array_decl (array_expr, index_exp)
   if (TYPE_LANG_SPECIFIC (type)
       && TYPE_OVERLOADS_ARRAY_REF (type))
     return build_opfncall (ARRAY_REF, LOOKUP_NORMAL,
-			 array_expr, index_exp, NULL_TREE);
+			   array_expr, index_exp, NULL_TREE);
 
   /* Otherwise, create an ARRAY_REF for a pointer or array type.  */
   if (TREE_CODE (type) == POINTER_TYPE
@@ -1000,17 +1011,14 @@ grok_array_decl (array_expr, index_exp)
       || TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
-  if (TYPE_LANG_SPECIFIC (type)
-      && TYPE_OVERLOADS_ARRAY_REF (type))
-    error ("array expression backwards");
-  else if (TREE_CODE (type) == POINTER_TYPE
-	   || TREE_CODE (type) == ARRAY_TYPE)
+  if (TREE_CODE (type) == POINTER_TYPE
+      || TREE_CODE (type) == ARRAY_TYPE)
     return build_array_ref (index_exp, array_expr);
-  else
-    error("`[]' applied to non-pointer type");
 
-  /* We gave an error, so give an error.  Huh?  */
-  return error_mark_node;
+  /* The expression E1[E2] is identical (by definition) to *((E1)+(E2)).  */
+  return build_indirect_ref (build_binary_op (PLUS_EXPR, array_expr,
+					      index_exp, 1),
+			     "array indexing");
 }
 
 /* Given the cast expression EXP, checking out its validity.   Either return
@@ -1128,13 +1136,13 @@ check_classfn (ctype, cname, function)
     }
 
   if (methods != end)
-    cp_error ("argument list for `%D' does not match any in class `%T'",
-	      fn_name, ctype);
+    cp_error ("argument list for `%#D' does not match any in class `%T'",
+	      function, ctype);
   else
     {
       methods = 0;
-      cp_error ("no `%D' member function declared in class `%T'",
-		fn_name, ctype);
+      cp_error ("no `%#D' member function declared in class `%T'",
+		function, ctype);
     }
 
   /* If we did not find the method in the class, add it to
@@ -2067,9 +2075,13 @@ finish_anon_union (anon_union_decl)
       return;
     }
 
-  while (field)
+  for (; field; field = TREE_CHAIN (field))
     {
-      tree decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
+      tree decl;
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+
+      decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
       /* tell `pushdecl' that this is not tentative.  */
       DECL_INITIAL (decl) = error_mark_node;
       TREE_PUBLIC (decl) = public_p;
@@ -2096,7 +2108,6 @@ finish_anon_union (anon_union_decl)
 	 TREE_PURPOSE of the following TREE_LIST.  */
       elems = tree_cons (NULL_TREE, decl, elems);
       TREE_TYPE (elems) = type;
-      field = TREE_CHAIN (field);
     }
   if (static_p)
     {
@@ -2530,6 +2541,37 @@ walk_sigtables (typedecl_fn, vardecl_fn)
     }
 }
 
+/* Determines the proper settings of TREE_PUBLIC and DECL_EXTERNAL for an
+   inline function at end-of-file.  */
+
+void
+import_export_inline (decl)
+     tree decl;
+{
+  if (TREE_PUBLIC (decl))
+    return;
+
+  /* If an explicit instantiation doesn't have TREE_PUBLIC set, it was with
+     'extern'.  */
+  if (DECL_EXPLICIT_INSTANTIATION (decl)
+      || (DECL_IMPLICIT_INSTANTIATION (decl) && ! flag_implicit_templates))
+    {
+      TREE_PUBLIC (decl) = 1;
+      DECL_EXTERNAL (decl) = 1;
+    }
+  else if (DECL_FUNCTION_MEMBER_P (decl))
+    {
+      tree ctype = DECL_CLASS_CONTEXT (decl);
+      if (CLASSTYPE_INTERFACE_KNOWN (ctype))
+	{
+	  TREE_PUBLIC (decl) = 1;
+	  DECL_EXTERNAL (decl)
+	    = (CLASSTYPE_INTERFACE_ONLY (ctype)
+	       || (DECL_INLINE (decl) && ! flag_implement_inlines));
+	}
+    }
+}
+  
 extern int parse_time, varconst_time;
 
 #define TIMEVAR(VAR, BODY)    \
@@ -2835,24 +2877,12 @@ finish_file ()
 	   0; don't crash.  */
 	if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
 	  continue;
-	if (DECL_FUNCTION_MEMBER_P (decl) && !TREE_PUBLIC (decl))
-	  {
-	    tree ctype = DECL_CLASS_CONTEXT (decl);
-	    if (CLASSTYPE_INTERFACE_KNOWN (ctype))
-	      {
-		TREE_PUBLIC (decl) = 1;
-		DECL_EXTERNAL (decl)
-		  = (CLASSTYPE_INTERFACE_ONLY (ctype)
-		     || (DECL_INLINE (decl) && ! flag_implement_inlines));
-	      }
-	  }
+	import_export_inline (decl);
 	if (TREE_PUBLIC (decl)
 	    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 	    || flag_keep_inline_functions)
 	  {
-	    if (DECL_EXTERNAL (decl)
-		|| (DECL_IMPLICIT_INSTANTIATION (decl)
-		    && ! flag_implicit_templates))
+	    if (DECL_EXTERNAL (decl))
 	      assemble_external (decl);
 	    else
 	      {
@@ -2879,9 +2909,7 @@ finish_file ()
 		if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		    && ! TREE_ASM_WRITTEN (decl))
 		  {
-		    if (DECL_EXTERNAL (decl)
-			|| (DECL_IMPLICIT_INSTANTIATION (decl)
-			    && ! flag_implicit_templates))
+		    if (DECL_EXTERNAL (decl))
 		      assemble_external (decl);
 		    else
 		      {

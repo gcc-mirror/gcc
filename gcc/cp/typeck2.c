@@ -631,7 +631,7 @@ digest_init (type, init, tail)
      tree type, init, *tail;
 {
   enum tree_code code = TREE_CODE (type);
-  tree element = 0;
+  tree element = NULL_TREE;
   tree old_tail_contents;
   /* Nonzero if INIT is a braced grouping, which comes in as a CONSTRUCTOR
      tree node which has no TREE_TYPE.  */
