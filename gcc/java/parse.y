@@ -396,7 +396,7 @@ static tree current_static_block = NULL_TREE;
 			variable_initializers constructor_body
 			array_initializer
 
-%type	 <node>		class_body block_end
+%type	 <node>		class_body block_end constructor_block_end
 %type	 <node>		statement statement_without_trailing_substatement
 			labeled_statement if_then_statement label_decl
 			if_then_else_statement while_statement for_statement
@@ -1001,18 +1001,22 @@ constructor_body:
 	/* Unlike regular method, we always need a complete (empty)
 	   body so we can safely perform all the required code
 	   addition (super invocation and field initialization) */
-	block_begin block_end
+	block_begin constructor_block_end
 		{ 
 		  BLOCK_EXPR_BODY ($2) = empty_stmt_node;
 		  $$ = $2;
 		}
-|	block_begin explicit_constructor_invocation block_end
+|	block_begin explicit_constructor_invocation constructor_block_end
 		{ $$ = $3; }
-|	block_begin block_statements block_end
+|	block_begin block_statements constructor_block_end
 		{ $$ = $3; }
-|       block_begin explicit_constructor_invocation block_statements block_end
+|       block_begin explicit_constructor_invocation block_statements constructor_block_end
 		{ $$ = $4; }
 ;
+
+constructor_block_end:
+	block_end
+|	block_end SC_TK
 
 /* Error recovery for that rule moved down expression_statement: rule.  */
 explicit_constructor_invocation:
