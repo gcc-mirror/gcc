@@ -5099,14 +5099,15 @@ lookup_java_method2 (clas, method_decl, do_interface)
   return NULL_TREE;
 }
 
-/* Return the line that matches DECL line number. Used during error
-   report */
+/* Return the line that matches DECL line number, and try its best to
+   position the column number. Used during error reports.  */
 
 static tree
 lookup_cl (decl)
      tree decl;
 {
   static tree cl = NULL_TREE;
+  char *line, *found;
   
   if (!decl)
     return NULL_TREE;
@@ -5116,6 +5117,14 @@ lookup_cl (decl)
 
   EXPR_WFL_FILENAME_NODE (cl) = get_identifier (DECL_SOURCE_FILE (decl));
   EXPR_WFL_SET_LINECOL (cl, DECL_SOURCE_LINE_FIRST (decl), -1);
+
+  line = java_get_line_col (IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE (cl)),
+			    EXPR_WFL_LINENO (cl), EXPR_WFL_COLNO (cl));
+
+  found = strstr ((const char *)line, 
+		  (const char *)IDENTIFIER_POINTER (DECL_NAME (decl)));
+  if (found)
+    EXPR_WFL_SET_LINECOL (cl, EXPR_WFL_LINENO (cl), found - line);
 
   return cl;
 }
@@ -7861,8 +7870,15 @@ qualify_ambiguous_name (id)
 	again = 1;
       }
     else 
-      name = EXPR_WFL_NODE (qual_wfl);
-    
+      {
+	name = EXPR_WFL_NODE (qual_wfl);
+	if (!name)
+	  {
+	    qual = EXPR_WFL_QUALIFICATION (qual_wfl);
+	    again = 1;
+	  }
+      }
+
     /* If we have a THIS (from a primary), we set the context accordingly */
     if (name == this_identifier_node)
       {
