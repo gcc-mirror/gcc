@@ -215,7 +215,7 @@ validate_change (object, loc, new, in_group)
   if (in_group == 0 && num_changes != 0)
     abort ();
 
-   *loc = new;
+  *loc = new;
 
   /* Save the information describing this change.  */
   if (num_changes >= changes_allocated)
@@ -353,33 +353,33 @@ apply_change_group ()
 	      && GET_CODE (XVECEXP (pat, 0, XVECLEN (pat, 0) - 1)) == CLOBBER
 	      && asm_noperands (PATTERN (object)) < 0)
 	    {
-	       rtx newpat;
+	      rtx newpat;
 
-	       if (XVECLEN (pat, 0) == 2)
-		 newpat = XVECEXP (pat, 0, 0);
-	       else
-		 {
-		   int j;
+	      if (XVECLEN (pat, 0) == 2)
+		newpat = XVECEXP (pat, 0, 0);
+	      else
+		{
+		  int j;
 
-		   newpat
-		     = gen_rtx_PARALLEL (VOIDmode, 
-					 rtvec_alloc (XVECLEN (pat, 0) - 1));
-		   for (j = 0; j < XVECLEN (newpat, 0); j++)
-		     XVECEXP (newpat, 0, j) = XVECEXP (pat, 0, j);
-		 }
+		  newpat
+		    = gen_rtx_PARALLEL (VOIDmode, 
+					rtvec_alloc (XVECLEN (pat, 0) - 1));
+		  for (j = 0; j < XVECLEN (newpat, 0); j++)
+		    XVECEXP (newpat, 0, j) = XVECEXP (pat, 0, j);
+		}
 
-	       /* Add a new change to this group to replace the pattern
-		  with this new pattern.  Then consider this change
-		  as having succeeded.  The change we added will
-		  cause the entire call to fail if things remain invalid.
+	      /* Add a new change to this group to replace the pattern
+		 with this new pattern.  Then consider this change
+		 as having succeeded.  The change we added will
+		 cause the entire call to fail if things remain invalid.
 
-		  Note that this can lose if a later change than the one
-		  we are processing specified &XVECEXP (PATTERN (object), 0, X)
-		  but this shouldn't occur.  */
+		 Note that this can lose if a later change than the one
+		 we are processing specified &XVECEXP (PATTERN (object), 0, X)
+		 but this shouldn't occur.  */
 
-	       validate_change (object, &PATTERN (object), newpat, 1);
-	       continue;
-	     }
+	      validate_change (object, &PATTERN (object), newpat, 1);
+	      continue;
+	    }
 	  else if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	    /* If this insn is a CLOBBER or USE, it is always valid, but is
 	       never recognized.  */
@@ -468,7 +468,7 @@ validate_replace_rtx_1 (loc, from, to, object)
       return;
     }
 
-  /* Call ourseves recursivly to perform the replacements.  */
+  /* Call ourself recursively to perform the replacements.  */
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
@@ -479,7 +479,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 	  validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object);
     }
 
-  /* In case we didn't substituted, there is nothing to do.  */
+  /* If we didn't substitute, there is nothing more to do.  */
   if (num_changes == prev_changes)
     return;
 
@@ -542,7 +542,7 @@ validate_replace_rtx_1 (loc, from, to, object)
       new = simplify_subreg (GET_MODE (x), SUBREG_REG (x), op0_mode,
 			     SUBREG_BYTE (x));
 
-      /* Subregs of VOIDmode operands are incorect.  */
+      /* Subregs of VOIDmode operands are incorrect.  */
       if (!new && GET_MODE (SUBREG_REG (x)) == VOIDmode)
 	new = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
       if (new)
@@ -1204,7 +1204,7 @@ nonmemory_operand (op, mode)
 	return 0;
 
       return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode
-	      || mode == VOIDmode)
+	       || mode == VOIDmode)
 #ifdef LEGITIMATE_PIC_OPERAND_P
 	      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
 #endif
@@ -2669,7 +2669,7 @@ reg_fits_class_p (operand, class, offset, mode)
 }
 
 /* Split single instruction.  Helper function for split_all_insns.
-   Return last insn in the sequence if succesfull, or NULL if unsuccesfull.  */
+   Return last insn in the sequence if successful, or NULL if unsuccessful.  */
 static rtx
 split_insn (insn)
      rtx insn;

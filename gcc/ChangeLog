@@ -1,5 +1,7 @@
 2001-10-16  Alan Modra  <amodra@bigpond.net.au>
 
+	* recog.c: Formatting and comment typo fixes.
+
 	* configure.in (gcc_cv_as_bfd_srcdir): New.  Use it to find gas
 	version in single tree build.
 	* configure: Regenerate.
