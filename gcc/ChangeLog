@@ -1,3 +1,8 @@
+2002-05-29  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* config/s390/s390.md (cmpstr_64/31): Mark whole
+	input registers as used. 
+
 2002-05-28  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_save_reg): Examine regs_ever_live,
