@@ -1,3 +1,12 @@
+2002-04-11  Adam King <aking@dreammechanics.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* include/jvm.h (_Jv_ThrowBadArrayIndex,
+	_Jv_ThrowNullPointerException): Mark as noreturn.
+	* win32.cc (_Jv_platform_initProperties): Use _Jv_MallocUnchecked
+	and _Jv_free.  Correctly invoke GetTempPath().  Indentation
+	fixes.
+
 2002-04-10  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
