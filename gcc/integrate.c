@@ -1472,7 +1472,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  rtx stack_slot
 	    = assign_stack_temp (TYPE_MODE (TREE_TYPE (arg)),
 				 int_size_in_bytes (TREE_TYPE (arg)), 1);
-	  MEM_IN_STRUCT_P (stack_slot) = AGGREGATE_TYPE_P (TREE_TYPE (arg));
+	  MEM_SET_IN_STRUCT_P (stack_slot,
+			       AGGREGATE_TYPE_P (TREE_TYPE (arg)));
 
 	  store_expr (arg, stack_slot, 0);
 
@@ -2173,7 +2174,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       target = gen_rtx_MEM (TYPE_MODE (type),
 			    memory_address (TYPE_MODE (type),
 					    structure_value_addr));
-      MEM_IN_STRUCT_P (target) = 1;
+      MEM_SET_IN_STRUCT_P (target, 1);
     }
 
   /* Make sure we free the things we explicitly allocated with xmalloc.  */
@@ -2719,8 +2720,7 @@ copy_rtx_and_substitute (orig, map)
       copy = rtx_alloc (MEM);
       PUT_MODE (copy, mode);
       XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map);
-      MEM_IN_STRUCT_P (copy) = MEM_IN_STRUCT_P (orig);
-      MEM_VOLATILE_P (copy) = MEM_VOLATILE_P (orig);
+      MEM_COPY_ATTRIBUTES (copy, orig);
       MEM_ALIAS_SET (copy) = MEM_ALIAS_SET (orig);
 
       /* If doing function inlining, this MEM might not be const in the
