@@ -31,36 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "gansidecl.h"
 
 /*}}}*/ 
-/*{{{  Forward strcuture declarations for use in prototypes.  */ 
-
-#ifdef BUFSIZ		/* stdio.h has been included, ok to use FILE * */
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
-#endif
-
-#ifndef RTX_CODE
-struct rtx_def;
-#define Rtx struct rtx_def *
-#else
-#define Rtx rtx
-#endif
-
-#ifndef TREE_CODE
-union tree_node;
-#define Tree union tree_node *
-#else
-#define Tree tree
-#endif
-
-#ifndef HAVE_MACHINE_MODES
-#include "hwint.h"
-#include "machmode.h"
-#endif
-
-#define Mmode enum machine_mode
-
-/*}}}*/ 
 /*{{{  Driver configuration */ 
 
 /* A C expression which determines whether the option `-CHAR' takes arguments.
@@ -585,15 +555,15 @@ enum reg_class
    containing several integers.  Each sub-initializer must be suitable as an
    initializer for the type `HARD_REG_SET' which is defined in
    `hard-reg-set.h'.  */
-#define REG_CLASS_CONTENTS 			\
-{ 						\
-  0,						\
-  1 << MD_LOW_REGNUM,				\
-  (1 << MD_LOW_REGNUM) | (1 << MD_HIGH_REGNUM),	\
-  (1 << 8) - 1,					\
-  ((1 << 8) - 1) << 8,				\
-  (1 << CONDITION_CODE_REGNUM) - 1,		\
-  (1 << FIRST_PSEUDO_REGISTER) - 1		\
+#define REG_CLASS_CONTENTS 				\
+{ 							\
+  { 0 },						\
+  { 1 << MD_LOW_REGNUM },				\
+  { (1 << MD_LOW_REGNUM) | (1 << MD_HIGH_REGNUM) },	\
+  { (1 << 8) - 1 },					\
+  { ((1 << 8) - 1) << 8 },				\
+  { (1 << CONDITION_CODE_REGNUM) - 1 },			\
+  { (1 << FIRST_PSEUDO_REGISTER) - 1 }			\
 }
 
 /* A C expression whose value is a register class containing hard register
@@ -1301,8 +1271,6 @@ typedef int CUMULATIVE_ARGS;
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 	\
   fr30_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
 
-extern int fr30_function_arg_partial_nregs PROTO ((CUMULATIVE_ARGS, int, Tree, int));
-
 /* A C expression that indicates when an argument must be passed by reference.
    If nonzero for an argument, a copy of that argument is made in memory and a
    pointer to the argument is passed instead of the argument itself.  The
@@ -1372,8 +1340,6 @@ extern int fr30_function_arg_partial_nregs PROTO ((CUMULATIVE_ARGS, int, Tree, i
    for arguments without any special help.  */
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
   (CUM) += (NAMED) * fr30_num_arg_regs (MODE, TYPE)
-
-extern int fr30_num_arg_regs PROTO ((int, Tree));
 
 /* If defined, a C expression which determines whether, and in which direction,
    to pad out an argument with extra space.  The value should be of type `enum
@@ -1934,9 +1900,6 @@ extern int fr30_num_arg_regs PROTO ((int, Tree));
   if (! SECOND_TIME) \
     fr30_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
 
-extern void fr30_setup_incoming_varargs
-  PROTO ((CUMULATIVE_ARGS, int, Tree, int *));
-
 /* Define this macro if the location where a function argument is passed
    depends on whether or not it is a named argument.
 
@@ -2456,39 +2419,6 @@ do										\
 
    This macro is not used on machines that do not use `cc0'.  */
 /* #define CC_STATUS_MDEP_INIT */
-
-/* A C compound statement to set the components of `cc_status' appropriately
-   for an insn INSN whose body is EXP.  It is this macro's responsibility to
-   recognize insns that set the condition code as a byproduct of other activity
-   as well as those that explicitly set `(cc0)'.
-
-   This macro is not used on machines that do not use `cc0'.
-
-   If there are insns that do not set the condition code but do alter other
-   machine registers, this macro must check to see whether they invalidate the
-   expressions that the condition code is recorded as reflecting.  For example,
-   on the 68000, insns that store in address registers do not set the condition
-   code, which means that usually `NOTICE_UPDATE_CC' can leave `cc_status'
-   unaltered for such insns.  But suppose that the previous insn set the
-   condition code based on location `a4@(102)' and the current insn stores a
-   new value in `a4'.  Although the condition code is not changed by this, it
-   will no longer be true that it reflects the contents of `a4@(102)'.
-   Therefore, `NOTICE_UPDATE_CC' must alter `cc_status' in this case to say
-   that nothing is known about the condition code value.
-
-   The definition of `NOTICE_UPDATE_CC' must be prepared to deal with the
-   results of peephole optimization: insns whose patterns are `parallel' RTXs
-   containing various `reg', `mem' or constants which are just the operands.
-   The RTL structure of these insns is not sufficient to indicate what the
-   insns actually do.  What `NOTICE_UPDATE_CC' should do when it sees one is
-   just to run `CC_STATUS_INIT'.
-
-   A possible definition of `NOTICE_UPDATE_CC' is to call a function that looks
-   at an attribute named, for example, `cc'.  This
-   avoids having detailed information about patterns in two places, the `md'
-   file and in `NOTICE_UPDATE_CC'.  */
-/* #define NOTICE_UPDATE_CC(EXP, INSN) fr30_notice_update_cc (INSN)
-  extern int fr30_notice_update_cc PROTO ((Rtx)); */
 
 /* A list of names to be used for additional modes for condition code values in
    registers.  These names are added to `enum
@@ -3655,8 +3585,6 @@ do {									\
    the punctuation character for CODE.  */
 #define PRINT_OPERAND(STREAM, X, CODE)	fr30_print_operand (STREAM, X, CODE)
 
-extern void fr30_print_operand STDIO_PROTO((FILE *, Rtx, int));
-
 /* A C expression which evaluates to true if CODE is a valid punctuation
    character for use in the `PRINT_OPERAND' macro.  If
    `PRINT_OPERAND_PUNCT_VALID_P' is not defined, it means that no punctuation
@@ -3672,7 +3600,6 @@ extern void fr30_print_operand STDIO_PROTO((FILE *, Rtx, int));
    `ENCODE_SECTION_INFO' to store the information into the `symbol_ref', and
    then check for it here.  *Note Assembler Format::.  */
 #define PRINT_OPERAND_ADDRESS(STREAM, X) fr30_print_operand_address (STREAM, X)
-extern void fr30_print_operand_address STDIO_PROTO((FILE *, Rtx));
 
 /* A C statement, to be executed after all slot-filler instructions have been
    output.  If necessary, call `dbr_sequence_length' to determine the number of
@@ -4471,22 +4398,6 @@ extern struct rtx_def * fr30_compare_op1;
   { "fp_displacement_operand",	{ CONST_INT }},		\
   { "sp_displacement_operand",	{ CONST_INT }},		\
   { "add_immediate_operand",	{ REG, CONST_INT }},
-
-/*}}}*/ 
-/*{{{  Functions defined in fr30.c */
-
-extern void fr30_expand_prologue PROTO ((void));
-extern void fr30_expand_epilogue PROTO ((void));
-extern unsigned int fr30_compute_frame_size PROTO ((int, int));
-extern int fr30_check_multiple_regs PROTO ((Rtx *, int, int));
-extern Rtx fr30_va_arg PROTO ((Tree, Tree));
-#ifndef NO_MD_PROTOTYPES
-extern int stack_add_operand        PROTO ((Rtx, Mmode));
-extern int add_immediate_operand    PROTO ((Rtx, Mmode));
-extern int high_register_operand    PROTO ((Rtx, Mmode));
-extern int low_register_operand     PROTO ((Rtx, Mmode));
-extern int call_operand             PROTO ((Rtx, Mmode));
-#endif
 
 /*}}}*/ 
 
