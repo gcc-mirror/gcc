@@ -1,3 +1,7 @@
+2003-01-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gccbug.in: Update for new categories.
+
 2002-12-31  Tom Tromey  <tromey@redhat.com>
 
 	* doc/install.texi (Testing): Fixed typo.
