@@ -555,7 +555,7 @@ cgraph_postorder (struct cgraph_node **order)
   /* We have to deal with cycles nicely, so use a depth first traversal
      output algorithm.  Ignore the fact that some functions won't need
      to be output and put them into order as well, so we get dependencies
-     right through intline functions.  */
+     right throughout inline functions.  */
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
   for (node = cgraph_nodes; node; node = node->next)
