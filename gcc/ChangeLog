@@ -1,8 +1,14 @@
+2003-09-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* objc/objc-act.c (encode_type): Encode INTEGER_TYPEs and
+	REAL_TYPEs based on the bitsize of the type's mode, not the
+	mode directly.
+
 2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* dwarf2out.c (default_eh_frame_section): Split into ...
 	(named_section_eh_frame_section, collect2_eh_frame_section): ... new
-	functions. 
+	functions.
 	* output.h (named_section_eh_frame_section): Declare.
 	(collect2_eh_frame_section): Likewise.
 
