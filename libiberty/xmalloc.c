@@ -120,12 +120,12 @@ xmalloc_failed (size)
   else
     allocated = (char *) sbrk (0) - (char *) &environ;
   fprintf (stderr,
-	   "\n%s%sCannot allocate %lu bytes after allocating %lu bytes\n",
+	   "\n%s%sout of memory allocating %lu bytes after allocating %lu bytes\n",
 	   name, *name ? ": " : "",
 	   (unsigned long) size, (unsigned long) allocated);
 #else /* HAVE_SBRK */
   fprintf (stderr,
-	   "\n%s%sCannot allocate %lu bytes\n",
+	   "\n%s%sout of memory allocating %lu bytes\n",
 	   name, *name ? ": " : "",
 	   (unsigned long) size);
 #endif /* HAVE_SBRK */
