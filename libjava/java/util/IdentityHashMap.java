@@ -103,7 +103,7 @@ public class IdentityHashMap extends AbstractMap
 
   public boolean containsKey (Object key)
   {
-    int h = Math.abs (2 * System.identityHashCode (key) % table.length);
+    int h = getHash (key);
     int save = h;
     while (true)
       {
@@ -112,7 +112,7 @@ public class IdentityHashMap extends AbstractMap
 	if (table[h] == emptyslot)
 	  return false;
 	h += 2;
-	if (h > table.length)
+	if (h >= table.length)
 	  h = 0;
 	if (h == save)
 	  return false;
@@ -174,7 +174,7 @@ public class IdentityHashMap extends AbstractMap
 
   public Object get (Object key)
   {
-    int h = Math.abs (2 * System.identityHashCode (key) % table.length);
+    int h = getHash (key);
     int save = h;
     while (true)
       {
@@ -230,14 +230,15 @@ public class IdentityHashMap extends AbstractMap
 
   public Object put (Object key, Object value)
   {
-    // Rehash is the load factor is too high.
-    if (size * 3 / 2 > table.length)
+    // Rehash if the load factor is too high.  We use a factor of 1.5
+    // -- the division by 2 is implicit on both sides.
+    if (size * 3 > table.length)
       {
 	Object[] old = table;
 	table = new Object[old.length * 2];
 	Arrays.fill (table, emptyslot);
 	size = 0;
-	for (int i = 0; i < old.length; ++i)
+	for (int i = 0; i < old.length; i += 2)
 	  {
 	    if (old[i] != tombstone && old[i] != emptyslot)
 	      {
@@ -248,7 +249,7 @@ public class IdentityHashMap extends AbstractMap
 	  }
       }
 
-    int h = Math.abs (2 * System.identityHashCode (key) % table.length);
+    int h = getHash (key);
     int save = h;
     int del = -1;
     while (true)
@@ -288,7 +289,7 @@ public class IdentityHashMap extends AbstractMap
 
   public Object remove (Object key)
   {
-    int h = Math.abs (2 * System.identityHashCode (key) % table.length);
+    int h = getHash (key);
     int save = h;
     while (true)
       {
@@ -301,7 +302,7 @@ public class IdentityHashMap extends AbstractMap
 	    return r;
 	  }
 	h += 2;
-	if (h > table.length)
+	if (h >= table.length)
 	  h = 0;
 	if (h == save)
 	  break;
@@ -413,14 +414,20 @@ public class IdentityHashMap extends AbstractMap
       }
   }
 
+  // Compute the hash value we will use for an object.
+  private int getHash (Object o)
+  {
+    return 2 * Math.abs (System.identityHashCode (o) % (table.length / 2));
+  }
+
   // Number of items in hash table.
   private int size;
   // The table itself.
   private Object[] table;
 
   // This object is used to mark deleted items.
-  private Object tombstone = new Object ();
+  private static final Object tombstone = new Object ();
   // This object is used to mark empty slots.  We need this because
   // using null is ambiguous.
-  private Object emptyslot = new Object ();
+  private static final Object emptyslot = new Object ();
 }
