@@ -929,17 +929,11 @@ const_section ()						\
 #undef  SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE, RTX, ALIGN) const_section ()
 
-#define SELECT_SECTION(DECL, RELOC, ALIGN) \
- mmix_select_section (DECL, RELOC, ALIGN)
-
 #define ENCODE_SECTION_INFO(DECL, FIRST) \
  mmix_encode_section_info (DECL, FIRST)
 
 #define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
  (VAR) = mmix_strip_name_encoding (SYM_NAME)
-
-#define UNIQUE_SECTION(DECL, RELOC) \
-  mmix_unique_section (decl, reloc)
 
 /* Node: PIC */
 /* (empty) */

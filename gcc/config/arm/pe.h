@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with PE obj format.
-   Copyright (C) 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
    
 This file is part of GNU CC.
@@ -111,7 +111,7 @@ Boston, MA 02111-1307, USA.  */
    symbols must be explicitly imported from shared libraries (DLLs).  */
 #define MULTIPLE_SYMBOL_SPACES
 
-#define UNIQUE_SECTION(DECL, RELOC) arm_pe_unique_section (DECL, RELOC)
+#define TARGET_ASM_UNIQUE_SECTION arm_pe_unique_section
 
 #define SUPPORTS_ONE_ONLY 1
 

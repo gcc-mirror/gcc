@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001 Free Software Foundation, Inc. 
+   2000, 2001, 2002 Free Software Foundation, Inc. 
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -115,6 +115,8 @@ int alpha_this_gpdisp_sequence_number;
 /* Declarations of static functions.  */
 static bool decl_in_text_section
   PARAMS ((tree));
+static bool alpha_in_small_data_p
+  PARAMS ((tree));
 static int some_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
 static int split_small_symbolic_operand_1
@@ -199,15 +201,21 @@ static void vms_asm_out_destructor PARAMS ((rtx, int));
 # define TARGET_SECTION_TYPE_FLAGS vms_section_type_flags
 #endif
 
+#undef TARGET_IN_SMALL_DATA_P
+#define TARGET_IN_SMALL_DATA_P alpha_in_small_data_p
+
 #if TARGET_ABI_UNICOSMK
 static void unicosmk_asm_named_section PARAMS ((const char *, unsigned int));
 static void unicosmk_insert_attributes PARAMS ((tree, tree *));
 static unsigned int unicosmk_section_type_flags PARAMS ((tree, const char *, 
 							 int));
+static void unicosmk_unique_section PARAMS ((tree, int));
 # undef TARGET_INSERT_ATTRIBUTES
 # define TARGET_INSERT_ATTRIBUTES unicosmk_insert_attributes
 # undef TARGET_SECTION_TYPE_FLAGS
 # define TARGET_SECTION_TYPE_FLAGS unicosmk_section_type_flags
+# undef TARGET_ASM_UNIQUE_SECTION
+# define TARGET_ASM_UNIQUE_SECTION unicosmk_unique_section
 #endif
 
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -1552,6 +1560,32 @@ decl_in_text_section (decl)
 		    && DECL_ONE_ONLY (decl))));
 }
 
+/* Return true if EXP should be placed in the small data section.  */
+
+static bool
+alpha_in_small_data_p (exp)
+     tree exp;
+{
+  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+    {
+      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+      if (strcmp (section, ".sdata") == 0
+	  || strcmp (section, ".sbss") == 0)
+	return true;
+    }
+  else
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
+
+      /* If this is an incomplete type with size 0, then we can't put it
+	 in sdata because it might be too big when completed.  */
+      if (size > 0 && size <= g_switch_value)
+	return true;
+    }
+
+  return false;
+}
+
 /* If we are referencing a function that is static, make the SYMBOL_REF
    special.  We use this to see indicate we can branch to this function
    without setting PV or restoring GP. 
@@ -1626,32 +1660,7 @@ alpha_encode_section_info (decl, first)
     is_local = true;
 
   /* Determine if DECL will wind up in .sdata/.sbss.  */
-
-  is_small = false;
-  if (DECL_SECTION_NAME (decl))
-    {
-      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
-      if (strcmp (section, ".sdata") == 0
-	  || strcmp (section, ".sbss") == 0)
-	is_small = true;
-    }
-  else
-    {
-      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
-
-      /* If the variable has already been defined in the output file, then it
-	 is too late to put it in sdata if it wasn't put there in the first
-	 place.  The test is here rather than above, because if it is already
-	 in sdata, then it can stay there.  */
-
-      if (TREE_ASM_WRITTEN (decl))
-	;
-
-      /* If this is an incomplete type with size 0, then we can't put it in
-	 sdata because it might be too big when completed.  */
-      else if (size > 0 && size <= g_switch_value)
-	is_small = true;
-    }
+  is_small = alpha_in_small_data_p (decl);
 
   /* Finally, encode this into the symbol string.  */
   if (is_local)
@@ -8546,7 +8555,7 @@ unicosmk_section_type_flags (decl, name, reloc)
 /* Generate a section name for decl and associate it with the
    declaration.  */
 
-void
+static void
 unicosmk_unique_section (decl, reloc)
       tree decl;
       int reloc ATTRIBUTE_UNUSED;
@@ -8626,7 +8635,7 @@ unicosmk_insert_attributes (decl, attr_ptr)
 {
   if (DECL_P (decl)
       && (TREE_PUBLIC (decl) || TREE_CODE (decl) == FUNCTION_DECL))
-    UNIQUE_SECTION (decl, 0);
+    unicosmk_unique_section (decl, 0);
 }
 
 /* Output an alignment directive. We have to use the macro 'gcc@code@align'

@@ -42,6 +42,7 @@ static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 #if VMS_TARGET
 static void vms_asm_out_constructor PARAMS ((rtx, int));
 static void vms_asm_out_destructor PARAMS ((rtx, int));
+static void vms_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 #endif
 
 /* Initialize the GCC target structure.  */
@@ -50,6 +51,11 @@ static void vms_asm_out_destructor PARAMS ((rtx, int));
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE vax_output_function_prologue
+
+#if VMS_TARGET
+#undef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION vms_select_section
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -870,6 +876,36 @@ vms_asm_out_destructor (symbol, priority)
   fprintf (asm_out_file,"$$PsectAttributes_NOOVR$$__gxx_clean_1:\n\t.long\t");
   assemble_name (asm_out_file, XSTR (symbol, 0));
   fputc ('\n', asm_out_file);
+}
+
+static void
+vax_select_section (exp, reloc, align)
+     tree exp;
+     int reloc ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (exp) == VAR_DECL)
+    {
+      if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp)
+	  && DECL_INITIAL (exp)
+	  && (DECL_INITIAL (exp) == error_mark_node
+	      || TREE_CONSTANT (DECL_INITIAL (exp))))
+	{
+	  if (TREE_PUBLIC (exp))
+	    const_section ();
+	  else
+	    text_section ();
+	}
+      else
+	data_section ();
+    }
+  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
+    {
+      if (TREE_CODE (exp) == STRING_CST && flag_writable_strings)
+	data_section ();
+      else
+	text_section ();
+    }
 }
 #endif /* VMS_TARGET */
 

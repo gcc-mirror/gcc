@@ -114,6 +114,8 @@ static void pa_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static int pa_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int pa_adjust_priority PARAMS ((rtx, int));
 static int pa_issue_rate PARAMS ((void));
+static void pa_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
+     ATTRIBUTE_UNUSED;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -7565,4 +7567,31 @@ pa_add_gc_roots ()
   ggc_add_rtx_root (&hppa_compare_op1, 1);
   ggc_add_root (&deferred_plabels, 1, sizeof (&deferred_plabels),
 		&mark_deferred_plabels);
+}
+
+/* On hpux10, the linker will give an error if we have a reference
+   in the read-only data section to a symbol defined in a shared
+   library.  Therefore, expressions that might require a reloc can
+   not be placed in the read-only data section.  */
+
+static void
+pa_select_section (exp, reloc, align)
+     tree exp;
+     int reloc;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (exp) == VAR_DECL
+      && TREE_READONLY (exp)
+      && !TREE_THIS_VOLATILE (exp)
+      && DECL_INITIAL (exp)
+      && (DECL_INITIAL (exp) == error_mark_node
+          || TREE_CONSTANT (DECL_INITIAL (exp)))
+      && !reloc)
+    readonly_data_section ();
+  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c'
+	   && !(TREE_CODE (exp) == STRING_CST && flag_writable_strings)
+	   && !reloc)
+    readonly_data_section ();
+  else
+    data_section ();
 }

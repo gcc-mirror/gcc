@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Sun SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -157,6 +157,9 @@ static void sparc_nonflat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT,
 #ifdef OBJECT_FORMAT_ELF
 static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
+static void sparc_aout_select_section PARAMS ((tree, int,
+					       unsigned HOST_WIDE_INT))
+     ATTRIBUTE_UNUSED;
 
 static int sparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int sparc_issue_rate PARAMS ((void));
@@ -8039,6 +8042,19 @@ sparc_elf_asm_named_section (name, flags)
   fputc ('\n', asm_out_file);
 }
 #endif /* OBJECT_FORMAT_ELF */
+
+/* ??? Similar to the standard section selection, but force reloc-y-ness
+   if SUNOS4_SHARED_LIBRARIES.  Unclear why this helps (as opposed to
+   pretending PIC always on), but that's what the old code did.  */
+
+static void
+sparc_aout_select_section (t, reloc, align)
+     tree t;
+     int reloc;
+     unsigned HOST_WIDE_INT align;
+{
+  default_select_section (t, reloc | SUNOS4_SHARED_LIBRARIES, align)
+}
 
 int
 sparc_extra_constraint_check (op, c, strict)

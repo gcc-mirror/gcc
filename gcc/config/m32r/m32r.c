@@ -74,6 +74,8 @@ static int    m32r_sched_reorder   PARAMS ((FILE *, int, rtx *, int *, int));
 static int    m32r_variable_issue  PARAMS ((FILE *, int, rtx, int));
 static int    m32r_issue_rate	   PARAMS ((void));
 
+static void m32r_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -320,10 +322,11 @@ m32r_handle_model_attribute (node, name, args, flags, no_add_attrs)
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
 
-void
-m32r_select_section (decl, reloc)
+static void
+m32r_select_section (decl, reloc, align)
      tree decl;
      int reloc;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   if (TREE_CODE (decl) == STRING_CST)
     {

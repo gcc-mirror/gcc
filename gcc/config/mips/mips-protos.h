@@ -1,6 +1,6 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2001 Free Software Foundation, Inc.
+   1999, 2001, 2002 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -79,8 +79,6 @@ extern int		mips_output_external PARAMS ((FILE *, tree,
 extern tree		mips_build_va_list PARAMS ((void));
 extern void		mips_va_start PARAMS ((int, tree, rtx));
 extern struct rtx_def  *mips_va_arg PARAMS ((tree, tree));
-extern void		mips_select_section PARAMS ((tree, int));
-extern void		mips_unique_section PARAMS ((tree, int));
 
 extern void		expand_block_move PARAMS ((rtx *));
 extern void		final_prescan_insn PARAMS ((rtx, rtx *, int));

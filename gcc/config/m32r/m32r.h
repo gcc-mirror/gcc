@@ -1567,13 +1567,8 @@ sbss_section ()								\
     }									\
 }									\
 
-/* A C statement or statements to switch to the appropriate section for
-   output of EXP.  You can assume that EXP is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether the initial value
-   of EXP requires link-time relocations.  */
-#undef  SELECT_SECTION
-#define SELECT_SECTION(EXP, RELOC, ALIGN) \
-  m32r_select_section ((EXP), (RELOC))
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  m32r_select_section
 
 /* A C statement or statements to switch to the appropriate section for
    output of RTX in mode MODE.  You can assume that RTX

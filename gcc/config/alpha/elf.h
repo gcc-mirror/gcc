@@ -191,13 +191,7 @@ do {									\
 #undef  ASCII_DATA_ASM_OP
 #define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
-/* Support const sections and the ctors and dtors sections for g++.
-   Note that there appears to be two different ways to support const
-   sections at the moment.  You can either #define the symbol
-   READONLY_DATA_SECTION (giving it some code which switches to the
-   readonly data section) or else you can #define the symbols
-   EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
-   SELECT_RTX_SECTION.  We do both here just to be on the safe side.  */
+/* Support const sections and the ctors and dtors sections for g++.  */
 
 #undef USE_CONST_SECTION
 #define USE_CONST_SECTION	1
@@ -284,160 +278,9 @@ void FN ()					\
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
-
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.
-
-   Set SECNUM to:
-	0	.text
-	1	.rodata
-	2	.data
-	3	.sdata
-	4	.bss
-	5	.sbss
-*/
-
-#define DO_SELECT_SECTION(SECNUM, DECL, RELOC)			\
-  do								\
-     {								\
-       HOST_WIDE_INT size;					\
-       SECNUM = 1;						\
-       if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	 {							\
-	   SECNUM = 0;						\
-	   break;						\
-	 }							\
-       else if (TREE_CODE (DECL) == STRING_CST)			\
-	 {							\
-	   if (flag_writable_strings)				\
-	     SECNUM = 2;					\
-	   else							\
-	     SECNUM = 0x101;					\
-	   break;						\
-	 }							\
-       else if (TREE_CODE (DECL) == VAR_DECL)			\
-	 {							\
-	   if (DECL_INITIAL (DECL) == NULL			\
-	       || DECL_INITIAL (DECL) == error_mark_node)	\
-	     SECNUM = 4;					\
-	   else if ((flag_pic && RELOC)				\
-		    || ! TREE_READONLY (DECL)			\
-		    || TREE_SIDE_EFFECTS (DECL)			\
-		    || ! TREE_CONSTANT (DECL_INITIAL (DECL)))	\
-	     SECNUM = 2;					\
-	  else if (flag_merge_constants >= 2)			\
-	    {							\
-	      /* C and C++ don't allow different variables to	\
-		 share the same location.  -fmerge-all-constants\
-		 allows even that (at the expense of not	\
-		 conforming).  */				\
-	      if (TREE_CODE (DECL_INITIAL (DECL)) == STRING_CST)\
-		SECNUM = 0x201;					\
-	      else						\
-		SECNUM = 0x301;					\
-	    }							\
-	 }							\
-       else if (TREE_CODE (DECL) == CONSTRUCTOR)		\
-	 {							\
-	   if ((flag_pic && RELOC)				\
-	       || TREE_SIDE_EFFECTS (DECL)			\
-	       || ! TREE_CONSTANT (DECL))			\
-	     SECNUM = 2;					\
-	 }							\
-								\
-       /* Select small data sections based on size.  */		\
-       size = int_size_in_bytes (TREE_TYPE (DECL));		\
-       if (size >= 0 && size <= g_switch_value)			\
-	 {							\
-	   if ((SECNUM & 0xff) >= 2)				\
-	     SECNUM += 1;					\
-	   /* Move readonly data to .sdata only if -msmall-data.  */ \
-	   /* ??? Consider .sdata.{lit4,lit8} as		\
-	      SHF_MERGE|SHF_ALPHA_GPREL.  */			\
-	   else if (TARGET_SMALL_DATA)				\
-	     SECNUM = 3;					\
-	 }							\
-     }								\
-   while (0)
-
-#undef  SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC, ALIGN)		\
-  do							\
-    {							\
-      typedef void (*sec_fn) PARAMS ((void));		\
-      static sec_fn const sec_functions[6] =		\
-      {							\
-	text_section,					\
-	const_section,					\
-	data_section,					\
-	sdata_section,					\
-	bss_section,					\
-	sbss_section					\
-      };						\
-							\
-      int sec;						\
-							\
-      DO_SELECT_SECTION (sec, DECL, RELOC);		\
-							\
-      switch (sec)					\
-	{						\
-	case 0x101:					\
-	  mergeable_string_section (DECL, ALIGN, 0);	\
-	  break;					\
-	case 0x201:					\
-	  mergeable_string_section (DECL_INITIAL (DECL),\
-				    ALIGN, 0);		\
-	  break;					\
-	case 0x301:					\
-	  mergeable_constant_section (DECL_MODE (DECL),	\
-				      ALIGN, 0);	\
-	  break;					\
-	default:					\
-	  (*sec_functions[sec]) ();			\
-	  break;					\
-	}						\
-    }							\
-  while (0)
+#define TARGET_ASM_SELECT_SECTION  default_elf_select_section
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-
-#undef  UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL, RELOC)					\
-  do									\
-    {									\
-      static const char * const prefixes[6][2] =			\
-      {									\
-	{ ".text.",   ".gnu.linkonce.t." },				\
-	{ ".rodata.", ".gnu.linkonce.r." },				\
-	{ ".data.",   ".gnu.linkonce.d." },				\
-	{ ".sdata.",  ".gnu.linkonce.s." },				\
-	{ ".bss.",    ".gnu.linkonce.b." },				\
-	{ ".sbss.",   ".gnu.linkonce.sb." }				\
-      };								\
-									\
-      int nlen, plen, sec;						\
-      const char *name, *prefix;					\
-      char *string;							\
-									\
-      DO_SELECT_SECTION (sec, DECL, RELOC);				\
-									\
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
-      STRIP_NAME_ENCODING (name, name);					\
-      nlen = strlen (name);						\
-									\
-      prefix = prefixes[sec & 0xff][DECL_ONE_ONLY(DECL)];		\
-      plen = strlen (prefix);						\
-									\
-      string = alloca (nlen + plen + 1);				\
-									\
-      memcpy (string, prefix, plen);					\
-      memcpy (string + plen, name, nlen + 1);				\
-									\
-      DECL_SECTION_NAME (DECL) = build_string (nlen + plen, string);	\
-    }									\
-  while (0)
 
 /* A C statement or statements to switch to the appropriate
    section for output of RTX in mode MODE.  RTX is some kind

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MCore using COFF/PE.
-   Copyright (C) 1994, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -79,35 +79,6 @@ rdata_section ()						\
 
 #undef  READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION() rdata_section ()
-
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
-#undef  SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC, ALIGN)				\
-{									\
-  if (TREE_CODE (DECL) == STRING_CST)					\
-    {									\
-      if (! flag_writable_strings)					\
-	rdata_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
-    {									\
-      if ((0 && RELOC)	/* should be (flag_pic && RELOC) */		\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || !DECL_INITIAL (DECL)					\
-	  || (DECL_INITIAL (DECL) != error_mark_node			\
-	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))			\
-	data_section ();						\
-      else								\
-	rdata_section ();						\
-    }									\
-  else									\
-    rdata_section ();							\
-}
 
 /* A C statement or statements to switch to the appropriate
    section for output of RTX in mode MODE.  RTX is some kind

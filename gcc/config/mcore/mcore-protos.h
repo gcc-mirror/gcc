@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in mcore.c
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
    Contributed by Nick Clifton (nickc@redhat.com)
 
 This file is part of GNU CC.
@@ -35,7 +35,6 @@ extern int          mcore_dllimport_name_p       	PARAMS ((const char *));
 extern int          mcore_naked_function_p       	PARAMS ((void));
 
 #ifdef TREE_CODE
-extern void         mcore_unique_section         	PARAMS ((tree, int));
 extern void         mcore_encode_section_info    	PARAMS ((tree, int));
 
 #ifdef HAVE_MACHINE_MODES

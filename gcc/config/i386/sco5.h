@@ -540,28 +540,9 @@ init_section ()								\
 	      == void_type_node))) ? (SIZE)				\
    : 0))
 
-#undef SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
-{									\
-  if (TARGET_ELF && flag_pic && RELOC)					\
-     data_section ();							\
-  else if (TREE_CODE (DECL) == STRING_CST)				\
-    {									\
-      if (! flag_writable_strings)					\
-	const_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
-    {									\
-      if (! DECL_READONLY_SECTION (DECL, RELOC)) 			\
-	data_section ();						\
-      else								\
-	const_section ();						\
-    }									\
-  else									\
-    const_section ();							\
-}
+/* ??? Ignore coff.  */
+#undef	TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  default_elf_select_section
 
 #undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) 						\

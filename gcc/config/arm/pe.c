@@ -1,5 +1,5 @@
 /* Routines for GCC for ARM/pe.
-   Copyright (C) 1995, 1996, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
 
 This file is part of GNU CC.
@@ -247,8 +247,6 @@ arm_pe_encode_section_info (decl, first)
 	 ??? We leave these alone for now.  */
     }
 }
-
-/* Cover function for UNIQUE_SECTION.  */
 
 void
 arm_pe_unique_section (decl, reloc)

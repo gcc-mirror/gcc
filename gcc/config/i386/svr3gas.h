@@ -83,16 +83,7 @@ Boston, MA 02111-1307, USA.  */
    this file should be rewritten to include config/svr3.h
    and override what isn't right.  */
 
-/* Support const sections and the ctors and dtors sections for g++.
-   Note that there appears to be two different ways to support const
-   sections at the moment.  You can either #define the symbol
-   READONLY_DATA_SECTION (giving it some code which switches to the
-   readonly data section) or else you can #define the symbols
-   EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
-   SELECT_RTX_SECTION.  We do both here just to be on the safe side.
-   However, use of the const section is turned off by default
-   unless the specific tm.h file turns it on by defining
-   USE_CONST_SECTION as 1.  */
+/* Support const sections and the ctors and dtors sections for g++.  */
 
 #define USE_CONST_SECTION	0
 
@@ -171,35 +162,6 @@ const_section ()							\
 }
 
 #define TARGET_ASM_CONSTRUCTOR  ix86_svr3_asm_out_constructor
-
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
-
-#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
-{									\
-  if (TREE_CODE (DECL) == STRING_CST)					\
-    {									\
-      if (! flag_writable_strings)					\
-	const_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
-    {									\
-      if ((0 && RELOC)	/* should be (flag_pic && RELOC) */		\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || !DECL_INITIAL (DECL)					\
-	  || (DECL_INITIAL (DECL) != error_mark_node 			\
-	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))			\
-	data_section ();						\
-      else								\
-	const_section ();						\
-    }									\
-  else									\
-    const_section ();							\
-}
 
 /* A C statement or statements to switch to the appropriate
    section for output of RTX in mode MODE.  RTX is some kind

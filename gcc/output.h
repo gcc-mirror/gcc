@@ -543,6 +543,12 @@ extern void default_named_section_asm_out_constructor PARAMS ((struct rtx_def *,
 extern void default_ctor_section_asm_out_constructor PARAMS ((struct rtx_def *,
 							      int));
 
+extern void default_select_section PARAMS ((tree, int,
+					    unsigned HOST_WIDE_INT));
+extern void default_elf_select_section PARAMS ((tree, int,
+						unsigned HOST_WIDE_INT));
+extern void default_unique_section PARAMS ((tree, int));
+
 /* Emit data for vtable gc for GNU binutils.  */
 extern void assemble_vtable_entry PARAMS ((struct rtx_def *, HOST_WIDE_INT));
 extern void assemble_vtable_inherit PARAMS ((struct rtx_def *,

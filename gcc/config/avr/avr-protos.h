@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
    This file is part of GNU CC.
@@ -43,7 +43,6 @@ extern void   gas_output_ascii          PARAMS ((FILE *file, const char *str,
 #ifdef TREE_CODE
 extern void   asm_output_external          PARAMS ((FILE *file, tree decl,
 						   char *name));
-extern void   unique_section               PARAMS ((tree decl, int reloc));
 extern void   encode_section_info          PARAMS ((tree decl, int));
 extern int    avr_progmem_p                PARAMS ((tree decl));
 

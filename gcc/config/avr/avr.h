@@ -1791,17 +1791,6 @@ progmem_section (void)							      \
    If these items should be placed in the text section, this macro
    should not be defined.  */
 
-/* `SELECT_SECTION (EXP, RELOC, ALIGN)'
-   A C statement or statements to switch to the appropriate section
-   for output of EXP.  You can assume that EXP is either a `VAR_DECL'
-   node or a constant of some sort.  RELOC indicates whether the
-   initial value of EXP requires link-time relocations.  Select the
-   section by calling `text_section' or one of the alternatives for
-   other sections.
-
-   Do not define this macro if you put all read-only variables and
-   constants in the read-only data section (usually the text section).  */
-
 /* `SELECT_RTX_SECTION (MODE, RTX, ALIGN)'
    A C statement or statements to switch to the appropriate section
    for output of RTX in mode MODE.  You can assume that RTX is some
@@ -1841,14 +1830,6 @@ progmem_section (void)							      \
    Decode SYM_NAME and store the real name part in VAR, sans the
    characters that encode section info.  Define this macro if
    `ENCODE_SECTION_INFO' alters the symbol's name string.  */
-
-#define UNIQUE_SECTION(DECL, RELOC) unique_section (DECL, RELOC)
-/* `UNIQUE_SECTION (DECL, RELOC)'
-   A C statement to build up a unique section name, expressed as a
-   STRING_CST node, and assign it to `DECL_SECTION_NAME (DECL)'.
-   RELOC indicates whether the initial value of EXP requires
-   link-time relocations.  If you do not define this macro, GNU CC
-   will use the symbol name prefixed by `.' as the section name.  */
 
 #define ASM_FILE_START(STREAM) asm_file_start (STREAM)
 /* A C expression which outputs to the stdio stream STREAM some

@@ -2354,40 +2354,7 @@ sdata_section ()							\
   INIT_SECTION_FUNCTION							\
   FINI_SECTION_FUNCTION
 
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.
-
-   For strings, the section is selected before the segment info is encoded.  */
-#undef	SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
-{									\
-  if (TREE_CODE (DECL) == STRING_CST)					\
-    {									\
-      if (! flag_writable_strings)					\
-	const_section ();						\
-      else if ( TREE_STRING_LENGTH (DECL) <= m88k_gp_threshold)		\
-	sdata_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
-    {									\
-      if (SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)))			\
-	sdata_section ();						\
-      else if ((flag_pic && RELOC)					\
-	       || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
-	       || !DECL_INITIAL (DECL)					\
-	       || (DECL_INITIAL (DECL) != error_mark_node		\
-		   && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
-	data_section ();						\
-      else								\
-	const_section ();						\
-    }									\
-  else									\
-    const_section ();							\
-}
+#define TARGET_ASM_SELECT_SECTION  m88k_select_section
 
 /* Jump tables consist of branch instructions and should be output in
    the text section.  When we use a table of addresses, we explicitly

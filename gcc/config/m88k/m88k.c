@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 88000.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001 Free Software Foundation, Inc. 
+   2001, 2002 Free Software Foundation, Inc. 
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -71,7 +71,7 @@ static void m88k_output_function_begin_epilogue PARAMS ((FILE *));
 static void m88k_svr3_asm_out_constructor PARAMS ((rtx, int));
 static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
 #endif
-
+static void m88k_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static int m88k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 /* Initialize the GCC target structure.  */
@@ -3319,6 +3319,38 @@ m88k_svr3_asm_out_destructor (symbol, priority)
     assemble_integer (constm1_rtx, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
 #endif /* INIT_SECTION_ASM_OP && ! OBJECT_FORMAT_ELF */
+
+static void
+m88k_select_section (decl, reloc, align)
+     tree decl;
+     int reloc;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (decl) == STRING_CST)
+    {
+      if (! flag_writable_strings)
+	const_section ();
+      else if (TREE_STRING_LENGTH (decl) <= m88k_gp_threshold)
+	sdata_section ();
+      else
+	data_section ();
+    }
+  else if (TREE_CODE (decl) == VAR_DECL)
+    {
+      if (SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)))
+	sdata_section ();
+      else if ((flag_pic && reloc)
+	       || !TREE_READONLY (decl) || TREE_SIDE_EFFECTS (decl)
+	       || !DECL_INITIAL (decl)
+	       || (DECL_INITIAL (decl) != error_mark_node
+		   && !TREE_CONSTANT (DECL_INITIAL (decl))))
+	data_section ();
+      else
+	const_section ();
+    }
+  else
+    const_section ();
+}
 
 /* Adjust the cost of INSN based on the relationship between INSN that
    is dependent on DEP_INSN through the dependence LINK.  The default

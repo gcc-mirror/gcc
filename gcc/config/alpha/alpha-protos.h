@@ -1,5 +1,5 @@
 /* Prototypes for alpha.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -175,9 +175,6 @@ extern rtx unicosmk_add_call_info_word PARAMS ((rtx));
 #if TARGET_ABI_UNICOSMK
 #ifdef RTX_CODE
 extern void unicosmk_defer_case_vector PARAMS ((rtx, rtx));
-#endif
-#ifdef TREE_CODE
-extern void unicosmk_unique_section PARAMS ((tree, int));
 #endif
 extern void unicosmk_add_extern PARAMS ((const char *));
 extern void unicosmk_output_align PARAMS ((FILE *, int));

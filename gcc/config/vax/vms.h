@@ -1,5 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1999, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -208,40 +209,6 @@ const_section ()					\
     fprintf(asm_out_file,".const\n");			\
     in_section = in_const;				\
   }							\
-}
-
-/* This macro contains the logic to decide which section a variable
-   should be stored in.  Static constant variables go in the text_section,
-   non-const variables go in the data_section, and non-static const
-   variables go in the const_section.
-
-   Since this macro is used in a number of places, we must also be able
-   to decide where to place string constants.  */
-
-#define SELECT_SECTION(T,RELOC,ALIGN)					\
-{									\
-  if (TREE_CODE (T) == VAR_DECL)					\
-    {									\
-      if (TREE_READONLY (T) && ! TREE_THIS_VOLATILE (T)			\
-	  && DECL_INITIAL (T)						\
-	  && (DECL_INITIAL (T) == error_mark_node			\
-	      || TREE_CONSTANT (DECL_INITIAL (T))))			\
-	{								\
-	  if (TREE_PUBLIC (T))						\
-	    const_section ();						\
-	  else								\
-	    text_section ();						\
-	}								\
-      else								\
-	data_section ();						\
-    }									\
-  if (TREE_CODE_CLASS (TREE_CODE (T)) == 'c')				\
-    {									\
-      if ((TREE_CODE (T) == STRING_CST && flag_writable_strings))	\
-	data_section ();						\
-      else								\
-	text_section ();						\
-    }									\
 }
 
 /* This is used by a hook in varasm.c to write the assembler directives

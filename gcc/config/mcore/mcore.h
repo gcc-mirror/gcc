@@ -1143,9 +1143,6 @@ switch_to_section (section, decl)				\
 #define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
   (VAR) = MCORE_STRIP_NAME_ENCODING (SYM_NAME)
 
-#undef  UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL, RELOC) mcore_unique_section (DECL, RELOC)
-
 #define MULTIPLE_SYMBOL_SPACES 1
 
 #define SUPPORTS_ONE_ONLY 1
