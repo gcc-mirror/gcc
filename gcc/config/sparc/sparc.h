@@ -34,7 +34,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC " %| %{fpic:-k} %{fPIC:-k}"
 
 /* Define macros to distinguish architectures.  */
-#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
+#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__} \
+  %{mfrw:-D__sparc_frw__}"
 
 /* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
@@ -62,6 +63,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       flag_omit_frame_pointer = 1;				\
     }								\
 }
+
+/* To make profiling work with -f{pic,PIC}, we need to emit the profiling
+   code into the rtl.  Also, if we are profiling, we cannot eliminate
+   the frame pointer (because the return address will get smashed).  */
+
+#define OVERRIDE_OPTIONS \
+  do { if (profile_flag || profile_block_flag)	\
+	 flag_omit_frame_pointer = 0, flag_pic = 0; } while (0)
 
 /* These compiler options take an argument.  We ignore -target for now.  */
 
@@ -112,6 +121,10 @@ extern int target_flags;
 /* Nonzero means that we should generate code for a sparclite.  */
 #define TARGET_SPARCLITE (target_flags & 128)
 
+/* Nonzero means that we should generate code using a flat register window
+   model, i.e. no save/restore instructions are generated.  */
+#define TARGET_FRW (target_flags & 256)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -133,6 +146,8 @@ extern int target_flags;
     {"sparclite", -1},		\
     {"no-sparclite", -128},	\
     {"no-sparclite", 1},	\
+    {"frw", 256},		\
+    {"no-frw", -256},		\
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
@@ -270,7 +285,7 @@ extern int target_flags;
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
-   0 is used for the condition code and not to represent %g0, which is
+   g0 is used for the condition code and not to represent %g0, which is
    hardwired to 0, so reg 0 is *not* fixed.
    g1 through g4 are free to use as temporaries.
    g5 through g7 are reserved for the operating system.  */
@@ -391,7 +406,8 @@ extern int leaf_function;
    it's not, there's no point in trying to eliminate the
    frame pointer.  If it is a leaf function, we guessed right!  */
 #define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  do { (VAR) = compute_frame_size (get_frame_size (), 1); } while (0)
+  ((VAR) = (TARGET_FRW ? sparc_frw_compute_frame_size (get_frame_size ()) \
+	    : compute_frame_size (get_frame_size (), 1)))
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 30
@@ -520,15 +536,6 @@ extern char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
 extern char leaf_reg_backmap[];
 #define LEAF_REG_BACKMAP(REGNO) (leaf_reg_backmap[REGNO])
-
-#define REG_USED_SO_FAR(REGNO) \
-  ((REGNO) >= 24 && (REGNO) < 30	\
-   ? (regs_ever_live[24]		\
-      || regs_ever_live[25]		\
-      || regs_ever_live[26]		\
-      || regs_ever_live[27]		\
-      || regs_ever_live[28]		\
-      || regs_ever_live[29]) : 0)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS GENERAL_REGS
@@ -669,13 +676,16 @@ extern char leaf_reg_backmap[];
 
 #define RETURN_POPS_ARGS(FUNTYPE,SIZE) 0
 
-/* Some subroutine macros specific to this machine.  */
+/* Some subroutine macros specific to this machine.
+   When !TARGET_FPU, put float return values in the general registers,
+   since we don't have any fp registers.  */
 #define BASE_RETURN_VALUE_REG(MODE) \
  (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32 : 8)
 #define BASE_OUTGOING_VALUE_REG(MODE) \
- (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32 : 24)
+ (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32	\
+  : (TARGET_FRW ? 8 : 24))
 #define BASE_PASSING_ARG_REG(MODE) (8)
-#define BASE_INCOMING_ARG_REG(MODE) (24)
+#define BASE_INCOMING_ARG_REG(MODE) (TARGET_FRW ? 8 : 24)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -882,7 +892,8 @@ extern int apparent_fsize;
    to do this is made in regclass.c.  */
 
 #define FUNCTION_PROLOGUE(FILE, SIZE)				\
-  output_function_prologue (FILE, SIZE, leaf_function)
+  (TARGET_FRW ? sparc_frw_output_function_prologue (FILE, SIZE, leaf_function)\
+   : output_function_prologue (FILE, SIZE, leaf_function))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -950,11 +961,14 @@ extern int current_function_outgoing_args_size;
 extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE)				\
-  output_function_epilogue (FILE, SIZE, leaf_function)
+  (TARGET_FRW ? sparc_frw_output_function_epilogue (FILE, SIZE, leaf_function)\
+   : output_function_epilogue (FILE, SIZE, leaf_function))
 
-#define DELAY_SLOTS_FOR_EPILOGUE 1
+#define DELAY_SLOTS_FOR_EPILOGUE	\
+  (TARGET_FRW ? sparc_frw_epilogue_delay_slots () : 1)
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled)	\
-  eligible_for_epilogue_delay (trial, slots_filled)
+  (TARGET_FRW ? sparc_frw_eligible_for_epilogue_delay (trial, slots_filled) \
+   : eligible_for_epilogue_delay (trial, slots_filled))
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
@@ -1024,8 +1038,8 @@ extern union tree_node *current_function_decl;
    explicit.  */
 
 #define EXPAND_BUILTIN_SAVEREGS(ARGLIST)				\
-  (emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, TImode, 24))),	\
-   emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DImode, 28))),	\
+  (emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, TImode, BASE_INCOMING_ARG_REG (VOIDmode)))),	\
+   emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DImode, BASE_INCOMING_ARG_REG (VOIDmode)+4))),	\
    expand_call (exp, target, ignore))
 
 /* Addressing modes, and classification of registers for them.  */
@@ -1401,10 +1415,8 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
-    if (INTVAL (RTX) == 0)					\
-      return 0;							\
     if (INTVAL (RTX) < 0x1000 && INTVAL (RTX) >= -0x1000)	\
-      return 1;							\
+      return 0;							\
   case HIGH:							\
     return 2;							\
   case CONST:							\
@@ -1418,7 +1430,7 @@ extern struct rtx_def *legitimize_pic_address ();
 	  || (XINT (RTX, 3) == -1				\
 	      && XINT (RTX, 2) < 0				\
 	      && XINT (RTX, 2) >= -0x1000))			\
-	return 1;						\
+	return 0;						\
     return 8;
 
 /* SPARC offers addressing modes which are "as cheap as a register".
@@ -1447,10 +1459,11 @@ extern struct rtx_def *legitimize_pic_address ();
   case UDIV:						\
   case MOD:						\
   case UMOD:						\
-    return COSTS_N_INSNS (20);				\
-  /* Make FLOAT more expensive than CONST_DOUBLE,	\
+    return COSTS_N_INSNS (25);				\
+  /* Make FLOAT and FIX more expensive than CONST_DOUBLE,\
      so that cse will favor the latter.  */		\
   case FLOAT:						\
+  case FIX:						\
     return 19;
 
 /* Conditional branches with empty delay slots have a length of two.  */
