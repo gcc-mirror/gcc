@@ -5842,7 +5842,7 @@ emit_reload_insns (insn)
 		}
 #endif
 
-	      if (! special)
+	      if (! special && ! rtx_equal_p (reloadreg, oldequiv))
 		gen_input_reload (reloadreg, oldequiv, reload_opnum[j],
 				  reload_when_needed[j]);
 
