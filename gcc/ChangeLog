@@ -1,5 +1,12 @@
 2004-10-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cfg.c (unchecked_make_edge, redirect_edge_succ,
+	redirect_edge_pred): Use VEC_safe_push instead of
+	VEC_safe_insert.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+
+2004-10-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* cfgloopmanip.c (loopify): Take two more arguments true_edge
 	and false_edge.
 	* cfgloop.h: Adjust the corresponding prototype.

@@ -270,8 +270,8 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
   e = ggc_alloc_cleared (sizeof (*e));
   n_edges++;
 
-  VEC_safe_insert (edge, src->succs, 0, e);
-  VEC_safe_insert (edge, dst->preds, 0, e);
+  VEC_safe_push (edge, src->succs, e);
+  VEC_safe_push (edge, dst->preds, e);
 
   e->src = src;
   e->dest = dst;
@@ -418,7 +418,7 @@ redirect_edge_succ (edge e, basic_block new_succ)
   gcc_assert (found);
 
   /* Reconnect the edge to the new successor block.  */
-  VEC_safe_insert (edge, new_succ->preds, 0, e);
+  VEC_safe_push (edge, new_succ->preds, e);
   e->dest = new_succ;
 }
 
@@ -476,7 +476,7 @@ redirect_edge_pred (edge e, basic_block new_pred)
   gcc_assert (found);
 
   /* Reconnect the edge to the new predecessor block.  */
-  VEC_safe_insert (edge, new_pred->succs, 0, e);
+  VEC_safe_push (edge, new_pred->succs, e);
   e->src = new_pred;
 }
 
