@@ -305,6 +305,10 @@ dump_iv (FILE *file, struct iv *iv)
   print_generic_expr (file, iv->ssa_name, TDF_SLIM);
   fprintf (file, "\n");
 
+  fprintf (file, "  type ");
+  print_generic_expr (file, TREE_TYPE (iv->base), TDF_SLIM);
+  fprintf (file, "\n");
+
   if (iv->step)
     {
       fprintf (file, "  base ");
@@ -358,34 +362,38 @@ dump_use (FILE *file, struct iv_use *use)
       gcc_unreachable ();
     }
 
-   fprintf (file, "  in statement ");
-   print_generic_expr (file, use->stmt, TDF_SLIM);
-   fprintf (file, "\n");
+  fprintf (file, "  in statement ");
+  print_generic_expr (file, use->stmt, TDF_SLIM);
+  fprintf (file, "\n");
 
-   fprintf (file, "  at position ");
-   if (use->op_p)
-     print_generic_expr (file, *use->op_p, TDF_SLIM);
-   fprintf (file, "\n");
+  fprintf (file, "  at position ");
+  if (use->op_p)
+    print_generic_expr (file, *use->op_p, TDF_SLIM);
+  fprintf (file, "\n");
 
-   if (iv->step)
-     {
-       fprintf (file, "  base ");
-       print_generic_expr (file, iv->base, TDF_SLIM);
-       fprintf (file, "\n");
+  fprintf (file, "  type ");
+  print_generic_expr (file, TREE_TYPE (iv->base), TDF_SLIM);
+  fprintf (file, "\n");
 
-       fprintf (file, "  step ");
-       print_generic_expr (file, iv->step, TDF_SLIM);
-       fprintf (file, "\n");
-     }
-   else
-     {
-       fprintf (file, "  invariant ");
-       print_generic_expr (file, iv->base, TDF_SLIM);
-       fprintf (file, "\n");
-     }
+  if (iv->step)
+    {
+      fprintf (file, "  base ");
+      print_generic_expr (file, iv->base, TDF_SLIM);
+      fprintf (file, "\n");
 
-   fprintf (file, "  related candidates ");
-   dump_bitmap (file, use->related_cands);
+      fprintf (file, "  step ");
+      print_generic_expr (file, iv->step, TDF_SLIM);
+      fprintf (file, "\n");
+    }
+  else
+    {
+      fprintf (file, "  invariant ");
+      print_generic_expr (file, iv->base, TDF_SLIM);
+      fprintf (file, "\n");
+    }
+
+  fprintf (file, "  related candidates ");
+  dump_bitmap (file, use->related_cands);
 }
 
 /* Dumps information about the uses to FILE.  */
@@ -438,22 +446,26 @@ dump_cand (FILE *file, struct iv_cand *cand)
       break;
     }
 
-   if (iv->step)
-     {
-       fprintf (file, "  base ");
-       print_generic_expr (file, iv->base, TDF_SLIM);
-       fprintf (file, "\n");
+  fprintf (file, "  type ");
+  print_generic_expr (file, TREE_TYPE (iv->base), TDF_SLIM);
+  fprintf (file, "\n");
 
-       fprintf (file, "  step ");
-       print_generic_expr (file, iv->step, TDF_SLIM);
-       fprintf (file, "\n");
-     }
-   else
-     {
-       fprintf (file, "  invariant ");
-       print_generic_expr (file, iv->base, TDF_SLIM);
-       fprintf (file, "\n");
-     }
+  if (iv->step)
+    {
+      fprintf (file, "  base ");
+      print_generic_expr (file, iv->base, TDF_SLIM);
+      fprintf (file, "\n");
+
+      fprintf (file, "  step ");
+      print_generic_expr (file, iv->step, TDF_SLIM);
+      fprintf (file, "\n");
+    }
+  else
+    {
+      fprintf (file, "  invariant ");
+      print_generic_expr (file, iv->base, TDF_SLIM);
+      fprintf (file, "\n");
+    }
 }
 
 /* Returns the info for ssa version VER.  */
@@ -1150,7 +1162,9 @@ idx_find_step (tree base, tree *idx, void *data)
 {
   struct ifs_ivopts_data *dta = data;
   struct iv *iv;
-  tree step, type, iv_type, iv_step;
+  tree step, type, iv_type, iv_step, lbound;
+  basic_block def_bb;
+  struct loop *loop = dta->ivopts_data->current_loop;
   
   if (TREE_CODE (*idx) != SSA_NAME)
     return true;
@@ -1167,7 +1181,30 @@ idx_find_step (tree base, tree *idx, void *data)
   iv_type = TREE_TYPE (iv->base);
   type = build_pointer_type (TREE_TYPE (base));
   if (TREE_CODE (base) == ARRAY_REF)
-    step = array_ref_element_size (base);
+    {
+      step = array_ref_element_size (base);
+      lbound = array_ref_low_bound (base);
+
+      /* We only handle addresses whose step is an integer constant.  */
+      if (TREE_CODE (step) != INTEGER_CST)
+	return false;
+
+      /* We need the lower bound to be invariant in loop, since otherwise
+	 we are unable to initialize a new induction variable created
+	 in strength reduction -- we need to take the address of the
+	 reference in front of the loop.  */
+      if (is_gimple_min_invariant (lbound))
+	; /* Nothing to do.  */
+      else if (TREE_CODE (lbound) != SSA_NAME)
+	return false;
+      else
+	{
+	  def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (lbound));
+	  if (def_bb
+	      && flow_bb_inside_loop_p (loop, def_bb))
+	    return false;
+	}
+    }
   else
     /* The step for pointer arithmetics already is 1 byte.  */
     step = build_int_cst (type, 1);
@@ -1198,10 +1235,15 @@ idx_find_step (tree base, tree *idx, void *data)
    object is passed to it in DATA.  */
 
 static bool
-idx_record_use (tree base ATTRIBUTE_UNUSED, tree *idx,
+idx_record_use (tree base, tree *idx,
 		void *data)
 {
   find_interesting_uses_op (data, *idx);
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
+      find_interesting_uses_op (data, array_ref_element_size (base));
+      find_interesting_uses_op (data, array_ref_low_bound (base));
+    }
   return true;
 }
 
@@ -1318,12 +1360,22 @@ find_interesting_uses_stmt (struct ivopts_data *data, tree stmt)
 	default: ;
 	}
 
-      if (TREE_CODE_CLASS (TREE_CODE (lhs)) == 'r')
+      /* Handle memory = gimple_val.  */
+      if (TREE_CODE_CLASS (TREE_CODE (lhs)) == 'r'
+	  && is_gimple_val (rhs))
 	{
 	  find_interesting_uses_address (data, stmt, &TREE_OPERAND (stmt, 0));
 	  find_interesting_uses_op (data, rhs);
 	  return;
 	}
+
+      /* TODO -- we should also handle address uses of type
+
+	 memory = call (whatever);
+
+	 and
+
+	 call (memory).  */
     }
 
   if (TREE_CODE (stmt) == PHI_NODE
@@ -1995,10 +2047,10 @@ static tree
 get_computation_at (struct loop *loop,
 		    struct iv_use *use, struct iv_cand *cand, tree at)
 {
-  tree ubase = unsave_expr_now (use->iv->base);
-  tree ustep = unsave_expr_now (use->iv->step);
-  tree cbase = unsave_expr_now (cand->iv->base);
-  tree cstep = unsave_expr_now (cand->iv->step);
+  tree ubase = use->iv->base;
+  tree ustep = use->iv->step;
+  tree cbase = cand->iv->base;
+  tree cstep = cand->iv->step;
   tree utype = TREE_TYPE (ubase), ctype = TREE_TYPE (cbase);
   tree uutype;
   tree expr, delta;
@@ -2500,98 +2552,6 @@ force_var_cost (struct ivopts_data *data,
   return target_spill_cost;
 }
 
-/* Peels a single layer of ADDR.  If DIFF is not NULL, do it only if the
-   offset is constant and add the offset to DIFF.  */
-
-static tree
-peel_address (tree addr, unsigned HOST_WIDE_INT *diff)
-{
-  tree off, size;
-  HOST_WIDE_INT bit_offset;
-
-  switch (TREE_CODE (addr))
-    {
-    case SSA_NAME:
-    case INDIRECT_REF:
-    case BIT_FIELD_REF:
-    case VAR_DECL:
-    case PARM_DECL:
-    case RESULT_DECL:
-    case STRING_CST:
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-      return NULL_TREE;
-
-    case COMPONENT_REF:
-      off = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (addr, 1));
-      bit_offset = TREE_INT_CST_LOW (off);
-
-      gcc_assert ((bit_offset % BITS_PER_UNIT) == 0);
-      
-      if (diff)
-	*diff += bit_offset / BITS_PER_UNIT;
-
-      return TREE_OPERAND (addr, 0);
-
-    case VIEW_CONVERT_EXPR:
-      return TREE_OPERAND (addr, 0);
-
-    case ARRAY_REF:
-      off = TREE_OPERAND (addr, 1);
-
-      if (diff)
-	{
-	  if (!cst_and_fits_in_hwi (off))
-	    return NULL_TREE;
-
-	  size = TYPE_SIZE_UNIT (TREE_TYPE (addr));
-	  if (!cst_and_fits_in_hwi (size))
-	    return NULL_TREE;
-
-	  *diff += TREE_INT_CST_LOW (off) * TREE_INT_CST_LOW (size);
-	}
-
-      return TREE_OPERAND (addr, 0);
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Checks whether E1 and E2 have constant difference, and if they do,
-   store it in *DIFF.  */
-
-static bool
-ptr_difference_const (tree e1, tree e2, unsigned HOST_WIDE_INT *diff)
-{
-  int d1 = 0, d2 = 0;
-  tree x;
-  unsigned HOST_WIDE_INT delta1 = 0, delta2 = 0;
-
-  /* Find depths of E1 and E2.  */
-  for (x = e1; x; x = peel_address (x, NULL))
-    d1++;
-  for (x = e2; x; x = peel_address (x, NULL))
-    d2++;
-
-  for (; e1 && d1 > d2; e1 = peel_address (e1, &delta1))
-    d1--;
-  for (; e2 && d2 > d1; e2 = peel_address (e2, &delta2))
-    d2--;
-
-  while (e1 && e2 && !operand_equal_p (e1, e2, 0))
-    {
-      e1 = peel_address (e1, &delta1);
-      e2 = peel_address (e2, &delta1);
-    }
-
-  if (!e1 || !e2)
-    return false;
-
-  *diff = delta1 - delta2;
-  return true;
-}
-
 /* Estimates cost of expressing address ADDR  as var + symbol + offset.  The
    value of offset is added to OFFSET, SYMBOL_PRESENT and VAR_PRESENT are set
    to false if the corresponding part is missing.  DEPENDS_ON is a set of the
@@ -2602,21 +2562,28 @@ split_address_cost (struct ivopts_data *data,
 		    tree addr, bool *symbol_present, bool *var_present,
 		    unsigned HOST_WIDE_INT *offset, bitmap *depends_on)
 {
-  tree core = addr;
+  tree core;
+  HOST_WIDE_INT bitsize;
+  HOST_WIDE_INT bitpos;
+  tree toffset;
+  enum machine_mode mode;
+  int unsignedp, volatilep;
+  
+  core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
+			      &unsignedp, &volatilep);
 
-  while (core
-	 && TREE_CODE (core) != VAR_DECL)
-    core = peel_address (core, offset);
-
-  if (!core)
+  if (toffset != 0
+      || bitpos % BITS_PER_UNIT != 0
+      || TREE_CODE (core) != VAR_DECL)
     {
       *symbol_present = false;
       *var_present = true;
       fd_ivopts_data = data;
       walk_tree (&addr, find_depends, depends_on, NULL);
       return target_spill_cost;
-    }  
-	  
+    }
+
+  *offset += bitpos / BITS_PER_UNIT;
   if (TREE_STATIC (core)
       || DECL_EXTERNAL (core))
     {
@@ -2641,7 +2608,7 @@ ptr_difference_cost (struct ivopts_data *data,
 		     tree e1, tree e2, bool *symbol_present, bool *var_present,
 		     unsigned HOST_WIDE_INT *offset, bitmap *depends_on)
 {
-  unsigned HOST_WIDE_INT diff = 0;
+  HOST_WIDE_INT diff = 0;
   unsigned cost;
 
   gcc_assert (TREE_CODE (e1) == ADDR_EXPR);
@@ -2905,7 +2872,7 @@ iv_value (struct iv *iv, tree niter)
   tree type = TREE_TYPE (iv->base);
 
   niter = fold_convert (type, niter);
-  val = fold (build2 (MULT_EXPR, type, iv->step, unsave_expr_now (niter)));
+  val = fold (build2 (MULT_EXPR, type, iv->step, niter));
 
   return fold (build2 (PLUS_EXPR, type, iv->base, val));
 }
@@ -4125,6 +4092,7 @@ rewrite_use_outer (struct ivopts_data *data,
 	value = get_computation_at (data->current_loop,
 				    use, cand, last_stmt (exit->src));
 
+      value = unshare_expr (value);
       op = force_gimple_operand (value, &stmts, true, SSA_NAME_VAR (tgt));
 	  
       /* If we will preserve the iv anyway and we would need to perform

@@ -84,22 +84,6 @@ inverse (tree x, tree mask)
   return rslt;
 }
 
-/* Returns unsigned variant of TYPE.  */
-
-tree
-unsigned_type_for (tree type)
-{
-  return make_unsigned_type (TYPE_PRECISION (type));
-}
-
-/* Returns signed variant of TYPE.  */
-
-static tree
-signed_type_for (tree type)
-{
-  return make_signed_type (TYPE_PRECISION (type));
-}
-
 /* Determine the number of iterations according to condition (for staying
    inside loop) which compares two induction variables using comparison
    operator CODE.  The induction variable on left side of the comparison
