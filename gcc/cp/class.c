@@ -1119,10 +1119,14 @@ get_vfield_offset (binfo)
 		     BINFO_OFFSET (binfo));
 }
 
-/* Get the offset to the start of the original binfo that we derived this
-   binfo from.  */
-tree get_derived_offset (binfo)
-     tree binfo;
+/* Get the offset to the start of the original binfo that we derived
+   this binfo from.  If we find TYPE first, return the offset only
+   that far.  The shortened search is useful because the this pointer
+   on method calling is expected to point to a DECL_CONTEXT (fndecl)
+   object, and not a baseclass of it.  */
+static tree
+get_derived_offset (binfo, type)
+     tree binfo, type;
 {
   tree offset1 = get_vfield_offset (TYPE_BINFO (BINFO_TYPE (binfo)));
   tree offset2;
@@ -1131,6 +1135,8 @@ tree get_derived_offset (binfo)
 	 && (i=CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo))) != -1)
     {
       tree binfos = BINFO_BASETYPES (binfo);
+      if (BINFO_TYPE (binfo) == type)
+	break;
       binfo = TREE_VEC_ELT (binfos, i);
     }
   offset2 = get_vfield_offset (TYPE_BINFO (BINFO_TYPE (binfo)));
@@ -2261,7 +2267,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	     Also, we want just the delta bewteen the most base class
 	     that we derived this vfield from and us.  */
 	  base_offset = size_binop (PLUS_EXPR,
-				    get_derived_offset (binfo),
+				    get_derived_offset (binfo, DECL_CONTEXT (current_fndecl)),
 				    BINFO_OFFSET (binfo));
 	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
 
@@ -2366,7 +2372,7 @@ fixup_vtable_deltas (binfo, t)
 	     Also, we want just the delta bewteen the most base class
 	     that we derived this vfield from and us.  */
 	  base_offset = size_binop (PLUS_EXPR,
-				    get_derived_offset (binfo),
+				    get_derived_offset (binfo, DECL_CONTEXT (fndecl)),
 				    BINFO_OFFSET (binfo));
 	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
 

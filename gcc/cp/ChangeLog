@@ -1,3 +1,8 @@
+Fri Oct 14 18:54:48 1994  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (modify_one_vtable): Since the DECL_CONTEXT of fndecl can
+	be set just below, use current_fndecl instead.
+
 Thu Oct 13 17:44:55 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
 
         * method.c (build_decl_overload): Set numeric_outputed_need_bar to 0.
@@ -39,6 +44,14 @@ Fri Sep  2 19:05:21 1994  Rohan Lenard  (rjl@iassf.easams.com.au)
 Tue Oct 11 23:48:31 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
   
         * various: Cast pointer arguments to bzero and bcopy to char *.
+
+Tue Oct 11 19:34:32 1994  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (get_derived_offset): Added a type parameter to limit how
+	far up the CLASSTYPE_VFIELD_PARENT chain we search.
+	* class.c (modify_one_vtable, fixup_vtable_deltas): When forming the
+	offset to put into the vtable for the this parameter, make sure we
+	don't offset from a parent of the DECL_CONTEXT of the function.
 
 Mon Oct 10 00:56:53 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
 
