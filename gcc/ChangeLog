@@ -1,4 +1,8 @@
-2002-04-21  Mark Mitchell  <mark@codesourcery.com>
+2002-04-22  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sol2-bi.h (ASM_DEBUG_SPEC): New.
+
+2002-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR f/6138.
 	* function.c (fixup_memory_subreg): Add promoted_mode parameter.
