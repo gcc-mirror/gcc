@@ -1,6 +1,6 @@
 // win32-signal.h - Catch runtime signals and turn them into exceptions.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,7 +20,7 @@ details.  */
 #define SIGNAL_HANDLER(_name)	\
 static void _name (int _dummy)
 
-#define MAKE_THROW_FRAME    do {} while (0)
+#define MAKE_THROW_FRAME(_exception)    do {} while (0)
 #define HANDLE_DIVIDE_OVERFLOW	do {} while (0)
 
 #define INIT_SEGV						\
