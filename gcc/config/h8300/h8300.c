@@ -1893,6 +1893,9 @@ compute_mov_length (rtx *operands)
 	      if (REG_P (src))
 		return 4;
 
+	      if (CONST_DOUBLE_OK_FOR_LETTER_P (src, 'G'))
+		return 4;
+
 	      return 8;
 	    }
 
@@ -2012,6 +2015,7 @@ compute_mov_length (rtx *operands)
 
 	      if (CONST_DOUBLE_OK_FOR_LETTER_P (src, 'G'))
 		return 2;
+
 	      return 6;
 	    }
 

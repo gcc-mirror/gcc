@@ -1,3 +1,8 @@
+2003-07-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (compute_mov_length): Correct the
+	length of loading CONST0_RTX (SFmode).
+
 2003-07-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* toplev.c (output_clean_symbol_name): Remove.
