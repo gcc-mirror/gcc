@@ -1,3 +1,13 @@
+2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Replace $(docdir) with doc.
+	(doc/gnat_ug_unx.info, doc/gnat_ug_vwx.info, doc/gnat_ug_vms.info
+	doc/gnat_ug_wnt.info, doc/gnat_rm.info, doc/gnat-style.info): Update
+	to use consistent MAKEINFO rule.
+	(ada.man, ada.srcman): Dummy entry.
+	(ADA_INFOFILES): Define.
+	(ada.info, ada.srcinfo): New rules.
+
 2004-01-16  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in: Add $(DESTDIR).

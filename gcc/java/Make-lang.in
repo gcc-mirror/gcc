@@ -161,12 +161,19 @@ java.tags: force
 	etags --include TAGS.sub --include ../TAGS.sub
 
 
-info:: $(docobjdir)/gcj.info
-dvi:: $(docobjdir)/gcj.dvi
-generated-manpages:: $(docobjdir)/gcj.1 $(docobjdir)/gcjh.1 \
-	$(docobjdir)/jv-scan.1 $(docobjdir)/jcf-dump.1 \
-	$(docobjdir)/gij.1 $(docobjdir)/jv-convert.1 \
-	$(docobjdir)/rmic.1 $(docobjdir)/rmiregistry.1
+java.info: doc/gcj.info
+
+java.srcinfo: doc/gcj.info
+	-cp -p $^ $(srcdir)/doc
+
+dvi:: doc/gcj.dvi
+JAVA_MANFILES = doc/gcj.1 doc/gcjh.1 doc/jv-scan.1 doc/jcf-dump.1 doc/gij.1 \
+                doc/jv-convert.1 doc/rmic.1 doc/rmiregistry.1
+
+java.man: $(JAVA_MANFILES)
+
+java.srcman: $(JAVA_MANFILES)
+	-cp -p $^ $(srcdir)/doc
 
 check-java :
 
@@ -355,16 +362,15 @@ java/java-tree-inline.o: tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(srcdir)/tree-inline.c -o $@
 
 # Documentation
-$(docobjdir)/gcj.info: java/gcj.texi $(docdir)/include/fdl.texi \
-  $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi stmp-docobjdir
+doc/gcj.info: java/gcj.texi $(docdir)/include/fdl.texi \
+  $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f doc/gcj.info*; \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir)/include -o $@ $<; \
 	else true; fi
 
-$(docobjdir)/gcj.dvi: java/gcj.texi $(docdir)/include/fdl.texi \
-	 $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi \
-	 stmp-docobjdir
+doc/gcj.dvi: java/gcj.texi $(docdir)/include/fdl.texi \
+	 $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi
 	$(TEXI2DVI) -I $(docdir)/include -o $@ $<
 
 .INTERMEDIATE: gcj.pod gcjh.pod jv-scan.pod jcf-dump.pod gij.pod \
@@ -388,30 +394,18 @@ rmiregistry.pod: java/gcj.texi
 	-$(TEXI2POD) -D rmiregistry < $< > $@
 
 # Install the man pages.
-java.install-man: installdirs $(GENERATED_JAVA_MANPAGES)
-	-if [ -f $(GCJ)$(exeext) ]; then \
-	  rm -f $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	  $(INSTALL_DATA) $(docobjdir)/gcj.1 $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	  chmod a-x $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	fi
-	-rm -f $(DESTDIR)$(man1dir)/gcjh$(man1ext)
-	-$(INSTALL_DATA) $(docobjdir)/gcjh.1 $(DESTDIR)$(man1dir)/gcjh$(man1ext)
-	-chmod a-x $(DESTDIR)$(man1dir)/gcjh$(man1ext)
-	-rm -f $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
-	-$(INSTALL_DATA) $(docobjdir)/jv-scan.1 $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
-	-chmod a-x $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
-	-rm -f $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
-	-$(INSTALL_DATA) $(docobjdir)/jcf-dump.1 $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
-	-chmod a-x $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
-	-rm -f $(DESTDIR)$(man1dir)/gij$(man1ext)
-	-$(INSTALL_DATA) $(docobjdir)/gij.1 $(DESTDIR)$(man1dir)/gij$(man1ext)
-	-chmod a-x $(DESTDIR)$(man1dir)/gij$(man1ext)
-	-rm -f $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
-	-$(INSTALL_DATA) $(docobjdir)/jv-convert.1 $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
-	-chmod a-x $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
-	-rm -f $(DESTDIR)$(man1dir)/rmic$(man1ext)
-	-$(INSTALL_DATA) $(docobjdir)/rmic.1 $(DESTDIR)$(man1dir)/rmic$(man1ext)
-	-chmod a-x $(DESTDIR)$(man1dir)/rmic$(man1ext)
-	-rm -f $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)
-	-$(INSTALL_DATA) $(docobjdir)/rmiregistry.1 $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)
-	-chmod a-x $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)
+java.install-man: installdirs \
+                  $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext) \
+                  $(DESTDIR)$(man1dir)/gcjh$(man1ext) \
+                  $(DESTDIR)$(man1dir)/jv-scan$(man1ext) \
+                  $(DESTDIR)$(man1dir)/jcf-dump$(man1ext) \
+                  $(DESTDIR)$(man1dir)/gij$(man1ext) \
+                  $(DESTDIR)$(man1dir)/jv-convert$(man1ext) \
+                  $(DESTDIR)$(man1dir)/jv-convert$(man1ext) \
+                  $(DESTDIR)$(man1dir)/rmic$(man1ext) \
+                  $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)
+
+$(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext): doc/gcj.1
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@

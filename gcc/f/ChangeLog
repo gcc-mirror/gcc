@@ -1,3 +1,18 @@
+2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Replace $(docdir) with doc.
+	(TEXI_G77_FILES): Define.
+	(f77.rebuilt): Delete.
+	(f77.srcextra): Add dependencies on f/BUGS and f/NEWS.
+	(f77.srcman, f77.srcinfo, f77.man, f77.info): New rules.
+	(doc/g77.info, doc/g77.dvi): Depend on TEXI_G77_FILES.  Always build in
+	doc directory.  Use $(MAKEINFOFLAGS).
+	(info, dvi, generated_manpages): Update to look in doc directory.
+	(f/BUGS, f/NEWS): Generate in build directory.
+	(f77.mostlyclean): Delete BUGS and NEWS from build directory.
+	(f77.maintainer-clean): Adjust to delete from source directory.
+	(f77.install-man): Revamp rule.
+
 2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (G77_INSTALL_NAME): Define via a immediate $(shell)

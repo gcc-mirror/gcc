@@ -1,3 +1,10 @@
+2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Replace $(docdir) with doc.
+	(c++.info, c++.srcinfo): Dummy entry.
+	(c++.man, c++.srcman): New rules.
+	(c++.install-man): Revamp rule.
+
 2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (CXX_INSTALL_NAME, GXX_INSTALL_NAME, 

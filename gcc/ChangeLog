@@ -1,3 +1,27 @@
+2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR bootstrap/12730
+	* configure.ac: Delete definition and subsitution of docdir.
+	Add info, man, srcman and srcinfo to target hooks. Create doc/
+	directory.
+	* configure: Regenerate.
+	* Makefile.in: Don't substitute docdir and delete all references
+	throughout.
+	(MAKEINFOFLAGS): Define.
+	(stmp-docobjdir): Delete.
+	(INFOFILES, MANFILES): Define.
+	(info): Call lang.info, srcinfo and lang.srcinfo.
+	(generated-manpages): Call lang.man, srcman and lang.srcman.
+	(srcinfo, srcman): New rules to copy back files to source directory.
+	(doc/%.info, doc/%.dvi, doc/%.1, doc/%.7): New implict rule.
+	(install-man): Revamp rule.
+	(clean): Update dvi directory.
+	(distclean): Delete TAGS from front end directorys.
+	(maintainer-clean): Delete all document files in source directory.
+
+	objc/Make-lang.in (objc.man, objc.info): Dummy entries.
+	(objc.srcman, objc.srcinfo): Likewise.
+
 2004-01-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (pretty-print.o): Depend on $(CONFIG_H) and

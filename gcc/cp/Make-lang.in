@@ -108,6 +108,8 @@ c++.all.build: g++$(exeext)
 c++.all.cross: g++-cross$(exeext)
 c++.start.encap: g++$(exeext)
 c++.rest.encap:
+c++.info:
+c++.srcinfo:
 c++.srcextra:
 
 c++.tags: force
@@ -115,7 +117,10 @@ c++.tags: force
 	  --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' cp-tree.def; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
-generated-manpages:: $(docobjdir)/g++.1
+c++.man: doc/g++.1
+
+c++.srcman: doc/g++.1
+	-cp -p $^ $(srcdir)/doc
 
 check-c++ : check-g++
 lang_checks += check-g++
@@ -157,15 +162,15 @@ c++.install-common: installdirs
 
 # We can't use links because not everyone supports them, and we can't use
 # .so because Irix 6.5 doesn't support them.  So just copy the manpage.
-$(docobjdir)/g++.1: $(docobjdir)/gcc.1
-	cp $(docobjdir)/gcc.1 $(docobjdir)/g++.1
+doc/g++.1: doc/gcc.1
+	cp doc/gcc.1 doc/g++.1
 
-c++.install-man: installdirs $(docobjdir)/g++.1
-	-if [ -f cc1plus$(exeext) ] ; then \
-	  rm -f $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
-	  $(INSTALL_DATA) $(docobjdir)/g++.1 $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
-	  chmod a-x $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
-	else true; fi
+c++.install-man: installdirs $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext) 
+
+$(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext): doc/g++.1
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 c++.uninstall:
 	-rm -rf $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext)
@@ -177,7 +182,7 @@ c++.uninstall:
 # We just have to delete files specific to us.
 
 c++.mostlyclean:
-	-rm -f $(docobjdir)/g++.1
+	-rm -f doc/g++.1
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
 c++.clean:
