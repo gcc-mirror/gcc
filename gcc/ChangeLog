@@ -1,3 +1,7 @@
+1999-04-17 10:15 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cccp.c: Make fatal non-static.
+
 Sat Apr 17 23:47:24 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*andqi3_255_clobber,*andqi3_65535_clobber):

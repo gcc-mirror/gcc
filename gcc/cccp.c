@@ -1010,7 +1010,7 @@ static void append_include_chain PROTO((struct file_name_list *, struct file_nam
 static int quote_string_for_make PROTO((char *, const char *));
 static void deps_output PROTO((const char *, int));
 
-static void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 static void perror_with_name PROTO((char *));
 static void pfatal_with_name PROTO((char *)) ATTRIBUTE_NORETURN;
@@ -10594,7 +10594,7 @@ deps_output (string, spacer)
   deps_buffer[deps_size] = 0;
 }
 
-static void
+void
 fatal VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
