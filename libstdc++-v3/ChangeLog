@@ -1,3 +1,16 @@
+2004-12-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_function.
+	(struct __sfinae_types, struct __is_function_helper): New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_object/is_object.cc: New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_object/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_function/is_function.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_function/typedefs.cc: Likewise.
+
 2004-12-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (extent): Minor tweak (i.e., public).
