@@ -1,3 +1,9 @@
+2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/18628
+	* cse.c (fold_rtx_mem): Don't fold a load from a jumptable into a
+	register.
+
 2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Document new MIPS -msym32 and -mno-sym32 options.

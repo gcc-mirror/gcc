@@ -3564,8 +3564,31 @@ fold_rtx (rtx x, rtx insn)
 		if (offset >= 0
 		    && (offset / GET_MODE_SIZE (GET_MODE (table))
 			< XVECLEN (table, 0)))
-		  return XVECEXP (table, 0,
-				  offset / GET_MODE_SIZE (GET_MODE (table)));
+		  {
+		    rtx label = XVECEXP
+		      (table, 0, offset / GET_MODE_SIZE (GET_MODE (table)));
+		    rtx set;
+
+		    /* If we have an insn that loads the label from
+		       the jumptable into a reg, we don't want to set
+		       the reg to the label, because this may cause a
+		       reference to the label to remain after the
+		       label is removed in some very obscure cases (PR
+		       middle-end/18628).  */
+		    if (!insn)
+		      return label;
+
+		    set = single_set (insn);
+
+		    if (! set || SET_SRC (set) != x)
+		      return x;
+
+		    /* If it's a jump, it's safe to reference the label.  */
+		    if (SET_DEST (set) == pc_rtx)
+		      return label;
+
+		    return x;
+		  }
 	      }
 	    if (table_insn && JUMP_P (table_insn)
 		&& GET_CODE (PATTERN (table_insn)) == ADDR_DIFF_VEC)
