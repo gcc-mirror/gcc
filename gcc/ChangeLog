@@ -1,5 +1,10 @@
 2004-08-24  Zack Weinberg  <zack@codesourcery.com>
 
+	* rtl.def: Reorganize, placing all codes used only in machine
+	descriptions at the end.
+
+2004-08-24  Zack Weinberg  <zack@codesourcery.com>
+
 	* basic-block.h (struct basic_block_def): Reorder fields to
 	eliminate interior padding.  Remove 'partition' field.
 	(BB_DISABLE_SCHEDULE, BB_HOT_PARTITION, BB_COLD_PARTITION)
