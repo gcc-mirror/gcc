@@ -1,3 +1,8 @@
+Fri Nov  3 13:32:14 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* lib/g++.exp (g++_set_ld_library_path): New function.
+	Use it to set LD_LIBRARYN32_PATH and LD_LIBRARY64_PATH.
+
 2000-11-03  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* gcc.dg/sequence-pt-1.c: A few new tests.  Unify output for bogus
