@@ -3760,7 +3760,7 @@ static void
 c_parser_for_statement (c_parser *parser)
 {
   tree block, cond, incr, save_break, save_cont, body;
-  location_t loc;
+  location_t loc = UNKNOWN_LOCATION;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_FOR));
   c_parser_consume_token (parser);
   block = c_begin_compound_stmt (flag_isoc99);

@@ -2013,7 +2013,11 @@ static void
 remove_bb (basic_block bb)
 {
   block_stmt_iterator i;
+#ifdef USE_MAPPED_LOCATION
+  source_location loc = UNKNOWN_LOCATION;
+#else
   source_locus loc = 0;
+#endif
 
   if (dump_file)
     {
@@ -2052,15 +2056,15 @@ remove_bb (basic_block bb)
 	 program that are indeed unreachable.  */
       if (TREE_CODE (stmt) != GOTO_EXPR && EXPR_HAS_LOCATION (stmt) && !loc)
 	{
-	  source_locus t;
-
 #ifdef USE_MAPPED_LOCATION
-	  t = EXPR_LOCATION (stmt);
+	  if (EXPR_HAS_LOCATION (stmt))
+	    loc = EXPR_LOCATION (stmt);
 #else
+	  source_locus t;
 	  t = EXPR_LOCUS (stmt);
-#endif
 	  if (t && LOCATION_LINE (*t) > 0)
 	    loc = t;
+#endif
 	}
     }
 
@@ -2068,10 +2072,11 @@ remove_bb (basic_block bb)
      block is unreachable.  We walk statements backwards in the
      loop above, so the last statement we process is the first statement
      in the block.  */
-  if (warn_notreached && loc)
 #ifdef USE_MAPPED_LOCATION
+  if (warn_notreached && loc != UNKNOWN_LOCATION)
     warning ("%Hwill never be executed", &loc);
 #else
+  if (warn_notreached && loc)
     warning ("%Hwill never be executed", loc);
 #endif
 
