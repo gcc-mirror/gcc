@@ -1,3 +1,12 @@
+2003-02-04  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (rtx_needs_barrier): Handle POPCOUNT,
+	UNSPEC_GETF_EXP; remove UNSPEC_POPCNT.
+	* config/ia64/ia64.md (UNSPEC_POPCNT): Remove.
+	(ffsdi2): Use popcount instead of unspec.
+	(popcountdi2): Rename from *popcnt.
+	(ctzdi2, clzdi2, getf_exp_tf): New.
+
 2003-02-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genconfig.c (main): Generate CC0_P.

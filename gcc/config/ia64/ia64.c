@@ -5017,7 +5017,7 @@ rtx_needs_barrier (x, flags, pred)
     case NEG:      case NOT:	        case SIGN_EXTEND:     case ZERO_EXTEND:
     case TRUNCATE: case FLOAT_EXTEND:   case FLOAT_TRUNCATE:  case FLOAT:
     case FIX:      case UNSIGNED_FLOAT: case UNSIGNED_FIX:    case ABS:
-    case SQRT:     case FFS:
+    case SQRT:     case FFS:		case POPCOUNT:
       need_barrier = rtx_needs_barrier (XEXP (x, 0), flags, pred);
       break;
 
@@ -5053,10 +5053,7 @@ rtx_needs_barrier (x, flags, pred)
 	  
 	case UNSPEC_FR_SPILL:
 	case UNSPEC_FR_RESTORE:
-	case UNSPEC_POPCNT:
-	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
-	  break;
-
+	case UNSPEC_GETF_EXP:
         case UNSPEC_ADDP4:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
