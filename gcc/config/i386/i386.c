@@ -399,15 +399,17 @@ const int x86_arch_always_fancy_math_387 = m_PENT|m_PPRO|m_ATHLON|m_PENT4;
    lower than this constant, emit fast (but longer) prologue and
    epilogue code.  */
 #define FAST_PROLOGUE_INSN_COUNT 30
+
 /* Set by prologue expander and used by epilogue expander to determine
    the style used.  */
 static int use_fast_prologue_epilogue;
 
 #define AT_BP(MODE) (gen_rtx_MEM ((MODE), hard_frame_pointer_rtx))
 
-static const char *const hi_reg_name[] = HI_REGISTER_NAMES; /* names for 16 bit regs */
-static const char *const qi_reg_name[] = QI_REGISTER_NAMES; /* names for 8 bit regs (low) */
-static const char *const qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES; /* names for 8 bit regs (high) */
+/* Names for 8 (low), 8 (high), and 16-bit registers, respectively.  */
+static const char *const qi_reg_name[] = QI_REGISTER_NAMES;
+static const char *const qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;
+static const char *const hi_reg_name[] = HI_REGISTER_NAMES;
 
 /* Array of the smallest class containing reg number REGNO, indexed by
    REGNO.  Used by REGNO_REG_CLASS in i386.h.  */
@@ -448,11 +450,16 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
 };
 
-static int const x86_64_int_parameter_registers[6] = {5 /*RDI*/, 4 /*RSI*/,
-					        1 /*RDX*/, 2 /*RCX*/,
-					        FIRST_REX_INT_REG /*R8 */,
-					        FIRST_REX_INT_REG + 1 /*R9 */};
-static int const x86_64_int_return_registers[4] = {0 /*RAX*/, 1 /*RDI*/, 5, 4};
+static int const x86_64_int_parameter_registers[6] =
+{
+  5 /*RDI*/, 4 /*RSI*/, 1 /*RDX*/, 2 /*RCX*/,
+  FIRST_REX_INT_REG /*R8 */, FIRST_REX_INT_REG + 1 /*R9 */
+};
+
+static int const x86_64_int_return_registers[4] =
+{
+  0 /*RAX*/, 1 /*RDI*/, 5 /*RDI*/, 4 /*RSI*/
+};
 
 /* The "default" register map used in 64bit mode.  */
 int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
@@ -598,14 +605,13 @@ enum cmodel ix86_cmodel;
 const char *ix86_asm_string;
 enum asm_dialect ix86_asm_dialect = ASM_ATT;
 
-/* which cpu are we scheduling for */
-enum processor_type ix86_cpu;
-
-/* which unit we are generating floating point math for */
+/* Which unit we are generating floating point math for.  */
 enum fpmath_unit ix86_fpmath;
 
-/* which instruction set architecture to use.  */
-int ix86_arch;
+/* Which cpu are we scheduling for.  */
+enum processor_type ix86_cpu;
+/* Which instruction set architecture to use.  */
+enum processor_type ix86_arch;
 
 /* Strings to hold which cpu and instruction set architecture  to use.  */
 const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
@@ -4941,7 +4947,7 @@ legitimate_address_p (mode, addr, strict)
     fprintf (stderr, "Success.\n");
   return TRUE;
 
-report_error:
+ report_error:
   if (TARGET_DEBUG_ADDR)
     {
       fprintf (stderr, "Error: %s\n", reason);
@@ -4955,10 +4961,10 @@ report_error:
 static HOST_WIDE_INT
 ix86_GOT_alias_set ()
 {
-    static HOST_WIDE_INT set = -1;
-    if (set == -1)
-      set = new_alias_set ();
-    return set;
+  static HOST_WIDE_INT set = -1;
+  if (set == -1)
+    set = new_alias_set ();
+  return set;
 }
 
 /* Return a legitimate reference for ORIG (an address) using the
@@ -5409,7 +5415,7 @@ output_pic_addr_const (file, x, code)
 
      case UNSPEC:
        if (XVECLEN (x, 0) != 1)
-	abort ();
+	 abort ();
        output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
        switch (XINT (x, 1))
 	{
@@ -5637,7 +5643,7 @@ print_reg (x, code, file)
       || REGNO (x) == FPSR_REG)
     abort ();
 
-  if (ASSEMBLER_DIALECT == ASM_ATT  || USER_LABEL_PREFIX[0] == 0)
+  if (ASSEMBLER_DIALECT == ASM_ATT || USER_LABEL_PREFIX[0] == 0)
     putc ('%', file);
 
   if (code == 'w' || MMX_REG_P (x))
@@ -6041,7 +6047,7 @@ print_operand (file, x, code)
       if (flag_pic && CONSTANT_ADDRESS_P (x))
 	output_pic_addr_const (file, x, code);
       /* Avoid (%rip) for call operands.  */
-      else if (CONSTANT_ADDRESS_P (x) && code =='P'
+      else if (CONSTANT_ADDRESS_P (x) && code == 'P'
 	       && GET_CODE (x) != CONST_INT)
 	output_addr_const (file, x);
       else if (this_is_asm_operands && ! address_operand (x, VOIDmode))
@@ -10048,8 +10054,8 @@ memory_address_length (addr)
   return len;
 }
 
-/* Compute default value for "length_immediate" attribute.  When SHORTFORM is set
-   expect that insn have 8bit immediate alternative.  */
+/* Compute default value for "length_immediate" attribute.  When SHORTFORM
+   is set, expect that insn have 8bit immediate alternative.  */
 int
 ix86_attr_length_immediate_default (insn, shortform)
      rtx insn;

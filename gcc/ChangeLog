@@ -1,3 +1,11 @@
+2002-05-23  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c, config/i386/i386.h: Tidy comments and whitespace.
+	(ix86_arch): Set type to enum processor_type.
+
+	* config/i386/i386.md (movsi_1, movdi_1_rex64): Use 
+	LEGITIMATE_PIC_OPERAND_P not SYMBOLIC_CONST.
+
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in: Fix as version test for binutils 2.12.1 releases
