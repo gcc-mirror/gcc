@@ -1,3 +1,8 @@
+Fri Nov  1 10:33:15 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (emit_move_insn):  Use SCALAR_FLOAT_MODE_P
+	* machmode.h (SCALAR_FLOAT_MODE_P): New macro.
+
 2002-10-31  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR optimization/6162
