@@ -297,12 +297,12 @@ void
 init_loop ()
 {
   char *free_point = (char *) oballoc (1);
-  rtx reg = gen_rtx (REG, SImode, 0);
+  rtx reg = gen_rtx (REG, word_mode, 0);
   rtx pow2 = GEN_INT (32);
   rtx lea;
   int i;
 
-  add_cost = rtx_cost (gen_rtx (PLUS, SImode, reg, reg), SET);
+  add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
 
   /* We multiply by 2 to reconcile the difference in scale between
      these two ways of computing costs.  Otherwise the cost of a copy
