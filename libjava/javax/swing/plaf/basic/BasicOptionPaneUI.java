@@ -1,5 +1,5 @@
 /* BasicOptionPaneUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +38,17 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.plaf.*;
-import javax.accessibility.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.OptionPaneUI;
 
 public class BasicOptionPaneUI extends OptionPaneUI
 {
