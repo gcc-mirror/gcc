@@ -370,51 +370,31 @@ struct cp_binding_level GTY(())
        TREE_LIST; the TREE_VALUE is the actual declaration.  */
     tree dead_vars_from_for;
 
-    /* 1 for the level that holds the parameters of a function.
-       2 for the level that holds a class declaration.  */
-    unsigned parm_flag : 2;
+    /* Binding depth at which this level began.  */
+    unsigned binding_depth;
+
+    /* The kind of scope that this object represents.  However, a
+       SK_TEMPLATE_SPEC scope is represented with KIND set to
+       SK_TEMPALTE_PARMS and EXPLICIT_SPEC_P set to true.  */
+    enum scope_kind kind : 4;
+
+    /* True if this scope is an SK_TEMPLATE_SPEC scope.  This field is
+       only valid if KIND == SK_TEMPLATE_PARMS.  */
+    bool explicit_spec_p : 1;
 
     /* 1 means make a BLOCK for this level regardless of all else.
        2 for temporary binding contours created by the compiler.  */
     unsigned keep : 2;
-
-    /* Nonzero if this level "doesn't exist" for tags.  */
-    unsigned tag_transparent : 1;
 
     /* Nonzero if this level can safely have additional
        cleanup-needing variables added to it.  */
     unsigned more_cleanups_ok : 1;
     unsigned have_cleanups : 1;
 
-    /* Nonzero if this scope is for storing the decls for template
-       parameters and generic decls; these decls will be discarded and
-       replaced with a TEMPLATE_DECL.  */
-    unsigned template_parms_p : 1;
+    /* Nonzero if this level "doesn't exist" for tags.  */
+    unsigned tag_transparent : 1;
 
-    /* Nonzero if this scope corresponds to the `<>' in a
-       `template <>' clause.  Whenever this flag is set,
-       TEMPLATE_PARMS_P will be set as well.  */
-    unsigned template_spec_p : 1;
-
-    /* This is set for a namespace binding level.  */
-    unsigned namespace_p : 1;
-
-    /* True if this level is that of a for-statement where we need to
-       worry about ambiguous (ARM or ISO) scope rules.  */
-    unsigned is_for_scope : 1;
-
-    /* True if this level corresponds to a TRY block.  Currently this
-       information is only available while building the tree structure.  */
-    unsigned is_try_scope : 1;
-
-    /* True if this level corresponds to a CATCH block.  Currently this
-       information is only available while building the tree structure.  */
-    unsigned is_catch_scope : 1;
-
-    /* Three bits left for this word.  */
-
-    /* Binding depth at which this level began.  */
-    unsigned binding_depth;
+    /* 20 bits left to fill a 32-bit word.  */
   };
 
 #define NULL_BINDING_LEVEL ((struct cp_binding_level *) NULL)
@@ -468,28 +448,18 @@ static tree pushdecl_with_scope	(tree, struct cp_binding_level *);
 static const char *
 cxx_scope_descriptor (cxx_scope *scope)
 {
-  const char *desc;
+  /* The order of this table must match the "scope_kind"
+     enumerators.  */
+  static const char* scope_kind_names[] = {
+    "block-scope",
+    "try-scope",
+    "catch-scope",
+    "for-scope",
+    "template-parameter-scope",
+    "template-explicit-spec-scope"
+  };
 
-  if (scope->namespace_p)
-    desc = "namespace-scope";
-  else if (scope->parm_flag == 1)
-    desc = "function-prototype-scope";
-  else if (scope->parm_flag == 2)
-    desc = "class-scope";
-  else if (scope->is_for_scope)
-    desc = "for-scope";
-  else if (scope->is_try_scope)
-    desc = "try-scope";
-  else if (scope->is_catch_scope)
-    desc = "catch-scope";
-  else if (scope->template_spec_p)
-    desc = "template-explicit-spec-scope";
-  else if (scope->template_parms_p)
-    desc = "template-prototype-scope";
-  else
-    desc = "block-scope";
-
-  return desc;
+  return scope_kind_names[scope->kind];
 }
 
 /* Output a debugging information about SCOPE when performning
@@ -555,9 +525,9 @@ find_class_binding_level (void)
 {
   struct cp_binding_level *level = current_binding_level;
 
-  while (level && level->parm_flag != 2)
+  while (level && level->kind != sk_class)
     level = level->level_chain;
-  if (level && level->parm_flag == 2)
+  if (level && level->kind == sk_class)
     class_binding_level = level;
   else
     class_binding_level = 0;
@@ -586,7 +556,7 @@ pop_binding_level (void)
     register struct cp_binding_level *level = current_binding_level;
     current_binding_level = current_binding_level->level_chain;
     level->level_chain = free_binding_level;
-    if (level->parm_flag == 2)
+    if (level->kind == sk_class)
       level->type_decls = NULL;
     else
       binding_table_free (level->type_decls);
@@ -659,7 +629,7 @@ innermost_nonclass_level (void)
   struct cp_binding_level *b;
 
   b = current_binding_level;
-  while (b->parm_flag == 2)
+  while (b->kind == sk_class)
     b = b->level_chain;
 
   return b;
@@ -676,7 +646,7 @@ toplevel_bindings_p (void)
 {
   struct cp_binding_level *b = innermost_nonclass_level ();
 
-  return b->namespace_p || b->template_parms_p;
+  return b->kind == sk_namespace || b->kind == sk_template_parms;
 }
 
 /* Nonzero if this is a namespace scope, or if we are defining a class
@@ -688,7 +658,7 @@ namespace_bindings_p (void)
 {
   struct cp_binding_level *b = innermost_nonclass_level ();
 
-  return b->namespace_p;
+  return b->kind == sk_namespace;
 }
 
 /* If KEEP is nonzero, make a BLOCK node for the next binding level,
@@ -713,13 +683,21 @@ kept_level_p (void)
 	      && !current_binding_level->tag_transparent));
 }
 
+/* Returns the kind of the innermost scope.  */
+
+scope_kind
+innermost_scope_kind (void)
+{
+  return current_binding_level->kind;
+}
+
 /* Returns nonzero if this scope was created to store template
    parameters.  */
 
 int
 template_parm_scope_p (void)
 {
-  return current_binding_level->template_parms_p;
+  return innermost_scope_kind () == sk_template_parms;
 }
 
 /* Returns the kind of template specialization we are currently
@@ -735,7 +713,9 @@ current_tmpl_spec_kind (int n_class_scopes)
   struct cp_binding_level *b;
 
   /* Scan through the template parameter scopes.  */
-  for (b = current_binding_level; b->template_parms_p; b = b->level_chain)
+  for (b = current_binding_level; 
+       b->kind == sk_template_parms; 
+       b = b->level_chain)
     {
       /* If we see a specialization scope inside a parameter scope,
 	 then something is wrong.  That corresponds to a declaration
@@ -746,7 +726,7 @@ current_tmpl_spec_kind (int n_class_scopes)
 	 which is always invalid since [temp.expl.spec] forbids the
 	 specialization of a class member template if the enclosing
 	 class templates are not explicitly specialized as well.  */
-      if (b->template_spec_p)
+      if (b->explicit_spec_p)
 	{
 	  if (n_template_parm_scopes == 0)
 	    innermost_specialization_p = 1;
@@ -823,9 +803,6 @@ set_class_shadows (tree shadows)
 void
 pushlevel (int tag_transparent)
 {
-  if (cfun && !doing_semantic_analysis_p ())
-    return;
-
   push_binding_level (make_cxx_scope (tag_transparent, keep_next_level_flag));
   keep_next_level_flag = 0;
 }
@@ -854,35 +831,12 @@ void
 begin_scope (scope_kind sk)
 {
   pushlevel (0);
-
-  switch (sk)
+  if (sk == sk_template_spec)
     {
-    case sk_block:
-      break;
-
-    case sk_try:
-      current_binding_level->is_try_scope = 1;
-      break;
-
-    case sk_catch:
-      current_binding_level->is_catch_scope = 1;
-      break;
-
-    case sk_for:
-      current_binding_level->is_for_scope = 1;
-      break;
-
-    case sk_template_spec:
-      current_binding_level->template_spec_p = 1;
-      /* Fall through.  */
-
-    case sk_template_parms:
-      current_binding_level->template_parms_p = 1;
-      break;
-
-    default:
-      abort ();
+      current_binding_level->explicit_spec_p = true;
+      sk = sk_template_parms;
     }
+  current_binding_level->kind = sk;
 }
 
 /* Exit the current scope.  */
@@ -937,7 +891,7 @@ add_decl_to_level (tree decl,
       b->names_size++;
 
       /* If appropriate, add decl to separate list of statics */
-      if (b->namespace_p)
+      if (b->kind == sk_namespace)
 	if ((TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
 	    || (TREE_CODE (decl) == FUNCTION_DECL
 		&& (!TREE_PUBLIC (decl) || DECL_DECLARED_INLINE_P (decl))))
@@ -957,9 +911,7 @@ push_local_binding (tree id, tree decl, int flags)
 
   /* Skip over any local classes.  This makes sense if we call
      push_local_binding with a friend decl of a local class.  */
-  b = current_binding_level;
-  while (b->parm_flag == 2)
-    b = b->level_chain;
+  b = innermost_nonclass_level ();
 
   if (lookup_name_current_level (id))
     {
@@ -1091,7 +1043,7 @@ pop_binding (tree id, tree decl)
 static void
 pop_label (tree label, tree old_value)
 {
-  if (!processing_template_decl && doing_semantic_analysis_p ())
+  if (!processing_template_decl)
     {
       if (DECL_INITIAL (label) == NULL_TREE)
 	{
@@ -1163,11 +1115,8 @@ poplevel (int keep, int reverse, int functionbody)
   int leaving_for_scope;
 
   timevar_push (TV_NAME_LOOKUP);
-  if (cfun && !doing_semantic_analysis_p ())
-    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
 
-  my_friendly_assert (current_binding_level->parm_flag != 2,
-		      19990916);
+  my_friendly_assert (current_binding_level->kind != sk_class, 19990916);
 
   real_functionbody = (current_binding_level->keep == 2
 		       ? ((functionbody = 0), tmp) : functionbody);
@@ -1198,9 +1147,9 @@ poplevel (int keep, int reverse, int functionbody)
 	    if (labels->binding_level == current_binding_level)
 	      {
 		tree decl;
-		if (current_binding_level->is_try_scope)
+		if (current_binding_level->kind == sk_try)
 		  labels->in_try_scope = 1;
-		if (current_binding_level->is_catch_scope)
+		if (current_binding_level->kind == sk_catch)
 		  labels->in_catch_scope = 1;
 		for (decl = labels->names_in_scope; decl;
 		     decl = TREE_CHAIN (decl))
@@ -1282,7 +1231,7 @@ poplevel (int keep, int reverse, int functionbody)
      ended.  We only use the new rules if flag_new_for_scope is
      nonzero.  */
   leaving_for_scope
-    = current_binding_level->is_for_scope && flag_new_for_scope == 1;
+    = current_binding_level->kind == sk_for && flag_new_for_scope == 1;
 
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
@@ -1499,7 +1448,6 @@ set_block (tree block ATTRIBUTE_UNUSED )
 {
   /* The RTL expansion machinery requires us to provide this callback,
      but it is not applicable in function-at-a-time mode.  */
-  my_friendly_assert (cfun && !doing_semantic_analysis_p (), 20000911);
 }
 
 /* Do a pushlevel for class declarations.  */
@@ -1510,10 +1458,8 @@ pushlevel_class (void)
   if (ENABLE_SCOPE_CHECKING)
     is_class_level = 1;
 
-  push_binding_level (make_cxx_scope (false, 0));
-
+  begin_scope (sk_class);
   class_binding_level = current_binding_level;
-  class_binding_level->parm_flag = 2;
   class_binding_level->this_entity = current_class_type;
 }
 
@@ -1546,7 +1492,7 @@ poplevel_class (void)
       /* Find the next enclosing class, and recreate
 	 IDENTIFIER_CLASS_VALUEs appropriate for that class.  */
       b = level->level_chain;
-      while (b && b->parm_flag != 2)
+      while (b && b->kind != sk_class)
 	b = b->level_chain;
 
       if (b)
@@ -1937,9 +1883,8 @@ initial_push_namespace_scope (tree ns)
   tree name = DECL_NAME (ns);
   cxx_scope *scope;
 
-  pushlevel (0);
+  begin_scope (sk_namespace);
   scope = current_binding_level;
-  scope->namespace_p = true;
   scope->type_decls = binding_table_new (name == std_identifier
                                          ? NAMESPACE_STD_HT_SIZE
                                          : (name == global_scope_name
@@ -2167,13 +2112,13 @@ maybe_push_to_top_level (int pseudo)
 	 inserted into namespace level, finish_file wouldn't find them
 	 when doing pending instantiations. Therefore, don't stop at
 	 namespace level, but continue until :: .  */
-      if (global_scope_p (b) || (pseudo && b->template_parms_p))
+      if (global_scope_p (b) || (pseudo && b->kind == sk_template_parms))
 	break;
 
       old_bindings = store_bindings (b->names, old_bindings);
       /* We also need to check class_shadowed to save class-level type
 	 bindings, since pushclass doesn't fill in b->names.  */
-      if (b->parm_flag == 2)
+      if (b->kind == sk_class)
 	old_bindings = store_bindings (b->class_shadowed, old_bindings);
 
       /* Unwind type-value slots back to top level.  */
@@ -2244,7 +2189,7 @@ set_identifier_type_value_with_scope (tree id,
 {
   tree type;
 
-  if (!b->namespace_p)
+  if (b->kind != sk_namespace)
     {
       /* Shadow the marker, not the real thing, so that the marker
 	 gets restored later.  */
@@ -2311,7 +2256,7 @@ pop_everything (void)
     verbatim ("XXX entering pop_everything ()\n");
   while (!toplevel_bindings_p ())
     {
-      if (current_binding_level->parm_flag == 2)
+      if (current_binding_level->kind == sk_class)
 	pop_nested_class ();
       else
 	poplevel (0, 0, 0);
@@ -2367,8 +2312,8 @@ maybe_process_template_type_declaration (tree type,
 	     friend case, push_template_decl will already have put the
 	     friend into global scope, if appropriate.  */
 	  if (TREE_CODE (type) != ENUMERAL_TYPE
-	      && !globalize && b->template_parms_p
-	      && b->level_chain->parm_flag == 2)
+	      && !globalize && b->kind == sk_template_parms
+	      && b->level_chain->kind == sk_class)
 	    {
 	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
 	      /* Put this UDT in the table of UDTs for the class, since
@@ -2464,7 +2409,7 @@ pushtag (tree name, tree type, int globalize)
   timevar_push (TV_NAME_LOOKUP);
   b = current_binding_level;
   while (b->tag_transparent
-	 || (b->parm_flag == 2
+	 || (b->kind == sk_class
 	     && (globalize
 		 /* We may be defining a new type in the initializer
 		    of a static member variable. We allow this when
@@ -2501,8 +2446,9 @@ pushtag (tree name, tree type, int globalize)
 	  if (!context)
 	    context = current_namespace;
 
-	  if ((b->template_parms_p && b->level_chain->parm_flag == 2)
-	      || b->parm_flag == 2)
+	  if (b->kind == sk_class
+	      || (b->kind == sk_template_parms 
+		  && b->level_chain->kind == sk_class))
 	    in_class = 1;
 
 	  if (current_lang_name == lang_name_java)
@@ -2516,7 +2462,7 @@ pushtag (tree name, tree type, int globalize)
 	  d = maybe_process_template_type_declaration (type,
 						       globalize, b);
 
-	  if (b->parm_flag == 2)
+	  if (b->kind == sk_class)
 	    {
 	      if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
 		/* Put this TYPE_DECL on the TYPE_FIELDS list for the
@@ -2546,14 +2492,12 @@ pushtag (tree name, tree type, int globalize)
 	      && !processing_template_decl)
 	    VARRAY_PUSH_TREE (local_classes, type);
         }
-      if (b->parm_flag == 2)
+      if (b->kind == sk_class
+	  && !COMPLETE_TYPE_P (current_class_type))
 	{
-	  if (!COMPLETE_TYPE_P (current_class_type))
-	    {
-	      maybe_add_class_template_decl_list (current_class_type,
-						  type, /*friend_p=*/0);
-	      CLASSTYPE_NESTED_UTDS (current_class_type) = b->type_decls;
-	    }
+	  maybe_add_class_template_decl_list (current_class_type,
+					      type, /*friend_p=*/0);
+	  CLASSTYPE_NESTED_UTDS (current_class_type) = b->type_decls;
 	}
     }
 
@@ -3559,10 +3503,6 @@ pushdecl (tree x)
   int need_new_binding;
 
   timevar_push (TV_NAME_LOOKUP);
-  /* We shouldn't be calling pushdecl when we're generating RTL for a
-     function that we already did semantic analysis on previously.  */
-  my_friendly_assert (!cfun || doing_semantic_analysis_p (),
-		      19990913);
 
   need_new_binding = 1;
 
@@ -3943,10 +3883,10 @@ pushdecl (tree x)
 		  b = b->level_chain;
 
 		  /* ARM $8.3 */
-		  if (b->parm_flag == 1)
+		  if (b->kind == sk_function_parms)
 		    {
 		      error ("declaration of `%#D' shadows a parameter",
-				name);
+			     name);
 		      err = true;
 		    }
 		}
@@ -4007,7 +3947,7 @@ pushdecl_with_scope (tree x, struct cp_binding_level* level)
 
   timevar_push (TV_NAME_LOOKUP);
   current_function_decl = NULL_TREE;
-  if (level->parm_flag == 2)
+  if (level->kind == sk_class)
     {
       b = class_binding_level;
       class_binding_level = level;
@@ -4574,9 +4514,6 @@ make_label_decl (tree id, int local_p)
   tree decl;
 
   decl = build_decl (LABEL_DECL, id, void_type_node);
-  if (expanding_p)
-    /* Make sure every label has an rtx.  */
-    label_rtx (decl);
 
   DECL_CONTEXT (decl) = current_function_decl;
   DECL_MODE (decl) = VOIDmode;
@@ -4745,7 +4682,7 @@ check_previous_goto_1 (tree decl,
 
       if (b == level)
 	break;
-      if ((b->is_try_scope || b->is_catch_scope) && ! saw_eh)
+      if ((b->kind == sk_try || b->kind == sk_catch) && ! saw_eh)
 	{
 	  if (! identified)
 	    {
@@ -4758,7 +4695,7 @@ check_previous_goto_1 (tree decl,
 		pedwarn ("%H  from here", locus);
 	      identified = 1;
 	    }
-	  if (b->is_try_scope)
+	  if (b->kind == sk_try)
 	    error ("  enters try block");
 	  else
 	    error ("  enters catch block");
@@ -4880,7 +4817,9 @@ define_label (location_t location, tree name)
 
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
-  for (p = current_binding_level; !(p->parm_flag); p = p->level_chain)
+  for (p = current_binding_level; 
+       p->kind != sk_function_parms; 
+       p = p->level_chain)
     p->more_cleanups_ok = 0;
 
   if (name == get_identifier ("wchar_t"))
@@ -4995,7 +4934,9 @@ finish_case_label (tree low_value, tree high_value)
 
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
-  for (p = current_binding_level; !(p->parm_flag); p = p->level_chain)
+  for (p = current_binding_level; 
+       p->kind != sk_function_parms; 
+       p = p->level_chain)
     p->more_cleanups_ok = 0;
 
   return r;
@@ -5104,7 +5045,7 @@ lookup_tag (enum tree_code form, tree name,
           if (type != NULL)
             POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, type);
         }
-      else if (level->namespace_p)
+      else if (level->kind == sk_namespace)
 	/* Do namespace lookup.  */
 	for (tail = current_namespace; 1; tail = CP_DECL_CONTEXT (tail))
 	  {
@@ -5165,7 +5106,7 @@ lookup_tag (enum tree_code form, tree name,
 	  }
       if (thislevel_only && ! level->tag_transparent)
 	{
-	  if (level->template_parms_p && allow_template_parms_p)
+	  if (level->kind == sk_template_parms && allow_template_parms_p)
 	    {
 	      /* We must deal with cases like this:
 
@@ -5628,7 +5569,7 @@ unqualified_namespace_lookup (tree name, int flags, tree* spacesp)
 
       /* Add all _DECLs seen through local using-directives.  */
       for (level = current_binding_level;
-	   !level->namespace_p;
+	   level->kind != sk_namespace;
 	   level = level->level_chain)
 	if (!lookup_using_namespace (name, &binding, level->using_directives,
                                      scope, flags, spacesp))
@@ -5813,7 +5754,7 @@ lookup_name_real (tree name, int prefer_type, int nonclass,
       struct cp_binding_level *level;
 
       for (level = current_binding_level; 
-	   level && !level->namespace_p; 
+	   level && level->kind != sk_namespace;
 	   level = level->level_chain)
 	{
 	  tree class_type;
@@ -5821,7 +5762,7 @@ lookup_name_real (tree name, int prefer_type, int nonclass,
 	  
 	  /* A conversion operator can only be declared in a class 
 	     scope.  */
-	  if (level->parm_flag != 2)
+	  if (level->kind != sk_class)
 	    continue;
 	  
 	  /* Lookup the conversion operator in the class.  */
@@ -5911,11 +5852,9 @@ lookup_name_current_level (tree name)
   tree t = NULL_TREE;
 
   timevar_push (TV_NAME_LOOKUP);
-  b = current_binding_level;
-  while (b->parm_flag == 2)
-    b = b->level_chain;
+  b = innermost_nonclass_level ();
 
-  if (b->namespace_p)
+  if (b->kind == sk_namespace)
     {
       t = IDENTIFIER_NAMESPACE_VALUE (name);
 
@@ -5949,7 +5888,8 @@ lookup_type_current_level (tree name)
   register tree t = NULL_TREE;
 
   timevar_push (TV_NAME_LOOKUP);
-  my_friendly_assert (! current_binding_level->namespace_p, 980716);
+  my_friendly_assert (current_binding_level->kind != sk_namespace, 
+		      980716);
 
   if (REAL_IDENTIFIER_TYPE_VALUE (name) != NULL_TREE
       && REAL_IDENTIFIER_TYPE_VALUE (name) != global_type_node)
@@ -5998,8 +5938,7 @@ record_builtin_type (enum rid rid_index,
     {
       tdecl = build_decl (TYPE_DECL, tname, type);
       DECL_ARTIFICIAL (tdecl) = 1;
-      if (tname)
-	SET_IDENTIFIER_GLOBAL_VALUE (tname, tdecl);
+      SET_IDENTIFIER_GLOBAL_VALUE (tname, tdecl);
     }
   if (rname)
     {
@@ -6381,7 +6320,7 @@ cp_make_fname_decl (tree id, int type_dep)
   if (current_function_decl)
     {
       struct cp_binding_level *b = current_binding_level;
-      while (b->level_chain->parm_flag == 0)
+      while (b->level_chain->kind != sk_function_parms)
 	b = b->level_chain;
       pushdecl_with_scope (decl, b);
     }	
@@ -7830,7 +7769,7 @@ maybe_inject_for_scope_var (tree decl)
       return;
     }
 
-  if (current_binding_level->is_for_scope)
+  if (current_binding_level->kind == sk_for)
     {
       struct cp_binding_level *outer
 	= current_binding_level->level_chain;
@@ -7853,7 +7792,7 @@ maybe_inject_for_scope_var (tree decl)
 	{
 	  BINDING_VALUE (outer_binding)
 	    = DECL_SHADOWED_FOR_VAR (BINDING_VALUE (outer_binding));
-	  current_binding_level->is_for_scope = 0;
+	  current_binding_level->kind = sk_block;
 	}
     }
   timevar_pop (TV_NAME_LOOKUP);
@@ -8144,8 +8083,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  if (DECL_FUNCTION_SCOPE_P (decl))
 	    {
 	      /* This is a local declaration.  */
-	      if (doing_semantic_analysis_p ())
-		maybe_inject_for_scope_var (decl);
+	      maybe_inject_for_scope_var (decl);
 	      /* Initialize the local variable.  */
 	      if (processing_template_decl)
 		{
@@ -13630,8 +13568,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
 	DECL_INTERFACE_KNOWN (decl1) = 1;
     }
 
-  pushlevel (0);
-  current_binding_level->parm_flag = 1;
+  begin_scope (sk_function_parms);
 
   ++function_depth;
 
@@ -13751,9 +13688,6 @@ save_function_data (tree decl)
   f->x_named_label_uses = NULL;
   f->bindings = NULL;
   f->x_local_names = NULL;
-
-  /* When we get back here again, we will be expanding.  */
-  f->x_expanding_p = 1;
 
   /* If we've already decided that we cannot inline this function, we
      must remember that fact when we actually go to expand the
@@ -14006,7 +13940,7 @@ finish_function (int flags)
   /* If the current binding level isn't the outermost binding level
      for this function, either there is a bug, or we have experienced
      syntax errors and the statement tree is malformed.  */
-  if (current_binding_level->parm_flag != 1)
+  if (current_binding_level->kind != sk_function_parms)
     {
       /* Make sure we have already experienced errors.  */
       if (errorcount == 0)
@@ -14016,9 +13950,9 @@ finish_function (int flags)
          levels.  */
       DECL_SAVED_TREE (fndecl) = build_stmt (COMPOUND_STMT, NULL_TREE);
 
-      while (current_binding_level->parm_flag != 1)
+      while (current_binding_level->kind != sk_function_parms)
 	{
-	  if (current_binding_level->parm_flag == 2)
+	  if (current_binding_level->kind == sk_class)
 	    pop_nested_class ();
 	  else
 	    poplevel (0, 0, 0);
@@ -14211,8 +14145,7 @@ start_method (tree declspecs, tree declarator, tree attrlist)
   cp_finish_decl (fndecl, NULL_TREE, NULL_TREE, 0);
 
   /* Make a place for the parms */
-  pushlevel (0);
-  current_binding_level->parm_flag = 1;
+  begin_scope (sk_function_parms);
 
   DECL_IN_AGGR_P (fndecl) = 1;
   return fndecl;
@@ -14415,10 +14348,6 @@ cxx_push_function_context (struct function * f)
   struct language_function *p
     = ggc_alloc_cleared (sizeof (struct language_function));
   f->language = p;
-
-  /* It takes an explicit call to expand_body to generate RTL for a
-     function.  */
-  expanding_p = 0;
 
   /* Whenever we start a new function, we destroy temporaries in the
      usual way.  */

@@ -854,19 +854,18 @@ create_coverage (void)
   rest_of_decl_compilation (ctor, 0, 1, 0);
   announce_function (ctor);
   current_function_decl = ctor;
-  DECL_INITIAL (ctor) = error_mark_node;
   make_decl_rtl (ctor, NULL);
   init_function_start (ctor);
-  (*lang_hooks.decls.pushlevel) (0);
   expand_function_start (ctor, 0);
-
   /* Actually generate the code to call __gcov_init.  */
   gcov_info_address = force_reg (Pmode, XEXP (DECL_RTL (gcov_info), 0));
   emit_library_call (gcov_init_libfunc, LCT_NORMAL, VOIDmode, 1,
 		     gcov_info_address, Pmode);
 
   expand_function_end ();
-  (*lang_hooks.decls.poplevel) (1, 0, 1);
+  /* Create a dummy BLOCK.  */
+  DECL_INITIAL (ctor) = make_node (BLOCK);
+  TREE_USED (DECL_INITIAL (ctor)) = 1;
 
   rest_of_compilation (ctor);
 

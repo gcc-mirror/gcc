@@ -47,6 +47,7 @@ extern bool lhd_post_options (const char **);
 extern HOST_WIDE_INT lhd_get_alias_set (tree);
 extern tree lhd_return_tree (tree);
 extern tree lhd_return_null_tree (tree);
+extern tree lhd_do_nothing_iii_return_null_tree (int, int, int);
 extern int lhd_safe_from_p (rtx, tree);
 extern int lhd_staticp (tree);
 extern int lhd_unsafe_for_reeval (tree);
