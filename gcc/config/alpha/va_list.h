@@ -1,6 +1,9 @@
 /* A replacement for Digital Unix's <va_list.h>.  */
 
-#include <va-alpha.h>
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
+typedef __builtin_va_list __gnuc_va_list;
+#endif
 
 #if !defined(_VA_LIST) && !defined(_HIDDEN_VA_LIST)
 #define _VA_LIST

@@ -1,3 +1,8 @@
+Tue Sep 14 23:05:37 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/alpha/va_list.h (va-alpha.h): Do not include.
+	(__gnuc_va_list): Typedef as in varargs.h.
+
 Tue Sep 14 18:14:03 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-common.c (ggc_mark_tree): Mark DECL_SOURCE_FILE and
