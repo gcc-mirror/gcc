@@ -2610,8 +2610,6 @@ import_export_class (ctype)
   /* FIXME this should really use some sort of target-independent macro.  */
   if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
     import_export = -1;
-  else if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
-    import_export = 1;
 #endif
 
   /* If we got -fno-implicit-templates, we import template classes that

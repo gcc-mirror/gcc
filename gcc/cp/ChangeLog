@@ -1,3 +1,8 @@
+1998-08-13  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* decl2.c (import_export_class): Don't use dllexport
+	attribute as a heuristic.
+
 1998-07-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (push_overloaded_decl): Use current_namespace instead of
