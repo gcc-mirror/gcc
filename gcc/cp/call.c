@@ -2716,7 +2716,9 @@ conditional_conversion (e1, e2)
       if (at_least_as_qualified_p (t2, t1))
 	{
 	  conv = build1 (IDENTITY_CONV, t1, e1);
-	  conv = build_conv (BASE_CONV, t2, conv);
+	  if (!same_type_p (TYPE_MAIN_VARIANT (t1), 
+			    TYPE_MAIN_VARIANT (t2)))
+	    conv = build_conv (BASE_CONV, t2, conv);
 	  return conv;
 	}
       else
@@ -2865,11 +2867,22 @@ build_conditional_expr (arg1, arg2, arg3)
       else if (conv2 && !ICS_BAD_FLAG (conv2))
 	{
 	  arg2 = convert_like (conv2, arg2);
+	  /* That may not quite have done the trick.  If the two types
+	     are cv-qualified variants of one another, we will have
+	     just used an IDENTITY_CONV.  (There's no conversion from
+	     an lvalue of one class type to an lvalue of another type,
+	     even a cv-qualified variant, and we don't want to lose
+	     lvalue-ness here.)  So, we manually add a NOP_EXPR here
+	     if necessary.  */
+	  if (!same_type_p (TREE_TYPE (arg2), arg3_type))
+	    arg2 = build1 (NOP_EXPR, arg3_type, arg2);
 	  arg2_type = TREE_TYPE (arg2);
 	}
       else if (conv3 && !ICS_BAD_FLAG (conv3))
 	{
 	  arg3 = convert_like (conv3, arg3);
+	  if (!same_type_p (TREE_TYPE (arg3), arg2_type))
+	    arg2 = build1 (NOP_EXPR, arg2_type, arg3);
 	  arg3_type = TREE_TYPE (arg3);
 	}
     }
@@ -3647,12 +3660,19 @@ convert_like (convs, expr)
 	return expr;
       /* else fall through */
     case BASE_CONV:
-      if (TREE_CODE (convs) == BASE_CONV
-	  && !NEED_TEMPORARY_P (convs))
-	/* We are going to bind a reference directly to a base-class
-	   subobject of EXPR.  We don't have to generate any code
-	   here.  */
-	return expr;
+      if (TREE_CODE (convs) == BASE_CONV && !NEED_TEMPORARY_P (convs))
+	{
+	  /* We are going to bind a reference directly to a base-class
+	     subobject of EXPR.  */
+	  tree base_ptr = build_pointer_type (TREE_TYPE (convs));
+
+	  /* Build an expression for `*((base*) &expr)'.  */
+	  expr = build_unary_op (ADDR_EXPR, expr, 0);
+	  expr = perform_implicit_conversion (base_ptr, expr);
+	  expr = build_indirect_ref (expr, "implicit conversion");
+	  return expr;
+	}
+
       {
 	tree cvt_expr = build_user_type_conversion
 	  (TREE_TYPE (convs), expr, LOOKUP_NORMAL);

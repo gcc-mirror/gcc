@@ -1,3 +1,14 @@
+1999-07-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (conditional_conversion): Don't build BASE_CONVs for
+	conversions between things that have the same type.
+	(build_conditional_expr): Tweak.
+	(convert_like): Some BASE_CONVs really do require the generation
+	of code.
+	
+	* init.c (perform_member_init): Don't go through build_modify_expr
+	for simple initializations.
+
 1999-07-27  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (DECL_VIRTUAL_CONTEXT): New macro.
