@@ -1,3 +1,9 @@
+2003-09-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* mklibgcc.in (libcc.a): Depend on stmp-dirs.
+	(libgov.a): Likewise.
+	(libgcc_eh.a): Likewise.
+
 2003-09-08  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (operand_equal_p): Clarify documentation.
