@@ -109,7 +109,7 @@ package System.OS_Interface is
    SIGUSR1    : constant := 30; --  user defined signal 1
    SIGUSR2    : constant := 31; --  user defined signal 2
 
-   SIGADAABORT : constant := SIGABRT;
+   SIGADAABORT : constant := SIGTERM;
    --  Change this if you want to use another signal for task abort.
    --  SIGTERM might be a good one.
 
@@ -308,7 +308,7 @@ package System.OS_Interface is
      (how  : int;
       set  : sigset_t_ptr;
       oset : sigset_t_ptr) return int;
-   pragma Import (C, pthread_sigmask, "sigprocmask");
+   pragma Import (C, pthread_sigmask, "pthread_sigmask");
 
    --------------------------
    -- POSIX.1c  Section 11 --
@@ -390,9 +390,13 @@ package System.OS_Interface is
      (C, pthread_mutexattr_setprioceiling,
       "pthread_mutexattr_setprioceiling");
 
+   type padding is array (int range <>) of Interfaces.C.char;
+
    type struct_sched_param is record
       sched_priority : int;  --  scheduling priority
+      opaque         : padding (1 .. 4);
    end record;
+   pragma Convention (C, struct_sched_param);
 
    function pthread_setschedparam
      (thread : pthread_t;
@@ -475,19 +479,17 @@ package System.OS_Interface is
 
 private
 
-   type array_type_1 is array (Integer range 0 .. 3) of unsigned_long;
-   type sigset_t is record
-      X_X_sigbits  : array_type_1;
-   end record;
-   pragma Convention (C, sigset_t);
+   type sigset_t is new unsigned;
 
-   type pid_t is new long;
+   type int32_t is new int;
+
+   type pid_t is new int32_t;
 
    type time_t is new long;
 
    type timespec is record
       tv_sec  : time_t;
-      tv_nsec : long;
+      tv_nsec : int32_t;
    end record;
    pragma Convention (C, timespec);
 
@@ -495,15 +497,15 @@ private
    CLOCK_REALTIME : constant clockid_t := 0;
 
    type struct_timeval is record
-      tv_sec  : long;
-      tv_usec : long;
+      tv_sec  : int32_t;
+      tv_usec : int32_t;
    end record;
    pragma Convention (C, struct_timeval);
 
    --
    --  Darwin specific signal implementation
    --
-   type Pad_Type is array (0 .. 7) of int;
+   type Pad_Type is array (1 .. 7) of unsigned;
    type siginfo_t is record
       si_signo  : int;               --  signal number
       si_errno  : int;               --  errno association
@@ -544,97 +546,41 @@ private
 
    type pthread_lock_t is new long;
 
-   type sched_param_pad is array (0 .. 3) of plain_char;
-   type sched_param is record
-      sched_priority : int;
-      opaque         : sched_param_pad;
-   end record;
-   pragma Convention (C, sched_param);
-   type boolean_t is new int;
-
    type pthread_attr_t is record
-      sig             : long;
-      lock            : pthread_lock_t;
-      detached        : int;
-      inherit         : int;
-      policy          : int;
-      param           : sched_param;
-      stackaddr       : System.Address;
-      stacksize       : long;
-      freeStackOnExit : boolean_t;
+      sig    : long;
+      opaque : padding (1 .. 36);
    end record;
    pragma Convention (C, pthread_attr_t);
 
    type pthread_mutexattr_t is record
-      sig         : long;
-      prioceiling : int;
-      protocol    : int;
+      sig    : long;
+      opaque : padding (1 .. 8);
    end record;
    pragma Convention (C, pthread_mutexattr_t);
 
-   type mach_port_t is new unsigned_long;
-
    type pthread_mutex_t is record
-      sig         : long;
-      lock        : pthread_lock_t;
-      prioceiling : int;
-      priority    : int;
-      protocol    : int;
-      owner       : pthread_t;
-      next        : pthread_mutex_ptr;
-      prev        : pthread_mutex_ptr;
-      busy        : pthread_cond_ptr;
-      field       : int;
-      sem         : mach_port_t;
+      sig    : long;
+      opaque : padding (1 .. 40);
    end record;
    pragma Convention (C, pthread_mutex_t);
 
    type pthread_condattr_t is record
-      sig         : long;
-      unsupported : int;
+      sig    : long;
+      opaque : padding (1 .. 4);
    end record;
    pragma Convention (C, pthread_condattr_t);
 
    type pthread_cond_t is record
-      sig         : long;
-      lock        : pthread_lock_t;
-      sem         : mach_port_t;
-      next        : pthread_cond_ptr;
-      prev        : pthread_cond_ptr;
-      busy        : pthread_mutex_ptr;
-      waiters     : short;
-      sigspending : short;
+      sig    : long;
+      opaque : padding (1 .. 24);
    end record;
    pragma Convention (C, pthread_cond_t);
 
    type pthread_once_t is record
-      sig  : long;
-      lock : pthread_lock_t;
+      sig    : long;
+      opaque : padding (1 .. 4);
    end record;
    pragma Convention (C, pthread_once_t);
-
-   type rwlockattr_rfu_array is array (0 .. 1) of int;
-
-   type pthread_rwlockattr_t is record
-      sig     : long;
-      pshared : int;
-      rfu     : rwlockattr_rfu_array;
-   end record;
-   pragma Convention (C, pthread_rwlockattr_t);
-
-   type rwlock_rfu_array is array (0 .. 2) of int;
-
-   type pthread_rwlock_t is record
-      sig           : long;
-      lock          : pthread_mutex_t;
-      state         : int;
-      read_signal   : pthread_cond_t;
-      write_signal  : pthread_cond_t;
-      block_writers : int;
-      pshared       : int;
-      rfu           : rwlock_rfu_array;
-   end record;
-   pragma Convention (C, pthread_rwlock_t);
 
    type pthread_key_t is new unsigned_long;
 
