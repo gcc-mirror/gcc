@@ -314,8 +314,8 @@ struct undo
 {
   struct undo *next;
   int is_int;
-  union {rtx r; unsigned int i;} old_contents;
-  union {rtx *r; unsigned int *i;} where;
+  union {rtx r; int i;} old_contents;
+  union {rtx *r; int *i;} where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -339,8 +339,7 @@ static struct undobuf undobuf;
 static int n_occurrences;
 
 static void do_SUBST			PARAMS ((rtx *, rtx));
-static void do_SUBST_INT		PARAMS ((unsigned int *,
-						 unsigned int));
+static void do_SUBST_INT		PARAMS ((int *, int));
 static void init_reg_last_arrays	PARAMS ((void));
 static void setup_incoming_promotions   PARAMS ((void));
 static void set_nonzero_bits_and_sign_copies  PARAMS ((rtx, rtx, void *));
@@ -472,10 +471,10 @@ do_SUBST (into, newval)
 
 static void
 do_SUBST_INT (into, newval)
-     unsigned int *into, newval;
+     int *into, newval;
 {
   struct undo *buf;
-  unsigned int oldval = *into;
+  int oldval = *into;
 
   if (oldval == newval)
     return;
@@ -5971,7 +5970,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   else if (GET_CODE (inner) == ASHIFT
 	   && GET_CODE (XEXP (inner, 1)) == CONST_INT
 	   && pos_rtx == 0 && pos == 0
-	   && len > INTVAL (XEXP (inner, 1)))
+	   && len > (unsigned HOST_WIDE_INT) INTVAL (XEXP (inner, 1)))
     {
       /* We're extracting the least significant bits of an rtx
 	 (ashift X (const_int C)), where LEN > C.  Extract the
@@ -6814,7 +6813,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 
 	  if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT
 	      && ((INTVAL (XEXP (x, 1)) & GET_MODE_MASK (GET_MODE (x)))
-		  == (HOST_WIDE_INT) mask))
+		  == mask))
 	    x = XEXP (x, 0);
 
 	  /* If it remains an AND, try making another AND with the bits

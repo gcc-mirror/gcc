@@ -1,3 +1,13 @@
+2002-07-03  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (struct_undo): Change types of recorded substitutions
+	to be either "int" or "rtx", instead of "unsigned int" and "rtx".
+	(do_SUBST_INT): Change types of the substitution from unsigned int
+	to int, to avoid compilation warning from SUBST_INT's only caller.
+
+	(make_extraction): Add cast to avoid compilation warning.
+	(force_to_mode): Remove cast to avoid compilation warning.
+
 2002-07-03  Eric Botcazou  <ebotcazou@multimania.com>
 	    Jeff Law  <law@redhat.com>
 
