@@ -1,3 +1,8 @@
+2002-11-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* jump.c (never_reached_warning): Don't set contains_insn until the
+	first line note is seen.
+
 2002-11-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movti_string): Use string instructions.
