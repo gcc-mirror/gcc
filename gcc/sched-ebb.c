@@ -49,7 +49,7 @@ static void init_ready_list PARAMS ((struct ready_list *));
 static int can_schedule_ready_p PARAMS ((rtx));
 static int new_ready PARAMS ((rtx));
 static int schedule_more_p PARAMS ((void));
-static const char *print_insn PARAMS ((rtx, int));
+static const char *ebb_print_insn PARAMS ((rtx, int));
 static int rank PARAMS ((rtx, rtx));
 static int contributes_to_priority PARAMS ((rtx, rtx));
 static void compute_jump_reg_dependencies PARAMS ((rtx, regset));
@@ -128,7 +128,7 @@ new_ready (next)
    to be formatted so that multiple output lines will line up nicely.  */
 
 static const char *
-print_insn (insn, aligned)
+ebb_print_insn (insn, aligned)
      rtx insn;
      int aligned ATTRIBUTE_UNUSED;
 {
@@ -188,7 +188,7 @@ static struct sched_info ebb_sched_info =
   schedule_more_p,
   new_ready,
   rank,
-  print_insn,
+  ebb_print_insn,
   contributes_to_priority,
   compute_jump_reg_dependencies,
 

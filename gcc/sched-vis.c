@@ -49,7 +49,6 @@ static int get_visual_tbl_length PARAMS ((void));
 static void print_exp PARAMS ((char *, rtx, int));
 static void print_value PARAMS ((char *, rtx, int));
 static void print_pattern PARAMS ((char *, rtx, int));
-static void print_insn PARAMS ((char *, rtx, int));
 
 /* Print names of units on which insn can/should execute, for debugging.  */
 
@@ -759,7 +758,7 @@ print_pattern (buf, x, verbose)
    (Probably the last "option" should be extended somehow, since it
    depends now on sched.c inner variables ...)  */
 
-static void
+void
 print_insn (buf, x, verbose)
      char *buf;
      rtx x;

@@ -1127,29 +1127,28 @@ schedule_insn (insn, ready, clock)
       || !(*targetm.sched.use_dfa_pipeline_interface) ())
     unit = insn_unit (insn);
 
-  if (sched_verbose >= 2)
+  if (targetm.sched.use_dfa_pipeline_interface
+      && (*targetm.sched.use_dfa_pipeline_interface) ()
+      && sched_verbose >= 1)
     {
+      char buf[2048];
 
-      if (targetm.sched.use_dfa_pipeline_interface
-	  && (*targetm.sched.use_dfa_pipeline_interface) ())
-	{
-	  fprintf (sched_dump,
-		   ";;\t\t--> scheduling insn <<<%d>>>:reservation ",
-		   INSN_UID (insn));
-	  
-	  if (recog_memoized (insn) < 0)
-	    fprintf (sched_dump, "nothing");
-	  else
-	    print_reservation (sched_dump, insn);
-	}
+      print_insn (buf, insn, 0);
+      buf[40]=0;
+      fprintf (sched_dump, ";;\t%3i--> %-40s:", clock, buf);
+
+      if (recog_memoized (insn) < 0)
+	fprintf (sched_dump, "nothing");
       else
-	{
-	  fprintf (sched_dump, ";;\t\t--> scheduling insn <<<%d>>> on unit ",
-		   INSN_UID (insn));
-	  insn_print_units (insn);
-	}
-
-      fprintf (sched_dump, "\n");
+	print_reservation (sched_dump, insn);
+      fputc ('\n', sched_dump);
+    }
+  else if (sched_verbose >= 2)
+    {
+      fprintf (sched_dump, ";;\t\t--> scheduling insn <<<%d>>> on unit ",
+	       INSN_UID (insn));
+      insn_print_units (insn);
+      fputc ('\n', sched_dump);
     }
 
   if (!targetm.sched.use_dfa_pipeline_interface
@@ -2052,7 +2051,7 @@ schedule_block (b, rgn_n_insns)
 	  rtx insn;
 	  int cost;
 
-	  if (sched_verbose)
+	  if (sched_verbose >= 2)
 	    {
 	      fprintf (sched_dump, ";;\tReady list (t =%3d):  ",
 		       clock_var);
