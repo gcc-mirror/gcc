@@ -6912,10 +6912,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       {
 	tree fntype = TREE_TYPE (current_function_decl);
 
-	if (TYPE_ARG_TYPES (fntype) == 0
-	    || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		== void_type_node)
-	    || current_function_varargs)
+	if ((TYPE_ARG_TYPES (fntype) == 0
+	     || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		 == void_type_node))
+	    && ! current_function_varargs)
 	  {
 	    error ("`va_start' used in function with fixed args");
 	    return const0_rtx;
