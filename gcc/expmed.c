@@ -313,12 +313,8 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
       for (i = 0; i < nwords; i++)
 	{
-	  /* If I is 0, use the low-order word in both field and target;
-	     if I is 1, use the next to lowest word; and so on.  */
-	  int wordnum = (WORDS_BIG_ENDIAN ? nwords - i - 1 : i);
-	  int bit_offset = (WORDS_BIG_ENDIAN
-			    ? MAX (bitsize - (i + 1) * BITS_PER_WORD, 0)
-			    : i * BITS_PER_WORD);
+	  int wordnum = i;
+	  int bit_offset = i * BITS_PER_WORD;
 	  store_bit_field (op0, MIN (BITS_PER_WORD,
 				     bitsize - i * BITS_PER_WORD),
 			   bitnum + bit_offset, word_mode,
