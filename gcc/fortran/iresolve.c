@@ -572,6 +572,15 @@ gfc_resolve_g77_math1 (gfc_expr * f, gfc_expr * x)
 
 
 void
+gfc_resolve_getcwd (gfc_expr * f)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+  f->value.function.name = gfc_get_string (PREFIX("getcwd"));
+}
+
+
+void
 gfc_resolve_getgid (gfc_expr * f)
 {
   f->ts.type = BT_INTEGER;
@@ -1496,6 +1505,23 @@ gfc_resolve_getarg (gfc_code * c)
 
   kind = gfc_default_integer_kind;
   name = gfc_get_string (PREFIX("getarg_i%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+/* Resolve the getcwd intrinsic subroutine.  */
+
+void
+gfc_resolve_getcwd_sub (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  if (c->ext.actual->next->expr != NULL)
+    kind = c->ext.actual->next->expr->ts.kind;
+  else
+    kind = gfc_default_integer_kind;
+
+  name = gfc_get_string (PREFIX("getcwd_i%d_sub"), kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 

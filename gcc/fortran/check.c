@@ -2093,3 +2093,20 @@ gfc_check_etime_sub (gfc_expr * values, gfc_expr * time)
 
   return SUCCESS;
 }
+
+
+try
+gfc_check_getcwd_sub (gfc_expr * cwd, gfc_expr * status)
+{
+
+  if (type_check (cwd, 0, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (status, 1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (status, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}

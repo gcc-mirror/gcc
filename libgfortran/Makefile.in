@@ -120,8 +120,8 @@ am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	unit.lo unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	c99_functions.lo cpu_time.lo cshift0.lo date_and_time.lo \
-	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo getXid.lo \
-	ishftc.lo pack_generic.lo size.lo spread_generic.lo \
+	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo getcwd.lo \
+	getXid.lo ishftc.lo pack_generic.lo size.lo spread_generic.lo \
 	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
 	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
 	system_clock.lo transpose_generic.lo unpack_generic.lo \
@@ -321,6 +321,7 @@ intrinsics/erf.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
+intrinsics/getcwd.c \
 intrinsics/getXid.c \
 intrinsics/ishftc.c \
 intrinsics/pack_generic.c \
@@ -2085,6 +2086,15 @@ etime.obj: intrinsics/etime.c
 
 etime.lo: intrinsics/etime.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o etime.lo `test -f 'intrinsics/etime.c' || echo '$(srcdir)/'`intrinsics/etime.c
+
+getcwd.o: intrinsics/getcwd.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getcwd.o `test -f 'intrinsics/getcwd.c' || echo '$(srcdir)/'`intrinsics/getcwd.c
+
+getcwd.obj: intrinsics/getcwd.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getcwd.obj `if test -f 'intrinsics/getcwd.c'; then $(CYGPATH_W) 'intrinsics/getcwd.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/getcwd.c'; fi`
+
+getcwd.lo: intrinsics/getcwd.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getcwd.lo `test -f 'intrinsics/getcwd.c' || echo '$(srcdir)/'`intrinsics/getcwd.c
 
 getXid.o: intrinsics/getXid.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getXid.o `test -f 'intrinsics/getXid.c' || echo '$(srcdir)/'`intrinsics/getXid.c
