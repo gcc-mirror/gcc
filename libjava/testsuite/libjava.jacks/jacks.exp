@@ -1,6 +1,17 @@
 # Run the Jacks test suite.
 # See http://www-124.ibm.com/developerworks/oss/cvs/jikes/~checkout~/jacks/jacks.html
 
+proc gcj_jacks_setup_xfail {ary} {
+  upvar $ary array
+  global srcdir
+
+  set fd [open $srcdir/libjava.jacks/jacks.xfail]
+  while {! [eof $fd]} {
+    set array([gets $fd]) {}
+  }
+  close $fd
+}
+
 proc gcj_jacks_write {filename} {
   global GCJ_UNDER_TEST
 
@@ -29,14 +40,21 @@ proc gcj_jacks_parse {file} {
     return
   }
 
+  verbose "Reading jacks.xfail"
+  gcj_jacks_setup_xfail xfails
+
   while {! [eof $fd]} {
     set line [gets $fd]
     if {[string match RESULT* $line]} {
       set linelist [split $line]
+      set test [lindex $linelist 1]
+      if {[info exists xfails($test)]} {
+	setup_xfail "*-*-*"
+      }
       if {[lindex $linelist 2] == "PASSED"} {
-	pass [lindex $linelist 1]
+	pass $test
       } else {
-	fail [lindex $linelist 1]
+	fail $test
       }
     }
   }
