@@ -1279,7 +1279,7 @@ handle_option (pfile, argc, argv)
 	      arg = argv[++i];
 	      if (!arg)
 		{
-		  cpp_fatal (pfile, _(cl_options[opt_index].msg), argv[i - 1]);
+		  cpp_fatal (pfile, cl_options[opt_index].msg, argv[i - 1]);
 		  return argc;
 		}
 	    }

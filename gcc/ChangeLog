@@ -1,3 +1,8 @@
+2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c (handle_option): Don't run error message through
+	gettext twice.
+
 Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* conflict.c (conflict_graph_add): Pass enum type to htab_find_slot.
