@@ -48,28 +48,28 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    because the sizes for those types can be configured to be anything.
    Instead we use the following special type names.  */
 
-typedef unsigned int UQItype	__attribute__ ((mode (QI)));
-typedef 	 int SItype	__attribute__ ((mode (SI)));
-typedef unsigned int USItype	__attribute__ ((mode (SI)));
-typedef		 int DItype	__attribute__ ((mode (DI)));
-typedef unsigned int UDItype	__attribute__ ((mode (DI)));
-typedef 	float SFtype	__attribute__ ((mode (SF)));
-typedef		float DFtype	__attribute__ ((mode (DF)));
+typedef unsigned int UQItype	__attribute__ ((mode ("QI")));
+typedef 	 int SItype	__attribute__ ((mode ("SI")));
+typedef unsigned int USItype	__attribute__ ((mode ("SI")));
+typedef		 int DItype	__attribute__ ((mode ("DI")));
+typedef unsigned int UDItype	__attribute__ ((mode ("DI")));
+typedef 	float SFtype	__attribute__ ((mode ("SF")));
+typedef		float DFtype	__attribute__ ((mode ("DF")));
 #if LONG_DOUBLE_TYPE_SIZE == 96
-typedef		float XFtype	__attribute__ ((mode (XF)));
+typedef		float XFtype	__attribute__ ((mode ("XF")));
 #endif
 #if LONG_DOUBLE_TYPE_SIZE == 128
-typedef		float TFtype	__attribute__ ((mode (TF)));
+typedef		float TFtype	__attribute__ ((mode ("TF")));
 #endif
 
 #if BITS_PER_WORD==16
-typedef int word_type __attribute__ ((mode (HI)));
+typedef int word_type __attribute__ ((mode ("HI")));
 #endif
 #if BITS_PER_WORD==32
-typedef int word_type __attribute__ ((mode (SI)));
+typedef int word_type __attribute__ ((mode ("SI")));
 #endif
 #if BITS_PER_WORD==64
-typedef int word_type __attribute__ ((mode (DI)));
+typedef int word_type __attribute__ ((mode ("DI")));
 #endif
 
 /* Make sure that we don't accidentally use any normal C language built-in
