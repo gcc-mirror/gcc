@@ -29,7 +29,7 @@ static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
 
 /* Forward declarations */
-static int jmp_uses_reg_or_mem		PARAMS ((rtx));
+static int computed_jump_p_1	PARAMS ((rtx));
 
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
@@ -2181,11 +2181,12 @@ replace_regs (x, reg_map, nregs, replace_dest)
   return x;
 }
 
-/* Return 1 if X, the SRC_SRC of  SET of (pc) contain a REG or MEM that is
-   not in the constant pool and not in the condition of an IF_THEN_ELSE.  */
+/* A subroutine of computed_jump_p, return 1 if X contains a REG or MEM or
+   constant that is not in the constant pool and not in the condition
+   of an IF_THEN_ELSE.  */
 
 static int
-jmp_uses_reg_or_mem (x)
+computed_jump_p_1 (x)
      rtx x;
 {
   enum rtx_code code = GET_CODE (x);
@@ -2194,11 +2195,14 @@ jmp_uses_reg_or_mem (x)
 
   switch (code)
     {
-    case CONST:
     case LABEL_REF:
     case PC:
       return 0;
 
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
     case REG:
       return 1;
 
@@ -2207,12 +2211,8 @@ jmp_uses_reg_or_mem (x)
 		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)));
 
     case IF_THEN_ELSE:
-      return (jmp_uses_reg_or_mem (XEXP (x, 1))
-	      || jmp_uses_reg_or_mem (XEXP (x, 2)));
-
-    case PLUS:  case MINUS:  case MULT:
-      return (jmp_uses_reg_or_mem (XEXP (x, 0))
-	      || jmp_uses_reg_or_mem (XEXP (x, 1)));
+      return (computed_jump_p_1 (XEXP (x, 1))
+	      || computed_jump_p_1 (XEXP (x, 2)));
 
     default:
       break;
@@ -2222,12 +2222,12 @@ jmp_uses_reg_or_mem (x)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e'
-	  && jmp_uses_reg_or_mem (XEXP (x, i)))
+	  && computed_jump_p_1 (XEXP (x, i)))
 	return 1;
 
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (jmp_uses_reg_or_mem (XVECEXP (x, i, j)))
+	  if (computed_jump_p_1 (XVECEXP (x, i, j)))
 	    return 1;
     }
 
@@ -2265,12 +2265,12 @@ computed_jump_p (insn)
 	    for (i = len - 1; i >= 0; i--)
 	      if (GET_CODE (XVECEXP (pat, 0, i)) == SET
 		  && SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
-		  && jmp_uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
+		  && computed_jump_p_1 (SET_SRC (XVECEXP (pat, 0, i))))
 		return 1;
 	}
       else if (GET_CODE (pat) == SET
 	       && SET_DEST (pat) == pc_rtx
-	       && jmp_uses_reg_or_mem (SET_SRC (pat)))
+	       && computed_jump_p_1 (SET_SRC (pat)))
 	return 1;
     }
   return 0;

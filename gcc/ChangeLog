@@ -1,3 +1,8 @@
+2001-01-14  Richard Henderson  <rth@redhat.com>
+
+	* rtlanal.c (computed_jump_p_1): Rename from jmp_uses_reg_or_mem;
+	update all call sites.  Return true for all non-label constants.
+
 Sun Jan 14 10:09:48 MET 2001  Jan hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_compare): Add bypass_test and second_test
