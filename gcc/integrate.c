@@ -1775,14 +1775,14 @@ copy_rtx_and_substitute (orig, map)
 	      rounded = CEIL_ROUND (size, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 	      loc = plus_constant (loc, rounded);
 #endif
-	      map->reg_map[regno] = force_operand (loc, 0);
-	      map->const_equiv_map[regno] = loc;
-	      map->const_age_map[regno] = CONST_AGE_PARM;
+	      map->reg_map[regno] = temp = force_operand (loc, 0);
+	      map->const_equiv_map[REGNO (temp)] = loc;
+	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
 
 	      seq = gen_sequence ();
 	      end_sequence ();
 	      emit_insn_after (seq, map->insns_at_start);
-	      return map->reg_map[regno];
+	      return temp;
 	    }
 	  else if (regno == VIRTUAL_INCOMING_ARGS_REGNUM)
 	    {
@@ -1794,14 +1794,14 @@ copy_rtx_and_substitute (orig, map)
 	      start_sequence ();
 	      loc = assign_stack_temp (BLKmode, size, 1);
 	      loc = XEXP (loc, 0);
-	      map->reg_map[regno] = force_operand (loc, 0);
-	      map->const_equiv_map[regno] = loc;
-	      map->const_age_map[regno] = CONST_AGE_PARM;
+	      map->reg_map[regno] = temp = force_operand (loc, 0);
+	      map->const_equiv_map[REGNO (temp)] = loc;
+	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
 
 	      seq = gen_sequence ();
 	      end_sequence ();
 	      emit_insn_after (seq, map->insns_at_start);
-	      return map->reg_map[regno];
+	      return temp;
 	    }
 	  else if (REG_FUNCTION_VALUE_P (orig))
 	    {
