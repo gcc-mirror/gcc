@@ -1,3 +1,7 @@
+2000-12-13  Tom Tromey  <tromey@redhat.com>
+
+	* gcc.c (handle_braces): Handle %{<S*} spec correctly.
+
 2000-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* function.c (assign_parms): Optimize incoming PARALLELs into
