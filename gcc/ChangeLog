@@ -1,3 +1,8 @@
+Fri Aug 13 01:29:57 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* dwarfout.c (fundamental_type_code): Return FT_boolean for
+	INTEGER_TYPE with precision==1, it's __java_boolean.  
+
 Thu Aug 12 23:51:04 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* global.c (prune_preferences): Move some invariants out of the
