@@ -28,6 +28,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "reload.h"
 #include "expr.h"
 
+#define CEIL(x,y) (((x) + (y) - 1) / (y))
+
 /* Modes for each hard register that we can save.  The smallest mode is wide
    enough to save the entire contents of the register.  When saving the
    register because it is live we first try to save in multi-register modes.
@@ -593,7 +595,7 @@ restore_referenced_regs (x, insn, insn_mode)
 	  for (i = regno; i < endregno; i++)
 	    if (TEST_HARD_REG_BIT (hard_regs_need_restore, i))
 	      i += insert_save_restore (insn, 0, i, insn_mode, 
-				GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD);
+		   CEIL (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD));
 	}
 
       return;
@@ -612,7 +614,9 @@ restore_referenced_regs (x, insn, insn_mode)
 
 /* Insert a sequence of insns to save or restore, SAVE_P says which,
    REGNO.  Place these insns in front of INSN.  INSN_MODE is the mode
-   to assign to these insns. 
+   to assign to these insns.   MAXRESTORE is the maximum number of registers
+   which should be restored during this call (when SAVE_P == 0).  It should
+   never be less than 1 since we only work with entire registers.
 
    Note that we have verified in init_caller_save that we can do this
    with a simple SET, so use it.  Set INSN_CODE to what we save there
