@@ -60,11 +60,16 @@ extern __gthread_key_t eh_context_key;
    don't map well enough onto VxWorks.  */
 
 static void
-__ehdtor ()
+__ehdtor (void *pTcb)
 {
-  if (eh_context_key)
-    free ((void*)eh_context_key);
-  eh_context_key = 0;
+  int tid = (int) pTcb;
+  void *p = (void*)taskVarGet(tid, &eh_context_key);
+  if (p != (void*)-1)
+    {
+      if (p)
+	free (p);
+      taskVarSet(tid, &eh_context_key, 0);
+    }
 }
 
 /* This only works for the code in libgcc2.c.  */
@@ -73,6 +78,11 @@ static inline int
 __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 {
   *key = 0;
+
+  /* Do this first so that the task variables are visible during the
+     running of the delete hook.  */
+
+  taskVarInit();
 
   /* We don't have a way to track dtor here, so instead, we
      register a generic routine that can cleanup any task.  */

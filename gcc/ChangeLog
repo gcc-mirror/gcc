@@ -1,3 +1,12 @@
+Thu Dec  3 11:19:50 1998  Mike Stump  <mrs@wrs.com>
+
+	* gthr-vxworks.h (__ehdtor): Fix memory leak.  The delete hook
+	runs in the context of the deleter, not the deletee, so we must
+	use taskVarGet to find the correct memory to free.
+	(__gthread_key_create): Initialize the task
+	variable subsystem so that the task variable is still active when
+	the delete hook is run.
+
 1998-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* pdp11.h (TARGET_40_PLUS): Fix typo.
