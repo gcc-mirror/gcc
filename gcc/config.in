@@ -347,6 +347,9 @@
    through valgrind (a memory checker).  This is extremely expensive. */
 #undef ENABLE_VALGRIND_CHECKING
 
+/* Define if valgrind's memcheck.h header is installed.  */
+#undef HAVE_MEMCHECK_H
+
 /* Define if you want to use __cxa_atexit, rather than atexit, to
    register C++ destructors for local statics and global objects.
    This is essential for fully standards-compliant handling of
