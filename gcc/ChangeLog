@@ -1,3 +1,7 @@
+Tue Oct  6 20:02:31 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* cse.c (insert_regs): Fix bug in Sep 24 change.
+
 Tue Oct  6 17:00:42 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* flags.h (flag_dump_unnumbered): Declare.
