@@ -1,3 +1,7 @@
+2005-02-12  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-96.c: Fix typo.
+
 2005-02-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14479
