@@ -1,3 +1,7 @@
+2002-05-21  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/tests/base/pthread.h(THREAD_KEYWORD_CHECK): add fix check
+
 2002-05-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgbuild.c: Fix formatting.
