@@ -1683,7 +1683,7 @@ sched_analyze_1 (x, insn)
 	    {
 	      /* If a dependency already exists, don't create a new one.  */
 	      if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-		if (anti_dependence (XEXP (pending_mem, 0), dest, insn))
+		if (anti_dependence (XEXP (pending_mem, 0), dest))
 		  add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
 
 	      pending = XEXP (pending, 1);
