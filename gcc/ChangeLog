@@ -1,3 +1,12 @@
+2004-05-10  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_promote_prototypes): Use TARGET_AAPCS_BASED.
+	* config/arm/arm.h (TARGET_AAPCS_BASED): Define.
+	(TARGET_DOUBLEWORD_ALIGN): Use it.
+	(WCHAR_TYPE): Define.
+	(WCHAR_SIZE_TYPE): Define.
+	(SIZE_TYPE): Define.
+
 2004-05-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (function_arg_boundary): Align for ABI_V4

@@ -14550,6 +14550,6 @@ arm_no_early_mul_dep (rtx producer, rtx consumer)
 static bool
 arm_promote_prototypes (tree t ATTRIBUTE_UNUSED)
 {
-    return arm_abi == ARM_ABI_APCS || arm_abi == ARM_ABI_ATPCS;
+    return !TARGET_AAPCS_BASED;
 }
 

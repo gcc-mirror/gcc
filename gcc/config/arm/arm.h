@@ -307,6 +307,8 @@ extern GTY(()) rtx aof_pic_label;
 				         : (target_flags & THUMB_FLAG_BACKTRACE))
 #define TARGET_CIRRUS_FIX_INVALID_INSNS	(target_flags & CIRRUS_FIX_INVALID_INSNS)
 #define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN)
+#define TARGET_AAPCS_BASED \
+    (arm_abi != ARM_ABI_APCS && arm_abi != ARM_ABI_ATPCS)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.  */
 #ifndef SUBTARGET_SWITCHES
@@ -655,8 +657,8 @@ extern int arm_is_6_or_7;
 #define UNITS_PER_WORD	4
 
 /* True if natural alignment is used for doubleword types.  */
-#define ARM_DOUBLEWORD_ALIGN \
-    (arm_abi == ARM_ABI_AAPCS || arm_abi == ARM_ABI_IWMMXT)
+#define ARM_DOUBLEWORD_ALIGN	TARGET_AAPCS_BASED
+
 #define DOUBLEWORD_ALIGNMENT 64
 
 #define PARM_BOUNDARY  	32
@@ -716,6 +718,17 @@ extern const char * structure_size_string;
 /* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+/* wchar_t is unsigned under the AAPCS.  */
+#ifndef WCHAR_TYPE
+#define WCHAR_TYPE (TARGET_AAPCS_BASED ? "unsigned int" : "int")
+
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef SIZE_TYPE
+#define SIZE_TYPE (TARGET_AAPCS_BASED ? "unsigned int" : "long unsigned int")
+#endif
 
 /* Standard register usage.  */
 
