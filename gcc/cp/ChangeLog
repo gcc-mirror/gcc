@@ -1,3 +1,9 @@
+Mon May 18 12:28:44 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* parse.y (.finish_new_placement): New non-terminal.
+	(unary_expr, new_type_id): Use it.  
+	* parse.c: Regenerated.
+	
 Mon May 18 12:20:27 1998  Brendan Kehoe  <brendan@cygnus.com>
 
 	* pt.c (redeclare_class_template): Say where the original definition
