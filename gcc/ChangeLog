@@ -1,3 +1,8 @@
+2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
+
+	* objc/objc-act.c (UTAG_STATICS, UTAG_PROTOCOL_LIST, USERTYPE):
+	Remove.
+
 2002-07-25  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Remove unused
