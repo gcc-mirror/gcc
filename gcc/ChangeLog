@@ -1,3 +1,7 @@
+2003-01-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* toplev.c (documented_lang_options): Document -Winvalid-pch.
+
 2003-01-10  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (NO_PROFILE_COUNTERS): Set.
