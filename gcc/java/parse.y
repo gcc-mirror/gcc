@@ -422,6 +422,13 @@ static tree current_this;
    the list of the catch clauses of the currently analysed try block. */
 static tree currently_caught_type_list;
 
+/* This holds a linked list of all the case labels for the current
+   switch statement.  It is only used when checking to see if there
+   are duplicate labels.  FIXME: probably this should just be attached
+   to the switch itself; then it could be referenced via
+   `ctxp->current_loop'.  */
+static tree case_label_list; 
+
 static tree src_parse_roots[1] = { NULL_TREE };
 
 /* All classes seen from source code */
@@ -622,6 +629,7 @@ goal:
 		  ggc_add_tree_root (&package_list, 1);
 		  ggc_add_tree_root (&current_this, 1);
 		  ggc_add_tree_root (&currently_caught_type_list, 1);
+		  ggc_add_tree_root (&case_label_list, 1);
 		  ggc_add_root (&ctxp, 1, 
 				sizeof (struct parser_ctxt *),
 				mark_parser_ctxt);
@@ -11674,9 +11682,12 @@ java_complete_lhs (node)
       TREE_CONSTANT_OVERFLOW (cn) = 0;
       CAN_COMPLETE_NORMALLY (cn) = 1;
 
-      /* Multiple instance of a case label bearing the same
-	 value is checked during code generation. The case
-	 expression is allright so far. */
+      /* Save the label on a list so that we can later check for
+	 duplicates.  */
+      case_label_list = tree_cons (node, cn, case_label_list);
+
+      /* Multiple instance of a case label bearing the same value is
+	 checked later. The case expression is all right so far. */
       if (TREE_CODE (cn) == VAR_DECL)
 	cn = DECL_INITIAL (cn);
       TREE_OPERAND (node, 0) = cn;
@@ -15404,6 +15415,7 @@ patch_switch_statement (node)
      tree node;
 {
   tree se = TREE_OPERAND (node, 0), se_type;
+  tree save, iter;
 
   /* Complete the switch expression */
   se = TREE_OPERAND (node, 0) = java_complete_tree (se);
@@ -15421,7 +15433,42 @@ patch_switch_statement (node)
       return error_mark_node;
     }
 
+  /* Save and restore the outer case label list.  */
+  save = case_label_list;
+  case_label_list = NULL_TREE;
+
   TREE_OPERAND (node, 1) = java_complete_tree (TREE_OPERAND (node, 1));
+
+  /* See if we've found a duplicate label.  We can't leave this until
+     code generation, because in `--syntax-only' and `-C' modes we
+     don't do ordinary code generation.  */
+  for (iter = case_label_list; iter != NULL_TREE; iter = TREE_CHAIN (iter))
+    {
+      HOST_WIDE_INT val = TREE_INT_CST_LOW (TREE_VALUE (iter));
+      tree subiter;
+      for (subiter = TREE_CHAIN (iter);
+	   subiter != NULL_TREE;
+	   subiter = TREE_CHAIN (subiter))
+	{
+	  HOST_WIDE_INT subval = TREE_INT_CST_LOW (TREE_VALUE (subiter));
+	  if (val == subval)
+	    {
+	      EXPR_WFL_LINECOL (wfl_operator)
+		= EXPR_WFL_LINECOL (TREE_PURPOSE (iter));
+	      /* The case_label_list is in reverse order, so print the
+		 outer label first.  */
+	      parse_error_context (wfl_operator, "duplicate case label: `%d'",
+				   subval);
+	      EXPR_WFL_LINECOL (wfl_operator)
+		= EXPR_WFL_LINECOL (TREE_PURPOSE (subiter));
+	      parse_error_context (wfl_operator, "original label is here");
+
+	      break;
+	    }
+	}
+    }
+
+  case_label_list = save;
 
   /* Ready to return */
   if (TREE_CODE (TREE_OPERAND (node, 1)) == ERROR_MARK)

@@ -1757,7 +1757,8 @@ generate_bytecode_insns (exp, target, state)
 		    gap_start--;
 		  }
 		relocs[gap_start++] = reloc;
-		/* Note we don't check for duplicates.  FIXME! */
+		/* Note we don't check for duplicates.  This is
+		   handled by the parser.  */
 	      }
 
 	    if (2 * sw_state.num_cases
