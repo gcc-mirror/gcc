@@ -1,3 +1,8 @@
+1999-02-26  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (add_namelet): Check for standard package names here.
+	(add_class_decl): Don't check for standard package names here.
+
 1999-02-25  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (read_import_dir): Use `|=', not `+=', to set `found'.

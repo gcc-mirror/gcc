@@ -865,6 +865,23 @@ add_namelet (name, name_limit, parent)
   unsigned char *p;
   struct namelet *n = NULL, *np;
 
+  /* We want to skip the standard namespaces that we assume the
+     runtime already knows about.  We only do this at the top level,
+     though, hence the check for `root'.  */
+  if (parent == &root)
+    {
+#define JAVALANG "java/lang/"
+#define JAVAIO "java/io/"
+#define JAVAUTIL "java/util/"
+      if ((name_limit - name >= sizeof (JAVALANG) - 1
+	   && ! strncmp (name, JAVALANG, sizeof (JAVALANG) - 1))
+	  || (name_limit - name >= sizeof (JAVAUTIL) - 1
+	      && ! strncmp (name, JAVAUTIL, sizeof (JAVAUTIL) - 1))
+	  || (name_limit - name >= sizeof (JAVAIO) - 1
+	      && ! strncmp (name, JAVAIO, sizeof (JAVAIO) - 1)))
+	return;
+    }
+
   for (p = name; p < name_limit && *p != '/' && *p != '$'; ++p)
     ;
 
@@ -976,20 +993,6 @@ add_class_decl (out, jcf, signature)
 	      jcf_print_utf8 (out, &s[start], i - start);
 	      fputs (">\n", out);
 	    }
-	}
-
-#define JAVALANG "java/lang/"
-#define JAVAIO "java/io/"
-#define JAVAUTIL "java/util/"
-      if ((i - start >= sizeof (JAVALANG) - 1
-	   && ! strncmp (&s[start], JAVALANG, sizeof (JAVALANG) - 1))
-	  || (i - start >= sizeof (JAVAUTIL) - 1
-	      && ! strncmp (&s[start], JAVAUTIL, sizeof (JAVAUTIL) - 1))
-	  || (i - start >= sizeof (JAVAIO) - 1
-	      && ! strncmp (&s[start], JAVAIO, sizeof (JAVAIO) - 1)))
-	{
-	  /* Skip all the standard `java.' classes.  */
-	  continue;
 	}
 
       add_namelet (&s[start], &s[i], &root);
