@@ -1438,17 +1438,18 @@ do									\
    CCFPEmode should be used with floating inequalities,
    CCFPmode should be used with floating equalities.
    CC_NOOVmode should be used with SImode integer equalities.
+   CC_Zmode should be used if only the Z flag is set correctly
    CCmode should be used otherwise. */
 
-#define EXTRA_CC_MODES CC_NOOVmode, CCFPmode, CCFPEmode
+#define EXTRA_CC_MODES CC_NOOVmode, CC_Zmode, CCFPmode, CCFPEmode
 
-#define EXTRA_CC_NAMES "CC_NOOV", "CCFP", "CCFPE"
+#define EXTRA_CC_NAMES "CC_NOOV", "CC_Z", "CCFP", "CCFPE"
 
 #define SELECT_CC_MODE(OP,X,Y)				      		\
   (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT				\
    ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)			\
    : ((GET_MODE (X) == SImode)						\
-      && ((OP) == EQ || (OP) == NE)					\
+      && ((OP) == EQ || (OP) == NE || (OP) == LT || (OP) == GE)		\
       && (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS			\
 	  || GET_CODE (X) == AND || GET_CODE (X) == IOR			\
 	  || GET_CODE (X) == XOR || GET_CODE (X) == MULT		\
@@ -1457,7 +1458,7 @@ do									\
 	  || GET_CODE (X) == ASHIFT || GET_CODE (X) == ASHIFTRT		\
 	  || GET_CODE (X) == ROTATERT || GET_CODE (X) == ZERO_EXTRACT)	\
       ? CC_NOOVmode							\
-      : GET_MODE (X) == QImode ? CC_NOOVmode : CCmode))
+      : GET_MODE (X) == QImode ? CC_Zmode : CCmode))
 
 #define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
 
@@ -1478,6 +1479,8 @@ extern int arm_compare_fp;
   {"arm_rhs_operand", {SUBREG, REG, CONST_INT}},			\
   {"fpu_rhs_operand", {SUBREG, REG, CONST_DOUBLE}},			\
   {"arm_not_operand", {SUBREG, REG, CONST_INT}},			\
+  {"offsettable_memory_operand", {MEM}},				\
+  {"alignable_memory_operand", {MEM}},					\
   {"shiftable_operator", {PLUS, MINUS, AND, IOR, XOR}},			\
   {"minmax_operator", {SMIN, SMAX, UMIN, UMAX}},			\
   {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT, ROTATERT, MULT}},	\
