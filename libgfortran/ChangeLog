@@ -1,3 +1,9 @@
+2004-02-21  Bud Davis  <bdavis@gfortran.org>
+
+	PR fortran/20086
+	* io/transfer.c (write_constant_string): accept an 'h' as
+	the start of a hollerith format string.
+
 2005-02-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR libfortran/19302
