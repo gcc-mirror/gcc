@@ -1,4 +1,12 @@
-2005-01-20  David Edelsohn  <edelsohn@gnu.org>
+2005-01-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfganal.c, real.h, reorg.c, timevar.def, tree-ssa-ccp.c,
+	config/alpha/alpha-protos.h, config/alpha/alpha.h,
+	config/alpha/alpha.md, config/alpha/predicates.md,
+	config/sparc/freebsd.h, config/sparc/netbsd-elf.h,
+	config/sparc/sol2.h: Update copyright.
+
+2005-01-22  David Edelsohn  <edelsohn@gnu.org>
             Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/19491
@@ -21,7 +29,7 @@
 	PR c/18809
 	* c-typeck.c (convert_arguments): Check for error_mark_node.
 
-2005-01-20  Ian Lance Taylor  <ian@airs.com>
+2005-01-21  Ian Lance Taylor  <ian@airs.com>
 
 	PR tree-optimization/13000
 	* tree-inline.c: Include "tree-flow.h".
