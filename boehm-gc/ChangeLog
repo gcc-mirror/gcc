@@ -1,4 +1,4 @@
-1999-12-15  Anthony Green  <green@cygnus.com>
+1999-12-12  Anthony Green  <green@cygnus.com>
 
 	* gcconfig.h (DATASTART): Define as (&data_start) for PowerPC
 	Linux.
