@@ -285,6 +285,12 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
+@item GNU Multiple Precision Library (GMP) version 4.0 (or later)
+
+Necessary to build the Fortran frontend. If you don't have it
+installed in your library search path, you will have to configure with
+the @option{--with-gmp} or @option{--with-gmp-dir} configure option.
+
 @end table
 
 
@@ -1194,6 +1200,22 @@ Specifies that @samp{newlib} is
 being used as the target C library.  This causes @code{__eprintf} to be
 omitted from @file{libgcc.a} on the assumption that it will be provided by
 @samp{newlib}.
+@end table
+
+@subheading Fortran-specific Option
+
+The following options apply to the build of the Fortran front end.
+
+@table @code
+
+@item --with-gmp=@var{pathname}
+@itemx --with-gmp-dir=@var{pathname}
+If you don't have GMP (the GNU Multiple Precision library) installed
+in a standard location and you want to build the Fortran front-end,
+you can explicitly specify the directory where GMP is installed
+(@samp{--with-gmp=gmpinstalldir}) or where you built the GMP library without
+installing (@samp{--with-gmp-dir=gmpbuilddir}).
+
 @end table
 
 @subheading Java-Specific Options

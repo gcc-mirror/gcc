@@ -1,3 +1,11 @@
+2004-06-01  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15478
+	* doc/install.texi: Document GMP as prerequisite. Document
+	--with-gmp and --with-gmp-dir configure options.
+	* fortran/gfortran.texi: Remove section "Compiling and testing",
+	remove TOC reference to it. 
+
 2004-06-05  Graham Stott  <graham.stott@btinternet.com>
 
 	* combine.c(simplify_shift_const): Check shift amount is a

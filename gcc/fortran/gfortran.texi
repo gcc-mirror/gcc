@@ -129,8 +129,6 @@ not accurately reflect the status of the most recent @command{gfortran}.
 * GFORTRAN and GCC::	    You can compile Fortran, C, or other programs.
 * GFORTRAN and G77::     Why we choose to start from scratch.
 * Invoking GFORTRAN::    Command options supported by @command{gfortran}.
-* Compiling and Testing::
-		    Need-to-knows about compiling and testing.
 * Project Status::  Status of GFORTRAN, Roadmap, proposed extensions.
 * Contributing::    Helping you can help.
 * Standards::	    Standards supported by GFORTRAN.
@@ -378,63 +376,6 @@ and then build a Fortran 95 compiler out of it.
 
 
 @include invoke.texi
-
-@c ---------------------------------------------------------------------
-@c Compiling and Testing
-@c ---------------------------------------------------------------------
-
-@node Compiling and Testing
-@chapter Compiling and Testing
-
-@command{gfortran} is not yet part of an official GCC release, so it is
-unlikley that OS distributor will provide it.
-
-@menu
-* Precompiled Binaries::
-* General notes about compiling GFORTRAN::
-* Testing::
-@end menu
-
-@node Precompiled Binaries
-@section Precompiled Binaries
-
-Precompiled binaries for i686-pc-linux-gnu in rpm format are available from
-@uref{http://people.redhat.com/dnovillo/pub/tree-ssa/snapshot/}
-
-@node General notes about compiling GFORTRAN
-@section General notes about compiling GFORTRAN
-@cindex GMP
-@cindex Multiple Precision Library
-
-Compiling gfortran requires the presence of GMP,
-the GNU Multiple Precision library version 4.0
-or better in order to do its arithmetic.
-Download @code{gmp} from your favorite GNU mirror,
-configure and compile it.  If your OS distributor provides prepackaged
-GMP libraries, you may also need the developent pacakges.
-
-If you do not have GMP installed in a standard system location, you may
-need to configure GCC with @option{--with-gmp} or @option{--with-gmp-dir}.
-
-Note: GMP is only required for the compiler itself.  Compiled fortran programs
-do not depend on the GMP library. 
-
-@node Testing
-@section Testing
-@cindex Test suite
-@cindex Testing
-
-The number of possible Fortran 95 programs is unlimited,
-and this means that gfortran has to correctly handle lots of possible inputs.
-Whenever you make any changes to the compiler,
-you should first test your change on a test program,
-then test your change against the gfortran test suite.
-In this way, we can be assured that once your fix has been made,
-the problem isn't re-introduced at some later time.
-
-The gfortran test suite is included in the gcc source distribution.
-
-We also encourage you to test gfortran on your own Fortran codes.
 
 @c ---------------------------------------------------------------------
 @c Project Status
