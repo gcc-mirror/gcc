@@ -1,3 +1,11 @@
+2004-09-09  James E Wilson  <wilson@specifixinc.com>
+
+	* c-typeck.c (convert_for_assignment): Check that rhs has VECTOR_TYPE
+	before calling vector_types_convertible_p.
+	(digest_init): Check that inside_init has VECTOR_TYPE before calling
+	vector_types_convertible_p.  Don't give another error if
+	convert_for_assignment returns error_mark_node.
+
 2004-09-09  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17055
