@@ -1,5 +1,7 @@
 2001-01-12  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* version.c: Bump.
+
 	* expr.c (expand_builtin_setjmp_receiver): Emit a scheduling barrier
 	as last insn.
 
