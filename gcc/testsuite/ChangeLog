@@ -1,3 +1,7 @@
+2000-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/20000720-1.S: New test.
+
 2000-07-21  Michael Meissner  <meissner@redhat.com>
 
 	* gcc.c-torture/execute/ieee/hugeval.c: New test.
