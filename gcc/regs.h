@@ -1,5 +1,6 @@
 /* Define per-register tables for data flow info and register allocation.
-   Copyright (C) 1987, 93-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

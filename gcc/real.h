@@ -1,5 +1,6 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989, 91, 94, 96-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1994, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

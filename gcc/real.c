@@ -1,6 +1,7 @@
 /* real.c - implementation of REAL_ARITHMETIC, REAL_VALUE_ATOF,
    and support for XFmode IEEE extended real floating point arithmetic.
-   Copyright (C) 1993, 94-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
 
 This file is part of GNU CC.

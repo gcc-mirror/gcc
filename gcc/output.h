@@ -1,6 +1,7 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
-   Copyright (C) 1987, 1991, 1994, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
