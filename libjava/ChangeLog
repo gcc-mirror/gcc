@@ -1,3 +1,9 @@
+2003-06-07  Michael Koch  <konqueror@gmx.de>
+
+	* include/posix.h
+	(O_DSYNC): Define O_DSYNC on platforms not
+	supporting O_FSYNC (newlib).
+
 2003-06-06  Mark Wielaard  <mark@klomp.org>
 
 	* java/awt/Toolkit.java (getDefaultToolkit): Add exception cause to
