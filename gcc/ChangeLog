@@ -1,3 +1,16 @@
+2000-01-03  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (grokdeclarator): Give zero-length arrays size zero.
+	Remove dead code.
+	* c-typeck.c (push_init_level): Move checks for flexible array
+	members and zero length arrays ...
+	(pop_init_level): ... here.  Silently discard empty initializations.
+	Remove dead code.
+	* varasm.c (output_constructor): Update for sizeof change to
+	zero-length arrays.
+
+	* extend.texi (Zero Length): Clarify semantics.
+
 2001-01-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (tm.h): Include isns-codes.h last.

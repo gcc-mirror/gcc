@@ -869,8 +869,8 @@ extension for floating-point constants of type @code{float}.
 @cindex zero-length arrays
 @cindex length-zero arrays
 
-Zero-length arrays are allowed in GNU C.  They are very useful as the last
-element of a structure which is really a header for a variable-length
+Zero-length arrays are allowed in GNU C.  They are very useful as the
+last element of a structure which is really a header for a variable-length
 object:
 
 @example
@@ -879,32 +879,54 @@ struct line @{
   char contents[0];
 @};
 
-@{
-  struct line *thisline = (struct line *)
-    malloc (sizeof (struct line) + this_length);
-  thisline->length = this_length;
-@}
+struct line *thisline = (struct line *)
+  malloc (sizeof (struct line) + this_length);
+thisline->length = this_length;
 @end example
 
 In ISO C89, you would have to give @code{contents} a length of 1, which
 means either you waste space or complicate the argument to @code{malloc}.
 
-In ISO C99, you would use a @dfn{flexible array member}, which uses a
-slightly different syntax: leave out the @code{0} and write
-@code{contents[]}.
+In ISO C99, you would use a @dfn{flexible array member}, which is 
+slightly different in syntax and semantics:
 
-GCC allows static initialization of the zero-length array if
-the structure is not nested inside another structure.  I.e.
+@itemize @bullet
+@item
+Flexible array members are written as @code{contents[]} without
+the @code{0}.
+
+@item
+Flexible array members have incomplete type, and so the @code{sizeof}
+operator may not be applied.  As a quirk of the original implementation
+of zero-length arrays, @code{sizeof} evaluates to zero.
+
+@item
+Flexible array members may only appear as the last member of a
+@code{struct} that is otherwise non-empty.  GCC currently allows 
+zero-length arrays anywhere.  You may encounter problems, however,
+defining structures containing only a zero-length array.  Such usage
+is deprecated, and we recommend using zero-length arrays only in
+places in which flexible array members would be allowed.
+
+@item
+GCC allows static initialization of the zero-length array if the structure
+is not nested inside another structure.  In addition, for backward
+compatibility with an earlier versions of gcc, we allow a degenerate empty
+initialization when nested inside another structure.  I.e.
 
 @example
+struct bar @{ struct line a; @};
+
 /* Legal.  */
 struct line x = @{ 4, @{ 'g', 'o', 'o', 'd' @} @};
 
 /* Illegal.  */
-struct bar @{
-  struct line a;
-@} y = @{ @{ 3, @{ 'b', 'a', 'd' @} @} @};
+struct bar y = @{ @{ 3, @{ 'b', 'a', 'd' @} @} @};
+
+/* Legal.  */
+struct bar z = @{ @{ 0, @{ @} @} @};
 @end example
+@end itemize
 
 @node Variable Length
 @section Arrays of Variable Length

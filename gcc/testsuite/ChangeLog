@@ -1,3 +1,8 @@
+2001-01-03  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/940510-1.c: Update expected error wording.
+	* gcc.dg/array-2.c, gcc.dg/array-3.c, gcc.dg/array-4.c: New.
+
 2001-01-03  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* lib/target-supports.exp (check_alias_available): Modified to
