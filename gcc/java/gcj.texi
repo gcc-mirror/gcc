@@ -913,6 +913,9 @@ Print version number and continue.
 
 @item --version
 Print version number, then exit.
+
+@item -verbose:class
+Each time a class is initialized, print a short message on standard error.
 @end table
 
 @c man end

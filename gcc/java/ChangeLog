@@ -1,3 +1,7 @@
+2004-07-07  Per Bothner  <per@bothner.com>
+
+	* gcj.texi (Invoking gij):  Document new -verbose:class flag.
+
 2004-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* java-tree.h (CLASSTYPE_SPUER): Adjust BINFO macros.
