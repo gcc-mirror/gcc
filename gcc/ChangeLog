@@ -1,3 +1,7 @@
+Fri May 15 01:47:37 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.c (print_operand, case 'x'): Use HOST_WIDE_INT_PRINT_HEX.
+
 Fri May 15 01:42:45 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* objc/Make-lang.in (OBJC_O): Add missing exeext.
