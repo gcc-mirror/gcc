@@ -1,3 +1,8 @@
+2003-09-26  Michael Koch  <konqueror@gmx.de>
+
+	* java/rmi/server/RMIClassLoader.java:
+	Reformatted file, no functional code changes.
+
 2003-09-26  Sascha Brawer  <brawer@dandelis.ch>
 
 	* java/awt/image/SinglePixelPackedSampleModel.java (createDataBuffer): 

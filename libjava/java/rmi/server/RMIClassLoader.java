@@ -1,5 +1,6 @@
 /* RMIClassLoader.java
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002, 2003
+  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,12 +38,12 @@ exception statement from your version. */
 
 package java.rmi.server;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLClassLoader;
 import java.io.IOException;
 import java.io.DataInputStream;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,40 +52,47 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 
+
+/**
+ * This class provides a set of public static utility methods for supporting
+ * network-based class loading in RMI. These methods are called by RMI's
+ * internal marshal streams to implement the dynamic class loading of types for
+ * RMI parameters and return values.
+ */
 public class RMIClassLoader
 {
-
   static private class MyClassLoader extends URLClassLoader
   {
-
-    private MyClassLoader(URL[] urls, ClassLoader parent, String annotation)
+    private MyClassLoader (URL[] urls, ClassLoader parent, String annotation)
     {
-      super(urls, parent);
+      super (urls, parent);
       this.annotation = annotation;
     }
 
-    private MyClassLoader(URL[] urls, ClassLoader parent)
+    private MyClassLoader (URL[] urls, ClassLoader parent)
     {
       super (urls, parent);
-      this.annotation = urlToAnnotation(urls);
+      this.annotation = urlToAnnotation (urls);
     }
 
-    public static String urlToAnnotation(URL[] urls)
+    public static String urlToAnnotation (URL[] urls)
     {
       if (urls.length == 0)
-	return null;
+        return null;
 
-      StringBuffer annotation = new StringBuffer(64*urls.length);
-      for(int i = 0; i < urls.length; i++)
-	{
-	  annotation.append(urls[i].toExternalForm());
-	  annotation.append(' ');
-	}
+      StringBuffer annotation = new StringBuffer (64 * urls.length);
+
+      for (int i = 0; i < urls.length; i++)
+      {
+        annotation.append (urls [i].toExternalForm());
+        annotation.append (' ');
+      }
 
       return annotation.toString();
     }
 
-    public final String getClassAnnotation(){
+    public final String getClassAnnotation()
+    {
       return annotation;
     }
 
@@ -100,47 +108,51 @@ public class RMIClassLoader
   private static String defaultAnnotation;
   //URL object for defaultAnnotation
   private static URL defaultCodebase;
+
   //class loader for defaultAnnotation
   private static MyClassLoader defaultLoader;
-  
+
   static
   {
     // 89 is a nice prime number for Hashtable initial capacity
-    cacheLoaders = new Hashtable(89);
-    cacheAnnotations = new Hashtable(89);
-    
-    defaultAnnotation = System.getProperty("java.rmi.server.defaultAnnotation");
-    try 
-      {
-	if (defaultAnnotation != null)
-	  defaultCodebase = new URL(defaultAnnotation);
-      }
-    catch(Exception _)
-      {
-	defaultCodebase = null;
-      }
+    cacheLoaders = new Hashtable (89);
+    cacheAnnotations = new Hashtable (89);
+
+    defaultAnnotation = System.getProperty ("java.rmi.server.defaultAnnotation");
+
+    try
+    {
+      if (defaultAnnotation != null)
+        defaultCodebase = new URL (defaultAnnotation);
+    }
+    catch (Exception _)
+    {
+      defaultCodebase = null;
+    }
+
     if (defaultCodebase != null)
       {
         defaultLoader = new MyClassLoader(new URL[]{ defaultCodebase },
 					  null, defaultAnnotation);
         cacheLoaders.put(defaultAnnotation, defaultLoader);
       }
-  }
-  
+    }
+
   /**
    * @deprecated
    */
-  public static Class loadClass(String name)
+  public static Class loadClass (String name)
     throws MalformedURLException, ClassNotFoundException
   {
-    return (loadClass("", name));
+    return loadClass ("", name);
   }
 
-  public static Class loadClass(String codebases, String name) 
-    throws MalformedURLException, ClassNotFoundException 
+  public static Class loadClass (String codebases, String name)
+    throws MalformedURLException, ClassNotFoundException
   {
     Class c = null;
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
     //try context class loader first
     try 
       {
@@ -182,16 +194,19 @@ public class RMIClassLoader
       {
 	return null; //??
       }
-	
+
     if (loader instanceof MyClassLoader)
       {
-	return ((MyClassLoader)loader).getClassAnnotation();
+        return ((MyClassLoader) loader).getClassAnnotation();
       }
-	
-    String s = (String)cacheAnnotations.get(loader);
+
+    String s = (String) cacheAnnotations.get (loader);
+
     if (s != null)
-      return s;
-	    
+      {
+        return s;
+      }
+
     if (loader instanceof URLClassLoader)
       {
 	URL[] urls = ((URLClassLoader)loader).getURLs();
@@ -209,13 +224,12 @@ public class RMIClassLoader
       }
     return null;
   }
-  
+
   /**
    * @deprecated
    */
-  public static Object getSecurityContext(ClassLoader loader)
+  public static Object getSecurityContext (ClassLoader loader)
   {
-    throw new Error("Not implemented");
+    throw new Error ("Not implemented");
   }
-
 }
