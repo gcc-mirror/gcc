@@ -1,5 +1,8 @@
 Wed Dec  5 06:26:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (keep_stack_depressed): Refine check for register
+	clobbered over call.
+
 	* expr.c (store_expr): When copying string constant into array,
 	use functions that update memrefs instead of computations on
 	addresses to better track MEMs.  Also properly handle 32/64 pointers.

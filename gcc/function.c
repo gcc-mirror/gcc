@@ -7274,7 +7274,8 @@ keep_stack_depressed (seq)
 
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (HARD_REGNO_MODE_OK (regno, Pmode)
-		    && !fixed_regs[regno] && call_used_regs[regno]
+		    && !fixed_regs[regno]
+		    && TEST_HARD_REG_BIT (regs_invalidated_by_call, regno)
 		    && !FUNCTION_VALUE_REGNO_P (regno))
 		  break;
 
