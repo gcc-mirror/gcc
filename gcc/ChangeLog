@@ -1,3 +1,14 @@
+2004-07-13  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* Makefile.in (OBJS-common): Add tree-data-ref.o.
+	(tree-scalar-evolution.o): Add missing dependences on tree-pass.h flags.h.
+	(tree-data-ref.o): New rule.
+	* lambda.h: New file.
+	* tree-data-ref.c: New file.
+	* tree-data-ref.h: New file.
+	* tree.c (int_cst_value, tree_fold_gcd): New functions.
+	* tree.h (int_cst_value, tree_fold_gcd): Declared here.
+	
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/13926

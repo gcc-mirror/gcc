@@ -5737,5 +5737,66 @@ find_compatible_field (tree record, tree orig_field)
   return orig_field;
 }
 
+/* Return value of a constant X.  */
+
+HOST_WIDE_INT
+int_cst_value (tree x)
+{
+  unsigned bits = TYPE_PRECISION (TREE_TYPE (x));
+  unsigned HOST_WIDE_INT val = TREE_INT_CST_LOW (x);
+  bool negative = ((val >> (bits - 1)) & 1) != 0;
+
+  if (bits > HOST_BITS_PER_WIDE_INT)
+    abort ();
+
+  if (negative)
+    val |= (~(unsigned HOST_WIDE_INT) 0) << (bits - 1) << 1;
+  else
+    val &= ~((~(unsigned HOST_WIDE_INT) 0) << (bits - 1) << 1);
+
+  return val;
+}
+
+/* Returns the greatest common divisor of A and B, which must be
+   INTEGER_CSTs.  */
+
+tree 
+tree_fold_gcd (tree a, tree b)
+{
+  tree a_mod_b;
+  tree type = TREE_TYPE (a);
+  
+#if defined ENABLE_CHECKING
+  if (TREE_CODE (a) != INTEGER_CST
+      || TREE_CODE (b) != INTEGER_CST)
+    abort ();
+#endif
+  
+  if (integer_zerop (a)) 
+    return b;
+  
+  if (integer_zerop (b)) 
+    return a;
+  
+  if (tree_int_cst_sgn (a) == -1)
+    a = fold (build (MULT_EXPR, type, a,
+		     convert (type, integer_minus_one_node)));
+  
+  if (tree_int_cst_sgn (b) == -1)
+    b = fold (build (MULT_EXPR, type, b,
+		     convert (type, integer_minus_one_node)));
+ 
+  while (1)
+    {
+      a_mod_b = fold (build (CEIL_MOD_EXPR, type, a, b));
+ 
+      if (!TREE_INT_CST_LOW (a_mod_b)
+	  && !TREE_INT_CST_HIGH (a_mod_b))
+	return b;
+
+      a = b;
+      b = a_mod_b;
+    }
+}
 
 #include "gt-tree.h"
