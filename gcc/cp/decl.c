@@ -2089,6 +2089,9 @@ binding_for_name (tree name, tree scope)
   BINDING_TYPE (result) = NULL_TREE;
   BINDING_VALUE (result) = NULL_TREE;
   BINDING_SCOPE (result) = scope;
+  result->is_local = false;
+  result->value_is_inherited = false;
+  result->has_level = true;
   IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
   return result;
 }
