@@ -73,6 +73,8 @@ test02()
   while(in >> x)
     {
       ++i;
+      if (i > 3) 
+	break;
     }
   VERIFY( i == 3 );
 }    
