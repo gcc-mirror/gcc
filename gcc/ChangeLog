@@ -1,3 +1,8 @@
+2004-11-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/rs6000/t-darwin: Augment SHLIB_MAPFILES with
+	config/rs6000/libgcc-ppc64.ver.
+
 2004-11-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgrtl.c (rtl_verify_flow_info): Don't use INSN_P when
