@@ -3,6 +3,8 @@
 	* builtins.c (expand_builtin_setjmp_receiver): Emit an ASM_INPUT as
 	a scheduling barrier at the end.
 
+	* tm.texi (MD_INIT_BUILTINS, MD_EXPAND_BUILTIN): Document.
+
 2001-02-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (reload_outsf): Removed.
