@@ -1434,6 +1434,8 @@ javax/swing/JSplitPane.java \
 javax/swing/JTextPane.java \
 javax/swing/JToolBar.java \
 javax/swing/OverlayLayout.java \
+javax/swing/Popup.java \
+javax/swing/PopupFactory.java \
 javax/swing/ProgressMonitor.java \
 javax/swing/ProgressMonitorInputStream.java \
 javax/swing/RepaintManager.java \

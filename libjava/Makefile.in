@@ -1203,6 +1203,8 @@ javax/swing/JSplitPane.java \
 javax/swing/JTextPane.java \
 javax/swing/JToolBar.java \
 javax/swing/OverlayLayout.java \
+javax/swing/Popup.java \
+javax/swing/PopupFactory.java \
 javax/swing/ProgressMonitor.java \
 javax/swing/ProgressMonitorInputStream.java \
 javax/swing/RepaintManager.java \
@@ -3995,7 +3997,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/swing/MenuElement.P \
 .deps/javax/swing/MenuSelectionManager.P \
 .deps/javax/swing/MutableComboBoxModel.P \
-.deps/javax/swing/OverlayLayout.P .deps/javax/swing/ProgressMonitor.P \
+.deps/javax/swing/OverlayLayout.P .deps/javax/swing/Popup.P \
+.deps/javax/swing/PopupFactory.P .deps/javax/swing/ProgressMonitor.P \
 .deps/javax/swing/ProgressMonitorInputStream.P \
 .deps/javax/swing/Renderer.P .deps/javax/swing/RepaintManager.P \
 .deps/javax/swing/RootPaneContainer.P \
