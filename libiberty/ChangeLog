@@ -1,3 +1,9 @@
+2003-03-11  Carlo Wood  <carlo@gnu.org>
+
+	* cplus-dem.c (demangle_integral_value): Correction to reflect
+	patch of 2002-01-10 in order to also make negative multi-digits
+	without leading underscore work.
+
 2003-03-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* cplus-dem.c: Add license exception to copyright notice.
