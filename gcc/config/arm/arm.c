@@ -1952,6 +1952,35 @@ arm_function_arg (pcum, mode, type, named)
   
   return gen_rtx_REG (mode, pcum->nregs);
 }
+
+/* Variable sized types are passed by reference.  This is a GCC
+   extension to the ARM ABI.  */
+
+int
+arm_function_arg_pass_by_reference (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     tree type;
+     int named ATTRIBUTE_UNUSED;
+{
+  return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+}
+
+/* Implement va_arg.  */
+
+rtx
+arm_va_arg (valist, type)
+     tree valist, type;
+{
+  /* Variable sized types are passed by reference.  */
+  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    {
+      rtx addr = std_expand_builtin_va_arg (valist, build_pointer_type (type));
+      return gen_rtx_MEM (ptr_mode, force_reg (Pmode, addr));
+    }
+
+  return std_expand_builtin_va_arg (valist, type);
+}
 
 /* Encode the current state of the #pragma [no_]long_calls.  */
 typedef enum
