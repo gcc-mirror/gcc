@@ -251,17 +251,20 @@ namespace std
 	  this->setg(_M_buf, _M_buf, _M_buf + __off);
 	if (__testout)
 	  this->setp(_M_buf, _M_buf + __off);
-
       }
 
       bool
       _M_is_indeterminate(void)
       { 
 	bool __ret = false;
-	if (_M_mode & ios_base::in)
-	  __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
-	if (_M_mode & ios_base::out)
-	  __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
+	// Don't return true if unbuffered.
+	if (_M_buf)
+	  {
+	    if (_M_mode & ios_base::in)
+	      __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
+	    if (_M_mode & ios_base::out)
+	      __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
+	  }
 	return __ret;
       }
 
@@ -350,7 +353,7 @@ namespace std
       {
 	int_type __ret;
 	if (_M_in_cur && _M_in_cur < _M_in_end)
-	  __ret = traits_type::to_int_type(*gptr());
+	  __ret = traits_type::to_int_type(*(this->gptr()));
 	else 
 	  __ret = this->underflow();
 	return __ret;

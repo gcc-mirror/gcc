@@ -189,15 +189,15 @@ namespace std
       switch (__ev)
         {
         case ios_base::erase_event:
-          delete static_cast<_Format_cache<_CharT>*> (__p); __p = 0;
+          delete static_cast<_Format_cache<_CharT>*>(__p);
+	  __p = 0;
           break;
         case ios_base::copyfmt_event:
           // If just stored zero, the callback would get registered again.
-          try {
-            __p = new _Format_cache<_CharT>;
-          }
-          catch(...) {
-          }
+          try 
+	    { __p = new _Format_cache<_CharT>; }
+          catch(...) 
+	    { }
           break;
         case ios_base::imbue_event:
           static_cast<_Format_cache<_CharT>*>(__p)->_M_valid = false;
