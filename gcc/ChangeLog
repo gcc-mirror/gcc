@@ -1,3 +1,8 @@
+Sat Oct  9 23:16:01 1999  Ken Raeburn  <raeburn@mit.edu>
+
+	* c-common.c (check_format_info): Warn if format string isn't a
+	string literal.
+
 Sat Oct  9 23:04:02 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* configure.in (arm*-*-*): Don't let autoconf remove brackets

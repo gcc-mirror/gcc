@@ -1488,10 +1488,20 @@ check_format_info (info, params)
       return;
     }
   if (TREE_CODE (format_tree) != ADDR_EXPR)
-    return;
+    {
+      /* The user may get multiple warnings if the supplied argument
+	 isn't even a string pointer.  */
+      warning ("format not a string literal, argument types not checked");
+      return;
+    }
   format_tree = TREE_OPERAND (format_tree, 0);
   if (TREE_CODE (format_tree) != STRING_CST)
-    return;
+    {
+      /* The user may get multiple warnings if the supplied argument
+	 isn't even a string pointer.  */
+      warning ("format not a string literal, argument types not checked");
+      return;
+    }
   format_chars = TREE_STRING_POINTER (format_tree);
   format_length = TREE_STRING_LENGTH (format_tree);
   if (format_length <= 1)
