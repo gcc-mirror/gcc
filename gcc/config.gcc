@@ -657,6 +657,27 @@ clipper-intergraph-clix*)
 	extra_parts="crtbegin.o crtend.o"
 	install_headers_dir=install-headers-cpio
 	;;
+cris-*-aout)
+	tm_file="dbxelf.h cris/cris.h cris/aout.h"
+	gas=yes
+	tmake_file="cris/t-cris cris/t-aout"
+	;;
+cris-*-elf | cris-*-none)
+	tm_file="elfos.h cris/cris.h"
+	tmake_file="cris/t-cris cris/t-elfmulti"
+	gas=yes
+	;;
+cris-*-linux*)
+	tm_file="linux.h cris/cris.h cris/linux.h"
+	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	case x${enable_threads} in
+	x | xyes | xpthreads | xposix)
+		thread_file=posix
+		;;
+	esac
+	gas=yes
+	;;
 d30v-*)
 	float_format=i64
 	;;

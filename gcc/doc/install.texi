@@ -1787,6 +1787,45 @@ can also be obtained from:
 </p>
 <hr>
 @end html
+@heading @anchor{cris}CRIS
+
+CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip
+series.  These are used in embedded applications.
+
+@ifnothtml
+@xref{CRIS Options,, CRIS Options, gcc, Using and Porting the GNU Compiler
+Collection (GCC)},
+@end ifnothtml
+@ifhtml
+See ``CRIS Options'' in the main manual
+@end ifhtml
+for a list of CRIS-specific options.
+
+There are a few different CRIS targets:
+@table @code
+@item cris-axis-aout
+Old target.  Includes a multilib for the @samp{elinux} a.out-based
+target.  No multilibs for newer architecture variants.
+@item cris-axis-elf
+Mainly for monolithic embedded systems.  Includes a multilib for the
+@samp{v10} core used in @samp{ETRAX 100 LX}.
+@item cris-axis-linux-gnu
+A GNU/Linux port for the CRIS architecture, currently targeting
+@samp{ETRAX 100 LX} by default.
+@end table
+
+For @code{cris-axis-aout} and @code{cris-axis-elf} you need binutils 2.11
+or newer.  For @code{cris-axis-linux-gnu} you need binutils 2.12 or newer.
+
+Pre-packaged tools can be obtained from
+@uref{ftp://ftp.axis.com/pub/axis/tools/cris/compiler-kit/}.  More
+information about this platform is available at
+@uref{http://developer.axis.com/}.
+
+@html
+</p>
+<hr>
+@end html
 @heading @anchor{dos}DOS
 
 Please have a look at our @uref{binaries.html,,binaries page}.
