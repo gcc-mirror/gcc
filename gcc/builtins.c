@@ -4248,17 +4248,12 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
       while (insn != NULL_RTX)
 	{
 	  rtx next = NEXT_INSN (insn);
-	  rtx pattern;
 
-	  if (GET_CODE (insn) == JUMP_INSN && any_condjump_p (insn)
-	      && (pattern = pc_set (insn)) != NULL_RTX)
+	  if (GET_CODE (insn) == JUMP_INSN && any_condjump_p (insn))
 	    {
-	      rtx ifelse = SET_SRC (pattern);
+	      rtx ifelse = SET_SRC (pc_set (insn));
 	      rtx label;
 	      int taken;
-
-	      if (GET_CODE (ifelse) != IF_THEN_ELSE)
-		goto do_next_insn;
 
 	      if (GET_CODE (XEXP (ifelse, 1)) == LABEL_REF)
 		{
