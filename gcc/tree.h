@@ -728,9 +728,15 @@ struct tree_type
 #define DECL_SIZE(NODE) ((NODE)->decl.size)
 /* Holds the alignment required for the datum.  */
 #define DECL_ALIGN(NODE) ((NODE)->decl.frame_size)
-/* Holds the machine mode of a variable or field.  */
+/* Holds the machine mode corresponding to the declaration of a variable or
+   field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a
+   FIELD_DECL.  */
 #define DECL_MODE(NODE) ((NODE)->decl.mode)
-/* Holds the RTL expression for the value of a variable or function.  */
+/* Holds the RTL expression for the value of a variable or function.  If
+   PROMOTED_MODE is defined, the mode of this expression may not be same
+   as DECL_MODE.  In that case, DECL_MODE contains the mode corresponding
+   to the variable's data type, while the mode
+   of DECL_RTL is the mode actually used to contain the data.  */
 #define DECL_RTL(NODE) ((NODE)->decl.rtl)
 /* For PARM_DECL, holds an RTL for the stack slot or register
    where the data was actually passed.  */
