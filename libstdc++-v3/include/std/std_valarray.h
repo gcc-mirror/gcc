@@ -214,20 +214,17 @@ namespace std
 	operator= (const _Expr<_Dom,_Tp>&);
 
       // _lib.valarray.access_ element access:
-      // XXX: LWG to be resolved.
       /**
        *  Return a reference to the i'th array element.  
-       *
-       *  The C++ spec defines the const version to return Tp instead of
-       *  the more useful const Tp&.  This issue is being reviewed in DR389.
        *
        *  @param  i  Index of element to return.
        *  @return  Reference to the i'th element.
        */
-      const _Tp&                 operator[](size_t) const;
+      _Tp&                operator[](size_t);
 
-      ///  Return a reference to the i'th array element.
-      _Tp&                operator[](size_t);		
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 389. Const overload of valarray::operator[] returns by value.
+      const _Tp&          operator[](size_t) const;
 
       // _lib.valarray.sub_ subset operations:
       /**
