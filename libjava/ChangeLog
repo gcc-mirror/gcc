@@ -1,3 +1,13 @@
+2001-09-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* posix-threads.cc (_Jv_ThreadInterrupt): Re-enable interrupt of 
+	blocking IO via pthread_kill().
+	* java/io/natFileDescriptorPosix.cc (write (jint)): Check for thread 
+	interrupted status flag only if ::write returned an error.
+	(write (jbyteArray, jint, jint): Likewise.
+	(read (jint)): Likewise.
+	(read (jbyteArray, jint, jint): Likewise.
+
 2001-09-19  Anthony Green  <green@redhat.com>
 
 	* gnu/gcj/protocol/file/Handler.java: Avoid NullPointerException
