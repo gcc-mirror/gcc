@@ -1,5 +1,10 @@
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
+	* ggc.h (GGC_NEW, GGC_CNEW, GGC_NEWVEC, GGC_CNEWVEC, GGC_NEWVAR,
+	GGC_CNEWVAR): New macros.
+
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
 	* c-common.c: Convert ATTRIBUTE_UNUSED to ARG_UNUSED in parameter
 	lists.
 	* c-decl.c: Likewise.
