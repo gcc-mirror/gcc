@@ -1,7 +1,15 @@
-2001-02-14	Joel Sherrill <joel@OARcorp.com>
+2002-02-14  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* config/cpu/m68k/bits/atomicity.h: Corrected for RTEMS targets which
-	do not have a CAS instruction.
+	* config/linker-map.gnu: Change tag from GCC_3.1 to GLIBCPP_3.1.
+	Add typeinfo bits. Smooth.
+	* aclocal.m4: Regenerate.
+	* configure: Same.
+	* src/Makefile.in: Same.
+
+2001-02-14  Joel Sherrill  <joel@OARcorp.com>
+
+	* config/cpu/m68k/bits/atomicity.h: Corrected for RTEMS targets
+	which do not have a CAS instruction.
 
 2002-02-14  Phil Edwards  <pme@gcc.gnu.org>
 
