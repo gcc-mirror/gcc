@@ -2178,13 +2178,13 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
     /* If not comparing with constant, just rework the comparison
        and return.  */
     return build (code, compare_type,
-		  build (BIT_AND_EXPR, type,
-			 make_bit_field_ref (linner, type,
-					     lnbitsize, lnbitpos, lunsignedp),
+		  build (BIT_AND_EXPR, unsigned_type,
+			 make_bit_field_ref (linner, unsigned_type,
+					     lnbitsize, lnbitpos, 1),
 			 mask),
-		  build (BIT_AND_EXPR, type,
-			 make_bit_field_ref (rinner, type,
-					     rnbitsize, rnbitpos, runsignedp),
+		  build (BIT_AND_EXPR, unsigned_type,
+			 make_bit_field_ref (rinner, unsigned_type,
+					     rnbitsize, rnbitpos, 1),
 			 mask));
 
   /* Otherwise, we are handling the constant case. See if the constant is too
@@ -2233,17 +2233,16 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
   /* Make a new bitfield reference, shift the constant over the
      appropriate number of bits and mask it with the computed mask
      (in case this was a signed field).  If we changed it, make a new one.  */
-  lhs = make_bit_field_ref (linner, TREE_TYPE (lhs), lnbitsize, lnbitpos, 
-			    lunsignedp);
+  lhs = make_bit_field_ref (linner, unsigned_type, lnbitsize, lnbitpos, 1);
 
-  rhs = fold (build1 (NOP_EXPR, type,
-		      const_binop (BIT_AND_EXPR,
-				   const_binop (LSHIFT_EXPR,
-						convert (unsigned_type, rhs),
-						size_int (lbitpos)), mask)));
+  rhs = fold (const_binop (BIT_AND_EXPR,
+			   const_binop (LSHIFT_EXPR,
+					convert (unsigned_type, rhs),
+					size_int (lbitpos)),
+			   mask));
 
   return build (code, compare_type,
-		build (BIT_AND_EXPR, type, lhs, mask),
+		build (BIT_AND_EXPR, unsigned_type, lhs, mask),
 		rhs);
 }
 
