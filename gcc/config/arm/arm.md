@@ -1721,6 +1721,39 @@
    (set_attr "length" "8")]
 )
 
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(zero_extract:SI (match_operand:SI 1 "s_register_operand" "")
+			 (match_operand:SI 2 "const_int_operand" "")
+			 (match_operand:SI 3 "const_int_operand" "")))
+   (clobber (match_operand:SI 4 "s_register_operand" ""))]
+  "TARGET_THUMB"
+  [(set (match_dup 4) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (lshiftrt:SI (match_dup 4) (match_dup 3)))]
+  "{
+     HOST_WIDE_INT temp = INTVAL (operands[2]);
+
+     operands[2] = GEN_INT (32 - temp - INTVAL (operands[3]));
+     operands[3] = GEN_INT (32 - temp);
+   }"
+)
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "")
+			 (match_operand:SI 2 "const_int_operand" "")
+			 (match_operand:SI 3 "const_int_operand" "")))]
+  "TARGET_THUMB"
+  [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ashiftrt:SI (match_dup 0) (match_dup 3)))]
+  "{
+     HOST_WIDE_INT temp = INTVAL (operands[2]);
+
+     operands[2] = GEN_INT (32 - temp - INTVAL (operands[3]));
+     operands[3] = GEN_INT (32 - temp);
+   }"
+)
+
 ;;; ??? This pattern is bogus.  If operand3 has bits outside the range
 ;;; represented by the bitfield, then this will produce incorrect results.
 ;;; Somewhere, the value needs to be truncated.  On targets like the m68k,
@@ -5246,6 +5279,365 @@
 		(const_int 8))))]
 )
 
+(define_insn "*tbit_cbranch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 0 "equality_operator"
+	  [(zero_extract:SI (match_operand:SI 1 "s_register_operand" "l")
+			    (const_int 1)
+			    (match_operand:SI 2 "const_int_operand" "i"))
+	   (const_int 0)])
+	 (label_ref (match_operand 3 "" ""))
+	 (pc)))
+   (clobber (match_scratch:SI 4 "=l"))]
+  "TARGET_THUMB"
+  "*
+  {
+  rtx op[3];
+  op[0] = operands[4];
+  op[1] = operands[1];
+  op[2] = GEN_INT (32 - 1 - INTVAL (operands[2]));
+
+  output_asm_insn (\"lsl\\t%0, %1, %2\", op);
+  switch (get_attr_length (insn))
+    {
+    case 4:  return \"b%d0\\t%l3\";
+    case 6:  return \"b%D0\\t.LCB%=\;b\\t%l3\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D0\\t.LCB%=\;bl\\t%l3\\t%@far jump\\n.LCB%=:\";
+    }
+  }"
+  [(set (attr "far_jump")
+        (if_then_else
+	    (eq_attr "length" "8")
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length") 
+        (if_then_else
+	    (and (ge (minus (match_dup 3) (pc)) (const_int -250))
+	         (le (minus (match_dup 3) (pc)) (const_int 256)))
+	    (const_int 4)
+	    (if_then_else
+	        (and (ge (minus (match_dup 3) (pc)) (const_int -2040))
+		     (le (minus (match_dup 3) (pc)) (const_int 2048)))
+		(const_int 6)
+		(const_int 8))))]
+)
+  
+(define_insn "*andsi3_cbranch_scratch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 4 "equality_operator"
+	  [(and:SI (match_operand:SI 1 "s_register_operand" "%0")
+		   (match_operand:SI 2 "s_register_operand" "l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 3 "" ""))
+	 (pc)))
+   (clobber (match_scratch:SI 0 "=l"))]
+  "TARGET_THUMB"
+  "*
+  {
+  output_asm_insn (\"and\\t%0, %2\", operands);
+  switch (get_attr_length (insn))
+    {
+    case 4:  return \"b%d4\\t%l3\";
+    case 6:  return \"b%D4\\t.LCB%=\;b\\t%l3\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D4\\t.LCB%=\;bl\\t%l3\\t%@far jump\\n.LCB%=:\";
+    }
+  }"
+  [(set (attr "far_jump")
+        (if_then_else
+	    (eq_attr "length" "8")
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length") 
+        (if_then_else
+	    (and (ge (minus (match_dup 3) (pc)) (const_int -250))
+	         (le (minus (match_dup 3) (pc)) (const_int 256)))
+	    (const_int 4)
+	    (if_then_else
+	        (and (ge (minus (match_dup 3) (pc)) (const_int -2040))
+		     (le (minus (match_dup 3) (pc)) (const_int 2048)))
+		(const_int 6)
+		(const_int 8))))]
+)
+  
+(define_insn "*andsi3_cbranch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 5 "equality_operator"
+	  [(and:SI (match_operand:SI 2 "s_register_operand" "%0,1,1,1")
+		   (match_operand:SI 3 "s_register_operand" "l,l,l,l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 4 "" ""))
+	 (pc)))
+   (set (match_operand:SI 0 "thumb_cbrch_target_operand" "=l,?h,?m,?m")
+	(and:SI (match_dup 2) (match_dup 3)))
+   (clobber (match_scratch:SI 1 "=X,l,&l,&l"))]
+  "TARGET_THUMB"
+  "*
+  {
+  if (which_alternative == 0)
+    output_asm_insn (\"and\\t%0, %3\", operands);
+  else if (which_alternative == 1)
+    {
+      output_asm_insn (\"and\\t%1, %3\", operands);
+      output_asm_insn (\"mov\\t%0, %1\", operands);
+    }
+  else
+    {
+      output_asm_insn (\"and\\t%1, %3\", operands);
+      output_asm_insn (\"str\\t%1, %0\", operands);
+    }
+
+  switch (get_attr_length (insn) - (which_alternative ? 2 : 0))
+    {
+    case 4:  return \"b%d5\\t%l4\";
+    case 6:  return \"b%D5\\t.LCB%=\;b\\t%l4\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D5\\t.LCB%=\;bl\\t%l4\\t%@far jump\\n.LCB%=:\";
+    }
+  }"
+  [(set (attr "far_jump")
+        (if_then_else
+	    (ior (and (eq (symbol_ref ("which_alternative"))
+	                  (const_int 0))
+		      (eq_attr "length" "8"))
+		 (eq_attr "length" "10"))
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length")
+     (if_then_else
+       (eq (symbol_ref ("which_alternative"))
+		       (const_int 0))
+       (if_then_else
+	 (and (ge (minus (match_dup 4) (pc)) (const_int -250))
+	      (le (minus (match_dup 4) (pc)) (const_int 256)))
+	 (const_int 4)
+	 (if_then_else
+	   (and (ge (minus (match_dup 4) (pc)) (const_int -2040))
+		(le (minus (match_dup 4) (pc)) (const_int 2048)))
+	   (const_int 6)
+	   (const_int 8)))
+       (if_then_else
+	 (and (ge (minus (match_dup 4) (pc)) (const_int -248))
+	      (le (minus (match_dup 4) (pc)) (const_int 256)))
+	 (const_int 6)
+	 (if_then_else
+	   (and (ge (minus (match_dup 4) (pc)) (const_int -2038))
+		(le (minus (match_dup 4) (pc)) (const_int 2048)))
+	   (const_int 8)
+	   (const_int 10)))))]
+)
+
+(define_insn "*orrsi3_cbranch_scratch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 4 "equality_operator"
+	  [(ior:SI (match_operand:SI 1 "s_register_operand" "%0")
+		   (match_operand:SI 2 "s_register_operand" "l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 3 "" ""))
+	 (pc)))
+   (clobber (match_scratch:SI 0 "=l"))]
+  "TARGET_THUMB"
+  "*
+  {
+  output_asm_insn (\"orr\\t%0, %2\", operands);
+  switch (get_attr_length (insn))
+    {
+    case 4:  return \"b%d4\\t%l3\";
+    case 6:  return \"b%D4\\t.LCB%=\;b\\t%l3\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D4\\t.LCB%=\;bl\\t%l3\\t%@far jump\\n.LCB%=:\";
+    }
+  }"
+  [(set (attr "far_jump")
+        (if_then_else
+	    (eq_attr "length" "8")
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length") 
+        (if_then_else
+	    (and (ge (minus (match_dup 3) (pc)) (const_int -250))
+	         (le (minus (match_dup 3) (pc)) (const_int 256)))
+	    (const_int 4)
+	    (if_then_else
+	        (and (ge (minus (match_dup 3) (pc)) (const_int -2040))
+		     (le (minus (match_dup 3) (pc)) (const_int 2048)))
+		(const_int 6)
+		(const_int 8))))]
+)
+  
+(define_insn "*orrsi3_cbranch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 5 "equality_operator"
+	  [(ior:SI (match_operand:SI 2 "s_register_operand" "%0,1,1,1")
+		   (match_operand:SI 3 "s_register_operand" "l,l,l,l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 4 "" ""))
+	 (pc)))
+   (set (match_operand:SI 0 "thumb_cbrch_target_operand" "=l,?h,?m,?m")
+	(ior:SI (match_dup 2) (match_dup 3)))
+   (clobber (match_scratch:SI 1 "=X,l,&l,&l"))]
+  "TARGET_THUMB"
+  "*
+  {
+  if (which_alternative == 0)
+    output_asm_insn (\"orr\\t%0, %3\", operands);
+  else if (which_alternative == 1)
+    {
+      output_asm_insn (\"orr\\t%1, %3\", operands);
+      output_asm_insn (\"mov\\t%0, %1\", operands);
+    }
+  else
+    {
+      output_asm_insn (\"orr\\t%1, %3\", operands);
+      output_asm_insn (\"str\\t%1, %0\", operands);
+    }
+
+  switch (get_attr_length (insn) - (which_alternative ? 2 : 0))
+    {
+    case 4:  return \"b%d5\\t%l4\";
+    case 6:  return \"b%D5\\t.LCB%=\;b\\t%l4\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D5\\t.LCB%=\;bl\\t%l4\\t%@far jump\\n.LCB%=:\";
+    }
+  }"
+  [(set (attr "far_jump")
+        (if_then_else
+	    (ior (and (eq (symbol_ref ("which_alternative"))
+	                  (const_int 0))
+		      (eq_attr "length" "8"))
+		 (eq_attr "length" "10"))
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length")
+     (if_then_else
+       (eq (symbol_ref ("which_alternative"))
+		       (const_int 0))
+       (if_then_else
+	 (and (ge (minus (match_dup 4) (pc)) (const_int -250))
+	      (le (minus (match_dup 4) (pc)) (const_int 256)))
+	 (const_int 4)
+	 (if_then_else
+	   (and (ge (minus (match_dup 4) (pc)) (const_int -2040))
+		(le (minus (match_dup 4) (pc)) (const_int 2048)))
+	   (const_int 6)
+	   (const_int 8)))
+       (if_then_else
+	 (and (ge (minus (match_dup 4) (pc)) (const_int -248))
+	      (le (minus (match_dup 4) (pc)) (const_int 256)))
+	 (const_int 6)
+	 (if_then_else
+	   (and (ge (minus (match_dup 4) (pc)) (const_int -2038))
+		(le (minus (match_dup 4) (pc)) (const_int 2048)))
+	   (const_int 8)
+	   (const_int 10)))))]
+)
+
+(define_insn "*xorsi3_cbranch_scratch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 4 "equality_operator"
+	  [(xor:SI (match_operand:SI 1 "s_register_operand" "%0")
+		   (match_operand:SI 2 "s_register_operand" "l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 3 "" ""))
+	 (pc)))
+   (clobber (match_scratch:SI 0 "=l"))]
+  "TARGET_THUMB"
+  "*
+  {
+  output_asm_insn (\"eor\\t%0, %2\", operands);
+  switch (get_attr_length (insn))
+    {
+    case 4:  return \"b%d4\\t%l3\";
+    case 6:  return \"b%D4\\t.LCB%=\;b\\t%l3\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D4\\t.LCB%=\;bl\\t%l3\\t%@far jump\\n.LCB%=:\";
+    }
+  }"
+  [(set (attr "far_jump")
+        (if_then_else
+	    (eq_attr "length" "8")
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length") 
+        (if_then_else
+	    (and (ge (minus (match_dup 3) (pc)) (const_int -250))
+	         (le (minus (match_dup 3) (pc)) (const_int 256)))
+	    (const_int 4)
+	    (if_then_else
+	        (and (ge (minus (match_dup 3) (pc)) (const_int -2040))
+		     (le (minus (match_dup 3) (pc)) (const_int 2048)))
+		(const_int 6)
+		(const_int 8))))]
+)
+  
+(define_insn "*xorsi3_cbranch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 5 "equality_operator"
+	  [(xor:SI (match_operand:SI 2 "s_register_operand" "%0,1,1,1")
+		   (match_operand:SI 3 "s_register_operand" "l,l,l,l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 4 "" ""))
+	 (pc)))
+   (set (match_operand:SI 0 "thumb_cbrch_target_operand" "=l,?h,?m,?m")
+	(xor:SI (match_dup 2) (match_dup 3)))
+   (clobber (match_scratch:SI 1 "=X,l,&l,&l"))]
+  "TARGET_THUMB"
+  "*
+  {
+  if (which_alternative == 0)
+    output_asm_insn (\"eor\\t%0, %3\", operands);
+  else if (which_alternative == 1)
+    {
+      output_asm_insn (\"eor\\t%1, %3\", operands);
+      output_asm_insn (\"mov\\t%0, %1\", operands);
+    }
+  else
+    {
+      output_asm_insn (\"eor\\t%1, %3\", operands);
+      output_asm_insn (\"str\\t%1, %0\", operands);
+    }
+
+  switch (get_attr_length (insn) - (which_alternative ? 2 : 0))
+    {
+    case 4:  return \"b%d5\\t%l4\";
+    case 6:  return \"b%D5\\t.LCB%=\;b\\t%l4\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D5\\t.LCB%=\;bl\\t%l4\\t%@far jump\\n.LCB%=:\";
+    }
+  }"
+  [(set (attr "far_jump")
+        (if_then_else
+	    (ior (and (eq (symbol_ref ("which_alternative"))
+	                  (const_int 0))
+		      (eq_attr "length" "8"))
+		 (eq_attr "length" "10"))
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length")
+     (if_then_else
+       (eq (symbol_ref ("which_alternative"))
+		       (const_int 0))
+       (if_then_else
+	 (and (ge (minus (match_dup 4) (pc)) (const_int -250))
+	      (le (minus (match_dup 4) (pc)) (const_int 256)))
+	 (const_int 4)
+	 (if_then_else
+	   (and (ge (minus (match_dup 4) (pc)) (const_int -2040))
+		(le (minus (match_dup 4) (pc)) (const_int 2048)))
+	   (const_int 6)
+	   (const_int 8)))
+       (if_then_else
+	 (and (ge (minus (match_dup 4) (pc)) (const_int -248))
+	      (le (minus (match_dup 4) (pc)) (const_int 256)))
+	 (const_int 6)
+	 (if_then_else
+	   (and (ge (minus (match_dup 4) (pc)) (const_int -2038))
+		(le (minus (match_dup 4) (pc)) (const_int 2048)))
+	   (const_int 8)
+	   (const_int 10)))))]
+)
+
 (define_insn "*cbranchne_decr1"
   [(set (pc)
 	(if_then_else (match_operator 3 "equality_operator"
@@ -5253,7 +5645,7 @@
 		        (const_int 0)])
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
-   (set (match_operand:SI 0 "s_register_operand" "=l,?h,?m,?m")
+   (set (match_operand:SI 0 "thumb_cbrch_target_operand" "=l,?h,?m,?m")
 	(plus:SI (match_dup 2) (const_int -1)))
    (clobber (match_scratch:SI 1 "=X,l,&l,&l"))]
   "TARGET_THUMB"
@@ -5262,7 +5654,7 @@
      rtx cond[2];
      cond[0] = gen_rtx_fmt_ee ((GET_CODE (operands[3]) == NE
 				? GEU : LTU),
-			       VOIDmode, NULL, NULL);
+			       VOIDmode, operands[2], const1_rtx);
      cond[1] = operands[4];
 
      if (which_alternative == 0)
@@ -5347,6 +5739,270 @@
 		(le (minus (match_dup 4) (pc)) (const_int 2048)))
 	   (const_int 8)
 	   (const_int 10)))])]
+)
+
+(define_insn "*addsi3_cbranch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 4 "comparison_operator"
+	  [(plus:SI
+	    (match_operand:SI 2 "s_register_operand" "%l,0,*0,1,1,1")
+	    (match_operand:SI 3 "reg_or_int_operand" "lL,IJ,*r,lIJ,lIJ,lIJ"))
+	   (const_int 0)])
+	 (label_ref (match_operand 5 "" ""))
+	 (pc)))
+   (set (match_operand:SI 0 "thumb_cbrch_target_operand" "=l,l,*!h,?h,?m,?m")
+	(plus:SI (match_dup 2) (match_dup 3)))
+   (clobber (match_scratch:SI 1 "=X,X,X,l,&l,&l"))]
+  "TARGET_THUMB
+   && (GET_CODE (operands[4]) == EQ
+       || GET_CODE (operands[4]) == NE
+       || GET_CODE (operands[4]) == GE
+       || GET_CODE (operands[4]) == LT)"
+  "*
+   {
+     rtx cond[3];
+
+     
+     cond[0] = (which_alternative < 3) ? operands[0] : operands[1];
+     cond[1] = operands[2];
+     cond[2] = operands[3];
+
+     if (GET_CODE (cond[2]) == CONST_INT && INTVAL (cond[2]) < 0)
+       output_asm_insn (\"sub\\t%0, %1, #%n2\", cond);
+     else
+       output_asm_insn (\"add\\t%0, %1, %2\", cond);
+
+     if (which_alternative >= 3
+	 && which_alternative < 4)
+       output_asm_insn (\"mov\\t%0, %1\", operands);
+     else if (which_alternative >= 4)
+       output_asm_insn (\"str\\t%1, %0\", operands);
+
+     switch (get_attr_length (insn) - ((which_alternative >= 3) ? 2 : 0))
+       {
+	 case 4:
+	   return \"b%d4\\t%l5\";
+	 case 6:
+	   return \"b%D4\\t.LCB%=\;b\\t%l5\\t%@long jump\\n.LCB%=:\";
+	 default:
+	   return \"b%D4\\t.LCB%=\;bl\\t%l5\\t%@far jump\\n.LCB%=:\";
+       }
+   }
+  "
+  [(set (attr "far_jump")
+        (if_then_else
+	    (ior (and (lt (symbol_ref ("which_alternative"))
+	                  (const_int 3))
+		      (eq_attr "length" "8"))
+		 (eq_attr "length" "10"))
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length")
+     (if_then_else
+       (lt (symbol_ref ("which_alternative"))
+		       (const_int 3))
+       (if_then_else
+	 (and (ge (minus (match_dup 5) (pc)) (const_int -250))
+	      (le (minus (match_dup 5) (pc)) (const_int 256)))
+	 (const_int 4)
+	 (if_then_else
+	   (and (ge (minus (match_dup 5) (pc)) (const_int -2040))
+		(le (minus (match_dup 5) (pc)) (const_int 2048)))
+	   (const_int 6)
+	   (const_int 8)))
+       (if_then_else
+	 (and (ge (minus (match_dup 5) (pc)) (const_int -248))
+	      (le (minus (match_dup 5) (pc)) (const_int 256)))
+	 (const_int 6)
+	 (if_then_else
+	   (and (ge (minus (match_dup 5) (pc)) (const_int -2038))
+		(le (minus (match_dup 5) (pc)) (const_int 2048)))
+	   (const_int 8)
+	   (const_int 10)))))]
+)
+
+(define_insn "*addsi3_cbranch_scratch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 3 "comparison_operator"
+	  [(plus:SI
+	    (match_operand:SI 1 "s_register_operand" "%l,l,l,0")
+	    (match_operand:SI 2 "reg_or_int_operand" "J,l,I,L"))
+	   (const_int 0)])
+	 (label_ref (match_operand 4 "" ""))
+	 (pc)))
+   (clobber (match_scratch:SI 0 "=X,X,l,l"))]
+  "TARGET_THUMB
+   && (GET_CODE (operands[3]) == EQ
+       || GET_CODE (operands[3]) == NE
+       || GET_CODE (operands[3]) == GE
+       || GET_CODE (operands[3]) == LT)"
+  "*
+   {
+     switch (which_alternative)
+       {
+       case 0:
+	 output_asm_insn (\"cmp\t%1, #%n2\", operands);
+	 break;
+       case 1:
+	 output_asm_insn (\"cmn\t%1, %2\", operands);
+	 break;
+       case 3:
+	 output_asm_insn (\"add\t%0, %1, %2\", operands);
+	 break;
+       case 4:
+	 output_asm_insn (\"add\t%0, %0, %2\", operands);
+	 break;
+       }
+
+     switch (get_attr_length (insn))
+       {
+	 case 4:
+	   return \"b%d3\\t%l4\";
+	 case 6:
+	   return \"b%D3\\t.LCB%=\;b\\t%l4\\t%@long jump\\n.LCB%=:\";
+	 default:
+	   return \"b%D3\\t.LCB%=\;bl\\t%l4\\t%@far jump\\n.LCB%=:\";
+       }
+   }
+  "
+  [(set (attr "far_jump")
+        (if_then_else
+	    (eq_attr "length" "8")
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length")
+       (if_then_else
+	 (and (ge (minus (match_dup 4) (pc)) (const_int -250))
+	      (le (minus (match_dup 4) (pc)) (const_int 256)))
+	 (const_int 4)
+	 (if_then_else
+	   (and (ge (minus (match_dup 4) (pc)) (const_int -2040))
+		(le (minus (match_dup 4) (pc)) (const_int 2048)))
+	   (const_int 6)
+	   (const_int 8))))]
+)
+
+(define_insn "*subsi3_cbranch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 4 "comparison_operator"
+	  [(minus:SI
+	    (match_operand:SI 2 "s_register_operand" "l,l,1,l")
+	    (match_operand:SI 3 "s_register_operand" "l,l,l,l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 5 "" ""))
+	 (pc)))
+   (set (match_operand:SI 0 "thumb_cbrch_target_operand" "=l,?h,?m,?m")
+	(minus:SI (match_dup 2) (match_dup 3)))
+   (clobber (match_scratch:SI 1 "=X,l,&l,&l"))]
+  "TARGET_THUMB
+   && (GET_CODE (operands[4]) == EQ
+       || GET_CODE (operands[4]) == NE
+       || GET_CODE (operands[4]) == GE
+       || GET_CODE (operands[4]) == LT)"
+  "*
+   {
+     if (which_alternative == 0)
+       output_asm_insn (\"sub\\t%0, %2, %3\", operands);
+     else if (which_alternative == 1)
+       {
+	 /* We must provide an alternative for a hi reg because reload 
+	    cannot handle output reloads on a jump instruction, but we
+	    can't subtract into that.  Fortunately a mov from lo to hi
+	    does not clobber the condition codes.  */
+	 output_asm_insn (\"sub\\t%1, %2, %3\", operands);
+	 output_asm_insn (\"mov\\t%0, %1\", operands);
+       }
+     else
+       {
+	 /* Similarly, but the target is memory.  */
+	 output_asm_insn (\"sub\\t%1, %2, %3\", operands);
+	 output_asm_insn (\"str\\t%1, %0\", operands);
+       }
+
+     switch (get_attr_length (insn) - ((which_alternative != 0) ? 2 : 0))
+       {
+	 case 4:
+	   return \"b%d4\\t%l5\";
+	 case 6:
+	   return \"b%D4\\t.LCB%=\;b\\t%l5\\t%@long jump\\n.LCB%=:\";
+	 default:
+	   return \"b%D4\\t.LCB%=\;bl\\t%l5\\t%@far jump\\n.LCB%=:\";
+       }
+   }
+  "
+  [(set (attr "far_jump")
+        (if_then_else
+	    (ior (and (eq (symbol_ref ("which_alternative"))
+	                  (const_int 0))
+		      (eq_attr "length" "8"))
+		 (eq_attr "length" "10"))
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length")
+     (if_then_else
+       (eq (symbol_ref ("which_alternative"))
+		       (const_int 0))
+       (if_then_else
+	 (and (ge (minus (match_dup 5) (pc)) (const_int -250))
+	      (le (minus (match_dup 5) (pc)) (const_int 256)))
+	 (const_int 4)
+	 (if_then_else
+	   (and (ge (minus (match_dup 5) (pc)) (const_int -2040))
+		(le (minus (match_dup 5) (pc)) (const_int 2048)))
+	   (const_int 6)
+	   (const_int 8)))
+       (if_then_else
+	 (and (ge (minus (match_dup 5) (pc)) (const_int -248))
+	      (le (minus (match_dup 5) (pc)) (const_int 256)))
+	 (const_int 6)
+	 (if_then_else
+	   (and (ge (minus (match_dup 5) (pc)) (const_int -2038))
+		(le (minus (match_dup 5) (pc)) (const_int 2048)))
+	   (const_int 8)
+	   (const_int 10)))))]
+)
+
+(define_insn "*subsi3_cbranch_scratch"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 0 "arm_comparison_operator"
+	  [(minus:SI (match_operand:SI 1 "register_operand" "l")
+		     (match_operand:SI 2 "nonmemory_operand" "l"))
+	   (const_int 0)])
+	 (label_ref (match_operand 3 "" ""))
+	 (pc)))]
+  "TARGET_THUMB
+   && (GET_CODE (operands[0]) == EQ
+       || GET_CODE (operands[0]) == NE
+       || GET_CODE (operands[0]) == GE
+       || GET_CODE (operands[0]) == LT)"
+  "*
+  output_asm_insn (\"cmp\\t%1, %2\", operands);
+  switch (get_attr_length (insn))
+    {
+    case 4:  return \"b%d0\\t%l3\";
+    case 6:  return \"b%D0\\t.LCB%=\;b\\t%l3\\t%@long jump\\n.LCB%=:\";
+    default: return \"b%D0\\t.LCB%=\;bl\\t%l3\\t%@far jump\\n.LCB%=:\";
+    }
+  "
+  [(set (attr "far_jump")
+        (if_then_else
+	    (eq_attr "length" "8")
+	    (const_string "yes")
+            (const_string "no")))
+   (set (attr "length") 
+        (if_then_else
+	    (and (ge (minus (match_dup 3) (pc)) (const_int -250))
+	         (le (minus (match_dup 3) (pc)) (const_int 256)))
+	    (const_int 4)
+	    (if_then_else
+	        (and (ge (minus (match_dup 3) (pc)) (const_int -2040))
+		     (le (minus (match_dup 3) (pc)) (const_int 2048)))
+		(const_int 6)
+		(const_int 8))))]
 )
 
 ;; Comparison and test insns

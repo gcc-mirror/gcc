@@ -178,6 +178,7 @@ extern const char *thumb_load_double_from_address (rtx *);
 extern const char *thumb_output_move_mem_multiple (int, rtx *);
 extern void thumb_expand_movstrqi (rtx *);
 extern int thumb_cmp_operand (rtx, enum machine_mode);
+extern int thumb_cbrch_target_operand (rtx, enum machine_mode);
 extern rtx *thumb_legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern int thumb_go_if_legitimate_address (enum machine_mode, rtx);
 extern rtx arm_return_addr (int, rtx);

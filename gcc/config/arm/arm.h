@@ -2689,6 +2689,7 @@ extern int making_const_table;
   {"reg_or_int_operand", {SUBREG, REG, CONST_INT}},			\
   {"index_operand",      {SUBREG, REG, CONST_INT}},			\
   {"thumb_cmp_operand",  {SUBREG, REG, CONST_INT}},			\
+  {"thumb_cbrch_target_operand", {SUBREG, REG, MEM}},			\
   {"offsettable_memory_operand", {MEM}},				\
   {"bad_signed_byte_operand", {MEM}},					\
   {"alignable_memory_operand", {MEM}},					\
