@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_PREDEFINES
 #endif
 
-#define	CPP_PREDEFINES "-DWIN32 -DWINNT -DCYGWIN32 -DPOSIX \
+#define	CPP_PREDEFINES "-D_WIN32 -DWINNT -D__CYGWIN32__ -DPOSIX \
   -D_POWER -D_ARCH_PPC -D__PPC__ -Asystem(winnt) -Acpu(powerpc) -Amachine(powerpc)"
 
 /* We have to dynamic link to get to the system dlls,
