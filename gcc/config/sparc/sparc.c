@@ -2348,6 +2348,8 @@ output_fp_move_quad (operands)
 	{
 	  if (TARGET_V9 && TARGET_HARD_QUAD)
 	    return "fmovq %1,%0";
+	  else if (TARGET_V9)
+	    return "fmovd %1,%0\n\tfmovd %S1,%S0";
 	  else
 	    return "fmovs %1,%0\n\tfmovs %R1,%R0\n\tfmovs %S1,%S0\n\tfmovs %T1,%T0";
 	}
