@@ -6139,30 +6139,35 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	}
       else if (GET_CODE (inner) == REG)
 	{
-	  /* We can't call gen_lowpart_for_combine here since we always want
-	     a SUBREG and it would sometimes return a new hard register.  */
 	  if (tmode != inner_mode)
 	    {
-	      HOST_WIDE_INT final_word = pos / BITS_PER_WORD;
+	      if (in_dest)
+		{
+		  /* We can't call gen_lowpart_for_combine here since we always want
+		     a SUBREG and it would sometimes return a new hard register.  */
+		  HOST_WIDE_INT final_word = pos / BITS_PER_WORD;
 
-	      if (WORDS_BIG_ENDIAN
-		  && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
-		final_word = ((GET_MODE_SIZE (inner_mode)
-			       - GET_MODE_SIZE (tmode))
-			      / UNITS_PER_WORD) - final_word;
+		  if (WORDS_BIG_ENDIAN
+		      && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
+		    final_word = ((GET_MODE_SIZE (inner_mode)
+				   - GET_MODE_SIZE (tmode))
+				  / UNITS_PER_WORD) - final_word;
 
-	      final_word *= UNITS_PER_WORD;
-	      if (BYTES_BIG_ENDIAN &&
-		  GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (tmode))
-		final_word += (GET_MODE_SIZE (inner_mode)
-			       - GET_MODE_SIZE (tmode)) % UNITS_PER_WORD;
+		  final_word *= UNITS_PER_WORD;
+		  if (BYTES_BIG_ENDIAN &&
+		      GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (tmode))
+		    final_word += (GET_MODE_SIZE (inner_mode)
+				   - GET_MODE_SIZE (tmode)) % UNITS_PER_WORD;
 
-	      /* Avoid creating invalid subregs, for example when
-		 simplifying (x>>32)&255.  */
-	      if (final_word >= GET_MODE_SIZE (inner_mode))
-		return NULL_RTX;
+		  /* Avoid creating invalid subregs, for example when
+		     simplifying (x>>32)&255.  */
+		  if (final_word >= GET_MODE_SIZE (inner_mode))
+		    return NULL_RTX;
 
-	      new = gen_rtx_SUBREG (tmode, inner, final_word);
+		  new = gen_rtx_SUBREG (tmode, inner, final_word);
+		}
+	      else
+		new = gen_lowpart_for_combine (tmode, inner);
 	    }
 	  else
 	    new = inner;

@@ -1,3 +1,10 @@
+2003-06-13  Jim Wilson  <wilson@tuliptree.org>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/10983
+	* combine.c (make_extraction): Use gen_lowpart_for_combine
+	when extracting from a REG and not in the destination of a SET.
+
 2003-06-13  Doug Evans  <dje@sebabeach.org>
 
 	* tsystem.h (abort): Declare in inhibit_libc case to remove build
