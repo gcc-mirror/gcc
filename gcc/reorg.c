@@ -1576,8 +1576,7 @@ redundant_insn_p (insn, target, delay_list)
       if (GET_CODE (trial) == CODE_LABEL)
 	return 0;
 
-      if (GET_CODE (trial) != INSN && GET_CODE (trial) != JUMP_INSN
-	  && GET_CODE (trial) != JUMP_INSN)
+      if (GET_RTX_CLASS (GET_CODE (trial)) != 'i')
 	continue;
 
       pat = PATTERN (trial);
