@@ -1,3 +1,9 @@
+2002-11-20  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.c (s16builtins,
+	xstormy16_init_builtins, xstormy16_expand_builtin): New.
+	* config/stormy16/stormy16.md (divmodhi4, sdivlh, udivlh): New.
+
 2002-11-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* Makefile.in (RUN_GEN, VALGRIND_DRIVER_DEFINES): New variables.

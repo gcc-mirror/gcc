@@ -435,6 +435,42 @@
   "div"
   [(set_attr "psw_operand" "nop")])
 
+;; Signed division giving both quotient and remainder
+(define_insn "divmodhi4"
+  [(set (match_operand:HI 0 "register_operand" "=a")
+	(div:HI (match_operand:HI 1 "register_operand" "a")
+		 (match_operand:HI 2 "register_operand" "c")))
+   (set (match_operand:HI 3 "register_operand" "=b")
+	(mod:HI (match_dup 1)
+		 (match_dup 2)))]
+  ""
+  "sdiv"
+  [(set_attr "psw_operand" "nop")])
+
+;; Signed 32/16 division
+(define_insn "sdivlh"
+  [(set (match_operand:HI 0 "register_operand" "=a")
+	(div:HI (match_operand:SI 2 "register_operand" "t")
+		 (match_operand:HI 3 "register_operand" "c")))
+   (set (match_operand:HI 1 "register_operand" "=b")
+	(mod:HI (match_dup 2)
+		 (match_dup 3)))]
+  ""
+  "sdivlh"
+  [(set_attr "psw_operand" "nop")])
+
+;; Unsigned 32/16 division
+(define_insn "udivlh"
+  [(set (match_operand:HI 0 "register_operand" "=a")
+	(udiv:HI (match_operand:SI 2 "register_operand" "t")
+		 (match_operand:HI 3 "register_operand" "c")))
+   (set (match_operand:HI 1 "register_operand" "=b")
+	(umod:HI (match_dup 2)
+		 (match_dup 3)))]
+  ""
+  "divlh"
+  [(set_attr "psw_operand" "nop")])
+
 ;; Negation
 
 (define_expand "neghi2"

@@ -53,6 +53,9 @@ static void xstormy16_encode_section_info PARAMS ((tree, int));
 static void xstormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 						   HOST_WIDE_INT, tree));
 
+static void xstormy16_init_builtins PARAMS ((void));
+static rtx xstormy16_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
 struct rtx_def * xstormy16_compare_op0;
@@ -2027,6 +2030,126 @@ xstormy16_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
 
   return NULL_TREE;
 }
+
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS xstormy16_init_builtins
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN xstormy16_expand_builtin
+
+static struct {
+  const char *name;
+  int md_code;
+  const char *arg_ops; /* 0..9, t for temp register, r for return value */
+  const char *arg_types; /* s=short,l=long, upper case for unsigned */
+} s16builtins[] = {
+  { "__sdivlh", CODE_FOR_sdivlh, "rt01", "sls" },
+  { "__smodlh", CODE_FOR_sdivlh, "tr01", "sls" },
+  { "__udivlh", CODE_FOR_udivlh, "rt01", "SLS" },
+  { "__umodlh", CODE_FOR_udivlh, "tr01", "SLS" },
+  { 0, 0, 0, 0 }
+};
+
+static void
+xstormy16_init_builtins ()
+{
+  tree args, ret_type, arg;
+  int i, a;
+
+  ret_type = void_type_node;
+
+  for (i=0; s16builtins[i].name; i++)
+    {
+      args = void_list_node;
+      for (a=strlen (s16builtins[i].arg_types)-1; a>=0; a--)
+	{
+	  switch (s16builtins[i].arg_types[a])
+	    {
+	    case 's': arg = short_integer_type_node; break;
+	    case 'S': arg = short_unsigned_type_node; break;
+	    case 'l': arg = long_integer_type_node; break;
+	    case 'L': arg = long_unsigned_type_node; break;
+	    default: abort();
+	    }
+	  if (a == 0)
+	    ret_type = arg;
+	  else
+	    args = tree_cons (NULL_TREE, arg, args);
+	}
+      builtin_function (s16builtins[i].name,
+			build_function_type (ret_type, args),
+			i, BUILT_IN_MD, NULL, NULL);
+    }
+}
+
+static rtx
+xstormy16_expand_builtin(exp, target, subtarget, mode, ignore)
+     tree exp;
+     rtx target;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
+{
+  rtx op[10], args[10], pat, copyto[10], retval = 0;
+  tree fndecl, argtree;
+  int i, a, o, code;
+
+  fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  argtree = TREE_OPERAND (exp, 1);
+  i = DECL_FUNCTION_CODE (fndecl);
+  code = s16builtins[i].md_code;
+
+  for (a = 0; a < 10 && argtree; a++)
+    {
+      args[a] = expand_expr (TREE_VALUE (argtree), NULL_RTX, VOIDmode, 0);
+      argtree = TREE_CHAIN (argtree);
+    }
+
+  for (o = 0; s16builtins[i].arg_ops[o]; o++)
+    {
+      char ao = s16builtins[i].arg_ops[o];
+      char c = insn_data[code].operand[o].constraint[0];
+      int omode;
+
+      copyto[o] = 0;
+
+      omode = insn_data[code].operand[o].mode;
+      if (ao == 'r')
+	op[o] = target ? target : gen_reg_rtx (omode);
+      else if (ao == 't')
+	op[o] = gen_reg_rtx (omode);
+      else
+	op[o] = args[(int) hex_value (ao)];
+
+      if (! (*insn_data[code].operand[o].predicate) (op[o], GET_MODE (op[o])))
+	{
+	  if (c == '+' || c == '=')
+	    {
+	      copyto[o] = op[o];
+	      op[o] = gen_reg_rtx (omode);
+	    }
+	  else
+	    op[o] = copy_to_mode_reg (omode, op[o]);
+	}
+
+      if (ao == 'r')
+	retval = op[o];
+    }
+
+  pat = GEN_FCN (code) (op[0], op[1], op[2], op[3], op[4],
+			op[5], op[6], op[7], op[8], op[9]);
+  emit_insn (pat);
+
+  for (o = 0; s16builtins[i].arg_ops[o]; o++)
+    if (copyto[o])
+      {
+	emit_move_insn (copyto[o], op[o]);
+	if (op[o] == retval)
+	  retval = copyto[o];
+      }
+
+  return retval;
+}
+
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
