@@ -2192,6 +2192,20 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
           return true;
         }
 
+      /* Constants in the range 0...255 can be loaded with an unextended
+	 instruction.  They are therefore as cheap as a register move.
+
+	 Given the choice between "li R1,0...255" and "move R1,R2"
+	 (where R2 is a known constant), it is usually better to use "li",
+	 since we do not want to unnessarily extend the lifetime of R2.  */
+      if (outer_code == SET
+	  && INTVAL (x) >= 0
+	  && INTVAL (x) < 256)
+	{
+	  *total = 0;
+	  return true;
+	}
+
       /* Otherwise fall through to the handling below.  */
 
     case CONST:
