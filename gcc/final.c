@@ -2846,19 +2846,46 @@ split_double (value, first, second)
 {
   if (GET_CODE (value) == CONST_INT)
     {
-      /* The rule for using CONST_INT for a wider mode
-	 is that we regard the value as signed.
-	 So sign-extend it.  */
-      rtx high = (INTVAL (value) < 0 ? constm1_rtx : const0_rtx);
-      if (WORDS_BIG_ENDIAN)
+      if (HOST_BITS_PER_WIDE_INT >= (2 * BITS_PER_WORD))
 	{
-	  *first = high;
-	  *second = value;
+	  /* In this case the CONST_INT holds both target words.
+	     Extract the bits from it into two word-sized pieces.  */
+	  rtx low, high;
+	  HOST_WIDE_INT word_mask;
+	  /* Avoid warnings for shift count >= BITS_PER_WORD.  */
+	  int shift_count = BITS_PER_WORD - 1;
+
+	  word_mask = (HOST_WIDE_INT) 1 << shift_count;
+	  word_mask |= word_mask - 1;
+	  low = GEN_INT (INTVAL (value) & word_mask);
+	  high = GEN_INT ((INTVAL (value) >> (shift_count + 1)) & word_mask);
+	  if (WORDS_BIG_ENDIAN)
+	    {
+	      *first = high;
+	      *second = low;
+	    }
+	  else
+	    {
+	      *first = low;
+	      *second = high;
+	    }
 	}
       else
 	{
-	  *first = value;
-	  *second = high;
+	  /* The rule for using CONST_INT for a wider mode
+	     is that we regard the value as signed.
+	     So sign-extend it.  */
+	  rtx high = (INTVAL (value) < 0 ? constm1_rtx : const0_rtx);
+	  if (WORDS_BIG_ENDIAN)
+	    {
+	      *first = high;
+	      *second = value;
+	    }
+	  else
+	    {
+	      *first = value;
+	      *second = high;
+	    }
 	}
     }
   else if (GET_CODE (value) != CONST_DOUBLE)
