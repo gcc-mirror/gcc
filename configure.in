@@ -1127,25 +1127,6 @@ if test -n "${host_makefile_frag}" ; then
   host_makefile_frag=mh-frag
 fi
 
-# If we aren't going to be using gcc, see if we can extract a definition
-# of CC from the fragment.
-# Actually, use the 'pre-extracted' version above.
-if test -z "${CC}" && test "${build}" = "${host}" ; then
-  IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
-  found=
-  for dir in $PATH; do
-    test -z "$dir" && dir=.
-    if test -f $dir/gcc; then
-      found=yes
-      break
-    fi
-  done
-  IFS="$save_ifs"
-  if test -z "${found}" && test -n "${tentative_cc}" ; then
-    CC=$tentative_cc
-  fi
-fi
-
 case "${target}" in
   v810*)
     target_makefile_frag="config/mt-v810"
@@ -1281,6 +1262,25 @@ case "${host}" in
     withoptions="$withoptions -x-libraries=/usr/lib/pa20_64 -x-includes=/usr/X11R6/include"
     ;;
 esac
+
+# If we aren't going to be using gcc, see if we can extract a definition
+# of CC from the fragment.
+# Actually, use the 'pre-extracted' version above.
+if test -z "${CC}" && test "${build}" = "${host}" ; then
+  IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
+  found=
+  for dir in $PATH; do
+    test -z "$dir" && dir=.
+    if test -f $dir/gcc; then
+      found=yes
+      break
+    fi
+  done
+  IFS="$save_ifs"
+  if test -z "${found}" && test -n "${tentative_cc}" ; then
+    CC=$tentative_cc
+  fi
+fi
 
 # post-target:
 

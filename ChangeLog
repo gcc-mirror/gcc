@@ -1,3 +1,7 @@
+2002-09-20  Nathanael Nerode <neroden@doctor.moo.mud.org>
+
+	* configure.in: Rearrange.
+
 2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* MAINTAINERS: Update my email address.
