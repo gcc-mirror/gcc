@@ -3314,10 +3314,10 @@ list of operands, such as this example:
 @group
   ""
   "
-{
+@{
   handle_add (operands[0], operands[1], operands[2]);
   DONE;
-}")
+@}")
 @end group
 @end smallexample
 
