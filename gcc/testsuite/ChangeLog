@@ -4,6 +4,8 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 	Use long types if __INT_MAX__ is 32767.
 	(main): Use cast to (sint32 *) when poking 88 into a_page.
 
+	* gcc.c-torture/execute/20000822-1.c: Check for NO_TRAMPOLINES.
+
 2000-12-21  Bernd Schmidt  <bernds@redhat.com>
 
 	* gcc.c-torture/compile/20001221-1.c: New test.
