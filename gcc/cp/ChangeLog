@@ -1,23 +1,29 @@
+2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13683
+	* call.c (convert_arg_to_ellipsis): Don't emit a warning if within
+	a sizeof expression.block
+
 2004-01-29  Aldy Hernandez  <aldyh@redhat.com>
-                                                                                
-        Backport:
-                                                                                
-        2004-01-17  Fred Fish  <fnf@intrinsity.com>
-                                                                                
-        PR c++/11895
-        * cp/decl.c (reshape_init): Handle VECTOR_TYPE like ARRAY_TYPE,
-        except don't call array_type_nelts() with a VECTOR_TYPE.
+
+	Backport:
+
+	2004-01-17  Fred Fish  <fnf@intrinsity.com>
+
+	PR c++/11895
+	* cp/decl.c (reshape_init): Handle VECTOR_TYPE like ARRAY_TYPE,
+	except don't call array_type_nelts() with a VECTOR_TYPE.
 
 2004-01-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	Backport:
 	2003-06-03  Jason Merrill  <jason@redhat.com>
-                                                                                
-        * cp/cp-tree.h (CP_AGGREGATE_TYPE_P): Accept vectors.
-                                                                                
-        * cp/decl.c (reshape_init): Handle vectors.
-                                                                                
-        * testsuite/g++.dg/init/array10.C: New.
+
+	* cp/cp-tree.h (CP_AGGREGATE_TYPE_P): Accept vectors.
+
+	* cp/decl.c (reshape_init): Handle vectors.
+
+	* testsuite/g++.dg/init/array10.C: New.
 
 2004-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
