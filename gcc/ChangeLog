@@ -1,5 +1,7 @@
 2000-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* configure.in: Also avoid wrapping auto-build.h with IN_GCC.
+
 	* scan-types.sh (VALUE) Wrap use with double quotes to protect
 	variable against filename expansion when it contains "char *".
 

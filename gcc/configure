@@ -6854,7 +6854,7 @@ do
 
 	for file in `eval echo '$'$var`; do
 		case $file in
-		auto-host.h)
+		auto-host.h | auto-build.h )
 			;;
 		*)
 			echo '#ifdef IN_GCC' >>$link
@@ -6862,7 +6862,7 @@ do
 		esac
 		echo "#include \"$file\"" >>$link
 		case $file in
-		auto-host.h)
+		auto-host.h | auto-build.h )
 			;;
 		*)
 			echo '#endif' >>$link
