@@ -2486,7 +2486,6 @@ life_analysis (f, file, flags)
   register int i;
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
-  sbitmap all_blocks;
 
   /* Record which registers will be eliminated.  We use this in
      mark_used_regs.  */
@@ -2532,8 +2531,6 @@ life_analysis (f, file, flags)
      data from lifetime analysis.  */
   allocate_reg_life_data ();
   allocate_bb_life_data ();
-  all_blocks = sbitmap_alloc (n_basic_blocks);
-  sbitmap_ones (all_blocks);
 
   /* Find the set of registers live on function exit.  */
   mark_regs_live_at_end (EXIT_BLOCK_PTR->global_live_at_start);
@@ -2544,11 +2541,9 @@ life_analysis (f, file, flags)
 
   if (flags & PROP_REG_INFO)
     memset (regs_ever_live, 0, sizeof(regs_ever_live));
-  update_life_info (all_blocks, UPDATE_LIFE_GLOBAL, flags);
+  update_life_info (NULL, UPDATE_LIFE_GLOBAL, flags);
 
   /* Clean up.  */
-  sbitmap_free (all_blocks);
-
   if (flags & PROP_SCAN_DEAD_CODE)
     end_alias_analysis ();
 
@@ -2634,10 +2629,11 @@ verify_local_live_at_start (new_live_at_start, bb)
 }
 
 /* Updates life information starting with the basic blocks set in BLOCKS.
+   If BLOCKS is null, consider it to be the universal set.
    
-   If LOCAL_ONLY, such as after splitting or peepholeing, we are only
-   expecting local modifications to basic blocks.  If we find extra
-   registers live at the beginning of a block, then we either killed
+   If EXTENT is UPDATE_LIFE_LOCAL, such as after splitting or peepholeing,
+   we are only expecting local modifications to basic blocks.  If we find
+   extra registers live at the beginning of a block, then we either killed
    useful data, or we have a broken split that wants data not provided.
    If we find registers removed from live_at_start, that means we have
    a broken peephole that is killing a register it shouldn't.
@@ -2672,16 +2668,32 @@ update_life_info (blocks, extent, prop_flags)
 	count_or_remove_death_notes (blocks, 1);
     }
 
-  EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
+  if (blocks)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
+	{
+	  basic_block bb = BASIC_BLOCK (i);
 
-      COPY_REG_SET (tmp, bb->global_live_at_end);
-      propagate_block (bb, tmp, (regset) NULL, prop_flags);
+	  COPY_REG_SET (tmp, bb->global_live_at_end);
+	  propagate_block (bb, tmp, (regset) NULL, prop_flags);
 
-      if (extent == UPDATE_LIFE_LOCAL)
-	verify_local_live_at_start (tmp, bb);
-    });
+	  if (extent == UPDATE_LIFE_LOCAL)
+	    verify_local_live_at_start (tmp, bb);
+	});
+    }
+  else
+    {
+      for (i = n_basic_blocks - 1; i >= 0; --i)
+	{
+	  basic_block bb = BASIC_BLOCK (i);
+
+	  COPY_REG_SET (tmp, bb->global_live_at_end);
+	  propagate_block (bb, tmp, (regset) NULL, prop_flags);
+
+	  if (extent == UPDATE_LIFE_LOCAL)
+	    verify_local_live_at_start (tmp, bb);
+	}
+    }
 
   FREE_REG_SET (tmp);
 
@@ -2970,6 +2982,8 @@ set_phi_alternative_reg (insn, dest_regno, src_regno, data)
 
 /* Propagate global life info around the graph of basic blocks.  Begin
    considering blocks with their corresponding bit set in BLOCKS_IN. 
+   If BLOCKS_IN is null, consider it the universal set.
+
    BLOCKS_OUT is set for every block that was changed.  */
 
 static void
@@ -3000,14 +3014,27 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   /* Queue the blocks set in the initial mask.  Do this in reverse block
      number order so that we are more likely for the first round to do 
      useful work.  We use AUX non-null to flag that the block is queued.  */
-  EXECUTE_IF_SET_IN_SBITMAP (blocks_in, 0, i,
+  if (blocks_in)
     {
-      basic_block bb = BASIC_BLOCK (i);
-      *--qhead = bb;
-      bb->aux = bb;
-    });
+      EXECUTE_IF_SET_IN_SBITMAP (blocks_in, 0, i,
+	{
+	  basic_block bb = BASIC_BLOCK (i);
+	  *--qhead = bb;
+	  bb->aux = bb;
+	});
+    }
+  else
+    {
+      for (i = 0; i < n_basic_blocks; ++i)
+	{
+	  basic_block bb = BASIC_BLOCK (i);
+	  *--qhead = bb;
+	  bb->aux = bb;
+	}
+    }
 
-  sbitmap_zero (blocks_out);
+  if (blocks_out)
+    sbitmap_zero (blocks_out);
 
   while (qhead != qtail)
     {
@@ -3080,7 +3107,8 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
       /* Let our caller know that BB changed enough to require its
 	 death notes updated.  */
-      SET_BIT (blocks_out, bb->index);
+      if (blocks_out)
+	SET_BIT (blocks_out, bb->index);
 
       if (! rescan)
 	{
@@ -3130,11 +3158,22 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   FREE_REG_SET (tmp);
   FREE_REG_SET (new_live_at_end);
 
-  EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i,
+  if (blocks_out)
     {
-      basic_block bb = BASIC_BLOCK (i);
-      FREE_REG_SET (bb->local_set);
-    });
+      EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i,
+	{
+	  basic_block bb = BASIC_BLOCK (i);
+	  FREE_REG_SET (bb->local_set);
+	});
+    }
+  else
+    {
+      for (i = n_basic_blocks - 1; i >= 0; --i)
+	{
+	  basic_block bb = BASIC_BLOCK (i);
+	  FREE_REG_SET (bb->local_set);
+	}
+    }
 
   free (queue);
 }
