@@ -1,3 +1,14 @@
+Mon Oct 19 10:45:40 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de> 
+
+	* combine.c (recog_for_combine): Lose PADDED_SCRATCHES arg.  All
+	callers changed.
+	(try_combine): Don't update max_scratch.
+	* flow.c (max_scratch, num_scratch): Delete variables.
+	(life_analysis_1): Don't initialize max_scratch.
+	(propagate_block): Don't update max_scratch.
+	(mark_set_1): Don't increment num_scratch.
+	* regs.h (max_scratch): Delete declaration.
+
 Mon Oct 19 10:28:15 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* sched.c (update_flow_info): Handle death notes made invalid by

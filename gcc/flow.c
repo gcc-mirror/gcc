@@ -167,15 +167,6 @@ int n_basic_blocks;
 
 int max_regno;
 
-/* Maximum number of SCRATCH rtx's used in any basic block of this
-   function.  */
-
-int max_scratch;
-
-/* Number of SCRATCH rtx's in the current block.  */
-
-static int num_scratch;
-
 /* Indexed by n, giving various register information */
 
 varray_type reg_n_info;
@@ -1544,8 +1535,6 @@ life_analysis_1 (f, nregs)
      basic_block_live_at_start[i]).  This is ok now because
      basic_block_live_at_end[i] is no longer used past this point.  */
 
-  max_scratch = 0;
-
   for (i = 0; i < n_basic_blocks; i++)
     {
       propagate_block (basic_block_live_at_end[i],
@@ -1732,8 +1721,6 @@ propagate_block (old, first, last, final, significant, bnum)
   if (final)
     {
       register int i;
-
-      num_scratch = 0;
 
       /* Process the regs live at the end of the block.
 	 Mark them as not local to any one basic block. */
@@ -1962,9 +1949,6 @@ propagate_block (old, first, last, final, significant, bnum)
 
   FREE_REG_SET (dead);
   FREE_REG_SET (live);
-
-  if (num_scratch > max_scratch)
-    max_scratch = num_scratch;
 }
 
 /* Return 1 if X (the body of an insn, or part of it) is just dead stores
@@ -2412,7 +2396,6 @@ mark_set_1 (needed, dead, x, insn, significant)
     {
       REG_NOTES (insn)
 	= gen_rtx_EXPR_LIST (REG_UNUSED, reg, REG_NOTES (insn));
-      num_scratch++;
     }
 }
 
