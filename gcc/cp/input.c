@@ -69,7 +69,7 @@ extern unsigned char *yy_cur, *yy_lim;
 extern int yy_get_token ();
 #endif
 
-extern void feed_input PROTO((char *, int));
+extern void feed_input PROTO((char *, int, char *, int));
 extern void put_input PROTO((int));
 extern void put_back PROTO((int));
 extern int getch PROTO((void));
@@ -110,9 +110,11 @@ free_input (inp)
 
 inline
 void
-feed_input (str, len)
+feed_input (str, len, file, line)
      char *str;
      int len;
+     char *file;
+     int line;
 {
   struct input_source *inp = allocate_input ();
 
@@ -126,6 +128,9 @@ feed_input (str, len)
     my_friendly_abort (990710);
   cpp_push_buffer (&parse_in, str, len);
   CPP_BUFFER (&parse_in)->manual_pop = 1;
+  CPP_BUFFER (&parse_in)->nominal_fname
+    = CPP_BUFFER (&parse_in)->fname = file;
+  CPP_BUFFER (&parse_in)->lineno = line;
 #else
   inp->str = str;
   inp->length = len;
@@ -134,6 +139,8 @@ feed_input (str, len)
   putback.buffer = NULL;
   putback.buffer_size = 0;
   putback.index = -1;
+  lineno = line;
+  input_filename = file;
 #endif
   inp->next = input;
   inp->filename = input_filename;

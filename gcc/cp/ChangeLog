@@ -1,3 +1,12 @@
+1999-07-26  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* input.c (feed_input): Add file, line parms.
+	* lex.c (begin_definition_of_inclass_inline, feed_defarg): Adjust.
+	(real_yylex): Check linemode before input_redirected().
+
+	* typeck.c (c_expand_return): Downgrade pedwarn about returning NULL
+	from op new to warning.
+
 1999-07-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (ncp_convert): Rename to perform_implicit_conversion.

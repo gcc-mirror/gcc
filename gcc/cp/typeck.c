@@ -6757,7 +6757,7 @@ c_expand_return (retval)
        || DECL_NAME (current_function_decl) == ansi_opname[(int) VEC_NEW_EXPR])
       && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
       && null_ptr_cst_p (retval))
-    cp_pedwarn ("operator new should throw an exception, not return NULL");
+    cp_warning ("operator new should throw an exception, not return NULL");
   
   if (retval == NULL_TREE)
     {

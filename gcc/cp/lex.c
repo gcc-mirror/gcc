@@ -1266,9 +1266,7 @@ begin_definition_of_inclass_inline (pi)
   if (context)
     push_cp_function_context (context);
 
-  feed_input (pi->buf, pi->len);
-  lineno = pi->lineno;
-  input_filename = pi->filename;
+  feed_input (pi->buf, pi->len, pi->filename, pi->lineno);
   yychar = PRE_PARSED_FUNCTION_DECL;
   yylval.ttype = build_tree_list ((tree) pi, pi->fndecl);
   /* Pass back a handle to the rest of the inline functions, so that they
@@ -1878,12 +1876,20 @@ feed_defarg (f, p)
      tree f, p;
 {
   tree d = TREE_PURPOSE (p);
-  feed_input (DEFARG_POINTER (d), DEFARG_LENGTH (d));
+  char *file;
+  int line;
   if (TREE_CODE (f) == FUNCTION_DECL)
     {
-      lineno = DECL_SOURCE_LINE (f);
-      input_filename = DECL_SOURCE_FILE (f);
+      line = DECL_SOURCE_LINE (f);
+      file = DECL_SOURCE_FILE (f);
     }
+  else
+    {
+      line = lineno;
+      file = input_filename;
+    }
+
+  feed_input (DEFARG_POINTER (d), DEFARG_LENGTH (d), file, line);
   yychar = DEFARG_MARKER;
   yylval.ttype = p;
 }
@@ -3557,10 +3563,10 @@ real_yylex ()
     case EOF:
       end_of_file = 1;
       token_buffer[0] = 0;
-      if (input_redirected ())
-	value = END_OF_SAVED_INPUT;
-      else if (linemode)
+      if (linemode)
 	value = END_OF_LINE;
+      else if (input_redirected ())
+	value = END_OF_SAVED_INPUT;
       else
 	value = ENDFILE;
       break;
