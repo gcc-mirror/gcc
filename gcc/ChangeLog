@@ -1,3 +1,9 @@
+2004-07-22  Jason Merrill  <jason@redhat.com>
+
+	* integrate.c (copy_decl_for_inlining): Remove invisible reference
+	handling.
+	* tree-inline.c (setup_one_parameter): Likewise.
+
 2004-07-22  Brian Booth  <bbooth@redhat.com>
 
 	* tree-ssa-ccp.c (latticevalue): Add UNKNOWN_VAL.
