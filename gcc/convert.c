@@ -397,7 +397,8 @@ convert_to_complex (type, expr)
 
   if (form == COMPLEX_TYPE)
     {
-      if (comptypes (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (expr))))
+      tree elt_type = TREE_TYPE (TREE_TYPE (expr));
+      if (TYPE_MAIN_VARIANT (elt_type) == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
 	return expr;
       else if (TREE_CODE (expr) == COMPLEX_EXPR)
 	return fold (build (COMPLEX_EXPR,
