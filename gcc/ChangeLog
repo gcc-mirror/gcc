@@ -1,3 +1,49 @@
+2002-07-21  Bernd Schmidt  <bernds@redhat.com>
+
+	Improvements for the ifcvt pass from Michael Meissner, with patches
+	by Richard Sandiford <rsandifo@redhat.com>
+	* basic-block.h (struct ce_if_block, ce_if_block_t): New types.
+	* ifcvt.c (cond_exec_changed_p): New static variable.
+	(last_active_insn): New function, renamed from last_active_insn_p
+	and changed to return the last active insn in a basic block. All
+	callers updated.
+	(block_fallthru): New function.
+	(cond_exec_process_insns): New argument CE_INFO.  Pass it to
+	IFCVT_MODIFY_INSN.  All callers updated.
+	Return false if START or END are NULL.
+	Handle case where we're processing an insn that is already
+	conditional.
+
+	(noce_process_if_block): CE_INFO argument rather than
+	multiple args containing the involved basic blocks.  All callers
+	changed.
+	(process_if_block, merge_if_block, find_if_block,
+	cond_exec_process_if_block): Likewise.
+
+	(cond_exec_process_if_block): New arg DO_MULTIPLE_P.  All callers
+	changed.
+	Use new function last_active_insn to simplify some code.
+	New code to handle multiple tests.
+	Call IFCVT_MODIFY_CANCEL in all failure cases, otherwise set
+	cond_exec_changed_p to TRUE.
+
+	(process_if_block): New code to handle multiple tests.
+	(merge_if_block): Likewise.
+	(find_if_header): New arg PASS.  Changed to return the currently
+	processed basic block or NULL instead of true/false. All callers
+	changed.
+	Call IFCVT_INIT_EXTRA_FIELDS.
+	(block_jumps_and_fallthru_p): New function.
+	(find_if_block): Discover opportunities to convert multiple tests.
+	Add additional debugging output.
+	Update the ce_info structure before returning.
+
+	(if_convert): Run multiple passes of if-conversion.
+	* doc/tm.texi (IFCVT_MODIFY_TESTS, IFCVT_MODIFY_INSN,
+	IFCVT_MODIFY_FINAL, IFCVT_MODIFY_CANCEL, IFCVT_MODIFY_MULTIPLE_TESTS,
+	IFCVT_INIT_EXTRA_FIELDS, IFCVT_EXTRA_FIELDS): Update documentation for
+	these macros.
+
 Sun Jul 21 00:54:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c: Include cselib.h
