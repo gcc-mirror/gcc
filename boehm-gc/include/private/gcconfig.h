@@ -715,6 +715,8 @@
 #   define MACH_TYPE "SPARC"
 #   if defined(__arch64__) || defined(__sparcv9)
 #     define ALIGNMENT 8
+#     define CPP_WORDSZ 64
+#     define ELF_CLASS ELFCLASS64
 #   else
 #     define ALIGNMENT 4	/* Required by hardware	*/
 #   endif
