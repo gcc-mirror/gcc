@@ -3750,7 +3750,6 @@ extern void cxx_pop_function_context		(struct function *);
 extern void cxx_mark_function_context		(struct function *);
 extern void maybe_push_cleanup_level (tree);
 extern void finish_scope                        (void);
-extern void delete_block			(tree);
 extern void add_block_current_level		(tree);
 extern void push_switch				(tree);
 extern void pop_switch				(void);
