@@ -2,6 +2,8 @@
 
 	* cfglayout.c (fixup_reorder_chain): Remove old_bb.
 
+	* cfgrtl.c (cfg_layout_merge_blocks): Remove new_e.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
