@@ -677,7 +677,11 @@ public class Container extends Component
    */
   public void update(Graphics g)
   {
-    g.clearRect(0, 0, width, height);
+    Rectangle clip = g.getClipBounds();
+    if (clip == null)
+      g.clearRect(0, 0, width, height);
+    else
+      g.clearRect(clip.x, clip.y, clip.width, clip.height);
     super.update(g);
   }
 
@@ -1196,7 +1200,7 @@ public class Container extends Component
   {
     synchronized (getTreeLock ())
       {
-        for (int i = 0; i < ncomponents; ++i)
+        for (int i = ncomponents - 1; i >= 0; --i)
           {
             Component comp = component[i];
             boolean applicable = comp.isVisible()
