@@ -1,3 +1,7 @@
+2001-07-05  Jason Merrill  <jason_merrill@redhat.com>
+
+	* testsuite_flags.in (--build-includes): backward, not backwards.
+
 2001-07-04  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* include/ext/ropeimpl.h (_Rope_RopeRep::_M_free_c_string):
