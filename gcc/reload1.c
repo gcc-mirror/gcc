@@ -601,7 +601,9 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
   code = GET_CODE (x);
   if (code == REG)
     {
-      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+      int regno = REGNO (x);
+
+      if (regno < FIRST_PSEUDO_REGISTER)
 	return;
 
       x = eliminate_regs (x, mem_mode, usage);
@@ -612,10 +614,15 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
 	  return;
 	}
 
-      if (reg_renumber [REGNO (x)] < 0)
-	*loc = regno_reg_rtx[REGNO (x)];
-      else if (reg_equiv_mem[REGNO (x)])
-	*loc = reg_equiv_mem[REGNO (x)];
+      if (reg_equiv_constant[regno])
+	*loc = reg_equiv_constant[regno];
+      else if (reg_equiv_mem[regno])
+	*loc = reg_equiv_mem[regno];
+      else if (reg_equiv_address[regno])
+	*loc = gen_rtx_MEM (GET_MODE (x), reg_equiv_address[regno]);
+      else if (GET_CODE (regno_reg_rtx[regno]) != REG
+	       || REGNO (regno_reg_rtx[regno]) != regno)
+	*loc = regno_reg_rtx[regno];
       else
 	abort ();
 
