@@ -1,3 +1,8 @@
+2001-01-29  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* config/mips/iris6.h (SUPPORTS_INIT_PRIORITY): Revise definition
+	to use flag_gnu_linker.
+
 2001-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpplib.c (T_BAD_DIRECTIVE): Remove.
