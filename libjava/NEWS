@@ -4,7 +4,7 @@ New in libgcj X.XX:
 is not found in the application binary or linked shared libraries, the
 class loader will search for a bytecode version in the CLASSPATH and execute
 it using the interpreter. A new front end that behaves like the traditional
-`java' command is provided: `gij'.
+`java' command is also provided: `gij'.
 
 * Support for specifying java system properties. Properties can either be set 
 at runtime via the GCJ_PROPERTIES environment variable in the format 
@@ -12,7 +12,7 @@ at runtime via the GCJ_PROPERTIES environment variable in the format
 -D<name>=<value>.
 
 * Support for setjmp/longjmp (sjlj) exception handling has been added, as an
-alternative to the existing range-table based mechanism. sljl is the default
+alternative to the existing range-table based mechanism. sjlj is the default
 on non-sparc, non-x86 targets, or can be specified with the 
 `--enable-sjlj-exceptions' configure parameter.
 
@@ -20,10 +20,12 @@ on non-sparc, non-x86 targets, or can be specified with the
 
 * Throwable.printStackTrace() has been implemented.
 
-* Runtime.loadLibrary() has been implemented. In addition, Class.forName() 
-will try to load a series of shared objects in order to find the requested 
-class.  If a class `gnu.quux.whatever' is requested, libgcj will first look 
-for `gnu-quux-whatever.so', then `gnu-quux.so', and finally `gnu.so'.
+* Runtime.loadLibrary() has been implemented.
+
+* Class.forName() will now try to load a series of shared objects in order 
+to find the requested class.  If a class `gnu.quux.whatever' is requested, 
+libgcj will search the system shared library path (eg LD_LIBRARY_PATH) for 
+`gnu-quux-whatever.so', then `gnu-quux.so', and finally `gnu.so'.
 
 * A pure-java implementation of java.math.BigInteger.
 
