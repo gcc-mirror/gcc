@@ -1,3 +1,11 @@
+2002-12-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* combine.c (combine_simplify_rtx): Add new canonicalizations.
+	* doc/md.texi (Insn Canonicalizations): Document new
+	canonicalizations for multiply/add combinations.
+	* config/rs6000/rs6000.md: Add and modify floating add/multiply
+	patterns to ensure they're used whenever they can be.
+
 2002-12-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c: Update the comments related to shifts.
