@@ -1941,9 +1941,9 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 }
 
 
-/* Given a control block BB and a predicate VAL, return the edge that
-   will be taken out of the block.  If VAL does not match a unique
-   edge, NULL is returned.  */
+/* Given a basic block BB ending with COND_EXPR or SWITCH_EXPR, and a
+   predicate VAL, return the edge that will be taken out of the block.
+   If VAL does not match a unique edge, NULL is returned.  */
 
 edge
 find_taken_edge (basic_block bb, tree val)
@@ -1971,7 +1971,7 @@ find_taken_edge (basic_block bb, tree val)
   if (TREE_CODE (stmt) == SWITCH_EXPR)
     return find_taken_edge_switch_expr (bb, val);
 
-  return EDGE_SUCC (bb, 0);
+  gcc_unreachable ();
 }
 
 
