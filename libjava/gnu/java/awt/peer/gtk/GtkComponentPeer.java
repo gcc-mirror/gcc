@@ -1,5 +1,5 @@
 /* GtkComponentPeer.java -- Implements ComponentPeer with GTK
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -124,6 +124,16 @@ public class GtkComponentPeer extends GtkGenericPeer
 	setFont(awtComponent.getFont());
 
       setCursor (awtComponent.getCursor ());
+      if (this instanceof GtkFileDialogPeer && awtComponent.getHeight() == 0
+          && awtComponent.getWidth() == 0)
+      {
+        int[] dims = new int[2];
+        gtkWidgetGetDimensions(dims);
+        ((GtkFileDialogPeer) this).setBoundsCallback((Window)awtComponent, 
+                                                     awtComponent.getX(), 
+                                                     awtComponent.getY(),
+                                                     dims[0], dims[1]);
+      }      
       Rectangle bounds = awtComponent.getBounds ();
       setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
 
