@@ -541,6 +541,8 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
    to the start of the trampoline.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
+  emit_insn (gen_rtx (ASM_INPUT, VOIDmode,				\
+		      "movpsl -(sp)\n\tpushal 1(pc)\n\trei"));		\
   emit_move_insn (gen_rtx (MEM, HImode, TRAMP),				\
 		  gen_rtx (MEM, HImode, FNADDR));			\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 4)), CXT);\
