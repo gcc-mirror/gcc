@@ -488,7 +488,7 @@ extern int n_non_fixed_regs;
 
 extern const char * reg_names[FIRST_PSEUDO_REGISTER];
 
-/* Given a hard REGN a FROM mode and a TO mode, return non-zero if
+/* Given a hard REGN a FROM mode and a TO mode, return nonzero if
    REGN cannot change modes between the specified modes.  */
 #define REG_CANNOT_CHANGE_MODE_P(REGN, FROM, TO)                          \
         (TEST_HARD_REG_BIT                                                \

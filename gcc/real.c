@@ -410,7 +410,7 @@ cmp_significands (a, b)
   return 0;
 }
 
-/* Return true if A is non-zero.  */
+/* Return true if A is nonzero.  */
 
 static inline int 
 cmp_significand_0 (a)
@@ -1675,8 +1675,8 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
   /* Round the result.  */
   if (digit == 5)
     {
-      /* Round to nearest.  If R is non-zero there are additional
-	 non-zero digits to be extracted.  */
+      /* Round to nearest.  If R is nonzero there are additional
+	 nonzero digits to be extracted.  */
       if (cmp_significand_0 (&r))
 	digit++;
       /* Round to even.  */
