@@ -2722,6 +2722,14 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
   if (CONSTANT_P (y) && preserve_subexpressions_p () && rtx_cost (y, COMPARE) > 2)
     y = force_reg (mode, y);
 
+#ifdef HAVE_cc0
+  /* Abort if we have a non-canonical comparison.  The RTL documentation
+     states that canonical comparisons are required only for targets which
+     have cc0.  */
+  if (CONSTANT_P (x) && ! CONSTANT_P (y))
+    abort();
+#endif
+
   /* Don't let both operands fail to indicate the mode.  */
   if (GET_MODE (x) == VOIDmode && GET_MODE (y) == VOIDmode)
     x = force_reg (mode, x);
@@ -2912,6 +2920,52 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
   else
     abort ();
 }
+
+/* Generate code to compare X with Y so that the condition codes are
+   set and to jump to LABEL if the condition is true.  If X is a
+   constant and Y is not a constant, then the comparison is swapped to
+   ensure that the comparison RTL has the canonical form.
+
+   MODE is the mode of the inputs (in case they are const_int).
+   UNSIGNEDP nonzero says that X and Y are unsigned;
+   this matters if they need to be widened.
+
+   If they have mode BLKmode, then SIZE specifies the size of both X and Y,
+   and ALIGN specifies the known shared alignment of X and Y.
+
+   COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).
+   It is ignored for fixed-point and block comparisons;
+   it is used only for floating-point comparisons.  */
+
+void
+emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
+     rtx x, y;
+     enum rtx_code comparison;
+     rtx size;
+     enum machine_mode mode;
+     int unsignedp;
+     int align;
+     rtx label;
+{
+  rtx op0;
+  rtx op1;
+	  
+  if (GET_CODE (x) == CONST_INT)
+    {
+      /* Swap operands and condition to ensure canonical RTL.  */
+      op0 = y;
+      op1 = x;
+      comparison = swap_condition (comparison);
+    }
+  else
+    {
+      op0 = x;
+      op1 = y;
+    }
+  emit_cmp_insn (op0, op1, comparison, size, mode, unsignedp, align);
+  emit_jump_insn ((*bcc_gen_fctn[(int) comparison]) (label));
+}
+
 
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */

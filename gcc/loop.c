@@ -7072,10 +7072,9 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 
 	      /* Add new compare/branch insn at end of loop.  */
 	      start_sequence ();
-	      emit_cmp_insn (reg, const0_rtx, cmp_code, NULL_RTX,
-			     GET_MODE (reg), 0, 0);
-	      emit_jump_insn ((*bcc_gen_fctn[(int) cmp_code])
-			      (XEXP (jump_label, 0)));
+	      emit_cmp_and_jump_insns (reg, const0_rtx, cmp_code, NULL_RTX,
+				       GET_MODE (reg), 0, 0, 
+				       XEXP (jump_label, 0));
 	      tem = gen_sequence ();
 	      end_sequence ();
 	      emit_jump_insn_before (tem, loop_end);

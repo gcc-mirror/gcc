@@ -919,12 +919,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
 	  if (loop_info->comparison_code != NE)
 	    {
-	      emit_cmp_insn (initial_value, final_value, neg_inc ? LE : GE,
-			     NULL_RTX, mode, 0, 0);
-	      if (neg_inc)
-		emit_jump_insn (gen_ble (labels[1]));
-	      else
-		emit_jump_insn (gen_bge (labels[1]));
+	      emit_cmp_and_jump_insns (initial_value, final_value, 
+				       neg_inc ? LE : GE,
+				       NULL_RTX, mode, 0, 0, labels[1]);
 	      JUMP_LABEL (get_last_insn ()) = labels[1];
 	      LABEL_NUSES (labels[1])++;
 	    }
@@ -965,15 +962,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		  cmp_code = LE;
 		}
 
-	      emit_cmp_insn (diff, GEN_INT (abs_inc * cmp_const),
-			     cmp_code, NULL_RTX, mode, 0, 0);
-
-	      if (i == 0)
-		emit_jump_insn (gen_beq (labels[i]));
-	      else if (neg_inc)
-		emit_jump_insn (gen_bge (labels[i]));
-	      else
-		emit_jump_insn (gen_ble (labels[i]));
+	      emit_cmp_and_jump_insns (diff, GEN_INT (abs_inc * cmp_const),
+				       cmp_code, NULL_RTX, mode, 0, 0,
+				       labels[i]);
 	      JUMP_LABEL (get_last_insn ()) = labels[i];
 	      LABEL_NUSES (labels[i])++;
 	    }
@@ -1003,13 +994,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		  cmp_code = GE;
 		}
 
-	      emit_cmp_insn (diff, GEN_INT (cmp_const), cmp_code, NULL_RTX,
-			     mode, 0, 0);
-
-	      if (neg_inc)
-		emit_jump_insn (gen_ble (labels[0]));
-	      else
-		emit_jump_insn (gen_bge (labels[0]));
+	      emit_cmp_and_jump_insns (diff, GEN_INT (cmp_const), cmp_code,
+				       NULL_RTX, mode, 0, 0, labels[0]);
 	      JUMP_LABEL (get_last_insn ()) = labels[0];
 	      LABEL_NUSES (labels[0])++;
 	    }
