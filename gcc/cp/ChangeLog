@@ -1,3 +1,7 @@
+1999-03-05  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst, case ARRAY_REF): Use tsubst_expr again.
+
 1999-03-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c, decl2.c, method.c, pt.c: Add 'static' to make SunOS 4
