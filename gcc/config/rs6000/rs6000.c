@@ -8184,9 +8184,15 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  assemble_name (file, fname);
 	  putc ('\n', file);
 	  text_section ();
+	  if (TARGET_MINIMAL_TOC)
+	    asm_fprintf (file, (TARGET_32BIT)
+			 ? "\t{l|lwz} %s,%s(%s)\n" : "\tld %s,%s(%s)\n", r12,
+			 TARGET_ELF ? ".LCTOC0@toc" : ".LCTOC..1", toc);
 	  asm_fprintf (file, (TARGET_32BIT) ? "\t{l|lwz} %s," : "\tld %s,", r12);
 	  assemble_name (file, buf);
-	  asm_fprintf (file, "(%s)\n", reg_names[2]);
+	  if (TARGET_ELF && TARGET_MINIMAL_TOC)
+	    fputs ("-(.LCTOC1)", file);
+	  asm_fprintf (file, "(%s)\n", TARGET_MINIMAL_TOC ? r12 : toc);
 	  asm_fprintf (file,
 		       (TARGET_32BIT) ? "\t{l|lwz} %s,0(%s)\n" : "\tld %s,0(%s)\n",
 		       r0, r12);
