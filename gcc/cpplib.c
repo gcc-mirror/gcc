@@ -6277,7 +6277,7 @@ cpp_warning VPROTO ((cpp_reader * pfile, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
-  const char *msg;
+  const char *msgid;
 #endif
   va_list ap;
   

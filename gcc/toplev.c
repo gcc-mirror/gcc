@@ -1852,7 +1852,7 @@ error VPROTO((const char *msgid, ...))
   VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgic = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
 
   verror (msgid, ap);

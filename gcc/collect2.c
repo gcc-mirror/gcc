@@ -476,7 +476,7 @@ void
 error VPROTO((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  const char * string;
+  const char * msgid;
 #endif
   va_list ap;
  

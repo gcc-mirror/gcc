@@ -129,7 +129,7 @@ cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msgid, ...))
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   int is_error;
-  const char *msg;
+  const char *msgid;
 #endif
   va_list ap;
   
