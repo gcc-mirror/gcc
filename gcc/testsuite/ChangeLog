@@ -8,6 +8,8 @@
 
 	* gcc.dg/20020527-1.c: New test.
 
+	* g++.dg/opt/cse1.C: New test.
+
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020529-1.c: New test.
