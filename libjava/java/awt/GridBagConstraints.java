@@ -1,6 +1,6 @@
 // GridBagConstraints.java - Constraints for GridBag layout manager
 
-/* Copyright (C) 2000, 2001  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2002  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -93,9 +93,17 @@ public class GridBagConstraints implements Cloneable, Serializable
   /** Create a copy of this object.  */
   public Object clone ()
   {
-    GridBagConstraints g = (GridBagConstraints) super.clone ();
-    g.insets = (Insets) insets.clone ();
-    return g;
+    try
+      {
+	GridBagConstraints g = (GridBagConstraints) super.clone ();
+	g.insets = (Insets) insets.clone ();
+	return g;
+      }
+    catch (CloneNotSupportedException _)
+      {
+	// Can't happen.
+	return null;
+      }
   }
 
   /** Create a new GridBagConstraints object with the default

@@ -477,22 +477,30 @@ java/awt/geom/Point2D.java \
 java/awt/geom/Rectangle2D.java \
 java/awt/geom/RectangularShape.java \
 java/awt/geom/RoundRectangle2D.java \
+java/awt/image/AreaAveragingScaleFilter.java \
 java/awt/image/BufferedImage.java \
 java/awt/image/ColorModel.java \
 java/awt/image/ComponentColorModel.java	\
 java/awt/image/ComponentSampleModel.java \
+java/awt/image/CropImageFilter.java \
 java/awt/image/DataBuffer.java \
 java/awt/image/DataBufferByte.java \
 java/awt/image/DataBufferInt.java \
 java/awt/image/DataBufferUShort.java \
 java/awt/image/DirectColorModel.java \
+java/awt/image/FilteredImageSource.java	\
 java/awt/image/ImageConsumer.java \
+java/awt/image/ImageFilter.java	\
 java/awt/image/ImageObserver.java \
 java/awt/image/ImageProducer.java \
 java/awt/image/IndexColorModel.java \
+java/awt/image/MemoryImageSource.java \
 java/awt/image/PackedColorModel.java \
+java/awt/image/PixelGrabber.java \
+java/awt/image/RGBImageFilter.java \
 java/awt/image/Raster.java \
 java/awt/image/RasterOp.java \
+java/awt/image/ReplicateScaleFilter.java \
 java/awt/image/SampleModel.java	\
 java/awt/image/SinglePixelPackedSampleModel.java \
 java/awt/image/WritableRaster.java \
@@ -2070,19 +2078,27 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/geom/Rectangle2D.P \
 .deps/java/awt/geom/RectangularShape.P \
 .deps/java/awt/geom/RoundRectangle2D.P \
+.deps/java/awt/image/AreaAveragingScaleFilter.P \
 .deps/java/awt/image/BufferedImage.P .deps/java/awt/image/ColorModel.P \
 .deps/java/awt/image/ComponentColorModel.P \
 .deps/java/awt/image/ComponentSampleModel.P \
+.deps/java/awt/image/CropImageFilter.P \
 .deps/java/awt/image/DataBuffer.P .deps/java/awt/image/DataBufferByte.P \
 .deps/java/awt/image/DataBufferInt.P \
 .deps/java/awt/image/DataBufferUShort.P \
 .deps/java/awt/image/DirectColorModel.P \
-.deps/java/awt/image/ImageConsumer.P \
+.deps/java/awt/image/FilteredImageSource.P \
+.deps/java/awt/image/ImageConsumer.P .deps/java/awt/image/ImageFilter.P \
 .deps/java/awt/image/ImageObserver.P \
 .deps/java/awt/image/ImageProducer.P \
 .deps/java/awt/image/IndexColorModel.P \
-.deps/java/awt/image/PackedColorModel.P .deps/java/awt/image/Raster.P \
-.deps/java/awt/image/RasterOp.P .deps/java/awt/image/SampleModel.P \
+.deps/java/awt/image/MemoryImageSource.P \
+.deps/java/awt/image/PackedColorModel.P \
+.deps/java/awt/image/PixelGrabber.P \
+.deps/java/awt/image/RGBImageFilter.P .deps/java/awt/image/Raster.P \
+.deps/java/awt/image/RasterOp.P \
+.deps/java/awt/image/ReplicateScaleFilter.P \
+.deps/java/awt/image/SampleModel.P \
 .deps/java/awt/image/SinglePixelPackedSampleModel.P \
 .deps/java/awt/image/WritableRaster.P .deps/java/awt/peer/ButtonPeer.P \
 .deps/java/awt/peer/CanvasPeer.P \
