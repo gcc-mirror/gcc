@@ -2,6 +2,8 @@
 /* { dg-options { -m68000 -O2 } { target m68k-*-* } } */
 /* { dg-options { -O2 } { target sparc-*-* } } */
 
+extern void abort (void);
+
 typedef SFtype __attribute__ ((mode (SF)));
 typedef DFtype __attribute__ ((mode (DF)));
 
