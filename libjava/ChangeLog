@@ -1,6 +1,17 @@
+2002-04-06  Mark Wielaard <mark@klomp.org>
+
+	* java/util/ArrayList.java (addAll(int,Collection)): System.arraycopy
+	all of the remaining elements.
+	* java/util/Vector.java (addAll(int,Collection)): Likewise.
+	(removeRange): If toIndex == fromIndex do
+	nothing, if toIndex < fromIndex throw IndexOutIfBoundsException.
+	(removeAll): Always throw NullPointerException when collection is
+	null.
+	(retrainAll): Likewise.
+
 2002-04-05  Mark Wielaard <mark@klomp.org>
 
-	* java/util/ArrayList.jva (removeRange): If toIndex == fromIndex do
+	* java/util/ArrayList.java (removeRange): If toIndex == fromIndex do
 	nothing, if toIndex < fromIndex throw IndexOutIfBoundsException.
 
 2002-04-04  Adam Megacz <adam@xwt.org>
