@@ -1,3 +1,8 @@
+Mon Aug 17 11:25:52 1998  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.h (SECONDARY_INPUT_RELOAD_CLASS): Return NO_REGS if compiling
+	for architecture v4.
+
 Sun Aug 16 00:57:48 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
