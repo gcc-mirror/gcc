@@ -1,3 +1,8 @@
+2005-04-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URL.java (DEFAULT_SEARCH_PATH): Added
+	org.metastatic.jessie.
+
 2005-04-02  Anthony Green  <green@redhat.com>
 
 	PR libgcj/20727
