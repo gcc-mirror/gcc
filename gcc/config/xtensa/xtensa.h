@@ -251,7 +251,6 @@ extern unsigned xtensa_current_frame_size;
 
 /* Size in bits of various types on the target machine.  */
 #define INT_TYPE_SIZE 32
-#define MAX_INT_TYPE_SIZE 32
 #define SHORT_TYPE_SIZE 16
 #define LONG_TYPE_SIZE 32
 #define MAX_LONG_TYPE_SIZE 32
@@ -1263,12 +1262,6 @@ typedef struct xtensa_args {
    to contain offsets from the address of the table.
    Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE */
-
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Define this as 1 if 'char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0

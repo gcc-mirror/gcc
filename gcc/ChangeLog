@@ -1,3 +1,8 @@
+2003-04-10  Bob Wilson  <bob.wilson@asm.org>
+
+	* config/xtensa/xtensa.h (MAX_INT_TYPE_SIZE, IMPLICIT_FIX_EXPR,
+	EASY_DIV_EXPR): Delete poisoned macro definitions.
+
 2003-04-09  Richard Henderson  <rth@redhat.com>
 
 	PR opt/10352
