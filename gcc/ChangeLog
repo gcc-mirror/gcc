@@ -1929,7 +1929,7 @@ Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	optimization in C++.
 	(ia64_output_mi_thunk): Support ILP32 mode.
 
-2003-08-22  bernardo innocenti  <bernie@develer.com>
+2003-08-22  Bernardo Innocenti  <bernie@develer.com>
 
 	* gcc/config/m68k/m68k.c (m68k_coff_asm_named_section): remove unused
 	function.
