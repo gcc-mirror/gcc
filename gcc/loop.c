@@ -2450,8 +2450,9 @@ prescan_loop (loop)
   for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
        insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE)
+      switch (GET_CODE (insn))
 	{
+	case NOTE:
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 	    {
 	      ++level;
@@ -2459,24 +2460,73 @@ prescan_loop (loop)
 	      loop->level++;
 	    }
 	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    {
-	      --level;
-	    }
-	}
-      else if (GET_CODE (insn) == CALL_INSN)
-	{
+	    --level;
+	  break;
+
+	case CALL_INSN:
 	  if (! CONST_OR_PURE_CALL_P (insn))
 	    {
 	      loop_info->unknown_address_altered = 1;
 	      loop_info->has_nonconst_call = 1;
 	    }
 	  loop_info->has_call = 1;
-	}
-      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
-	{
-	  rtx label1 = NULL_RTX;
-	  rtx label2 = NULL_RTX;
+	  if (can_throw_internal (insn))
+	    loop_info->has_multiple_exit_targets = 1;
+	  break;
 
+	case JUMP_INSN:
+	  if (! loop_info->has_multiple_exit_targets)
+	    {
+	      rtx set = pc_set (insn);
+
+	      if (set)
+		{
+		  rtx label1, label2;
+
+		  if (GET_CODE (SET_SRC (set)) == IF_THEN_ELSE)
+		    {
+		      label1 = XEXP (SET_SRC (set), 1);
+		      label2 = XEXP (SET_SRC (set), 2);
+		    }
+		  else
+		    {
+		      label1 = SET_SRC (PATTERN (insn));
+		      label2 = NULL_RTX;
+		    }
+
+		  do
+		    {
+		      if (label1 && label1 != pc_rtx)
+			{
+			  if (GET_CODE (label1) != LABEL_REF)
+			    {
+			      /* Something tricky.  */
+			      loop_info->has_multiple_exit_targets = 1;
+			      break;
+			    }
+			  else if (XEXP (label1, 0) != exit_target
+				   && LABEL_OUTSIDE_LOOP_P (label1))
+			    {
+			      /* A jump outside the current loop.  */
+			      loop_info->has_multiple_exit_targets = 1;
+			      break;
+			    }
+			}
+
+		      label1 = label2;
+		      label2 = NULL_RTX;
+		    }
+		  while (label1);
+		}
+	      else
+		{
+		  /* A return, or something tricky.  */
+		  loop_info->has_multiple_exit_targets = 1;
+		}
+	    }
+	  /* FALLTHRU */
+
+	case INSN:
 	  if (volatile_refs_p (PATTERN (insn)))
 	    loop_info->has_volatile = 1;
 
@@ -2489,48 +2539,13 @@ prescan_loop (loop)
 	  if (! loop_info->first_loop_store_insn && loop_info->store_mems)
 	    loop_info->first_loop_store_insn = insn;
 
-	  if (! loop_info->has_multiple_exit_targets
-	      && GET_CODE (insn) == JUMP_INSN
-	      && GET_CODE (PATTERN (insn)) == SET
-	      && SET_DEST (PATTERN (insn)) == pc_rtx)
-	    {
-	      if (GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
-		{
-		  label1 = XEXP (SET_SRC (PATTERN (insn)), 1);
-		  label2 = XEXP (SET_SRC (PATTERN (insn)), 2);
-		}
-	      else
-		{
-		  label1 = SET_SRC (PATTERN (insn));
-		}
+	  if (flag_non_call_exceptions && can_throw_internal (insn))
+	    loop_info->has_multiple_exit_targets = 1;
+	  break;
 
-	      do
-		{
-		  if (label1 && label1 != pc_rtx)
-		    {
-		      if (GET_CODE (label1) != LABEL_REF)
-			{
-			  /* Something tricky.  */
-			  loop_info->has_multiple_exit_targets = 1;
-			  break;
-			}
-		      else if (XEXP (label1, 0) != exit_target
-			       && LABEL_OUTSIDE_LOOP_P (label1))
-			{
-			  /* A jump outside the current loop.  */
-			  loop_info->has_multiple_exit_targets = 1;
-			  break;
-			}
-		    }
-
-		  label1 = label2;
-		  label2 = NULL_RTX;
-		}
-	      while (label1);
-	    }
+	default:
+	  break;
 	}
-      else if (GET_CODE (insn) == RETURN)
-	loop_info->has_multiple_exit_targets = 1;
     }
 
   /* Now, rescan the loop, setting up the LOOP_MEMS array.  */
@@ -7962,7 +7977,7 @@ check_dbra_loop (loop, insn_count)
 	 which is reversible.  */
       int reversible_mem_store = 1;
 
-      if (bl->giv_count == 0 && ! loop->exit_count)
+      if (bl->giv_count == 0 && ! loop_info->has_multiple_exit_targets)
 	{
 	  rtx bivreg = regno_reg_rtx[bl->regno];
 	  struct iv_class *blt;
@@ -8003,9 +8018,11 @@ check_dbra_loop (loop, insn_count)
 		  }
 	      }
 
-	  /* A biv has uses besides counting if it is used to set another biv.  */
+	  /* A biv has uses besides counting if it is used to set
+	     another biv.  */
 	  for (blt = ivs->list; blt; blt = blt->next)
-	    if (blt->init_set && reg_mentioned_p (bivreg, SET_SRC (blt->init_set)))
+	    if (blt->init_set
+		&& reg_mentioned_p (bivreg, SET_SRC (blt->init_set)))
 	      {
 		no_use_except_counting = 0;
 		break;

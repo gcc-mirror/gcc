@@ -1141,7 +1141,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
   /* If this instruction can throw an exception, then moving it changes
      where block boundaries fall.  This is mighty confusing elsewhere. 
      Therefore, prevent such an instruction from being moved.  */
-  if (flag_non_call_exceptions && can_throw_internal (insn))
+  if (can_throw_internal (insn))
     schedule_barrier_found = 1;
 
   /* Add dependencies if a scheduling barrier was found.  */
