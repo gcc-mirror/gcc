@@ -310,7 +310,7 @@ arm_override_options ()
      assembler and linker, and the ARMASM assembler seems to lack some
      required directives.  */
   if (flag_pic)
-    warning ("Position independent code not supported.  Ignored");
+    warning ("Position independent code not supported");
 
   if (TARGET_APCS_FLOAT)
     warning ("Passing floating point arguments in fp regs not yet supported");
