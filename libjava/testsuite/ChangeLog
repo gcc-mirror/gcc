@@ -1,3 +1,8 @@
+2000-02-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* libjava.lang/anonarray3.out: New file.
+	* libjava.lang/anonarray3.java: New file.
+
 2000-02-09  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/inner_priv.java: New file.
