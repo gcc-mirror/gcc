@@ -6032,7 +6032,7 @@ store_parm_decls (void)
   gen_aux_info_record (fndecl, 1, 0, prototype);
 
   /* Initialize the RTL code for the function.  */
-  init_function_start (fndecl);
+  allocate_struct_function (fndecl);
 
   /* Begin the statement tree for this function.  */
   begin_stmt_tree (&DECL_SAVED_TREE (fndecl));
@@ -6142,11 +6142,8 @@ finish_function (int nested, int can_defer_p)
       && DECL_INLINE (fndecl))
     warning ("no return statement in function returning non-void");
 
-  /* Clear out memory we no longer need.  */
-  free_after_parsing (cfun);
-  /* Since we never call rest_of_compilation, we never clear
-     CFUN.  Do so explicitly.  */
-  free_after_compilation (cfun);
+  /* We're leaving the context of this function, so zap cfun.  It's still in
+     DECL_SAVED_INSNS, and we'll restore it in tree_rest_of_compilation.  */
   cfun = NULL;
 
   if (flag_unit_at_a_time && can_defer_p)
@@ -6239,25 +6236,6 @@ c_expand_deferred_function (tree fndecl)
     }
 }
 
-/* Called to move the SAVE_EXPRs for parameter declarations in a
-   nested function into the nested function.  DATA is really the
-   nested FUNCTION_DECL.  */
-
-static tree
-set_save_expr_context (tree *tp,
-		       int *walk_subtrees,
-		       void *data)
-{
-  if (TREE_CODE (*tp) == SAVE_EXPR && !SAVE_EXPR_CONTEXT (*tp))
-    SAVE_EXPR_CONTEXT (*tp) = (tree) data;
-  /* Do not walk back into the SAVE_EXPR_CONTEXT; that will cause
-     circularity.  */
-  else if (DECL_P (*tp))
-    *walk_subtrees = 0;
-
-  return NULL_TREE;
-}
-
 /* Generate the RTL for the body of FNDECL.  If NESTED_P is nonzero,
    then we are already in the process of generating RTL for another
    function.  If can_defer_p is zero, we won't attempt to defer the
@@ -6266,78 +6244,14 @@ set_save_expr_context (tree *tp,
 static void
 c_expand_body_1 (tree fndecl, int nested_p)
 {
-  timevar_push (TV_EXPAND);
-
   if (nested_p)
     {
       /* Make sure that we will evaluate variable-sized types involved
 	 in our function's type.  */
       expand_pending_sizes (DECL_LANG_SPECIFIC (fndecl)->pending_sizes);
-      /* Squirrel away our current state.  */
-      push_function_context ();
     }
 
-  /* Initialize the RTL code for the function.  */
-  current_function_decl = fndecl;
-  input_location = DECL_SOURCE_LOCATION (fndecl);
-  init_function_start (fndecl);
-
-  /* This function is being processed in whole-function mode.  */
-  cfun->x_whole_function_mode_p = 1;
-
-  /* Even though we're inside a function body, we still don't want to
-     call expand_expr to calculate the size of a variable-sized array.
-     We haven't necessarily assigned RTL to all variables yet, so it's
-     not safe to try to expand expressions involving them.  */
-  immediate_size_expand = 0;
-  cfun->x_dont_save_pending_sizes_p = 1;
-
-  /* Set up parameters and prepare for return, for the function.  */
-  expand_function_start (fndecl, 0);
-
-  /* If the function has a variably modified type, there may be
-     SAVE_EXPRs in the parameter types.  Their context must be set to
-     refer to this function; they cannot be expanded in the containing
-     function.  */
-  if (decl_function_context (fndecl)
-      && variably_modified_type_p (TREE_TYPE (fndecl)))
-    walk_tree (&TREE_TYPE (fndecl), set_save_expr_context, fndecl,
-	       NULL);
-
-  /* If this function is `main', emit a call to `__main'
-     to run global initializers, etc.  */
-  if (DECL_NAME (fndecl)
-      && MAIN_NAME_P (DECL_NAME (fndecl))
-      && DECL_FILE_SCOPE_P (fndecl))
-    expand_main_function ();
-
-  /* Generate the RTL for this function.  */
-  expand_stmt (DECL_SAVED_TREE (fndecl));
-
-  /* We hard-wired immediate_size_expand to zero above.
-     expand_function_end will decrement this variable.  So, we set the
-     variable to one here, so that after the decrement it will remain
-     zero.  */
-  immediate_size_expand = 1;
-
-  /* Allow language dialects to perform special processing.  */
-  if (lang_expand_function_end)
-    (*lang_expand_function_end) ();
-
-  /* Generate rtl for function exit.  */
-  expand_function_end ();
-
-  /* If this is a nested function, protect the local variables in the stack
-     above us from being collected while we're compiling this function.  */
-  if (nested_p)
-    ggc_push_context ();
-
-  /* Run the optimizers and output the assembler code for this function.  */
-  rest_of_compilation (fndecl);
-
-  /* Undo the GC context switch.  */
-  if (nested_p)
-    ggc_pop_context ();
+  tree_rest_of_compilation (fndecl);
 
   /* With just -Wextra, complain only if function returns both with
      and without a value.  */
@@ -6345,46 +6259,6 @@ c_expand_body_1 (tree fndecl, int nested_p)
       && current_function_returns_value
       && current_function_returns_null)
     warning ("this function may return with or without a value");
-
-  /* If requested, warn about function definitions where the function will
-     return a value (usually of some struct or union type) which itself will
-     take up a lot of stack space.  */
-
-  if (warn_larger_than && !DECL_EXTERNAL (fndecl) && TREE_TYPE (fndecl))
-    {
-      tree ret_type = TREE_TYPE (TREE_TYPE (fndecl));
-
-      if (ret_type && TYPE_SIZE_UNIT (ret_type)
-	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
-	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-				   larger_than_size))
-	{
-          const location_t *locus = &DECL_SOURCE_LOCATION (fndecl);
-	  unsigned int size_as_int
-	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
-
-	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning ("%Hsize of return value of '%D' is %u bytes",
-                     locus, fndecl, size_as_int);
-	  else
-	    warning ("%Hsize of return value of '%D' is larger than %wd bytes",
-                     locus, fndecl, larger_than_size);
-	}
-    }
-
-  if (DECL_SAVED_INSNS (fndecl) == 0 && ! nested_p
-      && ! flag_inline_trees)
-    {
-      /* Stop pointing to the local nodes about to be freed.
-	 But DECL_INITIAL must remain nonzero so we know this
-	 was an actual function definition.
-	 For a nested function, this is done in c_pop_function_context.
-	 If rest_of_compilation set this to 0, leave it 0.  */
-      if (DECL_INITIAL (fndecl) != 0)
-	DECL_INITIAL (fndecl) = error_mark_node;
-
-      DECL_ARGUMENTS (fndecl) = 0;
-    }
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
     {
@@ -6403,11 +6277,6 @@ c_expand_body_1 (tree fndecl, int nested_p)
       else
 	static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
     }
-
-  if (nested_p)
-    /* Return to the enclosing function.  */
-    pop_function_context ();
-  timevar_pop (TV_EXPAND);
 }
 
 /* Like c_expand_body_1 but only for unnested functions.  */

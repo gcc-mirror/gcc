@@ -90,6 +90,9 @@ enum c_language_kind c_language = clk_c;
 #undef LANG_HOOKS_DECL_UNINIT
 #define LANG_HOOKS_DECL_UNINIT c_decl_uninit
 
+#undef LANG_HOOKS_RTL_EXPAND_STMT
+#define LANG_HOOKS_RTL_EXPAND_STMT expand_stmt
+
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
 #define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE c_common_attribute_table

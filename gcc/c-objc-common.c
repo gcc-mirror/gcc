@@ -289,20 +289,43 @@ static void
 expand_deferred_fns (void)
 {
   unsigned int i;
+  bool reconsider;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
+  do
     {
-      tree decl = VARRAY_TREE (deferred_fns, i);
-
-      if (! TREE_ASM_WRITTEN (decl))
+      reconsider = false;
+      for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
 	{
-	  /* For static inline functions, delay the decision whether to
-	     emit them or not until wrapup_global_declarations.  */
-	  if (! TREE_PUBLIC (decl))
-	    DECL_DEFER_OUTPUT (decl) = 1;
+	  tree decl = VARRAY_TREE (deferred_fns, i);
+
+	  if (TREE_ASM_WRITTEN (decl))
+	    continue;
+
+	  /* "extern inline" says the symbol exists externally,
+	      which means we should *never* expand it locally 
+	      unless we're actually inlining it.  */
+	  /* ??? Why did we queue these in the first place?  */
+	  if (DECL_DECLARED_INLINE_P (decl) && DECL_EXTERNAL (decl))
+	    continue;
+	      
+	  /* With flag_keep_inline_functions, we're emitting everything,
+	     so we never need to reconsider.  */
+	  if (flag_keep_inline_functions)
+	    ;
+	  /* Must emit all public functions.  C doesn't have COMDAT
+	     functions, so we don't need to check that, like C++.  */
+	  else if (TREE_PUBLIC (decl))
+	    reconsider = true;
+	  /* Must emit if the symbol is referenced.  */
+	  else if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	    reconsider = true;
+	  else
+	    continue;
+
 	  c_expand_deferred_function (decl);
 	}
     }
+  while (reconsider);
 
   deferred_fns = 0;
 }

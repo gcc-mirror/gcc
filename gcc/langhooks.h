@@ -77,6 +77,19 @@ struct lang_hooks_for_functions
   void (*leave_nested) (struct function *);
 };
 
+/* Lang hooks for rtl code generation.  */
+struct lang_hooks_for_rtl_expansion
+{
+  /* Called after expand_function_start, but before expanding the body.  */
+  void (*start) (void);
+
+  /* Called to expand each statement.  */
+  void (*stmt) (tree);
+
+  /* Called after expanding the body but before expand_function_end.  */
+  void (*end) (void);
+};
+
 /* The following hooks are used by tree-dump.c.  */
 
 struct lang_hooks_for_tree_dump
@@ -386,6 +399,8 @@ struct lang_hooks
   struct lang_hooks_for_decls decls;
 
   struct lang_hooks_for_types types;
+
+  struct lang_hooks_for_rtl_expansion rtl_expand;
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
