@@ -1,3 +1,8 @@
+2001-10-13  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (lookup_template_class): Build complete template arguments
+	for BOUND_TEMPLATE_TEMPLATE_PARM.
+
 2001-10-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* cp-tree.h (TYPE_BINFO): Update comment.
