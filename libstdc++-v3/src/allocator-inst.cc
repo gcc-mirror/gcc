@@ -32,20 +32,9 @@
 //
 
 #include <memory>
-#include <ext/mt_allocator.h>
-#include <ext/pool_allocator.h>
 
 namespace std
 {
   template class allocator<char>;
   template class allocator<wchar_t>;
 } // namespace std
-
-namespace __gnu_cxx
-{
-  template class __mt_alloc<char>;
-  template class __mt_alloc<wchar_t>;
-
-  template class __pool_alloc<char>;
-  template class __pool_alloc<wchar_t>;
-} // namespace __gnu_cxx

@@ -1,3 +1,39 @@
+2004-09-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/16614
+	* include/ext/mt_allocator.h (__mt_base): Not type dependent,
+	split into..
+	(__pool): New, specialize.
+	(__common_pool): New, static bits here.
+	(__per_type_pool): New, and here.
+	(__mt_alloc_base): New.
+	(__mt_alloc): Add template parameter, inherit from it.
+	* src/allocator.cc: Split this...
+	* src/allocator-inst.cc: And this...
+	* src/pool_allocator.cc: ...into this.
+	* src/mt_allocator.cc: ... and this. Add definitions for
+	__mt_base.
+	* src/Makefile.am (sources): Split allocator.cc to
+	pool_allocator.cc and mt_allocator.cc.
+	* src/Makefile.in: Regenerate.
+	* config/linker-map.gnu: Add symbols.
+	* docs/html/ext/mt_allocator.html: Document new design.
+	* testsuite/ext/mt_allocator/tune-1.cc: New.
+	* testsuite/ext/mt_allocator/tune-2.cc: New.
+	* testsuite/ext/mt_allocator/tune-3.cc: New.
+	* testsuite/ext/mt_allocator/tune-4.cc: New.	
+
+	* testsuite/testsuite_allocator.h (__gnu_test::check_new): New.
+	* testsuite/ext/allocators.cc: Use check_new, split into...
+	* testsuite/ext/mt_allocator/check_new.cc: this.
+	* testsuite/ext/pool_allocator/check_new.cc: this.
+	* testsuite/ext/malloc_allocator/check_new.cc: this.	
+	* testsuite/ext/debug_allocator/check_new.cc: this.	
+	* testsuite/ext/mt_allocator/instantiate.cc: this.
+	* testsuite/ext/pool_allocator/instantiate.cc: this.
+	* testsuite/ext/malloc_allocator/instantiate.cc: this.	
+	* testsuite/ext/debug_allocator/instantiate.cc: this.
+	
 2004-08-30  Phil Edwards  <phil@codesourcery.com>
 
 	* docs/html/install.html:  Update locales list (from Paolo).
