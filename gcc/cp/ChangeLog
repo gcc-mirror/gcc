@@ -1,3 +1,7 @@
+2003-07-07  Andreas Jaeger  <aj@suse.de>
+
+	* search.c (lookup_base_r): Remove unused variable.
+
 2003-07-06  Michael Chastain  <mec@shout.net>
 
 	PR debug/10055
