@@ -571,8 +571,7 @@ data files referenced by GCC@.  The default is @file{@var{prefix}/share}.
 @item --mandir=@var{dirname}
 Specify the installation directory for manual pages.  The default is
 @file{@var{prefix}/man}.  (Note that the manual pages are only extracts from
-the full GCC manuals, which are provided in Texinfo format.  The
-@command{g77} manpage is unmaintained and may be out of date; the others
+the full GCC manuals, which are provided in Texinfo format.  The manpages
 are derived by an automatic conversion process from parts of the full
 manual.)
 
