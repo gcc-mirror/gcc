@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -4869,11 +4869,12 @@ This macro will normally either not be defined or be defined as a
 constant.
 
 @findex REGISTER_MOVE_COST
-@item REGISTER_MOVE_COST (@var{from}, @var{to})
-A C expression for the cost of moving data from a register in class
-@var{from} to one in class @var{to}.  The classes are expressed using
-the enumeration values such as @code{GENERAL_REGS}.  A value of 2 is the
-default; other values are interpreted relative to that.
+@item REGISTER_MOVE_COST (@var{mode}, @var{from}, @var{to})
+A C expression for the cost of moving data of mode @var{mode} from a
+register in class @var{from} to one in class @var{to}.  The classes are
+expressed using the enumeration values such as @code{GENERAL_REGS}.  A
+value of 2 is the default; other values are interpreted relative to
+that.
 
 It is not required that the cost always equal 2 when @var{from} is the
 same as @var{to}; on some machines it is expensive to move between
