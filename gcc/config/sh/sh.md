@@ -117,6 +117,7 @@
   (UNSPECV_CONST2	2)
   (UNSPECV_CONST4	4)
   (UNSPECV_CONST8	6)
+  (UNSPECV_WINDOW_END	10)
   (UNSPECV_CONST_END	11)
 ])  
 
@@ -4120,12 +4121,14 @@
 ; 2 byte integer in line
 
 (define_insn "consttable_2"
- [(unspec_volatile [(match_operand:SI 0 "general_operand" "=g")]
+ [(unspec_volatile [(match_operand:SI 0 "general_operand" "=g")
+		    (match_operand 1 "" "")]
 		   UNSPECV_CONST2)]
  ""
  "*
 {
-  assemble_integer (operands[0], 2, 1);
+  if (operands[1] != const0_rtx)
+    assemble_integer (operands[0], 2, 1);
   return \"\";
 }"
  [(set_attr "length" "2")
@@ -4134,12 +4137,14 @@
 ; 4 byte integer in line
 
 (define_insn "consttable_4"
- [(unspec_volatile [(match_operand:SI 0 "general_operand" "=g")]
+ [(unspec_volatile [(match_operand:SI 0 "general_operand" "=g")
+		    (match_operand 1 "" "")]
 		   UNSPECV_CONST4)]
  ""
  "*
 {
-  assemble_integer (operands[0], 4, 1);
+  if (operands[1] != const0_rtx)
+    assemble_integer (operands[0], 4, 1);
   return \"\";
 }"
  [(set_attr "length" "4")
@@ -4148,12 +4153,14 @@
 ; 8 byte integer in line
 
 (define_insn "consttable_8"
- [(unspec_volatile [(match_operand:SI 0 "general_operand" "=g")]
+ [(unspec_volatile [(match_operand:SI 0 "general_operand" "=g")
+		    (match_operand 1 "" "")]
 		   UNSPECV_CONST8)]
  ""
  "*
 {
-  assemble_integer (operands[0], 8, 1);
+  if (operands[1] != const0_rtx)
+    assemble_integer (operands[0], 8, 1);
   return \"\";
 }"
  [(set_attr "length" "8")
@@ -4162,14 +4169,18 @@
 ; 4 byte floating point
 
 (define_insn "consttable_sf"
- [(unspec_volatile [(match_operand:SF 0 "general_operand" "=g")]
+ [(unspec_volatile [(match_operand:SF 0 "general_operand" "=g")
+		    (match_operand 1 "" "")]
 		   UNSPECV_CONST4)]
  ""
  "*
 {
-  union real_extract u;
-  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-  assemble_real (u.d, SFmode);
+  if (operands[1] != const0_rtx)
+    {
+      union real_extract u;
+      memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
+      assemble_real (u.d, SFmode);
+    }
   return \"\";
 }"
  [(set_attr "length" "4")
@@ -4178,14 +4189,18 @@
 ; 8 byte floating point
 
 (define_insn "consttable_df"
- [(unspec_volatile [(match_operand:DF 0 "general_operand" "=g")]
+ [(unspec_volatile [(match_operand:DF 0 "general_operand" "=g")
+		    (match_operand 1 "" "")]
 		   UNSPECV_CONST8)]
  ""
  "*
 {
-  union real_extract u;
-  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-  assemble_real (u.d, DFmode);
+  if (operands[1] != const0_rtx)
+    {
+      union real_extract u;
+      memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
+      assemble_real (u.d, DFmode);
+    }
   return \"\";
 }"
  [(set_attr "length" "8")
@@ -4230,6 +4245,15 @@
   ""
   "* return output_jump_label_table ();"
   [(set_attr "in_delay_slot" "no")])
+
+; emitted at the end of the window in the literal table.
+
+(define_insn "consttable_window_end"
+  [(unspec_volatile [(match_operand 0 "" "")] UNSPECV_WINDOW_END)]
+  ""
+  ""
+  [(set_attr "length" "0")
+   (set_attr "in_delay_slot" "no")])
 
 ;; -------------------------------------------------------------------------
 ;; Misc
