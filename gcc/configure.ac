@@ -805,6 +805,21 @@ else
   AC_CHECK_PROG(BISON, bison, bison, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing bison)
 fi
 
+# NM
+if test x${build} = x${host} && test -f $srcdir/../binutils/nm.c; then
+  NM='$(objdir)/../binutils/nm-new'
+else
+  AC_CHECK_PROG(NM, nm, nm, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing nm)
+fi
+
+# AR
+if test x${build} = x${host} && test -f $srcdir/../binutils/ar.c; then
+  AR='$(objdir)/../binutils/ar'
+else
+  AC_CHECK_PROG(AR, ar, ar, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing ar)
+fi
+
+
 # --------------------
 # Checks for C headers
 # --------------------

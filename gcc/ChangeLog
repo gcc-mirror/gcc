@@ -1,3 +1,12 @@
+2004-07-12  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.in (AR): Use @AR@ not ar.
+	(NM): New.
+	(AR_FOR_TARGET): Use $(AR) not ar for native.
+	(NM_FOR_TARGET): Use $(NM) not nm for native.
+	* configure.ac: Add AC_CHECK_PROG calls for NM and AR.
+	* configure: Regenerate.
+	
 2004-07-12  David S. Miller  <davem@nuts.davemloft.net>
 
 	* config/sparc/sparc.md (ashlsi3): Eliminate const 1
