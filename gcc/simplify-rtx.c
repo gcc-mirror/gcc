@@ -2220,8 +2220,10 @@ simplify_relational_operation (code, mode, op0, op1)
     return const0_rtx;
 
   /* For modes without NaNs, if the two operands are equal, we know the
-     result.  */
-  if (!HONOR_NANS (GET_MODE (trueop0)) && rtx_equal_p (trueop0, trueop1))
+     result except if they have side-effects.  */
+  if (! HONOR_NANS (GET_MODE (trueop0))
+      && rtx_equal_p (trueop0, trueop1)
+      && ! side_effects_p (trueop0))
     equal = 1, op0lt = 0, op0ltu = 0, op1lt = 0, op1ltu = 0;
 
   /* If the operands are floating-point constants, see if we can fold
