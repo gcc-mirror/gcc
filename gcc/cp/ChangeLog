@@ -1,3 +1,9 @@
+2004-07-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++spec.c (LIBSTDCXX_PROFILE): Default to LIBSTDCXX.
+	(lang_specific_driver): If the C++ or math library options don't
+	start with '-l', don't count them as added libraries.
+
 2004-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (xref_basetypes): Adjust base access vector creation.
