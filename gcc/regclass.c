@@ -288,7 +288,7 @@ init_reg_sets_1 ()
 {
   register unsigned int i, j;
   register unsigned int /* enum machine_mode */ m;
-  char contains_reg_of_mode [LIM_REG_CLASSES] [MAX_MACHINE_MODE];
+  char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
   char allocatable_regs_of_mode [MAX_MACHINE_MODE];
 
   /* This macro allows the fixed or call-used registers
@@ -443,53 +443,57 @@ init_reg_sets_1 ()
 
   for (m = 0; m < MAX_MACHINE_MODE; m++)
     if (allocatable_regs_of_mode [m])
-      for (i = 0; i < N_REG_CLASSES; i++)
-	if (contains_reg_of_mode [i][m])
-	  for (j = 0; j < N_REG_CLASSES; j++)
-	    {
-	      int cost;
-	      enum reg_class *p1, *p2;
+      {
+	for (i = 0; i < N_REG_CLASSES; i++)
+	  if (contains_reg_of_mode [i][m])
+	    for (j = 0; j < N_REG_CLASSES; j++)
+	      {
+		int cost;
+		enum reg_class *p1, *p2;
 
-	      if (!contains_reg_of_mode [j][m])
-		{
-		  move_cost[m][i][j] = 65536;
-		  may_move_in_cost[m][i][j] = 65536;
-		  may_move_out_cost[m][i][j] = 65536;
-		}
-	      else
-		{
-		  cost = i == j ? 2 : REGISTER_MOVE_COST (m, i, j);
+		if (!contains_reg_of_mode [j][m])
+		  {
+		    move_cost[m][i][j] = 65536;
+		    may_move_in_cost[m][i][j] = 65536;
+		    may_move_out_cost[m][i][j] = 65536;
+		  }
+		else
+		  {
+		    cost = i == j ? 2 : REGISTER_MOVE_COST (m, i, j);
 
-		  for (p2 = &reg_class_subclasses[j][0]; *p2 != LIM_REG_CLASSES;
-		       p2++)
-		    if (*p2 != i && contains_reg_of_mode [*p1][m])
-		      cost = MAX (cost, move_cost [m][i][*p2]);
+		    for (p2 = &reg_class_subclasses[j][0];
+		         *p2 != LIM_REG_CLASSES;
+			 p2++)
+		      if (*p2 != i && contains_reg_of_mode [*p1][m])
+			cost = MAX (cost, move_cost [m][i][*p2]);
 
-		  for (p1 = &reg_class_subclasses[i][0]; *p1 != LIM_REG_CLASSES;
-		       p1++)
-		    if (*p1 != j && contains_reg_of_mode [*p1][m])
-		      cost = MAX (cost, move_cost [m][*p1][j]);
+		    for (p1 = &reg_class_subclasses[i][0];
+		       	 *p1 != LIM_REG_CLASSES;
+			 p1++)
+		      if (*p1 != j && contains_reg_of_mode [*p1][m])
+			cost = MAX (cost, move_cost [m][*p1][j]);
 
-		  move_cost[m][i][j] = cost;
+		    move_cost[m][i][j] = cost;
 
-		  if (reg_class_subset_p (i, j))
-		    may_move_in_cost[m][i][j] = 0;
-		  else
-		    may_move_in_cost[m][i][j] = cost;
+		    if (reg_class_subset_p (i, j))
+		      may_move_in_cost[m][i][j] = 0;
+		    else
+		      may_move_in_cost[m][i][j] = cost;
 
-		  if (reg_class_subset_p (j, i))
-		    may_move_out_cost[m][i][j] = 0;
-		  else
-		    may_move_out_cost[m][i][j] = cost;
-		}
-	    }
-	else
-	  for (j = 0; j < N_REG_CLASSES; j++)
-	    {
-	      move_cost[m][i][j] = 65536;
-	      may_move_in_cost[m][i][j] = 65536;
-	      may_move_out_cost[m][i][j] = 65536;
-	    }
+		    if (reg_class_subset_p (j, i))
+		      may_move_out_cost[m][i][j] = 0;
+		    else
+		      may_move_out_cost[m][i][j] = cost;
+		  }
+	      }
+	  else
+	    for (j = 0; j < N_REG_CLASSES; j++)
+	      {
+		move_cost[m][i][j] = 65536;
+		may_move_in_cost[m][i][j] = 65536;
+		may_move_out_cost[m][i][j] = 65536;
+	      }
+      }
 
 #ifdef CLASS_CANNOT_CHANGE_MODE
   {

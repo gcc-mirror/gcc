@@ -1,3 +1,7 @@
+Tue Feb 13 23:05:42 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+ 	* regclass.c (init_reg_sets_1): Silence warning.
+
 Tue Feb 13 22:03:07 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sqrt?f2): Change to expander.
