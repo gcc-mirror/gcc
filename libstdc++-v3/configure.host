@@ -58,9 +58,6 @@ c_compatibility=no
 # Set any CPU-dependent bits.
 # Here we override defaults and catch more general cases due to naming
 # conventions (e.g., chip_name* to catch all variants).
-if test -d ${glibcpp_srcdir}/config/cpu/${host_cpu}; then
-  try_cpu=${host_cpu}
-fi
 
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
@@ -93,7 +90,11 @@ case "${host_cpu}" in
     try_cpu=sparc
     ;;
   *)
-    try_cpu=generic
+    if test -d ${glibcpp_srcdir}/config/cpu/${host_cpu}; then
+      try_cpu=${host_cpu}
+    else
+      try_cpu=generic
+    fi
     ;;
 esac
 
