@@ -7,4 +7,4 @@ struct foo
 
     foo(X)              {} // { dg-error "" }
     foo(X y, int) : x() {} // { dg-error "" }
-};
+};                         // { dg-error "" }
