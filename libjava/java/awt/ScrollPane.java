@@ -218,12 +218,71 @@ public Dimension getViewportSize ()
 {
   Dimension viewsize = getSize ();
   Insets insets = getInsets ();
-  viewsize.width = (viewsize.width
-                    - (insets.left + insets.right)
-                    - getVScrollbarWidth ());
-  viewsize.height = (viewsize.height
-                     - (insets.top + insets.bottom)
-                     - getHScrollbarHeight ());
+
+  viewsize.width -= (insets.left + insets.right);
+  viewsize.height -= (insets.top + insets.bottom);
+
+  Component[] list = getComponents();
+  if ((list == null) || (list.length <= 0))
+    return viewsize;
+
+  Dimension dim = list[0].getPreferredSize();
+
+  if (dim.width <= 0 && dim.height <= 0)
+    return viewsize;
+
+  int vScrollbarWidth = getVScrollbarWidth ();
+  int hScrollbarHeight = getHScrollbarHeight ();
+
+  if (scrollbarDisplayPolicy == SCROLLBARS_ALWAYS)
+    {
+      viewsize.width -= vScrollbarWidth;
+      viewsize.height -= hScrollbarHeight;
+      return viewsize;
+    }
+
+  if (scrollbarDisplayPolicy == SCROLLBARS_NEVER)
+    return viewsize;
+
+  // The scroll policy is SCROLLBARS_AS_NEEDED, so we need to see if
+  // either scrollbar is needed.
+
+  // Assume we don't need either scrollbar.
+  boolean mayNeedVertical = false;
+  boolean mayNeedHorizontal = false;
+
+  boolean needVertical = false;
+  boolean needHorizontal = false;
+
+  // Check if we need vertical scrollbars.  If we do, then we need to
+  // subtract the width of the vertical scrollbar from the viewport's
+  // width.
+  if (dim.height > viewsize.height)
+    needVertical = true;
+  else if (dim.height > (viewsize.height - hScrollbarHeight))
+    // This is tricky.  In this case the child is tall enough that its
+    // bottom edge would be covered by a horizontal scrollbar, if one
+    // were present.  This means that if there's a horizontal
+    // scrollbar then we need a vertical scrollbar.
+    mayNeedVertical = true;
+
+  if (dim.width > viewsize.width)
+    needHorizontal = true;
+  else if (dim.width > (viewsize.width - vScrollbarWidth))
+    mayNeedHorizontal = true;
+
+  if (needVertical && mayNeedHorizontal)
+    needHorizontal = true;
+
+  if (needHorizontal && mayNeedVertical)
+    needVertical = true;
+
+  if (needHorizontal)
+    viewsize.height -= hScrollbarHeight;
+
+  if (needVertical)
+    viewsize.width -= vScrollbarWidth;
+
   return viewsize;
 }
 
@@ -391,7 +450,19 @@ doLayout()
   if ((list != null) && (list.length > 0))
     {
       Dimension dim = list[0].getPreferredSize();
-      list[0].resize(dim);
+      Dimension vp = getViewportSize ();
+
+      if (dim.width < vp.width)
+	dim.width = vp.width;
+
+      if (dim.height < vp.height)
+	dim.height = vp.height;
+
+      ScrollPanePeer peer = (ScrollPanePeer) getPeer ();
+      if (peer != null)
+	peer.childResized (dim.width, dim.height);
+
+      list[0].resize (dim);
 
       Point p = getScrollPosition();
       if (p.x > dim.width)
