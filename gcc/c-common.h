@@ -1191,7 +1191,7 @@ extern void genrtl_compound_stmt                PARAMS ((tree));
 extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
 							 tree, tree,
 							 tree, int));
-extern void genrtl_decl_cleanup                 PARAMS ((tree));
+extern void genrtl_cleanup_stmt                 PARAMS ((tree));
 extern int stmts_are_full_exprs_p               PARAMS ((void));
 extern int anon_aggr_type_p                     PARAMS ((tree));
 
