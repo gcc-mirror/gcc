@@ -1394,7 +1394,9 @@ by @samp{make bootstrap}.  For a native build, you have to invoke
 @samp{make gnatlib_and_tools} in the @file{@var{objdir}/gcc}
 subdirectory before proceeding with the next steps.
 For a cross build, you need to invoke
-@samp{make gnatlib cross-gnattools ada.all.cross}.
+@samp{make gnatlib cross-gnattools ada.all.cross}.  For a canadian
+cross you only need to invoke @samp{make cross-gnattools}; the GNAT
+library would be the same as the one built for the cross compiler.
 
 For example, you can build a native Ada compiler by issuing the
 following commands (assuming @command{make} is GNU make):
