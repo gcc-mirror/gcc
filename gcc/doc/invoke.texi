@@ -545,6 +545,7 @@ Objective-C and Objective-C++ Dialects}.
 -msplit-addresses  -mno-split-addresses  @gol
 -mexplicit-relocs  -mno-explicit-relocs  @gol
 -mcheck-zero-division  -mno-check-zero-division @gol
+-mdivide-traps  -mdivide-breaks @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
@@ -9499,6 +9500,23 @@ to use an assembler that supports relocation operators.
 @opindex mno-check-zero-division
 Trap (do not trap) on integer division by zero.  The default is
 @option{-mcheck-zero-division}.
+
+@item -mdivide-traps
+@itemx -mdivide-breaks
+@opindex mdivide-traps
+@opindex mdivide-breaks
+MIPS systems check for division by zero by generating either a
+conditional trap or a break instruction.  Using traps results in
+smaller code, but is only supported on MIPS II and later.  Also, some
+versions of the Linux kernel have a bug that prevents trap from
+generating the proper signal (SIGFPE).  Use @option{-mdivide-traps} to
+allow conditional traps on architectures that support them and
+@option{-mdivide-breaks} to force the use of breaks.
+
+The default is usually @option{-mdivide-traps}, but this can be
+overridden at configure time using @option{--with-divide=breaks}.
+Divide-by-zero checks can be completely disabled using
+@option{-mno-check-zero-division}.
 
 @item -mmemcpy
 @itemx -mno-memcpy

@@ -1,3 +1,18 @@
+2004-09-07  David Daney  <ddaney@avtrex.com>
+
+	* config.gcc: Added support for --with-divide=[breaks|traps] for
+	mips targets.
+	* config/mips/mips.h (MASK_DIVIDE_BREAKS): New target_flags bit.
+	(TARGET_DIVIDE_TRAPS): New macro.
+	(TARGET_SWITCHES): Added -mdivide-traps and -mdivide-breaks.
+	(OPTION_DEFAULT_SPECS): Added --with-divide= support.
+	* config/mips/mips.c (mips_idiv_insns): Generate proper count on
+	GENERATE_DIVIDE_TRAPS.
+	(mips_output_division): Emit conditional trap if
+	GENERATE_DIVIDE_TRAPS is set.
+	* doc/install.texi: Document --with-divide.
+	* doc/invoke.texi: Document -mdivide-traps and -mdivide-breaks.
+
 2004-09-07  Caroline Tice  <ctice@apple.com>
 
 	* cfgrtl.c (rtl_verify_flow_info_1):  Add new edge flag,
