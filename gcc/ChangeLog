@@ -1,3 +1,8 @@
+Sun Nov 21 17:11:13 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* varasm.c (output_constructor): Solve problem with long long
+ 	bitfields, even on BYTES_BIG_ENDIAN machines (testcase 991118-1).
+
 Fri Nov 19 06:32:19 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.md (neg, not and abs patterns): Revmap to use
