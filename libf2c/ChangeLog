@@ -1,3 +1,8 @@
+Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
+
+	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
+	libdir, libsubdir and tooldir.
+
 Wed Jul  7 15:58:16 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libU77/date_.c (G77_date_y2kbug_0): G77_time_0 returns
