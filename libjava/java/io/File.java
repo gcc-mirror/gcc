@@ -190,10 +190,14 @@ public class File implements Serializable
     if (x.isDirectory())
       return true;
     String p = x.getPath();
-    x.setPath(x.getParent());
-    if (! mkdirs (x))
-      return false;
-    x.setPath(p);
+    String parent = x.getParent();
+    if (parent != null)
+      {
+	x.setPath(parent);
+	if (! mkdirs (x))
+	  return false;
+	x.setPath(p);
+      }
     return x.mkdir();
   }
 
