@@ -1,3 +1,8 @@
+Thu Jan 27 20:53:36 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* cp/optimize.c (remap_decl): Add walk_tree calls for DECL_SIZE (t)
+	and TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))).
+
 Thu Jan 27 13:54:12 2000  Mike Stump  <mrs@wrs.com>
 
 	* decl.c (pushdecl): Fix up shadow warnings with respect to implicit
