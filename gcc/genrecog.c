@@ -1650,6 +1650,7 @@ write_switch (start, depth)
 {
   struct decision *p = start;
   enum decision_type type = p->tests->type;
+  struct decision *needs_label = NULL;
 
   /* If we have two or more nodes in sequence that test the same one
      thing, we may be able to use a switch statement.  */
@@ -1674,6 +1675,9 @@ write_switch (start, depth)
       code = p->tests->u.code;
       do 
 	{
+	  if (p != start && p->need_label && needs_label == NULL)
+	    needs_label = p;
+
 	  printf ("    case ");
 	  print_code (code);
 	  printf (":\n      goto L%d;\n", p->success.first->number);
@@ -1697,7 +1701,10 @@ write_switch (start, depth)
 	 we don't actually write the test here, as it gets kinda messy.
 	 It is trivial to leave this to later by telling our caller that
 	 we only processed the CODE tests.  */
-      ret = p;
+      if (needs_label != NULL)
+	ret = needs_label;
+      else
+	ret = p;
 
       while (p && p->tests->type == DT_pred
 	     && p->tests->u.pred.index >= 0)
@@ -1774,6 +1781,9 @@ write_switch (start, depth)
 
       do
 	{
+	  if (p != start && p->need_label && needs_label == NULL)
+	    needs_label = p;
+
 	  printf ("    case ");
 	  switch (type)
 	    {
@@ -1800,7 +1810,7 @@ write_switch (start, depth)
       
       printf ("    default:\n      break;\n    }\n");
 
-      return p;
+      return needs_label != NULL ? needs_label : p;
     }
   else
     {
