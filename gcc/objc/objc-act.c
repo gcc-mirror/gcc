@@ -196,7 +196,7 @@ static void generate_static_references		PROTO((void));
 static int check_methods_accessible		PROTO((tree, tree,
 						       int));
 static void encode_aggregate_within		PROTO((tree, int, int,
-					               char, char));
+					               int, int));
 
 /* We handle printing method names ourselves for ObjC */
 extern char *(*decl_printable_name) ();
@@ -6552,8 +6552,8 @@ encode_aggregate_within (type, curtype, format, left, right)
      tree type;
      int curtype;
      int format;
-     char left;
-     char right;
+     int left;
+     int right;
 {
   if (obstack_object_size (&util_obstack) > 0
       && *(obstack_next_free (&util_obstack) - 1) == '^')
