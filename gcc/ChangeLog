@@ -1,3 +1,13 @@
+Thu May 27 03:07:13 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	Based on patch by Scott Bambrough and Pat Beirne:
+	* config/arm/arm.c (making_const_table): New variable.
+	* config/arm/arm.h (making_const_table): Declare.
+	(OUTPUT_INT_ADDR_CONST): Mark symbols as position independent if
+	appropriate.
+	* config/arm/arm.md (consttable_4, consttable_8, consttable_end):
+	Keep track of when we are building the constant table.	
+
 Thu May 27 02:52:55 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (STRIP_NAME_ENCODING): Remove default definition.

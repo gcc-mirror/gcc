@@ -1817,6 +1817,10 @@ extern int arm_pic_register;
 	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
 	     || ! symbol_mentioned_p (get_pool_constant (X))))
  
+/* We need to know when we are making a constant pool; this determines
+   whether data needs to be in the GOT or can be referenced via a GOT
+   offset.  */
+extern int making_const_table;
 
 
 /* Condition code information. */
@@ -2049,6 +2053,19 @@ extern struct rtx_def *arm_compare_op0, *arm_compare_op1;
 	fputs(")", STREAM);						\
       }									\
     else output_addr_const(STREAM, X);					\
+									\
+    /* Mark symbols as position independent.  We only do this in the	\
+      .text segment, not in the .data segment. */			\
+    if (NEED_PLT_GOT && flag_pic && making_const_table &&		\
+    	(GET_CODE(X) == SYMBOL_REF || GET_CODE(X) == LABEL_REF))	\
+     {									\
+        if (GET_CODE(X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P(X))	\
+          fprintf(STREAM, "(GOTOFF)");					\
+        else if (GET_CODE (X) == LABEL_REF)				\
+          fprintf(STREAM, "(GOTOFF)");					\
+        else								\
+          fprintf(STREAM, "(GOT)");					\
+     }									\
   }
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
