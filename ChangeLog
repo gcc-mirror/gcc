@@ -1,3 +1,8 @@
+Tue Nov 23 00:57:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config-ml.in (sparc*-*-*): Disable sparcv9 support if the
+	necessary libraries are missing.
+
 Fri Nov 19 11:22:31 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 
 	* MAINTAINERS: Add new 'write after approval' maintainer.
