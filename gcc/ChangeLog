@@ -1,3 +1,8 @@
+Thu Jul 16 01:17:44 1998  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (emit_iv_add_mult): Scan the entire insn list generated
+	for the sequence, recording base values.
+
 Wed Jul 15 10:49:55 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.h (CPP_CPU_SPEC): Remove -Asystem(unix).
