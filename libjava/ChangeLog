@@ -1,5 +1,17 @@
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol//http/Connection.java
+	(defRequestProperties): Removed. This dont gets used since JDK 1.3.
+	(requestProperties): Initialize, documentation added.
+	(inputStream): Renamed from bufferedIn.
+	(Connection): Dont initialize requestProperties.
+	(setDefaultRequestProperty): Removed.
+	(getDefaultRequestProperty): Removed.
+	(usingProxy): Documentation added.
+	(getHttpHeaders): Likewise.
+
+2003-12-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/DateFormat.java:
 	Explicitely import used classes.
 
