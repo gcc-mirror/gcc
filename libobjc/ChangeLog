@@ -1,3 +1,11 @@
+Fri Jul 28 08:58:02 2000  Nicola Pero  <nicola@brainstorm.co.uk>
+
+	* configure.in: Added libtool support; build shared libraries 
+	if --enable-shared was passed on command line.
+	* Makefile.in: Modified most compilation commands to use libtool.
+	* aclocal.m4: New symbolic link to the ../libtool.m4, from the
+	libtool distribution.
+
 Sat Jul 29 00:10:21 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* sarray.c, Object.m: Removed the explicit prototypes for strlen
