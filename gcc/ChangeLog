@@ -1,3 +1,7 @@
+Thu Mar 26 00:19:47 1998  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (make_compound_operation): Simplify (subreg (*_extend) 0).
+
 Wed Mar 25 23:53:11 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (pa_adjust_cost): Avoid redundant calls to get_attr_type.
