@@ -1,3 +1,8 @@
+2002-04-21  David S. Miller  <davem@redhat.com>
+
+	* include/dwarf2-signal.h (MAKE_THROW_FRAME, sparc32): Document
+	magic instruction reading sequence.
+
 2002-04-21  Mark Wielaard  <mark@klomp.org>
 
 	* mauve-libgcj: Don't run java.lang.ref tests since they are buggy.

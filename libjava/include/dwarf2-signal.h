@@ -77,9 +77,11 @@ do									\
   } *regp;								\
   unsigned int insn;							\
   __asm__ __volatile__("ld [%%i7 + 8], %0" : "=r" (insn));		\
+  /* mov __NR_sigaction, %g1; Old signal stack layout */		\
   if (insn == 0x821020d8)						\
     regp = (struct sig_regs *) _sip;					\
   else									\
+    /* mov __NR_rt_sigaction, %g1; New signal stack layout */		\
     regp = (struct sig_regs *) (_sip + 1);				\
   regp->pc = regp->npc;							\
   regp->npc += 4;							\
