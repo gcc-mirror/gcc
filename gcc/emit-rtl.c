@@ -958,6 +958,8 @@ gen_lowpart (mode, x)
 
       return change_address (x, mode, plus_constant (XEXP (x, 0), offset));
     }
+  else if (GET_CODE (x) == ADDRESSOF)
+    return gen_lowpart (mode, force_reg (GET_MODE (x), x));
   else
     abort ();
 }
