@@ -3557,7 +3557,15 @@ finish_decl (decl, init, asmspec_tree)
 	 normal for a local extern redeclaration of an inline function
 	 to have a copy of the top-level decl's DECL_INLINE.  */
       if (DECL_INITIAL (decl) != 0)
-	DECL_INITIAL (decl) = error_mark_node;
+	{
+	  /* If this is a static const variable, then preserve the
+	     initializer instead of discarding it so that we can optimize
+	     references to it.  */
+	  if (TREE_STATIC (decl) && TREE_READONLY (decl))
+	    preserve_initializer ();
+	  else
+	    DECL_INITIAL (decl) = error_mark_node;
+	}
     }
 
 #if 0
