@@ -1147,13 +1147,6 @@ build_array_ref (array, index)
     {
       tree rval, type;
 
-      if (index != error_mark_node
-	  && TREE_CODE (TREE_TYPE (index)) != INTEGER_TYPE)
-	{
-	  error ("array subscript is not an integer");
-	  return error_mark_node;
-	}
-
       /* Subscripting with type char is likely to lose
 	 on a machine where chars are signed.
 	 So warn on any machine, but optionally.
@@ -1166,6 +1159,13 @@ build_array_ref (array, index)
 
       /* Apply default promotions *after* noticing character types.  */
       index = default_conversion (index);
+
+      /* Require integer *after* promotion, for sake of enums.  */
+      if (TREE_CODE (TREE_TYPE (index)) != INTEGER_TYPE)
+	{
+	  error ("array subscript is not an integer");
+	  return error_mark_node;
+	}
 
       /* An array that is indexed by a non-constant
 	 cannot be stored in a register; we must be able to do
