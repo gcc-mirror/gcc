@@ -52,6 +52,7 @@
 #undef getchar
 #undef putc
 #undef putchar
+#undef printf
 
 namespace std 
 {

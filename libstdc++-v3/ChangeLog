@@ -1,3 +1,7 @@
+2001-01-11   Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* include/c_std/bits/std_cstdio.h: Undef printf.
+
 2001-01-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/ios.cc: Fix typo: change cout->wcout.
