@@ -2120,7 +2120,7 @@ enable_symvers=GLIBCPP_ENABLE_SYMVERS_DEFAULT)dnl
 # If we never went through the GLIBCPP_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks... 
 if test x$enable_shared = xno || 
-	test x$LD = x || 
+	test "x$LD" = x || 
 	test x$glibcpp_gnu_ld_version = x; then
   enable_symvers=no
 fi
