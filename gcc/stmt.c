@@ -1476,7 +1476,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      }
 	    break;
 
-	  case '?':  case '!':  case '*':  case '&':
+	  case '?':  case '!':  case '*':  case '&':  case '#':
 	  case 'E':  case 'F':  case 'G':  case 'H':
 	  case 's':  case 'i':  case 'n':
 	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
@@ -1658,7 +1658,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    break;
 
 	  case '<':  case '>':
-	  case '?':  case '!':  case '*':
+	  case '?':  case '!':  case '*':  case '#':
 	  case 'E':  case 'F':  case 'G':  case 'H':
 	  case 's':  case 'i':  case 'n':
 	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
