@@ -23,10 +23,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "bsd386.h"
 
-/* By default, target has a 80387.  */
-
-#define TARGET_DEFAULT 1
-
 /* Specify predefined symbols in preprocessor.  */
 
 #define CPP_PREDEFINES "-Dunix -Di386 -Dsequent"
@@ -74,15 +70,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 		    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)	\
     : (MODE) != QImode)							\
    && ! (REGNO == 2 && GET_MODE_UNIT_SIZE (MODE) > 4))
-
-/* Floating-point return values come in the FP register.  */
-
-#define VALUE_REGNO(MODE) \
-  (((MODE)==SFmode || (MODE)==DFmode) ? FIRST_FLOAT_REG : 0)
-
-/* 1 if N is a possible register number for a function value. */
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (N)== FIRST_FLOAT_REG)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry. */
