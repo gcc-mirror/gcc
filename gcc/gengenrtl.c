@@ -253,6 +253,7 @@ gencode (f)
   const char **fmt;
 
   fputs ("#include \"config.h\"\n", f);
+  fputs ("#include \"system.h\"\n", f);
   fputs ("#include \"obstack.h\"\n", f);
   fputs ("#include \"rtl.h\"\n\n", f);
   fputs ("extern struct obstack *rtl_obstack;\n\n", f);
