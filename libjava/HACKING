@@ -44,3 +44,20 @@ Install that (dont worry, it should still work for other projects), add your
 files to the Makefile.am, then just type "automake" and it will regenerate the
 Makefile.in. Easy!
 
+Tom Tromey adds:
+If you add a class to java.lang, java.io, or java.util
+(including sub-packages, like java.lang.ref).
+
+* Edit gcj/javaprims.h
+
+* Go to the `namespace java' line, and delete that entire block (the   
+  entire contents of the namespace)
+
+* Then insert the output of `perl ../scripts/classes.pl' into the file
+  at that point.
+
+If you're generating a patch there is a program you can get to do an
+offline `cvs add' (it will fake an `add' if you don't have write
+permission yet).  Then you can use `cvs diff -N' to generate the
+patch.  See http://www.red-bean.com/cvsutils/
+
