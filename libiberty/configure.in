@@ -126,6 +126,18 @@ AC_HEADER_TIME
 
 libiberty_AC_DECLARE_ERRNO
 
+AC_MSG_CHECKING(for uintptr_t)
+AC_EGREP_HEADER(uintptr_t, sys/types.h,
+                libiberty_cv_uintptr_t=yes, libiberty_cv_uintptr_t=no)
+
+if test $libiberty_cv_uintptr_t = yes
+then
+  AC_DEFINE(HAVE_UINTPTR_T)
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+fi
+
 # This is the list of functions which libiberty will provide if they
 # are not available on the host.
 
