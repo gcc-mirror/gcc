@@ -253,13 +253,13 @@ struct tree_common
    chain is via a `virtual' declaration.  */
 #define TREE_VIA_VIRTUAL(NODE) ((NODE)->common.static_flag)
 
-/* In an INTEGER_CST, this means there was an overflow in folding.
-   This is distinct from TREE_OVERFLOW because ANSI C requires a diagnostic
-   when overflows occur in constant expressions.  */
+/* In an INTEGER_CST, REAL_CST, or COMPLEX_CST, this means there was an
+   overflow in folding.  This is distinct from TREE_OVERFLOW because ANSI C
+   requires a diagnostic when overflows occur in constant expressions.  */
 #define TREE_CONSTANT_OVERFLOW(NODE) ((NODE)->common.static_flag)
 
-/* In an INTEGER_CST, this means there was an overflow in folding,
-   and no warning has been issued for this subexpression.
+/* In an INTEGER_CST, REAL_CST, of COMPLEX_CST, this means there was an
+   overflow in folding, and no warning has been issued for this subexpression.
    TREE_OVERFLOW implies TREE_CONSTANT_OVERFLOW, but not vice versa.  */
 #define TREE_OVERFLOW(NODE) ((NODE)->common.public_flag)
 
