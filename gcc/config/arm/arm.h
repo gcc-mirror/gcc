@@ -26,7 +26,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern void output_prologue ();
 extern void output_epilogue ();
-extern char *arm_output_asm_insn ();
 extern char *arm_output_llc ();
 extern char *arithmetic_instr ();
 extern char *output_add_immediate ();
@@ -510,7 +509,10 @@ enum reg_class
 
 #define EXTRA_CONSTRAINT(OP, C)                                         \
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG  \
-   : (C) == 'S' ? CONSTANT_ADDRESS_P (OP) : 0)
+   : (C) == 'R' ? (GET_CODE (OP) == MEM					\
+		   && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF		\
+		   && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0)))		\
+   : (C) == 'S' ? (optimize > 0 && CONSTANT_ADDRESS_P (OP)) : 0)
 
 /* Constant letter 'G' for the FPU immediate constants. 
    'H' means the same constant negated.  */
@@ -683,7 +685,7 @@ enum reg_class
 
 /* Generate assembly output for the start of a function.  */
 #define FUNCTION_PROLOGUE(STREAM, SIZE)  \
-  output_prologue ((STREAM), (SIZE))
+  output_func_prologue ((STREAM), (SIZE))
 
 /* Call the function profiler with a given profile label.  The Acorn compiler
    puts this BEFORE the prolog but gcc pust it afterwards.  The ``mov ip,lr''
@@ -708,7 +710,7 @@ enum reg_class
 
 /* Generate the assembly code for function exit. */
 #define FUNCTION_EPILOGUE(STREAM, SIZE)  \
-  output_epilogue ((STREAM), (SIZE))
+  output_func_epilogue ((STREAM), (SIZE))
 
 /* Determine if the epilogue should be output as RTL.
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
@@ -755,12 +757,13 @@ enum reg_class
     {									\
       int regno;							\
       int offset = 12;							\
+      int saved_hard_reg = 0;						\
 									\
-      for (regno = 4; regno <= 10; regno++)				\
-	if (regs_ever_live[regno])					\
-	  offset += 4;							\
-      for (regno = 20; regno <=23; regno++)				\
-	if (regs_ever_live[regno])					\
+      for (regno = 0; regno <= 10; regno++)				\
+	if (regs_ever_live[regno] && ! call_used_regs[regno])		\
+	  saved_hard_reg = 1, offset += 4;				\
+      for (regno = 16; regno <=23; regno++)				\
+	if (regs_ever_live[regno] && ! call_used_regs[regno])		\
 	  offset += 12;							\
       if ((FROM) == FRAME_POINTER_REGNUM)				\
 	(OFFSET) = -offset;						\
@@ -768,35 +771,13 @@ enum reg_class
 	{								\
 	   if (! regs_ever_live[HARD_FRAME_POINTER_REGNUM])		\
 	     offset -= 16;						\
-	   if (regs_ever_live[14])					\
+	   if (regs_ever_live[14] || saved_hard_reg)			\
 	     offset += 4;						\
 	   (OFFSET) = (get_frame_size () + 3 & ~3) + offset;		\
          }								\
     }									\
 }
 
-#if 0
-/* Store in the variable DEPTH the initial difference between the frame
-   pointer reg contents and the stack pointer reg contents, as of the start of
-   the function body.  This depends on the layout of the fixed parts of the
-   stack frame and on how registers are saved.  */
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) 			\
-{								\
-  int regno;							\
-  int offset = 12;						\
-								\
-  for (regno = 0; regno < FRAME_POINTER_REGNUM; regno++)	\
-    if (regs_ever_live[regno])					\
-      offset += 4;						\
-  for (regno = 20; regno < 24; regno++)				\
-    if (regs_ever_live[regno])					\
-      offset += 12;						\
-  (DEPTH) = offset + (get_frame_size () + 3 & ~3);		\
-}
-
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH)  \
-  (DEPTH) = (get_frame_size () + 3) & ~3;
-#endif
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
 
@@ -883,9 +864,10 @@ enum reg_class
   ||  GET_CODE(X) == CONST )
 #endif
 
-#define CONSTANT_ADDRESS_P(X)  					\
-  (GET_CODE (X) == SYMBOL_REF 					\
-   && (CONSTANT_POOL_ADDRESS_P (X) || SYMBOL_REF_FLAG (X)))
+#define CONSTANT_ADDRESS_P(X)  			\
+  (GET_CODE (X) == SYMBOL_REF 			\
+   && (CONSTANT_POOL_ADDRESS_P (X)		\
+       || (optimize > 0 && SYMBOL_REF_FLAG (X))))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
@@ -902,11 +884,13 @@ enum reg_class
 
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
-   faster than indirecting via memory.  */
+   faster than indirecting via memory.  Don't do this when not optimizing,
+   since we won't be calculating al of the offsets necessary to do this
+   simplification.  */
 
 #define ENCODE_SECTION_INFO(decl)					\
 {									\
-  if (TREE_CONSTANT (decl)						\
+  if (optimize > 0 && TREE_CONSTANT (decl)				\
       && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))	\
     {									\
       rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'		\
@@ -972,8 +956,8 @@ enum reg_class
 #define GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)  	\
 do									\
 {									\
-  int range;								\
-  int code = GET_CODE (INDEX);						\
+  HOST_WIDE_INT range;							\
+  enum rtx_code code = GET_CODE (INDEX);				\
 									\
   if (GET_MODE_CLASS (MODE) == MODE_FLOAT)				\
     {									\
@@ -1345,6 +1329,8 @@ do									\
       ? CC_NOOVmode							\
       : GET_MODE (X) == QImode ? CC_NOOVmode : CCmode))
 
+#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
+
 #define STORE_FLAG_VALUE 1
 
 /* Define the information needed to generate branch insns.  This is
@@ -1492,12 +1478,10 @@ do {									\
 
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO)   \
-  (arm_increase_location (4)                                   \
-   , fprintf(STREAM,"\tstmfd\tsp!,{%s}\n", reg_names[REGNO]))
+  fprintf(STREAM,"\tstmfd\tsp!,{%s}\n", reg_names[REGNO])
 
 #define ASM_OUTPUT_REG_POP(STREAM,REGNO)   \
-  (arm_increase_location (4)                                   \
-   , fprintf(STREAM,"\tldmfd\tsp!,{%s}\n", reg_names[REGNO]))
+  fprintf(STREAM,"\tldmfd\tsp!,{%s}\n", reg_names[REGNO])
 
 /* Output a relative address. Not needed since jump tables are absolute
    but we must define it anyway.  */
@@ -1506,8 +1490,7 @@ do {									\
 
 /* Output an element of a dispatch table.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  \
-  (arm_increase_location (4)                     \
-   , fprintf (STREAM, "\t.word\tL%d\n", VALUE))
+   fprintf (STREAM, "\t.word\tL%d\n", VALUE)
 
 /* Output various types of constants.  For real numbers we output hex, with
    a comment containing the "human" value, this allows us to pass NaN's which
@@ -1612,13 +1595,6 @@ do { char dstr[30];							\
    the bss segment.  Note that this is *bad* practice.  */
 #define ASM_OUTPUT_LOCAL(STREAM,NAME,SIZE,ROUNDED)  \
   output_lcomm_directive (STREAM, NAME, SIZE, ROUNDED)
-
-/* Output a source filename for the debugger. RISCiX dbx insists that the
-   ``desc'' field is set to compiler version number >= 315 (sic).  */
-#if 0
-#define ASM_OUTPUT_SOURCE_FILENAME(STREAM,NAME)	 \
-  fprintf (STREAM, "\t.stabs\t\"%s\", %d, 0, 315, Ltext\n", (NAME), N_SOL)
-#endif
 
 /* Output a source line for the debugger.  */
 /* #define ASM_OUTPUT_SOURCE_LINE(STREAM,LINE) */
@@ -1812,5 +1788,3 @@ do { char dstr[30];							\
     }									\
   else output_addr_const(STREAM, X);					\
 }
-
-/* EOF arm.h */
