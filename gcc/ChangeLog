@@ -1,3 +1,8 @@
+2004-06-08  Anil Paranjpe <anilp1@kpitcummins.com>
+
+	* h8300.md (extendqisi2_h8300): Add constraints.
+	(ldm_h8300s_4_normal): Fix typo.
+
 2004-06-08  Richard Henderson  <rth@redhat.com>
 
         * gimple-low.c (struct lower_data): Replace the_return_label and
