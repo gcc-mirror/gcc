@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS cpu cores.
-;; Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+;; Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 ;; Contributed by Axis Communications.
 
 ;; This file is part of GCC.
@@ -385,7 +385,7 @@
      prefer to split up constants early, like this.  The testcase in
      gcc.c-torture/execute/961213-1.c shows that CSE2 gets confused by the
      resulting subreg sets when using the construct from mcore (as of FSF
-     CVS, version -r 1.5), and it believe that the high part (the last one
+     CVS, version -r 1.5), and it believes that the high part (the last one
      emitted) is the final value.  This construct from romp seems more
      robust, especially considering the head comments from
      emit_no_conflict_block.  */
@@ -561,17 +561,22 @@
 
 ;; Other way around; move to memory.
 
-;; For all side-effect patterns, it seems to be the case that the
-;; predicate isn't consulted after combine.  For sake of stability, we
-;; recognize and split the cases where dangerous register combinations are
-;; spotted: where a register is set in the side-effect, and used in the
-;; main insn.  We don't handle the case where the set in the main insn
-;; overlaps the set in the side-effect; that would be too big a bug to
-;; paper over.  We handle just the case where the set in the side-effect
-;; overlaps the input operand of the main insn (i.e. just moves to memory).
+;; Note that the condition (which for side-effect patterns is usually a
+;; call to cris_side_effect_mode_ok), isn't consulted for register
+;; allocation preferences -- constraints is the method for that.  The
+;; drawback is that we can't exclude register allocation to cause
+;; "move.s rw,[rx=ry+rz.S]" when rw==rx without also excluding rx==ry or
+;; rx==rz if we use an earlyclobber modifier for the constraint for rx.
+;; Instead of that, we recognize and split the cases where dangerous
+;; register combinations are spotted: where a register is set in the
+;; side-effect, and used in the main insn.  We don't handle the case where
+;; the set in the main insn overlaps the set in the side-effect; that case
+;; must be handled in gcc.  We handle just the case where the set in the
+;; side-effect overlaps the input operand of the main insn (i.e. just
+;; moves to memory).
 
 ;;
-;; move.s rx,[ry=rx+rw.S]
+;; move.s rz,[ry=rx+rw.S]
 ;; FIXME: These could have anonymous mode for operand 3.
 
 ;; QImode
@@ -582,7 +587,7 @@
 			  (match_operand:SI 1 "const_int_operand" "n,n,n"))
 		 (match_operand:SI 2 "register_operand" "r,r,r")))
 	(match_operand:QI 3 "register_operand" "r,r,r"))
-   (set (match_operand:SI 4 "register_operand" "=*2,!*3,r")
+   (set (match_operand:SI 4 "register_operand" "=*2,!3,r")
 	(plus:SI (mult:SI (match_dup 0)
 			  (match_dup 1))
 		 (match_dup 2)))]
@@ -600,7 +605,7 @@
 			  (match_operand:SI 1 "const_int_operand" "n,n,n"))
 		 (match_operand:SI 2 "register_operand" "r,r,r")))
 	(match_operand:HI 3 "register_operand" "r,r,r"))
-   (set (match_operand:SI 4 "register_operand" "=*2,!*3,r")
+   (set (match_operand:SI 4 "register_operand" "=*2,!3,r")
 	(plus:SI (mult:SI (match_dup 0)
 			  (match_dup 1))
 		 (match_dup 2)))]
@@ -618,7 +623,7 @@
 			  (match_operand:SI 1 "const_int_operand" "n,n,n"))
 		 (match_operand:SI 2 "register_operand" "r,r,r")))
 	(match_operand:SI 3 "register_operand" "r,r,r"))
-   (set (match_operand:SI 4 "register_operand" "=*2,!*3,r")
+   (set (match_operand:SI 4 "register_operand" "=*2,!3,r")
 	(plus:SI (mult:SI (match_dup 0)
 			  (match_dup 1))
 		 (match_dup 2)))]
@@ -628,10 +633,10 @@
    #
    move.%s3 %3,[%4=%2+%0%T1]")
 
-;; Split for the case above where the predicate isn't honored; only the
-;; constraint, and we end up with the set in the side-effect gets the same
-;; register as the input register.  Arguably a GCC bug, but we'll spot it
-;; rarely enough that we need to catch it ourselves to be safe.
+;; Split for the case above where we're out of luck with register
+;; allocation (again, the condition isn't checked for that), and we end up
+;; with the set in the side-effect getting the same register as the input
+;; register.
 
 (define_split
   [(parallel
@@ -668,7 +673,7 @@
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
 		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r>Ri,r,>Ri")))
 	(match_operand:QI 2 "register_operand" "r,r,r,r"))
-   (set (match_operand:SI 3 "register_operand" "=*0,!*2,r,r")
+   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "cris_side_effect_mode_ok (PLUS, operands, 3, 0, 1, -1, 2)"
@@ -693,7 +698,7 @@
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
 		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r>Ri,r,>Ri")))
 	(match_operand:HI 2 "register_operand" "r,r,r,r"))
-   (set (match_operand:SI 3 "register_operand" "=*0,!*2,r,r")
+   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "cris_side_effect_mode_ok (PLUS, operands, 3, 0, 1, -1, 2)"
@@ -718,7 +723,7 @@
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
 		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r>Ri,r,>Ri")))
 	(match_operand:SI 2 "register_operand" "r,r,r,r"))
-   (set (match_operand:SI 3 "register_operand" "=*0,!*2,r,r")
+   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "cris_side_effect_mode_ok (PLUS, operands, 3, 0, 1, -1, 2)"
@@ -737,15 +742,15 @@
 }")
 
 ;; Like the biap case, a split where the set in the side-effect gets the
-;; same register as the input register to the main insn due to gcc not
-;; always checking the predicate.
+;; same register as the input register to the main insn, since the
+;; condition isn't checked at register allocation.
 
 (define_split
   [(parallel
     [(set (mem (plus:SI
 		(match_operand:SI 0 "cris_bdap_operand" "")
 		(match_operand:SI 1 "cris_bdap_operand" "")))
-	  (match_operand:SI 2 "register_operand" ""))
+	  (match_operand 2 "register_operand" ""))
      (set (match_operand:SI 3 "register_operand" "")
 	  (plus:SI (match_dup 0) (match_dup 1)))])]
   "reload_completed && reg_overlap_mentioned_p (operands[3], operands[2])"
@@ -4272,7 +4277,7 @@
    (set (match_dup 5) (match_dup 2))]
   "operands[5] = gen_rtx_MEM (GET_MODE (operands[2]), operands[3]);")
 
-;; clear.d ry,[rx=rx+rz.S2]
+;; clear.d [rx=rx+rz.S2]
 
 (define_split
   [(parallel
@@ -4292,7 +4297,7 @@
    (set (mem:SI (match_dup 3)) (const_int 0))]
   "")
 
-;; clear.w ry,[rx=rx+rz.S2]
+;; clear.w [rx=rx+rz.S2]
 
 (define_split
   [(parallel
@@ -4312,7 +4317,7 @@
    (set (mem:HI (match_dup 3)) (const_int 0))]
   "")
 
-;; clear.b ry,[rx=rx+rz.S2]
+;; clear.b [rx=rx+rz.S2]
 
 (define_split
   [(parallel
@@ -4332,7 +4337,7 @@
    (set (mem:QI (match_dup 3)) (const_int 0))]
   "")
 
-;; clear.d ry,[rx=rx+i]
+;; clear.d [rx=rx+i]
 
 (define_split
   [(parallel
@@ -4349,7 +4354,7 @@
    (set (mem:SI (match_dup 2)) (const_int 0))]
   "")
 
-;; clear.w ry,[rx=rx+i]
+;; clear.w [rx=rx+i]
 
 (define_split
   [(parallel
@@ -4366,7 +4371,7 @@
    (set (mem:HI (match_dup 2)) (const_int 0))]
   "")
 
-;; clear.b ry,[rx=rx+i]
+;; clear.b [rx=rx+i]
 
 (define_split
   [(parallel

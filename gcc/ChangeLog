@@ -1,3 +1,15 @@
+2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/6838
+	* config/cris/cris.md: Fix typos and thinkos in comments.
+	("*mov_sideqi_biap_mem"): Remove '*' in constraint for operand 4,
+	second alternative.
+	("*mov_sidehi_biap_mem", "*mov_sidesi_biap_mem"): Ditto.
+	("*mov_sideqi_mem"): Similar, but for operand 3.
+	("*mov_sidehi_mem", "*mov_sidesi_mem"): Ditto.
+	(splitter for mov_sideqi_mem, mov_sidehi_mem, mov_sidesi_mem):
+	Remove spurious mode specifier on operand 2.
+
 2002-05-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Remove the prototype for
