@@ -33,51 +33,18 @@ compilation is specified by a string called a "spec".  */
 
 #include "config.h"
 
-#include <sys/types.h>
-#include <ctype.h>
-#include <signal.h>
-#include <sys/stat.h>
-#include <errno.h>
-
-#ifdef HAVE_SYS_FILE_H
-#include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
-#endif
-
-#include "obstack.h"
 #include "gansidecl.h"
+#include "system.h"
 
+#include <signal.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
-#include <stdio.h>
 
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
+#include "obstack.h"
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
-
-#ifndef R_OK
-#define R_OK 4
-#define W_OK 2
-#define X_OK 1
-#endif
 
 /* ??? Need to find a GCC header to put these in.  */
 extern int pexecute PROTO ((const char *, char * const *, const char *,
@@ -154,14 +121,7 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
-extern char *getenv ();
-
 extern char *choose_temp_base PROTO((void));
-
-#ifndef errno
-extern int errno;
-#endif
 
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
@@ -1219,7 +1179,7 @@ set_spec (name, spec)
     }
 
   old_spec = *(sl->ptr_spec);
-  *(sl->ptr_spec) = ((spec[0] == '+' && isspace (spec[1]))
+  *(sl->ptr_spec) = ((spec[0] == '+' && ISSPACE (spec[1]))
 		     ? concat (old_spec, spec + 1, NULL_PTR)
 		     : save_string (spec, strlen (spec)));
 
@@ -1507,12 +1467,12 @@ read_specs (filename, main_p)
 	      while (*p1 == ' ' || *p1 == '\t')
 		p1++;
 
-	      if (! isalpha (*p1))
+	      if (! ISALPHA (*p1))
 		fatal ("specs %%rename syntax malformed after %d characters",
 		       p1 - buffer);
 
 	      p2 = p1;
-	      while (*p2 && !isspace (*p2))
+	      while (*p2 && !ISSPACE (*p2))
 		p2++;
 
 	      if (*p2 != ' ' && *p2 != '\t')
@@ -1524,13 +1484,13 @@ read_specs (filename, main_p)
 	      while (*p2 == ' ' || *p2 == '\t')
 		p2++;
 
-	      if (! isalpha (*p2))
+	      if (! ISALPHA (*p2))
 		fatal ("specs %%rename syntax malformed after %d characters",
 		       p2 - buffer);
 
 	      /* Get new spec name */
 	      p3 = p2;
-	      while (*p3 && !isspace (*p3))
+	      while (*p3 && !ISSPACE (*p3))
 		p3++;
 
 	      if (p3 != p-1)
@@ -2721,7 +2681,7 @@ process_command (argc, argv)
 			   && (value[len - 8] == '/'
 			       || value[len - 8] == DIR_SEPARATOR)))
 		      && strncmp (value + len - 7, "stage", 5) == 0
-		      && isdigit (value[len - 2])
+		      && ISDIGIT (value[len - 2])
 		      && (value[len - 1] == '/'
 			  || value[len - 1] == DIR_SEPARATOR))
 		    {
@@ -3385,7 +3345,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		   In 2.4, do something about that.  */
 		struct temp_name *t;
 		char *suffix = p;
-		while (*p == '.' || isalpha (*p)
+		while (*p == '.' || ISALPHA (*p)
 		       || (p[0] == '%' && p[1] == 'O'))
 		  p++;
 
@@ -3674,7 +3634,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      *x++ = *y++;
 
 		      if (*y != '_'
-			  || (*(y+1) != '_' && ! isupper (*(y+1))))
+			  || (*(y+1) != '_' && ! ISUPPER (*(y+1))))
 		        {
 			  /* Stick __ at front of macro name.  */
 			  *x++ = '_';
@@ -3716,7 +3676,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      y += 2;
 
 		      if (*y != '_'
-			  || (*(y+1) != '_' && ! isupper (*(y+1))))
+			  || (*(y+1) != '_' && ! ISUPPER (*(y+1))))
 		        {
 			  /* Stick -D__ at front of macro name.  */
 			  *x++ = '-';
@@ -3890,7 +3850,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		 ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
 
 	      /* Ignore leading non-digits.  i.e. "foo-" in "foo-2.7.2".  */
-	      while (! isdigit (*v))
+	      while (! ISDIGIT (*v))
 		v++;
 	      if (v > compiler_version && v[-1] != '-')
 		abort ();
@@ -3899,7 +3859,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      if (c1 == '2')
 		{
 		  /* Set V after the first period.  */
-		  while (isdigit (*v))
+		  while (ISDIGIT (*v))
 		    v++;
 		  if (*v != '.')
 		    abort ();
@@ -3908,7 +3868,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      /* Set Q at the next period or at the end.  */
 	      q = v;
-	      while (isdigit (*q))
+	      while (ISDIGIT (*q))
 		q++;
 	      if (*q != 0 && *q != ' ' && *q != '.' && *q != '-')
 		abort ();
