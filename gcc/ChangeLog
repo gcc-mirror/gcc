@@ -1,5 +1,9 @@
 2003-09-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (fold_builtin_logarithm): if N can't be truncated to
+	MODE exactly, then only convert logN(N) -> 1.0 if
+	flag_unsafe_math_optimizations is set.
+
 	* builtins.c (builtin_dconsts_init, dconstpi, dconste,
 	init_builtin_dconsts): Delete.
 	* emit-rtl.c (dconstpi, dconste): Define.
