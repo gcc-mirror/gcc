@@ -55,11 +55,19 @@ typedef struct use_optype_d GTY(())
 
 typedef use_optype_t *use_optype;
 
+/* Operand type which stores a def and a use tree.  */
+typedef struct v_may_def_operand_type GTY(())
+{
+  tree def;
+  tree use;
+} v_may_def_operand_type_t;
+
 /* This represents the MAY_DEFS for a stmt.  */
 typedef struct v_may_def_optype_d GTY(())
 {
   unsigned num_v_may_defs; 
-  tree GTY((length ("%h.num_v_may_defs * 2"))) v_may_defs[1];
+  struct v_may_def_operand_type GTY((length ("%h.num_v_may_defs")))
+							      v_may_defs[1];
 } v_may_def_optype_t;
 
 typedef v_may_def_optype_t *v_may_def_optype;
@@ -81,6 +89,21 @@ typedef struct v_must_def_optype_d GTY(())
 } v_must_def_optype_t;
 
 typedef v_must_def_optype_t *v_must_def_optype;
+
+/* This represents the operand cache fora stmt.  */
+typedef struct stmt_operands_d GTY(())
+{
+  /* Statement operands.  */
+  struct def_optype_d * GTY (()) def_ops;
+  struct use_optype_d * GTY (()) use_ops;
+
+  /* Virtual operands (V_MAY_DEF, VUSE, and V_MUST_DEF).  */
+  struct v_may_def_optype_d * GTY (()) v_may_def_ops;
+  struct vuse_optype_d * GTY (()) vuse_ops;
+  struct v_must_def_optype_d * GTY (()) v_must_def_ops;
+} stmt_operands_t;
+
+typedef stmt_operands_t *stmt_operands_p;
 
 #define USE_FROM_PTR(OP)	get_use_from_ptr (OP)
 #define DEF_FROM_PTR(OP)	get_def_from_ptr (OP)
@@ -157,13 +180,8 @@ typedef v_must_def_optype_t *v_must_def_optype;
 
 extern void init_ssa_operands (void);
 extern void fini_ssa_operands (void);
-extern void verify_start_operands (tree);
-extern void finalize_ssa_stmt_operands (tree);
-void add_vuse (tree, tree);
 extern void get_stmt_operands (tree);
-extern void remove_vuses (tree);
-extern void remove_v_may_defs (tree);
-extern void remove_v_must_defs (tree);
 extern void copy_virtual_operands (tree, tree);
+extern void create_ssa_artficial_load_stmt (stmt_operands_p, tree);
 
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */

@@ -1,3 +1,46 @@
+2004-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow-inline.h (get_def_ops, get_use_ops, get_v_may_def_ops,
+	get_vuse_ops,get_v_must_def_ops): Add operand structure reference.
+	(get_v_may_def_result_ptr, get_v_may_def_op_ptr): New access struct.
+	(start_ssa_stmt_operands): Delete.
+	* tree-flow.h (struct stmt_ann_d): Replace operand vectors with new 
+	struct stmt_operands_d.
+	(build_ssa_operands): New extern entry point.
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Remove operand 
+	building code, replace with create_ssa_artficial_load_stmt().
+	* tree-ssa-operands.c (struct voperands_d): Delete.
+	(allocate_v_may_def_optype): Allocate v_may_def_operand_type_t vector.
+	(allocate_v_must_def_optype): Use sizeof (tree), not sizeof (tree *).
+	(free_uses, free_defs, free_vuses, free_v_may_defs, 
+	free_v_must_defs): Remove dealloc parameter.
+	(remove_vuses, remove_v_may_def, remove_v_must_defs): Delete.
+	(finalize_ssa_defs, finalize_ssa_uses, finalize_ssa_v_may_defs,
+	finalize_ssa_vuses, finalize_ssa_v_must_defs): Perform all operand
+	vector comparisons, ssa_name reuse, and allocations here.
+	(verify_start_operands): Delete.
+	(finalize_ssa_stmt_operands): Set new operands by calling finalize
+	routines.
+	(start_ssa_stmt_operands): Move from tree-flow-inline.h.
+	(append_def, append_usei): Simplify to simple accumulation.
+	(append_v_may_def, append_vuse, append_v_must_def): Simplify to avoiding
+	duplicates and simple accumulation.
+	(free_ssa_operands): Free vectors in a stmt_operand structure.
+	(build_ssa_operands): New. Create a new stmt_operand structure from
+	a stmt and an old set of stmt_operands.  
+	(get_stmt_operands): Simplify and call build_ssa_operands.
+	(get_expr_operands, get_asm_expr_operands, get_indirect_ref_operands,
+	get_call_expr_operands, add_stmt_operand, add_call_clobber_ops,
+	add_call_read_ops): Don't pass prev_vops around anymore.
+	(note_addressable): Return if no stmt annotation.
+	(copy_virtual_operands): Access v_may_def operands through a struct.
+	(create_ssa_artficial_load_stmt): New.  Create a load stmt for DOM's
+	hash tables without treating the stmt as a real stmt.
+	* tree-ssa-operands.h (struct v_may_def_operand_type): New.  Access
+	v_may_def def and use through a struct instead of 2 array elements.
+	(struct v_may_def_optype_d): Use v_may_def_operand_type.
+	(struct stmt_operands_d): New.  Struct for storing all operand vectors.
+
 2004-08-11  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (arm_is_longcall_p): Update comment describing

@@ -266,14 +266,7 @@ struct stmt_ann_d GTY(())
   /* Basic block that contains this statement.  */
   basic_block GTY ((skip (""))) bb;
 
-  /* Statement operands.  */
-  struct def_optype_d * GTY (()) def_ops;
-  struct use_optype_d * GTY (()) use_ops;
-
-  /* Virtual operands (V_MAY_DEF, VUSE, and V_MUST_DEF).  */
-  struct v_may_def_optype_d * GTY (()) v_may_def_ops;
-  struct vuse_optype_d * GTY (()) vuse_ops;
-  struct v_must_def_optype_d * GTY (()) v_must_def_ops;
+  struct stmt_operands_d operands;
 
   /* Dataflow information.  */
   dataflow_t df;
@@ -689,6 +682,10 @@ void vn_delete (void);
 
 /* In tree-sra.c  */
 void insert_edge_copies (tree stmt, basic_block bb);
+
+/* In tree-ssa-operands.c  */
+extern void build_ssa_operands (tree, stmt_ann_t, stmt_operands_p, 
+				stmt_operands_p);
 
 #include "tree-flow-inline.h"
 

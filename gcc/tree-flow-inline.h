@@ -169,7 +169,7 @@ stmt_modified_p (tree t)
 static inline def_optype
 get_def_ops (stmt_ann_t ann)
 {
-  return ann ? ann->def_ops : NULL;
+  return ann ? ann->operands.def_ops : NULL;
 }
 
 /* Return the uses present in ANN, a statement annotation.
@@ -177,7 +177,7 @@ get_def_ops (stmt_ann_t ann)
 static inline use_optype
 get_use_ops (stmt_ann_t ann)
 {
-  return ann ? ann->use_ops : NULL;
+  return ann ? ann->operands.use_ops : NULL;
 }
 
 /* Return the virtual may-defs present in ANN, a statement
@@ -186,7 +186,7 @@ get_use_ops (stmt_ann_t ann)
 static inline v_may_def_optype
 get_v_may_def_ops (stmt_ann_t ann)
 {
-  return ann ? ann->v_may_def_ops : NULL;
+  return ann ? ann->operands.v_may_def_ops : NULL;
 }
 
 /* Return the virtual uses present in ANN, a statement annotation.
@@ -194,7 +194,7 @@ get_v_may_def_ops (stmt_ann_t ann)
 static inline vuse_optype
 get_vuse_ops (stmt_ann_t ann)
 {
-  return ann ? ann->vuse_ops : NULL;
+  return ann ? ann->operands.vuse_ops : NULL;
 }
 
 /* Return the virtual must-defs present in ANN, a statement
@@ -202,7 +202,7 @@ get_vuse_ops (stmt_ann_t ann)
 static inline v_must_def_optype
 get_v_must_def_ops (stmt_ann_t ann)
 {
-  return ann ? ann->v_must_def_ops : NULL;
+  return ann ? ann->operands.v_must_def_ops : NULL;
 }
 
 /* Return the tree pointer to by USE.  */ 
@@ -252,7 +252,7 @@ get_v_may_def_result_ptr(v_may_def_optype v_may_defs, unsigned int index)
   if (index >= v_may_defs->num_v_may_defs)
     abort();
 #endif
-  op.def = &(v_may_defs->v_may_defs[index * 2]);
+  op.def = &(v_may_defs->v_may_defs[index].def);
   return op;
 }
 
@@ -266,7 +266,7 @@ get_v_may_def_op_ptr(v_may_def_optype v_may_defs, unsigned int index)
   if (index >= v_may_defs->num_v_may_defs)
     abort();
 #endif
-  op.use = &(v_may_defs->v_may_defs[index * 2 + 1]);
+  op.use = &(v_may_defs->v_may_defs[index].use);
   return op;
 }
 
@@ -315,15 +315,6 @@ get_phi_arg_def_ptr (tree phi, int i)
   return op;
 }
  
-/* Mark the beginning of changes to the SSA operands for STMT.  */
-static inline void
-start_ssa_stmt_operands (tree stmt ATTRIBUTE_UNUSED)
-{
-#ifdef ENABLE_CHECKING
-  verify_start_operands (stmt);
-#endif
-}
-
 /* Return the bitmap of addresses taken by STMT, or NULL if it takes
    no addresses.  */
 static inline bitmap
