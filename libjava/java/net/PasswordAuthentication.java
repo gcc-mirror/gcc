@@ -1,5 +1,5 @@
 /* PasswordAuthentication.java -- Container class for username/password pairs
-   Copyright (C) 1998,2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,72 +45,64 @@ package java.net;
   */
 public final class PasswordAuthentication
 {
+  /*
+   * Instance Variables
+   */
 
-/*************************************************************************/
+  /**
+    * The username 
+    */
+  private String username;
 
-/*
- * Instance Variables
- */
+  /**
+    * The password
+    */
+  private char[] password;
 
-/**
-  * The username 
-  */
-private String username;
+  /*************************************************************************/
 
-/**
-  * The password
-  */
-private char[] password;
+  /*
+   * Constructors
+   */
 
-/*************************************************************************/
+  /**
+    * Creates a new <code>PasswordAuthentication</code> object from the 
+    * specified username and password.
+    *
+    * @param username The username for this object
+    * @param password The password for this object
+    */
+  public PasswordAuthentication(String username, char[] password)
+  {
+    this.username = username;
+    this.password = password;
+  }
 
-/*
- * Constructors
- */
+  /*************************************************************************/
 
-/**
-  * Creates a new PasswordAuthentication object from the specified username
-  * and password.
-  *
-  * @param username The username for this object
-  * @param password The password for this object
-  */
-public
-PasswordAuthentication(String username, char[] password)
-{
-  this.username = username;
-  this.password = password;
-}
+  /*
+   * Instance Methods
+   */
 
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * Returns the username associated with this object
-  *
-  * @return The username
-  */
-public String
-getUserName()
-{
-  return(username);
-}
- 
-/*************************************************************************/
-
-/**
-  * Returns the password associated with this object
-  *
-  * @return The password
-  */
-public char[]
-getPassword()
-{
-  return(password);
-}
+  /**
+    * Returns the username associated with this object
+    *
+    * @return The username
+    */
+  public String getUserName()
+  {
+    return(username);
+  }
+   
+  /**
+    * Returns the password associated with this object
+    *
+    * @return The password
+    */
+  public char[] getPassword()
+  {
+    return(password);
+  }
 
 } // class PasswordAuthentication
 

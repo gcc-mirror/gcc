@@ -1,3 +1,11 @@
+2003-05-26  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/NetPermission.java,
+	java/net/NetworkInterface.java,
+	java/net/PasswordAuthentication.java,
+	java/net/SocketPermission.java:
+	New versions from classpath.
+
 2003-05-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/PushbackInputStream.java,

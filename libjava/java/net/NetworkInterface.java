@@ -41,6 +41,12 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 /**
+ * This class models a network interface on the host computer.  A network
+ * interface contains a name (typically associated with a specific
+ * hardware adapter) and a list of addresses that are bound to it.
+ * For example, an ethernet interface may be named "eth0" and have the
+ * address 192.168.1.101 assigned to it.
+ *
  * @author Michael Koch <konqueror@gmx.de>
  * @since 1.4
  */
@@ -61,7 +67,9 @@ public final class NetworkInterface
     throws SocketException;
 
   /**
-   *  Returns the name of the network interface
+   * Returns the name of the network interface
+   *
+   * @return The name of the interface.
    */
   public String getName ()
   {
@@ -73,8 +81,8 @@ public final class NetworkInterface
    *  
    *  If a @see SecurityManager is available all addresses are checked
    *  with @see SecurityManager::checkConnect() if they are available.
-   *  Only InetAddresses are returned where the security manager doesn't
-   *  thrown an exception.
+   *  Only <code>InetAddresses</code> are returned where the security manager 
+   *  doesn't throw an exception.
    *  
    *  @return An enumeration of all addresses.
    */
@@ -106,6 +114,8 @@ public final class NetworkInterface
 
   /**
    *  Returns the display name of the interface
+   *
+   *  @return The display name of the interface
    */
   public String getDisplayName ()
   {
@@ -168,7 +178,7 @@ public final class NetworkInterface
   }
 
   /**
-   *  Return an Enumeration of all available network interfaces
+   *  Return an <code>Enumeration</code> of all available network interfaces
    *
    *  @exception SocketException If an error occurs
    */
