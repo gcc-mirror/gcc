@@ -1,5 +1,7 @@
 Thu Mar 21 09:50:48 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/ia64/ia64.c (hfa_element_call, case ARRAY_TYPE): Recurse.
+
 	* expr.c (emit_group_store): Don't copy const0_rtx to a CONCAT.
 
 2002-03-21  Eric Botcazou <ebotcazou@multimania.com>
