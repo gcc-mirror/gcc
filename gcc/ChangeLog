@@ -1,3 +1,20 @@
+Thu May 21 11:51:15 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* configure.in (extra_c_objs): add prefix.o.
+	(extra_cxx_objs): extra objects for C++ with cpplib.
+	* configure: Regenerate.
+
+	* c-tree.h: (get_directive_line): Different prototype for cpplib.
+	(GET_DIRECTIVE_LINE): Macro wrapper for get_directive_line.
+
+	* c-lex.h: (get_directive_line): Not needed here for cpplib.
+
+	* c-lex.c: (yy_cur,yy_lim,yy_get_token): Move to c-common.c.
+	(GET_DIRECTIVE_LINE): Move to c-common.c and rename to get_directive_line.
+
+	* c-common.c (parse_in,parse_options,cpp_token): Declare for cpplib.
+	(yy_cur,yy_lim,yy_get_token,get_directive,line): Moved here from c-lex.c
+
 Thu May 21 09:04:42 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gengenrtl.c (type_from_format, accessor_from_format): Change
