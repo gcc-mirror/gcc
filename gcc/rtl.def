@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987, 88, 92, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 94, 95, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -500,8 +500,13 @@ DEF_RTL_EXPR(CONST_STRING, "const_string", "s", 'o')
 /* This is used to encapsulate an expression whose value is constant
    (such as the sum of a SYMBOL_REF and a CONST_INT) so that it will be
    recognized as a constant operand rather than by arithmetic instructions.  */
-
 DEF_RTL_EXPR(CONST, "const", "e", 'o')
+
+/* A unary `__builtin_constant_p' expression.  This RTL code may only be used
+   as an operand of a CONST.  This pattern is only emitted during RTL
+   generation and then only if optimize > 0.  It is converted by the first
+   CSE pass into the appropriate CONST_INT.  */
+DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", 'x')
 
 /* program counter.  Ordinary jumps are represented
    by a SET whose first operand is (PC).  */
