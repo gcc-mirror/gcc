@@ -2,7 +2,7 @@
 // This testcase caused ICE on IA-32, since DWARF-2 was unable
 // to emit location expression for parameter a of operator+.
 // { dg-do compile }
-// { dg-options "-O2 -g -fpic" }
+// { dg-options "-fpic" }
 
 struct A { char *s; };
 

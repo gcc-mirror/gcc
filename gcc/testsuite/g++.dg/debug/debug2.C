@@ -1,7 +1,6 @@
 /* Verify that sched re-inserts needed scopes properly.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g" } */
-/* { dg-options "-O2 -g -mcpu=ev5" { target alpha*-*-* } } */
+/* { dg-options "-mcpu=ev5" { target alpha*-*-* } } */
 
 template <class T>
 inline void foo()

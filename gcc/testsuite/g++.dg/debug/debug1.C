@@ -1,6 +1,5 @@
 // Test whether dwarf2 debug info works with named return value optimization
-// { dg-do compile { target i?86-*-linux* } }
-// { dg-options "-O2 -gdwarf-2" }
+// { dg-do compile }
 
 struct S
 {
