@@ -1,5 +1,11 @@
 2003-08-19  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_va_arg): If EABI_FLOAT_VARARGS_P,
+	expect SFmode and DFmode arguments to be passed in FPRs,
+	regardless of the underlying type.
+
+2003-08-19  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR target/11924
 	* config/mips/mips.c (INTERNAL_SYMBOL_P): New macro.
 	(mips_classify_symbol, m16_usym8_4, m16_usym5_4): Use it.
