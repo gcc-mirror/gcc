@@ -2390,6 +2390,7 @@ fixup_stack_1 (x, insn)
 	      || REGNO (XEXP (ad, 0)) == HARD_FRAME_POINTER_REGNUM
 #endif
 	      || REGNO (XEXP (ad, 0)) == STACK_POINTER_REGNUM
+	      || REGNO (XEXP (ad, 0)) == ARG_POINTER_REGNUM
 	      || XEXP (ad, 0) == current_function_internal_arg_pointer)
 	  && GET_CODE (XEXP (ad, 1)) == CONST_INT)
 	{
