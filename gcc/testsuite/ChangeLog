@@ -1,5 +1,10 @@
 2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/other/ptrmem1.C: New test.
+	* g++.dg/other/ptrmem2.C: New test.
+
+2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.dg/template/ctor1.C: New test.
 
 2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
