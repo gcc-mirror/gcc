@@ -1,10 +1,10 @@
 #ifdef STACK_SIZE
-#if STACK_SIZE >= 8*100*100
-#define OK
+#if STACK_SIZE < 8*100*100
+#define SKIP
 #endif
 #endif
 
-#ifdef OK
+#ifndef SKIP
 double x[100][100];
 int main ()
 {
