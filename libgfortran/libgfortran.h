@@ -189,6 +189,8 @@ typedef int8_t GFC_INTEGER_1;
 typedef int16_t GFC_INTEGER_2;
 typedef int32_t GFC_INTEGER_4;
 typedef int64_t GFC_INTEGER_8;
+typedef uint8_t GFC_UINTEGER_1;
+typedef uint16_t GFC_UINTEGER_2;
 typedef uint32_t GFC_UINTEGER_4;
 typedef uint64_t GFC_UINTEGER_8;
 typedef GFC_INTEGER_4 GFC_LOGICAL_4;

@@ -1,3 +1,11 @@
+2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de> 
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Change to
+	logical	shift.  Call fold.  Remove 0-bit shift shortcut.
+	(gfc_conv_intrinsic_ishftc): Convert first argument to at least
+	4 bytes bits.  Convert 2nd and 3rd argument to 4 bytes.  Convert
+	result if width(arg 1) < 4 bytes.  Call fold.
+
 2004-12-23  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.texi: Fix typo.

@@ -1,6 +1,6 @@
 /* Implementation of the MVBITS intrinsic
    Copyright (C) 2004 Free Software Foundation, Inc.
-   Contributed by Tobias SchlÃ¼ter
+   Contributed by Tobias Schlüter
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -48,6 +48,22 @@ SUB_NAME (const TYPE *from, const GFC_INTEGER_4 *frompos,
 #endif
 
 #ifndef SUB_NAME
+#  define TYPE GFC_INTEGER_1
+#  define UTYPE GFC_UINTEGER_1
+#  define SUB_NAME mvbits_i1
+#  include "mvbits.c"
+#  undef SUB_NAME
+#  undef TYPE
+#  undef UTYPE
+ 
+#  define TYPE GFC_INTEGER_2
+#  define UTYPE GFC_UINTEGER_2
+#  define SUB_NAME mvbits_i2
+#  include "mvbits.c"
+#  undef SUB_NAME
+#  undef TYPE
+#  undef UTYPE
+ 
 #  define TYPE GFC_INTEGER_4
 #  define UTYPE GFC_UINTEGER_4
 #  define SUB_NAME mvbits_i4

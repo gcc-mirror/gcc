@@ -1774,14 +1774,21 @@ gfc_conv_intrinsic_ibits (gfc_se * se, gfc_expr * expr)
   se->expr = fold (build2 (BIT_AND_EXPR, type, tmp, mask));
 }
 
-/* ISHFT (I, SHIFT) = (shift >= 0) ? i << shift : i >> -shift.  */
+/* ISHFT (I, SHIFT) = (abs (shift) >= BIT_SIZE (i))
+                        ? 0
+	 	        : ((shift >= 0) ? i << shift : i >> -shift)
+   where all shifts are logical shifts.  */
 static void
 gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
 {
   tree arg;
   tree arg2;
   tree type;
+  tree utype;
   tree tmp;
+  tree width;
+  tree num_bits;
+  tree cond;
   tree lshift;
   tree rshift;
 
@@ -1789,23 +1796,36 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
   arg2 = TREE_VALUE (TREE_CHAIN (arg));
   arg = TREE_VALUE (arg);
   type = TREE_TYPE (arg);
+  utype = gfc_unsigned_type (type);
+
+  /* We convert to an unsigned type because we want a logical shift.
+     The standard doesn't define the case of shifting negative
+     numbers, and we try to be compatible with other compilers, most
+     notably g77, here.  */
+  arg = convert (utype, arg);
+  width = fold (build1 (ABS_EXPR, TREE_TYPE (arg2), arg2));
 
   /* Left shift if positive.  */
-  lshift = build2 (LSHIFT_EXPR, type, arg, arg2);
+  lshift = fold (build2 (LSHIFT_EXPR, type, arg, width));
 
-  /* Right shift if negative.  This will perform an arithmetic shift as
-     we are dealing with signed integers.  Section 13.5.7 allows this.  */
-  tmp = build1 (NEGATE_EXPR, TREE_TYPE (arg2), arg2);
-  rshift = build2 (RSHIFT_EXPR, type, arg, tmp);
+  /* Right shift if negative.  */
+  rshift = convert (type, fold (build2 (RSHIFT_EXPR, utype, arg, width)));
 
-  tmp = build2 (GT_EXPR, boolean_type_node, arg2,
-		convert (TREE_TYPE (arg2), integer_zero_node));
-  rshift = build3 (COND_EXPR, type, tmp, lshift, rshift);
+  tmp = fold (build2 (GE_EXPR, boolean_type_node, arg2,
+		      convert (TREE_TYPE (arg2), integer_zero_node)));
+  tmp = fold (build3 (COND_EXPR, type, tmp, lshift, rshift));
 
-  /* Do nothing if shift == 0.  */
-  tmp = build2 (EQ_EXPR, boolean_type_node, arg2,
-		convert (TREE_TYPE (arg2), integer_zero_node));
-  se->expr = build3 (COND_EXPR, type, tmp, arg, rshift);
+  /* The Fortran standard allows shift widths <= BIT_SIZE(I), whereas
+     gcc requires a shift width < BIT_SIZE(I), so we have to catch this
+     special case.  */
+  num_bits = convert (TREE_TYPE (arg2),	
+		      build_int_cst (NULL, TYPE_PRECISION (type)));
+  cond = fold (build2 (GE_EXPR, boolean_type_node, width,
+		       convert (TREE_TYPE (arg2), num_bits)));
+
+  se->expr = fold (build3 (COND_EXPR, type, cond, 
+			   convert (type, integer_zero_node),
+			   tmp));
 }
 
 /* Circular shift.  AKA rotate or barrel shift.  */
@@ -1826,17 +1846,28 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
   if (arg3)
     {
       /* Use a library function for the 3 parameter version.  */
+      tree int4type = gfc_get_int_type (4);
+
       type = TREE_TYPE (TREE_VALUE (arg));
-      /* Convert all args to the same type otherwise we need loads of library
-         functions.  SIZE and SHIFT cannot have values > BIT_SIZE (I) so the
-         conversion is safe.  */
-      tmp = convert (type, TREE_VALUE (arg2));
-      TREE_VALUE (arg2) = tmp;
-      tmp = convert (type, TREE_VALUE (arg3));
-      TREE_VALUE (arg3) = tmp;
+      /* We convert the first argument to at least 4 bytes, and
+	 convert back afterwards.  This removes the need for library
+	 functions for all argument sizes, and function will be
+	 aligned to at least 32 bits, so there's no loss.  */
+      if (expr->ts.kind < 4)
+	{
+	  tmp = convert (int4type, TREE_VALUE (arg));
+	  TREE_VALUE (arg) = tmp;
+	}
+      /* Convert the SHIFT and SIZE args to INTEGER*4 otherwise we would
+         need loads of library  functions.  They cannot have values >
+	 BIT_SIZE (I) so the conversion is safe.  */
+      TREE_VALUE (arg2) = convert (int4type, TREE_VALUE (arg2));
+      TREE_VALUE (arg3) = convert (int4type, TREE_VALUE (arg3));
 
       switch (expr->ts.kind)
 	{
+	case 1:
+	case 2:
 	case 4:
 	  tmp = gfor_fndecl_math_ishftc4;
 	  break;
@@ -1847,6 +1878,11 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 	  gcc_unreachable ();
 	}
       se->expr = gfc_build_function_call (tmp, arg);
+      /* Convert the result back to the original type, if we extended
+	 the first argument's width above.  */
+      if (expr->ts.kind < 4)
+	se->expr = convert (type, se->expr);
+
       return;
     }
   arg = TREE_VALUE (arg);
@@ -1854,20 +1890,20 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
   type = TREE_TYPE (arg);
 
   /* Rotate left if positive.  */
-  lrot = build2 (LROTATE_EXPR, type, arg, arg2);
+  lrot = fold (build2 (LROTATE_EXPR, type, arg, arg2));
 
   /* Rotate right if negative.  */
-  tmp = build1 (NEGATE_EXPR, TREE_TYPE (arg2), arg2);
-  rrot = build2 (RROTATE_EXPR, type, arg, tmp);
+  tmp = fold (build1 (NEGATE_EXPR, TREE_TYPE (arg2), arg2));
+  rrot = fold (build2 (RROTATE_EXPR, type, arg, tmp));
 
-  tmp = build2 (GT_EXPR, boolean_type_node, arg2,
-		convert (TREE_TYPE (arg2), integer_zero_node));
-  rrot = build3 (COND_EXPR, type, tmp, lrot, rrot);
+  tmp = fold (build2 (GT_EXPR, boolean_type_node, arg2,
+		      convert (TREE_TYPE (arg2), integer_zero_node)));
+  rrot = fold (build3 (COND_EXPR, type, tmp, lrot, rrot));
 
   /* Do nothing if shift == 0.  */
-  tmp = build2 (EQ_EXPR, boolean_type_node, arg2,
-		convert (TREE_TYPE (arg2), integer_zero_node));
-  se->expr = build3 (COND_EXPR, type, tmp, arg, rrot);
+  tmp = fold (build2 (EQ_EXPR, boolean_type_node, arg2,
+		      convert (TREE_TYPE (arg2), integer_zero_node)));
+  se->expr = fold (build3 (COND_EXPR, type, tmp, arg, rrot));
 }
 
 /* The length of a character string.  */
