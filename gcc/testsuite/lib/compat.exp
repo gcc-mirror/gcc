@@ -50,6 +50,7 @@ if ![info exists COMPAT_OPTIONS] {
 set option_list $COMPAT_OPTIONS
 
 load_lib dg.exp
+load_lib gcc-dg.exp
 
 #
 # compat-obj -- compile to an object file
@@ -59,15 +60,18 @@ load_lib dg.exp
 # OPTALL is the list of compiler options to use with all tests
 # OPTFILE is the list of compiler options to use with this file
 # OPTSTR is the options to print with test messages
+# XFAILDATA is the xfail data to be passed to the compiler
 #
-proc compat-obj { source dest optall optfile optstr } {
+proc compat-obj { source dest optall optfile optstr xfaildata } {
     global testcase
     global tool
+    global compiler_conditional_xfail_data
 
     # Set up the options for compiling this file.
     set options ""
     lappend options "additional_flags=$optfile $optall"
 
+    set compiler_conditional_xfail_data $xfaildata
     set comp_output [${tool}_target_compile "$source" "$dest" object $options]
     ${tool}_check_compile "$testcase $dest compile" $optstr $dest $comp_output
 }
@@ -120,7 +124,7 @@ proc compat-run { testname objlist dest optall optfile optstr } {
 }
 
 #
-# compat-flags -- get special tool flags to use for a source file
+# compat-get-options -- get special tool flags to use for a source file
 #
 # SRC is the full patchname of the source file.
 # The result is a list of options to use.
@@ -138,10 +142,15 @@ proc compat-get-options { src } {
 
     # dg-options sets a variable called dg-extra-tool-flags.
     set dg-extra-tool-flags ""
+
+    # dg-xfail-if sets compiler_conditional_xfail_data.
+    global compiler_conditional_xfail_data
+    set compiler_conditional_xfail_data ""
+
     set tmp [dg-get-options $src]
     foreach op $tmp {
 	set cmd [lindex $op 0]
-	if ![string compare "dg-options" $cmd] {
+	if { ![string compare "dg-options" $cmd] || ![string compare "dg-xfail-if" $cmd] } {
 	    set status [catch "$op" errmsg]
 	    if { $status != 0 } {
 		perror "src: $errmsg for \"$op\"\n"
@@ -176,6 +185,7 @@ proc compat-execute { src1 sid use_alt } {
     global verbose
     global testcase
     global gluefile
+    global compiler_conditional_xfail_data
 
     # Set up the names of the other source files.
     regsub "_main.*" $src1 "" base
@@ -188,7 +198,9 @@ proc compat-execute { src1 sid use_alt } {
     # extra flags in *_main.* are also used for linking.
     set extra_flags_1 [compat-get-options $src1]
     set extra_flags_2 [compat-get-options $src2]
+    set compile_xfail_2 $compiler_conditional_xfail_data
     set extra_flags_3 [compat-get-options $src3]
+    set compile_xfail_3 $compiler_conditional_xfail_data
 
     # Define the names of the object files.
     regsub "sid" "sid_main_tst.o" $sid obj1
@@ -243,15 +255,15 @@ proc compat-execute { src1 sid use_alt } {
 	# later.  Skip this if we don't have an alternate compiler.
 	if { $use_alt != 0 } then {
 	    compat-use-alt-compiler
-	    compat-obj "$src2" "$obj2_alt" $alt_option $extra_flags_2 $optstr
-	    compat-obj "$src3" "$obj3_alt" $alt_option $extra_flags_3 $optstr
+	    compat-obj "$src2" "$obj2_alt" $alt_option $extra_flags_2 $optstr $compile_xfail_2
+	    compat-obj "$src3" "$obj3_alt" $alt_option $extra_flags_3 $optstr $compile_xfail_3
 	}
 
 	# Compile pieces with the compiler under test.
 	compat-use-tst-compiler
-	compat-obj "$src1" "$obj1" $tst_option $extra_flags_1 $optstr
-	compat-obj "$src2" "$obj2_tst" $tst_option $extra_flags_2 $optstr
-	compat-obj "$src3" "$obj3_tst" $tst_option $extra_flags_3 $optstr
+	compat-obj "$src1" "$obj1" $tst_option $extra_flags_1 $optstr ""
+	compat-obj "$src2" "$obj2_tst" $tst_option $extra_flags_2 $optstr $compile_xfail_2
+	compat-obj "$src3" "$obj3_tst" $tst_option $extra_flags_3 $optstr $compile_xfail_3
 
 	# Link (using the compiler under test), run, and clean up tests.
 	compat-run "${obj2_tst}-${obj3_tst}" \

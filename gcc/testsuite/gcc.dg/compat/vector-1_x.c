@@ -1,4 +1,5 @@
 /* { dg-options "-w" } */
+/* { dg-xfail-if "PR target/12916" "sparc*-*-*" "*" "" } */
 
 #include "compat-common.h"
 #include "vector-defs.h"
