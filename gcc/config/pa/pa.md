@@ -3153,16 +3153,35 @@
   [(set_attr "type" "binary")
   (set_attr "length" "8")])
 
-(define_insn "subsi3"
+(define_expand "subsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(minus:SI (match_operand:SI 1 "arith11_operand" "")
+		  (match_operand:SI 2 "register_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(minus:SI (match_operand:SI 1 "arith11_operand" "r,I")
 		  (match_operand:SI 2 "register_operand" "r,r")))]
-  ""
+  "!TARGET_PA_20"
   "@
    sub %1,%2,%0
    subi %1,%2,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,4")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r,r,q")
+	(minus:SI (match_operand:SI 1 "arith11_operand" "r,I,S")
+		  (match_operand:SI 2 "register_operand" "r,r,r")))]
+  "TARGET_PA_20"
+  "@
+   sub %1,%2,%0
+   subi %1,%2,%0
+   mtsarcm %2"
+  [(set_attr "type" "binary,binary,move")
+   (set_attr "length" "4,4,4")])
 
 ;; Clobbering a "register_operand" instead of a match_scratch
 ;; in operand3 of millicode calls avoids spilling %r1 and
