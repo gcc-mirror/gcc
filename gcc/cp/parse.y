@@ -3017,18 +3017,15 @@ nonnested_type:
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    {
+		      $$ = lookup_name ($1, 1);
 		      if (current_class_type
 			  && TYPE_BEING_DEFINED (current_class_type)
 			  && ! IDENTIFIER_CLASS_VALUE ($1))
 			{
-			  /* Be sure to get an inherited typedef.  */
-			  $$ = lookup_name ($1, 1);
 			  /* Remember that this name has been used in the class
 			     definition, as per [class.scope0] */
 			  pushdecl_class_level ($$);
 			}
-		      else
-			$$ = identifier_typedecl_value ($1);
 		    }
 		  else
 		    $$ = $1;
@@ -3036,7 +3033,7 @@ nonnested_type:
 	| global_scope type_name
 		{
 		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    $$ = identifier_typedecl_value ($2);
+		    $$ = IDENTIFIER_GLOBAL_VALUE ($2);
 		  else
 		    $$ = $2;
 		  got_scope = NULL_TREE;
@@ -3285,7 +3282,7 @@ complex_type_name:
 	  global_scope type_name
 		{
 		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    $$ = identifier_typedecl_value ($2);
+		    $$ = IDENTIFIER_GLOBAL_VALUE ($2);
 		  else
 		    $$ = $2;
 		  got_scope = NULL_TREE;

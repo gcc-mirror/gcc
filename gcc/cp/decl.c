@@ -4389,7 +4389,7 @@ make_implicit_typename (context, t)
       && DECL_CONTEXT (t) != context)
     {
       tree binfo = get_binfo (DECL_CONTEXT (t), context, 0);
-      for (;;)
+      while (binfo)
 	{
 	  tree next = BINFO_INHERITANCE_CHAIN (binfo);
 	  if (! uses_template_parms (BINFO_TYPE (next))
@@ -4397,7 +4397,11 @@ make_implicit_typename (context, t)
 	    break;
 	  binfo = next;
 	}
-      retval = make_typename_type (BINFO_TYPE (binfo), DECL_NAME (t));
+      if (binfo)
+	retval = make_typename_type (BINFO_TYPE (binfo), DECL_NAME (t));
+      else
+	/* FIXME: find the enclosing class whose base t comes from.  */
+	retval = make_typename_type (DECL_CONTEXT (t), DECL_NAME (t));
     }
   else
     retval = make_typename_type (context, DECL_NAME (t));
