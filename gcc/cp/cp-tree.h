@@ -3209,14 +3209,15 @@ extern int function_depth;
 
 /* in pt.c  */
 
-/* These values are used for the `STRICT' parameter to type_unfication and
+/* These values are used for the `STRICT' parameter to type_unification and
    fn_type_unification.  Their meanings are described with the
    documentation for fn_type_unification.  */
 
 typedef enum unification_kind_t {
   DEDUCE_CALL,
   DEDUCE_CONV,
-  DEDUCE_EXACT
+  DEDUCE_EXACT,
+  DEDUCE_ORDER
 } unification_kind_t;
 
 /* Macros for operating on a template instantation level node, represented
@@ -4143,7 +4144,7 @@ extern tree instantiate_template		PARAMS ((tree, tree));
 extern int fn_type_unification                  PARAMS ((tree, tree, tree, tree, tree, unification_kind_t, int));
 extern tree tinst_for_decl			PARAMS ((void));
 extern void mark_decl_instantiated		PARAMS ((tree, int));
-extern int more_specialized			PARAMS ((tree, tree, int));
+extern int more_specialized			PARAMS ((tree, tree, int, int));
 extern void mark_class_instantiated		PARAMS ((tree, int));
 extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
 extern void do_type_instantiation		PARAMS ((tree, tree, int));

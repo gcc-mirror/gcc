@@ -5196,6 +5196,7 @@ joust (cand1, cand2, warn)
   else if (cand1->template && cand2->template)
     winner = more_specialized
       (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
+       DEDUCE_ORDER,
        /* Never do unification on the 'this' parameter.  */
        TREE_VEC_LENGTH (cand1->convs)
        - DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn));
