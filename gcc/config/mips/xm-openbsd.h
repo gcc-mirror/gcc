@@ -20,6 +20,3 @@ Boston, MA 02111-1307, USA.  */
 
 #include <xm-openbsd.h>
 #include <mips/xm-mips.h>
-
-/* We're NOT systemV.  */
-#undef USG

@@ -357,6 +357,7 @@ alpha-*-interix)
 	# GAS + IEEE_CONFORMANT
 	target_cpu_default="MASK_GAS|MASK_IEEE_CONFORMANT"
 
+	xm_defines=USG
 	xm_file="alpha/xm-alpha-interix.h xm-interix.h"
 	xmake_file=x-interix
 	tmake_file="alpha/t-alpha alpha/t-interix alpha/t-ieee"
@@ -609,7 +610,7 @@ c4x-*)
 	;;
 clipper-intergraph-clix*)
 	tm_file="${tm_file} svr3.h clipper/clix.h"
-	xm_file=clipper/xm-clix.h
+	xm_defines=USG
 	extra_headers=va-clipper.h
 	extra_parts="crtbegin.o crtend.o"
 	install_headers_dir=install-headers-cpio
@@ -693,6 +694,7 @@ hppa1.0-*-bsd*)
 	;;
 hppa1.0-*-hpux7*)
 	tm_file="pa/pa-oldas.h ${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux7.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -704,6 +706,7 @@ hppa1.0-*-hpux7*)
 	;;
 hppa1.0-*-hpux8.0[0-2]*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -718,6 +721,7 @@ hppa1.0-*-hpux8.0[0-2]*)
 hppa1.1-*-hpux8.0[0-2]*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -732,6 +736,7 @@ hppa1.1-*-hpux8.0[0-2]*)
 hppa1.1-*-hpux8*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -743,6 +748,7 @@ hppa1.1-*-hpux8*)
 	;;
 hppa1.0-*-hpux8*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -756,6 +762,7 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	float_format=i128
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
@@ -777,6 +784,7 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 hppa1.0-*-hpux10*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	float_format=i128
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
@@ -796,6 +804,7 @@ hppa1.0-*-hpux10*)
 	use_collect2=yes
 	;;
 hppa*64*-*-hpux11*)
+	xm_defines=USG
 	xm_file=pa/xm-pa64hpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
@@ -822,6 +831,7 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	float_format=i128
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
@@ -842,6 +852,7 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 hppa1.0-*-hpux11*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	float_format=i128
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -861,6 +872,7 @@ hppa1.0-*-hpux11*)
 hppa1.1-*-hpux* | hppa2*-*-hpux*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -872,6 +884,7 @@ hppa1.1-*-hpux* | hppa2*-*-hpux*)
 	;;
 hppa1.0-*-hpux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -884,6 +897,7 @@ hppa1.0-*-hpux*)
 hppa1.1-*-hiux* | hppa2*-*-hiux*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -895,6 +909,7 @@ hppa1.1-*-hiux* | hppa2*-*-hiux*)
 	;;
 hppa1.0-*-hiux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
+	xm_defines=USG
 	xm_file=pa/xm-pahpux.h
 	xmake_file=pa/x-pa-hpux
 	if test x$gas = xyes
@@ -918,12 +933,14 @@ hppa*-*-mpeix*)
 	use_collect2=yes 
 	;; 
 i370-*-opened*)			 # IBM 360/370/390 Architecture
+	xm_defines=USG
 	xm_file=i370/xm-oe.h
 	tm_file=i370/oe.h
 	xmake_file=i370/x-oe
 	tmake_file=i370/t-oe
 	;;
 i370-*-mvs*)
+	xm_defines=USG
 	xm_file=i370/xm-mvs.h
 	tm_file=i370/mvs.h
 	tmake_file=i370/t-mvs
@@ -944,7 +961,7 @@ i370-*-linux*)
 	fi
 	;;
 i[34567]86-*-chorusos*)
-	xm_file="${xm_file} xm-svr4.h"
+	xm_defines='USG POSIX'
 	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h i386/chorus.h"
 	tmake_file=i386/t-i386elf
 	xmake_file=x-svr4
@@ -955,7 +972,7 @@ i[34567]86-*-chorusos*)
 	esac
 	;;
 i[34567]86-*-elf*)
-	xm_file="${xm_file} xm-svr4.h"
+	xm_defines='USG POSIX'
 	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h"
 	tmake_file=i386/t-i386elf
 	xmake_file=x-svr4
@@ -1010,7 +1027,7 @@ i[34567]86-sequent-bsd*) 		# 80386 from Sequent
 	fi
 	;;
 i[34567]86-sequent-ptx1*)
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	xmake_file=i386/x-sysv3
 	tm_file=i386/seq-sysv3.h
 	tmake_file=i386/t-crtstuff
@@ -1018,7 +1035,7 @@ i[34567]86-sequent-ptx1*)
 	install_headers_dir=install-headers-cpio
 	;;
 i[34567]86-sequent-ptx2* | i[34567]86-sequent-sysv3*)
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	xmake_file=i386/x-sysv3
 	tm_file=i386/seq2-sysv3.h
 	tmake_file=i386/t-crtstuff
@@ -1052,6 +1069,7 @@ i[34567]86-*-aout*)
 	tmake_file=i386/t-i386bare
 	;;
 i[34567]86-*-beoself* | i[34567]86-*-beos*)
+	xm_defines=USG
 	xm_file=i386/xm-beos.h
 	tmake_file='i386/t-beos i386/t-crtpic'
 	tm_file=i386/beos-elf.h
@@ -1101,7 +1119,7 @@ i[34567]86-*-coff*)
 	;;
 i[34567]86-*-isc*)		# 80386 running ISC system
 	xm_file="${xm_file} i386/xm-isc.h"
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	case $machine in
 	  i[34567]86-*-isc[34]*)
 	    xmake_file=i386/x-isc3
@@ -1247,7 +1265,7 @@ i[34567]86-*-rtems*|i[34567]86-*-rtemself*)
 	;;
 i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 	xm_file="${xm_file} i386/xm-sco5.h"
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	xmake_file=i386/x-sco5
 	install_headers_dir=install-headers-cpio
 	tm_file=i386/sco5.h
@@ -1263,7 +1281,7 @@ i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 	;;
 i[34567]86-*-sco3.2v4*) 	# 80386 running SCO 3.2v4 system
 	xm_file="${xm_file} i386/xm-sco.h"
-	xm_defines="USG SVR3 BROKEN_LDEXP SMALL_ARG_MAX"
+	xm_defines="USG BROKEN_LDEXP SMALL_ARG_MAX"
 	xmake_file=i386/x-sco4
 	install_headers_dir=install-headers-cpio
         if test x$stabs = xyes
@@ -1358,8 +1376,8 @@ i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 	;;
 i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
 	cpu_type=i386
-	xm_file="${xm_file} xm-svr4.h i386/xm-osf1elf.h"
-	xm_defines="USE_C_ALLOCA SMALL_ARG_MAX"
+	xm_file="${xm_file} i386/xm-osf1elf.h"
+	xm_defines='USG POSIX USE_C_ALLOCA SMALL_ARG_MAX'
 	if test x$stabs = xyes
 	then
 		tm_file=i386/osf1elfgdb.h
@@ -1371,7 +1389,7 @@ i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
 i[34567]86-*-sysv*)		# Intel 80386's running system V
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	xmake_file=i386/x-sysv3
 	if test x$gas = xyes
 	then
@@ -1425,6 +1443,7 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 i[34567]86-*-mingw32*)
 	tm_file=i386/mingw32.h
 	float_format=i386
+	xm_defines=USG
 	xm_file="${xm_file} i386/xm-mingw32.h"
 	tmake_file="i386/t-cygwin i386/t-mingw32"
 	extra_objs=winnt.o
@@ -1493,16 +1512,16 @@ i860-*-mach*)
 	;;
 i860-*-osf*)			# Intel Paragon XP/S, OSF/1AD
 	tm_file="${tm_file} svr3.h i860/paragon.h"
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	;;
 i860-*-sysv3*)
 	tm_file="${tm_file} svr3.h i860/sysv3.h"
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	extra_parts="crtbegin.o crtend.o"
 	;;
 i860-*-sysv4*)
 	tm_file="${tm_file} svr4.h i860/sysv4.h"
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	xmake_file=i860/x-sysv4
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
@@ -1698,7 +1717,7 @@ m68k-atari-sysv4*)              # Atari variant of V.4.
 	;;
 m68k-motorola-sysv*)
 	tm_file=m68k/mot3300.h
-	xm_file="m68k/xm-mot3300.h ${xm_file}"
+	xm_defines=USG
 	if test x$gas = xyes
 	then
 		xmake_file=m68k/x-mot3300-gas
@@ -1726,7 +1745,7 @@ m68k-motorola-sysv*)
 	;;
 m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 	tm_file=m68k/tower-as.h
-	xm_defines="USG SVR3"
+	xm_defines=USG
 	xmake_file=m68k/x-tower
 	extra_parts="crtbegin.o crtend.o"
 	extra_headers=math-68881.h
@@ -1913,7 +1932,7 @@ m68k-*-coff*)
 	;;
 m68020-*-elf* | m68k-*-elf*)
 	tm_file="m68k/m68020-elf.h"
-	xm_file=m68k/xm-m68kv.h
+	xm_defines=USG
 	tmake_file=m68k/t-m68kelf
 	header_files=math-68881.h
 	;;
@@ -2013,6 +2032,7 @@ m68k-*-rtemself*|m68k-*-rtems*)
 	fi
 	;;
 m88k-dg-dgux*)
+	xm_defines=USG
 	case $machine in
 	  m88k-dg-dguxbcs*)
 	    tm_file=m88k/dguxbcs.h
@@ -2031,6 +2051,7 @@ m88k-dg-dgux*)
 	fi
 	;;
 m88k-dolphin-sysv3*)
+	xm_defines=USG
 	tm_file=m88k/dolph.h
 	extra_parts="crtbegin.o crtend.o"
 	xmake_file=m88k/x-dolph
@@ -2040,6 +2061,7 @@ m88k-dolphin-sysv3*)
 	fi
 	;;
 m88k-tektronix-sysv3)
+	xm_defines=USG
 	tm_file=m88k/tekXD88.h
 	extra_parts="crtbegin.o crtend.o"
 	xmake_file=m88k/x-tekXD88
@@ -2049,9 +2071,11 @@ m88k-tektronix-sysv3)
 	fi
 	;;
 m88k-*-aout*)
+	xm_defines=USG
 	tm_file=m88k/m88k-aout.h
 	;;
 m88k-*-coff*)
+	xm_defines=USG
 	tm_file=m88k/m88k-coff.h
 	tmake_file=m88k/t-bug
 	;;
@@ -2068,9 +2092,10 @@ m88k-*-luna*)
 m88k-*-openbsd*)
 	tmake_file="${tmake_file} m88k/t-luna-gas"
 	tm_file="m88k/aout-dbx.h aoutos.h m88k/m88k.h openbsd.h ${tm_file}"
-	xm_file="xm-openbsd.h m88k/xm-m88k.h ${xm_file}"
+	xm_file='m88k/xm-m88k.h xm-openbsd.h'
 	;;
 m88k-*-sysv3*)
+	xm_defines=USG
 	tm_file=m88k/sysv3.h
 	extra_parts="crtbegin.o crtend.o"
 	if test x$gas = xyes
@@ -2079,6 +2104,7 @@ m88k-*-sysv3*)
 	fi
 	;;
 m88k-*-sysv4*)
+	xm_defines=USG
 	tm_file=m88k/sysv4.h
 	extra_parts="crtbegin.o crtend.o"
 	xmake_file=m88k/x-sysv4
@@ -2100,7 +2126,8 @@ mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 		tm_file=mips/iris6.h
 	fi
 	tmake_file=mips/t-iris6
-	xm_file=mips/xm-iris6.h
+	xm_defines=USG
+	xm_file='mips/xm-mips.h mips/xm-iris6.h'
 	xmake_file=mips/x-iris6
 #	if test x$enable_threads = xyes; then
 #		thread_file='irix'
@@ -2659,6 +2686,7 @@ powerpc-*-openbsd*)
 powerpc-*-beos*)
 	cpu_type=rs6000
 	tm_file="${tm_file} rs6000/aix.h rs6000/beos.h"
+	xm_defines=USG
 	xm_file=rs6000/xm-beos.h
 	tmake_file=rs6000/t-beos
 	xmake_file=rs6000/x-beos
@@ -2676,6 +2704,7 @@ powerpc-*-sysv*)
 	xmake_file=rs6000/x-sysv4
 	;;
 powerpc-*-chorusos*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/chorus.h"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
@@ -2686,26 +2715,31 @@ powerpc-*-chorusos*)
 	esac
 	;;
 powerpc-*-eabiaix*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabiaix.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
 powerpc-*-eabisim*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabisim.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
 powerpc-*-elf*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
 powerpc-*-eabi*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/eabi.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
 powerpc-*-rtems*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/eabi.h rtems.h rs6000/rtems.h"
 	tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
@@ -2715,6 +2749,7 @@ powerpc-*-rtems*)
 	;;
 powerpc-*-linux*libc1)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/linux.h"
+	xm_defines=USG
 	xm_file=rs6000/xm-sysv4.h
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
@@ -2763,16 +2798,19 @@ powerpcle-*-sysv*)
 	extra_headers=ppc-asm.h
 	;;
 powerpcle-*-elf*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
 powerpcle-*-eabisim*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h rs6000/eabisim.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
 powerpcle-*-eabi*)
+	xm_defines=USG
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
@@ -2786,18 +2824,21 @@ powerpcle-*-solaris2*)
 	extra_headers=ppc-asm.h
 	;;
 rs6000-ibm-aix3.[01]*)
+	xm_defines=USG
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix31.h"
 	xmake_file=rs6000/x-aix31
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-ibm-aix3.2.[456789]* | powerpc-ibm-aix3.2.[456789]*)
+	xm_defines=USG
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix3newas.h"
 	tmake_file=rs6000/t-newas
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
+	xm_defines=USG
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix41.h"
 	tmake_file=rs6000/t-newas
 	xmake_file=rs6000/x-aix41
@@ -2805,6 +2846,7 @@ rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	use_collect2=yes
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
+	xm_defines=USG
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix43.h"
 	tmake_file=rs6000/t-aix43
 	xmake_file=rs6000/x-aix41
@@ -2813,6 +2855,7 @@ rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	thread_file='aix'
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
+	xm_defines=USG
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix51.h"
 	tmake_file=rs6000/t-aix43
 	xmake_file=rs6000/x-aix41
@@ -2821,17 +2864,20 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	thread_file='aix'
 	;;
 rs6000-ibm-aix*)
+	xm_defines=USG
 	tm_file="${tm_file} rs6000/aix.h"
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-bull-bosx)
+	xm_defines=USG
 	tm_file="${tm_file} rs6000/aix.h"
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-*-mach*)
 	tm_file=rs6000/mach.h
+	xm_defines=USG
 	xm_file="${xm_file} rs6000/xm-mach.h"
 	xmake_file=rs6000/x-mach
 	use_collect2=yes
@@ -3255,7 +3301,7 @@ vax-*-*)			# vax default entry
 	float_format=vax
 	;;
 we32k-att-sysv*)
-	xm_file="${xm_file} xm-svr3"
+	xm_defines=USG
 	use_collect2=yes
 	;;
 xscale-*-elf)
