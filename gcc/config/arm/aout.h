@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
    Copyright (C) 1995, 1996 Free Software Foundation, Inc.
-   Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
+   Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
 This file is part of GNU CC.
 
@@ -125,10 +125,6 @@ do {					\
   (fprintf (STREAM, "\t.global\t"),	  \
    assemble_name (STREAM, NAME),	  \
    fputc ('\n',STREAM))                   \
-
-/* Output a reference to a label.  */
-#define ASM_OUTPUT_LABELREF(STREAM,NAME)  \
-  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, NAME)
 
 /* Make an internal label into a string.  */
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
