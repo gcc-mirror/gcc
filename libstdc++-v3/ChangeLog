@@ -1,3 +1,12 @@
+2001-06-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	* src/Makefile.am (VPATH): Delimit with ":", not space.
+	* src/Makefile.in: Regenerate.
+
+	* configure.in (use of GLIBCPP_CHECK_GNU_MAKE): Don't fail if GNU
+	make isn't found.
+	* configure: Regenerate.
+
 2001-05-27  scott snyder  <snyder@fnal.gov>
 
 	libstdc++/2976
