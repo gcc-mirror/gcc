@@ -821,10 +821,10 @@ target_isinf (x)
       unsigned sign      :  1;
       unsigned exponent  : 11;
       unsigned mantissa1 : 20;
-      unsigned mantissa2;
+      unsigned mantissa2 : 32;
     } little_endian;
     struct {
-      unsigned mantissa2;
+      unsigned mantissa2 : 32;
       unsigned mantissa1 : 20;
       unsigned exponent  : 11;
       unsigned sign      :  1;
@@ -861,10 +861,10 @@ target_isnan (x)
       unsigned sign      :  1;
       unsigned exponent  : 11;
       unsigned mantissa1 : 20;
-      unsigned mantissa2;
+      unsigned mantissa2 : 32;
     } little_endian;
     struct {
-      unsigned mantissa2;
+      unsigned mantissa2 : 32;
       unsigned mantissa1 : 20;
       unsigned exponent  : 11;
       unsigned sign      :  1;
@@ -901,10 +901,10 @@ target_negative (x)
       unsigned sign      :  1;
       unsigned exponent  : 11;
       unsigned mantissa1 : 20;
-      unsigned mantissa2;
+      unsigned mantissa2 : 32;
     } little_endian;
     struct {
-      unsigned mantissa2;
+      unsigned mantissa2 : 32;
       unsigned mantissa1 : 20;
       unsigned exponent  : 11;
       unsigned sign      :  1;
