@@ -623,10 +623,8 @@ public class BorderUIResource
      * property. However, as of JDK1.4.1, the LineBorderUIResource
      * subclass does not have a corresponding constructor.
      * 
-     * A request for enhancing the Swing API has been filed with Sun.
-     * It currently is under review, its "review ID" is 188305.
-     *
-     *                         -- Sascha Brawer (brawer@dandelis.ch)
+     * A request for enhancing the Swing API has been filed with Sun:
+     * http://developer.java.sun.com/developer/bugParade/bugs/4879999.html
      */
   }
 

@@ -1,5 +1,22 @@
 2003-06-21  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/SpinnerModel.java:
+	New file from classpath.
+	* javax/swing/border/LineBorder.java,
+	javax/swing/border/SoftBevelBorder.java,
+	javax/swing/plaf/BorderUIResource.java,
+	javax/swing/plaf/basic/BasicBorders.java:
+	New versions from classpath.
+	* javax/swing/plaf/basic/doc-files/BasicBorders.MenuBarBorder-1.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.RadioButtonBorder-1.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.SplitPaneBorder-1.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.SplitPaneBorder-2.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.SplitPaneDividerBorder-1.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.ToggleButtonBorder-1.png:
+	New binary files from classpath.
+
+2003-06-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/logging/LogRecord.java,
 	java/util/logging/Logger.java,
 	java/util/logging/SocketHandler.java,
