@@ -290,7 +290,7 @@ in the following sections.
 -fsched-spec-load-dangerous  -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer -fthread-jumps @gol
--funroll-all-loops  -funroll-loops  @gol
+-funroll-all-loops  -funroll-loops  -funswitch-loops @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -3171,7 +3171,8 @@ Dump after conversion from registers to stack, to @file{@var{file}.31.stack}.
 Dump after local register allocation, to @file{@var{file}.23.lreg}.
 @item L
 @opindex dL
-Dump after loop optimization, to @file{@var{file}.12.loop}.
+Dump after loop optimization passes, to @file{@var{file}.12.loop} and
+@file{@var{file}.18.loop2}.
 @item M
 @opindex dM
 Dump after performing the machine dependent reorganization pass, to
@@ -4270,6 +4271,11 @@ the loop is entered.  This usually makes programs run more slowly.
 @option{-funroll-all-loops} implies the same options as
 @option{-funroll-loops},
 
+@item -funswitch-loops
+@opindex funswitch-loops
+Move branches with loop invariant conditions out of the loop, with duplicates
+of the loop on both branches (modified according to result of the condition).
+
 @item -fprefetch-loop-arrays
 @opindex fprefetch-loop-arrays
 If supported by the target machine, generate instructions to prefetch
@@ -4371,6 +4377,12 @@ will not be inlined.  This option is precisely equivalent to
 The maximum number of instructions that a loop should have if that loop
 is unrolled, and if the loop is unrolled, it determines how many times
 the loop code is unrolled.
+
+@item max-unswitch-insns
+The maximum number of insns of an unswitched loop.
+
+@item max-unswitch-level
+The maximum number of branches unswitched in a single loop.
 
 @item hot-bb-count-fraction
 Select fraction of the maximal count of repetitions of basic block in program

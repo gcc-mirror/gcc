@@ -1,5 +1,10 @@
 2003-02-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* doc/invoke.texi: Documentation for my previous commit.
+	* doc/passes.texi: Ditto.
+
+2003-02-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* cfgloop.h (fix_loop_placement, can_duplicate_loop_p,
 	duplicate_loop_to_header_edge, loopify, remove_path, split_loop_bb):
 	Declare.
