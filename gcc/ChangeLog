@@ -1,3 +1,12 @@
+2003-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (cmpqi): Remove mode from compare.
+	(cmphi): Likewise.
+	(*cmphi_h8300): Likewise.
+	(*cmphi_h8300hs): Likewise.
+	(cmpsi): Likewise.
+	(7 peephole2): Likewise.
+
 Sun Feb 16 23:07:52 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* c-typeck.c (build_c_cast):  Fold constant variables into
