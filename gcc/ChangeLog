@@ -1,5 +1,8 @@
 Mon Nov 29 16:56:42 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (store_constructor_field): If bit position is not multiple
+	of alignment of TARGET's mode, use BLKmode.
+
 	* expr.c (expand_expr_unaligned): Add more code from full case
 	that is needed when OP0 is in a register.
 
