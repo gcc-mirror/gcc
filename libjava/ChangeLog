@@ -1,5 +1,10 @@
 2003-02-23  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (JC1FLAGS): Added -Wno-deprecated.
+
+2003-02-23  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/natRuntime.cc (libraries_size, libraries_count,
 	libraries): Removed.
 	(add_library): Removed.
