@@ -216,6 +216,8 @@ struct loop_info
   /* The number of times the loop body was unrolled.  */
   unsigned int unroll_number;
   int used_count_register;
+  /* The loop iterator induction variable.  */
+  struct iv_class *iv;
   /* List of MEMs that are stored in this loop.  */
   rtx store_mems;
   /* Array of MEMs that are used (read or written) in this loop, but
