@@ -92,7 +92,7 @@ foo (quad_t q, u_quad_t uq, quad_t *qn, size_t z, size_t *zn, long long int ll,
   */
   printf ("%*2$.*1$m", i, i);
   printf ("%1$*2$.*1$m", i, i); /* { dg-warning "no argument" "printf %1\$m" } */
-  /* As an extension, glibc includes the "I" flag for decimal integer
+  /* As an extension, glibc includes the "I" flag for decimal
      formats, to output using the locale's digits (e.g. in Arabic).
      In GCC, we require this to be in the standard place for flags, though
      glibc allows it also after width or precision.
@@ -102,12 +102,12 @@ foo (quad_t q, u_quad_t uq, quad_t *qn, size_t z, size_t *zn, long long int ll,
   printf ("%Ix", u); /* { dg-warning "flag" "bad use of I flag" } */
   printf ("%IX", u); /* { dg-warning "flag" "bad use of I flag" } */
   printf ("%In", n); /* { dg-warning "flag" "bad use of I flag" } */
-  printf ("%If", d); /* { dg-warning "flag" "bad use of I flag" } */
-  printf ("%IF", d); /* { dg-warning "flag" "bad use of I flag" } */
-  printf ("%Ie", d); /* { dg-warning "flag" "bad use of I flag" } */
-  printf ("%IE", d); /* { dg-warning "flag" "bad use of I flag" } */
-  printf ("%Ig", d); /* { dg-warning "flag" "bad use of I flag" } */
-  printf ("%IG", d); /* { dg-warning "flag" "bad use of I flag" } */
+  printf ("%If", d);
+  printf ("%IF", d);
+  printf ("%Ie", d);
+  printf ("%IE", d);
+  printf ("%Ig", d);
+  printf ("%IG", d);
   printf ("%Ia", d); /* { dg-warning "flag" "bad use of I flag" } */
   printf ("%IA", d); /* { dg-warning "flag" "bad use of I flag" } */
   printf ("%Ic", i); /* { dg-warning "flag" "bad use of I flag" } */
