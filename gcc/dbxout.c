@@ -2689,7 +2689,7 @@ static void
 dbxout_prepare_symbol (tree decl ATTRIBUTE_UNUSED)
 {
 #ifdef WINNING_GDB
-  const char *filename = TREE_FILENAME (decl);
+  const char *filename = DECL_SOURCE_FILE (decl);
 
   dbxout_source_file (asmfile, filename);
 #endif
@@ -2703,7 +2703,7 @@ dbxout_finish_symbol (tree sym)
 #else
   int line = 0;
   if (use_gnu_debug_info_extensions && sym != 0)
-    line = TREE_LINENO (sym);
+    line = DECL_SOURCE_LINE (sym);
 
   fprintf (asmfile, "\",%d,0,%d,", current_sym_code, line);
   if (current_sym_addr)

@@ -411,7 +411,7 @@ xcoffout_declare_function (FILE *file, tree decl, const char *name)
   /* Any pending .bi or .ei must occur before the .function pseudo op.
      Otherwise debuggers will think that the function is in the previous
      file and/or at the wrong line number.  */
-  xcoffout_source_file (file, TREE_FILENAME (decl), 0);
+  xcoffout_source_file (file, DECL_SOURCE_FILE (decl), 0);
   dbxout_symbol (decl, 0);
 
   /* .function NAME, TOP, MAPPING, TYPE, SIZE

@@ -105,7 +105,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
   saved_loc = input_location;
-  input_location = TREE_LOCUS (fndecl);
+  input_location = DECL_SOURCE_LOCATION (fndecl);
   init_function_start (fndecl);
 
   /* This function is being processed in whole-function mode.  */

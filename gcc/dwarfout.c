@@ -3411,10 +3411,10 @@ name_and_src_coords_attributes (tree decl)
 	   Fred Fish sez that m68k/svr4 assemblers botch those.  */
 
 	ASM_OUTPUT_POP_SECTION (asm_out_file);
-	file_index = lookup_filename (TREE_FILENAME (decl));
+	file_index = lookup_filename (DECL_SOURCE_FILE (decl));
 	ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);
 
-	src_coords_attribute (file_index, TREE_LINENO (decl));
+	src_coords_attribute (file_index, DECL_SOURCE_LINE (decl));
       }
 #endif /* defined(DWARF_DECL_COORDINATES) */
     }
@@ -5618,7 +5618,7 @@ dwarfout_file_scope_decl (tree decl, int set_finalizing)
       /* ??? This code is different than the equivalent code in dwarf2out.c.
 	 The dwarf2out.c code is probably more correct.  */
 
-      if (!TREE_LOCUS_SET_P (decl)
+      if (DECL_SOURCE_LINE (decl) == 0
 	  && (type_is_fundamental (TREE_TYPE (decl))
 	      || TREE_CODE (TREE_TYPE (decl)) == LANG_TYPE))
 	return;

@@ -3981,7 +3981,7 @@ expand_decl_init (tree decl)
     }
   else if (DECL_INITIAL (decl) && TREE_CODE (DECL_INITIAL (decl)) != TREE_LIST)
     {
-      emit_line_note (TREE_LOCUS (decl));
+      emit_line_note (DECL_SOURCE_LOCATION (decl));
       expand_assignment (decl, DECL_INITIAL (decl), 0);
       emit_queue ();
     }

@@ -1655,9 +1655,9 @@ create_label_decl (label_name)
 {
   tree label_decl = build_decl (LABEL_DECL, label_name, void_type_node);
 
-  DECL_CONTEXT (label_decl) = current_function_decl;
-  DECL_MODE (label_decl) = VOIDmode;
-  set_tree_locus (label_decl, input_location);
+  DECL_CONTEXT (label_decl)     = current_function_decl;
+  DECL_MODE (label_decl)        = VOIDmode;
+  DECL_SOURCE_LOCATION (label_decl) = input_location;
 
   return label_decl;
 }

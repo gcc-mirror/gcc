@@ -1787,7 +1787,7 @@ print_binding_level (struct cp_binding_level* lvl)
 	    continue;
 	  if (no_print_builtins
 	      && (TREE_CODE (t) == TYPE_DECL)
-	      && (!strcmp (TREE_FILENAME (t), "<built-in>")))
+	      && (!strcmp (DECL_SOURCE_FILE (t),"<built-in>")))
 	    continue;
 
 	  /* Function decls tend to have longer names.  */
@@ -3153,8 +3153,9 @@ duplicate_decls (tree newdecl, tree olddecl)
       if (DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)) == NULL_TREE
 	  && DECL_INITIAL (DECL_TEMPLATE_RESULT (newdecl)) != NULL_TREE)
 	{
-	  copy_tree_locus (olddecl, newdecl);
-	  copy_tree_locus (DECL_TEMPLATE_RESULT (olddecl), newdecl);
+	  DECL_SOURCE_LOCATION (olddecl) 
+	    = DECL_SOURCE_LOCATION (DECL_TEMPLATE_RESULT (olddecl))
+	    = DECL_SOURCE_LOCATION (newdecl);
 	}
 
       return 1;
@@ -3194,13 +3195,13 @@ duplicate_decls (tree newdecl, tree olddecl)
 							 TYPE_RAISES_EXCEPTIONS (oldtype));
 
 	  if ((pedantic || ! DECL_IN_SYSTEM_HEADER (olddecl))
-	      && TREE_LOCUS_SET_P (olddecl)
+	      && DECL_SOURCE_LINE (olddecl) != 0
 	      && flag_exceptions
 	      && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (newdecl)),
 	                             TYPE_RAISES_EXCEPTIONS (TREE_TYPE (olddecl)), 1))
 	    {
 	      error ("declaration of `%F' throws different exceptions",
-		     newdecl);
+			newdecl);
 	      cp_error_at ("than previous declaration `%F'", olddecl);
 	    }
 	}
@@ -3231,7 +3232,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  && DECL_INITIAL (olddecl) != NULL_TREE)
 	{
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
-	  copy_tree_locus (newdecl, olddecl);
+	  DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
 	  if (CAN_HAVE_FULL_LANG_DECL_P (newdecl)
 	      && DECL_LANG_SPECIFIC (newdecl)
 	      && DECL_LANG_SPECIFIC (olddecl))
@@ -3700,7 +3701,7 @@ pushdecl (tree x)
       if (TREE_CODE (x) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (x);
-	  if (!TREE_LOCUS_SET_P (x))
+	  if (DECL_SOURCE_LINE (x) == 0)
             {
 	      if (TYPE_NAME (type) == 0)
 	        TYPE_NAME (type) = x;
@@ -4074,7 +4075,7 @@ pushdecl_class_level (tree x)
       for (f = TYPE_FIELDS (TREE_TYPE (x)); f; f = TREE_CHAIN (f))
 	{
 	  location_t save_location = input_location;
-	  input_location = TREE_LOCUS (f);
+	  input_location = DECL_SOURCE_LOCATION (f);
 	  if (!pushdecl_class_level (f))
 	    is_valid = false;
 	  input_location = save_location;
@@ -4519,7 +4520,7 @@ make_label_decl (tree id, int local_p)
 
   /* Say where one reference is to the label, for the sake of the
      error if it is not defined.  */
-  set_tree_locus (decl, input_location);
+  DECL_SOURCE_LOCATION (decl) = input_location;
 
   /* Record the fact that this identifier is bound to this label.  */
   SET_IDENTIFIER_LABEL_VALUE (id, decl);
@@ -4830,7 +4831,7 @@ define_label (location_t location, tree name)
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
       /* Say where in the source.  */
-      set_tree_locus (decl, location);
+      DECL_SOURCE_LOCATION (decl) = location;
       if (ent)
 	{
 	  ent->names_in_scope = current_binding_level->names;

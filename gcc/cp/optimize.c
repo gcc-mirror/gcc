@@ -109,7 +109,7 @@ update_cloned_parm (tree parm, tree cloned_parm)
   
   /* The name may have changed from the declaration.  */
   DECL_NAME (cloned_parm) = DECL_NAME (parm);
-  copy_tree_locus (cloned_parm, parm);
+  DECL_SOURCE_LOCATION (cloned_parm) = DECL_SOURCE_LOCATION (parm);
 }
 
 /* FN is a function that has a complete body.  Clone the body as
@@ -146,7 +146,7 @@ maybe_clone_body (tree fn)
       splay_tree decl_map;
 
       /* Update CLONE's source position information to match FN's.  */
-      copy_tree_locus (clone, fn);
+      DECL_SOURCE_LOCATION (clone) = DECL_SOURCE_LOCATION (fn);
       DECL_INLINE (clone) = DECL_INLINE (fn);
       DECL_DECLARED_INLINE_P (clone) = DECL_DECLARED_INLINE_P (fn);
       DECL_COMDAT (clone) = DECL_COMDAT (fn);
