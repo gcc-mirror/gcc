@@ -436,7 +436,9 @@ gfc_trans_static_array_pointer (gfc_symbol * sym)
 
 
 /* Generate code to allocate an array temporary, or create a variable to
-   hold the data.  */
+   hold the data.  If size is NULL zero the descriptor so that so that the
+   callee will allocate the array.  Also generates code to free the array
+   afterwards.  */
 
 static void
 gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
@@ -450,38 +452,54 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 
   desc = info->descriptor;
   data = gfc_conv_descriptor_data (desc);
-  onstack = gfc_can_put_var_on_stack (size);
-  if (onstack)
+  if (size == NULL_TREE)
     {
-      /* Make a temporary variable to hold the data.  */
-      tmp = fold (build (MINUS_EXPR, TREE_TYPE (nelem), nelem,
-			 integer_one_node));
-      tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
-      tmp = build_array_type (gfc_get_element_type (TREE_TYPE (desc)), tmp);
-      tmp = gfc_create_var (tmp, "A");
-      tmp = gfc_build_addr_expr (TREE_TYPE (data), tmp);
-      gfc_add_modify_expr (&loop->pre, data, tmp);
+      /* A callee allocated array.  */
+      gfc_add_modify_expr (&loop->pre, data, convert (TREE_TYPE (data), 
+                                                      gfc_index_zero_node));
       info->data = data;
       info->offset = gfc_index_zero_node;
-
+      onstack = FALSE;
     }
   else
     {
-      /* Allocate memory to hold the data.  */
-      args = gfc_chainon_list (NULL_TREE, size);
+      /* Allocate the temporary.  */
+      onstack = gfc_can_put_var_on_stack (size);
 
-      if (gfc_index_integer_kind == 4)
-	tmp = gfor_fndecl_internal_malloc;
-      else if (gfc_index_integer_kind == 8)
-	tmp = gfor_fndecl_internal_malloc64;
+      if (onstack)
+	{
+	  /* Make a temporary variable to hold the data.  */
+	  tmp = fold (build (MINUS_EXPR, TREE_TYPE (nelem), nelem,
+			     integer_one_node));
+	  tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node,
+				  tmp);
+	  tmp = build_array_type (gfc_get_element_type (TREE_TYPE (desc)),
+				  tmp);
+	  tmp = gfc_create_var (tmp, "A");
+	  tmp = gfc_build_addr_expr (TREE_TYPE (data), tmp);
+	  gfc_add_modify_expr (&loop->pre, data, tmp);
+	  info->data = data;
+	  info->offset = gfc_index_zero_node;
+
+	}
       else
-	abort ();
-      tmp = gfc_build_function_call (tmp, args);
-      tmp = convert (TREE_TYPE (data), tmp);
-      gfc_add_modify_expr (&loop->pre, data, tmp);
+	{
+	  /* Allocate memory to hold the data.  */
+	  args = gfc_chainon_list (NULL_TREE, size);
 
-      info->data = data;
-      info->offset = gfc_index_zero_node;
+	  if (gfc_index_integer_kind == 4)
+	    tmp = gfor_fndecl_internal_malloc;
+	  else if (gfc_index_integer_kind == 8)
+	    tmp = gfor_fndecl_internal_malloc64;
+	  else
+	    abort ();
+	  tmp = gfc_build_function_call (tmp, args);
+	  tmp = convert (TREE_TYPE (data), tmp);
+	  gfc_add_modify_expr (&loop->pre, data, tmp);
+
+	  info->data = data;
+	  info->offset = gfc_index_zero_node;
+	}
     }
 
   /* The offset is zero because we create temporaries with a zero
@@ -501,9 +519,11 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 
 
 /* Generate code to allocate and initialize the descriptor for a temporary
-   array.  Fills in the descriptor, data and offset fields of info.  Also
-   adjusts the loop variables to be zero-based.  Returns the size of the
-   array.  */
+   array.  This is used for both temporaries needed by the scaparizer, and
+   functions returning arrays.  Adjusts the loop variables to be zero-based,
+   and calculates the loop bounds for callee allocated arrays.
+   Also fills in the descriptor, data and offset fields of info if known.
+   Returns the size of the array, or NULL for a callee allocated array.  */
 
 tree
 gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
@@ -526,7 +546,9 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
 	assert (integer_zerop (loop->from[n]));
       else
 	{
-	  loop->to[n] = fold (build (MINUS_EXPR, gfc_array_index_type,
+	  /* Callee allocated arrays may not have a known bound yet.  */
+          if (loop->to[n])
+              loop->to[n] = fold (build (MINUS_EXPR, gfc_array_index_type,
 				     loop->to[n], loop->from[n]));
 	  loop->from[n] = gfc_index_zero_node;
 	}
@@ -566,6 +588,18 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
 
   for (n = 0; n < info->dimen; n++)
     {
+      if (loop->to[n] == NULL_TREE)
+        {
+	  /* For a callee allocated array express the loop bounds in terms
+	     of the descriptor fields.  */
+          tmp = build (MINUS_EXPR, gfc_array_index_type,
+                       gfc_conv_descriptor_ubound (desc, gfc_rank_cst[n]),
+                       gfc_conv_descriptor_lbound (desc, gfc_rank_cst[n]));
+          loop->to[n] = tmp;
+          size = NULL_TREE;
+          continue;
+        }
+        
       /* Store the stride and bound components in the descriptor.  */
       tmp = gfc_conv_descriptor_stride (desc, gfc_rank_cst[n]);
       gfc_add_modify_expr (&loop->pre, tmp, size);
@@ -589,7 +623,8 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
 
   /* Get the size of the array.  */
   nelem = size;
-  size = fold (build (MULT_EXPR, gfc_array_index_type, size,
+  if (size)
+    size = fold (build (MULT_EXPR, gfc_array_index_type, size,
 		      TYPE_SIZE_UNIT (gfc_get_element_type (type))));
 
   gfc_trans_allocate_array_storage (loop, info, size, nelem);
@@ -985,7 +1020,6 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
 /* Add the pre and post chains for all the scalar expressions in a SS chain
    to loop.  This is called after the loop parameters have been calculated,
    but before the actual scalarizing loops.  */
-/*GCC ARRAYS*/
 
 static void
 gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
@@ -1064,6 +1098,10 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	case GFC_SS_CONSTRUCTOR:
 	  gfc_trans_array_constructor (loop, ss);
 	  break;
+
+        case GFC_SS_TEMP:
+          /* Do nothing.  This will be handled later.  */
+          break;
 
 	default:
 	  abort ();
@@ -2256,8 +2294,14 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	      continue;
 	    }
 
-	  /* We don't know how to handle functions yet.
-	     This may not be possible in all cases.  */
+	  /* TODO: Pick the best bound if we have a choice between a
+	     functions and something else.  */
+          if (ss->type == GFC_SS_FUNCTION)
+            {
+              loopspec[n] = ss;
+              continue;
+            }
+
 	  if (ss->type != GFC_SS_SECTION)
 	    continue;
 
@@ -2333,6 +2377,11 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 							  &loop->pre);
 	      break;
 
+            case GFC_SS_FUNCTION:
+	      /* The loop bound will be set when we generate the call.  */
+              assert (loop->to[n] == NULL_TREE);
+              break;
+
 	    default:
 	      abort ();
 	    }
@@ -2359,6 +2408,11 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	}
     }
 
+  /* Add all the scalar code that can be taken out of the loops.
+     This may include calculating the loop bounds, so do it before
+     allocating the temporary.  */
+  gfc_add_loop_ss_code (loop, loop->ss, false);
+
   /* If we want a temporary then create it.  */
   if (loop->temp_ss != NULL)
     {
@@ -2372,9 +2426,6 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       gfc_trans_allocate_temp_array (loop, &loop->temp_ss->data.info,
 				     tmp, len);
     }
-
-  /* Add all the scalar code that can be taken out of the loops.  */
-  gfc_add_loop_ss_code (loop, loop->ss, false);
 
   for (n = 0; n < loop->temp_dim; n++)
     loopspec[loop->order[n]] = NULL;
@@ -3012,6 +3063,10 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   int checkparm;
   int no_repack;
 
+  /* Do nothing for pointer and allocatable arrays.  */
+  if (sym->attr.pointer || sym->attr.allocatable)
+    return body;
+
   if (sym->attr.dummy && gfc_is_nodesc_array (sym))
     return gfc_trans_g77_array (sym, body);
 
@@ -3284,15 +3339,17 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   tree start;
   tree offset;
   int full;
+  gfc_ss *vss;
 
   assert (ss != gfc_ss_terminator);
 
   /* TODO: Pass constant array constructors without a temporary.  */
-  /* If we have a linear array section, we can pass it directly.  Otherwise
-     we need to copy it into a temporary.  */
-  if (expr->expr_type == EXPR_VARIABLE)
+  /* Special case things we know we can pass easily.  */
+  switch (expr->expr_type)
     {
-      gfc_ss *vss;
+    case EXPR_VARIABLE:
+      /* If we have a linear array section, we can pass it directly.
+	 Otherwise we need to copy it into a temporary.  */
 
       /* Find the SS for the array section.  */
       secss = ss;
@@ -3352,8 +3409,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  else if (se->want_pointer)
 	    {
 	      /* We pass full arrays directly.  This means that pointers and
-	         allocatable arrays should also work.  */
-	      se->expr = gfc_build_addr_expr (NULL, desc);
+		 allocatable arrays should also work.  */
+	      se->expr = gfc_build_addr_expr (NULL_TREE, desc);
 	    }
 	  else
 	    {
@@ -3363,13 +3420,52 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
 	  return;
 	}
-    }
-  else
-    {
+      break;
+      
+    case EXPR_FUNCTION:
+      /* A transformational function return value will be a temporary
+	 array descriptor.  We still need to go through the scalarizer
+	 to create the descriptor.  Elemental functions ar handled as
+	 arbitary expressions, ie. copy to a temporary.  */
+      secss = ss;
+      /* Look for the SS for this function.  */
+      while (secss != gfc_ss_terminator
+	     && (secss->type != GFC_SS_FUNCTION || secss->expr != expr))
+      	secss = secss->next;
+
+      if (se->direct_byref)
+	{
+	  assert (secss != gfc_ss_terminator);
+
+	  /* For pointer assignments pass the descriptor directly.  */
+	  se->ss = secss;
+	  se->expr = gfc_build_addr_expr (NULL, se->expr);
+	  gfc_conv_expr (se, expr);
+	  return;
+	}
+
+      if (secss == gfc_ss_terminator)
+	{
+	  /* Elemental function.  */
+	  need_tmp = 1;
+	  info = NULL;
+	}
+      else
+	{
+	  /* Transformational function.  */
+	  info = &secss->data.info;
+	  need_tmp = 0;
+	}
+      break;
+
+    default:
+      /* Something complicated.  Copy it into a temporary.  */
       need_tmp = 1;
       secss = NULL;
       info = NULL;
+      break;
     }
+
 
   gfc_init_loopinfo (&loop);
 
@@ -3445,11 +3541,25 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       assert (is_gimple_lvalue (desc));
       se->expr = gfc_build_addr_expr (NULL, desc);
     }
+  else if (expr->expr_type == EXPR_FUNCTION)
+    {
+      desc = info->descriptor;
+
+      if (se->want_pointer)
+	se->expr = gfc_build_addr_expr (NULL_TREE, desc);
+      else
+	se->expr = desc;
+
+      if (expr->ts.type == BT_CHARACTER)
+	se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
+    }
   else
     {
-      /* We pass sections without copying to a temporary.  A function may
-         decide to repack the array to speed up access, but we're not
-         bothered about that here.  */
+      /* We pass sections without copying to a temporary.  Make a new
+	 descriptor and point it at the section we want.  The loop variable
+	 limits will be the limits of the section.
+	 A function may decide to repack the array to speed up access, but
+	 we're not bothered about that here.  */
       int dim;
       tree parm;
       tree parmtype;
@@ -3458,13 +3568,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tree to;
       tree base;
 
-      /* set the string_length for a character array.  */
+      /* Set the string_length for a character array.  */
       if (expr->ts.type == BT_CHARACTER)
 	se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
 
-      /* Otherwise make a new descriptor and point it at the section we
-         want.  The loop variable limits will be the limits of the section.
-       */
       desc = info->descriptor;
       assert (secss && secss != gfc_ss_terminator);
       if (se->direct_byref)

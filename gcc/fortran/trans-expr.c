@@ -1171,29 +1171,34 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
     TREE_SIDE_EFFECTS (se->expr) = 1;
 #endif
 
-  if (byref && !se->direct_byref)
+  if (byref)
     {
+      /* Add the function call to the pre chain.  There is no expression.  */
       gfc_add_expr_to_block (&se->pre, se->expr);
+      se->expr = NULL_TREE;
 
-      if (sym->result->attr.dimension)
+      if (!se->direct_byref)
 	{
-	  if (flag_bounds_check)
+	  if (sym->result->attr.dimension)
 	    {
-	      /* Check the data pointer hasn't been modified.  This would happen
-	         in a function returning a pointer.  */
-	      tmp = gfc_conv_descriptor_data (info->descriptor);
-	      tmp = build (NE_EXPR, boolean_type_node, tmp, info->data);
-	      gfc_trans_runtime_check (tmp, gfc_strconst_fault, &se->pre);
+	      if (flag_bounds_check)
+		{
+		  /* Check the data pointer hasn't been modified.  This would
+		     happen in a function returning a pointer.  */
+		  tmp = gfc_conv_descriptor_data (info->descriptor);
+		  tmp = build (NE_EXPR, boolean_type_node, tmp, info->data);
+		  gfc_trans_runtime_check (tmp, gfc_strconst_fault, &se->pre);
+		}
+	      se->expr = info->descriptor;
 	    }
-	  se->expr = info->descriptor;
+	  else if (sym->ts.type == BT_CHARACTER)
+	    {
+	      se->expr = var;
+	      se->string_length = len;
+	    }
+	  else
+	    abort ();
 	}
-      else if (sym->ts.type == BT_CHARACTER)
-	{
-	  se->expr = var;
-	  se->string_length = len;
-	}
-      else
-	abort ();
     }
 }
 
@@ -1637,6 +1642,8 @@ gfc_trans_pointer_assign (gfc_code * code)
 }
 
 
+/* Generate code for a pointer assignment.  */
+
 tree
 gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 {
@@ -1654,6 +1661,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
   rss = gfc_walk_expr (expr2);
   if (lss == gfc_ss_terminator)
     {
+      /* Scalar pointers.  */
       lse.want_pointer = 1;
       gfc_conv_expr (&lse, expr1);
       assert (rss == gfc_ss_terminator);
@@ -1669,6 +1677,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
     }
   else
     {
+      /* Array pointer.  */
       gfc_conv_expr_descriptor (&lse, expr1, lss);
       /* Implement Nullify.  */
       if (expr2->expr_type == EXPR_NULL)
@@ -1796,7 +1805,6 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   se.ss = gfc_walk_expr (expr2);
   assert (se.ss != gfc_ss_terminator);
   gfc_conv_function_expr (&se, expr2);
-  gfc_add_expr_to_block (&se.pre, se.expr);
   gfc_add_block_to_block (&se.pre, &se.post);
 
   return gfc_finish_block (&se.pre);

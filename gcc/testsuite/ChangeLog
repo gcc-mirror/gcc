@@ -1,3 +1,8 @@
+2004-08-06  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.dg/ret_array_1.f90: New test.
+	* gfortran.dg/ret_pointer_1.f90: New test.
+
 2004-08-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/missing-field-init-[12].c: New tests.
