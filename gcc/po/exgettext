@@ -153,4 +153,4 @@ END {
 echo "running xgettext..." >&2
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
-	  -o $package.pot
+	  -o po/$package.pot
