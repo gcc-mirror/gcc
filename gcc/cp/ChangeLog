@@ -1,3 +1,16 @@
+1999-08-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* exception.cc (__cplus_type_matcher): Call __throw_type_match_rtti_2.
+	Return arbitrary pointer or NULL.
+	(check_eh_spec): Call __throw_type_match_rtti_2.
+	* tinfo.h (*::dcast): Return int.  Add valp parm.
+	* tinfo.cc (*::dcast): Likewise.  Adjust to allow for null pointers.
+	* tinfo2.cc (__throw_type_match_rtti_2): Likewise.
+	(__throw_type_match_rtti): Now just a wrapper.
+
+	* except.c: Lose CatchMatch, FirstExceptionMatch, and Unwind.
+	(init_exception_processing): Don't initialize them.
+
 1999-08-23  Paul Burchard <burchard@pobox.com>
 
 	* decl.c (check_default_argument): Fix typo.

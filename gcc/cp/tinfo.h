@@ -1,5 +1,5 @@
 // RTTI support internals for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1998, 1999 Free Software Foundation
 
 #include "typeinfo"
 
@@ -12,8 +12,8 @@ struct __user_type_info : public std::type_info {
 
   // If our type can be converted to the desired type, 
   // return the pointer, adjusted accordingly; else return 0.
-  virtual void* dcast (const type_info &, int, void *,
-		       const type_info * = 0, void * = 0) const;
+  virtual int dcast (const type_info &, int, void *, void **,
+		     const type_info * = 0, void * = 0) const;
 };
 
 // type_info for a class with one public, nonvirtual base class.
@@ -25,8 +25,8 @@ public:
   __si_type_info (const char *n, const __user_type_info &b)
     : __user_type_info (n), base (b) { }
 
-  virtual void *dcast (const type_info &, int, void *,
-		       const type_info * = 0, void * = 0) const;
+  virtual int dcast (const type_info &, int, void *, void **,
+		     const type_info * = 0, void * = 0) const;
 };
 
 // type_info for a general class.
@@ -50,6 +50,6 @@ struct __class_type_info : public __user_type_info {
     : __user_type_info (name), base_list (bl), n_bases (bn) {}
 
   // This is a little complex.
-  virtual void* dcast (const type_info &, int, void *,
-		       const type_info * = 0, void * = 0) const;
+  virtual int dcast (const type_info &, int, void *, void **,
+		     const type_info * = 0, void * = 0) const;
 };
