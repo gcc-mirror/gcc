@@ -174,8 +174,8 @@ hash_string (cache_ptr cache, const void *key)
   unsigned int ctr = 0;
         
         
-  while (*(char *) key) {
-    ret ^= *(char *) key++ << ctr;
+  while (*(const char *) key) {
+    ret ^= *((const char *) key)++ << ctr;
     ctr = (ctr + 1) % sizeof (void *);
   }
 
@@ -187,7 +187,7 @@ hash_string (cache_ptr cache, const void *key)
 static inline int 
 compare_ptrs (const void *k1, const void *k2)
 {
-  return ! (k1 - k2);
+  return (k1 == k2);
 }
 
 

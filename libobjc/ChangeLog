@@ -1,3 +1,12 @@
+2003-04-11  David Chad  <davidc@freebsd.org>
+	    Loren J. Rittle  <ljrittle@acm.org>
+
+	libobjc/8562
+	* objc/hash.h (hash_string): Constify correctly.
+	(compare_ptrs): Use direct compare.
+	* objc/objc-list.h (list_nth): Rename index to indx to avoid shadow.
+	* objc/sarray.h: Global rename index to indx to avoid shadow.
+
 2003-03-12  Andreas Schwab  <schwab@suse.de>
 
 	* aclocal.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Avoid trailing /. in

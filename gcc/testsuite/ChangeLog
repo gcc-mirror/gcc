@@ -1,3 +1,9 @@
+2003-04-11  David Chad  <davidc@freebsd.org>
+	    Loren J. Rittle  <ljrittle@acm.org>
+
+	libobjc/8562
+	* objc.dg/headers.m: New test.
+
 2003-04-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/builtin-noret-2.c: New.
