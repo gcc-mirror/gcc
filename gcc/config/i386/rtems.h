@@ -26,8 +26,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (80386, RTEMS)"); 
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif
