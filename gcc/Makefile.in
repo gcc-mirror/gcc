@@ -64,6 +64,7 @@ INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL)
 SYMLINK = ln -s
 MAKEINFO = makeinfo
+TEXI2DVI = texi2dvi
 
 # Define this as & to perform parallel make on a Sequent.
 # Note that this has some bugs, and it seems currently necessary 
@@ -1395,9 +1396,11 @@ $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 # This works with GNU Make's default rule.
 $(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
+	$(TEXI2DVI) $<
 
 # This works with GNU Make's default rule.
 $(srcdir)/cpp.dvi: cpp.texi
+	$(TEXI2DVI) $<
 
 $(srcdir)/INSTALL: install1.texi install.texi
 	$(MAKEINFO) -D INSTALLONLY --no-header `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
