@@ -3522,10 +3522,12 @@ the Solaris 7 Recommended Patch Cluster.
 
 The Solaris 8 linker fails to link some @samp{libjava} programs if
 previously-installed GCC java libraries already exist in the configured
-prefix.  For this reason, @samp{libgcj} is disabled by default on Solaris 8.
-If you use GNU @command{ld}, or if you don't have a previously-installed @samp{libgcj} in
-the same prefix, use @option{--enable-libgcj} to build and install the
-Java libraries.
+prefix.  For this reason, @command{configure} will report an error on
+Solaris 8 if an existing @samp{libgcj} is found in the appropriate
+install directory and the system linker is in use.  In this case, you
+can configure with a different prefix, or delete or rename the existing
+@samp{libgcj} library files before configuring, or configure using
+@option{--disable-libgcj}.
 
 @html
 <p>
