@@ -7,14 +7,6 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_M88K_MULTI_INCL_CHECK
-#define FIXINC_M88K_MULTI_INCL_CHECK 1
-
-
-
-#if defined( M88K_MULTI_INCL_CHECK )
-
-#endif  /* M88K_MULTI_INCL_CHECK */
 
 
 #if defined( VXWORKS_NEEDS_VXTYPES_CHECK )
@@ -33,5 +25,3 @@ typedef void (*__gcc_VOIDFUNCPTR) ();
 #endif
 #define VOIDFUNCPTR __gcc_VOIDFUNCPTR
 #endif  /* VXWORKS_TIME_CHECK */
-
-#endif  /* FIXINC_M88K_MULTI_INCL_CHECK */

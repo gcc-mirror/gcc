@@ -73,7 +73,6 @@ case $machine in
     i370-*-openedition | \
     i?86-moss-msdos* | \
     i?86-*-moss* | \
-    i?86-*-osf1* | \
     i?86-*-win32 | \
     i?86-*-pe | \
     i?86-*-cygwin* | \

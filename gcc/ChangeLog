@@ -1,3 +1,22 @@
+2002-12-31  Larin Hennessy  <larin@science.oregonstate.edu>
+
+	* fixinc/fixinc.svr4: Remove references to i860, Sony NewsOS, and spur.
+	* fixinc/inclhack.def: Remove tests for Apple A/UX, ARM/RISCiX, DG/UX,
+	m88k-*-sysv3*, Sony NewsOS.   Remove references to i860.
+	Cleanup handling of replacement text.
+	* fixinc/mkfixinc.sh: Remove reference to i?86-*-osf1*
+
+2003-01-04  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/tests/base/math.h: removed obsolete results
+	* fixinc/tests/base/stdlib.h: ditto
+	* fixinc/tests/base/sys/param.h: ditto
+	* fixinc/tests/base/sys/stat.h: ditto
+	* fixinc/tests/base/time.h: ditto
+	* fixinc/tests/base/X11/Intrinsic.h: removed obsolete file
+	* fixinc/tests/base/sys/byteorder.h: ditto
+	* fixinc/inclhack.def: Remove superfluous backslashes
+
 2003-01-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add prototypes for

@@ -30,11 +30,6 @@ struct exception;
 #endif  /* BROKEN_CABS_CHECK */
 
 
-#if defined( FIX_HEADER_BREAKAGE_CHECK )
-extern double floor(), ceil(), fmod(), fabs _PARAMS((double));
-#endif  /* FIX_HEADER_BREAKAGE_CHECK */
-
-
 #if defined( HPUX11_CPP_POW_INLINE_CHECK )
 
 #endif  /* HPUX11_CPP_POW_INLINE_CHECK */
@@ -58,23 +53,6 @@ extern "C" int abs(int);
 #if defined( ISC_FMOD_CHECK )
 extern double	fmod(double, double);
 #endif  /* ISC_FMOD_CHECK */
-
-
-#if defined( M88K_BAD_HYPOT_OPT_CHECK )
-extern double hypot();
-/* Workaround a stupid Motorola optimization if one
-   of x or y is 0.0 and the other is negative!  */
-#ifdef __STDC__
-static __inline__ double fake_hypot (double x, double y)
-#else
-static __inline__ double fake_hypot (x, y)
-	double x, y;
-#endif
-{
-	return fabs (hypot (x, y));
-}
-#define hypot	fake_hypot
-#endif  /* M88K_BAD_HYPOT_OPT_CHECK */
 
 
 #if defined( MATH_EXCEPTION_CHECK )

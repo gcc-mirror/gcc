@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 148 fixup descriptions.
+ * This file contains 138 fixup descriptions.
  *
  * See README for more information.
  *
@@ -29,77 +29,6 @@
  *             59 Temple Place - Suite 330,
  *             Boston,  MA  02111-1307, USA.
  */
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Dgux_Int_Varargs fix
- */
-tSCC zAab_Dgux_Int_VarargsName[] =
-     "AAB_dgux_int_varargs";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Dgux_Int_VarargsList[] =
-  "|_int_varargs.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAab_Dgux_Int_VarargsMachs (const char**)NULL
-#define AAB_DGUX_INT_VARARGS_TEST_CT  0
-#define aAab_Dgux_Int_VarargsTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aab_Dgux_Int_Varargs
- */
-static const char* apzAab_Dgux_Int_VarargsPatch[] = {
-"#ifndef __INT_VARARGS_H\n\
-#define __INT_VARARGS_H\n\n\
-/********************************************************/\n\
-/*  Define the common stuff for varargs/stdarg/stdio.   */\n\
-/********************************************************/\n\n\
-/*\n\
-** This file is a DG internal header.  Never include this\n\
-** file directly.\n\
-*/\n\n\
-#ifndef ___int_features_h\n\
-#include <sys/_int_features.h>\n\
-#endif\n\n\
-#if !(defined(_VA_LIST) || defined(_VA_LIST_))\n\
-#define _VA_LIST\n\
-#define _VA_LIST_\n\n\
-#ifdef __LINT__\n\n\
-#ifdef __STDC__\n\
-typedef void * va_list;\n\
-#else\n\
-typedef char * va_list;\n\
-#endif\n\n\
-#else\n\
-#if _M88K_ANY\n\n\
-#if defined(__DCC__)\n\n\
-typedef struct {\n\
-      int     next_arg;\n\
-      int     *mem_ptr;\n\
-      int     *reg_ptr;\n\
-} va_list;\n\n\
-#else  /* ! defined(__DCC__) */\n\n\
-typedef struct {\n\
-      int  __va_arg;       /* argument number */\n\
-      int *__va_stk;       /* start of args passed on stack */\n\
-      int *__va_reg;       /* start of args passed in regs */\n\
-} va_list;\n\n\
-#endif  /* ! defined(__DCC__) */\n\n\
-#elif _IX86_ANY\n\n\
-#if defined(__GNUC__) || defined(__STDC__)\n\
-typedef void * va_list;\n\
-#else\n\
-typedef char * va_list;\n\
-#endif\n\n\
-#endif  /*  _IX86_ANY */\n\n\
-#endif /* __LINT__ */\n\
-#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */\n\
-#endif /*  #ifndef __INT_VARARGS_H  */",
-    (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -182,20 +111,20 @@ static const char* apzAab_Fd_Zero_Gnu_Types_HPatch[] = {
 "/* This file fixes a bug in the __FD_ZERO macro present in glibc 1.x. */\n\
 #ifndef _TYPES_H_WRAPPER\n\
 #include <features.h>\n\
- #include_next <gnu/types.h>\n\n\
+#include_next <gnu/types.h>\n\n\
 #if defined(__FD_ZERO) && !defined(__GLIBC__)\n\
 #undef __FD_ZERO\n\
-# define __FD_ZERO(fdsetp) \\\n\
-  do { \\\n\
-    int __d0, __d1; \\\n\
-\t__asm__ __volatile__(\"cld ; rep ; stosl\" \\\n\
-        \t: \"=&c\" (__d0), \"=&D\" (__d1) \\\n\
-        \t: \"a\" (0), \"0\" (__FDSET_LONGS), \\\n\
-\t\t  \"1\" ((__fd_set *) (fdsetp)) :\"memory\"); \\\n\
+# define __FD_ZERO(fdsetp) \\\\\n\
+  do { \\\\\n\
+    int __d0, __d1; \\\\\n\
+__asm__ __volatile__(\"cld ; rep ; stosl\" \\\\\n\
+        \t: \"=&c\" (__d0), \"=&D\" (__d1) \\\\\n\
+        \t: \"a\" (0), \"0\" (__FDSET_LONGS), \\\\\n\
+  \"1\" ((__fd_set *) (fdsetp)) :\"memory\"); \\\\\n\
   } while (0)\n\
 #endif\n\n\
 #define _TYPES_H_WRAPPER\n\
-#endif /* _TYPES_H_WRAPPER */\n",
+#endif /* _TYPES_H_WRAPPER */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -225,25 +154,25 @@ tSCC* apzAab_Fd_Zero_Selectbits_HMachs[] = {
 static const char* apzAab_Fd_Zero_Selectbits_HPatch[] = {
 "/* This file fixes a bug in the __FD_ZERO macro present in glibc 2.0.x. */\n\
 #ifndef _SELECTBITS_H_WRAPPER\n\
-#include <features.h>\n\
- #include_next <selectbits.h>\n\n\
-#if defined(__FD_ZERO) && defined(__GLIBC__) \\\n\
-\t&& defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \\\n\
-\t&& __GLIBC_MINOR__ == 0\n\
-#undef __FD_ZERO\n\
-#define __FD_ZERO(fdsetp) \\\n\
-  do { \\\n\
-    int __d0, __d1; \\\n\
-  __asm__ __volatile__ (\"cld; rep; stosl\" \\\n\
-                        : \"=&c\" (__d0), \"=&D\" (__d1) \\\n\
-                        : \"a\" (0), \"0\" (sizeof (__fd_set) \\\n\
-                                        / sizeof (__fd_mask)), \\\n\
-                          \"1\" ((__fd_mask *) (fdsetp)) \\\n\
-                        : \"memory\"); \\\n\
-  } while (0)\n\
-#endif\n\n\
-#define _SELECTBITS_H_WRAPPER\n\
-#endif /* _SELECTBITS_H_WRAPPER */\n",
+  #include <features.h>\n\
+  #include_next <selectbits.h>\n\n\
+  #if defined(__FD_ZERO) && defined(__GLIBC__) \\\\\n\
+  && defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \\\\\n\
+  && __GLIBC_MINOR__ == 0\n\
+     #undef __FD_ZERO\n\
+     #define __FD_ZERO(fdsetp) \\\\\n\
+     do { \\\\\n\
+        int __d0, __d1; \\\\\n\
+      __asm__ __volatile__ (\"cld; rep; stosl\" \\\\\n\
+                        : \"=&c\" (__d0), \"=&D\" (__d1) \\\\\n\
+                        : \"a\" (0), \"0\" (sizeof (__fd_set) \\\\\n\
+                                        / sizeof (__fd_mask)), \\\\\n\
+                          \"1\" ((__fd_mask *) (fdsetp)) \\\\\n\
+                        : \"memory\"); \\\\\n\
+      } while (0)\n\
+  #endif\n\n\
+  #define _SELECTBITS_H_WRAPPER\n\
+#endif /* _SELECTBITS_H_WRAPPER */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -272,10 +201,10 @@ tSCC* apzAab_Solaris_Sys_Varargs_HMachs[] = {
  */
 static const char* apzAab_Solaris_Sys_Varargs_HPatch[] = {
 "#ifdef __STDC__\n\
-#include <stdarg.h>\n\
+  #include <stdarg.h>\n\
 #else\n\
-#include <varargs.h>\n\
-#endif\n",
+  #include <varargs.h>\n\
+#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -311,145 +240,151 @@ static tTestDesc aAab_Sun_MemcpyTests[] = {
 static const char* apzAab_Sun_MemcpyPatch[] = {
 "/* This file was generated by fixincludes */\n\
 #ifndef __memory_h__\n\
-#define __memory_h__\n\n\
-#ifdef __STDC__\n\
-extern void *memccpy();\n\
-extern void *memchr();\n\
-extern void *memcpy();\n\
-extern void *memset();\n\
-#else\n\
-extern char *memccpy();\n\
-extern char *memchr();\n\
-extern char *memcpy();\n\
-extern char *memset();\n\
-#endif /* __STDC__ */\n\n\
-extern int memcmp();\n\n\
-#endif /* __memory_h__ */\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Svr4_Replace_Byteorder fix
- */
-tSCC zAab_Svr4_Replace_ByteorderName[] =
-     "AAB_svr4_replace_byteorder";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Svr4_Replace_ByteorderList[] =
-  "|sys/byteorder.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzAab_Svr4_Replace_ByteorderMachs[] = {
-        "*-*-sysv4*",
-        "i[34567]86-*-sysv5*",
-        "i[34567]86-*-udk*",
-        "i[34567]86-*-solaris2.[0-4]",
-        "powerpcle-*-solaris2.[0-4]",
-        "sparc-*-solaris2.[0-4]",
-        (const char*)NULL };
-#define AAB_SVR4_REPLACE_BYTEORDER_TEST_CT  0
-#define aAab_Svr4_Replace_ByteorderTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aab_Svr4_Replace_Byteorder
- */
-static const char* apzAab_Svr4_Replace_ByteorderPatch[] = {
-"#ifndef _SYS_BYTEORDER_H\n\
+  #define __memory_h__\n\n\
+  #ifdef __STDC__\n\
+    extern void *memccpy();\n\
+    extern void *memchr();\n\
+    extern void *memcpy();\n\
+    extern void *memset();\n\
+  #else\n\
+    extern char *memccpy();\n\
+    extern char *memchr();\n\
+    extern char *memcpy();\n\
+    extern char *memset();\n\
+  #endif /* __STDC__ */\n\n\
+  extern int memcmp();\n\n\
+#endif /* __memory_h__ */\n\
+_EndOfHeader;\n\
+};\n\n\n\
+/*\n\
+ *  Completely replace <sys/varargs.h> with a file that includes gcc's\n\
+ *  stdarg.h or varargs.h files as appropriate.\n\
+ */\n\
+#ifdef SVR4\n\
+fix = {\n\
+    hackname = AAB_svr4_no_varargs;\n\
+    files    = sys/varargs.h;\n\
+    replace  = \"/* This file was generated by fixincludes.  */\\n\"\n\
+               \"#ifndef _SYS_VARARGS_H\\n\"\n\
+               \"#define _SYS_VARARGS_H\\n\\n\"\n\
+                                                                                \n\
+               \"#ifdef __STDC__\\n\"\n\
+               \"#include <stdarg.h>\\n\"\n\
+               \"#else\\n\"\n\
+               \"#include <varargs.h>\\n\"\n\
+               \"#endif\\n\\n\"\n\
+                                                                                \n\
+               \"#endif  /* _SYS_VARARGS_H */\\n\";\n\
+};\n\
+#endif\n\n\n\
+/*\n\
+ *  Completely replace <sys/byteorder.h>; with a file that implements gcc's\n\
+ *  optimized byteswapping.  Restricted to \"SVR4\" machines until either\n\
+ *  it is shown to be safe to replace this file always, or we get bolder ;-)\n\
+ */\n\
+fix = {\n\
+    hackname = AAB_svr4_replace_byteorder;\n\
+#ifndef SVR5\n\
+    mach     = \"*-*-sysv4*\";\n\
+    mach     = \"i[34567]86-*-sysv5*\";\n\
+    mach     = \"i[34567]86-*-udk*\";\n\
+    mach     = \"i[34567]86-*-solaris2.[0-4]\";\n\
+    mach     = \"powerpcle-*-solaris2.[0-4]\";\n\
+    mach     = \"sparc-*-solaris2.[0-4]\";\n\
+#endif /* SVR5 */\n\
+    files    = sys/byteorder.h;\n\
+    replace  = <<-  _EndOfHeader_\n\
+#ifndef _SYS_BYTEORDER_H\n\
 #define _SYS_BYTEORDER_H\n\n\
-/* Functions to convert `short' and `long' quantities from host byte order\n\
+/* Functions to convert `short\\' and `long\\' quantities from host byte order\n\
    to (internet) network byte order (i.e. big-endian).\n\n\
    Written by Ron Guilmette (rfg@ncd.com).\n\n\
-   This isn't actually used by GCC.  It is installed by fixinc.svr4.\n\n\
+   This isn\\'t actually used by GCC.  It is installed by fixinc.svr4.\n\n\
    For big-endian machines these functions are essentially no-ops.\n\n\
    For little-endian machines, we define the functions using specialized\n\
    asm sequences in cases where doing so yields better code (e.g. i386).  */\n\n\
 #if !defined (__GNUC__) && !defined (__GNUG__)\n\
-#error You lose!  This file is only useful with GNU compilers.\n\
+  #error You lose!  This file is only useful with GNU compilers.\n\
 #endif\n\n\
 #ifndef __BYTE_ORDER__\n\
-/* Byte order defines.  These are as defined on UnixWare 1.1, but with\n\
-   double underscores added at the front and back.  */\n\
-#define __LITTLE_ENDIAN__   1234\n\
-#define __BIG_ENDIAN__      4321\n\
-#define __PDP_ENDIAN__      3412\n\
+  /* Byte order defines.  These are as defined on UnixWare 1.1, but with\n\
+     double underscores added at the front and back.  */\n\
+  #define __LITTLE_ENDIAN__   1234\n\
+  #define __BIG_ENDIAN__      4321\n\
+  #define __PDP_ENDIAN__      3412\n\
 #endif\n\n\
 #ifdef __STDC__\n\
-static __inline__ unsigned long htonl (unsigned long);\n\
-static __inline__ unsigned short htons (unsigned int);\n\
-static __inline__ unsigned long ntohl (unsigned long);\n\
-static __inline__ unsigned short ntohs (unsigned int);\n\
+  static __inline__ unsigned long htonl (unsigned long);\n\
+  static __inline__ unsigned short htons (unsigned int);\n\
+  static __inline__ unsigned long ntohl (unsigned long);\n\
+  static __inline__ unsigned short ntohs (unsigned int);\n\
 #endif /* defined (__STDC__) */\n\n\
 #if defined (__i386__)\n\n\
-#ifndef __BYTE_ORDER__\n\
-#define __BYTE_ORDER__ __LITTLE_ENDIAN__\n\
-#endif\n\n\
-/* Convert a host long to a network long.  */\n\n\
-/* We must use a new-style function definition, so that this will also\n\
-   be valid for C++.  */\n\
-static __inline__ unsigned long\n\
-htonl (unsigned long __arg)\n\
-{\n\
-  register unsigned long __result;\n\n\
-  __asm__ (\"xchg%B0 %b0,%h0\n\
-\tror%L0 $16,%0\n\
-\txchg%B0 %b0,%h0\" : \"=q\" (__result) : \"0\" (__arg));\n\
-  return __result;\n\
-}\n\n\
-/* Convert a host short to a network short.  */\n\n\
-static __inline__ unsigned short\n\
-htons (unsigned int __arg)\n\
-{\n\
-  register unsigned short __result;\n\n\
-  __asm__ (\"xchg%B0 %b0,%h0\" : \"=q\" (__result) : \"0\" (__arg));\n\
-  return __result;\n\
-}\n\n\
-#elif ((defined (__i860__) && !defined (__i860_big_endian__))\t\\\n\
-       || defined (__ns32k__) || defined (__vax__)\t\t\\\n\
-       || defined (__spur__) || defined (__arm__))\n\n\
-#ifndef __BYTE_ORDER__\n\
-#define __BYTE_ORDER__ __LITTLE_ENDIAN__\n\
-#endif\n\n\
-/* For other little-endian machines, using C code is just as efficient as\n\
-   using assembly code.  */\n\n\
-/* Convert a host long to a network long.  */\n\n\
-static __inline__ unsigned long\n\
-htonl (unsigned long __arg)\n\
-{\n\
-  register unsigned long __result;\n\n\
-  __result = (__arg >> 24) & 0x000000ff;\n\
-  __result |= (__arg >> 8) & 0x0000ff00;\n\
-  __result |= (__arg << 8) & 0x00ff0000;\n\
-  __result |= (__arg << 24) & 0xff000000;\n\
-  return __result;\n\
-}\n\n\
-/* Convert a host short to a network short.  */\n\n\
-static __inline__ unsigned short\n\
-htons (unsigned int __arg)\n\
-{\n\
-  register unsigned short __result;\n\n\
-  __result = (__arg << 8) & 0xff00;\n\
-  __result |= (__arg >> 8) & 0x00ff;\n\
-  return __result;\n\
-}\n\n\
+  #ifndef __BYTE_ORDER__\n\
+    #define __BYTE_ORDER__ __LITTLE_ENDIAN__\n\
+  #endif\n\n\
+  /* Convert a host long to a network long.  */\n\n\
+  /* We must use a new-style function definition, so that this will also\n\
+     be valid for C++.  */\n\
+  static __inline__ unsigned long\n\
+  htonl (unsigned long __arg)\n\
+  {\n\
+    register unsigned long __result;\n\n\
+    __asm__ (\"xchg%B0 %b0,%h0\n\
+  ror%L0 $16,%0\n\
+  xchg%B0 %b0,%h0\" : \"=q\" (__result) : \"0\" (__arg));\n\
+    return __result;\n\
+  }\n\n\
+  /* Convert a host short to a network short.  */\n\n\
+  static __inline__ unsigned short\n\
+  htons (unsigned int __arg)\n\
+  {\n\
+    register unsigned short __result;\n\n\
+    __asm__ (\"xchg%B0 %b0,%h0\" : \"=q\" (__result) : \"0\" (__arg));\n\
+    return __result;\n\
+  }\n\n\
+#elif (defined (__ns32k__) || defined (__vax__) || defined (__arm__))\n\n\
+  #ifndef __BYTE_ORDER__\n\
+    #define __BYTE_ORDER__ __LITTLE_ENDIAN__\n\
+  #endif\n\n\
+  /* For other little-endian machines, using C code is just as efficient as\n\
+     using assembly code.  */\n\n\
+  /* Convert a host long to a network long.  */\n\n\
+  static __inline__ unsigned long\n\
+  htonl (unsigned long __arg)\n\
+  {\n\
+    register unsigned long __result;\n\n\
+    __result = (__arg >> 24) & 0x000000ff;\n\
+    __result |= (__arg >> 8) & 0x0000ff00;\n\
+    __result |= (__arg << 8) & 0x00ff0000;\n\
+    __result |= (__arg << 24) & 0xff000000;\n\
+    return __result;\n\
+  }\n\n\
+  /* Convert a host short to a network short.  */\n\n\
+  static __inline__ unsigned short\n\
+  htons (unsigned int __arg)\n\
+  {\n\
+    register unsigned short __result;\n\n\
+    __result = (__arg << 8) & 0xff00;\n\
+    __result |= (__arg >> 8) & 0x00ff;\n\
+    return __result;\n\
+  }\n\n\
 #else /* must be a big-endian machine */\n\n\
-#ifndef __BYTE_ORDER__\n\
-#define __BYTE_ORDER__ __BIG_ENDIAN__\n\
-#endif\n\n\
-/* Convert a host long to a network long.  */\n\n\
-static __inline__ unsigned long\n\
-htonl (unsigned long __arg)\n\
-{\n\
-  return __arg;\n\
-}\n\n\
-/* Convert a host short to a network short.  */\n\n\
-static __inline__ unsigned short\n\
-htons (unsigned int __arg)\n\
-{\n\
-  return __arg;\n\
-}\n\n\
+  #ifndef __BYTE_ORDER__\n\
+    #define __BYTE_ORDER__ __BIG_ENDIAN__\n\
+  #endif\n\n\
+  /* Convert a host long to a network long.  */\n\n\
+  static __inline__ unsigned long\n\
+  htonl (unsigned long __arg)\n\
+  {\n\
+    return __arg;\n\
+  }\n\n\
+  /* Convert a host short to a network short.  */\n\n\
+  static __inline__ unsigned short\n\
+  htons (unsigned int __arg)\n\
+  {\n\
+    return __arg;\n\
+  }\n\n\
 #endif /* big-endian */\n\n\
 /* Convert a network long to a host long.  */\n\n\
 static __inline__ unsigned long\n\
@@ -463,7 +398,7 @@ ntohs (unsigned int __arg)\n\
 {\n\
   return htons (__arg);\n\
 }\n\
-#endif\n",
+#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -526,9 +461,9 @@ tSCC* apzAab_Ultrix_LimitsMachs[] = {
  */
 static const char* apzAab_Ultrix_LimitsPatch[] = {
 "#ifndef _LIMITS_INCLUDED\n\
-#define _LIMITS_INCLUDED\n\
-#include <sys/limits.h>\n\
-#endif /* _LIMITS_INCLUDED */\n",
+  #define _LIMITS_INCLUDED\n\
+  #include <sys/limits.h>\n\
+#endif /* _LIMITS_INCLUDED */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -557,9 +492,9 @@ tSCC* apzAab_Ultrix_MemoryMachs[] = {
  */
 static const char* apzAab_Ultrix_MemoryPatch[] = {
 "#ifndef _MEMORY_INCLUDED\n\
-#define _MEMORY_INCLUDED\n\
-#include <strings.h>\n\
-#endif /* _MEMORY_INCLUDED */\n",
+  #define _MEMORY_INCLUDED\n\
+  #include <strings.h>\n\
+#endif /* _MEMORY_INCLUDED */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -588,9 +523,9 @@ tSCC* apzAab_Ultrix_StringMachs[] = {
  */
 static const char* apzAab_Ultrix_StringPatch[] = {
 "#ifndef _STRING_INCLUDED\n\
-#define _STRING_INCLUDED\n\
-#include <strings.h>\n\
-#endif /* _STRING_INCLUDED */\n",
+  #define _STRING_INCLUDED\n\
+  #include <strings.h>\n\
+#endif /* _STRING_INCLUDED */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -912,112 +847,6 @@ static tTestDesc aAlpha_SbrkTests[] = {
 static const char* apzAlpha_SbrkPatch[] = {
     "format",
     "void *sbrk(",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Arm_Norcroft_Hint fix
- */
-tSCC zArm_Norcroft_HintName[] =
-     "arm_norcroft_hint";
-
-/*
- *  File name selection pattern
- */
-tSCC zArm_Norcroft_HintList[] =
-  "|X11/Intrinsic.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzArm_Norcroft_HintMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zArm_Norcroft_HintSelect0[] =
-       "___type p_type";
-
-#define    ARM_NORCROFT_HINT_TEST_CT  1
-static tTestDesc aArm_Norcroft_HintTests[] = {
-  { TT_EGREP,    zArm_Norcroft_HintSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Arm_Norcroft_Hint
- */
-static const char* apzArm_Norcroft_HintPatch[] = {
-    "format",
-    "p_type",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Arm_Wchar fix
- */
-tSCC zArm_WcharName[] =
-     "arm_wchar";
-
-/*
- *  File name selection pattern
- */
-tSCC zArm_WcharList[] =
-  "|stdlib.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzArm_WcharMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zArm_WcharSelect0[] =
-       "#[ \t]*define[ \t]*__wchar_t";
-
-#define    ARM_WCHAR_TEST_CT  1
-static tTestDesc aArm_WcharTests[] = {
-  { TT_EGREP,    zArm_WcharSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Arm_Wchar
- */
-static const char* apzArm_WcharPatch[] = {
-    "format",
-    "%1_GCC_WCHAR_T",
-    "(#[ \t]*(ifndef|define)[ \t]+)__wchar_t",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aux_Asm fix
- */
-tSCC zAux_AsmName[] =
-     "aux_asm";
-
-/*
- *  File name selection pattern
- */
-tSCC zAux_AsmList[] =
-  "|sys/param.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAux_AsmMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAux_AsmSelect0[] =
-       "#ifndef NOINLINE";
-
-#define    AUX_ASM_TEST_CT  1
-static tTestDesc aAux_AsmTests[] = {
-  { TT_EGREP,    zAux_AsmSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aux_Asm
- */
-static const char* apzAux_AsmPatch[] = {
-    "format",
-    "#if !defined(NOINLINE) && !defined(__GNUC__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1591,43 +1420,6 @@ static tTestDesc aEcd_CursorTests[] = {
 static const char* apzEcd_CursorPatch[] = {
     "format",
     "ecd_cursor",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Fix_Header_Breakage fix
- */
-tSCC zFix_Header_BreakageName[] =
-     "fix_header_breakage";
-
-/*
- *  File name selection pattern
- */
-tSCC zFix_Header_BreakageList[] =
-  "|math.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzFix_Header_BreakageMachs[] = {
-        "m88k-motorola-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zFix_Header_BreakageSelect0[] =
-       "extern double floor\\(\\), ceil\\(\\), fmod\\(\\), fabs\\(\\);";
-
-#define    FIX_HEADER_BREAKAGE_TEST_CT  1
-static tTestDesc aFix_Header_BreakageTests[] = {
-  { TT_EGREP,    zFix_Header_BreakageSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Fix_Header_Breakage
- */
-static const char* apzFix_Header_BreakagePatch[] = {
-    "format",
-    "extern double floor(), ceil(), fmod(), fabs _PARAMS((double));",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2721,128 +2513,6 @@ static const char* apzLynxos_Fcntl_ProtoPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of M88k_Bad_Hypot_Opt fix
- */
-tSCC zM88k_Bad_Hypot_OptName[] =
-     "m88k_bad_hypot_opt";
-
-/*
- *  File name selection pattern
- */
-tSCC zM88k_Bad_Hypot_OptList[] =
-  "|math.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzM88k_Bad_Hypot_OptMachs[] = {
-        "m88k-motorola-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zM88k_Bad_Hypot_OptSelect0[] =
-       "^extern double hypot\\(\\);\n";
-
-#define    M88K_BAD_HYPOT_OPT_TEST_CT  1
-static tTestDesc aM88k_Bad_Hypot_OptTests[] = {
-  { TT_EGREP,    zM88k_Bad_Hypot_OptSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for M88k_Bad_Hypot_Opt
- */
-static const char* apzM88k_Bad_Hypot_OptPatch[] = {
-    "format",
-    "%0/* Workaround a stupid Motorola optimization if one\n\
-   of x or y is 0.0 and the other is negative!  */\n\
-#ifdef __STDC__\n\
-static __inline__ double fake_hypot (double x, double y)\n\
-#else\n\
-static __inline__ double fake_hypot (x, y)\n\
-\tdouble x, y;\n\
-#endif\n\
-{\n\
-\treturn fabs (hypot (x, y));\n\
-}\n\
-#define hypot\tfake_hypot\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of M88k_Bad_S_If fix
- */
-tSCC zM88k_Bad_S_IfName[] =
-     "m88k_bad_s_if";
-
-/*
- *  File name selection pattern
- */
-tSCC zM88k_Bad_S_IfList[] =
-  "|sys/stat.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzM88k_Bad_S_IfMachs[] = {
-        "m88k-*-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zM88k_Bad_S_IfSelect0[] =
-       "#define[ \t]+S_IS[A-Z]+\\(m\\)[ \t]+\\(m[ \t]*&";
-
-#define    M88K_BAD_S_IF_TEST_CT  1
-static tTestDesc aM88k_Bad_S_IfTests[] = {
-  { TT_EGREP,    zM88k_Bad_S_IfSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for M88k_Bad_S_If
- */
-static const char* apzM88k_Bad_S_IfPatch[] = {
-    "format",
-    "#define %1(m) (((m) & S_IFMT) == %2)",
-    "#define[ \t]+(S_IS[A-Z]+)\\(m\\)[ \t]+\\(m[ \t]*&[ \t]*(S_IF[A-Z][A-Z][A-Z]+|0[0-9]+)[ \t]*\\)",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of M88k_Multi_Incl fix
- */
-tSCC zM88k_Multi_InclName[] =
-     "m88k_multi_incl";
-
-/*
- *  File name selection pattern
- */
-tSCC zM88k_Multi_InclList[] =
-  "|time.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzM88k_Multi_InclMachs[] = {
-        "m88k-tektronix-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content bypass pattern - skip fix if pattern found
- */
-tSCC zM88k_Multi_InclBypass0[] =
-       "#ifndef";
-
-#define    M88K_MULTI_INCL_TEST_CT  1
-static tTestDesc aM88k_Multi_InclTests[] = {
-  { TT_NEGREP,   zM88k_Multi_InclBypass0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for M88k_Multi_Incl
- */
-static const char* apzM88k_Multi_InclPatch[] = {
-    "wrap",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
  *  Description of Machine_Ansi_H_Va_List fix
  */
 tSCC zMachine_Ansi_H_Va_ListName[] =
@@ -3150,43 +2820,6 @@ static tTestDesc aNested_Sys_LimitsTests[] = {
 static const char* apzNested_Sys_LimitsPatch[] = { "sed",
     "-e", "/CHILD_MAX/s,/\\* Max, Max,",
     "-e", "/OPEN_MAX/s,/\\* Max, Max,",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of News_Os_Recursion fix
- */
-tSCC zNews_Os_RecursionName[] =
-     "news_os_recursion";
-
-/*
- *  File name selection pattern
- */
-tSCC zNews_Os_RecursionList[] =
-  "|stdlib.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzNews_Os_RecursionMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zNews_Os_RecursionSelect0[] =
-       "[ \t]*#include <stdlib\\.h>.*";
-
-#define    NEWS_OS_RECURSION_TEST_CT  1
-static tTestDesc aNews_Os_RecursionTests[] = {
-  { TT_EGREP,    zNews_Os_RecursionSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for News_Os_Recursion
- */
-static const char* apzNews_Os_RecursionPatch[] = {
-    "format",
-    "#ifdef BOGUS_RECURSION\n\
-%0\n\
-#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5782,21 +5415,19 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          155
-#define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            148
+#define REGEX_COUNT          147
+#define MACH_LIST_SIZE_LIMIT 261
+#define FIX_COUNT            138
 
 /*
  *  Enumerate the fixes
  */
 typedef enum {
-    AAB_DGUX_INT_VARARGS_FIXIDX,
     AAB_FD_ZERO_ASM_POSIX_TYPES_H_FIXIDX,
     AAB_FD_ZERO_GNU_TYPES_H_FIXIDX,
     AAB_FD_ZERO_SELECTBITS_H_FIXIDX,
     AAB_SOLARIS_SYS_VARARGS_H_FIXIDX,
     AAB_SUN_MEMCPY_FIXIDX,
-    AAB_SVR4_REPLACE_BYTEORDER_FIXIDX,
     AAB_ULTRIX_ANSI_COMPAT_FIXIDX,
     AAB_ULTRIX_LIMITS_FIXIDX,
     AAB_ULTRIX_MEMORY_FIXIDX,
@@ -5810,9 +5441,6 @@ typedef enum {
     ALPHA_GETOPT_FIXIDX,
     ALPHA_PARENS_FIXIDX,
     ALPHA_SBRK_FIXIDX,
-    ARM_NORCROFT_HINT_FIXIDX,
-    ARM_WCHAR_FIXIDX,
-    AUX_ASM_FIXIDX,
     AVOID_BOOL_DEFINE_FIXIDX,
     AVOID_BOOL_TYPE_FIXIDX,
     AVOID_WCHAR_T_TYPE_FIXIDX,
@@ -5828,7 +5456,6 @@ typedef enum {
     DEC_INTERN_ASM_FIXIDX,
     DJGPP_WCHAR_H_FIXIDX,
     ECD_CURSOR_FIXIDX,
-    FIX_HEADER_BREAKAGE_FIXIDX,
     FREEBSD_GCC3_BREAKAGE_FIXIDX,
     GNU_TYPES_FIXIDX,
     HP_INLINE_FIXIDX,
@@ -5858,9 +5485,6 @@ typedef enum {
     LIMITS_IFNDEFS_FIXIDX,
     LYNX_VOID_INT_FIXIDX,
     LYNXOS_FCNTL_PROTO_FIXIDX,
-    M88K_BAD_HYPOT_OPT_FIXIDX,
-    M88K_BAD_S_IF_FIXIDX,
-    M88K_MULTI_INCL_FIXIDX,
     MACHINE_ANSI_H_VA_LIST_FIXIDX,
     MACHINE_NAME_FIXIDX,
     MATH_EXCEPTION_FIXIDX,
@@ -5869,7 +5493,6 @@ typedef enum {
     NESTED_AUTH_DES_FIXIDX,
     NESTED_MOTOROLA_FIXIDX,
     NESTED_SYS_LIMITS_FIXIDX,
-    NEWS_OS_RECURSION_FIXIDX,
     NEXT_MATH_PREFIX_FIXIDX,
     NEXT_TEMPLATE_FIXIDX,
     NEXT_VOLITILE_FIXIDX,
@@ -5941,11 +5564,6 @@ typedef enum {
 } t_fixinc_idx;
 
 tFixDesc fixDescList[ FIX_COUNT ] = {
-  {  zAab_Dgux_Int_VarargsName,    zAab_Dgux_Int_VarargsList,
-     apzAab_Dgux_Int_VarargsMachs,
-     AAB_DGUX_INT_VARARGS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Dgux_Int_VarargsTests,   apzAab_Dgux_Int_VarargsPatch, 0 },
-
   {  zAab_Fd_Zero_Asm_Posix_Types_HName,    zAab_Fd_Zero_Asm_Posix_Types_HList,
      apzAab_Fd_Zero_Asm_Posix_Types_HMachs,
      AAB_FD_ZERO_ASM_POSIX_TYPES_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
@@ -5970,11 +5588,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAab_Sun_MemcpyMachs,
      AAB_SUN_MEMCPY_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Sun_MemcpyTests,   apzAab_Sun_MemcpyPatch, 0 },
-
-  {  zAab_Svr4_Replace_ByteorderName,    zAab_Svr4_Replace_ByteorderList,
-     apzAab_Svr4_Replace_ByteorderMachs,
-     AAB_SVR4_REPLACE_BYTEORDER_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Svr4_Replace_ByteorderTests,   apzAab_Svr4_Replace_ByteorderPatch, 0 },
 
   {  zAab_Ultrix_Ansi_CompatName,    zAab_Ultrix_Ansi_CompatList,
      apzAab_Ultrix_Ansi_CompatMachs,
@@ -6040,21 +5653,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAlpha_SbrkMachs,
      ALPHA_SBRK_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha_SbrkTests,   apzAlpha_SbrkPatch, 0 },
-
-  {  zArm_Norcroft_HintName,    zArm_Norcroft_HintList,
-     apzArm_Norcroft_HintMachs,
-     ARM_NORCROFT_HINT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aArm_Norcroft_HintTests,   apzArm_Norcroft_HintPatch, 0 },
-
-  {  zArm_WcharName,    zArm_WcharList,
-     apzArm_WcharMachs,
-     ARM_WCHAR_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aArm_WcharTests,   apzArm_WcharPatch, 0 },
-
-  {  zAux_AsmName,    zAux_AsmList,
-     apzAux_AsmMachs,
-     AUX_ASM_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aAux_AsmTests,   apzAux_AsmPatch, 0 },
 
   {  zAvoid_Bool_DefineName,    zAvoid_Bool_DefineList,
      apzAvoid_Bool_DefineMachs,
@@ -6130,11 +5728,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzEcd_CursorMachs,
      ECD_CURSOR_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aEcd_CursorTests,   apzEcd_CursorPatch, 0 },
-
-  {  zFix_Header_BreakageName,    zFix_Header_BreakageList,
-     apzFix_Header_BreakageMachs,
-     FIX_HEADER_BREAKAGE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aFix_Header_BreakageTests,   apzFix_Header_BreakagePatch, 0 },
 
   {  zFreebsd_Gcc3_BreakageName,    zFreebsd_Gcc3_BreakageList,
      apzFreebsd_Gcc3_BreakageMachs,
@@ -6281,21 +5874,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      LYNXOS_FCNTL_PROTO_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aLynxos_Fcntl_ProtoTests,   apzLynxos_Fcntl_ProtoPatch, 0 },
 
-  {  zM88k_Bad_Hypot_OptName,    zM88k_Bad_Hypot_OptList,
-     apzM88k_Bad_Hypot_OptMachs,
-     M88K_BAD_HYPOT_OPT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aM88k_Bad_Hypot_OptTests,   apzM88k_Bad_Hypot_OptPatch, 0 },
-
-  {  zM88k_Bad_S_IfName,    zM88k_Bad_S_IfList,
-     apzM88k_Bad_S_IfMachs,
-     M88K_BAD_S_IF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aM88k_Bad_S_IfTests,   apzM88k_Bad_S_IfPatch, 0 },
-
-  {  zM88k_Multi_InclName,    zM88k_Multi_InclList,
-     apzM88k_Multi_InclMachs,
-     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aM88k_Multi_InclTests,   apzM88k_Multi_InclPatch, 0 },
-
   {  zMachine_Ansi_H_Va_ListName,    zMachine_Ansi_H_Va_ListList,
      apzMachine_Ansi_H_Va_ListMachs,
      MACHINE_ANSI_H_VA_LIST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
@@ -6335,11 +5913,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzNested_Sys_LimitsMachs,
      NESTED_SYS_LIMITS_TEST_CT, FD_MACH_ONLY,
      aNested_Sys_LimitsTests,   apzNested_Sys_LimitsPatch, 0 },
-
-  {  zNews_Os_RecursionName,    zNews_Os_RecursionList,
-     apzNews_Os_RecursionMachs,
-     NEWS_OS_RECURSION_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aNews_Os_RecursionTests,   apzNews_Os_RecursionPatch, 0 },
 
   {  zNext_Math_PrefixName,    zNext_Math_PrefixList,
      apzNext_Math_PrefixMachs,
