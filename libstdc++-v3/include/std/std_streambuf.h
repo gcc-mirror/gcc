@@ -176,25 +176,6 @@ namespace std
       char_type* 		_M_out_cur;    // Current put area. 
       char_type* 		_M_out_end;    // End of put area.
 
-      //@{
-      /**
-       *  @if maint
-       *  setp (and _M_set_buffer(0) in basic_filebuf) set it equal to
-       *  _M_out_beg, then at each put operation it may be moved
-       *  forward (toward _M_out_end) by _M_move_out_cur.
-       *  @endif
-      */      
-      char_type*                _M_out_lim;    // End limit of used put area.
-      //@}
-
-      /**
-       *  @if maint
-       *  True iff _M_in_* and _M_out_* buffers should always point to
-       *  the same place.  True for fstreams, false for sstreams.
-       *  @endif
-      */
-      bool 			_M_buf_unified;	
-
       /**
        *  @if maint
        *  Place to stash in || out || in | out settings for current streambuf.
@@ -216,50 +197,11 @@ namespace std
       */
       fpos<__state_type>	_M_pos;
 
-      // Correctly sets the _M_in_cur pointer, and bumps the
-      // _M_out_cur pointer as well if necessary.
-      void 
-      _M_move_in_cur(off_type __n) // argument needs to be +-
-      {
-	const bool __testout = _M_out_cur;
-	_M_in_cur += __n;
-	if (__testout && _M_buf_unified)
-	  _M_out_cur += __n;
-      }
-
-      // Correctly sets the _M_out_cur pointer, and bumps the
-      // appropriate _M_out_lim and _M_in_end pointers as well. Necessary
-      // for the un-tied stringbufs, in in|out mode.
-      // Invariant:
-      // __n + _M_out_[cur, lim] <= _M_out_end
-      // Assuming all _M_out_[beg, cur, lim] pointers are operating on
-      // the same range:
-      // _M_out_beg <= _M_*_ <= _M_out_end
-      void 
-      _M_move_out_cur(off_type __n) // argument needs to be +-
-      {
-	_M_out_cur += __n;
-	if (__builtin_expect(_M_buf_unified, false))
-	  {
-	    const bool __testin = _M_in_cur;
-	    if (__testin)
-	      _M_in_cur += __n;
-	    if (_M_out_cur > _M_out_lim)
-	      {
-		_M_out_lim = _M_out_cur;
-		// NB: in | out buffers drag the _M_in_end pointer along...
-		if (__testin)
-		  _M_in_end += __n;
-	      }
-	  }
-      }
-
   public:
       /// Destructor deallocates no buffer space.
       virtual 
       ~basic_streambuf() 
       {
-	_M_buf_unified = false;
 	_M_mode = ios_base::openmode(0);
       }
 
@@ -330,7 +272,7 @@ namespace std
       streamsize 
       in_avail() 
       { 
-	const streamsize __ret = _M_in_end - _M_in_cur;
+	const streamsize __ret = this->egptr() - this->gptr();
 	return __ret ? __ret : this->showmanyc();
       }
 
@@ -373,8 +315,8 @@ namespace std
       sgetc()
       {
 	int_type __ret;
-	if (_M_in_cur < _M_in_end)
-	  __ret = traits_type::to_int_type(*this->_M_in_cur);
+	if (this->gptr() < this->egptr())
+	  __ret = traits_type::to_int_type(*this->gptr());
 	else 
 	  __ret = this->underflow();
 	return __ret;
@@ -461,7 +403,6 @@ namespace std
       basic_streambuf()
       : _M_in_beg(0), _M_in_cur(0), _M_in_end(0), 
       _M_out_beg(0), _M_out_cur(0), _M_out_end(0),
-      _M_out_lim(0), _M_buf_unified(false), 
       _M_mode(ios_base::openmode(0)),_M_buf_locale(locale()) 
       { }
 
@@ -553,7 +494,7 @@ namespace std
       void 
       setp(char_type* __pbeg, char_type* __pend)
       { 
-	_M_out_beg = _M_out_cur = _M_out_lim = __pbeg; 
+	_M_out_beg = _M_out_cur = __pbeg; 
 	_M_out_end = __pend;
       }
 
@@ -703,10 +644,10 @@ namespace std
 	int_type __ret = traits_type::eof();
 	const bool __testeof = traits_type::eq_int_type(this->underflow(), 
 							__ret);
-	if (!__testeof && _M_in_cur < _M_in_end)
+	if (!__testeof && this->gptr() < this->egptr())
 	  {
-	    __ret = traits_type::to_int_type(*_M_in_cur);
-	    ++_M_in_cur;
+	    __ret = traits_type::to_int_type(*this->gptr());
+	    this->gbump(1);
 	  }
 	return __ret;    
       }
@@ -786,8 +727,8 @@ namespace std
       void 
       stossc() 
       {
-	if (_M_in_cur < _M_in_end) 
-	  ++_M_in_cur;
+	if (this->gptr() < this->egptr()) 
+	  this->gbump(1);
 	else 
 	  this->uflow();
       }

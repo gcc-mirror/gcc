@@ -59,7 +59,7 @@ void test05()
   {
     constraint_filebuf fb_03;
     fb_03.open(name_01, ios_base::out | ios_base::in);
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( !fb_03.read_position() );
     // 27filebuf-3.txt = bd23456789:;<=>?...
     //beg
@@ -111,7 +111,7 @@ void test05()
     fb_03.pubsync(); 
     c3 = fb_03.sgetc();
     VERIFY( c1 == c3 );
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( fb_03.read_position() );
   }
 }

@@ -50,7 +50,7 @@ void test01()
   {
     constraint_filebuf fb_01; 
     fb_01.open(name_01, ios_base::out | ios_base::in | ios_base::trunc);
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
     VERIFY( !fb_01.read_position() );
     strmsz_1 = fb_01.sputn("racadabras", 10);//"abracadabras or what?"
     strmsz_2 = fb_01.sputn(", i wanna reach out and", 10);
@@ -90,7 +90,7 @@ void test01()
     c3 = fb_01.sgetc();
     VERIFY( c3 == c2 );
     VERIFY( strmsz_1 + 1 == strmsz_2 );
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
     VERIFY( fb_01.read_position() );
   }
 }

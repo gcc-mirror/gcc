@@ -127,7 +127,9 @@ namespace __gnu_cxx
 	  this->_M_mode = __mode;
 	  this->_M_buf_size = __size;
 	  _M_allocate_internal_buffer();
-	  _M_set_buffer(0);
+	  this->_M_reading = false;
+	  this->_M_writing = false;
+	  _M_set_buffer(-1);
 	}
     }
 
@@ -142,7 +144,9 @@ namespace __gnu_cxx
 	  this->_M_mode = __mode;
 	  this->_M_buf_size = __size;
 	  _M_allocate_internal_buffer();
-	  _M_set_buffer(0);
+	  this->_M_reading = false;
+	  this->_M_writing = false;
+	  _M_set_buffer(-1);
 	}
     }
 } // namespace __gnu_cxx

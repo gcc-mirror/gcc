@@ -137,18 +137,17 @@ namespace std
        *  @endif
       */
       bool			_M_buf_allocated;
-      
+
+      // _M_reading == false && _M_writing == false for 'uncommitted' mode;  
+      // _M_reading == true for 'read' mode;
+      // _M_writing == true for 'write' mode;
+      //
+      // NB: _M_reading == true && _M_writing == true is unused.
+      bool                      _M_reading;
+      bool                      _M_writing;
+
       // XXX Needed?
       bool			_M_last_overflowed;
-
-      // The position in the buffer corresponding to the external file
-      // pointer.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
-      char_type*		_M_filepos;
 
       //@{
       /**
@@ -175,8 +174,8 @@ namespace std
       {
 	if (!_M_pback_init)
 	  {
-	    _M_pback_cur_save = this->_M_in_cur;
-	    _M_pback_end_save = this->_M_in_end;
+	    _M_pback_cur_save = this->gptr();
+	    _M_pback_end_save = this->egptr();
 	    this->setg(&_M_pback, &_M_pback, &_M_pback + 1);
 	    _M_pback_init = true;
 	  }
@@ -191,7 +190,7 @@ namespace std
 	if (_M_pback_init)
 	  {
 	    // Length _M_in_cur moved in the pback buffer.
-	    _M_pback_cur_save += this->_M_in_cur != this->_M_in_beg;
+	    _M_pback_cur_save += this->gptr() != this->eback();
 	    this->setg(this->_M_buf, _M_pback_cur_save, _M_pback_end_save);
 	    _M_pback_init = false;
 	  }
@@ -365,23 +364,23 @@ namespace std
       sync()
       {
 	int __ret = 0;
-	const bool __testput = this->_M_out_beg < this->_M_out_lim;
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
-	if (__testput)
+	// NB: _M_file.sync() will be called within.
+	if (this->pbase() < this->pptr())
 	  {
-	    // Need to restore current position after the write.
-	    const off_type __off = this->_M_out_cur - this->_M_out_lim;
-
-	    // _M_file.sync() will be called within.
-	    if (traits_type::eq_int_type(this->overflow(), traits_type::eof()))
+	    int_type __tmp = this->overflow();
+	    if (traits_type::eq_int_type(__tmp, traits_type::eof()))
 	      __ret = -1;
-	    else if (__off)
-	      _M_file.seekoff(__off, ios_base::cur);
+	    else
+	      {
+		_M_set_buffer(-1);
+		_M_reading = false;
+		_M_writing = false;
+	      }
 	  }
-	else
-	  _M_file.sync();
+
 	_M_last_overflowed = false;
 	return __ret;
       }
@@ -398,9 +397,10 @@ namespace std
 	streamsize __ret = 0;
 	if (this->_M_pback_init)
 	  {
-	    if (__n && this->_M_in_cur == this->_M_in_beg)
+	    if (__n && this->gptr() == this->eback())
 	      {
-		*__s++ = *this->_M_in_cur++;
+		*__s++ = *this->gptr();
+		this->gbump(1);
 		__ret = 1;
 	      }
 	    _M_destroy_pback();
@@ -427,10 +427,13 @@ namespace std
       _M_output_unshift();
 
       // This function sets the pointers of the internal buffer, both get
-      // and put areas. Typically, __off == _M_in_end - _M_in_beg upon
-      // _M_underflow; __off == 0 upon overflow, seekoff, open, setbuf.
+      // and put areas. Typically:
+      //
+      //  __off == egptr() - eback() upon underflow/uflow ('read' mode);
+      //  __off == 0 upon overflow ('write' mode);
+      //  __off == -1 upon open, setbuf, seekoff/pos ('uncommitted' mode).
       // 
-      // NB: _M_out_end - _M_out_beg == _M_buf_size - 1, since _M_buf_size
+      // NB: epptr() - pbase() == _M_buf_size - 1, since _M_buf_size
       // reflects the actual allocated memory and the last cell is reserved
       // for the overflow char of a full put area.
       void
@@ -439,14 +442,15 @@ namespace std
  	const bool __testin = this->_M_mode & ios_base::in;
  	const bool __testout = this->_M_mode & ios_base::out;
 	
-	if (__testin)
+	if (__testin && __off > 0)
 	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
-	if (__testout && this->_M_buf_size > 1)
-	  {
-	    this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size - 1);
-	    this->_M_out_lim += __off;
-	  }
-	_M_filepos = this->_M_buf + __off;
+	else
+	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf);
+
+	if (__testout && __off == 0 && this->_M_buf_size > 1 )
+	  this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size - 1);
+	else
+	  this->setp(NULL, NULL);
       }
     };
 

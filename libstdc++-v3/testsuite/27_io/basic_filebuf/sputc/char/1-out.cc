@@ -51,7 +51,7 @@ void test05()
   {
     constraint_filebuf fb_02; 
     fb_02.open(name_02, ios_base::out | ios_base::trunc);
-    VERIFY( fb_02.write_position() );
+    VERIFY( !fb_02.write_position() );
     VERIFY( !fb_02.read_position() );
     c1 = fb_02.sputc('a');
     VERIFY( c1 == 'a' ); 

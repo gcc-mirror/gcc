@@ -63,8 +63,6 @@ namespace std
 	  delete [] this->_M_buf;
 	  this->_M_buf = NULL;
 	  _M_buf_allocated = false;
-	  this->setg(NULL, NULL, NULL);
-	  this->setp(NULL, NULL);
 	}
     }
 
@@ -73,10 +71,10 @@ namespace std
     basic_filebuf() : __streambuf_type(), _M_file(&_M_lock), 
     _M_state_cur(__state_type()), _M_state_beg(__state_type()),
     _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_allocated(false),
-    _M_last_overflowed(false), _M_filepos(0), _M_pback_cur_save(0), 
-    _M_pback_end_save(0), _M_pback_init(false), _M_codecvt(0)
+    _M_reading(false), _M_writing(false), _M_last_overflowed(false),
+    _M_pback_cur_save(0), _M_pback_end_save(0), _M_pback_init(false),
+    _M_codecvt(0)
     { 
-      this->_M_buf_unified = true; 	  
       if (has_facet<__codecvt_type>(this->_M_buf_locale))
 	_M_codecvt = &use_facet<__codecvt_type>(this->_M_buf_locale);
     }
@@ -95,8 +93,10 @@ namespace std
 	      _M_allocate_internal_buffer();
 	      this->_M_mode = __mode;
 
-	      // Setup initial position of buffer.
-	      _M_set_buffer(0);
+	      // Setup initial buffer to 'uncommitted' mode.
+	      _M_reading = false;
+	      _M_writing = false;
+	      _M_set_buffer(-1);
 
 	      if ((__mode & ios_base::ate) 
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
@@ -120,9 +120,7 @@ namespace std
 	  bool __testfail = false;
 	  try
 	    {
-	      const bool __testput = this->_M_out_beg < this->_M_out_lim;
-
-	      if (__testput 
+	      if (this->pbase() < this->pptr()
 		  && traits_type::eq_int_type(this->overflow(),
 					      traits_type::eof()))
 		__testfail = true;
@@ -144,6 +142,9 @@ namespace std
 	  this->_M_mode = ios_base::openmode(0);
 	  this->_M_pback_init = false;
 	  _M_destroy_internal_buffer();
+	  _M_reading = false;
+	  _M_writing = false;
+	  _M_set_buffer(-1);
 	  
 	  if (!_M_file.close())
 	    __testfail = true;
@@ -167,7 +168,7 @@ namespace std
 	{
 	  // For a stateful encoding (-1) the pending sequence might be just
 	  // shift and unshift prefixes with no actual character.
-	  __ret = this->_M_in_end - this->_M_in_cur;
+	  __ret = this->egptr() - this->gptr();
 	  if (__check_facet(_M_codecvt).encoding() >= 0)
 	    __ret += _M_file.showmanyc() / _M_codecvt->max_length();
 	}
@@ -185,26 +186,21 @@ namespace std
       const bool __testin = this->_M_mode & ios_base::in;
       const bool __testout = this->_M_mode & ios_base::out;
 
-      if (__testin)
+      if (__testin && !_M_writing)
 	{
 	  // Check for pback madness, and if so swich back to the
 	  // normal buffers and jet outta here before expensive
 	  // fileops happen...
 	  _M_destroy_pback();
 
-	  if (this->_M_in_cur < this->_M_in_end)
+	  if (this->gptr() < this->egptr())
 	    {
-	      __ret = traits_type::to_int_type(*this->_M_in_cur);
+	      __ret = traits_type::to_int_type(*this->gptr());
 	      if (__bump)
-		_M_move_in_cur(1);
+		this->gbump(1);
 	      return __ret;
 	    }
 
-	  // Sync internal and external buffers.
-	  if (__testout && this->_M_out_beg < this->_M_out_lim
-	      && traits_type::eq_int_type(this->overflow(), __ret))
-	    return __ret;
-	  
 	  // Get and convert input sequence.
 	  const size_t __buflen = this->_M_buf_size > 1
 	                          ? this->_M_buf_size - 1 : 1;
@@ -212,7 +208,7 @@ namespace std
 	  streamsize __ilen = 0;
 	  if (__check_facet(_M_codecvt).always_noconv())
 	    {
-	      __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->_M_in_beg), __buflen);
+	      __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->eback()), __buflen);
 	      __ilen = __elen;
 	    }
 	  else
@@ -224,13 +220,13 @@ namespace std
 	      char_type* __iend;
 	      codecvt_base::result __r;
 	      __r = _M_codecvt->in(_M_state_cur, __buf, __buf + __elen, 
-				   __eend, this->_M_in_beg, 
-				   this->_M_in_beg + __buflen, __iend);
+				   __eend, this->eback(), 
+				   this->eback() + __buflen, __iend);
 	      if (__r == codecvt_base::ok)
-		__ilen = __iend - this->_M_in_beg;
+		__ilen = __iend - this->eback();
 	      else if (__r == codecvt_base::noconv)
 		{
-		  traits_type::copy(this->_M_in_beg,
+		  traits_type::copy(this->eback(),
 				    reinterpret_cast<char_type*>(__buf), 
 				    __elen);
 		  __ilen = __elen;
@@ -246,9 +242,10 @@ namespace std
 	  if (__ilen > 0)
 	    {
 	      _M_set_buffer(__ilen);
-	      __ret = traits_type::to_int_type(*this->_M_in_cur);
+	      _M_reading = true;
+	      __ret = traits_type::to_int_type(*this->gptr());
 	      if (__bump)
-		_M_move_in_cur(1);
+		this->gbump(1);
 	    }	   	    
 	}
       _M_last_overflowed = false;	
@@ -263,7 +260,7 @@ namespace std
       int_type __ret = traits_type::eof();
       const bool __testin = this->_M_mode & ios_base::in;
 
-      if (__testin)
+      if (__testin && !_M_writing)
 	{
 	  // Remember whether the pback buffer is active, otherwise below
 	  // we may try to store in it a second char (libstdc++/9761).
@@ -271,10 +268,10 @@ namespace std
 	  const bool __testeof = traits_type::eq_int_type(__i, __ret);
 	  
 	  int_type __tmp;
-	  if (this->_M_in_beg < this->_M_in_cur)
+	  if (this->eback() < this->gptr())
 	    {
-	      _M_move_in_cur(-1);
-	      __tmp = traits_type::to_int_type(*this->_M_in_cur);
+	      this->gbump(-1);
+	      __tmp = traits_type::to_int_type(*this->gptr());
 	    }
 	  else if (this->seekoff(-1, ios_base::cur) >= 0)
 	    {
@@ -301,7 +298,8 @@ namespace std
 	  else if (!__testpb)
 	    {
 	      _M_create_pback();
-	      *this->_M_in_cur = traits_type::to_char_type(__i); 
+	      _M_reading = true;
+	      *this->gptr() = traits_type::to_char_type(__i); 
 	      __ret = __i;
 	    }
 	}
@@ -318,37 +316,50 @@ namespace std
       const bool __testeof = traits_type::eq_int_type(__c, __ret);
       const bool __testout = this->_M_mode & ios_base::out;
       
-      if (__testout)
+      if (__testout && !_M_reading)
 	{
-	  if (this->_M_out_beg < this->_M_out_lim)
+	  if (this->pbase() < this->pptr())
 	    {
-	      // Need to restore current position. The position of the
-	      // external byte sequence (_M_file) corresponds to
-	      // _M_filepos, and we need to move it to _M_out_beg for
-	      // the write.
-	      if (_M_filepos != this->_M_out_beg)
-		_M_file.seekoff(this->_M_out_beg - _M_filepos, ios_base::cur);
-
 	      // If appropriate, append the overflow char.
 	      if (!__testeof)
-		*this->_M_out_lim++ = traits_type::to_char_type(__c);
+		{
+		  *this->pptr() = traits_type::to_char_type(__c);
+		  this->pbump(1);
+		}
 	      
 	      // Convert pending sequence to external representation,
 	      // output.
-	      if (_M_convert_to_external(this->_M_out_beg,
-					 this->_M_out_lim - this->_M_out_beg)
+	      if (_M_convert_to_external(this->pbase(),
+					 this->pptr() - this->pbase())
 		  && (!__testeof || (__testeof && !_M_file.sync())))
 		{
 		  _M_set_buffer(0);
 		  __ret = traits_type::not_eof(__c);
 		}
 	    }
+	  else if (this->_M_buf_size > 1)
+	    {
+	      // Overflow in 'uncommitted' mode: set _M_writing, set
+	      // the buffer to the initial 'write' mode, and put __c
+	      // into the buffer.
+	      _M_set_buffer(0);
+	      _M_writing = true;
+	      if (!__testeof)
+		{
+		  *this->pptr() = traits_type::to_char_type(__c);
+		  this->pbump(1);
+		}
+	      __ret = traits_type::not_eof(__c);
+	    }
 	  else
 	    {
 	      // Unbuffered.
 	      char_type __conv = traits_type::to_char_type(__c);
 	      if (__testeof || _M_convert_to_external(&__conv, 1))
-		__ret = traits_type::not_eof(__c);
+		{		  
+		  _M_writing = true;
+		  __ret = traits_type::not_eof(__c);
+		}
 	    }
 	}
       _M_last_overflowed = true;	
@@ -393,7 +404,7 @@ namespace std
 	    }
 	  else
 	    {
-	      // Result == error .
+	      // Result == error.
 	      __blen = 0;
 	    }
 	  
@@ -407,7 +418,7 @@ namespace std
 	  if (__r == codecvt_base::partial)
 	    {
 	      const char_type* __iresume = __iend;
-	      streamsize __rlen = this->_M_out_lim - __iend;
+	      streamsize __rlen = this->pptr() - __iend;
 	      __r = _M_codecvt->out(_M_state_cur, __iresume,
 				    __iresume + __rlen, __iend, __buf, 
 				    __buf + __blen, __bend);
@@ -446,7 +457,9 @@ namespace std
 	  // Step 2: Use the external array.
 	  this->_M_buf = __s;
 	  this->_M_buf_size = __n;
-	  _M_set_buffer(0);
+	  _M_reading = false;
+	  _M_writing = false;
+	  _M_set_buffer(-1);
 	}
       _M_last_overflowed = false;	
       return this; 
@@ -473,41 +486,26 @@ namespace std
 	  // Ditch any pback buffers to avoid confusion.
 	  _M_destroy_pback();
 
-	  if (__way != ios_base::cur || __off != 0)
-	    { 
-	      // Sync the internal and external streams.	      
-	      const bool __testget = this->_M_in_beg < this->_M_in_end;
-	      const bool __testput = this->_M_out_beg < this->_M_out_lim;
-	      off_type __computed_off = __width * __off;
-
-	      if (__testput || _M_last_overflowed)
-		{
-		  // Part one: update the output sequence.
-		  this->sync();
-
-		  // Part two: output unshift sequence.
-		  _M_output_unshift();
-		}
-	      else if (__testget && __way == ios_base::cur)
-		__computed_off += this->_M_in_cur - _M_filepos;
-
-	      // Return pos_type(off_type(-1)) in case of failure.
-	      __ret = _M_file.seekoff(__computed_off, __way, __mode);
-	      _M_set_buffer(0);
-	    }
-	  else
+	  // Sync the internal and external streams.	      
+	  off_type __computed_off = __width * __off;
+	  
+	  if (this->pbase() < this->pptr()
+	      || _M_last_overflowed)
 	    {
-	      // NB: Need to do this in case _M_file in indeterminate
-	      // state, ie _M_file._offset == -1
-	      pos_type __tmp = _M_file.seekoff(__off, ios_base::cur, __mode);
-	      if (__tmp >= 0)
-		{
-		  // Seek successful.
-		  __ret = __tmp;
-		  __ret += std::max(this->_M_out_cur, this->_M_in_cur) 
-		           - _M_filepos;
-		}
+	      // Part one: update the output sequence.
+	      this->sync();
+	      
+	      // Part two: output unshift sequence.
+	      _M_output_unshift();
 	    }
+	  else if (_M_reading && __way == ios_base::cur)
+	    __computed_off += this->gptr() - this->egptr();
+	  
+	  // Return pos_type(off_type(-1)) in case of failure.
+	  __ret = _M_file.seekoff(__computed_off, __way, __mode);
+	  _M_reading = false;
+	  _M_writing = false;
+	  _M_set_buffer(-1);
 	}
       _M_last_overflowed = false;	
       return __ret;

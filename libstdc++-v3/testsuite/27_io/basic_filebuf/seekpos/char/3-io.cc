@@ -60,7 +60,7 @@ void test05()
   {
     constraint_filebuf fb_03;
     fb_03.open(name_01, ios_base::out | ios_base::in);
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( !fb_03.read_position() );
     pt_1 = fb_03.pubseekoff(78, ios_base::beg);
     off_1 = pt_1;
@@ -84,7 +84,7 @@ void test05()
     VERIFY( off_1 > off_2 );
     fb_03.sputn("\nof the wonderful things he does!!\nok", 37);
     fb_03.pubsync();
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( !fb_03.read_position() );
     fb_03.close();
     VERIFY( !fb_03.is_open() );

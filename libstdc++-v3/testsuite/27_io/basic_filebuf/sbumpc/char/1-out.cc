@@ -45,13 +45,13 @@ void test05()
   {
     constraint_filebuf fb_02; 
     fb_02.open(name_02, ios_base::out | ios_base::trunc);
-    VERIFY( fb_02.write_position() );
+    VERIFY( !fb_02.write_position() );
     VERIFY( !fb_02.read_position() );
     int_type c2 = fb_02.sbumpc();
     VERIFY( c2 == traits_type::eof() );
     int_type c4 = fb_02.sbumpc();
     VERIFY( c4 == traits_type::eof() );
-    VERIFY( fb_02.write_position() );
+    VERIFY( !fb_02.write_position() );
     VERIFY( !fb_02.read_position() );
   }
 }
