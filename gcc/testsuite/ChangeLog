@@ -1,3 +1,8 @@
+2004-01-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13520
+	* g++.dg/template/qualttp22.C: New test.
+
 2004-01-01  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/debug/20031231-1.c: New.

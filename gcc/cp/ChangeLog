@@ -1,2 +1,15 @@
+2004-01-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13520
+	* cp-tree.h (DECL_UNBOUND_CLASS_TEMPLATE_P): New macro.
+	(DECL_FUNCTION_TEMPLATE_P): Use it.
+	(DECL_CLASS_TEMPLATE_P): Likewise.
+	* parser.c (cp_parser_lookup_name): Add is_template parameter.
+	(cp_parser_type_parameter): Adjust call to cp_parser_lookup_name.
+	(cp_parser_template_name): Likewise.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(cp_parser_namespace_name): Likewise.
+	(cp_parser_class_name): Likewise.
+	(cp_parser_lookup_name_simple): Likewise.
 
 See ChangeLog.3 for earlier changes.
