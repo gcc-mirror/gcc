@@ -1,3 +1,12 @@
+1998-07-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (VERSION): Bump to 2.9.0.
+
+1998-07-12  Lars Albertsson <lalle@sics.se>
+
+	* std/bastring.cc (find_last_of): Fix.
+	(find_last_not_of): Likewise.
+
 1998-07-06  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (INSTALLDIR): Make sed pattern failsafe.

@@ -14,7 +14,7 @@
 # along with this library; see the file COPYING.  If not, write to the Free
 # Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-VERSION = 2.8.0
+VERSION = 2.9.0
 
 OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o
 SUBLIBS = $(STAMP)-string $(STAMP)-complx
@@ -54,10 +54,6 @@ INSTALLDIR = $(libdir)
 
 MOSTLYCLEAN_JUNK = *stmp-* tlib*.a *.s *.ii stdlist piclist
 CLEAN_JUNK = $(LIBS)
-
-# Remove these for public releases.
-CXXFLAGS = -g -O -Wpointer-arith -Wnested-externs -Woverloaded-virtual -Wbad-function-cast -Winline -Wwrite-strings -Weffc++
-CFLAGS = -g -O -Wpointer-arith -Wnested-externs
 
 .PHONY: libs
 libs: $(LIBS)
@@ -305,19 +301,22 @@ install:
 .PHONY: force
 force:
 
+# Remove these for public releases.
+MYCXXFLAGS = -g -O2 -Wpointer-arith -Wnested-externs -Woverloaded-virtual -Wbad-function-cast -Winline -Wwrite-strings
+MYCFLAGS = -g -O2 -Wpointer-arith -Wnested-externs
+
 .PHONY: stuff
 stuff:
-	$(MAKE) clean
-	$(MAKE) -C ../libio c++clean
-	-$(MAKE) $(MAKEFLAGS) check
-	-$(MAKE) -C ../libio check
-	-$(MAKE) -C ../../gcc check-g++
+	$(MAKE) stuff1
+	$(MAKE) stuff2
 
 stuff1:
 	$(MAKE) clean
 	$(MAKE) -C ../libio c++clean
+	touch ../../gcc/libgcc2.ready
 
 stuff2:
-	-$(MAKE) check
+	-$(MAKE) -C ../../gcc/ libgcc.a
+	-$(MAKE) check CXXFLAGS="$(MYCXXFLAGS)" CFLAGS="$(MYCFLAGS)"
 	-$(MAKE) -C ../libio check
 	-$(MAKE) -C ../../gcc check-g++
