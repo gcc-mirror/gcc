@@ -2,11 +2,55 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
+@ignore
+@c man begin COPYRIGHT
+Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+1998, 1999, 2000 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be included in translations
+approved by the Free Software Foundation instead of in the original
+English.
+@c man end
+@c Set file name and title for the man page.
+@setfilename gcc
+@settitle GNU project C and C++ compiler
+@c man begin SYNOPSIS
+gcc [@samp{-c}|@samp{-S}|@samp{-E}] [@samp{-std=}@var{standard}]
+    [@samp{-g}] [@samp{-pg}] [@samp{-O}@var{level}]
+    [@samp{-W}@var{warn}...] [@samp{-pedantic}]
+    [@samp{-I}@var{dir}...] [@samp{-L}@var{dir}...]
+    [@samp{-D}@var{macro}[=@var{defn}]...] [@samp{-U}@var{macro}]
+    [@samp{-f}@var{option}...] [@samp{-m}@var{machine-option}...]
+    [@samp{-o} @var{outfile}] @var{infile}...
+
+Only the most useful options are listed here; see below for the
+remainder.  @samp{g++} accepts mostly the same options as @samp{gcc}.
+@c man end
+@c man begin SEEALSO
+cpp(1), gcov(1), g77(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1)
+and the Info entries for @file{gcc}, @file{cpp}, @file{g77}, @file{as},
+@file{ld}, @file{binutils} and @file{gdb}.
+@c man end
+@end ignore
+
 @node Invoking GCC
 @chapter GCC Command Options
 @cindex GCC command options
 @cindex command options
 @cindex options, GCC command
+
+@c man begin DESCRIPTION
 
 When you invoke GCC, it normally does preprocessing, compilation,
 assembly and linking.  The ``overall options'' allow you to stop this
@@ -50,6 +94,8 @@ Many options have long names starting with @samp{-f} or with
 these have both positive and negative forms; the negative form of
 @samp{-ffoo} would be @samp{-fno-foo}.  This manual documents
 only one of these two forms, whichever one is not the default.
+
+@c man end
 
 @menu
 * Option Summary::	Brief list of all options, without explanations.
@@ -525,6 +571,8 @@ in the following sections.
 * Spec Files::          How to pass switches to sub-processes.
 * Target Options::      Running a cross-compiler, or an old version of GCC.
 @end menu
+
+@c man begin OPTIONS
 
 @node Overall Options
 @section Options Controlling the Kind of Output
@@ -6199,12 +6247,9 @@ These @samp{-m} options are defined for the i386 family of computers:
 @table @code
 @item -mcpu=@var{cpu type}
 Assume the defaults for the machine type @var{cpu type} when scheduling
-instructions.  The choices for @var{cpu type} are:
-
-@multitable @columnfractions .20 .20 .20 .20
-@item @samp{i386} @tab @samp{i486} @tab @samp{i586} @tab @samp{i686}
-@item @samp{pentium} @tab @samp{pentiumpro} @tab @samp{k6} @tab @samp{athlon}
-@end multitable
+instructions.  The choices for @var{cpu type} are @samp{i386},
+@samp{i486}, @samp{i586}, @samp{i686}, @samp{pentium},
+@samp{pentiumpro}, @samp{k6}, and @samp{athlon}
 
 While picking a specific @var{cpu type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that
@@ -7998,6 +8043,8 @@ If @code{LANG} is not defined, or if it has some other value, then the
 compiler will use mblen and mbtowc as defined by the default locale to
 recognize and translate multibyte characters.
 @end table
+
+@c man end
 
 @node Running Protoize
 @section Running Protoize
