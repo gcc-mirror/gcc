@@ -1,3 +1,9 @@
+Tue May  5 01:25:03 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in: Add .SUFFIXES.
+
+	* cp-tree.def: Remove NAMESPACE_DECL.
+
 Sun May  3 01:32:14 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_over_call): Do evaluate arg even if it has empty 

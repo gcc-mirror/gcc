@@ -4136,6 +4136,9 @@ type_ok_for_scope (type, scope)
 
   return is_tagged_type (type)
 	 ? (TYPE_CONTEXT (type) == scope
+	    /* Ignore namespaces for the moment.  */
+	    || (scope == NULL_TREE
+		&& TREE_CODE (TYPE_CONTEXT (type)) == NAMESPACE_DECL)
 	    || (scope == NULL_TREE && is_tagged_type (TYPE_CONTEXT (type))
 		&& TREE_ASM_WRITTEN (TYPE_CONTEXT (type))))
 	 : (scope == NULL_TREE || ! is_tagged_type (scope));
