@@ -27,7 +27,6 @@
 	* configure: Rebuilt.
 	* configure.in (GCJVERSION): Removed.
 
->>>>>>> 1.1201
 2002-02-26  Andreas Schwab  <schwab@suse.de>
 
 	* acinclude.m4 (LIB_AC_PROG_CXX): Use glibjava_CXX instead of
