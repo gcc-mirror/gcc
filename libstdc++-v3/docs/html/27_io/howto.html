@@ -377,7 +377,8 @@
 	return 0;
     }
    </pre>
-      Try it yourself!
+      Try it yourself!  More examples can be found in 3.1.x code, in
+      <code>include/ext/*_filebuf.h</code>.
    </p>
 
 <hr>
@@ -432,8 +433,8 @@
       The upside is that correctness is ensured.  The downside is that
       writing through <code>cout</code> can quite easily lead to awful
       performance when the C++ I/O library is layered on top of the C I/O
-      library (as it is for 3.0 by default).  Some patches are in the
-      works which should improve the situation for 3.1.
+      library (as it is for 3.0 by default).  Some patches have been applied
+      which improve the situation for 3.1.
    </p>
    <p>However, the C and C++ standard streams only need to be kept in sync
       when both libraries' facilities are in use.  If your program only uses
@@ -447,7 +448,7 @@
    </p>
    <p>You must do this before performing any I/O via the C++ stream objects.
       Once you call this, the C++ streams will operate independently of the
-      (unused) C streams.  For GCC 3.0, this means that <code>cout</code> and
+      (unused) C streams.  For GCC 3.x, this means that <code>cout</code> and
       company will become fully buffered on their own.
    </p>
    <p>Note, by the way, that the synchronization requirement only applies to
