@@ -1,3 +1,8 @@
+2001-03-22  Jason Merrill  <jason@redhat.com>
+
+	* toplev.c (wrapup_global_declarations): Don't emit DECL_COMDAT
+	variables unless necessary, either.
+
 2001-03-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi: Remove more obsolete documentation of bugs and

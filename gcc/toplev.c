@@ -1975,8 +1975,8 @@ wrapup_global_declarations (vec, len)
 	     defined in a main file, as opposed to an include file.  */
 
 	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-	      && (! TREE_READONLY (decl)
-		  || TREE_PUBLIC (decl)
+	      && (((! TREE_READONLY (decl) || TREE_PUBLIC (decl))
+		   && !DECL_COMDAT (decl))
 		  || (!optimize
 		      && flag_keep_static_consts
 		      && !DECL_ARTIFICIAL (decl))
