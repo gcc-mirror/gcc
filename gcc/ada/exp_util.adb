@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.331 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -64,11 +64,15 @@ package body Exp_Util is
    function Build_Task_Array_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      A_Type : Entity_Id)
+      A_Type : Entity_Id;
+      Dyn    : Boolean := False)
       return   Node_Id;
    --  Build function to generate the image string for a task that is an
    --  array component, concatenating the images of each index. To avoid
    --  storage leaks, the string is built with successive slice assignments.
+   --  The flag Dyn indicates whether this is called for the initialization
+   --  procedure of an array of tasks, or for the name of a dynamically
+   --  created task that is assigned to an indexed component.
 
    function Build_Task_Image_Function
      (Loc   : Source_Ptr;
@@ -94,10 +98,14 @@ package body Exp_Util is
    function Build_Task_Record_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      A_Type : Entity_Id)
+      A_Type : Entity_Id;
+      Dyn    : Boolean := False)
       return Node_Id;
    --  Build function to generate the image string for a task that is a
    --  record component. Concatenate name of variable with that of selector.
+   --  The flag Dyn indicates whether this is called for the initialization
+   --  procedure of record with task components, or for a dynamically
+   --  created task that is assigned to a selected component.
 
    function Make_CW_Equivalent_Type
      (T    : Entity_Id;
@@ -326,17 +334,17 @@ package body Exp_Util is
    --  The generated function has the following structure:
 
    --  function F return Task_Image_Type is
-   --     Prefix : string := Task_Id.all;
+   --     Pref : string := Task_Id.all;
    --     T1 : String := Index1'Image (Val1);
    --     ...
    --     Tn : String := indexn'image (Valn);
    --     Len : Integer := T1'Length + ... + Tn'Length + n + 1;
    --     --  Len includes commas and the end parentheses.
    --     Res : String (1..Len);
-   --     Pos : Integer := Prefix'Length;
+   --     Pos : Integer := Pref'Length;
    --
    --  begin
-   --     Res (1 .. Pos) := Prefix;
+   --     Res (1 .. Pos) := Pref;
    --     Pos := Pos + 1;
    --     Res (Pos)    := '(';
    --     Pos := Pos + 1;
@@ -357,7 +365,8 @@ package body Exp_Util is
    function Build_Task_Array_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      A_Type : Entity_Id)
+      A_Type : Entity_Id;
+      Dyn    : Boolean := False)
       return   Node_Id
    is
       Dims : constant Nat := Number_Dimensions (A_Type);
@@ -375,8 +384,11 @@ package body Exp_Util is
       Pos : Entity_Id;
       --  Running index for substring assignments
 
-      Prefix : Entity_Id;
+      Pref : Entity_Id;
       --  Name of enclosing variable, prefix of resulting name
+
+      P_Nam : Node_Id;
+      --  string expression for Pref.
 
       Res : Entity_Id;
       --  String to hold result
@@ -394,15 +406,26 @@ package body Exp_Util is
       Stats : List_Id := New_List;
 
    begin
-      Prefix := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+      Pref := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+
+      --  For a dynamic task, the name comes from the target variable.
+      --  For a static one it is a formal of the enclosing init_proc.
+
+      if Dyn then
+         Get_Name_String (Chars (Entity (Prefix (Id_Ref))));
+         P_Nam :=
+           Make_String_Literal (Loc, Strval => String_From_Name_Buffer);
+      else
+         P_Nam :=
+           Make_Explicit_Dereference (Loc,
+             Prefix => Make_Identifier (Loc, Name_uTask_Id));
+      end if;
 
       Append_To (Decls,
         Make_Object_Declaration (Loc,
-          Defining_Identifier => Prefix,
+          Defining_Identifier => Pref,
           Object_Definition => New_Occurrence_Of (Standard_String, Loc),
-          Expression =>
-            Make_Explicit_Dereference (Loc,
-              Prefix => Make_Identifier (Loc, Name_uTask_Id))));
+          Expression => P_Nam));
 
       Indx := First_Index (A_Type);
       Val  := First (Expressions (Id_Ref));
@@ -436,7 +459,7 @@ package body Exp_Util is
            Make_Attribute_Reference (Loc,
              Attribute_Name => Name_Length,
              Prefix =>
-               New_Occurrence_Of (Prefix, Loc),
+               New_Occurrence_Of (Pref, Loc),
              Expressions => New_List (Make_Integer_Literal (Loc, 1))));
 
       for J in 1 .. Dims loop
@@ -451,7 +474,7 @@ package body Exp_Util is
                 Expressions => New_List (Make_Integer_Literal (Loc, 1))));
       end loop;
 
-      Build_Task_Image_Prefix (Loc, Len, Res, Pos, Prefix, Sum, Decls, Stats);
+      Build_Task_Image_Prefix (Loc, Len, Res, Pos, Pref, Sum, Decls, Stats);
 
       Set_Character_Literal_Name (Char_Code (Character'Pos ('(')));
 
@@ -560,11 +583,14 @@ package body Exp_Util is
       A_Type : Entity_Id)
       return   List_Id
    is
-      T_Id  : Entity_Id := Empty;
-      Decl  : Node_Id;
-      Decls : List_Id   := New_List;
-      Expr  : Node_Id   := Empty;
-      Fun   : Node_Id   := Empty;
+      T_Id   : Entity_Id := Empty;
+      Decl   : Node_Id;
+      Decls  : List_Id   := New_List;
+      Expr   : Node_Id   := Empty;
+      Fun    : Node_Id   := Empty;
+      Is_Dyn : constant Boolean :=
+        Nkind (Parent (Id_Ref)) = N_Assignment_Statement
+         and then Nkind (Expression (Parent (Id_Ref))) = N_Allocator;
 
    begin
       --  If Discard_Names is in effect, generate a dummy declaration only.
@@ -607,14 +633,14 @@ package body Exp_Util is
             T_Id :=
               Make_Defining_Identifier (Loc,
                 New_External_Name (Chars (Selector_Name (Id_Ref)), 'I'));
-            Fun := Build_Task_Record_Image (Loc, Id_Ref, A_Type);
+            Fun := Build_Task_Record_Image (Loc, Id_Ref, A_Type, Is_Dyn);
 
          elsif Nkind (Id_Ref) = N_Indexed_Component then
             T_Id :=
               Make_Defining_Identifier (Loc,
                 New_External_Name (Chars (A_Type), 'I'));
 
-            Fun := Build_Task_Array_Image (Loc, Id_Ref, A_Type);
+            Fun := Build_Task_Array_Image (Loc, Id_Ref, A_Type, Is_Dyn);
          end if;
       end if;
 
@@ -760,7 +786,8 @@ package body Exp_Util is
    function Build_Task_Record_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      A_Type : Entity_Id)
+      A_Type : Entity_Id;
+      Dyn    : Boolean := False)
       return   Node_Id
    is
       Len : Entity_Id;
@@ -772,8 +799,11 @@ package body Exp_Util is
       Res : Entity_Id;
       --  String to hold result
 
-      Prefix : Entity_Id;
+      Pref : Entity_Id;
       --  Name of enclosing variable, prefix of resulting name
+
+      P_Nam : Node_Id;
+      --  string expression for Pref.
 
       Sum : Node_Id;
       --  Expression to compute total size of string.
@@ -785,15 +815,26 @@ package body Exp_Util is
       Stats : List_Id := New_List;
 
    begin
-      Prefix := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+      Pref := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+
+      --  For a dynamic task, the name comes from the target variable.
+      --  For a static one it is a formal of the enclosing init_proc.
+
+      if Dyn then
+         Get_Name_String (Chars (Entity (Prefix (Id_Ref))));
+         P_Nam :=
+           Make_String_Literal (Loc, Strval => String_From_Name_Buffer);
+      else
+         P_Nam :=
+           Make_Explicit_Dereference (Loc,
+             Prefix => Make_Identifier (Loc, Name_uTask_Id));
+      end if;
 
       Append_To (Decls,
         Make_Object_Declaration (Loc,
-          Defining_Identifier => Prefix,
+          Defining_Identifier => Pref,
           Object_Definition => New_Occurrence_Of (Standard_String, Loc),
-          Expression =>
-            Make_Explicit_Dereference (Loc,
-              Prefix => Make_Identifier (Loc, Name_uTask_Id))));
+          Expression => P_Nam));
 
       Sel := Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
 
@@ -815,10 +856,10 @@ package body Exp_Util is
            Make_Attribute_Reference (Loc,
              Attribute_Name => Name_Length,
              Prefix =>
-               New_Occurrence_Of (Prefix, Loc),
+               New_Occurrence_Of (Pref, Loc),
              Expressions => New_List (Make_Integer_Literal (Loc, 1))));
 
-      Build_Task_Image_Prefix (Loc, Len, Res, Pos, Prefix, Sum, Decls, Stats);
+      Build_Task_Image_Prefix (Loc, Len, Res, Pos, Pref, Sum, Decls, Stats);
 
       Set_Character_Literal_Name (Char_Code (Character'Pos ('.')));
 

@@ -1,5 +1,15 @@
 2001-10-10  Ed Schonberg <schonber@gnat.com>
 
+	* exp_ch4.adb (Expand_N_Allocator): Generate meaningful names for
+	a dynamic task if the allocator appears in an indexed assignment
+	or selected component assignment.
+	
+	* exp_util.adb (Build_Task_Array_Image, Build_Task_Record_Image): 
+	For a dynamic task in an assignment statement, use target of 
+	assignment to generate meaningful name.
+
+2001-10-10  Ed Schonberg <schonber@gnat.com>
+
 	* einfo.adb (Write_Field19_Name): Body_Entity is also defined for 
 	a generic package.
 
