@@ -10799,6 +10799,30 @@ arm_strip_name_encoding (name)
   return name;
 }
 
+/* If there is a '*' anywhere in the name's prefix, then
+   emit the stripped name verbatim, otherwise prepend an
+   underscore if leading underscores are being used.  */
+
+void
+arm_asm_output_labelref (stream, name)
+     FILE * stream;
+     const char * name;
+{
+  int skip;
+  int verbatim = 0;
+
+  while ((skip = arm_get_strip_length (* name)))
+    {
+      verbatim |= (*name == '*');
+      name += skip;
+    }
+
+  if (verbatim)
+    fputs (name, stream);
+  else
+    asm_fprintf (stream, "%U%s", name);
+}
+
 rtx aof_pic_label;
 
 #ifdef AOF_ASSEMBLER

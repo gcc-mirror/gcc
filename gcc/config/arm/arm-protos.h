@@ -34,6 +34,7 @@ extern void   arm_expand_prologue	PARAMS ((void));
 /* Used in arm.md, but defined in output.c.  */
 extern void   assemble_align		PARAMS ((int)); 
 extern const char * arm_strip_name_encoding	PARAMS ((const char *));
+extern void   arm_asm_output_labelref	PARAMS ((FILE *, const char *));
 extern unsigned long arm_current_func_type	PARAMS ((void));
 extern unsigned int  arm_compute_initial_elimination_offset PARAMS ((unsigned int, unsigned int));
 

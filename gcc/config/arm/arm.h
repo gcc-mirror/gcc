@@ -1858,7 +1858,7 @@ typedef struct
    `assemble_name' uses this.  */
 #undef  ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE, NAME)		\
-  asm_fprintf (FILE, "%U%s", arm_strip_name_encoding (NAME))
+   arm_asm_output_labelref (FILE, NAME)
 
 #define ARM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)	\
   arm_encode_call_attribute (DECL, SHORT_CALL_FLAG_CHAR)
