@@ -1,3 +1,14 @@
+2004-12-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/pr17055-1.c (dg-options): Add -fno-common to options on
+	hppa*-*-hpux*.
+	* gcc.dg/pr17957.c (dg-options): Likewise.
+	* gcc.dg/struct-ret-1.c: Add prototype for abort.
+	* gcc.dg/tree-ssa/asm-2.c, gcc.dg/tree-ssa/asm-3.c: Use register 1
+	instead of 0 on __hppa__.
+	* gcc.dg/tree-ssa/loop-1.c (dg-final): Check for five instances of
+	"foo,%r" on hppa*-*-*.
+
 2004-12-23  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/19071
