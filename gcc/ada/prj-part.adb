@@ -33,6 +33,7 @@ with Prj.Com;  use Prj.Com;
 with Prj.Dect;
 with Prj.Err;  use Prj.Err;
 with Scans;    use Scans;
+with Sdefault;
 with Sinput;   use Sinput;
 with Sinput.P; use Sinput.P;
 with Snames;
@@ -531,11 +532,6 @@ package body Prj.Part is
                            Virtual_Hash.Remove (Imported);
                            Declaration := Project_Declaration_Of (Imported);
                         end loop;
-
-                     elsif Virtual_Hash.Get (Imported) /= Empty_Node then
-                        Error_Msg
-                          ("this project cannot be imported directly",
-                           Location_Of (With_Clause));
                      end if;
 
                   end if;
@@ -1708,7 +1704,10 @@ begin
    --  Initialize Project_Path during package elaboration
 
    if Prj_Path.all = "" then
-      Project_Path := new String'(".");
+      Project_Path :=
+        new String'("." & Path_Separator & Sdefault.Search_Dir_Prefix.all &
+                    ".." & Directory_Separator & ".." & Directory_Separator &
+                    ".." & Directory_Separator & "gnat");
    else
       Project_Path := new String'("." & Path_Separator & Prj_Path.all);
    end if;

@@ -762,11 +762,13 @@ package body Prj.Proc is
      (Project   : Project_Id;
       With_Name : Name_Id) return Project_Id
    is
-      Data : constant Project_Data := Projects.Table (Project);
-      List : Project_List          := Data.Imported_Projects;
+      Data        : constant Project_Data := Projects.Table (Project);
+      List        : Project_List          := Data.Imported_Projects;
+      Result      : Project_Id := No_Project;
+      Temp_Result : Project_Id := No_Project;
 
    begin
-      --  First check if it is the name of a extended project
+      --  First check if it is the name of an extended project
 
       if Data.Extends /= No_Project
         and then Projects.Table (Data.Extends).Name = With_Name
@@ -776,20 +778,40 @@ package body Prj.Proc is
       else
          --  Then check the name of each imported project
 
-         while List /= Empty_Project_List
-           and then
-             Projects.Table
-               (Project_Lists.Table (List).Project).Name /= With_Name
+         while List /= Empty_Project_List loop
+            Result := Project_Lists.Table (List).Project;
 
-         loop
+            --  If the project is directly imported, then returns its ID
+
+            if Projects.Table (Result).Name = With_Name then
+               return Result;
+            end if;
+
+            --  If a project extending the project is imported, then keep
+            --  this extending project as a possibility. It will be the
+            --  returned ID if the project is not imported directly.
+
+            declare
+               Proj : Project_Id := Projects.Table (Result).Extends;
+            begin
+               while Proj /= No_Project loop
+                  if Projects.Table (Proj).Name = With_Name then
+                     Temp_Result := Result;
+                     exit;
+                  end if;
+
+                  Proj := Projects.Table (Proj).Extends;
+               end loop;
+            end;
+
             List := Project_Lists.Table (List).Next;
          end loop;
 
          pragma Assert
-           (List /= Empty_Project_List,
+           (Temp_Result /= No_Project,
            "project not found");
 
-         return Project_Lists.Table (List).Project;
+         return Temp_Result;
       end if;
    end Imported_Or_Extended_Project_From;
 
