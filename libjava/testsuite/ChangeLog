@@ -1,3 +1,8 @@
+2003-07-10  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.verify/verify.exp: New file.
+	* libjava.verify/README.verify: New file.
+
 2003-07-09  Jeff Sturm  <jsturm@one-point.com>
 
 	* libjava.lang/SyncTest.java (run): Cache .class value.
