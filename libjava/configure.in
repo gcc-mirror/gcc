@@ -248,7 +248,7 @@ case "$GC" in
     # We include the path to the boehm-gc build directory.
     # See Makefile.am to understand why.
     GCLIBS="$GCDEPS -L\$(here)/../boehm-gc/$libsubdir"
-    GCINCS='-I$(top_srcdir)/../boehm-gc -I$(top_builddir)/../boehm-gc'
+    GCINCS='-I$(top_srcdir)/../boehm-gc/include'
     GCSPEC='-lgcjgc'
     JC1GCSPEC='-fuse-boehm-gc'
     GCTESTSPEC="-L`pwd`/../boehm-gc/.libs -rpath `pwd`/../boehm-gc/.libs"

@@ -26,9 +26,9 @@ details.  */
 
 extern "C"
 {
-#include <gc_priv.h>
-#include <gc_mark.h>
-#include <include/gc_gcj.h>
+#include <private/gc_priv.h>
+#include <private/gc_pmark.h>
+#include <gc_gcj.h>
 
   // These aren't declared in any Boehm GC header.
   void GC_finalize_all (void);
@@ -324,7 +324,7 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
 // We assume that the gcj mark proc has index 0.  This is a dubious assumption,
 // since another one could be registered first.  But the compiler also
 // knows this, so in that case everything else will break, too.
-#define GCJ_DEFAULT_DESCR MAKE_PROC(GCJ_RESERVED_MARK_PROC_INDEX,0)
+#define GCJ_DEFAULT_DESCR GC_MAKE_PROC(GC_GCJ_RESERVED_MARK_PROC_INDEX,0)
 void *
 _Jv_BuildGCDescr(jclass klass)
 {
@@ -496,12 +496,12 @@ _Jv_InitGC (void)
   memset (array_free_list, 0, (MAXOBJSZ + 1) * sizeof (ptr_t));
 
   proc = GC_n_mark_procs++;
-  GC_mark_procs[proc] = (mark_proc) _Jv_MarkArray;
+  GC_mark_procs[proc] = (GC_mark_proc) _Jv_MarkArray;
 
   array_kind_x = GC_n_kinds++;
   GC_obj_kinds[array_kind_x].ok_freelist = array_free_list;
   GC_obj_kinds[array_kind_x].ok_reclaim_list = 0;
-  GC_obj_kinds[array_kind_x].ok_descriptor = MAKE_PROC (proc, 0);
+  GC_obj_kinds[array_kind_x].ok_descriptor = GC_MAKE_PROC (proc, 0);
   GC_obj_kinds[array_kind_x].ok_relocate_descr = FALSE;
   GC_obj_kinds[array_kind_x].ok_init = TRUE;
 
@@ -538,12 +538,12 @@ _Jv_InitGC (void)
   memset (obj_free_list, 0, (MAXOBJSZ + 1) * sizeof (ptr_t));
 
   proc = GC_n_mark_procs++;
-  GC_mark_procs[proc] = (mark_proc) _Jv_MarkObj;
+  GC_mark_procs[proc] = (GC_mark_proc) _Jv_MarkObj;
 
   obj_kind_x = GC_n_kinds++;
   GC_obj_kinds[obj_kind_x].ok_freelist = obj_free_list;
   GC_obj_kinds[obj_kind_x].ok_reclaim_list = 0;
-  GC_obj_kinds[obj_kind_x].ok_descriptor = MAKE_PROC (proc, 0);
+  GC_obj_kinds[obj_kind_x].ok_descriptor = GC_MAKE_PROC (proc, 0);
   GC_obj_kinds[obj_kind_x].ok_relocate_descr = FALSE;
   GC_obj_kinds[obj_kind_x].ok_init = TRUE;
 
@@ -555,12 +555,12 @@ _Jv_InitGC (void)
   memset (array_free_list, 0, (MAXOBJSZ + 1) * sizeof (ptr_t));
 
   proc = GC_n_mark_procs++;
-  GC_mark_procs[proc] = (mark_proc) _Jv_MarkArray;
+  GC_mark_procs[proc] = (GC_mark_proc) _Jv_MarkArray;
 
   array_kind_x = GC_n_kinds++;
   GC_obj_kinds[array_kind_x].ok_freelist = array_free_list;
   GC_obj_kinds[array_kind_x].ok_reclaim_list = 0;
-  GC_obj_kinds[array_kind_x].ok_descriptor = MAKE_PROC (proc, 0);
+  GC_obj_kinds[array_kind_x].ok_descriptor = GC_MAKE_PROC (proc, 0);
   GC_obj_kinds[array_kind_x].ok_relocate_descr = FALSE;
   GC_obj_kinds[array_kind_x].ok_init = TRUE;
 

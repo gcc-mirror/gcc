@@ -1,3 +1,14 @@
+2001-05-21  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* configure.in: Update boehm-gc include dir for new GC version.
+	* configure: Rebuilt.
+	* exception.cc: Only include <gc.h>. Remove TRUE/FALSE hacks and
+	extern "C" wrapper.
+	* boehm.cc: Update includes for new GC version. MAKE_PROC is now
+	GC_MAKE_PROC. mark_proc is now GC_mark_proc.
+	* posix-threads.cc: Only include <gc.h>. Don't need to wrap with
+	extern "C".
+
 2001-05-18  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* include/posix-threads.h (_Jv_CondInit): `0' used in place of `NULL.'

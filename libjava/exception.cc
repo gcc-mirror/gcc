@@ -20,18 +20,7 @@ details.  */
 
 #include "unwind.h"
 
-
-// More nastiness: the GC wants to define TRUE and FALSE.  We don't
-// need the Java definitions (themselves a hack), so we undefine them.
-#undef TRUE
-#undef FALSE
-
-extern "C"
-{
-#include <gc_priv.h>
-#include <gc_mark.h>
-#include <include/gc_gcj.h>
-};
+#include <gc.h>
 
 
 struct alignment_test_struct
