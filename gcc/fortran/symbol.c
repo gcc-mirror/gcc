@@ -213,9 +213,12 @@ gfc_set_default_type (gfc_symbol * sym, int error_flag, gfc_namespace * ns)
 
   if (ts->type == BT_UNKNOWN)
     {
-      if (error_flag)
-	gfc_error ("Symbol '%s' at %L has no IMPLICIT type", sym->name,
-		   &sym->declared_at);
+      if (error_flag && !sym->attr.untyped)
+	{
+	  gfc_error ("Symbol '%s' at %L has no IMPLICIT type",
+		     sym->name, &sym->declared_at);
+	  sym->attr.untyped = 1; /* Ensure we only give an error once.  */
+	}
 
       return FAILURE;
     }
