@@ -7367,6 +7367,7 @@ This describes how to specify debugging information.
 * DBX Hooks::          Hook macros for varying DBX format.
 * File Names and DBX:: Macros controlling output of file names in DBX format.
 * SDB and DWARF::      Macros for SDB (COFF) and DWARF formats.
+* VMS Debug::          Macros for VMS debug format.
 @end menu
 
 @node All Debuggers
@@ -7417,8 +7418,8 @@ A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{SDB_DEBUG}, @code{DWARF_DEBUG}, @code{DWARF2_DEBUG}, and
-@code{XCOFF_DEBUG}.
+@code{SDB_DEBUG}, @code{DWARF_DEBUG}, @code{DWARF2_DEBUG},
+@code{XCOFF_DEBUG}, @code{VMS_DEBUG}, and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
@@ -7429,7 +7430,8 @@ defined, GCC uses @code{DBX_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
 user can always get a specific type of output by using @option{-gstabs},
-@option{-gcoff}, @option{-gdwarf-1}, @option{-gdwarf-2}, or @option{-gxcoff}.
+@option{-gcoff}, @option{-gdwarf-1}, @option{-gdwarf-2}, @option{-gxcoff},
+or @option{-gvms}.
 @end table
 
 @node DBX Options
@@ -7817,6 +7819,24 @@ it.
 Define this macro to allow references to structure, union, or
 enumeration tags that have not yet been seen to be handled.  Some
 assemblers choke if forward tags are used, while some require it.
+@end table
+
+@need 2000
+@node VMS Debug
+@subsection Macros for VMS Debug Format
+
+@c prevent bad page break with this line
+Here are macros for VMS debug format.
+
+@table @code
+@findex VMS_DEBUGGING_INFO
+@item VMS_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output for VMS
+in response to the @option{-g} option.  The default behavior for VMS
+is to generate minimal debug info for a traceback in the absence of
+@option{-g} unless explicitly overridden with @option{-g0}.  This
+behavior is controlled by @code{OPTIMIZATION_OPTIONS} and
+@code{OVERRIDE_OPTIONS}.
 @end table
 
 @node Cross-compilation

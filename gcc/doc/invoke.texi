@@ -248,7 +248,7 @@ in the following sections.
 -fmem-report  -fpretend-float @gol
 -fprofile-arcs  -ftest-coverage  -ftime-report @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
--ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+ @gol
+-ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
 -print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
@@ -2608,8 +2608,8 @@ makes debugging work better in GDB but will probably make other debuggers
 crash or
 refuse to read the program.  If you want to control for certain whether
 to generate the extra information, use @option{-gstabs+}, @option{-gstabs},
-@option{-gxcoff+}, @option{-gxcoff}, @option{-gdwarf-1+}, or @option{-gdwarf-1}
-(see below).
+@option{-gxcoff+}, @option{-gxcoff}, @option{-gdwarf-1+}, @option{-gdwarf-1},
+or @option{-gvms} (see below).
 
 Unlike most other C compilers, GCC allows you to use @option{-g} with
 @option{-O}.  The shortcuts taken by optimized code may occasionally
@@ -2684,6 +2684,11 @@ crash or refuse to read the program.
 Produce debugging information in DWARF version 2 format (if that is
 supported).  This is the format used by DBX on IRIX 6.
 
+@item -gvms
+@opindex gvms
+Produce debugging information in VMS debug format (if that is
+supported).  This is the format used by DEBUG on VMS systems.
+
 @item -g@var{level}
 @itemx -ggdb@var{level}
 @itemx -gstabs@var{level}
@@ -2691,6 +2696,7 @@ supported).  This is the format used by DBX on IRIX 6.
 @itemx -gxcoff@var{level}
 @itemx -gdwarf@var{level}
 @itemx -gdwarf-2@var{level}
+@itemx -gvms@var{level}
 Request debugging information and also use @var{level} to specify how
 much information.  The default level is 2.
 

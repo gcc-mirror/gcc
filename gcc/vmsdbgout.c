@@ -171,7 +171,6 @@ static void vmsdbgout_decl		PARAMS ((tree));
 static void vmsdbgout_global_decl	PARAMS ((tree));
 static void vmsdbgout_abstract_function PARAMS ((tree));
 
-
 /* The debug hooks structure.  */
 
 struct gcc_debug_hooks vmsdbg_debug_hooks
@@ -523,31 +522,41 @@ restart:
     }
 }
 
+/* Output the debug header HEADER.  Also output COMMENT if flag_verbose_asm is
+   set.  Return the header size.  Just return the size if DOSIZEONLY is
+   non-zero. */
+
 static int
 write_debug_header (header, comment, dosizeonly)
      DST_HEADER *header;
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return 4;
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_DATA2 (asm_out_file,
+			      header->dst__header_length.dst_w_length);
 
-  ASM_OUTPUT_DEBUG_DATA2 (asm_out_file,
-			  header->dst__header_length.dst_w_length);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s record length", ASM_COMMENT_START);
-  fputc ('\n', asm_out_file);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s record length", ASM_COMMENT_START);
+      fputc ('\n', asm_out_file);
 
-  ASM_OUTPUT_DEBUG_DATA2 (asm_out_file,
-			  header->dst__header_type.dst_w_type);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s record type (%s)", ASM_COMMENT_START,
-	     comment);
+      ASM_OUTPUT_DEBUG_DATA2 (asm_out_file,
+			      header->dst__header_type.dst_w_type);
 
-  fputc ('\n', asm_out_file);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s record type (%s)", ASM_COMMENT_START,
+		 comment);
+
+      fputc ('\n', asm_out_file);
+    }
 
   return 4;
 }
+
+/* Output the address of SYMBOL.  Also output COMMENT if flag_verbose_asm is
+   set.  Return the address size.  Just return the size if DOSIZEONLY is
+   non-zero. */
 
 static int
 write_debug_addr (symbol, comment, dosizeonly)
@@ -555,16 +564,20 @@ write_debug_addr (symbol, comment, dosizeonly)
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return PTR_SIZE;
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_ADDR (asm_out_file, symbol);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
+      fputc ('\n', asm_out_file);
+    }
 
-  ASM_OUTPUT_DEBUG_ADDR (asm_out_file, symbol);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
-  fputc ('\n', asm_out_file);
-  
   return PTR_SIZE;
 }
+
+/* Output the single byte DATA1.  Also output COMMENT if flag_verbose_asm is
+   set.  Return the data size.  Just return the size if DOSIZEONLY is
+   non-zero. */
 
 static int
 write_debug_data1 (data1, comment, dosizeonly)
@@ -572,16 +585,20 @@ write_debug_data1 (data1, comment, dosizeonly)
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return 1;
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_DATA1 (asm_out_file, data1);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
+      fputc ('\n', asm_out_file);
+    }
 
-  ASM_OUTPUT_DEBUG_DATA1 (asm_out_file, data1);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
-  fputc ('\n', asm_out_file);
-  
   return 1;
 }
+
+/* Output the single word DATA2.  Also output COMMENT if flag_verbose_asm is
+   set.  Return the data size.  Just return the size if DOSIZEONLY is
+   non-zero. */
 
 static int
 write_debug_data2 (data2, comment, dosizeonly)
@@ -589,16 +606,19 @@ write_debug_data2 (data2, comment, dosizeonly)
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return 2;
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_DATA2 (asm_out_file, data2);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
+      fputc ('\n', asm_out_file);
+    }
 
-  ASM_OUTPUT_DEBUG_DATA2 (asm_out_file, data2);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
-  fputc ('\n', asm_out_file);
-  
   return 2;
 }
+
+/* Output double word DATA4.  Also output COMMENT if flag_verbose_asm is set.
+   Return the data size.  Just return the size if DOSIZEONLY is non-zero. */
 
 static int
 write_debug_data4 (data4, comment, dosizeonly)
@@ -606,16 +626,19 @@ write_debug_data4 (data4, comment, dosizeonly)
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return 4;
-
-  ASM_OUTPUT_DEBUG_DATA4 (asm_out_file, data4);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
-  fputc ('\n', asm_out_file);
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_DATA4 (asm_out_file, data4);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
+      fputc ('\n', asm_out_file);
+    }
   
   return 4;
 }
+
+/* Output quad word DATA8.  Also output COMMENT if flag_verbose_asm is set.
+   Return the data size.  Just return the size if DOSIZEONLY is non-zero.  */
 
 static int
 write_debug_data8 (data8, comment, dosizeonly)
@@ -623,16 +646,20 @@ write_debug_data8 (data8, comment, dosizeonly)
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return 8;
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_DATA8 (asm_out_file, data8);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
+      fputc ('\n', asm_out_file);
+    }
 
-  ASM_OUTPUT_DEBUG_DATA8 (asm_out_file, data8);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
-  fputc ('\n', asm_out_file);
-  
   return 8;
 }
+
+/* Output the difference between LABEL1 and LABEL2.  Also output COMMENT if
+   flag_verbose_asm is set.  Return the data size.  Just return the size if
+   DOSIZEONLY is non-zero. */
 
 static int
 write_debug_delta4 (label1, label2, comment, dosizeonly)
@@ -641,16 +668,20 @@ write_debug_delta4 (label1, label2, comment, dosizeonly)
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return 4;
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_DELTA4 (asm_out_file, label1, label2);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
+      fputc ('\n', asm_out_file);
+    }
 
-  ASM_OUTPUT_DEBUG_DELTA4(asm_out_file, label1, label2);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
-  fputc ('\n', asm_out_file);
-  
   return 4;
 }
+
+/* Output a character string STRING.  Also write COMMENT if flag_verbose_asm is
+   set.  Return the string length.  Just return the length if DOSIZEONLY is
+   non-zero. */
 
 static int
 write_debug_string (string, comment, dosizeonly)
@@ -658,22 +689,23 @@ write_debug_string (string, comment, dosizeonly)
      const char *comment;
      int dosizeonly;
 {
-  if (dosizeonly)
-    return strlen (string);
-
-  ASM_OUTPUT_DEBUG_STRING (asm_out_file, string);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
-  fputc ('\n', asm_out_file);
+  if (!dosizeonly)
+    {
+      ASM_OUTPUT_DEBUG_STRING (asm_out_file, string);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
+      fputc ('\n', asm_out_file);
+    }
   
   return strlen (string);
 }
 
-static int
+/* Output a module begin header and return the header size.  Just return the
+   size if DOSIZEONLY is non-zero. */
+
 write_modbeg (dosizeonly)
      int dosizeonly;
 {
-
   DST_MODULE_BEGIN modbeg;
   DST_MB_TRLR mb_trlr;
   int i;
@@ -731,6 +763,9 @@ write_modbeg (dosizeonly)
   return totsize;
 }
 
+/* Output a module end trailer and return the trailer size.   Just return
+   the size if DOSIZEONLY is non-zero. */
+
 static int
 write_modend (dosizeonly)
      int dosizeonly;
@@ -747,6 +782,9 @@ write_modend (dosizeonly)
 
   return totsize;
 }
+
+/* Output a routine begin header routine RTNNUM and return the header size.
+   Just return the size if DOSIZEONLY is non-zero. */
 
 static int
 write_rtnbeg (rtnnum, dosizeonly)
@@ -843,6 +881,9 @@ write_rtnbeg (rtnnum, dosizeonly)
   return totsize;
 }
 
+/* Output a routine end trailer for routine RTNNUM and return the header size.
+   Just return the size if DOSIZEONLY is non-zero. */
+
 static int
 write_rtnend (rtnnum, dosizeonly)
      int rtnnum;
@@ -883,6 +924,9 @@ write_rtnend (rtnnum, dosizeonly)
 #define K_INCR_LINUM(I) \
  ((I) < 256 ? DST_K_INCR_LINUM \
   : (I) < 65536 ? DST_K_INCR_LINUM_W : DST_K_INCR_LINUM_L)
+
+/* Output the PC to line number correlations and return the size.  Just return
+   the size if DOSIZEONLY is non-zero */
 
 static int
 write_pclines (dosizeonly)
@@ -1010,6 +1054,10 @@ write_pclines (dosizeonly)
 
   return totsize;
 }
+
+/* Output a source correlation for file FILEID using information saved in
+   FILE_INFO_ENTRY and return the size.  Just return the size if DOSIZEONLY is
+   non-zero. */
 
 static int
 write_srccorr (fileid, file_info_entry, dosizeonly)
@@ -1199,6 +1247,9 @@ write_srccorr (fileid, file_info_entry, dosizeonly)
   return totsize;
 }
 
+/* Output all the source correlation entries and return the size.  Just return
+   the size if DOSIZEONLY is non-zero. */
+
 static int
 write_srccorrs (dosizeonly)
      int dosizeonly;
@@ -1211,7 +1262,6 @@ write_srccorrs (dosizeonly)
 
   return totsize;
 }     
-
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
    the prologue.  */
@@ -1303,6 +1353,8 @@ vmsdbgout_end_block (line, blocknum)
     ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
 }
 
+/* Not implemented in VMS Debug.  */
+
 static bool
 vmsdbgout_ignore_block (block)
      tree block;
@@ -1314,6 +1366,8 @@ vmsdbgout_ignore_block (block)
 
   return retval;
 }
+
+/* Add an entry for function DECL into the func_table.  */
 
 static void
 vmsdbgout_begin_function (decl)
@@ -1336,6 +1390,9 @@ vmsdbgout_begin_function (decl)
 }
 
 static char fullname_buff [4096];
+
+/* Return the full file specification for FILENAME.  The specification must be
+   in VMS syntax in order to be processed by VMS Debug. */
 
 static char *
 full_name (filename)
@@ -1362,9 +1419,8 @@ full_name (filename)
 /* Lookup a filename (in the list of filenames that we know about here in
    vmsdbgout.c) and return its "index".  The index of each (known) filename is
    just a unique number which is associated with only that one filename.  We
-   need such numbers for the sake of generating labels (in the .debug_sfnames
-   section) and references to those files numbers (in the .debug_srcinfo
-   and.debug_macinfo sections).  If the filename given as an argument is not
+   need such numbers for the sake of generating labels  and references
+   to those files numbers.  If the filename given as an argument is not
    found in our current list, add it to the list and assign it the next
    available unique index number.  In order to speed up searches, we remember
    the index of the filename was looked up last.  This handles the majority of
@@ -1575,6 +1631,8 @@ vmsdbgout_init (main_input_filename)
 
 }
 
+/* Not implemented in VMS Debug.  */
+
 static void
 vmsdbgout_define (lineno, buffer)
      unsigned int lineno;
@@ -1583,6 +1641,8 @@ vmsdbgout_define (lineno, buffer)
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.define) (lineno, buffer);
 }
+
+/* Not implemented in VMS Debug.  */
 
 static void
 vmsdbgout_undef (lineno, buffer)
@@ -1593,6 +1653,8 @@ vmsdbgout_undef (lineno, buffer)
     (*dwarf2_debug_hooks.undef) (lineno, buffer);
 }
 
+/* Not implemented in VMS Debug.  */
+
 static void
 vmsdbgout_decl (decl)
      tree decl;
@@ -1600,6 +1662,8 @@ vmsdbgout_decl (decl)
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.function_decl) (decl);
 }
+
+/* Not implemented in VMS Debug.  */
 
 static void
 vmsdbgout_global_decl (decl)
@@ -1609,6 +1673,8 @@ vmsdbgout_global_decl (decl)
     (*dwarf2_debug_hooks.global_decl) (decl);
 }
 
+/* Not implemented in VMS Debug.  */
+
 static void
 vmsdbgout_abstract_function (decl)
      tree decl;
@@ -1617,8 +1683,8 @@ vmsdbgout_abstract_function (decl)
     (*dwarf2_debug_hooks.outlining_inline_function) (decl);
 }
 
-/* Output stuff that Debug requires at the end of every file,
-   and generate the VMS Debug debugging info.  */
+/* Output stuff that Debug requires at the end of every file and generate the
+   VMS Debug debugging info.  */
 
 static void
 vmsdbgout_finish (input_filename)
