@@ -1,3 +1,8 @@
+2002-12-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*tsthiCCT", "*tsthiCCT_cconly",
+	"*tstqiCCT", "*tstqiCCT_cconly"): New insns.
+
 2002-12-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/altivec.h (vec_cmplt macro): Reverse arguments in
