@@ -418,6 +418,8 @@ do { long l;					\
   else if (CODE == '+') fprintf (FILE, "(%%sp)+");			\
   else if (CODE == '@') fprintf (FILE, "(%%sp)");			\
   else if (CODE == '!') fprintf (FILE, "%%fpcr");			\
+  else if (CODE == '/')							\
+    fprintf (FILE, "%%");						\
   else if (CODE == '$') { if (TARGET_68040_ONLY) fprintf (FILE, "s"); }	\
   else if (CODE == '&') { if (TARGET_68040_ONLY) fprintf (FILE, "d"); }	\
   else if (GET_CODE (X) == REG)						\
