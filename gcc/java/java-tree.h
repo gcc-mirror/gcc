@@ -773,6 +773,8 @@ union lang_tree_node
 /* Number of local variable slots needed for the arguments of this function. */
 #define DECL_ARG_SLOT_COUNT(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->u.f.arg_slot_count)
+/* Line number of end of function. */
+#define DECL_FUNCTION_LAST_LINE(DECL) (DECL_LANG_SPECIFIC(DECL)->u.f.last_line)
 /* Information on declaration location */
 #define DECL_FUNCTION_WFL(DECL)  (DECL_LANG_SPECIFIC(DECL)->u.f.wfl)
 /* List of checked thrown exceptions, as specified with the `throws'
@@ -974,6 +976,7 @@ struct lang_decl_func GTY(())
   int max_locals;
   int max_stack;
   int arg_slot_count;
+  int last_line; 		/* End line number for a function decl */
   tree wfl;			/* Information on the original location */
   tree throws_list;		/* Exception specified by `throws' */
   tree function_decl_body;	/* Hold all function's statements */

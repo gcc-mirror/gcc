@@ -1420,13 +1420,9 @@ expand_call_inline (tp, walk_subtrees, data)
      pointing to the right place.  */
 #ifndef INLINER_FOR_JAVA
   chain = TREE_CHAIN (*tp);
+#endif /* INLINER_FOR_JAVA */
   *tp = build_expr_wfl (expr, DECL_SOURCE_FILE (fn), DECL_SOURCE_LINE (fn),
 			/*col=*/0);
-#else /* INLINER_FOR_JAVA */
-  *tp = build_expr_wfl (expr, DECL_SOURCE_FILE (fn),
-			DECL_SOURCE_LINE_FIRST(fn),
-			/*col=*/0);
-#endif /* INLINER_FOR_JAVA */
   EXPR_WFL_EMIT_LINE_NOTE (*tp) = 1;
 #ifndef INLINER_FOR_JAVA
   TREE_CHAIN (*tp) = chain;
