@@ -31,21 +31,21 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "integrate.h"
 
-static tree bot_manip PROTO((tree *, int *, void *));
-static tree bot_replace PROTO((tree *, int *, void *));
-static tree build_cplus_array_type_1 PROTO((tree, tree));
-static void list_hash_add PROTO((int, tree));
-static int list_hash PROTO((tree, tree, tree));
-static tree list_hash_lookup PROTO((int, tree, tree, tree));
-static cp_lvalue_kind lvalue_p_1 PROTO((tree, int));
-static tree no_linkage_helper PROTO((tree *, int *, void *));
-static tree build_srcloc PROTO((char *, int));
-static void mark_list_hash PROTO ((void *));
-static int statement_code_p PROTO((enum tree_code));
-static tree mark_local_for_remap_r PROTO((tree *, int *, void *));
-static tree cp_unsave_r PROTO ((tree *, int *, void *));
-static void cp_unsave PROTO((tree *));
-static tree build_target_expr PROTO((tree, tree));
+static tree bot_manip PARAMS ((tree *, int *, void *));
+static tree bot_replace PARAMS ((tree *, int *, void *));
+static tree build_cplus_array_type_1 PARAMS ((tree, tree));
+static void list_hash_add PARAMS ((int, tree));
+static int list_hash PARAMS ((tree, tree, tree));
+static tree list_hash_lookup PARAMS ((int, tree, tree, tree));
+static cp_lvalue_kind lvalue_p_1 PARAMS ((tree, int));
+static tree no_linkage_helper PARAMS ((tree *, int *, void *));
+static tree build_srcloc PARAMS ((char *, int));
+static void mark_list_hash PARAMS ((void *));
+static int statement_code_p PARAMS ((enum tree_code));
+static tree mark_local_for_remap_r PARAMS ((tree *, int *, void *));
+static tree cp_unsave_r PARAMS ((tree *, int *, void *));
+static void cp_unsave PARAMS ((tree *));
+static tree build_target_expr PARAMS ((tree, tree));
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  If TREAT_CLASS_RVALUES_AS_LVALUES is
@@ -1630,7 +1630,7 @@ break_out_target_exprs (t)
    current line number.  */
 
 tree
-build_min_nt VPROTO((enum tree_code code, ...))
+build_min_nt VPARAMS ((enum tree_code code, ...))
 {
 #ifndef ANSI_PROTOTYPES
   enum tree_code code;
@@ -1664,7 +1664,7 @@ build_min_nt VPROTO((enum tree_code code, ...))
    line-number.  */
 
 tree
-build_min VPROTO((enum tree_code code, tree tt, ...))
+build_min VPARAMS ((enum tree_code code, tree tt, ...))
 {
 #ifndef ANSI_PROTOTYPES
   enum tree_code code;

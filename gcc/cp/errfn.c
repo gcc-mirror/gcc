@@ -1,5 +1,6 @@
 /* Provide a call-back mechanism for handling error output.
-   Copyright (C) 1993, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 96, 97, 98, 99, 2000
+   Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
    This file is part of GNU CC.
@@ -30,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
    with all memory management; the functions in this file will not free
    the char*s returned.  See error.c for an example use of this code.  */
 
-typedef const char *cp_printer PROTO((tree, int));
+typedef const char *cp_printer PARAMS ((tree, int));
 extern cp_printer * cp_printers[256];
 
 /* Whether or not we should try to be quiet for errors and warnings; this is
@@ -40,7 +41,7 @@ int cp_silent = 0;
 
 typedef void errorfn ();	/* deliberately vague */
 
-static void cp_thing PROTO ((errorfn *, int, const char *, va_list));
+static void cp_thing PARAMS ((errorfn *, int, const char *, va_list));
 
 #define STRDUP(f) (ap = (char *) alloca (strlen (f) +1), strcpy (ap, (f)), ap)
 
@@ -190,7 +191,7 @@ cp_thing (errfn, atarg1, format, ap)
 }
 
 void
-cp_error VPROTO((const char *format, ...))
+cp_error VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
@@ -209,7 +210,7 @@ cp_error VPROTO((const char *format, ...))
 }
 
 void
-cp_warning VPROTO((const char *format, ...))
+cp_warning VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
@@ -228,7 +229,7 @@ cp_warning VPROTO((const char *format, ...))
 }
 
 void
-cp_pedwarn VPROTO((const char *format, ...))
+cp_pedwarn VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
@@ -247,7 +248,7 @@ cp_pedwarn VPROTO((const char *format, ...))
 }
 
 void
-cp_compiler_error VPROTO((const char *format, ...))
+cp_compiler_error VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
@@ -277,7 +278,7 @@ cp_deprecated (msg)
 }
 
 void
-cp_sprintf VPROTO((const char *format, ...))
+cp_sprintf VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
@@ -295,7 +296,7 @@ cp_sprintf VPROTO((const char *format, ...))
 }
 
 void
-cp_error_at VPROTO((const char *format, ...))
+cp_error_at VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
@@ -314,7 +315,7 @@ cp_error_at VPROTO((const char *format, ...))
 }
 
 void
-cp_warning_at VPROTO((const char *format, ...))
+cp_warning_at VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
@@ -333,7 +334,7 @@ cp_warning_at VPROTO((const char *format, ...))
 }
 
 void
-cp_pedwarn_at VPROTO((const char *format, ...))
+cp_pedwarn_at VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;

@@ -32,10 +32,10 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 
 #if 0
-static tree extract_aggr_init PROTO((tree, tree));
-static tree extract_scalar_init PROTO((tree, tree));
+static tree extract_aggr_init PARAMS ((tree, tree));
+static tree extract_scalar_init PARAMS ((tree, tree));
 #endif
-static rtx cplus_expand_expr PROTO((tree, rtx, enum machine_mode,
+static rtx cplus_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 				    enum expand_modifier));
 
 /* Hook used by output_constant to expand language-specific

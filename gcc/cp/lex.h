@@ -1,5 +1,5 @@
 /* Define constants and variables for communication with parse.y.
-   Copyright (C) 1987, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-97, 1998, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
    and by Brendan Kehoe (brendan@cygnus.com).
 
@@ -130,6 +130,6 @@ extern tree got_object;
    Positive is push count, negative is pop count.  */
 extern int pending_lang_change;
 
-extern int yylex PROTO((void));
+extern int yylex PARAMS ((void));
 
 extern struct lang_decl *free_lang_decl_chain;

@@ -75,78 +75,78 @@ pop_stack_level (stack)
 #define search_level stack_level
 static struct search_level *search_stack;
 
-static tree next_baselink PROTO((tree));
-static tree get_vbase_1 PROTO((tree, tree, unsigned int *));
-static tree lookup_field_1 PROTO((tree, tree));
-static tree convert_pointer_to_single_level PROTO((tree, tree));
-static int lookup_fnfields_here PROTO((tree, tree));
-static int is_subobject_of_p PROTO((tree, tree));
-static int hides PROTO((tree, tree));
-static tree virtual_context PROTO((tree, tree, tree));
-static tree dfs_check_overlap PROTO((tree, void *));
-static tree dfs_no_overlap_yet PROTO((tree, void *));
+static tree next_baselink PARAMS ((tree));
+static tree get_vbase_1 PARAMS ((tree, tree, unsigned int *));
+static tree lookup_field_1 PARAMS ((tree, tree));
+static tree convert_pointer_to_single_level PARAMS ((tree, tree));
+static int lookup_fnfields_here PARAMS ((tree, tree));
+static int is_subobject_of_p PARAMS ((tree, tree));
+static int hides PARAMS ((tree, tree));
+static tree virtual_context PARAMS ((tree, tree, tree));
+static tree dfs_check_overlap PARAMS ((tree, void *));
+static tree dfs_no_overlap_yet PARAMS ((tree, void *));
 static int get_base_distance_recursive
-	PROTO((tree, int, int, int, int *, tree *, tree,
+	PARAMS ((tree, int, int, int, int *, tree *, tree,
 	       int, int *, int, int));
-static int dynamic_cast_base_recurse PROTO((tree, tree, int, tree *));
+static int dynamic_cast_base_recurse PARAMS ((tree, tree, int, tree *));
 static void expand_upcast_fixups 
-	PROTO((tree, tree, tree, tree, tree, tree, tree *));
+	PARAMS ((tree, tree, tree, tree, tree, tree, tree *));
 static void fixup_virtual_upcast_offsets
-	PROTO((tree, tree, int, int, tree, tree, tree, tree,
+	PARAMS ((tree, tree, int, int, tree, tree, tree, tree,
 	       tree *));
-static tree marked_vtable_pathp PROTO((tree, void *));
-static tree unmarked_vtable_pathp PROTO((tree, void *));
-static tree marked_new_vtablep PROTO((tree, void *));
-static tree unmarked_new_vtablep PROTO((tree, void *));
-static tree marked_pushdecls_p PROTO((tree, void *));
-static tree unmarked_pushdecls_p PROTO((tree, void *));
+static tree marked_vtable_pathp PARAMS ((tree, void *));
+static tree unmarked_vtable_pathp PARAMS ((tree, void *));
+static tree marked_new_vtablep PARAMS ((tree, void *));
+static tree unmarked_new_vtablep PARAMS ((tree, void *));
+static tree marked_pushdecls_p PARAMS ((tree, void *));
+static tree unmarked_pushdecls_p PARAMS ((tree, void *));
 #if 0
-static tree dfs_debug_unmarkedp PROTO((tree, void *));
-static tree dfs_debug_mark PROTO((tree, void *));
+static tree dfs_debug_unmarkedp PARAMS ((tree, void *));
+static tree dfs_debug_mark PARAMS ((tree, void *));
 #endif
-static tree dfs_find_vbases PROTO((tree, void *));
-static tree dfs_clear_vbase_slots PROTO((tree, void *));
-static tree dfs_init_vbase_pointers PROTO((tree, void *));
-static tree dfs_get_vbase_types PROTO((tree, void *));
-static tree dfs_push_type_decls PROTO((tree, void *));
-static tree dfs_push_decls PROTO((tree, void *));
-static tree dfs_unuse_fields PROTO((tree, void *));
-static tree add_conversions PROTO((tree, void *));
-static tree get_virtuals_named_this PROTO((tree, tree));
-static tree get_virtual_destructor PROTO((tree, void *));
-static tree tree_has_any_destructor_p PROTO((tree, void *));
-static int covariant_return_p PROTO((tree, tree));
-static int check_final_overrider PROTO((tree, tree));
+static tree dfs_find_vbases PARAMS ((tree, void *));
+static tree dfs_clear_vbase_slots PARAMS ((tree, void *));
+static tree dfs_init_vbase_pointers PARAMS ((tree, void *));
+static tree dfs_get_vbase_types PARAMS ((tree, void *));
+static tree dfs_push_type_decls PARAMS ((tree, void *));
+static tree dfs_push_decls PARAMS ((tree, void *));
+static tree dfs_unuse_fields PARAMS ((tree, void *));
+static tree add_conversions PARAMS ((tree, void *));
+static tree get_virtuals_named_this PARAMS ((tree, tree));
+static tree get_virtual_destructor PARAMS ((tree, void *));
+static tree tree_has_any_destructor_p PARAMS ((tree, void *));
+static int covariant_return_p PARAMS ((tree, tree));
+static int check_final_overrider PARAMS ((tree, tree));
 static struct search_level *push_search_level
-	PROTO((struct stack_level *, struct obstack *));
+	PARAMS ((struct stack_level *, struct obstack *));
 static struct search_level *pop_search_level
-	PROTO((struct stack_level *));
+	PARAMS ((struct stack_level *));
 static tree bfs_walk
-	PROTO((tree, tree (*) (tree, void *), tree (*) (tree, void *),
+	PARAMS ((tree, tree (*) (tree, void *), tree (*) (tree, void *),
 	       void *));
-static tree lookup_field_queue_p PROTO((tree, void *));
-static tree lookup_field_r PROTO((tree, void *));
-static tree get_virtuals_named_this_r PROTO ((tree, void *));
-static tree context_for_name_lookup PROTO ((tree));
-static tree canonical_binfo PROTO ((tree));
-static tree shared_marked_p PROTO ((tree, void *));
-static tree shared_unmarked_p PROTO ((tree, void *));
-static int  dependent_base_p PROTO ((tree));
-static tree dfs_accessible_queue_p PROTO ((tree, void *));
-static tree dfs_accessible_p PROTO ((tree, void *));
-static tree dfs_access_in_type PROTO ((tree, void *));
-static tree access_in_type PROTO ((tree, tree));
-static tree dfs_canonical_queue PROTO ((tree, void *));
-static tree dfs_assert_unmarked_p PROTO ((tree, void *));
-static void assert_canonical_unmarked PROTO ((tree));
-static int protected_accessible_p PROTO ((tree, tree, tree, tree));
-static int friend_accessible_p PROTO ((tree, tree, tree, tree));
-static void setup_class_bindings PROTO ((tree, int));
-static int template_self_reference_p PROTO ((tree, tree));
-static void fixup_all_virtual_upcast_offsets PROTO ((tree, tree));
-static tree dfs_mark_primary_bases PROTO((tree, void *));
-static tree get_shared_vbase_if_not_primary PROTO((tree, void *));
-static tree dfs_find_vbase_instance PROTO((tree, void *));
+static tree lookup_field_queue_p PARAMS ((tree, void *));
+static tree lookup_field_r PARAMS ((tree, void *));
+static tree get_virtuals_named_this_r PARAMS ((tree, void *));
+static tree context_for_name_lookup PARAMS ((tree));
+static tree canonical_binfo PARAMS ((tree));
+static tree shared_marked_p PARAMS ((tree, void *));
+static tree shared_unmarked_p PARAMS ((tree, void *));
+static int  dependent_base_p PARAMS ((tree));
+static tree dfs_accessible_queue_p PARAMS ((tree, void *));
+static tree dfs_accessible_p PARAMS ((tree, void *));
+static tree dfs_access_in_type PARAMS ((tree, void *));
+static tree access_in_type PARAMS ((tree, tree));
+static tree dfs_canonical_queue PARAMS ((tree, void *));
+static tree dfs_assert_unmarked_p PARAMS ((tree, void *));
+static void assert_canonical_unmarked PARAMS ((tree));
+static int protected_accessible_p PARAMS ((tree, tree, tree, tree));
+static int friend_accessible_p PARAMS ((tree, tree, tree, tree));
+static void setup_class_bindings PARAMS ((tree, int));
+static int template_self_reference_p PARAMS ((tree, tree));
+static void fixup_all_virtual_upcast_offsets PARAMS ((tree, tree));
+static tree dfs_mark_primary_bases PARAMS ((tree, void *));
+static tree get_shared_vbase_if_not_primary PARAMS ((tree, void *));
+static tree dfs_find_vbase_instance PARAMS ((tree, void *));
 
 /* Allocate a level of searching.  */
 
@@ -1707,8 +1707,8 @@ lookup_fnfields_1 (type, name)
 static tree
 bfs_walk (binfo, fn, qfn, data)
      tree binfo;
-     tree (*fn) PROTO((tree, void *));
-     tree (*qfn) PROTO((tree, void *));
+     tree (*fn) PARAMS ((tree, void *));
+     tree (*qfn) PARAMS ((tree, void *));
      void *data;
 {
   size_t head;
@@ -1773,9 +1773,9 @@ bfs_walk (binfo, fn, qfn, data)
 tree
 dfs_walk_real (binfo, prefn, postfn, qfn, data)
      tree binfo;
-     tree (*prefn) PROTO((tree, void *));
-     tree (*postfn) PROTO((tree, void *));
-     tree (*qfn) PROTO((tree, void *));
+     tree (*prefn) PARAMS ((tree, void *));
+     tree (*postfn) PARAMS ((tree, void *));
+     tree (*qfn) PARAMS ((tree, void *));
      void *data;
 {
   int i;
@@ -1822,8 +1822,8 @@ dfs_walk_real (binfo, prefn, postfn, qfn, data)
 tree
 dfs_walk (binfo, fn, qfn, data)
      tree binfo;
-     tree (*fn) PROTO((tree, void *));
-     tree (*qfn) PROTO((tree, void *));
+     tree (*fn) PARAMS ((tree, void *));
+     tree (*qfn) PARAMS ((tree, void *));
      void *data;
 {
   return dfs_walk_real (binfo, 0, fn, qfn, data);

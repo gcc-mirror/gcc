@@ -1,5 +1,5 @@
 /* Code to maintain a C++ template repository.
-   Copyright (C) 1995, 96-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 96-97, 1998, 2000 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
 This file is part of GNU CC.
@@ -34,12 +34,12 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 
-static tree repo_get_id PROTO((tree));
-static char *extract_string PROTO((char **));
-static char *get_base_filename PROTO((const char *));
-static void open_repo_file PROTO((const char *));
-static char *afgets PROTO((FILE *));
-static void reopen_repo_file_for_write PROTO((void));
+static tree repo_get_id PARAMS ((tree));
+static char *extract_string PARAMS ((char **));
+static char *get_base_filename PARAMS ((const char *));
+static void open_repo_file PARAMS ((const char *));
+static char *afgets PARAMS ((FILE *));
+static void reopen_repo_file_for_write PARAMS ((void));
 
 static tree pending_repo;
 static tree original_repo;

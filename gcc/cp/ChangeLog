@@ -1,3 +1,35 @@
+2000-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c: PROTO -> PARAMS.
+	* class.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* decl.c: Likewise.
+	* decl.h: Likewise.
+	* decl2.c: Likewise.
+	* dump.c: Likewise.
+	* errfn.c: Likewise.
+	* error.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* init.c: Likewise.
+	* input.c: Likewise.
+	* lex.c: Likewise.
+	* lex.h: Likewise.
+	* method.c: Likewise.
+	* optimize.c: Likewise.
+	* parse.y: Likewise.
+	* pt.c: Likewise.
+	* repo.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* spew.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+	* xref.c: Likewise.
+
 2000-01-25  Richard Henderson  <rth@cygnus.com>
 
 	* typeck.c (build_binary_op_nodefault): Remove UNNE_EXPR.

@@ -1,5 +1,5 @@
 /* Variables and structures for declaration processing.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,7 +31,7 @@ enum decl_context
 };
 
 /* We need this in here to get the decl_context definition.  */
-extern tree grokdeclarator			PROTO((tree, tree, enum decl_context, int, tree));
+extern tree grokdeclarator			PARAMS ((tree, tree, enum decl_context, int, tree));
 
 /* Parsing a function declarator leaves a list of parameter names
    or a chain or parameter decls here.  */

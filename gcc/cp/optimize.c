@@ -65,17 +65,17 @@ typedef struct inline_data
 
 /* Prototypes.  */
 
-static tree initialize_inlined_parameters PROTO((inline_data *, tree, tree));
-static tree declare_return_variable PROTO((inline_data *, tree *));
-static tree copy_body_r PROTO((tree *, int *, void *));
-static tree copy_body PROTO((inline_data *));
-static tree expand_call_inline PROTO((tree *, int *, void *));
-static void expand_calls_inline PROTO((tree *, inline_data *));
-static int inlinable_function_p PROTO((tree, inline_data *));
-static tree remap_decl PROTO((tree, inline_data *));
-static void remap_block PROTO((tree, tree, inline_data *));
-static void copy_scope_stmt PROTO((tree *, int *, inline_data *));
-static tree calls_setjmp_r PROTO((tree *, int *, void *));
+static tree initialize_inlined_parameters PARAMS ((inline_data *, tree, tree));
+static tree declare_return_variable PARAMS ((inline_data *, tree *));
+static tree copy_body_r PARAMS ((tree *, int *, void *));
+static tree copy_body PARAMS ((inline_data *));
+static tree expand_call_inline PARAMS ((tree *, int *, void *));
+static void expand_calls_inline PARAMS ((tree *, inline_data *));
+static int inlinable_function_p PARAMS ((tree, inline_data *));
+static tree remap_decl PARAMS ((tree, inline_data *));
+static void remap_block PARAMS ((tree, tree, inline_data *));
+static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
+static tree calls_setjmp_r PARAMS ((tree *, int *, void *));
 
 /* Remap DECL during the copying of the BLOCK tree for the function.
    DATA is really an `inline_data *'.  */

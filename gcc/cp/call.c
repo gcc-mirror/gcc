@@ -39,65 +39,65 @@ Boston, MA 02111-1307, USA.  */
 
 extern int inhibit_warnings;
 
-static tree build_new_method_call PROTO((tree, tree, tree, tree, int));
+static tree build_new_method_call PARAMS ((tree, tree, tree, tree, int));
 
-static tree build_field_call PROTO((tree, tree, tree, tree));
-static struct z_candidate * tourney PROTO((struct z_candidate *));
-static int equal_functions PROTO((tree, tree));
-static int joust PROTO((struct z_candidate *, struct z_candidate *, int));
-static int compare_ics PROTO((tree, tree));
-static tree build_over_call PROTO((struct z_candidate *, tree, int));
-static tree convert_like PROTO((tree, tree));
-static void op_error PROTO((enum tree_code, enum tree_code, tree, tree,
+static tree build_field_call PARAMS ((tree, tree, tree, tree));
+static struct z_candidate * tourney PARAMS ((struct z_candidate *));
+static int equal_functions PARAMS ((tree, tree));
+static int joust PARAMS ((struct z_candidate *, struct z_candidate *, int));
+static int compare_ics PARAMS ((tree, tree));
+static tree build_over_call PARAMS ((struct z_candidate *, tree, int));
+static tree convert_like PARAMS ((tree, tree));
+static void op_error PARAMS ((enum tree_code, enum tree_code, tree, tree,
 			    tree, const char *));
-static tree build_object_call PROTO((tree, tree));
-static tree resolve_args PROTO((tree));
+static tree build_object_call PARAMS ((tree, tree));
+static tree resolve_args PARAMS ((tree));
 static struct z_candidate * build_user_type_conversion_1
-	PROTO ((tree, tree, int));
-static void print_z_candidates PROTO((struct z_candidate *));
-static tree build_this PROTO((tree));
-static struct z_candidate * splice_viable PROTO((struct z_candidate *));
-static int any_viable PROTO((struct z_candidate *));
+	PARAMS ((tree, tree, int));
+static void print_z_candidates PARAMS ((struct z_candidate *));
+static tree build_this PARAMS ((tree));
+static struct z_candidate * splice_viable PARAMS ((struct z_candidate *));
+static int any_viable PARAMS ((struct z_candidate *));
 static struct z_candidate * add_template_candidate
-	PROTO((struct z_candidate *, tree, tree, tree, tree, int,
+	PARAMS ((struct z_candidate *, tree, tree, tree, tree, int,
 	       unification_kind_t));
 static struct z_candidate * add_template_candidate_real
-	PROTO((struct z_candidate *, tree, tree, tree, tree, int,
+	PARAMS ((struct z_candidate *, tree, tree, tree, tree, int,
 	       tree, unification_kind_t));
 static struct z_candidate * add_template_conv_candidate 
-        PROTO((struct z_candidate *, tree, tree, tree, tree));
+        PARAMS ((struct z_candidate *, tree, tree, tree, tree));
 static struct z_candidate * add_builtin_candidates
-	PROTO((struct z_candidate *, enum tree_code, enum tree_code,
+	PARAMS ((struct z_candidate *, enum tree_code, enum tree_code,
 	       tree, tree *, int));
 static struct z_candidate * add_builtin_candidate
-	PROTO((struct z_candidate *, enum tree_code, enum tree_code,
+	PARAMS ((struct z_candidate *, enum tree_code, enum tree_code,
 	       tree, tree, tree, tree *, tree *, int));
-static int is_complete PROTO((tree));
+static int is_complete PARAMS ((tree));
 static struct z_candidate * build_builtin_candidate 
-	PROTO((struct z_candidate *, tree, tree, tree, tree *, tree *,
+	PARAMS ((struct z_candidate *, tree, tree, tree, tree *, tree *,
 	       int));
 static struct z_candidate * add_conv_candidate 
-	PROTO((struct z_candidate *, tree, tree, tree));
+	PARAMS ((struct z_candidate *, tree, tree, tree));
 static struct z_candidate * add_function_candidate 
-	PROTO((struct z_candidate *, tree, tree, int));
-static tree implicit_conversion PROTO((tree, tree, tree, int));
-static tree standard_conversion PROTO((tree, tree, tree));
-static tree reference_binding PROTO((tree, tree, tree, int));
-static tree non_reference PROTO((tree));
-static tree build_conv PROTO((enum tree_code, tree, tree));
-static int is_subseq PROTO((tree, tree));
-static int maybe_handle_ref_bind PROTO((tree*, tree*));
-static void maybe_handle_implicit_object PROTO((tree*));
-static struct z_candidate * add_candidate PROTO((struct z_candidate *,
+	PARAMS ((struct z_candidate *, tree, tree, int));
+static tree implicit_conversion PARAMS ((tree, tree, tree, int));
+static tree standard_conversion PARAMS ((tree, tree, tree));
+static tree reference_binding PARAMS ((tree, tree, tree, int));
+static tree non_reference PARAMS ((tree));
+static tree build_conv PARAMS ((enum tree_code, tree, tree));
+static int is_subseq PARAMS ((tree, tree));
+static int maybe_handle_ref_bind PARAMS ((tree*, tree*));
+static void maybe_handle_implicit_object PARAMS ((tree*));
+static struct z_candidate * add_candidate PARAMS ((struct z_candidate *,
 						 tree, tree, int));
-static tree source_type PROTO((tree));
-static void add_warning PROTO((struct z_candidate *, struct z_candidate *));
-static int reference_related_p PROTO ((tree, tree));
-static int reference_compatible_p PROTO ((tree, tree));
-static tree convert_class_to_reference PROTO ((tree, tree, tree));
-static tree direct_reference_binding PROTO ((tree, tree));
-static int promoted_arithmetic_type_p PROTO ((tree));
-static tree conditional_conversion PROTO ((tree, tree));
+static tree source_type PARAMS ((tree));
+static void add_warning PARAMS ((struct z_candidate *, struct z_candidate *));
+static int reference_related_p PARAMS ((tree, tree));
+static int reference_compatible_p PARAMS ((tree, tree));
+static tree convert_class_to_reference PARAMS ((tree, tree, tree));
+static tree direct_reference_binding PARAMS ((tree, tree));
+static int promoted_arithmetic_type_p PARAMS ((tree));
+static tree conditional_conversion PARAMS ((tree, tree));
 
 tree
 build_vfield_ref (datum, type)

@@ -33,22 +33,22 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 
-static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
-static void construct_virtual_bases PROTO((tree, tree, tree, tree, tree));
-static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int));
-static void expand_default_init PROTO((tree, tree, tree, tree, int));
-static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, int));
-static void perform_member_init PROTO((tree, tree, tree, int));
-static void sort_base_init PROTO((tree, tree *, tree *));
-static tree build_builtin_delete_call PROTO((tree));
-static int member_init_ok_or_else PROTO((tree, tree, const char *));
-static void expand_virtual_init PROTO((tree, tree));
-static tree sort_member_init PROTO((tree));
-static tree initializing_context PROTO((tree));
-static tree build_java_class_ref PROTO((tree));
-static void expand_cleanup_for_base PROTO((tree, tree));
-static tree get_temp_regvar PROTO((tree, tree));
-static tree dfs_initialize_vtbl_ptrs PROTO((tree, void *));
+static void expand_aggr_vbase_init_1 PARAMS ((tree, tree, tree, tree));
+static void construct_virtual_bases PARAMS ((tree, tree, tree, tree, tree));
+static void expand_aggr_init_1 PARAMS ((tree, tree, tree, tree, int));
+static void expand_default_init PARAMS ((tree, tree, tree, tree, int));
+static tree build_vec_delete_1 PARAMS ((tree, tree, tree, tree, int));
+static void perform_member_init PARAMS ((tree, tree, tree, int));
+static void sort_base_init PARAMS ((tree, tree *, tree *));
+static tree build_builtin_delete_call PARAMS ((tree));
+static int member_init_ok_or_else PARAMS ((tree, tree, const char *));
+static void expand_virtual_init PARAMS ((tree, tree));
+static tree sort_member_init PARAMS ((tree));
+static tree initializing_context PARAMS ((tree));
+static tree build_java_class_ref PARAMS ((tree));
+static void expand_cleanup_for_base PARAMS ((tree, tree));
+static tree get_temp_regvar PARAMS ((tree, tree));
+static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
 
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */

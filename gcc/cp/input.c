@@ -1,5 +1,6 @@
 /* Input handling for G++.
-   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 98, 99, 2000
+   Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Enhanced by Michael Tiemann (tiemann@cygnus.com) to better support USE_CPPLIB
 
@@ -69,15 +70,15 @@ extern unsigned char *yy_cur, *yy_lim;
 extern int yy_get_token ();
 #endif
 
-extern void feed_input PROTO((char *, int, char *, int));
-extern void put_input PROTO((int));
-extern void put_back PROTO((int));
-extern int getch PROTO((void));
-extern int input_redirected PROTO((void));
+extern void feed_input PARAMS ((char *, int, char *, int));
+extern void put_input PARAMS ((int));
+extern void put_back PARAMS ((int));
+extern int getch PARAMS ((void));
+extern int input_redirected PARAMS ((void));
 
-static inline struct input_source * allocate_input PROTO((void));
-static inline void free_input PROTO((struct input_source *));
-static inline void end_input PROTO((void));
+static inline struct input_source * allocate_input PARAMS ((void));
+static inline void free_input PARAMS ((struct input_source *));
+static inline void end_input PARAMS ((void));
 
 static inline struct input_source *
 allocate_input ()

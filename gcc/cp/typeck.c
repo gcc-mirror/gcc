@@ -41,31 +41,31 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "defaults.h"
 
-static tree convert_for_assignment PROTO((tree, tree, const char *, tree,
+static tree convert_for_assignment PARAMS ((tree, tree, const char *, tree,
 					  int));
-static tree pointer_int_sum PROTO((enum tree_code, tree, tree));
-static tree rationalize_conditional_expr PROTO((enum tree_code, tree));
-static int comp_target_parms PROTO((tree, tree, int));
-static int comp_ptr_ttypes_real PROTO((tree, tree, int));
-static int comp_ptr_ttypes_const PROTO((tree, tree));
-static int comp_ptr_ttypes_reinterpret PROTO((tree, tree));
-static int comp_except_types PROTO((tree, tree, int));
-static int comp_array_types PROTO((int (*) (tree, tree, int), tree,
+static tree pointer_int_sum PARAMS ((enum tree_code, tree, tree));
+static tree rationalize_conditional_expr PARAMS ((enum tree_code, tree));
+static int comp_target_parms PARAMS ((tree, tree, int));
+static int comp_ptr_ttypes_real PARAMS ((tree, tree, int));
+static int comp_ptr_ttypes_const PARAMS ((tree, tree));
+static int comp_ptr_ttypes_reinterpret PARAMS ((tree, tree));
+static int comp_except_types PARAMS ((tree, tree, int));
+static int comp_array_types PARAMS ((int (*) (tree, tree, int), tree,
 				   tree, int));
-static tree common_base_type PROTO((tree, tree));
+static tree common_base_type PARAMS ((tree, tree));
 #if 0
-static tree convert_sequence PROTO((tree, tree));
+static tree convert_sequence PARAMS ((tree, tree));
 #endif
-static tree lookup_anon_field PROTO((tree, tree));
-static tree pointer_diff PROTO((tree, tree, tree));
-static tree build_component_addr PROTO((tree, tree));
-static tree qualify_type PROTO((tree, tree));
-static tree get_delta_difference PROTO((tree, tree, int));
-static int comp_cv_target_types PROTO((tree, tree, int));
-static void casts_away_constness_r PROTO((tree *, tree *));
-static int casts_away_constness PROTO ((tree, tree));
-static void maybe_warn_about_returning_address_of_local PROTO ((tree));
-static tree strip_all_pointer_quals PROTO ((tree));
+static tree lookup_anon_field PARAMS ((tree, tree));
+static tree pointer_diff PARAMS ((tree, tree, tree));
+static tree build_component_addr PARAMS ((tree, tree));
+static tree qualify_type PARAMS ((tree, tree));
+static tree get_delta_difference PARAMS ((tree, tree, int));
+static int comp_cv_target_types PARAMS ((tree, tree, int));
+static void casts_away_constness_r PARAMS ((tree *, tree *));
+static int casts_away_constness PARAMS ((tree, tree));
+static void maybe_warn_about_returning_address_of_local PARAMS ((tree));
+static tree strip_all_pointer_quals PARAMS ((tree));
 
 /* Return the target type of TYPE, which means return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -857,7 +857,7 @@ comp_except_specs (t1, t2, exact)
 
 static int
 comp_array_types (cmp, t1, t2, strict)
-     register int (*cmp) PROTO((tree, tree, int));
+     register int (*cmp) PARAMS ((tree, tree, int));
      tree t1, t2;
      int strict;
 {

@@ -48,47 +48,47 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void yyprint PROTO((FILE *, int, YYSTYPE));
+extern void yyprint PARAMS ((FILE *, int, YYSTYPE));
 
-static tree get_time_identifier PROTO((const char *));
-static int check_newline PROTO((void));
-static int whitespace_cr		PROTO((int));
-static int skip_white_space PROTO((int));
-static void finish_defarg PROTO((void));
-static int my_get_run_time PROTO((void));
-static int interface_strcmp PROTO((const char *));
-static int readescape PROTO((int *));
-static char *extend_token_buffer PROTO((const char *));
-static void consume_string PROTO((struct obstack *, int));
-static void feed_defarg PROTO((tree, tree));
-static void store_pending_inline PROTO((tree, struct pending_inline *));
-static void reinit_parse_for_expr PROTO((struct obstack *));
-static int *init_cpp_parse PROTO((void));
-static void cp_pragma_interface PROTO((char *));
-static void cp_pragma_implementation PROTO ((char *));
-static int handle_cp_pragma PROTO((const char *));
+static tree get_time_identifier PARAMS ((const char *));
+static int check_newline PARAMS ((void));
+static int whitespace_cr		PARAMS ((int));
+static int skip_white_space PARAMS ((int));
+static void finish_defarg PARAMS ((void));
+static int my_get_run_time PARAMS ((void));
+static int interface_strcmp PARAMS ((const char *));
+static int readescape PARAMS ((int *));
+static char *extend_token_buffer PARAMS ((const char *));
+static void consume_string PARAMS ((struct obstack *, int));
+static void feed_defarg PARAMS ((tree, tree));
+static void store_pending_inline PARAMS ((tree, struct pending_inline *));
+static void reinit_parse_for_expr PARAMS ((struct obstack *));
+static int *init_cpp_parse PARAMS ((void));
+static void cp_pragma_interface PARAMS ((char *));
+static void cp_pragma_implementation PARAMS ((char *));
+static int handle_cp_pragma PARAMS ((const char *));
 #ifdef HANDLE_GENERIC_PRAGMAS
-static int handle_generic_pragma PROTO((int));
+static int handle_generic_pragma PARAMS ((int));
 #endif
 #ifdef GATHER_STATISTICS
 #ifdef REDUCE_LENGTH
-static int reduce_cmp PROTO((int *, int *));
-static int token_cmp PROTO((int *, int *));
+static int reduce_cmp PARAMS ((int *, int *));
+static int token_cmp PARAMS ((int *, int *));
 #endif
 #endif
-static void begin_definition_of_inclass_inline PROTO((struct pending_inline*));
-static void parse_float PROTO((PTR));
-static int is_global PROTO((tree));
-static void init_filename_times PROTO((void));
-static void extend_token_buffer_to PROTO((int));
+static void begin_definition_of_inclass_inline PARAMS ((struct pending_inline*));
+static void parse_float PARAMS ((PTR));
+static int is_global PARAMS ((tree));
+static void init_filename_times PARAMS ((void));
+static void extend_token_buffer_to PARAMS ((int));
 #ifdef HANDLE_PRAGMA
-static int pragma_getc PROTO((void));
-static void pragma_ungetc PROTO((int));
+static int pragma_getc PARAMS ((void));
+static void pragma_ungetc PARAMS ((int));
 #endif
-static int read_line_number PROTO((int *));
-static int token_getch PROTO ((void));
-static void token_put_back PROTO ((int));
-static void mark_impl_file_chain PROTO ((void *));
+static int read_line_number PARAMS ((int *));
+static int token_getch PARAMS ((void));
+static void token_put_back PARAMS ((int));
+static void mark_impl_file_chain PARAMS ((void *));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
@@ -4851,7 +4851,7 @@ dump_time_statistics ()
 }
 
 void
-compiler_error VPROTO ((const char *msg, ...))
+compiler_error VPARAMS ((const char *msg, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msg;
