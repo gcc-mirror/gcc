@@ -25,7 +25,7 @@ chill			Per Bothner		bothner@cygnus.com
 java			Per Bothner		bothner@cygnus.com
 cpplib			Per Bothner		bothner@cygnus.com
 fixincludes		Ian Taylor		ian@cygnus.com
-*alias analysis		John Carr		jfc@mit.edu
+alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@cygnus.com
 scheduler (+ haifa)	Jim Wilson		wilson@cygnus.com
 scheduler (+ haifa)	Michael Meissner	meissner@cygnus.com
@@ -35,6 +35,9 @@ caller-sae.c		Jeff Law		law@cygnus.com
 debugging code		Jim Wilson		wilson@cygnus.com
 dwarf debugging code	Jason Merrill		jason@cygnus.com
 c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
+*synthetic multiply	Torbjorn Granlund
+*c-torture		Torbjorn Granlund
+*f-torture		Kate Hedstrom
 
 
 Folks who have write access after patch approval:
@@ -44,7 +47,7 @@ Brendan Kehoe			brendan@cygnus.com
 Benjamin Kosnik			bkoz@cygnus.com
 Andrew Macleod			amacleod@cygnus.com
 Dave Love			d.love@dl.ac.uk
-*fortran		Toon Moene
+*fortran			Toon Moene
 
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
