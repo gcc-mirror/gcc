@@ -1,3 +1,8 @@
+2004-10-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* stmt.c (expand_case): Handle the default label outside of
+	the for loop.  Remove code to handle a missing default label.
+
 2004-10-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dbxout.c (dbxout_function_decl): Don't use

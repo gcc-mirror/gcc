@@ -2341,7 +2341,7 @@ expand_case (tree exp)
   struct case_node *case_list = 0;
 
   /* Label to jump to if no case matches.  */
-  tree default_label_decl = 0;
+  tree default_label_decl;
 
   /* The switch body is lowered in gimplify.c, we should never have
      switches with a non-NULL SWITCH_BODY here.  */
@@ -2353,20 +2353,21 @@ expand_case (tree exp)
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
   if (index_type != error_mark_node)
     {
-      for (i = TREE_VEC_LENGTH (vec); --i >= 0; )
-	{
-	  tree elt = TREE_VEC_ELT (vec, i);
+      tree elt;
 
-	  /* Handle default labels specially.  */
-	  if (!CASE_HIGH (elt) && !CASE_LOW (elt))
-	    {
-	      gcc_assert (!default_label_decl);
-	      default_label_decl = CASE_LABEL (elt);
-	    }
-	  else
-	    case_list = add_case_node (case_list, index_type,
-				       CASE_LOW (elt), CASE_HIGH (elt),
-				       CASE_LABEL (elt));
+      /* The default case is at the end of TREE_VEC.  */
+      elt = TREE_VEC_ELT (vec, TREE_VEC_LENGTH (vec) - 1);
+      gcc_assert (!CASE_HIGH (elt));
+      gcc_assert (!CASE_LOW (elt));
+      default_label_decl = CASE_LABEL (elt);
+
+      for (i = TREE_VEC_LENGTH (vec) - 1; --i >= 0; )
+	{
+	  elt = TREE_VEC_ELT (vec, i);
+	  gcc_assert (CASE_LOW (elt));
+	  case_list = add_case_node (case_list, index_type,
+				     CASE_LOW (elt), CASE_HIGH (elt),
+				     CASE_LABEL (elt));
 	}
 
 
@@ -2379,14 +2380,6 @@ expand_case (tree exp)
 	  start = get_last_insn ();
 	}
 
-      /* If we don't have a default-label, create one here,
-	 after the body of the switch.  */
-      if (default_label_decl == 0)
-	{
-	  default_label_decl
-	    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-	  expand_label (default_label_decl);
-	}
       default_label = label_rtx (default_label_decl);
 
       before_case = get_last_insn ();
