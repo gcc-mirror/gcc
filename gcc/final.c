@@ -3372,7 +3372,7 @@ output_addr_const (file, x)
    %U prints the value of USER_LABEL_PREFIX.
    %I prints the value of IMMEDIATE_PREFIX.
    %O runs ASM_OUTPUT_OPCODE to transform what follows in the string.
-   Also supported are %d, %x, %s, %e, %f, %g and %%.
+   Also supported are %d, %i, %u, %x, %X, %o, %c, %s and %%.
 
    We handle alternate assembler dialects here, just like output_asm_insn.  */
 
@@ -3421,6 +3421,11 @@ asm_fprintf (FILE *file, const char *p, ...)
       case '%':
 	c = *p++;
 	q = &buf[1];
+	while (strchr ("-+ #0", c))
+	  {
+	    *q++ = c;
+	    c = *p++;
+	  }
 	while (ISDIGIT (c) || c == '.')
 	  {
 	    *q++ = c;
@@ -3429,21 +3434,22 @@ asm_fprintf (FILE *file, const char *p, ...)
 	switch (c)
 	  {
 	  case '%':
-	    fprintf (file, "%%");
+	    putc ('%', file);
 	    break;
 
 	  case 'd':  case 'i':  case 'u':
-	  case 'x':  case 'p':  case 'X':
-	  case 'o':
+	  case 'x':  case 'X':  case 'o':
+	  case 'c':
 	    *q++ = c;
 	    *q = 0;
 	    fprintf (file, buf, va_arg (argptr, int));
 	    break;
 
 	  case 'w':
-	    /* This is a prefix to the 'd', 'i', 'u', 'x', 'p', and 'X' cases,
-	       but we do not check for those cases.  It means that the value
-	       is a HOST_WIDE_INT, which may be either `int' or `long'.  */
+	    /* This is a prefix to the 'd', 'i', 'u', 'x', 'X', and
+	       'o' cases, but we do not check for those cases.  It
+	       means that the value is a HOST_WIDE_INT, which may be
+	       either `long' or `long long'.  */
 
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
 #else
@@ -3462,17 +3468,22 @@ asm_fprintf (FILE *file, const char *p, ...)
 
 	  case 'l':
 	    *q++ = c;
-	    *q++ = *p++;
-	    *q = 0;
-	    fprintf (file, buf, va_arg (argptr, long));
-	    break;
-
-	  case 'e':
-	  case 'f':
-	  case 'g':
-	    *q++ = c;
-	    *q = 0;
-	    fprintf (file, buf, va_arg (argptr, double));
+#ifdef HAVE_LONG_LONG
+	    if (*p == 'l')
+	      {
+		*q++ = *p++;
+		*q++ = *p++;
+		*q = 0;
+		fprintf (file, buf, va_arg (argptr, long long));
+	      }
+	    else
+#endif
+	      {
+		*q++ = *p++;
+		*q = 0;
+		fprintf (file, buf, va_arg (argptr, long));
+	      }
+	    
 	    break;
 
 	  case 's':
@@ -3529,7 +3540,7 @@ asm_fprintf (FILE *file, const char *p, ...)
 	break;
 
       default:
-	fputc (c, file);
+	putc (c, file);
       }
   va_end (argptr);
 }

@@ -1,3 +1,9 @@
+2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* final.c (asm_fprintf): Update comments, accept "-+ #0" flags,
+	optimize '%' case, handle %c, don't accept %p, %e, %f or %g,
+	handle %ll, optimize regular character case.
+
 2003-06-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (cse.o): Add params.h dependency.
