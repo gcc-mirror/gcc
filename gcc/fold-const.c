@@ -2387,9 +2387,10 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
      int *punsignedp, *pvolatilep;
      tree *pmask;
 {
-  tree mask = 0;
-  tree inner;
-  tree offset;
+  tree and_mask = 0;
+  tree mask, inner, offset;
+  tree unsigned_type;
+  int precision;
 
   /* All the optimizations using this function assume integer fields.  
      There are problems with FP fields since the type_for_size call
@@ -2401,10 +2402,10 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
 
   if (TREE_CODE (exp) == BIT_AND_EXPR)
     {
-      mask = TREE_OPERAND (exp, 1);
+      and_mask = TREE_OPERAND (exp, 1);
       exp = TREE_OPERAND (exp, 0);
-      STRIP_NOPS (exp); STRIP_NOPS (mask);
-      if (TREE_CODE (mask) != INTEGER_CST)
+      STRIP_NOPS (exp); STRIP_NOPS (and_mask);
+      if (TREE_CODE (and_mask) != INTEGER_CST)
 	return 0;
     }
 
@@ -2417,17 +2418,20 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
   if (inner == exp || *pbitsize < 0 || offset != 0)
     return 0;
   
-  if (mask == 0)
-    {
-      tree unsigned_type = type_for_size (*pbitsize, 1);
-      int precision = TYPE_PRECISION (unsigned_type);
+  /* Compute the mask to access the bitfield.  */
+  unsigned_type = type_for_size (*pbitsize, 1);
+  precision = TYPE_PRECISION (unsigned_type);
 
-      mask = build_int_2 (~0, ~0);
-      TREE_TYPE (mask) = unsigned_type;
-      force_fit_type (mask, 0);
-      mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
-      mask = const_binop (RSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
-    }
+  mask = build_int_2 (~0, ~0);
+  TREE_TYPE (mask) = unsigned_type;
+  force_fit_type (mask, 0);
+  mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
+  mask = const_binop (RSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
+
+  /* Merge it with the mask we found in the BIT_AND_EXPR, if any.  */
+  if (and_mask != 0)
+    mask = fold (build (BIT_AND_EXPR, unsigned_type,
+			convert (unsigned_type, and_mask), mask));
 
   *pmask = mask;
   return inner;
