@@ -272,6 +272,7 @@ static int frv_registers_used_p			PARAMS ((rtx, unsigned char [],
 							 int));
 static int frv_registers_set_p			PARAMS ((rtx, unsigned char [],
 							 int));
+static int frv_use_dfa_pipeline_interface	PARAMS ((void));
 static void frv_pack_insns			PARAMS ((void));
 static void frv_function_prologue		PARAMS ((FILE *, HOST_WIDE_INT));
 static void frv_function_epilogue		PARAMS ((FILE *, HOST_WIDE_INT));
@@ -312,6 +313,9 @@ static void frv_asm_out_destructor		PARAMS ((rtx, int));
 #define TARGET_ASM_OUTPUT_MI_THUNK frv_asm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE frv_use_dfa_pipeline_interface
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8190,7 +8194,14 @@ frv_init_machine_status ()
 {
   return ggc_alloc_cleared (sizeof (struct machine_function));
 }
+
+/* Implement TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE.  */
 
+static int
+frv_use_dfa_pipeline_interface (void)
+{
+  return true;
+}
 
 /* Update the register state information, to know about which registers are set
    or clobbered.  */
