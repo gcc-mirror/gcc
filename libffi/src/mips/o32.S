@@ -73,7 +73,7 @@ sixteen:
 	ADDU	a0, $sp, 4 * FFI_SIZEOF_ARG
 	ADDU	a3, $fp, SIZEOF_FRAME + 3*FFI_SIZEOF_ARG
 
-	jal	t9
+	jalr	t9
 	
 	REG_L	t0, SIZEOF_FRAME + 3*FFI_SIZEOF_ARG($fp)  # load the flags word
 	add	t2, t0, 0			   # and copy it into t2
@@ -141,7 +141,7 @@ call_it:
 	beqz	t1, noretval
 
 	bne     t2, FFI_TYPE_INT, retlonglong
-	jal	t9
+	jalr	t9
 	REG_L	t0, SIZEOF_FRAME + 4*FFI_SIZEOF_ARG($fp)
 	REG_S	v0, 0(t0)
 	b	epilogue
@@ -149,7 +149,7 @@ call_it:
 retlonglong:
 	# Really any 64-bit int, signed or not.
 	bne	t2, FFI_TYPE_UINT64, retfloat
-	jal	t9
+	jalr	t9
 	REG_L	t0, SIZEOF_FRAME + 4*FFI_SIZEOF_ARG($fp)
 	REG_S	v1, 4(t0)
 	REG_S	v0, 0(t0)
@@ -157,20 +157,20 @@ retlonglong:
 
 retfloat:
 	bne     t2, FFI_TYPE_FLOAT, retdouble
-	jal	t9
+	jalr	t9
 	REG_L	t0, SIZEOF_FRAME + 4*FFI_SIZEOF_ARG($fp)
 	s.s	$f0, 0(t0)
 	b	epilogue
 
 retdouble:	
 	bne	t2, FFI_TYPE_DOUBLE, noretval
-	jal	t9
+	jalr	t9
 	REG_L	t0, SIZEOF_FRAME + 4*FFI_SIZEOF_ARG($fp)
 	s.d	$f0, 0(t0)
 	b	epilogue
 	
 noretval:	
-	jal	t9
+	jalr	t9
 	
 	# Epilogue
 epilogue:	
@@ -255,7 +255,7 @@ $LCFI7:
 	addu	$5, $fp, SIZEOF_FRAME2 -  6*FFI_SIZEOF_ARG
 	addu	$6, $fp, SIZEOF_FRAME2 +  0*FFI_SIZEOF_ARG
 	addu	$7, $fp, SIZEOF_FRAME2 - 10*FFI_SIZEOF_ARG
-	jal	$31, $25
+	jalr	$31, $25
 
 	# Load the return value into the appropriate register.
 	move	$8, $2
@@ -306,7 +306,7 @@ $LSCIE0:
 	.sleb128 4	 # CIE Data Alignment Factor
 	.byte	0x1f	 # CIE RA Column
 	.uleb128 0x1	 # Augmentation size
-	.byte	0x1b	 # FDE Encoding (pcrel sdata4)
+	.byte	0x00	 # FDE Encoding (absptr)
 	.byte	0xc	 # DW_CFA_def_cfa
 	.uleb128 0x1d
 	.uleb128 0x0
@@ -316,7 +316,7 @@ $LSFDE0:
 	.4byte	$LEFDE0-$LASFDE0	 # FDE Length
 $LASFDE0:
 	.4byte	$LASFDE0-$Lframe0	 # FDE CIE offset
-	.4byte	$LFB0-.	 # FDE initial location
+	.4byte	$LFB0	 # FDE initial location
 	.4byte	$LFE0-$LFB0	 # FDE address range
 	.uleb128 0x0	 # Augmentation size
 	.byte	0x4	 # DW_CFA_advance_loc4
@@ -342,7 +342,7 @@ $LSFDE1:
 	.4byte	$LEFDE1-$LASFDE1	 # FDE Length
 $LASFDE1:
 	.4byte	$LASFDE1-$Lframe0	 # FDE CIE offset
-	.4byte	$LFB1-.	 # FDE initial location
+	.4byte	$LFB1	 # FDE initial location
 	.4byte	$LFE1-$LFB1	 # FDE address range
 	.uleb128 0x0	 # Augmentation size
 	.byte	0x4	 # DW_CFA_advance_loc4
