@@ -1,3 +1,7 @@
+2000-05-11  Michael Meissner  <meissner@redhat.com>
+
+	* gcc.c-torture/execute/20000511-1.c: New test.
+
 2000-05-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/dg.exp: Scan .S files as well as .c files.
