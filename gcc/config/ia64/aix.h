@@ -87,7 +87,8 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
 -D__ia64 -D__ia64__ -D_AIX -D_AIX64 -D_LONGLONG -Dunix \
--D__LP64__ -D__ELF__ -Asystem=unix -Asystem=aix -Acpu=ia64 -Amachine=ia64 \
+-D_LP64 -D__LP64__ -D__ELF__ \
+-Asystem=unix -Asystem=aix -Acpu=ia64 -Amachine=ia64 \
 -D__64BIT__ -D_LONG_LONG -D_IA64 -D__int128=__size128_t"
 
 /* The GNU C++ standard library requires that these macros be defined.  */

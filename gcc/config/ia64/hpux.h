@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "\
   %{mcpu=itanium:-D__itanium__} \
-  %{mlp64:-D__LP64__ -D__LONG_MAX__=9223372036854775807L} \
+  %{mlp64:-D__LP64__ -D_LP64 -D__LONG_MAX__=9223372036854775807L} \
   %{!ansi:%{!std=c*:%{!std=i*: -D_HPUX_SOURCE -D__STDC_EXT__}}} \
   -D__fpreg=long\\ double \
   -D__float80=long\\ double \
