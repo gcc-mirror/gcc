@@ -30,9 +30,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
 
-#undef ASM_SPEC
-#define ASM_SPEC "-nocpp"
-
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS
 

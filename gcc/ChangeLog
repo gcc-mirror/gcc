@@ -1,3 +1,22 @@
+Tue Feb 24 23:54:07 1998  Richard Henderson  <rth@cygnus.com>
+
+	* flags.h (g_switch_value, g_switch_set): Declare.
+	* alpha.c (override_options): Set g_switch_value=8 if not set.
+	* alpha/elf.h (CC1_SPEC): New.
+	(ASM_SPEC): New.
+	(LINK_SPEC): Pass along the -G value we were given.
+	(LOCAL_ASM_OP): Remove.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Output to .bss or .sbss by size.
+	(MAX_OFILE_ALIGNMENT): New.
+	(BSS_SECTION_ASM_OP, SBSS_SECTION_ASM_OP, SDATA_SECTION_ASM_OP): New.
+	(EXTRA_SECTIONS): Add sbss and sdata.
+	(SECTION_FUNCTION_TEMPLATE): New.
+	(EXTRA_SECTION_FUNCTIONS): Use it.
+	(CTORS_SECTION_FUNCTION, DTORS_SECTION_FUNCTION): Remove.
+	(SELECT_SECTION): Use sdata when small enough.
+	* alpha/linux.h (ASM_SPEC): Remove.
+	
+
 Mon Feb 23 15:09:18 1998  Bruno Haible <bruno@linuix.mathematik.uni-karlsruhe.de>
         * config.sub (sco5): Fix typo.
 
