@@ -31,8 +31,8 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-#ifndef _CLIMITS
-#define _CLIMITS	1
+#ifndef _CPP_CLIMITS
+#define _CPP_CLIMITS	1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-#ifndef _CLOCALE
-#define _CLOCALE 1
+#ifndef _CPP_CLOCALE
+#define _CPP_CLOCALE 1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 27.8.2  C Library files
 //
 
-#ifndef _CSTDIO
-#define _CSTDIO 1
+#ifndef _CPP_CSTDIO
+#define _CPP_CSTDIO 1
 
 #pragma GCC system_header
 
