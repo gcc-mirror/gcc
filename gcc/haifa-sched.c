@@ -6329,27 +6329,24 @@ print_block_visualization (b, s)
      char *s;
 {
   int unit, i;
-  char *names;			/* names of units */
-  char *delim;			/* separation line */
 
   /* print header */
   fprintf (dump, "\n;;   ==================== scheduling visualization for block %d %s \n", b, s);
 
   /* Print names of units */
-  names = (char *) alloca (256);
-  delim = (char *) alloca (256);
-  sprintf (names, ";;   %-8s", "clock");
-  sprintf (delim, ";;   %-8s", "=====");
+  fprintf (dump, ";;   %-8s", "clock");
   for (unit = 0; unit < FUNCTION_UNITS_SIZE; unit++)
     if (function_units[unit].bitmask & target_units)
       for (i = 0; i < function_units[unit].multiplicity; i++)
-	{
-	  sprintf (names + strlen (names), "  %-33s", function_units[unit].name);
-	  sprintf (delim + strlen (delim), "  %-33s", "==============================");
-	}
-  sprintf (names + strlen (names), "  %-8s", "no-unit");
-  sprintf (delim + strlen (delim), "  %-8s", "=======");
-  fprintf (dump, "\n%s\n%s\n", names, delim);
+	fprintf (dump, "  %-33s", function_units[unit].name);
+  fprintf (dump, "  %-8s\n", "no-unit");
+
+  fprintf (dump, ";;   %-8s", "=====");
+  for (unit = 0; unit < FUNCTION_UNITS_SIZE; unit++)
+    if (function_units[unit].bitmask & target_units)
+      for (i = 0; i < function_units[unit].multiplicity; i++)
+	fprintf (dump, "  %-33s", "==============================");
+  fprintf (dump, "  %-8s\n", "=======");
 
   /* Print insns in each cycle */
   fprintf (dump, "%s\n", visual_tbl);
