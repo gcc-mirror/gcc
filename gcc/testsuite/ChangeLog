@@ -1,3 +1,7 @@
+2000-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/cast5.C: New test.
+
 2000-02-05  Alan Modra  <alan@SPRI.Levels.UniSA.Edu.Au>
 
 	* gcc.c-torture/execute/20000205-1.c: New.
