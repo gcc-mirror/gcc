@@ -1,3 +1,7 @@
+2003-04-07  Loren James Rittle  <ljrittle@acm.org>
+
+	* cpppch.c (cpp_valid_state): Unconditionally initialize nl.
+
 2003-04-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (move2add_last_cc0): New.

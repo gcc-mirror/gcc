@@ -455,7 +455,7 @@ cpp_valid_state (r, name, fd)
   size_t namebufsz = 256;
   unsigned char *namebuf = xmalloc (namebufsz);
   unsigned char *undeftab = NULL;
-  struct ht_node_list nl;
+  struct ht_node_list nl = { 0, 0, 0 };
   unsigned char *first, *last;
   unsigned int i;
   
