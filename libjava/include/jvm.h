@@ -186,6 +186,7 @@ _Jv_GetArrayElementFromElementType (jobject array,
 }
 
 extern "C" void _Jv_ThrowBadArrayIndex (jint bad_index);
+extern "C" void _Jv_ThrowNullPointerException (void);
 extern "C" jobject _Jv_NewArray (jint type, jint size)
   __attribute__((__malloc__));
 extern "C" jobject _Jv_NewMultiArray (jclass klass, jint dims, ...)

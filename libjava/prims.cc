@@ -303,6 +303,12 @@ _Jv_ThrowBadArrayIndex(jint bad_index)
 	   (java::lang::String::valueOf(bad_index)));
 }
 
+void
+_Jv_ThrowNullPointerException ()
+{
+  throw new java::lang::NullPointerException ();
+}
+
 // Allocate some unscanned memory and throw an exception if no memory.
 void *
 _Jv_AllocBytesChecked (jsize size)
