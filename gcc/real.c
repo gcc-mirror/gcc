@@ -246,15 +246,15 @@ unknown arithmetic type
 #define NE 6
 #define MAXDECEXP 4932
 #define MINDECEXP -4956
-#define GET_REAL(r,e) bcopy (r, e, 2*NE)
-#define PUT_REAL(e,r) bcopy (e, r, 2*NE)
+#define GET_REAL(r,e) bcopy ((char *) r, (char *) e, 2*NE)
+#define PUT_REAL(e,r) bcopy ((char *) e, (char *) r, 2*NE)
 #else /* no XFmode */
 #if LONG_DOUBLE_TYPE_SIZE == 128
 #define NE 10
 #define MAXDECEXP 4932
 #define MINDECEXP -4977
-#define GET_REAL(r,e) bcopy (r, e, 2*NE)
-#define PUT_REAL(e,r) bcopy (e, r, 2*NE)
+#define GET_REAL(r,e) bcopy ((char *) r, (char *) e, 2*NE)
+#define PUT_REAL(e,r) bcopy ((char *) e, (char *) r, 2*NE)
 #else
 #define NE 6
 #define MAXDECEXP 4932
