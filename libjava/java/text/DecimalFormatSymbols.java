@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.text;
 
 import java.io.Serializable;
+import java.util.Currency;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -192,6 +193,18 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
 	    && percent == dfs.percent
 	    && perMill == dfs.perMill
 	    && zeroDigit == dfs.zeroDigit);
+  }
+
+  /**
+   * Returns the currency corresponding to the currency symbol stored
+   * in the instance of <code>DecimalFormatSymbols</code>.
+   *
+   * @return A new instance of <code>Currency</code> if
+   * the currency code matches a known one.
+   */
+  public Currency getCurrency ()
+  {
+    return Currency.getInstance (currencySymbol);
   }
 
   /**
@@ -351,6 +364,16 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
     // separator -- JCL book.  This probably isn't a very good hash
     // code.
     return zeroDigit << 16 + groupingSeparator << 8 + decimalSeparator;
+  }
+
+  /**
+   * This method sets the currency to the specified value.
+   *
+   * @param currency The new currency
+   */
+  public void setCurrency (Currency currency)
+  {
+    setCurrencySymbol (currency.getSymbol());
   }
 
   /**

@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.text;
 
+import java.util.Currency;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -637,6 +638,19 @@ public class DecimalFormat extends NumberFormat
     return dest;
   }
 
+  /**
+   * Returns the currency corresponding to the currency symbol stored
+   * in the instance of <code>DecimalFormatSymbols</code> used by this
+   * <code>DecimalFormat</code>.
+   *
+   * @return A new instance of <code>Currency</code> if
+   * the currency code matches a known one, null otherwise.
+   */
+  public Currency getCurrency()
+  {
+    return symbols.getCurrency();
+  }
+
   public DecimalFormatSymbols getDecimalFormatSymbols ()
   {
     return symbols;
@@ -854,6 +868,16 @@ public class DecimalFormat extends NumberFormat
     pos.setIndex(index + suffix.length());
 
     return result;
+  }
+
+  /**
+   * Sets the <code>Currency</code> on the
+   * <code>DecimalFormatSymbols</code> used, which also sets the
+   * currency symbols on those symbols.
+   */
+  public void setCurrency(Currency currency)
+  {
+    symbols.setCurrency(currency);
   }
 
   public void setDecimalFormatSymbols (DecimalFormatSymbols newSymbols)
