@@ -65,6 +65,10 @@ extern int yydebug;
 /* File used for outputting assembler code.  */
 extern FILE *asm_out_file;
 
+#ifndef LONG_LONG_TYPE_SIZE
+#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
 #ifndef WCHAR_TYPE_SIZE
 #ifdef INT_TYPE_SIZE
 #define WCHAR_TYPE_SIZE INT_TYPE_SIZE
@@ -1151,16 +1155,18 @@ yylex ()
 	int largest_digit = 0;
 	int numdigits = 0;
 	/* for multi-precision arithmetic,
-	   we store only 8 live bits in each short,
-	   giving us 64 bits of reliable precision */
-	short shorts[8];
+	   we actually store only HOST_BITS_PER_CHAR bits in each part.
+	   The number of parts is chosen so as to be sufficient to hold
+	   at least as many bits as are in a target `long long' value.  */
+#define TOTAL_PARTS (LONG_LONG_TYPE_SIZE / HOST_BITS_PER_CHAR) + 2
+	int parts[TOTAL_PARTS];
 	int overflow = 0;
 
 	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS} floatflag
 	  = NOT_FLOAT;
 
-	for (count = 0; count < 8; count++)
-	  shorts[count] = 0;
+	for (count = 0; count < TOTAL_PARTS; count++)
+	  parts[count] = 0;
 
 	p = token_buffer;
 	*p++ = c;
@@ -1259,20 +1265,24 @@ yylex ()
 		  largest_digit = c;
 		numdigits++;
 
-		for (count = 0; count < 8; count++)
+		for (count = 0; count < TOTAL_PARTS; count++)
 		  {
-		    shorts[count] *= base;
+		    parts[count] *= base;
 		    if (count)
 		      {
-			shorts[count] += (shorts[count-1] >> 8);
-			shorts[count-1] &= (1<<8)-1;
+			parts[count]
+			  += (parts[count-1] >> HOST_BITS_PER_CHAR);
+			parts[count-1]
+			  &= (1 << HOST_BITS_PER_CHAR) - 1;
 		      }
-		    else shorts[0] += c;
+		    else
+		      parts[0] += c;
 		  }
 
-		if (shorts[7] >= 1<<8
-		    || shorts[7] < - (1 << 8))
-		  overflow = TRUE;
+		/* If the extra highest-order part ever gets anything in it,
+		   the number is certainly too big.  */
+		if (parts[TOTAL_PARTS - 1] != 0)
+		  overflow = 1;
 
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
@@ -1477,32 +1487,12 @@ yylex ()
 	    else
 	      bytes = TYPE_PRECISION (long_integer_type_node) / 8;
 
-	    if (bytes <= 8)
-	      {
-		warn = overflow;
-		for (i = bytes; i < 8; i++)
-		  if (shorts[i])
-		    {
-		      /* If LL was not used, then clear any excess precision.
-			 This is equivalent to the original code, but it is
-			 not clear why this is being done.  Perhaps to prevent
-			 ANSI programs from creating long long constants
-			 by accident?  */
-		      if (! spec_long_long)
-			shorts[i] = 0;
-		      warn = 1;
-		    }
-		if (warn)
-		  pedwarn ("integer constant out of range");
-	      }
-	    else if (overflow)
-	      pedwarn ("integer constant larger than compiler can handle");
-
-	    /* If it overflowed our internal buffer, then make it unsigned.
-	       We can't distinguish based on the tree node because
-	       any integer constant fits any long long type.  */
-	    if (overflow)
-	      spec_unsigned = 1;
+	    warn = overflow;
+	    for (i = bytes; i < TOTAL_PARTS; i++)
+	      if (parts[i])
+		warn = 1;
+	    if (warn)
+	      pedwarn ("integer constant out of range");
 
 	    /* This is simplified by the fact that our constant
 	       is always positive.  */
@@ -1510,74 +1500,11 @@ yylex ()
 	       needed, but they get around bugs in some C compilers.  */
 	    yylval.ttype
 	      = (build_int_2
-		 ((((long)shorts[3]<<24) + ((long)shorts[2]<<16)
-		   + ((long)shorts[1]<<8) + (long)shorts[0]),
-		  (((long)shorts[7]<<24) + ((long)shorts[6]<<16)
-		   + ((long)shorts[5]<<8) + (long)shorts[4])));
+		 ((((long)parts[3]<<24) + ((long)parts[2]<<16)
+		   + ((long)parts[1]<<8) + (long)parts[0]),
+		  (((long)parts[7]<<24) + ((long)parts[6]<<16)
+		   + ((long)parts[5]<<8) + (long)parts[4])));
 
-#if 0
-	    /* Find the first allowable type that the value fits in.  */
-	    type = 0;
-	    for (i = 0; i < sizeof (type_sequence) / sizeof (type_sequence[0]);
-		 i++)
-	      if (!(spec_long && !type_sequence[i].long_flag)
-		  && !(spec_long_long && !type_sequence[i].long_long_flag)
-		  && !(spec_unsigned && !type_sequence[i].unsigned_flag)
-		  /* A decimal constant can't be unsigned int
-		     unless explicitly specified.  */
-		  && !(base == 10 && !spec_unsigned
-		       && *type_sequence[i].node_var == unsigned_type_node))
-		if (int_fits_type_p (yylval.ttype, *type_sequence[i].node_var))
-		  {
-		    type = *type_sequence[i].node_var;
-		    break;
-		  }
-	    if (flag_traditional && type == long_unsigned_type_node
-		&& !spec_unsigned)
-	      type = long_integer_type_node;
-	      
-	    if (type == 0)
-	      {
-		type = long_long_integer_type_node;
-		warning ("integer constant out of range");
-	      }
-
-	    /* Warn about some cases where the type of a given constant
-	       changes from traditional C to ANSI C.  */
-	    if (warn_traditional)
-	      {
-		tree other_type = 0;
-
-		/* This computation is the same as the previous one
-		   except that flag_traditional is used backwards.  */
-		for (i = 0; i < sizeof (type_sequence) / sizeof (type_sequence[0]);
-		     i++)
-		  if (!(spec_long && !type_sequence[i].long_flag)
-		      && !(spec_long_long && !type_sequence[i].long_long_flag)
-		      && !(spec_unsigned && !type_sequence[i].unsigned_flag)
-		      /* A decimal constant can't be unsigned int
-			 unless explicitly specified.  */
-		      && !(base == 10 && !spec_unsigned
-			   && *type_sequence[i].node_var == unsigned_type_node))
-		    if (int_fits_type_p (yylval.ttype, *type_sequence[i].node_var))
-		      {
-			other_type = *type_sequence[i].node_var;
-			break;
-		      }
-		if (!flag_traditional && type == long_unsigned_type_node
-		    && !spec_unsigned)
-		  type = long_integer_type_node;
-	      
-		if (other_type != 0 && other_type != type)
-		  {
-		    if (flag_traditional)
-		      warning ("type of integer constant would be different without -traditional");
-		    else
-		      warning ("type of integer constant would be different with -traditional");
-		  }
-	      }
-
-#else /* 1 */
 	    /* If warn_traditional, calculate both the ANSI type and the
 	       traditional type, then see if they disagree.
 	       Otherwise, calculate only the type for the dialect in use.  */
@@ -1600,9 +1527,7 @@ yylex ()
 			 && int_fits_type_p (yylval.ttype, integer_type_node))
 		  traditional_type = (spec_unsigned ? unsigned_type_node
 				      : integer_type_node);
-		else if (! spec_long_long
-			 && int_fits_type_p (yylval.ttype,
-					     long_unsigned_type_node))
+		else if (! spec_long_long)
 		  traditional_type = (spec_unsigned ? long_unsigned_type_node
 				      : long_integer_type_node);
 		else
@@ -1622,9 +1547,7 @@ yylex ()
 		else if (! spec_unsigned && !spec_long_long
 			 && int_fits_type_p (yylval.ttype, long_integer_type_node))
 		  ansi_type = long_integer_type_node;
-		else if (! spec_long_long
-			 && int_fits_type_p (yylval.ttype,
-					     long_unsigned_type_node))
+		else if (! spec_long_long)
 		  ansi_type = long_unsigned_type_node;
 		else if (! spec_unsigned
 			 && int_fits_type_p (yylval.ttype,
@@ -1647,9 +1570,9 @@ yylex ()
 		else
 		  warning ("width of integer constant may change on other systems with -traditional");
 	      }
-#endif
 
-	    if (!flag_traditional && !int_fits_type_p (yylval.ttype, type))
+	    if (!flag_traditional && !int_fits_type_p (yylval.ttype, type)
+		&& !warn)
 	      pedwarn ("integer constant out of range");
 
 	    TREE_TYPE (yylval.ttype) = type;
