@@ -5927,7 +5927,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 	       + floor_log2 (INTVAL (XEXP (x, 1))))
 	      < GET_MODE_BITSIZE (GET_MODE (x)))
 	  && (INTVAL (XEXP (x, 1))
-	      & ~ nonzero_bits (XEXP (x, 0), GET_MODE (x)) == 0))
+	      & ~ nonzero_bits (XEXP (x, 0), GET_MODE (x))) == 0)
 	{
 	  temp = GEN_INT ((INTVAL (XEXP (x, 1)) & mask)
 			      << INTVAL (XEXP (XEXP (x, 0), 1)));
@@ -7449,8 +7449,8 @@ num_sign_bit_copies (x, mode)
 	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && ((nonzero_bits (XEXP (x, 0), mode)
 	       & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
-	  && (nonzero_bits (XEXP (x, 1), mode)
-	      & ((HOST_WIDE_INT) 1 << (bitwidth - 1)) != 0))
+	  && ((nonzero_bits (XEXP (x, 1), mode)
+	      & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0))
 	result--;
 
       return MAX (1, result);
@@ -8885,10 +8885,10 @@ simplify_comparison (code, pop0, pop1)
 		  == GET_MODE (SUBREG_REG (inner_op1)))
 	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
 		  <= HOST_BITS_PER_WIDE_INT)
-	      && (0 == (~c0) & nonzero_bits (SUBREG_REG (inner_op0),
-					     GET_MODE (SUBREG_REG (op0))))
-	      && (0 == (~c1) & nonzero_bits (SUBREG_REG (inner_op1),
-					     GET_MODE (SUBREG_REG (inner_op1)))))
+	      && (0 == ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
+					     GET_MODE (SUBREG_REG (op0)))))
+	      && (0 == ((~c1) & nonzero_bits (SUBREG_REG (inner_op1),
+					     GET_MODE (SUBREG_REG (inner_op1))))))
 	    {
 	      op0 = SUBREG_REG (inner_op0);
 	      op1 = SUBREG_REG (inner_op1);
