@@ -7630,14 +7630,12 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      if (BYTES_BIG_ENDIAN)
 		new = gen_rtx (MEM, tmode, XEXP (varop, 0));
 	      else
-		{
-		  new = gen_rtx (MEM, tmode,
-				 plus_constant (XEXP (varop, 0),
-						count / BITS_PER_UNIT));
-		  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (varop);
-		  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (varop);
-		  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (varop);
-		}
+		new = gen_rtx (MEM, tmode,
+			       plus_constant (XEXP (varop, 0),
+					      count / BITS_PER_UNIT));
+	      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (varop);
+	      MEM_VOLATILE_P (new) = MEM_VOLATILE_P (varop);
+	      MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (varop);
 	      varop = gen_rtx_combine (code == ASHIFTRT ? SIGN_EXTEND
 				       : ZERO_EXTEND, mode, new);
 	      count = 0;
