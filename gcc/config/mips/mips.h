@@ -2016,14 +2016,14 @@ typedef struct mips_args {
     }									\
   else									\
     {									\
-      fprintf (STREAM, "\t.word\t0x8fe30010\t\t# lw     $3,16($31)\n");	\
-      fprintf (STREAM, "\t.word\t0x8fe20014\t\t# lw     $2,20($31)\n");	\
+      fprintf (STREAM, "\t.word\t0x8fe30014\t\t# lw     $3,20($31)\n");	\
+      fprintf (STREAM, "\t.word\t0x8fe20018\t\t# lw     $2,24($31)\n");	\
     }									\
+  fprintf (STREAM, "\t.word\t0x0060c821\t\t# move   $25,$3 (abicalls)\n"); \
   fprintf (STREAM, "\t.word\t0x00600008\t\t# jr     $3\n");		\
   fprintf (STREAM, "\t.word\t0x0020f821\t\t# move   $31,$1\n");		\
   if (TARGET_LONG64)							\
     {									\
-      fprintf (STREAM, "\t.word\t0x00000000\t\t# <alignment padding>\n"); \
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <function address>\n"); \
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <static chain value>\n"); \
     }									\
@@ -2037,7 +2037,7 @@ typedef struct mips_args {
 /* A C expression for the size in bytes of the trampoline, as an
    integer.  */
 
-#define TRAMPOLINE_SIZE (TARGET_LONG64 ? (8 * 4 + 2 * 8) : (9 * 4))
+#define TRAMPOLINE_SIZE (32 + (TARGET_LONG64 ? 16 : 8))
 
 /* Alignment required for trampolines, in bits.  */
 
@@ -2059,8 +2059,8 @@ typedef struct mips_args {
     }									    \
   else									    \
     {									    \
-      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 28)), FUNC); \
-      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 32)), CHAIN);\
+      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 32)), FUNC); \
+      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 36)), CHAIN);\
     }									    \
 									    \
   /* Flush the instruction cache.  */					    \
