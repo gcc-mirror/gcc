@@ -1,5 +1,20 @@
 2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (lang_decl_flags): Rename defined_in_class to
+	initialized_in_class.
+	(DECL_DEFINED_IN_CLASS_P): Rename to ...
+	(DECL_INITIALIZED_IN_CLASS_P): ... here, to reflect true meaning.
+	* decl.c (duplicate_decls): Preseve DECL_INITIALIZED_IN_CLASS_P.
+	(cp_finish_decl): Adjust for DECL_INITIALIZED_IN_CLASS_P.
+	* pt.c (check_default_tmpl_args): Adjust for
+	DECL_INITIALIZED_IN_CLASS_P.
+	(instantiate_class_template): Likewise.
+	(instantiate_decl): Check DECL_INITIALIZED_IN_CLASS_P.
+	
+	* class.c (finish_struct): Constify saved_filename.
+
+2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (duplicate_tag_error): Adjust diagnostic.
 	(finish_struct): Locally set location to start of struct.
 	* decl.c (fixup_anonymous_aggr): Use cp_error_at.

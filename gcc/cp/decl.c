@@ -3573,6 +3573,8 @@ duplicate_decls (newdecl, olddecl)
       DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
       DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
       DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+      DECL_INITIALIZED_IN_CLASS_P (newdecl)
+        |= DECL_INITIALIZED_IN_CLASS_P (olddecl);
       olddecl_friend = DECL_FRIEND_P (olddecl);
 
       /* Only functions have DECL_BEFRIENDING_CLASSES.  */
@@ -7931,7 +7933,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       && CP_DECL_CONTEXT (decl) == current_class_type
       && TYPE_BEING_DEFINED (current_class_type)
       && (DECL_INITIAL (decl) || init))
-    DECL_DEFINED_IN_CLASS_P (decl) = 1;
+    DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
 
   if (TREE_CODE (decl) == VAR_DECL
       && DECL_CONTEXT (decl)

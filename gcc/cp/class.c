@@ -5328,7 +5328,7 @@ tree
 finish_struct (t, attributes)
      tree t, attributes;
 {
-  char *saved_filename = input_filename;
+  const char *saved_filename = input_filename;
   int saved_lineno = lineno;
 
   /* Now that we've got all the field declarations, reverse everything
