@@ -416,24 +416,29 @@ protect_from_queue (x, modify)
 
   if (code != QUEUED)
     {
-      /* A special hack for read access to (MEM (QUEUED ...))
-	 to facilitate use of autoincrement.
-	 Make a copy of the contents of the memory location
-	 rather than a copy of the address, but not
-	 if the value is of mode BLKmode.  */
+      /* A special hack for read access to (MEM (QUEUED ...)) to facilitate
+	 use of autoincrement.  Make a copy of the contents of the memory
+	 location rather than a copy of the address, but not if the value is
+	 of mode BLKmode.  Don't modify X in place since it might be
+	 shared.  */
       if (code == MEM && GET_MODE (x) != BLKmode
 	  && GET_CODE (XEXP (x, 0)) == QUEUED && !modify)
 	{
 	  register rtx y = XEXP (x, 0);
-	  XEXP (x, 0) = QUEUED_VAR (y);
+	  register rtx new = gen_rtx (MEM, GET_MODE (x), QUEUED_VAR (y));
+
+	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (x);
+	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
+	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (x);
+
 	  if (QUEUED_INSN (y))
 	    {
-	      register rtx temp = gen_reg_rtx (GET_MODE (x));
-	      emit_insn_before (gen_move_insn (temp, x),
+	      register rtx temp = gen_reg_rtx (GET_MODE (new));
+	      emit_insn_before (gen_move_insn (temp, new),
 				QUEUED_INSN (y));
 	      return temp;
 	    }
-	  return x;
+	  return new;
 	}
       /* Otherwise, recursively protect the subexpressions of all
 	 the kinds of rtx's that can contain a QUEUED.  */
