@@ -1,3 +1,11 @@
+2004-04-06  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Stop changing enable_threads midstream.
+	Replace uses of enable_threads_flag with enable_threads.
+	* configure.ac: Replace uses of enable_threads_flag with
+	enable_threads.  Improve autoconf quotation in one place.
+	* configure: Regenerate.
+
 2004-04-06  Uros Bizjak  <uros@kss-loka.si>
 
 	* builtins.c: Implement support for sincos function.

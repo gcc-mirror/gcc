@@ -4690,8 +4690,6 @@ if test "${enable_threads+set}" = set; then
 else
   enable_threads=''
 fi;
-# Save in case it gets overwritten in config.gcc
-enable_threads_flag=$enable_threads
 
 # Check whether --enable-objc-gc or --disable-objc-gc was given.
 if test "${enable_objc_gc+set}" = set; then
@@ -5261,7 +5259,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5264: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5262: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -9293,7 +9291,7 @@ fi
 # ---------
 
 # Check if a valid thread package
-case ${enable_threads_flag} in
+case ${enable_threads} in
   "" | no)
     # No threads
     target_thread_file='single'
@@ -9304,10 +9302,10 @@ case ${enable_threads_flag} in
     ;;
   aix | dce | gnat | irix | posix | rtems | \
   single | solaris | vxworks | win32 )
-    target_thread_file=${enable_threads_flag}
+    target_thread_file=${enable_threads}
     ;;
   *)
-    echo "${enable_threads_flag} is an unknown thread package" 1>&2
+    echo "${enable_threads} is an unknown thread package" 1>&2
     exit 1
     ;;
 esac
