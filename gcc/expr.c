@@ -1100,6 +1100,8 @@ convert_move (to, from, unsignedp)
       else
 	{
 	  enum machine_mode intermediate;
+	  rtx tmp;
+	  tree shift_amount;
 
 	  /* Search for a mode to convert via.  */
 	  for (intermediate = from_mode; intermediate != VOIDmode;
@@ -1116,8 +1118,18 @@ convert_move (to, from, unsignedp)
 		return;
 	      }
 
-	  /* No suitable intermediate mode.  */
-	  abort ();
+	  /* No suitable intermediate mode.
+	     Generate what we need with	shifts. */
+	  shift_amount = build_int_2 (GET_MODE_BITSIZE (to_mode)
+				      - GET_MODE_BITSIZE (from_mode), 0);
+	  from = gen_lowpart (to_mode, force_reg (from_mode, from));
+	  tmp = expand_shift (LSHIFT_EXPR, to_mode, from, shift_amount,
+			      to, unsignedp);
+	  tmp = expand_shift (RSHIFT_EXPR, to_mode, tmp,  shift_amount,
+			      to, unsignedp);
+	  if (tmp != to)
+	    emit_move_insn (to, tmp);
+	  return;
 	}
     }
 
