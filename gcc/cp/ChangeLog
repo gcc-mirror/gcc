@@ -1,3 +1,20 @@
+1999-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* method.c (PARM_CAN_BE_ARRAY_TYPE): Remove.
+	(mangling_flags): New type.
+	(build_overload_int): Change prototype.
+	(build_overload_value): Likewise.
+	(numeric_output_need_bar): Improve comment.
+	(mangle_expression): New function, broken out from ...
+	(build_overload_int): Here.
+	(build_overload_value): Adjust for use of mangling flags.  Don't
+	warn about real-valued template parameters here.  Do handle
+	complex expressions involving real-valued template parameters.
+	(build_template_parm_names): Encase non-type template parameters
+	in underscores, if necessary.
+	(process_overload_item): Remove conditional on
+	PARM_CAN_BE_ARRAY_TYPE.
+
 1999-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (dequeue_and_dump): Handle CLEANUP_POINT_EXPR.
