@@ -1,3 +1,10 @@
+2003-03-02  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/14350
+	* configure.in: Remove hardcoded gcc version.
+
+	* configure: Regenerated.
+
 2004-02-10  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* Makefile.in (gnattools): Depend on gnatlib.
