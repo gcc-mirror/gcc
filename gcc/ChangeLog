@@ -1,3 +1,9 @@
+2002-09-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* real.h (ibm_extended_format): Declare.
+	* real.c (encode_ibm_extended, decode_ibm_extended): New
+	functions.
+
 2002-09-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* darwin-protos.h (darwin_asm_output_dwarf_delta): Prototype.

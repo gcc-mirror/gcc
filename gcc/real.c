@@ -2951,6 +2951,99 @@ const struct real_format ieee_extended_intel_128_format =
   };
 
 
+/* IBM 128-bit extended precision format: a pair of IEEE double precision
+   numbers whose sum is equal to the extended precision value.  The number
+   with greater magnitude is first.  This format has the same magnitude
+   range as an IEEE double precision value, but effectively 106 bits of
+   significand precision.  Infinity and NaN are represented by their IEEE
+   double precision value stored in the first number, the second number is
+   ignored.  Zeroes, Infinities, and NaNs are set in both doubles
+   due to precedent.  */
+
+static void encode_ibm_extended PARAMS ((const struct real_format *fmt,
+					 long *, const REAL_VALUE_TYPE *));
+static void decode_ibm_extended PARAMS ((const struct real_format *,
+					 REAL_VALUE_TYPE *, const long *));
+
+static void
+encode_ibm_extended (fmt, buf, r)
+     const struct real_format *fmt ATTRIBUTE_UNUSED;
+     long *buf;
+     const REAL_VALUE_TYPE *r;
+{
+  REAL_VALUE_TYPE u, v;
+
+  switch (r->class)
+    {
+    case rvc_zero:
+      /* Both doubles have sign bit set.  */
+      buf[0] = FLOAT_WORDS_BIG_ENDIAN ? r->sign << 31 : 0;
+      buf[1] = FLOAT_WORDS_BIG_ENDIAN ? 0 : r->sign << 31;
+      buf[2] = buf[0];
+      buf[3] = buf[1];
+      break;
+
+    case rvc_inf:
+    case rvc_nan:
+      /* Both doubles set to Inf / NaN.  */
+      encode_ieee_double (&ieee_double_format, &buf[0], r);
+      buf[2] = buf[0];
+      buf[3] = buf[1];
+      return;
+      
+    case rvc_normal:
+      /* u = IEEE double precision portion of significand.  */
+      u = *r;
+      clear_significand_below (&u, SIGNIFICAND_BITS - 53);
+
+      /* v = remainder containing additional 53 bits of significand.  */
+      do_add (&v, r, &u, 1);
+
+      encode_ieee_double (&ieee_double_format, &buf[0], &u);
+      encode_ieee_double (&ieee_double_format, &buf[2], &v);
+      break;
+
+    default:
+      abort ();
+    }
+}
+
+static void
+decode_ibm_extended (fmt, r, buf)
+     const struct real_format *fmt ATTRIBUTE_UNUSED;
+     REAL_VALUE_TYPE *r;
+     const long *buf;
+{
+  REAL_VALUE_TYPE u, v;
+
+  decode_ieee_double (&ieee_double_format, &u, &buf[0]);
+
+  if (u.class != rvc_zero && u.class != rvc_inf && u.class != rvc_nan)
+    {
+      decode_ieee_double (&ieee_double_format, &v, &buf[2]);
+      do_add (r, &u, &v, 0);
+    }
+  else
+    *r = u;
+}
+
+const struct real_format ibm_extended_format = 
+  {
+    encode_ibm_extended,
+    decode_ibm_extended,
+    2,
+    1,
+    53 + 53,
+    -1021,
+    1024,
+    true,
+    true,
+    true,
+    true,
+    true
+  };
+
+
 /* IEEE quad precision format.  */
 
 static void encode_ieee_quad PARAMS ((const struct real_format *fmt,

@@ -216,6 +216,7 @@ extern const struct real_format ieee_double_format;
 extern const struct real_format ieee_extended_motorola_format;
 extern const struct real_format ieee_extended_intel_96_format;
 extern const struct real_format ieee_extended_intel_128_format;
+extern const struct real_format ibm_extended_format;
 extern const struct real_format ieee_quad_format;
 extern const struct real_format vax_f_format;
 extern const struct real_format vax_d_format;
