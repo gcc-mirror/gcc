@@ -343,6 +343,10 @@ struct cpp_reader
 
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
+
+  /* Whether to print our version number.  Done this way so
+     we don't get it twice for -v -version.  */
+  unsigned char print_version;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.

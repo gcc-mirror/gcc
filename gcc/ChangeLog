@@ -1,5 +1,21 @@
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
+	* cpphash.h (struct cpp_reader): Add print_version field.
+	* cppinit.c (cpp_handle_option): For -v, -version, and --version,
+	just set print_version and other flags as appropriate.
+	(cpp_post_options): Print version here if print_version is set.
+
+	* toplev.c (exit_after_options): New flag.
+	(independent_decode_option): Don't exit here; just set
+	exit_after_options.
+	(main): Exit after calling lang_hooks.post_options if
+	exit_after_options is true.
+
+	* cppinit.c (append_include_chain): Drop never-used case QUOTE.
+	(merge_include_chains): Adjust comment to match code.
+
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
 	* stringpool.c (set_identifier): New function.
 	* tree.h: Prototype it.
 

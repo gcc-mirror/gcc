@@ -391,6 +391,9 @@ int errorcount = 0;
 int warningcount = 0;
 int sorrycount = 0;
 
+/* Nonzero if we should exit after parsing options.  */
+static int exit_after_options = 0;
+
 /* The FUNCTION_DECL for the function currently being compiled,
    or 0 if between functions.  */
 tree current_function_decl;
@@ -4373,19 +4376,19 @@ independent_decode_option (argc, argv)
   if (!strcmp (arg, "-help"))
     {
       display_help ();
-      exit (0);
+      exit_after_options = 1;
     }
 
   if (!strcmp (arg, "-target-help"))
     {
       display_target_options ();
-      exit (0);
+      exit_after_options = 1;
     }
 
   if (!strcmp (arg, "-version"))
     {
       print_version (stderr, "");
-      exit (0);
+      exit_after_options = 1;
     }
 
   /* Handle '--param <name>=<value>'.  */
@@ -4834,6 +4837,9 @@ main (argc, argv)
   /* All command line options have been processed.  */
   if (lang_hooks.post_options)
     (*lang_hooks.post_options) ();
+
+  if (exit_after_options)
+    exit (0);
 
   /* Reflect any language-specific diagnostic option setting.  */
   reshape_diagnostic_buffer ();
