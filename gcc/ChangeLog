@@ -1,3 +1,7 @@
+2001-04-12  Kelley Cook <kelley.cook@home.com>
+
+	* config-lang.in (lang_dirs): Add in zlib.
+
 2001-04-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.md: Apply trunc_int_for_mode() to GEN_INT
