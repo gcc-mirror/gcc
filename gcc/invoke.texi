@@ -107,7 +107,7 @@ in the following sections.
 -fno-for-scope  -fno-gnu-keywords  -fguiding-decls  -fhandle-signatures
 -fhonor-std -fhuge-objects  -fno-implicit-templates  -finit-priority
 -fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
--foperator-names  -fno-optional-diags  -frepo  -fstrict-prototype
+-foperator-names  -fno-optional-diags  -fpermissive -frepo  -fstrict-prototype
 -fsquangle  -ftemplate-depth-@var{n}  -fthis-is-variable  -fvtable-thunks
 -nostdinc++  -Wctor-dtor-privacy -Wno-deprecated -Weffc++  
 -Wno-non-template-friend 
