@@ -576,7 +576,7 @@ extern enum reg_class reg_class_from_letter[];
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
 ((C) == 'G' ? fp_zero_operand (VALUE)		\
  : (C) == 'H' ? fp_one_operand (VALUE)		\
- : 0)
+ : (C) == 'F')
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -907,13 +907,9 @@ extern struct rtx_def *sh_builtin_saveregs ();
 
 /* Nonzero if the constant value X is a legitimate general operand.  */
 
-/* ??? Should modify this to accept CONST_DOUBLE, and then modify the
-   constant pool table code to fix loads of CONST_DOUBLEs.  If that doesn't
-   work well, then we can at least handle simple CONST_DOUBLEs here
-   such as 0.0.  */
-
 #define LEGITIMATE_CONSTANT_P(X) \
   (GET_CODE (X) != CONST_DOUBLE						\
+   || GET_MODE (X) == DFmode || GET_MODE (X) == SFmode			\
    || (TARGET_SH3E && (fp_zero_operand (X) || fp_one_operand (X))))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
