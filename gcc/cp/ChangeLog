@@ -1,3 +1,132 @@
+1999-08-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (queue): Be careful when computing bitmasks.
+	(dequeue_and_dump): Describe binfos as binfos, not as
+	vectors.
+	
+	* parse.y (pedantic): Give it itype.  Adjust usage accordingly
+	throughout. 	
+	* parse.c: Regenerated.
+	
+	* Make-lang.in (CXX_SRCS): Remove sig.c.
+	* Makefile.in (CXX_OBJS): Remove sig.o.
+	(sig.o): Remove.
+	* cp-tree.h (CPTI_OPAQUE_TYPE): Remove.
+	(CPTI_SIGNATURE_TYPE): Likewise.
+	(CPTI_SIGTABLE_ENTRY_TYPE): Likewise.
+	(opaque_type_node): Likewise.
+	(signature_type_node): Likewise.
+	(sigtable_entry_type): Likewise.
+	(flag_handle_signatures): Likewise.
+	(lang_type): Remove is_signature, is_signature_pointer,
+	is_signature_reference, has_opaque_typedecls,
+	sigtables_has_been_generated.  Adjust dummy.  Remove signature,
+	signature_pointer_to, signature_reference_to.
+	(IS_SIGNATURE): Remove.
+	(SET_SIGNATURE): Remove.
+	(CLEAR_SIGNATURE): Remove.
+	(IS_SIGNATURE_POINTER): Remove.
+	(IS_SIGNATURE_REFERENCE): Remove.
+	(SIGNATURE_HAS_OPAQUE_TYPEDECLS): Remove.
+	(SIGTABLE_HAS_BEEN_GENERATED): Remove.
+	(CLASSTYPE_SIGNATURE): Remove.
+	(SIGNATURE_TYPE): Remove.
+	(SIGNATURE_METHOD_VEC): Remove.
+	(SIGNATURE_POINTER_TO): Remove.
+	(SIGNATURE_REFERENCE_TO): Remove.
+	(lang_decl_flags): Remove is_default_implementation.  Rename
+	memfunc_pointer_to to saved_tree.
+	(IS_DEFAULT_IMPLEMENTATION): Remove.
+	(DECL_MEMFUNC_POINTER_TO): Remove.
+	(DECL_MEMFUNC_POINTING_TO): Remove.
+	(DECL_SAVED_TREE): Adjust definition.
+	(tag_types): Remove signature_type_node.
+	(SIGNATURE_FIELD_NAME): Remove.
+	(SIGNATURE_FIELD_NAME_FORMAT): Likewise.
+	(SIGNATURE_OPTR_NAME): Likewise.
+	(SIGNATURE_SPTR_NAME): Likewise.
+	(SIGNATURE_POINTER_NAME): Likewise.
+	(SIGNATURE_POINTER_NAME_FORMAT): Likewise.
+	(SIGNATURE_REFERENCE_NAME): Likewise.
+	(SIGNATURE_REFERNECE_NAME_FORMAT): Likewise.
+	(SIGTABLE_PTR_TYPE): Likewise.
+	(SIGTABLE_NAME_FORMAT): Likewise.
+	(SIGTABLE_NAME_FORMAT_LONG): Likewise.
+	(SIGTABLE_TAG_NAME): Likewise.
+	(SIGTABLE_VB_OFF_NAME): Likewise.
+	(SIGTABLE_VT_OFF_NAME): Likewise.
+	(finish_base_specifiers): Change prototype.
+	(build_signature_pointer_type): Remove.
+	(build_signature_reference_type): Remove.
+	(build_signature_pointer_constructor): Remove.
+	(build_signature_method_call): Remove.
+	(build_optr_ref): Likewise.
+	(append_signature_fields): Likewise.
+	(signature_error): Likewise.
+	* call.c (build_this): Remove signature support.
+	(build_over_call): Likewise.
+	(build_new_method_call): Likewise.
+	* class.c (add_implicitly_declared_members): Likewise.
+	(finish_struct_1): Likewise.
+	(finish_struct): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_pointer_force): Likewise.
+	(ocp_convert): Likewise.
+	* decl.c (sigtable_decl_p): Remove.
+	(init_decl_processing): Remove support for signatures.
+	(cp_finish_decl): Likewise.
+	(grokdeclarator): Likewise.
+	(grokparms): Likewise.
+	(xref_tag): Likewise.
+	(start_function): Likewise.
+	(start_method): Likewise.
+	* decl2.c (finish_sigtable_vardecl): Remove.
+	(flag_handle_signatures): Remove.
+	(lang_f_options): Remove handle-signatures.
+	(grokfield): Remove support for signatures.
+	(grokbitfield): Likewise.
+	(finish_file): Likewise.
+	(reparse_absdcl_as_casts): Likewise.
+	* error.c (dump_type_real): Likewise.
+	(dump_function_decl): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	* gxx.gperf: Remove __signature__, signature, __sigof__, sigof.
+	* hash.h: Regenerated.
+	* init.c (build_new_1): Remove support for signatures.
+	* lang-options.h: Remove -fhandle-signatures,
+	-fno-handle-signatures. 
+	* lex.c (init_parse): Remove support for signatures.
+	(yyprint): Likewise.
+	* lex.h (rid): Remove RID_SIGNATURE.
+	* method.c (build_decl_overload_real): Remove support for
+	signatures. 
+	(hack_identifier): Likewise.
+	* parse.y (base_class): Likewise.
+	(base_class.1): Likewise.
+	(access_specifier): Likewise.
+	* search.c (lookup_member): Likewise.
+	* semantics.c (finish_qualified_object_call_expr): Likewise.
+	(finish_template_type_parm): Likewise.
+	(begin_class_definition): Likewise.
+	(finish_base_specifier): Likewise.
+	* sig.c: Remove.
+	* tree.c (build_cplus_method_type): Remove support for signatures.
+	* typeck.c (require_complete_type): Likewise.
+	(c_sizeof): Likewise.
+	(c_alignof): Likewise.
+	(build_object_ref): Likewise.
+	(build_component_ref): Likewise.
+	(build_indirect_ref): Likewise.
+	(build_c_cast): Likewise.
+	(build_modify_expr): Likewise.
+	(convert_for_initialization): Likewise.
+	* typeck2.c (signature_error): Remove.
+	(store_init_value): Remove support for signatures.
+	(digest_init): Likewise.
+	(build_x_arrow): Likewise.
+	(build_functional_cast): Likewise.
+	* xref.c (GNU_xref_decl): Likewise.
+	
 1999-08-10  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* lex.c (do_identifier): Remove unnecessary lookup of class field.

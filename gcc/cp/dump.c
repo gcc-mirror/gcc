@@ -120,8 +120,8 @@ queue (di, t, flags)
   /* Create a new entry in the splay-tree.  */
   dni = (dump_node_info_p) xmalloc (sizeof (struct dump_node_info));
   dni->index = index;
-  dni->dump_children_p = flags & DUMP_CHILDREN;
-  dni->binfo_p = flags & DUMP_BINFO;
+  dni->dump_children_p = ((flags & DUMP_CHILDREN) != 0);
+  dni->binfo_p = ((flags & DUMP_BINFO) != 0);
   dq->node = splay_tree_insert (di->nodes, (splay_tree_key) t, 
 				(splay_tree_value) dni);
 
@@ -291,6 +291,7 @@ dequeue_and_dump (di)
   int dump_children_p;
   enum tree_code code;
   char code_class;
+  const char* code_name;
 
   /* Get the next node from the queue.  */
   dq = di->queue;
@@ -310,7 +311,11 @@ dequeue_and_dump (di)
   /* Print the node index.  */
   dump_index (di, index);
   /* And the type of node this is.  */
-  fprintf (di->stream, "%-16s ", tree_code_name[(int) TREE_CODE (t)]);
+  if (dni->binfo_p)
+    code_name = "binfo";
+  else
+    code_name = tree_code_name[(int) TREE_CODE (t)];
+  fprintf (di->stream, "%-16s ", code_name);
   di->column = 25;
 
   /* Figure out what kind of node this is.  */
