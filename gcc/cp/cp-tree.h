@@ -936,11 +936,10 @@ struct lang_decl_flags
   unsigned saved_inline : 1;
   unsigned use_template : 2;
 
-  unsigned c_static : 1;
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
-  unsigned dummy : 4;
+  unsigned dummy : 5;
 
   tree access;
   tree context;
@@ -1402,11 +1401,6 @@ extern int flag_new_for_scope;
 /* We know what we're doing with this decl now.  */
 #define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
 
-/* This decl was declared or deduced to have internal linkage.  This is
-   only meaningful if TREE_PUBLIC is set.  */
-#define DECL_C_STATIC(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.c_static)
-
 /* This function was declared inline.  This flag controls the linkage
    semantics of 'inline'; whether or not the function is inlined is
    controlled by DECL_INLINE.  */
@@ -1421,10 +1415,6 @@ extern int flag_new_for_scope;
 
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
-
-#define DECL_PUBLIC(NODE) \
-  (TREE_CODE (NODE) == FUNCTION_DECL \
-   ? ! DECL_C_STATIC (NODE) : TREE_PUBLIC (NODE))
 
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 

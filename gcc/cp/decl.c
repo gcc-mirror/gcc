@@ -2460,7 +2460,7 @@ duplicate_decls (newdecl, olddecl)
       /* If you declare a built-in or predefined function name as static,
 	 the old definition is overridden, but optionally warn this was a
 	 bad choice of name.  Ditto for overloads.  */
-      if (! DECL_PUBLIC (newdecl)
+      if (! TREE_PUBLIC (newdecl)
 	  || (TREE_CODE (newdecl) == FUNCTION_DECL
 	      && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl)))
 	{
@@ -2848,9 +2848,6 @@ duplicate_decls (newdecl, olddecl)
   if (! DECL_EXTERNAL (olddecl))
     DECL_EXTERNAL (newdecl) = 0;
 
-  if (TREE_CODE (newdecl) == FUNCTION_DECL)
-    DECL_C_STATIC (newdecl) |= DECL_C_STATIC (olddecl);
-
   if (DECL_LANG_SPECIFIC (newdecl))
     {
       DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
@@ -3214,7 +3211,7 @@ pushdecl (x)
 
 	  /* If the first global decl has external linkage,
 	     warn if we later see static one.  */
-	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && DECL_PUBLIC (x))
+	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && TREE_PUBLIC (x))
 	    TREE_PUBLIC (name) = 1;
 
 	  /* Don't install an artificial TYPE_DECL if we already have
@@ -6640,7 +6637,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  && current_function_decl
 	  && DECL_CONTEXT (decl) == current_function_decl
 	  && DECL_THIS_INLINE (current_function_decl)
-	  && DECL_PUBLIC (current_function_decl))
+	  && TREE_PUBLIC (current_function_decl))
 	{
 	  if (DECL_INTERFACE_KNOWN (current_function_decl))
 	    {
@@ -7218,7 +7215,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   decl = build_lang_decl (FUNCTION_DECL, declarator, type);
   /* propagate volatile out from type to decl */
   if (TYPE_VOLATILE (type))
-      TREE_THIS_VOLATILE (decl) = 1;
+    TREE_THIS_VOLATILE (decl) = 1;
 
   /* Should probably propagate const out from type to decl I bet (mrs).  */
   if (staticp)
@@ -7230,10 +7227,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (ctype)
     DECL_CLASS_CONTEXT (decl) = ctype;
 
-  /* All function decls start out public; we'll fix their linkage later (at
-     definition or EOF) if appropriate.  */
-  TREE_PUBLIC (decl) = 1;
-
   if (ctype == NULL_TREE && ! strcmp (IDENTIFIER_POINTER (declarator), "main"))
     {
       if (inlinep)
@@ -7244,8 +7237,12 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       publicp = 1;
     }
 	  
+  TREE_PUBLIC (decl) = publicp;
   if (! publicp)
-    DECL_C_STATIC (decl) = 1;
+    {
+      DECL_INTERFACE_KNOWN (decl) = 1;
+      DECL_NOT_REALLY_EXTERN (decl) = 1;
+    }
 
   if (inlinep)
     DECL_THIS_INLINE (decl) = DECL_INLINE (decl) = 1;
@@ -7262,7 +7259,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     grok_op_properties (decl, virtualp, check < 0);
 
   if (ctype && hack_decl_function_context (decl))
-      DECL_NO_STATIC_CHAIN (decl) = 1;
+    DECL_NO_STATIC_CHAIN (decl) = 1;
 
   for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
     if (TREE_PURPOSE (t)
@@ -11425,11 +11422,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  = (interface_only
 	     || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
       else
-	{
-	  DECL_EXTERNAL (decl1) = 0;
-	  if (DECL_C_STATIC (decl1))
-	    TREE_PUBLIC (decl1) = 0;
-	}	  
+	DECL_EXTERNAL (decl1) = 0;
       DECL_NOT_REALLY_EXTERN (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
@@ -11445,11 +11438,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  && ! hack_decl_function_context (decl1))
 	DECL_DEFER_OUTPUT (decl1) = 1;
       else
-	{
-	  DECL_INTERFACE_KNOWN (decl1) = 1;
-	  if (DECL_C_STATIC (decl1))
-	    TREE_PUBLIC (decl1) = 0;
-	}
+	DECL_INTERFACE_KNOWN (decl1) = 1;
     }
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
