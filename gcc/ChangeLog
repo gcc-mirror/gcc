@@ -1,3 +1,8 @@
+2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
+
+        * fixinc/inclhack.def (djgpp_wchar_h): New test.
+        * fixinc/fixincl.x: Regenerated.
+		
 2001-03-06  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Restore change that patch misapplied.

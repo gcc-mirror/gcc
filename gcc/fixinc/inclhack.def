@@ -1000,6 +1000,20 @@ fix = {
 
 
 /*
+ * Fix typo in <wchar.h> on DJGPP 2.03.
+ */
+fix = {
+    hackname  = djgpp_wchar_h;
+    file      = wchar.h;
+    select    = "__DJ_wint_t";
+    bypass    = "sys/djtypes.h";
+    c_fix     = format;
+    c_fix_arg = "%0\n#include <sys/djtypes.h>";
+    c_fix_arg = "#include <stddef.h>";
+    test_text = "__DJ_wint_t\n#undef __DJ_wint_t\n#define __DJ_wint_t";
+};
+
+/*
  * Fix these Sun OS files to avoid an invalid identifier in an #ifdef.
  */
 fix = {
