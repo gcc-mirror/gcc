@@ -784,20 +784,6 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
-# Fix line in IRIX 4.0.1 header file.  The sed script turns
-# #define EM_CTRL		(CUTIOC|0x1)
-# into
-# #define EM_CTRL		(CUTIOC|0x'1')
-file=sys/t3270reg.h
-if [ -r ${LIB}/$file ]; then
-  echo Fixing $file, overeager sed script
-  sed -e "s/0x'1'/0x1/" ${LIB}/$file > ${LIB}/${file}.sed
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    rm -f ${LIB}/$file
-  fi
-fi
-
 # Turning // comments into /* */ comments trashes this IRIX 4.0.1
 # header file, which embeds // comments inside multi-line /* */
 # comments.  If this looks like the IRIX header file, we refix it by
