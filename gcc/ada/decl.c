@@ -84,9 +84,10 @@ static void copy_alias_set (tree, tree);
 static tree substitution_list (Entity_Id, Entity_Id, tree, int);
 static int allocatable_size_p (tree, int);
 static struct attrib *build_attr_list (Entity_Id);
-static tree elaborate_expression (Node_Id, Entity_Id, tree, int, int, int);
+static tree elaborate_expression (Node_Id, Entity_Id, tree, bool, bool, bool);
 static int is_variable_size (tree);
-static tree elaborate_expression_1 (Node_Id, Entity_Id, tree, tree, int, int);
+static tree elaborate_expression_1 (Node_Id, Entity_Id, tree, tree,
+				    bool, bool);
 static tree make_packable_type (tree);
 static tree maybe_pad_type (tree, tree, unsigned int, Entity_Id, const char *,
                             int, int, int);
@@ -1487,7 +1488,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   fields once we build them.  */
 	tem = build (COMPONENT_REF, gnu_ptr_template,
 		     build (PLACEHOLDER_EXPR, gnu_fat_type),
-		     TREE_CHAIN (TYPE_FIELDS (gnu_fat_type)));
+		     TREE_CHAIN (TYPE_FIELDS (gnu_fat_type)), NULL_TREE);
 	gnu_template_reference
 	  = build_unary_op (INDIRECT_REF, gnu_template_type, tem);
 	TREE_READONLY (gnu_template_reference) = 1;
@@ -1532,9 +1533,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* We can't use build_component_ref here since the template
 	       type isn't complete yet.  */
 	    gnu_min = build (COMPONENT_REF, gnu_ind_subtype,
-			     gnu_template_reference, gnu_min_field);
+			     gnu_template_reference, gnu_min_field, NULL_TREE);
 	    gnu_max = build (COMPONENT_REF, gnu_ind_subtype,
-			     gnu_template_reference, gnu_max_field);
+			     gnu_template_reference, gnu_max_field, NULL_TREE);
 	    TREE_READONLY (gnu_min) = TREE_READONLY (gnu_max) = 1;
 
 	    /* Make a range type with the new ranges, but using
@@ -2331,7 +2332,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    gnu_get_parent = build (COMPONENT_REF, void_type_node,
 				    build (PLACEHOLDER_EXPR, gnu_type),
 				    build_decl (FIELD_DECL, NULL_TREE,
-						NULL_TREE));
+						NULL_TREE),
+				    NULL_TREE);
 
 	    if (Has_Discriminants (gnat_entity))
 	      for (gnat_field = First_Stored_Discriminant (gnat_entity);
@@ -2345,7 +2347,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			    gnu_get_parent,
 			    gnat_to_gnu_entity (Corresponding_Discriminant
 						(gnat_field),
-						NULL_TREE, 0)),
+						NULL_TREE, 0),
+			    NULL_TREE),
 		     1);
 
 	    gnu_parent = gnat_to_gnu_type (Parent_Subtype (gnat_entity));
@@ -2387,7 +2390,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			     build (COMPONENT_REF, TREE_TYPE (gnu_field),
 				    build (PLACEHOLDER_EXPR,
 					   DECL_CONTEXT (gnu_field)),
-				    gnu_field),
+				    gnu_field, NULL_TREE),
 			     1);
 
 	      TREE_CHAIN (gnu_field) = gnu_field_list;
@@ -4453,12 +4456,9 @@ maybe_variable (tree gnu_operand)
    purposes even if it isn't needed for code generation.  */
 
 static tree
-elaborate_expression (Node_Id gnat_expr,
-                      Entity_Id gnat_entity,
-                      tree gnu_name,
-                      int definition,
-                      int need_value,
-                      int need_debug)
+elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity,
+                      tree gnu_name, bool definition, bool need_value,
+		      bool need_debug)
 {
   tree gnu_expr;
 
@@ -4480,10 +4480,8 @@ elaborate_expression (Node_Id gnat_expr,
     = elaborate_expression_1 (gnat_expr, gnat_entity, gnat_to_gnu (gnat_expr),
 			      gnu_name, definition, need_debug);
 
-  /* Save the expression in case we try to elaborate this entity again.
-     Since this is not a DECL, don't check it.  If this is a constant,
-     don't save it since GNAT_EXPR might be used more than once.  Also,
-     don't save if it's a discriminant.  */
+  /* Save the expression in case we try to elaborate this entity again.  Since
+     this is not a DECL, don't check it.  Don't save if it's a discriminant. */
   if (! CONTAINS_PLACEHOLDER_P (gnu_expr))
     save_gnu_tree (gnat_expr, gnu_expr, 1);
 
@@ -4493,12 +4491,9 @@ elaborate_expression (Node_Id gnat_expr,
 /* Similar, but take a GNU expression.  */
 
 static tree
-elaborate_expression_1 (Node_Id gnat_expr,
-                        Entity_Id gnat_entity,
-                        tree gnu_expr,
-                        tree gnu_name,
-                        int definition,
-                        int need_debug)
+elaborate_expression_1 (Node_Id gnat_expr, Entity_Id gnat_entity,
+                        tree gnu_expr, tree gnu_name, bool definition,
+                        bool need_debug)
 {
   tree gnu_decl = 0;
   /* Strip any conversions to see if the expression is a readonly variable.
@@ -4517,7 +4512,7 @@ elaborate_expression_1 (Node_Id gnat_expr,
   if (TREE_CODE (gnu_expr) == FIELD_DECL)
     gnu_expr = build (COMPONENT_REF, TREE_TYPE (gnu_expr),
 		      build (PLACEHOLDER_EXPR, DECL_CONTEXT (gnu_expr)),
-		      gnu_expr);
+		      gnu_expr, NULL_TREE);
 
   /* If GNU_EXPR is neither a placeholder nor a constant, nor a variable
      that is a constant, make a variable that is initialized to contain the

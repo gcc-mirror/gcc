@@ -1535,10 +1535,8 @@ gnat_build_constructor (tree type, tree list)
    actual record and know how to look for fields in variant parts.  */
 
 static tree
-build_simple_component_ref (tree record_variable,
-                            tree component,
-                            tree field,
-                            int no_fold_p)
+build_simple_component_ref (tree record_variable, tree component,
+                            tree field, int no_fold_p)
 {
   tree record_type = TYPE_MAIN_VARIANT (TREE_TYPE (record_variable));
   tree ref;
@@ -1610,7 +1608,8 @@ build_simple_component_ref (tree record_variable,
 
   /* It would be nice to call "fold" here, but that can lose a type
      we need to tag a PLACEHOLDER_EXPR with, so we can't do it.  */
-  ref = build (COMPONENT_REF, TREE_TYPE (field), record_variable, field);
+  ref = build (COMPONENT_REF, TREE_TYPE (field), record_variable, field,
+	       NULL_TREE);
 
   if (TREE_READONLY (record_variable) || TREE_READONLY (field))
     TREE_READONLY (ref) = 1;
@@ -1625,10 +1624,8 @@ build_simple_component_ref (tree record_variable,
    reference could not be found.  */
 
 tree
-build_component_ref (tree record_variable,
-                     tree component,
-                     tree field,
-                     int no_fold_p)
+build_component_ref (tree record_variable, tree component,
+                     tree field, int no_fold_p)
 {
   tree ref = build_simple_component_ref (record_variable, component, field,
 					 no_fold_p);
@@ -1930,7 +1927,7 @@ build_allocator (tree type,
       result
 	= build (COMPOUND_EXPR, TREE_TYPE (result),
 		 build_binary_op
-		 (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (result)),
+		 (MODIFY_EXPR, NULL_TREE,
 		  build_unary_op (INDIRECT_REF, TREE_TYPE (TREE_TYPE (result)),
 				  result),
 		  init),
@@ -1993,19 +1990,8 @@ gnat_mark_addressable (tree expr_node)
       case VAR_DECL:
       case PARM_DECL:
       case RESULT_DECL:
-	/* If we have already made a REG for this decl, we must put it
-	   directly into the stack.  Likewise for a MEM whose address is a
-	   pseudo.  Otherwise, set a flag to mark us to do it later.  */
-	if (DECL_RTL_SET_P (expr_node)
-	    && (GET_CODE (DECL_RTL (expr_node)) == REG
-		|| (GET_CODE (DECL_RTL (expr_node)) == MEM
-		    && GET_CODE (XEXP (DECL_RTL (expr_node), 0)) == REG
-		    && (REGNO (XEXP (DECL_RTL (expr_node), 0))
-			> LAST_VIRTUAL_REGISTER))))
-	  put_var_into_stack (expr_node, 1);
-	else
-	  TREE_ADDRESSABLE (expr_node) = 1;
-
+	put_var_into_stack (expr_node, 1);
+	TREE_ADDRESSABLE (expr_node) = 1;
 	return true;
 
       case FUNCTION_DECL:

@@ -109,6 +109,10 @@ static GTY(()) tree gnu_return_label_stack;
    TREE_VALUE of each entry is the label of the corresponding LOOP_STMT.  */
 static GTY(()) tree gnu_loop_label_stack;
 
+/* List of TREE_LIST nodes representing labels for switch statements.
+   TREE_VALUE of each entry is the label at the end of the switch.  */
+static GTY(()) tree gnu_switch_label_stack;
+
 /* List of TREE_LIST nodes containing pending elaborations lists.
    used to prevent the elaborations being reclaimed by GC.  */
 static GTY(()) tree gnu_pending_elaboration_lists;
@@ -746,18 +750,21 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Object_Renaming_Declaration:
       gnat_temp = Defining_Entity (gnat_node);
-      gnu_result = alloc_stmt_list ();
 
-      /* Don't do anything if this renaming is handled by the front end.
-	 or if we are just annotating types and this object has a
-	 composite or task type, don't elaborate it.  */
+      /* Don't do anything if this renaming is handled by the front end.  or if
+	 we are just annotating types and this object has a composite or task
+	 type, don't elaborate it.  We return the result in case it has any
+	 SAVE_EXPRs in it that need to be evaluated here.  */
       if (! Is_Renaming_Of_Object (gnat_temp)
 	  && ! (type_annotate_only
 		&& (Is_Array_Type (Etype (gnat_temp))
 		    || Is_Record_Type (Etype (gnat_temp))
 		    || Is_Concurrent_Type (Etype (gnat_temp)))))
-	gnat_to_gnu_entity (gnat_temp,
-			    gnat_to_gnu (Renamed_Object (gnat_temp)), 1);
+	gnu_result
+	  = gnat_to_gnu_entity (gnat_temp,
+				gnat_to_gnu (Renamed_Object (gnat_temp)), 1);
+      else
+	gnu_result = alloc_stmt_list ();
       break;
 
     case N_Implicit_Label_Declaration:
@@ -2053,6 +2060,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	/* We build a SWITCH_EXPR that contains the code with interspersed
 	   CASE_LABEL_EXPRs for each label.  */
 
+	push_stack (&gnu_switch_label_stack, NULL_TREE,
+		    create_artificial_label ());
 	start_stmt_group ();
 	for (gnat_when = First_Non_Pragma (Alternatives (gnat_node));
 	     Present (gnat_when);
@@ -2121,10 +2130,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	       we want them to be local to this set of statements instead of
 	       the block containing the Case statement.  */
 	    add_stmt (build_stmt_group (Statements (gnat_when), true));
+	    add_stmt (build1 (GOTO_EXPR, void_type_node,
+			      TREE_VALUE (gnu_switch_label_stack)));
+
 	  }
 	
+	/* Now emit a definition of the label all the cases branched to. */
+	add_stmt (build1 (LABEL_EXPR, void_type_node,
+			  TREE_VALUE (gnu_switch_label_stack)));
 	gnu_result = build (SWITCH_EXPR, TREE_TYPE (gnu_expr), gnu_expr,
 			    end_stmt_group (), NULL_TREE);
+	pop_stack (&gnu_switch_label_stack);
 	break;
       }
 
@@ -4051,8 +4067,11 @@ add_decl_stmt (tree gnu_decl, Entity_Id gnat_entity)
 {
   /* If this is a variable that Gigi is to ignore, we may have been given
      an ERROR_MARK.  So test for it.  We also might have been given a
-     reference for a renaming.  So only do something for a decl.  */
-  if (!DECL_P (gnu_decl))
+     reference for a renaming.  So only do something for a decl.  Also
+     ignore a TYPE_DECL for an UNCONSTRAINED_ARRAY_TYPE.  */
+  if (!DECL_P (gnu_decl)
+      || (TREE_CODE (gnu_decl) == TYPE_DECL
+	  && TREE_CODE (TREE_TYPE (gnu_decl)) == UNCONSTRAINED_ARRAY_TYPE))
     return;
 
   add_stmt_with_node (build (DECL_STMT, void_type_node, gnu_decl),
@@ -4254,7 +4273,7 @@ gnat_gimplify_stmt (tree *stmt_p)
       return GS_OK;
 
     case USE_STMT:
-      *stmt_p = build_empty_stmt ();
+      *stmt_p = alloc_stmt_list ();
       return GS_ALL_DONE;
 
     case DECL_STMT:
@@ -4262,31 +4281,33 @@ gnat_gimplify_stmt (tree *stmt_p)
 	tree var = DECL_STMT_VAR (stmt);
 
 	if (TREE_CODE (var) == TYPE_DECL)
-	  *stmt_p = gnat_gimplify_type_sizes (TREE_TYPE (var));
-	else if (TREE_CODE (var) == VAR_DECL && !DECL_EXTERNAL (var)
-		 && !TREE_CONSTANT (DECL_SIZE_UNIT (var)))
+	  *stmt_p = gimplify_type_sizes (TREE_TYPE (var));
+	else if (TREE_CODE (var) == VAR_DECL)
 	  {
-	    tree pt_type = build_pointer_type (TREE_TYPE (var));
-	    tree size, pre = NULL_TREE, post = NULL_TREE;
-
-	    /* This is a variable-sized decl.  Simplify its size and mark it
-	       for deferred expansion.  Note that mudflap depends on the format
-	       of the emitted code: see mx_register_decls.  */
 	    *stmt_p = NULL_TREE;
-	    size = get_initialized_tmp_var (DECL_SIZE_UNIT (var), &pre, &post);
-	    DECL_DEFER_OUTPUT (var) = 1;
-	    append_to_statement_list (pre, stmt_p);
-	    append_to_statement_list
-	      (build_function_call_expr
-	       (implicit_built_in_decls[BUILT_IN_STACK_ALLOC],
-		tree_cons (NULL_TREE,
-			   build1 (ADDR_EXPR, pt_type, var),
-			   tree_cons (NULL_TREE, size, NULL_TREE))),
-	       stmt_p);
-	    append_to_statement_list (post, stmt_p);
+	    gimplify_one_sizepos (&DECL_SIZE (var), stmt_p);
+	    gimplify_one_sizepos (&DECL_SIZE_UNIT (var), stmt_p);
+
+	    if (!DECL_EXTERNAL (var) && !TREE_CONSTANT (DECL_SIZE_UNIT (var)))
+	      {
+		DECL_DEFER_OUTPUT (var) = 1;
+		append_to_statement_list
+		  (build_function_call_expr
+		   (implicit_built_in_decls[BUILT_IN_STACK_ALLOC],
+		    tree_cons (NULL_TREE,
+			       build1 (ADDR_EXPR,
+				       build_pointer_type (TREE_TYPE (var)),
+				       var),
+			       tree_cons (NULL_TREE, DECL_SIZE_UNIT (var),
+					  NULL_TREE))),
+		   stmt_p);
+	      }
+
+	    if (*stmt_p == NULL_TREE)
+	      *stmt_p = alloc_stmt_list ();
 	  }
 	else
-	  *stmt_p = build_empty_stmt ();
+	  *stmt_p = alloc_stmt_list ();
 	return GS_ALL_DONE;
       }
 
@@ -4351,76 +4372,6 @@ gnat_gimplify_stmt (tree *stmt_p)
     default:
       abort ();
     }
-}
-
-/* Look through GNU_TYPE for variable-sized objects and gimplify each such
-   size that we find.  Return a STATEMENT_LIST containing the result.  */
-
-static tree
-gnat_gimplify_type_sizes (tree gnu_type)
-{
-  tree gnu_stmts = NULL_TREE;
-  tree gnu_field;
-
-  switch (TREE_CODE (gnu_type))
-    {
-    case ERROR_MARK:
-    case UNCONSTRAINED_ARRAY_TYPE:
-      return alloc_stmt_list ();
-
-    case INTEGER_TYPE:
-    case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
-    case CHAR_TYPE:
-    case REAL_TYPE:
-      gnat_gimplify_one_sizepos (&TYPE_MIN_VALUE (gnu_type), &gnu_stmts);
-      gnat_gimplify_one_sizepos (&TYPE_MAX_VALUE (gnu_type), &gnu_stmts);
-      break;
-
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case QUAL_UNION_TYPE:
-      for (gnu_field = TYPE_FIELDS (gnu_type); gnu_field;
-	   gnu_field = TREE_CHAIN (gnu_field))
-	if (TREE_CODE (gnu_field) == FIELD_DECL)
-	  gnat_gimplify_one_sizepos (&DECL_FIELD_OFFSET (gnu_field),
-				     &gnu_stmts);
-      break;
-
-    default:
-      break;
-    }
-
-  gnat_gimplify_one_sizepos (&TYPE_SIZE (gnu_type), &gnu_stmts);
-  gnat_gimplify_one_sizepos (&TYPE_SIZE_UNIT (gnu_type), &gnu_stmts);
-
-  if (!gnu_stmts)
-    gnu_stmts = alloc_stmt_list ();
-
-  return gnu_stmts;
-}
-
-/* Subroutine of the above to gimplify one size or position, *GNU_EXPR_P.
-   We add any required statements to GNU_STMT_P.  */
-
-static void
-gnat_gimplify_one_sizepos (tree *gnu_expr_p, tree *gnu_stmt_p)
-{
-  tree gnu_pre = NULL_TREE, gnu_post = NULL_TREE;
-
-  /* We don't do anything if the value isn't there, is constant, or
-     contains a PLACEHOLDER_EXPR.  */
-  if (*gnu_expr_p == NULL_TREE
-      || TREE_CONSTANT (*gnu_expr_p)
-      || CONTAINS_PLACEHOLDER_P (*gnu_expr_p))
-    return;
-
-  gimplify_expr (gnu_expr_p, &gnu_pre, &gnu_post, is_gimple_val, fb_rvalue);
-
-  if (gnu_pre)
-    append_to_statement_list (gnu_pre, gnu_stmt_p);
-  if (gnu_post)
-    append_to_statement_list (gnu_post, gnu_stmt_p);
 }
 
 /* Generate the RTL for the body of GNU_DECL.  If NESTED_P is nonzero,
@@ -5472,7 +5423,7 @@ gnat_stabilize_reference (tree ref, int force)
       result = build (COMPONENT_REF, type,
 		      gnat_stabilize_reference (TREE_OPERAND (ref, 0),
 						force),
-		      TREE_OPERAND (ref, 1));
+		      TREE_OPERAND (ref, 1), NULL_TREE);
       break;
 
     case BIT_FIELD_REF:
@@ -5591,6 +5542,9 @@ build_unit_elab (Entity_Id gnat_unit, int body_p, tree gnu_elab_list)
   tree gnu_decl;
   rtx insn;
   int result = 1;
+
+  /* ??? For now, force nothing to do.  */
+  gnu_elab_list = 0;
 
   /* If we have nothing to do, return.  */
   if (gnu_elab_list == 0)
