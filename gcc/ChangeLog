@@ -1,3 +1,8 @@
+2003-04-22  Olivier Hainque  <hainque@act-europe.fr>
+
+	* config/alpha/alpha.c (alpha_expand_prologue [OPEN_VMS_ABI]): Don't
+	set FRP on stack adjustment for outgoing args if frame_pointer_needed.
+
 2003-04-22  Vincent Celier <celier@gnat.com>
 
         * gthr-gnat.h, gthr-gnat.c: new sources for implementation of
