@@ -37,16 +37,23 @@ enum typekind {
   TYPE_PARAM_STRUCT
 };
 
+typedef struct pair *pair_p;
+typedef struct type *type_p;
+typedef unsigned lang_bitmap;
+
+/* Option data for the 'nested_ptr' option.  */
+struct nested_ptr_data {
+  type_p type;
+  const char *convert_to;
+  const char *convert_from;
+};    
+
 /* A way to pass data through to the output end.  */
 typedef struct options {
   struct options *next;
   const char *name;
   const void *info;
 } *options_p;
-
-typedef struct pair *pair_p;
-typedef struct type *type_p;
-typedef unsigned lang_bitmap;
 
 /* A name and a type.  */
 struct pair {

@@ -1,3 +1,8 @@
+2004-05-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* symtab.h (struct ht): New field 'entries_owned'
+	(ht_load): New prototype.
+
 2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* cpplib.h: Moved from gcc.  Change header guard name.

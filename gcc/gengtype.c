@@ -1509,6 +1509,7 @@ walk_type (type_p t, struct walk_type_data *d)
   int use_param_num = -1;
   int use_params_p = 0;
   options_p oo;
+  const struct nested_ptr_data *nested_ptr_d = NULL;
 
   d->needs_cast_p = 0;
   for (oo = d->opt; oo; oo = oo->next)
@@ -1523,6 +1524,8 @@ walk_type (type_p t, struct walk_type_data *d)
       use_params_p = 1;
     else if (strcmp (oo->name, "desc") == 0)
       desc = (const char *)oo->info;
+    else if (strcmp (oo->name, "nested_ptr") == 0)
+      nested_ptr_d = (const struct nested_ptr_data *)oo->info ;
     else if (strcmp (oo->name, "dot") == 0)
       ;
     else if (strcmp (oo->name, "tag") == 0)
@@ -1623,7 +1626,48 @@ walk_type (type_p t, struct walk_type_data *d)
 		break;
 	      }
 
-	    d->process_field (t->u.p, d);
+	    if (nested_ptr_d)
+	      {
+		const char *oldprevval2 = d->prev_val[2];
+
+		if (! UNION_OR_STRUCT_P (nested_ptr_d->type))
+		  {
+		    error_at_line (d->line,
+				   "field `%s' has invalid "
+				   "option `nested_ptr'\n",
+				   d->val);
+		    return;
+		  }
+
+		d->prev_val[2] = d->val;
+		oprintf (d->of, "%*s{\n", d->indent, "");
+		d->indent += 2;
+		d->val = xasprintf ("x%d", d->counter++);
+		oprintf (d->of, "%*s%s %s * %s =\n", d->indent, "",
+			 (nested_ptr_d->type->kind == TYPE_UNION 
+			  ? "union" : "struct"), 
+			 nested_ptr_d->type->u.s.tag, d->val);
+		oprintf (d->of, "%*s", d->indent + 2, "");
+		output_escaped_param (d, nested_ptr_d->convert_from,
+				      "nested_ptr");
+		oprintf (d->of, ";\n");
+
+		d->process_field (nested_ptr_d->type, d);
+
+		oprintf (d->of, "%*s%s = ", d->indent, "",
+			 d->prev_val[2]);
+		d->prev_val[2] = d->val;
+		output_escaped_param (d, nested_ptr_d->convert_to,
+				      "nested_ptr");
+		oprintf (d->of, ";\n");
+
+		d->indent -= 2;
+		oprintf (d->of, "%*s}\n", d->indent, "");
+		d->val = d->prev_val[2];
+		d->prev_val[2] = oldprevval2;
+	      }
+	    else
+	      d->process_field (t->u.p, d);
 	  }
 	else
 	  {

@@ -1,3 +1,10 @@
+2004-05-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* symtab.c (ht_create): Set entries_owned.
+	(ht_destroy): Honour entries_owned.
+	(ht_expand): Likewise.
+	(ht_load): New.
+
 2004-05-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/15651
