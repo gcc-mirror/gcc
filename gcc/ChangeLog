@@ -1,3 +1,11 @@
+2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/arm/arm.c: Convert to ISO-C.
+	* config/avr/avr.h: Likewise.
+	* config/fr30/fr30.c: Likewise.
+	* config/ip2k/ip2k.c: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+
 2003-12-20  Andrew Pinski  <pinskia@gcc.gnu.org>
             Matt Thomas  <matt@3am-software.com>
 
