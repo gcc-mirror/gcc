@@ -3086,27 +3086,36 @@ sparc_builtin_saveregs (arglist)
 {
   tree fntype = TREE_TYPE (current_function_decl);
   /* First unnamed integer register.  */
-  int first_intreg = current_function_args_info.arg_count[0];
+  int first_intreg = current_function_args_info.arg_count[(int) SPARC_ARG_INT];
   /* Number of integer registers we need to save.  */
   int n_intregs = MAX (0, NPARM_REGS (SImode) - first_intreg);
   /* First unnamed SFmode float reg (no, you can't pass SFmode floats as
-     unnamed arguments, we just number them that way).  */
-  int first_floatreg = current_function_args_info.arg_count[1] + 1 & ~1;
+     unnamed arguments, we just number them that way).  We must round up to
+     the next double word float reg - that is the first one to save.  */
+  int first_floatreg = current_function_args_info.arg_count[(int) SPARC_ARG_FLOAT] + 1 & ~1;
   /* Number of SFmode float regs to save.  */
   int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
   int ptrsize = GET_MODE_SIZE (Pmode);
   rtx valist, regbuf, fpregs;
-  int regno;
+  int bufsize, adjust, regno;
 
   /* Allocate block of memory for the regs.
-     We only allocate as much as we need.  */
+     We only allocate as much as we need, but we must ensure quadword float
+     regs are stored with the appropriate alignment.  */
   /* ??? If n_intregs + n_floatregs == 0, should we allocate at least 1 byte?
      Or can assign_stack_local accept a 0 SIZE argument?  */
 
-  regbuf = assign_stack_local (BLKmode,
-			       (n_intregs * UNITS_PER_WORD
-				+ n_floatregs * FLOAT_TYPE_SIZE/BITS_PER_UNIT),
-			       BITS_PER_WORD);
+  bufsize = (n_intregs * UNITS_PER_WORD) + (n_floatregs * (UNITS_PER_WORD / 2));
+  /* Add space in front of the int regs to ensure proper alignment of quadword
+     fp regs.  We must add the space in front because va_start assumes this.  */
+  if (n_floatregs >= 4)
+    adjust = ((n_intregs + first_floatreg / 2) % 2) * UNITS_PER_WORD;
+  else
+    adjust = 0;
+
+  regbuf = assign_stack_local (BLKmode, bufsize + adjust,
+			       GET_MODE_BITSIZE (TFmode));
+  regbuf = gen_rtx (MEM, BLKmode, plus_constant (XEXP (regbuf, 0), adjust));
   MEM_IN_STRUCT_P (regbuf) = 1;
 
   /* Save int args.
@@ -3130,9 +3139,10 @@ sparc_builtin_saveregs (arglist)
   for (regno = first_floatreg; regno < NPARM_REGS (SFmode); regno += 2)
     emit_move_insn (gen_rtx (MEM, DFmode,
 			     plus_constant (fpregs,
-					    GET_MODE_SIZE (SFmode) * regno)),
-		    gen_rtx (REG, DFmode, BASE_INCOMING_ARG_REG (DFmode)
-			     + regno));
+					    GET_MODE_SIZE (SFmode)
+					    * (regno - first_floatreg))),
+		    gen_rtx (REG, DFmode,
+			     BASE_INCOMING_ARG_REG (DFmode) + regno));
 
   /* Return the address of the regbuf.  */
 
