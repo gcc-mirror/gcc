@@ -1,3 +1,24 @@
+2004-11-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/18519
+	
+	* tree-optimize (execute_todo): Add case for TODO_cleanup_cfg.
+	* tree-pass.h: Add TODO_cleanup_cfg.
+	* tree-ssa-ccp.c (pass_ccp): Use TODO_cleanup_cfg.
+	(ccp_finalize): Remove call to cleanup_cfg.
+	* tree-ssa-dce.c (pass_dce): Use TODO_cleanup_cfg and TODO_dump_func.
+	(pass_cd_dce): Ditto.
+	(perform_tree_ssa_dce): Remove call to cleanup_cfg, 
+	dump_function_to_file.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Remove call
+	to cleanup_cfg.
+	(pass_ch): Add TODO_cleanup_cfg.
+	* tree-ssa-loop.c (tree_ssa_loop_done): Remove call to
+	cleanup_cfg.
+	(pass_loop_done): Add TODO_cleanup_cfg.
+	* tree-ssa-phiopt.c (pass_phiopt): Ditto.
+	(tree_ssa_phiopt): Remove call to cleanup_cfg.	
+	
 2004-11-16  Devang Patel  <dpatel@apple.com>
 
 	* optabs.c (vector_compare_rtx): Fix COMPARISON_CLASS_P use.
