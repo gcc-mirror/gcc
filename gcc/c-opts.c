@@ -1162,7 +1162,8 @@ c_common_post_options (const char **pfilename)
   if (this_input_filename == NULL)
     return true;
 
-  if (flag_preprocess_only && flag_working_directory)
+  if (flag_working_directory
+      && flag_preprocess_only && ! flag_no_line_commands)
     pp_dir_change (parse_in, get_src_pwd ());
 
   return flag_preprocess_only;

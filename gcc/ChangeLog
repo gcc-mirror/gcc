@@ -1,3 +1,8 @@
+2004-02-10  Per Bothner  <per@bothner.com>
+
+	* c-opts.c (c_common_post_options):   Don't emit working directory
+	in cpp output if -P was specified.
+
 2004-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/13424
