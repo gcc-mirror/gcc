@@ -1,12 +1,5 @@
 /* Configuration common to all targets running the GNU system.  */
 
-/* Macro to produce CPP_PREDEFINES for GNU on a given machine.  */
-#define GNU_CPP_PREDEFINES(machine) \
-"-D" machine " -Acpu(" machine ") -Amachine(" machine ") \
--Dunix -Asystem(unix) \
--DMACH -Asystem(mach) \
--D__GNU__ -Asystem(gnu)"
-
 /* Provide GCC options for standard feature-test macros.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
