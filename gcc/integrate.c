@@ -2853,7 +2853,7 @@ subst_constants (loc, insn, map)
   register char *format_ptr;
   int num_changes = num_validated_changes ();
   rtx new = 0;
-  enum machine_mode op0_mode;
+  enum machine_mode op0_mode = MAX_MACHINE_MODE;
 
   code = GET_CODE (x);
 
@@ -3067,6 +3067,8 @@ subst_constants (loc, insn, map)
   switch (GET_RTX_CLASS (code))
     {
     case '1':
+      if (op0_mode == MAX_MACHINE_MODE)
+	abort ();
       new = simplify_unary_operation (code, GET_MODE (x),
 				      XEXP (x, 0), op0_mode);
       break;
@@ -3095,6 +3097,8 @@ subst_constants (loc, insn, map)
 
     case 'b':
     case '3':
+      if (op0_mode == MAX_MACHINE_MODE)
+	abort ();
       new = simplify_ternary_operation (code, GET_MODE (x), op0_mode,
 					XEXP (x, 0), XEXP (x, 1), XEXP (x, 2));
       break;

@@ -1858,6 +1858,8 @@ get_objc_string_decl (ident, section)
     chain = meth_var_names_chain;
   else if (section == meth_var_types)
     chain = meth_var_types_chain;
+  else
+    abort ();
 
   for (; chain != 0; chain = TREE_VALUE (chain))
     if (TREE_VALUE (chain) == ident)
@@ -2081,7 +2083,7 @@ build_selector_translation_table ()
   tree sc_spec, decl_specs;
   tree chain, initlist = NULL_TREE;
   int offset = 0;
-  tree decl, var_decl, name;
+  tree decl = NULL_TREE, var_decl, name;
 
   /* The corresponding pop_obstacks is in finish_decl,
      called at the end of this function.  */
@@ -2353,6 +2355,8 @@ add_objc_string (ident, section)
     chain = &meth_var_names_chain;
   else if (section == meth_var_types)
     chain = &meth_var_types_chain;
+  else
+    abort ();
 
   while (*chain)
     {
@@ -4222,6 +4226,8 @@ generate_protocol_list (i_or_p)
 		  synth_id_with_class_suffix ("_OBJC_CATEGORY_PROTOCOLS",
 					      i_or_p),
 		  build_int_2 (size + 2, 0));
+  else
+    abort ();
 
   expr_decl = build1 (INDIRECT_REF, NULL_TREE, expr_decl);
 
@@ -4599,6 +4605,9 @@ synth_id_with_class_suffix (preamble, ctxt)
 	= (char *) alloca (strlen (preamble) + strlen (protocol_name) + 3);
       sprintf (string, "%s_%s", preamble, protocol_name);
     }
+  else
+    abort ();
+  
   return get_identifier (string);
 }
 
@@ -4700,6 +4709,8 @@ build_keyword_selector (selector)
 	key_name = KEYWORD_KEY_NAME (key_chain);
       else if (TREE_CODE (selector) == TREE_LIST)
 	key_name = TREE_PURPOSE (key_chain);
+      else
+	abort ();
 
       if (key_name)
 	len += IDENTIFIER_LENGTH (key_name) + 1;
@@ -4717,6 +4728,8 @@ build_keyword_selector (selector)
 	key_name = KEYWORD_KEY_NAME (key_chain);
       else if (TREE_CODE (selector) == TREE_LIST)
 	key_name = TREE_PURPOSE (key_chain);
+      else
+	abort ();
 
       if (key_name)
 	strcat (buf, IDENTIFIER_POINTER (key_name));
@@ -4969,6 +4982,8 @@ build_message_expr (mess)
     sel_name = args;
   else if (TREE_CODE (args) == TREE_LIST)
     sel_name = build_keyword_selector (args);
+  else
+    abort ();
 
   /* Build the parameter list to give to the method.  */
 
@@ -5375,6 +5390,8 @@ build_selector_expr (selnamelist)
     selname = selnamelist;
   else if (TREE_CODE (selnamelist) == TREE_LIST)
     selname = build_keyword_selector (selnamelist);
+  else
+    abort ();
 
   if (flag_typed_selectors)
     return build_typed_selector_reference (selname, 0);
@@ -7635,7 +7652,7 @@ gen_declarator (decl, buf, name)
 	  return buf;
 
 	default:
-	  break;
+	  abort ();
 	}
 
       return str;

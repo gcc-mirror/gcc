@@ -94,12 +94,11 @@ label: \"basic block %d",
     }
 }
 
-static int
+static void
 node_data (fp, tmp_rtx)
      FILE *fp;
      rtx tmp_rtx;
 {
-  int result;
 
   if (PREV_INSN (tmp_rtx) == 0)
     {
@@ -168,9 +167,9 @@ darkgrey\n  shape: ellipse" : "white",
 	       XINT (tmp_rtx, 4) < 0 ? note_names[-XINT (tmp_rtx, 4)] : "");
     }
   else if (GET_RTX_CLASS (GET_CODE (tmp_rtx)) == 'i')
-    result = print_rtl_single (fp, PATTERN (tmp_rtx));
+    print_rtl_single (fp, PATTERN (tmp_rtx));
   else
-    result = print_rtl_single (fp, tmp_rtx);
+    print_rtl_single (fp, tmp_rtx);
 
   switch (graph_dump_format)
     {
@@ -180,8 +179,6 @@ darkgrey\n  shape: ellipse" : "white",
     case no_graph:
       break;
     }
-
-  return result;
 }
 
 static void
@@ -316,7 +313,6 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
       for (tmp_rtx = NEXT_INSN (rtx_first); NULL != tmp_rtx;
 	   tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
-	  int did_output;
 	  int edge_printed = 0;
 	  rtx next_insn;
 
@@ -339,7 +335,7 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 	    }
 
 	  /* Print the data for this node.  */
-	  did_output = node_data (fp, tmp_rtx);
+	  node_data (fp, tmp_rtx);
 	  next_insn = next_nonnote_insn (tmp_rtx);
 
 	  if ((i = end[INSN_UID (tmp_rtx)]) >= 0)
