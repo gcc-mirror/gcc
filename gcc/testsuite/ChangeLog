@@ -1,5 +1,9 @@
 1999-11-22  Nathan Sidwell  <nathan@acm.org>
 
+	* g++.old-deja/g++.other/warn4.C: New test.
+
+1999-11-22  Nathan Sidwell  <nathan@acm.org>
+
 	* g++.old-deja/g++.eh/cleanup2.C: New test.
 	* g++.old-deja/g++.ext/pretty2.C: New test.
 	* g++.old-deja/g++.ext/pretty3.C: New test.
