@@ -1805,6 +1805,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    && GET_CODE (body) == SET
 	    && SET_DEST (body) == pc_rtx
 	    && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE
+	    && GET_RTX_CLASS (GET_CODE (XEXP (SET_SRC (body), 0))) == '<'
+	    && XEXP (XEXP (SET_SRC (body), 0), 1) == cc0_rtx
 	    /* This is done during prescan; it is not done again
 	       in final scan when prescan has been done.  */
 	    && prescan >= 0)
