@@ -320,9 +320,7 @@ struct default_include { char *fname; int cplusplus; } include_defaults[]
 #ifdef SYSTEM_INCLUDE_DIR
     { SYSTEM_INCLUDE_DIR, 0},
 #endif
-#ifndef NO_STANDARD_INCLUDE_DIR
     { STANDARD_INCLUDE_DIR, 0},
-#endif
 #endif /* not CROSS_COMPILE */
     { 0, 0}
     };
@@ -614,8 +612,9 @@ static char * saved_repl_write_ptr;
 static const char *shortpath ();
 
 /* Allocate some space, but check that the allocation was successful.  */
+/* alloca.c uses this, so don't make it static.  */
 
-static pointer_type
+pointer_type
 xmalloc (byte_count)
      size_t byte_count;
 {
@@ -635,7 +634,7 @@ xmalloc (byte_count)
 
 /* Reallocate some space, but check that the reallocation was successful.  */
 
-static pointer_type
+pointer_type
 xrealloc (old_space, byte_count)
      pointer_type old_space;
      size_t byte_count;
@@ -658,7 +657,7 @@ xrealloc (old_space, byte_count)
    the `const' qualifier from it and also make sure that the pointer value
    is non-null.  */
 
-static void
+void
 xfree (p)
      const_pointer_type p;
 {
@@ -1933,7 +1932,7 @@ munge_compile_params (params_list)
   /* Make a copy of the compile_params in heap space.  */
 
   compile_params
-    = (char **) xmalloc (sizeof (char *) * (param_count+1));
+    = (const char **) xmalloc (sizeof (char *) * (param_count+1));
   memcpy (compile_params, temp_params, sizeof (char *) * param_count);
 }
 
