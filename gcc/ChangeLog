@@ -1,4 +1,4 @@
-2001-09-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+2001-09-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi: Markup fixes.
 	Use Solaris 2, SunOS 4 as appropriate.
