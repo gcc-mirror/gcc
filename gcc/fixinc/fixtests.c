@@ -120,7 +120,7 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
 TEST_FOR_FIX_PROC_HEAD( stdc_0_in_system_headers_test )
 {
 #ifdef STDC_0_IN_SYSTEM_HEADERS
-  return SKIP_FIX;
+  return (pz_machine == NULL) ? APPLY_FIX : SKIP_FIX;
 #else
   return APPLY_FIX;
 #endif
