@@ -53,7 +53,11 @@ namespace std
 	  // Named locale.
 	  _M_decimal_point = *(__nl_langinfo_l(RADIXCHAR, __cloc));
 	  _M_thousands_sep = *(__nl_langinfo_l(THOUSEP, __cloc));
-	  _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	  // Check for NUL, which implies no grouping.
+	  if (_M_thousands_sep == '\0')
+	    _M_grouping = "";
+	  else
+	    _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
 	}
       // NB: There is no way to extact this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
@@ -79,7 +83,10 @@ namespace std
 	  // Named locale.
 	  _M_decimal_point = static_cast<wchar_t>(((union { const char *__s; unsigned int __w; }){ __s: __nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc)}).__w);
 	  _M_thousands_sep = static_cast<wchar_t>(((union { const char *__s; unsigned int __w; }){ __s: __nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC, __cloc)}).__w);
-	  _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	  if (_M_thousands_sep == L'\0')
+	    _M_grouping = "";
+	  else
+	    _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
 	}
       // NB: There is no way to extact this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
