@@ -523,10 +523,10 @@ private:
 public:
                                 // allocation/deallocation
     rb_tree(const Compare& comp = Compare())
-      : key_compare(comp), node_count(0) { init(); }
+      : node_count(0), key_compare(comp) { init(); }
 
     rb_tree(const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& x) 
-      : key_compare(x.key_compare), node_count(0) { 
+      : node_count(0), key_compare(x.key_compare) { 
         header = get_node();
         color(header) = __rb_tree_red;
         if (x.root() == 0) {

@@ -61,6 +61,12 @@ protected:
     void deallocate() {
       if (start) data_allocator::deallocate(start, end_of_storage - start);
     }
+
+    void fill_initialize(size_type n, const T& value) {
+      start = allocate_and_fill(n, value);
+      finish = start + n;
+      end_of_storage = finish;
+    }
 public:
     iterator begin() { return start; }
     const_iterator begin() const { return start; }
@@ -75,22 +81,18 @@ public:
         return const_reverse_iterator(begin()); 
     }
     size_type size() const { return size_type(end() - begin()); }
-    size_type max_size() const { return size_type(-1); }
+    size_type max_size() const { return size_type(-1) / sizeof(T); }
     size_type capacity() const { return size_type(end_of_storage - begin()); }
     bool empty() const { return begin() == end(); }
     reference operator[](size_type n) { return *(begin() + n); }
     const_reference operator[](size_type n) const { return *(begin() + n); }
+
     vector() : start(0), finish(0), end_of_storage(0) {}
-    vector(size_type n, const T& value) {
-      start = allocate_and_fill(n, value);
-      finish = start + n;
-      end_of_storage = finish;
-    }
-    explicit vector(size_type n) {
-      start = allocate_and_fill(n, T());
-      finish = start + n;
-      end_of_storage = finish;
-    }
+    vector(size_type n, const T& value) { fill_initialize(n, value); }
+    vector(int n, const T& value) { fill_initialize(n, value); }
+    vector(long n, const T& value) { fill_initialize(n, value); }
+    explicit vector(size_type n) { fill_initialize(n, T()); }
+
     vector(const vector<T, Alloc>& x) {
       start = allocate_and_copy(x.end() - x.begin(), x.begin(), x.end());
       finish = start + (x.end() - x.begin());
@@ -119,7 +121,7 @@ public:
     void reserve(size_type n) {
       if (capacity() < n) {
         const size_type old_size = size();
-        const iterator tmp = allocate_and_copy(n, start, finish);
+        iterator tmp = allocate_and_copy(n, start, finish);
         destroy(start, finish);
         deallocate();
         start = tmp;
@@ -162,7 +164,15 @@ public:
     void insert(iterator position,
                 const_iterator first, const_iterator last);
 #endif /* __STL_MEMBER_TEMPLATES */
-    void insert (iterator position, size_type n, const T& x);
+
+    void insert (iterator pos, size_type n, const T& x);
+    void insert (iterator pos, int n, const T& x) {
+      insert(pos, (size_type) n, x);
+    }
+    void insert (iterator pos, long n, const T& x) {
+      insert(pos, (size_type) n, x);
+    }
+
     void pop_back() {
         --finish;
         destroy(finish);
@@ -291,7 +301,7 @@ template <class T, class Alloc>
 vector<T, Alloc>& vector<T, Alloc>::operator=(const vector<T, Alloc>& x) {
   if (&x != this) {
     if (x.size() > capacity()) {
-      const iterator tmp = allocate_and_copy(x.end() - x.begin(),
+      iterator tmp = allocate_and_copy(x.end() - x.begin(),
                                              x.begin(), x.end());
       destroy(start, finish);
       deallocate();
@@ -323,7 +333,7 @@ void vector<T, Alloc>::insert_aux(iterator position, const T& x) {
   else {
     const size_type old_size = size();
     const size_type len = old_size != 0 ? 2 * old_size : 1;
-    const iterator new_start = data_allocator::allocate(len);
+    iterator new_start = data_allocator::allocate(len);
     iterator new_finish = new_start;
 #       ifdef __STL_USE_EXCEPTIONS
     try {
@@ -351,10 +361,10 @@ void vector<T, Alloc>::insert_aux(iterator position, const T& x) {
 template <class T, class Alloc>
 void vector<T, Alloc>::insert(iterator position, size_type n, const T& x) {
   if (n != 0) {
-    if (size_type (end_of_storage - finish) >= n) {
+    if (size_type(end_of_storage - finish) >= n) {
       T x_copy = x;
       const size_type elems_after = finish - position;
-      const iterator old_finish = finish;
+      iterator old_finish = finish;
       if (elems_after > n) {
         uninitialized_copy(finish - n, finish, finish);
         finish += n;
@@ -372,7 +382,7 @@ void vector<T, Alloc>::insert(iterator position, size_type n, const T& x) {
     else {
       const size_type old_size = size();        
       const size_type len = old_size + max(old_size, n);
-      const iterator new_start = data_allocator::allocate(len);
+      iterator new_start = data_allocator::allocate(len);
       iterator new_finish = new_start;
 #         ifdef __STL_USE_EXCEPTIONS
       try {
@@ -417,9 +427,9 @@ void vector<T, Alloc>::range_insert(iterator position,
   if (first != last) {
     size_type n = 0;
     distance(first, last, n);
-    if (size_type (end_of_storage - finish) >= n) {
+    if (size_type(end_of_storage - finish) >= n) {
       const size_type elems_after = finish - position;
-      const iterator old_finish = finish;
+      iterator old_finish = finish;
       if (elems_after > n) {
         uninitialized_copy(finish - n, finish, finish);
         finish += n;
@@ -439,7 +449,7 @@ void vector<T, Alloc>::range_insert(iterator position,
     else {
       const size_type old_size = size();
       const size_type len = old_size + max(old_size, n);
-      const iterator new_start = data_allocator::allocate(len);
+      iterator new_start = data_allocator::allocate(len);
       iterator new_finish = new_start;
 #         ifdef __STL_USE_EXCEPTIONS
       try {
@@ -473,9 +483,9 @@ void vector<T, Alloc>::insert(iterator position,
   if (first != last) {
     size_type n = 0;
     distance(first, last, n);
-    if (end_of_storage - finish >= n) {
+    if (size_type(end_of_storage - finish) >= n) {
       const size_type elems_after = finish - position;
-      const iterator old_finish = finish;
+      iterator old_finish = finish;
       if (elems_after > n) {
         uninitialized_copy(finish - n, finish, finish);
         finish += n;
@@ -493,7 +503,7 @@ void vector<T, Alloc>::insert(iterator position,
     else {
       const size_type old_size = size();
       const size_type len = old_size + max(old_size, n);
-      const iterator new_start = data_allocator::allocate(len);
+      iterator new_start = data_allocator::allocate(len);
       iterator new_finish = new_start;
 #         ifdef __STL_USE_EXCEPTIONS
       try {

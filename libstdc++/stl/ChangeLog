@@ -1,3 +1,7 @@
+Fri Oct 17 19:07:42 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.h, vector.h: Fix accidental divergence from SGI release.
+
 Tue Sep  9 19:47:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* algo.h, algobase.h, alloc.h, bvector.h, deque.h, hashtable.h,
