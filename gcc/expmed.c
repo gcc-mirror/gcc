@@ -2439,13 +2439,16 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      modifying it.  */
   can_clobber_op0 = (GET_CODE (op0) == REG && op0 == target);
 
-  /* Now convert to the best mode to use.  Show we made a copy of OP0
+  /* Now convert to the best mode to use.  Normally show we made a copy of OP0
      and hence we can clobber it (we cannot use a SUBREG to widen
-     something.  */
+     something), but check that the conversion wasn't a no-op due to
+     promotion.  */
   if (compute_mode != mode)
     {
-      adjusted_op0 = op0 = convert_modes (compute_mode, mode, op0, unsignedp);
-      can_clobber_op0 = 1;
+      adjusted_op0 = convert_modes (compute_mode, mode, op0, unsignedp);
+      can_clobber_op0 = ! (GET_CODE (op0) == SUBREG 
+			   && SUBREG_REG (op0) == adjusted_op0);
+      op0 = adjusted_op0;
       op1 = convert_modes (compute_mode, mode, op1, unsignedp);
     }
 
