@@ -307,7 +307,7 @@ extern int target_flags;
 /* Target machine storage layout.  */
 
 /* Define for cross-compilation from a host with a different float format
-   or endianness (e.g. VAX, x86).  */
+   or endianess, as well as to support 80 bit long doubles on the i960.  */
 #define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
@@ -386,6 +386,12 @@ extern int target_flags;
    ? i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP)))	    \
    : (ALIGN))
 
+/* Make XFmode floating point quantities be 128 bit aligned.  */
+#define DATA_ALIGNMENT(TYPE, ALIGN)					\
+  (TREE_CODE (TYPE) == ARRAY_TYPE					\
+   && TYPE_MODE (TREE_TYPE (TYPE)) == XFmode				\
+   && (ALIGN) < 128 ? 128 : (ALIGN))
+
 /* Macros to determine size of aggregates (structures and unions
    in C).  Normally, these may be defined to simply return the maximum
    alignment and simple rounded-up size, but on some machines (like
@@ -393,9 +399,15 @@ extern int target_flags;
    rounding method.  */
 
 #define ROUND_TYPE_ALIGN(TYPE, COMPUTED, SPECIFIED)		\
-  ((!TARGET_OLD_ALIGN && TREE_CODE (TYPE) == RECORD_TYPE)	\
-   ? i960_round_align (MAX ((COMPUTED), (SPECIFIED)), TYPE_SIZE (TYPE)) \
-   : MAX ((COMPUTED), (SPECIFIED)))
+  ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	   \
+   ? 128  /* Put 80 bit floating point elements on 128 bit boundaries.  */ \
+   : ((!TARGET_OLD_ALIGN && TREE_CODE (TYPE) == RECORD_TYPE)		   \
+      ? i960_round_align (MAX ((COMPUTED), (SPECIFIED)), TYPE_SIZE (TYPE)) \
+      : MAX ((COMPUTED), (SPECIFIED))))
+
+#define ROUND_TYPE_SIZE(TYPE, COMPUTED, SPECIFIED)		\
+  ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	\
+   ? build_int_2 (128, 0) : (COMPUTED))
 
 /* Standard register usage.  */
 
@@ -478,7 +490,7 @@ extern int target_flags;
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On 80960, the cpu registers can hold any mode but the float registers
-   can only hold SFmode, DFmode, or TFmode.  */
+   can only hold SFmode, DFmode, or XFmode.  */
 extern unsigned int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((hard_regno_mode_ok[REGNO] & (1 << (int) (MODE))) != 0)
@@ -645,12 +657,10 @@ enum reg_class { NO_REGS, GLOBAL_REGS, LOCAL_REGS, LOCAL_OR_GLOBAL_REGS,
    Here VALUE is the CONST_DOUBLE rtx itself.
    For the 80960, G is 0.0 and H is 1.0.  */
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)		\
-  ((TARGET_NUMERICS) &&					\
-   (((C) == 'G' && ((VALUE) == CONST0_RTX (DFmode)	\
-		    || (VALUE) == CONST0_RTX (SFmode))) \
-    || ((C) == 'H' && ((VALUE) == CONST1_RTX (DFmode)	\
-		       || (VALUE) == CONST1_RTX (SFmode)))))
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
+  ((TARGET_NUMERICS) &&							\
+   (((C) == 'G' && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))		\
+    || ((C) == 'H' && ((VALUE) == CONST1_RTX (GET_MODE (VALUE))))))
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -1268,6 +1278,11 @@ extern struct rtx_def *gen_compare_reg ();
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%d", PREFIX, NUM)
+
+/* This is how to output an assembler line defining a `long double'
+   constant.  */
+
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE) i960_output_long_double(FILE, VALUE)
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
