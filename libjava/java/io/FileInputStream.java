@@ -268,11 +268,18 @@ public class FileInputStream extends InputStream
    *
    * @exception IOException If an error occurs
    */
-  public long skip(long n) throws IOException
+  public long skip (long numBytes) throws IOException
   {
-    long startPos = fd.getFilePointer();
-    long endPos = fd.seek(n, FileDescriptor.CUR, true);
-    return endPos - startPos;
+    if (numBytes < 0)
+      throw new IllegalArgumentException ( "Can't skip negative bytes: " +
+                                           numBytes);
+
+    if (numBytes == 0)
+      return 0;
+    
+    long curPos = fd.getFilePointer ();
+    long newPos = fd.seek (numBytes, FileDescriptor.CUR, true);
+    return newPos - curPos;
   }
 
   /**
