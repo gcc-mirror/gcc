@@ -14,6 +14,7 @@
 # LIB1ASMFUNCS
 # LIB1FUNCS_EXTRA
 # LIB2FUNCS
+# LIB2FUNCS_ST
 # LIB2ADD
 # LIB2ADD_ST 
 # LIB2ADDEH
@@ -168,6 +169,7 @@ esac
 #
 
 libgcc2_objs=""
+libgcc2_st_objs=""
 
 for name in $LIB2FUNCS; do
   for ml in $MULTILIBS; do
@@ -180,6 +182,19 @@ for name in $LIB2FUNCS; do
       -c '$(srcdir)/libgcc2.c' -o $out
   done
   libgcc2_objs="$libgcc2_objs ${name}${objext}"
+done
+
+for name in $LIB2FUNCS_ST; do
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${name}${objext}"
+
+    echo $out: $libgcc2_c_dep
+    echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' $flags -DL$name \
+      -c '$(srcdir)/libgcc2.c' -o $out
+  done
+  libgcc2_st_objs="$libgcc2_st_objs ${name}${objext}"
 done
 
 if [ "$FPBIT" ]; then
@@ -247,8 +262,6 @@ for file in $LIB2ADDEH; do
   done
   libgcc2_objs="$libgcc2_objs ${oname}${objext}"
 done
-
-libgcc2_st_objs=""
 
 for file in $LIB2ADD_ST; do
   name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
