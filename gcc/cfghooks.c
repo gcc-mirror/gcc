@@ -72,7 +72,7 @@ void
 verify_flow_info (void)
 {
   size_t *edge_checksum;
-  int num_bb_notes, err = 0;
+  int err = 0;
   basic_block bb, last_bb_seen;
   basic_block *last_visited;
 
@@ -215,7 +215,6 @@ verify_flow_info (void)
 	err = 1;
       }
 
-  num_bb_notes = 0;
   last_bb_seen = ENTRY_BLOCK_PTR;
 
   /* Clean up.  */
