@@ -1,3 +1,16 @@
+
+2000-12-29  Robert Lipe <robertl@sco.com>
+
+	Remove COFF support from i?86-pc-sco3.2v5.
+	* i386/sco5.h (PREFERRED_DEBUGGING_TYPE): Change to Dwarf II.
+	(TARGET_ELF): Now always true.
+	(SUBTARGET_SWTICHES: )Remove -mcoff.
+
+	* i386/t-sco5 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_EXCEPTION): Nuke coff.
+	(CRTSTUFF_T_CFLAGS_S):  Deleted.
+	(TARGET_LIBGCC2_CFLAGS): Added.
+
 2000-12-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* varasm.c (output_constant_def): Don't ENCODE_SECTION_INFO
