@@ -1,5 +1,16 @@
 Sat Jun 13 08:26:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* output.h (current_function_addresses_labels): Declare.
+	* function.h (struct function): New field `addresses_labels'.
+	* function.c (current_function_addresses_labels): Define.
+	({push,pop}_function_context): Save/restore it.
+	(init_function_start): Initialize it.
+	* rtl.h (FUNCTION_FLAGS_ADDRESSES_LABELS): New flag.
+	* expr.c (expand_expr, case LABEL_DECL): Show addresses labels.
+	* integrate.c (function_cannot_inline_p): Can't if addresses labels.
+	(initialize_for_inline): Save current_function_addresses_labels.
+	(output_inline_function): Restore it.
+
 	* reload.c (find_reloads, case 'o'): All reloaded addresses
 	are offsettable.
 	(find_reloads_address): If replacing address, don't return 1.
