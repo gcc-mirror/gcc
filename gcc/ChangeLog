@@ -1,3 +1,8 @@
+2002-05-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR preprocessor/6780
+	* cppmacro.c (enter_macro_context): Clear state.angled_headers.
+
 2002-05-24  Jim Blandy  <jimb@redhat.com>
 
 	* dwarf2out.c (dwarf2out_finish): Don't forget to emit a final
