@@ -1,3 +1,8 @@
+2004-05-06  Richard Henderson  <rth@redhat.com>
+
+	* stmt.c (parse_output_constraint): Don't warn for read-write
+	memory operand.
+
 2004-05-06  Jan Hubicka  <jh@suse.cz>
 
 	PR c/15004

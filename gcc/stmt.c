@@ -1256,9 +1256,6 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	break;
       }
 
-  if (*is_inout && !*allows_reg)
-    warning ("read-write constraint does not allow a register");
-
   return true;
 }
 
