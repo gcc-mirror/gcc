@@ -2602,6 +2602,8 @@ ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
   /* Indicate to allocate space on the stack for varargs save area.  */
   ix86_save_varrargs_registers = 1;
 
+  cfun->stack_alignment_needed = 128;
+
   fntype = TREE_TYPE (current_function_decl);
   stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
 	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
