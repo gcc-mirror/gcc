@@ -1,3 +1,9 @@
+2003-01-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_compute_initial_elimination_offset): If optimizing for
+	size, the link register is always saved if any other register is
+	saved.
+
 2003-01-30  Jerry Quinn  <jlquinn@optonline.net>
 
 	* gcc/doc/invoke.texi (Optimization Options): Group together

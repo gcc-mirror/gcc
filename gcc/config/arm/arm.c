@@ -8149,10 +8149,14 @@ arm_compute_initial_elimination_offset (from, to)
 	  reg_mask = reg_mask & ~ (reg_mask & - reg_mask);
 	}
 
-      if (regs_ever_live[LR_REGNUM]
-	  /* If a stack frame is going to be created, the LR will
-	     be saved as part of that, so we do not need to allow
-	     for it here.  */
+      if ((regs_ever_live[LR_REGNUM]
+	   /* If optimizing for size, then we save the link register if
+	      any other integer register is saved.  This gives a smaller
+	      return sequence.  */
+	   || (optimize_size && call_saved_registers > 0))
+	  /* But if a stack frame is going to be created, the LR will
+	     be saved as part of that, so we do not need to allow for
+	     it here.  */
 	  && ! frame_pointer_needed)
 	call_saved_registers += 4;
 
