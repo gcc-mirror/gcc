@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -70,7 +70,10 @@ public class InputStreamReader extends Reader
       }
   }
 
-  public String getEncoding() { return converter.getName(); }
+  public String getEncoding()
+  {
+    return in != null ? converter.getName() : null;
+  }
 
   public boolean ready() throws IOException
   {

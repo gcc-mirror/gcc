@@ -1,5 +1,11 @@
 2003-02-13  Mark Wielaard  <mark@klomp.org>
 
+	* java/io/InputStreamReader.java (getEncoding): Return null when
+	closed.
+	* java/io/OutputStreamWriter.java (getEncoding): Likewise.
+
+2003-02-13  Mark Wielaard  <mark@klomp.org>
+
 	* java/util/zip/InflaterInputStream.java (read): Return zero when len
 	is zero.
 
