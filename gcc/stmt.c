@@ -2855,6 +2855,10 @@ expand_return (retval)
 		expand_value_return (const0_rtx);
 		return;
 	      }
+	    break;
+
+	  default:
+	    break;
 	  }
     }
 #endif /* HAVE_return */
