@@ -1,3 +1,7 @@
+2003-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (start_decl): Don't set DECL_COMMON for __thread variables.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (c++.install-common, c++.install-man,
