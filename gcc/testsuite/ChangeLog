@@ -1,3 +1,9 @@
+1999-02-24  Craig Burley  <craig@jcb-sc.com>
+
+	* gcc.f-torture/noncompile/19981216-0.f: Renamed from...
+	* gcc.f-torture/compile/19981216-0.f: ...as it is expected
+	to not be compilable by current g77.
+
 1999-02-24  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/c-torture.exp: Add -O3 to TORTURE_OPTIONS list.
