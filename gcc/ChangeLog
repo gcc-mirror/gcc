@@ -1,17 +1,19 @@
-Mon Aug 18 21:49:02 1997  Jim Wilson  <wilson@cygnus.com>
-
-	* reload.c (find_reloads): Add code to convert RELOAD_FOR_OPADDR_ADDR
-	reloads to RELOAD_FOR_OPERAND_ADDRESS reloads.
-	* reload1.c: Undo bugfix from Aug 11.
-
 Tue Aug 19 09:34:57 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (EXPECT, RUNTEST, RUNTESTFLAGS): Define.
 	(site.exp, check, check-g++, check-gcc): New targets.
 
+	* haifa-sched.c: Make lots of variable static.
+
 Tue Aug 19 07:18:34 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* expr.h, real.h: Finish prototyping.
+
+Mon Aug 18 21:49:02 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* reload.c (find_reloads): Add code to convert RELOAD_FOR_OPADDR_ADDR
+	reloads to RELOAD_FOR_OPERAND_ADDRESS reloads.
+	* reload1.c: Undo bugfix from Aug 11.
 
 Mon Aug 18 17:39:02 1997  Mike Meissner  <meissner@cygnus.com>
 
