@@ -1,3 +1,7 @@
+2001-08-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.c (remove_fixup_regions): Fix typo.
+
 2001-08-08  Jan van Male <jan.vanmale@fenk.wau.nl>
 
         * emit-rtl.c (adjust_address, adjust_address_nv): Cast offset to
