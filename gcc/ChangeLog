@@ -1,5 +1,7 @@
 2001-11-09  Geoffrey Keating  <geoffk@redhat.com>
 
+	* flow.c (insn_dead_p): Allow for AUTO_INC notes all the time.
+
 	* config/stormy16/stormy16.h (ASM_SPEC): Revert last change,
 	don't pass --gdwarf2 to the assembler if the compiler will also
 	provide debug info.
