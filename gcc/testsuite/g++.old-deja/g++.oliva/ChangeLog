@@ -1,5 +1,7 @@
 1999-07-13  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* expr1.C: New test.
+
 	* partspec1.C: New test.
 
 1999-07-05  Alexandre Oliva  <oliva@dcc.unicamp.br>
