@@ -18,6 +18,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#undef TARGET_VERSION
+#if TARGET_ENDIAN_DEFAULT == 0
+#define TARGET_VERSION fprintf (stderr, " (MIPSel GNU/ELF)");
+#else
+#define TARGET_VERSION fprintf (stderr, " (MIPS GNU/ELF)");
+#endif
+
 /* Required to keep collect2.c happy */
 #undef OBJECT_FORMAT_COFF 
 
@@ -25,6 +32,13 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_ABICALLS|MASK_GAS)
 
+
+/* Handle #pragma weak and #pragma pack.  */
+#define HANDLE_SYSV_PRAGMA 1
+
+/* Use more efficient ``thunks'' to implement C++ vtables. */
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
 
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
