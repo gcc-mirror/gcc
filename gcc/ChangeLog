@@ -1,3 +1,8 @@
+Sat Apr 24 17:26:43 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-parse.in (expr_no_commas): Verify we've an expr before
+	calling C_SET_EXP_ORIGINAL_CODE.
+
 Thu Apr 22 22:22:15 EDT 1999  John Wehle  (john@feith.com)
 
 	* toplev.c (rest_of_compilation): Always set

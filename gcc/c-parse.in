@@ -604,12 +604,22 @@ expr_no_commas:
 		{ skip_evaluation -= $1 == boolean_true_node;
 		  $$ = build_conditional_expr ($1, $<ttype>2, $5); }
 	| expr_no_commas '=' expr_no_commas
-		{ $$ = build_modify_expr ($1, NOP_EXPR, $3);
-		  C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
+		{ char class;
+		  $$ = build_modify_expr ($1, NOP_EXPR, $3);
+		  class = TREE_CODE_CLASS (TREE_CODE ($$));
+		  if (class == 'e' || class == '1'
+		      || class == '2' || class == '<')
+		    C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR);
+		}
 	| expr_no_commas ASSIGN expr_no_commas
-		{ $$ = build_modify_expr ($1, $2, $3);
+		{ char class;
+		  $$ = build_modify_expr ($1, $2, $3);
 		  /* This inhibits warnings in truthvalue_conversion.  */
-		  C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
+		  class = TREE_CODE_CLASS (TREE_CODE ($$));
+		  if (class == 'e' || class == '1'
+		      || class == '2' || class == '<')
+		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK);
+		}
 	;
 
 primary:
