@@ -45,6 +45,9 @@ Godmar Back for his Java improvements and encouragement.
 Scott Bambrough for help porting the Java compiler.
 
 @item
+Wolfgang Bangerth for processing tons of bug reports.
+
+@item
 Jon Beniston for his Win32 port of Java.
 
 @item
@@ -168,6 +171,10 @@ Russell Davidson for fstream and stringstream fixes in libstdc++.
 Mo DeJong for GCJ and libgcj bugfixes.
 
 @item
+DJ Delorie for the DJGPP port, build and libiberty maintenance, and
+various bugfixes.
+
+@item
 Gabriel Dos Reis for contributions to g++, contributions and
 maintenance of GCC diagnostics infrastructure, libstdc++-v3,
 including valarray<>, complex<>, maintaining the numerics library
@@ -209,6 +216,9 @@ configuration support for locales and fstream-related fixes.
 Vadim Egorov for libstdc++ fixes in strings, streambufs, and iostreams.
 
 @item
+Christian Ehrhardt for dealing with bug reports.
+
+@item
 Ben Elliston for his work to move the Objective-C runtime into its
 own subdirectory and for his work on autoconf.
 
@@ -218,6 +228,10 @@ Marc Espie for OpenBSD support.
 @item
 Doug Evans for much of the global optimization framework, arc, m32r,
 and SPARC work.
+
+@item
+Christopher Faylor for his work on the Cygwin port and for caring and
+feeding the gcc.gnu.org box and saving its users tons of spam.
 
 @item
 Fred Fish for BeOS support and Ada fixes.
@@ -316,7 +330,7 @@ system.
 
 @item
 Janis Johnson for ia64 testing and fixes, her quality improvement
-sidetracks, and web page maintainance.
+sidetracks, and web page maintenance.
 
 @item
 J. Kean Johnston for OpenServer support.
@@ -399,7 +413,7 @@ with analysis and improvements of x86 performance.
 Ted Lemon wrote parts of the RTL reader and printer.
 
 @item
-Kriang Lerdsuwanakij for improvements to demangler and various c++ fixes.
+Kriang Lerdsuwanakij for improvements to the demangler and many c++ fixes.
 
 @item
 Warren Levy for tremendous work on libgcj (Java Runtime Library) and
@@ -537,6 +551,9 @@ MT-safe string and shadow headers.
 Felix Natter for documentation on porting libstdc++.
 
 @item
+Nathanael Nerode for cleaning up the configuration/build process.
+
+@item
 NeXT, Inc.@: donated the front end that supports the Objective-C
 language.
 
@@ -546,6 +563,10 @@ engine setup, various documentation fixes and other small fixes.
 
 @item
 Geoff Noer for this work on getting cygwin native builds working.
+
+@item
+Diego Novillo for his SPEC performance tracking web pages and assorted
+fixes in the middle end and various back ends.
 
 @item
 David O'Brien for the FreeBSD/alpha, FreeBSD/AMD x86-64, FreeBSD/ARM,
@@ -563,6 +584,9 @@ Melissa O'Neill for various NeXT fixes.
 Rainer Orth for random MIPS work, including improvements to our o32
 ABI support, improvements to dejagnu's MIPS support, Java configuration
 clean-ups and porting work, etc.
+
+@item
+Hartmut Penner for work on the s390 port.
 
 @item
 Paul Petersen wrote the machine description for the Alliant FX/8.
@@ -593,6 +617,9 @@ Rolf W. Rasmussen for hacking on AWT.
 @item
 David Reese of Sun Microsystems contributed to the Solaris on PowerPC
 port.
+
+@item
+Volker Reichelt for keeping up with the problem reports.
 
 @item
 Joern Rennecke for maintaining the sh port, loop, regmove & reload
@@ -679,6 +706,9 @@ Andrey Slepuhin for assorted AIX hacking.
 
 @item
 Christopher Smith did the port for Convex machines.
+
+@item
+Danny Smith for his major efforts on the Mingw (and Cygwin) ports.
 
 @item
 Randy Smith finished the Sun FPA support.
@@ -792,6 +822,9 @@ header tree.
 John Wehle for various improvements for the x86 code generator,
 related infrastructure improvements to help x86 code generation,
 value range propagation and other work, WE32k port.
+
+@item
+Ulrich Weigand for work on the s390 port.
 
 @item
 Zack Weinberg for major work on cpplib and various other bugfixes.
