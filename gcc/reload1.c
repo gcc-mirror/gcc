@@ -5693,9 +5693,9 @@ inc_for_reload (reloadreg, value, inc_amount, insn)
 						    inc_amount)),
 			    insn);
 	  emit_insn_before (gen_move_insn (incloc, reloadreg), insn);
-	  emit_insn_before (gen_sub2_insn (reloadreg,
+	  emit_insn_before (gen_add2_insn (reloadreg,
 					   gen_rtx (CONST_INT, VOIDmode,
-						    inc_amount)),
+						    -inc_amount)),
 			    insn);
 	}
       return first_new;
