@@ -208,7 +208,9 @@ DEFTREECODE (SET_TYPE, "set_type", "t", 0)
 
 /* Struct in C, or record in Pascal.  */
 /* Special fields:
-   TYPE_FIELDS  chain of FIELD_DECLs for the fields of the struct.
+   TYPE_FIELDS  chain of FIELD_DECLs for the fields of the struct,
+     and VAR_DECLs, TYPE_DECLs and CONST_DECLs for record-scope variables,
+     types and enumerators.
    A few may need to be added for Pascal.  */
 /* See the comment above, before ENUMERAL_TYPE, for how
    forward references to struct tags are handled in C.  */
@@ -271,9 +273,9 @@ DEFTREECODE (STRING_CST, "string_cst", "c", 3)
     this declaration has its scope.  For FIELD_DECLs, this is the
     RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node that the field
     is a member of.  For VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
-    and CONST_DECL nodes, this points to the FUNCTION_DECL for the
-    containing function, or else yields NULL_TREE if the given decl
-    has "file scope".
+    and CONST_DECL nodes, this points to either the FUNCTION_DECL for the
+    containing function, the RECORD_TYPE or UNION_TYPE for the containing
+    type, or NULL_TREE if the given decl has "file scope".
    DECL_ABSTRACT_ORIGIN, if non-NULL, points to the original (abstract)
     ..._DECL node of which this decl is an (inlined or template expanded)
     instance.

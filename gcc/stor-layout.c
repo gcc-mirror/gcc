@@ -336,7 +336,7 @@ layout_record (rec)
 	 In both cases, all we do is lay out the decl,
 	 and we do it *after* the record is laid out.  */
 
-      if (TREE_STATIC (field))
+      if (TREE_CODE (field) == VAR_DECL)
 	{
 	  pending_statics = tree_cons (NULL_TREE, field, pending_statics);
 	  continue;
