@@ -25,7 +25,12 @@ _G
 MS adds:
 _T
 
-For egcs:
+For GCC:
+
+  [Note that this list is out of date.  It applies to the old
+  name-mangling; in G++ 3.0 and higher a different name-mangling is
+  used.  In addition, many of the bugs relating to G++ interpreting
+  these names as operators have been fixed.]
 
   The full set of __* identifiers (combined from gcc/cp/lex.c and
   gcc/cplus-dem.c) that are either old or new, but are definitely 
