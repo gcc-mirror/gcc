@@ -1,3 +1,11 @@
+Wed Sep  8 14:34:42 1999  Ian Piumarta  <piumarta@prof.inria.fr>
+			  Melissa O'Neill  <oneill@cs.sfu.ca>
+			  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (first_reg_to_save): Don't save fixed or
+ 	call-used registers (call-saved registers must still be contiguous
+ 	and end with r31, of course).
+
 Tue Sep  7 21:41:38 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-typeck.c (type_lists_compatible_p): Use simple_type_promotes_to.
