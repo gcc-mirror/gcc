@@ -742,36 +742,29 @@ _done:
 ;
 ; New code:
 ;
-; 16b * 16b =  68 states
-; 16b * 32b =  96 states
-; 32b * 32b = 124 states
+; 16b * 16b =  48 states
+; 16b * 32b =  72 states
+; 32b * 32b =  92 states
 ;
 
 	.global	___mulsi3
 ___mulsi3:
-	push.l	er3     ; (10 states)
-  
 	mov.w	r1,r2   ; ( 2 states) b * d
 	mulxu	r0,er2  ; (22 states)
   
 	mov.w	e0,r3   ; ( 2 states) a * d
 	beq	L_skip1 ; ( 4 states)
 	mulxu	r1,er3  ; (22 states)
-	mov.w	r3,e3   ; ( 2 states)
-	mov.w	#0,r3   ; ( 2 states)
-	add.l	er3,er2 ; ( 2 states)
+	add.w	r3,e2   ; ( 2 states)
 
 L_skip1:
 	mov.w	e1,r3   ; ( 2 states) c * b
 	beq	L_skip2 ; ( 4 states)
 	mulxu	r0,er3  ; (22 states)
-	mov.w	r3,e3   ; ( 2 states)
-	mov.w	#0,r3   ; ( 2 states)
-	add.l	er3,er2 ; ( 2 states)
+	add.w	r3,e2   ; ( 2 states)
 
 L_skip2:
 	mov.l	er2,er0	; ( 2 states)
-	pop.l	er3	; (10 states)
 	rts		; (10 states)
 
 #endif
