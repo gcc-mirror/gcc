@@ -1,3 +1,7 @@
+Mon Sep 20 15:11:54 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* flow.c (verify_flow_info): Fix typo, "abort;" -> "abort ();".
+
 Mon Sep 20 14:56:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* crtstuff.c (ON_EXIT): Delete empty macro definition.
