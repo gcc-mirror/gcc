@@ -2148,96 +2148,16 @@ compute_logical_op_cc (mode, operands)
 
    o SHIFT_LOOP: Emit a loop using one (or two on H8S) bit shifts.
 
-   Here are some thoughts on what the absolutely positively best code
-   is.  "Best" here means some rational trade-off between code size
-   and speed, where speed is more preferred but not at the expense of
-   generating 20 insns.
+   For each shift count, we try to use code that has no trade-off
+   between code size and speed whenever possible.
 
-   Below, a trailing '*' after the shift count indicates the "best"
-   mode isn't implemented.  We only describe SHIFT_SPECIAL cases to
-   simplify the table.  For other cases, refer to shift_alg_[qhs]i.
+   If the trade-off is unavoidable, we try to be reasonable.
+   Specifically, the fastest version is one instruction longer than
+   the shortest version, we take the fastest version.  We also provide
+   the use a way to switch back to the shortest version with -Os.
 
-   H8/300 QImode shifts
-   7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
-
-   H8/300 HImode shifts
-   7      - shift 2nd half other way into carry.
-	    copy 1st half into 2nd half
-	    rotate 2nd half other way with carry
-	    rotate 1st half other way (no carry)
-	    mask off bits in 1st half (ASHIFT | LSHIFTRT).
-	    sign extend 1st half (ASHIFTRT)
-   8      - move byte, zero (ASHIFT | LSHIFTRT) or sign extend other (ASHIFTRT)
-   9-12   - do shift by 8, inline remaining shifts
-   15     - ASHIFTRT: shll, subx, set other byte
-
-   H8/300 SImode shifts
-   7*     - shift other way once, move bytes into place,
-            move carry into place (possibly with sign extension)
-   8      - move bytes into place, zero or sign extend other
-   15*    - shift other way once, move word into place, move carry into place
-   16     - move word, zero or sign extend other
-   24*    - move bytes into place, zero or sign extend other
-   31     - ASHIFTRT: shll top byte, subx, copy to other bytes
-
-   H8/300H QImode shifts (same as H8/300 QImode shifts)
-   7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
-
-   H8/300H HImode shifts
-   7      - shift 2nd half other way into carry.
-	    copy 1st half into 2nd half
-	    rotate entire word other way using carry
-	    mask off remaining bits  (ASHIFT | LSHIFTRT)
-	    sign extend remaining bits (ASHIFTRT)
-   8      - move byte, zero (ASHIFT | LSHIFTRT) or sign extend other (ASHIFTRT)
-   9-12   - do shift by 8, inline remaining shifts
-   15     - ASHIFTRT: shll, subx, set other byte
-
-   H8/300H SImode shifts
-   (These are complicated by the fact that we don't have byte level access to
-   the top word.)
-   A word is: bytes 3,2,1,0 (msb -> lsb), word 1,0 (msw -> lsw)
-   15*    - shift other way once, move word into place, move carry into place
-            (with sign extension for ASHIFTRT)
-   16     - move word into place, zero or sign extend other
-   17-20  - do 16bit shift, then inline remaining shifts
-   24*    - ASHIFT: move byte 0(msb) to byte 1, zero byte 0,
-                    move word 0 to word 1, zero word 0
-            LSHIFTRT: move word 1 to word 0, move byte 1 to byte 0,
-                      zero word 1, zero byte 1
-            ASHIFTRT: move word 1 to word 0, move byte 1 to byte 0,
-                      sign extend byte 0, sign extend word 0
-   25-27* - either loop, or
-            do 24 bit shift, inline rest
-   31     - shll, subx byte 0, sign extend byte 0, sign extend word 0
-
-   H8S QImode shifts
-   7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
-
-   H8S HImode shifts
-   8      - move byte, zero (ASHIFT | LSHIFTRT) or sign extend other (ASHIFTRT)
-   9-12   - do shift by 8, inline remaining shifts
-   15     - ASHIFTRT: shll, subx, set other byte
-
-   H8S SImode shifts
-   (These are complicated by the fact that we don't have byte level access to
-   the top word.)
-   A word is: bytes 3,2,1,0 (msb -> lsb), word 1,0 (msw -> lsw)
-   15*    - shift other way once, move word into place, move carry into place
-            (with sign extension for ASHIFTRT)
-   16     - move word into place, zero or sign extend other
-   17-20  - do 16bit shift, then inline remaining shifts
-   24*    - ASHIFT: move byte 0(msb) to byte 1, zero byte 0,
-                    move word 0 to word 1, zero word 0
-            LSHIFTRT: move word 1 to word 0, move byte 1 to byte 0,
-                      zero word 1, zero byte 1
-            ASHIFTRT: move word 1 to word 0, move byte 1 to byte 0,
-                      sign extend byte 0, sign extend word 0
-   25-27* - either loop, or
-            do 24 bit shift, inline rest
-   31     - shll, subx byte 0, sign extend byte 0, sign extend word 0
-
-   Panic!!!  */
+   For the details of the shift algorithms for various shift counts,
+   refer to shift_alg_[qhs]i.  */
 
 int
 nshift_operator (x, mode)
@@ -2474,16 +2394,15 @@ static void get_shift_alg PARAMS ((enum shift_type,
 
 /* Given SHIFT_TYPE, SHIFT_MODE, and shift count COUNT, determine the
    best algorithm for doing the shift.  The assembler code is stored
-   in the pointers in INFO.  We don't achieve maximum efficiency in
-   all cases, but the hooks are here to do so.
+   in the pointers in INFO.  We achieve the maximum efficiency in most
+   cases when !TARGET_H8300.  In case of TARGET_H8300, shifts in
+   SImode in particular have a lot of room to optimize.
 
-   For now we just use lots of switch statements.  Since we don't even come
-   close to supporting all the cases, this is simplest.  If this function ever
-   gets too big, perhaps resort to a more table based lookup.  Of course,
-   at this point you may just wish to do it all in rtl.
-
-   WARNING: The constraints on insns shiftbyn_QI/HI/SI assume shifts of
-   1,2,3,4 will be inlined (1,2 for SI).  */
+   We first determine the strategy of the shift algorithm by a table
+   lookup.  If that tells us to use a hand crafted assembly code, we
+   go into the big switch statement to find what that is.  Otherwise,
+   we resort to a generic way, such as inlining.  In either case, the
+   result is returned through INFO.  */
 
 static void
 get_shift_alg (shift_type, shift_mode, count, info)

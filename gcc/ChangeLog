@@ -1,3 +1,7 @@
+2002-12-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c: Update the comments related to shifts.
+
 2002-12-04  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md (get_fnaddr): Correct length attribute.
