@@ -1855,7 +1855,6 @@ eliminate (void)
 	  if (TREE_CODE (stmt) == MODIFY_EXPR
 	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
 	      && TREE_CODE (TREE_OPERAND (stmt ,1)) != SSA_NAME
-	      && TREE_CODE (TREE_OPERAND (stmt, 1)) != NOP_EXPR
 	      && !is_gimple_min_invariant (TREE_OPERAND (stmt, 1))
 	      && !stmt_ann (stmt)->has_volatile_ops)
 	    {
