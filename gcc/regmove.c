@@ -114,14 +114,12 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
 		   &SET_SRC (inc_insn_set),
 		   XEXP (SET_SRC (inc_insn_set), 0), 1);
 	      validate_change (insn, &XEXP (use, 0),
-			       gen_rtx (inc_code,
-					Pmode,
-					reg), 1);
+			       gen_rtx_fmt_e (inc_code, Pmode, reg), 1);
 	      if (apply_change_group ())
 		{
 		  REG_NOTES (insn)
-		    = gen_rtx (EXPR_LIST, REG_INC,
-			       reg, REG_NOTES (insn));
+		    = gen_rtx_EXPR_LIST (REG_INC,
+					 reg, REG_NOTES (insn));
 		  if (! inc_insn_set)
 		    {
 		      PUT_CODE (inc_insn, NOTE);
@@ -218,7 +216,7 @@ optimize_reg_copy_3 (insn, dest, src)
       XEXP (src, 0) = src_reg;
       return;
     }
-  subreg = gen_rtx(SUBREG, old_mode, src_reg, 0);
+  subreg = gen_rtx_SUBREG (old_mode, src_reg, 0);
   while (p = NEXT_INSN (p), p != insn)
     {
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
@@ -530,8 +528,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		     >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dst))))
 		{
 		  src_subreg
-		    = gen_rtx(SUBREG,  GET_MODE (SUBREG_REG (dst)),
-			      src, SUBREG_WORD (dst));
+		    = gen_rtx_SUBREG (GET_MODE (SUBREG_REG (dst)),
+				      src, SUBREG_WORD (dst));
 		  dst = SUBREG_REG (dst);
 		}
 	      if (GET_CODE (dst) != REG
@@ -1381,9 +1379,9 @@ regmove_profitable_p ()
 	      break;
 	  if (i + 2 >= FIRST_PSEUDO_REGISTER)
 	    break;
-	  reg0 = gen_rtx (REG, insn_operand_mode[icode][0], i);
-	  reg1 = gen_rtx (REG, insn_operand_mode[icode][1], i + 1);
-	  reg2 = gen_rtx (REG, insn_operand_mode[icode][2], i + 2);
+	  reg0 = gen_rtx_REG (insn_operand_mode[icode][0], i);
+	  reg1 = gen_rtx_REG (insn_operand_mode[icode][1], i + 1);
+	  reg2 = gen_rtx_REG (insn_operand_mode[icode][2], i + 2);
 	  if (! (*insn_operand_predicate[icode][0]) (reg0, VOIDmode)
 	      || ! (*insn_operand_predicate[icode][1]) (reg1, VOIDmode)
 	      || ! (*insn_operand_predicate[icode][2]) (reg2, VOIDmode))

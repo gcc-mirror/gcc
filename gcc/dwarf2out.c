@@ -402,30 +402,30 @@ static unsigned reg_number		PROTO((rtx));
    .debug_frame.  */
 
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL) \
-  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), PTR_SIZE, 1)
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, LABEL), PTR_SIZE, 1)
 
 #define ASM_OUTPUT_DWARF_OFFSET4(FILE,LABEL) \
-  assemble_integer (gen_rtx (SYMBOL_REF, SImode, LABEL), 4, 1)
+  assemble_integer (gen_rtx_SYMBOL_REF (SImode, LABEL), 4, 1)
 
 #define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL) \
-  assemble_integer (gen_rtx (SYMBOL_REF, SImode, LABEL), 4, 1)
+  assemble_integer (gen_rtx_SYMBOL_REF (SImode, LABEL), 4, 1)
 
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
-  assemble_integer (gen_rtx (MINUS, HImode,			      	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),   	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+  assemble_integer (gen_rtx_MINUS (HImode,			      	\
+			     gen_rtx_SYMBOL_REF (Pmode, LABEL1),   	\
+			     gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    2, 1)
   
 #define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
-  assemble_integer (gen_rtx (MINUS, SImode,			      	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),   	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+  assemble_integer (gen_rtx_MINUS (SImode,			      	\
+			     gen_rtx_SYMBOL_REF (Pmode, LABEL1),   	\
+			     gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    4, 1)
 
 #define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
-  assemble_integer (gen_rtx (MINUS, Pmode,				\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+  assemble_integer (gen_rtx_MINUS (Pmode,				\
+			     gen_rtx_SYMBOL_REF (Pmode, LABEL1),	\
+			     gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    PTR_SIZE, 1)
 
 #define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2) \

@@ -655,7 +655,7 @@ regclass (f, nregs)
 
   for (i = 0; i < N_REG_CLASSES; i++)
     {
-      rtx r = gen_rtx (REG, VOIDmode, 0);
+      rtx r = gen_rtx_REG (VOIDmode, 0);
       enum machine_mode m;
 
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
@@ -1645,22 +1645,22 @@ auto_inc_dec_reg_p (reg, mode)
      enum machine_mode mode;
 {
 #ifdef HAVE_POST_INCREMENT
-  if (memory_address_p (mode, gen_rtx (POST_INC, Pmode, reg)))
+  if (memory_address_p (mode, gen_rtx_POST_INC (Pmode, reg)))
     return 1;
 #endif
 
 #ifdef HAVE_POST_DECREMENT
-  if (memory_address_p (mode, gen_rtx (POST_DEC, Pmode, reg)))
+  if (memory_address_p (mode, gen_rtx_POST_DEC (Pmode, reg)))
     return 1;
 #endif
 
 #ifdef HAVE_PRE_INCREMENT
-  if (memory_address_p (mode, gen_rtx (PRE_INC, Pmode, reg)))
+  if (memory_address_p (mode, gen_rtx_PRE_INC (Pmode, reg)))
     return 1;
 #endif
 
 #ifdef HAVE_PRE_DECREMENT
-  if (memory_address_p (mode, gen_rtx (PRE_DEC, Pmode, reg)))
+  if (memory_address_p (mode, gen_rtx_PRE_DEC (Pmode, reg)))
     return 1;
 #endif
 

@@ -128,7 +128,7 @@ find_base_value (src)
 	  && (XEXP (src, 0) == arg_pointer_rtx
 	      || (GET_CODE (XEXP (src, 0)) == PLUS
 		  && XEXP (XEXP (src, 0), 0) == arg_pointer_rtx)))
-	return gen_rtx (ADDRESS, VOIDmode, src);
+	return gen_rtx_ADDRESS (VOIDmode, src);
       return 0;
 
     case CONST:
@@ -251,8 +251,8 @@ record_set (dest, set)
 	  return;
 	}
       reg_seen[regno] = 1;
-      new_reg_base_value[regno] = gen_rtx (ADDRESS, Pmode,
-				       GEN_INT (unique_id++));
+      new_reg_base_value[regno] = gen_rtx_ADDRESS (Pmode,
+						   GEN_INT (unique_id++));
       return;
     }
 
@@ -326,7 +326,7 @@ canon_rtx (x)
 	    return plus_constant_for_output (x1, INTVAL (x0));
 	  else if (GET_CODE (x1) == CONST_INT)
 	    return plus_constant_for_output (x0, INTVAL (x1));
-	  return gen_rtx (PLUS, GET_MODE (x), x0, x1);
+	  return gen_rtx_PLUS (GET_MODE (x), x0, x1);
 	}
     }
   /* This gives us much better alias analysis when called from
@@ -338,7 +338,7 @@ canon_rtx (x)
       rtx addr = canon_rtx (XEXP (x, 0));
       if (addr != XEXP (x, 0))
 	{
-	  rtx new = gen_rtx (MEM, GET_MODE (x), addr);
+	  rtx new = gen_rtx_MEM (GET_MODE (x), addr);
 	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (x);
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
 	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (x);
@@ -1049,28 +1049,28 @@ init_alias_analysis ()
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (argument_registers, i))
-	  new_reg_base_value[i] = gen_rtx (ADDRESS, VOIDmode,
-					   gen_rtx (REG, Pmode, i));
+	  new_reg_base_value[i] = gen_rtx_ADDRESS (VOIDmode,
+						   gen_rtx_REG (Pmode, i));
 
       new_reg_base_value[STACK_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, stack_pointer_rtx);
+	= gen_rtx_ADDRESS (Pmode, stack_pointer_rtx);
       new_reg_base_value[ARG_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, arg_pointer_rtx);
+	= gen_rtx_ADDRESS (Pmode, arg_pointer_rtx);
       new_reg_base_value[FRAME_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, frame_pointer_rtx);
+	= gen_rtx_ADDRESS (Pmode, frame_pointer_rtx);
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
       new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
-	= gen_rtx (ADDRESS, Pmode, hard_frame_pointer_rtx);
+	= gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
 #endif
       if (struct_value_incoming_rtx
 	  && GET_CODE (struct_value_incoming_rtx) == REG)
 	new_reg_base_value[REGNO (struct_value_incoming_rtx)]
-	  = gen_rtx (ADDRESS, Pmode, struct_value_incoming_rtx);
+	  = gen_rtx_ADDRESS (Pmode, struct_value_incoming_rtx);
 
       if (static_chain_rtx
 	  && GET_CODE (static_chain_rtx) == REG)
 	new_reg_base_value[REGNO (static_chain_rtx)]
-	  = gen_rtx (ADDRESS, Pmode, static_chain_rtx);
+	  = gen_rtx_ADDRESS (Pmode, static_chain_rtx);
 
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

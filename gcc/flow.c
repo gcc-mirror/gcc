@@ -473,8 +473,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	  /* Make a list of all labels referred to other than by jumps.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_LABEL)
-	      label_value_list = gen_rtx (EXPR_LIST, VOIDmode, XEXP (note, 0),
-					  label_value_list);
+	      label_value_list = gen_rtx_EXPR_LIST (VOIDmode, XEXP (note, 0),
+						    label_value_list);
 	}
 
       /* Keep a lifo list of the currently active exception handlers.  */
@@ -485,8 +485,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	      for (x = exception_handler_labels; x; x = XEXP (x, 1))
 		if (CODE_LABEL_NUMBER (XEXP (x, 0)) == NOTE_BLOCK_NUMBER (insn))
 		  {
-		    eh_note = gen_rtx (EXPR_LIST, VOIDmode,
-				       XEXP (x, 0), eh_note);
+		    eh_note = gen_rtx_EXPR_LIST (VOIDmode,
+						 XEXP (x, 0), eh_note);
 		    break;
 		  }
 	      if (x == NULL_RTX)
@@ -567,7 +567,7 @@ find_basic_blocks (f, nonlocal_label_list)
 		   reachable from this block.  */
 		for (x = forced_labels; x; x = XEXP (x, 1))
 		  if (! LABEL_REF_NONLOCAL_P (x))
-		    mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, XEXP (x, 0)),
 				    insn, 0);
 
 		/* Now scan the insns for this block, we may need to make
@@ -608,8 +608,7 @@ find_basic_blocks (f, nonlocal_label_list)
 			      {
 				x = XEXP (note, 0);
 				block_live[BLOCK_NUM (x)] = 1;
-				mark_label_ref (gen_rtx (LABEL_REF,
-							 VOIDmode, x),
+				mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, x),
 						insn, 0);
 			      }
 			  }
@@ -620,13 +619,13 @@ find_basic_blocks (f, nonlocal_label_list)
 			if (computed_jump_p (insn))
 			  {
 			    for (x = label_value_list; x; x = XEXP (x, 1))
-			      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
-						       XEXP (x, 0)),
+			      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+								 XEXP (x, 0)),
 					      insn, 0);
 
 			    for (x = forced_labels; x; x = XEXP (x, 1))
-			      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
-						       XEXP (x, 0)),
+			      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+								 XEXP (x, 0)),
 					      insn, 0);
 			    }
 
@@ -643,8 +642,8 @@ find_basic_blocks (f, nonlocal_label_list)
 							 NULL_RTX)))
 			  {
 			    if (active_eh_handler[INSN_UID (insn)])
-			      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
-						       active_eh_handler[INSN_UID (insn)]),
+			      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+								 active_eh_handler[INSN_UID (insn)]),
 					      insn, 0);
 
 			    if (!asynchronous_exceptions)
@@ -652,8 +651,8 @@ find_basic_blocks (f, nonlocal_label_list)
 				for (x = nonlocal_label_list;
 				     x;
 				     x = XEXP (x, 1))
-				  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
-							   XEXP (x, 0)),
+				  mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+								     XEXP (x, 0)),
 						  insn, 0);
 			      }
 			    /* ??? This could be made smarter:
@@ -1666,7 +1665,7 @@ propagate_block (old, first, last, final, significant, bnum)
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		    if (global_regs[i])
 		      mark_used_regs (old, live,
-				      gen_rtx (REG, reg_raw_mode[i], i),
+				      gen_rtx_REG (reg_raw_mode[i], i),
 				      final, insn);
 
 		  /* Calls also clobber memory.  */
@@ -2111,7 +2110,7 @@ mark_set_1 (needed, dead, x, insn, significant)
 		  && (regno >= FIRST_PSEUDO_REGISTER
 		      || asm_noperands (PATTERN (y)) < 0))
 		LOG_LINKS (y)
-		  = gen_rtx (INSN_LIST, VOIDmode, insn, LOG_LINKS (y));
+		  = gen_rtx_INSN_LIST (VOIDmode, insn, LOG_LINKS (y));
 	    }
 	  else if (! some_needed)
 	    {
@@ -2120,7 +2119,7 @@ mark_set_1 (needed, dead, x, insn, significant)
 		 be eliminated (because the same insn does something useful).
 		 Indicate this by marking the reg being set as dying here.  */
 	      REG_NOTES (insn)
-		= gen_rtx (EXPR_LIST, REG_UNUSED, reg, REG_NOTES (insn));
+		= gen_rtx_EXPR_LIST (REG_UNUSED, reg, REG_NOTES (insn));
 	      REG_N_DEATHS (REGNO (reg))++;
 	    }
 	  else
@@ -2137,10 +2136,10 @@ mark_set_1 (needed, dead, x, insn, significant)
 		   i >= 0; i--)
 		if (!REGNO_REG_SET_P (needed, regno + i))
 		  REG_NOTES (insn)
-		    = gen_rtx (EXPR_LIST, REG_UNUSED,
-			       gen_rtx (REG, reg_raw_mode[regno + i],
-					regno + i),
-			       REG_NOTES (insn));
+		    = gen_rtx_EXPR_LIST (REG_UNUSED,
+					 gen_rtx_REG (reg_raw_mode[regno + i],
+						      regno + i),
+					 REG_NOTES (insn));
 	    }
 	}
     }
@@ -2152,7 +2151,7 @@ mark_set_1 (needed, dead, x, insn, significant)
   else if (GET_CODE (reg) == SCRATCH && insn != 0)
     {
       REG_NOTES (insn)
-	= gen_rtx (EXPR_LIST, REG_UNUSED, reg, REG_NOTES (insn));
+	= gen_rtx_EXPR_LIST (REG_UNUSED, reg, REG_NOTES (insn));
       num_scratch++;
     }
 }
@@ -2226,7 +2225,7 @@ find_auto_inc (needed, x, insn)
 		 we can't, we are done.  Otherwise, we will do any
 		 needed updates below.  */
 	      if (! validate_change (insn, &XEXP (x, 0),
-				     gen_rtx (inc_code, Pmode, addr),
+				     gen_rtx_fmt_e (inc_code, Pmode, addr),
 				     0))
 		return;
 	    }
@@ -2267,7 +2266,7 @@ find_auto_inc (needed, x, insn)
 		 so is not correct in the pre-inc case.  */
 
 	      validate_change (insn, &XEXP (x, 0),
-			       gen_rtx (inc_code, Pmode, q),
+			       gen_rtx_fmt_e (inc_code, Pmode, q),
 			       1);
 	      validate_change (incr, &XEXP (y, 0), q, 1);
 	      if (! apply_change_group ())
@@ -2314,7 +2313,7 @@ find_auto_inc (needed, x, insn)
 	     has an implicit side effect.  */
 
 	  REG_NOTES (insn)
-	    = gen_rtx (EXPR_LIST, REG_INC, addr, REG_NOTES (insn));
+	    = gen_rtx_EXPR_LIST (REG_INC, addr, REG_NOTES (insn));
 
 	  /* Modify the old increment-insn to simply copy
 	     the already-incremented value of our register.  */
@@ -2553,7 +2552,7 @@ mark_used_regs (needed, live, x, final, insn)
 		if (! some_needed)
 		  {
 		    REG_NOTES (insn)
-		      = gen_rtx (EXPR_LIST, REG_DEAD, x, REG_NOTES (insn));
+		      = gen_rtx_EXPR_LIST (REG_DEAD, x, REG_NOTES (insn));
 		    REG_N_DEATHS (regno)++;
 		  }
 		else
@@ -2568,10 +2567,10 @@ mark_used_regs (needed, live, x, final, insn)
 		      if (!REGNO_REG_SET_P (needed, regno + i)
 			  && ! dead_or_set_regno_p (insn, regno + i))
 			REG_NOTES (insn)
-			  = gen_rtx (EXPR_LIST, REG_DEAD,
-				     gen_rtx (REG, reg_raw_mode[regno + i],
-					      regno + i),
-				     REG_NOTES (insn));
+			  = gen_rtx_EXPR_LIST (REG_DEAD,
+					       gen_rtx_REG (reg_raw_mode[regno + i],
+							    regno + i),
+					       REG_NOTES (insn));
 		  }
 	      }
 	  }
@@ -2814,14 +2813,14 @@ try_pre_increment (insn, reg, amount)
 
   /* See if this combination of instruction and addressing mode exists.  */
   if (! validate_change (insn, &XEXP (use, 0),
-			 gen_rtx (amount > 0
-				  ? (do_post ? POST_INC : PRE_INC)
-				  : (do_post ? POST_DEC : PRE_DEC),
-				  Pmode, reg), 0))
+			 gen_rtx_fmt_e (amount > 0
+					? (do_post ? POST_INC : PRE_INC)
+					: (do_post ? POST_DEC : PRE_DEC),
+					Pmode, reg), 0))
     return 0;
 
   /* Record that this insn now has an implicit side effect on X.  */
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, reg, REG_NOTES (insn));
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, reg, REG_NOTES (insn));
   return 1;
 }
 

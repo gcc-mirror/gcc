@@ -1,5 +1,5 @@
 /* OSF/rose half-pic support functions.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,9 +32,9 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HALF_PIC_INIT
 
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
-#include <stdio.h>
 #include "obstack.h"
 
 #define obstack_chunk_alloc xmalloc
@@ -188,7 +188,7 @@ half_pic_finish (stream)
       if (p->pointer_p)
 	{
 	  ASM_OUTPUT_LABEL (stream, p->ref_name);
-	  ASM_OUTPUT_INT (stream, gen_rtx (SYMBOL_REF, Pmode, p->real_name));
+	  ASM_OUTPUT_INT (stream, gen_rtx_SYMBOL_REF (Pmode, p->real_name));
 	}
     }
 }
@@ -394,7 +394,7 @@ half_pic_ptr (operand)
     }
 
   half_pic_number_refs++;
-  return gen_rtx (SYMBOL_REF, Pmode, p->ref_name);
+  return gen_rtx_SYMBOL_REF (Pmode, p->ref_name);
 }
 
 #endif /* HALF_PIC_INIT */

@@ -362,7 +362,7 @@ instrument_arcs (f, num_blocks, dump_file)
 		  emit_barrier_after (arcptr->branch_insn);
 		  
 		  /* Fix up the table jump.  */
-		  new_lref = gen_rtx (LABEL_REF, Pmode, new_label);
+		  new_lref = gen_rtx_LABEL_REF (Pmode, new_label);
 		  XVECEXP (PATTERN (arcptr->branch_insn),
 			   (code == ADDR_DIFF_VEC), index) = new_lref;
 		}
@@ -821,7 +821,7 @@ branch_prob (f, dump_file)
 	  {
 	    /* Make a fake insn to tag our notes on.  */
 	    bb_graph[i].first_insn = insn
-	      = emit_insn_after (gen_rtx (USE, VOIDmode, stack_pointer_rtx),
+	      = emit_insn_after (gen_rtx_USE (VOIDmode, stack_pointer_rtx),
 				 insn);
 	    prev_code = CALL_INSN;
 	  }
@@ -1139,8 +1139,8 @@ branch_prob (f, dump_file)
 	      num_branches++;
 	      
 	      REG_NOTES (arcptr->branch_insn)
-		= gen_rtx (EXPR_LIST, REG_BR_PROB, GEN_INT (prob),
-			   REG_NOTES (arcptr->branch_insn));
+		= gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
+				     REG_NOTES (arcptr->branch_insn));
 	    }
 	}
 
@@ -1159,8 +1159,8 @@ branch_prob (f, dump_file)
       else
 	{
 	  REG_NOTES (binfo->first_insn)
-	    = gen_rtx (EXPR_LIST, REG_EXEC_COUNT, GEN_INT (total),
-		       REG_NOTES (binfo->first_insn));
+	    = gen_rtx_EXPR_LIST (REG_EXEC_COUNT, GEN_INT (total),
+				 REG_NOTES (binfo->first_insn));
 	  if (i == num_blocks - 1)
 	    return_label_execution_count = total;
 	}
@@ -1498,7 +1498,7 @@ init_arc_profiler ()
   /* Generate and save a copy of this so it can be shared.  */
   char *name = xmalloc (20);
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
-  profiler_label = gen_rtx (SYMBOL_REF, Pmode, name);
+  profiler_label = gen_rtx_SYMBOL_REF (Pmode, name);
 }
 
 /* Output instructions as RTL to increment the arc execution count.  */
@@ -1510,10 +1510,9 @@ output_arc_profiler (arcno, insert_after)
 {
   rtx profiler_target_addr
     = (arcno
-       ? gen_rtx (CONST, Pmode,
-		  gen_rtx (PLUS, Pmode, profiler_label,
-			   gen_rtx (CONST_INT, VOIDmode,
-				    LONG_TYPE_SIZE / BITS_PER_UNIT * arcno)))
+       ? gen_rtx_CONST (Pmode,
+			gen_rtx_PLUS (Pmode, profiler_label,
+				      GEN_INT (LONG_TYPE_SIZE / BITS_PER_UNIT * arcno)))
        : profiler_label);
   enum machine_mode mode = mode_for_size (LONG_TYPE_SIZE, MODE_INT, 0);
   rtx profiler_reg = gen_reg_rtx (mode);
@@ -1569,14 +1568,14 @@ output_arc_profiler (arcno, insert_after)
   start_sequence ();
 
   emit_move_insn (address_reg, profiler_target_addr);
-  mem_ref = gen_rtx (MEM, mode, address_reg);
+  mem_ref = gen_rtx_MEM (mode, address_reg);
   emit_move_insn (profiler_reg, mem_ref);
 
-  add_ref = gen_rtx (PLUS, mode, profiler_reg, GEN_INT (1));
+  add_ref = gen_rtx_PLUS (mode, profiler_reg, GEN_INT (1));
   emit_move_insn (profiler_reg, add_ref);
 
   /* This is the same rtx as above, but it is not legal to share this rtx.  */
-  mem_ref = gen_rtx (MEM, mode, address_reg);
+  mem_ref = gen_rtx_MEM (mode, address_reg);
   emit_move_insn (mem_ref, profiler_reg);
 
   sequence = gen_sequence ();
@@ -1633,8 +1632,8 @@ output_func_start_profiler ()
   /* Actually generate the code to call __bb_init_func. */
   name = xmalloc (20);
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);
-  table_address = force_reg (Pmode, gen_rtx (SYMBOL_REF, Pmode, name));
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__bb_init_func"), 0,
+  table_address = force_reg (Pmode, gen_rtx_SYMBOL_REF (Pmode, name));
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_init_func"), 0,
 		     mode, 1, table_address, Pmode);
 
   expand_function_end (input_filename, lineno, 0);

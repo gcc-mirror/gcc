@@ -832,7 +832,7 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
-  *paligned_mem = gen_rtx (MEM, SImode,
+  *paligned_mem = gen_rtx_MEM (SImode,
 			   plus_constant (base, offset & ~3));
   MEM_IN_STRUCT_P (*paligned_mem) = MEM_IN_STRUCT_P (ref);
   MEM_VOLATILE_P (*paligned_mem) = MEM_VOLATILE_P (ref);
@@ -1025,7 +1025,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
 
 	  if (target == NULL)
 	    target = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx (SET, VOIDmode, target, GEN_INT (c)));
+	  emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (c)));
 	  return target;
 	}
       else if (n >= 2 + (extra != 0))
@@ -1234,7 +1234,7 @@ alpha_emit_conditional_move (cmp, mode)
      This avoids emitting spurious compares. */
   if (signed_comparison_operator (cmp, cmp_op_mode)
       && (op0 == CONST0_RTX (cmp_mode) || op1 == CONST0_RTX (cmp_mode)))
-    return gen_rtx (code, VOIDmode, op0, op1);
+    return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
 
   /* We can't put the comparison insides a conditional move;
      emit a compare instruction and put that inside the
@@ -1266,8 +1266,8 @@ alpha_emit_conditional_move (cmp, mode)
     }
 
   tem = gen_reg_rtx (cmp_op_mode);
-  emit_move_insn (tem, gen_rtx (code, cmp_op_mode, op0, op1));
-  return gen_rtx (cmov_code, VOIDmode, tem, CONST0_RTX (cmp_op_mode));
+  emit_move_insn (tem, gen_rtx_fmt_ee (code, cmp_op_mode, op0, op1));
+  return gen_rtx_fmt_ee (cmov_code, VOIDmode, tem, CONST0_RTX (cmp_op_mode));
 }
 
 /* Use ext[wlq][lh] as the Architecture Handbook describes for extracting
@@ -1313,16 +1313,17 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
 
   emit_move_insn (meml,
 		  change_address (mem, DImode,
-				  gen_rtx (AND, DImode, 
-					   plus_constant (XEXP (mem, 0), ofs),
-					   GEN_INT (-8))));
+				  gen_rtx_AND (DImode, 
+					       plus_constant (XEXP (mem, 0),
+							      ofs),
+					       GEN_INT (-8))));
 
   emit_move_insn (memh,
 		  change_address (mem, DImode,
-				  gen_rtx (AND, DImode, 
-					   plus_constant (XEXP (mem, 0),
-							  ofs + size - 1),
-					   GEN_INT (-8))));
+				  gen_rtx_AND (DImode, 
+					       plus_constant (XEXP (mem, 0),
+							      ofs + size - 1),
+					       GEN_INT (-8))));
 
   if (sign && size == 2)
     {
@@ -1373,13 +1374,14 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
   insh = gen_reg_rtx (DImode);
 
   meml = change_address (dst, DImode,
-			 gen_rtx (AND, DImode, 
-				  plus_constant (XEXP (dst, 0), ofs),
-				  GEN_INT (-8)));
+			 gen_rtx_AND (DImode, 
+				      plus_constant (XEXP (dst, 0), ofs),
+				      GEN_INT (-8)));
   memh = change_address (dst, DImode,
-			 gen_rtx (AND, DImode, 
-				  plus_constant (XEXP (dst, 0), ofs+size-1),
-				  GEN_INT (-8)));
+			 gen_rtx_AND (DImode, 
+				      plus_constant (XEXP (dst, 0),
+						     ofs+size-1),
+				      GEN_INT (-8)));
 
   emit_move_insn (dsth, memh);
   emit_move_insn (dstl, meml);
@@ -1461,17 +1463,17 @@ alpha_expand_unaligned_load_words (data_regs, src_addr, words)
     {
       emit_move_insn (data_regs[i],
 		      change_address (src_addr, DImode,
-				      gen_rtx (AND, DImode,
-					       plus_constant (XEXP(src_addr,0),
-							      8*i),
-					       im8)));
+				      gen_rtx_AND (DImode,
+						   plus_constant (XEXP(src_addr,0),
+								  8*i),
+						   im8)));
     }
   emit_move_insn (data_regs[words],
 		  change_address (src_addr, DImode,
-				  gen_rtx (AND, DImode,
-					   plus_constant (XEXP(src_addr,0),
-							  8*words - 1),
-					   im8)));
+				  gen_rtx_AND (DImode,
+					       plus_constant (XEXP(src_addr,0),
+							      8*words - 1),
+					       im8)));
 
   /* Extract the half-word fragments.  Unfortunately DEC decided to make
      extxh with offset zero a noop instead of zeroing the register, so 
@@ -1485,10 +1487,10 @@ alpha_expand_unaligned_load_words (data_regs, src_addr, words)
       emit_insn (gen_extxl (data_regs[i], data_regs[i], i64, src_reg));
 
       emit_insn (gen_extqh (ext_tmps[i], data_regs[i+1], src_reg));
-      emit_insn (gen_rtx (SET, VOIDmode, ext_tmps[i],
-			  gen_rtx (IF_THEN_ELSE, DImode,
-				   gen_rtx (EQ, DImode, and_reg, const0_rtx),
-				   const0_rtx, ext_tmps[i])));
+      emit_insn (gen_rtx_SET (VOIDmode, ext_tmps[i],
+			      gen_rtx_IF_THEN_ELSE (DImode,
+						    gen_rtx_EQ (DImode, and_reg, const0_rtx),
+						    const0_rtx, ext_tmps[i])));
     }
 
   /* Merge the half-words into whole words.  */
@@ -1528,14 +1530,14 @@ alpha_expand_unaligned_store_words (data_regs, dst_addr, words)
   st_tmp_2 = gen_reg_rtx(DImode);
   
   st_addr_2 = change_address (dst_addr, DImode,
-			      gen_rtx (AND, DImode,
-				       plus_constant (XEXP(dst_addr,0),
-						      words*8 - 1),
+			      gen_rtx_AND (DImode,
+					   plus_constant (XEXP(dst_addr,0),
+							  words*8 - 1),
 				       im8));
   st_addr_1 = change_address (dst_addr, DImode,
-			      gen_rtx (AND, DImode, 
-				       XEXP (dst_addr, 0),
-				       im8));
+			      gen_rtx_AND (DImode, 
+					   XEXP (dst_addr, 0),
+					   im8));
 
   /* Load up the destination end bits.  */
   emit_move_insn (st_tmp_2, st_addr_2);
@@ -1576,9 +1578,9 @@ alpha_expand_unaligned_store_words (data_regs, dst_addr, words)
   for (i = words-1; i > 0; --i)
     {
       emit_move_insn (change_address (dst_addr, DImode,
-				      gen_rtx (AND, DImode,
-					       plus_constant(XEXP (dst_addr,0),
-							     i*8),
+				      gen_rtx_AND (DImode,
+						   plus_constant(XEXP (dst_addr,0),
+								 i*8),
 					       im8)),
 		      data_regs ? ins_tmps[i-1] : const0_rtx);
     }
@@ -2058,7 +2060,8 @@ alpha_return_addr (count, frame)
 
   /* No rtx yet.  Invent one, and initialize it from $26 in the prologue.  */
   alpha_return_addr_rtx = gen_reg_rtx (Pmode);
-  init = gen_rtx (SET, Pmode, alpha_return_addr_rtx, gen_rtx (REG, Pmode, 26));
+  init = gen_rtx_SET (Pmode, alpha_return_addr_rtx,
+		      gen_rtx_REG (Pmode, REG_RA));
 
   /* Emit the insn to the prologue with the other argument copies.  */
   push_topmost_sequence ();
@@ -2076,7 +2079,8 @@ alpha_ra_ever_killed ()
   if (!alpha_return_addr_rtx)
     return regs_ever_live[REG_RA];
 
-  return reg_set_between_p (gen_rtx (REG, REG_RA), get_insns(), NULL_RTX);
+  return reg_set_between_p (gen_rtx_REG (Pmode, REG_RA),
+			    get_insns(), NULL_RTX);
 }
 
 
