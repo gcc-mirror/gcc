@@ -642,8 +642,8 @@ other, C++-specific, extension keywords such as @code{headof}.
 @findex strcmp
 @findex strcpy
 @findex strlen
-Don't recognize builtin functions that do not begin with two leading
-underscores.  Currently, the functions affected include @code{abort},
+Don't recognize builtin functions that do not begin with @samp{__builtin_}
+as prefix.  Currently, the functions affected include @code{abort},
 @code{abs}, @code{alloca}, @code{cos}, @code{exit}, @code{fabs},
 @code{ffs}, @code{labs}, @code{memcmp}, @code{memcpy}, @code{sin},
 @code{sqrt}, @code{strcmp}, @code{strcpy}, and @code{strlen}.
