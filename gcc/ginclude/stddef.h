@@ -410,8 +410,14 @@ typedef __WINT_TYPE__ wint_t;
 #ifdef _STDDEF_H
 
 /* Offset of member MEMBER in a struct of type TYPE.  */
-
+#ifndef __cplusplus
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#else /* C++ */
+/* The reference cast is necessary to thwart an operator& that might
+   be applicable to MEMBER's type.  See DR 273 for details.  */
+#define offsetof(TYPE, MEMBER) (reinterpret_cast <size_t> \
+    (&reinterpret_cast <char &>(static_cast <TYPE *> (0)->MEMBER)))
+#endif /* C++ */
 
 #endif /* _STDDEF_H was defined this time */
 

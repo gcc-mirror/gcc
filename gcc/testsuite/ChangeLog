@@ -1,3 +1,7 @@
+2003-04-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/other/offsetof2.C: New test.
+
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/recurse.C: Adjust location of error messages.
