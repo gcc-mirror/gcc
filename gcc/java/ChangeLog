@@ -1,5 +1,10 @@
 2000-06-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* jcf-write.c (push_long_const): Appropriately cast short negative
+	constant to jword.
+
+2000-06-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* parse.y (verify_constructor_super): Use loop variable
 	`m_arg_type' initialized with `mdecl_arg_type'.
 
