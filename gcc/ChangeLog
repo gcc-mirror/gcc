@@ -5,6 +5,10 @@
 	(get_non_padding_token):  We no longer need to compensate for the
 	"horrible things" the C++ front-end does with the current line number,
 
+	* c-lex.c (fe_file_change):  Handle a NULL new_map.
+	* fix-header.c (cb_file_change):  Likewise.
+	* c-ppoutput.c (pp_file_change):  Likewise.
+
 2003-10-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* target.h (init_libfuncs): New hook.

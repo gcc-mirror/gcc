@@ -346,24 +346,27 @@ pp_file_change (const struct line_map *map)
   if (flag_no_line_commands || flag_no_output)
     return;
 
-  /* First time?  */
-  if (print.map == NULL)
+  if (map != NULL)
     {
-      /* Avoid printing foo.i when the main file is foo.c.  */
-      if (!cpp_get_options (parse_in)->preprocessed)
-	print_line (map, map->from_line, flags);
-    }
-  else
-    {
-      /* Bring current file to correct line when entering a new file.  */
-      if (map->reason == LC_ENTER)
-	maybe_print_line (map - 1, map->from_line - 1);
+      /* First time?  */
+      if (print.map == NULL)
+	{
+	  /* Avoid printing foo.i when the main file is foo.c.  */
+	  if (!cpp_get_options (parse_in)->preprocessed)
+	    print_line (map, map->from_line, flags);
+	}
+      else
+	{
+	  /* Bring current file to correct line when entering a new file.  */
+	  if (map->reason == LC_ENTER)
+	    maybe_print_line (map - 1, map->from_line - 1);
 
-      if (map->reason == LC_ENTER)
-	flags = " 1";
-      else if (map->reason == LC_LEAVE)
-	flags = " 2";
-      print_line (map, map->from_line, flags);
+	  if (map->reason == LC_ENTER)
+	    flags = " 1";
+	  else if (map->reason == LC_LEAVE)
+	    flags = " 2";
+	  print_line (map, map->from_line, flags);
+	}
     }
 
   print.map = map;
