@@ -17,27 +17,68 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#define TARGET_DEFAULT MASK_ABICALLS
+#define	TARGET_DEFAULT	MASK_ABICALLS
 #define ABICALLS_ASM_OP ".option pic2"
+
+#define OBJECT_FORMAT_ELF
 
 #include "mips/iris4.h"
 
-/* mips-tfile doesn't work yet.  No debugging is supported.  */
-#undef ASM_FINAL_SPEC
-#undef SDB_DEBUGGING_INFO
-#undef DBX_DEBUGGING_INFO
+/* Specify size_t, ptrdiff_t, and wchar_t types.  */
+#undef	SIZE_TYPE
+#undef	PTRDIFF_TYPE
+#undef	WCHAR_TYPE
+#undef	WCHAR_TYPE_SIZE
+
+#define SIZE_TYPE	"unsigned int"
+#define PTRDIFF_TYPE	"int"
+#define WCHAR_TYPE	"long int"
+#define WCHAR_TYPE_SIZE	LONG_TYPE_SIZE
+
+/* ??? _MIPS_SIM and _MIPS_SZPTR should eventually depend on options when
+   options for them exist.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES	"\
--D_MIPS_FPSET=16 -D_MIPS_ISA=_MIPS_ISA_MIPS1 -D_MIPS_SIM_ABI32 \
--Dunix -Dmips -Dsgi -DSVR3 -Dhost_mips -DMIPSEB -DSYSTYPE_SYSV \
--D_SYSTYPE_SVR4 -D_LONGLONG -D_MIPSEB -D_SGI_SOURCE -D__SDO__  \
--D_MIPS_SZLONG=32 -D_MIPS_SZINT=32 -D_MIPS_SZPTR=32 -D_SVR4_SOURCE \
--Asystem(unix) -Asystem(svr3) -Acpu(mips) -Amachine(mips)"
+#define CPP_PREDEFINES \
+ "-Dunix -Dmips -Dsgi -Dhost_mips -DMIPSEB -DSYSTYPE_SVR4 \
+  -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
+  -D_MIPS_SIM=_MIPS_SIM_ABI32 -D_MIPS_SZPTR=32 \
+  -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
 
-#undef ASM_SPEC
-#define ASM_SPEC "-elf -KPIC -EB %{O*:-O2 -fullasopt} %{!O*:-O1}"
+#undef CPP_SPEC
+#define CPP_SPEC "\
+%{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE -D_LONGLONG} \
+%{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D_LANGUAGE_OBJECTIVE_C} \
+%{!.S: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}\
+%{!mfp64: -D_MIPS_FPSET=16}%{mfp64: -D_MIPS_FPSET=32} \
+%{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
+%{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
+%{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
+%{!mips1: %{!mips2: %{!mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS1}}} \
+%{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
+%{!mlong64: -D_MIPS_SZLONG=32}%{mlong64: -D_MIPS_SZLONG=64}"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-elf -_SYSTYPE_SVR4 -require_dynamic_link \
- _rld_new_interface -no_unresolved -KPIC -call_shared -transitive_link"
+#define LINK_SPEC "\
+%{G*} \
+%{!mgas: \
+	%{mips1} %{mips2} %{mips3} %{bestGnum} \
+	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
+	%{!shared: %{!non_shared: %{!call_shared: -call_shared}}} \
+	-_SYSTYPE_SVR4 }"
+
+#undef LIB_SPEC
+#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s"
+
+/* We do not want to run mips-tfile!  */
+#undef ASM_FINAL_SPEC
+
+#undef OBJECT_FORMAT_COFF
+
+#undef MACHINE_TYPE
+#define MACHINE_TYPE "SGI running IRIX 5.0"
+
