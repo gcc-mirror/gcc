@@ -1,3 +1,7 @@
+Wed Sep  9 13:14:41 1998  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (load_mems): Copy rtx for output mem.
+
 Wed Sep  9 15:16:58 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* mips/abi64.h (LONG_MAX_SPEC): Don't set LONG_MAX for
