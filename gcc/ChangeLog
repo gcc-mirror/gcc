@@ -1,4 +1,11 @@
 2005-03-16  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/20489
+
+	* tree-ssa-alias.c (push_fields_onto_fieldstack): DTRT
+	for empty structures.
+
+2005-03-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/20490
 	
