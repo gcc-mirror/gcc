@@ -2,7 +2,11 @@
 
 	PR fortran/17568
 	* gfortran.dg/ishft.f90: New test.
-	
+
+	PR fortran/17283
+	* gfortran.fortran-torture/execute/intrinsic_pack.f90: Enable new
+	tests.
+
 2004-10-06  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/do_1.f90: New test.
