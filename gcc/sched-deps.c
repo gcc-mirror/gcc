@@ -590,10 +590,10 @@ sched_analyze_1 (deps, x, insn)
 	      int r = regno + i;
 	      rtx u;
 
-	      for (u = deps->reg_last_uses[r]; u; u = XEXP (u, 1))
+	      for (u = deps->reg_last[r].uses; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-	      for (u = deps->reg_last_sets[r]; u; u = XEXP (u, 1))
+	      for (u = deps->reg_last[r].sets; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
 	      /* Clobbers need not be ordered with respect to one
@@ -602,8 +602,8 @@ sched_analyze_1 (deps, x, insn)
 	      if (code == SET)
 		{
 		  if (GET_CODE (PATTERN (insn)) != COND_EXEC)
-		    free_INSN_LIST_list (&deps->reg_last_uses[r]);
-		  for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
+		    free_INSN_LIST_list (&deps->reg_last[r].uses);
+		  for (u = deps->reg_last[r].clobbers; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 		  SET_REGNO_REG_SET (reg_pending_sets, r);
 		}
@@ -616,21 +616,30 @@ sched_analyze_1 (deps, x, insn)
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	    }
 	}
+      /* ??? Reload sometimes emits USEs and CLOBBERs of pseudos that
+	 it does not reload.  Ignore these as they have served their
+	 purpose already.  */
+      else if (regno >= deps->max_reg)
+	{
+	  if (GET_CODE (PATTERN (insn)) != USE
+	      && GET_CODE (PATTERN (insn)) != CLOBBER)
+	    abort ();
+	}
       else
 	{
 	  rtx u;
 
-	  for (u = deps->reg_last_uses[regno]; u; u = XEXP (u, 1))
+	  for (u = deps->reg_last[regno].uses; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-	  for (u = deps->reg_last_sets[regno]; u; u = XEXP (u, 1))
+	  for (u = deps->reg_last[regno].sets; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
 	  if (code == SET)
 	    {
 	      if (GET_CODE (PATTERN (insn)) != COND_EXEC)
-		free_INSN_LIST_list (&deps->reg_last_uses[regno]);
-	      for (u = deps->reg_last_clobbers[regno]; u; u = XEXP (u, 1))
+		free_INSN_LIST_list (&deps->reg_last[regno].uses);
+	      for (u = deps->reg_last[regno].clobbers; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	      SET_REGNO_REG_SET (reg_pending_sets, regno);
 	    }
@@ -757,14 +766,15 @@ sched_analyze_2 (deps, x, insn)
 	    while (--i >= 0)
 	      {
 		int r = regno + i;
-		deps->reg_last_uses[r]
-		  = alloc_INSN_LIST (insn, deps->reg_last_uses[r]);
+		deps->reg_last[r].uses
+		  = alloc_INSN_LIST (insn, deps->reg_last[r].uses);
+		SET_REGNO_REG_SET (&deps->reg_last_in_use, r);
 
-		for (u = deps->reg_last_sets[r]; u; u = XEXP (u, 1))
+		for (u = deps->reg_last[r].sets; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 
 		/* ??? This should never happen.  */
-		for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
+		for (u = deps->reg_last[r].clobbers; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 
 		if (call_used_regs[r] || global_regs[r])
@@ -773,16 +783,26 @@ sched_analyze_2 (deps, x, insn)
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	      }
 	  }
+	/* ??? Reload sometimes emits USEs and CLOBBERs of pseudos that
+	   it does not reload.  Ignore these as they have served their
+	   purpose already.  */
+	else if (regno >= deps->max_reg)
+	  {
+	    if (GET_CODE (PATTERN (insn)) != USE
+		&& GET_CODE (PATTERN (insn)) != CLOBBER)
+	      abort ();
+	  }
 	else
 	  {
-	    deps->reg_last_uses[regno]
-	      = alloc_INSN_LIST (insn, deps->reg_last_uses[regno]);
+	    deps->reg_last[regno].uses
+	      = alloc_INSN_LIST (insn, deps->reg_last[regno].uses);
+	    SET_REGNO_REG_SET (&deps->reg_last_in_use, regno);
 
-	    for (u = deps->reg_last_sets[regno]; u; u = XEXP (u, 1))
+	    for (u = deps->reg_last[regno].sets; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), 0);
 
 	    /* ??? This should never happen.  */
-	    for (u = deps->reg_last_clobbers[regno]; u; u = XEXP (u, 1))
+	    for (u = deps->reg_last[regno].clobbers; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), 0);
 
 	    /* Pseudos that are REG_EQUIV to something may be replaced
@@ -867,19 +887,19 @@ sched_analyze_2 (deps, x, insn)
 	   pseudo-regs because it might give an incorrectly rounded result.  */
 	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
 	  {
-	    int max_reg = max_reg_num ();
-	    for (i = 0; i < max_reg; i++)
+	    for (i = 0; i < deps->max_reg; i++)
 	      {
-		for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
+		struct deps_reg *reg_last = &deps->reg_last[i];
+
+		for (u = reg_last->uses; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+		for (u = reg_last->sets; u; u = XEXP (u, 1))
+		  add_dependence (insn, XEXP (u, 0), 0);
+		for (u = reg_last->clobbers; u; u = XEXP (u, 1))
+		  add_dependence (insn, XEXP (u, 0), 0);
+
 		if (GET_CODE (PATTERN (insn)) != COND_EXEC)
-		  free_INSN_LIST_list (&deps->reg_last_uses[i]);
-
-		for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
-		  add_dependence (insn, XEXP (u, 0), 0);
-
-		for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
-		  add_dependence (insn, XEXP (u, 0), 0);
+		  free_INSN_LIST_list (&reg_last->uses);
 	      }
 	    reg_pending_sets_all = 1;
 
@@ -948,7 +968,6 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 {
   register RTX_CODE code = GET_CODE (x);
   rtx link;
-  int maxreg = max_reg_num ();
   int i;
 
   if (code == COND_EXEC)
@@ -1001,13 +1020,15 @@ sched_analyze_insn (deps, x, insn, loop_notes)
       next = next_nonnote_insn (insn);
       if (next && GET_CODE (next) == BARRIER)
 	{
-	  for (i = 0; i < maxreg; i++)
+	  for (i = 0; i < deps->max_reg; i++)
 	    {
-	      for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
+	      struct deps_reg *reg_last = &deps->reg_last[i];
+
+	      for (u = reg_last->uses; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
+	      for (u = reg_last->sets; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
+	      for (u = reg_last->clobbers; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	    }
 	}
@@ -1017,13 +1038,13 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	  INIT_REG_SET (&tmp);
 
 	  (*current_sched_info->compute_jump_reg_dependencies) (insn, &tmp);
-	  EXECUTE_IF_SET_IN_REG_SET 
-	    (&tmp, 0, i,
+	  EXECUTE_IF_SET_IN_REG_SET (&tmp, 0, i,
 	    {
-	      for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
+	      struct deps_reg *reg_last = &deps->reg_last[i];
+	      for (u = reg_last->sets; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      deps->reg_last_uses[i]
-		= alloc_INSN_LIST (insn, deps->reg_last_uses[i]);
+	      reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
+	      SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
 	    });
 
 	  CLEAR_REG_SET (&tmp);
@@ -1049,7 +1070,6 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 
   if (loop_notes)
     {
-      int max_reg = max_reg_num ();
       int schedule_barrier_found = 0;
       rtx link;
 
@@ -1074,19 +1094,20 @@ sched_analyze_insn (deps, x, insn, loop_notes)
       /* Add dependencies if a scheduling barrier was found.  */
       if (schedule_barrier_found)
 	{
-	  for (i = 0; i < max_reg; i++)
+	  for (i = 0; i < deps->max_reg; i++)
 	    {
+	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      rtx u;
-	      for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
+
+	      for (u = reg_last->uses; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	      for (u = reg_last->sets; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), 0);
+	      for (u = reg_last->clobbers; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), 0);
+
 	      if (GET_CODE (PATTERN (insn)) != COND_EXEC)
-		free_INSN_LIST_list (&deps->reg_last_uses[i]);
-
-	      for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
-		add_dependence (insn, XEXP (u, 0), 0);
-
-	      for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
-		add_dependence (insn, XEXP (u, 0), 0);
+		free_INSN_LIST_list (&reg_last->uses);
 	    }
 	  reg_pending_sets_all = 1;
 
@@ -1095,46 +1116,46 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 
     }
 
-  /* Accumulate clobbers until the next set so that it will be output dependent
-     on all of them.  At the next set we can clear the clobber list, since
-     subsequent sets will be output dependent on it.  */
-  EXECUTE_IF_SET_IN_REG_SET
-    (reg_pending_sets, 0, i,
-    {
-      if (GET_CODE (PATTERN (insn)) != COND_EXEC)
-	{
-	  free_INSN_LIST_list (&deps->reg_last_sets[i]);
-	  free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
-	  deps->reg_last_sets[i] = 0;
-	}
-      deps->reg_last_sets[i]
-	= alloc_INSN_LIST (insn, deps->reg_last_sets[i]);
-    });
-  EXECUTE_IF_SET_IN_REG_SET
-    (reg_pending_clobbers, 0, i,
-    {
-      deps->reg_last_clobbers[i]
-	= alloc_INSN_LIST (insn, deps->reg_last_clobbers[i]);
-    });
-  CLEAR_REG_SET (reg_pending_sets);
-  CLEAR_REG_SET (reg_pending_clobbers);
-
+  /* Accumulate clobbers until the next set so that it will be output
+     dependent on all of them.  At the next set we can clear the clobber
+     list, since subsequent sets will be output dependent on it.  */
   if (reg_pending_sets_all)
     {
-      for (i = 0; i < maxreg; i++)
+      reg_pending_sets_all = 0;
+      for (i = 0; i < deps->max_reg; i++)
 	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
 	  if (GET_CODE (PATTERN (insn)) != COND_EXEC)
 	    {
-	      free_INSN_LIST_list (&deps->reg_last_sets[i]);
-	      free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
-	      deps->reg_last_sets[i] = 0;
+	      free_INSN_LIST_list (&reg_last->sets);
+	      free_INSN_LIST_list (&reg_last->clobbers);
 	    }
-	  deps->reg_last_sets[i]
-	    = alloc_INSN_LIST (insn, deps->reg_last_sets[i]);
+	  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+	  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
 	}
-
-      reg_pending_sets_all = 0;
     }
+  else
+    {
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  if (GET_CODE (PATTERN (insn)) != COND_EXEC)
+	    {
+	      free_INSN_LIST_list (&reg_last->sets);
+	      free_INSN_LIST_list (&reg_last->clobbers);
+	    }
+	  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+	  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+	});
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i,
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  reg_last->clobbers = alloc_INSN_LIST (insn, reg_last->clobbers);
+	  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+	});
+    }
+  CLEAR_REG_SET (reg_pending_sets);
+  CLEAR_REG_SET (reg_pending_clobbers);
 
   /* If a post-call group is still open, see if it should remain so.
      This insn must be a simple move of a hard reg to a pseudo or
@@ -1242,18 +1263,18 @@ sched_analyze (deps, head, tail)
 	  if (NEXT_INSN (insn) && GET_CODE (NEXT_INSN (insn)) == NOTE
 	      && NOTE_LINE_NUMBER (NEXT_INSN (insn)) == NOTE_INSN_SETJMP)
 	    {
-	      int max_reg = max_reg_num ();
-	      for (i = 0; i < max_reg; i++)
+	      for (i = 0; i < deps->max_reg; i++)
 		{
-		  for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
+		  struct deps_reg *reg_last = &deps->reg_last[i];
+		
+		  for (u = reg_last->uses; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		  free_INSN_LIST_list (&deps->reg_last_uses[i]);
-
-		  for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
+		  for (u = reg_last->sets; u; u = XEXP (u, 1))
+		    add_dependence (insn, XEXP (u, 0), 0);
+		  for (u = reg_last->clobbers; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), 0);
 
-		  for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
-		    add_dependence (insn, XEXP (u, 0), 0);
+		  free_INSN_LIST_list (&reg_last->uses);
 		}
 	      reg_pending_sets_all = 1;
 
@@ -1272,10 +1293,9 @@ sched_analyze (deps, head, tail)
 	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		if (call_used_regs[i] || global_regs[i])
 		  {
-		    for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
+		    for (u = deps->reg_last[i].uses; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-
-		    for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
+		    for (u = deps->reg_last[i].sets; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
 		    SET_REGNO_REG_SET (reg_pending_clobbers, i);
@@ -1424,10 +1444,12 @@ void
 init_deps (deps)
      struct deps *deps;
 {
-  int maxreg = max_reg_num ();
-  deps->reg_last_uses = (rtx *) xcalloc (maxreg, sizeof (rtx));
-  deps->reg_last_sets = (rtx *) xcalloc (maxreg, sizeof (rtx));
-  deps->reg_last_clobbers = (rtx *) xcalloc (maxreg, sizeof (rtx));
+  int max_reg = (reload_completed ? FIRST_PSEUDO_REGISTER : max_reg_num ());
+
+  deps->max_reg = max_reg;
+  deps->reg_last = (struct deps_reg *)
+    xcalloc (max_reg, sizeof (struct deps_reg));
+  INIT_REG_SET (&deps->reg_last_in_use);
 
   deps->pending_read_insns = 0;
   deps->pending_read_mems = 0;
@@ -1450,26 +1472,22 @@ void
 free_deps (deps)
      struct deps *deps;
 {
-  int max_reg = max_reg_num ();
   int i;
 
-  /* Note this loop is executed max_reg * nr_regions times.  It's first
-     implementation accounted for over 90% of the calls to free_INSN_LIST_list.
-     The list was empty for the vast majority of those calls.  On the PA, not
-     calling free_INSN_LIST_list in those cases improves -O2 compile times by
-     3-5% on average.  */
-  for (i = 0; i < max_reg; ++i)
+  /* Without the EXECUTE_IF_SET, this loop is executed max_reg * nr_regions
+     times.  For a test case with 42000 regs and 8000 small basic blocks,
+     this loop accounted for nearly 60% (84 sec) of the total -O2 runtime.  */
+  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i,
     {
-      if (deps->reg_last_clobbers[i])
-	free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
-      if (deps->reg_last_sets[i])
-	free_INSN_LIST_list (&deps->reg_last_sets[i]);
-      if (deps->reg_last_uses[i])
-	free_INSN_LIST_list (&deps->reg_last_uses[i]);
-    }
-  free (deps->reg_last_clobbers);
-  free (deps->reg_last_sets);
-  free (deps->reg_last_uses);
+      struct deps_reg *reg_last = &deps->reg_last[i];
+      free_INSN_LIST_list (&reg_last->uses);
+      free_INSN_LIST_list (&reg_last->sets);
+      free_INSN_LIST_list (&reg_last->clobbers);
+    });
+  CLEAR_REG_SET (&deps->reg_last_in_use);
+
+  free (deps->reg_last);
+  deps->reg_last = NULL;
 }
 
 /* If it is profitable to use them, initialize caches for tracking

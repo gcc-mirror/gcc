@@ -304,7 +304,7 @@ void debug_dependencies PARAMS ((void));
 
 static void init_regions PARAMS ((void));
 static void schedule_region PARAMS ((int));
-static void propagate_deps PARAMS ((int, struct deps *, int));
+static void propagate_deps PARAMS ((int, struct deps *));
 static void free_pending_lists PARAMS ((void));
 
 /* Functions for construction of the control flow graph.  */
@@ -2440,13 +2440,11 @@ add_branch_dependences (head, tail)
 static struct deps *bb_deps;
 
 /* After computing the dependencies for block BB, propagate the dependencies
-   found in TMP_DEPS to the successors of the block.  MAX_REG is the number
-   of registers.  */
+   found in TMP_DEPS to the successors of the block.  */
 static void
-propagate_deps (bb, tmp_deps, max_reg)
+propagate_deps (bb, tmp_deps)
      int bb;
      struct deps *tmp_deps;
-     int max_reg;
 {
   int b = BB_TO_BLOCK (bb);
   int e, first_edge;
@@ -2481,43 +2479,28 @@ propagate_deps (bb, tmp_deps, max_reg)
 	  continue;
 	}
 
-      for (reg = 0; reg < max_reg; reg++)
+      /* The reg_last lists are inherited by bb_succ.  */
+      EXECUTE_IF_SET_IN_REG_SET (&tmp_deps->reg_last_in_use, 0, reg,
 	{
-	  /* reg-last-uses lists are inherited by bb_succ.  */
-	  for (u = tmp_deps->reg_last_uses[reg]; u; u = XEXP (u, 1))
-	    {
-	      if (find_insn_list (XEXP (u, 0),
-				  succ_deps->reg_last_uses[reg]))
-		continue;
+	  struct deps_reg *tmp_deps_reg = &tmp_deps->reg_last[reg];
+	  struct deps_reg *succ_deps_reg = &succ_deps->reg_last[reg];
 
-	      succ_deps->reg_last_uses[reg]
-		= alloc_INSN_LIST (XEXP (u, 0),
-				   succ_deps->reg_last_uses[reg]);
-	    }
+	  for (u = tmp_deps_reg->uses; u; u = XEXP (u, 1))
+	    if (! find_insn_list (XEXP (u, 0), succ_deps_reg->uses))
+	      succ_deps_reg->uses
+		= alloc_INSN_LIST (XEXP (u, 0), succ_deps_reg->uses);
 
-	  /* reg-last-defs lists are inherited by bb_succ.  */
-	  for (u = tmp_deps->reg_last_sets[reg]; u; u = XEXP (u, 1))
-	    {
-	      if (find_insn_list (XEXP (u, 0),
-				  succ_deps->reg_last_sets[reg]))
-		continue;
+	  for (u = tmp_deps_reg->sets; u; u = XEXP (u, 1))
+	    if (! find_insn_list (XEXP (u, 0), succ_deps_reg->sets))
+	      succ_deps_reg->sets
+		= alloc_INSN_LIST (XEXP (u, 0), succ_deps_reg->sets);
 
-	      succ_deps->reg_last_sets[reg]
-		= alloc_INSN_LIST (XEXP (u, 0),
-				   succ_deps->reg_last_sets[reg]);
-	    }
-
-	  for (u = tmp_deps->reg_last_clobbers[reg]; u; u = XEXP (u, 1))
-	    {
-	      if (find_insn_list (XEXP (u, 0),
-				  succ_deps->reg_last_clobbers[reg]))
-		continue;
-
-	      succ_deps->reg_last_clobbers[reg]
-		= alloc_INSN_LIST (XEXP (u, 0),
-				   succ_deps->reg_last_clobbers[reg]);
-	    }
-	}
+	  for (u = tmp_deps_reg->clobbers; u; u = XEXP (u, 1))
+	    if (! find_insn_list (XEXP (u, 0), succ_deps_reg->clobbers))
+	      succ_deps_reg->clobbers
+		= alloc_INSN_LIST (XEXP (u, 0), succ_deps_reg->clobbers);
+	});
+      IOR_REG_SET (&succ_deps->reg_last_in_use, &tmp_deps->reg_last_in_use);
 
       /* Mem read/write lists are inherited by bb_succ.  */
       link_insn = tmp_deps->pending_read_insns;
@@ -2554,27 +2537,17 @@ propagate_deps (bb, tmp_deps, max_reg)
 
       /* last_function_call is inherited by bb_succ.  */
       for (u = tmp_deps->last_function_call; u; u = XEXP (u, 1))
-	{
-	  if (find_insn_list (XEXP (u, 0),
-			      succ_deps->last_function_call))
-	    continue;
-
+	if (! find_insn_list (XEXP (u, 0), succ_deps->last_function_call))
 	  succ_deps->last_function_call
-	    = alloc_INSN_LIST (XEXP (u, 0),
-			       succ_deps->last_function_call);
-	}
+	    = alloc_INSN_LIST (XEXP (u, 0), succ_deps->last_function_call);
 
       /* last_pending_memory_flush is inherited by bb_succ.  */
       for (u = tmp_deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	{
-	  if (find_insn_list (XEXP (u, 0),
+	if (! find_insn_list (XEXP (u, 0),
 			      succ_deps->last_pending_memory_flush))
-	    continue;
-
 	  succ_deps->last_pending_memory_flush
 	    = alloc_INSN_LIST (XEXP (u, 0),
 			       succ_deps->last_pending_memory_flush);
-	}
 
       /* sched_before_next_call is inherited by bb_succ.  */
       x = LOG_LINKS (tmp_deps->sched_before_next_call);
@@ -2594,8 +2567,8 @@ propagate_deps (bb, tmp_deps, max_reg)
 
    Specifically for reg-reg data dependences, the block insns are
    scanned by sched_analyze () top-to-bottom.  Two lists are
-   maintained by sched_analyze (): reg_last_sets[] for register DEFs,
-   and reg_last_uses[] for register USEs.
+   maintained by sched_analyze (): reg_last[].sets for register DEFs,
+   and reg_last[].uses for register USEs.
 
    When analysis is completed for bb, we update for its successors:
    ;  - DEFS[succ] = Union (DEFS [succ], DEFS [bb])
@@ -2609,7 +2582,6 @@ compute_block_backward_dependences (bb)
      int bb;
 {
   rtx head, tail;
-  int max_reg = max_reg_num ();
   struct deps tmp_deps;
 
   tmp_deps = bb_deps[bb];
@@ -2620,18 +2592,12 @@ compute_block_backward_dependences (bb)
   add_branch_dependences (head, tail);
 
   if (current_nr_blocks > 1)
-    propagate_deps (bb, &tmp_deps, max_reg);
+    propagate_deps (bb, &tmp_deps);
 
   /* Free up the INSN_LISTs.  */
   free_deps (&tmp_deps);
-
-  /* Assert that we won't need bb_reg_last_* for this block anymore.  
-     The vectors we're zeroing out have just been freed by the call to
-     free_deps.  */
-  bb_deps[bb].reg_last_uses = 0;
-  bb_deps[bb].reg_last_sets = 0;
-  bb_deps[bb].reg_last_clobbers = 0;
 }
+
 /* Remove all INSN_LISTs and EXPR_LISTs from the pending lists and add
    them to the unused_*_list variables, so that they can be reused.  */
 
