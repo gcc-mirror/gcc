@@ -56,9 +56,11 @@ extern const char tree_code_type[];
 /* Returns nonzero iff CLASS is the tree-code class of an
    expression.  */
 
-#define IS_EXPR_CODE_CLASS(CLASS) \
-  ((CLASS) == '<' || (CLASS) == '1' || (CLASS) == '2' || (CLASS) == 'e' \
-   || (CLASS) == 'r' || (CLASS) == 's')
+#define IS_EXPR_CODE_CLASS(CLASS) (strchr ("<12ers", (CLASS)) != 0)
+
+/* Returns nonzero iff NODE is an expression of some kind.  */
+
+#define EXPR_P(NODE) IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (NODE)))
 
 /* Number of argument-words in each kind of tree-node.  */
 
