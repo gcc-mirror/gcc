@@ -1398,6 +1398,21 @@ if [ -r ${LIB}/$file ]; then
 '\
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+
+  # In addition, copy the definition of DBL_MAX from float.h
+  # if math.h requires one.  The Lynx math.h requires it.
+  if egrep '#define[ 	]*HUGE_VAL[ 	]+DBL_MAX' $file >/dev/null 2>&1; then
+    if egrep '#define[ 	]+DBL_MAX[ 	]+' $file >/dev/null 2>&1; then
+      true;
+    else
+      dbl_max_def=`egrep 'define[ 	]+DBL_MAX[ 	]+.*' float.h 2>/dev/null`
+      if [ "$dbl_max_def" != "" ]; then
+        dbl_max_def=`echo $dbl_max_def | sed 's/.*define[ 	]*DBL_MAX[ 	]*//'`
+        sed -e "/define[ 	]HUGE_VAL[ 	]DBL_MAX/s/DBL_MAX/$dbl_max_def/" \
+          ${LIB}/$file > ${LIB}/${file}.sed
+      fi
+    fi
+  fi
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
@@ -1419,6 +1434,42 @@ if [ -r ${LIB}/$file ]; then
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
+  fi
+fi
+
+# Correct the return type for strlen in string.h on Lynx.
+file=string.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e 's/extern[ 	]*int[ 	]*strlen();/extern unsigned int strlen();/' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# Delete the '#define void int' line from curses.h on Lynx
+file=curses.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e '/#define[ 	][ 	]*void[ 	]int/d' \
+     ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
   fi
 fi
 
