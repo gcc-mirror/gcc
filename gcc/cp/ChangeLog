@@ -598,7 +598,7 @@
 	PR c++/13710
 	* pt.c (tsubst): Use finish_typeof.
 
-2004-01-16  Jason Merrill  <jason@redhat.com>
+2004-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/11725
 	* except.c (build_throw): In a template, set
