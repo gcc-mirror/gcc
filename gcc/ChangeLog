@@ -1,3 +1,11 @@
+2002-06-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sparc/t-crtfm (crtfastmath.o): Prefix with $(T) for
+	multilibs.
+	* config/sparc/t-sol2-64 (EXTRA_MULTILIB_PARTS): Add crtfastmath.o.
+	* config/sparc/t-linux64 (EXTRA_MULTILIB_PARTS): Likewise.
+	Fixes PR other/6836.
+
 2002-06-21  Bo Thorsen  <bo@suse.de>
 
 	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Add i386

@@ -5,6 +5,7 @@ MULTILIB_MATCHES =
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o gmon.o crt1.o crti.o crtn.o gcrt1.o
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o gmon.o crt1.o crti.o crtn.o gcrt1.o \
+	crtfastmath.o
 
 SHLIB_SLIBDIR_SUFFIXES = sparcv9:/sparcv9 sparcv7:
