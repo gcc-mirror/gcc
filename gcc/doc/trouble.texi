@@ -904,8 +904,8 @@ AIX linker from mistakenly assuming that static constructor or
 destructor are unused and removing them before the scanning can occur.
 All static constructors and destructors found will be referenced even
 though the modules in which they occur may not be used by the program.
-This may lead to increased executable size and unexpected dependencies
-on external symbols.
+This may lead to both increased executable size and unexpected symbol
+references.
 @end itemize
 
 @node C++ Misunderstandings
