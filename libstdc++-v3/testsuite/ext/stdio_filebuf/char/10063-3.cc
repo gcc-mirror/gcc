@@ -1,4 +1,4 @@
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,27 +22,26 @@
 
 #include <cstdio>
 #include <fstream>
-#include <ext/stdio_filebuf.h>
+#include <ext/stdio_sync_filebuf.h>
 #include <testsuite_hooks.h>
 
-void test2()
+void test3()
 {
   using namespace std;
   bool test __attribute__((unused)) = true;
 
   filebuf fbuf;
-  fbuf.open("tmp_10063-2", ios_base::out | ios_base::trunc);
+  fbuf.open("tmp_10063-3", ios_base::out | ios_base::trunc);
   fbuf.sputn("01234", 5);
   fbuf.close();
 
-  FILE* file = fopen("tmp_10063-2", "r");
-  setbuf(file, NULL);
+  FILE* file = fopen("tmp_10063-3", "r");
   int c = getc(file);
   VERIFY(c == '0');
   c = getc(file);
   VERIFY(c == '1');
   {
-    __gnu_cxx::stdio_filebuf<char> sbuf(file, ios_base::in);
+    __gnu_cxx::stdio_sync_filebuf<char> sbuf(file);
     c = sbuf.sbumpc();
     VERIFY(c == '2');
     c = sbuf.sbumpc();
@@ -57,6 +56,6 @@ void test2()
 
 int main()
 {
-  test2();
+  test3();
   return 0;
 }
