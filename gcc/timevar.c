@@ -371,31 +371,6 @@ timevar_stop (timevar_id_t timevar)
   timevar_accumulate (&tv->elapsed, &tv->start_time, &now);
 }
 
-/* Fill the elapsed time for TIMEVAR into ELAPSED.  Returns
-   update-to-date information even if TIMEVAR is currently running.  */
-
-void
-timevar_get (timevar_id_t timevar, struct timevar_time_def *elapsed)
-{
-  struct timevar_def *tv = &timevars[timevar];
-  struct timevar_time_def now;
-
-  *elapsed = tv->elapsed;
-
-  /* Is TIMEVAR currently running as a standalone timer?  */
-  if (tv->standalone)
-    {
-      get_time (&now);
-      timevar_accumulate (elapsed, &tv->start_time, &now);
-    }
-  /* Or is TIMEVAR at the top of the timer stack?  */
-  else if (stack->timevar == tv)
-    {
-      get_time (&now);
-      timevar_accumulate (elapsed, &start_time, &now);
-    }
-}
-
 /* Summarize timing variables to FP.  The timing variable TV_TOTAL has
    a special meaning -- it's considered to be the total elapsed time,
    for normalizing the others, and is displayed last.  */

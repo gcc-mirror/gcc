@@ -1,3 +1,8 @@
+2004-11-02  Ben Elliston  <bje@au.ibm.com>
+
+	* timevar.h (timevar_get): Remove. 
+	* timevar.c (timevar_get): Remove unused function.
+
 2004-11-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/include/texinfo.tex: Update from Texinfo CVS.
