@@ -1390,7 +1390,7 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://freeware.bull.net,,Bull's Freeware and Shareware Archive for AIX};
+@uref{http://www.bullfreeware.com,,Bull's Freeware and Shareware Archive for AIX};
 
 @item
 @uref{http://aixpdslib.seas.ucla.edu,,UCLA Software Library for AIX}.
