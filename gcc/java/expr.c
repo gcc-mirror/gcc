@@ -2171,6 +2171,8 @@ build_jni_stub (method)
   tree method_args, res_type;
   tree meth_var;
 
+  int args_size = 0;
+
   tree klass = DECL_CONTEXT (method);
   int from_class = ! CLASS_FROM_SOURCE_P (klass);
   klass = build_class_ref (klass);
@@ -2232,7 +2234,16 @@ build_jni_stub (method)
      special way, we would do that here.  */
   args = NULL_TREE;
   for (tem = method_args; tem != NULL_TREE; tem = TREE_CHAIN (tem))
-    args = tree_cons (NULL_TREE, tem, args);
+    {
+      int arg_bits = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (tem)));
+#ifdef PARM_BOUNDARY
+      arg_bits = (((arg_bits + PARM_BOUNDARY - 1) / PARM_BOUNDARY)
+                  * PARM_BOUNDARY);
+#endif
+      args_size += (arg_bits / BITS_PER_UNIT);
+
+      args = tree_cons (NULL_TREE, tem, args);
+    }
   args = nreverse (args);
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (method));
 
@@ -2241,31 +2252,38 @@ build_jni_stub (method)
      available in the argument list.  */
   if (METHOD_STATIC (method))
     {
+      args_size += int_size_in_bytes (TREE_TYPE (klass));
       args = tree_cons (NULL_TREE, klass, args);
       arg_types = tree_cons (NULL_TREE, object_ptr_type_node, arg_types);
     }
 
   /* The JNIEnv structure is the first argument to the JNI function.  */
+  args_size += int_size_in_bytes (TREE_TYPE (env_var));
   args = tree_cons (NULL_TREE, env_var, args);
   arg_types = tree_cons (NULL_TREE, ptr_type_node, arg_types);
 
   /* We call _Jv_LookupJNIMethod to find the actual underlying
      function pointer.  _Jv_LookupJNIMethod will throw the appropriate
      exception if this function is not found at runtime.  */
+  tem = build_tree_list (NULL_TREE, build_int_2 (args_size, 0));
   method_sig = build_java_signature (TREE_TYPE (method));
-  lookup_arg =
-    build_tree_list (NULL_TREE,
-		     build_utf8_ref (unmangle_classname
-				     (IDENTIFIER_POINTER (method_sig),
-				      IDENTIFIER_LENGTH (method_sig))));
+  lookup_arg = tree_cons (NULL_TREE,
+                          build_utf8_ref (unmangle_classname
+                                          (IDENTIFIER_POINTER (method_sig),
+                                           IDENTIFIER_LENGTH (method_sig))), 
+                          tem);
   tem = DECL_NAME (method);
   lookup_arg
     = tree_cons (NULL_TREE, klass,
 		 tree_cons (NULL_TREE, build_utf8_ref (tem), lookup_arg));
+  
+  tem = build_function_type (TREE_TYPE (TREE_TYPE (method)), arg_types);
 
-  jni_func_type
-    = build_pointer_type (build_function_type (TREE_TYPE (TREE_TYPE (method)),
-					       arg_types));
+#ifdef MODIFY_JNI_METHOD_CALL
+  tem = MODIFY_JNI_METHOD_CALL (tem);
+#endif
+
+  jni_func_type = build_pointer_type (tem);
 
   jnifunc = build (COND_EXPR, ptr_type_node,
 		   meth_var, meth_var,
