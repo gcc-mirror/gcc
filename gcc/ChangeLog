@@ -1,3 +1,8 @@
+Tue Apr  9 09:35:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (is_aligning_offset): New function.
+	(expand_expr, case COMPONENT_EXPR): Call it.
+
 2002-04-08  David S. Miller  <davem@redhat.com>
 
 	PR target/6082
