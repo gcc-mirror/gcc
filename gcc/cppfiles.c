@@ -230,6 +230,8 @@ open_file (_cpp_file *file)
       close (file->fd);
       file->fd = -1;
     }
+  else if (errno == ENOTDIR)
+    errno = ENOENT;
 
   file->err_no = errno;
 
