@@ -91,6 +91,14 @@ static void alpha_set_memflags_1  PROTO((rtx, int, int, int));
 static rtx alpha_emit_set_const_1 PROTO((rtx, enum machine_mode,
 					 HOST_WIDE_INT, int));
 static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
+
+/* Compute the size of the save area in the stack.  */
+static void alpha_sa_mask	PROTO((unsigned long *imaskP,
+				       unsigned long *fmaskP));
+/* Strip type information.  */
+#define CURRENT_FUNCTION_ARGS_INFO  \
+(TARGET_OPEN_VMS ? current_function_args_info & 0xff \
+ : current_function_args_info)
 
 /* Parse target option strings. */
 
@@ -175,6 +183,20 @@ override_options ()
     {
       warning ("fp software completion requires -mtrap-precision=i");
       alpha_tp = ALPHA_TP_INSN;
+    }
+
+  if (TARGET_FLOAT_VAX)
+    {
+      if (alpha_fprm == ALPHA_FPRM_MINF || alpha_fprm == ALPHA_FPRM_DYN)
+	{
+	  warning ("rounding mode not supported for VAX floats");
+	  alpha_fprm = ALPHA_FPRM_NORM;
+	}
+      if (alpha_fptm == ALPHA_FPTM_SUI)
+	{
+	  warning ("trap mode not supported for VAX floats");
+	  alpha_fptm = ALPHA_FPTM_SU;
+	}
     }
 }
 
@@ -485,7 +507,7 @@ call_operand (op, mode)
     return 0;
 
   return (GET_CODE (op) == SYMBOL_REF
-	  || (GET_CODE (op) == REG && REGNO (op) == 27));
+	  || (GET_CODE (op) == REG && (TARGET_OPEN_VMS || REGNO (op) == 27)));
 }
 
 /* Return 1 if OP is a valid Alpha comparison operator.  Here we know which
@@ -1281,6 +1303,16 @@ print_operand (file, x, code)
 	}
       break;
 
+    case ',':
+      /* Generates single precision instruction suffix.  */
+      fprintf (file, "%c", (TARGET_FLOAT_VAX?'f':'s'));
+      break;
+
+    case '-':
+      /* Generates double precision instruction suffix.  */
+      fprintf (file, "%c", (TARGET_FLOAT_VAX?'g':'t'));
+      break;
+
     case 'r':
       /* If this operand is the constant zero, write it as "$31".  */
       if (GET_CODE (x) == REG)
@@ -1506,9 +1538,9 @@ alpha_builtin_saveregs (arglist)
      both registers and memory.  Both of these are already included in
      current_function_args_info.  */
 
-  argsize = GEN_INT (current_function_args_info * UNITS_PER_WORD);
+  argsize = GEN_INT (CURRENT_FUNCTION_ARGS_INFO * UNITS_PER_WORD);
 
-  /* SETUP_INCOMING_VARARGS moves the starting address base up by 48,
+  /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base up by 48,
      storing fp arg registers in the first 48 bytes, and the integer arg
      registers in the next 48 bytes.  This is only done, however, if any
      integer registers need to be stored.
@@ -1517,41 +1549,182 @@ alpha_builtin_saveregs (arglist)
      order to account for the integer arg registers which are counted in
      argsize above, but which are not actually stored on the stack.  */
 
-  addr = (current_function_args_info <= 5 + stdarg
-	  ? plus_constant (virtual_incoming_args_rtx, 6 * UNITS_PER_WORD)
-	  : plus_constant (virtual_incoming_args_rtx, - (6 * UNITS_PER_WORD)));
+  if (TARGET_OPEN_VMS)
+    addr = plus_constant (virtual_incoming_args_rtx,
+			  CURRENT_FUNCTION_ARGS_INFO <= 5 + stdarg
+			  ? UNITS_PER_WORD : - 6 * UNITS_PER_WORD);
+  else
+    addr = (CURRENT_FUNCTION_ARGS_INFO <= 5 + stdarg
+	    ? plus_constant (virtual_incoming_args_rtx,
+			     6 * UNITS_PER_WORD)
+	    : plus_constant (virtual_incoming_args_rtx,
+			     - (6 * UNITS_PER_WORD)));
+
+  /* For VMS, we include the argsize, while on Unix, it's handled as
+     a separate field.  */
+  if (TARGET_OPEN_VMS)
+    addr = plus_constant (addr, INTVAL (argsize));
 
   addr = force_operand (addr, NULL_RTX);
-
-  /* Allocate the va_list constructor */
-  block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
-  RTX_UNCHANGING_P (block) = 1;
-  RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
-
-  /* Store the address of the first integer register in the __base member.  */
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   addr = convert_memory_address (ptr_mode, addr);
 #endif
 
-  emit_move_insn (change_address (block, ptr_mode, XEXP (block, 0)), addr);
+  if (TARGET_OPEN_VMS)
+    return addr;
+  else
+    {
+      /* Allocate the va_list constructor */
+      block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
+      RTX_UNCHANGING_P (block) = 1;
+      RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
-  /* Store the argsize as the __va_offset member.  */
-  emit_move_insn (change_address (block, TYPE_MODE (integer_type_node),
-				  plus_constant (XEXP (block, 0),
-						 POINTER_SIZE/BITS_PER_UNIT)),
-		  argsize);
+      /* Store the address of the first integer register in the __base
+	 member.  */
 
-  /* Return the address of the va_list constructor, but don't put it in a
-     register.  Doing so would fail when not optimizing and produce worse
-     code when optimizing.  */
-  return XEXP (block, 0);
+      emit_move_insn (change_address (block, ptr_mode, XEXP (block, 0)), addr);
+
+      /* Store the argsize as the __va_offset member.  */
+      emit_move_insn
+	(change_address (block, TYPE_MODE (integer_type_node),
+			 plus_constant (XEXP (block, 0),
+					POINTER_SIZE/BITS_PER_UNIT)),
+	 argsize);
+
+      /* Return the address of the va_list constructor, but don't put it in a
+	 register.  Doing so would fail when not optimizing and produce worse
+	 code when optimizing.  */
+      return XEXP (block, 0);
+    }
 }
 
 /* This page contains routines that are used to determine what the function
    prologue and epilogue code will do and write them out.  */
 
 /* Compute the size of the save area in the stack.  */
+
+#if OPEN_VMS
+
+#define REG_PV 27
+#define REG_RA 26
+
+/* These variables are used for communication between the following functions.
+   They indicate various things about the current function being compiled
+   that are used to tell what kind of prologue, epilogue and procedure
+   descriptior to generate. */
+
+/* Nonzero if we need a stack procedure.  */
+static int is_stack_procedure;
+
+/* Register number (either FP or SP) that is used to unwind the frame.  */
+static int unwind_regno;
+
+/* Register number used to save FP.  We need not have one for RA since
+   we don't modify it for register procedures.  This is only defined
+   for register frame procedures.  */
+static int save_fp_regno;
+
+/* Register number used to reference objects off our PV.  */
+static int base_regno;
+
+/*  Compute register masks for saved registers.  */
+
+static void
+alpha_sa_mask (imaskP, fmaskP)
+    unsigned long *imaskP;
+    unsigned long *fmaskP;
+{
+  unsigned long imask = 0;
+  unsigned long fmask = 0;
+  int i;
+
+  if (is_stack_procedure)
+    imask |= (1L << HARD_FRAME_POINTER_REGNUM);
+
+  /* One for every register we have to save.  */
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i])
+      {
+	if (i < 32)
+	  imask |= (1L << i);
+	else
+	  fmask |= (1L << (i - 32));
+      }
+
+  *imaskP = imask;
+  *fmaskP = fmask;
+
+  return;
+}
+
+int
+alpha_sa_size ()
+{
+  int sa_size = 0;
+  HOST_WIDE_INT stack_needed;
+  int i;
+
+  /* One for every register we have to save.  */
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i])
+      sa_size++;
+
+  /* Start by assuming we can use a register procedure if we don't make any
+     calls (REG_RA not used) or need to save any registers and a stack
+     procedure if we do.  */
+  is_stack_procedure = regs_ever_live[REG_RA] || sa_size != 0;
+
+  /* Decide whether to refer to objects off our PV via FP or PV.
+     If we need need FP for something else or if we receive a nonlocal
+     goto (which expects PV to contain the value), we must use PV.
+     Otherwise, start by assuming we can use FP.  */
+  base_regno = (frame_pointer_needed || current_function_has_nonlocal_label
+		|| is_stack_procedure
+		|| current_function_outgoing_args_size
+		? REG_PV : HARD_FRAME_POINTER_REGNUM);
+
+  /* If we want to copy PV into FP, we need to find some register in which to
+     save FP.  */
+
+  save_fp_regno = -1;
+
+  if (base_regno == HARD_FRAME_POINTER_REGNUM)
+    for (i = 0; i < 32; i++)
+      if (! fixed_regs[i] && call_used_regs[i] && ! regs_ever_live[i])
+	save_fp_regno = i;
+
+  if (save_fp_regno == -1)
+    base_regno = REG_PV, is_stack_procedure = 1;
+
+  /* Stack unwinding should be done via FP unless we use it for PV.  */
+  unwind_regno
+    = base_regno == REG_PV ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM;
+
+  /* If this is a stack procedure, allow space for saving FP and RA.  */
+  if (is_stack_procedure)
+    sa_size += 2;
+
+  return sa_size * 8;
+}
+
+int
+alpha_pv_save_size ()
+{
+  alpha_sa_size ();
+  return is_stack_procedure ? 8 : 0;
+}
+
+int
+alpha_using_fp ()
+{
+  alpha_sa_size ();
+  return unwind_regno == HARD_FRAME_POINTER_REGNUM;
+}
+
+#else /* ! OPEN_VMS */
 
 int
 alpha_sa_size ()
@@ -1575,12 +1748,14 @@ alpha_sa_size ()
   return size * 8;
 }
 
+#endif /* ! OPEN_VMS */
+
 /* Return 1 if this function can directly return via $26.  */
 
 int
 direct_return ()
 {
-  return (reload_completed && alpha_sa_size () == 0
+  return (! TARGET_OPEN_VMS && reload_completed && alpha_sa_size () == 0
 	  && get_frame_size () == 0
 	  && current_function_outgoing_args_size == 0
 	  && current_function_pretend_args_size == 0);
@@ -1589,7 +1764,7 @@ direct_return ()
 /* Write a version stamp.  Don't write anything if we are running as a
    cross-compiler.  Otherwise, use the versions in /usr/include/stamp.h.  */
 
-#if !defined(CROSS_COMPILE) && !defined(_WIN32) && !defined(__linux__)
+#if !defined(CROSS_COMPILE) && !defined(_WIN32) && !defined(__linux__) && !defined(VMS)
 #include <stamp.h>
 #endif
 
@@ -1661,6 +1836,438 @@ add_long_const (file, c, in_reg, out_reg, temp_reg)
 }
 
 /* Write function prologue.  */
+
+#if OPEN_VMS
+
+/* 
+   Quick and dirty vmskrunch routine to ensure symbols are within the
+   64 bytes limit imposed by VMS.
+
+   This is written specifically for GNAT, and may not work for C++.
+
+   This routine duplicates every symbol passed to it whether it is too
+   long or not, which is a waste of space, fix later.
+*/
+#include <string.h>
+char*
+vmskrunch (name)
+     char *name;
+{
+  char *foo;
+  int max = 60; /* Allow for the ..xx extension */
+  int len, tlen;
+
+  if (name[0] == '*')
+    return (&name[1]);
+
+  len = tlen = strlen (name);
+  foo = xstrdup (name);
+
+  /* Don't muck with the ..xx extenstion */
+  if ((foo [tlen-4] == '.') && (foo [tlen-3] == '.'))
+    {
+      max = max + 4;
+      if (tlen > max)
+	{
+	  foo [tlen-4] = 0;
+	  len = len - 4;
+	  max = max - 4;
+	}
+    }
+
+  if (len > max)
+    {
+      char *bar;
+      int i, j, slen, nlen, xlen, chopchar;
+
+      nlen = len;
+
+      /* Change all _ and . characters to spaces, if thats enough then quit.
+	 For example: "foobar__foo__bar" becomes "foobar  foo  bar" */
+
+      for (i = 0; bar = index (foo, '_'); i++)
+	*bar = ' ';
+      nlen = nlen - i;
+
+      for (i = 0; bar = index (foo, '.'); i++)
+	*bar = ' ';
+      nlen = nlen - i;
+
+      for (i = 0; bar = index (foo, '$'); i++)
+	*bar = ' ';
+      nlen = nlen - i;
+
+      /* Iteratively make blank the rightmost non-blank character on the
+	 longest leftmost substring delmited by blanks, until it's short
+	 enough. For example: "foobar  foo  bar" becomes, successively:
+	 "fooba   foo bar"
+	 "foob    foo bar"
+	 "foo     foo bar"
+	 "fo      foo bar"
+	 "fo      fo  bar"
+	 "fo      fo  ba "
+	 "f       fo  ba "
+	 "f       f   ba "
+	 "f       f   b  "
+	 etc.  */
+
+      while (nlen > max)
+	{
+	  j = 0;
+	  xlen = 0;
+
+	  while (foo[j])
+	    {
+	      /* Find first non-blank */
+	      if (foo[j])
+		for (i = j; foo[i]==' ' && foo[i]; i++)
+		  ;
+
+	      j = i;
+	      if (foo[j])
+		for (i = j + 1; foo[i] != ' ' && foo[i]; i++)
+		  ;
+
+	      slen = i - j;
+	      if (slen > xlen)
+		{
+		  chopchar = i - 1;
+		  xlen = slen;
+		}
+
+	      j = i;
+	    }
+
+	  foo [chopchar] = ' ';
+	  nlen--;
+	}
+
+      /* Put the ..xx extension back */
+      if (len != tlen)
+	{
+	  foo [len] = '.';
+	  len = len + 4;
+	}
+
+      /* Collapse all the blanks */
+      j = 0;
+      for (i = 0; foo[i]; i++)
+	if (foo[i] != ' ')
+	  foo[j++] = foo[i];
+      foo[j] = 0;
+
+      return foo;
+    }
+
+  /* Put back the ..xx extension */
+  if (len != tlen)
+    {
+      foo [len] = '.';
+      len = len + 4;
+    }
+
+  free (foo);
+  return name;
+}
+
+/* On vms we have two kinds of functions:
+
+   - stack frame (PROC_STACK)
+	these are 'normal' functions with local vars and which are
+	calling other functions
+   - register frame (PROC_REGISTER)
+	keeps all data in registers, needs no stack
+
+   We must pass this to the assembler so it can generate the
+   proper pdsc (procedure descriptor)
+   This is done with the '.pdesc' command.
+
+   size is the stack size needed for local variables.  */
+
+void
+output_prolog (file, size)
+     FILE *file;
+     int size;
+{
+  unsigned long imask = 0;
+  unsigned long fmask = 0;
+  /* Stack space needed for pushing registers clobbered by us.  */
+  HOST_WIDE_INT sa_size;
+  /* Complete stack size needed.  */
+  HOST_WIDE_INT frame_size;
+  /* Offset from base reg to register save area.  */
+  int rsa_offset = 8;
+  /* Offset during register save.  */
+  int reg_offset;
+  /* Label for the procedure entry.  */
+  char entry_label[70];
+  int i;
+
+  sa_size = alpha_sa_size ();
+  frame_size
+    = ALPHA_ROUND (sa_size 
+		   + (is_stack_procedure ? 8 : 0)
+		   + size + current_function_pretend_args_size);
+
+  fprintf (file, "# size %d, current_function_pretend_args_size %d, current_function_outgoing_args_size %d\n",
+	size, current_function_pretend_args_size, current_function_outgoing_args_size);
+  fprintf (file, "# sa_size %d, frame_size %d\n", sa_size, frame_size);
+
+  /* Issue function start and label.  */
+  fprintf (file, "\t.ent ");
+  assemble_name (file, alpha_function_name);
+  fprintf (file, "\n");
+  sprintf (entry_label, "%.64s..en", alpha_function_name);
+  ASM_OUTPUT_LABEL (file, entry_label);
+  inside_function = TRUE;
+
+  fprintf (file, "\t.base $%d\n", base_regno);
+
+  /* Calculate register masks for clobbered registers.  */
+
+  if (is_stack_procedure)
+    alpha_sa_mask (&imask, &fmask);
+
+  /* Adjust the stack by the frame size.  If the frame size is > 4096
+     bytes, we need to be sure we probe somewhere in the first and last
+     4096 bytes (we can probably get away without the latter test) and
+     every 8192 bytes in between.  If the frame size is > 32768, we
+     do this in a loop.  Otherwise, we generate the explicit probe
+     instructions. 
+
+     Note that we are only allowed to adjust sp once in the prologue.  */
+
+  if (frame_size < 32768)
+    {
+      if (frame_size > 4096)
+	{
+	  int probed = 4096;
+
+	  fprintf (file, "\tstq $31,-%d($30)\n", probed);
+
+	  while (probed + 8192 < frame_size)
+	    fprintf (file, "\tstq $31,-%d($30)\n", probed += 8192);
+
+	  /* We only have to do this probe if we aren't saving registers.  */
+	  if (sa_size == 0 && probed + 4096 < frame_size)
+	    fprintf (file, "\tstq $31,-%d($30)\n", frame_size);
+	}
+
+      if (frame_size != 0)
+	  fprintf (file, "\tlda $30,-%d($30)\n", frame_size);
+    }
+  else
+    {
+      /* Here we generate code to set R4 to SP + 4096 and set R23 to the
+	 number of 8192 byte blocks to probe.  We then probe each block
+	 in the loop and then set SP to the proper location.  If the
+	 amount remaining is > 4096, we have to do one more probe if we
+	 are not saving any registers.  */
+
+      HOST_WIDE_INT blocks = (frame_size + 4096) / 8192;
+      HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
+
+      add_long_const (file, blocks, 31, 23, 23);
+
+      fprintf (file, "\tlda $22,4096($30)\n");
+
+      assemble_name (file, alpha_function_name);
+      fprintf (file, "..sc:\n");
+
+      fprintf (file, "\tstq $31,-8192($22)\n");
+      fprintf (file, "\tsubq $23,1,$23\n");
+      fprintf (file, "\tlda $22,-8192($22)\n");
+
+      fprintf (file, "\tbne $23,");
+      assemble_name (file, alpha_function_name);
+      fprintf (file, "..sc\n");
+
+      if (leftover > 4096 && sa_size == 0)
+	fprintf (file, "\tstq $31,-%d($22)\n", leftover);
+
+      fprintf (file, "\tlda $30,-%d($22)\n", leftover);
+    }
+
+  if (is_stack_procedure)
+    {
+      int reg_offset = rsa_offset;
+
+      /* Store R26 (RA) first.  */
+      fprintf (file, "\tstq $26,%d($30)\n", reg_offset);
+      reg_offset += 8;
+
+      /* Store integer regs. according to mask.  */
+      for (i = 0; i < 32; i++)
+        if (imask & (1L<<i))
+	  {
+	    fprintf (file, "\tstq $%d,%d($30)\n", i, reg_offset);
+	    reg_offset += 8;
+	  }
+
+      /* Print the register mask and do floating-point saves.  */
+
+      if (imask)
+	fprintf (file, "\t.mask 0x%x,0\n", imask);
+
+      for (i = 0; i < 32; i++)
+	{
+	  if (fmask & (1L << i))
+	    {
+	      fprintf (file, "\tstt $f%d,%d($30)\n", i, reg_offset);
+	      reg_offset += 8;
+	    }
+	}
+
+      /* Print the floating-point mask, if we've saved any fp register.  */
+      if (fmask)
+	fprintf (file, "\t.fmask 0x%x,0\n", fmask);
+
+      fprintf (file, "\tstq $27,0($30)\n");
+    }
+  else 
+    {
+      fprintf (file, "\t.fp_save $%d\n", save_fp_regno);
+      fprintf (file, "\tbis $%d,$%d,$%d\n", HARD_FRAME_POINTER_REGNUM,
+	       HARD_FRAME_POINTER_REGNUM, save_fp_regno);
+    }
+
+  if (base_regno != REG_PV)
+    fprintf (file, "\tbis $%d,$%d,$%d\n", REG_PV, REG_PV, base_regno);
+
+  if (unwind_regno == HARD_FRAME_POINTER_REGNUM)
+    fprintf (file, "\tbis $%d,$%d,$%d\n", STACK_POINTER_REGNUM,
+	     STACK_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM);
+
+  /* Describe our frame.  */
+  fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
+	   unwind_regno, frame_size, rsa_offset);
+
+  /* If we have to allocate space for outgoing args, do it now.  */
+  if (current_function_outgoing_args_size != 0)
+    fprintf (file, "\tlda $%d,%d($%d)\n", STACK_POINTER_REGNUM,
+	     - ALPHA_ROUND (current_function_outgoing_args_size),
+	     HARD_FRAME_POINTER_REGNUM);
+
+  fprintf (file, "\t.prologue\n");
+
+  link_section ();
+  fprintf (file, "\t.align 3\n");
+  ASM_OUTPUT_LABEL (file, alpha_function_name);
+  fprintf (file, "\t.pdesc ");
+  assemble_name (file, alpha_function_name);
+  fprintf (file, "..en,%s\n", is_stack_procedure ? "stack" : "reg");
+  alpha_need_linkage (alpha_function_name, 1);
+  text_section ();
+
+  return;
+}
+
+/* Write function epilogue.  */
+
+void
+output_epilog (file, size)
+     FILE *file;
+     int size;
+{
+  unsigned long imask = 0;
+  unsigned long fmask = 0;
+  /* Stack space needed for pushing registers clobbered by us.  */
+  HOST_WIDE_INT sa_size = alpha_sa_size ();
+  /* Complete stack size needed.  */
+  HOST_WIDE_INT frame_size
+    = ALPHA_ROUND (sa_size
+		   + (is_stack_procedure ? 8 : 0)
+		   + size + current_function_pretend_args_size);
+  int i;
+  rtx insn = get_last_insn ();
+
+  /* If the last insn was a BARRIER, we don't have to write anything except
+     the .end pseudo-op.  */
+
+  if (GET_CODE (insn) == NOTE)
+    insn = prev_nonnote_insn (insn);
+
+  if (insn == 0 || GET_CODE (insn) != BARRIER)
+    {
+      /* Restore clobbered registers, load FP last.  */
+
+      if (is_stack_procedure)
+	{
+	  int rsa_offset = 8;
+	  int reg_offset;
+	  int fp_offset;
+
+	  if (unwind_regno == HARD_FRAME_POINTER_REGNUM)
+	    fprintf (file, "\tbis $%d,$%d,$%d\n", HARD_FRAME_POINTER_REGNUM,
+		     HARD_FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM);
+
+	  alpha_sa_mask (&imask, &fmask);
+
+	  /* Start reloading registers after RA.  */
+	  reg_offset = rsa_offset + 8;
+
+	  for (i = 0; i < 32; i++)
+	    if (imask & (1L<<i))
+	      {
+		if (i == HARD_FRAME_POINTER_REGNUM)
+		  fp_offset = reg_offset;
+		else
+		  fprintf (file, "\tldq $%d,%d($30)\n",
+				  i, reg_offset);
+		reg_offset += 8;
+	      }
+
+	  for (i = 0; i < 32; i++)
+	    if (fmask & (1L << i))
+	      {
+		fprintf (file, "\tldt $f%d,%d($30)\n", i, reg_offset);
+		reg_offset += 8;
+	      }
+
+	  /* Restore R26 (RA).  */
+	  fprintf (file, "\tldq $26,%d($30)\n", rsa_offset);
+
+	  /* Restore R29 (FP).  */
+	  fprintf (file, "\tldq $29,%d($30)\n", fp_offset);
+	}
+      else
+	fprintf (file, "\tbis $%d,$%d,$%d\n", save_fp_regno, save_fp_regno,
+		 HARD_FRAME_POINTER_REGNUM);
+
+      if (frame_size != 0)
+	{
+	  if (frame_size < 32768)
+	    fprintf (file, "\tlda $30,%d($30)\n", frame_size);
+	  else
+	    {
+	      long high = frame_size >> 16;
+	      long low = frame_size & 0xffff;
+	      if (low & 0x8000)
+		{
+		  high++;
+		  low = -32768 + (low & 0x7fff);
+		}
+	      fprintf (file, "\tldah $2,%ld($31)\n", high);
+	      fprintf (file, "\tlda $2,%ld($2)\n", low);
+	      fprintf (file, "\taddq $30,$2,$30\n");
+	    }
+	}
+
+      /* Finally return to the caller.  */
+      fprintf (file, "\tret $31,($26),1\n");
+    }
+
+  /* End the function.  */
+  fprintf (file, "\t.end ");
+  assemble_name (file,  alpha_function_name);
+  fprintf (file, "\n");
+  inside_function = FALSE;
+
+  /* Show that we know this function if it is called again.  */
+  SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+}
+
+#else /* !OPEN_VMS */
 
 void
 output_prolog (file, size)
@@ -1981,6 +2588,7 @@ output_epilog (file, size)
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 }
+#endif /* !OPEN_VMS */
 
 /* Debugging support.  */
 
@@ -2360,6 +2968,9 @@ check_float_value (mode, d, overflow)
   if (TARGET_IEEE || TARGET_IEEE_CONFORMANT || TARGET_IEEE_WITH_INEXACT)
     return 0;
 
+  if (TARGET_FLOAT_VAX)
+    return 0;
+
   if (inited_float_values == 0)
     {
       int i;
@@ -2402,3 +3013,150 @@ check_float_value (mode, d, overflow)
 
   return 0;
 }
+
+#if OPEN_VMS
+
+void *
+function_arg (cum, mode, type, named)
+    CUMULATIVE_ARGS *cum;
+    enum machine_mode mode;
+    tree type;
+    int named;
+{
+  int arg;
+
+  if (mode == VOIDmode)		/* final call, return argument information  */
+    {
+      return GEN_INT (*cum);
+    }
+
+  arg = *cum & 0xff;
+
+  switch (mode)
+    {
+      case SFmode:
+	*cum |= (((TARGET_FLOAT_VAX)?1:4) << ((arg * 3)+8));      /* 4 = AI$K_AR_FS, IEEE single */
+        break;
+      case DFmode:
+        *cum |= (((TARGET_FLOAT_VAX)?3:5) << ((arg * 3)+8));      /* 5 = AI$K_AR_FT, IEEE double */
+        break;
+      case TFmode:
+        *cum |= (7 << ((arg * 3)+8));        /* 5 = AI$K_AR_FT, IEEE double */
+        break;
+      default:
+        break;
+    }
+
+  return (arg < 6 && ! MUST_PASS_IN_STACK (mode, type)
+	 ? gen_rtx(REG, mode,
+		   (*cum & 0xff) + 16 + ((TARGET_FPREGS
+			  && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+			      || GET_MODE_CLASS (mode) == MODE_FLOAT))
+			 * 32))
+	 : 0);
+}
+
+/* Structure to collect function names for final output
+   in link section.  */
+
+enum links_kind {KIND_UNUSED, KIND_LOCAL, KIND_EXTERN};
+
+
+struct alpha_links {
+  struct alpha_links *next;
+  char *name;
+  enum links_kind kind;
+};
+
+static struct alpha_links *alpha_links_base = 0;
+
+/* Make (or fake) .linkage entry for function call.
+
+   IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
+
+void
+alpha_need_linkage (name, is_local)
+    char *name;
+    int is_local;
+{
+  rtx x;
+  struct alpha_links *lptr, *nptr;
+
+  if (name[0] == '*')
+    name++;
+
+  /* Is this name already defined ?  */
+
+  for (lptr = alpha_links_base; lptr; lptr = lptr->next)
+    if (strcmp (lptr->name, name) == 0)
+      {
+	if (is_local)
+	  {
+	    /* defined here but external assumed.  */
+	    if (lptr->kind == KIND_EXTERN)
+	      lptr->kind = KIND_LOCAL;
+	  }
+	else
+	  {
+	    /* used here but unused assumed.  */
+	    if (lptr->kind == KIND_UNUSED)
+	      lptr->kind = KIND_LOCAL;
+	  }
+	return;
+      }
+
+  nptr = (struct alpha_links *) xmalloc (sizeof (struct alpha_links));
+  nptr->next = alpha_links_base;
+  nptr->name = xstrdup (name);
+
+  /* Assume external if no definition.  */
+  nptr->kind = (is_local ? KIND_UNUSED : KIND_EXTERN);
+
+  alpha_links_base = nptr;
+
+  return;
+}
+
+
+void
+alpha_write_linkage (stream)
+    FILE *stream;
+{
+  struct alpha_links *lptr, *nptr;
+
+  readonly_section ();
+
+  fprintf (stream, "\t.align 3\n");
+
+  for (lptr = alpha_links_base; lptr; lptr = nptr)
+    {
+      nptr = lptr->next;
+
+      if (lptr->kind == KIND_UNUSED
+	  || ! TREE_SYMBOL_REFERENCED (get_identifier (lptr->name)))
+	continue;
+
+      fprintf (stream, "%s..lk:\n", lptr->name);
+      if (lptr->kind == KIND_LOCAL)   
+	{
+	  /*  Local and used, build linkage pair.  */
+	  fprintf (stream, "\t.quad %s..en\n", lptr->name);
+	  fprintf (stream, "\t.quad %s\n", lptr->name);
+	}
+      else
+	/* External and used, request linkage pair.  */
+	fprintf (stream, "\t.linkage %s\n", lptr->name);
+    }
+}
+
+#else
+
+void
+alpha_need_linkage (name, is_local)
+     char *name;
+     int is_local;
+{
+}
+
+#endif /* OPEN_VMS */
+
