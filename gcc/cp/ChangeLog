@@ -1,3 +1,9 @@
+2004-12-09  Matt Austern  <austern@apple.com>
+
+	PR c++/18514
+	* name-lookup.c (do_nonmember_using_decl): A real function
+	declaration takes precedence over an anticipated declaration.
+	
 2004-12-09  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* parser.c (cp_parser_member_declaration): Fix comment typo.
