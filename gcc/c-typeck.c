@@ -2169,10 +2169,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
     case MAX_EXPR:
     case MIN_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
-	   || code0 == COMPLEX_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
-	      || code1 == COMPLEX_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	shorten = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
@@ -2189,10 +2187,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
-	   || code0 == COMPLEX_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
-	      || code1 == COMPLEX_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
