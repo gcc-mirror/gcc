@@ -878,7 +878,7 @@
   "(! TARGET_40_PLUS)"
   "*
 {
-  static count = 0;
+  static int count = 0;
   char buf[100];
   rtx lateoperands[2];
 
@@ -1041,10 +1041,12 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    if (INTVAL(operands[2]) == 1)
-      return \"inc %0\";
-    else if (INTVAL(operands[2]) == -1)
-      return \"dec %0\";
+    {
+      if (INTVAL(operands[2]) == 1)
+	return \"inc %0\";
+      else if (INTVAL(operands[2]) == -1)
+        return \"dec %0\";
+    }
 
   return \"add %2, %0\";
 }"
@@ -1058,10 +1060,12 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    if (INTVAL(operands[2]) == 1)
-      return \"incb %0\";
-    else if (INTVAL(operands[2]) == -1)
-      return \"decb %0\";
+    {
+      if (INTVAL(operands[2]) == 1)
+	return \"incb %0\";
+      else if (INTVAL(operands[2]) == -1)
+	return \"decb %0\";
+    }
 
   return \"addb %2, %0\";
 }"
@@ -1520,10 +1524,12 @@
   "*
 {
   if (GET_CODE(operands[2]) == CONST_INT)
-    if (INTVAL(operands[2]) == 1)
-      return \"asl %0\";
-    else if (INTVAL(operands[2]) == -1)
-      return \"asr %0\";
+    {
+      if (INTVAL(operands[2]) == 1)
+	return \"asl %0\";
+      else if (INTVAL(operands[2]) == -1)
+	return \"asr %0\";
+    }
 
   return \"ash %2,%0\";
 }"
@@ -1563,7 +1569,7 @@
   "TARGET_ABSHI_BUILTIN"
   "*
 {
-  static count = 0;
+  static int count = 0;
   char buf[200];
 	
   output_asm_insn(\"tst %0\", operands);

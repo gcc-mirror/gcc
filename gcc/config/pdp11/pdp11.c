@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
+#include "recog.h"
 
 /*
 #define FPU_REG_P(X)	((X)>=8 && (X)<14)
@@ -97,8 +98,7 @@ output_function_prologue(stream, size)
   int size;
 {							       
     int fsize = ((size) + 1) & ~1;      				
-    int regno, nregs, i;						
-    int offset = 0;
+    int regno;
 
     int via_ac = -1;
     
@@ -192,10 +192,8 @@ output_function_epilogue(stream, size)
   FILE *stream;
   int size;
 {								
-    extern int may_call_alloca;
-
     int fsize = ((size) + 1) & ~1;      				
-    int nregs, regno, i, j, k, adjust_fp;				
+    int i, j, k;
 
     int via_ac;
     
@@ -735,6 +733,7 @@ find_addr_reg (addr)
 }
 
 /* Output an ascii string.  */
+void
 output_ascii (file, p, size)
      FILE *file;
      char *p;
@@ -769,6 +768,7 @@ output_ascii (file, p, size)
 
 /* --- stole from out-vax, needs changes */
 
+void
 print_operand_address (file, addr)
      FILE *file;
      register rtx addr;
@@ -1039,8 +1039,7 @@ int simple_memory_operand(op, mode)
   rtx op;
   enum machine_mode mode;
 {
-    rtx addr, plus0, plus1;
-    int offset = 0;
+    rtx addr;
 
     /* Eliminate non-memory operations */
     if (GET_CODE (op) != MEM)

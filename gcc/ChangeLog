@@ -1,3 +1,27 @@
+1999-04-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* pdp11.c: Include "recog.h".
+	(output_function_prologue): Remove unused variables `nregs', `i',
+	`offset'.
+	(output_function_epilogue): Remove unused variables
+	`may_call_alloca', `nregs', `regno', `adjust_fp'.
+	(output_ascii): Mark as returning void.
+	(print_operand_address: Likewise.
+	(simple_memory_operand): Remove unused variables `plus0', `plus1',
+	`offset'.
+	* pdp11.h: Declare functions `arith_operand',
+	`const_immediate_operand', `expand_shift_operand',
+	`legitimate_address_p', `notice_update_cc_on_set', `output_ascii',
+	`output_function_epilogue', `output_function_prologue',
+	`print_operand_address', `register_move_cost',
+	`simple_memory_operand'.
+	(HARD_REGNO_MODE_OK): Parenthesise `REGNO' arg.
+	(REGNO_REG_CLASS): Likewise.
+	* pdp11.md: Add explicit `int' to `static count' (in two places).
+	(addhi3): Add explicit braces to avoid ambiguous else.
+	(addqi3): Likewise.
+	(ashlhi3): Likewise.
+
 Fri Apr  2 14:17:10 1999  Jerry James <jerry@cs.ucsb.edu>
 
 	* gcc/invoke.texi: Add documentation for additional supported

@@ -21,10 +21,21 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* declarations */
+int arith_operand ();
+int const_immediate_operand ();
+int expand_shift_operand ();
+int legitimate_address_p ();
+void notice_update_cc_on_set ();
+void output_ascii ();
+void output_function_epilogue ();
+void output_function_prologue ();
 char *output_jump();
 char *output_move_double();
 char *output_move_quad();
 char *output_block_move();
+void print_operand_address ();
+int register_move_cost ();
+int simple_memory_operand ();
 
 /* check whether load_fpu_reg or not */
 #define LOAD_FPU_REG_P(x) ((x)>=8 && (x)<=11)
@@ -289,9 +300,9 @@ extern int target_flags;
    FPU can only hold DF - simplifies life!
 */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-((REGNO < 8)?						\
+(((REGNO) < 8)?						\
   ((GET_MODE_BITSIZE(MODE) <= 16) 			\
-   || (GET_MODE_BITSIZE(MODE) == 32 && !(REGNO & 1)))	\
+   || (GET_MODE_BITSIZE(MODE) == 32 && !((REGNO) & 1)))	\
   :(MODE) == DFmode)
     
 
@@ -395,7 +406,7 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO) 		\
-((REGNO)>=8?((REGNO)<=11?LOAD_FPU_REGS:NO_LOAD_FPU_REGS):((REGNO&1)?MUL_REGS:GENERAL_REGS))
+((REGNO)>=8?((REGNO)<=11?LOAD_FPU_REGS:NO_LOAD_FPU_REGS):(((REGNO)&1)?MUL_REGS:GENERAL_REGS))
 
 
 /* The class value for index registers, and the one for base regs.  */
