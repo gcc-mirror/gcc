@@ -625,14 +625,15 @@ namespace std
       { return this->replace(__i1, __i2, __s, traits_type::length(__s)); }
 
       basic_string&
-      replace(iterator __i1, iterator __i2, size_type __n, _CharT __c);
+      replace(iterator __i1, iterator __i2, size_type __n, _CharT __c)
+      { return _M_replace_aux(__i1, __i2, __n, __c); }
 
       template<class _InputIterator>
         basic_string&
         replace(iterator __i1, iterator __i2,
 		_InputIterator __k1, _InputIterator __k2)
-        { return _M_replace(__i1, __i2, __k1, __k2,
-	     typename iterator_traits<_InputIterator>::iterator_category()); }
+        { typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
+	  return _M_replace_dispatch(__i1, __i2, __k1, __k2, _Integral()); }
 
       // Specializations for the common case of pointer and iterator:
       // useful to avoid the overhead of temporary buffering in _M_replace.
@@ -659,6 +660,25 @@ namespace std
 	}
 
     private:
+      template<class _Integer>
+	basic_string&
+	_M_replace_dispatch(iterator __i1, iterator __i2, _Integer __n, 
+			    _Integer __val, __true_type)
+        { return _M_replace_aux(__i1, __i2, __n, __val); }
+
+      template<class _InputIterator>
+	basic_string&
+	_M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1,
+			    _InputIterator __k2, __false_type)
+        { 
+	  typedef typename iterator_traits<_InputIterator>::iterator_category
+	    _Category;
+	  return _M_replace(__i1, __i2, __k1, __k2, _Category());
+	}
+
+      basic_string&
+      _M_replace_aux(iterator __i1, iterator __i2, size_type __n2, _CharT __c);
+
       template<class _InputIterator>
         basic_string&
         _M_replace(iterator __i1, iterator __i2, _InputIterator __k1,
