@@ -4159,22 +4159,17 @@ build_reference_type (to_type)
      tree to_type;
 {
   register tree t = TYPE_REFERENCE_TO (to_type);
-  register struct obstack *ambient_obstack = current_obstack;
-  register struct obstack *ambient_saveable_obstack = saveable_obstack;
 
   /* First, if we already have a type for pointers to TO_TYPE, use it.  */
 
   if (t)
     return t;
 
-  /* We need a new one.  If TO_TYPE is permanent, make this permanent too.  */
-  if (TREE_PERMANENT (to_type))
-    {
-      current_obstack = &permanent_obstack;
-      saveable_obstack = &permanent_obstack;
-    }
-
+  /* We need a new one.  Put this in the same obstack as TO_TYPE.   */
+  push_obstacks (TYPE_OBSTACK (to_type), TYPE_OBSTACK (to_type));
   t = make_node (REFERENCE_TYPE);
+  pop_obstacks ();
+
   TREE_TYPE (t) = to_type;
 
   /* Record this type as the pointer to TO_TYPE.  */
@@ -4182,8 +4177,6 @@ build_reference_type (to_type)
 
   layout_type (t);
 
-  current_obstack = ambient_obstack;
-  saveable_obstack = ambient_saveable_obstack;
   return t;
 }
 
