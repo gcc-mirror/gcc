@@ -1,3 +1,7 @@
+Wed May  3 13:29:54 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (staticp, case LABEL_DECL): New case.
+
 2000-05-03  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (start.encap): Do not depend on LIBGCC1.
@@ -48,6 +52,7 @@ Wed May  3 12:55:46 2000  Jim Wilson  <wilson@cygnus.com>
 	(DECL_POINTER_DEPTH): Add macro.
 	(tree_decl): Add pointer_depth member.
 
+>>>>>>> 1.6472
 Wed May  3 22:52:53 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr-protos.h (test_hard_reg_class): Declared.
@@ -160,6 +165,7 @@ Wed May  3 12:40:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	* rtl.def (define_insn_and_split): New DEF_RTL_EXPR.
 	* md.texi (Insn Splitting): Document define_insn_and_split.
 
+>>>>>>> 1.6464
 Tue May  2 00:20:30 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* flow.c (verify_flow_info): Added two more sanity checks. The
