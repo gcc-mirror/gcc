@@ -293,8 +293,18 @@ public class EventQueue
   public static AWTEvent getCurrentEvent()
   {
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
-    if (Thread.currentThread() != eq.dispatchThread)
-      return null;
+    Thread ct = Thread.currentThread();
+    
+    /* Find out if this thread is the dispatch thread for any of the
+       EventQueues in the chain */ 
+    while (ct != eq.dispatchThread)
+      {
+        // Try next EventQueue, if any
+        if (eq.next == null)
+           return null;  // Not an event dispatch thread
+        eq = eq.next;
+      }
+
     return eq.currentEvent;
   }
 
