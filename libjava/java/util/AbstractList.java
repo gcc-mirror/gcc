@@ -496,7 +496,8 @@ public abstract class AbstractList extends AbstractCollection implements List
         public void remove()
 	{
           i.remove();
-	  SubList.this.modCount++;
+	  // FIXME: Uncomment the following line once the compiler is fixed.
+	  //SubList.this.modCount++;
           size--;
           position = nextIndex();
         }
@@ -509,7 +510,8 @@ public abstract class AbstractList extends AbstractCollection implements List
         public void add(Object o)
 	{
           i.add(o);
-	  SubList.this.modCount++;
+	  // FIXME: Uncomment the following line once the compiler is fixed.
+	  //SubList.this.modCount++;
           size++;
           position++;
         }
