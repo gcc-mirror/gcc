@@ -1,5 +1,14 @@
 2000-08-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.benjamin/13478.C: Mark candidate.
+	* g++.old-deja/g++.mike/net36.C: Mark candidate.
+	* g++.old-deja/g++.robertl/eb131.C: Mark candidate.
+	* g++.old-deja/g++.oliva/overload1.C: Remove XFAIL.
+	* g++.old-deja/g++.other/ptrmem7.C: New test.
+	* g++.old-deja/g++.pt/ptrmem10.C: New test.
+
+2000-08-18  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/typename27.C: New test.
 
 2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>

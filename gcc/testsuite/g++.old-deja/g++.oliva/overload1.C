@@ -12,7 +12,7 @@ struct foo {
 
 /* gcc emits a hard error without -pedantic, and a warning with
    -pedantic, even in bad1.  */
-int (*ok1)() = foo::bar; // gets bogus error - XFAIL *-*-*
+int (*ok1)() = foo::bar;
 void (foo::*bad1)(int) = foo::bar; // ERROR - missing &
 
 int (*ok2)() = &foo::bar; // ok
