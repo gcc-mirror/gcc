@@ -95,8 +95,8 @@
 #    if defined(nec_ews) || defined(_nec_ews)
 #      define EWS4800
 #    endif
-#    if !defined(LINUX) && !defined(EWS4800)
-#      if defined(ultrix) || defined(__ultrix) || defined(__NetBSD__)
+#    if !defined(LINUX) && !defined(EWS4800) && !defined(NETBSD)
+#      if defined(ultrix) || defined(__ultrix)
 #	 define ULTRIX
 #      else
 #	 if defined(_SYSTYPE_SVR4) || defined(SYSTYPE_SVR4) \
@@ -107,9 +107,6 @@
 #	 endif
 #      endif
 #    endif /* !LINUX */
-#    if defined(__NetBSD__) && defined(__MIPSEL__)
-#      undef ULTRIX
-#    endif
 #    define mach_type_known
 # endif
 # if defined(sequent) && (defined(i386) || defined(__i386__))
@@ -1226,21 +1223,15 @@
 #       define DATAEND /* not needed */
 #   endif
 #   if defined(NETBSD)
-      /* This also checked for __MIPSEL__ .  Why?  NETBSD recognition	*/
-      /* should be handled at the top of the file.			*/
-#     define ALIGNMENT 4
 #     define OS_TYPE "NETBSD"
+#     define ALIGNMENT 4
 #     define HEURISTIC2
 #     define USE_GENERIC_PUSH_REGS
-#     ifdef __ELF__
-        extern int etext[];
-#       define DATASTART GC_data_start
-#       define NEED_FIND_LIMIT
-#       define DYNAMIC_LOADING
-#     else
-#       define DATASTART ((ptr_t) 0x10000000)
-#       define STACKBOTTOM ((ptr_t) 0x7ffff000)
-#     endif /* _ELF_ */
+      extern int _fdata[];
+#     define DATASTART ((ptr_t)(_fdata))
+      extern int _end[];
+#     define DATAEND ((ptr_t)(_end))
+#     define DYNAMIC_LOADING
 #  endif
 # endif
 
