@@ -337,6 +337,8 @@ static bool attach_init_test_initialization_flags PARAMS ((struct hash_entry *,
 							  PTR));
 static bool emit_test_initialization PARAMS ((struct hash_entry *, PTR));
 
+static char *string_convert_int_cst PARAMS ((tree));
+
 /* Number of error found so far. */
 int java_error_count; 
 /* Number of warning found so far. */
@@ -12554,8 +12556,82 @@ build_assignment (op, op_location, lhs, rhs)
   return assignment;
 }
 
-/* Print an INTEGER_CST node in a static buffer, and return the buffer. */
+/* Print an INTEGER_CST node as decimal in a static buffer, and return
+   the buffer.  This is used only for string conversion.  */
+static char *
+string_convert_int_cst (node)
+     tree node;
+{
+  static char buffer[80];
 
+  unsigned HOST_WIDE_INT lo = TREE_INT_CST_LOW (node);
+  unsigned HOST_WIDE_INT hi = TREE_INT_CST_HIGH (node);
+  char *p = buffer + sizeof (buffer) - 1;
+  int neg = 0;
+
+  unsigned HOST_WIDE_INT hibit = (((unsigned HOST_WIDE_INT) 1)
+				  << (HOST_BITS_PER_WIDE_INT - 1));
+
+  *p-- = '\0';
+
+  /* If negative, note the fact and negate the value.  */
+  if ((hi & hibit))
+    {
+      lo = ~lo;
+      hi = ~hi;
+      if (++lo == 0)
+	++hi;
+      neg = 1;
+    }
+
+  /* Divide by 10 until there are no bits left.  */
+  while (hi || lo)
+    {
+      unsigned HOST_WIDE_INT acc = 0;
+      unsigned HOST_WIDE_INT outhi = 0, outlo = 0;
+      unsigned int i;
+
+      /* Use long division to compute the result and the remainder.  */
+      for (i = 0; i < 2 * HOST_BITS_PER_WIDE_INT; ++i)
+	{
+	  /* Shift a bit into accumulator.  */
+	  acc <<= 1;
+	  if ((hi & hibit))
+	    acc |= 1;
+
+	  /* Shift the value.  */
+	  hi <<= 1;
+	  if ((lo & hibit))
+	    hi |= 1;
+	  lo <<= 1;
+
+	  /* Shift the correct bit into the result.  */
+	  outhi <<= 1;
+	  if ((outlo & hibit))
+	    outhi |= 1;
+	  outlo <<= 1;
+	  if (acc >= 10)
+	    {
+	      acc -= 10;
+	      outlo |= 1;
+	    }
+	}
+
+      /* FIXME: ASCII assumption.  */
+      *p-- = '0' + acc;
+
+      hi = outhi;
+      lo = outlo;
+    }
+
+  if (neg)
+    *p-- = '-';
+
+  return p + 1;
+}
+
+/* Print an INTEGER_CST node in a static buffer, and return the
+   buffer.  This is used only for error handling.  */
 char *
 print_int_node (node)
     tree node;
@@ -13678,8 +13754,8 @@ merge_string_cste (op1, op2, after)
 	  string = ch;
 	}
       else
-	  string = print_int_node (op2);
-      
+	string = string_convert_int_cst (op2);
+
       return do_merge_string_cste (op1, string, strlen (string), after);
     }
   return NULL_TREE;
