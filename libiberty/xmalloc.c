@@ -81,12 +81,12 @@ xmalloc (size)
       else
 	allocated = (char *) sbrk (0) - (char *) &environ;
       fprintf (stderr,
-	       "\n%s%sCan not allocate %lu bytes after allocating %lu bytes\n",
+	       "\n%s%sCannot allocate %lu bytes after allocating %lu bytes\n",
 	       name, *name ? ": " : "",
 	       (unsigned long) size, (unsigned long) allocated);
 #else /* HAVE_SBRK */
       fprintf (stderr,
-              "\n%s%sCan not allocate %lu bytes\n",
+              "\n%s%sCannot allocate %lu bytes\n",
               name, *name ? ": " : "",
               (unsigned long) size);
 #endif /* HAVE_SBRK */
@@ -116,12 +116,12 @@ xcalloc (nelem, elsize)
       else
 	allocated = (char *) sbrk (0) - (char *) &environ;
       fprintf (stderr,
-	       "\n%s%sCan not allocate %lu bytes after allocating %lu bytes\n",
+	       "\n%s%sCannot allocate %lu bytes after allocating %lu bytes\n",
 	       name, *name ? ": " : "",
 	       (unsigned long) (nelem * elsize), (unsigned long) allocated);
 #else /* HAVE_SBRK */
       fprintf (stderr,
-              "\n%s%sCan not allocate %lu bytes\n",
+              "\n%s%sCannot allocate %lu bytes\n",
               name, *name ? ": " : "",
               (unsigned long) (nelem * elsize));
 #endif /* HAVE_SBRK */
@@ -154,12 +154,12 @@ xrealloc (oldmem, size)
       else
 	allocated = (char *) sbrk (0) - (char *) &environ;
       fprintf (stderr,
-	       "\n%s%sCan not reallocate %lu bytes after allocating %lu bytes\n",
+	       "\n%s%sCannot reallocate %lu bytes after allocating %lu bytes\n",
 	       name, *name ? ": " : "",
 	       (unsigned long) size, (unsigned long) allocated);
 #else /* HAVE_SBRK */
       fprintf (stderr,
-              "\n%s%sCan not reallocate %lu bytes\n",
+              "\n%s%sCannot reallocate %lu bytes\n",
               name, *name ? ": " : "",
               (unsigned long) size);
 #endif /* HAVE_SBRK */

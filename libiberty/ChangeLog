@@ -1,3 +1,8 @@
+1999-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* xmalloc.c (xmalloc): Fix spelling error.
+	(xcalloc, xrealloc): Likewise.
+
 1999-10-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (fancy_abort, demangle_integral_value,
