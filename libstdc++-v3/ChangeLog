@@ -1,3 +1,22 @@
+2003-12-12  Paolo Carlini  <pcarlini@suse.de>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/13341
+	* include/bits/locale_facets.h (ctype<wchar_t>): Declare
+	_M_initialize_ctype() and _M_narrow_ok, _M_narrow and _M_widen.
+	* src/ctype.cc (ctype<wchar_t>::ctype(size_t),
+	ctype<wchar_t>::ctype(__c_locale, size_t)): Use
+	_M_initialize_ctype to fill _M_narrow and _M_widen.
+	(ctype_byname<wchar_t>::ctype_byname(const char*, size_t)):
+	Likewise.
+	* config/locale/generic/ctype_members.cc (do_narrow, do_widen)
+	Use _M_narrow and _M_widen when possible, instead of calling
+	wctob and btowc, respectively.
+	(_M_initialize_ctype): Define, it fills at construction time
+	_M_narrow and _M_widen.
+	* config/locale/gnu/ctype_members.cc: Likewise.
+	* testsuite/performance/narrow_widen_wchar_t.cc: New.
+
 2003-12-12  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/faq/index.txt: Regenerate after adding <link> tags.

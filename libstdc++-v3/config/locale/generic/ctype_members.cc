@@ -185,7 +185,12 @@ namespace std
   wchar_t
   ctype<wchar_t>::
   do_widen(char __c) const
-  { return btowc(static_cast<unsigned char>(__c)); }
+  { 
+    const unsigned char __uc = static_cast<unsigned char>(__c);
+    if (__uc < 128)
+      return _M_widen[__uc];
+    return btowc(__uc);
+  }
   
   const char* 
   ctype<wchar_t>::
@@ -193,7 +198,11 @@ namespace std
   {
     while (__lo < __hi)
       {
-	*__dest = btowc(static_cast<unsigned char>(*__lo));
+	const unsigned char __uc = static_cast<unsigned char>(*__lo);	
+	if (__uc < 128)
+	  *__dest = _M_widen[__uc];
+	else
+	  *__dest = btowc(__uc);	
 	++__lo;
 	++__dest;
       }
@@ -204,7 +213,9 @@ namespace std
   ctype<wchar_t>::
   do_narrow(wchar_t __wc, char __dfault) const
   { 
-    int __c = wctob(__wc);
+    if (__wc >= 0 && __wc < 128 && _M_narrow_ok)
+      return _M_narrow[__wc];
+    const int __c = wctob(__wc);
     return (__c == EOF ? __dfault : static_cast<char>(__c)); 
   }
 
@@ -213,14 +224,48 @@ namespace std
   do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault, 
 	    char* __dest) const
   {
-    while (__lo < __hi)
-      {
-	int __c = wctob(*__lo);
-	*__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
-	++__lo;
-	++__dest;
-      }
+    if (_M_narrow_ok)
+      while (__lo < __hi)
+	{
+	  if (*__lo >= 0 && *__lo < 128)
+	    *__dest = _M_narrow[*__lo];
+	  else
+	    {
+	      const int __c = wctob(*__lo);
+	      *__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
+	    }
+	  ++__lo;
+	  ++__dest;
+	}
+    else
+      while (__lo < __hi)
+	{
+	  const int __c = wctob(*__lo);
+	  *__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
+	  ++__lo;
+	  ++__dest;
+	}
     return __hi;
+  }
+
+  void
+  ctype<wchar_t>::_M_initialize_ctype()
+  {
+    wint_t __i;
+    for (__i = 0; __i < 128; ++__i)
+      {
+	const int __c = wctob(__i);
+	if (__c == EOF)
+	  break;
+	else
+	  _M_narrow[__i] = static_cast<char>(__c);
+      }
+    if (__i == 128)
+      _M_narrow_ok = true;
+    else
+      _M_narrow_ok = false;
+    for (int __i = 0; __i < 128; ++__i)
+      _M_widen[__i] = btowc(__i);
   }
 #endif //  _GLIBCXX_USE_WCHAR_T
 }
