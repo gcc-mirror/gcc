@@ -745,18 +745,22 @@ _cpp_parse_expr (cpp_reader *pfile)
 	}
       else if (want_value)
 	{
-	  /* Ordering here is subtle and intended to favor the
-	     missing parenthesis diagnostics over alternatives.  */
-	  if (op.op == CPP_CLOSE_PAREN)
-	    {
-	      if (top->op == CPP_OPEN_PAREN)
-		SYNTAX_ERROR ("void expression between '(' and ')'");
-	    }
-	  else if (top->op == CPP_EOF)
+	  /* We want a number (or expression) and haven't got one.
+	     Try to emit a specific diagnostic.  */
+	  if (op.op == CPP_CLOSE_PAREN && top->op == CPP_OPEN_PAREN)
+	    SYNTAX_ERROR ("missing expression between '(' and ')'");
+
+	  if (op.op == CPP_EOF && top->op == CPP_EOF)
 	    SYNTAX_ERROR ("#if with no expression");
+
 	  if (top->op != CPP_EOF && top->op != CPP_OPEN_PAREN)
 	    SYNTAX_ERROR2 ("operator '%s' has no right operand",
 			   cpp_token_as_text (pfile, top->token));
+	  else if (op.op == CPP_CLOSE_PAREN || op.op == CPP_EOF)
+	    /* Complain about missing paren during reduction.  */;
+	  else
+	    SYNTAX_ERROR2 ("operator '%s' has no left operand",
+			   cpp_token_as_text (pfile, op.token));
 	}
 
       top = reduce (pfile, top, op.op);

@@ -23,3 +23,9 @@
 
 #if (2) 4 * 2  /* { dg-error "missing bin" "close paren then immediate" } */
 #endif
+
+#if == 2  /* { dg-error "no left op" } */
+#endif
+
+#if (==2)  /* { dg-error "no left op" } */
+#endif
