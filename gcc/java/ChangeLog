@@ -1,3 +1,10 @@
+2001-12-31  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (dump_java_tree): New function.
+	(source_end_java_method): Call it.
+	(end_class_declaration): Likewise.
+	* lang.c (java_decode_option): Call dump_switch_p.
+
 2001-12-28  Tom Tromey  <tromey@redhat.com>
 
 	* gen-table.pl: Don't process characters after \uffff.  Added

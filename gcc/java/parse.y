@@ -108,6 +108,7 @@ static tree resolve_package PARAMS ((tree, tree *));
 static tree lookup_package_type PARAMS ((const char *, int));
 static tree resolve_class PARAMS ((tree, tree, tree, tree));
 static void declare_local_variables PARAMS ((int, tree, tree));
+static void dump_java_tree PARAMS ((enum tree_dump_index, tree));
 static void source_start_java_method PARAMS ((tree));
 static void source_end_java_method PARAMS ((void));
 static tree find_name_in_single_imports PARAMS ((tree));
@@ -4060,6 +4061,9 @@ end_class_declaration (resume)
      popped by a resume. */
   int no_error_occurred = ctxp->next && GET_CPC () != error_mark_node;
 
+  if (GET_CPC () != error_mark_node)
+    dump_java_tree (TDI_class, GET_CPC ());
+
   java_parser_context_pop_initialized_field ();
   POP_CPC ();
   if (resume && no_error_occurred)
@@ -7391,6 +7395,24 @@ end_artificial_method_body (mdecl)
   exit_block ();
 }
 
+/* Dump a tree of some kind.  This is a convenience wrapper for the
+   dump_* functions in tree-dump.c.  */
+static void
+dump_java_tree (phase, t)
+     enum tree_dump_index phase;
+     tree t;
+{
+  FILE *stream;
+  int flags;
+
+  stream = dump_begin (phase, &flags);
+  if (stream)
+    {
+      dump_node (t, flags, stream);
+      dump_end (phase, stream);
+    }
+}
+
 /* Terminate a function and expand its body.  */
 
 static void
@@ -7409,6 +7431,10 @@ source_end_java_method ()
      -Wall flags. */
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) == empty_stmt_node)
     BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) = NULL_TREE;
+
+  /* We've generated all the trees for this function, and it has been
+     patched.  Dump it to a file if the user requested it.  */
+  dump_java_tree (TDI_original, fndecl);
 
   /* Generate function's code */
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl))
