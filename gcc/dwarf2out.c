@@ -7677,6 +7677,17 @@ local_scope_p (context_die)
   return 0;
 }
 
+/* Returns nonzero iff CONTEXT_DIE is a class.  */
+
+static inline int
+class_scope_p (context_die)
+     dw_die_ref context_die;
+{
+  return (context_die
+	  && (context_die->die_tag == DW_TAG_structure_type
+	      || context_die->die_tag == DW_TAG_union_type));
+}
+
 /* Many forms of DIEs require a "type description" attribute.  This
    routine locates the proper "type descriptor" die for the type given
    by 'type', and adds an DW_AT_type attribute below the given die.  */
@@ -8221,11 +8232,8 @@ gen_subprogram_die (decl, context_die)
   register tree fn_arg_types;
   register tree outer_scope;
   register dw_die_ref old_die = lookup_decl_die (decl);
-  register int declaration
-    = (current_function_decl != decl
-       || (context_die
-	   && (context_die->die_tag == DW_TAG_structure_type
-	       || context_die->die_tag == DW_TAG_union_type)));
+  register int declaration = (current_function_decl != decl
+			      || class_scope_p (context_die));
 
   /* Note that it is possible to have both DECL_ABSTRACT and `declaration'
      be true, if we started to generate the abstract instance of an inline,
@@ -8495,11 +8503,8 @@ gen_variable_die (decl, context_die)
   register dw_die_ref var_die = new_die (DW_TAG_variable, context_die);
 
   dw_die_ref old_die = lookup_decl_die (decl);
-  int declaration
-    = (DECL_EXTERNAL (decl)
-       || current_function_decl != decl_function_context (decl)
-       || context_die->die_tag == DW_TAG_structure_type
-       || context_die->die_tag == DW_TAG_union_type);
+  int declaration = (DECL_EXTERNAL (decl)
+		     || class_scope_p (context_die));
 
   if (origin != NULL)
     add_abstract_origin_attribute (var_die, origin);
@@ -8551,12 +8556,11 @@ gen_variable_die (decl, context_die)
   if (declaration)
     add_AT_flag (var_die, DW_AT_declaration, 1);
   
-  if ((declaration && decl_class_context (decl)) || DECL_ABSTRACT (decl))
+  if (class_scope_p (context_die) || DECL_ABSTRACT (decl))
     equate_decl_number_to_die (decl, var_die);
 
   if (! declaration && ! DECL_ABSTRACT (decl))
     {
-      equate_decl_number_to_die (decl, var_die);
       add_location_or_const_value_attribute (var_die, decl);
       add_pubname (decl, var_die);
     }
@@ -8970,8 +8974,8 @@ gen_struct_or_union_type_die (type, context_die)
     {
       add_AT_flag (type_die, DW_AT_declaration, 1);
 
-      /* We can't do this for function-local types, and we don't need to.  */
-      if (! decl_function_context (TYPE_STUB_DECL (type)))
+      /* We don't need to do this for function-local types.  */
+      if (context_die)
 	add_incomplete_type (type);
     }
 }
@@ -9576,7 +9580,7 @@ dwarf2out_decl (decl)
       /* Ignore this FUNCTION_DECL if it refers to a builtin declaration of a 
          builtin function.  Explicit programmer-supplied declarations of
          these same functions should NOT be ignored however.  */
-      if (DECL_EXTERNAL (decl) && DECL_FUNCTION_CODE (decl))
+      if (DECL_EXTERNAL (decl) && DECL_BUILT_IN (decl))
 	return;
 
       /* What we would really like to do here is to filter out all mere
