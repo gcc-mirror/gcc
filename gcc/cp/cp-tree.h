@@ -1959,7 +1959,9 @@ struct lang_decl
 /* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
    destructor.  */
 #define DECL_CLONED_FUNCTION_P(NODE)		\
-  (DECL_LANG_SPECIFIC (NODE)			\
+  ((TREE_CODE (NODE) == FUNCTION_DECL 		\
+    || TREE_CODE (NODE) == TEMPLATE_DECL)	\
+   && DECL_LANG_SPECIFIC (NODE)			\
    && DECL_CLONED_FUNCTION (NODE) != NULL_TREE)
 
 /* If DECL_CLONED_FUNCTION_P holds, this is the function that was
