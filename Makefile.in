@@ -567,6 +567,7 @@ ALL_MODULES = \
 	all-time \
 	all-uudecode \
 	all-wdiff \
+	all-zip \
 	$(EXTRA_TARGET_HOST_ALL_MODULES)
 
 # This is a list of the check targets for all of the modules which are
@@ -578,7 +579,8 @@ ALL_MODULES = \
 NATIVE_CHECK_MODULES = \
 	check-bison \
 	check-byacc \
-	check-flex
+	check-flex \
+	check-zip
 
 CROSS_CHECK_MODULES = \
 	check-apache \
@@ -710,6 +712,7 @@ INSTALL_MODULES = \
 	install-time \
 	install-uudecode \
 	install-wdiff \
+	install-zip \
 	$(EXTRA_TARGET_HOST_INSTALL_MODULES)
 
 # This is a list of the targets for all of the modules which are compiled
@@ -767,6 +770,10 @@ ALL_TARGET_MODULES = \
 	all-target-gperf \
 	all-target-examples \
 	all-target-libstub \
+	all-target-libjava \
+	all-target-zlib \
+	all-target-boehm-gc \
+	all-target-qthreads \
 	all-target-cygmon
 
 # This is a list of the configure targets for all of the modules which
@@ -786,6 +793,10 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-gperf \
 	configure-target-examples \
 	configure-target-libstub \
+	configure-target-libjava \
+	configure-target-zlib \
+	configure-target-boehm-gc \
+	configure-target-qthreads \
 	configure-target-cygmon
 
 # This is a list of the check targets for all of the modules which are
@@ -800,6 +811,10 @@ CHECK_TARGET_MODULES = \
 	check-target-libobjc \
 	check-target-winsup \
 	check-target-libiberty \
+	check-target-libjava \
+	check-target-zlib \
+	check-target-boehm-gc \
+	check-target-qthreads \
 	check-target-gperf
 
 # This is a list of the install targets for all of the modules which are
@@ -815,6 +830,11 @@ INSTALL_TARGET_MODULES = \
 	install-target-winsup \
 	install-target-libgloss \
 	install-target-libiberty \
+	install-target-bsp \
+	install-target-libjava \
+	install-target-zlib \
+	install-target-boehm-gc \
+	install-target-qthreads \
 	install-target-gperf
 
 # This is a list of the targets for which we can do a clean-{target}.
@@ -880,7 +900,9 @@ CLEAN_MODULES = \
 	clean-tgas \
 	clean-time \
 	clean-uudecode \
-	clean-wdiff
+	clean-wdiff \
+	clean-zip
+
 
 # All of the target modules that can be cleaned
 CLEAN_TARGET_MODULES = \
@@ -898,6 +920,10 @@ CLEAN_TARGET_MODULES = \
 	clean-target-gperf \
 	clean-target-examples \
 	clean-target-libstub \
+	clean-target-libjava \
+	clean-target-zlib \
+	clean-target-boehm-gc \
+	clean-target-qthreads \
 	clean-target-cygmon
 
 # All of the x11 modules that can be cleaned
@@ -1535,6 +1561,8 @@ all-bash:
 all-bfd: all-libiberty all-intl
 all-binutils: all-libiberty all-opcodes all-bfd all-flex all-bison all-byacc all-intl
 all-bison: all-texinfo
+configure-target-boehm-gc: configure-target-newlib configure-target-qthreads
+all-target-boehm-gc: configure-target-boehm-gc
 all-byacc:
 all-bzip2:
 all-cvssrc:
@@ -1587,6 +1615,8 @@ all-target-libio: configure-target-libio all-gas all-ld all-gcc all-target-libib
 check-target-libio: all-target-libstdc++
 all-libgui: all-tcl all-tk all-itcl
 all-libiberty:
+configure-target-libjava: $(ALL_GCC) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-newlib
+all-target-libjava: configure-target-libjava all-gcc all-zip all-target-newlib all-target-zlib all-target-boehm-gc all-target-qthreads
 configure-target-librx: $(ALL_GCC) configure-target-newlib
 all-target-librx: configure-target-librx
 configure-target-libstdc++: $(ALL_GCC)
@@ -1606,6 +1636,8 @@ all-opcodes: all-bfd all-libiberty
 all-patch: all-libiberty
 all-perl:
 all-prms: all-libiberty
+configure-target-qthreads: configure-target-newlib
+all-target-qthreads: configure-target-qthreads
 all-rcs:
 all-readline:
 all-recode: all-libiberty
@@ -1627,6 +1659,9 @@ all-wdiff:
 all-target-winsup: all-target-newlib all-target-libiberty all-target-libio configure-target-winsup 
 configure-target-winsup: configure-target-newlib
 all-uudecode: all-libiberty
+all-zip:
+configure-target-zlib: $(ALL_GCC)
+all-target-zlib: configure-target-zlib
 configure-target-libiberty: $(ALL_GCC)
 all-target-libiberty: configure-target-libiberty all-gcc all-ld all-target-newlib
 all-target: $(ALL_TARGET_MODULES)
