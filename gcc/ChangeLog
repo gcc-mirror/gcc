@@ -1,5 +1,12 @@
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (divmodsi_internal_er): Split, so that
+	we represent the address load's dependency on the gp.
+	(divmoddi_internal_er): Likewise.
+	(divmodsi_internal_er_1, divmoddi_internal_er_1): New.
+
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
 	* emit-rtl.c (widen_memory_access): New.
 	* expr.h (widen_memory_access): Declare it.
 	* config/alpha/alpha.c (get_aligned_mem): Use it.
