@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "function.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
@@ -509,8 +510,10 @@ print_operand (file, x, code)
 	  fprintf (file, reg_names[REGNO (x) + 1]);
 	  break;
 	case MEM:
-	  print_operand_address (file,
-				 XEXP (adj_offsettable_operand (x, 4), 0));
+	  x = XEXP (adj_offsettable_operand (x, 4), 0);
+	  print_operand_address (file, x);
+	  if (GET_CODE (x) == CONST_INT)
+	    fprintf (file, "[r0]");
 	  break;
 	  
 	default:
