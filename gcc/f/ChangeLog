@@ -1,3 +1,12 @@
+Sat Apr 24 12:19:53 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* expr.c (ffeexpr_finished_): Convert DATA implied-do
+	start/end/incr expressions to default INTEGER.
+	Fix some broken conditionals.
+	Clean up some code in the region.
+
+	* version.c: Bump version.
+
 Fri Apr 23 02:08:32 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi (Compiler Prototypes): Replace "missing" subscript-
