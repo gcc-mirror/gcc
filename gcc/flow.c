@@ -1521,11 +1521,11 @@ propagate_block (old, first, last, final, significant, bnum)
 
 		  /* Calls may also reference any of the global registers,
 		     so they are made live.  */
-
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		    if (global_regs[i])
-		      live[i / REGSET_ELT_BITS]
-			|= ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS));
+		      mark_used_regs (old, live,
+				      gen_rtx (REG, reg_raw_mode[i], i),
+				      final, insn);
 
 		  /* Calls also clobber memory.  */
 		  last_mem_set = 0;
