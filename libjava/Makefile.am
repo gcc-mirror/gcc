@@ -661,6 +661,8 @@ java/awt/Panel.java \
 java/awt/Point.java \
 java/awt/Polygon.java \
 java/awt/PopupMenu.java	\
+java/awt/PrintGraphics.java \
+java/awt/PrintJob.java \
 java/awt/Rectangle.java	\
 java/awt/RenderingHints.java \
 java/awt/ScrollPane.java \
@@ -677,6 +679,14 @@ java/awt/color/ColorSpace.java \
 java/awt/color/ICC_ColorSpace.java \
 java/awt/color/ICC_Profile.java	\
 java/awt/datatransfer/Clipboard.java \
+java/awt/datatransfer/ClipboardOwner.java \
+java/awt/datatransfer/DataFlavor.java \
+java/awt/datatransfer/FlavorMap.java \
+java/awt/datatransfer/MimeTypeParseException.java \
+java/awt/datatransfer/StringSelection.java \
+java/awt/datatransfer/SystemFlavorMap.java \
+java/awt/datatransfer/Transferable.java	\
+java/awt/datatransfer/UnsupportedFlavorException.java \
 java/awt/event/AWTEventListener.java \
 java/awt/event/ActionEvent.java	\
 java/awt/event/ActionListener.java \
