@@ -638,7 +638,7 @@ extern basic_block force_nonfallthru	PARAMS ((edge));
 extern bool redirect_edge_and_branch	PARAMS ((edge, basic_block));
 extern rtx block_label			PARAMS ((basic_block));
 extern bool forwarder_block_p		PARAMS ((basic_block));
-extern bool purge_all_dead_edges	PARAMS ((void));
+extern bool purge_all_dead_edges	PARAMS ((bool));
 extern bool purge_dead_edges		PARAMS ((basic_block));
 extern void find_sub_basic_blocks	PARAMS ((basic_block));
 extern void find_many_sub_basic_blocks	PARAMS ((sbitmap));

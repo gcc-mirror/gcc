@@ -456,6 +456,7 @@ life_analysis (f, file, flags)
   /* Always remove no-op moves.  Do this before other processing so
      that we don't have to keep re-scanning them.  */
   delete_noop_moves (f);
+  purge_all_dead_edges (false);
 
   /* Some targets can emit simpler epilogues if they know that sp was
      not ever modified during the function.  After reload, of course,
@@ -803,8 +804,6 @@ delete_noop_moves (f)
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
-	      if (insn == bb->end)
-		purge_dead_edges (bb);
 	    }
 	}
     }
