@@ -1,3 +1,7 @@
+2003-09-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* class.c (build_utf8_ref): Test for HAVE_GAS_SHF_MERGE value.
+
 2003-09-23  Roger Sayle  <roger@eyesopen.com>
 
 	* jcf-write.c (generate_bytecode_insns): Optimize binary operations
