@@ -130,7 +130,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 {
   tree field, instance;
 
-  if (name == ctor_identifier || name == dtor_identifier)
+  if (IDENTIFIER_CTOR_OR_DTOR_P (name))
     return NULL_TREE;
 
   /* Speed up the common case.  */
@@ -4172,6 +4172,29 @@ build_over_call (cand, args, flags)
   return convert_from_reference (fn);
 }
 
+/* Returns the value to use for the in-charge parameter when making a
+   call to a function with the indicated NAME.  */
+
+tree
+in_charge_arg_for_name (name)
+     tree name;
+{
+  if (name == base_ctor_identifier
+      || name == base_dtor_identifier)
+    return integer_zero_node;
+  else if (name == complete_ctor_identifier)
+    return integer_one_node;
+  else if (name == complete_dtor_identifier)
+    return integer_two_node;
+  else if (name == deleting_dtor_identifier)
+    return integer_three_node;
+
+  /* This function should only be called with one of the names listed
+     above.  */
+  my_friendly_abort (20000411);
+  return NULL_TREE;
+}
+
 static tree
 build_new_method_call (instance, name, args, basetype_path, flags)
      tree instance, name, args, basetype_path;
@@ -4253,30 +4276,30 @@ build_new_method_call (instance, name, args, basetype_path, flags)
   /* Callers should explicitly indicate whether they want to construct
      the complete object or just the part without virtual bases.  */
   my_friendly_assert (name != ctor_identifier, 20000408);
+  /* Similarly for destructors.  */
+  my_friendly_assert (name != dtor_identifier, 20000408);
 
-  if (name == complete_ctor_identifier 
-      || name == base_ctor_identifier)
+  if (IDENTIFIER_CTOR_OR_DTOR_P (name))
     {
-      pretty_name = constructor_name (basetype);
+      int constructor_p;
+
+      constructor_p = (name == complete_ctor_identifier
+		       || name == base_ctor_identifier);
+      pretty_name = (constructor_p 
+		     ? constructor_name (basetype) : dtor_identifier);
 
       if (!flag_new_abi)
 	{
 	  /* Add the in-charge parameter as an implicit first argument.  */
-	  if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
-	    {
-	      tree in_charge;
-
-	      if (name == complete_ctor_identifier)
-		in_charge = integer_one_node;
-	      else
-		in_charge = integer_zero_node;
-
-	      args = tree_cons (NULL_TREE, in_charge, args);
-	    }
+	  if (!constructor_p
+	      || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+	    args = tree_cons (NULL_TREE,
+			      in_charge_arg_for_name (name),
+			      args);
 
 	  /* We want to call the normal constructor function under the
 	     old ABI.  */
-	  name = ctor_identifier;
+	  name = constructor_p ? ctor_identifier : dtor_identifier;
 	}
     }
   else

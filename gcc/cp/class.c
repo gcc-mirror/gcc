@@ -3883,6 +3883,14 @@ build_clone (fn, name)
   /* And it hasn't yet been deferred.  */
   DECL_DEFERRED_FN (clone) = 0;
 
+  /* The base-class destructor is not virtual.  */
+  if (name == base_dtor_identifier)
+    {
+      DECL_VIRTUAL_P (clone) = 0;
+      if (TREE_CODE (clone) != TEMPLATE_DECL)
+	DECL_VINDEX (clone) = NULL_TREE;
+    }
+
   /* If there was an in-charge paramter, drop it from the function
      type.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
@@ -3948,6 +3956,8 @@ build_clone (fn, name)
       DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
       DECL_TI_TEMPLATE (result) = clone;
     }
+  else if (DECL_DEFERRED_FN (fn))
+    defer_fn (clone);
 
   return clone;
 }
@@ -3963,8 +3973,10 @@ clone_function_decl (fn, update_method_vec_p)
 {
   tree clone;
 
-  if (DECL_CONSTRUCTOR_P (fn))
+  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
     {
+      /* For each constructor, we need two variants: an in-charge version
+	 and a not-in-charge version.  */
       clone = build_clone (fn, complete_ctor_identifier);
       if (update_method_vec_p)
 	add_method (DECL_CONTEXT (clone), NULL, clone);
@@ -3973,8 +3985,22 @@ clone_function_decl (fn, update_method_vec_p)
 	add_method (DECL_CONTEXT (clone), NULL, clone);
     }
   else
-    /* We don't do destructors yet.  */
-    my_friendly_abort (20000411);
+    {
+      my_friendly_assert (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn), 20000411);
+
+      /* For each destructor, we need two variants: an in-charge
+	 version, a not-in-charge version, and an in-charge deleting
+	 version.  */
+      clone = build_clone (fn, complete_dtor_identifier);
+      if (update_method_vec_p)
+	add_method (DECL_CONTEXT (clone), NULL, clone);
+      clone = build_clone (fn, deleting_dtor_identifier);
+      if (update_method_vec_p)
+	add_method (DECL_CONTEXT (clone), NULL, clone);
+      clone = build_clone (fn, base_dtor_identifier);
+      if (update_method_vec_p)
+	add_method (DECL_CONTEXT (clone), NULL, clone);
+    }
 }
 
 /* For each of the constructors and destructors in T, create an
@@ -3995,12 +4021,10 @@ clone_constructors_and_destructors (t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return;
 
-  /* For each constructor, we need two variants: an in-charge version
-     and a not-in-charge version.  */
   for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
     clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
-
-  /* For now, we don't do the destructors.  */
+  for (fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
 }
 
 /* Remove all zero-width bit-fields from T.  */
@@ -4130,7 +4154,8 @@ create_vtable_ptr (t, empty_p, vfuns_p,
   /* Loop over the virtual functions, adding them to our various
      vtables.  */
   for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
-    if (DECL_VINDEX (fn))
+    if (DECL_VINDEX (fn) 
+	&& !(flag_new_abi && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn)))
       add_virtual_function (new_virtuals_p, overridden_virtuals_p,
 			    vfuns_p, fn, t);
 

@@ -888,14 +888,20 @@ expand_throw (exp)
       /* First, decay it.  */
       exp = decay_conversion (exp);
 
-      /* cleanup_type is void (*)(void *, int),
-	 the internal type of a destructor. */
+      /* The CLEANUP_TYPE is the internal type of a destructor.  Under
+	 the old ABI, destructors are two-argument functions; under
+	 the new ABI they take only one argument.  */
       if (cleanup_type == NULL_TREE)
-	cleanup_type = build_pointer_type
-	  (build_function_type
-	   (void_type_node, tree_cons
-	    (NULL_TREE, ptr_type_node, tree_cons
-	     (NULL_TREE, integer_type_node, void_list_node))));
+	{
+	  tree arg_types;
+	  
+	  arg_types = void_list_node;
+	  if (!flag_new_abi)
+	    arg_types = tree_cons (NULL_TREE, integer_type_node, arg_types);
+	  arg_types = tree_cons (NULL_TREE, ptr_type_node, arg_types);
+	  cleanup_type = (build_pointer_type 
+			  (build_function_type (void_type_node, arg_types)));
+	}
 
       if (TYPE_PTR_P (TREE_TYPE (exp)))
 	throw_type = build_eh_type_type (TREE_TYPE (exp));
@@ -949,7 +955,10 @@ expand_throw (exp)
 	  if (TYPE_HAS_DESTRUCTOR (TREE_TYPE (object)))
 	    {
 	      cleanup = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
-					 dtor_identifier, 0);
+					 (flag_new_abi
+					  ? complete_dtor_identifier
+					  : dtor_identifier),
+					 0);
 	      cleanup = TREE_VALUE (cleanup);
 	      mark_used (cleanup);
 	      mark_addressable (cleanup);
@@ -970,7 +979,7 @@ expand_throw (exp)
 	  TREE_TYPE (cleanup) = cleanup_type;
 	}
 
-      fn = get_identifier ("__cp_push_exception");
+      fn = cp_push_exception_identifier;
       if (IDENTIFIER_GLOBAL_VALUE (fn))
 	fn = IDENTIFIER_GLOBAL_VALUE (fn);
       else

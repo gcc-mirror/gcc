@@ -1,3 +1,40 @@
+2000-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (IDENTIFIER_CTOR_OR_DTOR_P): New macro.
+	(cp_tree_index): Add CPTI_PUSH_EXCEPTION_IDENTIFIER.
+	(cp_push_exception_identifier): New macro.
+	(DECL_COMPLETE_DESTRUCTOR_P): New macro.
+	(DECL_BASE_DESTRUCTOR_P): Likewise.
+	(DECL_DELETING_DESTRUCTOR_P): Likewise.
+	(get_vtbl_decl_for_binfo): Fix formatting.
+	(in_charge_arg_for_name): New macro.
+	(maybe_build_cleanup_and_delete): Remove declaration.
+	* call.c (build_field_call): Use IDENTIFIER_CTOR_OR_DTOR_P.
+	(in_charge_arg_for_name): New function.
+	(build_new_method_call): Use it.  Handle cloned destructors.
+	(build_clone): Don't make the base constructor virtual.
+	Automatically defer generated functions.
+	(clone_function_decl): Handle destructors, too.
+	(clone_constructors_and_destructors): Likewise.
+	(create_vtable_ptr): Don't create a vtable entry for a cloned
+	function.
+	* decl.c (predefined_identifier): Add ctor_or_dtor_p.
+	(initialize_predefined_identifiers): Update appropriately.
+	(finish_destructor_body): Simplify.
+	(maybe_build_cleanup_and_delete): Remove.
+	* except.c (expand_throw): Handle new-ABI destructors.
+	* init.c (expand_cleanup_for_base): Use base_dtor_identifier.
+	(build_dtor_call): New function.
+	(build_delete): Use it.  Simplify.
+	* optimize.c (maybe_clone_body): Handle destructors.
+	* search.c (lookup_field_queue_p): Use IDENTIFIER_CTOR_OR_DTOR_P.
+	
+	* exception.cc (cleanup_fn): New typedef.
+	(CALL_CLEANUP): New macro.
+	(cp_eh_info): Use them.
+	(__cp_push_exception): Likewise.
+	(__cp_pop_exception): Likewise.
+	
 2000-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (cp_tree_index): Add CPTI_DTOR_IDENTIFIER.
