@@ -335,6 +335,9 @@ _Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result, int stop)
       rf = n;
     }
 
+  // Update the local frame information.
+  env->locals = rf;
+
   return result == NULL ? NULL : _Jv_JNI_NewLocalRef (env, result);
 }
 
@@ -369,20 +372,15 @@ wrap_value (JNIEnv *, T value)
   return value;
 }
 
-template<>
-static jobject
-wrap_value (JNIEnv *env, jobject value)
-{
-  return value == NULL ? value : _Jv_JNI_NewLocalRef (env, value);
-}
-
-template<>
-static jclass
-wrap_value (JNIEnv *env, jclass value)
+// This specialization is used for jobject, jclass, jstring, jarray,
+// etc.
+template<typename T>
+static T *
+wrap_value (JNIEnv *env, T *value)
 {
   return (value == NULL
 	  ? value
-	  : (jclass) _Jv_JNI_NewLocalRef (env, (jobject) value));
+	  : (T *) _Jv_JNI_NewLocalRef (env, (jobject) value));
 }
 
 
