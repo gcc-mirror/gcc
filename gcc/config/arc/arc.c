@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
