@@ -19,7 +19,9 @@ import java.util.Random;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
+ * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998) and
+ * "Applied Cryptography, Second Edition" by Bruce Schneier (Wiley, 1996).
+
  * 
  * Based primarily on IntNum.java BitOps.java by Per Bothner <per@bothner.com>
  * (found in Kawa 1.6.62).
@@ -59,6 +61,15 @@ public class BigInteger extends Number implements Comparable
   private static final int CEILING = 2;
   private static final int TRUNCATE = 3;
   private static final int ROUND = 4;
+
+  /** When checking the probability of primes, it is most efficient to
+   * first check the factoring of small primes, so we'll use this array.
+   */
+  private static final int[] primes =
+    {   2,   3,   5,   7,  11,  13,  17,  19,  23,  29,  31,  37,  41,  43,
+       47,  53,  59,  61,  67,  71,  73,  79,  83,  89,  97, 101, 103, 107,
+      109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181,
+      191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251 };
 
   private BigInteger()
   {
@@ -138,6 +149,21 @@ public class BigInteger extends Number implements Comparable
     this.words = result.words;
   }
 
+  public BigInteger(int bitLength, int certainty, Random rnd)
+  {
+    this(bitLength, rnd);
+
+    // Keep going until we find a probable prime.
+    while (true)
+      {
+	if (isProbablePrime(certainty))
+	  return;
+
+	BigInteger next = new BigInteger(bitLength, rnd);
+	this.ival = next.ival;
+	this.words = next.words;
+      }
+  }
 
   /** Return a (possibly-shared) BigInteger with a given long value. */
   private static BigInteger make(long value)
@@ -288,6 +314,16 @@ public class BigInteger extends Number implements Comparable
   public int compareTo(BigInteger val)
   {
     return compareTo(this, val);
+  }
+
+  public BigInteger min(BigInteger val)
+  {
+    return compareTo(this, val) < 0 ? this : val;
+  }
+
+  public BigInteger max(BigInteger val)
+  {
+    return compareTo(this, val) > 0 ? this : val;
   }
 
   private final boolean isOdd()
@@ -1121,7 +1157,29 @@ public class BigInteger extends Number implements Comparable
     if (exponent.isOne())
       return mod(m);
 
-    return pow(exponent).mod(m);
+    // To do this naively by first raising this to the power of exponent
+    // and then performing modulo m would be extremely expensive, especially
+    // for very large numbers.  The solution is found in Number Theory
+    // where a combination of partial powers and modulos can be done easily.
+    //
+    // We'll use the algorithm for Additive Chaining which can be found on
+    // p. 244 of "Applied Cryptography, Second Edition" by Bruce Schneier.
+    BigInteger s, t, u;
+    int i;
+
+    s = ONE;
+    t = this;
+    u = exponent;
+
+    while (!u.isZero())
+      {
+	if (u.and(ONE).isOne())
+	  s = times(s, t).mod(m);
+	u = u.shiftRight(1);
+	t = times(t, t).mod(m);
+      }
+
+    return s;
   }
 
   /** Calculate Greatest Common Divisor for non-negative ints. */
@@ -1182,6 +1240,72 @@ public class BigInteger extends Number implements Comparable
     result.ival = len;
     result.words = xwords;
     return result.canonicalize();
+  }
+
+  public boolean isProbablePrime(int certainty)
+  {
+    /** We'll use the Rabin-Miller algorithm for doing a probabilistic
+     * primality test.  It is fast, easy and has faster decreasing odds of a
+     * composite passing than with other tests.  This means that this
+     * method will actually have a probability much greater than the
+     * 1 - .5^certainty specified in the JCL (p. 117), but I don't think
+     * anyone will complain about better performance with greater certainty.
+     *
+     * The Rabin-Miller algorithm can be found on pp. 259-261 of "Applied
+     * Cryptography, Second Edition" by Bruce Schneier.
+     */
+
+    // First rule out small prime factors and assure the number is odd.
+    for (int i = 0; i < primes.length; i++)
+      {
+	if (words == null && ival == primes[i])
+	  return true;
+        if (remainder(make(primes[i])).isZero())
+	  return false;
+      }
+
+    // Now perform the Rabin-Miller test.
+    // NB: I know that this can be simplified programatically, but
+    // I have tried to keep it as close as possible to the algorithm
+    // as written in the Schneier book for reference purposes.
+
+    // Set b to the number of times 2 evenly divides (this - 1).
+    // I.e. 2^b is the largest power of 2 that divides (this - 1).
+    BigInteger pMinus1 = add(this, -1);
+    int b = pMinus1.getLowestSetBit();
+
+    // Set m such that this = 1 + 2^b * m.
+    BigInteger m = pMinus1.divide(make(2L << b - 1));
+
+    Random rand = new Random();
+    while (certainty-- > 0)
+      {
+        // Pick a random number greater than 1 and less than this.
+	// The algorithm says to pick a small number to make the calculations
+	// go faster, but it doesn't say how small; we'll use 2 to 1024.
+	int a = rand.nextInt();
+	a = (a < 0 ? -a : a) % 1023 + 2;
+
+	BigInteger z = make(a).modPow(m, this);
+	if (z.isOne() || z.equals(pMinus1))
+	  continue;			// Passes the test; may be prime.
+
+	int i;
+	for (i = 0; i < b; )
+	  {
+	    if (z.isOne())
+	      return false;
+	    i++;
+	    if (z.equals(pMinus1))
+	      break;			// Passes the test; may be prime.
+
+	    z = z.modPow(make(2), this);
+	  }
+
+	if (i == b && !z.equals(pMinus1))
+	  return false;
+      }
+    return true;
   }
 
   private void setInvert()
@@ -1727,7 +1851,7 @@ public class BigInteger extends Number implements Comparable
         case 1:  return x.and(y);
         case 3:  return x;
         case 5:  return y;
-        case 15: return smallFixNums[-1 - minFixNum];	// Returns -1.
+        case 15: return make(-1);
       }
     BigInteger result = new BigInteger();
     setBitOp(result, op, x, y);
@@ -1998,6 +2122,33 @@ public class BigInteger extends Number implements Comparable
     return or(ONE.shiftLeft(n));
   }
 
+  public boolean testBit(int n)
+  {
+    if (n < 0)
+      throw new ArithmeticException();
+
+    return !and(ONE.shiftLeft(n)).isZero();
+  }
+
+  public BigInteger flipBit(int n)
+  {
+    if (n < 0)
+      throw new ArithmeticException();
+
+    return xor(ONE.shiftLeft(n));
+  }
+
+  public int getLowestSetBit()
+  {
+    if (isZero())
+      return -1;
+
+    if (words == null)
+      return MPN.findLowestBit(ival);
+    else
+      return MPN.findLowestBit(words);
+  }
+
   // bit4count[I] is number of '1' bits in I.
   private static final byte[] bit4_count = { 0, 1, 1, 2,  1, 2, 2, 3,
 					     1, 2, 2, 3,  2, 3, 3, 4};
@@ -2039,21 +2190,4 @@ public class BigInteger extends Number implements Comparable
       }
     return isNegative() ? x_len * 32 - i : i;
   }
-
-/* TODO:
-
-  public BigInteger(int bitLength, int certainty, Random rnd)
-
-  public boolean testBit(int n)
-
-  public BigInteger flipBit(int n)
-
-  public int getLowestSetBit()
-
-  public boolean isProbablePrime(int certainty)
-
-  public BigInteger min(BigInteger val)
-
-  public BigInteger max(BigInteger val)
-*/
 }

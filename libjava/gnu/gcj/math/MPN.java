@@ -571,7 +571,7 @@ public class MPN
 
   /** Return least i such that word&(1<<i). Assumes word!=0. */
 
-  static int findLowestBit (int word)
+  public static int findLowestBit (int word)
   {
     int i = 0;
     while ((word & 0xF) == 0)
@@ -591,7 +591,7 @@ public class MPN
 
   /** Return least i such that words & (1<<i). Assumes there is such an i. */
 
-  static int findLowestBit (int[] words)
+  public static int findLowestBit (int[] words)
   {
     for (int i = 0;  ; i++)
       {
