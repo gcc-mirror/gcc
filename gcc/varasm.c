@@ -799,7 +799,8 @@ make_decl_rtl (decl, asmspec, top_level)
 	      name = new_name;
 	    }
 
-	  DECL_ASSEMBLER_NAME (decl) = get_identifier (name);
+	  DECL_ASSEMBLER_NAME (decl)
+	    = get_identifier (name[0] == '*' ? name + 1 : name);
 	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
 					 gen_rtx_SYMBOL_REF (Pmode, name));
 	  MEM_ALIAS_SET (DECL_RTL (decl)) = get_alias_set (decl);
