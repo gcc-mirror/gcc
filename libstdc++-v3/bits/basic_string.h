@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -278,27 +278,27 @@ namespace std {
       // to optimize for the common case of pointers as iterators.
       template<class _Iterator>
         static void
-        _S_copy_chars(_CharT* __p, _Iterator __j1, _Iterator __j2)
+        _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
         { 
-	  for (; __j1 != __j2; ++__j1, ++__p) 
-	    traits_type::assign(*__p, *__j1); //these types are off
+	  for (; __k1 != __k2; ++__k1, ++__p) 
+	    traits_type::assign(*__p, *__k1); //these types are off
 	}
 
       static void
-      _S_copy_chars(_CharT* __p, iterator __j1, iterator __j2)
-      { _S_copy_chars(__p, __j1.base(), __j2.base()); }
+      _S_copy_chars(_CharT* __p, iterator __k1, iterator __k2)
+      { _S_copy_chars(__p, __k1.base(), __k2.base()); }
 
       static void
-      _S_copy_chars(_CharT* __p, const_iterator __j1, const_iterator __j2)
-      { _S_copy_chars(__p, __j1.base(), __j2.base()); }
+      _S_copy_chars(_CharT* __p, const_iterator __k1, const_iterator __k2)
+      { _S_copy_chars(__p, __k1.base(), __k2.base()); }
  
       static void
-      _S_copy_chars(_CharT* __p, _CharT* __j1, _CharT* __j2)
-      { traits_type::copy(__p, __j1, __j2 - __j1); }
+      _S_copy_chars(_CharT* __p, _CharT* __k1, _CharT* __k2)
+      { traits_type::copy(__p, __k1, __k2 - __k1); }
 
       static void
-      _S_copy_chars(_CharT* __p, const _CharT* __j1, const _CharT* __j2)
-      { traits_type::copy(__p, __j1, __j2 - __j1); }
+      _S_copy_chars(_CharT* __p, const _CharT* __k1, const _CharT* __k2)
+      { traits_type::copy(__p, __k1, __k2 - __k1); }
 
       void 
       _M_mutate(size_type __pos, size_type __len1, size_type __len2);
@@ -636,20 +636,20 @@ namespace std {
       template<class _InputIterator>
         basic_string& 
         replace(iterator __i1, iterator __i2,
-		_InputIterator __j1, _InputIterator __j2)
-        { return _M_replace(__i1, __i2, __j1, __j2,
+		_InputIterator __k1, _InputIterator __k2)
+        { return _M_replace(__i1, __i2, __k1, __k2,
 	     typename iterator_traits<_InputIterator>::iterator_category()); }
 
     private:
       template<class _InputIterator>
         basic_string& 
-        _M_replace(iterator __i1, iterator __i2, _InputIterator __j1, 
-		   _InputIterator __j2, input_iterator_tag);
+        _M_replace(iterator __i1, iterator __i2, _InputIterator __k1, 
+		   _InputIterator __k2, input_iterator_tag);
 
       template<class _FwdIterator>
         basic_string& 
-        _M_replace(iterator __i1, iterator __i2, _FwdIterator __j1, 
-		   _FwdIterator __j2, forward_iterator_tag);
+        _M_replace(iterator __i1, iterator __i2, _FwdIterator __k1, 
+		   _FwdIterator __k2, forward_iterator_tag);
 
       // _S_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIter is an integral type
