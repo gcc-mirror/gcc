@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 1988, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -334,9 +334,20 @@ extern int flag_function_sections;
 /* -fverbose-asm causes extra commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the
-   generated assembly code (perhaps while debugging the compiler itself).  */
+   generated assembly code (perhaps while debugging the compiler itself).
+   -fverbose-asm is the default.  -fno-verbose-asm causes the extra information
+   to not be added and is useful when comparing two assembler files.  */
 
 extern int flag_verbose_asm;
+
+/* -dA causes debug information to be produced in
+   the generated assembly code (to make it more readable).  This option
+   is generally only of use to those who actually need to read the
+   generated assembly code (perhaps while debugging the compiler itself).
+   Currently, this switch is only used by dwarfout.c; however, it is intended
+   to be a catchall for printing debug information in the assembler file.  */
+
+extern int flag_debug_asm;
 
 /* -fgnu-linker specifies use of the GNU linker for initializations.
    -fno-gnu-linker says that collect will be used.  */
