@@ -152,7 +152,6 @@ extern tree last_assemble_variable_decl;
 static void set_target_switch PARAMS ((const char *));
 static const char *decl_name PARAMS ((tree, int));
 
-extern void set_fatal_function PARAMS ((void (*)(const char *, va_list)));
 static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void pipe_closed PARAMS ((int)) ATTRIBUTE_NORETURN;
 #ifdef ASM_IDENTIFY_LANGUAGE

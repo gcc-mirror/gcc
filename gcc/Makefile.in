@@ -1408,7 +1408,8 @@ s-under: $(GCC_PASSES)
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
-	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) ggc.h
+	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) ggc.h \
+	$(EXPR_H)
 
 # Language-independent files.
 

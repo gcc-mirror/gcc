@@ -259,6 +259,8 @@ static int convert_regs_1		PARAMS ((FILE *, basic_block));
 static int convert_regs_2		PARAMS ((FILE *, basic_block));
 static int convert_regs			PARAMS ((FILE *));
 static void print_stack 		PARAMS ((FILE *, stack));
+static rtx next_flags_user 		PARAMS ((rtx));
+static void record_label_references	PARAMS ((rtx, rtx));
 
 /* Return non-zero if any stack register is mentioned somewhere within PAT.  */
 

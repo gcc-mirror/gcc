@@ -2515,6 +2515,9 @@ static void add_incomplete_type		PARAMS ((tree));
 static void retry_incomplete_types	PARAMS ((void));
 static void gen_type_die_for_member	PARAMS ((tree, tree, dw_die_ref));
 static void gen_abstract_function	PARAMS ((tree));
+static rtx save_rtx			PARAMS ((rtx));
+static void splice_child_die		PARAMS ((dw_die_ref, dw_die_ref));
+static void reverse_die_lists		PARAMS ((dw_die_ref));
 
 /* Section names used to hold DWARF debugging information.  */
 #ifndef DEBUG_INFO_SECTION
@@ -3470,6 +3473,7 @@ add_dwarf_attr (die, attr)
     }
 }
 
+static inline dw_val_class AT_class PARAMS ((dw_attr_ref));
 static inline dw_val_class
 AT_class (a)
      dw_attr_ref a;
@@ -3494,6 +3498,7 @@ add_AT_flag (die, attr_kind, flag)
   add_dwarf_attr (die, attr);
 }
 
+static inline unsigned AT_flag PARAMS ((dw_attr_ref));
 static inline unsigned
 AT_flag (a)
      register dw_attr_ref a;
@@ -3521,6 +3526,7 @@ add_AT_int (die, attr_kind, int_val)
   add_dwarf_attr (die, attr);
 }
 
+static inline long int AT_int PARAMS ((dw_attr_ref));
 static inline long int
 AT_int (a)
      register dw_attr_ref a;
@@ -3548,6 +3554,7 @@ add_AT_unsigned (die, attr_kind, unsigned_val)
   add_dwarf_attr (die, attr);
 }
 
+static inline unsigned long AT_unsigned PARAMS ((dw_attr_ref));
 static inline unsigned long
 AT_unsigned (a)
      register dw_attr_ref a;
@@ -3613,6 +3620,7 @@ add_AT_string (die, attr_kind, str)
   add_dwarf_attr (die, attr);
 }
 
+static inline const char *AT_string PARAMS ((dw_attr_ref));
 static inline const char *
 AT_string (a)
      register dw_attr_ref a;
@@ -3640,6 +3648,7 @@ add_AT_die_ref (die, attr_kind, targ_die)
   add_dwarf_attr (die, attr);
 }
 
+static inline dw_die_ref AT_ref PARAMS ((dw_attr_ref));
 static inline dw_die_ref
 AT_ref (a)
      register dw_attr_ref a;
@@ -3684,6 +3693,7 @@ add_AT_loc (die, attr_kind, loc)
   add_dwarf_attr (die, attr);
 }
 
+static inline dw_loc_descr_ref AT_loc PARAMS ((dw_attr_ref));
 static inline dw_loc_descr_ref
 AT_loc (a)
      register dw_attr_ref a;
@@ -3711,6 +3721,7 @@ add_AT_addr (die, attr_kind, addr)
   add_dwarf_attr (die, attr);
 }
 
+static inline rtx AT_addr PARAMS ((dw_attr_ref));
 static inline rtx
 AT_addr (a)
      register dw_attr_ref a;
@@ -3756,6 +3767,7 @@ add_AT_lbl_offset (die, attr_kind, label)
   
 }
 
+static inline const char *AT_lbl PARAMS ((dw_attr_ref));
 static inline const char *
 AT_lbl (a)
      register dw_attr_ref a;
@@ -3858,6 +3870,7 @@ get_AT_unsigned (die, attr_kind)
   return AT_unsigned (a);
 }
 
+static inline dw_die_ref get_AT_ref PARAMS ((dw_die_ref, enum dwarf_attribute));
 static inline dw_die_ref
 get_AT_ref (die, attr_kind)
      dw_die_ref die;
@@ -3886,6 +3899,7 @@ is_fortran ()
 
 /* Free up the memory used by A.  */
 
+static inline void free_AT PARAMS ((dw_attr_ref));
 static inline void
 free_AT (a)
      dw_attr_ref a;
@@ -3932,6 +3946,7 @@ remove_AT (die, attr_kind)
 
 /* Free up the memory used by DIE.  */
 
+static inline void free_die PARAMS ((dw_die_ref));
 static inline void
 free_die (die)
      dw_die_ref die;
@@ -7548,6 +7563,7 @@ scope_die_for (t, context_die)
 
 /* Returns nonzero iff CONTEXT_DIE is internal to a function.  */
 
+static inline int local_scope_p PARAMS ((dw_die_ref));
 static inline int
 local_scope_p (context_die)
      dw_die_ref context_die;
@@ -7561,6 +7577,7 @@ local_scope_p (context_die)
 
 /* Returns nonzero iff CONTEXT_DIE is a class.  */
 
+static inline int class_scope_p PARAMS ((dw_die_ref));
 static inline int
 class_scope_p (context_die)
      dw_die_ref context_die;
@@ -9410,8 +9427,8 @@ gen_decl_die (decl, context_die)
 
 void
 dwarf2out_add_library_unit_info (filename, context_list)
-     char *filename;
-     char *context_list;
+     const char *filename;
+     const char *context_list;
 {
   unsigned int file_index;
 

@@ -956,6 +956,7 @@ extern int ceil_log2			PARAMS ((unsigned HOST_WIDE_INT));
   plus_constant_for_output_wide (X, (HOST_WIDE_INT) (C))
 
 /* In explow.c */
+extern void set_stack_check_libfunc PARAMS ((rtx));
 extern HOST_WIDE_INT trunc_int_for_mode	PARAMS ((HOST_WIDE_INT,
 					       enum machine_mode));
 extern rtx plus_constant_wide		 PARAMS ((rtx, HOST_WIDE_INT));
