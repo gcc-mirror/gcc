@@ -5136,6 +5136,16 @@ print_operand (file, x, code)
 	output_operand_lossage ("invalid %%H value");
       break;
 
+    case 'J':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  if (INTVAL (x) != 0)
+	    fprintf (file, "\t\t!lituse_jsr!%d", (int) INTVAL (x));
+	}
+      else
+	output_operand_lossage ("invalid %%J value");
+      break;
+
     case 'r':
       /* If this operand is the constant zero, write it as "$31".  */
       if (GET_CODE (x) == REG)

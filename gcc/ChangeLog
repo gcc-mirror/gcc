@@ -1,3 +1,11 @@
+2002-01-10  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (print_operand): Add 'J'.
+	* config/alpha/alpha.md (call_osf_1_er, call_value_osf_1_er): Take a
+	new operand with the sequence number for the lituse.  When splitting
+	the insns, use gen_movdi_er_high_g and generate a sequence number.
+	(gen_movdi_er_high_g): Print the sequence number if non-zero.
+
 2002-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (altivec_init_builtins): Add support for

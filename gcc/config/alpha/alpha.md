@@ -4835,17 +4835,21 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		    (match_dup 1))
 	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
 	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
-	      (use (match_dup 0))])]
+	      (use (match_dup 0))
+	      (use (match_dup 3))])]
 {
   if (CONSTANT_P (operands[0]))
     {
       operands[2] = gen_rtx_REG (Pmode, 27);
-      emit_move_insn (operands[2], operands[0]);
+      operands[3] = GEN_INT (alpha_next_sequence_number++);
+      emit_insn (gen_movdi_er_high_g (operands[2], pic_offset_table_rtx,
+				      operands[0], operands[3]));
     }
   else
     {
       operands[2] = operands[0];
       operands[0] = const0_rtx;
+      operands[3] = const0_rtx;
     }
 })
 
@@ -4861,7 +4865,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		    (match_dup 1))
 	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
 	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
-	      (use (match_dup 0))])
+	      (use (match_dup 0))
+	      (use (match_dup 4))])
    (set (reg:DI 29)
 	(unspec_volatile:DI [(reg:DI 26) (match_dup 3)] UNSPECV_LDGP1))
    (set (reg:DI 29)
@@ -4870,12 +4875,15 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   if (CONSTANT_P (operands[0]))
     {
       operands[2] = gen_rtx_REG (Pmode, 27);
-      emit_move_insn (operands[2], operands[0]);
+      operands[4] = GEN_INT (alpha_next_sequence_number++);
+      emit_insn (gen_movdi_er_high_g (operands[2], pic_offset_table_rtx,
+				      operands[0], operands[4]));
     }
   else
     {
       operands[2] = operands[0];
       operands[0] = const0_rtx;
+      operands[4] = const0_rtx;
     }
   operands[3] = GEN_INT (alpha_next_sequence_number++);
 })
@@ -4888,9 +4896,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	 (match_operand 1 "" ""))
    (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
    (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
-   (use (match_operand 2 "" ""))]
+   (use (match_operand 2 "" ""))
+   (use (match_operand 3 "const_int_operand" ""))]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
-  "jsr $26,(%0),%2"
+  "jsr $26,(%0),%2%J3"
   [(set_attr "type" "jsr")])
 
 (define_insn "*call_osf_1_noreturn"
@@ -5495,14 +5504,19 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = split_small_symbolic_mem_operand (operands[1]);")
 
-(define_insn "*movdi_er_high_g"
+(define_insn "movdi_er_high_g"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
 		    (match_operand:DI 2 "global_symbolic_operand" "")
 		    (match_operand 3 "const_int_operand" "")]
 		   UNSPEC_LITERAL))]
   "TARGET_EXPLICIT_RELOCS"
-  "ldq %0,%2(%1)\t\t!literal"
+{
+  if (INTVAL (operands[3]) == 0)
+    return "ldq %0,%2(%1)\t\t!literal";
+  else
+    return "ldq %0,%2(%1)\t\t!literal!%3";
+}
   [(set_attr "type" "ldsym")])
 
 (define_split
@@ -6891,17 +6905,21 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			 (match_dup 2)))
 	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
 	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
-	      (use (match_dup 1))])]
+	      (use (match_dup 1))
+	      (use (match_dup 4))])]
 {
   if (CONSTANT_P (operands[1]))
     {
       operands[3] = gen_rtx_REG (Pmode, 27);
-      emit_move_insn (operands[3], operands[1]);
+      operands[4] = GEN_INT (alpha_next_sequence_number++);
+      emit_insn (gen_movdi_er_high_g (operands[3], pic_offset_table_rtx,
+				      operands[1], operands[4]));
     }
   else
     {
       operands[3] = operands[1];
       operands[1] = const0_rtx;
+      operands[4] = const0_rtx;
     }
 })
 
@@ -6919,7 +6937,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			 (match_dup 2)))
 	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
 	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
-	      (use (match_dup 1))])
+	      (use (match_dup 1))
+	      (use (match_dup 5))])
    (set (reg:DI 29)
 	(unspec_volatile:DI [(reg:DI 26) (match_dup 4)] UNSPECV_LDGP1))
    (set (reg:DI 29)
@@ -6928,12 +6947,15 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   if (CONSTANT_P (operands[1]))
     {
       operands[3] = gen_rtx_REG (Pmode, 27);
-      emit_move_insn (operands[3], operands[1]);
+      operands[5] = GEN_INT (alpha_next_sequence_number++);
+      emit_insn (gen_movdi_er_high_g (operands[3], pic_offset_table_rtx,
+				      operands[1], operands[5]));
     }
   else
     {
       operands[3] = operands[1];
       operands[1] = const0_rtx;
+      operands[5] = const0_rtx;
     }
   operands[4] = GEN_INT (alpha_next_sequence_number++);
 })
@@ -6947,9 +6969,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (set (reg:DI 26)
 	(plus:DI (pc) (const_int 4)))
    (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
-   (use (match_operand 3 "" ""))]
+   (use (match_operand 3 "" ""))
+   (use (match_operand 4 "const_int_operand" ""))]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
-  "jsr $26,(%1),%3"
+  "jsr $26,(%1),%3%J4"
   [(set_attr "type" "jsr")])
 
 (define_insn "*call_value_osf_1_noreturn"
