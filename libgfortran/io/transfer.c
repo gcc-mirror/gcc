@@ -119,7 +119,7 @@ read_sf (int *length)
 {
   static char data[SCRATCH_SIZE];
   char *base, *p, *q;
-  int n, unity;
+  int n, readlen;
 
   if (*length > SCRATCH_SIZE)
     p = base = line_buffer = get_mem (*length);
@@ -129,24 +129,33 @@ read_sf (int *length)
   memset(base,'\0',*length);
 
   current_unit->bytes_left = options.default_recl;
-  unity = 1;
+  readlen = 1;
   n = 0;
 
   do
     {
       if (is_internal_unit())
         {
-	  /* unity may be modified inside salloc_r if 
+	  /* readlen may be modified inside salloc_r if 
 	     is_internal_unit() is true.  */
-          unity = 1;
+          readlen = 1;
         }
 
-      q = salloc_r (current_unit->s, &unity);
+      q = salloc_r (current_unit->s, &readlen);
       if (q == NULL)
 	break;
 
-      if (*q == '\n')
+      /* If we have a line without a terminating \n, drop through to
+	 EOR below.  */
+      if (readlen < 1 & n == 0)
 	{
+	  generate_error (ERROR_END, NULL);
+	  return NULL;
+	}
+
+      if (readlen < 1 || *q == '\n')
+	{
+	  /* ??? What is this for?  */
           if (current_unit->unit_number == options.stdin_unit)
             {
               if (n <= 0)
@@ -1345,12 +1354,6 @@ static void
 finalize_transfer (void)
 {
 
-  if (setjmp (g.eof_jump))
-    {
-       generate_error (ERROR_END, NULL);
-       return;
-    }
-
   if ((ionml != NULL) && (ioparm.namelist_name != NULL))
     {
        if (ioparm.namelist_read_mode)
@@ -1362,6 +1365,12 @@ finalize_transfer (void)
   transfer = NULL;
   if (current_unit == NULL)
     return;
+
+  if (setjmp (g.eof_jump))
+    {
+      generate_error (ERROR_END, NULL);
+      return;
+    }
 
   if (ioparm.list_format && g.mode == READING)
     finish_list_read ();
