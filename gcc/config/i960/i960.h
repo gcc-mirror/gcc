@@ -25,10 +25,20 @@ Boston, MA 02111-1307, USA.  */
 /* Note that some other tm.h files may include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
-#define MULTILIB_DEFAULTS { "mnumerics" }
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("i960");		\
+	builtin_define_std ("I960");		\
+	builtin_define_std ("i80960");		\
+	builtin_define_std ("I80960");		\
+	builtin_assert ("cpu=i960");		\
+	builtin_assert ("machine=i960");	\
+    }						\
+  while (0)
 
-/* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Acpu=i960 -Amachine=i960"
+#define MULTILIB_DEFAULTS { "mnumerics" }
 
 /* Name to predefine in the preprocessor for processor variations.
    -mic* options make characters signed by default.  */
