@@ -1,3 +1,15 @@
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR C++/16174
+	* call.c (build_temp): Declare.
+	(check_constructor_callable): New.
+	(reference_binding): Only set CHECK_COPY_CONSTRUCTOR if not for
+	CONSTRUCTOR_CALLABLE.
+	(convert_like_real, initialize_reference): Use
+	check_constructor_callable.
+	* cp-tree.h (LOOKUP_CONSTRUCTOR_CALLABLE): New.
+	(LOOKUP_*): Renumber.
+
 2004-06-25  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/14865
