@@ -471,15 +471,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " tree");
   if (node->output)
     fprintf (f, " output");
-
   if (node->local.local)
     fprintf (f, " local");
-  if (node->local.external)
-    fprintf (f, " external");
-  if (node->local.calls_read_all)
-    fprintf (f, " calls_read_all");
-  if (node->local.calls_write_all)
-    fprintf (f, " calls_write_all");
   if (node->local.disregard_inline_limits)
     fprintf (f, " always_inline");
   else if (node->local.inlinable)
