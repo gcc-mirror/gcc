@@ -1,3 +1,8 @@
+2004-12-18  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18548
+	* gcc.dg/max-1.c: New test case.
+
 2004-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20041218-1.c: New test.
