@@ -1417,7 +1417,7 @@ read_only_data_section ()				\
 {							\
   if (in_section != read_only_data)			\
     {							\
-      fprintf (asm_out_file, ".csect %s[RO]\n",	\
+      fprintf (asm_out_file, ".csect %s[RO]\n",		\
 	       xcoff_read_only_section_name);		\
       in_section = read_only_data;			\
     }							\
@@ -1428,7 +1428,7 @@ private_data_section ()					\
 {							\
   if (in_section != private_data)			\
     {							\
-      fprintf (asm_out_file, ".csect %s[RW]\n",	\
+      fprintf (asm_out_file, ".csect %s[RW]\n",		\
 	       xcoff_private_data_section_name);	\
 							\
       in_section = private_data;			\
