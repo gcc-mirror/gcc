@@ -1,3 +1,20 @@
+2003-01-02  Artur Biesiadowski  <abies@pg.gda.pl>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/ZipFile.java (entries): Now HashMap.
+	(readLeShort(DataInput, byte[])): Read from given byte array.
+	(readLeInt(DataInput, byte[]): Likewise.
+	(readLeShort(byte[] b, int off)): New method.
+	(readLeInt(byte[] b, int off)): Likewise.
+	(readEntries): Use byte arrays to read info in bigger chunks.
+	(getEntries): Return HashMap.
+	(getEntry): Use HashMap.
+	(locBuf): New private field.
+	(checkLocalHeader): Use locBuf to read info in one chunk.
+	(getInputStream): Use entries HashMap, wrap PartialInputStream
+	in BufferedInputStream.
+	(ZipEntryEnumeration): Use HashMap and Interator.
+
 2003-01-02  Mark Wielaard  <mark@klomp.org>
 	    Jeroen Frijters  <jeroen@sumatra.nl>
 
