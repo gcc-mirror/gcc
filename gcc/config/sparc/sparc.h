@@ -1141,17 +1141,25 @@ extern char leaf_reg_remap[];
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 
-   For SPARC, `I' is used for the range of constants an insn
-   can actually contain.
+   `I' is used for the range of constants an insn can actually contain.
    `J' is used for the range which is just zero (since that is R0).
-   `K' is used for constants which can be loaded with a single sethi insn.  */
+   `K' is used for constants which can be loaded with a single sethi insn.
+   `L' is used for the range of constants supported by the movcc insns.
+   `M' is used for the range of constants supported by the movrcc insns.  */
 
-#define SMALL_INT(X) ((unsigned) (INTVAL (X) + 0x1000) < 0x2000)
+#define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) ((X) + 0x200) < 0x400)
+#define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) ((X) + 0x400) < 0x800)
+#define SPARC_SIMM13_P(X) ((unsigned HOST_WIDE_INT) ((X) + 0x1000) < 0x2000)
+/* 10 and 11 bit immediates are only used for a few specific insns.
+   SMALL_INT is used throughout the port so we continue to use it.  */
+#define SMALL_INT(X) (SPARC_SIMM13_P (INTVAL (X)))
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? (unsigned) ((VALUE) + 0x1000) < 0x2000	\
+  ((C) == 'I' ? SPARC_SIMM13_P (VALUE)			\
    : (C) == 'J' ? (VALUE) == 0				\
    : (C) == 'K' ? ((VALUE) & 0x3ff) == 0		\
+   : (C) == 'L' ? SPARC_SIMM11_P (VALUE)		\
+   : (C) == 'M' ? SPARC_SIMM10_P (VALUE)		\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
