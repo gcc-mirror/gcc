@@ -1,3 +1,7 @@
+Wed Dec 29 19:29:26 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* g77.texi (C Interfacing Tools): Fix an incorrect link.
+
 1999-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* target.h: Handle sparc64 the same way as alpha.
