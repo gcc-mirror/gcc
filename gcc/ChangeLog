@@ -1,3 +1,9 @@
+2005-02-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/lib1funcs.asm (FUNC_ALIAS): New macro.
+	(div0): Use it in place of ARM_FUNC_ALIAS.
+	(lshrdi3, ashrdi3, ashlrdi3): Likewise.
+
 2005-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20030
