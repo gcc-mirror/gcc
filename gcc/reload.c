@@ -5553,6 +5553,9 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	      else if (goal_mem && GET_CODE (dest) == MEM
 		       && ! push_operand (dest, GET_MODE (dest)))
 		return 0;
+	      else if (GET_CODE (dest) == MEM && regno >= FIRST_PSEUDO_REGISTER
+		       && reg_equiv_memory_loc[regno] != 0)
+		return 0;
 	      else if (need_stable_sp && push_operand (dest, GET_MODE (dest)))
 		return 0;
 	    }
