@@ -491,6 +491,7 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
+  CPP_OPTION (pfile, operator_names) = 1;
 
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
@@ -663,6 +664,7 @@ static const struct builtin builtin_array[] =
 #undef B
 #undef C
 #undef X
+#undef O
 #define builtin_array_end \
  builtin_array + sizeof(builtin_array)/sizeof(struct builtin)
 
@@ -677,6 +679,9 @@ initialize_builtins (pfile)
   for(b = builtin_array; b < builtin_array_end; b++)
     {
       if ((b->flags & CPLUS) && ! CPP_OPTION (pfile, cplusplus))
+	continue;
+
+      if ((b->flags & OPERATOR) && ! CPP_OPTION (pfile, operator_names))
 	continue;
 
       if (b->flags & (OPERATOR | BUILTIN))
@@ -1091,6 +1096,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("d",                        no_arg, OPT_d)                          \
   DEF_OPT("fleading-underscore",      0,      OPT_fleading_underscore)        \
   DEF_OPT("fno-leading-underscore",   0,      OPT_fno_leading_underscore)     \
+  DEF_OPT("fno-operator-names",       0,      OPT_fno_operator_names)         \
   DEF_OPT("fno-preprocessed",         0,      OPT_fno_preprocessed)           \
   DEF_OPT("fno-show-column",          0,      OPT_fno_show_column)            \
   DEF_OPT("fpreprocessed",            0,      OPT_fpreprocessed)              \
@@ -1286,6 +1292,9 @@ cpp_handle_option (pfile, argc, argv)
 	  break;
 	case OPT_fno_leading_underscore:
 	  CPP_OPTION (pfile, user_label_prefix) = "";
+	  break;
+	case OPT_fno_operator_names:
+	  CPP_OPTION (pfile, operator_names) = 0;
 	  break;
 	case OPT_fpreprocessed:
 	  CPP_OPTION (pfile, preprocessed) = 1;

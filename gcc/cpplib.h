@@ -424,6 +424,9 @@ struct cpp_options
 
   /* Print column number in error messages.  */
   unsigned char show_column;
+
+  /* Treat C++ alternate operator names special.  */
+  unsigned char operator_names;
 };
 
 struct lexer_state

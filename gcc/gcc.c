@@ -594,7 +594,7 @@ static const char *cpp_options =
  %{!ffreestanding:%{!fno-hosted:-D__STDC_HOSTED__=1}}\
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
- %{ftabstop=*} %{remap}\
+ %{fno-operator-names} %{ftabstop=*} %{remap}\
  %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}";
 
