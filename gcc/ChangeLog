@@ -1,3 +1,13 @@
+Tue Nov 25 01:26:55 1997  Bruno Haible <haible@ilog.fr>:
+
+	* dwarf2out.c (ASM_OUTPUT_DWARF_DELTA1): Implement.
+
+Mon Nov 24 22:41:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (get_dynamic_handler_chain): Build up a FUNCTION_DECL.
+	* optabs.c (init_optabs): Lose get_dynamic_handler_chain_libfunc.
+	* expr.h: Likewise.
+
 Fri Nov 21 15:20:05 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (program_transform_cross_name): Clean up "-e" confusion.
