@@ -1,3 +1,14 @@
+2001-10-30  Geert Bosch <bosch@gnat.com>
+
+	* ali-util.adb (Initialize_Checksum): Use out-mode instead of in out. 
+	Found due to GCC 3.0 warning of using uninitialized value.
+	
+	* layout.adb:
+	(Get_Max_Size): Use variant record for tracking value/expression.
+	 Makes logic clearer and prevents warnings for uninitialized variables.
+	(Layout_Array_Type): Use variant record for tracking value/expression.
+	 Makes logic clearer and prevents warnings for uninitialized variables.
+
 2001-10-30  Robert Dewar <dewar@gnat.com>
 
 	* lib.adb: Minor reformatting
