@@ -1453,7 +1453,7 @@
 
 (define_insn "floatsisf2"
   [(set (match_operand:SF 0 "general_operand" "=fx")
-	(float:SF (match_operand:SI 1 "register_operand" "fxr")))]
+	(float:SF (match_operand:SI 1 "register_operand" "fx")))]
   ""
   "* return output_floatsisf2 (operands);"
   [(set_attr "type" "fpalu")
@@ -1472,7 +1472,7 @@
 
 (define_insn "floatsidf2"
   [(set (match_operand:DF 0 "general_operand" "=fx")
-	(float:DF (match_operand:SI 1 "register_operand" "fxr")))]
+	(float:DF (match_operand:SI 1 "register_operand" "fx")))]
   ""
   "* return output_floatsidf2 (operands);"
   [(set_attr "type" "fpalu")
