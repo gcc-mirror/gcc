@@ -875,13 +875,11 @@ package body Sem_Prag is
 
       procedure Check_Arg_Is_String_Literal (Arg : Node_Id) is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
-
       begin
          if Nkind (Argx) /= N_String_Literal then
             Error_Pragma_Arg
               ("argument for pragma% must be string literal", Argx);
          end if;
-
       end Check_Arg_Is_String_Literal;
 
       ------------------------------------------
@@ -917,7 +915,6 @@ package body Sem_Prag is
 
       procedure Check_At_Most_N_Arguments (N : Nat) is
          Arg : Node_Id;
-
       begin
          if Arg_Count > N then
             Arg := Arg1;
@@ -997,7 +994,6 @@ package body Sem_Prag is
 
       procedure Check_First_Subtype (Arg : Node_Id) is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
-
       begin
          if not Is_First_Subtype (Entity (Argx)) then
             Error_Pragma_Arg
@@ -1198,11 +1194,9 @@ package body Sem_Prag is
 
       procedure Check_No_Identifiers is
          Arg_Node : Node_Id;
-
       begin
          if Arg_Count > 0 then
             Arg_Node := Arg1;
-
             while Present (Arg_Node) loop
                Check_No_Identifier (Arg_Node);
                Next (Arg_Node);
@@ -1280,8 +1274,9 @@ package body Sem_Prag is
 
             when N_Index_Or_Discriminant_Constraint =>
                declare
-                  IDC : Entity_Id := First (Constraints (Constr));
+                  IDC : Entity_Id;
                begin
+                  IDC := First (Constraints (Constr));
                   while Present (IDC) loop
                      Check_Static_Constraint (IDC);
                      Next (IDC);
@@ -1476,10 +1471,8 @@ package body Sem_Prag is
 
          Comp := First (Component_Items (Clist));
          while Present (Comp) loop
-
             Check_Component (Comp);
             Next (Comp);
-
          end loop;
       end Check_Variant;
 
@@ -2280,9 +2273,12 @@ package body Sem_Prag is
               ("pragma% must designate an object", Arg_Internal);
          end if;
 
-         if Is_Psected (Def_Id) then
+         if Has_Rep_Pragma (Def_Id, Name_Common_Object)
+              or else
+            Has_Rep_Pragma (Def_Id, Name_Psect_Object)
+         then
             Error_Pragma_Arg
-              ("previous Psect_Object applies, pragma % not permitted",
+              ("previous Common/Psect_Object applies, pragma % not permitted",
                Arg_Internal);
          end if;
 
@@ -2463,12 +2459,12 @@ package body Sem_Prag is
 
       begin
          Process_Extended_Import_Export_Internal_Arg (Arg_Internal);
-         Hom_Id := Entity (Arg_Internal);
          Ent := Empty;
          Ambiguous := False;
 
-         --  Loop through homonyms (overloadings) of Hom_Id
+         --  Loop through homonyms (overloadings) of the entity
 
+         Hom_Id := Entity (Arg_Internal);
          while Present (Hom_Id) loop
             Def_Id := Get_Base_Subprogram (Hom_Id);
 
@@ -4064,7 +4060,6 @@ package body Sem_Prag is
          else
             Bad_Class;
          end if;
-
       end Set_Mechanism_Value;
 
       ---------------------------
@@ -8401,13 +8396,7 @@ package body Sem_Prag is
             External : Node_Id renames Args (2);
             Size     : Node_Id renames Args (3);
 
-            R_Internal : Node_Id;
-            R_External : Node_Id;
-
-            MA       : Node_Id;
-            Str      : String_Id;
-
-            Def_Id   : Entity_Id;
+            Def_Id : Entity_Id;
 
             procedure Check_Too_Long (Arg : Node_Id);
             --  Posts message if the argument is an identifier with more
@@ -8451,9 +8440,7 @@ package body Sem_Prag is
             Gather_Associations (Names, Args);
             Process_Extended_Import_Export_Internal_Arg (Internal);
 
-            R_Internal := Relocate_Node (Internal);
-
-            Def_Id := Entity (R_Internal);
+            Def_Id := Entity (Internal);
 
             if Ekind (Def_Id) /= E_Constant
               and then Ekind (Def_Id) /= E_Variable
@@ -8462,38 +8449,39 @@ package body Sem_Prag is
                  ("pragma% must designate an object", Internal);
             end if;
 
-            Check_Too_Long (R_Internal);
+            Check_Too_Long (Internal);
 
             if Is_Imported (Def_Id) or else Is_Exported (Def_Id) then
                Error_Pragma_Arg
                  ("cannot use pragma% for imported/exported object",
-                  R_Internal);
+                  Internal);
             end if;
 
-            if Is_Concurrent_Type (Etype (R_Internal)) then
+            if Is_Concurrent_Type (Etype (Internal)) then
                Error_Pragma_Arg
                  ("cannot specify pragma % for task/protected object",
-                  R_Internal);
+                  Internal);
             end if;
 
-            if Is_Psected (Def_Id) then
-               Error_Msg_N ("?duplicate Psect_Object pragma", N);
-            else
-               Set_Is_Psected (Def_Id);
+            if Has_Rep_Pragma (Def_Id, Name_Common_Object)
+                 or else
+               Has_Rep_Pragma (Def_Id, Name_Psect_Object)
+            then
+               Error_Msg_N ("?duplicate Common/Psect_Object pragma", N);
             end if;
 
             if Ekind (Def_Id) = E_Constant then
                Error_Pragma_Arg
-                 ("cannot specify pragma % for a constant", R_Internal);
+                 ("cannot specify pragma % for a constant", Internal);
             end if;
 
-            if Is_Record_Type (Etype (R_Internal)) then
+            if Is_Record_Type (Etype (Internal)) then
                declare
                   Ent  : Entity_Id;
                   Decl : Entity_Id;
 
                begin
-                  Ent := First_Entity (Etype (R_Internal));
+                  Ent := First_Entity (Etype (Internal));
                   while Present (Ent) loop
                      Decl := Declaration_Node (Ent);
 
@@ -8503,7 +8491,7 @@ package body Sem_Prag is
                        and then Warn_On_Export_Import
                      then
                         Error_Msg_N
-                          ("?object for pragma % has defaults", R_Internal);
+                          ("?object for pragma % has defaults", Internal);
                         exit;
 
                      else
@@ -8517,120 +8505,13 @@ package body Sem_Prag is
                Check_Too_Long (Size);
             end if;
 
-            --  Make Psect case-insensitive.
-
             if Present (External) then
                Check_Too_Long (External);
-
-               if Nkind (External) = N_String_Literal then
-                  String_To_Name_Buffer (Strval (External));
-               else
-                  Get_Name_String (Chars (External));
-               end if;
-
-               Set_All_Upper_Case;
-               Start_String;
-               Store_String_Chars (Name_Buffer (1 .. Name_Len));
-               Str := End_String;
-               R_External := Make_String_Literal
-                 (Sloc => Sloc (External), Strval => Str);
-            else
-               Get_Name_String (Chars (Internal));
-               Set_All_Upper_Case;
-               Start_String;
-               Store_String_Chars (Name_Buffer (1 .. Name_Len));
-               Str := End_String;
-               R_External := Make_String_Literal
-                 (Sloc => Sloc (Internal), Strval => Str);
             end if;
 
-            --  Transform into pragma Linker_Section, add attributes to
-            --  match what DEC Ada does. Ignore size for now?
+            --  If all error tests pass, link pragma on to the rep item chain
 
-            Rewrite (N,
-               Make_Pragma
-                 (Sloc (N),
-                  Name_Linker_Section,
-                  New_List
-                    (Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_Internal),
-                        Expression => R_Internal),
-                     Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_External),
-                        Expression => R_External))));
-
-            Analyze (N);
-
-            --  Add Machine_Attribute of "overlaid", so the section overlays
-            --  other sections of the same name.
-
-            Start_String;
-            Store_String_Chars ("overlaid");
-            Str := End_String;
-
-            MA :=
-               Make_Pragma
-                 (Sloc (N),
-                  Name_Machine_Attribute,
-                  New_List
-                    (Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_Internal),
-                        Expression => R_Internal),
-                     Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_External),
-                        Expression =>
-                          Make_String_Literal
-                            (Sloc => Sloc (R_External),
-                             Strval => Str))));
-            Analyze (MA);
-
-            --  Add Machine_Attribute of "global", so the section is visible
-            --  everywhere
-
-            Start_String;
-            Store_String_Chars ("global");
-            Str := End_String;
-
-            MA :=
-               Make_Pragma
-                 (Sloc (N),
-                  Name_Machine_Attribute,
-                  New_List
-                    (Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_Internal),
-                        Expression => R_Internal),
-
-                     Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_External),
-                        Expression =>
-                          Make_String_Literal
-                            (Sloc => Sloc (R_External),
-                             Strval => Str))));
-            Analyze (MA);
-
-            --  Add Machine_Attribute of "initialize", so the section is
-            --  demand zeroed.
-
-            Start_String;
-            Store_String_Chars ("initialize");
-            Str := End_String;
-
-            MA :=
-               Make_Pragma
-                 (Sloc (N),
-                  Name_Machine_Attribute,
-                  New_List
-                    (Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_Internal),
-                        Expression => R_Internal),
-
-                     Make_Pragma_Argument_Association
-                       (Sloc => Sloc (R_External),
-                        Expression =>
-                          Make_String_Literal
-                            (Sloc => Sloc (R_External),
-                             Strval => Str))));
-            Analyze (MA);
+            Record_Rep_Item (Def_Id, N);
          end Psect_Object;
 
          ----------
@@ -9830,12 +9711,11 @@ package body Sem_Prag is
                end if;
 
                Vpart := Variant_Part (Clist);
+
                Variant := First (Variants (Vpart));
                while Present (Variant) loop
-
                   Check_Variant (Variant);
                   Next (Variant);
-
                end loop;
             end if;
 
@@ -9921,7 +9801,6 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
 
             Arg_Node := Arg1;
-
             while Present (Arg_Node) loop
                Check_No_Identifier (Arg_Node);
 
@@ -10117,9 +9996,9 @@ package body Sem_Prag is
 
                         if Is_Enumeration_Type (E) then
                            declare
-                              Lit : Entity_Id := First_Literal (E);
-
+                              Lit : Entity_Id;
                            begin
+                              Lit := First_Literal (E);
                               while Present (Lit) loop
                                  Set_Warnings_Off (Lit);
                                  Next_Literal (Lit);
@@ -10201,10 +10080,9 @@ package body Sem_Prag is
       Result : Entity_Id;
 
    begin
-      Result := Def_Id;
-
       --  Follow subprogram renaming chain
 
+      Result := Def_Id;
       while Is_Subprogram (Result)
         and then
           (Is_Generic_Instance (Result)

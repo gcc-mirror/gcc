@@ -156,6 +156,12 @@ package Tbuild is
    --  A convenient form of Make_Raise_Storage_Error where the Reason
    --  is given simply as an enumeration value, rather than a Uint code.
 
+   function Make_String_Literal
+     (Sloc   : Source_Ptr;
+      Strval : String) return Node_Id;
+   --  A convenient form of Make_String_Literal, where the string value
+   --  is given as a normal string instead of a String_Id value.
+
    function Make_Unsuppress_Block
      (Loc   : Source_Ptr;
       Check : Name_Id;

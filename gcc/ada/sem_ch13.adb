@@ -3411,16 +3411,6 @@ package body Sem_Ch13 is
       end if;
    end New_Stream_Procedure;
 
-   ---------------------
-   -- Record_Rep_Item --
-   ---------------------
-
-   procedure Record_Rep_Item (T : Entity_Id; N : Node_Id) is
-   begin
-      Set_Next_Rep_Item (N, First_Rep_Item (T));
-      Set_First_Rep_Item (T, N);
-   end Record_Rep_Item;
-
    ------------------------
    -- Rep_Item_Too_Early --
    ------------------------
