@@ -1597,23 +1597,20 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 }
   [(set_attr "type" "iadd,shift")])
 
-;; ??? The following pattern is made by combine, but earlier phases
-;; (specifically flow) can't handle it.  This occurs in jump.c.  Deal
-;; with this in a better way at some point.
-;;(define_insn ""
-;;  [(set (match_operand:DI 0 "register_operand" "=r")
-;;	(sign_extend:DI
-;;	 (subreg:SI (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-;;			       (match_operand:DI 2 "const_int_operand" "P"))
-;;		    0)))]
-;;  "INTVAL (operands[2]) >= 1 && INTVAL (operands[2]) <= 3"
-;;{
-;;  if (operands[2] == const1_rtx)
-;;    return "addl %r1,%r1,%0";
-;;  else
-;;    return "s%P2addl %r1,0,%0";
-;;}
-;;  [(set_attr "type" "iadd")])
+(define_insn "*ashldi_se"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	 (subreg:SI (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+			       (match_operand:DI 2 "const_int_operand" "P"))
+		    0)))]
+  "INTVAL (operands[2]) >= 1 && INTVAL (operands[2]) <= 3"
+{
+  if (operands[2] == const1_rtx)
+    return "addl %r1,%r1,%0";
+  else
+    return "s%P2addl %r1,0,%0";
+}
+  [(set_attr "type" "iadd")])
 
 (define_insn "lshrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
