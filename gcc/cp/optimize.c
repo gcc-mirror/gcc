@@ -748,20 +748,11 @@ calls_setjmp_r (tp, walk_subtrees, data)
      int *walk_subtrees ATTRIBUTE_UNUSED;
      void *data ATTRIBUTE_UNUSED;
 {
-  int setjmp_p;
-  int longjmp_p;
-  int fork_or_exec_p;
-  int malloc_p;
-  int alloca_p;
-
   /* We're only interested in FUNCTION_DECLS.  */
   if (TREE_CODE (*tp) != FUNCTION_DECL)
     return NULL_TREE;
 
-  special_function_p (*tp, &setjmp_p, &longjmp_p, &fork_or_exec_p, &malloc_p,
-		      &alloca_p);
-
-  return setjmp_p ? *tp : NULL_TREE;
+  return setjmp_call_p (*tp);
 }
 
 /* Returns non-zero if FN calls `setjmp' or some other function that

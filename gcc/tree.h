@@ -2551,8 +2551,9 @@ extern struct rtx_def *emit_line_note		PARAMS ((const char *, int));
 extern struct rtx_def *emit_line_note_force	PARAMS ((const char *, int));
 
 /* In calls.c */
-extern void special_function_p	        PARAMS ((tree, int *, int *,
-						int *, int *, int *));
+
+/* Flags used by special_function_p.  */
+extern int setjmp_call_p		PARAMS ((tree));
 
 /* In c-typeck.c */
 extern int mark_addressable		PARAMS ((tree));

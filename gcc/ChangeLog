@@ -1,3 +1,19 @@
+Tue Apr  4 19:17:20 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (ECF_MALLOC, ECF_MAY_BE_ALLOCA, ECF_RETURNS_TWICE,
+	 ECF_LONGJMP, ECF_FORK_OR_EXEC):  New constants.
+	(ECF_IS_CONST): Rename to ECF_CONST.
+	(special_function_p): Make static, change interface.
+	(flags_from_decl_or_type, try_to_integrate): Break out from ...
+	(expand_call) ... here; convert number of variables to flags.
+	(emit_library_call_vlue_1): Likewise.
+	(setjmp_call_p): New function.
+	(initialize_argument_information): Accepts flags as argument;
+	return flags.
+	(precompute_arguments): Likewise.
+	* tree.h (special_function_p): Remove.
+	(setjmp_call_p): Add prototype.
+
 2000-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (RTX_OK_FOR_OFFSET_P): Leave minor margin
