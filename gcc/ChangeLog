@@ -1,3 +1,9 @@
+2002-06-21  Bo Thorsen  <bo@suse.de>
+
+	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Add i386
+	support so multilib works again. And don't define this at all
+	when -Dinhibit_libc is used.
+
 Thu Jun 20 16:41:40 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (gen_lowpart_for_combine): Avoid calling of
