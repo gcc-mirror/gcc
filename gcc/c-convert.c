@@ -137,7 +137,20 @@ convert_to_integer (type, expr)
       register unsigned inprec = TYPE_PRECISION (intype);
       register enum tree_code ex_form = TREE_CODE (expr);
 
-      if (outprec >= inprec)
+      /* If we are widening the type, put in an explicit conversion.
+	 Similarly if we are not changing the width.  However, if this is
+	 a logical operation that just returns 0 or 1, we can change the
+	 type of the expression (see below).  */
+
+      if (TREE_CODE_CLASS (ex_form) == '<'
+	  || ex_form == TRUTH_AND_EXPR || ex_form == TRUTH_ANDIF_EXPR
+	  || ex_form == TRUTH_OR_EXPR || ex_form == TRUTH_ORIF_EXPR
+	  || ex_form == TRUTH_NOT_EXPR)
+	{
+	  TREE_TYPE (expr) = type;
+	  return expr;
+	}
+      else if (outprec >= inprec)
 	return build1 (NOP_EXPR, type, expr);
 
 /* Here detect when we can distribute the truncation down past some arithmetic.
@@ -249,22 +262,6 @@ convert_to_integer (type, expr)
 	      }
 	  }
 	  break;
-
-	case EQ_EXPR:
-	case NE_EXPR:
-	case GT_EXPR:
-	case GE_EXPR:
-	case LT_EXPR:
-	case LE_EXPR:
-	case TRUTH_AND_EXPR:
-	case TRUTH_ANDIF_EXPR:
-	case TRUTH_OR_EXPR:
-	case TRUTH_ORIF_EXPR:
-	case TRUTH_NOT_EXPR:
-	  /* If we want result of comparison converted to a byte,
-	     we can just regard it as a byte, since it is 0 or 1.  */
-	  TREE_TYPE (expr) = type;
-	  return expr;
 
 	case NEGATE_EXPR:
 	case BIT_NOT_EXPR:
