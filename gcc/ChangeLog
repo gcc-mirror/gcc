@@ -1,5 +1,20 @@
 2000-02-16  Richard Henderson  <rth@cygnus.com>
 
+	* configure.in (alpha-linux*, alpha-netbsd) [extra_parts]:
+	Add crtbeginS.o and crtendS.o.
+	* alpha/elf.h (STARTFILE_SPEC): Use crtbeginS.o.
+	(ENDFILE_SPEC): Use crtendS.o.
+	* alpha/t-crtbe (crtbeginS.o, crtendS.o): New targets.
+
+	* alpha/crtbegin.asm (__do_frame_takedown): Merge into ...
+	(__do_global_dtors_aux): ... here.  Call __cxa_finalize if
+	shared and present.
+	(__dso_handle): New variable.
+	* alpha/crtend.asm (__do_global_ctors_aux): Remove runtime
+	bias to __CTOR_END__.
+	
+2000-02-16  Richard Henderson  <rth@cygnus.com>
+
 	* Makefile.in (s-crtS, crtbeginS, crtendS): Prefix usage with $(T).
 
 Wed Feb 16 21:40:04 2000  Hans-Peter Nilsson  <hp@bitrange.com>

@@ -69,11 +69,6 @@ __EH_FRAME_BEGIN__:
 1:	ldgp    $29,0($29)
 	jsr     $26,__do_global_dtors_aux
 
-	# Ideally this call would go in crtend.o, except that we can't
-	# get hold of __EH_FRAME_BEGIN__ there.
-
-	jsr	$26,__do_frame_takedown
-
 	# Must match the alignment we got from crti.o else we get
 	# zero-filled holes in our _fini function and then SIGILL.
 	.align 3
@@ -92,10 +87,29 @@ __EH_FRAME_BEGIN__:
  # Invoke our destructors in order.
  #
 
-.data
+.section .sdata
 
  # Support recursive calls to exit.
-$ptr:	.quad	__DTOR_LIST__
+	.type dtor_ptr,@object
+	.size dtor_ptr,8
+dtor_ptr:
+	.quad	__DTOR_LIST__ + 8
+
+ # A globally unique widget for c++ local destructors to hang off.
+	.global __dso_handle
+	.type __dso_handle,@object
+	.size __dso_handle,8
+#ifdef SHARED
+.section .data
+	.align 3
+__dso_handle:
+	.quad	__dso_handle
+#else
+.section .bss
+	.align 3
+__dso_handle:
+	.zero 8
+#endif
 
 .text
 
@@ -103,23 +117,41 @@ $ptr:	.quad	__DTOR_LIST__
 	.ent __do_global_dtors_aux
 
 __do_global_dtors_aux:
+	ldgp	$29,0($27)
 	lda     $30,-16($30)
 	.frame  $30,16,$26,0
 	stq	$9,8($30)
 	stq     $26,0($30)
 	.mask   0x4000200,-16
-	.prologue 0
+	.prologue 1
 
-	lda     $9,$ptr
-	br      1f
-0:	stq	$1,0($9)
+#ifdef SHARED
+	# Do c++ local destructors.
+	lda	$1,__cxa_finalize
+	beq	$1,0f
+	lda	$16,__dso_handle
+	jsr	$26,__cxa_finalize
+	ldgp	$29,0($26)
+#endif
+
+0:	lda     $9,dtor_ptr
+	br      2f
+1:	stq	$1,0($9)
 	jsr     $26,($27)
-1:	ldq	$1,0($9)
-	ldq     $27,8($1)
+	ldgp	$29,0($26)
+2:	ldq	$1,0($9)
+	ldq     $27,0($1)
 	addq    $1,8,$1
-	bne     $27,0b
+	bne     $27,1b
 
-	ldq     $26,0($30)
+	# Remove our frame info.
+	lda	$1,__deregister_frame_info
+	beq	$1,3f
+	lda	$16,__EH_FRAME_BEGIN__
+	jsr	$26,__deregister_frame_info
+	ldgp	$29,0($26)
+
+3:	ldq     $26,0($30)
 	ldq	$9,8($30)
 	lda     $30,16($30)
 	ret
@@ -133,11 +165,11 @@ __do_global_dtors_aux:
  # ??? How can we rationally keep this size correct?
 
 .section .bss
-	.type $object,@object
+	.type frame_object,@object
+	.size frame_object, 48
 	.align 3
-$object:
+frame_object:
 	.zero 48
-	.size $object, 48
 
 .text 
 
@@ -155,38 +187,18 @@ __do_frame_setup:
 	lda	$1,__register_frame_info
 	beq	$1,0f
 	lda	$16,__EH_FRAME_BEGIN__
-	lda	$17,$object
+	lda	$17,frame_object
 	jsr	$26,__register_frame_info
+	ldgp	$29,0($26)
+
 	ldq     $26,0($30)
 0:	lda     $30,16($30)
 	ret
 
 	.end __do_frame_setup
 
- #
- # Remove our frame info.
- #
-
-	.align 3
-	.ent __do_frame_takedown
-
-__do_frame_takedown:
-	ldgp	$29,0($27)
-	lda     $30,-16($30)
-	.frame  $30,16,$26,0
-	stq     $26,0($30)
-	.mask   0x4000000,-16
-	.prologue 1
-
-	lda	$1,__deregister_frame_info
-	beq	$1,0f
-	lda	$16,__EH_FRAME_BEGIN__
-	jsr	$26,__deregister_frame_info
-	ldq     $26,0($30)
-0:	lda     $30,16($30)
-	ret
-
-	.end __do_frame_takedown
-
 .weak __register_frame_info
 .weak __deregister_frame_info
+#ifdef SHARED
+.weak __cxa_finalize
+#endif

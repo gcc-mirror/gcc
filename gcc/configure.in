@@ -620,7 +620,7 @@ changequote([,])dnl
 		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux alpha/t-crtbe alpha/t-ieee"
-		extra_parts="crtbegin.o crtend.o"
+		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		xmake_file=none
 		gas=yes gnu_ld=yes
  		if test x$enable_threads = xyes; then
@@ -631,7 +631,7 @@ changequote([,])dnl
 		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux alpha/t-crtbe alpha/t-ieee"
-		extra_parts="crtbegin.o crtend.o"
+		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		xmake_file=none
 		gas=yes gnu_ld=yes
  		if test x$enable_threads = xyes; then
@@ -642,7 +642,7 @@ changequote([,])dnl
 		tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsd-elf.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="alpha/t-crtbe alpha/t-ieee"
-		extra_parts="crtbegin.o crtend.o"
+		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		xmake_file=none
 		gas=yes gnu_ld=yes
 		;;
