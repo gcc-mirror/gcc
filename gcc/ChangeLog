@@ -1,5 +1,5 @@
+2002-07-02 Devang Patel <dpatel@apple.com>
 
-2002-07-02 Devang Patel <dpatel@apple.com
 	* objc/objc-act.c (adjust_type_for_id_default): Do not allow an
 	  object as parameter. Prevent something like 'NSObject' to be
 	  used as the type for a method argument.
