@@ -2214,7 +2214,7 @@ simplify_knowing (exp, known_true)
 {
   if (GET_CODE (exp) != CONST_STRING)
     {
-      int unknown, max;
+      int unknown = 0, max;
       max = max_attr_value (exp, &unknown);
       if (! unknown)
 	{

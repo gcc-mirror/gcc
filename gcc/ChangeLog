@@ -1,3 +1,8 @@
+Fri Feb 26 15:33:45 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genattrtab.c (simplify_knowing): Fix uninitialized read
+	in Feb 21 change.
+
 Fri Feb 26 02:24:57 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* c-pragma.c (add_weak); Delete.  Moved into...
