@@ -1,3 +1,8 @@
+2003-03-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/alpha/osf.h (TARGET_OS_CPP_BUILTINS): Define __digital__,
+	__arch64__ to match Compaq cc.
+
 2003-03-17  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c: Default TARGET_EBCDIC to 0 if not defined.
