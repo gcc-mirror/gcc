@@ -1,3 +1,10 @@
+2003-10-08  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/prefs/Preferences.java
+	(defaultFactoryClass): Fixed class name.
+	(getFactory): Create instance of class returned by Class.forName(),
+	reformated code.
+
 2003-10-08  Arnaud Vandyck <arnaud.vandyck@ulg.ac.be>
 
 	* javax/swing/table/AbstractTableModel.java
