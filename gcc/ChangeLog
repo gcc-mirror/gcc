@@ -1,3 +1,8 @@
+2004-12-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/t-aix43, config/rs6000/t-aix52 (SHLIB_LINK):
+	Revert 2004-12-01 change.
+
 2004-12-06  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-tree.h (struct lang_type): Add 'objc_protocols' field.
