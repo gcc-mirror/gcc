@@ -1123,6 +1123,7 @@ print_help ()
   printf ("  -lang-objc                Assume that the input sources are in ObjectiveC\n");
   printf ("  -lang-objc++              Assume that the input sources are in ObjectiveC++\n");
   printf ("  -lang-asm                 Assume that the input sources are in assembler\n");
+  printf ("  -lang-fortran	       Assume that the input sources are in Fortran\n");
   printf ("  -lang-chill               Assume that the input sources are in Chill\n");
   printf ("  -std=<std name>           Specify the conformance standard; one of:\n");
   printf ("                            gnu89, gnu9x, c89, c9x, iso9899:1990,\n");
@@ -1457,6 +1458,8 @@ main (argc, argv)
 	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 1;
  	else if (! strcmp (argv[i], "-lang-asm"))
  	  lang_asm = 1;
+	else if (! strcmp (argv[i], "-lang-fortran"))
+	  /* Doesn't actually do anything.  */ ;
  	else if (! strcmp (argv[i], "-lint"))
  	  for_lint = 1;
 	break;
