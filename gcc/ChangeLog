@@ -1,5 +1,12 @@
 2003-12-22  Dale Johannesen  <dalej@apple.com>
 
+        * reload1.c:  Add reg_reloaded_call_part_clobbered.
+        (reload_as_needed):  Use it.
+        (forget_old_reloads_1):  Ditto.
+        (emit_reload_insns):  Ditto.
+
+2003-12-22  Dale Johannesen  <dalej@apple.com>
+
         PR optimization/12828
         * loop.c:  Add find_regs_nested to look inside CLOBBER(MEM).
         (scan_loop):  Call it.
