@@ -19,9 +19,9 @@ host_xm_file=config/i386/xm-dos.h
 /^xmake_file=/ d
 /^tmake_file=/ d
 /^version=/ c\
-version=2.7.1
+version=2.7.2
 /^mainversion=/ c\
-mainversion=2.7.1
+mainversion=2.7.2
 s/CC = cc/CC = gcc/
 s/:\$/: \$/g
 s/^	\ *\.\//	go32 /
