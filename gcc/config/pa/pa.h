@@ -1383,11 +1383,11 @@ extern struct rtx_def *hppa_builtin_saveregs ();
    Using autoincrement addressing modes on PA8000 class machines is
    not profitable.  */
 
-#define HAVE_POST_INCREMENT (pa_cpu < 8000)
-#define HAVE_POST_DECREMENT (pa_cpu < 8000)
+#define HAVE_POST_INCREMENT (pa_cpu < PROCESSOR_8000)
+#define HAVE_POST_DECREMENT (pa_cpu < PROCESSOR_8000)
 
-#define HAVE_PRE_DECREMENT (pa_cpu < 8000)
-#define HAVE_PRE_INCREMENT (pa_cpu < 8000)
+#define HAVE_PRE_DECREMENT (pa_cpu < PROCESSOR_8000)
+#define HAVE_PRE_INCREMENT (pa_cpu < PROCESSOR_8000)
 
 /* Macros to check register numbers against specific register classes.  */
 
