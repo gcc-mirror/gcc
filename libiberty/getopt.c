@@ -3,29 +3,26 @@
    "Keep this file name-space clean" means, talk to roland@gnu.ai.mit.edu
    before changing it!
 
-   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95
+   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97
    	Free Software Foundation, Inc.
 
-This file is part of the libiberty library.  This library is free
-software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option)
-any later version.
+   NOTE: The canonical source of this file is maintained with the GNU C Library.
+   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-As a special exception, if you link this library with files
-compiled with a GNU compiler to produce an executable, this does not cause
-the resulting executable to be covered by the GNU General Public License.
-This exception does not however invalidate any other reasons why
-the executable file might be covered by the GNU General Public License. */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 /* This tells Alpha OSF/1 not to define a getopt prototype in <stdio.h>.
    Ditto for AIX 3.2 and <stdlib.h>.  */
@@ -34,17 +31,10 @@ the executable file might be covered by the GNU General Public License. */
 #endif
 
 #ifdef HAVE_CONFIG_H
-#if defined (emacs) || defined (CONFIG_BROKETS)
-/* We use <config.h> instead of "config.h" so that a compilation
-   using -I. -I$srcdir will use ./config.h rather than $srcdir/config.h
-   (which it would do because it found this file in $srcdir).  */
 #include <config.h>
-#else
-#include "config.h"
-#endif
 #endif
 
-#ifndef __STDC__
+#if !defined (__STDC__) || !__STDC__
 /* This is a separate conditional since some stdc systems
    reject `defined (const)'.  */
 #ifndef const
@@ -61,11 +51,16 @@ the executable file might be covered by the GNU General Public License. */
    (especially if it is a shared library).  Rather than having every GNU
    program understand `configure --with-gnu-libc' and omit the object files,
    it is simpler to just do this in the source for each such file.  */
-/* Many versions of the Linux C library include older, broken versions
-   of these routines, which will break the linker's command-line
-   parsing.  */
 
-#if defined (_LIBC) || !defined (__GNU_LIBRARY__) || defined (__linux__)
+#define GETOPT_INTERFACE_VERSION 2
+#if !defined (_LIBC) && defined (__GLIBC__) && __GLIBC__ >= 2
+#include <gnu-versions.h>
+#if _GNU_GETOPT_INTERFACE_VERSION == GETOPT_INTERFACE_VERSION
+#define ELIDE_CODE
+#endif
+#endif
+
+#ifndef ELIDE_CODE
 
 
 /* This needs to come after some library #include
@@ -74,7 +69,26 @@ the executable file might be covered by the GNU General Public License. */
 /* Don't include stdlib.h for non-GNU C libraries because some of them
    contain conflicting prototypes for getopt.  */
 #include <stdlib.h>
+#include <unistd.h>
 #endif	/* GNU C library.  */
+
+#ifdef VMS
+#include <unixlib.h>
+#if HAVE_STRING_H - 0
+#include <string.h>
+#endif
+#endif
+
+#ifndef _
+/* This is for other GNU distributions with internationalized messages.
+   When compiling libc, the _ macro is predefined.  */
+#ifdef HAVE_LIBINTL_H
+# include <libintl.h>
+# define _(msgid)	gettext (msgid)
+#else
+# define _(msgid)	(msgid)
+#endif
+#endif
 
 /* This version of `getopt' appears to the caller like standard Unix `getopt'
    but it behaves differently for the user, since it allows the user
@@ -106,14 +120,20 @@ char *optarg = NULL;
 
    On entry to `getopt', zero means this is the first call; initialize.
 
-   When `getopt' returns EOF, this is the index of the first of the
+   When `getopt' returns -1, this is the index of the first of the
    non-option elements that the caller should itself scan.
 
    Otherwise, `optind' communicates from one call to the next
    how much of ARGV has been scanned so far.  */
 
-/* XXX 1003.2 says this must be 1 before any call.  */
-int optind = 0;
+/* 1003.2 says this must be 1 before any call.  */
+int optind = 1;
+
+/* Formerly, initialization of getopt depended on optind==0, which
+   causes problems with re-calling getopt as programs generally don't
+   know that. */
+
+int __getopt_initialized = 0;
 
 /* The next char to be scanned in the option-element
    in which the last option character we returned was found.
@@ -162,12 +182,15 @@ int optopt = '?';
 
    The special argument `--' forces an end of option-scanning regardless
    of the value of `ordering'.  In the case of RETURN_IN_ORDER, only
-   `--' can cause `getopt' to return EOF with `optind' != ARGC.  */
+   `--' can cause `getopt' to return -1 with `optind' != ARGC.  */
 
 static enum
 {
   REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER
 } ordering;
+
+/* Value of POSIXLY_CORRECT environment variable.  */
+static char *posixly_correct;
 
 #ifdef	__GNU_LIBRARY__
 /* We want to avoid inclusion of string.h with non-GNU libraries
@@ -202,7 +225,7 @@ my_index (str, chr)
 #ifdef __GNUC__
 /* Note that Motorola Delta 68k R3V7 comes with GCC but not stddef.h.
    That was relevant to code that was here before.  */
-#ifndef __STDC__
+#if !defined (__STDC__) || !__STDC__
 /* gcc with -traditional declares the built-in strlen to return int,
    and has done so at least since version 2.4.5. -- rms.  */
 extern int strlen (const char *);
@@ -220,6 +243,46 @@ extern int strlen (const char *);
 static int first_nonopt;
 static int last_nonopt;
 
+#ifdef _LIBC
+/* Bash 2.0 gives us an environment variable containing flags
+   indicating ARGV elements that should not be considered arguments.  */
+
+/* Defined in getopt_init.c  */
+extern char *__getopt_nonoption_flags;
+
+static int nonoption_flags_max_len;
+static int nonoption_flags_len;
+
+static int original_argc;
+static char *const *original_argv;
+
+/* Make sure the environment variable bash 2.0 puts in the environment
+   is valid for the getopt call we must make sure that the ARGV passed
+   to getopt is that one passed to the process.  */
+static void
+__attribute__ ((unused))
+store_args_and_env (int argc, char *const *argv)
+{
+  /* XXX This is no good solution.  We should rather copy the args so
+     that we can compare them later.  But we must not use malloc(3).  */
+  original_argc = argc;
+  original_argv = argv;
+}
+# ifdef text_set_element
+text_set_element (__libc_subinit, store_args_and_env);
+# endif /* text_set_element */
+
+# define SWAP_FLAGS(ch1, ch2) \
+  if (nonoption_flags_len > 0)						      \
+    {									      \
+      char __tmp = __getopt_nonoption_flags[ch1];			      \
+      __getopt_nonoption_flags[ch1] = __getopt_nonoption_flags[ch2];	      \
+      __getopt_nonoption_flags[ch2] = __tmp;				      \
+    }
+#else	/* !_LIBC */
+# define SWAP_FLAGS(ch1, ch2)
+#endif	/* _LIBC */
+
 /* Exchange two adjacent subsequences of ARGV.
    One subsequence is elements [first_nonopt,last_nonopt)
    which contains all the non-options that have been skipped so far.
@@ -228,6 +291,10 @@ static int last_nonopt;
 
    `first_nonopt' and `last_nonopt' are relocated so that they describe
    the new indices of the non-options in ARGV after they are moved.  */
+
+#if defined (__STDC__) && __STDC__
+static void exchange (char **);
+#endif
 
 static void
 exchange (argv)
@@ -243,6 +310,28 @@ exchange (argv)
      It leaves the longer segment in the right place overall,
      but it consists of two parts that need to be swapped next.  */
 
+#ifdef _LIBC
+  /* First make sure the handling of the `__getopt_nonoption_flags'
+     string can work normally.  Our top argument must be in the range
+     of the string.  */
+  if (nonoption_flags_len > 0 && top >= nonoption_flags_max_len)
+    {
+      /* We must extend the array.  The user plays games with us and
+	 presents new arguments.  */
+      char *new_str = malloc (top + 1);
+      if (new_str == NULL)
+	nonoption_flags_len = nonoption_flags_max_len = 0;
+      else
+	{
+	  memset (__mempcpy (new_str, __getopt_nonoption_flags,
+			     nonoption_flags_max_len),
+		  '\0', top + 1 - nonoption_flags_max_len);
+	  nonoption_flags_max_len = top + 1;
+	  __getopt_nonoption_flags = new_str;
+	}
+    }
+#endif
+
   while (top > middle && middle > bottom)
     {
       if (top - middle > middle - bottom)
@@ -257,6 +346,7 @@ exchange (argv)
 	      tem = argv[bottom + i];
 	      argv[bottom + i] = argv[top - (middle - bottom) + i];
 	      argv[top - (middle - bottom) + i] = tem;
+	      SWAP_FLAGS (bottom + i, top - (middle - bottom) + i);
 	    }
 	  /* Exclude the moved bottom segment from further swapping.  */
 	  top -= len;
@@ -273,6 +363,7 @@ exchange (argv)
 	      tem = argv[bottom + i];
 	      argv[bottom + i] = argv[middle + i];
 	      argv[middle + i] = tem;
+	      SWAP_FLAGS (bottom + i, middle + i);
 	    }
 	  /* Exclude the moved top segment from further swapping.  */
 	  bottom += len;
@@ -287,17 +378,24 @@ exchange (argv)
 
 /* Initialize the internal data when the first call is made.  */
 
+#if defined (__STDC__) && __STDC__
+static const char *_getopt_initialize (int, char *const *, const char *);
+#endif
 static const char *
-_getopt_initialize (optstring)
+_getopt_initialize (argc, argv, optstring)
+     int argc;
+     char *const *argv;
      const char *optstring;
 {
   /* Start processing options with ARGV-element 1 (since ARGV-element 0
      is the program name); the sequence of previously skipped
      non-option ARGV-elements is empty.  */
 
-  first_nonopt = last_nonopt = optind = 1;
+  first_nonopt = last_nonopt = optind;
 
   nextchar = NULL;
+
+  posixly_correct = getenv ("POSIXLY_CORRECT");
 
   /* Determine how to handle the ordering of options and nonoptions.  */
 
@@ -311,10 +409,40 @@ _getopt_initialize (optstring)
       ordering = REQUIRE_ORDER;
       ++optstring;
     }
-  else if (getenv ("POSIXLY_CORRECT") != NULL)
+  else if (posixly_correct != NULL)
     ordering = REQUIRE_ORDER;
   else
     ordering = PERMUTE;
+
+#ifdef _LIBC
+  if (posixly_correct == NULL
+      && argc == original_argc && argv == original_argv)
+    {
+      if (nonoption_flags_max_len == 0)
+	{
+	  if (__getopt_nonoption_flags == NULL
+	      || __getopt_nonoption_flags[0] == '\0')
+	    nonoption_flags_max_len = -1;
+	  else
+	    {
+	      const char *orig_str = __getopt_nonoption_flags;
+	      int len = nonoption_flags_max_len = strlen (orig_str);
+	      if (nonoption_flags_max_len < argc)
+		nonoption_flags_max_len = argc;
+	      __getopt_nonoption_flags =
+		(char *) malloc (nonoption_flags_max_len);
+	      if (__getopt_nonoption_flags == NULL)
+		nonoption_flags_max_len = -1;
+	      else
+		memset (__mempcpy (__getopt_nonoption_flags, orig_str, len),
+			'\0', nonoption_flags_max_len - len);
+	    }
+	}
+      nonoption_flags_len = nonoption_flags_max_len;
+    }
+  else
+    nonoption_flags_len = 0;
+#endif
 
   return optstring;
 }
@@ -332,7 +460,7 @@ _getopt_initialize (optstring)
    updating `optind' and `nextchar' so that the next call to `getopt' can
    resume the scan with the following option character or ARGV-element.
 
-   If there are no more option characters, `getopt' returns `EOF'.
+   If there are no more option characters, `getopt' returns -1.
    Then `optind' is the index in ARGV of the first ARGV-element
    that is not an option.  (The ARGV-elements have been permuted
    so that those that are not options now come last.)
@@ -386,15 +514,36 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 {
   optarg = NULL;
 
-  if (optind == 0)
-    optstring = _getopt_initialize (optstring);
+  if (optind == 0 || !__getopt_initialized)
+    {
+      if (optind == 0)
+	optind = 1;	/* Don't scan ARGV[0], the program name.  */
+      optstring = _getopt_initialize (argc, argv, optstring);
+      __getopt_initialized = 1;
+    }
 
-  if (argc == 0)
-    return EOF;
+  /* Test whether ARGV[optind] points to a non-option argument.
+     Either it does not have option syntax, or there is an environment flag
+     from the shell indicating it is not an option.  The later information
+     is only used when the used in the GNU libc.  */
+#ifdef _LIBC
+#define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0'	      \
+		     || (optind < nonoption_flags_len			      \
+			 && __getopt_nonoption_flags[optind] == '1'))
+#else
+#define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0')
+#endif
 
   if (nextchar == NULL || *nextchar == '\0')
     {
       /* Advance to the next ARGV-element.  */
+
+      /* Give FIRST_NONOPT & LAST_NONOPT rational values if OPTIND has been
+	 moved back by the user (who may also have changed the arguments).  */
+      if (last_nonopt > optind)
+	last_nonopt = optind;
+      if (first_nonopt > optind)
+	first_nonopt = optind;
 
       if (ordering == PERMUTE)
 	{
@@ -409,8 +558,7 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 	  /* Skip any additional non-options
 	     and extend the range of non-options previously skipped.  */
 
-	  while (optind < argc
-		 && (argv[optind][0] != '-' || argv[optind][1] == '\0'))
+	  while (optind < argc && NONOPTION_P)
 	    optind++;
 	  last_nonopt = optind;
 	}
@@ -442,16 +590,16 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 	     that we previously skipped, so the caller will digest them.  */
 	  if (first_nonopt != last_nonopt)
 	    optind = first_nonopt;
-	  return EOF;
+	  return -1;
 	}
 
       /* If we have come to a non-option and did not permute it,
 	 either stop the scan or describe it to the caller and pass it by.  */
 
-      if ((argv[optind][0] != '-' || argv[optind][1] == '\0'))
+      if (NONOPTION_P)
 	{
 	  if (ordering == REQUIRE_ORDER)
-	    return EOF;
+	    return -1;
 	  optarg = argv[optind++];
 	  return 1;
 	}
@@ -487,7 +635,7 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
       const struct option *pfound = NULL;
       int exact = 0;
       int ambig = 0;
-      int indfound;
+      int indfound = -1;
       int option_index;
 
       for (nameend = nextchar; *nameend && *nameend != '='; nameend++)
@@ -498,7 +646,8 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
       for (p = longopts, option_index = 0; p->name; p++, option_index++)
 	if (!strncmp (p->name, nextchar, nameend - nextchar))
 	  {
-	    if (nameend - nextchar == strlen (p->name))
+	    if ((unsigned int) (nameend - nextchar)
+		== (unsigned int) strlen (p->name))
 	      {
 		/* Exact match found.  */
 		pfound = p;
@@ -520,10 +669,11 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
       if (ambig && !exact)
 	{
 	  if (opterr)
-	    fprintf (stderr, "%s: option `%s' is ambiguous\n",
+	    fprintf (stderr, _("%s: option `%s' is ambiguous\n"),
 		     argv[0], argv[optind]);
 	  nextchar += strlen (nextchar);
 	  optind++;
+	  optopt = 0;
 	  return '?';
 	}
 
@@ -540,19 +690,20 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 	      else
 		{
 		  if (opterr)
-		    {
-		      if (argv[optind - 1][1] == '-')
-			/* --option */
-			fprintf (stderr,
-				 "%s: option `--%s' doesn't allow an argument\n",
-				 argv[0], pfound->name);
-		      else
-			/* +option or -option */
-			fprintf (stderr,
-			     "%s: option `%c%s' doesn't allow an argument\n",
-			     argv[0], argv[optind - 1][0], pfound->name);
-		    }
+		   if (argv[optind - 1][1] == '-')
+		    /* --option */
+		    fprintf (stderr,
+		     _("%s: option `--%s' doesn't allow an argument\n"),
+		     argv[0], pfound->name);
+		   else
+		    /* +option or -option */
+		    fprintf (stderr,
+		     _("%s: option `%c%s' doesn't allow an argument\n"),
+		     argv[0], argv[optind - 1][0], pfound->name);
+
 		  nextchar += strlen (nextchar);
+
+		  optopt = pfound->val;
 		  return '?';
 		}
 	    }
@@ -563,9 +714,11 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 	      else
 		{
 		  if (opterr)
-		    fprintf (stderr, "%s: option `%s' requires an argument\n",
-			     argv[0], argv[optind - 1]);
+		    fprintf (stderr,
+			   _("%s: option `%s' requires an argument\n"),
+			   argv[0], argv[optind - 1]);
 		  nextchar += strlen (nextchar);
+		  optopt = pfound->val;
 		  return optstring[0] == ':' ? ':' : '?';
 		}
 	    }
@@ -591,15 +744,16 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 	    {
 	      if (argv[optind][1] == '-')
 		/* --option */
-		fprintf (stderr, "%s: unrecognized option `--%s'\n",
+		fprintf (stderr, _("%s: unrecognized option `--%s'\n"),
 			 argv[0], nextchar);
 	      else
 		/* +option or -option */
-		fprintf (stderr, "%s: unrecognized option `%c%s'\n",
+		fprintf (stderr, _("%s: unrecognized option `%c%s'\n"),
 			 argv[0], argv[optind][0], nextchar);
 	    }
 	  nextchar = (char *) "";
 	  optind++;
+	  optopt = 0;
 	  return '?';
 	}
     }
@@ -618,11 +772,140 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
       {
 	if (opterr)
 	  {
-	    /* 1003.2 specifies the format of this message.  */
-	    fprintf (stderr, "%s: illegal option -- %c\n", argv[0], c);
+	    if (posixly_correct)
+	      /* 1003.2 specifies the format of this message.  */
+	      fprintf (stderr, _("%s: illegal option -- %c\n"),
+		       argv[0], c);
+	    else
+	      fprintf (stderr, _("%s: invalid option -- %c\n"),
+		       argv[0], c);
 	  }
 	optopt = c;
 	return '?';
+      }
+    /* Convenience. Treat POSIX -W foo same as long option --foo */
+    if (temp[0] == 'W' && temp[1] == ';')
+      {
+	char *nameend;
+	const struct option *p;
+	const struct option *pfound = NULL;
+	int exact = 0;
+	int ambig = 0;
+	int indfound = 0;
+	int option_index;
+
+	/* This is an option that requires an argument.  */
+	if (*nextchar != '\0')
+	  {
+	    optarg = nextchar;
+	    /* If we end this ARGV-element by taking the rest as an arg,
+	       we must advance to the next element now.  */
+	    optind++;
+	  }
+	else if (optind == argc)
+	  {
+	    if (opterr)
+	      {
+		/* 1003.2 specifies the format of this message.  */
+		fprintf (stderr, _("%s: option requires an argument -- %c\n"),
+			 argv[0], c);
+	      }
+	    optopt = c;
+	    if (optstring[0] == ':')
+	      c = ':';
+	    else
+	      c = '?';
+	    return c;
+	  }
+	else
+	  /* We already incremented `optind' once;
+	     increment it again when taking next ARGV-elt as argument.  */
+	  optarg = argv[optind++];
+
+	/* optarg is now the argument, see if it's in the
+	   table of longopts.  */
+
+	for (nextchar = nameend = optarg; *nameend && *nameend != '='; nameend++)
+	  /* Do nothing.  */ ;
+
+	/* Test all long options for either exact match
+	   or abbreviated matches.  */
+	for (p = longopts, option_index = 0; p->name; p++, option_index++)
+	  if (!strncmp (p->name, nextchar, nameend - nextchar))
+	    {
+	      if ((unsigned int) (nameend - nextchar) == strlen (p->name))
+		{
+		  /* Exact match found.  */
+		  pfound = p;
+		  indfound = option_index;
+		  exact = 1;
+		  break;
+		}
+	      else if (pfound == NULL)
+		{
+		  /* First nonexact match found.  */
+		  pfound = p;
+		  indfound = option_index;
+		}
+	      else
+		/* Second or later nonexact match found.  */
+		ambig = 1;
+	    }
+	if (ambig && !exact)
+	  {
+	    if (opterr)
+	      fprintf (stderr, _("%s: option `-W %s' is ambiguous\n"),
+		       argv[0], argv[optind]);
+	    nextchar += strlen (nextchar);
+	    optind++;
+	    return '?';
+	  }
+	if (pfound != NULL)
+	  {
+	    option_index = indfound;
+	    if (*nameend)
+	      {
+		/* Don't test has_arg with >, because some C compilers don't
+		   allow it to be used on enums.  */
+		if (pfound->has_arg)
+		  optarg = nameend + 1;
+		else
+		  {
+		    if (opterr)
+		      fprintf (stderr, _("\
+%s: option `-W %s' doesn't allow an argument\n"),
+			       argv[0], pfound->name);
+
+		    nextchar += strlen (nextchar);
+		    return '?';
+		  }
+	      }
+	    else if (pfound->has_arg == 1)
+	      {
+		if (optind < argc)
+		  optarg = argv[optind++];
+		else
+		  {
+		    if (opterr)
+		      fprintf (stderr,
+			       _("%s: option `%s' requires an argument\n"),
+			       argv[0], argv[optind - 1]);
+		    nextchar += strlen (nextchar);
+		    return optstring[0] == ':' ? ':' : '?';
+		  }
+	      }
+	    nextchar += strlen (nextchar);
+	    if (longind != NULL)
+	      *longind = option_index;
+	    if (pfound->flag)
+	      {
+		*(pfound->flag) = pfound->val;
+		return 0;
+	      }
+	    return pfound->val;
+	  }
+	  nextchar = NULL;
+	  return 'W';	/* Let the application handle it.   */
       }
     if (temp[1] == ':')
       {
@@ -653,8 +936,9 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 		if (opterr)
 		  {
 		    /* 1003.2 specifies the format of this message.  */
-		    fprintf (stderr, "%s: option requires an argument -- %c\n",
-			     argv[0], c);
+		    fprintf (stderr,
+			   _("%s: option requires an argument -- %c\n"),
+			   argv[0], c);
 		  }
 		optopt = c;
 		if (optstring[0] == ':')
@@ -685,7 +969,7 @@ getopt (argc, argv, optstring)
 			   0);
 }
 
-#endif	/* _LIBC or not __GNU_LIBRARY__.  */
+#endif	/* Not ELIDE_CODE.  */
 
 #ifdef TEST
 
@@ -705,7 +989,7 @@ main (argc, argv)
       int this_option_optind = optind ? optind : 1;
 
       c = getopt (argc, argv, "abc:d:0123456789");
-      if (c == EOF)
+      if (c == -1)
 	break;
 
       switch (c)
