@@ -1,3 +1,8 @@
+Tue Jan 26 13:31:38 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* function.c (expand_function_end): Pass arg_pointer_save_area to
+	validize_mem before using it.  Emit code into a sequence.
+
 Tue Jan 26 13:41:38 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (doz + set cr and or + set cr patterns): Add missing
