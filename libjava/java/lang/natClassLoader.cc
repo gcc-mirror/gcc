@@ -262,6 +262,7 @@ _Jv_PrepareCompiledClass (jclass klass)
 	  int mod = f->getModifiers ();
 	  // If we have a static String field with a non-null initial
 	  // value, we know it points to a Utf8Const.
+	  _Jv_ResolveField(f, klass->loader);
 	  if (f->getClass () == &java::lang::String::class$
 	      && java::lang::reflect::Modifier::isStatic (mod))
 	    {
