@@ -1,6 +1,5 @@
 /* Configuration for an OpenBSD i386 target.
-   
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -135,3 +134,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Note that we pick up ASM_OUTPUT_MI_THUNK from unix.h.  */
 
+/* This is the pseudo-op used to generate a 32-bit word of data with a
+   specific value in some section.  */
+
+#define INT_ASM_OP ".long"

@@ -1,3 +1,7 @@
+2000-02-04  Richard Henderson  <rth@cygnus.com>
+
+	* i386/openbsd.h (INT_ASM_OP): Define.
+
 Fri Feb  4 10:51:30 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* tm.texi: Fix various typos.
