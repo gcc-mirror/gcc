@@ -1,5 +1,11 @@
 2003-03-15  Richard Henderson  <rth@redhat.com>
 
+	2003-01-14  Richard Henderson  <rth@redhat.com>
+        * config/alpha/alpha.c (alpha_expand_mov): Use correct mode
+        for force_const_mem.
+
+2003-03-15  Richard Henderson  <rth@redhat.com>
+
 	PR target/9700
 	* config/alpha/alpha.c (alpha_va_start): Account for 
 	current_function_pretend_args_size in the AP offset.
