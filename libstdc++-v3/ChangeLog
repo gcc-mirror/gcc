@@ -1,3 +1,12 @@
+2004-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1/array: Don't use layout_type.
+
+2004-10-16  Sashan Govender  <sashang@gmail.com>
+
+	* include/tr1/array (array::end const): Fix casting from iterator
+	to const_iterator.
+	
 2004-10-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/bitmap_allocator.h: Qualify ::operator delete.
