@@ -280,7 +280,7 @@ namespace std
 	  _M_rep()->_M_dispose(__a);
 	  _M_data(__r->_M_refdata());
       }
-      else if (__how_much)
+      else if (__how_much && __len1 != __len2)
 	{
 	  // Work in-place
 	  traits_type::move(_M_data() + __pos + __len2, __src, __how_much);
@@ -851,7 +851,3 @@ namespace std
 } // std::
 
 #endif /* _CPP_BITS_STRING_TCC */
-
-// Local Variables:
-// mode:c++
-// End:
