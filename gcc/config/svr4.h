@@ -39,6 +39,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    appropriate define for the type of hardware that you are targeting.
 */
 
+/* Define a symbol indicating that we are using svr4.h.  */
+#define USING_SVR4_H
+
 /* For the sake of libgcc2.c, indicate target supports atexit.  */
 #define HAVE_ATEXIT
 
