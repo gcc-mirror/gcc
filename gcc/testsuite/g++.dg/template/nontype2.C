@@ -1,9 +1,11 @@
-template <class T>
-class X
+template <bool> struct A {};
+ 
+template <bool> struct B
 {
-  static const int a = 5;
-
-  static T b[a];
+  void foo()
+  {
+    const int i=0;
+    typedef A< i<=1 > C; // { dg-error "" } 
+    typedef A< i<=2 > C; // { dg-error "" } 
+  }
 };
-
-template <class T> T X<T>::b[X::a];
