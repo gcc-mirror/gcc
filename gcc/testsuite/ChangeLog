@@ -1,5 +1,8 @@
 2004-10-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15876
+	* g++.dg/parse/error22.C: New test.
+
 	PR c++/17936
 	* g++.dg/template/spec18.C: New test.
 
