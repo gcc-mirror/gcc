@@ -1,3 +1,7 @@
+Mon Nov  8 09:23:41 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* hashtab.c (traverse_hash_table): Protect prototype with PARAMS.
+
 Tue Nov  2 03:23:13 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* xstrdup (sys/types.h): Include this file.
