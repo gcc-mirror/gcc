@@ -355,6 +355,7 @@ while (0)
 %{Qy:} %{!Qn:-Qy} \
 %{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
 %{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc }"
+#else
 
 #define LINK_SPEC "\
 %{h*} %{V} %{v:%{!V:-V}} \
