@@ -1,5 +1,13 @@
 Mon Jun 21 05:33:15 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* i386/winnt.c (exports_head): New static variable.
+	(i386_pe_record_exported_symbol): New function.
+	(i386_pe_asm_file_end): Use.
+	* i386/cygwin.h (ASM_OUTPUT_COMMON): Record the exported
+	symbols to be emitted at end of assembly.
+	(ASM_DECLARE_OBJECT_NAME): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+
 	* i386/uwin.h (CPP_SPEC): Use -idirafter instead -iprefix and
 	-iwithprefix.
 
