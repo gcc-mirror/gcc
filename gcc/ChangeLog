@@ -1,3 +1,8 @@
+Mon Jul 26 11:58:46 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c: Replace %R%s in asm_fprintf strings with %r.
+	* config/arm/arm.h: Replace %R%s in asm_fprintf strings with %r.
+
 Mon Jul 26 10:23:36 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* final.c (asm_fprintf): Accept ASM_FPRINTF_EXTENSIONS, if

@@ -22,15 +22,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Configuration triples for ARM ports work as follows:
-   (This is a bit of a mess and needs some thought)
-   arm-*-*: little endian
-   armel-*-*: little endian
-   armeb-*-*: big endian
-   If a non-embedded environment (ie: "real" OS) is specified, `arm'
-   should default to that used by the OS.
-*/
-
 #ifndef __ARM_H__
 #define __ARM_H__
 
@@ -316,11 +307,11 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define ARM_FLAG_NO_SCHED_PRO	(1 << 12)
 
 /* Nonzero if a call to abort should be generated if a noreturn 
-function tries to return. */
+   function tries to return.  */
 #define ARM_FLAG_ABORT_NORETURN	(1 << 13)
 
 /* Nonzero if function prologues should not load the PIC register. */
-#define ARM_FLAG_SINGLE_PIC_BASE	(1 << 14)
+#define ARM_FLAG_SINGLE_PIC_BASE (1 << 14)
 
 #define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
@@ -343,7 +334,7 @@ function tries to return. */
 #define TARGET_INTERWORK		(target_flags & ARM_FLAG_INTERWORK)
 #define TARGET_LITTLE_WORDS		(target_flags & ARM_FLAG_LITTLE_WORDS)
 #define TARGET_NO_SCHED_PRO		(target_flags & ARM_FLAG_NO_SCHED_PRO)
-#define TARGET_ABORT_NORETURN           (target_flags & ARM_FLAG_ABORT_NORETURN)
+#define TARGET_ABORT_NORETURN		(target_flags & ARM_FLAG_ABORT_NORETURN)
 #define TARGET_SINGLE_PIC_BASE		(target_flags & ARM_FLAG_SINGLE_PIC_BASE)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
@@ -378,7 +369,7 @@ function tries to return. */
      "Load shorts a byte at a time" },				\
   {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE, "" },	\
   {"short-load-words",	       -ARM_FLAG_SHORT_BYTE,		\
-     "Load shorts a word at a time" },				\
+     "Load words a byte at a time" },				\
   {"no-short-load-words",	ARM_FLAG_SHORT_BYTE, "" },	\
   {"soft-float",		ARM_FLAG_SOFT_FLOAT,		\
      "Use library calls to perform FP operations" },		\
@@ -395,13 +386,13 @@ function tries to return. */
   {"no-thumb-interwork",       -ARM_FLAG_INTERWORK, "" },	\
   {"abort-on-noreturn",         ARM_FLAG_ABORT_NORETURN,	\
    "Generate a call to abort if a noreturn function returns"},	\
-  {"no-abort-on-noreturn",      -ARM_FLAG_ABORT_NORETURN, ""},	\
+  {"no-abort-on-noreturn",     -ARM_FLAG_ABORT_NORETURN, ""},	\
   {"sched-prolog",             -ARM_FLAG_NO_SCHED_PRO,		\
      "Do not move instructions into a function's prologue" },	\
   {"no-sched-prolog",           ARM_FLAG_NO_SCHED_PRO, "" },	\
   {"single-pic-base",		ARM_FLAG_SINGLE_PIC_BASE,	\
      "Do not load the PIC register in function prologues" },	\
-  {"no-single-pic-base",	-ARM_FLAG_SINGLE_PIC_BASE, "" },\
+  {"no-single-pic-base",       -ARM_FLAG_SINGLE_PIC_BASE, "" },	\
   SUBTARGET_SWITCHES						\
   {"",				TARGET_DEFAULT }		\
 }
@@ -759,6 +750,20 @@ extern const char * structure_size_string;
     }							\
   SUBTARGET_CONDITIONAL_REGISTER_USAGE 		        \
 }
+
+/* These are a couple of extensions to the formats accecpted
+   by asm_fprintf:
+     %@ prints out ASM_COMMENT_START
+     %r prints out REGISTER_PREFIX reg_names[arg]  */
+#define ASM_FPRINTF_EXTENSIONS(FILE, ARGS, P)		\
+  case '@':						\
+    fputs (ASM_COMMENT_START, FILE);			\
+    break;						\
+							\
+  case 'r':						\
+    fputs (REGISTER_PREFIX, FILE);			\
+    fputs (reg_names [va_arg (ARGS, int)], FILE);	\
+    break;
 
 /* Convert fron bytes to ints.  */
 #define NUM_INTS(X) (((X) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -1234,9 +1239,8 @@ enum reg_class
   char temp[20];					\
   rtx sym;						\
 							\
-  asm_fprintf (STREAM, "\tmov\t%R%s, %R%s\n\tbl\t",	\
-	       reg_names[IP_REGNUM] /* ip */,		\
-	       reg_names[LR_REGNUM] /* lr */);		\
+  asm_fprintf (STREAM, "\tmov\t%r, %r\n\tbl\t",		\
+	       IP_REGNUM, LR_REGNUM);			\
   assemble_name (STREAM, ARM_MCOUNT_NAME);		\
   fputc ('\n', STREAM);					\
   ASM_GENERATE_INTERNAL_LABEL (temp, "LP", LABELNO);	\
@@ -1982,12 +1986,10 @@ extern struct rtx_def * arm_compare_op1;
 
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO) \
-  asm_fprintf (STREAM,"\tstmfd\t%Rsp!,{%R%s}\n", \
-	       reg_names [REGNO])
+  asm_fprintf (STREAM,"\tstmfd\t%r!,{%r}\n", SP_REGNUM, REGNO)
 
 #define ASM_OUTPUT_REG_POP(STREAM, REGNO) \
-  asm_fprintf (STREAM,"\tldmfd\t%Rsp!,{%R%s}\n", \
-	       reg_names [REGNO])
+  asm_fprintf (STREAM,"\tldmfd\t%r!,{%r}\n", SP_REGNUM, REGNO)
 
 #define ARM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL) 	\
   do							\
@@ -2033,12 +2035,12 @@ extern struct rtx_def * arm_compare_op1;
     int is_minus = GET_CODE (X) == MINUS;				\
 									\
     if (GET_CODE (X) == REG)						\
-      asm_fprintf (STREAM, "[%R%s, #0]", reg_names[REGNO (X)]);		\
+      asm_fprintf (STREAM, "[%r, #0]", REGNO (X));			\
     else if (GET_CODE (X) == PLUS || is_minus)				\
       {									\
 	rtx base = XEXP (X, 0);						\
 	rtx index = XEXP (X, 1);					\
-	char * base_reg_name;						\
+	int base_reg;							\
 	HOST_WIDE_INT offset = 0;					\
 	if (GET_CODE (base) != REG)					\
 	  {								\
@@ -2047,20 +2049,19 @@ extern struct rtx_def * arm_compare_op1;
 	    base = index;						\
 	    index = temp;						\
 	  }								\
-	base_reg_name = reg_names[REGNO (base)];			\
+	base_reg = REGNO (base);					\
 	switch (GET_CODE (index))					\
 	  {								\
 	  case CONST_INT:						\
 	    offset = INTVAL (index);					\
 	    if (is_minus)						\
 	      offset = -offset;						\
-	    asm_fprintf (STREAM, "[%R%s, #%d]", base_reg_name, offset);	\
+	    asm_fprintf (STREAM, "[%r, #%d]", base_reg, offset);	\
 	    break;							\
 									\
 	  case REG:							\
-	    asm_fprintf (STREAM, "[%R%s, %s%R%s]", 			\
-		         base_reg_name, is_minus ? "-" : "",		\
-		         reg_names[REGNO (index)] );			\
+	    asm_fprintf (STREAM, "[%r, %s%r]", base_reg,		\
+		         is_minus ? "-" : "", REGNO (index));		\
 	    break;							\
 									\
 	  case MULT:							\
@@ -2069,9 +2070,8 @@ extern struct rtx_def * arm_compare_op1;
 	  case ASHIFT:							\
 	  case ROTATERT:						\
 	  {								\
-	    asm_fprintf (STREAM, "[%R%s, %s%R%s", 			\
-		         base_reg_name, is_minus ? "-" : "", 		\
-		         reg_names[REGNO (XEXP (index, 0))]);		\
+	    asm_fprintf (STREAM, "[%r, %s%r", base_reg,			\
+		         is_minus ? "-" : "", REGNO (XEXP (index, 0)));	\
 	    arm_print_operand (STREAM, index, 'S');			\
 	    fputs ("]", STREAM);					\
 	    break;							\
@@ -2090,13 +2090,13 @@ extern struct rtx_def * arm_compare_op1;
 	abort ();							\
 									\
       if (GET_CODE (X) == PRE_DEC || GET_CODE (X) == PRE_INC)		\
-	asm_fprintf (STREAM, "[%R%s, #%s%d]!", 				\
-		     reg_names[REGNO (XEXP (X, 0))],			\
+	asm_fprintf (STREAM, "[%r, #%s%d]!", 				\
+		     REGNO (XEXP (X, 0)),				\
 		     GET_CODE (X) == PRE_DEC ? "-" : "",		\
 		     GET_MODE_SIZE (output_memory_reference_mode));	\
       else								\
-	asm_fprintf (STREAM, "[%R%s], #%s%d", 				\
-		     reg_names[REGNO (XEXP (X, 0))],			\
+	asm_fprintf (STREAM, "[%r], #%s%d", 				\
+		     REGNO (XEXP (X, 0)),				\
 		     GET_CODE (X) == POST_DEC ? "-" : "",		\
 		     GET_MODE_SIZE (output_memory_reference_mode));	\
     }									\
@@ -2146,9 +2146,8 @@ extern struct rtx_def * arm_compare_op1;
 	    shift += 2;								\
           else									\
 	    {									\
-	      asm_fprintf (FILE, "\t%s\t%R%s, %R%s, #%d\n",			\
-		           mi_op, reg_names[this_regno],			\
-		           reg_names[this_regno],				\
+	      asm_fprintf (FILE, "\t%s\t%r, %r, #%d\n",				\
+		           mi_op, this_regno, this_regno,			\
 		           mi_delta & (0xff << shift));				\
 	      mi_delta &= ~(0xff << shift);					\
 	      shift += 8;							\
@@ -2156,7 +2155,7 @@ extern struct rtx_def * arm_compare_op1;
         }									\
       fputs ("\tb\t", FILE);							\
       assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));		\
-      if (NEED_PLT_RELOC)								\
+      if (NEED_PLT_RELOC)							\
         fputs ("(PLT)", FILE);							\
       fputc ('\n', FILE);							\
     }										\

@@ -4409,16 +4409,18 @@ fp_const_from_val (r)
    must follow the register list.  */
 
 void
-print_multi_reg (stream, instr, mask, hat)
+print_multi_reg (stream, instr, reg, mask, hat)
      FILE * stream;
      char * instr;
-     int mask, hat;
+     int reg;
+     int mask;
+     int hat;
 {
   int i;
   int not_first = FALSE;
 
   fputc ('\t', stream);
-  fprintf (stream, instr, REGISTER_PREFIX);
+  asm_fprintf (stream, instr, reg);
   fputs (", {", stream);
   
   for (i = 0; i < 16; i++)
@@ -4427,7 +4429,7 @@ print_multi_reg (stream, instr, mask, hat)
 	if (not_first)
 	  fprintf (stream, ", ");
 	
-	asm_fprintf (stream, "%R%s", reg_names[i]);
+	asm_fprintf (stream, "%r", i);
 	not_first = TRUE;
       }
 
@@ -5557,15 +5559,15 @@ output_func_prologue (f, frame_size)
   return_used_this_function = 0;
   lr_save_eliminated = 0;
   
-  fprintf (f, "\t%s args = %d, pretend = %d, frame = %d\n",
-	   ASM_COMMENT_START, current_function_args_size,
-	   current_function_pretend_args_size, frame_size);
-  fprintf (f, "\t%s frame_needed = %d, current_function_anonymous_args = %d\n",
-	   ASM_COMMENT_START, frame_pointer_needed,
-	   current_function_anonymous_args);
+  asm_fprintf (f, "\t%@ args = %d, pretend = %d, frame = %d\n",
+	       current_function_args_size,
+	       current_function_pretend_args_size, frame_size);
+  asm_fprintf (f, "\t%@ frame_needed = %d, current_function_anonymous_args = %d\n",
+	       frame_pointer_needed,
+	       current_function_anonymous_args);
 
   if (volatile_func)
-    fprintf (f, "\t%s Volatile function.\n", ASM_COMMENT_START);
+    asm_fprintf (f, "\t%@ Volatile function.\n");
 
   if (current_function_anonymous_args && current_function_pretend_args_size)
     store_arg_regs = 1;
@@ -5574,7 +5576,7 @@ output_func_prologue (f, frame_size)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
       live_regs_mask |= (1 << reg);
 
-  if (flag_pic && ! TARGET_SINGLE_PIC_BASE 
+  if (flag_pic && ! TARGET_SINGLE_PIC_BASE
       && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
 
@@ -5602,13 +5604,11 @@ output_func_prologue (f, frame_size)
     }
 
   if (lr_save_eliminated)
-    fprintf (f,"\t%s I don't think this function clobbers lr\n",
-	     ASM_COMMENT_START);
+    asm_fprintf (f,"\t%@ I don't think this function clobbers lr\n");
 
 #ifdef AOF_ASSEMBLER
   if (flag_pic)
-    asm_fprintf (f, "\tmov\t%R%s, %R%s\n", reg_names [IP_REGNUM],
-		 reg_names[PIC_OFFSET_TABLE_REGNUM]);
+    asm_fprintf (f, "\tmov\t%r, %r\n", IP_REGNUM, PIC_OFFSET_TABLE_REGNUM);
 #endif
 }
 
@@ -5671,8 +5671,8 @@ output_func_epilogue (f, frame_size)
 	    if (regs_ever_live[reg] && ! call_used_regs[reg])
 	      {
 		floats_offset += 12;
-		asm_fprintf (f, "\tldfe\t%R%s, [%R%s, #-%d]\n", 
-			 reg_names[reg], reg_names [FP_REGNUM], floats_offset);
+		asm_fprintf (f, "\tldfe\t%r, [%r, #-%d]\n", 
+			     reg, FP_REGNUM, floats_offset);
 	      }
 	}
       else
@@ -5688,39 +5688,38 @@ output_func_epilogue (f, frame_size)
 		  /* We can't unstack more than four registers at once */
 		  if (start_reg - reg == 3)
 		    {
-		      asm_fprintf (f, "\tlfm\t%R%s, 4, [%R%s, #-%d]\n",
-			           reg_names[reg], reg_names [FP_REGNUM],
-				   floats_offset);
+		      asm_fprintf (f, "\tlfm\t%r, 4, [%r, #-%d]\n",
+			           reg, FP_REGNUM, floats_offset);
 		      start_reg = reg - 1;
 		    }
 		}
 	      else
 		{
 		  if (reg != start_reg)
-		    asm_fprintf (f, "\tlfm\t%R%s, %d, [%R%s, #-%d]\n",
-				 reg_names [reg + 1], start_reg - reg,
-				 reg_names [FP_REGNUM], floats_offset);
+		    asm_fprintf (f, "\tlfm\t%r, %d, [%r, #-%d]\n",
+				 reg + 1, start_reg - reg,
+				 FP_REGNUM, floats_offset);
 		  start_reg = reg - 1;
 		}
 	    }
 
 	  /* Just in case the last register checked also needs unstacking.  */
 	  if (reg != start_reg)
-	    asm_fprintf (f, "\tlfm\t%R%s, %d, [%R%s, #-%d]\n",
-			 reg_names [reg + 1], start_reg - reg,
-			 reg_names [FP_REGNUM], floats_offset);
+	    asm_fprintf (f, "\tlfm\t%r, %d, [%r, #-%d]\n",
+			 reg + 1, start_reg - reg,
+			 FP_REGNUM, floats_offset);
 	}
       
       if (TARGET_INTERWORK)
 	{
 	  live_regs_mask |= 0x6800;
-	  print_multi_reg (f, "ldmea\t%sfp", live_regs_mask, FALSE);
-	  asm_fprintf (f, "\tbx\t%R%s\n", reg_names [LR_REGNUM]);
+	  print_multi_reg (f, "ldmea\t%r", FP_REGNUM, live_regs_mask, FALSE);
+	  asm_fprintf (f, "\tbx\t%r\n", LR_REGNUM);
 	}
       else
 	{
 	  live_regs_mask |= 0xA800;
-	  print_multi_reg (f, "ldmea\t%sfp", live_regs_mask,
+	  print_multi_reg (f, "ldmea\t%r", FP_REGNUM, live_regs_mask,
 			   TARGET_APCS_32 ? FALSE : TRUE);
 	}
     }
@@ -5739,8 +5738,8 @@ output_func_epilogue (f, frame_size)
 	{
 	  for (reg = 16; reg < 24; reg++)
 	    if (regs_ever_live[reg] && ! call_used_regs[reg])
-	      asm_fprintf (f, "\tldfe\t%R%s, [%R%s], #12\n",
-			   reg_names[reg], reg_names [SP_REGNUM]);
+	      asm_fprintf (f, "\tldfe\t%r, [%r], #12\n",
+			   reg, SP_REGNUM);
 	}
       else
 	{
@@ -5752,17 +5751,17 @@ output_func_epilogue (f, frame_size)
 		{
 		  if (reg - start_reg == 3)
 		    {
-		      asm_fprintf (f, "\tlfmfd\t%R%s, 4, [%R%s]!\n",
-				   reg_names[start_reg], reg_names [SP_REGNUM]);
+		      asm_fprintf (f, "\tlfmfd\t%r, 4, [%r]!\n",
+				   start_reg, SP_REGNUM);
 		      start_reg = reg + 1;
 		    }
 		}
 	      else
 		{
 		  if (reg != start_reg)
-		    asm_fprintf (f, "\tlfmfd\t%R%s, %d, [%R%s]!\n",
-				 reg_names [start_reg], reg - start_reg,
-				 reg_names [SP_REGNUM]);
+		    asm_fprintf (f, "\tlfmfd\t%r, %d, [%r]!\n",
+				 start_reg, reg - start_reg,
+				 SP_REGNUM);
 		  
 		  start_reg = reg + 1;
 		}
@@ -5770,9 +5769,8 @@ output_func_epilogue (f, frame_size)
 
 	  /* Just in case the last register checked also needs unstacking.  */
 	  if (reg != start_reg)
-	    asm_fprintf (f, "\tlfmfd\t%R%s, %d, [%R%s]!\n",
-			 reg_names [start_reg], reg - start_reg,
-			 reg_names [SP_REGNUM]);
+	    asm_fprintf (f, "\tlfmfd\t%r, %d, [%r]!\n",
+			 start_reg, reg - start_reg, SP_REGNUM);
 	}
 
       if (current_function_pretend_args_size == 0 && regs_ever_live[LR_REGNUM])
@@ -5783,16 +5781,16 @@ output_func_epilogue (f, frame_size)
 		live_regs_mask |= 1 << LR_REGNUM;
 
 	      if (live_regs_mask != 0)
-		print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
+		print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, live_regs_mask, FALSE);
 	      
-	      asm_fprintf (f, "\tbx\t%R%s\n", reg_names [LR_REGNUM]);
+	      asm_fprintf (f, "\tbx\t%r\n", LR_REGNUM);
 	    }
 	  else if (lr_save_eliminated)
 	    asm_fprintf (f, "\tmov%c\t%r, %r\n",
 			 TARGET_APCS_32 ? ' ' : 's',
-			 reg_names [PC_REGNUM], reg_names [LR_REGNUM]);
+			 PC_REGNUM, LR_REGNUM);
 	  else
-	    print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask | 0x8000,
+	    print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, live_regs_mask | 0x8000,
 			     TARGET_APCS_32 ? FALSE : TRUE);
 	}
       else
@@ -5804,7 +5802,7 @@ output_func_epilogue (f, frame_size)
 		live_regs_mask |= 1 << LR_REGNUM;
 
 	      if (live_regs_mask != 0)
-		print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
+		print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, live_regs_mask, FALSE);
 	    }
 
 	  if (current_function_pretend_args_size)
@@ -5816,11 +5814,11 @@ output_func_epilogue (f, frame_size)
 	    }
 	  /* And finally, go home */
 	  if (TARGET_INTERWORK)
-	    asm_fprintf (f, "\tbx\t%R%s\n", reg_names [LR_REGNUM]);
+	    asm_fprintf (f, "\tbx\t%r\n", LR_REGNUM);
 	  else if (TARGET_APCS_32)
-	    asm_fprintf (f, "\tmov\t%R%s, %R%s\n",  reg_names [PC_REGNUM], reg_names [LR_REGNUM]);
+	    asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, LR_REGNUM);
 	  else
-	    asm_fprintf (f, "\tmovs\t%R%s, %R%s\n", reg_names [PC_REGNUM], reg_names [LR_REGNUM]);
+	    asm_fprintf (f, "\tmovs\t%r, %r\n", PC_REGNUM, LR_REGNUM);
 	}
     }
 
@@ -6129,9 +6127,8 @@ arm_print_operand (stream, x, code)
       return;
 
     case 'M':
-      asm_fprintf (stream, "{%R%s-%R%s}",
-		   reg_names[REGNO (x)],
-		   reg_names[REGNO (x) + NUM_REGS (GET_MODE (x)) - 1]);
+      asm_fprintf (stream, "{%r-%r}",
+		   REGNO (x), REGNO (x) + NUM_REGS (GET_MODE (x)) - 1);
       return;
 
     case 'd':
@@ -6698,9 +6695,9 @@ aof_dump_pic_table (f)
   if (aof_pic_chain == NULL)
     return;
 
-  asm_fprintf (f, "\tAREA |%R%s$$adcons|, BASED %R%s\n",
-	       reg_names[PIC_OFFSET_TABLE_REGNUM],
-	       reg_names[PIC_OFFSET_TABLE_REGNUM]);
+  asm_fprintf (f, "\tAREA |%r$$adcons|, BASED %r\n",
+	       PIC_OFFSET_TABLE_REGNUM,
+	       PIC_OFFSET_TABLE_REGNUM);
   fputs ("|x$adcons|\n", f);
   
   for (chain = aof_pic_chain; chain; chain = chain->next)
