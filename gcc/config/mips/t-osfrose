@@ -1,5 +1,3 @@
-EXTRA_OBJS	= halfpic.o
-
 # We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
 # PREMADE_ATTRTAB = $(srcdir)/config/mips/mips-at.c
 # PREMADE_ATTRTAB_MD = $(srcdir)/config/mips/mips-at.md
@@ -8,5 +6,3 @@ EXTRA_OBJS	= halfpic.o
 # and does not need anything from libgcc1.a.
 LIBGCC1 = libgcc1.null
 CROSS_LIBGCC1 = libgcc1.null
-
-halfpic.o: halfpic.c $(CONFIG_H) $(CONFIG2_H) $(RTL_H) $(TREE_H)
