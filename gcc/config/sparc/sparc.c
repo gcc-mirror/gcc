@@ -624,15 +624,13 @@ reg_unused_after (reg, insn)
 /* Legitimize PIC addresses.  If the address is already position-independent,
    we return ORIG.  Newly generated position-independent addresses go into a
    reg.  This is REG if non zero, otherwise we allocate register(s) as
-   necessary.  If this is called during reload, and we need a second temp
-   register, then we use SCRATCH, which is provided via the
-   SECONDARY_INPUT_RELOAD_CLASS mechanism.  */
+   necessary.  */
 
 rtx
-legitimize_pic_address (orig, mode, reg, scratch)
+legitimize_pic_address (orig, mode, reg)
      rtx orig;
      enum machine_mode mode;
-     rtx reg, scratch;
+     rtx reg;
 {
   if (GET_CODE (orig) == SYMBOL_REF)
     {
@@ -704,10 +702,9 @@ legitimize_pic_address (orig, mode, reg, scratch)
 
       if (GET_CODE (XEXP (orig, 0)) == PLUS)
 	{
-	  base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode,
-					 reg, 0);
+	  base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
 	  offset = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
-					 base == reg ? 0 : reg, 0);
+					 base == reg ? 0 : reg);
 	}
       else
 	abort ();
@@ -718,17 +715,8 @@ legitimize_pic_address (orig, mode, reg, scratch)
 	    return plus_constant_for_output (base, INTVAL (offset));
 	  else if (! reload_in_progress && ! reload_completed)
 	    offset = force_reg (Pmode, offset);
-	  /* We can't create any new registers during reload, so use the
-	     SCRATCH reg provided by the reload_insi pattern.  */
-	  else if (scratch)
-	    {
-	      emit_move_insn (scratch, offset);
-	      offset = scratch;
-	    }
 	  else
-	    /* If we reach here, then the SECONDARY_INPUT_RELOAD_CLASS
-	       macro needs to be adjusted so that a scratch reg is provided
-	       for this address.  */
+	    /* If we reach here, then something is seriously wrong.  */
 	    abort ();
 	}
       return gen_rtx (PLUS, Pmode, base, offset);
@@ -851,19 +839,19 @@ sparc_address_cost (X)
 
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
-   normally.
-
-   SCRATCH_REG if non zero can be used as a scratch register for the move
-   operation.  It is provided by a SECONDARY_RELOAD_* macro if needed.  */
+   normally.  */
 
 int
-emit_move_sequence (operands, mode, scratch_reg)
+emit_move_sequence (operands, mode)
      rtx *operands;
      enum machine_mode mode;
-     rtx scratch_reg;
 {
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
+
+  if (CONSTANT_P (operand1) && flag_pic
+      && pic_address_needs_scratch (operand1))
+    operands[1] = operand1 = legitimize_pic_address (operand1, mode, 0);
 
   /* Handle most common case first: storing into a register.  */
   if (register_operand (operand0, mode))
@@ -905,8 +893,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	{
 	  rtx temp_reg = reload_in_progress ? operand0 : 0;
 
-	  operands[1] = legitimize_pic_address (operand1, mode, temp_reg,
-						scratch_reg);
+	  operands[1] = legitimize_pic_address (operand1, mode, temp_reg);
 	}
       else if (GET_CODE (operand1) == CONST_INT
 	       ? (! SMALL_INT (operand1)
