@@ -1,3 +1,8 @@
+Sun Aug  1 22:46:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k.c (output_function_prologue): Fix typo in CPU32 case.
+	(output_function_epilogue): Similarly.
+
 Thu Jul 31 12:34:45 1999  Joe Buck  <jbuck@synopsys.com>
 
 	* gcc.texi: Use terms "GNU Compiler Collection" and "GCC".
