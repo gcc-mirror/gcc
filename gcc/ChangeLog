@@ -1,3 +1,14 @@
+2002-09-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* doc/tm.texi (TARGET_ASM_ASSEMBLE_VISIBILITY): Describe.
+	* target-def.h (TARGET_ASM_ASSEMBLE_VISIBILITY): Define.
+	(TARGET_ASM_OUT): Add the above here.
+	* target.h (struct gcc_target): Add "visibility" field.
+	* varasm.c (maybe_assemble_visibility): Call targetm visibility func.
+	* config/rs6000/rs6000.c (rs6000_assemble_visibility): New function.
+	(TARGET_ASM_ASSEMBLE_VISIBILITY): Define.
+	(rs6000_legitimize_reload_address, first_reg_to_save): Formatting.
+
 2002-09-06  Ziemowit Laski <zlaski@apple.com>
 
 	* c-lang.c (objc_is_id): New stub.

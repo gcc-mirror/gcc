@@ -4624,7 +4624,7 @@ maybe_assemble_visibility (decl)
     {
       const char *type
 	= TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (visibility)));
-      assemble_visibility (decl, type);
+      (* targetm.asm_out.visibility) (decl, type);
     }
 }
 
