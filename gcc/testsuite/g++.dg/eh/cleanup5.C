@@ -1,5 +1,6 @@
 // PR 17907
 // { dg-do compile }
+// { dg-options "" }
 // We lost a CLEANUP_POINT_EXPR, leading to a crash destroying temp of A.
 
 

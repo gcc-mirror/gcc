@@ -1,3 +1,7 @@
+2004-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/eh/cleanup5.C: Add dg-options "".
+
 2004-10-11  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17657
