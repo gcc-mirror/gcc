@@ -5867,29 +5867,22 @@ sra\t%M0,%M1,%2\n\
 ;; register, and an and (the key problem here is that the mips16 does
 ;; not have and immediate).  We recognize a shift of a load in order
 ;; to make it simple enough for combine to understand.
-
-;; ??? FIXME: turn into a define_insn_and_split
-(define_insn ""
+;;
+;; The length here is the worst case: the length of the split version
+;; will be more accurate. 
+(define_insn_and_split ""
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(lshiftrt:SI (match_operand:SI 1 "memory_operand" "m")
 		     (match_operand:SI 2 "immediate_operand" "I")))]
-  "0 && TARGET_MIPS16"
-  "lw\t%0,%1\;srl\t%0,%2"
-  [(set_attr "type"	"load")
-   (set_attr "mode"	"SI")
-   (set_attr_alternative "length"
-		[(if_then_else (match_operand:VOID 2 "m16_uimm3_b" "")
-			       (const_int 12)
-			       (const_int 16))])])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(lshiftrt:SI (match_operand:SI 1 "memory_operand" "")
-		     (match_operand:SI 2 "immediate_operand" "")))]
-  "TARGET_MIPS16 && !TARGET_DEBUG_D_MODE"
+  "TARGET_MIPS16"
+  "#"
+  ""
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 2)))]
-  "")
+  ""
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"16")])
 
 (define_expand "lshrdi3"
   [(parallel [(set (match_operand:DI 0 "register_operand" "")
