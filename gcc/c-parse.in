@@ -2013,8 +2013,11 @@ lineno_stmt_decl_or_labels_ending_stmt:
 lineno_stmt_decl_or_labels_ending_decl:
 	  lineno_decl
 	| lineno_stmt_decl_or_labels_ending_stmt lineno_decl
-		{ if (pedantic && !flag_isoc99)
-		    pedwarn ("ISO C89 forbids mixed declarations and code"); }
+		{
+		  if ((pedantic && !flag_isoc99)
+		      || warn_declaration_after_statement)
+		    pedwarn_c90 ("ISO C90 forbids mixed declarations and code");
+		}
 	| lineno_stmt_decl_or_labels_ending_decl lineno_decl
 	| lineno_stmt_decl_or_labels_ending_error lineno_decl
 	;

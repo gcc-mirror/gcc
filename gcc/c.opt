@@ -180,6 +180,10 @@ Wctor-dtor-privacy
 C++ ObjC++
 Warn when all constructors and destructors are private
 
+Wdeclaration-after-statement
+C ObjC
+Warn when a declaration is found after a statement
+
 Wdeprecated
 C++ ObjC++
 Warn about deprecated compiler features

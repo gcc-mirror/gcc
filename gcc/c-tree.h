@@ -288,6 +288,7 @@ extern void set_init_index (tree, tree);
 extern void set_init_label (tree);
 extern void process_init_element (tree);
 extern tree build_compound_literal (tree, tree);
+extern void pedwarn_c90 (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void pedwarn_c99 (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern tree c_start_case (tree);
 extern void c_finish_case (void);

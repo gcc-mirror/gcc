@@ -1,3 +1,20 @@
+2003-07-28  Hans-Peter Nilsson  <hp@bitrange.com>
+	    Michael Culbertson  <Michael.J.Culbertson@wheaton.edu>
+
+	* c-parse.in (lineno_stmt_decl_or_labels_ending_decl): Also warn
+	when warn_declaration_after_statement.  Call pedwarn_c90, not
+	pedwarn.  Correct message: it's "ISO C90", not "ISO C89".
+	* c-common.c (warn_declaration_after_statement): Define.
+	* c-common.h (warn_declaration_after_statement): Declare.
+	* c.opt (Wdeclaration-after-statement): New.
+	* c-errors.c (pedwarn_c90): New function.
+	* c-opts.c (c_common_handle_option) <case
+	OPT_Wdeclaration_after_statement>: New.
+	* c-tree.h (pedwarn_c90): Declare.
+	* doc/invoke.texi (Option Summary): Document
+	-Wdeclaration-after-statement.
+	(Warning Options): Ditto.
+
 Mon Jul 28 20:13:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (memory attribute) Avoid accessing uninitialized memory
