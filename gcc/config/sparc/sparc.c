@@ -3059,8 +3059,8 @@ sparc_cannot_force_const_mem (rtx x)
 static GTY(()) rtx global_offset_table;
 
 /* The function we use to get at it.  */
-static GTY(()) rtx get_pc_symbol;
-static GTY(()) char get_pc_symbol_name[256];
+static GTY(()) rtx add_pc_to_pic_symbol;
+static GTY(()) char add_pc_to_pic_symbol_name[256];
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
 
@@ -3643,33 +3643,33 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
 static void
 load_pic_register (void)
 {
-  /* Labels to get the PC in the prologue of this function.  */
   int orig_flag_pic = flag_pic;
 
-  /* If we haven't emitted the special get_pc helper function, do so now.  */
-  if (get_pc_symbol_name[0] == 0)
+  /* If we haven't emitted the special helper function, do so now.  */
+  if (add_pc_to_pic_symbol_name[0] == 0)
     {
+      const char *pic_name = reg_names[REGNO (pic_offset_table_rtx)];
       int align;
 
-      ASM_GENERATE_INTERNAL_LABEL (get_pc_symbol_name, "LGETPC", 0);
+      ASM_GENERATE_INTERNAL_LABEL (add_pc_to_pic_symbol_name, "LADDPC", 0);
       text_section ();
 
       align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
       if (align > 0)
 	ASM_OUTPUT_ALIGN (asm_out_file, align);
-      (*targetm.asm_out.internal_label) (asm_out_file, "LGETPC", 0);
-      fputs ("\tretl\n\tadd\t%o7, %l7, %l7\n", asm_out_file);
+      ASM_OUTPUT_LABEL (asm_out_file, add_pc_to_pic_symbol_name);
+      fprintf (asm_out_file, "\tjmp %%o7+8\n\t add\t%%o7, %s, %s\n",
+	       pic_name, pic_name);
     }
 
   /* Initialize every time through, since we can't easily
      know this to be permanent.  */
   global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-  get_pc_symbol = gen_rtx_SYMBOL_REF (Pmode, get_pc_symbol_name);
+  add_pc_to_pic_symbol = gen_rtx_SYMBOL_REF (Pmode, add_pc_to_pic_symbol_name);
+
   flag_pic = 0;
-
-  emit_insn (gen_get_pc (pic_offset_table_rtx, global_offset_table,
-			 get_pc_symbol));
-
+  emit_insn (gen_load_pcrel_sym (pic_offset_table_rtx, global_offset_table,
+				 add_pc_to_pic_symbol));
   flag_pic = orig_flag_pic;
 
   /* Need to emit this whether or not we obey regdecls,

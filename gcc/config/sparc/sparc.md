@@ -27,7 +27,7 @@
 (define_constants
   [(UNSPEC_MOVE_PIC		0)
    (UNSPEC_UPDATE_RETURN	1)
-   (UNSPEC_GET_PC		2)
+   (UNSPEC_LOAD_PCREL_SYM	2)
    (UNSPEC_MOVE_PIC_LABEL	5)
    (UNSPEC_SETH44		6)
    (UNSPEC_SETM44		7)
@@ -1664,17 +1664,19 @@
   [(set_attr "type" "branch")
    (set_attr "branch_type" "reg")])
 
-;; Load program counter insns.
+;; Load in operand 0 the (absolute) address of operand 1, which is a symbolic
+;; value subject to a PC-relative relocation.  Operand 2 is a helper function
+;; that adds the PC value at the call point to operand 0.
 
-(define_insn "get_pc"
-  [(clobber (reg:SI 15))
-   (set (match_operand 0 "register_operand" "=r")
-	(unspec [(match_operand 1 "" "") (match_operand 2 "" "")] UNSPEC_GET_PC))]
-  "flag_pic && REGNO (operands[0]) == 23"
+(define_insn "load_pcrel_sym"
+  [(set (match_operand 0 "register_operand" "=r")
+	(unspec [(match_operand 1 "symbolic_operand" "")
+		 (match_operand 2 "call_operand_address" "")] UNSPEC_LOAD_PCREL_SYM))
+   (clobber (reg:SI 15))]
+  ""
   "sethi\t%%hi(%a1-4), %0\n\tcall\t%a2\n\tadd\t%0, %%lo(%a1+4), %0"
   [(set_attr "type" "multi")
    (set_attr "length" "3")])
-
 
 ;; Move instructions
 

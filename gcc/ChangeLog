@@ -1,3 +1,15 @@
+2004-07-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (get_pc_symbol): Rename into
+	add_pc_to_pic_symbol.
+	(get_pc_symbol_name): Rename into add_pc_to_pic_symbol_name.
+	(load_pic_register): Account for previous changes.
+	Use reg_names.  Don't create the label twice.
+	* config/sparc/sparc.md (UNSPEC_GET_PC): Rename into
+	UNSPEC_LOAD_PCREL_SYM.
+	(get_pc): Rename into load_pcrel_sym.  Add predicate to
+	operands.  Remove condition.
+
 2004-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* dbxout.c (dbxout_type): Don't test whether the binfo slot of
