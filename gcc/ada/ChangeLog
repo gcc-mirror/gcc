@@ -1,3 +1,8 @@
+2003-02-28  Andreas Schwab  <schwab@suse.de>
+
+	* Make-lang.in (install-gnatlib): Change to ada directory before
+	running make instead of using ada/Makefile directly.
+
 2003-02-18  Ben Elliston  <bje@redhat.com>
 
 	Part of fix for PR ada/9406

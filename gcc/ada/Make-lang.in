@@ -695,7 +695,7 @@ ada.install-common:
 	fi
 
 install-gnatlib:
-	$(MAKE) -f ada/Makefile $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib
+	cd ada && $(MAKE) $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib
 
 ada.install-info:
 ada.install-man:
