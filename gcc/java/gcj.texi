@@ -115,7 +115,7 @@ files and object files, and it can read both Java source code and
 * Invoking jv-convert:: Converting from one encoding to another
 * Invoking rmic::        Generate stubs for Remote Method Invocation.
 * Invoking rmiregistry:: The remote object registry.
-* About CNI::           Description of the Cygnus Native Interface
+* About CNI::           Description of the Compiled Native Interface
 * System properties::   Modifying runtime behavior of the libgcj library
 * Resources::		Where to look for more information
 @end menu
@@ -1031,7 +1031,7 @@ Print version information, then exit.
 @node About CNI
 @chapter About CNI
 
-This documents CNI, the Cygnus Native Interface,
+This documents CNI, the Compiled Native Interface,
 which is is a convenient way to write Java native methods using C++.
 This is a more efficient, more convenient, but less portable
 alternative to the standard JNI (Java Native Interface).
