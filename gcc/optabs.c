@@ -689,13 +689,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  if (carries == 0)
 	    inter = 0;
 	  else
-	    inter = expand_binop (word_mode, binoptab, outof_input,
-				  op1, outof_target, unsignedp, next_methods);
-	  
-	  if (inter != 0 && inter != outof_target)
-	    emit_move_insn (outof_target, inter);
-
-	  if (inter != 0)
 	    inter = expand_binop (word_mode, unsigned_shift, into_input,
 				  op1, 0, unsignedp, next_methods);
 
@@ -705,6 +698,13 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  if (inter != 0 && inter != into_target)
 	    emit_move_insn (into_target, inter);
+
+	  if (inter != 0)
+	    inter = expand_binop (word_mode, binoptab, outof_input,
+				  op1, outof_target, unsignedp, next_methods);
+	  
+	  if (inter != 0 && inter != outof_target)
+	    emit_move_insn (outof_target, inter);
 	}
 
       insns = get_insns ();
