@@ -1,3 +1,7 @@
+Tue Jul 7 00:31:58 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Jul  7 01:03:03 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	Support for dllimport and dllexport attributes for i386-pe.
