@@ -751,7 +751,8 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 	   Give extract_bit_field the value it needs (with endianness
 	   compensation) to fetch the piece we want.  */
 	part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					BITS_PER_WORD - bitsize + bitsdone,
+					GET_MODE_BITSIZE (GET_MODE (value))
+					- bitsize + bitsdone,
 					NULL_RTX, 1, align);
 #else
       /* Fetch successively more significant portions.  */
