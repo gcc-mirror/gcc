@@ -1,3 +1,11 @@
+2002-02-19  Scott Snyder  <snyder@fnal.gov>
+
+	* testsuite/demangle-expected: Add test case for infinite loop in
+	demangler.
+	* cplus-dem.c (demangle_arm_hp_template): Stop trying to demangle
+	if do_type() doesn't make any progress --- prevents an infinite
+	loop.
+
 2002-02-18  Carlo Wood  <carlo@gnu.org>
 
 	PR c++/5390

@@ -2594,3 +2594,9 @@ _Utf58_0_1__1_2147483647__2147483648
 --format=gnu-v3
 St9bad_alloc
 std::bad_alloc
+# 
+# This caused an infinite loop.
+# We still don't demangle this correctly, but at least we don't hang.
+--format=auto
+__CPR212____ct__Q3_3std141list__tm__128_Q2_3edm41THandle__tm__26_Q2_4emid15EMparticleChunkQ2_3std68allocator__tm__51_Q2_3edmJ37J14const_iteratorFRCQ3_3std18list__tm__7_Z1ZZ2Z8iterator
+_Z1ZZ2Z::__CPR212____ct__Q3_3std141list__tm__128_Q2_3edm41THandle__tm__26_Q2_4emid15EMparticleChunkQ2_3std68allocator__tm__51_Q2_3edmJ37J14const_iteratorFRCQ3_3std18list__tm(iterator)
