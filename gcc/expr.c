@@ -4520,6 +4520,9 @@ expand_expr (exp, target, tmode, modifier)
 	  TREE_USED (exp) = 1;
 	}
 
+      /* Show we haven't gotten RTL for this yet.  */
+      temp = 0;
+
       /* Handle variables inherited from containing functions.  */
       context = decl_function_context (exp);
 
@@ -4547,31 +4550,43 @@ expand_expr (exp, target, tmode, modifier)
 			    fix_lexical_addr (XEXP (addr, 0), exp));
 	  else
 	    addr = fix_lexical_addr (addr, exp);
-	  return change_address (DECL_RTL (exp), mode, addr);
+	  temp = change_address (DECL_RTL (exp), mode, addr);
 	}
 
       /* This is the case of an array whose size is to be determined
 	 from its initializer, while the initializer is still being parsed.
 	 See expand_decl.  */
 
-      if (GET_CODE (DECL_RTL (exp)) == MEM
-	  && GET_CODE (XEXP (DECL_RTL (exp), 0)) == REG)
-	return change_address (DECL_RTL (exp), GET_MODE (DECL_RTL (exp)),
+      else if (GET_CODE (DECL_RTL (exp)) == MEM
+	       && GET_CODE (XEXP (DECL_RTL (exp), 0)) == REG)
+	temp = change_address (DECL_RTL (exp), GET_MODE (DECL_RTL (exp)),
 			       XEXP (DECL_RTL (exp), 0));
 
       /* If DECL_RTL is memory, we are in the normal case and either
 	 the address is not valid or it is not a register and -fforce-addr
 	 is specified, get the address into a register.  */
 
-      if (GET_CODE (DECL_RTL (exp)) == MEM
-	  && modifier != EXPAND_CONST_ADDRESS
-	  && modifier != EXPAND_SUM
-	  && modifier != EXPAND_INITIALIZER
-	  && (! memory_address_p (DECL_MODE (exp), XEXP (DECL_RTL (exp), 0))
-	      || (flag_force_addr
-		  && GET_CODE (XEXP (DECL_RTL (exp), 0)) != REG)))
-	return change_address (DECL_RTL (exp), VOIDmode,
+      else if (GET_CODE (DECL_RTL (exp)) == MEM
+	       && modifier != EXPAND_CONST_ADDRESS
+	       && modifier != EXPAND_SUM
+	       && modifier != EXPAND_INITIALIZER
+	       && (! memory_address_p (DECL_MODE (exp),
+				       XEXP (DECL_RTL (exp), 0))
+		   || (flag_force_addr
+		       && GET_CODE (XEXP (DECL_RTL (exp), 0)) != REG)))
+	temp = change_address (DECL_RTL (exp), VOIDmode,
 			       copy_rtx (XEXP (DECL_RTL (exp), 0)));
+
+      /* If we got something, return it.  But first, set the alignment
+	 the address is a register.  */
+      if (temp != 0)
+	{
+	  if (GET_CODE (temp) == MEM && GET_CODE (XEXP (temp, 0)) == REG)
+	    mark_reg_pointer (XEXP (temp, 0),
+			      DECL_ALIGN (exp) / BITS_PER_UNIT);
+
+	  return temp;
+	}
 
       /* If the mode of DECL_RTL does not match that of the decl, it
 	 must be a promoted value.  We return a SUBREG of the wanted mode,
@@ -5206,7 +5221,12 @@ expand_expr (exp, target, tmode, modifier)
 	    if (ext_mode == BLKmode)
 	      abort ();
 
-	    op0 = extract_bit_field (validize_mem (op0), bitsize, bitpos,
+	    op0 = validize_mem (op0);
+
+	    if (GET_CODE (op0) == MEM && GET_CODE (XEXP (op0, 0)) == REG)
+	      mark_reg_pointer (XEXP (op0, 0), alignment);
+
+	    op0 = extract_bit_field (op0, bitsize, bitpos,
 				     unsignedp, target, ext_mode, ext_mode,
 				     alignment,
 				     int_size_in_bytes (TREE_TYPE (tem)));
@@ -5238,6 +5258,9 @@ expand_expr (exp, target, tmode, modifier)
 	  op0 = change_address (op0, mode1,
 				plus_constant (XEXP (op0, 0),
 					       (bitpos / BITS_PER_UNIT)));
+	if (GET_CODE (XEXP (op0, 0)) == REG)
+	  mark_reg_pointer (XEXP (op0, 0), alignment);
+
 	MEM_IN_STRUCT_P (op0) = 1;
 	MEM_VOLATILE_P (op0) |= volatilep;
 	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode)
@@ -5495,9 +5518,6 @@ expand_expr (exp, target, tmode, modifier)
 
       if (modifier == EXPAND_INITIALIZER)
 	return gen_rtx (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
-
-      if (flag_force_mem && GET_CODE (op0) == MEM)
-	op0 = copy_to_reg (op0);
 
       if (target == 0)
 	return
@@ -6720,8 +6740,9 @@ expand_expr (exp, target, tmode, modifier)
       if (flag_force_addr && GET_CODE (op0) != REG)
 	op0 = force_reg (Pmode, op0);
 
-      if (GET_CODE (op0) == REG)
-	mark_reg_pointer (op0);
+      if (GET_CODE (op0) == REG
+	  && ! REG_USERVAR_P (op0))
+	mark_reg_pointer (op0, TYPE_ALIGN (TREE_TYPE (type)) / BITS_PER_UNIT);
 
       /* If we might have had a temp slot, add an equivalent address
 	 for it.  */
