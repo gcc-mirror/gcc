@@ -67,10 +67,15 @@ public class PipedInputStream extends InputStream
   /** Set to true if close() has been called on this InputStream. */
   boolean closed;
 
+
   /**
-    * The size of the internal buffer used for input/output.
-    */
-  protected static final int PIPE_SIZE = 2048;
+   * The size of the internal buffer used for input/output.
+   */
+  /* The "Constant Field Values" Javadoc of the Sun J2SE 1.4
+   * specifies 1024.
+   */
+  protected static final int PIPE_SIZE = 1024;
+
 
   /**
     * This is the internal circular buffer used for storing bytes written

@@ -1,6 +1,5 @@
-/* WriteAbortedException.java -- An exception occurred while writing a 
-   serialization stream
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+/* WriteAbortedException.java -- wraps an exception thrown while writing
+   Copyright (C) 1998, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -8,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,61 +39,71 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This exception is thrown when one of the other ObjectStreamException 
-  * subclasses was thrown during a serialization write.
-  *
-  * @version 0.0
+  * This exception is thrown when another ObjectStreamException occurs during
+  * a serialization read or write. The stream is reset, and deserialized
+  * objects are discarded.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Eric Blake <ebb9@email.byu.edu>
+  * @since 1.1
+  * @status updated to 1.4
   */
 public class WriteAbortedException extends ObjectStreamException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -3326426625597282442L;
 
-/*
- * Instance Variables
- */
+  /**
+   * The cause of this exception. This pre-dates the exception chaining
+   * of Throwable; and although you can change this field, you are wiser
+   * to leave it alone.
+   *
+   * @serial the exception cause
+   */
+  public Exception detail;
 
-/**
-  * The detailed exception that caused this exception to be thrown
-  */
-public Exception detail;
-private transient String message;
+  /**
+   * Create a new WriteAbortedException with a specified message and
+   * cause.
+   *
+   * @param msg the message
+   * @param detail the cause
+   */
+  public WriteAbortedException(String msg, Exception detail)
+  {
+    super(msg);
+    initCause(detail);
+    this.detail = detail;
+  }
 
-/*************************************************************************/
+  /**
+   * This method returns a message indicating what went wrong, in this
+   * format:
+   * <code>super.getMessage() + (detail == null ? "" : "; " + detail)<code>.
+   *
+   * @return the chained message
+   */
+  public String getMessage()
+  {
+    if (detail == this || detail == null)
+      return super.getMessage();
+    return super.getMessage() + "; " + detail;
+  }
 
-/*
- * Constructors
- */
-
-/**
-  * Create a new WriteAbortedException with an eof parameter indicating
-  * the detailed Exception that caused this exception to be thrown.
-  *
-  * @param detail The exception that caused this exception to be thrown
-  */
-public
-WriteAbortedException(String msg, Exception detail)
-{
-  this.message = msg;
-  this.detail = detail;
-}
-
-/*************************************************************************/
-
-/*
- * Instance Variables
- */
-
-/**
-  * This method returns a message indicating what went wrong, including 
-  * the message text from the initial exception that caused this one to
-  * be thrown
-  */
-public String
-getMessage()
-{
-  return(message + ": " + detail.getMessage());
-}
-
+  /**
+   * Returns the cause of this exception. Note that this may not be the
+   * original cause, thanks to the <code>detail</code> field being public
+   * and non-final (yuck). However, to avoid violating the contract of
+   * Throwable.getCause(), this returns null if <code>detail == this</code>,
+   * as no exception can be its own cause.
+   *
+   * @return the cause
+   * @since 1.4
+   */
+  public Throwable getCause()
+  {
+    return detail == this ? null : detail;
+  }
 } // class WriteAbortedException
-

@@ -54,18 +54,20 @@ public interface ObjectStreamConstants
   final static short STREAM_MAGIC = (short)0xaced;
   final static short STREAM_VERSION = 5;
 
-  final static byte TC_NULL = (byte)112;
-  final static byte TC_REFERENCE = (byte)113;
-  final static byte TC_CLASSDESC = (byte)114;
-  final static byte TC_OBJECT = (byte)115;
-  final static byte TC_STRING = (byte)116;
-  final static byte TC_ARRAY = (byte)117;
-  final static byte TC_CLASS = (byte)118;
-  final static byte TC_BLOCKDATA = (byte)119;
-  final static byte TC_ENDBLOCKDATA = (byte)120;
-  final static byte TC_RESET = (byte)121;
-  final static byte TC_BLOCKDATALONG = (byte)122;
-  final static byte TC_EXCEPTION = (byte)123;
+  final static byte TC_NULL = (byte)112;            //0x70
+  final static byte TC_REFERENCE = (byte)113;       //0x71
+  final static byte TC_CLASSDESC = (byte)114;       //0x72
+  final static byte TC_OBJECT = (byte)115;          //0x73
+  final static byte TC_STRING = (byte)116;          //0x74
+  final static byte TC_ARRAY = (byte)117;           //0x75
+  final static byte TC_CLASS = (byte)118;           //0x76
+  final static byte TC_BLOCKDATA = (byte)119;       //0x77
+  final static byte TC_ENDBLOCKDATA = (byte)120;    //0x78
+  final static byte TC_RESET = (byte)121;           //0x79
+  final static byte TC_BLOCKDATALONG = (byte)122;   //0x7A
+  final static byte TC_EXCEPTION = (byte)123;       //0x7B
+  final static byte TC_LONGSTRING = (byte)124;      //0x7C
+  final static byte TC_PROXYCLASSDESC = (byte)125;  //0x7D
 
   final static byte TC_BASE = TC_NULL;
   final static byte TC_MAX = TC_EXCEPTION;

@@ -1,5 +1,5 @@
-/* EOFException.java -- Unexpected end of file exception
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* EOFException.java -- unexpected end of file exception
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,53 +38,39 @@ exception statement from your version. */
 
 package java.io;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  Complete to 1.1.
- */
-
 /**
-  * This exception is thrown when the end of the file or stream was 
-  * encountered unexpectedly.  This is not the normal way that a normal
-  * EOF condition is reported.  Normally a special value such as -1 is
-  * returned.  However, certain types of streams expecting certain data
-  * in a certain format might reach EOF before reading their expected
-  * data pattern and thus throw this exception.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@cygnus.com>
-  * @date September 24, 1998
-  */
+ * This exception is thrown when the end of the file or stream was 
+ * encountered unexpectedly.  This is not the normal way that an EOF
+ * condition is reported; such as a special value like -1 being returned.
+ *  However, certain types of streams expecting certain data in a certain
+ * format might reach EOF before reading their expected data pattern and
+ * thus throw this exception.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey <tromey@cygnus.com>
+ * @status updated to 1.4
+ */
 public class EOFException extends IOException
 {
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 6433858223774886977L;
 
-/*
- * Constructors
- */
+  /**
+   * Create an exception without a descriptive error message.
+   */
+  public EOFException()
+  {
+  }
 
-/**
-  * Create a new EOFException without a descriptive error message
-  */
-public
-EOFException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Create a new EOFException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-public
-EOFException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message.
+   *
+   * @param message the descriptive error message
+   */
+  public EOFException(String message)
+  {
+    super(message);
+  }
 } // class EOFException
-

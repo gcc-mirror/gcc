@@ -1,5 +1,5 @@
-/* UnsupportedEncodingException.java -- The requested encoding isn't supported
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* UnsupportedEncodingException.java -- the requested encoding isn't supported
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,49 +38,36 @@ exception statement from your version. */
 
 package java.io;
 
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
- 
 /**
-  * This exception is thrown when the requested character encoding is 
-  * not supported.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Per Bothner <bothner@cygnus.com>
-  * @date April 17, 1998.
-  */
+ * This exception is thrown when the requested character encoding is 
+ * not supported.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Per Bothner <bothner@cygnus.com>
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class UnsupportedEncodingException extends IOException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -4274276298326136670L;
 
-/*
- * Constructors
- */
+  /**
+   * Create an exception without a descriptive error message.
+   */
+  public UnsupportedEncodingException()
+  {
+  }
 
-/**
-  * Create a new UnsupportedEncodingException without a descriptive error message
-  */
-public
-UnsupportedEncodingException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Create a new UnsupportedEncodingException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-public
-UnsupportedEncodingException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message.
+   *
+   * @param message the descriptive error message
+   */
+  public UnsupportedEncodingException(String message)
+  {
+    super(message);
+  }
 } // class UnsupportedEncodingException
-

@@ -1,5 +1,5 @@
-/* InvalidClassException.java -- An I/O operation was interrupted.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* InvalidClassException.java -- deserializing a class failed
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,44 +39,54 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This exception is thrown when there is some sort of problem with a
-  * class during a serialization operation.  This could be that the
-  * versions don't match, that there are unknown datatypes in the class
-  * or that the class doesn't have a default no-arg constructor.
-  * <p>
-  * The field <code>classname</code> will contain the name of the
-  * class that caused the problem if known.  The getMessage() method
-  * for this exception will always include the name of that class
-  * if known.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This exception is thrown when there is some sort of problem with a
+ * class during a serialization operation.  This could be:<br><ul>
+ * <li>the serial version of the class doesn't match</li>
+ * <li>the class contains unknown datatypes</li>
+ * <li>the class does not have an accessible no-arg constructor</li>
+ * </ul>.
+ *
+ * <p>The field <code>classname</code> will contain the name of the
+ * class that caused the problem if known.  The getMessage() method
+ * for this exception will always include the name of that class
+ * if known.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class InvalidClassException extends ObjectStreamException
 {
   /**
-    * The name of the class which encountered the error.
-    */
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -4333316296251054416L;
+
+  /**
+   * The name of the class which encountered the error.
+   *
+   * @serial the classname causing the error
+   */
   public String classname;
 
   /**
-    * Create a new InvalidClassException with a descriptive error message String
-    *
-    * @param message The descriptive error message
-    */
+   * Create an exception with a descriptive error message, but a null
+   * classname.
+   *
+   * @param message the descriptive error message
+   */
   public InvalidClassException(String message)
   {
     super(message);
   }
 
   /**
-    * Create a new InvalidClassException with a descriptive error message 
-    * String, and the name of the class that caused the problem.
-    * 
-    * @param classname The number of bytes tranferred before the interruption
-    * @param message The descriptive error message
-    */
+   * Create an exception with a descriptive error message, and the name of
+   * the class that caused the problem.
+   *
+   * @param classname the name of the faulty class
+   * @param message the descriptive error message
+   */
   public InvalidClassException(String classname, String message)
   {
     super(message);
@@ -84,15 +94,18 @@ public class InvalidClassException extends ObjectStreamException
   }
 
   /**
-    * Returns the descriptive error message for this exception.  It will
-    * include the class name that caused the problem if known.  This method
-    * overrides Throwable.getMessage()
-    *
-    * @return A descriptive error message
-    */
+   * Returns the descriptive error message for this exception. It will
+   * include the class name that caused the problem if known, in the format:
+   * <code>[classname][; ][super.getMessage()]</code>.
+   *
+   * @return A descriptive error message, may be null
+   */
   public String getMessage()
   {
-    return super.getMessage() + (classname == null ? "" : ": " + classname);
+    String msg = super.getMessage();
+    if (msg == null)
+      return classname;
+    return (classname == null ? "" : classname + "; ") + msg;
   }
 }
 

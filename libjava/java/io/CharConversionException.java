@@ -1,5 +1,5 @@
 /* CharConversionException.java -- Character conversion exceptions
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,49 +38,36 @@ exception statement from your version. */
 
 package java.io;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  Complete to 1.1.
- */
-
 /**
-  * This exception is thrown to indicate that a problem occurred with
-  * an attempted character conversion.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@cygnus.com>
-  * @date September 25, 1998
-  */
+ * This exception is thrown to indicate that a problem occurred with
+ * an attempted character conversion.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey <tromey@cygnus.com>
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class CharConversionException extends IOException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -8680016352018427031L;
 
-/*
- * Constructors
- */
+  /**
+   * Create an exception without a descriptive error message.
+   */
+  public CharConversionException()
+  {
+  }
 
-/**
-  * Create a new CharConversionException without a descriptive error message
-  */
-public
-CharConversionException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Create a new CharConversionException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-public
-CharConversionException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message.
+   *
+   * @param message the descriptive error message
+   */
+  public CharConversionException(String message)
+  {
+    super(message);
+  }
 } // class CharConversionException
-
