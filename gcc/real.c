@@ -406,15 +406,19 @@ static void eremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       unsigned EMUSHORT *));
 static void eiremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void mtherr	PROTO((char *, int));
+#ifdef DEC
 static void dectoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void etodec	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void todec	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
+#endif
+#ifdef IBM
 static void ibmtoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       enum machine_mode));
 static void etoibm	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       enum machine_mode));
 static void toibm	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       enum machine_mode));
+#endif
 static void make_nan	PROTO((unsigned EMUSHORT *, int, enum machine_mode));
 static void uditoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void ditoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
