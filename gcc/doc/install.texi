@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.7 2001/05/24 21:14:11 pb Exp $
+@comment $Id: install.texi,v 1.1.2.8 2001/05/28 07:48:24 gerald Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -309,7 +309,10 @@ for static libraries. Note that up to the gcc version 2.95.x series, static
 libraries were the default on all systems.
 
 @item
-@option{--with-gnu-as} @minus{}@minus{} Specify that the compiler should assume that the
+@html
+<a name="with-gnu-as">@option{--with-gnu-as}</a>
+@end html
+ @minus{}@minus{} Specify that the compiler should assume that the
 assembler it finds is the GNU assembler. However, this does not modify the rules to find an
 assembler and will result in confusion if found assembler is not actually the GNU assembler.
 If you have more than one assembler installed on your system, you may want to use this option
@@ -333,7 +336,11 @@ Note that these rules do not check for the value of @emph{$PATH}. You may want t
 multiple assemblers installed and want to choose one that is not found by the above rules.
 
 @item
-@option{--with-gnu-ld} @minus{}@minus{} Same as @option{--with-gnu-as} but for linker. 
+@html
+<a name="with-gnu-ld">@option{--with-gnu-ld}</a>
+@end html
+ @minus{}@minus{} Same as @uref{#with-gnu-as,,@option{--with-gnu-as}} but for linker.
+
 
 @item
 @option{--with-ld=@emph{/path/to/ld}} @minus{}@minus{} Same as @option{--with-as}, but for the
@@ -1047,8 +1054,7 @@ can also be obtained from:
 @uref{http://www.itnet.pl/amelektr/avr,,http://www.itnet.pl/amelektr/avr}
 @end itemize
 
-We strongly recommend to upgrade to binutils 2.11
-(or a current snapshot until 2.11 has been released).
+We @emph{strongly} recommend using binutils 2.11 or newer.
 
 The following error:
 @example
@@ -1085,11 +1091,11 @@ assembler.
 
 Specifically, @option{-g} does not work on HP-UX (since that system
 uses a peculiar debugging format which GCC does not know about), unless you
-use GAS and GDB and configure GCC with the @option{--with-gnu-as}
-option.
+use GAS and GDB and configure GCC with the @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}
+and @option{--with-as=...} options.
 
 If you wish to use pa-risc 2.0 architecture support, you must use either
-the HP assembler or a recent
+the HP assembler, gas/binutils-2.11 or a recent
 @uref{ftp://sources.redhat.com/pub/binutils/snapshots,,snapshot of gas}.
 
 More specific information to hppa*-hp-hpux* targets follows.
@@ -1220,7 +1226,7 @@ The native SCO assembler that is provided with the OS at no
 charge is normally required.  If, however, you must be able to use
 the GNU assembler (perhaps you're compiling code with asms that
 require GAS syntax) you may configure this package using the flags
-@option{--with-gnu-as}.  You must use a recent version of GNU
+@uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}.  You must use a recent version of GNU
 binutils; versions past 2.9.1 seem to work well.
 
 In general, the @option{--with-gnu-as} option isn't as well tested
@@ -1767,8 +1773,8 @@ current GCC) is to be found in the GCC texinfo manual.
 <h3><a name="elf_targets">all ELF targets (SVR4, Solaris, etc.)</a></h3>
 @end html
 
-C++ support is significantly better on ELF targets if you use the GNU
-linker; duplicate copies of inlines, vtables and template instantiations
+C++ support is significantly better on ELF targets if you use the @uref{./configure.html#with-gnu-ld,,GNU
+linker}; duplicate copies of inlines, vtables and template instantiations
 will be discarded automatically.
 
 
