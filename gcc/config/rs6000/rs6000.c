@@ -10910,6 +10910,16 @@ rs6000_generate_compare (enum rtx_code code)
   else if (code == GTU || code == LTU
 	   || code == GEU || code == LEU)
     comp_mode = CCUNSmode;
+  else if ((code == EQ || code == NE)
+	   && GET_CODE (rs6000_compare_op0) == SUBREG
+	   && GET_CODE (rs6000_compare_op1) == SUBREG
+	   && SUBREG_PROMOTED_UNSIGNED_P (rs6000_compare_op0)
+	   && SUBREG_PROMOTED_UNSIGNED_P (rs6000_compare_op1))
+    /* These are unsigned values, perhaps there will be a later
+       ordering compare that can be shared with this one.
+       Unfortunately we cannot detect the signedness of the operands
+       for non-subregs.  */
+    comp_mode = CCUNSmode;
   else
     comp_mode = CCmode;
 
