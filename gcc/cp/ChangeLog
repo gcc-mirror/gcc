@@ -1,5 +1,9 @@
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* exception.cc (__cp_pop_exception): Cleanup the original object.
+
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (grok_op_properties): Merge conversion to void warning
 	with other silly op warnings.
 
