@@ -1414,6 +1414,8 @@ extern char leaf_reg_remap[];
 #define PREFERRED_RELOAD_CLASS(X,CLASS)			\
   (CONSTANT_P (X)					\
    ? ((FP_REG_CLASS_P (CLASS)				\
+       || (CLASS) == GENERAL_OR_FP_REGS			\
+       || (CLASS) == GENERAL_OR_EXTRA_FP_REGS		\
        || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
 	   && ! TARGET_FPU)				\
        || (GET_MODE (X) == TFmode			\
