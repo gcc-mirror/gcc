@@ -47,7 +47,7 @@ import java.awt.peer.MenuComponentPeer;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class PopupMenu extends Menu implements java.io.Serializable
+public class PopupMenu extends Menu
 {
 
 /*

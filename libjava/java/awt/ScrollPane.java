@@ -41,7 +41,6 @@ package java.awt;
 import java.awt.peer.ScrollPanePeer;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.ComponentPeer;
-import java.io.Serializable;
 import javax.accessibility.Accessible;
 
 /**
@@ -50,7 +49,7 @@ import javax.accessibility.Accessible;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class ScrollPane extends Container implements Accessible, Serializable
+public class ScrollPane extends Container implements Accessible
 {
 
 /*

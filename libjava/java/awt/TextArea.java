@@ -404,7 +404,7 @@ preferredSize()
   * <code>getPreferredSize(int)</code>.
   */
 public Dimension
-preferredSize(int columns)
+preferredSize(int rows, int columns)
 {
   return(getPreferredSize(rows, columns));
 }
