@@ -1,3 +1,8 @@
+Fri Mar 12 00:51:43 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (expand_expr): Allow a CALL_EXPR with a mode wider than
+	MAX_INTEGER_COMPUTATION_MODE.
+
 Thu Mar 11 14:00:58 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (HARD_REGNO_MODE_OK): Disallow QI/HImode in fp regs.
