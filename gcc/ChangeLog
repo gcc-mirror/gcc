@@ -1,3 +1,8 @@
+2004-12-27 John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* vax.c (vax_address_cost, vax_rtx_cost): Correct casts.
+	(vax_rtx_cost): Handle small offsets for both PLUS and MINUS.
+
 2004-12-27  Steven Bosscher  <stevenb@suse.de>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
