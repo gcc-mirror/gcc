@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 # we want to use libgloss so we can get find_gcc.
 load_lib libgloss.exp
 load_lib prune.exp
+load_lib gcc-defs.exp
 
 #
 # GCC_UNDER_TEST is the compiler under test.
@@ -68,8 +69,9 @@ proc default_gcc_version { } {
 }
 
 #
-# Call gcc_version. We do it this way so we can override it if needed.
+# gcc_version -- Call default_gcc_version, so we can override it if needed.
 #
+
 proc gcc_version { } {
     default_gcc_version;
 }
@@ -116,6 +118,10 @@ proc gcc_init { args } {
     }
 }
 
+#
+# gcc_target_compile -- compile a source file
+#
+
 proc gcc_target_compile { source dest type options } {
     global tmpdir;
     global gluefile wrap_flags;
@@ -147,148 +153,4 @@ proc gcc_target_compile { source dest type options } {
     }
     lappend options "compiler=$GCC_UNDER_TEST"
     return [target_compile $source $dest $type $options]
-}
-
-
-# Reports pass/fail for a gcc compilation and returns true/false.
-proc gcc_check_compile {testcase option objname gcc_output} {
-
-    set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
- 
-    if [string match "$fatal_signal 6" $gcc_output] then {
-	gcc_fail $testcase "Got Signal 6, $option"
-	return 0
-    }
-
-    if [string match "$fatal_signal 11" $gcc_output] then {
-	gcc_fail $testcase "Got Signal 11, $option"
-	return 0
-    }
-
-    # We shouldn't get these because of -w, but just in case.
-    if [string match "*cc:*warning:*" $gcc_output] then {
-	warning "$testcase: (with warnings) $option"
-	send_log "$gcc_output\n"
-	unresolved "$testcase, $option"
-	return 0
-    }
-
-    set gcc_output [prune_warnings $gcc_output]
-
-    set unsupported_message [gcc_check_unsupported_p $gcc_output]
-    if { $unsupported_message != "" } {
-	unsupported "$testcase: $unsupported_message"
-	return 0
-    }
-
-    # remove any leftover LF/CR to make sure any output is legit
-    regsub -all -- "\[\r\n\]*" $gcc_output "" gcc_output
-
-    # If any message remains, we fail.
-    if ![string match "" $gcc_output] then {
-	gcc_fail $testcase $option
-	return 0
-    }
-
-    # fail if the desired object file doesn't exist.
-    # FIXME: there's no way of checking for existence on a remote host.
-    if {$objname != "" && ![is3way] && ![file exists $objname]} {
-	gcc_fail $testcase $option
-	return 0
-    }
-
-    gcc_pass $testcase $option
-    return 1
-}
-
-
-
-#
-# gcc_pass -- utility to record a testcase passed
-#
-
-proc gcc_pass { testcase cflags } {
-    if { "$cflags" == "" } {
-	pass "$testcase"
-    } else {
-	pass "$testcase, $cflags"
-    }
-}
-
-#
-# gcc_fail -- utility to record a testcase failed
-#
-
-proc gcc_fail { testcase cflags } {
-    if { "$cflags" == "" } {
-	fail "$testcase"
-    } else {
-	fail "$testcase, $cflags"
-    }
-}
-
-#
-# gcc_finish -- called at the end of every .exp script that calls gcc_init
-#
-# The purpose of this proc is to hide all quirks of the testing environment
-# from the testsuites.  It also exists to undo anything that gcc_init did
-# (that needs undoing).
-#
-
-proc gcc_finish { } {
-    # The testing harness apparently requires this.
-    global errorInfo;
-
-    if [info exists errorInfo] then {
-	unset errorInfo
-    }
-
-    # Might as well reset these (keeps our caller from wondering whether
-    # s/he has to or not).
-    global prms_id bug_id
-    set prms_id 0
-    set bug_id 0
-}
-
-proc gcc_exit { } {
-    global gluefile;
-
-    if [info exists gluefile] {
-	file_on_build delete $gluefile;
-	unset gluefile;
-    }
-}
-    
-# If this is an older version of dejagnu (without runtest_file_p),
-# provide one and assume the old syntax: foo1.exp bar1.c foo2.exp bar2.c.
-# This can be deleted after next dejagnu release.
-
-if { [info procs runtest_file_p] == "" } then {
-    proc runtest_file_p { runtests testcase } {
-	if { $runtests != "" && [regexp "\[.\]\[cC\]" $runtests] } then {
-	    if { [lsearch $runtests [file tail $testcase]] >= 0 } then {
-		return 1
-	    } else {
-		return 0
-	    }
-	}
-	return 1
-    }
-}
-
-# Utility used by mike-gcc.exp and c-torture.exp.
-# Check the compiler(/assembler/linker) output for text indicating that
-# the testcase should be marked as "unsupported".
-#
-# When dealing with a large number of tests, it's difficult to weed out the
-# ones that are too big for a particular cpu (eg: 16 bit with a small amount
-# of memory).  There are various ways to deal with this.  Here's one.
-# Fortunately, all of the cases where this is likely to happen will be using
-# gld so we can tell what the error text will look like.
-
-proc ${tool}_check_unsupported_p { output } {
-    if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
-	return "memory full"
-    }
-    return ""
 }

@@ -1,3 +1,11 @@
+2001-07-26  Stan Cox <scox@redhat.com>
+
+	* lib/g++.exp (g++_exit, g++_check_unsupported_p): Removed.
+	* lib/gcc.exp (gcc_check_compile, gcc_pass, gcc_fail, gcc_finish,
+	gcc_exit, gcc_check_unsupported_p):
+	Moved to gcc-deps.exp
+	* gcc-deps.exp: New file.
+
 2001-07-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.old-deja/g++.pt/defarg14.C: New test.
