@@ -1,3 +1,7 @@
+Sat Aug 17 15:23:39 1996  Geoffrey Noer  <noer@cygnus.com>
+
+	* g++.c: Update test for win32 (&& ! cygwin32).
+
 Mon Aug 12 00:09:18 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (end_template_decl): If we don't actually have parms, return.
