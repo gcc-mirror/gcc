@@ -771,8 +771,8 @@ gfc_conv_intrinsic_cmplx (gfc_se * se, gfc_expr * expr, int both)
   se->expr = fold (build2 (COMPLEX_EXPR, type, real, imag));
 }
 
-/* Remainder function MOD(A, P) = A - INT(A / P) * P.
-   MODULO(A, P) = (A==0 .or. !(A>0 .xor. P>0))? MOD(A,P):MOD(A,P)+P.  */
+/* Remainder function MOD(A, P) = A - INT(A / P) * P
+                      MODULO(A, P) = A - FLOOR (A / P) * P  */
 /* TODO: MOD(x, 0)  */
 
 static void
@@ -783,7 +783,6 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
   tree type;
   tree itype;
   tree tmp;
-  tree zero;
   tree test;
   tree test2;
   mpfr_t huge;
@@ -798,7 +797,10 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
     {
     case BT_INTEGER:
       /* Integer case is easy, we've got a builtin op.  */
-      se->expr = build2 (TRUNC_MOD_EXPR, type, arg, arg2);
+      if (modulo)
+       se->expr = build2 (FLOOR_MOD_EXPR, type, arg, arg2);
+      else
+       se->expr = build2 (TRUNC_MOD_EXPR, type, arg, arg2);
       break;
 
     case BT_REAL:
@@ -821,7 +823,10 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
       test2 = build2 (TRUTH_AND_EXPR, boolean_type_node, test, test2);
 
       itype = gfc_get_int_type (expr->ts.kind);
-      tmp = build_fix_expr (&se->pre, tmp, itype, FIX_TRUNC_EXPR);
+      if (modulo)
+       tmp = build_fix_expr (&se->pre, tmp, itype, FIX_FLOOR_EXPR);
+      else
+       tmp = build_fix_expr (&se->pre, tmp, itype, FIX_TRUNC_EXPR);
       tmp = convert (type, tmp);
       tmp = build3 (COND_EXPR, type, test2, tmp, arg);
       tmp = build2 (MULT_EXPR, type, tmp, arg2);
@@ -831,22 +836,6 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
 
     default:
       gcc_unreachable ();
-    }
-
-  if (modulo)
-    {
-     zero = gfc_build_const (type, integer_zero_node);
-     /* Build !(A > 0 .xor. P > 0).  */
-     test = build2 (GT_EXPR, boolean_type_node, arg, zero);
-     test2 = build2 (GT_EXPR, boolean_type_node, arg2, zero);
-     test = build2 (TRUTH_XOR_EXPR, boolean_type_node, test, test2);
-     test = build1 (TRUTH_NOT_EXPR, boolean_type_node, test);
-     /* Build (A == 0) .or. !(A > 0 .xor. P > 0).  */
-     test2 = build2 (EQ_EXPR, boolean_type_node, arg, zero);
-     test = build2 (TRUTH_OR_EXPR, boolean_type_node, test, test2);
-
-     se->expr = build3 (COND_EXPR, type, test, se->expr, 
-			build2 (PLUS_EXPR, type, se->expr, arg2));
     }
 }
 

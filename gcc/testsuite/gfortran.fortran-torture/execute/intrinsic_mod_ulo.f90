@@ -47,16 +47,19 @@ program mod_modulotest
    call integertest ((/-8, 5/), (/-3, 2/))
    call integertest ((/8, -5/), (/3, -2/))
    call integertest ((/-8, -5/), (/-3, -3/))
+   call integertest ((/ 2, -1/), (/0, 0/))
 
    call real4test ((/3.0, 2.5/), (/0.5, 0.5/))
    call real4test ((/-3.0, 2.5/), (/-0.5, 2.0/))
    call real4test ((/3.0, -2.5/), (/0.5, -2.0/))
    call real4test ((/-3.0, -2.5/), (/-0.5, -0.5/))
+   call real4test ((/ 2.0, -1.0/), (/ 0.0, 0.0 /))
 
    call real8test ((/3.0_8, 2.5_8/), (/0.5_8, 0.5_8/))
    call real8test ((/-3.0_8, 2.5_8/), (/-0.5_8, 2.0_8/))
    call real8test ((/3.0_8, -2.5_8/), (/0.5_8, -2.0_8/))
    call real8test ((/-3.0_8, -2.5_8/), (/-0.5_8, -0.5_8/))
+   call real8test ((/ 2.0_8, -1.0_8/), (/ 0.0_8, 0.0_8 /))
    
    ! Check large numbers
    call real4test ((/2e34, 1.0/), (/0.0, 0.0/))
