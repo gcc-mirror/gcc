@@ -315,7 +315,7 @@ static void add_insn_mem_dependence	PROTO((rtx *, rtx *, rtx, rtx));
 static void flush_pending_lists		PROTO((rtx));
 static void sched_analyze_1		PROTO((rtx, rtx));
 static void sched_analyze_2		PROTO((rtx, rtx));
-static void sched_analyze_insn		PROTO((rtx, rtx));
+static void sched_analyze_insn		PROTO((rtx, rtx, int));
 static int sched_analyze		PROTO((rtx, rtx));
 static void sched_note_set		PROTO((int, rtx, int));
 static int rank_for_schedule		PROTO((rtx *, rtx *));
@@ -2013,8 +2013,9 @@ sched_analyze_2 (x, insn)
 /* Analyze an INSN with pattern X to find all dependencies.  */
 
 static void
-sched_analyze_insn (x, insn)
+sched_analyze_insn (x, insn, loop_note)
      rtx x, insn;
+     int loop_note;
 {
   register RTX_CODE code = GET_CODE (x);
   rtx link;
@@ -2047,6 +2048,32 @@ sched_analyze_insn (x, insn)
 	else
 	  sched_analyze_2 (XEXP (link, 0), insn);
       }
+
+  /* If there is a LOOP_{BEG,END} note in the middle of a basic block, then
+     we must be sure that no instructions are scheduled across it.
+     Otherwise, the reg_n_refs info (which depends on loop_depth) would
+     become incorrect.  */
+
+  if (loop_note)
+    {
+      int max_reg = max_reg_num ();
+
+      for (i = 0; i < max_reg; i++)
+	{
+	  rtx u;
+	  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	  reg_last_uses[i] = 0;
+	  if (reg_last_sets[i])
+	    add_dependence (insn, reg_last_sets[i], 0);
+	}
+      reg_pending_sets_all = 1;
+
+      flush_pending_lists (insn);
+
+      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
+				       GEN_INT (loop_note), REG_NOTES (insn));
+    }
 
   /* After reload, it is possible for an instruction to have a REG_DEAD note
      for a register that actually dies a few instructions earlier.  For
@@ -2135,6 +2162,7 @@ sched_analyze (head, tail)
   register int n_insns = 0;
   register rtx u;
   register int luid = 0;
+  int loop_note = 0;
 
   for (insn = head; ; insn = NEXT_INSN (insn))
     {
@@ -2142,7 +2170,8 @@ sched_analyze (head, tail)
 
       if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
 	{
-	  sched_analyze_insn (PATTERN (insn), insn);
+	  sched_analyze_insn (PATTERN (insn), insn, loop_note);
+	  loop_note = 0;
 	  n_insns += 1;
 	}
       else if (GET_CODE (insn) == CALL_INSN)
@@ -2179,7 +2208,8 @@ sched_analyze (head, tail)
 
 	      /* Add a fake REG_NOTE which we will later convert
 		 back into a NOTE_INSN_SETJMP note.  */
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD, constm1_rtx,
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
+					  GEN_INT (NOTE_INSN_SETJMP),
 					  REG_NOTES (insn));
 	    }
 	  else
@@ -2207,7 +2237,8 @@ sched_analyze (head, tail)
 	    }
 	  LOG_LINKS (sched_before_next_call) = 0;
 
-	  sched_analyze_insn (PATTERN (insn), insn);
+	  sched_analyze_insn (PATTERN (insn), insn, loop_note);
+	  loop_note = 0;
 
 	  /* We don't need to flush memory for a function call which does
 	     not involve memory.  */
@@ -2224,6 +2255,10 @@ sched_analyze (head, tail)
 	  last_function_call = insn;
 	  n_insns += 1;
 	}
+      else if (GET_CODE (insn) == NOTE
+	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
+	loop_note = NOTE_LINE_NUMBER (insn);
 
       if (insn == tail)
 	return n_insns;
@@ -2995,8 +3030,11 @@ unlink_notes (insn, tail)
 
       /* Don't save away NOTE_INSN_SETJMPs, because they must remain
 	 immediately after the call they follow.  We use a fake
-	 (REG_DEAD (const_int -1)) note to remember them.  */
-      else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP)
+	 (REG_DEAD (const_int -1)) note to remember them.
+	 Likewise with NOTE_INSN_LOOP_BEG and NOTE_INSN_LOOP_END.  */
+      else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP
+	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
+	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END)
 	{
 	  /* Insert the note at the end of the notes list.  */
 	  PREV_INSN (insn) = note_list;
@@ -3813,17 +3851,23 @@ schedule_block (b, file)
       PREV_INSN (last) = insn;
       last = insn;
 
-      /* Check to see if we need to re-emit a NOTE_INSN_SETJMP here.  */
-      if (GET_CODE (insn) == CALL_INSN)
-	{
-	  rtx note = find_reg_note (insn, REG_DEAD, constm1_rtx);
+      /* Check to see if we need to re-emit any notes here.  */
+      {
+	rtx note;
 
-	  if (note)
-	    {
-	      emit_note_after (NOTE_INSN_SETJMP, insn);
-	      remove_note (insn, note);
-	    }
-	}
+	for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	  {
+	    if (REG_NOTE_KIND (note) == REG_DEAD
+		&& GET_CODE (XEXP (note, 0)) == CONST_INT)
+	      {
+		if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
+		  emit_note_after (INTVAL (XEXP (note, 0)), insn);
+		else
+		  last = emit_note_before (INTVAL (XEXP (note, 0)), insn);
+		remove_note (insn, note);
+	      }
+	  }
+      }
 
       /* Everything that precedes INSN now either becomes "ready", if
 	 it can execute immediately before INSN, or "pending", if
