@@ -326,10 +326,9 @@ calc_dfs_tree (di, reverse)
          They are reverse-unreachable.  In the dom-case we disallow such
          nodes, but in post-dom we have to deal with them, so we simply
          include them in the DFS tree which actually becomes a forest.  */
-      int i;
-      for (i = n_basic_blocks - 1; i >= 0; i--)
+      basic_block b;
+      FOR_EACH_BB_REVERSE (b)
 	{
-	  basic_block b = BASIC_BLOCK (i);
 	  if (di->dfs_order[b->index])
 	    continue;
 	  di->dfs_order[b->index] = di->dfsnum;
@@ -604,17 +603,17 @@ calculate_dominance_info (idom, doms, reverse)
 
   if (idom)
     {
-      int i;
-      for (i = 0; i < n_basic_blocks; i++)
+      basic_block b;
+
+      FOR_EACH_BB (b)
 	{
-	  basic_block b = BASIC_BLOCK (i);
 	  TBB d = di.dom[di.dfs_order[b->index]];
 
 	  /* The old code didn't modify array elements of nodes having only
 	     itself as dominator (d==0) or only ENTRY_BLOCK (resp. EXIT_BLOCK)
 	     (d==1).  */
 	  if (d > 1)
-	    idom[i] = di.dfs_to_bb[d]->index;
+	    idom[b->index] = di.dfs_to_bb[d]->index;
 	}
     }
   if (doms)

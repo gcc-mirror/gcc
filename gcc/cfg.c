@@ -167,12 +167,11 @@ free_edge (e)
 void
 clear_edges ()
 {
-  int i;
+  basic_block bb;
   edge e;
 
-  for (i = 0; i < n_basic_blocks; ++i)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       edge e = bb->succ;
 
       while (e)
@@ -480,11 +479,10 @@ redirect_edge_pred (e, new_pred)
 void
 clear_bb_flags ()
 {
-  int i;
-  ENTRY_BLOCK_PTR->flags = 0;
-  EXIT_BLOCK_PTR->flags = 0;
-  for (i = 0; i < n_basic_blocks; i++)
-    BASIC_BLOCK (i)->flags = 0;
+  basic_block bb;
+
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    bb->flags = 0;
 }
 
 void
@@ -492,6 +490,7 @@ dump_flow_info (file)
      FILE *file;
 {
   int i;
+  basic_block bb;
   static const char * const reg_class_names[] = REG_CLASS_NAMES;
 
   fprintf (file, "%d registers.\n", max_regno);
@@ -539,9 +538,8 @@ dump_flow_info (file)
       }
 
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       edge e;
       int sum;
       gcov_type lsum;
@@ -709,13 +707,10 @@ alloc_aux_for_blocks (size)
   first_block_aux_obj = (char *) obstack_alloc (&block_aux_obstack, 0);
   if (size)
     {
-      int i;
+      basic_block bb;
 
-      for (i = 0; i < n_basic_blocks; i++)
-	alloc_aux_for_block (BASIC_BLOCK (i), size);
-
-      alloc_aux_for_block (ENTRY_BLOCK_PTR, size);
-      alloc_aux_for_block (EXIT_BLOCK_PTR, size);
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+	alloc_aux_for_block (bb, size);
     }
 }
 
@@ -724,13 +719,10 @@ alloc_aux_for_blocks (size)
 void
 clear_aux_for_blocks ()
 {
-  int i;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; i++)
-    BASIC_BLOCK (i)->aux = NULL;
-
-  ENTRY_BLOCK_PTR->aux = NULL;
-  EXIT_BLOCK_PTR->aux = NULL;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    bb->aux = NULL;
 }
 
 /* Free data allocated in block_aux_obstack and clear AUX pointers
@@ -784,16 +776,11 @@ alloc_aux_for_edges (size)
   first_edge_aux_obj = (char *) obstack_alloc (&edge_aux_obstack, 0);
   if (size)
     {
-      int i;
-      for (i = -1; i < n_basic_blocks; i++)
-	{
-	  basic_block bb;
-	  edge e;
+      basic_block bb;
 
-	  if (i >= 0)
-	    bb = BASIC_BLOCK (i);
-	  else
-	    bb = ENTRY_BLOCK_PTR;
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+	{
+	  edge e;
 
 	  for (e = bb->succ; e; e = e->succ_next)
 	    alloc_aux_for_edge (e, size);
@@ -806,18 +793,11 @@ alloc_aux_for_edges (size)
 void
 clear_aux_for_edges ()
 {
-  int i;
+  basic_block bb;
+  edge e;
 
-  for (i = -1; i < n_basic_blocks; i++)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
     {
-      basic_block bb;
-      edge e;
-
-      if (i >= 0)
-	bb = BASIC_BLOCK (i);
-      else
-	bb = ENTRY_BLOCK_PTR;
-
       for (e = bb->succ; e; e = e->succ_next)
 	e->aux = NULL;
     }

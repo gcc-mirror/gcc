@@ -934,8 +934,8 @@ insn_current_reference_address (branch)
 void
 compute_alignments ()
 {
-  int i;
   int log, max_skip, max_log;
+  basic_block bb;
 
   if (label_align)
     {
@@ -952,9 +952,8 @@ compute_alignments ()
   if (! optimize || optimize_size)
     return;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx label = bb->head;
       int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
       edge e;

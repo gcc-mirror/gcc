@@ -6566,11 +6566,10 @@ ia64_sched_finish (dump, sched_verbose)
 static void
 emit_predicate_relation_info ()
 {
-  int i;
+  basic_block bb;
 
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  FOR_EACH_BB_REVERSE (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       int r;
       rtx head = bb->head;
 
@@ -6596,9 +6595,8 @@ emit_predicate_relation_info ()
      relations around them.  Otherwise the assembler will assume the call
      returns, and complain about uses of call-clobbered predicates after
      the call.  */
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  FOR_EACH_BB_REVERSE (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx insn = bb->head;
       
       while (1)
@@ -6974,11 +6972,11 @@ ia64_strip_name_encoding (str)
 
 /* The current basic block number.  */
 
-static int block_num;
+static bool last_block;
 
 /* True if we need a copy_state command at the start of the next block.  */
 
-static int need_copy_state;
+static bool need_copy_state;
 
 /* The function emits unwind directives for the start of an epilogue.  */
 
@@ -6988,10 +6986,10 @@ process_epilogue ()
   /* If this isn't the last block of the function, then we need to label the
      current state, and copy it back in at the start of the next block.  */
 
-  if (block_num != n_basic_blocks - 1)
+  if (!last_block)
     {
       fprintf (asm_out_file, "\t.label_state 1\n");
-      need_copy_state = 1;
+      need_copy_state = true;
     }
 
   fprintf (asm_out_file, "\t.restore sp\n");
@@ -7229,14 +7227,14 @@ process_for_unwind_directive (asm_out_file, insn)
       if (GET_CODE (insn) == NOTE
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
 	{
-	  block_num = NOTE_BASIC_BLOCK (insn)->index;
+	  last_block = NOTE_BASIC_BLOCK (insn)->next_bb == EXIT_BLOCK_PTR;
 
 	  /* Restore unwind state from immediately before the epilogue.  */
 	  if (need_copy_state)
 	    {
 	      fprintf (asm_out_file, "\t.body\n");
 	      fprintf (asm_out_file, "\t.copy_state 1\n");
-	      need_copy_state = 0;
+	      need_copy_state = false;
 	    }
 	}
 

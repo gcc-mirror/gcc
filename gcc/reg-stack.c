@@ -418,6 +418,7 @@ reg_to_stack (first, file)
      rtx first;
      FILE *file;
 {
+  basic_block bb;
   int i;
   int max_uid;
 
@@ -451,10 +452,9 @@ reg_to_stack (first, file)
 
   /* Set up block info for each basic block.  */
   alloc_aux_for_blocks (sizeof (struct block_info_def));
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  FOR_EACH_BB_REVERSE (bb)
     {
       edge e;
-      basic_block bb = BASIC_BLOCK (i);
       for (e = bb->pred; e; e=e->pred_next)
 	if (!(e->flags & EDGE_DFS_BACK)
 	    && e->src != ENTRY_BLOCK_PTR)
@@ -2380,12 +2380,12 @@ print_stack (file, s)
 static int
 convert_regs_entry ()
 {
-  int inserted = 0, i;
+  int inserted = 0;
   edge e;
+  basic_block block;
 
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  FOR_EACH_BB_REVERSE (block)
     {
-      basic_block block = BASIC_BLOCK (i);
       block_info bi = BLOCK_INFO (block);
       int reg;
 
@@ -2813,7 +2813,8 @@ static int
 convert_regs (file)
      FILE *file;
 {
-  int inserted, i;
+  int inserted;
+  basic_block b;
   edge e;
 
   /* Initialize uninitialized registers on function entry.  */
@@ -2833,9 +2834,8 @@ convert_regs (file)
 
   /* ??? Process all unreachable blocks.  Though there's no excuse
      for keeping these even when not optimizing.  */
-  for (i = 0; i < n_basic_blocks; ++i)
+  FOR_EACH_BB (b)
     {
-      basic_block b = BASIC_BLOCK (i);
       block_info bi = BLOCK_INFO (b);
 
       if (! bi->done)

@@ -279,7 +279,7 @@ void
 schedule_ebbs (dump_file)
      FILE *dump_file;
 {
-  int i;
+  basic_block bb;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -296,20 +296,19 @@ schedule_ebbs (dump_file)
   compute_bb_for_insn (get_max_uid ());
 
   /* Schedule every region in the subroutine.  */
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      rtx head = BASIC_BLOCK (i)->head;
+      rtx head = bb->head;
       rtx tail;
 
       for (;;)
 	{
-	  basic_block b = BASIC_BLOCK (i);
 	  edge e;
-	  tail = b->end;
-	  if (b->next_bb == EXIT_BLOCK_PTR
-	      || GET_CODE (b->next_bb->head) == CODE_LABEL)
+	  tail = bb->end;
+	  if (bb->next_bb == EXIT_BLOCK_PTR
+	      || GET_CODE (bb->next_bb->head) == CODE_LABEL)
 	    break;
-	  for (e = b->succ; e; e = e->succ_next)
+	  for (e = bb->succ; e; e = e->succ_next)
 	    if ((e->flags & EDGE_FALLTHRU) != 0)
 	      break;
 	  if (! e)
@@ -325,7 +324,7 @@ schedule_ebbs (dump_file)
 		}
 	    }
 
-	  i++;
+	  bb = bb->next_bb;
 	}
 
       /* Blah.  We should fix the rest of the code not to get confused by

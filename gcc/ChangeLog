@@ -1,3 +1,87 @@
+2002-05-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* bb-reorder.c (make_reorder_chain, make_reorder_chain_1):
+	Use FOR_EACH_BB macros to iterate over basic block chain.
+	* cfg.c (clear_edges, clear_bb_flags, dump_flow_info,
+	alloc_aux_for_blocks, clear_aux_for_blocks, alloc_aux_for_edges):
+	Likewise.
+	* cfganal.c (set_edge_can_fallthru_flag, flow_call_edges_add,
+	find_unreachable_blocks, create_edge_list, verify_edge_list,
+	remove_fake_edges, add_noreturn_fake_exit_edges,
+	flow_preorder_transversal_compute, flow_dfs_compute_reverse_execute):
+	Likewise.
+	* cfgbuild.c (make_edges, find_basic_blocks, find_many_sub_basic_blocks,
+	find_sub_basic_blocks): Likewise.
+	* cfgcleanup.c (try_optimize_cfg, delete_unreachable_blocks):
+	Likewise.
+	* cfglayout.c (record_effective_endpoints, cleanup_unconditional_jumps):
+	Likewise.
+	* cfgloop.c (flow_loops_cfg_dump, flow_loops_find):
+	Likewise.
+	* cfgrtl.c (compute_bb_for_insn, tidy_fallthru_edges,
+	commit_edge_insertions, commit_edge_insertions_watch_calls,
+	print_rtl_with_bb, verify_flow_info, purge_all_dead_edges): Likewise.
+	* combine.c (combine_instructions, reg_dead_at_p): Likewise.
+	* conflict.c (conflict_graph_compute): Likewise.
+	* df.c (df_bitmaps_alloc, df_bitmaps_free, df_alloc, df_analyse_1,
+	df_modified_p, df_refs_unlink, df_dump): Likewise.
+	* dominance.c (calc_dfs_tree, calculate_dominance_info): Likewise.
+	* final.c (compute_alignments): Likewise.
+	* flow.c (update_life_info, update_life_info_in_dirty_blocks,
+	delete_noop_moves, calculate_global_regs_live, allocate_bb_life_data,
+	count_or_remove_death_notes): Likewise.
+	* gcse.c (oprs_unchanged_p, record_last_reg_set_info,
+	compute_hash_table, compute_kill_rd, compute_rd, compute_ae_kill,
+	classic_gcse, compute_transp, cprop, compute_pre_data,
+	compute_transpout, invalidate_nonnull_info,
+	delete_null_pointer_checks_1, delete_null_pointer_checks,
+	compute_code_hoist_vbeinout, hoist_code, compute_ld_motion_mems,
+	compute_store_table, build_store_vectors, store_motion): Likewise.
+	* global.c (global_conflicts, mark_elimination): Likewise.
+	* graph.c (print_rtl_graph_with_bb): Likewise.
+	* haifa-sched.c (sched_init): Likewise.
+	* ifcvt.c (if_convert): Likewise.
+	* lcm.c (compute_antinout_edge, compute_laterin, compute_insert_delete,
+	compute_available, compute_nearerout, compute_rev_insert_delete,
+	optimize_mode_switching): Likewise.
+	* local-alloc.c (local_alloc, update_equiv_regs): Likewise.
+	* predict.c (estimate_probability, note_prediction_to_br_prob,
+	propagate_freq, counts_to_freqs, expensive_function_p,
+	estimate_bb_frequencies): Likewise.
+	* profile.c (instrument_edges, get_exec_counts,
+	compute_branch_probabilities, compute_checksum, branch_prob,
+	find_spanning_tree): Likewise.
+	* recog.c (split_all_insns, peephole2_optimize): Likewise.
+	* reg-stack.c (reg_to_stack, convert_regs_entry, convert_regs):
+	Likewise.
+	* regclass.c (scan_one_insn, regclass): Likewise.
+	* regmove.c (mark_flags_life_zones, regmove_optimize,
+	record_stack_memrefs): Likewise.
+	* regrename.c (regrename_optimize, copyprop_hardreg_forward): Likewise.
+	* reload1.c (reload, reload_combine, fixup_abnormal_edges): Likewise.
+	* resource.c (find_basic_block): Likewise.
+	* sched-ebb.c (schedule_ebbs): Likewise.
+	* sched-rgn.c (is_cfg_nonregular, build_control_flow,
+	find_single_block_region, find_rgns, schedule_insns)
+	* sibcall.c (optimize_sibling_and_tail_recursive_call)
+	* ssa-ccp.c (optimize_unexecutable_edges,
+	ssa_ccp_df_delete_unreachable_insns): Likewise.
+	* ssa-dce.c (ssa_eliminate_dead_code): Likewise.
+	* ssa.c (find_evaluations, compute_dominance_frontiers_1,
+	rename_block, convert_to_ssa, compute_conservative_reg_partition,
+	compute_coalesced_reg_partition, rename_equivalent_regs,
+	convert_from_ssa): Likewise.
+	* config/ia64/ia64.c (emit_predicate_relation_info, process_epilogue,
+	process_for_unwind_directive): Likewise.
+
+	* df.c (FOR_ALL_BBS): Removed.
+	* gcse.c (struct null_pointer_info): Type of current_block field
+	changed.
+	(struct reg_avail_info): Type of last_bb field changed.
+	* config/ia64/ia64.c (block_num): Removed.
+	(need_copy_state): Type changed.
+	(last_block): New.
+
 2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c (mark_named_operators): Split out from init_builtins.

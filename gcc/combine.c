@@ -610,133 +610,132 @@ combine_instructions (f, nregs)
 
   /* Now scan all the insns in forward order.  */
 
-  this_basic_block = ENTRY_BLOCK_PTR;
   label_tick = 1;
   last_call_cuid = 0;
   mem_last_set = 0;
   init_reg_last_arrays ();
   setup_incoming_promotions ();
 
-  for (insn = f; insn; insn = next ? next : NEXT_INSN (insn))
+  FOR_EACH_BB (this_basic_block)
     {
-      next = 0;
-
-      /* If INSN starts a new basic block, update our basic block number.  */
-      if (this_basic_block->next_bb != EXIT_BLOCK_PTR
-	  && this_basic_block->next_bb->head == insn)
-	this_basic_block = this_basic_block->next_bb;
-
-      if (GET_CODE (insn) == CODE_LABEL)
-	label_tick++;
-
-      else if (INSN_P (insn))
+      for (insn = this_basic_block->head;
+           insn != NEXT_INSN (this_basic_block->end);
+	   insn = next ? next : NEXT_INSN (insn))
 	{
-	  /* See if we know about function return values before this
-	     insn based upon SUBREG flags.  */
-	  check_promoted_subreg (insn, PATTERN (insn));
+	  next = 0;
 
-	  /* Try this insn with each insn it links back to.  */
+	  if (GET_CODE (insn) == CODE_LABEL)
+	    label_tick++;
 
-	  for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
-	    if ((next = try_combine (insn, XEXP (links, 0),
-				     NULL_RTX, &new_direct_jump_p)) != 0)
-	      goto retry;
-
-	  /* Try each sequence of three linked insns ending with this one.  */
-
-	  for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
+	  else if (INSN_P (insn))
 	    {
-	      rtx link = XEXP (links, 0);
+	      /* See if we know about function return values before this
+		 insn based upon SUBREG flags.  */
+	      check_promoted_subreg (insn, PATTERN (insn));
 
-	      /* If the linked insn has been replaced by a note, then there
-		 is no point in pursuing this chain any further.  */
-	      if (GET_CODE (link) == NOTE)
-		continue;
+	      /* Try this insn with each insn it links back to.  */
 
-	      for (nextlinks = LOG_LINKS (link);
-		   nextlinks;
-		   nextlinks = XEXP (nextlinks, 1))
-		if ((next = try_combine (insn, link,
-					 XEXP (nextlinks, 0),
-					 &new_direct_jump_p)) != 0)
+	      for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
+		if ((next = try_combine (insn, XEXP (links, 0),
+					 NULL_RTX, &new_direct_jump_p)) != 0)
 		  goto retry;
-	    }
 
-#ifdef HAVE_cc0
-	  /* Try to combine a jump insn that uses CC0
-	     with a preceding insn that sets CC0, and maybe with its
-	     logical predecessor as well.
-	     This is how we make decrement-and-branch insns.
-	     We need this special code because data flow connections
-	     via CC0 do not get entered in LOG_LINKS.  */
+	      /* Try each sequence of three linked insns ending with this one.  */
 
-	  if (GET_CODE (insn) == JUMP_INSN
-	      && (prev = prev_nonnote_insn (insn)) != 0
-	      && GET_CODE (prev) == INSN
-	      && sets_cc0_p (PATTERN (prev)))
-	    {
-	      if ((next = try_combine (insn, prev,
-				       NULL_RTX, &new_direct_jump_p)) != 0)
-		goto retry;
+	      for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
+		{
+		  rtx link = XEXP (links, 0);
 
-	      for (nextlinks = LOG_LINKS (prev); nextlinks;
-		   nextlinks = XEXP (nextlinks, 1))
-		if ((next = try_combine (insn, prev,
-					 XEXP (nextlinks, 0),
-					 &new_direct_jump_p)) != 0)
+		  /* If the linked insn has been replaced by a note, then there
+		     is no point in pursuing this chain any further.  */
+		  if (GET_CODE (link) == NOTE)
+		    continue;
+
+		  for (nextlinks = LOG_LINKS (link);
+		       nextlinks;
+		       nextlinks = XEXP (nextlinks, 1))
+		    if ((next = try_combine (insn, link,
+					     XEXP (nextlinks, 0),
+					     &new_direct_jump_p)) != 0)
+		      goto retry;
+		}
+
+    #ifdef HAVE_cc0
+	      /* Try to combine a jump insn that uses CC0
+		 with a preceding insn that sets CC0, and maybe with its
+		 logical predecessor as well.
+		 This is how we make decrement-and-branch insns.
+		 We need this special code because data flow connections
+		 via CC0 do not get entered in LOG_LINKS.  */
+
+	      if (GET_CODE (insn) == JUMP_INSN
+		  && (prev = prev_nonnote_insn (insn)) != 0
+		  && GET_CODE (prev) == INSN
+		  && sets_cc0_p (PATTERN (prev)))
+		{
+		  if ((next = try_combine (insn, prev,
+					   NULL_RTX, &new_direct_jump_p)) != 0)
+		    goto retry;
+
+		  for (nextlinks = LOG_LINKS (prev); nextlinks;
+		       nextlinks = XEXP (nextlinks, 1))
+		    if ((next = try_combine (insn, prev,
+					     XEXP (nextlinks, 0),
+					     &new_direct_jump_p)) != 0)
+		      goto retry;
+		}
+
+	      /* Do the same for an insn that explicitly references CC0.  */
+	      if (GET_CODE (insn) == INSN
+		  && (prev = prev_nonnote_insn (insn)) != 0
+		  && GET_CODE (prev) == INSN
+		  && sets_cc0_p (PATTERN (prev))
+		  && GET_CODE (PATTERN (insn)) == SET
+		  && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (insn))))
+		{
+		  if ((next = try_combine (insn, prev,
+					   NULL_RTX, &new_direct_jump_p)) != 0)
+		    goto retry;
+
+		  for (nextlinks = LOG_LINKS (prev); nextlinks;
+		       nextlinks = XEXP (nextlinks, 1))
+		    if ((next = try_combine (insn, prev,
+					     XEXP (nextlinks, 0),
+					     &new_direct_jump_p)) != 0)
+		      goto retry;
+		}
+
+	      /* Finally, see if any of the insns that this insn links to
+		 explicitly references CC0.  If so, try this insn, that insn,
+		 and its predecessor if it sets CC0.  */
+	      for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
+		if (GET_CODE (XEXP (links, 0)) == INSN
+		    && GET_CODE (PATTERN (XEXP (links, 0))) == SET
+		    && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (XEXP (links, 0))))
+		    && (prev = prev_nonnote_insn (XEXP (links, 0))) != 0
+		    && GET_CODE (prev) == INSN
+		    && sets_cc0_p (PATTERN (prev))
+		    && (next = try_combine (insn, XEXP (links, 0),
+					    prev, &new_direct_jump_p)) != 0)
 		  goto retry;
+    #endif
+
+	      /* Try combining an insn with two different insns whose results it
+		 uses.  */
+	      for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
+		for (nextlinks = XEXP (links, 1); nextlinks;
+		     nextlinks = XEXP (nextlinks, 1))
+		  if ((next = try_combine (insn, XEXP (links, 0),
+					   XEXP (nextlinks, 0),
+					   &new_direct_jump_p)) != 0)
+		    goto retry;
+
+	      if (GET_CODE (insn) != NOTE)
+		record_dead_and_set_regs (insn);
+
+	    retry:
+	      ;
 	    }
-
-	  /* Do the same for an insn that explicitly references CC0.  */
-	  if (GET_CODE (insn) == INSN
-	      && (prev = prev_nonnote_insn (insn)) != 0
-	      && GET_CODE (prev) == INSN
-	      && sets_cc0_p (PATTERN (prev))
-	      && GET_CODE (PATTERN (insn)) == SET
-	      && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (insn))))
-	    {
-	      if ((next = try_combine (insn, prev,
-				       NULL_RTX, &new_direct_jump_p)) != 0)
-		goto retry;
-
-	      for (nextlinks = LOG_LINKS (prev); nextlinks;
-		   nextlinks = XEXP (nextlinks, 1))
-		if ((next = try_combine (insn, prev,
-					 XEXP (nextlinks, 0),
-					 &new_direct_jump_p)) != 0)
-		  goto retry;
-	    }
-
-	  /* Finally, see if any of the insns that this insn links to
-	     explicitly references CC0.  If so, try this insn, that insn,
-	     and its predecessor if it sets CC0.  */
-	  for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
-	    if (GET_CODE (XEXP (links, 0)) == INSN
-		&& GET_CODE (PATTERN (XEXP (links, 0))) == SET
-		&& reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (XEXP (links, 0))))
-		&& (prev = prev_nonnote_insn (XEXP (links, 0))) != 0
-		&& GET_CODE (prev) == INSN
-		&& sets_cc0_p (PATTERN (prev))
-		&& (next = try_combine (insn, XEXP (links, 0),
-					prev, &new_direct_jump_p)) != 0)
-	      goto retry;
-#endif
-
-	  /* Try combining an insn with two different insns whose results it
-	     uses.  */
-	  for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
-	    for (nextlinks = XEXP (links, 1); nextlinks;
-		 nextlinks = XEXP (nextlinks, 1))
-	      if ((next = try_combine (insn, XEXP (links, 0),
-				       XEXP (nextlinks, 0),
-				       &new_direct_jump_p)) != 0)
-		goto retry;
-
-	  if (GET_CODE (insn) != NOTE)
-	    record_dead_and_set_regs (insn);
-
-	retry:
-	  ;
 	}
     }
   clear_bb_flags ();
@@ -11666,7 +11665,7 @@ reg_dead_at_p (reg, insn)
      rtx reg;
      rtx insn;
 {
-  int block;
+  basic_block block;
   unsigned int i;
 
   /* Set variables for reg_dead_at_p_1.  */
@@ -11699,21 +11698,21 @@ reg_dead_at_p (reg, insn)
 	return 1;
     }
 
-  /* Get the basic block number that we were in.  */
+  /* Get the basic block that we were in.  */
   if (insn == 0)
-    block = 0;
+    block = ENTRY_BLOCK_PTR->next_bb;
   else
     {
-      for (block = 0; block < n_basic_blocks; block++)
-	if (insn == BLOCK_HEAD (block))
+      FOR_EACH_BB (block)
+	if (insn == block->head)
 	  break;
 
-      if (block == n_basic_blocks)
+      if (block == EXIT_BLOCK_PTR)
 	return 0;
     }
 
   for (i = reg_dead_regno; i < reg_dead_endregno; i++)
-    if (REGNO_REG_SET_P (BASIC_BLOCK (block)->global_live_at_start, i))
+    if (REGNO_REG_SET_P (block->global_live_at_start, i))
       return 0;
 
   return 1;

@@ -336,8 +336,9 @@ alloc_qty (regno, mode, size, birth)
 int
 local_alloc ()
 {
-  int b, i;
+  int i;
   int max_qty;
+  basic_block b;
 
   /* We need to keep track of whether or not we recorded a LABEL_REF so
      that we know if the jump optimizer needs to be rerun.  */
@@ -394,7 +395,7 @@ local_alloc ()
 
   /* Allocate each block's local registers, block by block.  */
 
-  for (b = 0; b < n_basic_blocks; b++)
+  FOR_EACH_BB (b)
     {
       /* NEXT_QTY indicates which elements of the `qty_...'
 	 vectors might need to be initialized because they were used
@@ -426,7 +427,7 @@ local_alloc ()
 
       next_qty = 0;
 
-      block_alloc (b);
+      block_alloc (b->index);
     }
 
   free (qty);
@@ -815,7 +816,7 @@ static void
 update_equiv_regs ()
 {
   rtx insn;
-  int block;
+  basic_block bb;
   int loop_depth;
   regset_head cleared_regs;
   int clear_regnos = 0;
@@ -828,9 +829,8 @@ update_equiv_regs ()
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
      a register can be set below its use.  */
-  for (block = 0; block < n_basic_blocks; block++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (block);
       loop_depth = bb->loop_depth;
 
       for (insn = bb->head; insn != NEXT_INSN (bb->end); insn = NEXT_INSN (insn))
@@ -1044,10 +1044,8 @@ update_equiv_regs ()
      within the same loop (or in an inner loop), then move the register
      initialization just before the use, so that they are in the same
      basic block.  */
-  for (block = n_basic_blocks - 1; block >= 0; block--)
+  FOR_EACH_BB_REVERSE (bb)
     {
-      basic_block bb = BASIC_BLOCK (block);
-
       loop_depth = bb->loop_depth;
       for (insn = bb->end; insn != PREV_INSN (bb->head); insn = PREV_INSN (insn))
 	{
@@ -1139,12 +1137,12 @@ update_equiv_regs ()
 
 		      XEXP (reg_equiv[regno].init_insns, 0) = new_insn;
 
-		      REG_BASIC_BLOCK (regno) = block >= 0 ? block : 0;
+		      REG_BASIC_BLOCK (regno) = bb->index;
 		      REG_N_CALLS_CROSSED (regno) = 0;
 		      REG_LIVE_LENGTH (regno) = 2;
 
-		      if (block >= 0 && insn == BLOCK_HEAD (block))
-			BLOCK_HEAD (block) = PREV_INSN (insn);
+		      if (insn == bb->head)
+			bb->head = PREV_INSN (insn);
 
 		      /* Remember to clear REGNO from all basic block's live
 			 info.  */
@@ -1159,24 +1157,22 @@ update_equiv_regs ()
   /* Clear all dead REGNOs from all basic block's live info.  */
   if (clear_regnos)
     {
-      int j, l;
+      int j;
       if (clear_regnos > 8)
         {
-	  for (l = 0; l < n_basic_blocks; l++)
+	  FOR_EACH_BB (bb)
 	    {
-	      AND_COMPL_REG_SET (BASIC_BLOCK (l)->global_live_at_start,
-	                         &cleared_regs);
-	      AND_COMPL_REG_SET (BASIC_BLOCK (l)->global_live_at_end,
-	                         &cleared_regs);
+	      AND_COMPL_REG_SET (bb->global_live_at_start, &cleared_regs);
+	      AND_COMPL_REG_SET (bb->global_live_at_end, &cleared_regs);
 	    }
 	}
       else
         EXECUTE_IF_SET_IN_REG_SET (&cleared_regs, 0, j,
           {
-	    for (l = 0; l < n_basic_blocks; l++)
+	    FOR_EACH_BB (bb)
 	      {
-	        CLEAR_REGNO_REG_SET (BASIC_BLOCK (l)->global_live_at_start, j);
-	        CLEAR_REGNO_REG_SET (BASIC_BLOCK (l)->global_live_at_end, j);
+	        CLEAR_REGNO_REG_SET (bb->global_live_at_start, j);
+	        CLEAR_REGNO_REG_SET (bb->global_live_at_end, j);
 	      }
 	  });
     }

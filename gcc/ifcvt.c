@@ -2685,7 +2685,7 @@ void
 if_convert (x_life_data_ok)
      int x_life_data_ok;
 {
-  int block_num;
+  basic_block bb;
 
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
@@ -2707,18 +2707,13 @@ if_convert (x_life_data_ok)
     clear_bb_flags ();
 
   /* Record initial block numbers.  */
-  for (block_num = 0; block_num < n_basic_blocks; block_num++)
-    SET_ORIG_INDEX (BASIC_BLOCK (block_num), block_num);
+  FOR_EACH_BB (bb)
+    SET_ORIG_INDEX (bb, bb->index);
 
   /* Go through each of the basic blocks looking for things to convert.  */
-  for (block_num = 0; block_num < n_basic_blocks; )
-    {
-      basic_block bb = BASIC_BLOCK (block_num);
-      if (find_if_header (bb))
-	block_num = bb->index;
-      else 
-	block_num++;
-    }
+  FOR_EACH_BB (bb)
+    while (find_if_header (bb))
+      continue;
 
   if (post_dominators)
     sbitmap_vector_free (post_dominators);

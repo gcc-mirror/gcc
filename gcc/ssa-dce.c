@@ -490,6 +490,7 @@ ssa_eliminate_dead_code ()
 {
   int i;
   rtx insn;
+  basic_block bb;
   /* Necessary instructions with operands to explore.  */
   varray_type unprocessed_instructions;
   /* Map element (b,e) is nonzero if the block is control dependent on
@@ -718,10 +719,8 @@ ssa_eliminate_dead_code ()
   /* Find any blocks with no successors and ensure they are followed
      by a BARRIER.  delete_insn has the nasty habit of deleting barriers
      when deleting insns.  */
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_EACH_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
-
       if (bb->succ == NULL)
 	{
 	  rtx next = NEXT_INSN (bb->end);
