@@ -189,6 +189,7 @@ extern void emit_i387_cw_initialization PARAMS ((rtx, rtx));
 extern bool ix86_fp_jump_nontrivial_p PARAMS ((enum rtx_code));
 extern void x86_order_regs_for_local_alloc PARAMS ((void));
 extern void x86_function_profiler PARAMS ((FILE *, int));
+extern void x86_emit_floatuns PARAMS ((rtx [2]));
 
 
 #ifdef TREE_CODE
