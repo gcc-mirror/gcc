@@ -1,3 +1,8 @@
+1999-08-29 08:38 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* stdbool.h: Make the typedef name _Bool, with bool a #defined
+	alias.
+
 Sun Aug 29 09:36:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.c (tree_code_name): Constify a char*.
