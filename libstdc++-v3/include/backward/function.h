@@ -29,9 +29,7 @@
 
 #include <bits/c++config.h>
 #include <stddef.h>
-#ifndef _CPP_BITS_STL_FUNCTION_H
 #include <bits/stl_function.h>
-#endif
 
 // Names from stl_function.h
 using std::unary_function; 

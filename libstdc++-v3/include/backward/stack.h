@@ -30,12 +30,10 @@
 #include "vector.h"
 #include "deque.h"
 #include "heap.h"
-#include <bits/stl_stack.h>
-#include <bits/stl_queue.h>
+#include "queue.h"
+#include <bits/std_stack.h>
 
 using std::stack;
-using std::queue;
-using std::priority_queue;
 
 #endif /* _CPP_BACKWARD_STACK_H */
 

@@ -27,26 +27,15 @@
 #ifndef _CPP_BACKWARD_ITERATOR_H
 #define _CPP_BACKWARD_ITERATOR_H 1
 
-#ifndef _CPP_BACKWARD_FUNCTION_H
 #include "function.h"
-#endif
 #include <stddef.h>
 #include "iostream.h"
-#ifndef _CPP_BITS_STL_ITERATOR_H
-#include <bits/stl_iterator.h>
-#endif
-#ifndef _CPP_BITS_TYPE_TRAITS_H
-#include <bits/type_traits.h>
-#endif
-#ifndef _CPP_BITS_STL_CONSTRUCT_H
+#include "iterator.h"
+
 #include <bits/stl_construct.h>
-#endif
-#ifndef _CPP_BITS_STL_RAW_STORAGE_ITERATOR_H
 #include <bits/stl_raw_storage_iter.h>
-#endif
 
 // Names from stl_iterator.h
-
 using std::input_iterator_tag;
 using std::output_iterator_tag;
 using std::forward_iterator_tag;

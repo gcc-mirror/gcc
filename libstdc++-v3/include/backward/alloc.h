@@ -15,9 +15,7 @@
 #define _CPP_BACKWARD_ALLOC_H 1
 
 #include <bits/c++config.h>
-#ifndef _CPP_BITS_STL_ALLOC_H
 #include <bits/stl_alloc.h>
-#endif
 
 using std::__malloc_alloc_template; 
 using std::malloc_alloc; 

@@ -1,3 +1,44 @@
+2001-03-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.target: Remove duplicate aix entry.
+
+2001-03-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/stl_bvector.h: Move to...
+	* include/bits/stl_vector.h: ...here.
+	* include/ext/bvector: Move to...
+	* include/backward/bvector.h: ...here.
+	* include/bits/std_vector.h: Change stl_bvector include.
+	* include/bits/std_queue.h: Remove bvector include.
+	* include/ext/tree: Insert using rb_tree, move to...
+	* include/backward/tree.h: ...here.
+	* include/backward/hash_map.h: Include ext/hash_map.
+	* include/backward/hash_set.h: Include ext/hash_set.
+	* include/backward/queue.h: New file.
+	* include/backward/stack.h: Edit.
+	* include/backward/algo.h: Same.
+	* include/backward/algobase.h: Same.
+	* include/backward/alloc.h: Same.
+	* include/backward/function.h: Same.
+	* include/backward/iomanip.h: Same.
+	* include/backward/istream.h: Same.
+	* include/backward/iterator.h: Same.
+	* include/backward/list.h: Same.
+	* include/backward/map.h: Same.
+	* include/backward/multimap.h: Same.
+	* include/backward/multiset.h: Same.
+	* include/backward/ostream.h: Same.
+	* include/backward/pair.h: Same
+	* include/backward/rope.h: Same.
+	* include/backward/set.h: Same.
+	* include/backward/stream.h: Same.
+	* include/backward/strstream.h: Same.
+	* include/backward/tempbuf.h: Same.
+	* src/Makefile.am (ext_headers): Edit.
+	* src/Makefile.in: Regenerate.
+	* testsuite/ext/headers.cc (main): Fix.
+	* mkcheck.in: Fix.
+	
 2001-03-30  Phil Edwards  <pme@sources.redhat.com>
 
 	* tests_flags.in (LIBS):  Pass correct path for installed testing.
