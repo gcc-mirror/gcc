@@ -1,5 +1,10 @@
 2002-01-25  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/x-vms (version): Make static.
+
+	* config/alpha/vms.h (MD_FALLBACK_FRAME_STATE_FOR): Fix error
+	in previous checkin.
+
 	* Makefile.in (install-headers-cp): New target.
 	* config.gcc (alpha-dec-*vms*): Install headers with
 	install-headers-cp

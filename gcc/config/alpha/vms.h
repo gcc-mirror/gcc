@@ -413,14 +413,14 @@ do {									\
       (FS)->regs.reg[27].loc.offset = -pv->pdsc$l_size;			\
       (FS)->regs.reg[27].how = REG_SAVED_OFFSET;			\
       (FS)->regs.reg[26].loc.offset					\
-	 = pv->pdsc$w_rsa_offset - pv->pdsc$l_size;			\
+	 = -(pv->pdsc$l_size - pv->pdsc$w_rsa_offset);			\
       (FS)->regs.reg[26].how = REG_SAVED_OFFSET;			\
 									\
       for (i = 0, j = 0; i < 32; i++)					\
 	if (1<<i & pv->pdsc$l_ireg_mask)				\
 	  {								\
 	    (FS)->regs.reg[i].loc.offset				\
-	      = pv->pdsc$l_size - pv->pdsc$w_rsa_offset - 8 * j++;	\
+	      = -(pv->pdsc$l_size - pv->pdsc$w_rsa_offset - 8 * ++j);	\
 	    (FS)->regs.reg[i].how = REG_SAVED_OFFSET;			\
 	  }								\
 									\
