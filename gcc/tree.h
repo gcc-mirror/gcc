@@ -640,7 +640,8 @@ struct tree_type
    of the bit closest to the beginning of the structure.  */
 #define DECL_FIELD_BITPOS(NODE) ((NODE)->decl.arguments)
 /* In a FIELD_DECL, this indicates whether the field was a bit-field and
-   if so, its type.  */
+   if so, the type that was originally specified for it.
+   TREE_TYPE may have been modified (in finish_struct).  */
 #define DECL_BIT_FIELD_TYPE(NODE) ((NODE)->decl.result)
 /* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
 /* VAR_DECL and PARM_DECL reserve the arguments slot
