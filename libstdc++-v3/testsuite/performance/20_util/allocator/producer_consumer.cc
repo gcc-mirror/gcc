@@ -290,51 +290,51 @@ template<typename Container>
 
 int main(void)
 {
-#ifdef TEST_T1
+#ifdef TEST_T0
   test_container(vector<test_type, malloc_alloc_type>());
 #endif
-#ifdef TEST_T2
+#ifdef TEST_T1
   test_container(vector<test_type, new_alloc_type>());
 #endif
-#ifdef TEST_T3
+#ifdef TEST_T2
   test_container(vector<test_type, so_alloc_type>());
 #endif
-#ifdef TEST_T4
+#ifdef TEST_T3
   test_container(vector<test_type, bit_alloc_type>());
 #endif
-#ifdef TEST_T5
+#ifdef TEST_T4
   test_container(vector<test_type, po_alloc_type>());
 #endif
 
-#ifdef TEST_T6
+#ifdef TEST_T5
   test_container(list<test_type, malloc_alloc_type>());
 #endif
-#ifdef TEST_T7
+#ifdef TEST_T6
   test_container(list<test_type, new_alloc_type>());
 #endif
-#ifdef TEST_T8
+#ifdef TEST_T7
   test_container(list<test_type, so_alloc_type>());
 #endif
-#ifdef TEST_T9
+#ifdef TEST_T8
   test_container(list<test_type, bit_alloc_type>());
 #endif
-#ifdef TEST_T10
+#ifdef TEST_T9
   test_container(list<test_type, po_alloc_type>());
 #endif
 
-#ifdef TEST_T11
+#ifdef TEST_T10
   test_container(map<test_type, test_type, compare_type, malloc_alloc_type>());
 #endif
-#ifdef TEST_T12
+#ifdef TEST_T11
   test_container(map<test_type, test_type, compare_type, new_alloc_type>());
 #endif
-#ifdef TEST_T13
+#ifdef TEST_T12
   test_container(map<test_type, test_type, compare_type, so_alloc_type>());
 #endif
-#ifdef TEST_T14
+#ifdef TEST_T13
   test_container(map<test_type, test_type, compare_type, bit_alloc_type>());
 #endif
-#ifdef TEST_T15
+#ifdef TEST_T14
   test_container(map<test_type, test_type, compare_type, po_alloc_type>());
 #endif
 

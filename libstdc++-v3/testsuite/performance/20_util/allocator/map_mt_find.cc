@@ -142,10 +142,10 @@ int main()
   exec_tests<malloc_allocator<int> >();
 #endif
 #ifdef TEST_T2
-  exec_tests<bitmap_allocator<int> >();
+  exec_tests<__mt_alloc<int> >();
 #endif
 #ifdef TEST_T3
-  exec_tests<__mt_alloc<int> >();
+  exec_tests<bitmap_allocator<int> >();
 #endif
 #ifdef TEST_T4
   exec_tests<__pool_alloc<int> >();

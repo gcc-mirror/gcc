@@ -1,3 +1,15 @@
+2004-04-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::allocate): Factor out
+	some duplicated code.
+	(__mt_alloc<>::_Bin_record): Spare the space of _M_free and _M_used
+	in the single threaded case.
+	* testsuite/performance/20_util/allocator/list_sort_search.cc:
+	Reorder and renumber the tests consistently with the other testfiles.
+	* testsuite/performance/20_util/allocator/map_mt_find.cc: Ditto.
+	* testsuite/performance/20_util/allocator/map_thread.cc: Ditto.
+	* testsuite/performance/20_util/allocator/producer_consumer.cc: Ditto.
+
 2004-04-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
