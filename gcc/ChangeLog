@@ -1,3 +1,8 @@
+Tue Nov 20 11:56:12 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/xm-vms.h (_POSIX_EXIT): Define.
+	Remove unneeded exit related macros.
+
 2001-11-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (rs6000_emit_eh_toc_restore): Remove ALIGN parm.
