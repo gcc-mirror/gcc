@@ -1,3 +1,7 @@
+Tue Feb  4 21:49:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movti_rex64):  Fix constraint.
+
 2003-02-04  Rodney Brown  <rbrown64@csc.com.au>
 
 	* config/i386/i386.c (x86_function_profiler): Fix typo in format.
