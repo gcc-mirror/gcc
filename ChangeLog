@@ -1,3 +1,11 @@
+2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* Makefile.in (BASE_FLAGS_TO_PASS): Alphabetize. 
+	(libstdcxx_incdir): Pass down.
+	* config.if: Remove expired bits for cxx_interface, add stub.
+	(libstdcxx_incdir): Add variable for g++ include directory.
+	* configure.in (gxx_include_dir): Use it.
+	
 2000-12-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* MAINTAINERS: Added self as sh port co-maintainer.  Removed entry
