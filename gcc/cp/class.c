@@ -853,57 +853,34 @@ set_rtti_entry (virtuals, offset, type)
   TREE_VALUE (virtuals) = fn;
 }
 
-/* Build a virtual function for type TYPE.
-   If BINFO is non-NULL, build the vtable starting with the initial
-   approximation that it is the same as the one which is the head of
-   the association list.  */
+/* Get the VAR_DECL of the vtable for TYPE. TYPE need not be polymorphic,
+   or even complete.  If this does not exist, create it.  If COMPLETE is
+   non-zero, then complete the definition of it -- that will render it
+   impossible to actually build the vtable, but is useful to get at those
+   which are known to exist in the runtime.  */
 
-static void
-build_vtable (binfo, type)
-     tree binfo, type;
+tree get_vtable_decl (type, complete)
+     tree type;
+     int complete;
 {
   tree name = get_vtable_name (type);
-  tree virtuals, decl;
-
-  if (binfo)
+  tree decl = IDENTIFIER_GLOBAL_VALUE (name);
+  
+  if (decl)
     {
-      tree offset;
-
-      if (BINFO_NEW_VTABLE_MARKED (binfo))
-	/* We have already created a vtable for this base, so there's
-	   no need to do it again.  */
-	return;
-
-      virtuals = copy_list (BINFO_VIRTUALS (binfo));
-      decl = build_lang_decl (VAR_DECL, name, 
-			      TREE_TYPE (BINFO_VTABLE (binfo)));
-
-      /* Now do rtti stuff.  */
-      offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
-      offset = ssize_binop (MINUS_EXPR, integer_zero_node, offset);
-      set_rtti_entry (virtuals, offset, type);
+      my_friendly_assert (TREE_CODE (decl) == VAR_DECL
+                          && DECL_VIRTUAL_P (decl), 20000118);
+      return decl;
     }
-  else
-    {
-      virtuals = NULL_TREE;
-      decl = build_lang_decl (VAR_DECL, name, void_type_node);
-    }
-
-#ifdef GATHER_STATISTICS
-  n_vtables += 1;
-  n_vtable_elems += list_length (virtuals);
-#endif
-
+  
+  decl = build_lang_decl (VAR_DECL, name, void_type_node);
+  
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
   import_export_vtable (decl, type, 0);
 
   decl = pushdecl_top_level (decl);
   SET_IDENTIFIER_GLOBAL_VALUE (name, decl);
-  /* Initialize the association list for this type, based
-     on our first approximation.  */
-  TYPE_BINFO_VTABLE (type) = decl;
-  TYPE_BINFO_VIRTUALS (type) = virtuals;
-
+  
   DECL_ARTIFICIAL (decl) = 1;
   TREE_STATIC (decl) = 1;
 #ifndef WRITABLE_VTABLES
@@ -916,7 +893,61 @@ build_vtable (binfo, type)
 			   DECL_ALIGN (decl));
 
   DECL_VIRTUAL_P (decl) = 1;
+  
+  if (complete)
+    cp_finish_decl (decl, NULL_TREE, NULL_TREE, 0);
+
   DECL_CONTEXT (decl) = type;
+  return decl;
+}
+
+/* Build a virtual function for type TYPE.
+   If BINFO is non-NULL, build the vtable starting with the initial
+   approximation that it is the same as the one which is the head of
+   the association list.  */
+
+static void
+build_vtable (binfo, type)
+     tree binfo, type;
+{
+  tree virtuals, decl;
+
+  decl = get_vtable_decl (type, /*complete=*/0);
+  
+  if (binfo)
+    {
+      tree offset;
+
+      if (BINFO_NEW_VTABLE_MARKED (binfo))
+	/* We have already created a vtable for this base, so there's
+	   no need to do it again.  */
+	return;
+
+      virtuals = copy_list (BINFO_VIRTUALS (binfo));
+      TREE_TYPE (decl) = TREE_TYPE (BINFO_VTABLE (binfo));
+      DECL_SIZE (decl) = TYPE_SIZE (TREE_TYPE (BINFO_VTABLE (binfo)));
+
+      /* Now do rtti stuff.  */
+      offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
+      offset = ssize_binop (MINUS_EXPR, integer_zero_node, offset);
+      set_rtti_entry (virtuals, offset, type);
+    }
+  else
+    {
+      my_friendly_assert (TREE_CODE (TREE_TYPE (decl)) == VOID_TYPE,
+                          20000118);
+      virtuals = NULL_TREE;
+    }
+
+#ifdef GATHER_STATISTICS
+  n_vtables += 1;
+  n_vtable_elems += list_length (virtuals);
+#endif
+
+  /* Initialize the association list for this type, based
+     on our first approximation.  */
+  TYPE_BINFO_VTABLE (type) = decl;
+  TYPE_BINFO_VIRTUALS (type) = virtuals;
 
   binfo = TYPE_BINFO (type);
   SET_BINFO_NEW_VTABLE_MARKED (binfo);

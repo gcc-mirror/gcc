@@ -2551,6 +2551,10 @@ finish_vtable_vardecl (t, data)
 	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
+      if (TREE_TYPE (vars) == void_type_node)
+        /* It is a dummy vtable made by get_vtable_decl. Ignore it.  */
+        return 0;
+      
       /* Write it out.  */
       mark_vtable_entries (vars);
       if (TREE_TYPE (DECL_INITIAL (vars)) == 0)

@@ -1,5 +1,13 @@
 2000-01-24  Nathan Sidwell  <sidwell@codesourcery.com>
 
+	* cp-tree.h (get_vtable_decl): Prototype new function.
+	* class.c (get_vtable_decl): New function. Broken out from ...
+	(build_vtable): ... here. Use it.
+	* decl2.c (finish_vtable_vardecl): Ignore dummy vtables created
+	by get_vtable_decl.
+
+2000-01-24  Nathan Sidwell  <sidwell@codesourcery.com>
+
 	* cp-tree.h (CPTI_TP_DESC_TYPE, CPTI_ACCESS_MODE_TYPE,
 	CPTI_USER_DESC_TYPE, CPTI_CLASS_DESC_TYPE, CPTI_ATTR_DESC_TYPE,
 	CPTI_PTMF_DESC_TYPE): Remove cp_tree_index enumerations.
