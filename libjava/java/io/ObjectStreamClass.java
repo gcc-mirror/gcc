@@ -516,9 +516,12 @@ public class ObjectStreamClass implements Serializable
 	  && Modifier.isPrivate (modifiers))
       {
 	fields = getSerialPersistentFields (cl);
-	Arrays.sort (fields);
-	calculateOffsets ();
-	return;
+	if (fields != null)
+	  {
+	    Arrays.sort(fields);
+	    calculateOffsets();
+	    return;
+	  }
       }
     }
     catch (NoSuchFieldException ignore)
@@ -700,16 +703,41 @@ public class ObjectStreamClass implements Serializable
     }
   }
 
-  // Returns the value of CLAZZ's private static final field named
-  // `serialPersistentFields'.
+  /**
+   * Returns the value of CLAZZ's private static final field named
+   * `serialPersistentFields'. It performs some sanity checks before
+   * returning the real array. Besides, the returned array is a clean
+   * copy of the original. So it can be modified.
+   *
+   * @param clazz Class to retrieve 'serialPersistentFields' from.
+   * @return The content of 'serialPersistentFields'.
+   */
   private ObjectStreamField[] getSerialPersistentFields (Class clazz)
     throws NoSuchFieldException, IllegalAccessException
   {
+    ObjectStreamField[] fieldsArray = null;
+    ObjectStreamField[] o;
+
     // Use getDeclaredField rather than getField for the same reason
     // as above in getDefinedSUID.
     Field f = clazz.getDeclaredField("serialPersistentFields");
     f.setAccessible(true);
-    return (ObjectStreamField[]) f.get(null);
+
+    int modifiers = f.getModifiers();
+    if (!(Modifier.isStatic(modifiers)
+	&& Modifier.isFinal(modifiers)
+	&& Modifier.isPrivate(modifiers)))
+      return null;
+    
+    o = (ObjectStreamField[]) f.get(null);
+    
+    if (o == null)
+      return null;
+
+    fieldsArray = new ObjectStreamField[o.length];
+    System.arraycopy(o, 0, fieldsArray, 0, o.length);
+    
+    return fieldsArray;
   }
 
   public static final ObjectStreamField[] NO_FIELDS = {};
