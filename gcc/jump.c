@@ -3067,7 +3067,7 @@ delete_computation (insn)
   rtx note, next;
 
 #ifdef HAVE_cc0
-  if (reg_referenced_p (cc0_rtx, insn))
+  if (reg_referenced_p (cc0_rtx, PATTERN (insn)))
     {
       rtx prev = prev_nonnote_insn (insn);
       /* We assume that at this stage
