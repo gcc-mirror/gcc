@@ -349,7 +349,7 @@ asm_output_aligned_bss (file, decl, name, size, align)
   /* Standard thing is just output label for the object.  */
   ASM_OUTPUT_LABEL (file, name);
 #endif /* ASM_DECLARE_OBJECT_NAME */
-  ASM_OUTPUT_SKIP (file, size);
+  ASM_OUTPUT_SKIP (file, size ? size : 1);
 }
 
 #endif
