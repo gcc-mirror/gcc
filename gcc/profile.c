@@ -1537,12 +1537,14 @@ output_arc_profiler (arcno, insert_after)
       rtx next_insert_after = next_nonnote_insn (insert_after);
 
       /* The first insn after the call may be a stack pop, skip it.  */
-      if (GET_CODE (next_insert_after) == INSN
+      if (next_insert_after
+	  && GET_CODE (next_insert_after) == INSN
 	  && GET_CODE (PATTERN (next_insert_after)) == SET
 	  && SET_DEST (PATTERN (next_insert_after)) == stack_pointer_rtx)
 	next_insert_after = next_nonnote_insn (next_insert_after);
 
-      if (GET_CODE (next_insert_after) == INSN)
+      if (next_insert_after
+	  && GET_CODE (next_insert_after) == INSN)
 	{
 	  if (GET_CODE (PATTERN (insert_after)) == SET)
 	    return_reg = SET_DEST (PATTERN (insert_after));
@@ -1613,7 +1615,7 @@ output_func_start_profiler ()
 
   fndecl = build_decl (FUNCTION_DECL, fnname,
 		       build_function_type (void_type_node, NULL_TREE));
-  DECL_EXTERNAL (fndecl) = 1;
+  DECL_EXTERNAL (fndecl) = 0;
   TREE_PUBLIC (fndecl) = 1;
   DECL_ASSEMBLER_NAME (fndecl) = fnname;
   DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
