@@ -1,3 +1,9 @@
+2001-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* crtstuff.c (init_dummy): Use CRT_END_INIT_DUMMY if defined.
+	Remove ia32 linux PIC kludge and move it...
+	* config/i386/linux.h (CRT_END_INIT_DUMMY): ...here.
+
 2001-03-20  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in (install-libgcc): Pass complete list of variables.
