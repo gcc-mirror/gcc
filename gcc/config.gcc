@@ -2609,8 +2609,11 @@ powerpc-*-darwin*)
 	tm_file="${tm_file} darwin.h rs6000/darwin.h"
 	tm_p_file="${tm_p_file} darwin-protos.h"
 	tmake_file=rs6000/t-darwin
-	xm_file=rs6000/xm-darwin.h
 	xmake_file=rs6000/x-darwin
+	# Override the usual setting, since Apple's GCC has lame bugs
+	# and can't handle the initializers.  Someday the bugs will be
+	# fixed and we can get rid of this silliness.
+	xm_defines="HAVE_DESIGNATED_INITIALIZERS=0"
 	extra_objs="darwin.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no

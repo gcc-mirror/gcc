@@ -1,3 +1,9 @@
+2001-04-22  Stan Shebs  <shebs@apple.com>
+
+	* config.gcc (powerpc-*-darwin*): Move the flag in xm-darwin.h
+	into xm_defines.
+	* config/rs6000/xm-darwin.h: Remove file.
+
 2001-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (main): Use concat in lieu of xmalloc/sprintf.
