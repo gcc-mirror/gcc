@@ -3012,7 +3012,8 @@ assign_parms (fndecl, second_time)
 
 	      if (! second_time)
 		move_block_from_reg (REGNO (entry_parm),
-				     validize_mem (stack_parm), nregs);
+				     validize_mem (stack_parm), nregs,
+				     int_size_in_bytes (TREE_TYPE (parm)));
 	      entry_parm = stack_parm;
 	    }
 	}
@@ -3148,7 +3149,8 @@ assign_parms (fndecl, second_time)
 
 	      move_block_from_reg (REGNO (entry_parm),
 				   validize_mem (stack_parm),
-				   size_stored / UNITS_PER_WORD);
+				   size_stored / UNITS_PER_WORD,
+				   int_size_in_bytes (TREE_TYPE (parm)));
 	    }
 	  DECL_RTL (parm) = stack_parm;
 	}
@@ -3601,8 +3603,6 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 #else /* !ARGS_GROW_DOWNWARD */
   pad_to_arg_alignment (initial_offset_ptr, boundary);
   *offset_ptr = *initial_offset_ptr;
-  if (where_pad == downward)
-    pad_below (offset_ptr, passed_mode, sizetree);
 
 #ifdef PUSH_ROUNDING
   if (passed_mode != BLKmode)
@@ -3614,6 +3614,10 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 	  || ((TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)))
     sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
 
+  /* This must be done after rounding sizetree, so that it will subtract
+     the same value that we explicitly add below.  */
+  if (where_pad == downward)
+    pad_below (offset_ptr, passed_mode, sizetree);
   ADD_PARM_SIZE (*arg_size_ptr, sizetree);
 #endif /* ARGS_GROW_DOWNWARD */
 }
