@@ -1,5 +1,10 @@
 2002-06-20  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* libsupc++/Makefile.am (libsupc__convenience_la_SOURCES): Add
+	c_sources.
+
+2002-06-20  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* src/ext-inst.cc (__gnu_cxx): Use instead of std:: for extensions.
 	Use size_type instead of unsigned long.
 

@@ -95,7 +95,7 @@ sources = \
 	vec.cc
 
 libsupc___la_SOURCES = $(sources) $(c_sources)
-libsupc__convenience_la_SOURCES = $(sources)
+libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
 
 glibcppinstalldir = @gxx_include_dir@
 glibcppinstall_HEADERS = $(headers)
