@@ -1305,9 +1305,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 			       TREE_STRING_POINTER (string), "", 0, argvec,
 			       constraints, filename, line);
 
-  /* The only use of BODY is if no outputs are specified, so set
-     it volatile, at least for now.  */
-  MEM_VOLATILE_P (body) = 1;
+  MEM_VOLATILE_P (body) = vol;
 
   /* Eval the inputs and put them into ARGVEC.
      Put their constraints into ASM_INPUTs and store in CONSTRAINTS.  */

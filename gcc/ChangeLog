@@ -1,3 +1,8 @@
+Thu Feb  5 21:59:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (expand_asm_operands): Correctly identify asm statements
+	no operands.
+
 Thu Feb  5 21:56:06 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 	
 	* c-common.c (decl_attributes): Flag unrecognized attribute
