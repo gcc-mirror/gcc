@@ -27,14 +27,30 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-
 #ifndef _GLIBCPP_OS_DEFINES
-#  define _GLIBCPP_OS_DEFINES
-
+#define _GLIBCPP_OS_DEFINES
 
 /* System-specific #define, typedefs, corrections, etc, go here.  This
    file will come before all others. */
 
+#undef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 500
+#undef _XOPEN_SOURCE_EXTENDED
+#define _XOPEN_SOURCE_EXTENDED 1
+
+/* off64_t */
+#ifndef _LARGE_FILE_API
+#define _LARGE_FILE_API
+#endif
+
+/* atomic types */
+#ifndef _ALL_SOURCE
+#define _ALL_SOURCE
+#endif
+
+#define __off_t off_t
+#define __off64_t off64_t
+#define __ssize_t ssize_t
 
 #endif
 

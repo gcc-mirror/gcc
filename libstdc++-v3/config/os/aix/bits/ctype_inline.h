@@ -37,7 +37,7 @@
   bool
   ctype<char>::
   is(mask __m, char __c) const throw()
-  { return _IS(__c, __m); }
+  { return __OBJ_DATA(__lc_ctype)->mask[__c] & __m; }
 
   const char*
   ctype<char>::
