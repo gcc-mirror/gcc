@@ -1,3 +1,13 @@
+2002-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config.gcc (hppa1.1-*-pro*, hppa1.1-*-osf*, hppa1.1-*-rtems*,
+	hppa1.0-*-osf*, hppa1.1-*-bsd*, hppa1.1-*-hpux10*, hppa2*-*-hpux10*,
+	hppa1.0-*-hpux10*, hppa*64*-*-hpux11*, hppa1.1-*-hpux11*,
+	hppa2*-*-hpux11*, hppa1.0-*-hpux11*, hppa*-*-lites*): Define xmake_file.
+	* ada/Make-lang.in (ADA_FLAGS_TO_PASS): Don't pass ADA_CFLAGS.
+	* pa/t-linux, pa/t-pa, pa/t-pa64, t-pro (T_ADAFLAGS): Delete.
+	* pa/x-ada: New file.  Define ADA_CFLAGS.
+
 2002-04-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Final install): Add to the list of info to include
