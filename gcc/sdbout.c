@@ -715,6 +715,11 @@ sdbout_symbol (decl, local)
 	  && DECL_INITIAL (decl))
 	return;
 
+      /* C++ in 2.3 makes nameless symbols.  That will be fixed later.
+	 For now, avoid crashing.  */
+      if (DECL_NAME (decl) == NULL_TREE)
+	return;
+
       /* Record the name for, starting a symtab entry.  */
       name = IDENTIFIER_POINTER (DECL_NAME (decl));
 
