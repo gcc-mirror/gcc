@@ -1,4 +1,4 @@
-# Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,85 +24,21 @@
 # Load support procs.
 load_lib g++-dg.exp
 
-###########
-# conpr-1.C
-###########
+# Test for whether or not __attribute__((init_priority)) is supported
+# by the platform.
 
-dg-init
-set lines [g++_target_compile "$srcdir/$subdir/conpr-1.C" "$objdir/conpr-1.exe" executable ""]
-if [string match "*init_priority*" $lines] then {
-    xfail "conpr-1.C"
-    file delete $objdir/conpr-1.exe
-} elseif ![string match "" $lines] then {
-    fail "conpr-1.C"
-} else {
-    dg-runtest "$srcdir/$subdir/conpr-1.C" "" "" 
-    file delete $objdir/conpr-1.exe
+set comp_output [g++_target_compile \
+		"$srcdir/$subdir/initp1.C" "initp1.S" assembly ""]
+if { [string match "*init_priority*" $comp_output] } {
+  return 0
 }
-dg-finish
 
-
-###########
-# conpr-2.C
-###########
-
+# Initialize 'dg'.
 dg-init
 
-set lines [g++_target_compile "$srcdir/$subdir/conpr-2a.C" "conpr-2a.o" object ""]
-if [string match "*init_priority*" $lines] then {
-    xfail "conpr-2a.o"
-} elseif ![string match "" $lines] then {
-    fail "conpr-2a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/conpr-2.C" "conpr-2a.o" "" 
-    file delete conpr-2a.o
-}
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" ""
+
+# All done.
 dg-finish
 
-
-###########
-# conpr-3.C
-###########
-
-dg-init
-
-set lines [g++_target_compile "$srcdir/$subdir/conpr-3a.C" "conpr-3a.o" object ""]
-if [string match "*init_priority*" $lines] then {
-    xfail "conpr-3a.o"
-} elseif ![string match "" $lines] then {
-    fail "conpr-3a.o"
-} else {
-    set lines [g++_target_compile "$srcdir/$subdir/conpr-3b.C" "conpr-3b.o" object ""]
-    if ![string match "" $lines] then {
-        fail "conpr-3b.o"
-    } else {
-        # run it with objects both ways around!
-        # This doesn't work on solaris2 for reasons described in PR 6482.
-        if  { ![regexp ".*-solaris2.*" $target_triplet] } {
-            dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3a.o conpr-3b.o" ""
-            dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3b.o conpr-3a.o" ""
-        }
-        file delete conpr-3a.o conpr-3b.o
-    }
-}
-dg-finish
-
-###########
-# initp1.C
-###########
-
-dg-init
-set lines [g++_target_compile "$srcdir/$subdir/initp1.C" "$objdir/initp1.exe" executable ""]
-if [string match "*init_priority*" $lines] then {
-    xfail "initp1.C"
-    file delete $objdir/initp1.exe
-} elseif ![string match "" $lines] then {
-    fail "initp1.C"
-} else {
-    dg-runtest "$srcdir/$subdir/initp1.C" "" ""
-    file delete $objdir/initp1.exe
-}
-dg-finish
-
-
-### EOF ecos.exp
