@@ -235,3 +235,4 @@ Boston, MA 02111-1307, USA.
    to support ANSI C.  */
 /* #define MULTIBYTE_CHARS */
 
+#define TARGET_HAS_F_SETLKW
