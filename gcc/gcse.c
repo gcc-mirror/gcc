@@ -699,7 +699,8 @@ static void free_insn_expr_list_list	PARAMS ((rtx *));
 static void clear_modify_mem_tables	PARAMS ((void));
 static void free_modify_mem_tables	PARAMS ((void));
 static rtx gcse_emit_move_after		PARAMS ((rtx, rtx, rtx));
-static bool do_local_cprop		PARAMS ((rtx, rtx, int));
+static bool do_local_cprop		PARAMS ((rtx, rtx, int, rtx*));
+static bool adjust_libcall_notes	PARAMS ((rtx, rtx, rtx, rtx*));
 static void local_cprop_pass		PARAMS ((int));
 
 /* Entry point for global common subexpression elimination.
@@ -4241,16 +4242,18 @@ cprop_insn (insn, alter_jumps)
   return changed;
 }
 
+/* LIBCALL_SP is a zero-terminated array of insns at the end of a libcall;
+   their REG_EQUAL notes need updating.  */
 static bool
-do_local_cprop (x, insn, alter_jumps)
+do_local_cprop (x, insn, alter_jumps, libcall_sp)
      rtx x;
      rtx insn;
      int alter_jumps;
+     rtx *libcall_sp;
 {
   rtx newreg = NULL, newcnst = NULL;
 
-  /* Rule out USE instructions and ASM statements as we don't want to change the hard
-     registers mentioned.  */
+  /* Rule out USE instructions and ASM statements as we don't want to change the hard registers mentioned.  */
   if (GET_CODE (x) == REG
       && (REGNO (x) >= FIRST_PSEUDO_REGISTER
           || (GET_CODE (PATTERN (insn)) != USE && asm_noperands (PATTERN (insn)) < 0)))
@@ -4279,6 +4282,13 @@ do_local_cprop (x, insn, alter_jumps)
 	}
       if (newcnst && constprop_register (insn, x, newcnst, alter_jumps))
 	{
+	  /* If we find a case where we can't fix the retval REG_EQUAL notes
+	     match the new register, we either have to abandom this replacement
+	     or fix delete_trivially_dead_insns to preserve the setting insn,
+	     or make it delete the REG_EUAQL note, and fix up all passes that
+	     require the REG_EQUAL note there.  */
+	  if (!adjust_libcall_notes (x, newcnst, insn, libcall_sp))
+	    abort ();
 	  if (gcse_file != NULL)
 	    {
 	      fprintf (gcse_file, "LOCAL CONST-PROP: Replacing reg %d in ",
@@ -4293,6 +4303,7 @@ do_local_cprop (x, insn, alter_jumps)
 	}
       else if (newreg && newreg != x && try_replace_reg (x, newreg, insn))
 	{
+	  adjust_libcall_notes (x, newreg, insn, libcall_sp);
 	  if (gcse_file != NULL)
 	    {
 	      fprintf (gcse_file,
@@ -4307,20 +4318,74 @@ do_local_cprop (x, insn, alter_jumps)
   return false;
 }
 
+/* LIBCALL_SP is a zero-terminated array of insns at the end of a libcall;
+   their REG_EQUAL notes need updating to reflect that OLDREG has been
+   replaced with NEWVAL in INSN.  Return true if all substitutions could
+   be made.  */
+static bool
+adjust_libcall_notes (oldreg, newval, insn, libcall_sp)
+     rtx oldreg, newval, insn, *libcall_sp;
+{
+  rtx end;
+
+  while ((end = *libcall_sp++))
+    {
+      rtx note = find_reg_equal_equiv_note (end);
+
+      if (! note)
+	continue;
+
+      if (REG_P (newval))
+	{
+	  if (reg_set_between_p (newval, PREV_INSN (insn), end))
+	    {
+	      do
+		{
+		  note = find_reg_equal_equiv_note (end);
+		  if (! note)
+		    continue;
+		  if (reg_mentioned_p (newval, XEXP (note, 0)))
+		    return false;
+		}
+	      while ((end = *libcall_sp++));
+	      return true;
+	    }
+	}
+      XEXP (note, 0) = replace_rtx (XEXP (note, 0), oldreg, newval);
+      insn = end;
+    }
+  return true;
+}
+
+#define MAX_NESTED_LIBCALLS 9
+
 static void
 local_cprop_pass (alter_jumps)
      int alter_jumps;
 {
   rtx insn;
   struct reg_use *reg_used;
+  rtx libcall_stack[MAX_NESTED_LIBCALLS + 1], *libcall_sp;
 
   cselib_init ();
+  libcall_sp = &libcall_stack[MAX_NESTED_LIBCALLS];
+  *libcall_sp = 0;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	{
-	  rtx note = find_reg_equal_equiv_note (insn);
+	  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
 
+	  if (note)
+	    {
+	      if (libcall_sp == libcall_stack)
+		abort ();
+	      *--libcall_sp = XEXP (note, 0);
+	    }
+	  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
+	  if (note)
+	    libcall_sp++;
+	  note = find_reg_equal_equiv_note (insn);
 	  do
 	    {
 	      reg_use_count = 0;
@@ -4330,7 +4395,8 @@ local_cprop_pass (alter_jumps)
 
 	      for (reg_used = &reg_use_table[0]; reg_use_count > 0;
 		   reg_used++, reg_use_count--)
-		if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps))
+		if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps,
+		    libcall_sp))
 		  break;
 	    }
 	  while (reg_use_count);
