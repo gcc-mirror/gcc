@@ -258,7 +258,7 @@ libiberty.dvi : $(srcdir)/libiberty.texi $(TEXISRC)
 	texi2dvi $(srcdir)/libiberty.texi
 
 libiberty.html : $(srcdir)/libiberty.texi $(TEXISRC)
-	$(MAKEINFO) --html -I$(srcdir) $(srcdir)/libiberty.texi
+	$(MAKEINFO) --no-split --html -I$(srcdir) -o $@ $<
 
 @MAINT@$(srcdir)/functions.texi : stamp-functions
 @MAINT@	@true
