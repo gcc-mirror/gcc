@@ -8671,6 +8671,14 @@ expand_expr (exp, target, tmode, modifier)
 	 return a zero.  */
       else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ERROR_MARK)
 	return const0_rtx;
+      /* If we are taking the address of a constant and are at the
+	 top level, we have to use output_constant_def since we can't
+	 call force_const_mem at top level.  */
+      else if (cfun == 0
+	       && (TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
+		   || (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0)))
+		       == 'c')))
+	op0 = XEXP (output_constant_def (TREE_OPERAND (exp, 0), 0), 0);
       else
 	{
 	  /* We make sure to pass const0_rtx down if we came in with

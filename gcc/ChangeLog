@@ -1,5 +1,8 @@
 Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr, case ADDDR_EXPR): If at top level, don't call
+	force_const_mem.
+
 	* reload.c (combine_reloads): Don't combine an output reload if there
 	are other reloads around for part of the output.
 
