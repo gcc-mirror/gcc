@@ -1,3 +1,8 @@
+2003-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (comdat_linkage): Don't externalize explicit
+	instantiations.
+
 2003-05-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10554
