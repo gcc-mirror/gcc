@@ -1,3 +1,8 @@
+2000-09-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4: Include libtool macros from the source tree.
+	* aclocal.m4, configure: Rebuilt.
+
 2000-09-08  Warren Levy  <warrenl@cygnus.com>
 
 	* java/beans/PropertyChangeEvent.java (serialVersionUID): Added.
