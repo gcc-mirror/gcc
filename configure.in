@@ -94,7 +94,7 @@ native_only="autoconf automake libtool fileutils find gawk gettext grep gzip hel
 
 # directories to be built in a cross environment only
 #
-cross_only="target-libgloss target-newlib target-cygmon target-opcodes target-libstub"
+cross_only="target-libgloss target-newlib target-opcodes"
 
 ## All tools belong in one of the four categories, and are assigned above
 ## We assign ${configdirs} this way to remove all embedded newlines.  This
@@ -396,15 +396,9 @@ case "${target}" in
     ;;
   fr30-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
-    fi
     ;;
   frv-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
     ;;
   h8300*-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -440,9 +434,6 @@ case "${target}" in
     ;;
   i[3456]86-*-coff | i[3456]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-         target_configdirs="${target_configdirs} target-libstub target-cygmon"
-    fi
     ;;
   i[34567]86-*-freebsd*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
@@ -515,15 +506,9 @@ case "${target}" in
     ;;
   m68k-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
     ;;
   m68k-*-coff*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
     ;;
   mcore-*-pe*)
   # The EPOC C++ environment does not support exceptions or rtti,
@@ -535,15 +520,9 @@ case "${target}" in
     ;;
   mn10200-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
-    fi
     ;;
   mn10300-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
-    fi
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
@@ -564,9 +543,6 @@ case "${target}" in
     ;;
   powerpc-*-eabi)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
-    fi
     ;;
   rs6000-*-lynxos*)
     noconfigdirs="$noconfigdirs target-newlib gprof ${libgcj}"
@@ -600,7 +576,6 @@ case "${target}" in
     ;;
   mipstx39-*-*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"   # same as generic mips
-    target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
    ;;
   mips*-*-linux*)
     noconfigdirs="$noconfigdirs target-libffi"
@@ -624,27 +599,18 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   sparc-*-elf*)
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
-    fi
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc64-*-elf*)
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
-    fi
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparclite-*-*)
-    if test x${is_cross_compiler} != xno ; then
-	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
-    fi
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc-*-sunos4*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     if test x${is_cross_compiler} != xno ; then
-           noconfigdirs="$noconfigdirs gdb gdbtest target-newlib target-libgloss"
+           noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
     else
            use_gnu_ld=no
     fi
