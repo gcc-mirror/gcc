@@ -1,3 +1,8 @@
+2002-04-04  Jeff Sturm  <jsturm@one-point.com>
+
+	* src/sparc/v8.S: Add unwind info.
+	* src/sparc/v9.S: Likewise.
+
 2002-03-30  Krister Walfridsson  <cato@df.lth.se>
 
 	* configure.in: Enable i*86-*-netbsdelf*.
