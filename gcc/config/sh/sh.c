@@ -2105,7 +2105,7 @@ mova_p (insn)
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == UNSPEC
 	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPEC_MOVA
 	  /* Don't match mova_const.  */
-	  && XVECEXP (SET_SRC (PATTERN (insn)), 0, 0) == LABEL_REF);
+	  && GET_CODE (XVECEXP (SET_SRC (PATTERN (insn)), 0, 0)) == LABEL_REF);
 }
 
 /* Find the last barrier from insn FROM which is close enough to hold the

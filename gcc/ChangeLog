@@ -1,3 +1,7 @@
+2001-01-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (mova_p): Fix test for mova_const.
+
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * fix-header.c (read_scan_file): Use cpp_get_callbacks and
