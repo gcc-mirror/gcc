@@ -1,5 +1,12 @@
 2000-12-22  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* resource.c (mark_set_resources): Use MARK_SRC_DEST for
+	PRE_MODIFY and POST_MODIFY cases.
+
+	* rtlanal.c (side_effects_p): Handle PRE_MODIFY and POST_MODIFY.
+
+2000-12-22  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* md.texi (Looping Patterns): New node.
 
 2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
