@@ -3702,7 +3702,12 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
     }
 
   if (temp)
-    x = temp, code = GET_CODE (temp), op0_mode = VOIDmode;
+    {
+      x = temp;
+      code = GET_CODE (temp);
+      op0_mode = VOIDmode;
+      mode = GET_MODE (temp);
+    }
 
   /* First see if we can apply the inverse distributive law.  */
   if (code == PLUS || code == MINUS

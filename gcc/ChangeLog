@@ -1,3 +1,8 @@
+2001-07-06  Diego Novillo  <dnovillo@redhat.com>
+
+	* combine.c (combine_simplify_rtx): Also recompute 'mode' if the
+	call to simplify_binary_operation returns a new pattern.
+
 2001-07-06  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* glimits.h (__SHRT_MAX__): New.
