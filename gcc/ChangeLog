@@ -1,3 +1,13 @@
+Wed Aug 27 00:49:14 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* t-freebsd (USER_H): Include EXTRA_HEADERS and LANG_EXTRA_HEADERS.
+	* x-netbsd: Likewise
+	* x-dgux (USER_H): Include EXTRA_HEADERS and LANG_EXTRA_HEADERS
+	(INSTALL_HEADERS): Delete.
+	* x-dguxbcs: Likewise.
+	* x-hp3bsd44: Likewise
+	* x-pa: Likewise.
+
 Wed Aug 27 00:30:00 1997  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
 
 	* i386.md (pop): pop increments the stack pointer.
