@@ -655,7 +655,7 @@ namespace std
 	    {
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c;
+	      int_type __c = __eof;
 
 	      if (__n != numeric_limits<streamsize>::max())
 		--__n;
