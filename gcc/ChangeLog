@@ -1,3 +1,10 @@
+2004-08-26  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/16480
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Don't abort
+	on "(mem (symbol_ref ..))" rtl.  Look at LO_SUM base regs as well
+	as PLUS base regs.
+
 2005-08-28  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/symbian.h (SUBTARGET_ASM_FLOAT_SPEC): Default to
