@@ -86,8 +86,13 @@ typedef struct exception_descriptor
 
 typedef void * (*__eh_matcher)          PROTO ((void *, void *, void *));
 
+/* This value is to be checked as a 'match all' case in the runtime field. */
+
+#define CATCH_ALL_TYPE   ((void *) -1)
+
 /* This is the runtime exception information. This forms the minimum required
    information for an exception info pointer in an eh_context structure. */
+
 
 typedef struct __eh_info 
 {

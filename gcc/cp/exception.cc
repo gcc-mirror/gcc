@@ -160,6 +160,9 @@ __cplus_type_matcher (cp_eh_info *info, rtimetype match_info,
   if (exception_table->lang.language != EH_LANG_C_plus_plus)
     return NULL;
 
+  if (match_info == CATCH_ALL_TYPE)
+    return info->value;
+
   /* we don't worry about version info yet, there is only one version! */
   
   void *match_type = match_info ();

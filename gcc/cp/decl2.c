@@ -3257,6 +3257,8 @@ finish_file ()
       import_export_decl (decl);
     }
 
+  mark_all_runtime_matches ();
+
   /* Now write out inline functions which had their addresses taken and
      which were not declared virtual and which were not declared `extern
      inline'.  */

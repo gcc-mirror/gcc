@@ -161,8 +161,6 @@ void set_exception_version_code                 PROTO((short));
    exception. NEXT is a pointer to the next handler for this region. 
    NULL means there are no more. */
 
-#define CATCH_ALL_TYPE   (tree *) -1
-
 typedef struct handler_info 
 {
   rtx  handler_label;
@@ -209,6 +207,9 @@ int duplicate_handlers                          PROTO((int, int));
 
 struct handler_info *get_first_handler          PROTO((int));
 
+/* Find all the runtime handlers type matches currently referenced */
+
+int find_all_handler_type_matches               PROTO((void ***));
 
 extern void init_eh				PROTO((void));
 

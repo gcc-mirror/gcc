@@ -787,6 +787,66 @@ void remove_handler (removing_label)
     }
 }
 
+/* This function will return a malloc'd pointer to an array of 
+   void pointer representing the runtime match values that 
+   currently exist in all regions. */
+
+int 
+find_all_handler_type_matches (void ***array)
+{
+  struct handler_info *handler, *last;
+  int x,y;
+  void *val;
+  void **ptr;
+  int max_ptr;
+  int n_ptr = 0;
+
+  *array = NULL;
+
+  if (!doing_eh (0) || ! flag_new_exceptions)
+    return 0;
+
+  max_ptr = 100;
+  ptr = (void **)malloc (max_ptr * sizeof (void *));
+
+  if (ptr == NULL)
+    return 0;
+
+  for (x = 0 ; x < current_func_eh_entry; x++)
+    {
+      last = NULL;
+      handler = function_eh_regions[x].handlers;
+      for ( ; handler; last = handler, handler = handler->next)
+        {
+          val = handler->type_info;
+          if (val != NULL && val != CATCH_ALL_TYPE)
+            {
+              /* See if this match value has already been found. */
+              for (y = 0; y < n_ptr; y++)
+                if (ptr[y] == val)
+                  break;
+
+              /* If we break early, we already found this value. */
+              if (y < n_ptr)
+                continue;
+
+              /* Do we need to allocate more space? */
+              if (n_ptr >= max_ptr) 
+                {
+                  max_ptr += max_ptr / 2;
+                  ptr = (void **)realloc (ptr, max_ptr * sizeof (void *));
+                  if (ptr == NULL)
+                    return 0;
+                }
+              ptr[n_ptr] = val;
+              n_ptr++;
+            }
+        }
+    }
+  *array = ptr;
+  return n_ptr;
+}
+
 /* Create a new handler structure initialized with the handler label and
    typeinfo fields passed in. */
 
@@ -1852,7 +1912,11 @@ output_exception_table_entry (file, n)
           if (handler->type_info == NULL)
             assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
           else
-            output_constant ((tree)(handler->type_info), 
+            if (handler->type_info == CATCH_ALL_TYPE)
+              assemble_integer (GEN_INT (CATCH_ALL_TYPE), 
+                                             POINTER_SIZE / BITS_PER_UNIT, 1);
+            else
+              output_constant ((tree)(handler->type_info), 
                                                 POINTER_SIZE / BITS_PER_UNIT);
         }
       putc ('\n', file);		/* blank line */
