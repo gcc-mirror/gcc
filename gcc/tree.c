@@ -4382,23 +4382,7 @@ get_callee_fndecl (call)
      that `f' is being called.  */
   if (TREE_CODE (addr) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (addr, 0)) == FUNCTION_DECL)
-    {
-      tree fn = TREE_OPERAND (addr, 0);
-
-      /* If fn is a declaration of a function in a nested scope that
-         was globally declared inline, we don't set its DECL_INITIAL.
-         However, we can't blindly follow DECL_ABSTRACT_ORIGIN because
-         the C++ front-end uses it for cdtors to refer to their
-         internal declarations, that are not real functions.
-         Fortunately those don't have trees to be saved, so we can tell by
-         checking their DECL_SAVED_TREE.  */
-      if (! DECL_INITIAL (fn)
-	  && DECL_ABSTRACT_ORIGIN (fn)
-	  && DECL_SAVED_TREE (DECL_ABSTRACT_ORIGIN (fn)))
-	fn = DECL_ABSTRACT_ORIGIN (fn);
-
-      return fn;
-    }
+    return TREE_OPERAND (addr, 0);
 
   /* We couldn't figure out what was being called.  */
   return NULL_TREE;

@@ -1,3 +1,8 @@
+2001-12-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree.c (get_callee_fndecl): Move DECL_ABSTRACT_ORIGIN-following...
+	* tree-inline.c (expand_call_inline): ... here.
+
 2001-12-06  H.J. Lu <hjl@gnu.org>
 
 	* Makefile.in (.po.gmo): Use "-mkdir po" for parallel build.

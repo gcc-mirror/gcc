@@ -807,6 +807,18 @@ expand_call_inline (tp, walk_subtrees, data)
   if (!fn)
     return NULL_TREE;
 
+  /* If fn is a declaration of a function in a nested scope that was
+     globally declared inline, we don't set its DECL_INITIAL.
+     However, we can't blindly follow DECL_ABSTRACT_ORIGIN because the
+     C++ front-end uses it for cdtors to refer to their internal
+     declarations, that are not real functions.  Fortunately those
+     don't have trees to be saved, so we can tell by checking their
+     DECL_SAVED_TREE.  */
+  if (! DECL_INITIAL (fn)
+      && DECL_ABSTRACT_ORIGIN (fn)
+      && DECL_SAVED_TREE (DECL_ABSTRACT_ORIGIN (fn)))
+    fn = DECL_ABSTRACT_ORIGIN (fn);
+
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
   if (!inlinable_function_p (fn, id))
