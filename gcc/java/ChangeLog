@@ -6,6 +6,10 @@
 	* class.c (layout_class): Call maybe_layout_super_class on 
 	superinterfaces also, but only if compiling from bytecode.
 
+	Fix for PR gcj/373:
+	* parse.y (create_class): Set ACC_STATIC if class is declared in an
+	interface.
+
 2000-12-15  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (jcf_parse_source): Set wfl_operator if not already
