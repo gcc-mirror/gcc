@@ -74,6 +74,11 @@ extern int target_flags;
 
 #define TARGET_DISABLE_INDEXING (target_flags & 32)
 
+/* Force a colon to be tacked onto the end of local and global
+   labels.  An option because the HP assembler croaks on them.   */
+
+#define TARGET_TRAILING_COLON (target_flags & 64)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -91,6 +96,7 @@ extern int target_flags;
    {"no-shared-libs", -8},\
    {"long-calls", 16},	\
    {"disable-indexing", 32},\
+   {"trailing-colon", 64},\
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
@@ -1542,7 +1548,10 @@ bss_section ()								\
    such as the label on a static function or variable NAME.  */
 
 #define ASM_OUTPUT_LABEL(FILE, NAME)	\
-  do { assemble_name (FILE, NAME); fputc ('\n', FILE); } while (0)
+  do { assemble_name (FILE, NAME); 	\
+       if (TARGET_TRAILING_COLON)	\
+	 fputc (':', FILE);		\
+       fputc ('\n', FILE); } while (0)
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
@@ -1596,7 +1605,11 @@ bss_section ()								\
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s$%04d\n", PREFIX, NUM)
+  {fprintf (FILE, "%s$%04d", PREFIX, NUM);		\
+   if (TARGET_TRAILING_COLON)				\
+     fputs (":\n", FILE);				\
+   else							\
+     fputs (":\n", FILE);}
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
@@ -1697,19 +1710,23 @@ bss_section ()								\
 
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( bss_section (),					\
-  assemble_name ((FILE), (NAME)),			\
-  fputs ("\t.comm ", (FILE)),				\
-  fprintf ((FILE), "%d\n", (ROUNDED)))
+{ bss_section ();					\
+  assemble_name ((FILE), (NAME));			\
+  if (TARGET_TRAILING_COLON) 				\
+    fputc (':', (FILE));				\
+  fputs ("\t.comm ", (FILE));				\
+  fprintf ((FILE), "%d\n", (ROUNDED));}
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-( bss_section (),						\
-  fprintf ((FILE), "\t.align %d\n", (SIZE) <= 4 ? 4 : 8),	\
-  assemble_name ((FILE), (NAME)),				\
-  fprintf ((FILE), "\n\t.block %d\n", (ROUNDED)))
+{ bss_section ();						\
+  fprintf ((FILE), "\t.align %d\n", (SIZE) <= 4 ? 4 : 8);	\
+  assemble_name ((FILE), (NAME));				\
+  if (TARGET_TRAILING_COLON) 				\
+    fputc (':', (FILE));				\
+  fprintf ((FILE), "\n\t.block %d\n", (ROUNDED));}
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
