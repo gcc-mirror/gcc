@@ -1,3 +1,10 @@
+2000-04-24  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* call.c (standard_conversion): Accept conversion between
+	COMPLEX_TYPEs 
+
+	* cvt.c (ocp_convert): Handle conversion to COMPLEX_TYPE
+
 2000-04-24  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* decl2.c (finish_file): Remove double setup for accounting
