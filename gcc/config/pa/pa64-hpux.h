@@ -95,6 +95,14 @@ Boston, MA 02111-1307, USA.  */
 #define MD_EXEC_PREFIX "/usr/ccs/bin"
 #endif
 
+/* Default prefixes.  */
+
+#undef STANDARD_STARTFILE_PREFIX_1
+#define STANDARD_STARTFILE_PREFIX_1 "/lib/pa20_64/"
+
+#undef STANDARD_STARTFILE_PREFIX_2
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/lib/pa20_64/"
+
 /* Under hpux11 the normal location of the various pa20_64 *crt*.o files
    is the /usr/ccs/lib/pa20_64 directory.  Some files may also be in the
    /opt/langtools/lib/pa20_64 directory.  */
@@ -265,11 +273,19 @@ do {								\
 /* The following STARTFILE_SPEC and ENDFILE_SPEC defines provide the
    magic needed to run initializers and finalizers.  */
 #undef STARTFILE_SPEC
+#if TARGET_HPUX_11_11
 #define STARTFILE_SPEC \
-  "%{!shared: %{!symbolic: crt0.o%s}} %{static:crtbeginT.o%s} \
-   %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+  "%{!shared: %{!symbolic: crt0%O%s} %{munix=95:unix95.o%s} \
+     %{!munix=93:%{!munix=95:unix98%O%s}}} %{static:crtbeginT%Oos} \
+   %{!static:%{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}}"
+#else
+#define STARTFILE_SPEC \
+  "%{!shared: %{!symbolic: crt0%O%s} %{munix=95:unix95%O%s}} \
+   %{static:crtbeginT%O%s} %{!static:%{!shared:crtbegin%O%s} \
+   %{shared:crtbeginS%O%s}}"
+#endif
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s}"
+#define ENDFILE_SPEC "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
 
 /* Since HP uses the .init and .fini sections for array initializers
    and finalizers, we need different defines for INIT_SECTION_ASM_OP

@@ -1,3 +1,38 @@
+2004-08-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libstdc++/17005 (fix for HP-UX 11.11)
+	* config.gcc (hppa*-*-*): Move MASK_BIG_SWITCH to target_cpu_default2.
+	(hppa*-*-hpux*): Consolidate hppa1.0-*-* code.  Rework handling of
+	tm_file including pa-hpux1010.h or pa-hpux1111.h when appropriate.  
+	* config/pa/pa-hpux1010.h, config/pa/pa-hpux1111.h: New files.
+	* config/pa/pa-hpux.h (TARGET_HPUX): Define.
+	(LINK_SPEC): Handle march=1.0 option.
+	* config/pa/pa-hpux10.h (TARGET_OS_CPP_BUILTINS): Predefine _XOPEN_UNIX
+	and _XOPEN_SOURCE_EXTENDED for UNIX 95.
+	(SUBTARGET_OPTIONS): New define.
+	(LINK_SPEC): Handle march=1.0 option.
+	(STARTFILE_SPEC): New define.
+	* config/pa/pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Predefine _XOPEN_UNIX
+	and _XOPEN_SOURCE_EXTENDED for UNIX 95.  Additionally, predefine
+	_INCLUDE__STDC_A1_SOURCE and _INCLUDE_XOPEN_SOURCE_500 for UNIX 98.
+	(SUBTARGET_OPTIONS): New define.
+	(LINK_SPEC): Handle march=1.0 option.
+	(STARTFILE_SPEC): New define.
+	* config/pa/pa.c (override_options): Add code to process -munix= option.
+	* config/pa/pa.h (pa_unix_string, flag_pa_unix): Declare.
+	(TARGET_HPUX, TARGET_HPUX_10_10, TARGET_HPUX_11_11): Provide default
+	defines.
+	(TARGET_OPTIONS): Add SUBTARGET_OPTIONS to option list.
+	(SUBTARGET_OPTIONS): Provide default define.
+	* config/pa/pa64-hpux.h (STANDARD_STARTFILE_PREFIX_1,
+	STANDARD_STARTFILE_PREFIX_2): New defines.
+	(STARTFILE_SPEC): Provide unix95.o or unix98.o startfiles as necessary.
+	(ENDFILE_SPEC): Use %O.
+	* doc/install.texi (hppa*-*-hpux*): Reword paragraph on -g and gas.
+	Mention issue caused by changing namespace and runtime to UNIX 95/98.
+	* doc/invoke.texi (HPPA options): Move misplaced text to FRV options.
+	Document -munix=std option.
+
 2004-08-25  Steven Bosscher  <stevenb@suse.de>
 
 	* cse.c (cse_around_loop, cse_check_loop_start,
