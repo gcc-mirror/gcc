@@ -1987,11 +1987,6 @@ find_taken_edge_cond_expr (basic_block bb, tree val)
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
-  /* If both edges of the branch lead to the same basic block, it doesn't
-     matter which edge is taken.  */
-  if (true_edge->dest == false_edge->dest)
-    return true_edge;
-
   /* Otherwise, try to determine which branch of the if() will be taken.
      If VAL is a constant but it can't be reduced to a 0 or a 1, then
      we don't really know which edge will be taken at runtime.  This
