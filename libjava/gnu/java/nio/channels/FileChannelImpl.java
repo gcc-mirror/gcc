@@ -39,12 +39,19 @@ exception statement from your version. */
 package gnu.java.nio.channels;
 
 import gnu.classpath.Configuration;
-import gnu.gcj.RawData;
 import gnu.java.nio.FileLockImpl;
-import java.io.*;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.NonReadableChannelException;
+import java.nio.channels.NonWritableChannelException;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * This file is not user visible !
@@ -54,22 +61,33 @@ import java.nio.channels.*;
  * Upon a Input/Output/RandomAccessFile object.
  */
 
-public class FileChannelImpl extends FileChannel
+public final class FileChannelImpl extends FileChannel
 {
-  int mode;
   // These are WHENCE values for seek.
   static final int SET = 0;
   static final int CUR = 1;
 
   // These are mode values for open().
-  static final int READ   = 1;
-  static final int WRITE  = 2;
-  static final int APPEND = 4;
+  public static final int READ   = 1;
+  public static final int WRITE  = 2;
+  public static final int APPEND = 4;
 
   // EXCL is used only when making a temp file.
-  static final int EXCL   = 8;
-  static final int SYNC   = 16;
-  static final int DSYNC  = 32;
+  public static final int EXCL   = 8;
+  public static final int SYNC   = 16;
+  public static final int DSYNC  = 32;
+
+  private static native void init();
+
+  static
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("javanio");
+      }
+    
+    init();
+  }
 
   /**
    * This is the actual native file descriptor value
@@ -81,8 +99,8 @@ public class FileChannelImpl extends FileChannel
   // efficient way to accomplish that.
   private int fd = -1;
 
-  int length;
   private long pos;
+  private int mode;
 
   public FileChannelImpl ()
   {
@@ -95,8 +113,12 @@ public class FileChannelImpl extends FileChannel
     this.mode = mode;
   }
 
-  private static native void init();
-  static { init (); }
+  /* Used by init() (native code) */
+  FileChannelImpl (int fd, int mode)
+  {
+    this.fd = fd;
+    this.mode = mode;
+  }
 
   public static FileChannelImpl in;
   public static FileChannelImpl out;
@@ -104,19 +126,12 @@ public class FileChannelImpl extends FileChannel
 
   private native int open (String path, int mode) throws FileNotFoundException;
 
-  /** Attach to an already-opened file.  */
-  public FileChannelImpl (int desc, int mode)
-  {
-    fd = desc;
-    this.mode = mode;
-  }
-
-  native int available () throws IOException;
-  private native long implPosition ();
-  private native void seek (long newPosition);
-  private native void implTruncate (long size);
+  public native int available () throws IOException;
+  private native long implPosition () throws IOException;
+  private native void seek (long newPosition) throws IOException;
+  private native void implTruncate (long size) throws IOException;
   
-  public native void unlock (long pos, long len);
+  public native void unlock (long pos, long len) throws IOException;
 
   public native long size () throws IOException;
     
@@ -350,7 +365,7 @@ public class FileChannelImpl extends FileChannel
    * Otherwise return false.
    */
   private native boolean lock(long position, long size,
-			      boolean shared, boolean wait);
+			      boolean shared, boolean wait) throws IOException;
   
   public FileLock lock (long position, long size, boolean shared)
     throws IOException

@@ -1,5 +1,23 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileLockImpl.java
+	(static): Removed, not needed anymore.
+	* gnu/java/nio/channels/FileChannelImpl.java
+	(FileChannelImpl): Made final.
+	(mode): Made private.
+	(READ, WRITE, APPEND): Made public.
+	(EXCL, SYNC, DSYNC): Likewise.
+	(static): Load native JNI library, when needed.
+	(length): Unused, removed.
+	(available): Made public.
+	(implPosition): Throws IOException.
+	(seek): Likewise.
+	(implTruncate): Likewise.
+	(unlock): Likewise.
+	(lock): Likewise.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/AWTPermission.java,
 	java/awt/Component.java,
 	java/awt/ComponentOrientation.java,,
