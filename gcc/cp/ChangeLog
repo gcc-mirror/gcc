@@ -1,3 +1,8 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* gxxint.texi: Remove.
+	* Make-lang.in: Remove all traces of gxxint.texi.
+
 Mon Apr 30 16:14:10 2001  Mark P Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (start_static_initialization_or_destruction): Correct
