@@ -1904,7 +1904,7 @@ run time instead.  This is used in conjunction with the Fix-and-Continue
 debugging mode, where the object file in question may be recompiled and 
 dynamically reloaded in the course of program execution, without the need
 to restart the program itself.  Currently, Fix-and-Continue functionality
-is only available in conjunciton withthe NeXT runtime on Mac OS X 10.3 
+is only available in conjunction with the NeXT runtime on Mac OS X 10.3 
 and later.
 
 @item -fzero-link
