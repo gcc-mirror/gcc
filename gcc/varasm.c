@@ -2343,6 +2343,7 @@ struct constant_descriptor
 {
   struct constant_descriptor *next;
   char *label;
+  rtx rtl;
   char contents[1];
 };
 
@@ -2361,6 +2362,7 @@ mark_const_hash_entry (ptr)
   while (desc)
     {
       ggc_mark_string (desc->label);
+      ggc_mark_rtx (desc->rtl);
       desc = desc->next;
     }
 }
@@ -2576,6 +2578,7 @@ compare_constant_1 (exp, p)
 	  register tree link;
 	  int length = list_length (CONSTRUCTOR_ELTS (exp));
 	  tree type;
+	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 	  int have_purpose = 0;
 
 	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
@@ -2598,6 +2601,14 @@ compare_constant_1 (exp, p)
 
 	  if (bcmp ((char *) &type, p, sizeof type))
 	    return 0;
+
+	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	    {
+	      if (bcmp ((char *) &mode, p, sizeof mode))
+		return 0;
+
+	      p += sizeof mode;
+	    }
 
 	  p += sizeof type;
 
@@ -2715,12 +2726,14 @@ record_constant (exp)
 {
   struct constant_descriptor *next = 0;
   char *label = 0;
+  rtx rtl = 0;
 
-  /* Make a struct constant_descriptor.  The first two pointers will
+  /* Make a struct constant_descriptor.  The first three pointers will
      be filled in later.  Here we just leave space for them.  */
 
   obstack_grow (&permanent_obstack, (char *) &next, sizeof next);
   obstack_grow (&permanent_obstack, (char *) &label, sizeof label);
+  obstack_grow (&permanent_obstack, (char *) &rtl, sizeof rtl);
   record_constant_1 (exp);
   return (struct constant_descriptor *) obstack_finish (&permanent_obstack);
 }
@@ -2785,6 +2798,7 @@ record_constant_1 (exp)
 	{
 	  register tree link;
 	  int length = list_length (CONSTRUCTOR_ELTS (exp));
+	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 	  tree type;
 	  int have_purpose = 0;
 
@@ -2795,14 +2809,18 @@ record_constant_1 (exp)
 	  obstack_grow (&permanent_obstack, (char *) &length, sizeof length);
 
 	  /* For record constructors, insist that the types match.
-	     For arrays, just verify both constructors are for arrays. 
-	     Then insist that either both or none have any TREE_PURPOSE
-	     values.  */
+	     For arrays, just verify both constructors are for arrays
+	     of the same mode.  Then insist that either both or none
+	     have any TREE_PURPOSE values.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
 	    type = TREE_TYPE (exp);
 	  else
 	    type = 0;
+
 	  obstack_grow (&permanent_obstack, (char *) &type, sizeof type);
+	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	    obstack_grow (&permanent_obstack, &mode, sizeof mode);
+			  
 	  obstack_grow (&permanent_obstack, (char *) &have_purpose,
 			sizeof have_purpose);
 
@@ -3027,9 +3045,8 @@ output_constant_def (exp)
   register int hash;
   register struct constant_descriptor *desc;
   char label[256];
-  char *found = 0;
   int reloc;
-  register rtx def;
+  int found = 1;
 
   if (TREE_CST_RTL (exp))
     return TREE_CST_RTL (exp);
@@ -3047,12 +3064,9 @@ output_constant_def (exp)
       
   for (desc = const_hash_table[hash]; desc; desc = desc->next)
     if (compare_constant (exp, desc))
-      {
-	found = desc->label;
-	break;
-      }
+      break;
       
-  if (found == 0)
+  if (desc == 0)
     {
       /* No constant equal to EXP is known to have been output.
 	 Make a constant descriptor to enter EXP in the hash table.
@@ -3066,23 +3080,30 @@ output_constant_def (exp)
       desc->next = const_hash_table[hash];
       desc->label = ggc_alloc_string (label, -1);
       const_hash_table[hash] = desc;
-    }
   
-  /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
+      /* We have a symbol name; construct the SYMBOL_REF and the MEM
+	 in the permanent obstack.  We could also construct this in the
+	 obstack of EXP and put it into TREE_CST_RTL, but we have no way
+	 of knowing what obstack it is (e.g., it might be in a function
+	 obstack of a function we are nested inside).  */
 
-  push_obstacks_nochange ();
-  if (TREE_PERMANENT (exp))
-    end_temporary_allocation ();
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
 
-  def = gen_rtx_SYMBOL_REF (Pmode, desc->label);
-      
-  TREE_CST_RTL (exp)
-    = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), def);
-  RTX_UNCHANGING_P (TREE_CST_RTL (exp)) = 1;
-  if (AGGREGATE_TYPE_P (TREE_TYPE (exp)))
-    MEM_SET_IN_STRUCT_P (TREE_CST_RTL (exp), 1);
+      desc->rtl
+	= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
+		       gen_rtx_SYMBOL_REF (Pmode, desc->label));
 
-  pop_obstacks ();
+      RTX_UNCHANGING_P (desc->rtl) = 1;
+      if (AGGREGATE_TYPE_P (TREE_TYPE (exp)))
+	MEM_SET_IN_STRUCT_P (desc->rtl, 1);
+
+      pop_obstacks ();
+
+      found = 0;
+    }
+
+  TREE_CST_RTL (exp) = desc->rtl;
 
   /* Optionally set flags or add text to the name to record information
      such as that it is a function name.  If the name is changed, the macro
@@ -3093,7 +3114,7 @@ output_constant_def (exp)
 
   /* If this is the first time we've seen this particular constant,
      output it (or defer its output for later).  */
-  if (found == 0)
+  if (! found)
     {
       int after_function = 0;
 
@@ -3482,6 +3503,7 @@ record_constant_rtx (mode, x)
 {
   struct constant_descriptor *ptr;
   char *label;
+  rtx rtl;
   struct rtx_const value;
 
   decode_rtx_const (mode, x, &value);
@@ -3491,6 +3513,7 @@ record_constant_rtx (mode, x)
      memory allocated from function_obstack (current_obstack).  */
   obstack_grow (saveable_obstack, &ptr, sizeof ptr);
   obstack_grow (saveable_obstack, &label, sizeof label);
+  obstack_grow (saveable_obstack, &rtl, sizeof rtl);
 
   /* Record constant contents.  */
   obstack_grow (saveable_obstack, &value, sizeof value);
@@ -3986,6 +4009,161 @@ output_addressed_constants (exp)
       break;
     }
   return reloc;
+}
+
+/* Return nonzero if VALUE is a valid constant-valued expression
+   for use in initializing a static variable; one that can be an
+   element of a "constant" initializer.
+
+   Return null_pointer_node if the value is absolute;
+   if it is relocatable, return the variable that determines the relocation.
+   We assume that VALUE has been folded as much as possible;
+   therefore, we do not need to check for such things as
+   arithmetic-combinations of integers.  */
+
+tree
+initializer_constant_valid_p (value, endtype)
+     tree value;
+     tree endtype;
+{
+  switch (TREE_CODE (value))
+    {
+    case CONSTRUCTOR:
+      if ((TREE_CODE (TREE_TYPE (value)) == UNION_TYPE
+	   || TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE)
+	  && TREE_CONSTANT (value)
+	  && CONSTRUCTOR_ELTS (value))
+	return
+	  initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)),
+					endtype);
+	
+      return TREE_STATIC (value) ? null_pointer_node : 0;
+
+    case INTEGER_CST:
+    case REAL_CST:
+    case STRING_CST:
+    case COMPLEX_CST:
+      return null_pointer_node;
+
+    case ADDR_EXPR:
+      return TREE_OPERAND (value, 0);
+
+    case NON_LVALUE_EXPR:
+      return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
+    case CONVERT_EXPR:
+    case NOP_EXPR:
+      /* Allow conversions between pointer types.  */
+      if (POINTER_TYPE_P (TREE_TYPE (value))
+	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
+      /* Allow conversions between real types.  */
+      if (FLOAT_TYPE_P (TREE_TYPE (value))
+	  && FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
+      /* Allow length-preserving conversions between integer types.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (value))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0)))
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
+      /* Allow conversions between other integer types only if
+	 explicit value.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (value))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
+	{
+	  tree inner = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						     endtype);
+	  if (inner == null_pointer_node)
+	    return null_pointer_node;
+	  break;
+	}
+
+      /* Allow (int) &foo provided int is as wide as a pointer.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (value))
+	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0)))
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
+
+      /* Likewise conversions from int to pointers, but also allow
+	 conversions from 0.  */
+      if (POINTER_TYPE_P (TREE_TYPE (value))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
+	{
+	  if (integer_zerop (TREE_OPERAND (value, 0)))
+	    return null_pointer_node;
+	  else if (TYPE_PRECISION (TREE_TYPE (value))
+		   <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0))))
+	    return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						 endtype);
+	}
+
+      /* Allow conversions to union types if the value inside is okay.  */
+      if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
+      break;
+
+    case PLUS_EXPR:
+      if (! INTEGRAL_TYPE_P (endtype)
+	  || TYPE_PRECISION (endtype) >= POINTER_SIZE)
+        {
+	  tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						      endtype);
+	  tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
+						      endtype);
+	  /* If either term is absolute, use the other terms relocation.  */
+	  if (valid0 == null_pointer_node)
+	    return valid1;
+	  if (valid1 == null_pointer_node)
+	    return valid0;
+        }
+      break;
+
+    case MINUS_EXPR:
+      if (! INTEGRAL_TYPE_P (endtype)
+	  || TYPE_PRECISION (endtype) >= POINTER_SIZE)
+	{
+	  tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						      endtype);
+	  tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
+						      endtype);
+	  /* Win if second argument is absolute.  */
+	  if (valid1 == null_pointer_node)
+	    return valid0;
+	  /* Win if both arguments have the same relocation.
+	     Then the value is absolute.  */
+	  if (valid0 == valid1 && valid0 != 0)
+	    return null_pointer_node;
+	}
+
+      /* Support differences between labels.  */
+      if (INTEGRAL_TYPE_P (endtype))
+	{
+	  tree op0, op1;
+	  op0 = TREE_OPERAND (value, 0);
+	  op1 = TREE_OPERAND (value, 1);
+	  STRIP_NOPS (op0);
+	  STRIP_NOPS (op1);
+
+	  if (TREE_CODE (op0) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (op0, 0)) == LABEL_DECL
+	      && TREE_CODE (op1) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (op1, 0)) == LABEL_DECL)
+	    return null_pointer_node;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  return 0;
 }
 
 /* Output assembler code for constant EXP to FILE, with no label.
@@ -4608,7 +4786,7 @@ make_decl_one_only (decl)
 void
 init_varasm_once ()
 {
-  ggc_add_root (const_hash_table, MAX_HASH_TABLE, sizeof(const_hash_table[0]),
+  ggc_add_root (const_hash_table, MAX_HASH_TABLE, sizeof const_hash_table[0],
 		mark_const_hash_entry);
   ggc_add_string_root (&in_named_name, 1);
 }

@@ -1616,7 +1616,7 @@ initial_reg_note_copy (notes, map)
   PUT_MODE (copy, GET_MODE (notes));
 
   if (GET_CODE (notes) == EXPR_LIST)
-    XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (notes, 0), map);
+    XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (notes, 0), map, 0);
   else if (GET_CODE (notes) == INSN_LIST)
     /* Don't substitute for these yet.  */
     XEXP (copy, 0) = XEXP (notes, 0);
@@ -1927,7 +1927,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	    }
 	  else
 	    {
-	      pattern = copy_rtx_and_substitute (pattern, map);
+	      pattern = copy_rtx_and_substitute (pattern, map, 0);
 	      copy = emit_insn (pattern);
 	    }
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
@@ -1974,7 +1974,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  break;
 
 	case JUMP_INSN:
-	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
+	  pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
 	  copy = emit_jump_insn (pattern);
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
 
@@ -2107,14 +2107,15 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  break;
 
 	case CALL_INSN:
-	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
+	  pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
 	  copy = emit_call_insn (pattern);
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
 
 	  /* Because the USAGE information potentially contains objects other
 	     than hard registers, we need to copy it.  */
 	  CALL_INSN_FUNCTION_USAGE (copy)
-	    = copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn), map);
+	    = copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn),
+				       map, 0);
 
 #ifdef HAVE_cc0
 	  if (cc0_insn)

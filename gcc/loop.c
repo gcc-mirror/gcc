@@ -197,6 +197,11 @@ static int loop_mems_allocated;
 
 static int unknown_address_altered;
 
+/* The above doesn't count any readonly memory locations that are stored.
+   This does.  */
+
+static int unknown_constant_address_altered;
+
 /* Count of movable (i.e. invariant) instructions discovered in the loop.  */
 static int num_movables;
 
@@ -2386,9 +2391,9 @@ constant_high_bytes (p, loop_start)
 
 /* Scan a loop setting the elements `cont', `vtop', `loops_enclosed',
    `has_call', `has_volatile', and `has_tablejump' within LOOP_INFO.
-   Set the global variables `unknown_address_altered' and
-   `num_mem_sets'.  Also, fill in the array `loop_mems' and the list
-   `loop_store_mems'.  */
+   Set the global variables `unknown_address_altered',
+   `unknown_constant_address_altered', and `num_mem_sets'.  Also, fill
+   in the array `loop_mems' and the list `loop_store_mems'.  */
 
 static void
 prescan_loop (start, end, loop_info)
@@ -2414,6 +2419,7 @@ prescan_loop (start, end, loop_info)
   loop_info->vtop = 0;
 
   unknown_address_altered = 0;
+  unknown_constant_address_altered = 0;
   loop_store_mems = NULL_RTX;
   first_loop_store_insn = NULL_RTX;
   loop_mems_idx = 0;
@@ -3166,11 +3172,15 @@ note_addr_stored (x, y, data)
   num_mem_sets++;
 
   /* BLKmode MEM means all memory is clobbered.  */
-  if (GET_MODE (x) == BLKmode)
-    unknown_address_altered = 1;
+    if (GET_MODE (x) == BLKmode)
+    {
+      if (RTX_UNCHANGING_P (x))
+	unknown_constant_address_altered = 1;
+      else
+	unknown_address_altered = 1;
 
-  if (unknown_address_altered)
-    return;
+      return;
+    }
 
   loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, x, loop_store_mems);
 }
@@ -3275,20 +3285,12 @@ invariant_p (x)
       return VARRAY_INT (set_in_loop, REGNO (x)) == 0;
 
     case MEM:
-      /* Volatile memory references must be rejected.  Do this before
-	 checking for read-only items, so that volatile read-only items
-	 will be rejected also.  */
-      if (MEM_VOLATILE_P (x))
-	return 0;
-
-      /* Read-only items (such as constants in a constant pool) are
-	 invariant if their address is.  */
-      if (RTX_UNCHANGING_P (x))
-	break;
-
-      /* If we had a subroutine call, any location in memory could have been
-	 clobbered.  */
-      if (unknown_address_altered)
+      /* If we had a subroutine call, any location in memory could
+	 have been clobbered.  We used to test here for volatile and
+	 readonly, but true_dependence knows how to do that better
+	 than we do. */
+      if (RTX_UNCHANGING_P (x)
+	  ? unknown_constant_address_altered : unknown_address_altered)
 	return 0;
 
       /* See if there is any dependence between a store and this load.  */
@@ -3298,6 +3300,7 @@ invariant_p (x)
 	  if (true_dependence (XEXP (mem_list_entry, 0), VOIDmode,
 			       x, rtx_varies_p))
 	    return 0;
+
 	  mem_list_entry = XEXP (mem_list_entry, 1);
 	}
 
@@ -8013,6 +8016,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 
 	      reversible_mem_store
 		= (! unknown_address_altered
+		   && ! unknown_constant_address_altered
 		   && ! invariant_p (XEXP (XEXP (loop_store_mems, 0), 0)));
 
 	      /* If the store depends on a register that is set after the

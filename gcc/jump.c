@@ -1028,26 +1028,52 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		     need to remove the BARRIER if we succeed.  We can only
 		     have one such jump since there must be a label after
 		     the BARRIER and it's either ours, in which case it's the
-		     only one or some other, in which case we'd fail.  */
+		     only one or some other, in which case we'd fail.
+		     Likewise if it's a CALL_INSN followed by a BARRIER.  */
 
-		  if (simplejump_p (temp1))
-		    changed_jump = temp1;
+		  if (simplejump_p (temp1)
+		      || (GET_CODE (temp1) == CALL_INSN
+			  && NEXT_INSN (temp1) != 0
+			  && GET_CODE (NEXT_INSN (temp1)) == BARRIER))
+		    {
+		      if (changed_jump == 0)
+			changed_jump = temp1;
+		      else
+			changed_jump
+			  = gen_rtx_INSN_LIST (VOIDmode, temp1, changed_jump);
+		    }
 
 		  /* See if we are allowed another insn and if this insn
 		     if one we think we may be able to handle.  */
 		  if (++num_insns > BRANCH_COST
 		      || last_insn
-		      || (temp2 = single_set (temp1)) == 0
-		      || side_effects_p (SET_SRC (temp2))
-		      || may_trap_p (SET_SRC (temp2)))
-		    failed = 1;
-		  else
+		      || (((temp2 = single_set (temp1)) == 0
+			   || side_effects_p (SET_SRC (temp2))
+			   || may_trap_p (SET_SRC (temp2)))
+			  && GET_CODE (temp1) != CALL_INSN))
+		      failed = 1;
+		  else if (temp2 != 0)
 		    validate_change (temp1, &SET_SRC (temp2),
 				     gen_rtx_IF_THEN_ELSE
 				     (GET_MODE (SET_DEST (temp2)),
 				      copy_rtx (ourcond),
 				      SET_SRC (temp2), SET_DEST (temp2)),
 				     1);
+		  else
+		    {
+		      /* This is a CALL_INSN that doesn't have a SET.  */
+		      rtx *call_loc = &PATTERN (temp1);
+
+		      if (GET_CODE (*call_loc) == PARALLEL)
+			call_loc = &XVECEXP (*call_loc, 0, 0);
+
+		      validate_change (temp1, call_loc,
+				       gen_rtx_IF_THEN_ELSE
+				       (VOIDmode, copy_rtx (ourcond),
+					*call_loc, const0_rtx),
+				       1);
+		    }
+
 
 		  if (modified_in_p (ourcond, temp1))
 		    last_insn = 1;
@@ -1073,10 +1099,13 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 		  if (changed_jump != 0)
 		    {
-		      if (GET_CODE (NEXT_INSN (changed_jump)) != BARRIER)
-			abort ();
+		      while (GET_CODE (changed_jump) == INSN_LIST)
+			{
+			  delete_barrier (NEXT_INSN (XEXP (changed_jump, 0)));
+			  changed_jump = XEXP (changed_jump, 1);
+			}
 
-		      delete_insn (NEXT_INSN (changed_jump));
+		      delete_barrier (NEXT_INSN (changed_jump));
 		    }
 
 		  delete_insn (insn);
@@ -4035,6 +4064,18 @@ delete_jump (insn)
 
   if (set && GET_CODE (SET_DEST (set)) == PC)
     delete_computation (insn);
+}
+
+/* Verify INSN is a BARRIER and delete it.  */
+
+void
+delete_barrier (insn)
+     rtx insn;
+{
+  if (GET_CODE (insn) != BARRIER)
+    abort ();
+
+  delete_insn (insn);
 }
 
 /* Recursively delete prior insns that compute the value (used only by INSN

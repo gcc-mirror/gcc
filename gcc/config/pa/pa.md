@@ -5106,7 +5106,20 @@
   DONE;
 }")
 
-(define_insn "extzv"
+(define_expand "extzv"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "")
+			 (match_operand:SI 2 "uint5_operand" "")
+			 (match_operand:SI 3 "uint5_operand" "")))]
+  ""
+  "
+{
+  if (! uint5_operand (operands[2], SImode)
+      ||  ! uint5_operand (operands[3], SImode))
+  FAIL;
+}")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "uint5_operand" "")
@@ -5126,7 +5139,20 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
-(define_insn "extv"
+(define_expand "extv"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "")
+			 (match_operand:SI 2 "uint5_operand" "")
+			 (match_operand:SI 3 "uint5_operand" "")))]
+  ""
+  "
+{
+  if (! uint5_operand (operands[2], SImode)
+      ||  ! uint5_operand (operands[3], SImode))
+  FAIL;
+}")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "uint5_operand" "")
@@ -5146,7 +5172,20 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
-(define_insn "insv"
+(define_expand "insv"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "")
+			 (match_operand:SI 1 "uint5_operand" "")
+			 (match_operand:SI 2 "uint5_operand" ""))
+	(match_operand:SI 3 "arith5_operand" "r,L"))]
+  ""
+  "
+{
+  if (! uint5_operand (operands[1], SImode)
+      ||  ! uint5_operand (operands[2], SImode))
+  FAIL;
+}")
+
+(define_insn ""
   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r,r")
 			 (match_operand:SI 1 "uint5_operand" "")
 			 (match_operand:SI 2 "uint5_operand" ""))

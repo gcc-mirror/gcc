@@ -43,6 +43,9 @@ Boston, MA 02111-1307, USA.  */
 #define LD_INIT_SWITCH "-init"
 #define LD_FINI_SWITCH "-fini"
 
+/* The linker needs a space after "-o".  */
+#define SWITCHES_NEED_SPACES "o"
+
 /* Specify wchar_t types.  */
 #undef	WCHAR_TYPE
 #undef	WCHAR_TYPE_SIZE

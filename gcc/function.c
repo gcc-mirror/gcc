@@ -940,6 +940,15 @@ find_temp_slot_from_address (x)
 	    return p;
     }
 
+  /* If we have a sum involving a register, see if it points to a temp
+     slot.  */
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == REG
+      && (p = find_temp_slot_from_address (XEXP (x, 0))) != 0)
+    return p;
+  else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == REG
+	   && (p = find_temp_slot_from_address (XEXP (x, 1))) != 0)
+    return p;
+
   return 0;
 }
       
@@ -950,11 +959,34 @@ void
 update_temp_slot_address (old, new)
      rtx old, new;
 {
-  struct temp_slot *p = find_temp_slot_from_address (old);
+  struct temp_slot *p;
 
-  /* If none, return.  Else add NEW as an alias.  */
-  if (p == 0)
+  if (rtx_equal_p (old, new))
     return;
+
+  p = find_temp_slot_from_address (old);
+
+  /* If we didn't find one, see if both OLD and NEW are a PLUS and if
+     there is a register in common between them.  If so, try a recursive
+     call on those values.  */
+  if (p == 0)
+    {
+      if (GET_CODE (old) != PLUS || GET_CODE (new) != PLUS)
+	return;
+
+      if (rtx_equal_p (XEXP (old, 0), XEXP (new, 0)))
+	update_temp_slot_address (XEXP (old, 1), XEXP (new, 1));
+      else if (rtx_equal_p (XEXP (old, 1), XEXP (new, 0)))
+	update_temp_slot_address (XEXP (old, 0), XEXP (new, 1));
+      else if (rtx_equal_p (XEXP (old, 0), XEXP (new, 1)))
+	update_temp_slot_address (XEXP (old, 1), XEXP (new, 0));
+      else if (rtx_equal_p (XEXP (old, 1), XEXP (new, 1)))
+	update_temp_slot_address (XEXP (old, 0), XEXP (new, 0));
+
+      return;
+    }
+
+  /* Otherwise add an alias for the temp's address. */
   else if (p->address == 0)
     p->address = new;
   else
@@ -2665,9 +2697,11 @@ gen_mem_addressof (reg, decl)
   tree type = TREE_TYPE (decl);
   rtx r = gen_rtx_ADDRESSOF (Pmode, gen_reg_rtx (GET_MODE (reg)),
 			     REGNO (reg), decl);
+
   /* If the original REG was a user-variable, then so is the REG whose
-     address is being taken.  */
+     address is being taken.  Likewise for unchanging.  */
   REG_USERVAR_P (XEXP (r, 0)) = REG_USERVAR_P (reg);
+  RTX_UNCHANGING_P (XEXP (r, 0)) = RTX_UNCHANGING_P (reg);
 
   PUT_CODE (reg, MEM);
   PUT_MODE (reg, DECL_MODE (decl));
@@ -3422,17 +3456,20 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
       if (new)
 	{
+	  rtx src = SET_SRC (x);
+
+	  instantiate_virtual_regs_1 (&src, NULL_RTX, 0);
+
 	  /* The only valid sources here are PLUS or REG.  Just do
 	     the simplest possible thing to handle them.  */
-	  if (GET_CODE (SET_SRC (x)) != REG
-	      && GET_CODE (SET_SRC (x)) != PLUS)
+	  if (GET_CODE (src) != REG && GET_CODE (src) != PLUS)
 	    abort ();
 
 	  start_sequence ();
-	  if (GET_CODE (SET_SRC (x)) != REG)
-	    temp = force_operand (SET_SRC (x), NULL_RTX);
+	  if (GET_CODE (src) != REG)
+	    temp = force_operand (src, NULL_RTX);
 	  else
-	    temp = SET_SRC (x);
+	    temp = src;
 	  temp = force_operand (plus_constant (temp, offset), NULL_RTX);
 	  seq = get_insns ();
 	  end_sequence ();

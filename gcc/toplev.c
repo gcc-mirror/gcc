@@ -633,6 +633,10 @@ int flag_exceptions;
 
 int flag_new_exceptions = 1;
 
+/* Nonzero means generate frame unwind info table when supported */
+
+int flag_unwind_tables = 0;
+
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
 
@@ -937,6 +941,8 @@ lang_independent_options f_options[] =
    "Enable exception handling" },
   {"new-exceptions", &flag_new_exceptions, 1,
    "Use the new model for exception handling" },
+  {"unwind-tables", &flag_unwind_tables, 1,
+    "Just generate unwind tables for exception handling" },
   {"sjlj-exceptions", &exceptions_via_longjmp, 1,
    "Use setjmp/longjmp to handle exceptions" },
   {"asynchronous-exceptions", &asynchronous_exceptions, 1,
@@ -3571,7 +3577,20 @@ rest_of_compilation (decl)
   if (DECL_SAVED_INSNS (decl) == 0)
     {
       int inlinable = 0;
+      tree parent;
       const char *lose;
+
+      /* If this is nested inside an inlined external function, pretend
+	 it was only declared.  Since we cannot inline such functions,
+	 generating code for this one is not only not necessary but will
+	 confuse some debugging output writers.  */
+      for (parent = DECL_CONTEXT (current_function_decl);
+	   parent != 0; parent = DECL_CONTEXT (parent))
+	if (DECL_INLINE (parent) && DECL_EXTERNAL (parent))
+	  {
+	    DECL_INITIAL (decl) = 0;
+	    goto exit_rest_of_compilation;
+	  }
 
       /* If requested, consider whether to make this function inline.  */
       if (DECL_INLINE (decl) || flag_inline_functions)
@@ -4929,6 +4948,7 @@ decode_W_option (arg)
 /* Parse a -g... comand line switch.  ARG is the value after the -g.
    It is safe to access 'ARG - 2' to generate the full switch name.
    Return the number of strings consumed.  */
+
 static int
 decode_g_option (arg)
      const char * arg;
@@ -5012,8 +5032,7 @@ ignoring option `%s' due to invalid debug level specification",
 	    }
 	  
 	  if (type == NO_DEBUG)
-	    warning ("`%s' not supported by this configuration of GCC",
-		     arg - 2);
+	    warning ("`%s': unknown or unsupported -g option", arg - 2);
 
 	  /* Does it conflict with an already selected type?  */
 	  if (type_explicitly_set_p
@@ -5046,7 +5065,7 @@ ignoring option `%s' due to invalid debug level specification",
     }
   
   if (! da->arg)
-    warning ("`%s' not supported by this configuration of GCC", arg - 2);
+    warning ("`%s': unknown or unsupported -g option", arg - 2);
 
   return 1;
 }

@@ -69,7 +69,7 @@ static void integrate_parm_decls	PROTO((tree, struct inline_remap *,
 static tree integrate_decl_tree		PROTO((tree,
 					       struct inline_remap *));
 static void subst_constants		PROTO((rtx *, rtx,
-					       struct inline_remap *));
+					       struct inline_remap *, int));
 static void set_block_origin_self	PROTO((tree));
 static void set_decl_origin_self	PROTO((tree));
 static void set_block_abstract_flags	PROTO((tree, int));
@@ -153,7 +153,8 @@ function_cannot_inline_p (fndecl)
     return N_("function with nested functions cannot be inline");
 
   if (forced_labels)
-    return N_("function with label addresses used in initializers cannot inline");
+    return
+      N_("function with label addresses used in initializers cannot inline");
 
   if (current_function_cannot_inline)
     return current_function_cannot_inline;
@@ -769,11 +770,19 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	}
       else if (GET_CODE (loc) == MEM)
 	{
-	  /* This is the case of a parameter that lives in memory.
-	     It will live in the block we allocate in the called routine's
+	  /* This is the case of a parameter that lives in memory.  It
+	     will live in the block we allocate in the called routine's
 	     frame that simulates the incoming argument area.  Do nothing
-	     now; we will call store_expr later.  */
-	  ;
+	     with the parameter now; we will call store_expr later.  In
+	     this case, however, we must ensure that the virtual stack and
+	     incoming arg rtx values are expanded now so that we can be
+	     sure we have enough slots in the const equiv map since the
+	     store_expr call can easily blow the size estimate.  */
+	  if (DECL_FRAME_SIZE (fndecl) != 0)
+	    copy_rtx_and_substitute (virtual_stack_vars_rtx, map, 0);
+
+	  if (DECL_SAVED_INSNS (fndecl)->args_size != 0)
+	    copy_rtx_and_substitute (virtual_incoming_args_rtx, map, 0);
 	}
       else if (GET_CODE (loc) == REG)
 	process_reg_param (map, loc, copy);
@@ -816,8 +825,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
 	  /* Compute the address in the area we reserved and store the
 	     value there.  */
-	  temp = copy_rtx_and_substitute (loc, map);
-	  subst_constants (&temp, NULL_RTX, map);
+	  temp = copy_rtx_and_substitute (loc, map, 1);
+	  subst_constants (&temp, NULL_RTX, map, 1);
 	  apply_change_group ();
 	  if (! memory_address_p (GET_MODE (temp), XEXP (temp, 0)))
 	    temp = change_address (temp, VOIDmode, XEXP (temp, 0));
@@ -841,8 +850,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     {
       if (GET_CODE (XEXP (loc, 0)) == ADDRESSOF)
 	{
-	  temp = copy_rtx_and_substitute (loc, map);
-	  subst_constants (&temp, NULL_RTX, map);
+	  temp = copy_rtx_and_substitute (loc, map, 1);
+	  subst_constants (&temp, NULL_RTX, map, 1);
 	  apply_change_group ();
 	  target = temp;
 	}
@@ -882,8 +891,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	    }
 	  else
 	    {
-	      temp = copy_rtx_and_substitute (loc, map);
-	      subst_constants (&temp, NULL_RTX, map);
+	      temp = copy_rtx_and_substitute (loc, map, 1);
+	      subst_constants (&temp, NULL_RTX, map, 0);
 	      apply_change_group ();
 	      emit_move_insn (temp, structure_value_addr);
 	    }
@@ -1033,7 +1042,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
 		  /* If we must not delete the source,
 		     load it into a new temporary.  */
-		  copy = emit_insn (copy_rtx_and_substitute (pattern, map));
+		  copy = emit_insn (copy_rtx_and_substitute (pattern, map, 0));
 
 		  new_set = single_set (copy);
 		  if (new_set == 0)
@@ -1046,7 +1055,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 		 has a note on it, keep the insn.  */
 	      else if (rtx_equal_p (SET_DEST (set), SET_SRC (set))
 		       && REG_NOTES (insn) != 0)
-		copy = emit_insn (copy_rtx_and_substitute (pattern, map));
+		copy = emit_insn (copy_rtx_and_substitute (pattern, map, 0));
 	      else
 		break;
 	    }
@@ -1066,13 +1075,44 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 		   && rtx_equal_p (SET_SRC (set),
 				   static_chain_incoming_rtx))
 	    {
-	      rtx newdest = copy_rtx_and_substitute (SET_DEST (set), map);
+	      rtx newdest = copy_rtx_and_substitute (SET_DEST (set), map, 1);
 
 	      copy = emit_move_insn (newdest, static_chain_value);
 	      static_chain_value = 0;
 	    }
+
+	  /* If this is setting the virtual stack vars register, this must
+	     be the code at the handler for a builtin longjmp.  The value
+	     saved in the setjmp buffer will be the address of the frame
+	     we've made for this inlined instance within our frame.  But we
+	     know the offset of that value so we can use it to reconstruct
+	     our virtual stack vars register from that value.  If we are
+	     copying it from the stack pointer, leave it unchanged.  */
+	  else if (set != 0
+		   && rtx_equal_p (SET_DEST (set), virtual_stack_vars_rtx))
+	    {
+	      temp = map->reg_map[REGNO (SET_DEST (set))];
+	      temp = VARRAY_CONST_EQUIV (map->const_equiv_varray,
+					 REGNO (temp)).rtx;
+
+	      if (GET_CODE (temp) != PLUS
+		  || ! rtx_equal_p (XEXP (temp, 0), virtual_stack_vars_rtx)
+		  || GET_CODE (XEXP (temp, 1)) != CONST_INT)
+		abort ();
+
+	      if (rtx_equal_p (SET_SRC (set), stack_pointer_rtx))
+		temp = SET_SRC (set);
+	      else
+		temp
+		  = force_operand (plus_constant (SET_SRC (set),
+						  - INTVAL (XEXP (temp, 1))),
+				   NULL_RTX);
+
+	      copy = emit_move_insn (SET_DEST (set), temp);
+	    }
+
 	  else
-	    copy = emit_insn (copy_rtx_and_substitute (pattern, map));
+	    copy = emit_insn (copy_rtx_and_substitute (pattern, map, 0));
 	  /* REG_NOTES will be copied later.  */
 
 #ifdef HAVE_cc0
@@ -1113,7 +1153,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	      pattern = gen_jump (local_return_label);
 	    }
 	  else
-	    pattern = copy_rtx_and_substitute (PATTERN (insn), map);
+	    pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
 
 	  copy = emit_jump_insn (pattern);
 
@@ -1149,13 +1189,14 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  break;
 
 	case CALL_INSN:
-	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
+	  pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
 	  copy = emit_call_insn (pattern);
 
 	  /* Because the USAGE information potentially contains objects other
 	     than hard registers, we need to copy it.  */
 	  CALL_INSN_FUNCTION_USAGE (copy)
-	    = copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn), map);
+	    = copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn),
+				       map, 0);
 
 #ifdef HAVE_cc0
 	  if (cc0_insn)
@@ -1238,10 +1279,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	&& map->insn_map[INSN_UID (insn)]
 	&& REG_NOTES (insn))
       {
-	rtx tem = copy_rtx_and_substitute (REG_NOTES (insn), map);
+	rtx tem = copy_rtx_and_substitute (REG_NOTES (insn), map, 0);
+
 	/* We must also do subst_constants, in case one of our parameters
 	   has const type and constant value.  */
-	subst_constants (&tem, NULL_RTX, map);
+	subst_constants (&tem, NULL_RTX, map, 0);
 	apply_change_group ();
 	REG_NOTES (map->insn_map[INSN_UID (insn)]) = tem;
       }
@@ -1334,7 +1376,7 @@ integrate_parm_decls (args, map, arg_vector)
       register tree decl = build_decl (VAR_DECL, DECL_NAME (tail),
 				       TREE_TYPE (tail));
       rtx new_decl_rtl
-	= copy_rtx_and_substitute (RTVEC_ELT (arg_vector, i), map);
+	= copy_rtx_and_substitute (RTVEC_ELT (arg_vector, i), map, 1);
 
       DECL_ARG_TYPE (decl) = DECL_ARG_TYPE (tail);
       /* We really should be setting DECL_INCOMING_RTL to something reasonable
@@ -1349,7 +1391,7 @@ integrate_parm_decls (args, map, arg_vector)
 	 debugging information contains the actual register, instead of the
 	 virtual register.   Do this by not passing an insn to
 	 subst_constants.  */
-      subst_constants (&new_decl_rtl, NULL_RTX, map);
+      subst_constants (&new_decl_rtl, NULL_RTX, map, 1);
       apply_change_group ();
       DECL_RTL (decl) = new_decl_rtl;
     }
@@ -1385,12 +1427,13 @@ integrate_decl_tree (let, map)
 
       if (DECL_RTL (t) != 0)
 	{
-	  DECL_RTL (d) = copy_rtx_and_substitute (DECL_RTL (t), map);
+	  DECL_RTL (d) = copy_rtx_and_substitute (DECL_RTL (t), map, 1);
+
 	  /* Fully instantiate the address with the equivalent form so that the
 	     debugging information contains the actual register, instead of the
 	     virtual register.   Do this by not passing an insn to
 	     subst_constants.  */
-	  subst_constants (&DECL_RTL (d), NULL_RTX, map);
+	  subst_constants (&DECL_RTL (d), NULL_RTX, map, 1);
 	  apply_change_group ();
 	}
       /* These args would always appear unused, if not for this.  */
@@ -1437,21 +1480,26 @@ integrate_decl_tree (let, map)
   return new_block;
 }
 
-/* Create a new copy of an rtx.
-   Recursively copies the operands of the rtx,
+/* Create a new copy of an rtx. Recursively copies the operands of the rtx,
    except for those few rtx codes that are sharable.
 
    We always return an rtx that is similar to that incoming rtx, with the
    exception of possibly changing a REG to a SUBREG or vice versa.  No
    rtl is ever emitted.
 
+   If FOR_LHS is nonzero, if means we are processing something that will
+   be the LHS of a SET.  In that case, we copy RTX_UNCHANGING_P even if
+   inlining since we need to be conservative in how it is set for
+   such cases.
+
    Handle constants that need to be placed in the constant pool by
    calling `force_const_mem'.  */
 
 rtx
-copy_rtx_and_substitute (orig, map)
+copy_rtx_and_substitute (orig, map, for_lhs)
      register rtx orig;
      struct inline_remap *map;
+     int for_lhs;
 {
   register rtx copy, temp;
   register int i, j;
@@ -1593,7 +1641,7 @@ copy_rtx_and_substitute (orig, map)
       return map->reg_map[regno];
 
     case SUBREG:
-      copy = copy_rtx_and_substitute (SUBREG_REG (orig), map);
+      copy = copy_rtx_and_substitute (SUBREG_REG (orig), map, for_lhs);
       /* SUBREG is ordinary, but don't make nested SUBREGs.  */
       if (GET_CODE (copy) == SUBREG)
 	return gen_rtx_SUBREG (GET_MODE (orig), SUBREG_REG (copy),
@@ -1616,7 +1664,8 @@ copy_rtx_and_substitute (orig, map)
 
     case ADDRESSOF:
       copy = gen_rtx_ADDRESSOF (mode,
-				copy_rtx_and_substitute (XEXP (orig, 0), map),
+				copy_rtx_and_substitute (XEXP (orig, 0),
+							 map, for_lhs),
 				0, ADDRESSOF_DECL(orig));
       regno = ADDRESSOF_REGNO (orig);
       if (map->reg_map[regno])
@@ -1644,7 +1693,7 @@ copy_rtx_and_substitute (orig, map)
 	 to (use foo) if the original insn didn't have a subreg.
 	 Removing the subreg distorts the VAX movstrhi pattern
 	 by changing the mode of an operand.  */
-      copy = copy_rtx_and_substitute (XEXP (orig, 0), map);
+      copy = copy_rtx_and_substitute (XEXP (orig, 0), map, code == CLOBBER);
       if (GET_CODE (copy) == SUBREG && GET_CODE (XEXP (orig, 0)) != SUBREG)
 	copy = SUBREG_REG (copy);
       return gen_rtx_fmt_e (code, VOIDmode, copy);
@@ -1697,7 +1746,9 @@ copy_rtx_and_substitute (orig, map)
 	  if (inlining)
 	    {
 	      rtx temp = force_const_mem (const_mode,
-					  copy_rtx_and_substitute (constant, map));
+					  copy_rtx_and_substitute (constant,
+								   map, 0));
+
 #if 0
 	      /* Legitimizing the address here is incorrect.
 
@@ -1723,9 +1774,9 @@ copy_rtx_and_substitute (orig, map)
 	      return temp;
 	    }
 	  else if (GET_CODE (constant) == LABEL_REF)
-	    return XEXP (force_const_mem (GET_MODE (orig),
-					  copy_rtx_and_substitute (constant,
-								   map)),
+	    return XEXP (force_const_mem
+			 (GET_MODE (orig),
+			  copy_rtx_and_substitute (constant, map, for_lhs)),
 			 0);
 	}
       else
@@ -1792,8 +1843,8 @@ copy_rtx_and_substitute (orig, map)
 	    (GET_MODE (orig),
 	     gen_rtx_MEM (GET_MODE (XEXP (orig, 0)),
 			  copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0),
-						   map)),
-	     copy_rtx_and_substitute (XEXP (orig, 1), map));
+						   map, 0)),
+	     copy_rtx_and_substitute (XEXP (orig, 1), map, 0));
       break;
 
 #if 0
@@ -1815,19 +1866,25 @@ copy_rtx_and_substitute (orig, map)
 	  rtx equiv_loc;
 	  HOST_WIDE_INT loc_offset;
 
-	  copy_rtx_and_substitute (SET_DEST (orig), map);
+	  copy_rtx_and_substitute (SET_DEST (orig), map, for_lhs);
 	  equiv_reg = map->reg_map[REGNO (SET_DEST (orig))];
-	  equiv_loc = VARRAY_CONST_EQUIV (map->const_equiv_varray, REGNO (equiv_reg)).rtx;
+	  equiv_loc = VARRAY_CONST_EQUIV (map->const_equiv_varray,
+					  REGNO (equiv_reg)).rtx;
 	  loc_offset
 	    = GET_CODE (equiv_loc) == REG ? 0 : INTVAL (XEXP (equiv_loc, 1));
 	      
 	  return gen_rtx_SET (VOIDmode, SET_DEST (orig),
 			      force_operand
 			      (plus_constant
-			       (copy_rtx_and_substitute (SET_SRC (orig), map),
+			       (copy_rtx_and_substitute (SET_SRC (orig),
+							 map, 0),
 				- loc_offset),
 			       NULL_RTX));
 	}
+      else
+	return gen_rtx_SET (VOIDmode,
+			    copy_rtx_and_substitute (SET_DEST (orig), map, 1),
+			    copy_rtx_and_substitute (SET_SRC (orig), map, 0));
       break;
 
     case MEM:
@@ -1835,9 +1892,13 @@ copy_rtx_and_substitute (orig, map)
 	  && GET_CODE (XEXP (orig, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (orig, 0)))
 	{
-	  enum machine_mode const_mode = get_pool_mode_for_function (inlining, XEXP (orig, 0));
-	  rtx constant = get_pool_constant_for_function (inlining, XEXP (orig, 0));
-	  constant = copy_rtx_and_substitute (constant, map);
+	  enum machine_mode const_mode
+	    = get_pool_mode_for_function (inlining, XEXP (orig, 0));
+	  rtx constant
+	    = get_pool_constant_for_function (inlining, XEXP (orig, 0));
+
+	  constant = copy_rtx_and_substitute (constant, map, 0);
+
 	  /* If this was an address of a constant pool entry that itself
 	     had to be placed in the constant pool, it might not be a
 	     valid address.  So the recursive call might have turned it
@@ -1846,22 +1907,16 @@ copy_rtx_and_substitute (orig, map)
 	     MEM into a REG, but we'll assume that it safe.  */
 	  if (! CONSTANT_P (constant))
 	    return constant;
+
 	  return validize_mem (force_const_mem (const_mode, constant));
 	}
+
       copy = rtx_alloc (MEM);
       PUT_MODE (copy, mode);
-      XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map);
+      XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map, 0);
       MEM_COPY_ATTRIBUTES (copy, orig);
       MEM_ALIAS_SET (copy) = MEM_ALIAS_SET (orig);
-
-      /* If doing function inlining, this MEM might not be const in the
-	 function that it is being inlined into, and thus may not be
-	 unchanging after function inlining.  Constant pool references are
-	 handled elsewhere, so this doesn't lose RTX_UNCHANGING_P bits
-	 for them.  */
-      if (! map->integrating)
-	RTX_UNCHANGING_P (copy) = RTX_UNCHANGING_P (orig);
-
+      RTX_UNCHANGING_P (copy) = RTX_UNCHANGING_P (orig);
       return copy;
       
     default:
@@ -1886,7 +1941,8 @@ copy_rtx_and_substitute (orig, map)
 	  break;
 
 	case 'e':
-	  XEXP (copy, i) = copy_rtx_and_substitute (XEXP (orig, i), map);
+	  XEXP (copy, i)
+	    = copy_rtx_and_substitute (XEXP (orig, i), map, for_lhs);
 	  break;
 
 	case 'u':
@@ -1902,7 +1958,8 @@ copy_rtx_and_substitute (orig, map)
 	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
 	      for (j = 0; j < XVECLEN (copy, i); j++)
 		XVECEXP (copy, i, j)
-		  = copy_rtx_and_substitute (XVECEXP (orig, i, j), map);
+		  = copy_rtx_and_substitute (XVECEXP (orig, i, j),
+					     map, for_lhs);
 	    }
 	  break;
 
@@ -1947,9 +2004,14 @@ try_constants (insn, map)
   int i;
 
   map->num_sets = 0;
-  subst_constants (&PATTERN (insn), insn, map);
 
-  /* Apply the changes if they are valid; otherwise discard them.  */
+  /* First try just updating addresses, then other things.  This is
+     important when we have something like the store of a constant
+     into memory and we can update the memory address but the machine
+     does not support a constant source.  */
+  subst_constants (&PATTERN (insn), insn, map, 1);
+  apply_change_group ();
+  subst_constants (&PATTERN (insn), insn, map, 0);
   apply_change_group ();
 
   /* Show we don't know the value of anything stored or clobbered.  */
@@ -1996,16 +2058,19 @@ try_constants (insn, map)
    into insns; cse will do the latter task better.
 
    This function is also used to adjust address of items previously addressed
-   via the virtual stack variable or virtual incoming arguments registers.  */
+   via the virtual stack variable or virtual incoming arguments registers. 
+
+   If MEMONLY is nonzero, only make changes inside a MEM.  */
 
 static void
-subst_constants (loc, insn, map)
+subst_constants (loc, insn, map, memonly)
      rtx *loc;
      rtx insn;
      struct inline_remap *map;
+     int memonly;
 {
   rtx x = *loc;
-  register int i;
+  register int i, j;
   register enum rtx_code code;
   register const char *format_ptr;
   int num_changes = num_validated_changes ();
@@ -2027,7 +2092,8 @@ subst_constants (loc, insn, map)
 
 #ifdef HAVE_cc0
     case CC0:
-      validate_change (insn, loc, map->last_cc0_value, 1);
+      if (! memonly)
+	validate_change (insn, loc, map->last_cc0_value, 1);
       return;
 #endif
 
@@ -2036,24 +2102,25 @@ subst_constants (loc, insn, map)
       /* The only thing we can do with a USE or CLOBBER is possibly do
 	 some substitutions in a MEM within it.  */
       if (GET_CODE (XEXP (x, 0)) == MEM)
-	subst_constants (&XEXP (XEXP (x, 0), 0), insn, map);
+	subst_constants (&XEXP (XEXP (x, 0), 0), insn, map, 0);
       return;
 
     case REG:
       /* Substitute for parms and known constants.  Don't replace
 	 hard regs used as user variables with constants.  */
-      {
-	int regno = REGNO (x);
-	struct const_equiv_data *p;
+      if (! memonly)
+	{
+	  int regno = REGNO (x);
+	  struct const_equiv_data *p;
 
-	if (! (regno < FIRST_PSEUDO_REGISTER && REG_USERVAR_P (x))
-	    && (size_t) regno < VARRAY_SIZE (map->const_equiv_varray)
-	    && (p = &VARRAY_CONST_EQUIV (map->const_equiv_varray, regno),
-		p->rtx != 0)
-	    && p->age >= map->const_age)
-	  validate_change (insn, loc, p->rtx, 1);
-	return;
-      }
+	  if (! (regno < FIRST_PSEUDO_REGISTER && REG_USERVAR_P (x))
+	      && (size_t) regno < VARRAY_SIZE (map->const_equiv_varray)
+	      && (p = &VARRAY_CONST_EQUIV (map->const_equiv_varray, regno),
+		  p->rtx != 0)
+	      && p->age >= map->const_age)
+	    validate_change (insn, loc, p->rtx, 1);
+	}
+      return;
 
     case SUBREG:
       /* SUBREG applied to something other than a reg
@@ -2061,7 +2128,7 @@ subst_constants (loc, insn, map)
 	 be a special hack and we don't know how to treat it specially.
 	 Consider for example mulsidi3 in m68k.md.
 	 Ordinary SUBREG of a REG needs this special treatment.  */
-      if (GET_CODE (SUBREG_REG (x)) == REG)
+      if (! memonly && GET_CODE (SUBREG_REG (x)) == REG)
 	{
 	  rtx inner = SUBREG_REG (x);
 	  rtx new = 0;
@@ -2071,7 +2138,7 @@ subst_constants (loc, insn, map)
 	     see what is inside, try to form the new SUBREG and see if that is
 	     valid.  We handle two cases: extracting a full word in an 
 	     integral mode and extracting the low part.  */
-	  subst_constants (&inner, NULL_RTX, map);
+	  subst_constants (&inner, NULL_RTX, map, 0);
 
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
 	      && GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD
@@ -2091,11 +2158,11 @@ subst_constants (loc, insn, map)
       break;
 
     case MEM:
-      subst_constants (&XEXP (x, 0), insn, map);
+      subst_constants (&XEXP (x, 0), insn, map, 0);
 
       /* If a memory address got spoiled, change it back.  */
-      if (insn != 0 && num_validated_changes () != num_changes
-	  && !memory_address_p (GET_MODE (x), XEXP (x, 0)))
+      if (! memonly && insn != 0 && num_validated_changes () != num_changes
+	  && ! memory_address_p (GET_MODE (x), XEXP (x, 0)))
 	cancel_changes (num_changes);
       return;
 
@@ -2108,7 +2175,7 @@ subst_constants (loc, insn, map)
 	rtx dest = *dest_loc;
 	rtx src, tem;
 
-	subst_constants (&SET_SRC (x), insn, map);
+	subst_constants (&SET_SRC (x), insn, map, memonly);
 	src = SET_SRC (x);
 
 	while (GET_CODE (*dest_loc) == ZERO_EXTRACT
@@ -2117,15 +2184,15 @@ subst_constants (loc, insn, map)
 	  {
 	    if (GET_CODE (*dest_loc) == ZERO_EXTRACT)
 	      {
-		subst_constants (&XEXP (*dest_loc, 1), insn, map);
-		subst_constants (&XEXP (*dest_loc, 2), insn, map);
+		subst_constants (&XEXP (*dest_loc, 1), insn, map, memonly);
+		subst_constants (&XEXP (*dest_loc, 2), insn, map, memonly);
 	      }
 	    dest_loc = &XEXP (*dest_loc, 0);
 	  }
 
 	/* Do substitute in the address of a destination in memory.  */
 	if (GET_CODE (*dest_loc) == MEM)
-	  subst_constants (&XEXP (*dest_loc, 0), insn, map);
+	  subst_constants (&XEXP (*dest_loc, 0), insn, map, 0);
 
 	/* Check for the case of DEST a SUBREG, both it and the underlying
 	   register are less than one word, and the SUBREG has the wider mode.
@@ -2187,7 +2254,7 @@ subst_constants (loc, insn, map)
 
 	case 'e':
 	  if (XEXP (x, i))
-	    subst_constants (&XEXP (x, i), insn, map);
+	    subst_constants (&XEXP (x, i), insn, map, memonly);
 	  break;
 
 	case 'u':
@@ -2199,11 +2266,9 @@ subst_constants (loc, insn, map)
 
 	case 'E':
 	  if (XVEC (x, i) != NULL && XVECLEN (x, i) != 0)
-	    {
-	      int j;
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		subst_constants (&XVECEXP (x, i, j), insn, map);
-	    }
+	    for (j = 0; j < XVECLEN (x, i); j++)
+	      subst_constants (&XVECEXP (x, i, j), insn, map, memonly);
+
 	  break;
 
 	default:
@@ -2213,7 +2278,8 @@ subst_constants (loc, insn, map)
 
   /* If this is a commutative operation, move a constant to the second
      operand unless the second operand is already a CONST_INT.  */
-  if ((GET_RTX_CLASS (code) == 'c' || code == NE || code == EQ)
+  if (! memonly
+      && (GET_RTX_CLASS (code) == 'c' || code == NE || code == EQ)
       && CONSTANT_P (XEXP (x, 0)) && GET_CODE (XEXP (x, 1)) != CONST_INT)
     {
       rtx tem = XEXP (x, 0);
@@ -2222,45 +2288,49 @@ subst_constants (loc, insn, map)
     }
 
   /* Simplify the expression in case we put in some constants.  */
-  switch (GET_RTX_CLASS (code))
-    {
-    case '1':
-      if (op0_mode == MAX_MACHINE_MODE)
-	abort ();
-      new = simplify_unary_operation (code, GET_MODE (x),
-				      XEXP (x, 0), op0_mode);
-      break;
-
-    case '<':
+  if (! memonly)
+    switch (GET_RTX_CLASS (code))
       {
-	enum machine_mode op_mode = GET_MODE (XEXP (x, 0));
-	if (op_mode == VOIDmode)
-	  op_mode = GET_MODE (XEXP (x, 1));
-	new = simplify_relational_operation (code, op_mode,
-					     XEXP (x, 0), XEXP (x, 1));
+      case '1':
+	if (op0_mode == MAX_MACHINE_MODE)
+	  abort ();
+	new = simplify_unary_operation (code, GET_MODE (x),
+					XEXP (x, 0), op0_mode);
+	break;
+
+      case '<':
+	{
+	  enum machine_mode op_mode = GET_MODE (XEXP (x, 0));
+
+	  if (op_mode == VOIDmode)
+	    op_mode = GET_MODE (XEXP (x, 1));
+	  new = simplify_relational_operation (code, op_mode,
+					       XEXP (x, 0), XEXP (x, 1));
 #ifdef FLOAT_STORE_FLAG_VALUE
-	if (new != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	  if (new != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
 	  new = ((new == const0_rtx) ? CONST0_RTX (GET_MODE (x))
 		 : CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE,
 						 GET_MODE (x)));
 #endif
-	break;
+	  break;
       }
 
-    case '2':
-    case 'c':
-      new = simplify_binary_operation (code, GET_MODE (x),
-				       XEXP (x, 0), XEXP (x, 1));
-      break;
+      case '2':
+      case 'c':
+	new = simplify_binary_operation (code, GET_MODE (x),
+					 XEXP (x, 0), XEXP (x, 1));
+	break;
 
-    case 'b':
-    case '3':
-      if (op0_mode == MAX_MACHINE_MODE)
-	abort ();
-      new = simplify_ternary_operation (code, GET_MODE (x), op0_mode,
-					XEXP (x, 0), XEXP (x, 1), XEXP (x, 2));
-      break;
-    }
+      case 'b':
+      case '3':
+	if (op0_mode == MAX_MACHINE_MODE)
+	  abort ();
+
+	new = simplify_ternary_operation (code, GET_MODE (x), op0_mode,
+					  XEXP (x, 0), XEXP (x, 1),
+					  XEXP (x, 2));
+	break;
+      }
 
   if (new)
     validate_change (insn, loc, new, 1);

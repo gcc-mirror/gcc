@@ -2662,15 +2662,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	   && reg_alternate_class (REGNO (recog_data.operand[i])) == NO_REGS);
     }
 
-#ifdef HAVE_cc0
-  /* If we made any reloads for addresses, see if they violate a
-     "no input reloads" requirement for this insn.  */
-  if (no_input_reloads)
-    for (i = 0; i < n_reloads; i++)
-      if (rld[i].in != 0)
-	abort ();
-#endif
-
   /* If this is simply a copy from operand 1 to operand 0, merge the
      preferred classes for the operands.  */
   if (set != 0 && noperands >= 2 && recog_data.operand[0] == SET_DEST (set)
@@ -4111,6 +4102,18 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    transfer_replacements (i, j);
 	    rld[j].in = 0;
 	  }
+
+#ifdef HAVE_cc0
+  /* If we made any reloads for addresses, see if they violate a
+     "no input reloads" requirement for this insn.  But loads that we
+     do after the insn (such as for output addresses) are fine.  */
+  if (no_input_reloads)
+    for (i = 0; i < n_reloads; i++)
+      if (reload_in[i] != 0
+	  && reload_when_needed[i] != RELOAD_FOR_OUTADDR_ADDRESS
+	  && reload_when_needed[i] != RELOAD_FOR_OUTPUT_ADDRESS)
+	abort ();
+#endif
 
   /* Set which reloads must use registers not used in any group.  Start
      with those that conflict with a group and then include ones that

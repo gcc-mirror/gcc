@@ -1115,25 +1115,18 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	{
 	  register rtx cleanup_insns;
 
-	  /* Get the first non-label after the label
-	     this goto jumps to.  If that's before this scope begins,
-	     we don't have a jump into the scope.  */
-	  rtx after_label = f->target_rtl;
-	  while (after_label != 0 && GET_CODE (after_label) == CODE_LABEL)
-	    after_label = NEXT_INSN (after_label);
-
 	  /* If this fixup jumped into this contour from before the beginning
-	     of this contour, report an error.  */
+	     of this contour, report an error.   This code used to use
+	     the first non-label insn after f->target_rtl, but that's
+	     wrong since such can be added, by things like put_var_into_stack
+	     and have INSN_UIDs that are out of the range of the block.  */
 	  /* ??? Bug: this does not detect jumping in through intermediate
 	     blocks that have stack levels or cleanups.
 	     It detects only a problem with the innermost block
 	     around the label.  */
 	  if (f->target != 0
 	      && (dont_jump_in || stack_level || cleanup_list)
-	      /* If AFTER_LABEL is 0, it means the jump goes to the end
-		 of the rtl, which means it jumps into this scope.  */
-	      && (after_label == 0
-		  || INSN_UID (first_insn) < INSN_UID (after_label))
+	      && INSN_UID (first_insn) < INSN_UID (f->target_rtl)
 	      && INSN_UID (first_insn) > INSN_UID (f->before_jump)
 	      && ! DECL_ERROR_ISSUED (f->target))
 	    {
@@ -1345,6 +1338,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
       char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
+
       i = decode_reg_name (regname);
       if (i >= 0 || i == -4)
 	++nclobbers;
@@ -1372,11 +1366,13 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       while (tmp)
 	{
 	  char *constraint = TREE_STRING_POINTER (TREE_PURPOSE (tmp));
+
 	  if (n_occurrences (',', constraint) != nalternatives)
 	    {
 	      error ("operand constraints for `asm' differ in number of alternatives");
 	      return;
 	    }
+
 	  if (TREE_CHAIN (tmp))
 	    tmp = TREE_CHAIN (tmp);
 	  else
@@ -1405,7 +1401,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 the worst that happens if we get it wrong is we issue an error
 	 message.  */
 
-      c_len = TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1;
+      c_len = strlen (TREE_STRING_POINTER (TREE_PURPOSE (tail)));
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
 
       /* Allow the `=' or `+' to not be at the beginning of the string,
@@ -1585,7 +1581,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  return;
 	}
 
-      c_len = TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1;
+      c_len = strlen (TREE_STRING_POINTER (TREE_PURPOSE (tail)));
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
       orig_constraint = constraint;
 
@@ -1597,7 +1593,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  case '+':  case '=':  case '&':
 	    if (constraint == orig_constraint)
 	      {
-	        error ("input operand constraint contains `%c'", constraint[j]);
+	        error ("input operand constraint contains `%c'",
+		       constraint[j]);
 	        return;
 	      }
 	    break;
@@ -1645,10 +1642,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		|| (j == 1 && c_len == 2 && constraint[0] == '%'))
 	      {
 		tree o = outputs;
+
 		for (j = constraint[j] - '0'; j > 0; --j)
 		  o = TREE_CHAIN (o);
 	
-		c_len = TREE_STRING_LENGTH (TREE_PURPOSE (o)) - 1;
+		c_len = strlen (TREE_STRING_POINTER (TREE_PURPOSE (o)));
 		constraint = TREE_STRING_POINTER (TREE_PURPOSE (o));
 		j = 0;
 		break;
@@ -1691,6 +1689,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      emit_move_insn (memloc, op);
 	      op = memloc;
 	    }
+
 	  else if (GET_CODE (op) == MEM && MEM_VOLATILE_P (op))
 	    /* We won't recognize volatile memory as available a
 	       memory_operand at this point.  Ignore it.  */
@@ -1711,8 +1710,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       i++;
     }
 
-  /* Protect all the operands from the queue,
-     now that they have all been evaluated.  */
+  /* Protect all the operands from the queue now that they have all been
+     evaluated.  */
 
   for (i = 0; i < ninputs - ninout; i++)
     XVECEXP (body, 3, i) = protect_from_queue (XVECEXP (body, 3, i), 0);
@@ -1741,20 +1740,24 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       XSTR (body, 1) = TREE_STRING_POINTER (TREE_PURPOSE (outputs));
       insn = emit_insn (gen_rtx_SET (VOIDmode, output_rtx[0], body));
     }
+
   else if (noutputs == 0 && nclobbers == 0)
     {
       /* No output operands: put in a raw ASM_OPERANDS rtx.  */
       insn = emit_insn (body);
     }
+
   else
     {
       rtx obody = body;
       int num = noutputs;
-      if (num == 0) num = 1;
+
+      if (num == 0)
+	num = 1;
+
       body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num + nclobbers));
 
       /* For each output operand, store a SET.  */
-
       for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
 	{
 	  XVECEXP (body, 0, i)
@@ -2692,19 +2695,25 @@ expand_value_return (val)
 #ifdef PROMOTE_FUNCTION_RETURN
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
       int unsignedp = TREE_UNSIGNED (type);
+      enum machine_mode old_mode
+	= DECL_MODE (DECL_RESULT (current_function_decl));
       enum machine_mode mode
-	= promote_mode (type, DECL_MODE (DECL_RESULT (current_function_decl)),
-			&unsignedp, 1);
+	= promote_mode (type, old_mode, &unsignedp, 1);
 
-      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
-	convert_move (return_reg, val, unsignedp);
-      else
+      if (mode != old_mode)
+	val = convert_modes (mode, old_mode, val, unsignedp);
 #endif
+      if (GET_CODE (return_reg) == PARALLEL)
+	emit_group_load (return_reg, val, int_size_in_bytes (type),
+			 TYPE_ALIGN (type) / BITS_PER_UNIT);
+      else
 	emit_move_insn (return_reg, val);
     }
+
   if (GET_CODE (return_reg) == REG
       && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
     emit_insn (gen_rtx_USE (VOIDmode, return_reg));
+
   /* Handle calls that return values in multiple non-contiguous locations.
      The Irix 6 ABI has examples of this.  */
   else if (GET_CODE (return_reg) == PARALLEL)
@@ -2789,6 +2798,7 @@ expand_return (retval)
      run destructors on variables that might be used in the subsequent
      computation of the return value.  */
   rtx last_insn = 0;
+  rtx result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
   register rtx val = 0;
   register rtx op0;
   tree retval_rhs;
@@ -2941,7 +2951,7 @@ expand_return (retval)
 
   if (retval_rhs != 0
       && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
-      && GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) == REG)
+      && GET_CODE (result_rtl) == REG)
     {
       int i, bitpos, xbitpos;
       int big_endian_correction = 0;
@@ -3017,7 +3027,7 @@ expand_return (retval)
       if (tmpmode == VOIDmode)
 	abort ();
 
-      PUT_MODE (DECL_RTL (DECL_RESULT (current_function_decl)), tmpmode);
+      PUT_MODE (result_rtl, tmpmode);
 
       if (GET_MODE_SIZE (tmpmode) < GET_MODE_SIZE (word_mode))
 	result_reg_mode = word_mode;
@@ -3038,10 +3048,13 @@ expand_return (retval)
   else if (cleanups
       && retval_rhs != 0
       && TREE_TYPE (retval_rhs) != void_type_node
-      && GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) == REG)
+      && (GET_CODE (result_rtl) == REG
+	  || (GET_CODE (result_rtl) == PARALLEL)))
     {
-      /* Calculate the return value into a pseudo reg.  */
-      val = gen_reg_rtx (DECL_MODE (DECL_RESULT (current_function_decl)));
+      /* Calculate the return value into a temporary (usually a pseudo
+         reg).  */
+      val = assign_temp (TREE_TYPE (DECL_RESULT (current_function_decl)),
+			 0, 0, 1);
       val = expand_expr (retval_rhs, val, GET_MODE (val), 0);
       val = force_not_mem (val);
       emit_queue ();
@@ -3054,7 +3067,7 @@ expand_return (retval)
 	 calculate value into hard return reg.  */
       expand_expr (retval, const0_rtx, VOIDmode, 0);
       emit_queue ();
-      expand_value_return (DECL_RTL (DECL_RESULT (current_function_decl)));
+      expand_value_return (result_rtl);
     }
 }
 
@@ -4533,16 +4546,18 @@ pushcase (value, converter, label, duplicate)
   if (index_type == error_mark_node)
     return 0;
 
-  /* Convert VALUE to the type in which the comparisons are nominally done.  */
-  if (value != 0)
-    value = (*converter) (nominal_type, value);
-
   check_seenlabel ();
 
   /* Fail if this value is out of range for the actual type of the index
      (which may be narrower than NOMINAL_TYPE).  */
-  if (value != 0 && ! int_fits_type_p (value, index_type))
+  if (value != 0
+      && (TREE_CONSTANT_OVERFLOW (value)
+	  || ! int_fits_type_p (value, index_type)))
     return 3;
+
+  /* Convert VALUE to the type in which the comparisons are nominally done.  */
+  if (value != 0)
+    value = (*converter) (nominal_type, value);
 
   /* Fail if this is a duplicate or overlaps another entry.  */
   if (value == 0)
@@ -4606,17 +4621,14 @@ pushcase_range (value1, value2, converter, label, duplicate)
 
   /* Fail if the range is empty.  Do this before any conversion since
      we want to allow out-of-range empty ranges.  */
-  if (value2 && tree_int_cst_lt (value2, value1))
+  if (value2 != 0 && tree_int_cst_lt (value2, value1))
     return 4;
-
-  value1 = (*converter) (nominal_type, value1);
 
   /* If the max was unbounded, use the max of the nominal_type we are 
      converting to.  Do this after the < check above to suppress false
      positives.  */
-  if (!value2)
+  if (value2 == 0)
     value2 = TYPE_MAX_VALUE (nominal_type);
-  value2 = (*converter) (nominal_type, value2);
 
   /* Fail if these values are out of range.  */
   if (TREE_CONSTANT_OVERFLOW (value1)
@@ -4626,6 +4638,9 @@ pushcase_range (value1, value2, converter, label, duplicate)
   if (TREE_CONSTANT_OVERFLOW (value2)
       || ! int_fits_type_p (value2, index_type))
     return 3;
+
+  value1 = (*converter) (nominal_type, value1);
+  value2 = (*converter) (nominal_type, value2);
 
   return add_case_node (value1, value2, label, duplicate);
 }

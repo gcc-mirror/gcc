@@ -275,6 +275,9 @@ fnotice VPROTO ((FILE *file, const char *msgid, ...))
   va_end (ap);
 }
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
@@ -283,7 +286,7 @@ extern void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
 void
 fancy_abort ()
 {
-  fnotice (stderr, "Internal gcc abort.\n");
+  fnotice (stderr, "Internal gcov abort.\n");
   exit (FATAL_EXIT_CODE);
 }
 
@@ -407,7 +410,7 @@ open_files ()
   else
     strcat (bbg_file_name, ".bbg");
 
-  bb_file = fopen (bb_file_name, "r");
+  bb_file = fopen (bb_file_name, "rb");
   if (bb_file == NULL)
     {
       fnotice (stderr, "Could not open basic block file %s.\n", bb_file_name);
@@ -416,14 +419,14 @@ open_files ()
 
   /* If none of the functions in the file were executed, then there won't
      be a .da file.  Just assume that all counts are zero in this case.  */
-  da_file = fopen (da_file_name, "r");
+  da_file = fopen (da_file_name, "rb");
   if (da_file == NULL)
     {
       fnotice (stderr, "Could not open data file %s.\n", da_file_name);
       fnotice (stderr, "Assuming that all execution counts are zero.\n");
     }
     
-  bbg_file = fopen (bbg_file_name, "r");
+  bbg_file = fopen (bbg_file_name, "rb");
   if (bbg_file == NULL)
     {
       fnotice (stderr, "Could not open program flow graph file %s.\n",
@@ -1000,7 +1003,13 @@ output_data ()
     {
       /* If this is a relative file name, and an object directory has been
 	 specified, then make it relative to the object directory name.  */
-      if (*s_ptr->name != '/' && object_directory != 0
+      if (! (*s_ptr->name == '/' || *s_ptr->name == DIR_SEPARATOR
+	     /* Check for disk name on MS-DOS-based systems.  */
+	     || (DIR_SEPARATOR == '\\'
+		 && s_ptr->name[1] == ':'
+		 && (s_ptr->name[2] == DIR_SEPARATOR
+		     || s_ptr->name[2] == '/')))
+	  && object_directory != 0
 	  && *object_directory != '\0')
 	{
 	  int objdir_count = strlen (object_directory);

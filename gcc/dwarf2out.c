@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2out.h"
 #include "toplev.h"
 #include "dyn-string.h"
+#include <ctype.h>
 
 /* We cannot use <assert.h> in GCC source, since that would include
    GCC's assert.h, which may not be compatible with the host compiler.  */
@@ -65,6 +66,7 @@ dwarf2out_do_frame ()
           || DWARF2_FRAME_INFO
 #endif
 #ifdef DWARF2_UNWIND_INFO
+	  || flag_unwind_tables
 	  || (flag_exceptions && ! exceptions_via_longjmp)
 #endif
 	  );
@@ -1904,11 +1906,11 @@ dwarf2out_frame_finish ()
 #ifdef MIPS_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
     output_call_frame_info (0);
-  if (flag_exceptions && ! exceptions_via_longjmp)
+  if (flag_unwind_tables || (flag_exceptions && ! exceptions_via_longjmp))
     output_call_frame_info (1);
 #else
   if (write_symbols == DWARF2_DEBUG
-      || (flag_exceptions && ! exceptions_via_longjmp))
+      || flag_unwind_tables || (flag_exceptions && ! exceptions_via_longjmp))
     output_call_frame_info (1);  
 #endif
 }  
@@ -2441,7 +2443,6 @@ static int constant_size		PROTO((long unsigned));
 static unsigned long size_of_die	PROTO((dw_die_ref));
 static void calc_die_sizes		PROTO((dw_die_ref));
 static unsigned long size_of_line_prolog	PROTO((void));
-static unsigned long size_of_line_info	PROTO((void));
 static unsigned long size_of_pubnames	PROTO((void));
 static unsigned long size_of_aranges	PROTO((void));
 static enum dwarf_form value_format	PROTO((dw_val_ref));
@@ -2654,6 +2655,18 @@ static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
   }							\
   while (0)
 #endif
+
+/* We allow a language front-end to designate a function that is to be
+   called to "demangle" any name before it it put into a DIE.  */
+
+static char *(*demangle_name_func) PROTO((char *));
+
+void
+dwarf2out_set_demangle_name_func (func)
+     char *(*func) PROTO((char *));
+{
+  demangle_name_func = func;
+}
 
 /* Convert an integer constant expression into assembler syntax.  Addition
    and subtraction are the only arithmetic that may appear in these
@@ -4720,165 +4733,6 @@ size_of_line_prolog ()
   return size;
 }
 
-/* Return the size of the line information generated for this
-   compilation unit.  */
-
-static unsigned long
-size_of_line_info ()
-{
-  register unsigned long size;
-  register unsigned long lt_index;
-  register unsigned long current_line;
-  register long line_offset;
-  register long line_delta;
-  register unsigned long current_file;
-  register unsigned long function;
-  unsigned long size_of_set_address;
-
-  /* Size of a DW_LNE_set_address instruction.  */
-  size_of_set_address = 1 + size_of_uleb128 (1 + PTR_SIZE) + 1 + PTR_SIZE;
-
-  /* Version number.  */
-  size = 2;
-
-  /* Prolog length specifier.  */
-  size += DWARF_OFFSET_SIZE;
-
-  /* Prolog.  */
-  size += size_of_line_prolog ();
-
-  current_file = 1;
-  current_line = 1;
-  for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
-    {
-      register dw_line_info_ref line_info = &line_info_table[lt_index];
-
-      if (line_info->dw_line_num == current_line
-	  && line_info->dw_file_num == current_file)
-	continue;
-
-      /* Advance pc instruction.  */
-      /* ??? See the DW_LNS_advance_pc comment in output_line_info.  */
-      if (0)
-	size += 1 + 2;
-      else
-	size += size_of_set_address;
-
-      if (line_info->dw_file_num != current_file)
-	{
-	  /* Set file number instruction.  */
-	  size += 1;
-	  current_file = line_info->dw_file_num;
-	  size += size_of_uleb128 (current_file);
-	}
-
-      if (line_info->dw_line_num != current_line)
-	{
-	  line_offset = line_info->dw_line_num - current_line;
-	  line_delta = line_offset - DWARF_LINE_BASE;
-	  current_line = line_info->dw_line_num;
-	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
-	    /* 1-byte special line number instruction.  */
-	    size += 1;
-	  else
-	    {
-	      /* Advance line instruction.  */
-	      size += 1;
-	      size += size_of_sleb128 (line_offset);
-	      /* Generate line entry instruction.  */
-	      size += 1;
-	    }
-	}
-    }
-
-  /* Advance pc instruction.  */
-  if (0)
-    size += 1 + 2;
-  else
-    size += size_of_set_address;
-
-  /* End of line number info. marker.  */
-  size += 1 + size_of_uleb128 (1) + 1;
-
-  function = 0;
-  current_file = 1;
-  current_line = 1;
-  for (lt_index = 0; lt_index < separate_line_info_table_in_use; )
-    {
-      register dw_separate_line_info_ref line_info
-	= &separate_line_info_table[lt_index];
-
-      if (line_info->dw_line_num == current_line
-	  && line_info->dw_file_num == current_file
-	  && line_info->function == function)
-	goto cont;
-
-      if (function != line_info->function)
-	{
-	  function = line_info->function;
-	  /* Set address register instruction.  */
-	  size += size_of_set_address;
-	}
-      else
-	{
-	  /* Advance pc instruction.  */
-	  if (0)
-	    size += 1 + 2;
-	  else
-	    size += size_of_set_address;
-	}
-
-      if (line_info->dw_file_num != current_file)
-	{
-	  /* Set file number instruction.  */
-	  size += 1;
-	  current_file = line_info->dw_file_num;
-	  size += size_of_uleb128 (current_file);
-	}
-
-      if (line_info->dw_line_num != current_line)
-	{
-	  line_offset = line_info->dw_line_num - current_line;
-	  line_delta = line_offset - DWARF_LINE_BASE;
-	  current_line = line_info->dw_line_num;
-	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
-	    /* 1-byte special line number instruction.  */
-	    size += 1;
-	  else
-	    {
-	      /* Advance line instruction.  */
-	      size += 1;
-	      size += size_of_sleb128 (line_offset);
-
-	      /* Generate line entry instruction.  */
-	      size += 1;
-	    }
-	}
-
-    cont:
-      ++lt_index;
-
-      /* If we're done with a function, end its sequence.  */
-      if (lt_index == separate_line_info_table_in_use
-	  || separate_line_info_table[lt_index].function != function)
-	{
-	  current_file = 1;
-	  current_line = 1;
-
-	  /* Advance pc instruction.  */
-	  if (0)
-	    size += 1 + 2;
-	  else
-	    size += size_of_set_address;
-
-	  /* End of line number info. marker.  */
-	  size += 1 + size_of_uleb128 (1) + 1;
-	}
-    }
-
-  return size;
-}
-
 /* Return the size of the .debug_pubnames table  generated for the
    compilation unit.  */
 
@@ -5650,10 +5504,7 @@ output_aranges ()
 }
 
 /* Output the source line number correspondence information.  This
-   information goes into the .debug_line section.
-
-   If the format of this data changes, then the function size_of_line_info
-   must also be adjusted the same way.  */
+   information goes into the .debug_line section.  */
 
 static void
 output_line_info ()
@@ -5670,12 +5521,13 @@ output_line_info ()
   register unsigned long current_file;
   register unsigned long function;
 
-  ASM_OUTPUT_DWARF_DATA (asm_out_file, size_of_line_info ());
+  ASM_OUTPUT_DWARF_DELTA (asm_out_file, ".LTEND", ".LTSTART");
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Source Line Info.",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
+  ASM_OUTPUT_LABEL (asm_out_file, ".LTSTART");
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, DWARF_VERSION);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
@@ -5932,6 +5784,7 @@ output_line_info ()
     }
 
   /* Output the marker for the end of the line number info.  */
+  ASM_OUTPUT_LABEL (asm_out_file, ".LTEND");
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DW_LNE_end_sequence", ASM_COMMENT_START);
@@ -6234,6 +6087,9 @@ base_type_die (type)
     }
 
   base_type_result = new_die (DW_TAG_base_type, comp_unit_die);
+  if (demangle_name_func)
+    type_name = (*demangle_name_func) (type_name);
+
   add_AT_string (base_type_result, DW_AT_name, type_name);
   add_AT_unsigned (base_type_result, DW_AT_byte_size,
 		   int_size_in_bytes (type));
@@ -6774,17 +6630,20 @@ field_byte_offset (decl)
   bitpos_tree = DECL_FIELD_BITPOS (decl);
   field_size_tree = DECL_SIZE (decl);
 
-  /* We cannot yet cope with fields whose positions or sizes are variable, so 
+  /* We cannot yet cope with fields whose positions are variable, so 
      for now, when we see such things, we simply return 0.  Someday, we may
      be able to handle such cases, but it will be damn difficult.  */
   if (TREE_CODE (bitpos_tree) != INTEGER_CST)
     return 0;
+
   bitpos_int = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
 
-  if (TREE_CODE (field_size_tree) != INTEGER_CST)
-    return 0;
+    /* If we don't know the size of the field, pretend it's a full word.  */
+  if (TREE_CODE (field_size_tree) == INTEGER_CST)
+    field_size_in_bits = (unsigned) TREE_INT_CST_LOW (field_size_tree);
+  else
+    field_size_in_bits = BITS_PER_WORD;
 
-  field_size_in_bits = (unsigned) TREE_INT_CST_LOW (field_size_tree);
   type_size_in_bits = simple_type_size_in_bits (type);
   type_align_in_bits = simple_type_align_in_bits (type);
   type_align_in_bytes = type_align_in_bits / BITS_PER_UNIT;
@@ -7229,7 +7088,12 @@ add_name_attribute (die, name_string)
      register const char *name_string;
 {
   if (name_string != NULL && *name_string != 0)
-    add_AT_string (die, DW_AT_name, name_string);
+    {
+      if (demangle_name_func)
+	name_string = (*demangle_name_func) (name_string);
+
+      add_AT_string (die, DW_AT_name, name_string);
+    }
 }
 
 /* Given a tree node describing an array bound (either lower or upper) output
@@ -7923,6 +7787,7 @@ gen_array_type_die (type, context_die)
 #endif
     add_subscript_info (array_die, type);
 
+  add_name_attribute (array_die, type_tag (type));
   equate_type_number_to_die (type, array_die);
 
   /* Add representation of the type of the elements of this array type.  */
@@ -8422,13 +8287,13 @@ gen_subprogram_die (decl, context_die)
 	 inline is not saved anywhere.  */
       if (DECL_DEFER_OUTPUT (decl))
 	{
-	  if (DECL_INLINE (decl))
+	  if (DECL_INLINE (decl) && !flag_no_inline)
 	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_inlined);
 	  else
 	    add_AT_unsigned (subr_die, DW_AT_inline,
 			     DW_INL_declared_not_inlined);
 	}
-      else if (DECL_INLINE (decl))
+      else if (DECL_INLINE (decl) && !flag_no_inline)
 	add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
       else
 	abort ();
@@ -9577,6 +9442,30 @@ gen_decl_die (decl, context_die)
     }
 }
 
+/* Add Ada "use" clause information for SGI Workshop debugger.  */
+
+void
+dwarf2out_add_library_unit_info (filename, context_list)
+     char *filename;
+     char *context_list;
+{
+  unsigned int file_index;
+
+  if (filename != NULL)
+    {
+      dw_die_ref unit_die = new_die (DW_TAG_module, comp_unit_die);
+      tree context_list_decl 
+	= build_decl (LABEL_DECL, get_identifier (context_list),
+		      void_type_node);
+
+      TREE_PUBLIC (context_list_decl) = TRUE;
+      add_name_attribute (unit_die, context_list);
+      file_index = lookup_filename (filename);
+      add_AT_unsigned (unit_die, DW_AT_decl_file, file_index);
+      add_pubname (context_list_decl, unit_die);
+    }
+}
+
 /* Write the debugging output for DECL.  */
 
 void

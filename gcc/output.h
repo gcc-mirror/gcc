@@ -336,6 +336,17 @@ extern rtx peephole			PROTO((rtx));
 /* Write all the constants in the constant pool.  */
 extern void output_constant_pool	PROTO((char *, tree));
 
+/* Return nonzero if VALUE is a valid constant-valued expression
+   for use in initializing a static variable; one that can be an
+   element of a "constant" initializer.
+
+   Return null_pointer_node if the value is absolute;
+   if it is relocatable, return the variable that determines the relocation.
+   We assume that VALUE has been folded as much as possible;
+   therefore, we do not need to check for such things as
+   arithmetic-combinations of integers.  */
+extern tree initializer_constant_valid_p	PROTO((tree, tree));
+
 /* Output assembler code for constant EXP to FILE, with no label.
    This includes the pseudo-op such as ".int" or ".byte", and a newline.
    Assumes output_addressed_constants has been done on EXP already.

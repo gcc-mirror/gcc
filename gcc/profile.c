@@ -1423,7 +1423,7 @@ init_branch_prob (filename)
       strcpy (data_file, filename);
       strip_off_ending (data_file, len);
       strcat (data_file, ".bb");
-      if ((bb_file = fopen (data_file, "w")) == 0)
+      if ((bb_file = fopen (data_file, "wb")) == 0)
 	pfatal_with_name (data_file);
 
       /* Open an output file for the program flow graph.  */
@@ -1432,7 +1432,7 @@ init_branch_prob (filename)
       strcpy (bbg_file_name, filename);
       strip_off_ending (bbg_file_name, len);
       strcat (bbg_file_name, ".bbg");
-      if ((bbg_file = fopen (bbg_file_name, "w")) == 0)
+      if ((bbg_file = fopen (bbg_file_name, "wb")) == 0)
 	pfatal_with_name (bbg_file_name);
 
       /* Initialize to zero, to ensure that the first file name will be
@@ -1447,7 +1447,7 @@ init_branch_prob (filename)
       strcpy (da_file_name, filename);
       strip_off_ending (da_file_name, len);
       strcat (da_file_name, ".da");
-      if ((da_file = fopen (da_file_name, "r")) == 0)
+      if ((da_file = fopen (da_file_name, "rb")) == 0)
 	warning ("file %s not found, execution counts assumed to be zero.",
 		 da_file_name);
 
