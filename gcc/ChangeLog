@@ -1,3 +1,7 @@
+2004-04-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* fix-header.c: kill(), putenv() and tzset() are POSIX not ANSI.
+
 2004-04-12  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (output_387_reg_move): New function.
