@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "expr.h"
 #include "toplev.h"
+#include "defaults.h"
 
 static tree convert_for_assignment PROTO((tree, tree, const char *, tree,
 					  int));

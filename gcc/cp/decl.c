@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "../hash.h"
-#include "expr.h"
+#include "defaults.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
