@@ -1,3 +1,7 @@
+2001-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h: Update comments reflecting previous change.
+
 2001-08-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansidecl.h (VA_OPEN, VA_CLOSE): Allow multiple uses.
