@@ -6,6 +6,8 @@
 
 	* g++.dg/other/anon-union.C: New test.
 
+	* gcc.c-torture/execute/20011024-1.c: New test.
+
 2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/20000722-1.x,
