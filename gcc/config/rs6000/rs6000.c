@@ -524,6 +524,90 @@ reg_or_cint_operand (op, mode)
      return GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode);
 }
 
+/* Return the number of instructions it takes to form a constant in an
+   integer register.  */
+
+static int
+num_insns_constant_wide (value)
+     HOST_WIDE_INT value;
+{
+  /* signed constant loadable with {cal|addi} */
+  if (((unsigned HOST_WIDE_INT)value + 0x8000) < 0x10000)
+    return 1;
+
+#if HOST_BITS_PER_WIDE_INT == 32
+  /* constant loadable with {cau|addis} */
+  else if ((value & 0xffff) == 0)
+    return 1;
+
+#else
+  /* constant loadable with {cau|addis} */
+  else if ((value & 0xffff) == 0 && (value & ~0xffffffff) == 0)
+    return 1;
+
+  else if (TARGET_64BIT)
+    {
+      HOST_WIDE_INT low  = value & 0xffffffff;
+      HOST_WIDE_INT high = value >> 32;
+
+      if (high == 0 && (low & 0x80000000) == 0)
+	return 2;
+
+      else if (high == 0xffffffff && (low & 0x80000000) != 0)
+	return 2;
+
+      else if (!low)
+	return num_insns_constant_wide (high) + 1;
+
+      else
+	return (num_insns_constant_wide (high)
+		+ num_insns_constant_low (low) + 1);
+    }
+#endif
+
+  else
+    return 2;
+}
+
+int
+num_insns_constant (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode != SImode && mode != DImode)
+    abort ();
+
+  if (GET_CODE (op) == CONST_INT)
+    return num_insns_constant_wide (INTVAL (op));
+
+  else if (GET_CODE (op) == CONST_DOUBLE && TARGET_32BIT)
+    return (num_insns_constant_wide (CONST_DOUBLE_LOW (op))
+	    + num_insns_constant_wide (CONST_DOUBLE_HIGH (op)));
+
+  else if (GET_CODE (op) == CONST_DOUBLE && TARGET_64BIT)
+    {
+      HOST_WIDE_INT low  = CONST_DOUBLE_LOW (op);
+      HOST_WIDE_INT high = CONST_DOUBLE_HIGH (op);
+
+      if (high == 0 && (low & 0x80000000) == 0)
+	return num_insns_constant_wide (low);
+
+      else if (((high & 0xffffffff) == 0xffffffff)
+	       && ((low & 0x80000000) != 0))
+	return num_insns_constant_wide (low);
+
+      else if (low == 0)
+	return num_insns_constant_wide (high) + 1;
+
+      else
+	return (num_insns_constant_wide (high)
+		+ num_insns_constant_wide (low) + 1);
+    }
+
+  else
+    abort ();
+}
+
 /* Return 1 if the operand is a CONST_DOUBLE and it can be put into a register
    with one instruction per word.  We only do this if we can safely read
    CONST_DOUBLE_{LOW,HIGH}.  */
@@ -535,11 +619,11 @@ easy_fp_constant (op, mode)
 {
   if (GET_CODE (op) != CONST_DOUBLE
       || GET_MODE (op) != mode
-      || GET_MODE_CLASS (mode) != MODE_FLOAT)
+      || (GET_MODE_CLASS (mode) != MODE_FLOAT && mode != DImode))
     return 0;
 
   /* Consider all constants with -msoft-float to be easy */
-  if (TARGET_SOFT_FLOAT)
+  if (TARGET_SOFT_FLOAT && mode != DImode)
     return 1;
 
   if (mode == DFmode)
@@ -550,10 +634,11 @@ easy_fp_constant (op, mode)
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
 
-      return (((unsigned) (k[0] + 0x8000) < 0x10000 || (k[0] & 0xffff) == 0)
-	      && ((unsigned) (k[1] + 0x8000) < 0x10000 || (k[1] & 0xffff) == 0));
+      return (num_insns_constant_wide ((HOST_WIDE_INT)k[0]) == 1
+	      && num_insns_constant_wide ((HOST_WIDE_INT)k[1]) == 1);
     }
-  else
+
+  else if (mode == SFmode)
     {
       long l;
       REAL_VALUE_TYPE rv;
@@ -561,8 +646,14 @@ easy_fp_constant (op, mode)
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
 
-      return ((unsigned) (l + 0x8000) < 0x10000 || (l & 0xffff) == 0);
+      return num_insns_constant_wide (l) == 1;
     }
+
+  else if (mode == DImode && TARGET_32BIT)
+    return num_insns_constant (op, DImode) == 2;
+
+  else
+    abort ();
 }
 
 /* Return 1 if the operand is in volatile memory.  Note that during the
@@ -821,6 +912,11 @@ input_operand (op, mode)
       && easy_fp_constant (op, mode))
     return 1;
 
+  /* Allow any integer constant.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE))
+    return 1;
+
   /* For floating-point or multi-word mode, the only remaining valid type
      is a register.  */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
@@ -831,10 +927,6 @@ input_operand (op, mode)
      do not get called for MODE_CC values).  These can be in any
      register.  */
   if (register_operand (op, mode))
-    return 1;
-
-  /* For integer modes, any constant is ok.  */
-  if (GET_CODE (op) == CONST_INT)
     return 1;
 
   /* A SYMBOL_REF referring to the TOC is valid.  */

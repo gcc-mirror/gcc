@@ -995,10 +995,14 @@ enum reg_class
    Here VALUE is the CONST_DOUBLE rtx itself.
 
    We flag for special constants when we can copy the constant into
-   a general register in two insns for DF and one insn for SF.  */
+   a general register in two insns for DF/DI and one insn for SF.
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' ? easy_fp_constant (VALUE, GET_MODE (VALUE)) : 0)
+   'H' is used for DI constants that take 3 insns.  */
+
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
+  ((C) == 'G' ? easy_fp_constant (VALUE, GET_MODE (VALUE)) :		\
+   (C) == 'H' ? (num_insns_constant (VALUE, DImode) == 3) :		\
+   0)
 
 /* Optional extra constraints for this machine.
 
@@ -2819,6 +2823,7 @@ extern int reg_or_short_operand ();
 extern int reg_or_neg_short_operand ();
 extern int reg_or_u_short_operand ();
 extern int reg_or_cint_operand ();
+extern int num_insns_constant ();
 extern int easy_fp_constant ();
 extern int volatile_mem_operand ();
 extern int offsettable_addr_operand ();
