@@ -51,8 +51,15 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP	\
-				  | MASK_FLOAT_RETURNS		\
-				  | MASK_OMIT_LEAF_FRAME_POINTER)
+				  | MASK_FLOAT_RETURNS)
+
+#define SUBTARGET_OPTIMIZATION_OPTIONS			\
+  do							\
+    {							\
+      if (optimize >= 1)				\
+	target_flags |= MASK_OMIT_LEAF_FRAME_POINTER;	\
+    }							\
+  while (0)
 
 #define MULTILIB_DEFAULTS { "m32" }
 
