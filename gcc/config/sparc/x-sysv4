@@ -1,3 +1,2 @@
 X_CFLAGS=-DSVR4
-INSTALL=cp
 ALLOCA=alloca.o

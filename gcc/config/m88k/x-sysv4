@@ -1,5 +1,3 @@
-INSTALL = cp
-
 # Problems in early version of the assembler have been fixed (-DNO_BUGS).
 # There are peculiar problems with the include files that require __STDC__
 # to be defined as 0.  This results in sigset_t being defined which otherwise
