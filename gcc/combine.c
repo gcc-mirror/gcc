@@ -1661,9 +1661,32 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	}
 
       if (subreg_lowpart_p (SET_DEST (PATTERN (i3))))
-	lo = INTVAL (SET_SRC (PATTERN (i3)));
-      else
+	{
+	  /* We don't handle the case of the target word being wider
+	     than a host wide int.  */
+	  if (HOST_BITS_PER_WIDE_INT < BITS_PER_WORD)
+	    abort ();
+
+	  lo &= ~(((unsigned HOST_WIDE_INT)1 << BITS_PER_WORD) - 1);
+	  lo |= INTVAL (SET_SRC (PATTERN (i3)));
+	}
+      else if (HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	hi = INTVAL (SET_SRC (PATTERN (i3)));
+      else if (HOST_BITS_PER_WIDE_INT >= 2 * BITS_PER_WORD)
+	{
+	  int sign = -(int) ((unsigned HOST_WIDE_INT) lo
+			     >> (HOST_BITS_PER_WIDE_INT - 1));
+
+	  lo &= ~((((unsigned HOST_WIDE_INT)1 << BITS_PER_WORD) - 1)
+		  << BITS_PER_WORD);
+	  lo |= INTVAL (SET_SRC (PATTERN (i3))) << BITS_PER_WORD;
+	  if (hi == sign)
+	    hi = lo < 0 ? -1 : 0;
+	}
+      else
+	/* We don't handle the case of the higher word not fitting
+	   entirely in either hi or lo.  */
+	abort ();
 
       combine_merges++;
       subst_insn = i3;
