@@ -1,3 +1,9 @@
+2004-04-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR debug/15033
+	* dwarf2out.c (rtl_for_decl_location): Check for NULL
+	rtl.
+
 2004-04-20  James E Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.md (call_value_nogp): Add constraints for op0.

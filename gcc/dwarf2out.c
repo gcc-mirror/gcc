@@ -9757,6 +9757,7 @@ rtl_for_decl_location (tree decl)
 	}
     }
   else if (TREE_CODE (decl) == VAR_DECL
+	   && rtl
 	   && GET_CODE (rtl) == MEM
 	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl))
 	   && BYTES_BIG_ENDIAN)
