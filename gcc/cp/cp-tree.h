@@ -3971,7 +3971,7 @@ extern tree build_lang_decl			PARAMS ((enum tree_code, tree, tree));
 extern void retrofit_lang_decl			PARAMS ((tree));
 extern tree copy_decl                           PARAMS ((tree));
 extern tree copy_type                           PARAMS ((tree));
-extern tree cp_make_lang_type			PARAMS ((enum tree_code));
+extern tree cxx_make_type			PARAMS ((enum tree_code));
 extern tree make_aggr_type			PARAMS ((enum tree_code));
 extern void compiler_error			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;

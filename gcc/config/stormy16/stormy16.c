@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "tm_p.h"
+#include "langhooks.h"
 
 static rtx emit_addhi3_postreload PARAMS ((rtx, rtx, rtx));
 static void xstormy16_asm_out_constructor PARAMS ((rtx, int));
@@ -1140,7 +1141,7 @@ xstormy16_build_va_list ()
 {
   tree f_1, f_2, record, type_decl;
 
-  record = make_lang_type (RECORD_TYPE);
+  record = (*lang_hooks.types.make_type) (RECORD_TYPE);
   type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
   f_1 = build_decl (FIELD_DECL, get_identifier ("base"),

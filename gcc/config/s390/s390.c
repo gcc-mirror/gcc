@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "debug.h"
-
+#include "langhooks.h"
 
 static bool s390_assemble_integer PARAMS ((rtx, unsigned int, int));
 static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
@@ -3420,7 +3420,7 @@ s390_build_va_list ()
 {
   tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
 
-  record = make_lang_type (RECORD_TYPE);
+  record = (*lang_hooks.types.make_type) (RECORD_TYPE);
 
   type_decl =
     build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);

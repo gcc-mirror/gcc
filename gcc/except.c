@@ -70,6 +70,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tm_p.h"
 #include "target.h"
+#include "langhooks.h"
 
 /* Provide defaults for stuff that may not be defined when using
    sjlj exceptions.  */
@@ -383,7 +384,7 @@ init_eh ()
     {
       tree f_jbuf, f_per, f_lsda, f_prev, f_cs, f_data, tmp;
 
-      sjlj_fc_type_node = make_lang_type (RECORD_TYPE);
+      sjlj_fc_type_node = (*lang_hooks.types.make_type) (RECORD_TYPE);
       ggc_add_tree_root (&sjlj_fc_type_node, 1);
 
       f_prev = build_decl (FIELD_DECL, get_identifier ("__prev"),

@@ -2294,7 +2294,6 @@ cp_end_inlining (fn)
 void
 init_tree ()
 {
-  make_lang_type_fn = cp_make_lang_type;
   lang_statement_code_p = cp_statement_code_p;
   lang_set_decl_assembler_name = mangle_decl;
   list_hash_table = htab_create (31, list_hash, list_hash_eq, NULL);
