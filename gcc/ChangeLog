@@ -1,3 +1,7 @@
+Fri Nov 12 12:43:49 1999  Richard Henderson  <rth@cygnus.com>
+
+	* unroll.c (unroll_loop): Make temp an unsigned HOST_WIDE_INT.
+
 Fri Nov 12 15:14:19 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
 
 	* i960.h (CAN_DEBUG_WITHOUT_FP): Don't define it.
