@@ -7889,7 +7889,8 @@ java_complete_lhs (node)
       /* They complete the array creation expression, if no errors
          were found. */
       CAN_COMPLETE_NORMALLY (node) = 1;
-      return (flag ? error_mark_node : patch_newarray (node));
+      return (flag ? error_mark_node
+	      : force_evaluation_order (patch_newarray (node)));
 
     case NEW_CLASS_EXPR:
     case CALL_EXPR:
@@ -9268,7 +9269,10 @@ patch_binop (node, wfl_op1, wfl_op2)
   TREE_TYPE (node) = prom_type;
   TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
   
-  return fold (node);
+  /* fold does not respect side-effect order as required for Java but not C. */
+  if (! TREE_SIDE_EFFECTS (node))
+    node = fold (node);
+  return node;
 }
 
 /* Concatenate the STRING_CST CSTE and STRING. When AFTER is a non
