@@ -29,10 +29,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define HOST_WORDS_BIG_ENDIAN
 
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33
-
 /* The 88open BCS (and ABI) environment doesn't support BSD features
    (vfork, getrusage), so use USG.  The Omron Luna/88k is BSD though.  */
 #ifndef luna88k
@@ -50,7 +46,3 @@ Boston, MA 02111-1307, USA.  */
 #ifdef __DGUX__
 #define OBSTACK_CHUNK_SIZE (8192-16)
 #endif
-
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"

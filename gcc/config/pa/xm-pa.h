@@ -33,14 +33,6 @@ Boston, MA 02111-1307, USA.  */
 /* Place any machine-dependent include files here, in case we
    are bootstrapping.  */
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33
-
 /* 4.3BSD, OSF1 and Lites on the PA are all derived from NET2 or
    later code from Berkeley.  */
 #define __BSD_NET2__

@@ -24,9 +24,3 @@ Boston, MA 02111-1307, USA.  */
    CPU/xm-CPU.h and this file xm-gnu.h.  */
 
 #define POSIX			/* GNU complies to POSIX.1.  */
-
-#ifndef inhibit_libc
-/* Get a definition of O_RDONLY; some of the GCC files don't include this
-   properly and will define it themselves to be zero. */
-#include <fcntl.h>
-#endif

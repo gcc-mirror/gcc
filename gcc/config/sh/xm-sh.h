@@ -28,11 +28,3 @@ Boston, MA 02111-1307, USA.  */
 #ifdef __GNUC__
 #define alloca __builtin_alloca
 #endif
-
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.  */
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33

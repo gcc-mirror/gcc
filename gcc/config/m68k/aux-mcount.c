@@ -37,11 +37,8 @@ Boston, MA 02111-1307, USA.  */
 #error This file uses GNU C extensions
 #endif
 
+#include "tconfig.h"
 #include <mon.h>
-
-#ifdef IN_GCC
-#include "tm.h"
-#endif
 
 struct cnt *_countbase;
 

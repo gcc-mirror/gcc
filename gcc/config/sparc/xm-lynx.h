@@ -18,8 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <xm-lynx.h>
-
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 8
 #define HOST_BITS_PER_SHORT 16
@@ -28,12 +26,3 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_BITS_PER_LONGLONG 64
 
 #define HOST_WORDS_BIG_ENDIAN 1
-
-/* Include <sys/wait.h> to define the exit status access macros.  */
-#include <sys/types.h>
-#include <sys/wait.h>
-
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-
-#include "tm.h"

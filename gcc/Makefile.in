@@ -641,7 +641,7 @@ HOST_ERRORS = $(HOST_PREFIX)errors.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
-# so that tm.h and config.h will be found in the compilation
+# so that *config.h will be found in the compilation
 # subdirectory rather than in the source directory.
 # -I$(@D) and -I$(srcdir)/$(@D) cause the subdirectory of the file
 # currently being compiled, in both source trees, to be examined as well.
@@ -2349,7 +2349,7 @@ clean: mostlyclean $(INTL_CLEAN) lang.clean
 # while building and installing GCC.
 INTL_DISTCLEAN = intl.distclean
 distclean: clean $(INTL_DISTCLEAN) lang.distclean
-	-rm -f tm.h tm_p.h config.h auto-host.h auto-build.h tconfig.h hconfig.h
+	-rm -f tm_p.h config.h auto-host.h auto-build.h tconfig.h hconfig.h
 	-rm -f cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target

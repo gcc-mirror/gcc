@@ -55,10 +55,8 @@ Boston, MA 02111-1307, USA.  */
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
 
-#include "auto-host.h"
-#include "tm.h"
+#include "tconfig.h"
 #include "tsystem.h"
-
 #include "frame.h"
 
 #ifndef CRT_CALL_STATIC_FUNCTION

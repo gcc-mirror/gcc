@@ -31,16 +31,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define	HOST_WORDS_BIG_ENDIAN
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-
-#define	SUCCESS_EXIT_CODE	0
-#define	FATAL_EXIT_CODE		33
-
 /* Use the C alloca and use only int bitfields.  */
 
 #define USE_C_ALLOCA

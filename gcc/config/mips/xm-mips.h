@@ -36,14 +36,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33
-
 #ifndef __GNUC__
 /* The MIPS compiler gets it wrong, and treats enumerated bitfields
    as signed quantities, making it impossible to use an 8-bit enum

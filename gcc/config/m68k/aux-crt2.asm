@@ -1,6 +1,6 @@
 /* More startup code for A/UX */
 
-#include "tm.h"
+#include "tconfig.h"
 
 #ifdef USE_BIN_AS
 	file "crt2.s"

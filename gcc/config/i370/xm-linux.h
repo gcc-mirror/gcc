@@ -41,12 +41,3 @@ extern char *alloca ();
 #endif
 #define ONLY_INT_FIELDS
 #endif
-
-/* Target machine dependencies.  tm.h is a symbolic link to the actual
-   target specific file.  */
-
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE	0
-#define FATAL_EXIT_CODE		12
