@@ -4,13 +4,13 @@
 /* This is tested by i386gas.h.  */
 #define YES_UNDERSCORES
 
-#include "i386/gstabs.h"
+#include <i386/gstabs.h>
 
 /* Get perform_* macros to build libgcc.a.  */
-#include "i386/perform.h"
+#include <i386/perform.h>
 
 /* Get generic NetBSD definitions.  */
-#include "netbsd.h"
+#include <netbsd.h>
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -D__NetBSD__ -Asystem(unix) -Asystem(NetBSD) -Acpu(i386) -Amachine(i386)"

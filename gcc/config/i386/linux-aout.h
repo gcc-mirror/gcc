@@ -21,8 +21,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is tested by i386/gas.h.  */
 #define YES_UNDERSCORES
 
-#include "i386/gstabs.h"
-#include "linux-aout.h"	/* some common stuff */
+#include <i386/gstabs.h>
+#include <linux-aout.h>	/* some common stuff */
 
 /* Specify predefined symbols in preprocessor.  */
 

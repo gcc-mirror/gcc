@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "xm-lynx.h"
+#include <xm-lynx.h>
 
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 8

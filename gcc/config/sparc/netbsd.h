@@ -1,8 +1,8 @@
-#include "sparc/sparc.h"
+#include <sparc/sparc.h>
 
 /* Get generic NetBSD definitions.  */
 
-#include "netbsd.h"
+#include <netbsd.h>
 
 /* Names to predefine in the preprocessor for this target machine.  */
 

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "lynx.h"
+#include <lynx.h>
 
 /* Definitions we want to override with those from rs6000.h: */
 #undef LIB_SPEC
@@ -47,7 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef FUNCTION_PROFILER
 
-#include "rs6000/rs6000.h"
+#include <rs6000/rs6000.h>
 
 /* LynxOS has signed chars, regardless of what most R/S 6000 systems do */
 #undef DEFAULT_SIGNED_CHAR
