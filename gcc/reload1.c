@@ -787,7 +787,7 @@ reload (first, global, dumpfile)
       rtx max_groups_insn[N_REG_CLASSES];
       rtx max_nongroups_insn[N_REG_CLASSES];
       rtx x;
-      int starting_frame_size = get_frame_size ();
+      HOST_WIDE_INT starting_frame_size = get_frame_size ();
       int previous_frame_pointer_needed = frame_pointer_needed;
       static char *reg_class_names[] = REG_CLASS_NAMES;
 
