@@ -2648,6 +2648,15 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	   && reg_alternate_class (REGNO (recog_operand[i])) == NO_REGS);
     }
 
+#ifdef HAVE_cc0
+  /* If we made any reloads for addresses, see if they violate a
+     "no input reloads" requirement for this insn.  */
+  if (no_input_reloads)
+    for (i = 0; i < n_reloads; i++)
+      if (reload_in[i] != 0)
+	abort ();
+#endif
+
   /* If this is simply a copy from operand 1 to operand 0, merge the
      preferred classes for the operands.  */
   if (set != 0 && noperands >= 2 && recog_operand[0] == SET_DEST (set)
