@@ -4766,7 +4766,6 @@ ISA level.
 @item -mips3
 Issue instructions from level 3 of the MIPS ISA (64 bit instructions).
 @samp{r4000} is the default @var{cpu type} at this ISA level.
-This option does not change the sizes of any of the C data types.
 
 @item -mips4
 Issue instructions from level 4 of the MIPS ISA.  @samp{r8000} is the
@@ -4789,12 +4788,14 @@ Assume that 32 64-bit general purpose registers are available.  This is
 the default when the @samp{-mips3} option is used.
 
 @item -mint64
-Types long, int, and pointer are 64 bits.  This works only if @samp{-mips3}
-is also specified.
+Force int and long types to be 64 bits wide.  See @samp{-mlong64} for an
+explanation of the width of pointers.
 
 @item -mlong64
-Types long and pointer are 64 bits, and type int is 32 bits.
-This works only if @samp{-mips3} is also specified.
+Force long types to be 64 bits wide.
+
+The width of pointer types is the smaller of the width of longs
+or the width of general purpose registers.
 
 @itemx -mabi=32
 @itemx -mabi=n32

@@ -263,9 +263,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* If we are included from varasm.c, these need to depend on -mabi.  */
 #define CTORS_SECTION_ASM_OP \
-  (TARGET_LONG64 ? ".section\t.ctors,1,2,0,8" : ".section\t.ctors,1,2,0,4")
+  (Pmode == DImode ? ".section\t.ctors,1,2,0,8" : ".section\t.ctors,1,2,0,4")
 #define DTORS_SECTION_ASM_OP \
-  (TARGET_LONG64 ? ".section\t.dtors,1,2,0,8" : ".section\t.dtors,1,2,0,4")
+  (Pmode == DImode ? ".section\t.dtors,1,2,0,8" : ".section\t.dtors,1,2,0,4")
 #endif /* defined (CRT_BEGIN) || defined (CRT_END) */
 
 /* dwarf2out will handle padding this data properly.  We definitely don't
@@ -341,7 +341,7 @@ dtors_section ()							\
   do {									\
     ctors_section ();							\
     fprintf (FILE, "\t%s\t ",						\
-	     TARGET_LONG64 ? ".dword" : ".word");			\
+	     (Pmode == DImode) ? ".dword" : ".word");			\
     assemble_name (FILE, NAME);						\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -352,7 +352,7 @@ dtors_section ()							\
   do {									\
     dtors_section ();                   				\
     fprintf (FILE, "\t%s\t ",						\
-	     TARGET_LONG64 ? ".dword" : ".word");			\
+	     (Pmode == DImode) ? ".dword" : ".word");			\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)

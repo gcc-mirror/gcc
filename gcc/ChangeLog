@@ -1,3 +1,14 @@
+Tue Mar 16 10:22:22 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/iris.h (CTORS_SECTION_ASM_OP,DTORS_SECTION_ASM_OP,
+	dtors_section): Use Pmode == DImode rather than TARGET_LONG64.
+	* config/mips/mips.c (override_options): Allow -mlong64 and
+	-mint64 with -mips2 or less.
+	* config/mips/mips.h (MASK_LONG64): Fix comment.
+	(POINTER_SIZE): Use Pmode == DImode rather than TARGET_LONG64.
+	(Pmode): Make Pmode the smaller of longs or gp registers.
+	* invoke.texi: Note the new size for pointers.
+
 Mon Mar 15 22:45:25 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (ASM_OUTPUT_{DOUBLE,FLOAT}): Always generate IEEE 754

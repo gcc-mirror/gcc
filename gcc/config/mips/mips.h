@@ -315,7 +315,7 @@ extern void		mips_select_section ();
 
 					/* Bits for real switches */
 #define MASK_INT64	0x00000001	/* ints are 64 bits */
-#define MASK_LONG64	0x00000002	/* longs and pointers are 64 bits */
+#define MASK_LONG64	0x00000002	/* longs are 64 bits */
 #define MASK_SPLIT_ADDR	0x00000004	/* Address splitting is enabled.  */
 #define MASK_GPOPT	0x00000008	/* Optimize for global pointer */
 #define MASK_GAS	0x00000010	/* Gas used instead of MIPS as */
@@ -1344,7 +1344,7 @@ do {							\
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
 #ifndef POINTER_SIZE
-#define POINTER_SIZE (TARGET_LONG64 ? 64 : 32)
+#define POINTER_SIZE (Pmode == DImode ? 64 : 32)
 #endif
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
@@ -3240,10 +3240,12 @@ while (0)
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
-   between pointers and any other objects of this machine mode.  */
+   between pointers and any other objects of this machine mode.
+
+   For MIPS we make pointers are the smaller of longs and gp-registers. */
 
 #ifndef Pmode
-#define Pmode ((enum machine_mode)(TARGET_LONG64 ? DImode : SImode))
+#define Pmode ((enum machine_mode)((TARGET_LONG64 && TARGET_64BIT) ? DImode : SImode))
 #endif
 
 /* A function address in a call instruction
