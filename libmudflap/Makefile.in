@@ -818,12 +818,11 @@ uninstall-info: uninstall-info-recursive
 	uninstall uninstall-am uninstall-includeHEADERS \
 	uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 
-mf-runtime.lo: mf-runtime.c splay-tree.c splay-tree.h
 
 clean-local:
 	rm -f pth/*.o pth/*.lo
 
-pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h splay-tree.c splay-tree.h
+pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h
 	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-runtime.c -o $@
 pth/mf-heuristics.lo: mf-heuristics.c mf-runtime.h mf-impl.h
 	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-heuristics.c -o $@

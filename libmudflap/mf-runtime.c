@@ -2,6 +2,8 @@
    Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
+   Splay Tree code originally by Mark Mitchell <mark@markmitchell.com>,
+   adapted from libiberty.
 
 This file is part of GCC.
 
@@ -67,8 +69,61 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "mf-runtime.h"
 #include "mf-impl.h"
-#include "splay-tree.h"
 
+
+/* ------------------------------------------------------------------------ */
+/* Splay-tree implementation.  */
+
+typedef uintptr_t mfsplay_tree_key;
+typedef void *mfsplay_tree_value;
+
+/* Forward declaration for a node in the tree.  */
+typedef struct mfsplay_tree_node_s *mfsplay_tree_node;
+
+/* The type of a function used to iterate over the tree.  */
+typedef int (*mfsplay_tree_foreach_fn) (mfsplay_tree_node, void *);
+
+/* The nodes in the splay tree.  */
+struct mfsplay_tree_node_s
+{
+  /* Data.  */
+  mfsplay_tree_key key;
+  mfsplay_tree_value value;
+  /* Children.  */
+  mfsplay_tree_node left;
+  mfsplay_tree_node right;
+  /* XXX: The addition of a parent pointer may eliminate some recursion.  */
+};
+
+/* The splay tree itself.  */
+struct mfsplay_tree_s
+{
+  /* The root of the tree.  */
+  mfsplay_tree_node root;
+
+  /* The last key value for which the tree has been splayed, but not
+     since modified.  */
+  mfsplay_tree_key last_splayed_key;
+  int last_splayed_key_p;
+
+  /* Statistics.  */
+  unsigned num_keys;
+
+  /* Traversal recursion control flags.  */
+  unsigned max_depth;
+  unsigned depth;
+  unsigned rebalance_p;
+};
+typedef struct mfsplay_tree_s *mfsplay_tree;
+
+static mfsplay_tree mfsplay_tree_new (void);
+static mfsplay_tree_node mfsplay_tree_insert (mfsplay_tree, mfsplay_tree_key, mfsplay_tree_value);
+static void mfsplay_tree_remove (mfsplay_tree, mfsplay_tree_key);
+static mfsplay_tree_node mfsplay_tree_lookup (mfsplay_tree, mfsplay_tree_key);
+static mfsplay_tree_node mfsplay_tree_predecessor (mfsplay_tree, mfsplay_tree_key);
+static mfsplay_tree_node mfsplay_tree_successor (mfsplay_tree, mfsplay_tree_key);
+static int mfsplay_tree_foreach (mfsplay_tree, mfsplay_tree_foreach_fn, void *);
+static void mfsplay_tree_rebalance (mfsplay_tree sp);
 
 /* ------------------------------------------------------------------------ */
 /* Utility macros */
@@ -217,7 +272,7 @@ static unsigned __mf_find_dead_objects (uintptr_t ptr_low, uintptr_t ptr_high,
 static void __mf_adapt_cache ();
 static void __mf_describe_object (__mf_object_t *obj);
 static unsigned __mf_watch_or_not (void *ptr, size_t sz, char flag);
-static splay_tree __mf_object_tree (int type);
+static mfsplay_tree __mf_object_tree (int type);
 static void __mf_link_object (__mf_object_t *node);
 static void __mf_unlink_object (__mf_object_t *node);
 
@@ -611,13 +666,13 @@ struct __mf_dynamic_entry __mf_dynamic [] =
 /* ------------------------------------------------------------------------ */
 
 /* Lookup & manage automatic initialization of the five or so splay trees.  */
-static splay_tree
+static mfsplay_tree
 __mf_object_tree (int type)
 {
-  static splay_tree trees [__MF_TYPE_MAX+1];
+  static mfsplay_tree trees [__MF_TYPE_MAX+1];
   assert (type >= 0 && type <= __MF_TYPE_MAX);
   if (UNLIKELY (trees[type] == NULL))
-    trees[type] = splay_tree_new ();
+    trees[type] = mfsplay_tree_new ();
   return trees[type];
 }
 
@@ -1254,7 +1309,7 @@ struct tree_stats
 
 
 static int
-__mf_adapt_cache_fn (splay_tree_node n, void *param)
+__mf_adapt_cache_fn (mfsplay_tree_node n, void *param)
 {
   __mf_object_t *obj = (__mf_object_t *) n->value;
   struct tree_stats *s = (struct tree_stats *) param;
@@ -1311,11 +1366,11 @@ __mf_adapt_cache ()
 
   memset (&s, 0, sizeof (s));
 
-  splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP), __mf_adapt_cache_fn, (void *) & s);
-  splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP_I), __mf_adapt_cache_fn, (void *) & s);
-  splay_tree_foreach (__mf_object_tree (__MF_TYPE_STACK), __mf_adapt_cache_fn, (void *) & s);
-  splay_tree_foreach (__mf_object_tree (__MF_TYPE_STATIC), __mf_adapt_cache_fn, (void *) & s);
-  splay_tree_foreach (__mf_object_tree (__MF_TYPE_GUESS), __mf_adapt_cache_fn, (void *) & s);
+  mfsplay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP), __mf_adapt_cache_fn, (void *) & s);
+  mfsplay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP_I), __mf_adapt_cache_fn, (void *) & s);
+  mfsplay_tree_foreach (__mf_object_tree (__MF_TYPE_STACK), __mf_adapt_cache_fn, (void *) & s);
+  mfsplay_tree_foreach (__mf_object_tree (__MF_TYPE_STATIC), __mf_adapt_cache_fn, (void *) & s);
+  mfsplay_tree_foreach (__mf_object_tree (__MF_TYPE_GUESS), __mf_adapt_cache_fn, (void *) & s);
 
   /* Maybe we're dealing with funny aging/adaptation parameters, or an
      empty tree.  Just leave the cache alone in such cases, rather
@@ -1385,11 +1440,11 @@ __mf_find_objects2 (uintptr_t ptr_low, uintptr_t ptr_high,
                     __mf_object_t **objs, unsigned max_objs, int type)
 {
   unsigned count = 0;
-  splay_tree t = __mf_object_tree (type);
-  splay_tree_key k = (splay_tree_key) ptr_low;
+  mfsplay_tree t = __mf_object_tree (type);
+  mfsplay_tree_key k = (mfsplay_tree_key) ptr_low;
   int direction;
 
-  splay_tree_node n = splay_tree_lookup (t, k);
+  mfsplay_tree_node n = mfsplay_tree_lookup (t, k);
   /* An exact match for base address implies a hit.  */
   if (n != NULL)
     {
@@ -1402,13 +1457,13 @@ __mf_find_objects2 (uintptr_t ptr_low, uintptr_t ptr_high,
   for (direction = 0; direction < 2; direction ++)
     {
       /* Reset search origin.  */
-      k = (splay_tree_key) ptr_low;
+      k = (mfsplay_tree_key) ptr_low;
 
       while (1)
         {
           __mf_object_t *obj;
               
-          n = (direction == 0 ? splay_tree_successor (t, k) : splay_tree_predecessor (t, k));
+          n = (direction == 0 ? mfsplay_tree_successor (t, k) : mfsplay_tree_predecessor (t, k));
           if (n == NULL) break;
           obj = (__mf_object_t *) n->value;
               
@@ -1419,7 +1474,7 @@ __mf_find_objects2 (uintptr_t ptr_low, uintptr_t ptr_high,
             objs[count] = (__mf_object_t *) n->value;
           count ++;
 
-          k = (splay_tree_key) obj->low;
+          k = (mfsplay_tree_key) obj->low;
         }
     }
 
@@ -1461,8 +1516,8 @@ __mf_find_objects (uintptr_t ptr_low, uintptr_t ptr_high,
 static void
 __mf_link_object (__mf_object_t *node)
 {
-  splay_tree t = __mf_object_tree (node->type);
-  splay_tree_insert (t, (splay_tree_key) node->low, (splay_tree_value) node);
+  mfsplay_tree t = __mf_object_tree (node->type);
+  mfsplay_tree_insert (t, (mfsplay_tree_key) node->low, (mfsplay_tree_value) node);
 }
 
 /* __mf_unlink_object */
@@ -1470,8 +1525,8 @@ __mf_link_object (__mf_object_t *node)
 static void
 __mf_unlink_object (__mf_object_t *node)
 {
-  splay_tree t = __mf_object_tree (node->type);
-  splay_tree_remove (t, (splay_tree_key) node->low);
+  mfsplay_tree t = __mf_object_tree (node->type);
+  mfsplay_tree_remove (t, (mfsplay_tree_key) node->low);
 }
 
 /* __mf_find_dead_objects */
@@ -1623,7 +1678,7 @@ __mf_describe_object (__mf_object_t *obj)
 
 
 static int
-__mf_report_leaks_fn (splay_tree_node n, void *param)
+__mf_report_leaks_fn (mfsplay_tree_node n, void *param)
 {
   __mf_object_t *node = (__mf_object_t *) n->value;
   unsigned *count = (unsigned *) param;
@@ -1643,9 +1698,9 @@ __mf_report_leaks ()
 {
   unsigned count = 0;
 
-  (void) splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP),
+  (void) mfsplay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP),
                              __mf_report_leaks_fn, & count);
-  (void) splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP_I),
+  (void) mfsplay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP_I),
                              __mf_report_leaks_fn, & count);
 
   return count;
@@ -2162,25 +2217,519 @@ __assert_fail (const char *msg, const char *file, unsigned line, const char *fun
 
 
 
-
-
-/* #include the generic splay tree implementation from libiberty here, to
-   ensure that it uses our memory allocation primitives.  */
+/* Adapted splay tree code, originally from libiberty.  It has been
+   specialized for libmudflap as requested by RMS.  */
 
 static void
-splay_tree_free (void *p)
+mfsplay_tree_free (void *p)
 {
   DECLARE (void, free, void *p);
   CALL_REAL (free, p);
 }
 
 static void *
-splay_tree_xmalloc (size_t s)
+mfsplay_tree_xmalloc (size_t s)
 {
   DECLARE (void *, malloc, size_t s);
   return CALL_REAL (malloc, s);
 }
 
-#define free(z) splay_tree_free(z)
-#define xmalloc(z) splay_tree_xmalloc(z)
-#include "splay-tree.c"
+
+static void mfsplay_tree_splay (mfsplay_tree, mfsplay_tree_key);
+static mfsplay_tree_node mfsplay_tree_splay_helper (mfsplay_tree,
+                                                mfsplay_tree_key,
+                                                mfsplay_tree_node *,
+                                                mfsplay_tree_node *,
+                                                mfsplay_tree_node *);
+static void *mfsplay_tree_xmalloc (size_t size);
+static void mfsplay_tree_free (void *object);
+
+
+
+/* Inline comparison function specialized for libmudflap's key type.  */
+static inline int
+compare_uintptr_t (mfsplay_tree_key k1, mfsplay_tree_key k2)
+{
+  if ((uintptr_t) k1 < (uintptr_t) k2)
+    return -1;
+  else if ((uintptr_t) k1 > (uintptr_t) k2)
+    return 1;
+  else
+    return 0;
+}
+
+
+/* Help splay SP around KEY.  PARENT and GRANDPARENT are the parent
+   and grandparent, respectively, of NODE.  */
+
+static mfsplay_tree_node
+mfsplay_tree_splay_helper (mfsplay_tree sp,
+                         mfsplay_tree_key key,
+                         mfsplay_tree_node * node,
+                         mfsplay_tree_node * parent,
+                         mfsplay_tree_node * grandparent)
+{
+  mfsplay_tree_node *next;
+  mfsplay_tree_node n;
+  int comparison;
+
+  n = *node;
+
+  if (!n)
+    return *parent;
+
+  comparison = compare_uintptr_t (key, n->key);
+
+  if (comparison == 0)
+    /* We've found the target.  */
+    next = 0;
+  else if (comparison < 0)
+    /* The target is to the left.  */
+    next = &n->left;
+  else
+    /* The target is to the right.  */
+    next = &n->right;
+
+  if (next)
+    {
+      /* Check whether our recursion depth is too high.  Abort this search,
+         and signal that a rebalance is required to continue.  */
+      if (sp->depth > sp->max_depth)
+        {
+          sp->rebalance_p = 1;
+          return n;
+         }
+
+      /* Continue down the tree.  */
+      sp->depth ++;
+      n = mfsplay_tree_splay_helper (sp, key, next, node, parent);
+      sp->depth --;
+
+      /* The recursive call will change the place to which NODE
+         points.  */
+      if (*node != n || sp->rebalance_p)
+        return n;
+    }
+
+  if (!parent)
+    /* NODE is the root.  We are done.  */
+    return n;
+
+  /* First, handle the case where there is no grandparent (i.e.,
+   *PARENT is the root of the tree.)  */
+  if (!grandparent)
+    {
+      if (n == (*parent)->left)
+        {
+          *node = n->right;
+          n->right = *parent;
+        }
+      else
+        {
+          *node = n->left;
+          n->left = *parent;
+        }
+      *parent = n;
+      return n;
+    }
+
+  /* Next handle the cases where both N and *PARENT are left children,
+     or where both are right children.  */
+  if (n == (*parent)->left && *parent == (*grandparent)->left)
+    {
+      mfsplay_tree_node p = *parent;
+
+      (*grandparent)->left = p->right;
+      p->right = *grandparent;
+      p->left = n->right;
+      n->right = p;
+      *grandparent = n;
+      return n;
+    }
+  else if (n == (*parent)->right && *parent == (*grandparent)->right)
+    {
+      mfsplay_tree_node p = *parent;
+
+      (*grandparent)->right = p->left;
+      p->left = *grandparent;
+      p->right = n->left;
+      n->left = p;
+      *grandparent = n;
+      return n;
+    }
+
+  /* Finally, deal with the case where N is a left child, but *PARENT
+     is a right child, or vice versa.  */
+  if (n == (*parent)->left)
+    {
+      (*parent)->left = n->right;
+      n->right = *parent;
+      (*grandparent)->right = n->left;
+      n->left = *grandparent;
+      *grandparent = n;
+      return n;
+    }
+  else
+    {
+      (*parent)->right = n->left;
+      n->left = *parent;
+      (*grandparent)->left = n->right;
+      n->right = *grandparent;
+      *grandparent = n;
+      return n;
+    }
+}
+
+
+
+static int
+mfsplay_tree_rebalance_helper1 (mfsplay_tree_node n, void *array_ptr)
+{
+  mfsplay_tree_node **p = array_ptr;
+  *(*p) = n;
+  (*p)++;
+  return 0;
+}
+
+
+static mfsplay_tree_node
+mfsplay_tree_rebalance_helper2 (mfsplay_tree_node * array, unsigned low,
+                              unsigned high)
+{
+  unsigned middle = low + (high - low) / 2;
+  mfsplay_tree_node n = array[middle];
+
+  /* Note that since we're producing a balanced binary tree, it is not a problem
+     that this function is recursive.  */
+  if (low + 1 <= middle)
+    n->left = mfsplay_tree_rebalance_helper2 (array, low, middle - 1);
+  else
+    n->left = NULL;
+
+  if (middle + 1 <= high)
+    n->right = mfsplay_tree_rebalance_helper2 (array, middle + 1, high);
+  else
+    n->right = NULL;
+
+  return n;
+}
+
+
+/* Rebalance the entire tree.  Do this by copying all the node
+   pointers into an array, then cleverly re-linking them.  */
+static void
+mfsplay_tree_rebalance (mfsplay_tree sp)
+{
+  mfsplay_tree_node *all_nodes, *all_nodes_1;
+
+  if (sp->num_keys <= 2)
+    return;
+
+  all_nodes = mfsplay_tree_xmalloc (sizeof (mfsplay_tree_node) * sp->num_keys);
+
+  /* Traverse all nodes to copy their addresses into this array.  */
+  all_nodes_1 = all_nodes;
+  mfsplay_tree_foreach (sp, mfsplay_tree_rebalance_helper1,
+                      (void *) &all_nodes_1);
+
+  /* Relink all the nodes.  */
+  sp->root = mfsplay_tree_rebalance_helper2 (all_nodes, 0, sp->num_keys - 1);
+
+  mfsplay_tree_free (all_nodes);
+}
+
+
+/* Splay SP around KEY.  */
+static void
+mfsplay_tree_splay (mfsplay_tree sp, mfsplay_tree_key key)
+{
+  if (sp->root == 0)
+    return;
+
+  /* If we just splayed the tree with the same key, do nothing.  */
+  if (sp->last_splayed_key_p &&
+      compare_uintptr_t (sp->last_splayed_key, key) == 0)
+    return;
+
+  /* Compute a maximum recursion depth for a splay tree with NUM nodes.
+     The idea is to limit excessive stack usage if we're facing
+     degenerate access patterns.  Unfortunately such patterns can occur
+     e.g. during static initialization, where many static objects might
+     be registered in increasing address sequence, or during a case where
+     large tree-like heap data structures are allocated quickly. 
+
+     On x86, this corresponds to roughly 200K of stack usage. 
+     XXX: For libmudflapth, this could be a function of __mf_opts.thread_stack.  */
+  sp->max_depth = 2500;
+  sp->rebalance_p = sp->depth = 0;
+
+  mfsplay_tree_splay_helper (sp, key, &sp->root, NULL, NULL);
+  if (sp->rebalance_p)
+    {
+      mfsplay_tree_rebalance (sp);
+
+      sp->rebalance_p = sp->depth = 0;
+      mfsplay_tree_splay_helper (sp, key, &sp->root, NULL, NULL);
+
+      if (sp->rebalance_p)
+        abort ();
+    }
+
+
+  /* Cache this splay key. */
+  sp->last_splayed_key = key;
+  sp->last_splayed_key_p = 1;
+}
+
+
+
+/* Allocate a new splay tree.  */
+static mfsplay_tree
+mfsplay_tree_new ()
+{
+  mfsplay_tree sp = mfsplay_tree_xmalloc (sizeof (struct mfsplay_tree_s));
+  sp->root = NULL;
+  sp->last_splayed_key_p = 0;
+  sp->num_keys = 0;
+
+  return sp;
+}
+
+
+
+/* Insert a new node (associating KEY with DATA) into SP.  If a
+   previous node with the indicated KEY exists, its data is replaced
+   with the new value.  Returns the new node.  */
+static mfsplay_tree_node
+mfsplay_tree_insert (mfsplay_tree sp, mfsplay_tree_key key, mfsplay_tree_value value)
+{
+  int comparison = 0;
+
+  mfsplay_tree_splay (sp, key);
+
+  if (sp->root)
+    comparison = compare_uintptr_t (sp->root->key, key);
+
+  if (sp->root && comparison == 0)
+    {
+      /* If the root of the tree already has the indicated KEY, just
+         replace the value with VALUE.  */
+      sp->root->value = value;
+    }
+  else
+    {
+      /* Create a new node, and insert it at the root.  */
+      mfsplay_tree_node node;
+
+      node = mfsplay_tree_xmalloc (sizeof (struct mfsplay_tree_node_s));
+      node->key = key;
+      node->value = value;
+      sp->num_keys++;
+      if (!sp->root)
+        node->left = node->right = 0;
+      else if (comparison < 0)
+        {
+          node->left = sp->root;
+          node->right = node->left->right;
+          node->left->right = 0;
+        }
+      else
+        {
+          node->right = sp->root;
+          node->left = node->right->left;
+          node->right->left = 0;
+        }
+
+      sp->root = node;
+      sp->last_splayed_key_p = 0;
+    }
+
+  return sp->root;
+}
+
+/* Remove KEY from SP.  It is not an error if it did not exist.  */
+
+static void
+mfsplay_tree_remove (mfsplay_tree sp, mfsplay_tree_key key)
+{
+  mfsplay_tree_splay (sp, key);
+  sp->last_splayed_key_p = 0;
+  if (sp->root && compare_uintptr_t (sp->root->key, key) == 0)
+    {
+      mfsplay_tree_node left, right;
+      left = sp->root->left;
+      right = sp->root->right;
+      /* Delete the root node itself.  */
+      mfsplay_tree_free (sp->root);
+      sp->num_keys--;
+      /* One of the children is now the root.  Doesn't matter much
+         which, so long as we preserve the properties of the tree.  */
+      if (left)
+        {
+          sp->root = left;
+          /* If there was a right child as well, hang it off the 
+             right-most leaf of the left child.  */
+          if (right)
+            {
+              while (left->right)
+                left = left->right;
+              left->right = right;
+            }
+        }
+      else
+        sp->root = right;
+    }
+}
+
+/* Lookup KEY in SP, returning VALUE if present, and NULL 
+   otherwise.  */
+
+static mfsplay_tree_node
+mfsplay_tree_lookup (mfsplay_tree sp, mfsplay_tree_key key)
+{
+  mfsplay_tree_splay (sp, key);
+  if (sp->root && compare_uintptr_t (sp->root->key, key) == 0)
+    return sp->root;
+  else
+    return 0;
+}
+
+
+/* Return the immediate predecessor KEY, or NULL if there is no
+   predecessor.  KEY need not be present in the tree.  */
+
+static mfsplay_tree_node
+mfsplay_tree_predecessor (mfsplay_tree sp, mfsplay_tree_key key)
+{
+  int comparison;
+  mfsplay_tree_node node;
+  /* If the tree is empty, there is certainly no predecessor.  */
+  if (!sp->root)
+    return NULL;
+  /* Splay the tree around KEY.  That will leave either the KEY
+     itself, its predecessor, or its successor at the root.  */
+  mfsplay_tree_splay (sp, key);
+  comparison = compare_uintptr_t (sp->root->key, key);
+  /* If the predecessor is at the root, just return it.  */
+  if (comparison < 0)
+    return sp->root;
+  /* Otherwise, find the rightmost element of the left subtree.  */
+  node = sp->root->left;
+  if (node)
+    while (node->right)
+      node = node->right;
+  return node;
+}
+
+/* Return the immediate successor KEY, or NULL if there is no
+   successor.  KEY need not be present in the tree.  */
+
+static mfsplay_tree_node
+mfsplay_tree_successor (mfsplay_tree sp, mfsplay_tree_key key)
+{
+  int comparison;
+  mfsplay_tree_node node;
+  /* If the tree is empty, there is certainly no successor.  */
+  if (!sp->root)
+    return NULL;
+  /* Splay the tree around KEY.  That will leave either the KEY
+     itself, its predecessor, or its successor at the root.  */
+  mfsplay_tree_splay (sp, key);
+  comparison = compare_uintptr_t (sp->root->key, key);
+  /* If the successor is at the root, just return it.  */
+  if (comparison > 0)
+    return sp->root;
+  /* Otherwise, find the leftmost element of the right subtree.  */
+  node = sp->root->right;
+  if (node)
+    while (node->left)
+      node = node->left;
+  return node;
+}
+
+/* Call FN, passing it the DATA, for every node in SP, following an
+   in-order traversal.  If FN every returns a non-zero value, the
+   iteration ceases immediately, and the value is returned.
+   Otherwise, this function returns 0.
+   
+   This function simulates recursion using dynamically allocated
+   arrays, since it may be called from mfsplay_tree_rebalance(), which
+   in turn means that the tree is already uncomfortably deep for stack
+   space limits.  */
+static int
+mfsplay_tree_foreach (mfsplay_tree st, mfsplay_tree_foreach_fn fn, void *data)
+{
+  mfsplay_tree_node *stack1;
+  char *stack2;
+  unsigned sp;
+  int val = 0;
+  enum s { s_left, s_here, s_right, s_up };
+
+  if (st->root == NULL) /* => num_keys == 0 */
+    return 0;
+
+  stack1 = mfsplay_tree_xmalloc (sizeof (mfsplay_tree_node) * st->num_keys);
+  stack2 = mfsplay_tree_xmalloc (sizeof (char) * st->num_keys);
+
+  sp = 0;
+  stack1 [sp] = st->root;
+  stack2 [sp] = s_left;
+
+  while (1)
+    {
+      mfsplay_tree_node n;
+      enum s s;
+
+      n = stack1 [sp];
+      s = stack2 [sp];
+
+      /* Handle each of the four possible states separately.  */
+
+      /* 1: We're here to traverse the left subtree (if any).  */
+      if (s == s_left)
+        {
+          stack2 [sp] = s_here;
+          if (n->left != NULL)
+            {
+              sp ++;
+              stack1 [sp] = n->left;
+              stack2 [sp] = s_left;
+            }
+        }
+
+      /* 2: We're here to traverse this node.  */
+      else if (s == s_here)
+        {
+          stack2 [sp] = s_right;
+          val = (*fn) (n, data);
+          if (val) break;
+        }
+
+      /* 3: We're here to traverse the right subtree (if any).  */
+      else if (s == s_right)
+        {
+          stack2 [sp] = s_up;
+          if (n->right != NULL)
+            {
+              sp ++;
+              stack1 [sp] = n->right;
+              stack2 [sp] = s_left;
+            }
+        }
+
+      /* 4: We're here after both subtrees (if any) have been traversed.  */
+      else if (s == s_up)
+        {
+          /* Pop the stack.  */
+          if (sp == 0) break; /* Popping off the root note: we're finished!  */
+          sp --;
+        }
+
+      else
+        abort ();
+    }
+
+  mfsplay_tree_free (stack1);
+  mfsplay_tree_free (stack2);
+  return val;
+}
