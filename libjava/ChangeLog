@@ -1,3 +1,9 @@
+2003-12-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/ServerSocket.java bind():
+	If InetSocketAddress.getAddress() returns "null" use "0.0.0.0" as
+	address to bind to.
+
 2003-12-23  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/io/ObjectInputStream.java
