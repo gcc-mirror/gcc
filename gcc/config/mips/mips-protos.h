@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_MIPS_PROTOS_H
 #define GCC_MIPS_PROTOS_H
 
-extern int mips_reg_mode_ok_for_base_p (rtx, enum machine_mode, int);
+extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
 extern int mips_address_insns (rtx, enum machine_mode);
 extern int mips_const_insns (rtx);
 extern int mips_fetch_insns (rtx);
