@@ -2957,7 +2957,25 @@ delete_handlers ()
 	 Also permit deletion of the nonlocal labels themselves
 	 if nothing local refers to them.  */
       if (GET_CODE (insn) == CODE_LABEL)
-	LABEL_PRESERVE_P (insn) = 0;
+	{
+	  tree t, last_t;
+
+	  LABEL_PRESERVE_P (insn) = 0;
+
+	  /* Remove it from the nonlocal_label list, to avoid confusing
+	     flow.  */
+	  for (t = nonlocal_labels, last_t = 0; t;
+	       last_t = t, t = TREE_CHAIN (t))
+	    if (DECL_RTL (TREE_VALUE (t)) == insn)
+	      break;
+	  if (t)
+	    {
+	      if (! last_t)
+		nonlocal_labels = TREE_CHAIN (nonlocal_labels);
+	      else
+		TREE_CHAIN (last_t) = TREE_CHAIN (t);
+	    }
+	}
       if (GET_CODE (insn) == INSN
 	  && ((nonlocal_goto_handler_slot != 0
 	       && reg_mentioned_p (nonlocal_goto_handler_slot, PATTERN (insn)))
