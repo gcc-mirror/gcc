@@ -2578,7 +2578,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		  emit_insn_before (gen_rtx (SET, VOIDmode, tem,
 					     copy_rtx (v->new_reg)),
 				    loop_start);
-		  if (! recog_memoized (PREV_INSN (loop_start)))
+		  if (recog_memoized (PREV_INSN (loop_start)) < 0)
 		    {
 		      delete_insn (PREV_INSN (loop_start));
 		      emit_iv_add_mult (bl->initial_value, v->mult_val,
