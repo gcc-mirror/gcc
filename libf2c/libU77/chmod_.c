@@ -50,7 +50,6 @@ G77_chmod_0 ( /* const */ char *name, /* const */ char *mode,
 	     const ftnlen Lname, const ftnlen Lmode)
 {
   char *buff;
-  char *bp, *blast;
   int i;
   ftnlen l, l2;
   ftnlen six = 6;

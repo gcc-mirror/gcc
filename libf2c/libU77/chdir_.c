@@ -38,7 +38,6 @@ integer
 G77_chdir_0 (const char *name, const ftnlen Lname)
 {
   char *buff;
-  char *bp, *blast;
   int i;
 
   buff = malloc (Lname + 1);

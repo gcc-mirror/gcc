@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 /* Character */ void
 G77_ctime_0 (char *chtime, const ftnlen Lchtime, longint * xstime)
 {
-  int i, l;
   int s_copy ();
   time_t stime = *xstime;
 
