@@ -1,3 +1,7 @@
+1998-12-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.eh/tmpl2.C: New test.
+
 1998-12-04  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/using5.C: usified using[567].C here
