@@ -1582,7 +1582,7 @@ __main ()
 
 #endif /* L__main */
 
-#ifdef L_exit
+#ifdef L_ctors
 
 #include "gbl-ctors.h"
 
@@ -1597,6 +1597,11 @@ __main ()
 func_ptr __CTOR_LIST__[2];
 func_ptr __DTOR_LIST__[2];
 #endif /* no INIT_SECTION_ASM_OP and not CTOR_LISTS_DEFINED_EXTERNALLY */
+#endif /* L_ctors */
+
+#ifdef L_exit
+
+#include "gbl-ctors.h"
 
 #ifndef ON_EXIT
 
@@ -1606,7 +1611,7 @@ func_ptr __DTOR_LIST__[2];
 
 extern void __do_global_dtors ();
 extern void _cleanup ();
-extern void _exit ();
+extern volatile void _exit ();
 
 void 
 exit (status)
