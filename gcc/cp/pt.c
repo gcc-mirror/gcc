@@ -22,9 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Known bugs or deficiencies include:
 
-     templates for class static data don't work (methods only),
-     duplicated method templates can crash the compiler,
-     interface/impl data is taken from file defining the template,
      all methods must be provided in header files; can't use a source
      file that contains only the method templates and "just win".  */
 
@@ -2203,11 +2200,10 @@ tsubst (t, args, nargs, in_decl)
 	DECL_TEMPLATE_INFO (tmpl) = build_tree_list (t, args);
 	new_decl = tsubst (decl, args, nargs, in_decl);
 	DECL_RESULT (tmpl) = new_decl;
-	DECL_INITIAL (new_decl) = DECL_INITIAL (decl);
 	DECL_TI_TEMPLATE (new_decl) = tmpl;
 	TREE_TYPE (tmpl) = TREE_TYPE (new_decl);
 	DECL_TEMPLATE_INSTANTIATIONS (tmpl) = NULL_TREE;
-	SET_DECL_IMPLICIT_INSTANTIATION (decl);
+	SET_DECL_IMPLICIT_INSTANTIATION (tmpl);
 
 	/* The template parameters for this new template are all the
 	   template parameters for the old template, except the
@@ -2344,6 +2340,13 @@ tsubst (t, args, nargs, in_decl)
 		   template parameters are still just template
 		   parameters; there are no corresponding subsitution
 		   arguments.  */
+		/* FIXME The messed up thing here is that we get here with
+		   full args and only one level of parms.  This is necessary
+		   because when we partially instantiate a member template,
+		   even though there's really only one level of parms left
+		   we re-use the parms from the original template, which
+		   have level 2.  When this is fixed we can remove the
+		   add_to_template_args from instantiate_template.  */
 		tree tparms = DECL_TEMPLATE_PARMS (tmpl);
 
 		while (tparms && TREE_CHAIN (tparms) != NULL_TREE)
@@ -3409,8 +3412,7 @@ instantiate_template (tmpl, targ_ptr)
       for (specs = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
 	   specs != NULL_TREE;
 	   specs = TREE_CHAIN (specs))
-	if (comp_template_args (TREE_PURPOSE(specs),
-				targ_ptr))
+	if (comp_template_args (TREE_PURPOSE (specs), targ_ptr))
 	  return TREE_VALUE (specs);
     }
 
@@ -4401,7 +4403,7 @@ instantiate_decl (d)
   tree tmpl = TI_TEMPLATE (ti);
   tree args = TI_ARGS (ti);
   tree td;
-  tree pattern;
+  tree decl_pattern, code_pattern;
   tree save_ti;
   int nested = in_function_p ();
   int d_defined;
@@ -4409,36 +4411,31 @@ instantiate_decl (d)
   int line = lineno;
   char *file = input_filename;
 
-  while (DECL_TEMPLATE_INSTANTIATION (tmpl))
-    tmpl = DECL_TI_TEMPLATE (tmpl);
+  if (DECL_TEMPLATE_SPECIALIZATION (d))
+    return d;
 
-  pattern = DECL_TEMPLATE_RESULT (tmpl);
+  for (td = tmpl; DECL_TEMPLATE_INSTANTIATION (td); )
+    td = DECL_TI_TEMPLATE (td);
+
+  /* In the case of a member template, decl_pattern is the partially
+     instantiated declaration (in the instantiated class), and code_pattern
+     is the original template definition.  */
+  decl_pattern = DECL_TEMPLATE_RESULT (tmpl);
+  code_pattern = DECL_TEMPLATE_RESULT (td);
 
   if (TREE_CODE (d) == FUNCTION_DECL)
     {
       d_defined = (DECL_INITIAL (d) != NULL_TREE);
-      pattern_defined = (DECL_INITIAL (pattern) != NULL_TREE);
+      pattern_defined = (DECL_INITIAL (code_pattern) != NULL_TREE);
     }
   else
     {
       d_defined = ! DECL_IN_AGGR_P (d);
-      pattern_defined = ! DECL_IN_AGGR_P (pattern);
+      pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
     }
 
   if (d_defined)
     return d;
-
-  if (TREE_CODE (d) == FUNCTION_DECL) 
-    {
-      tree specs;
-
-      /* Check to see if there is a matching specialization. */
-      for (specs = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-	   specs != NULL_TREE;
-	   specs = TREE_CHAIN (specs))
-	if (comp_template_args (TREE_PURPOSE (specs), args))
-	  return TREE_VALUE (specs);
-    }
 
   /* This needs to happen before any tsubsting.  */
   if (! push_tinst_level (d))
@@ -4451,12 +4448,11 @@ instantiate_decl (d)
   /* We need to set up DECL_INITIAL regardless of pattern_defined if the
      variable is a static const initialized in the class body.  */
   if (TREE_CODE (d) == VAR_DECL
-      && ! DECL_INITIAL (d) && DECL_INITIAL (pattern))
+      && ! DECL_INITIAL (d) && DECL_INITIAL (code_pattern))
     {
       pushclass (DECL_CONTEXT (d), 2);
-      DECL_INITIAL (d) = tsubst_expr
-	(DECL_INITIAL (pattern), args,
-	 TREE_VEC_LENGTH (args), tmpl);
+      DECL_INITIAL (d) = tsubst_expr (DECL_INITIAL (code_pattern), args,
+				      TREE_VEC_LENGTH (args), tmpl);
       popclass (1);
     }
 
@@ -4472,13 +4468,13 @@ instantiate_decl (d)
 	      if (interface_unknown)
 		warn_if_unknown_interface (d);
 	    }
-	  else if (DECL_INTERFACE_KNOWN (pattern))
+	  else if (DECL_INTERFACE_KNOWN (code_pattern))
 	    {
 	      DECL_INTERFACE_KNOWN (d) = 1;
-	      DECL_NOT_REALLY_EXTERN (d) = ! DECL_EXTERNAL (pattern);
+	      DECL_NOT_REALLY_EXTERN (d) = ! DECL_EXTERNAL (code_pattern);
 	    }
 	  else
-	    warn_if_unknown_interface (pattern);
+	    warn_if_unknown_interface (code_pattern);
 	}
 
       if (at_eof)
@@ -4503,18 +4499,17 @@ instantiate_decl (d)
   input_filename = DECL_SOURCE_FILE (d);
 
   /* Trick tsubst into giving us a new decl in case the template changed.  */
-  save_ti = DECL_TEMPLATE_INFO (pattern);
-  DECL_TEMPLATE_INFO (pattern) = NULL_TREE;
-  td = tsubst (pattern, args, TREE_VEC_LENGTH (args), tmpl);
-  DECL_TEMPLATE_INFO (pattern) = save_ti;
+  save_ti = DECL_TEMPLATE_INFO (decl_pattern);
+  DECL_TEMPLATE_INFO (decl_pattern) = NULL_TREE;
+  td = tsubst (decl_pattern, args, TREE_VEC_LENGTH (args), tmpl);
+  DECL_TEMPLATE_INFO (decl_pattern) = save_ti;
 
   /* And set up DECL_INITIAL, since tsubst doesn't.  */
   if (TREE_CODE (td) == VAR_DECL)
     {
       pushclass (DECL_CONTEXT (d), 2);
-      DECL_INITIAL (td) = tsubst_expr
-	(DECL_INITIAL (pattern), args,
-	 TREE_VEC_LENGTH (args), tmpl);
+      DECL_INITIAL (td) = tsubst_expr (DECL_INITIAL (code_pattern), args,
+				       TREE_VEC_LENGTH (args), tmpl);
       popclass (1);
     }
 
@@ -4546,7 +4541,7 @@ instantiate_decl (d)
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
-      tree t = DECL_SAVED_TREE (pattern);
+      tree t = DECL_SAVED_TREE (code_pattern);
 
       start_function (NULL_TREE, d, NULL_TREE, 1);
       store_parm_decls ();

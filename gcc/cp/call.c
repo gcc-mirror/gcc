@@ -5538,7 +5538,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     }
 
   pretty_name
-    = (name == ctor_identifier ? constructor_name_full (basetype) : name);
+    = (name == ctor_identifier ? constructor_name (basetype) : name);
 
   fns = lookup_fnfields (basetype_path, name, 1);
 
