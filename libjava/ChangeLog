@@ -1,3 +1,7 @@
+2001-03-23  Kevin B Hendricks  <khendricks@ivey.uwo.ca>
+
+	* configure.host: Enable interpreter for PPC.
+
 2001-03-23  Per Bothner  <per@bothner.com>
 
 	* java/lang/natDouble.cc (parseDouble):  Cannot use errno to
