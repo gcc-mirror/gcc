@@ -659,7 +659,6 @@ namespace std
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c;
 
-	      __n = std::min(__n, numeric_limits<streamsize>::max());
 	      while (_M_gcount < __n
 		     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
 		{
@@ -740,14 +739,10 @@ namespace std
 	  try
 	    {
 	      // Cannot compare int_type with streamsize generically.
-	      streamsize __num = this->rdbuf()->in_avail();
-	      if (__num >= 0)
-		{
-		  __num = std::min(__num, __n);
-		  if (__num)
-		    _M_gcount = this->rdbuf()->sgetn(__s, __num);
-		}
-	      else
+	      const streamsize __num = this->rdbuf()->in_avail();
+	      if (__num > 0)
+		_M_gcount = this->rdbuf()->sgetn(__s, std::min(__num, __n));
+	      else if (__num == -1)
 		__err |= ios_base::eofbit;
 	    }
 	  catch(...)
