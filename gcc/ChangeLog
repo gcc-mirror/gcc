@@ -1,4 +1,12 @@
-2003-01-10 Kelley Cook <kelleycook@comcast.net>
+2003-01-10  Dale Johannesen <dalej@apple.com>
+ 
+        * calls.c (load_register_parameters):  Add is_sibcall, sibcall_failure
+        parameters.  Call check_sibcall_argument_overlap if indicated.
+        (check_sibcall_argument_overlap):  Add mark_stored_args_map
+        parameter.  Don't mark parameter area as clobbered if not set.
+        (expand_call):  Adjust calls to above.
+ 
+ 2003-01-10 Kelley Cook <kelleycook@comcast.net>
 
 	* configure.in (linker read-only and read-write section mixing):
 	Squelch some assembler warnings.
