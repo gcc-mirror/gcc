@@ -1,3 +1,8 @@
+1999-12-09  Gavin Romig-Koch  <gavin@cetus.cygnus.com>
+
+	* c-common.c (c_common_nodes_and_builtins): 
+	Create __builtin_ptrdiff_t and __builtin_size_t.
+
 Thu Dec  9 18:05:48 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa/elf.h (MAX_OFILE_ALIGNMENT): Define.
