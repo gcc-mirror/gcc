@@ -845,7 +845,7 @@ GLOBAL(movstrSI12_i4):
 !
 
 GLOBAL(mulsi3):
-	mulu    r4,r5		! multiply the lsws  macl=bb*dd
+	mulu.w  r4,r5		! multiply the lsws  macl=bb*dd
 	mov     r5,r3		! r3 = ccdd
 	swap.w  r4,r2		! r2 = bbaa
 	xtrct   r2,r3		! r3 = aacc
@@ -855,9 +855,9 @@ GLOBAL(mulsi3):
 	sts     macl,r0
 
 hiset:	sts	macl,r0		! r0 = bb*dd
-	mulu	r2,r5		! brewing macl = aa*dd
+	mulu.w	r2,r5		! brewing macl = aa*dd
 	sts	macl,r1
-	mulu	r3,r4		! brewing macl = cc*bb
+	mulu.w	r3,r4		! brewing macl = cc*bb
 	sts	macl,r2
 	add	r1,r2
 	shll16	r2
