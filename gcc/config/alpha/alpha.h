@@ -308,21 +308,21 @@ extern char *alpha_mlat_string;	/* For -mmemory-latency= */
 #define SUBTARGET_EXTRA_SPECS
 #endif
 
-#define EXTRA_SPECS				\
-  { "cpp_am_bwx", CPP_AM_BWX_SPEC },		\
-  { "cpp_am_max", CPP_AM_MAX_SPEC },		\
-  { "cpp_am_cix", CPP_AM_CIX_SPEC },		\
-  { "cpp_im_ev4", CPP_IM_EV4_SPEC },		\
-  { "cpp_im_ev5", CPP_IM_EV5_SPEC },		\
-  { "cpp_im_ev6", CPP_IM_EV6_SPEC },		\
-  { "cpp_cpu_ev4", CPP_CPU_EV4_SPEC },		\
-  { "cpp_cpu_ev5", CPP_CPU_EV5_SPEC },		\
-  { "cpp_cpu_ev56", CPP_CPU_EV56_SPEC },	\
-  { "cpp_cpu_pca56", CPP_CPU_PCA56_SPEC },	\
-  { "cpp_cpu_ev6", CPP_CPU_EV6_SPEC },		\
-  { "cpp_cpu_default", CPP_CPU_DEFAULT_SPEC },	\
-  { "cpp_cpu", CPP_CPU_SPEC },			\
-  { "cpp_subtarget", CPP_SUBTARGET_SPEC },	\
+#define EXTRA_SPECS						\
+  { "cpp_am_bwx", CPP_AM_BWX_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_am_max", CPP_AM_MAX_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_am_cix", CPP_AM_CIX_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_im_ev4", CPP_IM_EV4_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_im_ev5", CPP_IM_EV5_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_im_ev6", CPP_IM_EV6_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_cpu_ev4", CPP_CPU_EV4_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_cpu_ev5", CPP_CPU_EV5_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_cpu_ev56", CPP_CPU_EV56_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_cpu_pca56", CPP_CPU_PCA56_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_cpu_ev6", CPP_CPU_EV6_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_cpu_default", CPP_CPU_DEFAULT_SPEC, 0, 0, 0, 0 },	\
+  { "cpp_cpu", CPP_CPU_SPEC, 0, 0, 0, 0 },			\
+  { "cpp_subtarget", CPP_SUBTARGET_SPEC, 0, 0, 0, 0 },		\
   SUBTARGET_EXTRA_SPECS
 
 
@@ -1972,7 +1972,7 @@ literal_section ()						\
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*$%s%d", PREFIX, NUM)
+  sprintf ((LABEL), "*$%s%ld", (PREFIX), (long)(NUM))
 
 /* Check a floating-point value for validity for a particular machine mode.  */
 

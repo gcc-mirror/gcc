@@ -264,11 +264,11 @@ override_options ()
     if (!alpha_mlat_string)
       alpha_mlat_string = "L1";
 
-    if (isdigit (alpha_mlat_string[0])
+    if (ISDIGIT ((unsigned char)alpha_mlat_string[0])
 	&& (lat = strtol (alpha_mlat_string, &end, 10), *end == '\0'))
       ;
     else if ((alpha_mlat_string[0] == 'L' || alpha_mlat_string[0] == 'l')
-	     && isdigit (alpha_mlat_string[1])
+	     && ISDIGIT ((unsigned char)alpha_mlat_string[1])
 	     && alpha_mlat_string[2] == '\0')
       {
 	static int const cache_latency[][4] = 
