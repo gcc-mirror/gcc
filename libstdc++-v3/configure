@@ -3227,7 +3227,7 @@ if test -n "$with_cross_host"; then
   fi
 
   case "$target_alias" in
-    *-linux-*)
+    *-linux*)
 	# Construct linux crosses by hand, eliminating bits that need ld...
         # Check for available headers.
         for ac_hdr in nan.h ieeefp.h endian.h sys/isa_defs.h \

@@ -1,3 +1,9 @@
+2001-01-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	reported by Chris G. Demetriou <cgd@sibyte.com>
+	* configure.in: Change -linux-* to -linux*.
+	* configure: Regenerate.
+	
 2001-01-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Fix 27_io/filebuf_members.cc
