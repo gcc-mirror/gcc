@@ -307,73 +307,46 @@ print_operand (file, x, code)
     {
     case 'b':
     case 'B':
-      switch (code == 'b' ? GET_CODE (x) : reverse_condition (GET_CODE (x)))
+    case 'c':
+    case 'C':
+      switch ((code == 'B' || code == 'C')
+	      ? reverse_condition (GET_CODE (x)) : GET_CODE (x))
 	{
 	  case NE:
-	    fprintf (file, "bne");
+	    if (code == 'c' || code == 'C')
+	      fprintf (file, "nz");
+	    else
+	      fprintf (file, "ne");
 	    break;
 	  case EQ:
-	    fprintf (file, "be");
+	    if (code == 'c' || code == 'C')
+	      fprintf (file, "z");
+	    else
+	      fprintf (file, "e");
 	    break;
 	  case GE:
-	    fprintf (file, "bge");
+	    fprintf (file, "ge");
 	    break;
 	  case GT:
-	    fprintf (file, "bgt");
+	    fprintf (file, "gt");
 	    break;
 	  case LE:
-	    fprintf (file, "ble");
+	    fprintf (file, "le");
 	    break;
 	  case LT:
-	    fprintf (file, "blt");
+	    fprintf (file, "lt");
 	    break;
 	  case GEU:
-	    fprintf (file, "bnl");
+	    fprintf (file, "nl");
 	    break;
 	  case GTU:
-	    fprintf (file, "bh");
+	    fprintf (file, "h");
 	    break;
 	  case LEU:
-	    fprintf (file, "bnh");
+	    fprintf (file, "nh");
 	    break;
 	  case LTU:
-	    fprintf (file, "bl");
-	    break;
-	  default:
-	    abort ();
-	}
-      break;
-      switch (GET_CODE (x))
-	{
-	  case NE:
-	    fprintf (file, "be");
-	    break;
-	  case EQ:
-	    fprintf (file, "bne");
-	    break;
-	  case GE:
-	    fprintf (file, "blt");
-	    break;
-	  case GT:
-	    fprintf (file, "bgt");
-	    break;
-	  case LE:
-	    fprintf (file, "ble");
-	    break;
-	  case LT:
-	    fprintf (file, "blt");
-	    break;
-	  case GEU:
-	    fprintf (file, "bnl");
-	    break;
-	  case GTU:
-	    fprintf (file, "bh");
-	    break;
-	  case LEU:
-	    fprintf (file, "bnh");
-	    break;
-	  case LTU:
-	    fprintf (file, "bl");
+	    fprintf (file, "l");
 	    break;
 	  default:
 	    abort ();
@@ -503,6 +476,14 @@ print_operand (file, x, code)
       break;
     case '.':			/* register r0 */
       fputs (reg_names[0], file);
+      break;
+    case 'z':			/* reg or zero */
+      if (x == const0_rtx)
+	fputs (reg_names[0], file);
+      else if (GET_CODE (x) == REG)
+	fputs (reg_names[REGNO (x)], file);
+      else
+	abort ();
       break;
     default:
       switch (GET_CODE (x))
