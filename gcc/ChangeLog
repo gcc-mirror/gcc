@@ -1,3 +1,8 @@
+2004-09-11  Richard Henderson  <rth@redhat.com>
+
+	PR c/17396
+	* c-typeck.c (build_unary_op): Add legacy offsetof hack.
+
 2004-09-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/cfg.texi, doc/hostconfig.texi, doc/install.texi,
