@@ -1,3 +1,7 @@
+2001-03-21  Michael Chastain  <chastain@redhat.com>
+
+	* Makefile.in: all-m4 depends on all-texinfo.
+
 2001-03-20  Loren J. Rittle  <ljrittle@acm.org>
 
 	* MAINTAINERS: Add myself to write after approval list.
