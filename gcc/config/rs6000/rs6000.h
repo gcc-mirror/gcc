@@ -1884,10 +1884,6 @@ typedef struct rs6000_args
 
 /* #define FINALIZE_PIC */
 
-/* Current PIC register used by the V4 code */
-extern struct rtx_def *rs6000_pic_register;
-
-
 /* A C expression that is nonzero if X is a legitimate immediate
    operand on the target machine when generating position independent
    code.  You can assume that X satisfies `CONSTANT_P', so you need

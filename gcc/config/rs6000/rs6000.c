@@ -99,12 +99,6 @@ int rs6000_save_toc_p;
 /* ABI enumeration available for subtarget to use.  */
 enum rs6000_abi rs6000_current_abi;
 
-/* Temporary memory used to convert integer -> float */
-static rtx stack_temps[NUM_MACHINE_MODES];
-
-/* Current PIC register used by the V4 code */
-struct rtx_def *rs6000_pic_register = (struct rtx_def *)0;
-
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -1485,35 +1479,6 @@ expand_builtin_saveregs (args)
      tree args;
 {
   return virtual_incoming_args_rtx;
-}
-
-
-/* Allocate a stack temp.  Only allocate one stack temp per type for a
-   function.  */
-
-struct rtx_def *
-rs6000_stack_temp (mode, size)
-     enum machine_mode mode;
-     int size;
-{
-  rtx temp = stack_temps[ (int)mode ];
-  rtx addr;
-
-  if (temp == NULL_RTX)
-    {
-      temp = assign_stack_local (mode, size, 0);
-      addr = XEXP (temp, 0);
-
-      if ((size > 4 && !offsettable_address_p (0, mode, addr))
-	  || (size <= 4 && !memory_address_p (mode, addr)))
-	{
-	  XEXP (temp, 0) = copy_addr_to_reg (addr);
-	}
-
-      stack_temps[ (int)mode ] = temp;
-    }
-
-  return temp;
 }
 
 
@@ -3467,10 +3432,6 @@ output_epilog (file, size)
   int sp_offset = 0;
   int i;
 
-  /* Forget about any temporaries created */
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    stack_temps[i] = NULL_RTX;
-
   /* If the last insn was a BARRIER, we don't have to write anything except
      the trace table.  */
   if (GET_CODE (insn) == NOTE)
@@ -3765,7 +3726,7 @@ output_epilog (file, size)
   /* Reset varargs and save TOC indicator */
   rs6000_sysv_varargs_p = 0;
   rs6000_save_toc_p = 0;
-  rs6000_pic_register = (rtx)0;
+  pic_offset_table_rtx = (rtx)0;
 
   if (DEFAULT_ABI == ABI_NT)
     {
