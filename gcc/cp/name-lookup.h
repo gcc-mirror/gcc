@@ -264,7 +264,6 @@ extern void print_binding_stack	(void);
 extern void print_binding_level	(cxx_scope *);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
-extern void maybe_push_to_top_level (int);
 extern void pop_everything (void);
 extern void keep_next_level (bool);
 extern bool is_ancestor (tree, tree);

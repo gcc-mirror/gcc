@@ -2930,14 +2930,8 @@ void
 expand_or_defer_fn (tree fn)
 {
   /* When the parser calls us after finishing the body of a template
-     function, we don't really want to expand the body.  When we're
-     processing an in-class definition of an inline function,
-     PROCESSING_TEMPLATE_DECL will no longer be set here, so we have
-     to look at the function itself.  */
-  if (processing_template_decl
-      || (DECL_LANG_SPECIFIC (fn) 
-	  && DECL_TEMPLATE_INFO (fn)
-	  && uses_template_parms (DECL_TI_ARGS (fn))))
+     function, we don't really want to expand the body.  */
+  if (processing_template_decl)
     {
       /* Normally, collection only occurs in rest_of_compilation.  So,
 	 if we don't collect here, we never collect junk generated
