@@ -3198,13 +3198,22 @@ cselib_record_sets (insn)
      locations that are written.  */
   for (i = 0; i < n_sets; i++)
     {
-      sets[i].src_elt = cselib_lookup (sets[i].src, GET_MODE (sets[i].dest),
-				       1);
-      if (GET_CODE (sets[i].dest) == MEM)
-	sets[i].dest_addr_elt = cselib_lookup (XEXP (sets[i].dest, 0), Pmode,
-					       1);
-      else
-	sets[i].dest_addr_elt = 0;
+      rtx dest = sets[i].dest;
+
+      /* A STRICT_LOW_PART can be ignored; we'll record the equivalence for
+         the low part after invalidating any knowledge about larger modes.  */
+      if (GET_CODE (sets[i].dest) == STRICT_LOW_PART)
+	sets[i].dest = dest = XEXP (dest, 0);
+
+      /* We don't know how to record anything but REG or MEM.  */
+      if (GET_CODE (dest) == REG || GET_CODE (dest) == MEM)
+        {
+	  sets[i].src_elt = cselib_lookup (sets[i].src, GET_MODE (dest), 1);
+	  if (GET_CODE (dest) == MEM)
+	    sets[i].dest_addr_elt = cselib_lookup (XEXP (dest, 0), Pmode, 1);
+	  else
+	    sets[i].dest_addr_elt = 0;
+	}
     }
 
   /* Invalidate all locations written by this insn.  Note that the elts we
@@ -3214,7 +3223,11 @@ cselib_record_sets (insn)
 
   /* Now enter the equivalences in our tables.  */
   for (i = 0; i < n_sets; i++)
-    cselib_record_set (sets[i].dest, sets[i].src_elt, sets[i].dest_addr_elt);
+    {
+      rtx dest = sets[i].dest;
+      if (GET_CODE (dest) == REG || GET_CODE (dest) == MEM)
+	cselib_record_set (dest, sets[i].src_elt, sets[i].dest_addr_elt);
+    }
 }
 
 /* Record the effects of INSN.  */
