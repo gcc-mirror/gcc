@@ -1,3 +1,8 @@
+2002-03-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.c (rs6000_va_arg): Correctly set register count
+	for aggregate and TFmode types.
+
 2002-03-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* cfg.c (dump_flow_info): Guard against NULL regno_reg_rtx[i].
