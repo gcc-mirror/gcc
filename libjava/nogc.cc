@@ -1,6 +1,6 @@
 // nogc.cc - Implement null garbage collector.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,7 +20,7 @@ details.  */
 static long total = 0;
 
 void *
-_Jv_BuildGCDescr(jclass klass)
+_Jv_BuildGCDescr(jclass)
 {
   return 0;
 }
@@ -39,7 +39,7 @@ void *
 _Jv_AllocPtrFreeObj (jsize size, jclass klass)
 {
   total += size;
-  ptr_t obj = malloc (size, 1);
+  void *obj = calloc (size, 1);
   if (!obj) _Jv_ThrowNoMemory();
   *((_Jv_VTable **) obj) = klass->vtable;
   return obj;
@@ -59,7 +59,7 @@ void *
 _Jv_AllocBytes (jsize size)
 {
   total += size;
-  ptr_t obj = calloc (size, 1);
+  void *obj = calloc (size, 1);
   if (!obj) _Jv_ThrowNoMemory();
   return obj;
 }
@@ -112,12 +112,12 @@ _Jv_GCFreeMemory (void)
 }
 
 void
-_Jv_GCSetInitialHeapSize (size_t size)
+_Jv_GCSetInitialHeapSize (size_t)
 {
 }
 
 void
-_Jv_GCSetMaximumHeapSize (size_t size)
+_Jv_GCSetMaximumHeapSize (size_t)
 {
 }
 
@@ -136,11 +136,23 @@ _Jv_InitGC (void)
 {
 }
 
+void
+_Jv_GCRegisterDisappearingLink (jobject *)
+{
+}
+
+jboolean
+_Jv_GCCanReclaimSoftReference (jobject)
+{
+  // For now, always reclaim soft references.  FIXME.
+  return true;
+}
+
 #ifdef JV_HASH_SYNCHRONIZATION
 void *
 _Jv_AllocTraceOne (jsize size /* includes vtable slot */) 
 {
-  ptr_t obj = calloc(size, 1);
+  void *obj = calloc(size, 1);
   if (!obj) _Jv_ThrowNoMemory();
   return result;
 }
@@ -148,7 +160,7 @@ _Jv_AllocTraceOne (jsize size /* includes vtable slot */)
 void *
 _Jv_AllocTraceTwo (jsize size /* includes vtable slot */) 
 {
-  ptr_t obj = calloc(size, 1);
+  void *obj = calloc(size, 1);
   if (!obj) _Jv_ThrowNoMemory();
   return result;
 }
