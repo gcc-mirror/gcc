@@ -66,9 +66,10 @@ Boston, MA 02111-1307, USA.  */
 
 tSCC zNeedsArg[] = "fixincl error:  `%s' needs %s argument (c_fix_arg[%d])\n";
 
+typedef void t_fix_proc PARAMS ((const char *, const char *, tFixDesc *));
 typedef struct {
     const char*  fix_name;
-    void (*fix_proc)();
+    t_fix_proc*  fix_proc;
 } fix_entry_t;
 
 #define FIXUP_TABLE \
@@ -80,13 +81,14 @@ typedef struct {
   _FT_( "gnu_type",         gnu_type_fix )
 
 
-#define FIX_PROC_HEAD( fix ) \
-static void fix ( filname, text, p_fixd ) \
-    const char* filname; \
-    const char* text; \
+#define FIX_PROC_HEAD( fix )                    \
+static t_fix_proc fix; /* avoid warning */      \
+static void fix ( filname, text, p_fixd )       \
+    const char* filname;                        \
+    const char* text;                           \
     tFixDesc* p_fixd;
 
-
+#ifdef NEED_PRINT_QUOTE
 /*
  *  Skip over a quoted string.  Single quote strings may
  *  contain multiple characters if the first character is
@@ -128,6 +130,7 @@ print_quote( q, text )
 
   return text;
 }
+#endif /* NEED_PRINT_QUOTE */
 
 
 /*
@@ -250,7 +253,6 @@ FIX_PROC_HEAD( format_fix )
 {
   tCC*  pz_pat = p_fixd->patch_args[2];
   tCC*  pz_fmt = p_fixd->patch_args[1];
-  const char *p;
   regex_t re;
   regmatch_t rm[10];
 
@@ -295,9 +297,6 @@ FIX_PROC_HEAD( format_fix )
   compile_re (pz_pat, &re, 1, "format search-text", "format_fix" );
   while (regexec (&re, text, 10, rm, 0) == 0)
     {
-      char* apz[10];
-      int   i;
-
       fwrite( text, rm[0].rm_so, 1, stdout );
       format_write( pz_fmt, text, rm );
       text += rm[0].rm_eo;

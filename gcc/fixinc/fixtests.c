@@ -47,18 +47,20 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
+typedef apply_fix_p_t t_test_proc PARAMS(( tCC* file, tCC* text ));
+
 typedef struct {
-    tCC*  test_name;
-    apply_fix_p_t (*test_proc)();
+    tCC*         test_name;
+    t_test_proc* test_proc;
 } test_entry_t;
 
 #define FIX_TEST_TABLE \
   _FT_( "machine_name",     machine_name_test )
 
-
-#define TEST_FOR_FIX_PROC_HEAD( test ) \
-static apply_fix_p_t test ( fname, text ) \
-    tCC* fname; \
+#define TEST_FOR_FIX_PROC_HEAD( test )          \
+t_test_proc test;  /* avoid warning */          \
+static apply_fix_p_t test ( fname, text )       \
+    tCC* fname;                                 \
     tCC* text;
 
 
