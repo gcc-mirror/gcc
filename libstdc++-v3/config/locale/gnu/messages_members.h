@@ -39,7 +39,7 @@
      : facet(__refs)
      {  
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-       _M_name_messages = _S_c_name;
+       _M_name_messages = _S_get_c_name();
 #endif
        _M_c_locale_messages = _S_get_c_locale(); 
      }
@@ -72,7 +72,7 @@
     messages<_CharT>::~messages()
     { 
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-      if (_S_c_name != _M_name_messages)
+      if (_M_name_messages != _S_get_c_name())
 	delete [] _M_name_messages;
 #endif
       _S_destroy_c_locale(_M_c_locale_messages); 
@@ -100,7 +100,7 @@
      : messages<_CharT>(__refs) 
      { 
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-       if (this->_S_c_name != this->_M_name_messages)
+       if (this->_M_name_messages != locale::facet::_S_get_c_name())
 	 delete [] this->_M_name_messages;
        char* __tmp = new char[std::strlen(__s) + 1];
        std::strcpy(__tmp, __s);

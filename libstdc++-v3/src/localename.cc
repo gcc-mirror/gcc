@@ -258,7 +258,7 @@ namespace std
     for (size_t __i = 0; __i < _S_categories_size; ++__i)
       {
 	_M_names[__i] = new (&name_c[__i]) char[2];
-	std::strcpy(_M_names[__i], locale::facet::_S_c_name);
+	std::strcpy(_M_names[__i], locale::facet::_S_get_c_name());
       }
 
     // This is needed as presently the C++ version of "C" locales
