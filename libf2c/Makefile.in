@@ -142,7 +142,7 @@ i77 f77 u77: g2c.h
 $(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
 	$(LIBTOOL) --mode=link $(CC) -o $@ \
 	  -version-info $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_SUB) \
-	  -rpath $(prefix)/lib \
+	  -rpath $(libsubdir)/$(MULTISUBDIR) \
 	  -objectlist s-libe77 \
 	  -objectlist s-libf77 \
 	  -objectlist s-libi77 \
