@@ -1,3 +1,8 @@
+2000-02-06  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*ldi_on_overflow): New pattern.
+	(fixuns_truncqfqi2): Use it.
+
 2000-02-06  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (ix86_agi_dependant): Handle pro_epilogue_adjust_stack

@@ -453,6 +453,7 @@
 ; 10 RSQRF
 ; 11 loadqf_int
 ; 12 storeqf_int
+; 13 Conditional load on overflow
 ; 22 rptb_init
 
 ;
@@ -3752,32 +3753,27 @@
    DONE;")
 
 (define_expand "fixuns_truncqfqi2"
- [(set (match_dup 2) (match_dup 5))
-  (set (reg:CC 21)
-       (compare:CC (match_operand:QF 1 "src_operand" "fHm")
-                   (match_dup 2)))
-  (set (match_dup 2)
-       (if_then_else:QF (lt (reg:CC 21) (const_int 0))
-                        (match_dup 4)
-                        (match_dup 2)))
-  (parallel [(set (match_dup 2)
-		  (plus:QF (match_dup 2) (match_dup 2)))
+ [(parallel [(set (match_dup 2)
+		  (fix:QI (match_operand:QF 1 "src_operand" "fHm")))
+	     (clobber (reg:CC 21))])
+  (parallel [(set (match_dup 3)
+	          (minus:QF (match_dup 1) (match_dup 5)))
 	     (clobber (reg:CC_NOOV 21))])
-  (parallel [(set (match_dup 2)
-	          (minus:QF (match_dup 1) (match_dup 2)))
-	     (clobber (reg:CC_NOOV 21))])
-  (parallel [(set (match_operand:QI 0 "reg_operand" "=r")
-		  (fix:QI (match_dup 2)))
-	     (clobber (reg:CC 21))])]
+  (parallel [(set (reg:CC 21)
+		  (compare:CC (fix:QI (match_dup 3))
+		              (const_int 0)))
+	     (set (match_dup 4)
+		  (fix:QI (match_dup 3)))])
+  (parallel [(set (match_dup 4) (unspec:QI [(match_dup 2)] 13))
+             (use (reg:CC 21))])
+  (set (match_operand:QI 0 "reg_operand" "=r") (match_dup 4))]
  ""
- "operands[2] = gen_reg_rtx (QFmode);
+ "operands[2] = gen_reg_rtx (QImode);
   operands[3] = gen_reg_rtx (QFmode);
-  operands[4] = gen_reg_rtx (QFmode);
+  operands[4] = gen_reg_rtx (QImode);
   operands[5] = gen_reg_rtx (QFmode);
-  emit_move_insn (operands[4],
-   immed_real_const_1 (REAL_VALUE_ATOF (\"0.0\", QFmode), QFmode));
   emit_move_insn (operands[5],
-   immed_real_const_1 (REAL_VALUE_ATOF (\"2147483648.0\", QFmode), QFmode));")
+   immed_real_const_1 (REAL_VALUE_ATOF (\"4294967296.0\", QFmode), QFmode));")
 
 (define_expand "fixuns_truncqfhi2"
   [(parallel [(set (match_operand:HI 0 "reg_operand" "")
@@ -4140,6 +4136,15 @@
   ldi%1\\t%2,%0
   ldi%I1\\t%3,%0"
  [(set_attr "type" "binary")])
+
+(define_insn "*ldi_on_overflow"
+  [(set (match_operand:QI 0 "reg_operand" "=r")
+	(unspec:QI [(match_operand:QI 1 "src_operand" "rIm")] 13))
+   (use (reg:CC 21))]
+  ""
+  "@
+   ldiv\\t%1,%0"
+  [(set_attr "type" "binary")])
 
 ; Move operand 2 to operand 0 if condition (operand 1) is true
 ; else move operand 3 to operand 0.
