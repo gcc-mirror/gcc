@@ -555,6 +555,10 @@ export CVSROOT
 # Main Program
 ########################################################################
 
+# Set the timezone to UTC
+TZ="UTC0"
+export TZ
+
 # Handle the major modes.
 while [ $# -ne 0 ]; do
     case $1 in
