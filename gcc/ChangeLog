@@ -1,3 +1,12 @@
+Mon Sep 29 22:59:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/12175
+	* varasm.c (notice_global_symbol): Discard external symbols.
+
+	PR optimization/12286
+	* gcov-io.c (gcov_read_words): Fix memmove call.
+	* profile.c (compute_branch_probabilities): Add extra sanity checks.
+
 2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (sparc-*-solaris2*): Handle Solaris 10 and up like

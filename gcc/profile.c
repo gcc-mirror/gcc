@@ -280,6 +280,22 @@ compute_branch_probabilities (void)
   gcov_type *exec_counts = get_exec_counts ();
   int exec_counts_pos = 0;
 
+  /* Very simple sanity checks so we catch bugs in our profiling code.  */
+  if (profile_info)
+    {
+      if (profile_info->run_max * profile_info->runs < profile_info->sum_max)
+	{
+	  error ("corrupted profile info: run_max * runs < sum_max");
+	  exec_counts = NULL;
+	}
+
+      if (profile_info->sum_all < profile_info->sum_max)
+	{
+	  error ("corrupted profile info: sum_all is smaller than sum_max");
+	  exec_counts = NULL;
+	}
+    }
+
   /* Attach extra info block to each bb.  */
 
   alloc_aux_for_blocks (sizeof (struct bb_info));
@@ -315,6 +331,11 @@ compute_branch_probabilities (void)
 	    if (exec_counts)
 	      {
 		e->count = exec_counts[exec_counts_pos++];
+		if (e->count > profile_info->sum_max)
+		  {
+		    error ("corrupted profile info: edge from %i to %i exceeds maximal count",
+			   bb->index, e->dest->index);
+		  }
 	      }
 	    else
 	      e->count = 0;

@@ -143,6 +143,8 @@ build_eh_type_type (tree type)
   if (!exp)
     return NULL;
 
+  mark_used (exp);
+
   return build1 (ADDR_EXPR, ptr_type_node, exp);
 }
 

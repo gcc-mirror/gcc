@@ -1043,6 +1043,7 @@ notice_global_symbol (tree decl)
 {
   if ((!first_global_object_name || !weak_global_object_name)
       && TREE_PUBLIC (decl) && !DECL_COMMON (decl)
+      && !DECL_EXTERNAL (decl)
       && (TREE_CODE (decl) == FUNCTION_DECL
 	  || (TREE_CODE (decl) == VAR_DECL
 	      && (DECL_INITIAL (decl) != 0

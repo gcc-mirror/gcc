@@ -361,7 +361,7 @@ gcov_read_words (unsigned words)
 	  memcpy (gcov_var.buffer, gcov_var.buffer + gcov_var.offset, 4);
 	}
 #else
-      memmove (gcov_var.buffer, gcov_var.buffer + gcov_var.offset, excess);
+      memmove (gcov_var.buffer, gcov_var.buffer + gcov_var.offset, excess * 4);
 #endif
       gcov_var.offset = 0;
       gcov_var.length = excess;
