@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-    	OPENBSD_OS_CPP_BUILTINS_ELF();		\
+    	OPENBSD_OS_CPP_BUILTINS();		\
     }						\
   while (0)
 

@@ -1,3 +1,6 @@
+2005-01-18  Marc Espie  <espie@openbsd.org>
+	* config/i386/openbsdelf.h: Typo.
+
 2005-01-18  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_fp_movcc): Remove TARGET_IEEE_FP
