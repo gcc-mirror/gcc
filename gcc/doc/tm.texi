@@ -5924,6 +5924,11 @@ Returns true if @var{exp} should be placed into a ``small data'' section.
 The default version of this hook always returns false.
 @end deftypefn
 
+@deftypevar {Target Hook} bool TARGET_HAVE_SRODATA_SECTION
+Contains the value true if the target places read-only
+``small data'' into a separate section.  The default value is false.
+@end deftypevar
+
 @deftypefn {Target Hook} bool TARGET_BINDS_LOCAL_P (tree @var{exp})
 Returns true if @var{exp} names an object for which name resolution
 rules must resolve to the current ``module'' (dynamic shared library
@@ -5933,6 +5938,12 @@ The default version of this hook implements the name resolution rules
 for ELF, which has a looser model of global name binding than other
 currently supported object file formats.
 @end deftypefn
+
+@deftypevar {Target Hook} bool TARGET_HAVE_TLS
+Contains the value true if the target supports thread-local storage.
+The default value is false.
+@end deftypevar
+
 
 @node PIC
 @section Position Independent Code
