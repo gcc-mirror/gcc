@@ -135,7 +135,7 @@ prefer_and_bit_test (enum machine_mode mode, int bitnum)
     }
 
   /* Fill in the integers.  */
-  XEXP (and_test, 0) = GEN_INT ((unsigned HOST_WIDE_INT) 1 << bitnum);
+  XEXP (and_test, 1) = GEN_INT ((unsigned HOST_WIDE_INT) 1 << bitnum);
   XEXP (XEXP (shift_test, 0), 1) = GEN_INT (bitnum);
 
   return (rtx_cost (and_test, IF_THEN_ELSE)

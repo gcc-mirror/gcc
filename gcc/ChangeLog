@@ -1,3 +1,8 @@
+2004-03-21  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	* dojump.c (prefer_and_bit_test): Fix which part of
+	the and_test is replaced.
+
 2004-03-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* frontends.texi: Add missing line.
@@ -274,7 +279,6 @@
         * config/rs6000/rs6000.h: Definition of DWARF_CIE_DATA_ALIGNMENT
         macro for mixed mode.
 
->>>>>>> 2.3203
 2004-03-18  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (propagate_freq): Compute correctly frequency of
