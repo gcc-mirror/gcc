@@ -367,8 +367,7 @@ static regexp_t regexp_transform_func
 static regexp_t transform_regexp            PARAMS ((regexp_t));
 static void transform_insn_regexps          PARAMS ((void));
 
-static void check_unit_distribution_in_reserv PARAMS ((const char *, regexp_t,
-						       regexp_t, int));
+static void store_alt_unit_usage PARAMS ((regexp_t, regexp_t, int, int));
 static void check_regexp_units_distribution   PARAMS ((const char *, regexp_t));
 static void check_unit_distributions_to_automata PARAMS ((void));
 
@@ -546,14 +545,14 @@ static struct obstack irp;
    allocator when varray is used only.  */
 
 /* Start work with vla.  */
-#define VLA_PTR_CREATE(vla, allocated_length, name)                   	\
-  do									\
-    {                                                                	\
-      vla_ptr_t *const vla_ptr = &(vla);                                \
-                                                                      	\
-      VARRAY_GENERIC_PTR_INIT (vla_ptr->varray, allocated_length, name);\
-      vla_ptr->length = 0;                                              \
-    }									\
+#define VLA_PTR_CREATE(vla, allocated_length, name)                   	 \
+  do									 \
+    {                                                                	 \
+      vla_ptr_t *const _vla_ptr = &(vla);                                \
+                                                                      	 \
+      VARRAY_GENERIC_PTR_INIT (_vla_ptr->varray, allocated_length, name);\
+      _vla_ptr->length = 0;                                              \
+    }									 \
   while (0)
 
 /* Finish work with the vla.  */
@@ -576,23 +575,23 @@ static struct obstack irp;
    undefined.  */
 #define VLA_PTR_EXPAND(vla, n)                                        \
   do {                                                                \
-    vla_ptr_t *const expand_vla_ptr = &(vla);                         \
-    const size_t new_length = (n) + expand_vla_ptr->length;           \
+    vla_ptr_t *const _expand_vla_ptr = &(vla);                        \
+    const size_t _new_length = (n) + _expand_vla_ptr->length;         \
                                                                       \
-    if (VARRAY_SIZE (expand_vla_ptr->varray) < new_length)            \
-      VARRAY_GROW (expand_vla_ptr->varray,                            \
-                   (new_length - expand_vla_ptr->length < 128         \
-                    ? expand_vla_ptr->length + 128 : new_length));    \
-    expand_vla_ptr->length = new_length;                              \
+    if (VARRAY_SIZE (_expand_vla_ptr->varray) < _new_length)          \
+      VARRAY_GROW (_expand_vla_ptr->varray,                           \
+                   (_new_length - _expand_vla_ptr->length < 128       \
+                    ? _expand_vla_ptr->length + 128 : _new_length));  \
+    _expand_vla_ptr->length = _new_length;                            \
   } while (0)
 
 /* Add element to the end of the vla.  */
-#define VLA_PTR_ADD(vla, ptr)                                         \
-  do {                                                                \
-    vla_ptr_t *const vla_ptr = &(vla);                                \
-                                                                      \
-    VLA_PTR_EXPAND (*vla_ptr, 1);                                     \
-    VARRAY_GENERIC_PTR (vla_ptr->varray, vla_ptr->length - 1) = (ptr);\
+#define VLA_PTR_ADD(vla, ptr)                                           \
+  do {                                                                  \
+    vla_ptr_t *const _vla_ptr = &(vla);                                 \
+                                                                        \
+    VLA_PTR_EXPAND (*_vla_ptr, 1);                                      \
+    VARRAY_GENERIC_PTR (_vla_ptr->varray, _vla_ptr->length - 1) = (ptr);\
   } while (0)
 
 /* Length of the vla in elements.  */
@@ -607,10 +606,10 @@ static struct obstack irp;
 
 #define VLA_HWINT_CREATE(vla, allocated_length, name)                 \
   do {                                                                \
-    vla_hwint_t *const vla_ptr = &(vla);                              \
+    vla_hwint_t *const _vla_ptr = &(vla);                             \
                                                                       \
-    VARRAY_WIDE_INT_INIT (vla_ptr->varray, allocated_length, name);   \
-    vla_ptr->length = 0;                                              \
+    VARRAY_WIDE_INT_INIT (_vla_ptr->varray, allocated_length, name);  \
+    _vla_ptr->length = 0;                                             \
   } while (0)
 
 #define VLA_HWINT_DELETE(vla) VARRAY_FREE ((vla).varray)
@@ -621,22 +620,22 @@ static struct obstack irp;
 
 #define VLA_HWINT_EXPAND(vla, n)                                      \
   do {                                                                \
-    vla_hwint_t *const expand_vla_ptr = &(vla);                       \
-    const size_t new_length = (n) + expand_vla_ptr->length;           \
+    vla_hwint_t *const _expand_vla_ptr = &(vla);                      \
+    const size_t _new_length = (n) + _expand_vla_ptr->length;         \
                                                                       \
-    if (VARRAY_SIZE (expand_vla_ptr->varray) < new_length)            \
-      VARRAY_GROW (expand_vla_ptr->varray,                            \
-                   (new_length - expand_vla_ptr->length < 128         \
-                    ? expand_vla_ptr->length + 128 : new_length));    \
-    expand_vla_ptr->length = new_length;                              \
+    if (VARRAY_SIZE (_expand_vla_ptr->varray) < _new_length)          \
+      VARRAY_GROW (_expand_vla_ptr->varray,                           \
+                   (_new_length - _expand_vla_ptr->length < 128       \
+                    ? _expand_vla_ptr->length + 128 : _new_length));  \
+    _expand_vla_ptr->length = _new_length;                            \
   } while (0)
 
 #define VLA_HWINT_ADD(vla, ptr)                                       \
   do {                                                                \
-    vla_hwint_t *const vla_ptr = &(vla);                              \
+    vla_hwint_t *const _vla_ptr = &(vla);                             \
                                                                       \
-    VLA_HWINT_EXPAND (*vla_ptr, 1);                                   \
-    VARRAY_WIDE_INT (vla_ptr->varray, vla_ptr->length - 1) = (ptr);   \
+    VLA_HWINT_EXPAND (*_vla_ptr, 1);                                  \
+    VARRAY_WIDE_INT (_vla_ptr->varray, _vla_ptr->length - 1) = (ptr); \
   } while (0)
 
 #define VLA_HWINT_LENGTH(vla) ((vla).length)
@@ -763,6 +762,9 @@ struct unit_decl
   /* The following is used only when `query_p' has nonzero value.
      This is query number for the unit.  */
   int query_num;
+  /* The following is the last cycle on which the unit was checked for
+     correct distributions of units to automata in a regexp.  */
+  int last_distribution_check_cycle;
 
   /* The following fields are defined by automaton generator.  */
 
@@ -5442,78 +5444,61 @@ transform_insn_regexps ()
    about units to automata distribution has been output.  */
 static int annotation_message_reported_p;
 
-/* The function processes all alternative reservations on CYCLE in
-   given REGEXP of insn reservation with INSN_RESERV_NAME to check the
-   UNIT (or another unit from the same automaton) is not reserved on
-   the all alternatives.  If it is true, the function outputs message
-   about the rule violation.  */
-static void
-check_unit_distribution_in_reserv (insn_reserv_name, unit, regexp, cycle)
-     const char *insn_reserv_name;
-     regexp_t unit;
-     regexp_t regexp;
-     int cycle;
+/* The following structure describes usage of a unit in a reservation.  */
+struct unit_usage
 {
-  int i, k;
-  regexp_t seq, allof;
   unit_decl_t unit_decl;
+  /* The following forms a list of units used on the same cycle in the
+     same alternative.  */
+  struct unit_usage *next;
+};
 
-  if (regexp == NULL || regexp->mode != rm_oneof)
+/* Obstack for unit_usage structures.  */
+static struct obstack unit_usages;
+
+/* VLA for representation of array of pointers to unit usage
+   structures.  There is an element for each combination of
+   (alternative number, cycle).  Unit usages on given cycle in
+   alternative with given number are referred through element with
+   index equals to the cycle * number of all alternatives in the regexp
+   + the alternative number.  */
+static vla_ptr_t cycle_alt_unit_usages;
+
+/* The following function creates the structure unit_usage for UNIT on
+   CYCLE in REGEXP alternative with ALT_NUM.  The structure is made
+   accessed through cycle_alt_unit_usages.  */
+static void
+store_alt_unit_usage (regexp, unit, cycle, alt_num)
+     regexp_t regexp;
+     regexp_t unit;
+     int cycle;
+     int alt_num;
+{
+  size_t i, length, old_length;
+  unit_decl_t unit_decl;
+  struct unit_usage *unit_usage_ptr;
+  int index;
+
+  if (regexp == NULL || regexp->mode != rm_oneof
+      || alt_num >= REGEXP_ONEOF (regexp)->regexps_num)
     abort ();
   unit_decl = REGEXP_UNIT (unit)->unit_decl;
-  for (i = REGEXP_ONEOF (regexp)->regexps_num - 1; i >= 0; i--)
+  old_length = VLA_PTR_LENGTH (cycle_alt_unit_usages);
+  length = (cycle + 1) * REGEXP_ONEOF (regexp)->regexps_num;
+  if (old_length < length)
     {
-      seq = REGEXP_ONEOF (regexp)->regexps [i];
-      if (seq->mode == rm_sequence)
-	{
-	  if (cycle >= REGEXP_SEQUENCE (seq)->regexps_num)
-	    continue;
-	  allof = REGEXP_SEQUENCE (seq)->regexps [cycle];
-	  if (allof->mode == rm_allof)
-	    {
-	      for (k = 0; k < REGEXP_ALLOF (allof)->regexps_num; k++)
-		if (REGEXP_ALLOF (allof)->regexps [k]->mode == rm_unit
-		    && (REGEXP_UNIT (REGEXP_ALLOF (allof)->regexps [k])
-			->unit_decl->automaton_decl
-			== unit_decl->automaton_decl))
-		  break;
-	      if (k >= REGEXP_ALLOF (allof)->regexps_num)
-		break;
-	    }
-	  else if (allof->mode == rm_unit
-		   && (REGEXP_UNIT (allof)->unit_decl->automaton_decl
-		       != unit_decl->automaton_decl))
-	    break;
-	}
-      else if (cycle != 0)
-	continue;
-      else if (seq->mode == rm_allof)
-	{
-	  for (k = 0; k < REGEXP_ALLOF (seq)->regexps_num; k++)
-	    if (REGEXP_ALLOF (seq)->regexps [k]->mode == rm_unit
-		&& (REGEXP_UNIT (REGEXP_ALLOF (seq)->regexps [k])
-		    ->unit_decl->automaton_decl == unit_decl->automaton_decl))
-	      break;
-	  if (k >= REGEXP_ALLOF (seq)->regexps_num)
-	    break;
-	}
-      else if (seq->mode == rm_unit
-	       && (REGEXP_UNIT (seq)->unit_decl->automaton_decl
-		   != unit_decl->automaton_decl))
-	break;
+      VLA_PTR_EXPAND (cycle_alt_unit_usages, length - old_length);
+      for (i = old_length; i < length; i++)
+	VLA_PTR (cycle_alt_unit_usages, i) = NULL;
     }
-  if (i >= 0)
-    {
-      if (!annotation_message_reported_p)
-	{
-	  fprintf (stderr, "\n");
-	  error ("The following units do not satisfy units-automata distribution rule");
-	  error ("  (A unit of given unit automaton should be on each reserv. altern.)");
-	  annotation_message_reported_p = TRUE;
-	}
-      error ("Unit %s, reserv. %s, cycle %d",
-	     unit_decl->name, insn_reserv_name, cycle);
-    }
+  obstack_blank (&unit_usages, sizeof (struct unit_usage));
+  unit_usage_ptr = (struct unit_usage *) obstack_base (&unit_usages);
+  obstack_finish (&unit_usages);
+  unit_usage_ptr->unit_decl = unit_decl;
+  index = cycle * REGEXP_ONEOF (regexp)->regexps_num + alt_num;
+  unit_usage_ptr->next = VLA_PTR (cycle_alt_unit_usages, index);
+  VLA_PTR (cycle_alt_unit_usages, index) = unit_usage_ptr;
+  unit_decl->last_distribution_check_cycle = -1; /* undefined */
 }
 
 /* The function processes given REGEXP to find units with the wrong
@@ -5523,11 +5508,15 @@ check_regexp_units_distribution (insn_reserv_name, regexp)
      const char *insn_reserv_name;
      regexp_t regexp;
 {
-  int i, j, k;
+  int i, j, k, cycle;
   regexp_t seq, allof, unit;
+  struct unit_usage *unit_usage_ptr, *other_unit_usage_ptr;
 
   if (regexp == NULL || regexp->mode != rm_oneof)
     return;
+  /* Store all unit usages in the regexp:  */
+  obstack_init (&unit_usages);
+  VLA_PTR_CREATE (cycle_alt_unit_usages, 100, "unit usages on cycles");
   for (i = REGEXP_ONEOF (regexp)->regexps_num - 1; i >= 0; i--)
     {
       seq = REGEXP_ONEOF (regexp)->regexps [i];
@@ -5540,14 +5529,12 @@ check_regexp_units_distribution (insn_reserv_name, regexp)
 		{
 		  unit = REGEXP_ALLOF (allof)->regexps [k];
 		  if (unit->mode == rm_unit)
-		    check_unit_distribution_in_reserv (insn_reserv_name, unit,
-						       regexp, j);
+		    store_alt_unit_usage (regexp, unit, j, i);
 		  else if (unit->mode != rm_nothing)
 		    abort ();
 		}
 	    else if (allof->mode == rm_unit)
-	      check_unit_distribution_in_reserv (insn_reserv_name, allof,
-						 regexp, j);
+	      store_alt_unit_usage (regexp, allof, j, i);
 	    else if (allof->mode != rm_nothing)
 	      abort ();
 	  }
@@ -5556,16 +5543,58 @@ check_regexp_units_distribution (insn_reserv_name, regexp)
 	  {
 	    unit = REGEXP_ALLOF (seq)->regexps [k];
 	    if (unit->mode == rm_unit)
-	      check_unit_distribution_in_reserv (insn_reserv_name, unit,
-						 regexp, 0);
+	      store_alt_unit_usage (regexp, unit, 0, i);
 	    else if (unit->mode != rm_nothing)
 	      abort ();
 	  }
       else if (seq->mode == rm_unit)
-	check_unit_distribution_in_reserv (insn_reserv_name, seq, regexp, 0);
+	store_alt_unit_usage (regexp, seq, 0, i);
       else if (seq->mode != rm_nothing)
 	abort ();
     }
+  /* Check distribution:  */
+  for (i = 0; i < (int) VLA_PTR_LENGTH (cycle_alt_unit_usages); i++)
+    {
+      cycle = i / REGEXP_ONEOF (regexp)->regexps_num;
+      for (unit_usage_ptr = VLA_PTR (cycle_alt_unit_usages, i);
+	   unit_usage_ptr != NULL;
+	   unit_usage_ptr = unit_usage_ptr->next)
+	if (cycle != unit_usage_ptr->unit_decl->last_distribution_check_cycle)
+	  {
+	    unit_usage_ptr->unit_decl->last_distribution_check_cycle = cycle;
+	    for (k = cycle * REGEXP_ONEOF (regexp)->regexps_num;
+		 k < (int) VLA_PTR_LENGTH (cycle_alt_unit_usages)
+		   && k == cycle * REGEXP_ONEOF (regexp)->regexps_num;
+		 k++)
+	      {
+		for (other_unit_usage_ptr = VLA_PTR (cycle_alt_unit_usages, k);
+		     other_unit_usage_ptr != NULL;
+		     other_unit_usage_ptr = other_unit_usage_ptr->next)
+		  if (unit_usage_ptr->unit_decl->automaton_decl
+		      == other_unit_usage_ptr->unit_decl->automaton_decl)
+		    break;
+		if (other_unit_usage_ptr == NULL
+		    && VLA_PTR (cycle_alt_unit_usages, k) != NULL)
+		  break;
+	      }
+	    if (k < (int) VLA_PTR_LENGTH (cycle_alt_unit_usages)
+		&& k == cycle * REGEXP_ONEOF (regexp)->regexps_num)
+	      {
+		if (!annotation_message_reported_p)
+		  {
+		    fprintf (stderr, "\n");
+		    error ("The following units do not satisfy units-automata distribution rule");
+		    error (" (A unit of given unit automaton should be on each reserv. altern.)");
+		    annotation_message_reported_p = TRUE;
+		  }
+		error ("Unit %s, reserv. %s, cycle %d",
+		       unit_usage_ptr->unit_decl->name, insn_reserv_name,
+		       cycle);
+	      }
+	  }
+    }
+  VLA_PTR_DELETE (cycle_alt_unit_usages);
+  obstack_free (&unit_usages, NULL);
 }
 
 /* The function finds units which violates units to automata

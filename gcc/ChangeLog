@@ -1,3 +1,14 @@
+2003-02-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (VLA_PTR_CREATE, VLA_PTR_EXPAND, VLA_PTR_ADD,
+	VLA_HWINT_CREATE, VLA_HWINT_EXPAND, VLA_HWINT_ADD): Use temporay
+	variables starting with underscore.
+	(struct unit_usage): New structure.
+	(unit_usages, cycle_alt_unit_usages): New global variables.
+	(check_unit_distribution_in_reserv): Remove it.
+	(store_alt_unit_usage): New function.
+	(check_regexp_units_distribution): Rewrite it.
+
 2003-02-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.gcc (hppa*-*-linux*): Set MASK_NO_SPACE_REGS in
