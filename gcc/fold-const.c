@@ -4203,6 +4203,10 @@ fold (expr)
 			   arg1));
 	}
 
+      /* It would be nice to do this since it generates better code.
+	 Unfortunately, it doesn't produce the correct result if the
+	 first operand is negative.  */
+#if 0
       /* If this is an NE or EQ comparison of zero against the result of a
 	 signed MOD operation, make the MOD operation unsigned since it
 	 is simpler and equivalent.  */
@@ -4221,6 +4225,7 @@ fold (expr)
 
 	  return build (code, type, newmod, convert (newtype, arg1));
 	}
+#endif
 
       /* If this is an NE comparison of zero with an AND of one, remove the
 	 comparison since the AND will give the correct value.  */
