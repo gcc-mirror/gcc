@@ -1,3 +1,10 @@
+2003-01-24  Richard Henderson  <rth@redhat.com>
+
+	PR optimization/4382
+	* tree-inline.c (find_builtin_longjmp_call_1): New.
+	(find_builtin_longjmp_call): New.
+	(inlinable_function_p): Use it.
+
 2003-01-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* config/i386/i386-protos.h (function_arg_pass_by_reference): Declare.
