@@ -68,6 +68,19 @@ static int m32r_sched_odd_word_p;
 /* For string literals, etc.  */
 #define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
 
+/* Cache-flush support. Cache-flush is used at trampoline.
+   Default cache-flush is "trap 12".
+    default cache-flush function is "_flush_cache"  (CACHE_FLUSH_FUNC)
+    default cache-flush trap-interrupt number is "12". (CACHE_FLUSH_TRAP)
+   You can change how to generate code of cache-flush with following options.
+   -flush-func=FLUSH-FUNC-NAME
+   -no-flush-func
+   -fluch-trap=TRAP-NUMBER
+   -no-flush-trap.  */
+const char *m32r_cache_flush_func = CACHE_FLUSH_FUNC;
+const char *m32r_cache_flush_trap_string = CACHE_FLUSH_TRAP;
+int m32r_cache_flush_trap = 12;
+
 /* Forward declaration.  */
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
@@ -166,6 +179,15 @@ m32r_init (void)
     m32r_sdata = M32R_SDATA_USE;
   else
     error ("bad value (%s) for -msdata switch", m32r_sdata_string);
+
+  if (m32r_cache_flush_trap_string)
+    {
+      /* Change trap-number (12) for cache-flush to the others (0 - 15).  */
+      m32r_cache_flush_trap = atoi (m32r_cache_flush_trap_string);
+      if (m32r_cache_flush_trap < 0 || m32r_cache_flush_trap > 15)
+        error ("bad value (%s) for -flush-trap=n (0=<n<=15)",
+               m32r_cache_flush_trap_string);
+    }
 }
 
 /* Vectors to keep interesting information about registers where it can easily
@@ -509,6 +531,9 @@ addr24_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx sym;
 
+  if (flag_pic)
+    return 0;
+
   if (GET_CODE (op) == LABEL_REF)
     return TARGET_ADDR24;
 
@@ -549,7 +574,8 @@ addr32_operand (rtx op, enum machine_mode mode)
   else if (GET_CODE (op) == CONST
 	   && GET_CODE (XEXP (op, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
+	   && ! flag_pic)
     sym = XEXP (XEXP (op, 0), 0);
   else
     return 0;
@@ -563,6 +589,9 @@ addr32_operand (rtx op, enum machine_mode mode)
 int
 call26_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
+  if (flag_pic)
+    return 0;
+
   if (GET_CODE (op) == SYMBOL_REF)
     return SYMBOL_REF_MODEL (op) != M32R_MODEL_LARGE;
 
@@ -574,6 +603,9 @@ call26_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 seth_add3_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
+  if (flag_pic)
+    return 0;
+
   if (GET_CODE (op) == SYMBOL_REF
       || GET_CODE (op) == LABEL_REF)
     return 1;
@@ -711,6 +743,7 @@ move_src_operand (rtx op, enum machine_mode mode)
 {
   switch (GET_CODE (op))
     {
+    case LABEL_REF :
     case SYMBOL_REF :
     case CONST :
       return addr24_operand (op, mode);
@@ -726,8 +759,8 @@ move_src_operand (rtx op, enum machine_mode mode)
 	}
       else
 	return 1;
-    case LABEL_REF :
-      return TARGET_ADDR24;
+    case CONSTANT_P_RTX:
+	return 1;
     case CONST_DOUBLE :
       if (mode == SFmode)
 	return 1;
@@ -1801,6 +1834,7 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
   unsigned int gmask;
   enum m32r_function_type fn_type;
   int interrupt_p;
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table);
 
   var_size	= M32R_STACK_ALIGN (size);
   args_size	= M32R_STACK_ALIGN (current_function_outgoing_args_size);
@@ -1818,7 +1852,8 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
   /* Calculate space needed for registers.  */
   for (regno = 0; regno < M32R_MAX_INT_REGS; regno++)
     {
-      if (MUST_SAVE_REGISTER (regno, interrupt_p))
+      if (MUST_SAVE_REGISTER (regno, interrupt_p)
+          || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
 	{
 	  reg_size += UNITS_PER_WORD;
 	  gmask |= 1 << regno;
@@ -1826,7 +1861,7 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
     }
 
   current_frame_info.save_fp = MUST_SAVE_FRAME_POINTER;
-  current_frame_info.save_lr = MUST_SAVE_RETURN_ADDR;
+  current_frame_info.save_lr = MUST_SAVE_RETURN_ADDR || pic_reg_used;
 
   reg_size += ((current_frame_info.save_fp + current_frame_info.save_lr)
 	       * UNITS_PER_WORD);
@@ -1865,6 +1900,21 @@ m32r_first_insn_address (void)
   return 0;
 }
 
+/* The table we use to reference PIC data.  */
+static rtx global_offset_table;
+                                                                                
+void
+m32r_load_pic_register (void)
+{
+  global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+  emit_insn (gen_get_pc (pic_offset_table_rtx, global_offset_table,
+                         gen_rtx_CONST_INT(SImode, TARGET_MODEL_SMALL)));
+                                                                                
+  /* Need to emit this whether or not we obey regdecls,
+     since setjmp/longjmp can cause life info to screw up.  */
+  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+}
+
 /* Expand the m32r prologue as a series of insns.  */
 
 void
@@ -1873,6 +1923,7 @@ m32r_expand_prologue (void)
   int regno;
   int frame_size;
   unsigned int gmask;
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table);
 
   if (! current_frame_info.initialized)
     m32r_compute_frame_size (get_frame_size ());
@@ -1935,6 +1986,14 @@ m32r_expand_prologue (void)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
 
   if (current_function_profile)
+    /* Push lr for mcount (form_pc, x).  */
+    emit_insn (gen_movsi_push (stack_pointer_rtx,
+                               gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
+                                                                                
+  if (pic_reg_used)
+    m32r_load_pic_register ();
+
+  if (current_function_profile && !pic_reg_used)
     emit_insn (gen_blockage ());
 }
 
@@ -2084,18 +2143,122 @@ direct_return (void)
   if (! current_frame_info.initialized)
     m32r_compute_frame_size (get_frame_size ());
 
-  return current_frame_info.total_size == 0;
+   return current_frame_info.total_size == 0;
 }
 
 
 /* PIC.  */
+
+int
+m32r_legitimate_pic_operand_p (rtx x)
+{
+  if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
+    return 0;
+                                                                                
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && (GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+          || GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF)
+      && (GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
+    return 0;
+                                                                                
+  return 1;
+}
+
+rtx
+m32r_legitimize_pic_address (rtx orig, rtx reg)
+{
+#ifdef DEBUG_PIC
+  printf("m32r_legitimize_pic_address()\n");
+#endif
+
+  if (GET_CODE (orig) == SYMBOL_REF || GET_CODE (orig) == LABEL_REF)
+    {
+      rtx pic_ref, address;
+      rtx insn;
+      int subregs = 0;
+
+      if (reg == 0)
+        {
+          if (reload_in_progress || reload_completed)
+            abort ();
+          else
+            reg = gen_reg_rtx (Pmode);
+
+          subregs = 1;
+        }
+
+      if (subregs)
+        address = gen_reg_rtx (Pmode);
+      else
+        address = reg;
+
+      emit_insn (gen_pic_load_addr (address, orig));
+
+      emit_insn (gen_addsi3 (address, address, pic_offset_table_rtx));
+      pic_ref = gen_rtx (MEM, Pmode, address);
+
+      RTX_UNCHANGING_P (pic_ref) = 1;
+      insn = emit_move_insn (reg, pic_ref);
+      current_function_uses_pic_offset_table = 1;
+#if 0
+      /* Put a REG_EQUAL note on this insn, so that it can be optimized
+         by loop.  */
+      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, orig,
+                  REG_NOTES (insn));
+#endif
+      return reg;
+    }
+  else if (GET_CODE (orig) == CONST)
+    {
+      rtx base, offset;
+
+      if (GET_CODE (XEXP (orig, 0)) == PLUS
+          && XEXP (XEXP (orig, 0), 1) == pic_offset_table_rtx)
+        return orig;
+
+      if (reg == 0)
+        {
+          if (reload_in_progress || reload_completed)
+            abort ();
+          else
+            reg = gen_reg_rtx (Pmode);
+        }
+
+      if (GET_CODE (XEXP (orig, 0)) == PLUS)
+        {
+          base = m32r_legitimize_pic_address (XEXP (XEXP (orig, 0), 0), reg);
+          if (base == reg)
+            offset = m32r_legitimize_pic_address (XEXP (XEXP (orig, 0), 1), NULL_RTX);
+          else
+            offset = m32r_legitimize_pic_address (XEXP (XEXP (orig, 0), 1), reg);
+        }
+      else
+        return orig;
+
+      if (GET_CODE (offset) == CONST_INT)
+        {
+          if (INT16_P (INTVAL (offset)))
+            return plus_constant (base, INTVAL (offset));
+          else if (! reload_in_progress && ! reload_completed)
+            offset = force_reg (Pmode, offset);
+          else
+            /* If we reach here, then something is seriously wrong.  */
+            abort ();
+        }
+
+      return gen_rtx (PLUS, Pmode, base, offset);
+    }
+
+  return orig;
+}
 
 /* Emit special PIC prologues and epilogues.  */
 
 void
 m32r_finalize_pic (void)
 {
-  /* Nothing to do.  */
+  current_function_uses_pic_offset_table |= current_function_profile;
 }
 
 /* Nested function support.  */
@@ -2120,6 +2283,9 @@ m32r_file_start (void)
     fprintf (asm_out_file,
 	     "%s M32R/D special options: -G " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 	     ASM_COMMENT_START, g_switch_value);
+
+  if (TARGET_LITTLE_ENDIAN)
+    fprintf (asm_out_file, "\t.little\n");
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
