@@ -17,10 +17,10 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* Support #pragma weak by default if WEAK_ASM_OP and ASM_OUTPUT_DEF
-   are defined.  */
-#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
-#define HANDLE_PRAGMA_WEAK 1
+/* Support #pragma weak iff ASM_WEAKEN_LABEL and ASM_OUTPUT_DEF are
+   defined.  */
+#if defined (ASM_WEAKEN_LABEL) && defined (ASM_OUTPUT_DEF)
+#define HANDLE_PRAGMA_WEAK SUPPORTS_WEAK
 #endif
 
 enum pragma_state

@@ -802,6 +802,11 @@ assemble_start_function (decl, fnname)
     {
       if (!first_global_object_name)
 	STRIP_NAME_ENCODING (first_global_object_name, fnname);
+#ifdef ASM_WEAKEN_LABEL
+      if (DECL_WEAK (decl))
+	ASM_WEAKEN_LABEL (asm_out_file, fnname);
+      else
+#endif
       if (output_bytecode)
 	BC_GLOBALIZE_LABEL (asm_out_file, fnname);
       else
@@ -1172,6 +1177,11 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     {
       if (!first_global_object_name)
 	STRIP_NAME_ENCODING(first_global_object_name, name);
+#ifdef ASM_WEAKEN_LABEL
+      if (DECL_WEAK (decl))
+	ASM_WEAKEN_LABEL (asm_out_file, name);
+      else
+#endif
       ASM_GLOBALIZE_LABEL (asm_out_file, name);
     }
 #if 0
@@ -3964,14 +3974,12 @@ void
 declare_weak (decl)
      tree decl;
 {
-#ifdef HANDLE_PRAGMA_WEAK
   if (! TREE_PUBLIC (decl))
     error_with_decl (decl, "weak declaration of `%s' must be public");
-  else
-    handle_pragma_weak (ps_name,
-			IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-			NULL_PTR);
-#endif
+  else if (TREE_ASM_WRITTEN (decl))
+    error_with_decl (decl, "weak declaration of `%s' must precede definition");
+  else if (SUPPORTS_WEAK)
+    DECL_WEAK (decl) = 1;
 }
 
 /* Emit any pending weak declarations.  */
@@ -3985,14 +3993,7 @@ weak_finish ()
       struct weak_syms *t;
       for (t = weak_decls; t; t = t->next)
 	{
-	  fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
-
-	  if (output_bytecode)
-	    BC_OUTPUT_LABELREF (asm_out_file, t->name);
-	  else
-	    ASM_OUTPUT_LABELREF (asm_out_file, t->name);
-
-	  fputc ('\n', asm_out_file);
+	  ASM_WEAKEN_LABEL (asm_out_file, t->name);
 	  if (t->value)
 	    ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
 	}
@@ -4014,6 +4015,11 @@ assemble_alias (decl, target)
 
   if (TREE_PUBLIC (decl))
     {
+#ifdef ASM_WEAKEN_LABEL
+      if (DECL_WEAK (decl))
+	ASM_WEAKEN_LABEL (asm_out_file, name);
+      else
+#endif
       if (output_bytecode)
 	BC_GLOBALIZE_LABEL (asm_out_file, name);
       else
@@ -4021,6 +4027,7 @@ assemble_alias (decl, target)
     }
 
   ASM_OUTPUT_DEF (asm_out_file, name, IDENTIFIER_POINTER (target));
+  TREE_ASM_WRITTEN (decl) = 1;
 #else
   warning ("alias definitions not supported in this configuration");
 #endif

@@ -94,7 +94,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Handle #pragma weak and #pragma pack.  */
 
 #define HANDLE_SYSV_PRAGMA
-#define HANDLE_PRAGMA_WEAK	TARGET_ELF
+#define SUPPORTS_WEAK	TARGET_ELF
 
 /* Change default predefines.  */
 #undef	CPP_PREDEFINES
@@ -617,8 +617,13 @@ while (0)
 
 #define TYPE_ASM_OP	".type"
 #define SIZE_ASM_OP	".size"
-#define WEAK_ASM_OP	".weak"
 #define SET_ASM_OP	".set"
+
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
+       fputc ('\n', FILE); } while (0)
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers

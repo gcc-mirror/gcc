@@ -131,3 +131,12 @@ do { fprintf (FILE, "\t%s\t", ASM_SHORT);				\
   } while (0)
 #endif
 #endif
+
+/* This determines whether or not we support weak symbols.  */
+#ifndef SUPPORTS_WEAK
+#ifdef ASM_WEAKEN_LABEL
+#define SUPPORTS_WEAK 1
+#else
+#define SUPPORTS_WEAK 0
+#endif
+#endif
