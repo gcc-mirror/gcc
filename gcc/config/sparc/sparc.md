@@ -8401,7 +8401,8 @@
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tunimp\\t%2"
-  [(set_attr "type" "call_no_delay_slot")])
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
 
 ;; This is a call that wants a structure value.
 ;; There is no such critter for v9 (??? we may need one anyway).
@@ -8413,7 +8414,8 @@
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tunimp\\t%2"
-  [(set_attr "type" "call_no_delay_slot")])
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
 
 ;; This is a call that may want a structure value.  This is used for
 ;; untyped_calls.
@@ -8425,7 +8427,8 @@
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tnop"
-  [(set_attr "type" "call_no_delay_slot")])
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
 
 ;; This is a call that wants a structure value.
 (define_insn "*call_symbolic_untyped_struct_value_sp32"
@@ -8436,7 +8439,8 @@
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tnop"
-  [(set_attr "type" "call_no_delay_slot")])
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
 
 (define_expand "call_value"
   ;; Note that this expression is not used for generating RTL.
