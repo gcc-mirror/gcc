@@ -1,5 +1,5 @@
-/* ProtocolException.java -- A low level protocol error occurred
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* ProtocolException.java -- a low level protocol error occurred
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,51 +37,38 @@ exception statement from your version. */
 
 package java.net;
 
+import java.io.IOException;
+
 /**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Believed complete and correct.
+ * This exception indicates that some sort of low level protocol
+ * exception occurred.  Look in the descriptive message (if any) for
+ * details on what went wrong.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @status updated to 1.4
  */
-
-/**
-  * This exception indicates that some sort of low level protocol
-  * exception occurred.  Look in the descriptive message (if any) for
-  * details on what went wrong
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
-  * @date March 5, 1999.
-  */
-public class ProtocolException extends java.io.IOException
+public class ProtocolException extends IOException
 {
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -6098449442062388080L;
 
-/*
- * Constructors
- */
+  /**
+   * Create a new instance without a descriptive error message.
+   */
+  public ProtocolException()
+  {
+  }
 
-/**
-  * Initializes a new instance of <code>ProtocolException</code>
-  * without a descriptive error message.
-  */
-public
-ProtocolException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>ProtocolException</code>
-  * with a descriptive error message.
-  *
-  * @param message A message describing the error that occurred.
-  */
-public
-ProtocolException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create a new instance with a descriptive error message.
+   *
+   * @param message a message describing the error that occurred
+   */
+  public ProtocolException(String message)
+  {
+    super(message);
+  }
 } // class ProtocolException
-

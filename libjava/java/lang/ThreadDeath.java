@@ -1,5 +1,5 @@
-/* java.lang.ThreadDeath - Special exception registering Thread death.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* ThreadDeath.java - special exception registering Thread death
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,23 +38,31 @@ exception statement from your version. */
 
 package java.lang;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Complete to version 1.1
- */
-
 /**
- ** ThreadDeath is thrown in a thread when someone calls <CODE>stop()</CODE> on that thread.
- **
- ** <B>Important:</B> Make sure you rethrow this exception if you catch it.  If you don't, the thread will not die.
- **
- ** @author John Keiser
- ** @author Tom Tromey <tromey@cygnus.com>
- ** @version 1.1.0, 5 Feb 1998, August 26 1998
- ** @since JDK1.0
- ** @see java.lang.Thread#stop()
- **/
+ * ThreadDeath is thrown in a thread when someone calls <code>stop()</code>
+ * on that thread. <b>Important:</b> Make sure you rethrow this exception
+ * if you catch it.  If you don't, the thread will not die.
+ *
+ * <p>This is an Error rather than an exception, so that normal code will
+ * not catch it. It is intended for asynchronous cleanup when using the
+ * deprecated Thread.stop() method.
+ *
+ * @author John Keiser
+ * @author Tom Tromey <tromey@cygnus.com>
+ * @see Thread#stop()
+ * @status updated to 1.4
+ */
+public class ThreadDeath extends Error
+{
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -4417128565033088268L;
 
-public class ThreadDeath extends Error {
+  /**
+   * Create an error without a message.
+   */
+  public ThreadDeath()
+  {
+  }
 }

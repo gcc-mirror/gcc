@@ -1,5 +1,5 @@
-/* java.lang.CharSequence -- Anything that has an indexed sequence of chars
-   Copyright (C) 2001 Free Software Foundation, Inc.
+/* CharSequence.java -- Anything that has an indexed sequence of chars
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,8 +44,8 @@ package java.lang;
  * <code>CharBuffer</code> to give a uniform way to get chars at a certain
  * index, the number of characters in the sequence and a subrange of the
  * chars. Indexes start at 0 and the last index is <code>length()-1</code>.
- * <p>
- * Even when classes implement this interface they are not always
+ *
+ * <p>Even when classes implement this interface they are not always
  * exchangeble because they might implement their compare, equals or hash
  * function differently. This means that in general one should not use a
  * <code>CharSequence</code> as keys in collections since two sequences
@@ -54,38 +54,46 @@ package java.lang;
  * represented by different classes.
  *
  * @author Mark Wielaard (mark@klomp.org)
- *
  * @since 1.4
+ * @status updated to 1.4
  */
+public interface CharSequence
+{
+  /**
+   * Returns the character at the given index.
+   *
+   * @param i the index to retrieve from
+   * @return the character at that location
+   * @throws IndexOutOfBoundsException if i &lt; 0 || i &gt;= length() - 1
+   */
+  char charAt(int i);
 
-public interface CharSequence {
+  /**
+   * Returns the length of the sequence. This is the number of 16-bit
+   * characters in the sequence, which may differ from the length of the
+   * underlying encoding.
+   *
+   * @return the sequence length
+   */
+  int length();
 
-    /**
-     * Returns the character at the given index.
-     *
-     * @exception IndexOutOfBoundsException when <code>i &lt; 0</code> or
-     * <code>i &gt; length()-1</code>.
-     */
-    char charAt(int i);
+  /**
+   * Returns a new <code>CharSequence</char> of the indicated range.
+   *
+   * @param begin the start index (inclusive)
+   * @param end the end index (exclusive)
+   * @return a subsequence of this
+   * @throws IndexOutOfBoundsException if begin &gt; end || begin &lt; 0 ||
+   *         end &gt; length()
+   */
+  CharSequence subSequence(int begin, int end);
 
-    /**
-     * Returns the length of the sequence.
-     */
-    int length();
-
-    /**
-     * Returns a new <code>CharSequence</char> of the indicated range.
-     *
-     * @exception IndexOutOfBoundsException when <code>begin &lt; 0</code>,
-     *         <code>end &lt; 0</code>, <code>end &gt; length()</code> or
-     *         <code>begin &gt; end</code>
-     */
-    CharSequence subSequence(int begin, int end);
-
-    /**
-     * Returns the complete <code>CharSequence</code> as a <code>String</code>.
-     * Classes that implement this interface should return a <code>String</code>
-     * which contains only the characters in the sequence in the correct order.
-     */
-    String toString();
+  /**
+   * Returns the complete <code>CharSequence</code> as a <code>String</code>.
+   * Classes that implement this interface should return a <code>String</code>
+   * which contains only the characters in the sequence in the correct order.
+   *
+   * @return the character sequence as a String
+   */
+  String toString();
 }

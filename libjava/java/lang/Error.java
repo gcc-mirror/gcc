@@ -1,5 +1,5 @@
-/* Error.java - Indication of fatal abnormal conditions
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* Error.java -- Indication of fatal abnormal conditions
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,45 +38,70 @@ exception statement from your version. */
 
 package java.lang;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
- * Applications should not try to catch errors since they indicate 
+ * Applications should not try to catch errors since they indicate
  * abnormal conditions.  An abnormal condition is something which should not
- * occur.  A few errors, like <code>ThreadDeath</code> error do normally
- * occur, but most applications should not catch it.  
- * <p>
- * A method is not required to declare any subclass of <code>Error</code> in 
- * its <code>throws</code> clause which might be thrown but not caught while
- * executing the method..
+ * occur, or which should not be recovered from.  This latter category
+ * includes <code>ThreadDeath</code> and <code>AssertionError</code>.
  *
- * @since JDK 1.0
- * 
+ * <p>A method is not required to declare any subclass of <code>Error</code> in
+ * its <code>throws</code> clause which might be thrown but not caught while
+ * executing the method.
+ *
  * @author Brian Jones
  * @author Tom Tromey <tromey@cygnus.com>
- * @date October 1, 1998
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.0
+ * @status updated to 1.4
  */
 public class Error extends Throwable
 {
-  static final long serialVersionUID = 4980196508277280342L;
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 4980196508277280342L;
 
   /**
-   * Create an error without a message.
+   * Create an error without a message. The cause remains uninitialized.
+   *
+   * @see #initCause(Throwable)
    */
   public Error()
-    {
-      super();
-    }
+  {
+  }
 
   /**
-   * Create an error with a message.
+   * Create an error with a message. The cause remains uninitialized.
+   *
+   * @param s the message string
+   * @see #initCause(Throwable)
    */
   public Error(String s)
-    {
-      super(s);
-    }
+  {
+    super(s);
+  }
+
+  /**
+   * Create an error with a message and a cause.
+   *
+   * @param s the message string
+   * @param cause the cause of this error
+   * @since 1.4
+   */
+  public Error(String s, Throwable cause)
+  {
+    super(s, cause);
+  }
+
+  /**
+   * Create an error with a given cause, and a message of
+   * <code>cause == null ? null : cause.toString()</code>.
+   *
+   * @param cause the cause of this error
+   * @since 1.4
+   */
+  public Error(Throwable cause)
+  {
+    super(cause);
+  }
 }

@@ -1,6 +1,6 @@
-/* IllegalAccessException.java -- exception thrown when trying to load a 
-   class that is not public and in another package.
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* IllegalAccessException.java -- thrown on attempt to reflect on
+   inaccessible data
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,45 +39,57 @@ exception statement from your version. */
 
 package java.lang;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
- * Exceptions may be thrown by one part of a Java program and caught
- * by another in order to deal with exceptional conditions.  
- * Thrown in two cases.  The first is when try to load a class that is
- * not public and in another package using specific methods from 
- * <code>ClassLoader</code> and <code>Class</code>.  The second case is
- * when trying to create a new instance of a class to which you do not have
- * access to the zero argument constructor as in using the 
- * <code>newsInstance</code> method of class <code>Class</code>.
+ * Thrown whenever a reflective method tries to do something that the
+ * compiler would not allow.  For example, using reflection to set a private
+ * variable that belongs to a class in another package is bad.
  *
- * @since JDK 1.0
- * 
  * @author Brian Jones
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 18, 1998.
+ * @see Class#newInstance()
+ * @see Field#set(Object, Object)
+ * @see Field#setBoolean(Object, boolean)
+ * @see Field#setByte(Object, byte)
+ * @see Field#setShort(Object, short)
+ * @see Field#setChar(Object, char)
+ * @see Field#setInt(Object, int)
+ * @see Field#setLong(Object, long)
+ * @see Field#setFloat(Object, float)
+ * @see Field#setDouble(Object, double)
+ * @see Field#get(Object)
+ * @see Field#getBoolean(Object)
+ * @see Field#getByte(Object)
+ * @see Field#getShort(Object)
+ * @see Field#getChar(Object)
+ * @see Field#getInt(Object)
+ * @see Field#getLong(Object)
+ * @see Field#getFloat(Object)
+ * @see Field#getDouble(Object)
+ * @see Method#invoke(Object, Object[])
+ * @see Constructor#newInstance(Object[])
+ * @status updated to 1.4
  */
 public class IllegalAccessException extends Exception
 {
-  static final long serialVersionUID = 6616958222490762034L;
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 6616958222490762034L;
 
   /**
    * Create an exception without a message.
    */
   public IllegalAccessException()
-    {
-      super();
-    }
+  {
+  }
 
   /**
    * Create an exception with a message.
+   *
+   * @param s the message
    */
   public IllegalAccessException(String s)
-    {
-      super(s);
-    }
+  {
+    super(s);
+  }
 }

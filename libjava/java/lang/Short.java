@@ -1,5 +1,5 @@
-/* java.lang.Short
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+/* Short.java -- object wrapper for short
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,35 +47,44 @@ package java.lang;
  *
  * @author Paul Fisher
  * @author John Keiser
- * @since JDK 1.0
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.1
+ * @status updated to 1.4
  */
 public final class Short extends Number implements Comparable
 {
-  static final long serialVersionUID = 7515723908773894738L;
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 7515723908773894738L;
 
   /**
-   * The minimum value a <code>short</code> can represent is -32768.
+   * The minimum value a <code>short</code> can represent is -32768 (or
+   * -2<sup>15</sup).
    */
   public static final short MIN_VALUE = -32768;
 
   /**
-   * The minimum value a <code>short</code> can represent is 32767.
+   * The minimum value a <code>short</code> can represent is 32767 (or
+   * 2<sup>15</sup).
    */
-  public static final short MAX_VALUE =  32767;
+  public static final short MAX_VALUE = 32767;
 
   /**
-   * The primitive type <code>short</code> is represented by this 
+   * The primitive type <code>short</code> is represented by this
    * <code>Class</code> object.
    */
   public static final Class TYPE = VMClassLoader.getPrimitiveClass('S');
 
   /**
    * The immutable value of this Short.
+   *
+   * @serial the wrapped short
    */
   private final short value;
 
   /**
-   * Create a <code>Short</code> object representing the value of the 
+   * Create a <code>Short</code> object representing the value of the
    * <code>short</code> argument.
    *
    * @param value the value to use
@@ -86,90 +95,27 @@ public final class Short extends Number implements Comparable
   }
 
   /**
-   * Create a <code>Short</code> object representing the value of the 
+   * Create a <code>Short</code> object representing the value of the
    * argument after conversion to a <code>short</code>.
    *
-   * @param s the string to convert.
+   * @param s the string to convert
+   * @throws NumberFormatException if the String cannot be parsed
    */
-  public Short(String s) throws NumberFormatException
+  public Short(String s)
   {
     value = parseShort(s, 10);
   }
 
   /**
-   * Return a hashcode representing this Object.
-   *
-   * <code>Short</code>'s hash code is calculated by simply returning its
-   * value.
-   *
-   * @return this Object's hash code.
-   */
-  public int hashCode()
-  {
-    return value;
-  }
-
-  /**
-   * If the <code>Object</code> is not <code>null</code>, is an
-   * <code>instanceof</code> <code>Short</code>, and represents
-   * the same primitive <code>short</code> value return 
-   * <code>true</code>.  Otherwise <code>false</code> is returned.
-   */
-  public boolean equals(Object obj)
-  {
-    return obj instanceof Short && ((Short)obj).value == value;
-  }
-
-  /**
    * Converts the <code>short</code> to a <code>String</code> and assumes
    * a radix of 10.
-   * @param i the <code>short</code> to convert to <code>String</code>
-   * @return the <code>String</code> representation of the argument.
-   */    
-  public static String toString(short i)
-  {
-    return Integer.toString((int) i);
-  }
-
-  /**
-   * Converts the <code>Short</code> value to a <code>String</code> and
-   * assumes a radix of 10.
-   * @return the <code>String</code> representation of this <code>Short</code>.
-   */    
-  public String toString()
-  {
-    return Integer.toString ((int) value);
-  }
-
-  /**
-   * Creates a new <code>Short</code> object using the <code>String</code>,
-   * assuming a radix of 10.
-   * @param s the <code>String</code> to convert.
-   * @return the new <code>Short</code>.
-   * @see #Short(java.lang.String)
-   * @see #parseShort(java.lang.String)
-   * @exception NumberFormatException thrown if the <code>String</code> 
-   * cannot be parsed as a <code>short</code>.
+   *
+   * @param s the <code>short</code> to convert to <code>String</code>
+   * @return the <code>String</code> representation of the argument
    */
-  public static Short valueOf(String s) throws NumberFormatException
+  public static String toString(short s)
   {
-    return new Short(parseShort(s));
-  }
-
-  /**
-   * Creates a new <code>Short</code> object using the <code>String</code>
-   * and specified radix (base).
-   * @param s the <code>String</code> to convert.
-   * @param radix the radix (base) to convert with.
-   * @return the new <code>Short</code>.
-   * @see #parseShort(java.lang.String,int)
-   * @exception NumberFormatException thrown if the <code>String</code> 
-   * cannot be parsed as a <code>short</code>.
-   */
-  public static Short valueOf(String s, int radix)
-    throws NumberFormatException
-  {
-    return new Short(parseShort(s, radix));
+    return String.valueOf(s);
   }
 
   /**
@@ -177,138 +123,227 @@ public final class Short extends Number implements Comparable
    * This function assumes a radix of 10.
    *
    * @param s the <code>String</code> to convert
-   * @return the <code>short</code> value of the <code>String</code>
-   *         argument.
-   * @exception NumberFormatException thrown if the <code>String</code> 
-   * cannot be parsed as a <code>short</code>.
+   * @return the <code>short</code> value of <code>s</code>
+   * @throws NumberFormatException if <code>s</code> cannot be parsed as a
+   *         <code>short</code>
    */
-  public static short parseShort(String s) throws NumberFormatException
+  public static short parseShort(String s)
   {
     return parseShort(s, 10);
   }
 
   /**
    * Converts the specified <code>String</code> into a <code>short</code>
-   * using the specified radix (base).
+   * using the specified radix (base). The string must not be <code>null</code>
+   * or empty. It may begin with an optional '-', which will negate the answer,
+   * provided that there are also valid digits. Each digit is parsed as if by
+   * <code>Character.digit(d, radix)</code>, and must be in the range
+   * <code>0</code> to <code>radix - 1</code>. Finally, the result must be
+   * within <code>MIN_VALUE</code> to <code>MAX_VALUE</code>, inclusive.
+   * Unlike Double.parseDouble, you may not have a leading '+'.
    *
    * @param s the <code>String</code> to convert
    * @param radix the radix (base) to use in the conversion
-   * @return the <code>String</code> argument converted to </code>short</code>.
-   * @exception NumberFormatException thrown if the <code>String</code> 
-   * cannot be parsed as a <code>short</code>.
+   * @return the <code>String</code> argument converted to </code>short</code>
+   * @throws NumberFormatException if <code>s</code> cannot be parsed as a
+   *         <code>short</code>
    */
-  public static short parseShort(String s, int radix) 
-    throws NumberFormatException
+  public static short parseShort(String s, int radix)
   {
-    int i = Integer.parseInt(s, radix);
-    if (i < MIN_VALUE || i > MAX_VALUE)
+    int i = Integer.parseInt(s, radix, false);
+    if ((short) i != i)
       throw new NumberFormatException();
     return (short) i;
   }
 
   /**
+   * Creates a new <code>Short</code> object using the <code>String</code>
+   * and specified radix (base).
+   *
+   * @param s the <code>String</code> to convert
+   * @param radix the radix (base) to convert with
+   * @return the new <code>Short</code>
+   * @throws NumberFormatException if <code>s</code> cannot be parsed as a
+   *         <code>short</code>
+   * @see #parseShort(String, int)
+   */
+  public static Short valueOf(String s, int radix)
+  {
+    return new Short(parseShort(s, radix));
+  }
+
+  /**
+   * Creates a new <code>Short</code> object using the <code>String</code>,
+   * assuming a radix of 10.
+   *
+   * @param s the <code>String</code> to convert
+   * @return the new <code>Short</code>
+   * @throws NumberFormatException if <code>s</code> cannot be parsed as a
+   *         <code>short</code>
+   * @see #Short(String)
+   * @see #parseShort(String)
+   */
+  public static Short valueOf(String s)
+  {
+    return new Short(parseShort(s, 10));
+  }
+
+  /**
    * Convert the specified <code>String</code> into a <code>Short</code>.
-   * The <code>String</code> may represent decimal, hexadecimal, or 
+   * The <code>String</code> may represent decimal, hexadecimal, or
    * octal numbers.
    *
-   * The <code>String</code> argument is interpreted based on the leading
-   * characters.  Depending on what the String begins with, the base will be
-   * interpreted differently:
+   * <p>The extended BNF grammar is as follows:<br>
+   * <pre>
+   * <em>DecodableString</em>:
+   *      ( [ <code>-</code> ] <em>DecimalNumber</em> )
+   *    | ( [ <code>-</code> ] ( <code>0x</code> | <code>0X</code>
+   *              | <code>#</code> ) <em>HexDigit</em> { <em>HexDigit</em> } )
+   *    | ( [ <code>-</code> ] <code>0</code> { <em>OctalDigit</em> } )
+   * <em>DecimalNumber</em>:
+   *        <em>DecimalDigit except '0'</em> { <em>DecimalDigit</em> }
+   * <em>DecimalDigit</em>:
+   *        <em>Character.digit(d, 10) has value 0 to 9</em>
+   * <em>OctalDigit</em>:
+   *        <em>Character.digit(d, 8) has value 0 to 7</em>
+   * <em>DecimalDigit</em>:
+   *        <em>Character.digit(d, 16) has value 0 to 15</em>
+   * </pre>
+   * Finally, the value must be in the range <code>MIN_VALUE</code> to
+   * <code>MAX_VALUE</code>, or an exception is thrown.
    *
-   * <table>
-   * <tr><th>Leading<br>Characters</th><th>Base</th></tr>
-   * <tr><td>#</td><td>16</td></tr>
-   * <tr><td>0x</td><td>16</td></tr>
-   * <tr><td>0X</td><td>16</td></tr>
-   * <tr><td>0</td><td>8</td></tr>
-   * <tr><td>Anything<br>Else</td><td>10</td></tr>
-   * </table>
-   *
-   * @param s the <code>String</code> to interpret.
-   * @return the value of the String as a <code>Short</code>.
-   * @exception NumberFormatException thrown if the <code>String</code> 
-   * cannot be parsed as a <code>short</code>.    
+   * @param s the <code>String</code> to interpret
+   * @return the value of the String as a <code>Short</code>
+   * @throws NumberFormatException if <code>s</code> cannot be parsed as a
+   *         <code>short</code>
+   * @throws NullPointerException if <code>s</code> is null
+   * @see Integer#decode(String)
    */
-  public static Short decode(String s) throws NumberFormatException
+  public static Short decode(String s)
   {
-    int i = (Integer.decode(s)).intValue();
-    if (i < MIN_VALUE || i > MAX_VALUE)
+    int i = Integer.parseInt(s, 10, true);
+    if ((short) i != i)
       throw new NumberFormatException();
     return new Short((short) i);
   }
 
-  /** Return the value of this <code>Short</code> as an <code>short</code>.
-   ** @return the value of this <code>Short</code> as an <code>short</code>.
-   **/
+  /**
+   * Return the value of this <code>Short</code> as a <code>byte</code>.
+   *
+   * @return the byte value
+   */
   public byte byteValue()
   {
     return (byte) value;
   }
 
-  /** Return the value of this <code>Short</code> as an <code>short</code>.
-   ** @return the value of this <code>Short</code> as an <code>short</code>.
-   **/
+  /**
+   * Return the value of this <code>Short</code>.
+   *
+   * @return the short value
+   */
   public short shortValue()
   {
     return value;
   }
 
-  /** Return the value of this <code>Short</code> as an <code>int</code>.
-   ** @return the value of this <code>Short</code> as an <code>int</code>.
-   **/
+  /**
+   * Return the value of this <code>Short</code> as an <code>int</code>.
+   *
+   * @return the int value
+   */
   public int intValue()
   {
     return value;
   }
 
-  /** Return the value of this <code>Short</code> as a <code>long</code>.
-   ** @return the value of this <code>Short</code> as a <code>long</code>.
-   **/
+  /**
+   * Return the value of this <code>Short</code> as a <code>long</code>.
+   *
+   * @return the long value
+   */
   public long longValue()
   {
     return value;
   }
 
-  /** Return the value of this <code>Short</code> as a <code>float</code>.
-   ** @return the value of this <code>Short</code> as a <code>float</code>.
-   **/
+  /**
+   * Return the value of this <code>Short</code> as a <code>float</code>.
+   *
+   * @return the float value
+   */
   public float floatValue()
   {
     return value;
   }
 
-  /** Return the value of this <code>Short</code> as a <code>double</code>.
-   ** @return the value of this <code>Short</code> as a <code>double</code>.
-   **/
+  /**
+   * Return the value of this <code>Short</code> as a <code>double</code>.
+   *
+   * @return the double value
+   */
   public double doubleValue()
   {
     return value;
   }
 
   /**
-   * Compare two Shorts numerically by comparing their
-   * <code>short</code> values.
-   * @return a positive value if this <code>Short</code> is greater
-   * in value than the argument <code>Short</code>; a negative value
-   * if this <code>Short</code> is smaller in value than the argument
-   * <code>Short</code>; and <code>0</code>, zero, if this
-   * <code>Short</code> is equal in value to the argument
-   * <code>Short</code>.  
+   * Converts the <code>Short</code> value to a <code>String</code> and
+   * assumes a radix of 10.
    *
+   * @return the <code>String</code> representation of this <code>Short</code>
+   */
+  public String toString()
+  {
+    return String.valueOf(value);
+  }
+
+  /**
+   * Return a hashcode representing this Object. <code>Short</code>'s hash
+   * code is simply its value.
+   *
+   * @return this Object's hash code
+   */
+  public int hashCode()
+  {
+    return value;
+  }
+
+  /**
+   * Returns <code>true</code> if <code>obj</code> is an instance of
+   * <code>Short</code> and represents the same short value.
+   *
+   * @param obj the object to compare
+   * @return whether these Objects are semantically equal
+   */
+  public boolean equals(Object obj)
+  {
+    return obj instanceof Short && value == ((Short) obj).value;
+  }
+
+  /**
+   * Compare two Shorts numerically by comparing their <code>short</code>
+   * values. The result is positive if the first is greater, negative if the
+   * second is greater, and 0 if the two are equal.
+   *
+   * @param s the Short to compare
+   * @return the comparison
    * @since 1.2
    */
   public int compareTo(Short s)
   {
     return value - s.value;
   }
-    
+
   /**
-   * Behaves like <code>compareTo(java.lang.Short)</code> unless the Object
-   * is not a <code>Short</code>.  Then it throws a 
-   * <code>ClassCastException</code>.
-   * @exception ClassCastException if the argument is not a
-   * <code>Short</code>.
+   * Behaves like <code>compareTo(Short)</code> unless the Object
+   * is not a <code>Short</code>.
    *
+   * @param o the object to compare
+   * @return the comparison
+   * @throws ClassCastException if the argument is not a <code>Short</code>
+   * @see #compareTo(Short)
+   * @see Comparable
    * @since 1.2
    */
   public int compareTo(Object o)

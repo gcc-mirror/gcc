@@ -1,5 +1,5 @@
 /* ConnectException.java -- An exception occurred while connecting to a host
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,50 +39,37 @@ exception statement from your version. */
 package java.net;
 
 /**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Believed complete and correct.
+ * This exception indicates that an error occurred while attempting to
+ * connect to a remote host.  Often this indicates that the remote host
+ * refused the connection (ie, is not listening on the target socket).
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @since 1.1
+ * @status updated to 1.4
  */
-
-/**
-  * This exception indicates that an error occurred while attempting to
-  * connect to a remote host.  Often this indicates that the remote host
-  * refused the connection (ie, is not listening on the target socket).
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
-  * @date March 5, 1999.
-  */
 public class ConnectException extends SocketException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 3831404271622369215L;
 
-/*
- * Constructors
- */
+  /**
+   * Create a new instance without a descriptive error message.
+   */
+  public ConnectException()
+  {
+  }
 
-/**
-  * Initializes a new instance of <code>ConnectException</code> without
-  * a descriptive error message.
-  */
-public
-ConnectException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>ConnectException</code> with
-  * a descriptive error message, such as the text from strerror(3).
-  *
-  * @param message A message describing the error that occurred.
-  */
-public
-ConnectException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create a new instance with a descriptive error message, such as the
+   * text from strerror(3).
+   *
+   * @param message a message describing the error that occurred
+   */
+  public ConnectException(String message)
+  {
+    super(message);
+  }
 } // class ConnectException
-
