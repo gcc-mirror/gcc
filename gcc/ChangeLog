@@ -1,3 +1,8 @@
+Sat Feb 26 09:39:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): Use .set at
+	to tell assembler it is permitted to expand large constants.
+
 2000-02-25  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* protoize.c: (AUX_INFO_SUFFIX): New macro.
