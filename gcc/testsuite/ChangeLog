@@ -1,3 +1,7 @@
+Fri Aug 27 01:24:16 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/990827-1.c: New test.
+
 1999-08-26  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/noncompile/19990826-4.f: New test.
