@@ -87,6 +87,12 @@ proc check_weak_available { } {
 	return 1
     }
 
+    # HP-UX 10.X doesn't support it
+
+    if { [regexp "hppa.*hpux10" $target_triplet] } {
+	return 0
+    }
+
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
     # other linkers, so we should try it
 
@@ -97,6 +103,7 @@ proc check_weak_available { } {
         ecoff    { return 1 }
         a.out    { return 1 }
 	mach-o	 { return 1 }
+	som	 { return 1 }
         unknown  { return -1 }
         default  { return 0 }
     }
