@@ -1,3 +1,9 @@
+2000-02-29  Philip Blundell  <pb@futuretv.com>
+
+	* config/arm/conix-elf.h: New file.
+	* configure.in (arm*-*-conix*): New configuration.
+	* configure: Regenerate.
+
 2000-02-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (gen_block_die): Output abstract blocks even if they
