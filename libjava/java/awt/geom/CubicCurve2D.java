@@ -1,5 +1,5 @@
 /* CubicCurve2D.java -- represents a parameterized cubic curve in 2-D space
-   Copyright (C) 2002 Free Software Foundation
+   Copyright (C) 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -42,31 +42,168 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.NoSuchElementException;
 
+
 /**
- * STUBS ONLY
- * XXX Implement and document.
+ * A two-dimensional curve that is parameterized with a cubic
+ * function.
+ *
+ * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+ * alt="A drawing of a CubicCurve2D" />
+ *
+ * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Graydon Hoare (graydon@redhat.com)
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ *
+ * @since 1.2
  */
-public abstract class CubicCurve2D implements Shape, Cloneable
+public abstract class CubicCurve2D
+  implements Shape, Cloneable
 {
+  /**
+   * Constructs a new CubicCurve2D. Typical users will want to
+   * construct instances of a subclass, such as {@link
+   * CubicCurve2D.Float} or {@link CubicCurve2D.Double}.
+   */
   protected CubicCurve2D()
   {
   }
 
+
+  /**
+   * Returns the <i>x</i> coordinate of the curve&#x2019;s start
+   * point.
+   */
   public abstract double getX1();
+
+
+  /**
+   * Returns the <i>y</i> coordinate of the curve&#x2019;s start
+   * point.
+   */
   public abstract double getY1();
+
+
+  /**
+   * Returns the curve&#x2019;s start point.
+   */
   public abstract Point2D getP1();
+
+
+  /**
+   * Returns the <i>x</i> coordinate of the curve&#x2019;s first
+   * control point.
+   */
   public abstract double getCtrlX1();
+
+
+  /**
+   * Returns the <i>y</i> coordinate of the curve&#x2019;s first
+   * control point.
+   */
   public abstract double getCtrlY1();
+
+
+  /**
+   * Returns the curve&#x2019;s first control point.
+   */
   public abstract Point2D getCtrlP1();
+
+
+  /**
+   * Returns the <i>x</i> coordinate of the curve&#x2019;s second
+   * control point.
+   */
   public abstract double getCtrlX2();
+
+
+  /**
+   * Returns the <i>y</i> coordinate of the curve&#x2019;s second
+   * control point.
+   */
   public abstract double getCtrlY2();
+
+
+  /**
+   * Returns the curve&#x2019;s second control point.
+   */
   public abstract Point2D getCtrlP2();
+
+
+  /**
+   * Returns the <i>x</i> coordinate of the curve&#x2019;s end
+   * point.
+   */
   public abstract double getX2();
+
+
+  /**
+   * Returns the <i>y</i> coordinate of the curve&#x2019;s end
+   * point.
+   */
   public abstract double getY2();
+
+
+  /**
+   * Returns the curve&#x2019;s end point.
+   */
   public abstract Point2D getP2();
 
+
+  /**
+   * Changes the curve geometry, separately specifying each coordinate
+   * value.
+   *
+   * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+   * alt="A drawing of a CubicCurve2D" />
+   *
+   * @param x1 the <i>x</i> coordinate of the curve&#x2019;s new start
+   * point.
+   *
+   * @param y1 the <i>y</i> coordinate of the curve&#x2019;s new start
+   * point.
+   *
+   * @param cx1 the <i>x</i> coordinate of the curve&#x2019;s new
+   * first control point.
+   *
+   * @param cy1 the <i>y</i> coordinate of the curve&#x2019;s new
+   * first control point.
+   *
+   * @param cx2 the <i>x</i> coordinate of the curve&#x2019;s new
+   * second control point.
+   *
+   * @param cy2 the <i>y</i> coordinate of the curve&#x2019;s new
+   * second control point.
+   *
+   * @param x2 the <i>x</i> coordinate of the curve&#x2019;s new end
+   * point.
+   *
+   * @param y2 the <i>y</i> coordinate of the curve&#x2019;s new end
+   * point.
+   */
   public abstract void setCurve(double x1, double y1, double cx1, double cy1,
                                 double cx2, double cy2, double x2, double y2);
+
+
+  /**
+   * Changes the curve geometry, specifying coordinate values in an
+   * array.
+   *
+   * @param coords an array containing the new coordinate values.  The
+   * <i>x</i> coordinate of the new start point is located at
+   * <code>coords[offset]</code>, its <i>y</i> coordinate at
+   * <code>coords[offset + 1]</code>.  The <i>x</i> coordinate of the
+   * new first control point is located at <code>coords[offset +
+   * 2]</code>, its <i>y</i> coordinate at <code>coords[offset +
+   * 3]</code>.  The <i>x</i> coordinate of the new second control
+   * point is located at <code>coords[offset + 4]</code>, its <i>y</i>
+   * coordinate at <code>coords[offset + 5]</code>.  The <i>x</i>
+   * coordinate of the new end point is located at <code>coords[offset
+   * + 6]</code>, its <i>y</i> coordinate at <code>coords[offset +
+   * 7]</code>.
+   *
+   * @param offset the offset of the first coordinate value in
+   * <code>coords</code>.
+   */
   public void setCurve(double[] coords, int offset)
   {
     setCurve(coords[offset++], coords[offset++],
@@ -74,11 +211,51 @@ public abstract class CubicCurve2D implements Shape, Cloneable
              coords[offset++], coords[offset++],
              coords[offset++], coords[offset++]);
   }
+
+
+  /**
+   * Changes the curve geometry, specifying coordinate values in
+   * separate Point objects.
+   *
+   * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+   * alt="A drawing of a CubicCurve2D" />
+   *
+   * <p>The curve does not keep any reference to the passed point
+   * objects. Therefore, a later change to <code>p1</code>,
+   * <code>c1</code>, <code>c2</code> or <code>p2</code> will not
+   * affect the curve geometry.
+   *
+   * @param p1 the new start point.
+   * @param c1 the new first control point.
+   * @param c2 the new second control point.
+   * @param p2 the new end point.
+   */
   public void setCurve(Point2D p1, Point2D c1, Point2D c2, Point2D p2)
   {
     setCurve(p1.getX(), p1.getY(), c1.getX(), c1.getY(),
              c2.getX(), c2.getY(), p2.getX(), p2.getY());
   }
+
+
+  /**
+   * Changes the curve geometry, specifying coordinate values in an
+   * array of Point objects.
+   *
+   * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+   * alt="A drawing of a CubicCurve2D" />
+   *
+   * <p>The curve does not keep references to the passed point
+   * objects. Therefore, a later change to the <code>pts</code> array
+   * or any of its elements will not affect the curve geometry.
+   *
+   * @param pts an array containing the points. The new start point
+   * is located at <code>pts[offset]</code>, the new first control
+   * point at <code>pts[offset + 1]</code>, the new second control
+   * point at <code>pts[offset + 2]</code>, and the new end point
+   * at <code>pts[offset + 3]</code>.
+   *
+   * @param offset the offset of the start point in <code>pts</code>.
+   */
   public void setCurve(Point2D[] pts, int offset)
   {
     setCurve(pts[offset].getX(), pts[offset++].getY(),
@@ -86,24 +263,115 @@ public abstract class CubicCurve2D implements Shape, Cloneable
              pts[offset].getX(), pts[offset++].getY(),
              pts[offset].getX(), pts[offset++].getY());
   }
+  
+
+  /**
+   * Changes the curve geometry to that of another curve.
+   *
+   * @param c the curve whose coordinates will be copied.
+   */
   public void setCurve(CubicCurve2D c)
   {
     setCurve(c.getX1(), c.getY1(), c.getCtrlX1(), c.getCtrlY1(),
              c.getCtrlX2(), c.getCtrlY2(), c.getX2(), c.getY2());
   }
+
+
+  /**
+   * Calculates the squared flatness of a cubic curve, directly
+   * specifying each coordinate value. The flatness is the maximal
+   * distance of a control point to the line between start and end
+   * point.
+   *
+   * <p><img src="doc-files/CubicCurve2D-4.png" width="350" height="180"
+   * alt="A drawing that illustrates the flatness" />
+   *
+   * <p>In the above drawing, the straight line connecting start point
+   * P1 and end point P2 is depicted in gray.  In comparison to C1,
+   * control point C2 is father away from the gray line. Therefore,
+   * the result will be the square of the distance between C2 and the
+   * gray line, i.e. the squared length of the red line.
+   *
+   * @param x1 the <i>x</i> coordinate of the start point P1.
+   * @param y1 the <i>y</i> coordinate of the start point P1.
+   * @param cx1 the <i>x</i> coordinate of the first control point C1.
+   * @param cy1 the <i>y</i> coordinate of the first control point C1.
+   * @param cx2 the <i>x</i> coordinate of the second control point C2.
+   * @param cy2 the <i>y</i> coordinate of the second control point C2.
+   * @param x2 the <i>x</i> coordinate of the end point P2.
+   * @param y2 the <i>y</i> coordinate of the end point P2.
+   */
   public static double getFlatnessSq(double x1, double y1, double cx1,
                                      double cy1, double cx2, double cy2,
                                      double x2, double y2)
   {
-    // XXX Implement.
-    throw new Error("not implemented");
+    return Math.max(Line2D.ptSegDistSq(x1, y1, x2, y2, cx1, cy1),
+                    Line2D.ptSegDistSq(x1, y1, x2, y2, cx2, cy2));
   }
+
+
+  /**
+   * Calculates the flatness of a cubic curve, directly specifying
+   * each coordinate value. The flatness is the maximal distance of a
+   * control point to the line between start and end point.
+   *
+   * <p><img src="doc-files/CubicCurve2D-4.png" width="350" height="180"
+   * alt="A drawing that illustrates the flatness" />
+   *
+   * <p>In the above drawing, the straight line connecting start point
+   * P1 and end point P2 is depicted in gray.  In comparison to C1,
+   * control point C2 is father away from the gray line. Therefore,
+   * the result will be the distance between C2 and the gray line,
+   * i.e. the length of the red line.
+   *
+   * @param x1 the <i>x</i> coordinate of the start point P1.
+   * @param y1 the <i>y</i> coordinate of the start point P1.
+   * @param cx1 the <i>x</i> coordinate of the first control point C1.
+   * @param cy1 the <i>y</i> coordinate of the first control point C1.
+   * @param cx2 the <i>x</i> coordinate of the second control point C2.
+   * @param cy2 the <i>y</i> coordinate of the second control point C2.
+   * @param x2 the <i>x</i> coordinate of the end point P2.
+   * @param y2 the <i>y</i> coordinate of the end point P2.
+   */
   public static double getFlatness(double x1, double y1, double cx1,
                                    double cy1, double cx2, double cy2,
                                    double x2, double y2)
   {
     return Math.sqrt(getFlatnessSq(x1, y1, cx1, cy1, cx2, cy2, x2, y2));
   }
+
+
+  /**
+   * Calculates the squared flatness of a cubic curve, specifying the
+   * coordinate values in an array. The flatness is the maximal
+   * distance of a control point to the line between start and end
+   * point.
+   *
+   * <p><img src="doc-files/CubicCurve2D-4.png" width="350" height="180"
+   * alt="A drawing that illustrates the flatness" />
+   *
+   * <p>In the above drawing, the straight line connecting start point
+   * P1 and end point P2 is depicted in gray.  In comparison to C1,
+   * control point C2 is father away from the gray line. Therefore,
+   * the result will be the square of the distance between C2 and the
+   * gray line, i.e. the squared length of the red line.
+   *
+   * @param coords an array containing the coordinate values.  The
+   * <i>x</i> coordinate of the start point P1 is located at
+   * <code>coords[offset]</code>, its <i>y</i> coordinate at
+   * <code>coords[offset + 1]</code>.  The <i>x</i> coordinate of the
+   * first control point C1 is located at <code>coords[offset +
+   * 2]</code>, its <i>y</i> coordinate at <code>coords[offset +
+   * 3]</code>. The <i>x</i> coordinate of the second control point C2
+   * is located at <code>coords[offset + 4]</code>, its <i>y</i>
+   * coordinate at <code>coords[offset + 5]</code>. The <i>x</i>
+   * coordinate of the end point P2 is located at <code>coords[offset
+   * + 6]</code>, its <i>y</i> coordinate at <code>coords[offset +
+   * 7]</code>.
+   *
+   * @param offset the offset of the first coordinate value in
+   * <code>coords</code>.
+   */
   public static double getFlatnessSq(double[] coords, int offset)
   {
     return getFlatnessSq(coords[offset++], coords[offset++],
@@ -111,6 +379,39 @@ public abstract class CubicCurve2D implements Shape, Cloneable
                          coords[offset++], coords[offset++],
                          coords[offset++], coords[offset++]);
   }
+
+
+  /**
+   * Calculates the flatness of a cubic curve, specifying the
+   * coordinate values in an array. The flatness is the maximal
+   * distance of a control point to the line between start and end
+   * point.
+   *
+   * <p><img src="doc-files/CubicCurve2D-4.png" width="350" height="180"
+   * alt="A drawing that illustrates the flatness" />
+   *
+   * <p>In the above drawing, the straight line connecting start point
+   * P1 and end point P2 is depicted in gray.  In comparison to C1,
+   * control point C2 is father away from the gray line. Therefore,
+   * the result will be the distance between C2 and the gray line,
+   * i.e. the length of the red line.
+   *
+   * @param coords an array containing the coordinate values.  The
+   * <i>x</i> coordinate of the start point P1 is located at
+   * <code>coords[offset]</code>, its <i>y</i> coordinate at
+   * <code>coords[offset + 1]</code>.  The <i>x</i> coordinate of the
+   * first control point C1 is located at <code>coords[offset +
+   * 2]</code>, its <i>y</i> coordinate at <code>coords[offset +
+   * 3]</code>. The <i>x</i> coordinate of the second control point C2
+   * is located at <code>coords[offset + 4]</code>, its <i>y</i>
+   * coordinate at <code>coords[offset + 5]</code>. The <i>x</i>
+   * coordinate of the end point P2 is located at <code>coords[offset
+   * + 6]</code>, its <i>y</i> coordinate at <code>coords[offset +
+   * 7]</code>.
+   *
+   * @param offset the offset of the first coordinate value in
+   * <code>coords</code>.
+   */
   public static double getFlatness(double[] coords, int offset)
   {
     return Math.sqrt(getFlatnessSq(coords[offset++], coords[offset++],
@@ -118,11 +419,43 @@ public abstract class CubicCurve2D implements Shape, Cloneable
                                    coords[offset++], coords[offset++],
                                    coords[offset++], coords[offset++]));
   }
+
+
+  /**
+   * Calculates the squared flatness of this curve.  The flatness is
+   * the maximal distance of a control point to the line between start
+   * and end point.
+   *
+   * <p><img src="doc-files/CubicCurve2D-4.png" width="350" height="180"
+   * alt="A drawing that illustrates the flatness" />
+   *
+   * <p>In the above drawing, the straight line connecting start point
+   * P1 and end point P2 is depicted in gray.  In comparison to C1,
+   * control point C2 is father away from the gray line. Therefore,
+   * the result will be the square of the distance between C2 and the
+   * gray line, i.e. the squared length of the red line.
+   */
   public double getFlatnessSq()
   {
     return getFlatnessSq(getX1(), getY1(), getCtrlX1(), getCtrlY1(),
                          getCtrlX2(), getCtrlY2(), getX2(), getY2());
   }
+
+
+  /**
+   * Calculates the flatness of this curve.  The flatness is the
+   * maximal distance of a control point to the line between start and
+   * end point.
+   *
+   * <p><img src="doc-files/CubicCurve2D-4.png" width="350" height="180"
+   * alt="A drawing that illustrates the flatness" />
+   *
+   * <p>In the above drawing, the straight line connecting start point
+   * P1 and end point P2 is depicted in gray.  In comparison to C1,
+   * control point C2 is father away from the gray line. Therefore,
+   * the result will be the distance between C2 and the gray line,
+   * i.e. the length of the red line.
+   */
   public double getFlatness()
   {
     return Math.sqrt(getFlatnessSq(getX1(), getY1(), getCtrlX1(),
@@ -130,75 +463,266 @@ public abstract class CubicCurve2D implements Shape, Cloneable
                                    getX2(), getY2()));
   }
 
-  public void subdivide(CubicCurve2D l, CubicCurve2D r)
+
+  /**
+   * Subdivides this curve into two halves.
+   *
+   * <p><img src="doc-files/CubicCurve2D-3.png" width="700"
+   * height="180" alt="A drawing that illustrates the effects of
+   * subdividing a CubicCurve2D" />
+   *
+   * @param left a curve whose geometry will be set to the left half
+   * of this curve, or <code>null</code> if the caller is not
+   * interested in the left half.
+   *
+   * @param right a curve whose geometry will be set to the right half
+   * of this curve, or <code>null</code> if the caller is not
+   * interested in the right half.
+   */
+  public void subdivide(CubicCurve2D left, CubicCurve2D right)
   {
-    if (l == null)
-      l = new CubicCurve2D.Double();
-    if (r == null)
-      r = new CubicCurve2D.Double();
     // Use empty slots at end to share single array.
     double[] d = new double[] { getX1(), getY1(), getCtrlX1(), getCtrlY1(),
                                 getCtrlX2(), getCtrlY2(), getX2(), getY2(),
                                 0, 0, 0, 0, 0, 0 };
     subdivide(d, 0, d, 0, d, 6);
-    l.setCurve(d, 0);
-    r.setCurve(d, 6);
+    if (left != null)
+      left.setCurve(d, 0);
+    if (right != null)
+      right.setCurve(d, 6);
   }
+
+
+  /**
+   * Subdivides a cubic curve into two halves.
+   *
+   * <p><img src="doc-files/CubicCurve2D-3.png" width="700"
+   * height="180" alt="A drawing that illustrates the effects of
+   * subdividing a CubicCurve2D" />
+   *
+   * @param src the curve to be subdivided.
+   *
+   * @param left a curve whose geometry will be set to the left half
+   * of <code>src</code>, or <code>null</code> if the caller is not
+   * interested in the left half.
+   *
+   * @param right a curve whose geometry will be set to the right half
+   * of <code>src</code>, or <code>null</code> if the caller is not
+   * interested in the right half.
+   */
   public static void subdivide(CubicCurve2D src,
-                               CubicCurve2D l, CubicCurve2D r)
+                               CubicCurve2D left, CubicCurve2D right)
   {
-    src.subdivide(l, r);
+    src.subdivide(left, right);
   }
+
+
+  /**
+   * Subdivides a cubic curve into two halves, passing all coordinates
+   * in an array.
+   *
+   * <p><img src="doc-files/CubicCurve2D-3.png" width="700"
+   * height="180" alt="A drawing that illustrates the effects of
+   * subdividing a CubicCurve2D" />
+   *
+   * <p>The left end point and the right start point will always be
+   * identical. Memory-concious programmers thus may want to pass the
+   * same array for both <code>left</code> and <code>right</code>, and
+   * set <code>rightOff</code> to <code>leftOff + 6</code>.
+   *
+   * @param src an array containing the coordinates of the curve to be
+   * subdivided.  The <i>x</i> coordinate of the start point P1 is
+   * located at <code>src[srcOff]</code>, its <i>y</i> at
+   * <code>src[srcOff + 1]</code>.  The <i>x</i> coordinate of the
+   * first control point C1 is located at <code>src[srcOff +
+   * 2]</code>, its <i>y</i> at <code>src[srcOff + 3]</code>.  The
+   * <i>x</i> coordinate of the second control point C2 is located at
+   * <code>src[srcOff + 4]</code>, its <i>y</i> at <code>src[srcOff +
+   * 5]</code>. The <i>x</i> coordinate of the end point is located at
+   * <code>src[srcOff + 6]</code>, its <i>y</i> at <code>src[srcOff +
+   * 7]</code>.
+   *
+   * @param srcOff an offset into <code>src</code>, specifying
+   * the index of the start point&#x2019;s <i>x</i> coordinate.
+   *
+   * @param left an array that will receive the coordinates of the
+   * left half of <code>src</code>. It is acceptable to pass
+   * <code>src</code>. A caller who is not interested in the left half
+   * can pass <code>null</code>.
+   *
+   * @param leftOff an offset into <code>left</code>, specifying the
+   * index where the start point&#x2019;s <i>x</i> coordinate will be
+   * stored.
+   *
+   * @param right an array that will receive the coordinates of the
+   * right half of <code>src</code>. It is acceptable to pass
+   * <code>src</code> or <code>left</code>. A caller who is not
+   * interested in the right half can pass <code>null</code>.
+   *
+   * @param rightOff an offset into <code>right</code>, specifying the
+   * index where the start point&#x2019;s <i>x</i> coordinate will be
+   * stored.
+   */
   public static void subdivide(double[] src, int srcOff,
                                double[] left, int leftOff,
                                double[] right, int rightOff)
   {
-    // XXX Implement.
-    throw new Error("not implemented");
+    // To understand this code, please have a look at the image
+    // "CubicCurve2D-3.png" in the sub-directory "doc-files".
+    double src_C1_x, src_C1_y, src_C2_x, src_C2_y;
+    double left_P1_x, left_P1_y;
+    double left_C1_x, left_C1_y, left_C2_x, left_C2_y;
+    double right_C1_x, right_C1_y, right_C2_x, right_C2_y;
+    double right_P2_x, right_P2_y;
+    double Mid_x, Mid_y; // Mid = left.P2 = right.P1
+
+    left_P1_x = src[srcOff];
+    left_P1_y = src[srcOff + 1];
+    src_C1_x = src[srcOff + 2];
+    src_C1_y = src[srcOff + 3];
+    src_C2_x = src[srcOff + 4];
+    src_C2_y = src[srcOff + 5];
+    right_P2_x = src[srcOff + 6];
+    right_P2_y = src[srcOff + 7];
+
+    left_C1_x = (left_P1_x + src_C1_x) / 2;
+    left_C1_y = (left_P1_y + src_C1_y) / 2;
+    right_C2_x = (right_P2_x + src_C2_x) / 2;
+    right_C2_y = (right_P2_y + src_C2_y) / 2;
+    Mid_x = (src_C1_x + src_C2_x) / 2;
+    Mid_y = (src_C1_y + src_C2_y) / 2;
+    left_C2_x = (left_C1_x + Mid_x) / 2;
+    left_C2_y = (left_C1_y + Mid_y) / 2;
+    right_C1_x = (Mid_x + right_C2_x) / 2;
+    right_C1_y = (Mid_y + right_C2_y) / 2;
+    Mid_x = (left_C2_x + right_C1_x) / 2;
+    Mid_y = (left_C2_y + right_C1_y) / 2;
+
+    if (left != null)
+    {
+      left[leftOff] = left_P1_x;
+      left[leftOff + 1] = left_P1_y;
+      left[leftOff + 2] = left_C1_x;
+      left[leftOff + 3] = left_C1_y;
+      left[leftOff + 4] = left_C2_x;
+      left[leftOff + 5] = left_C2_y;
+      left[leftOff + 6] = Mid_x;
+      left[leftOff + 7] = Mid_y;
+    }
+
+    if (right != null)
+    {
+      right[rightOff] = Mid_x;
+      right[rightOff + 1] = Mid_y;
+      right[rightOff + 2] = right_C1_x;
+      right[rightOff + 3] = right_C1_y;
+      right[rightOff + 4] = right_C2_x;
+      right[rightOff + 5] = right_C2_y;
+      right[rightOff + 6] = right_P2_x;
+      right[rightOff + 7] = right_P2_y;
+    }
   }
+
+
   public static int solveCubic(double[] eqn)
   {
     return solveCubic(eqn, eqn);
   }
+
+
   public static int solveCubic(double[] eqn, double[] res)
   {
-    if (eqn[3] == 0)
+    double a, b, c, q, r, Q, R;
+    
+    double c3 = eqn[3];
+    if (c3 == 0)
       return QuadCurve2D.solveQuadratic(eqn, res);
-    // XXX Implement.
-    throw new Error("not implemented");
+
+    // Divide the equation by the cubic coefficient.
+    c = eqn[0] / c3;
+    b = eqn[1] / c3;
+    a = eqn[2] / c3;
+
+    // We now need to solve x^3 + ax^2 + bx + c = 0.
+    throw new Error("not implemented"); // FIXME
   }
 
+
+  /**
+   * Determines whether a position lies inside the area that is bounded
+   * by the curve and the straight line connecting its end points.
+   *
+   * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
+   * alt="A drawing of the area spanned by the curve" />
+   *
+   * <p>The above drawing illustrates in which area points are
+   * considered &#x201c;contained&#x201d; in a CubicCurve2D.
+   */
   public boolean contains(double x, double y)
   {
     // XXX Implement.
     throw new Error("not implemented");
   }
+
+
+  /**
+   * Determines whether a point lies inside the area that is bounded
+   * by the curve and the straight line connecting its end points.
+   *
+   * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
+   * alt="A drawing of the area spanned by the curve" />
+   *
+   * <p>The above drawing illustrates in which area points are
+   * considered &#x201c;contained&#x201d; in a CubicCurve2D.
+   */
   public boolean contains(Point2D p)
   {
     return contains(p.getX(), p.getY());
   }
+
+
   public boolean intersects(double x, double y, double w, double h)
   {
     // XXX Implement.
     throw new Error("not implemented");
   }
+
+
   public boolean intersects(Rectangle2D r)
   {
     return intersects(r.getX(), r.getY(), r.getWidth(), r.getHeight());
   }
+
+
   public boolean contains(double x, double y, double w, double h)
   {
     // XXX Implement.
     throw new Error("not implemented");
   }
+
+
   public boolean contains(Rectangle2D r)
   {
     return contains(r.getX(), r.getY(), r.getWidth(), r.getHeight());
   }
+
+
+  /**
+   * Determines the smallest rectangle that encloses the
+   * curve&#x2019;s start, end and control points. As the illustration
+   * below shows, the invisible control points may cause the bounds to
+   * be much larger than the area that is actually covered by the
+   * curve.
+   *
+   * <p><img src="doc-files/CubicCurve2D-2.png" width="350" height="180"
+   * alt="An illustration of the bounds of a CubicCurve2D" />
+   */
   public Rectangle getBounds()
   {
     return getBounds2D().getBounds();
   }
+
+
   public PathIterator getPathIterator(final AffineTransform at)
   {
     return new PathIterator()
@@ -276,47 +800,135 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       }
     };
   }
+
+
   public PathIterator getPathIterator(AffineTransform at, double flatness)
   {
     return new FlatteningPathIterator(getPathIterator(at), flatness);
   }
 
+
   /**
-   * Create a new curve of the same run-time type with the same contents as
-   * this one.
+   * Create a new curve with the same contents as this one.
    *
-   * @return the clone
+   * @return the clone.
    */
   public Object clone()
   {
     try
-      {
-        return super.clone();
-      }
+    {
+      return super.clone();
+    }
     catch (CloneNotSupportedException e)
-      {
-        throw (Error) new InternalError().initCause(e); // Impossible
-      }
+    {
+      throw (Error) new InternalError().initCause(e); // Impossible
+    }
   }
 
+
   /**
-   * STUBS ONLY
+   * A two-dimensional curve that is parameterized with a cubic
+   * function and stores coordinate values in double-precision
+   * floating-point format.
+   *
+   * @see CubicCurve2D.Float
+   *
+   * @author Eric Blake (ebb9@email.byu.edu)
+   * @author Sascha Brawer (brawer@dandelis.ch)
    */
-  public static class Double extends CubicCurve2D
+  public static class Double
+    extends CubicCurve2D
   {
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s start point.
+     */
     public double x1;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s start point.
+     */
     public double y1;
+
+
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s first control point.
+     */
     public double ctrlx1;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s first control point.
+     */
     public double ctrly1;
+
+
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s second control point.
+     */
     public double ctrlx2;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s second control point.
+     */
     public double ctrly2;
+
+
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s end point.
+     */
     public double x2;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s end point.
+     */
     public double y2;
 
+
+    /**
+     * Constructs a new CubicCurve2D that stores its coordinate values
+     * in double-precision floating-point format. All points are
+     * initially at position (0, 0).
+     */
     public Double()
     {
     }
 
+
+    /**
+     * Constructs a new CubicCurve2D that stores its coordinate values
+     * in double-precision floating-point format, specifying the
+     * initial position of each point.
+     *
+     * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+     * alt="A drawing of a CubicCurve2D" />
+     *
+     * @param x1 the <i>x</i> coordinate of the curve&#x2019;s start
+     * point.
+     *
+     * @param y1 the <i>y</i> coordinate of the curve&#x2019;s start
+     * point.
+     *
+     * @param cx1 the <i>x</i> coordinate of the curve&#x2019;s first
+     * control point.
+     *
+     * @param cy1 the <i>y</i> coordinate of the curve&#x2019;s first
+     * control point.
+     *
+     * @param cx2 the <i>x</i> coordinate of the curve&#x2019;s second
+     * control point.
+     *
+     * @param cy2 the <i>y</i> coordinate of the curve&#x2019;s second
+     * control point.
+     *
+     * @param x2 the <i>x</i> coordinate of the curve&#x2019;s end
+     * point.
+     *
+     * @param y2 the <i>y</i> coordinate of the curve&#x2019;s end
+     * point.
+     */
     public Double(double x1, double y1, double cx1, double cy1,
                   double cx2, double cy2, double x2, double y2)
     {
@@ -330,58 +942,154 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       this.y2 = y2;
     }
 
+
+    /**
+     * Returns the <i>x</i> coordinate of the curve&#x2019;s start
+     * point.
+     */
     public double getX1()
     {
       return x1;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s start
+     * point.
+     */
     public double getY1()
     {
       return y1;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s start point.
+     */
     public Point2D getP1()
     {
       return new Point2D.Double(x1, y1);
     }
 
+
+    /**
+     * Returns the <i>x</i> coordinate of the curve&#x2019;s first
+     * control point.
+     */
     public double getCtrlX1()
     {
       return ctrlx1;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s first
+     * control point.
+     */
     public double getCtrlY1()
     {
       return ctrly1;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s first control point.
+     */
     public Point2D getCtrlP1()
     {
       return new Point2D.Double(ctrlx1, ctrly1);
     }
 
+
+    /**
+     * Returns the <i>x</i> coordinate of the curve&#x2019;s second
+     * control point.
+     */
     public double getCtrlX2()
     {
       return ctrlx2;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s second
+     * control point.
+     */
     public double getCtrlY2()
     {
       return ctrly2;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s second control point.
+     */
     public Point2D getCtrlP2()
     {
       return new Point2D.Double(ctrlx2, ctrly2);
     }
 
+
+    /**
+     * Returns the <i>x</i> coordinate of the curve&#x2019;s end
+     * point.
+     */
     public double getX2()
     {
       return x2;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s end
+     * point.
+     */
     public double getY2()
     {
       return y2;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s end point.
+     */
     public Point2D getP2()
     {
       return new Point2D.Double(x2, y2);
     }
 
+
+    /**
+     * Changes the curve geometry, separately specifying each coordinate
+     * value.
+     *
+     * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+     * alt="A drawing of a CubicCurve2D" />
+     *
+     * @param x1 the <i>x</i> coordinate of the curve&#x2019;s new start
+     * point.
+     *
+     * @param y1 the <i>y</i> coordinate of the curve&#x2019;s new start
+     * point.
+     *
+     * @param cx1 the <i>x</i> coordinate of the curve&#x2019;s new
+     * first control point.
+     *
+     * @param cy1 the <i>y</i> coordinate of the curve&#x2019;s new
+     * first control point.
+     *
+     * @param cx2 the <i>x</i> coordinate of the curve&#x2019;s new
+     * second control point.
+     *
+     * @param cy2 the <i>y</i> coordinate of the curve&#x2019;s new
+     * second control point.
+     *
+     * @param x2 the <i>x</i> coordinate of the curve&#x2019;s new end
+     * point.
+     *
+     * @param y2 the <i>y</i> coordinate of the curve&#x2019;s new end
+     * point.
+     */
     public void setCurve(double x1, double y1, double cx1, double cy1,
                          double cx2, double cy2, double x2, double y2)
     {
@@ -394,6 +1102,18 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       this.x2 = x2;
       this.y2 = y2;
     }
+
+
+    /**
+     * Determines the smallest rectangle that encloses the
+     * curve&#x2019;s start, end and control points. As the
+     * illustration below shows, the invisible control points may cause
+     * the bounds to be much larger than the area that is actually
+     * covered by the curve.
+     *
+     * <p><img src="doc-files/CubicCurve2D-2.png" width="350" height="180"
+     * alt="An illustration of the bounds of a CubicCurve2D" />
+     */
     public Rectangle2D getBounds2D()
     {
       double nx1 = Math.min(Math.min(x1, ctrlx1), Math.min(ctrlx2, x2));
@@ -402,26 +1122,112 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       double ny2 = Math.max(Math.max(y1, ctrly1), Math.max(ctrly2, y2));
       return new Rectangle2D.Double(nx1, ny1, nx2 - nx1, ny2 - ny1);
     }
-  } // class Double
+  }
+
 
   /**
-   * STUBS ONLY
+   * A two-dimensional curve that is parameterized with a cubic
+   * function and stores coordinate values in single-precision
+   * floating-point format.
+   *
+   * @see CubicCurve2D.Float
+   *
+   * @author Eric Blake (ebb9@email.byu.edu)
+   * @author Sascha Brawer (brawer@dandelis.ch)
    */
-  public static class Float extends CubicCurve2D
+  public static class Float
+    extends CubicCurve2D
   {
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s start point.
+     */
     public float x1;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s start point.
+     */
     public float y1;
+
+
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s first control point.
+     */
     public float ctrlx1;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s first control point.
+     */
     public float ctrly1;
+
+
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s second control point.
+     */
     public float ctrlx2;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s second control point.
+     */
     public float ctrly2;
+
+
+    /**
+     * The <i>x</i> coordinate of the curve&#x2019;s end point.
+     */
     public float x2;
+
+
+    /**
+     * The <i>y</i> coordinate of the curve&#x2019;s end point.
+     */
     public float y2;
 
+
+    /**
+     * Constructs a new CubicCurve2D that stores its coordinate values
+     * in single-precision floating-point format. All points are
+     * initially at position (0, 0).
+     */
     public Float()
     {
     }
 
+
+    /**
+     * Constructs a new CubicCurve2D that stores its coordinate values
+     * in single-precision floating-point format, specifying the
+     * initial position of each point.
+     *
+     * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+     * alt="A drawing of a CubicCurve2D" />
+     *
+     * @param x1 the <i>x</i> coordinate of the curve&#x2019;s start
+     * point.
+     *
+     * @param y1 the <i>y</i> coordinate of the curve&#x2019;s start
+     * point.
+     *
+     * @param cx1 the <i>x</i> coordinate of the curve&#x2019;s first
+     * control point.
+     *
+     * @param cy1 the <i>y</i> coordinate of the curve&#x2019;s first
+     * control point.
+     *
+     * @param cx2 the <i>x</i> coordinate of the curve&#x2019;s second
+     * control point.
+     *
+     * @param cy2 the <i>y</i> coordinate of the curve&#x2019;s second
+     * control point.
+     *
+     * @param x2 the <i>x</i> coordinate of the curve&#x2019;s end
+     * point.
+     *
+     * @param y2 the <i>y</i> coordinate of the curve&#x2019;s end
+     * point.
+     */
     public Float(float x1, float y1, float cx1, float cy1,
                  float cx2, float cy2, float x2, float y2)
     {
@@ -435,58 +1241,154 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       this.y2 = y2;
     }
 
+
+    /**
+     * Returns the <i>x</i> coordinate of the curve&#x2019;s start
+     * point.
+     */
     public double getX1()
     {
       return x1;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s start
+     * point.
+     */
     public double getY1()
     {
       return y1;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s start point.
+     */
     public Point2D getP1()
     {
       return new Point2D.Float(x1, y1);
     }
 
+
+    /**
+     * Returns the <i>x</i> coordinate of the curve&#x2019;s first
+     * control point.
+     */
     public double getCtrlX1()
     {
       return ctrlx1;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s first
+     * control point.
+     */
     public double getCtrlY1()
     {
       return ctrly1;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s first control point.
+     */
     public Point2D getCtrlP1()
     {
       return new Point2D.Float(ctrlx1, ctrly1);
     }
 
+
+    /**
+     * Returns the <i>s</i> coordinate of the curve&#x2019;s second
+     * control point.
+     */
     public double getCtrlX2()
     {
       return ctrlx2;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s second
+     * control point.
+     */
     public double getCtrlY2()
     {
       return ctrly2;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s second control point.
+     */
     public Point2D getCtrlP2()
     {
       return new Point2D.Float(ctrlx2, ctrly2);
     }
 
+
+    /**
+     * Returns the <i>x</i> coordinate of the curve&#x2019;s end
+     * point.
+     */
     public double getX2()
     {
       return x2;
     }
+
+
+    /**
+     * Returns the <i>y</i> coordinate of the curve&#x2019;s end
+     * point.
+     */
     public double getY2()
     {
       return y2;
     }
+
+
+    /**
+     * Returns the curve&#x2019;s end point.
+     */
     public Point2D getP2()
     {
       return new Point2D.Float(x2, y2);
     }
 
+
+    /**
+     * Changes the curve geometry, separately specifying each coordinate
+     * value as a double-precision floating-point number.
+     *
+     * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+     * alt="A drawing of a CubicCurve2D" />
+     *
+     * @param x1 the <i>x</i> coordinate of the curve&#x2019;s new start
+     * point.
+     *
+     * @param y1 the <i>y</i> coordinate of the curve&#x2019;s new start
+     * point.
+     *
+     * @param cx1 the <i>x</i> coordinate of the curve&#x2019;s new
+     * first control point.
+     *
+     * @param cy1 the <i>y</i> coordinate of the curve&#x2019;s new
+     * first control point.
+     *
+     * @param cx2 the <i>x</i> coordinate of the curve&#x2019;s new
+     * second control point.
+     *
+     * @param cy2 the <i>y</i> coordinate of the curve&#x2019;s new
+     * second control point.
+     *
+     * @param x2 the <i>x</i> coordinate of the curve&#x2019;s new end
+     * point.
+     *
+     * @param y2 the <i>y</i> coordinate of the curve&#x2019;s new end
+     * point.
+     */
     public void setCurve(double x1, double y1, double cx1, double cy1,
                          double cx2, double cy2, double x2, double y2)
     {
@@ -499,6 +1401,39 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       this.x2 = (float) x2;
       this.y2 = (float) y2;
     }
+
+
+    /**
+     * Changes the curve geometry, separately specifying each coordinate
+     * value as a single-precision floating-point number.
+     *
+     * <p><img src="doc-files/CubicCurve2D-1.png" width="350" height="180"
+     * alt="A drawing of a CubicCurve2D" />
+     *
+     * @param x1 the <i>x</i> coordinate of the curve&#x2019;s new start
+     * point.
+     *
+     * @param y1 the <i>y</i> coordinate of the curve&#x2019;s new start
+     * point.
+     *
+     * @param cx1 the <i>x</i> coordinate of the curve&#x2019;s new
+     * first control point.
+     *
+     * @param cy1 the <i>y</i> coordinate of the curve&#x2019;s new
+     * first control point.
+     *
+     * @param cx2 the <i>x</i> coordinate of the curve&#x2019;s new
+     * second control point.
+     *
+     * @param cy2 the <i>y</i> coordinate of the curve&#x2019;s new
+     * second control point.
+     *
+     * @param x2 the <i>x</i> coordinate of the curve&#x2019;s new end
+     * point.
+     *
+     * @param y2 the <i>y</i> coordinate of the curve&#x2019;s new end
+     * point.
+     */
     public void setCurve(float x1, float y1, float cx1, float cy1,
                          float cx2, float cy2, float x2, float y2)
     {
@@ -511,6 +1446,18 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       this.x2 = x2;
       this.y2 = y2;
     }
+
+
+    /**
+     * Determines the smallest rectangle that encloses the
+     * curve&#x2019;s start, end and control points. As the
+     * illustration below shows, the invisible control points may cause
+     * the bounds to be much larger than the area that is actually
+     * covered by the curve.
+     *
+     * <p><img src="doc-files/CubicCurve2D-2.png" width="350" height="180"
+     * alt="An illustration of the bounds of a CubicCurve2D" />
+     */
     public Rectangle2D getBounds2D()
     {
       float nx1 = (float) Math.min(Math.min(x1, ctrlx1), Math.min(ctrlx2, x2));
@@ -519,5 +1466,5 @@ public abstract class CubicCurve2D implements Shape, Cloneable
       float ny2 = (float) Math.max(Math.max(y1, ctrly1), Math.max(ctrly2, y2));
       return new Rectangle2D.Float(nx1, ny1, nx2 - nx1, ny2 - ny1);
     }
-  } // class Float
-} // class CubicCurve2D
+  }
+}
