@@ -1,3 +1,7 @@
+2002-12-30  Andreas Jaeger  <aj@suse.de>
+
+	* unwind-dw2-fde.h (last_fde): Add unused attribute for obj.
+
 2002-12-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*addsi3_lshiftrt_16_zexthi): New.
