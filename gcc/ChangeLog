@@ -70,8 +70,8 @@ Sat Nov 27 08:38:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 1999-11-25  Mark Mitchell  <mark@codesourcery.com>
 
-	* except.c (init_eh_for_function): But still zero
-	eh_return_context, eh_return_stack_adjust, and eh_return_handler.
+	* except.c (init_eh_for_function): Still zero eh_return_context,
+	eh_return_stack_adjust, and eh_return_handler.
 
 	* except.h (eh_status): Adjust documentation for x_protect_list.
 	(begin_protect_partials): New function.
