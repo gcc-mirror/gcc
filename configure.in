@@ -755,6 +755,12 @@ case "${target}" in
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     ;;
+  frv-*-*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    if test x${is_cross_compiler} != xno ; then
+	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
+    fi
+    ;;
   h8300*-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
