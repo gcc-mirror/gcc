@@ -1,3 +1,7 @@
+2003-02-04  Rodney Brown  <rbrown64@csc.com.au>
+
+	* config/i386/i386.c (x86_function_profiler): Fix typo in format.
+
 2003-02-04  Phil Edwards  <pme@gcc.gnu.org>
 
 	* doc/install.texi (*-*-linux-gnu):  Mention glibc requirements
@@ -48,7 +52,7 @@ Mon Feb  3 21:19:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* hooks.c (hook_rtx_rtx_identity): Generic hook function that
 	takes a single rtx and returns it unmodified.
 	* hooks.h (hook_rtx_rtx_identity): Prototype here.
-	* target.h (struct gcc_target): Add "delegitimize_address" 
+	* target.h (struct gcc_target): Add "delegitimize_address"
 	field to target structure.
 	* target-def.h (TARGET_DELEGITIMIZE_ADDRESS):  Provide default
 	for delegitimize_address target using hook_rtx_rtx_identity.
@@ -180,49 +184,49 @@ Mon Feb  3 01:30:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-01  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
-        * optabs.h (optab_index): Add OTI_clz, OTI_ctz, OTI_popcount and
-        OTI_parity.
-        (clz_optab, ctz_optab, popcount_optab, parity_optab): New.
-        * optabs.c (widen_clz, expand_parity): New.
-        (expand_unop): Handle clz and parity.  Hardcode SImode as outmode
-        for libcalls to clz, ctz, popcount, and parity.
-        (init_optabs): Init clz_optab, ctz_optab, popcount_optab and
-        parity_optab, and set up libfunc handlers.
-        * libgcc2.c (__clzsi2, __clzdi2, __ctzsi2, __ctzdi2,
-        __popcountsi2, __popcountdi2, __paritysi2 __paritydi2,
-        __popcount_tab): New.
-        * libgcc2.h: Declare them.
-        * libgcc-std.ver (GCC_3.4): Add new functions from libgcc2.c.
-        * genopinit.c (optabs): Add clz_optab, ctz_optab, popcount_optab
-        and parity_optab.
-        * builtin-types.def (BT_FN_INT_LONG, BT_FN_INT_LONGLONG): New.
-        * builtins.def (BUILT_IN_CLZ, BUILT_IN_CTZ, BUILT_IN_POPCOUNT,
-        BUILT_IN_PARITY, BUILT_IN_FFSL, BUILT_IN_CLZL, BUILT_IN_CTZL,
-        BUILT_IN_POPCOUNTL, BUILT_IN_PARITYL, BUILT_IN_FFSLL,
-        BUILT_IN_CLZLL, BUILT_IN_CTZLL, BUILT_IN_POPCOUNTLL,
-        BUILT_IN_PARITYLL): New.
-        * builtins.c (expand_builtin_unop): Rename from expand_builtin_ffs
-        and add optab argument.
-        (expand_builtin): Expand BUILT_IN_{FFS,CLZ,POPCOUNT,PARITY}*.
-        * tree.def (CLZ_EXPR, CTZ_EXPR, POPCOUNT_EXPR, PARITY_EXPR): New.
-        * expr.c (expand_expr): Handle them.
-        * fold-const.c (tree_expr_nonnegative_p): Likewise.
-        * rtl.def (CLZ, CTZ, POPCOUNT, PARITY): New.
-        * reload1.c (eliminate_regs): Handle them.
-        (elimination_effects): Likewise.
-        * function.c (instantiate_virtual_regs_1): Likewise
-        * genattrtab.c (check_attr_value): Likewise.
-        * simplify-rtx.c (simplify_unary_operation): Likewise.
-        * c-common.c (c_common_truthvalue_conversion): Handle POPCOUNT_EXPR.
-        * combine.c (combine_simplify_rtx): Handle POPCOUNT and PARITY.
-        (nonzero_bits): Handle CLZ, CTZ, POPCOUNT and PARITY.
-        * config/alpha/alpha.md (clzdi2, ctzdi2, popcountdi2): New.
-        * config/arm/arm.c (arm_init_builtins): Rename __builtin_clz to
-        __builtin_arm_clz.
-        * Makefile.in (LIB2FUNCS_1, LIB2FUNCS_2): Move...
-        * mklibgcc.in (lib2funcs): ...here and merge.  Add new members.
-        * doc/extend.texi (Other Builtins): Add new builtins.
-        * doc/md.texi (Standard Names): Add new patterns.
+	* optabs.h (optab_index): Add OTI_clz, OTI_ctz, OTI_popcount and
+	OTI_parity.
+	(clz_optab, ctz_optab, popcount_optab, parity_optab): New.
+	* optabs.c (widen_clz, expand_parity): New.
+	(expand_unop): Handle clz and parity.  Hardcode SImode as outmode
+	for libcalls to clz, ctz, popcount, and parity.
+	(init_optabs): Init clz_optab, ctz_optab, popcount_optab and
+	parity_optab, and set up libfunc handlers.
+	* libgcc2.c (__clzsi2, __clzdi2, __ctzsi2, __ctzdi2,
+	__popcountsi2, __popcountdi2, __paritysi2 __paritydi2,
+	__popcount_tab): New.
+	* libgcc2.h: Declare them.
+	* libgcc-std.ver (GCC_3.4): Add new functions from libgcc2.c.
+	* genopinit.c (optabs): Add clz_optab, ctz_optab, popcount_optab
+	and parity_optab.
+	* builtin-types.def (BT_FN_INT_LONG, BT_FN_INT_LONGLONG): New.
+	* builtins.def (BUILT_IN_CLZ, BUILT_IN_CTZ, BUILT_IN_POPCOUNT,
+	BUILT_IN_PARITY, BUILT_IN_FFSL, BUILT_IN_CLZL, BUILT_IN_CTZL,
+	BUILT_IN_POPCOUNTL, BUILT_IN_PARITYL, BUILT_IN_FFSLL,
+	BUILT_IN_CLZLL, BUILT_IN_CTZLL, BUILT_IN_POPCOUNTLL,
+	BUILT_IN_PARITYLL): New.
+	* builtins.c (expand_builtin_unop): Rename from expand_builtin_ffs
+	and add optab argument.
+	(expand_builtin): Expand BUILT_IN_{FFS,CLZ,POPCOUNT,PARITY}*.
+	* tree.def (CLZ_EXPR, CTZ_EXPR, POPCOUNT_EXPR, PARITY_EXPR): New.
+	* expr.c (expand_expr): Handle them.
+	* fold-const.c (tree_expr_nonnegative_p): Likewise.
+	* rtl.def (CLZ, CTZ, POPCOUNT, PARITY): New.
+	* reload1.c (eliminate_regs): Handle them.
+	(elimination_effects): Likewise.
+	* function.c (instantiate_virtual_regs_1): Likewise
+	* genattrtab.c (check_attr_value): Likewise.
+	* simplify-rtx.c (simplify_unary_operation): Likewise.
+	* c-common.c (c_common_truthvalue_conversion): Handle POPCOUNT_EXPR.
+	* combine.c (combine_simplify_rtx): Handle POPCOUNT and PARITY.
+	(nonzero_bits): Handle CLZ, CTZ, POPCOUNT and PARITY.
+	* config/alpha/alpha.md (clzdi2, ctzdi2, popcountdi2): New.
+	* config/arm/arm.c (arm_init_builtins): Rename __builtin_clz to
+	__builtin_arm_clz.
+	* Makefile.in (LIB2FUNCS_1, LIB2FUNCS_2): Move...
+	* mklibgcc.in (lib2funcs): ...here and merge.  Add new members.
+	* doc/extend.texi (Other Builtins): Add new builtins.
+	* doc/md.texi (Standard Names): Add new patterns.
 
 2003-02-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -389,7 +393,7 @@ Sat Feb  1 00:28:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-30  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
-	PR target/9316 
+	PR target/9316
 	* config/rs6000/rtems.h: Add CPP_OS_DEFAULT_SPEC.
 	* config/rs6000/sysv4.h: Add CPP_OS_RTEMS_SPEC.
 	* config/rs6000/t-rtems: New file. multilib variants to match OS.
@@ -468,7 +472,7 @@ Sat Feb  1 00:28:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
 	PR bootstrap/9293
-	* config/m68k/t-crtstuff: Replace spaces with tabs, add 
+	* config/m68k/t-crtstuff: Replace spaces with tabs, add
 	 $(MULTILIB_CFLAGS) as compiler option and multilib crtbegin/end.o.
 
 2003-01-29  Joel Sherrill  <joel@OARcorp.com>
@@ -516,15 +520,15 @@ Wed Jan 29 10:26:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-28  Andreas Schwab  <schwab@suse.de>
 
-        * config/m68k/m68k.md (tablejump+2): Don't sign extend an address
-        register.
-        * config/m68k/apollo68.h (ASM_RETURN_CASE_JUMP): Likewise.
-        * config/m68k/coff.h (ASM_RETURN_CASE_JUMP): Likewise.
-        * config/m68k/linux.h (ASM_RETURN_CASE_JUMP): Likewise.
-        * config/m68k/m68kelf.h (ASM_RETURN_CASE_JUMP): Likewise.
-        * config/m68k/mot3300.h (ASM_RETURN_CASE_JUMP): Likewise.
-        * config/m68k/netbsd-elf.h (ASM_RETURN_CASE_JUMP): Likewise.
-        * config/m68k/pbb.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/m68k.md (tablejump+2): Don't sign extend an address
+	register.
+	* config/m68k/apollo68.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/coff.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/linux.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/m68kelf.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/mot3300.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/netbsd-elf.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/pbb.h (ASM_RETURN_CASE_JUMP): Likewise.
 
 2003-01-28  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -597,9 +601,9 @@ Wed Jan 29 10:26:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 	config/i386/i386.c, config/i386/i386.h, config/i960/i960-protos.h,
 	config/i960/i960.c, config/i960/i960.h, config/ip2k/ip2k-protos.h,
 	config/ip2k/ip2k.c, config/ip2k/ip2k.h, config/mips/mips-protos.h,
-	config/mips/mips.c, config/mips/mips.h, 
+	config/mips/mips.c, config/mips/mips.h,
 	config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c,
-	config/m68hc11/m68hc11.h, config/ns32k/ns32k-protos.h, 
+	config/m68hc11/m68hc11.h, config/ns32k/ns32k-protos.h,
 	config/ns32k/ns32k.c, config/ns32k/ns32k.h, config/pa/pa-protos.h,
 	config/pa/pa.c, config/pa/pa.h, config/s390/s390-protos.h,
 	config/s390/s390.c, config/s390/s390.h, config/vax/vax-protos.h,
@@ -655,7 +659,7 @@ Wed Jan 29 10:26:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* sched-rgn.c (init_ready_list): Ditto.
 	(can_schedule_ready_p): Ditto.
-	
+
 2003-01-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/i386/i386.md (*movsi_1): Use movdqa to move one xmm
@@ -705,7 +709,7 @@ Tue Jan 28 12:15:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* cse.c (rtx_cost): Use targetm.rtx_costs.
 	* system.h (CONST_COSTS RTX_COSTS DEFAULT_RTX_COSTS): Poison.
 	* doc/tm.texi: Update.
-	
+
 	* target.h (targetm.rtx_costs): New.
 	* target-def.h (TARGET_RTX_COSTS): New.
 	* hooks.c (hook_bool_rtx_int_int_intp_false): New.
@@ -847,7 +851,7 @@ Tue Jan 28 12:15:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (profile-arcs, test-coverage): Update and
 	clarify.
-	
+
 	* profile.c (index_counts_file): Remove duplicate check for open file.
 
 2003-01-27  Jerry Quinn  <jlquinn@optonline.net>
