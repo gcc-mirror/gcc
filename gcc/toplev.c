@@ -1656,12 +1656,15 @@ compile_file (name)
 	    && ! TREE_EXTERNAL (decl))
 	  output_inline_function (decl);
 
-	/* Warn about any function or variable
-	   declared static but not defined.  */
+	/* Warn about any function
+	   declared static but not defined.
+	   We don't warn about variables,
+	   because many programs have static variables
+	   that exist only to get some text into the object file.  */
 	if ((warn_unused
 	     || TREE_USED (decl)
 	     || (DECL_NAME (decl) && TREE_USED (DECL_NAME (decl))))
-/*	    && TREE_CODE (decl) == FUNCTION_DECL  */
+	    && TREE_CODE (decl) == FUNCTION_DECL
 	    && DECL_INITIAL (decl) == 0
 	    && TREE_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl))
@@ -2559,6 +2562,7 @@ main (argc, argv, envp)
       flag_expensive_optimizations = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
+      flag_caller_saves = 1;
 #ifdef INSN_SCHEDULING
       flag_schedule_insns = 1;
       flag_schedule_insns_after_reload = 1;
