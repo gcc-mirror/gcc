@@ -1,3 +1,7 @@
+2001-09-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/cppinternals.texi: Update.
+
 2001-09-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (struct cpp_pool): Remove locks and locked.
