@@ -25,6 +25,8 @@
 	'gfc'-prefix from local variable, remove dead code, use correct
 	type when inserting argument.
 
+	* trans-intrinsic.c, trans-types.c: Update copyright years.
+
 2005-01-16  Steven G. Kargl  <kargls@comcast.net>
 
 	PR 19168
