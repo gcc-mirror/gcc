@@ -1,3 +1,8 @@
+Fri Dec  7 11:07:35 EST 2001  John Wehle  (john@feith.com)
+
+	* rtl.h (get_jump_table_offset): Declare.
+	* rtlanal.c (get_jump_table_offset): Implement.
+
 Fri Dec  7 07:06:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (bb_head, bb_tail, bb_file_label_num, bb_func_label_num):
