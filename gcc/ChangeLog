@@ -1,5 +1,9 @@
 2004-03-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c: Put a comment for every function.
+
+2004-03-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Add comments about peephole2's.
 
 2004-03-04  Steven Bosscher  <stevenb@suse.de>
