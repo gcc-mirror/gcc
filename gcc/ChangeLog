@@ -1,5 +1,7 @@
 2001-01-16  Jim Wilson  <wilson@redhat.com>
 
+	* invoke.texi: Document IA-64 options.
+
 	* config/ia64/ia64.c (ia64_print_operand_address): Delete 'B' support.
 	(fixup_errata): Delete TARGET_A_STEP use.
 	* config/ia64/ia64.h (MASK_A_STEP, TARGET_A_STEP): Delete.
