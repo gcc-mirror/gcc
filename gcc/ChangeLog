@@ -1,3 +1,7 @@
+2001-12-27  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (two anonymous patterns): Remove.
+
 2001-12-27  Richard Henderson  <rth@redhat.com>
 
 	* haifa-sched.c (reemit_other_notes): New.
