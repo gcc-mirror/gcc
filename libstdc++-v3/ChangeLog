@@ -1,3 +1,8 @@
+2005-01-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_complex.h: Remove usages of the dead
+	_GLIBCXX_BUGGY_COMPLEX macro.
+
 2005-01-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR libstdc++/19510

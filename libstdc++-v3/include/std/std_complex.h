@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -736,9 +736,7 @@ namespace std
     typedef float value_type;
     
     complex(float = 0.0f, float = 0.0f);
-#ifdef _GLIBCXX_BUGGY_COMPLEX
-    complex(const complex& __z) : _M_value(__z._M_value) { }
-#endif
+
     explicit complex(const complex<double>&);
     explicit complex(const complex<long double>&);
 
@@ -892,10 +890,8 @@ namespace std
   public:
     typedef double value_type;
 
-    complex(double  =0.0, double =0.0);
-#ifdef _GLIBCXX_BUGGY_COMPLEX
-    complex(const complex& __z) : _M_value(__z._M_value) { }
-#endif
+    complex(double = 0.0, double = 0.0);
+
     complex(const complex<float>&);
     explicit complex(const complex<long double>&);
 
@@ -1049,9 +1045,7 @@ namespace std
     typedef long double value_type;
 
     complex(long double = 0.0L, long double = 0.0L);
-#ifdef _GLIBCXX_BUGGY_COMPLEX
-    complex(const complex& __z) : _M_value(__z._M_value) { }
-#endif
+
     complex(const complex<float>&);
     complex(const complex<double>&);
 
