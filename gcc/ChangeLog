@@ -1,3 +1,8 @@
+2005-03-29  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/19108
+	* tree-sra.c (generate_element_init_1): Handle RANGE_EXPR.
+
 2005-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/20622
