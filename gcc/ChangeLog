@@ -1,5 +1,12 @@
 Sat May 23 18:13:53 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
+	* rs6000.md (floatsidf2_loadaddr): rs6000_fpmem_offset will be
+	negative in a stackless frame.
+	* rs6000.c (rs6000_stack_info): Don't include fixed-size link area
+	in stackless frame size.  Support 64-bit stackless frame size.
+	Combine fpmem offset calculations and don't add total_size to
+	offset if not pushing a stack frame.
+
 	* tree.c (get_inner_array_type): New function.
 	* tree.h (get_inner_array_type): Likewise.
 
