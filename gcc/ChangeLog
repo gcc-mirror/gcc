@@ -1,3 +1,18 @@
+2003-06-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (in_tree_gas): Find out here whether GAS is ELF,
+	set in_tree_gas_is_elf accordingly.
+	(in_tree_ld): Find out whether LD emulation is ELF, set
+	in_tree_ld_is_elf accordingly.
+	(gcc_cv_as_subsections, gcc_cv_as_hidden, gcc_cv_as_leb128)
+	(gcc_cv_as_eh_frame, gcc_cv_as_shf_merge)
+	(gcc_cv_as_dwarf2_debug_line, gcc_cv_as_gdwarf2_flag)
+	(gcc_cv_as_gstabs_flag): Use $in_tree_gas_is_elf instead of
+	grepping gas/Makefile.
+	(gcc_cv_ld_ro_rw_mix, gcc_cv_ld_eh_frame_hdr, gcc_cv_ld_pie): Use
+	$in_tree_ld_is_elf instead of grepping ld/Makefile.
+	* configure: Regenerate.
+
 2003-06-22  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_mathfn_2): Use tree_cons to build
