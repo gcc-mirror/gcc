@@ -942,7 +942,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   ""
-  "and %1,255,%0"
+  "and %1,0xff,%0"
   [(set_attr "type" "ilog")])
 
 (define_insn ""
@@ -950,7 +950,7 @@
 	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   "TARGET_BWX"
   "@
-   and %1,255,%0
+   and %1,0xff,%0
    ldbu %0,%1"
   [(set_attr "type" "ilog,ild")])
 
@@ -958,7 +958,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   "! TARGET_BWX"
-  "and %1,255,%0"
+  "and %1,0xff,%0"
   [(set_attr "type" "ilog")])
 
 (define_expand "zero_extendqisi2"
@@ -972,7 +972,7 @@
 	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   "TARGET_BWX"
   "@
-   and %1,255,%0
+   and %1,0xff,%0
    ldbu %0,%1"
   [(set_attr "type" "ilog,ild")])
 
@@ -980,7 +980,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
   "! TARGET_BWX"
-  "and %1,255,%0"
+  "and %1,0xff,%0"
   [(set_attr "type" "ilog")])
   
 (define_expand "zero_extendqidi2"
