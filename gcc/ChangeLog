@@ -1,3 +1,8 @@
+Wed Sep  8 04:44:09 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* rtl.h (obstack_alloc_rtx): Removed, it's now static in
+	genrtl.c.
+
 Wed Sep  8 00:33:43 1999  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
 
 	* flow.c (insn_dead_p): Use XEXP rather than SUBREG_REG.
