@@ -1,5 +1,5 @@
 // RTTI support internals for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation
 
 #include "typeinfo"
 

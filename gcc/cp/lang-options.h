@@ -1,5 +1,5 @@
 /* Definitions for switches for C++.
-   Copyright (C) 1995, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 96-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
