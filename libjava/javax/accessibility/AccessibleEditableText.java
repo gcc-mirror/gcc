@@ -92,7 +92,7 @@ public interface AccessibleEditableText extends AccessibleText
    * @param end the end position, exclusive
    */
   // XXX What happens if indices are out of bounds?
-  String delete(int start, int end);
+  void delete(int start, int end);
 
   /**
    * Cut the text between two points to the system clipboard.
@@ -101,7 +101,7 @@ public interface AccessibleEditableText extends AccessibleText
    * @param end the end position, exclusive
    */
   // XXX What happens if indices are out of bounds?
-  String cut(int start, int end);
+  void cut(int start, int end);
 
   /**
    * Paste the text from the system clipboard at the given index.
