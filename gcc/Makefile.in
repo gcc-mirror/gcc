@@ -869,14 +869,15 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	do \
 	  if [ x$${file} != x.. ]; then \
 	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
+	    oname=` echo $${name} | sed -e 's,.*/,,'`; \
 	    echo $${name}; \
 	    if [ $${name}.asm = $${file} ]; then \
 	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
 	    else true; fi; \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
-	    rm -f $${name}.s $${name}$(objext); \
+	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${oname}$(objext); \
+	    rm -f $${name}.s $${oname}$(objext); \
 	  else true; \
 	  fi; \
 	done
