@@ -7004,11 +7004,18 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		    return 0;
 		}
 
+	      final_value = comparison_value;
+
 	      /* Reset these in case we normalized the initial value
 		 and comparison value above.  */
+	      if (GET_CODE (comparison_value) == CONST_INT
+		  && GET_CODE (initial_value) == CONST_INT)
+		{
+		  comparison_value = GEN_INT (comparison_val);
+		  final_value
+		    = GEN_INT (comparison_val + INTVAL (bl->initial_value));
+		}
 	      bl->initial_value = initial_value;
-	      if (GET_CODE (comparison_value) == CONST_INT)
-		comparison_value = GEN_INT (comparison_val);
 
 	      /* Save some info needed to produce the new insns.  */
 	      reg = bl->biv->dest_reg;
@@ -7017,7 +7024,6 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		jump_label = XEXP (SET_SRC (PATTERN (PREV_INSN (loop_end))), 2);
 	      new_add_val = GEN_INT (- INTVAL (bl->biv->add_val));
 
-	      final_value = comparison_value;
 	      /* Set start_value; if this is not a CONST_INT, we need
 		 to generate a SUB.
 		 Initialize biv to start_value before loop start.
