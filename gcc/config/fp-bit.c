@@ -459,6 +459,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
    if (exp != EXPMAX && exp != 0 && low != 0)
      {
        int lowexp = ((int)(low >> HALFFRACBITS)) & ((1 << EXPBITS) - 1);
+       int lowsign = ((int)(low >> (((HALFFRACBITS + EXPBITS))))) & 1;
        int shift;
        fractype xlow;
 
@@ -472,7 +473,10 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	 xlow <<= shift;
        else if (shift < 0)
 	 xlow >>= -shift;
-       fraction += xlow;
+       if (sign == lowsign)
+	 fraction += xlow;
+       else
+	 fraction -= xlow;
      }
  }
 # else
