@@ -1,3 +1,8 @@
+2004-06-18  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/unordered-2.c: New test case.
+	* gcc.dg/unordered-3.c: New test case.
+
 2004-06-19  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	PR other/16043
