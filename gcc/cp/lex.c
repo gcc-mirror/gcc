@@ -3141,7 +3141,7 @@ real_yylex ()
 		  p = extend_token_buffer (p);
 
 		*p++ = c;
-		c = getc (finput);
+		c = getch ();
 	      }
 
 	    if (linemode && c == '\n')
@@ -3652,7 +3652,7 @@ real_yylex ()
 		      p = extend_token_buffer (p);
 		    *p++ = c;
 		    *p = 0;
-		    c = getc (finput);
+		    c = getch ();
 		  }
 
 		/* The second argument, machine_mode, of REAL_VALUE_ATOF
@@ -3760,7 +3760,7 @@ real_yylex ()
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
-		c = getc (finput);
+		c = getch ();
 	      }
 
 	    /* If the constant is not long long and it won't fit in an
