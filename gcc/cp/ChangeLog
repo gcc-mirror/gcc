@@ -1,5 +1,23 @@
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (FN_TRY_BLOCK_P): New macro.
+	* init.c (perform_member_init): Remove obstack machinations.
+	(expand_cleanup_for_base): Likewise.
+	(finish_init_stmts): Mark the statement-expression as used.
+	* method.c (emit_thunk): Use tree-generating functions, not
+	RTL.
+	(do_build_copy_constructor): Likewise.
+	(do_build_assign_ref): Likewise.
+	(synthesize_method): Likewise.  Keep track of line numbers.
+	* pt.c (tsubst_expr): Handle various kinds of try blocks.
+	* semantics.c (expand_stmts): Remove.
+	(begin_function_try_block): Set FN_TRY_BLOCK_P.
+	(finish_function_try_block): Be careful rechaining 
+	function try blocks.
+	(expand_stmt): Loop through all the statements at a given level.
+	(exapnd_body): Be careful with line-numbers here too.  Prepare for
+	being called directly from the parser.
+
 	* cp-tree.h (finish_function): Adjust prototype.
 	* decl.c (finish_function): Return the function compiled.
 	* pt.c (instantiate_decl): Don't play games with obstacks.

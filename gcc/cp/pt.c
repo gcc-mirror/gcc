@@ -7443,16 +7443,32 @@ tsubst_expr (t, args, complain, in_decl)
 
     case TRY_BLOCK:
       prep_stmt (t);
-      stmt = begin_try_block ();
-      tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
-      finish_try_block (stmt);
       if (CLEANUP_P (t))
-	finish_cleanup (tsubst_expr (TRY_HANDLERS (t), args,
-				     complain, in_decl),
-			stmt);
+	{
+	  begin_try_block ();
+	  tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
+	  finish_cleanup_try_block (stmt);
+	  finish_cleanup (tsubst_expr (TRY_HANDLERS (t), args,
+				       complain, in_decl),
+			  stmt);
+	}
       else
 	{
-	  tree handler = TRY_HANDLERS (t);
+	  tree handler;
+
+	  if (FN_TRY_BLOCK_P (t))
+	    stmt = begin_function_try_block ();
+	  else
+	    stmt = begin_try_block ();
+
+	  tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
+
+	  if (FN_TRY_BLOCK_P (t))
+	    finish_function_try_block (stmt);
+	  else
+	    finish_try_block (stmt);
+
+	  handler = TRY_HANDLERS (t);
 	  for (; handler; handler = TREE_CHAIN (handler))
 	    tsubst_expr (handler, args, complain, in_decl);
 	  finish_handler_sequence (stmt);

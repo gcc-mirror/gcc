@@ -2147,7 +2147,7 @@ emit_thunk (thunk_fndecl)
       t = tree_cons (NULL_TREE, a, t);
     t = nreverse (t);
     t = build_call (function, TREE_TYPE (TREE_TYPE (function)), t);
-    c_expand_return (t);
+    finish_return_stmt (t);
 
     finish_function (lineno, 0);
 
@@ -2172,7 +2172,6 @@ do_build_copy_constructor (fndecl)
      tree fndecl;
 {
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
-  tree compound_stmt;
   tree t;
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
@@ -2249,9 +2248,6 @@ do_build_copy_constructor (fndecl)
       current_base_init_list = nreverse (current_base_init_list);
       setup_vtbl_ptr ();
     }
-
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
 }
 
 static void
@@ -2290,7 +2286,7 @@ do_build_assign_ref (fndecl)
 	  p = convert_from_reference (p);
 	  p = build_member_call (basetype, ansi_opname [MODIFY_EXPR],
 				 build_expr_list (NULL_TREE, p));
-	  expand_expr_stmt (p);
+	  finish_expr_stmt (p);
 	}
       for (; fields; fields = TREE_CHAIN (fields))
 	{
@@ -2342,10 +2338,10 @@ do_build_assign_ref (fndecl)
 	  comp = build (COMPONENT_REF, TREE_TYPE (field), comp, field);
 	  init = build (COMPONENT_REF, TREE_TYPE (field), init, field);
 
-	  expand_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
+	  finish_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
 	}
     }
-  c_expand_return (current_class_ref);
+  finish_return_stmt (current_class_ref);
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
 }
 
@@ -2355,6 +2351,7 @@ synthesize_method (fndecl)
 {
   int nested = (current_function_decl != NULL_TREE);
   tree context = hack_decl_function_context (fndecl);
+  int need_body = 1;
 
   if (at_eof)
     import_export_decl (fndecl);
@@ -2364,13 +2361,25 @@ synthesize_method (fndecl)
   else if (nested)
     push_function_context_to (context);
 
+  /* Put the function definition at the position where it is needed,
+     rather than within the body of the class.  That way, an error
+     during the generation of the implicit body points at the place
+     where the attempt to generate the function occurs, giving the
+     user a hint as to why we are attempting to generate the
+     function. */
+  DECL_SOURCE_LINE (fndecl) = lineno;
+  DECL_SOURCE_FILE (fndecl) = input_filename;
+
   interface_unknown = 1;
   start_function (NULL_TREE, fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   store_parm_decls ();
   clear_last_expr ();
 
   if (DECL_NAME (fndecl) == ansi_opname[MODIFY_EXPR])
-    do_build_assign_ref (fndecl);
+    {
+      do_build_assign_ref (fndecl);
+      need_body = 0;
+    }
   else if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
     ;
   else
@@ -2381,13 +2390,16 @@ synthesize_method (fndecl)
       if (arg_chain != void_list_node)
 	do_build_copy_constructor (fndecl);
       else if (TYPE_NEEDS_CONSTRUCTING (current_class_type))
-	{
-	  tree compound_stmt;
+	setup_vtbl_ptr ();
+    }
 
-	  setup_vtbl_ptr ();
-	  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-	  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
-	}
+  /* If we haven't yet generated the body of the function, just
+     generate an empty compound statement.  */
+  if (need_body)
+    {
+      tree compound_stmt;
+      compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+      finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
     }
 
   finish_function (lineno, 0);
