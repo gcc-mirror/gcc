@@ -39,7 +39,7 @@ Currently only Linux uses this. */
 -Asystem(linux) -Acpu(alpha) -Amachine(alpha) -D__ELF__"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-m elf64_alpha -G 8 %{O*:-O3} %{!O*:-O1}	\
+#define LINK_SPEC "-m elf64alpha -G 8 %{O*:-O3} %{!O*:-O1}	\
   %{shared:-shared}						\
   %{!shared:							\
     %{!static:							\
