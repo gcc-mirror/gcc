@@ -43,7 +43,12 @@ tree builtin_return_address_fndecl;
 #define TRY_NEW_EH
 #endif
 #endif
-#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips)
+#ifdef _IBMR2
+#ifndef __rs6000
+#define __rs6000
+#endif
+#endif
+#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips) || defined (__arm)
 #define TRY_NEW_EH
 #endif
 #endif
@@ -122,6 +127,16 @@ expand_throw (exp)
 }
 
 #else
+
+/* Make 'label' the first numbered label of the current function */
+void
+make_first_label(label)
+     rtx label;
+{
+  if (CODE_LABEL_NUMBER(label) < get_first_label_num())
+    set_new_first_and_last_label_num (CODE_LABEL_NUMBER(label),
+				      max_label_num());
+}
 
 static int
 doing_eh (do_warn)
@@ -236,9 +251,16 @@ void
 exception_section ()
 {
 #ifdef ASM_OUTPUT_SECTION_NAME
-  named_section (".gcc_except_table");
+  named_section (NULL_TREE, ".gcc_except_table");
 #else
-  text_section ();
+  if (flag_pic)
+    data_section ();
+  else
+#if defined(__rs6000)
+    data_section ();
+#else
+    readonly_data_section ();
+#endif
 #endif
 }
 
@@ -576,6 +598,10 @@ push_eh_entry (stack)
   entry->exception_handler_label = gen_label_rtx ();
   pop_rtl_from_perm ();
 
+  LABEL_PRESERVE_P (entry->start_label) = 1;
+  LABEL_PRESERVE_P (entry->end_label) = 1;
+  LABEL_PRESERVE_P (entry->exception_handler_label) = 1;
+
   entry->finalization = NULL_TREE;
 
   node->entry = entry;
@@ -794,9 +820,9 @@ init_exception_processing ()
   saved_throw_value = gen_rtx (REG, Pmode, 5);
 #endif
 #ifdef __rs6000
-  saved_pc = gen_rtx (REG, Pmode, 12);
-  saved_throw_type = gen_rtx (REG, Pmode, 13);
-  saved_throw_value = gen_rtx (REG, Pmode, 14);
+  saved_pc = gen_rtx (REG, Pmode, 13);
+  saved_throw_type = gen_rtx (REG, Pmode, 14);
+  saved_throw_value = gen_rtx (REG, Pmode, 15);
 #endif
 #ifdef __hppa
   saved_pc = gen_rtx (REG, Pmode, 5);
@@ -812,6 +838,11 @@ init_exception_processing ()
   saved_pc = gen_rtx (REG, Pmode, 16);
   saved_throw_type = gen_rtx (REG, Pmode, 17);
   saved_throw_value = gen_rtx (REG, Pmode, 18);
+#endif
+#ifdef __arm
+  saved_pc = gen_rtx (REG, Pmode, 7);
+  saved_throw_type = gen_rtx (REG, Pmode, 8);
+  saved_throw_value = gen_rtx (REG, Pmode, 9);
 #endif
   new_eh_queue (&ehqueue);
   new_eh_queue (&eh_table_output_queue);
@@ -958,7 +989,13 @@ expand_start_all_catch ()
   entry->end_label = gen_label_rtx ();
   entry->exception_handler_label = gen_label_rtx ();
   entry->finalization = TerminateFunctionCall;
+  assemble_external (TREE_OPERAND (Terminate, 0));
   pop_rtl_from_perm ();
+
+  LABEL_PRESERVE_P (entry->start_label) = 1;
+  LABEL_PRESERVE_P (entry->end_label) = 1;
+  LABEL_PRESERVE_P (entry->exception_handler_label) = 1;
+
   emit_label (entry->end_label);
 
   enqueue_eh_entry (&eh_table_output_queue, copy_eh_entry (entry));
@@ -969,6 +1006,7 @@ expand_start_all_catch ()
   /* Will this help us not stomp on it? */
   emit_insn (gen_rtx (USE, VOIDmode, saved_throw_type));
   emit_insn (gen_rtx (USE, VOIDmode, saved_throw_value));
+  make_first_label(throw_label);
   emit_jump (throw_label);
   emit_label (entry->exception_handler_label);
   expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
@@ -992,6 +1030,7 @@ expand_end_all_catch ()
   emit_move_insn (saved_pc, gen_rtx (LABEL_REF,
 				     Pmode,
 				     top_label_entry (&caught_return_label_stack)));
+  make_first_label(throw_label);
   emit_jump (throw_label);
 
   /* Find the start of the catch block.  */
@@ -1052,7 +1091,13 @@ expand_leftover_cleanups ()
       entry.end_label = label;
       entry.exception_handler_label = gen_label_rtx ();
       entry.finalization = TerminateFunctionCall;
+      assemble_external (TREE_OPERAND (Terminate, 0));
       pop_rtl_from_perm ();
+
+      LABEL_PRESERVE_P (entry.start_label) = 1;
+      LABEL_PRESERVE_P (entry.end_label) = 1;
+      LABEL_PRESERVE_P (entry.exception_handler_label) = 1;
+
       emit_label (label);
 
       enqueue_eh_entry (&eh_table_output_queue, copy_eh_entry (&entry));
@@ -1063,6 +1108,7 @@ expand_leftover_cleanups ()
       /* Will this help us not stomp on it? */
       emit_insn (gen_rtx (USE, VOIDmode, saved_throw_type));
       emit_insn (gen_rtx (USE, VOIDmode, saved_throw_value));
+      make_first_label(throw_label);
       emit_jump (throw_label);
       emit_label (entry.exception_handler_label);
       expand_expr (entry.finalization, const0_rtx, VOIDmode, 0);
@@ -1143,6 +1189,7 @@ expand_start_catch_block (declspecs, declarator)
 				    NULL_TREE));
       catch_match_fcall = build_function_call (CatchMatch, params);
       call_rtx = expand_call (catch_match_fcall, NULL_RTX, 0);
+      assemble_external (TREE_OPERAND (CatchMatch, 0));
 
       return_value_rtx =
 	hard_function_value (integer_type_node, catch_match_fcall);
@@ -1192,6 +1239,7 @@ void expand_end_catch_block ()
       emit_move_insn (saved_pc, gen_rtx (LABEL_REF,
 					 Pmode,
 					 top_label_entry (&caught_return_label_stack)));
+      make_first_label(throw_label);
       emit_jump (throw_label);
       /* No associated finalization.  */
       entry.finalization = NULL_TREE;
@@ -1209,6 +1257,10 @@ void expand_end_catch_block ()
       /* Because we are reordered out of line, we have to protect this. */
       entry.start_label = start_protect_label_rtx;
       entry.end_label = end_protect_label_rtx;
+
+      LABEL_PRESERVE_P (entry.start_label) = 1;
+      LABEL_PRESERVE_P (entry.end_label) = 1;
+      LABEL_PRESERVE_P (entry.exception_handler_label) = 1;
 
       /* These set up a call to throw the caught exception into the outer
        context.  */
@@ -1279,6 +1331,7 @@ do_unwind (throw_label)
 					    gen_rtx (LABEL_REF, Pmode, throw_label)), NULL_TREE);
   
   do_function_call (Unwind, params, NULL_TREE);
+  assemble_external (TREE_OPERAND (Unwind, 0));
   emit_barrier ();
 #endif
 #if m88k
@@ -1304,9 +1357,18 @@ do_unwind (throw_label)
 						     (HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
 #endif
 #endif
+#ifdef __arm
+  if (flag_omit_frame_pointer)
+    sorry ("this implementation of exception handling requires a frame pointer");
+
+  emit_move_insn (stack_pointer_rtx,
+		  gen_rtx (MEM, SImode, plus_constant (hard_frame_pointer_rtx, -8)));
+  emit_move_insn (hard_frame_pointer_rtx,
+		  gen_rtx (MEM, SImode, plus_constant (hard_frame_pointer_rtx, -12)));
+#endif
 }
 
-/* is called from expand_excpetion_blocks () to generate the code in a function
+/* is called from expand_exception_blocks () to generate the code in a function
    to "throw" if anything in the function needs to preform a throw.
 
    expands "throw" as the following psuedo code:
@@ -1333,12 +1395,14 @@ expand_builtin_throw ()
   rtx unwind_and_throw = gen_label_rtx ();
   rtx goto_unwind_and_throw = gen_label_rtx ();
 
+  make_first_label(throw_label);
   emit_label (throw_label);
 
   /* search for an exception handler for the saved_pc */
   return_val_rtx = do_function_call (FirstExceptionMatch,
 				     tree_cons (NULL_TREE, make_tree (ptr_type_node, saved_pc), NULL_TREE),
 				     ptr_type_node);
+  assemble_external (TREE_OPERAND (FirstExceptionMatch, 0));
 
   /* did we find one? */
   emit_cmp_insn (return_val_rtx, const0_rtx, EQ, NULL_RTX,
@@ -1354,9 +1418,15 @@ expand_builtin_throw ()
   emit_label (gotta_rethrow_it);
 
   /* call to  __builtin_return_address () */
+#ifdef __arm
+/* This replaces a 'call' to __builtin_return_address */
+  return_val_rtx = gen_reg_rtx (Pmode);
+  emit_move_insn (return_val_rtx, gen_rtx (MEM, SImode, plus_constant (hard_frame_pointer_rtx, -4)));
+#else
   params=tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   return_val_rtx = expand_expr (fcall, NULL_RTX, SImode, 0);
+#endif
 
   /* did __builtin_return_address () return a valid address? */
   emit_cmp_insn (return_val_rtx, const0_rtx, EQ, NULL_RTX,
@@ -1364,20 +1434,35 @@ expand_builtin_throw ()
 
   emit_jump_insn (gen_beq (gotta_call_terminate));
 
+#ifdef __arm
+  /* On the ARM, '__builtin_return_address',  must have 4
+     subtracted from it. */
+  emit_insn (gen_add2_insn (return_val_rtx, GEN_INT (-4)));
+
+  /* If we are generating code for an ARM2/ARM3 machine or for an ARM6 in 26 bit
+     mode, the condition codes must be masked out of the return value, or else
+     they will confuse BuiltinReturnAddress.  This does not apply to ARM6 and
+     later processors when running in 32 bit mode. */
+  if (!TARGET_6)
+    emit_insn (gen_rtx (SET, SImode, return_val_rtx, gen_rtx (AND, SImode, return_val_rtx, GEN_INT (0x03fffffc))));
+#else
 #ifndef sparc
   /* On the SPARC, __builtin_return_address is already -8, no need to
      subtract any more from it. */
   emit_insn (gen_add2_insn (return_val_rtx, GEN_INT (-1)));
 #endif
+#endif
 
   /* yes it did */
   emit_move_insn (saved_pc, return_val_rtx);
   do_unwind (throw_label);
+  make_first_label(throw_label);
   emit_jump (throw_label);
 
   /* no it didn't --> therefore we need to call terminate */
   emit_label (gotta_call_terminate);
   do_function_call (Terminate, NULL_TREE, NULL_TREE);
+  assemble_external (TREE_OPERAND (Terminate, 0));
 }
 
 
@@ -1424,7 +1509,7 @@ expand_exception_blocks ()
 
 	1. Allocate space to save the current PC onto the stack.
 	2. Generate and emit a label and save its address into the
-		newly allocate stack space since we can't save the pc directly.
+		newly allocated stack space since we can't save the pc directly.
 	3. If this is the first call to throw in this function:
 		generate a label for the throw block
 	4. jump to the throw block label.  */
@@ -1476,6 +1561,7 @@ expand_throw (exp)
       /* This part is easy, as we dont' have to do anything else.  */
     }
 
+  make_first_label(throw_label);
   emit_jump (throw_label);
 }
 

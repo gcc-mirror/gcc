@@ -2376,9 +2376,9 @@ add_friend (type, decl)
 	    {
 	      if (decl == TREE_VALUE (friends))
 		{
-		  cp_pedwarn ("`%D' is already a friend of class `%T'",
+		  cp_warning ("`%D' is already a friend of class `%T'",
 			      decl, type);
-		  cp_pedwarn_at ("previous friend declaration of `%D'",
+		  cp_warning_at ("previous friend declaration of `%D'",
 				 TREE_VALUE (friends));
 		  return;
 		}
@@ -2948,12 +2948,15 @@ build_new (placement, decl, init, use_global_new)
   else
     size = size_in_bytes (type);
 
+  if (true_type == void_type_node)
+    {
+      error ("invalid type for new: `void'");
+      return error_mark_node;
+    }
+
   if (TYPE_SIZE (true_type) == 0)
     {
-      if (true_type == void_type_node)
-	error ("invalid type for new: `void'");
-      else
-	incomplete_type_error (0, true_type);
+      incomplete_type_error (0, true_type);
       return error_mark_node;
     }
 

@@ -518,6 +518,18 @@ build_up_reference (type, arg, flags, checkconst)
 		    build_up_reference (type, TREE_OPERAND (targ, 2),
 					LOOKUP_PROTECT, checkconst));
 
+      /* Undo the folding... */
+    case MIN_EXPR:
+    case MAX_EXPR:
+      return build (COND_EXPR, type,
+		    build (TREE_CODE (targ) == MIN_EXPR ? LT_EXPR : GT_EXPR,
+			   boolean_type_node, TREE_OPERAND (targ, 0),
+			   TREE_OPERAND (targ, 1)),
+		    build_up_reference (type, TREE_OPERAND (targ, 0),
+					LOOKUP_PROTECT, checkconst),
+		    build_up_reference (type, TREE_OPERAND (targ, 1),
+					LOOKUP_PROTECT, checkconst));
+
     case WITH_CLEANUP_EXPR:
       return build (WITH_CLEANUP_EXPR, type,
 		    build_up_reference (type, TREE_OPERAND (targ, 0),
@@ -666,11 +678,10 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (form == REFERENCE_TYPE)
 	{
 	  tree type = TREE_TYPE (expr);
-	  tree tmp = copy_node (expr);
-	  TREE_TYPE (tmp) = build_pointer_type (TREE_TYPE (TREE_TYPE (expr)));
-	  rval = cp_convert (build_pointer_type (TREE_TYPE (reftype)), tmp,
+	  TREE_TYPE (expr) = build_pointer_type (TREE_TYPE (type));
+	  rval = cp_convert (build_pointer_type (TREE_TYPE (reftype)), expr,
 			     convtype, flags);
-	  TREE_TYPE (tmp) = type;
+	  TREE_TYPE (expr) = type;
 	  TREE_TYPE (rval) = reftype;
 	  return rval;
 	}
@@ -1487,14 +1498,8 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
 
    If (FOR_SURE & 1) is non-zero, then we allow this type conversion
    to take place immediately.  Otherwise, we build a SAVE_EXPR
-   which can be evaluated if the results are ever needed.
+   which can be evaluated if the results are ever needed.  */
 
-   If FOR_SURE >= 2, then we only look for exact conversions.
-
-   TYPE may be a reference type, in which case we first look
-   for something that will convert to a reference type.  If
-   that fails, we will try to look for something of the
-   reference's target type, and then return a reference to that.  */
 tree
 build_type_conversion (code, xtype, expr, for_sure)
      enum tree_code code;
@@ -1502,14 +1507,10 @@ build_type_conversion (code, xtype, expr, for_sure)
      int for_sure;
 {
   /* C++: check to see if we can convert this aggregate type
-     into the required scalar type.  */
-  tree type, type_default;
-  tree typename = build_typename_overload (xtype), *typenames;
-  int n_variants = 0;
-  tree basetype, save_basetype;
-  tree rval;
-  int exact_conversion = for_sure >= 2;
-  for_sure &= 1;
+     into the required type.  */
+  tree basetype;
+  tree conv;
+  tree winner = NULL_TREE;
 
   if (expr == error_mark_node)
     return error_mark_node;
@@ -1518,313 +1519,42 @@ build_type_conversion (code, xtype, expr, for_sure)
   if (TREE_CODE (basetype) == REFERENCE_TYPE)
     basetype = TREE_TYPE (basetype);
 
-  if (TYPE_PTRMEMFUNC_P (basetype) && TREE_CODE (xtype) == BOOLEAN_TYPE)
-    {
-      /* We convert a pointer to member function into a boolean,
-	 by just checking the index value, for == 0, we want false, for
-	 != 0, we want true.  */
-      return convert (xtype, build_component_ref (expr, index_identifier, 0, 0));
-    }
-
   basetype = TYPE_MAIN_VARIANT (basetype);
   if (! TYPE_LANG_SPECIFIC (basetype) || ! TYPE_HAS_CONVERSION (basetype))
     return NULL_TREE;
 
-  if (TREE_CODE (xtype) == POINTER_TYPE
-      || TREE_CODE (xtype) == REFERENCE_TYPE)
+  /* Do we have an exact match?  */
+  {
+    tree typename = build_typename_overload (xtype);
+    if (lookup_fnfields (TYPE_BINFO (basetype), typename, 0))
+      return build_type_conversion_1 (xtype, basetype, expr, typename,
+				      for_sure);
+  }
+
+  /* Nope; try looking for others.  */
+  for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
     {
-      /* Prepare to match a variant of this type.  */
-      type = TYPE_MAIN_VARIANT (TREE_TYPE (xtype));
-      for (n_variants = 0; type; type = TYPE_NEXT_VARIANT (type))
-	n_variants++;
-      typenames = (tree *)alloca (n_variants * sizeof (tree));
-      for (n_variants = 0, type = TYPE_MAIN_VARIANT (TREE_TYPE (xtype));
-	   type; n_variants++, type = TYPE_NEXT_VARIANT (type))
+      if (winner && TREE_PURPOSE (winner) == TREE_PURPOSE (conv))
+	continue;
+
+      if (can_convert (xtype, TREE_VALUE (conv)))
 	{
-	  if (type == TREE_TYPE (xtype))
-	    typenames[n_variants] = typename;
-	  else if (TREE_CODE (xtype) == POINTER_TYPE)
-	    typenames[n_variants] = build_typename_overload (build_pointer_type (type));
-	  else
-	    typenames[n_variants] = build_typename_overload (build_reference_type (type));
-	}
-    }
-
-  save_basetype = basetype;
-  type = xtype;
-
-  while (TYPE_HAS_CONVERSION (basetype))
-    {
-      int i;
-      if (lookup_fnfields (TYPE_BINFO (basetype), typename, 0))
-	return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-      for (i = 0; i < n_variants; i++)
-	if (typenames[i] != typename
-	    && lookup_fnfields (TYPE_BINFO (basetype), typenames[i], 0))
-	  return build_type_conversion_1 (xtype, basetype, expr, typenames[i], for_sure);
-
-      if (TYPE_BINFO_BASETYPES (basetype))
-	basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-      else
-	break;
-    }
-
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-#if 0
-      /* Only reference variable initializations can use a temporary; this
-         must be handled elsewhere (like convert_to_reference and
-         compute_conversion_costs).  */
-
-      type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      typename = build_typename_overload (type);
-      basetype = save_basetype;
-
-      /* May need to build a temporary for this.  */
-      while (TYPE_HAS_CONVERSION (basetype))
-	{
-	  if (lookup_fnfields (TYPE_BINFO (basetype), typename, 0))
+	  if (winner)
 	    {
-	      int flags;
-
-	      if (for_sure == 0)
-		flags = LOOKUP_PROTECT|LOOKUP_ONLYCONVERTING;
-	      else
-		flags = LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING;
-	      rval = build_method_call (expr,
-					constructor_name_full (typename),
-					NULL_TREE, NULL_TREE, flags);
-	      if (rval == error_mark_node)
-		{
-		  if (for_sure == 0)
-		    return NULL_TREE;
-		  return error_mark_node;
-		}
-
-	      return convert (xtype, rval);
-	    }
-	  if (TYPE_BINFO_BASETYPES (basetype))
-	    basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-	  else
-	    break;
-	}
-#endif
-      /* No free conversions for reference types, right?.  */
-      return NULL_TREE;
-    }
-
-  if (exact_conversion)
-    return NULL_TREE;
-
-  if (TREE_CODE (type) == BOOLEAN_TYPE)
-    {
-      tree as_int = build_type_conversion (code, long_long_unsigned_type_node, expr, 0);
-      tree as_ptr = build_type_conversion (code, ptr_type_node, expr, 0);
-      /* We are missing the conversion to pointer to member type. */
-      /* We are missing the conversion to floating type. */
-      if (as_int && as_ptr && for_sure)
-	{
-	  cp_error ("ambiguous conversion from `%T' to `bool', can convert to integral type or pointer", TREE_TYPE (expr));
-	  return error_mark_node;
-	}
-      if (as_int)
-	{
-	  as_int = build_type_conversion (code, long_long_unsigned_type_node, expr, for_sure+exact_conversion*2);
-	  return convert (xtype, as_int);
-	}
-      if (as_ptr)
-	{
-	  as_ptr = build_type_conversion (code, ptr_type_node, expr, for_sure+exact_conversion*2);
-	  return convert (xtype, as_ptr);
-	}
-      return NULL_TREE;
-    }
-
-  /* No perfect match found, try default.  */
-#if 0 /* This is wrong; there is no standard conversion from void* to
-         anything.  -jason */
-  if (code == CONVERT_EXPR && TREE_CODE (type) == POINTER_TYPE)
-    type_default = ptr_type_node;
-  else
-#endif
-  if (type == void_type_node)
-    return NULL_TREE;
-  else
-    {
-      tree tmp = default_conversion (build1 (NOP_EXPR, type, integer_zero_node));
-      if (tmp == error_mark_node)
-	return NULL_TREE;
-      type_default = TREE_TYPE (tmp);
-    }
-
-  basetype = save_basetype;
-
-  if (type_default != type)
-    {
-      type = type_default;
-      typename = build_typename_overload (type);
-
-      while (TYPE_HAS_CONVERSION (basetype))
-	{
-	  if (lookup_fnfields (TYPE_BINFO (basetype), typename, 0))
-	    return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-	  if (TYPE_BINFO_BASETYPES (basetype))
-	    basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-	  else
-	    break;
-	}
-    }
-
-  if (TREE_CODE (type) == POINTER_TYPE && TYPE_READONLY (TREE_TYPE (type)))
-    {
-      /* Try converting to some other const pointer type and then using
-         standard conversions. */
-
-      while (TYPE_HAS_CONVERSION (basetype))
-	{
-	  if (CLASSTYPE_CONVERSION (basetype, constptr_conv) != 0)
-	    {
-	      if (CLASSTYPE_CONVERSION (basetype, constptr_conv) == error_mark_node)
-		return error_mark_node;
-	      typename = DECL_NAME (CLASSTYPE_CONVERSION (basetype, constptr_conv));
-	      return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-	    }
-	  if (TYPE_BINFO_BASETYPES (basetype))
-	    basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-	  else
-	    break;
-	}
-    }
-  if (TREE_CODE (type) == POINTER_TYPE)
-    {
-      /* Try converting to some other pointer type and then using standard
-	 conversions.  */
-
-      while (TYPE_HAS_CONVERSION (basetype))
-	{
-	  if (CLASSTYPE_CONVERSION (basetype, ptr_conv) != 0)
-	    {
-	      if (CLASSTYPE_CONVERSION (basetype, ptr_conv) == error_mark_node)
-		return error_mark_node;
-	      typename = DECL_NAME (CLASSTYPE_CONVERSION (basetype, ptr_conv));
-	      return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-	    }
-	  if (TYPE_BINFO_BASETYPES (basetype))
-	    basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-	  else
-	    break;
-	}
-    }
-
-  /* Use the longer or shorter conversion that is appropriate.  Have
-     to check against 0 because the conversion may come from a baseclass.  */
-  if (TREE_CODE (type) == INTEGER_TYPE
-      && TYPE_HAS_INT_CONVERSION (basetype)
-      && CLASSTYPE_CONVERSION (basetype, int_conv) != 0
-      && CLASSTYPE_CONVERSION (basetype, int_conv) != error_mark_node)
-    {
-      typename = DECL_NAME (CLASSTYPE_CONVERSION (basetype, int_conv));
-      return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-    }
-
-  if (TREE_CODE (type) == REAL_TYPE
-      && TYPE_HAS_REAL_CONVERSION (basetype)
-      && CLASSTYPE_CONVERSION (basetype, real_conv) != 0
-      && CLASSTYPE_CONVERSION (basetype, real_conv) != error_mark_node)
-    {
-      /* Only accept using an operator double() if there isn't a conflicting
-	 operator int().  */
-      if (TYPE_HAS_INT_CONVERSION (basetype))
-	{
-	  if (for_sure)
-	    {
-	      cp_error ("two possible conversions for type `%T'", type);
-	      return error_mark_node;
+	      cp_error ("ambiguous conversion from `%T' to `%T'", basetype,
+			xtype);
+	      cp_error ("  candidate conversion functions include `%T' and `%T'",
+			TREE_VALUE (winner), TREE_VALUE (conv));
+	      return NULL_TREE;
 	    }
 	  else
-	    return NULL_TREE;
-	}
-
-      typename = DECL_NAME (CLASSTYPE_CONVERSION (basetype, real_conv));
-      return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-    }
-
-  /* THESE ARE TOTAL KLUDGES.  */
-  /* Default promotion yields no new alternatives, try
-     conversions which are anti-default, such as
-
-     double -> float or int -> unsigned or unsigned -> long
-
-     */
-  if (type_default == type
-      && (INTEGRAL_TYPE_P (type) || TREE_CODE (type) == REAL_TYPE))
-    {
-      int not_again = 0;
-
-      if (type == double_type_node)
-	typename = build_typename_overload (float_type_node);
-      else if (type == integer_type_node)
-	typename = build_typename_overload (unsigned_type_node);
-      else if (type == unsigned_type_node)
-	typename = build_typename_overload (long_integer_type_node);
-
-    again:
-      basetype = save_basetype;
-      while (TYPE_HAS_CONVERSION (basetype))
-	{
-	  if (lookup_fnfields (TYPE_BINFO (basetype), typename, 0))
-	    return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-	  if (TYPE_BINFO_BASETYPES (basetype))
-	    basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-	  else
-	    break;
-	}
-      if (! not_again)
-	{
-	  if (type == integer_type_node)
-	    {
-	      typename = build_typename_overload (long_integer_type_node);
-	      not_again = 1;
-	      goto again;
-	    }
-	  else
-	    {
-	      typename = build_typename_overload (integer_type_node);
-	      not_again = 1;
-	      goto again;
-	    }
+	    winner = conv;
 	}
     }
 
-  /* Now, try C promotions...
-
-     float -> int
-     int -> float  */
-
-    basetype = save_basetype;
-    if (TREE_CODE (type) == REAL_TYPE)
-      type = integer_type_node;
-    else if (TREE_CODE (type) == INTEGER_TYPE)
-      if (TYPE_HAS_REAL_CONVERSION (basetype))
-	type = double_type_node;
-      else
-	return NULL_TREE;
-    else
-      return NULL_TREE;
-
-    typename = build_typename_overload (type);
-    while (TYPE_HAS_CONVERSION (basetype))
-      {
-	if (lookup_fnfields (TYPE_BINFO (basetype), typename, 0))
-	  {
-	    rval = build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-	    return rval;
-	  }
-	if (TYPE_BINFO_BASETYPES (basetype))
-	  basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-	else
-	  break;
-      }
+  if (winner)
+    return build_type_conversion_1 (xtype, basetype, expr,
+				    TREE_PURPOSE (winner), for_sure);
 
   return NULL_TREE;
 }

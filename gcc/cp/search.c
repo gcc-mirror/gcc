@@ -1089,18 +1089,29 @@ lookup_field (xbasetype, name, protect, want_type)
     entry = 0;
 
   rval = lookup_field_1 (type, name);
-  if (rval || lookup_fnfields_here (type, name)>=0)
-    {
-      rval_binfo = basetype_path;
-      rval_binfo_h = rval_binfo;
-    }
 
-  if (rval && TREE_CODE (rval) != TYPE_DECL && want_type)
-    rval = NULL_TREE;
-
-  if (rval)
+  if (rval || lookup_fnfields_here (type, name) >= 0)
     {
-      if (protect)
+      if (rval)
+	{
+	  if (want_type)
+	    {
+	      if (TREE_CODE (rval) != TYPE_DECL)
+		{
+		  rval = purpose_member (name, CLASSTYPE_TAGS (type));
+		  if (rval)
+		    rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
+		}
+	    }
+	  else
+	    {
+	      if (TREE_CODE (rval) == TYPE_DECL
+		  && lookup_fnfields_here (type, name) >= 0)
+		rval = NULL_TREE;
+	    }
+	}
+
+      if (protect && rval)
 	{
 	  if (TREE_PRIVATE (rval) | TREE_PROTECTED (rval))
 	    this_v = compute_access (basetype_path, rval);
@@ -1259,11 +1270,32 @@ lookup_field (xbasetype, name, protect, want_type)
     if (entry)
       TREE_VALUE (entry) = rval;
 
-    if (want_type && (rval == NULL_TREE || TREE_CODE (rval) != TYPE_DECL))
+    if (rval_binfo)
       {
-	rval = NULL_TREE;
-	errstr = 0;
+	type = BINFO_TYPE (rval_binfo);
+
+	if (rval)
+	  {
+	    if (want_type)
+	      {
+		if (TREE_CODE (rval) != TYPE_DECL)
+		  {
+		    rval = purpose_member (name, CLASSTYPE_TAGS (type));
+		    if (rval)
+		      rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
+		  }
+	      }
+	    else
+	      {
+		if (TREE_CODE (rval) == TYPE_DECL
+		    && lookup_fnfields_here (type, name) >= 0)
+		  rval = NULL_TREE;
+	      }
+	  }
       }
+
+    if (rval == NULL_TREE)
+      errstr = 0;
 
     /* If this FIELD_DECL defines its own access level, deal with that.  */
     if (rval && errstr == 0
@@ -1948,11 +1980,51 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		   == TYPE_READONLY (instptr_type))
 		  && compparms (TREE_CHAIN (btypes), TREE_CHAIN (dtypes), 3))
 		{
-		  if (IDENTIFIER_ERROR_LOCUS (name) == NULL_TREE
-		      && ! comptypes (TREE_TYPE (TREE_TYPE (tmp)), drettype, 1))
+		  tree brettype = TREE_TYPE (TREE_TYPE (tmp));
+		  if (comptypes (brettype, drettype, 1))
+		    /* OK */;
+		  else if
+		    (TREE_CODE (brettype) == TREE_CODE (drettype)
+		     && (TREE_CODE (brettype) == POINTER_TYPE
+			 || TREE_CODE (brettype) == REFERENCE_TYPE)
+		     && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (brettype)),
+				   TYPE_MAIN_VARIANT (TREE_TYPE (drettype)),
+				   0))
+		      /* covariant return type */
+		    {
+		      tree b = TREE_TYPE (brettype), d = TREE_TYPE (drettype);
+		      if (TYPE_MAIN_VARIANT (b) != TYPE_MAIN_VARIANT (d))
+			{
+			  tree binfo = get_binfo (b, d, 1);
+			  if (binfo != error_mark_node
+			      && ! BINFO_OFFSET_ZEROP (binfo))
+			    sorry ("adjusting pointers for covariant returns");
+			}
+		      if (TYPE_READONLY (d) > TYPE_READONLY (b))
+			{
+			  cp_error ("return type of `%#D' adds const", fndecl);
+			  cp_error_at ("  overriding definition as `%#D'",
+				       tmp);
+			}
+		      else if (TYPE_VOLATILE (d) > TYPE_VOLATILE (b))
+			{
+			  cp_error ("return type of `%#D' adds volatile",
+				    fndecl);
+			  cp_error_at ("  overriding definition as `%#D'",
+				       tmp);
+			}
+		    }
+		  else if (IS_AGGR_TYPE_2 (brettype, drettype)
+			   && comptypes (brettype, drettype, 0))
+		    {
+		      error ("invalid covariant return type (must use pointer or reference)");
+		      cp_error_at ("  overriding `%#D'", tmp);
+		      cp_error ("  with `%#D'", fndecl);
+		    }
+		  else if (IDENTIFIER_ERROR_LOCUS (name) == NULL_TREE)
 		    {
 		      cp_error ("conflicting return type specified for virtual function `%#D'", fndecl);
-		      cp_error_at ("overriding definition as `%#D'", tmp);
+		      cp_error_at ("  overriding definition as `%#D'", tmp);
 		      SET_IDENTIFIER_ERROR_LOCUS (name, basetype);
 		    }
 		  break;
@@ -2192,7 +2264,7 @@ dfs_walk (binfo, fn, qfn)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
 
-      if ((*qfn)(base_binfo))
+      if (qfn == 0 || (*qfn)(base_binfo))
 	{
 	  if (fn == dfs_init_vbase_pointers)
 	    {
@@ -2800,8 +2872,14 @@ dfs_pushdecls (binfo)
 		    ? DECL_CLASS_CONTEXT (value)
 		      : DECL_CONTEXT (value);
 
-		  if (context && (context == type
-				  || TYPE_DERIVES_FROM (context, type)))
+		  if (context == type)
+		    {
+		      if (TREE_CODE (value) == TYPE_DECL
+			  && DECL_ARTIFICIAL (value))
+			value = fields;
+		      /* else the old value wins */
+		    }
+		  else if (context && TYPE_DERIVES_FROM (context, type))
 		    value = fields;
 		  else
 		    value = tree_cons (NULL_TREE, fields,
@@ -3209,4 +3287,25 @@ reinit_search_statistics ()
   n_calls_get_base_type = 0;
   n_outer_fields_searched = 0;
   n_contexts_saved = 0;
+}
+
+static tree conversions;
+static void
+add_conversions (binfo)
+     tree binfo;
+{
+  tree tmp = CLASSTYPE_FIRST_CONVERSION (BINFO_TYPE (binfo));
+  for (; tmp && IDENTIFIER_TYPENAME_P (DECL_NAME (tmp));
+       tmp = TREE_CHAIN (tmp))
+    conversions = tree_cons (DECL_NAME (tmp), TREE_TYPE (TREE_TYPE (tmp)),
+			     conversions);
+}
+
+tree
+lookup_conversions (type)
+     tree type;
+{
+  conversions = NULL_TREE;
+  dfs_walk (TYPE_BINFO (type), add_conversions, 0);
+  return conversions;
 }

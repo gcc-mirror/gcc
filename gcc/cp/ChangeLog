@@ -1,18 +1,381 @@
+Mon Jan 23 21:57:14 1995  Mike Stump  <mrs@cygnus.com>
+
+	* pt.c (tsubst): When we copy a node, don't forget to copy
+	TREE_CHAIN, we use it later.
+
+Mon Jan 23 03:33:47 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (convert_for_assignment): Initialize variable before use.
+
+Fri Jan 20 01:17:59 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* g++.c (main): Link with both libstdc++ and libg++ if called as
+	something ending with "g++", otherwise only libstdc++.  Move -lm to
+	the end of the line.
+
+Thu Jan 19 15:43:11 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* call.c (build_method_call): Don't mess with 'this' before calling
+        compute_conversion_costs.
+
+Wed Jan 18 15:40:55 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* search.c (get_matching_virtual): Give line number for previous
+        declaration.
+
+	* call.c (convert_harshness): Handle conversions to references
+	better.
+
+	* cvt.c (build_up_reference): OK, handle {MIN,MAX}_EXPR *properly*.
+
+Wed Jan 18 15:21:38 1995  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (instantiate_type): Use DECL_CHAIN to walk lists instead,
+	as the TREE_CHAIN for methods will take us to the next differently
+	named function, DECL_CHAIN won't.
+
+Wed Jan 18 14:26:59 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* tree.c (lvalue_p): Handle {MIN,MAX}_EXPR.
+
+	* decl2.c (lang_decode_option): -Wall implies -Wparentheses.
+	warn_parentheses defaults to 0.
+
+	* decl.c (grokparms): Put back call to require_instantiated_type.
+
+Tue Jan 17 19:56:15 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (exception_section): Use the data section on the rs6000.
+	Change calling convention for named_section.
+
+Wed Jan 17 18:20:57 1994  Fergus Henderson <fjh@munta.cs.mu.oz.au>
+
+        * cp-tree.h : Make if (x=0) warn with wall
+        * parse.y : Make if (x=0) warn with wall
+
 Tue Jan 17 14:12:00 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
-        * cvt.c (cp_convert): Just call truthvalue_conversion to convert to
+	* decl.c (BOOL_TYPE_SIZE): BITS_PER_WORD if SLOW_BYTE_ACCESS,
+	BITS_PER_UNIT otherwise.
+
+	* search.c (get_matching_virtual): Don't check the binfo if the
+	types are the same.
+
+	* cvt.c (cp_convert): Just call truthvalue_conversion to convert to
         bool.
 
 Mon Jan 16 13:28:48 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
-        * various: Use boolean_type_node, boolean_true_node,
-        boolean_false_node.
+	* various: Use boolean_type_node, boolean_true_node,
+	boolean_false_node.
+
+	* search.c (get_matching_virtual): Allow covariant returns that
+	don't require pointer adjustment.
+
+	* typeck.c (build_conditional_expr): Don't call default_conversion
+	on ifexp.
+
+	* cvt.c (build_up_reference): Handle MIN_EXPR and MAX_EXPR.
+
+	* decl.c (grokdeclarator): Upgrade warning about &const to pedwarn.
+
+Sun Jan 15 22:17:32 1995  dcb@lovat.fmrco.COM (David Binderman)
+
+	* pt.c (do_function_instantiation): Free targs once we're done.
 
 Sun Jan 15 22:17:32 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
-        * decl.c (BOOL_TYPE_SIZE): Defaults to BITS_PER_WORD.
-        (init_decl_processing): Use BOOL_TYPE_SIZE instead of CHAR_TYPE_SIZE
-        for bool.
+	* decl.c (BOOL_TYPE_SIZE): Defaults to BITS_PER_WORD.
+	(init_decl_processing): Use BOOL_TYPE_SIZE instead of CHAR_TYPE_SIZE
+	for bool.
+
+Sat Jan 14 05:33:55 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (finish_file): We need to mess up if there are any
+	variables in the list, not just if there is one with a constructor.
+
+Fri Jan 13 14:42:55 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (duplicate_decls): Propagate DECL_STATIC_{CON,DE}STRUCTOR.
+	(finish_function): Handle DECL_STATIC_{CON,DE}STRUCTOR.
+	(finish_function): Trust rest_of_compilation.
+
+	* decl2.c (finish_file): Also call functions designated as static
+	constructors/destructors.
+
+	* decl.c (grokdeclarator): Allow access decls of operator functions.
+	(grokparms): Only do convert_for_initialization if the initializer
+	has a type.
+	(duplicate_decls): Put back push_obstacks_nochange call.
+
+	* lex.c (real_yylex): Downgrade complaint about the escape sequence
+	being too large from pedwarn to warning.
+
+	* decl.c (grokdeclarator): Don't complain about long long in system
+	headers.
+
+	* lex.c (real_yylex): Handle digraphs.
+
+Thu Jan 12 12:17:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (init_decl_processing): -f{no-,}strict-prototype only
+	affects C linkage declarations now.
+
+	* typeck.c (comp_target_types): Grok simple contravariant conversions.
+	(common_type): t1 and t2 are interchangeable.
+
+	* various: Test return value of comp_target_types differently in
+	different places; it now returns -1 for a contravariant conversion
+	(which is fine in symmetric cases).
+
+	(common_type): Prefer long double to double even when
+	they have the same precision.
+
+	* decl.c (grokparms): Call convert_for_initialization to check
+	default arguments.
+
+	* init.c (build_new): void_type_node has a size (of 0).
+
+	* decl.c (decls_match): Also check for agreement of TREE_READONLY
+	and TREE_THIS_VOLATILE.
+	(push_class_level_binding): Properly handle shadowing of
+	nested tags by fields.
+
+	* search.c (dfs_pushdecls): Ditto.
+
+	* decl2.c (finish_file): Don't second-guess self-initialization.
+
+	* cvt.c (convert_to_reference): Work with expr directly, rather than
+	a copy.
+
+	* decl.c (push_overloaded_decl): Only shadow artificial TYPE_DECLs.
+
+	* init.c (add_friend): Downgrade duplicate friend message from
+	pedwarn to warning.
+
+	* decl.c (duplicate_decls): Push obstacks before calling common_type.
+
+Thu Jan 12 17:15:21 1995  Michael Ben-Gershon  <mybg@cs.huji.ac.il>
+
+	* except.c (push_eh_entry): set LABEL_PRESERVE_P flag for
+	exception table labels.
+	(expand_start_all_catch): Ditto.
+	(expand_leftover_cleanups): Ditto.
+	(expand_end_catch_block): Ditto.
+	* except.c (make_first_label): new function.
+	(expand_start_all_catch): add a call to make_first_label() before
+	using a label as a jump destination.
+	(expand_end_all_catch): Ditto.
+	(expand_leftover_cleanups): Ditto.
+	(expand_end_catch_block): Ditto.
+	(expand_builtin_throw): Ditto.
+	(expand_throw): Ditto.
+	* except.c: Add ARM processor support for exception handling.
+
+Thu Jan 12 12:17:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	(complete_array_type): Copy code from C frontend.
+
+	* lex.c (real_yylex): Don't multiply the length of a wide string
+	literal by WCHAR_BYTES.
+
+	* decl.c (pushdecl): Check for redeclaration of wchar_t here.
+	(duplicate_decls): Instead of here.
+	(define_label): Complain about a label named wchar_t.
+	(grokdeclarator): Complain about declarations of
+	operator-function-ids as non-functions.
+
+	* typeck.c (unary_complex_lvalue): Also wrap prefix -- and ++ in
+	COMPOUND_EXPRs.
+	(build_unary_op): Wrap unary plus in a NON_LVALUE_EXPR.
+
+	* lex.c (real_yylex): Don't skip whitespace when reading the next
+	character after ->.
+
+Wed Jan 11 16:32:49 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c: Allow cc1plus to be built with native compiler on rs6000.
+	(expand_start_all_catch): Add assemble_external calls for various
+	routines we call.
+	(expand_leftover_cleanups): Ditto.
+	(expand_start_catch_block): Ditto.
+	(do_unwind): Ditto.
+	(expand_builtin_throw): Ditto.
+
+Wed Jan 11 01:05:42 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (pushtag): Only look for a previous decl in the current
+	binding level.  Use explicit global scope in DECL_NESTED_TYPENAME.
+
+	* gxx.gperf: Add __signature__ and __sigof__ keywords.
+
+	* decl2.c (lang_decode_option): -ansi does not set flag_no_asm.  It
+	does set flag_no_gnu_keywords and flag_operator_names.
+
+	* lex.c (init_lex): 'overload' is not a keyword unless -traditional.
+	Unset extension keywords if -fno-gnu-keywords.
+	Allow operator names ('bitand') if -foperator-names.
+	Never unset 'asm'; -fno-asm only affects 'typeof'.
+
+	* decl.c (lookup_name_real): The got_object special lookup only
+	applies to types.
+
+Tue Jan 10 18:07:51 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* spew.c (yylex): Also use DECL_NESTED_TYPENAME if got_object is set.
+
+	* parse.y (primary): Unset got_object after all rules that use the
+        'object' nonterminal.
+	(object): Set got_object.
+
+	* lex.h: Declare got_object.
+
+	* decl.c (lookup_name_real): Also lookup names in the context of an
+	object specified.
+
+Tue Jan 10 14:30:30 1995  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (get_member_function_from_ptrfunc): Use ptrdiff_type_node
+	for things that have to be added to pointers, not size_type.  Cures
+	problems with pointer to members on Alphas.
+	(build_binary_op_nodefault): Ditto.
+	(get_delta_difference_: Ditto.
+	(build_ptrmemfunc): Ditto.
+
+Tue Jan 10 01:49:25 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (pushtag): Stick the new decl in TYPE_NAME before pushing
+	it.
+
+	* typeck.c (build_component_ref): Don't build up a COMPONENT_REF
+	when dealing with overloaded member functions; just act like
+	build_offset_ref.
+	(commonparms): Remove misleading comment.
+
+	* decl.c (duplicate_decls): Complain about repeated default
+	arguments here.
+	(redeclaration_error_message): Instead of here.
+	(pushdecl): Complain about missing default arguments here.
+	(grokparms): Instead of here.
+	(lookup_name_current_level): Also match on DECL_ASSEMBLER_NAME.
+	(grok_reference_init): Do not complain about missing initializer if
+	declared 'extern'.
+
+	* search.c (lookup_field): Don't return a TYPE_DECL if there is a
+	function alternative and want_type is not set.
+
+Mon Jan  9 18:16:23 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (pushtag): Don't set TYPE_NAME to an identifier.  Do push
+	the decl when the type has no TYPE_NAME.
+	(lookup_nested_type): Don't assume that type has TYPE_NAME set.
+	(lookup_name_real): Call lookup_field with want_type =
+	prefer_type.
+
+	* search.c (lookup_field): Handle want_type properly in the presence
+	of fields with the same name.
+
+	* decl.c (set_nested_typename): Set nested name for file-scope types
+	to include leading ::.
+	(pushdecl): Set the nested typename if the decl doesn't have one,
+	rather than if the type's canonical decl doesn't have one.
+
+Mon Jan  9 16:48:16 1995  Steve Chamberlain  (sac@jonny.cygnus.com)
+
+	* typeck.c (pointer_int_sum):  Use offset size when calculating
+	index expression.
+
+Mon Jan  9 03:44:33 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (convert_for_assignment): Complain about contravariance
+	violation here.
+	(comp_target_types): Instead of here.
+	(build_unary_op): resolve_offset_ref before checking for a valid
+	type.
+
+	* spew.c (yylex): Decrement looking_for_typename after we see a
+	_DEFN.
+
+	* decl.c (pushdecl): Don't install an artificial TYPE_DECL in
+        IDENTIFIER_LOCAL_VALUE if we already have a decl with that name.
+
+	* typeck.c (convert_for_assignment): Converting pointers to bool
+	does not need a cast.
+
+Sun Jan  8 18:16:45 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* class.c (instantiate_type): Initialize nsubsts parm.
+
+	* pt.c (do_function_instantiation): Ditto.
+
+Sat Jan  7 14:37:05 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* pt.c (tsubst): Use TREE_STATIC instead of DECL_INLINE &&
+	DECL_SAVED_INSNS to determine whether or not we've seen a definition
+	of this function.
+	(instantiate_template): Ditto.
+
+	* call.c (convert_harshness): Allow const reference binding when
+	called from the overloading code, but not when called from
+	can_convert (since it isn't a conversion).
+	(convert_harshness): Put back some disabled code.
+
+Fri Jan  6 14:10:57 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* call.c (convert_harshness): There is no implicit conversion from
+	void* to other pointer types (unless the parameter is (void*)0).
+	(convert_harshness): Non-lvalues do not convert to reference types.
+
+	* class.c (finish_struct_methods): Still set
+        TYPE_HAS_{INT,REAL}_CONVERSION.
+
+	* call.c (can_convert): Don't use aggregate initialization.
+
+	* cp-tree.h: Declare lookup_conversions.
+
+Thu Jan  5 21:08:00 1995  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y (simple_stmt): Fix duplicate case value error messages to
+	be more readable.
+
+Wed Jan  4 16:44:19 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* cvt.c (build_type_conversion): Total rewrite to use
+	convert_harshness instead of reproducing conversion logic here.  Now
+	much shorter.
+
+	* call.c (convert_harshness): Support conversions to bool.
+	(can_convert): Checks whether a conversion is less harsh
+	than USER_CODE, for build_type_conversion.
+
+	* search.c (add_conversions): Function for passing to dfs_walk which
+	adds all the type conversion operators in the current type to a list.
+	(lookup_conversions): Calls dfs_walk with add_conversions and return
+	the list.
+	(dfs_walk): Don't require a qfn.
+
+	* cp-tree.h: Lose CLASSTYPE_CONVERSIONS hackery.
+	(CLASSTYPE_FIRST_CONVERSION): Points to elt 1 of CLASSTYPE_METHOD_VEC.
+
+	* class.c (finish_struct_bits): Lose CLASSTYPE_CONVERSIONS hackery.
+	(grow_method): A separate function for building onto the growing
+	method vector.
+	(finish_struct_methods): Use it.  Put all type conversion operators
+	right after the constructors.  Perhaps we should sort the methods
+        alphabetically?
+
+Mon Jan  2 14:42:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* call.c (build_method_call): Lose another misleading shortcut.
+
+Fri Dec 30 17:57:30 1994  Mike Stump  <mrs@cygnus.com>
+
+	* gc.c (build_bltn_desc): Handle bool as a built-in type.
+
+Fri Dec 30 14:20:21 1994  Mike Stump  <mrs@cygnus.com>
+
+	* tree.c (layout_vbasetypes): Ensure that we don't loose alignment
+	on the complete type because of small virtual bases.
 
 Fri Dec 30 12:22:29 1994  Mike Stump  <mrs@cygnus.com>
 

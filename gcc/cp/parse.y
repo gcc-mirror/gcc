@@ -1246,7 +1246,8 @@ expr_no_commas:
 	| expr_no_commas '?' xexpr ':' expr_no_commas
 		{ $$ = build_x_conditional_expr ($$, $3, $5); }
 	| expr_no_commas '=' expr_no_commas
-		{ $$ = build_modify_expr ($$, NOP_EXPR, $3); }
+		{ $$ = build_modify_expr ($$, NOP_EXPR, $3);
+                  C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
 	| expr_no_commas ASSIGN expr_no_commas
 		{ register tree rval;
 		  if ((rval = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL, $$, $3,
@@ -1333,7 +1334,12 @@ primary:
 	| string
 		{ $$ = combine_strings ($$); }
 	| '(' expr ')'
-		{ $$ = $2; }
+		{ char class = TREE_CODE_CLASS (TREE_CODE ($2));
+		  if (class == 'e' || class == '1'
+		      || class == '2' || class == '<')
+                    /* This inhibits warnings in truthvalue_conversion. */
+		    C_SET_EXP_ORIGINAL_CODE ($2, ERROR_MARK);
+		  $$ = $2; }
 	| '(' error ')'
 		{ $$ = error_mark_node; }
 	| '('
@@ -1538,11 +1544,14 @@ primary:
 	| overqualified_id LEFT_RIGHT
 		{ $$ = build_member_call (OP0 ($$), OP1 ($$), NULL_TREE); }
 	| object unqualified_id  %prec UNARY
-		{ $$ = build_component_ref ($$, $2, NULL_TREE, 1); }
+		{ got_object = NULL_TREE;
+		  $$ = build_component_ref ($$, $2, NULL_TREE, 1); }
 	| object qualified_id %prec UNARY
-		{ $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
+		{ got_object = NULL_TREE;
+		  $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
 	| object unqualified_id '(' nonnull_exprlist ')'
 		{
+		  got_object = NULL_TREE;
 #if 0
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
@@ -1558,6 +1567,7 @@ primary:
 		}
 	| object unqualified_id LEFT_RIGHT
 		{
+		  got_object = NULL_TREE;
 #if 0
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
@@ -1573,6 +1583,7 @@ primary:
 		}
 	| object qualified_id '(' nonnull_exprlist ')'
 		{
+		  got_object = NULL_TREE;
 		  if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (OP0 ($2))))
 		    {
 		      warning ("signature name in scope resolution ignored");
@@ -1584,6 +1595,7 @@ primary:
 		}
 	| object qualified_id LEFT_RIGHT
 		{
+		  got_object = NULL_TREE;
 		  if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (OP0 ($2))))
 		    {
 		      warning ("signature name in scope resolution ignored");
@@ -1595,20 +1607,27 @@ primary:
 		}
 	/* p->int::~int() is valid -- 12.4 */
 	| object '~' TYPESPEC LEFT_RIGHT
-		{ 
+		{
+		  got_object = NULL_TREE;
 		  if (TREE_CODE (TREE_TYPE ($1)) 
 		      != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($3))))
 		    cp_error ("`%E' is not of type `%T'", $1, $3);
 		  $$ = convert (void_type_node, $1);
 		}
 	| object TYPESPEC SCOPE '~' TYPESPEC LEFT_RIGHT
-		{ 
+		{
+		  got_object = NULL_TREE;
 		  if ($2 != $5)
 		    cp_error ("destructor specifier `%T::~%T()' must have matching names", $2, $5);
 		  if (TREE_CODE (TREE_TYPE ($1))
 		      != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($2))))
 		    cp_error ("`%E' is not of type `%T'", $1, $2);
 		  $$ = convert (void_type_node, $1);
+		}
+	| object error
+		{
+		  got_object = NULL_TREE;
+		  $$ = error_mark_node;
 		}
 	;
 
@@ -1690,9 +1709,11 @@ nodecls:
 	;
 
 object:	  primary '.'
+		{ got_object = TREE_TYPE ($$); }
 	| primary POINTSAT
 		{
-		  $$ = build_x_arrow ($$);
+		  $$ = build_x_arrow ($$); 
+		  got_object = TREE_TYPE ($$);
 		}
 	;
 
@@ -3288,7 +3309,7 @@ simple_stmt:
 		      else if (success == 2)
 			{
 			  cp_error ("duplicate case value `%E'", $2);
-			  cp_error_at ("`%E' previously used here", duplicate);
+			  cp_error_at ("previously used here", duplicate);
 			}
 		      else if (success == 3)
 			warning ("case value out of range");

@@ -64,6 +64,10 @@ static int global_temp_name_counter;
 /* Flag used when debugging spew.c */
 
 extern int spew_debug;
+
+/* Functions called along with real static constructors and destructors.  */
+
+tree static_ctors, static_dtors;
 
 /* C (and C++) language-specific option variables.  */
 
@@ -79,6 +83,10 @@ int flag_short_double;
 /* Nonzero means don't recognize the keyword `asm'.  */
 
 int flag_no_asm;
+
+/* Nonzero means don't recognize any extension keywords.  */
+
+int flag_no_gnu_keywords;
 
 /* Nonzero means don't recognize the non-ANSI builtin functions.  */
 
@@ -99,11 +107,12 @@ int flag_signed_bitfields = 1;
 
 /* Nonzero means handle `#ident' directives.  0 means ignore them.  */
 
-int flag_no_ident = 0;
+int flag_no_ident;
 
-/* Nonzero means disable GNU extensions.  */
+/* Nonzero means enable obscure ANSI features and disable GNU extensions
+   that might cause ANSI-compliant code to be miscompiled.  */
 
-int flag_ansi = 0;
+int flag_ansi;
 
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
@@ -113,13 +122,13 @@ int flag_implement_inlines = 1;
 /* Nonzero means do emit exported implementations of templates, instead of
    multiple static copies in each file that needs a definition. */
 
-int flag_external_templates = 0;
+int flag_external_templates;
 
 /* Nonzero means that the decision to emit or not emit the implementation of a
    template depends on where the template is instantiated, rather than where
    it is defined.  */
 
-int flag_alt_external_templates = 0;
+int flag_alt_external_templates;
 
 /* Nonzero means that implicit instantiations will be emitted if needed.  */
 
@@ -139,7 +148,7 @@ int warn_ctor_dtor_privacy = 1;
 
    Also causes output of vtables to be controlled by whether
    we seen the class's first non-inline virtual function. */
-int flag_vtable_thunks = 0;
+int flag_vtable_thunks;
 
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
@@ -198,7 +207,7 @@ int warn_conversion;
 
 /* Warn if adding () is suggested.  */
 
-int warn_parentheses = 1;
+int warn_parentheses;
 
 /* Non-zero means warn in function declared in derived class has the
    same name as a virtual in the base class, but fails to match the
@@ -229,6 +238,7 @@ int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
 /* Nonzero for -fno-strict-prototype switch: do not consider empty
    argument prototype to mean function takes no arguments.  */
 
+int flag_strict_prototype = 2;
 int strict_prototype = 1;
 int strict_prototypes_lang_c, strict_prototypes_lang_cplusplus = 1;
 
@@ -303,7 +313,7 @@ int flag_gc;
 
 /* Controls whether compiler generates 'type descriptor' that give
    run-time type information.  */
-int flag_rtti = 0;
+int flag_rtti;
 
 /* Nonzero if we wish to output cross-referencing information
    for the GNU class browser.  */
@@ -319,20 +329,27 @@ extern int flag_gnu_xref;
    In general, it is `reasonable' to assume that for many programs,
    and better code can be generated in that case.  */
 
-int flag_assume_nonnull_objects;
+int flag_assume_nonnull_objects = 1;
 
 /* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
    objects. */
+
 int flag_huge_objects;
 
 /* Nonzero if we want to conserve space in the .o files.  We do this
    by putting uninitialized data and runtime initialized data into
    .common instead of .data at the expense of not flaging multiple
    definitions.  */
+
 int flag_conserve_space;
 
 /* Nonzero if we want to obey access control semantics.  */
+
 int flag_access_control = 1;
+
+/* Nonzero if we want to understand the operator names, i.e. 'bitand'.  */
+
+int flag_operator_names;
 
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
@@ -355,7 +372,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"labels-ok", &flag_labels_ok, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"this-is-variable", &flag_this_is_variable, 1},
-  {"strict-prototype", &strict_prototypes_lang_cplusplus, 1},
+  {"strict-prototype", &flag_strict_prototype, 1},
   {"all-virtual", &flag_all_virtual, 1},
   {"memoize-lookups", &flag_memoize_lookups, 1},
   {"elide-constructors", &flag_elide_constructors, 1},
@@ -376,7 +393,9 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"vtable-thunks", &flag_vtable_thunks, 1},
   {"short-temps", &flag_short_temps, 1},
   {"access-control", &flag_access_control, 1},
-  {"nonansi-builtins", &flag_no_nonansi_builtin, 0}
+  {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
+  {"gnu-keywords", &flag_no_gnu_keywords, 0},
+  {"operator-names", &flag_operator_names, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -552,6 +571,7 @@ lang_decode_option (p)
 	  warn_ctor_dtor_privacy = setting;
 	  warn_switch = setting;
 	  warn_format = setting;
+	  warn_parentheses = setting;
 	  warn_missing_braces = setting;
 	  warn_extern_inline = setting;
 	  warn_nonvdtor = setting;
@@ -569,8 +589,8 @@ lang_decode_option (p)
       else return 0;
     }
   else if (!strcmp (p, "-ansi"))
-    flag_no_asm = 1, dollars_in_ident = 0, flag_no_nonansi_builtin = 1,
-    flag_ansi = 1;
+    dollars_in_ident = 0, flag_no_nonansi_builtin = 1, flag_ansi = 1,
+    flag_no_gnu_keywords = 1, flag_operator_names = 1;
 #ifdef SPEW_DEBUG
   /* Undocumented, only ever used when you're invoking cc1plus by hand, since
      it's probably safe to assume no sane person would ever want to use this
@@ -2674,10 +2694,10 @@ finish_file ()
      we'll need here.  */
   push_lang_context (lang_name_c);
 
-  /* Set up the name of the file-level functions we may need.  */
-  /* Use a global object (which is already required to be unique over
-     the program) rather than the file name (which imposes extra
-     constraints).  -- Raeburn@MIT.EDU, 10 Jan 1990.  */
+  if (static_ctors || vars || have_exception_handlers)
+    needs_messing_up = 1;
+  if (static_dtors)
+    needs_cleaning = 1;
 
   /* See if we really need the hassle.  */
   while (vars && needs_cleaning == 0)
@@ -2740,6 +2760,10 @@ finish_file ()
       vars = TREE_CHAIN (vars);
     }
 
+  for (; static_dtors; static_dtors = TREE_CHAIN (static_dtors))
+    expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
+					   NULL_TREE));
+      
   expand_end_bindings (getdecls(), 1, 0);
   poplevel (1, 0, 0);
   pop_momentary ();
@@ -2753,7 +2777,7 @@ finish_file ()
  mess_up:
   /* Must do this while we think we are at the top level.  */
   vars = nreverse (static_aggregates);
-  if (vars != NULL_TREE || have_exception_handlers)
+  if (needs_messing_up)
     {
       fnname = get_file_function_name ('I');
       start_function (void_list_node, build_parse_node (CALL_EXPR, fnname, void_list_node, NULL_TREE), 0, 0);
@@ -2797,6 +2821,7 @@ finish_file ()
 		 the same acess rights as a member function.  */
 	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
 
+#if 0
 	      if (init)
 		{
 		  if (TREE_CODE (init) == VAR_DECL)
@@ -2815,7 +2840,6 @@ finish_file ()
 			      && CONSTRUCTOR_ELTS (init) == NULL_TREE)
 			    init = NULL_TREE;
 			}
-#if 0
 		      else if (TREE_TYPE (decl) == TREE_TYPE (init))
 			{
 #if 1
@@ -2828,9 +2852,9 @@ finish_file ()
 			  init = DECL_INITIAL (init);
 #endif				/* 1 */
 			}
-#endif				/* 0 */
 		    }
 		}
+#endif				/* 0 */
 	      if (IS_AGGR_TYPE (TREE_TYPE (decl))
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 		expand_aggr_init (decl, init, 0, 0);
@@ -2865,6 +2889,10 @@ finish_file ()
 	  expand_cleanups_to (old_cleanups);
 	}
 
+      for (; static_ctors; static_ctors = TREE_CHAIN (static_ctors))
+	expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
+					       NULL_TREE));
+      
       expand_end_bindings (getdecls(), 1, 0);
       poplevel (1, 0, 0);
       pop_momentary ();

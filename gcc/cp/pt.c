@@ -1257,6 +1257,8 @@ tsubst (t, args, nargs, in_decl)
 		type = newtype;
 
 		fnargs = copy_node (DECL_ARGUMENTS (t));
+		TREE_CHAIN (fnargs) = TREE_CHAIN (DECL_ARGUMENTS (t));
+
 		/* In this case we need "in-charge" flag saying whether
 		   this constructor is responsible for initialization
 		   of virtual baseclasses or not.  */
@@ -1419,7 +1421,7 @@ tsubst (t, args, nargs, in_decl)
 		  r = build_lang_decl (FUNCTION_DECL, r, type);
 		  DECL_ASSEMBLER_NAME (r) = a;
 		}
-	      else if (DECL_INLINE (r) && DECL_SAVED_INSNS (r))
+	      else if (TREE_STATIC (r))
 		{
 		  /* This overrides the template version, use it. */
 		  return r;
@@ -1718,7 +1720,7 @@ instantiate_template (tmpl, targ_ptr)
 
   /* If we have a preexisting version of this function, don't expand
      the template version, use the other instead.  */
-  if (DECL_INLINE (fndecl) && DECL_SAVED_INSNS (fndecl))
+  if (TREE_STATIC (fndecl))
     {
       SET_DECL_TEMPLATE_SPECIALIZATION (fndecl);
       p = (struct pending_inline *)0;
@@ -2448,7 +2450,7 @@ do_function_instantiation (declspecs, declarator, storage)
 	  {
 	    int ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (fn));
 	    tree *targs = (tree *) malloc (sizeof (tree) * ntparms);
-	    int i, dummy;
+	    int i, dummy = 0;
 	    i = type_unification (DECL_TEMPLATE_PARMS (fn), targs,
 				  TYPE_ARG_TYPES (TREE_TYPE (fn)),
 				  TYPE_ARG_TYPES (TREE_TYPE (decl)),
@@ -2460,6 +2462,7 @@ do_function_instantiation (declspecs, declarator, storage)
 		else
 		  result = instantiate_template (fn, targs);
 	      }
+	    free (targs);
 	  }
     }
   if (! result)

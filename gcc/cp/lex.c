@@ -403,6 +403,8 @@ void
 init_lex ()
 {
   extern char *(*decl_printable_name) ();
+  extern int flag_no_gnu_keywords;
+  extern int flag_operator_names;
 
   int i;
 
@@ -788,23 +790,21 @@ init_lex ()
     }
 #endif
 
-  if (! (flag_gc || flag_rtti))
+  if (! (flag_gc || flag_rtti) || flag_no_gnu_keywords)
     {
       UNSET_RESERVED_WORD ("classof");
       UNSET_RESERVED_WORD ("headof");
     }
-  if (! flag_handle_signatures)
+  if (! flag_handle_signatures || flag_no_gnu_keywords)
     {
       /* Easiest way to not recognize signature
 	 handling extensions...  */
       UNSET_RESERVED_WORD ("signature");
       UNSET_RESERVED_WORD ("sigof");
     }
-  if (flag_no_asm)
-    UNSET_RESERVED_WORD ("asm");
-  if (flag_no_asm || flag_traditional)
+  if (flag_no_asm || flag_no_gnu_keywords)
     UNSET_RESERVED_WORD ("typeof");
-  if (!flag_ansi)
+  if (! flag_operator_names)
     {
       /* These are new ANSI keywords that may break code.  */
       UNSET_RESERVED_WORD ("and");
@@ -815,6 +815,8 @@ init_lex ()
       UNSET_RESERVED_WORD ("or");
       UNSET_RESERVED_WORD ("xor");
     }
+  if (! flag_traditional)
+    UNSET_RESERVED_WORD ("overload");
 
   token_count = init_parse ();
   interface_unknown = 1;
@@ -4211,7 +4213,7 @@ real_yylex ()
 		  goto tryagain;
 		if (width < HOST_BITS_PER_INT
 		    && (unsigned) c >= (1 << width))
-		  pedwarn ("escape sequence out of range for character");
+		  warning ("escape sequence out of range for character");
 #ifdef MAP_CHARACTER
 		if (isprint (c))
 		  c = MAP_CHARACTER (c);
@@ -4328,7 +4330,7 @@ real_yylex ()
 		if (!wide_flag
 		    && TYPE_PRECISION (char_type_node) < HOST_BITS_PER_INT
 		    && c >= ((unsigned) 1 << TYPE_PRECISION (char_type_node)))
-		  pedwarn ("escape sequence out of range for character");
+		  warning ("escape sequence out of range for character");
 	      }
 	    else if (c == '\n')
 	      {
@@ -4483,7 +4485,7 @@ real_yylex ()
 	    }
 	else if ((c == '-') && (c1 == '>'))
 	  {
-	    nextchar = skip_white_space (getch ());
+	    nextchar = getch ();
 	    if (nextchar == '*')
 	      {
 		nextchar = -1;
@@ -4510,11 +4512,22 @@ real_yylex ()
 		value = MIN_MAX;
 		nextchar = c1;
 	      }
-	    if (flag_ansi)
+	    if (pedantic)
 	      pedwarn ("use of `operator %s' is not standard C++",
 		       token_buffer);
 	    goto done;
 	  }
+	/* digraphs */
+	else if (c == '<' && c1 == '%')
+	  { value = '{'; goto done; }
+	else if (c == '<' && c1 == ':')
+	  { value = '['; goto done; }
+	else if (c == '%' && c1 == '>')
+	  { value = '}'; goto done; }
+	else if (c == '%' && c1 == ':')
+	  { value = '#'; goto done; }
+	else if (c == ':' && c1 == '>')
+	  { value = ']'; goto done; }
 
 	nextchar = c1;
 	token_buffer[1] = 0;

@@ -47,6 +47,7 @@ extern tree unary_complex_lvalue ();
 static struct harshness_code convert_harshness ();
 
 #define EVIL_RETURN(ARG)	((ARG).code = EVIL_CODE, (ARG))
+#define STD_RETURN(ARG)		((ARG).code = STD_CODE, (ARG))
 #define QUAL_RETURN(ARG)	((ARG).code = QUAL_CODE, (ARG))
 #define TRIVIAL_RETURN(ARG)	((ARG).code = TRIVIAL_CODE, (ARG))
 #define ZERO_RETURN(ARG)	((ARG).code = 0, (ARG))
@@ -117,6 +118,7 @@ convert_harshness (type, parmtype, parm)
   struct harshness_code h;
   register enum tree_code codel;
   register enum tree_code coder;
+  int lvalue;
 
   h.code = 0;
   h.distance = 0;
@@ -136,7 +138,12 @@ convert_harshness (type, parmtype, parm)
       if (parm)
 	parm = convert_from_reference (parm);
       parmtype = TREE_TYPE (parmtype);
+      lvalue = 1;
     }
+  else if (parm)
+    lvalue = lvalue_p (parm);
+  else
+    lvalue = 0;
 
   codel = TREE_CODE (type);
   coder = TREE_CODE (parmtype);
@@ -300,6 +307,14 @@ convert_harshness (type, parmtype, parm)
   if (coder == VOID_TYPE)
     return EVIL_RETURN (h);
 
+  if (codel == BOOLEAN_TYPE)
+    {
+      if (INTEGRAL_CODE_P (coder) || coder == REAL_TYPE
+	  || coder == POINTER_TYPE || coder == OFFSET_TYPE)
+	return STD_RETURN (h);
+      return EVIL_RETURN (h);
+    }
+
   if (INTEGRAL_CODE_P (codel))
     {
       /* Control equivalence of ints an enums.  */
@@ -375,11 +390,10 @@ convert_harshness (type, parmtype, parm)
       register tree ttr = TYPE_MAIN_VARIANT (TREE_TYPE (parmtype));
       int penalty = 4 * (ttl != ttr);
 
-      /* Anything converts to void *.  void * converts to anything.
-	 Since these may be `const void *' (etc.) use VOID_TYPE
-	 instead of void_type_node.  Otherwise, the targets must be the same,
-	 except that we do allow (at some cost) conversion between signed and
-	 unsigned pointer types.  */
+      /* Anything converts to void *.  Since this may be `const void *'
+	 (etc.) use VOID_TYPE instead of void_type_node.  Otherwise, the
+	 targets must be the same, except that we do allow (at some cost)
+	 conversion between signed and unsigned pointer types.  */
 
       if ((TREE_CODE (ttl) == METHOD_TYPE
 	   || TREE_CODE (ttl) == FUNCTION_TYPE)
@@ -396,7 +410,8 @@ convert_harshness (type, parmtype, parm)
 	}
 
 #if 1
-      if (TREE_CODE (ttl) != VOID_TYPE && TREE_CODE (ttr) != VOID_TYPE)
+      if (TREE_CODE (ttl) != VOID_TYPE
+	  && (TREE_CODE (ttr) != VOID_TYPE || !parm || !integer_zerop (parm)))
 	{
 	  if (TREE_UNSIGNED (ttl) != TREE_UNSIGNED (ttr))
 	    {
@@ -404,7 +419,7 @@ convert_harshness (type, parmtype, parm)
 	      ttr = unsigned_type (ttr);
 	      penalty = 10;
 	    }
-	  if (! comp_target_types (ttl, ttr, 0))
+	  if (comp_target_types (ttl, ttr, 0) <= 0)
 	    return EVIL_RETURN (h);
 	}
 #else
@@ -414,7 +429,7 @@ convert_harshness (type, parmtype, parm)
 		&& (ttl = unsigned_type (ttl),
 		    ttr = unsigned_type (ttr),
 		    penalty = 10, 0))
-	    || (comp_target_types (ttl, ttr, 0))))
+	    || (comp_target_types (ttl, ttr, 0) > 0)))
 	return EVIL_RETURN (h);
 #endif
 
@@ -503,14 +518,21 @@ convert_harshness (type, parmtype, parm)
 
       ttl = TREE_TYPE (type);
 
-      /* When passing a non-const argument into a const reference (or vice
-	 versa), dig it a little, so a non-const reference is preferred
-	 over this one. (mrs) */
-      if (TYPE_READONLY (ttl) != constp
-	  || TYPE_VOLATILE (ttl) != volatilep)
-	penalty = 2;
-      else
-	penalty = 0;
+      /* Only allow const reference binding if we were given a parm to deal
+         with, since it isn't really a conversion.  This is a hack to
+         prevent build_type_conversion from finding this conversion, but
+         still allow overloading to find it.  */
+      if (! lvalue && ! (parm && TYPE_READONLY (ttl)))
+	return EVIL_RETURN (h);
+
+      if (TYPE_READONLY (ttl) < constp
+	  || TYPE_VOLATILE (ttl) < volatilep)
+	return EVIL_RETURN (h);
+
+      /* When passing a non-const argument into a const reference, dig it a
+	 little, so a non-const reference is preferred over this one.  */
+      penalty = ((TYPE_READONLY (ttl) > constp)
+		 + (TYPE_VOLATILE (ttl) > volatilep));
 
       ttl = TYPE_MAIN_VARIANT (ttl);
 
@@ -520,98 +542,17 @@ convert_harshness (type, parmtype, parm)
 	  form = TREE_CODE (intype);
 	}
 
-      if (ttl == intype && penalty == 0)
-	return ZERO_RETURN (h);
-      else
-	penalty = 2;
-
       ttr = intype;
 
-      /* If the initializer is not an lvalue, then it does not
-	 matter if we make life easier for the programmer
-	 by creating a temporary variable with which to
-	 hold the result.  */
-      if (parm && (INTEGRAL_CODE_P (coder)
-		   || coder == REAL_TYPE)
-	  && ! lvalue_p (parm))
-	{
-	  h = convert_harshness (ttl, ttr, NULL_TREE);
-	  if (penalty > 2 || h.code != 0)
-	    h.code |= STD_CODE;
-	  else
-	    h.code |= TRIVIAL_CODE;
-	  h.distance = 0;
-	  return h;
-	}
+      /* Maybe handle conversion to base here?  */
 
-      if (TREE_UNSIGNED (ttl) ^ TREE_UNSIGNED (intype))
+      h = convert_harshness (ttl, ttr, NULL_TREE);
+      if (penalty && h.code == 0)
 	{
-	  ttl = unsigned_type (ttl);
-	  ttr = intype = unsigned_type (intype);
-	  penalty += 2;
+	  h.code = QUAL_CODE;
+	  h.int_penalty = penalty;
 	}
-
-      if (ttl == ttr)
-	{
-	  if (penalty > 2)
-	    {
-	      h.code = STD_CODE;
-	      h.distance = 0;
-	    }
-	  else
-	    {
-	      h.code = TRIVIAL_CODE;
-	      /* We set this here so that build_overload_call_real will be
-		 able to see the penalty we found, rather than just looking
-		 at a TRIVIAL_CODE with no other information.  */
-	      h.int_penalty = penalty;
-	    }
-	  return h;
-	}
-
-      /* Pointers to voids always convert for pointers.  But
-	 make them less natural than more specific matches.  */
-      if (TREE_CODE (ttl) == POINTER_TYPE && TREE_CODE (ttr) == POINTER_TYPE)
-	{
-	  if (TREE_TYPE (ttl) == void_type_node
-	      || TREE_TYPE (ttr) == void_type_node)
-	    {
-	      h.code = STD_CODE;
-	      h.distance = 0;
-	      return h;
-	    }
-	}
-
-      /* Here it does matter.  If this conversion is from derived to base,
-	 allow it.  Otherwise, types must be compatible in the strong sense.  */
-      if (TREE_CODE (ttl) == RECORD_TYPE && TREE_CODE (ttr) == RECORD_TYPE)
-	{
-	  int b_or_d = get_base_distance (ttl, ttr, 0, 0);
-	  if (b_or_d < 0)
-	    {
-	      b_or_d = get_base_distance (ttr, ttl, 0, 0);
-	      if (b_or_d < 0)
-		return EVIL_RETURN (h);
-	      h.distance = -b_or_d;
-	    }
-	  /* Say that this conversion is relatively painless.
-	     If it turns out that there is a user-defined X(X&)
-	     constructor, then that will be invoked, but that's
-	     preferable to dealing with other user-defined conversions
-	     that may produce surprising results.  */
-	  else
-	    h.distance = b_or_d;
-	  h.code = STD_CODE;
-	  return h;
-	}
-
-      if (comp_target_types (ttl, intype, 1))
-	{
-	  if (penalty)
-	    h.code = STD_CODE;
-	  h.distance = 0;
-	  return h;
-	}
+      return h;
     }
   if (codel == RECORD_TYPE && coder == RECORD_TYPE)
     {
@@ -629,6 +570,15 @@ convert_harshness (type, parmtype, parm)
       return h;
     }
   return EVIL_RETURN (h);
+}
+
+int
+can_convert (to, from)
+     tree to, from;
+{
+  struct harshness_code h;
+  h = convert_harshness (to, from, NULL_TREE);
+  return h.code < USER_CODE;
 }
 
 #ifdef DEBUG_MATCHING
@@ -2134,6 +2084,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    basetype_path = TREE_VALUE (basetype_path);
 	  basetype = BINFO_TYPE (basetype_path);
 
+#if 0
 	  /* Cast the instance variable if necessary.  */
 	  if (basetype != TYPE_MAIN_VARIANT
 	      (TREE_TYPE (TREE_TYPE (TREE_VALUE (parms)))))
@@ -2152,6 +2103,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	     the access-control rewrite will make this change more cleanly.  */
 	  if (TREE_VALUE (parms) == error_mark_node)
 	    return error_mark_node;
+#endif
 
 	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function)))
 	    function = DECL_CHAIN (function);
@@ -2208,19 +2160,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
 			  && (cp->h.code & USER_CODE))
 			continue;
 
-		      /* If we used default parameters, we must
-			 check to see whether anyone else might
-			 use them also, and report a possible
-			 ambiguity.  */
-		      if (! TYPE_USES_MULTIPLE_INHERITANCE (save_basetype)
-			  && cp->harshness[len].distance == 0
-			  && cp->h.code < best)
-			{
-			  if (! DECL_STATIC_FUNCTION_P (function))
-			    TREE_VALUE (parms) = cp->arg;
-			  if (best == 1)
-			    goto found_and_maybe_warn;
-			}
 		      cp++;
 		    }
 		}

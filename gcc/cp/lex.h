@@ -123,6 +123,7 @@ extern int looking_for_template;
 
 /* Tell the lexer where to look for names.  */
 extern tree got_scope;
+extern tree got_object;
 
 /* Pending language change.
    Positive is push count, negative is pop count.  */
