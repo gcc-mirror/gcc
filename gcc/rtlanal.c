@@ -70,9 +70,17 @@ rtx_unstable_p (x)
 
     case REG:
       /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
-      return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-		|| x == arg_pointer_rtx || x == pic_offset_table_rtx
-		|| RTX_UNCHANGING_P (x));
+      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+	  || x == arg_pointer_rtx || RTX_UNCHANGING_P (x))
+	return 0;
+#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+      /* ??? When call-clobbered, the value is stable modulo the restore
+	 that must happen after a call.  This currently screws up local-alloc
+	 into believing that the restore is not needed.  */
+      if (x == pic_offset_table_rtx)
+	return 0;
+#endif
+      return 1;
 
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
@@ -135,8 +143,17 @@ rtx_varies_p (x)
 	 and arg pointers and not just the register number in case we have
 	 eliminated the frame and/or arg pointer and are using it
 	 for pseudos.  */
-      return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-		|| x == arg_pointer_rtx || x == pic_offset_table_rtx);
+      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+	  || x == arg_pointer_rtx)
+	return 0;
+#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+      /* ??? When call-clobbered, the value is stable modulo the restore
+	 that must happen after a call.  This currently screws up local-alloc
+	 into believing that the restore is not needed.  */
+      if (x == pic_offset_table_rtx)
+	return 0;
+#endif
+      return 1;
 
     case LO_SUM:
       /* The operand 0 of a LO_SUM is considered constant

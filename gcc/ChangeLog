@@ -1,3 +1,8 @@
+2000-10-24  Richard Henderson  <rth@cygnus.com>
+
+	* rtlanal.c (rtx_unstable_p, rtx_varies_p): Don't consider pic
+	register stable if PIC_OFFSET_TABLE_REG_CALL_CLOBBERED.
+
 2000-10-24  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcse.c (cprop_insn): do not propagate constants into jump_insn
