@@ -1412,7 +1412,7 @@ ovl_member (fn, ovl)
   if (!ovl || TREE_CODE (ovl) != OVERLOAD)
     return 0;
   for (; ovl; ovl = OVL_CHAIN (ovl))
-    if (OVL_FUNCTION (ovl) == fn)
+    if (decls_match (OVL_FUNCTION (ovl), fn))
       return 1;
   return 0;
 }
