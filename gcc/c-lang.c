@@ -168,14 +168,14 @@ finish_file ()
 #endif
   extern tree build_function_call                 PROTO((tree, tree));
 #if !defined(ASM_OUTPUT_CONSTRUCTOR) || !defined(ASM_OUTPUT_DESTRUCTOR)
-  tree void_list_node = build_tree_list (NULL_TREE, void_type_node);
+  tree void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
 #endif
 #ifndef ASM_OUTPUT_CONSTRUCTOR
   if (static_ctors)
     {
       tree fnname = get_file_function_name ('I');
-      start_function (void_list_node,
-		      build_parse_node (CALL_EXPR, fnname, void_list_node,
+      start_function (void_list_node_1,
+		      build_parse_node (CALL_EXPR, fnname, void_list_node_1,
 					NULL_TREE),
 		      NULL_TREE, NULL_TREE, 0);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
@@ -194,8 +194,8 @@ finish_file ()
   if (static_dtors)
     {
       tree fnname = get_file_function_name ('D');
-      start_function (void_list_node,
-		      build_parse_node (CALL_EXPR, fnname, void_list_node,
+      start_function (void_list_node_1,
+		      build_parse_node (CALL_EXPR, fnname, void_list_node_1,
 					NULL_TREE),
 		      NULL_TREE, NULL_TREE, 0);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
