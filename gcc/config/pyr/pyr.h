@@ -1045,7 +1045,7 @@ extern int current_function_calls_alloca;
 /* #define NO_FUNCTION_CSE */
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
-#define PROMOTE_PROTOTYPES
+#define PROMOTE_PROTOTYPES 1
 
 /* There are no flag store insns on a pyr. */
 /* #define STORE_FLAG_VALUE */
