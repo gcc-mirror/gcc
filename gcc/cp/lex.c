@@ -1998,22 +1998,10 @@ cons_up_default_function (type, full_name, kind)
 
   {
     tree declarator = make_call_declarator (name, args, NULL_TREE, NULL_TREE);
-    int saved_processing_specialization;
-    int saved_processing_explicit_instantiation;
     if (retref)
       declarator = build_parse_node (ADDR_EXPR, declarator);
 
-    /* The following is in case we're generating the default
-       implementation in the midst of handling a specialization. */
-    saved_processing_specialization = processing_specialization;
-    saved_processing_explicit_instantiation =
-      processing_explicit_instantiation; 
-    processing_specialization = 0;
-    processing_explicit_instantiation = 0;
     fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
-    processing_specialization = saved_processing_specialization;
-    processing_explicit_instantiation = 
-      saved_processing_explicit_instantiation;
   }
   
   if (fn == void_type_node)

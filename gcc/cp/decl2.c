@@ -2940,7 +2940,7 @@ finish_file ()
 	continue;
 
       fn = TREE_PURPOSE (fnname);
-      args = get_bindings (fn, decl);
+      args = get_bindings (fn, decl, NULL_TREE);
       fn = instantiate_template (fn, args);
       instantiate_decl (fn);
     }
@@ -3605,21 +3605,10 @@ build_expr_from_tree (t)
       }
 
     case COMPONENT_REF:
-      {
-	tree object = build_expr_from_tree (TREE_OPERAND (t, 0));
-
-	if (object != NULL_TREE 
-	    && TREE_CODE (object) == TEMPLATE_DECL)
-	  {
-	    cp_error ("invalid use of %D", object);
-	    object = error_mark_node;
-	  }
-
-	return build_x_component_ref
-	  (object,
-	   TREE_OPERAND (t, 1), NULL_TREE, 1);
-      }
-
+      return build_x_component_ref
+	(build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 TREE_OPERAND (t, 1), NULL_TREE, 1);
+      
     case THROW_EXPR:
       return build_throw (build_expr_from_tree (TREE_OPERAND (t, 0)));
 

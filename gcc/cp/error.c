@@ -1661,7 +1661,7 @@ fndecl_as_string (fndecl, print_ret_type_p)
   return decl_as_string (fndecl, print_ret_type_p);
 }
 
-/* Same, but handtype a _TYPE.
+/* Same, but handle a _TYPE.
    Called from convert_to_reference, mangle_class_name_for_template,
    build_unary_op, and GNU_xref_decl.  */
 

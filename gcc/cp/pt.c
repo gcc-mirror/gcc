@@ -85,7 +85,36 @@ static int  type_unification_real PROTO((tree, tree *, tree, tree, int*,
 					 int, int, int));
 static void note_template_header PROTO((int));
 static tree maybe_fold_nontype_arg PROTO((tree));
-static tree convert_nontype_parameter PROTO((tree, tree));
+static tree convert_nontype_argument PROTO((tree, tree));
+
+/* Do any processing required when DECL (a member template declaration
+   using TEMPLATE_PARAMETERS as its innermost parameter list) is
+   finished.  Returns the TEMPLATE_DECL corresponding to DECL, unless
+   it is a specialization, in which case the DECL itself is returned.  */
+
+tree
+finish_member_template_decl (template_parameters, decl)
+  tree template_parameters;
+  tree decl;
+{
+  if (template_parameters)
+    end_template_decl();
+  else
+    end_specialization();
+
+  if (decl && DECL_TEMPLATE_INFO (decl) &&
+      !DECL_TEMPLATE_SPECIALIZATION (decl))
+    {
+      check_member_template (DECL_TI_TEMPLATE (decl));
+      return DECL_TI_TEMPLATE (decl);
+    }
+
+  if (decl)
+    return decl;
+
+  cp_error ("invalid member template declaration");
+  return NULL_TREE;
+}
 
 /* Restore the template parameter context. */
 
@@ -399,8 +428,6 @@ register_specialization (spec, tmpl, args)
 		       used.  That situation can occur if we have
 		       implicitly instantiated a member function of
 		       class type, and then specialized it later.  */
-
-		    /* FIXME: Should we call duplicate_decls here?  */
 		    TREE_VALUE (s) = spec;
 		    return;
 		  }
@@ -410,7 +437,6 @@ register_specialization (spec, tmpl, args)
 		if (DECL_INITIAL (fn))
 		  cp_error ("duplicate specialization of %D", fn);
 
-		/* FIXME: Should we call duplicate_decls here?  */
 		TREE_VALUE (s) = spec;
 		return;
 	      }
@@ -422,30 +448,51 @@ register_specialization (spec, tmpl, args)
 }
 
 
+/* Print the list of candidate FNS in an error message.  */
+
+static void
+print_candidates (fns)
+     tree fns;
+{
+  tree fn;
+
+  char* str = "candidates are:";
+
+  for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
+    {
+      cp_error_at ("%s %+#D", str, TREE_VALUE (fn));
+      str = "               ";
+    }
+}
+
 /* Returns the template (one of the functions given by TEMPLATE_ID)
-   which can be specialized to have the indicated TYPE with the
-   explicit template args given in TEMPLATE_ID.  TARGS_IN.  The
-   template args (those explicitly specified and those deduced) are
-   output in a newly created vector *TARGS_OUT.  If it is impossible
-   to determine the result, an error message is issued, unless
-   COMPLAIN is 0.  */
+   which can be specialized to match the indicated DECL with the
+   explicit template args given in TEMPLATE_ID.  If
+   NEED_MEMBER_TEMPLATE is true the function is a specialization of a
+   member template.  The template args (those explicitly specified and
+   those deduced) are output in a newly created vector *TARGS_OUT.  If
+   it is impossible to determine the result, an error message is
+   issued, unless COMPLAIN is 0.  The DECL may be NULL_TREE if none is
+   available.  */
 
 tree
-determine_specialization (template_id, type, targs_out, 
+determine_specialization (template_id, decl, targs_out, 
 			  need_member_template,
 			  complain)
      tree template_id;
-     tree type;
+     tree decl;
      tree* targs_out;
      int need_member_template;
      int complain;
 {
   tree fns = TREE_OPERAND (template_id, 0);
   tree targs_in = TREE_OPERAND (template_id, 1);
-  tree matching_fns = NULL_TREE;
+  tree templates = NULL_TREE;
   tree fn;
   int overloaded;
   int i;
+
+  *targs_out = NULL_TREE;
 
   if (is_overloaded_fn (fns))
     fn = get_first_fn (fns);
@@ -457,17 +504,21 @@ determine_specialization (template_id, type, targs_out,
        fn = overloaded ? DECL_CHAIN (fn) : NULL_TREE)
     {
       int dummy = 0;
-      tree targs;
-      tree t;
       tree tmpl;
 
       if (!need_member_template 
 	  && TREE_CODE (fn) == FUNCTION_DECL 
+	  && DECL_FUNCTION_MEMBER_P (fn)
 	  && DECL_USE_TEMPLATE (fn)
 	  && DECL_TI_TEMPLATE (fn))
+	/* We can get here when processing something like:
+	     template <class T> class X { void f(); }
+	     template <> void X<int>::f() {}
+	   We're specializing a member function, but not a member
+	   template.  */
 	tmpl = DECL_TI_TEMPLATE (fn);
       else if (TREE_CODE (fn) != TEMPLATE_DECL
-	  || (need_member_template && !is_member_template (fn)))
+	       || (need_member_template && !is_member_template (fn)))
 	continue;
       else
 	tmpl = fn;
@@ -475,77 +526,64 @@ determine_specialization (template_id, type, targs_out,
       if (list_length (targs_in) > DECL_NTPARMS (tmpl))
 	continue;
 
-      targs = make_scratch_vec (DECL_NTPARMS (tmpl));
-
-      /* We allow incomplete unification here, because we are going to
-	 check all the functions. */
-      i = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
-			    &TREE_VEC_ELT (targs, 0),
-			    type 
-			    ? TYPE_ARG_TYPES (TREE_TYPE (tmpl)) : NULL_TREE, 
-			    type ? TYPE_ARG_TYPES (type) : NULL_TREE,
-			    targs_in,
-			    &dummy, 1, 1);
-      
-      if (i == 0) 
+      if (decl == NULL_TREE)
 	{
-	  /* Unification was successful.  See if the return types
-	     match. */
-	  if (type != NULL_TREE)
-	    {
-	      tree tmpl_return_type = tsubst (TREE_TYPE (TREE_TYPE (tmpl)),
-					      targs,
-					      DECL_NTPARMS (tmpl),
-					      NULL_TREE);
-	      
-	      if (tmpl_return_type != TREE_TYPE (type))
-		{
-		  /* Always complain about this.  With ambiguity, some
-		     other context, might resolve things.  But, a
-		     non-matching return type will always be a
-		     problem.  */
-		  cp_error ("Return type of explicit specialization of");
-		  cp_error ("`%D' is `%T', but should be `%T'.", 
-			    tmpl, TREE_TYPE (type), tmpl_return_type);
-		  *targs_out = NULL_TREE;
-		  return NULL_TREE;
-		}
-	    }
+	  tree targs = make_scratch_vec (DECL_NTPARMS (tmpl));
 
-	  matching_fns = scratch_tree_cons (tmpl, targs, matching_fns);
+	  /* We allow incomplete unification here, because we are going to
+	     check all the functions. */
+	  i = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
+				&TREE_VEC_ELT (targs, 0),
+				NULL_TREE,
+				NULL_TREE,  
+				targs_in,
+				&dummy, 1, 1);
+      
+	  if (i == 0) 
+	    /* Unification was successful.  */
+	    templates = scratch_tree_cons (targs, tmpl, templates);
 	}
+      else
+	templates = scratch_tree_cons (NULL_TREE, tmpl, templates);
     }
   
-  if (matching_fns == NULL_TREE)
+  if (decl != NULL_TREE)
     {
+      tree tmpl = most_specialized (templates, decl, targs_in);
+
+      if (tmpl == error_mark_node) 
+	goto ambiguous;
+      else if (tmpl == NULL_TREE)
+	goto no_match;
+
+      *targs_out = get_bindings (tmpl, decl, targs_in);
+      return tmpl;
+    }
+
+  if (templates == NULL_TREE)
+    {
+    no_match:
       if (complain)
-	cp_error ("`%D' does not match any template declaration.",
+	cp_error ("`%D' does not match any template declaration",
 		  template_id);
       
-      *targs_out = NULL_TREE;
       return NULL_TREE;
     }
-  
-  if (TREE_CHAIN (matching_fns) != NULL_TREE) 
+  else if (TREE_CHAIN (templates) != NULL_TREE) 
     {
+    ambiguous:
       if (complain)
 	{
-	  tree tmpl;
-	  
-	  cp_error ("Ambiguous explicit specialization.  Candidates are:");
-	  for (tmpl = matching_fns; 
-	       tmpl != NULL_TREE; 
-	       tmpl = TREE_CHAIN (tmpl)) 
-	    cp_error ("    %D", TREE_PURPOSE (tmpl));
+	  cp_error ("ambiguous template specialization `%D'",
+		    template_id);
+	  print_candidates (templates);
 	}
-
-      *targs_out = NULL_TREE;
       return NULL_TREE;
     }
 
   /* We have one, and exactly one, match. */
-  *targs_out = TREE_VALUE (matching_fns);
-  return TREE_PURPOSE (matching_fns);
+  *targs_out = TREE_PURPOSE (templates);
+  return TREE_VALUE (templates);
 }
 
 	
@@ -554,7 +592,8 @@ determine_specialization (template_id, type, targs_out,
    template.  We may also discover that the declaration is an explicit
    instantiation at this point.
 
-   Returns:
+   Returns DECL, or an equivalent declaration that should be used
+   instead. 
    
      0: The function is not an explicit specialization or instantiation.
      1: The function is an explicit specialization.
@@ -595,7 +634,7 @@ determine_specialization (template_id, type, targs_out,
    is set up correctly, and it is added to the list of specializations 
    for that template.  */
 
-int
+tree
 check_explicit_specialization (declarator, decl, template_count, flags)
      tree declarator;
      tree decl;
@@ -606,6 +645,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
   int have_def = flags & 2;
   int is_friend = flags & 4;
   int specialization = 0;
+  int explicit_instantiation = 0;
   int member_specialization = flags & 8;
 
   tree ctype = DECL_CLASS_CONTEXT (decl);
@@ -659,7 +699,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
 		 But, we're missing another template <>.  */
 	      cp_error("too few template parameter lists in declaration of `%D'", decl);
-	      return 0;
+	      return decl;
 	    } 
 	}
       else if (processing_explicit_instantiation)
@@ -670,12 +710,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  if (have_def)
 	    cp_error ("definition provided for explicit instantiation");
 
-	  SET_DECL_EXPLICIT_INSTANTIATION (decl);
-
-	  /* We don't try to figure out what's being explicitly
-	     instantiated at this point, since do_decl_instantiation
-	     will do that later.  */
-	  return 2;
+	  explicit_instantiation = 1;
 	}
       else if ((ctype != NULL_TREE
 		&& !TYPE_BEING_DEFINED (ctype)
@@ -700,22 +735,19 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     void f<int>();  */
 
 	  if (template_header_count > template_count)
-	    {
-	      cp_error ("template-id `%D' in declaration of primary template",
-			declarator);
-	      return 0;
-	    }
-	  
-	  cp_error ("explicit specialization not preceded by `template <>'");
-	  return 0;
+	    cp_error ("template-id `%D' in declaration of primary template",
+		      declarator);
+	  else
+	    cp_error ("explicit specialization not preceded by `template <>'");
+
+	  return decl;
 	}
     }
 
-  if (specialization || member_specialization)
+  if (specialization || member_specialization || explicit_instantiation)
     {
       tree tmpl = NULL_TREE;
       tree targs = NULL_TREE;
-      tree targs_in;
 
       /* Make sure that the declarator is a TEMPLATE_ID_EXPR.  */
       if (TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
@@ -738,8 +770,9 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  /* A friend declaration.  We can't do much, because we don't
 	   know what this resolves to, yet.  */
 	  my_friendly_assert (is_friend != 0, 0);
+	  my_friendly_assert (!explicit_instantiation, 0);
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
-	  return 1;
+	  return decl;
 	} 
 
       if (ctype != NULL_TREE && TYPE_BEING_DEFINED (ctype))
@@ -748,17 +781,16 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     can't call lookup_fnfields.  We note that this
 	     template is a specialization, and proceed, letting
 	     finish_struct fix this up later.  */
-	  DECL_TEMPLATE_INFO (decl) 
-	    = perm_tree_cons (NULL_TREE, 
-			      TREE_OPERAND (declarator, 1),
-			      /* We remember whether or not this was a
-				 member specialization by recording
-				 this value, temporarily, in the
-				 TREE_CHAIN field.  Nobody looks at
-				 this, and we clear it in
-				 finish_struct.  */ 
-			      (tree) member_specialization);
-	  return 1;
+	  tree ti = perm_tree_cons (NULL_TREE, 
+				    TREE_OPERAND (declarator, 1),
+				    NULL_TREE);
+	  TI_PENDING_SPECIALIZATION_FLAG (ti) = 1;
+	  DECL_TEMPLATE_INFO (decl) = ti;
+	  /* This should not be an instantiation; explicit
+	     instantiation directives can only occur at the top
+	     level.  */
+	  my_friendly_assert (!explicit_instantiation, 0);
+	  return decl;
 	}
       else if (ctype != NULL_TREE 
 	       && (TREE_CODE (TREE_OPERAND (declarator, 0)) ==
@@ -778,14 +810,16 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		  : !TYPE_HAS_DESTRUCTOR (ctype))
 		{
 		  /* From [temp.expl.spec]:
-
+		       
 		     If such an explicit specialization for the member
 		     of a class template names an implicitly-declared
 		     special member function (clause _special_), the
-		     program is ill-formed.  */
+		     program is ill-formed.  
+
+		     Similar language is found in [temp.explicit].  */
 		  cp_error ("specialization of implicitly-declared special member function");
 
-		  return 1;
+		  return decl;
 		}
 
 	      fns = TREE_VEC_ELT(CLASSTYPE_METHOD_VEC (ctype),
@@ -800,22 +834,49 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      cp_error ("no member function `%s' declared in `%T'",
 			IDENTIFIER_POINTER (name),
 			ctype);
-	      return 1;
+	      return decl;
 	    }
 	  else
 	    TREE_OPERAND (declarator, 0) = fns;
 	}
       
-      /* Figure out what exactly is being specialized at this point.  */
-      tmpl = determine_specialization (declarator,
-				       TREE_TYPE (decl), &targs, 
+      /* Figure out what exactly is being specialized at this point.
+	 Note that for an explicit instantiation, even one for a
+	 member function, we cannot tell apriori whether the the
+	 instantiation is for a member template, or just a member
+	 function of a template class.  In particular, even in if the
+	 instantiation is for a member template, the template
+	 arguments could be deduced from the declaration.  */
+      tmpl = determine_specialization (declarator, decl,
+				       &targs, 
 				       member_specialization,
 				       1);
 	    
       if (tmpl)
 	{
-	  /* Mangle the function name appropriately.  */
-	  if ((member_specialization || ctype == NULL_TREE)
+	  if (explicit_instantiation)
+	    {
+	      decl = instantiate_template (tmpl, targs);
+	      if (!DECL_TEMPLATE_SPECIALIZATION (decl))
+		/* There doesn't seem to be anything in the draft to
+		   prevent a specialization from being explicitly
+		   instantiated.  We're careful not to destroy the
+		   information indicating that this is a
+		   specialization here.  */
+		SET_DECL_EXPLICIT_INSTANTIATION (decl);
+	      return decl;
+	    }
+
+	  /* Mangle the function name appropriately.  Note that we do
+	     not mangle specializations of non-template member
+	     functions of template classes, e.g. with
+	       template <class T> struct S { void f(); }
+	     and given the specialization 
+	       template <> void S<int>::f() {}
+	     we do not mangle S<int>::f() here.  That's because it's
+	     just an ordinary member function and doesn't need special
+	     treatment.  */
+	  if ((is_member_template (tmpl) || ctype == NULL_TREE)
 	      && name_mangling_version >= 1)
 	    {
 	      tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (tmpl));
@@ -843,7 +904,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      SET_DECL_IMPLICIT_INSTANTIATION (decl);
 	      DECL_TEMPLATE_INFO (decl) 
 		= perm_tree_cons (tmpl, targs, NULL_TREE);
-	      return 2;
+	      return decl;
 	    }
 
 	  /* If DECL_TI_TEMPLATE (decl), the decl is an
@@ -868,11 +929,11 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
 	  register_specialization (decl, tmpl, targs);
 
-	  return 1;
+	  return decl;
 	}
     }
   
-  return 0;
+  return decl;
 }
 
 
@@ -1113,6 +1174,10 @@ current_template_args ()
   return args;
 }
 
+
+/* Return a TEMPLATE_DECL corresponding to DECL, using the indicated
+   template PARMS.  Used by push_template_decl below.  */
+
 static tree
 build_template_decl (decl, parms)
      tree decl;
@@ -1147,7 +1212,9 @@ push_template_decl (decl)
       && DECL_CLASS_CONTEXT (decl))
     ;
   /* Note that this template is a "primary template" */
-  else if (! ctx || ! CLASSTYPE_TEMPLATE_INFO (ctx)
+  else if (! ctx 
+	   || (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't' 
+	       && ! CLASSTYPE_TEMPLATE_INFO (ctx))
       /* || (processing_template_decl > CLASSTYPE_TEMPLATE_LEVEL (ctx)) */)
     primary = 1;
 
@@ -1307,38 +1374,6 @@ push_template_decl (decl)
 }
 
 
-/* Attempt to determine which of the overloaded functions given by
-   FNS has the indicated TYPE.  If this cannot be determined
-   unambiguously, return error_mark_node.  */
-
-static tree
-determine_overloaded_function (type, fns)
-     tree type;
-     tree fns;
-{
-  tree fn;
-
-  my_friendly_assert (fns != NULL_TREE, 0);
-  
-  if (!is_overloaded_fn (fns))
-    return error_mark_node;
-  
-  if (really_overloaded_fn (fns))
-    {
-      fn = instantiate_type (type, fns, 0);
-      if (fn == error_mark_node)
-	/* We couldn't resolve the overloading.  */
-	return error_mark_node;
-    }
-  else
-    fn = get_first_fn (fns);
-  
-  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 0);
-
-  return fn;
-}
-
-
 /* Attempt to convert the non-type template parameter EXPR to the
    indicated TYPE.  If the conversion is successful, return the
    converted value.  If the conversion is unsuccesful, return
@@ -1350,7 +1385,7 @@ determine_overloaded_function (type, fns)
    parameters.  */
 
 static tree
-convert_nontype_parameter (type, expr)
+convert_nontype_argument (type, expr)
      tree type;
      tree expr;
 {
@@ -1486,7 +1521,7 @@ convert_nontype_parameter (type, expr)
 	    else
 	      fns = expr;
 
-	    fn = determine_overloaded_function (type_pointed_to, fns);
+	    fn = instantiate_type (type_pointed_to, fns, 0);
 
 	    if (fn == error_mark_node)
 	      return error_mark_node;
@@ -1515,8 +1550,11 @@ convert_nontype_parameter (type, expr)
 	       (_conv.ptr_) are applied.  Although 0 is a valid
 	       template-argument for a non-type template-parameter of
 	       integral type, it is not a valid template-argument for a
-	       non-type template-parameter of pointer type.]  */
-	    expr = perform_array_to_pointer_conversion (expr);
+	       non-type template-parameter of pointer type.]  
+	    
+	       The call to decay_conversion performs the
+	       array-to-pointer conversion, if appropriate.  */
+	    expr = decay_conversion (expr);
 
 	    if (expr == error_mark_node)
 	      return error_mark_node;
@@ -1540,7 +1578,7 @@ convert_nontype_parameter (type, expr)
 	    tree fns = expr;
 	    tree fn;
 
-	    fn = determine_overloaded_function (type_referred_to, fns);
+	    fn = instantiate_type (type_referred_to, fns, 0);
 
 	    if (!TREE_PUBLIC (fn))
 	      {
@@ -1614,8 +1652,8 @@ convert_nontype_parameter (type, expr)
 
 	fns = TREE_OPERAND (expr, 0);
 	
-	fn = determine_overloaded_function (TREE_TYPE (TREE_TYPE (type)), 
-					    fns);
+	fn = instantiate_type (TREE_TYPE (TREE_TYPE (type)), 
+			       fns, 0);
 	
 	if (fn == error_mark_node)
 	  return error_mark_node;
@@ -1908,7 +1946,7 @@ coerce_template_parms (parms, arglist, in_decl,
 	       conversions can occur is part of determining which
 	       function template to call, or whether a given epxlicit
 	       argument specification is legal.  */
-	    val = convert_nontype_parameter (t, arg);
+	    val = convert_nontype_argument (t, arg);
 	  else
 	    val = arg;
 
@@ -1999,7 +2037,14 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
 
   if (ctx)
     {
-      char* s = fndecl_as_string(ctx, 0);
+      char* s;
+
+      if (TREE_CODE (ctx) == FUNCTION_DECL)
+	s = fndecl_as_string(ctx, 0);
+      else if (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't')
+	s = type_as_string(ctx, 0);
+      else
+	my_friendly_abort (0);
       cat (s);
       cat ("::");
     }
@@ -2079,9 +2124,7 @@ classtype_mangled_name (t)
       char *mangled_name = mangle_class_name_for_template
 	(IDENTIFIER_POINTER (name),
 	 DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (t)),
-	 CLASSTYPE_TI_ARGS (t), 
-	 (DECL_CONTEXT (t) && TREE_CODE (t) == FUNCTION_DECL) ? 
-	 DECL_CONTEXT (t) : NULL_TREE);
+	 CLASSTYPE_TI_ARGS (t), DECL_CONTEXT (t));
       tree id = get_identifier (mangled_name);
       IDENTIFIER_TEMPLATE (id) = name;
       return id;
@@ -2150,10 +2193,10 @@ lookup_template_function (fns, arglist)
    being instantiated.  */
 
 tree
-lookup_template_class (d1, arglist, in_decl, function_context)
+lookup_template_class (d1, arglist, in_decl, context)
      tree d1, arglist;
      tree in_decl;
-     tree function_context;
+     tree context;
 {
   tree template, parmlist;
   char *mangled_name;
@@ -2220,7 +2263,9 @@ lookup_template_class (d1, arglist, in_decl, function_context)
       TYPE_SIZE (parm) = 0;
       return parm;
     }
-  else if (PRIMARY_TEMPLATE_P (template))
+  else if (PRIMARY_TEMPLATE_P (template)
+	   || (TREE_CODE (TYPE_CONTEXT (TREE_TYPE (template))) 
+	       == FUNCTION_DECL))
     {
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
 
@@ -2258,22 +2303,22 @@ lookup_template_class (d1, arglist, in_decl, function_context)
       mangled_name = mangle_class_name_for_template (IDENTIFIER_POINTER (d1),
 						     parmlist,
 						     arglist,
-						     function_context);
+						     context);
       id = get_identifier (mangled_name);
       IDENTIFIER_TEMPLATE (id) = d1;
 
       maybe_push_to_top_level (uses_template_parms (arglist));
       t = xref_tag_from_type (TREE_TYPE (template), id, 1);
 
-      if (function_context != NULL_TREE)
+      if (context != NULL_TREE)
 	{
 	  /* Set up the context for the type_decl correctly.  Note
 	     that we must clear DECL_ASSEMBLER_NAME to fool
 	     build_overload_name into creating a new name.  */
 	  tree type_decl = TYPE_STUB_DECL (t);
 
-	  TYPE_CONTEXT (t) = function_context;
-	  DECL_CONTEXT (type_decl) = function_context;
+	  TYPE_CONTEXT (t) = context;
+	  DECL_CONTEXT (type_decl) = context;
 	  DECL_ASSEMBLER_NAME (type_decl) = DECL_NAME (type_decl);
 	  DECL_ASSEMBLER_NAME (type_decl) = 
 	    get_identifier (build_overload_name (t, 1, 1));
@@ -2975,8 +3020,8 @@ tsubst (t, args, nargs, in_decl)
 	  tree context;
 	  tree r;
 
-	  context = (TYPE_CONTEXT (t) 
-		     && TREE_CODE (TYPE_CONTEXT (t)) == FUNCTION_DECL)
+	  context = 
+	    TYPE_CONTEXT (t) 
 	    ? tsubst (TYPE_CONTEXT (t), args, nargs, in_decl) : NULL_TREE;
 
 	  r = lookup_template_class (t, argvec, in_decl, context);
@@ -3090,7 +3135,8 @@ tsubst (t, args, nargs, in_decl)
 			  arg = TYPE_NAME (arg);
 
 			r = lookup_template_class (DECL_NAME (arg), 
-						   argvec, in_decl, NULL_TREE);
+						   argvec, in_decl, 
+						   DECL_CONTEXT (arg));
 			return cp_build_type_variant (r, TYPE_READONLY (t),
 						      TYPE_VOLATILE (t));
 		      }
@@ -3261,6 +3307,7 @@ tsubst (t, args, nargs, in_decl)
 
 	r = copy_node (t);
 	copy_lang_decl (r);
+	DECL_USE_TEMPLATE (r) = 0;
 	TREE_TYPE (r) = type;
 
 	DECL_CONTEXT (r)
@@ -3455,12 +3502,13 @@ tsubst (t, args, nargs, in_decl)
 
 	    DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
 
-	    /* If we have a preexisting version of this function, don't expand
-	       the template version, use the other instead.  */
-	    if (TREE_STATIC (r) || 
-		(DECL_TEMPLATE_SPECIALIZATION (r) &&
-		 /* FIXME: Explain this condition.  */
-		 !DECL_TEMPLATE_SPECIALIZATION (tmpl)))
+	    /* If we're not using ANSI overloading, then we might have
+	       called duplicate_decls above, and gotten back an
+	       preexisting version of this function.  We treat such a
+	       function as a specialization.  Otherwise, we cleared
+	       both TREE_STATIC and DECL_TEMPLATE_SPECIALIZATION, so
+	       this condition will be false.  */
+	    if (TREE_STATIC (r) || DECL_TEMPLATE_SPECIALIZATION (r))
 	      SET_DECL_TEMPLATE_SPECIALIZATION (r);
 	    else
 	      SET_DECL_IMPLICIT_INSTANTIATION (r);
@@ -5113,26 +5161,27 @@ mark_decl_instantiated (result, extern_p)
     mark_inline_for_output (result);
 }
 
-/* Given two function templates PAT1 and PAT2, return:
+/* Given two function templates PAT1 and PAT2, and explicit template
+   arguments EXPLICIT_ARGS return:
 
    1 if PAT1 is more specialized than PAT2 as described in [temp.func.order].
    -1 if PAT2 is more specialized than PAT1.
    0 if neither is more specialized.  */
    
 int
-more_specialized (pat1, pat2)
-     tree pat1, pat2;
+more_specialized (pat1, pat2, explicit_args)
+     tree pat1, pat2, explicit_args;
 {
   tree targs;
   int winner = 0;
 
-  targs = get_bindings (pat1, pat2);
+  targs = get_bindings (pat1, pat2, explicit_args);
   if (targs)
     {
       --winner;
     }
 
-  targs = get_bindings (pat2, pat1);
+  targs = get_bindings (pat2, pat1, explicit_args);
   if (targs)
     {
       ++winner;
@@ -5168,24 +5217,37 @@ more_specialized_class (pat1, pat2)
 }
 
 /* Return the template arguments that will produce the function signature
-   DECL from the function template FN.  */
+   DECL from the function template FN, with the explicit template
+   arguments EXPLICIT_ARGS.  */
 
 tree 
-get_bindings (fn, decl)
-     tree fn, decl;
+get_bindings (fn, decl, explicit_args)
+     tree fn, decl, explicit_args;
 {
   int ntparms = DECL_NTPARMS (fn);
   tree targs = make_scratch_vec (ntparms);
   int i;
 
-  i = fn_type_unification (fn, NULL_TREE, targs, 
+  i = fn_type_unification (fn, explicit_args, targs, 
 			   TYPE_ARG_TYPES (TREE_TYPE (decl)), 
 			   TREE_TYPE (TREE_TYPE (decl)),
 			   1);
 
   if (i == 0)
-    return targs;
-  return 0;
+    {
+      /* Check to see that the resulting return type is also OK.  */
+      tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)),
+		       targs,
+		       DECL_NTPARMS (fn),
+		       NULL_TREE);
+
+      if (!comptypes(t, TREE_TYPE (TREE_TYPE (decl)), 1))
+	return NULL_TREE;
+
+      return targs;
+    }
+
+  return NULL_TREE;
 }
 
 static tree
@@ -5216,18 +5278,19 @@ get_class_bindings (tparms, parms, args)
 }
 
 /* Return the most specialized of the list of templates in FNS that can
-   produce an instantiation matching DECL.  */
+   produce an instantiation matching DECL, given the explicit template
+   arguments EXPLICIT_ARGS.  */
 
 tree
-most_specialized (fns, decl)
-     tree fns, decl;
+most_specialized (fns, decl, explicit_args)
+     tree fns, decl, explicit_args;
 {
   tree fn, champ, args, *p;
   int fate;
 
   for (p = &fns; *p; )
     {
-      args = get_bindings (TREE_VALUE (*p), decl);
+      args = get_bindings (TREE_VALUE (*p), decl, explicit_args);
       if (args)
 	{
 	  p = &TREE_CHAIN (*p);
@@ -5244,7 +5307,7 @@ most_specialized (fns, decl)
   fn = TREE_CHAIN (fn);
   for (; fn; fn = TREE_CHAIN (fn))
     {
-      fate = more_specialized (champ, TREE_VALUE (fn));
+      fate = more_specialized (champ, TREE_VALUE (fn), explicit_args);
       if (fate == 1)
 	;
       else
@@ -5261,7 +5324,7 @@ most_specialized (fns, decl)
 
   for (fn = fns; fn && TREE_VALUE (fn) != champ; fn = TREE_CHAIN (fn))
     {
-      fate = more_specialized (champ, TREE_VALUE (fn));
+      fate = more_specialized (champ, TREE_VALUE (fn), explicit_args);
       if (fate != 1)
 	return error_mark_node;
     }
@@ -5333,7 +5396,6 @@ do_decl_instantiation (declspecs, declarator, storage)
   tree fn;
   tree result = NULL_TREE;
   int extern_p = 0;
-  tree templates = NULL_TREE;
 
   if (! DECL_LANG_SPECIFIC (decl))
     {
@@ -5353,59 +5415,8 @@ do_decl_instantiation (declspecs, declarator, storage)
       cp_error ("explicit instantiation of `%#D'", decl);
       return;
     }
-  else if (DECL_FUNCTION_MEMBER_P (decl))
-    {
-      if (DECL_TEMPLATE_INSTANTIATION (decl) && DECL_RTL (decl))
-	result = decl;
-      else if (name = DECL_ASSEMBLER_NAME (decl),
-	       fn = IDENTIFIER_GLOBAL_VALUE (name),
-	       fn && DECL_TEMPLATE_INSTANTIATION (fn)
-	       && DECL_RTL (fn))
-	result = fn;
-      else 
-	{
-	  /* Maybe this is an instantiation of a member template
-	     function.  */
-	  tree ctype = DECL_CONTEXT (decl);
-
-	  name = DECL_NAME (decl);
-	  fn = lookup_fnfields (TYPE_BINFO (ctype), name, 1);
-	  if (fn)
-	    fn = TREE_VALUE (fn);
-
-	  for (; fn; fn = DECL_CHAIN (fn))
-	    if (TREE_CODE (fn) == TEMPLATE_DECL)
-	      templates = decl_tree_cons (NULL_TREE, fn, templates);
-	}
-    }
-  else if (name = DECL_NAME (decl), fn = IDENTIFIER_GLOBAL_VALUE (name), fn)
-    {
-      for (fn = get_first_fn (fn); fn; fn = DECL_CHAIN (fn))
-	if (TREE_CODE (fn) == TEMPLATE_DECL)
-	  templates = decl_tree_cons (NULL_TREE, fn, templates);
-    }
-
-  if (templates && !result)
-    {
-      tree args;
-      result = most_specialized (templates, decl);
-      if (result == error_mark_node)
-	{
-	  char *str = "candidates are:";
-	  cp_error ("ambiguous template instantiation for `%D' requested", decl);
-	  for (fn = templates; fn; fn = TREE_CHAIN (fn))
-	    {
-	      cp_error_at ("%s %+#D", str, TREE_VALUE (fn));
-	      str = "               ";
-	    }
-	  return;
-	}
-      else if (result)
-	{
-	  args = get_bindings (result, decl);
-	  result = instantiate_template (result, args);
-	}
-    }
+  else if (DECL_TEMPLATE_INSTANTIATION (decl))
+    result = decl;
 
   if (! result)
     {
@@ -5822,7 +5833,7 @@ add_maybe_template (d, fns)
   if (DECL_MAYBE_TEMPLATE (d))
     return;
 
-  t = most_specialized (fns, d);
+  t = most_specialized (fns, d, NULL_TREE);
   if (! t)
     return;
   if (t == error_mark_node)

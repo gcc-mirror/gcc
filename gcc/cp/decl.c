@@ -1835,6 +1835,8 @@ struct saved_scope {
   tree template_parms;
   HOST_WIDE_INT processing_template_decl;
   tree previous_class_type, previous_class_values;
+  int processing_specialization;
+  int processing_explicit_instantiation;
 };
 static struct saved_scope *current_saved_scope;
 
@@ -1933,6 +1935,8 @@ maybe_push_to_top_level (pseudo)
   s->processing_template_decl = processing_template_decl;
   s->previous_class_type = previous_class_type;
   s->previous_class_values = previous_class_values;
+  s->processing_specialization = processing_specialization;
+  s->processing_explicit_instantiation = processing_explicit_instantiation;
 
   current_class_name = current_class_type = NULL_TREE;
   current_function_decl = NULL_TREE;
@@ -1945,6 +1949,8 @@ maybe_push_to_top_level (pseudo)
   named_labels = NULL_TREE;
   minimal_parse_mode = 0;
   previous_class_type = previous_class_values = NULL_TREE;
+  processing_specialization = 0;
+  processing_explicit_instantiation = 0;
   if (!pseudo)
     {
       current_template_parms = NULL_TREE;
@@ -2011,6 +2017,8 @@ pop_from_top_level ()
   processing_template_decl = s->processing_template_decl;
   previous_class_type = s->previous_class_type;
   previous_class_values = s->previous_class_values;
+  processing_specialization = s->processing_specialization;
+  processing_explicit_instantiation = s->processing_explicit_instantiation;
 
   free (s);
 
@@ -6144,8 +6152,7 @@ start_decl (declarator, declspecs, initialized)
       /* The declaration of template specializations does not affect
 	 the functions available for overload resolution, so we do not
 	 call pushdecl.  */
-      || (!flag_guiding_decls 
-	  && TREE_CODE (decl) == FUNCTION_DECL
+      || (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_TEMPLATE_SPECIALIZATION (decl)))
     tem = decl;
   else
@@ -6487,6 +6494,8 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (minimal_parse_mode && ! DECL_ARTIFICIAL (decl))
 	{
 	  tree stmt = DECL_VINDEX (decl);
+	  /* If the decl is declaring a member of a local class (in a
+	     template function), there will be no associated stmt.  */
 	  if (stmt != NULL_TREE)
 	    {
 	      DECL_VINDEX (decl) = NULL_TREE;
@@ -6778,11 +6787,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       || TREE_CODE (decl) == RESULT_DECL)
     {
       /* ??? FIXME: What about nested classes?  */
-      /* We check for FUNCTION_DECL here so that member functions of
-	 local classes, which will have internal linkage, are not
-	 given bizarre names by make_decl_rtl.  */
-      int toplev = toplevel_bindings_p () || pseudo_global_level_p ()
-	|| TREE_CODE (decl) == FUNCTION_DECL;
+      int toplev = toplevel_bindings_p () || pseudo_global_level_p ();
       int was_temp
 	= (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)
 	   && allocation_temporary_p ());
@@ -7491,10 +7496,10 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
       grokclassfn (ctype, declarator, decl, flags, quals);
 
-      check_explicit_specialization (orig_declarator, decl,
-				     template_count, 
-				     funcdef_flag ? 2 : 
-				     (friendp ? 3 : 0));
+      decl = check_explicit_specialization (orig_declarator, decl,
+					    template_count, 
+					    funcdef_flag ? 2 : 
+					    (friendp ? 3 : 0));
 
       if (check)
 	{
@@ -7538,10 +7543,10 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       if (ctype != NULL_TREE)
 	grokclassfn (ctype, cname, decl, flags, quals);
 
-      check_explicit_specialization (orig_declarator, decl,
-				     template_count, 
-				     funcdef_flag ? 2 : 
-				     (friendp ? 3 : 0));
+      decl = check_explicit_specialization (orig_declarator, decl,
+					    template_count, 
+					    funcdef_flag ? 2 : 
+					    (friendp ? 3 : 0));
 
       if (ctype != NULL_TREE && check)
 	{
@@ -9666,6 +9671,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
 	    int publicp = 0;
+	    tree function_context;
 
 	    /* We catch the others as conflicts with the builtin
 	       typedefs.  */
@@ -9715,7 +9721,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
-	    publicp = (! friendp || ! staticp) && !is_local_class (ctype);
+	    function_context = (ctype != NULL_TREE) ? 
+	      hack_decl_function_context (TYPE_MAIN_DECL (ctype)) : NULL_TREE;
+	    publicp = (! friendp || ! staticp)
+	      && function_context == NULL_TREE;
 	    decl = grokfndecl (ctype, type, 
 			       TREE_CODE (declarator) != TEMPLATE_ID_EXPR
 			       ? declarator : dname,
@@ -9725,6 +9734,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			       funcdef_flag, template_count);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
+	    if (function_context != NULL_TREE
+		&& DECL_THIS_INLINE (function_context)
+		&& TREE_PUBLIC (function_context))
+	      /* We just declared a member of a local class in an
+		 extern inline function.  Give such an entity comdat
+		 linkage.  */
+	      {
+		comdat_linkage (decl);
+		DECL_INTERFACE_KNOWN (decl) = 1;
+	      }
 #if 0
 	    /* This clobbers the attrs stored in `decl' from `attrlist'.  */
 	    /* The decl and setting of decl_machine_attr is also turned off.  */
@@ -12494,7 +12513,7 @@ finish_function (lineno, call_poplevel, nested)
       can_reach_end = 0;
 
       if (DECL_CONTEXT (fndecl) != NULL_TREE
-	  && is_local_class (DECL_CONTEXT (fndecl)))
+	  && hack_decl_function_context (fndecl))
 	/* Trick rest_of_compilation into not deferring output of this
 	   function, even if it is inline, since the rtl_obstack for
 	   this function is the function_obstack of the enclosing
