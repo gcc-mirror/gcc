@@ -1,3 +1,9 @@
+2003-02-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (compute_frame_size): Don't assume PREFERRED_STACK_BOUNDARY
+	is 8 * STACK_BOUNDARY.
+	* pa.h (PREFERRED_STACK_BOUNDARY): Change to 128 on 64-bit port.
+
 2003-02-26  Michael Matz  <matz@suse.de>
 
 	* ra-colorize.c (merge_moves): Fix list handling.
