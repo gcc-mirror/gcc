@@ -1,3 +1,8 @@
+2005-02-15  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-vn.c (get_value_handle): Make sure that given an
+	is_gimple_min_invariant expression, we always return it.
+
 2005-02-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* passes.c (rest_of_handle_gcse): Fix a comment.
