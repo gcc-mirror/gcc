@@ -9,6 +9,7 @@ __asm, ASM_KEYWORD, RID_UNUSED
 __asm__, ASM_KEYWORD, RID_UNUSED
 __attribute, ATTRIBUTE, RID_UNUSED
 __attribute__, ATTRIBUTE, RID_UNUSED
+__builtin_va_arg, VA_ARG, RID_UNUSED
 __complex, TYPESPEC, RID_COMPLEX
 __complex__, TYPESPEC, RID_COMPLEX
 __const, CV_QUALIFIER, RID_CONST

@@ -133,7 +133,7 @@ empty_parms ()
 %token BREAK CONTINUE RETURN_KEYWORD GOTO ASM_KEYWORD TYPEOF ALIGNOF
 %token SIGOF
 %token ATTRIBUTE EXTENSION LABEL
-%token REALPART IMAGPART
+%token REALPART IMAGPART VA_ARG
 
 /* the reserved words... C++ extensions */
 %token <ttype> AGGR
@@ -1162,6 +1162,9 @@ unary_expr:
 		{ $$ = build_x_unary_op (REALPART_EXPR, $2); }
 	| IMAGPART cast_expr %prec UNARY
 		{ $$ = build_x_unary_op (IMAGPART_EXPR, $2); }
+	| VA_ARG '(' expr_no_commas ',' type_id ')'
+		{ $$ = build_va_arg ($3, groktypename ($5.t));
+		  check_for_new_type ("__builtin_va_arg", $5); }
 	;
 
         /* Note this rule is not suitable for use in new_placement

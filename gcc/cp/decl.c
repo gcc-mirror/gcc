@@ -275,6 +275,12 @@ tree char_type_node;
 tree integer_type_node;
 tree unsigned_type_node;
 
+/* These can't be part of the above array, since they are declared
+   individially in tree.h and used by the target routines.  */
+
+tree ptr_type_node;
+tree va_list_type_node;
+
 /* Indicates that there is a type value in some namespace, although
    that is not necessarily in scope at the moment.  */
 

@@ -1,3 +1,10 @@
+1999-07-24  Richard Henderson  <rth@cygnus.com>
+
+	* decl.c (ptr_type_node, va_list_type_node): New.
+	* gxx.gperf (__builtin_va_arg): New.
+	* parse.y (VA_ARG): New token.
+	(unary_expr): Recognize it.
+
 Sun Jul 25 15:24:21 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g++FAQ.texi: Deleted per Joe Buck's request.
