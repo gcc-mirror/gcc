@@ -257,8 +257,23 @@ decl_attributes (decl, attributes)
 	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
 	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("aligned"))
       {
-	int align = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (a)))
-		    * BITS_PER_UNIT;
+	tree align_expr = TREE_VALUE (TREE_VALUE (a));
+	int align;
+
+	/* Strip any NOPs of any kind.  */
+	while (TREE_CODE (align_expr) == NOP_EXPR
+	       || TREE_CODE (align_expr) == CONVERT_EXPR
+	       || TREE_CODE (align_expr) == NON_LVALUE_EXPR)
+	  align_expr = TREE_OPERAND (align_expr, 0);
+
+	if (TREE_CODE (align_expr) != INTEGER_CST)
+	  {
+	    error_with_decl (decl,
+			     "requested alignment of `%s' is not a constant");
+	    continue;
+	  }
+
+	align = TREE_INT_CST_LOW (align_expr) * BITS_PER_UNIT;
 	
 	if (exact_log2 (align) == -1)
 	  error_with_decl (decl,
@@ -276,8 +291,10 @@ decl_attributes (decl, attributes)
       {
         tree list = TREE_VALUE (TREE_VALUE (a));
         tree format_type = TREE_PURPOSE (list);
-	int format_num = TREE_INT_CST_LOW (TREE_PURPOSE (TREE_VALUE (list)));
-	int first_arg_num = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
+	tree format_num_expr = TREE_PURPOSE (TREE_VALUE (list));
+	tree first_arg_num_expr = TREE_VALUE (TREE_VALUE (list));
+	int format_num;
+	int first_arg_num;
 	int is_scan;
 	tree argument;
 	int arg_num;
@@ -286,7 +303,7 @@ decl_attributes (decl, attributes)
 	  {
 	    error_with_decl (decl,
 			     "argument format specified for non-function `%s'");
-	    return;
+	    continue;
 	  }
 	
 	if (format_type == get_identifier ("printf"))
@@ -296,14 +313,36 @@ decl_attributes (decl, attributes)
 	else
 	  {
 	    error_with_decl (decl, "unrecognized format specifier for `%s'");
-	    return;
+	    continue;
 	  }
 	
+	/* Strip any conversions from the string index and first arg number
+	   and verify they are constants.  */
+	while (TREE_CODE (format_num_expr) == NOP_EXPR
+	       || TREE_CODE (format_num_expr) == CONVERT_EXPR
+	       || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
+	  format_num_expr = TREE_OPERAND (format_num_expr, 0);
+
+	while (TREE_CODE (first_arg_num_expr) == NOP_EXPR
+	       || TREE_CODE (first_arg_num_expr) == CONVERT_EXPR
+	       || TREE_CODE (first_arg_num_expr) == NON_LVALUE_EXPR)
+	  first_arg_num_expr = TREE_OPERAND (first_arg_num_expr, 0);
+
+	if (TREE_CODE (format_num_expr) != INTEGER_CST
+	    || TREE_CODE (first_arg_num_expr) != INTEGER_CST)
+	  {
+	    error_with_decl (decl,
+		   "format string for `%s' has non-constant operand number");
+	    continue;
+	  }
+
+	format_num = TREE_INT_CST_LOW (format_num_expr);
+	first_arg_num = TREE_INT_CST_LOW (first_arg_num_expr);
 	if (first_arg_num != 0 && first_arg_num <= format_num)
 	  {
 	    error_with_decl (decl,
-		"format string arg follows the args to be formatted, for `%s'");
-	    return;
+	      "format string arg follows the args to be formatted, for `%s'");
+	    continue;
 	  }
 
 	/* Verify that the format_num argument is actually a string, in case
@@ -322,7 +361,7 @@ decl_attributes (decl, attributes)
 	  {
 	    error_with_decl (decl,
 			     "format string arg not a string type, for `%s'");
-	    return;
+	    continue;
 	  }
 	if (first_arg_num != 0)
 	  {
@@ -333,7 +372,7 @@ decl_attributes (decl, attributes)
 	      {
 		error_with_decl (decl,
 				 "args to be formatted is not ..., for `%s'");
-		return;
+		continue;
 	      }
 	  }
 
