@@ -205,7 +205,7 @@ while [ $# != 0 ]; do
 # But the argument to egrep must be kept small, or many versions of egrep
 # won't be able to handle it.
 # rms: I removed `|#[el].*if.*[^/ 	]' because it made egrep fail.
-    if egrep '[ 	_]_IO|CTRL|#define.NULL|#[el]*if.*([0-9]|sparc|vax|sun|pyr)' $file > /dev/null; then
+    if egrep '//|[ 	_]_IO|CTRL|#define.NULL|#[el]*if.*([0-9]|sparc|vax|sun|pyr)' $file > /dev/null; then
       echo Fixing $file
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1	\
@@ -219,6 +219,7 @@ while [ $# != 0 ]; do
 				   :loop
 	  /\\$/			N
 	  /\\$/			b loop
+	  /\/\//			s|//\(.*\)$|/*\1*/|
 	  /[ 	]_IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
 	  /[ 	]BSD43__IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
 	  /#define._IO/			s/'\''x'\''/x/g
