@@ -1,3 +1,11 @@
+2004-01-14  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (rs6000_stack_info)
+	Calculate always vrsave_mask if TARGET_ALTIVEC.
+	(rs6000_emit_prologue): Emit code for vrsave
+	only if TARGET_ALTIVEC_VRSAVE.
+	(rs6000_emit_epilogue): Likewise.
+ 
 2003-01-14  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	PR objc/7993
