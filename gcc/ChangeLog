@@ -1,5 +1,10 @@
 2003-07-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* c-pragma.c (apply_pragma_weak): Don't use warning_with_decl.
+	* toplev.h (warning): Remove attribute.
+
+2003-07-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* c-decl.c (c_finish_incomplete_decl): Don't use xxx_with_decl.
 	(pop_label_level): Likewise.
 	(duplicate_decls): Likewise.
