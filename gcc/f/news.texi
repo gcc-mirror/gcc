@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-03-13
+@set last-update-news 1999-03-17
 
 @include root.texi
 
@@ -215,7 +215,7 @@ including information on Year 2000 (Y2K) compliance.
 @ifclear USERVISONLY
 @itemize @bullet
 @item
-Fix the @code{IDate} Intrinsic (VXT)
+Fix the @code{IDate} intrinsic (VXT) (in @code{libg2c})
 so the returned year is in the documented, non-Y2K-compliant range
 of 0--99,
 instead of being returned as 100 in the year 2000.
