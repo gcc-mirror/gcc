@@ -1141,7 +1141,7 @@ mips_classify_address (info, x, mode, strict, lea_p)
       return ADDRESS_INVALID;
 
     case CONST_INT:
-      /* Small-integer addressses don't occur very often, but they
+      /* Small-integer addresses don't occur very often, but they
 	 are legitimate if $0 is a valid base register.  */
       if (!TARGET_MIPS16 && SMALL_INT (x))
 	return ADDRESS_CONST_INT;
@@ -1591,7 +1591,7 @@ cmp_op (op, mode)
 }
 
 /* Return nonzero if the code is a relational operation suitable for a
-   conditional trap instructuion (only EQ, NE, LT, LTU, GE, GEU).
+   conditional trap instruction (only EQ, NE, LT, LTU, GE, GEU).
    We need this in the insn that expands `trap_if' in order to prevent
    combine from erroneously altering the condition.  */
 
@@ -3927,7 +3927,7 @@ mips_arg_info (cum, mode, type, named, info)
 			|| TREE_CODE (type) == QUAL_UNION_TYPE));
 
   /* Decide whether this argument should go in a floating-point register,
-     assuming one is free.  Later code checks for availablity.  */
+     assuming one is free.  Later code checks for availability.  */
 
   info->fpr_p = false;
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
@@ -7808,7 +7808,7 @@ mips_select_rtx_section (mode, x, align)
     {
       /* For hosted applications, always put constants in small data if
 	 possible, as this gives the best performance.  */
-      /* ??? Consider using mergable small data sections.  */
+      /* ??? Consider using mergeable small data sections.  */
 
       if (GET_MODE_SIZE (mode) <= (unsigned) mips_section_threshold
 	  && mips_section_threshold > 0)
@@ -7985,18 +7985,18 @@ mips_encode_section_info (decl, rtl, first)
          There are three cases to consider:
 
             - o32 PIC (either with or without explicit relocs)
-            - n32/n64 PIC without explict relocs
+            - n32/n64 PIC without explicit relocs
             - n32/n64 PIC with explicit relocs
 
          In the first case, both local and global accesses will use an
          R_MIPS_GOT16 relocation.  We must correctly predict which of
          the two semantics (local or global) the assembler and linker
          will apply.  The choice doesn't depend on the symbol's
-         visibility, so we deliberately ignore decl_visiblity and
+         visibility, so we deliberately ignore decl_visibility and
          binds_local_p here.
 
          In the second case, the assembler will not use R_MIPS_GOT16
-         relocations, but it chooses between local and global accessees
+         relocations, but it chooses between local and global accesses
          in the same way as for o32 PIC.
 
          In the third case we have more freedom since both forms of
@@ -8519,7 +8519,7 @@ mips16_fp_args (file, fp_code, from_fp_p)
 }
 
 /* Build a mips16 function stub.  This is used for functions which
-   take aruments in the floating point registers.  It is 32 bit code
+   take arguments in the floating point registers.  It is 32 bit code
    that moves the floating point args into the general registers, and
    then jumps to the 16 bit code.  */
 

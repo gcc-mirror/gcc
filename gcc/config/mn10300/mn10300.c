@@ -581,7 +581,7 @@ expand_epilogue ()
      Else leave it alone, it will be cut back as part of the
      ret/retf instruction, or there wasn't any stack to begin with.
 
-     Under no circumstanes should the register save area be
+     Under no circumstances should the register save area be
      deallocated here, that would leave a window where an interrupt
      could occur and trash the register save area.  */
   if (frame_pointer_needed)

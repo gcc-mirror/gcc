@@ -3388,7 +3388,7 @@ const_sint32_operand (op, mode)
 
 /* Operand predicates for implementing asymmetric pc-relative addressing
    on m68k.  The m68k supports pc-relative addressing (mode 7, register 2)
-   when used as a source operand, but not as a destintation operand.
+   when used as a source operand, but not as a destination operand.
 
    We model this by restricting the meaning of the basic predicates
    (general_operand, memory_operand, etc) to forbid the use of this

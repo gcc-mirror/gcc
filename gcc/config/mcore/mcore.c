@@ -2370,7 +2370,7 @@ mcore_setup_incoming_varargs (args_so_far, mode, type, ptr_pretend_size)
      registers during the prologue.  */
   number_of_regs_before_varargs = args_so_far + mcore_num_arg_regs (mode, type);
   
-  /* There is a bug somwehere in the arg handling code.
+  /* There is a bug somewhere in the arg handling code.
      Until I can find it this workaround always pushes the
      last named argument onto the stack.  */
   number_of_regs_before_varargs = args_so_far;
@@ -2586,7 +2586,7 @@ mcore_expand_epilog ()
     }
 
   /* Give back anything else.  */
-  /* XXX: Should accumuate total and then give it back.  */
+  /* XXX: Should accumulate total and then give it back.  */
   while (growth >= 0)
     output_stack_adjust ( 1, fi.growth[growth--]);
 }
@@ -3147,7 +3147,7 @@ mcore_must_pass_on_stack (mode, type)
   if (type == NULL)
     return 0;
 
-  /* If the argugment can have its address taken, it must
+  /* If the argument can have its address taken, it must
      be placed on the stack.  */
   if (TREE_ADDRESSABLE (type))
     return 1;
@@ -3280,7 +3280,7 @@ mcore_function_arg (cum, mode, type, named)
 /* Implements the FUNCTION_ARG_PARTIAL_NREGS macro.
    Returns the number of argument registers required to hold *part* of
    a parameter of machine mode MODE and type TYPE (which may be NULL if
-   the type is not known).  If the argument fits entirly in the argument
+   the type is not known).  If the argument fits entirely in the argument
    registers, or entirely on the stack, then 0 is returned.  CUM is the
    number of argument registers already used by earlier parameters to
    the function.  */

@@ -1622,7 +1622,7 @@ do {							\
    done, NIL if none.
 
    When in 64 bit mode, mips_move_1word will sign extend SImode and CCmode
-   moves.  All other referces are zero extended.  */
+   moves.  All other references are zero extended.  */
 #define LOAD_EXTEND_OP(MODE) \
   (TARGET_64BIT && ((MODE) == SImode || (MODE) == CCmode) \
    ? SIGN_EXTEND : ZERO_EXTEND)
@@ -1732,7 +1732,7 @@ do {							\
    all the FIXED_REGISTERS.  Until this problem has been
    resolved this macro can be used to overcome this situation.
    In particular, block_propagate() requires this list
-   be acurate, or we can remove registers which should be live.
+   be accurate, or we can remove registers which should be live.
    This macro is used in regs_invalidated_by_call.  */
 
 
@@ -2382,7 +2382,7 @@ extern enum reg_class mips_char_to_class[256];
 /* The return address for the current frame is in r31 if this is a leaf
    function.  Otherwise, it is on the stack.  It is at a variable offset
    from sp/fp/ap, so we define a fake hard register rap which is a
-   poiner to the return address on the stack.  This always gets eliminated
+   pointer to the return address on the stack.  This always gets eliminated
    during reload to be either the frame pointer or the stack pointer plus
    an offset.  */
 

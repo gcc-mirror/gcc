@@ -1617,7 +1617,7 @@ do {                                                                    \
 
 /* Assembler Commands for Exception Regions.  */
 
-/* Default values provided by GCC should be ok. Assumming that DWARF-2
+/* Default values provided by GCC should be ok. Assuming that DWARF-2
    frame unwind info is ok for this platform.  */
 
 #undef PREFERRED_DEBUGGING_TYPE

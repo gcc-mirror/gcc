@@ -691,7 +691,7 @@
 ;;
 ;; Other sizes may be handy for indexing. 
 ;; the tradeoffs to consider when adding these are
-;;	codesize, execution time [vs. mul it is easy to win],
+;;	code size, execution time [vs. mul it is easy to win],
 ;;	and register pressure -- these patterns don't use an extra
 ;;	register to build the offset from the base
 ;;	and whether the compiler will not come up with some other idiom.

@@ -1028,7 +1028,7 @@ m32r_pass_by_reference (type)
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
    return the rtx for compare [arg0 of the if_then_else].
    If need_compare is true then the comparison insn must be generated, rather
-   than being susummed into the following branch instruction.  */
+   than being subsumed into the following branch instruction.  */
 
 rtx
 gen_compare (code, x, y, need_compare)
@@ -1307,7 +1307,7 @@ gen_split_move_double (operands)
 		ld r1,r3+; ld r2,r3
 
 	     if r3 were not used subsequently.  However, the REG_NOTES aren't
-	     propigated correctly by the reload phase, and it can cause bad
+	     propagated correctly by the reload phase, and it can cause bad
 	     code to be generated.  We could still try:
 
 		ld r1,r3+; ld r2,r3; addi r3,-4
@@ -1334,7 +1334,7 @@ gen_split_move_double (operands)
 	st r1,r3; st r2,+r3
 
      if r3 were not used subsequently.  However, the REG_NOTES aren't
-     propigated correctly by the reload phase, and it can cause bad
+     propagated correctly by the reload phase, and it can cause bad
      code to be generated.  We could still try:
 
 	st r1,r3; st r2,+r3; addi r3,-4
@@ -1579,7 +1579,7 @@ m32r_sched_reorder (stream, verbose, ready, n_readyp, clock)
       rtx * new_tail = new_head + (n_ready - 1);
       int   i;
 
-      /* Loop through the instructions, classifing them as short/long.  Try
+      /* Loop through the instructions, classifying them as short/long.  Try
 	 to keep 2 short together and/or 1 long.  Note, the ready list is
 	 actually ordered backwards, so keep it in that manner.  */
       for (i = n_ready-1; i >= 0; i--)
@@ -2586,7 +2586,7 @@ conditional_move_operand (operand, mode)
   if (mode != SImode && mode != HImode && mode != QImode)
     return FALSE;
 
-  /* At the moment we can hanndle moving registers and loading constants.  */
+  /* At the moment we can handle moving registers and loading constants.  */
   /* To be added: Addition/subtraction/bitops/multiplication of registers.  */
 
   switch (GET_CODE (operand))
@@ -2728,7 +2728,7 @@ block_move_call (dest_reg, src_reg, bytes_rtx)
 
 /* The maximum number of bytes to copy using pairs of load/store instructions.
    If a block is larger than this then a loop will be generated to copy
-   MAX_MOVE_BYTES chunks at a time.  The value of 32 is a semi-arbitary choice.
+   MAX_MOVE_BYTES chunks at a time.  The value of 32 is a semi-arbitrary choice.
    A customer uses Dhrystome as their benchmark, and Dhrystone has a 31 byte
    string copy in it.  */
 #define MAX_MOVE_BYTES 32
@@ -2788,7 +2788,7 @@ m32r_expand_block_move (operands)
       /* If we are going to have to perform this loop more than
 	 once, then generate a label and compute the address the
 	 source register will contain upon completion of the final
-	 itteration.  */
+	 iteration.  */
       if (bytes > MAX_MOVE_BYTES)
 	{
 	  final_src = gen_reg_rtx (Pmode);
