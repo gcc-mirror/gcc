@@ -1,3 +1,9 @@
+2003-10-02  Chris Demetriou  <cgd@broadcom.com>
+
+	* lib/f-torture.exp (search_for): Rename to...
+	(search_for_re): This.  Also, clean up comments and the
+	"regexp" invocation.
+
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcc.c-torture/compile/20031002-1.c: New test.
