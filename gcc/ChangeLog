@@ -1,3 +1,8 @@
+2002-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/4697:
+	* stmt.c (warn_if_unused_value): Move side effects test once more.
+
 2002-02-20  Torbjorn Granlund  <tege@swox.com>
 
 	* config/avr/avr.md: Add more patterns for mized-mode add and subtract
