@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -273,7 +273,19 @@ namespace std
       void clear();
     };
 
-
+  /**
+   *  @ingroup Containers
+   *  @ingroup Sequences
+   *
+   *  Meets the requirements of a <a href="tables.html#65">container</a>, a
+   *  <a href="tables.html#66">reversible container</a>, and a
+   *  <a href="tables.html#67">sequence</a>, including the
+   *  <a href="tables.html#68">optional sequence requirements</a> with the
+   *  %exception of @c at and @c operator[].
+   *
+   *  @doctodo
+   *
+  */
   template<typename _Tp, typename _Alloc = allocator<_Tp> >
     class list : protected _List_base<_Tp, _Alloc>
     {

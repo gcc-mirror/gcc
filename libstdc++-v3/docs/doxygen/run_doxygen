@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Runs doxygen and massages the output files.
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[user|maint|man]  v3srcdir  v3builddir
 #
@@ -8,7 +9,7 @@
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.2.12
+DOXYVER=1.2.14
 doxygen=
 
 find_doxygen() {
@@ -147,6 +148,7 @@ set +e
 
 test $do_html = yes && {
     cp ${srcdir}/docs/doxygen/mainpage.html ${outdir}/html_${mode}/index.html
+    cp ${srcdir}/docs/doxygen/tables.html ${outdir}/html_${mode}/tables.html
     echo ::
     echo :: HTML pages begin with
     echo :: ${outdir}/html_${mode}/index.html
@@ -185,7 +187,8 @@ mv iterator_tags.3          Iterator_types.3
 find . -name "[a-z]*" -a ! -name "std_*" -print | xargs rm
 rm -f *.h.3 *config* *.cc.3 *.tcc.3
 rm -f *_t.3  # workaround doxygen template parsing bug for now
-#mkdir trash  # this is used to examine what we would have deleted
+# this is used to examine what we would have deleted, for debugging
+#mkdir trash
 #find . -name "[a-z]*" -a ! -name "std_*" -print | xargs -i mv {} trash
 #mv *.h.3 *config* *.cc.3 *.tcc.3 *_t.3  trash
 

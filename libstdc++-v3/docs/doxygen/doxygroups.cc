@@ -1,5 +1,8 @@
 
 /*
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   See license.html for license.
+
    This just provides documentation for stuff that doesn't need to be in the
    source headers themselves.  It is a ".cc" file for the sole cheesy reason
    that it triggers many different text editors into doing Nice Things when
@@ -67,9 +70,8 @@ storing your objects.  The objects are destroyed when the container is
 itself destroyed.  Note that if you are storing pointers in a container,
 @c delete is @e not automatically called on the pointers before destroying them.
 
-All containers must meet certain requirements.  They would be listed here
-except I'm not certain how much of 14882 can be reproduced without a
-copyright violation.  Reproducing Tables 65 through 69 is a lot of typing...
+All containers must meet certain requirements, summarized in
+<a href="tables.html">tables</a>.
 
 The standard containers are further refined into
 @link Sequences Sequences@endlink and
@@ -92,6 +94,9 @@ the second category of differences, algorithmic complexity.  For example, if
 you need to perform many inserts and removals from the middle of a sequence,
 @c list would be ideal.  But if you need to perform constant-time access to
 random elements of the sequence, then @c list should not be used.
+
+All sequences must meet certain requirements, summarized in
+<a href="tables.html">tables</a>.
 */
 
 /** @addtogroup Assoc_containers Associative Containers
@@ -99,6 +104,11 @@ Associative containers allow fast retrieval of data based on keys.
 
 Each container type is parameterized on a @c Key type, and an ordering
 relation used to sort the elements of the container.
+
+There should be more text here.
+
+All associative containers must meet certain requirements, summarized in
+<a href="tables.html">tables</a>.
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //

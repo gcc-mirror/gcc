@@ -65,11 +65,11 @@ namespace std
 {
 
 /**
- *  @maint
+ *  @if maint
  *  This class is used in two places:  stl_algo.h and ext/memory, where it
  *  is wrapped as the temporary_buffer class.  See temporary_buffer docs for
  *  more notes.
- *  @endmaint
+ *  @endif
 */
 template <class _ForwardIterator, class _Tp>
   class _Temporary_buffer
