@@ -107,6 +107,7 @@ void gimplify_to_stmt_list (tree *);
 void gimplify_body (tree *, tree);
 void push_gimplify_context (void);
 void pop_gimplify_context (tree);
+void gimplify_and_add (tree, tree *);
 
 /* Miscellaneous helpers.  */
 tree get_base_address (tree t);
@@ -121,6 +122,8 @@ tree build_and_jump (tree *);
 tree alloc_stmt_list (void);
 void free_stmt_list (tree);
 tree force_labels_r (tree *, int *, void *);
+enum gimplify_status gimplify_va_arg_expr (tree *, tree *, tree *);
+void std_gimplify_va_arg_expr (tree *, tree *, tree *);
 
 /* In tree-nested.c.  */
 extern void lower_nested_functions (tree);

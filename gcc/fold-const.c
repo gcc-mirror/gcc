@@ -10001,4 +10001,73 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
   return tem;
 }
 
+/* Build an expression for the address of T.  Folds away INDIRECT_REF to
+   avoid confusing the gimplify process.  */
+
+tree
+build_fold_addr_expr_with_type (tree t, tree ptrtype)
+{
+  if (TREE_CODE (t) == INDIRECT_REF)
+    {
+      t = TREE_OPERAND (t, 0);
+      if (TREE_TYPE (t) != ptrtype)
+	t = build1 (NOP_EXPR, ptrtype, t);
+    }
+  else
+    {
+      tree base = t;
+      while (TREE_CODE (base) == COMPONENT_REF
+	     || TREE_CODE (base) == ARRAY_REF)
+	base = TREE_OPERAND (base, 0);
+      if (DECL_P (base))
+	TREE_ADDRESSABLE (base) = 1;
+
+      t = build1 (ADDR_EXPR, ptrtype, t);
+    }
+
+  return t;
+}
+
+tree
+build_fold_addr_expr (tree t)
+{
+  return build_fold_addr_expr_with_type (t, build_pointer_type (TREE_TYPE (t)));
+}
+
+/* Builds an expression for an indirection through T, simplifying some
+   cases.  */
+
+tree
+build_fold_indirect_ref (tree t)
+{
+  tree type = TREE_TYPE (TREE_TYPE (t));
+  tree sub = t;
+  tree subtype;
+
+  STRIP_NOPS (sub);
+  if (TREE_CODE (sub) == ADDR_EXPR)
+    {
+      tree op = TREE_OPERAND (sub, 0);
+      tree optype = TREE_TYPE (op);
+      /* *&p => p */
+      if (lang_hooks.types_compatible_p (type, optype))
+	return op;
+      /* *(foo *)&fooarray => fooarray[0] */
+      else if (TREE_CODE (optype) == ARRAY_TYPE
+	       && lang_hooks.types_compatible_p (type, TREE_TYPE (optype)))
+	return build2 (ARRAY_REF, type, op, size_zero_node);
+    }
+
+  /* *(foo *)fooarrptr => (*fooarrptr)[0] */
+  subtype = TREE_TYPE (sub);
+  if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
+      && lang_hooks.types_compatible_p (type, TREE_TYPE (TREE_TYPE (subtype))))
+    {
+      sub = build_fold_indirect_ref (sub);
+      return build2 (ARRAY_REF, type, sub, size_zero_node);
+    }
+
+  return build1 (INDIRECT_REF, type, t);
+}
+
 #include "gt-fold-const.h"

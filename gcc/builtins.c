@@ -4106,10 +4106,7 @@ stabilize_va_list (tree valist, int needs_lvalue)
       if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
 	{
 	  tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
-	  tree p2 = build_pointer_type (va_list_type_node);
-
-	  valist = build1 (ADDR_EXPR, p2, valist);
-	  valist = fold_convert (p1, valist);
+	  valist = build_fold_addr_expr_with_type (valist, p1);
 	}
     }
   else
@@ -4128,8 +4125,7 @@ stabilize_va_list (tree valist, int needs_lvalue)
 
       if (TREE_SIDE_EFFECTS (valist))
 	valist = save_expr (valist);
-      valist = fold (build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)),
-			     valist));
+      valist = build_fold_indirect_ref (valist);
     }
 
   return valist;
@@ -4362,6 +4358,184 @@ expand_builtin_va_arg (tree valist, tree type)
   set_mem_alias_set (result, get_varargs_alias_set ());
 
   return result;
+}
+
+/* Like std_expand_builtin_va_arg, but gimplify instead of expanding.  */
+
+void
+std_gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
+{
+  tree addr, t, type_size = NULL;
+  tree align, alignm1;
+  tree rounded_size;
+  HOST_WIDE_INT boundary;
+  tree valist = TREE_OPERAND (*expr_p, 0);
+  tree type = TREE_TYPE (*expr_p);
+
+  /* Compute the rounded size of the type.  */
+  align = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
+  alignm1 = size_int (PARM_BOUNDARY / BITS_PER_UNIT - 1);
+  boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+
+  /* Reduce valist it so it's sharable with the postqueue.  */
+  gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
+
+  /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
+     requires greater alignment, we must perform dynamic alignment.  */
+
+  if (boundary > PARM_BOUNDARY)
+    {
+      if (!PAD_VARARGS_DOWN)
+	{
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		      build2 (PLUS_EXPR, TREE_TYPE (valist), valist,
+			      build_int_2 (boundary / BITS_PER_UNIT - 1, 0)));
+	  gimplify_stmt (&t);
+	  append_to_statement_list (t, pre_p);
+	}
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		  build2 (BIT_AND_EXPR, TREE_TYPE (valist), valist,
+			  build_int_2 (~(boundary / BITS_PER_UNIT - 1), -1)));
+      gimplify_stmt (&t);
+      append_to_statement_list (t, pre_p);
+    }
+  if (type == error_mark_node
+      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
+      || TREE_OVERFLOW (type_size))
+    rounded_size = size_zero_node;
+  else
+    {
+      rounded_size = fold (build2 (PLUS_EXPR, sizetype, type_size, alignm1));
+      rounded_size = fold (build2 (TRUNC_DIV_EXPR, sizetype,
+				   rounded_size, align));
+      rounded_size = fold (build2 (MULT_EXPR, sizetype,
+				   rounded_size, align));
+    }
+
+  /* Reduce rounded_size so it's sharable with the postqueue.  */
+  gimplify_expr (&rounded_size, pre_p, post_p, is_gimple_val, fb_rvalue);
+
+  /* Get AP.  */
+  addr = valist;
+  if (PAD_VARARGS_DOWN && ! integer_zerop (rounded_size))
+    {
+      /* Small args are padded downward.  */
+      addr = fold (build2 (PLUS_EXPR, TREE_TYPE (addr), addr,
+				fold (build3 (COND_EXPR, sizetype,
+					      fold (build2 (GT_EXPR, sizetype,
+							    rounded_size,
+							    align)),
+					      size_zero_node,
+					      fold (build2 (MINUS_EXPR,
+							    sizetype,
+							    rounded_size,
+							    type_size))))));
+    }
+
+  addr = convert (build_pointer_type (type), addr);
+  *expr_p = build1 (INDIRECT_REF, type, addr);
+
+  /* Compute new value for AP.  */
+  if (! integer_zerop (rounded_size))
+    {
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		  build2 (PLUS_EXPR, TREE_TYPE (valist), valist,
+			  rounded_size));
+      gimplify_stmt (&t);
+      append_to_statement_list (t, post_p);
+    }
+}
+
+/* Return a dummy expression of type TYPE in order to keep going after an
+   error.  */
+
+static tree
+dummy_object (tree type)
+{
+  tree t = convert (build_pointer_type (type), null_pointer_node);
+  return build1 (INDIRECT_REF, type, t);
+}
+
+/* Like expand_builtin_va_arg, but gimplify instead of expanding.  */
+
+enum gimplify_status
+gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
+{
+  tree promoted_type, want_va_type, have_va_type;
+  tree valist = TREE_OPERAND (*expr_p, 0);
+  tree type = TREE_TYPE (*expr_p);
+  tree t;
+
+  /* Verify that valist is of the proper type.  */
+
+  want_va_type = va_list_type_node;
+  have_va_type = TREE_TYPE (valist);
+  if (TREE_CODE (want_va_type) == ARRAY_TYPE)
+    {
+      /* If va_list is an array type, the argument may have decayed
+	 to a pointer type, e.g. by being passed to another function.
+         In that case, unwrap both types so that we can compare the
+	 underlying records.  */
+      if (TREE_CODE (have_va_type) == ARRAY_TYPE
+	  || TREE_CODE (have_va_type) == POINTER_TYPE)
+	{
+	  want_va_type = TREE_TYPE (want_va_type);
+	  have_va_type = TREE_TYPE (have_va_type);
+	}
+    }
+
+  if (TYPE_MAIN_VARIANT (want_va_type) != TYPE_MAIN_VARIANT (have_va_type))
+    {
+      error ("first argument to `va_arg' not of type `va_list'");
+      *expr_p = dummy_object (type);
+      return GS_ALL_DONE;
+    }
+
+  /* Generate a diagnostic for requesting data of a type that cannot
+     be passed through `...' due to type promotion at the call site.  */
+  else if ((promoted_type = lang_hooks.types.type_promotes_to (type))
+	   != type)
+    {
+      static bool gave_help;
+
+      /* Unfortunately, this is merely undefined, rather than a constraint
+	 violation, so we cannot make this an error.  If this call is never
+	 executed, the program is still strictly conforming.  */
+      warning ("`%T' is promoted to `%T' when passed through `...'",
+	       type, promoted_type);
+      if (! gave_help)
+	{
+	  gave_help = true;
+	  warning ("(so you should pass `%T' not `%T' to `va_arg')",
+		   promoted_type, type);
+	}
+
+      /* We can, however, treat "undefined" any way we please.
+	 Call abort to encourage the user to fix the program.  */
+      inform ("if this code is reached, the program will abort");
+      t = build_function_call_expr (implicit_built_in_decls[BUILT_IN_TRAP],
+				    NULL);
+      append_to_statement_list (t, pre_p);
+
+      /* This is dead code, but go ahead and finish so that the
+	 mode of the result comes out right.  */
+      *expr_p = dummy_object (type);
+      return GS_ALL_DONE;
+    }
+  else
+    {
+      /* Make it easier for the backends by protecting the valist argument
+         from multiple evaluations.  */
+      valist = stabilize_va_list (valist, 0);
+      TREE_OPERAND (*expr_p, 0) = valist;
+
+      if (!targetm.calls.gimplify_va_arg_expr)
+	/* Once most targets are converted this should abort.  */
+	return GS_ALL_DONE;
+
+      targetm.calls.gimplify_va_arg_expr (expr_p, pre_p, post_p);
+      return GS_OK;
+    }
 }
 
 /* Expand ARGLIST, from a call to __builtin_va_end.  */

@@ -1,3 +1,33 @@
+2004-06-08  Jason Merrill  <jason@redhat.com>
+
+	Gimplify VA_ARG_EXPR into simpler forms.
+	* target.h: Add gimplify_va_arg_expr hook.
+	* target-def.h: Add TARGET_GIMPLIFY_VA_ARG_EXPR.
+	* fold-const.c (build_fold_addr_expr)
+	(build_fold_addr_expr_with_type): Move from gimplify.c.
+	* tree.h: Declare them.
+	* gimplify.c (gimplify_and_add): New fn.
+	(build_addr_expr, build_addr_expr_with_type): Move to fold-const.c.
+	(gimplify_array_ref_to_plus, gimplify_modify_expr)
+	(gimplify_expr): Use build_fold_*.
+	(copy_if_shared_r): Only mark VA_ARG_EXPR volatile if we
+	don't know how to gimplify it.
+	* builtins.c (std_gimplify_va_arg_expr): New fn.
+	(dummy_object): New static fn.
+	(gimplify_va_arg_expr): New fn.
+	(stabilize_va_list): Use build_fold_*.
+	* tree-gimple.h: Declare new fns.
+	* config/i386/i386.c (TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
+	(ix86_gimplify_va_arg): New fn.
+	* config/i386/ia64.c (TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
+	(ia64_gimplify_va_arg): New fn.
+	* config/i386/rs6000.c (rs6000_gimplify_va_arg): New fn.
+	(TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
+	* config/i386/sparc.c (sparc_gimplify_va_arg): New fn.
+	* alias.c (get_varargs_alias_set): Just return 0 for now.
+	
+	* c-objc-common.c (c_tree_printer): Improve handling of %T.
+
 2004-06-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-complex.c (expand_complex_comparison): Use fold_convert instead
