@@ -225,10 +225,7 @@ mostlyclean:
 	rm -fr libE77
 
 clean:
-	rm -f config.log
-	rm -f libF77/Makefile
-	rm -f libI77/Makefile
-	rm -f libU77/Makefile libU77/config.log libU77/a.out
+	rm -f config.log libU77/config.log libU77/a.out
 
 distclean:
 	rm -f Makefile config.cache config.status g2c.h
