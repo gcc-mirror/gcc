@@ -1,3 +1,7 @@
+2003-01-24  Paolo Carlini  <pcarlini@unitus.it>
+
+	* g++.dg/parse/undefined1.C: Add error message.
+
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9354
