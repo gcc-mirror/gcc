@@ -34,12 +34,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES \
   "-Dm68k -Dunix -DAMIX -Amachine(m68k) -Acpu(m68k) -Asystem(unix) -Alint(off)"
 
-/* This is the library routine that is used to transfer control from
-   the trampoline to the actual nested function.  FIXME:  This needs to
-   be implemented still.  -fnf */
-
-#undef TRANSFER_FROM_TRAMPOLINE
-
 /* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
    Some SGS assemblers have a bug such that "Lnnn-LInnn-2.b(pc,d0.l*2)"
    fails to assemble.  Luckily "Lnnn(pc,d0.l*2)" produces the results
