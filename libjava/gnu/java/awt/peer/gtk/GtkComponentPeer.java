@@ -115,8 +115,6 @@ public class GtkComponentPeer extends GtkGenericPeer
     this.awtComponent = awtComponent;
     insets = new Insets (0, 0, 0, 0);
 
-    /* temporary try/catch block until all peers use this creation method */
-    try {
       create ();
       
       GtkArgList args = new GtkArgList ();
@@ -147,7 +145,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 
       Rectangle bounds = awtComponent.getBounds ();
       setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
-    } catch (RuntimeException ex) { ; }
+    setVisible (awtComponent.isVisible ());
   }
 
   public int checkImage (Image image, int width, int height, 
@@ -449,18 +447,14 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void setVisible (boolean b)
   {
-    set ("visible", b);
-  }
-  
-  public void hide () 
-  {
-    setVisible (false);
+    if (b)
+      show ();
+    else
+      hide ();
   }
 
-  public void show () 
-  {
-    setVisible (true);
-  }
+  public native void hide ();
+  public native void show ();
 
   protected void postMouseEvent(int id, long when, int mods, int x, int y, 
 				int clickCount, boolean popupTrigger) 
@@ -514,7 +508,6 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void getArgs (Component component, GtkArgList args)
   {
-    args.add ("visible", component.isVisible ());
     args.add ("sensitive", component.isEnabled ());
 
     ComponentPeer p;

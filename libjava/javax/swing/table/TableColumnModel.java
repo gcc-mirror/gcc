@@ -37,17 +37,17 @@ exception statement from your version. */
 
 package javax.swing.table;
 
-// Imports
 import java.util.Enumeration;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableColumnModelListener;
+
 
 /**
  * TableColumnModel public interface
  * @author Andrew Selkirk
  */
-public interface TableColumnModel {
-
+public interface TableColumnModel
+{
 	/**
 	 * addColumn
 	 * @param column TableColumn
@@ -75,13 +75,13 @@ public interface TableColumnModel {
 
 	/**
 	 * getColumnCount
-	 * @returns Column count
+   * @return Column count
 	 */
 	int getColumnCount();
 
 	/**
 	 * getColumns
-	 * @returns Enumeration of columns
+   * @return Enumeration of columns
 	 */
 	Enumeration getColumns();
 
@@ -99,19 +99,19 @@ public interface TableColumnModel {
 
 	/**
 	 * getColumnMargin
-	 * @returns Column margin
+   * @return Column margin
 	 */
 	int getColumnMargin();
 
 	/**
 	 * getColumnIndexAtX
-	 * @returns Column index as position x
+   * @return Column index as position x
 	 */
 	int getColumnIndexAtX(int xPosition);
 
 	/**
 	 * getTotalColumnWidth
-	 * @returns Total column width
+   * @return Total column width
 	 */
 	int getTotalColumnWidth();
 
@@ -123,19 +123,19 @@ public interface TableColumnModel {
 
 	/**
 	 * getColumnSelectionAllowed
-	 * @returns true if column selection allowed, false otherwise
+   * @return true if column selection allowed, false otherwise
 	 */
 	boolean getColumnSelectionAllowed();
 
 	/**
 	 * getSelectedColumns
-	 * @returns Selected columns
+   * @return Selected columns
 	 */
 	int[] getSelectedColumns();
 
 	/**
 	 * getSelectedColumnCount
-	 * @returns Count of selected columns
+   * @return Count of selected columns
 	 */
 	int getSelectedColumnCount();
 
@@ -162,6 +162,4 @@ public interface TableColumnModel {
 	 * @param listener TableColumnModelListener
 	 */
 	void removeColumnModelListener(TableColumnModelListener listener);
-
-
-} // TableColumnModel
+}

@@ -82,7 +82,7 @@ public class JWindow extends Window implements Accessible, RootPaneContainer
 
     public JWindow()
     {      
-     	super(null); // FIXME: This throws an exception.
+      super(SwingUtilities.getOwnerFrame());
     }
 
     // huuu ?

@@ -246,5 +246,6 @@ public class GtkImagePainter implements Runnable, ImageConsumer
   public void 
   imageComplete (int status)
   {
+    image.imageComplete(status);
   }
 }

@@ -39,15 +39,16 @@ package javax.swing;
 
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
+
 import javax.accessibility.AccessibleContext;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.PlainEditorKit;
 
 
 public class JEditorPane extends JTextComponent
@@ -82,12 +83,12 @@ public class JEditorPane extends JTextComponent
 
   protected EditorKit createDefaultEditorKit()
   {
-    return new PlainEditorKit();
+    return new DefaultEditorKit();
   }
 
-  protected static EditorKit createEditorKitForContentType(String type)
+  public static EditorKit createEditorKitForContentType(String type)
   {
-    return new PlainEditorKit();
+    return new DefaultEditorKit();
   }
 
   /**
@@ -197,7 +198,8 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
-   * Make sure that TAB and Shift-TAB events get consumed, so that awt doesn't attempt focus traversal.  
+   * Make sure that TAB and Shift-TAB events get consumed,
+   * so that awt doesn't attempt focus traversal.  
    */
   protected void processKeyEvent(KeyEvent e)
   {
@@ -228,16 +230,18 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
-   * Replaces the currently selected content with new content represented by the given string. 
+   * Replaces the currently selected content with new content represented
+   * by the given string.
    */
   public void replaceSelection(String content)
   {
   }
 
   /**
-   * Scrolls the view to the given reference location (that is, the value returned by the UL.getRef method for the URL being displayed).  
+   * Scrolls the view to the given reference location (that is, the value
+   * returned by the UL.getRef method for the URL being displayed).
    */
-  protected void scrollToReference(String reference)
+  public void scrollToReference(String reference)
   {
   }
 

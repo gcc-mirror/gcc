@@ -49,44 +49,76 @@ public class JCheckBox extends JToggleButton
 {
   private static final long serialVersionUID = -5246739313864538930L;
   
+  private boolean borderPaintedFlat;
+
+  private void init()
+  {
+    borderPainted = false;
+    contentAreaFilled = false;
+  }
+  
     public JCheckBox()
     {
-	this(null, null);
+    super();
+    init();
     }
-    public JCheckBox(Action a)
+
+  public JCheckBox(Action action)
     {
-	this();
-	setAction(a);
+    super(action);
+    init();
     }
 
     public JCheckBox(Icon icon)
     { 
-	this(null, icon);
+    super(icon);
+    init();
+  }    
+  
+  public JCheckBox(Icon icon, boolean selected)
+  { 
+    super(icon, selected);
+    init();
     }    
   
     public JCheckBox(String text)
     {
-	this(text, null);
+    super(text);
+    init();
+  }
+      
+  public JCheckBox(String text, boolean selected)
+  {
+    super(text, selected);
+    init();
     }
       
     public JCheckBox(String text, Icon icon)
     {
 	super(text, icon);
-        paint_border = false;
-        content_area_filled = false;
+    init();
     }
 
+  public JCheckBox(String text, Icon icon, boolean selected)
+  {
+    super(text, icon, selected);
+    init();
+  }
     
+  /**
+   * Gets the AccessibleContext associated with this JCheckBox.
+   */
     public AccessibleContext getAccessibleContext()
     {
-	//Gets the AccessibleContext associated with this JCheckBox. 
 	return null;
     }
   
+  /**
+   * Returns a string that specifies the name of the L&amp;F class
+   * that renders this component.
+   */
     public String getUIClassID()
     {
-	//Returns a string that specifies the name of the Look and Feel
-	//class that renders this component.  
 	return "CheckBoxUI";
     }
   
@@ -94,4 +126,15 @@ public class JCheckBox extends JToggleButton
     {
 	return "JCheckBox";
     }
+
+  public boolean isBorderPaintedFlat()
+  {
+    return borderPaintedFlat;
+  }
+
+  public void setBorderPaintedFlat(boolean newValue)
+  {
+    firePropertyChange("borderPaintedFlat", borderPaintedFlat, newValue);
+    borderPaintedFlat = newValue;
+  }
 }

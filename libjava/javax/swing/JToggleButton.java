@@ -81,6 +81,11 @@ public class JToggleButton extends AbstractButton implements Accessible
     this(null, icon);
   }    
   
+  public JToggleButton (Icon icon, boolean selected) 
+  {
+    this(null, icon, selected);
+  }
+  
   public JToggleButton(String text)
   {
     this(text, null);
@@ -88,8 +93,7 @@ public class JToggleButton extends AbstractButton implements Accessible
       
   public JToggleButton(String text, boolean selected)
   {
-    this(text, null);
-    setSelected(selected);
+    this(text, null, selected);
   }
 
   public JToggleButton(String text, Icon icon)
@@ -101,13 +105,15 @@ public class JToggleButton extends AbstractButton implements Accessible
   {
     super(text, icon);
 
-    hori_align = LEADING;
+    horizontalAlignment = LEADING;
     setModel(new ToggleButtonModel());	
     model.setSelected(selected);
   }
 
   /**
-   * Gets the AccessibleContext associated with this JToggleButton.
+   * Gets the AccessibleContext associated with this <code>JToggleButton</code>.
+   *
+   * @return the associated context
    */
   public AccessibleContext getAccessibleContext()
   {

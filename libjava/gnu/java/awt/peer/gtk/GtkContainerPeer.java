@@ -90,7 +90,6 @@ public class GtkContainerPeer extends GtkComponentPeer
   public void setBounds (int x, int y, int width, int height)
   {
     super.setBounds (x, y, width, height);
-    awtComponent.validate ();
   }
 
   public void setFont(Font f)

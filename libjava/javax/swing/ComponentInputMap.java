@@ -1,5 +1,5 @@
 /* ComponentInputMap.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,79 +37,94 @@ exception statement from your version. */
 
 package javax.swing;
 
+
 /**
- * ComponentInputMap
  * @author	Andrew Selkirk
- * @version	1.0
+ * @author Michael Koch
  */
-public class ComponentInputMap extends InputMap {
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
+public class ComponentInputMap extends InputMap
+{
 	/**
-	 * component
+   * The component to notify.
 	 */
 	private JComponent component;
 
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
 	/**
-	 * Constructor ComponentInputMap
-	 * @param value0 TODO
-	 */
-	public ComponentInputMap(JComponent value0) {
-		// TODO
-	} // ComponentInputMap()
+   * Creates <code>ComponentInputMap</code> object that notifies the given
+   * component about changes to it.
+   *
+   * @param comp the component to notify
+   *
+   * @exception IllegalArgumentException if comp is null
+   */
+  public ComponentInputMap(JComponent comp)
+  {
+    if (comp == null)
+      throw new IllegalArgumentException();
+    
+    this.component = comp;
+  }
 
+  /**
+   * Puts a new entry into the <code>InputMap</code>.
+   * If actionMapKey is null an existing entry will be removed.
+   *
+   * @param keystroke the keystroke for the entry
+   * @param actionMapKey the action.
+   */
+  public void put(KeyStroke keystroke, Object value)
+  {
+    super.put(keystroke, value);
+    // FIXME: Notify component.
+  }
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Clears the <code>InputMap</code>.
+   */
+  public void clear()
+  {
+    super.clear();
+    // FIXME: Notify component.
+  }
 
-	/**
-	 * put
-	 * @param keystroke TODO
-	 * @param value TODO
-	 */
-	public void put(KeyStroke keystroke, Object value) {
-		// TODO
-	} // put()
+  /**
+   * Remove an entry from the <code>InputMap</code>.
+   *
+   * @param key the key of the entry to remove
+   */
+  public void remove(KeyStroke keystroke)
+  {
+    super.remove(keystroke);
+    // FIXME: Notify component.
+  }
 
-	/**
-	 * clear
-	 */
-	public void clear() {
-		// TODO
-	} // clear()
+  /**
+   * Sets a parent for this <code>ComponentInputMap</code>.
+   *
+   * @param parentMap the new parent
+   *
+   * @exception IllegalArgument if parentMap is not a
+   * <code>ComponentInputMap</code> or not associated with the same component
+   */
+  public void setParent(InputMap parentMap)
+  {
+    if (! (parentMap instanceof ComponentInputMap))
+      throw new IllegalArgumentException();
 
-	/**
-	 * remove
-	 * @param keystroke TODO
-	 */
-	public void remove(KeyStroke keystroke) {
-		// TODO
-	} // remove()
+    if (((ComponentInputMap) parentMap).getComponent() != component)
+      throw new IllegalArgumentException();
+   
+    super.setParent(parentMap);
+    // FIXME: Notify component.
+  }
 
-	/**
-	 * setParent
-	 * @param parent TODO
-	 */
-	public void setParent(InputMap parent) {
-		// TODO
-	} // setParent()
-
-	/**
-	 * getComponent
-	 * @returns JComponent
-	 */
-	public JComponent getComponent() {
-		return null; // TODO
-	} // getComponent()
-
-
-} // ComponentInputMap
+  /**
+   * Returns the component to notify about changes.
+   *
+   * @return a <code>JComponent</code> object
+   */
+  public JComponent getComponent()
+  {
+    return component;
+  }
+}

@@ -163,7 +163,8 @@ public class Event implements java.io.Serializable
 
   protected String paramString ()
   {
-    return "id=" + id + ",x=" + x + ",y=" + y + "target=" + target;
+    return "id=" + id + ",x=" + x + ",y=" + y
+      + ",target=" + target + ",arg=" + arg;
   }
 
   public boolean shiftDown() 

@@ -1,5 +1,5 @@
-/* CharacterIterator.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* LayeredHighlighter.java --
+   Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,17 +37,25 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Graphics;
+import java.awt.Shape;
 
-public interface CharacterIterator extends Cloneable
+import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
+
+
+public abstract class LayeredHighlighter
+  implements Highlighter
 {
-    Object clone();
-    char current();
-    char first();
-    int getBeginIndex();
-    int getEndIndex();
-    int getIndex();
-    char last();
-    char next();
-    char previous();
-    char setIndex(int position);    
+  public abstract static class LayerPainter
+    implements Highlighter.HighlightPainter
+  {
+    public abstract Shape paintLayer(Graphics g, int p0, int p1,
+				     Shape viewBounds, JTextComponent editor,
+				     View view);
+  }
+  
+  public abstract void paintLayeredHighlights(Graphics g, int p0, int p1,
+                                              Shape viewBounds,
+                                              JTextComponent editor, View view);
 }

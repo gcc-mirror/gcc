@@ -150,26 +150,11 @@ public class JMenuItem extends AbstractButton implements Accessible,
     setMnemonic(mnemonic);
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @param stream DOCUMENT ME!
-   *
-   * @throws IOException DOCUMENT ME!
-   * @throws ClassNotFoundException DOCUMENT ME!
-   */
   private void readObject(ObjectInputStream stream)
                    throws IOException, ClassNotFoundException
   {
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @param stream DOCUMENT ME!
-   *
-   * @throws IOException DOCUMENT ME!
-   */
   private void writeObject(ObjectOutputStream stream) throws IOException
   {
   }
@@ -186,10 +171,14 @@ public class JMenuItem extends AbstractButton implements Accessible,
 
     // Initializes properties for this menu item, that are different
     // from Abstract button properties. 
-    paint_border = false;
-    paint_focus = false;
-    hori_align = JButton.LEFT;
-    hori_text_pos = JButton.LEFT;
+    /* NOTE: According to java specifications paint_border should be set to false,
+      since menu item should not have a border. However running few java programs
+      it seems that menu items and menues can have a border. Commenting
+      out statement below for now. */
+    //borderPainted = false;
+    focusPainted = false;
+    horizontalAlignment = JButton.LEFT;
+    horizontalTextPosition = JButton.LEFT;
   }
 
   /**
@@ -288,9 +277,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
   {
     super.configurePropertiesFromAction(action);
 
-    if (action == null)
-      setAccelerator(null);
-    else
+    if (! (this instanceof JMenu) && action != null)
       setAccelerator((KeyStroke) (action.getValue(Action.ACCELERATOR_KEY)));
   }
 
@@ -325,70 +312,76 @@ public class JMenuItem extends AbstractButton implements Accessible,
   public void processMouseEvent(MouseEvent event, MenuElement[] path,
                                 MenuSelectionManager manager)
   {
+    // Fire MenuDragMouseEvents if mouse is being dragged.
+    boolean dragged = (event.getModifiers() & InputEvent.BUTTON1_MASK) != 0;
+    if (dragged)
+      processMenuDragMouseEvent(createMenuDragMouseEvent(event, path, manager));
+
     switch (event.getID())
       {
       case MouseEvent.MOUSE_CLICKED:
 	break;
       case MouseEvent.MOUSE_ENTERED:
-	if (event.getSource() instanceof JMenuItem)
-	  {
-	    JMenuItem item = (JMenuItem) event.getSource();
-
-	    ButtonModel model = item.getModel();
-	    if (item.isRolloverEnabled())
+	if (isRolloverEnabled())
 	      model.setRollover(true);
-	  }
 	break;
       case MouseEvent.MOUSE_EXITED:
-	if (event.getSource() instanceof JMenuItem)
-	  {
-	    JMenuItem item = (JMenuItem) event.getSource();
-	    ButtonModel model = item.getModel();
-	    if (item.isRolloverEnabled())
+	if (isRolloverEnabled())
 	      model.setRollover(false);
-	  }
+
+	// for JMenu last element on the path is its popupMenu.
+	// JMenu shouldn't me disarmed.	
+	if (! (path[path.length - 1] instanceof JPopupMenu) && ! dragged)
+	  setArmed(false);
 	break;
       case MouseEvent.MOUSE_PRESSED:
-	if (event.getSource() instanceof JMenuItem)
-	  {
 	    if ((event.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
 	      {
 		model.setArmed(true);
 		model.setPressed(true);
 	      }
-	  }
 	break;
       case MouseEvent.MOUSE_RELEASED:
 	break;
       case MouseEvent.MOUSE_MOVED:
 	break;
       case MouseEvent.MOUSE_DRAGGED:
-	MenuDragMouseEvent e = new MenuDragMouseEvent((Component) event
-	                                              .getSource(),
-	                                              event.getID(),
-	                                              event.getWhen(),
-	                                              event.getModifiers(),
-	                                              event.getX(),
-	                                              event.getY(),
-	                                              event.getClickCount(),
-	                                              event.isPopupTrigger(),
-	                                              path, manager);
-	processMenuDragMouseEvent(e);
 	break;
       }
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates MenuDragMouseEvent.
    *
-   * @param event DOCUMENT ME!
-   * @param path DOCUMENT ME!
-   * @param manager DOCUMENT ME!
+   * @param event MouseEvent that occured while mouse was pressed.
+   * @param path Path the the menu element where the dragging event was
+   *        originated
+   * @param manager MenuSelectionManager for the current menu hierarchy.
+   *
+   * @return new MenuDragMouseEvent
+   */
+  private MenuDragMouseEvent createMenuDragMouseEvent(MouseEvent event,
+                                                      MenuElement[] path,
+                                                      MenuSelectionManager manager)
+  {
+    return new MenuDragMouseEvent((Component) event.getSource(),
+                                  event.getID(), event.getWhen(),
+                                  event.getModifiers(), event.getX(),
+                                  event.getY(), event.getClickCount(),
+                                  event.isPopupTrigger(), path, manager);
+  }
+
+  /**
+   * Process key events forwarded from MenuSelectionManager.
+   *
+   * @param event event forwarded from MenuSelectionManager
+   * @param path path to the menu element from which event was generated
+   * @param manager MenuSelectionManager for the current menu hierarchy
    */
   public void processKeyEvent(KeyEvent event, MenuElement[] path,
                               MenuSelectionManager manager)
   {
-    // TODO
+    // Need to implement.
   }
 
   /**
@@ -426,7 +419,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
    */
   public void processMenuKeyEvent(MenuKeyEvent event)
   {
-    // TODO
+    // Need to implement.
   }
 
   /**
@@ -535,9 +528,19 @@ public class JMenuItem extends AbstractButton implements Accessible,
   public void menuSelectionChanged(boolean changed)
   {
     if (changed)
+      {
       model.setArmed(true);
+
+	if (this.getParent() instanceof JPopupMenu)
+	  ((JPopupMenu) this.getParent()).setSelected(this);
+      }
     else
+      {
       model.setArmed(false);
+
+	if (this.getParent() instanceof JPopupMenu)
+	  ((JPopupMenu) this.getParent()).getSelectionModel().clearSelection();
+      }
   }
 
   /**
@@ -617,11 +620,6 @@ public class JMenuItem extends AbstractButton implements Accessible,
     return "JMenuItem";
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)

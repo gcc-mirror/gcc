@@ -162,16 +162,41 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
       {
         Component target = (Component) e.getSource ();
 
-        if (e.id == FocusEvent.FOCUS_GAINED
-            && !(target instanceof Window))
+        if (e.id == FocusEvent.FOCUS_GAINED)
           {
             if (((FocusEvent) e).isTemporary ())
               setGlobalFocusOwner (target);
             else
               setGlobalPermanentFocusOwner (target);
           }
+        else if (e.id == FocusEvent.FOCUS_LOST)
+          {
+            // We need to set the window's focus owner here; we can't
+            // set it when the window loses focus because by that time
+            // the previous focus owner has already lost focus
+            // (FOCUS_LOST events are delivered before
+            // WINDOW_LOST_FOCUS events).
 
-        if (!(target instanceof Window))
+            // Find the target Component's top-level ancestor.
+            Container parent = target.getParent ();
+
+            while (parent != null
+                   && !(parent instanceof Window))
+              parent = parent.getParent ();
+
+            Window toplevel = parent == null ?
+              (Window) target : (Window) parent;
+
+            Component focusOwner = getFocusOwner ();
+            if (focusOwner != null)
+              toplevel.setFocusOwner (focusOwner);
+
+            if (((FocusEvent) e).isTemporary ())
+              setGlobalFocusOwner (null);
+            else
+              setGlobalPermanentFocusOwner (null);
+          }
+
           target.dispatchEvent (e);
 
         return true;
@@ -192,6 +217,8 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
         // processKeyEvent checks if this event represents a focus
         // traversal key stroke.
         Component focusOwner = getGlobalPermanentFocusOwner ();
+
+        if (focusOwner != null)
         processKeyEvent (focusOwner, (KeyEvent) e);
 
         if (e.isConsumed ())
@@ -230,6 +257,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
   {
     Component focusOwner = getGlobalPermanentFocusOwner ();
 
+    if (focusOwner != null)
     focusOwner.dispatchEvent (e);
 
     // Loop through all registered KeyEventPostProcessors, giving

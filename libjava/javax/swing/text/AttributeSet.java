@@ -41,6 +41,22 @@ import java.util.Enumeration;
 
 public interface AttributeSet
 { 
+  static interface CharacterAttribute
+  {
+  }
+
+  static interface ColorAttribute
+  {
+  }
+
+  static interface FontAttribute
+  {
+  }
+
+  static interface ParagraphAttribute
+  {
+  }
+  
     boolean containsAttribute(Object name, Object value);
     boolean containsAttributes(AttributeSet attributes);
     AttributeSet copyAttributes();

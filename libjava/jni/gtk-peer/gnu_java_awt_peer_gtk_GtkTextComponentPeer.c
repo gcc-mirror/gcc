@@ -151,6 +151,10 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setCaretPosition
   GtkWidget *text = NULL;
   GtkTextBuffer *buf;
   GtkTextIter iter;
+  GtkTextMark *mark;
+  GtkTextMark *oldmark;
+  GtkTextIter olditer;
+  int oldpos;
 
   ptr = NSA_GET_PTR (env, obj);
 
@@ -174,8 +178,24 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setCaretPosition
       if (text)
 	{
 	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+
+	  /* Save old position. */
+	  oldmark = gtk_text_buffer_get_insert (buf);
+	  gtk_text_buffer_get_iter_at_mark (buf, &olditer, oldmark);
+	  oldpos = gtk_text_iter_get_offset (&olditer);
+
+	  /* Move to new position. */
 	  gtk_text_buffer_get_iter_at_offset (buf, &iter, pos);
 	  gtk_text_buffer_place_cursor (buf, &iter);
+
+	  /* Scroll to new position. Alignment is determined
+	     comparing the new position to the old position. */
+	  if (oldpos > pos)
+	    gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW (text),
+	                                  &iter, 0, TRUE, 0, 0);
+	  else if (oldpos < pos)
+	    gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW (text),
+	                                  &iter, 0, TRUE, 1, 1);
 	}
     }
 

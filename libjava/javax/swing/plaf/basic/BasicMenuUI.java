@@ -213,8 +213,11 @@ public class BasicMenuUI extends BasicMenuItemUI
     acceleratorFont = defaults.getFont("Menu.acceleratorFont");
     acceleratorForeground = defaults.getColor("Menu.acceleratorForeground");
     acceleratorSelectionForeground = defaults.getColor("Menu.acceleratorSelectionForeground");
+    selectionBackground = defaults.getColor("Menu.selectionBackground");
+    selectionForeground = defaults.getColor("Menu.selectionForeground");
     arrowIcon = defaults.getIcon("Menu.arrowIcon");
     oldBorderPainted = defaults.getBoolean("Menu.borderPainted");
+    menuItem.setOpaque(true);
   }
 
   /**
@@ -233,7 +236,9 @@ public class BasicMenuUI extends BasicMenuItemUI
   protected void installListeners()
   {
     ((JMenu) menuItem).addMouseListener(mouseInputListener);
+    ((JMenu) menuItem).addMouseMotionListener(mouseInputListener);
     ((JMenu) menuItem).addMenuListener(menuListener);
+    ((JMenu) menuItem).addMenuDragMouseListener(menuDragMouseListener);
   }
 
   protected void setupPostTimer(JMenu menu)
@@ -254,6 +259,8 @@ public class BasicMenuUI extends BasicMenuItemUI
     acceleratorFont = null;
     acceleratorForeground = null;
     acceleratorSelectionForeground = null;
+    selectionBackground = null;
+    selectionForeground = null;
     arrowIcon = null;
   }
 
@@ -304,11 +311,10 @@ public class BasicMenuUI extends BasicMenuItemUI
                selected. (If nothing was selected, menu should be pressed before
                it will be selected)      
       */
-      
       JMenu menu = (JMenu) menuItem;
       if (! menu.isTopLevelMenu()
           || (menu.isTopLevelMenu()
-          && (((JMenuBar) menu.getParent()).isSelected())))
+          && (((JMenuBar) menu.getParent()).isSelected() && ! menu.isArmed())))
         {
 	  // set new selection and forward this event to MenuSelectionManager
 	  MenuSelectionManager manager = MenuSelectionManager.defaultManager();
@@ -329,7 +335,6 @@ public class BasicMenuUI extends BasicMenuItemUI
 
     public void mousePressed(MouseEvent e)
     {
-
       MenuSelectionManager manager = MenuSelectionManager.defaultManager();
       JMenu menu = (JMenu) menuItem;
       manager.processMouseEvent(e);
@@ -339,11 +344,9 @@ public class BasicMenuUI extends BasicMenuItemUI
       if (menu.isTopLevelMenu())
         {
 	  if (menu.getPopupMenu().isVisible())
-	    {
 	      // If menu is visible and menu button was pressed.. 
 	      // then need to cancel the menu
 	      manager.clearSelectedPath();
-	    }
 	  else
 	    {
 	      // Display the menu
@@ -374,30 +377,44 @@ public class BasicMenuUI extends BasicMenuItemUI
   {
     /**
      * This method is called when menu is cancelled. The menu is cancelled
-     * when its popup menu is closed without selection.
+     * when its popup menu is closed without selection. It clears selected index
+     * in the selectionModel of the menu parent.
      *
      * @param e The MenuEvent.
      */
     public void menuCanceled(MenuEvent e)
     {
+      menuDeselected(e);
     }
 
     /**
-     * This method is called when menu is deselected.
+     * This method is called when menu is deselected. It clears selected index
+     * in the selectionModel of the menu parent.
      *
      * @param e The MenuEvent.
      */
     public void menuDeselected(MenuEvent e)
     {
+      JMenu menu = (JMenu) menuItem;
+      if (menu.isTopLevelMenu())
+	((JMenuBar) menu.getParent()).getSelectionModel().clearSelection();
+      else
+	((JPopupMenu) menu.getParent()).getSelectionModel().clearSelection();
     }
 
     /**
-     * This method is called when menu is selected.
+     * This method is called when menu is selected.  It sets selected index
+     * in the selectionModel of the menu parent.
      *
      * @param e The MenuEvent.
      */
     public void menuSelected(MenuEvent e)
     {
+      JMenu menu = (JMenu) menuItem;
+      if (menu.isTopLevelMenu())
+	((JMenuBar) menu.getParent()).setSelected(menu);
+      else
+	((JPopupMenu) menu.getParent()).setSelected(menu);
     }
   }
 
@@ -426,31 +443,35 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   /**
-   * This class handles mouse dragged events.
+   * This class handles mouse dragged events occuring in the menu.
    */
   protected class MenuDragMouseHandler implements MenuDragMouseListener
   {
     /**
-     * Tbis method is invoked when mouse is dragged over the menu item.
+     * This method is invoked when mouse is dragged over the menu item.
      *
      * @param e The MenuDragMouseEvent
      */
     public void menuDragMouseDragged(MenuDragMouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.setSelectedPath(e.getPath());
     }
 
     /**
-     * Tbis method is invoked when mouse enters the menu item while it is
+     * This method is invoked when mouse enters the menu item while it is
      * being dragged.
      *
      * @param e The MenuDragMouseEvent
      */
     public void menuDragMouseEntered(MenuDragMouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.setSelectedPath(e.getPath());
     }
 
     /**
-     * Tbis method is invoked when mouse exits the menu item while
+     * This method is invoked when mouse exits the menu item while
      * it is being dragged
      *
      * @param e The MenuDragMouseEvent
@@ -460,7 +481,7 @@ public class BasicMenuUI extends BasicMenuItemUI
     }
 
     /**
-     * Tbis method is invoked when mouse was dragged and released
+     * This method is invoked when mouse was dragged and released
      * inside the menu item.
      *
      * @param e The MenuDragMouseEvent

@@ -1625,6 +1625,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void revalidate()
   {
+    invalidate();
     RepaintManager.currentManager(this).addInvalidComponent(this);
   }
 

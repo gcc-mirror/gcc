@@ -340,7 +340,7 @@ public class GridBagLayout
       if (components.length == 0)
         return;
 
-      GridBagLayoutInfo info = getLayoutInfo (parent, MINSIZE);
+      GridBagLayoutInfo info = getLayoutInfo (parent, PREFERREDSIZE);
       if (info.cols == 0 && info.rows == 0)
         return;
       layoutInfo = info;

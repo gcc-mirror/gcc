@@ -53,6 +53,8 @@ Java_gnu_java_awt_peer_gtk_GtkPanelPeer_create
   
   widget = gtk_layout_new (NULL, NULL);
 
+  GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
+
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, widget);

@@ -114,6 +114,7 @@ public class Timer implements Serializable
           while (running)
             {
               sleep(delay);
+              queueEvent();
               
               if (logTimers)
                 System.out.println("javax.swing.Timer -> clocktick");

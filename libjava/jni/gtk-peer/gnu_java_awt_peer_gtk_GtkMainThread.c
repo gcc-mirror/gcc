@@ -218,7 +218,7 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkMain
 
 /* This is a big hack, needed until this pango bug is resolved:
    http://bugzilla.gnome.org/show_bug.cgi?id=119081.
-   See: http://www.geocrawler.com/archives/3/522/2003/8/0/10579352/
+   See: http://mail.gnome.org/archives/gtk-i18n-list/2003-August/msg00001.html
    for details. */
 static void
 init_dpi_conversion_factor ()

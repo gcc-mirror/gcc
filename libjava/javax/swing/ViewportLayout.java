@@ -67,13 +67,6 @@ public class ViewportLayout implements LayoutManager, Serializable
   {
     JViewport vp = (JViewport)parent;
     Component view = vp.getView();
-    if (view instanceof Scrollable)
-      {
-        Scrollable sc = (Scrollable) view;
-        Dimension d = sc.getPreferredScrollableViewportSize();
-        return d;
-      }
-    else
       return view.getPreferredSize();
   }
   public Dimension minimumLayoutSize(Container parent) 
@@ -126,7 +119,7 @@ public class ViewportLayout implements LayoutManager, Serializable
     // the viewport require inputs in view space.
 
     Rectangle portBounds = port.getViewRect();
-    Dimension viewSize = port.getViewSize();
+    Dimension viewPref = view.getPreferredSize();
     Dimension viewMinimum = view.getMinimumSize();
     Point portLowerRight = new Point(portBounds.x + portBounds.width,
                                      portBounds.y + portBounds.height);
@@ -135,12 +128,12 @@ public class ViewportLayout implements LayoutManager, Serializable
     if (portBounds.height >= viewMinimum.height)
       {
         portBounds.y = 0;
-        viewSize.height = portBounds.height;
+        viewPref.height = portBounds.height;
       }
     else
       {
-        viewSize.height = viewMinimum.height;
-        int overextension = portLowerRight.y - viewSize.height;
+        viewPref.height = viewMinimum.height;
+        int overextension = portLowerRight.y - viewPref.height;
         if (overextension > 0)
             portBounds.y -= overextension;
       }
@@ -149,17 +142,17 @@ public class ViewportLayout implements LayoutManager, Serializable
     if (portBounds.width >= viewMinimum.width)
       {
         portBounds.x = 0;
-        viewSize.width = portBounds.width;
+        viewPref.width = portBounds.width;
       }
     else
       {
-        viewSize.width = viewMinimum.width;
-        int overextension = portLowerRight.x - viewSize.width;
+        viewPref.width = viewMinimum.width;
+        int overextension = portLowerRight.x - viewPref.width;
         if (overextension > 0)
             portBounds.x -= overextension;
       }
 
     port.setViewPosition(portBounds.getLocation());
-    port.setViewSize(viewSize);
+    port.setViewSize(viewPref);
   }
 }

@@ -66,7 +66,15 @@ import javax.swing.plaf.MenuItemUI;
 
 
 /**
- * JMenuBar
+ * <p>
+ * JMenuBar is a container for menu's. For a menu bar to be seen on the
+ * screen, at least one menu should be added to it. Just like adding
+ * components to container, one can use add() to add menu's to the menu bar.
+ * Menu's will be displayed in the menu  bar in the order they were added.
+ * The JMenuBar uses selectionModel to keep track of selected menu index.
+ * JMenuBar's selectionModel will fire ChangeEvents to its registered 
+ * listeners when the selected index changes.
+ * </p>
  */
 public class JMenuBar extends JComponent implements Accessible, MenuElement
 {
@@ -76,6 +84,8 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   /** Fired in a PropertyChangeEvent when the "model" changes. */
   public static final String MODEL_CHANGED_PROPERTY = "model";
   
+  /** Fired in a PropertyChangeEvent when the "margin" changes. */
+  public static final String MARGIN_CHANGED_PROPERTY = "margin";
   private static final long serialVersionUID = -8191026883931977036L;
 
   /** JMenuBar's model. It keeps track of selected menu's index */
@@ -112,7 +122,8 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method overrides addNotify() in the Container to register
+   * this menu bar with the current keyboard manager.
    */
   public void addNotify()
   {
@@ -216,9 +227,9 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns number of menu's in this menu bar
    *
-   * @return DOCUMENT ME!
+   * @return number of menu's in this menu bar
    */
   public int getMenuCount()
   {
@@ -226,9 +237,12 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * Returns selection model for this menu bar.
+   * Returns selection model for this menu bar. SelectionModel
+   * keeps track of the selected menu in the menu bar. Whenever
+   * selected property of selectionModel changes, the ChangeEvent
+   * will be fired its ChangeListeners.
    *
-   * @return selection mdoel for this menu bar.
+   * @return selection model for this menu bar.
    */
   public SingleSelectionModel getSelectionModel()
   {
@@ -319,9 +333,10 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * A string that describes this JMenuBar. Normally only used
+   * for debugging.
    *
-   * @return DOCUMENT ME!
+   * @return A string describing this JMenuBar
    */
   protected String paramString()
   {
@@ -329,11 +344,13 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Process key events forwarded from MenuSelectionManager. This method
+   * doesn't do anything. It is here to conform to the MenuElement interface.
    *
-   * @param e DOCUMENT ME!
-   * @param path DOCUMENT ME!
-   * @param manager DOCUMENT ME!
+   * @param event event forwarded from MenuSelectionManager
+   * @param path path to the menu element from which event was generated
+   * @param manager MenuSelectionManager for the current menu hierarchy
+   *
    */
   public void processKeyEvent(KeyEvent e, MenuElement[] path,
                               MenuSelectionManager manager)
@@ -342,11 +359,13 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Process mouse events forwarded from MenuSelectionManager. This method
+   * doesn't do anything. It is here to conform to the MenuElement interface.
    *
-   * @param event DOCUMENT ME!
-   * @param path DOCUMENT ME!
-   * @param manager DOCUMENT ME!
+   * @param event event forwarded from MenuSelectionManager
+   * @param path path to the menu element from which event was generated
+   * @param manager MenuSelectionManager for the current menu hierarchy
+   *
    */
   public void processMouseEvent(MouseEvent event, MenuElement[] path,
                                 MenuSelectionManager manager)
@@ -355,7 +374,8 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method overrides removeNotify() in the Container to
+   * unregister this menu bar from the current keyboard manager.
    */
   public void removeNotify()
   {
@@ -364,9 +384,10 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets painting status of the border. If 'b' is true then menu bar's
+   * border will be painted, and it will not be painted otherwise.
    *
-   * @param b DOCUMENT ME!
+   * @param b indicates if menu bar's border should be painted.
    */
   public void setBorderPainted(boolean b)
   {
@@ -381,27 +402,38 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets help menu for this menu bar
    *
-   * @param menu DOCUMENT ME!
+   * @param menu help menu
    */
   public void setHelpMenu(JMenu menu)
   {
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets the menu bar's "margin" bound property,  which represents
+   * distance between the menubar's border and its menus.
+   * icon. When marging property is modified, PropertyChangeEvent will
+   * be fired to menuBar's PropertyChangeListener's.
    *
-   * @param m DOCUMENT ME!
+   * @param m distance between the menubar's border and its menus.
+   *
    */
   public void setMargin(Insets m)
   {
+    if (m.equals(this.margin))
+      {
+	Insets oldMargin = this.margin;
+	this.margin = m;
+	firePropertyChange(MARGIN_CHANGED_PROPERTY, oldMargin, margin);
+      }
+
     this.margin = m;
   }
 
   /**
-   * Changes menu bar's selection to the specifies menu.
-   * This method updates selected index of menu bar's model,
+   * Changes menu bar's selection to the specified menu.
+   * This method updates selected index of menu bar's selection model,
    * which results in a model firing change event.
    *
    * @param sel menu to select

@@ -39,11 +39,15 @@ package javax.swing;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.Icon;
+import javax.swing.JInternalFrame;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import javax.swing.plaf.OptionPaneUI;
 
 
@@ -60,6 +64,7 @@ public class JOptionPane extends JComponent implements Accessible
    */
   protected class AccessibleJOptionPane extends JComponent.AccessibleJComponent
   {
+    /** DOCUMENT ME! */
     private static final long serialVersionUID = 686071432213084821L;
   
     /**
@@ -80,6 +85,7 @@ public class JOptionPane extends JComponent implements Accessible
     }
   }
 
+  /** DOCUMENT ME! */
   private static final long serialVersionUID = 5231143276678566796L;
   
   /** The value returned when cancel option is selected. */
@@ -373,6 +379,8 @@ public class JOptionPane extends JComponent implements Accessible
     dialog.getContentPane().add(this);
     dialog.setModal(true);
     dialog.setResizable(false);
+    dialog.invalidate();
+    dialog.repaint();
 
     return dialog;
   }
@@ -394,8 +402,21 @@ public class JOptionPane extends JComponent implements Accessible
                                             String title)
                                      throws RuntimeException
   {
-    // FIXME: implement.
-    return null;
+    JDesktopPane toUse = getDesktopPaneForComponent(parentComponent);
+    if (toUse == null)
+      throw new RuntimeException("parentComponent does not have a valid parent");
+
+    JInternalFrame frame = new JInternalFrame(title);
+
+    inputValue = UNINITIALIZED_VALUE;
+    value = UNINITIALIZED_VALUE;
+
+    frame.setClosable(true);
+    toUse.add(frame);
+
+    // FIXME: JLayeredPane broken? See bug # 16576
+    // frame.setLayer(JLayeredPane.MODAL_LAYER);
+    return frame;
   }
 
   /**
@@ -421,7 +442,8 @@ public class JOptionPane extends JComponent implements Accessible
    */
   public static JDesktopPane getDesktopPaneForComponent(Component parentComponent)
   {
-    return (JDesktopPane) SwingUtilities.getAncestorOfClass(JDesktopPane.class, parentComponent);
+    return (JDesktopPane) SwingUtilities.getAncestorOfClass(JDesktopPane.class,
+                                                            parentComponent);
   }
 
   /**
@@ -434,7 +456,8 @@ public class JOptionPane extends JComponent implements Accessible
    */
   public static Frame getFrameForComponent(Component parentComponent)
   {
-    return (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);
+    return (Frame) SwingUtilities.getAncestorOfClass(Frame.class,
+                                                     parentComponent);
   }
 
   /**
@@ -822,6 +845,7 @@ public class JOptionPane extends JComponent implements Accessible
   {
     JOptionPane pane = new JOptionPane(message);
     JDialog dialog = pane.createDialog(parentComponent, "Select an Option");
+
     dialog.pack();
     dialog.show();
 
@@ -1064,123 +1088,171 @@ public class JOptionPane extends JComponent implements Accessible
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal confirmation dialog with the given message.
+   * The internal frame dialog will be placed in the first JDesktopPane
+   * ancestor of the given parentComponent. This method will return the value
+   * selected.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
+   * @param parentComponent The parent to find a JDesktopPane in.
+   * @param message The message to display.
    *
-   * @return DOCUMENT ME!
+   * @return The value selected.
    */
   public static int showInternalConfirmDialog(Component parentComponent,
                                               Object message)
   {
-    // FIXME: implement
-    return 0;
+    JOptionPane pane = new JOptionPane(message);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, null);
+
+    startModal(frame, pane);
+
+    return ((Integer) pane.getValue()).intValue();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal confirmation dialog with the given message,
+   * optionType and title. The internal frame dialog will be placed in the
+   * first JDesktopPane ancestor of the given parentComponent.  This method
+   * will return the selected value.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param optionType DOCUMENT ME!
+   * @param parentComponent The parent to find a JDesktopPane in.
+   * @param message The message to display.
+   * @param title The title to display.
+   * @param optionType The option type.
    *
-   * @return DOCUMENT ME!
+   * @return The selected value.
    */
   public static int showInternalConfirmDialog(Component parentComponent,
                                               Object message, String title,
                                               int optionType)
   {
-    // FIXME: implement  
-    return 0;
+    JOptionPane pane = new JOptionPane(message, PLAIN_MESSAGE, optionType);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
+
+    return ((Integer) pane.getValue()).intValue();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal confirmation dialog with the given message,
+   * title, optionTypes and icon for the given message type. The internal
+   * confirmation dialog will be placed in the first  instance of
+   * JDesktopPane ancestor of the given parentComponent.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param optionType DOCUMENT ME!
-   * @param messageType DOCUMENT ME!
+   * @param parentComponent The component to find a JDesktopPane in.
+   * @param message The message to display.
+   * @param title The title of the dialog.
+   * @param optionType The option type.
+   * @param messageType The message type.
    *
-   * @return DOCUMENT ME!
+   * @return The selected value.
    */
   public static int showInternalConfirmDialog(Component parentComponent,
                                               Object message, String title,
                                               int optionType, int messageType)
   {
-    // FIXME: implement  
-    return 0;
+    JOptionPane pane = new JOptionPane(message, messageType, optionType);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
+
+    return ((Integer) pane.getValue()).intValue();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal confirmation dialog with the given message,
+   * title, option type, message type, and icon. The internal frame dialog
+   * will be placed in the first JDesktopPane ancestor  that is found in the
+   * given parentComponent. This method returns  the selected value.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param optionType DOCUMENT ME!
-   * @param messageType DOCUMENT ME!
-   * @param icon DOCUMENT ME!
+   * @param parentComponent The parent to find a JDesktopPane in.
+   * @param message The message to display.
+   * @param title The title to display.
+   * @param optionType The option type.
+   * @param messageType The message type.
+   * @param icon The icon to display.
    *
-   * @return DOCUMENT ME!
+   * @return The selected value.
    */
   public static int showInternalConfirmDialog(Component parentComponent,
                                               Object message, String title,
                                               int optionType, int messageType,
                                               Icon icon)
   {
-    // FIXME: implement  
-    return 0;
+    JOptionPane pane = new JOptionPane(message, messageType, optionType, icon);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
+
+    return ((Integer) pane.getValue()).intValue();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal input dialog with the given message. The
+   * internal frame dialog will be placed in the first JDesktopPane ancestor
+   * of the given parent component. This method returns the value input by
+   * the user.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
+   * @param parentComponent The parent to find a JDesktopPane in.
+   * @param message The message to display.
    *
-   * @return DOCUMENT ME!
+   * @return The user selected value.
    */
   public static String showInternalInputDialog(Component parentComponent,
                                                Object message)
   {
-    // FIXME: implement  
-    return null;
+    JOptionPane pane = new JOptionPane(message);
+    pane.setWantsInput(true);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, null);
+
+    startModal(frame, pane);
+
+    return (String) pane.getInputValue();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal input dialog with the given message,  title
+   * and message type. The internal input dialog will be placed in the first
+   * JDesktopPane ancestor found in the given parent component. This method
+   * will return the input value given by the user.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param messageType DOCUMENT ME!
+   * @param parentComponent The component to find a JDesktopPane in.
+   * @param message The message to display.
+   * @param title The title to display.
+   * @param messageType The message type.
    *
-   * @return DOCUMENT ME!
+   * @return The user input value.
    */
   public static String showInternalInputDialog(Component parentComponent,
                                                Object message, String title,
                                                int messageType)
   {
-    // FIXME: implement  
-    return null;
+    JOptionPane pane = new JOptionPane(message, messageType);
+    pane.setWantsInput(true);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
+
+    return (String) pane.getInputValue();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal input dialog with the given message, title
+   * message type, icon, selection value list and initial selection value.
+   * The internal frame dialog will be placed in the first JDesktopPane
+   * ancestor found in the given parent component. This method returns the
+   * input value from the user.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param messageType DOCUMENT ME!
-   * @param icon DOCUMENT ME!
-   * @param selectionValues DOCUMENT ME!
-   * @param initialSelectionValue DOCUMENT ME!
+   * @param parentComponent The parent to find a JDesktopPane in.
+   * @param message The message to display.
+   * @param title The title to display.
+   * @param messageType The message type.
+   * @param icon The icon to display.
+   * @param selectionValues The selection value list.
+   * @param initialSelectionValue The initial selection value.
    *
-   * @return DOCUMENT ME!
+   * @return The user input value.
    */
   public static Object showInternalInputDialog(Component parentComponent,
                                                Object message, String title,
@@ -1188,66 +1260,94 @@ public class JOptionPane extends JComponent implements Accessible
                                                Object[] selectionValues,
                                                Object initialSelectionValue)
   {
-    // FIXME: implement  
-    return null;
+    JOptionPane pane = new JOptionPane(message, messageType);
+    pane.setWantsInput(true);
+    pane.setIcon(icon);
+    pane.setSelectionValues(selectionValues);
+    pane.setInitialSelectionValue(initialSelectionValue);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
+
+    return (String) pane.getInputValue();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal message dialog with the given message. The
+   * internal frame dialog will be placed in the first JDesktopPane ancestor
+   * found in the given parent component.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
+   * @param parentComponent The component to find a JDesktopPane in.
+   * @param message The message to display.
    */
   public static void showInternalMessageDialog(Component parentComponent,
                                                Object message)
   {
-    // FIXME: implement  
+    JOptionPane pane = new JOptionPane(message);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, null);
+
+    startModal(frame, pane);
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal message dialog with the given message,
+   * title and message type. The internal message dialog is placed in the
+   * first JDesktopPane ancestor found in the given parent component.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param messageType DOCUMENT ME!
+   * @param parentComponent The parent component to find a JDesktopPane in.
+   * @param message The message to display.
+   * @param title The title to display.
+   * @param messageType The message type.
    */
   public static void showInternalMessageDialog(Component parentComponent,
                                                Object message, String title,
                                                int messageType)
   {
-    // FIXME: implement
+    JOptionPane pane = new JOptionPane(message, messageType);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
   }
 
   /**
-   * DOCUMENT ME!
+   * This method shows an internal message dialog with the given message,
+   * title, message type and icon. The internal message dialog is placed in
+   * the first JDesktopPane ancestor found in the given parent component.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param messageType DOCUMENT ME!
-   * @param icon DOCUMENT ME!
+   * @param parentComponent The component to find a JDesktopPane in.
+   * @param message The message to display.
+   * @param title The title to display.
+   * @param messageType The message type.
+   * @param icon The icon to display.
    */
   public static void showInternalMessageDialog(Component parentComponent,
                                                Object message, String title,
                                                int messageType, Icon icon)
   {
-    // FIXME: implement  
+    JOptionPane pane = new JOptionPane(message, messageType);
+    pane.setIcon(icon);
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
   }
 
   /**
-   * DOCUMENT ME!
+   * This method displays an internal option dialog with the given message,
+   * title, option type, message type, icon, option list, and initial option
+   * value. The internal option dialog is placed in the first JDesktopPane
+   * ancestor found in the parent component. This method returns the option
+   * selected.
    *
-   * @param parentComponent DOCUMENT ME!
-   * @param message DOCUMENT ME!
-   * @param title DOCUMENT ME!
-   * @param optionType DOCUMENT ME!
-   * @param messageType DOCUMENT ME!
-   * @param icon DOCUMENT ME!
-   * @param options DOCUMENT ME!
-   * @param initialValue DOCUMENT ME!
+   * @param parentComponent The parent to find a JDesktopPane in.
+   * @param message The message displayed.
+   * @param title The title displayed.
+   * @param optionType The option type.
+   * @param messageType The message type.
+   * @param icon The icon to display.
+   * @param options The array of options.
+   * @param initialValue The initial value selected.
    *
-   * @return DOCUMENT ME!
+   * @return The option that was selected.
    */
   public static int showInternalOptionDialog(Component parentComponent,
                                              Object message, String title,
@@ -1255,8 +1355,14 @@ public class JOptionPane extends JComponent implements Accessible
                                              Icon icon, Object[] options,
                                              Object initialValue)
   {
-    // FIXME: implement  
-    return 0;
+    JOptionPane pane = new JOptionPane(message, messageType, optionType, icon,
+                                       options, initialValue);
+
+    JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
+
+    startModal(frame, pane);
+
+    return ((Integer) pane.getValue()).intValue();
   }
 
   /**
@@ -1338,6 +1444,7 @@ public class JOptionPane extends JComponent implements Accessible
   {
     JOptionPane pane = new JOptionPane(message, messageType, optionType, icon,
                                        options, initialValue);
+
     JDialog dialog = pane.createDialog(parentComponent, title);
     dialog.pack();
     dialog.show();
@@ -1393,5 +1500,50 @@ public class JOptionPane extends JComponent implements Accessible
 	return true;
       }
     return false;
+  }
+
+  /**
+   * This helper method makes the JInternalFrame wait until it is notified by
+   * an InternalFrameClosing event. This method also adds the given
+   * JOptionPane to the JInternalFrame and sizes it according to the
+   * JInternalFrame's preferred size.
+   *
+   * @param f The JInternalFrame to make modal.
+   * @param pane The JOptionPane to add to the JInternalFrame.
+   */
+  private static void startModal(JInternalFrame f, JOptionPane pane)
+  {
+    f.getContentPane().add(pane);
+    f.pack();
+    f.show();
+
+    Dimension pref = f.getPreferredSize();
+    f.setBounds(0, 0, pref.width, pref.height);
+
+    synchronized (f)
+      {
+	final JInternalFrame tmp = f;
+	tmp.toFront();
+
+	f.addInternalFrameListener(new InternalFrameAdapter()
+	    {
+	      public void internalFrameClosed(InternalFrameEvent e)
+	      {
+		synchronized (tmp)
+		  {
+		    tmp.removeInternalFrameListener(this);
+		    tmp.notifyAll();
+		  }
+	      }
+	    });
+	try
+	  {
+	    while (! f.isClosed())
+	      f.wait();
+	  }
+	catch (InterruptedException ignored)
+	  {
+	  }
+      }
   }
 }

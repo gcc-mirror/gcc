@@ -43,11 +43,15 @@ import java.awt.Graphics;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.ScrollPaneLayout;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ScrollPaneUI;
 
 public class BasicScrollPaneUI extends ScrollPaneUI
+  implements ScrollPaneConstants
 {
 
     public static ComponentUI createUI(final JComponent c) 
@@ -55,11 +59,36 @@ public class BasicScrollPaneUI extends ScrollPaneUI
 	return new BasicScrollPaneUI();
     }
 
+  protected void installDefaults(JScrollPane p)
+  {
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    p.setForeground(defaults.getColor("ScrollPane.foreground"));
+    p.setBackground(defaults.getColor("ScrollPane.background"));
+    p.setFont(defaults.getFont("ScrollPane.font"));
+    p.setBorder(defaults.getBorder("ScrollPane.border"));
+    p.setOpaque(true);
+  }
+
+  protected void uninstallDefaults(JScrollPane p)
+  {
+    p.setForeground(null);
+    p.setBackground(null);
+    p.setFont(null);
+    p.setBorder(null);
+  }
     
     public void installUI(final JComponent c) 
     {
 	super.installUI(c);
+    this.installDefaults((JScrollPane)c);
+  }
+
+  public void uninstallUI(final JComponent c) 
+  {
+    super.uninstallUI(c);
+    this.uninstallDefaults((JScrollPane)c);
     }
+    
     
     public Dimension getMinimumSize(JComponent c) 
     {

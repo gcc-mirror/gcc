@@ -56,6 +56,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -63,6 +64,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -111,7 +113,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
       Object value = new Integer(JOptionPane.CLOSED_OPTION);
       Object[] options = optionPane.getOptions();
       if (options != null)
-	value = options[buttonIndex];
+	value = new Integer(buttonIndex);
       else
         {
 	  String text = ((JButton) e.getSource()).getText();
@@ -131,6 +133,20 @@ public class BasicOptionPaneUI extends OptionPaneUI
 
       if (owner instanceof JDialog)
 	((JDialog) owner).dispose();
+
+      //else we probably have some kind of internal frame.
+      JInternalFrame inf = (JInternalFrame) SwingUtilities.getAncestorOfClass(JInternalFrame.class,
+                                                                              optionPane);
+      if (inf != null)
+        {
+	  try
+	    {
+	      inf.setClosed(true);
+	    }
+	  catch (PropertyVetoException pve)
+	    {
+	    }
+        }
     }
   }
 
@@ -642,10 +658,10 @@ public class BasicOptionPaneUI extends OptionPaneUI
 		  toAdd = new JButton((Icon) buttons[i]);
 		else
 		  toAdd = new JButton(buttons[i].toString());
-		((JButton) toAdd).addActionListener(createButtonActionListener(i));
 		hasCustomComponents = true;
 	      }
-
+	    if (toAdd instanceof JButton)
+	      ((JButton) toAdd).addActionListener(createButtonActionListener(i));
 	    if (i == initialIndex)
 	      initialFocusComponent = toAdd;
 	    container.add(toAdd);
@@ -837,8 +853,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
     {
     public Dimension getPreferredSize()
     {
-      int w = Math.max(optionPane.getSize().width,
-                       minimumWidth);
+	  int w = Math.max(optionPane.getSize().width, minimumWidth);
       Insets i = optionPane.getInsets();
       Dimension orig = super.getPreferredSize();
       Dimension value = new Dimension(w - i.left - i.right - iconSize,
@@ -856,10 +871,13 @@ public class BasicOptionPaneUI extends OptionPaneUI
       {
 	Object[] selection = optionPane.getSelectionValues();
 
+//	if (selection == null)
+//	  inputComponent = new JTextField();
+//	else if (selection.length < 20)
+//	  inputComponent = new JComboBox(selection);
+	// FIXME: Uncomment when the widgets are done.
 	if (selection == null)
-	  inputComponent = new JTextField();
-	else if (selection.length < 20)
-	  inputComponent = new JComboBox(selection);
+	  inputComponent = null;
 	else
 	  inputComponent = new JList(selection);
 	if (inputComponent != null)
@@ -972,7 +990,9 @@ public class BasicOptionPaneUI extends OptionPaneUI
 	tmp = questionIcon;
 	break;
       }
-    return new IconUIResource(tmp);
+    return tmp;
+    // FIXME: Don't cast till the default icons are in.
+    // return new IconUIResource(tmp);
   }
 
   /**

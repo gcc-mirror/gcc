@@ -1,5 +1,5 @@
 /* BasicTextUI.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,85 +35,186 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
+
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.TextUI;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
+import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
 
-public class BasicTextUI extends TextUI
+public abstract class BasicTextUI extends TextUI
   implements ViewFactory
 {
-  int gap = 3;
-  View view = null; // was: new RootView();
-  Color textColor;
-  Color disabledTextColor;
-  Color normalBackgroundColor;
-  EditorKit kit = new DefaultEditorKit();
-
-  /* *****************************************************************
-   * This View is way too incomplete to be of any use. To avoid errors
-   * when compiling with the Sun JDK, it has been commented out.
-   *                            -- Sascha Brawer (brawer@dandelis.ch)
-   *
-   * (begin of commented out section)
-  class RootView extends View
+  public static class BasicCaret extends DefaultCaret
+    implements UIResource
   {
-      RootView()
+    public BasicCaret()
+    {
+    }
+  }
+
+  public static class BasicHighlighter extends DefaultHighlighter
+    implements UIResource
+  {
+    public BasicHighlighter()
+    {
+    }
+  }
+
+  private class RootView extends View
+  {
+    private JTextComponent textComponent;
+    private View view;
+    
+    public RootView(JTextComponent parent)
       {
           super(null);
+      textComponent = parent;
       }
-      public void paint(Graphics g, Shape s)
+
+    public void setView(View v)
       {
           if (view != null)
-              {
-                  Rectangle r = s.getBounds();
+	view.setParent(null);
+      
+      if (v != null)
+	v.setParent(null);
 
-                  view.setSize((int)r.getWidth(),
-                               (int)r.getHeight());
-                  view.paint(g, s);
+      view = v;
+    }
+
+    public Container getContainer()
+              {
+      return textComponent;
+    }
+
+    public float getPreferredSpan(int axis)
+    {
+      if (view != null)
+	return view.getPreferredSpan(axis);
+
+      return Integer.MAX_VALUE;
               }
+
+    public void paint(Graphics g, Shape s)
+    {
+      System.out.println("Michael: BasicTextUI.RootView.paint");
+      
+      if (view != null)
+	view.paint(g, s);
       }
   }
-  * (end of commented out section)
-  *************************************************************** */
+  
+  RootView rootView;
+  JTextComponent textComponent;
+  int gap = 3;
+  EditorKit kit = new DefaultEditorKit();
+
   public BasicTextUI()
   {
   }
 
-  public static ComponentUI createUI(final JComponent c)
+  protected Caret createCaret()
   {
-    return new BasicTextUI();
+    return new BasicCaret();
+  }
+
+  protected Highlighter createHighlighter()
+  {
+    return new BasicHighlighter();
+  }
+  
+  protected final JTextComponent getComponent()
+  {
+    return textComponent;
   }
 
   public void installUI(final JComponent c)
   {
     super.installUI(c);
+    c.setOpaque(true);
 
-    textColor = new Color(0, 0, 0);
-    disabledTextColor = new Color(130, 130, 130);
-    normalBackgroundColor = new Color(192, 192, 192);
+    textComponent = (JTextComponent) c;
+
+    Document doc = textComponent.getDocument();
+    if (doc == null)
+      {
+	doc = new PlainDocument();
+	textComponent.setDocument(doc);
   }
+
+    rootView = new RootView(textComponent);
+    setView(create(doc.getDefaultRootElement()));
+    
+    installDefaults();
+    installListeners();
+    installKeyboardActions();
+  }
+
+  protected void installDefaults()
+  {
+  }
+
+  protected void installListeners()
+  {
+  }
+
+  protected void installKeyboardActions()
+  {
+  }
+  
+  public void uninstallUI(final JComponent c)
+  {
+    super.uninstallUI(c);
+    rootView = null;
+
+    uninstallDefaults();
+    uninstallListeners();
+    uninstallKeyboardActions();
+  }
+
+  protected void uninstallDefaults()
+  {
+  }
+
+  protected void uninstallListeners()
+  {
+  }
+
+  protected void uninstallKeyboardActions()
+  {
+  }
+  
+  protected abstract String getPropertyPrefix();
 
   public Dimension getPreferredSize(JComponent c)
   {
-    JTextComponent b = (JTextComponent) c;
-
-    View v = getRootView(b);
+    View v = getRootView(textComponent);
 
     float w = v.getPreferredSpan(View.X_AXIS);
     float h = v.getPreferredSpan(View.Y_AXIS);
@@ -121,9 +222,32 @@ public class BasicTextUI extends TextUI
     return new Dimension((int) w, (int) h);
   }
 
-  public void paint(Graphics g, JComponent c)
+  public final void paint(Graphics g, JComponent c)
   {
-    //	view.paint(
+    paintSafely(g);
+  }
+
+  protected void paintSafely(Graphics g)
+  {
+    Caret caret = textComponent.getCaret();
+    Highlighter highlighter = textComponent.getHighlighter();
+    
+    if (textComponent.isOpaque())
+      paintBackground(g);
+    
+    rootView.paint(g, getVisibleEditorRect());
+
+    if (highlighter != null)
+      highlighter.paint(g);
+
+    if (caret != null)
+      caret.paint(g);
+  }
+
+  protected void paintBackground(Graphics g)
+  {
+    g.setColor(Color.WHITE); // FIXME: set background color
+    g.fillRect(0, 0, textComponent.getWidth(), textComponent.getHeight());
   }
 
   public void damageRange(JTextComponent t, int p0, int p1)
@@ -151,7 +275,7 @@ public class BasicTextUI extends TextUI
 
   public View getRootView(JTextComponent t)
   {
-    return view;
+    return rootView;
   }
 
   public Rectangle modelToView(JTextComponent t, int pos)
@@ -180,5 +304,31 @@ public class BasicTextUI extends TextUI
   {
     // subclasses have to implement this to get this functionality
     return null;
+  }
+
+  public View create(Element elem, int p0, int p1)
+  {
+    // subclasses have to implement this to get this functionality
+    return null;
+  }
+  
+  protected Rectangle getVisibleEditorRect()
+  {
+    int width = textComponent.getWidth();
+    int height = textComponent.getHeight();
+
+    if (width <= 0 || height <= 0)
+      return null;
+	
+    Insets insets = textComponent.getInsets();
+    return new Rectangle(insets.left, insets.top,
+			 width - insets.left + insets.right,
+			 height - insets.top + insets.bottom);
+  }
+
+  protected final void setView(View view)
+  {
+    rootView.setView(view);
+    view.setParent(rootView);
   }
 }

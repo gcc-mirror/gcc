@@ -37,22 +37,38 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-public class Segment implements Cloneable, CharacterIterator
+import java.text.CharacterIterator;
+
+
+public class Segment
+  implements Cloneable, CharacterIterator
 {
-    char[] array;
-    int count;
-    int offset;
+  public char[] array;
+  public int count;
+  public int offset;
+
+  public Segment()
+  {
+  }
+
+  public Segment(char[] array, int offset, int count)
+  {
+    this.array = array;
+    this.offset = offset;
+    this.count = count;
+  }
     
     public Object clone()
     {
-	try {
+    try
+      {
 	    return super.clone();
-	} catch (Exception e) {
-	    System.err.println("Huuuhhh, this class implements cloneable !!!!!!");
-	    System.err.println("I think there is a bug in this JVM somewhere");
 	}
+    catch (CloneNotSupportedException e)
+      {
 	return null;
     }
+  }
     
     public char current()
     {
@@ -74,25 +90,30 @@ public class Segment implements Cloneable, CharacterIterator
     {
 	return offset + count;
     }
+
     public int getIndex()
     {
 	return offset;
     }
+
     public char last()
     {
 	offset = getEndIndex() - 1;
 	return array[offset];
     }
+
     public char next()
     {
 	offset++;
 	return array[offset];
     }
+
     public char previous()
     {
 	offset--;
 	return array[offset];
     }
+
     public char setIndex(int position)
     {
 	offset = position;
@@ -104,4 +125,3 @@ public class Segment implements Cloneable, CharacterIterator
 	return new String(array, offset, count);
     }
 }
-

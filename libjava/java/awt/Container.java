@@ -856,6 +856,16 @@ public class Container extends Component
    */
   public void deliverEvent(Event e)
   {
+    if (!handleEvent (e))
+      {
+        synchronized (getTreeLock ())
+          {
+            Component parent = getParent ();
+
+            if (parent != null)
+              parent.deliverEvent (e);
+          }
+      }
   }
 
   /**
@@ -1027,7 +1037,7 @@ public class Container extends Component
   {
     String param = super.paramString();
     if (layoutMgr != null)
-      param = param + "," + layoutMgr.getClass().getName();
+      param = param + ",layout=" + layoutMgr.getClass().getName();
 
     return param;
   }

@@ -1,5 +1,5 @@
-/* PlainEditorKit.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* FieldView.java -- 
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,69 +35,63 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.text;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
-import javax.swing.Action;
-import javax.swing.JEditorPane;
+import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Shape;
 
-public class PlainEditorKit extends EditorKit
+
+public class FieldView extends PlainView
 {
-    public PlainEditorKit()
-    {
-    }
+  public FieldView(Element elem)
+  {
+    super(elem);
+  }
 
-    public PlainEditorKit(PlainEditorKit kit)
-    {
-	super(kit);
-    }
+  protected FontMetrics getFontMetrics()
+  {
+    Component container = getContainer();
+    return container.getFontMetrics(container.getFont());
+  }
 
-    protected Object clone()  
-    {
-	return new PlainEditorKit(this);
-    }
-    void deinstall(JEditorPane c)
-    {
-	//      Called when the kit is being removed from the JEditorPane. 
-    }
-    void install(JEditorPane c)
-    {
-    }
+  public float getPreferredSpan(int axis)
+  {
+    if (axis != X_AXIS && axis != Y_AXIS)
+      throw new IllegalArgumentException();
 
-    Caret createCaret()
-    {
-	return null;
-    }
-    Document createDefaultDocument()
-    {
-	return null;
-    }
-    Action[] getActions()
-    {
-	return null;
-    }
-    String getContentType()
-    {
-	return null;
-    }
-    ViewFactory getViewFactory()
-    {
-	return null;
-    }
-    void read(InputStream in, Document doc, int pos)
-    {	
-    }
-    void read(Reader in, Document doc, int pos)
-    {
-    }
-    void write(OutputStream out, Document doc, int pos, int len)
-    {
-    }
-    void write(Writer out, Document doc, int pos, int len)
-    {
-    }
+    FontMetrics fm = getFontMetrics();
+
+    if (axis == Y_AXIS)
+      return fm.getHeight();
+
+    String text;
+    Element elem = getElement();
+
+    try
+      {
+	text = elem.getDocument().getText(elem.getStartOffset(),
+					  elem.getEndOffset());
+      }
+    catch (BadLocationException e)
+      {
+	// This should never happen.
+	text = "";
+	System.out.println("Michael: FieldView.getPreferredSpan: Error");
+      }
+    
+    return fm.stringWidth(text);
+  }
+
+  public int getResizeWeight(int axis)
+  {
+    return axis = axis == X_AXIS ? 1 : 0;
+  }
+  
+  public void paint(Graphics g, Shape s)
+  {
+    drawLine(0, g, 0, 0);
+  }
 }
-

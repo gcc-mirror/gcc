@@ -61,7 +61,7 @@ public class BasicButtonUI extends ButtonUI
 {
   /** A constant used to pad out elements in the button's layout and
       preferred size calculations. */
-  int defaultTextIconGap = 3;
+  int defaultTextIconGap = 4;
 
   /** A constant added to the defaultTextIconGap to adjust the text
       within this particular button. */
@@ -92,6 +92,7 @@ public class BasicButtonUI extends ButtonUI
     b.setBackground(defaults.getColor("Button.background"));
     b.setMargin(defaults.getInsets("Button.margin"));
     b.setBorder(defaults.getBorder("Button.border"));
+    b.setIconTextGap(defaults.getInt("Button.textIconGap"));
     b.setOpaque(true);
   }
 
@@ -100,6 +101,7 @@ public class BasicButtonUI extends ButtonUI
     b.setForeground(null);
     b.setBackground(null);
     b.setBorder(null);
+    b.setIconTextGap(defaultTextIconGap);
     b.setMargin(null);
   }
 
@@ -234,19 +236,19 @@ public class BasicButtonUI extends ButtonUI
                                                      b.getVerticalTextPosition(), 
                                                      b.getHorizontalTextPosition(),
                                                      vr, ir, tr, 
-                                                     defaultTextIconGap 
+                                                     b.getIconTextGap() 
                                                      + defaultTextShiftOffset);
     
     if ((b.getModel().isArmed() && b.getModel().isPressed()) 
         || b.isSelected())
-      paintButtonPressed(g, br, c);
+      paintButtonPressed(g, b);
     else
       paintButtonNormal(g, br, c);
 	
     paintIcon(g, c, ir);
     if (text != null)
-      paintText(g, c, tr, b.getText());
-    paintFocus(g, c, vr, tr, ir);
+      paintText(g, b, tr, text);
+    paintFocus(g, b, vr, tr, ir);
   }
 
   /**
@@ -256,7 +258,7 @@ public class BasicButtonUI extends ButtonUI
    * "focusPainted" property is <code>true</code>.
    *
    * @param g Graphics context to paint with
-   * @param c Component to paint the focus of
+   * @param b Button to paint the focus of
    * @param vr Visible rectangle, the area in which to paint
    * @param tr Text rectangle, contained in visible rectangle
    * @param ir Icon rectangle, contained in visible rectangle
@@ -264,10 +266,9 @@ public class BasicButtonUI extends ButtonUI
    * @see AbstractButton.isFocusPainted()
    * @see JComponent.hasFocus()
    */
-  protected void paintFocus(Graphics g, JComponent c, Rectangle vr,
+  protected void paintFocus(Graphics g, AbstractButton b, Rectangle vr,
                             Rectangle tr, Rectangle ir)
   {
-    AbstractButton b = (AbstractButton) c;
     if (b.hasFocus() && b.isFocusPainted())
       {
         Graphics2D g2 = (Graphics2D) g;
@@ -313,13 +314,14 @@ public class BasicButtonUI extends ButtonUI
    * pressedBackgroundColor}.
    *
    * @param g The graphics context to paint with
-   * @param area The area in which to paint
-   * @param b The component to paint the state of
+   * @param b The button to paint the state of
    */
-  protected void paintButtonPressed(Graphics g, Rectangle area, JComponent b)
+  protected void paintButtonPressed(Graphics g, AbstractButton b)
   {
-    if (((AbstractButton)b).isContentAreaFilled())
+    if (b.isContentAreaFilled())
       {
+	Rectangle area = new Rectangle();
+	SwingUtilities.calculateInnerArea(b, area);
         g.setColor(b.getBackground().darker());
         g.fillRect(area.x, area.y, area.width, area.height);
       }
@@ -334,7 +336,7 @@ public class BasicButtonUI extends ButtonUI
    * @param area The area in which to paint
    * @param b The component to paint the state of
    */
-  protected void paintButtonNormal(Graphics g, Rectangle area, JComponent b)
+  private void paintButtonNormal(Graphics g, Rectangle area, JComponent b)
   {
     if (((AbstractButton)b).isContentAreaFilled() && b.isOpaque())
       {
@@ -355,20 +357,37 @@ public class BasicButtonUI extends ButtonUI
   protected void paintText(Graphics g, JComponent c, Rectangle textRect,
                            String text) 
   {	
-    Font f = c.getFont();
+    paintText(g, (AbstractButton) c, textRect, text);
+  }
+
+  /**
+   * Paints the "text" property of an {@link AbstractButton}, using the
+   * {@link textColor} color.
+   *
+   * @param g The graphics context to paint with
+   * @param b The button to paint the state of
+   * @param textRect The area in which to paint the text
+   * @param text The text to paint
+   *
+   * @since 1.4
+   */
+  protected void paintText(Graphics g, AbstractButton b, Rectangle textRect,
+			   String text)
+  {
+    Font f = b.getFont();
     g.setFont(f);
     FontMetrics fm = g.getFontMetrics(f);
 
-    if (c.isEnabled())
+    if (b.isEnabled())
       {
-	g.setColor(c.getForeground());
+	g.setColor(b.getForeground());
 	g.drawString(text, textRect.x, textRect.y + fm.getAscent());
       }
     else
       {
-	g.setColor(c.getBackground().brighter());
+	g.setColor(b.getBackground().brighter());
 	g.drawString(text, textRect.x, textRect.y + fm.getAscent());
-	g.setColor(c.getBackground().darker());
+	g.setColor(b.getBackground().darker());
 	g.drawString(text, textRect.x + 1, textRect.y + fm.getAscent() + 1);
       }
   } 

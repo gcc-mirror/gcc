@@ -38,6 +38,7 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -67,12 +68,6 @@ import javax.swing.plaf.TextUI;
 public abstract class JTextComponent extends JComponent
   implements Scrollable, Accessible
 {
-//    public class AccessibleJTextComponent extends AccessibleJComponent
-//      implements AccessibleText, CaretListener, DocumentListener,
-//                 AccessibleAction, AccessibleEditableText
-//    {
-//    }
-
   /**
    * AccessibleJTextComponent
    */
@@ -80,11 +75,6 @@ public abstract class JTextComponent extends JComponent
     implements AccessibleText, CaretListener, DocumentListener
   {
     private static final long serialVersionUID = 7664188944091413696L;
-
-    /**
-     * caretPos
-     */
-    int caretPos;
 
     /**
      * Constructor AccessibleJTextComponent
@@ -280,6 +270,12 @@ public abstract class JTextComponent extends JComponent
     public KeyStroke key;
     public String actionName;
 
+    /**
+     * Creates a new <code>KeyBinding</code> instance.
+     *
+     * @param key a <code>KeyStroke</code> value
+     * @param actionName a <code>String</code> value
+     */
     public KeyBinding(KeyStroke key, String actionName)
     {
       this.key = key;
@@ -294,8 +290,16 @@ public abstract class JTextComponent extends JComponent
 
   private Document doc;
   private Caret caret;
+  private Highlighter highlighter;
+  private Color caretColor;
+  private Color disabledTextColor;
+  private Color selectedTextColor;
+  private Color selectionColor;
   private boolean editable;
 
+  /**
+   * Creates a new <code>JTextComponent</code> instance.
+   */
   public JTextComponent()
   {
     enableEvents(AWTEvent.KEY_EVENT_MASK);
@@ -311,13 +315,13 @@ public abstract class JTextComponent extends JComponent
 
   public Document getDocument()
   {
-    if (doc == null)
-      System.out.println("doc == null !!!");
     return doc;
   }
 
   /**
-   * Get the AccessibleContext of this object
+   * Get the <code>AccessibleContext<code> of this object.
+   *
+   * @return an <code>AccessibleContext</code> object
    */
   public AccessibleContext getAccessibleContext()
   {
@@ -351,7 +355,18 @@ public abstract class JTextComponent extends JComponent
    */
   public String getText()
   {
-    return getDocument().getText(0, getDocument().getLength());
+    if (doc == null)
+      return null;
+
+    try
+      {
+	return doc.getText(0, doc.getLength());
+      }
+    catch (BadLocationException e)
+      {
+	// This should never happen.
+	return "";
+      }
   }
 
   /**
@@ -389,14 +404,33 @@ public abstract class JTextComponent extends JComponent
     return "JTextComponent";
   }
 
+  /**
+   * This method returns the label's UI delegate.
+   *
+   * @return The label's UI delegate.
+   */
   public TextUI getUI()
   {
-    return (TextUI) UIManager.getUI(this);
+    return (TextUI) ui;
   }
 
+  /**
+   * This method sets the label's UI delegate.
+   *
+   * @param ui The label's UI delegate.
+   */
+  public void setUI(TextUI newUI)
+  {
+    super.setUI(newUI);
+  }
+
+  /**
+   * This method resets the label's UI delegate to the default UI for the
+   * current look and feel.
+   */
   public void updateUI()
   {
-    setUI(getUI());
+    setUI((TextUI) UIManager.getUI(this));
   }
 
   public Dimension getPreferredScrollableViewportSize()
@@ -448,6 +482,61 @@ public abstract class JTextComponent extends JComponent
   }
 
   /**
+   * Sets a new <code>Caret</code> for this text component.
+   *
+   * @param newCaret the new <code>Caret</code> to set
+   */
+  public void setCaret(Caret newCaret)
+  {
+    firePropertyChange("caret", caret, newCaret);
+    caret = newCaret;
+  }
+
+  public Color getCaretColor()
+  {
+    return caretColor;
+  }
+
+  public void setCaretColor(Color newColor)
+  {
+    firePropertyChange("caretColor", caretColor, newColor);
+    caretColor = newColor;
+  }
+
+  public Color getDisabledTextColor()
+  {
+    return disabledTextColor;
+  }
+
+  public void setDisabledTextColor(Color newColor)
+  {
+    firePropertyChange("disabledTextColor", caretColor, newColor);
+    disabledTextColor = newColor;
+  }
+
+  public Color getSelectedTextColor()
+  {
+    return selectedTextColor;
+  }
+
+  public void setSelectedTextColor(Color newColor)
+  {
+    firePropertyChange("selectedTextColor", caretColor, newColor);
+    selectedTextColor = newColor;
+  }
+
+  public Color getSelectionColor()
+  {
+    return selectionColor;
+  }
+
+  public void setSelectionColor(Color newColor)
+  {
+    firePropertyChange("selectionColor", caretColor, newColor);
+    selectionColor = newColor;
+  }
+
+  /**
    * Retrisves the current caret position.
    *
    * @return the current position
@@ -486,6 +575,17 @@ public abstract class JTextComponent extends JComponent
       throw new IllegalArgumentException();
 
     caret.moveDot(position);
+  }
+
+  public Highlighter getHighlighter()
+  {
+    return highlighter;
+  }
+
+  public void setHighlighter(Highlighter newHighlighter)
+  {
+    firePropertyChange("highlighter", highlighter, newHighlighter);
+    highlighter = newHighlighter;
   }
 
   /**
@@ -554,6 +654,34 @@ public abstract class JTextComponent extends JComponent
   public void selectAll()
   {
     select(0, doc.getLength());
+  }
+
+  public synchronized void replaceSelection(String content)
+  {
+    int dot = caret.getDot();
+    int mark = caret.getMark();
+
+    // If content is empty delete selection.
+    if (content == null)
+      {
+	caret.setDot(dot);
+	return;
+      }
+
+    try
+      {
+	// Remove selected text.
+	if (dot != mark)
+	  doc.remove(Math.min(dot, mark), Math.max(dot, mark));
+
+	// Insert new text.
+	doc.insertString(Math.min(dot, mark), content, null);
+      }
+    catch (BadLocationException e)
+      {
+	// This should never happen.
+	System.out.println("Michael: JTextComponent.replaceSelection: Error");
+      }
   }
 
   public boolean getScrollableTracksViewportHeight()

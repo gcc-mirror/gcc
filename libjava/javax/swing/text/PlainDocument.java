@@ -44,6 +44,7 @@ public class PlainDocument extends AbstractDocument
   public static final String lineLimitAttribute = "lineLimit";
   public static final String tabSizeAttribute = "tabSize";
 
+  private Element rootElement;
   private int tabSize;
   
   public PlainDocument()
@@ -55,11 +56,22 @@ public class PlainDocument extends AbstractDocument
   {
     super(content);
     tabSize = 8;
+    rootElement = createDefaultRoot();
+  }
+
+  protected AbstractDocument.AbstractElement createDefaultRoot()
+  {
+    BranchElement rootElement =
+      (BranchElement) createBranchElement(null, null);
+    Element[] lines = new Element[1];
+    lines[0] = createLeafElement(rootElement, null, 0, 1);
+    rootElement.replace(0, 0, lines);
+    return rootElement;
   }
 
   public Element getDefaultRootElement()
   {
-    return null;
+    return rootElement;
   }
 
   public Element getParagraphElement(int pos)

@@ -404,6 +404,7 @@ awt_keycode_to_keysym (jint keyCode, jint keyLocation)
     }
 }
 
+
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor 
   (JNIEnv *env, jobject obj, jint type) 
@@ -867,13 +868,30 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkSetFont
   (*env)->ReleaseStringUTFChars (env, name, font_name);
 }
 
-void
-set_visible (GtkWidget *widget, jboolean visible)
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_show
+  (JNIEnv *env, jobject obj)
 {
-  if (visible)
-    gtk_widget_show (widget);
-  else
-    gtk_widget_hide (widget);
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter();
+  gtk_widget_show (GTK_WIDGET (ptr));
+  gdk_threads_leave();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_hide
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter();
+  gtk_widget_hide (GTK_WIDGET (ptr));
+  gdk_threads_leave();
 }
 
 GtkLayout *

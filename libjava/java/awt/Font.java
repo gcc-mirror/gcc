@@ -1268,10 +1268,9 @@ toString()
   return(getClass().getName() 
          + "(logical=" + getName () 
          + ",family=" + getFamily ()
-         + ",face=" + getFontName ()
+         + ",name=" + getFontName ()
          + ",style=" + getStyle ()
-         + ",size=" + getSize ()
-         + ",transform=" + getTransform () + ")");
+         + ",size=" + getSize ());
 }
 
 
