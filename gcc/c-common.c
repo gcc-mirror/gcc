@@ -2974,14 +2974,6 @@ c_common_nodes_and_builtins (void)
     (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
 		 va_list_type_node));
 
-  lang_hooks.decls.pushdecl
-    (build_decl (TYPE_DECL, get_identifier ("__builtin_ptrdiff_t"),
-		 ptrdiff_type_node));
-
-  lang_hooks.decls.pushdecl
-    (build_decl (TYPE_DECL, get_identifier ("__builtin_size_t"),
-		 sizetype));
-
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {
       va_list_arg_type_node = va_list_ref_type_node =
