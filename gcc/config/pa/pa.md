@@ -1572,7 +1572,7 @@
 ;; Note since this pattern can be created at reload time (via movsi), all
 ;; the same rules for movsi apply here.  (no new pseudos, no temporaries).
 (define_insn ""
-  [(set (match_operand 0 "register_operand" "=a")
+  [(set (match_operand 0 "pmode_register_operand" "=a")
 	(match_operand 1 "pic_label_operand" ""))]
   ""
   "*
@@ -5608,8 +5608,8 @@
 
 (define_insn "dcacheflush"
   [(unspec_volatile [(const_int 1)] 0)
-   (use (mem:SI (match_operand 0 "register_operand" "r")))
-   (use (mem:SI (match_operand 1 "register_operand" "r")))]
+   (use (mem:SI (match_operand 0 "pmode_register_operand" "r")))
+   (use (mem:SI (match_operand 1 "pmode_register_operand" "r")))]
   ""
   "fdc 0(%0)\;fdc 0(%1)\;sync"
   [(set_attr "type" "multi")
@@ -5617,11 +5617,11 @@
 
 (define_insn "icacheflush"
   [(unspec_volatile [(const_int 2)] 0)
-   (use (mem:SI (match_operand 0 "register_operand" "r")))
-   (use (mem:SI (match_operand 1 "register_operand" "r")))
-   (use (match_operand 2 "register_operand" "r"))
-   (clobber (match_operand 3 "register_operand" "=&r"))
-   (clobber (match_operand 4 "register_operand" "=&r"))]
+   (use (mem:SI (match_operand 0 "pmode_register_operand" "r")))
+   (use (mem:SI (match_operand 1 "pmode_register_operand" "r")))
+   (use (match_operand 2 "pmode_register_operand" "r"))
+   (clobber (match_operand 3 "pmode_register_operand" "=&r"))
+   (clobber (match_operand 4 "pmode_register_operand" "=&r"))]
   ""
   "mfsp %%sr0,%4\;ldsid (%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
   [(set_attr "type" "multi")
@@ -5856,5 +5856,3 @@
   emit_insn (gen_blockage ());
   DONE;
 }")
-
-
