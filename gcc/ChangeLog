@@ -1,3 +1,13 @@
+Fri Jun 25 13:41:25 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (output_toc): Always use hex values for floating-point
+	constants.  Store single-precision values in upper-half of TOC
+	entry in 64-bit mode.
+	* rs6000.md (floatsidf2, floatunssidf2): Add !TARGET_POWERPC64
+	to final constraints.
+	(fix_truncdfsi2 splitter): Change pattern matching fctiwz.
+	(fctiwz): Improve accuracy of RTL for pattern.
+
 Fri Jun 25 11:26:38 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* expr.c (expand_expr): Allow RTL_EXPR's through the 
