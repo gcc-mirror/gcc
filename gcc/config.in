@@ -26,9 +26,6 @@
 /* Define if you don't have vprintf but do have _doprnt.  */
 #undef HAVE_DOPRNT
 
-/* Define if the `long double' type works.  */
-#undef HAVE_LONG_DOUBLE
-
 /* Define if you have the ANSI # stringizing operator in cpp. */
 #undef HAVE_STRINGIZE
 
@@ -314,6 +311,9 @@
 /* Define if you want the C and C++ compilers to support multibyte
    character sets for source code. */
 #undef MULTIBYTE_CHARS
+
+/* Define if your compiler supports the `long double' type. */
+#undef HAVE_LONG_DOUBLE
 
 /* Define if the `_Bool' type is built-in. */
 #undef HAVE__BOOL

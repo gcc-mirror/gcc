@@ -1618,7 +1618,7 @@ esac
 
 
 # Find some useful tools
-for ac_prog in gawk mawk nawk awk
+for ac_prog in mawk gawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -3834,64 +3834,64 @@ fi
 
 done
 if test x = y ; then
-  cat >> confdefs.h <<EOF
+  cat >> confdefs.h <<\EOF
 #define HAVE_DECL_BCOPY 1
 EOF
  \
-	cat >> confdefs.h <<EOF
+	cat >> confdefs.h <<\EOF
 #define HAVE_DECL_GETENV 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_ATOL 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_SBRK 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_ABORT 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_ATOF 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_GETCWD 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_GETWD 1
 EOF
  \
-	cat >> confdefs.h <<EOF
+	cat >> confdefs.h <<\EOF
 #define HAVE_DECL_STRSIGNAL 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_PUTC_UNLOCKED 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_FPUTS_UNLOCKED 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_STRSTR 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_ENVIRON 1
 EOF
  \
-	cat >> confdefs.h <<EOF
+	cat >> confdefs.h <<\EOF
 #define HAVE_DECL_MALLOC 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_REALLOC 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_CALLOC 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_FREE 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_BASENAME 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_GETOPT 1
 EOF
 fi
@@ -3950,13 +3950,13 @@ fi
 
 done
 if test x = y ; then
-  cat >> confdefs.h <<EOF
+  cat >> confdefs.h <<\EOF
 #define HAVE_DECL_GETRLIMIT 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_SETRLIMIT 1
 EOF
- cat >> confdefs.h <<EOF
+ cat >> confdefs.h <<\EOF
 #define HAVE_DECL_GETRUSAGE 1
 EOF
 fi

@@ -70,8 +70,8 @@ done
 dnl Automatically generate config.h entries via autoheader.
 if test x = y ; then
   patsubst(translit([$1], [a-z], [A-Z]), [\w+],
-    AC_DEFINE([HAVE_DECL_\&], 1,
-      [Define to 1 if we found this declaration otherwise define to 0.]))dnl
+    [AC_DEFINE([HAVE_DECL_\&], 1,
+      [Define to 1 if we found this declaration otherwise define to 0.])])dnl
 fi
 ])
 
@@ -206,7 +206,8 @@ switch (0) case 0: case (sizeof(long double) >= sizeof(double)):;],
 gcc_cv_c_long_double=yes, gcc_cv_c_long_double=no)
 fi])
 if test $gcc_cv_c_long_double = yes; then
-  AC_DEFINE(HAVE_LONG_DOUBLE)
+  AC_DEFINE(HAVE_LONG_DOUBLE, 1, 
+      [Define if your compiler supports the \`long double' type.])
 fi
 ])
 
@@ -1136,7 +1137,9 @@ if test -n "[$]$1"; then
 [changequote(<<,>>)dnl
   ac_prog_version=`<<$>>$1 $3 2>&1 |
                    sed -n 's/^.*patsubst(<<$4>>,/,\/).*$/\1/p'`
+changequote([,])dnl
   echo "configure:__oline__: version of $2 is $ac_prog_version" >&AC_FD_CC
+changequote(<<,>>)dnl
   case $ac_prog_version in
     '')     gcc_cv_prog_$2_modern=no;;
     <<$5>>)
