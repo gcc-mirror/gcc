@@ -1,5 +1,8 @@
 2002-01-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/Container.java (addNotify): Unconditionally call
+	addNotifyContainerChildren and superclass addNotify.
+
 	* java/awt/image/ColorModel.java (getAlpha(Object)): Call
 	getAlpha, not getBlue.
 
