@@ -1,3 +1,7 @@
+2001-01-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * diagnostic.c (fatal): Request preprocessed source.
+
 Thu Jan 25 02:01:16 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* c-decl.c (duplicate_decls): If different_binding_level is nonzero,
