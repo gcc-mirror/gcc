@@ -1,4 +1,8 @@
-2002-01-26  Graham Stott  <grahams@redhat.com>
+2002-01-16  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c: General formatting tidy up.
+
+2002-01-16  Graham Stott  <grahams@redhat.com>
 
 	* calls.c (try_to_integrate): Use "(size_t)" intermediate
 	cast and when casting an integer literal to "rtx" pointer.
@@ -8,7 +12,7 @@
 	* integrate.c (expand_iline_function): Likewise.
 	* regmove.c (try_auto_increment): Likewise.
 
-2002-01-26  Graham Stott  <grahams@redhat.com>
+2002-01-16  Graham Stott  <grahams@redhat.com>
 
 	* sched-rgn.c (passed): Use sbitmap_free.
 	(header): Likewise.
