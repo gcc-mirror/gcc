@@ -182,7 +182,7 @@ make a difference.
 @cindex Haifa scheduler
 @cindex scheduler, experimental
 @item --enable-haifa
-@item --disable-haifa
+@itemx --disable-haifa
 Use @samp{--enable-haifa} to enable use of an experimental instruction
 scheduler (from IBM Haifa).  This may or may not produce better code.
 Some targets on which it is known to be a win enable it by default; use
