@@ -1780,7 +1780,7 @@ output_bound_representation (bound, dim_num, u_or_l)
 		   || TREE_CODE (bound) == CONVERT_EXPR)
 	      bound = TREE_OPERAND (bound, 0);
 
-	    if (TREE_CODE (bound) == SAVE_EXPR_RTL)
+	    if (TREE_CODE (bound) == SAVE_EXPR)
 	      output_loc_descriptor
 		(eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
 	  }
