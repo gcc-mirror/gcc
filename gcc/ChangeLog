@@ -1,3 +1,8 @@
+2004-08-25  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-decl.c (grokparm): New function.
+	* c-tree.h (grokparm): New prototype.
+
 2004-08-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-operands.h (struct ssa_operand_iterator_d): New.  SSA operand

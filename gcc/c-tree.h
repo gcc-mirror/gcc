@@ -180,6 +180,7 @@ extern tree get_parm_info (bool);
 extern tree grokfield (tree, tree, tree);
 extern tree groktypename (tree);
 extern tree groktypename_in_parm_context (tree);
+extern tree grokparm (tree);
 extern tree implicitly_declare (tree);
 extern void keep_next_level (void);
 extern tree lookup_name (tree);

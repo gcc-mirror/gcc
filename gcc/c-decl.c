@@ -3153,6 +3153,20 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     }
 }
 
+/* Given a parsed parameter declaration, decode it into a PARM_DECL.  */
+
+tree
+grokparm (tree parm)
+{
+  tree decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
+			      TREE_PURPOSE (TREE_PURPOSE (parm)),
+			      PARM, false, NULL);
+
+  decl_attributes (&decl, TREE_VALUE (parm), 0);
+
+  return decl;
+}
+
 /* Given a parsed parameter declaration, decode it into a PARM_DECL
    and push that on the current scope.  */
 
