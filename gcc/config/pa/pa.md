@@ -31,7 +31,7 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli"
+  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,parallel_branch"
   (const_string "binary"))
 
 ;; Processor type (for scheduling, not code generation) -- this attribute
@@ -69,7 +69,7 @@
 
 ;; For conditional branches.
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
 		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
@@ -77,7 +77,7 @@
 ;; Disallow instructions which use the FPU since they will tie up the FPU
 ;; even if the instruction is nullified.
 (define_attr "in_nullified_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,parallel_branch")
 		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
@@ -85,7 +85,7 @@
 ;; For calls and millicode calls.  Allow unconditional branches in the
 ;; delay slot.
 (define_attr "in_call_delay" "false,true"
-  (cond [(and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli")
+  (cond [(and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
 	      (eq_attr "length" "4"))
 	   (const_string "true")
 	 (eq_attr "type" "uncond_branch")
@@ -96,19 +96,19 @@
 	(const_string "false")))
 
 
-;; Unconditional branch and call delay slot description.
-(define_delay (eq_attr "type" "uncond_branch,branch,call")
+;; Call delay slot description.
+(define_delay (eq_attr "type" "uncond_branch,call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 ;; millicode call delay slot description.  Note it disallows delay slot
-;; when TARGET_PORTABLE_RUNTIME.
+;; when TARGET_PORTABLE_RUNTIME is true.
 (define_delay (eq_attr "type" "milli")
   [(and (eq_attr "in_call_delay" "true")
 	(eq (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0)))
    (nil) (nil)])
 
-;; Unconditional branch, return and other similar instructions.
-(define_delay (eq_attr "type" "uncond_branch,branch")
+;; Return and other similar instructions.
+(define_delay (eq_attr "type" "branch,parallel_branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Floating point conditional branch delay slot description and
@@ -4878,15 +4878,15 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "movb_comparison_operator"
-	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
+	   [(match_operand:SI 1 "register_operand" "r,r,r,r") (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
-   (set (match_operand:SI 0 "register_operand" "=!r,!*f,!*m")
+   (set (match_operand:SI 0 "register_operand" "=!r,!*f,!*m,!*q")
 	(match_dup 1))]
   ""
 "* return output_movb (operands, insn, which_alternative, 0); "
 ;; Do not expect to understand this the first time through.
-[(set_attr "type" "cbranch,multi,multi")
+[(set_attr "type" "cbranch,multi,multi,multi")
  (set (attr "length")
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
@@ -4911,7 +4911,7 @@
 		  (const_int 8184))
 	      (const_int 12)
 	      (const_int 16)))
-;; Loop counter in memory case.
+;; Loop counter in memory or sar case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else
 	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
@@ -4924,15 +4924,15 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "movb_comparison_operator"
-	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
+	   [(match_operand:SI 1 "register_operand" "r,r,r,r") (const_int 0)])
 	  (pc)
 	  (label_ref (match_operand 3 "" ""))))
-   (set (match_operand:SI 0 "register_operand" "=!r,!*f,!*m")
+   (set (match_operand:SI 0 "register_operand" "=!r,!*f,!*m,!*q")
 	(match_dup 1))]
   ""
 "* return output_movb (operands, insn, which_alternative, 1); "
 ;; Do not expect to understand this the first time through.
-[(set_attr "type" "cbranch,multi,multi")
+[(set_attr "type" "cbranch,multi,multi,multi")
  (set (attr "length")
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
@@ -4957,7 +4957,7 @@
 		  (const_int 8184))
 	      (const_int 12)
 	      (const_int 16)))
-;; Loop counter in memory case.
+;; Loop counter in memory or SAR case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else
 	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
@@ -5261,18 +5261,6 @@
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
-
-
-;; XXX FIXME.  The function pointer comparison code is only at the FSF
-;; for documentation and merging purposes, it is _NOT_ actually used.
-;;
-;; I've been trying to get Kenner to deal with the machine independent
-;; problems for many months, and for whatever reason nothing ever seems
-;; to happen.
-;;
-;; If you want function pointer comparisons to work, first scream at
-;; Kenner to deal with the MI problems, then email me for a hack that
-;; will get the job done (law@cygnus.com).
 
 ;; Given a function pointer, canonicalize it so it can be 
 ;; reliably compared to another function pointer.  */

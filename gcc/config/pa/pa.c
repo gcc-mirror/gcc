@@ -383,6 +383,19 @@ arith_double_operand (op, mode)
 }
 
 /* Return truth value of whether OP is a integer which fits the
+   range constraining immediate operands in three-address insns, or
+   is an integer register.  */
+
+int
+ireg_or_int5_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_CODE (op) == CONST_INT && INT_5_BITS (op))
+	  || (GET_CODE (op) == REG && REGNO (op) > 0 && REGNO (op) < 32));
+}
+
+/* Return truth value of whether OP is a integer which fits the
    range constraining immediate operands in three-address insns.  */
 
 int
@@ -3058,6 +3071,10 @@ pa_adjust_insn_length (insn, length)
 	  && length == 4
 	  && ! forward_branch_p (insn))
 	return 4;
+      else if (GET_CODE (pat) == PARALLEL
+	       && get_attr_type (insn) == TYPE_PARALLEL_BRANCH
+	       && length == 4)
+	return 4;
       /* Adjust dbra insn with short backwards conditional branch with
 	 unfilled delay slot -- only for case where counter is in a
 	 general register register. */
@@ -3071,8 +3088,7 @@ pa_adjust_insn_length (insn, length)
       else
 	return 0;
     }
-  else
-    return 0;
+  return 0;
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
@@ -4364,8 +4380,10 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	  output_asm_insn ("stw %1,-16(0,%%r30)",operands);
 	  return "fldws -16(0,%%r30),%0";
 	}
-      else
+      else if (which_alternative == 2)
 	return "stw %1,%0";
+      else
+	return "mtsar %r1";
     }
 
   /* Support the second variant.  */
@@ -4432,7 +4450,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tfldws -16(0,%%r30),%0";
     }
   /* Deal with gross reload from memory case.  */
-  else
+  else if (which_alternative == 2)
     {
       /* Reload loop counter from memory, the store back to memory
 	 happens in the branch's delay slot.   */
@@ -4440,6 +4458,14 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	return "comb,%S2 0,%1,%3\n\tstw %1,%0";
       else
 	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tstw %1,%0";
+    }
+  /* Handle SAR as a destination.  */
+  else
+    {
+      if (get_attr_length (insn) == 8)
+	return "comb,%S2 0,%1,%3\n\tmtsar %r1";
+      else
+	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tmtsar %r1";
     }
 }
 
@@ -5086,6 +5112,157 @@ jump_in_call_delay (insn)
     }
   else
     return 0;
+}
+
+/* Output an unconditional move and branch insn.  */
+
+char *
+output_parallel_movb (operands, length)
+     rtx *operands;
+     int length;
+{
+  /* These are the cases in which we win.  */
+  if (length == 4)
+    return "mov%I1b,tr %1,%0,%2";
+
+  /* None of these cases wins, but they don't lose either.  */
+  if (dbr_sequence_length () == 0)
+    {
+      /* Nothing in the delay slot, fake it by putting the combined
+	 insn (the copy or add) in the delay slot of a bl.  */
+      if (GET_CODE (operands[1]) == CONST_INT)
+	return "bl %2,0\n\tldi %1,%0";
+      else
+	return "bl %2,0\n\tcopy %1,%0";
+    }
+  else
+    {
+      /* Something in the delay slot, but we've got a long branch.  */
+      if (GET_CODE (operands[1]) == CONST_INT)
+	return "ldi %1,%0\n\tbl %2,0";
+      else
+	return "copy %1,%0\n\tbl %2,0";
+    }
+}
+
+/* Output an unconditional add and branch insn.  */
+
+char *
+output_parallel_addb (operands, length)
+     rtx *operands;
+     int length;
+{
+  /* To make life easy we want operand0 to be the shared input/output
+     operand and operand1 to be the readonly operand.  */
+  if (operands[0] == operands[1])
+    operands[1] = operands[2];
+
+  /* These are the cases in which we win.  */
+  if (length == 4)
+    return "add%I1b,tr %1,%0,%3";
+
+  /* None of these cases win, but they don't lose either.  */
+  if (dbr_sequence_length () == 0)
+    {
+      /* Nothing in the delay slot, fake it by putting the combined
+	 insn (the copy or add) in the delay slot of a bl.  */
+      return "bl %3,0\n\tadd%I1 %1,%0,%0";
+    }
+  else
+    {
+      /* Something in the delay slot, but we've got a long branch.  */
+      return "add%I1 %1,%0,%0\n\tbl %3,0";
+    }
+}
+
+/* Return nonzero if INSN represents an integer add which might be
+   combinable with an unconditional branch.  */ 
+
+combinable_add (insn)
+     rtx insn;
+{
+  rtx src, dest, prev, pattern = PATTERN (insn);
+
+  /* Must be a (set (reg) (plus (reg) (reg/5_bit_int)))  */
+  if (GET_CODE (pattern) != SET
+      || GET_CODE (SET_SRC (pattern)) != PLUS
+      || GET_CODE (SET_DEST (pattern)) != REG)
+    return 0;
+
+  src = SET_SRC (pattern);
+  dest = SET_DEST (pattern);
+
+  /* Must be an integer add.  */
+  if (GET_MODE (src) != SImode
+      || GET_MODE (dest) != SImode)
+    return 0;
+
+  /* Each operand must be an integer register and/or 5 bit immediate.  */
+  if (!ireg_or_int5_operand (dest, VOIDmode)
+       || !ireg_or_int5_operand (XEXP (src, 0), VOIDmode)
+       || !ireg_or_int5_operand (XEXP (src, 1), VOIDmode))
+    return 0;
+
+  /* The destination must also be one of the sources.  */
+  return (dest == XEXP (src, 0) || dest == XEXP (src, 1));
+}
+
+/* Return nonzero if INSN represents an integer load/copy which might be
+   combinable with an unconditional branch.  */ 
+
+combinable_copy (insn)
+     rtx insn;
+{
+  rtx src, dest, pattern = PATTERN (insn);
+  enum machine_mode mode;
+
+  /* Must be a (set (reg) (reg/5_bit_int)).  */
+  if (GET_CODE (pattern) != SET)
+    return 0;
+
+  src = SET_SRC (pattern);
+  dest = SET_DEST (pattern);
+
+  /* Must be a mode that corresponds to a single integer register.  */
+  mode = GET_MODE (dest);
+  if (mode != SImode
+      && mode != SFmode
+      && mode != HImode
+      && mode != QImode)
+    return 0;
+
+  /* Each operand must be a register or 5 bit integer.  */
+  if (!ireg_or_int5_operand (dest, VOIDmode)
+      || !ireg_or_int5_operand (src, VOIDmode))
+    return 0;
+
+  return 1;
+}
+
+/* Return nonzero if INSN (a jump insn) immediately follows a call.  This
+   is used to discourage creating parallel movb/addb insns since a jump
+   which immediately follows a call can execute in the delay slot of the
+   call.  */
+   
+following_call (insn)
+     rtx insn;
+{
+  /* Find the previous real insn, skipping NOTEs.  */
+  insn = PREV_INSN (insn);
+  while (insn && GET_CODE (insn) == NOTE)
+    insn = PREV_INSN (insn);
+
+  /* Check for CALL_INSNs and millicode calls.  */
+  if (insn
+      && (GET_CODE (insn) == CALL_INSN
+	  || (GET_CODE (insn) == INSN
+	      && GET_CODE (PATTERN (insn)) != SEQUENCE
+	      && GET_CODE (PATTERN (insn)) != USE
+	      && GET_CODE (PATTERN (insn)) != CLOBBER
+	      && get_attr_type (insn) == TYPE_MILLI)))
+    return 1;
+
+  return 0;
 }
 
 
