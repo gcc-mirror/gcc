@@ -2427,6 +2427,13 @@ print_operand (file, x, code)
 	  return;
 	}
       abort();
+    case 'O':
+      if (GET_CODE (x) == CONST_INT && exact_log2 (INTVAL (x)) >= 0)
+	{
+	  fprintf (file, "%d", exact_log2 (INTVAL (x)));
+	  return;
+	}
+      abort();
     case 'P':
       if (GET_CODE (x) == CONST_INT)
 	{
@@ -3037,4 +3044,14 @@ shadd_constant_p (val)
     return 1;
   else
     return 0;
+}
+
+/* Return 1 if OP is a CONST_INT with the value 2, 4, or 8.  These are
+   the valid constant for shadd instructions.  */
+int
+shadd_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT && shadd_constant_p (INTVAL (op)));
 }
