@@ -1,3 +1,8 @@
+Tue Jun 22 00:20:05 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* final.c (shorten_branches): Don't try to split an insn that has
+	been deleted.
+
 Mon Jun 21 12:47:39 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/mips/mips.c (symbolic_expression_p): New function.
