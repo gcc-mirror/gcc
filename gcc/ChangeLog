@@ -1,5 +1,35 @@
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (negate_mathfn_p): New function to determine whether
+	a built-in mathematical function is sign preserving, f(-x) == -f(x).
+	Add support for BUILT_IN_ASIN, BUILT_IN_ASINF and BUILT_IN_ASINL.
+	(tree_swap_operands_p): Change API to take an additional argument
+	indicating that the swapped operands evaluate in reverse order.
+	Canonicalize VAR_DECLs and PARM_DECLs last if we can, i.e. neither
+	operand side-effects or we don't care about flag_evaluation_order.
+	(reorder_operands_p): New function to check whether its safe to
+	evaluate the given operands in reverse order.
+	(negate_expr_p):  We can always negate integer constants unless
+	we honor -ftrapv and the signed type would overflow.  Only allow
+	-(A-B) into B-A if reorder_operands_p says that its OK.  Allow
+	negation of COMPLEX_CST if both real and imaginary parts can be
+	negated.  Allow negation through floating point extensions and
+	sign-preserving built-in functions.
+	(negate_expr):  Move the code to negate integers from "fold" to
+	here.  Always negate integer constants unless we honor -ftrapv
+	and the signed type would overflow.  Always negate real constants
+	unless we honor -ftrapping-math.  Only convert -(A-B) into B-A
+	if allowed by reorder_operands_p.  Add support for COMPLEX_CST.
+	Optimize negation through floating point extensions and 
+	sign-preserving built-in functions (as defined by negate_mathfn_p).
+	(fold): Adjust calls to tree_swap_operands_p.
+	(fold <NEGATE_EXPR>): Move the remaining negation optimizations
+	to negate_expr_p/negate_expr.
+	(fold <MINUS_EXPR>): Use reorder_operands_p to check whether we're
+	allowed to convert (-A) - B into (-B) - A.
+
+2003-10-11  Roger Sayle  <roger@eyesopen.com>
+
 	* builtins.c (expand_builtin_strcmp): Defend against the possibility
 	that gen_cmpstrsi may fail: Stabilize the argument list against
 	re-evaluation and expand the library call directly using this saved
