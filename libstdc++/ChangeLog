@@ -1,3 +1,9 @@
+Thu Sep 17 01:29:46 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in ($(ARLINK), $(SHLINK)): Don't rely on 'ln -f'.
+
+	* Makefile.in (install): Don't rely on 'ln -f'.
+
 1998-09-09  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (install): Initialize RELINSTALLDIR correctly

@@ -89,7 +89,8 @@ $(ARLIB): stdlist
 	$(RANLIB) $(ARLIB)
 
 $(ARLINK):
-	ln -f -s $(ARLIB) $(ARLINK)
+	-rm -f $(ARLINK)
+	ln -s $(ARLIB) $(ARLINK)
 
 marlink:
 	@$(MAKE) $(MARLINK) "ARLINK=$(MARLINK)"
@@ -104,7 +105,8 @@ $(SHARLIB): $(SHLIB)
 	$(RANLIB) $(SHARLIB)
 
 $(SHLINK):
-	ln -f -s $(SHLIB) $(SHLINK)
+	-rm -f $(SHLINK)
+	ln -s $(SHLIB) $(SHLINK)
 
 mshlink:
 	@$(MAKE) $(MSHLINK) "SHLINK=$(MSHLINK)"
@@ -312,25 +314,29 @@ install:
 	  rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	  if [ $$FILE = $(SHLINK) ] ; then \
 	    if [ -f $${INSTALLDIR}/$(MSHLINK) ]; then \
-	      ln -f -s $${RELINSTALLDIR}$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -s $${RELINSTALLDIR}$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    else \
-	      ln -f -s $${RELINSTALLDIR}$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -s $${RELINSTALLDIR}$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    fi; \
 	  elif [ $$FILE = $(ARLINK) ] ; then \
 	    if [ -f $${INSTALLDIR}/$(MARLINK) ]; then \
-	      ln -f -s $${RELINSTALLDIR}$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -s $${RELINSTALLDIR}$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    else \
-	      ln -f -s $${RELINSTALLDIR}$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -s $${RELINSTALLDIR}$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    fi; \
 	  elif [ $$FILE = mshlink ]; then \
 	    for FILE in $(MSHLINK) ; do \
 	      rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -f -s $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -s $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = marlink ]; then \
 	    for FILE in $(MARLINK) ; do \
 	      rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -f -s $(ARLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -s $(ARLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = $(SHLIB) ]; then \
 	    $(INSTALL_PROGRAM) $$FILE $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
