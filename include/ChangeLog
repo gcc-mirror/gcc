@@ -1,3 +1,7 @@
+2005-03-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (xstrndup): Declare.
+
 2005-03-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (make_relative_prefix): Add ATTRIBUTE_MALLOC.
