@@ -945,6 +945,7 @@ reload (first, global, dumpfile)
 		struct needs insn;
 		struct needs other_addr;
 		struct needs op_addr;
+		struct needs op_addr_reload;
 		struct needs in_addr[MAX_RECOG_OPERANDS];
 		struct needs out_addr[MAX_RECOG_OPERANDS];
 	      } insn_needs;
@@ -1073,6 +1074,9 @@ reload (first, global, dumpfile)
 					    ? reload_outmode[j]
 					    : reload_inmode[j])
 			   > 1)
+			  && (!reload_optional[j])
+			  && (reload_in[j] != 0 || reload_out[j] != 0
+			      || reload_secondary_p[j])
 			  && reloads_conflict (i, j)
 			  && reg_classes_intersect_p (class,
 						      reload_reg_class[j]))
@@ -1107,6 +1111,9 @@ reload (first, global, dumpfile)
 		      break;
 		    case RELOAD_FOR_OPERAND_ADDRESS:
 		      this_needs = &insn_needs.op_addr;
+		      break;
+		    case RELOAD_FOR_OPADDR_ADDR:
+		      this_needs = &insn_needs.op_addr_reload;
 		      break;
 		    }
 
@@ -1184,7 +1191,10 @@ reload (first, global, dumpfile)
 			 don't conflict with things needed to reload inputs or
 			 outputs. */
 
-		      in_max = MAX (in_max, insn_needs.op_addr.regs[j][i]);
+		      in_max = MAX (MAX (insn_needs.op_addr.regs[j][i],
+					 insn_needs.op_addr_reload.regs[j][i]),
+				    in_max);
+
 		      out_max = MAX (out_max, insn_needs.insn.regs[j][i]);
 
 		      insn_needs.input.regs[j][i]
@@ -1210,7 +1220,9 @@ reload (first, global, dumpfile)
 			= MAX (out_max, insn_needs.out_addr[j].groups[i]);
 		    }
 
-		  in_max = MAX (in_max, insn_needs.op_addr.groups[i]);
+		  in_max = MAX (MAX (insn_needs.op_addr.groups[i],
+				     insn_needs.op_addr_reload.groups[i]),
+				in_max);
 		  out_max = MAX (out_max, insn_needs.insn.groups[i]);
 
 		  insn_needs.input.groups[i]
@@ -3106,6 +3118,8 @@ eliminate_regs_in_insn (insn, replace)
 {
   rtx old_body = PATTERN (insn);
   rtx new_body;
+  rtx old_set;
+  rtx new_set;
   int val = 0;
   struct elim_table *ep;
 
@@ -3176,6 +3190,12 @@ eliminate_regs_in_insn (insn, replace)
   new_body = eliminate_regs (old_body, 0, replace ? insn : NULL_RTX);
   if (new_body != old_body)
     {
+      old_set = (GET_CODE (old_body) == PARALLEL) ? single_set (insn) :
+	old_body;
+
+      new_set = (GET_CODE (new_body) == PARALLEL) ? XVECEXP(new_body,0,0) :
+	new_body;
+
       /* If we aren't replacing things permanently and we changed something,
 	 make another copy to ensure that all the RTL is new.  Otherwise
 	 things can go wrong if find_reload swaps commutative operands
@@ -3187,22 +3207,25 @@ eliminate_regs_in_insn (insn, replace)
 	new_body = copy_rtx (new_body);
 
       /* If we had a move insn but now we don't, rerecognize it.  */
-      if ((GET_CODE (old_body) == SET && GET_CODE (SET_SRC (old_body)) == REG
-	   && (GET_CODE (new_body) != SET
-	       || GET_CODE (SET_SRC (new_body)) != REG))
+      if ((GET_CODE (old_set) == SET && GET_CODE (SET_SRC (old_set)) == REG
+	   && (GET_CODE (new_set) != SET
+	       || GET_CODE (SET_SRC (new_set)) != REG))
 	  /* If this was a load from or store to memory, compare
 	     the MEM in recog_operand to the one in the insn.  If they
 	     are not equal, then rerecognize the insn.  */
-	  || (GET_CODE (old_body) == SET
-	      && ((GET_CODE (SET_SRC (old_body)) == MEM
-		   && SET_SRC (old_body) != recog_operand[1])
-		  || (GET_CODE (SET_DEST (old_body)) == MEM
-		      && SET_DEST (old_body) != recog_operand[0])))
+	  || (GET_CODE (old_set) == SET
+	      && ((GET_CODE (SET_SRC (old_set)) == MEM
+		   && SET_SRC (old_set) != recog_operand[1])
+		  || (GET_CODE (SET_DEST (old_set)) == MEM
+		      && SET_DEST (old_set) != recog_operand[0])))
 	  /* If this was an add insn before, rerecognize.  */
 	  ||
-	  (GET_CODE (old_body) == SET
-	   && GET_CODE (SET_SRC (old_body)) == PLUS))
+	  (GET_CODE (old_set) == SET
+	   && GET_CODE (SET_SRC (old_set)) == PLUS))
 	{
+	  if (!replace)
+	    PATTERN (insn) = copy_rtx (PATTERN (insn));
+
 	  if (! validate_change (insn, &PATTERN (insn), new_body, 0))
 	    /* If recognition fails, store the new body anyway.
 	       It's normal to have recognition failures here
@@ -3993,6 +4016,8 @@ static HARD_REG_SET reload_reg_used_in_input[MAX_RECOG_OPERANDS];
 static HARD_REG_SET reload_reg_used_in_output[MAX_RECOG_OPERANDS];
 /* If reg is in use for a RELOAD_FOR_OPERAND_ADDRESS reload.  */
 static HARD_REG_SET reload_reg_used_in_op_addr;
+/* If reg is in use for a RELOAD_FOR_OPADDR_ADDR reload.  */
+static HARD_REG_SET reload_reg_used_in_op_addr_reload;
 /* If reg is in use for a RELOAD_FOR_INSN reload.  */
 static HARD_REG_SET reload_reg_used_in_insn;
 /* If reg is in use for a RELOAD_FOR_OTHER_ADDRESS reload.  */
@@ -4037,6 +4062,10 @@ mark_reload_reg_in_use (regno, opnum, type, mode)
 
 	case RELOAD_FOR_OPERAND_ADDRESS:
 	  SET_HARD_REG_BIT (reload_reg_used_in_op_addr, i);
+	  break;
+
+	case RELOAD_FOR_OPADDR_ADDR:
+	  SET_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, i);
 	  break;
 
 	case RELOAD_FOR_OTHER_ADDRESS:
@@ -4092,6 +4121,10 @@ clear_reload_reg_in_use (regno, opnum, type, mode)
 	  CLEAR_HARD_REG_BIT (reload_reg_used_in_op_addr, i);
 	  break;
 
+	case RELOAD_FOR_OPADDR_ADDR:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, i);
+	  break;
+
 	case RELOAD_FOR_OTHER_ADDRESS:
 	  CLEAR_HARD_REG_BIT (reload_reg_used_in_other_addr, i);
 	  break;
@@ -4142,6 +4175,9 @@ reload_reg_free_p (regno, opnum, type)
 	  || TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno))
 	return 0;
 
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno))
+	return 0;
+
       /* If it is used for some other input, can't use it.  */
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
@@ -4185,6 +4221,13 @@ reload_reg_free_p (regno, opnum, type)
 
       return (! TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno)
 	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno));
+
+    case RELOAD_FOR_OPADDR_ADDR:
+      for (i = 0; i < reload_n_operands; i++)
+        if (TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
+          return 0;
+
+      return (!TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno));
 
     case RELOAD_FOR_OUTPUT:
       /* This cannot share a register with RELOAD_FOR_INSN reloads, other
@@ -4294,6 +4337,7 @@ reload_reg_free_before_p (regno, opnum, type)
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
 
     case RELOAD_FOR_OPERAND_ADDRESS:
+    case RELOAD_FOR_OPADDR_ADDR:
     case RELOAD_FOR_INSN:
       /* These can't conflict with inputs, or each other, so all we have to
 	 test is input addresses and the addresses of OTHER items.  */
@@ -4389,6 +4433,9 @@ reload_reg_reaches_end_p (regno, opnum, type)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno))
+	return 0;
+
       return (! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
 	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno));
 
@@ -4415,8 +4462,17 @@ reload_reg_reaches_end_p (regno, opnum, type)
 
       return 1;
 
+    case RELOAD_FOR_OPADDR_ADDR:
+      for (i = 0; i < reload_n_operands; i++)
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
+	  return 0;
+
+      return (! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
+	      && !TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno));
+
     case RELOAD_FOR_INSN:
-      /* These conflict with other outputs with with RELOAD_OTHER.  So
+      /* These conflict with other outputs with RELOAD_OTHER.  So
 	 we need only check for output addresses.  */
 
       opnum = -1;
@@ -4465,6 +4521,7 @@ reloads_conflict (r1, r2)
     case RELOAD_FOR_INPUT:
       return (r2_type == RELOAD_FOR_INSN 
 	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS
+	      || r2_type == RELOAD_FOR_OPADDR_ADDR
 	      || r2_type == RELOAD_FOR_INPUT
 	      || (r2_type == RELOAD_FOR_INPUT_ADDRESS && r2_opnum > r1_opnum));
 
@@ -4479,6 +4536,10 @@ reloads_conflict (r1, r2)
     case RELOAD_FOR_OPERAND_ADDRESS:
       return (r2_type == RELOAD_FOR_INPUT || r2_type == RELOAD_FOR_INSN
 	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS);
+
+    case RELOAD_FOR_OPADDR_ADDR:
+      return (r2_type == RELOAD_FOR_INPUT 
+	      || r2_type == RELOAD_FOR_OPADDR_ADDR);
 
     case RELOAD_FOR_OUTPUT:
       return (r2_type == RELOAD_FOR_INSN || r2_type == RELOAD_FOR_OUTPUT
@@ -4750,6 +4811,7 @@ choose_reload_regs (insn, avoid_return_reg)
   HARD_REG_SET save_reload_reg_used_in_input[MAX_RECOG_OPERANDS];
   HARD_REG_SET save_reload_reg_used_in_output[MAX_RECOG_OPERANDS];
   HARD_REG_SET save_reload_reg_used_in_op_addr;
+  HARD_REG_SET save_reload_reg_used_in_op_addr_reload;
   HARD_REG_SET save_reload_reg_used_in_insn;
   HARD_REG_SET save_reload_reg_used_in_other_addr;
   HARD_REG_SET save_reload_reg_used_at_all;
@@ -4761,6 +4823,7 @@ choose_reload_regs (insn, avoid_return_reg)
   CLEAR_HARD_REG_SET (reload_reg_used);
   CLEAR_HARD_REG_SET (reload_reg_used_at_all);
   CLEAR_HARD_REG_SET (reload_reg_used_in_op_addr);
+  CLEAR_HARD_REG_SET (reload_reg_used_in_op_addr_reload);
   CLEAR_HARD_REG_SET (reload_reg_used_in_insn);
   CLEAR_HARD_REG_SET (reload_reg_used_in_other_addr);
 
@@ -4888,6 +4951,10 @@ choose_reload_regs (insn, avoid_return_reg)
   COPY_HARD_REG_SET (save_reload_reg_used_at_all, reload_reg_used_at_all);
   COPY_HARD_REG_SET (save_reload_reg_used_in_op_addr,
 		     reload_reg_used_in_op_addr);
+
+  COPY_HARD_REG_SET (save_reload_reg_used_in_op_addr_reload,
+		     reload_reg_used_in_op_addr_reload);
+
   COPY_HARD_REG_SET (save_reload_reg_used_in_insn,
 		     reload_reg_used_in_insn);
   COPY_HARD_REG_SET (save_reload_reg_used_in_other_addr,
@@ -5257,6 +5324,8 @@ choose_reload_regs (insn, avoid_return_reg)
       COPY_HARD_REG_SET (reload_reg_used_at_all, save_reload_reg_used_at_all);
       COPY_HARD_REG_SET (reload_reg_used_in_op_addr,
 			 save_reload_reg_used_in_op_addr);
+      COPY_HARD_REG_SET (reload_reg_used_in_op_addr_reload,
+			 save_reload_reg_used_in_op_addr_reload);
       COPY_HARD_REG_SET (reload_reg_used_in_insn,
 			 save_reload_reg_used_in_insn);
       COPY_HARD_REG_SET (reload_reg_used_in_other_addr,
@@ -5466,6 +5535,7 @@ emit_reload_insns (insn)
   rtx output_reload_insns[MAX_RECOG_OPERANDS];
   rtx output_address_reload_insns[MAX_RECOG_OPERANDS];
   rtx operand_reload_insns = 0;
+  rtx other_operand_reload_insns = 0;
   rtx following_insn = NEXT_INSN (insn);
   rtx before_insn = insn;
   int special;
@@ -5670,6 +5740,9 @@ emit_reload_insns (insn)
 	      break;
 	    case RELOAD_FOR_OPERAND_ADDRESS:
 	      where = &operand_reload_insns;
+	      break;
+	    case RELOAD_FOR_OPADDR_ADDR:
+	      where = &other_operand_reload_insns;
 	      break;
 	    case RELOAD_FOR_OTHER_ADDRESS:
 	      where = &other_input_address_reload_insns;
@@ -6286,6 +6359,8 @@ emit_reload_insns (insn)
      For each operand, any RELOAD_FOR_INPUT_ADDRESS reloads followed by
      the RELOAD_FOR_INPUT reload for the operand.
 
+     RELOAD_FOR_OPADDR_ADDRS reloads.
+
      RELOAD_FOR_OPERAND_ADDRESS reloads.
 
      After the insn being reloaded, we write the following:
@@ -6302,6 +6377,7 @@ emit_reload_insns (insn)
       emit_insns_before (input_reload_insns[j], before_insn);
     }
 
+  emit_insns_before (other_operand_reload_insns, before_insn);
   emit_insns_before (operand_reload_insns, before_insn);
 
   for (j = 0; j < reload_n_operands; j++)
