@@ -28,8 +28,7 @@ _Jv_ThreadInitData (java::lang::Thread * thread)
 }
 
 void
-_Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *,
-		 _Jv_ThreadStartFunc *meth)
+_Jv_ThreadStart (java::lang::Thread *, _Jv_Thread_t *, _Jv_ThreadStartFunc *)
 {
   JvFail ("Thread.start called but threads not available");
 }

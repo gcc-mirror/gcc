@@ -1,3 +1,8 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* no-threads.cc (_Jv_ThreadStart): Remove names of unused arguments.
+	* java/lang/mprec.c (lo0bits): Fix paren typo.
+
 2001-09-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* posix-threads.cc (_Jv_ThreadInterrupt): Re-enable interrupt of 
