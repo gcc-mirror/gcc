@@ -53,8 +53,9 @@ extern FILE* finput;
 static int deep_const_expr			PARAMS ((tree));
 static void chill_print_error_function		PARAMS ((const char *));
 
-/* return 1 if the expression tree given has all
-   constant nodes as its leaves; return 0 otherwise. */
+/* Return 1 if the expression tree given has all
+   constant nodes as its leaves,otherwise. */
+
 static int
 deep_const_expr (exp)
      tree exp;
@@ -67,13 +68,13 @@ deep_const_expr (exp)
     return 0;
 
   code = TREE_CODE (exp);
-  length = tree_code_length[(int) code];
+  length = first_rtl_op (TREE_CODE (exp));
 
   /* constant leaf?  return TRUE */
   if (TREE_CODE_CLASS (code) == 'c')
     return 1;
 
-  /* recursively check next level down */
+  /* Recursively check next level down.  */
   for (i = 0; i < length; i++)
     if (! deep_const_expr (TREE_OPERAND (exp, i)))
       return 0;

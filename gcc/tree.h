@@ -39,8 +39,8 @@ enum tree_code {
 
 #undef DEFTREECODE
 
-/* Number of tree codes.  */
-#define NUM_TREE_CODES ((int)LAST_AND_UNUSED_TREE_CODE)
+/* Number of language-independent tree codes.  */
+#define NUM_TREE_CODES ((int) LAST_AND_UNUSED_TREE_CODE)
 
 /* Indexed by enum tree_code, contains a character which is
    `<' for a comparison expression, `1', for a unary arithmetic
@@ -62,6 +62,7 @@ extern char tree_code_type[MAX_TREE_CODES];
 /* Number of argument-words in each kind of tree-node.  */
 
 extern int tree_code_length[MAX_TREE_CODES];
+#define TREE_CODE_LENGTH(CODE)	tree_code_length[(int) (CODE)]
 
 /* Names of tree components.  */
 

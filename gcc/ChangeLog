@@ -1,3 +1,22 @@
+Sat May 27 11:01:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.h (TREE_CODE_LENGTH): New macro.
+	* c-common.c (c_find_base_decl): Use it.
+	* expr.c (safe_from_p): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* tree.c (make_node, copy_node, get_identifier): Likewie.
+	(first_rtl_op, contains_placeholder_p, substitute_in_expr): Likewise.
+	(build, build_nt, build_parse_node, simple_cst_equal): Likewise.
+	* fold-const.c (make_range): Likewise.
+	(fold): Likewise; also use first_rtl_op.
+	* c-iterate.c (collect_iterators): Use first_rtl_op.
+	* calls.c (calls_function_1): Likewise; also rename TYPE to CLASS.
+	Use IS_EXPR_CODE_CLASS.
+	(preexpand_calls): Likewise.
+	* ggc-common.c (ggc_mark_trees): Rework to use first_rtl_op
+	and TREE_CODE_LENGTH.
+	* stmt.c (warn_if_unused_value): If no operands, no unused value.
+
 2000-05-26  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.md (movsi_internal1): Use '%a1' rather

@@ -241,27 +241,9 @@ collect_iterators (exp, list)
 	case 'e':
 	case 'r':
 	  {
-	    int num_args = tree_code_length[(int) TREE_CODE (exp)];
+	    int num_args = first_rtl_op (TREE_CODE (exp));
 	    int i;
 
-	    /* Some tree codes have RTL, not trees, as operands.  */
-	    switch (TREE_CODE (exp))
-	      {
-	      case CALL_EXPR:
-		num_args = 2;
-		break;
-	      case METHOD_CALL_EXPR:
-		num_args = 3;
-		break;
-	      case WITH_CLEANUP_EXPR:
-		num_args = 1;
-		break;
-	      case RTL_EXPR:
-		return list;
-	      default:
-		break;
-	      }
-		
 	    for (i = 0; i < num_args; i++)
 	      list = collect_iterators (TREE_OPERAND (exp, i), list);
 	    return list;

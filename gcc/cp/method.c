@@ -519,7 +519,7 @@ mangle_expression (value)
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (value))))
     {
       int i;
-      int operands = tree_code_length[(int) TREE_CODE (value)];
+      int operands = TREE_CODE_LENGTH (TREE_CODE (value));
       tree id;
       const char *name;
 

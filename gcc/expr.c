@@ -5499,7 +5499,7 @@ safe_from_p (x, exp, top_p)
 	    return 0;
 	  save_expr_rewritten[save_expr_count++] = exp;
 
-	  nops = tree_code_length[(int) SAVE_EXPR];
+	  nops = TREE_CODE_LENGTH (SAVE_EXPR);
 	  for (i = 0; i < nops; i++)
 	    {
 	      tree operand = TREE_OPERAND (exp, i);
@@ -5530,7 +5530,7 @@ safe_from_p (x, exp, top_p)
       if (exp_rtl)
 	break;
 
-      nops = tree_code_length[(int) TREE_CODE (exp)];
+      nops = TREE_CODE_LENGTH (TREE_CODE (exp));
       for (i = 0; i < nops; i++)
 	if (TREE_OPERAND (exp, i) != 0
 	    && ! safe_from_p (x, TREE_OPERAND (exp, i), 0))
@@ -9079,14 +9079,14 @@ preexpand_calls (exp)
      tree exp;
 {
   register int nops, i;
-  int type = TREE_CODE_CLASS (TREE_CODE (exp));
+  int class = TREE_CODE_CLASS (TREE_CODE (exp));
 
   if (! do_preexpand_calls)
     return;
 
   /* Only expressions and references can contain calls.  */
 
-  if (type != 'e' && type != '<' && type != '1' && type != '2' && type != 'r')
+  if (! IS_EXPR_CODE_CLASS (class) && class != 'r')
     return;
 
   switch (TREE_CODE (exp))
@@ -9134,7 +9134,7 @@ preexpand_calls (exp)
       break;
     }
 
-  nops = tree_code_length[(int) TREE_CODE (exp)];
+  nops = TREE_CODE_LENGTH (TREE_CODE (exp));
   for (i = 0; i < nops; i++)
     if (TREE_OPERAND (exp, i) != 0)
       {
@@ -9144,9 +9144,8 @@ preexpand_calls (exp)
 	  ;
 	else
 	  {
-	    type = TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, i)));
-	    if (type == 'e' || type == '<' || type == '1' || type == '2'
-		|| type == 'r')
+	    class = TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, i)));
+	    if (IS_EXPR_CODE_CLASS (class) || class == 'r')
 	      preexpand_calls (TREE_OPERAND (exp, i));
 	  }
       }

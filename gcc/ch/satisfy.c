@@ -371,7 +371,8 @@ satisfy (exp, chain)
 	default:
 	  ;
 	}
-      arg_length = tree_code_length[TREE_CODE (exp)];
+
+      arg_length = TREE_CODE_LENGTH (TREE_CODE (exp));
       for (i = 0; i < arg_length; i++)
 	SATISFY (TREE_OPERAND (exp, i));
       return exp;

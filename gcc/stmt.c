@@ -2004,6 +2004,14 @@ warn_if_unused_value (exp)
 	   || TREE_CODE_CLASS (TREE_CODE (exp)) == 'r')
 	  && TREE_THIS_VOLATILE (exp))
 	return 0;
+
+      /* If this is an expression which has no operands, there is no value
+	 to be unused.  There are no such language-independent codes,
+	 but front ends may define such.  */
+      if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'e'
+	  && TREE_CODE_LENGTH (TREE_CODE (exp)) == 0)
+	return 0;
+
     warn:
       warning_with_file_and_line (emit_filename, emit_lineno,
 				  "value computed is not used");
