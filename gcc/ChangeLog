@@ -1,3 +1,23 @@
+Thu Jan 29 01:28:14 1998  Klaus Kaempf  <kkaempf@progis.de>
+
+	* am-alpha.h: Don't include alloca for OPEN_VMS.
+
+	* alpha/xm-vms.h (HAVE_CPP_STRINGIFY): Define.
+
+	* alpha/xm-vms.h (INCLUDE_DEFAULTS): Define.
+	(GCC_INCLUDE_DIR): Define
+
+	* make-cc.com, make-cccp.com, make-cc1.com: Removed.
+	* makefile.vms: New file.
+
+	* alpha/vms.h (CPP_PREDEFINES): Remove -Dalpha.
+
+	* alpha.c (output_prolog): Output '.name' directive
+	for minimal traceback information.
+
+	* alpha.c (output_prolog): Don't prepend entry point symbols
+	with '$' on OPEN_VMS.
+
 Thu Jan 29 00:25:35 1998  David S. Miller  <davem@tanya.rutgers.edu>
 			  Jeffrey A Law  (law@cygnus.com)
 
