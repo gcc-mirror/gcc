@@ -1155,6 +1155,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
 	  if (j < 0)
 	    {
+	      if (j == -3)
+		continue;
+
 	      error ("unknown register name `%s' in `asm'", regname);
 	      return;
 	    }

@@ -813,7 +813,7 @@ recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
    insn-flags.h insn-codes.h real.h
 reg-stack.o : reg-stack.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
    regs.h hard-reg-set.h flags.h insn-config.h
-   
+
 aux-output.o : aux-output.c $(CONFIG_H) \
    $(RTL_H) regs.h hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h
@@ -1153,6 +1153,7 @@ mostlyclean:
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
 	-rm -f tmp-float.h tmp-*proto.1 tmp-gcc.xtar.Z tmp-limits.h gccnew
+	-rm -f tmp-foo1 tmp-foo2
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
 # Delete debugging dump files.
@@ -1549,6 +1550,26 @@ bootstrap2: force
 
 bootstrap3: force
 	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+
+# Compare the object files in the current directory with those in the
+# stage2 directory.
+
+compare: force
+	for file in *.o; do \
+	  tail +10c $file > tmp-foo1; \
+	  tail +10c stage2/$file > tmp-foo2; \
+	  cmp tmp-foo1 tmp-foo2 || echo $file differs; \
+	done
+	-rm -f tmp-foo*
+
+# Similar, but compare with stage3 directory
+compare3: force
+	for file in *.o; do \
+	  tail +10c $file > tmp-foo1; \
+	  tail +10c stage3/$file > tmp-foo2; \
+	  cmp tmp-foo1 tmp-foo2 || echo $file differs; \
+	done
+	-rm -f tmp-foo*
 
 # Copy the object files from a particular stage into a subdirectory.
 stage1: force
