@@ -1,3 +1,7 @@
+Mon Oct 18 02:30:47 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* setenv.c (sys/types.h, stdio.h): Include those files unconditionaly.
+
 Fri Oct 15 01:47:51 1999  Vladimir Makarov  <vmakarov@loony.cygnus.com>
 
 	* Makefile.in (CFILES): Add hashtab.c
