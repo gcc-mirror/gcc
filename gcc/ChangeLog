@@ -1,3 +1,7 @@
+Sun Aug 29 03:27:23 1999  Scott Weikart <scott@igc.apc.org>
+
+	* fix-header.c (main): Do not pass a null pointer to strcmp.
+
 Sun Aug 29 03:18:48 1999  William Bader  (william@nscs.fast.net)
 
 	* configure.in (i[34567]86-*-sco3.2v4*): Target does not truncate
