@@ -1,3 +1,7 @@
+2004-07-05  Anthony Green  <green@redhat.com>
+	
+	* java/io/File.java (toURI): Merge from Classpath.
+
 2004-07-05  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/gcj/runtime/VMClassLoader.java (init): Check classpath entry
