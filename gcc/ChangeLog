@@ -1,5 +1,8 @@
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* final.c (output_asm_insn): Use strtoul instead of atoi, save a
+	loop.
+
 	* config/darwin.c: Include target.h.
 	(struct machopic_indirection): Make ptr_name a string.
 	(machopic_indirection_hash): Update for ptr_name a string.
