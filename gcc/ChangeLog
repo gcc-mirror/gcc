@@ -1,3 +1,8 @@
+2004-10-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.text (freorder-functions): Add a leading `.' to
+	"text.hot" and "text.unlikely" sections.
+
 2004-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/16007
