@@ -1,3 +1,8 @@
+2000-11-17  Neil Booth  <neilb@earthling.net>
+
+        * cpperror.c (print_file_and_line): Don't display line number
+        if 0.
+
 2000-11-17  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* ggc.h: Delete ggc_add_string_root and ggc_mark_string.  Add
