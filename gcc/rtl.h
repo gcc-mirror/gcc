@@ -89,6 +89,9 @@ typedef struct
    so MEMs that the same attributes share a data structure.  This means
    they cannot be modified in place.  If any element is nonzero, it means
    the value of the corresponding attribute is unknown.  */
+/* ALIGN and SIZE are the alignment and size of the MEM itself,
+   while EXPR can describe a larger underlying object, which might have a
+   stricter alignment; OFFSET is the offset of the MEM within that object.  */
 typedef struct mem_attrs GTY(())
 {
   HOST_WIDE_INT alias;		/* Memory alias set.  */
