@@ -1124,7 +1124,7 @@ print_help ()
   printf ("Usage: %s [switches] input output\n", progname);
   printf ("Switches:\n");
   printf ("  -include <file>           Include the contents of <file> before other files\n");
-  printf ("  -imacros <file>           Accept definition of marcos in <file>\n");
+  printf ("  -imacros <file>           Accept definition of macros in <file>\n");
   printf ("  -iprefix <path>           Specify <path> as a prefix for next two options\n");
   printf ("  -iwithprefix <dir>        Add <dir> to the end of the system include paths\n");
   printf ("  -iwithprefixbefore <dir>  Add <dir> to the end of the main include paths\n");
@@ -1138,7 +1138,7 @@ print_help ()
   printf ("  -traditional              Follow K&R pre-processor behaviour\n");
   printf ("  -trigraphs                Support ANSI C trigraphs\n");
   printf ("  -lang-c                   Assume that the input sources are in C\n");
-  printf ("  -lang-c89                 Assume that the input is C89; depricated\n");
+  printf ("  -lang-c89                 Assume that the input is C89; deprecated\n");
   printf ("  -lang-c++                 Assume that the input sources are in C++\n");
   printf ("  -lang-objc                Assume that the input sources are in ObjectiveC\n");
   printf ("  -lang-objc++              Assume that the input sources are in ObjectiveC++\n");

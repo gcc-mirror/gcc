@@ -1,3 +1,7 @@
+2001-09-17  Philip Blundell  <philb@gnu.org>
+
+	* cccp.c (print_help): Fix typos.
+
 2001-08-29  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/alpha/crtbegin.asm: The normal calling convention for alpha is
