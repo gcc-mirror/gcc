@@ -309,7 +309,9 @@ static int alter_cond		PROTO((rtx));
 #ifndef ADDR_VEC_ALIGN
 static int final_addr_vec_align PROTO ((rtx));
 #endif
+#ifdef HAVE_ATTR_length
 static int align_fuzz		PROTO ((rtx, rtx, int, unsigned));
+#endif
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -699,7 +701,7 @@ init_insn_lengths ()
 
 int
 get_attr_length (insn)
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
 {
 #ifdef HAVE_ATTR_length
   rtx body;
@@ -980,7 +982,7 @@ insn_current_reference_address (branch)
 
 void
 shorten_branches (first)
-     rtx first;
+     rtx first ATTRIBUTE_UNUSED;
 {
   rtx insn;
   int max_uid;
@@ -1694,7 +1696,7 @@ final_start_function (first, file, optimize)
 
 static void
 profile_after_prologue (file)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
 {
 #ifdef FUNCTION_BLOCK_PROFILER
   if (profile_block_flag)

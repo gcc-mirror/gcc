@@ -356,10 +356,10 @@ dtors_section ()						\
     {								\
       int len;							\
       int sec;							\
-      char *name;						\
+      const char *name;						\
       char *string;						\
-      char *prefix;						\
-      static char *prefixes[4][2] =				\
+      const char *prefix;					\
+      static const char *prefixes[4][2] =			\
       {								\
 	{ ".text.",   ".gnu.linkonce.t." },			\
 	{ ".rodata.", ".gnu.linkonce.r." },			\

@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "resource.h"
+#include "insn-attr.h"
 
 /* This structure is used to record liveness information at the targets or
    fallthrough insns of branches.  We will most likely need the information

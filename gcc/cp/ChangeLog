@@ -1,3 +1,7 @@
+2000-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.c: Include tm_p.h.
+
 2000-01-07  Nathan Sidwell  <sidwell@codesourcery.com>
 
 	* lang-specs.h (__GXX_ABI_VERSION): New preprocessor macro.

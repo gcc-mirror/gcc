@@ -2794,7 +2794,9 @@ expand_return (retval)
   rtx last_insn = 0;
   rtx result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
   register rtx val = 0;
+#ifdef HAVE_return
   register rtx op0;
+#endif
   tree retval_rhs;
   int cleanups;
 

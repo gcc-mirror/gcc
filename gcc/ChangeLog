@@ -1,5 +1,48 @@
 2000-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (optabs.o): Depend on real.h
+	(resource.o): Depend on insn-attr.h
+
+	* builtins.c (result_vector): Wrap prototype in macro conditions
+	governing definition and use.
+
+	* c-common.c: Include tm_p.h.
+
+	* c-lex.c: Likewise.
+
+	* elfos.h: Constify a char*.
+
+	* final.c (align_fuzz): Wrap prototype in macro HAVE_ATTR_length.
+	(get_attr_length, shorten_branches, profile_after_prologue): Mark
+	parameter with ATTRIBUTE_UNUSED.
+
+	* fold-const.c (exact_real_inverse): Wrap variable `i' in
+	CHECK_FLOAT_VALUE.
+
+	* haifa-sched.c (schedule_insns): Mark parameter with
+	ATTRIBUTE_UNUSED.
+
+	* optabs.c: Include real.h.
+
+	* real.h (ereal_atof): Add prototype arguments.
+
+	* resource.c: Include insn-attr.h.
+
+	* sdbout.c (sdbout_queue_anonymous_type,
+	sdbout_dequeue_anonymous_types): Wrap in macro
+	SDB_ALLOW_FORWARD_REFERENCES.
+	(sdbout_init, sdbout_start_new_source_file): Mark parameter with
+	ATTRIBUTE_UNUSED.
+
+	* stmt.c (expand_return): Wrap variable `op0' in macro HAVE_return.
+
+	* stupid.c: Include tm_p.h.
+
+	* tree.c (real_value_from_int_cst): Mark parameter with
+	ATTRIBUTE_UNUSED.
+
+2000-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* i960-protos.h: New file.
 
 	* i960.c: Include tm_p.h.  Add static prototypes.  Fix compile

@@ -914,7 +914,9 @@ exact_real_inverse (mode, r)
       double d;
       unsigned short i[4];
     }x, t, y;
+#ifdef CHECK_FLOAT_VALUE
   int i;
+#endif
 
   /* Usually disable if bounds checks are not reliable.  */
   if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT) && !flag_pretend_float)
