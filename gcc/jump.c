@@ -3397,17 +3397,21 @@ mark_jump_label (x, insn, cross_jump)
 	       is one.  */
 	    else if (! find_reg_note (insn, REG_LABEL, label))
 	      {
-		rtx next = next_real_insn (label);
-		/* Don't record labels that refer to dispatch tables.
-		   This is not necessary, since the tablejump
-		   references the same label.
-		   And if we did record them, flow.c would make worse code.  */
-		if (next == 0
-		    || ! (GET_CODE (next) == JUMP_INSN
-			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
-			      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC)))
-		  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, label,
-							REG_NOTES (insn));
+		/* This code used to ignore labels which refered to dispatch
+		   tables to avoid flow.c generating worse code.
+
+		   However, in the presense of global optimizations like
+		   gcse which call find_basic_blocks without calling
+		   life_analysis, not recording such labels will lead
+		   to compiler aborts because of inconsistencies in the
+		   flow graph.  So we go ahead and record the label.
+
+		   It may also be the case that the optimization argument
+		   is no longer valid because of the more accurate cfg
+		   we build in find_basic_blocks -- it no longer pessimizes
+		   code when it finds a REG_LABEL note.  */
+		REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, label,
+						      REG_NOTES (insn));
 	      }
 	  }
 	return;
