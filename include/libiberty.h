@@ -145,6 +145,12 @@ extern char * getpwd PARAMS ((void));
 
 extern long get_run_time PARAMS ((void));
 
+/* Generate a relocated path to some installation directory.  Allocates
+   return value using malloc.  */
+
+extern char *make_relative_prefix PARAMS ((const char *, const char *,
+					   const char *));
+
 /* Choose a temporary directory to use for scratch files.  */
 
 extern char *choose_temp_base PARAMS ((void)) ATTRIBUTE_MALLOC;

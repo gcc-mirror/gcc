@@ -135,6 +135,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	hashtab.c hex.c							\
 	index.c insque.c						\
 	lbasename.c							\
+	make-relative-prefix.c						\
 	make-temp-file.c md5.c memchr.c memcmp.c memcpy.c memmove.c	\
 	 memset.c mkstemps.c						\
 	objalloc.c obstack.c						\
@@ -159,6 +160,7 @@ REQUIRED_OFILES = regex.o cplus-dem.o cp-demangle.o md5.o		\
 	getopt.o getopt1.o getpwd.o getruntime.o			\
 	hashtab.o hex.o							\
 	lbasename.o							\
+	make-relative-prefix.o						\
 	make-temp-file.o						\
 	objalloc.o obstack.o						\
 	partition.o pexecute.o						\
@@ -432,6 +434,7 @@ hashtab.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/hashtab.h \
 hex.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 lbasename.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/safe-ctype.h
+make-relative-prefix.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 make-temp-file.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 md5.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/md5.h
 memchr.o: $(INCDIR)/ansidecl.h
