@@ -821,12 +821,10 @@ changequote([,])dnl
 	arm*-*-elf)
 		tm_file=arm/unknown-elf.h
 		tmake_file=arm/t-arm-elf
-#		tm_file=arm2/unknown-elf.h
-#		tmake_file=arm2/t-arm-elf
-#		out_file=arm2/arm.c
-#		xm_file=arm2/xm-arm.h
-#		md_file=arm2/arm.md
-#		tm_p_file=arm2/arm-protos.h
+		;;
+	arm*-*-conix*)
+		tm_file=arm/conix-elf.h
+		tmake_file=arm/t-arm-elf
 		;;
         arm*-*-oabi)
 		tm_file=arm/unknown-elf-oabi.h
