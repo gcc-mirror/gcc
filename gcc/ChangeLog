@@ -1,3 +1,8 @@
+2003-07-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.c (machopic_select_section): Use decl_readonly_section
+	to do most of the work.
+
 2003-07-15  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.c (sparc_nonflat_function_epilogue): Only

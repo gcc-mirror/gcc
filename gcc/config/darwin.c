@@ -1091,18 +1091,21 @@ machopic_select_section (exp, reloc, align)
      int reloc;
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
-  if (TREE_CODE (exp) == STRING_CST)
-    {
-      if (flag_writable_strings)
-	data_section ();
-      else if (TREE_STRING_LENGTH (exp) !=
-	       strlen (TREE_STRING_POINTER (exp)) + 1)
-	readonly_data_section ();
-      else
-	cstring_section ();
-    }
-  else if (TREE_CODE (exp) == INTEGER_CST
-	   || TREE_CODE (exp) == REAL_CST)
+  void (*base_function)(void);
+  
+  if (decl_readonly_section (exp, reloc))
+    base_function = readonly_data_section;
+  else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
+    base_function = const_data_section;
+  else
+    base_function = data_section;
+
+  if (TREE_CODE (exp) == STRING_CST
+      && TREE_STRING_LENGTH (exp) == strlen (TREE_STRING_POINTER (exp)) + 1
+      && ! flag_writable_strings)
+    cstring_section ();
+  else if ((TREE_CODE (exp) == INTEGER_CST || TREE_CODE (exp) == REAL_CST)
+	   && flag_merge_constants)
     {
       tree size = TYPE_SIZE (TREE_TYPE (exp));
 
@@ -1115,7 +1118,7 @@ machopic_select_section (exp, reloc, align)
 	       TREE_INT_CST_HIGH (size) == 0)
 	literal8_section ();
       else
-	readonly_data_section ();
+	base_function ();
     }
   else if (TREE_CODE (exp) == CONSTRUCTOR
 	   && TREE_TYPE (exp)
@@ -1129,15 +1132,8 @@ machopic_select_section (exp, reloc, align)
 	objc_constant_string_object_section ();
       else if (!strcmp (IDENTIFIER_POINTER (name), "NXConstantString"))
 	objc_string_object_section ();
-      else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
-	{
-	  if (TREE_SIDE_EFFECTS (exp) || (flag_pic && reloc))
-	    const_data_section ();
-	  else
-	    readonly_data_section ();
-	}
-      else
-	data_section ();
+      else 
+	base_function ();
     }
   else if (TREE_CODE (exp) == VAR_DECL &&
 	   DECL_NAME (exp) &&
@@ -1191,26 +1187,11 @@ machopic_select_section (exp, reloc, align)
 	objc_cat_cls_meth_section ();
       else if (!strncmp (name, "_OBJC_PROTOCOL_", 15))
 	objc_protocol_section ();
-      else if ((TREE_READONLY (exp) || TREE_CONSTANT (exp))
-	       && !TREE_SIDE_EFFECTS (exp))
-	{
-	  if (flag_pic && reloc)
-	    const_data_section ();
-	  else
-	    readonly_data_section ();
-	}
-      else
-	data_section ();
+      else 
+	base_function ();
     }
-  else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
-    {
-      if (TREE_SIDE_EFFECTS (exp) || (flag_pic && reloc))
-	const_data_section ();
-      else
-	readonly_data_section ();
-    }
-  else
-    data_section ();
+  else 
+    base_function ();
 }
 
 /* This can be called with address expressions as "rtx".
