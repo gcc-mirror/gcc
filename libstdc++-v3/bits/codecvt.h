@@ -39,9 +39,8 @@
 #define _CPP_BITS_CODECVT_H	1
 
 #ifdef _GLIBCPP_USE_WCHAR_T
-// #include <localefwd.h>
-// XXX include iconv here or higher up.... 
 #include <iconv.h>		// For iconv, iconv_t
+#include <langinfo.h>
 #endif
 
 namespace std
@@ -53,16 +52,14 @@ namespace std
   // including conversions and comparisons between various character
   // sets.  This object encapsulates data that may need to be shared between
   // char_traits, codecvt and ctype.
-  template<typename _InternT, typename _ExternT>
   class __enc_traits
   {
   public:
     // Types:
-    typedef _InternT	__intc_type;
-    typedef _ExternT	__extc_type;
     typedef iconv_t	__conv_type;
     typedef mbstate_t	__state_type;
     
+  protected:
     // Data Members:
     // Max size of charset encoding name
     static const int 	__max_size = 32;
@@ -72,62 +69,71 @@ namespace std
     char  	       	__extc_enc[__max_size];
 
     // Conversion descriptor between external encoding to internal encoding.
-    __conv_type		__in_conv;
+    __conv_type		__in_desc;
     // Conversion descriptor between internal encoding to external encoding.
-    __conv_type		__out_conv;
+    __conv_type		__out_desc;
 
-    __enc_traits()
+  public:
+    __enc_traits() : __in_desc(0), __out_desc(0)
     {
       // __intc_end = whatever we are using internally, which is
       // UCS4 (linux) 
-      // UCS2 (microsoft, java, aix, whatever...)
+      // UCS2 == UNICODE  (microsoft, java, aix, whatever...)
       // XXX Currently don't know how to get this data from target system...
       strcpy(__intc_enc, "UCS4");
 
       // __extc_end = external codeset in current locale
       strcpy(__extc_enc, nl_langinfo(CODESET));
-      __in_conv = iconv_open(__intc_enc, __extc_enc);
-      __out_conv = iconv_open(__extc_enc, __intc_enc);
-      if (__out_conv == (iconv_t) -1 || __in_conv == (iconv_t) -1)
-	{
-	  // XXX Extended error checking.
-	}
     }
 
     __enc_traits(const char* __int, const char* __ext)
+    : __in_desc(0), __out_desc(0)
     {
       strcpy(__intc_enc, __int);
       strcpy(__extc_enc, __ext);
-      __in_conv = iconv_open(__intc_enc, __extc_enc);
-      __out_conv = iconv_open(__extc_enc, __intc_enc);
-      if (__out_conv == (iconv_t) -1 || __in_conv == (iconv_t) -1)
-	{
-	  // XXX Extended error checking.
-	}
     }
 
     ~__enc_traits()
     {
-      iconv_close(__in_conv);
-      iconv_close(__out_conv);
+      iconv_close(__in_desc);
+      iconv_close(__out_desc);
     } 
 
-    const char* 
-    _M_get_intc_enc(void)
+    // Initializes
+    void
+    _M_init()
+    {
+      __in_desc = iconv_open(__intc_enc, __extc_enc);
+      __out_desc = iconv_open(__extc_enc, __intc_enc);
+      if (__out_desc == (iconv_t) -1 || __in_desc == (iconv_t) -1)
+	{
+	  // XXX Extended error checking.
+	}
+    }
+
+    bool
+    _M_good()
+    { 
+      return __out_desc && __in_desc 
+	     && __out_desc != iconv_t(-1) && __in_desc != iconv_t(-1);
+    }
+
+    const __conv_type* 
+    _M_get_in_descriptor()
+    { return &__in_desc; }
+
+    const __conv_type* 
+    _M_get_out_descriptor()
+    { return &__out_desc; }
+
+   const char* 
+    _M_get_internal_enc()
     { return __intc_enc; }
 
-    void
-    _M_set_intc_enc(const char* __c)
-    { strcpy(__intc_enc, __c); }
-
     const char* 
-    _M_get_extc_enc(void)
+    _M_get_external_enc()
     { return __extc_enc; }
 
-    void
-    _M_set_extc_enc(const char* __c)
-    { strcpy(__extc_enc, __c); }
-   
   protected:
     // 21.1.2 traits typedefs
     // p4
@@ -163,34 +169,35 @@ namespace std
     {
     public:
       // Types:
-      typedef _InternT intern_type;
-      typedef _ExternT extern_type;
-      typedef _StateT  state_type;
+      typedef codecvt_base::result			result;
+      typedef _InternT 					intern_type;
+      typedef _ExternT 					extern_type;
+      typedef _StateT  					state_type;
       
       // 22.2.1.5.1 codecvt members
       result
       out(state_type& __state, const intern_type* __from, 
 	  const intern_type* __from_end, const intern_type*& __from_next,
-	  extern_type* __to, extern_type* __to_limit, 
+	  extern_type* __to, extern_type* __to_end, 
 	  extern_type*& __to_next) const
       { 
 	return this->do_out(__state, __from, __from_end, __from_next, 
-			    __to, __to_limit, __to_next); 
+			    __to, __to_end, __to_next); 
       }
 
       result
-      unshift(state_type& __state, extern_type* __to, extern_type* __to_limit,
+      unshift(state_type& __state, extern_type* __to, extern_type* __to_end,
 	      extern_type*& __to_next) const
-      { return this->do_unshift(__state, __to,__to_limit,__to_next); }
+      { return this->do_unshift(__state, __to,__to_end,__to_next); }
 
       result
       in(state_type& __state, const extern_type* __from, 
 	 const extern_type* __from_end, const extern_type*& __from_next,
-	 intern_type* __to, intern_type* __to_limit, 
+	 intern_type* __to, intern_type* __to_end, 
 	 intern_type*& __to_next) const
       { 
 	return this->do_in(__state, __from, __from_end, __from_next,
-			   __to, __to_limit, __to_next); 
+			   __to, __to_end, __to_next); 
       }
 
       int 
@@ -220,17 +227,17 @@ namespace std
       virtual result
       do_out(state_type& __state, const intern_type* __from, 
 	     const intern_type* __from_end, const intern_type*& __from_next,
-	     extern_type* __to, extern_type* __to_limit,
+	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const = 0;
 
       virtual result
       do_unshift(state_type& __state, extern_type* __to, 
-		 extern_type* __to_limit, extern_type*& __to_next) const = 0;
+		 extern_type* __to_end, extern_type*& __to_next) const = 0;
       
       virtual result
       do_in(state_type& __state, const extern_type* __from, 
 	    const extern_type* __from_end, const extern_type*& __from_next, 
-	    intern_type* __to, intern_type* __to_limit, 
+	    intern_type* __to, intern_type* __to_end, 
 	    intern_type*& __to_next) const = 0;
       
       virtual int 
@@ -255,6 +262,7 @@ namespace std
     {
     public:      
       // Types:
+      typedef codecvt_base::result			result;
       typedef _InternT intern_type;
       typedef _ExternT extern_type;
       typedef _StateT  state_type;
@@ -275,11 +283,219 @@ namespace std
     locale::id codecvt<_InternT, _ExternT, _StateT>::id;
 
   // partial specialization
+  // This specialization takes advantage of iconv to provide code
+  // conversions between a large number of character encodings.
   template<typename _InternT, typename _ExternT>
-  class codecvt<_InternT, _ExternT, __enc_traits<_InternT, _ExternT> >
-  : public __codecvt_abstract_base<_InternT, 
-    				   _ExternT, __enc_traits<_InternT, _ExternT> >
-  { };
+    class codecvt<_InternT, _ExternT, __enc_traits>
+    : public __codecvt_abstract_base<_InternT, _ExternT, __enc_traits>
+    {
+    public:      
+      // Types:
+      typedef codecvt_base::result			result;
+      typedef _InternT 					intern_type;
+      typedef _ExternT 					extern_type;
+      typedef __enc_traits 				state_type;
+      typedef __enc_traits::__conv_type 		__conv_type;
+      typedef __enc_traits				__enc_type;
+
+      // Data Members:
+      static locale::id 		id;
+
+      explicit 
+      codecvt(size_t __refs = 0)
+      : __codecvt_abstract_base<intern_type, extern_type, state_type>(__refs)
+      { }
+
+      explicit 
+      codecvt(__enc_type* __enc, size_t __refs = 0)
+      : __codecvt_abstract_base<intern_type, extern_type, state_type>(__refs)
+      { }
+
+    protected:
+      virtual 
+      ~codecvt() { }
+
+      virtual result
+      do_out(state_type& __state, const intern_type* __from, 
+	     const intern_type* __from_end, const intern_type*& __from_next,
+	     extern_type* __to, extern_type* __to_end,
+	     extern_type*& __to_next) const;
+
+      virtual result
+      do_unshift(state_type& __state, extern_type* __to, 
+		 extern_type* __to_end, extern_type*& __to_next) const;
+
+      virtual result
+      do_in(state_type& __state, const extern_type* __from, 
+	    const extern_type* __from_end, const extern_type*& __from_next,
+	    intern_type* __to, intern_type* __to_end, 
+	    intern_type*& __to_next) const;
+
+      virtual int 
+      do_encoding() const throw();
+
+      virtual bool 
+      do_always_noconv() const throw();
+
+      virtual int 
+      do_length(const state_type&, const extern_type* __from, 
+		const extern_type* __end, size_t __max) const;
+
+      virtual int 
+      do_max_length() const throw();
+    };
+
+  template<typename _InternT, typename _ExternT>
+    locale::id 
+    codecvt<_InternT, _ExternT, __enc_traits>::id;
+
+  template<typename _InternT, typename _ExternT>
+    codecvt_base::result
+    codecvt<_InternT, _ExternT, __enc_traits>::
+    do_out(state_type& __state, const intern_type* __from, 
+	   const intern_type* __from_end, const intern_type*& __from_next,
+	   extern_type* __to, extern_type* __to_end,
+	   extern_type*& __to_next) const
+    {
+      result __ret = error;
+      if (__state._M_good())
+	{
+	  typedef state_type::__conv_type	__conv_type;
+	  const __conv_type* __desc = __state._M_get_out_descriptor();
+	  const size_t __fmultiple = sizeof(intern_type) / sizeof(char);
+	  size_t __flen = __fmultiple * (__from_end - __from);
+	  const size_t __tmultiple = sizeof(extern_type) / sizeof(char);
+	  size_t __tlen = __tmultiple * (__to_end - __to); 
+	  
+	  // Argument list for iconv specifies a byte sequence. Thus,
+	  // all to/from arrays must be brutally casted to char*.
+	  const char* __cfrom = reinterpret_cast<const char*>(__from);
+	  char* __cto = reinterpret_cast<char*>(__to);
+	  size_t __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	  
+	  if (__conv != size_t(-1))
+	    {
+	      __from_next = reinterpret_cast<const intern_type*>(__cfrom);
+	      __to_next = reinterpret_cast<extern_type*>(__cto);
+	      __ret = ok;
+	    }
+	  else 
+	    {
+	      if (__flen < __from_end - __from)
+		{
+		  __from_next = reinterpret_cast<const intern_type*>(__cfrom);
+		  __to_next = reinterpret_cast<extern_type*>(__cto);
+		  __ret = partial;
+		}
+	      else
+		__ret = error;
+	    }
+	}
+      return __ret; 
+    }
+
+  template<typename _InternT, typename _ExternT>
+    codecvt_base::result
+    codecvt<_InternT, _ExternT, __enc_traits>::
+    do_unshift(state_type& __state, extern_type* __to, 
+	       extern_type* __to_end, extern_type*& __to_next) const
+    {
+      result __ret = error;
+      if (__state._M_good())
+	{
+	  typedef state_type::__conv_type	__conv_type;
+	  const __conv_type* __desc = __state._M_get_in_descriptor();
+	  const size_t __tmultiple = sizeof(intern_type) / sizeof(char);
+	  size_t __tlen = __tmultiple * (__to_end - __to); 
+	  
+	  // Argument list for iconv specifies a byte sequence. Thus,
+	  // all to/from arrays must be brutally casted to char*.
+	  char* __cto = reinterpret_cast<char*>(__to);
+	  size_t __conv = iconv(*__desc, NULL, NULL, &__cto, &__tlen); 
+	  
+	  if (__conv != size_t(-1))
+	    {
+	      __to_next = reinterpret_cast<extern_type*>(__cto);
+	      __ret = ok;
+	    }
+	  else 
+	    __ret = error;
+	}
+      return __ret; 
+    }
+   
+  template<typename _InternT, typename _ExternT>
+    codecvt_base::result
+    codecvt<_InternT, _ExternT, __enc_traits>::
+    do_in(state_type& __state, const extern_type* __from, 
+	  const extern_type* __from_end, const extern_type*& __from_next,
+	  intern_type* __to, intern_type* __to_end, 
+	  intern_type*& __to_next) const
+    { 
+      result __ret = error;
+      if (__state._M_good())
+	{
+	  typedef state_type::__conv_type	__conv_type;
+	  const __conv_type* __desc = __state._M_get_in_descriptor();
+	  const size_t __fmultiple = sizeof(extern_type) / sizeof(char);
+	  size_t __flen = __fmultiple * (__from_end - __from);
+	  const size_t __tmultiple = sizeof(intern_type) / sizeof(char);
+	  size_t __tlen = __tmultiple * (__to_end - __to); 
+	  
+	  // Argument list for iconv specifies a byte sequence. Thus,
+	  // all to/from arrays must be brutally casted to char*.
+	  const char* __cfrom = reinterpret_cast<const char*>(__from);
+	  char* __cto = reinterpret_cast<char*>(__to);
+	  size_t __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	  
+	  if (__conv != size_t(-1))
+	    {
+	      __from_next = reinterpret_cast<const extern_type*>(__cfrom);
+	      __to_next = reinterpret_cast<intern_type*>(__cto);
+	      __ret = ok;
+	    }
+	  else 
+	    {
+	      if (__flen < __from_end - __from)
+		{
+		  __from_next = reinterpret_cast<const extern_type*>(__cfrom);
+		  __to_next = reinterpret_cast<intern_type*>(__cto);
+		  __ret = partial;
+		}
+	      else
+		__ret = error;
+	    }
+	}
+      return __ret; 
+    }
+  
+  template<typename _InternT, typename _ExternT>
+    int 
+    codecvt<_InternT, _ExternT, __enc_traits>::
+    do_encoding() const throw()
+    { return 0; }
+  
+  template<typename _InternT, typename _ExternT>
+    bool 
+    codecvt<_InternT, _ExternT, __enc_traits>::
+    do_always_noconv() const throw()
+    { return false; }
+  
+  template<typename _InternT, typename _ExternT>
+    int 
+    codecvt<_InternT, _ExternT, __enc_traits>::
+    do_length(const state_type& __state, const extern_type* __from, 
+	      const extern_type* __end, size_t __max) const
+    { return min(__max, static_cast<size_t>(__end - __from)); }
+
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+// 74.  Garbled text for codecvt::do_max_length
+  template<typename _InternT, typename _ExternT>
+    int 
+    codecvt<_InternT, _ExternT, __enc_traits>::
+    do_max_length() const throw()
+    { return 1; }
+#endif
 
   // codecvt<char, char, mbstate_t> required specialization
   template<>
@@ -305,17 +521,17 @@ namespace std
       virtual result
       do_out(state_type& __state, const intern_type* __from, 
 	     const intern_type* __from_end, const intern_type*& __from_next,
-	     extern_type* __to, extern_type* __to_limit,
+	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const;
 
       virtual result
       do_unshift(state_type& __state, extern_type* __to, 
-		 extern_type* __to_limit, extern_type*& __to_next) const;
+		 extern_type* __to_end, extern_type*& __to_next) const;
 
       virtual result
       do_in(state_type& __state, const extern_type* __from, 
 	    const extern_type* __from_end, const extern_type*& __from_next,
-	    intern_type* __to, intern_type* __to_limit, 
+	    intern_type* __to, intern_type* __to_end, 
 	    intern_type*& __to_next) const;
 
       virtual int 
@@ -357,19 +573,19 @@ namespace std
       virtual result
       do_out(state_type& __state, const intern_type* __from, 
 	     const intern_type* __from_end, const intern_type*& __from_next,
-	     extern_type* __to, extern_type* __to_limit,
+	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const;
 
       virtual result
       do_unshift(state_type& __state,
-		 extern_type* __to, extern_type* __to_limit,
+		 extern_type* __to, extern_type* __to_end,
 		 extern_type*& __to_next) const;
 
       virtual result
       do_in(state_type& __state,
 	     const extern_type* __from, const extern_type* __from_end,
 	     const extern_type*& __from_next,
-	     intern_type* __to, intern_type* __to_limit,
+	     intern_type* __to, intern_type* __to_end,
 	     intern_type*& __to_next) const;
 
       virtual 

@@ -389,7 +389,7 @@ namespace std
  
   template<>
     const ctype<char>&
-    use_facet<const ctype<char> > (const locale& __loc);
+    use_facet<const ctype<char> >(const locale& __loc);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   // ctype<wchar_t> specialization
@@ -455,7 +455,7 @@ namespace std
 
   template<>
     const ctype<wchar_t>&
-    use_facet< const ctype<wchar_t> > (const locale& __loc);
+    use_facet< const ctype<wchar_t> >(const locale& __loc);
 #endif //_GLIBCPP_USE_WCHAR_T
 
   // Include host-specific ctype specializations.
@@ -1615,66 +1615,66 @@ namespace std
   template<typename _CharT>
     inline bool 
     isspace(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::space, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::space, __c); }
 
   template<typename _CharT>
     inline bool 
     isprint(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::print, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::print, __c); }
 
   template<typename _CharT>
     inline bool 
     iscntrl(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::cntrl, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::cntrl, __c); }
 
   template<typename _CharT>
     inline bool 
     isupper(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::upper, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::upper, __c); }
 
   template<typename _CharT>
     inline bool islower(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::lower, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::lower, __c); }
 
   template<typename _CharT>
     inline bool 
     isalpha(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::alpha, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::alpha, __c); }
 
   template<typename _CharT>
     inline bool 
     isdigit(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::digit, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::digit, __c); }
 
   template<typename _CharT>
     inline bool 
     ispunct(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::punct, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::punct, __c); }
 
   template<typename _CharT>
     inline bool 
     isxdigit(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::xdigit, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::xdigit, __c); }
 
   template<typename _CharT>
     inline bool 
     isalnum(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::alnum, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::alnum, __c); }
 
   template<typename _CharT>
     inline bool 
     isgraph(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).is(ctype_base::graph, __c); }
+    { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::graph, __c); }
 
   template<typename _CharT>
     inline _CharT 
     toupper(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).toupper(__c); }
+    { return use_facet<ctype<_CharT> >(__loc).toupper(__c); }
 
   template<typename _CharT>
     inline _CharT 
     tolower(_CharT __c, const locale& __loc)
-    { return use_facet<ctype<_CharT> > (__loc).tolower(__c); }
+    { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
 
 } // namespace std
 

@@ -135,6 +135,15 @@ namespace std {
   // codecvt
   template class __codecvt_abstract_base<char, char, mbstate_t>;
   template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  typedef unsigned short			unicode_t;
+  template
+    const codecvt<unicode_t, char, __enc_traits>& 
+    use_facet<codecvt<unicode_t, char, __enc_traits> >(const locale&);
+  template 
+    bool
+    has_facet<codecvt<unicode_t, char, __enc_traits> >(const locale &);
+#endif
 
   // collate
   template class _Collate<char>;
@@ -160,8 +169,8 @@ namespace std {
     use_facet<ctype<char> >(const locale& __loc);
   template
     const codecvt<char, char, mbstate_t>& 
-    use_facet<codecvt<char, char, mbstate_t> >(locale const &);
-  template 
+    use_facet<codecvt<char, char, mbstate_t> >(const locale&);
+   template 
     const num_put<char, obuf_iterator>& 
     _Use_facet_failure_handler<num_put<char, obuf_iterator> >
     (const locale &);

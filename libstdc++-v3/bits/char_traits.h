@@ -82,8 +82,8 @@ namespace std {
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
       { 
 	for (size_t __i = 0; __i < __n; ++__i)
-	  if (!eq(__s1[__i],__s2[__i]))
-	    return lt(__s1[__i],__s2[__i]) ? -1 : 1;
+	  if (!eq(__s1[__i], __s2[__i]))
+	    return lt(__s1[__i], __s2[__i]) ? -1 : 1;
 	return 0; 
       }
 

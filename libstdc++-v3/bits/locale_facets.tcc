@@ -35,10 +35,10 @@
 #include <bits/std_cerrno.h>
 #include <bits/std_cstdlib.h>   // For strof, strtold
 #include <bits/std_limits.h>    // For numeric_limits
-#include <bits/std_vector.h>
 #include <bits/std_memory.h>    // For auto_ptr
 #include <bits/sbuf_iter.h>     // For streambuf_iterators
 #include <bits/std_cctype.h>    // For isspace
+#include <bits/std_vector.h>	
 
 namespace std
 {
@@ -69,12 +69,12 @@ namespace std
     const _Facet&
     use_facet(const locale& __loc)
     {
+      typedef locale::_Impl::__vec_facet        __vec_facet;
       const locale::facet* __fp = (const _Facet*)0;    // check derivation
       locale::id& __id = _Facet::id;         // check member id
       size_t __i = __id._M_index;
-      const locale::_Impl* __tmp = __loc._M_impl;
-      if (__id._M_index >= __loc._M_impl->_M_facets->size()
-          || (__fp = (*(__tmp->_M_facets))[__i]) == 0)
+      __vec_facet* __facet = __loc._M_impl->_M_facets;
+      if (__i >= __facet->size() || (__fp = (*(__facet))[__i]) == 0)
         return _Use_facet_failure_handler<_Facet>(__loc);
       return static_cast<const _Facet&>(*__fp);
     }
@@ -86,8 +86,8 @@ namespace std
       typedef locale::_Impl::__vec_facet        __vec_facet;
       locale::id& __id = _Facet::id;         // check member id
       size_t __i = __id._M_index;
-      __vec_facet* __tmpv = __loc._M_impl->_M_facets;
-      return (__i < __tmpv->size() && (*__tmpv)[__i] != 0);
+      __vec_facet* __facet = __loc._M_impl->_M_facets;
+      return (__i < __facet->size() && (*__facet)[__i] != 0);
     }
 
   // __match_parallel
@@ -405,7 +405,6 @@ namespace std
       // We now seek "units", i.e. digits and thousands separators.
       // We may need to know if anything is found here. A leading zero
       // (removed by now) would count.
-
       bool __testunits = __testzero;
       while (__valid && __beg != __end)
         {
