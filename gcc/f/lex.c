@@ -694,7 +694,13 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 	      register unsigned bytes_used = (p - q);
 
 	      buffer_length *= 2;
-	      q = xrealloc (q, buffer_length);
+	      if (q == &buff[0])
+		{
+		  q = xmalloc (buffer_length);
+		  memcpy (q, buff, bytes_used);
+		}
+	      else
+		q = xrealloc (q, buffer_length);
 	      p = &q[bytes_used];
 	      r = &q[buffer_length];
 	    }
@@ -754,7 +760,13 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 		  register unsigned bytes_used = (p - q);
 
 		  buffer_length = bytes_used * 2;
-		  q = xrealloc (q, buffer_length);
+		  if (q == &buff[0])
+		    {
+		      q = xmalloc (buffer_length);
+		      memcpy (q, buff, bytes_used);
+		    }
+		  else
+		    q = xrealloc (q, buffer_length);
 		  p = &q[bytes_used];
 		  r = &q[buffer_length];
 		}
