@@ -1,3 +1,11 @@
+2000-09-29  Richard Henderson  <rth@cygnus.com>
+
+	* cse.c (notreg_cost): New argument outer.
+	(COST): Pass in SET to notreg_cost
+	(COST_IN): New.
+	(fold_rtx): Use COST_IN.  Prefer constants when costs
+	are the same.
+
 2000-09-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* fixinc/inclhack.def (broken_cabs): Generalize regex.
