@@ -1,5 +1,7 @@
 Fri Nov 28 10:00:27 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* arm.md (movsfcc, movdfcc): Fix "patch" lossage.
+
 	* configure.in: Fix NCR entries.
 
 Thu Nov 27 12:20:19 1997  Jeffrey A Law  (law@cygnus.com)
