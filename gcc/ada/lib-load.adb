@@ -43,7 +43,6 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
 with Stand;    use Stand;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uname;    use Uname;
 
@@ -143,7 +142,6 @@ package body Lib.Load is
         Cunit           => Cunit,
         Cunit_Entity    => Cunit_Entity,
         Dependency_Num  => 0,
-        Dependent_Unit  => False,
         Dynamic_Elab    => False,
         Error_Location  => Sloc (With_Node),
         Expected_Unit   => Spec_Name,
@@ -215,7 +213,6 @@ package body Lib.Load is
            Cunit           => Empty,
            Cunit_Entity    => Empty,
            Dependency_Num  => 0,
-           Dependent_Unit  => True,
            Dynamic_Elab    => False,
            Error_Location  => No_Location,
            Expected_Unit   => No_Name,
@@ -252,39 +249,6 @@ package body Lib.Load is
       Unump        : Unit_Number_Type;
       Fname        : File_Name_Type;
       Src_Ind      : Source_File_Index;
-
-      procedure Set_Load_Unit_Dependency (U : Unit_Number_Type);
-      --  Sets the Dependent_Unit flag unless we have a predefined unit
-      --  being loaded in High_Integrity_Mode. In this case we do not want
-      --  to create a dependency, since we have loaded the unit only
-      --  to inline stuff from it. If this is not the case, an error
-      --  message will be issued in Rtsfind in any case.
-
-      ------------------------------
-      -- Set_Load_Unit_Dependency --
-      ------------------------------
-
-      procedure Set_Load_Unit_Dependency (U : Unit_Number_Type) is
-      begin
-         --  Differentiate between pragma No_Run_Time mode (that can be
-         --  used with a standard installation), and HI-E mode which comes
-         --  with a special installation.
-
-         --  For Configurable_Run_Time_Mode set by a pragma, we do not want to
-         --  create a dependency since the binder would generate references to
-         --  these units. In the case of configurable run-time, we do want to
-         --  establish this dependency.
-
-         if Configurable_Run_Time_Mode
-           and then not Configurable_Run_Time_On_Target
-           and then not Debug_Flag_YY
-           and then Is_Internal_File_Name (Unit_File_Name (U))
-         then
-            null;
-         else
-            Units.Table (U).Dependent_Unit := True;
-         end if;
-      end Set_Load_Unit_Dependency;
 
    --  Start of processing for Load_Unit
 
@@ -547,7 +511,6 @@ package body Lib.Load is
          end if;
 
          Load_Stack.Decrement_Last;
-         Set_Load_Unit_Dependency (Unum);
          return Unum;
 
       --  Unit is not already in table, so try to open the file
@@ -574,7 +537,6 @@ package body Lib.Load is
               Cunit           => Empty,
               Cunit_Entity    => Empty,
               Dependency_Num  => 0,
-              Dependent_Unit  => False,
               Dynamic_Elab    => False,
               Error_Location  => Sloc (Error_Node),
               Expected_Unit   => Uname_Actual,
@@ -631,7 +593,6 @@ package body Lib.Load is
             --  Remove load stack entry and return the entry in the file table
 
             Load_Stack.Decrement_Last;
-            Set_Load_Unit_Dependency (Unum);
             return Unum;
 
          --  Case of file not found

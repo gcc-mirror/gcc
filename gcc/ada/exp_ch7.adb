@@ -706,6 +706,7 @@ package body Exp_Ch7 is
               or else Ekind (E) = E_Constant)
            and then Has_Simple_Protected_Object (Etype (E))
            and then not Has_Task (Etype (E))
+           and then Nkind (Parent (E)) /= N_Object_Renaming_Declaration
          then
             declare
                Typ : constant Entity_Id := Etype (E);

@@ -4122,8 +4122,7 @@ package body Exp_Aggr is
 
                --  Ada 0Y (AI-287): This case has not been analyzed???
 
-               pragma Assert (False);
-               null;
+               raise Program_Error;
             end if;
 
             --  Name in assignment is explicit dereference.
@@ -4743,11 +4742,13 @@ package body Exp_Aggr is
       Typ    : Entity_Id;
       Target : Node_Id;
       Flist  : Node_Id   := Empty;
-      Obj    : Entity_Id := Empty) return List_Id is
+      Obj    : Entity_Id := Empty) return List_Id
+   is
    begin
       if Is_Record_Type (Etype (N)) then
          return Build_Record_Aggr_Code (N, Typ, Target, Flist, Obj);
-      elsif Is_Array_Type (Etype (N)) then
+
+      else pragma Assert (Is_Array_Type (Etype (N)));
          return
            Build_Array_Aggr_Code
              (N           => N,
@@ -4757,9 +4758,6 @@ package body Exp_Aggr is
               Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)),
               Indices     => No_List,
               Flist       => Flist);
-      else
-         pragma Assert (False);
-         return New_List;
       end if;
    end Late_Expansion;
 

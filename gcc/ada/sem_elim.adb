@@ -657,7 +657,7 @@ package body Sem_Elim is
 
       --  Should never fall through, since entry should be in table
 
-      pragma Assert (False);
+      raise Program_Error;
    end Eliminate_Error_Msg;
 
    ----------------

@@ -1812,6 +1812,14 @@ package body Sem_Ch10 is
 
          null;
       end if;
+
+      --  Ada 0Y (AI-262): Remove from visibility the entity corresponding to
+      --  private_with units; they will be made visible later (just before the
+      --  private part is analyzed)
+
+      if Private_Present (N) then
+         Set_Is_Immediately_Visible (E_Name, False);
+      end if;
    end Analyze_With_Clause;
 
    ------------------------------
@@ -2226,8 +2234,12 @@ package body Sem_Ch10 is
       Item := First (Context_Items (N));
       while Present (Item) loop
 
+         --  Ada 0Y (AI-262): Allow private_with of a private child package in
+         --  public siblings
+
          if Nkind (Item) = N_With_Clause
             and then not Implicit_With (Item)
+            and then not Private_Present (Item)
             and then Is_Private_Descendant (Entity (Name (Item)))
          then
             Priv_Child := Entity (Name (Item));
@@ -2422,7 +2434,7 @@ package body Sem_Ch10 is
             Mark_Rewrite_Insertion (Withn);
          end if;
 
-      elsif Nkind (Nam) = N_Selected_Component then
+      else pragma Assert (Nkind (Nam) = N_Selected_Component);
          Withn :=
            Make_With_Clause
            (Loc,
@@ -2453,10 +2465,6 @@ package body Sem_Ch10 is
 
             Expand_Limited_With_Clause (Prefix (Nam), N);
          end if;
-
-      else
-         null;
-         pragma Assert (False);
       end if;
 
       New_Nodes_OK := New_Nodes_OK - 1;
@@ -3154,6 +3162,12 @@ package body Sem_Ch10 is
       Clause : Node_Id;
 
    begin
+      if Debug_Flag_I then
+         Write_Str ("install private with clauses of ");
+         Write_Name (Chars (P));
+         Write_Eol;
+      end if;
+
       if Nkind (Parent (Decl)) = N_Compilation_Unit then
          Clause := First (Context_Items (Parent (Decl)));
          while Present (Clause) loop
@@ -3176,36 +3190,6 @@ package body Sem_Ch10 is
       Item : Node_Id;
       Id   : Entity_Id;
       Prev : Entity_Id;
-
-      function Is_Ancestor (E : Entity_Id) return Boolean;
-      --  Determine whether the scope of a child unit is an ancestor of
-      --  the current unit.
-      --  Shouldn't this be somewhere more general ???
-
-      -----------------
-      -- Is_Ancestor --
-      -----------------
-
-      function Is_Ancestor (E : Entity_Id) return Boolean is
-         Par : Entity_Id;
-
-      begin
-         Par := U_Name;
-         while Present (Par)
-           and then Par /= Standard_Standard
-         loop
-            if Par = E then
-               return True;
-            end if;
-
-            Par := Scope (Par);
-         end loop;
-
-         return False;
-      end Is_Ancestor;
-
-   --  Start of processing for Install_Siblings
-
    begin
       --  Iterate over explicit with clauses, and check whether the
       --  scope of each entity is an ancestor of the current unit.
@@ -3219,13 +3203,21 @@ package body Sem_Ch10 is
             Id := Entity (Name (Item));
 
             if Is_Child_Unit (Id)
-              and then Is_Ancestor (Scope (Id))
+              and then Is_Ancestor_Package (Scope (Id), U_Name)
             then
                Set_Is_Immediately_Visible (Id);
-               Prev := Current_Entity (Id);
+
+               --  Ada 0Y (AI-262): Make visible the private entities of
+               --  private-withed siblings
+
+               if Private_Present (Item) then
+                  Install_Private_Declarations (Id);
+               end if;
 
                --  Check for the presence of another unit in the context,
                --  that may be inadvertently hidden by the child.
+
+               Prev := Current_Entity (Id);
 
                if Present (Prev)
                  and then Is_Immediately_Visible (Prev)
@@ -3257,7 +3249,7 @@ package body Sem_Ch10 is
             --  the child immediately visible.
 
             elsif Is_Child_Unit (Scope (Id))
-              and then Is_Ancestor (Scope (Scope (Id)))
+              and then Is_Ancestor_Package (Scope (Scope (Id)), U_Name)
             then
                Set_Is_Immediately_Visible (Scope (Id));
             end if;
@@ -3327,8 +3319,7 @@ package body Sem_Ch10 is
             return;
 
          when others =>
-            pragma Assert (False);
-            null;
+            raise Program_Error;
       end case;
 
       P := Defining_Unit_Name (Specification (P_Unit));
@@ -3472,9 +3463,25 @@ package body Sem_Ch10 is
       P     : constant Entity_Id := Scope (Uname);
 
    begin
+      --  Ada 0Y (AI-262): Do not install the private withed unit if we are
+      --  compiling a package declaration and the Private_With_OK flag was not
+      --  set by the caller. These declarations will be installed later (before
+      --  analyzing the private part of the package).
+
+      if Private_Present (With_Clause)
+        and then Nkind (Cunit (Current_Sem_Unit)) = N_Package_Declaration
+        and then not (Private_With_OK)
+      then
+         return;
+      end if;
 
       if Debug_Flag_I then
-         Write_Str ("install withed unit ");
+         if Private_Present (With_Clause) then
+            Write_Str ("install private withed unit ");
+         else
+            Write_Str ("install withed unit ");
+         end if;
+
          Write_Name (Chars (Uname));
          Write_Eol;
       end if;
@@ -3492,17 +3499,13 @@ package body Sem_Ch10 is
       end if;
 
       if P /= Standard_Standard then
-         if Private_Present (With_Clause)
-           and then not (Private_With_OK)
-         then
-            return;
 
          --  If the unit is not analyzed after analysis of the with clause,
          --  and it is an instantiation, then it awaits a body and is the main
          --  unit. Its appearance in the context of some other unit indicates
          --  a circular dependency (DEC suite perversity).
 
-         elsif not Analyzed (Uname)
+         if not Analyzed (Uname)
            and then Nkind (Parent (Uname)) = N_Package_Instantiation
          then
             Error_Msg_N
@@ -3520,7 +3523,6 @@ package body Sem_Ch10 is
                Set_Is_Visible_Child_Unit
                  (Related_Instance
                    (Defining_Entity (Unit (Library_Unit (With_Clause)))));
-               null;
             end if;
 
             --  The parent unit may have been installed already, and
@@ -3909,8 +3911,7 @@ package body Sem_Ch10 is
             return;
 
          when others =>
-            pragma Assert (False);
-            null;
+            raise Program_Error;
       end case;
 
       --  Check if the chain is already built

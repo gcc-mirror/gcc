@@ -68,7 +68,6 @@ package body Lib.Writ is
          Cunit           => Empty,
          Cunit_Entity    => Empty,
          Dependency_Num  => 0,
-         Dependent_Unit  => True,
          Dynamic_Elab    => False,
          Fatal_Error     => False,
          Generate_Code   => False,
@@ -122,7 +121,6 @@ package body Lib.Writ is
         Cunit           => Empty,
         Cunit_Entity    => Empty,
         Dependency_Num  => 0,
-        Dependent_Unit  => True,
         Dynamic_Elab    => False,
         Fatal_Error     => False,
         Generate_Code   => False,
@@ -619,7 +617,6 @@ package body Lib.Writ is
 
             if Unit_Name (J) /= No_Name
               and then (With_Flags (J) or else Unit_Name (J) = Pname)
-              and then Units.Table (J).Dependent_Unit
             then
                Num_Withs := Num_Withs + 1;
                With_Table (Num_Withs) := J;
@@ -1042,11 +1039,9 @@ package body Lib.Writ is
             Write_Info_Initiate ('D');
             Write_Info_Char (' ');
 
-            --  Normal case of a dependent unit entry with a source index
+            --  Normal case of a unit entry with a source index
 
-            if Sind /= No_Source_File
-              and then Units.Table (Unum).Dependent_Unit
-            then
+            if Sind /= No_Source_File then
                Write_Info_Name (File_Name (Sind));
                Write_Info_Tab (25);
                Write_Info_Str (String (Time_Stamp (Sind)));
@@ -1078,8 +1073,8 @@ package body Lib.Writ is
                   Write_Info_Name (Reference_Name (Sind));
                end if;
 
-            --  Case where there is no source index (happens for missing files)
-            --  Also come here for non-dependent units.
+               --  Case where there is no source index (happens for missing
+               --  files). In this case we write a dummy time stamp.
 
             else
                Write_Info_Name (Unit_File_Name (Unum));

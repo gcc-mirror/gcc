@@ -2444,13 +2444,12 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 
   field_list
     = chainon (field_list,
-	       make_descriptor_field ("POINTER",
-				      build_pointer_type (type),
-				      record_type,
-				      build1 (ADDR_EXPR,
-					      build_pointer_type (type),
-					      build (PLACEHOLDER_EXPR,
-						     type))));
+	       make_descriptor_field
+	       ("POINTER",
+		build_pointer_type_for_mode (type, SImode, false), record_type,
+		build1 (ADDR_EXPR,
+			build_pointer_type_for_mode (type, SImode, false),
+			build (PLACEHOLDER_EXPR, type))));
 
   switch (mech)
     {
@@ -2520,8 +2519,13 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
       field_list
 	= chainon (field_list,
 		   make_descriptor_field
-		   ("A0", build_pointer_type (inner_type), record_type,
-		    build1 (ADDR_EXPR, build_pointer_type (inner_type), tem)));
+		   ("A0",
+		    build_pointer_type_for_mode (inner_type, SImode, false),
+		    record_type,
+		    build1 (ADDR_EXPR,
+			    build_pointer_type_for_mode (inner_type, SImode,
+							 false),
+			    tem)));
 
       /* Next come the addressing coefficients.  */
       tem = size_int (1);

@@ -1,3 +1,91 @@
+2004-05-14  Robert Dewar  <dewar@gnat.com>
+
+	* gnat_ugn.texi: Minor change to -gnatS documentation
+
+	* sprint.adb: Remove some instances of Assert (False) and for this
+	purpose replace them by output of a ??? string.
+
+	* checks.adb, exp_aggr.adb, sem_elim.adb: Remove useless pragma
+	Assert (False).
+
+	* lib-writ.adb, lib-load.adb, lib.ads, lib.adb: Remove Dependent_Unit
+	flag processing. This was suppressing required dependencies in
+	No_Run_Time mode and is not needed since the binder does not generate
+	references for things in libgnat anyway.
+
+	* sem_ch3.adb (Access_Type_Declaration): Reorganize code to avoid GCC
+	warning.
+
+2004-05-14  Thomas Quinot  <quinot@act-europe.fr>
+
+	* gnat_ugn.texi: Document AIX-specific issue with initialization of
+	resolver library.
+
+	* exp_ch4.adb (Insert_Dereference_Action): Do not generate dereference
+	action for the case of an actual parameter in an init proc call.
+
+2004-05-14  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): If prefix is a protected
+	subtype, check visible entities in base type.
+
+	* exp_ch7.adb (Clean_Simple_Protected_Objects): Do not generate cleanup
+	actions if the object is a renaming.
+
+	* sem_ch12.adb (Same_Instantiated_Entity): Predicate for
+	Check_Formal_Package_Instance, to determine more precisely when the
+	formal and the actual denote the same entity.
+
+2004-05-14  Javier Miranda  <miranda@gnat.com>
+
+	* par-ch10.adb (P_Context_Clause): Complete documentation on AI-262
+
+	* sem_ch10.adb (Analyze_With_Clause): After analyzed, the entity
+	corresponding to a private_with must be removed from visibility; it
+	will be made visible later, just before we analyze the private part of
+	the package.
+	(Check_Private_Child_Unit): Allow private_with clauses in public
+	siblings.
+	(Install_Siblings): Make visible the private entities of private-withed
+	siblings.
+	(Install_Withed_Unit): Do not install the private withed unit if we
+	are compiling a package declaration and the Private_With_OK flag was
+	not set by the caller. These declarations will be installed later,
+	just before we analyze the private part of the package.
+
+	* sem_ch3.adb (Analyze_Object_Declaration): In case of errors detected
+	during the evaluation of the expression that initializes the object,
+	decorate it with the expected type to avoid cascade errors.
+	Code cleanup.
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): If we are compiling a library
+	subprogram we have to install the private_with clauses after its
+	specification has been analyzed (as documented in AI-262.TXT).
+
+	* sem_ch8.adb (Has_Private_With): New function. Determines if the
+	current compilation unit has a private with on a given entity.
+	(Find_Direct_Name): Detect the Beaujolais problem described in
+	AI-262.TXT
+
+	* sem_utils.ads, sem_util.adb (Is_Ancestor_Package): New function. It
+	provides the functionality of the function Is_Ancestor that was
+	previously available in sem_ch10. It has been renamed to avoid
+	overloading.
+
+	* sprint.adb (Sprint_Node_Actual): Print limited_with clauses
+
+2004-05-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* utils.c (build_vms_descriptor): Use SImode pointers.
+
+2004-05-14  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* gnat_ugn.texi: Revised chapter "GNAT and Libraries".
+
+2004-05-14  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-05-14  Arnaud Charlet  <charlet@act-europe.fr>
 
 	Renaming of target specific files for clarity

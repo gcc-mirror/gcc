@@ -2768,7 +2768,8 @@ package body Sem_Ch4 is
             <<Next_Comp>>
                Next_Entity (Comp);
                exit when not In_Scope
-                 and then Comp = First_Private_Entity (Prefix_Type);
+                 and then
+                   Comp = First_Private_Entity (Base_Type (Prefix_Type));
          end loop;
 
          Set_Is_Overloaded (N, Is_Overloaded (Sel));
