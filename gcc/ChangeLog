@@ -1,3 +1,9 @@
+2003-01-08  Danny Smith  <dannysmith@users.sourceforge.net>
+
+        PR optimization/8750
+        * config/i386/i386.c (ix86_expand_prologue): Don't allow
+        scheduling pass to move insns across __alloca call.
+
 2003-01-08  Dale Johannesen  <dalej@apple.com>
 
         * config/rs6000/rs6000.md:  Replace *store_multiple_string
