@@ -1,3 +1,9 @@
+1999-11-30  Tom Tromey  <tromey@cygnus.com>
+
+	* posix-threads.cc (_Jv_MutexInit): Use _Jv_PthreadGetMutex to get
+	mutex to initialize.  Initialize `count' if required.
+	Fixes PR libgcj/98.
+
 1999-11-27  Per Bothner  <per@bothner.com>
 
 	* exception.cc:  Remove prototype declarations for malloc and free.
