@@ -1952,11 +1952,7 @@ struct tree_binfo GTY (())
 #define DECL_SOURCE_LOCATION(NODE) (DECL_CHECK (NODE)->decl.locus)
 #define DECL_SOURCE_FILE(NODE) LOCATION_FILE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_LINE(NODE) LOCATION_LINE (DECL_SOURCE_LOCATION (NODE))
-#if 0
-/* Should be: #ifdef USE_MAPPED_LOCATION
-   However, there appears to be a jc1 bug that this would expose.
-   (It prevents bookstrapping because dwarf2out tries to emit a
-   non-found class.) FIXME. */
+#ifdef USE_MAPPED_LOCATION
 #define DECL_IS_BUILTIN(DECL) \
   (DECL_SOURCE_LOCATION (DECL) <= BUILTINS_LOCATION)
 #else
