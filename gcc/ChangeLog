@@ -1,3 +1,8 @@
+2003-08-26  Andreas Krebbel <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*fmadddf", "*fmsubdf", 
+	"*fmaddsf", "*fmsubsf"): New insns.
+
 2003-08-26  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold <MULT_EXPR>): Optimize (C1/X)*C2 into
