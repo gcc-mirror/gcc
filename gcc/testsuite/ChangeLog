@@ -1,5 +1,7 @@
 2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcc.dg/spe1.c: New test.
+
 	PR c++/11670
 	* g++.dg/expr/cast2.C: New test.
 	
