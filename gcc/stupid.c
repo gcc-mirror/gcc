@@ -214,6 +214,8 @@ stupid_life_analysis (f, nregs, file)
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (call_used_regs[i])
 	      regs_live[i] = 0;
+
+	  stupid_mark_refs (CALL_INSN_FUNCTION_USAGE (insn), insn);
 	}
 
       /* Update which hard regs are currently live
@@ -385,9 +387,14 @@ static void
 stupid_mark_refs (x, insn)
      rtx x, insn;
 {
-  register RTX_CODE code = GET_CODE (x);
+  register RTX_CODE code;
   register char *fmt;
   register int regno, i;
+
+  if (x == 0)
+    return;
+
+  code = GET_CODE (x);
 
   if (code == SET || code == CLOBBER)
     {
