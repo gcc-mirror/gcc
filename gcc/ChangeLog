@@ -1,3 +1,7 @@
+2004-09-17  Sylvain Pion  <Sylvain.Pion@sophia.inria.fr>
+
+        * doc/extend.texi: Fix duplicated word.
+
 2004-09-17  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* doc/invoke.texi: Remove stray explanation on
