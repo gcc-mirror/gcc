@@ -1,3 +1,10 @@
+2004-11-15  Tom Tromey  <tromey@redhat.com>
+
+	* decl.c (instn_ptr_type_node): Removed.
+	(lineNumbers_ptr_type_node): Removed.
+	(jint_type): Removed.
+	(jint_ptr_type): Removed.
+
 2004-11-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR java/15576
