@@ -1,3 +1,7 @@
+2002-12-18  Loren James Rittle  <rittle@labs.mot.com>
+
+	* gcc.c (validate_switches): Robustify against skipping past '\0'.
+
 2002-12-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* config.gcc: Set extra_objs in the generic Darwin rule,

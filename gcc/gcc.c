@@ -6808,11 +6808,11 @@ next_member:
 	  switches[i].validated = 1;
     }
 
-  p++;
-  if (p[-1] == '|' || p[-1] == '&')
+  if (*p) p++;
+  if (*p && (p[-1] == '|' || p[-1] == '&'))
     goto next_member;
 
-  if (p[-1] == ':')
+  if (*p && p[-1] == ':')
     {
       while (*p && *p != ';' && *p != '}')
 	{
@@ -6824,11 +6824,11 @@ next_member:
 	      else if (p[0] == 'W' && p[1] == '{')
 		p = validate_switches (p+2);
 	    }
-	  p++;
+	  if (*p) p++;
 	}
 
-      p++;
-      if (p[-1] == ';')
+      if (*p) p++;
+      if (*p && p[-1] == ';')
 	goto next_member;
     }
 
