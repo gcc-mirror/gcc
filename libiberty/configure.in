@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script
 
 AC_PREREQ(2.13)
-AC_INIT(pexecute.c)
+AC_INIT(xmalloc.c)
 
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
@@ -424,6 +424,17 @@ if test -z "${setobjs}"; then
   done
   AC_CHECK_FUNCS($checkfuncs)
 fi
+
+# Figure out which version of pexecute to use.
+case "${host}" in
+     *-*-cygwin*)		pexecute=pex-cygwin.o ;;
+     *-*-mingw* | *-*-winnt*)	pexecute=pex-win32.o  ;;
+     *-*-msdosdjgpp*)		pexecute=pex-djgpp.o  ;;
+     *-*-msdos*)		pexecute=pex-msdos.o  ;;
+     *-*-os2-emx*)		pexecute=pex-os2.o    ;;
+     *)				pexecute=pex-unix.o   ;;
+esac
+AC_SUBST(pexecute)
 
 libiberty_AC_FUNC_STRNCMP
 

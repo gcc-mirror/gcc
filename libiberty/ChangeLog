@@ -1,3 +1,24 @@
+2003-01-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (CFILES): Add pex-*.c.
+	(REQUIRED_OFILES): Change pexecute.o to @pexecute@
+	(CONFIGURED_OFILES): Add pex-*.o.
+	(TEXIFILES): Add pexecute.txh.
+	(pexecute.o): Delete rule.
+	(pex-cygwin.o, pex-djgpp.o, pex-mpw.o, pex-msdos.o, pex-os2.o,
+	pex-unix.o, pex-win32.o): New rules.
+	* configure.in: Change AC_INIT argument to xmalloc.c.
+	Compute appropriate pexecute implementation and substitute it
+	as @pexecute@.
+
+	* pexecute.c: Split up into...
+	* pex-cygwin.c, pex-djgpp.c, pex-mpw.c, pex-msdos.c, pex-os2.c,
+	pex-unix.c, pex-win32.c, pex-common.h, pexecute.txh: ... these
+	new files.
+
+	* functions.texi: Regenerate.
+	* configure: Regenerate.
+
 2003-01-20  Josef Zlomek  <zlomekj@suse.cz>
 
 	* hashtab.c (htab_expand): Fix allocation of new entries.

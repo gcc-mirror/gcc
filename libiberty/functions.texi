@@ -483,7 +483,7 @@ reading and writing.
 
 @end deftypefn
 
-@c pexecute.c:67
+@c pexecute.txh:1
 @deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int flags)
 
 Executes a program.
@@ -498,14 +498,15 @@ use if needed.  This is currently only needed for MS-DOS ports that
 don't use @code{go32} (do any still exist?).  Ports that don't need it
 can pass @code{NULL}.
 
-(@code{@var{flags} & PEXECUTE_SEARCH}) is non-zero if @env{PATH} should be searched
-(??? It's not clear that GCC passes this flag correctly).  (@code{@var{flags} &
-PEXECUTE_FIRST}) is nonzero for the first process in chain.
-(@code{@var{flags} & PEXECUTE_FIRST}) is nonzero for the last process
-in chain.  The first/last flags could be simplified to only mark the
-last of a chain of processes but that requires the caller to always
-mark the last one (and not give up early if some error occurs).
-It's more robust to require the caller to mark both ends of the chain.
+(@code{@var{flags} & PEXECUTE_SEARCH}) is non-zero if @env{PATH}
+should be searched (??? It's not clear that GCC passes this flag
+correctly).  (@code{@var{flags} & PEXECUTE_FIRST}) is nonzero for the
+first process in chain.  (@code{@var{flags} & PEXECUTE_FIRST}) is
+nonzero for the last process in chain.  The first/last flags could be
+simplified to only mark the last of a chain of processes but that
+requires the caller to always mark the last one (and not give up
+early if some error occurs).  It's more robust to require the caller
+to mark both ends of the chain.
 
 The result is the pid on systems like Unix where we
 @code{fork}/@code{exec} and on systems like WIN32 and OS/2 where we
@@ -540,21 +541,23 @@ name is unset/removed.
 
 @end deftypefn
 
-@c pexecute.c:104
+@c pexecute.txh:39
 @deftypefn Extension int pwait (int @var{pid}, int *@var{status}, int @var{flags})
 
 Waits for a program started by @code{pexecute} to finish.
 
 @var{pid} is the process id of the task to wait for. @var{status} is
-the `status' argument to wait. @var{flags} is currently unused (allows
-future enhancement without breaking upward compatibility).  Pass 0 for now.
+the `status' argument to wait. @var{flags} is currently unused
+(allows future enhancement without breaking upward compatibility).
+Pass 0 for now.
 
 The result is the pid of the child reaped, or -1 for failure
 (@code{errno} says why).
 
-On systems that don't support waiting for a particular child, @var{pid} is
-ignored.  On systems like MS-DOS that don't really multitask @code{pwait}
-is just a mechanism to provide a consistent interface for the caller.
+On systems that don't support waiting for a particular child,
+@var{pid} is ignored.  On systems like MS-DOS that don't really
+multitask @code{pwait} is just a mechanism to provide a consistent
+interface for the caller.
 
 @end deftypefn
 
