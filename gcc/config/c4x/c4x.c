@@ -1165,8 +1165,8 @@ c4x_expand_epilogue()
       
       if (jump)
 	{
-	  insn = emit_insn (gen_indirect_jump (
-					       gen_rtx_REG (QImode, R2_REGNO)));
+	  insn = emit_jump_insn (gen_return_indirect_internal
+				 (gen_rtx_REG (QImode, R2_REGNO)));
           RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else
