@@ -252,7 +252,7 @@ static void profile_function	PARAMS ((FILE *));
 static void profile_after_prologue PARAMS ((FILE *));
 static void add_bb		PARAMS ((FILE *));
 static int add_bb_string	PARAMS ((const char *, int));
-static void output_source_line	PARAMS ((FILE *, rtx));
+static void output_source_line	PARAMS ((rtx));
 static rtx walk_alter_subreg	PARAMS ((rtx));
 static void output_asm_name	PARAMS ((void));
 static void output_operand	PARAMS ((rtx, int));
@@ -1606,7 +1606,7 @@ final_start_function (first, file, optimize)
       /* But only output line number for other debug info types if -g2
 	 or better.  */
       if (NOTE_LINE_NUMBER (first) != NOTE_INSN_DELETED)
-	output_source_line (file, first);
+	output_source_line (first);
 
 #ifdef LEAF_REG_REMAP
   if (current_function_uses_only_leaf_regs)
@@ -1757,50 +1757,22 @@ profile_function (file)
    even though not all of them are needed.  */
 
 void
-final_end_function (first, file, optimize)
-     rtx first ATTRIBUTE_UNUSED;
-     FILE *file ATTRIBUTE_UNUSED;
-     int optimize ATTRIBUTE_UNUSED;
+final_end_function ()
 {
   app_disable ();
 
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
-    sdbout_end_function (high_function_linenum);
-#endif
-
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
-    dwarfout_end_function ();
-#endif
-
-#ifdef XCOFF_DEBUGGING_INFO
-  if (write_symbols == XCOFF_DEBUG)
-    xcoffout_end_function (file, high_function_linenum);
-#endif
+  (*debug_hooks->end_function) (high_function_linenum);
 
   /* Finally, output the function epilogue:
      code to restore the stack frame and return to the caller.  */
-  (*targetm.asm_out.function_epilogue) (file, get_frame_size ());
+  (*targetm.asm_out.function_epilogue) (asm_out_file, get_frame_size ());
 
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
-    sdbout_end_epilogue ();
-#endif
+  /* And debug output.  */
+  (*debug_hooks->end_epilogue) ();
 
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
-    dwarfout_end_epilogue ();
-#endif
-
-#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
-  if (dwarf2out_do_frame ())
+#if defined (DWARF2_UNWIND_INFO)
+  if (write_symbols != DWARF2_DEBUG && dwarf2out_do_frame ())
     dwarf2out_end_epilogue ();
-#endif
-
-#ifdef XCOFF_DEBUGGING_INFO
-  if (write_symbols == XCOFF_DEBUG)
-    xcoffout_end_epilogue (file);
 #endif
 
   bb_func_label_num = -1;	/* not in function, nuke label # */
@@ -2140,7 +2112,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      high_block_linenum = last_linenum;
 
 	      /* Output debugging info about the symbol-block beginning.  */
-	      (*debug_hooks->begin_block) (file, last_linenum, n);
+	      (*debug_hooks->begin_block) (last_linenum, n);
 
 	      /* Mark this block as output.  */
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
@@ -2162,7 +2134,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      if (block_depth < 0)
 		abort ();
 
-	      (*debug_hooks->end_block) (file, high_block_linenum, n);
+	      (*debug_hooks->end_block) (high_block_linenum, n);
 	    }
 	  break;
 
@@ -2219,7 +2191,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    /* Output this line note if it is the first or the last line
 	       note in a row.  */
 	    if (!note_after)
-	      output_source_line (file, insn);
+	      output_source_line (insn);
 	  }
 	  break;
 	}
@@ -2934,8 +2906,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
    based on the NOTE-insn INSN, assumed to be a line number.  */
 
 static void
-output_source_line (file, insn)
-     FILE *file ATTRIBUTE_UNUSED;
+output_source_line (insn)
      rtx insn;
 {
   register const char *filename = NOTE_SOURCE_FILE (insn);
@@ -2953,47 +2924,7 @@ output_source_line (file, insn)
   high_block_linenum = MAX (last_linenum, high_block_linenum);
   high_function_linenum = MAX (last_linenum, high_function_linenum);
 
-  if (write_symbols != NO_DEBUG)
-    {
-#ifdef SDB_DEBUGGING_INFO
-      if (write_symbols == SDB_DEBUG
-#if 0 /* People like having line numbers even in wrong file!  */
-	  /* COFF can't handle multiple source files--lose, lose.  */
-	  && !strcmp (filename, main_input_filename)
-#endif
-	  /* COFF relative line numbers must be positive.  */
-	  && last_linenum > sdb_begin_function_line)
-	{
-#ifdef ASM_OUTPUT_SOURCE_LINE
-	  ASM_OUTPUT_SOURCE_LINE (file, last_linenum);
-#else
-	  fprintf (file, "\t.ln\t%d\n",
-		   ((sdb_begin_function_line > -1)
-		    ? last_linenum - sdb_begin_function_line : 1));
-#endif
-	}
-#endif
-
-#if defined (DBX_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG)
-	dbxout_source_line (file, filename, NOTE_LINE_NUMBER (insn));
-#endif
-
-#if defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == XCOFF_DEBUG)
-	xcoffout_source_line (file, filename, insn);
-#endif
-
-#ifdef DWARF_DEBUGGING_INFO
-      if (write_symbols == DWARF_DEBUG)
-	dwarfout_line (filename, NOTE_LINE_NUMBER (insn));
-#endif
-
-#ifdef DWARF2_DEBUGGING_INFO
-      if (write_symbols == DWARF2_DEBUG)
-	dwarf2out_line (filename, NOTE_LINE_NUMBER (insn));
-#endif
-    }
+  (*debug_hooks->source_line) (filename, insn);
 }
 
 /* For each operand in INSN, simplify (subreg (reg)) so that it refers

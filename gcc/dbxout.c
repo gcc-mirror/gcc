@@ -284,10 +284,11 @@ static int current_sym_nchars;
 #define CONTIN do { } while (0)
 #endif
 
-static void dbxout_init			PARAMS ((FILE *, const char *));
-static void dbxout_finish		PARAMS ((FILE *, const char *));
+static void dbxout_init			PARAMS ((const char *));
+static void dbxout_finish		PARAMS ((const char *));
 static void dbxout_start_source_file	PARAMS ((unsigned, const char *));
 static void dbxout_end_source_file	PARAMS ((unsigned));
+static void dbxout_source_line		PARAMS ((const char *, rtx));
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void dbxout_function_end		PARAMS ((void));
 #endif
@@ -314,8 +315,8 @@ static void dbxout_really_begin_function PARAMS ((tree));
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
 
-static void dbxout_begin_block		PARAMS ((FILE *, unsigned, unsigned));
-static void dbxout_end_block		PARAMS ((FILE *, unsigned, unsigned));
+static void dbxout_begin_block		PARAMS ((unsigned, unsigned));
+static void dbxout_end_block		PARAMS ((unsigned, unsigned));
 
 struct gcc_debug_hooks dbx_debug_hooks =
 {
@@ -326,7 +327,10 @@ struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_start_source_file,
   dbxout_end_source_file,
   dbxout_begin_block,
-  dbxout_end_block
+  dbxout_end_block,
+  dbxout_source_line,
+  debug_nothing_void,		/* end_epilogue */
+  debug_nothing_int		/* end function */
 };
 #endif /* DBX_DEBUGGING_INFO  */
 
@@ -340,7 +344,10 @@ struct gcc_debug_hooks xcoff_debug_hooks =
   dbxout_start_source_file,
   dbxout_end_source_file,
   xcoffout_begin_block,
-  xcoffout_end_block
+  xcoffout_end_block,
+  xcoffout_source_line,
+  xcoffout_end_epilogue,
+  xcoffout_end_function
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 
@@ -371,14 +378,13 @@ dbxout_function_end ()
    Initialize `typevec' and output the standard data types of C.  */
 
 static void
-dbxout_init (asm_file, input_file_name)
-     FILE *asm_file;
+dbxout_init (input_file_name)
      const char *input_file_name;
 {
   char ltext_label_name[100];
   tree syms = getdecls ();
 
-  asmfile = asm_file;
+  asmfile = asm_out_file;
 
   typevec_len = 100;
   typevec = (struct typeinfo *) xcalloc (typevec_len, sizeof typevec[0]);
@@ -556,18 +562,19 @@ dbxout_source_file (file, filename)
 /* Output a line number symbol entry into output stream FILE, 
    for source file FILENAME and line number LINENO.  */
 
-void
-dbxout_source_line (file, filename, lineno)
-     FILE *file;
+static void
+dbxout_source_line (filename, note)
      const char *filename;
-     int lineno;
+     rtx note;
 {
-  dbxout_source_file (file, filename);
+  unsigned int lineno = NOTE_LINE_NUMBER (note);
+
+  dbxout_source_file (asmfile, filename);
 
 #ifdef ASM_OUTPUT_SOURCE_LINE
-  ASM_OUTPUT_SOURCE_LINE (file, lineno);
+  ASM_OUTPUT_SOURCE_LINE (asmfile, lineno);
 #else
-  fprintf (file, "%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
+  fprintf (asmfile, "%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
 #endif
 }
 
@@ -576,23 +583,21 @@ dbxout_source_line (file, filename, lineno)
 /* Describe the beginning of an internal block within a function.  */
 
 static void
-dbxout_begin_block (file, line, n)
-     FILE *file;
+dbxout_begin_block (line, n)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int n;
 {
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", n);
+  ASM_OUTPUT_INTERNAL_LABEL (asmfile, "LBB", n);
 }
 
 /* Describe the end line-number of an internal block within a function.  */
 
 static void
-dbxout_end_block (file, line, n)
-     FILE *file;
+dbxout_end_block (line, n)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int n;
 {
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LBE", n);
+  ASM_OUTPUT_INTERNAL_LABEL (asmfile, "LBE", n);
 }
 
 #endif /* DBX_DEBUGGING_INFO  */
@@ -602,12 +607,11 @@ dbxout_end_block (file, line, n)
    to do nothing.  */
 
 static void
-dbxout_finish (file, filename)
-     FILE *file ATTRIBUTE_UNUSED;
+dbxout_finish (filename)
      const char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_OUTPUT_MAIN_SOURCE_FILE_END
-  DBX_OUTPUT_MAIN_SOURCE_FILE_END (file, filename);
+  DBX_OUTPUT_MAIN_SOURCE_FILE_END (asmfile, filename);
 #endif /* DBX_OUTPUT_MAIN_SOURCE_FILE_END */
 }
 

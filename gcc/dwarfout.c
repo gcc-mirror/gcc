@@ -787,16 +787,19 @@ static int in_class;
 
 /* Forward declarations for functions defined in this file.  */
 
-static void dwarfout_init 		PARAMS ((FILE *, const char *));
-static void dwarfout_finish		PARAMS ((FILE *, const char *));
+static void dwarfout_init 		PARAMS ((const char *));
+static void dwarfout_finish		PARAMS ((const char *));
 static void dwarfout_define	        PARAMS ((unsigned int, const char *));
 static void dwarfout_undef	        PARAMS ((unsigned int, const char *));
 static void dwarfout_start_source_file	PARAMS ((unsigned, const char *));
 static void dwarfout_start_source_file_check PARAMS ((unsigned, const char *));
 static void dwarfout_end_source_file	PARAMS ((unsigned));
 static void dwarfout_end_source_file_check PARAMS ((unsigned));
-static void dwarfout_begin_block	PARAMS ((FILE *, unsigned, unsigned));
-static void dwarfout_end_block		PARAMS ((FILE *, unsigned, unsigned));
+static void dwarfout_begin_block	PARAMS ((unsigned, unsigned));
+static void dwarfout_end_block		PARAMS ((unsigned, unsigned));
+static void dwarfout_end_epilogue	PARAMS ((void));
+static void dwarfout_source_line	PARAMS (( const char *, rtx));
+static void dwarfout_end_function	PARAMS ((unsigned int));
 static const char *dwarf_tag_name	PARAMS ((unsigned));
 static const char *dwarf_attr_name	PARAMS ((unsigned));
 static const char *dwarf_stack_op_name	PARAMS ((unsigned));
@@ -1379,7 +1382,10 @@ struct gcc_debug_hooks dwarf_debug_hooks =
   dwarfout_start_source_file_check,
   dwarfout_end_source_file_check,
   dwarfout_begin_block,
-  dwarfout_end_block
+  dwarfout_end_block,
+  dwarfout_source_line,
+  dwarfout_end_epilogue,
+  dwarfout_end_function
 };
 
 /************************ general utility functions **************************/
@@ -5838,8 +5844,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
    for a lexical block.	 */
 
 static void
-dwarfout_begin_block (file, line, blocknum)
-     FILE *file ATTRIBUTE_UNUSED;
+dwarfout_begin_block (line, blocknum)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int blocknum;
 {
@@ -5854,8 +5859,7 @@ dwarfout_begin_block (file, line, blocknum)
    for a lexical block.	 */
 
 static void
-dwarfout_end_block (file, line, blocknum)
-     FILE *file ATTRIBUTE_UNUSED;
+dwarfout_end_block (line, blocknum)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int blocknum;
 {
@@ -5885,8 +5889,9 @@ dwarfout_begin_function ()
 /* Output a marker (i.e. a label) for the point in the generated code where
    the real body of the function ends (just before the epilogue code).  */
 
-void
-dwarfout_end_function ()
+static void
+dwarfout_end_function (line)
+     unsigned int line ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -5901,7 +5906,7 @@ dwarfout_end_function ()
    for a function definition.  This gets called *after* the epilogue code
    has been generated.	*/
 
-void
+static void
 dwarfout_end_epilogue ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -6053,11 +6058,13 @@ generate_srcinfo_entry (line_entry_num, files_entry_num)
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 }
 
-void
-dwarfout_line (filename, line)
-     register const char *filename;
-     register unsigned line;
+static void
+dwarfout_source_line (filename, note)
+     const char *filename;
+     rtx note;
 {
+  unsigned int line = NOTE_LINE_NUMBER (note);
+
   if (debug_info_level >= DINFO_LEVEL_NORMAL
       /* We can't emit line number info for functions in separate sections,
 	 because the assembler can't subtract labels in different sections.  */
@@ -6215,8 +6222,7 @@ dwarfout_undef (lineno, buffer)
 /* Set up for Dwarf output at the start of compilation.	 */
 
 static void
-dwarfout_init (asm_out_file, main_input_filename)
-     register FILE *asm_out_file;
+dwarfout_init (main_input_filename)
      register const char *main_input_filename;
 {
   /* Remember the name of the primary input file.  */
@@ -6405,8 +6411,7 @@ dwarfout_init (asm_out_file, main_input_filename)
 /* Output stuff that dwarf requires at the end of every file.  */
 
 static void
-dwarfout_finish (asm_out_file, main_input_filename)
-     register FILE *asm_out_file;
+dwarfout_finish (main_input_filename)
      register const char *main_input_filename ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];

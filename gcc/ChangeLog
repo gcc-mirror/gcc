@@ -1,3 +1,58 @@
+2001-07-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* dbxout.c (dbxout_source_line): Make static, update prototype.
+	(dbx_debug_hooks, xcoff_debug_hooks): Add new hooks.
+	(dbxout_init, dbxout_finish, dbxout_source_line,
+	dbxout_begin_block, dbxout_end_block): Update for new prototypes.
+	* dbxout.h (dbxout_source_line): Delete.
+	* debug.c (debug_nothing_file, debug_nothing_file_int,
+	debug_nothing_file_charstar_rtx): New.
+	(do_nothing_debug_hooks): Update.
+	(debug_nothing_void, debug_nothing_charstar_rtx,
+	dwarf2out_end_epilogue): New.
+	(debug_nothing_file_charstar, debug_nothing_file_int_int): Rename.
+	* debug.h (struct rtx_def): Declare.
+	(gcc_debug_hooks): New hooks source_line, end_epilogue
+	and end_function.
+	(debug_nothing_void, debug_nothing_charstar_rtx,
+	dwarf2out_end_epilogue): New.
+	(debug_nothing_file_charstar, debug_nothing_file_int_int): Rename.
+	* dwarf2out.c (dwarf2out_source_line): Make static, update prototype.
+	(dwarf2_debug_hooks): Update.
+	(dwarf2out_init, dwarf2out_finish, dwarf2out_source_line,
+	dwarf2out_begin_block, dwarf2out_end_block): Update for new prototypes.
+	* dwarf2out.h (dwarf2out_source_line): Remove.
+	* dwarfout.c (dwarfout_end_epilogue, dwarfout_end_function):
+	Make static, update prototype.
+	(dwarfout_init, dwarfout_finish, dwarfout_source_line,
+	dwarfout_begin_block, dwarfout_end_block): Update for new prototypes.
+	(dwarf_debug_hooks): Update.
+	* dwarfout.h (dwarfout_end_epilogue, dwarfout_source_line,
+	dwarfout_end_function): Remove.
+	* final.c (profile_function): Use debug hooks for ending functions
+	and epilogues.
+	(output_source_line, final_end_function): Update prototype,
+	use debug hooks.
+	(final_start_function, final_scan_insn): Update.
+	* output.h (sdb_begin_function_line): Remove.
+	(final_end_function): Update prototype.
+	* sdbout.c (sdb_begin_function_line): Make static.
+	(PUT_SDB_EPILOGUE_END): Move to sdbout_end_epilogue.
+	(sdbout_source_line): New.
+	(sdbout_end_epilogue, sdbout_end_function): Make static, update
+	prototypes.
+	(sdb_debug_hooks): Update.
+	(sdbout_init, sdbout_source_line,
+	sdbout_begin_block, sdbout_end_block): Update for new prototypes.
+	* sdbout.h (sdbout_end_epilogue, sdbout_end_function): Remove.
+	* toplev.c (compile_file, rest_of_compilation): Update.
+	* tree.h (dwarf2out_end_epilogue): Move to debug.h.
+	* xcoffout.c (xcoffout_source_line, xcoffout_begin_block,
+	xcoffout_end_block, xcoffout_end_epilogue, xcoffout_end_function):
+	Update for prototype changes.
+	* xcoffout.h (xcoffout_source_line, xcoffout_begin_block,
+	xcoffout_end_block, xcoffout_end_epilogue): Update prototypes.
+
 2001-07-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (TARGET_ABI_OSF): New.

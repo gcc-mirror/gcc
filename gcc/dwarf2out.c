@@ -3001,14 +3001,15 @@ get_cfa_from_loc_descr (cfa, loc)
 /* And now, the support for symbolic debugging information.  */
 #ifdef DWARF2_DEBUGGING_INFO
 
-static void dwarf2out_init 		PARAMS ((FILE *, const char *));
-static void dwarf2out_finish		PARAMS ((FILE *, const char *));
+static void dwarf2out_init 		PARAMS ((const char *));
+static void dwarf2out_finish		PARAMS ((const char *));
 static void dwarf2out_define	        PARAMS ((unsigned int, const char *));
 static void dwarf2out_undef	        PARAMS ((unsigned int, const char *));
 static void dwarf2out_start_source_file	PARAMS ((unsigned, const char *));
 static void dwarf2out_end_source_file	PARAMS ((unsigned));
-static void dwarf2out_begin_block	PARAMS ((FILE *, unsigned, unsigned));
-static void dwarf2out_end_block		PARAMS ((FILE *, unsigned, unsigned));
+static void dwarf2out_begin_block	PARAMS ((unsigned, unsigned));
+static void dwarf2out_end_block		PARAMS ((unsigned, unsigned));
+static void dwarf2out_source_line	PARAMS ((const char *, rtx));
 
 /* The debug hooks structure.  */
 
@@ -3021,7 +3022,10 @@ struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_start_source_file,
   dwarf2out_end_source_file,
   dwarf2out_begin_block,
-  dwarf2out_end_block
+  dwarf2out_end_block,
+  dwarf2out_source_line,
+  dwarf2out_end_epilogue,
+  debug_nothing_int		/* end_function */
 };
 
 /* NOTE: In the comments in this file, many references are made to
@@ -11108,8 +11112,7 @@ dwarf2out_decl (decl)
    a lexical block.  */
 
 static void
-dwarf2out_begin_block (file, line, blocknum)
-     FILE *file ATTRIBUTE_UNUSED;
+dwarf2out_begin_block (line, blocknum)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int blocknum;
 {
@@ -11121,8 +11124,7 @@ dwarf2out_begin_block (file, line, blocknum)
    lexical block.  */
 
 static void
-dwarf2out_end_block (file, line, blocknum)
-     FILE *file ATTRIBUTE_UNUSED;
+dwarf2out_end_block (line, blocknum)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int blocknum;
 {
@@ -11221,11 +11223,13 @@ init_file_table ()
    and record information relating to this source line, in
    'line_info_table' for later output of the .debug_line section.  */
 
-void
-dwarf2out_line (filename, line)
+static void
+dwarf2out_source_line (filename, note)
      register const char *filename;
-     register unsigned line;
+     rtx note;
 {
+  unsigned int line = NOTE_LINE_NUMBER (note);
+
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
       function_section (current_function_decl);
@@ -11385,8 +11389,7 @@ dwarf2out_undef (lineno, buffer)
 /* Set up for Dwarf output at the start of compilation.  */
 
 static void
-dwarf2out_init (asm_out_file, main_input_filename)
-     register FILE *asm_out_file;
+dwarf2out_init (main_input_filename)
      register const char *main_input_filename;
 {
   init_file_table ();
@@ -11475,8 +11478,7 @@ dwarf2out_init (asm_out_file, main_input_filename)
    and generate the DWARF-2 debugging info.  */
 
 static void
-dwarf2out_finish (asm_out_file, input_filename)
-     register FILE *asm_out_file;
+dwarf2out_finish (input_filename)
      register const char *input_filename ATTRIBUTE_UNUSED;
 {
   limbo_die_node *node, *next_node;

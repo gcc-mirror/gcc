@@ -20,7 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern int dwarf2out_ignore_block	PARAMS ((tree));
 extern void dwarf2out_decl		PARAMS ((tree));	
-extern void dwarf2out_line		PARAMS ((const char *, unsigned));
 extern void dwarf2out_frame_init	PARAMS ((void));
 extern void dwarf2out_frame_debug	PARAMS ((rtx));
 extern void dwarf2out_frame_finish	PARAMS ((void));

@@ -2343,7 +2343,7 @@ compile_file (name)
     dwarf2out_frame_init ();
 #endif
 
-  (*debug_hooks->init) (asm_out_file, main_input_filename);
+  (*debug_hooks->init) (main_input_filename);
   timevar_pop (TV_SYMOUT);
 
   /* Initialize yet another pass.  */
@@ -2422,7 +2422,7 @@ compile_file (name)
     dwarf2out_frame_finish ();
 #endif
 
-  (*debug_hooks->finish) (asm_out_file, main_input_filename);
+  (*debug_hooks->finish) (main_input_filename);
   timevar_pop (TV_SYMOUT);
 
   /* Output some stuff at end of file if nec.  */
@@ -3752,7 +3752,7 @@ rest_of_compilation (decl)
     assemble_start_function (decl, fnname);
     final_start_function (insns, asm_out_file, optimize);
     final (insns, asm_out_file, optimize, 0);
-    final_end_function (insns, asm_out_file, optimize);
+    final_end_function ();
 
 #ifdef IA64_UNWIND_INFO
     /* ??? The IA-64 ".handlerdata" directive must be issued before
