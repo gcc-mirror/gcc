@@ -2970,10 +2970,9 @@ print_rtl_with_bb (outf, rtx_first)
 	  end[INSN_UID (basic_block_end[i])] = i;
 	  for (x = basic_block_head[i]; x != NULL_RTX; x = NEXT_INSN (x))
 	    {
-	      in_bb_p[ INSN_UID(x)] =
-		((in_bb_p[ INSN_UID(x)] == NOT_IN_BB)
-		 ? IN_ONE_BB
-		 : IN_MULTIPLE_BB);
+	      in_bb_p[ INSN_UID(x)]
+		= (in_bb_p[ INSN_UID(x)] == NOT_IN_BB)
+		 ? IN_ONE_BB : IN_MULTIPLE_BB);
 	      if (x == basic_block_end[i])
 		break;
 	    }
