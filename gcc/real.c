@@ -5489,7 +5489,7 @@ make_nan (nan, sign, mode)
 
 REAL_VALUE_TYPE
 ereal_from_float (f)
-     unsigned long f;
+     HOST_WIDE_INT f;
 {
   REAL_VALUE_TYPE r;
   unsigned EMUSHORT s[2];
@@ -5516,31 +5516,49 @@ ereal_from_float (f)
    This is the inverse of the function `etardouble' invoked by
    REAL_VALUE_TO_TARGET_DOUBLE.
 
-   The DFmode is stored as an array of long ints
-   with 32 bits of the value per each long.  The first element
+   The DFmode is stored as an array of HOST_WIDE_INT in the target's
+   data format, with no holes in the bit packing.  The first element
    of the input array holds the bits that would come first in the
    target computer's memory.  */
 
 REAL_VALUE_TYPE
 ereal_from_double (d)
-     unsigned long d[];
+     HOST_WIDE_INT d[];
 {
   REAL_VALUE_TYPE r;
   unsigned EMUSHORT s[4];
   unsigned EMUSHORT e[NE];
 
-  /* Convert array of 32 bit pieces to equivalent array of 16 bit pieces.
-   This is the inverse of `endian'.   */
+  /* Convert array of HOST_WIDE_INT to equivalent array of 16-bit pieces.  */
 #if FLOAT_WORDS_BIG_ENDIAN
   s[0] = (unsigned EMUSHORT) (d[0] >> 16);
   s[1] = (unsigned EMUSHORT) d[0];
-  s[2] = (unsigned EMUSHORT) (d[1] >> 16);
-  s[3] = (unsigned EMUSHORT) d[1];
+  if (HOST_BITS_PER_WIDE_INT >= 64)
+    {
+      /* In this case the entire target double is contained in the
+         first array element.  The second element of the input is ignored.  */
+      s[2] = (unsigned EMUSHORT) (d[0] >> 48);
+      s[3] = (unsigned EMUSHORT) (d[0] >> 32);
+    }
+  else
+    {
+      s[2] = (unsigned EMUSHORT) (d[1] >> 16);
+      s[3] = (unsigned EMUSHORT) d[1];
+    }
 #else
+/* Target float words are little-endian.  */
   s[0] = (unsigned EMUSHORT) d[0];
   s[1] = (unsigned EMUSHORT) (d[0] >> 16);
-  s[2] = (unsigned EMUSHORT) d[1];
-  s[3] = (unsigned EMUSHORT) (d[1] >> 16);
+  if (HOST_BITS_PER_WIDE_INT >= 64)
+    {
+      s[2] = (unsigned EMUSHORT) (d[0] >> 32);
+      s[3] = (unsigned EMUSHORT) (d[0] >> 48);
+    }
+  else
+    {
+      s[2] = (unsigned EMUSHORT) d[1];
+      s[3] = (unsigned EMUSHORT) (d[1] >> 16);
+    }
 #endif
   /* Convert target double to E-type. */
   e53toe (s, e);
