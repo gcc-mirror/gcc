@@ -1511,7 +1511,7 @@ output_epilog (file, size)
     insn = prev_nonnote_insn (insn);
   if (insn == 0 || GET_CODE (insn) != BARRIER)
     {
-      int fp_offset;
+      int fp_offset = 0;
 
       /* If we have a frame pointer, restore SP from it.  */
       if (frame_pointer_needed)
@@ -1558,7 +1558,7 @@ output_epilog (file, size)
       /* If we needed a frame pointer and we have to restore it, do it
 	 now.  This must be done in one instruction immediately
 	 before the SP update.  */
-      if (restore_fp)
+      if (restore_fp && fp_offset)
 	fprintf (file, "\tldq $15,%d($30)\n", fp_offset);
 
       /* Now update the stack pointer, if needed.  Only one instruction must
