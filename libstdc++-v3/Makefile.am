@@ -46,10 +46,25 @@ check-script-install: $(top_builddir)/mkcheck
 	  cd testsuite; \
 	  @glibcpp_builddir@/mkcheck 1)
 
+# Use 'new-abi-baseline' to create an initial symbol file.  Then run
+# 'check-abi' to test for changes against that file.
 baseline_file = @baseline_file@
 check-abi: $(top_builddir)/testsuite/abi_check
 	-(cd testsuite; \
-	  ./abi_check ${baseline_file})
+	  ${top_srcdir}/config/abi/extract_symvers \
+	     ../src/.libs/libstdc++.so \
+	     ./current_symbols.txt && \
+	  ./abi_check --check ./current_symbols.txt ${baseline_file})
+
+new-abi-baseline:
+	-@(output=${baseline_file}; \
+	  if test -f $${output}; then \
+	    output=$${output}.new; \
+	    t=`echo $${output} | sed 's=.*config/abi/=='`; \
+	    echo "Baseline file already exists, writing to $${t} instead."; \
+	  fi; \
+	  ${top_srcdir}/config/abi/extract_symvers \
+	     src/.libs/libstdc++.so $${output})
 
 # These rules are messy, but are hella worth it.
 doxygen:

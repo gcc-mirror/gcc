@@ -1,3 +1,11 @@
+2002-09-16  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/abi_check.cc:  Pull shell fragments out into...
+	* config/abi/extract_symvers:  ...here.  New file.
+	* Makefile.am (check_abi):  Change to match.
+	(new-abi-baseline):  New target.
+	* Makefile.in:  Regenerated.
+
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
 	* include/std/std_limits.h (__glibcpp_f32_denorm_min_bytes,
