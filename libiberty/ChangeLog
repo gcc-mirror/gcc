@@ -24,6 +24,17 @@ Sun Feb  1 02:52:32 1998  Mike Stump  <mrs@wrs.com>
 	* config.table (vxworks configs): Default to VxWorks 5.x, as that is
 	the currently shipping OS.
 
+Tue Jan 27 16:08:20 1998  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmsbuild.com [REQUIRE_OFILES]: Synchronized with Makefile.in:
+	Add fnmatch.o and objalloc.o; remove vasprintf.o.
+	[config.h]: Define NEED_strsignal.
+
+Mon Jan 19 12:20:01 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* functions.def: Correct argument types for strerror and
+	strsignal.  Reported by Alex Gutman <agutman@emc.com>.
+
 Sun Jan 18 15:57:28 1998  Michael Snyder  <msnyder@cleaver.cygnus.com>
 
 	* vasprintf.c (int_vasprintf): Increase buffer size for float/double
