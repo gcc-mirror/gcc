@@ -1,3 +1,11 @@
+2000-07-19  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixincl.c:  Convert to using a table of environment variables
+	and activate the auto-edit marker on the fixed output files.
+	* fixinc/fixlib.h:  Define the environment table
+	* fixinc/fixincl.sh: export the ${INPUT} dir
+	* fixinc/check.tpl: likewise
+
 2000-07-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.c (.h spec): Fix typo.

@@ -146,6 +146,7 @@ fi
 cd ${INPUT}
 
 INPUT=`${PWDCMD}`
+export INPUT
 
 #
 # # # # # # # # # # # # # # # # # # # # #
