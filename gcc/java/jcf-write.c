@@ -2095,10 +2095,10 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
       tree arg0 = TREE_OPERAND (exp, 0);
       tree arg1 = TREE_OPERAND (exp, 1);
       jopcode += adjust_typed_op (type, 3);
-      if (arg0 == arg1 && TREE_CODE (arg0) == SAVE_EXPR)
+      if (arg0 != NULL_TREE && operand_equal_p (arg0, arg1, 0))
 	{
 	  /* fold may (e.g) convert 2*x to x+x. */
-	  generate_bytecode_insns (TREE_OPERAND (arg0, 0), target, state);
+	  generate_bytecode_insns (arg0, target, state);
 	  emit_dup (TYPE_PRECISION (TREE_TYPE (arg0)) > 32 ? 2 : 1, 0, state);
 	}
       else
