@@ -1,3 +1,9 @@
+Sun Mar  7 11:48:56 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (ENCODE_BLOCKAGE): Don't shift unit too far.
+	(print_exp): Special case addition of a constant.
+	(print_value) [CONST_INT]: Use HOST_WIDE_INT_PRINT_HEX.
+
 Sun Mar  7 11:21:02 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (reg_last_clobbers): New.
