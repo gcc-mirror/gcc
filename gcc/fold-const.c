@@ -2809,12 +2809,11 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
      tree compare_type;
      tree lhs, rhs;
 {
-  int lbitpos, lbitsize, rbitpos, rbitsize;
-  int lnbitpos, lnbitsize, rnbitpos = 0, rnbitsize = 0;
+  int lbitpos, lbitsize, rbitpos, rbitsize, nbitpos, nbitsize;
   tree type = TREE_TYPE (lhs);
   tree signed_type, unsigned_type;
   int const_p = TREE_CODE (rhs) == INTEGER_CST;
-  enum machine_mode lmode, rmode, lnmode, rnmode = VOIDmode;
+  enum machine_mode lmode, rmode, nmode;
   int lunsignedp, runsignedp;
   int lvolatilep = 0, rvolatilep = 0;
   int alignment;
@@ -2848,55 +2847,39 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 
   /* See if we can find a mode to refer to this field.  We should be able to,
      but fail if we can't.  */
-  lnmode = get_best_mode (lbitsize, lbitpos,
-			  TYPE_ALIGN (TREE_TYPE (linner)), word_mode,
-			  lvolatilep);
-  if (lnmode == VOIDmode)
+  nmode = get_best_mode (lbitsize, lbitpos,
+			 const_p ? TYPE_ALIGN (TREE_TYPE (linner))
+			 : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
+				TYPE_ALIGN (TREE_TYPE (rinner))),
+			 word_mode, lvolatilep || rvolatilep);
+  if (nmode == VOIDmode)
     return 0;
 
   /* Set signed and unsigned types of the precision of this mode for the
      shifts below.  */
-  signed_type = type_for_mode (lnmode, 0);
-  unsigned_type = type_for_mode (lnmode, 1);
+  signed_type = type_for_mode (nmode, 0);
+  unsigned_type = type_for_mode (nmode, 1);
 
-  if (! const_p)
-    {
-      rnmode = get_best_mode (rbitsize, rbitpos, 
-			      TYPE_ALIGN (TREE_TYPE (rinner)), word_mode,
-			      rvolatilep);
-      if (rnmode == VOIDmode)
-	return 0;
-    }
-    
   /* Compute the bit position and size for the new reference and our offset
      within it. If the new reference is the same size as the original, we
      won't optimize anything, so return zero.  */
-  lnbitsize = GET_MODE_BITSIZE (lnmode);
-  lnbitpos = lbitpos & ~ (lnbitsize - 1);
-  lbitpos -= lnbitpos;
-  if (lnbitsize == lbitsize)
+  nbitsize = GET_MODE_BITSIZE (nmode);
+  nbitpos = lbitpos & ~ (nbitsize - 1);
+  lbitpos -= nbitpos;
+  if (nbitsize == lbitsize)
     return 0;
 
-  if (! const_p)
-    {
-      rnbitsize = GET_MODE_BITSIZE (rnmode);
-      rnbitpos = rbitpos & ~ (rnbitsize - 1);
-      rbitpos -= rnbitpos;
-      if (rnbitsize == rbitsize)
-	return 0;
-    }
-
   if (BYTES_BIG_ENDIAN)
-    lbitpos = lnbitsize - lbitsize - lbitpos;
+    lbitpos = nbitsize - lbitsize - lbitpos;
 
   /* Make the mask to be used against the extracted field.  */
   mask = build_int_2 (~0, ~0);
   TREE_TYPE (mask) = unsigned_type;
   force_fit_type (mask, 0);
   mask = convert (unsigned_type, mask);
-  mask = const_binop (LSHIFT_EXPR, mask, size_int (lnbitsize - lbitsize), 0);
+  mask = const_binop (LSHIFT_EXPR, mask, size_int (nbitsize - lbitsize), 0);
   mask = const_binop (RSHIFT_EXPR, mask,
-		      size_int (lnbitsize - lbitsize - lbitpos), 0);
+		      size_int (nbitsize - lbitsize - lbitpos), 0);
 
   if (! const_p)
     /* If not comparing with constant, just rework the comparison
@@ -2904,11 +2887,11 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
     return build (code, compare_type,
 		  build (BIT_AND_EXPR, unsigned_type,
 			 make_bit_field_ref (linner, unsigned_type,
-					     lnbitsize, lnbitpos, 1),
+					     nbitsize, nbitpos, 1),
 			 mask),
 		  build (BIT_AND_EXPR, unsigned_type,
 			 make_bit_field_ref (rinner, unsigned_type,
-					     rnbitsize, rnbitpos, 1),
+					     nbitsize, nbitpos, 1),
 			 mask));
 
   /* Otherwise, we are handling the constant case. See if the constant is too
@@ -2957,7 +2940,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
   /* Make a new bitfield reference, shift the constant over the
      appropriate number of bits and mask it with the computed mask
      (in case this was a signed field).  If we changed it, make a new one.  */
-  lhs = make_bit_field_ref (linner, unsigned_type, lnbitsize, lnbitpos, 1);
+  lhs = make_bit_field_ref (linner, unsigned_type, nbitsize, nbitpos, 1);
   if (lvolatilep)
     {
       TREE_SIDE_EFFECTS (lhs) = 1;
