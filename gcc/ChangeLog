@@ -1,5 +1,8 @@
 Tue Jan 27 11:02:04 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* v850.h (ASM_OUTPUT_ALIGNED_BSS): Use
+	asm_output_aligned_bss() instead of asm_output_bss().
+
 	* toplev.c (rest_of_compilation): Replace references to
 	stack_reg_dump_file and dbr_sched_dump_file with references to
 	rtl_dump_file. 
