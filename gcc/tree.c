@@ -1071,18 +1071,12 @@ make_node (code)
     }
 
   t = (tree) obstack_alloc (obstack, length);
+  bzero (t, length);
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)kind]++;
   tree_node_sizes[(int)kind] += length;
 #endif
-
-  /* Clear a word at a time.  */
-  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
-    ((int *) t)[i] = 0;
-  /* Clear any extra bytes.  */
-  for (i = length / sizeof (int) * sizeof (int); i < length; i++)
-    ((char *) t)[i] = 0;
 
   TREE_SET_CODE (t, code);
   if (obstack == &permanent_obstack)
@@ -1189,12 +1183,7 @@ copy_node (node)
     }
 
   t = (tree) obstack_alloc (current_obstack, length);
-
-  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
-    ((int *) t)[i] = ((int *) node)[i];
-  /* Clear any extra bytes.  */
-  for (i = length / sizeof (int) * sizeof (int); i < length; i++)
-    ((char *) t)[i] = ((char *) node)[i];
+  bzero (t, length);
 
   /* EXPR_WITH_FILE_LOCATION must keep filename info stored in TREE_CHAIN */
   if (TREE_CODE (node) != EXPR_WITH_FILE_LOCATION)
@@ -1262,7 +1251,7 @@ get_identifier (text)
   register int len, hash_len;
 
   /* Compute length of text in len.  */
-  for (len = 0; text[len]; len++);
+  len = strlen (text);
 
   /* Decide how much of that length to hash on */
   hash_len = len;
@@ -1325,7 +1314,7 @@ maybe_get_identifier (text)
   register int len, hash_len;
 
   /* Compute length of text in len.  */
-  for (len = 0; text[len]; len++);
+  len = strlen (text);
 
   /* Decide how much of that length to hash on */
   hash_len = len;
@@ -1565,9 +1554,7 @@ make_tree_vec (len)
 #endif
 
   t = (tree) obstack_alloc (obstack, length);
-
-  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
-    ((int *) t)[i] = 0;
+  bzero (t, length);
 
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
@@ -3074,14 +3061,12 @@ build1 (code, type, node)
   length = sizeof (struct tree_exp);
 
   t = (tree) obstack_alloc (obstack, length);
+  bzero (t, length);
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)kind]++;
   tree_node_sizes[(int)kind] += length;
 #endif
-
-  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
-    ((int *) t)[i] = 0;
 
   TREE_TYPE (t) = type;
   TREE_SET_CODE (t, code);

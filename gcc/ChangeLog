@@ -1,3 +1,10 @@
+Sat Jan  9 18:35:29 1999  Richard Henderson  <rth@cygnus.com>
+
+	* tree.c (make_node): Call bzero instead of inline clear.
+	(copy_node, make_tree_vec, build1): Likewise.
+	(get_identifier): Call strlen instead of inline count.
+	(maybe_get_identifier): Likewise.
+
 Sun Jan 10 14:04:51 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md: (in_annul_slot_3): Allow unarycc and binarycc
