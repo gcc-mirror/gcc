@@ -15,6 +15,8 @@ sed -e '/^#/ d' "$1" | (
      if test "x$x" != "x$demangled"; then
 	failures=`expr $failures + 1`
 	echo "FAIL: $type $mangled"
+	echo "   result: $x"
+	echo " expected: $demangled"
      fi
   done
 
