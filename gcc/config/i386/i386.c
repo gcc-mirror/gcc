@@ -15909,4 +15909,23 @@ ix86_reverse_condition (enum rtx_code code, enum machine_mode mode)
 	  : reverse_condition_maybe_unordered (code));
 }
 
+/* Output code to perform an x87 FP register move, from OPERANDS[1]
+   to OPERANDS[0].  */
+
+const char *
+output_387_reg_move (rtx insn, rtx *operands)
+{
+  if (REG_P (operands[1])
+      && find_regno_note (insn, REG_DEAD, REGNO (operands[1])))
+    {
+      if (REGNO (operands[0]) == FIRST_STACK_REG
+	  && TARGET_USE_FFREEP)
+	return "ffreep\t%y0";
+      return "fstp\t%y0";
+    }
+  if (STACK_TOP_P (operands[0]))
+    return "fld%z1\t%y1";
+  return "fst\t%y0";
+}
+
 #include "gt-i386.h"

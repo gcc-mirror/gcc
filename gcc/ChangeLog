@@ -1,3 +1,12 @@
+2004-04-12  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (output_387_reg_move): New function.
+	* config/i386/i386-protos.h (output_387_reg_move): Prototype here.
+	* config/i386/i386.md (*movsf_1, *movsf1_nointerunit,
+	*movdf_nointeger, *movdf_integer, *movxf_nointeger, *movxf_integer,
+	*extendsfdf2_1,  *extendsfxf2_1, *extenddfxf2_1, truncdfsf2_noop,
+	truncxfsf2_noop, truncxfdf2_noop): Call output_387_reg_move.
+
 2004-04-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (finish_decl): Make a decl_stmt for a variable-sized
