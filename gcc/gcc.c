@@ -2393,7 +2393,12 @@ convert_filename (name, do_exe)
      int do_exe;
 {
   int i;
-  int len = strlen (name);
+  int len;
+
+  if (name == NULL)
+    return NULL;
+  
+  len = strlen (name);
 
 #ifdef HAVE_OBJECT_SUFFIX
   /* Convert x.o to x.obj if OBJECT_SUFFIX is ".obj".  */

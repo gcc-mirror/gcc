@@ -1,3 +1,7 @@
+Tue Feb  9 16:52:22 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* gcc.c (convert_filename): Handle null filename argument.
+
 Wed Feb 10 15:46:10 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*movhf_noclobber, *movhi_noclobber): Use
