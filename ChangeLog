@@ -1,3 +1,7 @@
+2001-12-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* MAINTAINERS: Update my email address.
+
 2001-12-07  Turly O'Connor  <turly@apple.com>
 	* MAINTAINERS (Write After Approval): Add myself.
 	* rs6000.c (rs6000_trampoline_size): Handle ABI_DARWIN case.
