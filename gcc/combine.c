@@ -4503,6 +4503,10 @@ simplify_logical (x, last)
 
 	  if (GET_CODE (x) != AND)
 	    return x;
+
+	  if (GET_RTX_CLASS (GET_CODE (x)) == 'c' 
+	      || GET_RTX_CLASS (GET_CODE (x)) == '2')
+	    op0 = XEXP (x, 0), op1 = XEXP (x, 1);
 	}
 
       /* Convert (A | B) & A to A.  */
