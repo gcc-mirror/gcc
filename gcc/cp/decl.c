@@ -9682,6 +9682,11 @@ build_enumerator (tree name, tree value, tree enumtype)
   tree context;
   tree type;
 
+  /* If the VALUE was erroneous, pretend it wasn't there; that will
+     result in the enum being assigned the next value in sequence.  */
+  if (value == error_mark_node)
+    value = NULL_TREE;
+
   /* Remove no-op casts from the value.  */
   if (value)
     STRIP_TYPE_NOPS (value);

@@ -1,3 +1,42 @@
+2005-01-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (build_enumerator): Do not issue duplicate error messages
+	about invalid enumeration constants.
+	* parser.c (cp_parser_non_integral_constant_expression): Always
+	set parser->non_integral_constant_expression_p.
+	(cp_parser_primary_expression): Add cast_p parameter.  Issue
+	errors about invalid uses of floating-point literals in
+	cast-expressions.
+	(cp_parser_postfix_expression): Add cast_p parameter.
+	(cp_parser_open_square_expression): Pass it.
+	(cp_parser_parenthesized_expression_list): Add cast_p parameter.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_new_placement): Pass it.
+	(cp_parser_direct_new_declarator): Likewise.
+	(cp_parser_new_initializer): Likewise.
+	(cp_parser_cast_expression): Add cast_p parameter.
+	(cp_parser_binary_expression): Likewise.
+	(cp_parser_question_colon_clause): Likewise.
+	(cp_parser_assignment_expression): Likewise.
+	(cp_parser_expression): Likewise.
+	(cp_parser_constant_expression): If an integral constant
+	expression is invalid, return error_mark_node.
+	(cp_parser_expression_statement): Pass cast_p.
+	(cp_parser_condition): Likewise.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_jump_statement): Likewise.
+	(cp_parser_mem_initializer): Likewise.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_initializer): Likewise.
+	(cp_parser_throw_expression): Likewise.
+	(cp_parser_attribute_list): Likewise.
+	(cp_parser_simple_cast_expression): Likewise.
+	(cp_parser_functional_cast): Likewise.
+	(cp_parser_late_parsing_default_args): Likewise.
+	(cp_parser_sizeof_operand): Save/restore
+	non_integral_constant_expression_p.
+
 2005-01-31  Mike Stump  <mrs@apple.com>
 
 	* parser.c (cp_lexer_new_main): Get the first token, first, before
