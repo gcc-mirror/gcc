@@ -1659,12 +1659,21 @@ convert_arguments (typelist, values, name, fundecl)
 		{
 		  int formal_prec = TYPE_PRECISION (type);
 
-		  if (TREE_CODE (type) != REAL_TYPE
+		  if (INTEGRAL_TYPE_P (type)
 		      && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
 		    warn_for_assignment ("%s as integer rather than floating due to prototype", (char *) 0, name, parmnum + 1);
+		  else if (TREE_CODE (type) == COMPLEX_TYPE
+			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
+		    warn_for_assignment ("%s as complex rather than floating due to prototype", (char *) 0, name, parmnum + 1);
 		  else if (TREE_CODE (type) == REAL_TYPE
-		      && TREE_CODE (TREE_TYPE (val)) != REAL_TYPE)
+			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
 		    warn_for_assignment ("%s as floating rather than integer due to prototype", (char *) 0, name, parmnum + 1);
+		  else if (TREE_CODE (type) == REAL_TYPE
+			   && TREE_CODE (TREE_TYPE (val)) == COMPLEX_TYPE)
+		    warn_for_assignment ("%s as floating rather than complex due to prototype", (char *) 0, name, parmnum + 1);
+		  /* ??? At some point, messages should be written about
+		     conversions between complex types, but that's too messy
+		     to do now.  */
 		  else if (TREE_CODE (type) == REAL_TYPE
 			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
 		    {
@@ -1674,10 +1683,8 @@ convert_arguments (typelist, values, name, fundecl)
 			warn_for_assignment ("%s as `float' rather than `double' due to prototype", (char *) 0, name, parmnum + 1);
 		    }
 		  /* Detect integer changing in width or signedness.  */
-		  else if ((TREE_CODE (type) == INTEGER_TYPE
-			    || TREE_CODE (type) == ENUMERAL_TYPE)
-			   && (TREE_CODE (TREE_TYPE (val)) == INTEGER_TYPE
-			       || TREE_CODE (TREE_TYPE (val)) == ENUMERAL_TYPE))
+		  else if (INTEGRAL_TYPE_P (type)
+			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
 		    {
 		      tree would_have_been = default_conversion (val);
 		      tree type1 = TREE_TYPE (would_have_been);
