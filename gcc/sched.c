@@ -324,7 +324,7 @@ static void sched_note_set		PROTO((int, rtx, int));
 static int rank_for_schedule		PROTO((rtx *, rtx *));
 static void swap_sort			PROTO((rtx *, int));
 static void queue_insn			PROTO((rtx, int));
-static int birthing_insn		PROTO((rtx));
+static int birthing_insn_p		PROTO((rtx));
 static void adjust_priority		PROTO((rtx));
 static int schedule_insn		PROTO((rtx, rtx *, int, int));
 static int schedule_select		PROTO((rtx *, int, int, FILE *));
