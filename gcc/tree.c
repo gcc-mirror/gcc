@@ -3376,7 +3376,10 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 #endif
 
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
-  if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name, attr_args))
+  if (valid)
+    /* Don't apply the attribute to both the decl and the type.  */;
+  else if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name,
+					 attr_args))
     {
       tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
 				    type_attr_list);
