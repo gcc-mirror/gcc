@@ -1,3 +1,11 @@
+Fri Mar 19 01:54:30 1999  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* toplev.c (read_integral_parameter): Constify.  Better control of
+	error messages.
+	(main): Use read_integral_parameter to set optimize, id_clash_len,
+	larger_than_size, and the debugging level.
+	* toplev.h (read_integral_parameter): Update prototype.
+
 Fri Mar 19 01:42:05 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* system.h: Use putc_unlocked, fputc_unlocked, and

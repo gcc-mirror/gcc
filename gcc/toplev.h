@@ -26,7 +26,8 @@ union tree_node;
 struct rtx_def;
 #endif
 
-extern int read_integral_parameter	PROTO ((char *, char *, int));
+extern int read_integral_parameter	PROTO ((const char *, const char *,
+						const int));
 extern int count_error			PROTO ((int));
 extern void strip_off_ending		PROTO ((char *, int));
 extern void print_time			PROTO ((const char *, int));

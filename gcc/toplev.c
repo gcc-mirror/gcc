@@ -1246,25 +1246,30 @@ FILE *rtl_dump_file = NULL;
 
 /* Decode the string P as an integral parameter.
    If the string is indeed an integer return its numeric value else
-   issue an Invalid Option error for the option PNAME and return DEFVAL. */
+   issue an Invalid Option error for the option PNAME and return DEFVAL.
+   If PNAME is zero just return DEFVAL, do not call error.               */
    
 int
 read_integral_parameter (p, pname, defval)
-     char *p;
-     char *pname;
-     int  defval;
+     const char *p;
+     const char *pname;
+     const int  defval;
 {
-  char *endp = p;
+  const char *endp = p;
 
   while (*endp)
     {
       if (*endp >= '0' && *endp <= '9')
 	endp++;
       else
-	{
-	  error ("Invalid option `%s'", pname);
-	  return defval;
-	}
+	break;
+    }
+
+  if (*endp != 0)
+    {
+      if (pname != 0)
+	error ("Invalid option `%s'", pname);
+      return defval;
     }
 
   return atoi (p);
@@ -4713,7 +4718,6 @@ main (argc, argv)
 	{
 	  /* Handle -Os, -O2, -O3, -O69, ...  */
 	  char *p = &argv[i][2];
-	  int c;
 	  
 	  if ((p[0] == 's') && (p[1] == 0))
 	    {
@@ -4724,12 +4728,10 @@ main (argc, argv)
 	    }
 	  else
 	    {	    
-	      while ((c = *p++))
-		if (! (c >= '0' && c <= '9'))
-		  break;
-	      if (c == 0)
+	      const int optimize_val = read_integral_parameter (p, p - 2, -1);
+	      if (optimize_val != -1)
 		{
-		  optimize = atoi (&argv[i][2]);
+		  optimize = optimize_val;
 		  optimize_size = 0;
 		}
 	    }
@@ -4996,16 +4998,7 @@ main (argc, argv)
 	    }
 	  else if (str[0] == 'O')
 	    {
-	      register char *p = str+1;
-	      if (*p == 's')
-		p++;
-	      else
-		while (*p && *p >= '0' && *p <= '9')
-		  p++;
-	      if (*p == '\0')
-		;
-	      else
-		error ("Invalid option `%s'", argv[i]);
+	      /* Already been treated above. Do nothing.  */
 	    }
 	  else if (!strcmp (str, "pedantic"))
 	    pedantic = 1;
@@ -5058,39 +5051,23 @@ main (argc, argv)
 		;
 	      else if (!strncmp (p, "id-clash-", 9))
 		{
-		  char *endp = p + 9;
-
-		  while (*endp)
+		  const int id_clash_val
+		    = read_integral_parameter (p + 9, p - 2, -1);
+		  if (id_clash_val != -1)
 		    {
-		      if (*endp >= '0' && *endp <= '9')
-			endp++;
-		      else
-			{
-			  error ("Invalid option `%s'", argv[i]);
-			  goto id_clash_lose;
-			}
+		      id_clash_len = id_clash_val;
+		      warn_id_clash = 1;
 		    }
-		  warn_id_clash = 1;
-		  id_clash_len = atoi (str + 10);
-		id_clash_lose: ;
 		}
 	      else if (!strncmp (p, "larger-than-", 12))
 		{
-		  char *endp = p + 12;
-
-		  while (*endp)
+		  const int larger_than_val
+		    = read_integral_parameter (p + 12, p - 2, -1);
+		  if (larger_than_val != -1)
 		    {
-		      if (*endp >= '0' && *endp <= '9')
-			endp++;
-		      else
-			{
-			  error ("Invalid option `%s'", argv[i]);
-			  goto larger_than_lose;
-			}
+		      larger_than_size = larger_than_val;
+		      warn_larger_than = 1;
 		    }
-		  warn_larger_than = 1;
-		  larger_than_size = atoi (str + 13);
-		larger_than_lose: ;
 		}
 	      else
 		error ("Invalid option `%s'", argv[i]);
@@ -5118,7 +5095,6 @@ main (argc, argv)
 	    }
 	  else if (str[0] == 'g')
 	    {
-	      unsigned len;
 	      unsigned level;
 	      /* A lot of code assumes write_symbols == NO_DEBUG if the
 		 debugging level is 0 (thus -gstabs1 -gstabs0 would lose track
@@ -5136,48 +5112,43 @@ main (argc, argv)
 		"none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
 	      };
 
+	      /* The maximum admissible debug level value.  */
+	      static const unsigned max_debug_level = 3;
+
 	      /* Look up STR in the table.  */
 	      for (da = debug_args; da->arg; da++)
 		{
-		  if (! strncmp (str, da->arg, strlen (da->arg)))
+		  const int da_len = strlen (da->arg);
+
+		  if (! strncmp (str, da->arg, da_len))
 		    {
 		      enum debug_info_type type = da->debug_type;
-		      char *p, *q;
+		      const char *p = str + da_len;
 
-		      p = str + strlen (da->arg);
 		      if (*p && (*p < '0' || *p > '9'))
 			continue;
-		      len = p - str;
-		      q = p;
-		      while (*q && (*q >= '0' && *q <= '9'))
-			q++;
-		      if (*p)
+		      
+		      level = read_integral_parameter (p, 0,
+						       max_debug_level + 1);
+		      if (da_len > 1 && !strncmp (str, "gdwarf", da_len))
 			{
-			  level = atoi (p);
-			  if (len > 1 && !strncmp (str, "gdwarf", len))
-			    {
-			      error ("use -gdwarf -g%d for DWARF v1, level %d",
-				       level, level);
-			      if (level == 2)
-				error ("use -gdwarf-2   for DWARF v2");
-			    }
+			  error ("use -gdwarf -g%d for DWARF v1, level %d",
+				 level, level);
+			  if (level == 2)
+			    error ("use -gdwarf-2   for DWARF v2");
 			}
-		      else
-			level = 2;	/* default debugging info level */
-		      if (*q || level > 3)
+
+		      if (level > max_debug_level)
 			{
-			  warning ("invalid debug level specification in option: `-%s'",
-				   str);
-			  /* ??? This error message is incorrect in the case of
-			     -g4 -g.  */
-			  warning ("no debugging information will be generated");
-			  level = 0;
+			  warning ("ignoring option `%s' due to invalid debug level specification",
+				   str - 1);
+			  level = debug_info_level;
 			}
 
 		      if (type == NO_DEBUG)
 			{
 			  type = PREFERRED_DEBUGGING_TYPE;
-			  if (len > 1 && strncmp (str, "ggdb", len) == 0)
+			  if (da_len > 1 && strncmp (str, "ggdb", da_len) == 0)
 			    {
 #if defined (DWARF2_DEBUGGING_INFO) && !defined (LINKER_DOES_NOT_WORK_WITH_DWARF2)
 			      type = DWARF2_DEBUG;
@@ -5231,8 +5202,19 @@ main (argc, argv)
 	    }
 	  else if (str[0] == 'G')
 	    {
-	      g_switch_set = TRUE;
-	      g_switch_value = atoi ((str[1] != '\0') ? str+1 : argv[++i]);
+	      const int g_switch_val = (str[1] != '\0') ?
+	                               read_integral_parameter(str + 1, 0, -1) :
+			               read_integral_parameter(argv[++i], 0, -1);
+	      
+	      if (g_switch_val != -1)
+	        {
+		  g_switch_set = TRUE;
+		  g_switch_value = g_switch_val;
+		}
+	      else
+	        {
+		  error("Invalid option `-%s'",str);
+		}
 	    }
 	  else if (!strncmp (str, "aux-info", 8))
 	    {
