@@ -398,7 +398,7 @@ init_reload ()
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       tem = gen_rtx (PLUS, Pmode,
-		     gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM),
+		     gen_rtx (REG, Pmode, HARD_FRAME_POINTER_REGNUM),
 		     gen_rtx (REG, Pmode, i));
       /* This way, we make sure that reg+reg is an offsettable address.  */
       tem = plus_constant (tem, 4);
@@ -607,7 +607,8 @@ reload (first, global, dumpfile)
     {
       ep->can_eliminate = ep->can_eliminate_previous
 	= (CAN_ELIMINATE (ep->from, ep->to)
-	   && (ep->from != FRAME_POINTER_REGNUM || ! frame_pointer_needed));
+	   && (ep->from != HARD_FRAME_POINTER_REGNUM 
+	       || ! frame_pointer_needed));
     }
 #else
   reg_eliminate[0].can_eliminate = reg_eliminate[0].can_eliminate_previous
@@ -1496,7 +1497,7 @@ reload (first, global, dumpfile)
 	 since they can't have changed.  */
 
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-	if ((ep->from == FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED)
+	if ((ep->from == HARD_FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED)
 #ifdef ELIMINABLE_REGS
 	    || ! CAN_ELIMINATE (ep->from, ep->to)
 #endif
@@ -1545,7 +1546,8 @@ reload (first, global, dumpfile)
       frame_pointer_needed = 1;
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	{
-	  if (ep->can_eliminate && ep->from == FRAME_POINTER_REGNUM)
+	  if (ep->can_eliminate && ep->from == FRAME_POINTER_REGNUM
+	      && ep->to != HARD_FRAME_POINTER_REGNUM)
 	    frame_pointer_needed = 0;
 
 	  if (! ep->can_eliminate && ep->can_eliminate_previous)
@@ -1930,8 +1932,9 @@ reload (first, global, dumpfile)
 
   if (! frame_pointer_needed)
     for (i = 0; i < n_basic_blocks; i++)
-      basic_block_live_at_start[i][FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
-	&= ~ ((REGSET_ELT_TYPE) 1 << (FRAME_POINTER_REGNUM % REGSET_ELT_BITS));
+      basic_block_live_at_start[i][HARD_FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
+	&= ~ ((REGSET_ELT_TYPE) 1 << (HARD_FRAME_POINTER_REGNUM
+				      % REGSET_ELT_BITS));
 
   /* Come here (with failure set nonzero) if we can't get enough spill regs
      and we decide not to abort about it.  */
@@ -2969,17 +2972,18 @@ eliminate_regs (x, mem_mode, insn)
 	  /* See if this is setting the replacement register for an
 	     elimination.
 
-	     If DEST is the frame pointer, we do nothing because we assume that
-	     all assignments to the frame pointer are for non-local gotos and
-	     are being done at a time when they are valid and do not disturb
-	     anything else.  Some machines want to eliminate a fake argument
-	     pointer with either the frame or stack pointer.  Assignments to
-	     the frame pointer must not prevent this elimination.  */
+	     If DEST is the hard frame pointer, we do nothing because we
+	     assume that all assignments to the frame pointer are for
+	     non-local gotos and are being done at a time when they are valid
+	     and do not disturb anything else.  Some machines want to
+	     eliminate a fake argument pointer (or even a fake frame pointer)
+	     with either the real frame or the stack pointer.  Assignments to
+	     the hard frame pointer must not prevent this elimination.  */
 
 	  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
 	       ep++)
 	    if (ep->to_rtx == SET_DEST (x)
-		&& SET_DEST (x) != frame_pointer_rtx)
+		&& SET_DEST (x) != hard_frame_pointer_rtx)
 	      {
 		/* If it is being incremented, adjust the offset.  Otherwise,
 		   this elimination can't be done.  */
@@ -3264,11 +3268,11 @@ eliminate_regs_in_insn (insn, replace)
    modifies DEST in any way other than by adding a constant integer to it.
 
    If DEST is the frame pointer, we do nothing because we assume that
-   all assignments to the frame pointer are nonlocal gotos and are being done
-   at a time when they are valid and do not disturb anything else.
+   all assignments to the hard frame pointer are nonlocal gotos and are being
+   done at a time when they are valid and do not disturb anything else.
    Some machines want to eliminate a fake argument pointer with either the
-   frame or stack pointer.  Assignments to the frame pointer must not prevent
-   this elimination.
+   frame or stack pointer.  Assignments to the hard frame pointer must not
+   prevent this elimination.
 
    Called via note_stores from reload before starting its passes to scan
    the insns of the function.  */
@@ -3286,7 +3290,7 @@ mark_not_eliminable (dest, x)
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
 
-  if (dest == frame_pointer_rtx)
+  if (dest == hard_frame_pointer_rtx)
     return;
 
   for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
@@ -3523,8 +3527,8 @@ order_regs_for_reload ()
 #endif
 	}
     }
-  hard_reg_n_uses[FRAME_POINTER_REGNUM].uses += 2 * large + 2;
-  SET_HARD_REG_BIT (bad_spill_regs, FRAME_POINTER_REGNUM);
+  hard_reg_n_uses[HARD_FRAME_POINTER_REGNUM].uses += 2 * large + 2;
+  SET_HARD_REG_BIT (bad_spill_regs, HARD_FRAME_POINTER_REGNUM);
 
 #ifdef ELIMINABLE_REGS
   /* If registers other than the frame pointer are eliminable, mark them as
@@ -5048,7 +5052,7 @@ choose_reload_regs (insn, avoid_return_reg)
 
 	      /* If we found an equivalent reg, say no code need be generated
 		 to load it, and use it as our reload reg.  */
-	      if (equiv != 0 && regno != FRAME_POINTER_REGNUM)
+	      if (equiv != 0 && regno != HARD_FRAME_POINTER_REGNUM)
 		{
 		  reload_reg_rtx[r] = equiv;
 		  reload_inherited[r] = 1;
