@@ -1046,6 +1046,11 @@ singlemove_string (operands)
   else if (GET_CODE (operands[1]) == CONST_DOUBLE
 	   && GET_MODE (operands[1]) == SFmode)
     {
+      abort ();
+#if 0
+      /* Switched off since it is wrong, and should never really be used
+	 anyway.  If we want to switch this on again, we have to make it use
+	 the REAL_ARITHMETIC stuff.  */
       int i;
       union real_extract u;
       union float_extract { float f; int i; } v;
@@ -1072,6 +1077,7 @@ singlemove_string (operands)
 	}
       else
 	return "ldil L'%1,%0\n\tldo R'%1(%0),%0";
+#endif
     }
 
   else if (GET_CODE (operands[1]) == CONST_INT)
@@ -3091,6 +3097,12 @@ print_operand (file, x, code)
 	  break;
 	}
     }
+#if 0
+  /* The code here is completely wrong.  It attempts to extract parts of
+     a CONST_DOUBLE which is wrong since REAL_ARITHMETIC is defined, and it
+     extracts the wrong indices (0 instead of 2 and 1 instead of 3) using
+     the wrong macro (XINT instead of XWINT).
+     Just disable it for now, since the code will never be used anyway!  */
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode)
     {
       union { double d; int i[2]; } u;
@@ -3108,6 +3120,7 @@ print_operand (file, x, code)
       u.i[0] = XINT (x, 0); u.i[1] = XINT (x, 1);
       fprintf (file, "0r%.20g", u.d);
     }
+#endif
   else
     output_addr_const (file, x);
 }
