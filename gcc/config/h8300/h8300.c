@@ -3326,8 +3326,8 @@ h8300_adjust_insn_length (insn, length)
           && GET_CODE (addr) == REG)
 	return -6;
 
-      /* On the H8/300H and H8/300S, reg + d, for small displacements is 4
-	 bytes shorter than indicated in the machine description.  */
+      /* On the H8/300H and H8/S, reg + d, for small displacements is
+	 4 bytes shorter than indicated in the machine description.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && GET_CODE (addr) == PLUS
 	  && GET_CODE (XEXP (addr, 0)) == REG
@@ -3336,7 +3336,7 @@ h8300_adjust_insn_length (insn, length)
 	  && INTVAL (XEXP (addr, 1)) < 32767)
 	return -4;
 
-      /* On the H8/300H and H8/300S, abs:16 is two bytes shorter than the
+      /* On the H8/300H and H8/S, abs:16 is two bytes shorter than the
 	 more general abs:24.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && GET_CODE (addr) == SYMBOL_REF
@@ -3395,8 +3395,8 @@ h8300_adjust_insn_length (insn, length)
       if (mode == QImode && shift <= 4)
 	return -(20 - shift * 2);
 
-      /* Similarly for HImode and SImode shifts by
-	 small constants on the H8/300H and H8/300S.  */
+      /* Similarly for HImode and SImode shifts by small constants on
+	 the H8/300H and H8/S.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && (mode == HImode || mode == SImode) && shift <= 4)
 	return -(20 - shift * 2);

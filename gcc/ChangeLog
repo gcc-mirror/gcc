@@ -1,3 +1,8 @@
+2001-12-18  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c: Fix comment typos.
+	* config/h8300/h8300.h: Fix comment formatting.
+
 2001-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* machmode.h (mode_name, mode_class, mode_size, mode_unit_size,
