@@ -1,3 +1,7 @@
+2002-08-01  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (BRANCH_LIKELY_P): Remove unused macro.
+
 2002-08-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (DBX_OUTPUT_BRAC): Define.
