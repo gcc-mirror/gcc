@@ -12,8 +12,9 @@
 	* error.c (dump_type, case TYPENAME_TYPE): Don't emit the
 	aggregate tag on the typename's context.
 	
-	* pt.c (tsubst_friend_class): Return NULL, if parms becomes NULL.
-	(instantiate_class_template): Ignore NULL friend types.
+	* pt.c (tsubst_friend_class): Return error_mark_node, if
+	parms becomes NULL.
+	(instantiate_class_template): Ignore error_mark_node friend types.
 
 2000-08-14  Nathan Sidwell  <nathan@codesourcery.com>
 
