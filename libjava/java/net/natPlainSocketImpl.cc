@@ -20,17 +20,20 @@ details.  */
 #undef MIN_PRIORITY
 #undef FIONREAD
 
-// stuff to make Win32 look POSIXy
-static inline int close(int s) {
+// These functions make the Win32 socket API look more POSIXy
+static inline int
+close(int s) {
   return closesocket(s);
 }
 
-static inline int write(int s, void *buf, int len)
+static inline int
+write(int s, void *buf, int len)
 {
   return send(s, (char*)buf, len, 0);
 }
 
-static inline int read(int s, void *buf, int len)
+static inline int
+read(int s, void *buf, int len)
 {
   return recv(s, (char*)buf, len, 0);
 }
