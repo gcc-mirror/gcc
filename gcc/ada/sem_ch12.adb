@@ -400,6 +400,11 @@ package body Sem_Ch12 is
    --  of the instance can be placed after the freeze node of the parent,
    --  which it itself an instance.
 
+   function In_Main_Context (E : Entity_Id) return Boolean;
+   --  Check whether an instantiation is in the context of the main unit.
+   --  Used to determine whether its body should be elaborated to allow
+   --  front-end inlining.
+
    procedure Set_Instance_Env
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id);
@@ -1207,14 +1212,19 @@ package body Sem_Ch12 is
       then
          Error_Msg_N ("premature usage of incomplete type", Def);
 
+      --  Check that range constraint is not allowed on the component type
+      --  of a generic formal array type (AARM 12.5.3(3))
+
       elsif Is_Internal (Component_Type (T))
+        and then Present (Subtype_Indication (Component_Definition (Def)))
         and then Nkind (Original_Node
                         (Subtype_Indication (Component_Definition (Def))))
-          /= N_Attribute_Reference
+          = N_Subtype_Indication
       then
          Error_Msg_N
-           ("only a subtype mark is allowed in a formal",
-              Subtype_Indication (Component_Definition (Def)));
+           ("in a formal, a subtype indication can only be "
+             & "a subtype mark ('R'M 12.5.3(3))",
+             Subtype_Indication (Component_Definition (Def)));
       end if;
 
    end Analyze_Formal_Array_Type;
@@ -2563,7 +2573,8 @@ package body Sem_Ch12 is
               and then Expander_Active
               and then (not Is_Child_Unit (Gen_Unit)
                          or else not Is_Generic_Unit (Scope (Gen_Unit)))
-              and then Is_In_Main_Unit (N)
+              and then (Is_In_Main_Unit (N)
+                          or else In_Main_Context (Current_Scope))
               and then Nkind (Parent (N)) /= N_Compilation_Unit
               and then Might_Inline_Subp
               and then not Is_Actual_Pack
@@ -5771,6 +5782,51 @@ package body Sem_Ch12 is
 
       return False;
    end In_Same_Declarative_Part;
+
+   ---------------------
+   -- In_Main_Context --
+   ---------------------
+
+   function In_Main_Context (E : Entity_Id) return Boolean is
+      Context : List_Id;
+      Clause  : Node_Id;
+      Nam     : Node_Id;
+
+   begin
+      if not Is_Compilation_Unit (E)
+        or else Ekind (E) /= E_Package
+        or else In_Private_Part (E)
+      then
+         return False;
+      end if;
+
+      Context := Context_Items (Cunit (Main_Unit));
+
+      Clause  := First (Context);
+      while Present (Clause) loop
+         if Nkind (Clause) = N_With_Clause then
+            Nam := Name (Clause);
+
+            --  If the current scope is part of the context of the main unit,
+            --  analysis of the corresponding with_clause is not complete, and
+            --  the entity is not set. We use the Chars field directly, which
+            --  might produce false positives in rare cases, but guarantees
+            --  that we produce all the instance bodies we will need.
+
+            if (Nkind (Nam) = N_Identifier
+                 and then Chars (Nam) = Chars (E))
+              or else (Nkind (Nam) = N_Selected_Component
+                        and then Chars (Selector_Name (Nam)) = Chars (E))
+            then
+               return True;
+            end if;
+         end if;
+
+         Next (Clause);
+      end loop;
+
+      return False;
+   end In_Main_Context;
 
    ---------------------
    -- Inherit_Context --
