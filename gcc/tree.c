@@ -2167,9 +2167,7 @@ build_decl (code, name, type)
 
 /* BLOCK nodes are used to represent the structure of binding contours
    and declarations, once those contours have been exited and their contents
-   compiled.  This information is used for outputting debugging info.
-   A BLOCK may have a "controller" which is a BIND_EXPR node.
-   Then the BLOCK is ignored unless the controller has the TREE_USED flag.  */
+   compiled.  This information is used for outputting debugging info.  */
 
 tree
 build_block (vars, tags, subblocks, supercontext, chain)
