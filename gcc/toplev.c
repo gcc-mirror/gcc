@@ -3421,8 +3421,7 @@ main (argc, argv, envp)
       /* If this is a language-specific option,
 	 decode it in a language-specific way.  */
       for (j = 0; lang_options[j] != 0; j++)
-	if (!strncmp (argv[i], lang_options[j],
-		      strlen (lang_options[j])))
+	if (!strcmp (argv[i], lang_options[j]))
 	  break;
       if (lang_options[j] != 0)
 	/* If the option is valid for *some* language,
