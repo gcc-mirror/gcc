@@ -447,6 +447,8 @@ extern void default_function_pro_epilogue (FILE *, HOST_WIDE_INT);
 extern void default_exception_section (void);
 
 /* Tell assembler to switch to the section for the EH frames.  */
+extern void named_section_eh_frame_section (void);
+extern void collect2_eh_frame_section (void);
 extern void default_eh_frame_section (void);
 
 /* Default target hook that outputs nothing to a stream.  */
