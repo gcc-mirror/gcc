@@ -7176,8 +7176,10 @@ delete_trivially_dead_insns (insns, nreg)
 	live_insn = ! dead_libcall;
       else if (GET_CODE (PATTERN (insn)) == SET)
 	{
-	  if (GET_CODE (SET_DEST (PATTERN (insn))) == REG
-	      && SET_DEST (PATTERN (insn)) == SET_SRC (PATTERN (insn)))
+	  if ((GET_CODE (SET_DEST (PATTERN (insn))) == REG
+	       || GET_CODE (SET_DEST (PATTERN (insn))) == SUBREG)
+	      && rtx_equal_p (SET_DEST (PATTERN (insn)),
+			      SET_SRC (PATTERN (insn))))
 	    ;
 
 #ifdef HAVE_cc0
@@ -7207,8 +7209,9 @@ delete_trivially_dead_insns (insns, nreg)
 
 	    if (GET_CODE (elt) == SET)
 	      {
-		if (GET_CODE (SET_DEST (elt)) == REG
-		    && SET_DEST (elt) == SET_SRC (elt))
+		if ((GET_CODE (SET_DEST (elt)) == REG
+		     || GET_CODE (SET_DEST (elt)) == SUBREG)
+		    && rtx_equal_p (SET_DEST (elt), SET_SRC (elt)))
 		  ;
 
 #ifdef HAVE_cc0
