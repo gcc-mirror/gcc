@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "rtl.h"
 #include "varray.h"
-#include "expr.h"
+#include "defaults.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
