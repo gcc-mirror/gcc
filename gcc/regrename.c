@@ -238,8 +238,7 @@ regrename_optimize ()
 	  struct du_chain *this = all_chains;
 	  struct du_chain *tmp, *last;
 	  HARD_REG_SET this_unavailable;
-	  int reg = REGNO (*this->loc), treg;
-	  int nregs = HARD_REGNO_NREGS (reg, GET_MODE (*this->loc));
+	  int reg = REGNO (*this->loc);
 	  int i;
 
 	  all_chains = this->next_chain;
@@ -287,9 +286,10 @@ regrename_optimize ()
 
 	  /* Now potential_regs is a reasonable approximation, let's
 	     have a closer look at each register still in there.  */
-	  for (treg = 0; treg < FIRST_PSEUDO_REGISTER; treg++)
+	  for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
 	    {
-	      new_reg = treg;
+	      int nregs = HARD_REGNO_NREGS (new_reg, GET_MODE (*this->loc));
+
 	      for (i = nregs - 1; i >= 0; --i)
 	        if (TEST_HARD_REG_BIT (this_unavailable, new_reg + i)
 		    || fixed_regs[new_reg + i]
