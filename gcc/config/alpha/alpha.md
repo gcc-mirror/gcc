@@ -155,12 +155,17 @@
 
 ; Memory takes at least 2 clocks.  Return one from here and fix up with
 ; user-defined latencies in adjust_cost.
-; ??? How to: "An instruction of class LD cannot be issued in the _second_
-; cycle after an instruction of class ST is issued."
 (define_function_unit "ev5_ebox" 2 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "ild,fld,ldsym"))
   1 1)
+
+; Loads can dual issue with one another, but loads and stores do not mix.
+(define_function_unit "ev5_e0" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "ild,fld,ldsym"))
+  1 1
+  [(eq_attr "type" "ist,fst")])
 
 ; Stores, shifts, multiplies can only issue to E0
 (define_function_unit "ev5_e0" 1 0
