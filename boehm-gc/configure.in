@@ -13,6 +13,7 @@
 
 dnl Process this file with autoconf to produce configure.
 
+AC_PREREQ(2.13)
 AC_INIT(gcj_mlc.c)
 
 # This works around the fact that libtool configuration may change LD

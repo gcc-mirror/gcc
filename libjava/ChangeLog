@@ -1,3 +1,9 @@
+2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in: Add in AC_PREREQ(2.13)
+	* libltdl/configure.ac: Update to AC_PREREQ(2.57).  Delete 
+	FIXME comment.
+
 2004-01-14  Nathan Bryant  <nbryant@optonline.net>
 	    Tom Tromey  <tromey@redhat.com>
 
