@@ -922,7 +922,7 @@ assemble_destructor (name)
     {
       /* Now tell GNU LD that this is part of the static destructor set.  */
       /* This code works for any machine provided you use GNU as/ld.  */
-      fprintf (asm_out_file, "%s \"___DTOR_LIST__\",22,0,0,", ASM_STABS_OP);
+      fprintf (asm_out_file, "%s\"___DTOR_LIST__\",22,0,0,", ASM_STABS_OP);
       assemble_name (asm_out_file, name);
       fputc ('\n', asm_out_file);
     }
@@ -942,7 +942,7 @@ assemble_constructor (name)
     {
       /* Now tell GNU LD that this is part of the static constructor set.  */
       /* This code works for any machine provided you use GNU as/ld.  */
-      fprintf (asm_out_file, "%s \"___CTOR_LIST__\",22,0,0,", ASM_STABS_OP);
+      fprintf (asm_out_file, "%s\"___CTOR_LIST__\",22,0,0,", ASM_STABS_OP);
       assemble_name (asm_out_file, name);
       fputc ('\n', asm_out_file);
     }
@@ -962,7 +962,7 @@ assemble_gc_entry (name)
   if (flag_gnu_linker)
     {
       /* Now tell GNU LD that this is part of the static constructor set.  */
-      fprintf (asm_out_file, "%s \"___PTR_LIST__\",22,0,0,", ASM_STABS_OP);
+      fprintf (asm_out_file, "%s\"___PTR_LIST__\",22,0,0,", ASM_STABS_OP);
       assemble_name (asm_out_file, name);
       fputc ('\n', asm_out_file);
     }
@@ -1127,7 +1127,7 @@ assemble_zeros (size)
 	{
 #ifdef ASM_BYTE_OP
 	  fprintf (asm_out_file,
-		   "%s 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n", ASM_BYTE_OP);
+		   "%s0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n", ASM_BYTE_OP);
 #else
 	  fprintf (asm_out_file,
 		   "\tbyte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n");
@@ -1136,7 +1136,7 @@ assemble_zeros (size)
       if (i < size)
         {
 #ifdef ASM_BYTE_OP
-	  fprintf (asm_out_file, "%s 0", ASM_BYTE_OP);
+	  fprintf (asm_out_file, "%s0", ASM_BYTE_OP);
 #else
 	  fprintf (asm_out_file, "\tbyte 0");
 #endif

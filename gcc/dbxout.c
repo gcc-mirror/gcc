@@ -348,7 +348,7 @@ dbxout_function_end ()
 
   /* By convention, GCC will mark the end of a function with an N_FUN
      symbol and an empty string.  */
-  fprintf (asmfile, "%s \"\",%d,0,0,", ASM_STABS_OP, N_FUN);
+  fprintf (asmfile, "%s\"\",%d,0,0,", ASM_STABS_OP, N_FUN);
   assemble_name (asmfile, lscope_label_name);
   fputc ('-', asmfile);
   assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
@@ -394,7 +394,7 @@ dbxout_init (asm_file, input_file_name, syms)
 #ifdef DBX_OUTPUT_MAIN_SOURCE_DIRECTORY
 	  DBX_OUTPUT_MAIN_SOURCE_DIRECTORY (asmfile, cwd);
 #else /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
-	  fprintf (asmfile, "%s ", ASM_STABS_OP);
+	  fprintf (asmfile, "%s", ASM_STABS_OP);
 	  output_quoted_string (asmfile, cwd);
 	  fprintf (asmfile, ",%d,0,0,%s\n", N_SO, &ltext_label_name[1]);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
@@ -409,7 +409,7 @@ dbxout_init (asm_file, input_file_name, syms)
   /* We include outputting `Ltext:' here,
      because that gives you a way to override it.  */
   /* Used to put `Ltext:' before the reference, but that loses on sun 4.  */
-  fprintf (asmfile, "%s ", ASM_STABS_OP);
+  fprintf (asmfile, "%s", ASM_STABS_OP);
   output_quoted_string (asmfile, input_file_name);
   fprintf (asmfile, ",%d,0,0,%s\n", 
 	   N_SO, &ltext_label_name[1]);
@@ -493,7 +493,7 @@ dbxout_start_new_source_file (filename)
   n->file_number = next_file_number++;
   n->next_type_number = 1;
   current_file = n;
-  fprintf (asmfile, "%s ", ASM_STABS_OP);
+  fprintf (asmfile, "%s", ASM_STABS_OP);
   output_quoted_string (asmfile, filename);
   fprintf (asmfile, ",%d,0,0,0\n", N_BINCL);
 #endif
@@ -507,7 +507,7 @@ dbxout_resume_previous_source_file ()
 #ifdef DBX_USE_BINCL
   struct dbx_file *next;
 
-  fprintf (asmfile, "%s %d,0,0,0\n", ASM_STABN_OP, N_EINCL);
+  fprintf (asmfile, "%s%d,0,0,0\n", ASM_STABN_OP, N_EINCL);
   next = current_file->next;
   free (current_file);
   current_file = next;
@@ -530,7 +530,7 @@ dbxout_source_file (file, filename)
 #else
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext",
 				   source_label_number);
-      fprintf (file, "%s ", ASM_STABS_OP);
+      fprintf (file, "%s", ASM_STABS_OP);
       output_quoted_string (file, filename);
       fprintf (file, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
       if (current_function_decl != NULL_TREE
@@ -559,7 +559,7 @@ dbxout_source_line (file, filename, lineno)
 #ifdef ASM_OUTPUT_SOURCE_LINE
   ASM_OUTPUT_SOURCE_LINE (file, lineno);
 #else
-  fprintf (file, "\t%s %d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
+  fprintf (file, "\t%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
 #endif
 }
 
@@ -609,7 +609,7 @@ dbxout_continue ()
   fprintf (asmfile, "\\\\");
 #endif
   dbxout_finish_symbol (NULL_TREE);
-  fprintf (asmfile, "%s \"", ASM_STABS_OP);
+  fprintf (asmfile, "%s\"", ASM_STABS_OP);
   current_sym_nchars = 0;
 }
 #endif /* DBX_CONTIN_LENGTH > 0 */
@@ -1754,7 +1754,7 @@ dbxout_symbol (decl, local)
 	break;
       FORCE_TEXT;
 
-      fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+      fprintf (asmfile, "%s\"%s:%c", ASM_STABS_OP,
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 	       TREE_PUBLIC (decl) ? 'F' : 'f');
       result = 1;
@@ -1830,14 +1830,14 @@ dbxout_symbol (decl, local)
 		current_sym_addr = 0;
 		current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
 
-		fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"%s:T", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (name));
 		dbxout_type (type, 1, 0);
 		dbxout_finish_symbol (NULL_TREE);
 	      }
 
 	    /* Output typedef name.  */
-	    fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
+	    fprintf (asmfile, "%s\"%s:", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (DECL_NAME (decl)));
 
 	    /* Short cut way to output a tag also.  */
@@ -1891,7 +1891,7 @@ dbxout_symbol (decl, local)
 	    current_sym_addr = 0;
 	    current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
 
-	    fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
+	    fprintf (asmfile, "%s\"%s:T", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (name));
 	    dbxout_type (type, 1, 0);
 	    dbxout_finish_symbol (NULL_TREE);
@@ -1910,7 +1910,7 @@ dbxout_symbol (decl, local)
 
 	    /* Some debuggers fail when given NULL names, so give this a
 	       harmless name of ` '.  */
-	    fprintf (asmfile, "%s \" :T", ASM_STABS_OP);
+	    fprintf (asmfile, "%s\" :T", ASM_STABS_OP);
 	    dbxout_type (type, 1, 0);
 	    dbxout_finish_symbol (NULL_TREE);
 	  }
@@ -1956,7 +1956,7 @@ dbxout_symbol (decl, local)
 #ifdef DBX_OUTPUT_CONSTANT_SYMBOL
 		  DBX_OUTPUT_CONSTANT_SYMBOL (asmfile, name, ival);
 #else
-		  fprintf (asmfile, "%s \"%s:c=i", ASM_STABS_OP, name);
+		  fprintf (asmfile, "%s\"%s:c=i", ASM_STABS_OP, name);
 
 		  fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC, ival);
 		  fprintf (asmfile, "\",0x%x,0,0,0\n", N_LSYM);
@@ -2230,7 +2230,7 @@ dbxout_symbol_name (decl, suffix, letter)
 
   if (name == 0)
     name = "(anon)";
-  fprintf (asmfile, "%s \"%s%s:", ASM_STABS_OP, name,
+  fprintf (asmfile, "%s\"%s%s:", ASM_STABS_OP, name,
 	   (suffix ? suffix : ""));
 
   if (letter) putc (letter, asmfile);
@@ -2339,14 +2339,14 @@ dbxout_parms (parms)
 	      {
 		current_sym_nchars = 2 + IDENTIFIER_LENGTH (DECL_NAME (parms));
 
-		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"%s:%c", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (DECL_NAME (parms)),
 			 DBX_MEMPARM_STABS_LETTER);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"(anon):%c", ASM_STABS_OP,
 			 DBX_MEMPARM_STABS_LETTER);
 	      }
 
@@ -2404,14 +2404,14 @@ dbxout_parms (parms)
 	    if (DECL_NAME (parms))
 	      {
 		current_sym_nchars = 2 + IDENTIFIER_LENGTH (DECL_NAME (parms));
-		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"%s:%c", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (DECL_NAME (parms)),
 			 regparm_letter);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"(anon):%c", ASM_STABS_OP,
 			 regparm_letter);
 	      }
 
@@ -2457,14 +2457,14 @@ dbxout_parms (parms)
 	      {
 		current_sym_nchars = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
 
-		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"%s:%c", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (DECL_NAME (parms)),
 			 regparm_letter);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"(anon):%c", ASM_STABS_OP,
 			 regparm_letter);
 	      }
 
@@ -2518,14 +2518,14 @@ dbxout_parms (parms)
 		current_sym_nchars
 		  = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
 
-		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"%s:%c", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (DECL_NAME (parms)),
 			 DBX_MEMPARM_STABS_LETTER);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"(anon):%c", ASM_STABS_OP,
 		DBX_MEMPARM_STABS_LETTER);
 	      }
 
@@ -2538,7 +2538,7 @@ dbxout_parms (parms)
 	      {
 		/* Generate an entry for the stack location */
 
-		fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
+		fprintf (asmfile, "%s\"%s:", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (DECL_NAME (parms)));
 		current_sym_value = aux_sym_value;
 	        current_sym_code = N_LSYM;
@@ -2688,7 +2688,7 @@ dbxout_block (block, depth, args)
 #ifdef DBX_OUTPUT_CATCH
 		      DBX_OUTPUT_CATCH (asmfile, decl, buf);
 #else
-		      fprintf (asmfile, "%s \"%s:C1\",%d,0,0,", ASM_STABS_OP,
+		      fprintf (asmfile, "%s\"%s:C1\",%d,0,0,", ASM_STABS_OP,
 			       IDENTIFIER_POINTER (DECL_NAME (decl)), N_CATCH);
 		      assemble_name (asmfile, buf);
 		      fprintf (asmfile, "\n");
@@ -2700,7 +2700,7 @@ dbxout_block (block, depth, args)
 #ifdef DBX_OUTPUT_LBRAC
 	      DBX_OUTPUT_LBRAC (asmfile, buf);
 #else
-	      fprintf (asmfile, "%s %d,0,0,", ASM_STABN_OP, N_LBRAC);
+	      fprintf (asmfile, "%s%d,0,0,", ASM_STABN_OP, N_LBRAC);
 	      assemble_name (asmfile, buf);
 #if DBX_BLOCKS_FUNCTION_RELATIVE
 	      fputc ('-', asmfile);
@@ -2730,7 +2730,7 @@ dbxout_block (block, depth, args)
 #ifdef DBX_OUTPUT_RBRAC
 	      DBX_OUTPUT_RBRAC (asmfile, buf);
 #else
-	      fprintf (asmfile, "%s %d,0,0,", ASM_STABN_OP, N_RBRAC);
+	      fprintf (asmfile, "%s%d,0,0,", ASM_STABN_OP, N_RBRAC);
 	      assemble_name (asmfile, buf);
 #if DBX_BLOCKS_FUNCTION_RELATIVE
 	      fputc ('-', asmfile);

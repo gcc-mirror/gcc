@@ -273,7 +273,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #ifdef PUSHSECTION_FORMAT
 #define SECTION_FORMAT PUSHSECTION_FORMAT
 #else
-#define SECTION_FORMAT		"\t%s\t%s\n"
+#define SECTION_FORMAT		"%s%s\n"
 #endif
 #endif
 
@@ -306,12 +306,12 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 #ifndef ASM_OUTPUT_DWARF_DATA1
 #define ASM_OUTPUT_DWARF_DATA1(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) (VALUE))
+  fprintf ((FILE), "%s0x%x", ASM_BYTE_OP, (unsigned) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DELTA1
 #define ASM_OUTPUT_DWARF_DELTA1(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", ASM_BYTE_OP);			\
+ do {	fprintf ((FILE), "%s", ASM_BYTE_OP);			\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, "-");						\
 	assemble_name (FILE, LABEL2);					\
@@ -334,7 +334,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 #ifndef ASM_OUTPUT_DWARF_DELTA2
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_SHORT_ASM_OP);		\
+ do {	fprintf ((FILE), "%s", UNALIGNED_SHORT_ASM_OP);			\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, "-");						\
 	assemble_name (FILE, LABEL2);					\
@@ -343,7 +343,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 #ifndef ASM_OUTPUT_DWARF_DELTA4
 #define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+ do {	fprintf ((FILE), "%s", UNALIGNED_INT_ASM_OP);			\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, "-");						\
 	assemble_name (FILE, LABEL2);					\
@@ -352,7 +352,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 #ifndef ASM_OUTPUT_DWARF_DELTA
 #define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_OFFSET_ASM_OP);		\
+ do {	fprintf ((FILE), "%s", UNALIGNED_OFFSET_ASM_OP);		\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, "-");						\
 	assemble_name (FILE, LABEL2);					\
@@ -361,7 +361,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 #ifndef ASM_OUTPUT_DWARF_ADDR_DELTA
 #define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);		\
+ do {	fprintf ((FILE), "%s", UNALIGNED_WORD_ASM_OP);			\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, "-");						\
 	assemble_name (FILE, LABEL2);					\
@@ -370,7 +370,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 #ifndef ASM_OUTPUT_DWARF_ADDR
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL)				\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);		\
+ do {	fprintf ((FILE), "%s", UNALIGNED_WORD_ASM_OP);			\
 	assemble_name (FILE, LABEL);					\
   } while (0)
 #endif
@@ -378,50 +378,50 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)				\
   do {									\
-    fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);			\
+    fprintf ((FILE), "%s", UNALIGNED_WORD_ASM_OP);			\
     output_addr_const ((FILE), (RTX));					\
   } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_OFFSET4
 #define ASM_OUTPUT_DWARF_OFFSET4(FILE,LABEL) \
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+ do {	fprintf ((FILE), "%s", UNALIGNED_INT_ASM_OP);			\
 	assemble_name (FILE, LABEL);					\
   } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_OFFSET
 #define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL)				\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_OFFSET_ASM_OP);		\
+ do {	fprintf ((FILE), "%s", UNALIGNED_OFFSET_ASM_OP);		\
 	assemble_name (FILE, LABEL);					\
   } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA2
 #define ASM_OUTPUT_DWARF_DATA2(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_SHORT_ASM_OP, (unsigned) (VALUE))
+  fprintf ((FILE), "%s0x%x", UNALIGNED_SHORT_ASM_OP, (unsigned) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA4
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_INT_ASM_OP, (unsigned) (VALUE))
+  fprintf ((FILE), "%s0x%x", UNALIGNED_INT_ASM_OP, (unsigned) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA8
 #define ASM_OUTPUT_DWARF_DATA8(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_DOUBLE_INT_ASM_OP, \
+  fprintf ((FILE), "%s0x%lx", UNALIGNED_DOUBLE_INT_ASM_OP, \
 	   (unsigned long) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA
 #define ASM_OUTPUT_DWARF_DATA(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_OFFSET_ASM_OP, \
+  fprintf ((FILE), "%s0x%lx", UNALIGNED_OFFSET_ASM_OP, \
 	   (unsigned long) (VALUE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ADDR_DATA
 #define ASM_OUTPUT_DWARF_ADDR_DATA(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_WORD_ASM_OP, \
+  fprintf ((FILE), "%s0x%lx", UNALIGNED_WORD_ASM_OP, \
 	   (unsigned long) (VALUE))
 #endif
 
@@ -430,13 +430,13 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
   do {									\
     if (WORDS_BIG_ENDIAN)						\
       {									\
-	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, (HIGH_VALUE));\
-	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, (LOW_VALUE));\
+	fprintf ((FILE), "%s0x%lx\n", UNALIGNED_INT_ASM_OP, (HIGH_VALUE));\
+	fprintf ((FILE), "%s0x%lx", UNALIGNED_INT_ASM_OP, (LOW_VALUE));\
       }									\
     else								\
       {									\
-	fprintf ((FILE), "\t%s\t0x%lx\n", UNALIGNED_INT_ASM_OP, (LOW_VALUE)); \
-	fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, (HIGH_VALUE)); \
+	fprintf ((FILE), "%s0x%lx\n", UNALIGNED_INT_ASM_OP, (LOW_VALUE)); \
+	fprintf ((FILE), "%s0x%lx", UNALIGNED_INT_ASM_OP, (HIGH_VALUE)); \
       }									\
   } while (0)
 #endif
@@ -514,7 +514,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #ifndef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
 #define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)    	\
  do {									\
-  fprintf (FILE, "\t%s\t", SET_ASM_OP);					\
+  fprintf (FILE, "%s", SET_ASM_OP);					\
   assemble_name (FILE, SY);						\
   fputc (',', FILE);							\
   assemble_name (FILE, HI);						\
@@ -1563,7 +1563,7 @@ output_uleb128 (value)
 {
   unsigned long save_value = value;
 
-  fprintf (asm_out_file, "\t%s\t", ASM_BYTE_OP);
+  fprintf (asm_out_file, "%s", ASM_BYTE_OP);
   do
     {
       register unsigned byte = (value & 0x7f);
@@ -1592,7 +1592,7 @@ output_sleb128 (value)
   register unsigned byte;
   long save_value = value;
 
-  fprintf (asm_out_file, "\t%s\t", ASM_BYTE_OP);
+  fprintf (asm_out_file, "%s", ASM_BYTE_OP);
   do
     {
       byte = (value & 0x7f);
@@ -5789,7 +5789,7 @@ output_abbrev_section ()
 		 dwarf_tag_name (abbrev->die_tag));
 
       fputc ('\n', asm_out_file);
-      fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP,
+      fprintf (asm_out_file, "%s0x%x", ASM_BYTE_OP,
 	       abbrev->die_child != NULL ? DW_children_yes : DW_children_no);
 
       if (flag_debug_asm)
@@ -5812,11 +5812,11 @@ output_abbrev_section ()
 	  output_value_format (a_attr);
 	}
 
-      fprintf (asm_out_file, "\t%s\t0,0\n", ASM_BYTE_OP);
+      fprintf (asm_out_file, "%s0,0\n", ASM_BYTE_OP);
     }
 
   /* Terminate the table.  */
-  fprintf (asm_out_file, "\t%s\t0\n", ASM_BYTE_OP);
+  fprintf (asm_out_file, "%s0\n", ASM_BYTE_OP);
 }
 
 /* Output a symbol we can use to refer to this DIE from another CU.  */
@@ -6403,19 +6403,19 @@ output_line_info ()
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  fprintf (asm_out_file, "\t%s\t%d", ASM_BYTE_OP, DWARF_LINE_BASE);
+  fprintf (asm_out_file, "%s%d", ASM_BYTE_OP, DWARF_LINE_BASE);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Line Base Value (Special Opcodes)",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  fprintf (asm_out_file, "\t%s\t%u", ASM_BYTE_OP, DWARF_LINE_RANGE);
+  fprintf (asm_out_file, "%s%u", ASM_BYTE_OP, DWARF_LINE_RANGE);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Line Range Value (Special Opcodes)",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  fprintf (asm_out_file, "\t%s\t%u", ASM_BYTE_OP, DWARF_LINE_OPCODE_BASE);
+  fprintf (asm_out_file, "%s%u", ASM_BYTE_OP, DWARF_LINE_OPCODE_BASE);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Special Opcode Base", ASM_COMMENT_START);
 
