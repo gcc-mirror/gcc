@@ -69,6 +69,13 @@ Boston, MA 02111-1307, USA.  */
 #include "gofast.h"
 #define INIT_TARGET_OPTABS INIT_GOFAST_OPTABS
 
+/* Biggest alignment supported by the object file format of this
+   machine.  Use this macro to limit the alignment which can be
+   specified using the `__attribute__ ((aligned (N)))' construct.  If
+   not defined, the default value is `BIGGEST_ALIGNMENT'.  */
+
+#define MAX_OFILE_ALIGNMENT (32768*8)
+
 /* We need to use .esize and .etype instead of .size and .type to
    avoid conflicting with ELF directives.  */
 #undef PUT_SDB_SIZE
