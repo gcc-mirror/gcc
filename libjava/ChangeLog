@@ -1,3 +1,25 @@
+1999-05-11  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in, configure: Rebuilt.
+	* Makefile.am (jv_convert_LDFLAGS): Removed -nodefaultlibs.
+	(jv_convert_LDADD): Added ZLIBS.  Removed -lm, -lc, -lgcc.
+	(jv_convert_DEPENDENCIES): Added ZDEPS.
+	* configure.in (GCSPEC): Added `-L' to point to boehm-gc build
+	directory.
+	(THREADSPEC): Added `-L' to point to qthreads build directory.
+	(ZLIBS): New subst.
+	(ZDEPS): New subst.
+
+	* configure, Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclib_DATA): New macro.
+	* configure.in: Create libgcj.spec.  Look for -lsocket and -lnsl.
+	Recognize --with-system-zlib.
+	(GCSPEC): New subst.
+	(THREADSPEC): New subst.
+	(SYSTEMSPEC): New subst.
+	(ZLIBSPEC): New subst.
+	* libgcj.spec.in: New file.
+
 1999-05-10  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/InputStreamReader.java (read): If length is 0, return

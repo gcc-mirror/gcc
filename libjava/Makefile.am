@@ -16,6 +16,7 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 
 toolexeclib_LTLIBRARIES = libgcj.la
+toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
 ## For now, only on native systems.
@@ -260,14 +261,18 @@ EXTRA_jv_convert_SOURCES = $(convert_source_files)
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
-jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert -nodefaultlibs \
+jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 	-rpath $(toolexeclibdir)
 jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 	-o jv-convert
+## We explicitly link in the libraries we need.  This way we don't
+## need -nodefaultlibs, so we can still rely on gcj picking up the
+## system libraries we need (via the specs file).  The -L. finds the
+## specs file for us.
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS) -lm -lgcc -lc -lgcc
+	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L.
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
-	$(GCDEPS) $(THREADDEPS) libgcj.la
+	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
