@@ -1,4 +1,26 @@
-2000-01-11  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>, Richard Henderson  <rth@cygnus.com>
+2000-01-11 16:24 -0800  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (struct cpp_options): Change lang_asm to char.
+	Add lang_fortran.
+	* cppinit.c (builtin_array): Take out __STDC_VERSION__, it's
+	done in cpp_handle_option now.
+	(initialize_builtins): Take out special case code used only by
+	__STDC_VERSION__.
+	(cpp_handle_option): Turn off trigraphs and trigraph warnings
+	if -traditional.  Recognize -lang-fortran and set
+	lang_fortran, also turn off cplusplus_comments.
+	(print_help): Document -lang-fortran.
+	* cpplib.c (handle_directive): Ignore `# 123 "file"' if
+	lang_asm. Ignore all directives other than `# 123 "file"' if
+	CPP_PREPROCESSED.
+	(cpp_get_token): If -traditional, don't recognize directives
+	unless the # is in column 1.
+	(parse_string): If lang_fortran or lang_asm, silently
+	terminate strings ('' or "") at end of line.
+	Remove unnecessary braces.
+
+2000-01-11  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+	    Richard Henderson  <rth@cygnus.com>
 
 	* resource.c (mark_referenced_resources): Mark a set strict_low_part
 	as used.

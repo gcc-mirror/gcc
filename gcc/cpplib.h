@@ -346,10 +346,18 @@ struct cpp_options {
 
   char objc;
 
-  /* Nonzero means this is an assembly file, and allow
-     unknown directives, which could be comments.  */
+  /* Nonzero means this is an assembly file, so ignore unrecognized
+     directives and the "# 33" form of #line, both of which are
+     probably comments.  Also, permit unbalanced ' strings (again,
+     likely to be in comments).  */
 
-  int lang_asm;
+  char lang_asm;
+
+  /* Nonzero means this is Fortran, and we don't know where the
+     comments are, so permit unbalanced ' strings.  Unlike lang_asm,
+     this does not ignore unrecognized directives.  */
+
+  char lang_fortran;
 
   /* Nonzero means turn NOTREACHED into #pragma NOTREACHED etc */
 
