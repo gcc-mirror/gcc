@@ -92,6 +92,11 @@ Boston, MA 02111-1307, USA.  */
 #define target_flags not_target_flags
 static int __attribute__ ((__unused__)) not_target_flags = 0;
 
+/* Some ROUND_TYPE_ALIGN use ALTIVEC_VECTOR_MODE (rs6000 darwin).
+   Define a dummy ALTIVEC_VECTOR_MODE so it will not die.  */
+#undef ALTIVEC_VECTOR_MODE
+#define ALTIVEC_VECTOR_MODE(MODE) (0)
+
 
 /*  FIXME: while this file has no business including tm.h, this
     definitely has no business defining this macro but it
