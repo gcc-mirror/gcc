@@ -1,3 +1,8 @@
+2003-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* genautomata.c (output_internal_insn_latency_func): Add
+	missing break statement to generated code.
+
 2003-01-21  Roger Sayle  <roger@eyesopen.com>
 
 	* stmt.c (same_case_target_p): New function to determine whether

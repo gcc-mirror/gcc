@@ -8982,7 +8982,7 @@ output_internal_insn_latency_func ()
 			 bypass->latency);
 	      }
 	  }
-	fputs ("        }\n", output_file);
+	fputs ("        }\n      break;\n", output_file);
       }
 
   fprintf (output_file, "    }\n  return default_latencies[%s];\n}\n\n",
