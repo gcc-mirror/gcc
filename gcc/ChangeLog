@@ -1,3 +1,36 @@
+2002-05-21  Richard Henderson  <rth@redhat.com>
+
+	* c-common.h (enum rid): Add RID_THREAD.
+	* c-decl.c (start_decl): Do not set DECL_COMMON for tls variables.
+	(grokdeclarator): Grok __thread.
+	* c-parse.in (reswords): Add __thread.
+	(rid_to_yy): Add RID_THREAD.
+
+	* tree.h (DECL_THREAD_LOCAL): New.
+	(struct tree_decl): Add thread_local_flag.
+	* print-tree.c (print_node): Dump DECL_THREAD_LOCAL.
+	* tree.c (staticp): TLS variables are not static.
+
+	* target-def.h (TARGET_HAVE_TLS): New.
+	* target.h (have_tls): New.
+	* output.h (SECTION_TLS): New.
+	* varasm.c (assemble_variable): TLS variables can't be common for now.
+	(default_section_type_flags): Handle .tdata and .tbss.
+	(default_elf_asm_named_section): Handle SECTION_TLS.
+	(categorize_decl_for_section): Handle DECL_THREAD_LOCAL.
+
+	* flags.h (flag_tls_default): Declare.
+	* toplev.c (flag_tls_default): Define.
+	(display_help): Display help for it.
+	(decode_f_option): Set it.
+
+	* doc/extend.texi (Thread-Local): New node describing language-level
+	thread-local storage.
+	* doc/invoke.texi (-ftls-model): Document.
+
+	* fixinc/inclhack.def (thread_keyword): New.
+	* fixinc/fixincl.x: Rebuild.
+
 2002-05-21  Jeffrey A Law  <law@redhat.com>
 
 	* i386.c (ix86_sched_reorder_ppro): Fix typo/thinko.

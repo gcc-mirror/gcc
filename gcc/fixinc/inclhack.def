@@ -1,4 +1,3 @@
-
 /* -*- Mode: C -*-  */
 
 autogen definitions fixincl;
@@ -2885,6 +2884,20 @@ fix = {
     "extern char*\tbsearch(void*,size_t,size_t);\n";
 };
 
+
+/*
+ * __thread is now a keyword.
+ */
+fix = {
+    hackname	= thread_keyword;
+    files	= "pthread.h";
+    files	= "bits/sigthread.h";
+    select	= "pthread_t __thread";
+
+    sed		= "s/pthread_t __thread\\([^a-z0-9_]\\)/pthread_t __thr\\1/";
+
+    test_text	= "extern int pthread_kill (pthread_t __thread, int __signo);";
+};
 
 /*
  *  if the #if says _cplusplus, not the double underscore __cplusplus

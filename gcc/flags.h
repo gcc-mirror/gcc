@@ -458,10 +458,21 @@ extern int flag_dump_unnumbered;
 
 extern int flag_pedantic_errors;
 
-/* Nonzero means generate position-independent code.
-   This is not fully implemented yet.  */
+/* Nonzero means generate position-independent code.  1 vs 2 for a 
+   target-dependent "small" or "large" mode.  */
 
 extern int flag_pic;
+
+/* Set to the default thread-local storage (tls) model to use.  */
+
+enum tls_model {
+  TLS_MODEL_GLOBAL_DYNAMIC,
+  TLS_MODEL_LOCAL_DYNAMIC,
+  TLS_MODEL_INITIAL_EXEC,
+  TLS_MODEL_LOCAL_EXEC
+};
+
+extern enum tls_model flag_tls_default;
 
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */

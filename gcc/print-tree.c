@@ -352,6 +352,8 @@ print_node (file, prefix, node, indent)
 
       if (TREE_CODE (node) == VAR_DECL && DECL_IN_TEXT_SECTION (node))
 	fputs (" in-text-section", file);
+      if (TREE_CODE (node) == VAR_DECL && DECL_THREAD_LOCAL (node))
+	fputs (" thread-local", file);
 
       if (TREE_CODE (node) == PARM_DECL && DECL_TRANSPARENT_UNION (node))
 	fputs (" transparent-union", file);

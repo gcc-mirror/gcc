@@ -256,6 +256,9 @@ struct gcc_target
   /* True if "native" constructors and destructors are supported,
      false if we're using collect2 for the job.  */
   bool have_ctors_dtors;
+
+  /* True if thread-local storage is supported.  */
+  bool have_tls;
 };
 
 extern struct gcc_target targetm;

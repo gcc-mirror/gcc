@@ -474,6 +474,7 @@ const short rid_to_yy[RID_MAX] =
   /* RID_BOUNDED */	0,
   /* RID_UNBOUNDED */	0,
   /* RID_COMPLEX */	TYPESPEC,
+  /* RID_THREAD */	0,
 
   /* C++ */
   /* RID_FRIEND */	SCSPEC,

@@ -685,11 +685,14 @@ int flag_shared_data;
 int flag_delayed_branch;
 
 /* Nonzero if we are compiling pure (sharable) code.
-   Value is 1 if we are doing reasonable (i.e. simple
-   offset into offset table) pic.  Value is 2 if we can
-   only perform register offsets.  */
+   Value is 1 if we are doing "small" pic; value is 2 if we're doing
+   "large" pic.  */
 
 int flag_pic;
+
+/* Set to the default thread-local storage (tls) model to use.  */
+
+enum tls_model flag_tls_default;
 
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */
@@ -3547,6 +3550,7 @@ display_help ()
   printf (_("  -finline-limit=<number> Limits the size of inlined functions to <number>\n"));
   printf (_("  -fmessage-length=<number> Limits diagnostics messages lengths to <number> characters per line.  0 suppresses line-wrapping\n"));
   printf (_("  -fdiagnostics-show-location=[once | every-line] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n"));
+  printf (_("  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indicates the default thread-local storage code generation model\n"));
 
   for (i = ARRAY_SIZE (f_options); i--;)
     {
@@ -3824,6 +3828,19 @@ decode_f_option (arg)
 	read_integral_parameter (option_value, arg - 2,
 				 MAX_INLINE_INSNS);
       set_param_value ("max-inline-insns", val);
+    }
+  else if ((option_value = skip_leading_substring (arg, "tls-model=")))
+    {
+      if (strcmp (option_value, "global-dynamic") == 0)
+	flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
+      else if (strcmp (option_value, "local-dynamic") == 0)
+	flag_tls_default = TLS_MODEL_LOCAL_DYNAMIC;
+      else if (strcmp (option_value, "initial-exec") == 0)
+	flag_tls_default = TLS_MODEL_INITIAL_EXEC;
+      else if (strcmp (option_value, "local-exec") == 0)
+	flag_tls_default = TLS_MODEL_LOCAL_EXEC;
+      else
+	warning ("`%s': unknown tls-model option", arg - 2);
     }
 #ifdef INSN_SCHEDULING
   else if ((option_value = skip_leading_substring (arg, "sched-verbose=")))
