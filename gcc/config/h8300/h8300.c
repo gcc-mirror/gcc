@@ -767,34 +767,6 @@ print_operand_address (file, addr)
     }
 }
 
-/* Output to FILE a reference to the user-level label NAME.
-   Strip off the section name if any.  It is separated from the label name
-   by a space.  */
-
-void
-asm_output_labelref (file, name)
-     FILE *file;
-     char *name;
-{
-  char *p;
-
-  fputc ('_', file);
-
-  for (p = name; *p; p++)
-    {
-      if (*p == ' ')
-	{
-	  /* If we found a space in the name, then we've skipped over the
-	     section encoding.  */
-	  fputs (p + 1, file);
-	  return;
-	}
-    }
-
-  /* No space, so no section.  */
-  fputs (name, file);
-}
-
 /* Output all insn addresses and their sizes into the assembly language
    output file.  This is helpful for debugging whether the length attributes
    in the md file are correct.  This is not meant to be a user selectable
