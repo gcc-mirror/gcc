@@ -981,7 +981,7 @@ build_static_field_ref (fdecl)
   int is_compiled = is_compiled_class (fclass);
   if (is_compiled)
     {
-      if (DECL_RTL (fdecl) == 0)
+      if (!DECL_RTL_SET_P (fdecl))
 	{
 	  make_decl_rtl (fdecl, NULL);
 	  if (is_compiled == 1)
@@ -1144,7 +1144,7 @@ make_method_value (mdecl)
 #define ACC_TRANSLATED          0x4000
   int accflags = get_access_flags_from_decl (mdecl) | ACC_TRANSLATED;
   code = null_pointer_node;
-  if (DECL_RTL (mdecl))
+  if (DECL_RTL_SET_P (mdecl))
     code = build1 (ADDR_EXPR, nativecode_ptr_type_node, mdecl);
   START_RECORD_CONSTRUCTOR (minit, method_type_node);
   PUSH_FIELD_VALUE (minit, "name",
@@ -1218,7 +1218,7 @@ get_dispatch_table (type, this_class_addr)
 	}
       else
 	{
-	  if (DECL_RTL (method) == 0)
+	  if (!DECL_RTL_SET_P (method))
 	    make_decl_rtl (method, NULL);
 	  method = build1 (ADDR_EXPR, nativecode_ptr_type_node, method);
 	}

@@ -1,5 +1,11 @@
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (build_static_field_ref): Likewise.
+	(make_method_value): Likewise.
+	(get_dispatch_table): Likewise.
+
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
 	* decl.c (push_jvm_slot): Use COPY_DECL_RTL, DECL_RTL_SET_P, etc.
 
 2001-03-07  Tom Tromey  <tromey@redhat.com>
