@@ -1,5 +1,11 @@
 2001-02-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* fold-const.c (fold_binary_op_with_conditional_arg): New
+	function, split out from ...
+	(fold): ... here.
+	* tree.def (COND_EXPR): Document the use of VOID_TYPE for
+	conditional arms that throw exceptions.
+	
 	* print-tree.c (print_node): Do not use BLOCK_CHAIN when we're not
 	looking at a BLOCK.
 
