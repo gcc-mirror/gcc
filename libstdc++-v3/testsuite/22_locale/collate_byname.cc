@@ -1,6 +1,6 @@
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -120,9 +120,9 @@ void test01()
   l4 = coll_de.hash(strlit4, strlit4 + size4);
   VERIFY ( l3 != l4 );
 
-  string str5 = coll_de.transform(strlit3, strlit3 + size4);
+  string str5 = coll_de.transform(strlit3, strlit3 + size3);
   string str6 = coll_de.transform(strlit4, strlit4 + size4);
-  i3 = coll_de.compare(str5.c_str(), str5.c_str() + size4,
+  i3 = coll_de.compare(str5.c_str(), str5.c_str() + size3,
 		       str6.c_str(), str6.c_str() + size4);
   i4 = coll_de.compare(strlit3, strlit3 + size4, strlit4, strlit4 + size4);
   VERIFY(i3 == i4);
