@@ -359,7 +359,7 @@ flow_analysis (f, nregs, file)
 		    || prev_code == BARRIER)))
 	  i++;
 
-	if (code == CALL_INSN && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	if (code == CALL_INSN && find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	  code = INSN;
 
 	if (code != NOTE)
