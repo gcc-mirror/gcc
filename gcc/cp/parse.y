@@ -937,7 +937,7 @@ paren_expr_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' expr ')'
-		{ $$ = build1 (CLEANUP_POINT_EXPR, bool_type_node, 
+		{ $$ = build1 (CLEANUP_POINT_EXPR, boolean_type_node, 
 			       bool_truthvalue_conversion ($2)); }
 	;
 
@@ -947,7 +947,7 @@ paren_cond_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' condition ')'
-		{ $$ = build1 (CLEANUP_POINT_EXPR, bool_type_node, 
+		{ $$ = build1 (CLEANUP_POINT_EXPR, boolean_type_node, 
 			       bool_truthvalue_conversion ($2)); }
 	;
 
@@ -955,7 +955,7 @@ xcond:
 	/* empty */
 		{ $$ = NULL_TREE; }
 	| condition
-		{ $$ = build1 (CLEANUP_POINT_EXPR, bool_type_node, 
+		{ $$ = build1 (CLEANUP_POINT_EXPR, boolean_type_node, 
 			       bool_truthvalue_conversion ($$)); }
 	| error
 		{ $$ = NULL_TREE; }
@@ -1664,9 +1664,9 @@ delete:	  DELETE
 
 boolean.literal:
 	  CXX_TRUE
-		{ $$ = true_node; }
+		{ $$ = boolean_true_node; }
 	| CXX_FALSE
-		{ $$ = false_node; }
+		{ $$ = boolean_false_node; }
 	;
 
 /* Produces a STRING_CST with perhaps more STRING_CSTs chained onto it.  */

@@ -2740,7 +2740,7 @@ build_binary_op (code, arg1, arg2, convert_p)
 	  
 	  types[0] = type1; types[1] = type2;
 	  if (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
-	    try = build_type_conversion (code, bool_type_node,
+	    try = build_type_conversion (code, boolean_type_node,
 					 args[convert_index], 1);
 	  else
 	    {
@@ -2975,7 +2975,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      result_type = bool_type_node;
+      result_type = boolean_type_node;
       op0 = bool_truthvalue_conversion (op0);
       op1 = bool_truthvalue_conversion (op1);
       converted = 1;
@@ -3059,7 +3059,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 
     case EQ_EXPR:
     case NE_EXPR:
-      result_type = bool_type_node;
+      result_type = boolean_type_node;
       converted = 1;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
@@ -3251,7 +3251,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
-      result_type = bool_type_node;
+      result_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
 	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	short_compare = 1;
@@ -3437,8 +3437,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  tree val 
 	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
 	  if (val != 0)
-	    return convert (bool_type_node, val);
-	  op0 = xop0, op1 = xop1, result_type = bool_type_node;
+	    return convert (boolean_type_node, val);
+	  op0 = xop0, op1 = xop1, result_type = boolean_type_node;
 	  resultcode = xresultcode;
 	}
 
@@ -3776,7 +3776,7 @@ bool_truthvalue_conversion (expr)
   /* We really want to preform the optimizations in truthvalue_conversion
      but, not this way. */
   /* expr = truthvalue_conversion (expr); */
-  return convert (bool_type_node, expr);
+  return convert (boolean_type_node, expr);
 }
 
 /* C++: Must handle pointers to members.
