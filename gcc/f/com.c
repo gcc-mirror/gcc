@@ -11823,8 +11823,7 @@ ffecom_init_0 ()
       warning ("and pointers are %d bits wide, but g77 doesn't yet work",
 	  (int) TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (null_pointer_node))));
       warning ("properly unless they all are 32 bits wide");
-      warning ("Please keep this in mind before you report bugs.  g77 should");
-      warning ("support non-32-bit machines better as of version 0.6");
+      warning ("Please keep this in mind before you report bugs.");
     }
 #endif
 

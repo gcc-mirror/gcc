@@ -120,8 +120,6 @@ configuration that it no longer makes regarding variables (types).
 Included with this item is the fact that @code{g77} doesn't recognize
 that, on IEEE-754/854-compliant systems, @samp{0./0.} should produce a NaN
 and no warning instead of the value @samp{0.} and a warning.
-This is to be fixed in version 0.6, when @code{g77} will use the
-@code{gcc} back end's constant-handling mechanisms to replace its own.
 
 @cindex compiler speed
 @cindex speed, of compiler
@@ -138,7 +136,6 @@ areas having any initialized elements.
 For example, @samp{REAL A(1000000)} followed by @samp{DATA A(1)/1/}
 takes up way too much time and space, including
 the size of the generated assembler file.
-This is to be mitigated somewhat in version 0.6.
 
 Version 0.5.18 improves cases like this---specifically,
 cases of @emph{sparse} initialization that leave large, contiguous
@@ -232,8 +229,6 @@ working together properly sooner.
 such as the Digital Semiconductor (``DEC'') Alpha.
 
 This problem is largely resolved as of version 0.5.23.
-Version 0.6 should solve most or all remaining problems
-(such as cross-compiling involving 64-bit machines).
 
 @cindex padding
 @cindex structures
