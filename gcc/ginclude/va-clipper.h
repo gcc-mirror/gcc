@@ -15,7 +15,7 @@ typedef struct
 
 
 #if defined (_STDARG_H) || defined (_VARARGS_H)
-#define va_list __gnuc_va_list
+typedef __gnuc_va_list va_list;
 #define __va_list __gnuc_va_list	/* acc compatibility */
 
 #define _VA_LIST

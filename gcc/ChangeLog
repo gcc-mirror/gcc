@@ -1,3 +1,8 @@
+Sat Aug  1 17:59:30 1998  Richard Henderson  <rth@cygnus.com>
+
+        * ginclude/va-alpha.h (va_list): Use a typedef, not a define.
+        * ginclude/va-clipper.h (va_list): Likewise.
+
 Fri Jul 31 20:22:02 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (rs6000_override_options): If big endian and -Os, use

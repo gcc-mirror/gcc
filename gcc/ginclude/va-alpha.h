@@ -28,8 +28,8 @@ typedef struct {
 /* If this is for internal libc use, don't define anything but
    __gnuc_va_list.  */
 #if defined (_STDARG_H) || defined (_VARARGS_H)
+typedef __gnuc_va_list va_list;
 
-#define va_list __gnuc_va_list
 #define _VA_LIST
 #define _VA_LIST_
 
@@ -128,4 +128,3 @@ enum {
 #define __va_copy(dest, src) (dest) = (src)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
-
