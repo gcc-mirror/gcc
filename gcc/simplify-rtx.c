@@ -140,6 +140,128 @@ simplify_gen_binary (code, mode, op0, op1)
     return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
+/* Make a unary operation by first seeing if it folds and otherwise making
+   the specified operation.  */
+
+rtx
+simplify_gen_unary (code, mode, op, op_mode)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx op;
+     enum machine_mode op_mode;
+{
+  rtx tem;
+
+  /* If this simplifies, use it.  */
+  if ((tem = simplify_unary_operation (code, mode, op, op_mode)) != 0)
+    return tem;
+
+  return gen_rtx_fmt_e (code, mode, op);
+}
+
+/* Likewise for ternary operations.  */
+
+rtx
+simplify_gen_ternary (code, mode, op0_mode, op0, op1, op2)
+     enum rtx_code code;
+     enum machine_mode mode, op0_mode;
+     rtx op0, op1, op2;
+{
+  rtx tem;
+
+  /* If this simplifies, use it.  */
+  if (0 != (tem = simplify_ternary_operation (code, mode, op0_mode,
+					      op0, op1, op2)))
+    return tem;
+
+  return gen_rtx_fmt_eee (code, mode, op0, op1, op2);
+}
+
+/* Likewise, for relational operations.  */
+
+rtx
+simplify_gen_relational (code, mode, op0, op1)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx op0, op1;
+{
+  rtx tem;
+
+  if ((tem = simplify_relational_operation (code, mode, op0, op1)) != 0)
+    return tem;
+
+  /* Put complex operands first and constants second.  */
+  if ((CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)
+      || (GET_RTX_CLASS (GET_CODE (op0)) == 'o'
+	  && GET_RTX_CLASS (GET_CODE (op1)) != 'o')
+      || (GET_CODE (op0) == SUBREG
+	  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op0))) == 'o'
+	  && GET_RTX_CLASS (GET_CODE (op1)) != 'o'))
+    tem = op0, op0 = op1, op1 = tem, code = swap_condition (code);
+
+  return gen_rtx_fmt_ee (code, mode, op0, op1);
+}
+
+/* Replace all occurrences of OLD in X with NEW and try to simplify the
+   resulting RTX.  Return a new RTX which is as simplified as possible.  */
+
+rtx
+simplify_replace_rtx (x, old, new)
+     rtx x;
+     rtx old;
+     rtx new;
+{
+  enum rtx_code code = GET_CODE (x);
+  enum machine_mode mode = GET_MODE (x);
+
+  /* If X is OLD, return NEW.  Otherwise, if this is an expression, try
+     to build a new expression substituting recursively.  If we can't do
+     anything, return our input.  */
+
+  if (x == old)
+    return new;
+
+  switch (GET_RTX_CLASS (code))
+    {
+    case '1':
+      {
+	enum machine_mode op_mode = GET_MODE (XEXP (x, 0));
+	rtx op = (XEXP (x, 0) == old
+		  ? new : simplify_replace_rtx (XEXP (x, 0), old, new));
+
+	return simplify_gen_unary (code, mode, op, op_mode);
+      }
+
+    case '2':
+    case 'c':
+      return
+	simplify_gen_binary (code, mode,
+			     simplify_replace_rtx (XEXP (x, 0), old, new),
+			     simplify_replace_rtx (XEXP (x, 1), old, new));
+
+    case '3':
+    case 'b':
+      return
+	simplify_gen_ternary (code, mode, GET_MODE (XEXP (x, 0)),
+			      simplify_replace_rtx (XEXP (x, 0), old, new),
+			      simplify_replace_rtx (XEXP (x, 1), old, new),
+			      simplify_replace_rtx (XEXP (x, 2), old, new));
+
+    case 'x':
+      /* The only case we try to handle is a lowpart SUBREG of a single-word
+	 CONST_INT.  */
+      if (code == SUBREG && subreg_lowpart_p (x) && old == SUBREG_REG (x)
+	  && GET_CODE (new) == CONST_INT
+	  && GET_MODE_SIZE (GET_MODE (old)) <= UNITS_PER_WORD)
+	return GEN_INT (INTVAL (new) & GET_MODE_MASK (mode));
+
+      return x;
+
+    default:
+      return x;
+    }
+}
+
 /* Try to simplify a unary operation CODE whose output mode is to be
    MODE with input operand OP whose mode was originally OP_MODE.
    Return zero if no simplification can be made.  */
@@ -2063,11 +2185,8 @@ rtx
 simplify_rtx (x)
      rtx x;
 {
-  enum rtx_code code;
-  enum machine_mode mode;
-
-  mode = GET_MODE (x);
-  code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
+  enum machine_mode mode = GET_MODE (x);
 
   switch (GET_RTX_CLASS (code))
     {
@@ -2081,11 +2200,13 @@ simplify_rtx (x)
     case '3':
     case 'b':
       return simplify_ternary_operation (code, mode, GET_MODE (XEXP (x, 0)),
-					 XEXP (x, 0), XEXP (x, 1), XEXP (x, 2));
+					 XEXP (x, 0), XEXP (x, 1),
+					 XEXP (x, 2));
 
     case '<':
       return simplify_relational_operation (code,
-					    (GET_MODE (XEXP (x, 0)) != VOIDmode
+					    ((GET_MODE (XEXP (x, 0))
+					      != VOIDmode)
 					     ? GET_MODE (XEXP (x, 0))
 					     : GET_MODE (XEXP (x, 1))),
 					    XEXP (x, 0), XEXP (x, 1));

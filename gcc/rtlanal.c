@@ -1485,6 +1485,23 @@ find_regno_note (insn, kind, regno)
   return 0;
 }
 
+/* Return a REG_EQUIV or REG_EQUAL note if insn has only a single set and
+   has such a note.  */
+
+rtx
+find_reg_equal_equiv_note (insn)
+     rtx insn;
+{
+  rtx note;
+
+  if (single_set (insn) == 0)
+    return 0;
+  else if ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
+    return note;
+  else
+    return find_reg_note (insn, REG_EQUAL, NULL_RTX);
+}
+
 /* Return true if DATUM, or any overlap of DATUM, of kind CODE is found
    in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
 

@@ -1311,12 +1311,33 @@ extern rtx try_split			PARAMS ((rtx, rtx, int));
 extern rtx split_insns			PARAMS ((rtx, rtx));
 
 /* In simplify-rtx.c  */
-extern rtx simplify_unary_operation	PARAMS ((enum rtx_code, enum machine_mode, rtx, enum machine_mode));
-extern rtx simplify_binary_operation	PARAMS ((enum rtx_code, enum machine_mode, rtx, rtx));
-extern rtx simplify_ternary_operation	PARAMS ((enum rtx_code, enum machine_mode, enum machine_mode, rtx, rtx, rtx));
-extern rtx simplify_relational_operation PARAMS ((enum rtx_code, enum machine_mode, rtx, rtx));
-extern rtx simplify_gen_binary		PARAMS ((enum rtx_code, enum machine_mode,
-					       rtx, rtx));
+extern rtx simplify_unary_operation	PARAMS ((enum rtx_code,
+						 enum machine_mode, rtx,
+						 enum machine_mode));
+extern rtx simplify_binary_operation	PARAMS ((enum rtx_code,
+						 enum machine_mode, rtx,
+						 rtx));
+extern rtx simplify_ternary_operation	PARAMS ((enum rtx_code,
+						 enum machine_mode,
+						 enum machine_mode, rtx, rtx,
+						 rtx));
+extern rtx simplify_relational_operation PARAMS ((enum rtx_code,
+						  enum machine_mode, rtx,
+						  rtx));
+extern rtx simplify_gen_binary		PARAMS ((enum rtx_code,
+						 enum machine_mode,
+						 rtx, rtx));
+extern rtx simplify_gen_unary		PARAMS ((enum rtx_code,
+						 enum machine_mode, rtx,
+						 enum machine_mode));
+extern rtx simplify_gen_ternary		PARAMS ((enum rtx_code,
+						 enum machine_mode,
+						 enum machine_mode,
+						 rtx, rtx, rtx));
+extern rtx simplify_gen_relational	PARAMS ((enum rtx_code,
+						 enum machine_mode,
+						 rtx, rtx));
+extern rtx simplify_replace_rtx		PARAMS ((rtx, rtx, rtx));
 extern rtx simplify_rtx			PARAMS ((rtx));
 
 /* In optabs.c  */
@@ -1388,6 +1409,7 @@ extern int dead_or_set_regno_p		PARAMS ((rtx, unsigned int));
 extern rtx find_reg_note		PARAMS ((rtx, enum reg_note, rtx));
 extern rtx find_regno_note		PARAMS ((rtx, enum reg_note,
 						 unsigned int));
+extern rtx find_reg_equal_equiv_note	PARAMS ((rtx));
 extern int find_reg_fusage		PARAMS ((rtx, enum rtx_code, rtx));
 extern int find_regno_fusage		PARAMS ((rtx, enum rtx_code,
 						 unsigned int));
