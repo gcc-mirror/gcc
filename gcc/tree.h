@@ -484,6 +484,7 @@ struct tree_exp
 #define BLOCK_CHAIN(NODE) TREE_CHAIN (NODE)
 #define BLOCK_ABSTRACT_ORIGIN(NODE) ((NODE)->block.abstract_origin)
 #define BLOCK_ABSTRACT(NODE) ((NODE)->block.abstract_flag)
+#define BLOCK_END_NOTE(NODE) ((NODE)->block.end_note)
 
 /* Nonzero means that this block is prepared to handle exceptions
    listed in the BLOCK_VARS slot.  */
@@ -501,6 +502,7 @@ struct tree_block
   union tree_node *subblocks;
   union tree_node *supercontext;
   union tree_node *abstract_origin;
+  struct rtx_def *end_note;
 };
 
 /* Define fields and accessors for nodes representing data types.  */
