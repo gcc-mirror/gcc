@@ -32,12 +32,9 @@ case ${query} in
       echo ${INCLUDES}
       ;;
     --build-includes)
-      C_DIR="`basename  @C_INCLUDE_DIR@`"
-      INCLUDES="-nostdinc++ -I${BUILD_DIR}/include -I${SRC_DIR}/include
-                -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
+      INCLUDES="-nostdinc++ @GLIBCPP_INCLUDES@
 	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
-		-I${SRC_DIR}/testsuite
-		-I${SRC_DIR}/include/backward -I${SRC_DIR}/include/ext"
+		-I${SRC_DIR}/testsuite"
       echo ${INCLUDES}
       ;;
     --install-cxx)

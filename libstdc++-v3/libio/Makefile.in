@@ -65,20 +65,28 @@ target_alias = @target_alias@
 target_triplet = @target@
 AR = @AR@
 AS = @AS@
+ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
+BASIC_FILE_H = @BASIC_FILE_H@
 CC = @CC@
+CCODECVT_C = @CCODECVT_C@
+CLOCALE_H = @CLOCALE_H@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
-CSTD_INCLUDES = @CSTD_INCLUDES@
+CSTDIO_H = @CSTDIO_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
+GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
 LIBMATHOBJS = @LIBMATHOBJS@
+LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSTRINGOBJS = @LIBSTRINGOBJS@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
@@ -88,6 +96,7 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 OPT_LDFLAGS = @OPT_LDFLAGS@
+OS_INC_SRCDIR = @OS_INC_SRCDIR@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
@@ -104,6 +113,7 @@ glibcpp_basedir = @glibcpp_basedir@
 glibcpp_builddir = @glibcpp_builddir@
 glibcpp_prefixdir = @glibcpp_prefixdir@
 glibcpp_srcdir = @glibcpp_srcdir@
+glibcpp_thread_h = @glibcpp_thread_h@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
@@ -114,26 +124,28 @@ toplevel_srcdir = @toplevel_srcdir@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
-@GLIBCPP_BUILD_LIBIO_TRUE@noinst_LTLIBRARIES = libio.la
+@GLIBCPP_BUILD_LIBIO_TRUE@noinst_LTLIBRARIES = @GLIBCPP_BUILD_LIBIO_TRUE@libio.la
 @GLIBCPP_BUILD_LIBIO_FALSE@noinst_LTLIBRARIES = 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
-GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
-C_INCLUDE_DIR = @C_INCLUDE_DIR@
+GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
-LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
-CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
-INCLUDES =  	-nostdinc++ 	-I$(top_builddir)/include -I$(GLIBCPP_INCLUDE_DIR) 	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
+INCLUDES = \
+	-nostdinc++ \
+	$(GLIBCPP_INCLUDES) $(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 
-libio_headers =          libio.h libioP.h iolibio.h
+libio_headers = \
+        libio.h libioP.h iolibio.h
 
-@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = 	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c 	iofclose.c iofopen.c 
+@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = @GLIBCPP_NEED_LIBIO_TRUE@\
+@GLIBCPP_NEED_LIBIO_TRUE@	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c \
+@GLIBCPP_NEED_LIBIO_TRUE@	iofclose.c iofopen.c 
 @GLIBCPP_NEED_LIBIO_FALSE@LIBIO_SRCS = 
-@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = 	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
+@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = @GLIBCPP_NEED_WLIBIO_TRUE@\
+@GLIBCPP_NEED_WLIBIO_TRUE@	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
 @GLIBCPP_NEED_WLIBIO_FALSE@LIBIO_WSRCS = 
 
 EXTRA_DIST = iostreamP.h

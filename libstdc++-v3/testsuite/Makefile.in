@@ -65,10 +65,14 @@ target_alias = @target_alias@
 target_triplet = @target@
 AR = @AR@
 AS = @AS@
+ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
+BASIC_FILE_H = @BASIC_FILE_H@
 CC = @CC@
+CCODECVT_C = @CCODECVT_C@
+CLOCALE_H = @CLOCALE_H@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
-CSTD_INCLUDES = @CSTD_INCLUDES@
+CSTDIO_H = @CSTDIO_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
@@ -78,7 +82,8 @@ EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
+GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
@@ -93,6 +98,7 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 OPT_LDFLAGS = @OPT_LDFLAGS@
+OS_INC_SRCDIR = @OS_INC_SRCDIR@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
@@ -110,6 +116,7 @@ glibcpp_basedir = @glibcpp_basedir@
 glibcpp_builddir = @glibcpp_builddir@
 glibcpp_prefixdir = @glibcpp_prefixdir@
 glibcpp_srcdir = @glibcpp_srcdir@
+glibcpp_thread_h = @glibcpp_thread_h@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
@@ -121,10 +128,14 @@ AUTOMAKE_OPTIONS = foreign dejagnu
 
 DEJATOOL = libstdc++-v3
 
-EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then             echo @glibcpp_builddir@/../../expect/expect ;           else echo expect ; fi`
+EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
+            echo @glibcpp_builddir@/../../expect/expect ; \
+          else echo expect ; fi`
 
 
-RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then 	       echo @glibcpp_srcdir@/../dejagnu/runtest ; 	    else echo runtest; fi`
+RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
+	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
+	    else echo runtest; fi`
 
 
 RUNTESTFLAGS = 

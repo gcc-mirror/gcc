@@ -33,24 +33,7 @@
 // Do not compile with optimization turned on.
 //
 
-#include <bits/c++config.h>
-
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
-
-//
-// Force Linux <limits.h> to define the *LONG_LONG*
-//
-#if __linux__ && _GLIBCPP_USE_LONG_LONG
-# ifndef __USE_GNU
-#  define __USE_GNU 1
-# endif
-# ifndef _GNU_SOURCE
-#  define _GNU_SOURCE 1
-# endif
-#endif
-
+#include <config.h>
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>

@@ -760,7 +760,6 @@ AC_DEFUN(GLIBCPP_CHECK_TARGET, [
     . [$]{glibcpp_basedir}/configure.target
     AC_MSG_RESULT(CPU config directory is $cpu_include_dir)
     AC_MSG_RESULT(OS config directory is $os_include_dir)
-    AC_LINK_FILES($os_include_dir/bits/os_defines.h, include/bits/os_defines.h)
 ])
 
 
@@ -1011,7 +1010,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       ;;
   esac
 
-  AC_LINK_FILES($CLOCALE_H, include/bits/c++locale.h)
+  AC_SUBST(CLOCALE_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
 ])
 
@@ -1111,13 +1110,13 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
       exit 1
       ;;
   esac
-  AC_LINK_FILES($CSTDIO_H, include/bits/c++io.h)
-  AC_LINK_FILES($BASIC_FILE_H, include/bits/basic_file_model.h)
+  AC_SUBST(CSTDIO_H)
+  AC_SUBST(BASIC_FILE_H)
   AC_LINK_FILES($BASIC_FILE_CC, src/basic_file.cc)
 
   # 2000-08-04 bkoz hack
   CCODECVT_C=config/c_io_libio_codecvt.c
-  AC_LINK_FILES($CCODECVT_C, libio/c_codecvt.c)
+  AC_SUBST(CCODECVT_C)
   # 2000-08-04 bkoz hack
 
   AM_CONDITIONAL(GLIBCPP_BUILD_LIBIO,
@@ -1150,24 +1149,13 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
   AC_MSG_RESULT([$target_thread_file])
 
-  AC_LINK_FILES($toprel/gcc/gthr.h, include/bits/gthr.h-in)
-  AC_LINK_FILES($toprel/gcc/gthr-single.h,
-		include/bits/gthr-single.h-in)
-  AC_LINK_FILES($toprel/gcc/gthr-$target_thread_file.h,
-		include/bits/gthr-default.h-in)
   if test $target_thread_file != single; then
     AC_DEFINE(HAVE_GTHR_DEFAULT)
     AC_DEFINE(_GLIBCPP_SUPPORTS_WEAK, __GXX_WEAK__)
   fi
-  AC_OUTPUT_COMMANDS([d=include/bits; a='[ABCDEFGHIJKLMNOPQRSTUVWXYZ_]'
-    rm -f $d/gthr.h $d/gthr-single.h $d/gthr-default.h
-    sed '/^#/s/\('"$a$a"'*\)/_GLIBCPP_\1/g' <$d/gthr.h-in \
-      | sed 's,"gthr-,"bits/gthr-,' >$d/gthr.h
-    sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-single.h-in \
-      | sed 's/\(GCC'"$a"'*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
-    sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-default.h-in \
-      | sed 's/\(GCC'"$a"'*_H\)/_GLIBCPP_\1/g' \
-      | sed 's/\('"$a"'*WEAK\)/_GLIBCPP_\1/g' >$d/gthr-default.h])
+
+  glibcpp_thread_h=gthr-$target_thread_file.h
+  AC_SUBST(glibcpp_thread_h)
 ])
 
 
@@ -1497,25 +1485,19 @@ dnl Option parsed, now other scripts can test enable_c_mbchar for yes/no.
 dnl
 dnl Set up *_INCLUDES and *_INCLUDE_DIR variables for all sundry Makefile.am's.
 dnl
-dnl GLIBCPP_INCLUDE_DIR
-dnl C_INCLUDE_DIR
 dnl TOPLEVEL_INCLUDES
 dnl LIBMATH_INCLUDES
 dnl LIBSUPCXX_INCLUDES
 dnl LIBIO_INCLUDES
 dnl CSHADOW_INCLUDES
 dnl
-dnl GLIBCPP_EXPORT_INCLUDE
+dnl GLIBCPP_EXPORT_INCLUDES
 AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
-  # Root level of the include sources.
-  GLIBCPP_INCLUDE_DIR='$(top_srcdir)/include'
+  # Root level of the build directory include sources.
+  GLIBCPP_INCLUDES="-I${glibcpp_builddir}/include/${target_alias} -I${glibcpp_builddir}/include"
 
-  # Can either use include/c or include/c_std to grab "C" headers. This
-  # variable is set to the include directory currently in use.
-  # set with C_INCLUDE_DIR in GLIBCPP_ENABLE_CHEADERS
-   
   # Passed down for canadian crosses.
-  if  test x"$CANADIAN" = xyes; then
+  if test x"$CANADIAN" = xyes; then
     TOPLEVEL_INCLUDES='-I$(includedir)'
   fi
 
@@ -1523,26 +1505,16 @@ AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
 
   LIBSUPCXX_INCLUDES='-I$(top_srcdir)/libsupc++'
 
-  #if GLIBCPP_NEED_LIBIO
-  LIBIO_INCLUDES='-I$(top_builddir)/libio -I$(top_srcdir)/libio'
-  #else
-  #LIBIO_INCLUDES='-I$(top_srcdir)/libio'
-  #endif
-
-  #if GLIBCPP_USE_CSHADOW
-  #  CSHADOW_INCLUDES='-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR) \
-  #                   -I$(top_blddir)/cshadow'
-  #else
-  CSTD_INCLUDES='-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR)'
-  #endif
+  if test x"$need_libio" = xyes; then
+    LIBIO_INCLUDES='-I$(top_builddir)/libio -I$(top_srcdir)/libio'
+    AC_SUBST(LIBIO_INCLUDES)
+  fi
 
   # Now, export this to all the little Makefiles....
-  AC_SUBST(GLIBCPP_INCLUDE_DIR)
+  AC_SUBST(GLIBCPP_INCLUDES)
   AC_SUBST(TOPLEVEL_INCLUDES)
   AC_SUBST(LIBMATH_INCLUDES)
   AC_SUBST(LIBSUPCXX_INCLUDES)
-  AC_SUBST(LIBIO_INCLUDES)
-  AC_SUBST(CSTD_INCLUDES)
 ])
 
 

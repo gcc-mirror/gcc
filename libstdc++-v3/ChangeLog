@@ -1,3 +1,34 @@
+2001-07-13  Stephen M. Webb  <stephen@bregmasoft.com>
+            Loren J. Rittle  <ljrittle@acm.org>
+            Phil Edwards  <pme@sources.redhat.com>
+
+	* include/Makefile.am:  New file encapsulating header generation rules.
+	* Makefile.am (SUBDIRS):  Prepend 'include' directory.
+	* acinclude.m4:  Moved/removed rules for building various headers.
+	* configure.in (AC_OUTPUT):  Add include/Makefile.
+	* mkc++config:  Removed.
+
+	* testsuite_flags.in:  Changed build-includes to match new scheme.
+	* mknumeric_limits:  Likewise.
+	* libio/Makefile.am:  Changed INCLUDES to maatch new header scheme.
+	* libmath/Makefile.am:  Likewise.
+	* libsupc++/Makefile.am:  Likewise.
+	* src/Makefile.am:  Likewise; removed rules to build headers.
+	* libmath/mathconf.h:  Changed #include'd header names to match.
+	* libmath/stubs.c:  Likewise.
+	* src/gen-num-limits.cc:  Likewise.
+
+	* configure:  Regenerated.
+	* config.h.in:  Regenerated.
+	* aclocal.m4:  Regenerated.
+	* Makefile.in:  Regenerated.
+	* include/Makefile.in:  Regenerated.
+	* libio/Makefile.in:  Regenerated.
+	* libmath/Makefile.in:  Regenerated.
+	* libsupc++/Makefile.in:  Regenerated.
+	* src/Makefile.in:  Regenerated.
+	* testsuite/Makefile.in:  Regenerated.
+
 2001-07-11   Felix Natter  <fnatter@gmx.net>
 
 	* docs/html/17_intro/porting-howto.xml:  Initial checkin of
