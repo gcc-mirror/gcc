@@ -160,9 +160,9 @@ __extension__								\
 	  int __i;							\
 									\
 	  for (__i = 0; __i < __va_nwords (__type); __i++)		\
-	    __obj[__i] = ((__va).__va_arg < 6				\
-			  ? (__va).__va_iregs[(__va).__va_arg]		\
-			  : (__va).__va_stack[(__va).__va_arg - 6]);	\
+	    __obj[__i] = ((__va).__va_arg + __i < 6			\
+			  ? (__va).__va_iregs[(__va).__va_arg + __i]	\
+			  : (__va).__va_stack[(__va).__va_arg + __i - 6]); \
 									\
 	  __rv = (void *) &__obj[0];					\
 	}								\
