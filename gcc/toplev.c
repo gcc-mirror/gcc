@@ -3923,6 +3923,7 @@ decode_f_option (arg)
      const char * arg;
 {
   int j;
+  const char *option_value = NULL;
 
   /* Search for the option in the table of binary f options.  */
   for (j = sizeof (f_options) / sizeof (f_options[0]); j--;)
@@ -3941,44 +3942,47 @@ decode_f_option (arg)
 	}
     }
 
-  if (!strncmp (arg, "inline-limit-", 13)
-      || !strncmp (arg, "inline-limit=", 13))
+  if ((option_value = skip_leading_substring (arg, "inline-limit-"))
+      || (option_value = skip_leading_substring (arg, "inline-limit=")))
     inline_max_insns =
-      read_integral_parameter (arg + 13, arg - 2, inline_max_insns);
+      read_integral_parameter (option_value, arg - 2, inline_max_insns);
 #ifdef INSN_SCHEDULING
-  else if (!strncmp (arg, "sched-verbose=", 14))
-    fix_sched_param ("verbose", (const char *)(arg + 14));
+  else if ((option_value = skip_leading_substring (arg, "sched-verbose=")))
+    fix_sched_param ("verbose", option_value);
 #endif
-  else if (!strncmp (arg, "fixed-", 6))
-    fix_register ((const char *)(arg + 6), 1, 1);
-  else if (!strncmp (arg, "call-used-", 10))
-    fix_register ((const char *)(arg + 10), 0, 1);
-  else if (!strncmp (arg, "call-saved-", 11))
-    fix_register ((const char *)(arg + 11), 0, 0);
-  else if (!strncmp (arg, "align-loops=", 12))
-    align_loops = read_integral_parameter (arg + 12, arg - 2, align_loops);
-  else if (!strncmp (arg, "align-functions=", 16))
+  else if ((option_value = skip_leading_substring (arg, "fixed-")))
+    fix_register (option_value, 1, 1);
+  else if ((option_value = skip_leading_substring (arg, "call-used-")))
+    fix_register (option_value, 0, 1);
+  else if ((option_value = skip_leading_substring (arg, "call-saved-")))
+    fix_register (option_value, 0, 0);
+  else if ((option_value = skip_leading_substring (arg, "align-loops=")))
+    align_loops = read_integral_parameter (option_value, arg - 2, align_loops);
+  else if ((option_value = skip_leading_substring (arg, "align-functions=")))
     align_functions
-      = read_integral_parameter (arg + 16, arg - 2, align_functions);
-  else if (!strncmp (arg, "align-jumps=", 12))
-    align_jumps = read_integral_parameter (arg + 12, arg - 2, align_jumps);
-  else if (!strncmp (arg, "align-labels=", 13))
-    align_labels = read_integral_parameter (arg + 13, arg - 2, align_labels);
-  else if (!strncmp (arg, "stack-limit-register=", 21))
+      = read_integral_parameter (option_value, arg - 2, align_functions);
+  else if ((option_value = skip_leading_substring (arg, "align-jumps=")))
+    align_jumps = read_integral_parameter (option_value, arg - 2, align_jumps);
+  else if ((option_value = skip_leading_substring (arg, "align-labels=")))
+    align_labels
+      = read_integral_parameter (option_value, arg - 2, align_labels);
+  else if ((option_value
+            = skip_leading_substring (arg, "stack-limit-register=")))
     {
-      int reg = decode_reg_name (arg + 21);
+      int reg = decode_reg_name (option_value);
       if (reg < 0)
-	error ("unrecognized register name `%s'", arg + 21);
+	error ("unrecognized register name `%s'", option_value);
       else
 	stack_limit_rtx = gen_rtx_REG (Pmode, reg);
     }
-  else if (!strncmp (arg, "stack-limit-symbol=", 19))
+  else if ((option_value
+            = skip_leading_substring (arg, "stack-limit-symbol=")))
     {
       char *nm;
       if (ggc_p)
-	nm = ggc_alloc_string (arg + 19, strlen (arg + 19));
+	nm = ggc_alloc_string (option_value, strlen (option_value));
       else
-	nm = xstrdup (arg + 19);
+	nm = xstrdup (option_value);
       stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, nm);
     }
   else if (!strcmp (arg, "no-stack-limit"))
@@ -4001,6 +4005,7 @@ static int
 decode_W_option (arg)
      const char * arg;
 {
+  const char *option_value = NULL;
   int j;
   
   /* Search for the option in the table of binary W options.  */
@@ -4021,16 +4026,16 @@ decode_W_option (arg)
 	}
     }
 
-  if (!strncmp (arg, "id-clash-", 9))
+  if ((option_value = skip_leading_substring (arg, "id-clash-")))
     {
-      id_clash_len = read_integral_parameter (arg + 9, arg - 2, -1);
+      id_clash_len = read_integral_parameter (option_value, arg - 2, -1);
       
       if (id_clash_len != -1)
 	warn_id_clash = 1;
     }
-  else if (!strncmp (arg, "larger-than-", 12))
+  else if ((option_value = skip_leading_substring (arg, "larger-than-")))
     {
-      larger_than_size = read_integral_parameter (arg + 12, arg - 2, -1);
+      larger_than_size = read_integral_parameter (option_value, arg - 2, -1);
 
       if (larger_than_size != -1)
 	warn_larger_than = 1;

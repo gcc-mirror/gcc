@@ -26,6 +26,11 @@ union tree_node;
 struct rtx_def;
 #endif
 
+/* If non-NULL, return one past-the-end of the matching SUBPART of
+   the WHOLE string.  */
+#define skip_leading_substring(whole,  part) \
+   (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
+
 extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
 extern int count_error			PARAMS ((int));
