@@ -5517,8 +5517,6 @@ output_int_conditional_move (which_alternative, operands)
      rtx operands[];
 {
   int code = GET_CODE (operands[1]);
-  enum machine_mode mode;
-  rtx xops[4];
 
   /* This is very tricky. We have to do it right. For a code segement
      like:
@@ -5538,29 +5536,16 @@ output_int_conditional_move (which_alternative, operands)
       && (cc_prev_status.flags & CC_NO_OVERFLOW))
     return NULL_PTR;
 
-  mode = GET_MODE (operands [0]);
-  if (mode == DImode)
-    {
-      xops [0] = gen_rtx_SUBREG (SImode, operands [0], 1);
-      xops [1] = operands [1];
-      xops [2] = gen_rtx_SUBREG (SImode, operands [2], 1);
-      xops [3] = gen_rtx_SUBREG (SImode, operands [3], 1);
-    }
-
   switch (which_alternative)
     {
     case 0:
       /* r <- cond ? arg : r */
       output_asm_insn (AS2 (cmov%C1,%2,%0), operands);
-      if (mode == DImode)
-	output_asm_insn (AS2 (cmov%C1,%2,%0), xops);
       break;
 
     case 1:
       /* r <- cond ? r : arg */
       output_asm_insn (AS2 (cmov%c1,%3,%0), operands);
-      if (mode == DImode)
-	output_asm_insn (AS2 (cmov%c1,%3,%0), xops);
       break;
 
     default:
