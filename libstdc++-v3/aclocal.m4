@@ -1171,15 +1171,15 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
     AC_DEFINE(HAVE_GTHR_DEFAULT)
     AC_DEFINE(_GLIBCPP_SUPPORTS_WEAK, __GXX_WEAK__)
   fi
-  AC_OUTPUT_COMMANDS([d=include/bits
+  AC_OUTPUT_COMMANDS([d=include/bits; a='[ABCDEFGHIJKLMNOPQRSTUVWXYZ_]'
     rm -f $d/gthr.h $d/gthr-single.h $d/gthr-default.h
-    sed '/^#/s/\([A-Z_][A-Z_]*\)/_GLIBCPP_\1/g' <$d/gthr.h-in \
+    sed '/^#/s/\('$a$a'*\)/_GLIBCPP_\1/g' <$d/gthr.h-in \
       | sed 's,"gthr-,"bits/gthr-,' >$d/gthr.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-single.h-in \
-      | sed 's/\(GCC[A-Z_]*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
+      | sed 's/\(GCC'$a'*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-default.h-in \
-      | sed 's/\(GCC[A-Z_]*_H\)/_GLIBCPP_\1/g' \
-      | sed 's/\([A-Z_]*WEAK\)/_GLIBCPP_\1/g' >$d/gthr-default.h])
+      | sed 's/\(GCC'$a'*_H\)/_GLIBCPP_\1/g' \
+      | sed 's/\('$a'*WEAK\)/_GLIBCPP_\1/g' >$d/gthr-default.h])
 ])
 
 
