@@ -4038,7 +4038,11 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   if (last)
     delete_insns_since (last);
 
-  subtarget = target_mode == mode ? target : 0;
+  /* If expensive optimizations, use different pseudo registers for each
+     insn, instead of reusing the same pseudo.  This leads to better CSE,
+     but slows down the compiler, since there are more pseudos */
+  subtarget = (!flag_expensive_optimizations
+	       && (target_mode == mode)) ? target : NULL_RTX;
 
   /* If we reached here, we can't do this with a scc insn.  However, there
      are some comparisons that can be done directly.  For example, if
@@ -4183,15 +4187,22 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   if (tem && normalizep)
     tem = expand_shift (RSHIFT_EXPR, mode, tem,
 			size_int (GET_MODE_BITSIZE (mode) - 1),
-			tem, normalizep == 1);
+			subtarget, normalizep == 1);
 
-  if (tem && GET_MODE (tem) != target_mode)
+  if (tem)
     {
-      convert_move (target, tem, 0);
-      tem = target;
+      if (GET_MODE (tem) != target_mode)
+	{
+	  convert_move (target, tem, 0);
+	  tem = target;
+	}
+      else if (!subtarget)
+	{
+	  emit_move_insn (target, tem);
+	  tem = target;
+	}
     }
-
-  if (tem == 0)
+  else
     delete_insns_since (last);
 
   return tem;
