@@ -5611,7 +5611,7 @@ handle_braces (p)
 
       atom = p;
       while (ISIDNUM(*p) || *p == '-' || *p == '+' || *p == '='
-	     || *p == ',' || *p == '.')
+	     || *p == ',' || *p == '.' || *p == '@')
 	p++;
       end_atom = p;
 
