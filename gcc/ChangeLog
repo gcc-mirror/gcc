@@ -1,3 +1,8 @@
+2001-12-05  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (STMP_FIXPROTO, STMP_FIXINC): Use substituted values
+	from autoconf.
+
 2001-12-05  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config.gcc: Include arm/xscale-coff.h before arm/arm.h.
