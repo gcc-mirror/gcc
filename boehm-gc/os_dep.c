@@ -155,11 +155,11 @@
 
 # ifdef LINUX
 #   pragma weak __data_start
-    extern int __data_start;
+    extern int __data_start[];
 #   pragma weak data_start
-    extern int data_start;
+    extern int data_start[];
 # endif /* LINUX */
-  extern int _end;
+  extern int _end[];
 
   ptr_t GC_data_start;
 
@@ -169,16 +169,16 @@
 
 #   ifdef LINUX
       /* Try the easy approaches first:	*/
-      if (&__data_start != 0) {
-	  GC_data_start = (ptr_t)(&__data_start);
+      if (__data_start != 0) {
+	  GC_data_start = (ptr_t)__data_start;
 	  return;
       }
-      if (&data_start != 0) {
-	  GC_data_start = (ptr_t)(&data_start);
+      if (data_start != 0) {
+	  GC_data_start = (ptr_t)data_start;
 	  return;
       }
 #   endif /* LINUX */
-    GC_data_start = GC_find_limit((ptr_t)(&_end), FALSE);
+    GC_data_start = GC_find_limit((ptr_t)_end, FALSE);
   }
 #endif
 
