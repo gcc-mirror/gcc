@@ -46,6 +46,11 @@
 
 2001-09-16  Anthony Green  <green@redhat.com>
 
+	* gnu/java/locale/LocaleInformation.java: Extend
+	LocaleInformation_en_US, not LocaleInformation_en.
+
+2001-09-16  Anthony Green  <green@redhat.com>
+
 	* gnu/gcj/convert/IOConverter.java: Add support for iso8859_1.
 
 2001-09-14  Tom Tromey  <tromey@redhat.com>

@@ -31,7 +31,7 @@ package gnu.java.locale;
   * This is the resource bundle for the default locale, which right now is 
   * hardcoded to US English.
   */
-public class LocaleInformation extends LocaleInformation_en
+public class LocaleInformation extends LocaleInformation_en_US
 {
 }
 
