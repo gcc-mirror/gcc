@@ -4,6 +4,14 @@
 	* search.c (add_conversions): Avoid adding two conversion
 	operators for the same type.
 
+2003-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6196
+	* pt.c (tsubst_copy_and_build): Correct handling of
+	address-of-label extension.
+	* semantics.c (finish_goto_stmt): The address of a label must go
+	through the lvalue-to-rvalue conversion.
+
 2003-08-29  Richard Henderson  <rth@redhat.com>
 	    Jason Merrill <jason@redhat.com>
 
