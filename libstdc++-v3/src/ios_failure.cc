@@ -1,4 +1,4 @@
-// Explicit instantiation file.
+// Iostreams base classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
@@ -29,31 +29,20 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882:
+// ISO C++ 14882: 27.4.2.1.1  Class ios_base::failure
 //
 
 #include <ios>
-#include <iomanip>
 
-namespace std
+namespace std 
 {
-  // basic_ios
-  template class basic_ios<char>;
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template class basic_ios<wchar_t>;
-#endif
+  ios_base::failure::failure(const string& __str) throw()
+  : _M_msg(__str) { }
 
-  // iomanip
-  template class _Setfill<char>;
-  template _Setfill<char> setfill(char);
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template class _Setfill<wchar_t>;
-  template _Setfill<wchar_t> setfill(wchar_t);
-#endif
-
-  // iostream
-  template class basic_iostream<char>;
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template class basic_iostream<wchar_t>; 
-#endif
+  ios_base::failure::~failure() throw()
+  { }
+  
+  const char*
+  ios_base::failure::what() const throw()
+  { return _M_msg.c_str(); }
 } // namespace std

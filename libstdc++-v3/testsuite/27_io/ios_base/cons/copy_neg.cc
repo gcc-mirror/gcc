@@ -41,5 +41,5 @@ void test02()
   test_base io2 = io1; 
 }
 // { dg-error "within this context" "" { target *-*-* } 41 } 
-// { dg-error "is private" "" { target *-*-* } 745 } 
+// { dg-error "is private" "" { target *-*-* } 744 } 
 // { dg-error "copy constructor" "" { target *-*-* } 0 } 

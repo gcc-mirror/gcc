@@ -1,3 +1,18 @@
+2003-10-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/string-inst.cc: Prune.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
+	
+2003-10-09  Petur Runolfsson  <peturr02@ru.is>
+
+	* src/io-inst.cc: Don't include iostream.
+	* include/bits/ios_base.h (ios_base::failure): Use string.
+	* src/Makefile.am: Add ios_failure.cc.
+	* src/Makefile.in: Regenerate.
+	* src/ios.cc: Move ios_base::failure definitions to...
+	* src/ios_failure.cc: ...here. New.
+
 2003-10-09  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9874

@@ -262,6 +262,7 @@ sources = \
 	globals.cc \
 	io-inst.cc \
 	ios.cc \
+	ios_failure.cc \
 	istream-inst.cc \
 	limits.cc \
 	locale.cc \
@@ -357,7 +358,7 @@ am__objects_2 = basic_file.lo c++locale.lo
 am__objects_3 = allocator-inst.lo codecvt.lo complex_io.lo \
 	concept-inst.lo ctype.lo demangle.lo ext-inst.lo \
 	fstream-inst.lo functexcept.lo globals.lo io-inst.lo ios.lo \
-	istream-inst.lo limits.lo locale.lo locale-inst.lo \
+	ios_failure.lo istream-inst.lo limits.lo locale.lo locale-inst.lo \
 	localename.lo misc-inst.lo ostream-inst.lo sstream-inst.lo \
 	stdexcept.lo stl_tree.lo streambuf-inst.lo string-inst.lo \
 	strstream.lo valarray-inst.lo wstring-inst.lo $(am__objects_1) \

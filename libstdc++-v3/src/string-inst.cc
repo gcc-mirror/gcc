@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -73,23 +73,6 @@ namespace std
   template 
     S::basic_string(S::iterator, S::iterator, const allocator<C>&);
 
-  template 
-    S::basic_string(S::const_iterator, S::const_iterator, const allocator<C>&);
-
-  template 
-    S& 
-    S::_M_replace(S::iterator, S::iterator, S::iterator, S::iterator, 
-		  input_iterator_tag);
-
-  template 
-    S& 
-    S::_M_replace(S::iterator, S::iterator, S::const_iterator, 
-		  S::const_iterator, input_iterator_tag);
-
-  template
-    S&
-    S::_M_replace(S::iterator, S::iterator, C*, C*, input_iterator_tag); 
-
   template
     S&
     S::_M_replace(S::iterator, S::iterator, const C*, const C*, 
@@ -98,15 +81,6 @@ namespace std
   template 
     S& 
     S::_M_replace_safe(S::iterator, S::iterator, S::iterator, S::iterator);
-
-  template 
-    S& 
-    S::_M_replace_safe(S::iterator, S::iterator, S::const_iterator, 
-		  S::const_iterator);
-
-  template
-    S&
-    S::_M_replace_safe(S::iterator, S::iterator, C*, C*); 
 
   template
     S&
@@ -117,11 +91,6 @@ namespace std
     S::_S_construct(S::iterator, S::iterator, 
 		    const allocator<C>&, forward_iterator_tag);
 
-  template 
-    C* 
-    S::_S_construct(S::const_iterator, S::const_iterator, 
-		    const allocator<C>&, forward_iterator_tag);
-
   template
     C*
     S::_S_construct(C*, C*, const allocator<C>&, forward_iterator_tag);
@@ -130,8 +99,4 @@ namespace std
     C*
     S::_S_construct(const C*, const C*, const allocator<C>&,
 		    forward_iterator_tag);
-
-  template
-    void
-    __destroy_aux<S*>(S*, S*, __false_type);
 } // namespace std
