@@ -16,6 +16,10 @@
 	Use UNTESTED, not XFAIL, for tests which are not run because
 	they depend on a previous test which failed.
 
+2001-04-02  Marcus G. Daniels  <mgd@swarm.org>
+
+	* jni.cc (wrap_value<jclass>): New specialization.
+
 2001-04-02  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/PrintStream.java (out): Removed field.  Fixes PR
