@@ -159,9 +159,10 @@ public class Window extends Container implements Accessible
     // FIXME: add to owner's "owned window" list
     //owner.owned.add(this); // this should be a weak reference
     
-    /*  FIXME: Security check
-    SecurityManager.checkTopLevelWindow(...)
-    */
+    // FIXME: make this text visible in the window.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null && ! s.checkTopLevelWindow(this))
+      warningString = System.getProperty("awt.appletWarning");
 
     if (gc != null
         && gc.getDevice().getType() != GraphicsDevice.TYPE_RASTER_SCREEN)
@@ -315,20 +316,7 @@ public class Window extends Container implements Accessible
    */
   public final String getWarningString()
   {
-    boolean secure = true;
-    /* boolean secure = SecurityManager.checkTopLevelWindow(...) */
-
-    if (!secure)
-      {
-        if (warningString != null)
-          return warningString;
-        else
-          {
-            String warning = System.getProperty("awt.appletWarning");
-            return warning;
-          }
-      }
-    return null;
+    return warningString;
   }
 
   /**

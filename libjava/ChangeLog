@@ -1,3 +1,9 @@
+2003-07-22  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Window.java (getWarningString): Just return the
+	string.
+	(Window): Set warningString; check with security manager.
+
 2003-07-22  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/xlib/XGraphicsConfiguration.java
