@@ -1,3 +1,7 @@
+Mon Apr 12 23:34:35 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon Apr 12 14:58:30 MET DST 1999 Jan Hubicka <hubicka@freesoft.cz>
 
 	* reg-stack.c (check_stack_regs_mentioned): Remove variable SIZE.
