@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,97 +43,112 @@ import java.util.zip.ZipEntry;
  * @since 1.2
  * @author Mark Wielaard (mark@klomp.org)
  */
- 
-public class JarEntry extends ZipEntry {
 
-    // (Packge local) fields
+public class JarEntry extends ZipEntry
+{
+  // (Packge local) fields
 
-    Attributes attr;
-    Certificate certs[];
+  Attributes attr;
+  Certificate certs[];
 
-    // Constructors
+  // Constructors
 
-    /**
-     * Creates a new JarEntry with the specified name and no attributes or
-     * or certificates. Calls <code>super(name)</code> so all other (zip)entry
-     * fields are null or -1.
-     *
-     * @param name the name of the new jar entry
-     * @exception NullPointerException when the supplied name is null
-     * @exception IllegalArgumentException when the supplied name is longer
-     * than 65535 bytes
-     */
-    public JarEntry(String name) throws NullPointerException,
-                                 IllegalArgumentException {
-        super(name);
-        attr = null;
-        certs = null;
-    }
+  /**
+   * Creates a new JarEntry with the specified name and no attributes or
+   * or certificates. Calls <code>super(name)</code> so all other (zip)entry
+   * fields are null or -1.
+   *
+   * @param name the name of the new jar entry
+   * @exception NullPointerException when the supplied name is null
+   * @exception IllegalArgumentException when the supplied name is longer
+   * than 65535 bytes
+   */
+  public JarEntry(String name) throws NullPointerException,
+    IllegalArgumentException
+  {
+    super(name);
+    attr = null;
+    certs = null;
+  }
 
-    /**
-     * Creates a new JarEntry with the specified ZipEntry as template for
-     * all properties of the entry. Both attributes and certificates will be
-     * null.
-     *
-     * @param entry the ZipEntry whose fields should be copied
-     */
-    public JarEntry(ZipEntry entry) {
-        super(entry);
-        attr = null;
-        certs = null;
-    }
+  /**
+   * Creates a new JarEntry with the specified ZipEntry as template for
+   * all properties of the entry. Both attributes and certificates will be
+   * null.
+   *
+   * @param entry the ZipEntry whose fields should be copied
+   */
+  public JarEntry(ZipEntry entry)
+  {
+    super(entry);
+    attr = null;
+    certs = null;
+  }
 
-    /**
-     * Creates a new JarEntry with the specified JarEntry as template for
-     * all properties of the entry.
-     *
-     * @param entry the jarEntry whose fields should be copied
-     */
-    public JarEntry(JarEntry entry) {
-        super(entry);
-        try {
-            attr = entry.getAttributes();
-        } catch(IOException _) {}
-        certs = entry.getCertificates();
-    }
+  /**
+   * Creates a new JarEntry with the specified JarEntry as template for
+   * all properties of the entry.
+   *
+   * @param entry the jarEntry whose fields should be copied
+   */
+  public JarEntry(JarEntry entry)
+  {
+    super(entry);
+    try
+      {
+	attr = entry.getAttributes();
+      }
+    catch (IOException _)
+      {
+      }
+    certs = entry.getCertificates();
+  }
 
-    // Methods
+  // Methods
 
-    /**
-     * Returns a copy of the Attributes set for this entry.
-     * When no Attributes are set in the manifest null is returned.
-     *
-     * @return a copy of the Attributes set for this entry
-     * @exception IOException This will never be thrown. It is here for
-     * binary compatibility.
-     */
-    public Attributes getAttributes() throws IOException {
-        if (attr != null) {
-            return (Attributes) attr.clone();
-        } else {
-            return null;
-        }
-    }
+  /**
+   * Returns a copy of the Attributes set for this entry.
+   * When no Attributes are set in the manifest null is returned.
+   *
+   * @return a copy of the Attributes set for this entry
+   * @exception IOException This will never be thrown. It is here for
+   * binary compatibility.
+   */
+  public Attributes getAttributes() throws IOException
+  {
+    if (attr != null)
+      {
+	return (Attributes) attr.clone();
+      }
+    else
+      {
+	return null;
+      }
+  }
 
-    /**
-     * Returns a copy of the certificates set for this entry.
-     * When no certificates are set or when not all data of this entry has
-     * been read null is returned.
-     * <p>
-     * To make sure that this call returns a valid value you must read all
-     * data from the JarInputStream for this entry.
-     * When you don't need the data for an entry but want to know the
-     * certificates that are set for the entry then you can skip all data by
-     * calling <code>skip(entry.getSize())</code> on the JarInputStream for
-     * the entry.
-     *
-     * @return a copy of the certificates set for this entry
-     */
-    public Certificate[] getCertificates() {
-        if (certs != null) {
-            return (Certificate []) certs.clone();
-        } else {
-            return null;
-        }
-    }
+  /**
+   * Returns a copy of the certificates set for this entry.
+   * When no certificates are set or when not all data of this entry has
+   * been read null is returned.
+   * <p>
+   * To make sure that this call returns a valid value you must read all
+   * data from the JarInputStream for this entry.
+   * When you don't need the data for an entry but want to know the
+   * certificates that are set for the entry then you can skip all data by
+   * calling <code>skip(entry.getSize())</code> on the JarInputStream for
+   * the entry.
+   *
+   * @return a copy of the certificates set for this entry
+   */
+  public Certificate[] getCertificates()
+  {
+    if (certs != null)
+      {
+	return (Certificate[])certs.clone();
+      }
+    else
+      {
+	return null;
+      }
+  }
 }

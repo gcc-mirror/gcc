@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,231 +47,251 @@ import java.util.Enumeration;
  * @since 1.2
  * @author Mark Wielaard (mark@klomp.org)
  */
-public class JarFile extends ZipFile {
+public class JarFile extends ZipFile
+{
+  // Fields
 
-    // Fields
+  /** The name of the manifest entry: META-INF/MANIFEST.MF */
+  public static final String MANIFEST_NAME = "META-INF/MANIFEST.MF";
 
-    /** The name of the manifest entry: META-INF/MANIFEST.MF */
-    public static final String MANIFEST_NAME = "META-INF/MANIFEST.MF";
+  /**
+   * The manifest of this file, if any, otherwise null.
+   * Read by the constructor.
+   */
+  private final Manifest manifest;
 
-    /**
-     * The manifest of this file, if any, otherwise null.
-     * Read by the constructor.
-     */
-    private final Manifest manifest;
+  /** Wether to verify the manifest and all entries */
+  private boolean verify;
 
-    /** Wether to verify the manifest and all entries */
-    private boolean verify;
+  // Constructors
 
-    // Constructors
+  /**
+   * Creates a new JarFile, tries to read the manifest and if the manifest
+   * exists verifies it.
+   *
+   * @param fileName the name of the file to open
+   * @exception FileNotFoundException if the fileName cannot be found
+   * @exception IOException if another IO exception occurs while reading
+   */
+  public JarFile(String fileName) throws FileNotFoundException, IOException
+  {
+    this(fileName, true);
+  }
 
-    /**
-     * Creates a new JarFile, tries to read the manifest and if the manifest
-     * exists verifies it.
-     *
-     * @param fileName the name of the file to open
-     * @exception FileNotFoundException if the fileName cannot be found
-     * @exception IOException if another IO exception occurs while reading
-     */
-    public JarFile(String fileName) throws FileNotFoundException,
-                                           IOException {
-        this (fileName, true);
+  /**
+   * Creates a new JarFile, tries to read the manifest and if the manifest
+   * exists and verify is true verfies it.
+   *
+   * @param fileName the name of the file to open
+   * @param verify checks manifest and entries when true and a manifest
+   * exists, when false no checks are made
+   * @exception FileNotFoundException if the fileName cannot be found
+   * @exception IOException if another IO exception occurs while reading
+   */
+  public JarFile(String fileName, boolean verify) throws
+    FileNotFoundException, IOException
+  {
+    super(fileName);
+    manifest = readManifest();
+    if (verify)
+      verify();
+  }
+
+  /**
+   * Creates a new JarFile, tries to read the manifest and if the manifest
+   * exists verifies it.
+   *
+   * @param file the file to open as a jar file
+   * @exception FileNotFoundException if the file does not exits
+   * @exception IOException if another IO exception occurs while reading
+   */
+  public JarFile(File file) throws FileNotFoundException, IOException
+  {
+    this(file, true);
+  }
+
+  /**
+   * Creates a new JarFile, tries to read the manifest and if the manifest
+   * exists and verify is true verfies it.
+   *
+   * @param file the file to open to open as a jar file
+   * @param verify checks manifest and entries when true and a manifest
+   * exists, when false no checks are made
+   * @exception FileNotFoundException if file does not exist
+   * @exception IOException if another IO exception occurs while reading
+   */
+  public JarFile(File file, boolean verify) throws FileNotFoundException,
+    IOException
+  {
+    super(file);
+    manifest = readManifest();
+    if (verify)
+      verify();
+  }
+
+  /**
+   * Creates a new JarFile with the indicated mode, tries to read the
+   * manifest and if the manifest exists and verify is true verfies it.
+   *
+   * @param file the file to open to open as a jar file
+   * @param verify checks manifest and entries when true and a manifest
+   * exists, when false no checks are made
+   * @param mode either ZipFile.OPEN_READ or
+   *             (ZipFile.OPEN_READ | ZipFile.OPEN_DELETE)
+   * @exception FileNotFoundException if the file does not exist
+   * @exception IOException if another IO exception occurs while reading
+   * @exception IllegalArgumentException when given an illegal mode
+   * 
+   * @since 1.3
+   */
+  public JarFile(File file, boolean verify, int mode) throws
+    FileNotFoundException, IOException, IllegalArgumentException
+  {
+    super(file, mode);
+    manifest = readManifest();
+    if (verify)
+      verify();
+  }
+
+  // Methods
+
+  /**
+   * XXX - should verify the manifest file
+   */
+  private void verify()
+  {
+    // only check if manifest is not null
+    if (manifest == null)
+      {
+	verify = false;
+	return;
+      }
+
+    verify = true;
+    // XXX - verify manifest
+  }
+
+  /**
+   * Parses and returns the manifest if it exists, otherwise returns null.
+   */
+  private Manifest readManifest()
+  {
+    try
+      {
+	ZipEntry manEntry = super.getEntry(MANIFEST_NAME);
+	if (manEntry != null)
+	  {
+	    InputStream in = super.getInputStream(manEntry);
+	    return new Manifest(in);
+	  }
+	else
+	  {
+	    return null;
+	  }
+      }
+    catch (IOException ioe)
+      {
+	return null;
+      }
+  }
+
+  /**
+   * Returns a enumeration of all the entries in the JarFile.
+   * Note that also the Jar META-INF entries are returned.
+   *
+   * @exception IllegalStateException when the JarFile is already closed
+   */
+  public Enumeration entries() throws IllegalStateException
+  {
+    return new JarEnumeration(super.entries());
+  }
+
+  /**
+   * Wraps a given Zip Entries Enumeration. For every zip entry a
+   * JarEntry is created and the corresponding Attributes are looked up.
+   * XXX - Should also look up the certificates.
+   */
+  private class JarEnumeration implements Enumeration
+  {
+
+    private final Enumeration entries;
+
+    JarEnumeration(Enumeration e)
+    {
+      entries = e;
     }
 
-    /**
-     * Creates a new JarFile, tries to read the manifest and if the manifest
-     * exists and verify is true verfies it.
-     *
-     * @param fileName the name of the file to open
-     * @param verify checks manifest and entries when true and a manifest
-     * exists, when false no checks are made
-     * @exception FileNotFoundException if the fileName cannot be found
-     * @exception IOException if another IO exception occurs while reading
-     */
-    public JarFile(String fileName, boolean verify) throws
-                                                    FileNotFoundException,
-                                                    IOException {
-        super(fileName);
-        manifest = readManifest();
-        if (verify)
-            verify();
+    public boolean hasMoreElements()
+    {
+      return entries.hasMoreElements();
     }
 
-    /**
-     * Creates a new JarFile, tries to read the manifest and if the manifest
-     * exists verifies it.
-     *
-     * @param file the file to open as a jar file
-     * @exception FileNotFoundException if the file does not exits
-     * @exception IOException if another IO exception occurs while reading
-     */
-    public JarFile(File file) throws FileNotFoundException,
-                                     IOException {
-        this (file, true);
+    public Object nextElement()
+    {
+      ZipEntry zip = (ZipEntry) entries.nextElement();
+      JarEntry jar = new JarEntry(zip);
+      if (manifest != null)
+	{
+	  jar.attr = manifest.getAttributes(jar.getName());
+	}
+      // XXX jar.certs
+      return jar;
     }
+  }
 
-    /**
-     * Creates a new JarFile, tries to read the manifest and if the manifest
-     * exists and verify is true verfies it.
-     *
-     * @param file the file to open to open as a jar file
-     * @param verify checks manifest and entries when true and a manifest
-     * exists, when false no checks are made
-     * @exception FileNotFoundException if file does not exist
-     * @exception IOException if another IO exception occurs while reading
-     */
-    public JarFile(File file, boolean verify) throws FileNotFoundException,
-                                                     IOException {
-        super(file);
-        manifest = readManifest();
-        if (verify)
-            verify();
-    }
+  /**
+   * XXX
+   * It actually returns a JarEntry not a zipEntry
+   * @param name XXX
+   */
+  public ZipEntry getEntry(String name)
+  {
+    ZipEntry entry = super.getEntry(name);
+    if (entry != null)
+      {
+	JarEntry jarEntry = new JarEntry(entry);
+	if (manifest != null)
+	  {
+	    jarEntry.attr = manifest.getAttributes(name);
+	    // XXX jarEntry.certs
+	  }
+	return jarEntry;
+      }
+    return null;
+  }
 
-    /**
-     * Creates a new JarFile with the indicated mode, tries to read the
-     * manifest and if the manifest exists and verify is true verfies it.
-     *
-     * @param file the file to open to open as a jar file
-     * @param verify checks manifest and entries when true and a manifest
-     * exists, when false no checks are made
-     * @param mode either ZipFile.OPEN_READ or
-     *             (ZipFile.OPEN_READ | ZipFile.OPEN_DELETE)
-     * @exception FileNotFoundException if the file does not exist
-     * @exception IOException if another IO exception occurs while reading
-     * @exception IllegalArgumentException when given an illegal mode
-     * 
-     * @since 1.3
-     */
-    public JarFile(File file, boolean verify, int mode) throws
-                                                    FileNotFoundException,
-                                                    IOException,
-                                                    IllegalArgumentException {
-        super(file, mode);
-        manifest = readManifest();
-        if (verify)
-            verify();
-    }
+  /**
+   * XXX should verify the inputstream
+   * @param entry XXX
+   * @exception ZipException XXX
+   * @exception IOException XXX
+   */
+  public synchronized InputStream getInputStream(ZipEntry entry) throws
+    ZipException, IOException
+  {
+    return super.getInputStream(entry);	// XXX verify
+  }
 
-    // Methods
+  /**
+   * Returns the JarEntry that belongs to the name if such an entry
+   * exists in the JarFile. Returns null otherwise
+   * Convenience method that just casts the result from <code>getEntry</code>
+   * to a JarEntry.
+   *
+   * @param name the jar entry name to look up
+   * @return the JarEntry if it exists, null otherwise
+   */
+  public JarEntry getJarEntry(String name)
+  {
+    return (JarEntry) getEntry(name);
+  }
 
-    /**
-     * XXX - should verify the manifest file
-     */
-    private void verify() {
-        // only check if manifest is not null
-        if (manifest == null) {
-            verify = false;
-            return;
-        }
-
-        verify = true;
-        // XXX - verify manifest
-    }
-
-    /**
-     * Parses and returns the manifest if it exists, otherwise returns null.
-     */
-    private Manifest readManifest() {
-        try {
-            ZipEntry manEntry = super.getEntry(MANIFEST_NAME);
-            if (manEntry != null) {
-                InputStream in = super.getInputStream(manEntry);
-                return new Manifest(in);
-            } else {
-                return null;
-            }
-        } catch (IOException ioe) {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a enumeration of all the entries in the JarFile.
-     * Note that also the Jar META-INF entries are returned.
-     *
-     * @exception IllegalStateException when the JarFile is already closed
-     */
-    public Enumeration entries() throws IllegalStateException {
-        return new JarEnumeration(super.entries());
-    }
-
-    /**
-     * Wraps a given Zip Entries Enumeration. For every zip entry a
-     * JarEntry is created and the corresponding Attributes are looked up.
-     * XXX - Should also look up the certificates.
-     */
-    private class JarEnumeration implements Enumeration {
-
-        private final Enumeration entries;
-
-        JarEnumeration(Enumeration e) {
-            entries = e;
-        }
-
-        public boolean hasMoreElements() {
-            return entries.hasMoreElements();
-        }
-
-        public Object nextElement() {
-            ZipEntry zip = (ZipEntry) entries.nextElement();
-            JarEntry jar = new JarEntry(zip);
-            if (manifest != null) {
-                jar.attr = manifest.getAttributes(jar.getName());
-            }
-            // XXX jar.certs
-            return jar;
-        }
-    }
-
-    /**
-     * XXX
-     * It actually returns a JarEntry not a zipEntry
-     * @param name XXX
-     */
-    public ZipEntry getEntry(String name) {
-        ZipEntry entry = super.getEntry(name);
-        if (entry != null) {
-            JarEntry jarEntry = new JarEntry(entry);
-            if (manifest != null) {
-                jarEntry.attr = manifest.getAttributes(name);
-                // XXX jarEntry.certs
-            }
-            return jarEntry;
-        }
-        return null;
-    }
-
-    /**
-     * XXX should verify the inputstream
-     * @param entry XXX
-     * @exception ZipException XXX
-     * @exception IOException XXX
-     */
-    public synchronized InputStream getInputStream(ZipEntry entry) throws
-                                                                ZipException,
-                                                                IOException {
-        return super.getInputStream(entry); // XXX verify
-    }
-
-    /**
-     * Returns the JarEntry that belongs to the name if such an entry
-     * exists in the JarFile. Returns null otherwise
-     * Convenience method that just casts the result from <code>getEntry</code>
-     * to a JarEntry.
-     *
-     * @param name the jar entry name to look up
-     * @return the JarEntry if it exists, null otherwise
-     */
-    public JarEntry getJarEntry(String name) {
-        return (JarEntry)getEntry(name);
-    }
-
-    /**
-     * Returns the manifest for this JarFile or null when the JarFile does not
-     * contain a manifest file.
-     */
-    public Manifest getManifest() {
-        return manifest;
-    }
+  /**
+   * Returns the manifest for this JarFile or null when the JarFile does not
+   * contain a manifest file.
+   */
+  public Manifest getManifest()
+  {
+    return manifest;
+  }
 }
