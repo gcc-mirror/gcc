@@ -105,6 +105,7 @@ Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
 Don Lindsay					dlindsay@cygnus.com
 Geoff Keating					geoffk@cygnus.com
 Alex Samuel					samuel@codesourcery.com
+Greg McGary					gkm@gnu.org
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
 can write in the source tree
