@@ -1489,8 +1489,8 @@ read_specs (filename, main_p)
 		p1++;
 
 	      if (*p1++ != '<' || p[-2] != '>')
-		fatal ("specs %%include syntax malformed after %d characters",
-		       p1 - buffer + 1);
+		fatal ("specs %%include syntax malformed after %ld characters",
+		       (long) (p1 - buffer + 1));
 
 	      p[-2] = '\0';
 	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK);
@@ -1507,8 +1507,8 @@ read_specs (filename, main_p)
 	      while (*p1 == ' ' || *p1 == '\t') p1++;
 
 	      if (*p1++ != '<' || p[-2] != '>')
-		fatal ("specs %%include syntax malformed after %d characters",
-		       p1 - buffer + 1);
+		fatal ("specs %%include syntax malformed after %ld characters",
+		       (long) (p1 - buffer + 1));
 
 	      p[-2] = '\0';
 	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK);
@@ -1531,16 +1531,16 @@ read_specs (filename, main_p)
 		p1++;
 
 	      if (! ISALPHA ((unsigned char)*p1))
-		fatal ("specs %%rename syntax malformed after %d characters",
-		       p1 - buffer);
+		fatal ("specs %%rename syntax malformed after %ld characters",
+		       (long) (p1 - buffer));
 
 	      p2 = p1;
 	      while (*p2 && !ISSPACE ((unsigned char)*p2))
 		p2++;
 
 	      if (*p2 != ' ' && *p2 != '\t')
-		fatal ("specs %%rename syntax malformed after %d characters",
-		       p2 - buffer);
+		fatal ("specs %%rename syntax malformed after %ld characters",
+		       (long) (p2 - buffer));
 
 	      name_len = p2 - p1;
 	      *p2++ = '\0';
@@ -1548,8 +1548,8 @@ read_specs (filename, main_p)
 		p2++;
 
 	      if (! ISALPHA ((unsigned char)*p2))
-		fatal ("specs %%rename syntax malformed after %d characters",
-		       p2 - buffer);
+		fatal ("specs %%rename syntax malformed after %ld characters",
+		       (long) (p2 - buffer));
 
 	      /* Get new spec name */
 	      p3 = p2;
@@ -1557,8 +1557,8 @@ read_specs (filename, main_p)
 		p3++;
 
 	      if (p3 != p-1)
-		fatal ("specs %%rename syntax malformed after %d characters",
-		       p3 - buffer);
+		fatal ("specs %%rename syntax malformed after %ld characters",
+		       (long) (p3 - buffer));
 	      *p3 = '\0';
 
 	      for (sl = specs; sl; sl = sl->next)
@@ -1588,8 +1588,8 @@ read_specs (filename, main_p)
 	      continue;
 	    }
 	  else
-	    fatal ("specs unknown %% command after %d characters",
-		   p1 - buffer);
+	    fatal ("specs unknown %% command after %ld characters",
+		   (long) (p1 - buffer));
 	}
 
       /* Find the colon that should end the suffix.  */
@@ -1599,7 +1599,8 @@ read_specs (filename, main_p)
 
       /* The colon shouldn't be missing.  */
       if (*p1 != ':')
-	fatal ("specs file malformed after %d characters", p1 - buffer);
+	fatal ("specs file malformed after %ld characters",
+	       (long) (p1 - buffer));
 
       /* Skip back over trailing whitespace.  */
       p2 = p1;
@@ -1611,7 +1612,8 @@ read_specs (filename, main_p)
       /* Find the next line.  */
       p = skip_whitespace (p1 + 1);
       if (p[1] == 0)
-	fatal ("specs file malformed after %d characters", p - buffer);
+	fatal ("specs file malformed after %ld characters",
+	       (long) (p - buffer));
 
       p1 = p;
       /* Find next blank line or end of string.  */
