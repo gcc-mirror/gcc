@@ -77,11 +77,6 @@ Boston, MA 02111-1307, USA.  */
     const_section ();				\
 }
 
-/* This is the string used to begin an assembly language comment for the
-   Sparc/svr4 assembler.  */
-
-#define ASM_COMMENT_START "!"
-
 /* Define the names of various pseudo-op used by the Sparc/svr4 assembler.
    Note that many of these are different from the typical pseudo-ops used
    by most svr4 assemblers.  That is probably due to a (misguided?) attempt
@@ -199,44 +194,6 @@ do {									\
   else									\
     fprintf (FILE, ".section\t\"%s\",#alloc,#write\n", (NAME));		\
 } while (0)
-
-/* This is how to output assembly code to define a `float' constant.
-   We always have to use a .long pseudo-op to do this because the native
-   SVR4 ELF assembler is buggy and it generates incorrect values when we
-   try to use the .float pseudo-op instead.  */
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-do { long value;							\
-     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);			\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value);			\
-   } while (0)
-
-/* This is how to output assembly code to define a `double' constant.
-   We always have to use a pair of .long pseudo-ops to do this because
-   the native SVR4 ELF assembler is buggy and it generates incorrect
-   values when we try to use the the .double pseudo-op instead.  */
-
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-do { long value[2];							\
-     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);			\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[0]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[1]);		\
-   } while (0)
-
-/* This is how to output an assembler line defining a `long double'
-   constant.  */
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
-do { long value[4];							\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), value);			\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[0]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[1]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[2]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[3]);		\
-   } while (0)
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.  */
