@@ -1,3 +1,9 @@
+2003-09-08  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (c_expand_body_1): Push and pop function context here.
+	* tree-optimize.c (tree_rest_of_compilation): ... not here.  Take
+	nested argument instead of computing nesting ourselves.
+
 2003-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* toplev.c (rest_of_handle_stack_regs): Call split_all_insns before

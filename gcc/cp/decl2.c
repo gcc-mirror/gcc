@@ -4232,10 +4232,7 @@ mark_used (tree decl)
 		  information.  */
 	       || cp_function_chain->can_throw);
 
-      /* Our caller is likely to have lots of data on the stack.  */
-      ggc_push_context ();
       instantiate_decl (decl, defer);
-      ggc_pop_context ();
     }
 }
 
