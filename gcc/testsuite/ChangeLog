@@ -1,5 +1,10 @@
 2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* gcc.c-torture/execute/20040331-1.c: Don't use too wide a
+	bit-field on 16-bit targets.
+
+2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* gcc.c-torture/execute/20040409-2.c: Fix constants used on
 	16-bit targets.
 
