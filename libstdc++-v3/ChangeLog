@@ -1,3 +1,10 @@
+2005-01-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/fstream.tcc: Remove unnecessary qualifications for
+	uglified data members of basic_filebuf, including _M_buf,
+	_M_buf_size, _M_mode, _M_pback_init.
+	* include/std/std_fstream.h: Same.
+	
 2005-01-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/testsuite_hooks.h: 
