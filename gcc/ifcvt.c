@@ -1079,7 +1079,8 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
 	  || (set_b = single_set (insn_b)) == NULL_RTX
 	  || ! rtx_equal_p (x, SET_DEST (set_b))
 	  || reg_mentioned_p (x, cond)
-	  || reg_mentioned_p (x, a))
+	  || reg_mentioned_p (x, a)
+	  || reg_mentioned_p (x, SET_SRC (set_b)))
 	insn_b = set_b = NULL_RTX;
     }
   b = (set_b ? SET_SRC (set_b) : x);
