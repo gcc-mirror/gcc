@@ -1769,7 +1769,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
   else if (*str == '+')
     str++;
 
-  if (str[0] == '0' && str[1] == 'x')
+  if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
     {
       /* Hexadecimal floating point.  */
       int pos = SIGNIFICAND_BITS - 4, d;
