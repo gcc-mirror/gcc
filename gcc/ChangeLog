@@ -1,3 +1,8 @@
+2002-01-20  Graham Stott  <grahams@redhat.com>
+
+	* dwarf2out.c (indirect_string_alloc, output_indirect_string):
+        Move prototype into DWARF2_DEBUGGING_INFO conditional block. 
+
 2002-01-10  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (extendsidi2_fix): Penalize f/f alternative.
