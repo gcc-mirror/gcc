@@ -132,7 +132,7 @@ static void set_identifier_type_value_with_scope
 	PROTO((tree, tree, struct binding_level *));
 static void record_builtin_type PROTO((enum rid, const char *, tree));
 static void record_unknown_type PROTO((tree, const char *));
-static int member_function_or_else PROTO((tree, tree, const char *));
+static int member_function_or_else PROTO((tree, tree, enum overload_flags));
 static void bad_specifiers PROTO((tree, const char *, int, int, int, int,
 				  int));
 static void lang_print_error_function PROTO((const char *));
@@ -8321,13 +8321,18 @@ complete_array_type (type, initial_value, do_default)
    message to print in that case.  Otherwise, quietly return 1.  */
 
 static int
-member_function_or_else (ctype, cur_type, string)
+member_function_or_else (ctype, cur_type, flags)
      tree ctype, cur_type;
-     const char *string;
+     enum overload_flags flags;
 {
   if (ctype && ctype != cur_type)
     {
-      error (string, TYPE_NAME_STRING (ctype));
+      if (flags == DTOR_FLAG)
+	error ("destructor for alien class `%s' cannot be a member",
+	       TYPE_NAME_STRING (ctype));
+      else
+	error ("constructor for alien class `%s' cannot be a member",
+	       TYPE_NAME_STRING (ctype));
       return 0;
     }
   return 1;
@@ -10177,8 +10182,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      }
 		    if (decl_context == FIELD)
 		      {
-			if (! member_function_or_else (ctype, current_class_type,
-						       "destructor for alien class `%s' cannot be a member"))
+			if (! member_function_or_else (ctype,
+						       current_class_type,
+						       flags))
 			  return void_type_node;
 		      }
 		  }
@@ -10213,8 +10219,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    type = build_pointer_type (ctype);
 		    if (decl_context == FIELD)
 		      {
-			if (! member_function_or_else (ctype, current_class_type,
-						       "constructor for alien class `%s' cannot be member"))
+			if (! member_function_or_else (ctype,
+						       current_class_type,
+						       flags))
 			  return void_type_node;
 			TYPE_HAS_CONSTRUCTOR (ctype) = 1;
 			if (return_type != return_ctor)
