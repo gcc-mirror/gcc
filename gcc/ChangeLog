@@ -1,3 +1,7 @@
+Thu Jun 20 00:26:53 2002  Denis Chertykov  <denisc@overta.ru>
+
+	* config.gcc: Add support for ip2k.
+
 2002-06-23  Jan Hubicka  <jh@suse.cz>
 	    Jeff Law <law@redhat.com>
 
