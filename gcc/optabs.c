@@ -2051,6 +2051,90 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
    MODE is the mode of the operand; the mode of the result is
    different but can be deduced from MODE.
 
+   UNSIGNEDP is relevant if extension is needed.  */
+
+rtx
+expand_abs (mode, op0, target, unsignedp, safe)
+     enum machine_mode mode;
+     rtx op0;
+     rtx target;
+     int unsignedp;
+     int safe;
+{
+  rtx temp, op1;
+
+  /* First try to do it with a special abs instruction.  */
+  temp = expand_unop (mode, abs_optab, op0, target, 0);
+  if (temp != 0)
+    return temp;
+
+  /* If this machine has expensive jumps, we can do integer absolute
+     value of X as (((signed) x >> (W-1)) ^ x) - ((signed) x >> (W-1)),
+     where W is the width of MODE.  */
+
+  if (GET_MODE_CLASS (mode) == MODE_INT && BRANCH_COST >= 2)
+    {
+      rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
+				   size_int (GET_MODE_BITSIZE (mode) - 1),
+				   NULL_RTX, 0);
+
+      temp = expand_binop (mode, xor_optab, extended, op0, target, 0,
+			   OPTAB_LIB_WIDEN);
+      if (temp != 0)
+	temp = expand_binop (mode, sub_optab, temp, extended, target, 0,
+			     OPTAB_LIB_WIDEN);
+
+      if (temp != 0)
+	return temp;
+    }
+
+  /* If that does not win, use conditional jump and negate.  */
+  op1 = gen_label_rtx ();
+  if (target == 0 || ! safe
+      || GET_MODE (target) != mode
+      || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
+      || (GET_CODE (target) == REG
+	  && REGNO (target) < FIRST_PSEUDO_REGISTER))
+    target = gen_reg_rtx (mode);
+
+  emit_move_insn (target, op0);
+  NO_DEFER_POP;
+
+  /* If this mode is an integer too wide to compare properly,
+     compare word by word.  Rely on CSE to optimize constant cases.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode))
+    do_jump_by_parts_greater_rtx (mode, 0, target, const0_rtx, 
+				  NULL_RTX, op1);
+  else
+    {
+      temp = compare_from_rtx (target, CONST0_RTX (mode), GE, 0, mode,
+			       NULL_RTX, 0);
+      if (temp == const1_rtx)
+	return target;
+      else if (temp != const0_rtx)
+	{
+	  if (bcc_gen_fctn[(int) GET_CODE (temp)] != 0)
+	    emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op1));
+	  else
+	    abort ();
+	}
+    }
+
+  op0 = expand_unop (mode, neg_optab, target, target, 0);
+  if (op0 != target)
+    emit_move_insn (target, op0);
+  emit_label (op1);
+  OK_DEFER_POP;
+  return target;
+}
+
+/* Emit code to compute the absolute value of OP0, with result to
+   TARGET if convenient.  (TARGET may be 0.)  The return value says
+   where the result actually is to be found.
+
+   MODE is the mode of the operand; the mode of the result is
+   different but can be deduced from MODE.
+
    UNSIGNEDP is relevant for complex integer modes.  */
 
 rtx
