@@ -1676,11 +1676,13 @@ try_combine (i3, i2, i1)
 	   && ! find_reg_note (i3, REG_UNUSED,
 			       SET_DEST (XVECEXP (newpat, 0, 0))))
     {
+      rtx ni2dest;
+
       newi2pat = XVECEXP (newpat, 0, 0);
+      ni2dest = SET_DEST (XVECEXP (newpat, 0, 0));
       newpat = XVECEXP (newpat, 0, 1);
       SUBST (SET_SRC (newpat),
-	     gen_lowpart_for_combine (GET_MODE (SET_SRC (newpat)),
-				      SET_DEST (newi2pat)));
+	     gen_lowpart_for_combine (GET_MODE (SET_SRC (newpat)), ni2dest));
       i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
       if (i2_code_number >= 0)
 	insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
@@ -1717,7 +1719,7 @@ try_combine (i3, i2, i1)
 	       insn = NEXT_INSN (insn))
 	    {
 	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-		  && reg_referenced_p (SET_DEST (newi2pat), PATTERN (insn)))
+		  && reg_referenced_p (ni2dest, PATTERN (insn)))
 		{
 		  for (link = LOG_LINKS (insn); link;
 		       link = XEXP (link, 1))
