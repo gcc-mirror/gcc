@@ -89,7 +89,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
     int extraLength = readu2();
     byte[] bname = new byte[filenameLength];
     readFully(bname);
-    ZipEntry entry = new ZipEntry(new String(bname, "8859_1"));
+    ZipEntry entry = createZipEntry(new String(bname, "8859_1"));
     if (extraLength > 0)
       {
 	byte[] bextra = new byte[extraLength];
@@ -160,6 +160,13 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
     return count;
   }
 
+  public int available() {
+    if (closed)
+      return 0;
+    else
+      return 1;
+  }
+
   private void readFully (byte[] b)  throws IOException
   {
     int off = 0;
@@ -222,6 +229,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   public void close ()  throws IOException
   {
     current = null;
+    closed = true;
     super.close();
   }
 
@@ -231,4 +239,6 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   private int avail;
   // Number of bytes we can read from underlying stream.
   private int compressed_bytes;
+  // Is this ZipInputStream closed? Set by the close() method.
+  private boolean closed = false;
 }

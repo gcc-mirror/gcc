@@ -22,9 +22,9 @@ package java.util.zip;
 
 public class CRC32 implements Checksum
 {
-  int crc = 0;
+  private int crc = 0;
 
-  static int[] crc_table = make_crc_table();
+  private static int[] crc_table = make_crc_table();
 
   /* Make the table for a fast CRC. */
   static int[] make_crc_table ()

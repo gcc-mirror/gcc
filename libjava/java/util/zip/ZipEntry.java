@@ -102,7 +102,7 @@ public class ZipEntry implements ZipConstants, Cloneable
   
   public void setCompressedSize (long compressedSize)
   {
-    if (size < 0 || size > 0xffffffffL)
+    if (compressedSize < 0 || compressedSize > 0xffffffffL)
       throw new IllegalArgumentException ();
     this.compressedSize = compressedSize;
   }

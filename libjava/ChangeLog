@@ -1,3 +1,14 @@
+2000-08-20  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/Adler32.java: Make private variables really private
+	* java/util/zip/CRC32.java: Make private variables really private
+	* java/util/zip/CheckedInputStream.java: skip() could skip to much bytes
+	* java/util/zip/InflaterInputStream.java: skip() could skip to much bytes
+	* java/util/zip/ZipEntry.java: setCompressedSize() didn't check input
+	* java/util/zip/ZipFile.java: size() new 1.2 method
+	* java/util/zip/ZipInputStream.java: Use createZipEntry not new ZipEntry.
+    since 1.2 available() always returns just 1 or 0 when closed
+
 Sun Aug 20 12:33:43 2000  Anthony Green  <green@redhat.com>
 
 	* java/util/jar/JarFile.java: Don't call
