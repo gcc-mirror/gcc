@@ -195,6 +195,7 @@ In K+R C, you have to cast enum types to use them as integers, and
 some compilers in particular give lots of warnings for using an enum
 as an array index.
 
+
 Bitfields
 ---------
 
@@ -232,6 +233,7 @@ values in unsigned char fit in an int, it promotes to int).
 ** Not having any argument whose type is a short type (char, short,
 float of any flavor) and subject to promotion. **
 
+
 Trigraphs
 ---------
 
@@ -246,14 +248,15 @@ Suffixes on Integer Constants
 **Using a 'u' suffix on integer constants.**
 
 
+			Common Coding Pitfalls
+			======================
+
 errno
 -----
 
 errno might be declared as a macro.
 
 
-			Common Coding Pitfalls
-			======================
 Implicit int
 ------------
 
