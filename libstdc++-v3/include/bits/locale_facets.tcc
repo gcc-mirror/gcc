@@ -1284,38 +1284,50 @@ namespace std
 	    __testvalid = false;
 	}
 
+      const char_type __zero = __ctype.widen('0');
+
       // Strip leading zeros.
-      while (__tmp_units.size() > 1 && __tmp_units[0] == __ctype.widen('0'))
-	__tmp_units.erase(__tmp_units.begin());
-
-      if (__sign.size() && __sign == __neg_sign)
-	__tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));
-
-      // Test for grouping fidelity.
-      if (__grouping.size() && __grouping_tmp.size())
+      if (__tmp_units.size() > 1)
 	{
-	  if (!std::__verify_grouping(__grouping, __grouping_tmp))
-	    __testvalid = false;
+	  const size_type __first = __tmp_units.find_first_not_of(__zero);
+	  const bool __only_zeros = __first == string_type::npos;
+	  if (__first)
+	    __tmp_units.erase(0, __only_zeros  ? __tmp_units.size() - 1
+			                       : __first);
 	}
+
+      if (__tmp_units.size())
+	{
+	  // 22.2.6.1.2, p4
+	  if (__sign.size() && __sign == __neg_sign
+	      && __tmp_units[0] != __zero)
+	    __tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));      
+
+	  // Test for grouping fidelity.
+	  if (__grouping.size() && __grouping_tmp.size())
+	    {
+	      if (!std::__verify_grouping(__grouping, __grouping_tmp))
+		__testvalid = false;
+	    }
+
+	  // Iff not enough digits were supplied after the decimal-point.
+	  if (__testdecfound)
+	    {
+	      const int __frac = __intl ? __mpt.frac_digits() 
+		                        : __mpf.frac_digits();
+	      if (__frac > 0 && __sep_pos != __frac)
+		__testvalid = false;
+	    }
+	}
+      else
+	__testvalid = false;
 
       // Iff no more characters are available.      
       if (__c == __eof)
 	__err |= ios_base::eofbit;
 
-      // Iff not enough digits were supplied after the decimal-point.
-      if (__testdecfound)
-	{
-	  const int __frac = __intl ? __mpt.frac_digits() 
-				    : __mpf.frac_digits();
-	  if (__frac > 0)
-	    {
-	      if (__sep_pos != __frac)
-		__testvalid = false;
-	    }
-	}
-
       // Iff valid sequence is not recognized.
-      if (!__testvalid || !__tmp_units.size())
+      if (!__testvalid)
 	__err |= ios_base::failbit;
       else
 	// Use the "swap trick" to copy __tmp_units into __units.

@@ -1,3 +1,12 @@
+2003-10-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (money_get<>::do_get(...,
+	string_type&)): Use find_first_not_of to strip leading
+	zeros; if __tmp_units == "0" never prefix it with '-';
+	always fail if __tmp_units is empty.
+	* testsuite/22_locale/money_get/get/char/10.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/10.cc: Ditto.
+
 2003-10-23  Phil Edwards  <phil@codesourcery.com>
 
 	* config/os/vxworks/ctype_noninline.h:  Adjust ctor to match
