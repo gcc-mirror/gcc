@@ -271,6 +271,9 @@ static rtx find_reloads_subreg_address (rtx, int, int, enum reload_type,
 					int, rtx);
 static void copy_replacements_1 (rtx *, rtx *, int);
 static int find_inc_amount (rtx, rtx);
+static int refers_to_mem_for_reload_p (rtx);
+static int refers_to_regno_for_reload_p (unsigned int, unsigned int,
+					 rtx, rtx *);
 
 #ifdef HAVE_SECONDARY_RELOADS
 
@@ -6171,7 +6174,7 @@ find_replacement (rtx *loc)
    This is similar to refers_to_regno_p in rtlanal.c except that we
    look at equivalences for pseudos that didn't get hard registers.  */
 
-int
+static int
 refers_to_regno_for_reload_p (unsigned int regno, unsigned int endregno,
 			      rtx x, rtx *loc)
 {
@@ -6364,7 +6367,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 /* Return nonzero if anything in X contains a MEM.  Look also for pseudo
    registers.  */
 
-int
+static int
 refers_to_mem_for_reload_p (rtx x)
 {
   const char *fmt;

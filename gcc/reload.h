@@ -308,18 +308,8 @@ extern void move_replacements (rtx *x, rtx *y);
    Otherwise, return *LOC.  */
 extern rtx find_replacement (rtx *);
 
-/* Return nonzero if register in range [REGNO, ENDREGNO)
-   appears either explicitly or implicitly in X
-   other than being stored into.  */
-extern int refers_to_regno_for_reload_p (unsigned int, unsigned int,
-					 rtx, rtx *);
-
 /* Nonzero if modifying X will affect IN.  */
 extern int reg_overlap_mentioned_for_reload_p (rtx, rtx);
-
-/* Return nonzero if anything in X contains a MEM.  Look also for pseudo
-   registers.  */
-extern int refers_to_mem_for_reload_p (rtx);
 
 /* Check the insns before INSN to see if there is a suitable register
    containing the same value as GOAL.  */
