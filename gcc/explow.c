@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -400,7 +400,7 @@ memory_address (mode, x)
 	    }
 	}
 
-      if (GET_CODE (x) == MULT || GET_CODE (x) == MINUS)
+      else if (GET_CODE (x) == MULT || GET_CODE (x) == MINUS)
 	x = force_operand (x, NULL_RTX);
 
       /* If we have a register that's an invalid address,
