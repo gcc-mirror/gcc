@@ -1,3 +1,7 @@
+2000-12-30  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* lib/g++.exp:  Use sh to exec ${odir_v3}/tests_flags
+
 2000-12-29  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20001117-1.c (__cyg_profile_func_enter): Define.
