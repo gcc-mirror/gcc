@@ -1,5 +1,7 @@
 2001-02-07  Mark Mitchell  <mark@codesourcery.com>
 
+	* config/rs6000/aix43.h (CPLUSCPLUS_CPP_SPEC): Define it.
+
 	* defaults.h (CPLUSPLUS_CPP_SPEC): New macro.
 	* gcc.c (struct compiler): Add cpp_spec field.
 	(input_file_compiler): New variable.
