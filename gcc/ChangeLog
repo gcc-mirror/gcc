@@ -1,3 +1,9 @@
+1997-09-17  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* configure.in, configure: Make sure to create the stage* and include
+	symbolic links in each subdirectory, as we do in configure.lang for
+	non-autoconf configurations.
+
 Wed Sep 17 14:11:38 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* v850.c (construct_save_jarl): Fix thinko in last change.
