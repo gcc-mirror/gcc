@@ -8364,6 +8364,7 @@ do_jump (exp, if_false_label, if_true_label)
   rtx comparison = 0;
   int i;
   tree type;
+  enum machine_mode mode;
 
   emit_queue ();
 
@@ -8440,7 +8441,8 @@ do_jump (exp, if_false_label, if_true_label)
 	  && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
 	  && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
 	  && (i = floor_log2 (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)))) >= 0
-	  && (type = type_for_size (i + 1, 1)) != 0
+	  && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
+	  && (type = type_for_mode (mode, 1)) != 0
 	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
 	  && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
 	      != CODE_FOR_nothing))
