@@ -53,9 +53,16 @@
    In addition, E must be large enough to hold the smallest supported
    denormal number in a normalized form.
 
-   Both of these requirements are easily satisfied.  The largest
-   target significand is 113 bits; we store 128.  The smallest
+   Both of these requirements are easily satisfied.  The largest target
+   significand is 113 bits; we store at least 160.  The smallest
    denormal number fits in 17 exponent bits; we store 29.
+
+   Note that the decimal string conversion routines are sensitive to 
+   rounding error.  Since the raw arithmetic routines do not themselves
+   have guard digits or rounding, the computation of 10**exp can
+   accumulate more than a few digits of error.  The previous incarnation
+   of real.c successfully used a 144 bit fraction; given the current
+   layout of REAL_VALUE_TYPE we're forced to expand to at least 160 bits.
 
    Target floating point models that use base 16 instead of base 2
    (i.e. IBM 370), are handled during round_for_format, in which we
@@ -119,6 +126,7 @@ static void do_fix_trunc PARAMS ((REAL_VALUE_TYPE *,
 
 static const REAL_VALUE_TYPE * ten_to_ptwo PARAMS ((int));
 static const REAL_VALUE_TYPE * real_digit PARAMS ((int));
+static void times_pten PARAMS ((REAL_VALUE_TYPE *, int));
 
 static void round_for_format PARAMS ((const struct real_format *,
 				      REAL_VALUE_TYPE *));
@@ -186,7 +194,7 @@ sticky_rshift_significand (r, a, n)
     {
       for (i = 0, ofs = n / HOST_BITS_PER_LONG; i < ofs; ++i)
 	sticky |= a->sig[i];
-      n -= ofs * HOST_BITS_PER_LONG;
+      n &= HOST_BITS_PER_LONG - 1;
     }
 
   if (n != 0)
@@ -222,7 +230,7 @@ rshift_significand (r, a, n)
 {
   unsigned int i, ofs = n / HOST_BITS_PER_LONG;
 
-  n -= ofs * HOST_BITS_PER_LONG;
+  n &= HOST_BITS_PER_LONG - 1;
   if (n != 0)
     {
       for (i = 0; i < SIGSZ; ++i)
@@ -253,7 +261,7 @@ lshift_significand (r, a, n)
 {
   unsigned int i, ofs = n / HOST_BITS_PER_LONG;
 
-  n -= ofs * HOST_BITS_PER_LONG;
+  n &= HOST_BITS_PER_LONG - 1;
   if (n == 0)
     {
       for (i = 0; ofs + i < SIGSZ; ++i)
@@ -888,10 +896,10 @@ do_divide (r, a, b)
   rr->exp = exp;
 
   inexact = div_significands (rr, a, b);
-  rr->sig[0] |= inexact;
 
   /* Re-normalize the result.  */
   normalize (rr);
+  rr->sig[0] |= inexact;
 
   if (rr != r)
     *r = t;
@@ -1416,11 +1424,11 @@ real_to_decimal (str, r_orig, digits)
     case rvc_normal:
       break;
     case rvc_inf:
-      strcpy (str, (r.sign ? "+Inf" : "-Inf"));
+      strcpy (str, (r.sign ? "-Inf" : "+Inf"));
       return;
     case rvc_nan:
       /* ??? Print the significand as well, if not canonical?  */
-      strcpy (str, (r.sign ? "+NaN" : "-NaN"));
+      strcpy (str, (r.sign ? "-NaN" : "+NaN"));
       return;
     default:
       abort ();
@@ -1441,21 +1449,7 @@ real_to_decimal (str, r_orig, digits)
   dec_exp = r.exp * M_LOG10_2;
   
   /* Scale the number such that it is in [1, 10).  */
-  if (dec_exp > 0)
-    {
-      int i;
-      for (i = EXP_BITS - 1; i >= 0; --i)
-	if (dec_exp & (1 << i))
-	  do_divide (&r, &r, ten_to_ptwo (i));
-    }
-  else if (dec_exp < 0)
-    {
-      int i, pos_exp = -(--dec_exp);
-
-      for (i = EXP_BITS - 1; i >= 0; --i)
-	if (pos_exp & (1 << i))
-	  do_multiply (&r, &r, ten_to_ptwo (i));
-    }
+  times_pten (&r, (dec_exp > 0 ? -dec_exp : -(--dec_exp)));
 
   /* Assert that the number is in the proper range.  Round-off can
      prevent the above from working exactly.  */
@@ -1545,11 +1539,11 @@ real_to_hexadecimal (str, r, digits)
     case rvc_normal:
       break;
     case rvc_inf:
-      strcpy (str, (r->sign ? "+Inf" : "-Inf"));
+      strcpy (str, (r->sign ? "-Inf" : "+Inf"));
       return;
     case rvc_nan:
       /* ??? Print the significand as well, if not canonical?  */
-      strcpy (str, (r->sign ? "+NaN" : "-NaN"));
+      strcpy (str, (r->sign ? "-NaN" : "+NaN"));
       return;
     default:
       abort ();
@@ -1755,19 +1749,8 @@ real_from_string (r, str)
 	  exp += d;
 	}
 
-      if (exp < 0)
-	{
-	  exp = -exp;
-	  for (d = 0; d < EXP_BITS; ++d)
-	    if (exp & (1 << d))
-	      do_divide (r, r, ten_to_ptwo (d));
-	}
-      else if (exp > 0)
-	{
-	  for (d = 0; d < EXP_BITS; ++d)
-	    if (exp & (1 << d))
-	      do_multiply (r, r, ten_to_ptwo (d));
-	}
+      if (exp)
+        times_pten (r, exp);
     }
 
   r->sign = sign;
@@ -1898,6 +1881,34 @@ real_digit (n)
     real_from_integer (&num[n], VOIDmode, n, 0, 1);
 
   return &num[n];
+}
+
+/* Multiply R by 10**EXP.  */
+
+static void
+times_pten (r, exp)
+     REAL_VALUE_TYPE *r;
+     int exp;
+{
+  REAL_VALUE_TYPE pten, *rr;
+  bool negative = (exp < 0);
+  int i;
+
+  if (negative)
+    {
+      exp = -exp;
+      pten = *real_digit (1);
+      rr = &pten;
+    }
+  else
+    rr = r;
+
+  for (i = 0; exp > 0; ++i, exp >>= 1)
+    if (exp & 1)
+      do_multiply (rr, rr, ten_to_ptwo (i));
+
+  if (negative)
+    do_divide (r, r, &pten);
 }
 
 /* Fills R with +Inf.  */

@@ -34,7 +34,7 @@ enum real_value_class {
   rvc_nan
 };
 
-#define SIGNIFICAND_BITS	128
+#define SIGNIFICAND_BITS	(128 + HOST_BITS_PER_LONG)
 #define EXP_BITS		(32 - 3)
 #define MAX_EXP			((1 << (EXP_BITS - 1)) - 1)
 #define SIGSZ			(SIGNIFICAND_BITS / HOST_BITS_PER_LONG)
@@ -88,7 +88,11 @@ extern char test_real_width
 #    if REAL_WIDTH == 5
 #     define CONST_DOUBLE_FORMAT "wwwww"
 #    else
-      #error "REAL_WIDTH > 5 not supported"
+#     if REAL_WIDTH == 6
+#      define CONST_DOUBLE_FORMAT "wwwwww"
+#     else
+       #error "REAL_WIDTH > 6 not supported"
+#     endif
 #    endif
 #   endif
 #  endif
