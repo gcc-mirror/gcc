@@ -1,3 +1,9 @@
+Wed Sep  8 16:07:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gengenrtl.c (CONST_DOUBLE_FORMAT): Take the size REAL_ARITHMETIC 
+	will use into account.  Expand the max width to 5.
+	* rtl.c: Likewise.
+
 Wed Sep  8 16:01:14 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-simple.c (ggc_free_rtx): Poison the correct amount

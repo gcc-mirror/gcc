@@ -30,19 +30,45 @@ Boston, MA 02111-1307, USA.  */
 
 /* Calculate the format for CONST_DOUBLE.  This depends on the relative
    widths of HOST_WIDE_INT and REAL_VALUE_TYPE.
-   We only need to go out to e0wwww, since min(HOST_WIDE_INT)==32 and
-   max(LONG_DOUBLE_TYPE_SIZE)==128.
-   This is duplicated in rtl.c.  
+
+   We need to go out to e0wwwww, since REAL_ARITHMETIC assumes 16-bits
+   per element in REAL_VALUE_TYPE.
+
+   This is duplicated in rtl.c.
+
    A number of places assume that there are always at least two 'w'
    slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
-#if HOST_BITS_PER_WIDE_INT >= LONG_DOUBLE_TYPE_SIZE
-#define CONST_DOUBLE_FORMAT	"e0ww"
-#elif HOST_BITS_PER_WIDE_INT*2 >= LONG_DOUBLE_TYPE_SIZE
-#define CONST_DOUBLE_FORMAT	"e0ww"
+
+#ifdef REAL_ARITHMETIC
+#if LONG_DOUBLE_TYPE_SIZE == 96
+#define REAL_WIDTH	(11*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
+#elif LONG_DOUBLE_TYPE_SIZE == 128
+#define REAL_WIDTH	(19*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
+#elif HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
+#define REAL_WIDTH	(7*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
+#endif
+#endif /* REAL_ARITHMETIC */
+
+#ifndef REAL_WIDTH
+#if HOST_BITS_PER_WIDE_INT*2 >= LONG_DOUBLE_TYPE_SIZE
+#define REAL_WIDTH	2
 #elif HOST_BITS_PER_WIDE_INT*3 >= LONG_DOUBLE_TYPE_SIZE
-#define CONST_DOUBLE_FORMAT	"e0www"
+#define REAL_WIDTH	3
 #elif HOST_BITS_PER_WIDE_INT*4 >= LONG_DOUBLE_TYPE_SIZE
+#define REAL_WIDTH	4
+#endif
+#endif /* REAL_WIDTH */
+
+#if REAL_WIDTH == 1
+#define CONST_DOUBLE_FORMAT	"e0ww"
+#elif REAL_WIDTH == 2
+#define CONST_DOUBLE_FORMAT	"e0ww"
+#elif REAL_WIDTH == 3
+#define CONST_DOUBLE_FORMAT	"e0www"
+#elif REAL_WIDTH == 4
 #define CONST_DOUBLE_FORMAT	"e0wwww"
+#elif REAL_WIDTH == 5
+#define CONST_DOUBLE_FORMAT	"e0wwwww"
 #else
 #define CONST_DOUBLE_FORMAT	/* nothing - will cause syntax error */
 #endif
