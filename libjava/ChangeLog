@@ -1,3 +1,11 @@
+2005-03-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/20292
+	* testsuite/libjava.jni/jni.exp
+	(gcj_jni_invocation_compile_c_to_binary): Add -I. -I.. to compile
+	flags.
+	(gcj_jni_invocation_test_one): Add -L../.libs to cxx flags.
+
 2005-02-24  David Gilbert  <david.gilbert@object-refinery.com>
 
 	* java/awt/font/TextAttribute.java: changed names to lower case;
