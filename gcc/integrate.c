@@ -148,6 +148,9 @@ function_cannot_inline_p (fndecl)
   if (current_function_contains_functions)
     return N_("function with nested functions cannot be inline");
 
+  if (forced_labels)
+    return "function with label addresses used in initializers cannot inline";
+
   if (current_function_cannot_inline)
     return current_function_cannot_inline;
 
