@@ -1,5 +1,11 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/Class.java,
+	java/lang/Object.java,
+	java/lang/Thread.java: Merged copyright with classpath.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/FileDescriptor.java: Merged copyright with classpath to
 	start merging this class.
 
