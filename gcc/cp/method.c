@@ -80,7 +80,9 @@ static int check_ktype PROTO((tree, int));
 static int issue_ktype PROTO((tree));
 static void build_overload_scope_ref PROTO((tree));
 static void build_mangled_template_parm_index PROTO((char *, tree));
+#if HOST_BITS_PER_WIDE_INT >= 64
 static void build_mangled_C9x_name PROTO((int));
+#endif
 static int is_back_referenceable_type PROTO((tree));
 static int check_btype PROTO((tree));
 static void build_mangled_name_for_type PROTO((tree));
@@ -644,6 +646,7 @@ build_mangled_template_parm_index (s, index)
 
    Given an integer in decimal format, mangle according to this scheme. */
 
+#if HOST_BITS_PER_WIDE_INT >= 64
 static void
 build_mangled_C9x_name (bits)
      int bits;
@@ -657,7 +660,7 @@ build_mangled_C9x_name (bits)
 
   OB_PUTCP (mangled);
 }
-
+#endif
 
 static void
 build_overload_value (type, value, in_template)

@@ -3128,7 +3128,7 @@ tree
 build_binary_op (code, arg1, arg2, convert_p)
      enum tree_code code;
      tree arg1, arg2;
-     int convert_p;
+     int convert_p ATTRIBUTE_UNUSED;
 {
   return build_binary_op_nodefault (code, arg1, arg2, code);
 }

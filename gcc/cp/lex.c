@@ -4774,7 +4774,7 @@ yyerror (string)
     strcat (buf, " before string constant");
   else if (token_buffer[0] == '\'')
     strcat (buf, " before character constant");
-  else if (!ISGRAPH (token_buffer[0]))
+  else if (!ISGRAPH ((unsigned char)token_buffer[0]))
     sprintf (buf + strlen (buf), " before character 0%o",
 	     (unsigned char) token_buffer[0]);
   else
