@@ -8649,11 +8649,19 @@ expand_expr (exp, target, tmode, modifier)
 	      return op0;
 	    }
 
-	  /* If OP0 is not aligned as least as much as the type requires,
-	     we need to make a temporary, copy OP0 to it, and take the
-	     address of the temporary.  */
-	  if (GET_MODE (op0) == BLKmode
-	      && expr_align (TREE_OPERAND (exp, 0)) > MEM_ALIGN (op0))
+	  /* If OP0 is not aligned as least as much as the type requires, we
+	     need to make a temporary, copy OP0 to it, and take the address of
+	     the temporary.  We want to use the alignment of the type, not of
+	     the operand.  Note that this is incorrect for FUNCTION_TYPE, but
+	     the test for BLKmode means that can't happen.  The test for
+	     BLKmode is because we never make mis-aligned MEMs with
+	     non-BLKmode.
+
+	     We don't need to do this at all if the machine doesn't have
+	     strict alignment.  */
+	  if (STRICT_ALIGNMENT && GET_MODE (op0) == BLKmode
+	      && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
+		  > MEM_ALIGN (op0)))
 	    {
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 	      rtx new

@@ -1615,6 +1615,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* Reset the alignment in case we have made it tighter, so we can benefit
      from it in get_pointer_alignment.  */
   DECL_ALIGN (decl) = align;
+  set_mem_align (decl_rtl, align);
 
   /* Handle uninitialized definitions.  */
 
