@@ -5118,11 +5118,11 @@ constant is of the same type as the variable it is initializing.  The
 @code{vector bool} type is deprecated and will be discontinued in
 further revisions.  Use @code{vector signed} instead.  If @code{signed}
 or @code{unsigned} is omitted, the vector type will default to
-@{signed}.  Lastly, all overloaded functions are implemented with macros
+@code{signed}.  Lastly, all overloaded functions are implemented with macros
 for the C implementation.  So code the following example will not work:
 
 @smallexample
-  vec_add ((vector signed int){1, 2, 3, 4}, foo);
+  vec_add ((vector signed int)@{1, 2, 3, 4@}, foo);
 @end smallexample
 
 Since vec_add is a macro, the vector constant in the above example will
