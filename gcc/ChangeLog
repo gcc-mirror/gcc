@@ -1,3 +1,13 @@
+2002-08-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-common.c (builtin_define_type_precision): New function.
+	(cb_register_builtins): Use it.  Define __WCHAR_UNSIGNED__ is
+	wchar_t is unsigned in C++.
+	* doc/cpp.texi (Common Predefined Macros): Document
+	__WCHAR_UNSIGNED__, __CHAR_BIT__, __WCHAR_BIT__, __SHRT_BIT__,
+	__INT_BIT__, __LONG_BIT__, __LONG_LONG_BIT__, __FLOAT_BIT__,
+	__DOUBLE_BIT__, __LONG_DOUBLE_BIT__.
+
 2002-08-28  Sylvain Pion <pion@cs.nyu.edu>
 
 	* doc/invoke.texi (-Wreorder): Remove remaining pieces from the generic

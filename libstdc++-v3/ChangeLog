@@ -1,3 +1,13 @@
+2002-08-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/std/std_limits.h (__glibcpp_char_bits,
+	__glibcpp_short_bits, __glibcpp_int_bits, __glibcpp_long_bits,
+	__glibcpp_long_long_bits, __glibcpp_float_bits,
+	__glibcpp_double_bits, __glibcpp_long_double_bits): Remove.  Use
+	compiler predifined macros.
+	(__glibcpp_wchar_t_is_signed): Define based on compiler predefined
+	__WCHAR_UNSIGNED__. 
+
 2002-08-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/std/std_limits.h (__glibcpp_f32_infinity_bytes,

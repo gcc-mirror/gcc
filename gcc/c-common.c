@@ -760,9 +760,10 @@ static bool get_nonnull_operand		PARAMS ((tree,
 						 unsigned HOST_WIDE_INT *));
 void builtin_define_std PARAMS ((const char *));
 static void builtin_define_with_value PARAMS ((const char *, const char *,
-					       int));
+                                               int));
 static void builtin_define_type_max PARAMS ((const char *, tree, int));
 static void cpp_define_data_format PARAMS ((cpp_reader *));
+static void builtin_define_type_precision PARAMS ((const char *, tree));
 
 /* Table of machine-independent attributes common to all C-like languages.  */
 const struct attribute_spec c_common_attribute_table[] =
@@ -4765,6 +4766,17 @@ cpp_define_data_format (pfile)
   builtin_define_with_value ("__GCC_FLOAT_FORMAT__", format, 0);
 }
 
+/* Define NAME with value TYPE precision.  */
+static void
+builtin_define_type_precision (name, type)
+     const char *name;
+     tree type;
+{
+  char buf[8];
+  sprintf (buf, "%d", (int) TYPE_PRECISION (type));
+  builtin_define_with_value (name, buf, 0);
+}
+
 /* Hook that registers front end and target-specific built-ins.  */
 void
 cb_register_builtins (pfile)
@@ -4807,11 +4819,16 @@ cb_register_builtins (pfile)
   builtin_define_type_max ("__LONG_MAX__", long_integer_type_node, 1);
   builtin_define_type_max ("__LONG_LONG_MAX__", long_long_integer_type_node, 2);
 
-  {
-    char buf[8];
-    sprintf (buf, "%d", (int) TYPE_PRECISION (signed_char_type_node));
-    builtin_define_with_value ("__CHAR_BIT__", buf, 0);
-  }
+  builtin_define_type_precision ("__CHAR_BIT__", char_type_node);
+  builtin_define_type_precision ("__WCHAR_BIT__", wchar_type_node);
+  builtin_define_type_precision ("__SHRT_BIT__", short_integer_type_node);
+  builtin_define_type_precision ("__INT_BIT__", integer_type_node);
+  builtin_define_type_precision ("__LONG_BIT__", long_integer_type_node);
+  builtin_define_type_precision ("__LONG_LONG_BIT__",
+                                 long_long_integer_type_node);
+  builtin_define_type_precision ("__FLOAT_BIT__", float_type_node);
+  builtin_define_type_precision ("__DOUBLE_BIT__", double_type_node);
+  builtin_define_type_precision ("__LONG_DOUBLE_BIT__", long_double_type_node);
 
   /* For use in assembly language.  */
   builtin_define_with_value ("__REGISTER_PREFIX__", REGISTER_PREFIX, 0);
@@ -4848,6 +4865,9 @@ cb_register_builtins (pfile)
 
   if (!flag_signed_char)
     cpp_define (pfile, "__CHAR_UNSIGNED__");
+
+  if (c_language == clk_cplusplus && TREE_UNSIGNED (wchar_type_node))
+    cpp_define (pfile, "__WCHAR_UNSIGNED__");
 
   cpp_define_data_format (pfile);
   
