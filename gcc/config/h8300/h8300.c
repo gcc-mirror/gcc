@@ -286,7 +286,7 @@ function_epilogue (file, size)
 	    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
 	}
       /* deallocate locals */
-      dosize (file, "add", fsize;
+      dosize (file, "add", fsize);
     }
 
   if (interrupt_handler)
