@@ -1,3 +1,8 @@
+1998-10-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/spec24.C: ensure that template
+	specializations start with template headers
+
 1998-10-29  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/dcast2.C: cannot dynamic downcast &x
