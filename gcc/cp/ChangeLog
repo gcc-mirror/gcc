@@ -1,3 +1,7 @@
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* spew.c: Remove references to CPP_OSTRING.
+
 2001-03-06  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* call.c (joust): Ensure more_specialized()'s argument length
