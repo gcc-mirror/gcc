@@ -679,7 +679,7 @@ extern enum reg_class regno_reg_class[];
    : (GET_CODE (X) == CONST_DOUBLE		\
       && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT) \
    ? (! CONST_DOUBLE_OK_FOR_LETTER_P (X, 'G')	\
-      && CLASS == FP_REGS			\
+      && (CLASS == FP_REGS || CLASS == DATA_OR_FP_REGS) \
       ? FP_REGS : NO_REGS)			\
    : (CLASS))
 
