@@ -41,9 +41,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    By not having -mxopen and -mno-symrename, we get warning messages,
    but everything still compiles.  */
 /* None of these is actually used in cc1, so they modify bit 31 */
-#define ARM_EXTRA_TARGET_SWITCHES \
+#define SUBTARGET_SWITCHES \
 {"bsd", 0x80000000}, 
-
     
 
 /* Run-time Target Specification.  */

@@ -82,10 +82,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #endif
 
-/* None of these is actually used in cc1, so they modify bit 31 */
-#define ARM_EXTRA_TARGET_SWITCHES \
+/* None of these is actually used in cc1.  If we don't define them in target
+   switches cc1 complains about them.  For the sake of argument lets allocate
+   bit 31 of target flags for such options.  */
+#define SUBTARGET_SWITCHES \
 {"bsd", 0x80000000}, {"xopen", 0x80000000}, {"no-symrename", 0x80000000},
-
     
 
 /* Run-time Target Specification.  */
