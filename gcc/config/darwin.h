@@ -78,11 +78,6 @@ Boston, MA 02111-1307, USA.  */
 #undef	DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* Don't warn about MacOS-style 'APPL' four-char-constants.  */
-
-#undef WARN_FOUR_CHAR_CONSTANTS
-#define WARN_FOUR_CHAR_CONSTANTS 0
-
 /* Machine dependent cpp options.  */
 
 #undef	CPP_SPEC
@@ -106,12 +101,6 @@ Boston, MA 02111-1307, USA.  */
 /* We use Dbx symbol format.  */
 
 #define DBX_DEBUGGING_INFO 1
-
-/* Also enable Dwarf 2 as an option.  */
-
-#define DWARF2_DEBUGGING_INFO 1
-
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* When generating stabs debugging, use N_BINCL entries.  */
 
@@ -281,11 +270,6 @@ do { text_section ();							\
         || DECL_INITIAL (DECL)))					\
       machopic_define_name (NAME);					\
   } while (0)
-
-/* Output nothing for #ident.  */
-
-#undef	ASM_OUTPUT_IDENT
-#define ASM_OUTPUT_IDENT(FILE, NAME)
 
 /* The maximum alignment which the object file format can support.
    For Mach-O, this is 2^15.  */
