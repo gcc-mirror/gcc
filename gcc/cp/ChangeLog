@@ -1,3 +1,27 @@
+1999-01-18  Chip Salzenberg  <chip@perlsupport.com>
+
+	* typeck.c (comp_ptr_ttypes_reinterpret): Per ANSI, tighten up
+	definition of 'casting away const' in reinterpret_cast<>.
+
+1999-01-18  Graham <grahams@rcp.co.uk>
+
+	* cvt.c: Add include for decl.h, remove extern for
+	static_aggregates which is now provided by decl.h.
+
+	* Makefile.in (cvt.o): Add dependency for decl.h and missing
+	dependencies for convert.h and flags.h.
+
+1999-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (do_dtors): Set current location to that of the
+	decl, for sensible diagnostics and debugging.
+	(check_classfn): Issue `incomplete type' error, if
+	class is not defined.
+
+1999-01-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h: Add prototype for bound_pmf_p.
+
 1999-01-16  Jason Merrill  <jason@yorick.cygnus.com>
 	    Manfred Hollstein <manfred@s-direktnet.de>
 

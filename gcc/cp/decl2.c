@@ -1455,8 +1455,11 @@ check_classfn (ctype, function)
   else
     {
       methods = 0;
-      cp_error ("no `%#D' member function declared in class `%T'",
-		function, ctype);
+      if (TYPE_SIZE (ctype) == 0)
+        incomplete_type_error (function, ctype);
+      else
+        cp_error ("no `%#D' member function declared in class `%T'",
+		  function, ctype);
     }
 
   /* If we did not find the method in the class, add it to avoid
@@ -3094,6 +3097,12 @@ do_dtors (start)
 	  if (! current_function_decl)
 	    start_objects ('D', initp);
 
+	  /* Set these global variables so that GDB at least puts
+	     us near the declaration which required the initialization.  */
+	  input_filename = DECL_SOURCE_FILE (decl);
+	  lineno = DECL_SOURCE_LINE (decl);
+	  emit_note (input_filename, lineno);
+	  
 	  /* Because of:
 
 	       [class.access.spec]

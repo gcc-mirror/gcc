@@ -3259,6 +3259,7 @@ extern int count_functions			PROTO((tree));
 extern int is_overloaded_fn			PROTO((tree));
 extern tree get_first_fn			PROTO((tree));
 extern tree binding_init                        PROTO((struct tree_binding*));
+extern int bound_pmf_p				PROTO((tree));
 extern tree ovl_cons                            PROTO((tree, tree));
 extern tree scratch_ovl_cons                    PROTO((tree, tree));
 extern int ovl_member                           PROTO((tree, tree));
