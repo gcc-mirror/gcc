@@ -4463,7 +4463,9 @@ pre_delete (void)
 		  expr->reaching_reg
 		    = gen_reg_rtx (GET_MODE (SET_DEST (set)));
 
-		gcse_emit_move_after (expr->reaching_reg, SET_DEST (set), insn);
+		emit_insn_after (gen_move_insn (SET_DEST (set), 
+						expr->reaching_reg), 
+				 insn);
 		delete_insn (insn);
 		occr->deleted_p = 1;
 		SET_BIT (pre_redundant_insns, INSN_CUID (insn));
