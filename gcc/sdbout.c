@@ -1002,7 +1002,11 @@ static void
 sdbout_one_type (type)
      tree type;
 {
-  text_section ();
+  if (current_function_decl != NULL_TREE
+      && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
+    ; /* Don't change section amid function.  */
+  else
+    text_section ();
 
   switch (TREE_CODE (type))
     {
