@@ -1,3 +1,7 @@
+2002-09-10  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/20020312-2.c: Adjust for x86-64.
+
 2002-09-08  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.dg/7388.f: New test case for PR 7388.
@@ -94,7 +98,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* g++.dg/ext/lvaddr.C: New test.
 	* g++.dg/ext/lvcast.C: New test.
-	
+
 2002-08-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/g++.dg/inherit/cond1.C: New test.
@@ -109,7 +113,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-08-20  Devang Patel  <dpatel@apple.com>
 	* objc.dg/proto-hier-2.m: New test.
-	
+
 2002-08-19  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/bitfield-1.m: New test.
@@ -160,7 +164,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 2002-08-08  Devang Patel  <dpatel@apple.com>
 
 	* objc.dg/selector-1.m : New test
-	
+
 2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/bitfield4.C: New test.
@@ -174,7 +178,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* g++.dg/abi/offsetof.C: Tweak error messages.
 	* g++.old-deja/g++.mike/p10769a.C: Likewise.
-	
+
 2002-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/bitfld-3.c: New test.
@@ -248,7 +252,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* g++.dg/lookup/disamb1.C: Fix typo in comment.
 	* g++.dg/other/error1.C: Change expected error message.
 	* g++.dg/template/conv4.C: Likewise.
-	
+
 2002-07-26  Neil Booth  <neil@daikokuya.cop.uk>
 
 	* gcc.dg/cpp/trad/Wunused.c, gcc.dg/cpp/Wunused.c: Add test
@@ -274,7 +278,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 2002-07-24  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/loop-2e.c: Rewrite for 64 bit and no mmap.
-	
+
 2002-07-24  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* g++.dg/ext/alignof1.C (main): Return 0 for success.
