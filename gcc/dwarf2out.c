@@ -6260,38 +6260,21 @@ add_AT_location_description (die, attr_kind, rtl)
      enum dwarf_attribute attr_kind;
      register rtx rtl;
 {
-  dw_loc_descr_ref loc_descr = NULL;
-
   /* Handle a special case.  If we are about to output a location descriptor
      for a variable or parameter which has been optimized out of existence,
-     don't do that.  Instead we output a null location descriptor value as
-     part of the location attribute. A variable which has been optimized out
+     don't do that.  A variable which has been optimized out
      of existence will have a DECL_RTL value which denotes a pseudo-reg.
      Currently, in some rare cases, variables can have DECL_RTL values which
      look like (MEM (REG pseudo-reg#)).  These cases are due to bugs
      elsewhere in the compiler.  We treat such cases as if the variable(s) in 
-     question had been optimized out of existence. Note that in all cases
-     where we wish to express the fact that a variable has been optimized out 
-     of existence, we do not simply suppress the generation of the entire
-     location attribute because the absence of a location attribute in
-     certain kinds of DIEs is used to indicate something else entirely...
-     i.e. that the DIE represents an object declaration, but not a
-     definition.  So sayeth the PLSIG.  */
+     question had been optimized out of existence.  */
 
-  if (!is_pseudo_reg (rtl)
-      && (GET_CODE (rtl) != MEM
-	  || !is_pseudo_reg (XEXP (rtl, 0))))
-    loc_descr = loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX, 0));
+  if (is_pseudo_reg (rtl)
+      || (GET_CODE (rtl) == MEM
+	  && is_pseudo_reg (XEXP (rtl, 0))))
+    return;
 
-#ifdef MIPS_DEBUGGING_INFO
-  /* ??? SGI's dwarf reader is buggy, and will not accept a zero size
-     location descriptor.  Lets just use r0 for now to represent a
-     variable that has been optimized away.  */
-  if (loc_descr == NULL)
-    loc_descr = loc_descriptor (gen_rtx (REG, word_mode, 0));
-#endif
-
-  add_AT_loc (die, attr_kind, loc_descr);
+  add_AT_loc (die, attr_kind, loc_descriptor (rtl));
 }
 
 /* Attach the specialized form of location attribute used for data
@@ -6428,9 +6411,7 @@ add_const_value_attribute (die, rtl)
          of the (artificial) local variable either.  Rather, it represents the 
          *value* which the artificial local variable always has during its
          lifetime.  We currently have no way to represent such quasi-constant 
-         values in Dwarf, so for now we just punt and generate an
-         DW_AT_const_value attribute with null address.  */
-      add_AT_addr (die, DW_AT_const_value, addr_to_string (const0_rtx));
+         values in Dwarf, so for now we just punt and generate nothing.  */
       break;
 
     default:
@@ -6565,6 +6546,12 @@ add_location_or_const_value_attribute (die, decl)
 
   if (rtl == NULL_RTX)
     return;
+
+  rtl = eliminate_regs (rtl, 0, NULL_RTX, 0);
+#ifdef LEAF_REG_REMAP
+  if (leaf_function)
+    leaf_renumber_regs_insn (DECL_RTL (decl));
+#endif
 
   switch (GET_CODE (rtl))
     {
