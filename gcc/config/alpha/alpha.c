@@ -695,7 +695,7 @@ alpha_emit_set_const (target, mode, c, n)
 
   if ((HOST_BITS_PER_WIDE_INT != 64
        || c >> 31 == -1 || c >> 31 == 0)
-      && c != 0x80000000u)
+      && c != 0x80000000U)
     {
       HOST_WIDE_INT low = (c & 0xffff) - 2 * (c & 0x8000);
       HOST_WIDE_INT tmp1 = c - low;
