@@ -35,6 +35,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define USG
 
+/* Don't try to use sys_siglist.  */
+#define NO_SYS_SIGLIST
+
+/* Don't try including wait.h.  */
+#define NO_WAIT_H
+
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */
 #include "tm.h"
