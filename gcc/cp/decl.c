@@ -2758,16 +2758,17 @@ decls_match (tree newdecl, tree olddecl)
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
-      if (!comp_template_parms (DECL_TEMPLATE_PARMS (newdecl),
-				DECL_TEMPLATE_PARMS (olddecl)))
-	return 0;
-
       if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl))
 	  != TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)))
 	return 0;
 
+      if (!comp_template_parms (DECL_TEMPLATE_PARMS (newdecl),
+				DECL_TEMPLATE_PARMS (olddecl)))
+	return 0;
+
       if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
-	types_match = 1;
+	types_match = same_type_p (TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl)),
+				   TREE_TYPE (DECL_TEMPLATE_RESULT (newdecl)));
       else
 	types_match = decls_match (DECL_TEMPLATE_RESULT (olddecl),
 				   DECL_TEMPLATE_RESULT (newdecl));

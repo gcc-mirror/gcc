@@ -1,3 +1,12 @@
+2003-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11697
+	* decl.c (decls_match): Don't ignore the types of template
+	classes.
+
+	PR c++/11744
+	* pt.c (tsubst_copy_and_build): Refine Koenig lookup logic.
+
 2003-08-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8442, c++/8806

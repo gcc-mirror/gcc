@@ -8116,8 +8116,21 @@ tsubst_copy_and_build (tree t,
 	tree function;
 	tree call_args;
 	bool qualified_p;
+	bool koenig_p;
 
 	function = TREE_OPERAND (t, 0);
+	/* To determine whether or not we should perform Koenig lookup
+	   we must look at the form of the FUNCTION.  */
+	koenig_p = !(/* Koenig lookup does not apply to qualified
+			names.  */
+		     TREE_CODE (function) == SCOPE_REF
+		     /* Or to references to members of classes.  */
+		     || TREE_CODE (function) == COMPONENT_REF
+		     /* If it is a FUNCTION_DECL or a baselink, then
+			the name was already resolved when the
+			template was parsed.  */
+		     || TREE_CODE (function) == FUNCTION_DECL
+		     || TREE_CODE (function) == BASELINK);
 	if (TREE_CODE (function) == SCOPE_REF)
 	  {
 	    qualified_p = true;
@@ -8140,7 +8153,7 @@ tsubst_copy_and_build (tree t,
 	if (BASELINK_P (function))
 	  qualified_p = 1;
 
-	if (!qualified_p
+	if (koenig_p
 	    && TREE_CODE (function) != TEMPLATE_ID_EXPR
 	    && (is_overloaded_fn (function)
 		|| DECL_P (function)
