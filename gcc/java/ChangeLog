@@ -1,5 +1,11 @@
 2004-09-28  Andrew Haley  <aph@redhat.com>
 
+	PR java/17586
+	* jcf-parse.c (load_class): Don't try to read a class that we've
+	already read.
+
+2004-09-28  Andrew Haley  <aph@redhat.com>
+
 	* jcf-parse.c (load_class): Back out previous broken patch.
 
 2004-09-28  Andrew Haley  <aph@redhat.com>
