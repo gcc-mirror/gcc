@@ -2039,10 +2039,13 @@ CXX_FOR_TARGET_FOR_RECURSIVE_MAKE="\$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}"
 RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE="\$(STAGE_CC_WRAPPER) ${qqRAW_CXX_FOR_TARGET}"
 
 # Makefile fragments.
-host_makefile_frag=${srcdir}/${host_makefile_frag}
-target_makefile_frag=${srcdir}/${target_makefile_frag}
-alphaieee_frag=${srcdir}/${alphaieee_frag}
-ospace_frag=${srcdir}/${ospace_frag}
+for frag in host_makefile_frag target_makefile_frag alphaieee_frag ospace_frag;
+do
+  eval fragval=\$$frag
+  if test $fragval != /dev/null; then
+    eval $frag=${srcdir}/$fragval
+  fi
+done
 AC_SUBST_FILE(host_makefile_frag)
 AC_SUBST_FILE(target_makefile_frag)
 AC_SUBST_FILE(alphaieee_frag)

@@ -1,3 +1,9 @@
+2004-07-05  Phil Edwards  <phil@codesourcery.com>
+
+	* configure.in:  Do not prepend $srcdir to /dev/null in
+	makefile fragments.
+	* configure:  Regenerate.
+
 2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (build_modules): Add bison, byacc, flex,
