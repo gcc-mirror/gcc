@@ -1,4 +1,12 @@
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	
+	PR fortran/13201
+	* resolve.c (resolve_symbol): Verify that the shape of a
+	parameter array is not only explicit, but also constant.
+	* array.c (gfc_is_compile_time_shape): New function.
+	* gfortran.h (gfc_is_compile_time_shape): Add prototype.
+
+2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15481
 	PR fortran/13372
