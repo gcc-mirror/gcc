@@ -32,6 +32,10 @@
 	* c-decl.c: Likewise.
 	* gensupport.c: Likewise.
 	* simplify-rtx.c: Likewise.
+	* c-common.c (disable_builtin_function): Replace a call to xmalloc()
+	with XNEW().
+	* gensupport.c (alter_output_for_insn): Replace two calls to xmalloc()
+	with XNEWVEC().
 
 2004-07-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
