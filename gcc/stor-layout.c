@@ -150,22 +150,44 @@ variable_size (size)
 
 enum machine_mode
 mode_for_size (size, class, limit)
-     unsigned int size;
+     int size;
      enum mode_class class;
      int limit;
 {
   register enum machine_mode mode;
 
-  if (limit && size > (unsigned int)(MAX_FIXED_MODE_SIZE))
+  if (limit && size > MAX_FIXED_MODE_SIZE)
     return BLKmode;
 
   /* Get the first mode which has this size, in the specified class.  */
   for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if ((unsigned int)GET_MODE_BITSIZE (mode) == size)
+    if (GET_MODE_BITSIZE (mode) == size)
       return mode;
 
   return BLKmode;
+}
+
+/* Similar, except passed a tree node.  */
+
+enum machine_mode
+mode_for_size_tree (size, class, limit)
+     tree size;
+     enum mode_class class;
+     int limit;
+{
+  if (TREE_CODE (size) != INTEGER_CST
+      || TREE_INT_CST_HIGH (size) != 0
+      /* If the low-order part is so high as to appear negative, we can't
+	 find a mode for that many bits.  */
+      || TREE_INT_CST_LOW (size) < 0
+      /* What we really want to say here is that the size can fit in a
+	 host integer, but we know there's no way we'd find a mode for
+	 this many bits, so there's no point in doing the precise test.  */
+      || TREE_INT_CST_LOW (size) > 1000)
+    return BLKmode;
+  else
+    return mode_for_size (TREE_INT_CST_LOW (size), class, limit);
 }
 
 /* Similar, but never return BLKmode; return the narrowest mode that
@@ -173,7 +195,7 @@ mode_for_size (size, class, limit)
 
 enum machine_mode
 smallest_mode_for_size (size, class)
-     unsigned int size;
+     int size;
      enum mode_class class;
 {
   register enum machine_mode mode;
@@ -182,7 +204,7 @@ smallest_mode_for_size (size, class)
      specified class.  */
   for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if ((unsigned int)GET_MODE_BITSIZE (mode) >= size)
+    if (GET_MODE_BITSIZE (mode) >= size)
       return mode;
 
   abort ();
@@ -332,7 +354,7 @@ layout_decl (decl, known_align)
       && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
     {
       register enum machine_mode xmode
-	= mode_for_size (TREE_INT_CST_LOW (DECL_SIZE (decl)), MODE_INT, 1);
+	= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
 
       if (xmode != BLKmode
 	  && known_align % GET_MODE_ALIGNMENT (xmode) == 0)
@@ -1058,19 +1080,17 @@ layout_type (type)
 
 	TYPE_MODE (type) = BLKmode;
 	if (TYPE_SIZE (type) != 0
-	    && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	    /* BLKmode elements force BLKmode aggregate;
 	       else extract/store fields may lose.  */
 	    && (TYPE_MODE (TREE_TYPE (type)) != BLKmode
 		|| TYPE_NO_FORCE_BLK (TREE_TYPE (type))))
 	  {
 	    TYPE_MODE (type)
-	      = mode_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
-			       MODE_INT, 1);
+	      = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
 
-	    if (STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
-		&& ((int) TYPE_ALIGN (type)
-		    < TREE_INT_CST_LOW (TYPE_SIZE (type)))
+	    if (TYPE_MODE (type) != BLKmode
+		&& STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
+		&& TYPE_ALIGN (type) < GET_MODE_ALIGNMENT (TYPE_MODE (type))
 		&& TYPE_MODE (type) != BLKmode)
 	      {
 		TYPE_NO_FORCE_BLK (type) = 1;
@@ -1136,21 +1156,20 @@ layout_type (type)
 	    TYPE_MODE (type) = mode;
 	  else
 	    TYPE_MODE (type)
-	      = mode_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
-			       MODE_INT, 1);
+	      = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
 
 	  /* If structure's known alignment is less than
 	     what the scalar mode would need, and it matters,
 	     then stick with BLKmode.  */
-	  if (STRICT_ALIGNMENT
+	  if (TYPE_MODE (type) != BLKmode
+	      && STRICT_ALIGNMENT
 	      && ! (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-		    || ((int) TYPE_ALIGN (type)
-			>= TREE_INT_CST_LOW (TYPE_SIZE (type)))))
+		    || (TYPE_ALIGN (type) >=
+			GET_MODE_ALIGNMENT (TYPE_MODE (type)))))
 	    {
-	      if (TYPE_MODE (type) != BLKmode)
-		/* If this is the only reason this type is BLKmode,
-		   then don't force containing types to be BLKmode.  */
-		TYPE_NO_FORCE_BLK (type) = 1;
+	      /* If this is the only reason this type is BLKmode,
+		 then don't force containing types to be BLKmode.  */
+	      TYPE_NO_FORCE_BLK (type) = 1;
 	      TYPE_MODE (type) = BLKmode;
 	    }
 
@@ -1195,8 +1214,7 @@ layout_type (type)
 	    }
 
 	  TYPE_MODE (type)
-	    = mode_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
-			     MODE_INT, 1);
+	    = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
 
 	union_lose: ;
 	}

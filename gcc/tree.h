@@ -1799,6 +1799,14 @@ extern tree type_hash_canon		PARAMS ((int, tree));
 
 extern void layout_decl			PARAMS ((tree, unsigned));
 
+/* Return the mode for data of a given size SIZE and mode class CLASS.
+   If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
+   The value is BLKmode if no other mode is found.  This is like
+   mode_for_size, but is passed a tree.  */
+
+extern enum machine_mode mode_for_size_tree PARAMS ((tree, enum mode_class,
+						     int));
+
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
 
 extern tree non_lvalue			PARAMS ((tree));
