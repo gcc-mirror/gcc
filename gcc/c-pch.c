@@ -40,7 +40,7 @@ static const char pch_ident[8] = "gpchC010";
 static FILE *pch_outfile;
 
 extern char *asm_file_name;
-static off_t asm_file_startpos;
+static long asm_file_startpos;
 
 void
 pch_init ()
@@ -67,7 +67,7 @@ pch_init ()
 	  || strcmp (asm_file_name, "-") == 0)
 	fatal_error ("`%s' is not a valid output file", asm_file_name);
 
-      asm_file_startpos = ftello (asm_out_file);
+      asm_file_startpos = ftell (asm_out_file);
       
       cpp_save_state (parse_in, f);
     }
@@ -77,13 +77,13 @@ void
 c_common_write_pch ()
 {
   char *buf;
-  off_t asm_file_end;
-  off_t written;
+  long asm_file_end;
+  long written;
   struct c_pch_header h;
 
   cpp_write_pch_deps (parse_in, pch_outfile);
 
-  asm_file_end = ftello (asm_out_file);
+  asm_file_end = ftell (asm_out_file);
   h.asm_size = asm_file_end - asm_file_startpos;
   
   if (fwrite (&h, sizeof (h), 1, pch_outfile) != 1)
@@ -92,12 +92,12 @@ c_common_write_pch ()
   buf = xmalloc (16384);
   fflush (asm_out_file);
 
-  if (fseeko (asm_out_file, asm_file_startpos, SEEK_SET) != 0)
+  if (fseek (asm_out_file, asm_file_startpos, SEEK_SET) != 0)
     fatal_io_error ("can't seek in %s", asm_file_name);
 
   for (written = asm_file_startpos; written < asm_file_end; )
     {
-      off_t size = asm_file_end - written;
+      long size = asm_file_end - written;
       if (size > 16384)
 	size = 16384;
       if (fread (buf, size, 1, asm_out_file) != 1)
@@ -203,7 +203,7 @@ c_common_read_pch (pfile, name, fd, orig_name)
   buf = xmalloc (16384);
   for (written = 0; written < h.asm_size; )
     {
-      off_t size = h.asm_size - written;
+      long size = h.asm_size - written;
       if (size > 16384)
 	size = 16384;
       if (fread (buf, size, 1, f) != 1

@@ -1,3 +1,13 @@
+2003-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-pch.c (asm_file_startpos): Change to `long'.
+	(pch_init): Use ftell, not ftello.
+	(c_common_write_pch): Use ftell/fseek, not ftello/fseeko.
+	Use `long' instead of `off_t'.
+	(c_common_read_pch): Likewise.
+	* ggc-common.c (gt_pch_save): Use long/ftell instead of
+	off_t/ftello.
+
 2003-01-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* expr.c (expand_expr <RDIV_EXPR>): Correct recursive call args.

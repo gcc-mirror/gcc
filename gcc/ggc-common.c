@@ -495,9 +495,9 @@ gt_pch_save (f)
   
   /* Pad the PCH file so that the mmaped area starts on a page boundary.  */
   {
-    off_t o;
-    o = ftello (state.f) + sizeof (mmi);
-    if (o == (off_t) -1)
+    long o;
+    o = ftell (state.f) + sizeof (mmi);
+    if (o == -1)
       fatal_io_error ("can't get position in PCH file");
     mmi.offset = page_size - o % page_size;
     if (mmi.offset == page_size)
