@@ -730,32 +730,49 @@ _done:
 
 #else /* __H8300H__ */
 
+;
+; mulsi3 for H8/300H - based on Hitachi SH implementation
+;
+; by Toshiyasu Morita
+;
+; Old code:
+;
+; 16b * 16b = 372 states (worst case)
+; 32b * 32b = 724 states (worst case)
+;
+; New code:
+;
+; 16b * 16b =  68 states
+; 16b * 32b =  96 states
+; 32b * 32b = 124 states
+;
+
 	.global	___mulsi3
 ___mulsi3:
-	sub.l	A2P,A2P
+	push.l	er3     ; (10 states)
+  
+	mov.w	r1,r2   ; ( 2 states) b * d
+	mulxu	r0,er2  ; (22 states)
+  
+	mov.w	e0,r3   ; ( 2 states) a * d
+	beq	L_skip1 ; ( 4 states)
+	mulxu	r1,er3  ; (22 states)
+	mov.w	r3,e3   ; ( 2 states)
+	mov.w	#0,r3   ; ( 2 states)
+	add.l	er3,er2 ; ( 2 states)
 
-	; while (a)
-_top:	mov.l	A0P,A0P
-	beq	_done
+L_skip1:
+	mov.w	e1,r3   ; ( 2 states) c * b
+	beq	L_skip2 ; ( 4 states)
+	mulxu	r0,er3  ; (22 states)
+	mov.w	r3,e3   ; ( 2 states)
+	mov.w	#0,r3   ; ( 2 states)
+	add.l	er3,er2 ; ( 2 states)
 
-	; if (a & 1)
-	bld	#0,A0L
-	bcc	_nobit
-
-	; r += b
-	add.l	A1P,A2P
-
-_nobit:
-	; a >>= 1
-	shlr.l	A0P
-
-	; b <<= 1
-	shll.l	A1P
-	bra	_top
-
-_done:
-	mov.l	A2P,A0P
-	rts
+L_skip2:
+	mov.l	er2,er0	; ( 2 states)
+	pop.l	er3	; (10 states)
+	rts		; (10 states)
 
 #endif
 #endif /* L_mulsi3 */
