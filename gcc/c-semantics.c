@@ -39,6 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "timevar.h"
 #include "predict.h"
+#include "tree-inline.h"
 
 /* If non-NULL, the address of a language-specific function for
    expanding statements.  */
@@ -50,6 +51,11 @@ void (*lang_expand_stmt) PARAMS ((tree));
    defined, it is assumed that declarations other than those for
    variables and labels do not require any RTL generation.  */
 void (*lang_expand_decl_stmt) PARAMS ((tree));
+
+static tree find_reachable_label_1	PARAMS ((tree *, int *, void *));
+static tree find_reachable_label	PARAMS ((tree));
+static bool expand_unreachable_if_stmt	PARAMS ((tree));
+static bool expand_unreachable_stmt	PARAMS ((tree, int));
 
 /* Create an empty statement tree rooted at T.  */
 
@@ -409,11 +415,20 @@ genrtl_if_stmt (t)
   emit_line_note (input_filename, lineno);
   expand_start_cond (cond, 0);
   if (THEN_CLAUSE (t))
-    expand_stmt (THEN_CLAUSE (t));
+    {
+      if (cond && integer_zerop (cond))
+	expand_unreachable_stmt (THEN_CLAUSE (t), warn_notreached);
+      else
+	expand_stmt (THEN_CLAUSE (t));
+    }
+
   if (ELSE_CLAUSE (t))
     {
       expand_start_else ();
-      expand_stmt (ELSE_CLAUSE (t));
+      if (cond && integer_nonzerop (cond))
+	expand_unreachable_stmt (ELSE_CLAUSE (t), warn_notreached);
+      else
+	expand_stmt (ELSE_CLAUSE (t));
     }
   expand_end_cond ();
 }
@@ -672,7 +687,7 @@ genrtl_switch_stmt (t)
 
   emit_line_note (input_filename, lineno);
   expand_start_case (1, cond, TREE_TYPE (cond), "switch statement");
-  expand_stmt (SWITCH_BODY (t));
+  expand_unreachable_stmt (SWITCH_BODY (t), warn_notreached);
   expand_end_case_type (cond, SWITCH_TYPE (t));
 }
 
@@ -808,7 +823,8 @@ expand_stmt (t)
 
 	case RETURN_STMT:
 	  genrtl_return_stmt (t);
-	  break;
+	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  return;
 
 	case EXPR_STMT:
 	  genrtl_expr_stmt_value (EXPR_STMT_EXPR (t), TREE_ADDRESSABLE (t),
@@ -843,11 +859,13 @@ expand_stmt (t)
 
 	case BREAK_STMT:
 	  genrtl_break_stmt ();
-	  break;
+	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  return;
 
 	case CONTINUE_STMT:
 	  genrtl_continue_stmt ();
-	  break;
+	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  return;
 
 	case SWITCH_STMT:
 	  genrtl_switch_stmt (t);
@@ -872,7 +890,8 @@ expand_stmt (t)
 	      NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_GOTO, NOT_TAKEN);
 	    }
 	  genrtl_goto_stmt (GOTO_DESTINATION (t));
-	  break;
+	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  return;
 
 	case ASM_STMT:
 	  genrtl_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t),
@@ -904,3 +923,164 @@ expand_stmt (t)
       t = TREE_CHAIN (t);
     }
 }
+
+/* If *TP is a potentially reachable label, return nonzero.  */
+
+static tree
+find_reachable_label_1 (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  switch (TREE_CODE (*tp))
+    {
+    case LABEL_STMT:
+    case CASE_LABEL:
+      return *tp;
+
+    default:
+      break;
+    }
+  return NULL_TREE;
+}
+
+/* Determine whether expression EXP contains a potentially
+   reachable label.  */
+static tree
+find_reachable_label (exp)
+     tree exp;
+{
+  int line = lineno;
+  const char *file = input_filename;
+  tree ret = walk_tree (&exp, find_reachable_label_1, NULL, NULL);
+  input_filename = file;
+  lineno = line;
+  return ret;
+}
+
+/* Expand an unreachable if statement, T.  This function returns
+   true if the IF_STMT contains a potentially reachable code_label.  */
+static bool
+expand_unreachable_if_stmt (t)
+     tree t;
+{
+  if (find_reachable_label (IF_COND (t)) != NULL_TREE)
+    {
+      genrtl_if_stmt (t);
+      return true;
+    }
+
+  if (THEN_CLAUSE (t) && ELSE_CLAUSE (t))
+    {
+      if (expand_unreachable_stmt (THEN_CLAUSE (t), 0))
+	{
+	  rtx label;
+	  label = gen_label_rtx ();
+	  emit_jump (label);
+	  expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
+	  emit_label (label);
+	  return true;
+	}
+      else
+	return expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
+    }
+  else if (THEN_CLAUSE (t))
+    return expand_unreachable_stmt (THEN_CLAUSE (t), 0);
+  else if (ELSE_CLAUSE (t))
+    return expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
+
+  return false;
+}
+
+/* Expand an unreachable statement list.  This function skips all
+   statements preceding the first potentially reachable label and
+   then expands the statements normally with expand_stmt.  This
+   function returns true if such a reachable label was found.  */
+static bool
+expand_unreachable_stmt (t, warn)
+     tree t;
+     int warn;
+{
+  int saved;
+
+  while (t && t != error_mark_node)
+    {
+      if (warn)
+	switch (TREE_CODE (t))
+	  {
+	  case BREAK_STMT:
+	  case CONTINUE_STMT:
+	  case EXPR_STMT:
+	  case GOTO_STMT:
+	  case IF_STMT:
+	  case RETURN_STMT:
+	    if (!STMT_LINENO_FOR_FN_P (t))
+	      lineno = STMT_LINENO (t);
+	    warning("will never be executed");
+	    warn = false;
+	    break;
+
+	  default:
+	    break;
+	  }
+
+      switch (TREE_CODE (t))
+	{
+	case GOTO_STMT:
+	case CONTINUE_STMT:
+	case BREAK_STMT:
+	  break;
+
+	case FILE_STMT:
+	  input_filename = FILE_STMT_FILENAME (t);
+	  break;
+
+	case RETURN_STMT:
+	  if (find_reachable_label (RETURN_STMT_EXPR (t)) != NULL_TREE)
+	    {
+	      expand_stmt (t);
+	      return true;
+	    }
+	  break;
+
+	case EXPR_STMT:
+	  if (find_reachable_label (EXPR_STMT_EXPR (t)) != NULL_TREE)
+	    {
+	      expand_stmt (t);
+	      return true;
+	    }
+	  break;
+
+	case IF_STMT:
+	  if (expand_unreachable_if_stmt (t))
+	    {
+	      expand_stmt (TREE_CHAIN (t));
+	      return true;
+	    }
+	  break;
+
+	case COMPOUND_STMT:
+	  if (expand_unreachable_stmt (COMPOUND_BODY (t), warn))
+	    {
+	      expand_stmt (TREE_CHAIN (t));
+	      return true;
+	    }
+	  warn = false;
+	  break;
+
+	case SCOPE_STMT:
+	  saved = stmts_are_full_exprs_p ();
+	  prep_stmt (t);
+	  genrtl_scope_stmt (t);
+	  current_stmt_tree ()->stmts_are_full_exprs_p = saved;
+	  break;
+
+	default:
+	  expand_stmt (t);
+	  return true;
+	}
+      t = TREE_CHAIN (t);
+    }
+  return false;
+}
+
