@@ -883,16 +883,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
 
 #define FIRST_PARM_OFFSET(FNDECL)	2
 
-/* A C expression whose value is RTL representing the location of the
-   incoming return address at the beginning of any function, before the
-   prologue.  This RTL is either a REG, indicating that the return
-   value is saved in REG, or a MEM representing a location in
-   the stack.
-  
-   Before the prologue, RA is at 0(sp). */
-#define INCOMING_RETURN_ADDR_RTX \
-    gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
-
 /* After the prologue, RA is at 0(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT) == 0								\

@@ -1,3 +1,8 @@
+2001-09-30  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h(INCOMING_RETURN_ADDR_RTX): Remove so
+	that we use setjmp/longjmp exceptions.
+
 2001-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_adjust_cost): Fixed incorrect scheduling.
