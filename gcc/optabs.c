@@ -280,6 +280,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		  || binoptab->code == LSHIFTRT
 		  || binoptab->code == ROTATE
 		  || binoptab->code == ROTATERT);
+  rtx entry_last = get_last_insn ();
   rtx last;
 
   class = GET_MODE_CLASS (mode);
@@ -1093,7 +1094,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
   if (! (methods == OPTAB_WIDEN || methods == OPTAB_LIB_WIDEN
 	 || methods == OPTAB_MUST_WIDEN))
-    return 0;			/* Caller says, don't even try.  */
+    {
+      /* Caller says, don't even try.  */
+      delete_insns_since (entry_last);
+      return 0;
+    }
 
   /* Compute the value of METHODS to pass to recursive calls.
      Don't allow widening to be tried recursively.  */
@@ -1172,6 +1177,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	}
     }
 
+  delete_insns_since (entry_last);
   return 0;
 }
 
@@ -1254,6 +1260,7 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
   enum machine_mode mode = GET_MODE (targ0 ? targ0 : targ1);
   enum mode_class class;
   enum machine_mode wider_mode;
+  rtx entry_last = get_last_insn ();
   rtx last;
 
   class = GET_MODE_CLASS (mode);
@@ -1358,6 +1365,7 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
 	}
     }
 
+  delete_insns_since (entry_last);
   return 0;
 }
 
@@ -1651,7 +1659,8 @@ expand_complex_abs (mode, op0, target, unsignedp)
   enum mode_class class = GET_MODE_CLASS (mode);
   enum machine_mode wider_mode;
   register rtx temp;
-  rtx last = get_last_insn ();
+  rtx entry_last = get_last_insn ();
+  rtx last;
   rtx pat;
 
   /* Find the correct mode for the real and imaginary parts.  */
@@ -1669,6 +1678,8 @@ expand_complex_abs (mode, op0, target, unsignedp)
     {
       op0 = force_not_mem (op0);
     }
+
+  last = get_last_insn ();
 
   if (target)
     target = protect_from_queue (target, 1);
@@ -1819,6 +1830,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
 	}
     }
 
+  delete_insns_since (entry_last);
   return 0;
 }
 
