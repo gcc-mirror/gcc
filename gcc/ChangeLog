@@ -2,6 +2,8 @@
 
 	* flow.c (regset_bytes, regset_size): Remove.
 
+	* cfganal.c: Fix a reference to Harvey's paper.
+
 2005-01-23  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/19464
