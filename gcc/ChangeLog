@@ -1,3 +1,8 @@
+2004-08-03  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* ra-build.c (conflicts_between_webs): For webs that cross a call add
+	conflicts to regs_invalidated_by_call.
+
 2004-08-03  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (emit_sfm): Only emit a single frame adjustment.

@@ -2176,9 +2176,7 @@ static void
 conflicts_between_webs (struct df *df)
 {
   unsigned int i;
-#ifdef STACK_REGS
   struct dlist *d;
-#endif
   bitmap ignore_defs = BITMAP_XMALLOC ();
   unsigned int have_ignored;
   unsigned int *pass_cache = xcalloc (num_webs, sizeof (int));
@@ -2253,18 +2251,24 @@ conflicts_between_webs (struct df *df)
   free (pass_cache);
   BITMAP_XFREE (ignore_defs);
 
-#ifdef STACK_REGS
-  /* Pseudos can't go in stack regs if they are live at the beginning of
-     a block that is reached by an abnormal edge.  */
   for (d = WEBS(INITIAL); d; d = d->next)
     {
       struct web *web = DLIST_WEB (d);
       int j;
+
+      if (web->crosses_call)
+	for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+	  if (TEST_HARD_REG_BIT (regs_invalidated_by_call, j))
+	    record_conflict (web, hardreg2web[j]);
+
+#ifdef STACK_REGS
+      /* Pseudos can't go in stack regs if they are live at the beginning of
+	 a block that is reached by an abnormal edge.  */
       if (web->live_over_abnormal)
 	for (j = FIRST_STACK_REG; j <= LAST_STACK_REG; j++)
 	  record_conflict (web, hardreg2web[j]);
-    }
 #endif
+    }
 }
 
 /* Remember that a web was spilled, and change some characteristics
