@@ -89,6 +89,11 @@ abstract class DirectByteBufferImpl extends ByteBuffer
       super(capacity);
     }
 
+    ReadWrite(RawData address, int capacity)
+    {
+      super(address, capacity);
+    }
+    
     ReadWrite(Object owner, RawData address,
 	      int capacity, int limit,
 	      int position)
@@ -109,6 +114,13 @@ abstract class DirectByteBufferImpl extends ByteBuffer
     this.address = VMDirectByteBuffer.allocate(capacity);
   }
 
+  DirectByteBufferImpl(RawData address, int capacity)
+  {
+    super(capacity, capacity, 0, -1);
+    this.owner = this;
+    this.address = address;
+  }
+  
   DirectByteBufferImpl(Object owner, RawData address,
 		       int capacity, int limit,
 		       int position)

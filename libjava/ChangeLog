@@ -1,3 +1,14 @@
+2004-11-24  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/DirectByteBufferImpl.java
+	(ReadWrite.ReadWrite): New constructor.
+	(DirectByteBufferImpl): Likewise.
+	* jni.cc (_Jv_JNI_NewDirectByteBuffer):
+	Use DirectByteBufferImpl.ReadWrite.
+	* Makefile.am:
+	Generate java/nio/DirectByteBufferImpl$ReadWrite.h.
+	* Makefile.in: Rgenerated.
+
 2004-11-24  Jeroen Frijters  <address@bogus.example.com>
 
 	* java/nio/DirectByteBufferImpl.java
