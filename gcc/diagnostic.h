@@ -101,6 +101,8 @@ extern int diagnostic_message_length_per_line;
 extern output_buffer *diagnostic_buffer;
 
 /* Prototypes */
+void set_fatal_function		PARAMS ((void (*) PARAMS ((const char *,
+							   va_list *))));
 void report_diagnostic          PARAMS ((const char *, va_list *,
                                          const char *, int, int));
 void initialize_diagnostics     PARAMS ((void));
