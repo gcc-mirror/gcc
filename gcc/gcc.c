@@ -3719,7 +3719,7 @@ process_command (argc, argv)
 	  argv[i] = convert_filename (argv[i], 0);
 #endif
 
-	  if (strcmp (argv[i], "-") != 0 && access (argv[i], R_OK) < 0)
+	  if (strcmp (argv[i], "-") != 0 && access (argv[i], F_OK) < 0)
 	    {
 	      perror_with_name (argv[i]);
 	      error_count++;

@@ -1,3 +1,7 @@
+Fri Nov 24 18:50:58 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcc.c (process_command): Use F_OK, not R_OK.
+
 2000-11-24  Arno J. Klaassen  <arno@heho.snv.jussieu.fr>
 
 	* flow.c (print_rtl_and_abort): Remove ANSIism.
