@@ -1,5 +1,10 @@
 2004-10-04  Thomas Quinot  <quinot@act-europe.fr>
 
+	* usage.adb: Change "pragma inline" to "pragma Inline" in information
+	and error messages
+
+2004-10-04  Thomas Quinot  <quinot@act-europe.fr>
+
 	* exp_dist.adb: Split declaration of asynchronous flag out of
 	Add_RACW_Read_Attribute.
 	Minor reformatting for better alignment with PolyORB version.

@@ -375,8 +375,8 @@ begin
    Write_Line ("        n*   normal warning mode (cancels -gnatws/-gnatwe)");
    Write_Line ("        o*   turn on warnings for address clause overlay");
    Write_Line ("        O    turn off warnings for address clause overlay");
-   Write_Line ("        p    turn on warnings for ineffective pragma inline");
-   Write_Line ("        P*   turn off warnings for ineffective pragma inline");
+   Write_Line ("        p    turn on warnings for ineffective pragma Inline");
+   Write_Line ("        P*   turn off warnings for ineffective pragma Inline");
    Write_Line ("        r    turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        s    suppress all warnings");
