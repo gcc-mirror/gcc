@@ -1,3 +1,8 @@
+2000-04-14  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Additional test for PR gcj/148:
+	* libjava.compile/assignment_2.java: New file.
+
 2000-03-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Test case for PR libgcj/184:
