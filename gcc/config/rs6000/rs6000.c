@@ -3519,7 +3519,7 @@ output_prolog (file, size)
 	  asm_fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCprobe", probe_labelno);
 	  asm_fprintf (file, "\t{lu|lwzu} %s,-4096(%s)\n", reg_names[0], reg_names[12]);
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCprobe", probe_labelno);
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCprobe", probe_labelno++);
 	  fputs ("\tbdnz ", file);
 	  assemble_name (file, buf);
 	  fputs ("\n", file);
