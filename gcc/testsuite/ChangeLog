@@ -1,3 +1,8 @@
+2000-05-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.eh/catch11.C: New test.
+	* g++.old-deja/g++.eh/catch12.C: New test.
+
 2000-05-24  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/execute/20000523-1.c: New test.
