@@ -59,7 +59,7 @@ void test01()
       fb.pubsync();
       fb.close();
     }
-  catch (exception&)
+  catch (std::exception&)
     {
     }
 }

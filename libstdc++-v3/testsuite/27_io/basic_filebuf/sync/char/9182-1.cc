@@ -66,7 +66,7 @@ void test13()
       fbuf1.pubsync();
       VERIFY( false );
     }
-  catch (exception&)
+  catch (std::exception&)
     {
     }
 }
