@@ -1,5 +1,5 @@
 /* Collection.java -- Interface that represents a collection of objects
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -24,9 +24,6 @@ resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
-
-// TO DO:
-// ~ Maybe some more @see clauses would be helpful.
 
 package java.util;
 
@@ -57,9 +54,23 @@ package java.util;
  * and returns a collection containing the same elements (that is, creates a
  * copy of the argument using its own implementation).
  *
- * @see java.util.List
- * @see java.util.Set
- * @see java.util.AbstractCollection
+ * @author Original author unknown
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see List
+ * @see Set
+ * @see Map
+ * @see SortedSet
+ * @see SortedMap
+ * @see HashSet
+ * @see TreeSet
+ * @see ArrayList
+ * @see LinkedList
+ * @see Vector
+ * @see Collections
+ * @see Arrays
+ * @see AbstractCollection
+ * @since 1.2
+ * @status updated to 1.4
  */
 public interface Collection
 {
@@ -67,12 +78,12 @@ public interface Collection
    * Add an element to this collection.
    *
    * @param o the object to add.
-   * @returns true if the collection was modified as a result of this action.
-   * @exception UnsupportedOperationException if this collection does not
+   * @return true if the collection was modified as a result of this action.
+   * @throws UnsupportedOperationException if this collection does not
    *   support the add operation.
-   * @exception ClassCastException if o cannot be added to this collection due
+   * @throws ClassCastException if o cannot be added to this collection due
    *   to its type.
-   * @exception IllegalArgumentException if o cannot be added to this
+   * @throws IllegalArgumentException if o cannot be added to this
    *   collection for some other reason.
    */
   boolean add(Object o);
@@ -81,12 +92,12 @@ public interface Collection
    * Add the contents of a given collection to this collection.
    *
    * @param c the collection to add.
-   * @returns true if the collection was modified as a result of this action.
-   * @exception UnsupportedOperationException if this collection does not
+   * @return true if the collection was modified as a result of this action.
+   * @throws UnsupportedOperationException if this collection does not
    *   support the addAll operation.
-   * @exception ClassCastException if some element of c cannot be added to this
+   * @throws ClassCastException if some element of c cannot be added to this
    *   collection due to its type.
-   * @exception IllegalArgumentException if some element of c cannot be added
+   * @throws IllegalArgumentException if some element of c cannot be added
    *   to this collection for some other reason.
    */
   boolean addAll(Collection c);
@@ -95,7 +106,7 @@ public interface Collection
    * Clear the collection, such that a subsequent call to isEmpty() would
    * return true.
    *
-   * @exception UnsupportedOperationException if this collection does not
+   * @throws UnsupportedOperationException if this collection does not
    *   support the clear operation.
    */
   void clear();
@@ -105,7 +116,7 @@ public interface Collection
    * elements.
    *
    * @param o the element to look for.
-   * @returns true if this collection contains at least one element e such that
+   * @return true if this collection contains at least one element e such that
    *   <code>o == null ? e == null : o.equals(e)</code>.
    */
   boolean contains(Object o);
@@ -114,7 +125,7 @@ public interface Collection
    * Test whether this collection contains every element in a given collection.
    *
    * @param c the collection to test for.
-   * @returns true if for every element o in c, contains(o) would return true.
+   * @return true if for every element o in c, contains(o) would return true.
    */
   boolean containsAll(Collection c);
 
@@ -132,7 +143,7 @@ public interface Collection
    * preserve the symmetry of the relation.
    *
    * @param o the object to compare to this collection.
-   * @returns true if the o is equal to this collection.
+   * @return true if the o is equal to this collection.
    */
   boolean equals(Object o);
 
@@ -148,21 +159,21 @@ public interface Collection
    * method renders it impossible to correctly implement both Set and List, as
    * the required implementations are mutually exclusive.
    *
-   * @returns a hash code for this collection.
+   * @return a hash code for this collection.
    */
   int hashCode();
 
   /**
    * Test whether this collection is empty, that is, if size() == 0.
    *
-   * @returns true if this collection contains no elements.
+   * @return true if this collection contains no elements.
    */
   boolean isEmpty();
 
   /**
    * Obtain an Iterator over this collection.
    *
-   * @returns an Iterator over the elements of this collection, in any order.
+   * @return an Iterator over the elements of this collection, in any order.
    */
   Iterator iterator();
 
@@ -172,9 +183,9 @@ public interface Collection
    *   : o.equals(e)</code>.
    *
    * @param o the object to remove.
-   * @returns true if the collection changed as a result of this call, that is,
+   * @return true if the collection changed as a result of this call, that is,
    *   if the collection contained at least one occurrence of o.
-   * @exception UnsupportedOperationException if this collection does not
+   * @throws UnsupportedOperationException if this collection does not
    *   support the remove operation.
    */
   boolean remove(Object o);
@@ -183,8 +194,8 @@ public interface Collection
    * Remove all elements of a given collection from this collection. That is,
    * remove every element e such that c.contains(e).
    *
-   * @returns true if this collection was modified as a result of this call.
-   * @exception UnsupportedOperationException if this collection does not
+   * @return true if this collection was modified as a result of this call.
+   * @throws UnsupportedOperationException if this collection does not
    *   support the removeAll operation.
    */
   boolean removeAll(Collection c);
@@ -193,8 +204,8 @@ public interface Collection
    * Remove all elements of this collection that are not contained in a given
    * collection. That is, remove every element e such that !c.contains(e).
    *
-   * @returns true if this collection was modified as a result of this call.
-   * @exception UnsupportedOperationException if this collection does not
+   * @return true if this collection was modified as a result of this call.
+   * @throws UnsupportedOperationException if this collection does not
    *   support the retainAll operation.
    */
   boolean retainAll(Collection c);
@@ -202,14 +213,14 @@ public interface Collection
   /**
    * Get the number of elements in this collection.
    *
-   * @returns the number of elements in the collection.
+   * @return the number of elements in the collection.
    */
   int size();
 
   /**
    * Copy the current contents of this collection into an array.
    *
-   * @returns an array of type Object[] and length equal to the size of this
+   * @return an array of type Object[] and length equal to the size of this
    *   collection, containing the elements currently in this collection, in
    *   any order.
    */
@@ -227,9 +238,9 @@ public interface Collection
    * if it is known that this collection does not contain any null elements.
    *
    * @param a the array to copy this collection into.
-   * @returns an array containing the elements currently in this collection, in
+   * @return an array containing the elements currently in this collection, in
    *   any order.
-   * @exception ArrayStoreException if the type of any element of the
+   * @throws ArrayStoreException if the type of any element of the
    *   collection is not a subtype of the element type of a.
    */
   Object[] toArray(Object[] a);

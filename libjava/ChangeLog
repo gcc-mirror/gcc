@@ -1,3 +1,32 @@
+2001-10-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/HashMap.java (HashEntry.clone): Removed.
+	(HashMap(Map)): Use putAllInternal.
+	(clone): Likewise.
+	(putAllInternal): New method. Efficient counterpart to putAll which 
+	does not call put().	
+	* java/util/LinkedHashMap.java (rethread): Removed.
+	(putAllInternal): New method. Clear "head" and "tail".
+	(addEntry): New argument "callRemove". Don't call removeEldestEntry()
+	if callRemove == false. 
+
+	* Makefile.am: Add new classes RandomAccess and LinkedHashMap.
+	* Makefile.in: Rebuilt.
+
+2001-10-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/Collection.java: Updated javadoc.
+	* java/util/Comparator.java: Updated javadoc.
+	* java/util/Enumeration.java: Updated javadoc.
+	* java/util/Iterator.java: Updated javadoc.
+	* java/util/List.java: Updated javadoc.
+	* java/util/ListIterator.java: Updated javadoc.
+	* java/util/Map.java: Updated javadoc.
+	* java/util/RandomAccess.java: New file.
+	* java/util/Set.java: Updated javadoc.
+	* java/util/SortedMap.java: Updated javadoc.
+	* java/util/SortedSet.java: Updated javadoc.
+
 2001-10-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/AccessibleObject.java (checkPermission):
@@ -190,6 +219,7 @@
 2001-10-03  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* resolve.cc (_Jv_PrepareClass): Fix typos in vtable layout.
+	* gij.cc (version): Use GCJVERSION.
 
 2001-10-02  Mark Wielaard  <mark@klomp.org>
 

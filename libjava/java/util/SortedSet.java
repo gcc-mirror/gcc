@@ -1,6 +1,6 @@
-/* SortedSet.java -- A set that makes guarantees about the order of its 
+/* SortedSet.java -- A set that makes guarantees about the order of its
    elements
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -26,17 +26,137 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
 
-// TO DO:
-// ~ Doc comments for everything.
-
 package java.util;
 
+/**
+ * A set which guarantees its iteration order. The elements in the set
+ * are related by the <i>natural ordering</i> if they are Comparable, or
+ * by the provided Comparator.  Additional operations take advantage of
+ * the sorted nature of the set.
+ * <p>
+ *
+ * All elements entered in the set must be mutually comparable; in other words,
+ * <code>k1.compareTo(k2)</code> or <code>comparator.compare(k1, k2)</code>
+ * must not throw a ClassCastException. The ordering must be <i>consistent
+ * with equals</i> (see {@link Comparator} for this definition), if the
+ * map is to obey the general contract of the Set interface.  If not,
+ * the results are well-defined, but probably not what you wanted.
+ * <p>
+ *
+ * It is recommended that all implementing classes provide four constructors:
+ * 1) one that takes no arguments and builds an empty set sorted by natural
+ * order of the elements; 2) one that takes a Comparator for the sorting order;
+ * 3) one that takes a Set and sorts according to the natural order of its
+ * elements; and 4) one that takes a SortedSet and sorts by the same
+ * comparator. Unfortunately, the Java language does not provide a way to
+ * enforce this.
+ *
+ * @author Original author unknown
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Set
+ * @see TreeSet
+ * @see SortedMap
+ * @see Collection
+ * @see Comparable
+ * @see Comparator
+ * @see ClassCastException
+ * @since 1.2
+ * @status updated to 1.4
+ */
 public interface SortedSet extends Set
 {
+  /**
+   * Returns the comparator used in sorting this set, or null if it is
+   * the elements' natural ordering.
+   *
+   * @return the sorting comparator
+   */
   Comparator comparator();
+
+  /**
+   * Returns the first (lowest sorted) element in the map.
+   *
+   * @return the first element
+   */
   Object first();
+
+  /**
+   * Returns a view of the portion of the set strictly less than toElement. The
+   * view is backed by this set, so changes in one show up in the other.
+   * The subset supports all optional operations of the original.
+   * <p>
+   *
+   * The returned set throws an IllegalArgumentException any time an element is
+   * used which is out of the range of toElement. Note that the endpoint is not
+   * included; if you want the endpoint, pass the successor object in to
+   * toElement.  For example, for Strings, you can request
+   * <code>headSet(limit + "\0")</code>.
+   *
+   * @param toElement the exclusive upper range of the subset
+   * @return the subset
+   * @throws ClassCastException if toElement is not comparable to the set
+   *         contents
+   * @throws IllegalArgumentException if this is a subSet, and toElement is out
+   *         of range
+   * @throws NullPointerException if toElement is null but the map does not
+   *         allow null elements
+   */
   SortedSet headSet(Object toElement);
+
+  /**
+   * Returns the last (highest sorted) element in the map.
+   *
+   * @return the last element
+   */
   Object last();
+
+  /**
+   * Returns a view of the portion of the set greater than or equal to
+   * fromElement, and strictly less than toElement. The view is backed by
+   * this set, so changes in one show up in the other. The subset supports all
+   * optional operations of the original.
+   * <p>
+   *
+   * The returned set throws an IllegalArgumentException any time an element is
+   * used which is out of the range of fromElement and toElement. Note that the
+   * lower endpoint is included, but the upper is not; if you want to
+   * change the inclusion or exclusion of an endpoint, pass the successor
+   * object in instead.  For example, for Strings, you can request
+   * <code>subSet(lowlimit + "\0", highlimit + "\0")</code> to reverse
+   * the inclusiveness of both endpoints.
+   *
+   * @param fromElement the inclusive lower range of the subset
+   * @param toElement the exclusive upper range of the subset
+   * @return the subset
+   * @throws ClassCastException if fromElement or toElement is not comparable
+   *         to the set contents
+   * @throws IllegalArgumentException if this is a subSet, and fromElement or
+   *         toElement is out of range
+   * @throws NullPointerException if fromElement or toElement is null but the
+   *         set does not allow null elements
+   */
   SortedSet subSet(Object fromElement, Object toElement);
+
+  /**
+   * Returns a view of the portion of the set greater than or equal to
+   * fromElement. The view is backed by this set, so changes in one show up
+   * in the other. The subset supports all optional operations of the original.
+   * <p>
+   *
+   * The returned set throws an IllegalArgumentException any time an element is
+   * used which is out of the range of fromElement. Note that the endpoint is
+   * included; if you do not want the endpoint, pass the successor object in
+   * to fromElement.  For example, for Strings, you can request
+   * <code>tailSet(limit + "\0")</code>.
+   *
+   * @param fromElement the inclusive lower range of the subset
+   * @return the subset
+   * @throws ClassCastException if fromElement is not comparable to the set
+   *         contents
+   * @throws IllegalArgumentException if this is a subSet, and fromElement is
+   *         out of range
+   * @throws NullPointerException if fromElement is null but the set does not
+   *         allow null elements
+   */
   SortedSet tailSet(Object fromElement);
 }
