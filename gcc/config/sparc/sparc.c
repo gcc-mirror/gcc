@@ -5262,9 +5262,14 @@ function_arg_record_value_1 (tree type, HOST_WIDE_INT startbitpos,
 	{
 	  HOST_WIDE_INT bitpos = startbitpos;
 
-	  if (DECL_SIZE (field) != 0
-	      && host_integerp (bit_position (field), 1))
-	    bitpos += int_bit_position (field);
+	  if (DECL_SIZE (field) != 0)
+	    {
+	      if (integer_zerop (DECL_SIZE (field)))
+		continue;
+
+	      if (host_integerp (bit_position (field), 1))
+		bitpos += int_bit_position (field);
+	    }
 
 	  /* ??? FIXME: else assume zero offset.  */
 
@@ -5355,8 +5360,8 @@ function_arg_record_value_3 (HOST_WIDE_INT bitpos,
      at the moment but may wish to revisit.  */
 
   if (intoffset % BITS_PER_WORD != 0)
-    mode = mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
-			  MODE_INT, 0);
+    mode = smallest_mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
+			  	   MODE_INT);
   else
     mode = word_mode;
 
@@ -5405,9 +5410,14 @@ function_arg_record_value_2 (tree type, HOST_WIDE_INT startbitpos,
 	{
 	  HOST_WIDE_INT bitpos = startbitpos;
 
-	  if (DECL_SIZE (field) != 0
-	      && host_integerp (bit_position (field), 1))
-	    bitpos += int_bit_position (field);
+	  if (DECL_SIZE (field) != 0)
+	    {
+	      if (integer_zerop (DECL_SIZE (field)))
+		continue;
+
+	      if (host_integerp (bit_position (field), 1))
+		bitpos += int_bit_position (field);
+	    }
 
 	  /* ??? FIXME: else assume zero offset.  */
 
@@ -5587,6 +5597,10 @@ function_arg_union_value (int size, enum machine_mode mode, int regno)
 {
   int nwords = ROUND_ADVANCE (size), i;
   rtx regs;
+
+  /* See comment in previous function for empty structures.  */
+  if (nwords == 0)
+    return gen_rtx_REG (mode, regno);
 
   regs = gen_rtx_PARALLEL (mode, rtvec_alloc (nwords));
 
