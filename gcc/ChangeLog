@@ -1,5 +1,8 @@
 2001-08-12  Geoffrey Keating  <geoffk@redhat.com>
 
+	* loop.c (check_dbra_loop): Use condjump_label to compute
+	jump_label.
+
 	* rtl.h: Move prototypes of rtx_alloc and rtvec_alloc around
 	to better document the files they're in.
 
