@@ -1,3 +1,10 @@
+2000-01-12  Robert Lipe  <robertl@sco.com>
+
+	* i386/sco5.h (INIT_SECTION_ASM_OP_COFF): Rename section to "ctor".
+	(BUILD_VA_LIST_TYPE): Define.
+	(EH_FRAME_SECTION_ASM_OP): Explictly define to better interact
+	with crtstuff.c.
+
 2000-01-12  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cccp.c (do_pragma): Add cast to (char *).
