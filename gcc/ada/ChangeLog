@@ -1,3 +1,13 @@
+2001-10-26  Robert Dewar <dewar@gnat.com>
+
+	* sinfo.ads: Define Associated_Node to overlap Entity field. Cleanup.
+	
+	* sinfo.ads: Clarify use of Associated_Node (documentation only).
+	
+	* sem_ch12.adb: Change Node4 to Associated_Node. Change 
+	Associated_Node to Get_Associated_Node. Put use of Unchecked_Access 
+	much more narrowly in places where needed. These are cleanups.
+
 2001-10-26  Joel Brobecker <brobecke@gnat.com>
 
 	* 5zosinte.ads (null_pthread): new constant.

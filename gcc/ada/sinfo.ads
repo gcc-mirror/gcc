@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -404,6 +404,7 @@ package Sinfo is
    --       Left_Opnd                (Node2)      left operand expression
    --       Right_Opnd               (Node3)      right operand expression
    --       Entity                   (Node4-Sem)  defining entity for operator
+   --       Associated_Node          (Node4-Sem)  for generic processing
    --       Do_Overflow_Check        (Flag17-Sem) set if overflow check needed
    --       Has_Private_View         (Flag11-Sem) set in generic units.
 
@@ -411,6 +412,7 @@ package Sinfo is
    --       Chars                    (Name1)      Name_Id for the operator
    --       Right_Opnd               (Node3)      right operand expression
    --       Entity                   (Node4-Sem)  defining entity for operator
+   --       Associated_Node          (Node4-Sem)  for generic processing
    --       Do_Overflow_Check        (Flag17-Sem) set if overflow check needed
    --       Has_Private_View         (Flag11-Sem) set in generic units.
 
@@ -565,6 +567,16 @@ package Sinfo is
    --    flag defined. Here it is used to indicate that an initialization
    --    expression is valid, even where it would normally not be allowed
    --    (e.g. where the type involved is limited).
+
+   --  Associated_Node (Node4-Sem)
+   --    Present in nodes that can denote an entity: identifiers, character
+   --    literals and expanded names, operator nodes that carry an entity
+   --    reference,  and also in N_Aggregate, N_Selected_Component, and
+   --    N_Extension_Aggregate nodes.  This field is used during generic
+   --    processing to relate nodes in the original template to nodes in the
+   --    generic copy. It overlaps the Entity field, and is used to capture
+   --    global references in the analyzed copy and place them in the template.
+   --    see description in Sem_Ch12 for further details on this usage.
 
    --  At_End_Proc (Node1)
    --    This field is present in an N_Handled_Sequence_Of_Statements node.
@@ -849,10 +861,11 @@ package Sinfo is
    --    defining occurrence is in a separately compiled file, and this
    --    pointer must be set using the library Load procedure. Note that
    --    during name resolution, the value in Entity may be temporarily
-   --    incorrect (e.g. during overload resolution, Entity is
-   --    initially set to the first possible correct interpretation, and
-   --    then later modified if necessary to contain the correct value
-   --    after resolution).
+   --    incorrect (e.g. during overload resolution, Entity is initially
+   --    set to the first possible correct interpretation, and then later
+   --    modified if necessary to contain the correct value after resolution).
+   --    Note that Associated_Node overlays this field during the processing
+   --    of generics. See Sem_Ch12 for further details.
 
    --  Etype (Node5-Sem)
    --    Appears in all expression nodes, all direct names, and all
@@ -1538,6 +1551,7 @@ package Sinfo is
       --  Sloc points to identifier
       --  Chars (Name1) contains the Name_Id for the identifier
       --  Entity (Node4-Sem)
+      --  Associated_Node (Node4-Sem)
       --  Original_Discriminant (Node2-Sem)
       --  Redundant_Use (Flag13-Sem)
       --  Has_Private_View (Flag11-Sem) (set in generic units)
@@ -1610,6 +1624,7 @@ package Sinfo is
       --  Chars (Name1) contains the Name_Id for the identifier
       --  Char_Literal_Value (Char_Code2) contains the literal value
       --  Entity (Node4-Sem)
+      --  Associated_Node (Node4-Sem)
       --  Has_Private_View (Flag11-Sem) set in generic units.
       --  plus fields for expression
 
@@ -2721,6 +2736,7 @@ package Sinfo is
       --  Sloc points to period
       --  Prefix (Node3)
       --  Selector_Name (Node2)
+      --  Associated_Node (Node4-Sem)
       --  Do_Access_Check (Flag11-Sem)
       --  Do_Discriminant_Check (Flag13-Sem)
       --  plus fields for expression
@@ -2791,6 +2807,7 @@ package Sinfo is
       --  Attribute_Name (Name2) identifier name from attribute designator
       --  Expressions (List1) (set to No_List if no associated expressions)
       --  Entity (Node4-Sem) used if the attribute yields a type
+      --  Associated_Node (Node4-Sem)
       --  Do_Access_Check (Flag11-Sem)
       --  Do_Overflow_Check (Flag17-Sem)
       --  Redundant_Use (Flag13-Sem)
@@ -2850,6 +2867,7 @@ package Sinfo is
       --  Component_Associations (List2) (set to No_List if none)
       --  Null_Record_Present (Flag17)
       --  Aggregate_Bounds (Node3-Sem)
+      --  Associated_Node (Node4-Sem)
       --  Static_Processing_OK (Flag4-Sem)
       --  Compile_Time_Known_Aggregate (Flag18-Sem)
       --  Expansion_Delayed (Flag11-Sem)
@@ -2932,6 +2950,7 @@ package Sinfo is
       --  N_Extension_Aggregate
       --  Sloc points to left parenthesis
       --  Ancestor_Part (Node3)
+      --  Associated_Node (Node4-Sem)
       --  Expressions (List1) (set to No_List if none or null record case)
       --  Component_Associations (List2) (set to No_List if none)
       --  Null_Record_Present (Flag17)
@@ -3779,6 +3798,7 @@ package Sinfo is
       --  Strval (Str3) Id of string value. This is used if the operator
       --   symbol turns out to be a normal string after all.
       --  Entity (Node4-Sem)
+      --  Associated_Node (Node4-Sem)
       --  Has_Private_View (Flag11-Sem) set in generic units.
       --  Etype (Node5-Sem)
 
@@ -5887,6 +5907,7 @@ package Sinfo is
       --  Prefix (Node3)
       --  Selector_Name (Node2)
       --  Entity (Node4-Sem)
+      --  Associated_Node (Node4-Sem)
       --  Redundant_Use (Flag13-Sem)
       --  Has_Private_View (Flag11-Sem) set in generic units.
       --  plus fields for expression
@@ -5942,6 +5963,7 @@ package Sinfo is
       --  N_Freeze_Entity
       --  Sloc points near freeze point (see above special note)
       --  Entity (Node4-Sem)
+      --  Associated_Node (Node4-Sem)
       --  Access_Types_To_Process (Elist2-Sem) (set to No_Elist if none)
       --  TSS_Elist (Elist3-Sem) (set to No_Elist if no associated TSS's)
       --  Actions (List1) (set to No_List if no freeze actions)
@@ -6739,6 +6761,9 @@ package Sinfo is
    function Assignment_OK
      (N : Node_Id) return Boolean;    -- Flag15
 
+   function Associated_Node
+     (N : Node_Id) return Node_Id;    -- Node4
+
    function At_End_Proc
      (N : Node_Id) return Node_Id;    -- Node1
 
@@ -7486,6 +7511,9 @@ package Sinfo is
    procedure Set_Assignment_OK
      (N : Node_Id; Val : Boolean := True);    -- Flag15
 
+   procedure Set_Associated_Node
+     (N : Node_Id; Val : Node_Id);            -- Node4
+
    procedure Set_Attribute_Name
      (N : Node_Id; Val : Name_Id);            -- Name2
 
@@ -8215,6 +8243,7 @@ package Sinfo is
    pragma Inline (Ancestor_Part);
    pragma Inline (Array_Aggregate);
    pragma Inline (Assignment_OK);
+   pragma Inline (Associated_Node);
    pragma Inline (At_End_Proc);
    pragma Inline (Attribute_Name);
    pragma Inline (Aux_Decls_Node);
@@ -8461,6 +8490,7 @@ package Sinfo is
    pragma Inline (Set_Ancestor_Part);
    pragma Inline (Set_Array_Aggregate);
    pragma Inline (Set_Assignment_OK);
+   pragma Inline (Set_Associated_Node);
    pragma Inline (Set_At_End_Proc);
    pragma Inline (Set_Attribute_Name);
    pragma Inline (Set_Aux_Decls_Node);
