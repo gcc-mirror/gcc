@@ -224,9 +224,7 @@ extern int target_flags;
 #define BYTES_BIG_ENDIAN 1
 
 /* Define this if most significant word of a multiword number is lowest
-   numbered.
-   This is true on an H8/300 (actually we can make it up, but we choose to
-   be consistent).  */
+   numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
 #define MAX_BITS_PER_WORD	32
