@@ -1,3 +1,8 @@
+2001-01-27  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/t-ieee: Remove multilibbing.
+	(TARGET_LIBGCC2_CFLAGS): Add -mieee.
+
 2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Arrange to include defaults.h in [ht]config.h/tm.h.

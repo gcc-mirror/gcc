@@ -1,3 +1,7 @@
+2001-01-27  Richard Henderson  <rth@redhat.com>
+
+	* configure.host (alpha*-*) [libgcj_flags]: Add -mieee.
+
 2001-01-27  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNIFunctions): Added comment for each entry in
