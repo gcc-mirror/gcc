@@ -5491,6 +5491,13 @@ output_fp_conditional_move (which_alternative, operands)
      int which_alternative;
      rtx operands[];
 {
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  /* This should never happen.  */
+  if (!(cc_prev_status.flags & CC_IN_80387)
+      && (code == GT || code == LE || code == GE || code == LT))
+    abort ();
+
   switch (which_alternative)
     {
     case 0:
