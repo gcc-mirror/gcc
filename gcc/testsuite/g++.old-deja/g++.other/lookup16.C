@@ -5,6 +5,8 @@
 // typenames are not injected early enough, [basic.scope.pdecl]3.3.1/4
 // indicates this should compile.
 
+// excess errors test - XFAIL
+
 struct A {
 };
 
@@ -24,7 +26,7 @@ struct C : B {
 
 struct D : B {
   typedef B Parent;
-  struct F : D::Parent::F {
+  struct F : D::Parent::F { // finds the wrong Parent
     typedef D::Parent::F Parent;
   };
 };

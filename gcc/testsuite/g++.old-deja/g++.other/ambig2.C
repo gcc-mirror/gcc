@@ -14,7 +14,7 @@ struct D3 : B, C { int m; };
 
 void fn(D0 *d0, D1 *d1, D2 *d2, D3 *d3)
 {
-  A *a0 = d0;   // ERROR - A is an ambiguous base
+  A *a0 = d0;   // ERROR - A is an ambiguous base XFAIL
   A *a1 = d1;   // ERROR - A is an ambiguous base
   A *a2 = d2;   // ERROR - A is an ambiguous base
   A *a3 = d3;   // ERROR - A is an ambiguous base
