@@ -3204,12 +3204,19 @@ Dump after the first scheduling pass, to @file{@var{file}.24.sched}.
 @opindex dt
 Dump after the second CSE pass (including the jump optimization that
 sometimes follows CSE), to @file{@var{file}.19.cse2}.
+@item T
+@opindex dT
+Dump after running tracer, to @file{@var{file}.17.tracer}.
 @item u
 @opindex du
 Dump after null pointer elimination pass to @file{@var{file}.08.null}.
 @item w
 @opindex dw
 Dump after the second flow pass, to @file{@var{file}.28.flow2}.
+@item W
+@opindex dW
+Dump after SSA conditional constant propagation, to
+@file{@var{file}.05.ssaccp}.
 @item X
 @opindex dX
 Dump after SSA dead code elimination, to @file{@var{file}.06.ssadce}.
