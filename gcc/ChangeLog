@@ -1,3 +1,7 @@
+Tue Dec 16 00:14:29 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon Dec 15 18:40:08 1997  Richard Henderson  <rth@cygnus.com>
 
 	* expmed.c (expand_shift): If SHIFT_COUNT_TRUNCATED, drop a SUBREG.
