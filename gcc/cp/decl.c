@@ -41,6 +41,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+extern tree builtin_return_address_fndecl;
+
 extern struct obstack permanent_obstack;
 
 extern int current_class_depth;
@@ -122,7 +124,6 @@ static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
 static void grok_op_properties			PROTO((tree, int, int));
-static void deactivate_exception_cleanups	PROTO((void));
 
 tree define_function		
 	PROTO((char *, tree, enum built_in_function, void (*)(), char *));
@@ -256,12 +257,6 @@ tree dtor_label;
    the pointer to the initialized object.  */
 
 tree ctor_label;
-
-/* A FUNCTION_DECL which can call `unhandled_exception'.
-   Not necessarily the one that the user will declare,
-   but sufficient to be called by routines that want to abort the program.  */
-
-tree unhandled_exception_fndecl;
 
 /* A FUNCTION_DECL which can call `abort'.  Not necessarily the
    one that the user will declare, but sufficient to be called
@@ -564,11 +559,6 @@ struct binding_level
     unsigned more_cleanups_ok : 1;
     unsigned have_cleanups : 1;
 
-    /* Nonzero if this level can safely have additional
-       exception-raising statements added to it.  */
-    unsigned more_exceptions_ok : 1;
-    unsigned have_exceptions : 1;
-
     /* Nonzero if we should accept any name as an identifier in
        this scope.  This happens in some template definitions.  */
     unsigned accept_any : 1;
@@ -657,7 +647,6 @@ push_binding_level (newlevel, tag_transparent, keep)
   current_binding_level = newlevel;
   newlevel->tag_transparent = tag_transparent;
   newlevel->more_cleanups_ok = 1;
-  newlevel->more_exceptions_ok = 1;
   newlevel->keep = keep;
 #if defined(DEBUG_CP_BINDING_LEVELS)
   newlevel->binding_depth = binding_depth;
@@ -749,23 +738,6 @@ void
 declare_parm_level ()
 {
   current_binding_level->parm_flag = 1;
-}
-
-/* Identify this binding level as a level of a default exception handler.  */
-
-void
-declare_implicit_exception ()
-{
-  current_binding_level->parm_flag = 3;
-}
-
-/* Nonzero if current binding contour contains expressions
-   that might raise exceptions.  */
-
-int
-have_exceptions_p ()
-{
-  return current_binding_level->have_exceptions;
 }
 
 void
@@ -1105,7 +1077,7 @@ poplevel (keep, reverse, functionbody)
     }
 
   /* Take care of compiler's internal binding structures.  */
-  if (tmp == 2 && !implicit_try_block)
+  if (tmp == 2 && class_binding_level)
     {
 #if 0
       /* We did not call push_momentary for this
@@ -1300,10 +1272,6 @@ print_binding_level (lvl)
     fprintf (stderr, " more-cleanups-ok");
   if (lvl->have_cleanups)
     fprintf (stderr, " have-cleanups");
-  if (lvl->more_exceptions_ok)
-    fprintf (stderr, " more-exceptions-ok");
-  if (lvl->have_exceptions)
-    fprintf (stderr, " have-exceptions");
   fprintf (stderr, "\n");
   if (lvl->names)
     {
@@ -1664,6 +1632,7 @@ set_nested_typename (decl, classname, name, type)
       sprintf (buf, "%s::%s", IDENTIFIER_POINTER (classname),
 	       IDENTIFIER_POINTER (name));
       DECL_NESTED_TYPENAME (decl) = get_identifier (buf);
+      TREE_MANGLED (DECL_NESTED_TYPENAME (decl)) = 1;
 
       /* This is a special usage of IDENTIFIER_TYPE_VALUE which have no
 	 correspondence in any binding_level.  This is ok since the
@@ -2988,7 +2957,6 @@ pushdecl (x)
 
       /* Keep count of variables in this level with incomplete type.  */
       if (TREE_CODE (x) != TEMPLATE_DECL
-	  && TREE_CODE (x) != CPLUS_CATCH_DECL
 	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
 	  && PROMOTES_TO_AGGR_TYPE (TREE_TYPE (x), ARRAY_TYPE))
 	{
@@ -3001,7 +2969,7 @@ pushdecl (x)
     {
       if (current_class_name)
 	{
-	  if (!DECL_NESTED_TYPENAME (TYPE_NAME (TREE_TYPE (x))))
+	  if (! TREE_MANGLED (name))
 	    set_nested_typename (x, current_class_name, DECL_NAME (x),
 				 TREE_TYPE (x));
 	}
@@ -3107,6 +3075,21 @@ pushdecl_class_level (x)
 
   if (name)
     {
+      if (TYPE_BEING_DEFINED (current_class_type))
+	{
+	  /* Check for inconsistent use of this name in the class body.
+	     Types, enums, and static vars are checked here; other
+	     members are checked in finish_struct.  */
+	  tree icv = IDENTIFIER_CLASS_VALUE (name);
+
+	  if (icv)
+	    {
+	      cp_error ("declaration of identifier `%D' as `%#D'", name, x);
+	      cp_error_at ("conflicts with previous use in class as `%#D'",
+			   icv);
+	    }
+	}
+
       push_class_level_binding (name, x);
       if (TREE_CODE (x) == TYPE_DECL)
 	{
@@ -3936,11 +3919,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	/* Try to find values from base classes if we are presently
 	   defining a type.  We are presently only interested in
 	   TYPE_DECLs.  */
-	{
-	  val = lookup_field (current_class_type, name, 0, 1);
-	  if (val)
-	    pushdecl_class_level (val);
-	}
+	val = lookup_field (current_class_type, name, 0, 1);
 
       /* yylex() calls this with -2, since we should never start digging for
 	 the nested name at the point where we haven't even, for example,
@@ -4498,6 +4477,7 @@ init_decl_processing ()
   builtin_function ("__builtin_constant_p", int_ftype_int,
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
+  builtin_return_address_fndecl =
   builtin_function ("__builtin_return_address",
 		    build_function_type (ptr_type_node, 
 					 tree_cons (NULL_TREE,
@@ -4911,23 +4891,13 @@ init_decl_processing ()
 		       build_function_type (void_type_node, void_list_node),
 		       NOT_BUILT_IN, 0, 0);
 
-  unhandled_exception_fndecl
-    = define_function ("__unhandled_exception",
-		       build_function_type (void_type_node, NULL_TREE),
-		       NOT_BUILT_IN, 0, 0);
-
   /* Perform other language dependent initializations.  */
   init_class_processing ();
   init_init_processing ();
   init_search_processing ();
 
   if (flag_handle_exceptions)
-    {
-      if (flag_handle_exceptions == 2)
-	/* Too much trouble to inline all the trys needed for this.  */
-	flag_this_is_variable = 2;
-      init_exception_processing ();
-    }
+    init_exception_processing ();
   if (flag_gc)
     init_gc_processing ();
   if (flag_no_inline)
@@ -5097,14 +5067,11 @@ shadow_tag (declspecs)
 	      push_obstacks (&permanent_obstack, &permanent_obstack);
 
 	      pushclass (t, 0);
-	      finish_exception (t, NULL_TREE);
 
 	      ename = TYPE_NAME (t);
 	      if (TREE_CODE (ename) == TYPE_DECL)
 		ename = DECL_NAME (ename);
 	      decl = build_lang_field_decl (VAR_DECL, ename, t);
-	      finish_exception_decl (current_class_name, decl);
-	      end_exception_decls ();
 
 	      pop_obstacks ();
 	    }
@@ -5779,7 +5746,6 @@ finish_decl (decl, init, asmspec_tree, need_pop)
   if (type != error_mark_node && IS_AGGR_TYPE (type)
       && CLASSTYPE_DECLARED_EXCEPTION (type))
     {
-      finish_exception_decl (NULL_TREE, decl);
       CLASSTYPE_GOT_SEMICOLON (type) = 1;
       goto finish_end;
     }
@@ -6111,7 +6077,6 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	      cleanup = TREE_OPERAND (init, 2);
 	      init = TREE_OPERAND (init, 0);
 	      current_binding_level->have_cleanups = 1;
-	      current_binding_level->more_exceptions_ok = 0;
 	    }
 	  else
 	    cleanup = maybe_build_cleanup (decl);
@@ -6145,14 +6110,6 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 
       if (was_temp)
 	end_temporary_allocation ();
-
-      /* If we are in need of a cleanup, get out of any implicit
-	 handlers that have been established so far.  */
-      if (cleanup && current_binding_level->parm_flag == 3)
-	{
-	  pop_implicit_try_blocks (decl);
-	  current_binding_level->more_exceptions_ok = 0;
-	}
 
       if (TREE_CODE (decl) == VAR_DECL
 	  && current_binding_level != global_binding_level
@@ -6343,7 +6300,11 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 		expand_decl (decl);
 	      else if (cleanup)
 		{
-		  expand_decl_cleanup (NULL_TREE, cleanup);
+		  /* XXX: Why don't we use decl here?  */
+		  /* Ans: Because it was already expanded? */
+		  if (! expand_decl_cleanup (NULL_TREE, cleanup))
+		    cp_error ("parser lost in parsing declaration of `%D'",
+			      decl);
 		  /* Cleanup used up here.  */
 		  cleanup = NULL_TREE;
 		}
@@ -8849,8 +8810,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    decl = build_lang_field_decl (VAR_DECL, declarator, type);
 	    if (ctype == NULL_TREE)
 	      ctype = current_class_type;
-	    finish_exception_decl (TREE_CODE (TYPE_NAME (ctype)) == TYPE_DECL
-				   ? TYPE_IDENTIFIER (ctype) : TYPE_NAME (ctype), decl);
 	    return void_type_node;
 	  }
 	else if (TYPE_SIZE (type) == NULL_TREE && !staticp
@@ -9869,10 +9828,8 @@ xref_tag (code_type_node, name, binfo, globalize)
        * and don't try to find it as a type. */
       xref_next_defn = 0;
       if (t && TYPE_CONTEXT(t))
-	{ 
-	  extern char *index();
-	  char *p;
-	  if ((p = index(IDENTIFIER_POINTER(name), ':')) && *(p+1) == ':')
+	{
+	  if (TREE_MANGLED (name))
 	    ref = t;
 	  else
       	    ref = lookup_tag (code, name, b, 1);
@@ -10267,6 +10224,7 @@ finish_enum (enumtype, values)
 
       HOST_WIDE_INT value = TREE_INT_CST_LOW (TREE_VALUE (values));
       TREE_TYPE (TREE_VALUE (values)) = enumtype;
+      TREE_TYPE (DECL_INITIAL (TREE_VALUE (values))) = enumtype;
       minvalue = maxvalue = value;
       
       for (pair = TREE_CHAIN (values); pair; pair = TREE_CHAIN (pair))
@@ -10370,8 +10328,7 @@ build_enumerator (name, value)
 	}
       else
 	{
-	  error ("enumerator value for `%s' not integer constant",
-		 IDENTIFIER_POINTER (name));
+	  cp_error ("enumerator value for `%D' not integer constant", name);
 	  value = NULL_TREE;
 	}
     }
@@ -10403,8 +10360,6 @@ build_enumerator (name, value)
       value = copy_node (value);
       TREE_TYPE (value) = integer_type_node;
     }
-
-  result = saveable_tree_cons (name, value, NULL_TREE);
 
   /* C++ associates enums with global, function, or class declarations.  */
 
@@ -10439,6 +10394,7 @@ build_enumerator (name, value)
   if (enum_next_value == integer_one_node)
     enum_next_value = copy_node (enum_next_value);
 
+  result = saveable_tree_cons (name, decl, NULL_TREE);
   return result;
 }
 
@@ -10494,7 +10450,6 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
      tree declarator, declspecs, raises;
      int pre_parsed_p;
 {
-  extern tree EHS_decl;
   tree decl1, olddecl;
   tree ctype = NULL_TREE;
   tree fntype;
@@ -10502,9 +10457,6 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   extern int have_extern_spec;
   extern int used_extern_spec;
   int doing_friend = 0;
-
-  if (flag_handle_exceptions && EHS_decl == NULL_TREE)
-    init_exception_processing_1 ();
 
   /* Sanity check.  */
   my_friendly_assert (TREE_VALUE (void_list_node) == void_type_node, 160);
@@ -10829,7 +10781,6 @@ store_parm_decls ()
   register tree fndecl = current_function_decl;
   register tree parm;
   int parms_have_cleanups = 0;
-  tree eh_decl;
 
   /* This is either a chain of PARM_DECLs (when a prototype is used).  */
   tree specparms = current_function_parms;
@@ -10853,18 +10804,6 @@ store_parm_decls ()
 
   /* Create a binding level for the parms.  */
   expand_start_bindings (0);
-
-  /* Prepare to catch raises, if appropriate.  */
-  if (flag_handle_exceptions)
-    {
-      /* Get this cleanup to be run last, since it
-	 is a call to `longjmp'.  */
-      setup_exception_throw_decl ();
-      eh_decl = current_binding_level->names;
-      current_binding_level->names = TREE_CHAIN (current_binding_level->names);
-    }
-  if (flag_handle_exceptions)
-    expand_start_try (integer_one_node, 0, 1);
 
   if (specparms != NULL_TREE)
     {
@@ -10919,7 +10858,9 @@ store_parm_decls ()
 	      if (cleanup)
 		{
 		  expand_decl (parm);
-		  expand_decl_cleanup (parm, cleanup);
+		  if (! expand_decl_cleanup (parm, cleanup))
+		    cp_error ("parser lost in parsing declaration of `%D'",
+			      parm);
 		  parms_have_cleanups = 1;
 		}
 	    }
@@ -10953,14 +10894,6 @@ store_parm_decls ()
   DECL_SAVED_INSNS (fndecl) = NULL_RTX;
   expand_function_start (fndecl, parms_have_cleanups);
 
-  if (flag_handle_exceptions)
-    {
-      /* Make the throw decl visible at this level, just
-	 not in the way of the parameters.  */
-      pushdecl (eh_decl);
-      expand_decl_init (eh_decl);
-    }
-
   /* Create a binding contour which can be used to catch
      cleanup-generated temporaries.  Also, if the return value needs or
      has initialization, deal with that now.  */
@@ -10975,7 +10908,8 @@ store_parm_decls ()
   if (flag_gc)
     {
       maybe_gc_cleanup = build_tree_list (NULL_TREE, error_mark_node);
-      expand_decl_cleanup (NULL_TREE, maybe_gc_cleanup);
+      if (! expand_decl_cleanup (NULL_TREE, maybe_gc_cleanup))
+	cp_error ("parser lost in parsing declaration of `%D'", fndecl);
     }
 
   /* If this function is `main', emit a call to `__main'
@@ -11121,7 +11055,6 @@ finish_function (lineno, call_poplevel)
   register tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
   rtx head, last_parm_insn, mark;
-  extern int sets_exception_throw_decl;
   /* Label to use if this function is supposed to return a value.  */
   tree no_return_label = NULL_TREE;
   tree decls = NULL_TREE;
@@ -11344,8 +11277,6 @@ finish_function (lineno, call_poplevel)
 	  if (call_poplevel)
 	    {
 	      decls = getdecls ();
-	      if (flag_handle_exceptions == 2)
-		deactivate_exception_cleanups ();
 	      expand_end_bindings (decls, decls != NULL_TREE, 0);
 	      poplevel (decls != NULL_TREE, 0, 0);
 	    }
@@ -11377,41 +11308,6 @@ finish_function (lineno, call_poplevel)
 				  current_class_decl, integer_zero_node, 1);
 	  thenclause = build_modify_expr (current_class_decl, NOP_EXPR,
 					  build_new (NULL_TREE, current_class_type, void_type_node, 0));
-	  if (flag_handle_exceptions == 2)
-	    {
-	      tree cleanup, cleanup_deallocate;
-	      tree virtual_size;
-
-	      /* This is the size of the virtual object pointed to by
-		 allocated_this.  In this case, it is simple.  */
-	      virtual_size = c_sizeof (current_class_type);
-
-	      allocated_this = build_decl (VAR_DECL, NULL_TREE, ptr_type_node);
-	      DECL_REGISTER (allocated_this) = 1;
-	      DECL_INITIAL (allocated_this) = error_mark_node;
-	      expand_decl (allocated_this);
-	      expand_decl_init (allocated_this);
-	      /* How we cleanup `this' if an exception was raised before
-		 we are ready to bail out.  */
-	      cleanup = TYPE_GETS_REG_DELETE (current_class_type)
-		? build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, allocated_this, virtual_size, NULL_TREE)
-		  /* The size of allocated_this is wrong, and hence the
-		     second argument to operator delete will be wrong. */
-		  : build_delete (TREE_TYPE (allocated_this), allocated_this,
-				  integer_three_node,
-				  LOOKUP_NORMAL|LOOKUP_HAS_IN_CHARGE, 1);
-	      cleanup_deallocate
-		= build_modify_expr (current_class_decl, NOP_EXPR, integer_zero_node);
-	      cleanup = tree_cons (NULL_TREE, cleanup,
-				   build_tree_list (NULL_TREE, cleanup_deallocate));
-
-	      expand_decl_cleanup (allocated_this,
-				   build (COND_EXPR, integer_type_node,
-					  build (NE_EXPR, integer_type_node,
-						 allocated_this, integer_zero_node),
-					  build_compound_expr (cleanup),
-					  integer_zero_node));
-	    }
 	}
 
       CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) = abstract_virtuals;
@@ -11426,8 +11322,6 @@ finish_function (lineno, call_poplevel)
 	{
 	  expand_start_cond (cond, 0);
 	  expand_expr_stmt (thenclause);
-	  if (flag_handle_exceptions == 2)
-	    expand_assignment (allocated_this, current_class_decl, 0, 0);
 	  expand_end_cond ();
 	}
 
@@ -11460,14 +11354,6 @@ finish_function (lineno, call_poplevel)
       /* This is where the body of the constructor ends.  */
       expand_label (ctor_label);
       ctor_label = NULL_TREE;
-      if (flag_handle_exceptions == 2)
-	{
-	  expand_assignment (allocated_this, integer_zero_node, 0, 0);
-	  if (call_poplevel)
-	    deactivate_exception_cleanups ();
-	}
-
-      pop_implicit_try_blocks (NULL_TREE);
 
       if (call_poplevel)
 	{
@@ -11545,19 +11431,6 @@ finish_function (lineno, call_poplevel)
     /* Emit label at beginning of cleanup code for parameters.  */
     emit_label (cleanup_label);
 
-#if 1
-  /* Cheap hack to get better code from GNU C++.  Remove when cse is fixed.  */
-  if (exception_throw_decl && sets_exception_throw_decl == 0)
-    expand_assignment (exception_throw_decl, integer_zero_node, 0, 0);
-#endif
-
-  if (flag_handle_exceptions)
-    {
-      expand_end_try ();
-      expand_start_except (0, 0);
-      expand_end_except ();
-    }
-
   /* Get return value into register if that's where it's supposed to be.  */
   if (original_result_rtx)
     fixup_result_decl (DECL_RESULT (fndecl), original_result_rtx);
@@ -11589,6 +11462,9 @@ finish_function (lineno, call_poplevel)
 
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 1);
+
+  if (flag_handle_exceptions)
+    expand_exception_blocks();
 
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
@@ -11917,9 +11793,13 @@ hack_incomplete_structures (type)
 	    rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
 	    if (! toplevel)
 	      {
+		tree cleanup;
 		expand_decl (decl);
-		expand_decl_cleanup (decl, maybe_build_cleanup (decl));
+		cleanup = maybe_build_cleanup (decl);
 		expand_decl_init (decl);
+		if (! expand_decl_cleanup (decl, cleanup))
+		  cp_error ("parser lost in parsing declaration of `%D'",
+			    decl);
 	      }
 	  }
 	my_friendly_assert (current_binding_level->n_incomplete > 0, 164);
@@ -11982,9 +11862,6 @@ maybe_build_cleanup (decl)
 	rval = build_compound_expr (tree_cons (NULL_TREE, rval,
 					       build_tree_list (NULL_TREE, build_vbase_delete (type, decl))));
 
-      current_binding_level->have_cleanups = 1;
-      current_binding_level->more_exceptions_ok = 0;
-
       if (TREE_CODE (decl) != PARM_DECL)
 	resume_momentary (temp);
 
@@ -12024,27 +11901,8 @@ cplus_expand_expr_stmt (exp)
 	  cp_warning ("reference, not call, to function `%D'", exp);
 	  warning ("at this point in file");
 	}
-      if (TREE_RAISES (exp))
-	{
-	  my_friendly_assert (flag_handle_exceptions, 165);
-	  if (flag_handle_exceptions == 2)
-	    {
-	      if (! current_binding_level->more_exceptions_ok)
-		{
-		  extern struct nesting *nesting_stack, *block_stack;
-
-		  remove_implicit_immediately
-		    = (nesting_stack != block_stack);
-		  cplus_expand_start_try (1);
-		}
-	      current_binding_level->have_exceptions = 1;
-	    }
-	}
 
       expand_expr_stmt (break_out_cleanups (exp));
-
-      if (remove_implicit_immediately)
-	pop_implicit_try_blocks (NULL_TREE);
     }
 
   /* Clean up any pending cleanups.  This happens when a function call
@@ -12080,95 +11938,6 @@ finish_stmt ()
 
   if (flag_cadillac)
     cadillac_finish_stmt ();
-}
-
-void
-pop_implicit_try_blocks (decl)
-     tree decl;
-{
-  if (decl)
-    {
-      my_friendly_assert (current_binding_level->parm_flag == 3, 166);
-      current_binding_level->names = TREE_CHAIN (decl);
-    }
-
-  while (current_binding_level->parm_flag == 3)
-    {
-      tree name = get_identifier ("(compiler error)");
-      tree orig_ex_type = current_exception_type;
-      tree orig_ex_decl = current_exception_decl;
-      tree orig_ex_obj = current_exception_object;
-      tree decl = cplus_expand_end_try (2);
-
-      /* @@ It would be nice to make all these point
-	 to exactly the same handler.  */
-      /* Start hidden EXCEPT.  */
-      cplus_expand_start_except (name, decl);
-      /* reraise ALL.  */
-      cplus_expand_reraise (NULL_TREE);
-      current_exception_type = orig_ex_type;
-      current_exception_decl = orig_ex_decl;
-      current_exception_object = orig_ex_obj;
-      /* This will reraise for us.  */
-      cplus_expand_end_except (error_mark_node);
-    }
-
-  if (decl)
-    {
-      TREE_CHAIN (decl) = current_binding_level->names;
-      current_binding_level->names = decl;
-    }
-}
-
-/* Push a cleanup onto the current binding contour that will cause
-   ADDR to be cleaned up, in the case that an exception propagates
-   through its binding contour.  */
-
-void
-push_exception_cleanup (addr)
-     tree addr;
-{
-  tree decl = build_decl (VAR_DECL, get_identifier (EXCEPTION_CLEANUP_NAME), ptr_type_node);
-  tree cleanup;
-
-  decl = pushdecl (decl);
-  DECL_REGISTER (decl) = 1;
-  store_init_value (decl, addr);
-  expand_decl (decl);
-  expand_decl_init (decl);
-
-  cleanup = build (COND_EXPR, integer_type_node,
-		   build (NE_EXPR, integer_type_node,
-			  decl, integer_zero_node),
-		   build_delete (TREE_TYPE (addr), decl,
-				 lookup_name (in_charge_identifier, 0),
-				 LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0),
-		   integer_zero_node);
-  expand_decl_cleanup (decl, cleanup);
-}
-
-/* For each binding contour, emit code that deactivates the
-   exception cleanups.  All other cleanups are left as they were.  */
-
-static void
-deactivate_exception_cleanups ()
-{
-  struct binding_level *b = current_binding_level;
-  tree xyzzy = get_identifier (EXCEPTION_CLEANUP_NAME);
-  while (b != class_binding_level)
-    {
-      if (b->parm_flag == 3)
-	{
-	  tree decls = b->names;
-	  while (decls)
-	    {
-	      if (DECL_NAME (decls) == xyzzy)
-		expand_assignment (decls, integer_zero_node, 0, 0);
-	      decls = TREE_CHAIN (decls);
-	    }
-	}
-      b = b->level_chain;
-    }
 }
 
 /* Change a static member function definition into a FUNCTION_TYPE, instead

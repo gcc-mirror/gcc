@@ -2504,7 +2504,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
      int warn_anon;
 {
   extern int interface_only, interface_unknown;
-  extern tree EHS_type;
 
   int old;
   int round_up_size = 1;
@@ -2727,10 +2726,25 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      if (! fields)
 		fields = x;
 	      last_x = x;
-	      DECL_CONTEXT (x) = t;
 	      continue;
 	    }
 
+	  /* Check for inconsistent use of this name in the class body.
+             Enums, types and static vars have already been checked.  */
+	  if (TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
+	    {
+	      tree name = DECL_NAME (x);
+	      tree icv = name ? IDENTIFIER_CLASS_VALUE (name) : NULL_TREE;
+
+	      /* Don't complain about constructors.  */
+	      if (icv && name != constructor_name (current_class_type))
+		{
+		  cp_error_at ("declaration of identifier `%D' as `%+#D'",
+			       name, x);
+		  cp_error_at ("conflicts with other use in class as `%#D'",
+			       icv);
+		}
+	    }
 
 	  if (TREE_CODE (x) == FUNCTION_DECL)
 	    {
@@ -3129,9 +3143,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       fn_fields = default_fn;
     }
 
-  /* Create default copy constructor, if needed.  Don't do it for
-     the exception handler.  */
-  if (! TYPE_HAS_INIT_REF (t) && ! cant_synth_copy_ctor && t != EHS_type)
+  /* Create default copy constructor, if needed.  */
+  if (! TYPE_HAS_INIT_REF (t) && ! cant_synth_copy_ctor)
     {
       /* ARM 12.18: You get either X(X&) or X(const X&), but
 	 not both.  --Chip  */

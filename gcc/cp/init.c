@@ -217,12 +217,8 @@ perform_member_init (member, name, init, explicit)
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
-
-  if (flag_handle_exceptions == 2 && TYPE_NEEDS_DESTRUCTOR (type))
-    {
-      cplus_expand_start_try (1);
-      push_exception_cleanup (build_unary_op (ADDR_EXPR, decl, 0));
-    }
+  if (flag_handle_exceptions && TYPE_NEEDS_DESTRUCTOR (type))
+    cp_warning ("caution, member `%D' may not be destroyed in the presense of an exception during construction", member);
 }
 
 /* Subroutine of emit_member_init.  */
@@ -390,20 +386,6 @@ emit_base_init (t, immediately)
     emit_line_note_force (DECL_SOURCE_FILE (current_function_decl),
 			  DECL_SOURCE_LINE (current_function_decl));
 
-  /* In this case, we always need IN_CHARGE_NODE, because we have
-     to know whether to deallocate or not before exiting.  */
-  if (flag_handle_exceptions == 2
-      && lookup_name (in_charge_identifier, 0) == NULL_TREE)
-    {
-      tree in_charge_node = pushdecl (build_decl (VAR_DECL, in_charge_identifier,
-						  integer_type_node));
-      store_init_value (in_charge_node, build (EQ_EXPR, integer_type_node,
-					       current_class_decl,
-					       integer_zero_node));
-      expand_decl (in_charge_node);
-      expand_decl_init (in_charge_node);
-    }
-
   start = ! TYPE_USES_VIRTUAL_BASECLASSES (t);
   for (pass = start; pass < 2; pass++)
     {
@@ -521,11 +503,6 @@ emit_base_init (t, immediately)
 	  expand_aggr_init_1 (t_binfo, 0,
 			      build_indirect_ref (member, NULL_PTR), init,
 			      BINFO_OFFSET_ZEROP (binfo), LOOKUP_COMPLAIN);
-	  if (flag_handle_exceptions == 2 && TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (binfo)))
-	    {
-	      cplus_expand_start_try (1);
-	      push_exception_cleanup (member);
-	    }
 	}
 
       if (pass == 0)
@@ -594,12 +571,6 @@ emit_base_init (t, immediately)
 	      expand_aggr_init_1 (t_binfo, 0, ref, NULL_TREE,
 				  BINFO_OFFSET_ZEROP (base_binfo),
 				  LOOKUP_COMPLAIN);
-	      if (flag_handle_exceptions == 2
-		  && TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
-		{
-		  cplus_expand_start_try (1);
-		  push_exception_cleanup (base);
-		}
 	    }
 	}
       CLEAR_BINFO_BASEINIT_MARKED (base_binfo);

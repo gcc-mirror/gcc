@@ -192,8 +192,7 @@ empty_parms ()
 %left <code> POINTSAT '.' '(' '['
 
 %right SCOPE			/* C++ extension */
-%nonassoc NEW DELETE RAISE RAISES RERAISE TRY EXCEPT CATCH THROW
-%nonassoc ANSI_TRY ANSI_THROW
+%nonassoc NEW DELETE TRY CATCH THROW
 
 %type <code> unop
 
@@ -209,7 +208,7 @@ empty_parms ()
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attribute_list attrib
 
-%type <ttype> compstmt except_stmts ansi_except_stmts implicitly_scoped_stmt
+%type <ttype> compstmt implicitly_scoped_stmt
 
 %type <ttype> declarator notype_declarator after_type_declarator
 %type <ttype> direct_notype_declarator direct_after_type_declarator
@@ -251,15 +250,13 @@ empty_parms ()
 /* %type <ttype> primary_no_id */
 %type <ttype> nonmomentary_expr
 %type <itype> forhead.2 initdcl0 notype_initdcl0 member_init_list
-%type <itype> try ansi_try
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type template_arg_list template_arg
 %type <ttype> template_instantiation template_type_name tmpl.2
 %type <ttype> template_instantiate_once template_instantiate_some
 %type <itype> fn_tmpl_end
 /* %type <itype> try_for_typename */
-%type <ttype> condition partially_scoped_stmt xcond paren_cond_or_null
-%type <strtype> .kindof_pushlevel
+%type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
 %type <ttype> qualified_type_name complete_type_name notype_identifier
 %type <ttype> complex_type_name nested_name_specifier_1
@@ -486,7 +483,6 @@ template_def:
 				  0, $<ttype>4);
 		  cplus_decl_attributes (d, $6);
 		  finish_decl (d, NULL_TREE, $5, 0);
-		  end_exception_decls ();
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
 		    {
@@ -530,7 +526,6 @@ datadef:
 		}
 	| typed_declspecs initdecls ';'
 		{
-		  end_exception_decls ();
 		  note_list_got_semicolon ($<ttype>$);
 		}
 	/* Normal case: make this fast.  */
@@ -538,7 +533,6 @@ datadef:
 		{ tree d;
 		  d = start_decl ($<ttype>2, $<ttype>$, 0, NULL_TREE);
 		  finish_decl (d, NULL_TREE, NULL_TREE, 0);
-		  end_exception_decls ();
 		  note_list_got_semicolon ($<ttype>$);
 		}
         | declmods ';'
@@ -959,56 +953,6 @@ condition:
 	| expr
 	;
 
-/* Used for the blocks controlled by a condition, to add any DECLs in
-   the condition to the controlled block.  */
-.kindof_pushlevel: /* empty */
-		{ tree d = getdecls ();
-		  emit_line_note (input_filename, lineno);
-		  pushlevel (0);
-		  clear_last_expr ();
-		  push_momentary ();
-		  expand_start_bindings (0);
-		  if (d) pushdecl (d);
-	        }    
-	;
-
-/* Like implicitly_scoped_stmt, but uses .kindof_pushlevel */
-partially_scoped_stmt:
-           '{' .kindof_pushlevel '}'
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  $$ = poplevel (kept_level_p (), 1, 0);
-		  pop_momentary (); 
-		  finish_stmt (); }
-	| '{' .kindof_pushlevel maybe_label_decls stmts '}'
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  $$ = poplevel (kept_level_p (), 1, 0);
-		  pop_momentary (); 
-		  finish_stmt (); }
-	| '{' .kindof_pushlevel maybe_label_decls error '}'
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  $$ = poplevel (kept_level_p (), 0, 0);
-		  pop_momentary (); 
-		  finish_stmt (); }
-	| .kindof_pushlevel simple_stmt
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  $$ = poplevel (kept_level_p (), 1, 0);
-		  pop_momentary (); }
-	;
-
-already_scoped_stmt:
-          '{' '}'
-		{ finish_stmt (); }
-	| '{' maybe_label_decls stmts '}'
-		{ finish_stmt (); }
-	| '{' maybe_label_decls error '}'
-		{ finish_stmt (); }
-	| simple_stmt
-	;
-
 nontrivial_exprlist:
 	  expr_no_commas ',' expr_no_commas
 		{ $$ = tree_cons (NULL_TREE, $$, 
@@ -1262,6 +1206,10 @@ expr_no_commas:
 		    $$ = rval;
 		  else
 		    $$ = build_modify_expr ($$, $2, $3); }
+	| THROW
+		{ $$ = build_throw (NULL_TREE); }
+	| THROW expr_no_commas
+		{ $$ = build_throw ($2); }
 /* These extensions are not defined.  The second arg to build_m_component_ref
    is old, build_m_component_ref now does an implicit
    build_indirect_ref (x, NULL_PTR) on the second argument.
@@ -1767,10 +1715,10 @@ typed_declspecs1:
 		{ $$ = decl_tree_cons (NULL_TREE, $$, $2); }
 	| declmods typespec reserved_declspecs
 		{ $$ = decl_tree_cons (NULL_TREE, $2, chainon ($3, $$)); }
- 	| declmods typespec reserved_typespecquals
- 		{ $$ = decl_tree_cons (NULL_TREE, $2, chainon ($3, $$)); }
- 	| declmods typespec reserved_typespecquals reserved_declspecs
- 		{ $$ = decl_tree_cons (NULL_TREE, $2, 
+	| declmods typespec reserved_typespecquals
+		{ $$ = decl_tree_cons (NULL_TREE, $2, chainon ($3, $$)); }
+	| declmods typespec reserved_typespecquals reserved_declspecs
+		{ $$ = decl_tree_cons (NULL_TREE, $2, 
 				       chainon ($3, chainon ($4, $$))); }
 	;
 
@@ -1873,7 +1821,7 @@ typespec: structsp
 		    }
 		  else
 		    {
-  		      error("`sigof' applied to non-aggregate type");
+		      error("`sigof' applied to non-aggregate type");
 		      $$ = error_mark_node;
 		    }
 		}
@@ -2150,10 +2098,6 @@ structsp:
 		    /* $$ = $1 from default rule.  */;
 		  else if (CLASSTYPE_DECLARED_EXCEPTION ($$))
 		    {
-		      if (! semi)
-			$$ = finish_exception ($$, $3);
-		      else
-			warning ("empty exception declaration\n");
 		    }
 		  else
 		    {
@@ -2546,12 +2490,10 @@ component_decl_1:
 	  typed_declspecs components
 		{
 		  $$ = grok_x_components ($$, $2);
-		  end_exception_decls ();
 		}
 	| declmods notype_components
 		{ 
 		  $$ = grok_x_components ($$, $2);
-		  end_exception_decls ();
 		}
 	| notype_declarator maybe_raises maybeasm maybe_attribute
 		{ $$ = grokfield ($$, NULL_TREE, $2, NULL_TREE, $3);
@@ -2764,6 +2706,18 @@ after_type_declarator:
 
 qualified_type_name:
 	  type_name %prec EMPTY
+		{
+		  /* Remember that this name has been used in the class
+		     definition, as per [class.scope0] */
+		  if (current_class_type
+		      && TYPE_BEING_DEFINED (current_class_type)
+		      && ! IDENTIFIER_CLASS_VALUE ($$))
+		    {
+		      tree t = lookup_name ($$, -2);
+		      if (t)
+			pushdecl_class_level (t);
+		    }
+		}
 	| nested_type
 	;
 
@@ -3072,18 +3026,15 @@ compstmt_or_error:
 	;
 
 compstmt: '{' .pushlevel '}'
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p(), 1);
+		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
 		  $$ = poplevel (kept_level_p (), 1, 0);
 		  pop_momentary (); }
 	| '{' .pushlevel maybe_label_decls stmts '}'
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p(), 1);
+		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
 		  $$ = poplevel (kept_level_p (), 1, 0);
 		  pop_momentary (); }
 	| '{' .pushlevel maybe_label_decls error '}'
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p(), 1);
+		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
 		  $$ = poplevel (kept_level_p (), 0, 0);
 		  pop_momentary (); }
 	;
@@ -3094,15 +3045,14 @@ simple_if:
 	  .pushlevel paren_cond_or_null
 		{ emit_line_note (input_filename, lineno);
 		  expand_start_cond (truthvalue_conversion ($4), 0); }
-	  partially_scoped_stmt
+	  implicitly_scoped_stmt
 	;
 
 implicitly_scoped_stmt:
 	  compstmt
 		{ finish_stmt (); }
 	| .pushlevel simple_stmt
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), getdecls() != NULL_TREE, 1);
+		{ expand_end_bindings (getdecls (), getdecls() != NULL_TREE, 1);
 		  $$ = poplevel (kept_level_p (), 1, 0);
 		  pop_momentary (); }
 	;
@@ -3118,7 +3068,7 @@ simple_stmt:
 		{ finish_stmt (); }
 	| expr ';'
 		{
-  		  tree expr = $1;
+		  tree expr = $1;
 		  emit_line_note (input_filename, lineno);
 		  /* Do default conversion if safe and possibly important,
 		     in case within ({...}).  */
@@ -3131,16 +3081,14 @@ simple_stmt:
 		  finish_stmt (); }
 	| simple_if ELSE
 		{ expand_start_else (); }
-	  partially_scoped_stmt
+	  implicitly_scoped_stmt
 		{ expand_end_cond ();
-		  pop_implicit_try_blocks (NULL_TREE);
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
 		  finish_stmt (); }
 	| simple_if %prec IF
 		{ expand_end_cond ();
-		  pop_implicit_try_blocks (NULL_TREE);
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
@@ -3152,9 +3100,8 @@ simple_stmt:
 		  cond_stmt_keyword = "while"; }
 	  .pushlevel paren_cond_or_null
 		{ expand_exit_loop_if_false (0, truthvalue_conversion ($4)); }
-	  already_scoped_stmt
-		{ pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
+	  implicitly_scoped_stmt
+		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
 		  expand_end_loop ();
@@ -3184,13 +3131,12 @@ simple_stmt:
 		/* Don't let the tree nodes for $7 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
 		{ push_momentary (); }
-	  already_scoped_stmt
+	  implicitly_scoped_stmt
 		{ emit_line_note (input_filename, lineno);
-		  pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  expand_loop_continue_here ();
 		  if ($7) cplus_expand_expr_stmt ($7);
 		  pop_momentary ();
+		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
 		  expand_end_loop ();
@@ -3207,13 +3153,12 @@ simple_stmt:
 		   by clear_momentary during the parsing of the next stmt.  */
 		{ push_momentary ();
 		  $<itype>8 = lineno; }
-	  already_scoped_stmt
+	  implicitly_scoped_stmt
 		{ emit_line_note (input_filename, (int) $<itype>8);
-		  pop_implicit_try_blocks (NULL_TREE);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  expand_loop_continue_here ();
 		  if ($7) cplus_expand_expr_stmt ($7);
 		  pop_momentary ();
+		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
 		  expand_end_loop ();
@@ -3225,10 +3170,9 @@ simple_stmt:
 		  /* Don't let the tree nodes for $4 be discarded by
 		     clear_momentary during the parsing of the next stmt.  */
 		  push_momentary (); }
-	  partially_scoped_stmt
+	  implicitly_scoped_stmt
 		{ expand_end_case ($4);
 		  pop_momentary ();
-		  pop_implicit_try_blocks (NULL_TREE);
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
@@ -3422,7 +3366,7 @@ simple_stmt:
 		}
 	/* This is the case with clobbered registers as well.  */
 	| asm_keyword maybe_type_qual '(' string ':' asm_operands ':'
-  	  asm_operands ':' asm_clobbers ')' ';'
+	  asm_operands ':' asm_clobbers ')' ';'
 		{ if (TREE_CHAIN ($4)) $4 = combine_strings ($4);
 		  emit_line_note (input_filename, lineno);
 		  c_expand_asm_operands ($4, $6, $8, $10,
@@ -3447,178 +3391,55 @@ simple_stmt:
 		  finish_stmt (); }
 	| ';'
 		{ finish_stmt (); }
-
-	/* Exception handling extensions.  */
-	| ANSI_THROW ';' { cplus_expand_throw (NULL_TREE); }
-	| ANSI_THROW expr ';' { cplus_expand_throw ($2); }
-	| THROW raise_identifier '(' nonnull_exprlist ')' ';'
-		{ cplus_expand_raise ($2, $4, NULL_TREE, 0);
-		  finish_stmt (); }
-	| THROW raise_identifier LEFT_RIGHT ';'
-		{ cplus_expand_raise ($2, NULL_TREE, NULL_TREE, 0);
-		  finish_stmt (); }
-	| RAISE raise_identifier '(' nonnull_exprlist ')' ';'
-		{ cplus_expand_raise ($2, $4, NULL_TREE, 0);
-		  finish_stmt (); }
-	| RAISE raise_identifier LEFT_RIGHT ';'
-		{ cplus_expand_raise ($2, NULL_TREE, NULL_TREE, 0);
-		  finish_stmt (); }
-	| RAISE identifier ';'
-		{ cplus_expand_reraise ($2);
-		  finish_stmt (); }
-	| try EXCEPT identifier '{'
-		{
-		  tree decl = cplus_expand_end_try ($1);
-		  $<ttype>2 = current_exception_type;
-		  $<ttype>4 = current_exception_decl;
-		  $<ttype>$ = current_exception_object;
-		  cplus_expand_start_except ($3, decl);
-		  pushlevel (0);
-		  clear_last_expr ();
-		  push_momentary ();
-		  expand_start_bindings (0);
-		}
-	  except_stmts '}'
-		{
-		  tree decls = getdecls ();
-		  /* If there is a default exception to handle,
-		     handle it here.  */
-		  if ($6)
-		    {
-		      tree decl = build_decl (CPLUS_CATCH_DECL, NULL_TREE, 0);
-		      tree block;
-
-		      pushlevel (1);
-		      expand_start_bindings (0);
-		      expand_expr ($6, 0, 0, 0);
-		      expand_end_bindings (0, 1, 0);
-		      block = poplevel (1, 0, 0);
-
-		      /* This is a catch block.  */
-		      TREE_LANG_FLAG_2 (block) = 1;
-		      BLOCK_VARS (block) = decl;
-		    }
-
-		  expand_end_bindings (decls, decls != 0, 1);
-		  poplevel (decls != 0, 1, 0);
-		  pop_momentary ();
-		  current_exception_type = $<ttype>2;
-		  current_exception_decl = $<ttype>4;
-		  current_exception_object = $<ttype>5;
-		  cplus_expand_end_except ($6);
-		}
-	| try error
-		{
-		  cplus_expand_end_try ($1);
-		  /* These are the important actions of
-		     `cplus_expand_end_except' which we must emulate.  */
-		  if (expand_escape_except ())
-		    expand_end_except ();
-		  expand_end_bindings (0, 0, 1);
-		  poplevel (0, 0, 0);
-		}
-	| ansi_try ansi_dummy ansi_dummy
-		{
-		  tree decl = cplus_expand_end_try ($1);
-		  $<ttype>2 = current_exception_type;
-		  $<ttype>3 = current_exception_decl;
-		  $<ttype>$ = current_exception_object;
-		  cplus_expand_start_except (NULL, decl);
-		  pushlevel (0);
-		  clear_last_expr ();
-		  push_momentary ();
-		  expand_start_bindings (0);
-		}
-	  ansi_except_stmts
-		{
-		  tree decls = getdecls ();
-		  /* If there is a default exception to handle,
-		     handle it here.  */
-		  if ($5)
-		    {
-		      tree decl = build_decl (CPLUS_CATCH_DECL, NULL_TREE, 0);
-		      tree block;
-
-		      pushlevel (1);
-		      expand_start_bindings (0);
-		      expand_expr ($5, 0, 0, 0);
-		      expand_end_bindings (0, 1, 0);
-		      block = poplevel (1, 0, 0);
-
-		      /* This is a catch block.  */
-		      TREE_LANG_FLAG_2 (block) = 1;
-		      BLOCK_VARS (block) = decl;
-		    }
-
-		  expand_end_bindings (decls, decls != 0, 1);
-		  poplevel (decls != 0, 1, 0);
-		  pop_momentary ();
-		  current_exception_type = $<ttype>2;
-		  current_exception_decl = $<ttype>3;
-		  current_exception_object = $<ttype>4;
-		  cplus_expand_end_except ($5);
-		}
-	| try RERAISE raise_identifiers /* ';' checked for at bottom.  */
-		{ tree name = get_identifier ("(compiler error)");
-		  tree orig_ex_type = current_exception_type;
-		  tree orig_ex_decl = current_exception_decl;
-		  tree orig_ex_obj = current_exception_object;
-		  tree decl = cplus_expand_end_try ($1), decls;
-
-		  /* Start hidden EXCEPT.  */
-		  cplus_expand_start_except (name, decl);
-		  pushlevel (0);
-		  clear_last_expr ();
-		  push_momentary ();
-		  expand_start_bindings (0);
-
-		  /* This sets up the reraise.  */
-		  cplus_expand_reraise ($3);
-
-		  decls = getdecls ();
-		  expand_end_bindings (decls, decls != 0, 1);
-		  poplevel (decls != 0, 1, 0);
-		  pop_momentary ();
-		  current_exception_type = orig_ex_type;
-		  current_exception_decl = orig_ex_decl;
-		  current_exception_object = orig_ex_obj;
-		  /* This will reraise for us.  */
-		  cplus_expand_end_except (error_mark_node);
-		  if (yychar == YYEMPTY)
-		    yychar = YYLEX;
-		  if (yychar != ';')
-		    error ("missing ';' after reraise statement");
-		}
-	| try  %prec EMPTY
-		{ yyerror ("`except' missing after `try' statement");
-		  /* Terminate the binding contour started by special
-		     code in `.pushlevel'.  Automagically pops off
-		     the conditional we started for `try' stmt.  */
-		  cplus_expand_end_try ($1);
-		  expand_end_bindings (0, 0, 1);
-		  poplevel (0, 0, 0);
-		  pop_momentary ();
-		  YYERROR; }
+	| try_block
 	;
 
-try:	  try_head '}'
+try_block:
+	  TRY '{' .pushlevel
+		{ expand_start_try_stmts (); }
+	  ansi_try_stmts
+		{ expand_end_try_stmts ();
+		  expand_start_all_catch (); }
+	  handler_seq
+		{ expand_end_all_catch (); }
+	;
+
+ansi_try_stmts:
+	  '}'
 		/* An empty try block is degenerate, but it's better to
 		   do extra work here than to do all the special-case work
 		   everywhere else.  */
-		{
-		  $$ = 1;
-		  pop_implicit_try_blocks (NULL_TREE);
+		{ expand_end_bindings (0,1,1);
+		  poplevel (2,0,0);
 		}
-	| try_head stmts '}'
-		{
-		  $$ = 1;
-		  pop_implicit_try_blocks (NULL_TREE);
+	| stmts '}'
+		{ expand_end_bindings (0,1,1);
+		  poplevel (2,0,0);
 		}
-	| try_head error '}'
-		{
-		  $$ = 0;
-		  pop_implicit_try_blocks (NULL_TREE);
+	| error '}'
+		{ expand_end_bindings (0,1,1);
+		  poplevel (2,0,0);
 		}
+	;
+
+optional_identifier:
+	  /* empty */
+		{ $$ = NULL_TREE; }
+	| identifier ;
+
+handler_seq:
+	  /* empty */
+	| handler_seq CATCH
+		{ emit_line_note (input_filename, lineno); }
+	  handler_args compstmt
+		{ expand_end_catch_block (); }
+	;
+
+handler_args:
+	  '(' ELLIPSIS ')'
+		{ expand_start_catch_block (NULL_TREE, NULL_TREE); }
+	| '(' type_id optional_identifier ')'
+		{ expand_start_catch_block ($2, $3); }
 	;
 
 label_colon:
@@ -3631,156 +3452,6 @@ label_colon:
 		}
 	| PTYPENAME ':'
 		{ goto do_label; }
-	;
-
-try_head: TRY '{' { cplus_expand_start_try (0); } .pushlevel
-
-ansi_try:	  ansi_try_head '}'
-		/* An empty try block is degenerate, but it's better to
-		   do extra work here than to do all the special-case work
-		   everywhere else.  */
-		{
-		  $$ = 1;
-		  pop_implicit_try_blocks (NULL_TREE);
-		}
-	| ansi_try_head stmts '}'
-		{
-		  $$ = 1;
-		  pop_implicit_try_blocks (NULL_TREE);
-		}
-	| ansi_try_head error '}'
-		{
-		  $$ = 0;
-		  pop_implicit_try_blocks (NULL_TREE);
-		}
-	;
-
-ansi_dummy: ; /* Temporary place-holder. */
-ansi_try_head: ANSI_TRY '{' { cplus_expand_start_try (0); } .pushlevel
-
-except_stmts:
-	  /* empty */
-		{ $$ = NULL_TREE; }
-	| except_stmts raise_identifier
-		{
-		  tree type = lookup_exception_type (current_class_type, current_class_name, $2);
-		  if (type == NULL_TREE)
-		    {
-		      error ("`%s' is not an exception type",
-			     IDENTIFIER_POINTER (TREE_VALUE ($2)));
-		      current_exception_type = NULL_TREE;
-		      TREE_TYPE (current_exception_object) = error_mark_node;
-		    }
-		  else
-		    {
-		      current_exception_type = type;
-		      /* In-place union.  */
-		      TREE_TYPE (current_exception_object) = type;
-		    }
-		  $2 = cplus_expand_start_catch ($2);
-		  pushlevel (1);
-		  expand_start_bindings (0);
-		}
-	  compstmt
-		{
-		  expand_end_bindings (0, 1, 0);
-		  $4 = poplevel (1, 0, 0);
-
-		  cplus_expand_end_catch (0);
-
-		  /* Mark this as a catch block.  */
-		  TREE_LANG_FLAG_2 ($4) = 1;
-		  if ($2 != error_mark_node)
-		    {
-		      tree decl = build_decl (CPLUS_CATCH_DECL, DECL_NAME ($2), 0);
-		      DECL_RTL (decl) = DECL_RTL ($2);
-		      TREE_CHAIN (decl) = BLOCK_VARS ($4);
-		      BLOCK_VARS ($4) = decl;
-		    }
-		}
-	| except_stmts DEFAULT
-		{
-		  if ($1)
-		    error ("duplicate default in exception handler");
-		  current_exception_type = NULL_TREE;
-		  /* Takes it right out of scope.  */
-		  TREE_TYPE (current_exception_object) = error_mark_node;
-
-		  if (! expand_catch_default ())
-		    compiler_error ("default catch botch");
-
-		  /* The default exception is handled as the
-		     last in the chain of exceptions handled.  */
-		  do_pending_stack_adjust ();
-		  $1 = make_node (RTL_EXPR);
-		  TREE_TYPE ($1) = void_type_node;
-		  start_sequence_for_rtl_expr ($1);
-		}
-	  compstmt
-		{
-		  extern struct rtx_def *get_insns ();
-		  do_pending_stack_adjust ();
-		  if (! expand_catch (NULL_TREE))
-		    compiler_error ("except nesting botch");
-		  if (! expand_end_catch ())
-		    compiler_error ("except nesting botch");
-		  RTL_EXPR_SEQUENCE ($1) = get_insns ();
-		  if ($4)
-		    {
-		      /* Mark this block as the default catch block.  */
-		      TREE_LANG_FLAG_1 ($4) = 1;
-		      TREE_LANG_FLAG_2 ($4) = 1;
-		    }
-		  end_sequence ();
-		}
-	;
-
-optional_identifier:
-	  /* empty */
-		{ $$ = NULL_TREE; }
-	| identifier ;
-
-ansi_except_stmts:
-	  /* empty */
-		{ $$ = NULL_TREE; }
-	| ansi_except_stmts CATCH '(' type_id optional_identifier ')'
-		{
-		  tree type = groktypename ($4);
-		  if (IS_SIGNATURE (type))
-		    {
-		      error ("exception cannot be of signature type");
-		      type = error_mark_node;
-		    }
-		  current_exception_type = type;
-		  /* In-place union.  */
-		  if ($5)
-		    {
-		      tree tmp;
-		      tmp = pushdecl (build_decl (VAR_DECL, $5, type));
-		      current_exception_object =
-		          build1 (INDIRECT_REF, type, tmp);
-		     }
-		  $4 = ansi_expand_start_catch(type);
-		  pushlevel (1);
-		  expand_start_bindings (0);
-		}
-	  compstmt
-		{
-		  expand_end_bindings (0, 1, 0);
-		  $8 = poplevel (1, 0, 0);
-
-		  cplus_expand_end_catch (0);
-
-		  /* Mark this as a catch block.  */
-		  TREE_LANG_FLAG_2 ($8) = 1;
-		  if ($4 != error_mark_node)
-		    {
-		      tree decl = build_decl (CPLUS_CATCH_DECL, DECL_NAME ($4), 0);
-		      DECL_RTL (decl) = DECL_RTL ($4);
-		      TREE_CHAIN (decl) = BLOCK_VARS ($8);
-		      BLOCK_VARS ($8) = decl;
-		    }
-		}
 	;
 
 forhead.1:
@@ -3869,7 +3540,7 @@ parmlist:  /* empty */
    as it is ambiguous and must be disambiguated elsewhere.  */
 complex_parmlist:
 	  parms
-  		{
+		{
 		  $$ = chainon ($$, void_list_node);
 		  TREE_PARMLIST ($$) = 1;
 		}
@@ -4029,16 +3700,14 @@ bad_parm:
 maybe_raises:
 	  %prec EMPTY /* empty */
 		{ $$ = NULL_TREE; }
-	| RAISES raise_identifiers  %prec EMPTY
-		{ $$ = $2; }
-	| ANSI_THROW '(' ansi_raise_identifiers  ')' %prec EMPTY
+	| THROW '(' ansi_raise_identifiers  ')' %prec EMPTY
 		{ $$ = $3; }
 	;
 
 raise_identifier:
-	  ALL
-		{ $$ = void_list_node; }
-	| IDENTIFIER
+/*	  ALL
+		{ $$ = void_list_node; } */
+	  IDENTIFIER
 		{ $$ = build_decl_list (NULL_TREE, $$); }
 	| TYPENAME
 		{ $$ = build_decl_list (NULL_TREE, $$); }
@@ -4057,7 +3726,7 @@ raise_identifiers:
 	  raise_identifier
 	| raise_identifiers ',' raise_identifier
 		{
-  		  TREE_CHAIN ($3) = $$;
+		  TREE_CHAIN ($3) = $$;
 		  $$ = $3;
 		}
 	;
@@ -4066,7 +3735,7 @@ ansi_raise_identifiers:
 	  ansi_raise_identifier
 	| ansi_raise_identifiers ',' ansi_raise_identifier
 		{
-  		  TREE_CHAIN ($3) = $$;
+		  TREE_CHAIN ($3) = $$;
 		  $$ = $3;
 		}
 	;

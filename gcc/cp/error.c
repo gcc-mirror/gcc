@@ -559,14 +559,19 @@ dump_decl (t, v)
       break;
 
     case TYPE_DECL:
-      if (TYPE_NAME (TREE_TYPE (t)) != t)
-	{
-	  if (v > 0)
-	    OB_PUTS ("typedef ");
-	  goto general;
-	}
-
-      dump_type (TREE_TYPE (t), v);
+      {
+	/* Don't say 'typedef class A' */
+	tree type = TREE_TYPE (t);
+        if (IS_AGGR_TYPE (type) && ! TYPE_PTRMEMFUNC_P (type)
+	    && type == TYPE_MAIN_VARIANT (type))
+	  {
+	    dump_type (type, v);
+	    break;
+	  }
+      }
+      if (v > 0)
+	OB_PUTS ("typedef ");
+      goto general;
       break;
       
     case VAR_DECL:
@@ -586,9 +591,8 @@ dump_decl (t, v)
 	  OB_PUTC (' ');
 	}
       /* DECL_CLASS_CONTEXT isn't being set in some cases.  Hmm...  */
-      if (TREE_CODE (t) == FIELD_DECL
-	  || (TREE_CODE (t) == VAR_DECL && DECL_CONTEXT (t)
-	      && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't'))
+      if (DECL_CONTEXT (t)
+	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't')
 	{
 	  dump_type (DECL_CONTEXT (t), 0);
 	  OB_PUTC2 (':', ':');
@@ -696,14 +700,7 @@ dump_decl (t, v)
 
     case CONST_DECL:
       if (NEXT_CODE (t) == ENUMERAL_TYPE)
-	{
-	  if (DECL_CONTEXT (t))
-	    {
-	      dump_decl (DECL_CONTEXT (t), 0);
-	      OB_PUTC2 (':', ':');
-	    }
-	  OB_PUTID (DECL_NAME (t));
-	}
+	goto general;
       else
 	dump_expr (DECL_INITIAL (t), 0);
       break;

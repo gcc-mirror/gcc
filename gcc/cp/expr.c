@@ -214,6 +214,10 @@ cplus_expand_expr (exp, target, tmode, modifier)
     case THUNK_DECL:
       return DECL_RTL (exp);
 
+    case THROW_EXPR:
+      expand_throw (TREE_OPERAND (exp, 0));
+      return NULL;
+
     default:
       break;
     }

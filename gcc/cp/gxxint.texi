@@ -8,7 +8,7 @@
 @node Top, Limitations of g++, (dir), (dir)
 @chapter Internal Architecture of the Compiler
 
-This is meant to describe the C++ frontend for gcc in detail.
+This is meant to describe the C++ front-end for gcc in detail.
 Questions and comments to mrs@@cygnus.com.
 
 @menu
@@ -24,6 +24,7 @@ Questions and comments to mrs@@cygnus.com.
 * Error Reporting::             
 * Parser::                      
 * Copying Objects::             
+* Exception Handling::             
 * Concept Index::               
 @end menu
 
@@ -555,7 +556,7 @@ IDENTIFIER_NODEs for TYPE_DECLs
 
 @item DECL_IGNORED_P
 A bit that can be set to inform the debug information output routines in
-the backend that a certain _DECL node should be totally ignored.
+the back-end that a certain _DECL node should be totally ignored.
 
 Used in cases where it is known that the debugging information will be
 output in another file, or where a sub-type is known not to be needed
@@ -989,7 +990,7 @@ completely unrelated to access control!
 @node Error Reporting, Parser, Access Control, Top
 @section Error Reporting
 
-The C++ frontend uses a call-back mechanism to allow functions to print
+The C++ front-end uses a call-back mechanism to allow functions to print
 out reasonable strings for types and functions without putting extra
 logic in the functions where errors are found.  The interface is through
 the @code{cp_error} function (or @code{cp_warning}, etc.).  The
@@ -1115,7 +1116,7 @@ conflicts.
 
 Unlike the others, this ambiguity is not recognized by the Working Paper.
 
-@node  Copying Objects, Concept Index, Parser, Top
+@node  Copying Objects, Exception Handling, Parser, Top
 @section Copying Objects
 
 The generated copy assignment operator in g++ does not currently do the
@@ -1141,7 +1142,54 @@ them.
 This issue is currently under discussion in the core reflector
 (2/28/94).
 
-@node Concept Index,  , Copying Objects, Top
+@node  Copying Objects, Concept Index, Copying Objects, Top
+@section Exception Handling
+
+This section describes the mapping of C++ exceptions in the C++
+front-end, into the back-end exception handling framework.
+
+The basic mechanism of exception handling in the back-end is
+unwind-protect a la elisp.  This is a general, robust, and language
+independent representation for exceptions.
+
+The C++ front-end exceptions are mapping into the unwind-protect
+semantics by the C++ front-end.  The mapping is describe below.
+
+Objects with RTTI support, should use the RTTI information to do mapping
+and checking.  Objects without RTTI, like int and const char *, have to
+use another means of matching.  Currently we use the normal mangling used in
+building functions names.  Int's are "i", const char * is PCc, etc...
+
+Unfortunately, the standard allows standard type conversions on throw
+parameters so they can match catch handlers.  This means we need a
+mechanism to handle type conversion at run time, ICK.
+
+In C++, all cleanups should be protected by exception regions.  The
+region starts just after the reason why the cleanup is created has
+ended.  For example, with an automatic variable, that has a constructor,
+it would be right after the constructor is run.  The region ends just
+before the finalization is expanded.  Since the backend may expand the
+cleanup multiple times along different paths, once for normal end of the
+region, once for non-local gotos, once for returns, etc, the backend
+must take special care to protect the finalization expansion, if the
+expansion is for any other reason than normal region end, and it is
+`inline' (it is inside the exception region).  The backend can either
+choose to move them out of line, or it can created an exception region
+over the finalization to protect it, and in the handler associated with
+it, it would not run the finalization as it otherwise would have, but
+rather just rethrow to the outer handler, careful to skip the normal
+handler for the original region.
+
+In Ada, they will use the more runtime intensive approach of having
+fewer regions, but at the cost of additional work at run time, to keep a
+list of things that need cleanups.  When a variable has finished
+construction, they add the cleanup to the list, when the come to the end
+of the lifetime of the variable, the run the list down.  If the take a
+hit before the section finishes normally, they examine the list for
+actions to perform.  I hope they add this logic into the back-end, as it
+would be nice to get that alternative approach in C++.
+
+@node Concept Index,  , Exception Handling, Top
 @section Concept Index
 
 @printindex cp

@@ -1,3 +1,55 @@
+Fri May  6 01:25:38 1994  Mike Stump  (mrs@cygnus.com)
+
+	Add alpha exception handling support to the compiler.
+	Quick and dirty backend in except.c.
+
+	* cp/*:  Remove most remnants of old exception handling support.
+	* decl.c (finish_function): Call expand_exception_blocks to put
+	the exception hanlding blocks at the end of the function.
+	* dec.c (hack_incomplete_structures): Make sure expand_decl_cleanup
+	comes after expand_decl_init.
+	* except.c: Reimplementation.
+	* expr.c (cplus_expand_expr): Handle THROW_EXPRs.
+	* lex.c (init_lex): Always have catch, try and throw be reserved
+	words, so that we may always parse exception handling.
+	* parse.y: Cleanup to support new interface into exception handling.
+	* tree.def (THROW_EXPR): Add.
+
+Thu May  5 17:35:37 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* parse.y (simple_stmt, for loops): Use implicitly_scoped_stmt.
+	(various): Lose .kindof_pushlevel and partially_scoped_stmt.
+
+Thu May  5 16:17:27 1994  Kung Hsu  (kung@mexican.cygnus.com)
+
+	* parse.y (already_scoped_stmt): move expand_end_binding() to
+	fix the unmatched LBB/LBE in stabs.
+
+Thu May  5 14:36:17 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (set_nested_typename): Set TREE_MANGLED on the new
+	identifiers.
+	(pushdecl): Check TREE_MANGLED.
+	(xref_tag): Ditto.
+	* cp-tree.h (TREE_MANGLED): This identifier is a
+	DECL_NESTED_TYPENAME (named to allow for future use to denote
+	mangled function names as well).
+
+	Implement inconsistency checking specified in [class.scope0].
+	* decl.c (lookup_name_real): Don't set ICV here after all.
+	(finish_enum): Also set the type of the enumerators themselves.
+	(build_enumerator): Put the CONST_DECL in the list instead of its
+	initial value.
+	(pushdecl_class_level): Check inconsistent use of a name in the
+	class body.
+	* class.c (finish_struct): Check inconsistent use of a name in the
+	class body.  Don't set DECL_CONTEXT on types here anymore.
+	* parse.y (qualified_type_name): Note that the identifier has now
+	been used (as a type) in the class body.
+	* lex.c (do_identifier): Note that the identifier has now been used
+	(as a constant) in the class body.
+	* error.c (dump_decl): Print type and enum decls better.
+
 Thu May  5 09:35:35 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
 	* typeck.c (build_modify_expr): Warn about assignment to `this'.

@@ -266,15 +266,9 @@ int write_virtuals;
 int flag_elide_constructors;
 
 /* Nonzero means recognize and handle exception handling constructs.
-   2 means handle exceptions the way Spring wants them handled.  */
+   Use ansi syntax and semantics.  WORK IN PROGRESS!  */
 
 int flag_handle_exceptions;
-
-/* Nonzero means recognize and handle exception handling constructs.
-   Use ansi syntax and semantics.  WORK IN PROGRESS!
-   2 means handle exceptions the way Spring wants them handled.  */
-
-int flag_ansi_exceptions;
 
 /* Nonzero means recognize and handle signature language constructs.  */
 
@@ -354,9 +348,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"memoize-lookups", &flag_memoize_lookups, 1},
   {"elide-constructors", &flag_elide_constructors, 1},
   {"handle-exceptions", &flag_handle_exceptions, 1},
-  {"ansi-exceptions", &flag_ansi_exceptions, 1},
   {"handle-signatures", &flag_handle_signatures, 1},
-  {"spring-exceptions", &flag_handle_exceptions, 2},
   {"default-inline", &flag_default_inline, 1},
   {"dollars-in-identifiers", &dollars_in_ident, 1},
   {"enum-int-equiv", &flag_int_enum_equivalence, 1},
@@ -2492,6 +2484,8 @@ finish_file ()
   tree fnname;
   tree vars = static_aggregates;
   int needs_cleaning = 0, needs_messing_up = 0;
+
+  build_exception_table ();
 
   if (flag_detailed_statistics)
     dump_tree_statistics ();
