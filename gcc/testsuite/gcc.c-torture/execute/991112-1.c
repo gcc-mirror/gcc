@@ -1,5 +1,5 @@
 /* This code was miscompiled at -O3 on x86.
-   Reported by Jim Myering; distilled from bash.  */
+   Reported by Jim Meyering; distilled from bash.  */
 
 int rl_show_char (int c) { return 0; }
 
