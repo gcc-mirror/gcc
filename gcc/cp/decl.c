@@ -1719,6 +1719,8 @@ namespace_binding (name, scope)
   tree b = IDENTIFIER_NAMESPACE_BINDINGS (name);
   if (b == NULL_TREE)
     return NULL_TREE;
+  if (scope == NULL_TREE)
+    scope = global_namespace;
   if (TREE_CODE (b) != CPLUS_BINDING)
     return (scope == global_namespace) ? b : NULL_TREE;
   name = find_binding (name,scope);
@@ -1737,6 +1739,10 @@ set_namespace_binding (name, scope, val)
      tree val;
 {
   tree b;
+
+  if (scope == NULL_TREE)
+    scope = global_namespace;
+  
   if (scope == global_namespace)
     {
       b = IDENTIFIER_NAMESPACE_BINDINGS (name);
@@ -1837,7 +1843,7 @@ pop_namespace ()
       in_std--;
       return;
     }
-  current_namespace = DECL_CONTEXT (current_namespace);
+  current_namespace = CP_DECL_CONTEXT (current_namespace);
   /* The binding level is not popped, as it might be re-opened later.  */
   suspend_binding_level ();
 }
@@ -2263,7 +2269,7 @@ pushtag (name, type, globalize)
 	    d = TYPE_MAIN_DECL (d);
 
 	  TYPE_NAME (type) = d;
-	  DECL_CONTEXT (d) = context;
+	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
 
 	  if (processing_template_parmlist)
 	    /* You can't declare a new template type in a template
@@ -3241,7 +3247,7 @@ pushdecl (x)
       && ! DECL_CONTEXT (x))
     DECL_CONTEXT (x) = current_function_decl;
   if (!DECL_CONTEXT (x))
-    DECL_CONTEXT (x) = current_namespace;
+    DECL_CONTEXT (x) = FROB_CONTEXT (current_namespace);
 
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
      compiler wants to use.  */
@@ -4687,10 +4693,10 @@ make_typename_type (context, name)
   if (processing_template_decl)
     pop_obstacks ();
 
-  TYPE_CONTEXT (t) = context;
+  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TYPE_NAME (TREE_TYPE (d)) = d;
   TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-  DECL_CONTEXT (d) = context;
+  DECL_CONTEXT (d) = FROB_CONTEXT (context);
   CLASSTYPE_GOT_SEMICOLON (t) = 1;
 
   return t;
@@ -4920,6 +4926,8 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	  if (scope == global_namespace)
 	    break;
 	  scope = DECL_CONTEXT (scope);
+          if (scope == NULL_TREE)
+            scope = global_namespace;
 	}
     }
 
@@ -5980,7 +5988,7 @@ define_function (name, type, function_code, pfn, library_name)
   DECL_ARTIFICIAL (decl) = 1;
 
   my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 392);
-  DECL_CONTEXT (decl) = current_namespace;
+  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
   /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,
      we cannot change DECL_ASSEMBLER_NAME until we have installed this
@@ -9707,7 +9715,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (current_class_type)
 	    DECL_CONTEXT (decl) = current_class_type;
 	  else
-	    DECL_CONTEXT (decl) = current_namespace;
+	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
 	  DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
 	  DECL_ASSEMBLER_NAME (decl)

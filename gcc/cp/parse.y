@@ -280,13 +280,14 @@ empty_parms ()
 
 %{
 /* List of types and structure classes of the current declaration.  */
-static tree current_declspecs = NULL_TREE;
+static tree current_declspecs;
+
 /* List of prefix attributes in effect.
    Prefix attributes are parsed by the reserved_declspecs and declmods
    rules.  They create a list that contains *both* declspecs and attrs.  */
 /* ??? It is not clear yet that all cases where an attribute can now appear in
    a declspec list have been updated.  */
-static tree prefix_attributes = NULL_TREE;
+static tree prefix_attributes;
 
 /* When defining an aggregate, this is the most recent one being defined.  */
 static tree current_aggr;

@@ -1,3 +1,33 @@
+1998-06-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (CP_DECL_CONTEXT): New macro.
+	* decl2.c (is_namespace_ancestor, lookup_using_namespace): Use it.
+	* method.c (build_overload_nested_name): Likewise.
+	* sig.c (build_signature_pointer_or_reference_type): Don't set
+	DECL_CONTEXT.
+
+1998-06-24  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	Set DECL_CONTEXT for globals to NULL_TREE instead of global_namespace.
+	* cp-tree.h (FROB_CONTEXT): New macro.
+	(DECL_MAIN_P): ::main should have a DECL_CONTEXT of NULL_TREE.
+	* decl.c (namespace_binding): Replace NULL_TREE with
+	global_namespace.
+	(set_namespace_binding, pop_namespace, lookup_name_real): Likewise.
+	* decl2.c (is_namespace_ancestor, lookup_using_namespace):
+	Likewise.
+	* decl.c (pushtag): Use FROB_CONTEXT.
+	(pushdecl, make_typename_type, define_function, grokdeclarator):
+	Likewise.
+	* decl2.c (set_decl_namespace, do_namespace_alias): Likewise.
+	* pt.c (push_template_decl_real, lookup_template_class, tsubst):
+	Likewise.
+	* decl2.c (decl_namespace): Return global_namespace if no context.
+	* method.c (build_overload_nested_name): Expect null as context.
+	* pt.c (mangle_class_name_for_template): Do nothing for null
+	contexts.
+	(lookup_template_class): Allow for null id_context.
+
 1998-06-25  Richard Henderson  <rth@cygnus.com>
 
 	* method.c (emit_thunk): Set current_function_is_thunk for the

@@ -1662,7 +1662,7 @@ push_template_decl_real (decl, is_friend)
     ctx = NULL_TREE;
 
   if (!DECL_CONTEXT (decl))
-    DECL_CONTEXT (decl) = current_namespace;
+    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
   /* For determining whether this is a primary template or not, we're really
      interested in the lexical context, not the true context.  */
@@ -2748,10 +2748,10 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
 	    {
 	      /* Already substituted with real template.  Just output 
 		 the template name here */
-	      my_friendly_assert (TREE_CODE (DECL_CONTEXT (arg)) 
-				  == NAMESPACE_DECL, 980422);
-	      if (DECL_CONTEXT (arg) != global_namespace)
+              tree context = DECL_CONTEXT (arg);
+	      if (context)
 		{
+                  my_friendly_assert (TREE_CODE (context) == NAMESPACE_DECL, 980422);
 		  cat(decl_as_string (DECL_CONTEXT (arg), 0));
 		  cat("::");
 		}
@@ -2980,7 +2980,8 @@ lookup_template_class (d1, arglist, in_decl, context)
     id_context = context;
   else
     id_context = DECL_CONTEXT (template);
-  my_friendly_assert (id_context != NULL_TREE, 980410);
+  if (id_context == NULL_TREE)
+    id_context = global_namespace;
 
   if (TREE_CODE (template) != TEMPLATE_DECL)
     {
@@ -3097,8 +3098,8 @@ lookup_template_class (d1, arglist, in_decl, context)
 	     build_overload_name into creating a new name.  */
 	  tree type_decl = TYPE_STUB_DECL (t);
 
-	  TYPE_CONTEXT (t) = context;
-	  DECL_CONTEXT (type_decl) = context;
+	  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
+	  DECL_CONTEXT (type_decl) = FROB_CONTEXT (context);
 	  DECL_ASSEMBLER_NAME (type_decl) = DECL_NAME (type_decl);
 	  DECL_ASSEMBLER_NAME (type_decl) = 
 	    get_identifier (build_overload_name (t, 1, 1));
@@ -5025,7 +5026,7 @@ tsubst (t, args, in_decl)
 	  {
 	    fntype = make_node (TREE_CODE (t));
 	    TREE_TYPE (fntype) = type;
-	    TYPE_CONTEXT (fntype) = context;
+	    TYPE_CONTEXT (fntype) = FROB_CONTEXT (context);
 	    TYPE_VALUES (fntype) = values;
 	    TYPE_SIZE (fntype) = TYPE_SIZE (t);
 	    TYPE_ALIGN (fntype) = TYPE_ALIGN (t);

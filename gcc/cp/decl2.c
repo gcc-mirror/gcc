@@ -3806,7 +3806,7 @@ is_namespace_ancestor (root, child)
     return 1;
   if (child == global_namespace)
     return 0;
-  return is_namespace_ancestor (root, DECL_CONTEXT (child));
+  return is_namespace_ancestor (root, CP_DECL_CONTEXT (child));
 }
   
 
@@ -3950,7 +3950,7 @@ lookup_using_namespace (name, val, current, scope)
 	  }
       if (current == scope)
 	break;
-      current = DECL_CONTEXT (current);
+      current = CP_DECL_CONTEXT (current);
     }
   return val != error_mark_node;
 }
@@ -4013,7 +4013,7 @@ set_decl_namespace (decl, scope)
   if (!is_namespace_ancestor (current_namespace, scope))
     cp_error ("declaration of `%D' not in a namespace surrounding `%D'",
 	      decl, scope);
-  DECL_CONTEXT (decl) = scope;
+  DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
   if (scope != current_namespace)
     {
       /* See whether this has been declared in the namespace. */
@@ -4056,9 +4056,7 @@ decl_namespace (decl)
       my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd', 390);
     }
 
-  /* We should always find the namespace. */
-  my_friendly_abort (390);
-  return NULL_TREE;
+  return global_namespace;
 }
 
 /* Return the namespace where the current declaration is declared. */
@@ -4388,7 +4386,7 @@ do_namespace_alias (alias, namespace)
       /* Build the alias. */
       alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);     
       DECL_NAMESPACE_ALIAS (alias) = namespace;
-      DECL_CONTEXT (alias) = current_namespace;
+      DECL_CONTEXT (alias) = FROB_CONTEXT (current_namespace);
       BINDING_VALUE (binding) = alias;
     }
 }
