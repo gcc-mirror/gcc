@@ -182,6 +182,7 @@ static tree get_atexit_node PARAMS ((void));
 static tree get_dso_handle_node PARAMS ((void));
 static tree start_cleanup_fn PARAMS ((void));
 static void end_cleanup_fn PARAMS ((void));
+static tree cp_make_fname_decl PARAMS ((tree, const char *, int));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -1784,7 +1785,15 @@ wrapup_globals_for_namespace (namespace, data)
      Put them into VEC from back to front, then take out from front.  */
 
   for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
-    vec[len - i - 1] = decl;
+    {
+      /* Pretend we've output an unused static variable.  This ensures
+         that the toplevel __FUNCTION__ etc won't be emitted, unless
+         needed. */
+      if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
+          && !TREE_USED (decl))
+        TREE_ASM_WRITTEN (decl) = 1;
+      vec[len - i - 1] = decl;
+    }
 
   if (last_time)
     {
@@ -6168,9 +6177,7 @@ init_decl_processing ()
 
   /* Make a type to be the domain of a few array types
      whose domains don't really matter.
-     200 is small enough that it always fits in size_t
-     and large enough that it can hold most function names for the
-     initializations of __FUNCTION__ and __PRETTY_FUNCTION__.  */
+     200 is small enough that it always fits in size_t.  */
   array_domain_type = build_index_type (build_int_2 (200, 0));
 
   /* Make a type for arrays of characters.
@@ -6340,6 +6347,7 @@ init_decl_processing ()
     flag_weak = 0;
 
   /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
+  make_fname_decl = cp_make_fname_decl;
   declare_function_name ();
 
   /* Prepare to check format strings against argument lists.  */
@@ -6388,6 +6396,59 @@ init_decl_processing ()
 
   ggc_add_tree_root (&current_lang_name, 1);
   ggc_add_tree_root (&static_aggregates, 1);
+}
+
+/* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give the
+   decl, NAME is the initialization string and TYPE_DEP indicates whether
+   NAME depended on the type of the function. We make use of that to detect
+   __PRETTY_FUNCTION__ inside a template fn.  Because we build a tree for
+   the function before emitting any of it, we don't need to treat the
+   VAR_DECL specially. We can decide whether to emit it later, if it was
+   used.  */
+
+static tree
+cp_make_fname_decl (id, name, type_dep)
+     tree id;
+     const char *name;
+     int type_dep;
+{
+  tree decl, type, init;
+  size_t length = strlen (name);
+  tree domain = NULL_TREE;
+  
+  if (!processing_template_decl)
+    type_dep = 0;
+  if (!type_dep)
+    domain = build_index_type (build_int_2 (length, 0));
+
+  type =  build_cplus_array_type
+          (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
+	   domain);
+
+  decl = build_lang_decl (VAR_DECL, id, type);
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  DECL_SOURCE_LINE (decl) = 0;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IN_SYSTEM_HEADER (decl) = 1;
+  pushdecl (decl);
+  if (processing_template_decl)
+    decl = push_template_decl (decl);
+  if (type_dep)
+    {
+      init = build (FUNCTION_NAME, type);
+      DECL_PRETTY_FUNCTION_P (decl) = 1;
+    }
+  else
+    {
+      init = build_string (length + 1, name);
+      TREE_TYPE (init) = type;
+    }
+  DECL_INITIAL (decl) = init;
+  cp_finish_decl (decl, init, NULL_TREE, LOOKUP_ONLYCONVERTING);
+  
+  /* We will have to make sure we only emit this, if it is actually used. */
+  return decl;
 }
 
 /* Function to print any language-specific context for an error message.  */
@@ -7625,26 +7686,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       if (init)
 	error ("assignment (not initialization) in declaration");
       return;
-    }
-
-  /* Handling __FUNCTION__ and its ilk in a template-function requires
-     some special processing because we are called from
-     language-independent code.  */
-  if (cfun && processing_template_decl
-      && current_function_name_declared == 2)
-    {
-      /* Since we're in a template function, we need to
-	 push_template_decl.  The language-independent code in
-	 declare_hidden_char_array doesn't know to do this.  */
-      retrofit_lang_decl (decl);
-      decl = push_template_decl (decl);
-
-      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
-		  "__PRETTY_FUNCTION__") == 0)
-	{
-	  init = build (FUNCTION_NAME, const_string_type_node);
-	  DECL_PRETTY_FUNCTION_P (decl) = 1;
-	}
     }
 
   /* If a name was specified, get the string.  */

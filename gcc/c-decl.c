@@ -288,6 +288,7 @@ static tree grokdeclarator		PARAMS ((tree, tree, enum decl_context,
 						 int));
 static tree grokparms			PARAMS ((tree, int));
 static void layout_array_type		PARAMS ((tree));
+static tree c_make_fname_decl           PARAMS ((tree, const char *, int));
 
 /* C-specific option variables.  */
 
@@ -3059,6 +3060,7 @@ init_decl_processing ()
   pedantic_lvalues = pedantic;
 
   /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
+  make_fname_decl = c_make_fname_decl;
   declare_function_name ();
 
   start_identifier_warnings ();
@@ -3083,6 +3085,43 @@ init_decl_processing ()
 		mark_binding_level);
   ggc_add_tree_root (&static_ctors, 1);
   ggc_add_tree_root (&static_dtors, 1);
+}
+
+/* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give the
+   decl, NAME is the initialization string and TYPE_DEP indicates whether
+   NAME depended on the type of the function.  As we don't yet implement
+   delayed emission of static data, we mark the decl as emitted
+   so it is not placed in the output.  Anything using it must therefore pull
+   out the STRING_CST initializer directly.  This does mean that these names
+   are string merging candidates, which C99 does not permit.  */
+
+static tree
+c_make_fname_decl (id, name, type_dep)
+     tree id;
+     const char *name;
+     int type_dep ATTRIBUTE_UNUSED;
+{
+  tree decl, type, init;
+  size_t length = strlen (name);
+
+  type =  build_array_type
+          (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
+	   build_index_type (build_int_2 (length, 0)));
+
+  decl = build_decl (VAR_DECL, id, type);
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  TREE_ASM_WRITTEN (decl) = 1;
+  DECL_SOURCE_LINE (decl) = 0;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IN_SYSTEM_HEADER (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  init = build_string (length + 1, name);
+  TREE_TYPE (init) = type;
+  DECL_INITIAL (decl) = init;
+  finish_decl (pushdecl (decl), init, NULL_TREE);
+  
+  return decl;
 }
 
 /* Return a definition for a builtin function named NAME and whose data type

@@ -1716,12 +1716,8 @@ decay_conversion (exp)
   /* Replace a nonvolatile const static variable with its value.  We
      don't do this for arrays, though; we want the address of the
      first element of the array, not the address of the first element
-     of its initializing constant.  We *do* replace variables that the
-     user isn't really supposed to know about; this is a hack to deal
-     with __PRETTY_FUNCTION__ and the like.  */
-  else if (TREE_READONLY_DECL_P (exp)
-	   && (code != ARRAY_TYPE 
-	       || (TREE_CODE (exp) == VAR_DECL && DECL_IGNORED_P (exp))))
+     of its initializing constant.  */
+  else if (TREE_READONLY_DECL_P (exp) && code != ARRAY_TYPE)
     {
       exp = decl_constant_value (exp);
       type = TREE_TYPE (exp);

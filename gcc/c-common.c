@@ -135,6 +135,8 @@ enum cpp_token cpp_token;
 
 tree c_global_trees[CTI_MAX];
 
+tree (*make_fname_decl)                PARAMS ((tree, const char *, int));
+
 /* Nonzero means the expression being parsed will never be evaluated.
    This is a count, since unevaluated expressions can nest.  */
 int skip_evaluation;
@@ -148,7 +150,6 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type };
 
-static void declare_hidden_char_array	PARAMS ((const char *, const char *));
 static void add_attribute		PARAMS ((enum attrs, const char *,
 						 int, int, int));
 static void init_attributes		PARAMS ((void));
@@ -269,42 +270,12 @@ declare_function_name ()
 	name = "";
       printable_name = (*decl_printable_name) (current_function_decl, 2);
     }
-
-  declare_hidden_char_array ("__FUNCTION__", name);
-  declare_hidden_char_array ("__PRETTY_FUNCTION__", printable_name);
+  
+  (*make_fname_decl) (get_identifier ("__FUNCTION__"), name, 0);
+  (*make_fname_decl) (get_identifier ("__PRETTY_FUNCTION__"), printable_name, 1);
   /* The ISO C people "of course" couldn't use __FUNCTION__ in the
      ISO C 99 standard; instead a new variable is invented.  */
-  declare_hidden_char_array ("__func__", name);
-}
-
-static void
-declare_hidden_char_array (name, value)
-     const char *name, *value;
-{
-  tree decl, type, init;
-  unsigned int vlen;
-
-  /* If the default size of char arrays isn't big enough for the name,
-     or if we want to give warnings for large objects, make a bigger one.  */
-  vlen = strlen (value) + 1;
-  type = char_array_type_node;
-  if (compare_tree_int (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), vlen) < 0
-      || warn_larger_than)
-    type = build_array_type (char_type_node,
-			     build_index_type (build_int_2 (vlen, 0)));
-
-  decl = build_decl (VAR_DECL, get_identifier (name), type);
-  TREE_STATIC (decl) = 1;
-  TREE_READONLY (decl) = 1;
-  TREE_ASM_WRITTEN (decl) = 1;
-  DECL_SOURCE_LINE (decl) = 0;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IN_SYSTEM_HEADER (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  init = build_string (vlen, value);
-  TREE_TYPE (init) = type;
-  DECL_INITIAL (decl) = init;
-  finish_decl (pushdecl (decl), init, NULL_TREE);
+  (*make_fname_decl) (get_identifier ("__func__"), name, 0);
 }
 
 /* Given a chain of STRING_CST nodes,
