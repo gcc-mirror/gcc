@@ -288,6 +288,38 @@ do { fprintf (asm_out_file, "\t.def\t");		\
 /* Ensure we don't output a negative line number.  */
 #define MAKE_LINE_SAFE(line)  \
   if (line <= sdb_begin_function_line) line = sdb_begin_function_line + 1
+
+/* Perform linker optimization of merging header file definitions together
+   for targets with MIPS_DEBUGGING_INFO defined.  This won't work without a
+   post 960826 version of GAS.  Nothing breaks with earlier versions of GAS,
+   the optimization just won't be done.  The native assembler already has the
+   necessary support.  */
+
+#ifdef MIPS_DEBUGGING_INFO
+
+#ifndef PUT_SDB_SRC_FILE
+#define PUT_SDB_SRC_FILE(FILENAME) \
+output_file_directive (asm_out_file, (FILENAME))
+#endif
+
+/* ECOFF linkers have an optimization that does the same kind of thing as
+   N_BINCL/E_INCL in stabs: eliminate duplicate debug information in the
+   executable.  To achieve this, GCC must output a .file for each file
+   name change.  */
+
+/* This is a stack of input files.  */
+
+struct sdb_file
+{
+  struct sdb_file *next;
+  char *name;
+};
+
+/* This is the top of the stack.  */
+
+static struct sdb_file *current_file;
+
+#endif /* MIPS_DEBUGGING_INFO */
 
 /* Set up for SDB output at the start of compilation.  */
 
@@ -297,6 +329,12 @@ sdbout_init (asm_file, input_file_name, syms)
      char *input_file_name;
      tree syms;
 {
+#ifdef MIPS_DEBUGGING_INFO
+  current_file = (struct sdb_file *) xmalloc (sizeof *current_file);
+  current_file->next = NULL;
+  current_file->name = input_file_name;
+#endif
+
 #ifdef RMS_QUICK_HACK_1
   tree t;
   for (t = syms; t; t = TREE_CHAIN (t))
@@ -1554,6 +1592,37 @@ sdbout_label (insn)
   PUT_SDB_SCL (C_LABEL);
   PUT_SDB_TYPE (T_NULL);
   PUT_SDB_ENDEF;
+}
+
+/* Change to reading from a new source file.  */
+
+void
+sdbout_start_new_source_file (filename)
+     char *filename;
+{
+#ifdef MIPS_DEBUGGING_INFO
+  struct sdb_file *n = (struct sdb_file *) xmalloc (sizeof *n);
+
+  n->next = current_file;
+  n->name = filename;
+  current_file = n;
+  PUT_SDB_SRC_FILE (filename);
+#endif
+}
+
+/* Revert to reading a previous source file.  */
+
+void
+sdbout_resume_previous_source_file ()
+{
+#ifdef MIPS_DEBUGGING_INFO
+  struct sdb_file *next;
+
+  next = current_file->next;
+  free (current_file);
+  current_file = next;
+  PUT_SDB_SRC_FILE (current_file->name);
+#endif
 }
 
 #endif /* SDB_DEBUGGING_INFO */

@@ -4323,6 +4323,10 @@ debug_start_source_file (filename)
       && write_symbols == DWARF2_DEBUG)
     dwarf2out_start_source_file (filename);
 #endif /* DWARF2_DEBUGGING_INFO */  
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG)
+    sdbout_start_new_source_file (filename);
+#endif
 }
 
 /* Record the resumption of a source file.  LINENO is the line number in
@@ -4346,6 +4350,10 @@ debug_end_source_file (lineno)
       && write_symbols == DWARF2_DEBUG)
     dwarf2out_end_source_file ();
 #endif /* DWARF2_DEBUGGING_INFO */
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG)
+    sdbout_resume_previous_source_file ();
+#endif
 }
 
 /* Called from check_newline in c-parse.y.  The `buffer' parameter contains
