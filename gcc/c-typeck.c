@@ -2079,6 +2079,13 @@ convert_arguments (typelist, values, name, fundecl)
 			/* Change in signedness doesn't matter
 			   if an enum value is unaffected.  */
 			;
+		      /* If the value is extended from a narrower
+			 unsigned type, it doesn't matter whether we
+			 pass it as signed or unsigned; the value
+			 certainly is the same either way.  */
+		      else if (TYPE_PRECISION (TREE_TYPE (val)) < TYPE_PRECISION (type)
+			       && TREE_UNSIGNED (TREE_TYPE (val)))
+			;
 		      else if (TREE_UNSIGNED (type))
 			warn_for_assignment ("%s as unsigned due to prototype", (char *) 0, name, parmnum + 1);
 		      else
