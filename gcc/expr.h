@@ -90,6 +90,10 @@ extern int current_function_uses_pic_offset_table;
 /* The arg pointer hard register, or the pseudo into which it was copied.  */
 extern rtx current_function_internal_arg_pointer;
 
+/* This is nonzero if memory access checking is to be enabled in the current
+   function.  */
+extern int current_function_check_memory_usage;
+
 /* Nonzero means stack pops must not be deferred, and deferred stack
    pops must not be output.  It is nonzero inside a function call,
    inside a conditional expression, inside a statement expression,
