@@ -1,3 +1,9 @@
+Wed Jun  7 20:00:31 1995  Mike Stump  <mrs@cygnus.com>
+
+	* *.[chy]: Change all callers of finish_decl to cp_finish_decl.
+	* decl.c (finish_decl): New routine to handle call backs from the
+	mid end (declare_hidden_char_array).
+
 Mon May 29 12:45:10 1995  Paul Eggert  <eggert@twinsun.com>
 
 	* Make-lang.in (c++.mostlyclean): Remove $(DEMANGLER_PROG).
