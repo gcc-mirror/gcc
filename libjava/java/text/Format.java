@@ -59,7 +59,7 @@ import java.io.Serializable;
  */
 public abstract class Format implements Serializable, Cloneable
 {
-  static final long serialVersionUID = -299282585814624189L;
+  static final long serialVersionUID = 4479235611355683992L;
 
   /**
    * This method initializes a new instance of <code>Format</code>.
