@@ -1,3 +1,8 @@
+2004-06-29  Per Bothner  <per@bothner.com>
+
+	* tree.c (build_min_nt, build_min, build_min_non_dep):
+	Don't set TREE_COMPLEXITY from input_line.
+
 2004-06-29  Paul Brook  <paul@codesourcery.com>
 
 	* init.c: Include target.h.
