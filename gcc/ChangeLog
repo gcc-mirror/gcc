@@ -1,5 +1,23 @@
 Mon Apr 10 07:21:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* sbitmap.h: Whitespace changes and use upper-case macro args.
+	(struct simple_bitmap_def): All sizes now unsigned.
+	(EXECUTE_IF_SET_IN_SBITMAP): Internal vars now _X instead of X_.
+	* sbitmap.c (sbitmap_alloc): N_ELMS now unsigned; also local vars.
+	(sbitmap_vector_alloc): Parms and local vars now unsigned.
+	(sbitmap_zero): Cast bzero arg to PTR.
+	(sbitmap_vector_zero, sbitmap_vector_one): Parm and Local var unsigned.
+	(sbitmap_union_of_diffs): Change loop index to unsigned and rework
+	loop to make structure clearer.
+	(sbitmap_not, sbitmap_difference, sbitmap_a_and_b): Likewise.
+	(sbitmap_a_or_b, sbitmap_a_subset_b_p, sbitmap_a_or_b_and_c): Likewise.
+	(sbitmap_a_and_b_or_c): Likewise.
+	(sbitmap_intersection_of_succs): Minor cleanups.
+	(sbitmap_intersection_of_preds, sbitmap_union_of_succs): Likewise.
+	(sbitmap_union_of_preds): Likewise.
+	(sbitmap_first_set_bit, dump_sbitmap): Local variables now unsigned.
+	(debug_sbitmap): New function.
+	
 	* c-convert.c (convert): Handle REFERENCE_TYPE like POINTER_TYPE.
 	* c-typeck.c (convert_for_assignment): Likewise.
 
