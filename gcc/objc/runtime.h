@@ -51,6 +51,8 @@ extern void __objc_register_selectors_from_class(Class*); /* (objc-sel.c) */
 extern void __objc_update_dispatch_table_for_class (Class*);/* (objc-msg.c) */
 extern void class_add_method_list(Class*, MethodList_t);
 
+void objc_error(id object, const char* fmt, va_list);
+
 /* True when class links has been resolved */     
 extern BOOL __objc_class_links_resolved;
 

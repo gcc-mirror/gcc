@@ -25,6 +25,7 @@ You should have received a copy of the GNU General Public License along with
    covered by the GNU General Public License.  */
 
 #include "runtime.h"
+#include "argframe.h"
 
 #ifdef OBJC_SPARSE_LOOKUP
 const char* __objc_sparse_lookup_id = "Method lookup uses sparse arrays";
@@ -110,11 +111,13 @@ objc_msg_lookup_super (Super_t super, SEL sel)
 }
 
 retval_t
-objc_msg_sendv(id object, SEL op, size_t frame_size, arglist_t arg_frame)
+objc_msg_sendv(id object, SEL op, size_t frame_size, af_frame arg_frame)
 {
-#ifdef __objc_frame_receiver
-  __objc_frame_receiver(arg_frame) = object;
-  __objc_frame_selector(arg_frame) = op;
+#ifndef __ARGFRAME_DOES_NOT_WORK
+  af_cum cum;
+  af_start (cum, arg_frame);
+  af_put (arg_frame, cum, id, object);
+  af_put (arg_frame, cum, SEL, op);
   return __builtin_apply((apply_t)get_imp(object->class_pointer, op),
 			 arg_frame,
 			 frame_size);
