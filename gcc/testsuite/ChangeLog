@@ -1,3 +1,11 @@
+2003-11-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20031023-4.c: XFAIL on SPARC64
+	* gcc.c-torture/compile/simd-5.c: XFAIL on SPARC64 at -O0 and -O1.
+	* gcc.c-torture/execute/simd-4.x: New file.  XFAIL on SPARC at -O0.
+	* gcc.c-torture/execute/va-arg-25.x: New file.  XFAIL on SPARC.
+	* gcc.dg/uninit-C.c: XFAIL on non 64-bit Solaris versions.
+
 2003-11-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/cond-lvalue-1.c: New test.
