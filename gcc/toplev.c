@@ -1414,11 +1414,6 @@ init_asm_output (const char *name)
 	fatal_error ("can%'t open %s for writing: %m", asm_file_name);
     }
 
-#ifdef IO_BUFFER_SIZE
-  setvbuf (asm_out_file, xmalloc (IO_BUFFER_SIZE),
-	   _IOFBF, IO_BUFFER_SIZE);
-#endif
-
   if (!flag_syntax_only)
     {
       targetm.asm_out.file_start ();
