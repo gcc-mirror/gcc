@@ -1995,18 +1995,45 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	  /* Prevent sharing of rtl that might lose.  */
 	  rtx sub = copy_rtx (XEXP (var, 0));
 
-	  start_sequence ();
-
 	  if (! validate_change (insn, loc, sub, 0))
 	    {
-	      rtx y = force_operand (sub, NULL_RTX);
+	      rtx y = gen_reg_rtx (GET_MODE (sub));
+	      rtx seq, new_insn;
 
-	      if (! validate_change (insn, loc, y, 0))
-		*loc = copy_to_reg (y);
+	      /* We should be able to replace with a register or all is lost.
+		 Note that we can't use validate_change to verify this, since
+		 we're not caring for replacing all dups simultaneously.  */
+	      if (! validate_replace_rtx (*loc, y, insn))
+		abort ();
+
+	      /* Careful!  First try to recognize a direct move of the
+		 value, mimicking how things are done in gen_reload wrt
+		 PLUS.  Consider what happens when insn is a conditional
+		 move instruction and addsi3 clobbers flags.  */
+
+	      start_sequence ();
+	      new_insn = emit_insn (gen_rtx_SET (VOIDmode, y, sub));
+	      seq = gen_sequence ();
+	      end_sequence ();
+
+	      if (recog_memoized (new_insn) < 0)
+		{
+		  /* That failed.  Fall back on force_operand and hope.  */
+
+		  start_sequence ();
+		  force_operand (sub, y);
+		  seq = gen_sequence ();
+		  end_sequence ();
+		}
+
+#ifdef HAVE_cc0
+	      /* Don't separate setter from user.  */
+	      if (PREV_INSN (insn) && sets_cc0_p (PREV_INSN (insn)))
+		insn = PREV_INSN (insn);
+#endif
+
+	      emit_insn_before (seq, insn);
 	    }
-
-	  emit_insn_before (gen_sequence (), insn);
-	  end_sequence ();
 	}
       return;
 
