@@ -1,3 +1,9 @@
+2004-02-04  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c (find_base_term, get_addr):  Do not dereference NULL
+	pointer when all VALUE's locations has been invalidated.
+	(rtx_equal_for_memref_p): Simplify checking of VALUEs.
+
 2004-02-03  Wolfgang Bangerth  <bangerth@dealii.org> 
 
 	* doc/invoke.texi (x86 options): Fix spelling/wording.
