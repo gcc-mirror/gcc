@@ -2809,7 +2809,7 @@ static void
 mark_regs_live_at_end (set)
      regset set;
 {
-  tree type;
+  tree result, type;
   int i;
 
   /* If exiting needs the right stack value, consider the stack pointer
@@ -2868,22 +2868,22 @@ mark_regs_live_at_end (set)
 
   /* Mark function return value.  */
 
-  type = TREE_TYPE (DECL_RESULT (current_function_decl));
+  result = DECL_RESULT (current_function_decl);
+  type = TREE_TYPE (result);
   if (type != void_type_node)
     {
       rtx outgoing;
 
-      if (current_function_returns_struct
-	  || current_function_returns_pcc_struct)
-	type = build_pointer_type (type);
-
+      /* ??? Share this code with expand_function_end.  */
 #ifdef FUNCTION_OUTGOING_VALUE
       outgoing = FUNCTION_OUTGOING_VALUE (type, current_function_decl);
 #else
       outgoing = FUNCTION_VALUE (type, current_function_decl);
 #endif
+      /* If this is a BLKmode structure being returned in registers,
+	 then use the mode computed in expand_return.  */
       if (GET_MODE (outgoing) == BLKmode)
-	PUT_MODE (outgoing, DECL_MODE (DECL_RESULT (current_function_decl)));
+	PUT_MODE (outgoing, GET_MODE (DECL_RTL (result)));
 
       if (GET_CODE (outgoing) == REG)
 	mark_reg (set, outgoing);
