@@ -932,7 +932,7 @@ char *fake_f_rep(type, val) char *type; Long_double val; {
 	union { unsigned int i[4]; Long_double ld;} u;
 	u.i[0] = u.i[1] = u.i[2] = u.i[3] = 0;
 	u.ld = val;
-	sprintf(buf, "(__extension__ ((union __convert_long_double) {0x%x, 0x%x, 0x%x, 0x%x}).__convert_long_double_d)",
+	sprintf(buf, "(__extension__ ((union __convert_long_double) {__convert_long_double_i: {0x%x, 0x%x, 0x%x, 0x%x}}).__convert_long_double_d)",
 		u.i[0], u.i[1], u.i[2], u.i[3]);
 	return buf;
 }
