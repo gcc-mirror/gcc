@@ -1,5 +1,6 @@
 /* lang-specs.h file for Fortran
-   Copyright (C) 1995, 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1999, 2000, 2002
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -33,7 +34,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {".r", "@ratfor", 0},
   {"@ratfor",
    "%{C:%{!E:%eGNU C does not support -C without using -E}}\
-    ratfor %{C} %{v} %i %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} |\n\
+    ratfor %{C} %{v} %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} %i |\n\
     f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}", 0},
   {".f",   "@f77", 0},
   {".for", "@f77", 0},

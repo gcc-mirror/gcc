@@ -1,3 +1,10 @@
+2002-10-28  Andris Pavenis  <pavenis@latnet.lv>
+            Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/8308
+	* lang-specs.h: Correct ratfor specs.
+	* news.texi: Document this fix.
+
 2002-09-14  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* target.c (ffetarget_memcpy_): Don't test nonexistent

@@ -10,7 +10,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002
 
-@set last-update-news 2002-08-05
+@set last-update-news 2002-10-28
 
 @include root.texi
 
@@ -156,7 +156,11 @@ The following information was last updated on @value{last-update-news}:
 @heading In @code{GCC} 3.2 versus @code{GCC} 3.1:
 @itemize @bullet
 @item
-Nothing.
+Problem Reports fixed (in chronological order of submission):
+@table @code
+@item 8308
+gcc-3.x does not compile files with suffix .r (RATFOR) [Fixed in 3.2.1]
+@end table
 @end itemize
 
 @heading In @code{GCC} 3.1 (formerly known as g77-0.5.27) versus @code{GCC} 3.0:
