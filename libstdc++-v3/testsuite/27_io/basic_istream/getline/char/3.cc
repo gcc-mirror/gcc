@@ -19,13 +19,10 @@
 // USA.
 
 // 27.6.1.3 unformatted input functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
-#include <cstring> // for strncmp,...
+#include <cstring> // for strlen
 #include <istream>
 #include <sstream>
-#include <fstream>
 #include <testsuite_hooks.h>
 
 // [bug] istream::getline(char*,streamsize) still broken

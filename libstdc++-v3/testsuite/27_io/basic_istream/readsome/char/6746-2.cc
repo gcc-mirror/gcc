@@ -26,9 +26,7 @@
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %-*.txt
 
-#include <cstring> // for strncmp,...
 #include <istream>
-#include <sstream>
 #include <fstream>
 #include <testsuite_hooks.h>
 

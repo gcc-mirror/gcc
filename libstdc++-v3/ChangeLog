@@ -1,3 +1,39 @@
+2004-01-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/extractors_other/char/1.cc:
+	Remove redundant #includes.
+	* testsuite/27_io/basic_istream/extractors_other/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/get/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/6360.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/7220.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/6414.cc: Likewise.
+	* testsuite/27_io/basic_istream/putback/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/6746-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/6746-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/8258.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/2346-fstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/2346-sstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-1.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/8348.cc: Likewise.
+
 2004-01-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
