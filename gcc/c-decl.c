@@ -3182,6 +3182,10 @@ init_decl_processing ()
 						    endlink)),
 		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
 
+  builtin_function ("__builtin_aggregate_incoming_address",
+		    build_function_type (ptr_type_node, NULL_TREE),
+		    BUILT_IN_AGGREGATE_INCOMING_ADDRESS, NULL_PTR);
+
   builtin_function ("__builtin_alloca",
 		    build_function_type (ptr_type_node,
 					 tree_cons (NULL_TREE,
