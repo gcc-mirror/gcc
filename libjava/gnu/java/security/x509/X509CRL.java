@@ -1,5 +1,5 @@
 /* X509CRL.java -- X.509 certificate revocation list.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,18 +38,16 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.io.ASN1ParsingException;
+import gnu.java.security.OID;
+import gnu.java.security.der.BitString;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+
 import java.io.InputStream;
 import java.io.IOException;
-
 import java.math.BigInteger;
-
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Set;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -60,16 +58,13 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRLEntry;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
-
-import gnu.java.io.ASN1ParsingException;
-import gnu.java.security.OID;
-import gnu.java.security.der.BitString;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
-import gnu.java.security.der.DERWriter;
 
 /**
  * X.509 certificate revocation lists.

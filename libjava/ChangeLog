@@ -1,3 +1,12 @@
+2004-10-17  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/security/OID.java,
+	gnu/java/security/provider/DSAParameters.java,
+	gnu/java/security/provider/DSASignature.java,
+	gnu/java/security/x509/X500DistinguishedName.java,
+	gnu/java/security/x509/X509CRL.java:
+	Import statements cleaned up.
+
 2004-10-16  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/NIODatagramSocket.java,

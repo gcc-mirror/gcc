@@ -1,5 +1,5 @@
 /* OID.java -- numeric representation of an object identifier
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,14 +38,12 @@ exception statement from your version. */
 
 package gnu.java.security;
 
-import java.io.ByteArrayInputStream;
+import gnu.java.security.der.DEREncodingException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
-
 import java.util.StringTokenizer;
-
-import gnu.java.security.der.DEREncodingException;
 
 /**
  * This immutable class represents an object identifier, or OID.
