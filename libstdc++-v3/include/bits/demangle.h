@@ -2665,12 +2665,14 @@ namespace __gnu_cxx
 	  return demangler_session.M_pos;
 	}
 	// Must have been a <function name>.
+	string_type return_type_postfix;
 	if (demangler_session.M_name_is_template
 	    && !(demangler_session.M_name_is_cdtor
 	         || demangler_session.M_name_is_conversion_operator))
 	{
-	  if (!demangler_session.decode_type(output))
-	      // Return type of function
+	  // Return type of function
+	  if (!demangler_session.decode_type_with_postfix(output,
+	      return_type_postfix))
 	    return INT_MIN;
 	  output += ' ';
 	}
@@ -2678,6 +2680,7 @@ namespace __gnu_cxx
 	if (!demangler_session.decode_bare_function_type(output))
 	  return INT_MIN;
 	output += nested_name_qualifiers;
+	output += return_type_postfix;
 	return demangler_session.M_pos;
       }
 
