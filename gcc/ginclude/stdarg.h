@@ -137,6 +137,8 @@ typedef __gnuc_va_list va_list;
    (Note that the comments in NET 2's ansi.h
    are incorrect for _VA_LIST_--see stdio.h!)  */
 #if !defined (_VA_LIST_) || defined (__BSD_NET2__) || defined (____386BSD____) || defined (__bsdi__) || defined (__FreeBSD__)
+/* The macro _VA_LIST_DEFINED is used in Windows NT 3.5 */
+#ifndef _VA_LIST_DEFINED
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
 /* The macro _VA_LIST_T_H is used in the Bull dpx2  */
@@ -146,9 +148,11 @@ typedef __gnuc_va_list va_list;
 #define _VA_LIST_
 #endif
 #define _VA_LIST
+#define _VA_LIST_DEFINED
 typedef __gnuc_va_list va_list;
 #endif /* not _VA_LIST_T_H */
 #endif /* not _VA_LIST */
+#endif /* not _VA_LIST_DEFINED */
 #endif /* not _VA_LIST_ */
 
 #endif /* not __svr4__ */
