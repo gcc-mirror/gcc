@@ -1,3 +1,8 @@
+2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* libU77/bes.c, libU77/dbes.c: Remove.
+	* libU77/Makefile.in: Remove references to bes.c, dbes.c
+
 2003-04-21  Loren J. Rittle  <ljrittle@acm.org>
 
 	* libI77/configure.in (_XOPEN_SOURCE): Bump to 600.

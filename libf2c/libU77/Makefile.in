@@ -61,7 +61,6 @@ OBJS =  VersionU.lo gerror_.lo perror_.lo ierrno_.lo itime_.lo time_.lo \
 	dtime_.lo  isatty_.lo ltime_.lo fstat_.lo stat_.lo \
 	lstat_.lo access_.lo link_.lo getlog_.lo ttynam_.lo getcwd_.lo symlnk_.lo \
         vxttime_.lo vxtidate_.lo gmtime_.lo fdate_.lo secnds_.lo \
-	bes.lo dbes.lo \
 	chdir_.lo chmod_.lo lnblnk_.lo hostnm_.lo rename_.lo fgetc_.lo fputc_.lo \
         umask_.lo sys_clock_.lo date_.lo second_.lo flush1_.lo mclock_.lo \
 	alarm_.lo datetime_.lo
@@ -71,7 +70,6 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	dtime_.c isatty_.c ltime_.c fstat_.c stat_.c \
 	lstat_.c access_.c link_.c getlog_.c ttynam_.c getcwd_.c symlnk_.c \
         vxttime_.c vxtidate_.c gmtime_.c fdate_.c secnds_.c \
-	bes.c dbes.c \
 	chdir_.c chmod_.c lnblnk_.c hostnm_.c rename_.c fgetc_.c fputc_.c \
 	umask_.c sys_clock_.c date_.c second_.c flush1_.c mclock_.c \
 	alarm_.c datetime_.c
@@ -150,8 +148,6 @@ vtxidate_.lo: vxtidate_.c
 fdate_.lo: fdate_.c
 gmtime_.lo: gmtime_.c
 secnds_.lo: secnds_.c
-bes.lo: bes.c
-dbes.lo: dbes.c
 lnblnk_.lo: lnblnk_.c
 chmod_.lo: chmod_.c
 chdir_.lo: chdir_.c
