@@ -8,6 +8,8 @@ extern void exit (int);
 
 struct A { int i; int j; int k[4]; };
 struct B { };
+struct C { int i; };
+struct D { int i; struct C j; };
 
 /* As a GNU extension, we allow initialization of objects with static storage
    duration by compound literals.  It is handled as if the object
@@ -22,6 +24,10 @@ int c[] = (int []) { [2] = 6, 7, 8 };
 int d[] = (int [3]) { 1 };
 int e[2] = (int []) { 1, 2 };
 int f[2] = (int [2]) { 1 };
+struct C g[3] = { [2] = (struct C) { 13 }, [1] = (const struct C) { 12 } };
+struct D h = { .j = (struct C) { 15 }, .i = 14 };
+struct D i[2] = { [1].j = (const struct C) { 17 },
+		  [0] = { 0, (struct C) { 16 } } };
 
 int main (void)
 {
@@ -42,6 +48,12 @@ int main (void)
   if (f[0] != 1 || f[1])
     abort ();
   if (sizeof (f) != 2 * sizeof (int))
+    abort ();
+  if (g[0].i || g[1].i != 12 || g[2].i != 13)
+    abort ();
+  if (h.i != 14 || h.j.i != 15)
+    abort ();
+  if (i[0].i || i[0].j.i != 16 || i[1].i || i[1].j.i != 17)
     abort ();
   exit (0);
 }
