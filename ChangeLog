@@ -1,3 +1,7 @@
+2004-11-12  Scott Robert Ladd <scott.ladd@coyotegulch.com>
+
+	* MAINTAINERS (Write After Approval): Add myself
+
 2004-11-12  Mike Stump  <mrs@apple.com>
 
 	* Makefile.def: Add html support.
