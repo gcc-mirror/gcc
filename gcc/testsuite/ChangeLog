@@ -1,3 +1,7 @@
+2002-10-24  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/inherit/thunk1.C: Enable for ia64.
+
 2002-10-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8067

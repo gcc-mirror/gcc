@@ -250,7 +250,7 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8167,40 +8167,96 @@ ia64_aix_select_rtx_section (mode, x, align)
   flag_pic = save_pic;
 }
 
+/* Output the assembler code for a thunk function.  THUNK_DECL is the
+   declaration for the thunk function itself, FUNCTION is the decl for
+   the target function.  DELTA is an immediate constant offset to be
+   added to THIS.  If VCALL_OFFSET is non-zero, the word at
+   *(*this + vcall_offset) should be added to THIS.  */
+
 static void
 ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
-     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT vcall_offset;
      tree function;
 {
-  if (CONST_OK_FOR_I (delta))						
-    {									
-      fprintf (file, "\tadds r32 = ");					
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));			
-      fprintf (file, ", r32\n");					
-    }									
-  else									
-    {									
-      if (CONST_OK_FOR_J (delta))					
-        {								
-          fprintf (file, "\taddl r2 = ");				
-          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));		
-          fprintf (file, ", r0\n");					
-        }								
-      else								
-        {								
-	  fprintf (file, "\tmovl r2 = ");				
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));		
-	  fprintf (file, "\n");						
-        }								
-      fprintf (file, "\t;;\n");						
-      fprintf (file, "\tadd r32 = r2, r32\n");				
-    }									
-  fprintf (file, "\tbr ");						
-  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
-  fprintf (file, "\n");							
+  rtx this, insn, funexp;
+
+  /* Set things up as ia64_expand_prologue might.  */
+  last_scratch_gr_reg = 15;
+
+  memset (&current_frame_info, 0, sizeof (current_frame_info));
+  current_frame_info.spill_cfa_off = -16;
+  current_frame_info.n_input_regs = 1;
+  current_frame_info.need_regstk = (TARGET_REG_NAMES != 0);
+
+  if (!TARGET_REG_NAMES)
+    reg_names[IN_REG (0)] = ia64_reg_numbers[0];
+
+  /* Mark the end of the (empty) prologue.  */
+  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+
+  this = gen_rtx_REG (Pmode, IN_REG (0));
+
+  /* Apply the constant offset, if required.  */
+  if (delta)
+    {
+      rtx delta_rtx = GEN_INT (delta);
+
+      if (!CONST_OK_FOR_I (delta))
+	{
+	  rtx tmp = gen_rtx_REG (Pmode, 2);
+	  emit_move_insn (tmp, delta_rtx);
+	  delta_rtx = tmp;
+	}
+      emit_insn (gen_adddi3 (this, this, delta_rtx));
+    }
+
+  /* Apply the offset from the vtable, if required.  */
+  if (vcall_offset)
+    {
+      rtx vcall_offset_rtx = GEN_INT (vcall_offset);
+      rtx tmp = gen_rtx_REG (Pmode, 2);
+
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
+
+      if (!CONST_OK_FOR_J (vcall_offset))
+	{
+	  rtx tmp2 = gen_rtx_REG (Pmode, next_scratch_gr_reg ());
+	  emit_move_insn (tmp2, vcall_offset_rtx);
+	  vcall_offset_rtx = tmp2;
+	}
+      emit_insn (gen_adddi3 (tmp, tmp, vcall_offset_rtx));
+
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
+
+      emit_insn (gen_adddi3 (this, this, tmp));
+    }
+
+  /* Generate a tail call to the target function.  */
+  if (! TREE_USED (function))
+    {
+      assemble_external (function);
+      TREE_USED (function) = 1;
+    }
+  funexp = XEXP (DECL_RTL (function), 0);
+  funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
+  ia64_expand_call (NULL_RTX, funexp, NULL_RTX, 1);
+  insn = get_last_insn ();
+  SIBLING_CALL_P (insn) = 1;
+  emit_barrier ();
+
+  /* Run just enough of rest_of_compilation to get the insns emitted.
+     There's not really enough bulk here to make other passes such as
+     instruction scheduling worth while.  Note that use_thunk calls
+     assemble_start_function and assemble_end_function.  */
+  insn = get_insns ();
+  emit_all_insn_group_barriers (NULL, insn);
+  shorten_branches (insn);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1, 0);
+  final_end_function ();
 }
 
 #include "gt-ia64.h"
