@@ -209,35 +209,14 @@ static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
       if ((f) & BOL) {(d)->col = (s)->col; (d)->line = (s)->line;} \
   } while (0)
 
-#define T(e, s) {SPELL_OPERATOR, (const U_CHAR *) s},
-#define I(e, s) {SPELL_IDENT, s},
-#define S(e, s) {SPELL_STRING, s},
-#define C(e, s) {SPELL_CHAR, s},
-#define N(e, s) {SPELL_NONE, s},
+#define OP(e, s) { SPELL_OPERATOR, U s           },
+#define TK(e, s) { s,              U STRINGX (e) },
 
 const struct token_spelling
-token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
+_cpp_token_spellings [N_TTYPES] = {TTYPE_TABLE };
 
-#undef T
-#undef I
-#undef S
-#undef C
-#undef N
-
-/* For debugging: the internal names of the tokens.  */
-#define T(e, s) U STRINGX(e),
-#define I(e, s) U STRINGX(e),
-#define S(e, s) U STRINGX(e),
-#define C(e, s) U STRINGX(e),
-#define N(e, s) U STRINGX(e),
-
-const U_CHAR *const token_names[N_TTYPES] = { TTYPE_TABLE };
-
-#undef T
-#undef I
-#undef S
-#undef C
-#undef N
+#undef OP
+#undef TK
 
 /* The following table is used by trigraph_ok/trigraph_replace.  If we
    have designated initializers, it can be constant data; otherwise,
@@ -579,7 +558,7 @@ _cpp_expand_name_space (list, len)
       unsigned int i;
 
       for (i = 0; i < list->tokens_used; i++)
-	if (token_spellings[list->tokens[i].type].type == SPELL_STRING)
+	if (TOKEN_SPELL (&list->tokens[i]) == SPELL_STRING)
 	  list->tokens[i].val.str.text += (list->namebuf - old_namebuf);
     }
 }
@@ -684,7 +663,7 @@ _cpp_equiv_tokens (a, b)
      const cpp_token *a, *b;
 {
   if (a->type == b->type && a->flags == b->flags)
-    switch (token_spellings[a->type].type)
+    switch (TOKEN_SPELL (a))
       {
       default:			/* Keep compiler happy.  */
       case SPELL_OPERATOR:
@@ -1966,7 +1945,7 @@ spell_token (pfile, token, buffer)
      const cpp_token *token;
      unsigned char *buffer;
 {
-  switch (token_spellings[token->type].type)
+  switch (TOKEN_SPELL (token))
     {
     case SPELL_OPERATOR:
       {
@@ -1976,7 +1955,7 @@ spell_token (pfile, token, buffer)
 	if (token->flags & DIGRAPH)
 	  spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
 	else
-	  spelling = token_spellings[token->type].spelling;
+	  spelling = TOKEN_NAME (token);
 	
 	while ((c = *spelling++) != '\0')
 	  *buffer++ = c;
@@ -2013,25 +1992,12 @@ spell_token (pfile, token, buffer)
       break;
 
     case SPELL_NONE:
-      cpp_ice (pfile, "Unspellable token %s", token_names[token->type]);
+      cpp_ice (pfile, "Unspellable token %s", TOKEN_NAME (token));
       break;
     }
 
   return buffer;
 }
-
-/* Return the spelling of a token known to be an operator.
-   Does not distinguish digraphs from their counterparts.  */
-const unsigned char *
-_cpp_spell_operator (type)
-     enum cpp_ttype type;
-{
-  if (token_spellings[type].type == SPELL_OPERATOR)
-    return token_spellings[type].spelling;
-  else
-    return token_names[type];
-}
-
 
 /* Macro expansion algorithm.
 
@@ -2554,7 +2520,7 @@ release_temp_tokens (pfile)
     {
       cpp_token *token = pfile->temp_tokens[--pfile->temp_used];
 
-      if (token_spellings[token->type].type == SPELL_STRING)
+      if (TOKEN_SPELL (token) == SPELL_STRING)
 	{
 	  free ((char *) token->val.str.text);
 	  token->val.str.text = 0;
@@ -2595,7 +2561,7 @@ duplicate_token (pfile, token)
   cpp_token *result = get_temp_token (pfile);
 
   *result = *token;
-  if (token_spellings[token->type].type == SPELL_STRING)
+  if (TOKEN_SPELL (token) == SPELL_STRING)
     {
       U_CHAR *buff = (U_CHAR *) xmalloc (token->val.str.len);
       memcpy (buff, token->val.str.text, token->val.str.len);
@@ -2837,6 +2803,9 @@ stringify_arg (pfile, token)
       unsigned char *buf;
       unsigned int len = TOKEN_LEN (token);
 
+      if (token->type == CPP_PLACEMARKER)
+	continue;
+
       escape = (token->type == CPP_STRING || token->type == CPP_WSTRING
 		|| token->type == CPP_CHAR || token->type == CPP_WCHAR);
       if (escape)
@@ -3008,6 +2977,22 @@ _cpp_push_token (pfile, token)
      const cpp_token *token;
 {
   cpp_context *context = CURRENT_CONTEXT (pfile);
+
+  if (context->posn > 0)
+    {
+      const cpp_token *prev;
+      if (IS_ARG_CONTEXT (context))
+	prev = context->u.arg[context->posn - 1];
+      else
+	prev = &context->u.list->tokens[context->posn - 1];
+
+      if (prev == token)
+	{
+	  context->posn--;
+	  return;
+	}
+    }
+
   if (context->pushed_token)
     cpp_ice (pfile, "two tokens pushed in a row");
   if (token->type != CPP_EOF)
@@ -3031,8 +3016,7 @@ process_directive (pfile, token)
   if (token[1].type == CPP_NAME)
     _cpp_get_raw_token (pfile);
   else if (token[1].type != CPP_NUMBER)
-    cpp_ice (pfile, "directive begins with %s?!",
-	     token_names[token[1].type]);
+    cpp_ice (pfile, "directive begins with %s?!", TOKEN_NAME (token));
 
   /* Flush pending tokens at this point, in case the directive produces
      output.  XXX Directive output won't be visible to a direct caller of
@@ -3491,7 +3475,7 @@ _cpp_dump_list (pfile, list, token, flush)
 	    CPP_PUTC (pfile, '#');
 	  dump_param_spelling (pfile, list, token->val.aux);
 	}
-      else
+      else if (token->type != CPP_PLACEMARKER)
 	output_token (pfile, token, prev);
       if (token->flags & PASTE_LEFT)
 	CPP_PUTS (pfile, " ##", 3);

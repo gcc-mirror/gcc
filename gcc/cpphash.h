@@ -38,12 +38,13 @@ enum spell_type
 
 struct token_spelling
 {
-  ENUM_BITFIELD(spell_type) type : CHAR_BIT;
-  const U_CHAR *spelling;
+  enum spell_type category;
+  const U_CHAR *name;
 };
 
-extern const struct token_spelling token_spellings[];
-#define TOKEN_SPELL(token) (token_spellings[(token)->type].type)
+extern const struct token_spelling _cpp_token_spellings[];
+#define TOKEN_SPELL(token) (_cpp_token_spellings[(token)->type].category)
+#define TOKEN_NAME(token) (_cpp_token_spellings[(token)->type].name)
 
 /* Chained list of answers to an assertion.  */
 struct answer
@@ -267,7 +268,6 @@ extern const cpp_token *_cpp_get_token PARAMS ((cpp_reader *));
 extern const cpp_token *_cpp_get_raw_token PARAMS ((cpp_reader *));
 extern void _cpp_push_token PARAMS ((cpp_reader *, const cpp_token*));
 extern const cpp_token *_cpp_glue_header_name PARAMS ((cpp_reader *));
-extern const U_CHAR *_cpp_spell_operator PARAMS ((enum cpp_ttype));
 
 /* In cpplib.c */
 extern const struct directive *_cpp_check_directive

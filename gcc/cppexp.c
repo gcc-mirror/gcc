@@ -397,7 +397,6 @@ lex (pfile, skip_evaluation)
   switch (tok->type)
     {
     case CPP_PLACEMARKER:
-      /* XXX These shouldn't be visible outside cpplex.c.  */
       goto retry;
 
     case CPP_INT:
@@ -443,8 +442,7 @@ lex (pfile, skip_evaluation)
 	  return op;
 	}
 
-      SYNTAX_ERROR2("'%s' is not valid in #if expressions",
-		    _cpp_spell_operator (tok->type));
+      SYNTAX_ERROR2("'%s' is not valid in #if expressions", TOKEN_NAME (tok));
   }
 
  syntax_error:
@@ -718,6 +716,8 @@ op_to_prio[] =
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the truth value of the expression.  */
 
+#define TYPE_NAME(t) _cpp_token_spellings[t].name
+
 int
 _cpp_parse_expr (pfile)
      cpp_reader *pfile;
@@ -804,7 +804,7 @@ _cpp_parse_expr (pfile)
 		SYNTAX_ERROR ("void expression between '(' and ')'");
 	      else
 		SYNTAX_ERROR2 ("operator '%s' has no right operand",
-			       _cpp_spell_operator (top->op));
+			       TYPE_NAME (top->op));
 	    }
 
 	  unsigned2 = top->unsignedp, v2 = top->value;
@@ -815,8 +815,7 @@ _cpp_parse_expr (pfile)
 	  switch (top[1].op)
 	    {
 	    default:
-	      cpp_ice (pfile, "impossible operator type %s",
-		       _cpp_spell_operator (op.op));
+	      cpp_ice (pfile, "impossible operator type %s", TYPE_NAME (op.op));
 	      goto syntax_error;
 
 	    case CPP_NOT:	 UNARY(!);	break;
@@ -969,13 +968,13 @@ _cpp_parse_expr (pfile)
 	{
 	  if (top->flags & HAVE_VALUE)
 	    SYNTAX_ERROR2 ("missing binary operator before '%s'",
-			   _cpp_spell_operator (op.op));
+			   TYPE_NAME (op.op));
 	}
       else
 	{
 	  if (!(top->flags & HAVE_VALUE))
 	    SYNTAX_ERROR2 ("operator '%s' has no left operand",
-			   _cpp_spell_operator (op.op));
+			   TYPE_NAME (op.op));
 	}
 
       /* Check for and handle stack overflow.  */
