@@ -451,23 +451,6 @@ union real_extract
   HOST_WIDE_INT i[sizeof (REAL_VALUE_TYPE) / sizeof (HOST_WIDE_INT)];
 };
 
-/* For a CONST_DOUBLE:
-   The usual two ints that hold the value.
-   For a DImode, that is all there are;
-    and CONST_DOUBLE_LOW is the low-order word and ..._HIGH the high-order.
-   For a float, the number of ints varies,
-    and CONST_DOUBLE_LOW is the one that should come first *in memory*.
-    So use &CONST_DOUBLE_LOW(r) as the address of an array of ints.  */
-#define CONST_DOUBLE_LOW(r) XWINT (r, 2)
-#define CONST_DOUBLE_HIGH(r) XWINT (r, 3)
-
-/* Link for chain of all CONST_DOUBLEs in use in current function.  */
-#define CONST_DOUBLE_CHAIN(r) X0EXP (r, 1)
-/* The MEM which represents this CONST_DOUBLE's value in memory,
-   or const0_rtx if no MEM has been made for it yet,
-   or cc0_rtx if it is not on the chain.  */
-#define CONST_DOUBLE_MEM(r) XEXP (r, 0)
-
 /* Given a CONST_DOUBLE in FROM, store into TO the value it represents.  */
 /* Function to return a real value (not a tree node)
    from a given integer constant.  */

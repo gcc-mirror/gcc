@@ -214,7 +214,7 @@ cb_def_pragma (pfile)
 {
   cpp_printf (pfile, &parse_out, "#pragma ");
   cpp_output_list (pfile, parse_out.outf, &pfile->token_list,
-		   pfile->first_directive_token);
+		   pfile->first_directive_token + 2);
   putc ('\n', parse_out.outf);
 }
 

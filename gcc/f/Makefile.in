@@ -200,13 +200,12 @@ F77_OBJS = \
  where.o
 
 # Language-independent object files.
-OBJS = `cat ../stamp-objlist`
-OBJDEPS = ../stamp-objlist
+BACKEND = ../toplev.o ../libbackend.a
 
 compiler: ../f771$(exeext)
-../f771$(exeext): $(P) $(F77_OBJS) $(OBJDEPS) $(LIBDEPS)
+../f771$(exeext): $(P) $(F77_OBJS) $(BACKEND) $(LIBDEPS)
 	rm -f f771$(exeext)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(F77_OBJS) $(OBJS) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(F77_OBJS) $(BACKEND) $(LIBS)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status

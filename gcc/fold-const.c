@@ -7260,3 +7260,54 @@ multiple_of_p (type, top, bottom)
       return 0;
     }
 }
+
+/* Return true if `t' is known to be non-negative.  */
+
+int
+tree_expr_nonnegative_p (t)
+     tree t;
+{
+  switch (TREE_CODE (t))
+    {
+    case INTEGER_CST:
+      return tree_int_cst_sgn (t) >= 0;
+    case COND_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
+	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 2));
+    case BIND_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case RTL_EXPR:
+      return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
+      
+    default:
+      /* We don't know sign of `t', so be safe and return false.  */
+      return 0;
+    }
+}
+
+/* Return true if `r' is known to be non-negative.
+   Only handles constants at the moment.  */
+
+int
+rtl_expr_nonnegative_p (r)
+     rtx r;
+{
+  switch (GET_CODE (r))
+    {
+    case CONST_INT:
+      return INTVAL (r) >= 0;
+
+    case CONST_DOUBLE:
+      if (GET_MODE (r) == VOIDmode)
+	return CONST_DOUBLE_HIGH (r) >= 0;
+      return 0;
+
+    case SYMBOL_REF:
+    case LABEL_REF:
+      /* These are always nonnegative.  */
+      return 1;
+
+    default:
+      return 0;
+    }
+}

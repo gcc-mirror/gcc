@@ -753,6 +753,23 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 
 #define INTVAL(RTX) XCWINT(RTX, 0, CONST_INT)
 
+/* For a CONST_DOUBLE:
+   The usual two ints that hold the value.
+   For a DImode, that is all there are;
+    and CONST_DOUBLE_LOW is the low-order word and ..._HIGH the high-order.
+   For a float, the number of ints varies,
+    and CONST_DOUBLE_LOW is the one that should come first *in memory*.
+    So use &CONST_DOUBLE_LOW(r) as the address of an array of ints.  */
+#define CONST_DOUBLE_LOW(r) XCWINT (r, 2, CONST_DOUBLE)
+#define CONST_DOUBLE_HIGH(r) XCWINT (r, 3, CONST_DOUBLE)
+
+/* Link for chain of all CONST_DOUBLEs in use in current function.  */
+#define CONST_DOUBLE_CHAIN(r) XCEXP (r, 1, CONST_DOUBLE)
+/* The MEM which represents this CONST_DOUBLE's value in memory,
+   or const0_rtx if no MEM has been made for it yet,
+   or cc0_rtx if it is not on the chain.  */
+#define CONST_DOUBLE_MEM(r) XCEXP (r, 0, CONST_DOUBLE)
+
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
    SUBREG_WORD extracts the word-number.  */
 

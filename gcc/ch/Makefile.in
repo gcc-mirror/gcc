@@ -193,20 +193,16 @@ FLAGS_TO_PASS = \
 
 # Language-specific object files for CHILL
 
-#C_OBJS = ../cpplib.o ../cppexp.o ../cpphash.o ../cpperror.o
-
 CHILL_OBJS = parse.o actions.o except.o grant.o lang.o \
    tree.o lex.o decl.o typeck.o convert.o expr.o loop.o \
    tasking.o timing.o inout.o satisfy.o ch-version.o \
    ../ggc-callbacks.o
 
-# Language-independent object files.
-OBJS = `cat ../stamp-objlist`
-OBJDEPS = ../stamp-objlist
+BACKEND = ../toplev.o ../libbackend.a
 
-../cc1chill$(exeext): $(P) $(CHILL_OBJS) $(OBJDEPS) $(LIBDEPS)
+../cc1chill$(exeext): $(P) $(CHILL_OBJS) $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CHILL_OBJS) \
-	      $(OBJS) $(C_OBJS) $(LIBS)
+	      $(BACKEND) $(LIBS)
 
 # This executable is used in the CHILL regression 
 # test script

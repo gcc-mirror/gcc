@@ -93,7 +93,7 @@ chill: $(srcdir)/ch/chill.in Makefile
 chill-cross: $(srcdir)/ch/chill.in
 	touch $@
 
-cc1chill$(exeext): $(P) $(CHILL_SRCS) $(LIBDEPS) stamp-objlist \
+cc1chill$(exeext): $(P) $(CHILL_SRCS) $(LIBDEPS) $(BACKEND) \
 	insn-config.h insn-flags.h insn-attr.h insn-codes.h \
 	c-typeck.o c-aux-info.o c-common.o c-iterate.o \
         ggc-callbacks.o

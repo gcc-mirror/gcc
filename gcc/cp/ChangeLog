@@ -1,3 +1,9 @@
+2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+        * Make-lang.in (cc1plus): Depend on $(BACKEND), not stamp-objlist.
+        * Makefile.in: Add C_OBJS, BACKEND; delete OBJS, OBJDEPS.
+        (cc1plus): Link with $(BACKEND) and $(C_OBJS).
+
 2000-08-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (add_method): Change prototype.
