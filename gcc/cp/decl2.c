@@ -1917,7 +1917,6 @@ grok_function_init (decl, init)
 	 vtbl. For wellformed call, it should be itself. pr4737 */
       if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)))
 	{
-	  extern tree abort_fndecl;
 	  /* Give this node rtl from `abort'.  */
 	  DECL_RTL (decl) = DECL_RTL (abort_fndecl);
 	}
