@@ -792,6 +792,8 @@ __gnat_readdir_is_thread_safe ()
 }
 
 #ifdef _WIN32
+/* Number of seconds between <Jan 1st 1601> and <Jan 1st 1970>.  */
+static const unsigned long long w32_epoch_offset = 11644473600ULL;
 
 /* Returns the file modification timestamp using Win32 routines which are
    immune against daylight saving time change. It is in fact not possible to
@@ -801,27 +803,20 @@ __gnat_readdir_is_thread_safe ()
 static time_t
 win32_filetime (HANDLE h)
 {
-  BOOL res;
-  FILETIME t_create;
-  FILETIME t_access;
-  FILETIME t_write;
-  unsigned long long timestamp;
-
-  /* Number of seconds between <Jan 1st 1601> and <Jan 1st 1970>.  */
-  unsigned long long offset = 11644473600;
+  union
+  {
+    FILETIME ft_time;
+    unsigned long long ull_time;
+  } t_write;
 
   /* GetFileTime returns FILETIME data which are the number of 100 nanosecs
      since <Jan 1st 1601>. This function must return the number of seconds
      since <Jan 1st 1970>.  */
 
-  res = GetFileTime (h, &t_create, &t_access, &t_write);
-
-  timestamp = (((long long) t_write.dwHighDateTime << 32)
-	       + t_write.dwLowDateTime);
-
-  timestamp = timestamp / 10000000 - offset;
-
-  return (time_t) timestamp;
+  if (GetFileTime (h, NULL, NULL, &t_write.ft_time))
+    return (time_t) (t_write.ull_time / 10000000ULL
+		     - w32_epoch_offset);
+  return (time_t) 0;
 }
 #endif
 
@@ -838,10 +833,15 @@ __gnat_file_time_name (char *name)
   return ret;
 
 #elif defined (_WIN32)
+  time_t ret = 0;
   HANDLE h = CreateFile (name, GENERIC_READ, FILE_SHARE_READ, 0,
 			 OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
-  time_t ret = win32_filetime (h);
-  CloseHandle (h);
+ 
+  if (h != INVALID_HANDLE_VALUE)
+    {
+      ret = win32_filetime (h);
+      CloseHandle (h);
+    }
   return ret;
 #else
   struct stat statbuf;
@@ -951,10 +951,30 @@ __gnat_file_time_fd (int fd)
 void
 __gnat_set_file_time_name (char *name, time_t time_stamp)
 {
-#if defined (__EMX__) || defined (MSDOS) || defined (_WIN32) \
-    || defined (__vxworks)
+#if defined (__EMX__) || defined (MSDOS) || defined (__vxworks)
 
 /* Code to implement __gnat_set_file_time_name for these systems.  */
+
+#elif defined (_WIN32)
+  union
+  {
+    FILETIME ft_time;
+    unsigned long long ull_time;
+  } t_write;
+  
+  HANDLE h  = CreateFile (name, GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
+			  OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS,
+			  NULL);
+  if (h == INVALID_HANDLE_VALUE)
+    return;
+  /* Add number of seconds between <Jan 1st 1601> and <Jan 1st 1970> */
+  t_write.ull_time = ((unsigned long long)time_stamp + w32_epoch_offset);
+  /*  Convert to 100 nanosecond units  */
+  t_write.ull_time *= 10000000ULL;
+
+  SetFileTime(h, NULL, NULL, &t_write.ft_time);
+  CloseHandle (h);
+  return;
 
 #elif defined (VMS)
   struct FAB fab;
