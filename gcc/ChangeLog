@@ -1,5 +1,8 @@
 Sun Oct 31 01:53:30 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (combine_simplify_rtx): Renamed from simplify_rtx.  All
+	references/callers changed.
+
 	* mn10200.c (mn10200_va_arg): Force the return value into a
 	register.
 

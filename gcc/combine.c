@@ -362,7 +362,7 @@ static rtx try_combine		PROTO((rtx, rtx, rtx));
 static void undo_all		PROTO((void));
 static rtx *find_split_point	PROTO((rtx *, rtx));
 static rtx subst		PROTO((rtx, rtx, rtx, int, int));
-static rtx simplify_rtx		PROTO((rtx, enum machine_mode, int, int));
+static rtx combine_simplify_rtx	PROTO((rtx, enum machine_mode, int, int));
 static rtx simplify_if_then_else  PROTO((rtx));
 static rtx simplify_set		PROTO((rtx));
 static rtx simplify_logical	PROTO((rtx, int));
@@ -3248,7 +3248,7 @@ subst (x, from, to, in_dest, unique_copy)
       /* If X is sufficiently simple, don't bother trying to do anything
 	 with it.  */
       if (code != CONST_INT && code != REG && code != CLOBBER)
-	x = simplify_rtx (x, op0_mode, i == 3, in_dest);
+	x = combine_simplify_rtx (x, op0_mode, i == 3, in_dest);
 
       if (GET_CODE (x) == code)
 	break;
@@ -3272,7 +3272,7 @@ subst (x, from, to, in_dest, unique_copy)
    X is returned; IN_DEST is nonzero if we are inside a SET_DEST.  */
 
 static rtx
-simplify_rtx (x, op0_mode, last, in_dest)
+combine_simplify_rtx (x, op0_mode, last, in_dest)
      rtx x;
      enum machine_mode op0_mode;
      int last;
