@@ -55,11 +55,11 @@ ALLOCA =
 ALLOCA_FLAGS =
 ALLOCA_FINISH = true
 
-# Various ways of specifying flags for compilations:  
+# Various ways of specifying flags for compilations:
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass
 # to the stage2 and stage3 compilations
-# WARN_CFLAGS are the warning flags to pass to stage2 and stage3.  
+# WARN_CFLAGS are the warning flags to pass to stage2 and stage3.
 # (And for stage 1 if the native compiler is GCC.)  It is
 # separate from BOOT_CFLAGS because people tend to override optimization
 # flags and we'd like them to still have warnings turned on.  They are free
@@ -114,7 +114,7 @@ MAKEOVERRIDES =
 @SET_MAKE@
 
 # Define this as & to perform parallel make on a Sequent.
-# Note that this has some bugs, and it seems currently necessary 
+# Note that this has some bugs, and it seems currently necessary
 # to compile all the gen* files first by hand to avoid erroneous results.
 P =
 
@@ -147,7 +147,8 @@ INSTALL_HEADERS_DIR = @build_install_headers_dir@
 # to programs compiled with GCC.
 USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/varargs.h $(srcdir)/ginclude/proto.h \
-    $(srcdir)/ginclude/stdbool.h $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
+    $(srcdir)/ginclude/stdbool.h $(srcdir)/ginclude/iso646.h \
+    $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
 
 # Target to use whe installing assert.h.  Some systems may
 # want to set this empty.
@@ -339,14 +340,14 @@ LIBGCC2 = libgcc2.a
 # so that -g1 will be tested.
 #
 LIBGCC2_DEBUG_CFLAGS = -g1
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED @inhibit_libc@ 
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED @inhibit_libc@
 
 # Additional options to use when compiling libgcc2.a.
 # Some targets override this to -Iinclude
 LIBGCC2_INCLUDES =
 
 # Additional target-dependent options for compiling libgcc2.a.
-TARGET_LIBGCC2_CFLAGS = 
+TARGET_LIBGCC2_CFLAGS =
 
 # Things which must be built before building libgcc2.a.
 # Some targets override this to stmp-int-hdrs
@@ -391,11 +392,11 @@ USE_COLLECT2 = collect2$(exeext)
 
 # List of extra C and assembler files to add to libgcc1.a.
 # Assembler files should have names ending in `.asm'.
-LIB1FUNCS_EXTRA = 
+LIB1FUNCS_EXTRA =
 
 # List of extra C and assembler files to add to libgcc2.a.
 # Assembler files should have names ending in `.asm'.
-LIB2FUNCS_EXTRA = 
+LIB2FUNCS_EXTRA =
 
 # Handle cpp installation.
 INSTALL_CPP=
@@ -406,7 +407,7 @@ UNINSTALL_CPP=
 FLOAT_H=@float_h_file@
 
 # Program to convert libraries.
-LIBCONVERT = 
+LIBCONVERT =
 
 # Control whether header files are installed.
 INSTALL_HEADERS=install-headers
@@ -414,7 +415,7 @@ INSTALL_HEADERS=install-headers
 # Additional directories of header files to run fixincludes on.
 # These should be directories searched automatically by default
 # just as /usr/include is.
-# *Do not* use this for directories that happen to contain 
+# *Do not* use this for directories that happen to contain
 # header files, but are not searched automatically by default.
 # On most systems, this is empty.
 OTHER_FIXINCLUDES_DIRS=
@@ -444,7 +445,7 @@ MD_FILE = md-cpp-not-used
 HOST_PREFIX=
 # Prefix to apply to names of object files when compiling them
 # to run on the machine we are compiling on.
-# The default for this variable is chosen to keep these rules 
+# The default for this variable is chosen to keep these rules
 # out of the way of the other rules for compiling the same source files.
 HOST_PREFIX_1=loser-
 HOST_CC=$(CC)
@@ -488,13 +489,13 @@ RUNTEST = `if [ -f $${srcdir}/../dejagnu/runtest ] ; then \
 RUNTESTFLAGS =
 
 # Extra symbols for fixproto to define when parsing headers.
-FIXPROTO_DEFINES = 
+FIXPROTO_DEFINES =
 
 # Extra flags to use when compiling crt{begin,end}.o.
-CRTSTUFF_T_CFLAGS = 
+CRTSTUFF_T_CFLAGS =
 
 # Extra flags to use when compiling [m]crt0.o.
-CRT0STUFF_T_CFLAGS = 
+CRT0STUFF_T_CFLAGS =
 
 # "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
 T =
@@ -860,7 +861,7 @@ compilations: ${OBJS}
 
 # Create a list of the language-independent object files so the language
 # subdirectories needn't mention their names explicitly.
-stamp-objlist: $(OBJS) 
+stamp-objlist: $(OBJS)
 	echo " $(OBJS)" | sed -e 's, \([a-z0-9]\), ../\1,g' -e 's/\.o/$(objext)/g' >stamp-objlist
 
 # We call this executable `xgcc' rather than `gcc'
@@ -924,7 +925,7 @@ libgcc1.null: $(GCC_PASSES)
 	rm -f dummy$(objext) dummy.c
 
 # This is $(LIBGCC1) for a cross-compiler.
-# We have no automatic way of building libgcc1.a, 
+# We have no automatic way of building libgcc1.a,
 # so it's up to the installer to find a way to do that.
 # This rule deliberately does not depend on libgcc1.a
 # so that it will fail if the installer hasn't provided it.
@@ -1277,7 +1278,7 @@ s-crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
   defaults.h frame.h gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_BEGIN -DCRTSTUFFS_O -finhibit-size-directive -fno-inline-functions \
-	  -fno-exceptions -g0 -c $(srcdir)/crtstuff.c 
+	  -fno-exceptions -g0 -c $(srcdir)/crtstuff.c
 	mv crtstuff$(objext) crtbeginS$(objext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_END -DCRTSTUFFS_O -finhibit-size-directive -fno-inline-functions \
@@ -1344,7 +1345,7 @@ graph.o: graph.c $(CONFIG_H) system.h toplev.h flags.h output.h $(RTL_H) \
     function.h hard-reg-set.h $(BASIC_BLOCK_H)
 sbitmap.o: sbitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H)
 
-COLLECT2_OBJS = collect2.o tlink.o hash.o intl.o underscore.o version.o 
+COLLECT2_OBJS = collect2.o tlink.o hash.o intl.o underscore.o version.o
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
@@ -1574,7 +1575,7 @@ reorg.o : reorg.c $(CONFIG_H) system.h $(RTL_H) conditions.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(REGS_H) insn-config.h insn-attr.h insn-flags.h \
    $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h
 alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h \
-   $(REGS_H) toplev.h output.h $(EXPR_H) 
+   $(REGS_H) toplev.h output.h $(EXPR_H)
 regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    $(RECOG_H) output.h reload.h $(REGS_H) hard-reg-set.h flags.h function.h \
    $(EXPR_H) insn-flags.h $(BASIC_BLOCK_H) toplev.h
@@ -1624,7 +1625,7 @@ alloca.o:	$(srcdir)/../libiberty/alloca.c
 	  -c `echo alloca.c | sed 's,^\./,,'`
 	$(ALLOCA_FINISH)
 #
-# Generate header and source files from the machine description, 
+# Generate header and source files from the machine description,
 # and compile them.
 
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h \
@@ -1762,7 +1763,7 @@ s-genrtl: gengenrtl $(srcdir)/move-if-change $(RTL_BASE_H)
 # even if GCC is being compiled to run on some other machine.
 
 # $(CONFIG_H) is omitted from the deps of the gen*.o
-# because these programs don't really depend on anything 
+# because these programs don't really depend on anything
 # about the target machine.  They do depend on config.h itself,
 # since that describes the host machine.
 
@@ -1915,7 +1916,7 @@ $(HOST_PREFIX_1)errors.o: errors.c
 
 # This satisfies the dependency that we get if you cross-compile a compiler
 # that does not need to compile alloca, malloc or whatever.
-$(HOST_PREFIX_1): 
+$(HOST_PREFIX_1):
 	touch $(HOST_PREFIX_1)
 
 
@@ -1959,7 +1960,7 @@ intl.distdir-fixup:
 cpp$(exeext): $(CCCP)$(exeext)
 	-rm -f cpp$(exeext)
 	$(LN) $(CCCP)$(exeext) cpp$(exeext)
-CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o @extra_cpp_objs@ mbchar.o 
+CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o @extra_cpp_objs@ mbchar.o
 cccp$(exeext): $(CCCP_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CCCP_OBJS) $(LIBS)
 cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h mbchar.h
@@ -2016,7 +2017,7 @@ cppinit.o:  cppinit.c $(CONFIG_H) cpplib.h intl.h system.h \
 
 proto: config.status protoize$(exeext) unprotoize$(exeext) SYSCALLS.c.X
 
-PROTO_OBJS = intl.o version.o 
+PROTO_OBJS = intl.o version.o
 
 protoize$(exeext): protoize.o $(PROTO_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
@@ -2126,7 +2127,7 @@ FIXINCSRCDIR=$(srcdir)/fixinc
 fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	$(FIXINCSRCDIR)/procopen.c $(FIXINCSRCDIR)/gnu-regex.c \
 	$(FIXINCSRCDIR)/server.c $(FIXINCSRCDIR)/gnu-regex.h \
-	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def 
+	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def
 	MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc; pwd` ; \
 	export MAKE srcdir ; \
 	cd ./fixinc; $(SHELL) $${srcdir}/mkfixinc.sh $(target)
@@ -2288,7 +2289,7 @@ cpp.dvi: $(srcdir)/cpp.texi
 
 INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
 	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY \
-		--no-split -o INSTALL install1.texi 
+		--no-split -o INSTALL install1.texi
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -2309,7 +2310,7 @@ mostlyclean: intl.mostlyclean lang.mostlyclean
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
-	-rm -f $(HOST_PREFIX_1)obstack.c 
+	-rm -f $(HOST_PREFIX_1)obstack.c
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f tmplibgcc* tmpcopy xlimits.h libgcc1-test
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
@@ -2346,7 +2347,7 @@ mostlyclean: intl.mostlyclean lang.mostlyclean
 clean: mostlyclean intl.clean lang.clean
 # It may not be quite desirable to delete unprotoize.c here,
 # but the spec for `make clean' requires it.
-# Using unprotoize.c is not quite right in the first place, 
+# Using unprotoize.c is not quite right in the first place,
 # but what better way is there?
 	-rm -f libgcc.a libgcc1.a libgcc1-asm.a libgcc2.a libgcc2.ready
 	-rm -f libgcc1.null
@@ -2413,7 +2414,7 @@ maintainer-clean:
 		intl.maintainer-clean lang.maintainer-clean
 	-rm -f c-parse.y c-gperf.h
 	-rm -f c-parse.c c-parse.h c-parse.output
-	-rm -f cexp.c cexp.output TAGS 
+	-rm -f cexp.c cexp.output TAGS
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
 #
@@ -2711,7 +2712,7 @@ uninstall: intl.uninstall lang.uninstall $(UNINSTALL_CPP)
 	-rm -rf $(man1dir)/unprotoize$(manext)
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 #
-# These targets are for the dejagnu testsuites. The file site.exp 
+# These targets are for the dejagnu testsuites. The file site.exp
 # contains global variables that all the testsuites will use.
 
 # Set to $(target_alias)/ for cross.
@@ -2859,7 +2860,7 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	     $$1 " " $$2 " " $$3 != "This directory contains"' \
 	  version=$(version) $(srcdir)/README > tmp.README
 	mv tmp.README README
-	-rm -rf gcc-$(version) tmp	
+	-rm -rf gcc-$(version) tmp
 # Put all the files in a temporary subdirectory
 # which has the name that we want to have in the tar file.
 	mkdir tmp
@@ -2917,7 +2918,7 @@ distdir-check:
 distdir: distdir-cvs distdir-start intl.distdir intl.distdir-fixup \
   lang.distdir distdir-finish
 
-# make diff oldversion=M.N 
+# make diff oldversion=M.N
 # creates a diff file between an older distribution and this one.
 # The -P option assumes this is GNU diff.
 diff:
@@ -3191,4 +3192,3 @@ float.h-cross:
 	echo "#error float.h values not known for cross-compiler" >> t-float.h-cross
 	echo "#endif" >> t-float.h-cross
 	mv t-float.h-cross float.h-cross
-
