@@ -1,8 +1,6 @@
 // Build don't link:
 // by Bert Bril <bert@dgb.nl>
 
-// excess errors test - XFAIL *-*-*
-
 struct M1 {
     struct I                            {};
 };
