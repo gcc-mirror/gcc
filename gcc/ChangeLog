@@ -1,5 +1,8 @@
 Sun Jan  3 21:01:04 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* fixincludes (sys/utsname.h): Provide forward declaration of
+	struct utsname on Ultrix V4.[35].
+
 	* mips.md (div_trap): Use local labels instead of dot-relative
 	branches.
 
