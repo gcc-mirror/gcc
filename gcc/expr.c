@@ -7954,7 +7954,7 @@ get_pointer_alignment (exp, max_align)
 {
   unsigned align, inner;
 
-  if (TREE_CODE (TREE_TYPE (exp)) != POINTER_TYPE)
+  if (! POINTER_TYPE_P (TREE_TYPE (exp)))
     return 0;
 
   align = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
@@ -7968,8 +7968,9 @@ get_pointer_alignment (exp, max_align)
 	case CONVERT_EXPR:
 	case NON_LVALUE_EXPR:
 	  exp = TREE_OPERAND (exp, 0);
-	  if (TREE_CODE (TREE_TYPE (exp)) != POINTER_TYPE)
+	  if (! POINTER_TYPE_P (TREE_TYPE (exp)))
 	    return align;
+
 	  inner = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
 	  align = MIN (inner, max_align);
 	  break;
@@ -8525,9 +8526,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_APPLY:
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
 	  || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
 	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
 	return const0_rtx;
@@ -8549,7 +8550,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_RETURN:
       if (arglist
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE)
+	  && POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
 	expand_builtin_return (expand_expr (TREE_VALUE (arglist),
 					    NULL_RTX, VOIDmode, 0));
       return const0_rtx;
@@ -8855,7 +8856,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
 	break;
       else
 	{
@@ -8944,9 +8945,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
 	  || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))))
 	break;
       else
 	{
@@ -8968,10 +8969,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
 	  || TREE_CHAIN (arglist) == 0
-	  || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	      != POINTER_TYPE)
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
 	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
 	  || (TREE_CODE (TREE_TYPE (TREE_VALUE
 				    (TREE_CHAIN (TREE_CHAIN (arglist)))))
@@ -9043,7 +9043,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
 	  || TREE_CHAIN (arglist) == 0
 	  || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
 	      != INTEGER_TYPE)
@@ -9116,9 +9116,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
 	  || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))))
 	break;
       else if (!HAVE_cmpstrsi)
 	break;
@@ -9173,9 +9173,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
 	  || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
 	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
 	break;
@@ -9241,7 +9241,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_SETJMP:
       if (arglist == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+	  || ! PPOINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
 	break;
 
       {
@@ -9255,7 +9255,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	 function but works with __builtin_setjmp above.  */
     case BUILT_IN_LONGJMP:
       if (arglist == 0 || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
 	break;
 
       {
@@ -10898,7 +10898,7 @@ compare (exp, signed_code, unsigned_code)
   /* If function pointers need to be "canonicalized" before they can
      be reliably compared, then canonicalize them.  */
   if (HAVE_canonicalize_funcptr_for_compare
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
+      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 0)))
       && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
 	  == FUNCTION_TYPE))
     {
@@ -10909,7 +10909,7 @@ compare (exp, signed_code, unsigned_code)
     }
 
   if (HAVE_canonicalize_funcptr_for_compare
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
+      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 1)))
       && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
 	  == FUNCTION_TYPE))
     {
@@ -11058,10 +11058,10 @@ do_store_flag (exp, target, mode, only_cheap)
      when function pointers must be canonicalized before comparisons.  */
 #ifdef HAVE_canonicalize_funcptr_for_compare
   if (HAVE_canonicalize_funcptr_for_compare
-      && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
+      && ((POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 0)))
 	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
 	       == FUNCTION_TYPE))
-	  || (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
+	  || (POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 1)))
 	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
 		  == FUNCTION_TYPE))))
     return 0;
