@@ -1,3 +1,8 @@
+Fry May 12 20:03:00 CEST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (emit_push_insn): Do not adjust stack pointer when
+	preallocating.
+
 Fri May 12 19:03:58 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* ggc-simple.c (offsetof): Macro fallback definition moved from here ..
