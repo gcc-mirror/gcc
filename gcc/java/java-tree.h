@@ -1036,8 +1036,7 @@ struct lang_type
 #define JCF_u4 unsigned long
 #define JCF_u2 unsigned short
 
-extern void java_set_yydebug PARAMS ((int));
-extern void java_parse_file PARAMS ((void));
+extern void java_parse_file PARAMS ((int));
 extern void java_mark_tree PARAMS ((tree));
 extern bool java_mark_addressable PARAMS ((tree));
 extern tree java_type_for_mode PARAMS ((enum machine_mode, int));

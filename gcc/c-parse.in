@@ -43,7 +43,7 @@ end ifc
 #include "cpplib.h"
 #include "intl.h"
 #include "timevar.h"
-#include "c-lex.h"
+#include "c-lex.h"		/* Gets YYDEBUG macro.  */
 #include "c-tree.h"
 #include "c-pragma.h"
 #include "flags.h"
@@ -61,9 +61,6 @@ end ifobjc
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
-
-/* Cause the "yydebug" variable to be defined.  */
-#define YYDEBUG 1
 %}
 
 %start program
@@ -3800,21 +3797,6 @@ yylex()
   r = _yylex();
   timevar_pop (TV_LEX);
   return r;
-}
-
-/* Sets the value of the 'yydebug' variable to VALUE.
-   This is a function so we don't have to have YYDEBUG defined
-   in order to build the compiler.  */
-
-void
-c_set_yydebug (value)
-     int value;
-{
-#if YYDEBUG != 0
-  yydebug = value;
-#else
-  warning ("YYDEBUG not defined");
-#endif
 }
 
 /* Function used when yydebug is set, to print a token in more detail.  */

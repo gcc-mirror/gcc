@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file is the lexical analyzer for GNU C++.  */
 
-/* Cause the `yydebug' variable to be defined.  */
-#define YYDEBUG 1
-
 #include "config.h"
 #include "system.h"
 #include "input.h"
@@ -843,22 +840,6 @@ print_parse_statistics ()
   fprintf (stderr, "\n");
 #endif
 #endif
-#endif
-}
-
-/* Sets the value of the 'yydebug' variable to VALUE.
-   This is a function so we don't have to have YYDEBUG defined
-   in order to build the compiler.  */
-
-void
-cxx_set_yydebug (value)
-     int value;
-{
-#if YYDEBUG != 0
-  extern int yydebug;
-  yydebug = value;
-#else
-  warning ("YYDEBUG not defined");
 #endif
 }
 

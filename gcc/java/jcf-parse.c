@@ -247,8 +247,6 @@ set_source_filename (jcf, index)
 
 #include "jcf-reader.c"
 
-static int yydebug;
-
 tree
 parse_signature (jcf, sig_index)
      JCF *jcf;
@@ -260,13 +258,6 @@ parse_signature (jcf, sig_index)
   else
     return parse_signature_string (JPOOL_UTF_DATA (jcf, sig_index),
 				   JPOOL_UTF_LENGTH (jcf, sig_index));
-}
-
-void
-java_set_yydebug (value)
-     int value;
-{
-  yydebug = value;
 }
 
 tree
@@ -920,7 +911,8 @@ predefined_filename_p (node)
 }
 
 void
-java_parse_file ()
+java_parse_file (set_yydebug)
+     int set_yydebug ATTRIBUTE_UNUSED;
 {
   int filename_count = 0;
   char *list, *next;

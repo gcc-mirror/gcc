@@ -126,6 +126,9 @@ static int print_single_switch PARAMS ((FILE *, int, int, const char *,
 static void print_switch_values PARAMS ((FILE *, int, int, const char *,
 				       const char *, const char *));
 
+/* Nonzero to dump debug info whilst parsing (-dy option).  */
+static int set_yydebug;
+
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
 
@@ -2029,7 +2032,7 @@ compile_file ()
 
   /* Call the parser, which parses the entire file (calling
      rest_of_compilation for each function).  */
-  (*lang_hooks.parse_file) ();
+  (*lang_hooks.parse_file) (set_yydebug);
 
   /* In case there were missing block closers,
      get us back to the global binding level.  */
@@ -3721,7 +3724,7 @@ decode_d_option (arg)
 	rtl_dump_and_exit = 1;
 	break;
       case 'y':
-	(*lang_hooks.set_yydebug) (1);
+	set_yydebug = 1;
 	break;
       case 'D':	/* These are handled by the preprocessor.  */
       case 'I':

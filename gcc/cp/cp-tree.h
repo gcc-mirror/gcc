@@ -3615,7 +3615,6 @@ extern void cxx_print_type			PARAMS ((FILE *, tree, int));
 extern void cxx_print_identifier		PARAMS ((FILE *, tree, int));
 extern void cxx_print_error_function	PARAMS ((struct diagnostic_context *,
 						 const char *));
-extern void cxx_set_yydebug			PARAMS ((int));
 extern void build_self_reference		PARAMS ((void));
 extern int same_signature_p			PARAMS ((tree, tree));
 extern void warn_hidden				PARAMS ((tree));
