@@ -6975,8 +6975,11 @@ schedule_insns (dump_file)
 	SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
 	RESET_BIT (large_region_blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
 
+	/* Don't update reg info after reload, since that affects
+	   regs_ever_live, which should not change after reload.  */
 	update_life_info (blocks, UPDATE_LIFE_LOCAL,
-			  PROP_DEATH_NOTES | PROP_REG_INFO);
+			  (reload_completed ? PROP_DEATH_NOTES
+			   : PROP_DEATH_NOTES | PROP_REG_INFO));
 
 	/* In the single block case, the count of registers that died should
 	   not have changed during the schedule.  */
