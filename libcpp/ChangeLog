@@ -1,3 +1,10 @@
+2005-02-15  Eric Christopher  <echristo@redhat.com>
+
+	PR preprocessor/19077
+	* macro.c (cpp_macro_definition): Move handling of whitespace
+	to PREV_WHITE conditional. Remove overloading of len
+	variable.
+
 2005-02-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* directives.c, files.c, init.c, internal.h, macro.c, pch.c,
