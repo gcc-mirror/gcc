@@ -865,7 +865,7 @@ public class TreeMap extends AbstractMap
     int rowsize;
 
     // Fill each row that is completely full of nodes.
-    for (rowsize = 2; rowsize + rowsize < count; rowsize <<= 1)
+    for (rowsize = 2; rowsize + rowsize <= count; rowsize <<= 1)
       {
         Node parent = row;
         Node last = null;
@@ -1468,10 +1468,10 @@ public class TreeMap extends AbstractMap
      */
     public void remove()
     {
-      if (knownMod != modCount)
-        throw new ConcurrentModificationException();
       if (last == null)
         throw new IllegalStateException();
+      if (knownMod != modCount)
+        throw new ConcurrentModificationException();
 
       removeNode(last);
       last = null;
