@@ -1,3 +1,8 @@
+2004-09-25  Jan Hubicka  <jh@suse.cz>
+
+	* compile/30040909-1.c: New test.
+	* compile/30040907-1.c: New test.
+
 2004-09-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/va-arg-26.c: New test.
