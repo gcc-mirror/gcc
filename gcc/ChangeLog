@@ -12,6 +12,11 @@
 	htab_find_slot_with_hash.
 	(cselib_lookup): Likewise.
 
+	Based on a patch from Geoff Keating <geoffk@redhat.com>:
+	* loop.c (basic_induction_var): If a REG is set from something
+	that is not a biv, then the REG is not a biv.  Even if it is
+	earlier set from something that is a biv.
+
 2000-11-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (extra_objs): Enclose extra_headers in quotes.
