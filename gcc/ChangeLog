@@ -1,3 +1,11 @@
+2001-03-25  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (umodqi3): Output a tab instead of a
+	space.
+	(modqi3): Likewise.
+	(umodhi3): Likewise.
+	(modhi3): Likewise.
+
 2001-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mkconfig.sh (DEFINES): Handle entries with '='.
