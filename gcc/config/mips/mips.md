@@ -139,7 +139,7 @@
 ;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000"))
+  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000,r4600"))
   3 0)
 
 (define_function_unit "memory" 1 0
