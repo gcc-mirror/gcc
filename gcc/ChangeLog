@@ -1,5 +1,10 @@
 Sun Nov 29 16:36:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* genattr.c (fatal): No longer static.
+	* genattrtab.c, gencodes.c, genconfig.c, genemit.c: Likewise.
+	* genextract.c, genflags.c, gengenrtl.c, genopinit.c: Likewise.
+	* genoutput.c, genpeep.c, genrecog.c: Likewise.
+
 	* 1750a.c: Use gen_rtx_FOO and GEN_INT, not gen_rtx; include system.h.
 	* a29k.c, alpha.c, arc.c, arm.c, clipper.c, convex.c: Likewise.
 	* dsp16xx.c, fx80.c, gmicro.c, h8300.c, i386.c, i860.c: Likewise.
