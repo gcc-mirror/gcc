@@ -761,17 +761,26 @@ This macro is similar to @code{TARGET_SWITCHES} but defines names of command
 options that have values.  Its definition is an initializer with a
 subgrouping for each command option.
 
-Each subgrouping contains a string constant, that defines the fixed part
-of the option name, the address of a variable, and a description string.
-Non-empty description strings should be marked with @code{N_(@dots{})} for
-@command{xgettext}.  Please do not mark empty strings because the empty
-string is reserved by GNU gettext. @code{gettext("")} returns the header entry
-of the message catalog with meta information, not the empty string.
+Each subgrouping contains a string constant, that defines the option
+name, the address of a variable, a description string, and a value.
+Non-empty description strings should be marked with @code{N_(@dots{})}
+for @command{xgettext}.  Please do not mark empty strings because the
+empty string is reserved by GNU gettext. @code{gettext("")} returns the
+header entry of the message catalog with meta information, not the empty
+string.
 
-The variable, type @code{char *}, is set to the variable part of the
-given option if the fixed part matches.  The actual option name is made
-by appending @samp{-m} to the specified name.  Again, each option should
-also be documented in @file{invoke.texi}.
+If the value listed in the table is @code{NULL}, then the variable, type
+@code{char *}, is set to the variable part of the given option if the
+fixed part matches.  In other words, if the first part of the option
+matches what's in the table, the variable will be set to point to the
+rest of the option.  This allows the user to specify a value for that
+option.  The actual option name is made by appending @samp{-m} to the
+specified name.  Again, each option should also be documented in
+@file{invoke.texi}.
+
+If the value listed in the table is non-@code{NULL}, then the option
+must match the option in the table exactly (with @samp{-m}), and the
+variable is set to point to the value listed in the table.
 
 Here is an example which defines @option{-mshort-data-@var{number}}.  If the
 given option is @option{-mshort-data-512}, the variable @code{m88k_short_data}
@@ -781,7 +790,38 @@ will be set to the string @code{"512"}.
 extern char *m88k_short_data;
 #define TARGET_OPTIONS \
  @{ @{ "short-data-", &m88k_short_data, \
-     N_("Specify the size of the short data section") @} @}
+     N_("Specify the size of the short data section"), 0 @} @}
+@end smallexample
+
+Here is an variant of the above that allows the user to also specify
+just @option{-mshort-data} where a default of @code{"64"} is used.
+
+@smallexample
+extern char *m88k_short_data;
+#define TARGET_OPTIONS \
+ @{ @{ "short-data-", &m88k_short_data, \
+     N_("Specify the size of the short data section"), 0 @} \
+    @{ "short-data", &m88k_short_data, "", "64" @},
+    @}
+@end smallexample
+
+Here is an example which defines @option{-mno-alu}, @option{-malu1}, and
+@option{-malu2} as a three-state switch, along with suitable macros for
+checking the state of the option (documentation is elided for brevity).
+
+@smallexample
+[chip.c]
+char *chip_alu = ""; /* Specify default here.  */
+
+[chip.h]
+extern char *chip_alu;
+#define TARGET_OPTIONS \
+  @{ @{ "no-alu", &chip_alu, "", "" @}, \
+     @{ "alu1", &chip_alu, "", "1" @}, \
+     @{ "alu2", &chip_alu, "", "2" @}, @}
+#define TARGET_ALU (chip_alu[0] != '\0')
+#define TARGET_ALU1 (chip_alu[0] == '1')
+#define TARGET_ALU2 (chip_alu[0] == '2')
 @end smallexample
 
 @findex TARGET_VERSION

@@ -82,9 +82,9 @@ extern const char *rs6000_sdata_name;
 
 /* Override rs6000.h definition.  */
 #undef	SUBTARGET_OPTIONS
-#define	SUBTARGET_OPTIONS						\
-  { "call-",  &rs6000_abi_name, N_("Select ABI calling convention") },	\
-  { "sdata=", &rs6000_sdata_name, N_("Select method for sdata handling") }
+#define	SUBTARGET_OPTIONS							\
+  { "call-",  &rs6000_abi_name, N_("Select ABI calling convention"), 0},	\
+  { "sdata=", &rs6000_sdata_name, N_("Select method for sdata handling"), 0}
 
 /* Max # of bytes for variables to automatically be put into the .sdata
    or .sdata2 sections.  */

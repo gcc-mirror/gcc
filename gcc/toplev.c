@@ -1437,6 +1437,7 @@ static const struct
   const char *const prefix;
   const char **const variable;
   const char *const description;
+  const char *const value;
 }
 target_options[] = TARGET_OPTIONS;
 #endif
@@ -4685,10 +4686,21 @@ set_target_switch (name)
     for (j = 0; j < ARRAY_SIZE (target_options); j++)
       {
 	int len = strlen (target_options[j].prefix);
-	if (!strncmp (target_options[j].prefix, name, len))
+	if (target_options[j].value)
 	  {
-	    *target_options[j].variable = name + len;
-	    valid_target_option = 1;
+	    if (!strcmp (target_options[j].prefix, name))
+	      {
+		*target_options[j].variable = target_options[j].value;
+		valid_target_option = 1;
+	      }
+	  }
+	else
+	  {
+	    if (!strncmp (target_options[j].prefix, name, len))
+	      {
+		*target_options[j].variable = name + len;
+		valid_target_option = 1;
+	      }
 	  }
       }
 #endif

@@ -376,26 +376,26 @@ extern enum processor_type rs6000_cpu;
 #define TARGET_OPTIONS							\
 {									\
    {"cpu=",  &rs6000_select[1].string,					\
-    N_("Use features of and schedule code for given CPU") },		\
+    N_("Use features of and schedule code for given CPU"), 0},		\
    {"tune=", &rs6000_select[2].string,					\
-    N_("Schedule code for given CPU") },				\
-   {"debug=", &rs6000_debug_name, N_("Enable debug output") },		\
+    N_("Schedule code for given CPU"), 0},				\
+   {"debug=", &rs6000_debug_name, N_("Enable debug output"), 0},	\
    {"traceback=", &rs6000_traceback_name,				\
-    N_("Select full, part, or no traceback table") },			\
-   {"abi=", &rs6000_abi_string, N_("Specify ABI to use") },		\
+    N_("Select full, part, or no traceback table"), 0},			\
+   {"abi=", &rs6000_abi_string, N_("Specify ABI to use"), 0},		\
    {"long-double-", &rs6000_long_double_size_string,			\
-    N_("Specify size of long double (64 or 128 bits)") },		\
+    N_("Specify size of long double (64 or 128 bits)"), 0},		\
    {"isel=", &rs6000_isel_string,                                       \
-    N_("Specify yes/no if isel instructions should be generated") },    \
+    N_("Specify yes/no if isel instructions should be generated"), 0},  \
    {"spe=", &rs6000_spe_string,                                         \
-    N_("Specify yes/no if SPE SIMD instructions should be generated") },\
+    N_("Specify yes/no if SPE SIMD instructions should be generated"), 0},\
    {"float-gprs=", &rs6000_float_gprs_string,                           \
-    N_("Specify yes/no if using floating point in the GPRs") },         \
-   {"vrsave=", &rs6000_altivec_vrsave_string,                         \
-    N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec") }, \
+    N_("Specify yes/no if using floating point in the GPRs"), 0},       \
+   {"vrsave=", &rs6000_altivec_vrsave_string,                           \
+    N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec"), 0}, \
    {"longcall", &rs6000_longcall_switch,				\
-    N_("Avoid all range limits on call instructions") },		\
-   {"no-longcall", &rs6000_longcall_switch, "" },			\
+    N_("Avoid all range limits on call instructions"), 0},		\
+   {"no-longcall", &rs6000_longcall_switch, "", 0},			\
    SUBTARGET_OPTIONS							\
 }
 

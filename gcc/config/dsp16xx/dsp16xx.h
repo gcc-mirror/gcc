@@ -269,15 +269,15 @@ extern int target_flags;
 #define TARGET_OPTIONS						\
 {								\
   { "text=",	&text_seg_name,				        \
-    N_("Specify alternate name for text section") },            \
+    N_("Specify alternate name for text section"), 0},          \
   { "data=",	&data_seg_name,				        \
-    N_("Specify alternate name for data section") },            \
+    N_("Specify alternate name for data section"), 0},          \
   { "bss=",	&bss_seg_name,				        \
-    N_("Specify alternate name for bss section") },             \
+    N_("Specify alternate name for bss section"), 0},           \
   { "const=",   &const_seg_name,                                \
-    N_("Specify alternate name for constant section") },        \
+    N_("Specify alternate name for constant section"), 0},      \
   { "chip=",    &chip_name,                                     \
-    N_("Specify alternate name for dsp16xx chip") },            \
+    N_("Specify alternate name for dsp16xx chip"), 0},          \
 }
 
 /* Sometimes certain combinations of command options do not make sense

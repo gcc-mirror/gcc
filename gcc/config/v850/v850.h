@@ -220,14 +220,14 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 #define TARGET_OPTIONS							\
 {									\
   { "tda=",	&small_memory[ (int)SMALL_MEMORY_TDA ].value,		\
-      N_("Set the max size of data eligible for the TDA area")  },	\
-  { "tda-",	&small_memory[ (int)SMALL_MEMORY_TDA ].value, "" },	\
+      N_("Set the max size of data eligible for the TDA area"), 0},	\
+  { "tda-",	&small_memory[ (int)SMALL_MEMORY_TDA ].value, "", 0},	\
   { "sda=",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, 		\
-      N_("Set the max size of data eligible for the SDA area")  },	\
-  { "sda-",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, "" },	\
+      N_("Set the max size of data eligible for the SDA area"), 0},	\
+  { "sda-",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, "", 0},	\
   { "zda=",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, 		\
-      N_("Set the max size of data eligible for the ZDA area")  },	\
-  { "zda-",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, "" },	\
+      N_("Set the max size of data eligible for the ZDA area"), 0},	\
+  { "zda-",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, "", 0},	\
 }
 
 /* Sometimes certain combinations of command options do not make

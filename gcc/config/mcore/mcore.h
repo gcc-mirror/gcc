@@ -176,7 +176,7 @@ extern const char * mcore_stack_increment_string;
 #define	TARGET_OPTIONS							\
 {									\
   {"stack-increment=", & mcore_stack_increment_string,			\
-     N_("Maximum amount for a single stack increment operation")}	\
+     N_("Maximum amount for a single stack increment operation"), 0}	\
 }
 
 #ifndef CC1_SPEC

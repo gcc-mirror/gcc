@@ -138,11 +138,11 @@ extern const char *arc_cpu_string;
 extern const char *arc_text_string,*arc_data_string,*arc_rodata_string;
 
 #define TARGET_OPTIONS \
-{						\
-  { "cpu=",	&arc_cpu_string		},	\
-  { "text=",	&arc_text_string	},	\
-  { "data=",	&arc_data_string	},	\
-  { "rodata=",	&arc_rodata_string	},	\
+{					\
+  { "cpu=",	&arc_cpu_string, 0},	\
+  { "text=",	&arc_text_string, 0},	\
+  { "data=",	&arc_data_string, 0},	\
+  { "rodata=",	&arc_rodata_string, 0},	\
 }
 
 /* Which cpu we're compiling for.  */

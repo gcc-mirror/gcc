@@ -350,19 +350,19 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 #define TARGET_OPTIONS					\
 {							\
   {"cpu=",		&alpha_cpu_string,		\
-   N_("Use features of and schedule given CPU")},	\
+   N_("Use features of and schedule given CPU"), 0},	\
   {"tune=",		&alpha_tune_string,		\
-   N_("Schedule given CPU")},				\
+   N_("Schedule given CPU"), 0},			\
   {"fp-rounding-mode=",	&alpha_fprm_string,		\
-   N_("Control the generated fp rounding mode")},	\
+   N_("Control the generated fp rounding mode"), 0},	\
   {"fp-trap-mode=",	&alpha_fptm_string,		\
-   N_("Control the IEEE trap mode")},			\
+   N_("Control the IEEE trap mode"), 0},		\
   {"trap-precision=",	&alpha_tp_string,		\
-   N_("Control the precision given to fp exceptions")},	\
+   N_("Control the precision given to fp exceptions"), 0},	\
   {"memory-latency=",	&alpha_mlat_string,		\
-   N_("Tune expected memory latency")},			\
+   N_("Tune expected memory latency"), 0},		\
   {"tls-size=",		&alpha_tls_size_string,		\
-   N_("Specify bit size of immediate TLS offsets")},	\
+   N_("Specify bit size of immediate TLS offsets"), 0},	\
 }
 
 /* This macro defines names of additional specifications to put in the

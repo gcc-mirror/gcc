@@ -218,9 +218,9 @@ extern short *reg_renumber;	/* def in local_alloc.c */
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
 { { "reg-alloc=",	&m68hc11_reg_alloc_order,                       \
-    N_("Specify the register allocation order")},			\
+    N_("Specify the register allocation order"), 0},			\
   { "soft-reg-count=",	&m68hc11_soft_reg_count,                        \
-    N_("Indicate the number of soft registers available") },		\
+    N_("Indicate the number of soft registers available"), 0},		\
   SUBTARGET_OPTIONS							\
 }
 

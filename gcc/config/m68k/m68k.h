@@ -260,11 +260,11 @@ extern int target_flags;
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
 { { "align-loops=",	&m68k_align_loops_string,			\
-    N_("Loop code aligned to this power of 2") },			\
+    N_("Loop code aligned to this power of 2"), 0},			\
   { "align-jumps=",	&m68k_align_jumps_string,			\
-    N_("Jump targets are aligned to this power of 2") },		\
+    N_("Jump targets are aligned to this power of 2"), 0},		\
   { "align-functions=",	&m68k_align_funcs_string,			\
-    N_("Function starts are aligned to this power of 2") },		\
+    N_("Function starts are aligned to this power of 2"), 0},		\
   SUBTARGET_OPTIONS							\
 }
 

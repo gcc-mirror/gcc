@@ -486,13 +486,13 @@ extern int target_flags;
 	 "Specify the size of the short data section"  } }
 
    This declaration is optional.  */
-#define TARGET_OPTIONS							    \
-{									    \
-  { "cpu=",		&frv_cpu_string,	 "Set cpu type" },	    \
-  { "branch-cost=",	&frv_branch_cost_string, "Internal debug switch" }, \
-  { "cond-exec-insns=", &frv_condexec_insns_str, "Internal debug switch" }, \
-  { "cond-exec-temps=", &frv_condexec_temps_str, "Internal debug switch" }, \
-  { "sched-lookahead=", &frv_sched_lookahead_str,"Internal debug switch" }, \
+#define TARGET_OPTIONS							      \
+{									      \
+  { "cpu=",		&frv_cpu_string,	 "Set cpu type", 0},	      \
+  { "branch-cost=",	&frv_branch_cost_string, "Internal debug switch", 0}, \
+  { "cond-exec-insns=", &frv_condexec_insns_str, "Internal debug switch", 0}, \
+  { "cond-exec-temps=", &frv_condexec_temps_str, "Internal debug switch", 0}, \
+  { "sched-lookahead=", &frv_sched_lookahead_str,"Internal debug switch", 0}, \
 }
 
 /* This macro is a C statement to print on `stderr' a string describing the

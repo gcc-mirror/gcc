@@ -433,34 +433,34 @@ extern int x86_prefetch_sse;
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS						\
 { { "tune=",		&ix86_tune_string,			\
-    N_("Schedule code for given CPU")},				\
+    N_("Schedule code for given CPU"), 0},			\
   { "fpmath=",		&ix86_fpmath_string,			\
-    N_("Generate floating point mathematics using given instruction set")},\
+    N_("Generate floating point mathematics using given instruction set"), 0},\
   { "arch=",		&ix86_arch_string,			\
-    N_("Generate code for given CPU")},				\
+    N_("Generate code for given CPU"), 0},			\
   { "regparm=",		&ix86_regparm_string,			\
-    N_("Number of registers used to pass integer arguments") },	\
+    N_("Number of registers used to pass integer arguments"), 0},\
   { "align-loops=",	&ix86_align_loops_string,		\
-    N_("Loop code aligned to this power of 2") },		\
+    N_("Loop code aligned to this power of 2"), 0},		\
   { "align-jumps=",	&ix86_align_jumps_string,		\
-    N_("Jump targets are aligned to this power of 2") },	\
+    N_("Jump targets are aligned to this power of 2"), 0},	\
   { "align-functions=",	&ix86_align_funcs_string,		\
-    N_("Function starts are aligned to this power of 2") },	\
+    N_("Function starts are aligned to this power of 2"), 0},	\
   { "preferred-stack-boundary=",				\
     &ix86_preferred_stack_boundary_string,			\
-    N_("Attempt to keep stack aligned to this power of 2") },	\
+    N_("Attempt to keep stack aligned to this power of 2"), 0},	\
   { "branch-cost=",	&ix86_branch_cost_string,		\
-    N_("Branches are this expensive (1-5, arbitrary units)") },	\
+    N_("Branches are this expensive (1-5, arbitrary units)"), 0},\
   { "cmodel=", &ix86_cmodel_string,				\
-    N_("Use given x86-64 code model") },			\
+    N_("Use given x86-64 code model"), 0},			\
   { "debug-arg", &ix86_debug_arg_string,			\
-    "" /* Undocumented. */ },					\
+    "" /* Undocumented. */, 0},					\
   { "debug-addr", &ix86_debug_addr_string,			\
-    "" /* Undocumented. */ },					\
+    "" /* Undocumented. */, 0},					\
   { "asm=", &ix86_asm_string,					\
-    N_("Use given assembler dialect") },			\
+    N_("Use given assembler dialect"), 0},			\
   { "tls-dialect=", &ix86_tls_dialect_string,			\
-    N_("Use given thread-local storage dialect") },		\
+    N_("Use given thread-local storage dialect"), 0},		\
   SUBTARGET_OPTIONS						\
 }
 

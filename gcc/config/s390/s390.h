@@ -114,9 +114,9 @@ extern int target_flags;
 
 #define TARGET_OPTIONS                                          \
 { { "tune=",            &s390_tune_string,                      \
-    N_("Schedule code for given CPU")},                         \
+    N_("Schedule code for given CPU"), 0},                      \
   { "arch=",            &s390_arch_string,                      \
-    N_("Generate code for given CPU")},                         \
+    N_("Generate code for given CPU"), 0},                      \
 }
 
 /* Target version string.  Overridden by the OS header.  */

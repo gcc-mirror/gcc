@@ -249,8 +249,8 @@ extern int flag_pic;				/* -fpic */
 
 /* Macro to define table for command options with values.  */
 
-#define TARGET_OPTIONS { { "short-data-", &m88k_short_data }, \
-			 { "version-", &m88k_version } }
+#define TARGET_OPTIONS { { "short-data-", &m88k_short_data, 0}, \
+			 { "version-", &m88k_version, 0} }
 
 /* Do any checking or such that is needed after processing the -m switches.  */
 

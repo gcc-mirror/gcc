@@ -269,9 +269,9 @@ extern const char * m32r_sdata_string;
 #define TARGET_OPTIONS							\
 {									\
   { "model=", & m32r_model_string,					\
-    N_("Code size: small, medium or large") },				\
+    N_("Code size: small, medium or large"), 0},			\
   { "sdata=", & m32r_sdata_string,					\
-    N_("Small data area: none, sdata, use") }				\
+    N_("Small data area: none, sdata, use"), 0}				\
   SUBTARGET_OPTIONS							\
 }
 
