@@ -279,10 +279,8 @@ static GTY((length ("fde_table_allocated"))) dw_fde_ref fde_table;
 /* Number of elements currently allocated for fde_table.  */
 static unsigned fde_table_allocated;
 
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 /* Number of elements in fde_table currently in use.  */
-static unsigned fde_table_in_use;
-#endif
+static GTY(()) unsigned fde_table_in_use;
 
 /* Size (in elements) of increments by which we may expand the
    fde_table.  */
@@ -310,6 +308,7 @@ struct indirect_string_node GTY(())
 static GTY ((param_is (struct indirect_string_node))) htab_t debug_str_hash;
 
 static GTY(()) int dw2_string_counter;
+static GTY(()) unsigned long dwarf2out_cfi_label_num;
 
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
@@ -561,9 +560,8 @@ char *
 dwarf2out_cfi_label ()
 {
   static char label[20];
-  static unsigned long label_num = 0;
 
-  ASM_GENERATE_INTERNAL_LABEL (label, "LCFI", label_num++);
+  ASM_GENERATE_INTERNAL_LABEL (label, "LCFI", dwarf2out_cfi_label_num++);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   return label;
 }

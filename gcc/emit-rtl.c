@@ -69,7 +69,7 @@ enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 /* This is *not* reset after each function.  It gives each CODE_LABEL
    in the entire compilation a unique label number.  */
 
-static int label_num = 1;
+static GTY(()) int label_num = 1;
 
 /* Highest label number in current function.
    Zero means use the value of label_num instead.
