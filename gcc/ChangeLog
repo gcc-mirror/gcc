@@ -1,3 +1,8 @@
+2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-alias.c: Follow spelling conventions.
+	* doc/tree-ssa.texi: Fix a typo.
+
 2005-03-31  J"orn Rennecke <joern.rennecke@st.com>
 
 	* postreload-gcse.c: Include target.h.
