@@ -468,7 +468,7 @@ struct ls_expr
   struct ls_expr * next;	/* Next in the list.  */
   int invalid;			/* Invalid for some reason.  */
   int index;			/* If it maps to a bitmap index.  */
-  int hash_index;		/* Index when in a hash table.  */
+  unsigned int hash_index;	/* Index when in a hash table.  */
   rtx reaching_reg;		/* Register to use when re-writing.  */
 };
 
@@ -1513,12 +1513,14 @@ oprs_available_p (rtx x, rtx insn)
 
    MODE is only used if X is a CONST_INT.  DO_NOT_RECORD_P is a boolean
    indicating if a volatile operand is found or if the expression contains
-   something we don't want to insert in the table.
+   something we don't want to insert in the table.  HASH_TABLE_SIZE is
+   the current size of the hash table to be probed.
 
    ??? One might want to merge this with canon_hash.  Later.  */
 
 static unsigned int
-hash_expr (rtx x, enum machine_mode mode, int *do_not_record_p, int hash_table_size)
+hash_expr (rtx x, enum machine_mode mode, int *do_not_record_p,
+	   int hash_table_size)
 {
   unsigned int hash;
 
@@ -6519,28 +6521,29 @@ one_code_hoisting_pass (void)
 static struct ls_expr *
 ldst_entry (rtx x)
 {
+  int do_not_record_p = 0;
   struct ls_expr * ptr;
+  unsigned int hash;
 
-  for (ptr = first_ls_expr(); ptr != NULL; ptr = next_ls_expr (ptr))
-    if (expr_equiv_p (ptr->pattern, x))
-      break;
+  hash = hash_expr_1 (x, GET_MODE (x), & do_not_record_p);
 
-  if (!ptr)
-    {
-      ptr = xmalloc (sizeof (struct ls_expr));
+  for (ptr = pre_ldst_mems; ptr != NULL; ptr = ptr->next)
+    if (ptr->hash_index == hash && expr_equiv_p (ptr->pattern, x))
+      return ptr;
 
-      ptr->next         = pre_ldst_mems;
-      ptr->expr         = NULL;
-      ptr->pattern      = x;
-      ptr->pattern_regs	= NULL_RTX;
-      ptr->loads        = NULL_RTX;
-      ptr->stores       = NULL_RTX;
-      ptr->reaching_reg = NULL_RTX;
-      ptr->invalid      = 0;
-      ptr->index        = 0;
-      ptr->hash_index   = 0;
-      pre_ldst_mems     = ptr;
-    }
+  ptr = xmalloc (sizeof (struct ls_expr));
+
+  ptr->next         = pre_ldst_mems;
+  ptr->expr         = NULL;
+  ptr->pattern      = x;
+  ptr->pattern_regs = NULL_RTX;
+  ptr->loads        = NULL_RTX;
+  ptr->stores       = NULL_RTX;
+  ptr->reaching_reg = NULL_RTX;
+  ptr->invalid      = 0;
+  ptr->index        = 0;
+  ptr->hash_index   = hash;
+  pre_ldst_mems     = ptr;
 
   return ptr;
 }
@@ -6800,55 +6803,40 @@ compute_ld_motion_mems (void)
 static void
 trim_ld_motion_mems (void)
 {
-  struct ls_expr * last = NULL;
-  struct ls_expr * ptr = first_ls_expr ();
+  struct ls_expr * * last = & pre_ldst_mems;
+  struct ls_expr * ptr = pre_ldst_mems;
 
   while (ptr != NULL)
     {
-      int del = ptr->invalid;
-      struct expr * expr = NULL;
+      struct expr * expr;
 
       /* Delete if entry has been made invalid.  */
-      if (!del)
+      if (! ptr->invalid)
 	{
-	  unsigned int i;
-
-	  del = 1;
 	  /* Delete if we cannot find this mem in the expression list.  */
-	  for (i = 0; i < expr_hash_table.size && del; i++)
-	    {
-	      for (expr = expr_hash_table.table[i];
-		   expr != NULL;
-		   expr = expr->next_same_hash)
-		if (expr_equiv_p (expr->expr, ptr->pattern))
-		  {
-		    del = 0;
-		    break;
-		  }
-	    }
-	}
+	  unsigned int hash = ptr->hash_index % expr_hash_table.size;
 
-      if (del)
+	  for (expr = expr_hash_table.table[hash];
+	       expr != NULL;
+	       expr = expr->next_same_hash)
+	    if (expr_equiv_p (expr->expr, ptr->pattern))
+	      break;
+	}
+      else
+	expr = (struct expr *) 0;
+
+      if (expr)
 	{
-	  if (last != NULL)
-	    {
-	      last->next = ptr->next;
-	      free_ldst_entry (ptr);
-	      ptr = last->next;
-	    }
-	  else
-	    {
-	      pre_ldst_mems = pre_ldst_mems->next;
-	      free_ldst_entry (ptr);
-	      ptr = pre_ldst_mems;
-	    }
+	  /* Set the expression field if we are keeping it.  */
+	  ptr->expr = expr;
+	  last = & ptr->next;
+	  ptr = ptr->next;
 	}
       else
 	{
-	  /* Set the expression field if we are keeping it.  */
-	  last = ptr;
-	  ptr->expr = expr;
-	  ptr = ptr->next;
+	  *last = ptr->next;
+	  free_ldst_entry (ptr);
+	  ptr = * last;
 	}
     }
 
