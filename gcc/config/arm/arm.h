@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Acorn RISC Machine.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
               and Martin Simmons (@harleqn.co.uk).
 
@@ -847,11 +847,6 @@ do									\
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
-
-/* Define if normal loads of shorter-than-word items from memory clears
-   the rest of the bigs in the register.
-   On the ARM, movhi does a garbage extend.  */
-/* #define BYTE_LOADS_ZERO_EXTEND */
 
 /* Define this if zero-extension is slow (more than one real instruction).
    On the ARM, it is more than one instruction only if not fetching from
