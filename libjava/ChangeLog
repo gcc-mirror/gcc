@@ -1,5 +1,10 @@
 2004-04-21  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/natPlainSocketImplPosix.cc
+	(SocketInputStream::read): Make sure returned data is a byte value.
+
+2004-04-21  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/classpath/ServiceFactory.java,
 	gnu/classpath/ServiceProviderLoadingAction.java,
 	javax/imageio/ImageReader.java,
