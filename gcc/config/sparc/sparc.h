@@ -3146,3 +3146,9 @@ extern int flag_pic;
    is something you can return to.  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx (PLUS, word_mode, gen_rtx (REG, word_mode, 15), GEN_INT (8))
+
+/* The offset from the incoming value of %sp to the top of the stack frame
+   for the current function.  On sparc64, we have to account for the stack
+   bias if present.  */
+
+#define INCOMING_FRAME_SP_OFFSET SPARC_STACK_BIAS

@@ -1,3 +1,8 @@
+Mon Sep 22 11:36:42 1997  David S. Miller  <davem@tanya.rutgers.edu>
+
+	* sparc.h (INCOMING_FRAME_SP_OFFSET): Define to
+	SPARC_STACK_BIAS for sake of dwarf2 on sparc64.
+
 Mon Sep 22 11:21:33 1997  J. Kean Johnston  <jkj@sco.com>
 
 	* i386/sco5.h: Make ELF default file format and add -mcoff/-melf..
