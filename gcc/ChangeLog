@@ -1,3 +1,8 @@
+2001-03-27  Alan Modra  <alan@linuxcare.com.au>
+
+	* except.c (eh_regs): Save results of build_pointer_type to a temp
+	as FUNCTION_VALUE macro may evaluate its args multiple times.
+
 2001-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (DECL_NUM_STMTS): New macro.
