@@ -770,6 +770,8 @@ avoid_overlap (decl, newdecl)
     ;
 
   DECL_SIZE (field) = integer_one_node;
+
+  return 1;
 }
 
 /* Returns a list of fields to stand in for the base class subobjects
