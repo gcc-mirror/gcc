@@ -491,6 +491,7 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
 	{
 	  rtx start, end;
 	  rtx t, f;
+	  enum rtx_code f_code;
 
 	  bb = block_fallthru (bb);
 	  start = first_active_insn (bb);
@@ -510,11 +511,11 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
 	  if (! t)
 	    goto fail;
 
-	  f = gen_rtx_fmt_ee (reverse_condition (GET_CODE (t)),
-			      GET_MODE (t),
-			      XEXP (t, 0),
-			      XEXP (t, 1));
+	  f_code = reversed_comparison_code (t, BB_END (bb));
+	  if (f_code == UNKNOWN)
+	    goto fail;
 
+	  f = gen_rtx_fmt_ee (f_code, GET_MODE (t), XEXP (t, 0), XEXP (t, 1));
 	  if (ce_info->and_and_p)
 	    {
 	      t = gen_rtx_AND (GET_MODE (t), true_expr, t);

@@ -5240,16 +5240,17 @@ like:
 @end smallexample
 @end defmac
 
-@defmac REVERSE_CONDEXEC_PREDICATES_P (@var{code1}, @var{code2})
+@defmac REVERSE_CONDEXEC_PREDICATES_P (@var{op1}, @var{op2})
 A C expression that returns true if the conditional execution predicate
-@var{code1} is the inverse of @var{code2} and vice versa.  Define this to
-return 0 if the target has conditional execution predicates that cannot be
-reversed safely.  If no expansion is specified, this macro is defined as
-follows:
+@var{op1}, a comparison operation, is the inverse of @var{op2} and vice
+versa.  Define this to return 0 if the target has conditional execution
+predicates that cannot be reversed safely.  There is no need to validate
+that the arguments of op1 and op2 are the same, this is done separately.
+If no expansion is specified, this macro is defined as follows:
 
 @smallexample
 #define REVERSE_CONDEXEC_PREDICATES_P (x, y) \
-   ((x) == reverse_condition (y))
+   (GET_CODE ((x)) == reversed_comparison_code ((y), NULL))
 @end smallexample
 @end defmac
 

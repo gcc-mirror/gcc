@@ -1,5 +1,15 @@
 2004-08-29  Richard Earnshaw  <rearnsha@arm.com>
 
+	* flow.c (REVERSE_CONDEXEC_PREDICATES_P): Use the whole comparison, not
+	just the codes, call reversed_comparison_code ().
+	(ior_reg_cond): Update arguments to REVERSE_CONDEXEC_PREDICATES_P.
+	(not_reg_cond): Use reversed_comparison_code.
+	(and_reg_cond): Likewise.
+	* ifcvt.c (cond_exec_process_if_block): Likewise.
+	* doc/tm.texi (REVERSE_CONDEXEC_PREDICATES_P): Update documentation.
+
+2004-08-29  Richard Earnshaw  <rearnsha@arm.com>
+
 	* sched-deps.c (get_condition): Rewrite using jump support functions.
 	Use reversed_comparison_code.
 	(conditions_mutex_p): Use reversed_comparison_code.
