@@ -77,10 +77,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "gansidecl.h"
 
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
-
 extern void cpp_fatal ();
 
 #if !__STDC__ && !defined(const)

@@ -144,14 +144,6 @@ typedef char * pointer_type;
 typedef char * const_pointer_type;
 #endif
 
-#ifndef O_RDONLY
-#define O_RDONLY        0
-#endif
-
-#ifndef O_WRONLY
-#define O_WRONLY        1
-#endif
-
 #if defined(POSIX)
 
 #include <signal.h>
