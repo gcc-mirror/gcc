@@ -10,6 +10,9 @@ details.  */
 
 package java.io;
 
+import java.util.*;
+import gnu.gcj.runtime.FileDeleter;
+
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date September 24, 1998 
@@ -42,7 +45,7 @@ public class File implements Serializable
     return access (p, WRITE);
   }
 
-  private final native boolean performDelete (String canon);
+  private final native static boolean performDelete (String canon);
   public boolean delete ()
   {
     SecurityManager s = System.getSecurityManager();
@@ -345,6 +348,17 @@ public class File implements Serializable
 	// Nothing.
       }
     return p;
+  }
+
+  // Add this File to the set of files to be deleted upon normal
+  // termination.
+  public void deleteOnExit ()
+  {
+    SecurityManager sm = System.getSecurityManager ();
+    if (sm != null)
+      sm.checkDelete (getName ());
+
+    FileDeleter.add (this);
   }
 
   // QUERY arguments to access function.

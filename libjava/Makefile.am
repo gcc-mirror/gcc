@@ -733,6 +733,7 @@ gnu/gcj/protocol/http/Connection.java \
 gnu/gcj/protocol/http/Handler.java \
 gnu/gcj/protocol/jar/Connection.java \
 gnu/gcj/protocol/jar/Handler.java \
+gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/text/BaseBreakIterator.java \
