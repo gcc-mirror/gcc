@@ -1,3 +1,37 @@
+1999-11-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (begin_new_placement): Remove.
+	(finish_new_placement): Likewise.
+	* class.c (finish_struct_1): Don't suspend_momentary or
+	resume_momentary.
+	* decl.c (grokdeclarator): Likewise.
+	(maybe_build_cleanup_1): Likewise.
+	* except.c (push_eh_cleanup): Likewise.
+	(build_terminate_handler): Likewise.
+	* init.c (build_new_1): Likewise.
+	* parse.y (parse_decl): Change prototype.
+	(initdecls, notype_initdecls, initdcl): Don't return int.
+	(initdcl0, notype_initdcl0, initdcl0_innards): Likewise.
+	(.begin_new_placement): Remove.
+	(.finish_new_placement): Likewise.
+	(nonmomentary_expr): Likewise.
+	(suspend_mom): Likewise.
+	(condition): Don't suspend_momentary, resume_momentary, or keep
+	track of need to resume.
+	(unary_expr): Likewise.
+	(new_placement): Likewise.
+	(decl): Likewise.
+	(structsp): Likewise.
+	(new_type_id): Likewise.
+	(maybe_parmlist): Likewise.
+	(direct_after_type_declaration): Likewise.
+	(direct_new_declarator): Likewise.
+	(direct_abstract_declaration): Likewise.
+	* parse.c: Regenerated.
+	* pt.c (tsubst_expr): Don't suspend_momentary or resume_momentary.
+	* semantics.c (begin_new_placement): Remove.
+	(finish_new_placement): Likewise.
+	
 1999-11-05  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK): New macro.

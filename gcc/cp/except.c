@@ -440,12 +440,7 @@ do_pop_exception ()
 static void
 push_eh_cleanup ()
 {
-  int yes;
-
-  yes = suspend_momentary ();
-  /* All cleanups must last longer than normal.  */
   finish_decl_cleanup (NULL_TREE, do_pop_exception ());
-  resume_momentary (yes);
 }
 
 /* Build up a call to terminate on the function obstack, for use as an
@@ -454,10 +449,7 @@ push_eh_cleanup ()
 static tree
 build_terminate_handler ()
 {
-  int yes = suspend_momentary ();
-  tree term = build_function_call (terminate_node, NULL_TREE);
-  resume_momentary (yes);
-  return term;
+  return build_function_call (terminate_node, NULL_TREE);
 }
 
 /* Initialize the catch parameter DECL.  */

@@ -7097,7 +7097,6 @@ tsubst_expr (t, args, complain, in_decl)
 
     case DECL_STMT:
       {
-	int i = suspend_momentary ();
 	tree decl;
 	tree init;
 
@@ -7122,7 +7121,6 @@ tsubst_expr (t, args, complain, in_decl)
 	    maybe_push_decl (decl);
 	    cp_finish_decl (decl, init, NULL_TREE, 0, 0);
 	  }
-	resume_momentary (i);
 	return decl;
       }
 
