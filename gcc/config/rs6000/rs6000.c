@@ -7621,11 +7621,11 @@ rs6000_encode_section_info (decl)
 	{
 	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
 	  size_t len = strlen (XSTR (sym_ref, 0));
-	  char *str = alloca (len + 1);
+	  char *str = alloca (len + 2);
 
 	  str[0] = '@';
 	  memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
-	  XSTR (sym_ref, 0) = ggc_alloc_string (str, len);
+	  XSTR (sym_ref, 0) = ggc_alloc_string (str, len + 1);
 	}
     }
 }
