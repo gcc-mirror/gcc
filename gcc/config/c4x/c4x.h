@@ -1162,11 +1162,6 @@ CUMULATIVE_ARGS;
 
 #define DEFAULT_PCC_STRUCT_RETURN	0
 
-/* Varargs handling.  */
-
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  c4x_va_arg (valist, type)
-
 /* Generating Code for Profiling.  */
 
 /* Note that the generated assembly uses the ^ operator to load the 16
