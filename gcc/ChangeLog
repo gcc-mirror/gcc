@@ -1,3 +1,7 @@
+Wed Oct 28 03:59:29 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* final.c (cleanup_subreg_operands):  ASM_INPUTs need no treatment.
+
 Wed Oct 28 02:38:12 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (compile_file): Temporarily revert last change.
