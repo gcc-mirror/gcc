@@ -151,7 +151,8 @@ target_libraries="target-libiberty \
 		target-libstdc++-v3 \
 		target-libf2c \
 		${libgcj} \
-		target-libobjc"
+		target-libobjc \
+		target-libada"
 
 # these tools are built using the target libraries, and are intended to
 # run only in the target environment
@@ -305,6 +306,14 @@ case "${host}" in
     noconfigdirs="$noconfigdirs tk itcl tix libgui"
     ;;
 esac
+
+AC_ARG_ENABLE(libada,
+[  --enable-libada        Builds libada directory],
+ENABLE_LIBADA=$enableval,
+ENABLE_LIBADA=yes)
+if test "${ENABLE_LIBADA}" != "yes" ; then
+  noconfigdirs="$noconfigdirs target-libada"
+fi
 
 # Save it here so that, even in case of --enable-libgcj, if the Java
 # front-end isn't enabled, we still get libgcj disabled.
