@@ -4432,7 +4432,9 @@ make_tree (tree type, rtx x)
       if (POINTER_TYPE_P (type))
 	x = convert_memory_address (TYPE_MODE (type), x);
 
-      SET_DECL_RTL (t, x);
+      /* Note that we do *not* use SET_DECL_RTL here, because we do not
+	 want set_decl_rtl to go adjusting REG_ATTRS for this temporary.  */
+      t->decl.rtl = x;
 
       return t;
     }
