@@ -1,6 +1,6 @@
 2004-06-12  Bud Davis  <bdavis9659@comcast.net>
 
-	PR fortran/15655
+	PR fortran/15665
 	* intrinsics/args.c: Implement GETARG and IARGC.
 	* Makefile.am: Add it.
 	* Makefile.in: Regenerate.
