@@ -17,9 +17,13 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.4 2000/12/28 21:47:37 robertl Exp $
+/* $Id: jartool.c,v 1.5 2001/05/03 21:40:47 danglin Exp $
 
    $Log: jartool.c,v $
+   Revision 1.5  2001/05/03 21:40:47  danglin
+   	* jartool.c (jt_strdup): New function.
+   	(get_next_arg): Use jt_strdup instead of strdup.
+
    Revision 1.4  2000/12/28 21:47:37  robertl
    2000-12-28  Robert Lipe <robertl@sco.com>
 
@@ -208,7 +212,13 @@
 
 static char version_string[] = VERSION;
 
+#ifndef errno
 extern int errno;
+#endif
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 void usage(const char*);
 void add_entry(struct zipentry *);
@@ -366,8 +376,9 @@ int main(int argc, char **argv){
   /* create the jarfile */
   if(action == ACTION_CREATE){
     if(file){
-      jarfd = creat(jarfile, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-      
+      jarfd = open(jarfile, O_CREAT | O_BINARY | O_WRONLY | O_TRUNC,
+		   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
       if(jarfd < 0){
         fprintf(stderr, "Error opening %s for writing!\n", jarfile);
         perror(jarfile);
@@ -391,7 +402,7 @@ int main(int argc, char **argv){
   } else if(action == ACTION_LIST || action == ACTION_EXTRACT){
 
     if(file){
-      jarfd = open(jarfile, O_RDONLY);
+      jarfd = open(jarfile, O_RDONLY | O_BINARY);
 
       if(jarfd < 0){
         fprintf(stderr, "Error opening %s for reading!\n", jarfile);
@@ -413,7 +424,7 @@ int main(int argc, char **argv){
     init_headers();
 
    if((action == ACTION_UPDATE) && file) {
-      if((jarfd = open(jarfile, O_RDWR)) < 0) {
+      if((jarfd = open(jarfile, O_RDWR | O_BINARY)) < 0) {
 	fprintf(stderr, "Error opening %s for reading!\n", jarfile);
         perror(jarfile);
         exit(1);
@@ -724,7 +735,7 @@ int make_manifest(int jfd, const char *mf_name){
       exit(1);
     }
   
-    mfd = open(mf_name, O_RDONLY);
+    mfd = open(mf_name, O_RDONLY | O_BINARY);
 
     if(mfd < 0){
       fprintf(stderr, "Error opening %s.\n", mf_name);
@@ -870,7 +881,7 @@ int add_to_jar(int fd, const char *new_dir, const char *file){
   } else if(S_ISREG(statbuf.st_mode)){
     int add_fd;
 
-    add_fd = open(file, O_RDONLY);
+    add_fd = open(file, O_RDONLY | O_BINARY);
     if(add_fd < 0){
       fprintf(stderr, "Error opening %s.\n", file);
       return 0;
