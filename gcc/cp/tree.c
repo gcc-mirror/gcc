@@ -1821,7 +1821,7 @@ copy_tree_r (tp, walk_subtrees, data)
       /* For now, we don't update BLOCKs when we make copies.  So, we
 	 have to nullify all scope-statements.  */
       if (TREE_CODE (*tp) == SCOPE_STMT)
-	SCOPE_NULLIFIED_P (*tp) = 1;
+	SCOPE_STMT_BLOCK (*tp) = NULL_TREE;
     }
   else if (code == TEMPLATE_TEMPLATE_PARM)
     /* These must be copied specially.  */

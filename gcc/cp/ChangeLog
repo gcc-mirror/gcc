@@ -1,5 +1,27 @@
 1999-12-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.def (SCOPE_STMT): Take one operand.
+	* cp-tree.h (SCOPE_STMT_BLOCK): New macro.
+	(SCOPE_NULLIFIED_P): Redefine.
+	(SCOPE_NO_CLEANUPS_P): New macro.
+	(add_scope_stmt): Change prototype.
+	* decl.c (poplevel): Tidy.  Warn about unused variables here.
+	Record SCOPE_STMT_BLOCKs.
+	(finish_function): Keep DECL_INITIAL for functions that might be
+	inlined.
+	* ir.texi: Document SCOPE_NO_CLEANUPS_P.
+	* semantics.c: Include rtl.h.
+	(add_scope_stmt): Return the new scope statement and, for an
+	end-of-scope statement, its matching begin statement.  Don't set
+	SCOPE_NULLIFIED_P.
+	(do_pushlevel): Simplify, now that we are always
+	function-at-a-time.
+	(do_poplevel): Likewise.  Record SCOPE_STMT_BLOCKs.
+	(expand_stmt): Don't call expand_start_bindings or
+	expand_end_bindings for a scope with SCOPE_NO_CLEANUPS_P set.
+	* tree.c (copy_tree_r): Clear SCOPE_STMT_BLOCK rather than setting
+	SCOPE_NULLIFIED_P.
+	
 	* decl2.c (pending_statics_used): Make it a macro.
 	(saved_inlines_used): Likewise.
 	(finish_static_data_member_decl): Use VARRAY_PUSH_TREE.

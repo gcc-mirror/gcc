@@ -1170,7 +1170,6 @@ poplevel (keep, reverse, functionbody)
 
   /* Output any nested inline functions within this block
      if they weren't already output.  */
-
   for (decl = decls; decl; decl = TREE_CHAIN (decl))
     if (TREE_CODE (decl) == FUNCTION_DECL
 	&& ! TREE_ASM_WRITTEN (decl)
@@ -1191,10 +1190,17 @@ poplevel (keep, reverse, functionbody)
 	  }
       }
 
+  /* When not in function-at-a-time mode, expand_end_bindings will
+     warn about unused variables.  But, in function-at-a-time mode
+     expand_end_bindings is not passed the list of variables in the
+     current scope, and therefore no warning is emitted.  So, we
+     explicitly warn here.  */
+  if (!processing_template_decl)
+    warn_about_unused_variables (getdecls ());
+
   /* If there were any declarations or structure tags in that level,
      or if this level is a function body,
      create a BLOCK to record them for the life of this function.  */
-
   block = NULL_TREE;
   block_previously_created = (current_binding_level->this_block != NULL_TREE);
   if (block_previously_created)
@@ -1227,7 +1233,6 @@ poplevel (keep, reverse, functionbody)
     }
 
   /* In each subblock, record that this is its superior.  */
-
   if (keep >= 0)
     for (link = subblocks; link; link = TREE_CHAIN (link))
       BLOCK_SUPERCONTEXT (link) = block;
@@ -1406,23 +1411,28 @@ poplevel (keep, reverse, functionbody)
     current_binding_level->blocks
       = chainon (current_binding_level->blocks, subblocks);
 
-  /* Take care of compiler's internal binding structures.  */
-  if (tmp == 2)
-    {
-      add_scope_stmt (/*begin_p=*/0, /*partial_p=*/1);
-      /* Each and every BLOCK node created here in `poplevel' is important
-	 (e.g. for proper debugging information) so if we created one
-	 earlier, mark it as "used".  */
-      if (block)
-	TREE_USED (block) = 1;
-      block = poplevel (keep, reverse, functionbody);
-    }
-
   /* Each and every BLOCK node created here in `poplevel' is important
      (e.g. for proper debugging information) so if we created one
      earlier, mark it as "used".  */
   if (block)
     TREE_USED (block) = 1;
+
+  /* Take care of compiler's internal binding structures.  */
+  if (tmp == 2)
+    {
+      tree scope_stmts;
+
+      scope_stmts 
+	= add_scope_stmt (/*begin_p=*/0, /*partial_p=*/1);
+      if (block)
+	{
+	  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmts)) = block;
+	  SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmts)) = block;
+	}
+
+      block = poplevel (keep, reverse, functionbody);
+    }
+
   return block;
 }
 
@@ -13777,7 +13787,8 @@ finish_function (lineno, flags)
 
   --function_depth;
 
-  if (!DECL_SAVED_INSNS (fndecl) && !DECL_SAVED_FUNCTION_DATA (fndecl))
+  if (!DECL_SAVED_INSNS (fndecl) && !DECL_SAVED_FUNCTION_DATA (fndecl)
+      && !(flag_inline_trees && DECL_INLINE (fndecl)))
     {
       tree t;
 

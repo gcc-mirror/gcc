@@ -66,7 +66,7 @@ Boston, MA 02111-1307, USA.  */
       (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
-      SCOPE_NULLIFIED_P (in SCOPE_STMT)
+      SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
@@ -2697,6 +2697,10 @@ extern int flag_new_for_scope;
 #define SCOPE_END_P(NODE) \
   (!SCOPE_BEGIN_P (SCOPE_STMT_CHECK (NODE)))
 
+/* The BLOCK containing the declarations contained in this scope.  */
+#define SCOPE_STMT_BLOCK(NODE) \
+  (TREE_OPERAND (SCOPE_STMT_CHECK (NODE), 0))
+
 /* Nonzero if this CTOR_STMT is for the beginning of a constructor.  */
 #define CTOR_BEGIN_P(NODE) \
   (TREE_LANG_FLAG_0 (CTOR_STMT_CHECK (NODE)))
@@ -2707,6 +2711,12 @@ extern int flag_new_for_scope;
 
 /* Nonzero for a SCOPE_STMT if there were no variables in this scope.  */
 #define SCOPE_NULLIFIED_P(NODE) \
+  (SCOPE_STMT_BLOCK ((NODE)) == NULL_TREE)
+
+/* Nonzero for a SCOPE_STMT which represents a lexical scope, but
+   which should be treated as non-existant from the point of view of
+   running cleanup actions.  */
+#define SCOPE_NO_CLEANUPS_P(NODE) \
   (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
 
 /* Nonzero for a SCOPE_STMT if this statement is for a partial scope.
@@ -3969,7 +3979,7 @@ extern void expand_body                         PROTO((tree));
 extern void begin_stmt_tree                     PROTO((tree *));
 extern void finish_stmt_tree                    PROTO((tree *));
 extern void prep_stmt                           PROTO((tree));
-extern void add_scope_stmt                      PROTO((int, int));
+extern tree add_scope_stmt                      PROTO((int, int));
 extern void do_pushlevel                        PROTO((void));
 extern tree do_poplevel                         PROTO((void));
 /* Non-zero if we are presently building a statement tree, rather

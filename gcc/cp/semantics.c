@@ -33,6 +33,7 @@
 #include "toplev.h"
 #include "flags.h"
 #include "ggc.h"
+#include "rtl.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -1264,38 +1265,44 @@ setup_vtbl_ptr ()
 /* Add a scope-statement to the statement-tree.  BEGIN_P indicates
    whether this statements opens or closes a scope.  PARTIAL_P is true
    for a partial scope, i.e, the scope that begins after a label when
-   an object that needs a cleanup is created.  */
+   an object that needs a cleanup is created.  If BEGIN_P is nonzero,
+   returns a new TREE_LIST representing the top of the SCOPE_STMT
+   stack.  The TREE_PURPOSE is the new SCOPE_STMT.  If BEGIN_P is
+   zero, returns a TREE_LIST whose TREE_VALUE is the new SCOPE_STMT,
+   and whose TREE_PURPOSE is the matching SCOPE_STMT iwth
+   SCOPE_BEGIN_P set.  */
 
-void
+tree
 add_scope_stmt (begin_p, partial_p)
      int begin_p;
      int partial_p;
 {
   tree ss;
+  tree top;
 
   /* Build the statement.  */
-  ss = build_min_nt (SCOPE_STMT);
+  ss = build_min_nt (SCOPE_STMT, NULL_TREE);
   SCOPE_BEGIN_P (ss) = begin_p;
   SCOPE_PARTIAL_P (ss) = partial_p;
 
-  /* If we're finishing a scope, figure out whether the scope was
-     really necessary.  */
-  if (!begin_p)
-    {
-      SCOPE_NULLIFIED_P (ss) = !kept_level_p ();
-      SCOPE_NULLIFIED_P (TREE_VALUE (current_scope_stmt_stack))
-	= SCOPE_NULLIFIED_P (ss);
-    }
-
   /* Keep the scope stack up to date.  */
   if (begin_p)
-    current_scope_stmt_stack 
-      = tree_cons (NULL_TREE, ss, current_scope_stmt_stack);
+    {
+      current_scope_stmt_stack 
+	= tree_cons (ss, NULL_TREE, current_scope_stmt_stack);
+      top = current_scope_stmt_stack;
+    }
   else
-    current_scope_stmt_stack = TREE_CHAIN (current_scope_stmt_stack);
+    {
+      top = current_scope_stmt_stack;
+      TREE_VALUE (top) = ss;
+      current_scope_stmt_stack = TREE_CHAIN (top);
+    }
 
   /* Add the new statement to the statement-tree.  */
   add_tree (ss);
+
+  return top;
 }
 
 /* Begin a new scope.  */
@@ -1313,8 +1320,9 @@ do_pushlevel ()
       pushlevel (0);
       if (!building_stmt_tree ()
 	  && !current_function->x_whole_function_mode_p)
-	expand_start_bindings (0);
-      else if (building_stmt_tree () && !processing_template_decl)
+	my_friendly_abort (19991129);
+
+      if (building_stmt_tree () && !processing_template_decl)
 	add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
     }
 }
@@ -1324,28 +1332,27 @@ do_pushlevel ()
 tree
 do_poplevel ()
 {
-  tree t = NULL_TREE;
+  tree block = NULL_TREE;
 
   if (stmts_are_full_exprs_p)
     {
-      if (!building_stmt_tree ()
-	  && !current_function->x_whole_function_mode_p)
-	expand_end_bindings (getdecls (), kept_level_p (), 0);
-      else if (building_stmt_tree () && !processing_template_decl)
+      tree scope_stmts;
+      int keep = kept_level_p ();
+
+      if (building_stmt_tree () && !processing_template_decl)
+	scope_stmts = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
+      else
+	scope_stmts = NULL_TREE;
+
+      block = poplevel (kept_level_p (), 1, 0);
+      if (block && !processing_template_decl)
 	{
-	  add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-
-	  /* When not in function-at-a-time mode, expand_end_bindings
-	     will warn about unused variables.  But, in
-	     function-at-a-time mode expand_end_bindings is not passed
-	     the list of variables in the current scope, and therefore
-	     no warning is emitted.  So, we explicitly warn here.  */
-	  warn_about_unused_variables (getdecls ());
+	  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmts)) = block;
+	  SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmts)) = block;
 	}
-
-      t = poplevel (kept_level_p (), 1, 0);
     }
-  return t;
+
+  return block;
 }
 
 /* Finish a parenthesized expression EXPR.  */
@@ -2473,11 +2480,19 @@ expand_stmt (t)
 	  break;
 
 	case SCOPE_STMT:
-	  if (SCOPE_BEGIN_P (t))
-	    expand_start_bindings (2 * SCOPE_NULLIFIED_P (t));
-	  else if (SCOPE_END_P (t))
-	    expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 
-				 SCOPE_PARTIAL_P (t));
+	  if (!SCOPE_NO_CLEANUPS_P (t))
+	    {
+	      if (SCOPE_BEGIN_P (t))
+		expand_start_bindings (2 * SCOPE_NULLIFIED_P (t));
+	      else if (SCOPE_END_P (t))
+		expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 
+				     SCOPE_PARTIAL_P (t));
+	    }
+	  else if (!SCOPE_NULLIFIED_P (t))
+	    emit_note (NULL,
+		       (SCOPE_BEGIN_P (t) 
+			? NOTE_INSN_BLOCK_BEG
+			: NOTE_INSN_BLOCK_END));
 	  break;
 
 	case RETURN_INIT:
