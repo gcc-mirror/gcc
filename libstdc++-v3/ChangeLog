@@ -1,3 +1,16 @@
+2001-12-26  Benjamin Kosnik  <bkoz@waller.constant.com>
+
+	* testsuite/24_iterators/insert_iterator.cc (test02): Add.
+	* testsuite/24_iterators/front_insert_iterator.cc (test02): Add.
+	* testsuite/24_iterators/back_insert_iterator.cc (test02): Add.
+	* testsuite/24_iterators/reverse_iterator.cc (test02): Add.
+
+	* include/bits/stl_iterator.h (reverse_iterator): Uglify member
+	current to _M_current.
+	(back_insert_iterator): Ulify member container to _M_container.
+	(front_insert_iterator): Same.
+	(insert_iterator): Same.
+	
 2001-12-25  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/std_limits.h (__glibcpp_xxx_is_modulo): New
@@ -5,7 +18,7 @@
 	(numeric_limits<>::is_modulo): Get value from corresponding
 	__glibcpp_xxx_is_modulo macro.
 
-Sun Dec 23 18:47:24 2001  Jeffrey A Law  (law@redhat.com)
+2001-12-23  Jeffrey A Law  <law@redhat.com>
 
 	* config/os/hpux/bits/os_defines.h: Do not include <_sys/inttypes.h>.
 	Twiddle return types for strtoll and strtoull to avoid using
@@ -15,13 +28,13 @@ Sun Dec 23 18:47:24 2001  Jeffrey A Law  (law@redhat.com)
 
 	* configure.target (CPULIMITSH): Fix typo in alpha case.
 
-Sat Dec 22 09:52:41 2001  Jeffrey A Law  (law@redhat.com)
+2001-12-22  Jeffrey A Law  <law@redhat.com>
 
-        * config/os/hpux/bits/os_defines.h: Update to avoid #defines
+	* config/os/hpux/bits/os_defines.h: Update to avoid #defines
         for strtoll and strtoull.
 
-Fri Dec 21 17:35:21 2001  Jeffrey A Law  (law@redhat.com)
-
+2001-12-21  Jeffrey A Law  <law@redhat.com>
+	
 	* config/os/hpux/bits/os_defines.h: Include <sys/_inttypes.h.
 	Define strtoll and strtoull.  Provide prototypes for
 	__strtoll and __strtoull.  Define _GLIBCPP_USE_LONG_LONG

@@ -45,8 +45,24 @@ void test01()
   typedef test_iterator::container_type container_type;
 }
 
+
+
+// Make sure iterator can be instantiated.
+template class std::insert_iterator<std::list<int> >;
+
+void test02()
+{
+  typedef std::insert_iterator<std::list<int> > iterator_type;
+
+  std::list<int> li;
+  std::list<int>::iterator liit;
+  iterator_type it01(li, liit);
+  iterator_type it02 = std::inserter(li, liit);
+}
+
 int main() 
 { 
   test01();
+  test02();
   return 0;
 }

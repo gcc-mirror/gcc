@@ -66,14 +66,14 @@ namespace std
   // 24.4.1 Reverse iterators
   template<typename _Iterator>
     class reverse_iterator 
-      : public iterator<typename iterator_traits<_Iterator>::iterator_category,
-			typename iterator_traits<_Iterator>::value_type,
-		        typename iterator_traits<_Iterator>::difference_type,
-		        typename iterator_traits<_Iterator>::pointer,
-                        typename iterator_traits<_Iterator>::reference>
+    : public iterator<typename iterator_traits<_Iterator>::iterator_category,
+		      typename iterator_traits<_Iterator>::value_type,
+		      typename iterator_traits<_Iterator>::difference_type,
+		      typename iterator_traits<_Iterator>::pointer,
+                      typename iterator_traits<_Iterator>::reference>
     {
     protected:
-      _Iterator current;
+      _Iterator _M_current;
 
     public:
       typedef _Iterator 				       iterator_type;
@@ -83,25 +83,25 @@ namespace std
       typedef typename iterator_traits<_Iterator>::pointer     pointer;
 
     public:
-      reverse_iterator() {}
+      reverse_iterator() { }
 
       explicit 
-      reverse_iterator(iterator_type __x) : current(__x) {}
+      reverse_iterator(iterator_type __x) : _M_current(__x) { }
 
       reverse_iterator(const reverse_iterator& __x) 
-	: current(__x.current) { }
+      : _M_current(__x._M_current) { }
 
       template<typename _Iter>
         reverse_iterator(const reverse_iterator<_Iter>& __x)
-	: current(__x.base()) {}
+	: _M_current(__x.base()) { }
     
       iterator_type 
-      base() const { return current; }
+      base() const { return _M_current; }
 
       reference 
       operator*() const 
       {
-	_Iterator __tmp = current;
+	_Iterator __tmp = _M_current;
 	return *--__tmp;
       }
 
@@ -111,7 +111,7 @@ namespace std
       reverse_iterator& 
       operator++() 
       {
-	--current;
+	--_M_current;
 	return *this;
       }
 
@@ -119,38 +119,38 @@ namespace std
       operator++(int) 
       {
 	reverse_iterator __tmp = *this;
-	--current;
+	--_M_current;
 	return __tmp;
       }
 
       reverse_iterator& 
       operator--() 
       {
-	++current;
+	++_M_current;
 	return *this;
       }
 
       reverse_iterator operator--(int) 
       {
 	reverse_iterator __tmp = *this;
-	++current;
+	++_M_current;
 	return __tmp;
       }
       
       reverse_iterator 
       operator+(difference_type __n) const 
-      { return reverse_iterator(current - __n); }
+      { return reverse_iterator(_M_current - __n); }
 
       reverse_iterator& 
       operator+=(difference_type __n) 
       {
-	current -= __n;
+	_M_current -= __n;
 	return *this;
       }
 
       reverse_iterator 
       operator-(difference_type __n) const 
-      { return reverse_iterator(current + __n); }
+      { return reverse_iterator(_M_current + __n); }
 
       reverse_iterator& 
       operator-=(difference_type __n) 
@@ -213,22 +213,22 @@ namespace std
 
   // 24.4.2.2.1 back_insert_iterator
   template<typename _Container>
-  class back_insert_iterator 
+    class back_insert_iterator 
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-      _Container* container;
+      _Container* _M_container;
 
     public:
       typedef _Container          container_type;
       
       explicit 
-      back_insert_iterator(_Container& __x) : container(&__x) {}
+      back_insert_iterator(_Container& __x) : _M_container(&__x) { }
 
       back_insert_iterator&
       operator=(typename _Container::const_reference __value) 
       { 
-	container->push_back(__value);
+	_M_container->push_back(__value);
 	return *this;
       }
 
@@ -249,20 +249,20 @@ namespace std
 
   template<typename _Container>
     class front_insert_iterator 
-      : public iterator<output_iterator_tag, void, void, void, void>
+    : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-      _Container* container;
+      _Container* _M_container;
 
     public:
       typedef _Container          container_type;
 
-      explicit front_insert_iterator(_Container& __x) : container(&__x) {}
+      explicit front_insert_iterator(_Container& __x) : _M_container(&__x) { }
 
       front_insert_iterator&
       operator=(typename _Container::const_reference __value) 
       { 
-	container->push_front(__value);
+	_M_container->push_front(__value);
 	return *this;
       }
 
@@ -277,27 +277,28 @@ namespace std
     };
 
   template<typename _Container>
-  inline front_insert_iterator<_Container> front_inserter(_Container& __x) 
-  { return front_insert_iterator<_Container>(__x); }
+    inline front_insert_iterator<_Container> 
+    front_inserter(_Container& __x) 
+    { return front_insert_iterator<_Container>(__x); }
 
   template<typename _Container>
     class insert_iterator 
-      : public iterator<output_iterator_tag, void, void, void, void>
+    : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-      _Container* container;
+      _Container* _M_container;
       typename _Container::iterator iter;
 
     public:
       typedef _Container          container_type;
       
       insert_iterator(_Container& __x, typename _Container::iterator __i) 
-	: container(&__x), iter(__i) {}
+      : _M_container(&__x), iter(__i) {}
    
       insert_iterator&
       operator=(const typename _Container::const_reference __value) 
       { 
-	iter = container->insert(iter, __value);
+	iter = _M_container->insert(iter, __value);
 	++iter;
 	return *this;
       }
@@ -313,11 +314,11 @@ namespace std
     };
   
   template<typename _Container, typename _Iterator>
-    inline 
-    insert_iterator<_Container> inserter(_Container& __x, _Iterator __i)
+    inline insert_iterator<_Container> 
+    inserter(_Container& __x, _Iterator __i)
     {
-      typedef typename _Container::iterator __iter;
-      return insert_iterator<_Container>(__x, __iter(__i));
+      return insert_iterator<_Container>(__x, 
+					 typename _Container::iterator(__i));
     }
   
   // This iterator adapter is 'normal' in the sense that it does not
