@@ -79,10 +79,6 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF2_DEBUGGING_INFO 1
 #endif
 
-/* Also allow them to support STABS debugging.  */
-
-#include "dbxelf.h"
-
 /* The GNU tools operate better with stabs.  Since we don't have
    any native tools to be compatible with, default to stabs.  */
 
