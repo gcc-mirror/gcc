@@ -1271,7 +1271,7 @@ L2:     .word STATIC
 #endif
 
 /* Length in bytes of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE 12
+#define TRAMPOLINE_SIZE 24
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
