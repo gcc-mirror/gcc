@@ -1,5 +1,8 @@
 2001-03-30  Bernd Schmidt  <bernds@redhat.com>
 
+	* loop.c (load_mems): When generating a load from a pseudo, update
+	REGNO_LAST_UID.
+
 	* config/ia64/ia64.c (update_set_flags): New function, broken out of
 	rtx_needs_barrier.
 	(set_src_needs_barrier): Likewise.
