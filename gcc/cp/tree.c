@@ -501,18 +501,8 @@ tree
 canonical_type_variant (t)
      tree t;
 {
-  int constp, volatilep;
-  if (TREE_CODE (t) == ARRAY_TYPE)
-    {
-      constp = TYPE_READONLY (TREE_TYPE (t));
-      volatilep = TYPE_VOLATILE (TREE_TYPE (t));
-    }
-  else
-    {
-      constp = TYPE_READONLY (t);
-      volatilep = TYPE_VOLATILE (t);
-    }
-  return cp_build_type_variant (TYPE_MAIN_VARIANT (t), constp, volatilep);
+  return cp_build_type_variant (TYPE_MAIN_VARIANT (t), CP_TYPE_READONLY (t),
+				CP_TYPE_VOLATILE (t));
 }
 
 /* Add OFFSET to all base types of T.

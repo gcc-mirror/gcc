@@ -1,3 +1,10 @@
+1998-10-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (CP_TYPE_READONLY): New macro to handle arrays.
+	(CP_TYPE_VOLATILE): Likewise.
+	* decl.c (grokdeclarator): Use them.
+	* tree.c (canonical_type_variant): Likewise.
+
 1998-10-22  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (named_class_head): Push into class while parsing the

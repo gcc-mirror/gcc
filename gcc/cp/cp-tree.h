@@ -514,6 +514,15 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
 
+#define CP_TYPE_READONLY(NODE)			\
+  (TREE_CODE (NODE) == ARRAY_TYPE		\
+   ? TYPE_READONLY (TREE_TYPE (NODE))		\
+   : TYPE_READONLY (NODE))
+#define CP_TYPE_VOLATILE(NODE)			\
+  (TREE_CODE (NODE) == ARRAY_TYPE		\
+   ? TYPE_VOLATILE (TREE_TYPE (NODE))		\
+   : TYPE_VOLATILE (NODE))
+
 /* Nonzero if T is a class (or struct or union) type.  Also nonzero
    for template type parameters and typename types.  Despite its name,
    this macro has nothing to do with the definition of aggregate given

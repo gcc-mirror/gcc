@@ -9196,8 +9196,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      explicit specification or via a typedef.
      Likewise for VOLATILEP.  */
 
-  constp = !! RIDBIT_SETP (RID_CONST, specbits) + TYPE_READONLY (type);
-  volatilep = !! RIDBIT_SETP (RID_VOLATILE, specbits) + TYPE_VOLATILE (type);
+  constp = !!RIDBIT_SETP (RID_CONST, specbits) + CP_TYPE_READONLY (type);
+  volatilep = !!RIDBIT_SETP (RID_VOLATILE, specbits) + CP_TYPE_VOLATILE (type);
   type = cp_build_type_variant (type, constp, volatilep);
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
