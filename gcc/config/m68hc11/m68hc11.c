@@ -1520,6 +1520,17 @@ emit_move_after_reload (to, from, scratch)
 					    XEXP (XEXP (from, 0), 0),
 					    REG_NOTES (insn));
     }
+
+  /* For 68HC11, put a REG_INC note on `sts _.frame' to prevent the cse-reg
+     to think that sp == _.frame and later replace a x = sp with x = _.frame.
+     The problem is that we are lying to gcc and use `txs' for x = sp
+     (which is not really true because txs is really x = sp + 1).  */
+  else if (TARGET_M6811 && SP_REG_P (from))
+    {
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC,
+					    from,
+					    REG_NOTES (insn));
+    }
 }
 
 int
@@ -2263,6 +2274,8 @@ must_parenthesize (op)
 	      || strcasecmp (name, "d") == 0
 	      || strcasecmp (name, "x") == 0
 	      || strcasecmp (name, "y") == 0
+	      || strcasecmp (name, "ix") == 0
+	      || strcasecmp (name, "iy") == 0
 	      || strcasecmp (name, "pc") == 0
 	      || strcasecmp (name, "sp") == 0
 	      || strcasecmp (name, "ccr") == 0) ? 1 : 0;
@@ -2404,7 +2417,13 @@ print_operand_address (file, addr)
 	    }
 	  else
 	    {
+              need_parenthesis = must_parenthesize (offset);
+              if (need_parenthesis)
+                asm_fprintf (file, "(");
+
 	      output_addr_const (file, offset);
+              if (need_parenthesis)
+                asm_fprintf (file, ")");
 	      asm_fprintf (file, ",");
 	      asm_print_register (file, REGNO (base));
 	    }
@@ -2965,6 +2984,9 @@ m68hc11_gen_movhi (insn, operands)
 	    case HARD_D_REGNUM:
 	      output_asm_insn ("psh%1", operands);
 	      break;
+            case HARD_SP_REGNUM:
+              output_asm_insn ("sts\t-2,sp", operands);
+              break;
 	    default:
 	      abort ();
 	    }
@@ -4361,7 +4383,12 @@ m68hc11_check_z_replacement (insn, info)
 		  info->must_save_reg = 0;
 		  info->must_restore_reg = 0;
 		}
-	      info->last = NEXT_INSN (insn);
+	      if (info->first != insn
+		  && ((info->y_used && ix_clobber)
+		      || (info->x_used && iy_clobber)))
+		info->last = insn;
+	      else
+		info->last = NEXT_INSN (insn);
 	      info->save_before_last = 1;
 	    }
 	  return 0;
@@ -4645,6 +4672,8 @@ m68hc11_z_replacement (insn)
       if (GET_CODE (body) == SET || GET_CODE (body) == PARALLEL
 	  || GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
 	{
+          rtx note;
+
 	  if (debug_m6811 && reg_mentioned_p (replace_reg, body))
 	    {
 	      printf ("Reg mentioned here...:\n");
@@ -4685,6 +4714,20 @@ m68hc11_z_replacement (insn)
 		replace_reg_qi = gen_rtx (REG, QImode, REGNO (replace_reg));
 	      validate_replace_rtx (z_reg_qi, replace_reg_qi, insn);
 	    }
+
+          /* If there is a REG_INC note on Z, replace it with a
+             REG_INC note on the replacement register.  This is necessary
+             to make sure that the flow pass will identify the change
+             and it will not remove a possible insn that saves Z.  */
+          for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+            {
+              if (REG_NOTE_KIND (note) == REG_INC
+                  && GET_CODE (XEXP (note, 0)) == REG
+                  && REGNO (XEXP (note, 0)) == REGNO (z_reg))
+                {
+                  XEXP (note, 0) = replace_reg;
+                }
+            }
 	}
       if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
 	break;

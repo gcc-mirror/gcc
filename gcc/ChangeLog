@@ -1,5 +1,21 @@
 2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (emit_move_after_reload): Add a REG_INC
+	note on the insn that sets the soft frame register.
+	(must_parenthesize): ix and iy are also reserved names.
+	(print_operand_address): One more place where parenthesis are required
+	to avoid confusion with register names.
+	(m68hc11_gen_movhi): Allow push of stack pointer.
+	(m68hc11_check_z_replacement): Fix handling of parallel with a
+	clobber.
+	(m68hc11_z_replacement): Must update the REG_INC notes to tell what
+	the replacement register is.
+	* config/m68hc11/m68hc11.h (REG_CLASS_CONTENTS): Switch Z_REGS
+	and D8_REGS classes.
+	(MODES_TIEABLE_P): All modes are tieable except QImode.
+
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/larith.asm (___adddi3): Optimize saving of result.
 	(___subdi3): Likewise.
 	(__mulsi3, __mulhi32): Avoid using _.tmp scratch location.
