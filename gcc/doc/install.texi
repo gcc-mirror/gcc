@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.23 2001/06/13 13:07:28 jsm28 Exp $
+@comment $Id: install.texi,v 1.24 2001/06/14 22:51:17 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1181,6 +1181,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#avr,,avr}
 @item
+@uref{#c4x,,c4x}
+@item
 @uref{#decstation-*,,decstation-*}
 @item
 @uref{#dos,,DOS}
@@ -1625,6 +1627,31 @@ The following error:
 @end example
 
 indicates that you should upgrade to a newer version of the binutils.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{c4x}c4x
+
+Texas Instruments TMS320C3x and TMS320C4x Floating Point Digital Signal
+Processors.  These are used in embedded applications.  There are no
+standard Unix configurations.  @xref{C4x Options,, C4x Options, gcc,
+Using and Porting the GNU Compiler Collection (GCC)}, for the list of
+supported MCU types.
+
+GCC can be configured as a cross compiler for both the C3x and C4x
+architectures on the same system.  Use @samp{configure --target=c4x
+--enable-languages="c,c++"} to configure.
+
+
+Further installation notes and other useful information about C4x tools
+can also be obtained from:
+
+@itemize @bullet
+@item
+@uref{http://www.elec.canterbury.ac.nz/c4x,,http://www.elec.canterbury.ac.nz/c4x}
+@end itemize
 
 @html
 </p>
