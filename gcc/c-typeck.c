@@ -4781,7 +4781,7 @@ digest_init (type, init, require_constant, constructor_constant)
   /* Handle scalar types, including conversions.  */
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
-      || code == ENUMERAL_TYPE || code == COMPLEX_TYPE)
+      || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE || code == COMPLEX_TYPE)
     {
       /* Note that convert_for_assignment calls default_conversion
 	 for arrays and functions.  We must not call it in the
