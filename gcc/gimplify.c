@@ -996,7 +996,12 @@ gimplify_decl_expr (tree *stmt_p)
 	     of the emitted code: see mx_register_decls().  */
 	  tree t, args, addr, ptr_type;
 
-	  gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
+	  /* ??? We really shouldn't need to gimplify the type of the variable
+	     since it already should have been done.  But leave this here
+	     for now to avoid disrupting too many things at once.  */
+	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (decl)))
+	    gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
+
 	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
 	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
 
@@ -4180,7 +4185,17 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 void
 gimplify_type_sizes (tree type, tree *list_p)
 {
-  tree field;
+  tree field, t;
+
+  /* Note that we do not check for TYPE_SIZES_GIMPLIFIED already set because
+     that's not supposed to happen on types where gimplifcation does anything.
+     We should assert that it isn't set, but we can indeed be called multiple
+     times on pointers.  Unfortunately, this includes fat pointers which we
+     can't easily test for.  We could pass TYPE down to gimplify_one_sizepos
+     and test there, but it doesn't seem worth it.  */
+
+  /* We first do the main variant, then copy into any other variants. */
+  type = TYPE_MAIN_VARIANT (type);
 
   switch (TREE_CODE (type))
     {
@@ -4194,11 +4209,22 @@ gimplify_type_sizes (tree type, tree *list_p)
     case REAL_TYPE:
       gimplify_one_sizepos (&TYPE_MIN_VALUE (type), list_p);
       gimplify_one_sizepos (&TYPE_MAX_VALUE (type), list_p);
+
+      for (t = TYPE_NEXT_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	{
+	  TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (type);
+	  TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (type);
+	  TYPE_SIZES_GIMPLIFIED (t) = 1;
+	}
       break;
 
     case ARRAY_TYPE:
-      /* These anonymous types don't have declarations, so handle them here.  */
-      gimplify_type_sizes (TYPE_DOMAIN (type), list_p);
+      /* These types may not have declarations, so handle them here.  */
+      if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (type)))
+	gimplify_type_sizes (TREE_TYPE (type), list_p);
+
+      if (!TYPE_SIZES_GIMPLIFIED (TYPE_DOMAIN (type)))
+	  gimplify_type_sizes (TYPE_DOMAIN (type), list_p);
       break;
 
     case RECORD_TYPE:
@@ -4215,23 +4241,15 @@ gimplify_type_sizes (tree type, tree *list_p)
 
   gimplify_one_sizepos (&TYPE_SIZE (type), list_p);
   gimplify_one_sizepos (&TYPE_SIZE_UNIT (type), list_p);
-}
 
-/* A subroutine of gimplify_one_sizepos, called via walk_tree.  Evaluate
-   the expression if it's a SAVE_EXPR and add it to the statement list 
-   in DATA.  */
-
-static tree
-eval_save_expr (tree *tp, int *walk_subtrees, void *data)
-{
-  if (TREE_CODE (*tp) == SAVE_EXPR)
+  for (t = TYPE_NEXT_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
     {
-      *walk_subtrees = 0;
-      gimplify_and_add (*tp, (tree *) data);
+      TYPE_SIZE (t) = TYPE_SIZE (type);
+      TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (type);
+      TYPE_SIZES_GIMPLIFIED (t) = 1;
     }
-  else if (TYPE_P (*tp) || DECL_P (*tp))
-    *walk_subtrees = 0;
-  return NULL;
+
+  TYPE_SIZES_GIMPLIFIED (type) = 1;
 }
 
 /* A subroutine of gimplify_type_sizes to make sure that *EXPR_P,
@@ -4251,7 +4269,8 @@ gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
       || CONTAINS_PLACEHOLDER_P (*expr_p))
     return;
 
-  walk_tree (expr_p, eval_save_expr, stmt_p, NULL);
+  *expr_p = unshare_expr (*expr_p);
+  gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue);
 }
 
 #ifdef ENABLE_CHECKING

@@ -368,6 +368,8 @@ struct tree_common GTY(())
            all expressions
 	   all decls
 	   all constants
+       TYPE_SIZES_GIMPLIFIED
+           ..._TYPE
 
    unsigned_flag:
 
@@ -933,6 +935,9 @@ extern void tree_operand_check_failed (int, enum tree_code,
 /* Value of expression is constant.  Always on in all ..._CST nodes.  May
    also appear in an expression or decl where the value is constant.  */
 #define TREE_CONSTANT(NODE) (NON_TYPE_CHECK (NODE)->common.constant_flag)
+
+/* Nonzero if NODE, a type, has had its sizes gimplified.  */
+#define TYPE_SIZES_GIMPLIFIED(NODE) (TYPE_CHECK (NODE)->common.constant_flag)
 
 /* In a decl (most significantly a FIELD_DECL), means an unsigned field.  */
 #define DECL_UNSIGNED(NODE) (DECL_CHECK (NODE)->common.unsigned_flag)
