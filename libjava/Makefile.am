@@ -267,7 +267,7 @@ $(nat_headers) $(x_nat_headers): libgcj.jar
 java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
-		-friend 'void _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar);' \
+		-friend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		$(basename $<)
 
 ## Our internal main program needs to be able to create a FirstThread.
@@ -284,6 +284,8 @@ java/lang/Thread.h: java/lang/Thread.class libgcj.jar
 		-prepend '#define _JV_INTERRUPTED 2' \
 		-friend '_Jv_JNIEnv * _Jv_GetCurrentJNIEnv ();' \
 		-friend 'void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
+		-friend 'void _Jv_ThreadRun (java::lang::Thread* thread);' \
+		-friend 'jint _Jv_AttachCurrentThread(java::lang::Thread* thread);' \
 		-friend 'java::lang::Thread* _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'jint _Jv_DetachCurrentThread ();' \
 		$(basename $<)
@@ -1343,6 +1345,7 @@ gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
+gnu/gcj/runtime/natFirstThread.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \

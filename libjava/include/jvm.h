@@ -166,7 +166,8 @@ void _Jv_SetInitialHeapSize (const char *arg);
 void _Jv_SetMaximumHeapSize (const char *arg);
 
 extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
-void _Jv_RunMain (const char* name, int argc, const char **argv, bool is_jar);
+void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
+		  bool is_jar);
 
 // This function is used to determine the hash code of an object.
 inline jint
@@ -276,7 +277,7 @@ _Jv_JNIEnv *_Jv_GetCurrentJNIEnv ();
 void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *);
 
 struct _Jv_JavaVM;
-_Jv_JavaVM *_Jv_GetJavaVM ();
+_Jv_JavaVM *_Jv_GetJavaVM (); 
 
 #ifdef ENABLE_JVMPI
 #include "jvmpi.h"

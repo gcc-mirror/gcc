@@ -90,13 +90,11 @@ property_pair *_Jv_Environment_Properties;
 #endif
 
 // The name of this executable.
-static char * _Jv_execName;
+static char *_Jv_execName;
 
 // Stash the argv pointer to benefit native libraries that need it.
 const char **_Jv_argv;
 int _Jv_argc;
-
-typedef void main_func (jobject);
 
 #ifdef ENABLE_JVMPI
 // Pointer to JVMPI notification functions.
@@ -643,7 +641,7 @@ JvConvertArgv (int argc, const char **argv)
 // it will only scan the qthreads stacks.
 
 // Command line arguments.
-static jobject arg_vec;
+static JArray<jstring> *arg_vec;
 
 // The primary thread.
 static java::lang::Thread *main_thread;
@@ -689,7 +687,6 @@ win32_exception_handler (LPEXCEPTION_POINTERS e)
 }
 
 #endif
-
 
 #ifndef DISABLE_GETENV_PROPERTIES
 
@@ -885,93 +882,15 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   return 0;
 }
 
-static void
-runFirst (::java::lang::Class *klass, ::java::lang::Object *args)
-{
-  Utf8Const* main_signature = _Jv_makeUtf8Const ("([Ljava.lang.String;)V", 22);
-  Utf8Const* main_name = _Jv_makeUtf8Const ("main", 4);
-
-  _Jv_Method *meth = _Jv_GetMethodLocal (klass, main_name, main_signature);
-
-  // Some checks from Java Spec section 12.1.4.
-  const char *msg = NULL;
-  if (meth == NULL)
-    msg = "no suitable method `main' in class";
-  else if (! java::lang::reflect::Modifier::isStatic(meth->accflags))
-    msg = "`main' must be static";
-  else if (! java::lang::reflect::Modifier::isPublic(meth->accflags))
-    msg =  "`main' must be public";
-  if (msg != NULL)
-    {
-      fprintf (stderr, "%s\n", msg);
-      ::exit(1);
-    }
-
-#ifdef WITH_JVMPI
-  if (_Jv_JVMPI_Notify_THREAD_START)
-    {
-      JVMPI_Event event;
-
-      jstring thread_name = getName ();
-      jstring group_name = NULL, parent_name = NULL;
-      java::lang::ThreadGroup *group = getThreadGroup ();
-
-      if (group)
-	{
-	  group_name = group->getName ();
-	  group = group->getParent ();
-
-	  if (group)
-	    parent_name = group->getName ();
-	}
-
-      int thread_len = thread_name ? JvGetStringUTFLength (thread_name) : 0;
-      int group_len = group_name ? JvGetStringUTFLength (group_name) : 0;
-      int parent_len = parent_name ? JvGetStringUTFLength (parent_name) : 0;
-
-      char thread_chars[thread_len + 1];
-      char group_chars[group_len + 1];
-      char parent_chars[parent_len + 1];
-
-      if (thread_name)
-	JvGetStringUTFRegion (thread_name, 0, 
-			      thread_name->length(), thread_chars);
-      if (group_name)
-	JvGetStringUTFRegion (group_name, 0, 
-			      group_name->length(), group_chars);
-      if (parent_name)
-	JvGetStringUTFRegion (parent_name, 0, 
-			      parent_name->length(), parent_chars);
-
-      thread_chars[thread_len] = '\0';
-      group_chars[group_len] = '\0';
-      parent_chars[parent_len] = '\0';
-
-      event.event_type = JVMPI_EVENT_THREAD_START;
-      event.env_id = NULL;
-      event.u.thread_start.thread_name = thread_chars;
-      event.u.thread_start.group_name = group_chars;
-      event.u.thread_start.parent_name = parent_chars;
-      event.u.thread_start.thread_id = (jobjectID) this;
-      event.u.thread_start.thread_env_id = _Jv_GetCurrentJNIEnv ();
-
-      _Jv_DisableGC ();
-      (*_Jv_JVMPI_Notify_THREAD_START) (&event);
-      _Jv_EnableGC ();
-    }
-#endif
-
-  main_func *real_main = (main_func *) meth->ncode;
-  (*real_main) (args);
-}
-
 void
-JvRunMain (jclass klass, int argc, const char **argv)
+_Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
+	     bool is_jar)
 {
   _Jv_argv = argv;
   _Jv_argc = argc;
 
-  _Jv_CreateJavaVM (NULL);
+  java::lang::Runtime *runtime = NULL;
+
 #ifdef HAVE_PROC_SELF_EXE
   char exec_name[20];
   sprintf (exec_name, "/proc/%d/exe", getpid ());
@@ -980,68 +899,51 @@ JvRunMain (jclass klass, int argc, const char **argv)
   _Jv_ThisExecutable (argv[0]);
 #endif
 
-  // Get the Runtime here.  We want to initialize it before searching
-  // for `main'; that way it will be set up if `main' is a JNI method.
-  java::lang::Runtime *rtime = java::lang::Runtime::getRuntime ();
+  try
+    {
+      _Jv_CreateJavaVM (NULL);
 
-  main_thread = _Jv_AttachCurrentThread (JvNewStringLatin1 ("main"), NULL);
-  arg_vec = JvConvertArgv (argc - 1, argv + 1);
-  runFirst (klass, arg_vec);
+      // Get the Runtime here.  We want to initialize it before searching
+      // for `main'; that way it will be set up if `main' is a JNI method.
+      runtime = java::lang::Runtime::getRuntime ();
+
+      arg_vec = JvConvertArgv (argc - 1, argv + 1);
+      
+      if (klass)
+	main_thread = new gnu::gcj::runtime::FirstThread (klass, arg_vec);
+      else
+	main_thread = new gnu::gcj::runtime::FirstThread 
+			(JvNewStringLatin1 (name), arg_vec, is_jar);
+
+      if (is_jar)
+	{
+	  // We need a new ClassLoader because the classpath must be the
+	  // jar file only.  The easiest way to do this is to lose our
+	  // reference to the previous classloader.
+	  _Jv_Jar_Class_Path = strdup (name);
+	  java::lang::ClassLoader::system = NULL;
+	}
+    }
+  catch (java::lang::Throwable *t)
+    {
+      java::lang::System::err->println (JvNewStringLatin1 
+        ("Exception during runtime initialization"));
+      t->printStackTrace();
+      runtime->exit (1);
+    }
+
+  _Jv_AttachCurrentThread (main_thread);
+  _Jv_ThreadRun (main_thread);
   _Jv_ThreadWait ();
 
   int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
-    
-  rtime->_exit (status);
+  runtime->exit (status);
 }
 
 void
-_Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
+JvRunMain (jclass klass, int argc, const char **argv)
 {
-  jstring class_name;
-
-  _Jv_CreateJavaVM (NULL);
-
-#ifdef HAVE_PROC_SELF_EXE
-  char exec_name[20];
-  sprintf (exec_name, "/proc/%d/exe", getpid ());
-  _Jv_ThisExecutable (exec_name);
-#endif
-
-  // Get the Runtime here.  We want to initialize it before searching
-  // for `main'; that way it will be set up if `main' is a JNI method.
-  java::lang::Runtime *rtime = java::lang::Runtime::getRuntime ();
-
-  main_thread = _Jv_AttachCurrentThread (JvNewStringLatin1 ("main"), NULL);
-
-  if (is_jar)
-    {
-      // name specifies a jar file.  We must now extract the
-      // Main-Class attribute from the jar's manifest file.
-      // This is done by gnu.gcj.runtime.FirstThread.getMain.
-      _Jv_Jar_Class_Path = strdup (name);
-      jstring jar_name = JvNewStringLatin1 (name);
-      // FirstThread.getMain extracts the main class name.
-      class_name = gnu::gcj::runtime::FirstThread::getMain (jar_name);
-
-      // We need a new ClassLoader because the classpath must be the
-      // jar file only.  The easiest way to do this is to lose our
-      // reference to the previous classloader.
-      java::lang::ClassLoader::system = NULL;
-    }
-  else
-    class_name = JvNewStringLatin1 (name);
-
-  arg_vec = JvConvertArgv (argc - 1, argv + 1);
-
-  if (class_name)
-    {
-      runFirst(java::lang::Class::forName (class_name), arg_vec);
-      _Jv_ThreadWait ();
-    }
-
-  int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
-
-  rtime->exit (status);
+  _Jv_RunMain (klass, NULL, argc, argv, false);
 }
 
 

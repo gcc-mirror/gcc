@@ -136,5 +136,5 @@ main (int argc, const char **argv)
       exit (1);
     }
 
-  _Jv_RunMain (argv[i], argc - i, argv + i, jar_mode);
+  _Jv_RunMain (NULL, argv[i], argc - i, argv + i, jar_mode);
 }
