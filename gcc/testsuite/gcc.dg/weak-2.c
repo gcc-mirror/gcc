@@ -2,9 +2,10 @@
 /* { dg-options "-fno-common" } */
 
 /* COFF does not support weak, and dg doesn't support UNSUPPORTED.  */
-/* { dg-do compile { xfail *-*-coff i?86-pc-cygwin h8300-*-hms } } */
+/* { dg-do compile { xfail *-*-coff i?86-pc-cygwin h8300-*-hms *-*-darwin* } } */
 
 /* { dg-final { global target_triplet } } */
+/* { dg-final { if [string match *-*-darwin* $target_triplet ] {return} } } */
 /* { dg-final { if [string match h8300-*-hms $target_triplet ] {return} } } */
 /* { dg-final { if [string match i?86-pc-cygwin $target_triplet ] {return} } } */
 /* { dg-final { if [string match *-*-coff $target_triplet ] {return} } } */
@@ -30,7 +31,7 @@ void * foo1b (void)
   return (void *)ffoo1b;
 }
 
-extern void * ffoo1c (void);  /* { dg-warning "applying #pragma weak" "applying #pragma weak" { xfail *-*-coff i?86-pc-cygwin h8300-*-hms } } */
+extern void * ffoo1c (void);  /* { dg-warning "applying #pragma weak" "applying #pragma weak" { xfail *-*-coff i?86-pc-cygwin h8300-*-hms *-*-darwin* } } */
 void * foo1c (void)
 {
   return (void *)ffoo1c;

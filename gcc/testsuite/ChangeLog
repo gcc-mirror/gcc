@@ -1,3 +1,15 @@
+2002-09-05  Stan Shebs  <shebs@apple.com>
+
+	* gcc.dg/weak-1.c: xfail on Darwin.
+	* gcc.dg/weak-2.c: Ditto.
+	* gcc.dg/weak-3.c: Ditto.
+	* gcc.dg/weak-4.c: Ditto.
+	* gcc.dg/weak-5.c: Ditto.
+	* gcc.dg/weak-6.c: Ditto.
+	* gcc.dg/weak-7.c: Ditto.
+	* gcc.dg/weak-8.c: Ditto.
+	* gcc.dg/weak-9.c: Ditto.
+
 Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/loop-14.c: New test.
