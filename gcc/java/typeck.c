@@ -417,13 +417,34 @@ build_java_array_type (element_type, length)
     {
       tree atype = build_prim_array_type (element_type, length);
       tree arfld = build_decl (FIELD_DECL, get_identifier ("data"), atype);
+      
       DECL_CONTEXT (arfld) = t;
       TREE_CHAIN (fld) = arfld;
+
+      /* We need to force the data field to begin at an alignment at
+       least equal to the biggest alignment in an object type node
+       in order to be compatible with the way that JArray is defined
+       in CNI.  However, we can't exceed BIGGEST_FIELD_ALIGNMENT. */
+      {
+      unsigned desired_align = TYPE_ALIGN (object_type_node);
+      desired_align = MAX (desired_align, TYPE_ALIGN (element_type));
+#ifdef BIGGEST_FIELD_ALIGNMENT
+      desired_align = MIN (desired_align, 
+                           (unsigned) BIGGEST_FIELD_ALIGNMENT);
+#endif
+#ifdef ADJUST_FIELD_ALIGN
+      desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
+#endif
+      DECL_ALIGN (arfld) = desired_align;
+      }
     }
   else
     {
-      TYPE_ALIGN (t) = TYPE_ALIGN (element_type);
-      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (element_type);
+      unsigned desired_align = TYPE_ALIGN (element_type);
+#ifdef BIGGEST_FIELD_ALIGNMENT
+      desired_align = MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
+#endif
+      TYPE_ALIGN (t) = desired_align;
     }
   pop_obstacks ();
 
