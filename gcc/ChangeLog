@@ -1,3 +1,49 @@
+2004-02-21  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Refer to
+	SUBTARGET_OPTION_TRANSLATE_TABLE for architecture-specific options.
+	* config/i386/darwin.h (SUBTARGET_OPTION_TRANSLATE_TABLE): Define it.
+	* config/rs6000/altivec.h: #error out if '-maltivec' not specified.
+	(vector, pixel, bool): #define to __vector, __pixel and __bool.
+	(__un_args_eq, __bin_args_eq, __tern_args_eq): Move to C-specific
+	portion of header.
+	(__altivec_link_error_invalid_argument): Remove prototype; will use
+	__builtin_altivec_compiletime_error("vec_*") instead.
+	(vec_*): Fix/complete set of available operation overloads given the
+	existence of distinct 'vector bool ...' and 'vector pixel' types; tighten
+	cv-correctness of pointer arguments; in C, always check for correct
+	argument types before macro expansion.
+	* config/rs6000/darwin.h (SUBTARGET_OPTION_TRANSLATE_TABLE): New macro
+	defining Darwin/PowerPC-specific '-f[no-]altivec' and
+	'-W[no-]altivec-long-deprecated' switches.
+	* config/rs6000/rs6000-c (rs6000_cpu_cpp_builtins): Pre-define
+	'__vector', '__pixel' and '__bool' macros using
+	'__attribute__((altivec(...)))' types.
+	* config/rs6000/rs6000.c (bool_char_type_node, bool_short_type_node,
+	bool_int_type_node, pixel_type_node, bool_V16QI_type_node,
+	bool_V8HI_type_node, bool_V4SI_type_node, pixel_V8HI_type_node):
+	New type nodes.
+	(rs6000_warn_altivec_long, rs6000_warn_altivec_long_switch): New, for
+	handling '-W[no-]altivec-long-deprecated'.
+	(rs6000_override_options): Handle '-W[no-]altivec-long-deprecated'.
+	(rs6000_expand_binop_builtin, rs6000_expand_ternop_builtin,
+	altivec_expand_dst_builtin): Remove casts from integer literals.
+	(altivec_expand_builtin): Likewise; handle expansion of new
+	'__builtin_altivec_compiletime_error' function.
+	(rs6000_init_builtins): Initialize 'vector bool ...' and 'vector pixel'
+	types, and make them distinct from other vector types; register
+	'__builtin_altivec_compiletime_error' function.
+	(print_operand): For 'P', print a full target register name instead of
+	merely its number.
+	(rs6000_attribute_table): Add "altivec" attribute.
+	(rs6000_handle_altivec_attribute): New function.
+	* config/rs6000/rs6000.h (TARGET_OPTIONS): Describe 
+	'-m[no-]-warn-altivec-long' (which '-W[no-]altivec-long-deprecated'
+	maps to).
+	(rs6000_warn_altivec_long, rs6000_warn_altivec_long_switch): Forward
+	declare.
+	(ALTIVEC_BUILTIN_COMPILETIME_ERROR): New built-in enumeration.
+
 2004-02-20  James E Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.md (shift_mix4left+1): Delete reload_completed

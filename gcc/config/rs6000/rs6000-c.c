@@ -92,7 +92,15 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   if (! TARGET_POWER && ! TARGET_POWER2 && ! TARGET_POWERPC)
     builtin_define ("_ARCH_COM");
   if (TARGET_ALTIVEC)
-    builtin_define ("__ALTIVEC__");
+    {
+      builtin_define ("__ALTIVEC__");
+      builtin_define ("__VEC__=10206");
+
+      /* Define the AltiVec syntactic elements.  */
+      builtin_define ("__vector=__attribute__((altivec(vector__)))");
+      builtin_define ("__pixel=__attribute__((altivec(pixel__))) unsigned short");
+      builtin_define ("__bool=__attribute__((altivec(bool__))) unsigned");
+    }
   if (TARGET_SPE)
     builtin_define ("__SPE__");
   if (TARGET_SOFT_FLOAT)
