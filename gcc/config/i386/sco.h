@@ -16,6 +16,11 @@
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT 0201
 
+/* Let's guess that the SCO software FPU emulator can't handle
+   80-bit XFmode insns, so don't generate them.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
+
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
 #undef STARTFILE_SPEC
