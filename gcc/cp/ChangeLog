@@ -1,3 +1,145 @@
+Thu Jan 30 19:18:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_name_real): Also build a TYPENAME_TYPE for nested
+ 	classes.
+	* pt.c (tsubst): Don't recurse for the type of a TYPENAME_TYPE.
+
+Wed Jan 29 11:40:35 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (duplicate_decls): Next route, pedwarn about different
+	exceptions if -pedantic *or* olddecl !DECL_IN_SYSTEM_HEADER.
+
+Tue Jan 28 20:43:29 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* cp-tree.h (HAS_DEFAULT_IMPLEMENTATION): Delete macro.
+	(struct lang_type): Delete has_default_implementation member.
+	Increase dummy to 21.
+	* decl.c (start_method): Delete usage.
+
+	* cp-tree.h (build_call, null_ptr_cst_p, in_function_p,
+	store_after_parms, start_decl_1, auto_function): Add decls.
+	(get_arglist_len_in_bytes, declare_implicit_exception,
+	have_exceptions_p, make_type_decl, typedecl_for_tag,
+	store_in_parms, pop_implicit_try_blocks, push_exception_cleanup,
+	build_component_type_expr, cplus_exception_name,
+	{make,clear}_anon_parm_name, dont_see_typename): Removed decls.
+	* call.c (build_this): Make static.
+	(is_complete): Likewise.
+	(implicit_conversion): Likewise.
+	(reference_binding): Likewise.
+	(standard_conversion): Likewise.
+	(strip_top_quals): Likewise.
+	(non_reference): Likewise.
+	(build_conv): Likewise.
+	(user_harshness): Likewise.
+	(rank_for_ideal): Likewise.
+	* decl.c (start_decl_1): Delete forward decl.
+	(push_decl_level): Make static.
+	(resume_binding_level): Make static.
+	(namespace_bindings_p): Make static.
+	(declare_namespace_level): Make static.
+	(lookup_name_real): Make static.
+	(duplicate_decls): Make static.  Take register off NEWDECL and
+	OLDDECL parm decls.
+	* decl2.c (get_sentry): Make static.
+	(temp_name_p): Delete fn.
+	* except.c (auto_function): Delete decl.
+	* lex.c (handle_{cp,sysv}_pragma): Make static.
+	(handle_sysv_pragma) [HANDLE_SYSV_PRAGMA]: Add forward decl.
+	* method.c (do_build_{copy_constructor,assign_ref}): Make static.
+	* pt.c (tsubst_expr_values): Make static.
+	* rtti.c (combine_strings): Delete decl.
+
+Tue Jan 28 16:40:40 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (push_template_decl): Handle getting a typedef.
+
+	* call.c (build_new_function_call): Complain about void arg.
+
+Tue Jan 28 15:25:09 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (duplicate_decls): Give pedwarn of different exceptions
+	if -pedantic, instead of olddecl !DECL_IN_SYSTEM_HEADER.
+
+Mon Jan 27 19:21:29 1997  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_throw): Don't expand the cleanup tree here,
+ 	since we are not going to write the rtl out.  Fixes problem with
+ 	-g -O on SPARC.
+
+Mon Jan 27 16:24:35 1997  Sean McNeil  <sean@mcneil.com>
+
+	* Make-lang.in: Add $(exeext) as necessary.
+
+Mon Jan 27 13:20:39 1997  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y (handler_seq): Must have at least one catch clause.
+
+Sat Jan 25 12:00:05 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (add_builtin_candidate): Restore ?: hack.
+
+	* decl.c (grok_op_properties): More warnings.
+
+Sat Jan 25 08:50:03 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (duplicate_decls): On second thought, do it as a pedwarn
+	still but only if !DECL_IN_SYSTEM_HEADER (olddecl).
+
+	* decl.c (duplicate_decls): Scale back to a warning, and only do
+	'em if -pedantic.
+
+Fri Jan 24 17:52:54 1997  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (duplicate_decls): pedwarn mismatched exception
+ 	specifications.
+
+Thu Jan 23 18:18:54 1997  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (build_new_method_call): Don't display the invisible
+ 	argument for controlling virtual bases.
+
+Thu Jan 23 16:48:10 1997  Mike Stump  <mrs@cygnus.com>
+
+	* new: Add nothrow new and delete, bad_alloc and throw specifications
+	for delete.
+	* decl.c (init_decl_processing): Add throw specification for delete.
+	* new.cc (nothrow): Define.
+	* lex.c (real_yylex): Removing warning that throw and friends are
+	keywords.
+	* new1.cc (operator new (size_t sz, const nothrow_t&)): Define.
+	* new2.cc (operator new[] (size_t sz, const nothrow_t&): Define.
+	* Make-lang.in: Add new{1,2}.{cc,o}.
+
+Thu Jan 23 16:39:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (cons_up_default_function): Fix return type of synth op=.
+
+	* init.c (emit_base_init): Add warnings for uninitialized members
+ 	and bases.
+
+	* decl.c (xref_basetypes): Add warning for non-polymorphic type
+ 	with destructor used as base type.
+
+	* decl.c (grok_op_properties): Add warning for op= returning void.
+	* typeck.c (c_expand_return): Add warning for op= returning anything
+	other than *this.
+
+	* class.c (finish_struct_1): Add warning for class with pointers
+ 	but not copy ctor or copy op=.
+
+	* cp-tree.h (TI_PENDING_TEMPLATE_FLAG): New macro.
+	* pt.c (add_pending_template): Use it instead of LANG_FLAG_0.
+	(instantiate_template): If -fexternal-templates, add this
+ 	instantiation to pending_templates.
+
+	* decl2.c (copy_assignment_arg_p): Disable old hack to support
+ 	Booch components.
+
+Tue Jan 21 18:32:04 1997  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (cp_convert): Pedwarn enum to pointer conversions.
+
 Mon Jan 20 17:59:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (standard_conversion): Handle getting references.  Tack

@@ -1194,11 +1194,12 @@ cp_convert (type, expr, convtype, flags)
   if (INTEGRAL_CODE_P (code))
     {
       tree intype = TREE_TYPE (e);
-      /* enum = enum, enum = int, enum = float are all errors.  */
+      /* enum = enum, enum = int, enum = float, (enum)pointer are all
+         errors.  */
       if (flag_int_enum_equivalence == 0
 	  && TREE_CODE (type) == ENUMERAL_TYPE
-	  && ARITHMETIC_TYPE_P (intype)
-	  && ! (convtype & CONV_STATIC))
+	  && ((ARITHMETIC_TYPE_P (intype) && ! (convtype & CONV_STATIC))
+	      || (TREE_CODE (intype) == POINTER_TYPE)))
 	{
 	  cp_pedwarn ("conversion from `%#T' to `%#T'", intype, type);
 

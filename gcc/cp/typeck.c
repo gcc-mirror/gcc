@@ -7116,6 +7116,12 @@ c_expand_return (retval)
       retval = current_class_ptr;
     }
 
+  /* Effective C++ rule 15.  See also start_function.  */
+  if (extra_warnings
+      && DECL_NAME (current_function_decl) == ansi_opname[(int) MODIFY_EXPR]
+      && retval != current_class_ref)
+    cp_warning ("`operator=' should return a reference to `*this'");
+
   if (valtype == NULL_TREE || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;

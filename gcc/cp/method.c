@@ -1664,7 +1664,7 @@ make_thunk (function, delta)
 
 void
 emit_thunk (thunk_fndecl)
-  tree thunk_fndecl;
+     tree thunk_fndecl;
 {
   rtx insns;
   char buffer[250];
@@ -1917,7 +1917,7 @@ largest_union_member (type)
 
 /* Generate code for default X(X&) constructor.  */
 
-void
+static void
 do_build_copy_constructor (fndecl)
      tree fndecl;
 {
@@ -2020,7 +2020,7 @@ do_build_copy_constructor (fndecl)
   pop_momentary ();
 }
 
-void
+static void
 do_build_assign_ref (fndecl)
      tree fndecl;
 {

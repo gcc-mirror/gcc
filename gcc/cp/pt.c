@@ -67,7 +67,7 @@ void pop_template_decls ();
 
 tree classtype_mangled_name ();
 static char * mangle_class_name_for_template ();
-tree tsubst_expr_values ();
+static tree tsubst_expr_values ();
 tree most_specialized_class PROTO((tree, tree));
 tree get_class_bindings PROTO((tree, tree, tree));
 tree make_temp_vec PROTO((int));
@@ -251,7 +251,7 @@ push_template_decl (decl)
     primary = 1;
 
   /* Partial specialization.  */
-  if (TREE_CODE (decl) == TYPE_DECL
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
       && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
     {
       tree type = TREE_TYPE (decl);
@@ -287,7 +287,7 @@ push_template_decl (decl)
       if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	cp_error ("must specialize `%#T' before defining member `%#D'",
 		  ctx, decl);
-      if (TREE_CODE (decl) == TYPE_DECL)
+      if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
 	tmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
       else if (! DECL_TEMPLATE_INFO (decl))
 	{
@@ -309,7 +309,7 @@ push_template_decl (decl)
 
   info = perm_tree_cons (tmpl, args, NULL_TREE);
 
-  if (TREE_CODE (decl) == TYPE_DECL)
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
     {
       CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (tmpl)) = info;
       DECL_NAME (decl) = classtype_mangled_name (TREE_TYPE (decl));
@@ -647,13 +647,13 @@ add_pending_template (d)
   else
     ti = DECL_TEMPLATE_INFO (d);
 
-  if (TREE_LANG_FLAG_0 (ti))
+  if (TI_PENDING_TEMPLATE_FLAG (ti))
     return;
 
   *template_tail = perm_tree_cons
     (current_function_decl, d, NULL_TREE);
   template_tail = &TREE_CHAIN (*template_tail);
-  TREE_LANG_FLAG_0 (ti) = 1;
+  TI_PENDING_TEMPLATE_FLAG (ti) = 1;
 }
 
 /* Given an IDENTIFIER_NODE (type TEMPLATE_DECL) and a chain of
@@ -1359,7 +1359,8 @@ tsubst (t, args, nargs, in_decl)
   type = TREE_TYPE (t);
   if (type == unknown_type_node)
     my_friendly_abort (42);
-  if (type && TREE_CODE (t) != FUNCTION_DECL)
+  if (type && TREE_CODE (t) != FUNCTION_DECL
+      && TREE_CODE (t) != TYPENAME_TYPE)
     type = tsubst (type, args, nargs, in_decl);
 
   switch (TREE_CODE (t))
@@ -2523,6 +2524,9 @@ instantiate_template (tmpl, targ_ptr)
   /* substitute template parameters */
   fndecl = tsubst (DECL_RESULT (tmpl), targ_ptr, len, tmpl);
 
+  if (flag_external_templates)
+    add_pending_template (fndecl);
+
  out:
   function_maybepermanent_obstack = old_fmp_obstack;
   pop_obstacks ();
@@ -3520,7 +3524,7 @@ tsubst_chain (t, argvec)
   return NULL_TREE;
 }
 
-tree
+static tree
 tsubst_expr_values (t, argvec)
      tree t, argvec;
 {

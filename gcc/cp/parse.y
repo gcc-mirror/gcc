@@ -3724,8 +3724,12 @@ try_block:
 	;
 
 handler_seq:
-	  /* empty */
-	| handler_seq CATCH
+	  handler
+	| handler_seq handler
+	;
+
+handler:
+	  CATCH
 		{
 		  if (processing_template_decl)
 		    {
@@ -3734,7 +3738,7 @@ handler_seq:
 		      add_tree ($<ttype>$);
 		    }
 		}
-	.pushlevel handler_args
+	  .pushlevel handler_args
 		{
 		  if (processing_template_decl)
 		    {
@@ -3743,7 +3747,7 @@ handler_seq:
 		      last_tree = $<ttype>3;
 		    }
 		}	  
-	compstmt
+	  compstmt
 		{
 		  if (processing_template_decl)
 		    {
@@ -3754,7 +3758,7 @@ handler_seq:
 		  else
 		    expand_end_catch_block ();
 		}	  
-	.poplevel
+	  .poplevel
 	;
 
 type_specifier_seq:

@@ -38,9 +38,6 @@ extern struct obstack *permanent_obstack;
 tree type_info_type_node;
 tree tinfo_fn_id;
 tree tinfo_fn_type;
-
-/* in c-common.c */
-extern tree combine_strings PROTO((tree));
 
 void
 init_rtti_processing ()
@@ -266,7 +263,7 @@ build_x_typeid (exp)
   return convert_from_reference (exp);
 }
 
-tree
+static tree
 get_tinfo_var (type)
      tree type;
 {
@@ -358,7 +355,7 @@ get_tinfo_fn (type)
   return d;
 }
 
-tree
+static tree
 get_typeid_1 (type)
      tree type;
 {
@@ -392,7 +389,7 @@ get_typeid (type)
 /* Check whether TEST is null before returning RESULT.  If TEST is used in
    RESULT, it must have previously had a save_expr applied to it.  */
 
-tree
+static tree
 ifnonnull (test, result)
      tree test, result;
 {
