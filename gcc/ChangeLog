@@ -1,3 +1,7 @@
+1999-07-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Typo fixes.
+
 Wed Jul 14 23:28:06 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* emit-rtl.c (gen_realpart): Issue an error for cases GCC can not
