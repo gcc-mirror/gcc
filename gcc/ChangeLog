@@ -1,3 +1,8 @@
+Wed Dec 11 18:39:52 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (REG_CLASS_HAS_GENERAL_REG): New.
+	(REGISTER_MOVE_COST): Use it.
+
 2002-12-11  Richard Henderson  <rth@redhat.com>
 
 	* tree.h (MODULE_LOCAL_P): Kill.
