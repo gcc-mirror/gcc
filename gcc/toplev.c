@@ -2966,8 +2966,12 @@ compile_file (name)
 	    && ! DECL_ARTIFICIAL (decl)
 	    && ! TREE_PUBLIC (decl))
 	  {
-	    pedwarn_with_decl (decl, 
-			       "`%s' declared `static' but never defined");
+	    if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	      pedwarn_with_decl (decl,
+				 "`%s' used but never defined");
+	    else
+	      warning_with_decl (decl,
+				 "`%s' declared `static' but never defined");
 	    /* This symbol is effectively an "extern" declaration now.  */
 	    TREE_PUBLIC (decl) = 1;
 	    assemble_external (decl);
