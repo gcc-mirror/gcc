@@ -28,5 +28,5 @@ int main ()
   ap = (C2*)&e2;
   // ap points to base subobject shared by two Bs; fails
   if (dynamic_cast <B2*> (ap) != 0)
-    return 1;
+    return 2;
 }

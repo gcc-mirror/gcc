@@ -1640,11 +1640,14 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
 
   /* Under the new ABI, we need to point into the middle of the
      vtable.  */
-  if (vbase_offsets_in_vtable_p ())
+  if (flag_new_abi)
     {
-      vtable_decl = build (PLUS_EXPR, TREE_TYPE (vtable_decl), 
+      vtable_decl = build (PLUS_EXPR,
+			   TREE_TYPE (vtable_decl),
 			   vtable_decl,
-			   size_extra_vtbl_entries (TYPE_BINFO (real_type)));
+			   size_binop (MULT_EXPR,
+				       size_int (2),
+				       TYPE_SIZE_UNIT (vtable_entry_type)));
       TREE_CONSTANT (vtable_decl) = 1;
     }
 

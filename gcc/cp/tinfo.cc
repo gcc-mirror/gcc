@@ -590,6 +590,14 @@ adjust_pointer (const void *base, ptrdiff_t offset)
     (reinterpret_cast <const char *> (base) + offset);
 }
 
+inline ptrdiff_t
+get_vbase_offset (const void *object, ptrdiff_t offset)
+{
+  const char *vtable = *reinterpret_cast <const char *const *> (object);
+  vtable += offset;
+  return *reinterpret_cast <const ptrdiff_t *> (vtable);
+}
+
 // some predicate functions for __class_type_info::sub_kind
 inline bool contained_p (__class_type_info::sub_kind access_path)
 {
@@ -718,9 +726,7 @@ do_find_public_src (ptrdiff_t src2dst,
         {
           if (src2dst == -3)
             continue; // Not a virtual base, so can't be here.
-  	  const ptrdiff_t *vtable = *static_cast <const ptrdiff_t *const *> (base);
-          
-	  offset = vtable[offset];
+	  offset = get_vbase_offset (base, offset);
         }
       base = adjust_pointer <void> (base, offset);
       
@@ -841,9 +847,7 @@ do_dyncast (ptrdiff_t src2dst,
       if (base_list[i].is_virtual_p ())
         {
           base_access = sub_kind (base_access | contained_virtual_mask);
-  	  const ptrdiff_t *vtable = *static_cast <const ptrdiff_t *const *> (base);
-          
-	  offset = vtable[offset];
+	  offset = get_vbase_offset (base, offset);
 	}
       base = adjust_pointer <void> (base, offset);
 
@@ -1041,10 +1045,7 @@ do_upcast (sub_kind access_path,
       	  sub_access = sub_kind (sub_access | contained_virtual_mask);
           
           if (base)
-            {
-    	      const ptrdiff_t *vtable = *static_cast <const ptrdiff_t *const *> (base);
-	      offset = vtable[offset];
-	    }
+	    offset = get_vbase_offset (base, offset);
         }
       if (base)
         base = adjust_pointer <void> (base, offset);

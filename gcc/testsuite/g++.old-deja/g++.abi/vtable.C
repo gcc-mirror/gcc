@@ -65,7 +65,7 @@ int main ()
   
   if (vtable (&s4) != vtable (s2))
     return 1;
-    if (vtable (s2) >= vtable (s3))
+  if (vtable (s2) >= vtable (s3))
     return 2;
   if (vtable (s3) >= vtable (s1))
     return 3;
