@@ -681,6 +681,8 @@ c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h c-parse.h \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 $(srcdir)/c-parse.c $(srcdir)/c-parse.h: $(srcdir)/c-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d c-parse.y -o c-parse.c
+$(srcdir)/c-parse.y: $(srcdir)/c-parse.in $(srcdir)/cond.awk
+	cd $(srcdir); awk -f cond.awk objc=0 c-parse.in > c-parse.y
 
 c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h
@@ -753,6 +755,8 @@ objc-parse.o : $(srcdir)/objc-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/objc-parse.c
 $(srcdir)/objc-parse.c : $(srcdir)/objc-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) objc-parse.y -o objc-parse.c
+$(srcdir)/objc-parse.y: $(srcdir)/c-parse.in $(srcdir)/cond.awk
+	cd $(srcdir); awk -f cond.awk objc=1 c-parse.in > objc-parse.y
 
 objc-actions.o : objc-actions.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h \
    flags.h objc-actions.h
@@ -1279,6 +1283,7 @@ extraclean: distclean
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
 realclean: distclean
+	-rm -f c-parse.y objc-parse.y
 	-rm -f cp-parse.c cp-parse.h cp-parse.output
 	-rm -f objc-parse.c objc-parse.output
 	-rm -f c-parse.c c-parse.h c-parse.output
@@ -1570,7 +1575,7 @@ gcc.xtar.Z: gcc.xtar
 #	compress < gcc-$(version).tar > gcc-$(version).tar.Z
 
 #gcc-$(version).tar:
-gcc.xtar: doc
+gcc.xtar: doc c-parse.y objc-parse.y
 	if grep -s "for version ${version}" gcc.texi; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
