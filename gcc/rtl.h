@@ -102,17 +102,14 @@ typedef struct rtx_def
 {
 #ifdef ONLY_INT_FIELDS
 #ifdef CODE_FIELD_BUG
-  unsigned int code : 15;
+  unsigned int code : 16;
 #else
   unsigned short code;
 #endif
 #else
   /* The kind of expression this is.  */
-  enum rtx_code code : 15;
+  enum rtx_code code : 16;
 #endif
-
-  /* Used by the garbage collector.  */
-  unsigned gc_mark : 1;
 
   /* The kind of value the expression has.  */
 #ifdef ONLY_INT_FIELDS
@@ -207,7 +204,6 @@ typedef struct rtx_def
 
 typedef struct rtvec_def{
   int num_elem;		/* number of elements */
-  int gc_mark;
   struct rtx_def *elem[1];
 } *rtvec;
 

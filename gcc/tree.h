@@ -203,9 +203,7 @@ struct tree_common
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
 
-  unsigned gc_mark : 1;
-
-  /* There is room for two more flags.  */
+  /* There is room for three more flags.  */
 };
 
 /* The following table lists the uses of each of the above flags and

@@ -35,28 +35,13 @@
 /* For now, keep using the old obstack scheme in the gen* programs.  */
 int ggc_p = 0;
 
-rtx
-ggc_alloc_rtx (nslots)
-     int nslots;
+void *
+ggc_alloc_obj (size, zero)
+     size_t size;
+     int zero;
 {
-  int size = sizeof(struct rtx_def) + (nslots - 1) * sizeof(rtunion);
-  rtx n;
-
-  n = (rtx) xmalloc (size);
-  bzero ((char *) n, size);
-
-  return n;
-}
-
-rtvec
-ggc_alloc_rtvec (nelt)
-     int nelt;
-{
-  int size = sizeof (struct rtvec_def) + (nelt - 1) * sizeof (rtx);
-  rtvec v;
-
-  v = (rtvec) xmalloc (size);
-  bzero ((char *) v, size);
-
-  return v;
+  void *p = xmalloc (size);
+  if (zero)
+    memset (p, 0, size);
+  return p;
 }

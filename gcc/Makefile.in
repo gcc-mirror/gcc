@@ -1750,7 +1750,7 @@ s-output : $(md_file) genoutput $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-output.c insn-output.c
 	touch s-output
 
-genrtl.o : genrtl.c $(CONFIG_H) $(RTL_H) system.h
+genrtl.o : genrtl.c $(CONFIG_H) $(RTL_H) system.h ggc.h
 genrtl.c genrtl.h : s-genrtl
 	@true	# force gnu make to recheck modification times.
 

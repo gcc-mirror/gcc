@@ -368,7 +368,7 @@ fi
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
-	fputs_unlocked getrusage)
+	fputs_unlocked getrusage valloc)
 
 # Make sure wchar_t is available
 #AC_CHECK_TYPE(wchar_t, unsigned int)
@@ -4455,6 +4455,8 @@ AC_ARG_WITH(gc,
     ;;
 esac],
 [if test $ac_cv_func_mmap_fixed_mapped = yes; then
+  GGC=ggc-page
+elif test $ac_cv_func_valloc = yes; then
   GGC=ggc-page
 else
   GGC=ggc-simple

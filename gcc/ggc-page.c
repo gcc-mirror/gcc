@@ -27,7 +27,9 @@
 #include "flags.h"
 #include "ggc.h"
 
+#ifdef HAVE_MMAP
 #include <sys/mman.h>
+#endif
 
 
 /* Stategy: 
@@ -111,10 +113,10 @@ char *empty_string;
    significant PAGE_L2_BITS and PAGE_L1_BITS are the second and first
    index values in the lookup table, respectively.  
 
-   The topmost leftover bits, if any, are ignored.  For 32-bit
-   architectures and the settings below, there are no leftover bits.
-   For architectures with wider pointers, the lookup tree points to a
-   list of pages, which must be scanned to find the correct one.  */
+   For 32-bit architectures and the settings below, there are no
+   leftover bits.  For architectures with wider pointers, the lookup
+   tree points to a list of pages, which must be scanned to find the
+   correct one.  */
 
 #define PAGE_L1_BITS	(8)
 #define PAGE_L2_BITS	(32 - PAGE_L1_BITS - G.lg_pagesize)
@@ -178,8 +180,8 @@ typedef page_entry **page_table[PAGE_L1_SIZE];
 
 #else
 
-/* On 64-bit hosts, we use two level page tables plus a linked list
-   that disambiguates the top 32-bits.  There will almost always be
+/* On 64-bit hosts, we use the same two level page tables plus a linked
+   list that disambiguates the top 32-bits.  There will almost always be
    exactly one entry in the list.  */
 typedef struct page_table_chain
 {
@@ -221,7 +223,7 @@ static struct globals
   unsigned char context_depth;
 
   /* A file descriptor open to /dev/zero for reading.  */
-#ifndef MAP_ANONYMOUS
+#if defined (HAVE_MMAP) && !defined(MAP_ANONYMOUS)
   int dev_zero_fd;
 #endif
 
@@ -258,16 +260,13 @@ static struct globals
 #define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
 
 
-static page_entry *** ggc_lookup_page_table PROTO ((void));
 static int ggc_allocated_p PROTO ((const void *));
-static page_entry *lookup_page_table_entry PROTO ((void *));
+static page_entry *lookup_page_table_entry PROTO ((const void *));
 static void set_page_table_entry PROTO ((void *, page_entry *));
 static char *alloc_anon PROTO ((char *, size_t));
 static struct page_entry * alloc_page PROTO ((unsigned));
 static void free_page PROTO ((struct page_entry *));
 static void release_pages PROTO ((void));
-static void *alloc_obj PROTO ((size_t, int));
-static int mark_obj PROTO ((void *));
 static void clear_marks PROTO ((void));
 static void sweep_pages PROTO ((void));
 
@@ -278,26 +277,6 @@ static void poison_pages PROTO ((void));
 
 void debug_print_page_list PROTO ((int));
 
-/* Returns the lookup table appropriate for looking up P.  */
-
-static inline page_entry ***
-ggc_lookup_page_table ()
-{
-  page_entry ***base;
-
-#if HOST_BITS_PER_PTR <= 32
-  base = &G.lookup[0];
-#else
-  page_table table = G.lookup;
-  size_t high_bits = (size_t) p & ~ (size_t) 0xffffffff;
-  while (table->high_bits != high_bits)
-    table = table->next;
-  base = &table->table[0];
-#endif
-
-  return base;
-}
-
 /* Returns non-zero if P was allocated in GC'able memory.  */
 
 static inline int
@@ -307,7 +286,21 @@ ggc_allocated_p (p)
   page_entry ***base;
   size_t L1, L2;
 
-  base = ggc_lookup_page_table ();
+#if HOST_BITS_PER_PTR <= 32
+  base = &G.lookup[0];
+#else
+  page_table table = G.lookup;
+  size_t high_bits = (size_t) p & ~ (size_t) 0xffffffff;
+  while (1)
+    {
+      if (table == NULL)
+	return 0;
+      if (table->high_bits == high_bits)
+	break;
+      table = table->next;
+    }
+  base = &table->table[0];
+#endif
 
   /* Extract the level 1 and 2 indicies.  */
   L1 = LOOKUP_L1 (p);
@@ -321,12 +314,20 @@ ggc_allocated_p (p)
 
 static inline page_entry *
 lookup_page_table_entry(p)
-     void *p;
+     const void *p;
 {
   page_entry ***base;
   size_t L1, L2;
 
-  base = ggc_lookup_page_table ();
+#if HOST_BITS_PER_PTR <= 32
+  base = &G.lookup[0];
+#else
+  page_table table = G.lookup;
+  size_t high_bits = (size_t) p & ~ (size_t) 0xffffffff;
+  while (table->high_bits != high_bits)
+    table = table->next;
+  base = &table->table[0];
+#endif
 
   /* Extract the level 1 and 2 indicies.  */
   L1 = LOOKUP_L1 (p);
@@ -407,11 +408,12 @@ poison (start, len)
    (if non-null).  */
 static inline char *
 alloc_anon (pref, size)
-     char *pref;
+     char *pref ATTRIBUTE_UNUSED;
      size_t size;
 {
   char *page;
 
+#ifdef HAVE_MMAP
 #ifdef MAP_ANONYMOUS
   page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
 			MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -424,6 +426,16 @@ alloc_anon (pref, size)
       fputs ("Virtual memory exhausted!\n", stderr);
       exit(1);
     }
+#else
+#ifdef HAVE_VALLOC
+  page = (char *) valloc (size);
+  if (!page)
+    {
+      fputs ("Virtual memory exhausted!\n", stderr);
+      exit(1);
+    }
+#endif /* HAVE_VALLOC */
+#endif /* HAVE_MMAP */
 
   return page;
 }
@@ -522,6 +534,7 @@ free_page (entry)
 static inline void
 release_pages ()
 {
+#ifdef HAVE_MMAP
   page_entry *p, *next;
   char *start;
   size_t len;
@@ -553,6 +566,19 @@ release_pages ()
     }
 
   munmap (start, len);
+#else
+#ifdef HAVE_VALLOC
+  page_entry *p, *next;
+
+  for (p = G.free_pages; p ; p = next)
+    {
+      next = p->next;
+      free (p->page);
+      free (p);
+    }
+#endif /* HAVE_VALLOC */
+#endif /* HAVE_MMAP */
+
   G.free_pages = NULL;
 }
 
@@ -582,8 +608,8 @@ static unsigned char const size_lookup[257] =
 
 /* Allocate a chunk of memory of SIZE bytes.  If ZERO is non-zero, the
    memory is zeroed; otherwise, its contents are undefined.  */
-static void *
-alloc_obj (size, zero)
+void *
+ggc_alloc_obj (size, zero)
      size_t size;
      int zero;
 {
@@ -700,8 +726,8 @@ alloc_obj (size, zero)
 /* If P is not marked, marks it and returns 0.  Otherwise returns 1.
    P must have been allocated by the GC allocator; it mustn't point to
    static objects, stack variables, or memory allocated with malloc.  */
-static int
-mark_obj (p)
+int
+ggc_set_mark (p)
      void *p;
 {
   page_entry *entry;
@@ -738,6 +764,13 @@ mark_obj (p)
   return 0;
 }
 
+void
+ggc_mark_if_gcable (p)
+     void *p;
+{
+  if (p && ggc_allocated_p (p))
+    ggc_set_mark (p);
+}
 
 /* Initialize the ggc-mmap allocator.  */
 void
@@ -746,7 +779,7 @@ init_ggc ()
   G.pagesize = getpagesize();
   G.lg_pagesize = exact_log2 (G.pagesize);
 
-#ifndef MAP_ANONYMOUS
+#if defined (HAVE_MMAP) && !defined(MAP_ANONYMOUS)
   G.dev_zero_fd = open ("/dev/zero", O_RDONLY);
   if (G.dev_zero_fd == -1)
     abort ();
@@ -812,64 +845,6 @@ ggc_pop_context ()
 	}
     }
 }
-
-
-struct rtx_def *
-ggc_alloc_rtx (nslots)
-     int nslots;
-{
-  return (struct rtx_def *) 
-    alloc_obj (sizeof (struct rtx_def) + (nslots - 1) * sizeof (rtunion), 1);
-}
-
-
-struct rtvec_def *
-ggc_alloc_rtvec (nelt)
-     int nelt;
-{
-  return (struct rtvec_def *)
-    alloc_obj (sizeof (struct rtvec_def) + (nelt - 1) * sizeof (rtx), 1);
-}
-
-
-union tree_node *
-ggc_alloc_tree (length)
-     int length;
-{
-  return (union tree_node *) alloc_obj (length, 1);
-}
-
-
-char *
-ggc_alloc_string (contents, length)
-     const char *contents;
-     int length;
-{
-  char *string;
-
-  if (length < 0)
-    {
-      if (contents == NULL)
-	return NULL;
-      length = strlen (contents);
-    }
-
-  string = (char *) alloc_obj (length + 1, 0);
-  if (contents != NULL)
-    memcpy (string, contents, length);
-  string[length] = 0;
-
-  return string;
-}
-
-
-void *
-ggc_alloc (size)
-     size_t size;
-{
-  return alloc_obj (size, 0);
-}
-
 
 static inline void
 clear_marks ()
@@ -1072,54 +1047,9 @@ ggc_collect ()
   time = get_run_time () - time;
   gc_time += time;
 
-  time = (time + 500) / 1000;
   if (!quiet_flag)
-    fprintf (stderr, "%luk in %d.%03d}", 
-	     (unsigned long) G.allocated / 1024, time / 1000, time % 1000);
-}
-
-
-int
-ggc_set_mark_rtx (r)
-     rtx r;
-{
-  return mark_obj (r);
-}
-
-int
-ggc_set_mark_rtvec (v)
-     rtvec v;
-{
-  return mark_obj (v);
-}
-
-int
-ggc_set_mark_tree (t)
-     tree t;
-{
-  return mark_obj (t);
-}
-
-void
-ggc_mark_string (s)
-     char *s;
-{
-  if (s)
-    mark_obj (s);
-}
-
-void
-ggc_mark_string_if_gcable (s)
-     char *s;
-{
-  if (s && ggc_allocated_p (s))
-    mark_obj (s);
-}
-
-void 
-ggc_mark (p)
-     void *p;
-{
-  if (p)
-    mark_obj (p);
+    {
+      fprintf (stderr, "%luk in %.3f}", 
+	       (unsigned long) G.allocated / 1024, time * 1e-6);
+    }
 }
