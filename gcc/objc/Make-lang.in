@@ -107,6 +107,8 @@ objc.tags: force
 	cd $(srcdir)/objc; etags -o TAGS.sub *.y *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
+lang_checks += check-objc
+
 #
 # Install hooks:
 # cc1obj is installed elsewhere as part of $(COMPILERS).

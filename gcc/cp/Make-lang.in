@@ -120,6 +120,9 @@ c++.tags: force
 
 generated-manpages:: cp/g++.1
 
+check-c++ : check-g++
+lang_checks += check-g++
+
 #
 # Install hooks:
 # cc1plus is installed elsewhere as part of $(COMPILERS).

@@ -271,7 +271,6 @@ treelang.distdir:
 #	not here yet sorry not sure if this is needed or not???
 
 # test hook
-# the other languages are hard coded in the main makefile.in - that seems to be wrong
 
 check-treelang: treelang.check
 

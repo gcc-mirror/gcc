@@ -551,7 +551,9 @@ specified in @code{outputs} in @file{config-lang.in}, although this is
 deprecated).  Some hooks are defined by using a double-colon rule for
 @code{@var{hook}}, rather than by using a target of form
 @code{@var{lang}.@var{hook}}.  These hooks are called ``double-colon
-hooks'' below.
+hooks'' below.  It also adds any testsuite targets that can use the
+standard rule in @file{gcc/Makefile.in} to the variable
+@code{lang_checks}.
 
 @table @code
 @item all.build
