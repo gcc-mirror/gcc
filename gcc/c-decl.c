@@ -6008,7 +6008,7 @@ store_parm_decls ()
 #endif
 		      if (pedantic)
 			{
-			  warning ("promoted argument `%s' doesn't match prototype",
+			  pedwarn ("promoted argument `%s' doesn't match prototype",
 				   IDENTIFIER_POINTER (DECL_NAME (parm)));
 			  warning_with_file_and_line
 			    (current_function_prototype_file,
