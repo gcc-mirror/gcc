@@ -162,7 +162,7 @@ static long compute_checksum PARAMS ((void));
 static basic_block find_group PARAMS ((basic_block));
 static void union_groups PARAMS ((basic_block, basic_block));
 
-/* If non-zero, we need to output a constructor to set up the
+/* If nonzero, we need to output a constructor to set up the
    per-object-file data.  */
 static int need_func_profiler = 0;
 

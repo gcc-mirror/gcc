@@ -1103,7 +1103,7 @@ do {									\
 #define MEM_SCALAR_P(RTX)						\
   (RTL_FLAG_CHECK1("MEM_SCALAR_P", (RTX), MEM)->frame_related)
 
-/* If VAL is non-zero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
+/* If VAL is nonzero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
    RTX.  Otherwise, vice versa.  Use this macro only when you are
    *sure* that you know that the MEM is in a structure, or is a
    scalar.  VAL is evaluated only once.  */

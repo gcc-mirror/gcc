@@ -2979,7 +2979,7 @@ emit_unop_insn (icode, target, op0, code)
    TARGET, OP0, and OP1 are the output and inputs of the operations,
    respectively.  OP1 may be zero for a unary operation.
 
-   EQUIV, if non-zero, is an expression to be placed into a REG_EQUAL note
+   EQUIV, if nonzero, is an expression to be placed into a REG_EQUAL note
    on the last insn.
 
    If TARGET is not a register, INSNS is simply emitted with no special
@@ -4152,7 +4152,7 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
   return target;
 }
 
-/* Return non-zero if a conditional move of mode MODE is supported.
+/* Return nonzero if a conditional move of mode MODE is supported.
 
    This function is for combine so it can tell whether an insn that looks
    like a conditional move is actually supported by the hardware.  If we

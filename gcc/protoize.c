@@ -363,7 +363,7 @@ struct def_dec_info_struct {
 
 static const char *pname;
 
-/* Error counter.  Will be non-zero if we should give up at the next convenient
+/* Error counter.  Will be nonzero if we should give up at the next convenient
    stopping point.  */
 
 static int errors = 0;
@@ -669,7 +669,7 @@ is_id_char (ch)
 }
 
 /* Give a message indicating the proper way to invoke this program and then
-   exit with non-zero status.  */
+   exit with nonzero status.  */
 
 static void
 usage ()
@@ -1437,7 +1437,7 @@ find_corresponding_lparen (p)
 /* Given a line from  an aux info file, and a time at which the aux info
    file it came from was created, check to see if the item described in
    the line comes from a file which has been modified since the aux info
-   file was created.  If so, return non-zero, else return zero.  */
+   file was created.  If so, return nonzero, else return zero.  */
 
 static int
 referenced_file_is_newer (l, aux_info_mtime)
@@ -3202,7 +3202,7 @@ edit_fn_declaration (def_dec_p, clean_text_p)
    list that lies to the left of the one it was originally called to work
    on.  Thus, a whole set gets done in right-to-left order.
 
-   This routine returns non-zero if it thinks that it should not be trying
+   This routine returns nonzero if it thinks that it should not be trying
    to convert this particular function definition (because the name of the
    function doesn't match the one expected).  */
 
@@ -3254,7 +3254,7 @@ edit_formals_lists (end_formals, f_list_count, def_dec_p)
 
   /* Check that the function name in the header we are working on is the same
      as the one we would expect to find.  If not, issue a warning and return
-     non-zero.  */
+     nonzero.  */
 
   if (f_list_count == 0)
     {

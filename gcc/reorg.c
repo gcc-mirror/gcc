@@ -928,7 +928,7 @@ rare_destination (insn)
    taken, return 1.  If the branch is slightly less likely to be taken,
    return 0 and if the branch is highly unlikely to be taken, return -1.
 
-   CONDITION, if non-zero, is the condition that JUMP_INSN is testing.  */
+   CONDITION, if nonzero, is the condition that JUMP_INSN is testing.  */
 
 static int
 mostly_true_jump (jump_insn, condition)
@@ -1098,7 +1098,7 @@ get_branch_condition (insn, target)
   return 0;
 }
 
-/* Return non-zero if CONDITION is more strict than the condition of
+/* Return nonzero if CONDITION is more strict than the condition of
    INSN, i.e., if INSN will always branch if CONDITION is true.  */
 
 static int
@@ -1126,7 +1126,7 @@ condition_dominates_p (condition, insn)
   return comparison_dominates_p (code, other_code);
 }
 
-/* Return non-zero if redirecting JUMP to NEWLABEL does not invalidate
+/* Return nonzero if redirecting JUMP to NEWLABEL does not invalidate
    any insns already in the delay slot of JUMP.  */
 
 static int
@@ -1138,7 +1138,7 @@ redirect_with_delay_slots_safe_p (jump, newlabel, seq)
 
   /* Make sure all the delay slots of this jump would still
      be valid after threading the jump.  If they are still
-     valid, then return non-zero.  */
+     valid, then return nonzero.  */
 
   flags = get_jump_flags (jump, newlabel);
   for (i = 1; i < XVECLEN (pat, 0); i++)
@@ -1161,7 +1161,7 @@ redirect_with_delay_slots_safe_p (jump, newlabel, seq)
   return (i == XVECLEN (pat, 0));
 }
 
-/* Return non-zero if redirecting JUMP to NEWLABEL does not invalidate
+/* Return nonzero if redirecting JUMP to NEWLABEL does not invalidate
    any insns we wish to place in the delay slot of JUMP.  */
 
 static int
@@ -1173,7 +1173,7 @@ redirect_with_delay_list_safe_p (jump, newlabel, delay_list)
 
   /* Make sure all the insns in DELAY_LIST would still be
      valid after threading the jump.  If they are still
-     valid, then return non-zero.  */
+     valid, then return nonzero.  */
 
   flags = get_jump_flags (jump, newlabel);
   for (li = delay_list, i = 0; li; li = XEXP (li, 1), i++)
@@ -1233,9 +1233,9 @@ check_annul_list_true_false (annul_true_p, delay_list)
    insns in DELAY_LIST).  It is updated with the number that have been
    filled from the SEQUENCE, if any.
 
-   PANNUL_P points to a non-zero value if we already know that we need
+   PANNUL_P points to a nonzero value if we already know that we need
    to annul INSN.  If this routine determines that annulling is needed,
-   it may set that value non-zero.
+   it may set that value nonzero.
 
    PNEW_THREAD points to a location that is to receive the place at which
    execution should continue.  */
@@ -1856,9 +1856,9 @@ redundant_insn (insn, target, delay_list)
   return 0;
 }
 
-/* Return 1 if THREAD can only be executed in one way.  If LABEL is non-zero,
+/* Return 1 if THREAD can only be executed in one way.  If LABEL is nonzero,
    it is the target of the branch insn being scanned.  If ALLOW_FALLTHROUGH
-   is non-zero, we are allowed to fall into this thread; otherwise, we are
+   is nonzero, we are allowed to fall into this thread; otherwise, we are
    not.
 
    If LABEL is used more than one or we pass a label other than LABEL before
@@ -2040,7 +2040,7 @@ update_reg_unused_notes (insn, redundant_insn)
 /* Scan a function looking for insns that need a delay slot and find insns to
    put into the delay slot.
 
-   NON_JUMPS_P is non-zero if we are to only try to fill non-jump insns (such
+   NON_JUMPS_P is nonzero if we are to only try to fill non-jump insns (such
    as calls).  We do these first since we don't want jump insns (that are
    easier to fill) to get the only insns that could be used for non-jump insns.
    When it is zero, only try to fill JUMP_INSNs.
@@ -2543,7 +2543,7 @@ fill_simple_delay_slots (non_jumps_p)
    OPPOSITE_THREAD is the thread in the opposite direction.  It is used
    to see if any potential delay slot insns set things needed there.
 
-   LIKELY is non-zero if it is extremely likely that the branch will be
+   LIKELY is nonzero if it is extremely likely that the branch will be
    taken and THREAD_IF_TRUE is set.  This is used for the branch at the
    end of a loop back up to the top.
 

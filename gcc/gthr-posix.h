@@ -57,7 +57,7 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_mutex_unlock
 
 #ifdef _LIBOBJC
-/* Objective C.  */
+/* Objective-C.  */
 #pragma weak pthread_cond_broadcast
 #pragma weak pthread_cond_destroy
 #pragma weak pthread_cond_init

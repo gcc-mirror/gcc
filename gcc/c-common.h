@@ -43,7 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 /* Reserved identifiers.  This is the union of all the keywords for C,
-   C++, and Objective C.  All the type modifiers have to be in one
+   C++, and Objective-C.  All the type modifiers have to be in one
    block at the beginning, because they are used as mask bits.  There
    are 27 type modifiers; if we add many more we will have to redesign
    the mask mechanism.  */
@@ -93,7 +93,7 @@ enum rid
   /* casts */
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
 
-  /* Objective C */
+  /* Objective-C */
   RID_ID,          RID_AT_ENCODE,    RID_AT_END,
   RID_AT_CLASS,    RID_AT_ALIAS,     RID_AT_DEFS,
   RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,
