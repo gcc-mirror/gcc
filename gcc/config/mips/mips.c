@@ -203,6 +203,9 @@ char *mips_cpu_string;		/* for -mcpu=<xxx> */
 char *mips_isa_string;		/* for -mips{1,2,3,4} */
 char *mips_abi_string;		/* for -mabi={32,n32,64} */
 
+/* If TRUE, we split addresses into their high and low parts in the RTL.  */
+int mips_split_addresses;
+
 /* Generating calls to position independent functions?  */
 enum mips_abicalls_type mips_abicalls;
 
@@ -536,6 +539,9 @@ simple_memory_operand (op, mode)
     return FALSE;
 
   /* dword operations really put out 2 instructions, so eliminate them.  */
+  /* ??? This isn't strictly correct.  It is OK to accept multiword modes
+     here, since the length attributes are being set correctly, but only
+     if the address is offsettable.  LO_SUM is not offsettable.  */
   if (GET_MODE_SIZE (GET_MODE (op)) > UNITS_PER_WORD)
     return FALSE;
 
@@ -547,6 +553,7 @@ simple_memory_operand (op, mode)
       break;
 
     case REG:
+    case LO_SUM:
       return TRUE;
 
     case CONST_INT:
@@ -655,13 +662,59 @@ call_insn_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == MEM
-      && (CONSTANT_ADDRESS_P (XEXP (op, 0))
-	  || (GET_CODE (XEXP (op, 0)) == REG
-	      && XEXP (op, 0) != arg_pointer_rtx
-	      && !(REGNO (XEXP (op, 0)) >= FIRST_PSEUDO_REGISTER
-		   && REGNO (XEXP (op, 0)) <= LAST_VIRTUAL_REGISTER))))
+  if (CONSTANT_ADDRESS_P (op)
+      || (GET_CODE (op) == REG && op != arg_pointer_rtx
+	  && ! (REGNO (op) >= FIRST_PSEUDO_REGISTER
+		&& REGNO (op) <= LAST_VIRTUAL_REGISTER)))
     return 1;
+  return 0;
+}
+
+/* Return true if OPERAND is valid as a source operand for a move
+   instruction.  */
+
+int
+move_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (general_operand (op, mode)
+	  && ! (mips_split_addresses && mips_check_split (op, mode)));
+}
+
+/* Return true if we split the address into high and low parts.  */
+
+/* ??? We should also handle reg+array somewhere.  We get four
+   instructions currently, lui %hi/addui %lo/addui reg/lw.  Better is
+   lui %hi/addui reg/lw %lo.  Fixing GO_IF_LEGITIMATE_ADDRESS to accept
+   (plus (reg) (symbol_ref)) doesn't work because the SYMBOL_REF is broken
+   out of the address, then we have 4 instructions to combine.  Perhaps
+   add a 3->2 define_split for combine.  */
+
+/* ??? We could also split a CONST_INT here if it is a large_int().
+   However, it doesn't seem to be very useful to have %hi(constant).
+   We would be better off by doing the masking ourselves and then putting
+   the explicit high part of the constant in the RTL.  This will give better
+   optimization.  Also, %hi(constant) needs assembler changes to work.
+   There is already a define_split that does this.  */
+
+int
+mips_check_split (address, mode)
+     rtx address;
+     enum machine_mode mode;
+{     
+  /* ??? This is the same check used in simple_memory_operand.
+     We use it here because LO_SUM is not offsettable.  */
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    return 0;
+
+  if ((GET_CODE (address) == SYMBOL_REF && ! SYMBOL_REF_FLAG (address))
+      || (GET_CODE (address) == CONST
+	  && GET_CODE (XEXP (XEXP (address, 0), 0)) == SYMBOL_REF
+	  && ! SYMBOL_REF_FLAG (XEXP (XEXP (address, 0), 0)))
+      || GET_CODE (address) == LABEL_REF)
+    return 1;
+
   return 0;
 }
 
@@ -787,6 +840,7 @@ mips_count_memory_refs (op, num)
 
 	case REG:
 	case CONST_INT:
+	case LO_SUM:
 	  break;
 
 	case PLUS:
@@ -1178,6 +1232,12 @@ mips_move_1word (operands, insn, unsignedp)
 	  operands[2] = add_op0;
 	  operands[3] = add_op1;
 	  ret = "add%:\t%0,%2,%3";
+	}
+
+      else if (code1 == HIGH)
+	{
+	  operands[1] = XEXP (op1, 0);
+	  ret = "lui\t%0,%%hi(%1)";
 	}
     }
 
@@ -1622,7 +1682,6 @@ mips_address_cost (addr)
       break;
 
     case LO_SUM:
-    case HIGH:
       return 1;
 
     case LABEL_REF:
@@ -2554,6 +2613,42 @@ output_block_move (insn, operands, num_regs, move_type)
 	}
     }
 
+  /* ??? We really shouldn't get any LO_SUM addresses here, because they
+     are not offsettable, however, offsettable_address_p says they are
+     offsettable. I think this is a bug in offsettable_address_p.
+     For expediency, we fix this by just loading the address into a register
+     if we happen to get one.  */
+
+  if (GET_CODE (src_reg) == LO_SUM)
+    {
+      src_reg = operands[ 3 + num_regs-- ];
+      if (move_type != BLOCK_MOVE_LAST)
+	{
+	  xoperands[2] = XEXP (XEXP (operands[1], 0), 1);
+	  xoperands[1] = XEXP (XEXP (operands[1], 0), 0);
+	  xoperands[0] = src_reg;
+	  if (Pmode == DImode)
+	    output_asm_insn ("daddiu\t%0,%1,%%lo(%2)", xoperands);
+	  else
+	    output_asm_insn ("addiu\t%0,%1,%%lo(%2)", xoperands);
+	}
+    }
+
+  if (GET_CODE (dest_reg) == LO_SUM)
+    {
+      dest_reg = operands[ 3 + num_regs-- ];
+      if (move_type != BLOCK_MOVE_LAST)
+	{
+	  xoperands[2] = XEXP (XEXP (operands[0], 0), 1);
+	  xoperands[1] = XEXP (XEXP (operands[0], 0), 0);
+	  xoperands[0] = dest_reg;
+	  if (Pmode == DImode)
+	    output_asm_insn ("daddiu\t%0,%1,%%lo(%2)", xoperands);
+	  else
+	    output_asm_insn ("addiu\t%0,%1,%%lo(%2)", xoperands);
+	}
+    }
+
   if (num_regs > (sizeof (load_store) / sizeof (load_store[0])))
     num_regs = (sizeof (load_store) / sizeof (load_store[0]));
 
@@ -3436,6 +3531,14 @@ override_options ()
       mips_section_threshold = 0x7fffffff;
     }
 
+  /* ??? This does not work when target addresses are DImode.
+     This is because we are missing DImode high/lo_sum patterns.  */
+
+  if (TARGET_GAS && optimize && ! flag_pic && Pmode == SImode)
+    mips_split_addresses = 1;
+  else
+    mips_split_addresses = 0;
+
   /* -mrnames says to use the MIPS software convention for register
      names instead of the hardware names (ie, $a0 instead of $4).
      We do this by switching the names in mips_reg_names, which the
@@ -3918,6 +4021,23 @@ print_operand_address (file, addr)
 	fprintf (file, "0(%s)", reg_names [REGNO (addr)]);
 	break;
 
+      case LO_SUM:
+	{
+	  register rtx arg0   = XEXP (addr, 0);
+	  register rtx arg1   = XEXP (addr, 1);
+
+	  if (! mips_split_addresses)
+	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, Spurious LO_SUM.");
+
+	  if (GET_CODE (arg0) != REG)
+	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, LO_SUM with #1 not REG.");
+
+	  fprintf (file, "%%lo(");
+	  print_operand_address (file, arg1);
+	  fprintf (file, ")(%s)", reg_names [REGNO (arg0)]);
+	}
+	break;
+
       case PLUS:
 	{
 	  register rtx reg    = (rtx)0;
@@ -3948,8 +4068,8 @@ print_operand_address (file, addr)
 	  if (!CONSTANT_P (offset))
 	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, invalid insn #2");
 
-	if (REGNO (reg) == ARG_POINTER_REGNUM)
-	  abort_with_insn (addr, "Arg pointer not eliminated.");
+	  if (REGNO (reg) == ARG_POINTER_REGNUM)
+	    abort_with_insn (addr, "Arg pointer not eliminated.");
 
 	  output_addr_const (file, offset);
 	  fprintf (file, "(%s)", reg_names [REGNO (reg)]);
