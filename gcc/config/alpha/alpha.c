@@ -1987,7 +1987,7 @@ vmskrunch (name)
 void
 output_prolog (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   unsigned long imask = 0;
   unsigned long fmask = 0;
