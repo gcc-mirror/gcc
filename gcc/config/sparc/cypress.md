@@ -1,4 +1,4 @@
-;; Scheduling description for Sparc Cypress.
+;; Scheduling description for SPARC Cypress.
 ;;   Copyright (C) 2002 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GNU CC.

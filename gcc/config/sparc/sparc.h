@@ -434,7 +434,7 @@ extern int target_flags;
 #define MASK_FLAT 0x200
 #define TARGET_FLAT (target_flags & MASK_FLAT)
 
-/* Nonzero means use the registers that the Sparc ABI reserves for
+/* Nonzero means use the registers that the SPARC ABI reserves for
    application software.  This must be the default to coincide with the
    setting in FIXED_REGISTERS.  */
 #define MASK_APP_REGS 0x400
@@ -560,15 +560,15 @@ extern int target_flags;
     {"cypress", 0,							\
      N_("Optimize for Cypress processors") }, 				\
     {"sparclite", 0,							\
-     N_("Optimize for SparcLite processors") }, 			\
+     N_("Optimize for SPARCLite processors") }, 			\
     {"f930", 0,								\
      N_("Optimize for F930 processors") }, 				\
     {"f934", 0,								\
      N_("Optimize for F934 processors") }, 				\
     {"v8", 0,								\
-     N_("Use V8 Sparc ISA") }, 						\
+     N_("Use V8 SPARC ISA") }, 						\
     {"supersparc", 0,							\
-     N_("Optimize for SuperSparc processors") }, 			\
+     N_("Optimize for SuperSPARC processors") }, 			\
     /* End of deprecated options.  */					\
     {"ptr64", MASK_PTR64,						\
      N_("Pointers are 64-bit") }, 					\
@@ -634,7 +634,7 @@ extern enum processor_type sparc_cpu;
   { "tune=", &sparc_select[2].string,				\
     N_("Schedule code for given CPU") },			\
   { "cmodel=", &sparc_cmodel_string,				\
-    N_("Use given Sparc code model") },				\
+    N_("Use given SPARC code model") },				\
   SUBTARGET_OPTIONS 						\
 }
 
@@ -700,7 +700,7 @@ extern struct sparc_cpu_select sparc_select[];
 /* ??? This does not work in SunOS 4.x, so it is not enabled here.
    Instead, it is enabled in sol2.h, because it does work under Solaris.  */
 /* Define for support of TFmode long double.
-   Sparc ABI says that long double is 4 words.  */
+   SPARC ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 #endif
 
@@ -1118,7 +1118,7 @@ extern int sparc_mode_class[];
 
 #define DEFAULT_PCC_STRUCT_RETURN -1
 
-/* Sparc ABI says that quad-precision floats and all structures are returned
+/* SPARC ABI says that quad-precision floats and all structures are returned
    in memory.
    For v9: unions <= 32 bytes in size are returned in int regs,
    structures up to 32 bytes are returned in int and fp regs.  */
@@ -1817,7 +1817,7 @@ extern GTY(()) rtx sparc_compare_op1;
 /* Generate the special assembly code needed to tell the assembler whatever
    it might need to know about the return value of a function.
 
-   For Sparc assemblers, we need to output a .proc pseudo-op which conveys
+   For SPARC assemblers, we need to output a .proc pseudo-op which conveys
    information to the assembler relating to peephole optimization (done in
    the assembler).  */
 
@@ -2373,7 +2373,7 @@ do {									\
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.
 
-   For Sparc 32, we wish to handle addresses by splitting them into
+   For SPARC 32, we wish to handle addresses by splitting them into
    HIGH+LO_SUM pairs, retaining the LO_SUM in the memory reference. 
    This cuts the number of extra insns by one.
 
@@ -2494,7 +2494,7 @@ do {                                                                    \
 #define SELECT_CC_MODE(OP,X,Y)  select_cc_mode ((OP), (X), (Y))
 
 /* Return non-zero if MODE implies a floating point inequality can be
-   reversed.  For Sparc this is always true because we have a full
+   reversed.  For SPARC this is always true because we have a full
    compliment of ordered and unordered comparisons, but until generic
    code knows how to reverse it correctly we keep the old definition.  */
 #define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode && (MODE) != CCFPmode)

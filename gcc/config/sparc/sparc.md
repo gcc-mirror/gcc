@@ -1602,7 +1602,7 @@
   [(set_attr "type" "branch")
    (set_attr "branch_type" "fcc")])
 
-;; Sparc V9-specific jump insns.  None of these are guaranteed to be
+;; SPARC V9-specific jump insns.  None of these are guaranteed to be
 ;; in the architecture.
 
 ;; There are no 32 bit brreg insns.
@@ -2202,7 +2202,7 @@
   "TARGET_ARCH64 && flag_pic"
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
 
-;; Sparc-v9 code model support insns.  See sparc_emit_set_symbolic_const64
+;; SPARC-v9 code model support insns.  See sparc_emit_set_symbolic_const64
 ;; in sparc.c to see what is going on here... PIC stuff comes first.
 
 (define_insn "movdi_lo_sum_pic"
@@ -3459,7 +3459,7 @@
   DONE;
 })
 
-;; Sparc V9 conditional move instructions.
+;; SPARC V9 conditional move instructions.
 
 ;; We can handle larger constants here for some flavors, but for now we keep
 ;; it simple and only allow those constants supported by all flavours.
@@ -7216,14 +7216,14 @@
   [(set_attr "type" "shift")])
 
 ;; Unconditional and other jump instructions
-;; On the Sparc, by setting the annul bit on an unconditional branch, the
+;; On the SPARC, by setting the annul bit on an unconditional branch, the
 ;; following insn is never executed.  This saves us a nop.  Dbx does not
 ;; handle such branches though, so we only use them when optimizing.
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
 {
-  /* TurboSparc is reported to have problems with
+  /* TurboSPARC is reported to have problems with
      with
 	foo: b,a foo
      i.e. an empty loop with the annul bit set.  The workaround is to use 
@@ -7909,7 +7909,7 @@
 ;; ??? This should be a define expand, so that the extra instruction have
 ;; a chance of being optimized away.
 
-;; Disabled because none of the UltraSparcs implement popc.  The HAL R1
+;; Disabled because none of the UltraSPARCs implement popc.  The HAL R1
 ;; does, but no one uses that and we don't have a switch for it.
 ;
 ;(define_insn "ffsdi2"

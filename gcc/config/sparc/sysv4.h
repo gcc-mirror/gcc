@@ -1,4 +1,4 @@
-/* Target definitions for GNU compiler for Sparc running System V.4
+/* Target definitions for GNU compiler for SPARC running System V.4
    Copyright (C) 1991, 1992, 1995, 1996, 1997, 1998, 2000, 2002
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Undefined some symbols which are defined in "svr4.h" but which are
    appropriate only for typical svr4 systems, but not for the specific
-   case of svr4 running on a Sparc.  */
+   case of svr4 running on a SPARC.  */
 
 #undef INIT_SECTION_ASM_OP
 #undef FINI_SECTION_ASM_OP
@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #undef SET_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */
 
 /* Provide a set of pre-definitions and pre-assertions appropriate for
-   the Sparc running svr4.  __svr4__ is our extension.  */
+   the SPARC running svr4.  __svr4__ is our extension.  */
 
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -68,10 +68,10 @@ Boston, MA 02111-1307, USA.  */
   "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
    %{fpic:-K PIC} %{fPIC:-K PIC} %(asm_cpu)"
 
-/* Define the names of various pseudo-op used by the Sparc/svr4 assembler.
+/* Define the names of various pseudo-op used by the SPARC/svr4 assembler.
    Note that many of these are different from the typical pseudo-ops used
    by most svr4 assemblers.  That is probably due to a (misguided?) attempt
-   to keep the Sparc/svr4 assembler somewhat compatible with the Sparc/SunOS
+   to keep the SPARC/svr4 assembler somewhat compatible with the SPARC/SunOS
    assembler.  */
 
 #define STRING_ASM_OP		"\t.asciz\t"
@@ -81,12 +81,12 @@ Boston, MA 02111-1307, USA.  */
 #define POPSECTION_ASM_OP	"\t.popsection"
 
 /* This is the format used to print the second operand of a .type pseudo-op
-   for the Sparc/svr4 assembler.  */
+   for the SPARC/svr4 assembler.  */
 
 #define TYPE_OPERAND_FMT      "#%s"
 
 /* This is the format used to print a .pushsection pseudo-op (and its operand)
-   for the Sparc/svr4 assembler.  */
+   for the SPARC/svr4 assembler.  */
 
 #define PUSHSECTION_FORMAT	"%s\"%s\"\n"
 
@@ -108,9 +108,9 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 	fprintf (FILE, "\n");						\
   } while (0)
 
-/* Define how the Sparc registers should be numbered for Dwarf output.
+/* Define how the SPARC registers should be numbered for Dwarf output.
    The numbering provided here should be compatible with the native
-   svr4 SDB debugger in the Sparc/svr4 reference port.  The numbering
+   svr4 SDB debugger in the SPARC/svr4 reference port.  The numbering
    is as follows:
 
    Assembly name	gcc internal regno	Dwarf regno

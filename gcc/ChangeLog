@@ -1,3 +1,25 @@
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/sparc/cypress.md: Replace Sparc with SPARC.
+	* config/sparc/freebsd.h: Likewise.
+	* config/sparc/gmon-sol2.c: Likewise.
+	* config/sparc/hypersparc.md: Likewise.
+	* config/sparc/lb1spc.asm: Likewise.
+	* config/sparc/lb1spl.asm: Likewise.
+	* config/sparc/linux.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+	* config/sparc/lynx.h: Likewise.
+	* config/sparc/sol2.h: Likewise.
+	* config/sparc/sparc-modes.def: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+	* config/sparc/sparclet.md: Likewise.
+	* config/sparc/supersparc.md: Likewise.
+	* config/sparc/sysv4.h: Likewise.
+	* config/sparc/vxsim.h: Likewise.
+	* config/sparc/vxsparc64.h: Likewise.
+
 2002-09-14  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (output.h): Move after inclusion of tree.h.

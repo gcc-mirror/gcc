@@ -1410,7 +1410,7 @@ sparc_emit_set_const32 (op0, op1)
 }
 
 
-/* Sparc-v9 code-model support.  */
+/* SPARC-v9 code-model support.  */
 void
 sparc_emit_set_symbolic_const64 (op0, op1, temp1)
      rtx op0;
@@ -4757,7 +4757,7 @@ function_arg_record_value_2 (type, startbitpos, parms)
 }
 
 /* Used by function_arg and function_value to implement the complex
-   Sparc64 structure calling conventions.  */
+   SPARC64 structure calling conventions.  */
 
 static rtx
 function_arg_record_value (type, mode, slotno, named, regbase)

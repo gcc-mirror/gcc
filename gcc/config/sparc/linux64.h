@@ -149,7 +149,7 @@ ENDFILE_SPEC_COMMON
 #define WCHAR_TYPE_SIZE 32
 
 /* Define for support of TFmode long double.
-   Sparc ABI says that long double is 4 words.  */
+   SPARC ABI says that long double is 4 words.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 
@@ -378,7 +378,7 @@ do {									\
 
 /* Handle multilib correctly.  */
 #if defined(__arch64__)
-/* 64-bit Sparc version */
+/* 64-bit SPARC version */
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
   do {									\
     unsigned int *pc_ = (CONTEXT)->ra;					\
@@ -429,7 +429,7 @@ do {									\
     goto SUCCESS;							\
   } while (0)
 #else
-/* 32-bit Sparc version */
+/* 32-bit SPARC version */
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
   do {									\
     unsigned int *pc_ = (CONTEXT)->ra;					\

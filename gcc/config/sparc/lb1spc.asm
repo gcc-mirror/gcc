@@ -1,7 +1,7 @@
 /* This is an assembly language implementation of mulsi3, divsi3, and modsi3
    for the sparc processor.
 
-   These routines are derived from the Sparc Architecture Manual, version 8,
+   These routines are derived from the SPARC Architecture Manual, version 8,
    slightly edited to match the desired calling convention, and also to
    optimize them for our purposes.  */
 
@@ -81,7 +81,7 @@ mul_shortway:
 
 #ifdef L_divsi3
 /*
- * Division and remainder, from Appendix E of the Sparc Version 8
+ * Division and remainder, from Appendix E of the SPARC Version 8
  * Architecture Manual, with fixes from Gordon Irlam.
  */
 
@@ -197,7 +197,7 @@ ready_to_divide:
 		nop
 		be	do_single_div
 		nop
-	/* NB: these are commented out in the V8-Sparc manual as well */
+	/* NB: these are commented out in the V8-SPARC manual as well */
 	/* (I do not understand this) */
 	! %o5 > %o3: went too far: back up 1 step
 	!	srl	%o5, 1, %o5
@@ -544,7 +544,7 @@ divide:
 		nop
 		be	do_single_div
 		nop
-	/* NB: these are commented out in the V8-Sparc manual as well */
+	/* NB: these are commented out in the V8-SPARC manual as well */
 	/* (I do not understand this) */
 	! %o5 > %o3: went too far: back up 1 step
 	!	srl	%o5, 1, %o5
