@@ -1,3 +1,12 @@
+2002-01-03  Andreas Schwab  <schwab@suse.de>
+
+	* cppfiles.c (_cpp_pop_file_buffer): Change return type to bool
+	and return true if _cpp_push_next_buffer pushed a new include
+	file.
+	* cpplib.c (_cpp_pop_buffer): Only call obstack_free if
+	_cpp_pop_file_buffer did not push a new file.
+	* cpphash.h (_cpp_pop_file_buffer): Update declaration.
+
 2002-01-02  Eric Christopher  <echristo@redhat.com>
 
 	* final.c (final_scan_insn): Change 0 -> NULL_RTX in

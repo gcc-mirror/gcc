@@ -390,7 +390,7 @@ extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
 extern void _cpp_init_includes		PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));
-extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
+extern bool _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
 						 struct include_file *));
 
 /* In cppexp.c */
