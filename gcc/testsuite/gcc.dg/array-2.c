@@ -1,10 +1,13 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-w" } */
 
 /* Verify that we can't do things to get ourselves in trouble
-   with GCC's zero-length array extension.  */
+   with GCC's initialized flexible array member extension.  */
 
-struct f { int w; int x[0]; };
+struct f { int w; int x[]; };
 struct g { struct f f; };
 struct g g1 = { { 0, { } } };
-struct g g2 = { { 0, { 1 } } }; /* { dg-error "(nested structure)|(near initialization)" "nested" } */
+struct g g2 = { { 0, { 1 } } }; /* { dg-error "(nested context)|(near initialization)" "nested" } */
+
+struct h { int x[0]; int y; };
+struct h h1 = { { 0 }, 1 }; /* { dg-error "(before end)|(near initialization)" "before end" } */
