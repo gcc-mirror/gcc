@@ -3841,8 +3841,6 @@ build_base_field (record_layout_info rli, tree binfo,
       DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
       DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
       DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
-      /* Tell the backend not to round up to TYPE_ALIGN.  */
-      DECL_PACKED (decl) = 1;
   
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
