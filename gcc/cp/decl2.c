@@ -202,7 +202,7 @@ int warn_overloaded_virtual;
 
 /* Non-zero means warn when declaring a class that has a non virtual
    destructor, when it really ought to have a virtual one. */
-int warn_nonvdtor = 1;
+int warn_nonvdtor;
 
 /* Non-zero means warn when a function is declared extern and later inline.  */
 int warn_extern_inline;
@@ -530,6 +530,7 @@ lang_decode_option (p)
 	  warn_format = setting;
 	  warn_missing_braces = setting;
 	  warn_extern_inline = setting;
+	  warn_nonvdtor = setting;
 	  /* We save the value of warn_uninitialized, since if they put
 	     -Wuninitialized on the command line, we need to generate a
 	     warning about not using it without also specifying -O.  */
@@ -2760,44 +2761,81 @@ finish_file ()
 	emit_thunk (vars);
     }
 
-  /* Now write out inline functions which had their addresses taken
-     and which were not declared virtual and which were not declared
-     `extern inline'.  */
-  while (saved_inlines)
-    {
-      tree decl = TREE_VALUE (saved_inlines);
-      saved_inlines = TREE_CHAIN (saved_inlines);
-      /* Redefinition of a member function can cause DECL_SAVED_INSNS to be
-         0; don't crash.  */
-      if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
-	continue;
-      if (DECL_FUNCTION_MEMBER_P (decl) && !TREE_PUBLIC (decl))
-	{
-	  tree ctype = DECL_CLASS_CONTEXT (decl);
-	  if (CLASSTYPE_INTERFACE_KNOWN (ctype))
-	    {
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_EXTERNAL (decl)
-		= (CLASSTYPE_INTERFACE_ONLY (ctype)
-		   || (DECL_INLINE (decl) && ! flag_implement_inlines));
-	    }
-	}
-      if (TREE_PUBLIC (decl)
-	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-	  || flag_keep_inline_functions)
-	{
-	  if (DECL_EXTERNAL (decl)
-	      || (DECL_IMPLICIT_INSTANTIATION (decl)
-		  && ! flag_implicit_templates))
-	    assemble_external (decl);
-	  else
-	    {	
-	      temporary_allocation ();
-	      output_inline_function (decl);
-	      permanent_allocation (1);
-	    }
-	}
-    }
+  {
+    int reconsider = 0;		/* More may be referenced; check again */
+    tree delayed = NULL_TREE;	/* These might be referenced later */
+
+    /* Now write out inline functions which had their addresses taken and
+       which were not declared virtual and which were not declared `extern
+       inline'.  */
+    while (saved_inlines)
+      {
+	tree decl = TREE_VALUE (saved_inlines);
+	saved_inlines = TREE_CHAIN (saved_inlines);
+	/* Redefinition of a member function can cause DECL_SAVED_INSNS to be
+	   0; don't crash.  */
+	if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
+	  continue;
+	if (DECL_FUNCTION_MEMBER_P (decl) && !TREE_PUBLIC (decl))
+	  {
+	    tree ctype = DECL_CLASS_CONTEXT (decl);
+	    if (CLASSTYPE_INTERFACE_KNOWN (ctype))
+	      {
+		TREE_PUBLIC (decl) = 1;
+		DECL_EXTERNAL (decl)
+		  = (CLASSTYPE_INTERFACE_ONLY (ctype)
+		     || (DECL_INLINE (decl) && ! flag_implement_inlines));
+	      }
+	  }
+	if (TREE_PUBLIC (decl)
+	    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+	    || flag_keep_inline_functions)
+	  {
+	    if (DECL_EXTERNAL (decl)
+		|| (DECL_IMPLICIT_INSTANTIATION (decl)
+		    && ! flag_implicit_templates))
+	      assemble_external (decl);
+	    else
+	      {
+		reconsider = 1;
+		temporary_allocation ();
+		output_inline_function (decl);
+		permanent_allocation (1);
+	      }
+	  }
+	else if (TREE_USED (decl)
+		 || TREE_USED (DECL_ASSEMBLER_NAME (decl)))
+	  delayed = tree_cons (NULL_TREE, decl, delayed);
+      }
+
+    if (reconsider && delayed)
+      {
+	while (reconsider)
+	  {
+	    tree place;
+	    reconsider = 0;
+	    for (place = delayed; place; place = TREE_CHAIN (place))
+	      {
+		tree decl = TREE_VALUE (place);
+		if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+		    && ! TREE_ASM_WRITTEN (decl))
+		  {
+		    if (DECL_EXTERNAL (decl)
+			|| (DECL_IMPLICIT_INSTANTIATION (decl)
+			    && ! flag_implicit_templates))
+		      assemble_external (decl);
+		    else
+		      {
+			reconsider = 1;
+			temporary_allocation ();
+			output_inline_function (decl);
+			permanent_allocation (1);
+		      }
+		  }
+	      }
+	  }
+      }
+  }
 
   if (write_virtuals == 2)
     {

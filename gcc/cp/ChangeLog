@@ -1,3 +1,30 @@
+Fri Jul  1 09:35:51 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* parse.y (init): ANSI C++ does not forbid { }.
+
+Thu Jun 30 00:35:22 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl2.c (lang_decode_option): Set warn_nonvdtor along with -Wall.
+	warn_nonvdtor defaults to off.
+
+	* class.c (instantiate_type): Use comptypes rather than relying on 
+	types to satisfy ==.
+
+	* decl.c (start_function): Set DECL_DEFER_OUTPUT on all inlines that
+	might be static.
+
+	* tree.c (build_cplus_new): Never build WITH_CLEANUP_EXPRs.
+
+	* decl.c (grok_reference_init): Deal with ADDR_EXPRs of TARGET_EXPRs.
+
+	* cvt.c (cp_convert): Pass 0 to with_cleanup_p arg of
+	build_cplus_new.
+
+Wed Jun 29 22:31:09 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl2.c (finish_file): Maybe consider static inlines multiple
+	times, in case they reference each other.
+
 Tue Jun 28 11:58:38 1994  Gerald Baumgartner  (gb@cs.purdue.edu)
 
 	* class.c (finish_struct): Don't `cons_up_default_function's

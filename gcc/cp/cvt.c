@@ -1395,7 +1395,9 @@ cp_convert (type, expr, convtype, flags)
 	      cp_error ("in conversion to type `%T'", type);
 	      return error_mark_node;
 	    }
-	  rval = build_cplus_new (type, init, 1);
+	  /* We can't pass 1 to the with_cleanup_p arg here, because that
+             screws up passing classes by value.  */
+	  rval = build_cplus_new (type, init, 0);
 	  return rval;
 	}
     }

@@ -1779,7 +1779,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  if ((IS_SIGNATURE (basetype)
 	       && (instance_ptr = build_optr_ref (instance)))
 	      || (lvalue_p (instance)
-	       && (instance_ptr = build_unary_op (ADDR_EXPR, instance, 0)))
+		  && (instance_ptr = build_unary_op (ADDR_EXPR, instance, 0)))
 	      || (instance_ptr = unary_complex_lvalue (ADDR_EXPR, instance)))
 	    {
 	      if (instance_ptr == error_mark_node)

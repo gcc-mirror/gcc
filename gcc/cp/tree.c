@@ -138,6 +138,7 @@ build_cplus_new (type, init, with_cleanup_p)
   TREE_SIDE_EFFECTS (rval) = 1;
   TREE_ADDRESSABLE (rval) = 1;
 
+#if 0
   if (with_cleanup_p && TYPE_NEEDS_DESTRUCTOR (type))
     {
       TREE_OPERAND (rval, 2) = error_mark_node;
@@ -149,6 +150,7 @@ build_cplus_new (type, init, with_cleanup_p)
       TREE_SIDE_EFFECTS (rval) = 1;
       TREE_ADDRESSABLE (rval) = 1;
     }
+#endif
   return rval;
 }
 
@@ -334,9 +336,6 @@ build_cplus_staticfn_type (basetype, rettype, argtypes)
 
   TYPE_METHOD_BASETYPE (t) = TYPE_MAIN_VARIANT (basetype);
   TREE_TYPE (t) = rettype;
-
-  /* The actual arglist for this function includes a "hidden" argument
-     which is "this".  Put it into the list of argument types.  */
 
   TYPE_ARG_TYPES (t) = argtypes;
 
