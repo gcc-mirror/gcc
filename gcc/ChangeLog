@@ -1,3 +1,11 @@
+2003-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (finish_decl): When prototype with asmspec is found
+	for built-in, adjust built_in_decls as well as expr.c decls.
+	* expr.c (init_block_move_fn, init_block_clear_fn): New functions.
+	(emit_block_move_libcall_fn, clear_storage_libcall_fn): Use it.
+	* expr.c (init_block_move_fn, init_block_clear_fn): New prototypes.
+
 2003-04-28  Richard Henderson  <rth@redhat.com>
 
         * config/sparc/sparc.c (print_operand): Add 's' to sign-extend.

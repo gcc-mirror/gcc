@@ -1994,15 +1994,14 @@ emit_block_move_via_libcall (dst, src, size)
 
 static GTY(()) tree block_move_fn;
 
-static tree
-emit_block_move_libcall_fn (for_call)
-      int for_call;
+void
+init_block_move_fn (asmspec)
+     const char *asmspec;
 {
-  static bool emitted_extern;
-  tree fn = block_move_fn, args;
-
-  if (!fn)
+  if (!block_move_fn)
     {
+      tree fn, args;
+
       if (TARGET_MEM_FUNCTIONS)
 	{
 	  fn = get_identifier ("memcpy");
@@ -2027,14 +2026,30 @@ emit_block_move_libcall_fn (for_call)
       block_move_fn = fn;
     }
 
+  if (asmspec)
+    {
+      SET_DECL_RTL (block_move_fn, NULL_RTX);
+      SET_DECL_ASSEMBLER_NAME (block_move_fn, get_identifier (asmspec));
+    }
+}
+
+static tree
+emit_block_move_libcall_fn (for_call)
+     int for_call;
+{
+  static bool emitted_extern;
+
+  if (!block_move_fn)
+    init_block_move_fn (NULL);
+
   if (for_call && !emitted_extern)
     {
       emitted_extern = true;
-      make_decl_rtl (fn, NULL);
-      assemble_external (fn);
+      make_decl_rtl (block_move_fn, NULL);
+      assemble_external (block_move_fn);
     }
 
-  return fn;
+  return block_move_fn;
 }
 
 /* A subroutine of emit_block_move.  Copy the data via an explicit
@@ -3089,15 +3104,14 @@ clear_storage_via_libcall (object, size)
 
 static GTY(()) tree block_clear_fn;
 
-static tree
-clear_storage_libcall_fn (for_call)
-     int for_call;
+void
+init_block_clear_fn (asmspec)
+     const char *asmspec;
 {
-  static bool emitted_extern;
-  tree fn = block_clear_fn, args;
-
-  if (!fn)
+  if (!block_clear_fn)
     {
+      tree fn, args;
+
       if (TARGET_MEM_FUNCTIONS)
 	{
 	  fn = get_identifier ("memset");
@@ -3121,14 +3135,30 @@ clear_storage_libcall_fn (for_call)
       block_clear_fn = fn;
     }
 
+  if (asmspec)
+    {
+      SET_DECL_RTL (block_clear_fn, NULL_RTX);
+      SET_DECL_ASSEMBLER_NAME (block_clear_fn, get_identifier (asmspec));
+    }
+}
+
+static tree
+clear_storage_libcall_fn (for_call)
+     int for_call;
+{
+  static bool emitted_extern;
+
+  if (!block_clear_fn)
+    init_block_clear_fn (NULL);
+
   if (for_call && !emitted_extern)
     {
       emitted_extern = true;
-      make_decl_rtl (fn, NULL);
-      assemble_external (fn);
+      make_decl_rtl (block_clear_fn, NULL);
+      assemble_external (block_clear_fn);
     }
 
-  return fn;
+  return block_clear_fn;
 }
 
 /* Generate code to copy Y into X.
