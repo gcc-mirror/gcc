@@ -1,3 +1,11 @@
+2002-04-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add Paolo Carlini and
+	Janis Johnson.
+	Update Richard Henderson, Jakub Jelinek, and Mark Mitchell.
+	Refer to Objective-C instead of	ObjC, SPARC instead of sparc,
+	and CPU instead of cpu.
+
 Mon Apr 29 13:36:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (flag_if_conversion, flag_if_conversion2): New static
