@@ -666,7 +666,7 @@ objc-runtime: libobjc.a
 
 # Build the Objective C runtime library.
 libobjc.a: cc1obj libgcc2.ready
-	mkdir objc
+	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
