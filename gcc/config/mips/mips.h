@@ -233,6 +233,8 @@ extern int		mips16_gp_offset_p ();
 extern int		mips16_constant ();
 extern int		mips16_constant_after_function_p ();
 extern int		build_mips16_call_stub ();
+extern char  	       *mips_output_conditional_branch ();
+extern int              mips_adjust_insn_length ();
 
 /* Recognition functions that return if a condition is true.  */
 extern int		address_operand ();
@@ -1685,6 +1687,9 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    HARD_FRAME_POINTER_REGNUM.  We can get away with this because $1 is
    a fixed register, and will not be used for anything else.  */
 #define FRAME_POINTER_REGNUM (GP_REG_FIRST + 1)
+
+/* Temporary scratch register for use by the assembler.  */
+#define ASSEMBLER_SCRATCH_REGNUM (GP_REG_FIRST + 1)
 
 /* $30 is not available on the mips16, so we use $17 as the frame
    pointer.  */
@@ -3769,6 +3774,14 @@ while (0)
 #define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
   if (REG_NOTE_KIND (LINK) != 0)					\
     (COST) = 0; /* Anti or output dependence.  */
+
+/* If defined, modifies the length assigned to instruction INSN as a
+   function of the context in which it is used.  LENGTH is an lvalue
+   that contains the initially computed length of the insn and should
+   be updated with the correct length of the insn.  */
+#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
+  ((LENGTH) = mips_adjust_insn_length ((INSN), (LENGTH)))
+
 
 /* Optionally define this if you have added predicates to
    `MACHINE.c'.  This macro is called within an initializer of an
