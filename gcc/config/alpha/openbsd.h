@@ -21,8 +21,6 @@ Boston, MA 02111-1307, USA.  */
 /* We settle for little endian for now.  */
 #define TARGET_ENDIAN_DEFAULT 0
 
-#include <alpha/alpha.h>
-
 #define OBSD_NO_DYNAMIC_LIBRARIES
 #define OBSD_HAS_DECLARE_FUNCTION_NAME
 #define OBSD_HAS_DECLARE_FUNCTION_SIZE

@@ -29,8 +29,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define NO_EXTERNAL_INDIRECT_ADDRESS
 
-#include "alpha/alpha.h"
-
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
 "-D__ALPHA -Dvms -DVMS -D__vms__ -D__VMS__ -Asystem=vms"

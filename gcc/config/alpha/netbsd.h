@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES							\
-  "-D__NetBSD__ -D__ELF__ -Asystem=unix -Asystem=NetBSD"
+  "-D__NetBSD__ -Asystem=unix -Asystem=NetBSD"
 
 
 /* Show that we need a GP when profiling.  */
@@ -39,18 +39,13 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC							\
   "%{mieee:-D_IEEE_FP}							\
    %{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT}			\
+   %{posix:-D_POSIX_SOURCE}						\
    %(cpp_cpu) %(cpp_subtarget)"
-
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC						\
-  "%{posix:-D_POSIX_SOURCE}"
-
 
 /* Provide a LINK_SPEC appropriate for a NetBSD/alpha ELF target.
    This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
    the alpha target.  */
 
-#undef LINK_SPEC
 #define LINK_SPEC							\
   "%{G*} %{relax:-relax}						\
    %{O*:-O3} %{!O*:-O1}							\
