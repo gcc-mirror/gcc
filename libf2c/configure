@@ -1201,7 +1201,8 @@ test "$host_alias" != "$target_alias" &&
 subdirs="libU77 libI77 libF77"
 
 # Do Makefile first since g2c.h depends on it and shouldn't get an
-# earlier timestamp.
+# earlier timestamp.  Of course, it does when the multilib gunk below
+# edits Makefile, sigh; see additional touch below.
 trap '' 1 2 15
 cat > confcache <<\EOF
 # This file is a shell script that caches the results of configure
@@ -1492,6 +1493,7 @@ if test -n "$CONFIG_FILES"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile
     . ${topsrcdir}/config-ml.in
+    touch g2c.h   # to keep it more recent than Makefile
   fi
 fi
 exit 0
