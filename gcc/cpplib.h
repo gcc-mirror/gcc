@@ -405,10 +405,6 @@ struct cpp_callbacks
 /* Name under which this program was invoked.  */
 extern const char *progname;
 
-/* Where does this buffer come from?  A source file, a builtin macro,
-   a command-line option, or a _Pragma operator.  */
-enum cpp_buffer_type {BUF_FILE, BUF_BUILTIN, BUF_CL_OPTION, BUF_PRAGMA};
-
 /* The structure of a node in the hash table.  The hash table has
    entries for all identifiers: either macros defined by #define
    commands (type NT_MACRO), assertions created with #assert
@@ -541,7 +537,7 @@ extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
 
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    const unsigned char *, size_t,
-					    enum cpp_buffer_type, int));
+					    int, int));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 
 /* N.B. The error-message-printer prototypes have not been nicely

@@ -171,13 +171,12 @@ struct cpp_buffer
   cppchar_t read_ahead;		/* read ahead character */
   cppchar_t extra_char;		/* extra read-ahead for long tokens.  */
 
-  struct cpp_reader *pfile;	/* Owns this buffer.  */
   struct cpp_buffer *prev;
 
-  const unsigned char *buf;	 /* entire buffer */
+  const unsigned char *buf;	 /* Entire buffer.  */
 
-  /* Pointer into the include table.  Used for include_next and
-     to record control macros. */
+  /* Pointer into the include table; non-NULL if this is a file
+     buffer.  Used for include_next and to record control macros.  */
   struct include_file *inc;
 
   /* Value of if_stack at start of this file.
@@ -213,9 +212,6 @@ struct cpp_buffer
      true, a CPP_EOF token is then returned.  Otherwise, the next
      token from the enclosing buffer is returned.  */
   bool return_at_eof;
-
-  /* Buffer type.  */
-  ENUM_BITFIELD (cpp_buffer_type) type : 8;
 
   /* The directory of the this buffer's file.  Its NAME member is not
      allocated, so we don't need to worry about freeing it.  */
@@ -391,7 +387,8 @@ extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
 extern void _cpp_init_includes		PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));
-extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *, cpp_buffer *));
+extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
+						 struct include_file *));
 
 /* In cppexp.c */
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));

@@ -1,3 +1,28 @@
+2001-08-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpperror.c (print_location): Don't show _Pragma.
+	* cppfiles.c (_cpp_pop_file_buffer): Handle -include file pushing
+	and file change callback generation here.
+	(stack_include_file): Update use of cpp_push_buffer.
+	* cpphash.h (_cpp_pop_file_buffer): Update prototype.
+	(struct cpp_buffer): Remove type, pfile members.
+	* cppinit.c (cpp_handle_option): Use free_chain.
+	* cpplex.c (_cpp_lex_token): Don't do -include file pushing here.
+	(skip_escaped_newlines, get_effective_char, lex_percent): Take
+	a cpp_reader rather than a cpp_buffer.
+	(skip_escaped_newlines, get_effective_char, skip_block_comment,
+	skip_line_comment, parse_string, lex_percent, lex_dot,
+	_cpp_lex_token): Update accordingly.
+	* cpplib.c (_cpp_pop_buffer): Don't do file change callback
+	generation here.
+	(cpp_push_buffer): Update prototype.
+	(run_directive): Update use of cpp_push_buffer.
+	(_cpp_do__Pragma, cpp_define, cpp_define_builtin, cpp_undef,
+	handle_assertion): Update use of run_directive.
+	* cpplib.h (enum cpp_buffer_type): Remove.
+	(cpp_push_buffer): Update prototype.
+	* fix-header.c (read_scan_file): Update.
+
 2001-08-22  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* gcc.c (struct prefix_list): Change prefix to const char *.
