@@ -1,6 +1,8 @@
 2001-06-22  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* libmath/stubs.c: New file.
+	(tanhf): Fix typo.
+
 	* libmath/Makefile.am (libmath_la_SOURCES): Add.
 	* libmath/Makefile.in.  Regenerate.
 

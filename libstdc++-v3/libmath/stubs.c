@@ -31,7 +31,7 @@
 #include <bits/c++config.h>
 
 #if !defined(_GLIBCPP_HAVE_COSF) && !defined(_GLIBCPP_HAVE___BUILTIN_COSF)
-extern float
+float
 cosf(float x)
 {
   return (float) cos(x);
@@ -39,7 +39,7 @@ cosf(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_COSHF
-extern float
+float
 coshf(float x)
 {
   return (float) cosh(x);
@@ -47,7 +47,7 @@ coshf(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_EXPF
-extern float
+float
 expf(float x)
 {
   return (float) exp(x);
@@ -55,7 +55,7 @@ expf(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_LOGF
-extern float
+float
 logf(float x)
 {
   return (float) log(x);
@@ -63,7 +63,7 @@ logf(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_LOG10F
-extern float
+float
 log10f(float x)
 {
   return (float) log10(x);
@@ -71,7 +71,7 @@ log10f(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_POWF
-extern float
+float
 powf(float x)
 {
   return (float) pow(x);
@@ -79,7 +79,7 @@ powf(float x)
 #endif
 
 #if !defined(_GLIBCPP_HAVE_SINF) && !defined(_GLIBCPP_HAVE___BUILTIN_SINF)
-extern float
+float
 sinf(float x)
 {
   return (float) sin(x);
@@ -87,7 +87,7 @@ sinf(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_SINHF
-extern float
+float
 sinhf(float x)
 {
   return (float) sinh(x);
@@ -95,7 +95,7 @@ sinhf(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_TANF
-extern float
+float
 tanf(float x)
 {
   return (float) tanf(x);
@@ -103,9 +103,9 @@ tanf(float x)
 #endif
 
 #ifndef _GLIBCPP_HAVE_TANHF
-extern float
+float
 tanhf(float x)
 {
-  return (float) tanhf(x);
+  return (float) tanh(x);
 }
 #endif
