@@ -1896,13 +1896,13 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 	    case BUILT_IN_SIN:
 	    case BUILT_IN_SINF:
 	    case BUILT_IN_SINL:
-	      if (! expand_twoval_unop(builtin_optab, 0, target, op0, 0))    
+	      if (!expand_twoval_unop (builtin_optab, op0, 0, target, 0))    
 		abort();
 	      break;
 	    case BUILT_IN_COS:
 	    case BUILT_IN_COSF:
 	    case BUILT_IN_COSL:
-	      if (! expand_twoval_unop(builtin_optab, target, 0, op0, 0))
+	      if (!expand_twoval_unop (builtin_optab, op0, target, 0, 0))
 		abort();
 	      break;
 	    default:

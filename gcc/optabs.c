@@ -2159,7 +2159,7 @@ sign_expand_binop (enum machine_mode mode, optab uoptab, optab soptab,
    Returns 1 if this operation can be performed; 0 if not.  */
 
 int
-expand_twoval_unop (optab unoptab, rtx targ0, rtx targ1, rtx op0,
+expand_twoval_unop (optab unoptab, rtx op0, rtx targ0, rtx targ1,
 		    int unsignedp)
 {
   enum machine_mode mode = GET_MODE (targ0 ? targ0 : targ1);
@@ -2234,7 +2234,7 @@ expand_twoval_unop (optab unoptab, rtx targ0, rtx targ1, rtx op0,
 	      rtx t1 = gen_reg_rtx (wider_mode);
 	      rtx cop0 = convert_modes (wider_mode, mode, op0, unsignedp);
 
-	      if (expand_twoval_unop (unoptab, t0, t1, cop0, unsignedp))
+	      if (expand_twoval_unop (unoptab, cop0, t0, t1, unsignedp))
 		{
 		  convert_move (targ0, t0, unsignedp);
 		  convert_move (targ1, t1, unsignedp);
