@@ -289,8 +289,8 @@ do {									\
    NAME whose size is SIZE bytes and alignment is ALIGN bytes.
    Try to use asm_output_aligned_bss to implement this macro.  */
 
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) 		\
-  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
 #undef ESCAPES
 #define ESCAPES \
@@ -694,7 +694,7 @@ dtors_section ()							\
 #undef NO_IMPLICIT_EXTERN_C
 #define NO_IMPLICIT_EXTERN_C 1
 
-/* JKJ FIXME - examine the rammifications of RETURN_IN_MEMORY and
+/* JKJ FIXME - examine the ramifications of RETURN_IN_MEMORY and
    RETURN_POPS_ARGS */
 
 #undef RETURN_POPS_ARGS

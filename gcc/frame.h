@@ -18,10 +18,26 @@ typedef struct frame_state
 #define REG_SAVED_OFFSET 1
 #define REG_SAVED_REG 2
 
+/* The representation for an "object" to be searched for frame unwind info.
+   For targets with named sections, one object is an executable or shared
+   library; for other targets, one object is one translation unit.
+
+   A copy of this structure declaration is printed by collect2.c;
+   keep the copies synchronized!  */
+
+struct object {
+  void *pc_begin;
+  void *pc_end;
+  struct dwarf_fde *fde_begin;
+  struct dwarf_fde **fde_array;
+  size_t count;
+  struct object *next;
+};
+
 /* Called either from crtbegin.o or a static constructor to register the
    unwind info for an object or translation unit, respectively.  */
 
-extern void __register_frame (void *);
+extern void __register_frame (void *, struct object *);
 
 /* Called from crtend.o to deregister the unwind info for an object.  */
 

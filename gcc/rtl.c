@@ -184,6 +184,9 @@ char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_EXEC_COUNT", "REG_NOALIAS", "REG_SAVE_AREA",
 			  "REG_BR_PRED" };
 
+static void dump_and_abort	PROTO((int, int, FILE *));
+static void read_name		PROTO((char *, FILE *));
+
 /* Allocate an rtx vector of N elements.
    Store the length, and initialize all elements to zero.  */
 
@@ -849,14 +852,3 @@ init_rtl ()
 	}
     }
 }
-
-#ifdef memset
-gcc_memset (dest, value, len)
-     char *dest;
-     int value;
-     int len;
-{
-  while (len-- > 0)
-    *dest++ = value;
-}
-#endif /* memset */

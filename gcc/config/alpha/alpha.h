@@ -747,8 +747,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
        && (GET_CODE (SUBREG_REG (OUT)) == MEM				\
 	   || (GET_CODE (SUBREG_REG (OUT)) == REG			\
 	       && REGNO (SUBREG_REG (OUT)) >= FIRST_PSEUDO_REGISTER)))) \
-  && ((((MODE) == HImode || (MODE) == QImode) && ! TARGET_BWX		\
-       || ((MODE) == SImode && (CLASS) == FLOAT_REGS))))		\
+  && ((((MODE) == HImode || (MODE) == QImode)				\
+       && (! TARGET_BWX || (CLASS) == FLOAT_REGS))			\
+      || ((MODE) == SImode && (CLASS) == FLOAT_REGS)))			\
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == MEM			\
     && GET_CODE (XEXP (OUT, 0)) == AND) ? GENERAL_REGS			\
@@ -911,8 +912,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
   gen_rtx (REG,							\
-	   (INTEGRAL_TYPE_P (VALTYPE)				\
-	    && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD) 	\
+	   ((INTEGRAL_TYPE_P (VALTYPE)				\
+	     && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
+	    || POINTER_TYPE_P (VALTYPE))			\
 	   ? word_mode : TYPE_MODE (VALTYPE),			\
 	   ((TARGET_FPREGS					\
 	     && (TREE_CODE (VALTYPE) == REAL_TYPE		\
@@ -2278,7 +2280,7 @@ do {							\
 #else
 /* In OSF/1 v3.2c, the assembler by default does not output file names which
    causes mips-tfile to fail.  Passing -g to the assembler fixes this problem.
-   ??? Stricly speaking, we only need -g if the user specifies -g.  Passing
+   ??? Strictly speaking, we need -g only if the user specifies -g.  Passing
    it always means that we get slightly larger than necessary object files
    if the user does not specify -g.  If we don't pass -g, then mips-tfile
    will need to be fixed to work in this case.  Pass -O0 since some

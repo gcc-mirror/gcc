@@ -1,4 +1,4 @@
-/* Definitions for rtems targetting a MIPS ORION using ecoff.
+/* Definitions for rtems targeting a MIPS ORION using ecoff.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 

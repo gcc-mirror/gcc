@@ -143,7 +143,9 @@ EGCS_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h unistd.h varargs.h sys/varargs.h)
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h unistd.h sys/file.h sys/time.h sys/resource.h sys/param.h sys/times.h varargs.h sys/varargs.h)
 
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, and declares intmax_t.
@@ -158,14 +160,28 @@ AC_CACHE_VAL(gcc_cv_header_inttypes_h,
   gcc_cv_header_inttypes_h=no)])
 AC_MSG_RESULT($gcc_cv_header_inttypes_h)
 
+AC_CHECK_FUNCS(strtoul)
+AC_CHECK_FUNCS(bsearch)
+AC_CHECK_FUNCS(strerror)
+AC_CHECK_FUNCS(putenv)
+AC_CHECK_FUNCS(popen)
+AC_CHECK_FUNCS(vprintf)
+AC_CHECK_FUNCS(bcopy)
+AC_CHECK_FUNCS(bzero)
+AC_CHECK_FUNCS(bcmp)
+AC_CHECK_FUNCS(index)
+AC_CHECK_FUNCS(rindex)
+AC_CHECK_FUNCS(kill)
+
 GCC_NEED_DECLARATION(malloc)
 GCC_NEED_DECLARATION(realloc)
 GCC_NEED_DECLARATION(calloc)
 GCC_NEED_DECLARATION(free)
+GCC_NEED_DECLARATION(index)
+GCC_NEED_DECLARATION(rindex)
+GCC_NEED_DECLARATION(getenv)
 
 AC_DECL_SYS_SIGLIST
-
-AC_CHECK_FUNCS(strerror strtoul bsearch)
 
 # File extensions
 manext='.1'
@@ -414,9 +430,8 @@ for machine in $build $host $target; do
 		tmake_file="t-netbsd arm/t-netbsd"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
-		use_collect2=yes
 		;;
-	arm-*-linux-gnuaout*)		# ARM Linux
+	arm-*-linux-gnuaout*)		# ARM GNU/Linux
 		cpu_type=arm
 		xm_file=arm/xm-linux.h
 		xmake_file=x-linux
@@ -788,7 +803,6 @@ for machine in $build $host $target; do
 		;;
 	i[[3456]]86-*-freebsdelf*)
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
-		xm_file=i386/xm-freebsd.h
 		# On FreeBSD, the headers are already ok, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
@@ -798,14 +812,12 @@ for machine in $build $host $target; do
 		;;
 	i[[3456]]86-*-freebsd*)
 		tm_file=i386/freebsd.h
-		xm_file=i386/xm-freebsd.h
 		# On FreeBSD, the headers are already ok, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
 		;;
 	i[[3456]]86-*-netbsd*)
 		tm_file=i386/netbsd.h
-		xm_file=i386/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -836,7 +848,7 @@ for machine in $build $host $target; do
 		fi
 		install_headers_dir=install-headers-cpio
 		;;
-	i[[3456]]86-*-linux-gnuoldld*)	# Intel 80386's running Linux
+	i[[3456]]86-*-linux-gnuoldld*)	# Intel 80386's running GNU/Linux
 		xm_file=i386/xm-linux.h # with a.out format using pre BFD linkers
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
@@ -844,7 +856,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		;;
-	i[[3456]]86-*-linux-gnuaout*)		# Intel 80386's running Linux
+	i[[3456]]86-*-linux-gnuaout*)	# Intel 80386's running GNU/Linux
 		xm_file=i386/xm-linux.h		# with a.out format
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
@@ -853,9 +865,9 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		;;
 	i[[3456]]86-*-linux-gnulibc1)
-		xm_file=i386/xm-linux.h	# Intel 80386's running Linux
+		xm_file=i386/xm-linux.h	# Intel 80386's running GNU/Linux
 		xmake_file=x-linux	# with ELF format using the
-		tm_file=i386/linux.h	# Linux C library 5
+		tm_file=i386/linux.h	# GNU/Linux C library 5
 		tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
@@ -864,9 +876,9 @@ for machine in $build $host $target; do
  			thread_file='single'
  		fi
 		;;
-	i[[3456]]86-*-linux-gnu*)		# Intel 80386's running Linux
+	i[[3456]]86-*-linux-gnu*)	# Intel 80386's running GNU/Linux
 		xm_file=i386/xm-linux.h # with ELF format using glibc 2
-		xmake_file=x-linux	# aka Linux C library 6
+		xmake_file=x-linux	# aka GNU/Linux C library 6
 		tm_file=i386/linux.h
 		tmake_file="t-linux i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -1080,7 +1092,7 @@ for machine in $build $host $target; do
               ;;
 	i860-alliant-*)		# Alliant FX/2800
 		tm_file="${tm_file} svr4.h i860/sysv4.h i860/fx2800.h"
-		xm_file="${xm_file} i860/xm-fx2800.h"
+		xm_file="${xm_file}"
 		xmake_file=i860/x-fx2800
 		tmake_file=i860/t-fx2800
 		extra_parts="crtbegin.o crtend.o"
@@ -1284,7 +1296,7 @@ for machine in $build $host $target; do
 		;;
 	m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 		tm_file=m68k/tower-as.h
-		xm_file=m68k/xm-tower.h
+		xm_file="${xm_file} xm-svr3.h"
 		xmake_file=m68k/x-tower
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
@@ -1432,7 +1444,6 @@ for machine in $build $host $target; do
 		else
 			tm_file=m68k/sun3.h
 		fi
-		xm_file=m68k/xm-sun3.h
 		use_collect2=yes
 		extra_headers=math-68881.h
 		;;
@@ -1465,7 +1476,6 @@ for machine in $build $host $target; do
 		;;
 	m68k-*-netbsd*)
 		tm_file=m68k/netbsd.h
-		xm_file=m68k/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -1483,32 +1493,32 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
 		;;
-	m68k-*-linux-gnuaout*)		# Motorola m68k's running Linux
+	m68k-*-linux-gnuaout*)		# Motorola m68k's running GNU/Linux
 		xm_file=m68k/xm-linux.h	# with a.out format
 		xmake_file=x-linux
 		tm_file=m68k/linux-aout.h
 		tmake_file="t-linux-aout m68k/t-linux-aout"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		;;
-	m68k-*-linux-gnulibc1)		# Motorola m68k's running Linux
+	m68k-*-linux-gnulibc1)		# Motorola m68k's running GNU/Linux
 		xm_file=m68k/xm-linux.h	# with ELF format using the
-		xmake_file=x-linux	# Linux C library 5
+		xmake_file=x-linux	# GNU/Linux C library 5
 		tm_file=m68k/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		;;
-	m68k-*-linux-gnu*)			# Motorola m68k's running Linux
+	m68k-*-linux-gnu*)		# Motorola m68k's running GNU/Linux
 		xm_file=m68k/xm-linux.h	# with ELF format using glibc 2
-		xmake_file=x-linux	# aka the Linux C library 6.
+		xmake_file=x-linux	# aka the GNU/Linux C library 6.
 		tm_file=m68k/linux.h
 		tmake_file="t-linux m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		if [[ x$enable_threads = xyes ]]; then
@@ -1764,7 +1774,6 @@ for machine in $build $host $target; do
 	      ;;
 	mips-dec-netbsd*)                  # Decstation running NetBSD
 		tm_file=mips/netbsd.h
-		xm_file=mips/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2092,7 +2101,6 @@ for machine in $build $host $target; do
 		;;
 	ns32k-pc532-netbsd*)
 		tm_file=ns32k/netbsd.h
-		xm_file=ns32k/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2322,7 +2330,6 @@ for machine in $build $host $target; do
 		;;
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
-		xm_file=sparc/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2337,14 +2344,14 @@ for machine in $build $host $target; do
 		#float_format=i128
 		float_format=i64
 		;;
-	sparc-*-linux-gnuaout*)		# Sparc's running Linux, a.out
+	sparc-*-linux-gnuaout*)		# Sparc's running GNU/Linux, a.out
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnulibc1*)	# Sparc's running Linux, libc5
+	sparc-*-linux-gnulibc1*)	# Sparc's running GNU/Linux, libc5
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
@@ -2353,7 +2360,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnu*)		# Sparc's running Linux, libc6
+	sparc-*-linux-gnu*)		# Sparc's running GNU/Linux, libc6
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
@@ -2444,12 +2451,12 @@ for machine in $build $host $target; do
 		tm_file=sparc/sp64-elf.h
 		extra_parts="crtbegin.o crtend.o"
 		;;
-	sparc64-*-linux*)		# 64-bit Sparc's running Linux
+	sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 		tmake_file=sparc/t-sp64
 		xm_file="sparc/xm-sp64.h sparc/xm-linux.h"
 		tm_file=sparc/linux64.h
 		xmake_file=x-linux
-		fixincludes=Makefile.in	# On Linux, the headers are ok already.
+		fixincludes=Makefile.in	# The headers are ok already.
 		gnu_ld=yes
 		;;
 # This hasn't been upgraded to GCC 2.
@@ -2479,12 +2486,11 @@ for machine in $build $host $target; do
 		;;
 	vax-*-sysv*)			# vaxen running system V
 		tm_file="${tm_file} vax/vaxv.h"
-		xm_file="${tm_file} vax/xm-vaxv.h"
+		xm_file="${xm_file} vax/xm-vaxv.h"
 		float_format=vax
 		;;
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
-		xm_file="${xm_file} xm-netbsd.h"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2583,6 +2589,37 @@ for machine in $build $host $target; do
 			fi
 		fi
 		;;
+	arm*-*-*)
+		case "x$with_cpu" in
+			x)
+				# The most generic
+				target_cpu_default2="TARGET_CPU_generic"
+				;;
+
+			# Distinguish cores, and major variants
+			# arm7m doesn't exist, but D & I don't affect code
+			xarm[23678] | xarm250 | xarm[67][01]0 \
+			| xarm7m | xarm7dm | xarm7dmi | xarm7tdmi \
+			| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
+			| xstrongarm | xstrongarm110)
+				target_cpu_default2="TARGET_CPU_$with_cpu"
+				;;
+
+			xyes | xno)
+				echo "--with-cpu must be passed a value" 1>&2
+				exit 1
+				;;
+
+			*)
+				if [[ x$pass2done = xyes ]]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
+				;;
+		esac
+		;;
+
 	mips*-*-ecoff* | mips*-*-elf*)
 		if [[ x$gas = xyes ]]
 		then
@@ -2618,8 +2655,11 @@ for machine in $build $host $target; do
 				;;
 
 			*)
-				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
-				exit 1
+				if [[ x$pass2done = xyes ]]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
 				;;
 		esac
 		;;
@@ -2632,8 +2672,11 @@ for machine in $build $host $target; do
 				target_cpu_default2="TARGET_CPU_$with_cpu"
 				;;
 			*)
-				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
-				exit 1
+				if [[ x$pass2done = xyes ]]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
 				;;
 		esac
 		;;

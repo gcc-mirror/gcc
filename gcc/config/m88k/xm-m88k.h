@@ -1,6 +1,6 @@
 /* Configuration for GNU compiler.
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 1989, 1990, 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 90, 91, 93, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,14 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
-/* Use System V memory functions.  */
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
-
-#define rindex strrchr
-#define index strchr
-
 /* The 88open BCS (and ABI) environment doesn't support BSD features
    (vfork, getrusage), so use USG.  The Omron Luna/88k is BSD though.  */
 #ifndef luna88k
@@ -53,9 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #define NO_SYS_SIGLIST
 #endif
-
-/* Define HAVE_VPRINTF if it is available on host system.  */
-#define HAVE_VPRINTF
 
 /* If not compiled with GNU C, use the C alloca */
 #ifndef __GNUC__

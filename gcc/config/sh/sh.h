@@ -404,7 +404,7 @@ do {								\
    frame pointer register can often be eliminated in favor of the stack
    pointer register.  Secondly, the argument pointer register can always be
    eliminated; it is replaced with either the stack or frame pointer.
-   Third, there is the retuen address pointer, which can also be replaced
+   Third, there is the return address pointer, which can also be replaced
    with either the stack or the frame pointer.  */
 
 /* This is an array of structures.  Each structure initializes one pair

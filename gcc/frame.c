@@ -37,8 +37,8 @@ Boston, MA 02111-1307, USA.  */
 #ifdef DWARF2_UNWIND_INFO
 #include "gansidecl.h"
 #include "dwarf2.h"
-#include "frame.h"
 #include <stddef.h>
+#include "frame.h"
 
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
@@ -75,18 +75,7 @@ struct dwarf_fde {
 
 typedef struct dwarf_fde fde;
 
-/* The representation for an "object" to be searched for frame unwind info.
-   For targets with named sections, one object is an executable or shared
-   library; for other targets, one object is one translation unit.  */
-
-struct object {
-  void *pc_begin;
-  void *pc_end;
-  fde *fde_begin;
-  fde ** fde_array;
-  size_t count;
-  struct object *next;
-};
+/* Objects to be searched for frame unwind info.  */
 
 static struct object *objects;
 
@@ -512,10 +501,8 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
 /* Called from crtbegin.o to register the unwind info for an object.  */
 
 void
-__register_frame (void *begin)
+__register_frame (void *begin, struct object *ob)
 {
-  struct object *ob = (struct object *) malloc (sizeof (struct object));
-
   ob->fde_begin = begin;
 
   ob->pc_begin = ob->pc_end = 0;
@@ -531,10 +518,8 @@ __register_frame (void *begin)
    collect2.  */
 
 void
-__register_frame_table (void *begin)
+__register_frame_table (void *begin, struct object *ob)
 {
-  struct object *ob = (struct object *) malloc (sizeof (struct object));
-
   ob->fde_begin = begin;
   ob->fde_array = begin;
 
@@ -562,7 +547,6 @@ __deregister_frame (void *begin)
 	  /* If we've run init_frame for this object, free the FDE array.  */
 	  if (ob->pc_begin)
 	    free (ob->fde_array);
-	  free (ob);
 
 	  return;
 	}

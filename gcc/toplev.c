@@ -35,21 +35,31 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <ctype.h>
 #include <sys/stat.h>
-#if !defined (_WIN32) || defined (__CYGWIN32__)
-#ifdef USG
 #undef FLOAT
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
-/* This is for hpux.  It is a real screw.  They should change hpux.  */
-#undef FLOAT
-#include <sys/times.h>
-#include <time.h>   /* Correct for hpux at least.  Is it good on other USG?  */
+#endif
+
+#undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
 #else
-#ifndef VMS
-#include <sys/time.h>
-#include <sys/resource.h>
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
+# else
+#  include <time.h>
 #endif
 #endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+
+#ifdef HAVE_SYS_TIMES_H
+# include <sys/times.h>
 #endif
 
 #include "input.h"
@@ -854,6 +864,7 @@ char *lang_options[] =
   "-Wno-selector",
   "-Wprotocol",
   "-Wno-protocol",
+  "-print-objc-runtime-info",
 
 #include "options.h"
   0
@@ -3026,7 +3037,7 @@ rest_of_compilation (decl)
 
   if (DECL_SAVED_INSNS (decl) == 0)
     {
-      int inlineable = 0;
+      int inlinable = 0;
       char *lose;
 
       /* If requested, consider whether to make this function inline.  */
@@ -3053,7 +3064,7 @@ rest_of_compilation (decl)
 			like "inline" was specified for a function if we choose
 			to inline it.  This isn't quite right, but it's
 			probably not worth the trouble to fix.  */
-		     inlineable = DECL_INLINE (decl) = 1;
+		     inlinable = DECL_INLINE (decl) = 1;
 		 });
 
       insns = get_insns ();
@@ -3073,7 +3084,7 @@ rest_of_compilation (decl)
 
       /* If we can, defer compiling inlines until EOF.
 	 save_for_inline_copying can be extremely expensive.  */
-      if (inlineable && ! decl_function_context (decl))
+      if (inlinable && ! decl_function_context (decl))
 	DECL_DEFER_OUTPUT (decl) = 1;
 
       /* If function is inline, and we don't yet know whether to
@@ -3088,7 +3099,7 @@ rest_of_compilation (decl)
 	 finish compiling ourselves.  Otherwise, wait until EOF.
 	 We have to do this because the purge_addressof transformation
 	 changes the DECL_RTL for many variables, which confuses integrate.  */
-      if (inlineable)
+      if (inlinable)
 	{
 	  if (decl_function_context (decl))
 	    purge_addressof (insns);
@@ -3131,14 +3142,14 @@ rest_of_compilation (decl)
 		}
 #endif
 	      TIMEVAR (integration_time, save_for_inline_nocopy (decl));
-	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
+	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
 	      goto exit_rest_of_compilation;
 	    }
 	}
 
       /* If we have to compile the function now, save its rtl and subdecls
 	 so that its compilation will not affect what others get.  */
-      if (inlineable || DECL_DEFER_OUTPUT (decl))
+      if (inlinable || DECL_DEFER_OUTPUT (decl))
 	{
 #ifdef DWARF_DEBUGGING_INFO
 	  /* Generate the DWARF info for the "abstract" instance of
@@ -3167,7 +3178,7 @@ rest_of_compilation (decl)
 	  saved_block_tree = DECL_INITIAL (decl);
 	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
-	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
+	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
 	}
 
       /* If specified extern inline but we aren't inlining it, we are

@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989, 92-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -1109,7 +1109,7 @@ start_anon_func ()
   interface_unknown = 1;
 
   params = void_list_node;
-  /* tcf stands for throw clean funciton.  */
+  /* tcf stands for throw clean function.  */
   sprintf (name, "__tcf_%d", counter++);
   t = make_call_declarator (get_identifier (name), params, NULL_TREE,
 			    NULL_TREE);

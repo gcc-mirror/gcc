@@ -1,8 +1,3 @@
-Wed Oct 22 18:56:31 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* lex.c (lang_init): Enable flag_exceptions by default if no
-	command line switch was specified.
-
 Wed Sep 10 16:39:26 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Make-lang.in (LN, LN_S): New macros, use where appropriate.

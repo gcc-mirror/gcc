@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6.
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -140,7 +140,7 @@ Boston, MA 02111-1307, USA.  */
   } while (0)
 
 /* Tell function_prologue in mips.c that we have already output the .ent/.end
-   psuedo-ops.  */
+   pseudo-ops.  */
 #define FUNCTION_NAME_ALREADY_DECLARED
 
 #undef SET_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */

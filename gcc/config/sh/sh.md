@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+;;  Copyright (C) 1993, 1994, 1995, 1997Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -80,7 +80,7 @@
 ;; cbranch	conditional branch instructions
 ;; jump		unconditional jumps
 ;; arith	ordinary arithmetic
-;; arith3	a compound insn that behaves similarily to a sequence of
+;; arith3	a compound insn that behaves similarly to a sequence of
 ;;		three insns of type arith
 ;; arith3b	like above, but might end with a redirected branch
 ;; load		from memory
@@ -169,7 +169,7 @@
 ;; between the actual call address and the function arguments.
 ;; ADJUST_COST can only properly handle reductions of the cost, so we
 ;; use a latency of three here.
-;; We only do this for SImode loads of general regsiters, to make the work
+;; We only do this for SImode loads of general registers, to make the work
 ;; for ADJUST_COST easier.
 (define_function_unit "memory" 1 0
   (eq_attr "type" "load_si,pcload_si")
@@ -563,7 +563,7 @@
 ;; registers as a normal function call would.
 
 ;; The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
-;; also has an effect on the register that holds the addres of the sfunc.
+;; also has an effect on the register that holds the address of the sfunc.
 ;; To make this work, we have an extra dummy insns that shows the use
 ;; of this register for reorg.
 
@@ -2646,7 +2646,7 @@
   return \"\";
 }"
 ;; Need a variable length for this to be processed in each shorten_branch pass.
-;; The actual work is done in ADJUST_INSN_LENTH, because length attributes
+;; The actual work is done in ADJUST_INSN_LENGTH, because length attributes
 ;; need to be (a choice of) constants.
 ;; We use the calculated length before ADJUST_INSN_LENGTH to
 ;; determine if the insn_addresses array contents are valid.
@@ -2807,7 +2807,7 @@
   "operands[2] = gen_reg_rtx (SImode);")
 
 ;; Recognize mov #-1/negc/neg sequence, and change it to movt/add #-1.
-;; This prevents a regression that occured when we switched from xor to
+;; This prevents a regression that occurred when we switched from xor to
 ;; mov/neg for sne.
 
 (define_split
@@ -2923,7 +2923,7 @@
  ""
  ".align %O0"
 ;; Need a variable length for this to be processed in each shorten_branch pass.
-;; The actual work is done in ADJUST_INSN_LENTH, because length attributes
+;; The actual work is done in ADJUST_INSN_LENGTH, because length attributes
 ;; need to be (a choice of) constants.
   [(set (attr "length")
 	(if_then_else (ne (pc) (pc)) (const_int 2) (const_int 0)))
@@ -3322,7 +3322,7 @@
 }"
   [(set_attr "length" "10")])
 
-;; Switch back to the original stack for interrupt funtions with the
+;; Switch back to the original stack for interrupt functions with the
 ;; sp_switch attribute.  */
 (define_insn "sp_switch_2"
   [(const_int 2)]

@@ -1,4 +1,4 @@
-/* Definitions for rtems targetting an Intel i386 using coff.
+/* Definitions for rtems targeting an Intel i386 using coff.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 

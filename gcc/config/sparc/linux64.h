@@ -1,4 +1,4 @@
-/* Definitions for 64-bit SPARC running Linux with ELF
+/* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
    Copyright 1996, 1997 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
@@ -52,8 +52,8 @@ Boston, MA 02111-1307, USA.  */
 #define LIBGCC_SPEC \
   "%{!shared:-lgcc}"
 
-/* Provide a STARTFILE_SPEC appropriate for Linux.  Here we add
-   the Linux magical crtbegin.o file (see crtstuff.c) which
+/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
+   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main'. */
    
@@ -63,18 +63,18 @@ Boston, MA 02111-1307, USA.  */
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
-/* Provide a ENDFILE_SPEC appropriate for Linux.  Here we tack on
-   the Linux magical crtend.o file (see crtstuff.c) which
+/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
+   the GNU/Linux magical crtend.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main', followed by a normal
-   Linux "finalizer" file, `crtn.o'.  */
+   GNU/Linux "finalizer" file, `crtn.o'.  */
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (sparc64 Linux/ELF)");
+#define TARGET_VERSION fprintf (stderr, " (sparc64 GNU/Linux with ELF)");
 
 /* A 64 bit v9 compiler with stack-bias,
    in a Medium/Anywhere code model environment.  */
@@ -113,15 +113,14 @@ Boston, MA 02111-1307, USA.  */
 %{posix:-D_POSIX_SOURCE} \
 "
 /* We no longer link with libc_p.a or libg.a by default. If you
- * want to profile or debug the Linux C library, please add
- * -lc_p or -ggdb to LDFLAGS at the link time, respectively.
- */
+   want to profile or debug the GNU/Linux C library, please add
+   -lc_p or -ggdb to LDFLAGS at the link time, respectively.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared: %{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} \
      %{!ggdb:-lc} %{ggdb:-lg}}"
 
-/* Provide a LINK_SPEC appropriate for Linux.  Here we provide support
+/* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
    combinations of options at link-time. We like to support here for

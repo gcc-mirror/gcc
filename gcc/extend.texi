@@ -2174,7 +2174,7 @@ possibly unused.  GNU CC will not produce a warning for any variables of
 that type, even if the variable appears to do nothing.  This is often
 the case with lock or thread classes, which are usually defined and then
 not referenced, but contain constructors and destructors that have
-non-trivial bookeeping functions.
+nontrivial bookkeeping functions.
 
 @end table
 

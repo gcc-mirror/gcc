@@ -1248,7 +1248,7 @@ free_temps_for_rtl_expr (t)
   combine_temp_slots ();
 }
 
-/* Mark all temporaries ever allocated in this functon as not suitable
+/* Mark all temporaries ever allocated in this function as not suitable
    for reuse until the current level is exited.  */
 
 void
@@ -1417,7 +1417,8 @@ put_var_into_stack (decl)
 		       XEXP (reg, 0), ptr_mode,
 		       GEN_INT (GET_MODE_SIZE (GET_MODE (reg))),
 		       TYPE_MODE (sizetype),
-		       GEN_INT (MEMORY_USE_RW), QImode);
+		       GEN_INT (MEMORY_USE_RW),
+		       TYPE_MODE (integer_type_node));
 }
 
 /* Subroutine of put_var_into_stack.  This puts a single pseudo reg REG
@@ -1767,8 +1768,19 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
     case ADDRESSOF:
       if (XEXP (x, 0) == var)
 	{
+	  /* Prevent sharing of rtl that might lose.  */
+	  rtx sub = copy_rtx (XEXP (var, 0));
+
 	  start_sequence ();
-	  *loc = force_operand (XEXP (var, 0), NULL_RTX);
+
+	  if (! validate_change (insn, loc, sub, 0))
+	    {
+	      rtx y = force_operand (sub, NULL_RTX);
+
+	      if (! validate_change (insn, loc, y, 0))
+		*loc = copy_to_reg (y);
+	    }
+
 	  emit_insn_before (gen_sequence (), insn);
 	  end_sequence ();
 	}
@@ -2381,6 +2393,7 @@ fixup_stack_1 (x, insn)
 	      || REGNO (XEXP (ad, 0)) == HARD_FRAME_POINTER_REGNUM
 #endif
 	      || REGNO (XEXP (ad, 0)) == STACK_POINTER_REGNUM
+	      || REGNO (XEXP (ad, 0)) == ARG_POINTER_REGNUM
 	      || XEXP (ad, 0) == current_function_internal_arg_pointer)
 	  && GET_CODE (XEXP (ad, 1)) == CONST_INT)
 	{
@@ -2705,13 +2718,16 @@ purge_addressof_1 (loc, insn, force)
   if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
     {
       rtx insns;
+      /* We must create a copy of the rtx because it was created by
+	 overwriting a REG rtx which is always shared.  */
+      rtx sub = copy_rtx (XEXP (XEXP (x, 0), 0));
 
-      if (validate_change (insn, loc, XEXP (XEXP (x, 0), 0), 0))
+      if (validate_change (insn, loc, sub, 0))
 	return;
 
       start_sequence ();
       if (! validate_change (insn, loc,
-			     force_operand (XEXP (XEXP (x, 0), 0), NULL_RTX),
+			     force_operand (sub, NULL_RTX),
 			     0))
 	abort ();
 
@@ -2723,6 +2739,8 @@ purge_addressof_1 (loc, insn, force)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
+      if (GET_CODE (sub) != REG)
+	sub = copy_rtx (sub);
       if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
 	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)
@@ -2912,7 +2930,7 @@ instantiate_decl (x, size, valid_only)
 
   addr = XEXP (x, 0);
   if (CONSTANT_P (addr)
-      || GET_CODE (addr) == ADDRESSOF
+      || (GET_CODE (addr) == ADDRESSOF && GET_CODE (XEXP (addr, 0)) == REG)
       || (GET_CODE (addr) == REG
 	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
 	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
@@ -3507,7 +3525,7 @@ aggregate_value_p (exp)
 
   if (RETURN_IN_MEMORY (type))
     return 1;
-  /* Types that are TREE_ADDRESSABLE must be contructed in memory,
+  /* Types that are TREE_ADDRESSABLE must be constructed in memory,
      and thus can't be returned in registers.  */
   if (TREE_ADDRESSABLE (type))
     return 1;
@@ -3930,7 +3948,8 @@ assign_parms (fndecl, second_time)
 				     GEN_INT (int_size_in_bytes 
 					      (TREE_TYPE (parm))),
 				     TYPE_MODE (sizetype),
-				     GEN_INT (MEMORY_USE_RW), QImode);
+				     GEN_INT (MEMORY_USE_RW),
+				     TYPE_MODE (integer_type_node));
 		  conversion_insns = get_insns ();
 		  end_sequence ();
 		}
@@ -4061,7 +4080,7 @@ assign_parms (fndecl, second_time)
 	      /* ENTRY_PARM has been converted to PROMOTED_MODE, its
 		 mode, by the caller.  We now have to convert it to 
 		 NOMINAL_MODE, if different.  However, PARMREG may be in
-		 a diffent mode than NOMINAL_MODE if it is being stored
+		 a different mode than NOMINAL_MODE if it is being stored
 		 promoted.
 
 		 If ENTRY_PARM is a hard register, it might be in a register
@@ -4160,7 +4179,8 @@ assign_parms (fndecl, second_time)
 				   XEXP (copy, 0), ptr_mode,
 				   GEN_INT (int_size_in_bytes (type)),
 				   TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW), QImode);
+				   GEN_INT (MEMORY_USE_RW),
+				   TYPE_MODE (integer_type_node));
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;
 	      end_sequence ();
@@ -4327,7 +4347,8 @@ assign_parms (fndecl, second_time)
 				 GEN_INT (GET_MODE_SIZE (GET_MODE 
 							 (entry_parm))),
 				 TYPE_MODE (sizetype),
-				 GEN_INT (MEMORY_USE_RW), QImode);
+				 GEN_INT (MEMORY_USE_RW),
+				 TYPE_MODE (integer_type_node));
 
 	      conversion_insns = get_insns ();
 	      end_sequence ();

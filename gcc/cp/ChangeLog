@@ -37,6 +37,13 @@ Wed Dec  3 11:44:52 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c, cp-tree.h (get_target_expr): New fn.
 
+Wed Dec  3 08:47:27 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* pt.c (check_explicit_specialization): Fix misspelling in
+	diagnostic: `preceeded'.
+	* typeck.c (get_delta_difference): Fix misspelling in diagnostic:
+	`conversiona'.
+
 1997-12-02  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (determine_explicit_specialization): Avoid an internal
@@ -62,6 +69,11 @@ Fri Nov 28 01:58:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (check_explicit_specialization): Complain about using a 
 	template-id for a non-specialization.
+
+Fri Nov 28 12:35:19 1997  Scott Christley  <scottc@net-community.com>
+
+	* repo.c: Prototype rindex only if needed.
+	* xref.c: Likewise.
 
 Fri Nov 28 01:56:35 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
@@ -100,6 +112,11 @@ Wed Nov 26 20:28:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* pt.c (mark_class_instantiated): Revert last change.
 
 	* except.c (expand_throw): Call mark_used on the destructor.
+
+Wed Nov 26 15:13:48 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* lex.c (lang_init): Enable flag_exceptions by default if no
+	command line switch was specified.
 
 1997-11-26  Mark Mitchell  <mmitchell@usa.net>
 

@@ -46,10 +46,27 @@ extern time_t time ();
 #endif /* !defined(POSIX) */
 #endif /* defined(DWARF_TIMESTAMPS) */
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+
 extern char *getpwd ();
 
+#ifdef NEED_DECLARATION_INDEX
 extern char *index ();
+#endif
+
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
 
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */
@@ -354,7 +371,7 @@ static inline void low_pc_attribute	PROTO((char *));
 static inline void high_pc_attribute	PROTO((char *));
 static inline void body_begin_attribute	PROTO((char *));
 static inline void body_end_attribute	PROTO((char *));
-static inline void langauge_attribute	PROTO((unsigned));
+static inline void language_attribute	PROTO((unsigned));
 static inline void member_attribute	PROTO((tree));
 static inline void string_length_attribute PROTO((tree));
 static inline void comp_dir_attribute	PROTO((char *));
@@ -414,7 +431,7 @@ static void output_block		PROTO((tree, int));
 static void output_decls_for_scope	PROTO((tree, int));
 static void output_decl			PROTO((tree, tree));
 static void shuffle_filename_entry	PROTO((filename_entry *));
-static void geneate_new_sfname_entry	PROTO((void));
+static void generate_new_sfname_entry	PROTO((void));
 static unsigned lookup_filename		PROTO((char *));
 static void generate_srcinfo_entry	PROTO((unsigned, unsigned));
 static void generate_macinfo_entry	PROTO((char *, char *));
@@ -2364,7 +2381,7 @@ location_or_const_value_attribute (decl)
      shouldn't be happening.  All PARM_DECL nodes should get valid non-NULL
      DECL_INCOMING_RTL values, but integrate.c doesn't currently generate
      these values for inlined instances of inline function parameters, so
-     when we see such cases, we are just SOL (shit-out-of-luck) for the time
+     when we see such cases, we are just out-of-luck for the time
      being (until integrate.c gets fixed).
   */
 

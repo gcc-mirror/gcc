@@ -581,7 +581,7 @@ expand_epilogue ()
      the stack with one instruction.
 
      ?!? Only save registers which are actually used.  Reduces
-     stack requireents and is faster.  */
+     stack requirements and is faster.  */
   if (regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
       || frame_pointer_needed)

@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -150,7 +150,7 @@ is_member_template (t)
 
   if (TREE_CODE (t) != FUNCTION_DECL
       && !DECL_FUNCTION_TEMPLATE_P (t))
-    /* Anything that isn't a template or a template functon is
+    /* Anything that isn't a template or a template function is
        certainly not a member template.  */
     return 0;
 
@@ -509,7 +509,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      return 0;
 	    }
 	  else if (pedantic || uses_template_parms (decl))
-	    pedwarn ("explicit specialization not preceeded by `template <>'");
+	    pedwarn ("explicit specialization not preceded by `template <>'");
 	}
 
       if (TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
@@ -3505,7 +3505,7 @@ overload_template_name (type)
   pushdecl_class_level (decl);
 }
 
-/* Like type_unfication but designed specially to handle conversion
+/* Like type_unification but designed specially to handle conversion
    operators.  */
 
 int
@@ -4613,7 +4613,7 @@ instantiate_decl (d)
 
       setup_vtbl_ptr ();
       /* Always keep the BLOCK node associated with the outermost
-	 pair of curley braces of a function.  These are needed
+	 pair of curly braces of a function.  These are needed
 	 for correct operation of dwarfout.c.  */
       keep_next_level ();
 

@@ -33,20 +33,13 @@ Boston, MA 02111-1307, USA. */
 #define USE_PROTOTYPES 1
 #endif
 
-#ifndef HAVE_VPRINTF
-#define HAVE_VPRINTF 1
-#endif
-
 #define NO_SYS_SIGLIST 1
-#define bcmp(a,b,c) memcmp (a,b,c)
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define index  strchr
-#define rindex strrchr
-#define kill(a,b) raise(b)
 #define link(a,b) -1
 #define environ _environ
 
 /* Even though we support "/", allow "\" since everybody tests both.  */
 #define DIR_SEPARATOR '\\'
 #define EXECUTABLE_SUFFIX ".exe"
+
+#undef PATH_SEPARATOR
+#define PATH_SEPARATOR ';'

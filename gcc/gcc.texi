@@ -144,9 +144,9 @@ original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 26 November 1995
+@center Last updated 4 December 1997
 @sp 1
-@c The version number appears twice more in this file.
+@c The version number appears three times more in this file.
 
 @center for egcs-1.0
 @page
@@ -437,7 +437,7 @@ GNU CC.  The fix is to get rid of the file @code{real-ld} which purify
 installs---so that GNU CC won't try to use it.
 
 @item
-On Linux SLS 1.01, there is a problem with @file{libc.a}: it does not
+On GNU/Linux SLS 1.01, there is a problem with @file{libc.a}: it does not
 contain the obstack functions.  However, GNU CC assumes that the obstack
 functions are in @file{libc.a} when it is the GNU C library.  To work
 around this problem, change the @code{__GNU_LIBRARY__} conditional
@@ -3681,12 +3681,6 @@ Define this macro to indicate that the host compiler does not properly
 handle converting a function value to a pointer-to-function when it is
 used in an expression.
 
-@findex HAVE_VPRINTF
-@findex vprintf
-@item HAVE_VPRINTF
-Define this if the library function @code{vprintf} is available on your
-system.
-
 @findex MULTIBYTE_CHARS
 @item MULTIBYTE_CHARS
 Define this macro to enable support for multibyte characters in the
@@ -3694,21 +3688,9 @@ input to GNU CC.  This requires that the host system support the ANSI C
 library functions for converting multibyte characters to wide
 characters.
 
-@findex HAVE_PUTENV
-@findex putenv
-@item HAVE_PUTENV
-Define this if the library function @code{putenv} is available on your
-system.
-
 @findex POSIX
 @item POSIX
 Define this if your system is POSIX.1 compliant.
-
-@findex HAVE_POPEN
-@findex popen
-@item HAVE_POPEN
-Define this if the library function @code{popen} is available on your
-system.
 
 @findex NO_SYS_SIGLIST
 @item NO_SYS_SIGLIST

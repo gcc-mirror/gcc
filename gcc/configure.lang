@@ -1,6 +1,6 @@
 # configure.lang for GNU CC
 # This script is run by configure for configuration of language
-# subdirectories which conform to the old GCC configure mechansim
+# subdirectories which conform to the old GCC configure mechanism
 # for such subdirectories.
 
 # Copyright (C) 1997 Free Software Foundation, Inc.

@@ -1172,7 +1172,7 @@ __save_interrupt:
 	.size	__save_interrupt,.-__save_interrupt
 
 	/* Restore saved registers, deallocate stack and return from the interrupt */
-	/* Called via:	jr __return_interupt */
+	/* Called via:	jr __return_interrupt */
 	.align	2
 	.globl	__return_interrupt
 	.type	__return_interrupt,@function

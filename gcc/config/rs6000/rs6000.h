@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_cpu)"
 
-/* Common CPP definitions used by CPP_SPEC amonst the various targets
+/* Common CPP definitions used by CPP_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
 #define CPP_CPU_SPEC \
 "%{!mcpu*: \
@@ -101,7 +101,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SYSV_DEFAULT_SPEC ""
 #endif
 
-/* Common ASM definitions used by ASM_SPEC amonst the various targets
+/* Common ASM definitions used by ASM_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
 #define ASM_CPU_SPEC \
 "%{!mcpu*: \
@@ -242,7 +242,7 @@ extern int target_flags;
    if there are more than 16K unique variables/constant in a single module.
 
    This is at the cost of having 2 extra loads and one extra store per
-   function, and one less allocatable register.  */
+   function, and one less allocable register.  */
 #define MASK_MINIMAL_TOC	0x00000200
 
 /* Nonzero for the 64bit model: ints, longs, and pointers are 64 bits.  */
@@ -424,7 +424,7 @@ extern enum processor_type rs6000_cpu;
 	extern char *m88k_short_data;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
-/* This is meant to be overriden in target specific files.  */
+/* This is meant to be overridden in target specific files.  */
 #ifndef SUBTARGET_OPTIONS
 #define	SUBTARGET_OPTIONS
 #endif
@@ -909,7 +909,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    Also, cr0 is the only condition code register that can be used in
    arithmetic insns, so make a separate class for it.
 
-   There is a special 'registrer' (76), which is not a register, but a
+   There is a special 'register' (76), which is not a register, but a
    placeholder for memory allocated to convert between floating point and
    integral types.  This works around a problem where if we allocate memory
    with allocate_stack_{local,temp} and the function is an inline function, the

@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -72,7 +72,7 @@ struct class_level
   int unused;
 };
 
-/* The currect_class_ptr is the pointer to the current class.
+/* The current_class_ptr is the pointer to the current class.
    current_class_ref is the actual current class.  */
 tree current_class_ptr, current_class_ref;
 

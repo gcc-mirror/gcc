@@ -207,6 +207,8 @@ extern int target_flags;
   { "no-debug-arg",		-MASK_DEBUG_ARG },			\
   { "stack-arg-probe",		 MASK_STACK_PROBE },			\
   { "no-stack-arg-probe",	-MASK_STACK_PROBE },			\
+  { "windows",			0 },					\
+  { "dll",			0 },					\
   SUBTARGET_SWITCHES							\
   { "", MASK_SCHEDULE_PROLOGUE | TARGET_DEFAULT}}
 

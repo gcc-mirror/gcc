@@ -49,7 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC Linux)");
+#define TARGET_VERSION fprintf (stderr, " (PowerPC GNU/Linux)");
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are

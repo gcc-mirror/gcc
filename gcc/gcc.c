@@ -39,7 +39,7 @@ compilation is specified by a string called a "spec".  */
 #include <sys/stat.h>
 #include <errno.h>
 
-#ifndef NO_SYS_FILE_H
+#ifdef HAVE_SYS_FILE_H
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 
@@ -148,6 +148,10 @@ extern int sys_nerr;
 extern char *sys_errlist[];
 #else
 extern char *strerror();
+#endif
+
+#ifndef HAVE_KILL
+#define kill(p,s) raise(s)
 #endif
 
 /* If a stage of compilation returns an exit status >= 1,
@@ -5152,7 +5156,7 @@ validate_switches (start)
 }
 
 /* Check whether a particular argument was used.  The first time we
-   canonialize the switches to keep only the ones we care about.  */
+   canonicalize the switches to keep only the ones we care about.  */
 
 static int
 used_arg (p, len)

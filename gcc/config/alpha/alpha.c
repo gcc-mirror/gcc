@@ -1201,10 +1201,9 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 
   if (alpha_cpu == PROCESSOR_EV5)
     {
-      /* On EV5, "A special bypass provides an effective latency of 0
-	 cycles for an ICMP or ILOG insn producing the test operand of an
-	 IBR or CMOV insn." */
-
+      /* And the lord DEC saith:  "A special bypass provides an effective
+	 latency of 0 cycles for an ICMP or ILOG insn producing the test
+	 operand of an IBR or CMOV insn." */
       if (recog_memoized (dep_insn) >= 0
 	  && (get_attr_type (dep_insn) == TYPE_ICMP
 	      || get_attr_type (dep_insn) == TYPE_ILOG)
@@ -1753,10 +1752,12 @@ alpha_builtin_saveregs (arglist)
       emit_move_insn (dest, addr);
 
       if (flag_check_memory_usage)
-	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, dest,
-			   ptr_mode, GEN_INT (GET_MODE_SIZE (ptr_mode)),
+	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			   dest, ptr_mode,
+			   GEN_INT (GET_MODE_SIZE (ptr_mode)),
 			   TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_RW), QImode);
+			   GEN_INT (MEMORY_USE_RW), 
+			   TYPE_MODE (integer_type_node));
   
       /* Store the argsize as the __va_offset member.  */
       dest = change_address (block, TYPE_MODE (integer_type_node),
@@ -1765,12 +1766,13 @@ alpha_builtin_saveregs (arglist)
       emit_move_insn (dest, argsize);
 
       if (flag_check_memory_usage)
-	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, dest,
-			   ptr_mode,
+	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			   dest, ptr_mode,
 			   GEN_INT (GET_MODE_SIZE
 				    (TYPE_MODE (integer_type_node))),
 			   TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_RW), QImode);
+			   GEN_INT (MEMORY_USE_RW),
+			   TYPE_MODE (integer_type_node));
 
       /* Return the address of the va_list constructor, but don't put it in a
 	 register.  Doing so would fail when not optimizing and produce worse

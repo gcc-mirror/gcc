@@ -34,6 +34,18 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/file.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+
 #define COLLECT
 
 #include "demangle.h"
@@ -292,9 +304,17 @@ static void scan_libraries	PROTO((char *));
 char *xcalloc ();
 char *xmalloc ();
 
+#ifdef NEED_DECLARATION_INDEX
 extern char *index ();
+#endif
+
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
+
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
 
 #ifdef NO_DUP2
 int
@@ -1760,11 +1780,22 @@ write_c_file_stat (stream, name)
       write_list (stream, "\t\t&", frame_tables.first);
       fprintf (stream, "\t0\n};\n");
 
-      fprintf (stream, "extern void __register_frame_table (void *);\n");
+      /* This must match what's in frame.h.  */
+      fprintf (stream, "struct object {\n");
+      fprintf (stream, "  void *pc_begin;\n");
+      fprintf (stream, "  void *pc_end;\n");
+      fprintf (stream, "  void *fde_begin;\n");
+      fprintf (stream, "  void *fde_array;\n");
+      fprintf (stream, "  size_t count;\n");
+      fprintf (stream, "  struct object *next;\n");
+      fprintf (stream, "};\n");
+
+      fprintf (stream, "extern void __register_frame_table (void *, struct object *);\n");
       fprintf (stream, "extern void __deregister_frame (void *);\n");
 
       fprintf (stream, "static void reg_frame () {\n");
-      fprintf (stream, "\t__register_frame_table (frame_table);\n");
+      fprintf (stream, "\tstatic struct object ob;\n");
+      fprintf (stream, "\t__register_frame_table (frame_table, &ob);\n");
       fprintf (stream, "\t}\n");
 
       fprintf (stream, "static void dereg_frame () {\n");

@@ -16,87 +16,27 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
+Boston, MA 02111-1307, USA. */
 
- In other words, you are welcome to use, share and improve this program.
- You are forbidden to forbid anyone else to use, share and improve
- what you give them.   Help stamp out software-hoarding!  */
-
-typedef unsigned char U_CHAR;
-
-#ifdef EMACS
-#define NO_SHORTNAMES
-#include "../src/config.h"
-#ifdef open
-#undef open
-#undef read
-#undef write
-#endif /* open */
-#endif /* EMACS */
-
-/* The macro EMACS is defined when cpp is distributed as part of Emacs,
-   for the sake of machines with limited C compilers.  */
-#ifndef EMACS
 #include "config.h"
-#endif /* not EMACS */
-
-#ifndef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/include"
-#endif
-
-#include "pcp.h"
-
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-#define PATH_SEPARATOR ':'
-#endif
-
-/* By default, the suffix for object files is ".o".  */
-#ifdef OBJECT_SUFFIX
-#define HAVE_OBJECT_SUFFIX
-#else
-#define OBJECT_SUFFIX ".o"
-#endif
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <signal.h>
 
-/* The following symbols should be autoconfigured:
-	HAVE_FCNTL_H
-	HAVE_SYS_TIME_H
-	STDC_HEADERS
-	TIME_WITH_SYS_TIME
-   In the mean time, we'll get by with approximations based
-   on existing GCC configuration symbols.  */
-
-#ifdef POSIX
-# ifndef STDC_HEADERS
-# define STDC_HEADERS 1
-# endif
-#endif /* defined (POSIX) */
-
-#if defined (POSIX) || (defined (USG) && !defined (VMS))
-# ifndef HAVE_FCNTL_H
-# define HAVE_FCNTL_H 1
-# endif
-#endif
-
-#ifndef RLIMIT_STACK
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
 # include <time.h>
 #else
-# if TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
 # else
-#  if HAVE_SYS_TIME_H
-#   include <sys/time.h>
-#  else
-#   include <time.h>
-#  endif
-# endif
+#  include <time.h>
+#endif
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
 #endif
 
@@ -108,96 +48,68 @@ typedef unsigned char U_CHAR;
 # include <limits.h>
 #endif
 
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #include <errno.h>
 
 #if HAVE_STDLIB_H
 # include <stdlib.h>
-#else
-char *getenv ();
 #endif
 
-#if STDC_HEADERS
+#ifdef HAVE_STRING_H
 # include <string.h>
-# ifndef bcmp
-# define bcmp(a, b, n) memcmp (a, b, n)
-# endif
-# ifndef bcopy
-# define bcopy(s, d, n) memcpy (d, s, n)
-# endif
-# ifndef bzero
-# define bzero(d, n) memset (d, 0, n)
-# endif
-#else /* !STDC_HEADERS */
-char *index ();
-char *rindex ();
+#else
+# ifdef HAVE_STRINGS_H
+#  inclued <strings.h>
+#endif
+#endif
 
-# if !defined (BSTRING) && (defined (USG) || defined (VMS))
+typedef unsigned char U_CHAR;
 
-#  ifndef bcmp
-#  define bcmp my_bcmp
-static int
-my_bcmp (a, b, n)
-     register char *a;
-     register char *b;
-     register unsigned n;
-{
-   while (n-- > 0)
-     if (*a++ != *b++)
-       return 1;
+#include "gansidecl.h"
+#include "pcp.h"
 
-   return 0;
-}
-#  endif /* !defined (bcmp) */
+#ifdef NEED_DECLARATION_INDEX
+extern char *index ();
+#endif
 
-#  ifndef bcopy
-#  define bcopy my_bcopy
-static void
-my_bcopy (s, d, n)
-     register char *s;
-     register char *d;
-     register unsigned n;
-{
-  while (n-- > 0)
-    *d++ = *s++;
-}
-#  endif /* !defined (bcopy) */
+#ifdef NEED_DECLARATION_RINDEX
+extern char *rindex ();
+#endif
 
-#  ifndef bzero
-#  define bzero my_bzero
-static void
-my_bzero (b, length)
-     register char *b;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b++ = 0;
-}
-#  endif /* !defined (bzero) */
-
-# endif /* !defined (BSTRING) && (defined (USG) || defined (VMS)) */
-#endif /* ! STDC_HEADERS */
+#ifdef NEED_DECLARATION_GETENV
+extern char *getenv ();
+#endif
 
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
 #endif
 
-#ifndef PROTO
-# if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#  define PROTO(ARGS) ARGS
-# else
-#  define PROTO(ARGS) ()
-# endif
+#ifndef STANDARD_INCLUDE_DIR
+# define STANDARD_INCLUDE_DIR "/usr/include"
+#endif
+
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+# define PATH_SEPARATOR ':'
+#endif
+
+/* By default, the suffix for object files is ".o".  */
+#ifdef OBJECT_SUFFIX
+# define HAVE_OBJECT_SUFFIX
+#else
+# define OBJECT_SUFFIX ".o"
 #endif
 
 #if defined (__STDC__) && defined (HAVE_VPRINTF)
 # include <stdarg.h>
-# define VA_START(va_list, var) va_start (va_list, var)
 # define PRINTF_ALIST(msg) char *msg, ...
 # define PRINTF_DCL(msg)
 # define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
 # include <varargs.h>
-# define VA_START(va_list, var) va_start (va_list)
 # define PRINTF_ALIST(msg) msg, va_alist
 # define PRINTF_DCL(msg) char *msg; va_dcl
 # define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
@@ -214,10 +126,6 @@ my_bzero (b, length)
 #define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 #define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
 #define PRINTF_PROTO_3(ARGS) PRINTF_PROTO(ARGS, 3, 4)
-
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
 /* VMS-specific definitions */
 #ifdef VMS
@@ -258,12 +166,10 @@ static void hack_vms_include_specification ();
 #  include <inttypes.h>
 #  define HOST_WIDE_INT intmax_t
 # else
-#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
-       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
 #   define HOST_WIDE_INT int
 #  else
-#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
-       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
 #   define HOST_WIDE_INT long
 #  else
 #   define HOST_WIDE_INT long long
@@ -288,24 +194,6 @@ static void hack_vms_include_specification ();
 #define INO_T_HASH(a) (a)
 #endif
 
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
-#endif
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR) 0)
-#endif
-
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
 #endif
@@ -325,7 +213,7 @@ char *strerror ();
 char *strerror (int,...);
 #endif
 HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
-HOST_WIDE_INT parse_c_expression PROTO((char *));
+HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 
 #ifndef errno
 extern int errno;
@@ -412,7 +300,7 @@ static enum {dump_none, dump_only, dump_names, dump_definitions}
 static int debug_output = 0;
 
 /* Nonzero means pass #include lines through to the output,
-   even if they are ifdeffed out.  */
+   even if they are ifdefed out.  */
 static int dump_includes;
 
 /* Nonzero indicates special processing used by the pcp program.  The
@@ -466,7 +354,7 @@ static int warn_trigraphs;
 
 /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
 
-int warn_undef;
+static int warn_undef;
 
 /* Nonzero means warn if #import is used.  */
 
@@ -489,6 +377,9 @@ int c89;
    are still obeyed.  */
 
 static int no_output;
+
+/* Nonzero means we should look for header.gcc files that remap file names.  */
+static int remap;
 
 /* Nonzero means this file was included with a -imacros or -include
    command line and should not be recorded as an include file.  */
@@ -1214,6 +1105,7 @@ static void make_assertion PROTO((char *, char *));
 static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, char *, char *, char *));
 static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
 
+static int quote_string_for_make PROTO((char *, char *));
 static void deps_output PROTO((char *, int));
 
 static void fatal PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
@@ -1775,6 +1667,11 @@ main (argc, argv)
 	  no_precomp = 1;
 	break;
 
+      case 'r':
+	if (!strcmp (argv[i], "-remap"))
+	  remap = 1;
+	break;
+
       case 'u':
 	/* Sun compiler passes undocumented switch "-undef".
 	   Let's assume it means to inhibit the predefined symbols.  */
@@ -2212,8 +2109,11 @@ main (argc, argv)
   } else {
     /* Read a file whose size we can determine in advance.
        For the sake of VMS, st.st_size is just an upper bound.  */
-    fp->buf = (U_CHAR *) xmalloc (st.st_size + 2);
-    fp->length = safe_read (f, (char *) fp->buf, st.st_size);
+    size_t s = (size_t) st.st_size;
+    if (s != st.st_size || s + 2 < s)
+      memory_full ();
+    fp->buf = (U_CHAR *) xmalloc (s + 2);
+    fp->length = safe_read (f, (char *) fp->buf, s);
     if (fp->length < 0) goto perror;
   }
   fp->bufp = fp->buf;
@@ -4709,7 +4609,7 @@ absolute_filename (filename)
 
    Do only the simplifications allowed by Posix.
    It is OK to miss simplifications on non-Posix hosts,
-   since this merely leads to suboptimial results.  */
+   since this merely leads to suboptimal results.  */
 
 static size_t
 simplify_filename (filename)
@@ -4926,7 +4826,7 @@ open_include_file (filename, searchptr, importing, pinc)
      U_CHAR *importing;
      struct include_file **pinc;
 {
-  char *fname = remap_include_file (filename, searchptr);
+  char *fname = remap ? remap_include_file (filename, searchptr) : filename;
   int fd = -2;
 
   /* Look up FNAME in include_hashtab.  */
@@ -5090,12 +4990,15 @@ finclude (f, inc, op, system_header_p, dirptr)
   fp->dir = dirptr;
 
   if (S_ISREG (inc->st.st_mode)) {
-    fp->buf = (U_CHAR *) xmalloc (inc->st.st_size + 2);
+    size_t s = (size_t) inc->st.st_size;
+    if (s != inc->st.st_size || s + 2 < s)
+      memory_full ();
+    fp->buf = (U_CHAR *) xmalloc (s + 2);
     fp->bufp = fp->buf;
 
-    /* Read the file contents, knowing that inc->st.st_size is an upper bound
+    /* Read the file contents, knowing that s is an upper bound
        on the number of bytes we can read.  */
-    fp->length = safe_read (f, (char *) fp->buf, inc->st.st_size);
+    fp->length = safe_read (f, (char *) fp->buf, s);
     if (fp->length < 0) goto nope;
   }
   else if (S_ISDIR (inc->st.st_mode)) {
@@ -5210,8 +5113,11 @@ check_precompiled (pcf, st, fname, limit)
 
   if (S_ISREG (st->st_mode))
     {
-      buf = xmalloc (st->st_size + 2);
-      length = safe_read (pcf, buf, st->st_size);
+      size_t s = (size_t) st->st_size;
+      if (s != st->st_size || s + 2 < s)
+	memory_full ();
+      buf = xmalloc (s + 2);
+      length = safe_read (pcf, buf, s);
       if (length < 0)
 	goto nope;
     }
@@ -7032,7 +6938,8 @@ eval_if_expression (buf, length)
   delete_macro (save_defined);	/* clean up special symbol */
 
   temp_obuf.buf[temp_obuf.length] = '\n';
-  value = parse_c_expression ((char *) temp_obuf.buf);
+  value = parse_c_expression ((char *) temp_obuf.buf,
+			      warn_undef && !instack[indepth].system_header_p);
 
   free (temp_obuf.buf);
 
@@ -9940,6 +9847,67 @@ append_include_chain (first, last)
   last_include = last;
 }
 
+/* Place into DST a representation of the file named SRC that is suitable
+   for `make'.  Do not null-terminate DST.  Return its length.  */
+static int
+quote_string_for_make (dst, src)
+     char *dst;
+     char *src;
+{
+  char *p = src;
+  int i = 0;
+  for (;;)
+    {
+      char c = *p++;
+      switch (c)
+	{
+	case '\0':
+	case ' ':
+	case '\t':
+	  {
+	    /* GNU make uses a weird quoting scheme for white space.
+	       A space or tab preceded by 2N+1 backslashes represents
+	       N backslashes followed by space; a space or tab
+	       preceded by 2N backslashes represents N backslashes at
+	       the end of a file name; and backslashes in other
+	       contexts should not be doubled.  */
+	    char *q;
+	    for (q = p - 1; src < q && q[-1] == '\\';  q--)
+	      {
+		if (dst)
+		  dst[i] = '\\';
+		i++;
+	      }
+	  }
+	  if (!c)
+	    return i;
+	  if (dst)
+	    dst[i] = '\\';
+	  i++;
+	  goto ordinary_char;
+	  
+	case '$':
+	  if (dst)
+	    dst[i] = c;
+	  i++;
+	  /* Fall through.  This can mishandle things like "$(" but
+	     there's no easy fix.  */
+	default:
+	ordinary_char:
+	  /* This can mishandle characters in the string "\0\n%*?[\\~";
+	     exactly which chars are mishandled depends on the `make' version.
+	     We know of no portable solution for this;
+	     even GNU make 3.76.1 doesn't solve the problem entirely.
+	     (Also, '\0' is mishandled due to our calling conventions.)  */
+	  if (dst)
+	    dst[i] = c;
+	  i++;
+	  break;
+	}
+    }
+}
+
+
 /* Add output to `deps_buffer' for the -M switch.
    STRING points to the text to be output.
    SPACER is ':' for targets, ' ' for dependencies.  */
@@ -9949,9 +9917,7 @@ deps_output (string, spacer)
      char *string;
      int spacer;
 {
-  int size = strlen (string);
-  int i;
-  char *p;
+  int size = quote_string_for_make ((char *) 0, string);
 
   if (size == 0)
     return;
@@ -9976,27 +9942,9 @@ deps_output (string, spacer)
     deps_buffer[deps_size++] = ' ';
     deps_column++;
   }
-
-  for (i = 0; i < size; ++i)
-    {
-      if (string[i] == '$')
-	{
-	  deps_buffer[deps_size++] = '$';
-	  deps_column++;
-	}
-      else
-	{
-	  p = strchr ("~[]*?()\\ ", string[i]);
-	  if (p != NULL)
-	    {
-	      deps_buffer[deps_size++] = '\\';
-	      deps_column++;
-	    }
-	}
-      deps_buffer[deps_size++] = string[i];
-      deps_column++;
-    }
-
+  quote_string_for_make (&deps_buffer[deps_size], string);
+  deps_size += size;
+  deps_column += size;
   if (spacer == ':') {
     deps_buffer[deps_size++] = ':';
     deps_column++;
@@ -10272,10 +10220,11 @@ VMS_freopen (fname, type, oldfile)
      char *type;
      FILE *oldfile;
 {
+#undef freopen	/* Get back the real freopen routine.  */
   if (strcmp (type, "w") == 0)
-    return decc$freopen (fname, type, oldfile,
+    return freopen (fname, type, oldfile,
 			 "mbc=16", "deq=64", "fop=tef", "shr=nil");
-  return decc$freopen (fname, type, oldfile, "mbc=16");
+  return freopen (fname, type, oldfile, "mbc=16");
 }
 
 static FILE *
@@ -10283,10 +10232,11 @@ VMS_fopen (fname, type)
      char *fname;
      char *type;
 {
+#undef fopen	/* Get back the real fopen routine.  */
   /* The gcc-vms-1.42 distribution's header files prototype fopen with two
      fixed arguments, which matches ANSI's specification but not VAXCRTL's
      pre-ANSI implementation.  This hack circumvents the mismatch problem.  */
-  FILE *(*vmslib_fopen)() = (FILE *(*)()) decc$fopen;
+  FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
 
   if (*type == 'w')
     return (*vmslib_fopen) (fname, type, "mbc=32",
@@ -10301,7 +10251,8 @@ VMS_open (fname, flags, prot)
      int flags;
      int prot;
 {
-  return decc$open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
+#undef open	/* Get back the real open routine.  */
+  return open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
 }
 
 /* more VMS hackery */
@@ -10322,13 +10273,14 @@ extern unsigned long sys$parse(), sys$search();
    bad enough, but then compounding the problem by reporting the reason for
    failure as "normal successful completion."  */
 
+#undef fstat	/* Get back to the library version.  */
 
 static int
 VMS_fstat (fd, statbuf)
      int fd;
      struct stat *statbuf;
 {
-  int result = decc$fstat (fd, statbuf);
+  int result = fstat (fd, statbuf);
 
   if (result < 0)
     {
