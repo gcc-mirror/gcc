@@ -1,3 +1,11 @@
+2003-08-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_movstr, s390_expand_clrstr,
+	s390_expand_cmpmem, s390_output_constant_pool, s390_build_va_list,
+	s390_function_profiler, s390_output_mi_thunk): Use ISO C syntax
+	for function pointer calls.
+	* config/s390/s390.md ("*negdi2_31"): Likewise.
+
 2003-08-23  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (apply_distributive_law): Correct comment.
