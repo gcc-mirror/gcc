@@ -1,3 +1,8 @@
+2002-01-30  Loren Rittle <ljrittle@acm.org>
+
+	* config/locale/c_locale_generic.cc: Check errno for ERANGE
+	instead of non-zero to aid portability.
+
 2002-01-30  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* docs/html/22_locale/messages.html: Fix example code.
