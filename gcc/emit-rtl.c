@@ -3042,7 +3042,7 @@ emit_note (file, line)
   return note;
 }
 
-/* Emit a NOTE, and don't omit it even if LINE it the previous note.  */
+/* Emit a NOTE, and don't omit it even if LINE is the previous note.  */
 
 rtx
 emit_line_note_force (file, line)
