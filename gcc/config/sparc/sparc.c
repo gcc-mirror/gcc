@@ -4280,6 +4280,96 @@ sparc_builtin_saveregs ()
 
   return address;
 }
+
+/* Implement `va_start' for varargs and stdarg.  */
+
+void
+sparc_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p ATTRIBUTE_UNUSED;
+     tree valist;
+     rtx nextarg;
+{
+  nextarg = expand_builtin_saveregs ();
+  std_expand_builtin_va_start (1, valist, nextarg);
+}
+
+/* Implement `va_arg'.  */
+
+rtx
+sparc_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT size, rsize, align;
+  tree addr, incr, tmp;
+  rtx addr_rtx;
+  int indirect = 0;
+
+  /* Round up sizeof(type) to a word.  */
+  size = int_size_in_bytes (type);
+  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+  align = 0;
+
+  if (TARGET_ARCH64)
+    {
+      if (TYPE_ALIGN (type) >= 2 * BITS_PER_WORD)
+	align = 2 * UNITS_PER_WORD;
+
+      if (AGGREGATE_TYPE_P (type) && size > 16)
+	{
+	  indirect = 1;
+	  size = rsize = UNITS_PER_WORD;
+	}
+    }
+  else
+    {
+      if (AGGREGATE_TYPE_P (type)
+	  || TYPE_MODE (type) == TFmode
+	  || TYPE_MODE (type) == TCmode)
+	{
+	  indirect = 1;
+	  size = rsize = UNITS_PER_WORD;
+	}
+      else
+	{
+	  /* ??? The old va-sparc.h implementation, for 8 byte objects
+	     copied stuff to a temporary -- I don't see that that 
+	     provides any more alignment than the stack slot did.  */
+	}
+    }
+
+  incr = valist;
+  if (align)
+    {
+      incr = fold (build (PLUS_EXPR, ptr_type_node, incr,
+			 build_int_2 (align - 1, 0)));
+      incr = fold (build (BIT_AND_EXPR, ptr_type_node, incr,
+			  build_int_2 (-align, -1)));
+    }
+
+  addr = incr = save_expr (incr);
+  if (BYTES_BIG_ENDIAN && size < rsize)
+    {
+      addr = fold (build (PLUS_EXPR, ptr_type_node, incr,
+			  build_int_2 (rsize - size, 0)));
+    }
+  incr = fold (build (PLUS_EXPR, ptr_type_node, incr,
+		      build_int_2 (rsize, 0)));
+
+  incr = build (MODIFY_EXPR, ptr_type_node, valist, incr);
+  TREE_SIDE_EFFECTS (incr) = 1;
+  expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  addr_rtx = expand_expr (addr, NULL, Pmode, EXPAND_NORMAL);
+
+  if (indirect)
+    {
+      addr_rtx = force_reg (Pmode, addr_rtx);
+      addr_rtx = gen_rtx_MEM (Pmode, addr_rtx);
+      MEM_ALIAS_SET (addr_rtx) = get_varargs_alias_set ();
+    }
+
+  return addr_rtx;
+}
 
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label.  OP is the conditional expression.
