@@ -3952,8 +3952,9 @@ expand_expr (exp, target, tmode, modifier)
       if (GET_CODE (SAVE_EXPR_RTL (exp)) == REG
 	  && GET_MODE (SAVE_EXPR_RTL (exp)) != mode)
 	{
-	  temp = gen_rtx (SUBREG, promote_mode (type, mode, &unsignedp, 0),
-			  SAVE_EXPR_RTL (exp), 0);
+	  /* Compute the signedness and make the proper SUBREG.  */
+	  promote_mode (type, mode, &unsignedp, 0);
+	  temp = gen_rtx (SUBREG, mode, SAVE_EXPR_RTL (exp), 0);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
 	  return temp;
