@@ -1822,13 +1822,27 @@ truth_value_p (enum tree_code code)
 	  || code == TRUTH_XOR_EXPR || code == TRUTH_NOT_EXPR);
 }
 
-/* Return nonzero if two operands are necessarily equal.
+/* Return nonzero if two operands (typically of the same tree node)
+   are necessarily equal.  If either argument has side-effects this
+   function returns zero.
+
    If ONLY_CONST is nonzero, only return nonzero for constants.
    This function tests whether the operands are indistinguishable;
    it does not test whether they are equal using C's == operation.
    The distinction is important for IEEE floating point, because
    (1) -0.0 and 0.0 are distinguishable, but -0.0==0.0, and
-   (2) two NaNs may be indistinguishable, but NaN!=NaN.  */
+   (2) two NaNs may be indistinguishable, but NaN!=NaN.
+
+   If ONLY_CONST is zero, a VAR_DECL is considered equal to itself
+   even though it may hold multiple values during a function.
+   This is because a GCC tree node guarantees that nothing else is
+   executed between the evaluation of its "operands" (which may often
+   be evaluated in arbitrary order).  Hence if the operands themselves
+   don't side-effect, the VAR_DECLs, PARM_DECLs etc... must hold the
+   same value in each operand/subexpression.  Hence a zero value for
+   ONLY_CONST assumes isochronic (or instantaneous) tree equivalence.
+   If comparing arbitrary expression trees, such as from different
+   statements, ONLY_CONST must usually be non-zero.  */
 
 int
 operand_equal_p (tree arg0, tree arg1, int only_const)
