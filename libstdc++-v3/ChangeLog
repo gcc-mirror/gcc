@@ -1,7 +1,8 @@
 2002-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linker-map.gnu: Export _S_construct even if size_t is
-	unsigned long.
+	unsigned long.  Collapse std::codecvt<char>::codecvt(size_t)
+	and std::codecvt<wchar_t>::codecvt(size_t) into one export pattern.
 
 2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
 
