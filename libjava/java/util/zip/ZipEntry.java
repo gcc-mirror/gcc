@@ -51,10 +51,10 @@ import java.util.Date;
  */
 public class ZipEntry implements ZipConstants, Cloneable
 {
-  private static int KNOWN_SIZE   = 1;
-  private static int KNOWN_CSIZE  = 2;
-  private static int KNOWN_CRC    = 4;
-  private static int KNOWN_TIME   = 8;
+  private static final int KNOWN_SIZE   = 1;
+  private static final int KNOWN_CSIZE  = 2;
+  private static final int KNOWN_CRC    = 4;
+  private static final int KNOWN_TIME   = 8;
 
   private static Calendar cal;
 

@@ -1,5 +1,6 @@
 /* Process.java - Represent spawned system process
-   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +39,8 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * An instance of a subclass of <code>Process</code> is created by the
