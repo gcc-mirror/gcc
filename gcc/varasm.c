@@ -1507,9 +1507,9 @@ immed_double_const (i0, i1, mode)
   r = gen_rtx (CONST_DOUBLE, mode, 0, i0, i1);
   pop_obstacks ();
 
-  /* Don't touch const_double_chain in nested function;
-     see force_const_mem.  */
-  if (outer_function_chain == 0)
+  /* Don't touch const_double_chain in nested function; see force_const_mem.
+     Also, don't touch it if not inside any function.  */
+  if (outer_function_chain == 0 && current_function_decl != 0)
     {
       CONST_DOUBLE_CHAIN (r) = const_double_chain;
       const_double_chain = r;
@@ -1582,9 +1582,9 @@ immed_real_const_1 (d, mode)
   bcopy (&u, &CONST_DOUBLE_LOW (r), sizeof u);
   pop_obstacks ();
 
-  /* Don't touch const_double_chain in nested function;
-     see force_const_mem.  */
-  if (outer_function_chain == 0)
+  /* Don't touch const_double_chain in nested function; see force_const_mem.
+     Also, don't touch it if not inside any function.  */
+  if (outer_function_chain == 0 && current_function_decl != 0)
     {
       CONST_DOUBLE_CHAIN (r) = const_double_chain;
       const_double_chain = r;
