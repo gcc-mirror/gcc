@@ -1,3 +1,8 @@
+2003-10-29  Dalibor Topic  <robilad@kaffe.org>
+
+	* gnu/java/beans/IntrospectionIncubator.java (addMethod): Add public
+	static methods.
+
 2003-10-29  Julian Dolby  <dolby@us.ibm.com>
 
 	* javax/naming/spi/NamingManager.java (getContinuationContext): Call
