@@ -1,3 +1,14 @@
+Tue Oct 27 08:56:46 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* dwarfout.c (ASM_OUTPUT_DWARF_STRING_NEWLINE): ASM_OUTPUT_DWARF_STRING
+	has been changed to not include a newline. Use this macro instead.
+	(output_enumeral_list, const_value_attribute, name_attribute,
+	comp_dir_attribute, prototyped_attribute, producer_attribute,
+	inline_attribute, pure_or_virtual_attribute, output_inheritance_die,
+	dwarfout_file_scope_decl, generate_new_sfname_entry,
+	generate_macinfo_entry, dwarfout_init, dwarfout_finish): Use
+	ASM_OUTPUT_DWARF_STRING_NEWLINE macro.
+
 Mon Oct 26 13:35:02 1998  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (subst): Process the inputs to a parallel asm_operands

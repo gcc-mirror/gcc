@@ -857,10 +857,20 @@ static int is_redundant_typedef		PROTO((tree));
   } while (0)
 #endif
 
+/* ASM_OUTPUT_DWARF_STRING is defined to output an ascii string, but to
+   NOT issue a trailing newline. We define ASM_OUTPUT_DWARF_STRING_NEWLINE
+   based on whether ASM_OUTPUT_DWARF_STRING is defined or not. If it is
+   defined, we call it, then issue the line feed. If not, we supply a
+   default defintion of calling ASM_OUTPUT_ASCII */
+
 #ifndef ASM_OUTPUT_DWARF_STRING
-#define ASM_OUTPUT_DWARF_STRING(FILE,P) \
+#define ASM_OUTPUT_DWARF_STRING_NEWLINE(FILE,P) \
   ASM_OUTPUT_ASCII ((FILE), P, strlen (P)+1)
+#else
+#define ASM_OUTPUT_DWARF_STRING_NEWLINE(FILE,P) \
+  ASM_OUTPUT_DWARF_STRING (FILE,P), ASM_OUTPUT_DWARF_STRING (FILE,"\n") 
 #endif
+
 
 /************************ general utility functions **************************/
 
@@ -1893,7 +1903,7 @@ output_enumeral_list (link)
       output_enumeral_list (TREE_CHAIN (link));
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
 			      (unsigned) TREE_INT_CST_LOW (TREE_VALUE (link)));
-      ASM_OUTPUT_DWARF_STRING (asm_out_file,
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
 			       IDENTIFIER_POINTER (TREE_PURPOSE (link)));
     }
 }
@@ -2256,7 +2266,7 @@ const_value_attribute (rtl)
 	break;
 
       case CONST_STRING:
-	ASM_OUTPUT_DWARF_STRING (asm_out_file, XSTR (rtl, 0));
+	ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, XSTR (rtl, 0));
 	break;
 
       case SYMBOL_REF:
@@ -2466,7 +2476,7 @@ name_attribute (name_string)
   if (name_string && *name_string)
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_name);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, name_string);
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, name_string);
     }
 }
 
@@ -2904,7 +2914,7 @@ comp_dir_attribute (dirname)
      register char *dirname;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_comp_dir);
-  ASM_OUTPUT_DWARF_STRING (asm_out_file, dirname);
+  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, dirname);
 }
 
 static inline void
@@ -2942,7 +2952,7 @@ prototyped_attribute (func_type)
       && (TYPE_ARG_TYPES (func_type) != NULL))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_prototyped);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
 }
 
@@ -2951,7 +2961,7 @@ producer_attribute (producer)
      register char *producer;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_producer);
-  ASM_OUTPUT_DWARF_STRING (asm_out_file, producer);
+  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, producer);
 }
 
 static inline void
@@ -2961,7 +2971,7 @@ inline_attribute (decl)
   if (DECL_INLINE (decl))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_inline);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
 }
 
@@ -3024,7 +3034,7 @@ pure_or_virtual_attribute (func_decl)
       else
 #endif
         ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_virtual);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
 }
 
@@ -3751,17 +3761,17 @@ output_inheritance_die (arg)
   if (TREE_VIA_VIRTUAL (binfo))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_virtual);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
   if (TREE_VIA_PUBLIC (binfo))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_public);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
   else if (TREE_VIA_PROTECTED (binfo))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_protected);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
     }
 }  
 
@@ -5121,7 +5131,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
 	  sprintf (label, PUB_DIE_LABEL_FMT, next_pubname_number);
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, label);
-	  ASM_OUTPUT_DWARF_STRING (asm_out_file,
+	  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
 				   IDENTIFIER_POINTER (DECL_NAME (decl)));
 	  ASM_OUTPUT_POP_SECTION (asm_out_file);
 	}
@@ -5159,7 +5169,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
 	      sprintf (label, PUB_DIE_LABEL_FMT, next_pubname_number);
 	      ASM_OUTPUT_DWARF_ADDR (asm_out_file, label);
-	      ASM_OUTPUT_DWARF_STRING (asm_out_file,
+	      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
 				       IDENTIFIER_POINTER (DECL_NAME (decl)));
 	      ASM_OUTPUT_POP_SECTION (asm_out_file);
 	    }
@@ -5386,7 +5396,7 @@ generate_new_sfname_entry ()
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
   sprintf (label, SFNAMES_ENTRY_LABEL_FMT, filename_table[0].number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
-  ASM_OUTPUT_DWARF_STRING (asm_out_file,
+  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
     			   filename_table[0].name
 			     ? filename_table[0].name
 			     : "");
@@ -5559,7 +5569,7 @@ generate_macinfo_entry (type_and_offset, string)
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
   fprintf (asm_out_file, "\t%s\t%s\n", UNALIGNED_INT_ASM_OP, type_and_offset);
-  ASM_OUTPUT_DWARF_STRING (asm_out_file, string);
+  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, string);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 }
 
@@ -5740,7 +5750,7 @@ dwarfout_init (asm_out_file, main_input_filename)
     
 	    strcpy (dirname, pwd);
 	    strcpy (dirname + len, "/");
-	    ASM_OUTPUT_DWARF_STRING (asm_out_file, dirname);
+	    ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, dirname);
 	    free (dirname);
 	  }
 	  ASM_OUTPUT_POP_SECTION (asm_out_file);
@@ -5944,7 +5954,7 @@ dwarfout_finish ()
 	  fputc ('\n', asm_out_file);
 	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
 	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
-	  ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+	  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
 	  ASM_OUTPUT_POP_SECTION (asm_out_file);
 	}
     
@@ -5953,7 +5963,7 @@ dwarfout_finish ()
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
       ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       /* Generate the terminating entries for the .debug_aranges section.
