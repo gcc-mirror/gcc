@@ -346,7 +346,7 @@ namespace __gnu_cxx
       if (0 != __cstr)
 	{
 	  size_t __size = this->_M_size + 1;
-	  _Destroy(__cstr, __cstr + __size);
+	  _Destroy(__cstr, __cstr + __size, get_allocator());
 	  this->_Data_deallocate(__cstr, __size);
 	}
     }
@@ -357,7 +357,7 @@ namespace __gnu_cxx
     _S_free_string(_CharT* __s, size_t __n, allocator_type __a)
     {
       if (!_S_is_basic_char_type((_CharT*)0))
-	_Destroy(__s, __s + __n);
+	_Destroy(__s, __s + __n, __a);
       
       //  This has to be a static member, so this gets a bit messy
       __a.deallocate(__s,
@@ -1547,7 +1547,8 @@ namespace __gnu_cxx
       else
 	{
 	  __rest_buffer = this->_Data_allocate(_S_rounded_up_size(__rest));
-	  uninitialized_fill_n(__rest_buffer, __rest, __c);
+	  __uninitialized_fill_n_a(__rest_buffer, __rest, __c,
+				   get_allocator());
 	  _S_cond_store_eos(__rest_buffer[__rest]);
 	  try
 	    { __remainder = _S_new_RopeLeaf(__rest_buffer, __rest, __a); }
@@ -1564,7 +1565,8 @@ namespace __gnu_cxx
 	    this->_Data_allocate(_S_rounded_up_size(__exponentiate_threshold));
 	  _RopeLeaf* __base_leaf;
 	  rope __base_rope;
-	  uninitialized_fill_n(__base_buffer, __exponentiate_threshold, __c);
+	  __uninitialized_fill_n_a(__base_buffer, __exponentiate_threshold, __c,
+				   get_allocator());
 	  _S_cond_store_eos(__base_buffer[__exponentiate_threshold]);
 	  try
 	    {

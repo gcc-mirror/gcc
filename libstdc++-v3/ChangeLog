@@ -1,3 +1,50 @@
+2004-07-28  Matt Austern  <austern@apple.com>
+
+	* include/bits/stl_construct.h (_Destroy): New three-argument
+	overload that takes an allocator argument.  Another inline
+	three-argument overload that takes std::allocator and dispatches
+	to the two-argument version.
+	* include/bits/stl_uninitialized.h (__uninitialized_fill_n_aux):
+	Change return type to void to match uninitialized_fill_n.
+	(__uninitialized_copy_a_): New function.  Like uninitialized_copy
+	except that it takes an allocator and uses it for construct and
+	destroy.  If the allocator is std::allocator, dispatches to
+	uninitialized_copy.
+	(__uninitialized_fill_a): Likewise.
+	(__uninitialized_fill_n_a): Likewise.
+	(__uninitialized_copy_copy): Give it an allocator argument.
+	(__uninitialized_fill_copy): Likewise.
+	(__uninitialized_copy_fill): Likewise.
+	* include/bits/deque.tcc: Use new forms defined in stl_construct.h
+	and stl_uninitialized.h.  Replace use of single-argument _Construct
+	and _Destroy with use of allocator's construct and destroy methods.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/ext/hashtable.h: Use rebind so that allocator_type
+	has correct type for a container's allocator.  Replace use of 
+	single-argument _Construct and _Destroy with use of allocator's 
+	construct and destroy methods.
+	* include/ext/memory (__uninitialized_copy_n_a): New function.
+	Like uninitialized_copy_n except that it takes an extra parameter,
+	an allocator, and uses it for construct and destroy operations.
+	* include/ext/rope: Use new forms defined in stl_construct.h,
+	stl_uninitialized.h, and ext/memory.  Replace use of single-argument 
+	_Construct and _Destroy with allocator construct and destroy methods.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/ext/slist.h: Likewise.
+	* testsuite/testsuite_allocator.h (check_construct_destroy): New.
+	* testsuite/testsuite_allocator.cc (check_construct_destroy): New.
+	* testsuite/23_containers/deque/check_construct_destroy.cc: New.
+	* testsuite/23_containers/list/check_construct_destroy.cc: New.
+	* testsuite/23_containers/set/check_construct_destroy.cc: New.	
+	* testsuite/23_containers/vector/check_construct_destroy.cc: New. 
+	* testsuite/ext/hash_check_construct_destroy.cc
+	* testsuite/ext/slist_check_construct_destroy.cc
+	
 2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	2003-10-01  Eric Christopher  <echristo@redhat.com>

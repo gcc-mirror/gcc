@@ -435,7 +435,7 @@ namespace _GLIBCXX_STD
 	_Node* __p = this->_M_get_node();
 	try
 	  {
-	    std::_Construct(&__p->_M_data, __x);
+	    this->get_allocator().construct(&__p->_M_data, __x);
 	  }
 	catch(...)
 	  {
@@ -457,7 +457,7 @@ namespace _GLIBCXX_STD
 	_Node* __p = this->_M_get_node();
 	try
 	  {
-	    std::_Construct(&__p->_M_data);
+	    this->get_allocator().construct(&__p->_M_data);
 	  }
 	catch(...)
 	  {
@@ -1170,7 +1170,7 @@ namespace _GLIBCXX_STD
       {
         __position._M_node->unhook();
         _Node* __n = static_cast<_Node*>(__position._M_node);
-        std::_Destroy(&__n->_M_data);
+        this->get_allocator().destroy(&__n->_M_data);
         _M_put_node(__n);
       }
     };

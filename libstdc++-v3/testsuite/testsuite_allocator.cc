@@ -28,6 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <iostream>
 #include <testsuite_allocator.h>
 
 namespace __gnu_test
@@ -36,5 +37,24 @@ namespace __gnu_test
   allocation_tracker::size_type allocation_tracker::deallocationTotal_ = 0;
   int allocation_tracker::constructCount_    = 0;
   int allocation_tracker::destructCount_     = 0;
+
+  bool
+  check_construct_destroy(const char* tag, int expected_c, int expected_d)
+  {
+    if (allocation_tracker::constructCount() == expected_c &&
+	allocation_tracker::destructCount() == expected_d)
+      return true;
+
+    else {
+      std::cerr << tag << ": "
+		<< " construct = " << allocation_tracker::constructCount()
+		<< " (should be " << expected_c << "),"
+		<< " destroy = " << allocation_tracker::destructCount()
+		<< " (should be " << expected_d << ")"
+		<< std::endl;
+      return false;
+    }
+  }
+
 }; // namespace __cxx_test
 

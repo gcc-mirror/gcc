@@ -677,8 +677,8 @@ namespace _GLIBCXX_STD
        */
       deque(const deque& __x)
       : _Base(__x.get_allocator(), __x.size())
-      { std::uninitialized_copy(__x.begin(), __x.end(),
-				this->_M_impl._M_start); }
+      { std::__uninitialized_copy_a(__x.begin(), __x.end(), this->_M_impl._M_start,
+				    this->get_allocator()); }
 
       /**
        *  @brief  Builds a %deque from a range.
@@ -710,7 +710,8 @@ namespace _GLIBCXX_STD
        *  way.  Managing the pointer is the user's responsibilty.
        */
       ~deque()
-      { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish); }
+      { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+		      this->get_allocator()); }
 
       /**
        *  @brief  %Deque assignment operator.
@@ -1004,7 +1005,7 @@ namespace _GLIBCXX_STD
       {
 	if (this->_M_impl._M_start._M_cur != this->_M_impl._M_start._M_first)
 	  {
-	    std::_Construct(this->_M_impl._M_start._M_cur - 1, __x);
+	    this->_M_impl.construct(this->_M_impl._M_start._M_cur - 1, __x);
 	    --this->_M_impl._M_start._M_cur;
 	  }
 	else
@@ -1025,7 +1026,7 @@ namespace _GLIBCXX_STD
 	if (this->_M_impl._M_finish._M_cur
 	    != this->_M_impl._M_finish._M_last - 1)
 	  {
-	    std::_Construct(this->_M_impl._M_finish._M_cur, __x);
+	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur, __x);
 	    ++this->_M_impl._M_finish._M_cur;
 	  }
 	else
@@ -1046,7 +1047,7 @@ namespace _GLIBCXX_STD
 	if (this->_M_impl._M_start._M_cur
 	    != this->_M_impl._M_start._M_last - 1)
 	  {
-	    std::_Destroy(this->_M_impl._M_start._M_cur);
+	    this->_M_impl.destroy(this->_M_impl._M_start._M_cur);
 	    ++this->_M_impl._M_start._M_cur;
 	  }
 	else
@@ -1068,7 +1069,7 @@ namespace _GLIBCXX_STD
 	    != this->_M_impl._M_finish._M_first)
 	  {
 	    --this->_M_impl._M_finish._M_cur;
-	    std::_Destroy(this->_M_impl._M_finish._M_cur);
+	    this->_M_impl.destroy(this->_M_impl._M_finish._M_cur);
 	  }
 	else
 	  _M_pop_back_aux();

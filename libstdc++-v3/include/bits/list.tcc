@@ -74,7 +74,7 @@ namespace _GLIBCXX_STD
       {
         _Node* __tmp = __cur;
         __cur = static_cast<_Node*>(__cur->_M_next);
-        std::_Destroy(&__tmp->_M_data);
+        this->get_allocator().destroy(&__tmp->_M_data);
         _M_put_node(__tmp);
       }
     }

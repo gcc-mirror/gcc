@@ -200,7 +200,8 @@ namespace _GLIBCXX_STD
 	     const allocator_type& __a = allocator_type())
       : _Base(__n, __a)
       {
-	std::uninitialized_fill_n(this->_M_impl._M_start, __n, __value);
+	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value,
+				      this->get_allocator());
 	this->_M_impl._M_finish = this->_M_impl._M_start + __n;
       }
 
@@ -215,7 +216,8 @@ namespace _GLIBCXX_STD
       vector(size_type __n)
       : _Base(__n, allocator_type())
       {
-	std::uninitialized_fill_n(this->_M_impl._M_start, __n, value_type());
+	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, value_type(),
+				      this->get_allocator());
 	this->_M_impl._M_finish = this->_M_impl._M_start + __n;	
       }
 
@@ -230,10 +232,11 @@ namespace _GLIBCXX_STD
        */
       vector(const vector& __x)
       : _Base(__x.size(), __x.get_allocator())
-      { this->_M_impl._M_finish = std::uninitialized_copy(__x.begin(),
-							  __x.end(),
-							  this->
-							  _M_impl._M_start); }
+      { this->_M_impl._M_finish =
+	  std::__uninitialized_copy_a(__x.begin(), __x.end(),
+				      this->_M_impl._M_start,
+				      this->get_allocator());
+      }
 
       /**
        *  @brief  Builds a %vector from a range.
@@ -267,7 +270,9 @@ namespace _GLIBCXX_STD
        *  responsibilty.
        */
       ~vector()
-      { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish); }
+      { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+		      this->get_allocator());
+      }
 
       /**
        *  @brief  %Vector assignment operator.
@@ -598,7 +603,7 @@ namespace _GLIBCXX_STD
       {
 	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	  {
-	    std::_Construct(this->_M_impl._M_finish, __x);
+	    this->_M_impl.construct(this->_M_impl._M_finish, __x);
 	    ++this->_M_impl._M_finish;
 	  }
 	else
@@ -618,7 +623,7 @@ namespace _GLIBCXX_STD
       pop_back()
       {
 	--this->_M_impl._M_finish;
-	std::_Destroy(this->_M_impl._M_finish);
+	this->_M_impl.destroy(this->_M_impl._M_finish);
       }
 
       /**
@@ -758,7 +763,8 @@ namespace _GLIBCXX_STD
 	  pointer __result = this->_M_allocate(__n);
 	  try
 	    {
-	      std::uninitialized_copy(__first, __last, __result);
+	      std::__uninitialized_copy_a(__first, __last, __result,
+					  this->get_allocator());
 	      return __result;
 	    }
 	  catch(...)
@@ -778,7 +784,8 @@ namespace _GLIBCXX_STD
         {
 	  this->_M_impl._M_start = _M_allocate(__n);
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-	  std::uninitialized_fill_n(this->_M_impl._M_start, __n, __value);
+	  std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value,
+					this->get_allocator());
 	  this->_M_impl._M_finish = this->_M_impl._M_end_of_storage;
 	}
 
@@ -812,9 +819,10 @@ namespace _GLIBCXX_STD
 	  const size_type __n = std::distance(__first, __last);
 	  this->_M_impl._M_start = this->_M_allocate(__n);
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-	  this->_M_impl._M_finish = std::uninitialized_copy(__first, __last,
-							    this->
-							    _M_impl._M_start);
+	  this->_M_impl._M_finish =
+	    std::__uninitialized_copy_a(__first, __last,
+					this->_M_impl._M_start,
+					this->get_allocator());
 	}
 
 
