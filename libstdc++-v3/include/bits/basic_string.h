@@ -709,7 +709,7 @@ namespace std
       copy(_CharT* __s, size_type __n, size_type __pos = 0) const;
 
       void
-      swap(basic_string<_CharT, _Traits, _Alloc>& __s);
+      swap(basic_string& __s);
 
       // String operations:
       const _CharT*
