@@ -231,10 +231,10 @@ Please refer to our @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
 The full distribution includes the C, C++, Objective-C, Fortran, Java,
-and CHILL compilers.  The full distribution also includes runtime libraries
-for C++, Objective-C, Fortran, Java and CHILL.  (GCC 3.0 does not
-include CHILL.)  In GCC 3.0 and later versions, GNU compiler testsuites
-are also included in the full distribution.
+and Ada (in case of GCC 3.1 and later) compilers.  The full distribution
+also includes runtime libraries for C++, Objective-C, Fortran, and Java.
+In GCC 3.0 and later versions, GNU compiler testsuites are also included
+in the full distribution.
 
 If you choose to download specific components, you must download the core
 GCC distribution plus any language specific distributions you wish to
@@ -445,7 +445,7 @@ before the target alias is prepended to the name - so, specifying
 resulting binary would be installed as
 @file{/usr/local/bin/i686-pc-linux-gnu-foo-gcc-3.1}.
 
-As a last shortcoming, none of the installed CHILL and Ada programs are
+As a last shortcoming, none of the installed Ada programs are
 transformed yet, which will be fixed in some time.
 
 @item --with-local-prefix=@var{dirname}
@@ -726,9 +726,7 @@ grep language= */config-lang.in
 @end example
 Currently, you can use any of the following:
 @code{ada}, @code{c}, @code{c++}, @code{f77}, @code{java}, @code{objc}.
-@code{CHILL} is not currently maintained, and will almost
-certainly fail to compile.  Building the Ada compiler has special
-requirements, see below.@*
+Building the Ada compiler has special requirements, see below.@*
 If you do not pass this flag, all languages available in the @file{gcc}
 sub-tree will be configured.  Re-defining @code{LANGUAGES} when calling
 @samp{make bootstrap} @strong{does not} work anymore, as those
