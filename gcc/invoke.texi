@@ -342,7 +342,7 @@ in the following sections.
 -mno-wide-multiply  -mrtd  -malign-double
 -mreg-alloc=@var{list}  -mregparm=@var{num}
 -malign-jumps=@var{num}  -malign-loops=@var{num}
--malign-functions=@var{num} -mpreferred_stack_boundary=@var{num}
+-malign-functions=@var{num} -mpreferred-stack-boundary=@var{num}
 
 @emph{HPPA Options}
 -march=@var{architecture type}

@@ -7,6 +7,8 @@ Thu Jun 17 13:28:30 1999  David O'Brien <obrien@FreeBSD.org>
 
 Thu Jun 17 02:54:30 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* invoke.texi (ia32 options): Fix typo.
+
 	* emit-rtl.c (operand_subword): Tighten checks for when it is safe
 	to safe to extract a subword out of a REG.
 
