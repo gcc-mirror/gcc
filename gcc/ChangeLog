@@ -1,3 +1,8 @@
+Thu Sep  4 10:43:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (wrapup_global_declarations): Fix final pass in
+	unit-at-atime mode.
+
 2003-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/extend.texi: Document removal of cast-as-lvalue extension in
