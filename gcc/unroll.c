@@ -238,6 +238,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   struct inline_remap *map;
   char *local_label;
   char *local_regno;
+  int max_local_regnum;
   int maxregnum;
   rtx exit_label = 0;
   rtx start_label;
@@ -755,6 +756,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   /* The preconditioning code may allocate two new pseudo registers.  */
   maxregnum = max_reg_num ();
 
+  /* local_regno is only valid for regnos < max_local_regnum.  */
+  max_local_regnum = maxregnum;
+
   /* Allocate and zero out the splittable_regs and addr_combined_regs
      arrays.  These must be zeroed here because they will be used if
      loop preconditioning is performed, and must be zero for that case.
@@ -1051,7 +1055,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		if (local_label[j])
 		  set_label_in_map (map, j, gen_label_rtx ());
 
-	      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
+	      for (j = FIRST_PSEUDO_REGISTER; j < max_local_regnum; j++)
 		if (local_regno[j])
 		  {
 		    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
@@ -1199,7 +1203,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	if (local_label[j])
 	  set_label_in_map (map, j, gen_label_rtx ());
 
-      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
+      for (j = FIRST_PSEUDO_REGISTER; j < max_local_regnum; j++)
 	if (local_regno[j])
 	  {
 	    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
