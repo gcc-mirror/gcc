@@ -1,3 +1,17 @@
+2002-06-24  Ben Elliston  <bje@redhat.com>
+
+	* configure.in (host_tools): Remove cgen.
+
+	* Makefile.in (all-cgen): Remove; runs from its source directory.
+	(check-cgen, install-cgen, clean-cgen): Likewise.
+	(all-opcodes): No not depend on all-cgen.
+	(all-sim): Likewise.
+
+2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
+
+	* Makefile.in: Eliminate 'apache' targets.
+	* configure.in: Eliminate 'apache' targets.
+
 2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
 
 	* configure.in: Eliminate redundant tests.  Reorganize.
