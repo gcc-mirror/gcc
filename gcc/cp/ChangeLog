@@ -1,3 +1,8 @@
+2001-02-19  Mark Mitchell  <mark@codesourcery.com>
+
+        * decl2.c (set_decl_namespace): Allow explicit instantiations in
+        any namespace.
+
 2001-02-21  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (struct lang_decl_flags): Remove uninlinable flag.
