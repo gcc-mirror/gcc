@@ -1,5 +1,11 @@
 2002-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/5681:
+	* expr.c (safe_from_p): Pass VOIDmode to true_dependence instead of
+	GET_MODE (x).
+
+2002-02-13  Jakub Jelinek  <jakub@redhat.com>
+
 	PR optimization/5547:
 	* config/i386/i386.c (i386_simplify_dwarf_addr): Simplify
 	all valid IA-32 address modes involving non-scaled %ebx and

@@ -2,6 +2,8 @@
 
 	* g++.dg/other/debug3.C: New test.
 
+	* gcc.c-torture/execute/20020213-1.c: New test.
+
 2002-02-13  Richard Smith <richard@ex-parrot.com>
 
 	* g++.old-deja/g++.other/thunk1.C: New test.
