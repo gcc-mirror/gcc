@@ -19,4 +19,4 @@ template<> struct A<int> {
 };
 
 bool A<int>::a = true; // ok
-template<> bool A<int>::b = false; // { dg-error "" "" { xfail *-*-* } } 
+template<> bool A<int>::b = false; // { dg-error "template header" } 

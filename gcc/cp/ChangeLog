@@ -1,3 +1,8 @@
+2004-11-24  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/8929
+	* decl.c (start_decl): Check for invalid specialization headers.
+
 2004-11-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/16882
