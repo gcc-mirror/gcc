@@ -1,3 +1,9 @@
+Mon May 31 15:23:23 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (reload_*_help): New patterns and splitters.
+	(reload_*): Use them.
+	(mov[qh]i): Likewise.
+
 Mon May 31 11:48:07 1999  Mark Mitchell  <mark@codesourcery.com>
 
         * cccp.c (handle_directive): Handle backslash-newlines in quoted
