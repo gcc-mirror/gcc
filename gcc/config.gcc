@@ -222,6 +222,9 @@ c*-convex-*)
 i[34567]86-*-*)
 	cpu_type=i386
 	;;
+x86_64-*-*)
+	cpu_type=i386
+	;;
 hppa*-*-* | parisc*-*-*)
 	cpu_type=pa
 	;;
@@ -1132,6 +1135,18 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# aka GNU/Linux C library 6
 	xmake_file=x-linux
 	tm_file="i386/i386.h i386/att.h linux.h i386/linux.h"
+	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	gnu_ld=yes
+	float_format=i386
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	;;
+x86_64-*-linux*)
+	xmake_file=x-linux
+	tm_file="i386/biarch64.h i386/i386.h i386/att.h linux.h i386/x86-64.h \
+		 i386/linux64.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes

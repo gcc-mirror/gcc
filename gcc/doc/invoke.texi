@@ -464,7 +464,7 @@ in the following sections.
 -mabi=32  -mabi=n32  -mabi=64  -mabi=eabi @gol
 -mfix7000  -mno-crt0}
 
-@emph{i386 Options}
+@emph{i386 and x86-64 Options}
 @gccoptlist{
 -mcpu=@var{cpu-type}  -march=@var{cpu-type} @gol
 -mintel-syntax -mieee-fp  -mno-fancy-math-387 @gol
@@ -474,7 +474,9 @@ in the following sections.
 -mmmx  -msse  -m3dnow @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
--m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer}
+-m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer @gol
+-mno-red-zone@gol
+-m32 -m64}
 
 @emph{HPPA Options}
 @gccoptlist{
@@ -5077,7 +5079,7 @@ that macro, which enables you to change the defaults.
 * RS/6000 and PowerPC Options::
 * RT Options::
 * MIPS Options::
-* i386 Options::
+* i386 and x86-64 Options::
 * HPPA Options::
 * Intel 960 Options::
 * DEC Alpha Options::
@@ -7418,12 +7420,15 @@ options is also defined by that macro, which enables you to change the
 defaults.
 @end ifset
 
-@node i386 Options
-@subsection Intel 386 Options
+@node i386 and x86-64 Options
+@subsection Intel 386 and AMD x86-64 Options
 @cindex i386 Options
+@cindex x86-64 Options
 @cindex Intel 386 Options
+@cindex AMD x86-64 Options
 
-These @samp{-m} options are defined for the i386 family of computers:
+These @samp{-m} options are defined for the i386 and x86-64 family of
+computers:
 
 @table @gcctabopt
 @item -mcpu=@var{cpu-type}
@@ -8025,6 +8030,29 @@ avoids the instructions to save, set up and restore frame pointers and
 makes an extra register available in leaf functions.  The option
 @option{-fomit-frame-pointer} removes the frame pointer for all functions
 which might make debugging harder.
+@end table
+
+These @samp{-m} switches are supported in addition to the above
+on AMD x86-64 processors in 64-bit environments.
+
+@table @gcctabopt
+@item -m32
+@itemx -m64
+@opindex m32
+@opindex m64
+Generate code for a 32-bit or 64-bit environment.
+The 32-bit environment sets int, long and pointer to 32 bits and
+generates code that runs on any i386 system.
+The 64-bit environment sets int to 32 bits and long and pointer
+to 64 bits and generates code for AMD's x86-64 architecture.
+
+@item -mno-red-zone
+@opindex no-red-zone
+Do not use a so called red zone for x86-64 code.  The red zone is mandated
+by the x86-64 ABI, it is a 128-byte area beyond the location of the
+stack pointer that will not be modified by signal or interrupt handlers
+and therefore can be used for temporary data without adjusting the stack
+pointer.  The flag @option{-mno-red-zone} disables this red zone.
 @end table
 
 @node HPPA Options

@@ -484,6 +484,11 @@ extern int ix86_arch;
 #endif
 #endif /* CPP_CPU_DEFAULT_SPEC */
 
+#ifdef TARGET_BI_ARCH
+#define NO_BUILTIN_SIZE_TYPE
+#define NO_BUILTIN_PTRDIFF_TYPE
+#endif
+
 #ifdef NO_BUILTIN_SIZE_TYPE
 #define CPP_CPU32_SIZE_TYPE_SPEC \
   " -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int"
@@ -653,7 +658,7 @@ extern int ix86_arch;
    the stack, which results in aligned frames for functions called from
    main, though it does nothing for the alignment of main itself.  */
 #define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN \
-  (ix86_preferred_stack_boundary > STACK_BOUNDARY)
+  (ix86_preferred_stack_boundary > STACK_BOUNDARY && !TARGET_64BIT)
 
 /* Allocation boundary for the code of a function. */
 #define FUNCTION_BOUNDARY 16
@@ -2907,6 +2912,11 @@ do { long l;						\
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
 ( fputs (ASM_LONG, FILE),			\
+  output_addr_const (FILE,(VALUE)),		\
+  putc('\n',FILE))
+
+#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
+( fprintf (FILE, "%s\t", ASM_QUAD),		\
   output_addr_const (FILE,(VALUE)),		\
   putc('\n',FILE))
 
