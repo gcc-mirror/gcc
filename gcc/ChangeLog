@@ -1,3 +1,9 @@
+2001-11-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* mkconfig.sh: Undefine ENABLE_NLS if GENERATOR_FILE is
+	defined (prevents link errors when gettext isn't in the system
+	library).
+
 2001-11-19  DJ Delorie  <dj@redhat.com>
 
 	* read-rtl.c (ISDIGIT, ISSPACE): Make sure we have these.
