@@ -1,3 +1,8 @@
+Mon Jan 19 21:57:00 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (push): Prohibit symbolic constants if flag_pic.
+	(movsi+1): Likewise for move to non-register.
+
 Mon Jan 19 11:15:38 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* alpha.c (mode_mask_operand): Accept 0xffffffff on 32 bit host.
