@@ -1,3 +1,12 @@
+2002-07-23  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc/explow.c (convert_memory_address): Fix conversion of CONSTs.
+	Fix permutation of conversion and plus/mult.
+	* gcc/builtins.c (expand_builtin_memcpy) Ensure return pointer is
+	ptr_mode and not Pmode when POINTERS_EXTEND_UNSIGNED is defined.
+	(expand_builtin_strncpy) Ditto.
+	(expand_builtin_memset) Ditto.
+
 2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
 
 	Fix PR/7363:

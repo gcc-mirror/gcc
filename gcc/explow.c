@@ -353,6 +353,7 @@ convert_memory_address (to_mode, x)
 {
   enum machine_mode from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
   rtx temp;
+  enum rtx_code code;
 
   /* Here we handle some special cases.  If none of them apply, fall through
      to the default case.  */
@@ -360,7 +361,18 @@ convert_memory_address (to_mode, x)
     {
     case CONST_INT:
     case CONST_DOUBLE:
-      return x;
+      if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode))
+	code = TRUNCATE;
+      else if (POINTERS_EXTEND_UNSIGNED < 0)
+	break;
+      else if (POINTERS_EXTEND_UNSIGNED > 0)
+	code = ZERO_EXTEND;
+      else
+	code = SIGN_EXTEND;
+      temp = simplify_unary_operation (code, to_mode, x, from_mode);
+      if (temp)
+	return temp;
+      break;
 
     case SUBREG:
       if ((SUBREG_PROMOTED_VAR_P (x) || REG_POINTER (SUBREG_REG (x)))
@@ -389,17 +401,17 @@ convert_memory_address (to_mode, x)
 
     case PLUS:
     case MULT:
-      /* For addition the second operand is a small constant, we can safely
-	 permute the conversion and addition operation.  We can always safely
-	 permute them if we are making the address narrower.  In addition,
-	 always permute the operations if this is a constant.  */
-      if ((GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
-	      || (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT
-		  && (INTVAL (XEXP (x, 1)) + 20000 < 40000
-		      || CONSTANT_P (XEXP (x, 0))))))
+      /* For addition we can safely permute the conversion and addition
+	 operation if one operand is a constant and converting the constant
+	 does not change it.  We can always safely permute them if we are
+	 making the address narrower.  */
+      if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
+	  || (GET_CODE (x) == PLUS
+	      && GET_CODE (XEXP (x, 1)) == CONST_INT
+	      && XEXP (x, 1) == convert_memory_address (to_mode, XEXP (x, 1))))
 	return gen_rtx_fmt_ee (GET_CODE (x), to_mode,
 			       convert_memory_address (to_mode, XEXP (x, 0)),
-			       convert_memory_address (to_mode, XEXP (x, 1)));
+			       XEXP (x, 1));
       break;
 
     default:
