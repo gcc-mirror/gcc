@@ -753,11 +753,11 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
         break
       fi
     done
-    ml_config_env='CC="${CC_} $flags" CXX="${CXX_} $flags"'
+    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags"'
 
     if [ "${with_target_subdir}" = "." ]; then
-	CC_=$CC
-	CXX_=$CXX
+	CC_=$CC' '
+	CXX_=$CXX' '
     else
 	# Create a regular expression that matches any string as long
 	# as ML_POPDIR.
@@ -786,6 +786,39 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	  esac
 	done
 
+	if test "x${LD_LIBRARY_PATH+set}" = xset; then
+	  LD_LIBRARY_PATH_=
+	  for arg in `echo "$LD_LIBRARY_PATH" | tr ':' ' '`; do
+	    case "$arg" in
+	    "${ML_POPDIR}"/*)
+	      arg=`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`
+	      ;;
+	    esac
+	    if test "x$LD_LIBRARY_PATH_" != x; then
+	      LD_LIBRARY_PATH_=$LD_LIBRARY_PATH_:$arg
+	    else
+	      LD_LIBRARY_PATH_=$arg
+	    fi
+          done
+	  ml_config_env="$ml_config_env LD_LIBRARY_PATH=$LD_LIBRARY_PATH_"
+	fi
+
+	if test "x${SHLIB_PATH+set}" = xset; then
+	  SHLIB_PATH_=
+	  for arg in `echo "$SHLIB_PATH" | tr ':' ' '`; do
+	    case "$arg" in
+	    "${ML_POPDIR}"/*)
+	      arg=`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`
+	      ;;
+	    esac
+	    if test "x$SHLIB_PATH_" != x; then
+	      SHLIB_PATH_=$SHLIB_PATH_:$arg
+	    else
+	      SHLIB_PATH_=$arg
+	    fi
+          done
+	  ml_config_env="$ml_config_env SHLIB_PATH=$SHLIB_PATH_"
+	fi
     fi
 
     if eval ${ml_config_env} ${ml_config_shell} ${ml_recprog} \
