@@ -960,6 +960,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
       for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	{
 	  rtx elt = XVECEXP (PATTERN (insn), 0, i);
+	  rtx note;
 
 	  switch (GET_CODE (elt))
 	    {
@@ -1010,6 +1011,8 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	      /* Ignore SETs whose result isn't used but not those that
 		 have side-effects.  */
 	      if (find_reg_note (insn, REG_UNUSED, SET_DEST (elt))
+		  && (!(note = find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+		      || INTVAL (XEXP (note, 0)) <= 0)
 		  && ! side_effects_p (elt))
 		break;
 
@@ -2019,11 +2022,21 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
      we just need the first SET.   This can occur when simplifying a divmod
      insn.  We *must* test for this case here because the code below that
      splits two independent SETs doesn't handle this case correctly when it
-     updates the register status.  Also check the case where the first
-     SET's destination is unused.  That would not cause incorrect code, but
-     does cause an unneeded insn to remain.  */
+     updates the register status.
 
-  if (insn_code_number < 0 && GET_CODE (newpat) == PARALLEL
+     It's pointless doing this if we originally had two sets, one from
+     i3, and one from i2.  Combining then splitting the parallel results
+     in the original i2 again plus an invalid insn (which we delete).
+     The net effect is only to move instructions around, which makes
+     debug info less accurate.
+
+     Also check the case where the first SET's destination is unused.
+     That would not cause incorrect code, but does cause an unneeded
+     insn to remain.  */
+
+  if (insn_code_number < 0
+      && !(added_sets_2 && i1 == 0)
+      && GET_CODE (newpat) == PARALLEL
       && XVECLEN (newpat, 0) == 2
       && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
       && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
