@@ -2546,8 +2546,9 @@
 (define_expand "tablejump"
   [(set (match_dup 3)
 	(sign_extend:DI (match_operand:SI 0 "register_operand" "")))
-   (parallel [(set (pc) (plus:DI (match_dup 3) (reg:DI 29)))
-	      (use (label_ref (match_operand 1 "" "")))
+   (parallel [(set (pc)
+		   (plus:DI (match_dup 3)
+			    (label_ref:DI (match_operand 1 "" ""))))
 	      (clobber (match_scratch:DI 2 "=r"))])]
   ""
   "
@@ -2556,19 +2557,20 @@
 (define_insn ""
   [(set (pc)
 	(plus:DI (match_operand:DI 0 "register_operand" "r")
-		 (reg:DI 29)))
-   (use (label_ref (match_operand 1 "" "")))
+		 (label_ref:DI (match_operand 1 "" ""))))
    (clobber (match_scratch:DI 2 "=r"))]
-  ""
+  "next_active_insn (insn) != 0
+   && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
+   && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "*
 { rtx best_label = 0;
   rtx jump_table_insn = next_active_insn (operands[1]);
 
   if (GET_CODE (jump_table_insn) == JUMP_INSN
-      && GET_CODE (PATTERN (jump_table_insn)) == ADDR_VEC)
+      && GET_CODE (PATTERN (jump_table_insn)) == ADDR_DIFF_VEC)
     {
       rtx jump_table = PATTERN (jump_table_insn);
-      int n_labels = XVECLEN (jump_table, 0);
+      int n_labels = XVECLEN (jump_table, 1);
       int best_count = -1;
       int i, j;
 
@@ -2577,12 +2579,12 @@
 	  int count = 1;
 
 	  for (j = i + 1; j < n_labels; j++)
-	    if (XEXP (XVECEXP (jump_table, 0, i), 0)
-		== XEXP (XVECEXP (jump_table, 0, j), 0))
+	    if (XEXP (XVECEXP (jump_table, 1, i), 0)
+		== XEXP (XVECEXP (jump_table, 1, j), 0))
 	      count++;
 
 	  if (count > best_count)
-	    best_count = count, best_label = XVECEXP (jump_table, 0, i);
+	    best_count = count, best_label = XVECEXP (jump_table, 1, i);
 	}
     }
 
