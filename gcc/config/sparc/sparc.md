@@ -7241,10 +7241,6 @@
   ""
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-
   if (operands[2] == const1_rtx)
     return \"add\\t%1, %1, %0\";
   return \"sll\\t%1, %2, %0\";
@@ -7276,10 +7272,6 @@
   "TARGET_ARCH64"
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
   if (operands[2] == const1_rtx)
     return \"add\\t%1, %1, %0\";
   return \"sllx\\t%1, %2, %0\";
@@ -7344,10 +7336,6 @@
   ""
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-
   return \"sra\\t%1, %2, %0\";
 }"
   [(set_attr "type" "shift")])
@@ -7405,10 +7393,6 @@
   "TARGET_ARCH64"
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
   return \"srax\\t%1, %2, %0\";
 }"
   [(set_attr "type" "shift")])
@@ -7431,10 +7415,6 @@
   ""
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-
   return \"srl\\t%1, %2, %0\";
 }"
   [(set_attr "type" "shift")])
@@ -7502,10 +7482,6 @@
   "TARGET_ARCH64"
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
-
   return \"srlx\\t%1, %2, %0\";
 }"
   [(set_attr "type" "shift")])
