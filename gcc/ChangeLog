@@ -1,3 +1,10 @@
+2000-12-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Use @table @samp instead of @itemize @minus for
+	table of language standards.  Fix use of @pxref.  From Zack
+	Weinberg.  Also exclude specs documentation from generated
+	manpage, and create separate ENVIRONMENT section.
+
 2000-12-06  Michael Matz  <matzmich@cs.tu-berlin.de>
 
 	* gcse.c (compute_pre_data): Kill trapping expressions in
