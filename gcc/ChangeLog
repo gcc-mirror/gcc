@@ -1,3 +1,12 @@
+2005-03-14  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17236
+	* optabs.c (expand_doubleword_mult): New helper function split out
+	from expand_binop.  Permute the order in which instructions are
+	emitted to minimize the number of simultaneously live registers.
+	(expand_binop): Call expand_doubleword_mult to synthesize a double
+	word multiplication.
+
 2005-03-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h: Update the prototypes of cached_make_edge and
