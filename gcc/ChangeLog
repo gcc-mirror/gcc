@@ -1,3 +1,10 @@
+2001-02-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/elfos.h (INT_ASM_OP): Don't define it if it's already
+	defined.
+	* config/sh/sh.h (INT_ASM_OP, ASM_OUTPUT_CONSTRUCTOR,
+	ASM_OUTPUT_DESTRUCTOR): Copy definitions from config/elfos.h.
+
 2001-02-06  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* final.c: Revert back my previous changes.

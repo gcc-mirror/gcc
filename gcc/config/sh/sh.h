@@ -1931,11 +1931,34 @@ dtors_section()							\
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
    do { fprintf (FILE, ".section\t%s\n", NAME); } while (0)
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME) \
-   do { ctors_section();  asm_fprintf((FILE),"\t.long\t%U%s\n", (NAME)); } while (0)
+/* This is the pseudo-op used to generate a reference to a specific
+   symbol in some section.  */
 
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME) \
-   do {  dtors_section();  asm_fprintf((FILE),"\t.long\t%U%s\n", (NAME)); } while (0)
+#define INT_ASM_OP	"\t.long\t"
+     
+/* A C statement (sans semicolon) to output an
+   element in the table of global constructors.  */
+#define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)			\
+  do								\
+    {								\
+      ctors_section ();						\
+      fprintf (FILE, "%s", INT_ASM_OP);				\
+      assemble_name (FILE, NAME);				\
+      fprintf (FILE, "\n");					\
+    }								\
+  while (0)
+
+/* A C statement (sans semicolon) to output an
+   element in the table of global destructors.  */
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       			\
+  do								\
+    {								\
+      dtors_section ();                   			\
+      fprintf (FILE, "%s", INT_ASM_OP);				\
+      assemble_name (FILE, NAME);              			\
+      fprintf (FILE, "\n");					\
+    }								\
+  while (0)
 
 #undef DO_GLOBAL_CTORS_BODY
 
