@@ -1,3 +1,17 @@
+2003-12-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-prune-output): New annotation.
+	(additional_prunes): New global.
+	(gcc-dg-prune): Handle additional per-test pruning.
+	(dg-test): Clear additional_prunes between tests.
+
+	* gcc.c-torture/compile/920625-1.c: Remove xfail.  Use
+	dg-prune-output to avoid spurious failures from assembler
+	complaining about nonexistent WAW violations.
+	* gcc.c-torture/compile/981223-1.c: Remove dg-options line.
+	Use dg-prune-output to avoid spurious failures from assembler
+	warning about Itanium B-step errata.
+
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/macro0.C: New test.
@@ -315,7 +329,7 @@
 	* g++.dg/template/type1.C: Likewise.
 	* g++.old-deja/g++.other/crash32.C: Likewise.
 	* g++.old-djea/g++.pt/defarg8.C: Likewise.
-	
+
 2003-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13106

@@ -130,7 +130,16 @@ proc gcc-dg-test { prog do_what extra_tool_flags } {
 }
 
 proc gcc-dg-prune { system text } {
+    global additional_prunes
+
     set text [prune_gcc_output $text]
+
+    foreach p $additional_prunes {
+	if { [string length $p] > 0 } {
+	    # Following regexp matches a complete line containing $p.
+	    regsub -all "(^|\n)\[^\n\]*$p\[^\n\]*" $text "" text
+	}
+    }
 
     # If we see "region xxx is full" then the testcase is too big for ram.
     # This is tricky to deal with in a large testsuite like c-torture so
@@ -329,6 +338,18 @@ proc dg-require-dll { args } {
     set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 }
 
+# Prune any messages matching ARGS[1] (a regexp) from test output.
+proc dg-prune-output { args } {
+    global additional_prunes
+
+    if { [llength $args] != 2 } {
+	error "[lindex $args 1]: need one argument"
+	return
+    }
+
+    lappend additional_prunes [lindex $args 1]
+}
+
 # Like check_conditional_xfail, but callable from a dg test.
 
 proc dg-xfail-if { args } {
@@ -341,11 +362,10 @@ proc dg-xfail-if { args } {
 }
 
 
-# We need to make sure that additional_files and additional_sources
-# are both cleared out after every test.  It is not enough to clear
-# them out *before* the next test run because gcc-target-compile gets
-# run directly from some .exp files (outside of any test).  (Those
-# uses should eventually be eliminated.) 
+# We need to make sure that additional_* are cleared out after every
+# test.  It is not enough to clear them out *before* the next test run
+# because gcc-target-compile gets run directly from some .exp files
+# (outside of any test).  (Those uses should eventually be eliminated.)
 
 # Because the DG framework doesn't provide a hook that is run at the
 # end of a test, we must replace dg-test with a wrapper.
@@ -356,15 +376,19 @@ if { [info procs saved-dg-test] == [list] } {
     proc dg-test { args } {
 	global additional_files
 	global additional_sources
+	global additional_prunes
 	global errorInfo
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
 	    set additional_files ""
 	    set additional_sources ""
+	    set additional_prunes ""
 	    error $errmsg $saved_info
 	}
 	set additional_files ""
 	set additional_sources ""
+	set additional_prunes ""
     }
 }
+set additional_prunes ""
