@@ -1,3 +1,7 @@
+2004-08-03  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (emit_sfm): Only emit a single frame adjustment.
+
 2004-08-03  Jan Hubicka  <jh@suse.cz>
 
 	* coverage.c (tree_coverage_counter_ref): Fix computation of the new

@@ -9911,7 +9911,7 @@ emit_sfm (int base_reg, int count)
   int i;
 
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
-  dwarf = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
+  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
 
   reg = gen_rtx_REG (XFmode, base_reg++);
 
@@ -9922,13 +9922,10 @@ emit_sfm (int base_reg, int count)
 		   gen_rtx_UNSPEC (BLKmode,
 				   gen_rtvec (1, reg),
 				   UNSPEC_PUSH_MULT));
-  tmp
-    = gen_rtx_SET (VOIDmode, 
-		   gen_rtx_MEM (XFmode,
-				gen_rtx_PRE_DEC (BLKmode, stack_pointer_rtx)),
-		   reg);
+  tmp = gen_rtx_SET (VOIDmode, 
+		     gen_rtx_MEM (XFmode, stack_pointer_rtx), reg);
   RTX_FRAME_RELATED_P (tmp) = 1;
-  XVECEXP (dwarf, 0, count - 1) = tmp;	  
+  XVECEXP (dwarf, 0, 1) = tmp;	  
   
   for (i = 1; i < count; i++)
     {
@@ -9937,12 +9934,20 @@ emit_sfm (int base_reg, int count)
 
       tmp = gen_rtx_SET (VOIDmode, 
 			 gen_rtx_MEM (XFmode,
-				      gen_rtx_PRE_DEC (BLKmode,
-						       stack_pointer_rtx)),
+				      plus_constant (stack_pointer_rtx,
+						     i * 12)),
 			 reg);
       RTX_FRAME_RELATED_P (tmp) = 1;
-      XVECEXP (dwarf, 0, count - i - 1) = tmp;	  
+      XVECEXP (dwarf, 0, i + 1) = tmp;	  
     }
+
+  tmp = gen_rtx_SET (VOIDmode,
+		     stack_pointer_rtx,
+		     gen_rtx_PLUS (SImode,
+				   stack_pointer_rtx,
+				   GEN_INT (-12 * count)));
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  XVECEXP (dwarf, 0, 0) = tmp;
 
   par = emit_insn (par);
   REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
