@@ -3724,7 +3724,11 @@ init_optabs ()
   abs_optab->handlers[(int) DCmode].libfunc
     = gen_rtx (SYMBOL_REF, Pmode, "cabs");
 
-  ffs_optab->handlers[(int) mode_for_size (BITS_PER_WORD, MODE_INT, 0)] .libfunc
+  /* The ffs function operates on `int'.  */
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+  ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)] .libfunc
     = gen_rtx (SYMBOL_REF, Pmode, "ffs");
 
   extendsfdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__extendsfdf2");
