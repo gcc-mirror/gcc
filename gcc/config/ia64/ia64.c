@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -6454,7 +6454,7 @@ ia64_init_builtins ()
 {
   tree psi_type_node = build_pointer_type (integer_type_node);
   tree pdi_type_node = build_pointer_type (long_integer_type_node);
-  tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
+  tree endlink = void_list_node;
 
   /* __sync_val_compare_and_swap_si, __sync_bool_compare_and_swap_si */
   tree si_ftype_psi_si_si

@@ -1,3 +1,13 @@
+2001-01-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (CTI_VOID_LIST): Remove.
+	(void_list_node): Likewise.
+	* tree.h (TI_VOID_LIST_NODE): New enumeral.
+	(void_list_node): New macro.
+	* config/arm/arm.c (arm_init_builtins): Use void_list_node.
+	* config/i386/i386.c (ix86_init_builtins): Likewise.
+	* config/ia64a/ia64.c (ia64_init_builtins): Likewise.
+
 2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * Makefile.in (tradcpp0): Depend on mkdeps.h.  Link mkdeps.o

@@ -1739,6 +1739,8 @@ enum tree_index
   TI_PTRDIFF_TYPE,
   TI_VA_LIST_TYPE,
 
+  TI_VOID_LIST_NODE,
+
   TI_V4SF_TYPE,
   TI_V4SI_TYPE,
   TI_V8QI_TYPE,
@@ -1792,6 +1794,13 @@ extern tree global_trees[TI_MAX];
 #define const_ptr_type_node		global_trees[TI_CONST_PTR_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
+
+/* The node that should be placed at the end of a parameter list to
+   indicate that the function does not take a variable number of
+   arguments.  The TREE_VALUE will be void_type_node and there will be
+   no TREE_CHAIN.  Language-independent code should not assume
+   anything else about this node.  */
+#define void_list_node                  global_trees[TI_VOID_LIST_NODE]
 
 #define main_identifier_node		global_trees[TI_MAIN_IDENTIFIER]
 #define MAIN_NAME_P(NODE) (IDENTIFIER_NODE_CHECK (NODE) == main_identifier_node)
