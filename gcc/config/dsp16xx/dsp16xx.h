@@ -71,12 +71,8 @@ extern struct rtx_def *dsp16xx_lshrhi3_libcall;
   (!strcmp (STR, "ifile") ? 1 :                 \
    0)
 
-#ifdef  CC1_SPEC
 #undef  CC1_SPEC
-#endif
 #define CC1_SPEC       "%{!O*:-O}"
-
-#define CPP_SPEC       "%{!O*:-D__OPTIMIZE__}"
 
 /* Define this as a spec to call the AT&T assembler */
 
@@ -138,10 +134,29 @@ extern struct rtx_def *dsp16xx_lshrhi3_libcall;
 }
 
 /* Names to predefine in the preprocessor for this target machine.  */
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("dsp1600");		\
+      builtin_define_std ("DSP1600");		\
+    }						\
+  while (0)
+
 #ifdef __MSDOS__
-#define CPP_PREDEFINES "-Ddsp1600 -DDSP1600 -DMSDOS"
+# define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("MSDOS");		\
+    }						\
+  while (0)
 #else
-#define CPP_PREDEFINES "-Ddsp1600 -DDSP1600 -Ddsp1610 -DDSP1610"
+# define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("dsp1610");		\
+      builtin_define_std ("DSP1610");		\
+    }						\
+  while (0)
 #endif
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
