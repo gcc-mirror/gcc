@@ -1189,6 +1189,73 @@ asm ("___builtin_saveregs:");
 	asm ("	st.l	%r28,12(%r16)"); /* pointer to overflow args */
 
 #else /* not __svr4__ */
+#if defined(__PARAGON__)
+	/*
+	 *	we'll use SVR4-ish varargs but need SVR3.2 assembler syntax,
+	 *	and we stand a better chance of hooking into libraries
+	 *	compiled by PGI.  [andyp@ssd.intel.com]
+	 */
+	asm ("	.text");
+	asm ("	.align	4");
+	asm (".globl	__builtin_saveregs");
+asm ("__builtin_saveregs:");
+	asm (".globl	___builtin_saveregs");
+asm ("___builtin_saveregs:");
+
+        asm ("	andnot	0x0f,sp,sp");	/* round down to 16-byte boundary */
+	asm ("	adds	-96,sp,sp");	/* allocate stack space for reg save
+					   area and also for a new va_list
+					   structure */
+	/* Save all argument registers in the arg reg save area.  The
+	   arg reg save area must have the following layout (according
+	   to the svr4 ABI):
+
+		struct {
+		  union  {
+		    float freg[8];
+		    double dreg[4];
+		  } float_regs;
+		  long	ireg[12];
+		};
+	*/
+
+	asm ("	fst.q	f8,  0(sp)");
+	asm ("	fst.q	f12,16(sp)"); 
+	asm ("	st.l	r16,32(sp)");
+	asm ("	st.l	r17,36(sp)"); 
+	asm ("	st.l	r18,40(sp)");
+	asm ("	st.l	r19,44(sp)");
+	asm ("	st.l	r20,48(sp)");
+	asm ("	st.l	r21,52(sp)");
+	asm ("	st.l	r22,56(sp)");
+	asm ("	st.l	r23,60(sp)");
+	asm ("	st.l	r24,64(sp)");
+	asm ("	st.l	r25,68(sp)");
+	asm ("	st.l	r26,72(sp)");
+	asm ("	st.l	r27,76(sp)");
+
+	asm ("	adds	80,sp,r16");  /* compute the address of the new
+					   va_list structure.  Put in into
+					   r16 so that it will be returned
+					   to the caller.  */
+
+	/* Initialize all fields of the new va_list structure.  This
+	   structure looks like:
+
+		typedef struct {
+		    unsigned long	ireg_used;
+		    unsigned long	freg_used;
+		    long		*reg_base;
+		    long		*mem_ptr;
+		} va_list;
+	*/
+
+	asm ("	st.l	r0, 0(r16)"); /* nfixed */
+	asm ("	st.l	r0, 4(r16)"); /* nfloating */
+	asm ("  st.l    sp, 8(r16)"); /* __va_ctl points to __va_struct.  */
+	asm ("	bri	r1");		/* delayed return */
+	asm ("	 st.l	r28,12(r16)"); /* pointer to overflow args */
+#else /* not __PARAGON__ */
 	asm ("	.text");
 	asm ("	.align	4");
 
@@ -1226,6 +1293,7 @@ asm ("___builtin_saveregs:");
 	asm ("	mov	r30,sp");
 				/* recover stack and pass address to start 
 				   of data.  */
+#endif /* not __PARAGON__ */
 #endif /* not __svr4__ */
 #else /* not __i860__ */
 #ifdef __sparc__
