@@ -1930,6 +1930,74 @@ ix86_expand_prologue ()
   ix86_prologue (1);
 }
 
+void
+load_pic_register (do_rtl)
+     int do_rtl;
+{
+  rtx xops[4];
+
+  if (TARGET_DEEP_BRANCH_PREDICTION)
+    {
+      xops[0] = pic_offset_table_rtx;
+      if (pic_label_rtx == 0)
+	{
+	  pic_label_rtx = gen_label_rtx ();
+	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
+	  LABEL_NAME (pic_label_rtx) = pic_label_name;
+	}
+
+      xops[1] = gen_rtx (MEM, QImode,
+			 gen_rtx (SYMBOL_REF, Pmode,
+				  LABEL_NAME (pic_label_rtx)));
+
+      if (do_rtl)
+	{
+	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
+	  emit_insn (gen_prologue_set_got (xops[0], 
+					   gen_rtx (SYMBOL_REF, Pmode,
+						    "$_GLOBAL_OFFSET_TABLE_"), 
+					   xops[1]));
+	}
+      else
+	{
+	  output_asm_insn (AS1 (call,%P1), xops);
+	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
+	  pic_label_rtx = 0;
+	}
+    }
+
+  else
+    {
+      xops[0] = pic_offset_table_rtx;
+      xops[1] = gen_label_rtx ();
+ 
+      if (do_rtl)
+	{
+	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
+	  emit_insn (gen_pop (xops[0]));
+	  emit_insn (gen_prologue_set_got
+		     (xops[0],
+		      gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
+		      xops[1]));
+	}
+      else
+	{
+	  output_asm_insn (AS1 (call,%P1), xops);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", 
+				     CODE_LABEL_NUMBER (xops[1]));
+	  output_asm_insn (AS1 (pop%L0,%0), xops);
+	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
+	}
+    } 
+
+  /* When -fpic, we must emit a scheduling barrier, so that the instruction
+     that restores %ebx (which is PIC_OFFSET_TABLE_REGNUM), does not get
+     moved before any instruction which implicitly uses the got.   */
+
+  if (do_rtl)
+    emit_insn (gen_blockage ());
+}
+
 static void
 ix86_prologue (do_rtl)
      int do_rtl;
@@ -2066,66 +2134,14 @@ ix86_prologue (do_rtl)
  	  }
       }
 
-  if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
-    {
-      xops[0] = pic_offset_table_rtx;
-      if (pic_label_rtx == 0)
-	{
-	  pic_label_rtx = gen_label_rtx ();
-	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
-	  LABEL_NAME (pic_label_rtx) = pic_label_name;
-	}
+  if (pic_reg_used)
+    load_pic_register (do_rtl);
 
-      xops[1] = gen_rtx (MEM, QImode,
-			 gen_rtx (SYMBOL_REF, Pmode,
-				  LABEL_NAME (pic_label_rtx)));
-
-      if (do_rtl)
-	{
-	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
-	  emit_insn (gen_prologue_set_got (xops[0], 
-					   gen_rtx (SYMBOL_REF, Pmode,
-						    "$_GLOBAL_OFFSET_TABLE_"), 
-					   xops[1]));
-	}
-      else
-	{
-	  output_asm_insn (AS1 (call,%P1), xops);
-	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
-	  pic_label_rtx = 0;
-	}
-    }
-
-  else if (pic_reg_used)
-    {
-      xops[0] = pic_offset_table_rtx;
-      xops[1] = gen_label_rtx ();
- 
-      if (do_rtl)
-	{
-	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
-	  emit_insn (gen_pop (xops[0]));
-	  emit_insn (gen_prologue_set_got
-		     (xops[0],
-		      gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
-		      xops[1]));
-	}
-      else
-	{
-	  output_asm_insn (AS1 (call,%P1), xops);
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", 
-				     CODE_LABEL_NUMBER (xops[1]));
-	  output_asm_insn (AS1 (pop%L0,%0), xops);
-	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
-	}
-    } 
-
-  /* When -fpic, we must emit a scheduling barrier, so that the instruction
-     that restores %ebx (which is PIC_OFFSET_TABLE_REGNUM), does not get
-     moved before any instruction which implicitly uses the got.  
-     If we are profiling, make sure no instructions are scheduled before
-     the call to mcount.  */
-  if (flag_pic || profile_flag || profile_block_flag)
+  /* If we are profiling, make sure no instructions are scheduled before
+     the call to mcount.  However, if -fpic, the above call will have
+     done that.  */
+  if ((profile_flag || profile_block_flag)
+      && ! pic_reg_used && do_rtl)
     emit_insn (gen_blockage ());
 }
 
