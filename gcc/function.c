@@ -290,7 +290,7 @@ static tree *get_block_vector   PARAMS ((tree, int *));
 static void record_insns	PARAMS ((rtx, varray_type *)) ATTRIBUTE_UNUSED;
 static int contains		PARAMS ((rtx, varray_type));
 #ifdef HAVE_return
-static void emit_return_into_block PARAMS ((basic_block));
+static void emit_return_into_block PARAMS ((basic_block, rtx));
 #endif
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
 static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int, 
@@ -6798,19 +6798,24 @@ sibcall_epilogue_contains (insn)
    block_for_insn appropriately.  */
 
 static void
-emit_return_into_block (bb)
+emit_return_into_block (bb, line_note)
      basic_block bb;
+     rtx line_note;
 {
   rtx p, end;
 
-  end = emit_jump_insn_after (gen_return (), bb->end);
   p = NEXT_INSN (bb->end); 
+  end = emit_jump_insn_after (gen_return (), bb->end);
+  if (line_note)
+    emit_line_note_after (NOTE_SOURCE_FILE (line_note),
+			  NOTE_LINE_NUMBER (line_note), bb->end);
+
   while (1)
     {
       set_block_for_insn (p, bb);
-      if (p == end)
+      if (p == bb->end)
 	break;
-      p = NEXT_INSN (p);
+      p = PREV_INSN (p);
     }
   bb->end = end;
 }
@@ -6829,6 +6834,9 @@ thread_prologue_and_epilogue_insns (f)
   rtx seq;
 #ifdef HAVE_prologue
   rtx prologue_end = NULL_RTX;
+#endif
+#if defined (HAVE_epilogue) || defined(HAVE_return)
+  rtx epilogue_end = NULL_RTX;
 #endif
 
 #ifdef HAVE_prologue
@@ -6902,6 +6910,19 @@ thread_prologue_and_epilogue_insns (f)
 
       if (last->head == label && GET_CODE (label) == CODE_LABEL)
 	{
+          rtx epilogue_line_note = NULL_RTX;
+
+	  /* Locate the line number associated with the closing brace,
+	     if we can find one.  */
+	  for (seq = get_last_insn ();
+	       seq && ! active_insn_p (seq);
+	       seq = PREV_INSN (seq))
+	    if (GET_CODE (seq) == NOTE && NOTE_LINE_NUMBER (seq) > 0)
+	      {
+		epilogue_line_note = seq;
+		break;
+	      }
+
 	  for (e = last->pred; e ; e = e_next)
 	    {
 	      basic_block bb = e->src;
@@ -6919,7 +6940,7 @@ thread_prologue_and_epilogue_insns (f)
 		 with a simple return instruction.  */
 	      if (simplejump_p (jump))
 		{
-		  emit_return_into_block (bb);
+		  emit_return_into_block (bb, epilogue_line_note);
 		  flow_delete_insn (jump);
 		}
 
@@ -6951,29 +6972,17 @@ thread_prologue_and_epilogue_insns (f)
 		continue;
 
 	      /* Fix up the CFG for the successful change we just made.  */
-	      remove_edge (e);
-	      make_edge (NULL, bb, EXIT_BLOCK_PTR, 0);
+	      redirect_edge_succ (e, EXIT_BLOCK_PTR);
 	    }
 
 	  /* Emit a return insn for the exit fallthru block.  Whether
 	     this is still reachable will be determined later.  */
 
 	  emit_barrier_after (last->end);
-	  emit_return_into_block (last);
+	  emit_return_into_block (last, epilogue_line_note);
+	  epilogue_end = last->end;
+          goto epilogue_done;
 	}
-      else 
-	{
-	  /* The exit block wasn't empty.  We have to use insert_insn_on_edge,
-	     as it may be the exit block can go elsewhere as well
-	     as exiting.  */
-	  start_sequence ();
-	  emit_jump_insn (gen_return ());
-	  seq = gen_sequence ();
-	  end_sequence ();
-	  insert_insn_on_edge (seq, e);
-	  inserted = 1;
-	}
-      goto epilogue_done;
     }
 #endif
 #ifdef HAVE_epilogue
@@ -6991,7 +7000,7 @@ thread_prologue_and_epilogue_insns (f)
 	goto epilogue_done;
 
       start_sequence ();
-      emit_note (NULL, NOTE_INSN_EPILOGUE_BEG);
+      epilogue_end = emit_note (NULL, NOTE_INSN_EPILOGUE_BEG);
 
       seq = gen_epilogue ();
       emit_jump_insn (seq);
@@ -7091,6 +7100,22 @@ epilogue_done:
 				      prologue_end);
 		break;
 	      }
+	}
+    }
+#endif
+#ifdef HAVE_epilogue
+  if (epilogue_end)
+    {
+      rtx insn, next;
+
+      /* Similarly, move any line notes that appear after the epilogue.
+         There is no need, however, to be quite so anal about the existance
+	 of such a note.  */
+      for (insn = epilogue_end; insn ; insn = next)
+	{
+	  next = NEXT_INSN (insn);
+	  if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	    reorder_insns (insn, insn, PREV_INSN (epilogue_end));
 	}
     }
 #endif

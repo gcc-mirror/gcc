@@ -1,5 +1,12 @@
 2000-05-29  Richard Henderson  <rth@cygnus.com>
 
+	* function.c (emit_return_into_block): New line_note arg; emit it.
+	(thread_prologue_and_epilogue_insns): Attempt to locate a line note
+	for the close brace to accompany HAVE_return.  Move all line notes
+	following the epilogue to before the NOTE_INSN_EPILOGUE_BEG.
+
+2000-05-29  Richard Henderson  <rth@cygnus.com>
+
 	* longlong.h [__alpha] (count_leading_zeros): New.
 	(count_trailing_zeros): New.
 	(COUNT_LEADING_ZEROS_0): New.
