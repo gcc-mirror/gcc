@@ -11,11 +11,12 @@
 }
 @end tex
 
-@set last-up-date 1998-04-20
-@set version-g77 0.5.23
-
 @c %**start of header 
 @setfilename g77.info
+
+@set last-up-date 1998-05-19
+@set version-g77 0.5.23
+
 @c @setfilename useg77.info
 @c @setfilename portg77.info
 @c To produce the full manual, use the "g77.info" setfilename, and
@@ -147,9 +148,9 @@ original English.
 
 @ifinfo
 
-@dircategory Fortran Programming
+@dircategory Programming
 @direntry
-* g77: (g77).               The GNU Fortran compilation system.
+* g77: (g77).                  The GNU Fortran compiler.
 @end direntry
 @node Top, Copying,, (DIR)
 @top Introduction
@@ -693,6 +694,11 @@ as @code{f2c} used in conjunction with @code{gcc}.
 So far, this has resulted in the three, somewhat
 experimental, options added by @code{g77} to the @code{gcc}
 compiler and its back end.
+
+(These, in turn, have made their way into the @code{egcs}
+version of the compiler, and do not exist in @code{gcc}
+version 2.8 or versions of @code{g77} based on that version
+of @code{gcc}.)
 
 @item
 John Carr (@email{jfc@@mit.edu}) wrote the alias analysis improvements.
