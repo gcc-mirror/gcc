@@ -1,3 +1,10 @@
+2002-05-18  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* optabs.c (complex_part_zero_p): New.
+	* (expand_cmplxdiv_straight): Use it.
+	* (expand_cmplxdiv_wide): Ditto.
+	* (expand_binop): Ditto.
+
 2002-05-18  Richard Henderson  <rth@redhat.com>
 
 	* final.c (HAVE_READONLY_DATA_SECTION): New.
