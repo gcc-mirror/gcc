@@ -2,6 +2,8 @@
 
 	* pa.c (hppa_init_pic_save): Set rtx_unchanging for
 	PIC_OFFSET_TABLE_SAVE_RTX.
+	(zdepi_cint_p): Describe zdepi insn.
+	Formatting and white space fixes throughout file.
 
 	* pa.c (uint32_operand): Don't use long constant >= 2^32.
 	(emit_move_sequence): Use HOST_WIDE_INT constants.  Don't worry
