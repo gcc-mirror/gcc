@@ -27,8 +27,9 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-extern double __aeabi_ul2d (unsigned long long);
-extern float __aeabi_ul2f (unsigned long long);
+#define VISIBLE __attribute__((visibility("default")))
+extern VISIBLE double __aeabi_ul2d (unsigned long long);
+extern VISIBLE float __aeabi_ul2f (unsigned long long);
 extern long long __divdi3 (long long, long long);
 extern unsigned long long __udivdi3 (unsigned long long, 
 				     unsigned long long);
