@@ -1,3 +1,10 @@
+2003-04-21  Loren J. Rittle  <ljrittle@acm.org>
+
+	* libI77/configure.in (_XOPEN_SOURCE): Bump to 600.
+	* libI77/configure: Regenerate. 
+	* libU77/configure.in (_XOPEN_SOURCE): Bump to 600.
+	* libU77/configure: Regenerate. 
+
 2003-04-11  Bud Davis <bdavis9659@comcast.net>
 
 	PR Fortran/1832

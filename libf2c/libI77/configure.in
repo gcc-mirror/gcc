@@ -32,16 +32,16 @@ define([AC_PROG_CC_WORKS],[])
 AC_PROG_CC
 
 # These defines are necessary to get 64-bit file size support.
-# NetBSD 1.4 header files does not support XOPEN_SOURCE == 500, but it
+# NetBSD 1.4 header files does not support XOPEN_SOURCE == 600, but it
 # handles 64-bit file sizes without needing these defines.
 AC_MSG_CHECKING(whether _XOPEN_SOURCE may be defined)
-AC_TRY_COMPILE([#define _XOPEN_SOURCE 500L
+AC_TRY_COMPILE([#define _XOPEN_SOURCE 600L
 #include <unistd.h>],,
 may_use_xopen_source=yes,
 may_use_xopen_source=no)
 AC_MSG_RESULT($may_use_xopen_source)
 if test $may_use_xopen_source = yes; then
-  AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
+  AC_DEFINE(_XOPEN_SOURCE, 600L, [Get Single Unix Specification semantics])
   # The following is needed by irix6.2 so that struct timeval is declared.
   AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Get Single Unix Specification semantics])
   # The following is needed by Solaris2.5.1 so that struct timeval is declared.
