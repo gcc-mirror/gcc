@@ -20,6 +20,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
+
+/* All these system support ANSI prototypes.  */
+#if defined (__STDC__) || defined (_AIX) || (defined (__mips) && defined (_SYSTYPE_SVR4)) || defined(_WIN32)
+#define ANSI_PROTOTYPES
+#endif
+
 /* We must include stdarg.h/varargs.h before stdio.h. */
 #ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
@@ -379,4 +385,3 @@ extern void abort ();
 #ifndef S_ISDIR
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
-
