@@ -1,3 +1,25 @@
+2005-04-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/v850/v850-protos.h (override_options): Delete.
+	* config/v850/v850.h (target_flags, MASK_GHS, MASK_LONG_CALLS, MASK_EP)
+	(MASK_PROLOG_FUNCTION, MASK_DEBUG, MASK_V850, MASK_V850E)
+	(MASK_SMALL_SLD, MASK_BIG_SWITCH, MASK_NO_APP_REGS, MASK_DISABLE_CALLT)
+	(MASK_STRICT_ALIGN, MASK_US_BIT_SET, MASK_US_MASK_SET, TARGET_GHS)
+	(TARGET_LONG_CALLS, TARGET_EP, TARGET_PROLOG_FUNCTION, TARGET_V850)
+	(TARGET_BIG_SWITCH, TARGET_DEBUG, TARGET_V850E, TARGET_US_BIT_SET)
+	(TARGET_SMALL_SLD, TARGET_DISABLE_CALLT, TARGET_NO_APP_REGS)
+	(TARGET_STRICT_ALIGN, TARGET_SWITCHES, TARGET_OPTIONS)
+	(OVERRIDE_OPTIONS): Delete.
+	(MASK_CPU): Redefine as MASK_V850 | MASK_V850E.
+	(small_memory_info): Remove the value field.
+	(CONDITIONAL_REGISTER_USAGE): Check !TARGET_APP_REGS rather than
+	TARGET_NO_APP_REGS.
+	* config/v850/v850.c (small_memory): Remove the value field.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(override_options): Delete.
+	(v850_handle_memory_option, v850_handle_option): New functions.
+	* config/v850/v850.opt: New file.
+
 2005-04-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* config.host: Add a section for generic hosts, and a subsection

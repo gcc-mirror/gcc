@@ -49,6 +49,7 @@
 #endif
 
 /* Function prototypes for stupid compilers:  */
+static bool v850_handle_option       (size_t, const char *, int);
 static void const_double_split       (rtx, HOST_WIDE_INT *, HOST_WIDE_INT *);
 static int  const_costs_int          (HOST_WIDE_INT, int);
 static int  const_costs		     (rtx, enum rtx_code);
@@ -75,10 +76,10 @@ static int v850_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
 {
-  /* name	value		max		physical max */
-  { "tda",	(char *)0,	0,		256 },
-  { "sda",	(char *)0,	0,		65536 },
-  { "zda",	(char *)0,	0,		32768 },
+  /* name	max	physical max */
+  { "tda",	0,		256 },
+  { "sda",	0,		65536 },
+  { "zda",	0,		32768 },
 };
 
 /* Names of the various data areas used on the v850.  */
@@ -115,6 +116,11 @@ static int v850_interrupt_p = FALSE;
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_DEFAULT | MASK_APP_REGS)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION v850_handle_option
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS v850_rtx_costs
 
@@ -144,49 +150,64 @@ static int v850_interrupt_p = FALSE;
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
+/* Set the maximum size of small memory area TYPE to the value given
+   by VALUE.  Return true if VALUE was syntactically correct.  VALUE
+   starts with the argument separator: either "-" or "=".  */
 
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
-
-void
-override_options (void)
+static bool
+v850_handle_memory_option (enum small_memory_type type, const char *value)
 {
-  int i;
-  extern int atoi (const char *);
+  int i, size;
 
-  /* Parse -m{s,t,z}da=nnn switches */
-  for (i = 0; i < (int)SMALL_MEMORY_max; i++)
-    {
-      if (small_memory[i].value)
-	{
-	  if (!ISDIGIT (*small_memory[i].value))
-	    error ("%s=%s is not numeric",
-		   small_memory[i].name,
-		   small_memory[i].value);
-	  else
-	    {
-	      small_memory[i].max = atoi (small_memory[i].value);
-	      if (small_memory[i].max > small_memory[i].physical_max)
-		error ("%s=%s is too large",
-		   small_memory[i].name,
-		   small_memory[i].value);
-	    }
-	}
-    }
+  if (*value != '-' && *value != '=')
+    return false;
 
-  /* Make sure that the US_BIT_SET mask has been correctly initialized.  */
-  if ((target_flags & MASK_US_MASK_SET) == 0)
-    {
-      target_flags |= MASK_US_MASK_SET;
-      target_flags &= ~MASK_US_BIT_SET;
-    }
+  value++;
+  for (i = 0; value[i]; i++)
+    if (!ISDIGIT (value[i]))
+      return false;
+
+  size = atoi (value);
+  if (size > small_memory[type].physical_max)
+    error ("value passed to %<-m%s%> is too large", small_memory[type].name);
+  else
+    small_memory[type].max = size;
+  return true;
 }
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+v850_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_mspace:
+      target_flags |= MASK_EP | MASK_PROLOG_FUNCTION;
+      return true;
+
+    case OPT_mv850:
+      target_flags &= ~(MASK_CPU ^ MASK_V850);
+      return true;
+
+    case OPT_mv850e:
+    case OPT_mv850e1:
+      target_flags &= ~(MASK_CPU ^ MASK_V850E);
+      return true;
+
+    case OPT_mtda:
+      return v850_handle_memory_option (SMALL_MEMORY_TDA, arg);
+
+    case OPT_msda:
+      return v850_handle_memory_option (SMALL_MEMORY_SDA, arg);
+
+    case OPT_mzda:
+      return v850_handle_memory_option (SMALL_MEMORY_ZDA, arg);
+
+    default:
+      return true;
+    }
+}
 
 static bool
 v850_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
