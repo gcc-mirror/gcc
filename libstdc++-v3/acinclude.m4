@@ -991,9 +991,6 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
       [mbstate_t teststate;], 
       use_native_mbstatet=yes, use_native_mbstatet=no)
       AC_MSG_RESULT($use_native_mbstatet)
-      if test x"$use_native_mbstatet" = xno; then
-        AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
-      fi
     
       dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
       dnl numeric_limits can instantiate type_traits<wchar_t>
@@ -1066,7 +1063,6 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
   
     else
       AC_MSG_WARN([<wchar.h> not found])
-      AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
     fi
 
   else
@@ -1478,7 +1474,7 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   ])
   AC_MSG_RESULT($glibcpp_lldiv_t_use)
   if test x$glibcpp_lldiv_t_use = x"yes"; then
-    AC_DEFINE(_GLIBCPP_HAVE_LLDIV_T)
+    AC_DEFINE(HAVE_LLDIV_T)
   fi
 
   AC_MSG_CHECKING([for enabled long long])

@@ -81,9 +81,6 @@ if test -n "$with_cross_host"; then
 	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
 	include/bits/ctype_noninline.h)
 
-
-	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
-
 	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
 	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
 	;;
@@ -103,8 +100,6 @@ if test -n "$with_cross_host"; then
 	include/bits/ctype_inline.h)
 	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
 	include/bits/ctype_noninline.h)
-
-	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
 
 	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
 	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
