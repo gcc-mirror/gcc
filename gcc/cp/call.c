@@ -782,8 +782,11 @@ standard_conversion (to, from, expr)
       enum tree_code ufcode = TREE_CODE (TREE_TYPE (from));
       enum tree_code utcode = TREE_CODE (TREE_TYPE (to));
 
-      if (utcode == VOID_TYPE && ufcode != OFFSET_TYPE
-	  && ufcode != FUNCTION_TYPE)
+      if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (from)),
+		     TYPE_MAIN_VARIANT (TREE_TYPE (to)), 1))
+	;
+      else if (utcode == VOID_TYPE && ufcode != OFFSET_TYPE
+	       && ufcode != FUNCTION_TYPE)
 	{
 	  from = build_pointer_type
 	    (cp_build_type_variant (void_type_node,
