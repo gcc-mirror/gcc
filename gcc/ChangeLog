@@ -1,5 +1,10 @@
 2004-04-08  Roger Sayle  <roger@eyesopen.com>
 
+	* function.c (gen_mem_addressof): When changing the RTX from a REG
+	to a MEM, clear MEM_VOLATILE_P which was formerly REG_USERVAR_P.
+
+2004-04-08  Roger Sayle  <roger@eyesopen.com>
+
 	PR target/14888
 	* config/i386/i386.md (truncdfsf2_noop, truncxfsf2_noop,
 	truncxfdf2_noop): Provide dummy "fmov" implementations.
