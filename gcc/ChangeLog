@@ -1,3 +1,7 @@
+2002-06-05  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (ASM_OUTPUT_SOURCE_LINE): Define.
+
 2002-06-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* gengtype-yacc.y: Make sure all rules end with a semicolon.
