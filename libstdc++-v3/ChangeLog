@@ -1,3 +1,8 @@
+2001-09-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* libsupc++/eh_personality.cc (parse_lsda_header): Change type of
+	tmp from _Unwind_Ptr to _Unwind_Word.
+
 2001-08-31  Jason Merrill  <jason_merrill@redhat.com>
 
 	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Simplify
