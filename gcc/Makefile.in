@@ -2655,8 +2655,10 @@ $(docobjdir)/gccinstall.info gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
 $(docobjdir)/cppinternals.info cppinternals.dvi: $(TEXI_CPPINT_FILES)
 
 $(docobjdir)/%.info: $(docdir)/%.texi stmp-docobjdir
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) -I $(docdir)/include \
-	  -o $@ $<
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+		$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) \
+			-I $(docdir)/include -o $@ $<; \
+	fi
 
 dvi:: gcc.dvi gccint.dvi gccinstall.dvi cpp.dvi cppinternals.dvi
 
