@@ -675,7 +675,7 @@ in the following sections.
 -fnon-call-exceptions  -funwind-tables @gol
 -fasynchronous-unwind-tables @gol
 -finhibit-size-directive  -finstrument-functions @gol
--fno-common  -fno-ident  -fno-gnu-linker @gol
+-fno-common  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC -fpie -fPIE @gol
 -freg-struct-return  -fshared-data  -fshort-enums @gol
 -fshort-double  -fshort-wchar @gol
@@ -11284,17 +11284,6 @@ program will work on other systems which always work this way.
 @item -fno-ident
 @opindex fno-ident
 Ignore the @samp{#ident} directive.
-
-@item -fno-gnu-linker
-@opindex fno-gnu-linker
-Do not output global initializations (such as C++ constructors and
-destructors) in the form used by the GNU linker (on systems where the GNU
-linker is the standard method of handling them).  Use this option when
-you want to use a non-GNU linker, which also requires using the
-@command{collect2} program to make sure the system linker includes
-constructors and destructors.  (@command{collect2} is included in the GCC
-distribution.)  For systems which @emph{must} use @command{collect2}, the
-compiler driver @command{gcc} is configured to do this automatically.
 
 @item -finhibit-size-directive
 @opindex finhibit-size-directive

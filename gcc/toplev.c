@@ -882,15 +882,6 @@ int flag_debug_asm = 0;
 
 int flag_dump_rtl_in_asm = 0;
 
-/* -fgnu-linker specifies use of the GNU linker for initializations.
-   (Or, more generally, a linker that handles initializations.)
-   -fno-gnu-linker says that collect2 will be used.  */
-#ifdef USE_COLLECT2
-int flag_gnu_linker = 0;
-#else
-int flag_gnu_linker = 1;
-#endif
-
 /* Nonzero means put zero initialized data in the bss section.  */
 int flag_zero_initialized_in_bss = 1;
 
@@ -1112,7 +1103,6 @@ static const lang_independent_options f_options[] =
   {"function-sections", &flag_function_sections, 1 },
   {"data-sections", &flag_data_sections, 1 },
   {"verbose-asm", &flag_verbose_asm, 1 },
-  {"gnu-linker", &flag_gnu_linker, 1 },
   {"regmove", &flag_regmove, 1 },
   {"optimize-register-move", &flag_regmove, 1 },
   {"pack-struct", &flag_pack_struct, 1 },

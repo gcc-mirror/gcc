@@ -549,10 +549,6 @@ extern int flag_dump_rtl_in_asm;
    in generated assembly code.  */
 extern int flag_leading_underscore;
 
-/* -fgnu-linker specifies use of the GNU linker for initializations.
-   -fno-gnu-linker says that collect will be used.  */
-extern int flag_gnu_linker;
-
 /* Tag all structures with __attribute__(packed) */
 extern int flag_pack_struct;
 
