@@ -984,10 +984,6 @@ expand_java_pushc (ival, type)
   push_value (value);
 }
 
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
 static void
 expand_java_return (type)
      tree type;

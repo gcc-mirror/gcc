@@ -1,3 +1,9 @@
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* decl.c, timing.c: Include defaults.h if not already included.
+	Don't define the *_TYPE_SIZE macros.
+	* Makefile.in: Update dependencies.
+
 2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* inout.c (add_enum_to_list): Use DECL_NAME directly, don't get

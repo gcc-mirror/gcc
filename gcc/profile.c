@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
-
+#include "defaults.h"
 
 /* Additional information about the edges we need.  */
 struct edge_info
@@ -118,10 +118,6 @@ static void output_gcov_string PARAMS ((const char *, long));
 static void compute_branch_probabilities PARAMS ((void));
 static basic_block find_group PARAMS ((basic_block));
 static void union_groups PARAMS ((basic_block, basic_block));
-
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
 
 /* If non-zero, we need to output a constructor to set up the
    per-object-file data. */

@@ -111,14 +111,6 @@ Boston, MA 02111-1307, USA.  */
 #define	N_SOL 0x84
 #endif
 
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
-
 /* If we aren't using cc0, CC_STATUS_INIT shouldn't exist.  So define a
    null default for it to save conditionalization later.  */
 #ifndef CC_STATUS_INIT

@@ -240,6 +240,7 @@ SYSTEM_H = $(srcdir)/../system.h
 TOPLEV_H = $(srcdir)/../toplev.h
 TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h \
 	$(srcdir)/../tree.def $(srcdir)/../machmode.h $(srcdir)/../machmode.def
+DEFAULTS_H = $(srcdir)/../defaults.h
 
 ansify.o: ansify.c $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H)
 bad.o: bad.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bad.h bad.def where.h \
@@ -254,12 +255,12 @@ bld.o: bld.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bld.h bld-op.def bit.h \
  info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
  type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
  intrin.h intrin.def
-com.o: com.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(FLAGS_H) $(RTL_H) $(TOPLEV_H) \
+com.o: com.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(FLAGS_H) $(RTL_H) \
  $(TREE_H) $(OUTPUT_H) $(CONVERT_H) com.h com-rt.def bld.h bld-op.def bit.h \
  malloc.h info.h info-b.def info-k.def info-w.def target.h bad.h \
  bad.def where.h $(GLIMITS_H) top.h lex.h type.h intrin.h intrin.def \
  lab.h symbol.h symbol.def equiv.h storag.h global.h name.h expr.h \
- implic.h src.h st.h $(GGC_H)
+ implic.h src.h st.h $(GGC_H) $(TOPLEV_H) $(DEFAULTS_H)
 data.o: data.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) data.h bld.h \
  bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
  info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \

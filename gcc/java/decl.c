@@ -54,10 +54,6 @@ static tree create_primitive_vtable PARAMS ((const char *));
    before static field references.  */
 extern int always_initialize_class_p;
 
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
 /* The DECL_MAP is a mapping from (index, type) to a decl node.
    If index < max_locals, it is the index of a local variable.
    if index >= max_locals, then index-max_locals is a stack slot.

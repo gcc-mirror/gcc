@@ -29,10 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "assert.h"
 #include "toplev.h"
-
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
+#include "defaults.h"
 
 /* Accessors for the type_info objects. We need to remember several things
    about each of the type_info types. The global tree nodes such as

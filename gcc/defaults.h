@@ -1,7 +1,8 @@
 /* Definitions of various defaults for how to do assembler output
    (most of which are designed to be appropriate for GAS or for
    some BSD assembler).
-   Copyright (C) 1992, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GNU CC.
@@ -20,6 +21,9 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
+
+#ifndef GCC_DEFAULTS_H
+#define GCC_DEFAULTS_H
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable or function named NAME.
@@ -194,3 +198,50 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #ifndef DWARF_FRAME_REGISTERS
 #define DWARF_FRAME_REGISTERS FIRST_PSEUDO_REGISTER
 #endif
+
+/* Default sizes for base C types.  If the sizes are different for
+   your target, you should override these values by defining the
+   appropriate symbols in your tm.h file.  */
+
+#ifndef CHAR_TYPE_SIZE
+#define CHAR_TYPE_SIZE BITS_PER_UNIT
+#endif
+
+#ifndef SHORT_TYPE_SIZE
+#define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
+#endif
+
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef LONG_TYPE_SIZE
+#define LONG_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef LONG_LONG_TYPE_SIZE
+#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+#ifndef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE INT_TYPE_SIZE
+#endif
+
+#ifndef WCHAR_UNSIGNED
+#define WCHAR_UNSIGNED 0
+#endif
+
+#ifndef FLOAT_TYPE_SIZE
+#define FLOAT_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef DOUBLE_TYPE_SIZE
+#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+#ifndef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+#endif  /* GCC_DEFAULTS_H */
+

@@ -139,15 +139,6 @@ dw_fde_node;
 /* Maximum size (in bytes) of an artificially generated label.   */
 #define MAX_ARTIFICIAL_LABEL_BYTES	30
 
-/* Make sure we know the sizes of the various types dwarf can describe. These
-   are only defaults.  If the sizes are different for your target, you should
-   override these values by defining the appropriate symbols in your tm.h
-   file.  */
-
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
-
 /* The size of the target's pointer type.  */
 #ifndef PTR_SIZE
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)

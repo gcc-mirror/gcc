@@ -1,3 +1,9 @@
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* com.c: Include defaults.h.
+	* com.h: Don't define the *_TYPE_SIZE macros.
+	* Makefile.in: Update dependencies.
+
 2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* ansify.c: Use #line, not # <number>.
