@@ -1,3 +1,9 @@
+2002-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8518
+	* c-decl.c (duplicate_decls): Outline the second definition
+	of an extern inline function in all cases.
+
 2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* stor-layout.c (place_field): Update rli->offset as well as
