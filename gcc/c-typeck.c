@@ -2107,7 +2107,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case RSHIFT_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  if (TREE_CODE (op1) == INTEGER_CST)
+	  if (TREE_CODE (op1) == INTEGER_CST && skip_evaluation == 0)
 	    {
 	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("right shift count is negative");
@@ -2139,7 +2139,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case LSHIFT_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  if (TREE_CODE (op1) == INTEGER_CST)
+	  if (TREE_CODE (op1) == INTEGER_CST && skip_evaluation == 0)
 	    {
 	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("left shift count is negative");
@@ -2167,7 +2167,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case LROTATE_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  if (TREE_CODE (op1) == INTEGER_CST)
+	  if (TREE_CODE (op1) == INTEGER_CST && skip_evaluation == 0)
 	    {
 	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("shift count is negative");
@@ -2469,7 +2469,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  converted = 1;
 	  resultcode = xresultcode;
 
-	  if (warn_sign_compare)
+	  if (warn_sign_compare && skip_evaluation == 0)
 	    {
 	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
@@ -3376,15 +3376,6 @@ build_conditional_expr (ifexp, op1, op2)
   register enum tree_code code2;
   register tree result_type = NULL;
   tree orig_op1 = op1, orig_op2 = op2;
-
-  /* If second operand is omitted, it is the same as the first one;
-     make sure it is calculated only once.  */
-  if (op1 == 0)
-    {
-      if (pedantic)
-	pedwarn ("ANSI C forbids omitting the middle term of a ?: expression");
-      ifexp = orig_op1 = op1 = save_expr (ifexp);
-    }
 
   ifexp = truthvalue_conversion (default_conversion (ifexp));
 
