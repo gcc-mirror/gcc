@@ -1434,7 +1434,11 @@ tsubst (t, args, nargs, in_decl)
 
 	if (type == TREE_TYPE (t)
 	    && (! member || ctx == DECL_CLASS_CONTEXT (t)))
-	  return t;
+	  {
+	    t = copy_node (t);
+	    copy_lang_decl (t);
+	    return t;
+	  }
 
 	/* Do we already have this instantiation?  */
 	if (DECL_TEMPLATE_INFO (t) != NULL_TREE)

@@ -144,7 +144,7 @@ empty_parms ()
 /* the reserved words... C++ extensions */
 %token <ttype> AGGR
 %token <ttype> VISSPEC
-%token DELETE NEW OVERLOAD THIS OPERATOR CXX_TRUE CXX_FALSE
+%token DELETE NEW THIS OPERATOR CXX_TRUE CXX_FALSE
 %token NAMESPACE TYPENAME_KEYWORD USING
 %token LEFT_RIGHT TEMPLATE
 %token TYPEID DYNAMIC_CAST STATIC_CAST REINTERPRET_CAST CONST_CAST
@@ -359,7 +359,6 @@ extdef:
 		{ if (pending_inlines) do_pending_inlines (); }
 	| template_def
 		{ if (pending_inlines) do_pending_inlines (); }
-	| overloaddef
 	| asm_keyword '(' string ')' ';'
 		{ if (TREE_CHAIN ($3)) $3 = combine_strings ($3);
 		  assemble_asm ($3); }
@@ -467,18 +466,6 @@ template_parm:
 		{ $$ = build_tree_list (NULL_TREE, $1.t); }
 	| parm '=' expr_no_commas  %prec ARITHCOMPARE
 		{ $$ = build_tree_list ($3, $1.t); }
-	;
-
-overloaddef:
-	  OVERLOAD ov_identifiers ';'
-		{ warning ("use of `overload' is an anachronism"); }
-	;
-
-ov_identifiers:
-	  IDENTIFIER
-		{ declare_overloaded ($1); }
-	| ov_identifiers ',' IDENTIFIER
-		{ declare_overloaded ($3); }
 	;
 
 template_def:
@@ -764,13 +751,13 @@ member_init_list:
 member_init:
 	  '(' nonnull_exprlist ')'
 		{
-		  if (current_class_name && !flag_traditional)
+		  if (current_class_name)
 		    pedwarn ("anachronistic old style base class initializer");
 		  expand_member_init (current_class_ref, NULL_TREE, $2);
 		}
 	| LEFT_RIGHT
 		{
-		  if (current_class_name && !flag_traditional)
+		  if (current_class_name)
 		    pedwarn ("anachronistic old style base class initializer");
 		  expand_member_init (current_class_ref, NULL_TREE, void_type_node);
 		}

@@ -62,10 +62,6 @@ static char *scratch_firstobj;
 # define OB_FINISH() (obstack_1grow (&scratch_obstack, '\0'))
 # define OB_LAST() (obstack_next_free (&scratch_obstack)[-1])
 
-#ifdef NO_AUTO_OVERLOAD
-int is_overloaded ();
-#endif
-
 void
 init_method ()
 {
@@ -1108,56 +1104,6 @@ get_id_2 (name, name2)
   OB_FINISH ();
   return get_identifier (obstack_base (&scratch_obstack));
 }
-
-/* Top-level interface to explicit overload requests. Allow NAME
-   to be overloaded. Error if NAME is already declared for the current
-   scope. Warning if function is redundantly overloaded.  */
-
-void
-declare_overloaded (name)
-     tree name;
-{
-#ifdef NO_AUTO_OVERLOAD
-  if (is_overloaded (name))
-    warning ("function `%s' already declared overloaded",
-	     IDENTIFIER_POINTER (name));
-  else if (IDENTIFIER_GLOBAL_VALUE (name))
-    error ("overloading function `%s' that is already defined",
-	   IDENTIFIER_POINTER (name));
-  else
-    {
-      TREE_OVERLOADED (name) = 1;
-      IDENTIFIER_GLOBAL_VALUE (name) = build_tree_list (name, NULL_TREE);
-      TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (name)) = unknown_type_node;
-    }
-#else
-  if (current_lang_name == lang_name_cplusplus)
-    {
-      if (0)
-	warning ("functions are implicitly overloaded in C++");
-    }
-  else if (current_lang_name == lang_name_c)
-    error ("overloading function `%s' cannot be done in C language context");
-  else
-    my_friendly_abort (76);
-#endif
-}
-
-#ifdef NO_AUTO_OVERLOAD
-/* Check to see if NAME is overloaded. For first approximation,
-   check to see if its TREE_OVERLOADED is set.  This is used on
-   IDENTIFIER nodes.  */
-
-int
-is_overloaded (name)
-     tree name;
-{
-  /* @@ */
-  return (TREE_OVERLOADED (name)
-	  && (! IDENTIFIER_CLASS_VALUE (name) || current_class_type == 0)
-	  && ! IDENTIFIER_LOCAL_VALUE (name));
-}
-#endif
 
 /* Given a tree_code CODE, and some arguments (at least one),
    attempt to use an overloaded operator on the arguments.
@@ -1428,9 +1374,8 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 
 		  /* There's probably a LOT of code in the world that
 		     relies upon this old behavior.  */
-		  if (! flag_traditional)
-		    pedwarn ("no `operator%s (int)' declared for postfix `%s', using prefix operator instead",
-			     op, op);
+		  pedwarn ("no `operator%s (int)' declared for postfix `%s', using prefix operator instead",
+			   op, op);
 		  xarg2 = NULL_TREE;
 		  binary_is_unary = 1;
 		}
