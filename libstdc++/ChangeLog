@@ -1,3 +1,9 @@
+Thu Oct  2 00:08:18 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.h: Move exception stuff after definition of string.
+	Move typedef of string here.
+	* string: From here.
+
 Sat Sep 27 16:48:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/complext.h: Lose injection decls.
