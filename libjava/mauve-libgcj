@@ -8,9 +8,9 @@ java.lang.Character.classify12
 java.lang.String.hash
 # We support 1.2 for these 3 tests.
 java.lang.reflect.Modifier.toString12
-!java.io.ObjectInputOutput.InputTest
-!java.io.ObjectInputOutput.OutputTest
-!java.io.ObjectStreamClass.Test
+java.io.ObjectInputOutput.InputTest
+java.io.ObjectInputOutput.OutputTest
+java.io.ObjectStreamClass.Test
 java.math
 !java.rmi
 java.security

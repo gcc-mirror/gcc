@@ -23,7 +23,8 @@ details.  */
 jint
 java::lang::reflect::Constructor::getModifiers ()
 {
-  return _Jv_FromReflectedConstructor (this)->accflags;
+  // Ignore all unknown flags.
+  return _Jv_FromReflectedConstructor (this)->accflags & Modifier::ALL_FLAGS;
 }
 
 void
