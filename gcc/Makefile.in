@@ -1176,6 +1176,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DTOOLDIR=\"$(tooldir)/\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
@@ -1196,6 +1197,7 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  -DUNPROTOIZE $(srcdir)/protoize.c
@@ -1204,6 +1206,7 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
@@ -1231,6 +1234,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
+	  -DTOOL_INCLUDE_DIR=0 \
 	  -DSTD_PROTO_DIR=0" tmp-proto.c
 	@echo '**********' Expect 400 lines of differences.
 	-diff $(srcdir)/protoize.c tmp-proto.c > tmp-proto.diff
@@ -1240,6 +1244,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
+	  -DTOOL_INCLUDE_DIR=0 \
 	  -DSTD_PROTO_DIR=0" tmp-proto.c
 	@echo Expect zero differences.
 	diff $(srcdir)/protoize.c tmp-proto.c | cat
