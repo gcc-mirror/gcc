@@ -1,3 +1,59 @@
+Wed Nov 25 14:54:46 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+        * cpplib.h: Delete struct import_file.  Add ihash element to
+        struct cpp_buffer.  Delete dont_repeat_files and
+        import_hash_table elements from cpp_reader; change
+        all_include_files to a hash table.  Delete all foobar_include
+        / last_foobar_include elements from struct cpp_options; put
+        back four such: quote_include, bracket_include,
+        system_include, after_include.  Redo struct file_name_list
+        completely.  Add new structure type include_hash.  Add
+        prototypes for merge_include_chains and include_hash.  Change
+        prototypes for finclude, find_include_file, and
+        append_include_chain to match changes below.
+
+        * cppfiles.c (simplify_pathname, include_hash,
+        remap_filename, merge_include_chains): New functions.
+        (add_import, lookup_import, open_include_file): Removed.
+        (INO_T_EQ): Define this (copied from cccp.c).
+        (hack_vms_include_specification): Remove all calls and #if 0
+        out the definition.  It was being called incorrectly and at
+        the wrong times.  Until a VMSie can look at this, it's better
+        to not pretend to support it.
+        (append_include_chain): Change calling convention; now takes
+        only one directory at a time, and sets up the data structure
+        itself.
+        (redundant_include_p): Rewritten - this is now used for all
+        include redundancy, whether by #ifndef, #import, or #pragma
+        once.  Looks up things in the include hash table.
+        (file_cleanup): Decrement pfile->system_include_depth here if
+        it's >0.
+        (find_include_file): Calling convention changed; now passes
+        around a struct include_hash instead of 3 separate parameters.
+        Guts ripped out and replaced with new include_hash mechanism.
+        (finclude): Calling convention changed as for
+        find_include_file.  Error exits pulled out-of-line.  Reformat.
+        (safe_read): Return a long, not an int.
+        (deps_output): Don't recurse.
+
+        * cpplib.c (is_system_include): Deleted.
+        (path_include): Fix up call to append_include_chain.
+        (do_include): Fix up calls to find_include_file and finclude.
+        Clean up dependency output a bit.  Shorten obnoxiously lengthy
+        #import warning message.  Don't decrement
+        pfile->system_include_depth here.
+        (do_pragma): Understand the include_hash structure.  Reformat.
+        (do_endif): Correct handling of control macros.  Understand
+        the include_hash.
+        (cpp_start_read): Fix up calls to finclude.  Call
+        merge_include_chains.
+        (cpp_handle_option): Fix up calls to append_include_chain.
+        Understand the four partial include chains.
+        (cpp_finish): Add debugging code (#if 0-ed out) for the
+        include_hash.
+        (cpp_cleanup): Free the include_hash, not the import hash and
+        the all_include and dont_repeat lists which no longer exist.
+
 Wed Nov 25 11:26:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (no_new_pseudos): Define.
