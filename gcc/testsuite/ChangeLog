@@ -1,5 +1,11 @@
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.robertl/eb63.C: Remove new initializer list
+	case.
+	* g++.old-deja/g++.ext/arrnew.C: Deprecate.
+
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/spec40.C: New test.
 
 2001-02-12  Jakub Jelinek  <jakub@redhat.com>

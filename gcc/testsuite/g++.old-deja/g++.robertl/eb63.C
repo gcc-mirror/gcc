@@ -11,6 +11,6 @@ public:
 
 main() {
         A* a;
-	a = new A[2] = { A(1,false), A(1,false) } ;
+
         a = new A[2](1,false);
 }

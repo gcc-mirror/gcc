@@ -4390,6 +4390,9 @@ it is required for backwards compatibility @xref{Backwards Compatibility}.
 The named return value extension has been deprecated, and will be
 removed from g++ at some point.
 
+The use of initializer lists with new expressions has been deprecated,
+and will be removed from g++ at some point.
+
 @node Backwards Compatibility
 @section Backwards Compatibility
 @cindex Backwards Compatibility
