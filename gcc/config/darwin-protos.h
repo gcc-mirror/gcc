@@ -103,6 +103,7 @@ extern void objc_selector_refs_section (void);
 extern void objc_selector_fixup_section (void);
 extern void objc_symbols_section (void);
 extern void objc_module_info_section (void);
+extern void objc_image_info_section (void);
 extern void objc_protocol_section (void);
 extern void objc_string_object_section (void);
 extern void objc_constant_string_object_section (void);
