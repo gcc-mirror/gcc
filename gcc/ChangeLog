@@ -1,3 +1,10 @@
+2003-03-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* loop-unroll.c (decide_peel_completely,
+	decide_unroll_constant_iterations, decide_unroll_stupid,
+	decide_unroll_runtime_iterations, decide_peel_simple): Set
+	loop->has_desc.
+
 Mon Mar 17 18:57:01 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* ggc-common.c (ggc_mark_roots): Use htab_traverse_noresize.
