@@ -1,3 +1,7 @@
+2003-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* decl.c (grokfndecl): Change OK to type tree.
+
 2003-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (build_target_expr_with_type): Treate VA_ARG_EXPR like
