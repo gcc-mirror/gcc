@@ -3900,8 +3900,7 @@ not specified, 0 is used.
 If defined, modifies the length assigned to instruction @var{insn} as a
 function of the context in which it is used.  @var{length} is an lvalue
 that contains the initially computed length of the insn and should be
-updated with the correct length of the insn.  If updating is required,
-@var{insn} must not be a varying-length insn.
+updated with the correct length of the insn.
 
 This macro will normally not be required.  A case in which it is
 required is the ROMP.  On this machine, the size of an @code{addr_vec}

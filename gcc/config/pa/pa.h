@@ -1926,9 +1926,6 @@ while (0)
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
   LENGTH += pa_adjust_insn_length (INSN, LENGTH);
 
-/* Enable a bug fix.  (This is for extra caution.)  */
-#define SHORTEN_WITH_ADJUST_INSN_LENGTH
-
 /* Millicode insns are actually function calls with some special
    constraints on arguments and register usage.
 

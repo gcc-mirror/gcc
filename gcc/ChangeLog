@@ -1,3 +1,9 @@
+Wed Mar 11 15:07:18 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* final.c (shorten_branches): Remove conditionalizing on
+	SHORTEN_WITH_ADJUST_INSN_LENGTH
+	* sh.h, pa.h (SHORTEN_WITH_ADJUST_INSN_LENGTH): Remove.
+
 Wed Mar 11 02:37:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (find_basic_blocks_1): Keep the cfg accurate when removing
