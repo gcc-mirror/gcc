@@ -114,7 +114,7 @@ msgstr ""
 "Project-Id-Version: GNU gcc 3.4-b20040206\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-02-06 01:40+0000\n"
-"PO-Revision-Date: 2004-02-16 08:00-0500\n"
+"PO-Revision-Date: 2004-02-16 12:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -824,9 +824,8 @@ msgid "%Jnon-const declaration of '%D' follows const declaration"
 msgstr "déclaration de non constante %J de « %D » suit une déclaration de constante"
 
 #: c-decl.c:1246
-#, fuzzy
 msgid "%Jredundant redeclaration of '%D'"
-msgstr "déclaration redondante de « %D » dans la même étendue"
+msgstr "déclaration redondante %J de « %D »"
 
 #: c-decl.c:1690
 #, c-format
@@ -834,9 +833,8 @@ msgid "nested extern declaration of `%s'"
 msgstr "déclaration de « %s » externe imbriquée"
 
 #: c-decl.c:1829 objc/objc-act.c:2534 objc/objc-act.c:6793
-#, fuzzy
 msgid "%Jprevious declaration of '%D'"
-msgstr "déclaration précédente de « %D »"
+msgstr "déclaration précédente %J de « %D »"
 
 #: c-decl.c:1870 c-decl.c:1872
 #, c-format
@@ -872,33 +870,28 @@ msgid "duplicate label declaration `%s'"
 msgstr "déclaration de l'étiquette « %s » en double"
 
 #: c-decl.c:2001
-#, fuzzy
 msgid "%Jthis is a previous declaration"
-msgstr "ceci est une déclaration précédente"
+msgstr "%J est la déclaration précédente"
 
 #: c-decl.c:2036
-#, fuzzy
 msgid "%Hduplicate label `%D'"
-msgstr "étiquette « %D » apparaît en double"
+msgstr "étiquette %H « %D » apparaît en double"
 
 #: c-decl.c:2038
-#, fuzzy
 msgid "%J`%D' previously defined here"
-msgstr "«%#D» précédemment défini ici"
+msgstr "« %J%'%D » précédemment défini ici"
 
 #: c-decl.c:2040
-#, fuzzy
 msgid "%J`%D' previously declared here"
-msgstr "«%#D» précédemment déclaré ici"
+msgstr "%J « %D » précédemment déclaré ici"
 
 #: c-decl.c:2060
 msgid "%Htraditional C lacks a separate namespace for labels, identifier `%s' conflicts"
 msgstr ""
 
 #: c-decl.c:2131
-#, fuzzy
 msgid "%H`%s' defined as wrong kind of tag"
-msgstr "« %s » redéclaré comme une autre sorte de symbole"
+msgstr "%H « %s » défini incorrectement comme une mauvais sorte d'étiquette"
 
 #: c-decl.c:2369
 msgid "unnamed struct/union that defines no instances"
@@ -934,9 +927,8 @@ msgid "static or type qualifiers in abstract declarator"
 msgstr "static ou qualificateurs de type dans un déclarateur abstrait"
 
 #: c-decl.c:2517
-#, fuzzy
 msgid "%J'%D' is usually a function"
-msgstr "« %s » est habituellement une fonction"
+msgstr "%J « %s » est habituellement une fonction"
 
 #: c-decl.c:2526
 #, c-format
@@ -969,48 +961,40 @@ msgid "elements of array `%s' have incomplete type"
 msgstr "les éléments du tableau « %s » ont des types incomplets"
 
 #: c-decl.c:2640 c-decl.c:5426 cp/decl.c:3748 cp/decl.c:10156
-#, fuzzy
 msgid "%Jinline function '%D' given attribute noinline"
-msgstr "la fonction inline « %s » a reçu l'attribut noinline"
+msgstr "%J fonction en-ligne « %D » a reçu l'attribut non en-ligne"
 
 #: c-decl.c:2716
-#, fuzzy
 msgid "%Jinitializer fails to determine size of '%D'"
-msgstr "l'initialisation n'a pu déterminer la taille de « %D »"
+msgstr "initialisateur %J a échoué à déterminer la taille de « %D »"
 
 #: c-decl.c:2721
-#, fuzzy
 msgid "%Jarray size missing in '%D'"
-msgstr "taille de tableau manquante dans « %D »"
+msgstr "taille du tableau %J est manquante dans « %D »"
 
 #: c-decl.c:2737
-#, fuzzy
 msgid "%Jzero or negative size array '%D'"
-msgstr "tableau « %s » de taille zéro ou négative"
+msgstr "tableau %J « %D » de taille zéro ou négative"
 
 #: c-decl.c:2765
-#, fuzzy
 msgid "%Jstorage size of '%D' isn't known"
-msgstr "taille de stockage de « %D » n'est pas connue"
+msgstr "taille de stockage %J de « %D » n'est pas connue"
 
 #: c-decl.c:2775
-#, fuzzy
 msgid "%Jstorage size of '%D' isn't constant"
-msgstr "taille de stockage de « %D » n'est pas une constante"
+msgstr "taille de stockage %J de « %D » n'est pas une constante"
 
 #: c-decl.c:2858
-#, fuzzy
 msgid "%Jignoring asm-specifier for non-static local variable '%D'"
-msgstr "spécificateur asm ignorés pour la variable locale non statique « %s »"
+msgstr "spécificateur asm ignoré pour la variable locale non statique %J « %D »"
 
 #: c-decl.c:2969
 msgid "ISO C forbids forward parameter declarations"
 msgstr "le C ISO interdit la déclaration anticipée de paramètres"
 
 #: c-decl.c:3151
-#, fuzzy
 msgid "<anonymous>"
-msgstr "<anonymous %s>"
+msgstr "<anonymous>"
 
 #: c-decl.c:3160
 #, c-format
@@ -1033,9 +1017,9 @@ msgid "bit-field `%s' has invalid type"
 msgstr "le champ de bits « %s » a un type invalide"
 
 #: c-decl.c:3192
-#, fuzzy, c-format
+#, c-format
 msgid "type of bit-field `%s' is a GCC extension"
-msgstr "la directive de style de ligne est extension GCC"
+msgstr "le type de champ de bit « %s » est une extension GCC"
 
 #: c-decl.c:3201
 #, c-format
@@ -1192,9 +1176,9 @@ msgid "`%s' has both `extern' and initializer"
 msgstr "« %s » initialisé et marqué « extern »"
 
 #: c-decl.c:3719
-#, fuzzy, c-format
+#, c-format
 msgid "file-scope declaration of `%s' specifies `auto'"
-msgstr "la déclaration hors de toute fonction de « %s » a spécifié « auto »"
+msgstr "la déclaration de l'étendue de fichier « %s » spécifie « auto »"
 
 #: c-decl.c:3724 cp/decl.c:7189
 #, c-format
@@ -1332,14 +1316,12 @@ msgid "cannot inline function `main'"
 msgstr "ne peut transformer « main » en fonction en-ligne"
 
 #: c-decl.c:4415
-#, fuzzy
 msgid "variable previously declared `static' redeclared `extern'"
-msgstr "variable ou champ « %s » déclaré « void »"
+msgstr "variable précédemment déclarée « static » redéclarée « extern »"
 
 #: c-decl.c:4424
-#, fuzzy
 msgid "%Jvariable '%D' declared `inline'"
-msgstr "variable « %s » déclarée « inline »"
+msgstr "variable %J « %D » déclarée « inline »"
 
 #. A mere warning is sure to result in improper semantics
 #. at runtime.  Don't bother to allow this to compile.
@@ -1365,31 +1347,28 @@ msgid "parameter has incomplete type"
 msgstr "le paramètre a un type incomplet"
 
 #: c-decl.c:4599
-#, fuzzy
 msgid "\"void\" as only parameter may not be qualified"
-msgstr "nom du typedef peut ne pas être qualifié pour la classe"
+msgstr "\"void\" comme seul paramètre ne peut être qualifié"
 
 #: c-decl.c:4620
-#, fuzzy
 msgid "\"void\" must be the only parameter"
-msgstr "non concordance de mode dans le paramètre 1"
+msgstr "\"void\" doit être le seul paramètre"
 
 #: c-decl.c:4637
-#, fuzzy
 msgid "%Jparameter \"%D\" has just a forward declaration"
-msgstr "le paramètre « %s » n'a qu'une déclaration anticipée"
+msgstr "le paramètre %J « %D » n'a qu'une déclaration anticipée"
 
 #. The first %s will be one of 'struct', 'union', or 'enum'.
 #: c-decl.c:4665
-#, fuzzy, c-format
+#, c-format
 msgid "\"%s %s\" declared inside parameter list"
-msgstr "« struct %s » déclarée à l'intérieur de la liste de paramètres"
+msgstr "\"%s %s\" déclarée à l'intérieur de la liste de paramètres"
 
 #. The %s will be one of 'struct', 'union', or 'enum'.
 #: c-decl.c:4669
-#, fuzzy, c-format
+#, c-format
 msgid "anonymous %s declared inside parameter list"
-msgstr "structure anonyme déclarée à l'intérieur de la liste des paramètres"
+msgstr "structure anonyme %s déclarée à l'intérieur de la liste des paramètres"
 
 #: c-decl.c:4673
 msgid "its scope is only this definition or declaration, which is probably not what you want"
@@ -1410,9 +1389,8 @@ msgid "declaration does not declare anything"
 msgstr "déclaration ne déclarant rien du tout"
 
 #: c-decl.c:4873 c-decl.c:4889
-#, fuzzy
 msgid "%Jduplicate member '%D'"
-msgstr "membre « %D » est double"
+msgstr "membre %J « %D » est double"
 
 #: c-decl.c:4923 c-decl.c:4926
 #, c-format
@@ -1450,24 +1428,20 @@ msgid "nested redefinition of `%s'"
 msgstr "redéfinition imbriquée de « %s »"
 
 #: c-decl.c:4998
-#, fuzzy
 msgid "%Jflexible array member in union"
-msgstr "membre flexible de tableau dans l'union"
+msgstr "membre flexible de tableau %J dans l'union"
 
 #: c-decl.c:5000
-#, fuzzy
 msgid "%Jflexible array member not at end of struct"
-msgstr "le membre flexible de tableau n'est pas à la fin de la structure"
+msgstr "le membre flexible de tableau %J n'est pas à la fin de la structure"
 
 #: c-decl.c:5002
-#, fuzzy
 msgid "%Jflexible array member in otherwise empty struct"
-msgstr "membre flexible de tableau dans une structure vide par ailleurs"
+msgstr "membre flexible de tableau %J dans une structure vide par ailleurs"
 
 #: c-decl.c:5007
-#, fuzzy
 msgid "%Jinvalid use of structure with flexible array member"
-msgstr "utilisation invalide d'une structure ayant un membre flexible"
+msgstr "utilisation invalide d'une structure %J ayant un membre flexible"
 
 #: c-decl.c:5102
 msgid "union cannot be made transparent"
@@ -1509,117 +1483,96 @@ msgid "return type defaults to `int'"
 msgstr "le type du retour est « int » par défaut"
 
 #: c-decl.c:5476
-#, fuzzy
 msgid "%Jno previous prototype for '%D'"
-msgstr "aucun prototype anticipé pour « %s »"
+msgstr "aucun prototype précédent %J pour « %D »"
 
 #: c-decl.c:5482
-#, fuzzy
 msgid "%J'%D' was used with no prototype before its definition"
-msgstr "« %s » a été utilisé sans prototype avant sa définition"
+msgstr "« %J'%D » a été utilisé sans prototype avant sa définition"
 
 #: c-decl.c:5489
-#, fuzzy
 msgid "%Jno previous declaration for '%D'"
-msgstr "aucune déclaration anticipée pour « %s »"
+msgstr "aucune déclaration précédente %J pour « %D »"
 
 #: c-decl.c:5495
-#, fuzzy
 msgid "%J`%D' was used with no declaration before its definition"
-msgstr "« %s » a été utilisé sans déclaration avant sa définition"
+msgstr "%J « %D » a été utilisé sans déclaration avant sa définition"
 
 #: c-decl.c:5531 c-decl.c:6037
-#, fuzzy
 msgid "%Jreturn type of '%D' is not `int'"
-msgstr "le type de retour de « %s » n'est pas « int »"
+msgstr "le type de retour de %J « %D » n'est pas « int »"
 
 #: c-decl.c:5546
-#, fuzzy
 msgid "%Jfirst argument of '%D' should be `int'"
-msgstr "le premier argument de « %s » devrait être « int »"
+msgstr "le premier argument de %J « %D » devrait être « int »"
 
 #: c-decl.c:5555
-#, fuzzy
 msgid "%Jsecond argument of '%D' should be 'char **'"
-msgstr "le second argument de « %s » devrait être « char ** »"
+msgstr "le second argument de %J « %D » devrait être « char ** »"
 
 #: c-decl.c:5564
-#, fuzzy
 msgid "%Jthird argument of '%D' should probably be 'char **'"
-msgstr "le troisième argument de « %s » devrait probablement être « char ** »"
+msgstr "le troisième argument de %J « %D » devrait probablement être « char ** »"
 
 #: c-decl.c:5574
-#, fuzzy
 msgid "%J'%D' takes only zero or two arguments"
-msgstr "« %s » prend soit aucun argument soit deux arguments"
+msgstr "%J « %D » prend soit aucun argument ou soit deux arguments"
 
 #: c-decl.c:5577
-#, fuzzy
 msgid "%J'%D' is normally a non-static function"
-msgstr "« %s » n'est normalement pas une fonction statique"
+msgstr "%J « %D » n'est pas normalement une fonction statique"
 
 #: c-decl.c:5633
 msgid "%Jold-style parameter declarations in prototyped function definition"
 msgstr ""
 
 #: c-decl.c:5647
-#, fuzzy
 msgid "%Jparameter name omitted"
-msgstr "nom de paramètre omis"
+msgstr "nom de paramètre %J omis"
 
 #: c-decl.c:5722
-#, fuzzy
 msgid "%Jparameter name missing from parameter list"
-msgstr "nom du paramètre manquant dans la liste des paramètres"
+msgstr "nom du paramètre %J manquant dans la liste des paramètres"
 
 #: c-decl.c:5732
-#, fuzzy
 msgid "%J\"%D\" declared as a non-parameter"
-msgstr "« %D » déclaré comme un ami"
+msgstr "%J\"%D\" déclaré comme un non paramètre"
 
 #: c-decl.c:5737
-#, fuzzy
 msgid "%Jmultiple parameters named \"%D\""
-msgstr "plusieurs paramètres nommés « %s »"
+msgstr "plusieurs paramètres nommés %J « %D »"
 
 #: c-decl.c:5745
-#, fuzzy
 msgid "%Jparameter \"%D\" declared void"
-msgstr "paramètre « %D » déclaré «void »"
+msgstr "paramètre %J \"%D\" déclaré «void »"
 
 #: c-decl.c:5760 c-decl.c:5762
-#, fuzzy
 msgid "%Jtype of \"%D\" defaults to \"int\""
-msgstr "le type de « %s » est « int » par défaut"
+msgstr "le type de %J « %D » est « int » par défaut"
 
 #: c-decl.c:5776
-#, fuzzy
 msgid "%Jparameter \"%D\" has incomplete type"
-msgstr "le paramètre a un type incomplet"
+msgstr "le paramètre %J \"%D\" a un type incomplet"
 
 #: c-decl.c:5782
-#, fuzzy
 msgid "%Jdeclaration for parameter \"%D\" but no such parameter"
-msgstr "déclaration du paramètre « %s » mais pas de tel paramètre"
+msgstr "déclaration du paramètre %J « %D » mais pas de tel paramètre"
 
 #: c-decl.c:5834
 msgid "number of arguments doesn't match prototype"
 msgstr "le nombre d'arguments ne concorde pas avec celui du prototype"
 
 #: c-decl.c:5835 c-decl.c:5866 c-decl.c:5873
-#, fuzzy
 msgid "%Hprototype declaration"
-msgstr "déclaration vide"
+msgstr "déclaration de prototype %H"
 
 #: c-decl.c:5864
-#, fuzzy
 msgid "promoted argument \"%D\" doesn't match prototype"
-msgstr "argument promu « %s » ne concorde pas avec le prototype"
+msgstr "argument promu \"%D\" ne concorde pas avec le prototype"
 
 #: c-decl.c:5872
-#, fuzzy
 msgid "argument \"%D\" doesn't match prototype"
-msgstr "argument « %s » ne concorde pas avec le prototype"
+msgstr "argument \"%D\" ne concorde pas avec le prototype"
 
 #: c-decl.c:6069 cp/decl.c:10876
 msgid "no return statement in function returning non-void"
@@ -1633,49 +1586,43 @@ msgstr "cette fonction devrait finir en retournant ou non une valeur"
 #. the C99 for loop scope.  This doesn't make much sense, so don't
 #. allow it.
 #: c-decl.c:6175
-#, fuzzy
 msgid "'for' loop initial declaration used outside C99 mode"
 msgstr "déclaration initiale de la boucle « for » utilisée en dehors du mode C99"
 
 #: c-decl.c:6199
-#, fuzzy, c-format
+#, c-format
 msgid "'struct %s' declared in 'for' loop initial declaration"
 msgstr "« struct %s » déclarée dans la déclaration initiale de la boucle « for »"
 
 #: c-decl.c:6202
-#, fuzzy, c-format
+#, c-format
 msgid "'union %s' declared in 'for' loop initial declaration"
 msgstr "« union %s » déclarée dans la déclaration initiale de la boucle « for »"
 
 #: c-decl.c:6205
-#, fuzzy, c-format
+#, c-format
 msgid "'enum %s' declared in 'for' loop initial declaration"
 msgstr "« enum %s » déclarée dans la déclaration initiale de la boucle « for »"
 
 #: c-decl.c:6213
-#, fuzzy
 msgid "%Jdeclaration of non-variable '%D' in 'for' loop initial declaration"
-msgstr "déclaration de « %s » (qui n'est pas une variable) dans la déclaration initiale de « for »"
+msgstr "déclaration de %J « %D » (qui n'est pas une variable) dans la déclaration initiale de « for »"
 
 #: c-decl.c:6216
-#, fuzzy
 msgid "%Jdeclaration of static variable '%D' in 'for' loop initial declaration"
-msgstr "déclaration de la variable statique « %s » dans la déclaration initiale de la boucle « for »"
+msgstr "déclaration de la variable statique %J « %D » dans la déclaration initiale de la boucle « for »"
 
 #: c-decl.c:6219
-#, fuzzy
 msgid "%Jdeclaration of 'extern' variable '%D' in 'for' loop initial declaration"
-msgstr "déclaration de la variable externe « %s » dans la déclaration initiale « for »"
+msgstr "déclaration de la variable externe %J « %D » dans la déclaration initiale « for »"
 
 #: c-decl.c:6532
-#, fuzzy
 msgid "%Jredefinition of global '%D'"
-msgstr "redéfinition de « %s »"
+msgstr "redéfinition globale de %J « %D »"
 
 #: c-decl.c:6533
-#, fuzzy
 msgid "%J'%D' previously defined here"
-msgstr "«%#D» précédemment défini ici"
+msgstr "%J « %D » précédemment défini ici"
 
 #: c-format.c:94 c-format.c:210
 msgid "format string has invalid operand number"
@@ -1699,9 +1646,8 @@ msgid "`%s' is an unrecognized format function type"
 msgstr "« %s » a un format de type de fonction non reconnu"
 
 #: c-format.c:216
-#, fuzzy
 msgid "'...' has invalid operand number"
-msgstr "la chaîne de format a un nombre invalide d'opérandes"
+msgstr "'...' a un nombre invalide d'opérandes"
 
 #: c-format.c:224
 msgid "format string arg follows the args to be formatted"
@@ -2225,9 +2171,8 @@ msgstr "#pragma %s %s ignoré"
 
 #. ... or not.
 #: c-lex.c:385
-#, fuzzy
 msgid "%Hstray '@' in program"
-msgstr "« %c » perdu dans le programme"
+msgstr "%H « @ » perdu dans le programme"
 
 #: c-lex.c:393
 #, c-format
@@ -2263,9 +2208,8 @@ msgid "floating constant exceeds range of \"%s\""
 msgstr "constante en nombre flottant excédant les limites de « %s »"
 
 #: c-lex.c:696
-#, fuzzy
 msgid "traditional C rejects string constant concatenation"
-msgstr "le C traditionel rejette la concaténation de chaînes"
+msgstr "le C traditionel rejette la concaténation de chaînes de constantes"
 
 #: c-objc-common.c:82
 msgid "%Jfunction '%F' can never be inlined because it is supressed using -fno-inline"
@@ -2288,9 +2232,9 @@ msgid "%Jnested function '%F' can never be inlined because it has possibly saved
 msgstr ""
 
 #: c-opts.c:141
-#, fuzzy, c-format
+#, c-format
 msgid "no class name specified with \"%s\""
-msgstr "aucun nom de classe spécifié avec « -%s »"
+msgstr "aucun nom de classe spécifié avec \"%s\""
 
 #: c-opts.c:145
 #, fuzzy, c-format
