@@ -5597,9 +5597,11 @@ expand_expr (exp, target, tmode, modifier)
 		if (TREE_OPERAND (exp, 2) == 0)
 		  TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
 		if (TREE_OPERAND (exp, 2))
-		  cleanups_this_call = tree_cons (NULL_TREE,
-						  TREE_OPERAND (exp, 2),
-						  cleanups_this_call);
+		  {
+		    cleanups_this_call = tree_cons (NULL_TREE,
+						    TREE_OPERAND (exp, 2),
+						    cleanups_this_call);
+		  }
 	      }
 	  }
 	else
