@@ -1,3 +1,10 @@
+2004-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/18730
+	* emit-rtl.c (get_first_nonnote_insn, get_last_nonnote_insn): When
+	the first/last insn is a sequence, return the first/last insn of the
+	sequence.
+
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
         PR target/18932
