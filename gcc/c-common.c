@@ -1550,6 +1550,10 @@ static int maybe_read_dollar_number		PARAMS ((int *, const char **, int,
 static void finish_dollar_format_checking	PARAMS ((int *));
 
 static void check_format_types	PARAMS ((int *, format_wanted_type *));
+static int is_valid_printf_arglist PARAMS ((tree));
+static rtx c_expand_builtin (tree, rtx, enum machine_mode, enum expand_modifier);
+static rtx c_expand_builtin_printf PARAMS ((tree, rtx, enum machine_mode,
+					    enum expand_modifier, int));
 
 /* Initialize the table of functions to perform format checking on.
    The ISO C functions are always checked (whether <stdio.h> is
@@ -1615,8 +1619,6 @@ init_function_format_info ()
       record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
       record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
     }
-
-  check_function_format_ptr = check_function_format;
 }
 
 /* Record information for argument format checking.  FUNCTION_IDENT is
@@ -4388,7 +4390,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
     builtin_function ("__builtin_puts", puts_ftype,
 		      BUILT_IN_PUTS, BUILT_IN_NORMAL, "puts");
   builtin_function ("__builtin_printf", printf_ftype,
-		    BUILT_IN_PRINTF, BUILT_IN_NORMAL, "printf");
+		    BUILT_IN_PRINTF, BUILT_IN_FRONTEND, "printf");
   /* We declare these without argument so that the initial declaration
      for these identifiers is a builtin.  That allows us to redeclare
      them later with argument without worrying about the explicit
@@ -4450,7 +4452,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
       builtin_function ("cosl", ldouble_ftype_ldouble, BUILT_IN_COS,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("printf", printf_ftype, BUILT_IN_PRINTF,
-			BUILT_IN_NORMAL, NULL_PTR);
+			BUILT_IN_FRONTEND, NULL_PTR);
       /* We declare these without argument so that the initial
          declaration for these identifiers is a builtin.  That allows
          us to redeclare them later with argument without worrying
@@ -5028,6 +5030,20 @@ c_expand_expr (exp, target, tmode, modifier)
       }
       break;
       
+    case CALL_EXPR:
+      {
+	if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+	    && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+		== FUNCTION_DECL)
+	    && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+	    && (DECL_BUILT_IN_CLASS (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+		== BUILT_IN_FRONTEND))
+	  return c_expand_builtin (exp, target, tmode, modifier);
+	else
+	  abort();
+      }
+      break;
+
     default:
       abort ();
     }
@@ -5111,4 +5127,177 @@ add_c_tree_codes ()
   memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
 	  c_tree_code_name,
 	  (LAST_C_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+}
+
+#define CALLED_AS_BUILT_IN(NODE) \
+   (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
+
+static rtx
+c_expand_builtin (exp, target, tmode, modifier)
+     tree exp;
+     rtx target;
+     enum machine_mode tmode;
+     enum expand_modifier modifier;
+{
+  tree type = TREE_TYPE (exp);
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+  enum tree_code code = TREE_CODE (exp);
+  const int ignore = (target == const0_rtx
+		      || ((code == NON_LVALUE_EXPR || code == NOP_EXPR
+			   || code == CONVERT_EXPR || code == REFERENCE_EXPR
+			   || code == COND_EXPR)
+			  && TREE_CODE (type) == VOID_TYPE));
+
+  if (! optimize && ! CALLED_AS_BUILT_IN (fndecl))
+    return expand_call (exp, target, ignore);
+
+  switch (fcode)
+    {
+    case BUILT_IN_PRINTF:
+      target = c_expand_builtin_printf (arglist, target, tmode,
+					modifier, ignore);
+      if (target)
+	return target;
+      break;
+
+    default:			/* just do library call, if unknown builtin */
+      error ("built-in function `%s' not currently supported",
+	     IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+    }
+
+  /* The switch statement above can drop through to cause the function
+     to be called normally.  */
+  return expand_call (exp, target, ignore);
+}
+
+/* Check an arglist to *printf for problems.  The arglist should start
+   at the format specifier, with the remaining arguments immediately
+   following it. */
+static int
+is_valid_printf_arglist (arglist)
+  tree arglist;
+{
+  /* Save this value so we can restore it later. */
+  const int SAVE_pedantic = pedantic;
+  int diagnostic_occurred = 0;
+
+  /* Set this to a known value so the user setting won't affect code
+     generation.  */
+  pedantic = 1;
+  /* Check to make sure there are no format specifier errors. */
+  check_function_format (&diagnostic_occurred,
+			 maybe_get_identifier("printf"),
+			 NULL_TREE, arglist);
+
+  /* Restore the value of `pedantic'. */
+  pedantic = SAVE_pedantic;
+
+  /* If calling `check_function_format_ptr' produces a warning, we
+     return false, otherwise we return true. */
+  return ! diagnostic_occurred;
+}
+
+/* If the arguments passed to printf are suitable for optimizations,
+   we attempt to transform the call. */
+static rtx
+c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
+     tree arglist;
+     rtx target;
+     enum machine_mode tmode;
+     enum expand_modifier modifier;
+     int ignore;
+{
+  tree fn_putchar = built_in_decls[BUILT_IN_PUTCHAR],
+    fn_puts = built_in_decls[BUILT_IN_PUTS];
+  tree fn, format_arg, stripped_string;
+
+  /* If the return value is used, or the replacement _DECL isn't
+     initialized, don't do the transformation. */
+  if (!ignore || !fn_putchar || !fn_puts)
+    return 0;
+
+  /* Verify the required arguments in the original call. */
+  if (arglist == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE))
+    return 0;
+  
+  /* Check the specifier vs. the parameters. */
+  if (!is_valid_printf_arglist (arglist))
+    return 0;
+  
+  format_arg = TREE_VALUE (arglist);
+  stripped_string = format_arg;
+  STRIP_NOPS (stripped_string);
+  if (stripped_string && TREE_CODE (stripped_string) == ADDR_EXPR)
+    stripped_string = TREE_OPERAND (stripped_string, 0);
+
+  /* If the format specifier isn't a STRING_CST, punt.  */
+  if (TREE_CODE (stripped_string) != STRING_CST)
+    return 0;
+  
+  /* OK!  We can attempt optimization.  */
+
+  /* If the format specifier was "%s\n", call __builtin_puts(arg2). */
+  if (strcmp (TREE_STRING_POINTER (stripped_string), "%s\n") == 0)
+    {
+      arglist = TREE_CHAIN (arglist);
+      fn = fn_puts;
+    }
+  /* If the format specifier was "%c", call __builtin_putchar (arg2). */
+  else if (strcmp (TREE_STRING_POINTER (stripped_string), "%c") == 0)
+    {
+      arglist = TREE_CHAIN (arglist);
+      fn = fn_putchar;
+    }
+  else
+    {
+     /* We can't handle anything else with % args or %% ... yet. */
+      if (strchr (TREE_STRING_POINTER (stripped_string), '%'))
+	return 0;
+      
+      /* If the resulting constant string has a length of 1, call
+         putchar.  Note, TREE_STRING_LENGTH includes the terminating
+         NULL in its count.  */
+      if (TREE_STRING_LENGTH (stripped_string) == 2)
+        {
+	  /* Given printf("c"), (where c is any one character,)
+             convert "c"[0] to an int and pass that to the replacement
+             function. */
+	  arglist = build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0);
+	  arglist = build_tree_list (NULL_TREE, arglist);
+	  
+	  fn = fn_putchar;
+        }
+      /* If the resulting constant was "string\n", call
+         __builtin_puts("string").  Ensure "string" has at least one
+         character besides the trailing \n.  Note, TREE_STRING_LENGTH
+         includes the terminating NULL in its count.  */
+      else if (TREE_STRING_LENGTH (stripped_string) > 2
+	       && TREE_STRING_POINTER (stripped_string)
+	       [TREE_STRING_LENGTH (stripped_string) - 2] == '\n')
+        {
+	  /* Create a NULL-terminated string that's one char shorter
+	     than the original, stripping off the trailing '\n'.  */
+	  const int newlen = TREE_STRING_LENGTH (stripped_string) - 1;
+	  char *newstr = (char *) alloca (newlen);
+	  memcpy (newstr, TREE_STRING_POINTER (stripped_string), newlen - 1);
+	  newstr[newlen - 1] = 0;
+	  
+	  arglist = build_string (newlen, newstr);
+	  TREE_TYPE (arglist) = 
+	    build_type_variant (char_array_type_node, 1, 0);
+	  arglist = build_tree_list (NULL_TREE, arglist);
+	  fn = fn_puts;
+	}
+      else
+	/* We'd like to arrange to call fputs(string) here, but we
+           need stdout and don't have a way to get it ... yet.  */
+	return 0;
+    }
+  
+  return expand_expr (build_function_call (fn, arglist),
+		      (ignore ? const0_rtx : target),
+		      tmode, modifier);
 }

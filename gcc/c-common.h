@@ -683,6 +683,8 @@ extern tree c_add_case_label                    PARAMS ((splay_tree,
 							 tree, tree,
 							 tree));
 
+extern tree build_function_call			PARAMS ((tree, tree));
+
 #ifdef RTX_CODE
 
 extern struct rtx_def *c_expand_expr            PARAMS ((tree, rtx,
