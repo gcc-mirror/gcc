@@ -2809,9 +2809,6 @@ expand_return (retval)
   rtx last_insn = 0;
   rtx result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
   register rtx val = 0;
-#ifdef HAVE_return
-  register rtx op0;
-#endif
   tree retval_rhs;
   int cleanups;
 
@@ -2884,82 +2881,6 @@ expand_return (retval)
       end_cleanup_deferral ();
       return;
     }
-
-  /* Attempt to optimize the call if it is tail recursive.  */
-  if (flag_optimize_sibling_calls
-      && retval_rhs != NULL_TREE
-      && frame_offset == 0
-      && TREE_CODE (retval_rhs) == CALL_EXPR
-      && TREE_CODE (TREE_OPERAND (retval_rhs, 0)) == ADDR_EXPR
-      && (TREE_OPERAND (TREE_OPERAND (retval_rhs, 0), 0)
-	  == current_function_decl)
-      && optimize_tail_recursion (TREE_OPERAND (retval_rhs, 1), last_insn))
-    return;
-
-#ifdef HAVE_return
-  /* This optimization is safe if there are local cleanups
-     because expand_null_return takes care of them.
-     ??? I think it should also be safe when there is a cleanup label,
-     because expand_null_return takes care of them, too.
-     Any reason why not?  */
-  if (HAVE_return && cleanup_label == 0
-      && ! current_function_returns_pcc_struct
-      && BRANCH_COST <= 1)
-    {
-      /* If this is  return x == y;  then generate
-	 if (x == y) return 1; else return 0;
-	 if we can do it with explicit return insns and branches are cheap,
-	 but not if we have the corresponding scc insn.  */
-      int has_scc = 0;
-      if (retval_rhs)
-	switch (TREE_CODE (retval_rhs))
-	  {
-	  case EQ_EXPR:
-#ifdef HAVE_seq
-	    has_scc = HAVE_seq;
-#endif
-	  case NE_EXPR:
-#ifdef HAVE_sne
-	    has_scc = HAVE_sne;
-#endif
-	  case GT_EXPR:
-#ifdef HAVE_sgt
-	    has_scc = HAVE_sgt;
-#endif
-	  case GE_EXPR:
-#ifdef HAVE_sge
-	    has_scc = HAVE_sge;
-#endif
-	  case LT_EXPR:
-#ifdef HAVE_slt
-	    has_scc = HAVE_slt;
-#endif
-	  case LE_EXPR:
-#ifdef HAVE_sle
-	    has_scc = HAVE_sle;
-#endif
-	  case TRUTH_ANDIF_EXPR:
-	  case TRUTH_ORIF_EXPR:
-	  case TRUTH_AND_EXPR:
-	  case TRUTH_OR_EXPR:
-	  case TRUTH_NOT_EXPR:
-	  case TRUTH_XOR_EXPR:
-	    if (! has_scc)
-	      {
-		op0 = gen_label_rtx ();
-		jumpifnot (retval_rhs, op0);
-		expand_value_return (const1_rtx);
-		emit_label (op0);
-		expand_value_return (const0_rtx);
-		return;
-	      }
-	    break;
-
-	  default:
-	    break;
-	  }
-    }
-#endif /* HAVE_return */
 
   /* If the result is an aggregate that is being returned in one (or more)
      registers, load the registers here.  The compiler currently can't handle
