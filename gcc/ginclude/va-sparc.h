@@ -20,10 +20,14 @@ typedef char * __va___list;
 /* The ... causes current_function_varargs to be set in cc1.  */
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
 
-/* The difference is to store the stack address in both components
-   instead of in AP itself.  */
+#ifdef _STDARG_H
+#define va_start(AP, LASTARG)					\
+  (__builtin_saveregs (), AP = ((char *) __builtin_next_arg ()))
+#else
 #define va_start(AP) 						\
  (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
+#endif
+
 #define va_end(pvar)
 
 #define __va_rounded_size(TYPE)  \
@@ -43,6 +47,6 @@ __extension__							\
 ({ TYPE __va_temp;						\
    ((__builtin_classify_type (__va_temp) >= 12)			\
     ? ((pvar) += __va_rounded_size (TYPE *),			\
-       **(TYPE **) (pvar) - __va_rounded_size (TYPE *))		\
-    : ((pvar) += __va_rounded_size (TYPE),		\
+       **(TYPE **) ((pvar) - __va_rounded_size (TYPE *)))	\
+    : ((pvar) += __va_rounded_size (TYPE),			\
        *((TYPE *) ((pvar) - __va_rounded_size (TYPE)))));})
