@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "arm/semi.h"
 #include "arm/aout.h"
 
+/* Note - it is important that this definition matches the one in tcoff.h */
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 

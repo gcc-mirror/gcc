@@ -44,12 +44,12 @@ extern int arm_structure_size_boundary;
 
 #include "dbxcoff.h"
 
-/* Note - it is important that these definitions match those in semi.h for the ARM port.  */
-#undef LOCAL_LABEL_PREFIX
+#undef  LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 
-#undef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
+/* Note - it is important that this definition matches the one in coff.h */
+#undef  USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
 
 /* A C statement to output assembler commands which will identify the
    object file as having been compiled with GNU CC (or another GNU
