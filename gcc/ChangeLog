@@ -1,3 +1,8 @@
+2003-01-20  Andreas Schwab  <schwab@suse.de>
+
+	* system.h: Don't declare strsignal if the decl test hasn't been
+	run yet.
+
 2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (notice_update_cc): Don't assume that
