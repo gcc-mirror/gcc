@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1990, 91-99, 2000, 2001, 2002
+#   Copyright (C) 1990, 91-99, 2000, 2001, 2002, 2003
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -279,10 +279,10 @@ install_to_libdir: all
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 install_to_tooldir: all
-	${mkinstalldirs} $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR)
-	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n
-	( cd $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
-	mv -f $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)
+	${mkinstalldirs} $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`
+	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)n
+	( cd $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory` ; $(RANLIB) $(TARGETLIB)n )
+	mv -f $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)n $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 # needed-list is used by libstdc++.  NEEDED is the list of functions
