@@ -1,3 +1,12 @@
+2000-09-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* builtins.def (BUILT_IN_LLABS): Add.
+	* builtins.c (expand_builtin): Also abort on BUILT_IN_LLABS.
+	* c-common.c (c_common_nodes_builtins): Create builtin functions
+	__builtin_llabs, and plain llabs unless no_nonansi_builtins
+	outside of C99 mode.
+	(expand_tree_builtin): Handle BUILT_IN_LLABS.
+
 Sat 23-Sep-2000 22:39:18 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cpphash.h (CPP_RESERVE, CPP_PUTS_Q, CPP_PUTS, CPP_PUTC_Q,
