@@ -3406,9 +3406,11 @@ compile_file (name)
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,
    and TYPE_DECL nodes.
 
-   This does nothing for local (non-static) variables.
-   Otherwise, it sets up the RTL and outputs any assembler code
-   (label definition, storage allocation and initialization).
+   This does nothing for local (non-static) variables, unless the
+   variable is a register variable with an ASMSPEC.  In that case, or
+   if the variable is not an automatice, it sets up the RTL and
+   outputs any assembler code (label definition, storage allocation
+   and initialization).
 
    DECL is the declaration.  If ASMSPEC is nonzero, it specifies
    the assembler symbol name to be used.  TOP_LEVEL is nonzero

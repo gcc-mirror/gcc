@@ -1,3 +1,7 @@
+Fri Sep 24 01:10:11 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* toplev.c (rest_of_decl_compilation): Update comment.
+
 Fri Sep 24 11:57:06 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/mips/elf.h (ASM_OUTPUT_ALIGNED_BSS): Put the symbol
