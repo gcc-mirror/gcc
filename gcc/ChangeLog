@@ -1,3 +1,11 @@
+2004-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/16294
+	* resource.c (return_insn_p): New predicate.
+	(mark_target_live_regs): Use it.  Special-case return insns.
+	(init_resource_info): Use it.  Don't scan the epilogue past
+	a return.
+
 2004-07-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* loop-init.c (loop_optimizer_init, loop_optimizer_finalize): Do not
