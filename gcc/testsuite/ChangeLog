@@ -1,5 +1,8 @@
 2005-03-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/18384, c++/18327
+	* g++.dg/init/array19.C: New test.
+
 	PR inline-asm/20314
 	* gcc.dg/torture/pr20314-1.c: New test.
 	* gcc.dg/torture/pr20314-2.c: New test.
