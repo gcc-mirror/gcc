@@ -96,6 +96,10 @@ enum op_type recog_op_type[MAX_RECOG_OPERANDS];
 char recog_operand_address_p[MAX_RECOG_OPERANDS];
 #endif
 
+/* Contains a vector of operand_alternative structures for every operand.
+   Set up by preprocess_constraints.  */
+struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
+
 /* On return from `constrain_operands', indicate which alternative
    was satisfied.  */
 
@@ -1803,8 +1807,115 @@ extract_insn (insn)
     recog_op_type[i] = (recog_constraints[i][0] == '=' ? OP_OUT
 			: recog_constraints[i][0] == '+' ? OP_INOUT
 			: OP_IN);
+
+  if (recog_n_alternatives > MAX_RECOG_ALTERNATIVES)
+    abort ();
 }
 
+/* After calling extract_insn, you can use this function to extract some
+   information from the constraint strings into a more usable form.
+   The collected data is stored in recog_op_alt.  */
+void
+preprocess_constraints ()
+{
+  int i;
+
+  for (i = 0; i < recog_n_operands; i++)
+    {
+      int j;
+      struct operand_alternative *op_alt;
+      char *p = recog_constraints[i];
+
+      op_alt = recog_op_alt[i];
+
+      for (j = 0; j < recog_n_alternatives; j++)
+	{
+	  op_alt[j].class = NO_REGS;
+	  op_alt[j].constraint = p;
+	  op_alt[j].matches = -1;
+	  op_alt[j].matched = -1;
+
+	  if (*p == '\0' || *p == ',')
+	    {
+	      op_alt[j].anything_ok = 1;
+	      continue;
+	    }
+
+	  for (;;)
+	    {
+	      char c = *p++;
+	      if (c == '#')
+		do
+		  c = *p++;
+		while (c != ',' && c != '\0');
+	      if (c == ',' || c == '\0')
+		break;
+
+	      switch (c)
+		{
+		case '=': case '+': case '*': case '%':
+		case 'E': case 'F': case 'G': case 'H':
+		case 's': case 'i': case 'n':
+		case 'I': case 'J': case 'K': case 'L':
+		case 'M': case 'N': case 'O': case 'P':
+#ifdef EXTRA_CONSTRAINT
+		case 'Q': case 'R': case 'S': case 'T': case 'U':
+#endif
+		  /* These don't say anything we care about.  */
+		  break;
+
+		case '?':
+		  op_alt[j].reject += 6;
+		  break;
+		case '!':
+		  op_alt[j].reject += 600;
+		  break;
+		case '&':
+		  op_alt[j].earlyclobber = 1;
+		  break;		  
+
+		case '0': case '1': case '2': case '3': case '4':
+		case '5': case '6': case '7': case '8': case '9':
+		  op_alt[j].matches = c - '0';
+		  op_alt[op_alt[j].matches].matched = i;
+		  break;
+
+		case 'm':
+		  op_alt[j].memory_ok = 1;
+		  break;
+		case '<':
+		  op_alt[j].decmem_ok = 1;
+		  break;
+		case '>':
+		  op_alt[j].incmem_ok = 1;
+		  break;
+		case 'V':
+		  op_alt[j].nonoffmem_ok = 1;
+		  break;
+		case 'o':
+		  op_alt[j].offmem_ok = 1;
+		  break;
+		case 'X':
+		  op_alt[j].anything_ok = 1;
+		  break;
+
+		case 'p':
+		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) BASE_REG_CLASS];
+		  break;
+
+		case 'g': case 'r':
+		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) GENERAL_REGS];
+		  break;
+
+		default:
+		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) REG_CLASS_FROM_LETTER (c)];
+		  break;
+		}
+	    }
+	}
+    }
+}
+ 
 #ifdef REGISTER_CONSTRAINTS
 
 /* Check the operands of an insn against the insn's operand constraints
