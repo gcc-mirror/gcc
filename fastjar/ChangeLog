@@ -1,3 +1,9 @@
+2002-09-04  Tom Tromey  <tromey@redhat.com>
+
+	From greenrd@hotmail.com:
+	* jartool.c (list_jar): Correctly determine when new `filename'
+	buffer must be allocated.  Fixes PR java/7830.
+
 2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	* configure.in: Support cross-compiling.

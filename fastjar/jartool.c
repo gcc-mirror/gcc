@@ -1657,7 +1657,7 @@ int list_jar(int fd, char **files, int file_num){
         strftime(ascii_date, 30, "%a %b %d %H:%M:%S %Z %Y", s_tm);
       }
 
-      if(filename_len < fnlen){
+      if(filename_len < fnlen + 1){
         if(filename != NULL)
           free(filename);
       
@@ -1776,7 +1776,7 @@ int list_jar(int fd, char **files, int file_num){
         strftime(ascii_date, 30, "%a %b %d %H:%M:%S %Z %Y", s_tm);
       }
 
-      if(filename_len < fnlen){
+      if(filename_len < fnlen + 1){
         if(filename != NULL)
           free(filename);
         
