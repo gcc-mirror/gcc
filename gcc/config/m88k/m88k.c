@@ -868,14 +868,20 @@ output_call (operands, addr)
 	     If we loose, we must use the non-delay form.  This is unlikely
 	     to ever happen.  If it becomes a problem, claim that a call
 	     has two delay slots and only the second can be filled with
-	     a jump.  */
+	     a jump.  
+
+	     The 88110 can lose when a jsr.n r1 is issued and a page fault
+	     occurs accessing the delay slot.  So don't use jsr.n form when
+	     jumping thru r1.
+	   */
 #ifdef AS_BUG_IMMEDIATE_LABEL /* The assembler restricts immediate values.  */
 	  if (optimize < 2
-	      || ! ADD_INTVAL (delta * 2))
+	      || ! ADD_INTVAL (delta * 2)
 #else
 	  if (optimize < 2
-	      || ! ADD_INTVAL (delta))
+	      || ! ADD_INTVAL (delta)
 #endif
+	      || (REG_P (addr) && REGNO (addr) == 1))
 	    {
 	      operands[1] = dest;
 	      return (REG_P (addr)
