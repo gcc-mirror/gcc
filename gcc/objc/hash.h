@@ -1,5 +1,3 @@
-/* -*-c-*- */
-
 /* Copyright (C) 1989, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -25,10 +23,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the executable file might be covered by the GNU General Public License.  */
 
 /* 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/dispatch/RCS/hash.h,v 0.10 1992/08/18 04:46:58 dglattin Exp $
+  $Header: /home/fsf/rms/c-runtime/dispatch/RCS/hash.h,v 0.11 1992/08/31 21:15:02 dglattin Exp rms $
   $Author: dglattin $
-  $Date: 1992/08/18 04:46:58 $
+  $Date: 1992/08/31 21:15:02 $
   $Log: hash.h,v $
+ * Revision 0.11  1992/08/31  21:15:02  dglattin
+ * minor documentation changes.
+ *
  * Revision 0.10  1992/08/18  04:46:58  dglattin
  * Saving a working version before release.
  *
@@ -50,7 +51,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  * Revision 0.5  1991/11/23  22:19:21  dennisg
  * converted some entries in the hash structure from ints to shorts.
  * this was done to use a less expensive division instruction
- * in the hashIndex () routine.
+ * in the hashIndex  routine.
  *
  * Revision 0.4  1991/11/21  22:25:19  dennisg
  * deleted hash mask information from hash struct.
@@ -71,18 +72,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef _hash_INCLUDE_GNU
 #define _hash_INCLUDE_GNU
 
-                                                /* If someone is using a c++
-                                                  compiler then adjust the 
-                                                  types in the file back 
-                                                  to C. */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-#include        <assert.h>
-#include  <sys/types.h>
+#include "assert.h"
+#include "mutex.h"
 
-#include        <mutex.h>
 
 /*
  * This data structure is used to hold items
@@ -92,16 +85,16 @@ extern "C" {
  * Items in the cache are really of type void*.
  */
 typedef struct cache_node {
-  struct cache_node*  nextNode;                   /* Pointer to next entry on
-                                                    the list.  NULL indicates
-                                                    end of list. */
-  void*               theKey;                     /* Key used to locate the
-                                                    value.  Used to locate
-                                                    value when more than one
-                                                    key computes the same hash
-                                                    value. */
-  void*               theValue;                   /* Value stored for the
-                                                    key. */
+  struct cache_node *nextNode;	/* Pointer to next entry on
+				   the list.  NULL indicates
+				   end of list. */
+  void *theKey;			/* Key used to locate the
+				   value.  Used to locate
+				   value when more than one
+				   key computes the same hash
+				   value. */
+  void *theValue;		/* Value stored for the
+				   key. */
 } CacheNode, *CacheNode_t;
 
 
@@ -112,9 +105,9 @@ typedef struct cache_node {
  *
  * Unfortunately there is a mutual data structure reference problem with this
  * typedef.  Therefore, to remove compiler warnings the functions passed to
- * hash_new() will have to be casted to this type. 
+ * hash_new will have to be casted to this type. 
  */
-typedef u_int   (*HashFunc)(void*, void*);
+typedef unsigned int   (*HashFunc)(void*, void*);
 
 /*
  * This data type is the function that compares two hash keys and returns an
@@ -137,88 +130,72 @@ typedef struct cache {
    * Variables used to implement the
    *  hash itself.
    */
-  CacheNode_t  (* theNodeTable)[];                /* Pointer to an array of
-                                                    hash nodes. */
+  CacheNode_t  (*theNodeTable)[]; /* Pointer to an array of
+				     hash nodes. */
   /*
    * Variables used to track the size of the hash
    *  table so to determine when to resize it.
    */
-  u_int       sizeOfHash,                        /* Number of buckets 
-                                                    allocated for the hash
-                                                    table  (number of array
-                                                    entries allocated for
-                                                    "theNodeTable").  Must be
-                                                    a power of two. */
-              entriesInHash,                      /* Current number of entries
-                                                    in the hash table. */
-              mask;                               /* Precomputed mask. */
+  unsigned int sizeOfHash,	/* Number of buckets 
+				   allocated for the hash
+				   table  (number of array
+				   entries allocated for
+				   "theNodeTable").  Must be
+				   a power of two. */
+  unsigned int entriesInHash,	/* Current number of entries
+				   in the hash table. */
+  unsigned int mask;		/* Precomputed mask. */
   /*
    * Variables used to implement indexing
    *  through the hash table.
    */
-  u_int       lastBucket;                         /* Tracks which entry in the
-                                                    array where the last value
-                                                    was returned. */
-                                                  /* Function used to compute
-						     a hash code given a key. 
-						     This function is 
-						     specified when the hash 
-						     table is created. */
+  unsigned int lastBucket;	/* Tracks which entry in the
+				   array where the last value
+				   was returned. */
+  /* Function used to compute a hash code given a key. 
+     This function is specified when the hash table is created. */
   HashFunc    hashFunc;
-                                                  /* Function used to compare 
-						     two hash keys to determine
-						     if they are equal. */
+  /* Function used to compare two hash keys to determine
+     if they are equal. */
   CompareFunc compareFunc;
 } Cache, *Cache_t;
 
 
-                                                /* Prototypes for hash
-                                                  functions. */
-                                                /* Allocate and initialize 
-                                                  a hash table. */ 
+/* Allocate and initialize a hash table. */ 
 Cache_t 
-hash_new (u_int sizeOfHash, HashFunc aHashFunc, CompareFunc aCompareFunc);
-                                                /* Deallocate all of the
-                                                  hash nodes and the cache
-                                                  itself. */
+hash_new (unsigned int sizeOfHash,
+	  HashFunc aHashFunc, CompareFunc aCompareFunc);
+                       
+/* Deallocate all of the hash nodes and the cache itself. */
 void 
 hash_delete (Cache_t theCache);
-                                                /* Add the key/value pair
-                                                  to the hash table.  If the
-                                                  hash table reaches a 
-                                                  level of fullnes then
-                                                  it will be resized. 
+
+/* Add the key/value pair to the hash table.  If the
+   hash table reaches a level of fullnes then it will be resized. 
                                                    
-                                                  assert() if the key is 
-                                                  already in the hash. */
+   assert if the key is already in the hash. */
 void 
-hash_add (Cache_t* theCache, void* aKey, void* aValue);
-                                                /* Remove the key/value pair
-                                                  from the hash table.  
-                                                  assert() if the key isn't 
-                                                  in the table. */
+hash_add (Cache_t *theCache, void *aKey, void *aValue);
+     
+/* Remove the key/value pair from the hash table.  
+   assert if the key isn't in the table. */
 void 
-hash_remove (Cache_t theCache, void* aKey);
-                                                /* Used to index through the
-                                                  hash table.  Start with NULL
-                                                  to get the first entry.
+hash_remove (Cache_t theCache, void *aKey);
+
+/* Used to index through the hash table.  Start with NULL
+   to get the first entry.
                                                   
-                                                  Successive calls pass the
-                                                  value returned previously.
-                                                  ** Don't modify the hash
-                                                  during this operation *** 
+   Successive calls pass the value returned previously.
+   ** Don't modify the hash during this operation *** 
                                                   
-                                                  Cache nodes are returned
-                                                  such that key or value can
-                                                  ber extracted. */
+   Cache nodes are returned such that key or value can
+   be extracted. */
 CacheNode_t 
 hash_next (Cache_t theCache, CacheNode_t aCacheNode);
 
-                                               /* Used to return a value from 
-						  a hash table using a given 
-						  key.  */
+/* Used to return a value from a hash table using a given key.  */
 void* 
-hash_value_for_key (Cache_t theCache, void* aKey);
+hash_value_for_key (Cache_t theCache, void *aKey);
 
 
 /************************************************
@@ -229,27 +206,26 @@ hash_value_for_key (Cache_t theCache, void* aKey);
         
 ************************************************/
 
-                                                /* Calculate a hash code by 
-						   performing some 
-						   manipulation of the key 
-						   pointer. */
-static inline u_int 
-intHash(Cache_t theCache, void* aKey) {
+/* Calculate a hash code by performing some 
+   manipulation of the key pointer. */
+static inline unsigned int 
+intHash(Cache_t theCache, void *aKey)
+{
 
 
-  assert(sizeof (u_int) == sizeof (aKey));
+  assert(sizeof (unsigned int) == sizeof (aKey));
 
-  return ((u_int)aKey >> (sizeof(void*) - 1)) & theCache->mask ;
+  return ((unsigned int)aKey >> (sizeof(void*) - 1)) & theCache->mask ;
 }
 
-                                                /* Calculate a hash code by 
-						   iterating over a NULL 
-						   terminate string. */
-static inline u_int 
-strHash(Cache_t theCache, void* aKey) {
 
-  u_int   ret = 0;
-  u_int   ctr = 0;
+/* Calculate a hash code by iterating over a NULL 
+   terminate string. */
+static inline unsigned int 
+strHash(Cache_t theCache, void *aKey)
+{
+  unsigned int ret = 0;
+  unsigned int ctr = 0;
         
         
   while(*(char*)aKey) {
@@ -263,24 +239,18 @@ strHash(Cache_t theCache, void* aKey) {
 
 /* Compare two integers. */
 static inline int 
-intCmp(void* k1, void* k2) {
-
-
-        return !((int)k1 - (int)k2);
+intCmp(void *k1, void *k2)
+{
+  return !((int)k1 - (int)k2);
 }
 
 
 /* Compare two strings. */
 static inline int 
-strCmp(void* k1, void* k2) {
-
-
-  return !strcmp( k1, k2 );
+strCmp(void *k1, void *k2)
+{
+  return !strcmp(k1, k2);
 }
 
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+#endif /* _hash_INCLUDE_GNU */
