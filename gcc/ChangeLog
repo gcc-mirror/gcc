@@ -2,6 +2,8 @@
 
 	* combine.c (combine_simplify_rtx): Try to simplify VEC_SELECT of a
 	VEC_CONCAT.
+	* rtl.texi (description of USE): Add note about possible pitfalls
+	with this rtx.
 	From Richard Henderson:
 	* reload1.c (choose_reload_regs): Compute need_mode properly.
 
