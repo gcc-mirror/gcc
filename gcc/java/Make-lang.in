@@ -296,10 +296,10 @@ java/jcf-path.o: java/jcf-path.c $(CONFIG_H) $(SYSTEM_H) java/jcf.h
 $(srcdir)/java/gcj.info: $(srcdir)/java/gcj.texi
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f $(srcdir)/java/gcc.info*; \
-	  cd $(srcdir)/java && $(MAKEINFO) -o gcj.info gcj.texi; \
+	  cd $(srcdir)/java && $(MAKEINFO) -I.. -o gcj.info gcj.texi; \
 	else true; fi
 
 java/gcj.dvi: $(srcdir)/java/gcj.texi
-	TEXINPUTS=${texidir}:$(srcdir)/java:$$TEXINPUTS tex gcj.texi
+	TEXINPUTS=${texidir}:$(srcdir)/java:$(srcdir):$$TEXINPUTS tex gcj.texi
 	texindex gcj.??
-	TEXINPUTS=${texidir}:$(srcdir)/java:$$TEXINPUTS tex gcj.texi
+	TEXINPUTS=${texidir}:$(srcdir)/java:$(srcdir):$$TEXINPUTS tex gcj.texi

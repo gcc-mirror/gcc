@@ -1,3 +1,10 @@
+2001-05-01  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in ($(srcdir)/java/gcj.info): Added `-I..'.
+	(java/gcj.dvi): Added $(srcdir) to TEXINPUTS.
+	* gcj.texi: Updated copyright text.  Include fdl.texi.
+	(Top): Link to new node.
+
 2001-05-01  Per Bothner  <per@bothner.com>
 
 	* parse.h (REGISTER_IMPORT):  Use tree_cons instead of chainon.
