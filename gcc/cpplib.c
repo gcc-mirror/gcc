@@ -1106,7 +1106,7 @@ handle_directive (pfile)
 	CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
     }
 
-  /* We may want to pass through #define, #pragma, and #include.
+  /* We may want to pass through #define, #undef, #pragma, and #include.
      Other directives may create output, but we don't want the directive
      itself out, so we pop it now.  For example conditionals may emit
      #failed ... #endfailed stuff.  But note that popping the buffer
@@ -1116,6 +1116,8 @@ handle_directive (pfile)
 
   line_end = CPP_PWRITTEN (pfile);
   if (! (kt->type == T_DEFINE
+	 || (kt->type == T_UNDEF
+	     && CPP_OPTIONS (pfile)->dump_macros != dump_definitions)
 	 || kt->type == T_PRAGMA
 	 || (IS_INCLUDE_DIRECTIVE_TYPE (kt->type)
 	     && CPP_OPTIONS (pfile)->dump_includes)))
