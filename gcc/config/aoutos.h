@@ -36,6 +36,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    or configure.in script to properly use the new ?????aout.h file
    when configuring for the system.  */
 
+/* Define a symbol indicating that we are using aoutos.h.  */
+#define USING_AOUTOS_H
+
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors. 
    If using GNU LD, tell it that this is part of the static destructor set. 
