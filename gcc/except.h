@@ -472,10 +472,6 @@ extern void push_ehqueue                        PARAMS ((void));
 /* Restore a previously pushed ehqueue.  */
 extern void pop_ehqueue                         PARAMS ((void));
 
-/* One to use setjmp/longjmp method of generating code.  */
-
-extern int exceptions_via_longjmp;
-
 /* One to enable asynchronous exception support.  */
 
 extern int flag_non_call_exceptions;
@@ -515,4 +511,28 @@ void init_insn_eh_region                PARAMS ((rtx, int));
 
 #ifdef rtx
 #undef rtx
+#endif
+
+/* Just because the user configured --with-sjlj-exceptions=no doesn't
+   mean that we can use call frame exceptions.  Detect that the target
+   has appropriate support.  */
+
+#ifdef CONFIG_SJLJ_EXCEPTIONS
+# if CONFIG_SJLJ_EXCEPTIONS == 1
+#  define USING_SJLJ_EXCEPTIONS		1
+# endif
+# if CONFIG_SJLJ_EXCEPTIONS == 0
+#  define USING_SJLJ_EXCEPTIONS		0
+#  if !defined(DWARF2_UNWIND_INFO) && !defined(IA64_UNWIND_INFO)
+    #error "{DWARF2,IA64}_UNWIND_INFO required"
+#  endif
+# endif
+#else
+# ifdef IA64_UNWIND_INFO
+#  define USING_SJLJ_EXCEPTIONS		(!IA64_UNWIND_INFO)
+# else
+#  ifdef DWARF2_UNWIND_INFO
+#   define USING_SJLJ_EXCEPTIONS	(!DWARF2_UNWIND_INFO)
+#  endif
+# endif
 #endif

@@ -86,7 +86,7 @@ dwarf2out_do_frame ()
 #endif
 #ifdef DWARF2_UNWIND_INFO
 	  || flag_unwind_tables
-	  || (flag_exceptions && ! exceptions_via_longjmp)
+	  || (flag_exceptions && ! USING_SJLJ_EXCEPTIONS)
 #endif
 	  );
 }
@@ -1936,11 +1936,11 @@ dwarf2out_frame_finish ()
 #ifdef MIPS_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
     output_call_frame_info (0);
-  if (flag_unwind_tables || (flag_exceptions && ! exceptions_via_longjmp))
+  if (flag_unwind_tables || (flag_exceptions && ! USING_SJLJ_EXCEPTIONS))
     output_call_frame_info (1);
 #else
   if (write_symbols == DWARF2_DEBUG
-      || flag_unwind_tables || (flag_exceptions && ! exceptions_via_longjmp))
+      || flag_unwind_tables || (flag_exceptions && ! USING_SJLJ_EXCEPTIONS))
     output_call_frame_info (1);
 #endif
 }

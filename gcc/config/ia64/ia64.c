@@ -2470,7 +2470,7 @@ ia64_function_prologue (file, size)
 	     current_frame_info.n_output_regs,
 	     current_frame_info.n_rotate_regs);
 
-  if (!flag_unwind_tables && (!flag_exceptions || exceptions_via_longjmp))
+  if (!flag_unwind_tables && (!flag_exceptions || USING_SJLJ_EXCEPTIONS))
     return;
 
   /* Emit the .prologue directive.  */
@@ -2529,7 +2529,7 @@ void
 ia64_output_end_prologue (file)
      FILE *file;
 {
-  if (!flag_unwind_tables && (!flag_exceptions || exceptions_via_longjmp))
+  if (!flag_unwind_tables && (!flag_exceptions || USING_SJLJ_EXCEPTIONS))
     return;
 
   fputs ("\t.body\n", file);
@@ -6587,7 +6587,7 @@ process_for_unwind_directive (asm_out_file, insn)
      rtx insn;
 {
   if (flag_unwind_tables
-      || (flag_exceptions && !exceptions_via_longjmp))
+      || (flag_exceptions && !USING_SJLJ_EXCEPTIONS))
     {
       rtx pat;
 

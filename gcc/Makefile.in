@@ -887,10 +887,19 @@ cs-hconfig.h: Makefile
 	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
 	$(SHELL) $(srcdir)/mkconfig.sh hconfig.h
 
-cs-tconfig.h: Makefile
+cs-tconfig.h: Makefile $(GCONFIG_H) insn-flags.h except.h
 	HEADERS="$(xm_file)" DEFINES="$(xm_defines)" \
 	TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
+# ??? Need extra help to get this definition copied to where libgcc can
+# see it.  It shouldn't matter which compiler we use to get there.
+	echo '#include "config.h"' > conftest.c
+	echo '#include "except.h"' >> conftest.c
+	echo 'xyzzy USING_SJLJ_EXCEPTIONS' >> conftest.c
+	$(HOST_CC) -E conftest.c $(HOST_CFLAGS) $(INCLUDES) > conftest.out
+	sed -e 's/xyzzy/#define USING_SJLJ_EXCEPTIONS/' -e '/#define/p' \
+		-e d conftest.out >> tconfig.h
+	rm conftest.*
 
 cs-tm_p.h: Makefile
 	HEADERS="$(tm_p_file)" DEFINES="" TARGET_CPU_DEFAULT="" \
