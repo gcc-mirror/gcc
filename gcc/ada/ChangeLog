@@ -1,3 +1,80 @@
+2004-02-09  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): When looking for the primitive equality
+	for a tagged type, verify that both formals have the same type.
+
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Initialize properly the
+	temporary when the formal is an in-parameter and the actual a possibly
+	unaligned slice.
+
+	* exp_ch9.adb (Expand_Entry_Barrier): Resolve barrier expression even
+	when expansion is disabled, to ensure proper name capture with
+	overloaded literals.  Condition can be of any boolean type, resolve
+	accordingly.
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Emit warning if the
+	renaming is for a formal subprogram with a default operator name, and
+	there is a usable operator that is visible at the point of
+	instantiation.
+
+2004-02-09  Robert Dewar  <dewar@gnat.com>
+
+	* ali.adb (Scan_Ali) Add Ignore_Errors argument. This is a major
+	rewrite to ignore errors in ali files, intended to allow tools downward
+	compatibility with new versions of ali files.
+
+	* ali.ads: Add new parameter Ignore_Errors
+
+	* bcheck.adb (Check_Consistent_Restrictions): Fix error of sometimes
+	duplicating the error message giving the file with restrictions.
+
+	* debug.adb: Add debug flag I for gnatbind
+
+	* errout.adb (Set_Msg_Insertion_Node): Suppress extra quotes around
+	operators for the case where the operator is a defining operator.
+
+	* exp_ch3.adb: Minor reformatting (new function spec format).
+
+	* exp_ch4.adb: Add comment for previous change, and make minor
+	adjustment to loop to always check for improper loop termination.
+	Minor reformatting throughout (new function spec format).
+
+	* gnatbind.adb: Implement -di debug flag for gnatbind
+
+	* gnatlink.adb: Call Scan_ALI with Ignore_Errors set to True
+
+	* gnatls.adb: Call Scan_ALI with Ignore_Errors set to True
+
+	* lib-load.adb: Fix bad assertion.
+	Found by testing and code reading.
+	Minor reformatting.
+
+	* lib-load.ads: Minor reformatting.
+
+	* lib-writ.adb: There is only one R line now.
+
+	* lib-writ.ads: Add documentation on making downward compatible changes
+	to ali files so old tools work with new ali files.
+	There is only one R line now.
+	Add documentation on format incompatibilities (with special GPS note)
+
+	* namet.ads, namet.adb: (Is_Operator_Name): New procedure
+
+	* par-load.adb: Minor reformatting
+
+	* sem_ch8.adb: Fix to error message from last update
+	Minor reformatting and restructuring of code from last update
+
+	* par-prag.adb, snames.adb, snames.ads, snames.h,
+	sem_prag.adb: Implement pragma Profile.
+
+	* stylesw.adb: Implement -gnatyN switch to turn off all style check
+	options.
+
+	* usage.adb: Add line for -gnatyN switch
+
+	* vms_data.ads: Add entry STYLE_CHECKS=NONE for -gnatyN
+
 2004-02-09  Albert Lee  <lee@gnat.com>
 
 	* errno.c: define _SGI_MP_SOURCE for task-safe errno on IRIX

@@ -923,10 +923,12 @@ package body Lib.Writ is
          end if;
       end loop;
 
-      --  Output first restrictions line
+      --  Output restrictions line
 
       Write_Info_Initiate ('R');
       Write_Info_Char (' ');
+
+      --  First the information for the boolean restrictions
 
       for R in All_Boolean_Restrictions loop
          if Main_Restrictions.Set (R) then
@@ -938,12 +940,11 @@ package body Lib.Writ is
          end if;
       end loop;
 
-      Write_Info_EOL;
+      --  A separating space
 
-      --  Output second restrictions line
-
-      Write_Info_Initiate ('R');
       Write_Info_Char (' ');
+
+      --  And now the information for the parameter restrictions
 
       for RP in All_Parameter_Restrictions loop
          if Main_Restrictions.Set (RP) then

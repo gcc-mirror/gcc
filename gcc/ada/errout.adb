@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,10 +164,9 @@ package body Errout is
    --  example, the entity A.B.C.D will output B.C. if N = 2.
 
    function Special_Msg_Delete
-     (Msg  : String;
-      N    : Node_Or_Entity_Id;
-      E    : Node_Or_Entity_Id)
-      return Boolean;
+     (Msg : String;
+      N   : Node_Or_Entity_Id;
+      E   : Node_Or_Entity_Id) return Boolean;
    --  This function is called from Error_Msg_NEL, passing the message Msg,
    --  node N on which the error is to be posted, and the entity or node E
    --  to be used for an & insertion in the message if any. The job of this
@@ -1795,6 +1794,8 @@ package body Errout is
    ----------------------------
 
    procedure Set_Msg_Insertion_Node is
+      K : Node_Kind;
+
    begin
       Suppress_Message :=
         Error_Msg_Node_1 = Error
@@ -1815,10 +1816,24 @@ package body Errout is
       else
          Set_Msg_Blank_Conditional;
 
-         --  Skip quotes for operator case
+         --  Output name
 
-         if Nkind (Error_Msg_Node_1) in N_Op then
+         K := Nkind (Error_Msg_Node_1);
+
+         --  If we have operator case, skip quotes since name of operator
+         --  itself will supply the required quotations. An operator can be
+         --  an applied use in an expression or an explicit operator symbol,
+         --  or an identifier whose name indicates it is an operator.
+
+         if K in N_Op
+           or else K = N_Operator_Symbol
+           or else K = N_Defining_Operator_Symbol
+           or else ((K = N_Identifier or else K = N_Defining_Identifier)
+                       and then Is_Operator_Name (Chars (Error_Msg_Node_1)))
+         then
             Set_Msg_Node (Error_Msg_Node_1);
+
+         --  Normal case, not an operator, surround with quotes
 
          else
             Set_Msg_Quote;
@@ -2302,10 +2317,9 @@ package body Errout is
    ------------------------
 
    function Special_Msg_Delete
-     (Msg  : String;
-      N    : Node_Or_Entity_Id;
-      E    : Node_Or_Entity_Id)
-      return Boolean
+     (Msg : String;
+      N   : Node_Or_Entity_Id;
+      E   : Node_Or_Entity_Id) return Boolean
    is
    begin
       --  Never delete messages in -gnatdO mode

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1761,6 +1761,8 @@ package VMS_Data is
                                                "-gnatyl "                  &
                                             "LINE_LENGTH "                 &
                                                "-gnatym "                  &
+                                            "NONE "                        &
+                                               "-gnatyN "                  &
                                             "STANDARD_CASING "             &
                                                "-gnatyn "                  &
                                             "ORDERED_SUBPROGRAMS "         &
@@ -1974,6 +1976,8 @@ package VMS_Data is
    --                           an 80 character wide device or window, allowing
    --                           for possible special treatment of 80 character
    --                           lines.
+   --
+   --      NONE                 Clear any previously set style checks.
    --
    --      ORDERED_SUBPROGRAMS  Check order of subprogram bodies.
    --                           All subprogram bodies in a given scope (e.g.

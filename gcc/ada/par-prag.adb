@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -951,6 +951,7 @@ begin
            Pragma_Persistent_Object            |
            Pragma_Preelaborate                 |
            Pragma_Priority                     |
+           Pragma_Profile                      |
            Pragma_Propagate_Exceptions         |
            Pragma_Psect_Object                 |
            Pragma_Pure                         |

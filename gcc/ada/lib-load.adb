@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,8 +55,7 @@ package body Lib.Load is
 
    function Spec_Is_Irrelevant
      (Spec_Unit : Unit_Number_Type;
-      Body_Unit : Unit_Number_Type)
-      return      Boolean;
+      Body_Unit : Unit_Number_Type) return Boolean;
    --  The Spec_Unit and Body_Unit parameters are the unit numbers of the
    --  spec file that corresponds to the main unit which is a body. This
    --  function determines if the spec file is irrelevant and will be
@@ -73,8 +72,7 @@ package body Lib.Load is
 
    function Create_Dummy_Package_Unit
      (With_Node : Node_Id;
-      Spec_Name : Unit_Name_Type)
-      return      Unit_Number_Type
+      Spec_Name : Unit_Name_Type) return Unit_Number_Type
    is
       Unum         : Unit_Number_Type;
       Cunit_Entity : Entity_Id;
@@ -100,9 +98,6 @@ package body Lib.Load is
       --  Child package
 
       else
-
-         --  Nkind (Name (With_Node)) = N_Expanded_Name
-
          Cunit_Entity :=
            Make_Defining_Identifier (No_Location,
              Chars => Chars (Selector_Name (Name (With_Node))));
@@ -117,7 +112,6 @@ package body Lib.Load is
            Make_Designator (No_Location,
              Name => New_Copy_Tree (Prefix (Name (With_Node))),
              Identifier => New_Occurrence_Of (Cunit_Entity, No_Location));
-
       end if;
 
       Set_Scope (Cunit_Entity, Standard_Standard);
@@ -213,7 +207,6 @@ package body Lib.Load is
       Units.Table (Main_Unit).Unit_File_Name := Fname;
 
       if Fname /= No_File then
-
          Main_Source_File := Load_Source_File (Fname);
          Current_Error_Source_File := Main_Source_File;
 
@@ -249,8 +242,7 @@ package body Lib.Load is
       Error_Node : Node_Id;
       Subunit    : Boolean;
       Corr_Body  : Unit_Number_Type := No_Unit;
-      Renamings  : Boolean          := False)
-      return       Unit_Number_Type
+      Renamings  : Boolean          := False) return Unit_Number_Type
    is
       Calling_Unit : Unit_Number_Type;
       Uname_Actual : Unit_Name_Type;
@@ -340,14 +332,14 @@ package body Lib.Load is
                      Par := Prefix (Par);
                   end loop;
 
-                  if Nkind (Par) = N_Selected_Component then
-                     --  some intermediate parent is a renaming.
+                  --  Case of some intermediate parent is a renaming
 
+                  if Nkind (Par) = N_Selected_Component then
                      Set_Entity (Selector_Name (Par), Cunit_Entity (Unump));
 
-                  else
-                     --  the ultimate parent is a renaming.
+                  --  Case where the ultimate parent is a renaming
 
+                  else
                      Set_Entity (Par, Cunit_Entity (Unump));
                   end if;
                end;
@@ -705,11 +697,11 @@ package body Lib.Load is
 
    function Spec_Is_Irrelevant
      (Spec_Unit : Unit_Number_Type;
-      Body_Unit : Unit_Number_Type)
-      return      Boolean
+      Body_Unit : Unit_Number_Type) return Boolean
    is
       Sunit : constant Node_Id := Cunit (Spec_Unit);
       Bunit : constant Node_Id := Cunit (Body_Unit);
+
    begin
       --  The spec is irrelevant if the body is a subprogram body, and the
       --  spec is other than a subprogram spec or generic subprogram spec.

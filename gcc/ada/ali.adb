@@ -37,6 +37,25 @@ package body ALI is
    use ASCII;
    --  Make control characters visible
 
+   --  The following variable records which characters currently are
+   --  used as line type markers in the ALI file. This is used in
+   --  Scan_ALI to detect (or skip) invalid lines.
+
+   Known_ALI_Lines : constant array (Character range 'A' .. 'Z') of Boolean :=
+     ('V'    => True,   -- version
+      'M'    => True,   -- main program
+      'A'    => True,   -- argument
+      'P'    => True,   -- program
+      'R'    => True,   -- restriction
+      'I'    => True,   -- interrupt
+      'U'    => True,   -- unit
+      'W'    => True,   -- with
+      'L'    => True,   -- linker option
+      'E'    => True,   -- external
+      'D'    => True,   -- dependency
+      'X'    => True,   -- xref
+      others => False);
+
    --------------------
    -- Initialize_ALI --
    --------------------
@@ -99,13 +118,14 @@ package body ALI is
    --------------
 
    function Scan_ALI
-     (F            : File_Name_Type;
-      T            : Text_Buffer_Ptr;
-      Ignore_ED    : Boolean;
-      Err          : Boolean;
-      Read_Xref    : Boolean := False;
-      Read_Lines   : String := "";
-      Ignore_Lines : String := "X") return ALI_Id
+     (F             : File_Name_Type;
+      T             : Text_Buffer_Ptr;
+      Ignore_ED     : Boolean;
+      Err           : Boolean;
+      Read_Xref     : Boolean := False;
+      Read_Lines    : String  := "";
+      Ignore_Lines  : String  := "X";
+      Ignore_Errors : Boolean := False) return ALI_Id
    is
       P         : Text_Ptr := T'First;
       Line      : Logical_Line_Number := 1;
@@ -141,9 +161,25 @@ package body ALI is
       procedure Checkc (C : Character);
       --  Check next character is C. If so bump past it, if not fatal error
 
+      procedure Check_Unknown_Line;
+      --  If Ignore_Errors mode, then checks C to make sure that it is not
+      --  an unknown ALI line type characters, and if so, skips lines
+      --  until the first character of the line is one of these characters,
+      --  at which point it does a Getc to put that character in C. The
+      --  call has no effect if C is already an appropriate character.
+      --  If not in Ignore_Errors mode, a fatal error is signalled if the
+      --  line is unknown. Note that if C is an EOL on entry, the line is
+      --  skipped (it is assumed that blank lines are never significant).
+      --  If C is EOF on entry, the call has no effect (it is assumed that
+      --  the caller will properly handle this case).
+
       procedure Fatal_Error;
       --  Generate fatal error message for badly formatted ALI file if
       --  Err is false, or raise Bad_ALI_Format if Err is True.
+
+      procedure Fatal_Error_Ignore;
+      pragma Inline (Fatal_Error_Ignore);
+      --  In Ignore_Errors mode, has no effect, otherwise same as Fatal_Error
 
       function Getc return Character;
       --  Get next character, bumping P past the character obtained
@@ -210,7 +246,13 @@ package body ALI is
       procedure Check_At_End_Of_Field is
       begin
          if not At_End_Of_Field then
-            Fatal_Error;
+            if Ignore_Errors then
+               while Nextc > ' ' loop
+                  P := P + 1;
+               end loop;
+            else
+               Fatal_Error;
+            end if;
          end if;
       end Check_At_End_Of_Field;
 
@@ -222,10 +264,37 @@ package body ALI is
       begin
          if Nextc = C then
             P := P + 1;
+         elsif Ignore_Errors then
+            P := P + 1;
          else
             Fatal_Error;
          end if;
       end Checkc;
+
+      ------------------------
+      -- Check_Unknown_Line --
+      ------------------------
+
+      procedure Check_Unknown_Line is
+      begin
+         while C not in 'A' .. 'Z'
+           or else not Known_ALI_Lines (C)
+         loop
+            if C = CR or else C = LF then
+               Skip_Line;
+
+            elsif C = EOF then
+               return;
+
+            elsif Ignore_Errors then
+               Skip_Line;
+               C := Getc;
+
+            else
+               Fatal_Error;
+            end if;
+         end loop;
+      end Check_Unknown_Line;
 
       -----------------
       -- Fatal_Error --
@@ -323,6 +392,17 @@ package body ALI is
          Exit_Program (E_Fatal);
       end Fatal_Error;
 
+      ------------------------
+      -- Fatal_Error_Ignore --
+      ------------------------
+
+      procedure Fatal_Error_Ignore is
+      begin
+         if not Ignore_Errors then
+            Fatal_Error;
+         end if;
+      end Fatal_Error_Ignore;
+
       --------------
       -- Get_Name --
       --------------
@@ -336,7 +416,11 @@ package body ALI is
          Skip_Space;
 
          if At_Eol then
-            Fatal_Error;
+            if Ignore_Errors then
+               return Error_Name;
+            else
+               Fatal_Error;
+            end if;
          end if;
 
          loop
@@ -400,7 +484,11 @@ package body ALI is
          Skip_Space;
 
          if At_Eol then
-            Fatal_Error;
+            if Ignore_Errors then
+               return Dummy_Time_Stamp;
+            else
+               Fatal_Error;
+            end if;
          end if;
 
          --  Following reads old style time stamp missing first two digits
@@ -454,7 +542,15 @@ package body ALI is
       begin
          Skip_Space;
 
-         if not At_Eol then Fatal_Error; end if;
+         if not At_Eol then
+            if Ignore_Errors then
+               while not At_Eol loop
+                  P := P + 1;
+               end loop;
+            else
+               Fatal_Error;
+            end if;
+         end if;
 
          --  Loop to skip past blank lines (first time through skips this EOL)
 
@@ -569,10 +665,16 @@ package body ALI is
       --  C is set to contain the first character of the following line.
 
       C := Getc;
+      Check_Unknown_Line;
 
       --  Acquire library version
 
       if C /= 'V' then
+
+         --  The V line missing really indicates trouble, most likely it
+         --  means we don't have an ALI file at all, so here we give a
+         --  fatal error even if we are in Ignore_Errors mode.
+
          Fatal_Error;
 
       elsif Ignore ('V') then
@@ -594,6 +696,7 @@ package body ALI is
       end if;
 
       C := Getc;
+      Check_Unknown_Line;
 
       --  Acquire main program line if present
 
@@ -648,7 +751,10 @@ package body ALI is
 
       First_Arg := Args.Last + 1;
 
-      Arg_Loop : while C = 'A' loop
+      A_Loop : loop
+         Check_Unknown_Line;
+         exit A_Loop when C /= 'A';
+
          if Ignore ('A') then
             Skip_Line;
 
@@ -668,15 +774,28 @@ package body ALI is
          end if;
 
          C := Getc;
-      end loop Arg_Loop;
+      end loop A_Loop;
 
       --  Acquire P line
 
-      if C /= 'P' then
-         Fatal_Error;
+      Check_Unknown_Line;
 
-      elsif Ignore ('P') then
+      while C /= 'P' loop
+         if Ignore_Errors then
+            if C = EOF then
+               Fatal_Error;
+            else
+               Skip_Line;
+            end if;
+         else
+            Fatal_Error;
+         end if;
+      end loop;
+
+      if Ignore ('P') then
          Skip_Line;
+
+      --  Process P line
 
       else
          NS_Found := False;
@@ -731,7 +850,7 @@ package body ALI is
                --  Invalid switch starting with N
 
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
             --  Processing for Qx
@@ -758,7 +877,7 @@ package body ALI is
                --  Invalid switch starting with S
 
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
             --  Processing for Tx
@@ -786,18 +905,26 @@ package body ALI is
                --  Invalid switches starting with U
 
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
             --  Processing for ZX
 
             elsif C = 'Z' then
-               Checkc ('X');
+               C := Getc;
+
+               if C = 'X' then
                   ALIs.Table (Id).Zero_Cost_Exceptions := True;
                   Zero_Cost_Exceptions_Specified := True;
+               else
+                  Fatal_Error_Ignore;
+               end if;
+
+            --  Invalid parameter
 
             else
-               Fatal_Error;
+               C := Getc;
+               Fatal_Error_Ignore;
             end if;
          end loop;
 
@@ -809,148 +936,172 @@ package body ALI is
       end if;
 
       C := Getc;
+      Check_Unknown_Line;
 
-      --  Acquire first restrictions line
+      --  Acquire restrictions line
 
-      if C /= 'R' then
-         Fatal_Error;
+      while C /= 'R' loop
+         if Ignore_Errors then
+            if C = EOF then
+               Fatal_Error;
+            else
+               Skip_Line;
+            end if;
+         else
+            Fatal_Error;
+         end if;
+      end loop;
 
-      elsif Ignore ('R') then
+      if Ignore ('R') then
          Skip_Line;
 
-      else
-         Checkc (' ');
-         Skip_Space;
-
-         for R in All_Boolean_Restrictions loop
-            C := Getc;
-
-            case C is
-               when 'v' =>
-                  ALIs.Table (Id).Restrictions.Violated (R) := True;
-                  Cumulative_Restrictions.Violated (R) := True;
-
-               when 'r' =>
-                  ALIs.Table (Id).Restrictions.Set (R) := True;
-                  Cumulative_Restrictions.Set (R) := True;
-
-               when 'n' =>
-                  null;
-
-               when others =>
-                  Fatal_Error;
-            end case;
-         end loop;
-
-         Skip_Eol;
-      end if;
-
-      C := Getc;
-
-      --  See if we have a second R line
-
-      if C /= 'R' then
-
-         --  If not, just ignore, and leave the restrictions variables
-         --  unchanged. This is useful for dealing with old format ALI
-         --  files with only one R line (this can be removed later on,
-         --  but is useful for transitional purposes).
-
-         null;
-
-         --  Here we have a second R line, ignore it if ignore flag set
-
-      elsif Ignore ('R') then
-         Skip_Line;
-         C := Getc;
-
-      --  Otherwise acquire second R line
+      --  Process restrictions line
 
       else
-         Checkc (' ');
-         Skip_Space;
+         Scan_Restrictions : declare
+            Save_R : constant Restrictions_Info := Cumulative_Restrictions;
+            --  Save cumulative restrictions in case we have a fatal error
 
-         for RP in All_Parameter_Restrictions loop
+            Bad_R_Line : exception;
+            --  Signal bad restrictions line
 
-            --  Acquire restrictions pragma information
+         begin
+            Checkc (' ');
+            Skip_Space;
 
-            case Getc is
-               when 'n' =>
-                  null;
+            --  Acquire information for boolean restrictions
 
-               when 'r' =>
-                  ALIs.Table (Id).Restrictions.Set (RP) := True;
+            for R in All_Boolean_Restrictions loop
+               C := Getc;
 
-                  declare
-                     N : constant Integer := Integer (Get_Nat);
-                  begin
-                     ALIs.Table (Id).Restrictions.Value (RP) := N;
+               case C is
+                  when 'v' =>
+                     ALIs.Table (Id).Restrictions.Violated (R) := True;
+                     Cumulative_Restrictions.Violated (R) := True;
 
-                     if Cumulative_Restrictions.Set (RP) then
-                        Cumulative_Restrictions.Value (RP) :=
-                          Integer'Min (Cumulative_Restrictions.Value (RP), N);
-                     else
-                        Cumulative_Restrictions.Set (RP) := True;
-                        Cumulative_Restrictions.Value (RP) := N;
-                     end if;
-                  end;
+                  when 'r' =>
+                     ALIs.Table (Id).Restrictions.Set (R) := True;
+                     Cumulative_Restrictions.Set (R) := True;
 
-               when others =>
-                  Fatal_Error;
-            end case;
+                  when 'n' =>
+                     null;
 
-            --  Acquire restrictions violations information
+                  when others =>
+                     Fatal_Error;
+               end case;
+            end loop;
 
-            case Getc is
-               when 'n' =>
-                  null;
+            --  Skip separating space
 
-               when 'v' =>
-                  ALIs.Table (Id).Restrictions.Violated (RP) := True;
-                  Cumulative_Restrictions.Violated (RP) := True;
+            Checkc (' ');
 
-                  declare
-                     N : constant Integer := Integer (Get_Nat);
-                     pragma Unsuppress (Overflow_Check);
+            --  Acquire information for parameter restrictions
 
-                  begin
-                     ALIs.Table (Id).Restrictions.Count (RP) := N;
+            for RP in All_Parameter_Restrictions loop
 
-                     if RP in Checked_Max_Parameter_Restrictions then
-                        Cumulative_Restrictions.Count (RP) :=
-                          Integer'Max (Cumulative_Restrictions.Count (RP), N);
-                     else
-                        Cumulative_Restrictions.Count (RP) :=
-                          Cumulative_Restrictions.Count (RP) + N;
-                     end if;
+               --  Acquire restrictions pragma information
 
-                  exception
-                     when Constraint_Error =>
+               case Getc is
+                  when 'n' =>
+                     null;
 
-                        --  A constraint error comes from the addition in
-                        --  the else branch. We reset to the maximum and
-                        --  indicate that the real value is now unknown.
+                  when 'r' =>
+                     ALIs.Table (Id).Restrictions.Set (RP) := True;
 
-                        Cumulative_Restrictions.Value (RP) := Integer'Last;
+                     declare
+                        N : constant Integer := Integer (Get_Nat);
+                     begin
+                        ALIs.Table (Id).Restrictions.Value (RP) := N;
+
+                        if Cumulative_Restrictions.Set (RP) then
+                           Cumulative_Restrictions.Value (RP) :=
+                             Integer'Min
+                               (Cumulative_Restrictions.Value (RP), N);
+                        else
+                           Cumulative_Restrictions.Set (RP) := True;
+                           Cumulative_Restrictions.Value (RP) := N;
+                        end if;
+                     end;
+
+                  when others =>
+                     Fatal_Error;
+               end case;
+
+               --  Acquire restrictions violations information
+
+               case Getc is
+                  when 'n' =>
+                     null;
+
+                  when 'v' =>
+                     ALIs.Table (Id).Restrictions.Violated (RP) := True;
+                     Cumulative_Restrictions.Violated (RP) := True;
+
+                     declare
+                        N : constant Integer := Integer (Get_Nat);
+                        pragma Unsuppress (Overflow_Check);
+
+                     begin
+                        ALIs.Table (Id).Restrictions.Count (RP) := N;
+
+                        if RP in Checked_Max_Parameter_Restrictions then
+                           Cumulative_Restrictions.Count (RP) :=
+                             Integer'Max
+                               (Cumulative_Restrictions.Count (RP), N);
+                        else
+                           Cumulative_Restrictions.Count (RP) :=
+                             Cumulative_Restrictions.Count (RP) + N;
+                        end if;
+
+                     exception
+                        when Constraint_Error =>
+
+                           --  A constraint error comes from the addition in
+                           --  the else branch. We reset to the maximum and
+                           --  indicate that the real value is now unknown.
+
+                           Cumulative_Restrictions.Value (RP) := Integer'Last;
+                           Cumulative_Restrictions.Unknown (RP) := True;
+                     end;
+
+                     if Nextc = '+' then
+                        Skipc;
+                        ALIs.Table (Id).Restrictions.Unknown (RP) := True;
                         Cumulative_Restrictions.Unknown (RP) := True;
-                  end;
+                     end if;
 
-                  if Nextc = '+' then
-                     Skipc;
-                     ALIs.Table (Id).Restrictions.Unknown (RP) := True;
-                     Cumulative_Restrictions.Unknown (RP) := True;
-                  end if;
+                  when others =>
+                     Fatal_Error;
+               end case;
+            end loop;
 
-               when others =>
+            Skip_Eol;
+
+         --  Here if error during scanning of restrictions line
+
+         exception
+            when Bad_R_Line =>
+
+               --  In Ignore_Errors mode, undo any changes to restrictions
+               --  from this unit, and continue on.
+
+               if Ignore_Errors then
+                  Cumulative_Restrictions := Save_R;
+                  ALIs.Table (Id).Restrictions := Restrictions_Initial;
+
+               --  In normal mode, this is a fatal error
+
+               else
                   Fatal_Error;
-            end case;
-         end loop;
+               end if;
 
-         Skip_Eol;
-         C := Getc;
+         end Scan_Restrictions;
       end if;
 
       --  Acquire 'I' lines if present
+
+      C := Getc;
+      Check_Unknown_Line;
 
       while C = 'I' loop
          if Ignore ('I') then
@@ -983,7 +1134,9 @@ package body ALI is
 
       --  Loop to acquire unit entries
 
-      Unit_Loop : while C = 'U' loop
+      U_Loop : loop
+         Check_Unknown_Line;
+         exit U_Loop when C /= 'U';
 
          --  Note: as per spec, we never ignore U lines
 
@@ -1104,17 +1257,28 @@ package body ALI is
             --  BN parameter (Body needed)
 
             elsif C = 'B' then
-               Checkc ('N');
-               Check_At_End_Of_Field;
-               Units.Table (Units.Last).Body_Needed_For_SAL := True;
+               C := Getc;
 
-            --  DE parameter (Dynamic elaboration checks
+               if C = 'N' then
+                  Check_At_End_Of_Field;
+                  Units.Table (Units.Last).Body_Needed_For_SAL := True;
+               else
+                  Fatal_Error_Ignore;
+               end if;
+
+
+            --  DE parameter (Dynamic elaboration checks)
 
             elsif C = 'D' then
-               Checkc ('E');
-               Check_At_End_Of_Field;
-               Units.Table (Units.Last).Dynamic_Elab := True;
-               Dynamic_Elaboration_Checks_Specified := True;
+               C := Getc;
+
+               if C = 'E' then
+                  Check_At_End_Of_Field;
+                  Units.Table (Units.Last).Dynamic_Elab := True;
+                  Dynamic_Elaboration_Checks_Specified := True;
+               else
+                  Fatal_Error_Ignore;
+               end if;
 
             --  EB/EE parameters
 
@@ -1123,12 +1287,10 @@ package body ALI is
 
                if C = 'B' then
                   Units.Table (Units.Last).Elaborate_Body := True;
-
                elsif C = 'E' then
                   Units.Table (Units.Last).Set_Elab_Entity := True;
-
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
                Check_At_End_Of_Field;
@@ -1136,9 +1298,14 @@ package body ALI is
             --  GE parameter (generic)
 
             elsif C = 'G' then
-               Checkc ('E');
-               Check_At_End_Of_Field;
-               Units.Table (Units.Last).Is_Generic := True;
+               C := Getc;
+
+               if C = 'E' then
+                  Check_At_End_Of_Field;
+                  Units.Table (Units.Last).Is_Generic := True;
+               else
+                  Fatal_Error_Ignore;
+               end if;
 
             --  IL/IS/IU parameters
 
@@ -1147,16 +1314,13 @@ package body ALI is
 
                if C = 'L' then
                   Units.Table (Units.Last).Icasing := All_Lower_Case;
-
                elsif C = 'S' then
                   Units.Table (Units.Last).Init_Scalars := True;
                   Initialize_Scalars_Used := True;
-
                elsif C = 'U' then
                   Units.Table (Units.Last).Icasing := All_Upper_Case;
-
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
                Check_At_End_Of_Field;
@@ -1168,12 +1332,10 @@ package body ALI is
 
                if C = 'M' then
                   Units.Table (Units.Last).Kcasing := Mixed_Case;
-
                elsif C = 'U' then
                   Units.Table (Units.Last).Kcasing := All_Upper_Case;
-
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
                Check_At_End_Of_Field;
@@ -1181,32 +1343,29 @@ package body ALI is
             --  NE parameter
 
             elsif C = 'N' then
-               Checkc ('E');
-               Units.Table (Units.Last).No_Elab := True;
-               Check_At_End_Of_Field;
+               C := Getc;
+
+               if C = 'E' then
+                  Units.Table (Units.Last).No_Elab := True;
+                  Check_At_End_Of_Field;
+               else
+                  Fatal_Error_Ignore;
+               end if;
+
 
             --  PR/PU/PK parameters
 
             elsif C = 'P' then
                C := Getc;
 
-               --  PR parameter (preelaborate)
-
                if C = 'R' then
                   Units.Table (Units.Last).Preelab := True;
-
-               --  PU parameter (pure)
-
                elsif C = 'U' then
                   Units.Table (Units.Last).Pure := True;
-
-               --  PK indicates unit is package
-
                elsif C = 'K' then
                   Units.Table (Units.Last).Unit_Kind := 'p';
-
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
                Check_At_End_Of_Field;
@@ -1216,23 +1375,14 @@ package body ALI is
             elsif C = 'R' then
                C := Getc;
 
-               --  RC parameter (remote call interface)
-
                if C = 'C' then
                   Units.Table (Units.Last).RCI := True;
-
-               --  RT parameter (remote types)
-
                elsif C = 'T' then
                   Units.Table (Units.Last).Remote_Types := True;
-
-               --  RA parameter (remote access to class wide type)
-
                elsif C = 'A' then
                   Units.Table (Units.Last).Has_RACW := True;
-
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
                Check_At_End_Of_Field;
@@ -1240,24 +1390,19 @@ package body ALI is
             elsif C = 'S' then
                C := Getc;
 
-               --  SP parameter (shared passive)
-
                if C = 'P' then
                   Units.Table (Units.Last).Shared_Passive := True;
-
-               --  SU parameter indicates unit is subprogram
-
                elsif C = 'U' then
                   Units.Table (Units.Last).Unit_Kind := 's';
-
                else
-                  Fatal_Error;
+                  Fatal_Error_Ignore;
                end if;
 
                Check_At_End_Of_Field;
 
             else
-               Fatal_Error;
+               C := Getc;
+               Fatal_Error_Ignore;
             end if;
          end loop;
 
@@ -1275,7 +1420,10 @@ package body ALI is
 
          --  Scan out With lines for this unit
 
-         With_Loop : while C = 'W' loop
+         With_Loop : loop
+            Check_Unknown_Line;
+            exit With_Loop when C /= 'W';
+
             if Ignore ('W') then
                Skip_Line;
 
@@ -1345,7 +1493,9 @@ package body ALI is
 
          Name_Len := 0;
 
-         Linker_Options_Loop : while C = 'L' loop
+         Linker_Options_Loop : loop
+            Check_Unknown_Line;
+            exit Linker_Options_Loop when C /= 'L';
 
             if Ignore ('L') then
                Skip_Line;
@@ -1361,7 +1511,7 @@ package body ALI is
                   if C < Character'Val (16#20#)
                     or else C > Character'Val (16#7E#)
                   then
-                     Fatal_Error;
+                     Fatal_Error_Ignore;
 
                   elsif C = '{' then
                      C := Character'Val (0);
@@ -1386,7 +1536,7 @@ package body ALI is
                                          10;
 
                            else
-                              Fatal_Error;
+                              Fatal_Error_Ignore;
                            end if;
                         end loop;
 
@@ -1428,7 +1578,7 @@ package body ALI is
             Linker_Options.Table (Linker_Options.Last).Original_Pos :=
               Linker_Options.Last;
          end if;
-      end loop Unit_Loop;
+      end loop U_Loop;
 
       --  End loop through units for one ALI file
 
@@ -1457,7 +1607,10 @@ package body ALI is
 
       --  Scan out external version references and put in hash table
 
-      while C = 'E' loop
+      E_Loop : loop
+         Check_Unknown_Line;
+         exit E_Loop when C /= 'E';
+
          if Ignore ('E') then
             Skip_Line;
 
@@ -1483,13 +1636,16 @@ package body ALI is
          end if;
 
          C := Getc;
-      end loop;
+      end loop E_Loop;
 
       --  Scan out source dependency lines for this ALI file
 
       ALIs.Table (Id).First_Sdep := Sdep.Last + 1;
 
-      while C = 'D' loop
+      D_Loop : loop
+         Check_Unknown_Line;
+         exit D_Loop when C /= 'D';
+
          if Ignore ('D') then
             Skip_Line;
 
@@ -1585,13 +1741,19 @@ package body ALI is
          end if;
 
          C := Getc;
-      end loop;
+      end loop D_Loop;
 
       ALIs.Table (Id).Last_Sdep := Sdep.Last;
 
       --  We must at this stage be at an Xref line or the end of file
 
-      if C /= EOF and then C /= 'X' then
+      if C = EOF then
+         return Id;
+      end if;
+
+      Check_Unknown_Line;
+
+      if C /= 'X' then
          Fatal_Error;
       end if;
 
@@ -1604,7 +1766,9 @@ package body ALI is
 
       --  Loop through Xref sections
 
-      while C = 'X' loop
+      X_Loop : loop
+         Check_Unknown_Line;
+         exit X_Loop when C /= 'X';
 
          --  Make new entry in section table
 
@@ -1864,7 +2028,7 @@ package body ALI is
          end Read_Refs_For_One_File;
 
          C := Getc;
-      end loop;
+      end loop X_Loop;
 
       --  Here after dealing with xref sections
 

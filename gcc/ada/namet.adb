@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -904,6 +904,18 @@ package body Namet is
         and then C /= 'W'
         and then C /= 'X';
    end Is_OK_Internal_Letter;
+
+   ----------------------
+   -- Is_Operator_Name --
+   ----------------------
+
+   function Is_Operator_Name (Id : Name_Id) return Boolean is
+      S : Int;
+   begin
+      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      S := Name_Entries.Table (Id).Name_Chars_Index;
+      return Name_Chars.Table (S + 1) = 'O';
+   end Is_Operator_Name;
 
    --------------------
    -- Length_Of_Name --

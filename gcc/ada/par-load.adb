@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,16 +89,18 @@ procedure Load is
 
    function Same_File_Name_Except_For_Case
      (Expected_File_Name : File_Name_Type;
-      Actual_File_Name   : File_Name_Type)
-      return               Boolean;
+      Actual_File_Name   : File_Name_Type) return Boolean;
    --  Given an actual file name and an expected file name (the latter being
    --  derived from the unit name), determine if they are the same except for
    --  possibly different casing of letters.
 
+   ------------------------------------
+   -- Same_File_Name_Except_For_Case --
+   ------------------------------------
+
    function Same_File_Name_Except_For_Case
      (Expected_File_Name : File_Name_Type;
-      Actual_File_Name   : File_Name_Type)
-      return               Boolean
+      Actual_File_Name   : File_Name_Type) return Boolean
    is
    begin
       Get_Name_String (Actual_File_Name);
