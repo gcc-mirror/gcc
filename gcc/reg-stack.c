@@ -2675,10 +2675,24 @@ convert_regs_1 (FILE *file, basic_block block)
 	beste = e;
     }
 
-  /* Entry block does have stack already initialized.  */
+  /* Initialize stack at block entry.  */
   if (bi->stack_in.top == -2)
-    inserted |= compensate_edge (beste, file);
+    {
+      if (beste)
+	inserted |= compensate_edge (beste, file);
+      else
+	{
+	  /* No predecessors.  Create an arbitrary input stack.  */
+	  int reg;
+
+	  bi->stack_in.top = -1;
+	  for (reg = LAST_STACK_REG; reg >= FIRST_STACK_REG; --reg)
+	    if (TEST_HARD_REG_BIT (bi->stack_in.reg_set, reg))
+	      bi->stack_in.reg[++bi->stack_in.top] = reg;
+	}
+    }
   else
+    /* Entry blocks do have stack already initialized.  */
     beste = NULL;
 
   current_block = block;
@@ -2833,12 +2847,19 @@ convert_regs_2 (FILE *file, basic_block block)
 
       block = *--sp;
 
-      /* Processing "block" is achieved by convert_regs_1, which may purge
-	 some dead EH outgoing edge after the possible deletion of the
-	 trapping insn inside the block.  Since the number of predecessors of
-	 "block"'s successors has been computed based on the initial edge set,
-	 we check for the possibility to process some of these successors
-	 before such an edge deletion may happen.  */
+      /* Processing BLOCK is achieved by convert_regs_1, which may purge
+	 some dead EH outgoing edge after the deletion of the trapping
+	 insn inside the block.  Since the number of predecessors of
+	 BLOCK's successors was computed based on the initial edge set,
+	 we check the necessity to process some of these successors
+	 before such an edge deletion may happen.  However, there is
+	 a pitfall: if BLOCK is the only predecessor of a successor and
+	 the edge between them happens to be deleted, the successor
+	 becomes unreachable and should not be processed.  The problem
+	 is that there is no way to preventively detect this case so we
+	 stack the successor in all cases and hand over the task of
+	 fixing up the discrepancy to convert_regs_1.  */
+
       for (e = block->succ; e ; e = e->succ_next)
 	if (! (e->flags & EDGE_DFS_BACK))
 	  {
@@ -2888,17 +2909,7 @@ convert_regs (FILE *file)
       block_info bi = BLOCK_INFO (b);
 
       if (! bi->done)
-	{
-	  int reg;
-
-	  /* Create an arbitrary input stack.  */
-	  bi->stack_in.top = -1;
-	  for (reg = LAST_STACK_REG; reg >= FIRST_STACK_REG; --reg)
-	    if (TEST_HARD_REG_BIT (bi->stack_in.reg_set, reg))
-	      bi->stack_in.reg[++bi->stack_in.top] = reg;
-
-	  inserted |= convert_regs_2 (file, b);
-	}
+	inserted |= convert_regs_2 (file, b);
     }
   clear_aux_for_blocks ();
 
