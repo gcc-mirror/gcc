@@ -30,9 +30,10 @@
 
 #ifdef __DEPRECATED
 #warning This file includes at least one deprecated or antiquated header. \
-         Please use the <X> header instead of <X.h> header for 'C++' includes \
-         and use the <cX> header instead of <X.h> header for 'C' includes. \
-         To disable this warning use -Wno-deprecated.
+Please consider using one of the 32 headers found in section 17.4.1.2 of the \
+C++ standard. Examples include substituting the <X> header for the <X.h> \
+header for C++ includes, or <sstream> instead of the deprecated header \
+<strstream.h>. To disable this warning use -Wno-deprecated.
 #endif
 
 #endif

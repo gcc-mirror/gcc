@@ -1,3 +1,33 @@
+2001-08-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (libtool_VERSION): Add.
+	(VERSION): Change to 
+	(release_VERSION): This.
+	* configure: Regenerate.	
+	* src/Makefile.am (libstdc___la_LDFLAGS): Use -version-info with
+	libtool_VERSION.
+	* src/Makefile.in: Regenerate.
+
+	* intl/Makefile.am: Remove.
+	* intl/Makefile.in: Remove.
+	* intl: Remove.
+	* Makefile.am (SUBDIRS): Remove intl.
+	* po/Makefile.am (DISTFILES): Add string_literals.cc
+	(MSGFMT): Add.
+	* po/string_literals.cc: Add.
+	* po/POTFILES.in: Fix path.
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Don't call AM_GNU_GETTEXT. 
+	* aclocal.m4: Regenerate.
+	* configure.in: Remove AC_OUTPUT of intl/Makefile.
+	
+	* include/backward/backward_warning.h: Clarify message.
+
+	* testsuite_flags.in (--cxxflags): Use same debug flags for
+	library and testsuite.
+
+	* include/Makefile.am (c_compatibility): Remove.
+	* include/Makefile.in: Regenerate.
+	
 2001-08-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in (LIMITS_INC_SRCDIR): New variable.
@@ -39,7 +69,7 @@
 	colon in $(objdir).
 	* include/Makefile.in: Rebuilt.
 
-2001-08-10   Gunter Winkler <gunter.winkler@mathematik.tu-chemnitz.de>
+2001-08-10   Gunter Winkler  <gunter.winkler@mathematik.tu-chemnitz.de>
 
 	* include/bits/std_complex.h (complex<long double>::operator*=,
  	complex<long double>::operator/=): Fix thinko.

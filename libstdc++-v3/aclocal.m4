@@ -1066,7 +1066,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
 
       # Don't use gettext.
       USE_NLS=no
-      AC_SUBST(USE_NLS)
 
       CLOCALE_H=config/locale/c_locale_generic.h
       CLOCALE_CC=config/locale/c_locale_generic.cc
@@ -1081,13 +1080,17 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       # languages.
       # For some reason, ALL_LINGUAS has to be before AM_GNU_GETTEXT
       ALL_LINGUAS="de fr"
-      AM_GNU_GETTEXT
+      # Don't call AM_GNU_GETTEXT here. Instead, assume glibc.
+      # Need to deal with MSGFMT, USE_NLS, and glibcpp_[P,M]OFILES
+      USE_NLS=yes
 
       # Export the build objects.
       for ling in $ALL_LINGUAS; do \
         glibcpp_MOFILES="$glibcpp_MOFILES $ling.mo"; \
+        glibcpp_POFILES="$glibcpp_POFILES $ling.po"; \
       done
       AC_SUBST(glibcpp_MOFILES)
+      AC_SUBST(glibcpp_POFILES)
 
       CLOCALE_H=config/locale/c_locale_gnu.h
       CLOCALE_CC=config/locale/c_locale_gnu.cc
@@ -1100,7 +1103,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
 
       # Don't use gettext.
       USE_NLS=no
-      AC_SUBST(USE_NLS)
 
       CLOCALE_H=config/locale/c_locale_ieee_1003.1-200x.h
       CLOCALE_CC=config/locale/c_locale_ieee_1003.1-200x.cc
@@ -1119,6 +1121,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   glibcpp_localedir=${glibcpp_builddir}/po/share/locale
   AC_SUBST(glibcpp_localedir)
 
+  AC_SUBST(USE_NLS)
   AC_SUBST(CLOCALE_H)
   AC_SUBST(CCODECVT_H)
   AC_SUBST(CMESSAGES_H)

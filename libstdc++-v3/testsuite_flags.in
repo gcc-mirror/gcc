@@ -47,7 +47,7 @@ case ${query} in
       echo ${CXX}
       ;;
     --cxxflags)
-      CXXFLAGS=' -ggdb3 @SECTION_FLAGS@ @SECTION_LDFLAGS@ 
+      CXXFLAGS=' -g @SECTION_FLAGS@ @SECTION_LDFLAGS@ 
 		 -DDEBUG_ASSERT  -DLOCALEDIR="@glibcpp_localedir@" '
       echo ${CXXFLAGS}
       ;;
