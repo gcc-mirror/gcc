@@ -307,39 +307,39 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	    case CONSTANT_Integer:
 	      {
 		jint num;
+		int most_negative = 0;
 		fputs ("  static const jint ", out);
 		print_name (out, jcf, name_index);
 		fputs (" = ", out);
 		num = JPOOL_INT (jcf, current_field_value);
-		/* We single out the most negative number to print in
-		   hex.  That avoids later warnings from g++.  */
+		/* We single out the most negative number to print
+		   specially.  This avoids later warnings from g++.  */
 		if (num == 0x80000000)
 		  {
-		    strcpy (buffer, "0x");
-		    format_uint (buffer + 2, (jlong) (uint32) num, 16);
+		    most_negative = 1;
+		    ++num;
 		  }
-		else
-		  format_int (buffer, (jlong) num, 10);
-		fprintf (out, "%sL;\n", buffer);
+		format_int (buffer, (jlong) num, 10);
+		fprintf (out, "%sL%s;\n", buffer, most_negative ? " - 1" : "");
 	      }
 	      break;
 	    case CONSTANT_Long:
 	      {
 		jlong num;
+		int most_negative = 0;
 		fputs ("  static const jlong ", out);
 		print_name (out, jcf, name_index);
 		fputs (" = ", out);
 		num = JPOOL_LONG (jcf, current_field_value);
-		/* We single out the most negative number to print in
-		   hex.  That avoids later warnings from g++.  */
+		/* We single out the most negative number to print
+                   specially..  This avoids later warnings from g++.  */
 		if (num == 0x8000000000000000LL)
 		  {
-		    strcpy (buffer, "0x");
-		    format_uint (buffer + 2, num, 16);
+		    most_negative = 1;
+		    ++num;
 		  }
-		else
-		  format_int (buffer, num, 10);
-		fprintf (out, "%sLL;\n", buffer);
+		format_int (buffer, num, 10);
+		fprintf (out, "%sLL%s;\n", buffer, most_negative ? " - 1" :"");
 	      }
 	      break;
 	    case CONSTANT_Float:
