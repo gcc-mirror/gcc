@@ -1,3 +1,8 @@
+2002-09-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.host: Handle arm*-elf, strongarm*-elf and xscale*-elf with
+	a single configuration.
+
 2002-09-25  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	* java/util/TimeZone.java (getDSTSavings): New method.
