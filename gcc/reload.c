@@ -2954,6 +2954,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 precisely the same as in the code below that calls
 		 force_const_mem.  */
 	      if (CONSTANT_P (operand)
+		  /* force_const_mem does not accept HIGH.  */
+		  && GET_CODE (operand) != HIGH
 		  && (PREFERRED_RELOAD_CLASS (operand,
 					      (enum reg_class) this_alternative[i])
 		      == NO_REGS)
@@ -3294,6 +3296,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i]
 	&& CONSTANT_P (recog_operand[i])
+	/* force_const_mem does not accept HIGH.  */
+	&& GET_CODE (recog_operand[i]) != HIGH
 	&& (PREFERRED_RELOAD_CLASS (recog_operand[i],
 				    (enum reg_class) goal_alternative[i])
 	    == NO_REGS)
