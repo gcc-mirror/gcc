@@ -1,3 +1,11 @@
+2003-06-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* snapshot-index.html: Use F77 instead of G77 front end.
+	Remove link to CodeSourcery snapshots which was not up-to-date.
+	Do not refer to gcc-bugs@gcc.gnu.org any longer.
+
+	* snapshot-README: Use F77 front end instead of G77 language.
+
 2003-06-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (build_tarfile): Build .bz2 files instead of .gz files.
