@@ -443,6 +443,16 @@ lhd_expr_size (exp)
     return size_in_bytes (TREE_TYPE (exp));
 }
 
+/* Return true if decl, which is a function decl, may be called by a
+   sibcall.  */
+
+bool
+lhd_decl_ok_for_sibcall (decl)
+     tree decl ATTRIBUTE_UNUSED;
+{
+  return true;
+}
+
 /* lang_hooks.decls.final_write_globals: perform final processing on
    global variables. */
 void
