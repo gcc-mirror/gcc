@@ -1,3 +1,7 @@
+2000-08-06  Kazu Hirata  <kazu@hxi.com>
+
+	* expr.c: Fix formatting.
+
 2000-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rs6000.c (rs6000_maybe_dead): Prototype.
