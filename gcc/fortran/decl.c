@@ -254,6 +254,7 @@ static try
 add_init_expr_to_sym (const char *name, gfc_expr ** initp,
 		      locus * var_locus)
 {
+  int i;
   symbol_attribute attr;
   gfc_symbol *sym;
   gfc_expr *init;
@@ -287,7 +288,7 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
   else
     {
       /* If a variable appears in a DATA block, it cannot have an
-         initializer.  */
+	 initializer.  */
       if (sym->attr.data)
 	{
 	  gfc_error
@@ -300,6 +301,19 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
       if (sym->ts.type != BT_DERIVED && init->ts.type != BT_DERIVED
 	  && gfc_check_assign_symbol (sym, init) == FAILURE)
 	return FAILURE;
+
+      for (i = 0; i < sym->attr.dimension; i++)
+	{
+	  if (sym->as->lower[i] == NULL
+	      || sym->as->lower[i]->expr_type != EXPR_CONSTANT
+	      || sym->as->upper[i] == NULL
+	      || sym->as->upper[i]->expr_type != EXPR_CONSTANT)
+	    {
+	      gfc_error ("Array '%s' at %C cannot have initializer",
+			 sym->name);
+	      return FAILURE;
+	    }
+	}
 
       /* Add initializer.  Make sure we keep the ranks sane.  */
       if (sym->attr.dimension && init->rank == 0)
