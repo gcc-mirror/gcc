@@ -1,3 +1,11 @@
+2001-12-05  Robert Dewar <dewar@gnat.com>
+
+	* sem_warn.adb: Remove stuff for conditionals, we are not going to 
+	do this after all.
+	
+	* sem_warn.ads: Remove stuff for conditionals, we are not going to 
+	do this after all.  Add 2001 to copyright notice
+
 2001-12-04  Geert Bosch <bosch@gnat.com>
 
 	*  einfo.h, sinfo.h, treeprs.ads: Regenerate.

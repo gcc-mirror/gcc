@@ -882,24 +882,6 @@ package body Sem_Warn is
       end if;
    end Check_Unused_Withs;
 
-   ---------------------
-   -- End_Conditional --
-   ---------------------
-
-   procedure End_Conditional is
-   begin
-      null;
-   end End_Conditional;
-
-   --------------
-   -- End_Unit --
-   --------------
-
-   procedure End_Unit is
-   begin
-      null;
-   end End_Unit;
-
    ----------------------------------
    -- Output_Unreferenced_Messages --
    ----------------------------------
@@ -971,33 +953,6 @@ package body Sem_Warn is
          end if;
       end loop;
    end Output_Unreferenced_Messages;
-
-   ------------------
-   -- Start_Branch --
-   ------------------
-
-   procedure Start_Branch (Loc : Source_Ptr) is
-   begin
-      null;
-   end Start_Branch;
-
-   -----------------------
-   -- Start_Conditional --
-   -----------------------
-
-   procedure Start_Conditional (If_Stmt : Boolean) is
-   begin
-      null;
-   end Start_Conditional;
-
-   ----------------
-   -- Start_Unit --
-   ----------------
-
-   procedure Start_Unit is
-   begin
-      null;
-   end Start_Unit;
 
    -----------------------------
    -- Warn_On_Known_Condition --
