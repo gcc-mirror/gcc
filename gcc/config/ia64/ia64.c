@@ -1695,6 +1695,7 @@ ia64_print_operand_address (stream, address)
         a floating point register emitted normally.
    I	Invert a predicate register by adding 1.
    J    Select the proper predicate register for a condition.
+   j    Select the inverse predicate register for a condition.
    O	Append .acq for volatile load.
    P	Postincrement of a MEM.
    Q	Append .rel for volatile store.
@@ -1755,7 +1756,15 @@ ia64_print_operand (file, x, code)
       return;
 
     case 'J':
-      fputs (reg_names [REGNO (XEXP (x, 0)) + (GET_CODE (x) == EQ)], file);
+    case 'j':
+      {
+	unsigned int regno = REGNO (XEXP (x, 0));
+	if (GET_CODE (x) == EQ)
+	  regno += 1;
+	if (code == 'j')
+	  regno ^= 1;
+        fputs (reg_names [regno], file);
+      }
       return;
 
     case 'O':
@@ -1864,6 +1873,47 @@ ia64_print_operand (file, x, code)
   return;
 }
 
+/* For conditional branches, returns or calls, substitute
+   sptk, dptk, dpnt, or spnt for %s.  */
+
+const char *
+ia64_expand_prediction (insn, template)
+     rtx insn;
+     const char *template;
+{
+  static char const pred_name[4][5] = {
+	"spnt", "dpnt", "dptk", "sptk"
+  };
+  static char new_template[64];
+
+  int pred_val, pred_which;
+  rtx note;
+
+  note = find_reg_note (insn, REG_BR_PROB, 0);
+  if (note)
+    {
+      pred_val = INTVAL (XEXP (note, 0));
+
+      /* Guess top and bottom 10% statically predicted.  */
+      if (pred_val < REG_BR_PROB_BASE / 10)
+	pred_which = 0;
+      else if (pred_val < REG_BR_PROB_BASE / 2)
+	pred_which = 1;
+      else if (pred_val < REG_BR_PROB_BASE * 9 / 10)
+	pred_which = 2;
+      else
+	pred_which = 3;
+    }
+  else
+    pred_which = 2;
+
+  if (strlen (template) >= sizeof (new_template) - 3)
+    abort ();
+
+  sprintf (new_template, template, pred_name[pred_which]);
+
+  return new_template;
+}
 
 
 /* This function returns the register class required for a secondary
@@ -2654,9 +2704,6 @@ static void
 emit_insn_group_barriers (insns)
      rtx insns;
 {
-  int need_barrier = 0;
-  int exception_nesting;
-  struct reg_flags flags;
   rtx insn, prev_insn;
 
   memset (rws_sum, 0, sizeof (rws_sum));
@@ -2664,31 +2711,61 @@ emit_insn_group_barriers (insns)
   prev_insn = 0;
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     {
+      int need_barrier = 0;
+      struct reg_flags flags;
+
       memset (&flags, 0, sizeof (flags));
       switch (GET_CODE (insn))
 	{
 	case NOTE:
-	  switch (NOTE_LINE_NUMBER (insn))
-	    {
-	    case NOTE_INSN_EH_REGION_BEG:
-	      exception_nesting++;
-	      break;
-
-	    case NOTE_INSN_EH_REGION_END:
-	      exception_nesting--;
-	      break;
-
-	    case NOTE_INSN_EPILOGUE_BEG:
-	      break;
-
-	    default:
-	      break;
-	    }
 	  break;
 
-	case JUMP_INSN:
 	case CALL_INSN:
 	  flags.is_branch = 1;
+	  memset (rws_insn, 0, sizeof (rws_insn));
+	  need_barrier = rtx_needs_barrier (PATTERN (insn), flags, 0);
+
+	  if (need_barrier)
+	    {
+	      /* PREV_INSN null can happen if the very first insn is a
+		 volatile asm.  */
+	      if (prev_insn)
+		emit_insn_after (gen_insn_group_barrier (), prev_insn);
+	      memcpy (rws_sum, rws_insn, sizeof (rws_sum));
+	    }
+
+	  /* A call must end a group, otherwise the assembler might pack
+	     it in with a following branch and then the function return
+	     goes to the wrong place.  Do this unconditionally for 
+	     unconditional calls, simply because it (1) looks nicer and
+	     (2) keeps the data structures more accurate for the insns
+	     following the call.  */
+
+	  need_barrier = 1;
+	  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
+	    {
+	      rtx next_insn = insn;
+	      do
+		next_insn = next_nonnote_insn (next_insn);
+	      while (next_insn
+		     && GET_CODE (next_insn) == INSN
+		     && (GET_CODE (PATTERN (next_insn)) == USE
+			 || GET_CODE (PATTERN (next_insn)) == CLOBBER));
+	      if (next_insn && GET_CODE (next_insn) != JUMP_INSN)
+		need_barrier = 0;
+	    }
+	  if (need_barrier)
+	    {
+	      emit_insn_after (gen_insn_group_barrier (), insn);
+	      memset (rws_sum, 0, sizeof (rws_sum));
+	      prev_insn = NULL_RTX;
+	    }
+	  break;
+	
+	case JUMP_INSN:
+	  flags.is_branch = 1;
+	  /* FALLTHRU */
+
 	case INSN:
 	  if (GET_CODE (PATTERN (insn)) == USE)
 	    /* Don't care about USE "insns"---those are used to
@@ -2698,7 +2775,7 @@ emit_insn_group_barriers (insns)
 	  else
 	    {
 	      memset (rws_insn, 0, sizeof (rws_insn));
-	      need_barrier = rtx_needs_barrier (PATTERN (insn), flags, 0);
+	      need_barrier |= rtx_needs_barrier (PATTERN (insn), flags, 0);
 
 	      /* Check to see if the previous instruction was a volatile
 		 asm.  */
@@ -2713,7 +2790,6 @@ emit_insn_group_barriers (insns)
 		    emit_insn_after (gen_insn_group_barrier (), prev_insn);
 		  memcpy (rws_sum, rws_insn, sizeof (rws_sum));
 		}
-	      need_barrier = 0;
 	      prev_insn = insn;
 	    }
 	  break;
@@ -2753,7 +2829,9 @@ ia64_epilogue_uses (regno)
      from such a call, we need to make sure the function restores the
      original gp-value, even if the function itself does not use the
      gp anymore.  */
-  if (regno == R_GR(1) && TARGET_CONST_GP && !(TARGET_AUTO_PIC || TARGET_NO_PIC))
+  if (regno == R_GR (1)
+      && TARGET_CONST_GP
+      && !(TARGET_AUTO_PIC || TARGET_NO_PIC))
     return 1;
 
   /* For functions defined with the syscall_linkage attribute, all input
@@ -2766,6 +2844,11 @@ ia64_epilogue_uses (regno)
       && (regno < IN_REG (current_function_args_info.words))
       && lookup_attribute ("syscall_linkage",
 			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
+    return 1;
+
+  /* Conditional return patterns can't represent the use of `b0' as
+     the return address, so we force the value live this way.  */
+  if (regno == R_BR (0))
     return 1;
 
   return 0;

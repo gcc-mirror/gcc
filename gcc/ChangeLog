@@ -1,5 +1,42 @@
 2000-05-08  Richard Henderson  <rth@cygnus.com>
 
+	* final.c (current_insn_predicate): New.
+	(final_scan_insn): Set it.
+	* output.h (current_insn_predicate): Declare.
+
+	* ifcvt.c (cond_exec_process_insns): New argument prob_val.
+	Attach it to call insns.
+	(cond_exec_process_if_block): Track probability for true and
+	false branches.
+	(dead_or_predicable): Likewise.
+
+	* predict.c (PROB_NEVER, PROB_VERY_UNLIKELY): New.
+	(PROB_UNLIKELY, PROB_EVEN, PROB_LIKELY): New.
+	(PROB_VERY_LIKELY, PROB_ALWAYS): New.
+	(estimate_probability, expected_value_to_br_prob): Use them.
+
+	* config/ia64/ia64-protos.h (ia64_expand_prediction): Declare.
+	* config/ia64/ia64.c (ia64_print_operand_address): Handle 'j'.
+	(ia64_expand_prediction): New.
+	(emit_insn_group_barriers): Don't look at notes.  Emit barriers
+	as needed after calls.
+	(ia64_epilogue_uses): Mark b0 used.
+	* config/ia64/ia64.md (beq_true, beq_false): Remove.
+	(bne_true, bne_false): Remove.
+	(eq_return, eq_not_return, ne_return, ne_not_return): Remove.
+	(br_true, br_false): New.  Use predicate_operator and
+	ia64_expand_prediction.
+	(return_true, return_false): Likewise.
+	(call_internal): Use ia64_expand_prediction.  Don't emit stop bit.
+	(call_internal1, call_value_internal): Likewise.
+	(call_value_internal1, call_multiple_values_internal1): Likewise.
+
+	* config/ia64/ia64.c (ia64_direct_return): Require frame size zero.
+
+	* config/ia64/ia64.md (extendsfdf2): Split only after reload.
+
+2000-05-08  Richard Henderson  <rth@cygnus.com>
+
 	* rtlanal.c (may_trap_p): Consider old-style and volatile
 	asms to trap.
 

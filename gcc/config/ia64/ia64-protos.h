@@ -61,6 +61,7 @@ extern enum reg_class ia64_secondary_reload_class PARAMS((enum reg_class,
 							  enum machine_mode,
 							  rtx));
 extern void ia64_reorg PARAMS((rtx));
+extern const char *ia64_expand_prediction PARAMS((rtx, const char *));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
