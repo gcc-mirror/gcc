@@ -1,5 +1,6 @@
-/* Definitions for Intel 386 running Linux with pre-BFD a.out linkers
-   Copyright (C) 1995 Free Software Foundation, Inc.
+/* Definitions for Intel 386 running Linux-based GNU systems with pre-BFD
+   a.out linkers.
+   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com)
 
 This file is part of GNU CC.
@@ -24,6 +25,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include <i386/gstabs.h>
 #include <linux-aout.h>	/* some common stuff */
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
 
 /* Specify predefined symbols in preprocessor.  */
 
@@ -53,9 +57,8 @@ Boston, MA 02111-1307, USA.  */
 
 #if 1
 /* We no longer link with libc_p.a or libg.a by default. If you
- * want to profile or debug the Linux C library, please add
- * -lc_p or -ggdb to LDFLAGS at the link time, respectively.
- */
+   want to profile or debug the GNU/Linux C library, please add
+   lc_p or -ggdb to LDFLAGS at the link time, respectively.  */
 #define LIB_SPEC \
 "%{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} %{!ggdb:-lc} %{ggdb:-lg}"
 #else    

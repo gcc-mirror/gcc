@@ -1,3 +1,12 @@
+Thu May  7 10:18:41 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* config/linux.h (ASM_COMMENT_START): Remove from here,
+	* config/linux-aout.h (ASM_COMMENT_START): and here,
+	* config/i386/linux.h (ASM_COMMENT_START): to here,
+	* config/i386/linux-aout.h (ASM_COMMENT_START): and here.
+	* config/i386/linux-oldld.h (ASM_COMMENT_START): Define
+	here as '#' too.
+
 Thu May  7 10:55:59 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* config/m68k/m68k.md (adddi3, subdi3): Properly negate the DImode
