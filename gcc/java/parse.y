@@ -12992,7 +12992,10 @@ patch_incomplete_class_ref (node)
     return error_mark_node;
 
   if (!flag_emit_class_files || JPRIMITIVE_TYPE_P (ref_type))
-    return build_class_ref (ref_type);
+    {
+      /* A class referenced by `foo.class' is initialized.  */
+      return build_class_init (ref_type, build_class_ref (ref_type));
+    }
 
   /* If we're emitting class files and we have to deal with non
      primitive types, we invoke (and consider generating) the
