@@ -188,6 +188,15 @@ public abstract class AbstractListModel implements ListModel, Serializable {
 	} // getListeners()
 
 	/**
+	 * getListDataListeners
+	 */
+	public ListDataListener[] getListDataListeners()
+	{
+          // FIXME: implement this
+	  return null;
+	}
+
+	/**
 	 * getElementAt
 	 * @param index TODO
 	 * @returns Object

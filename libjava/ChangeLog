@@ -1,5 +1,14 @@
 2002-10-10  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/AbstractListModel.java
+	(getListDataListeners): New stubbed method.
+	javax/swing/DefaultBoundedRangeModel.java
+	(getChangeListeners): New stubbed method.
+	javax/swing/DefaultSingleSelectionModel.java
+	(getChangeListeners): New stubbed method.
+
+2002-10-10  Michael Koch  <konqueror@gmx.de>
+
 	* gcj/.cvsignore: New file to ignore files generated during build.
 	* include/.cvsignore: New file to ignore files generated during build.
 
