@@ -67,21 +67,25 @@ Boston, MA 02111-1307, USA.  */
 	  builtin_define ("__IEEE_FP");			\
 	if (TARGET_IEEE_WITH_INEXACT)			\
 	  builtin_define ("__IEEE_FP_INEXACT");		\
+							\
+	/* Macros dependent on the C dialect.  */	\
+	if (preprocessing_asm_p ())			\
+	  builtin_define_std ("LANGUAGE_ASSEMBLY");	\
+        else if (c_language == clk_c)			\
+	  builtin_define_std ("LANGUAGE_C");		\
+	else if (c_language == clk_cplusplus)		\
+	  {						\
+	    builtin_define ("__LANGUAGE_C_PLUS_PLUS");	\
+	    builtin_define ("__LANGUAGE_C_PLUS_PLUS__");\
+	  }						\
+	else if (c_language == clk_objective_c)		\
+	  {						\
+	    builtin_define ("__LANGUAGE_OBJECTIVE_C");	\
+	    builtin_define ("__LANGUAGE_OBJECTIVE_C__");\
+	  }						\
 } while (0)
 
-/* For C++ we need to ensure that __LANGUAGE_C_PLUS_PLUS is defined independent
-   of the source file extension.  */
-#define CPLUSPLUS_CPP_SPEC "-D__LANGUAGE_C_PLUS_PLUS__\
- -D__LANGUAGE_C_PLUS_PLUS %(cpp)"
-
-/* Write out the correct language type definition for the header files.  
-   Unless we have assembler language, write out the symbols for C.  */
-#define CPP_SPEC "\
-%{!undef:\
-%{.S:-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY }}\
-%{.m:-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C }\
-%{!.S:%{!.cc:%{!.cxx:%{!.cpp:%{!.cp:%{!.c++:%{!.C:%{!.m:-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C }}}}}}}}}}\
-%(cpp_subtarget)"
+#define CPP_SPEC "%(cpp_subtarget)"
 
 #ifndef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC ""

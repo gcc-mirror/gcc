@@ -30,11 +30,10 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("linux");				\
 	builtin_define_std ("unix");				\
 	builtin_assert ("system=linux");			\
+	/* The GNU C++ standard library requires this.  */	\
+	if (c_language == clk_cplusplus)			\
+	  builtin_define ("_GNU_SOURCE");			\
     } while (0)
-
-/* The GNU C++ standard library requires that these macros be defined.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
 #undef LIB_SPEC
 #define LIB_SPEC \
