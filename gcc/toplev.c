@@ -1762,9 +1762,14 @@ output_quoted_string (asm_file, string)
   putc ('\"', asm_file);
   while ((c = *string++) != 0)
     {
-      if (c == '\"' || c == '\\')
-	putc ('\\', asm_file);
-      putc (c, asm_file);
+      if (ISPRINT (c))
+	{
+	  if (c == '\"' || c == '\\')
+	    putc ('\\', asm_file);
+	  putc (c, asm_file);
+	}
+      else
+	fprintf (asm_file, "\\%03o", c);
     }
   putc ('\"', asm_file);
 #endif

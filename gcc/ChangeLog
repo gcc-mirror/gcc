@@ -1,3 +1,8 @@
+2002-02-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* toplev.c (output_quoted_string): Write unprintable
+	characters with octal escapes.
+
 2002-02-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Set
