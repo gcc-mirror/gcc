@@ -18,6 +18,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef _SBITMAP_H
+#define _SBITMAP_H 1
+
 /* It's not clear yet whether using bitmap.[ch] will be a win.
    It should be straightforward to convert so for now we keep things simple
    while more important issues are dealt with.  */
@@ -109,6 +112,7 @@ extern int sbitmap_a_or_b_and_c PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
 extern int sbitmap_a_and_b_or_c PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
 extern int sbitmap_a_and_b PROTO ((sbitmap, sbitmap, sbitmap));
 extern int sbitmap_a_or_b PROTO ((sbitmap, sbitmap, sbitmap));
+extern int sbitmap_a_subset_b_p PROTO ((sbitmap, sbitmap));
 
 struct int_list;
 extern void sbitmap_intersect_of_predsucc PROTO ((sbitmap, sbitmap *,
@@ -129,3 +133,4 @@ extern void sbitmap_intersection_of_preds    PROTO ((sbitmap, sbitmap *, int));
 extern void sbitmap_union_of_succs	     PROTO ((sbitmap, sbitmap *, int));
 extern void sbitmap_union_of_preds	     PROTO ((sbitmap, sbitmap *, int));
 
+#endif /* _SBITMAP_H */

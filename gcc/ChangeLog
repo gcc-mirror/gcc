@@ -1,3 +1,21 @@
+1999-11-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* flow.c (flow_nodes_print, flow_loops_cfg_dump): New functions.
+	(flow_loop_nested_p, flow_loops_dump, flow_loops_free): Likewise.
+	(flow_loop_exits_find, flow_loop_nodes_find): Likewise.
+	(flow_depth_first_order_compute, flow_loop_pre_header_find): Likewise.
+	(flow_loop_tree_node_add, flow_loops_tree_build): Likewise.
+	(flow_loop_level_compute, low_loops_level_compute): Likewise.
+	(flow_loops_find, flow_loop_outside_edge_p): Likewise.
+	* basic-block.h: Protect from multiple inclusion.
+	(flow_loops_find, flow_loops_free, flow_loop_dump): Add protoypes.
+	(struct loops, struct loop): Define structures.
+	* sbitmap.c (sbitmap_a_subset_b_p): New function.
+	* sbitmap.h: Protect from multiple inclusion.
+	(sbitmap_a_subset_b_p): Add prototype.
+	* Makefile.in (LOOP_H): New macro.
+	(stmt.o, integrate.o, loop.o, unroll.o): Replace loop.h with LOOP_H.
+
 Tue Nov 30 01:34:47 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* cppinit.c (CAT): The argument list of this macro may not contain
