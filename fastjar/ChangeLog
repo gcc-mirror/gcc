@@ -1,3 +1,8 @@
+2001-08-27  Tom Tromey  <tromey@redhat.com>
+
+	* jartool.c (jarfile): Remove length limitation.
+	(main): Use jt_strdup when initializing jarfile.
+
 2001-07-04  Tom Tromey  <tromey@redhat.com>
 
 	Modified from patch by Julian Hall <jules@acris.co.uk>:
