@@ -1436,6 +1436,43 @@ function_arg_partial_nregs (cum, mode, type, named)
   return (nregs * UNITS_PER_WORD - cum->nbytes) / UNITS_PER_WORD;
 }
 
+rtx
+mn10200_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT align, rsize;
+  tree t, ptr, pptr;
+
+  /* Compute the rounded size of the type.  */
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
+  rsize = (((int_size_in_bytes (type) + align - 1) / align) * align);
+
+  t = build (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist, 
+	     build_int_2 ((rsize > 8 ? 4 : rsize), 0));
+  TREE_SIDE_EFFECTS (t) = 1;
+
+  ptr = build_pointer_type (type);
+
+  /* "Large" types are passed by reference.  */
+  if (rsize > 8)
+    {
+      pptr = build_pointer_type (ptr);
+      t = build1 (NOP_EXPR, pptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+
+      t = build1 (INDIRECT_REF, ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+    }
+  else
+    {
+      t = build1 (NOP_EXPR, ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+    }
+
+  /* Calculate!  */
+  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+}
+
 char *
 output_tst (operand, insn)
      rtx operand, insn;

@@ -508,6 +508,10 @@ extern struct rtx_def *function_arg();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED)
 
+/* Implement `va_arg'.  */
+extern struct rtx_def *mn10200_va_arg();
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  mn10200_va_arg (valist, type)
 
 /* For "large" items, we pass them by invisible reference, and the
    callee is responsible for copying the data item if it might be

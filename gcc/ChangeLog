@@ -1,3 +1,8 @@
+Wed Jul 28 11:20:19 1999  Richard Henderson  <rth@cygnus.com>
+
+	* mn10200.c (mn10200_va_arg): New.
+	* mn10200.h (EXPAND_BUILTIN_VA_ARG): New.
+
 Wed Jul 28 11:19:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (std_expand_builtin_va_arg): Use int_size_in_bytes
