@@ -714,6 +714,7 @@ struct tree_block
 
 #define TYPE_UID(NODE) ((NODE)->type.uid)
 #define TYPE_SIZE(NODE) ((NODE)->type.size)
+#define TYPE_SIZE_UNIT(NODE) ((NODE)->type.size_unit)
 #define TYPE_MODE(NODE) ((NODE)->type.mode)
 #define TYPE_VALUES(NODE) ((NODE)->type.values)
 #define TYPE_DOMAIN(NODE) ((NODE)->type.values)
@@ -795,6 +796,7 @@ struct tree_type
   char common[sizeof (struct tree_common)];
   union tree_node *values;
   union tree_node *size;
+  union tree_node *size_unit;
   union tree_node *attributes;
   unsigned uid;
 

@@ -720,11 +720,13 @@ layout_type (type)
       TYPE_MODE (type) = smallest_mode_for_size (TYPE_PRECISION (type),
 						 MODE_INT);
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
+      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
     case REAL_TYPE:
       TYPE_MODE (type) = mode_for_size (TYPE_PRECISION (type), MODE_FLOAT, 0);
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
+      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
     case COMPLEX_TYPE:
@@ -735,29 +737,34 @@ layout_type (type)
 			  ? MODE_COMPLEX_INT : MODE_COMPLEX_FLOAT),
 			 0);
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
+      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
     case VOID_TYPE:
       TYPE_SIZE (type) = size_zero_node;
+      TYPE_SIZE_UNIT (type) = size_zero_node;
       TYPE_ALIGN (type) = 1;
       TYPE_MODE (type) = VOIDmode;
       break;
 
     case OFFSET_TYPE:
       TYPE_SIZE (type) = bitsize_int (POINTER_SIZE, 0L);
+      TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE / BITS_PER_UNIT);
       TYPE_MODE (type) = ptr_mode;
       break;
 
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       TYPE_MODE (type) = mode_for_size (2 * POINTER_SIZE, MODE_INT, 0);
-      TYPE_SIZE (type) = size_int (2 * POINTER_SIZE);
+      TYPE_SIZE (type) = bitsize_int (2 * POINTER_SIZE, 0);
+      TYPE_SIZE_UNIT (type) = size_int ((2 * POINTER_SIZE) / BITS_PER_UNIT);
       break;
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       TYPE_MODE (type) = ptr_mode;
       TYPE_SIZE (type) = bitsize_int (POINTER_SIZE, 0L);
+      TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE / BITS_PER_UNIT);
       TREE_UNSIGNED (type) = 1;
       TYPE_PRECISION (type) = POINTER_SIZE;
       break;
@@ -810,6 +817,17 @@ layout_type (type)
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, TYPE_SIZE (element),
 					   length);
+
+	    /* If we know the size of the element, calculate the total
+	       size directly, rather than do some division thing below.
+	       This optimization helps Fortran assumed-size arrays
+	       (where the size of the array is determined at runtime)
+	       substantially.  */
+	    if (TYPE_SIZE_UNIT (element) != 0)
+	      {
+	        TYPE_SIZE_UNIT (type)
+		  = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (element), length);
+	      }
 	  }
 
 	/* Now round the alignment and size,
@@ -824,8 +842,15 @@ layout_type (type)
 
 #ifdef ROUND_TYPE_SIZE
 	if (TYPE_SIZE (type) != 0)
-	  TYPE_SIZE (type)
-	    = ROUND_TYPE_SIZE (type, TYPE_SIZE (type), TYPE_ALIGN (type));
+	  {
+	    tree tmp;
+	    tmp = ROUND_TYPE_SIZE (type, TYPE_SIZE (type), TYPE_ALIGN (type));
+	    /* If the rounding changed the size of the type, remove any
+	       pre-calculated TYPE_SIZE_UNIT.  */
+	    if (simple_cst_equal (TYPE_SIZE (type), tmp) != 1)
+	      TYPE_SIZE_UNIT (type) = NULL;
+	    TYPE_SIZE (type) = tmp;
+	  }
 #endif
 
 	TYPE_MODE (type) = BLKmode;
@@ -983,6 +1008,7 @@ layout_type (type)
 	  else
 	    TYPE_MODE (type) = mode_for_size (alignment, MODE_INT, 1);
 	  TYPE_SIZE (type) = bitsize_int (rounded_size, 0L);
+	  TYPE_SIZE_UNIT (type) = size_int (rounded_size / BITS_PER_UNIT);
 	  TYPE_ALIGN (type) = alignment;
 	  TYPE_PRECISION (type) = size_in_bits;
 	}
@@ -1015,6 +1041,19 @@ layout_type (type)
   if (TYPE_SIZE (type) != 0 && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     TYPE_SIZE (type) = variable_size (TYPE_SIZE (type));
 
+  /* If we failed to find a simple way to calculate the unit size
+     of the type above, find it by division.  */
+  if (TYPE_SIZE_UNIT (type) == 0 && TYPE_SIZE (type) != 0)
+    {
+      TYPE_SIZE_UNIT (type) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
+				          size_int (BITS_PER_UNIT));
+    }
+
+  /* Once again evaluate only once, either now or as soon as safe.  */
+  if (TYPE_SIZE_UNIT (type) != 0
+      && TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST)
+    TYPE_SIZE_UNIT (type) = variable_size (TYPE_SIZE_UNIT (type));
+
   /* Also layout any other variants of the type.  */
   if (TYPE_NEXT_VARIANT (type)
       || type != TYPE_MAIN_VARIANT (type))
@@ -1022,6 +1061,7 @@ layout_type (type)
       tree variant;
       /* Record layout info of this variant.  */
       tree size = TYPE_SIZE (type);
+      tree size_unit = TYPE_SIZE_UNIT (type);
       int align = TYPE_ALIGN (type);
       enum machine_mode mode = TYPE_MODE (type);
 
@@ -1031,6 +1071,7 @@ layout_type (type)
 	   variant = TYPE_NEXT_VARIANT (variant))
 	{
 	  TYPE_SIZE (variant) = size;
+	  TYPE_SIZE_UNIT (variant) = size_unit;
 	  TYPE_ALIGN (variant) = align;
 	  TYPE_MODE (variant) = mode;
 	}

@@ -1,3 +1,11 @@
+Mon May 18 13:20:23 1998  Richard Henderson  <rth@cygnus.com>
+
+	* tree.h (TYPE_SIZE_UNIT): New.
+	(struct tree_type): Add size_unit member.
+	* stor-layout.c (layout_type): Initialize it.
+	* expr.c (get_inner_reference) [ARRAY_REF]: Use it.
+	* tree.c (size_in_bytes, int_size_in_bytes): Likewise.
+
 Mon May 18 12:07:37 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* stor-layout.c (layout_record): Fix off-by-one error when checking
