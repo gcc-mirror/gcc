@@ -1,3 +1,7 @@
+2003-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* df.c (df_uses_record): Handle CC0.
+
 2003-01-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
         * reload.c (maybe_memory_address_p): New function.
