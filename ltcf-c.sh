@@ -175,16 +175,6 @@ EOF
       $CC $output_objdir/$soname-exp '$lt_cv_cc_dll_switch' -Wl,-e,'$dll_entry' -o $output_objdir/$soname '$ltdll_obj'$libobjs $deplibs $compiler_flags'
     ;;
 
-  darwin* | rhapsody*)
-    allow_undefined_flag='-undefined suppress'
-    archive_cmds='$CC `test .$module = .yes && echo -bundle || echo -dynamiclib` $allow_undefined_flag -o $lib $libobjs $deplibs $linkopts -install_name $rpath/$soname `test -n "$verstring" -a x$verstring != x0.0 && echo $verstring`'
-    # We need to add '_' to the symbols in $export_symbols first
-    #archive_expsym_cmds="$archive_cmds"' && strip -s $export_symbols'
-    hardcode_direct=yes
-    hardcode_shlibpath_var=no
-    whole_archive_flag_spec='-all_load $convenience'
-    ;;
-
   netbsd*)
     if echo __ELF__ | $CC -E - | grep __ELF__ >/dev/null; then
       archive_cmds='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
@@ -385,9 +375,52 @@ else
     fix_srcfile_path='`cygpath -w "$srcfile"`'
     ;;
 
-  freebsd1*)
-    ld_shlibs=no
+  darwin* | rhapsody*)
+    case "$host_os" in
+    rhapsody* | darwin1.[[012]])
+	allow_undefined_flag='-undefined suppress'
+	;;
+    *) # Darwin 1.3 on
+    if test -z ${MACOSX_DEPLOYMENT_TARGET} ; then
+       allow_undefined_flag='-flat_namespace -undefined suppress'
+    else
+	case ${MACOSX_DEPLOYMENT_TARGET} in
+	    10.[[012]])
+		allow_undefined_flag='-flat_namespace -undefined suppress'
+		;;
+	    10.*)
+		allow_undefined_flag='-undefined dynamic_lookup'
+		;;
+	esac
+    fi
     ;;
+    esac
+    # Disable shared library build on OS-X older than 10.3.
+    case $host_os in
+	darwin[1-6]*)
+	    can_build_shared=no
+	    ;;
+	darwin7*)
+	    can_build_shared=yes
+	    ;;
+    esac
+    output_verbose_link_cmd='echo'
+    archive_cmds='$CC -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs$compiler_flags -install_name $rpath/$soname $verstring'
+    module_cmds='$CC $allow_undefined_flag -o $lib -bundle $libobjs $deplibs$compiler_flags'
+    # Don't fix this by using the ld -exported_symbols_list flag,
+    # it doesn't exist in older darwin ld's
+    archive_expsym_cmds='sed -e "s,#.*,," -e "s,^[    ]*,," -e "s,^\(..*\),_&," < $export_symbols > $output_objdir/${libname}-symbols.expsym~$CC -dynamiclib $allow_undefined_flag  -o $lib $libobjs $deplibs$compiler_flags -install_name $rpath/$soname $verstring~nmedit -s $output_objdir/${libname}-symbols.expsym ${lib}'
+    module_expsym_cmds='sed -e "s,#.*,," -e "s,^[    ]*,," -e "s,^\(..*\),_&," < $export_symbols > $output_objdir/${libname}-symbols.expsym~$CC $allow_undefined_flag  -o $lib -bundle $libobjs $deplibs$compiler_flags~nmedit -s $output_objdir/${libname}-symbols.expsym ${lib}'
+    hardcode_direct=no
+    hardcode_automatic=yes
+    hardcode_shlibpath_var=unsupported
+    whole_archive_flag_spec='-all_load $convenience'
+    link_all_deplibs=yes
+    ;;
+
+  freebsd1*)
+  ld_shlibs=no
+  ;;
 
   # FreeBSD 2.2.[012] allows us to include c++rt0.o to get C++ constructor
   # support.  Future versions do this automatically, but an explicit c++rt0.o
@@ -670,7 +703,7 @@ else
     darwin* | rhapsody*)
       # PIC is the default on this platform
       # Common symbols not allowed in MH_DYLIB files
-      lt_cv_prog_cc_pic='-fno-common'
+      ac_cv_prog_cc_pic='-fno-common'
       ;;
     *djgpp*)
       # DJGPP does not support shared libraries at all

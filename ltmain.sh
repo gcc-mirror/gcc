@@ -1111,6 +1111,19 @@ EOF
 	  finalize_command="$finalize_command $wl$qarg"
 	  continue
 	  ;;
+	framework)
+	  case $host in
+	   *-*-darwin*)
+	     case "$deplibs " in
+	       *" $qarg.framework "*) ;;
+	       *) deplibs="$deplibs $qarg.framework" # this is fixed later
+		  ;;
+	     esac
+	     ;;
+	  esac
+	  prev=
+	  continue
+	  ;;
 	*)
 	  eval "$prev=\"\$arg\""
 	  prev=
@@ -1361,6 +1374,10 @@ EOF
 
       -Xlinker)
 	prev=xlinker
+	continue
+	;;
+      -framework)
+	prev=framework
 	continue
 	;;
 
@@ -1839,6 +1856,13 @@ EOF
 	case $lib in
 	*/* | *\\*) . $lib ;;
 	*) . ./$lib ;;
+	esac
+
+	case $host in
+	    *-*-darwin*)
+	  # Convert "-framework foo" to "foo.framework" in dependency_libs
+		test -n "$dependency_libs" && dependency_libs=`$echo "X$dependency_libs" | $Xsed -e 's/-framework \([^ $]*\)/\1.framework/g'`
+		;;
 	esac
 
 	if test "$linkmode,$pass" = "lib,link" ||
@@ -2446,6 +2470,7 @@ EOF
       case $outputname in
       lib*)
 	name=`$echo "X$outputname" | $Xsed -e 's/\.la$//' -e 's/^lib//'`
+	eval shared_ext=\"$shrext\"
 	eval libname=\"$libname_spec\"
 	;;
       *)
@@ -2457,6 +2482,7 @@ EOF
 	if test "$need_lib_prefix" != no; then
 	  # Add the "lib" prefix for modules if required
 	  name=`$echo "X$outputname" | $Xsed -e 's/\.la$//'`
+	  eval shared_ext=\"$shrext\"
 	  eval libname=\"$libname_spec\"
 	else
 	  libname=`$echo "X$outputname" | $Xsed -e 's/\.la$//'`
@@ -2644,7 +2670,16 @@ EOF
 	# Clear the version info if we defaulted, and they specified a release.
 	if test -z "$vinfo" && test -n "$release"; then
 	  major=
-	  verstring="0.0"
+	  case $version_type in
+	  darwin)
+	    # we can't check for "0.0" in archive_cmds due to quoting
+	    # problems, so we reset it completely
+	    verstring=
+	    ;;
+	  *)
+	    verstring="0.0"
+	    ;;
+	  esac
 	  if test "$need_version" = no; then
 	    versuffix=
 	  else
@@ -3020,6 +3055,14 @@ EOF
 	    fi
 	  fi
 	fi
+	# Time to change all our "foo.framework" stuff back to "-framework foo"
+	case $host in
+	    *-*-darwin*)
+		newdeplibs=`$echo "X $newdeplibs" | $Xsed -e 's% \([^ $]*\).framework% -framework \1%g'`
+		dependency_libs=`$echo "X $dependency_libs" | $Xsed -e 's% \([^ $]*\).framework% -framework \1%g'`
+		;;
+	esac
+	# Done checking deplibs!
 	# Done checking deplibs!
 	deplibs=$newdeplibs
       fi
@@ -3088,6 +3131,7 @@ EOF
 
 	# Get the real and link names of the library.
 	eval library_names=\"$library_names_spec\"
+	eval shared_ext=\"$shrext\"
 	set dummy $library_names
 	realname="$2"
 	shift; shift
@@ -3530,6 +3574,19 @@ EOF
 	# On Rhapsody replace the C library is the System framework
 	compile_deplibs=`$echo "X $compile_deplibs" | $Xsed -e 's/ -lc / -framework System /'`
 	finalize_deplibs=`$echo "X $finalize_deplibs" | $Xsed -e 's/ -lc / -framework System /'`
+	;;
+      esac
+
+      case $host in
+      *-*-darwin*)
+      # Don't allow lazy linking, it breaks C++ global constructors
+	if test "$tagname" = CXX ; then
+	   compile_command="$compile_command ${wl}-bind_at_load"
+	   finalize_command="$finalize_command ${wl}-bind_at_load"
+	fi
+      # Time to change all our "foo.framework" stuff back to "-framework foo"
+	compile_deplibs=`$echo "X $compile_deplibs" | $Xsed -e 's% \([^ $]*\).framework% -framework \1%g'`
+	finalize_deplibs=`$echo "X $finalize_deplibs" | $Xsed -e 's% \([^ $]*\).framework% -framework \1%g'`
 	;;
       esac
 
