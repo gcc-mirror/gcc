@@ -29,7 +29,6 @@ extern int lhs_lshift_cint_operand (rtx, enum machine_mode);
 
 #ifdef TREE_CODE
 extern void hppa_va_start (tree, rtx);
-extern rtx hppa_va_arg (tree, tree);
 #endif /* TREE_CODE */
 extern rtx hppa_legitimize_address (rtx, rtx, enum machine_mode);
 

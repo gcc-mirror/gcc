@@ -124,6 +124,7 @@ static void pa_asm_out_destructor (rtx, int);
 #endif
 static void pa_init_builtins (void);
 static rtx hppa_builtin_saveregs (void);
+static tree hppa_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static void copy_fp_args (rtx) ATTRIBUTE_UNUSED;
 static int length_fp_args (rtx) ATTRIBUTE_UNUSED;
 static struct deferred_plabel *get_plabel (const char *)
@@ -267,6 +268,8 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR hppa_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5948,12 +5951,12 @@ hppa_va_start (tree valist, rtx nextarg)
   std_expand_builtin_va_start (valist, nextarg);
 }
 
-rtx
-hppa_va_arg (tree valist, tree type)
+static tree
+hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  HOST_WIDE_INT size = int_size_in_bytes (type);
-  HOST_WIDE_INT ofs;
-  tree t, ptr, pptr;
+  bool indirect;
+
+  indirect = FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, 0);
 
   if (TARGET_64BIT)
     {
@@ -5965,89 +5968,57 @@ hppa_va_arg (tree valist, tree type)
 	 to conflict with the ABI.  For variable sized arguments,
 	 GCC doesn't have the infrastructure to allocate these to
 	 registers.  */
+      /* Args grow upward.  We can use the generic routines.  */
 
-      /* Arguments with a size greater than 8 must be aligned 0 MOD 16.  */
-
-      if (size > UNITS_PER_WORD)
-        {
-          t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
-                     build_int_2 (2 * UNITS_PER_WORD - 1, 0));
-          t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
-                     build_int_2 (-2 * UNITS_PER_WORD, -1));
-          t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-          TREE_SIDE_EFFECTS (t) = 1;
-	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-        }
-
-      if (size > 0)
-	return std_expand_builtin_va_arg (valist, type);
+      if (indirect)
+	return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
       else
-	{
-	  ptr = build_pointer_type (type);
-
-	  /* Args grow upward.  */
-	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist,
-		     build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
-	  TREE_SIDE_EFFECTS (t) = 1;
-
-	  pptr = build_pointer_type (ptr);
-	  t = build1 (NOP_EXPR, pptr, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
-
-	  t = build1 (INDIRECT_REF, ptr, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
-	}
+	return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
     }
   else /* !TARGET_64BIT */
     {
-      ptr = build_pointer_type (type);
+      tree ptr = build_pointer_type (type);
+      tree valist_type;
+      tree t, u;
+      unsigned int size, ofs;
 
-      /* "Large" and variable sized types are passed by reference.  */
-      if (size > 8 || size <= 0)
+      if (indirect)
 	{
-	  /* Args grow downward.  */
-	  t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
-		     build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
-	  TREE_SIDE_EFFECTS (t) = 1;
-
-	  pptr = build_pointer_type (ptr);
-	  t = build1 (NOP_EXPR, pptr, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
-
-	  t = build1 (INDIRECT_REF, ptr, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
+	  type = ptr;
+	  ptr = build_pointer_type (type);
 	}
-      else
+      size = int_size_in_bytes (type);
+      valist_type = TREE_TYPE (valist);
+
+      /* Args grow down.  Not handled by generic routines.  */
+
+      u = fold_convert (valist_type, size_in_bytes (type));
+      t = build (MINUS_EXPR, valist_type, valist, u);
+
+      /* Copied from va-pa.h, but we probably don't need to align to
+	 word size, since we generate and preserve that invariant.  */
+      u = build_int_2 ((size > 4 ? -8 : -4), -1);
+      u = fold_convert (valist_type, u);
+      t = build (BIT_AND_EXPR, valist_type, t, u);
+
+      t = build (MODIFY_EXPR, valist_type, valist, t);
+
+      ofs = (8 - size) % 4;
+      if (ofs != 0)
 	{
-	  t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
-		     build_int_2 (-size, -1));
-
-	  /* Copied from va-pa.h, but we probably don't need to align to
-	     word size, since we generate and preserve that invariant.  */
-	  t = build (BIT_AND_EXPR, TREE_TYPE (valist), t,
-		     build_int_2 ((size > 4 ? -8 : -4), -1));
-
-	  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
-
-	  ofs = (8 - size) % 4;
-	  if (ofs)
-	    {
-	      t = build (PLUS_EXPR, TREE_TYPE (valist), t,
-			 build_int_2 (ofs, 0));
-	      TREE_SIDE_EFFECTS (t) = 1;
-	    }
-
-	  t = build1 (NOP_EXPR, ptr, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
+	  u = fold_convert (valist_type, size_int (ofs));
+	  t = build (PLUS_EXPR, valist_type, t, u);
 	}
+
+      t = fold_convert (ptr, t);
+      t = build_fold_indirect_ref (t);
+
+      if (indirect)
+	t = build_fold_indirect_ref (t);
+
+      return t;
     }
-
-  /* Calculate!  */
-  return expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 }
-
-
 
 /* This routine handles all the normal conditional branch sequences we
    might need to generate.  It handles compare immediate vs compare
