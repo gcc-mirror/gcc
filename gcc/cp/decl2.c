@@ -733,6 +733,8 @@ lang_decode_option (argc, argv)
 	warn_float_equal = setting;
       else if (!strcmp (p, "format"))
 	set_Wformat (setting);
+      else if (!strcmp (p, "format=2"))
+	set_Wformat (2);
       else if (!strcmp (p, "format-y2k"))
 	warn_format_y2k = setting;
       else if (!strcmp (p, "format-extra-args"))
