@@ -591,7 +591,6 @@ funlike_invocation_p (pfile, node, list)
      const cpp_hashnode *node;
      struct toklist *list;
 {
-  cpp_context *orig;
   cpp_token maybe_paren;
   macro_arg *args = 0;
   cpp_lexer_pos macro_pos;
@@ -599,7 +598,6 @@ funlike_invocation_p (pfile, node, list)
   macro_pos = pfile->lexer_pos;
   pfile->state.parsing_args = 1;
   pfile->state.prevent_expansion++;
-  orig = pfile->context;
 
   cpp_start_lookahead (pfile);
   cpp_get_token (pfile, &maybe_paren);
@@ -613,8 +611,6 @@ funlike_invocation_p (pfile, node, list)
 	 "function-like macro \"%s\" must be used with arguments in traditional C",
 		 NODE_NAME (node));
 
-  /* Restore original context.  */
-  pfile->context = orig;
   pfile->state.prevent_expansion--;
   pfile->state.parsing_args = 0;
 
@@ -886,8 +882,7 @@ _cpp_pop_context (pfile)
   if (!pfile->context->prev && !pfile->state.parsing_args)
     unlock_pools (pfile);
 
-  /* Re-enable a macro, temporarily if parsing_args, when leaving its
-     expansion.  */
+  /* Re-enable a macro when leaving its expansion.  */
   context->macro->disabled = 0;
 }
 
