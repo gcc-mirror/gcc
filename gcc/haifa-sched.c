@@ -477,6 +477,22 @@ static int q_size = 0;
 #define NEXT_Q(X) (((X)+1) & (INSN_QUEUE_SIZE-1))
 #define NEXT_Q_AFTER(X, C) (((X)+C) & (INSN_QUEUE_SIZE-1))
 
+/* Describe the ready list of the scheduler.
+   VEC holds space enough for all insns in the current region.  VECLEN
+   says how many exactly.
+   FIRST is the index of the element with the highest priority; i.e. the
+   last one in the ready list, since elements are ordered by ascending
+   priority.
+   N_READY determines how many insns are on the ready list.  */
+
+struct ready_list
+{
+  rtx *vec;
+  int veclen;
+  int first;
+  int n_ready;
+};
+
 /* Forward declarations.  */
 static void add_dependence PARAMS ((rtx, rtx, enum reg_note));
 static void remove_dependence PARAMS ((rtx, rtx));
@@ -502,7 +518,7 @@ static void sched_analyze PARAMS ((struct deps *, rtx, rtx));
 static int rank_for_schedule PARAMS ((const PTR, const PTR));
 static void swap_sort PARAMS ((rtx *, int));
 static void queue_insn PARAMS ((rtx, int));
-static int schedule_insn PARAMS ((rtx, rtx *, int, int));
+static void schedule_insn PARAMS ((rtx, struct ready_list *, int));
 static void find_insn_reg_weight PARAMS ((int));
 static int schedule_block PARAMS ((int, int));
 static char *safe_concat PARAMS ((char *, char *, const char *));
@@ -773,9 +789,14 @@ static rtx reemit_notes PARAMS ((rtx, rtx));
 static void get_block_head_tail PARAMS ((int, rtx *, rtx *));
 static void get_bb_head_tail PARAMS ((int, rtx *, rtx *));
 
-static int queue_to_ready PARAMS ((rtx[], int));
+static void ready_add PARAMS ((struct ready_list *, rtx));
+static rtx *ready_lastpos PARAMS ((struct ready_list *));
+static void ready_sort PARAMS ((struct ready_list *));
+static rtx ready_remove_first PARAMS ((struct ready_list *));
 
-static void debug_ready_list PARAMS ((rtx[], int));
+static void queue_to_ready PARAMS ((struct ready_list *));
+
+static void debug_ready_list PARAMS ((struct ready_list *));
 static void init_target_units PARAMS ((void));
 static void insn_print_units PARAMS ((rtx));
 static int get_visual_tbl_length PARAMS ((void));
@@ -4184,8 +4205,6 @@ swap_sort (a, n)
   a[i + 1] = insn;
 }
 
-static int max_priority;
-
 /* Add INSN to the insn queue so that it can be executed at least
    N_CYCLES after the currently executing insn.  Preserve insns
    chain for debugging purposes.  */
@@ -4209,7 +4228,66 @@ queue_insn (insn, n_cycles)
 
       fprintf (dump, "queued for %d cycles.\n", n_cycles);
     }
+}
 
+/* Return a pointer to the bottom of the ready list, i.e. the insn
+   with the lowest priority.  */
+
+HAIFA_INLINE static rtx *
+ready_lastpos (ready)
+     struct ready_list *ready;
+{
+  if (ready->n_ready == 0)
+    abort ();
+  return ready->vec + ready->first - ready->n_ready + 1;
+}
+
+/* Add an element INSN to the ready list so that it ends up with the lowest
+   priority.  */
+
+HAIFA_INLINE static void
+ready_add (ready, insn)
+     struct ready_list *ready;
+     rtx insn;
+{
+  if (ready->first == ready->n_ready)
+    {
+      memmove (ready->vec + ready->veclen - ready->n_ready,
+	       ready_lastpos (ready),
+	       ready->n_ready * sizeof (rtx));
+      ready->first = ready->veclen - 1;
+    }
+  ready->vec[ready->first - ready->n_ready] = insn;
+  ready->n_ready++;
+}
+
+/* Remove the element with the highest priority from the ready list and
+   return it.  */
+
+HAIFA_INLINE static rtx
+ready_remove_first (ready)
+     struct ready_list *ready;
+{
+  rtx t;
+  if (ready->n_ready == 0)
+    abort ();
+  t = ready->vec[ready->first--];
+  ready->n_ready--;
+  /* If the queue becomes empty, reset it.  */
+  if (ready->n_ready == 0)
+    ready->first = ready->veclen - 1;
+  return t;
+}
+
+/* Sort the ready list READY by ascending priority, using the SCHED_SORT
+   macro.  */
+
+HAIFA_INLINE static void
+ready_sort (ready)
+     struct ready_list *ready;
+{
+  rtx *first = ready_lastpos (ready);
+  SCHED_SORT (first, ready->n_ready);
 }
 
 /* PREV is an insn that is ready to execute.  Adjust its priority if that
@@ -4236,15 +4314,14 @@ adjust_priority (prev)
 static int last_clock_var;
 
 /* INSN is the "currently executing insn".  Launch each insn which was
-   waiting on INSN.  READY is a vector of insns which are ready to fire.
-   N_READY is the number of elements in READY.  CLOCK is the current
-   cycle.  */
+   waiting on INSN.  READY is the ready list which contains the insns
+   that are ready to fire.  CLOCK is the current cycle.
+   */
 
-static int
-schedule_insn (insn, ready, n_ready, clock)
+static void
+schedule_insn (insn, ready, clock)
      rtx insn;
-     rtx *ready;
-     int n_ready;
+     struct ready_list *ready;
      int clock;
 {
   rtx link;
@@ -4267,13 +4344,7 @@ schedule_insn (insn, ready, n_ready, clock)
     schedule_unit (unit, insn, clock);
 
   if (INSN_DEPEND (insn) == 0)
-    return n_ready;
-
-  /* This is used by the function adjust_priority above.  */
-  if (n_ready > 0)
-    max_priority = MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn));
-  else
-    max_priority = INSN_PRIORITY (insn);
+    return;
 
   for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
     {
@@ -4315,7 +4386,7 @@ schedule_insn (insn, ready, n_ready, clock)
 	     list or queue it.  */
 	  adjust_priority (next);
 	  if (effective_cost < 1)
-	    ready[n_ready++] = next;
+	    ready_add (ready, next);
 	  else
 	    queue_insn (next, effective_cost);
 	}
@@ -4331,8 +4402,6 @@ schedule_insn (insn, ready, n_ready, clock)
       PUT_MODE (insn, clock > last_clock_var ? TImode : VOIDmode);
       last_clock_var = clock;
     }
-
-  return n_ready;
 }
 
 /* Functions for handling of notes.  */
@@ -4729,10 +4798,9 @@ static int clock_var;
 
 /* Move insns that became ready to fire from queue to ready list.  */
 
-static int
-queue_to_ready (ready, n_ready)
-     rtx ready[];
-     int n_ready;
+static void
+queue_to_ready (ready)
+     struct ready_list *ready;
 {
   rtx insn;
   rtx link;
@@ -4743,7 +4811,6 @@ queue_to_ready (ready, n_ready)
      ready list.  */
   for (link = insn_queue[q_ptr]; link; link = XEXP (link, 1))
     {
-
       insn = XEXP (link, 0);
       q_size -= 1;
 
@@ -4753,7 +4820,7 @@ queue_to_ready (ready, n_ready)
       if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
 	fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
 
-      ready[n_ready++] = insn;
+      ready_add (ready, insn);
       if (sched_verbose >= 2)
 	fprintf (dump, "moving to ready without stalls\n");
     }
@@ -4761,7 +4828,7 @@ queue_to_ready (ready, n_ready)
 
   /* If there are no ready insns, stall until one is ready and add all
      of the pending insns at that point to the ready list.  */
-  if (n_ready == 0)
+  if (ready->n_ready == 0)
     {
       register int stalls;
 
@@ -4781,13 +4848,13 @@ queue_to_ready (ready, n_ready)
 		  if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
 		    fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
 
-		  ready[n_ready++] = insn;
+		  ready_add (ready, insn);
 		  if (sched_verbose >= 2)
 		    fprintf (dump, "moving to ready with %d stalls\n", stalls);
 		}
 	      insn_queue[NEXT_Q_AFTER (q_ptr, stalls)] = 0;
 
-	      if (n_ready)
+	      if (ready->n_ready)
 		break;
 	    }
 	}
@@ -4797,23 +4864,26 @@ queue_to_ready (ready, n_ready)
       q_ptr = NEXT_Q_AFTER (q_ptr, stalls);
       clock_var += stalls;
     }
-  return n_ready;
 }
 
 /* Print the ready list for debugging purposes.  Callable from debugger.  */
 
 static void
-debug_ready_list (ready, n_ready)
-     rtx ready[];
-     int n_ready;
+debug_ready_list (ready)
+     struct ready_list *ready;
 {
+  rtx *p;
   int i;
 
-  for (i = 0; i < n_ready; i++)
+  if (ready->n_ready == 0)
+    return;
+
+  p = ready_lastpos (ready);
+  for (i = 0; i < ready->n_ready; i++)
     {
-      fprintf (dump, "  %d", INSN_UID (ready[i]));
-      if (current_nr_blocks > 1 && INSN_BB (ready[i]) != target_bb)
-	fprintf (dump, "/b%d", BLOCK_NUM (ready[i]));
+      fprintf (dump, "  %d", INSN_UID (p[i]));
+      if (current_nr_blocks > 1 && INSN_BB (p[i]) != target_bb)
+	fprintf (dump, "/b%d", BLOCK_NUM (p[i]));
     }
   fprintf (dump, "\n");
 }
@@ -5817,8 +5887,7 @@ schedule_block (bb, rgn_n_insns)
 {
   /* Local variables.  */
   rtx insn, last;
-  rtx *ready;
-  int n_ready = 0;
+  struct ready_list ready;
   int can_issue_more;
 
   /* Flow block of this bb.  */
@@ -5933,7 +6002,10 @@ schedule_block (bb, rgn_n_insns)
   clear_units ();
 
   /* Allocate the ready list.  */
-  ready = (rtx *) xmalloc ((rgn_n_insns + 1) * sizeof (rtx));
+  ready.veclen = rgn_n_insns + 1 + ISSUE_RATE;
+  ready.first = ready.veclen - 1;
+  ready.vec = (rtx *) xmalloc (ready.veclen * sizeof (rtx));
+  ready.n_ready = 0;
 
   /* Print debugging information.  */
   if (sched_verbose >= 5)
@@ -5941,7 +6013,6 @@ schedule_block (bb, rgn_n_insns)
 
   /* Initialize ready list with all 'ready' insns in target block.
      Count number of insns in the target block being scheduled.  */
-  n_ready = 0;
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
       rtx next;
@@ -5952,7 +6023,7 @@ schedule_block (bb, rgn_n_insns)
 
       if (INSN_DEP_COUNT (insn) == 0
 	  && (SCHED_GROUP_P (next) == 0 || ! INSN_P (next)))
-	ready[n_ready++] = insn;
+	ready_add (&ready, insn);
       if (!(SCHED_GROUP_P (insn)))
 	target_n_insns++;
     }
@@ -5995,7 +6066,7 @@ schedule_block (bb, rgn_n_insns)
 		    && (! next
 			|| SCHED_GROUP_P (next) == 0
 			|| ! INSN_P (next)))
-		  ready[n_ready++] = insn;
+		  ready_add (&ready, insn);
 	      }
 	  }
       }
@@ -6034,25 +6105,25 @@ schedule_block (bb, rgn_n_insns)
          If there are no ready insns, increment clock until one
          is ready and add all pending insns at that point to the ready
          list.  */
-      n_ready = queue_to_ready (ready, n_ready);
+      queue_to_ready (&ready);
 
-      if (n_ready == 0)
+      if (ready.n_ready == 0)
 	abort ();
 
       if (sched_verbose >= 2)
 	{
 	  fprintf (dump, ";;\t\tReady list after queue_to_ready:  ");
-	  debug_ready_list (ready, n_ready);
+	  debug_ready_list (&ready);
 	}
 
       /* Sort the ready list based on priority.  */
-      SCHED_SORT (ready, n_ready);
+      ready_sort (&ready);
 
       /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
 #ifdef MD_SCHED_REORDER
-      MD_SCHED_REORDER (dump, sched_verbose, ready, n_ready, clock_var,
-			can_issue_more);
+      MD_SCHED_REORDER (dump, sched_verbose, ready_lastpos (&ready),
+			ready.n_ready, clock_var, can_issue_more);
 #else
       can_issue_more = issue_rate;
 #endif
@@ -6060,14 +6131,14 @@ schedule_block (bb, rgn_n_insns)
       if (sched_verbose)
 	{
 	  fprintf (dump, "\n;;\tReady list (t =%3d):  ", clock_var);
-	  debug_ready_list (ready, n_ready);
+	  debug_ready_list (&ready);
 	}
 
       /* Issue insns from ready list.  */
-      while (n_ready != 0 && can_issue_more)
+      while (ready.n_ready != 0 && can_issue_more)
 	{
 	  /* Select and remove the insn from the ready list.  */
-	  rtx insn = ready[--n_ready];
+	  rtx insn = ready_remove_first (&ready);
 	  int cost = actual_hazard (insn_unit (insn), insn, clock_var, 0);
 
 	  if (cost >= 1)
@@ -6148,7 +6219,7 @@ schedule_block (bb, rgn_n_insns)
 	  can_issue_more--;
 #endif
 
-	  n_ready = schedule_insn (insn, ready, n_ready, clock_var);
+	  schedule_insn (insn, &ready, clock_var);
 
 	  /* Close this block after scheduling its jump.  */
 	  if (GET_CODE (last_scheduled_insn) == JUMP_INSN)
@@ -6164,7 +6235,7 @@ schedule_block (bb, rgn_n_insns)
   if (sched_verbose)
     {
       fprintf (dump, ";;\tReady list (final):  ");
-      debug_ready_list (ready, n_ready);
+      debug_ready_list (&ready);
       print_block_visualization (b, "");
     }
 
@@ -6220,7 +6291,7 @@ schedule_block (bb, rgn_n_insns)
       free (bblst_table);
       free (bitlst_table);
     }
-  free (ready);
+  free (ready.vec);
 
   return (sched_n_insns);
 }
