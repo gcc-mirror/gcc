@@ -4255,12 +4255,12 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	   && ! memory_address_p (mode, ad))
     {
       *loc = ad = gen_rtx (PLUS, GET_MODE (ad),
+			   XEXP (XEXP (ad, 0), 0),
 			   plus_constant (XEXP (XEXP (ad, 0), 1),
-					  INTVAL (XEXP (ad, 1))),
-			   XEXP (XEXP (ad, 0), 0));
-      find_reloads_address_part (XEXP (ad, 0), &XEXP (ad, 0), BASE_REG_CLASS,
+					  INTVAL (XEXP (ad, 1))));
+      find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1), BASE_REG_CLASS,
 				 GET_MODE (ad), opnum, type, ind_levels);
-      find_reloads_address_1 (XEXP (ad, 1), 1, &XEXP (ad, 1), opnum, type, 0);
+      find_reloads_address_1 (XEXP (ad, 0), 1, &XEXP (ad, 0), opnum, type, 0);
 
       return 1;
     }
