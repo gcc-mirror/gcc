@@ -12354,7 +12354,7 @@ lookup_filename (file_name)
 
   if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
-      fprintf (asm_out_file, "\t.file %u ", i);
+      fprintf (asm_out_file, "\t.file %lu ", (unsigned long) i);
       output_quoted_string (asm_out_file, file_name);
       fputc ('\n', asm_out_file);
     }

@@ -73,12 +73,12 @@ typedef struct {
   _FT_( "gnu_type",         gnu_type_fix )
 
 
-#define FIX_PROC_HEAD( fix )                    \
-static void fix PARAMS ((const char *, const char *, tFixDesc *)); /* avoid warning */      \
-static void fix ( filname, text, p_fixd )       \
-    const char* filname;                        \
-    const char* text;                           \
-    tFixDesc* p_fixd;
+#define FIX_PROC_HEAD( fix )						\
+static void fix PARAMS ((const char *, const char *, tFixDesc *));	\
+static void fix ( filname, text, p_fixd )				\
+    const char* filname ATTRIBUTE_UNUSED;				\
+    const char* text ATTRIBUTE_UNUSED;					\
+    tFixDesc* p_fixd ATTRIBUTE_UNUSED;
 
 #ifdef NEED_PRINT_QUOTE
 /*

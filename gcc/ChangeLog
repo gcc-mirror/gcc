@@ -1,3 +1,14 @@
+2003-01-21  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (lookup_filename): Fix printf format warning.
+	* system.h (fread_unlocked, fwrite_unlocked): Undef.
+
+	* fixinc/Makefile.in (FL_LIST): Add $($@-warn) hook.
+	(fixincl.o-warn, gnu-regex.o-warn): New.
+	* fixinc/fixfixes.c (FIX_PROC_HEAD): Mark parameters unused.
+	* fixinc/fixtests.c (TEST_FOR_FIX_PROC_HEAD): Likewise.
+	* fixinc/fixincl.c (process): Fix printf format warning.
+
 2003-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* dwarf2out (output_file_names): Don't crash if called
