@@ -3216,6 +3216,12 @@ subst (x, from, to, in_dest, unique_copy)
 	  )
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
+      /* A paradoxical SUBREG of a VOIDmode constant is the same constant,
+	 since we are saying that the high bits don't matter.  */
+      if (CONSTANT_P (SUBREG_REG (x)) && GET_MODE (SUBREG_REG (x)) == VOIDmode
+	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (op0_mode))
+	return SUBREG_REG (x);
+
       /* If we are narrowing an integral object, we need to see if we can
 	 simplify the expression for the object knowing that we only need the
 	 low-order bits.  */
@@ -4002,12 +4008,13 @@ subst (x, from, to, in_dest, unique_copy)
 	      m = GET_MODE (XEXP (t, 0));
 	    }
 
-	  if (reversible_comparison_p (XEXP (x, 0))
-	      && (GET_CODE (f) == PLUS || GET_CODE (f) == MINUS
-		  || GET_CODE (f) == IOR || GET_CODE (f) == XOR
-		  || GET_CODE (f) == ASHIFT
-		  || GET_CODE (f) == LSHIFTRT || GET_CODE (f) == ASHIFTRT)
-	      && rtx_equal_p (XEXP (f, 0), t))
+	  else if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+		   && reversible_comparison_p (XEXP (x, 0))
+		   && (GET_CODE (f) == PLUS || GET_CODE (f) == MINUS
+		       || GET_CODE (f) == IOR || GET_CODE (f) == XOR
+		       || GET_CODE (f) == ASHIFT
+		       || GET_CODE (f) == LSHIFTRT || GET_CODE (f) == ASHIFTRT)
+		   && rtx_equal_p (XEXP (f, 0), t))
 	    {
 	      c1 = XEXP (f, 1), op = GET_CODE (f), z = t;
 	      cond_op = reverse_condition (cond_op);
