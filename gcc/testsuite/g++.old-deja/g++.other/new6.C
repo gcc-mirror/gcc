@@ -1,3 +1,6 @@
+// Test that we properly default-initialize the new int when () is given.
+// execution test - XFAIL *-*-*
+
 #include <new>
 using namespace std;
 extern "C" void *malloc (size_t);
