@@ -1,3 +1,9 @@
+Mon May 24 14:34:31 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (strength_reduce): Do not clear NOT_EVERY_ITERATION at the
+	last CODE_LABEL in a loop if we have previously passed a jump
+	to the top of the loop.
+
 Mon May 24 01:02:58 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* stmt.c (expand_end_bindings): Ignore any elements of VARS that

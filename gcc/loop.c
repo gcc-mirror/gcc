@@ -3669,6 +3669,9 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   /* This is 1 if current insn may be executed more than once for every
      loop iteration.  */
   int maybe_multiple = 0;
+  /* This is 1 if we have past a branch back to the top of the loop
+     (aka a loop latch).  */
+  int past_loop_latch = 0;
   /* Temporary list pointers for traversing loop_iv_list.  */
   struct iv_class *bl, **backbl;
   /* Ratio of extra register life span we can justify
@@ -3836,16 +3839,30 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    loop_depth--;
 	}
 
+      /* Note if we pass a loop latch.  If we do, then we can not clear
+	 NOT_EVERY_ITERATION below when we pass the last CODE_LABEL in
+	 a loop since a jump before the last CODE_LABEL may have started
+	 a new loop iteration.
+
+	 Note that LOOP_TOP is only set for rotated loops and we need
+	 this check for all loops, so compare against the CODE_LABEL
+	 which immediately follows LOOP_START.  */
+      if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == NEXT_INSN (loop_start))
+	past_loop_latch = 1;
+
       /* Unlike in the code motion pass where MAYBE_NEVER indicates that
 	 an insn may never be executed, NOT_EVERY_ITERATION indicates whether
 	 or not an insn is known to be executed each iteration of the
 	 loop, whether or not any iterations are known to occur.
 
 	 Therefore, if we have just passed a label and have no more labels
-	 between here and the test insn of the loop, we know these insns
-	 will be executed each iteration.  */
+	 between here and the test insn of the loop, and we have not passed
+	 a jump to the top of the loop, then we know these insns will be
+	 executed each iteration.  */
 
-      if (not_every_iteration && GET_CODE (p) == CODE_LABEL
+      if (not_every_iteration 
+	  && ! past_loop_latch
+	  && GET_CODE (p) == CODE_LABEL
 	  && no_labels_between_p (p, loop_end)
 	  && loop_insn_first_p (p, loop_cont))
 	not_every_iteration = 0;
