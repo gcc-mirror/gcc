@@ -2348,7 +2348,7 @@ do {								\
 /* When a prototype says `char' or `short', really pass an `int'.
    (The 386 can't easily push less than an int.)  */
 
-#define PROMOTE_PROTOTYPES 1
+#define PROMOTE_PROTOTYPES (!TARGET_64BIT)
 
 /* A macro to update M and UNSIGNEDP when an object whose type is
    TYPE and which has the specified mode and signedness is to be

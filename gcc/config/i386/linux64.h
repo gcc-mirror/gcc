@@ -65,3 +65,5 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC "\
   %{m32:%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s} \
   %{!m32:%{!shared:crtend.o%s} %{shared:crtendS.o%s} /usr/lib64/crtn.o%s}"
+
+#define MULTILIB_DEFAULTS { "m64" }

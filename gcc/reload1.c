@@ -459,7 +459,7 @@ static void failed_reload		PARAMS ((rtx, int));
 static int set_reload_reg		PARAMS ((int, int));
 static void reload_cse_delete_noop_set	PARAMS ((rtx, rtx));
 static void reload_cse_simplify		PARAMS ((rtx));
-static void fixup_abnormal_edges	PARAMS ((void));
+void fixup_abnormal_edges		PARAMS ((void));
 extern void dump_needs			PARAMS ((struct insn_chain *));
 
 /* Initialize the reload pass once per compilation.  */
@@ -8024,6 +8024,7 @@ static void
 reload_cse_delete_noop_set (insn, value)
      rtx insn, value;
 {
+  bool purge = BLOCK_FOR_INSN (insn)->end == insn;
   if (value)
     {
       PATTERN (insn) = gen_rtx_USE (VOIDmode, value);
@@ -8032,6 +8033,8 @@ reload_cse_delete_noop_set (insn, value)
     }
   else
     delete_insn (insn);
+  if (purge)
+    purge_dead_edges (BLOCK_FOR_INSN (insn));
 }
 
 /* See whether a single set SET is a noop.  */
@@ -9470,7 +9473,7 @@ copy_eh_notes (insn, x)
    proper call and fix the damage.
  
    Similar handle instructions throwing exceptions internally.  */
-static void
+void
 fixup_abnormal_edges ()
 {
   int i;

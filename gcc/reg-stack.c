@@ -2854,6 +2854,7 @@ convert_regs (file)
 	}
     }
 
+  fixup_abnormal_edges ();
   if (inserted)
     commit_edge_insertions ();
 

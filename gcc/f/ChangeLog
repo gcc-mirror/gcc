@@ -1,3 +1,7 @@
+Mon Mar 18 18:43:22 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* target.h (FFETARGET_32bit_longs): Undefine for x86-64.
+
 2002-02-13  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: List Problem Reports fixed in 3.1.

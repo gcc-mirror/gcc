@@ -1,3 +1,27 @@
+Mon Mar 18 18:12:48 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (override_options): Disallow preferred_stack_boundary to be
+	less than 16 bytes
+	(construct_container): Fix end of array check.
+	(ix86_va_start): Force alignemnt to be 16 bytes.
+
+	* linux64.h (MULTILIB_DEFAULTS): Set to "m64".
+	(t-linux64): Add multilibing
+
+	* i386.h (PROMOTE_PROTOTYPES): Set to 0 for x86_64.
+
+	* gcse.c (hash_scan_set): Refuse instructions with EH edges.
+
+	* basic-block.h (fixup_abnormal_edges): Declare.
+	* reload1.c (fixup_abnormal_edges): Make global.
+	* reg-stack.c (convert_regs): Use it.
+
+	* gcse.c (insert_insn_end_bb): Handle trapping insns.
+
+	* reload1.c (reload_cse_delete_noop_set): Purge dead edges.
+
+	* recog.c (peephole2_optimize): Re-distribute EH edges.
+
 2002-03-18  Jason Merrill  <jason@redhat.com>
 
 	* configure.in: Disable checking by default on release branch.

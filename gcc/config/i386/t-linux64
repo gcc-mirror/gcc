@@ -1,3 +1,11 @@
 # On x86-64 we do not need any exports for glibc, override the settings
 # from t-slibgcc-elf-ver and t-linux
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
+
+MULTILIB_OPTIONS = m64/m32
+MULTILIB_DIRNAMES = 64 32 
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
