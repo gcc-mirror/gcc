@@ -2835,7 +2835,7 @@ extern void expand_decl_init			PARAMS ((tree));
 extern void clear_last_expr			PARAMS ((void));
 extern void expand_label			PARAMS ((tree));
 extern void expand_goto				PARAMS ((tree));
-extern void expand_asm				PARAMS ((tree));
+extern void expand_asm				PARAMS ((tree, int));
 extern void expand_start_cond			PARAMS ((tree, int));
 extern void expand_end_cond			PARAMS ((void));
 extern void expand_start_else			PARAMS ((void));

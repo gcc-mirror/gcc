@@ -1,3 +1,7 @@
+2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	gcc.dg/old-style-asm-1.c: New test.
+
 2003-01-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/compile/20030109-1.c: New test.
