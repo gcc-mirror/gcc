@@ -6409,6 +6409,18 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
       return;
     }
 
+  /* Avoid setting TREE_READONLY incorrectly.  */
+  if (/* If the object has a constructor, the constructor may modify
+	 the object.  */
+      TYPE_NEEDS_CONSTRUCTING (type)
+      /* If the type isn't complete, we don't know yet if it will need
+	 constructing.  */
+      || !COMPLETE_TYPE_P (type) 
+      /* If the type has a mutable component, that component might be
+	 modified.  */
+      || TYPE_HAS_MUTABLE_P (type))
+    type_quals &= ~TYPE_QUAL_CONST;
+
   c_apply_type_quals_to_decl (type_quals, decl);
 }
 

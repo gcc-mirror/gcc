@@ -3823,14 +3823,6 @@ start_decl_1 (tree decl)
      instantiation has occurred that TYPE_HAS_NONTRIVIAL_DESTRUCTOR
      will be set correctly.  */
   maybe_push_cleanup_level (type);
-
-  /* An object declared 'const' is only readonly after it is
-     initialized.  We don't have any way of expressing this currently,
-     so we need to be conservative and unset TREE_READONLY for types
-     with constructors.  Otherwise aliasing code will ignore stores in
-     an inline constructor.  */
-   if (type != error_mark_node && TYPE_NEEDS_CONSTRUCTING (type))
-     TREE_READONLY (decl) = 0;
 }
 
 /* Handle initialization of references.  DECL, TYPE, and INIT have the
@@ -4757,9 +4749,6 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
   if (type == error_mark_node)
     goto finish_end;
 
-  if (TYPE_HAS_MUTABLE_P (type))
-    TREE_READONLY (decl) = 0;
-
   if (processing_template_decl)
     {
       /* Add this declaration to the statement-tree.  */
@@ -4806,16 +4795,13 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
     ttype = target_type (type);
 
 
-  /* Currently, GNU C++ puts constants in text space, making them
-     impossible to initialize.  In the future, one would hope for
-     an operating system which understood the difference between
-     initialization and the running of a program.  */
-  if (! DECL_EXTERNAL (decl) && TREE_READONLY (decl))
+  /* A reference will be modified here, as it is initialized.  */
+  if (! DECL_EXTERNAL (decl) 
+      && TREE_READONLY (decl)
+      && TREE_CODE (type) == REFERENCE_TYPE)
     {
       was_readonly = 1;
-      if (TYPE_NEEDS_CONSTRUCTING (type)
-	  || TREE_CODE (type) == REFERENCE_TYPE)
-	TREE_READONLY (decl) = 0;
+      TREE_READONLY (decl) = 0;
     }
 
   if (TREE_CODE (decl) == VAR_DECL)
@@ -10959,16 +10945,11 @@ complete_vars (tree type)
       if (same_type_p (type, TREE_PURPOSE (*list)))
 	{
 	  tree var = TREE_VALUE (*list);
+	  tree type = TREE_TYPE (var);
 	  /* Complete the type of the variable.  The VAR_DECL itself
 	     will be laid out in expand_expr.  */
-	  complete_type (TREE_TYPE (var));
-	  /* An object declared 'const' is only readonly after it is
-	     initialized.  We don't have any way of expressing this currently,
-	     so we need to be conservative and unset TREE_READONLY for types
-	     with constructors.  Otherwise aliasing code will ignore stores in
-	     an inline constructor.  */
-	  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
-	    TREE_READONLY (var) = 0;
+	  complete_type (type);
+	  cp_apply_type_quals_to_decl (cp_type_quals (type), var);
 	  /* Remove this entry from the list.  */
 	  *list = TREE_CHAIN (*list);
 	}
