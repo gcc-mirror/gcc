@@ -26,6 +26,7 @@ Written by Per Bothner 1994.  */
    
 #include "config.h"
 #include "cpplib.h"
+#include "gansidecl.h"
 
 extern char *xmalloc PARAMS ((unsigned));
 extern char *xrealloc PARAMS ((void *, unsigned));
