@@ -1,3 +1,8 @@
+2001-08-23  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (zero_extendqihi2): Correct the insn
+	length.
+
 2001-08-19  Release Manager
 
 	* GCC 3.0.1 Released.
