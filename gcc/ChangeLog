@@ -1,5 +1,9 @@
 2002-06-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gengtype.h (error_at_line): Use PARAMS, not VPARAMS.  Add
+	ATTRIBUTE_PRINTF_2.
+	* gengtype-lex.l: Fix format specifier warning.
+
 	* genautomata.c: Don't include ctype.h or limits.h.  Use ISSPACE,
 	not isspace.
 	* gengtype-lex.l: Don't include ctype.h and use ISSPACE/ISIDNUM in

@@ -283,7 +283,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
 "%}"		{ BEGIN(in_struct); }
 "%"		{
   error_at_line (&lexer_line, 
-		 "unterminated %{; unexpected EOF");
+		 "unterminated %%{; unexpected EOF");
 }
 }
 

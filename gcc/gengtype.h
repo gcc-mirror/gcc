@@ -109,7 +109,7 @@ extern struct fileloc lexer_line;
 
 /* Print an error message.  */
 extern void error_at_line 
-  VPARAMS ((struct fileloc *pos, const char *msg, ...));
+  PARAMS ((struct fileloc *pos, const char *msg, ...)) ATTRIBUTE_PRINTF_2;
 
 /* Constructor routines for types.  */
 extern void do_typedef PARAMS ((const char *s, type_p t, struct fileloc *pos));
