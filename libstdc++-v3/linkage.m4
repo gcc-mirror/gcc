@@ -173,6 +173,35 @@ dnl 2) has "C" linkage
 dnl
 dnl argument 1 is name of function to check
 dnl
+dnl ASSUMES argument is a stdlib function without parameters
+dnl
+dnl GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0
+AC_DEFUN(GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcxx_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <stdlib.h>],
+                     [ $1();],
+                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_func_$1_use)
+  if test x$glibcxx_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)
+  fi
+])
+
+
+dnl
+dnl Check to see if the (stdlib function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl argument 1 is name of function to check
+dnl
 dnl ASSUMES argument is a math function with TWO parameters
 dnl
 dnl GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2
@@ -342,7 +371,7 @@ dnl This might seem like overkill but experience has shown that it's not...
 dnl
 dnl Define HAVE_STRTOLD if "strtold" is declared and links
 dnl Define HAVE_STRTOF if "strtof" is declared and links
-dnl Define HAVE_DRAND48 if "drand48" is declared and links
+dnl Define HAVE_LRAND48 if "lrand48" is declared and links
 dnl
 dnl GLIBCXX_CHECK_STDLIB_SUPPORT
 AC_DEFUN(GLIBCXX_CHECK_STDLIB_SUPPORT, [
@@ -352,7 +381,7 @@ AC_DEFUN(GLIBCXX_CHECK_STDLIB_SUPPORT, [
 
   GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtold)
   GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtof)
-  AC_CHECK_FUNCS(drand48)
+  GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0(lrand48)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 ])

@@ -1,3 +1,15 @@
+2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* linkage.m4 (GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0): Define.
+	(GLIBCXX_CHECK_STDLIB_SUPPORT): Use it to test for lrand48
+	instead of drand48.
+	* acconfig.h (HAVE_DRAND48): Renamed to HAVE_LRAND48.
+	* crossconfig.m4 (*-freebsd*): Define HAVE_LRAND48 instead of
+	HAVE_DRAND48.
+	* config.h.in, configure: Regenerate.
+	* include/bits/stl_algo.h: Use _GLIBCXX_HAVE_LRAND48 to guard
+	lrand48 use.
+
 2003-10-01  Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/locale_facets.tcc (time_put::put): Avoid
