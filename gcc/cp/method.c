@@ -2104,6 +2104,7 @@ emit_thunk (thunk_fndecl)
     assemble_end_function (thunk_fndecl, fnname);
     permanent_allocation (1);
     current_function_decl = 0;
+    current_function = 0;
 #else /* ASM_OUTPUT_MI_THUNK */
   /* If we don't have the necessary macro for efficient thunks, generate a
      thunk function that just makes a call to the real function.
@@ -2132,7 +2133,8 @@ emit_thunk (thunk_fndecl)
     DECL_INTERFACE_KNOWN (thunk_fndecl) = 1;
     DECL_NOT_REALLY_EXTERN (thunk_fndecl) = 1;
 
-    start_function (NULL_TREE, thunk_fndecl, NULL_TREE, 1);
+    start_function (NULL_TREE, thunk_fndecl, NULL_TREE, 
+		    SF_DEFAULT | SF_PRE_PARSED);
     store_parm_decls ();
     current_function_is_thunk = 1;
 
@@ -2363,7 +2365,7 @@ synthesize_method (fndecl)
     push_function_context_to (context);
 
   interface_unknown = 1;
-  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
+  start_function (NULL_TREE, fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   store_parm_decls ();
   clear_last_expr ();
 

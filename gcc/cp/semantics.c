@@ -1394,7 +1394,7 @@ begin_function_definition (decl_specs, declarator)
   tree specs;
   tree attrs;
   split_specs_attrs (decl_specs, &specs, &attrs);
-  if (!start_function (specs, declarator, attrs, 0))
+  if (!start_function (specs, declarator, attrs, SF_DEFAULT))
     return 0;
   
   reinit_parse_for_function ();
@@ -2182,16 +2182,10 @@ void
 expand_body (fn)
      tree fn;
 {
-  int saved_expanding_p;
   tree t;
   tree try_block;
 
-  /* Let the compiler know that now is the time to really generate
-     actualy RTL.  */
-  saved_expanding_p = expanding_p;
-  expanding_p = 1;
-
-  start_function (NULL_TREE, fn, NULL_TREE, 1);
+  start_function (NULL_TREE, fn, NULL_TREE, SF_PRE_PARSED | SF_EXPAND);
   store_parm_decls ();
 
   /* There are a few things that we do not handle recursively.  For
@@ -2242,7 +2236,4 @@ expand_body (fn)
     }
 
   finish_function (lineno, 0);
-
-  /* Restore EXPANDING_P.  */
-  expanding_p = saved_expanding_p;
 }

@@ -1120,7 +1120,8 @@ synthesize_tinfo_fn (fndecl)
   DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
   cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
 
-  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
+  start_function (NULL_TREE, fndecl, NULL_TREE, 
+		  SF_DEFAULT | SF_PRE_PARSED);
   store_parm_decls ();
   clear_last_expr ();
   push_momentary ();

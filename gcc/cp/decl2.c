@@ -2018,12 +2018,6 @@ mark_inline_for_output (decl)
   ++saved_inlines_used;
 }
 
-void
-clear_temp_name ()
-{
-  temp_name_counter = 0;
-}
-
 /* Hand off a unique name which can be used for variable we don't really
    want to know about anyway, for example, the anonymous variables which
    are needed to make references work.  Declare this thing so we can use it.
@@ -2825,7 +2819,7 @@ start_objects (method_type, initp)
   start_function (void_list_node,
 		  make_call_declarator (fnname, void_list_node, NULL_TREE,
 					NULL_TREE),
-		  NULL_TREE, 0);
+		  NULL_TREE, SF_DEFAULT);
 
 #if defined(ASM_OUTPUT_CONSTRUCTOR) && defined(ASM_OUTPUT_DESTRUCTOR)
   /* It can be a static function as long as collect2 does not have
@@ -3014,7 +3008,7 @@ start_static_storage_duration_function ()
   start_function (/*specs=*/NULL_TREE, 
 		  ssdf_decl,
 		  /*attrs=*/NULL_TREE,
-		  /*pre_parsed_p=*/1);
+		  SF_DEFAULT | SF_PRE_PARSED);
 
   /* Set up the scope of the outermost block in the function.  */
   store_parm_decls ();

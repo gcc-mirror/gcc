@@ -525,6 +525,7 @@ struct saved_scope {
   tree class_name;
   tree class_type;
   tree access_specifier;
+  tree function_decl;
   varray_type lang_base;
   tree *lang_stack;
   tree lang_name;
@@ -536,10 +537,12 @@ struct saved_scope {
   HOST_WIDE_INT x_processing_template_decl;
   int x_processing_specialization;
   int x_processing_explicit_instantiation;
+  int need_pop_function_context;
 
   char *firstobj;
 
   struct binding_level *class_bindings;
+  struct binding_level *bindings;
 
   struct saved_scope *prev;
 };
@@ -627,12 +630,12 @@ struct language_function
   int stmts_are_full_exprs_p; 
 
   struct named_label_list *named_label_uses;
-  struct binding_level *binding_level;
+  struct binding_level *bindings;
 };
 
 /* The current C++-specific per-function global variables.  */
 
-#define cp_function_chain (outer_function_chain->language)
+#define cp_function_chain (current_function->language)
 
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
@@ -665,8 +668,10 @@ struct language_function
    PARM_DECL for the `this' pointer.  The current_class_ref is an
    expression for `*this'.  */
 
-#define current_class_ptr cp_function_chain->x_current_class_ptr
-#define current_class_ref cp_function_chain->x_current_class_ref
+#define current_class_ptr \
+  (current_function ? cp_function_chain->x_current_class_ptr : NULL_TREE)
+#define current_class_ref \
+  (current_function ? cp_function_chain->x_current_class_ref : NULL_TREE)
 
 /* When building a statement-tree, this is the last node added to the
    tree.  */
@@ -2942,6 +2947,18 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define PUSH_USING           2  /* We are pushing this DECL as the
 				   result of a using declaration.  */
 
+/* Used with start function.  */
+#define SF_DEFAULT           SF_EXPAND
+                                /* No flags.  Temporarily, this is
+				   SF_EXPAND.  Once we are fully
+				   function-at-a-time, this will be
+				   0.  */
+#define SF_PRE_PARSED        1  /* The function declaration has
+				   already been parsed.  */
+#define SF_INCLASS_INLINE    2  /* The function is an inline, defined
+				   in the class body.  */
+#define SF_EXPAND            4  /* Generate RTL for this function.  */
+
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
    sense of `same'.  */
 #define same_type_p(type1, type2) \
@@ -3226,7 +3243,6 @@ extern tree constructor_name_full		PROTO((tree));
 extern tree constructor_name			PROTO((tree));
 extern void setup_vtbl_ptr			PROTO((void));
 extern void mark_inline_for_output		PROTO((tree));
-extern void clear_temp_name			PROTO((void));
 extern tree get_temp_name			PROTO((tree, int));
 extern void finish_anon_union			PROTO((tree));
 extern tree finish_table			PROTO((tree, tree, tree, int));

@@ -1549,8 +1549,6 @@ reinit_parse_for_method (yychar, decl)
   reinit_parse_for_block (yychar, &inline_text_obstack);
 
   len = obstack_object_size (&inline_text_obstack);
-  current_base_init_list = NULL_TREE;
-  current_member_init_list = NULL_TREE;
   if (decl == void_type_node
       || (current_class_type && TYPE_REDEFINED (current_class_type)))
     {
