@@ -674,7 +674,7 @@ dtors_section ()							\
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 				\
  ((TARGET_ELF) ?							\
   (i386_return_pops_args (FUNDECL, FUNTYPE, SIZE)) : 			\
-  (TREE_CODE (FUNTYPE) == IDENTIFIER_NODE ? 0				\
+  (TREE_CODE (FUNDECL) == IDENTIFIER_NODE ? 0				\
    : (TARGET_RTD							\
       && (TYPE_ARG_TYPES (FUNTYPE) == 0					\
 	  || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))		\

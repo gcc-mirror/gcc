@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running SCO Unix System V.
-   Copyright (C) 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1995 Free, 1996 Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -104,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef RETURN_POPS_ARGS
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  (TREE_CODE (FUNTYPE) == IDENTIFIER_NODE ? 0			\
+  (TREE_CODE (FUNDECL) == IDENTIFIER_NODE ? 0			\
    : (TARGET_RTD						\
       && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	  || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\

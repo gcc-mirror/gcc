@@ -495,7 +495,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    We may nevertheless provide this as an option.   */
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  ((TARGET_RETD && TREE_CODE (FUNTYPE) != IDENTIFIER_NODE	\
+  ((TARGET_RETD && TREE_CODE (FUNDECL) != IDENTIFIER_NODE	\
     && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
 	    == void_type_node)))				\
