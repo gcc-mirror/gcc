@@ -1,5 +1,9 @@
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* invoke.texi: Update lists of languages and suffixes supported.
+
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* configure.in: Take toplevel configure arguments from the
 	environment to create configargs.h and substitute
 	gcc_config_arguments, taking account of any existing configargs.h

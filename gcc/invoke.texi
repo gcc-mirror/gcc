@@ -551,16 +551,59 @@ C++ source code which should not be preprocessed.
 Objective-C source code.  Note that you must link with the library
 @file{libobjc.a} to make an Objective-C program work.
 
+@item @var{file}.mi
+Objective-C source code which should not be preprocessed.
+
 @item @var{file}.h
 C header file (not to be compiled or linked).
 
 @item @var{file}.cc
+@itemx @var{file}.cp
 @itemx @var{file}.cxx
 @itemx @var{file}.cpp
+@itemx @var{file}.c++
 @itemx @var{file}.C
 C++ source code which must be preprocessed.  Note that in @samp{.cxx},
 the last two letters must both be literally @samp{x}.  Likewise,
 @samp{.C} refers to a literal capital C.
+
+@item @var{file}.f
+@itemx @var{file}.for
+@itemx @var{file}.FOR
+Fortran source code which should not be preprocessed.
+
+@item @var{file}.F
+@itemx @var{file}.fpp
+@itemx @var{file}.FPP
+Fortran source code which must be preprocessed (with the traditional
+preprocessor).
+
+@item @var{file}.r
+Fortran source code which must be preprocessed with a RATFOR
+preprocessor (not included with GCC).
+
+@xref{Overall Options,,Options Controlling the Kind of Output, g77,
+Using and Porting GNU Fortran}, for more details of the handling of
+Fortran input files.
+
+@c FIXME: Descriptions of Java file types.
+@c @var{file}.java
+@c @var{file}.class
+@c @var{file}.zip
+@c @var{file}.jar
+
+@c GCC also knows about some suffixes for languages not yet included:
+@c Ada:
+@c @var{file}.ads
+@c @var{file}.adb
+@c @var{file}.ada
+@c Pascal:
+@c @var{file}.p
+@c @var{file}.pas
+
+@item @var{file}.ch
+@itemx @var{file}.chi
+CHILL source code (preprocessed with the traditional preprocessor).
 
 @item @var{file}.s
 Assembler code.
@@ -582,10 +625,14 @@ Specify explicitly the @var{language} for the following input files
 name suffix).  This option applies to all following input files until
 the next @samp{-x} option.  Possible values for @var{language} are:
 @example
-c  objective-c  c++
-c-header  cpp-output  c++-cpp-output
+c  c-header  cpp-output
+c++  c++-cpp-output
+objective-c  objc-cpp-output
 assembler  assembler-with-cpp
+f77  f77-cpp-input  ratfor
+java  chill
 @end example
+@c Also f77-version, for internal use only.
 
 @item -x none
 Turn off any specification of a language, so that subsequent files are
