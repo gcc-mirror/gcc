@@ -1,3 +1,8 @@
+2003-02-26  Josef Zlomek  <zlomekj@suse.cz>
+
+	* function.c (assign_parms): Set reg_attrs for parameters passed in
+	registers.
+
 2003-02-26  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/9681
