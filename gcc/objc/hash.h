@@ -21,10 +21,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.4 1991/11/21 22:25:19 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.5 1991/11/23 22:19:21 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/21 22:25:19 $
+  $Date: 1991/11/23 22:19:21 $
   $Log: hash.h,v $
+ * Revision 0.5  1991/11/23  22:19:21  dennisg
+ * converted some entries in the hash structure from ints to shorts.
+ * this was done to use a less expensive division instruction
+ * in the hashIndex() routine.
+ *
  * Revision 0.4  1991/11/21  22:25:19  dennisg
  * deleted hash mask information from hash struct.
  * changed hashing algorithm.  those values are no longer needed.
@@ -93,7 +98,7 @@ typedef struct cache {
 	 * Variables used to track the size of the hash
 	 *	table so to determine when to resize it.
 	 */
-  u_short     sizeOfHash,                         /* Number of buckets 
+  u_int       sizeOfHash,                         /* Number of buckets 
                                                     allocated for the hash
                                                     table (number of array
                                                     entries allocated for
