@@ -1528,7 +1528,7 @@ do { union { float f; long l;} tem;			\
      fprintf (FILE, "\t.long 0x%x\n", tem.l);	\
    } while (0)
 
-#endif /* not CROSS_COMPILER */
+#endif /* not CROSS_COMPILE */
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
@@ -1682,7 +1682,7 @@ do { union { float f; long l;} tem;			\
       u.i[0] = CONST_DOUBLE_HIGH (X); u.i[1] = CONST_DOUBLE_LOW (X);
 #endif
 
-#ifdef CROSS_COMPILER
+#ifdef CROSS_COMPILE
 #define PRINT_OPERAND_PRINT_FLOAT(CODE, FILE)   \
   ASM_OUTPUT_FLOAT_OPERAND (FILE, u1.f);
 #else
