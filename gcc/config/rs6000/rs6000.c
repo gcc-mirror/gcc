@@ -1508,7 +1508,7 @@ output_prolog (file, size)
 	asm_fprintf (file, "\t{stu|stwu} 1,%d(1)\n", - total_size);
       else
 	{
-	  asm_fprintf (file, "\t{cau 0,0,%d|lis 0,%d}\n\t{oril 0,0,%d|li 0,%d}\n",
+	  asm_fprintf (file, "\t{cau 0,0,%d|lis 0,%d}\n\t{oril|ori} 0,0,%d\n",
 		   (total_size >> 16) & 0xffff, total_size & 0xffff);
 	  if (TARGET_POWERPC)
 	    asm_fprintf (file, "\tsubf 12,0,1\n");
