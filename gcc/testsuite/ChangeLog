@@ -1,3 +1,7 @@
+2000-10-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/enum14.C: New test.
+
 2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/crash59.C: New test.
