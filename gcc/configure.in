@@ -473,8 +473,7 @@ AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy bzero bcmp \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
 	fputs_unlocked getrusage valloc)
 
-# Make sure wchar_t is available
-#AC_CHECK_TYPE(wchar_t, unsigned int)
+AC_CHECK_TYPE(ssize_t, int)
 
 gcc_AC_FUNC_VFPRINTF_DOPRNT
 gcc_AC_FUNC_PRINTF_PTR

@@ -1,5 +1,14 @@
 2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* configure.in: Add AC_CHECK_TYPE(ssize_t).  Remove commented 
+	out check for wchar_t.
+	* acconfig.h: Add template for ssize_t.  Remove @TOP@.
+	* system.h: Add infrastructure for defining missing   
+	TYPE_MAX/TYPE_MIN macros.  Use it to provide fallback  
+	definitions of UCHAR_MAX and SSIZE_MAX.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 	* Makefile.in (libgcc2.ready): Rename to libgcc.ready.
 	Depend on $(LANGUAGES) as well as $(GCC_PATCHES) and fixed
 	headers.

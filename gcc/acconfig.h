@@ -23,4 +23,5 @@
 /* Define if your assembler uses the old HImode fild and fist notation.  */
 #undef HAVE_GAS_FILDS_FISTS
 
-@TOP@
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef ssize_t
