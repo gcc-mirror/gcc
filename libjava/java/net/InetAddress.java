@@ -140,12 +140,12 @@ public class InetAddress implements Serializable
    */
   public boolean isMulticastAddress()
   {
-    int len = addr.length;
-    
-    if (len == 4)
+    // Mask against high order bits of 1110
+    if (addr.length == 4)
       return (addr [0] & 0xF0) == 0xE0;
     
-    if (len == 16)
+    // Mask against high order bits of 11111111
+    if (addr.lenth == 16)
       return addr [0] == (byte) 0xFF;
     
     return false;
@@ -297,7 +297,10 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Returns the hostname represented by this InetAddress
+   * Returns the hostname for this address.  This will return the IP address
+   * as a String if there is no hostname available for this address
+   *
+   * @return The hostname for this address
    */
   public String getHostName()
   {
@@ -333,7 +336,9 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Returns the IP address of this InetAddress as array of bytes
+   * Returns the IP address of this object as a byte array.
+   *
+   * @return IP address
    */
   public byte[] getAddress()
   {
@@ -368,7 +373,10 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Returns the IP address as string
+   * Returns the IP address of this object as a String.  The address is in 
+   * the dotted octet notation, for example, "127.0.0.1".
+   *
+   * @return The IP address of this object in String form
    *
    * @since 1.0.2
    */
@@ -426,7 +434,10 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Returns a hashcode of the InetAddress
+   * Returns a hash value for this address.  Useful for creating hash
+   * tables.  Overrides Object.hashCode()
+   *
+   * @return A hash value for this address.
    */
   public int hashCode()
   {
@@ -443,7 +454,14 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Compares the InetAddress object with another one.
+   * Tests this address for equality against another InetAddress.  The two
+   * addresses are considered equal if they contain the exact same octets.
+   * This implementation overrides Object.equals()
+   *
+   * @param obj The address to test for equality
+   *
+   * @return true if the passed in object's address is equal to this one's,
+   * false otherwise
    */
   public boolean equals (Object obj)
   {
@@ -471,7 +489,11 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Returns then <code>InetAddress</code> as string
+   * Converts this address to a String.  This string contains the IP in
+   * dotted decimal form. For example: "127.0.0.1"  This method is equivalent
+   * to getHostAddress() and overrides Object.toString()
+   *
+   * @return This address in String form
    */
   public String toString()
   {
@@ -539,7 +561,16 @@ public class InetAddress implements Serializable
   private static native int getFamily (byte[] address);
 
   /**
-   * Determines the IP address of a host, given the host's name.
+   * Returns an InetAddress object representing the IP address of the given
+   * hostname.  This name can be either a hostname such as "www.urbanophile.com"
+   * or an IP address in dotted decimal format such as "127.0.0.1".  If the
+   * hostname is null, the hostname of the local machine is supplied by
+   * default.  This method is equivalent to returning the first element in
+   * the InetAddress array returned from GetAllByName.
+   *
+   * @param hostname The name of the desired host, or null for the local machine.
+   * 
+   * @return The address of the host as an InetAddress object.
    *
    * @exception UnknownHostException If no IP address for the host could
    * be found
@@ -586,9 +617,17 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Given the name of a host, returns an array of its IP addresses,
-   * based on the configured name service on the system.
+   * Returns an array of InetAddress objects representing all the host/ip
+   * addresses of a given host, given the host's name.  This name can be
+   * either a hostname such as "www.urbanophile.com" or an IP address in
+   * dotted decimal format such as "127.0.0.1".  If the value is null, the
+   * hostname of the local machine is supplied by default.
    *
+   * @param @param hostname The name of the desired host, or null for the
+   * local machine.
+   *
+   * @return All addresses of the host as an array of InetAddress objects.
+   * 
    * @exception UnknownHostException If no IP address for the host could
    * be found
    * @exception SecurityException If a security manager exists and its
