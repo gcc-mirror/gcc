@@ -1451,7 +1451,8 @@ extern tree delta_identifier;
 extern tree delta2_identifier;
 extern tree pfn_or_delta2_identifier;
 extern tree tag_identifier;
-extern tree offset_identifier;
+extern tree vb_off_identifier;
+extern tree vt_off_identifier;
 
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
@@ -1667,7 +1668,8 @@ extern int current_function_parms_stored;
 #define SIGTABLE_NAME_FORMAT	"__st_%s_%s"
 #define SIGTABLE_NAME_FORMAT_LONG "__st_%s_%s_%d"
 #define SIGTABLE_TAG_NAME	"__tag"
-#define SIGTABLE_OFFSET_NAME	"__offset"
+#define SIGTABLE_VB_OFF_NAME	"__vb_off"
+#define SIGTABLE_VT_OFF_NAME	"__vt_off"
 #define EXCEPTION_CLEANUP_NAME 	"exception cleanup"
 
 #define THIS_NAME_P(ID_NODE) (strcmp(IDENTIFIER_POINTER (ID_NODE), "this") == 0)
