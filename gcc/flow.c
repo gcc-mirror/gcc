@@ -9466,6 +9466,71 @@ flow_loop_nodes_find (header, latch, nodes)
   return num_nodes;
 }
 
+/* Compute reverse top sort order */
+void
+flow_reverse_top_sort_order_compute (rts_order)
+     int *rts_order;
+{
+  edge *stack;
+  int sp;
+  int postnum = 0;
+  sbitmap visited;
+
+  /* Allocate stack for back-tracking up CFG.  */
+  stack = (edge *) xmalloc ((n_basic_blocks + 1) * sizeof (edge));
+  sp = 0;
+
+  /* Allocate bitmap to track nodes that have been visited.  */
+  visited = sbitmap_alloc (n_basic_blocks);
+
+  /* None of the nodes in the CFG have been visited yet.  */
+  sbitmap_zero (visited);
+
+  /* Push the first edge on to the stack.  */
+  stack[sp++] = ENTRY_BLOCK_PTR->succ;
+
+  while (sp)
+    {
+      edge e;
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      e = stack[sp - 1];
+      src = e->src;
+      dest = e->dest;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (dest != EXIT_BLOCK_PTR && ! TEST_BIT (visited, dest->index))
+	{
+	  /* Mark that we have visited the destination.  */
+	  SET_BIT (visited, dest->index);
+
+	  if (dest->succ)
+	    {
+	      /* Since the DEST node has been visited for the first
+		 time, check its successors.  */
+	      stack[sp++] = dest->succ;
+	    }
+	  else
+	    rts_order[postnum++] = dest->index;
+	}
+      else
+	{
+	  if (! e->succ_next && src != ENTRY_BLOCK_PTR)
+	   rts_order[postnum++] = src->index;
+
+	  if (e->succ_next)
+	    stack[sp - 1] = e->succ_next;
+	  else
+	    sp--;
+	}
+    }
+
+  free (stack);
+  sbitmap_free (visited);
+}
+
 /* Compute the depth first search order and store in the array
   DFS_ORDER if non-zero, marking the nodes visited in VISITED.  If
   RC_ORDER is non-zero, return the reverse completion number for each

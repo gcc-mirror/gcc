@@ -140,6 +140,7 @@ struct df
   bitmap *dom;
   int * dfs_order;
   int * rc_order;
+  int * rts_order;
 };
 
 
