@@ -1,3 +1,7 @@
+2002-04-07  David S. Miller  <davem@redhat.com>
+
+	* config.gcc (sparc64-*-linux*): Add t-crtfm to tmake_file.
+
 2002-04-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	PR 5933

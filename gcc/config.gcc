@@ -3243,7 +3243,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	esac
 	;;
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
-	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64"
+	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64 sparc/t-crtfm"
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
