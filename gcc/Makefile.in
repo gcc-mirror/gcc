@@ -1023,8 +1023,8 @@ c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
 ld: collect2
 	rm -f ld$(exeext)
-	ln collect2$(exeext) ld$(exeext) > /dev/null 2>&1
-	 || cp collect2$(exeext) ld$(exeext)
+	ln collect2$(exeext) ld$(exeext) > /dev/null 2>&1 \
+	   || cp collect2$(exeext) ld$(exeext)
 
 collect2 : collect2.o version.o $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
