@@ -1,3 +1,8 @@
+2000-09-12  Jim Wilson  <wilson@cygnus.com>
+
+	* ifcvt.c (noce_process_if_block): If A and B are the same, and no
+	else block, and X has side-effects, then fail.
+
 2000-09-12  Greg McGary  <greg@mcgary.org>
 
 	* config/mips/mips-protos.h

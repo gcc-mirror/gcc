@@ -1247,6 +1247,11 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
 	  reorder_insns (insn_b, insn_b, PREV_INSN (if_info.cond_earliest));
 	  insn_b = NULL_RTX;
 	}
+      /* If we have "x = b; if (...) x = a;", and x has side-effects, then
+	 x must be executed twice.  */
+      else if (insn_b && side_effects_p (orig_x))
+	return FALSE;
+	
       x = orig_x;
       goto success;
     }
