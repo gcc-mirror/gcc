@@ -1,3 +1,10 @@
+Thu Jun 10 19:23:00 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (TARGET_HARWARD, TARGET_HARVARD): Changed the former to the
+	latter.
+
+	* sh.md (ic_invalidate_line_i): Remove second alternative.
+
 Thu Jun 10 06:55 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	*fixinc/inclhack.def(sun_auth_proto): We do not know how to

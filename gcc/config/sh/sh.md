@@ -2242,16 +2242,16 @@
 }")
 
 ;; The address %0 is assumed to be 4-aligned at least.  Thus, by ORing
-;; 0xf0000008, we get the low-oder bits *1*00 (binary), ;; which fits
-;; the requirement *0*00 for associative address writes.  The alignment of
+;; 0xf0000008, we get the low-oder bits *1*00 (binary), which fits
+;; the requirement *1*00 for associative address writes.  The alignment of
 ;; %0 implies that its least significant bit is cleared,
 ;; thus we clear the V bit of a matching entry if there is one.
 (define_insn "ic_invalidate_line_i"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r,r")
-		     (match_operand:SI 1 "register_operand" "r,r")] 12)
-   (clobber (match_scratch:SI 2 "=&r,1"))]
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")
+		     (match_operand:SI 1 "register_operand" "r")] 12)
+   (clobber (match_scratch:SI 2 "=&r"))]
   "TARGET_HARD_SH4"
-  "ocbwb\\t@%0\;extu.w\\t%0,%2\;or\\t%r1,%r2\;mov.l\\t%0,@%2"
+  "ocbwb\\t@%0\;extu.w\\t%0,%2\;or\\t%1,%2\;mov.l\\t%0,@%2"
   [(set_attr "length" "8")])
 
 (define_insn "movqi_i"
