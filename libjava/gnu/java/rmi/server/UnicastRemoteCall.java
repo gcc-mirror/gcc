@@ -138,6 +138,21 @@ public class UnicastRemoteCall
       oout.flush();
   }
 
+  /**
+  *
+  * (re)starts ObjectInputStream
+  *
+  */ 
+  public ObjectInput startInputStream() throws IOException
+  {
+	if (conn != null) {
+		return (oin = conn.startObjectInputStream());
+	} else {
+		return getInputStream(); // dummy Input Stream
+	}
+
+  }
+
   public ObjectInput getInputStream() throws IOException
   {
     if (conn != null)
@@ -177,7 +192,7 @@ public class UnicastRemoteCall
 	DataOutputStream dout = conn.getDataOutputStream();
 	dout.write(MESSAGE_CALL);
 	
-	oout = conn.getObjectOutputStream();
+	oout = conn.startObjectOutputStream(); // (re)start ObjectOutputStream
 	objid.write(oout);
 	oout.writeInt(opnum);
 	oout.writeLong(hash);
@@ -194,7 +209,7 @@ public class UnicastRemoteCall
         if (din.readByte() != MESSAGE_CALL_ACK)
 	    throw new RemoteException("Call not acked");
 
-        oin = getInputStream();
+        oin = startInputStream();
         returncode = oin.readByte();
         UID.read(oin);
       }

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,42 +35,24 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.rmi.server;
+package gnu.java.rmi.server; 
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import gnu.java.rmi.server.RMIIncomingThread;
-
-public abstract class RemoteServer
-	extends RemoteObject {
-
-private static final long serialVersionUID = -4100238210092549637L;
-
-protected RemoteServer() {
-	super();
-}
-
-protected RemoteServer(RemoteRef ref) {
-	super(ref);
-}
-
-public static String getClientHost() throws ServerNotActiveException {
-	Thread currThread = Thread.currentThread();
-	if (currThread instanceof RMIIncomingThread) {
-		RMIIncomingThread incomingThread = (RMIIncomingThread) currThread;
-		return incomingThread.getClientHost();
-	} else {
-		throw new ServerNotActiveException(
-			"Unknown client host - current thread not instance of 'RMIIncomingThread'");
+public class RMIIncomingThread extends Thread {  
+	
+	private String clientHost = null;
+	
+	public RMIIncomingThread(Runnable runnable, String s_clientHost) {
+		super(runnable);
+		clientHost = s_clientHost;		
 	}
-}
-
-public static void setLog(OutputStream out) {
-	throw new Error("Not implemented");
-}
-
-public static PrintStream getLog() {
-	throw new Error("Not implemented");
-}
+	
+	public String toString() {
+		return "RMIIncoming from " + clientHost + " " + super.toString();
+	}
+	
+	public String getClientHost() {
+		return clientHost;
+	}
+	
 
 }
