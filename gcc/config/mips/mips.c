@@ -4274,13 +4274,7 @@ override_options ()
   /* make sure sizes of ints/longs/etc. are ok */
   if (mips_isa < 3)
     {
-      if (TARGET_INT64)
-	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit ints");
-
-      else if (TARGET_LONG64)
-	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit longs");
-
-      else if (TARGET_FLOAT64)
+      if (TARGET_FLOAT64)
 	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit fp registers");
 
       else if (TARGET_64BIT)
