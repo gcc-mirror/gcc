@@ -1,0 +1,52 @@
+#!/bin/sh
+# This script parses the output of a gcc bootstrap when using warning
+# flags and determines various statistics.
+#
+# By Kaveh Ghazi  (ghazi@caip.rutgers.edu)  12/13/97.
+
+# This function displays all warnings from stage3 of the bootstrap.
+stage3warns()
+{
+# Some awks choke on long lines so grep them out.
+  grep -v libf2c.a $1 | \
+	$AWK '/ warning: /{if(t==1)print} ; /stage2/{if(t==0)t=1}'
+}
+
+# Find a good awk.
+if test -z "$AWK" ; then
+  for AWK in gawk nawk awk ; do
+    if type $AWK 2>&1 | grep 'not found' > /dev/null 2>&1 ; then
+      :
+    else
+      break
+    fi
+  done
+fi
+
+for file in "$@" ; do
+
+  count=`stage3warns $file | wc -l`
+  echo There are $count warnings in stage3 of this bootstrap.
+
+  echo
+  echo Number of warnings per file:
+  stage3warns $file | $AWK -F: '{print$1}' | sort | uniq -c | sort -nr
+
+  echo
+  echo Number of warning types:
+  stage3warns $file | sed 's/.*warning: //; 
+		s/`\(int\)'"'"'/"\1"/g;
+		s/`\(char\)'"'"'/"\1"/g;
+		s/`\(inline\)'"'"'/"\1"/g;
+		s/`\(else\)'"'"'/"\1"/g;
+		s/`\(return\)'"'"'/"\1"/g;
+		s/`\(static\)'"'"'/"\1"/g;
+		s/`\(extern\)'"'"'/"\1"/g;
+		s/`\(longjmp\)'"'"' or `\(vfork\)'"'"'/"\1" or "\2"/g;
+		s/`'"[^']*'/"'`???'"'/g;"'
+		s/.*format, .* arg (arg [0-9]*)/??? format, ??? arg (arg ???)/;
+		s/(arg [0-9]*)/(arg ???)/;
+		s/"\([^"]*\)"/`\1'"'"'/g' | \
+	sort | uniq -c | sort -nr
+
+done
