@@ -794,13 +794,7 @@ public class BigInteger extends Number implements Comparable
 	  xwords[xlen++] = 0;
 	MPN.divide(xwords, xlen, ywords, ylen);
 	rlen = ylen;
-	if (remainder != null || rounding_mode != TRUNCATE)
-	  {
-	    if (nshift == 0)
-	      System.arraycopy(xwords, 0, ywords, 0, rlen);
-	    else
-	      MPN.rshift(ywords, xwords, 0, rlen, nshift);
-	  }
+	MPN.rshift0 (ywords, xwords, 0, rlen, nshift);
 
 	qlen = xlen + 1 - ylen;
 	if (quotient != null)
@@ -808,6 +802,12 @@ public class BigInteger extends Number implements Comparable
 	    for (int i = 0;  i < qlen;  i++)
 	      xwords[i] = xwords[i+ylen];
 	  }
+      }
+
+    if (ywords[rlen-1] < 0)
+      {
+        ywords[rlen] = 0;
+        rlen++;
       }
 
     // Now the quotient is in xwords, and the remainder is in ywords.
@@ -1399,15 +1399,10 @@ public class BigInteger extends Number implements Comparable
 	  {
 	    if (words == null || words.length < d_len)
 	      realloc(d_len);
-	    if (count == 0)
-	      System.arraycopy(x.words, word_count, words, 0, d_len);
-            else
-	      {
-		MPN.rshift(words, x.words, word_count, d_len, count);
-        	if (neg)
-        	  words[d_len-1] |= -1 << (32 - count);
-              }
+	    MPN.rshift0 (words, x.words, word_count, d_len, count);
 	    ival = d_len;
+	    if (neg)
+	      words[d_len-1] |= -1 << (32 - count);
 	  }
       }
   }

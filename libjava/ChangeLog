@@ -1,3 +1,14 @@
+2001-03-01  Per Bothner  <per@bothner.com>
+
+	Changes merged from Kawa's gnu.math.
+	* java/math/BigInteger.java 
+	* gnu/gcj/math/MPN.java (rshift0): New method handles zero shift count.
+	(rshift(int[],int[],int,int):  Removed - not needed.
+	(gcd):  Use rshift0 rather than rshift.
+	* java/math/BigInteger.java (setShiftRight):  Likewise.
+	(divide):  Simplify by using rshift0.
+	(divide):  Zero-extend results if high-order bit set.
+
 2001-02-27  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libgcj.spec.in: Insert %(libgcc) before %(liborig) to fix static
