@@ -1,3 +1,45 @@
+2004-12-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/frv/frv-modes.def: Fix comment typos.
+	(CC_NZ): Define new mode.
+	* config/frv/frv-protos.h (frv_select_cc_mode): Declare.
+	(condexec_intop_cmp_operator): Delete.
+	* config/frv/frv.c (comparison_string): New function.
+	(frv_print_operand): Use it to handle 'c' and 'C'.
+	(relational_operator): Redefine in terms of integer_relational_operator
+	and float_relational_operator.
+	(signed_relational_operator, unsigned_relational_operator): Delete.
+	(integer_relational_operator): New predicate, combining the above.
+	Check the mode of the first operand but leave frv.md to check the rest.
+	(float_relational_operator): Just check the mode of the first operand
+	and leave frv.md to check the rest.
+	(intop_compare_operator): Assume the result is compared with zero
+	in mode CC_NZmode.  Allow PLUS and MINUS.  Leave frv.md to check
+	the operand predicates.
+	(condexec_intop_cmp_operator): Delete.
+	(frv_ifcvt_modify_tests, frv_ifcvt_modify_multiple_tests)
+	(frv_hard_regno_mode_ok): Handle CC_NZmode.
+	(frv_select_cc_mode): New function.
+	* config/frv/frv.h (SELECT_CC_MODE): Use frv_select_cc_mode.
+	(REVERSIBLE_CC_MODE): Include CC_NZmode.
+	(PREDICATE_CODES): Replace entries for signed_relational_operand and
+	unsigned_relational_operator with one for integer_relational_operator.
+	Delete entry for condexec_intop_cmp_operator.
+	* config/frv/frv.md (movcc_nz, *internal_movcc_nz, reload_incc_nz)
+	(reload_outcc_nz, *cmpsi_cc_nz, *cond_exec_cmpsi_cc_nz): New patterns.
+	(*combo_intop_compare2, *combo_intop_compare4): Delete.
+	(*combo_intop_compare1): Change mode to CC_NZ.
+	(*combo_intop_compare2): Likewise.  Renamed from *combo_intop_compare3.
+	(branch_{un,}signed_true, branch_{un,}signed_false)
+	(*scc_{un,}signed, *scc_neg1_{un,}signed, *ck_{un,}signed)
+	(*movqicc_internal1_{un,}signed, *movqicc_internal2_{un,}signed)
+	(*movhicc_internal1_{un,}signed, *movhicc_internal2_{un,}signed)
+	(*movsicc_internal1_{un,}signed, *movsicc_internal2_{un,}signed)
+	(*movsfcc_has_fprs_{un,}signed, *movsfcc_no_fprs_{un,}signed)
+	(*return_{unsigned_,}true, *return_{unsigned_,}false): Merge these
+	pattern pairs.  Use integer_relational_operator.  Remove mode from
+	icc_operand.
+
 2004-12-10  Mark Dettinger  <dettinge@de.ibm.com>
 
 	* config/s390/s390.c (struct processor_costs): New fields ml,
