@@ -1876,6 +1876,10 @@ compute_mov_length (rtx *operands)
 
 		  if ((INTVAL (src) & 0xffff) == 0)
 		    return 6;
+
+		  if ((INTVAL (src) & 0xffff)
+		      == ((INTVAL (src) >> 16) & 0xffff))
+		    return 6;
 		}
 	      return 8;
 	    }
