@@ -8879,10 +8879,11 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
 	   ? result_mode : mode);
 
       /* Handle cases where the count is greater than the size of the mode
-	 minus 1.  For ASHIFT, use the size minus one as the count (this can
-	 occur when simplifying (lshiftrt (ashiftrt ..))).  For rotates,
-	 take the count modulo the size.  For other shifts, the result is
-	 zero.
+	 minus 1.  If SHIFT_COUNT_TRUNCATED, there aren't really any such
+	 cases.  Otherwise, for ASHIFT, use the size minus one as the count
+	 (this can occur when simplifying (lshiftrt (ashiftrt ..))).  For
+	 rotates, take the count modulo the size.  For other shifts, the
+	 result is zero.
 
 	 Since these shifts are being produced by the compiler by combining
 	 multiple operations, each of which are defined, we know what the
@@ -8890,6 +8891,11 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
 
       if (count > GET_MODE_BITSIZE (shift_mode) - 1)
 	{
+#ifdef SHIFT_COUNT_TRUNCATED
+	  if (SHIFT_COUNT_TRUNCATED)
+	    count %= GET_MODE_BITSIZE (shift_mode);
+	  else
+#endif
 	  if (code == ASHIFTRT)
 	    count = GET_MODE_BITSIZE (shift_mode) - 1;
 	  else if (code == ROTATE || code == ROTATERT)
