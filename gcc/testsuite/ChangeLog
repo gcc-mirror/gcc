@@ -1,3 +1,8 @@
+2001-08-23  Jason Merrill  <jason_merrill@redhat.com>
+
+	* lib/prune.exp (prune_gcc_output): Also ignore "In constructor"
+	and "In instantiation".
+
 2001-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.c-torture/execute/divmod-1.c: Convert to ANSI.
