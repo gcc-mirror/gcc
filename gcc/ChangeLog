@@ -1,3 +1,9 @@
+Sun Nov 11 05:56:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (nonoverlapping_memrefs_p): Not overlapping if one base is
+	constant and one is on frame.
+	If know memref offset, adjust size from decl.
+
 2001-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha/unicosmk.h (ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT): Fix
