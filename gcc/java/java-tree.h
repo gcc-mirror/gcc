@@ -61,6 +61,7 @@ struct JCF;
    3: CLASS_FROM_SOURCE_P (in RECORD_TYPE).
    4: CLASS_P (in RECORD_TYPE).
    5: CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (in RECORD_TYPE)
+   6: CLASS_HAS_FINIT_P (in RECORD_TYPE)
 
    Usage of DECL_LANG_FLAG_?:
    1: METHOD_PUBLIC (in FUNCTION_DECL).
@@ -195,6 +196,7 @@ extern tree string_array_type_node;
 extern tree TYPE_identifier_node;      /* "TYPE" */
 extern tree init_identifier_node;      /* "<init>" */
 extern tree clinit_identifier_node;      /* "<clinit>" */
+extern tree finit_identifier_node;      /* "<finit>" */
 extern tree void_signature_node;       /* "()V" */
 extern tree length_identifier_node;  /* "length" */
 extern tree this_identifier_node;  /* "this" */
@@ -324,6 +326,10 @@ struct lang_identifier
 /* List of checked thrown exceptions, as specified with the `throws'
    keyword */
 #define DECL_FUNCTION_THROWS(DECL) (DECL_LANG_SPECIFIC(DECL)->throws_list)
+/* List of other constructors of the same class that this constructor
+   calls */
+#define DECL_CONSTRUCTOR_CALLS(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->called_constructor)
 /* Pointer to the function's current's COMPOUND_EXPR tree (while
    completing its body) or the function's block */
 #define DECL_FUNCTION_BODY(DECL) (DECL_LANG_SPECIFIC(DECL)->function_decl_body)
@@ -403,6 +409,8 @@ struct lang_decl
   int max_locals, max_stack, arg_slot_count;
   tree throws_list;		/* Exception specified by `throws' */
   tree function_decl_body;	/* Hold all function's statements */
+  tree called_constructor;	/* When decl is a constructor, the
+				   list of other constructor it calls. */
 };
 
 /* DECL_LANG_SPECIFIC for VAR_DECL and PARM_DECL. */
@@ -524,6 +532,7 @@ extern void register_class PROTO (());
 extern int alloc_name_constant PROTO ((int, tree));
 extern void emit_register_classes PROTO (());
 extern void lang_init_source PROTO ((int));
+extern void write_classfile PROTO ((tree));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
@@ -661,6 +670,9 @@ extern tree *type_map;
 #define CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P(TYPE) \
   TYPE_LANG_FLAG_5 (TYPE)
 
+/* True if class TYPE has a field initializer <finit> function */
+#define CLASS_HAS_FINIT_P(TYPE) TYPE_LANG_FLAG_6 (TYPE)
+
 /* True if identifier ID was seen while processing a single type import stmt */
 #define IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P(ID) TREE_LANG_FLAG_0 (ID)
 
@@ -754,8 +766,20 @@ extern tree *type_map;
 #define FINISH_RECORD_CONSTRUCTOR(CONS) \
   CONSTRUCTOR_ELTS(CONS) = nreverse (CONSTRUCTOR_ELTS(CONS))
 
-/* Macro(s) using the definitions above */
-#define CALL_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == NEW_CLASS_EXPR)
+/* Macros on constructors invocations.  */
+#define CALL_CONSTRUCTOR_P(NODE)		\
+  (TREE_CODE (NODE) == NEW_CLASS_EXPR || CALL_EXPLICIT_CONSTRUCTOR_P (NODE))
+
+#define CALL_EXPLICIT_CONSTRUCTOR_P(NODE)				\
+  (CALL_THIS_CONSTRUCTOR_P (NODE) || CALL_SUPER_CONSTRUCTOR_P (NODE))
+
+#define CALL_THIS_CONSTRUCTOR_P(NODE)					\
+  (TREE_CODE (NODE) == CALL_EXPR					\
+   && EXPR_WFL_NODE (TREE_OPERAND (NODE, 0)) == this_identifier_node)
+
+#define CALL_SUPER_CONSTRUCTOR_P(NODE)					\
+  (TREE_CODE (NODE) == CALL_EXPR					\
+   && EXPR_WFL_NODE (TREE_OPERAND (NODE, 0)) == super_identifier_node)
 
 /* Using a FINALLY_EXPR node */
 #define FINALLY_EXPR_LABEL(NODE) TREE_OPERAND ((NODE), 0)

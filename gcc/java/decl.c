@@ -325,6 +325,7 @@ tree boolean_true_node, boolean_false_node;
 tree TYPE_identifier_node;
 tree init_identifier_node;
 tree clinit_identifier_node;
+tree finit_identifier_node;
 tree void_signature_node;
 tree length_identifier_node;
 tree this_identifier_node;
@@ -533,6 +534,7 @@ init_decl_processing ()
   TYPE_identifier_node = get_identifier ("TYPE");
   init_identifier_node = get_identifier ("<init>");
   clinit_identifier_node = get_identifier ("<clinit>");
+  finit_identifier_node = get_identifier ("<finit>");
   void_signature_node = get_identifier ("()V");
   length_identifier_node = get_identifier ("length");
   this_identifier_node = get_identifier ("this");

@@ -506,13 +506,14 @@ int
 jcf_parse_source (jcf)
      JCF *jcf;
 {
+  tree filename = get_identifier (input_filename);
   java_parser_context_save_global ();
 
   input_filename = current_jcf->filename;
   if (!(finput = fopen (input_filename, "r")))
     fatal ("input file `%s' just disappeared - jcf_parse_source",
 	   input_filename);
-  parse_source_file (1);	/* Parse only */
+  parse_source_file (IS_A_COMMAND_LINE_FILENAME_P (filename));
   java_parser_context_restore_global ();
 }
 
@@ -686,9 +687,6 @@ parse_source_file (parse_only)
   java_layout_classes ();
   java_parse_abort_on_error ();
 
-  if (flag_emit_class_files)
-    write_classfile (current_class);
-
   /* If only parsing, make sure that the currently parsed file isn't
      also present in the argument list. If it's the case, remember
      that we should generate it. */
@@ -737,33 +735,35 @@ yyparse ()
     }
   while (next);
 
+  current_jcf = main_jcf;
   current_file_list = nreverse (current_file_list);
   for (node = current_file_list; node; node = TREE_CHAIN (node))
     {
-      /* Don't substitute if INPUT_FILENAME doesn't feature the &
-         separator: we have only one file to deal with, we're fine */
-      if (several_files)
-	{
-	  tree name = TREE_VALUE (node);
+      tree name = TREE_VALUE (node);
 
-	  /* Skip already parsed files */
-	  if (HAS_BEEN_ALREADY_PARSED_P (name))
-	    continue;
-
-	  /* Close previous descriptor, if any */
-	  if (main_jcf->read_state && fclose (main_jcf->read_state))
-	    fatal ("failed to close input file `%s' - yyparse",
-		   (main_jcf->filename ? main_jcf->filename : "<unknown>"));
-
-	  /* Open new file */
-	  main_jcf->read_state = fopen (IDENTIFIER_POINTER (name), "r");
-	  if (main_jcf->read_state == NULL)
-	    pfatal_with_name (IDENTIFIER_POINTER (name));
-
-	  /* Set new input_filename and finput */
-	  input_filename = IDENTIFIER_POINTER (name);
-	  finput = main_jcf->read_state;
-	}
+      /* Skip already parsed files */
+      if (HAS_BEEN_ALREADY_PARSED_P (name))
+	continue;
+      
+      /* Close previous descriptor, if any */
+      if (main_jcf->read_state && fclose (main_jcf->read_state))
+	fatal ("failed to close input file `%s' - yyparse",
+	       (main_jcf->filename ? main_jcf->filename : "<unknown>"));
+      
+      /* Set jcf up and open a new file */
+      JCF_ZERO (main_jcf);
+      main_jcf->read_state = fopen (IDENTIFIER_POINTER (name), "r");
+      if (main_jcf->read_state == NULL)
+	pfatal_with_name (IDENTIFIER_POINTER (name));
+      
+      /* Set new input_filename and finput */
+      finput = main_jcf->read_state;
+#ifdef IO_BUFFER_SIZE
+      setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE),
+	       _IOFBF, IO_BUFFER_SIZE);
+#endif
+      input_filename = IDENTIFIER_POINTER (name);
+      main_jcf->filbuf = jcf_filbuf_from_stdio;
 
       switch (jcf_figure_file_type (current_jcf))
 	{
@@ -813,14 +813,16 @@ parse_zip_file_entries (void)
 	  jcf_parse (current_jcf);
 	}
 
-      input_filename = current_jcf->filename;
-
-      parse_class_file ();
-      FREE (current_jcf->buffer); /* No longer necessary */
-      /* Note: there is a way to free this buffer right after a class seen
-	 in a zip file has been parsed. The idea is the set its jcf in such
-	 a way that buffer will be reallocated the time the code for the class
-	 will be generated. FIXME.  */
+      if (TYPE_SIZE (current_class) != error_mark_node)
+	{
+	  input_filename = current_jcf->filename;
+	  parse_class_file ();
+	  FREE (current_jcf->buffer); /* No longer necessary */
+	  /* Note: there is a way to free this buffer right after a
+	     class seen in a zip file has been parsed. The idea is the
+	     set its jcf in such a way that buffer will be reallocated
+	     the time the code for the class will be generated. FIXME. */
+	}
     }
 }
 

@@ -99,10 +99,14 @@ extern tree stabilize_reference PROTO ((tree));
       count++;								\
     }
 
-#define ABSTRACT_CHECK(flag, v, cl, s)				\
-  if ((flag) & (v))						\
-    parse_error_context (cl, s " method can't be abstract");
+#define ABSTRACT_CHECK(FLAG, V, CL, S)				\
+  if ((FLAG) & (V))						\
+    parse_error_context ((CL), S " method can't be abstract");
 
+#define JCONSTRUCTOR_CHECK(FLAG, V, CL, S)			\
+  if ((FLAG) & (V))						\
+    parse_error_context ((CL), "Constructor can't be %s", (S));	\
+      
 /* Misc. */
 #define exit_java_complete_class()		\
   {						\
@@ -158,6 +162,10 @@ extern tree stabilize_reference PROTO ((tree));
 #define JPRIMITIVE_TYPE_P(TYPE)  ((TYPE) 				  \
 				  && (JNUMERIC_TYPE_P ((TYPE))		  \
 				  || TREE_CODE ((TYPE)) == BOOLEAN_TYPE))
+
+#define JBSC_TYPE_P(TYPE) ((TYPE) && (((TYPE) == byte_type_node)	\
+				      || ((TYPE) == short_type_node)	\
+				      || ((TYPE) == char_type_node)))
 
 /* Not defined in the LRM */
 #define JSTRING_TYPE_P(TYPE) ((TYPE) 					   \
@@ -269,16 +277,15 @@ extern tree stabilize_reference PROTO ((tree));
 #define POP_EXCEPTIONS()						\
   currently_caught_type_list = TREE_CHAIN (currently_caught_type_list)
 
-/* Check that we're inside a try block */
+/* Check that we're inside a try block.  */
 #define IN_TRY_BLOCK_P()				\
   (currently_caught_type_list 				\
    && ((TREE_VALUE (currently_caught_type_list) !=	\
 	DECL_FUNCTION_THROWS (current_function_decl))	\
        || TREE_CHAIN (currently_caught_type_list)))
 
-/* Check that we have exceptions in E */
+/* Check that we have exceptions in E.  */
 #define EXCEPTIONS_P(E) ((E) ? TREE_VALUE (E) : NULL_TREE)
-
 
 /* Invocation modes, as returned by invocation_mode (). */
 enum {
@@ -462,6 +469,7 @@ static jdeplist *reverse_jdep_list ();
 }
 #define COMPLETE_CHECK_OP_0(NODE) COMPLETE_CHECK_OP(NODE, 0)
 #define COMPLETE_CHECK_OP_1(NODE) COMPLETE_CHECK_OP(NODE, 1)
+#define COMPLETE_CHECK_OP_2(NODE) COMPLETE_CHECK_OP(NODE, 2)
 
 /* Building invocations: append(ARG) and StringBuffer(ARG) */
 #define BUILD_APPEND(ARG)						     \
@@ -567,6 +575,12 @@ struct parser_ctxt {
 					labeled blocks. */
 
   int pending_block;		     /* Pending block to close */
+
+  int explicit_constructor_p;	     /* True when processing an
+					explicit constructor. This flag is 
+					used to trap illegal argument usage 
+					during an explicit constructor
+					invocation. */
 #endif /* JC1_LITE */
 };
 
@@ -611,8 +625,10 @@ static void check_abstract_method_header PROTO ((tree));
 static tree lookup_java_interface_method2 PROTO ((tree, tree));
 static tree resolve_expression_name PROTO ((tree));
 static tree maybe_create_class_interface_decl PROTO ((tree, tree, tree));
-static int check_class_interface_creation PROTO ((int, int, tree, tree, tree, tree));
-static tree patch_method_invocation_stmt PROTO ((tree, tree, tree, int *, tree *));
+static int check_class_interface_creation PROTO ((int, int, tree, 
+						  tree, tree, tree));
+static tree patch_method_invocation_stmt PROTO ((tree, tree, tree, 
+						 int *, tree *, int));
 static int breakdown_qualified PROTO ((tree *, tree *, tree));
 static tree resolve_and_layout PROTO ((tree, tree));
 static tree resolve_no_layout PROTO ((tree, tree));
@@ -620,7 +636,7 @@ static int invocation_mode PROTO ((tree, int));
 static tree find_applicable_accessible_methods_list PROTO ((tree, tree, tree));
 static tree find_most_specific_methods_list PROTO ((tree));
 static int argument_types_convertible PROTO ((tree, tree));
-static tree patch_invoke PROTO ((tree, tree, tree));
+static tree patch_invoke PROTO ((tree, tree, tree, int));
 static tree lookup_method_invoke PROTO ((int, tree, tree, tree, tree));
 static tree register_incomplete_type PROTO ((int, tree, tree, tree));
 static tree obtain_incomplete_type PROTO ((tree));
@@ -704,6 +720,21 @@ static void check_thrown_exceptions PROTO ((int, tree));
 static int check_thrown_exceptions_do PROTO ((tree));
 static void purge_unchecked_exceptions PROTO ((tree));
 static void check_throws_clauses PROTO ((tree, tree, tree));
+static void complete_method_declaration PROTO ((tree));
+static tree build_super_invocation PROTO (());
+static int verify_constructor_circularity PROTO ((tree, tree));
+static char *constructor_circularity_msg PROTO ((tree, tree));
+static tree build_this_super_qualified_invocation PROTO ((int, tree, tree,
+							  int, int));
+static char *get_printable_method_name PROTO ((tree));
+static tree patch_conditional_expr PROTO ((tree, tree, tree));
+static void maybe_generate_finit PROTO (());
+static void fix_constructors PROTO ((tree));
+static int verify_constructor_super PROTO (());
+static tree create_artificial_method PROTO ((tree, int, tree, tree, tree));
+static void start_artificial_method_body PROTO ((tree));
+static void end_artificial_method_body PROTO ((tree));
+static tree generate_field_initialization_code PROTO ((tree));
 
 void safe_layout_class PROTO ((tree));
 void java_complete_class PROTO ((void));

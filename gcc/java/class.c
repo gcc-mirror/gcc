@@ -1400,7 +1400,8 @@ layout_class (this_class)
 	{
 	  int len;  tree arg, arglist, t;
 	  int method_name_needs_escapes = 0;
-	  if (method_name != init_identifier_node)
+	  if (method_name != init_identifier_node 
+	      && method_name != finit_identifier_node)
 	    {
 	      int encoded_len
 		= unicode_mangling_length (IDENTIFIER_POINTER (method_name), 
@@ -1421,6 +1422,8 @@ layout_class (this_class)
 	    }
 
 	  obstack_grow (&temporary_obstack, "__", 2);
+	  if (method_name == finit_identifier_node)
+	    obstack_grow (&temporary_obstack, "finit", 5);
 	  append_gpp_mangled_type (&temporary_obstack, this_class);
 	  TREE_PUBLIC (method_decl) = 1;
 
@@ -1492,7 +1495,7 @@ layout_class (this_class)
 	  DECL_NAME (method_decl) = get_identifier (p);
 	  DECL_CONSTRUCTOR_P (method_decl) = 1;
 	}
-      else if (! METHOD_STATIC (method_decl))
+      else if (! METHOD_STATIC (method_decl) && !DECL_ARTIFICIAL (method_decl))
 	{
 	  tree method_sig = build_java_argument_signature (TREE_TYPE (method_decl));
 	  tree super_method = lookup_argument_method (super_class, method_name,

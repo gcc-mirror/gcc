@@ -35,7 +35,6 @@ Language Specification. J. Gosling, B. Joy, G. Steele. Addison Wesley
 The following modifications were brought to the original grammar:
 
 method_body: added the rule '| block SC_TK'
-constructor_declaration: added two rules to accept SC_TK. 
 static_initializer: added the rule 'static block SC_TK'. 
 
 Note: All the extra rules described above should go away when the
@@ -196,16 +195,16 @@ static tree wfl_to_string = NULL_TREE;
 			abstract_method_declaration interface_type_list
 %type	 <node>		class_body_declaration class_member_declaration
 			static_initializer constructor_declaration block
-%type	 <node>		class_body_declarations
+%type	 <node>		class_body_declarations constructor_header
 %type    <node>		class_or_interface_type class_type class_type_list
 			constructor_declarator explicit_constructor_invocation
 %type    <node>         dim_expr dim_exprs this_or_super throws
 
 %type	 <node>		variable_declarator_id variable_declarator
 			variable_declarators variable_initializer
-			variable_initializers
+			variable_initializers constructor_body
 
-%type	 <node>		class_body
+%type	 <node>		class_body block_end
 %type	 <node>		block_statement local_variable_declaration_statement
 			block_statements local_variable_declaration
 %type	 <node>		statement statement_without_trailing_substatement
@@ -448,6 +447,7 @@ type_declaration:
 	class_declaration
 		{
 		  maybe_generate_clinit ();
+		  maybe_generate_finit ();
 		  $$ = $1;
 		}
 |	interface_declaration
@@ -644,18 +644,7 @@ method_declaration:
 		  source_start_java_method (current_function_decl);
 		}
 	method_body
-		{ 
-		  BLOCK_EXPR_BODY 
-		    (DECL_FUNCTION_BODY (current_function_decl)) = $3;
-		  maybe_absorb_scoping_blocks ();
-		  exit_block (); /* Exit function's body. */
-
-		  /* Merge last line of the function with first line,
-		     directly in the function decl. It will be used to
-		     emit correct debug info. */
-		  DECL_SOURCE_LINE_MERGE (current_function_decl,
-					  ctxp->last_ccb_indent1);
-		}
+		{ complete_method_declaration ($3); }
 |	method_header error
 		{YYNOT_TWICE yyerror ("'{' expected"); RECOVER;}
 ;
@@ -774,51 +763,61 @@ static:				/* Test lval.sub_token here */
 ;
 
 /* 19.8.5 Productions from 8.6: Constructor Declarations  */
-/* NOTE FOR FURTHER WORK ON CONSTRUCTORS:
-   - If a forbidded modifier is found, the the error is either the use of
-     a forbidded modifier for a constructor OR bogus attempt to declare a
-     method without having specified the return type. FIXME */
 constructor_declaration:
-	constructor_declarator throws constructor_body
+	constructor_header
 		{
-		  RULE ("CONSTRUCTOR_DECLARATION");
+		  current_function_decl = $1;
+		  source_start_java_method (current_function_decl);
 		}
-|	modifiers constructor_declarator throws constructor_body
-		{
-		  SOURCE_FRONTEND_DEBUG (("Modifiers: %d", $1));
-		  RULE ("CONSTRUCTOR_DECLARATION (modifier)");
-		}
-/* extra SC_TK, FIXME */
-|	constructor_declarator throws constructor_body SC_TK
-		{
-		  RULE ("CONSTRUCTOR_DECLARATION");
-		}
-/* extra SC_TK, FIXME */
-|	modifiers constructor_declarator throws constructor_body SC_TK
-		{
-		  SOURCE_FRONTEND_DEBUG (("Modifiers: %d", $1));
-		  RULE ("CONSTRUCTOR_DECLARATION (modifier)");
-		}
-/* I'm not happy with the SC_TK addition. It isn't in the grammer and should
-   probably be matched by and empty statement. But it doesn't work. FIXME */
+	constructor_body
+		{ complete_method_declaration ($3); }
+;
+
+constructor_header:
+	constructor_declarator throws
+		{ $$ = method_header (0, NULL_TREE, $1, $2); }
+|	modifiers constructor_declarator throws
+		{ $$ = method_header ($1, NULL_TREE, $2, $3); }
 ;
 
 constructor_declarator:
 	simple_name OP_TK CP_TK
+		{ $$ = method_declarator ($1, NULL_TREE); }
 |	simple_name OP_TK formal_parameter_list CP_TK
+		{ $$ = method_declarator ($1, $3); }
 ;
 
 constructor_body:
-	OCB_TK CCB_TK
-|	OCB_TK explicit_constructor_invocation CCB_TK
-|	OCB_TK block_statements CCB_TK
-|       OCB_TK explicit_constructor_invocation block_statements CCB_TK
+	/* Unlike regular method, we always need a complete (empty)
+	   body so we can safely perform all the required code
+	   addition (super invocation and field initialization) */
+	block_begin block_end
+		{ 
+		  BLOCK_EXPR_BODY ($2) = size_zero_node;
+		  $$ = $2;
+		}
+|	block_begin explicit_constructor_invocation block_end
+		{ $$ = $3; }
+|	block_begin block_statements block_end
+		{ $$ = $3; }
+|       block_begin explicit_constructor_invocation block_statements block_end
+		{ $$ = $4; }
 ;
 
 /* Error recovery for that rule moved down expression_statement: rule.  */
 explicit_constructor_invocation:
 	this_or_super OP_TK CP_TK SC_TK
+		{ 
+		  $$ = build_method_invocation ($1, NULL_TREE); 
+		  $$ = build_debugable_stmt (EXPR_WFL_LINECOL ($1), $$);
+		  $$ = java_method_add_stmt (current_function_decl, $$);
+		}
 |	this_or_super OP_TK argument_list CP_TK SC_TK
+		{ 
+		  $$ = build_method_invocation ($1, $3); 
+		  $$ = build_debugable_stmt (EXPR_WFL_LINECOL ($1), $$);
+		  $$ = java_method_add_stmt (current_function_decl, $$);
+		}
         /* Added, JDK1.1 inner classes. Modified because the rule
 	   'primary' couldn't work.  */
 |	name DOT_TK SUPER_TK OP_TK argument_list CP_TK SC_TK
@@ -960,9 +959,16 @@ variable_initializers:
 block:
 	OCB_TK CCB_TK
 		{ $$ = size_zero_node; }
-|	OCB_TK 
+|	block_begin block_statements block_end
+		{ $$ = $3; }
+;
+
+block_begin:
+	OCB_TK
 		{ enter_block (); }
-	block_statements
+;
+
+block_end:
 	CCB_TK
 		{ 
 		  maybe_absorb_scoping_blocks ();
@@ -1101,11 +1107,19 @@ expression_statement:
 |       this_or_super OP_TK error
 		{yyerror ("')' expected"); RECOVER;}
 |       this_or_super OP_TK CP_TK error
-		{yyerror ("';' expected"); RECOVER;}
+		{
+		  yyerror ("Constructor invocation must be first "
+			   "thing in a constructor"); 
+		  RECOVER;
+		}
 |       this_or_super OP_TK argument_list error
 		{yyerror ("')' expected"); RECOVER;}
 |       this_or_super OP_TK argument_list CP_TK error
-		{yyerror ("';' expected"); RECOVER;}
+		{
+		  yyerror ("Constructor invocation must be first "
+			   "thing in a constructor"); 
+		  RECOVER;
+		}
 |	name DOT_TK SUPER_TK error
 		{yyerror ("'(' expected"); RECOVER;}
 |	name DOT_TK SUPER_TK OP_TK error
@@ -1666,31 +1680,35 @@ method_invocation:
 		{ $$ = build_method_invocation ($1, $3); }
 |	primary DOT_TK identifier OP_TK CP_TK
 		{ 
-		  tree invok = build_method_invocation ($3, NULL_TREE);
-		  $$ = make_qualified_primary ($1, invok, $2.location);
+		  if (TREE_CODE ($1) == THIS_EXPR)
+		    $$ = build_this_super_qualified_invocation 
+		      (1, $3, NULL_TREE, 0, $2.location);
+		  else
+		    {
+		      tree invok = build_method_invocation ($3, NULL_TREE);
+		      $$ = make_qualified_primary ($1, invok, $2.location);
+		    }
 		}
 |	primary DOT_TK identifier OP_TK argument_list CP_TK
 		{ 
-		  tree invok = build_method_invocation ($3, $5);
-		  $$ = make_qualified_primary ($1, invok, $2.location);
+		  if (TREE_CODE ($1) == THIS_EXPR)
+		    $$ = build_this_super_qualified_invocation 
+		      (1, $3, $5, 0, $2.location);
+		  else
+		    {
+		      tree invok = build_method_invocation ($3, $5);
+		      $$ = make_qualified_primary ($1, invok, $2.location);
+		    }
 		}
 |	SUPER_TK DOT_TK identifier OP_TK CP_TK
-		{
-		  tree invok;
-		  tree wfl = build_wfl_node (super_identifier_node, 
-					     input_filename, 0, 0);
-		  EXPR_WFL_LINECOL (wfl) = $1.location;
-		  invok = build_method_invocation ($3, NULL_TREE);
-		  $$ = make_qualified_primary (wfl, invok, $2.location);
+		{ 
+		  $$ = build_this_super_qualified_invocation 
+		    (0, $3, NULL_TREE, $1.location, $2.location);
 		}
 |	SUPER_TK DOT_TK identifier OP_TK argument_list CP_TK
 		{
-		  tree invok;
-		  tree wfl = build_wfl_node (super_identifier_node, 
-					     input_filename, 0, 0);
-		  EXPR_WFL_LINECOL (wfl) = $1.location;
-		  invok = build_method_invocation ($3, $5);
-		  $$ = make_qualified_primary (wfl, invok, $2.location);
+		  $$ = build_this_super_qualified_invocation 
+		    (0, $3, $5, $1.location, $2.location);
 		}
         /* Screws up thing. I let it here until I'm convinced it can
            be removed. FIXME
@@ -2006,6 +2024,10 @@ conditional_or_expression:
 conditional_expression:		/* Error handling here is weak */
 	conditional_or_expression
 |	conditional_or_expression REL_QM_TK expression REL_CL_TK conditional_expression
+		{
+		  $$ = build (CONDITIONAL_EXPR, NULL_TREE, $1, $3, $5);
+		  EXPR_WFL_LINECOL ($$) = $2.location;
+		}
 |	conditional_or_expression REL_QM_TK REL_CL_TK error
 		{
 		  YYERROR_NOW;
@@ -2079,9 +2101,20 @@ java_push_parser_context ()
     ctxp->incomplete_class = ctxp->next->incomplete_class;
 }  
 
+/* If the first file of a file list was a class file, no context
+   exists for a source file to be parsed. This boolean remembers that
+   java_parser_context_save_global might have created a dummy one, so
+   that java_parser_context_restore_global can pop it.  */
+static int extra_ctxp_pushed_p = 0;
+
 void
 java_parser_context_save_global ()
 {
+  if (!ctxp)
+    {
+      java_push_parser_context ();
+      extra_ctxp_pushed_p = 1;
+    }
   ctxp->finput = finput;
   ctxp->lineno = lineno;
   ctxp->current_class = current_class;
@@ -2097,6 +2130,11 @@ java_parser_context_restore_global ()
   current_class = ctxp->current_class;
   input_filename = ctxp->filename;
   current_function_decl = ctxp->current_function_decl;
+  if (extra_ctxp_pushed_p)
+    {
+      java_pop_parser_context (0);
+      extra_ctxp_pushed_p = 0;
+    }
 }
 
 void 
@@ -2375,6 +2413,7 @@ build_array_from_name (type, type_wfl, name, ret_name)
       if (JPRIMITIVE_TYPE_P (type))
 	{
 	  type = build_java_array_type (type, -1);
+	  CLASS_LOADED_P (type) = 1;
 	  more_dims--;
 	}
       /* Otherwise, if we have a WFL for this type, use it (the type
@@ -2804,10 +2843,15 @@ register_fields (flags, type, variable_list)
 
       /* Type adjustment. We may have just readjusted TYPE because
 	 the variable specified more dimensions. Make sure we have
-	 a reference if we can and don't have one already. */
-      if (type != saved_type && !must_chain 
-	  && (TREE_CODE (type) == RECORD_TYPE))
-	type = promote_type (type);
+	 a reference if we can and don't have one already. Also
+	 change the name if we have an init. */
+      if (type != saved_type)
+	{
+	  if (!must_chain && (TREE_CODE (type) == RECORD_TYPE))
+	    type = promote_type (type);
+	  if (init)
+	    EXPR_WFL_NODE (TREE_OPERAND (init, 0)) = current_name;
+	}
 
       /* Set lineno to the line the field was found and create a
          declaration for it */
@@ -2848,6 +2892,7 @@ register_fields (flags, type, variable_list)
 	     time of the generation of <init>. */
 	  else
 	    {
+	      INITIALIZED_P (field_decl) = 1;
 	      TREE_CHAIN (init) = ctxp->non_static_initialized;
 	      ctxp->non_static_initialized = init;
 	    }
@@ -2856,36 +2901,49 @@ register_fields (flags, type, variable_list)
   lineno = saved_lineno;
 }
 
+/* Generate the method <finit> that initializes fields initialized
+   upon declaration.  */
+
+static void
+maybe_generate_finit ()
+{
+  tree mdecl, current;
+  
+  if (!ctxp->non_static_initialized || java_error_count)
+    return;
+
+  mdecl = create_artificial_method (TREE_TYPE (ctxp->current_parsed_class),
+				    ACC_PRIVATE|ACC_FINAL, void_type_node,
+				    finit_identifier_node, NULL_TREE);
+  start_artificial_method_body (mdecl);
+
+  ctxp->non_static_initialized = nreverse (ctxp->non_static_initialized);
+  for (current = ctxp->non_static_initialized; current;
+       current = TREE_CHAIN (current))
+    java_method_add_stmt (mdecl, 
+			  build_debugable_stmt (EXPR_WFL_LINECOL (current), 
+						current));
+
+  end_artificial_method_body (mdecl);
+  CLASS_HAS_FINIT_P (TREE_TYPE (ctxp->current_parsed_class)) = 1;
+  ctxp->non_static_initialized = NULL_TREE;
+}
+
 /* Check whether it is necessary to generate a <clinit> for the class
    we just parsed. */
 
 static void
 maybe_generate_clinit ()
 {
-  int saved_lineno;
-  tree meth, mdecl, c;
-  tree cclass, class_wfl;
+  tree mdecl, c;
 
   if (!ctxp->static_initialized || java_error_count)
     return;
 
-  cclass = TREE_TYPE (ctxp->current_parsed_class);
-  class_wfl = build_expr_wfl (DECL_NAME (TYPE_NAME (cclass)),
-			      input_filename, 0, 0);
-  
-  saved_lineno = lineno;
-  lineno = 0;
-  meth = make_node (FUNCTION_TYPE);
-  TREE_TYPE (meth) = void_type_node;
-  TYPE_ARG_TYPES (meth) = NULL_TREE;
-  mdecl = add_method (cclass, ACC_STATIC, clinit_identifier_node,
-		     build_java_signature (meth));
-  lineno = saved_lineno;
-
-  DECL_SOURCE_LINE (mdecl) = 1;
-  DECL_SOURCE_LINE_MERGE (mdecl, 1);
-  source_start_java_method (mdecl);
-  enter_block ();
+  mdecl = create_artificial_method (TREE_TYPE (ctxp->current_parsed_class),
+				    ACC_STATIC, void_type_node,
+				    clinit_identifier_node, NULL_TREE);
+  start_artificial_method_body (mdecl);
 
   /* Keep initialization in order to enforce 8.5 */
   ctxp->static_initialized = nreverse (ctxp->static_initialized);
@@ -2898,11 +2956,11 @@ maybe_generate_clinit ()
       /* We build the assignment expression that will initialize the
 	 field to its value. There are strict rules on static
 	 initializers (8.5). FIXME */
-      java_method_add_stmt (mdecl, c);
+      java_method_add_stmt (mdecl, 
+			    build_debugable_stmt (EXPR_WFL_LINECOL (c), c));
     }
 
-  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) = exit_block ();
-  exit_block ();
+  end_artificial_method_body (mdecl);
   ctxp->static_initialized = NULL_TREE;
 }
 
@@ -2917,7 +2975,8 @@ static int patch_stage;
 /* Check the method declaration and add the method to its current
    class.  If the argument list is known to contain incomplete types,
    the method is partially added and the registration will be resume
-   once the method arguments resolved  */
+   once the method arguments resolved. If TYPE is NULL, we're dealing
+   with a constructor.  */
 
 static tree
 method_header (flags, type, mdecl, throws)
@@ -2929,12 +2988,13 @@ method_header (flags, type, mdecl, throws)
   tree this_class = TREE_TYPE (ctxp->current_parsed_class);
   tree meth_name, returned_type, current;
   int saved_lineno;
+  int constructor_ok = 0;
   
   check_modifiers_consistency (flags);
   
   /* There are some forbidden modifiers for an abstract method and its
      class must be abstract as well.  */
-  if (flags & ACC_ABSTRACT)
+  if (type && (flags & ACC_ABSTRACT))
     {
       ABSTRACT_CHECK (flags, ACC_PRIVATE, id, "Private");
       ABSTRACT_CHECK (flags, ACC_STATIC, id, "Static");
@@ -2948,7 +3008,30 @@ method_header (flags, type, mdecl, throws)
 	   IDENTIFIER_POINTER (DECL_NAME (ctxp->current_parsed_class)),
 	   IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
     }
-
+  /* Things to be checked when declaring a constructor */
+  if (!type)
+    {
+      int ec = java_error_count;
+      /* 8.6: Constructor declarations: we might be trying to define a
+         method without specifying a return type. */
+      if (EXPR_WFL_NODE (id) != DECL_NAME (ctxp->current_parsed_class))
+	parse_error_context 
+	  (id, "Invalid method declaration, return type required");
+      /* 8.6.3: Constructor modifiers */
+      else
+	{
+	  JCONSTRUCTOR_CHECK (flags, ACC_ABSTRACT, id, "abstract");
+	  JCONSTRUCTOR_CHECK (flags, ACC_STATIC, id, "static");
+	  JCONSTRUCTOR_CHECK (flags, ACC_FINAL, id, "final");
+	  JCONSTRUCTOR_CHECK (flags, ACC_NATIVE, id, "native");
+	  JCONSTRUCTOR_CHECK (flags, ACC_SYNCHRONIZED, id, "synchronized");
+	}
+      /* If we found error here, we don't consider it's OK to tread
+	 the method definition as a constructor, for the rest of this
+	 function */
+      if (ec == java_error_count)
+	constructor_ok = 1;
+    }
 
   /* Method declared within the scope of an interface are implicitly
      abstract and public. Conflicts with other erroneously provided
@@ -2970,7 +3053,17 @@ method_header (flags, type, mdecl, throws)
   /* Modifiers context reset moved up, so abstract method declaration
      modifiers can be later checked.  */
 
-  meth_name = EXPR_WFL_NODE (id);
+  /* Set constructor returned type to void and method name to <init>,
+     unless we found an error identifier the constructor (in which
+     case we retain the original name) */
+  if (!type)
+    {
+      type = void_type_node;
+      if (constructor_ok)
+	meth_name = init_identifier_node;
+    }
+  else
+    meth_name = EXPR_WFL_NODE (id);
 
   if (unresolved_type_p (type, &returned_type))
     {
@@ -3055,10 +3148,90 @@ method_header (flags, type, mdecl, throws)
      redefinition error accurately. When method are verified,
      DECL_NAME is reinstalled properly (using the content of the
      WFL node ID) (see check_method_redefinition). We don't do that
-     when Object is being defined. */
+     when Object is being defined. Constructor <init> names will be
+     reinstalled the same way. */
   if (TREE_TYPE (ctxp->current_parsed_class) != object_type_node)
     DECL_NAME (meth) = id;
+
+  /* Set the flag if we correctly processed a constructor */
+  if (constructor_ok)
+    DECL_CONSTRUCTOR_P (meth) = 1;
+
   return meth;
+}
+
+/* Complete the method declaration with METHOD_BODY.  */
+
+static void
+complete_method_declaration (method_body)
+     tree method_body;
+{
+  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (current_function_decl)) = method_body;
+  maybe_absorb_scoping_blocks ();
+  /* Exit function's body */
+  exit_block ();
+  /* Merge last line of the function with first line, directly in the
+     function decl. It will be used to emit correct debug info. */
+  DECL_SOURCE_LINE_MERGE (current_function_decl, ctxp->last_ccb_indent1);
+}
+
+/* Build a an error message for constructor circularity errors.  */
+
+static char *
+constructor_circularity_msg (from, to)
+     tree from, to;
+{
+  static char string [4096];
+  char *t = strdup (lang_printable_name (from, 0));
+  sprintf (string, "`%s' invokes `%s'", t, lang_printable_name (to, 0));
+  free (t);
+  return string;
+}
+
+/* Verify a circular call to METH. Return 1 if an error is found, 0
+   otherwise.  */
+
+static int
+verify_constructor_circularity (meth, current)
+     tree meth, current;
+{
+  static tree list = NULL_TREE;
+  tree c;
+  for (c = DECL_CONSTRUCTOR_CALLS (current); c; c = TREE_CHAIN (c))
+    {
+      if (TREE_VALUE (c) == meth)
+	{
+	  char *t;
+	  if (list)
+	    {
+	      tree liste;
+	      list = nreverse (list);
+	      for (liste = list; liste; liste = TREE_CHAIN (liste))
+		{
+		  parse_error_context 
+		    (TREE_PURPOSE (TREE_PURPOSE (liste)),
+		     constructor_circularity_msg
+		      (TREE_VALUE (liste), TREE_VALUE (TREE_PURPOSE (liste)))); 
+		  java_error_count--;
+		}
+	    }
+	  t = strdup (lang_printable_name (meth, 0));
+	  parse_error_context (TREE_PURPOSE (c), 
+			       "%s: recursive invocation of constructor `%s'",
+			       constructor_circularity_msg (current, meth), t);
+	  free (t);
+	  list = NULL_TREE;
+	  return 1;
+	}
+    }
+  for (c = DECL_CONSTRUCTOR_CALLS (current); c; c = TREE_CHAIN (c))
+    {
+      list = tree_cons (c, current, list);
+      if (verify_constructor_circularity (meth, TREE_VALUE (c)))
+	return 1;
+      list = TREE_CHAIN (list);
+    }
+  return 0;
 }
 
 /* Check modifiers that can be declared but exclusively */
@@ -3797,6 +3970,36 @@ java_check_final ()
 {
 }
 
+/* Return a static string containing the DECL prototype string. If
+   DECL is a constructor, use the class name instead of the form
+   <init> */
+
+static char *
+get_printable_method_name (decl)
+     tree decl;
+{
+  char *to_return;
+  tree name;
+
+  if (DECL_CONSTRUCTOR_P (decl))
+    {
+      name = DECL_NAME (decl);
+      DECL_NAME (decl) = 
+	DECL_NAME (ctxp->current_parsed_class ? 
+		   ctxp->current_parsed_class : current_class);
+    }
+      
+  to_return = lang_printable_name (decl, 0);
+  if (DECL_CONSTRUCTOR_P (decl))
+    DECL_NAME (decl) = name;
+  
+  return to_return;
+}
+
+/* Track method being redefined inside the same class. As a side
+   effect, set DECL_NAME to an IDENTIFIER (prior entering this
+   function it's a FWL, so we can track errors more accurately */
+
 static int
 check_method_redefinition (class, method)
      tree class, method;
@@ -3804,14 +4007,17 @@ check_method_redefinition (class, method)
   tree redef, name;
   tree cl = DECL_NAME (method);
   tree sig = TYPE_LANG_SPECIFIC (TREE_TYPE (method))->signature;
-  /* decl name of generated <clinit> doesn't need to be fixed and
+  /* decl name of artificial <clinit> and <finit> doesn't need to be fixed and
      checked */
-  if (DECL_NAME (method) != clinit_identifier_node)
+  if (DECL_NAME (method) != clinit_identifier_node
+      && DECL_NAME (method) != finit_identifier_node)
     {
       /* NAME is just the plain name when Object is being defined */
       if (class != object_type_node)
-	name = DECL_NAME (method) = EXPR_WFL_NODE (DECL_NAME (method));
-      else
+	name = DECL_NAME (method) = (DECL_CONSTRUCTOR_P (method) ? 
+				     init_identifier_node :
+				     EXPR_WFL_NODE (DECL_NAME (method)));
+      else 
 	name = DECL_NAME (method);
     }
   else 
@@ -3825,7 +4031,10 @@ check_method_redefinition (class, method)
 	break;
       if (DECL_NAME (redef) == name && sig == t->signature)
 	{
-	  parse_error_context (cl, "Duplicate method declaration");
+	  parse_error_context 
+	    (cl, "Duplicate %s declaration `%s'",
+	     (DECL_CONSTRUCTOR_P (redef) ? "constructor" : "method"),
+	     get_printable_method_name (redef));
 	  return 1;
 	}
     }
@@ -3843,7 +4052,7 @@ java_check_regular_methods (class_decl)
   tree method;
   tree class = CLASS_TO_HANDLE_TYPE (TREE_TYPE (class_decl));
   tree super_class = CLASSTYPE_SUPER (class);
-  int seen_constructor = 0;
+  int saw_constructor = 0;
 
   TYPE_METHODS (class) = nreverse (TYPE_METHODS (class));
 
@@ -3854,12 +4063,18 @@ java_check_regular_methods (class_decl)
       tree method_wfl = DECL_NAME (method);
       int aflags;
 
-     if (DECL_CONSTRUCTOR_P (method))
-	seen_constructor = 1;
-
       /* Check for redefinitions */
       if (check_method_redefinition (class, method))
 	continue;
+
+      /* If we see one constructor a mark so we don't generate the
+	 default one. Also skip other verifications: constructors
+	 can't be inherited hence hiden or overriden */
+     if (DECL_CONSTRUCTOR_P (method))
+       {
+	 saw_constructor = 1;
+	 continue;
+       }
 
       sig = build_java_argument_signature (TREE_TYPE (method));
 
@@ -3951,19 +4166,20 @@ java_check_regular_methods (class_decl)
   
   TYPE_METHODS (class) = nreverse (TYPE_METHODS (class));
 
-  if (!seen_constructor)
+  if (!saw_constructor)
     {
       /* No constructor seen, we craft one, at line 0 */
-      int saved_lineno = lineno;
-      tree meth, decl;
-      lineno = 0;
-      meth = make_node (FUNCTION_TYPE);
-      TREE_TYPE (meth) = void_type_node;
-      TYPE_ARG_TYPES (meth) = NULL_TREE; 
-      decl = add_method (class, 0, init_identifier_node,
-			 build_java_signature (meth));
+      int flags;
+      tree decl;
+
+      /* If the class is declared PUBLIC, the default constructor is
+         PUBLIC otherwise it has default access implied by no access
+         modifiers. */
+      flags = (get_access_flags_from_decl (class_decl) & ACC_PUBLIC ?
+	       ACC_PUBLIC : 0);
+      decl = create_artificial_method (class, flags, void_type_node, 
+				       init_identifier_node, NULL_TREE);
       DECL_CONSTRUCTOR_P (decl) = 1;
-      lineno = saved_lineno;
     }
 }
 
@@ -4075,7 +4291,6 @@ java_check_abstract_methods (interface)
 void
 java_check_methods ()
 {
-
   tree current;
   for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
     if (CLASS_FROM_SOURCE_P (TREE_TYPE (current)))
@@ -4633,6 +4848,47 @@ source_start_java_method (fndecl)
   DECL_ARG_SLOT_COUNT (current_function_decl) = i;
 }
 
+/* Called during parsing. Creates an artificial method declaration.  */
+
+static tree
+create_artificial_method (class, flags, type, name, args)
+     tree class;
+     int flags;
+     tree type, name, args;
+{
+  int saved_lineno = lineno;					    
+  tree mdecl;
+
+  lineno = 0;								    
+  mdecl = make_node (FUNCTION_TYPE);				    
+  TREE_TYPE (mdecl) = type;
+  TYPE_ARG_TYPES (mdecl) = args;
+  mdecl = add_method (class, flags, name, build_java_signature (mdecl)); 
+  lineno = saved_lineno;						    
+  DECL_ARTIFICIAL (mdecl) = 1;					    
+  return mdecl;
+}
+
+/* Starts the body if an artifical method.  */
+
+static void
+start_artificial_method_body (mdecl)
+     tree mdecl;
+{
+  DECL_SOURCE_LINE (mdecl) = 1;
+  DECL_SOURCE_LINE_MERGE (mdecl, 1);
+  source_start_java_method (mdecl);
+  enter_block ();
+}
+
+static void
+end_artificial_method_body (mdecl)
+     tree mdecl;
+{
+  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) = exit_block ();
+  exit_block ();
+}
+
 /* Called during expansion. Push decls formerly built from argument
    list so they're usable during expansion. */
 
@@ -4765,7 +5021,8 @@ add_stmt_to_compound (existing, type, stmt)
 /* Hold THIS for the scope of the current public method decl.  */
 static tree current_this;
 
-/* Layout all class found during parsing */
+/* Layout all class found during parsing. Also fixes the order of
+   several field related lists. */
 
 void
 java_layout_classes ()
@@ -4774,8 +5031,16 @@ java_layout_classes ()
   for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
     {
       current_class = TREE_TYPE (current);
-      TYPE_FIELDS (current_class) = nreverse (TYPE_FIELDS (current_class));
-      if (!TYPE_SIZE (current_class))
+
+      /* Reverse the fields if it's necessary (they've already
+         reversed if the dummy field has been inserted at the
+         beginning of the list */
+      if (TYPE_FIELDS (current_class)
+	  && !DECL_IGNORED_P (TYPE_FIELDS (current_class)))
+	TYPE_FIELDS (current_class) = nreverse (TYPE_FIELDS (current_class));
+      
+      /* Do a layout if necessary */
+      if (!TYPE_SIZE (current_class) || (current_class == object_type_node))
 	safe_layout_class (current_class);
     }
 }
@@ -4819,6 +5084,14 @@ java_complete_expand_methods ()
 	      java_complete_expand_method (decl);
 	  }
 
+      /* Now verify constructor circularity (stop after the first one
+         we find) */
+      if (!CLASS_INTERFACE (TYPE_NAME (current_class)))
+	for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
+	  if (DECL_CONSTRUCTOR_P (decl) && 
+	      verify_constructor_circularity (decl, decl))
+	    break;
+
       /* Make the class data, register it and run the rest of decl
          compilation on it */
       if (!java_error_count && ! flag_emit_class_files)
@@ -4841,51 +5114,11 @@ static void
 java_complete_expand_method (mdecl)
      tree mdecl;
 {
-  int no_ac_found = 1;
-
-  /* We generate some code for an empty constructor */
-  if (DECL_CONSTRUCTOR_P (mdecl) && !DECL_FUNCTION_BODY (mdecl))
-    {
-      tree arg_list, func, call;
-      tree method_type = TREE_TYPE (mdecl);
-      tree class_type = CLASS_TO_HANDLE_TYPE (current_class);
-      tree self_type = (CLASSTYPE_SUPER (class_type) ? 
-			CLASSTYPE_SUPER (class_type) : class_type);
-      tree method_signature = 
-	TYPE_LANG_SPECIFIC (method_type)->signature;
-      tree method = 
-	lookup_java_constructor (CLASS_TO_HANDLE_TYPE (self_type),
-				 method_signature);
-      tree block, compound;
-
-      /* Fixe the begining/ending lines of the method so that with
-         no_line_numbers set to 1 it doesn't generate debug info at
-         line 1 for this artificial constructor. */
-      DECL_SOURCE_LINE (mdecl) = 1;
-      DECL_SOURCE_LINE_MERGE (mdecl, 1);
-      source_start_java_method (mdecl);
-      arg_list = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (mdecl));
-      enter_block ();
-      func = build_known_method_ref (method, method_type, self_type,
-				     method_signature, arg_list);
-      
-      if (! flag_emit_class_files)
-	func = build1 (NOP_EXPR, build_pointer_type (method_type), func);
-      call = build (CALL_EXPR, TREE_TYPE (method_type), func, 
-		    build_tree_list (NULL_TREE, arg_list), NULL_TREE);
-      TREE_SIDE_EFFECTS (call) = 1;
-      call = build_class_init (self_type, call);
-      compound = java_method_add_stmt (mdecl, call);
-      block = exit_block ();
-      BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) = block;
-      /* The function decl, its block and the compound statement
-         within this block are all of void type. */
-      TREE_TYPE (block) = TREE_TYPE (compound) = 
-	TREE_TYPE (DECL_FUNCTION_BODY (mdecl)) = void_type_node;
-      exit_block ();
-      no_ac_found = 0;
-    }
+  /* Fix constructors before expanding them */
+  if (DECL_CONSTRUCTOR_P (mdecl))
+    fix_constructors (mdecl);
   
+  /* Expand functions that have a body */
   if (DECL_FUNCTION_BODY (mdecl))
     {
       expand_start_java_method (mdecl);
@@ -4900,18 +5133,153 @@ java_complete_expand_method (mdecl)
       /* Install exceptions thrown with `throws' */
       PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
 
-      if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) && no_ac_found)
+      if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)))
 	java_complete_tree (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)));
       /* Don't go any further if we've found error(s) during the
          expansion */
       if (!java_error_count)
 	source_end_java_method ();
+      else
+	{
+	  pushdecl_force_head (DECL_ARGUMENTS (mdecl));
+	  poplevel (1, 0, 1);
+	}
 
       /* Pop the exceptions and sanity check */
       POP_EXCEPTIONS();
       if (currently_caught_type_list)
 	fatal ("Exception list non empty - java_complete_expand_method");
     }
+}
+
+/* Craft a body for default constructor. Patch existing constructor
+   bodies with call to super() and field initialization statements if
+   necessary.  */
+
+static void
+fix_constructors (mdecl)
+     tree mdecl;
+{
+  tree body = DECL_FUNCTION_BODY (mdecl);
+  tree field_init;
+
+  /* The constructor body must be crafted by hand. It's the
+     constructor we defined when we realize we didn't have the
+     CLASSNAME() constructor */
+  if (!body)
+    {
+      tree compound;
+
+      /* It is an error for the compiler to generate a default
+	 constructor if the superclass doesn't have a constructor that
+	 takes no argument */
+      if (verify_constructor_super ())
+	{
+	  tree sclass_decl = TYPE_NAME (CLASSTYPE_SUPER (current_class));
+	  char *n = IDENTIFIER_POINTER (DECL_NAME (sclass_decl));
+	  parse_error_context (lookup_cl (TYPE_NAME (current_class)), 
+			       "No constructor matching `%s()' found in "
+			       "class `%s'", n, n);
+	}
+      
+      start_artificial_method_body (mdecl);
+      
+      /* We don't generate a super constructor invocation if we're
+	 compiling java.lang.Object. build_super_invocation takes care
+	 of that. */
+      compound = java_method_add_stmt (mdecl, build_super_invocation ());
+      
+      /* Takes care of non static field initialization */
+      field_init = generate_field_initialization_code (current_class);
+      if (field_init)
+	compound = java_method_add_stmt (mdecl, field_init);
+
+      end_artificial_method_body (mdecl);
+    }
+  /* Search for an explicit constructor invocation */
+  else 
+    {
+      int found = 0;
+      tree main_block = BLOCK_EXPR_BODY (body);
+      tree compound = NULL_TREE;
+      
+      while (body)
+	switch (TREE_CODE (body))
+	  {
+	  case CALL_EXPR:
+	    found = CALL_EXPLICIT_CONSTRUCTOR_P (body);
+	    body = NULL_TREE;
+	    break;
+	  case COMPOUND_EXPR:
+	  case EXPR_WITH_FILE_LOCATION:
+	    body = TREE_OPERAND (body, 0);
+	    break;
+	  case BLOCK:
+	    body = BLOCK_EXPR_BODY (body);
+	    break;
+	  default:
+	    found = 0;
+	    body = NULL_TREE;
+	  }
+      /* The constructor is missing an invocation of super() */
+      if (!found)
+	compound = add_stmt_to_compound (compound, NULL_TREE,
+					 build_super_invocation ());
+      
+      /* Also fix its initialized fields initialization */
+      field_init = generate_field_initialization_code (current_class);
+      if (field_init)
+	compound = add_stmt_to_compound (compound, NULL_TREE, field_init);
+      
+      /* Fix the constructor main block if we're adding extra stmts */
+      if (compound)
+	{
+	  compound = add_stmt_to_compound (compound, NULL_TREE,
+					   BLOCK_EXPR_BODY (main_block));
+	  BLOCK_EXPR_BODY (main_block) = compound;
+	}
+    }
+}
+
+/* Browse constructors in the super class, searching for a constructor
+   that doesn't take any argument. Return 0 if one is found, 1
+   otherwise. */
+
+static int
+verify_constructor_super ()
+{
+  tree class = CLASSTYPE_SUPER (current_class);
+  if (!class)
+    return 0;
+
+  if (class)
+    {
+      tree mdecl;
+      for (mdecl = TYPE_METHODS (class); mdecl; mdecl = TREE_CHAIN (mdecl))
+	{
+	  if (DECL_CONSTRUCTOR_P (mdecl)
+	      && !TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (mdecl))))
+	    return 0;
+	}
+    }
+  return 1;
+}
+
+/* Generate the code used to initialize field declared with an
+   initialization statement. For now, it returns a call the the
+   artificial function <finit>, if required. Always returns NULL if
+   nothing needs to be generated. */
+
+static tree
+generate_field_initialization_code (class)
+     tree class;
+{
+  if (CLASS_HAS_FINIT_P (class))
+    return build_method_invocation (build_expr_wfl (finit_identifier_node, 
+						    input_filename, 0, 0), 
+				    NULL_TREE);
+  else
+    return NULL_TREE;
 }
 
 /* Expand finals.  */
@@ -4921,7 +5289,7 @@ java_expand_finals ()
 {
 }
 
-/* Generate code for all context remembered for code generation */
+/* Generate code for all context remembered for code generation.  */
 
 void
 java_expand_classes ()
@@ -4936,6 +5304,8 @@ java_expand_classes ()
       java_parse_abort_on_error ();
       java_check_final ();            /* Check unitialized final  */
       java_parse_abort_on_error ();
+      if (flag_emit_class_files)
+	write_classfile (current_class);
     }
 }
 
@@ -5089,6 +5459,15 @@ resolve_expression_name (id)
 					 (TYPE_NAME (current_class))));
 		  return error_mark_node;
 		}
+	      /* Instance variables can't appear as an argument of
+		 an explicit constructor invocation */
+	      if (!fs && ctxp->explicit_constructor_p)
+		{
+		  parse_error_context
+		    (id, "Can't reference `%s' before the superclass "
+		     "constructor has been called", IDENTIFIER_POINTER (name));
+		  return error_mark_node;
+		}
 	      decl = build_field_ref ((fs ? NULL_TREE : current_this),
 				      current_class, name);
 	      return (fs ? build_class_init (current_class, decl) : decl);
@@ -5210,7 +5589,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    return 1;
 	  *where_found = 
 	    patch_method_invocation_stmt (qual_wfl, decl, type,
-					  &is_static, NULL);
+					  &is_static, NULL, from_super);
 	  if (*where_found == error_mark_node)
 	    return 1;
 	  *type_found = type = QUAL_DECL_TYPE (*where_found);
@@ -5237,6 +5616,13 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    return 1;
 	  *type_found = type = QUAL_DECL_TYPE (decl);
 	  from_cast = 1;
+	  continue;
+
+	case CONDITIONAL_EXPR:
+	  *where_found = decl = java_complete_tree (qual_wfl);
+	  if (decl == error_mark_node)
+	    return 1;
+	  *type_found = type = QUAL_DECL_TYPE (decl);
 	  continue;
 
 	case ARRAY_REF:
@@ -5295,6 +5681,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 			     CLASSTYPE_SUPER (current_class),
 			     build_this (EXPR_WFL_LINECOL (qual_wfl)));
 	  *where_found = decl = java_complete_tree (node);
+	  if (decl == error_mark_node)
+	    return 1;
 	  *type_found = type = QUAL_DECL_TYPE (decl);
 	  from_super = from_type = 1;
 	  continue;
@@ -5560,15 +5948,17 @@ maybe_access_field (decl, where, type)
    used. IS_STATIC is set to 1 if the invoked function is static. */
 
 static tree
-patch_method_invocation_stmt (patch, primary, where, is_static, ret_decl)
+patch_method_invocation_stmt (patch, primary, where, is_static, ret_decl, super)
      tree patch, primary, where;
      int *is_static;
      tree *ret_decl;
+     int super;
 {
   tree wfl = TREE_OPERAND (patch, 0);
   tree args = TREE_OPERAND (patch, 1);
   tree name = EXPR_WFL_NODE (wfl);
   tree list, class_type;
+  int is_static_flag = 0;
   
   /* Should be overriden if everything goes well. Otherwise, if
      something fails, it should keep this value. It stop the
@@ -5678,24 +6068,49 @@ patch_method_invocation_stmt (patch, primary, where, is_static, ret_decl)
       /* We search constructor in their target class */
       if (CALL_CONSTRUCTOR_P (patch))
 	{
-	  class_to_search = resolve_no_layout (EXPR_WFL_NODE (wfl), NULL_TREE);
-	  if (!class_to_search)
+	  if (TREE_CODE (patch) == NEW_CLASS_EXPR)
+	    class_to_search = EXPR_WFL_NODE (wfl);
+	  else if (EXPR_WFL_NODE (TREE_OPERAND (patch, 0)) == 
+		   this_identifier_node)
+	    class_to_search = NULL_TREE;
+	  else if (EXPR_WFL_NODE (TREE_OPERAND (patch, 0)) ==
+		   super_identifier_node)
 	    {
-	      parse_error_context 
-		(wfl, "Class `%s' not found in type declaration",
-		 IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
-	      PATCH_METHOD_RETURN_ERROR ();
+	      if (CLASSTYPE_SUPER (current_class))
+		class_to_search = 
+		  DECL_NAME (TYPE_NAME (CLASSTYPE_SUPER (current_class)));
+	      else
+		{
+		  parse_error_context (wfl, "Can't invoke super constructor "
+				       "on java.lang.Object");
+		  PATCH_METHOD_RETURN_ERROR ();
+		}
 	    }
-	  
-	  /* Can't instantiate an abstract class */
-	  if (CLASS_ABSTRACT (class_to_search))
+
+	  /* Class to search is NULL if we're searching the current one */
+	  if (class_to_search)
 	    {
-	      parse_error_context 
-		(wfl, "Class `%s' is an abstract class. It can't be "
-		 "instantiated", IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
-	      PATCH_METHOD_RETURN_ERROR ();
+	      class_to_search = resolve_no_layout (class_to_search, NULL_TREE);
+	      if (!class_to_search)
+		{
+		  parse_error_context 
+		    (wfl, "Class `%s' not found in type declaration",
+		     IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+		  PATCH_METHOD_RETURN_ERROR ();
+		}
+	      
+	      /* Can't instantiate an abstract class */
+	      if (CLASS_ABSTRACT (class_to_search))
+		{
+		  parse_error_context 
+		    (wfl, "Class `%s' is an abstract class. It can't be "
+		     "instantiated", IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+		  PATCH_METHOD_RETURN_ERROR ();
+		}
+	      class_to_search = TREE_TYPE (class_to_search);
 	    }
-	  class_to_search = TREE_TYPE (class_to_search);
+	  else
+	    class_to_search = current_class;
 	  lc = 1;
 	}
       /* This is a regular search in the local class, unless an
@@ -5721,11 +6136,12 @@ patch_method_invocation_stmt (patch, primary, where, is_static, ret_decl)
 					     class_to_search, primary))
 	PATCH_METHOD_RETURN_ERROR ();
 
-      /* Non static/constructor methods are called with the current
-	 object extra argument. If method is resolved as a primary,
-	 use the primary otherwise use the current THIS. */
+      /* Non static methods are called with the current object extra
+	 argument. If patch a `new TYPE()', the argument is the value
+	 returned by the object allocator. If method is resolved as a
+	 primary, use the primary otherwise use the current THIS. */
       args = nreverse (args);
-      if (!CALL_CONSTRUCTOR_P (patch) && !METHOD_STATIC (list))
+      if (!METHOD_STATIC (list) && TREE_CODE (patch) != NEW_CLASS_EXPR)
 	args = tree_cons (NULL_TREE, primary ? primary : current_this, args);
 
       class_type = class_to_search;
@@ -5750,15 +6166,27 @@ patch_method_invocation_stmt (patch, primary, where, is_static, ret_decl)
       free (fct_name);
       PATCH_METHOD_RETURN_ERROR ();
     }
-  
-  if (is_static) 
-    *is_static = METHOD_STATIC (list);
+
+  is_static_flag = METHOD_STATIC (list);
+
+  /* In the context of an explicit constructor invocation, we can't invoke
+     any method relying on `this' */
+  if (ctxp->explicit_constructor_p 
+      && !is_static_flag && (!primary || primary == current_this))
+    {
+      parse_error_context 
+	(wfl, "Can't reference `this' before the superclass constructor has "
+	 "been called");
+      PATCH_METHOD_RETURN_ERROR ();
+    }
   java_parser_context_restore_global ();
+  if (is_static) 
+    *is_static = is_static_flag;
   /* Sometimes, we want the decl of the selected method. Such as for
      EH checking */
   if (ret_decl)
     *ret_decl = list;
-  return patch_invoke (patch, list, args);
+  return patch_invoke (patch, list, args, super);
 }
 
 /* Check that we're not trying to do a static reference to a method in
@@ -5786,35 +6214,37 @@ check_for_static_method_reference (wfl, node, method, where, primary)
    mode.  */
 
 static tree
-patch_invoke (patch, method, args)
+patch_invoke (patch, method, args, from_super)
      tree patch, method, args;
+     int from_super;
 {
   int im;
   tree dtable, func;
   tree signature = build_java_signature (TREE_TYPE (method));
   tree original_call, t, ta;
 
-  /* Last step for args: convert build-in types */
-  for (t = TYPE_ARG_TYPES (TREE_TYPE (method)),
-       ta = args; t && ta; t = TREE_CHAIN (t), ta = TREE_CHAIN (ta))
+  /* Last step for args: convert build-in types. */
+  for (t = TYPE_ARG_TYPES (TREE_TYPE (method)), ta = args;
+       t && ta; t = TREE_CHAIN (t), ta = TREE_CHAIN (ta))
     if (JPRIMITIVE_TYPE_P (TREE_TYPE (TREE_VALUE (ta))) &&
 	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
       TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
-       
-  switch ((im = invocation_mode (method, 0)))
+  
+  switch ((im = invocation_mode (method, from_super)))
     {
     case INVOKE_VIRTUAL:
       dtable = invoke_build_dtable (0, args);
       func = build_invokevirtual (dtable, method);
       break;
 
+    case INVOKE_SUPER:
     case INVOKE_STATIC:
       func = build_known_method_ref (method, TREE_TYPE (method),
 				     DECL_CONTEXT (method), signature, args);
       break;
 
     default:
-      fatal ("Unknown invocation mode - build_invoke");
+      fatal ("Unknown invocation mode `%d' - build_invoke", im);
       return NULL_TREE;
     }
 
@@ -5825,11 +6255,12 @@ patch_invoke (patch, method, args)
   TREE_OPERAND (patch, 1) = args;
   original_call = patch;
 
-  /* We're calling a constructor. New is called an its returned value
-     is an argument to the constructor. We build a COMPOUND_EXPR and
-     use saved expression so that the overall NEW expression value is
-     a pointer to a newly created and initialized class. */
-  if (CALL_CONSTRUCTOR_P (original_call))
+  /* We're processing a `new TYPE ()' form. New is called an its
+     returned value is the first argument to the constructor. We build
+     a COMPOUND_EXPR and use saved expression so that the overall NEW
+     expression value is a pointer to a newly created and initialized
+     class. */
+  if (TREE_CODE (original_call) == NEW_CLASS_EXPR)
     {
       tree class = DECL_CONTEXT (method);
       tree c1, saved_new, size, new;
@@ -5859,21 +6290,21 @@ invocation_mode (method, super)
 {
   int access = get_access_flags_from_decl (method);
 
+  if (super)
+    return INVOKE_SUPER;
+
   if (access & ACC_STATIC || access & ACC_FINAL)
     return INVOKE_STATIC;
 
   if (CLASS_FINAL (TYPE_NAME (DECL_CONTEXT (method))))
     return INVOKE_STATIC;
   
-  if (super)
-    return INVOKE_SUPER;
-  
   if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))))
     return INVOKE_INTERFACE;
   
   if (DECL_CONSTRUCTOR_P (method))
     return INVOKE_STATIC;
-  
+
   return INVOKE_VIRTUAL;
 }
 
@@ -5932,11 +6363,9 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
 	  char string [4096];
 	  if (!cm || not_accessible_p (class, cm, 0))
 	    continue;
-	  signature = build_java_argument_signature (TREE_TYPE (cm));
 	  sprintf 
-	    (string, "  `%s(%s)' in `%s'%s",
-	     IDENTIFIER_POINTER (name), 
-	     IDENTIFIER_POINTER (signature),
+	    (string, "  `%s' in `%s'%s",
+	     get_printable_method_name (cm),
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (cm)))),
 	     (TREE_CHAIN (current) ? "\n" : ""));
 	  obstack_grow (&temporary_obstack, string, strlen (string));
@@ -5946,8 +6375,11 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
     }
   /* Issue the error message */
   signature = build_java_argument_signature (method);
-  parse_error_context (cl, "Can't find method `%s(%s)' in class `%s'%s",
-		       IDENTIFIER_POINTER (name),
+  parse_error_context (cl, "Can't find %s `%s(%s)' in class `%s'%s",
+		       (lc ? "constructor" : "method"),
+		       (lc ? 
+			IDENTIFIER_POINTER(DECL_NAME (TYPE_NAME (class))) :
+			IDENTIFIER_POINTER (name)),
 		       IDENTIFIER_POINTER (signature),
 		       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))),
 		       (candidates ? candidates : ""));
@@ -5969,8 +6401,7 @@ find_applicable_accessible_methods_list (class, name, arglist)
 	   method != NULL_TREE;  method = TREE_CHAIN (method))
 	{
 	  /* Names have to match and we're not looking for constructor */
-	  if (DECL_NAME (method) != name
-	      || DECL_CONSTRUCTOR_P (method))
+	  if (DECL_NAME (method) != name || DECL_CONSTRUCTOR_P (method))
 	    continue;
 
 	  if (argument_types_convertible (method, arglist))
@@ -6145,7 +6576,10 @@ qualify_ambiguous_name (id)
       {
 	qual = TREE_CHAIN (qual);
 	qual_wfl = QUAL_WFL (qual);
-	name = EXPR_WFL_NODE (qual_wfl);
+	if (TREE_CODE (qual_wfl) == CALL_EXPR)
+	  again = 1;
+	else
+	  name = EXPR_WFL_NODE (qual_wfl);
 	this_found = 1;
       }
     /* If we have a SUPER, we set the context accordingly */
@@ -6163,6 +6597,13 @@ qualify_ambiguous_name (id)
 	qual = TREE_CHAIN (qual);
 	/* Do one more interation to set things up */
 	super_found = again = 1;
+      }
+    /* Loop one more time if we're dealing with ?: up front */
+    if (TREE_CODE (qual_wfl) == CONDITIONAL_EXPR)
+      {
+	qual = TREE_CHAIN (qual);
+	qual_wfl = QUAL_WFL (qual);
+	again = 1;
       }
   } while (again);
   
@@ -6283,7 +6724,7 @@ static tree
 java_complete_tree (node)
      tree node;
 {
-  tree nn, cn, wfl_op1, wfl_op2;
+  tree nn, cn, wfl_op1, wfl_op2, wfl_op3;
   int flag;
 
   /* CONVERT_EXPR always has its type set, even though it needs to be
@@ -6394,6 +6835,16 @@ java_complete_tree (node)
       return patch_if_else_statement (node);
       break;
 
+    case CONDITIONAL_EXPR:
+      /* Condition */
+      wfl_op1 = TREE_OPERAND (node, 0);
+      COMPLETE_CHECK_OP_0 (node);
+      wfl_op2 = TREE_OPERAND (node, 1);
+      COMPLETE_CHECK_OP_1 (node);
+      wfl_op3 = TREE_OPERAND (node, 2);
+      COMPLETE_CHECK_OP_2 (node);
+      return patch_conditional_expr (node, wfl_op1, wfl_op2);
+
       /* 3- Expression section */
     case COMPOUND_EXPR:
       TREE_OPERAND (node, 0) = java_complete_tree (TREE_OPERAND (node, 0));
@@ -6459,11 +6910,21 @@ java_complete_tree (node)
 	return error_mark_node;
       else
 	{
-	  tree decl;
+	  tree decl, wfl = TREE_OPERAND (node, 0);
+	  int in_this = CALL_THIS_CONSTRUCTOR_P (node);
+
 	  node = patch_method_invocation_stmt (node, NULL_TREE, 
-					       NULL_TREE, 0, &decl);
+					       NULL_TREE, 0, &decl, 0);
 	  if (node != error_mark_node)
-	    check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl);
+	    {
+	      check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl);
+	      /* If we call this(...), register signature and positions */
+	      if (in_this)
+		DECL_CONSTRUCTOR_CALLS (current_function_decl) = 
+		  tree_cons (wfl, decl,
+			     DECL_CONSTRUCTOR_CALLS (current_function_decl));
+		
+	    }
 	  return node;
 	}
 
@@ -6585,7 +7046,8 @@ java_complete_tree (node)
       TREE_OPERAND (node, 1) = java_complete_tree (wfl_op2);
       if (TREE_OPERAND (node, 1) == error_mark_node)
 	return error_mark_node;
-      TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
+      if (!flag_emit_class_files)
+	TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
       return patch_array_ref (node, wfl_op1, wfl_op2);
 
     case THIS_EXPR:
@@ -6595,6 +7057,15 @@ java_complete_tree (node)
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 	  parse_error_context (wfl_operator, "Keyword `this' used outside "
 			       "allowed context");
+	  TREE_TYPE (node) = error_mark_node;
+	  return error_mark_node;
+	}
+      if (ctxp->explicit_constructor_p)
+	{
+	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
+	  parse_error_context 
+	    (wfl_operator, "Can't reference `this' or `super' before the "
+	     "superclass constructor has been called");
 	  TREE_TYPE (node) = error_mark_node;
 	  return error_mark_node;
 	}
@@ -6622,6 +7093,7 @@ complete_function_arguments (node)
   int flag = 0;
   tree cn;
 
+  ctxp->explicit_constructor_p += (CALL_THIS_CONSTRUCTOR_P (node) ? 1 : 0);
   for (cn = TREE_OPERAND (node, 1); cn; cn = TREE_CHAIN (cn))
     {
       tree wfl = TREE_VALUE (cn), parm, temp;
@@ -6644,6 +7116,7 @@ complete_function_arguments (node)
 	  INITIALIZED_P (parm) = 1;
 	}
     }
+  ctxp->explicit_constructor_p -= (CALL_THIS_CONSTRUCTOR_P (node) ? 1 : 0);
   return flag;
 }
 
@@ -6768,6 +7241,40 @@ maybe_absorb_scoping_blocks ()
 /* This section of the source is reserved to build_* functions that
    are building incomplete tree nodes and the patch_* functions that
    are completing them.  */
+
+/* Build a super() constructor invocation. Returns size_zero_node if
+   we're currently dealing with the class java.lang.Object. */
+
+static tree
+build_super_invocation ()
+{
+  if (current_class == object_type_node)
+    return size_zero_node;
+  else
+    {
+      tree super_wfl = build_wfl_node (super_identifier_node, 
+				       input_filename, 0, 0);
+      return build_method_invocation (super_wfl, NULL_TREE);
+    }
+}
+
+/* Build a SUPER/THIS qualified method invocation.  */
+
+static tree
+build_this_super_qualified_invocation (use_this, name, args, lloc, rloc)
+     int use_this;
+     tree name, args;
+     int lloc, rloc;
+
+{
+  tree invok;
+  tree wfl = 
+    build_wfl_node ((use_this ? this_identifier_node : super_identifier_node),
+		    input_filename, 0, 0);
+  EXPR_WFL_LINECOL (wfl) = lloc;
+  invok = build_method_invocation (name, args);
+  return make_qualified_primary (wfl, invok, rloc);
+}
 
 /* Build an incomplete CALL_EXPR node. */
 
@@ -6962,7 +7469,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
      assignment into an array element, return it here. */
   if (TREE_CODE (node) == COMPOUND_EXPR)
     return node;
-      
+
   TREE_OPERAND (node, 0) = lvalue;
   TREE_OPERAND (node, 1) = new_rhs;
   TREE_TYPE (node) = lhs_type;
@@ -7845,7 +8352,7 @@ patch_unaryop (node, wfl_op)
 	  TREE_TYPE (node) = error_mark_node;
 	  error_found = 1;
 	}
-      else if (FIELD_FINAL (op))
+      else if (DECL_P (op) && FIELD_FINAL (op))
 	{
 	  parse_error_context 
 	    (wfl_op, "Can't assign a value to the final variable `%s'",
@@ -8315,11 +8822,19 @@ patch_return (node)
 
   if (error_found)
     {
-      char *t = strdup (lang_printable_name (mtype, 0));
-      parse_error_context (wfl_operator, "`return' with%s value from `%s %s'",
-			   (error_found == 1 ? "" : "out"), t,
-			   lang_printable_name (meth, 0));
-      free (t);
+      if (!DECL_CONSTRUCTOR_P (meth))
+	{
+	  char *t = strdup (lang_printable_name (mtype, 0));
+	  parse_error_context (wfl_operator, 
+			       "`return' with%s value from `%s %s'",
+			       (error_found == 1 ? "" : "out"), 
+			       t, lang_printable_name (meth, 0));
+	  free (t);
+	}
+      else
+	parse_error_context (wfl_operator, 
+			     "`return' with value from constructor `%s'",
+			     lang_printable_name (meth, 0));
       return error_mark_node;
     }
 
@@ -9363,4 +9878,108 @@ purge_unchecked_exceptions (mdecl)
     }
   /* List is inverted here, but it doesn't matter */
   DECL_FUNCTION_THROWS (mdecl) = new;
+}
+
+/* 15.24 Conditional Operator ?: */
+
+static tree
+patch_conditional_expr (node, wfl_cond, wfl_op1)
+     tree node, wfl_cond, wfl_op1;
+{
+  tree cond = TREE_OPERAND (node, 0);
+  tree op1 = TREE_OPERAND (node, 1);
+  tree op2 = TREE_OPERAND (node, 2);
+  tree t1 = TREE_TYPE (op1);
+  tree t2 = TREE_TYPE (op2);
+  tree resulting_type = NULL_TREE;
+  int error_found = 0;
+
+  /* The first expression must be a boolean */
+  if (TREE_TYPE (cond) != boolean_type_node)
+    {
+      SET_WFL_OPERATOR (wfl_operator, node, wfl_cond);
+      parse_error_context (wfl_operator, "Incompatible type for `?:'. Can't "
+			   "convert `%s' to `boolean'",
+			   lang_printable_name (TREE_TYPE (cond), 0));
+      error_found = 1;
+    }
+
+  /* Second and third can be numeric, boolean (i.e. primitive),
+     references or null. Anything else results in an error */
+  if (!((JNUMERIC_TYPE_P (t1) && JNUMERIC_TYPE_P (t2))
+	|| ((JREFERENCE_TYPE_P (t1) || op1 == null_pointer_node) 
+	    && (JREFERENCE_TYPE_P (t2) || op2 == null_pointer_node))
+	|| (t1 == boolean_type_node && t2 == boolean_type_node)))
+    error_found = 1;
+
+  /* Determine the type of the conditional expression. Same types are
+     easy to deal with */
+  else if (t1 == t2)
+    resulting_type = t1;
+
+  /* There are different rules for numeric types */
+  else if (JNUMERIC_TYPE_P (t1))
+    {
+      /* if byte/short found, the resulting type is short */
+      if ((t1 == byte_type_node && t2 == short_type_node)
+	  || (t1 == short_type_node && t2 == byte_type_node))
+	resulting_type = short_type_node;
+
+      /* If t1 is a constant int and t2 is of type byte, short or char
+	 and t1's value fits in t2, then the resulting type is t2 */
+      else if ((t1 == int_type_node && TREE_CONSTANT (TREE_OPERAND (node, 1)))
+	  && JBSC_TYPE_P (t2) && int_fits_type_p (TREE_OPERAND (node, 1), t2))
+	resulting_type = t2;
+
+      /* If t2 is a constant int and t1 is of type byte, short or char
+	 and t2's value fits in t1, then the resulting type is t1 */
+      else if ((t2 == int_type_node && TREE_CONSTANT (TREE_OPERAND (node, 2)))
+	  && JBSC_TYPE_P (t1) && int_fits_type_p (TREE_OPERAND (node, 2), t1))
+	resulting_type = t1;
+
+      /* Otherwise, binary numeric promotion is applied and the
+	 resulting type is the promoted type of operand 1 and 2 */
+      else 
+	resulting_type = binary_numeric_promotion (t2, t2, 
+						   &TREE_OPERAND (node, 1), 
+						   &TREE_OPERAND (node, 2));
+    }
+
+  /* Cases of a reference and a null type */
+  else if (JREFERENCE_TYPE_P (t1) && op2 == null_pointer_node)
+    resulting_type = t1;
+
+  else if (JREFERENCE_TYPE_P (t2) && op1 == null_pointer_node)
+    resulting_type = t2;
+
+  /* Last case: different reference types. If a type can be converted
+     into the other one by assignment conversion, the latter
+     determines the type of the expression */
+  else if ((resulting_type = try_reference_assignconv (t1, op2)))
+    resulting_type = promote_type (t1);
+
+  else if ((resulting_type = try_reference_assignconv (t2, op1)))
+    resulting_type = promote_type (t2);
+
+  /* If we don't have any resulting type, we're in trouble */
+  if (!resulting_type)
+    {
+      char *t = strdup (lang_printable_name (t1, 0));
+      SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
+      parse_error_context (wfl_operator, "Incompatible type for `?:'. Can't "
+			   "convert `%s' to `%s'", t,
+			   lang_printable_name (t2, 0));
+      free (t);
+      error_found = 1;
+    }
+
+  if (error_found)
+    {
+      TREE_TYPE (node) = error_mark_node;
+      return error_mark_node;
+    }
+
+  TREE_TYPE (node) = resulting_type;
+  TREE_SET_CODE (node, COND_EXPR);
+  return node;
 }

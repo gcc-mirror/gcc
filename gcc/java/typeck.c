@@ -546,7 +546,6 @@ build_java_signature (type)
     {
       TYPE_LANG_SPECIFIC (type) = (struct lang_type *)
 	perm_calloc (1, sizeof (struct lang_type));
-
     }
   sig = TYPE_LANG_SPECIFIC (type)->signature;
   if (sig == NULL_TREE)
@@ -600,7 +599,7 @@ build_java_signature (type)
 	    obstack_grow (&temporary_obstack,
 			  IDENTIFIER_POINTER (sig), IDENTIFIER_LENGTH (sig));
 	    obstack_1grow (&temporary_obstack, ')');
-  
+
 	    t = build_java_signature (TREE_TYPE (type));
 	    obstack_grow0 (&temporary_obstack,
 			   IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
