@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 /* { dg-require-visibility "" } */
-/* { dg-final { scan-assembler "\\.hidden.*__GI_fputs_unlocked" } } */
+/* { dg-final { scan-hidden "__GI_fputs_unlocked" } } */
 
 int fputs_unlocked (const char *restrict, int *restrict)
    __asm__ ("__GI_fputs_unlocked")

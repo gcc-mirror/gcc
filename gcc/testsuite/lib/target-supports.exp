@@ -88,6 +88,7 @@ proc check_visibility_available { } {
 
     switch $objformat {
         elf      { return 1 }
+        mach-o   { return 1 }
         unknown  { return -1 }
         default  { return 0 }
     }

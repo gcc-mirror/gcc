@@ -1,4 +1,6 @@
-/* { dg-do assemble { target *-*-darwin* } } */
+/* { dg-do compile } */
+/* { dg-require-visibility "" } */
+/* { dg-final { scan-hidden "n" } } */
 
 #define __private_extern__ extern __attribute__((visibility ("hidden")))
 
