@@ -559,7 +559,7 @@
    suf%?d\\t%0, %1, #%N2"
 [(set_attr "type" "farith")])
 
-(define_insn "*adddf_df_esfdf"
+(define_insn "*adddf_esfdf_df"
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
 	(plus:DF (float_extend:DF
 		  (match_operand:SF 1 "s_register_operand" "f,f"))
@@ -5571,7 +5571,7 @@
   "str%?\\t%3, [%0, %2]!"
 [(set_attr "type" "store1")])
 
-(define_insn "*strqi_predec"
+(define_insn "*strsi_predec"
   [(set (mem:SI (minus:SI (match_operand:SI 1 "s_register_operand" "0")
 			  (match_operand:SI 2 "s_register_operand" "r")))
 	(match_operand:SI 3 "s_register_operand" "r"))
@@ -5730,7 +5730,7 @@
   "str%?\\t%5, [%0, -%3%S2]!"
 [(set_attr "type" "store1")])
 
-(define_insn "*loadqi_shiftpreinc"
+(define_insn "*loadsi_shiftpreinc"
   [(set (match_operand:SI 5 "s_register_operand" "=r")
 	(mem:SI (plus:SI (match_operator:SI 2 "shift_operator"
 			  [(match_operand:SI 3 "s_register_operand" "r")
@@ -5745,7 +5745,7 @@
   "ldr%?\\t%5, [%0, %3%S2]!"
 [(set_attr "type" "load")])
 
-(define_insn "*loadqi_shiftpredec"
+(define_insn "*loadsi_shiftpredec"
   [(set (match_operand:SI 5 "s_register_operand" "=r")
 	(mem:SI (minus:SI (match_operand:SI 1 "s_register_operand" "0")
 			  (match_operator:SI 2 "shift_operator"
