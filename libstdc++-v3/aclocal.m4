@@ -279,8 +279,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  if test x"$ac_fdsections" = x"yes" &&
-     test x"$enable_debug" = x"no"; then
+  if test x"$ac_fdsections" = x"yes"; then
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
   fi
   AC_MSG_RESULT($ac_fdsections)
@@ -373,7 +372,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   fi
 
   # Set linker optimization flags.
-  if test x"$with_gnu_ld" = x"yes" && test x"$enable_debug" = x"no"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
   fi
 
@@ -923,7 +922,11 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
     AC_CHECK_FUNCS([__signbitl], , [LIBMATHOBJS="$LIBMATHOBJS signbitl.lo"])
   fi
 
+  if test -n "$LIBMATHOBJS"; then
+    need_libmath=yes
+  fi
   AC_SUBST(LIBMATHOBJS)
+  AM_CONDITIONAL(GLIBCPP_BUILD_LIBMATH,  test "$need_libmath" = yes)
 ])
 
 
@@ -1055,14 +1058,20 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
 
 
 dnl
-dnl Check for special debugging mode; not for production use.
+dnl Check to see if debugging libraries are to be built.
 dnl
 dnl GLIBCPP_ENABLE_DEBUG
-dnl --enable-debug sets '-ggdb3 -O0'.
-dnl --disable-debug sets '-g' and whatever optimization options the
-dnl     compiler can handle.
-dnl  +  --enable-maintainer-mode automatically defaults this to on.
-dnl  +  Perhaps -D/-U of NDEBUG, DEBUG, DEBUG_ASSERT, ...?
+dnl
+dnl --enable-debug 
+dnl builds a separate set of debugging libraries in addition to the
+dnl normal (shared, static) libstdc++ binaries.
+dnl
+dnl --disable-debug 
+dnl builds only one (non-debug) version of libstdc++.
+dnl
+dnl --enable-debug-flags=FLAGS
+dnl iff --enable-debug == yes, then use FLAGS to build the debug library.
+dnl
 dnl  +  Usage:  GLIBCPP_ENABLE_DEBUG[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
 dnl       defaults to `no'.
@@ -1078,17 +1087,56 @@ changequote([, ])dnl
  *)   AC_MSG_ERROR([Unknown argument to enable/disable extra debugging]) ;;
  esac],
 enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
+AC_MSG_CHECKING([for additional debug build])
+AC_MSG_RESULT($enable_debug)
+AM_CONDITIONAL(GLIBCPP_BUILD_DEBUG, test "$enable_debug" = yes)	
+])
+
+
+dnl Check for explicit debug flags.
+dnl
+dnl GLIBCPP_ENABLE_DEBUG_FLAGS
+dnl
+dnl --enable-debug-flags='-O1' 
+dnl is a general method for passing flags to be used when 
+dnl building debug libraries with --enable-debug.
+dnl
+dnl --disable-debug-flags does nothing.
+dnl  +  Usage:  GLIBCPP_ENABLE_DEBUG_FLAGS(default flags)
+dnl       If "default flags" is an empty string (or "none"), the effect is
+dnl       the same as --disable or --enable=no.
+AC_DEFUN(GLIBCPP_ENABLE_DEBUG_FLAGS, [dnl
+define([GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
+AC_ARG_ENABLE(debug_flags,
+changequote(<<, >>)dnl
+<<  --enable-debug-flags=FLAGS    pass compiler FLAGS when building debug 
+	                library;[default=>>GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT],
+changequote([, ])dnl
+[case "${enableval}" in
+ none)  ;;
+ -*) enable_debug_flags="${enableval}" ;;
+ *)   AC_MSG_ERROR([Unknown argument to extra debugging flags]) ;;
+ esac],
+enable_debug_flags=GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT)dnl
 
 dnl Option parsed, now set things appropriately
-case "${enable_debug}" in
-    yes) 
-        DEBUG_FLAGS='-O0 -ggdb3'                        
+case x"$enable_debug" in
+    xyes) 
+        case "$enable_debug_flags" in
+	  none) 
+            DEBUG_FLAGS="-g3 -O0";;
+	  -*) #valid input
+	    DEBUG_FLAGS="${enableval}"
+        esac
         ;; 
-    no)   
-        DEBUG_FLAGS='-g'
+    xno)   
+        DEBUG_FLAGS=""
         ;;
 esac
 AC_SUBST(DEBUG_FLAGS)
+
+AC_MSG_CHECKING([for debug build flags])
+AC_MSG_RESULT($DEBUG_FLAGS)
 ])
 
 
@@ -1109,25 +1157,21 @@ dnl       If "default flags" is an empty string (or "none"), the effect is
 dnl       the same as --disable or --enable=no.
 AC_DEFUN(GLIBCPP_ENABLE_CXX_FLAGS, [dnl
 define([GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
-AC_ARG_ENABLE(cxx-flags,
+AC_ARG_ENABLE(cxx_flags,
 changequote(<<, >>)dnl
 <<  --enable-cxx-flags=FLAGS      pass compiler FLAGS when building library;
                                 [default=>>GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT],
 changequote([, ])dnl
-[case "x$enableval" in
+enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')
+
+case "x$enable_cxx_flags" in
  xyes)   
         AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
- xno|x)  
+ xno | xnone | x)  
         enable_cxx_flags='' ;;
  *)      
         enable_cxx_flags="$enableval" ;;
- esac],
-enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')
-
-dnl Thinko on my part during design.  This kludge is the workaround.
-if test "$enable_cxx_flags" = "none"; then 
-  enable_cxx_flags=''; 
-fi
+esac	
 
 dnl Run through flags (either default or command-line) and set anything
 dnl extra (e.g., #defines) that must accompany particular g++ options.
@@ -1303,23 +1347,19 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   glibcpp_localedir=${glibcpp_builddir}/po/share/locale
   AC_SUBST(glibcpp_localedir)
 
-  # For the time being, transform ctype_noninline.h to ctype_members_char.cc
-#  CCTYPE_CHAR_CC=config/${os_include_dir}/ctype_noninline.h
-
   AC_SUBST(USE_NLS)
   AC_SUBST(CLOCALE_H)
   AC_SUBST(CCODECVT_H)
   AC_SUBST(CMESSAGES_H)
-  AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
-  AC_LINK_FILES($CCODECVT_CC, src/codecvt_members.cc)
-  AC_LINK_FILES($CCOLLATE_CC, src/collate_members.cc)
-#  AC_LINK_FILES($CCTYPE_CHAR_CC, src/ctype_members_char.cc)
-  AC_LINK_FILES($CCTYPE_CC, src/ctype_members.cc)
-  AC_LINK_FILES($CMESSAGES_CC, src/messages_members.cc)
-  AC_LINK_FILES($CMONEY_CC, src/monetary_members.cc)
-  AC_LINK_FILES($CNUMERIC_CC, src/numeric_members.cc)
-  AC_LINK_FILES($CTIME_CC, src/time_members.cc)
-  AC_LINK_FILES($CLOCALE_INTERNAL_H, src/c++locale_internal.h)
+  AC_SUBST(CCODECVT_CC)
+  AC_SUBST(CCOLLATE_CC)
+  AC_SUBST(CCTYPE_CC)
+  AC_SUBST(CMESSAGES_CC)
+  AC_SUBST(CMONEY_CC)
+  AC_SUBST(CNUMERIC_CC)
+  AC_SUBST(CTIME_CC)
+  AC_SUBST(CLOCALE_CC)
+  AC_SUBST(CLOCALE_INTERNAL_H)
 ])
 
 
@@ -1420,7 +1460,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   esac
   AC_SUBST(CSTDIO_H)
   AC_SUBST(BASIC_FILE_H)
-  AC_LINK_FILES($BASIC_FILE_CC, src/basic_file.cc)
+  AC_SUBST(BASIC_FILE_CC)
 
   # 2000-08-04 bkoz hack
   CCODECVT_C=config/io/c_io_libio_codecvt.c
@@ -1739,7 +1779,7 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
 
 
 dnl
-dnl Check for what kind of C headers to use.
+dnl Check for what type of C headers to use.
 dnl
 dnl GLIBCPP_ENABLE_CHEADERS
 dnl --enable-cheaders= [does stuff].
@@ -1752,7 +1792,7 @@ define([GLIBCPP_ENABLE_CHEADERS_DEFAULT], ifelse($1, c_std, c_std, c_std))dnl
 AC_MSG_CHECKING([for c header strategy to use])
 AC_ARG_ENABLE(cheaders,
 changequote(<<, >>)dnl
-<<  --enable-cheaders       construct "C" header files for g++ [default=>>GLIBCPP_ENABLE_CHEADERS_DEFAULT],
+<<  --enable-cheaders=MODEL       construct "C" header files for g++ [default=>>GLIBCPP_ENABLE_CHEADERS_DEFAULT],
 changequote([, ])
   [case "$enableval" in
    c) 
@@ -2247,15 +2287,15 @@ fi
 dnl Everything parsed; figure out what file to use.
 case $enable_symvers in
   no)
-      LINKER_MAP=config/linker-map.dummy
+      SYMVER_MAP=config/linker-map.dummy
       ;;
   gnu)
-      LINKER_MAP=config/linker-map.gnu
+      SYMVER_MAP=config/linker-map.gnu
       AC_DEFINE(_GLIBCPP_SYMVER)	
       ;;
 esac
 
-AC_LINK_FILES($LINKER_MAP, src/linker.map)
+AC_SUBST(SYMVER_MAP)
 AM_CONDITIONAL(GLIBCPP_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)

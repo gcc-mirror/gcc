@@ -312,6 +312,11 @@ target_headers = \
 	${target_srcdir}/ctype_noninline.h \
 	${target_srcdir}/os_defines.h \
 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h 
+
+# Non-installed target_header files.
+target_headers_noinst = \
+	${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@
+
 # These target_headers_extra files are all built with ad hoc naming rules.
 target_headers_extra = \
 	${target_builddir}/basic_file.h \
@@ -331,8 +336,7 @@ thread_target_headers = \
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext \
-	${target_builddir}/stamp-target
+	stamp-backward stamp-ext stamp-target
 
 
 # Here are the rules for building the headers
@@ -400,16 +404,18 @@ stamp-${target_alias}:
 	fi
 
 # Target includes static.
-${target_builddir}/stamp-target: ${target_headers} stamp-${target_alias}
-	@cd ${target_builddir} ;\
-	if [ ! -f stamp-target ]; then \
+# XXX Missing dependency info for {target_headers_extra}
+stamp-target: ${target_headers} ${target_headers_noinst} stamp-${target_alias}
+	@if [ ! -f stamp-target ]; then \
+	  (cd ${target_builddir} ;\
 	  @LN_S@ ${target_headers} . || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@ . || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true ;\
-	  echo `date` > stamp-target; \
+	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true);\
+	  echo `date` > stamp-target ; \
 	fi
 
 # Target includes dynamic.

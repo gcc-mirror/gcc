@@ -54,18 +54,19 @@ AC_SUBST(enable_static)
 GLIBCPP_CHECK_GNU_MAKE
 
 # Enable all the variable C++ stuff.  C_MBCHAR must come early.
-GLIBCPP_ENABLE_DEBUG($USE_MAINTAINER_MODE)
 GLIBCPP_ENABLE_CSTDIO
 GLIBCPP_ENABLE_CLOCALE
+GLIBCPP_ENABLE_CHEADERS([$c_model])
 GLIBCPP_ENABLE_C_MBCHAR([yes])
 GLIBCPP_ENABLE_C99([yes])
 GLIBCPP_ENABLE_LONG_LONG([yes])
-GLIBCPP_ENABLE_CHEADERS([$c_model])
 GLIBCPP_ENABLE_THREADS
-GLIBCPP_ENABLE_CXX_FLAGS([none])
 GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
 GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS
 GLIBCPP_ENABLE_CONCEPT_CHECKS
+GLIBCPP_ENABLE_CXX_FLAGS([none])
+GLIBCPP_ENABLE_DEBUG([no])
+GLIBCPP_ENABLE_DEBUG_FLAGS([none])
 
 # Check for headers necessary for libsupc++ using dyn-string.c/cxa_demangle.c
 AC_CHECK_HEADERS(string.h stdlib.h)
@@ -451,7 +452,7 @@ fi
 # Export all the install information
 GLIBCPP_EXPORT_INSTALL_INFO
 
-# Export all the include and flag information to makefiles.
+# Export all the include and flag information to Makefiles.
 GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_EXPORT_FLAGS
 
@@ -473,11 +474,14 @@ AC_OUTPUT(Makefile \
     include/Makefile src/Makefile \
     libmath/Makefile libio/Makefile libsupc++/Makefile \
     po/Makefile testsuite/Makefile mkcheck testsuite_flags,
-[if test -n "$CONFIG_FILES"; then
-  LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-  ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
-  grep '^MULTISUBDIR =' Makefile >> src/Makefile
-  grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+[test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
+if test -n "$CONFIG_FILES"; then
+ if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
+    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
+    ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+    grep '^MULTISUBDIR =' Makefile >> src/Makefile
+    grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+  fi
 fi
 chmod +x mkcheck
 chmod +x testsuite_flags

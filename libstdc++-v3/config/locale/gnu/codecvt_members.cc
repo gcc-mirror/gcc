@@ -34,7 +34,7 @@
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
-#include "c++locale_internal.h"
+#include <bits/c++locale_internal.h>
 
 namespace std
 {
