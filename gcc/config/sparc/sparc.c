@@ -484,6 +484,20 @@ fp_zero_operand (op, mode)
   return op == CONST0_RTX (mode);
 }
 
+/* Nonzero if OP is a register operand in floating point register.  */
+
+int
+fp_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! register_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  return GET_CODE (op) == REG && SPARC_FP_REG_P (REGNO (op));
+}
+
 /* Nonzero if OP is a floating point constant which can
    be loaded into an integer register using a single
    sethi instruction.  */

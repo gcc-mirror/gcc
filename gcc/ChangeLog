@@ -1,4 +1,16 @@
+2002-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/6315
+	* config/sparc/sparc.md (movtf reg<-reg split): Allow spliting
+	even if hard quad and register is not floating.
+	(movtf reg<-mem split): Disallow splitting if hard quad and
+	register is floating.
+	(movtf mem<-reg split): Likewise.
+	* config/sparc/sparc.c (fp_register_operand): New predicate.
+	* config/sparc/sparc.h (PREDICATE_CODES): Add fp_register_operand.
+
 2002-04-17  Zack Weinberg  <zack@codesourcery.com>
+
 	* Makefile.in (PROTO_OBJS): Add cppdefault.o.
 	(protoize.o): Take $(PREPROCESSOR_DEFINES) off command line.
 	(unprotoize.o): Ditto.  Build from protoize.c.  Define

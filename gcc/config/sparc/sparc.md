@@ -3840,7 +3840,8 @@
   "reload_completed
    && (! TARGET_ARCH64
        || (TARGET_FPU
-           && ! TARGET_HARD_QUAD))"
+           && ! TARGET_HARD_QUAD)
+       || ! fp_register_operand (operands[0], TFmode))"
   [(clobber (const_int 0))]
   "
 {
@@ -3902,7 +3903,10 @@
   [(set (match_operand:TF 0 "register_operand" "")
         (match_operand:TF 1 "memory_operand" ""))]
   "(reload_completed
-    && offsettable_memref_p (operands[1]))"
+    && offsettable_memref_p (operands[1])
+    && (! TARGET_ARCH64
+	|| ! TARGET_HARD_QUAD
+	|| ! fp_register_operand (operands[0], TFmode)))"
   [(clobber (const_int 0))]
   "
 {
@@ -3935,7 +3939,10 @@
   [(set (match_operand:TF 0 "memory_operand" "")
 	(match_operand:TF 1 "register_operand" ""))]
   "(reload_completed
-    && offsettable_memref_p (operands[0]))"
+    && offsettable_memref_p (operands[0])
+    && (! TARGET_ARCH64
+	|| ! TARGET_HARD_QUAD
+	|| ! fp_register_operand (operands[1], TFmode)))"
   [(clobber (const_int 0))]
   "
 {
