@@ -1,3 +1,13 @@
+2002-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6256:
+	* pt.c (tsubst_friend_class): Handle templates with explicit
+	nested names.
+
+	PR c++/6331:
+	* typeck.c (merge_types): Remember the cv-qualification of pointer
+	types when merging them.
+
 2002-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5658

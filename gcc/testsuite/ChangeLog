@@ -1,3 +1,11 @@
+2002-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6256:
+	* g++.dg/template/friend5.C: New test.
+
+	PR c++/6331:
+	* g++.dg/template/qual1.C: Likewise.
+
 2002-04-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/980707-1.c: Don't use isspace().
