@@ -1,3 +1,7 @@
+2004-10-17  Matthias Klose  <doko@debian.org>
+
+	* gnatvsn.ads: Set gnat library version to 4.0.
+
 2004-10-05  Vincent Celier  <celier@gnat.com>
 
         * mlib-tgt.ads: (Build_Dynamic_Library): New parameter Options_2
