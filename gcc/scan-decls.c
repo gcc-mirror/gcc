@@ -32,13 +32,13 @@ int brace_nesting = 0;
 
 /* The first extern_C_braces_length elements of extern_C_braces
    indicate the (brace nesting levels of) left braces that were
-   prefixed by extern "C". */
+   prefixed by extern "C".  */
 int extern_C_braces_length = 0;
 char extern_C_braces[20];
 #define in_extern_C_brace (extern_C_braces_length>0)
 
 /* True if the function declaration currently being scanned is
-   prefixed by extern "C". */
+   prefixed by extern "C".  */
 int current_extern_C = 0;
 
 static void
@@ -77,7 +77,7 @@ scan_decls (fp)
   saw_inline = 0;
   if (c == '}')
     {
-      /* pop an 'extern "C"' nesting level, if appropriate */
+      /* Pop an 'extern "C"' nesting level, if appropriate.  */
       if (extern_C_braces_length
 	  && extern_C_braces[extern_C_braces_length - 1] == brace_nesting)
 	extern_C_braces_length--;
@@ -100,11 +100,11 @@ scan_decls (fp)
       && strncmp (buf.base, "__DEFINED_MACRO_", 16) == 0)
     {
       /* For certain interesting macro names, fixproto puts
-	   #ifdef FOO
-	   __DEFINED_MACRO_FOO
-	   #endif
+	 #ifdef FOO
+	 __DEFINED_MACRO_FOO
+	 #endif
 	 into the file to be pre-processed.  So if we see __DEFINED_MACRO_FOO,
-	 it means FOO was defined, which we may want to make a note of. */
+	 it means FOO was defined, which we may want to make a note of.  */
       recognized_macro (buf.base+16);
       goto new_statement;
     }
@@ -134,7 +134,7 @@ scan_decls (fp)
     {
       int followingc = getc (fp); /* char following token in buf */
 
-      MAKE_SSTRING_SPACE(&rtype, 1);
+      MAKE_SSTRING_SPACE (&rtype, 1);
       *rtype.ptr = 0;
 
       if (c == IDENTIFIER_TOKEN)
@@ -143,11 +143,13 @@ scan_decls (fp)
 	  if (nextc == '(')
 	    {
 	      int nesting = 1;
+	      int func_lineno = source_lineno;
+	      char *args;
 
 	      arg_list.ptr = arg_list.base;
-	      c = skip_spaces (fp, ' ');
 	      for (;;)
 		{
+		  c = getc (fp);
 		  if (c == '(')
 		    nesting++;
 		  else if (c == ')')
@@ -156,17 +158,23 @@ scan_decls (fp)
 		  if (c == EOF)
 		    break;
 		  if (c == '\n')
-		    c = ' ';
-		  SSTRING_PUT(&arg_list, c);
-		  c = getc (fp);
+		    {
+		      c = ' ';
+		      source_lineno++;
+		      lineno++;
+		    }
+		  SSTRING_PUT (&arg_list, c);
 		}
-	      SSTRING_PUT(&arg_list, '\0');
+	      SSTRING_PUT (&arg_list, '\0');
+	      args = arg_list.base;
+	      while (*args == ' ')
+		args++;
 	      recognized_function (buf.base,
-				  saw_inline ? 'I'
-				  : in_extern_C_brace || current_extern_C
-				  ? 'F' : 'f',
-				  rtype.base, arg_list.base,
-				  source_filename.base, source_lineno);
+				   (saw_inline ? 'I'
+				    : in_extern_C_brace || current_extern_C
+				    ? 'F' : 'f'),
+				   rtype.base, args,
+				   source_filename.base, func_lineno);
 	      c = get_token (fp, &buf);
 	      if (c == '{')
 		{
@@ -190,7 +198,7 @@ scan_decls (fp)
 	goto handle_statement;
       sstring_append (&rtype, &buf);
       if (followingc == ' ' || followingc == '\t' || followingc == '\n')
-	SSTRING_PUT(&rtype, ' ');
+	SSTRING_PUT (&rtype, ' ');
       c = get_token (fp, &buf);
     }
 }
