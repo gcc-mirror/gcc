@@ -1,5 +1,6 @@
 2004-02-18  Paul Brook  <paul@codesourcery.com>
 
+	PR debug/12934
 	* gcc.dg/debug/debug-7.c: New test.
 
 2004-02-17  Ulrich Weigand  <uweigand@de.ibm.com>
