@@ -476,6 +476,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			       code for it, but still can keep the note.  */
 			    PATTERN (insn)
 			      = gen_rtx (USE, VOIDmode, XEXP (trial, 0));
+			    INSN_CODE (insn) = -1;
 			    /* Remove all reg notes but the REG_DEAD one.  */
 			    REG_NOTES (insn) = trial;
 			    XEXP (trial, 1) = NULL_RTX;
