@@ -283,7 +283,6 @@ static int mips_sched_reorder (FILE *, int, rtx *, int *, int);
 static int mips_variable_issue (FILE *, int, rtx, int);
 static int mips_adjust_cost (rtx, rtx, rtx, int);
 static int mips_issue_rate (void);
-static int mips_use_dfa_pipeline_interface (void);
 static int mips_multipass_dfa_lookahead (void);
 static void mips_init_libfuncs (void);
 static void mips_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
@@ -732,7 +731,7 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE mips_issue_rate
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE mips_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   mips_multipass_dfa_lookahead
@@ -9922,29 +9921,6 @@ mips_issue_rate (void)
 
   abort ();
 
-}
-
-/* Implements TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE.  Return true for
-   processors that have a DFA pipeline description.  */
-
-static int
-mips_use_dfa_pipeline_interface (void)
-{
-  switch (mips_tune)
-    {
-    case PROCESSOR_R3000:
-    case PROCESSOR_R4130:
-    case PROCESSOR_R5400:
-    case PROCESSOR_R5500:
-    case PROCESSOR_R7000:
-    case PROCESSOR_R9000:
-    case PROCESSOR_SB1:
-    case PROCESSOR_SR71000:
-      return true;
-
-    default:
-      return false;
-    }
 }
 
 /* Implements TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD.  This should

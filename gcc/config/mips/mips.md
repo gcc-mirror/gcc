@@ -313,332 +313,36 @@
    (nil)
    (nil)])
 
-;; .........................
+;; Pipeline descriptions.
 ;;
-;;	Functional units
+;; generic.md provides a fallback for processors without a specific
+;; pipeline description.  It is derived from the old define_function_unit
+;; version and uses the "alu" and "imuldiv" units declared below.
 ;;
-;; .........................
-
-; (define_function_unit NAME MULTIPLICITY SIMULTANEITY
-;			TEST READY-DELAY ISSUE-DELAY [CONFLICT-LIST])
-
-;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
-
-(define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load,fpload,fpidxload")
-       (eq_attr "cpu" "!r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
-  3 0)
-
-(define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load,fpload,fpidxload")
-       (eq_attr "cpu" "r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
-  2 0)
-
-(define_function_unit "memory"   1 0
-  (eq_attr "type" "store,fpstore,fpidxstore")
-  1 0)
-
-(define_function_unit "memory"   1 0 (eq_attr "type" "xfer") 2 0)
-
-(define_function_unit "imuldiv"  1 0
-  (eq_attr "type" "mthilo,mfhilo")
-  1 3)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd")
-       (eq_attr "cpu" "!r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
-  17 17)
-
-;; On them mips16, we want to stronly discourage a mult from appearing
-;; after an mflo, since that requires explicit nop instructions.  We
-;; do this by pretending that mflo ties up the function unit for long
-;; enough that the scheduler will ignore load stalls and the like when
-;; selecting instructions to between the two instructions.
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "mfhilo") (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
-  1 5)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r3900"))
-  12 12)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r4000,r4600"))
-  10 10)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r4650"))
-  4 4)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd")
-       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100,r4120")))
-  1 1)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100,r4120")))
-  4 4)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd")
-       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300,r5000")))
-  5 5)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
-  8 8)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r5000")))
-  9 9)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv")
-       (eq_attr "cpu" "!r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
-  38 38)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r3900"))
-  35 35)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4600"))
-  42 42)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4650"))
-  36 36)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4000"))
-  69 69)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100,r4120")))
-  35 35)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100,r4120")))
-  67 67)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300")))
-  37 37)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
-  69 69)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r5000")))
-  36 36)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r5000")))
-  68 68)
-
-;; The R4300 does *NOT* have a separate Floating Point Unit, instead
-;; the FP hardware is part of the normal ALU circuitry.  This means FP
-;; instructions affect the pipe-line, and no functional unit
-;; parallelism can occur on R4300 processors.  To force GCC into coding
-;; for only a single functional unit, we force the R4300 FP
-;; instructions to be processed in the "imuldiv" unit.
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3900,r6000,r4300,r5000"))
-  3 0)
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "r3900,r6000"))
-  2 0)
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "r5000"))
-  1 0)
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3900,r6000,r4300"))
-  4 0)
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r3900"))
-  2 0)
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r6000"))
-  3 0)
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg,fmove")
-       (eq_attr "cpu" "!r3900,r4600,r4650,r4300,r5000"))
-  2 0)
-
-(define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg,fmove") (eq_attr "cpu" "r3900,r4600,r4650,r5000"))
-  1 0)
-
-(define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3900,r6000,r4600,r4650,r4300,r5000")))
-  7 0)
-
-(define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3900,r5000")))
-  4 0)
-
-(define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
-  5 0)
-
-(define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
-  8 0)
-
-(define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3900,r6000,r4300,r5000")))
-  8 0)
-
-(define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3900,r5000")))
-  5 0)
-
-(define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
-  6 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3900,r6000,r4600,r4650,r4300,r5000")))
-  23 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3900")))
-  12 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
-  15 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
-  32 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r5000")))
-  21 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "DF")
-	    (eq_attr "cpu" "!r3900,r6000,r4600,r4650,r4300")))
-  36 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3900")))
-  19 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
-  16 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
-  61 0)
-
-;;; ??? Is this number right?
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
-  54 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
-  31 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r5000")))
-  21 0)
-
-;;; ??? Is this number right?
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
-  112 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
-  60 0)
-
-(define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r5000")))
-  36 0)
-
-;; R4300 FP instruction classes treated as part of the "imuldiv"
-;; functional unit:
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r4300"))
-  3 3)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fcmp,fabs,fneg,fmove") (eq_attr "cpu" "r4300"))
-  1 1)
-
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300")))
-  5 5)
-(define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
-  8 8)
-
-(define_function_unit "imuldiv" 1 0
-  (and (and (eq_attr "type" "fdiv") (eq_attr "type" "fsqrt,frsqrt"))
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300")))
-  29 29)
-(define_function_unit "imuldiv" 1 0
-  (and (and (eq_attr "type" "fdiv") (eq_attr "type" "fsqrt,frsqrt"))
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
-  58 58)
-
-;; Include scheduling descriptions.
+;; Some of the processor-specific files are also derived from old
+;; define_function_unit descriptions and simply override the parts of
+;; generic.md that don't apply.  The other processor-specific files
+;; are self-contained.
+(define_automaton "alu,imuldiv")
+
+(define_cpu_unit "alu" "alu")
+(define_cpu_unit "imuldiv" "imuldiv")
 
 (include "3000.md")
+(include "4000.md")
+(include "4100.md")
 (include "4130.md")
+(include "4300.md")
+(include "4600.md")
+(include "5000.md")
 (include "5400.md")
 (include "5500.md")
+(include "6000.md")
 (include "7000.md")
 (include "9000.md")
 (include "sb1.md")
 (include "sr71k.md")
+(include "generic.md")
 
 ;;
 ;;  ....................
