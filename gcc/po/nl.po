@@ -1,20 +1,21 @@
 # Dutch messages for gcc 3.x.
-# Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
-# Tim Van Holder <tim.van.holder@pandora.be>, 1999, 2000, 2002.
-#
-# Currently still a lot of fuzzies, since this started out life
-# as a .po file for gcc 2.95.2.
-#
+# Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+# Tim Van Holder <tim.van.holder@pandora.be>, 1999, 2000, 2002, 2003.
+# 
+# Still a lot of fuzzies, since this started life as a
+# .po file for gcc 2.95.2.
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.1-b20020128\n"
+"Project-Id-Version: gcc 3.3.2\n"
 "POT-Creation-Date: 2003-10-24 13:20+0200\n"
-"PO-Revision-Date: 2002-02-04 18:04+0000\n"
+"PO-Revision-Date: 2003-10-26 10:40+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@pandora.be>\n"
 "Language-Team: Dutch <vertaling@nl.linux.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: attribs.c:185
 #, c-format
@@ -159,9 +160,8 @@ msgid "built-in function `%s' not currently supported"
 msgstr "ingebouwde functie `%s' wordt op het ogenblik niet ondersteund"
 
 #: builtins.c:4165
-#, fuzzy
 msgid "target format does not support infinity"
-msgstr "doel-CPU ondersteunt geen interworking"
+msgstr "doelformaat ondersteunt geen oneindige waarde"
 
 # betere vertaling voor 'function scope'?
 #: c-common.c:1168
@@ -175,9 +175,8 @@ msgid "string length `%d' is greater than the length `%d' ISO C%d compilers are 
 msgstr "stringlengte `%d' is groter dan `%d', de lengte die ISO C%d compilers moeten ondersteunen"
 
 #: c-common.c:1247
-#, fuzzy
 msgid "concatenation of string literals with __FUNCTION__ is deprecated"
-msgstr "concatenatie van stringconstantes met __FUNCTION__ is verouderd.  Deze mogelijkheid zal in de toekomst verwijderd worden"
+msgstr "concatenatie van stringconstantes met __FUNCTION__ is verouderd"
 
 #: c-common.c:1343
 msgid "overflow in constant expression"
@@ -192,9 +191,8 @@ msgid "floating point overflow in expression"
 msgstr "floating-point overflow in expressie"
 
 #: c-common.c:1379
-#, fuzzy
 msgid "vector overflow in expression"
-msgstr "integer overflow in expressie"
+msgstr "vector overflow in expressie"
 
 #. This detects cases like converting -129 or 256 to unsigned char.
 #: c-common.c:1402
@@ -257,14 +255,12 @@ msgid "pointer to a function used in arithmetic"
 msgstr "pointer naar functie gebruikt in rekensom"
 
 #: c-common.c:2653
-#, fuzzy
 msgid "pointer to member function used in arithmetic"
-msgstr "pointer naar functie gebruikt in rekensom"
+msgstr "pointer naar lid-functie gebruikt in rekensom"
 
 #: c-common.c:2659
-#, fuzzy
 msgid "pointer to a member used in arithmetic"
-msgstr "pointer naar functie gebruikt in rekensom"
+msgstr "pointer naar een lid gebruikt in rekensom"
 
 #: c-common.c:2746 f/com.c:14762
 msgid "struct type value used where scalar is required"
@@ -287,19 +283,18 @@ msgid "invalid use of `restrict'"
 msgstr "ongeldig gebruik van `restrict'"
 
 #: c-common.c:3064
-#, fuzzy
 msgid "invalid application of `sizeof' to a function type"
-msgstr "ANSI C verbiedt een gekwalificeerd functietype"
+msgstr "ongeldige toepassing van `sizeof' op een functietype"
 
 #: c-common.c:3074
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to a void type"
-msgstr "sizeof toegepast op een void-type"
+msgstr "ongeldige toepasing van `%s' op een void-type"
 
 #: c-common.c:3080
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to an incomplete type"
-msgstr "__alignof__ toegepast op een onvolledig type"
+msgstr "ongeldige toepassing van `%s' op een onvolledig type"
 
 #: c-common.c:3121
 msgid "`__alignof' applied to a bit-field"
@@ -321,9 +316,9 @@ msgid "too many arguments to function `%s'"
 msgstr "teveel argumenten voor functie `%s'"
 
 #: c-common.c:3812
-#, fuzzy, c-format
+#, c-format
 msgid "non-floating-point argument to function `%s'"
-msgstr "teveel argumenten voor functie `%s'"
+msgstr "niet-floating-point argument voor functie `%s'"
 
 #: c-common.c:4081
 msgid "pointers are not permitted as case values"
@@ -389,10 +384,11 @@ msgstr "onbekende machine-modus `%s'"
 msgid "no data type for mode `%s'"
 msgstr "geen datatype voor modus `%s'"
 
+# Misschien beter 'emuleren' dan nabootsen?
 #: c-common.c:5666 c-common.c:6316
-#, fuzzy, c-format
+#, c-format
 msgid "unable to emulate '%s'"
-msgstr "kan bestand '%s' niet openen"
+msgstr "kan '%s' niet nabootsen"
 
 #: c-common.c:5702
 msgid "section attribute cannot be specified for local variables"
@@ -438,23 +434,22 @@ msgstr "`%s' is zowel als alias en als normale naam gedefinieerd"
 msgid "alias arg not a string"
 msgstr "alias-argument is geen string"
 
+# Of moet dit vertaald worden als 'zichtbaarheidsargument is ...'?
 #: c-common.c:5910
-#, fuzzy
 msgid "visibility arg not a string"
-msgstr "alias-argument is geen string"
+msgstr "argument 'visibility' is geen string"
 
 #: c-common.c:5919
 msgid "visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
-msgstr ""
+msgstr "argument 'visibility' moet \"default\", \"hidden\", \"protected\" of \"internal\" zijn"
 
 #: c-common.c:5953
-#, fuzzy
 msgid "tls_model arg not a string"
-msgstr "alias-argument is geen string"
+msgstr "argument 'tls_model' is geen string"
 
 #: c-common.c:5962
 msgid "tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-msgstr ""
+msgstr "argument 'tls_model' moet \"local-exec\", \"initial-exec\", \"local-dynamic\" of \"global-dynamic\" zijn"
 
 #: c-common.c:5987 c-common.c:6043
 #, c-format
@@ -469,7 +464,7 @@ msgstr "kan het `%s' attribuut niet instellen na een definitie"
 #: c-common.c:6114
 #, fuzzy
 msgid "cleanup arg not an identifier"
-msgstr "switch-waarde is geen integer"
+msgstr "`defined' zonder een naam"
 
 #: c-common.c:6121
 #, fuzzy
@@ -492,9 +487,8 @@ msgid "no vector mode with the size and type specified could be found"
 msgstr "er kon geen vectormodus gevonden worden met de opgegeven grootte en type"
 
 #: c-common.c:6403
-#, fuzzy
 msgid "nonnull attribute without arguments on a non-prototype"
-msgstr "aantal argumenten kom niet overeen met prototype"
+msgstr "nonnull attribuut zonder argumenten gebruikt voor een niet-prototype"
 
 #: c-common.c:6418
 #, fuzzy, c-format
@@ -504,17 +498,17 @@ msgstr "de formaatstring heeft een niet-constant operand-nummer"
 #: c-common.c:6437
 #, c-format
 msgid "nonnull argument with out-of-range operand number (arg %lu, operand %lu)"
-msgstr ""
+msgstr "nonnull argument met operandnummer dat buiten bereik is (arg %lu, operand %lu)"
 
 #: c-common.c:6445
 #, c-format
 msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
-msgstr ""
+msgstr "nonnull argument verwijst naar niet-pointer operand (arg %lu, operand %lu)"
 
 #: c-common.c:6531
 #, c-format
 msgid "null argument where non-null required (arg %lu)"
-msgstr ""
+msgstr "null argument waar een niet-null argument vereist is (arg %lu)"
 
 #: c-convert.c:80 c-typeck.c:988 c-typeck.c:4059 cp/typeck.c:1615
 #: cp/typeck.c:5939
@@ -935,11 +929,11 @@ msgstr "herhaalde `%s'"
 
 #: c-decl.c:3619 cp/decl.c:10892
 msgid "`__thread' before `extern'"
-msgstr ""
+msgstr "`__thread' voor `extern'"
 
 #: c-decl.c:3621 cp/decl.c:10894
 msgid "`__thread' before `static'"
-msgstr ""
+msgstr "`__thread' voor `static'"
 
 #: c-decl.c:3629 cp/decl.c:10921
 #, c-format
@@ -1309,7 +1303,7 @@ msgstr "herdefinitie van `struct %s'"
 
 #: c-decl.c:5105 cp/decl.c:7532
 msgid "declaration does not declare anything"
-msgstr ""
+msgstr "declaratie declareert niets"
 
 #: c-decl.c:5169 c-decl.c:5172
 #, fuzzy, c-format
@@ -1393,7 +1387,7 @@ msgstr "flexibele array niet laatste lid van struct"
 
 #: c-decl.c:5327
 msgid "flexible array member in otherwise empty struct"
-msgstr ""
+msgstr "flexibele array als lid in overigens lege struct"
 
 #: c-decl.c:5357
 #, c-format
@@ -1562,7 +1556,7 @@ msgstr "grootte van teruggeefwaarde van `%s' is %u bytes"
 #. allow it.
 #: c-decl.c:6791
 msgid "`for' loop initial declaration used outside C99 mode"
-msgstr ""
+msgstr "initiële declaratie voor `for' lus gebruikt buiten C99 modus"
 
 #: c-decl.c:6815
 #, fuzzy, c-format
@@ -1603,9 +1597,10 @@ msgstr "de formaatstring is geen string-type"
 msgid "args to be formatted is not '...'"
 msgstr "de te formatteren argumenten zijn niet ..."
 
+# Klinkt wat vreemd...
 #: c-format.c:133
 msgid "strftime formats cannot format arguments"
-msgstr ""
+msgstr "strftime formaten kunnen geen argumenten formatteren"
 
 #: c-format.c:168 c-format.c:270
 #, fuzzy
@@ -1631,302 +1626,295 @@ msgstr "de formaatstring volgt de te formatteren argumenten"
 
 #: c-format.c:601
 msgid "` ' flag"
-msgstr ""
+msgstr "` ' vlag"
 
 #: c-format.c:601
 msgid "the ` ' printf flag"
-msgstr ""
+msgstr "de ` ' printf-vlag"
 
 #: c-format.c:602 c-format.c:673
 msgid "`+' flag"
-msgstr ""
+msgstr "`+' vlag"
 
 #: c-format.c:602
 msgid "the `+' printf flag"
-msgstr ""
+msgstr "de `+' printf-vlag"
 
 #: c-format.c:603 c-format.c:649
 msgid "`#' flag"
-msgstr ""
+msgstr "`#' vlag"
 
 #: c-format.c:603
 msgid "the `#' printf flag"
-msgstr ""
+msgstr "de `#' printf-vlag"
 
 #: c-format.c:604 c-format.c:647
 msgid "`0' flag"
-msgstr ""
+msgstr "`0' vlag"
 
 #: c-format.c:604
 msgid "the `0' printf flag"
-msgstr ""
+msgstr "de `0' printf-vlag"
 
 #: c-format.c:605 c-format.c:646 c-format.c:676
 msgid "`-' flag"
-msgstr ""
+msgstr "`-' vlag"
 
 #: c-format.c:605
 msgid "the `-' printf flag"
-msgstr ""
+msgstr "de `-' printf-vlag"
 
 #: c-format.c:606 c-format.c:630
 msgid "`'' flag"
-msgstr ""
+msgstr "`'' vlag"
 
 #: c-format.c:606
 msgid "the `'' printf flag"
-msgstr ""
+msgstr "de `'' printf-vlag"
 
 #: c-format.c:607 c-format.c:631
 msgid "`I' flag"
-msgstr ""
+msgstr "`I' vlag"
 
 #: c-format.c:607
 msgid "the `I' printf flag"
-msgstr ""
+msgstr "de `I' printf-vlag"
 
 #: c-format.c:608 c-format.c:628 c-format.c:650 c-format.c:677 c-format.c:1702
 msgid "field width"
-msgstr ""
+msgstr "veldbreedte"
 
 #: c-format.c:608
-#, fuzzy
 msgid "field width in printf format"
-msgstr "veldbreedte is niet van het type 'int' (argument %d)"
+msgstr "veldbreedte in printf-formaat"
 
 #: c-format.c:609
 msgid "precision"
-msgstr ""
+msgstr "precisie"
 
 #: c-format.c:609
-#, fuzzy
 msgid "precision in printf format"
-msgstr "precisie gebruikt bij `%c' formaat"
+msgstr "precisie in printf-formaat"
 
+# Goede vertaling voor modifier? "aanpasser" en "veranderaar" klinken nogal duf...
 #: c-format.c:610 c-format.c:629 c-format.c:680
 msgid "length modifier"
-msgstr ""
+msgstr "lengte-modifier"
 
 #: c-format.c:610
-#, fuzzy
 msgid "length modifier in printf format"
-msgstr "meerdere E/O opties in formaat"
+msgstr "lengte-modifier in printf-formaat"
 
+# moet beter kunnen...
 #: c-format.c:626
 #, fuzzy
 msgid "assignment suppression"
-msgstr "ontbrekende index-expressie"
+msgstr "toewijzingsonderdrukking"
 
+# dit wringt nogal...
 #: c-format.c:626
 msgid "the assignment suppression scanf feature"
-msgstr ""
+msgstr "de scanf toewijzingsonderdrukking mogelijkheid"
 
 #: c-format.c:627
 msgid "`a' flag"
-msgstr ""
+msgstr "`a' vlag"
 
 #: c-format.c:627
 msgid "the `a' scanf flag"
-msgstr ""
+msgstr "de `a' scanf-vlag"
 
 #: c-format.c:628
-#, fuzzy
 msgid "field width in scanf format"
-msgstr "breedte gebruikt bij `%c' formaat"
+msgstr "veldbreedte in scanf-formaat"
 
 #: c-format.c:629
-#, fuzzy
 msgid "length modifier in scanf format"
-msgstr "meerdere E/O opties in formaat"
+msgstr "lengte-modifier in scanf-formaat"
 
 #: c-format.c:630
 msgid "the `'' scanf flag"
-msgstr ""
+msgstr "de `'' scanf-vlag"
 
 #: c-format.c:631
 msgid "the `I' scanf flag"
-msgstr ""
+msgstr "de `I' scanf-vlag"
 
 #: c-format.c:645
 msgid "`_' flag"
-msgstr ""
+msgstr "`_' vlag"
 
 #: c-format.c:645
 msgid "the `_' strftime flag"
-msgstr ""
+msgstr "de `_' strftime-vlag"
 
 #: c-format.c:646
 msgid "the `-' strftime flag"
-msgstr ""
+msgstr "de `-' strftime-vlag"
 
 #: c-format.c:647
 msgid "the `0' strftime flag"
-msgstr ""
+msgstr "de `0' strftime-vlag"
 
 #: c-format.c:648 c-format.c:672
 msgid "`^' flag"
-msgstr ""
+msgstr "`^' vlag"
 
 #: c-format.c:648
 msgid "the `^' strftime flag"
-msgstr ""
+msgstr "de `^' strftime-vlag"
 
 #: c-format.c:649
 msgid "the `#' strftime flag"
-msgstr ""
+msgstr "de `#' strftime-vlag"
 
 #: c-format.c:650
 msgid "field width in strftime format"
-msgstr ""
+msgstr "veldbreedte in strftime-formaat"
 
 # Wat is een correcte vertaling voor 'identifier'? Ik kies voor 'naam'.
 #: c-format.c:651
 #, fuzzy
 msgid "`E' modifier"
-msgstr "`$' in naam"
+msgstr "`E' modifier"
 
 #: c-format.c:651
 msgid "the `E' strftime modifier"
-msgstr ""
+msgstr "de `E' strftime-modifier"
 
 # Wat is een correcte vertaling voor 'identifier'? Ik kies voor 'naam'.
 #: c-format.c:652
 #, fuzzy
 msgid "`O' modifier"
-msgstr "`$' in naam"
+msgstr "`O' modifier"
 
 #: c-format.c:652
 msgid "the `O' strftime modifier"
-msgstr ""
+msgstr "de `O' strftime-modifier"
 
 #: c-format.c:653
 msgid "the `O' modifier"
-msgstr ""
+msgstr "de `O' modifier"
 
 #: c-format.c:671
-#, fuzzy
 msgid "fill character"
-msgstr "%s bij nulkarakter"
+msgstr "opvulkarakter"
 
 #: c-format.c:671
-#, fuzzy
 msgid "fill character in strfmon format"
-msgstr "ongeldig karakter in naam van macro-parameter"
+msgstr "opvulkarakter in strfmon-formaat"
 
 #: c-format.c:672
 msgid "the `^' strfmon flag"
-msgstr ""
+msgstr "de `^' strfmon-vlag"
 
 #: c-format.c:673
 msgid "the `+' strfmon flag"
-msgstr ""
+msgstr "de `+' strfmon-vlag"
 
 #: c-format.c:674
 msgid "`(' flag"
-msgstr ""
+msgstr "`(' vlag"
 
 #: c-format.c:674
 msgid "the `(' strfmon flag"
-msgstr ""
+msgstr "de `(' strfmon-vlag"
 
 #: c-format.c:675
 msgid "`!' flag"
-msgstr ""
+msgstr "`!' vlag"
 
 #: c-format.c:675
 msgid "the `!' strfmon flag"
-msgstr ""
+msgstr "de `!' strfmon-vlag"
 
 #: c-format.c:676
 msgid "the `-' strfmon flag"
-msgstr ""
+msgstr "de `-' strfmon-vlag"
 
 #: c-format.c:677
 msgid "field width in strfmon format"
-msgstr ""
+msgstr "veldbreedte in strfmon-formaat"
 
 #: c-format.c:678
 msgid "left precision"
-msgstr ""
+msgstr "linkse precisie"
 
 #: c-format.c:678
-#, fuzzy
 msgid "left precision in strfmon format"
-msgstr "precisie gebruikt bij `%c' formaat"
+msgstr "linkse precisie in strfmon-formaat"
 
 #: c-format.c:679
 msgid "right precision"
-msgstr ""
+msgstr "rechtse precisie"
 
 #: c-format.c:679
 msgid "right precision in strfmon format"
-msgstr ""
+msgstr "rechtse precisie in strfmon-formaat"
 
 #: c-format.c:680
-#, fuzzy
 msgid "length modifier in strfmon format"
-msgstr "meerdere E/O opties in formaat"
+msgstr "lengte-modifier in strfmon-formaat"
 
 #: c-format.c:983
-#, fuzzy, c-format
+#, c-format
 msgid "function might be possible candidate for `%s' format attribute"
-msgstr "deze functie is een mogelijke kandidaat voor het `noreturn' attribuut"
+msgstr "deze functie is een mogelijke kandidaat voor het `%s' formaat-attribuut"
 
+# niet zeker of '$-operandnummer' wel de juiste betekenis vervat
 #: c-format.c:1107 c-format.c:1128 c-format.c:2112
-#, fuzzy
 msgid "missing $ operand number in format"
-msgstr "operand buiten bereik in formaat"
+msgstr "$-operandnummer ontbreekt in formaat"
 
 #: c-format.c:1138
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support %%n$ operand number formats"
-msgstr "ANSI C ondersteunt het `%c' formaat niet"
+msgstr "%s ondersteunt geen %%n$ operandnummer formaten"
 
 #: c-format.c:1145
 msgid "operand number out of range in format"
-msgstr "operand buiten bereik in formaat"
+msgstr "operandnummer buiten bereik in formaat"
 
 #: c-format.c:1168
-#, fuzzy, c-format
+#, c-format
 msgid "format argument %d used more than once in %s format"
-msgstr "formaat-argument is geen pointer (argument %d)"
+msgstr "formaat-argument %d meer dan eens gebruikt in %s formaat"
 
+# moet beter kunnen
 #: c-format.c:1218
 #, c-format
 msgid "format argument %d unused before used argument %d in $-style format"
-msgstr ""
+msgstr "formaat-argument %d ongebruikt voor gebruikt argument %d in $-stijl formaat"
 
 #: c-format.c:1322
-#, fuzzy
 msgid "format not a string literal, format string not checked"
-msgstr "de formaatstring is geen string-type"
+msgstr "formaat is geen stringconstante, de formaatstring werd dus niet nagekeken"
 
 #: c-format.c:1336
 msgid "format not a string literal and no format arguments"
-msgstr ""
+msgstr "formaat is geen stringconstante en er zijn geen formaat-argumenten"
 
 #: c-format.c:1338
 msgid "format not a string literal, argument types not checked"
-msgstr ""
+msgstr "formaat is geen stringconstante, de argumenttypes werden dus niet nagekeken"
 
 #: c-format.c:1351
 msgid "too many arguments for format"
 msgstr "teveel argumenten voor formaat"
 
 #: c-format.c:1354
-#, fuzzy
 msgid "unused arguments in $-style format"
-msgstr "te weinig argumenten voor formaat"
+msgstr "ongebruikte argumenten in $-stijl formaat"
 
 #: c-format.c:1357
-#, fuzzy, c-format
+#, c-format
 msgid "zero-length %s format string"
-msgstr "formaatstring van lengte 0"
+msgstr "%s formaatstring van lengte 0"
 
+# "brede string"? "string met brede karakters/tekens"?
 #: c-format.c:1361
-#, fuzzy
 msgid "format is a wide character string"
-msgstr "karakterconstante in slecht formaat"
+msgstr "formaat is een wide-character string"
 
 #: c-format.c:1364
 msgid "unterminated format string"
@@ -1942,42 +1930,41 @@ msgid "spurious trailing `%%' in format"
 msgstr "overbodige `%%' achteraan formaat"
 
 #: c-format.c:1635 c-format.c:1872
-#, fuzzy, c-format
+#, c-format
 msgid "repeated %s in format"
-msgstr "herhaalde `%c' optie in formaat"
+msgstr "herhaalde %s in formaat"
 
 #: c-format.c:1648
-#, fuzzy
 msgid "missing fill character at end of strfmon format"
-msgstr "conversie mist type aan het einde van het formaat"
+msgstr "opvulkarakter ontbreekt aan het einde van dit strfmon-formaat"
 
 #: c-format.c:1687 c-format.c:1786 c-format.c:2066 c-format.c:2119
 msgid "too few arguments for format"
 msgstr "te weinig argumenten voor formaat"
 
 #: c-format.c:1728
-#, fuzzy, c-format
+#, c-format
 msgid "zero width in %s format"
-msgstr "breedte gebruikt bij `%c' formaat"
+msgstr "breedte van nul in %s formaat"
 
 #: c-format.c:1747
-#, fuzzy, c-format
+#, c-format
 msgid "empty left precision in %s format"
-msgstr "precisie gebruikt bij `%c' formaat"
+msgstr "lege linkse precisie gebruikt in %s formaat"
 
 #: c-format.c:1801
 msgid "field precision"
-msgstr ""
+msgstr "veldprecisie"
 
 #: c-format.c:1816
-#, fuzzy, c-format
+#, c-format
 msgid "empty precision in %s format"
-msgstr "precisie gebruikt bij `%c' formaat"
+msgstr "lege precisie in %s formaat"
 
 #: c-format.c:1856
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support the `%s' %s length modifier"
-msgstr "ANSI C ondersteunt de `%c' lengte-optie niet"
+msgstr "%s ondersteunt de `%s' %s lengte-modifier niet"
 
 #: c-format.c:1906
 msgid "conversion lacks type at end of format"
@@ -1994,44 +1981,44 @@ msgid "unknown conversion type character 0x%x in format"
 msgstr "onbekend typeconversie-karakter 0x%x in formaat"
 
 #: c-format.c:1927
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support the `%%%c' %s format"
-msgstr "ANSI C ondersteunt het `%c' formaat niet"
+msgstr "%s ondersteunt het `%%%c' %s formaat niet"
 
 #: c-format.c:1943
-#, fuzzy, c-format
+#, c-format
 msgid "%s used with `%%%c' %s format"
-msgstr "breedte gebruikt bij `%c' formaat"
+msgstr "%s gebruikt bij `%%%c' %s formaat"
 
 #: c-format.c:1952
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support %s"
-msgstr "-mcpu=%s ondersteunt -march=%s niet"
+msgstr "%s ondersteunt %s niet"
 
 #: c-format.c:1961
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support %s with the `%%%c' %s format"
-msgstr "ANSI C ondersteunt het `%c' formaat niet"
+msgstr "%s ondersteunt %s niet bij het `%%%c' %s formaat"
 
 #: c-format.c:1994
-#, fuzzy, c-format
+#, c-format
 msgid "%s ignored with %s and `%%%c' %s format"
-msgstr "`0' optie wordt genegeerd bij precisiespecificatie en `%c' formaat"
+msgstr "%s wordt genegeerd bij %s en `%%%c' %s formaat"
 
 #: c-format.c:1998
-#, fuzzy, c-format
+#, c-format
 msgid "%s ignored with %s in %s format"
-msgstr "`0' optie wordt genegeerd bij precisiespecificatie en `%c' formaat"
+msgstr "%s wordt genegeerd bij %s in %s formaat"
 
 #: c-format.c:2004
-#, fuzzy, c-format
+#, c-format
 msgid "use of %s and %s together with `%%%c' %s format"
-msgstr "zowel de `*' optie alse de `%c' optie in formaat gebruikt"
+msgstr "zowel %s als %s gebruikt bij '%%%c' %s formaat"
 
 #: c-format.c:2008
-#, fuzzy, c-format
+#, c-format
 msgid "use of %s and %s together in %s format"
-msgstr "zowel de `*' optie alse de `%c' optie in formaat gebruikt"
+msgstr "zowel %s als %s gebruikt in %s formaat"
 
 #: c-format.c:2027
 #, c-format
@@ -2050,33 +2037,32 @@ msgid "no closing `]' for `%%[' format"
 msgstr "geen eind-`]' voor `%%[' formaat"
 
 #: c-format.c:2059
-#, fuzzy, c-format
+#, c-format
 msgid "use of `%s' length modifier with `%c' type character"
-msgstr "lengtekarakter `%c' samen met typekarakter `%c' gebruikt"
+msgstr "`%s' lengte-modifier samen met typekarakter `%c' gebruikt"
 
 #: c-format.c:2080
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support the `%%%s%c' %s format"
-msgstr "ANSI C ondersteunt het `%c' formaat niet"
+msgstr "%s ondersteunt het `%%%s%c' %s formaat niet"
 
 #: c-format.c:2095
 msgid "operand number specified with suppressed assignment"
-msgstr ""
+msgstr "operandnummer opgegeven met onderdukte uitlijning"
 
 #: c-format.c:2097
-#, fuzzy
 msgid "operand number specified for format taking no argument"
-msgstr "operand buiten bereik in formaat"
+msgstr "operandnummer opgegeven voor formaat dat geen argument heeft"
 
 #: c-format.c:2211
-#, fuzzy, c-format
+#, c-format
 msgid "writing through null pointer (arg %d)"
-msgstr "constant object wordt beschreven (argument %d)"
+msgstr "beschrijving via null pointer (arg %d)"
 
 #: c-format.c:2220
-#, fuzzy, c-format
+#, c-format
 msgid "reading through null pointer (arg %d)"
-msgstr "formaat-argument is geen pointer (argument %d)"
+msgstr "uitlezing via null-pointer (arg %d)"
 
 #: c-format.c:2240
 #, c-format
@@ -2103,9 +2089,8 @@ msgid "pointer"
 msgstr ""
 
 #: c-format.c:2332
-#, fuzzy
 msgid "different type"
-msgstr "Ongeldige modus voor gen_tst_reg"
+msgstr "verschillend type"
 
 #: c-format.c:2353
 #, fuzzy, c-format
@@ -2118,7 +2103,6 @@ msgid "%s format, %s arg (arg %d)"
 msgstr "%s formaat, %s argument (argument %d)"
 
 #: c-lex.c:153
-#, fuzzy
 msgid "YYDEBUG not defined"
 msgstr "YYDEBUG niet gedefinieerd"
 
@@ -2172,7 +2156,7 @@ msgstr "floating-point getal overschrijdt het bereik van een `float'"
 #: c-lex.c:977 cpplex.c:330 cpplex.c:668 cpplex.c:1942
 #, fuzzy
 msgid "ignoring invalid multibyte character"
-msgstr "Ongeldig multibyte-karakter wordt genegeerd"
+msgstr "ongeldig multibyte-karakter wordt genegeerd"
 
 #: c-opts.c:355
 #, fuzzy, c-format
@@ -14165,7 +14149,7 @@ msgstr ""
 #: cp/call.c:4542
 #, fuzzy
 msgid "`%T' is not an accessible base of `%T'"
-msgstr "`%s' is geen static veld"
+msgstr "`%s' is geen bestand, pipe of tty"
 
 #: cp/call.c:4786
 msgid "could not find class$ field in java interface type `%T'"
@@ -21566,1595 +21550,3 @@ msgstr "-mhard-float wordt niet ondersteund"
 #, fuzzy
 msgid "-msingle-float and -msoft-float can not both be specified"
 msgstr "-msingle-float en -msoft-float kunnen niet samen gebruikt worden."
-
-#~ msgid "__builtin_trap not supported by this target"
-#~ msgstr "`__builtin_trap' wordt niet ondersteund op dit doelsysteem"
-
-#~ msgid "-traditional is deprecated and may be removed"
-#~ msgstr "-traditional is verouderd en zal misschien verwijderd worden"
-
-#~ msgid "unknown C standard `%s'"
-#~ msgstr "onbekende C standaard `%s'"
-
-#~ msgid "`%s' previously defined here"
-#~ msgstr "`%s' tevoren hier gedefinieerd"
-
-#~ msgid "`%s' previously declared here"
-#~ msgstr "`%s' tevoren hier gedeclareerd"
-
-#~ msgid "type of external `%s' is not global"
-#~ msgstr "type van extern symbool `%s' is niet globaal"
-
-#~ msgid "unnamed fields of type other than struct or union are not allowed"
-#~ msgstr "onbenoemde velden van een type anders dan struct of union zijn niet toegestaan"
-
-#~ msgid "null format string"
-#~ msgstr "formaatstring is NULL"
-
-# Moet 'floating(-point)' ook vertaald worden?
-#, fuzzy
-#~ msgid "both 'f' and 'l' suffixes on floating constant"
-#~ msgstr "zowel `f' als `l' in floating-point constante"
-
-#~ msgid "numeric constant with no digits"
-#~ msgstr "numerieke constante zonder cijfers"
-
-#~ msgid "numeric constant contains digits beyond the radix"
-#~ msgstr "numerieke constante bevat cijfers buiten de basis"
-
-# Ik denk dat 'radix' -> 'basis' correct is.
-# Mag 'radix' ook 'radix' blijven?
-#~ msgid "floating constant may not be in radix 16"
-#~ msgstr "floating-point constante mag niet in basis 16 staan"
-
-#, fuzzy
-#~ msgid "more than one 'f' suffix on floating constant"
-#~ msgstr "meer dan één `f' in numerieke constante"
-
-#, fuzzy
-#~ msgid "more than one 'l' suffix on floating constant"
-#~ msgstr "meer dan één `l' in numerieke constante"
-
-#, fuzzy
-#~ msgid "more than one 'i' or 'j' suffix on floating constant"
-#~ msgstr "meer dan één `i' of `j' in numerieke constante"
-
-#, fuzzy
-#~ msgid "ISO C forbids imaginary numeric constants"
-#~ msgstr "ANSI C verbiedt imaginaire numerieke constantes"
-
-#~ msgid "floating constant out of range"
-#~ msgstr "floating-point constante buiten bereik"
-
-#, fuzzy
-#~ msgid "floating point number exceeds range of 'double'"
-#~ msgstr "floating-point getal overschrijdt het bereik van een `double'"
-
-#, fuzzy
-#~ msgid "two 'u' suffixes on integer constant"
-#~ msgstr "twee `u's in integerconstante"
-
-# `l'en of `l's?
-#, fuzzy
-#~ msgid "three 'l' suffixes on integer constant"
-#~ msgstr "drie `l'en in integerconstante"
-
-#, fuzzy
-#~ msgid "more than one 'i' or 'j' suffix on integer constant"
-#~ msgstr "meer dan één `i' of `j' in numerieke constante"
-
-# 'width' -> 'wijdte' of 'breedte'?
-# Best 'breedte'; zo wordt 'too wide' 'te breed'.
-#~ msgid "width of integer constant changes with -traditional"
-#~ msgstr "breedte van integerconstante verandert met -traditional"
-
-#, fuzzy
-#~ msgid "integer constant is unsigned in ISO C, signed with -traditional"
-#~ msgstr "integerconstante is unsigned in ANSI C, signed met -traditional"
-
-#~ msgid "width of integer constant may change on other systems with -traditional"
-#~ msgstr "breedte van integerconstante kan veranderen op andere systemen met -traditional"
-
-#, fuzzy
-#~ msgid "integer constant larger than the maximum value of %s"
-#~ msgstr "integerconstante is zo groot dat hij unsigned is"
-
-#~ msgid "decimal constant is so large that it is unsigned"
-#~ msgstr "decimale constante is zo groot dat hij unsigned is"
-
-#, fuzzy
-#~ msgid "complex integer constant is too wide for 'complex int'"
-#~ msgstr "complexe integerconstante is te breed voor `complex int'"
-
-#, fuzzy
-#~ msgid "integer constant is larger than the maximum value for its type"
-#~ msgstr "integerconstante is zo groot dat hij unsigned is"
-
-#, fuzzy
-#~ msgid "missing white space after number '%.*s'"
-#~ msgstr "ontbrekende witruimte na getal `%.*s'"
-
-#, fuzzy
-#~ msgid "ISO C does not permit use of `varargs.h'"
-#~ msgstr "ANSI C staat het gebruik van `varargs.h' niet toe"
-
-#, fuzzy
-#~ msgid "storage class specifier in array declarator"
-#~ msgstr "opslagklasse opgegeven voor parameter `%s'"
-
-#~ msgid "parse error; also virtual memory exceeded"
-#~ msgstr "parse-fout; ook is het virtueel geheugen opgebruikt"
-
-#~ msgid "sizeof applied to a function type"
-#~ msgstr "sizeof toegepast op een functie-type"
-
-#~ msgid "sizeof applied to an incomplete type"
-#~ msgstr "sizeof toegepast op een onvolledig type"
-
-#~ msgid "invalid lvalue in increment"
-#~ msgstr "ongeldige lvalue bij incrementeren"
-
-#~ msgid "invalid lvalue in decrement"
-#~ msgstr "ongeldige lvalue bij decrementeren"
-
-#~ msgid "increment"
-#~ msgstr "incrementeren"
-
-#~ msgid "decrement"
-#~ msgstr "decrementeren"
-
-#~ msgid "execvp %s"
-#~ msgstr "execvp %s"
-
-#, fuzzy
-#~ msgid "floating point numbers are not valid in #if"
-#~ msgstr "Floating-point getallen zijn niet toegestaan in #if-expressies"
-
-#, fuzzy
-#~ msgid "too many 'l' suffixes in integer constant"
-#~ msgstr "teveel `l'en in integerconstante"
-
-#~ msgid "integer constant contains digits beyond the radix"
-#~ msgstr "integerconstante bevat cijfers buiten de basis"
-
-#~ msgid "integer constant out of range"
-#~ msgstr "integerconstante buiten bereik"
-
-#, fuzzy
-#~ msgid "string constants are not valid in #if"
-#~ msgstr "stringconstantes zijn niet toegestaan in #if-expressies"
-
-#, fuzzy
-#~ msgid "missing binary operator"
-#~ msgstr "beginwaarde ontbreekt"
-
-#, fuzzy
-#~ msgid "operator '%s' has no left operand"
-#~ msgstr "parameter `%s' heeft een onvolledig type"
-
-#~ msgid "I/O error on output"
-#~ msgstr "I/O-fout op uitvoer"
-
-#, fuzzy
-#~ msgid "argument missing after %s"
-#~ msgstr "Bestandsnaam ontbreekt na %s optie"
-
-#, fuzzy
-#~ msgid "target missing after %s"
-#~ msgstr "Bestandsnaam ontbreekt na %s optie"
-
-#, fuzzy
-#~ msgid "GNU CPP version %s (cpplib)"
-#~ msgstr "GNU CPP versie %s"
-
-#, fuzzy
-#~ msgid "possible start of unterminated string literal"
-#~ msgstr "mogelijk echte begin van niet-beëindigde constante"
-
-#, fuzzy
-#~ msgid "\"%s\" cannot be used as a macro name"
-#~ msgstr "`%s' kan niet statisch gealloceerd worden"
-
-#, fuzzy
-#~ msgid "invalid option %s"
-#~ msgstr "Ongeldige optie `%s'"
-
-# Dit zou misschien beter 'warning' blijven
-#, fuzzy
-#~ msgid "%s:%d: warning: "
-#~ msgstr "let op: "
-
-# Dit zou misschien beter 'warning' blijven
-#, fuzzy
-#~ msgid "%s: warning: "
-#~ msgstr "let op: "
-
-#, fuzzy
-#~ msgid "Internal compiler error in %s, at %s:%d"
-#~ msgstr "Interne compilerfout %d."
-
-#, fuzzy
-#~ msgid "internal error: %s"
-#~ msgstr "interne fout"
-
-#, fuzzy
-#~ msgid "floating point numbers not allowed in #if expressions"
-#~ msgstr "Floating-point getallen zijn niet toegestaan in #if-expressies"
-
-#, fuzzy
-#~ msgid "invalid character constant in #if"
-#~ msgstr "niet-beëindigde karakterconstante"
-
-#, fuzzy
-#~ msgid "double quoted strings not allowed in #if expressions"
-#~ msgstr "stringconstantes zijn niet toegestaan in #if-expressies"
-
-#, fuzzy
-#~ msgid "octal character constant does not fit in a byte"
-#~ msgstr "karakterconstante te lang"
-
-#, fuzzy
-#~ msgid "hex character constant does not fit in a byte"
-#~ msgstr "karakterconstante te lang"
-
-#, fuzzy
-#~ msgid "empty #if expression"
-#~ msgstr "Ongeldig token in expressie"
-
-#~ msgid "Junk after end of expression."
-#~ msgstr "Brol na einde van expressie."
-
-#, fuzzy
-#~ msgid "-traditional is not supported in C++"
-#~ msgstr "-Wuninitialized wordt niet ondersteund zonder -O"
-
-#, fuzzy
-#~ msgid "filename missing after -i option"
-#~ msgstr "Bestandsnaam ontbreekt na -o optie"
-
-#, fuzzy
-#~ msgid "filename missing after -o option"
-#~ msgstr "Bestandsnaam ontbreekt na -o optie"
-
-#, fuzzy
-#~ msgid "target missing after %s option"
-#~ msgstr "Bestandsnaam ontbreekt na %s optie"
-
-#, fuzzy
-#~ msgid "filename missing after %s option"
-#~ msgstr "Bestandsnaam ontbreekt na %s optie"
-
-#, fuzzy
-#~ msgid "macro name missing after -%c option"
-#~ msgstr "Macro-naam ontbreekt na -D optie"
-
-#, fuzzy
-#~ msgid "directory name missing after -I option"
-#~ msgstr "Foldernaam ontbreekt na `%s' optie"
-
-#~ msgid "`/*' within comment"
-#~ msgstr "`/*' binnen commentaar"
-
-# 'Voorwaarde' is niet echt een vertaling van 'conditional'.
-# Is er een betere manier?
-#, fuzzy
-#~ msgid "unterminated #%s conditional"
-#~ msgstr "niet-beëindigde `#%s' voorwaarde"
-
-#, fuzzy
-#~ msgid "not in any file?!"
-#~ msgstr "cccp fout: in geen enkel bestand?!"
-
-#~ msgid "cccp error: invalid special hash type"
-#~ msgstr "cccp fout: ongeldig soort van speciale hash"
-
-#, fuzzy
-#~ msgid "no include path in which to find %.*s"
-#~ msgstr "Geen include-pad waarin %s kan gevonden worden"
-
-#~ msgid "invalid macro name"
-#~ msgstr "ongeldige macronaam"
-
-#, fuzzy
-#~ msgid "parameter name starts with a digit in #define"
-#~ msgstr "argument voor `#%s' begint met cijfer"
-
-# Is 'interpunctie' hier een goede vertaling voor 'punctuation'
-#, fuzzy
-#~ msgid "badly punctuated parameter list in #define"
-#~ msgstr "slechte interpunctie van parameterlijst in `#define'"
-
-#, fuzzy
-#~ msgid "unterminated parameter list in #define"
-#~ msgstr "niet-beëindigde parameterlijst in `#define'"
-
-#, fuzzy
-#~ msgid "\"%.*s\" redefined"
-#~ msgstr "`%.*s' opnieuw gedefinieerd"
-
-#, fuzzy
-#~ msgid "# operator should be followed by a macro argument name"
-#~ msgstr "de `#' operator zou door een naam van een macro-argument gevolgd moeten worden"
-
-#, fuzzy
-#~ msgid "invalid format #line command"
-#~ msgstr "`#line'-commando in slecht formaat"
-
-# is ongedefinieerd beter? ik denk van nie
-#, fuzzy
-#~ msgid "undefining `defined'"
-#~ msgstr "`%s' wordt geondefinieerd"
-
-# is ongedefinieerd beter? ik denk van nie
-#~ msgid "undefining `%s'"
-#~ msgstr "`%s' wordt geondefinieerd"
-
-# OK, OK... Dit hoort thuis in lang nl@be, niet nl
-#, fuzzy
-#~ msgid "extra text at end of directive"
-#~ msgstr "brol aan einde van `#line'-commando"
-
-#, fuzzy
-#~ msgid "#error%.*s"
-#~ msgstr "#error %s"
-
-#, fuzzy
-#~ msgid "#warning%.*s"
-#~ msgstr "#warning %s"
-
-#, fuzzy
-#~ msgid "#elif not within a conditional"
-#~ msgstr "`#elif' niet binnen een voorwaarde"
-
-#, fuzzy
-#~ msgid "#%s not within a conditional"
-#~ msgstr "`#%s' niet binnen een voorwaarde"
-
-#, fuzzy
-#~ msgid "#else or #elif after #else"
-#~ msgstr "`#else' of `#elif' na `#else'"
-
-#, fuzzy
-#~ msgid "#else not within a conditional"
-#~ msgstr "`#else' niet binnen een voorwaarde"
-
-#, fuzzy
-#~ msgid "unbalanced #endif"
-#~ msgstr "niet-gebalanceerde `#endif'"
-
-#~ msgid "unterminated string or character constant"
-#~ msgstr "niet-beëindigde string- of karakterconstante"
-
-#~ msgid "arguments given to macro `%s'"
-#~ msgstr "argumenten aan macro `%s' gegeven"
-
-#, fuzzy
-#~ msgid "no args to macro `%s'"
-#~ msgstr "argumenten aan macro `%s' gegeven"
-
-#, fuzzy
-#~ msgid "only 1 arg to macro `%s'"
-#~ msgstr "argumenten aan macro `%s' gegeven"
-
-#, fuzzy
-#~ msgid "only %d args to macro `%s'"
-#~ msgstr "argumenten aan macro `%s' gegeven"
-
-#, fuzzy
-#~ msgid "too many (%d) args to macro `%s'"
-#~ msgstr "teveel argumenten voor functie `%s'"
-
-#~ msgid "invalid %%V value"
-#~ msgstr "ongeldige waarde voor %%V"
-
-#, fuzzy
-#~ msgid "Store locals in argument registers"
-#~ msgstr "teveel argumenten voor functie"
-
-#~ msgid "inline float constants not supported on this host"
-#~ msgstr "inline floatconstantes worden op deze host niet ondersteund"
-
-#, fuzzy
-#~ msgid "Warn when a function arg is a structure"
-#~ msgstr "argument #%d is een structure"
-
-#, fuzzy
-#~ msgid "argument is a structure"
-#~ msgstr "argument #%d is een structure"
-
-#~ msgid "invalid %H value"
-#~ msgstr "ongeldige waarde voor %H"
-
-#~ msgid "invalid %h value"
-#~ msgstr "ongeldige waarde voor %h"
-
-#~ msgid "invalid %Q value"
-#~ msgstr "ongeldige waarde voor %Q"
-
-#~ msgid "invalid %q value"
-#~ msgstr "ongeldige waarde voor %q"
-
-#~ msgid "invalid %p value"
-#~ msgstr "ongeldige waarde voor %p"
-
-#~ msgid "invalid %B value"
-#~ msgstr "ongeldige waarde voor %B"
-
-#~ msgid "invalid %C value"
-#~ msgstr "ongeldige waarde voor %C"
-
-#~ msgid "invalid %E value"
-#~ msgstr "ongeldige waarde voor %E"
-
-#, fuzzy
-#~ msgid "this target does not support the -mabi switch"
-#~ msgstr "doel-CPU ondersteunt geen interworking"
-
-#, fuzzy
-#~ msgid "-march=%s does not support -mips%d"
-#~ msgstr "-mcpu=%s ondersteunt -march=%s niet"
-
-#, fuzzy
-#~ msgid "-mips%d does not support 64 bit fp registers"
-#~ msgstr "-mcpu=%s ondersteunt -march=%s niet"
-
-#, fuzzy
-#~ msgid "-mips%d does not support 64 bit gp registers"
-#~ msgstr "-mcpu=%s ondersteunt -march=%s niet"
-
-#, fuzzy
-#~ msgid "-fdata-sections not supported on AIX"
-#~ msgstr "-pipe wordt niet ondersteund"
-
-#, fuzzy
-#~ msgid "no code label found"
-#~ msgstr "geen symbooltabel gevonden"
-
-#~ msgid "%d errors, %d sorries, do granting"
-#~ msgstr "%d fouten, %d sorries, granting wordt gedaan"
-
-#~ msgid "GNU compiler does not support statically allocated objects"
-#~ msgstr "de GNU compiler ondersteunt geen statisch gealloceerde objecten"
-
-#~ msgid "causing unhandled exception `%s' (this is flaged only once)"
-#~ msgstr "niet-opgevangen exception `%s' wordt veroorzaakt (dit wordt maar één keer vermeld)"
-
-#~ msgid "range failure (not inside function)"
-#~ msgstr "bereik-fout (niet in een functie)"
-
-#~ msgid "possible range failure (not inside function)"
-#~ msgstr "mogelijke bereik-fout (niet in een functie)"
-
-#~ msgid "expression will always cause RANGEFAIL"
-#~ msgstr "expressie zal altijd RANGEFAIL veroorzaken"
-
-#~ msgid "right hand side of assignment is a mode"
-#~ msgstr "rechterkant van toewijzing is een modus"
-
-#~ msgid "incompatible modes in %s"
-#~ msgstr "incompatibele modi in %s"
-
-#~ msgid "bad string length in %s"
-#~ msgstr "slechte stringlengte in %s"
-
-#~ msgid "mode mismatch in %s expression"
-#~ msgstr "modi in %s expressie komen niet overeen"
-
-#~ msgid "%s expression must be referable"
-#~ msgstr "%s expressie moet refereerbaar zijn"
-
-#~ msgid "%s not allowed outside a PROC"
-#~ msgstr "%s is niet toegestaan buiten een PROC"
-
-#~ msgid "%s action in PROC with no declared RESULTS"
-#~ msgstr "%s-actie in PROC zonder gedeclareerde RESULTS"
-
-#~ msgid "RETURN not allowed outside PROC"
-#~ msgstr "RETURN is niet toegestaan buiten PROC"
-
-#~ msgid "RETURN with a value, in PROC returning void"
-#~ msgstr "RETURN met waarde, in een PROC die void teruggeeft"
-
-#~ msgid "RETURN with no value and no RESULT action in procedure"
-#~ msgstr "RETURN zonder waarde en geen RESULTS-actie in procedure"
-
-#~ msgid "no label named `%s'"
-#~ msgstr "er is geen label dat `%s' heet"
-
-#~ msgid "cannot GOTO label `%s' outside current function"
-#~ msgstr "kan geen GOTO uitvoeren naar label `%s' dat buiten de huidige functie ligt"
-
-# Misschien beter 'EXIT-baar'?
-#~ msgid "no EXITable label named `%s'"
-#~ msgstr "er is geen EXITable label dat `%s' heet"
-
-# Is dit de juiste vertaling?
-#~ msgid "cannot EXIT label `%s' outside current function"
-#~ msgstr "kan geen EXIT uitvoeren voor label `%s' buiten huidige functie"
-
-#~ msgid "ELSE label not within a CASE statement"
-#~ msgstr "ELSE-label niet in een CASE-statement"
-
-#~ msgid "multiple default labels found in a CASE statement"
-#~ msgstr "meerdere default-labels gevonden in één CASE-statement"
-
-#~ msgid "this is the first ELSE label"
-#~ msgstr "dit is het eerste ELSE-label"
-
-#~ msgid "label found outside of CASE statement"
-#~ msgstr "label gevonden buiten een CASE-statement"
-
-#~ msgid "duplicate CASE value"
-#~ msgstr "herhaalde CASE-waarde"
-
-# 'vermelding' lijkt me beter dat het letterlijke 'ingang'
-#~ msgid "this is the first entry for that value"
-#~ msgstr "dit is de eerste vermelding van deze waarde"
-
-#~ msgid "CASE value out of range"
-#~ msgstr "CASE-waarde buiten bereik"
-
-#~ msgid "empty range"
-#~ msgstr "leeg bereik"
-
-# klinkt niet echt goed
-#~ msgid "label within scope of cleanup or variable array"
-#~ msgstr "label binnen bereik van opruiming of variabele array"
-
-# Hoe vertaal je 'discrete' best? Discreet is waarschijnlijk wel correct, maar ik
-# vermoed/hoop dat er een betere oplossing is.
-#~ msgid "mode in label is not discrete"
-#~ msgstr "modus in label is niet discreet"
-
-#~ msgid "label not within a CASE statement"
-#~ msgstr "label niet in een CASE-statement"
-
-# Letterlijk is hoogstwaarschijnlijk geen goede vertaling.
-# Misschien beter gewoon 'moet een discrete literal zijn' vertalen?
-#, fuzzy
-#~ msgid "lower bound of range must be a discrete literal expression"
-#~ msgstr "Ondergrens van bereik moet een letterlijke discrete expressie zijn"
-
-#, fuzzy
-#~ msgid "upper bound of range must be a discrete literal expression"
-#~ msgstr "Bovengrens van bereik moet een letterlijke discrete expressie zijn"
-
-#, fuzzy
-#~ msgid "CASE label is not valid"
-#~ msgstr "Het CASE-label in niet geldig"
-
-#, fuzzy
-#~ msgid "number of CASE selectors does not match the number of CASE label lists"
-#~ msgstr "Het aantal CASE-selectors komt niet overeen met het aantal CASE-label lijsten"
-
-#~ msgid "incomplete CASE - %s not handled"
-#~ msgstr "onvolledige CASE - %s niet opgevangen"
-
-#~ msgid "CASE selector with variable range"
-#~ msgstr "CASE-selector met variabel bereik"
-
-#~ msgid "too many cases to do CASE completeness testing"
-#~ msgstr "teveel gevallen om CASE-volledigheidstesten uit te voeren"
-
-#~ msgid "lefthand side of assignment is not a location"
-#~ msgstr "linkerkant van toewijzing is geen locatie"
-
-# Of 'tupel van machtsverzameling'?
-#~ msgid "powerset tuple element out of range"
-#~ msgstr "element van powerset-tupel buiten bereik"
-
-# 'fixed' -> 'vast'?
-#~ msgid "no initializer value for fixed field `%s'"
-#~ msgstr "geen beginwaarde voor fixed veld `%s'"
-
-#~ msgid "non-constant value for tag field `%s'"
-#~ msgstr "niet-constante waarde voor tagveld `%s'"
-
-#~ msgid "bad initializer for field `%s'"
-#~ msgstr "ongeldige beginwaarde voor veld `%s'"
-
-#~ msgid "excess initializer for field `%s'"
-#~ msgstr "overtollige beginwaarde voor veld `%s'"
-
-#~ msgid "excess unnamed initializers"
-#~ msgstr "overtollige onbenoemde beginwaarden"
-
-#~ msgid "non-constant start index for tuple"
-#~ msgstr "niet-constante start-index voor tupel"
-
-#~ msgid "invalid array tuple label"
-#~ msgstr "ongeldig label voor array-tupel"
-
-#~ msgid "non-constant array tuple index range"
-#~ msgstr "niet-constant indexbereik van array-tupel"
-
-#~ msgid "incompatible array tuple element %s"
-#~ msgstr "incompatibel array-tupel element %s"
-
-#~ msgid "empty range in array tuple"
-#~ msgstr "leeg indexbereik in array-tupel"
-
-#~ msgid "array tuple index out of range"
-#~ msgstr "index van array-tupel buiten bereik"
-
-# Is 'mode' enkel van toepassing op 'string', of ook op 'array'?
-#~ msgid "initializer is not an array or string mode"
-#~ msgstr "beginwaarde is geen array of string-modus"
-
-#~ msgid "internal error:  unknown type of expression"
-#~ msgstr "interne fout: onbekende expressie-soort"
-
-#~ msgid "`%s' must not be declared readonly"
-#~ msgstr "`%s' mag niet als alleen-lezen gedeclareerd worden"
-
-#, fuzzy
-#~ msgid "no initialization allowed for `%s'"
-#~ msgstr "geen initialisatie toegestaan voor `%s'"
-
-#~ msgid "nonconstant initializer for `%s'"
-#~ msgstr "niet-constante beginwaarde voor `%s'"
-
-#~ msgid "POS may not be specified for a list of field declarations"
-#~ msgstr "POS mag niet opgegeven worden voor een lijst van veld-declaraties"
-
-#~ msgid "too many tag labels"
-#~ msgstr "teveel tag-labels"
-
-#~ msgid "case label lower limit is not a discrete constant expression"
-#~ msgstr "ondergrens van case-label is geen discrete constante expressie"
-
-#~ msgid "case label upper limit is not a discrete constant expression"
-#~ msgstr "bovengrens van case-label is geen discrete constante expressie"
-
-#~ msgid "case label must be a discrete constant expression"
-#~ msgstr "case-label moet een discrete constante expressie zijn"
-
-#~ msgid "duplicate grant for `%s'"
-#~ msgstr "herhaalde grant voor `%s'"
-
-#~ msgid "previous grant for `%s'"
-#~ msgstr "eerdere grant voor `%s'"
-
-#~ msgid "duplicate definition `%s'"
-#~ msgstr "herhaalde definitie `%s'"
-
-#~ msgid "previous definition of `%s'"
-#~ msgstr "eerdere definitie van `%s'"
-
-#, fuzzy
-#~ msgid "enumerator value for `%s' is less than 0"
-#~ msgstr "enumeratiewaarde voor `%s' is kleiner dan 0"
-
-#~ msgid "BASE variable never declared"
-#~ msgstr "BASE-variabele nooit gedeclareerd"
-
-#~ msgid "conditional expression not allowed in %s"
-#~ msgstr "voorwaardelijke expressie niet toegestaan in `%s'"
-
-#~ msgid "internal error:  unknown expression mode in %s"
-#~ msgstr "interne fout:  onbekende expressie-modus in %s"
-
-#~ msgid "The number of CASE selectors does not match the number of CASE label lists"
-#~ msgstr "Het aantal CASE-selectors komt niet overeen met het aantal CASE-label lijsten"
-
-# klinkt niet
-#~ msgid "powerset is not addressable"
-#~ msgstr "powerset kan niet geaddresseerd worden"
-
-#, fuzzy
-#~ msgid "too few arguments in call to `%s'"
-#~ msgstr "Te weinig argumenten in oproep van `%s'"
-
-#, fuzzy
-#~ msgid "too many arguments in call to `%s'"
-#~ msgstr "Teveel argumenten in oproep van `%s'"
-
-#, fuzzy
-#~ msgid "cannot dereference, not a pointer"
-#~ msgstr "kan niet derefereren, is geen pointer."
-
-# Is the %s the argument, or is it 'of' the argument?
-#~ msgid "invalid type argument of `->'"
-#~ msgstr "ongeldig type-argument voor `->'"
-
-#, fuzzy
-#~ msgid "no field named `%s'"
-#~ msgstr "Geen veld dat `%s' heet"
-
-#, fuzzy
-#~ msgid "argument %d to ABSTIME must be of integer type"
-#~ msgstr "argument van `%s' moet van een integraal type zijn."
-
-#, fuzzy
-#~ msgid "parameter 1 must be referable"
-#~ msgstr "argument %d moet refereerbaar zijn"
-
-# Hoe vertaal je in godsnaam 'mismatch' op KORTE manier in het Nederlands???
-#, fuzzy
-#~ msgid "mode mismatch in parameter 1"
-#~ msgstr "geen overeenkomst van modus in parameter %d"
-
-#, fuzzy
-#~ msgid "parameter 2 must be a positive integer"
-#~ msgstr "parameter 2 moet een locatie zijn"
-
-#, fuzzy
-#~ msgid "expression for DESCR-built-in must be referable"
-#~ msgstr "%s expressie moet refereerbaar zijn"
-
-#, fuzzy
-#~ msgid "argument to `%s' must be of integer type"
-#~ msgstr "argument van `%s' moet van een integraal type zijn."
-
-#, fuzzy
-#~ msgid "first argument to `%s' must be a mode"
-#~ msgstr "Eerste argument van `%s' moet een modus zijn"
-
-#, fuzzy
-#~ msgid "argument 1 to INTTIME must be of mode TIME"
-#~ msgstr "Eerste argument van `%s' moet een modus zijn"
-
-#~ msgid "argument to NUM is not discrete"
-#~ msgstr "argument voor NUM is niet discreet"
-
-#, fuzzy
-#~ msgid "no integer mode which matches expression's mode"
-#~ msgstr "Geen integer-modus die met expressie overeen komt"
-
-#~ msgid "size applied to a function mode"
-#~ msgstr "size toegepast op een functie-modus"
-
-#~ msgid "sizeof applied to a void mode"
-#~ msgstr "sizeof toegepast op een void-modus"
-
-#~ msgid "sizeof applied to an incomplete mode"
-#~ msgstr "sizeof toegepast op een onvolledige modus"
-
-#~ msgid "%s parameter %d must be a location"
-#~ msgstr "%s parameter %d moet een locatie zijn"
-
-# Hoe vertaal je in godsnaam 'mismatch' op KORTE manier in het Nederlands???
-#~ msgid "mode mismatch in parameter %d"
-#~ msgstr "geen overeenkomst van modus in parameter %d"
-
-#~ msgid "too many arguments to procedure"
-#~ msgstr "teveel argumenten voor procedure"
-
-#~ msgid "too few arguments to procedure `%s'"
-#~ msgstr "te weinig argumenten voor procedure `%s'"
-
-#~ msgid "too few arguments to procedure"
-#~ msgstr "te weinig argumenten voor procedure"
-
-#, fuzzy
-#~ msgid "unimplemented built-in function `%s'"
-#~ msgstr "ingebouwde functie `%s' is niet geïmplementeerd"
-
-#, fuzzy
-#~ msgid "internal error - bad built-in function `%s'"
-#~ msgstr "interne fout - slechte ingebouwde functie `%s'"
-
-#~ msgid "empty expression in string index"
-#~ msgstr "lege expressie in string-index"
-
-#~ msgid "incompatible modes in concat expression"
-#~ msgstr "incompatibele modi in concat-expressie"
-
-#, fuzzy
-#~ msgid "invalid operation on array of chars"
-#~ msgstr "Ongeldige operatie op array van chars"
-
-#~ msgid "incompatible operands to %s"
-#~ msgstr "incompatibele operands voor %s"
-
-#~ msgid "relational operator not allowed for this mode"
-#~ msgstr "relationele operator niet toegestaan voor deze modus"
-
-#~ msgid "invalid left operand of %s"
-#~ msgstr "ongeldige linker operand van %s"
-
-#~ msgid "invalid right operand of %s"
-#~ msgstr "ongeldige rechter operand van %s"
-
-#, fuzzy
-#~ msgid "-> operator not allow in constant expression"
-#~ msgstr "-> operator niet toegestaan in constante expressie"
-
-#~ msgid "%s is not addressable"
-#~ msgstr "%s is niet addresseerbaar"
-
-#~ msgid "repetition count is not an integer constant"
-#~ msgstr "herhalings-aantal is geen integerconstante"
-
-#~ msgid "repetition value not constant"
-#~ msgstr "herhalings-aantal is niet constant"
-
-#~ msgid "string repetition operand is non-constant bitstring"
-#~ msgstr "string herhalings-operand is een niet-constante bitstring"
-
-# Of moet/mag 'boolean' hier vertaald worden?
-#~ msgid "non-boolean mode in conditional expression"
-#~ msgstr "niet-boolean modus in voorwaardelijke expressie"
-
-#, fuzzy
-#~ msgid "can't write to %s"
-#~ msgstr "open %s"
-
-#, fuzzy
-#~ msgid "function \"really_grant_this\" called for `%s'"
-#~ msgstr "functie \"really_grant_this\" opgeroepen voor `%s'"
-
-#~ msgid "argument %d of %s must be a location"
-#~ msgstr "argument %d van %s moet een locatie zijn"
-
-#~ msgid "argument 2 of ASSOCIATE must not be an empty string"
-#~ msgstr "argument 2 van ASSOCIATE mag geen lege string zijn"
-
-#, fuzzy
-#~ msgid "too many arguments in call to MODIFY"
-#~ msgstr "Teveel argumenten in oproep van MODIFY"
-
-#~ msgid "argument 2 of MODIFY must not be an empty string"
-#~ msgstr "argument 2 van MODIFY mag geen lege string zijn"
-
-#~ msgid "argument 2 to MODIFY must be a string"
-#~ msgstr "argument 2 van MODIFY moet een string zijn"
-
-#~ msgid "argument 3 to MODIFY must be a string"
-#~ msgstr "argument 3 van MODIFY moet een string zijn"
-
-#~ msgid "incompatible index mode"
-#~ msgstr "incompatibele index-modus"
-
-#, fuzzy
-#~ msgid "too few arguments in call to `readrecord'"
-#~ msgstr "Te weinig argumenten in oproep van `readrecord'"
-
-#, fuzzy
-#~ msgid "too few arguments in call to `writerecord'"
-#~ msgstr "Te weinig argumenten in oproep van `writerecord'"
-
-#~ msgid "parameter 2 must be a location"
-#~ msgstr "parameter 2 moet een locatie zijn"
-
-#~ msgid "incompatible modes in parameter 2"
-#~ msgstr "incompatibele modes in parameter 2"
-
-# 'braced-group'? Wie schrijft verdorie die foutmeldingen?
-#~ msgid "conditional expression not allowed in this context"
-#~ msgstr "voorwaardelijke expressie niet toegestaan in deze context"
-
-# Betere vertaling voor 'untyped'?
-#~ msgid "untyped expression as argument %d"
-#~ msgstr "expressie zonder type als argument %d"
-
-# Ik weet het, 'alleen-lezen' is lelijk, maar het is de min of meer geijkte vertaling.
-#~ msgid "argument %d is READonly"
-#~ msgstr "argument %d is alleen-lezen"
-
-#~ msgid "argument %d must be referable"
-#~ msgstr "argument %d moet refereerbaar zijn"
-
-#~ msgid "too few arguments for this format string"
-#~ msgstr "te weinig argumenten voor deze formaatstring"
-
-#~ msgid "internal error in check_format_string"
-#~ msgstr "interne fout in check_format_string"
-
-#~ msgid "too many arguments for this format string"
-#~ msgstr "teveel argumenten voor deze formaatstring"
-
-#, fuzzy
-#~ msgid "too few arguments in call to `writetext'"
-#~ msgstr "Te weinig argumenten in oproep van `writetext'"
-
-#, fuzzy
-#~ msgid "too few arguments in call to `readtext'"
-#~ msgstr "Te weinig argumenten in oproep van `readtext'"
-
-#~ msgid "non-constant expression"
-#~ msgstr "niet-constante expressie"
-
-#~ msgid "internal error - use of undefined type"
-#~ msgstr "interne fout -- niet gedefinieerd type gebruikt"
-
-#~ msgid "invalid C'xx' "
-#~ msgstr "ongeldige C'xx'"
-
-#, fuzzy
-#~ msgid "real number exceeds range of REAL"
-#~ msgstr "floating-point getal overschrijdt het bereik van een `float'"
-
-#, fuzzy
-#~ msgid "end-of-file in '<>' directive"
-#~ msgstr "ongedefinieerd of ongeldig #-commando"
-
-#, fuzzy
-#~ msgid "unrecognized compiler directive"
-#~ msgstr "onbekende formaatspecificatie"
-
-#, fuzzy
-#~ msgid "unrecognized compiler directive `%s'"
-#~ msgstr "onbekende formaatspecificatie"
-
-#, fuzzy
-#~ msgid "invalid base in read control sequence"
-#~ msgstr "ongeldige lvalue bij decrementeren"
-
-#, fuzzy
-#~ msgid "unterminated string literal"
-#~ msgstr "Onbeëindigde stringconstante"
-
-#, fuzzy
-#~ msgid "invalid number format `%s'"
-#~ msgstr "ongeldige registernaam voor `%s'"
-
-#, fuzzy
-#~ msgid "can't find %s"
-#~ msgstr "kan %s niet vinden"
-
-#, fuzzy
-#~ msgid "invalid value follows `=' in compiler directive"
-#~ msgstr "`#line'-commando in slecht formaat"
-
-#, fuzzy
-#~ msgid "invalid `%c' character in name"
-#~ msgstr "ongeldig karakter in naam van macro-parameter"
-
-#, fuzzy
-#~ msgid "`%s' not integer constant synonym "
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "value out of range in compiler directive"
-#~ msgstr "lijnnummer buiten bereik in `#line'-commando"
-
-#, fuzzy
-#~ msgid "modeless tuple not allowed in this context"
-#~ msgstr "%s: %s compiler niet geïnstalleerd op dit systeem"
-
-#, fuzzy
-#~ msgid "loop's IN expression is not a composite object"
-#~ msgstr "`%s' is geen iterator"
-
-#, fuzzy
-#~ msgid "loop variable incompatible with start expression"
-#~ msgstr "overflow in constante expressie"
-
-#, fuzzy
-#~ msgid "no RETURN or RESULT in procedure"
-#~ msgstr "RETURN zonder waarde en geen RESULTS-actie in procedure"
-
-#, fuzzy
-#~ msgid "internal parser error - expected token %d"
-#~ msgstr "interne fout - dup-operatie"
-
-#, fuzzy
-#~ msgid "'%s!' is not followed by an identifier"
-#~ msgstr "`#' gevolgd door een integer"
-
-#, fuzzy
-#~ msgid "`%s' undeclared"
-#~ msgstr "`%s' tevoren hier gedeclareerd"
-
-#, fuzzy
-#~ msgid "empty ON-condition"
-#~ msgstr "lege declaratie"
-
-#, fuzzy
-#~ msgid "'=' used where ':=' is required"
-#~ msgstr "waarde van union-type gebruikt waar een scalair nodig is"
-
-#, fuzzy
-#~ msgid "syntax error in parameter name list"
-#~ msgstr "ongeldig karakter in naam van macro-parameter"
-
-#, fuzzy
-#~ msgid "case range list"
-#~ msgstr "leeg case-bereik"
-
-#, fuzzy
-#~ msgid "expression is not an action"
-#~ msgstr "`%s' is geen iterator"
-
-#, fuzzy
-#~ msgid "definition follows action"
-#~ msgstr "herdefinitie van `union %s'"
-
-#, fuzzy
-#~ msgid "invalid expression/location syntax"
-#~ msgstr "ongeldige expressie als operand"
-
-# 'braced-group'? Wie schrijft verdorie die foutmeldingen?
-#, fuzzy
-#~ msgid "conditional expression not allowed inside parentheses"
-#~ msgstr "accolade-groep in expressie enkel toegestaan binnen een functie"
-
-#, fuzzy
-#~ msgid "missing field"
-#~ msgstr "beginwaarde ontbreekt"
-
-#, fuzzy
-#~ msgid "SIGNAL is not a valid mode"
-#~ msgstr "-fPIC is niet geldig met -mcoff"
-
-#, fuzzy
-#~ msgid "SET expression not a location"
-#~ msgstr "`%s' is geen iterator"
-
-#, fuzzy
-#~ msgid "too many arguments to process `%s'"
-#~ msgstr "teveel argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "too many arguments to process"
-#~ msgstr "teveel argumenten voor functie"
-
-#, fuzzy
-#~ msgid "too few arguments to process `%s'"
-#~ msgstr "te weinig argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "too few arguments to process"
-#~ msgstr "te weinig argument voor functie"
-
-#, fuzzy
-#~ msgid "QUEUE_LENGTH argument must be a BUFFER/EVENT location"
-#~ msgstr "argument %d van %s moet een locatie zijn"
-
-#, fuzzy
-#~ msgid "too many values for SIGNAL `%s'"
-#~ msgstr "teveel argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "too few values for SIGNAL `%s'"
-#~ msgstr "te weinig argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "internal error: RECEIVE CASE stack invalid"
-#~ msgstr "interne fout"
-
-#, fuzzy
-#~ msgid "too many data fields provided for `%s'"
-#~ msgstr "teveel argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "incompatible modes in receive buffer alternative"
-#~ msgstr "incompatibele types bij %s"
-
-#, fuzzy
-#~ msgid "CONTINUE requires an event location"
-#~ msgstr "Een -ifile optie heeft een -map optie nodig"
-
-#, fuzzy
-#~ msgid "PRIORITY must be of integer type"
-#~ msgstr "argument van `%s' moet van een integraal type zijn."
-
-#, fuzzy
-#~ msgid "delay alternative must be an EVENT location"
-#~ msgstr "parameter 2 moet een locatie zijn"
-
-#, fuzzy
-#~ msgid "DELAY action requires an event location"
-#~ msgstr "Een -ifile optie heeft een -map optie nodig"
-
-#, fuzzy
-#~ msgid "PRIORITY in DELAY action must be of integer type"
-#~ msgstr "argument van `%s' moet van een integraal type zijn."
-
-#, fuzzy
-#~ msgid "send buffer action requires a BUFFER location"
-#~ msgstr "Een -ifile optie heeft een -map optie nodig"
-
-#, fuzzy
-#~ msgid "there must be only 1 value for send buffer action"
-#~ msgstr "incompatibele types bij %s"
-
-#, fuzzy
-#~ msgid "convert failed for send buffer action"
-#~ msgstr "incompatibele types bij %s"
-
-#, fuzzy
-#~ msgid "incompatible modes in send buffer action"
-#~ msgstr "incompatibele types bij %s"
-
-#, fuzzy
-#~ msgid "WITH not allowed for send buffer action"
-#~ msgstr "incompatibele types bij %s"
-
-#, fuzzy
-#~ msgid "TO not allowed for send buffer action"
-#~ msgstr "incompatibele types bij %s"
-
-#, fuzzy
-#~ msgid "can only build a powerset from a discrete mode"
-#~ msgstr "array subscript is geen integer"
-
-#, fuzzy
-#~ msgid "non-constant bitstring size invalid"
-#~ msgstr "niet-constante array-index in beginwaarde"
-
-#, fuzzy
-#~ msgid "non-constant powerset size invalid"
-#~ msgstr "niet-constante array-index in beginwaarde"
-
-#, fuzzy
-#~ msgid "index is not an integer expression"
-#~ msgstr "ongeldig gebruik van een void-expressie"
-
-#, fuzzy
-#~ msgid "index not compatible with index mode"
-#~ msgstr "incompatibele types bij %s"
-
-#, fuzzy
-#~ msgid "index is not discrete"
-#~ msgstr "-pipe wordt niet ondersteund"
-
-#, fuzzy
-#~ msgid "slice length out-of-range"
-#~ msgstr "case-waarde buiten bereik"
-
-#, fuzzy
-#~ msgid "too many index expressions"
-#~ msgstr "Ongeldig token in expressie"
-
-#, fuzzy
-#~ msgid "array index is not discrete"
-#~ msgstr "array-index in beginwaarde van niet-array"
-
-#, fuzzy
-#~ msgid "invalid compound index for bitstring mode"
-#~ msgstr "ongeldige beginwaarde voor bit-string"
-
-#, fuzzy
-#~ msgid "possible overflow (not inside function)"
-#~ msgstr "`%s' is hier niet gedeclareerd (niet in een functie)"
-
-#, fuzzy
-#~ msgid "non-constant expression for BIN"
-#~ msgstr "overflow in constante expressie"
-
-#, fuzzy
-#~ msgid "bounds of range are not compatible"
-#~ msgstr "-pg en -fomit-frame-pointer zijn niet compatibel"
-
-#, fuzzy
-#~ msgid "negative string length"
-#~ msgstr "Onbeëindigde stringconstante"
-
-#, fuzzy
-#~ msgid "range's lower bound and parent mode don't match"
-#~ msgstr "prototype voor `%s' volgt en argument %d komt niet overeen"
-
-#, fuzzy
-#~ msgid "floating point ranges"
-#~ msgstr "floating-point constante buiten bereik"
-
-# `l'en of `l's?
-#, fuzzy
-#~ msgid "stepsize in STEP must be an integer constant"
-#~ msgstr "drie `l'en in integerconstante"
-
-# `l'en of `l's?
-#, fuzzy
-#~ msgid "stepsize in STEP must be > 0"
-#~ msgstr "drie `l'en in integerconstante"
-
-# `l'en of `l's?
-#, fuzzy
-#~ msgid "stepsize in STEP must be the natural width of the array element mode"
-#~ msgstr "drie `l'en in integerconstante"
-
-#, fuzzy
-#~ msgid "starting word in POS must be an integer constant"
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "starting word in POS must be >= 0"
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "starting word in POS within STEP must be 0"
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "starting bit in POS must be an integer constant"
-#~ msgstr "breedte van bitveld `%s' is geen integerconstante"
-
-#, fuzzy
-#~ msgid "starting bit in POS within STEP must be 0"
-#~ msgstr "breedte van bitveld `%s' is geen integerconstante"
-
-#, fuzzy
-#~ msgid "starting bit in POS must be >= 0"
-#~ msgstr "breedte van bitveld `%s' is geen integerconstante"
-
-#, fuzzy
-#~ msgid "starting bit in POS must be < the width of a word"
-#~ msgstr "breedte van bitveld `%s' is geen integerconstante"
-
-#, fuzzy
-#~ msgid "length in POS must be an integer constant"
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "length in POS must be > 0"
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "end bit in POS must be an integer constant"
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "end bit in POS must be >= the start bit"
-#~ msgstr "twee `u's in integerconstante"
-
-#, fuzzy
-#~ msgid "end bit in POS must be < the width of a word"
-#~ msgstr "twee `u's in integerconstante"
-
-# `l'en of `l's?
-#, fuzzy
-#~ msgid "step size in STEP must be >= the length in POS"
-#~ msgstr "drie `l'en in integerconstante"
-
-#, fuzzy
-#~ msgid "array index must be a range, not a single integer"
-#~ msgstr "array subscript is geen integer"
-
-#, fuzzy
-#~ msgid "array index is not a discrete mode"
-#~ msgstr "array subscript is geen integer"
-
-#, fuzzy
-#~ msgid "parameterized structures not implemented"
-#~ msgstr "parameter wijst naar een onvolledig type"
-
-#, fuzzy
-#~ msgid "invalid parameterized type"
-#~ msgstr "ongeldige operand voor %p-code"
-
-#, fuzzy
-#~ msgid "`%D' as declarator"
-#~ msgstr "`%.*s' is niet gedefinieerd"
-
-#, fuzzy
-#~ msgid "size of member `%D' is not constant"
-#~ msgstr "opslaggrootte van `%s' is niet constant"
-
-#, fuzzy
-#~ msgid "parser lost in parsing declaration of `%D'"
-#~ msgstr "type krijgt standaardwaarde `int' in de declaratie van `%s'"
-
-#, fuzzy
-#~ msgid "                %#D"
-#~ msgstr ""
-#~ ",\n"
-#~ "                 door "
-
-#, fuzzy
-#~ msgid "member initializers for `%#D'"
-#~ msgstr "ongeldige beginwaarde voor veld `%s'"
-
-#, fuzzy
-#~ msgid "multiple initializations given for member `%D'"
-#~ msgstr "ongeldige beginwaarde voor member `%s'"
-
-#, fuzzy
-#~ msgid "explicit specialization here"
-#~ msgstr "initialisatie"
-
-#, fuzzy
-#~ msgid "base initializer for `%T'"
-#~ msgstr "ongeldige beginwaarde voor veld `%s'"
-
-#, fuzzy
-#~ msgid "`%T' cannot be `restrict'-qualified"
-#~ msgstr "`%s' kan niet statisch gealloceerd worden"
-
-#, fuzzy
-#~ msgid "`sizeof' applied to incomplete type `%T'"
-#~ msgstr "sizeof toegepast op een onvolledig type"
-
-#, fuzzy
-#~ msgid "invalid use of type decl `%#D' as expression"
-#~ msgstr "ongeldig gebruik van een void-expressie"
-
-#, fuzzy
-#~ msgid "object missing in call to method `%D'"
-#~ msgstr "kan oproep van `%s' niet inline maken"
-
-#, fuzzy
-#~ msgid "ISO C++ forbids using pointer of type `void *' in pointer arithmetic"
-#~ msgstr "pointer van type `void *' gebruikt in rekensom"
-
-#, fuzzy
-#~ msgid "ISO C++ forbids using a pointer-to-function in pointer arithmetic"
-#~ msgstr "pointer naar functie gebruikt in rekensom"
-
-#, fuzzy
-#~ msgid "ISO C++ forbids using a pointer to member function in pointer arithmetic"
-#~ msgstr "pointer naar functie gebruikt in rekensom"
-
-#, fuzzy
-#~ msgid "invalid use of undefined type `%#T'"
-#~ msgstr "ongeldig gebruik van het niet gedefinieerde type `%s %s'"
-
-#, fuzzy
-#~ msgid "forward declaration of `%#T'"
-#~ msgstr "herdeclaratie van `%s'"
-
-#, fuzzy
-#~ msgid "invalid use of `%T'"
-#~ msgstr "ongeldig gebruik van `restrict'"
-
-#, fuzzy
-#~ msgid "internal error #%d"
-#~ msgstr "interne fout"
-
-#, fuzzy
-#~ msgid "initializer list construction invalid for `%D'"
-#~ msgstr "beginwaarde legt grootte van `%s' niet vast"
-
-#, fuzzy
-#~ msgid "due to non-public access of member `%D'"
-#~ msgstr "herhaald lid `%s'"
-
-#, fuzzy
-#~ msgid "ISO C++ forbids non-constant aggregate initializer expressions"
-#~ msgstr "ANSI C verbiedt constructor-expressies"
-
-#, fuzzy
-#~ msgid "The meaning of `\\x' (at %0) varies with -traditional"
-#~ msgstr "de betekenis van `\\x' varieert naargelang -traditional al dan niet gebruikt wordt"
-
-#, fuzzy
-#~ msgid "The meaning of `\\a' (at %0) varies with -traditional"
-#~ msgstr "de betekenis van `\\a' varieert naargelang -traditional al dan niet gebruikt wordt"
-
-#~ msgid "the meaning of `\\x' varies with -traditional"
-#~ msgstr "de betekenis van `\\x' varieert naargelang -traditional al dan niet gebruikt wordt"
-
-#~ msgid "the meaning of `\\a' varies with -traditional"
-#~ msgstr "de betekenis van `\\a' varieert naargelang -traditional al dan niet gebruikt wordt"
-
-#, fuzzy
-#~ msgid "`.%A.' at %0 not a binary operator"
-#~ msgstr "`%s' is geen iterator"
-
-#, fuzzy
-#~ msgid "Invalid octal constant at %0"
-#~ msgstr "ongeldige beginwaarde"
-
-#, fuzzy
-#~ msgid "Invalid binary constant at %0"
-#~ msgstr "ongeldige beginwaarde"
-
-#, fuzzy
-#~ msgid "Invalid hexadecimal constant at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid typeless constant at %1"
-#~ msgstr "ongeldige expressie als operand"
-
-# 'braced-group'? Wie schrijft verdorie die foutmeldingen?
-#, fuzzy
-#~ msgid "Null expression between %0 and %1 invalid in this context"
-#~ msgstr "voorwaardelijke expressie niet toegestaan in deze context"
-
-#, fuzzy
-#~ msgid "Invalid null expression between %0 and %1"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Unterminated character constant at %0 [info -f g77 M LEX]"
-#~ msgstr "niet-beëindigde karakterconstante"
-
-#, fuzzy
-#~ msgid "Invalid continuation line at %0"
-#~ msgstr "Ongeldige optie `%s'"
-
-#, fuzzy
-#~ msgid "Invalid statement at %0"
-#~ msgstr "ongeldige beginwaarde"
-
-#, fuzzy
-#~ msgid "Invalid form for %A statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid %A statement at %0"
-#~ msgstr "ongeldige beginwaarde"
-
-#, fuzzy
-#~ msgid "Invalid I specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid B specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid O specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid Z specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid F specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid E specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid G specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid L specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid A specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid D specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid Q specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid $ specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid P specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid T specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid X specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid S specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid : specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid H specifier in FORMAT statement at %0"
-#~ msgstr "ongeldige expressie als operand"
-
-#, fuzzy
-#~ msgid "Invalid token with FORMAT run-time expression at %0"
-#~ msgstr "Ongeldig token in expressie"
-
-#, fuzzy
-#~ msgid "Invalid type-declaration attribute at %0"
-#~ msgstr "lege declaratie"
-
-#, fuzzy
-#~ msgid "Unrecognized value for character constant at %0"
-#~ msgstr "%s voor karakterconstante"
-
-#, fuzzy
-#~ msgid "Invalid kind at %0 for type at %1"
-#~ msgstr "Ongeldig register voor vergelijking"
-
-#, fuzzy
-#~ msgid "Invalid operand at %1 for boolean operator at %0"
-#~ msgstr "ongeldige operanden voor binaire %s-operator"
-
-#, fuzzy
-#~ msgid "Invalid operand at %1 for .NOT. operator at %0"
-#~ msgstr "ongeldige operand voor %N-code"
-
-#, fuzzy
-#~ msgid "Invalid operand at %1 for relational operator at %0"
-#~ msgstr "ongeldige operanden voor binaire %s-operator"
-
-#, fuzzy
-#~ msgid "Invalid reference to intrinsic `%A' at %0"
-#~ msgstr "Ongeldige modus voor gen_tst_reg"
-
-#, fuzzy
-#~ msgid "Too few arguments passed to intrinsic `%A' at %0"
-#~ msgstr "te weinig argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "Too few arguments for intrinsic `%A' at %0"
-#~ msgstr "te weinig argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "Too many arguments passed to intrinsic `%A' at %0"
-#~ msgstr "teveel argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "Too many arguments for intrinsic `%A' at %0"
-#~ msgstr "teveel argumenten voor functie `%s'"
-
-#, fuzzy
-#~ msgid "Unimplemented intrinsic `%A' at %0"
-#~ msgstr "ingebouwde functie `%s' is niet geïmplementeerd"
-
-#, fuzzy
-#~ msgid "Too many dimensions at %0"
-#~ msgstr "Teveel argumenten in oproep van `%s'"
-
-# Is the %s the argument, or is it 'of' the argument?
-#, fuzzy
-#~ msgid "Invalid actual argument at %0"
-#~ msgstr "ongeldig type-argument `%s'"
-
-#, fuzzy
-#~ msgid "can't to open %s"
-#~ msgstr "open %s"
-
-#, fuzzy
-#~ msgid "Can't specify array dimension in a declaration"
-#~ msgstr "POS mag niet opgegeven worden voor een lijst van veld-declaraties"
-
-#, fuzzy
-#~ msgid "incompatible interworking options"
-#~ msgstr "incompatibele operands voor %s"
-
-#~ msgid "-mbsd and -pedantic incompatible"
-#~ msgstr "-mbsd en -pedantic zijn niet compatibel"
-
-#~ msgid "-mbsd and -mxopen incompatible"
-#~ msgstr "-mbsd en -mxopen zijn niet compatibel"
-
-#~ msgid "-mxopen and -pedantic incompatible"
-#~ msgstr "-mxopen en -pedantic zijn niet compatibel"
-
-#, fuzzy
-#~ msgid "-p profiling is no longer supported.  Use -pg instead"
-#~ msgstr "profileren met -p wordt niet meer ondersteund. Gebruik -pg."
-
-#~ msgid "-static not valid with -mcoff"
-#~ msgstr "-static is niet geldig met -mcoff"
-
-#~ msgid "-shared not valid with -mcoff"
-#~ msgstr "-shared is niet geldig met -mcoff"
-
-#~ msgid "-symbolic not valid with -mcoff"
-#~ msgstr "-symbolic is niet geldig met -mcoff"
-
-#~ msgid "-fpic is not valid with -mcoff"
-#~ msgstr "-fpic is niet geldig met -mcoff"
-
-#~ msgid "-fPIC is not valid with -mcoff"
-#~ msgstr "-fPIC is niet geldig met -mcoff"
-
-#~ msgid "-fpic not valid with -mcoff"
-#~ msgstr "-fpic is niet geldig met -mcoff"
-
-#~ msgid "-fPIC not valid with -mcoff"
-#~ msgstr "-fPIC is niet geldig met -mcoff"
-
-#, fuzzy
-#~ msgid "a -ifile option requires a -map option"
-#~ msgstr "Een -ifile optie heeft een -map optie nodig"
-
-#~ msgid "-p option not supported: use -pg instead"
-#~ msgstr "de -p optie wordt niet ondersteund: gebruik -pg"
-
-#~ msgid "may not use both -mfp64 and -msingle-float"
-#~ msgstr "-mfp64 en -msingle-float mogen niet samen gebruikt worden"
-
-#~ msgid "may not use both -mfp64 and -m4650"
-#~ msgstr "-mfp64 en -m4650 mogen niet samen gebruikt worden"
