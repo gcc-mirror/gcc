@@ -4913,19 +4913,29 @@ validate_nonmember_using_decl (decl, scope, name)
       *scope = TREE_OPERAND (decl, 0);
       *name = TREE_OPERAND (decl, 1);
 
-      /* [namespace.udecl]
-
-	 A using-declaration for a class member shall be a
-	 member-declaration.  */
-      if (!processing_template_decl
-          && TREE_CODE (*scope) != NAMESPACE_DECL)
-	{
-	  if (TYPE_P (*scope))
-	    cp_error ("`%T' is not a namespace", *scope);
-	  else
-	    cp_error ("`%D' is not a namespace", *scope);
-	  return NULL_TREE;
-	}
+      if (!processing_template_decl)
+        {
+          /* [namespace.udecl]
+             A using-declaration for a class member shall be a
+             member-declaration.  */
+          if(TREE_CODE (*scope) != NAMESPACE_DECL)
+            {
+              if (TYPE_P (*scope))
+                cp_error ("`%T' is not a namespace", *scope);
+              else
+                cp_error ("`%D' is not a namespace", *scope);
+              return NULL_TREE;
+            }
+          
+          /* 7.3.3/5
+             A using-declaration shall not name a template-id.  */
+          if (TREE_CODE (*name) == TEMPLATE_ID_EXPR)
+            {
+              *name = TREE_OPERAND (*name, 0);
+              cp_error ("a using-declaration cannot specify a template-id.  Try `using %D'", *name);
+              return NULL_TREE;
+            }
+        }
     }
   else if (TREE_CODE (decl) == IDENTIFIER_NODE
            || TREE_CODE (decl) == TYPE_DECL
@@ -5129,7 +5139,13 @@ do_class_using_decl (decl)
       cp_error ("using-declaration for destructor");
       return NULL_TREE;
     }
-  if (TREE_CODE (name) == TYPE_DECL)
+  else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    {
+      name = TREE_OPERAND (name, 0);
+      cp_error ("a using-declaration cannot specify a template-id.  Try  `using %T::%D'", TREE_OPERAND (decl, 0), name);
+      return NULL_TREE;
+    }
+  if (TREE_CODE (name) == TYPE_DECL || TREE_CODE (name) == TEMPLATE_DECL)
     name = DECL_NAME (name);
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 980716);
