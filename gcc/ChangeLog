@@ -1,3 +1,12 @@
+Sat Nov 27 08:38:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (negate_expr, associate_trees, extract_muldiv): New.
+	(split_tree): Completely rework to make more general.
+	(make_range, fold): Call negate_expr.
+	(fold, case NEGATE_EXPR): Simplify -(a-b) is -ffast-math.
+	(fold, associate): Call new split_tree and associate_trees.
+	(fold, case MULT_EXPR, case *_{DIV,MOD}_EXPR): Call extract_muldiv.
+
 1999-11-26  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (try_copy_prop): Avoid GNU C extension.
