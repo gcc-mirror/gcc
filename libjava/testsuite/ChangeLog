@@ -1,5 +1,0 @@
-2004-01-22  Jeff Sturm  <jsturm@one-point.com>
-
-	PR java/13733
-	* libjava.compile/PR13733.java: New file.
-	* libjava.compile/PR13733.xfail: New file.

@@ -1,3 +1,9 @@
+2004-01-22  Jeff Sturm  <jsturm@one-point.com>
+
+	PR java/13733
+	* testsuite/libjava.compile/PR13733.java: New file.
+	* testsuite/libjava.compile/PR13733.xfail: New file.
+
 2004-01-22  Arnaud Vandyck  <arnaud.vandyck@ulg.ac.be>
             Michael Koch  <konqueror@gmx.de>
 
