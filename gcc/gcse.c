@@ -3581,16 +3581,11 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	    }
 	  else if (GET_CODE (new) == LABEL_REF)
 	    {
-	      edge_iterator ei2;
-
 	      dest = BLOCK_FOR_INSN (XEXP (new, 0));
 	      /* Don't bypass edges containing instructions.  */
-	      FOR_EACH_EDGE (edest, ei2, bb->succs)
-		if (edest->dest == dest && edest->insns.r)
-		  {
-		    dest = NULL;
-		    break;
-		  }
+	      edest = find_edge (bb, dest);
+	      if (edest && edest->insns.r)
+		dest = NULL;
 	    }
 	  else
 	    dest = NULL;
@@ -3599,18 +3594,9 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	     branch.  We would end up emitting the instruction on "both"
 	     edges.  */
 
-	  if (dest && setcc && !CC0_P (SET_DEST (PATTERN (setcc))))
-	    {
-	      edge e2;
-	      edge_iterator ei2;
-
-	      FOR_EACH_EDGE (e2, ei2, e->src->succs)
-		if (e2->dest == dest)
-		  {
-		    dest = NULL;
-		    break;
-		  }
-	    }
+	  if (dest && setcc && !CC0_P (SET_DEST (PATTERN (setcc)))
+	      && find_edge (e->src, dest))
+	    dest = NULL;
 
 	  old_dest = e->dest;
 	  if (dest != NULL
