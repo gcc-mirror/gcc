@@ -1,6 +1,6 @@
 /* Definitions of host machine for GNU compiler.
    Atari TT ASV version.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,9 +23,11 @@ Boston, MA 02111-1307, USA.  */
 
 #define HAVE_VPRINTF            /* Host has vprintf() in library */
 
-/* ASV does not define HZ, so we have to do it ourselves. */
+/* Add HZ define if missing */
 
-#define HZ 128			/* System clock */
+#ifndef HZ
+#define HZ 100			/* System clock */
+#endif
 
 /* Define FULL_PROTOTYPES for protoize.c, to get <unistd.h> included.
    We need this file for things like R_OK, not necessarily prototypes. */
