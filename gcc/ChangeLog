@@ -1,3 +1,10 @@
+Sun Jan 24 09:31:35 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (expand_inline_function): Handle case of setting
+	virtual stack vars register (from built in setjmp).
+	* reload1.c (eliminate_regs_in_insn): Properly test for PLUS
+	when updating eliminable register.
+
 Sat Jan 23 09:09:48 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stmt.c (expand_asm_operands): Don't use TREE_STRING_LENGTH for
