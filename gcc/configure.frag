@@ -20,15 +20,15 @@
 #the Free Software Foundation, 59 Temple Place - Suite 330,
 #Boston, MA 02111-1307, USA.
 
-rm -f Make-lang
-touch Make-lang
-
 # First parameter is the source directory, second is list of subdirectories
 savesrcdir=$1
 savesubdirs=$2
 for subdir in . $savesubdirs
 do
 	oldsrcdir=$savesrcdir
+
+	rm -f Make-lang
+	touch Make-lang
 
 	# Re-adjust the path
 	case $oldsrcdir in
