@@ -1,3 +1,12 @@
+2002-01-12  Graham Stott <grahams@redhat.com>
+
+	* attribs.c (handle_deprecated_attribute): constify WHAT.
+	* diagnostic.c (warn_deprecated_use): Add braces, fixes
+	dangling else warning and constify WHAT.
+	* except.h (struct function, struct inline_remap): Move
+	struct tag forward defs before all prototypes.
+	(duplicate_eh_regions): Whitespace.
+
 2002-01-12  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.h (ARM_LEGITIMIZE_RELOAD_ADDRESS): Use

@@ -1148,7 +1148,7 @@ handle_deprecated_attribute (node, name, args, flags, no_add_attrs)
 {
   tree type = NULL_TREE;
   int warn = 0;
-  char *what = NULL;
+  const char *what = NULL;
   
   if (DECL_P (*node))
     {

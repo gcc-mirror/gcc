@@ -26,6 +26,9 @@ struct varray_head_tag;
 #define varray_type struct varray_head_tag *
 #endif
 
+struct function;
+
+struct inline_remap;
 
 /* Per-function EH data.  Used only in except.c, but GC and others
    manipulate pointers to the opaque type.  */
@@ -127,12 +130,8 @@ extern rtx expand_builtin_frob_return_addr	PARAMS ((tree));
 extern rtx expand_builtin_dwarf_fp_regnum	PARAMS ((void));
 extern void expand_builtin_eh_return		PARAMS ((tree, tree));
 extern void expand_eh_return			PARAMS ((void));
-
 extern rtx get_exception_pointer		PARAMS ((struct function *));
-
-struct function;
-struct inline_remap;
-extern int duplicate_eh_regions		PARAMS ((struct function *,
+extern int duplicate_eh_regions			PARAMS ((struct function *,
 						 struct inline_remap *));
 
 extern void sjlj_emit_function_exit_after	PARAMS ((rtx));
