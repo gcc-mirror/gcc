@@ -1,3 +1,9 @@
+2002-10-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8080
+	* semantics.c (finish_for_cond, finish_while_cond): Don't mess
+	with condition decls in a template.
+
 2002-10-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (add_method): Compare template parms too.
