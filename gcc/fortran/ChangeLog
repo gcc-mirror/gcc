@@ -1,3 +1,12 @@
+2005-03-30  Canqun Yang  <canqun@nudt.edu.cn>
+
+	* trans-common.c (create_common): Build RECORD_NODE for common blocks
+	contain no equivalence objects.
+	(add_equivalences): New argument saw_equiv.
+	(trans_common): New local variable saw_equiv.
+	(finish_equivalences): Add a local variable dummy, Always pass true
+	for the 3rd parameter to create_common.
+
 2005-03-29  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.h (option_t): Change d8, i8, r8 to flag_default_double,
