@@ -144,35 +144,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\t.word .L%d\n", VALUE)
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
-
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\tsethi %%hi(.LP%d),%%o0\n\tcall mcount\n\tor %%lo(.LP%d),%%o0,%%o0\n", \
-	   (LABELNO), (LABELNO))
-
-/* Output assembler code to FILE to initialize this source file's
-   basic block profiling info, if that has not already been done.  */
-
-#undef FUNCTION_BLOCK_PROFILER
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\tsethi %%hi(.LPBX0),%%o0\n\tld [%%lo(.LPBX0)+%%o0],%%o1\n\ttst %%o1\n\tbne .LPY%d\n\tnop\n\tcall ___bb_init_func\n\tnop\n.LPY%d:\n",  \
-	   (LABELNO), (LABELNO))
-
-/* Output assembler code to FILE to increment the entry-count for
-   the BLOCKNO'th basic block in this source file.  */
-
-#undef BLOCK_PROFILER
-#define BLOCK_PROFILER(FILE, BLOCKNO) \
-{								\
-  int blockn = (BLOCKNO);					\
-  fprintf (FILE, "\tsethi %%hi(.LPBX2+%d),%%g1\n\tld [%%lo(.LPBX2+%d)+%%g1],%%g2\n\
-\tadd %%g2,1,%%g2\n\tst %%g2,[%%lo(.LPBX2+%d)+%%g1]\n",		\
-	   4 * blockn, 4 * blockn, 4 * blockn);			\
-  CC_STATUS_INIT;  /* We have clobbered %g1.  Also %g2.  */	\
-}
-/*   This is needed for SunOS 4.0, and should not hurt for 3.2
+/* This is needed for SunOS 4.0, and should not hurt for 3.2
    versions either.  */
 #undef ASM_OUTPUT_SOURCE_LINE(file, line) 
 #define ASM_OUTPUT_SOURCE_LINE(file, line)		\

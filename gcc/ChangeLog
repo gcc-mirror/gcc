@@ -1,3 +1,25 @@
+Mon Jun 21 17:18:25 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.c (sparc_override_options): Don't allow profiling for
+	code models other than medlow.
+	(sparc_function_profiler): New function from old FUNCTION_PROFILER
+	macro.  Use ASM_GENERATE_INTERNAL_LABEL and MCOUNT_FUNCTION.
+	(sparc_function_block_profiler): Likewise.  Use user_label_prefix.
+	(sparc_block_profiler): Likewise.
+	(sparc_function_block_profiler_exit): Likewise.
+	* sparc.h (FUNCTION_PROFILER): Call new sparc.c function.
+	(FUNCTION_BLOCK_PROFILER): Likewise.
+	(BLOCK_PROFILER): Likewise.
+	(FUNCTION_BLOCK_PROFILER_EXIT): Likewise.
+	(MCOUNT_FUNCTION): New.
+	* sparc/pbd.h (FUNCTION_PROFILER): Delete.
+	(FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER): Delete.
+	* sparc/sun4o3.h (FUNCTION_PROFILER): Delete.
+	(MCOUNT_FUNCTION): New.
+	* sparc/sysv4.h (FUNCTION_BLOCK_PROFILER): Delete.
+	(BLOCK_PROFILER): Delete.
+	(MCOUNT_FUNCTION): New.
+
 Mon Jun 21 06:22:21 1999  Mark Elbrecht <snowball3@bigfoot.com>
 
 	* i386/djgpp.h (LIB_SPEC): New.
