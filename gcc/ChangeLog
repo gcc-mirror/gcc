@@ -1,3 +1,7 @@
+2003-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* df.c (df_uses_record): Handle CC0.
+
 Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 			      Eric Botcazou <ebotcazou@libertysurf.fr>
 	PR opt/8492

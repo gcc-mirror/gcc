@@ -1037,6 +1037,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
     case CONST_DOUBLE:
     case CONST_VECTOR:
     case PC:
+    case CC0:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
       return;
@@ -1102,9 +1103,10 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 		}
 	      /* ... FALLTHRU ...  */
 	    case REG:
-	    case PC:
 	    case PARALLEL:
-	      break;
+	    case PC:
+	    case CC0:
+		break;
 	    case MEM:
 	      df_uses_record (df, &XEXP (dst, 0),
 			      DF_REF_REG_MEM_STORE,
