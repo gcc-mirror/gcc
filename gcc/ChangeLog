@@ -1,3 +1,10 @@
+2004-04-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/altivec/altivec.h [__cplusplus] (vec_subsubs): Rename to
+	vec_sububs.
+	[__cplusplus] (vec_subsuhs): Rename to vec_subuhs, without
+	duplicates.
+
 2004-04-30  Uros Bizjak  <uros@kss-loka.si>
 
         * config/i386/i386.md (atansf2, atandf2, atanxf2): Move near
@@ -82,6 +89,9 @@
 	* combine.c (combine_simplify_rtx): Adjust call to use
 	simplify_relational_operation.  Do not use SELECT_CC_MODE
 	when a comparison already has a MODE_CC mode.
+
+2004-04-29  Paolo Bonzini  <bonzini@gnu.org>
+
 	(simplify_set): simplify_relational_operation may now
 	return another relational expression.
 	* cse.c (fold_rtx): simplify_relational_operation now
