@@ -1,3 +1,10 @@
+2004-06-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* crossconfig.m4: Remove signbit, signbitf, signbitl.	
+	* linkage.m4: Comment LIBMATHOBJS, tweak others.  AC_DEFINES for
+	builtin math functions instead of AC_DEFINE_UNQUOTED.
+	* configure: Regenerate.
+	
 2004-06-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/filter.sed: Rename _GLIBCXX_STD to std.
