@@ -1627,6 +1627,14 @@ do {                                                                    \
    the page number.  */
 #define DWARF2_ADDR_SIZE 4
 
+/* SCz 2003-07-08: Don't use as dwarf2 .file/.loc directives because
+   the linker is doing relaxation and it does not adjust the debug_line
+   sections when it shrinks the code.  This results in invalid addresses
+   when debugging.  This does not bless too much the HC11/HC12 as most
+   applications are embedded and small, hence a reasonable debug info.
+   This problem is known for binutils 2.13, 2.14 and mainline.   */
+#undef HAVE_AS_DWARF2_DEBUG_LINE
+
 /* The prefix for local labels.  You should be able to define this as
    an empty string, or any arbitrary string (such as ".", ".L%", etc)
    without having to make any other changes to account for the specific

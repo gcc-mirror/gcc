@@ -1,3 +1,8 @@
+2003-07-08  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.h (HAVE_AS_DWARF2_DEBUG_LINE): Don't define
+	as .file/.loc directives are incompatible with linker relaxation.
+
 2003-07-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (fixinc.sh): Remove gnu-regex.[ch] from dependencies.
@@ -8888,7 +8893,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(mips_delegitimize_address): Declare.
 	* config/mips/mips.h (ASM_SIMPLIFY_DWARF_ADDR): Undefine.
 	(FIND_BASE_TERM): Define.
-	* config/mips/mips.c (TARGET_DELEGITIMIZE_ADDRESS): Define.
+	* config/mips/mips.c (TARGET_DELEGITIMIZE_ADDRESS): Defi~e.
 	(mips_delegitimize_address): Renamed from mips_simplify_dwarf_addr.
 	Handle small-data addresses.
 
