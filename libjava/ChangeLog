@@ -1,3 +1,21 @@
+2004-05-19  Anthony Green  <green@localhost.localdomain>
+
+	* Makefile.am (awt_java_source_files): Remove javax.rmi and
+	gnu.javax.rmi code.
+	* Makefile.in: Rebuilt.
+	* javax/rmi/ClassDesc.java, javax/rmi/StubDelegate.java,
+	javax/rmi/UtilDelegate.java, javax/rmi/Stub.java,
+	javax/rmi/Util.java, javax/rmi/ObjectImpl.java,
+	javax/rmi/SystemException.java, javax/rmi/ValueHandler.java,
+	javax/rmi/PortableRemoteObjectDelegate.java, javax/rmi/Tie.java,
+	gnu/javax/rmi/CORBA/DelegateFactory.java,
+	gnu/javax/rmi/CORBA/GetDelegateInstanceException.java,
+	gnu/javax/rmi/CORBA/PortableRemoteObjectDelegateImpl.java,
+	gnu/javax/rmi/CORBA/StubDelegateImpl.java,
+	gnu/javax/rmi/CORBA/UtilDelegateImpl.java,
+	gnu/javax/rmi/CORBA/ValueHandlerImpl.java,
+	gnu/javax/rmi/PortableServer.java: Remove files.
+
 2004-05-19  Anthony Green  <green@redhat.com>
 
 	* Makefile.am: Define JAVA_EXT_DIRS.
