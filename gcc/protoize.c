@@ -67,9 +67,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #else
 #include <sys/dir.h>
 #endif
-#if ! defined (USG) || defined (SVR4)
-#include <sys/wait.h>
-#endif
 #include <setjmp.h>
 #include "gvarargs.h"
 
@@ -2041,21 +2038,20 @@ gen_aux_info_file (base_filename)
 
         if (wait (&wait_status) == -1)
           {
-            fprintf (stderr, "%s: error: wait for process failed: %s\n",
+            fprintf (stderr, "%s: wait failed: %s\n",
 		     pname, sys_errlist[errno]);
             return 0;
           }
-        if (!WIFEXITED (wait_status))
-          {
-            fprintf (stderr, "%s: error: subprocess %ld did not exit\n",
-		     pname, (long) child_pid);
-            kill (child_pid, 9);
-            return 0;
-          }
-        if (WEXITSTATUS (wait_status) != 0)
+	if ((wait_status & 0x7F) != 0)
 	  {
-	    fprintf (stderr, "%s: error: %s: compilation failed\n",
-		     pname, base_filename);
+	    fprintf (stderr, "%s: subprocess got fatal signal %d",
+		     pname, (wait_status & 0x7F));
+	    return 0;
+	  }
+	if (((wait_status & 0xFF00) >> 8) != 0)
+	  {
+	    fprintf (stderr, "%s: %s exited with status %d\n",
+		     pname, base_filename, ((wait_status & 0xFF00) >> 8));
 	    return 0;
 	  }
 	return 1;
