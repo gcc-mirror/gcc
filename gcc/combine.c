@@ -6752,8 +6752,16 @@ nonzero_bits (x, mode)
 	  sp_alignment = MIN (PUSH_ROUNDING (1), sp_alignment);
 #endif
 
-	  return nonzero & ~ (sp_alignment - 1);
+	  nonzero &= ~ (sp_alignment - 1);
 	}
+#endif
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      /* If pointers extend unsigned and this is a pointer in Pmode, say that
+	 all the bits above ptr_mode are known to be zero.  */
+      if (POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
+	  && REGNO_POINTER_FLAG (REGNO (x)))
+	nonzero &= GET_MODE_MASK (ptr_mode);
 #endif
 
       /* If X is a register whose nonzero bits value is current, use it.
@@ -7090,6 +7098,14 @@ num_sign_bit_copies (x, mode)
   switch (code)
     {
     case REG:
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      /* If pointers extend signed and this is a pointer in Pmode, say that
+	 all the bits above ptr_mode are known to be sign bit copies.  */
+      if (! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode && mode == Pmode
+	  && REGNO_POINTER_FLAG (REGNO (x)))
+	return GET_MODE_BITSIZE (Pmode) - GET_MODE_BITSIZE (ptr_mode) + 1;
+#endif
 
       if (reg_last_set_value[REGNO (x)] != 0
 	  && reg_last_set_mode[REGNO (x)] == mode
