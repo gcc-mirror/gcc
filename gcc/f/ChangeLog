@@ -1,3 +1,8 @@
+2000-05-17  H.J. Lu  (hjl@gnu.org)
+
+	* Make-lang.in: Use a unique stamp for each target to support
+	parallel make.
+
 Thu Jun 15 14:03:14 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ste.c (gbe_block): Constify.
