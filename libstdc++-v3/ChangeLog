@@ -1,5 +1,10 @@
 2003-05-21  Jonathan Wakely  <redi@gcc.gnu.org>
 
+	* docs/html/faq/index.html: Fix typo.
+	* docs/html/faq/index.txt: Regenerate.
+
+2003-05-21  Jonathan Wakely  <redi@gcc.gnu.org>
+
 	* docs/html/test.html: Fix markup.
 
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>

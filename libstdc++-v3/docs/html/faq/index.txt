@@ -174,7 +174,7 @@
    the SGI STL aren't maintained by us and don't get a lot of our
    attention, because they don't require a lot of our time.) It is
    entirely plausable that the "useful stuff" from libg++ might be
-   extracted into an updated utilities library, but nobody has stated
+   extracted into an updated utilities library, but nobody has started
    such a project yet.
 
    (The [64]Boost site houses free C++ libraries that do varying things,
