@@ -1,3 +1,7 @@
+2001-05-22  Jason Merrill  <jason_merrill@redhat.com>
+
+	* mt-linux (CXXFLAGS_FOR_TARGET): Lose -fvtable-thunks.
+
 2001-01-27  Richard Henderson  <rth@redhat.com>
 
 	* mt-alphaieee: New file.
