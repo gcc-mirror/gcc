@@ -2062,23 +2062,31 @@ expand_mult (mode, op0, op1, target, unsignedp)
 {
   rtx const_op1 = op1;
 
+  /* synth_mult does an `unsigned int' multiply.  As long as the mode is
+     less than or equal in size to `unsigned int' this doesn't matter.
+     If the mode is larger than `unsigned int', then synth_mult works only
+     if the constant value exactly fits in an `unsigned int' without any
+     truncation.  This means that multiplying by negative values does
+     not work; results are off by 2^32 on a 32 bit machine.  */
+
   /* If we are multiplying in DImode, it may still be a win
      to try to work with shifts and adds.  */
   if (GET_CODE (op1) == CONST_DOUBLE
       && GET_MODE_CLASS (GET_MODE (op1)) == MODE_INT
-      && HOST_BITS_PER_INT <= BITS_PER_WORD)
-    {
-      if ((CONST_DOUBLE_HIGH (op1) == 0 && CONST_DOUBLE_LOW (op1) >= 0)
-	  || (CONST_DOUBLE_HIGH (op1) == -1 && CONST_DOUBLE_LOW (op1) < 0))
-	const_op1 = GEN_INT (CONST_DOUBLE_LOW (op1));
-    }
+      && HOST_BITS_PER_INT >= BITS_PER_WORD
+      && CONST_DOUBLE_HIGH (op1) == 0)
+    const_op1 = GEN_INT (CONST_DOUBLE_LOW (op1));
+  else if (HOST_BITS_PER_INT < GET_MODE_BITSIZE (mode)
+	   && GET_CODE (op1) == CONST_INT
+	   && INTVAL (op1) < 0)
+    const_op1 = 0;
 
   /* We used to test optimize here, on the grounds that it's better to
      produce a smaller program when -O is not used.
      But this causes such a terrible slowdown sometimes
      that it seems better to use synth_mult always.  */
 
-  if (GET_CODE (const_op1) == CONST_INT)
+  if (const_op1 && GET_CODE (const_op1) == CONST_INT)
     {
       struct algorithm alg;
       struct algorithm alg2;
@@ -2096,10 +2104,16 @@ expand_mult (mode, op0, op1, target, unsignedp)
       mult_cost = MIN (12 * add_cost, mult_cost);
 
       synth_mult (&alg, val, mult_cost);
-      synth_mult (&alg2, - val,
-		  (alg.cost < mult_cost ? alg.cost : mult_cost) - negate_cost);
-      if (alg2.cost + negate_cost < alg.cost)
-	alg = alg2, variant = negate_variant;
+
+      /* This works only if the inverted value actually fits in an
+	 `unsigned int' */
+      if (HOST_BITS_PER_INT >= GET_MODE_BITSIZE (mode))
+	{
+	  synth_mult (&alg2, - val,
+		      (alg.cost < mult_cost ? alg.cost : mult_cost) - negate_cost);
+	  if (alg2.cost + negate_cost < alg.cost)
+	    alg = alg2, variant = negate_variant;
+	}
 
       /* This proves very useful for division-by-constant.  */
       synth_mult (&alg2, val - 1,
