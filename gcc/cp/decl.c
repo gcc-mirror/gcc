@@ -4777,6 +4777,10 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 
       if (init && DECL_INITIAL (decl))
 	DECL_INITIAL (decl) = init;
+      if (TREE_CODE (decl) == VAR_DECL
+	  && !DECL_PRETTY_FUNCTION_P (decl)
+	  && !dependent_type_p (TREE_TYPE (decl)))
+	maybe_deduce_size_from_array_init (decl, init);
       goto finish_end0;
     }
 
