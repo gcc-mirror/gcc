@@ -30,7 +30,7 @@ MULTILIB_MATCHES     =
 MULTILIB_EXTRA_OPTS  = 
 MULTILIB_EXCEPTIONS  =
 
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
+# EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 LIBGCC               = stmp-multilib
 INSTALL_LIBGCC       = install-multilib
 

@@ -24,6 +24,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define SUBTARGET_CPP_PREDEFINES " -D__pe__"
 
+/* The MCore ABI says that bitfields are unsigned by default.  */
+/* The EPOC C++ environment does not support exceptions.  */
+#define CC1_SPEC "-funsigned-bitfields %{!DIN_GCC:-fno-rtti} %{!DIN_GCC:-fno-exceptions}"
+
 #include "svr3.h"
 #include "mcore/mcore.h"
 #include "dbxcoff.h"
