@@ -1,3 +1,9 @@
+2004-09-29  Per Bothner  <per@bothner.com>
+
+	* directives.c (cpp_handle_deferred_pragma):  Save, clear and restore
+	cb.line_change.  Otherwise do_pragma will call the line_change
+	call-back with a meaningless line number.
+
 2004-09-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.ac: Move AC_PROG_MAKE_SET, AC_PROG_INSTALL to
