@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
+#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_LONG_LONG\
 -Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
 
 /* Print subsidiary information on the compiler version in use.  */
