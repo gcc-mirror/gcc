@@ -639,10 +639,10 @@ namespace std
         _M_replace(iterator __i1, iterator __i2, _InputIterator __k1, 
 		   _InputIterator __k2, input_iterator_tag);
 
-      template<class _InputIterator>
+      template<class _ForwardIterator>
         basic_string& 
-        _M_replace_safe(iterator __i1, iterator __i2, _InputIterator __k1, 
-		   _InputIterator __k2);
+        _M_replace_safe(iterator __i1, iterator __i2, _ForwardIterator __k1, 
+		   _ForwardIterator __k2);
 
       // _S_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIter is an integral type

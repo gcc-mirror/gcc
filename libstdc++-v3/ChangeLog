@@ -1,4 +1,9 @@
 2001-12-10  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/basic_string.tcc (_M_replace_safe):  Fix typos.
+	* include/bits/basic_string.h:  Fix typos.
+
+2001-12-10  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/basic_string.tcc (_M_replace_safe):  New function.
