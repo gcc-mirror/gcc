@@ -96,6 +96,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 				   declarations for e.g. AIX 4.x.  */
 #endif
 
+#ifndef HAVE_conditional_execution
+#define HAVE_conditional_execution 0
+#endif
+
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */
 
@@ -2294,12 +2298,14 @@ rest_of_handle_regrename (tree decl, rtx insns)
 static void
 rest_of_handle_reorder_blocks (tree decl, rtx insns)
 {
+  bool changed;
   open_dump_file (DFI_bbro, decl);
 
   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
      splitting possibly introduced more crossjumping opportunities.  */
-  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE
-	       | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
+  changed |= cleanup_cfg (CLEANUP_EXPENSIVE
+		  	  | (!HAVE_conditional_execution
+			     ? CLEANUP_UPDATE_LIFE : 0));
 
   if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
     tracer ();
@@ -2307,8 +2313,16 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
     reorder_basic_blocks ();
   if (flag_reorder_blocks
       || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
-    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
+    changed |= cleanup_cfg (CLEANUP_EXPENSIVE
+			    | (!HAVE_conditional_execution
+			       ? CLEANUP_UPDATE_LIFE : 0));
 
+  /* On conditional execution targets we can not update the life cheaply, so
+     we deffer the updating to after both cleanups.  This may lose some cases
+     but should not be terribly bad.  */
+  if (changed && HAVE_conditional_execution)
+    update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
+		      PROP_DEATH_NOTES | PROP_REG_INFO);
   close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
 }
 
@@ -3474,16 +3488,22 @@ rest_of_compilation (tree decl)
     }
 #endif
 
+  open_dump_file (DFI_ce3, decl);
+  if (optimize)
+    /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+       splitting possibly introduced more crossjumping opportunities.  */
+    cleanup_cfg (CLEANUP_EXPENSIVE
+		 | CLEANUP_UPDATE_LIFE 
+		 | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
   if (flag_if_conversion2)
     {
       timevar_push (TV_IFCVT2);
-      open_dump_file (DFI_ce3, decl);
 
       if_convert (1);
 
-      close_dump_file (DFI_ce3, print_rtl_with_bb, insns);
       timevar_pop (TV_IFCVT2);
     }
+  close_dump_file (DFI_ce3, print_rtl_with_bb, insns);
 
   if (optimize > 0)
     {
