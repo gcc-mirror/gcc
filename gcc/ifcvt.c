@@ -161,7 +161,9 @@ count_bb_insns (basic_block bb)
   return count;
 }
 
-/* Count the total rtx_cost of non-jump active insns in BB.  */
+/* Count the total insn_rtx_cost of non-jump active insns in BB.
+   This function returns -1, if the cost of any instruction could
+   not be estimated.  */
 
 static int
 total_bb_rtx_cost (basic_block bb)
@@ -171,9 +173,16 @@ total_bb_rtx_cost (basic_block bb)
 
   while (1)
     {
-      if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == INSN)
-	count += rtx_cost (PATTERN (insn), 0);
-
+      if (NONJUMP_INSN_P (insn))
+	{
+	  int cost = insn_rtx_cost (PATTERN (insn));
+	  if (cost == 0)
+	    return -1;
+	  count += cost;
+	}
+      else if (CALL_P (insn))
+	return -1;
+ 
       if (insn == BB_END (bb))
 	break;
       insn = NEXT_INSN (insn);
@@ -2867,7 +2876,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest, new_bb;
   edge then_succ = then_bb->succ;
-  int then_bb_index;
+  int then_bb_index, bb_cost;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -2904,7 +2913,8 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 	     test_bb->index, then_bb->index);
 
   /* THEN is small.  */
-  if (total_bb_rtx_cost (then_bb) >= COSTS_N_INSNS (BRANCH_COST))
+  bb_cost = total_bb_rtx_cost (then_bb);
+  if (bb_cost < 0 || bb_cost >= COSTS_N_INSNS (BRANCH_COST))
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */
@@ -2947,6 +2957,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   edge else_succ = else_bb->succ;
+  int bb_cost;
   rtx note;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
@@ -2995,7 +3006,8 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 	     test_bb->index, else_bb->index);
 
   /* ELSE is small.  */
-  if (total_bb_rtx_cost (else_bb) >= COSTS_N_INSNS (BRANCH_COST))
+  bb_cost = total_bb_rtx_cost (else_bb);
+  if (bb_cost < 0 || bb_cost >= COSTS_N_INSNS (BRANCH_COST))
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */

@@ -4785,3 +4785,39 @@ num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
   return nonzero & ((HOST_WIDE_INT) 1 << (bitwidth - 1))
 	 ? 1 : bitwidth - floor_log2 (nonzero) - 1;
 }
+
+/* Calculate the rtx_cost of a single instruction.  A return value of
+   zero indicates an instruction pattern without a known cost.  */
+
+int
+insn_rtx_cost (rtx pat)
+{
+  int i, cost;
+  rtx set;
+
+  /* Extract the single set rtx from the instruction pattern.
+     We can't use single_set since we only have the pattern.  */
+  if (GET_CODE (pat) == SET)
+    set = pat;
+  else if (GET_CODE (pat) == PARALLEL)
+    {
+      set = NULL_RTX;
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx x = XVECEXP (pat, 0, i);
+	  if (GET_CODE (x) == SET)
+	    {
+	      if (set)
+		return 0;
+	      set = x;
+	    }
+	}
+      if (!set)
+	return 0;
+    }
+  else
+    return 0;
+
+  cost = rtx_cost (SET_SRC (set), SET);
+  return cost > 0 ? cost : COSTS_N_INSNS (1);
+}

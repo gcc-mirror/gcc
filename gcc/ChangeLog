@@ -1,5 +1,25 @@
 2004-07-11  Roger Sayle  <roger@eyesopen.com>
 
+	* rtlanal.c (insn_rtx_cost): New function, moved and renamed from
+	combine.c's combine_insn_cost.
+	* rtl.h (insn_rtx_cost): Prototype here.
+	* combine.c (combine_insn_cost): Delete function.
+	(combine_validate_cost): Update callers of combine_insn_cost to
+	call insn_rtx_cost instead.
+	(combine_instructions): Likewise.  Use NONJUMP_INSN_P to avoid
+	requesting the rtx_cost of call and/or jump instructions.
+
+	* ifcvt.c (total_bb_rtx_cost): Use insn_rtx_cost instead of calling
+	rtx_cost directly.  Don't request/use the cost of call or jump
+	instructions.  Return -1 if the cost of any instruction can't be
+	determined (or the BB contains a function call).
+	(find_if_case_1): Abort transformation if total_bb_rtx_cost returns
+	-1 (i.e. can't determine the cost of any instruction or the basic
+	block contains a subroutine call).
+	(find_if_case_2): Likewise.
+
+2004-07-11  Roger Sayle  <roger@eyesopen.com>
+
 	* rs6000.c (struct processor_costs): Change semantics of fields to
 	include the COST_N_INSNS scaling, and update all initializers.
 	(rs6000_rtx_costs): Don't use COSTS_N_INSNS on rs6000_cost fields.

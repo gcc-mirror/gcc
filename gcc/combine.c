@@ -284,7 +284,7 @@ static basic_block this_basic_block;
    those blocks as starting points.  */
 static sbitmap refresh_blocks;
 
-/* The following array records the combine_insn_cost for every insn
+/* The following array records the insn_rtx_cost for every insn
    in the instruction stream.  */
 
 static int *uid_insn_cost;
@@ -515,44 +515,8 @@ do_SUBST_INT (int *into, int newval)
 
 #define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT(&(INTO), (NEWVAL))
 
-/* Calculate the rtx_cost of a single instruction.  A return value of zero
-   indicates an instruction without a known cost.  */
-
-static int
-combine_insn_cost (rtx pat)
-{
-  int i, cost;
-  rtx set;
-
-  /* Extract the single set rtx from the instruction pattern.
-     We can't use single_set since we only have the pattern.  */
-  if (GET_CODE (pat) == SET)
-    set = pat;
-  else if (GET_CODE (pat) == PARALLEL)
-    {
-      set = NULL_RTX;
-      for (i = 0; i < XVECLEN (pat, 0); i++)
-	{
-	  rtx x = XVECEXP (pat, 0, i);
-	  if (GET_CODE (x) == SET)
-	    {
-	      if (set)
-		return 0;
-	      set = x;
-	    }
-	}
-      if (!set)
-	return 0;
-    }
-  else
-    return 0;
-
-  cost = rtx_cost (SET_SRC (set), SET);
-  return cost > 0 ? cost : COSTS_N_INSNS (1);
-}
-
 /* Subroutine of try_combine.  Determine whether the combine replacement
-   patterns NEWPAT and NEWI2PAT are cheaper according to combine_insn_cost
+   patterns NEWPAT and NEWI2PAT are cheaper according to insn_rtx_cost
    that the original instruction sequence I1, I2 and I3.  Note that I1
    and/or NEWI2PAT may be NULL_RTX.  This function returns false, if the
    costs of all instructions can be estimated, and the replacements are
@@ -565,7 +529,7 @@ combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat)
   int new_i2_cost, new_i3_cost;
   int old_cost, new_cost;
 
-  /* Lookup the original combine_insn_costs.  */
+  /* Lookup the original insn_rtx_costs.  */
   i2_cost = INSN_UID (i2) <= last_insn_cost
 	    ? uid_insn_cost[INSN_UID (i2)] : 0;
   i3_cost = INSN_UID (i3) <= last_insn_cost
@@ -584,11 +548,11 @@ combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat)
       i1_cost = 0;
     }
 
-  /* Calculate the replacement combine_insn_costs.  */
-  new_i3_cost = combine_insn_cost (newpat);
+  /* Calculate the replacement insn_rtx_costs.  */
+  new_i3_cost = insn_rtx_cost (newpat);
   if (newi2pat)
     {
-      new_i2_cost = combine_insn_cost (newi2pat);
+      new_i2_cost = insn_rtx_cost (newi2pat);
       new_cost = (new_i2_cost > 0 && new_i3_cost > 0)
 		 ? new_i2_cost + new_i3_cost : 0;
     }
@@ -708,7 +672,7 @@ combine_instructions (rtx f, unsigned int nregs)
   refresh_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (refresh_blocks);
 
-  /* Allocate array of current combine_insn_costs.  */
+  /* Allocate array of current insn_rtx_costs.  */
   uid_insn_cost = xcalloc (max_uid_cuid + 1, sizeof (int));
   last_insn_cost = max_uid_cuid;
 
@@ -731,8 +695,9 @@ combine_instructions (rtx f, unsigned int nregs)
 						NULL);
 #endif
 
-	  /* Record the current combine_insn_cost of this instruction.  */
-	  uid_insn_cost[INSN_UID (insn)] = combine_insn_cost (PATTERN (insn));
+	  /* Record the current insn_rtx_cost of this instruction.  */
+	  if (NONJUMP_INSN_P (insn))
+	    uid_insn_cost[INSN_UID (insn)] = insn_rtx_cost (PATTERN (insn));
 	  if (dump_file)
 	    fprintf(dump_file, "insn_cost %d: %d\n",
 		    INSN_UID (insn), uid_insn_cost[INSN_UID (insn)]);
@@ -2655,7 +2620,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   }
 #endif
 
-  /* Only allow this combination if combine_insn_costs reports that the
+  /* Only allow this combination if insn_rtx_costs reports that the
      replacement instructions are cheaper than the originals.  */
   if (!combine_validate_cost (i1, i2, i3, newpat, newi2pat))
     {
