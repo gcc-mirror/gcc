@@ -533,6 +533,7 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/va-m88k.h $(srcdir)/ginclude/va-pa.h \
     $(srcdir)/ginclude/va-pyr.h $(srcdir)/ginclude/va-sparc.h \
     $(srcdir)/ginclude/va-clipper.h $(srcdir)/ginclude/va-spur.h \
+    $(srcdir)/ginclude/iso646.h \
     $(srcdir)/ginclude/proto.h $(EXTRA_HEADERS)
 
 # The files that "belong" in CONFIG_H are deliberately omitted
