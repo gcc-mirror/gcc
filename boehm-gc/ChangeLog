@@ -1,3 +1,8 @@
+2004-08-23  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* aix_irix_threads.c: Move _THREADS checks after gc_priv.h include.
+	* backgraph.c, include/private/gc_pmark.h: Always include gc.h.
+
 2004-08-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* win32_threads.c: Move GC_WIN32_THREADS check after gc_priv.h include.
