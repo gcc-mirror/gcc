@@ -2261,7 +2261,8 @@ docdir = $(srcdir)/doc
 doc: $(BUILD_INFO) $(GENERATED_MANPAGES) gccbug
 info: $(docdir)/cpp.info $(docdir)/gcc.info $(docdir)/gccint.info lang.info $(docdir)/cppinternals.info
 
-$(docdir)/cpp.info: $(docdir)/cpp.texi $(docdir)/include/fdl.texi
+$(docdir)/cpp.info: $(docdir)/cpp.texi $(docdir)/include/fdl.texi \
+  $(docdir)/cppenv.texi $(docdir)/cppopts.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/cpp.info doc/cpp.texi
 
 $(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
@@ -2272,7 +2273,7 @@ $(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
 	 $(docdir)/contribute.texi $(docdir)/vms.texi \
 	 $(docdir)/include/funding.texi $(docdir)/gnu.texi \
 	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
-	 $(docdir)/contrib.texi
+	 $(docdir)/contrib.texi $(docdir)/cppenv.texi $(docdir)/cppopts.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gcc.info doc/gcc.texi
 
 $(docdir)/gccint.info: $(docdir)/gccint.texi \
@@ -2296,7 +2297,8 @@ $(docdir)/cppinternals.info: $(docdir)/cppinternals.texi
 dvi: gcc.dvi gccint.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 # This works with GNU Make's default rule.
-cpp.dvi: $(docdir)/cpp.texi $(docdir)/include/fdl.texi
+cpp.dvi: $(docdir)/cpp.texi $(docdir)/include/fdl.texi \
+	$(docdir)/cppenv.texi $(docdir)/cppopts.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cpp.texi
 
 gcc.dvi: $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
@@ -2307,7 +2309,7 @@ gcc.dvi: $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
 	 $(docdir)/contribute.texi $(docdir)/vms.texi \
 	 $(docdir)/include/funding.texi $(docdir)/gnu.texi \
 	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
-	 $(docdir)/contrib.texi
+	 $(docdir)/contrib.texi $(docdir)/cppenv.texi $(docdir)/cppopts.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gcc.texi
 
 gccint.dvi: $(docdir)/gccint.texi \
@@ -2339,7 +2341,8 @@ $(docdir)/gcov.1: $(docdir)/gcov.texi
 		(rm -f $(docdir)/gcov.1.T$$$$ && exit 1)
 	-rm -f gcov.pod
 
-$(docdir)/cpp.1: $(docdir)/cpp.texi
+$(docdir)/cpp.1: $(docdir)/cpp.texi $(docdir)/cppenv.texi \
+  $(docdir)/cppopts.texi
 	$(STAMP) $(docdir)/cpp.1
 	-$(TEXI2POD) $(docdir)/cpp.texi > cpp.pod
 	-($(POD2MAN) --section=1 cpp.pod > $(docdir)/cpp.1.T$$$$ && \
@@ -2347,7 +2350,8 @@ $(docdir)/cpp.1: $(docdir)/cpp.texi
 		(rm -f $(docdir)/cpp.1.T$$$$ && exit 1)
 	-rm -f cpp.pod
 
-$(docdir)/gcc.1: $(docdir)/invoke.texi
+$(docdir)/gcc.1: $(docdir)/invoke.texi $(docdir)/cppenv.texi \
+  $(docdir)/cppopts.texi
 	$(STAMP) $(docdir)/gcc.1
 	-$(TEXI2POD) $(docdir)/invoke.texi > gcc.pod
 	-($(POD2MAN) --section=1 gcc.pod > $(docdir)/gcc.1.T$$$$ && \
