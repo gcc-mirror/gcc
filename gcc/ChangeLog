@@ -1,3 +1,11 @@
+2005-02-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR target/19886
+	* config/ia64/ia64.h (struct machine_function): Add state_num.
+	* config/ia64/ia64.c (process_epilogue,
+	process_for_unwind_directive): Use new unwind state numbers each
+	time rather than state 1.
+
 2005-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/20054
