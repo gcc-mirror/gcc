@@ -2070,12 +2070,6 @@ struct lang_decl
    member function.  */
 #define DECL_STATIC_FUNCTION_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.static_function)
 
-/* Nonzero for a class member means that it is shared between all objects
-   of that class.  */
-#define SHARED_MEMBER_P(NODE) \
-  (TREE_CODE (NODE) == VAR_DECL || TREE_CODE (NODE) == TYPE_DECL \
-   || TREE_CODE (NODE) == CONST_DECL)
-
 /* Nonzero for FUNCTION_DECL means that this decl is a non-static
    member function.  */
 #define DECL_NONSTATIC_MEMBER_FUNCTION_P(NODE) \
@@ -3785,6 +3779,7 @@ extern void keep_next_level			PARAMS ((int));
 extern int kept_level_p				PARAMS ((void));
 extern int template_parm_scope_p		PARAMS ((void));
 extern void set_class_shadows			PARAMS ((tree));
+extern void maybe_push_cleanup_level		PARAMS ((tree));
 extern void begin_scope                         PARAMS ((scope_kind));
 extern void finish_scope                        PARAMS ((void));
 extern void note_level_for_for			PARAMS ((void));

@@ -863,6 +863,24 @@ pushlevel (tag_transparent)
   keep_next_level_flag = 0;
 }
 
+/* We're defining an object of type TYPE.  If it needs a cleanup, but
+   we're not allowed to add any more objects with cleanups to the current
+   scope, create a new binding level.  */
+
+void
+maybe_push_cleanup_level (type)
+     tree type;
+{
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      && current_binding_level->more_cleanups_ok == 0)
+    {
+      keep_next_level (2);
+      pushlevel (1);
+      clear_last_expr ();
+      add_scope_stmt (/*begin_p=*/1, /*partial_p=*/1);
+    }
+}
+  
 /* Enter a new scope.  The KIND indicates what kind of scope is being
    created.  */
 
@@ -5993,10 +6011,9 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	      && TREE_CODE (val) == TYPE_DECL
 	      && ! same_type_p (TREE_TYPE (from_obj), TREE_TYPE (val)))
 	    cp_pedwarn ("\
-lookup of `%D' in the scope of `%#T' (`%#T') \
-does not match lookup in the current scope (`%#T')",
-			name, got_object, TREE_TYPE (from_obj),
-			TREE_TYPE (val));
+lookup of `%D' in the scope of `%#T' (`%#D') \
+does not match lookup in the current scope (`%#D')",
+			name, got_object, from_obj, val);
 
 	  /* We don't change val to from_obj if got_object depends on
 	     template parms because that breaks implicit typename for
@@ -6864,14 +6881,23 @@ check_tag_decl (declspecs)
       register tree value = TREE_VALUE (link);
 
       if (TYPE_P (value)
+	  || TREE_CODE (value) == TYPE_DECL
 	  || (TREE_CODE (value) == IDENTIFIER_NODE
 	      && IDENTIFIER_GLOBAL_VALUE (value)
-	      && TYPE_P (IDENTIFIER_GLOBAL_VALUE (value))))
+	      && TREE_CODE (IDENTIFIER_GLOBAL_VALUE (value)) == TYPE_DECL))
 	{
 	  ++found_type;
 
-	  if ((TREE_CODE (value) != TYPENAME_TYPE && IS_AGGR_TYPE (value))
-	      || TREE_CODE (value) == ENUMERAL_TYPE)
+	  if (found_type == 2 && TREE_CODE (value) == IDENTIFIER_NODE)
+	    {
+	      if (! in_system_header)
+		cp_pedwarn ("redeclaration of C++ built-in type `%T'", value);
+	      return NULL_TREE;
+	    }
+
+	  if (TYPE_P (value)
+	      && ((TREE_CODE (value) != TYPENAME_TYPE && IS_AGGR_TYPE (value))
+		  || TREE_CODE (value) == ENUMERAL_TYPE))
 	    {
 	      my_friendly_assert (TYPE_MAIN_DECL (value) != NULL_TREE, 261);
 	      t = value;
@@ -7194,17 +7220,7 @@ start_decl_1 (decl)
   if (type == error_mark_node)
     return;
 
-  /* If this type of object needs a cleanup, but we're not allowed to
-     add any more objects with cleanups to the current scope, create a
-     new binding level.  */
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
-      && current_binding_level->more_cleanups_ok == 0)
-    {
-      keep_next_level (2);
-      pushlevel (1);
-      clear_last_expr ();
-      add_scope_stmt (/*begin_p=*/1, /*partial_p=*/1);
-    }
+  maybe_push_cleanup_level (type);
 
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?

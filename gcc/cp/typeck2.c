@@ -261,11 +261,15 @@ friendly_abort (where, file, line, func)
      int line;
      const char *func;
 {
-  if (where > 0)
-    error ("Internal error #%d.", where);
+  if (errorcount > 0 || sorrycount > 0)
+    /* Say nothing.  */;
+  else if (where > 0)
+    {
+      error ("Internal error #%d.", where);
 
-  /* Uncount this error, so finish_abort will do the right thing.  */
-  --errorcount;
+      /* Uncount this error, so internal_error will do the right thing.  */
+      --errorcount;
+    }
 
   fancy_abort (file, line, func);
 }

@@ -7930,25 +7930,28 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
    template).  */
 
 static int
-type_unification_real (tparms, targs, parms, args, subr,
-		       strict, allow_incomplete, len)
-     tree tparms, targs, parms, args;
+type_unification_real (tparms, targs, xparms, xargs, subr,
+		       strict, allow_incomplete, xlen)
+     tree tparms, targs, xparms, xargs;
      int subr;
      unification_kind_t strict;
-     int allow_incomplete, len;
+     int allow_incomplete, xlen;
 {
   tree parm, arg;
   int i;
   int ntparms = TREE_VEC_LENGTH (tparms);
   int sub_strict;
+  int saw_undeduced = 0;
+  tree parms, args;
+  int len;
 
   my_friendly_assert (TREE_CODE (tparms) == TREE_VEC, 289);
-  my_friendly_assert (parms == NULL_TREE 
-		      || TREE_CODE (parms) == TREE_LIST, 290);
+  my_friendly_assert (xparms == NULL_TREE 
+		      || TREE_CODE (xparms) == TREE_LIST, 290);
   /* ARGS could be NULL (via a call from parse.y to
      build_x_function_call).  */
-  if (args)
-    my_friendly_assert (TREE_CODE (args) == TREE_LIST, 291);
+  if (xargs)
+    my_friendly_assert (TREE_CODE (xargs) == TREE_LIST, 291);
   my_friendly_assert (ntparms > 0, 292);
 
   switch (strict)
@@ -7974,8 +7977,13 @@ type_unification_real (tparms, targs, parms, args, subr,
       my_friendly_abort (0);
     }
 
-  if (len == 0)
+  if (xlen == 0)
     return 0;
+
+ again:
+  parms = xparms;
+  args = xargs;
+  len = xlen;
 
   while (parms
 	 && parms != void_list_node
@@ -8056,7 +8064,7 @@ type_unification_real (tparms, targs, parms, args, subr,
 
       /* Are we done with the interesting parms?  */
       if (--len == 0)
-	return 0;
+	goto done;
     }
   /* Fail if we've reached the end of the parm list, and more args
      are present, and the parm list isn't variadic.  */
@@ -8067,10 +8075,23 @@ type_unification_real (tparms, targs, parms, args, subr,
       && parms != void_list_node
       && TREE_PURPOSE (parms) == NULL_TREE)
     return 1;
+
+ done:
   if (!subr)
     for (i = 0; i < ntparms; i++)
       if (TREE_VEC_ELT (targs, i) == NULL_TREE)
 	{
+	  tree tparm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
+
+	  /* If this is an undeduced nontype parameter that depends on
+	     a type parameter, try another pass; its type may have been
+	     deduced from a later argument than the one from which
+	     this parameter can be deduced.  */
+	  if (TREE_CODE (tparm) == PARM_DECL
+	      && uses_template_parms (TREE_TYPE (tparm))
+	      && !saw_undeduced++)
+	    goto again;
+
 	  if (!allow_incomplete)
 	    error ("incomplete type unification");
 	  return 2;
@@ -8742,13 +8763,17 @@ unify (tparms, targs, parm, arg, strict)
 	 template-parameter exactly, except that a template-argument
 	 deduced from an array bound may be of any integral type. 
 	 The non-type parameter might use already deduced type parameters.  */
-      if (same_type_p (TREE_TYPE (arg),
-                       tsubst (TREE_TYPE (parm), targs, 0, NULL_TREE)))
-	/* OK */;
+      tparm = tsubst (TREE_TYPE (parm), targs, 0, NULL_TREE);
+      if (same_type_p (TREE_TYPE (arg), tparm))
+	  /* OK */;
       else if ((strict & UNIFY_ALLOW_INTEGER)
-	       && (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
-		   || TREE_CODE (TREE_TYPE (parm)) == BOOLEAN_TYPE))
+	       && (TREE_CODE (tparm) == INTEGER_TYPE
+		   || TREE_CODE (tparm) == BOOLEAN_TYPE))
 	/* OK */;
+      else if (uses_template_parms (tparm))
+	/* We haven't deduced the type of this parameter yet.  Try again
+	   later.  */
+	return 0;
       else
 	return 1;
 

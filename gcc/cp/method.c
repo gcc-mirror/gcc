@@ -1359,8 +1359,12 @@ process_overload_item (parmtype, extra_Gcode)
 	    tree length = array_type_nelts (parmtype);
 	    if (TREE_CODE (length) != INTEGER_CST || flag_do_squangling)
 	      {
-		length = fold (build (PLUS_EXPR, TREE_TYPE (length),
-				      length, integer_one_node));
+		if (TREE_CODE (length) == MINUS_EXPR
+		    && TREE_OPERAND (length, 1) == integer_one_node)
+		  length = TREE_OPERAND (length, 0);
+		else
+		  length = fold (build (PLUS_EXPR, TREE_TYPE (length),
+					length, integer_one_node));
 		STRIP_NOPS (length);
 	      }
 	    build_overload_value (sizetype, length, 1);
@@ -1964,7 +1968,8 @@ hack_identifier (value, name)
     {
       if (current_class_name)
 	{
-	  tree fields = lookup_fnfields (TYPE_BINFO (current_class_type), name, 1);
+	  tree fields = lookup_fnfields (TYPE_BINFO (current_class_type),
+					 name, 1);
 	  if (fields == error_mark_node)
 	    return error_mark_node;
 	  if (fields)
@@ -2091,8 +2096,9 @@ hack_identifier (value, name)
   else if (TREE_CODE (value) == TREE_LIST 
 	   && TREE_TYPE (value) == error_mark_node)
     {
-      error ("request for member `%s' is ambiguous in multiple inheritance lattice",
-	     IDENTIFIER_POINTER (name));
+      cp_error ("\
+request for member `%D' is ambiguous in multiple inheritance lattice",
+		name);
       print_candidates (value);
       return error_mark_node;
     }

@@ -380,6 +380,7 @@ build_up_reference (type, arg, flags)
 	arg = get_temp_name (argtype);
       else
 	{
+	  maybe_push_cleanup_level (argtype);
 	  arg = pushdecl (build_decl (VAR_DECL, NULL_TREE, argtype));
 	  DECL_ARTIFICIAL (arg) = 1;
 	}

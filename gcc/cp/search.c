@@ -119,6 +119,7 @@ static tree bfs_walk
 	PARAMS ((tree, tree (*) (tree, void *), tree (*) (tree, void *),
 	       void *));
 static tree lookup_field_queue_p PARAMS ((tree, void *));
+static int shared_member_p PARAMS ((tree));
 static tree lookup_field_r PARAMS ((tree, void *));
 static tree canonical_binfo PARAMS ((tree));
 static tree shared_marked_p PARAMS ((tree, void *));
@@ -1312,6 +1313,37 @@ template_self_reference_p (type, decl)
 	   && DECL_NAME (decl) == constructor_name (type));
 }
 
+
+/* Nonzero for a class member means that it is shared between all objects
+   of that class.
+
+   [class.member.lookup]:If the resulting set of declarations are not all
+   from sub-objects of the same type, or the set has a  nonstatic  member
+   and  includes members from distinct sub-objects, there is an ambiguity
+   and the program is ill-formed.
+
+   This function checks that T contains no nonstatic members.  */
+
+static int
+shared_member_p (t)
+     tree t;
+{
+  if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == TYPE_DECL \
+      || TREE_CODE (t) == CONST_DECL)
+    return 1;
+  if (is_overloaded_fn (t))
+    {
+      for (; t; t = OVL_NEXT (t))
+	{
+	  tree fn = OVL_CURRENT (t);
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	    return 0;
+	}
+      return 1;
+    }
+  return 0;
+}
+
 /* DATA is really a struct lookup_field_info.  Look for a field with
    the name indicated there in BINFO.  If this function returns a
    non-NULL value it is the result of the lookup.  Called from
@@ -1392,7 +1424,7 @@ lookup_field_r (binfo, data)
      hide the old one, we might have an ambiguity.  */
   if (lfi->rval_binfo && !is_subobject_of_p (lfi->rval_binfo, binfo, lfi->type))
     {
-      if (nval == lfi->rval && SHARED_MEMBER_P (nval))
+      if (nval == lfi->rval && shared_member_p (nval))
 	/* The two things are really the same.  */
 	;
       else if (is_subobject_of_p (binfo, lfi->rval_binfo, lfi->type))
