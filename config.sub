@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-06-19'
+timestamp='2002-07-03'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -118,7 +118,7 @@ esac
 # Here we must recognize all the valid KERNEL-OS combinations.
 maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
-  nto-qnx* | linux-gnu* | storm-chaos* | os2-emx* | windows32-* | rtmk-nova*)
+  nto-qnx* | linux-gnu* | freebsd*-gnu* | storm-chaos* | os2-emx* | windows32-* | rtmk-nova*)
     os=-$maybe_os
     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
     ;;
@@ -231,23 +231,30 @@ case $basic_machine in
 	| arc | arm | arm[bl]e | arme[lb] | armv[2345] | armv[345][lb] | avr \
 	| c4x | clipper \
 	| d10v | d30v | dlx | dsp16xx \
-	| fr30 \
+	| fr30 | frv \
 	| h8300 | h8500 | hppa | hppa1.[01] | hppa2.0 | hppa2.0[nw] | hppa64 \
 	| i370 | i860 | i960 | ia64 \
 	| ip2k \
 	| m32r | m68000 | m68k | m88k | mcore \
-	| mips | mips16 | mips64 | mips64el | mips64orion | mips64orionel \
-	| mips64vr4100 | mips64vr4100el | mips64vr4300 \
-	| mips64vr4300el | mips64vr5000 | mips64vr5000el \
-	| mipsbe | mipseb | mipsel | mipsle | mipstx39 | mipstx39el \
-	| mipsisa32 | mipsisa64 \
+	| mips | mipsbe | mipseb | mipsel | mipsle \
+	| mips16 \
+	| mips64 | mips64el \
+	| mips64orion | mips64orionel \
+	| mips64vr4100 | mips64vr4100el \
+	| mips64vr4300 | mips64vr4300el \
+	| mips64vr5000 | mips64vr5000el \
+	| mipsisa32 | mipsisa32el \
+	| mipsisa64 | mipsisa64el \
+	| mipsisa64sb1 | mipsisa64sb1el \
+	| mipstx39 | mipstx39el \
 	| mn10200 | mn10300 \
 	| ns16k | ns32k \
 	| openrisc | or32 \
 	| pdp10 | pdp11 | pj | pjl \
 	| powerpc | powerpc64 | powerpc64le | powerpcle | ppcbe \
 	| pyramid \
-	| sh | sh[34] | sh[34]eb | shbe | shle | sh64 | sh64le \
+	| sh | sh[1234] | sh3e | sh[34]eb | shbe | shle | sh[1234]le | sh3ele \
+	| sh64 | sh64le \
 	| sparc | sparc64 | sparc86x | sparclet | sparclite | sparcv9 | sparcv9b \
 	| strongarm \
 	| tahoe | thumb | tic80 | tron \
@@ -289,7 +296,7 @@ case $basic_machine in
 	| clipper-* | cydra-* \
 	| d10v-* | d30v-* | dlx-* \
 	| elxsi-* \
-	| f30[01]-* | f700-* | fr30-* | fx80-* \
+	| f30[01]-* | f700-* | fr30-* | frv-* | fx80-* \
 	| h8300-* | h8500-* \
 	| hppa-* | hppa1.[01]-* | hppa2.0-* | hppa2.0[nw]-* | hppa64-* \
 	| i*86-* | i860-* | i960-* | ia64-* \
@@ -297,17 +304,25 @@ case $basic_machine in
 	| m32r-* \
 	| m68000-* | m680[012346]0-* | m68360-* | m683?2-* | m68k-* \
 	| m88110-* | m88k-* | mcore-* \
-	| mips-* | mips16-* | mips64-* | mips64el-* | mips64orion-* \
-	| mips64orionel-* | mips64vr4100-* | mips64vr4100el-* \
-	| mips64vr4300-* | mips64vr4300el-* | mipsbe-* | mipseb-* \
-	| mipsle-* | mipsel-* | mipstx39-* | mipstx39el-* \
+	| mips-* | mipsbe-* | mipseb-* | mipsel-* | mipsle-* \
+	| mips16-* \
+	| mips64-* | mips64el-* \
+	| mips64orion-* | mips64orionel-* \
+	| mips64vr4100-* | mips64vr4100el-* \
+	| mips64vr4300-* | mips64vr4300el-* \
+	| mips64vr5000-* | mips64vr5000el-* \
+	| mipsisa32-* | mipsisa32el-* \
+	| mipsisa64-* | mipsisa64el-* \
+	| mipsisa64sb1-* | mipsisa64sb1el-* \
+	| mipstx39 | mipstx39el \
 	| none-* | np1-* | ns16k-* | ns32k-* \
 	| orion-* \
 	| pdp10-* | pdp11-* | pj-* | pjl-* | pn-* | power-* \
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* | ppcbe-* \
 	| pyramid-* \
 	| romp-* | rs6000-* \
-	| sh-* | sh[34]-* | sh[34]eb-* | shbe-* | shle-* | sh64-* | sh64le-* \
+	| sh-* | sh[1234]-* | sh3e-* | sh[34]eb-* | shbe-* \
+	| shle-* | sh[1234]le-* | sh3ele-* | sh64-* | sh64le-* \
 	| sparc-* | sparc64-* | sparc86x-* | sparclet-* | sparclite-* \
 	| sparcv9-* | sparcv9b-* | strongarm-* | sv1-* | sx?-* \
 	| tahoe-* | thumb-* | tic30-* | tic54x-* | tic80-* | tron-* \
@@ -998,7 +1013,7 @@ case $basic_machine in
 	we32k)
 		basic_machine=we32k-att
 		;;
-	sh3 | sh4 | sh3eb | sh4eb)
+	sh3 | sh4 | sh3eb | sh4eb | sh[1234]le | sh3ele)
 		basic_machine=sh-unknown
 		;;
 	sh64)

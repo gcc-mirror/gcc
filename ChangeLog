@@ -1,3 +1,8 @@
+2002-07-16  Chris Demetriou  <cgd@broadcom.com>
+
+	* config.guess: Update to 2002-07-09 version.
+	* config.sub: Update to 2002-07-03 version.
+
 2002-07-15  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* MAINTAINERS: Fix typo in a maintainer email address.

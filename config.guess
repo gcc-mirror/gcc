@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-05-22'
+timestamp='2002-07-09'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -88,30 +88,40 @@ if test $# != 0; then
   exit 1
 fi
 
+trap 'exit 1' 1 2 15
 
-dummy=dummy-$$
-trap 'rm -f $dummy.c $dummy.o $dummy.rel $dummy; exit 1' 1 2 15
+# CC_FOR_BUILD -- compiler used by this script. Note that the use of a
+# compiler to aid in system detection is discouraged as it requires
+# temporary files to be created and, as you can see below, it is a
+# headache to deal with in a portable fashion.
 
-# CC_FOR_BUILD -- compiler used by this script.
 # Historically, `CC_FOR_BUILD' used to be named `HOST_CC'. We still
 # use `HOST_CC' if defined, but it is deprecated.
 
-set_cc_for_build='case $CC_FOR_BUILD,$HOST_CC,$CC in
- ,,)    echo "int dummy(){}" > $dummy.c ;
+# This shell variable is my proudest work .. or something. --bje
+
+set_cc_for_build='tmpdir=${TMPDIR-/tmp}/config-guess-$$ ;
+(old=`umask` && umask 077 && mkdir $tmpdir && umask $old && unset old)
+   || (echo "$me: cannot create $tmpdir" >&2 && exit 1) ;
+dummy=$tmpdir/dummy ;
+files="$dummy.c $dummy.o $dummy.rel $dummy" ;
+trap '"'"'rm -f $files; rmdir $tmpdir; exit 1'"'"' 1 2 15 ;
+case $CC_FOR_BUILD,$HOST_CC,$CC in
+ ,,)    echo "int x;" > $dummy.c ;
 	for c in cc gcc c89 c99 ; do
-	  ($c $dummy.c -c -o $dummy.o) >/dev/null 2>&1 ;
-	  if test $? = 0 ; then
+	  if ($c $dummy.c -c -o $dummy.o) >/dev/null 2>&1 ; then
 	     CC_FOR_BUILD="$c"; break ;
 	  fi ;
 	done ;
-	rm -f $dummy.c $dummy.o $dummy.rel ;
+	rm -f $files ;
 	if test x"$CC_FOR_BUILD" = x ; then
 	  CC_FOR_BUILD=no_compiler_found ;
 	fi
 	;;
  ,,*)   CC_FOR_BUILD=$CC ;;
  ,*,*)  CC_FOR_BUILD=$HOST_CC ;;
-esac'
+esac ;
+unset files'
 
 # This is needed to find uname on a Pyramid OSx when run in the BSD universe.
 # (ghazi@noc.rutgers.edu 1994-08-24)
@@ -249,7 +259,7 @@ EOF
 	eval $set_cc_for_build
 	$CC_FOR_BUILD $dummy.s -o $dummy 2>/dev/null
 	if test "$?" = 0 ; then
-		case `./$dummy` in
+		case `$dummy` in
 			0-0)
 				UNAME_MACHINE="alpha"
 				;;
@@ -273,7 +283,7 @@ EOF
 				;;
 		esac
 	fi
-	rm -f $dummy.s $dummy
+	rm -f $dummy.s $dummy && rmdir $tmpdir
 	echo ${UNAME_MACHINE}-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VTX]//' | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'`
 	exit 0 ;;
     Alpha\ *:Windows_NT*:*)
@@ -314,6 +324,10 @@ EOF
     NILE*:*:*:dcosx)
 	echo pyramid-pyramid-svr4
 	exit 0 ;;
+    DRS?6000:UNIX_SV:4.2*:7*)
+	case `/usr/bin/uname -p` in
+	    sparc) echo sparc-icl-nx7 && exit 0 ;;
+	esac ;;
     sun4H:SunOS:5.*:*)
 	echo sparc-hal-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
@@ -421,9 +435,9 @@ EOF
 	}
 EOF
 	$CC_FOR_BUILD $dummy.c -o $dummy \
-	  && ./$dummy `echo "${UNAME_RELEASE}" | sed -n 's/\([0-9]*\).*/\1/p'` \
-	  && rm -f $dummy.c $dummy && exit 0
-	rm -f $dummy.c $dummy
+	  && $dummy `echo "${UNAME_RELEASE}" | sed -n 's/\([0-9]*\).*/\1/p'` \
+	  && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
+	rm -f $dummy.c $dummy && rmdir $tmpdir
 	echo mips-mips-riscos${UNAME_RELEASE}
 	exit 0 ;;
     Motorola:PowerMAX_OS:*:*)
@@ -504,8 +518,8 @@ EOF
 			exit(0);
 			}
 EOF
-		$CC_FOR_BUILD $dummy.c -o $dummy && ./$dummy && rm -f $dummy.c $dummy && exit 0
-		rm -f $dummy.c $dummy
+		$CC_FOR_BUILD $dummy.c -o $dummy && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
+		rm -f $dummy.c $dummy && rmdir $tmpdir
 		echo rs6000-ibm-aix3.2.5
 	elif grep bos324 /usr/include/stdio.h >/dev/null 2>&1; then
 		echo rs6000-ibm-aix3.2.4
@@ -603,9 +617,9 @@ EOF
                   exit (0);
               }
 EOF
-		    (CCOPTS= $CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null) && HP_ARCH=`./$dummy`
+		    (CCOPTS= $CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null) && HP_ARCH=`$dummy`
 		    if test -z "$HP_ARCH"; then HP_ARCH=hppa; fi
-		    rm -f $dummy.c $dummy
+		    rm -f $dummy.c $dummy && rmdir $tmpdir
 		fi ;;
 	esac
 	echo ${HP_ARCH}-hp-hpux${HPUX_REV}
@@ -641,8 +655,8 @@ EOF
 	  exit (0);
 	}
 EOF
-	$CC_FOR_BUILD $dummy.c -o $dummy && ./$dummy && rm -f $dummy.c $dummy && exit 0
-	rm -f $dummy.c $dummy
+	$CC_FOR_BUILD $dummy.c -o $dummy && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
+	rm -f $dummy.c $dummy && rmdir $tmpdir
 	echo unknown-hitachi-hiuxwe2
 	exit 0 ;;
     9000/7??:4.3bsd:*:* | 9000/8?[79]:4.3bsd:*:* )
@@ -725,7 +739,19 @@ EOF
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     *:FreeBSD:*:*)
-	echo ${UNAME_MACHINE}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`
+	# Determine whether the default compiler uses glibc.
+	eval $set_cc_for_build
+	sed 's/^	//' << EOF >$dummy.c
+	#include <features.h>
+	#if __GLIBC__ >= 2
+	LIBC=gnu
+	#else
+	LIBC=
+	#endif
+EOF
+	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep ^LIBC=`
+	rm -f $dummy.c && rmdir $tmpdir
+	echo ${UNAME_MACHINE}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`${LIBC:+-$LIBC}
 	exit 0 ;;
     i*:CYGWIN*:*)
 	echo ${UNAME_MACHINE}-pc-cygwin
@@ -786,7 +812,7 @@ EOF
 	#endif
 EOF
 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep ^CPU=`
-	rm -f $dummy.c
+	rm -f $dummy.c && rmdir $tmpdir
 	test x"${CPU}" != x && echo "${CPU}-pc-linux-gnu" && exit 0
 	;;
     ppc:Linux:*:*)
@@ -882,7 +908,7 @@ EOF
 	#endif
 EOF
 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep ^LIBC=`
-	rm -f $dummy.c
+	rm -f $dummy.c && rmdir $tmpdir
 	test x"${LIBC}" != x && echo "${UNAME_MACHINE}-pc-linux-${LIBC}" && exit 0
 	test x"${TENTATIVE}" != x && echo "${TENTATIVE}" && exit 0
 	;;
@@ -921,13 +947,13 @@ EOF
 		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
 		echo ${UNAME_MACHINE}-pc-isc$UNAME_REL
 	elif /bin/uname -X 2>/dev/null >/dev/null ; then
-		UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
-		(/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
-		(/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
+		UNAME_REL=`(/bin/uname -X|grep Release|sed -e 's/.*= //')`
+		(/bin/uname -X|grep i80486 >/dev/null) && UNAME_MACHINE=i486
+		(/bin/uname -X|grep '^Machine.*Pentium' >/dev/null) \
 			&& UNAME_MACHINE=i586
-		(/bin/uname -X|egrep '^Machine.*Pent ?II' >/dev/null) \
+		(/bin/uname -X|grep '^Machine.*Pent *II' >/dev/null) \
 			&& UNAME_MACHINE=i686
-		(/bin/uname -X|egrep '^Machine.*Pentium Pro' >/dev/null) \
+		(/bin/uname -X|grep '^Machine.*Pentium Pro' >/dev/null) \
 			&& UNAME_MACHINE=i686
 		echo ${UNAME_MACHINE}-pc-sco$UNAME_REL
 	else
@@ -1245,8 +1271,8 @@ main ()
 }
 EOF
 
-$CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null && ./$dummy && rm -f $dummy.c $dummy && exit 0
-rm -f $dummy.c $dummy
+$CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null && $dummy && rm -f $dummy.c $dummy && rmdir $tmpdir && exit 0
+rm -f $dummy.c $dummy && rmdir $tmpdir
 
 # Apollos put the system type in the environment.
 
