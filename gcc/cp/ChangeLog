@@ -1,5 +1,11 @@
 2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* mangle.c (write_expression): Correct handling of enumeration
+	constants.
+	(write_template_arg): Likewise.
+	* pt.c (convert_template_argument): Do not fold non-type template
+	arguments when inside a template.
+
 	PR c++/7478
 	* cvt.c (convert_to_reference): Allow references as the incoming
 	type.

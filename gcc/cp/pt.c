@@ -3487,10 +3487,11 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
       if (invalid_nontype_parm_type_p (t, complain))
         return error_mark_node;
       
-      if (processing_template_decl)
+      if (processing_template_decl && !abi_version_at_least (2))
 	arg = maybe_fold_nontype_arg (arg);
 
-      if (!uses_template_parms (arg) && !uses_template_parms (t))
+      if ((!abi_version_at_least (2) || !processing_template_decl)
+	  && (!uses_template_parms (arg) && !uses_template_parms (t)))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
