@@ -1204,7 +1204,7 @@ reload (first, global, dumpfile)
 		      caller_save_needs[(int) caller_save_spill_class]++;
 
 		      while (*p != LIM_REG_CLASSES)
-			caller_save_needs[*p++] += 1;
+			caller_save_needs[(int) *p++] += 1;
 		    }
 
 		  if (caller_save_group_size > 1)
