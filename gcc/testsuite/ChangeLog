@@ -1,5 +1,8 @@
 2003-07-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8327
+	* g++.dg/template/scope1.C: New test.
+
 	* g++.dg/warn/Wsign-compare-1.C: New test.
 
 2003-07-10  Kazu Hirata  <kazu@cs.umass.edu>
