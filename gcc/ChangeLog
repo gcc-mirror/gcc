@@ -1,3 +1,13 @@
+Thu Oct 12 16:02:31 MET DST 2000 Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (adddi3, subdi3 splitters): Update for new pattern.
+	(addsi3_cc, addqi3_cc, subsi3_cc): Remove
+	(addsi3_carry): Canonicalize.
+	(addqi_5): Remove '*'.
+	(sbb pattern): Canonicalize.
+
+	* i386.md (cmp to inc/add peep2): New.
+
 2000-10-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	* bb-reorder.c (reorder_basic_blocks): Allocate an aux block for
