@@ -1,5 +1,12 @@
 2003-02-12  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/channels/Channels.java: New file.
+	* Makefile.am
+	(ordinary_java_source_files): Added java/nio/channels/Channels.java.
+	* Makefile.in: Regenerated.
+
+2003-02-12  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/ByteBuffer.java
 	(allocate): Implemented.
 	(wrap): Implemented.
