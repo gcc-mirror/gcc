@@ -1230,6 +1230,65 @@ finish_named_return_value (return_id, init)
   DECL_UNINLINABLE (current_function_decl) = 1;
 }
 
+/* The INIT_LIST is a list of mem-initializers, in the order they were
+   written by the user.  The TREE_VALUE of each node is a list of
+   initializers for a particular subobject.  The TREE_PURPOSE is a
+   FIELD_DECL is the initializer is for a non-static data member, and
+   a class type if the initializer is for a base class.  */
+
+void
+finish_mem_initializers (init_list)
+     tree init_list;
+{
+  tree member_init_list;
+  tree base_init_list;
+  tree last_base_warned_about;
+  tree next; 
+  tree init;
+
+  member_init_list = NULL_TREE;
+  base_init_list = NULL_TREE;
+  last_base_warned_about = NULL_TREE;
+
+  for (init = init_list; init; init = next)
+    {
+      next = TREE_CHAIN (init);
+      if (TREE_CODE (TREE_PURPOSE (init)) == FIELD_DECL)
+	{
+	  TREE_CHAIN (init) = member_init_list;
+	  member_init_list = init;
+
+	  /* We're running through the initializers from right to left
+	     as we process them here.  So, if we see a data member
+	     initializer after we see a base initializer, that
+	     actually means that the base initializer preceeded the
+	     data member initializer.  */
+	  if (warn_reorder && last_base_warned_about != base_init_list)
+	    {
+	      tree base;
+
+	      for (base = base_init_list; 
+		   base != last_base_warned_about; 
+		   base = TREE_CHAIN (base))
+		{
+		  cp_warning ("base initializer for `%T'",
+			      TREE_PURPOSE (base));
+		  warning ("   will be re-ordered to precede member initializations");
+		}
+
+	      last_base_warned_about = base_init_list;
+	    }
+	}
+      else
+	{
+	  TREE_CHAIN (init) = base_init_list;
+	  base_init_list = init;
+	}
+    }
+
+  setup_vtbl_ptr (member_init_list, base_init_list);
+}
+
 /* Cache the value of this class's main virtual function table pointer
    in a register variable.  This will save one indirection if a
    more than one virtual function call is made this function.  */

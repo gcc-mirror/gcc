@@ -4479,6 +4479,7 @@ extern void prep_stmt                           PARAMS ((tree));
 extern tree add_scope_stmt                      PARAMS ((int, int));
 extern void do_pushlevel                        PARAMS ((void));
 extern tree do_poplevel                         PARAMS ((void));
+extern void finish_mem_initializers             PARAMS ((tree));
 
 /* in spew.c */
 extern void init_spew				PARAMS ((void));
@@ -4556,6 +4557,7 @@ extern void remap_save_expr                     PARAMS ((tree *, splay_tree, tre
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
 extern tree build_shared_int_cst                PARAMS ((int));
 extern special_function_kind special_function_p PARAMS ((tree));
+extern int count_trees                          PARAMS ((tree));
 
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));

@@ -854,40 +854,10 @@ return_init:
 base_init:
 	  ':' .set_base_init member_init_list
 		{
-		  tree member_init_list = NULL_TREE;
-		  tree base_init_list = NULL_TREE;
-		  tree init;
-		  tree next;
-		  int seen_member_init_p;
-
 		  if ($3.new_type_flag == 0)
 		    error ("no base or member initializers given following ':'");
-		  
-		  seen_member_init_p = 0;
-		  for (init = $3.t; init; init = next)
-		    {
-		      next = TREE_CHAIN (init);
-		      if (TREE_CODE (TREE_PURPOSE (init)) == FIELD_DECL)
-			{
-			  TREE_CHAIN (init) = member_init_list;
-			  member_init_list = init;
-			  seen_member_init_p = 1;
-			}
-		      else
-			{
-			  if (warn_reorder && seen_member_init_p)
-			    {
-			      cp_warning ("base initializer for `%T'",
-					  TREE_PURPOSE (init));
-			      warning ("   will be re-ordered to precede member initializations");
-			    }
-			    
-			  TREE_CHAIN (init) = base_init_list;
-			  base_init_list = init;
-			}
-		    }
 
-		  setup_vtbl_ptr (member_init_list, base_init_list);
+		  finish_mem_initializers ($3.t);
 		}
 	;
 
