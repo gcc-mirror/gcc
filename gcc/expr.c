@@ -4719,7 +4719,8 @@ safe_from_p (x, exp)
 	{
 	case ADDR_EXPR:
 	  return (staticp (TREE_OPERAND (exp, 0))
-		  || safe_from_p (x, TREE_OPERAND (exp, 0)));
+		  || safe_from_p (x, TREE_OPERAND (exp, 0))
+		  || TREE_STATIC (exp));
 
 	case INDIRECT_REF:
 	  if (GET_CODE (x) == MEM)
@@ -7178,7 +7179,8 @@ expand_expr (exp, target, tmode, modifier)
       /* Are we taking the address of a nested function?  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == FUNCTION_DECL
 	  && decl_function_context (TREE_OPERAND (exp, 0)) != 0
-	  && ! DECL_NO_STATIC_CHAIN (TREE_OPERAND (exp, 0)))
+	  && ! DECL_NO_STATIC_CHAIN (TREE_OPERAND (exp, 0))
+	  && ! TREE_STATIC (exp))
 	{
 	  op0 = trampoline_address (TREE_OPERAND (exp, 0));
 	  op0 = force_operand (op0, target);
