@@ -1,3 +1,10 @@
+2004-06-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/pool_allocator.h: Convert to a global free-list,
+	as per the original SGI/HP design: move the implementation
+	details to struct __pool_base, from which __pool_alloc derives.
+	* src/allocator.cc: Instantiate __pool_base.
+
 2004-06-07  Dhruv Matani  <dhruvbird@gmx.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 
