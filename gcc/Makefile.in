@@ -695,6 +695,9 @@ LIBS =	$(INTLLIBS) @LIBS@ $(LIBIBERTY)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
 
+# Libs needed (at present) just for jcf-dump.
+LDEXP_LIB = @LDEXP_LIB@
+
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 BUILD_LIBS = $(BUILD_LIBIBERTY)

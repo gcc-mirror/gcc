@@ -752,6 +752,15 @@ GNAT_LIBEXC="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(GNAT_LIBEXC)
 
+# Some systems put ldexp and frexp in libm instead of libc; assume
+# they're both in the same place.  jcf-dump needs them.
+save_LIBS="$LIBS"
+LIBS=
+AC_SEARCH_LIBS(ldexp, m)
+LDEXP_LIB="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(LDEXP_LIB)
+
 # See if the stage1 system preprocessor understands the ANSI C
 # preprocessor stringification operator.  (Used by symcat.h.)
 AC_C_STRINGIZE
