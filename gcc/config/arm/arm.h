@@ -1287,8 +1287,8 @@ enum reg_class
     (OFFSET) = 0;							\
   else if ((FROM) == FRAME_POINTER_REGNUM				\
 	   && (TO) == STACK_POINTER_REGNUM)				\
-    (OFFSET) = (current_function_outgoing_args_size			\
-		+ NUM_INTS (get_frame_size ()));			\
+    (OFFSET) = current_function_outgoing_args_size			\
+		+ ((get_frame_size () + 3) & ~3);			\
   else									\
     {									\
       int regno;							\
@@ -1317,7 +1317,7 @@ enum reg_class
 	       && (regs_ever_live[LR_REGNUM] || saved_hard_reg))	\
 	     offset += 4;						\
 	   offset += current_function_outgoing_args_size;		\
-	   (OFFSET) = NUM_INTS (get_frame_size ()) + offset;		\
+	   (OFFSET) = ((get_frame_size () + 3) & ~3) + offset;		\
          }								\
     }									\
 }
