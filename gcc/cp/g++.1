@@ -1,0 +1,670 @@
+.\" Copyright (c) 1991, 1992 Free Software Foundation              -*-Text-*-
+.\" See section COPYING for conditions for redistribution
+.\" FIXME: no info here on predefines.  Should there be?  extra for C++...
+.TH G++ 1 "30apr1993" "GNU Tools" "GNU Tools"
+.de BP
+.sp
+.ti \-.2i
+\(**
+..
+.SH NAME
+g++ \- GNU project C++ Compiler (v2.4)
+.SH SYNOPSIS
+.RB g++ " [" \c
+.IR option " | " filename " ].\|.\|.
+.SH DESCRIPTION
+The C and C++ compilers are integrated;
+.B g++
+is a script to call
+.B gcc with options to recognize C++.  
+.B gcc
+processes input files
+through one or more of four stages: preprocessing, compilation,
+assembly, and linking.  This man page contains full descriptions for 
+.I only
+C++ specific aspects of the compiler, though it also contains
+summaries of some general-purpose options.  For a fuller explanation
+of the compiler, see
+.BR gcc ( 1 ).
+
+C++ source files use one of the suffixes `\|\c
+.B .C\c
+\&\|', `\|\c
+.B .cc\c
+\&\|', or `\|\c
+.B .cxx\c
+\&\|'; preprocessed C++ files use the suffix `\|\c
+.B .ii\c
+\&\|'.
+.SH OPTIONS
+There are many command-line options, including options to control
+details of optimization, warnings, and code generation, which are
+common to both 
+.B gcc
+and
+.B g++\c
+\&.  For full information on all options, see 
+.BR gcc ( 1 ).
+
+Options must be separate: `\|\c
+.B \-dr\c
+\&\|' is quite different from `\|\c
+.B \-d \-r
+\&\|'. 
+
+Most `\|\c
+.B \-f\c
+\&\|' and `\|\c
+.B \-W\c
+\&\|' options have two contrary forms: 
+.BI \-f name
+and
+.BI \-fno\- name\c
+\& (or 
+.BI \-W name
+and
+.BI \-Wno\- name\c
+\&). Only the non-default forms are shown here.
+
+.TP
+.B \-c
+Compile or assemble the source files, but do not link.  The compiler
+output is an object file corresponding to each source file.
+.TP
+.BI \-D macro
+Define macro \c
+.I macro\c
+\& with the string `\|\c
+.B 1\c
+\&\|' as its definition.
+.TP
+.BI \-D macro = defn
+Define macro \c
+.I macro\c
+\& as \c
+.I defn\c
+\&.
+.TP
+.B \-E
+Stop after the preprocessing stage; do not run the compiler proper.  The
+output is preprocessed source code, which is sent to the
+standard output.
+.TP
+.B \-fall\-virtual
+Treat all possible member functions as virtual, implicitly.  All
+member functions (except for constructor functions and
+.B new
+or
+.B delete
+member operators) are treated as virtual functions of the class where
+they appear.
+
+This does not mean that all calls to these member functions will be
+made through the internal table of virtual functions.  Under some
+circumstances, the compiler can determine that a call to a given
+virtual function can be made directly; in these cases the calls are
+direct in any case.
+.TP
+.B \-fdollars\-in\-identifiers
+Permit the use of `\|\c
+.B $\c
+\&\|' in identifiers.
+Traditional C allowed the character `\|\c
+.B $\c
+\&\|' to form part of identifiers; by default, GNU C also
+allows this.  However, ANSI C forbids `\|\c
+.B $\c
+\&\|' in identifiers, and GNU C++ also forbids it by default on most
+platforms (though on some platforms it's enabled by default for GNU
+C++ as well).
+.TP
+.B \-felide\-constructors
+Use this option to instruct the compiler to be smarter about when it can
+elide constructors.  Without this flag, GNU C++ and cfront both
+generate effectively the same code for:
+.sp
+.br
+A\ foo\ ();
+.br
+A\ x\ (foo\ ());\ \ \ //\ x\ initialized\ by\ `foo\ ()',\ no\ ctor\ called
+.br
+A\ y\ =\ foo\ ();\ \ \ //\ call\ to\ `foo\ ()'\ heads\ to\ temporary,
+.br
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ //\ y\ is\ initialized\ from\ the\ temporary.
+.br
+.sp
+Note the difference!  With this flag, GNU C++ initializes `\|\c
+.B y\c
+\&\|' directly
+from the call to 
+.B foo ()
+without going through a temporary.
+.TP
+.B \-fenum\-int\-equiv
+Normally GNU C++ allows conversion of 
+.B enum
+to
+.B int\c
+\&, but not the other way around.  Use this option if you want GNU C++
+to allow conversion of
+.B int
+to 
+.B enum
+as well.  
+.TP
+.B \-fexternal\-templates
+Produce smaller code for template declarations, by generating only a
+single copy of each template function where it is defined.
+To use this option successfully, you must also mark all files that
+use templates with either `\|\c
+.B #pragma implementation\c
+\&\|' (the definition) or
+`\|\c
+.B #pragma interface\c
+\&\|' (declarations).
+
+When your code is compiled with `\|\c
+.B \-fexternal\-templates\c
+\&\|', all
+template instantiations are external.  You must arrange for all
+necessary instantiations to appear in the implementation file; you can
+do this with a \c
+.B typedef\c
+\& that references each instantiation needed.
+Conversely, when you compile using the default option
+`\|\c
+.B \-fno\-external\-templates\c
+\&\|', all template instantiations are
+explicitly internal.
+.TP
+.B \-fno\-gnu\-linker
+Do not output global initializations (such as C++ constructors and
+destructors) in the form used by the GNU linker (on systems where the GNU
+linker is the standard method of handling them).  Use this option when
+you want to use a non-GNU linker, which also requires using the
+.B collect2
+program to make sure the system linker includes
+constructors and destructors.  (\c
+.B collect2
+is included in the GNU CC distribution.)  For systems which
+.I must
+use
+.B collect2\c
+\&, the compiler driver
+.B gcc
+is configured to do this automatically.
+.TP
+.B \-fmemoize\-lookups
+.TP
+.B \-fsave\-memoized
+These flags are used to get the compiler to compile programs faster
+using heuristics.  They are not on by default since they are only effective
+about half the time.  The other half of the time programs compile more
+slowly (and take more memory).
+
+The first time the compiler must build a call to a member function (or
+reference to a data member), it must (1) determine whether the class
+implements member functions of that name; (2) resolve which member
+function to call (which involves figuring out what sorts of type
+conversions need to be made); and (3) check the visibility of the member
+function to the caller.  All of this adds up to slower compilation.
+Normally, the second time a call is made to that member function (or
+reference to that data member), it must go through the same lengthy
+process again.  This means that code like this
+.sp
+.br
+\ \ cout\ <<\ "This\ "\ <<\ p\ <<\ "\ has\ "\ <<\ n\ <<\ "\ legs.\en";
+.br
+.sp
+makes six passes through all three steps.  By using a software cache,
+a ``hit'' significantly reduces this cost.  Unfortunately, using the
+cache introduces another layer of mechanisms which must be implemented,
+and so incurs its own overhead.  `\|\c
+.B \-fmemoize\-lookups\c
+\&\|' enables
+the software cache.
+
+Because access privileges (visibility) to members and member functions
+may differ from one function context to the next, 
+.B g++
+may need to flush the cache. With the `\|\c
+.B \-fmemoize\-lookups\c
+\&\|' flag, the cache is flushed after every
+function that is compiled.  The `\|\c
+\-fsave\-memoized\c
+\&\|' flag enables the same software cache, but when the compiler
+determines that the context of the last function compiled would yield
+the same access privileges of the next function to compile, it
+preserves the cache. 
+This is most helpful when defining many member functions for the same
+class: with the exception of member functions which are friends of
+other classes, each member function has exactly the same access
+privileges as every other, and the cache need not be flushed.
+.TP
+.B \-fno\-default\-inline
+Do not make member functions inline by default merely because they are
+defined inside the class scope.  Otherwise, when you specify
+.B \-O\c
+\&, member functions defined inside class scope are compiled
+inline by default; i.e., you don't need to add `\|\c
+.B inline\c
+\&\|' in front of
+the member function name.
+.TP
+.B \-fno\-strict\-prototype
+Consider the declaration \c
+.B int foo ();\c
+\&.  In C++, this means that the
+function \c
+.B foo\c
+\& takes no arguments.  In ANSI C, this is declared
+.B int foo(void);\c
+\&.  With the flag `\|\c
+.B \-fno\-strict\-prototype\c
+\&\|',
+declaring functions with no arguments is equivalent to declaring its
+argument list to be untyped, i.e., \c
+.B int foo ();\c
+\& is equivalent to
+saying \c
+.B int foo (...);\c
+\&.
+.TP
+.B \-fnonnull\-objects
+Normally, GNU C++ makes conservative assumptions about objects reached
+through references.  For example, the compiler must check that `\|\c
+.B a\c
+\&\|' is not null in code like the following:
+.br
+\ \ \ \ obj\ &a\ =\ g\ ();
+.br
+\ \ \ \ a.f\ (2);
+.br
+Checking that references of this sort have non-null values requires
+extra code, however, and it is unnecessary for many programs.  You can
+use `\|\c
+.B \-fnonnull\-objects\c
+\&\|' to omit the checks for null, if your program doesn't require the
+default checking.
+.TP
+.B \-fhandle\-signatures
+.TP
+.B \-fno\-handle\-signatures
+These options control the recognition of the \c
+.B signature\c
+\& and \c
+.B sigof\c
+\& constructs for specifying abstract types.  By default, these
+constructs are not recognized.
+.TP
+.B \-fthis\-is\-variable
+The incorporation of user-defined free store management into C++ has
+made assignment to \c
+.B this\c
+\& an anachronism.  Therefore, by default GNU
+C++ treats the type of \c
+.B this\c
+\& in a member function of \c
+.B class X\c
+\&
+to be \c
+.B X *const\c
+\&.  In other words, it is illegal to assign to
+\c
+.B this\c
+\& within a class member function.  However, for backwards
+compatibility, you can invoke the old behavior by using
+\&`\|\c
+.B \-fthis\-is\-variable\c
+\&\|'.
+.TP
+.B \-g
+Produce debugging information in the operating system's native format
+(for DBX or SDB or DWARF).  GDB also can work with this debugging
+information.  On most systems that use DBX format, `\|\c
+.B \-g\c
+\&\|' enables use
+of extra debugging information that only GDB can use.
+
+Unlike most other C compilers, GNU CC allows you to use `\|\c
+.B \-g\c
+\&\|' with
+`\|\c
+.B \-O\c
+\&\|'.  The shortcuts taken by optimized code may occasionally
+produce surprising results: some variables you declared may not exist
+at all; flow of control may briefly move where you did not expect it;
+some statements may not be executed because they compute constant
+results or their values were already at hand; some statements may
+execute in different places because they were moved out of loops.
+
+Nevertheless it proves possible to debug optimized output.  This makes
+it reasonable to use the optimizer for programs that might have bugs.
+.TP
+.BI "\-I" "dir"\c
+\&
+Append directory \c
+.I dir\c
+\& to the list of directories searched for include files.
+.TP
+.BI "\-L" "dir"\c
+\&
+Add directory \c
+.I dir\c
+\& to the list of directories to be searched
+for `\|\c
+.B \-l\c
+\&\|'.
+.TP
+.BI \-l library\c
+\&
+Use the library named \c
+.I library\c
+\& when linking.  (C++ programs often require `\|\c
+\-lg++\c
+\&\|' for successful linking.)
+.TP
+.B \-nostdinc
+Do not search the standard system directories for header files.  Only
+the directories you have specified with
+.B \-I
+options (and the current directory, if appropriate) are searched.
+.TP
+.B \-nostdinc++
+Do not search for header files in the standard directories specific to
+C++, but do still search the other standard directories.  (This option
+is used when building libg++.)
+.TP
+.B \-O
+Optimize.  Optimizing compilation takes somewhat more time, and a lot
+more memory for a large function.
+.TP
+.BI "\-o " file\c
+\&
+Place output in file \c
+.I file\c
+\&.
+.TP
+.B \-S
+Stop after the stage of compilation proper; do not assemble.  The output
+is an assembler code file for each non-assembler input
+file specified.
+.TP
+.B \-traditional
+Attempt to support some aspects of traditional C compilers.
+
+Specifically, for both C and C++ programs:
+.TP
+\ \ \ \(bu
+In the preprocessor, comments convert to nothing at all, rather than
+to a space.  This allows traditional token concatenation.
+.TP
+\ \ \ \(bu
+In the preprocessor, macro arguments are recognized within string
+constants in a macro definition (and their values are stringified,
+though without additional quote marks, when they appear in such a
+context).  The preprocessor always considers a string constant to end
+at a newline.
+.TP
+\ \ \ \(bu
+The preprocessor does not predefine the macro \c
+.B __STDC__\c
+\& when you use
+`\|\c
+.B \-traditional\c
+\&\|', but still predefines\c
+.B __GNUC__\c
+\& (since the GNU extensions indicated by 
+.B __GNUC__\c
+\& are not affected by
+`\|\c
+.B \-traditional\c
+\&\|').  If you need to write header files that work
+differently depending on whether `\|\c
+.B \-traditional\c
+\&\|' is in use, by
+testing both of these predefined macros you can distinguish four
+situations: GNU C, traditional GNU C, other ANSI C compilers, and
+other old C compilers.
+.TP
+\ \ \ \(bu
+In the preprocessor, comments convert to nothing at all, rather than
+to a space.  This allows traditional token concatenation.
+.TP
+\ \ \ \(bu
+In the preprocessor, macro arguments are recognized within string
+constants in a macro definition (and their values are stringified,
+though without additional quote marks, when they appear in such a
+context).  The preprocessor always considers a string constant to end
+at a newline.
+.TP
+\ \ \ \(bu
+The preprocessor does not predefine the macro \c
+.B __STDC__\c
+\& when you use
+`\|\c
+.B \-traditional\c
+\&\|', but still predefines\c
+.B __GNUC__\c
+\& (since the GNU extensions indicated by 
+.B __GNUC__\c
+\& are not affected by
+`\|\c
+.B \-traditional\c
+\&\|').  If you need to write header files that work
+differently depending on whether `\|\c
+.B \-traditional\c
+\&\|' is in use, by
+testing both of these predefined macros you can distinguish four
+situations: GNU C, traditional GNU C, other ANSI C compilers, and
+other old C compilers.
+.PP
+.TP
+\ \ \ \(bu
+String ``constants'' are not necessarily constant; they are stored in
+writable space, and identical looking constants are allocated
+separately.
+
+For C++ programs only (not C), `\|\c
+.B \-traditional\c
+\&\|' has one additional effect: assignment to 
+.B this
+is permitted.  This is the same as the effect of `\|\c
+.B \-fthis\-is\-variable\c
+\&\|'.
+.TP
+.BI \-U macro
+Undefine macro \c
+.I macro\c
+\&.
+.TP
+.B \-Wall
+Issue warnings for conditions which pertain to usage that we recommend
+avoiding and that we believe is easy to avoid, even in conjunction
+with macros. 
+.TP
+.B \-Wenum\-clash
+Warn when converting between different enumeration types.
+.TP
+.B \-Woverloaded\-virtual
+In a derived class, the definitions of virtual functions must match
+the type signature of a virtual function declared in the base class.
+Use this option to request warnings when a derived class declares a
+function that may be an erroneous attempt to define a virtual
+function: that is, warn when a function with the same name as a
+virtual function in the base class, but with a type signature that
+doesn't match any virtual functions from the base class.
+.TP
+.B \-Wtemplate\-debugging
+When using templates in a C++ program, warn if debugging is not yet
+fully available.
+.TP
+.B \-w
+Inhibit all warning messages.
+.TP
+.BI +e N
+Control how virtual function definitions are used, in a fashion
+compatible with
+.B cfront
+1.x.
+.PP
+
+.SH PRAGMAS
+Two `\|\c
+.B #pragma\c
+\&\|' directives are supported for GNU C++, to permit using the same
+header file for two purposes: as a definition of interfaces to a given
+object class, and as the full definition of the contents of that object class.
+.TP
+.B #pragma interface
+Use this directive in header files that define object classes, to save
+space in most of the object files that use those classes.  Normally,
+local copies of certain information (backup copies of inline member
+functions, debugging information, and the internal tables that
+implement virtual functions) must be kept in each object file that
+includes class definitions.  You can use this pragma to avoid such
+duplication.  When a header file containing `\|\c
+.B #pragma interface\c
+\&\|' is included in a compilation, this auxiliary information
+will not be generated (unless the main input source file itself uses
+`\|\c
+.B #pragma implementation\c
+\&\|').  Instead, the object files will contain references to be
+resolved at link time.  
+.tr !"
+.TP
+.B #pragma implementation
+.TP
+.BI "#pragma implementation !" objects .h!
+Use this pragma in a main input file, when you want full output from
+included header files to be generated (and made globally visible).
+The included header file, in turn, should use `\|\c
+.B #pragma interface\c
+\&\|'.  
+Backup copies of inline member functions, debugging information, and
+the internal tables used to implement virtual functions are all
+generated in implementation files.
+
+If you use `\|\c
+.B #pragma implementation\c
+\&\|' with no argument, it applies to an include file with the same
+basename as your source file; for example, in `\|\c
+.B allclass.cc\c
+\&\|', `\|\c
+.B #pragma implementation\c
+\&\|' by itself is equivalent to `\|\c
+.B 
+#pragma implementation "allclass.h"\c
+\&\|'.  Use the string argument if you want a single implementation
+file to include code from multiple header files.  
+
+There is no way to split up the contents of a single header file into
+multiple implementation files. 
+.SH FILES
+.ta \w'LIBDIR/g++\-include 'u
+file.h	C header (preprocessor) file
+.br
+file.i	preprocessed C source file
+.br
+file.C	C++ source file
+.br
+file.cc	C++ source file
+.br
+file.cxx	C++ source file
+.br
+file.s	assembly language file
+.br
+file.o	object file
+.br
+a.out	link edited output
+.br
+\fITMPDIR\fR/cc\(**	temporary files
+.br
+\fILIBDIR\fR/cpp	preprocessor
+.br
+\fILIBDIR\fR/cc1plus	compiler
+.br
+\fILIBDIR\fR/collect	linker front end needed on some machines
+.br
+\fILIBDIR\fR/libgcc.a	GCC subroutine library
+.br
+/lib/crt[01n].o	start-up routine
+.br
+\fILIBDIR\fR/ccrt0	additional start-up routine for C++
+.br
+/lib/libc.a	standard C library, see
+.IR intro (3)
+.br
+/usr/include	standard directory for 
+.B #include
+files
+.br
+\fILIBDIR\fR/include	standard gcc directory for
+.B #include
+files
+.br
+\fILIBDIR\fR/g++\-include	additional g++ directory for
+.B #include
+.sp
+.I LIBDIR
+is usually
+.B /usr/local/lib/\c
+.IR machine / version .
+.br
+.I TMPDIR
+comes from the environment variable 
+.B TMPDIR
+(default
+.B /usr/tmp
+if available, else
+.B /tmp\c
+\&).
+.SH "SEE ALSO"
+gcc(1), cpp(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1).
+.br
+.RB "`\|" gcc "\|', `\|" cpp \|', 
+.RB `\| as \|', `\| ld \|',
+and 
+.RB `\| gdb \|'
+entries in
+.B info\c
+\&.
+.br
+.I 
+Using and Porting GNU CC (for version 2.0)\c
+, Richard M. Stallman; 
+.I
+The C Preprocessor\c
+, Richard M. Stallman;
+.I 
+Debugging with GDB: the GNU Source-Level Debugger\c
+, Richard M. Stallman and Roland H. Pesch;
+.I
+Using as: the GNU Assembler\c
+, Dean Elsner, Jay Fenlason & friends;
+.I
+gld: the GNU linker\c
+, Steve Chamberlain and Roland Pesch.
+
+.SH BUGS
+For instructions on how to report bugs, see the GCC manual.
+
+.SH COPYING
+Copyright (c) 1991, 1992, 1993 Free Software Foundation, Inc.
+.PP
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+.PP
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+.PP
+Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be included in
+translations approved by the Free Software Foundation instead of in
+the original English.
+.SH AUTHORS
+See the GNU CC Manual for the contributors to GNU CC.
