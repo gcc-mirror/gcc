@@ -33,6 +33,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "obstack.h"
+#include "tree.h"
+
+extern char *language_string;
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
@@ -1328,8 +1331,171 @@ output_epilog (file, size)
 	fprintf (file, "\tbr\n");
     }
 
-  /* ??? Need to output a traceback table here when -g was given for complete
-     debugging output.  */
+  /* Output a traceback table here.  See /usr/include/sys/debug.h for info
+     on its format.  */
+  {
+    char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+    int fixed_parms, float_parms, parm_info;
+    int i;
+
+    /* Need label immediately before tbtab, so we can compute its offset
+       from the function start.  */
+    if (*fname == '*')
+      ++fname;
+    fprintf (file, "L..tbtab_");
+    ASM_OUTPUT_LABEL (file, fname);
+
+    /* The .tbtab psuedo-op can only be used for the first eight
+       expressions, since it can't handle the possibly variable length
+       fields that follow.  However, if you omit the optional fields,
+       the assembler outputs zeros for all optional fields anyways, giving each
+       variable length field is minimum length (as defined in sys/debug.h).
+       Thus we can not use the .tbtab psuedo-op at all.  */
+
+    /* An all-zero word flags the start of the tbtab, for debuggers that have
+       to find it by searching forward from the entry point or from the
+       current pc.  */
+    fprintf (file, "\t.long 0\n");
+
+    /* Tbtab format type.  Use format type 0.  */
+    fprintf (file, "\t.byte 0\n");
+
+    /* Language type.  Unfortunately, there doesn't seem to be any official way
+       to get this info, so we use language_string.  C is 0.  C++ is 9.
+       No number defined for Obj-C, but it doesn't have its own
+       language_string, so we can't detect it anyways.  */
+    if (! strcmp (language_string, "GNU C"))
+      i = 0;
+    else if (! strcmp (language_string, "GNU C++"))
+      i = 9;
+    else
+      abort ();
+    fprintf (file, "\t.byte %d\n", i);
+
+    /* 8 single bit fields: global linkage (not set for C extern linkage,
+       apparently a PL/I convention?), out-of-line epilogue/prologue, offset
+       from start of procedure stored in tbtab, internal function, function
+       has controlled storage, function has no toc, function uses fp,
+       function logs/aborts fp operations.  */
+    /* Assume that fp operations are used if any fp reg must be saved.  */
+    fprintf (file, "\t.byte %d\n", (1 << 5) | ((first_fp_reg != 64) << 1));
+
+    /* 6 bitfields: function is interrupt handler, name present in proc table,
+       function calls alloca, on condition directives (controls stack walks,
+       3 bits), saves condition reg, saves link reg.  */
+    /* The `function calls alloca' bit seems to be set whenever reg 31 is
+       set up as a frame pointer, even when there is no alloca call.  */
+    fprintf (file, "\t.byte %d\n",
+	     ((1 << 6) | (frame_pointer_needed << 5)
+	      | (must_save_cr () << 1) | (regs_ever_live[65])));
+
+    /* 3 bitfields: saves backchain, spare bit, number of fpr saved
+       (6 bits).  */
+    fprintf (file, "\t.byte %d\n",
+	     (must_push << 7) | (64 - first_fp_reg_to_save ()));
+
+    /* 2 bitfields: spare bits (2 bits), number of gpr saved (6 bits).  */
+    fprintf (file, "\t.byte %d\n", (32 - first_reg_to_save ()));
+
+    {
+      /* Compute the parameter info from the function decl argument list.  */
+      tree decl;
+      int next_parm_info_bit;
+
+      next_parm_info_bit = 31;
+      parm_info = 0;
+      fixed_parms = 0;
+      float_parms = 0;
+
+      for (decl = DECL_ARGUMENTS (current_function_decl);
+	   decl; decl = TREE_CHAIN (decl))
+	{
+	  rtx parameter = DECL_INCOMING_RTL (decl);
+	  enum machine_mode mode = GET_MODE (parameter);
+
+	  if (GET_CODE (parameter) == REG)
+	    {
+	      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+		{
+		  int bits;
+
+		  float_parms++;
+
+		  if (mode == SFmode)
+		    bits = 0x2;
+		  else if (mode == DFmode)
+		    bits = 0x3;
+		  else
+		    abort ();
+
+		  /* If only one bit will fit, don't or in this entry.  */
+		  if (next_parm_info_bit > 0)
+		    parm_info |= (bits << (next_parm_info_bit - 1));
+		  next_parm_info_bit -= 2;
+		}
+	      else
+		{
+		  fixed_parms += ((GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1))
+				  / UNITS_PER_WORD);
+		  next_parm_info_bit -= 1;
+		}
+	    }
+	}
+    }
+
+    /* Number of fixed point parameters.  */
+    /* This is actually the number of words of fixed point parameters; thus
+       an 8 byte struct counts as 2; and thus the maximum value is 8.  */
+    fprintf (file, "\t.byte %d\n", fixed_parms);
+
+    /* 2 bitfields: number of floating point parameters (7 bits), parameters
+       all on stack.  */
+    /* This is actually the number of fp registers that hold parameters;
+       and thus the maximum value is 13.  */
+    /* Set parameters on stack bit if parameters are not in their original
+       registers, irregardless of whether they are on the stack?  Xlc
+       seems to set the bit when not optimizing.  */
+    fprintf (file, "\t.byte %d\n", ((float_parms << 1) | (! optimize)));
+
+    /* Optional fields follow.  Some are variable length.  */
+
+    /* Parameter types, left adjusted bit fields: 0 fixed, 10 single float,
+       11 double float.  */
+    /* There is an entry for each parameter in a register, in the order that
+       they occur in the parameter list.  Any intervening arguments on the
+       stack are ignored.  If the list overflows a long (max possible length
+       34 bits) then completely leave off all elements that don't fit.  */
+    /* Only emit this long if there was at least one parameter.  */
+    if (fixed_parms || float_parms)
+      fprintf (file, "\t.long %d\n", parm_info);
+
+    /* Offset from start of code to tb table.  */
+    fprintf (file, "\t.long L..tbtab_");
+    RS6000_OUTPUT_BASENAME (file, fname);
+    fprintf (file, "-.");
+    RS6000_OUTPUT_BASENAME (file, fname);
+    fprintf (file, "\n");
+
+    /* Interrupt handler mask.  */
+    /* Omit this long, since we never set the iterrupt handler bit above.  */
+
+    /* Number of CTL (controlled storage) anchors.  */
+    /* Omit this long, since the has_ctl bit is never set above.  */
+
+    /* Displacement into stack of each CTL anchor.  */
+    /* Omit this list of longs, because there are no CTL anchors.  */
+
+    /* Length of function name.  */
+    fprintf (file, "\t.short %d\n", strlen (fname));
+
+    /* Function name.  */
+    assemble_string (fname, strlen (fname));
+
+    /* Register for alloca automatic storage; this is always reg 31.
+       Only emit this if the alloca bit was set above.  */
+    if (frame_pointer_needed)
+      fprintf (file, "\t.byte 31\n");
+  }
 }
 
 /* Output a TOC entry.  We derive the entry name from what is
