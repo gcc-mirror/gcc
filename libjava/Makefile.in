@@ -557,6 +557,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc link.cc \
 	gnu/gcj/runtime/SharedLibLoader.java \
 	gnu/gcj/runtime/StackTrace.java \
 	gnu/gcj/runtime/StringBuffer.java \
+	gnu/gcj/runtime/SystemClassLoader.java \
 	gnu/gcj/runtime/VMClassLoader.java gnu/gcj/util/Debug.java \
 	gnu/java/io/ASN1ParsingException.java \
 	gnu/java/io/Base64InputStream.java \
@@ -3863,6 +3864,7 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/gcj/runtime/SharedLibHelper.lo \
 	gnu/gcj/runtime/SharedLibLoader.lo \
 	gnu/gcj/runtime/StackTrace.lo gnu/gcj/runtime/StringBuffer.lo \
+	gnu/gcj/runtime/SystemClassLoader.lo \
 	gnu/gcj/runtime/VMClassLoader.lo gnu/gcj/util/Debug.lo \
 	gnu/java/io/ASN1ParsingException.lo \
 	gnu/java/io/Base64InputStream.lo \
@@ -7064,6 +7066,7 @@ gnu/gcj/runtime/SharedLibHelper.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
+gnu/gcj/runtime/SystemClassLoader.java \
 gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/util/Debug.java \
 gnu/java/io/ASN1ParsingException.java \
@@ -9333,6 +9336,8 @@ gnu/gcj/runtime/SharedLibLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/StringBuffer.lo: gnu/gcj/runtime/$(am__dirstamp) \
+	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/runtime/SystemClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/VMClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
@@ -15834,6 +15839,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/StackTrace.lo
 	-rm -f gnu/gcj/runtime/StringBuffer.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/StringBuffer.lo
+	-rm -f gnu/gcj/runtime/SystemClassLoader.$(OBJEXT)
+	-rm -f gnu/gcj/runtime/SystemClassLoader.lo
 	-rm -f gnu/gcj/runtime/VMClassLoader.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/VMClassLoader.lo
 	-rm -f gnu/gcj/runtime/natFinalizerThread.$(OBJEXT)
@@ -21293,6 +21300,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SharedLibLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/StackTrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/StringBuffer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SystemClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/VMClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natFinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natNameFinder.Plo@am__quote@
