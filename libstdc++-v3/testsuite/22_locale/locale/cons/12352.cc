@@ -22,6 +22,7 @@
 #include <locale>
 #include <cstdlib>
 #include <cstring>
+#include <testsuite_hooks.h>
 
 int times_to_fail = 0;
 
@@ -100,7 +101,7 @@ void test01(int iters)
 	  times_to_fail = i;
 	  try
 	    {
-	      std::locale loc1("");
+	      std::locale loc1 = __gnu_test::try_named_locale("");
 	      std::locale loc2(loc1, std::locale::classic(),
 			       std::locale::numeric);
 	    }

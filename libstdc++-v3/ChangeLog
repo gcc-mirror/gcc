@@ -1,5 +1,10 @@
 2003-11-14  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/22_locale/locale/cons/12352.cc: Use
+	__gnu_test::try_named_locale.
+
+2003-11-14  Paolo Carlini  <pcarlini@suse.de>
+
 	* docs/html/ext/howto.html: Add entries for DR 63, 75
 	and 305; tweak entries for DR 60 and 328.
 
