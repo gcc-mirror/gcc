@@ -1,6 +1,6 @@
 2002-09-11  Zack Weinberg  <zack@codesourcery.com>
 
-	* cplus-dem.c: Code code under #ifdef MAIN moved to gcc/cp/cxxfilt.c.
+	* cplus-dem.c: Code under #ifdef MAIN moved to gcc/cp/cxxfilt.c.
 	* testsuite/Makefile.in: Adjust for test-demangle.
 	* testsuite/regress-demangle: Deleted.
 	* testsuite/test-demangle.c: New file.
