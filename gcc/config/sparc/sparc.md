@@ -7713,39 +7713,31 @@
   DONE;
 })
 
-(define_expand "save_register_window"
-  [(use (match_operand 0 "arith_operand" ""))]
-  ""
-{
-  rtvec vec;
+;; The "save register window" insn is modelled as follows so that the DWARF-2
+;; backend automatically emits the required call frame debugging information
+;; while it is parsing it.  Therefore, the pattern should not be modified
+;; without first studying the impact of the changes on the debug info.
+;; [(set (%fp) (%sp))
+;;  (set (%sp) (unspec_volatile [(%sp) (-frame_size)] UNSPECV_SAVEW))
+;;  (set (%i7) (%o7))]
 
-  vec = gen_rtvec (2,
-		   gen_rtx_SET (VOIDmode,
-				stack_pointer_rtx,
-				gen_rtx_PLUS (Pmode,
-					      hard_frame_pointer_rtx,
-					      operands[0])),
-		   gen_rtx_UNSPEC_VOLATILE (VOIDmode,
-					    gen_rtvec (1, const0_rtx),
-					    UNSPECV_SAVEW));
-
-  emit_insn (gen_rtx_PARALLEL (VOIDmode, vec));
-  DONE;
-})
-
-(define_insn "*save_register_windowsi"
-  [(set (reg:SI 14) (plus:SI (reg:SI 30)
-			     (match_operand:SI 0 "arith_operand" "rI")))
-   (unspec_volatile [(const_int 0)] UNSPECV_SAVEW)]
-  "! TARGET_ARCH64"
+(define_insn "save_register_windowdi"
+  [(set (reg:DI 30) (reg:DI 14))
+   (set (reg:DI 14) (unspec_volatile [(reg:DI 14)
+				      (match_operand:DI 0 "arith_operand" "rI")]
+				     UNSPECV_SAVEW))
+   (set (reg:DI 31) (reg:DI 15))]
+  "TARGET_ARCH64"
   "save\t%%sp, %0, %%sp"
   [(set_attr "type" "savew")])
 
-(define_insn "*save_register_windowdi"
-  [(set (reg:DI 14) (plus:DI (reg:DI 30)
-			     (match_operand:DI 0 "arith_operand" "rI")))
-   (unspec_volatile [(const_int 0)] UNSPECV_SAVEW)]
-  "TARGET_ARCH64"
+(define_insn "save_register_windowsi"
+  [(set (reg:SI 30) (reg:SI 14))
+   (set (reg:SI 14) (unspec_volatile [(reg:SI 14)
+				      (match_operand:SI 0 "arith_operand" "rI")]
+				     UNSPECV_SAVEW))
+   (set (reg:SI 31) (reg:SI 15))]
+  "!TARGET_ARCH64"
   "save\t%%sp, %0, %%sp"
   [(set_attr "type" "savew")])
 
