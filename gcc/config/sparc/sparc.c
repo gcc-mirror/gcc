@@ -153,7 +153,7 @@ static rtx *ultra_find_type PARAMS ((int, rtx *, int));
 static void ultra_build_types_avail PARAMS ((rtx *, int));
 static void ultra_flush_pipeline PARAMS ((void));
 static void ultra_rescan_pipeline_state PARAMS ((rtx *, int));
-static int set_extends PARAMS ((rtx, rtx));
+static int set_extends PARAMS ((rtx));
 static void output_restore_regs PARAMS ((FILE *, int));
 
 /* Option handling.  */
@@ -2852,7 +2852,7 @@ load_pic_register ()
       if (align > 0)
 	ASM_OUTPUT_ALIGN (asm_out_file, align);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LGETPC", 0);
-      fputs ("\tretl\n\tadd %o7,%l7,%l7\n", asm_out_file);
+      fputs ("\tretl\n\tadd\t%o7, %l7, %l7\n", asm_out_file);
     }
 
   /* Initialize every time through, since we can't easily
@@ -3253,11 +3253,11 @@ restore_regs (file, low, high, base, offset, n_regs)
 		       base, offset + 4 * n_regs, reg_names[i]),
 	      n_regs += 2;
 	    else
-	      fprintf (file, "\tld\t[%s+%d],%s\n",
+	      fprintf (file, "\tld\t[%s+%d], %s\n",
 		       base, offset + 4 * n_regs, reg_names[i]),
 	      n_regs += 2;
 	  else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	    fprintf (file, "\tld\t[%s+%d],%s\n",
+	    fprintf (file, "\tld\t[%s+%d], %s\n",
 		     base, offset + 4 * n_regs + 4, reg_names[i+1]),
 	    n_regs += 2;
 	}
@@ -5417,9 +5417,9 @@ output_return (operands)
       else
 	{
 	  if ((actual_fsize & 0x3ff) != 0)
-	    return "sethi %%hi(%a0),%%g1\n\tor %%g1,%%lo(%a0),%%g1\n\tretl\n\tadd %%sp,%%g1,%%sp";
+	    return "sethi\t%%hi(%a0), %%g1\n\tor\t%%g1, %%lo(%a0), %%g1\n\tretl\n\tadd\t%%sp, %%g1, %%sp";
 	  else
-	    return "sethi %%hi(%a0),%%g1\n\tretl\n\tadd %%sp,%%g1,%%sp";
+	    return "sethi\t%%hi(%a0), %%g1\n\tretl\n\tadd\t%%sp, %%g1, %%sp";
 	}
     }
   else if (TARGET_V9)
@@ -7978,8 +7978,8 @@ sparc_issue_rate ()
 }
 
 static int
-set_extends(x, insn)
-     rtx x, insn;
+set_extends (insn)
+     rtx insn;
 {
   register rtx pat = PATTERN (insn);
 
@@ -8003,27 +8003,40 @@ set_extends(x, insn)
       return 1;
     case AND:
       {
+	rtx op0 = XEXP (SET_SRC (pat), 0);
 	rtx op1 = XEXP (SET_SRC (pat), 1);
 	if (GET_CODE (op1) == CONST_INT)
 	  return INTVAL (op1) >= 0;
-	if (GET_CODE (XEXP (SET_SRC (pat), 0)) == REG
-	    && sparc_check_64 (XEXP (SET_SRC (pat), 0), insn) == 1)
+	if (GET_CODE (op0) != REG)
+	  return 0;
+	if (sparc_check_64 (op0, insn) == 1)
 	  return 1;
-	if (GET_CODE (op1) == REG
-	    && sparc_check_64 ((op1), insn) == 1)
-	  return 1;
+	return (GET_CODE (op1) == REG && sparc_check_64 (op1, insn) == 1);
+      }
+    case IOR:
+    case XOR:
+      {
+	rtx op0 = XEXP (SET_SRC (pat), 0);
+	rtx op1 = XEXP (SET_SRC (pat), 1);
+	if (GET_CODE (op0) != REG || sparc_check_64 (op0, insn) <= 0)
+	  return 0;
+	if (GET_CODE (op1) == CONST_INT)
+	  return INTVAL (op1) >= 0;
+	return (GET_CODE (op1) == REG && sparc_check_64 (op1, insn) == 1);
       }
     case ASHIFT:
     case LSHIFTRT:
       return GET_MODE (SET_SRC (pat)) == SImode;
       /* Positive integers leave the high bits zero. */
     case CONST_DOUBLE:
-      return ! (CONST_DOUBLE_LOW (x) & 0x80000000);
+      return ! (CONST_DOUBLE_LOW (SET_SRC (pat)) & 0x80000000);
     case CONST_INT:
-      return ! (INTVAL (x) & 0x80000000);
+      return ! (INTVAL (SET_SRC (pat)) & 0x80000000);
     case ASHIFTRT:
     case SIGN_EXTEND:
       return - (GET_MODE (SET_SRC (pat)) == SImode);
+    case REG:
+      return sparc_check_64 (SET_SRC (pat), insn);
     default:
       return 0;
     }
@@ -8145,10 +8158,16 @@ sparc_check_64 (x, insn)
      the single set and return the correct value or fail to recognize
      it and return 0.  */
   int set_once = 0;
+  rtx y = x;
 
-  if (GET_CODE (x) == REG
-      && flag_expensive_optimizations
-      && REG_N_SETS (REGNO (x)) == 1)
+  if (GET_CODE (x) != REG)
+    abort ();
+
+  if (GET_MODE (x) == DImode)
+    y = gen_rtx_REG (SImode, REGNO (x) + WORDS_BIG_ENDIAN);
+
+  if (flag_expensive_optimizations
+      && REG_N_SETS (REGNO (y)) == 1)
     set_once = 1;
 
   if (insn == 0)
@@ -8178,8 +8197,10 @@ sparc_check_64 (x, insn)
 	    if (GET_CODE (pat) != SET)
 	      return 0;
 	    if (rtx_equal_p (x, SET_DEST (pat)))
-	      return set_extends (x, insn);
-	    if (reg_overlap_mentioned_p (SET_DEST (pat), x))
+	      return set_extends (insn);
+	    if (y && rtx_equal_p (y, SET_DEST (pat)))
+	      return set_extends (insn);
+	    if (reg_overlap_mentioned_p (SET_DEST (pat), y))
 	      return 0;
 	  }
 	}
@@ -8199,21 +8220,21 @@ sparc_v8plus_shift (operands, insn, opcode)
     operands[3] = operands[0];
   if (GET_CODE (operands[1]) == CONST_INT)
     {
-      output_asm_insn ("mov %1,%3", operands);
+      output_asm_insn ("mov\t%1, %3", operands);
     }
   else
     {
-      output_asm_insn ("sllx %H1,32,%3", operands);
+      output_asm_insn ("sllx\t%H1, 32, %3", operands);
       if (sparc_check_64 (operands[1], insn) <= 0)
-	output_asm_insn ("srl %L1,0,%L1", operands);
-      output_asm_insn ("or %L1,%3,%3", operands);
+	output_asm_insn ("srl\t%L1, 0, %L1", operands);
+      output_asm_insn ("or\t%L1, %3, %3", operands);
     }
 
   strcpy(asm_code, opcode);
   if (which_alternative != 2)
-    return strcat (asm_code, " %0,%2,%L0\n\tsrlx %L0,32,%H0");
+    return strcat (asm_code, "\t%0, %2, %L0\n\tsrlx\t%L0, 32, %H0");
   else
-    return strcat (asm_code, " %3,%2,%3\n\tsrlx %3,32,%H0\n\tmov %3,%L0");
+    return strcat (asm_code, "\t%3, %2, %3\n\tsrlx\t%3, 32, %H0\n\tmov\t%3, %L0");
 }
 
 
@@ -8250,22 +8271,22 @@ sparc_function_profiler (file, labelno)
   ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
 
   if (! TARGET_ARCH64)
-    fputs ("\tst\t%g2,[%fp-4]\n", file);
+    fputs ("\tst\t%g2, [%fp-4]\n", file);
 
   fputs ("\tsethi\t%hi(", file);
   assemble_name (file, buf);
-  fputs ("),%o0\n", file);
+  fputs ("), %o0\n", file);
 
   fputs ("\tcall\t", file);
   assemble_name (file, MCOUNT_FUNCTION);
   putc ('\n', file);
 
-  fputs ("\t or\t%o0,%lo(", file);
+  fputs ("\t or\t%o0, %lo(", file);
   assemble_name (file, buf);
-  fputs ("),%o0\n", file);
+  fputs ("), %o0\n", file);
 
   if (! TARGET_ARCH64)
-    fputs ("\tld\t[%fp-4],%g2\n", file);
+    fputs ("\tld\t[%fp-4], %g2\n", file);
 }
 
 
@@ -8337,17 +8358,17 @@ sparc_function_block_profiler(file, block_or_label)
     {
       fputs ("\tsethi\t%hi(", file);
       assemble_name (file, LPBX);
-      fputs ("),%o0\n", file);
+      fputs ("), %o0\n", file);
   
-      fprintf (file, "\tsethi\t%%hi(%d),%%o1\n", block_or_label);
+      fprintf (file, "\tsethi\t%%hi(%d), %%o1\n", block_or_label);
 
-      fputs ("\tor\t%o0,%lo(", file);
+      fputs ("\tor\t%o0, %lo(", file);
       assemble_name (file, LPBX);
-      fputs ("),%o0\n", file);
+      fputs ("), %o0\n", file);
   
       fprintf (file, "\tcall\t%s__bb_init_trace_func\n", user_label_prefix);
 
-      fprintf (file, "\t or\t%%o1,%%lo(%d),%%o1\n", block_or_label);
+      fprintf (file, "\t or\t%%o1, %%lo(%d), %%o1\n", block_or_label);
     }
   else if (profile_block_flag != 0)
     {
@@ -8356,11 +8377,11 @@ sparc_function_block_profiler(file, block_or_label)
 
       fputs ("\tsethi\t%hi(", file);
       assemble_name (file, LPBX);
-      fputs ("),%o0\n", file);
+      fputs ("), %o0\n", file);
       
       fputs ("\tld\t[%lo(", file);
       assemble_name (file, LPBX);
-      fputs (")+%o0],%o1\n", file);
+      fputs (")+%o0], %o1\n", file);
 
       fputs ("\ttst\t%o1\n", file);
 
@@ -8377,9 +8398,9 @@ sparc_function_block_profiler(file, block_or_label)
 	  putc ('\n', file);
 	}
 
-      fputs ("\t or\t%o0,%lo(", file);
+      fputs ("\t or\t%o0, %lo(", file);
       assemble_name (file, LPBX);
-      fputs ("),%o0\n", file);
+      fputs ("), %o0\n", file);
 
       fprintf (file, "\tcall\t%s__bb_init_func\n\t nop\n", user_label_prefix);
 
@@ -8464,27 +8485,27 @@ sparc_block_profiler(file, blockno)
     {
       ASM_GENERATE_INTERNAL_LABEL (LPBX, "LPBX", 0);
 
-      fprintf (file, "\tsethi\t%%hi(%s__bb),%%g1\n", user_label_prefix);
-      fprintf (file, "\tsethi\t%%hi(%d),%%g%d\n", blockno, bbreg);
-      fprintf (file, "\tor\t%%g1,%%lo(%s__bb),%%g1\n", user_label_prefix);
-      fprintf (file, "\tor\t%%g%d,%%lo(%d),%%g%d\n", bbreg, blockno, bbreg);
+      fprintf (file, "\tsethi\t%%hi(%s__bb), %%g1\n", user_label_prefix);
+      fprintf (file, "\tsethi\t%%hi(%d), %%g%d\n", blockno, bbreg);
+      fprintf (file, "\tor\t%%g1, %%lo(%s__bb), %%g1\n", user_label_prefix);
+      fprintf (file, "\tor\t%%g%d, %%lo(%d), %%g%d\n", bbreg, blockno, bbreg);
 
-      fprintf (file, "\tst\t%%g%d,[%%g1]\n", bbreg);
+      fprintf (file, "\tst\t%%g%d, [%%g1]\n", bbreg);
 
       fputs ("\tsethi\t%hi(", file);
       assemble_name (file, LPBX);
-      fprintf (file, "),%%g%d\n", bbreg);
+      fprintf (file, "), %%g%d\n", bbreg);
   
-      fputs ("\tor\t%o2,%lo(", file);
+      fputs ("\tor\t%o2, %lo(", file);
       assemble_name (file, LPBX);
-      fprintf (file, "),%%g%d\n", bbreg);
+      fprintf (file, "), %%g%d\n", bbreg);
   
-      fprintf (file, "\tst\t%%g%d,[%%g1+4]\n", bbreg);
-      fprintf (file, "\tmov\t%%o7,%%g%d\n", bbreg);
+      fprintf (file, "\tst\t%%g%d, [%%g1 + 4]\n", bbreg);
+      fprintf (file, "\tmov\t%%o7, %%g%d\n", bbreg);
 
       fprintf (file, "\tcall\t%s__bb_trace_func\n\t nop\n", user_label_prefix);
 
-      fprintf (file, "\tmov\t%%g%d,%%o7\n", bbreg);
+      fprintf (file, "\tmov\t%%g%d, %%o7\n", bbreg);
     }
   else if (profile_block_flag != 0)
     {
@@ -8492,18 +8513,18 @@ sparc_block_profiler(file, blockno)
 
       fputs ("\tsethi\t%hi(", file);
       assemble_name (file, LPBX);
-      fprintf (file, "+%d),%%g1\n", blockno*4);
+      fprintf (file, "+%d), %%g1\n", blockno*4);
 
       fputs ("\tld\t[%g1+%lo(", file);
       assemble_name (file, LPBX);
       if (TARGET_ARCH64 && USE_AS_OFFSETABLE_LO10)
-	fprintf (file, ")+%d],%%g%d\n", blockno*4, bbreg);
+	fprintf (file, ")+%d], %%g%d\n", blockno*4, bbreg);
       else
-	fprintf (file, "+%d)],%%g%d\n", blockno*4, bbreg);
+	fprintf (file, "+%d)], %%g%d\n", blockno*4, bbreg);
 
-      fprintf (file, "\tadd\t%%g%d,1,%%g%d\n", bbreg, bbreg);
+      fprintf (file, "\tadd\t%%g%d, 1, %%g%d\n", bbreg, bbreg);
 
-      fprintf (file, "\tst\t%%g%d,[%%g1+%%lo(", bbreg);
+      fprintf (file, "\tst\t%%g%d, [%%g1+%%lo(", bbreg);
       assemble_name (file, LPBX);
       if (TARGET_ARCH64 && USE_AS_OFFSETABLE_LO10)
 	fprintf (file, ")+%d]\n", blockno*4);

@@ -1,3 +1,19 @@
+2000-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (muldi3_v8plus): Remove H constraint.
+	Handle CONST_INT as second argument.
+	* config/sparc/sparc.c (set_extends): Remove first argument.
+	Properly handle AND, CONST_INT and CONST_DOUBLE, handle IOR, XOR and
+	MOV.
+	(sparc_check_64): Abort if first argument is not REG.
+	If it is DImode REG, look at the lower register of the register
+	pair.
+
+	* config/sparc/sparc.c (load_pic_register, restore_regs,
+	output_return, sparc_v8plus_shift, sparc_function_profiler,
+	sparc_function_block_profiler, sparc_block_profiler): Fix output
+	formatting.
+
 2000-11-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (TARGET_NONE): New.
