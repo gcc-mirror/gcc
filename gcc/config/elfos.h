@@ -69,11 +69,15 @@ do {				 				\
 
 /* System V Release 4 uses DWARF debugging info.  */
 
-#define DWARF_DEBUGGING_INFO
+#ifndef DWARF_DEBUGGING_INFO
+#define DWARF_DEBUGGING_INFO 1
+#endif
 
 /* All ELF targets can support DWARF-2.  */
 
-#define DWARF2_DEBUGGING_INFO
+#ifndef DWARF2_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
+#endif
 
 /* Also allow them to support STABS debugging.  */
 

@@ -1,4 +1,4 @@
-/* Definitions for rtems targeting an Intel i386 using coff.
+/* Definitions for rtems targeting a SPARC using a.out.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
@@ -19,17 +19,17 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/i386-coff.h"
+#include "sparc/elf.h"
 
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -Drtems -D__rtems__ \
-   -Asystem(rtems) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dsparc -D__GCC_NEW_VARARGS__ -Drtems -D__rtems__ \
+  -Asystem(rtems) -Acpu(sparc) -Amachine(sparc)"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
 
-/* end of i386/rtems.h */
+/* end of sparc/rtems.h */
