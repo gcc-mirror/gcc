@@ -1019,6 +1019,16 @@ shiftcosts (x)
 {
   int value;
 
+  if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
+    {
+      if (GET_MODE (x) == DImode
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) == 1)
+	return 2;
+
+      /* Everything else is invalid, because there is no pattern for it.  */
+      return 10000;
+    }
   /* If shift by a non constant, then this will be expensive.  */
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
     return SH_DYNAMIC_SHIFT_COST;
