@@ -1,3 +1,14 @@
+2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/include: New directory.
+	* doc/fdl.texi: Move to doc/include/fdl.texi.
+	* doc/texinfo.tex: Move to doc/include/texinfo.tex.
+	* doc/include/funding.texi, doc/include/gpl.texi: New files.
+	* doc/gcc.texi: Use funding.texi and gpl.texi.
+	* Makefile.in ($(docdir)/cpp.info, $(docdir)/gcc.info,
+	$(docdir)/cppinternals.info, cpp.dvi. gcc.dvi. cppinternals.dvi):
+	Update dependencies and use -I $(docdir)/include.
+
 2001-07-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (sparc64-*-*): Remove garbage.

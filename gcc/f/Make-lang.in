@@ -172,27 +172,31 @@ f77.dvi: f/g77.dvi
 $(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/g77install.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
-		$(srcdir)/f/root.texi $(srcdir)/doc/fdl.texi
+		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
+		$(srcdir)/doc/include/gpl.texi \
+		$(srcdir)/doc/include/funding.texi
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) $(STAMP) lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
 	if [ -f lang-f77 ] && [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(srcdir)/f/g77.info-*; \
-	  cd $(srcdir)/f && $(MAKEINFO) -I../doc -o g77.info g77.texi; \
+	  cd $(srcdir)/f && $(MAKEINFO) -I../doc/include -o g77.info g77.texi; \
 	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/g77install.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
-		$(srcdir)/f/root.texi $(srcdir)/doc/fdl.texi
+		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
+		$(srcdir)/doc/include/gpl.texi \
+		$(srcdir)/doc/include/funding.texi
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) $(STAMP) lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
 	if [ -f lang-f77 ]; then \
 	  s=`cd $(srcdir); pwd`; export s; \
-	  cd f && $(TEXI2DVI) -I $$s/doc $$s/f/g77.texi; \
+	  cd f && $(TEXI2DVI) -I $$s/doc/include $$s/f/g77.texi; \
 	else true; fi
 
 # This dance is all about producing accurate documentation for g77's

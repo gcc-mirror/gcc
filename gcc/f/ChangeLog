@@ -1,3 +1,10 @@
+2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Use gpl.texi and funding.texi.  Remove Look and Feel
+	section.  Add Funding Free Software to invariant sections.
+	* Make-lang.in ($(srcdir)/f/g77.info, f/g77.dvi): Update
+	dependencies and use doc/include in search path.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.

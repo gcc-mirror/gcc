@@ -2278,32 +2278,36 @@ doc: $(BUILD_INFO) gccbug
 info: $(docdir)/cpp.info $(docdir)/gcc.info lang.info $(docdir)/cppinternals.info
 
 $(docdir)/cpp.info: $(docdir)/cpp.texi
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -o doc/cpp.info doc/cpp.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/cpp.info doc/cpp.texi
 
-$(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install.texi \
-	 $(docdir)/invoke.texi $(docdir)/md.texi $(docdir)/c-tree.texi \
-	 $(docdir)/rtl.texi $(docdir)/tm.texi $(docdir)/gcov.texi \
-	 $(docdir)/contrib.texi $(docdir)/objc.texi $(docdir)/fdl.texi
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -o doc/gcc.info doc/gcc.texi
+$(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/extend.texi \
+	 $(docdir)/install-old.texi  $(docdir)/invoke.texi $(docdir)/md.texi \
+	 $(docdir)/c-tree.texi $(docdir)/rtl.texi $(docdir)/tm.texi \
+	 $(docdir)/gcov.texi $(docdir)/contrib.texi $(docdir)/objc.texi \
+	 $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
+	 $(docdir)/include/funding.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gcc.info doc/gcc.texi
 
 $(docdir)/cppinternals.info: $(docdir)/cppinternals.texi
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -o doc/cppinternals.info \
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/cppinternals.info \
 		doc/cppinternals.texi
 
 dvi: gcc.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 # This works with GNU Make's default rule.
 cpp.dvi: $(docdir)/cpp.texi
-	$(TEXI2DVI) -I $(docdir) $(docdir)/cpp.texi
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cpp.texi
 
-gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install.texi \
+gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install-old.texi \
 	 $(docdir)/invoke.texi $(docdir)/md.texi $(docdir)/c-tree.texi \
 	 $(docdir)/rtl.texi $(docdir)/tm.texi $(docdir)/gcov.texi \
-	 $(docdir)/contrib.texi $(docdir)/objc.texi $(docdir)/fdl.texi
-	$(TEXI2DVI) -I $(docdir) $(docdir)/gcc.texi
+	 $(docdir)/contrib.texi $(docdir)/objc.texi \
+	 $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
+	 $(docdir)/include/funding.texi
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gcc.texi
 
 cppinternals.dvi: $(docdir)/cppinternals.texi
-	$(TEXI2DVI) -I $(docdir) $(docdir)/cppinternals.texi
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cppinternals.texi
 
 generated-manpages: $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1
 
