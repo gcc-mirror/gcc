@@ -1,3 +1,9 @@
+2003-07-06  Michael Chastain  <mec@shout.net>
+
+	PR debug/10055
+	* lex.c (cxx_init): Call push_srcloc and pop_srcloc rather than
+	assigning to input_filename directly.
+
 2003-07-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c: Fix comment formatting.
