@@ -1,5 +1,9 @@
 2001-08-18  Zack Weinberg  <zackw@panix.com>
 
+	* cpperror.c: Use VA_OPEN/VA_CLOSE/VA_FIXEDARG throughout. 
+
+2001-08-18  Zack Weinberg  <zackw@panix.com>
+
 	* haifa-sched.c: Convert to target hooks.  Macros replaced
 	are ISSUE_RATE, ADJUST_COST, ADJUST_PRIORITY, MD_SCHED_INIT,
 	MD_SCHED_REORDER, MD_SCHED_REORDER2, MD_SCHED_VARIABLE_ISSUE,

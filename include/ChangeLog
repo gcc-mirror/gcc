@@ -1,3 +1,10 @@
+2001-08-18  Zack Weinberg  <zackw@panix.com>
+
+	* ansidecl.h: Reorganize for readability, remove documentation
+	of obsolete macros, document PARAMS and VPARAMS.  Add new
+	macros VA_OPEN, VA_CLOSE, and VA_FIXEDARG for nicer variadic
+	function implementation.
+
 2001-08-16  Richard Henderson  <rth@redhat.com>
 
 	* hashtab.h (htab_hash_string): Declare.
