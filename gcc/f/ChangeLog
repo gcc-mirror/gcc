@@ -1,3 +1,8 @@
+Fri Jun  4 10:26:04 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi (News): Mention GCC 2.95 in favor of EGCS 1.2.
+	Mention that libg2c is multilibbed.
+
 Fri Jun  4 10:09:50 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi (Missing Features): Add `Better Warnings'
