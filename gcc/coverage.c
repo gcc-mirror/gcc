@@ -172,8 +172,8 @@ read_counts_file (void)
       GCOV_UNSIGNED2STRING (v, tag);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
 
-      warning ("`%s' is version `%.4s', expected version `%.4s'",
- 	       da_file_name, v, e);
+      warning ("`%s' is version `%.*s', expected version `%.*s'",
+ 	       da_file_name, 4, v, 4, e);
       gcov_close ();
       return;
     }
