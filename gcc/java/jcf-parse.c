@@ -315,7 +315,7 @@ get_constant (jcf, index)
 	else
 	  buf[0] = lo, buf[1] = hi;
 
-	real_from_target_fmt (&d, &buf, &ieee_double_format);
+	real_from_target_fmt (&d, buf, &ieee_double_format);
 	value = build_real (double_type_node, d);
 	break;
       }

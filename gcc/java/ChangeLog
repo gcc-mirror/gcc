@@ -1,3 +1,7 @@
+2002-10-15  Richard Henderson  <rth@redhat.com>
+
+	* jcf-parse.c (get_constant): Fix type warning.
+
 2002-10-15  Andrew Haley  <aph@redhat.com>
 
 	* java-tree.h (java_inlining_merge_static_initializers): Declare.
