@@ -64,7 +64,7 @@ objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib			Dave Brolley		brolley@redhat.com
 cpplib			Per Bothner		per@bothner.com
-cpplib			Zack Weinberg		zack@wolery.cumb.org
+cpplib			Zack Weinberg		zackw@stanford.edu
 cpplib			Neil Booth		neil@daikokuya.demon.co.uk
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@redhat.com
