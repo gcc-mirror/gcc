@@ -196,8 +196,8 @@ static string_list_t string_list_new
   PARAMS ((int));
 static void string_list_delete
   PARAMS ((string_list_t));
-static status_t result_close_template_list 
-  PARAMS ((demangling_t));
+static status_t result_add_separated_char
+  PARAMS ((demangling_t, char));
 static status_t result_push
   PARAMS ((demangling_t));
 static string_list_t result_pop
@@ -297,6 +297,13 @@ static void demangling_delete
   (dyn_string_append_space (&(DM)->result->string)                      \
    ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
+/* Appends a (less-than, greater-than) character to the result in DM
+   to (open, close) a template argument or parameter list.  Appends a
+   space first if necessary to prevent spurious elision of angle
+   brackets with the previous character.  */
+#define result_open_template_list(DM) result_add_separated_char(DM, '<')
+#define result_close_template_list(DM) result_add_separated_char(DM, '>')
+
 /* Appends a base 10 representation of VALUE to DS.  STATUS_OK on
    success.  On failure, deletes DS and returns an error code.  */
 
@@ -378,28 +385,27 @@ string_list_delete (node)
     }
 }
 
-/* Appends a greater-than character to the demangled result.  If the
-   last character is a greater-than character, a space is inserted
-   first, so that the two greater-than characters don't look like a
-   right shift token.  */
+/* Appends CHARACTER to the demangled result.  If the current trailing
+   character of the result is CHARACTER, a space is inserted first.  */
 
 static status_t
-result_close_template_list (dm)
+result_add_separated_char (dm, character)
      demangling_t dm;
+     char character;
 {
   dyn_string_t s = &dm->result->string;
 
   /* Add a space if the last character is already a closing angle
      bracket, so that a nested template arg list doesn't look like
      it's closed with a right-shift operator.  */
-  if (dyn_string_last_char (s) == '>')
+  if (dyn_string_last_char (s) == character)
     {
       if (!dyn_string_append_char (s, ' '))
 	return STATUS_ALLOCATION_FAILED;
     }
 
   /* Add closing angle brackets.  */
-  if (!dyn_string_append_char (s, '>'))
+  if (!dyn_string_append_char (s, character))
     return STATUS_ALLOCATION_FAILED;
 
   return STATUS_OK;
@@ -1108,6 +1114,10 @@ demangle_prefix (dm, template_p)
   int start = substitution_start (dm);
   int nested = 0;
 
+  /* This flag is set to non-zero if the most recent (rightmost)
+     element in the prefix was a constructor.  */
+  int last_was_ctor = 0;
+
   /* TEMPLATE_P is updated as we decend the nesting chain.  After
      <template-args>, it is set to non-zero; after everything else it
      is set to zero.  */
@@ -1124,6 +1134,15 @@ demangle_prefix (dm, template_p)
 
       peek = peek_char (dm);
       
+      /* We'll initialize last_was_ctor to false, and set it to true
+	 if we end up demangling a constructor name.  However, make
+	 sure we're not actually about to demangle template arguments
+	 -- if so, this is the <template-args> following a
+	 <template-prefix>, so we'll want the previous flag value
+	 around.  */
+      if (peek != 'I')
+	last_was_ctor = 0;
+
       if (IS_DIGIT ((unsigned char) peek)
 	  || (peek >= 'a' && peek <= 'z')
 	  || peek == 'C' || peek == 'D'
@@ -1137,25 +1156,47 @@ demangle_prefix (dm, template_p)
 
 	  if (peek == 'S')
 	    /* The substitution determines whether this is a
-	       template-id.   */
+	       template-id.  */
 	    RETURN_IF_ERROR (demangle_substitution (dm, template_p, 
 						    &unused));
 	  else
 	    {
+	      /* It's just a name.  Remember whether it's a
+		 constructor.  */
 	      RETURN_IF_ERROR (demangle_unqualified_name (dm));
 	      *template_p = 0;
 	    }
+
+	  /* If this element was a constructor name, make a note of
+	     that.  */
+	  if (peek == 'C')
+	    last_was_ctor = 1;
 	}
       else if (peek == 'Z')
 	RETURN_IF_ERROR (demangle_local_name (dm));
       else if (peek == 'I')
 	{
-	  if (*template_p)
-	    return STATUS_INTERNAL_ERROR;
+	  /* If the template flag is already set, this is the second
+             set of template args in a row.  Something is wrong with
+             the mangled name.  */
+	  if (*template_p) 
+	    return "Unexpected second consecutive template args in <prefix>.";
 	  /* The template name is a substitution candidate.  */
 	  RETURN_IF_ERROR (substitution_add (dm, start, 0, NOT_TEMPLATE_PARM));
 	  RETURN_IF_ERROR (demangle_template_args (dm));
-	  *template_p = 1;
+
+	  /* Now we want to indicate to the caller that we've
+	     demangled template arguments, thus the prefix was a
+	     <template-prefix>.  That's so that the caller knows to
+	     demangle the function's return type, if this turns out to
+	     be a function name.  */
+	  if (!last_was_ctor)
+	    *template_p = 1;
+	  else
+	    /* But, if it's a member template constructor, report it
+	       as untemplated.  We don't ever want to demangle the
+	       return type of a constructor.  */
+	    *template_p = 0;
 	}
       else if (peek == 'E')
 	/* All done.  */
@@ -1904,13 +1945,12 @@ demangle_type_ptr (dm)
 	}
       else
 	{
-	  /* No more pointe or reference tokens.  Finish up.  */
+	  /* No more pointer or reference tokens.  Finish up.  */
 	  status = demangle_type (dm);
 
 	  if (STATUS_NO_ERROR (status))
 	    status = result_append_string (dm, symbols);
 	  dyn_string_delete (symbols);
-	  RETURN_IF_ERROR (status);
 
 	  RETURN_IF_ERROR (status);
 	  return STATUS_OK;
@@ -2016,8 +2056,17 @@ demangle_type (dm)
 	   or underscore.  */
 	peek_next = peek_char_next (dm);
 	if (IS_DIGIT (peek_next) || peek_next == '_')
-	  RETURN_IF_ERROR (demangle_substitution (dm, &template_p,
-						  &special_std_substitution));
+	  {
+	    RETURN_IF_ERROR (
+              demangle_substitution (dm, &template_p,
+				     &special_std_substitution));
+	    
+	    /* The substituted name may have been a template name.
+	       Check if template arguments follow, and if so, demangle
+	       them.  */
+	    if (peek_char (dm) == 'I')
+	      RETURN_IF_ERROR (demangle_template_args (dm));
+	  }
 	else
 	  demangle_class_enum_type (dm, &template_p);
 	break;
@@ -2440,7 +2489,7 @@ demangle_template_args (dm)
     return STATUS_ALLOCATION_FAILED;
 
   RETURN_IF_ERROR (demangle_char (dm, 'I'));
-  RETURN_IF_ERROR (result_append_char (dm, '<'));
+  RETURN_IF_ERROR (result_open_template_list (dm));
   do
     {
       string_list_t arg;
