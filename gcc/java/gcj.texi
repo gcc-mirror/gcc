@@ -543,7 +543,9 @@ all @samp{.}s will be transformed into @samp{-}s and that searching
 for inner classes starts with their outermost outer class.  If the class
 cannot be found this way the system classloader tries to use
 the @code{libgcj} bytecode interpreter to load the class from the standard
-classpath.
+classpath.  This process can be controlled to some degree via the
+@code{gnu.gcj.runtime.VMClassLoader.library_control} property;
+@xref{libgcj Runtime Properties}.
 @end itemize
 
 @node Invoking gcjh
@@ -2246,6 +2248,14 @@ trace.  Only done when the stack is sanitized.  Defaults to @code{true}.
 Whether an external process (@command{addr2line} or @command{addr2name.awk})
 should be used as fallback to convert the addresses to function names when
 the runtime is unable to do it through @code{dladdr}.
+
+@item gnu.gcj.runtime.VMClassLoader.library_control
+This controls how shared libraries are automatically loaded by the
+built-in class loader.  By default, or if this property is set to
+@samp{full}, a full search is done for each requested class.  If this
+property is set to @samp{cache}, then any failed lookups are cached
+and not tried again.  If this property is set to @samp{never}, then
+lookups are never done.  For more information, @xref{Extensions}.
 
 @end table
 
