@@ -40,6 +40,10 @@ tree size_zero_node;
 
 tree size_one_node;
 
+/* If nonzero, this is an upper limit on alignment of structure fields.
+   The value is measured in bits.  */
+int maximum_field_alignment;
+
 #define GET_MODE_ALIGNMENT(MODE)   \
   MIN (BIGGEST_ALIGNMENT, 	   \
        MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
@@ -198,7 +202,12 @@ layout_decl (decl, known_align)
   /* Conditions are: a fixed size that is correct for another mode
      and occupying a complete byte or bytes on proper boundary.  */
   if (code == FIELD_DECL)
-    DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
+    {
+      DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
+      if (maximum_field_alignment != 0)
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
+    }
+
   if (DECL_BIT_FIELD (decl)
       && TYPE_SIZE (type) != 0
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
