@@ -756,7 +756,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 	  switch (*fmt++)
 	    {
 	    case '0':		/* Field with unknown use.  Zero it.  */
-	      XEXP (rt_val, 1) = NULL_RTX;
+	      X0EXP (rt_val, i) = NULL_RTX;
 	      break;
 
 	    case 'i':		/* An integer?  */
