@@ -609,6 +609,12 @@ alpha*-dec-osf[45]*)
 	    target_cpu_default=MASK_SUPPORT_ARCH
 	    ;;
 	esac
+	case x${enable_threads} in
+	x | xyes | xpthreads | xposix)
+	    thread_file='posix'
+	    tmake_file="${tmake_file} alpha/t-osf-pthread"
+	    ;;
+	esac
 	;;
 alpha64-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h alpha/vms64.h"

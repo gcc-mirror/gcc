@@ -1,6 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +35,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define __GTHREADS 1
 
+/* Some implementations of <pthread.h> require this to be defined.  */
+#ifndef _REENTRANT
+#define _REENTRANT 1
+#endif
+
 #include <pthread.h>
 #include <unistd.h>
 
@@ -57,7 +63,7 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_mutex_trylock
 #pragma weak pthread_mutex_unlock
 
-#ifdef _LIBOBJC
+#if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
 /* Objective-C.  */
 #pragma weak pthread_cond_broadcast
 #pragma weak pthread_cond_destroy
@@ -82,7 +88,7 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_getschedparam
 #pragma weak pthread_setschedparam
 #endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
-#endif /* _LIBOBJC */
+#endif /* _LIBOBJC || _LIBOBJC_WEAK */
 
 static inline int
 __gthread_active_p (void)

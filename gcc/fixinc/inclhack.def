@@ -578,6 +578,25 @@ fix = {
 
 
 /*
+ *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX <pthread.h>.
+ */
+fix = {
+    hackname  = alpha_pthread;
+    files     = pthread.h;
+    select    = "(#[ \t]*if defined \\(_PTHREAD_ENV_DECC\\) || defined \\(_PTHREAD_ENV_EPCC\\))\n"
+		"(#[ \t]*define _PTHREAD_USE_PTDNAM_)";
+
+    mach      = "alpha*-dec-osf*";
+    c_fix     = format;
+    c_fix_arg = "%1 || defined (__PRAGMA_EXTERN_PREFIX)\n%2";
+
+    test_text = "#  if defined (_PTHREAD_ENV_DECC) || defined (_PTHREAD_ENV_EPCC)\n"
+		"#   define _PTHREAD_USE_PTDNAM_\n"
+		"#  endif";
+};
+
+
+/*
  *  Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
  *  And OpenBSD.
  */
