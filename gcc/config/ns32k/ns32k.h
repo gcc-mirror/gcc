@@ -26,7 +26,7 @@ extern enum reg_class secondary_reload_class();
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dns32000 -Dunix"
+#define CPP_PREDEFINES "-Dns32000 -Dunix -Asystem(unix) -Acpu(ns32k) -Amachine(ns32k)"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (32000, GAS syntax)");
