@@ -265,213 +265,213 @@ ada.install-common:
 	 then \
 	  if [ -f gnatbind-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatbind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatbind-cross$(exeext) $(bindir)/$(target_alias)-gnatbind$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	      rm -f $(tooldir)/bin/gnatbind$(exeext); \
-	      $(INSTALL_PROGRAM) gnatbind-cross$(exeext) $(tooldir)/bin/gnatbind$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatbind$(exeext); \
+	    $(INSTALL_PROGRAM) gnatbind-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatbind$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	      rm -f $(DESTDIR)$(tooldir)/bin/gnatbind$(exeext); \
+	      $(INSTALL_PROGRAM) gnatbind-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatbind$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatbind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatbind$(exeext) $(bindir)/gnatbind$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatbind$(exeext); \
+	    $(INSTALL_PROGRAM) gnatbind$(exeext) $(DESTDIR)$(bindir)/gnatbind$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatbl-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatbl$(exeext); \
-	    $(INSTALL_PROGRAM) gnatbl-cross$(exeext) $(bindir)/$(target_alias)-gnatbl$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatbl$(exeext); \
-	       $(INSTALL_PROGRAM) gnatbl-cross$(exeext) $(tooldir)/bin/gnatbl$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatbl$(exeext); \
+	    $(INSTALL_PROGRAM) gnatbl-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatbl$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatbl$(exeext); \
+	       $(INSTALL_PROGRAM) gnatbl-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatbl$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatbl$(exeext); \
-	    $(INSTALL_PROGRAM) gnatbl$(exeext) $(bindir)/gnatbl$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatbl$(exeext); \
+	    $(INSTALL_PROGRAM) gnatbl$(exeext) $(DESTDIR)$(bindir)/gnatbl$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatchop-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatchop$(shext); \
-	    $(INSTALL_PROGRAM) $(srcdir)/ada/gnatchop$(shext) $(bindir)/$(target_alias)-gnatchop$(shext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatchop$(shext); \
-	       $(INSTALL_PROGRAM) gnatchop$(shext) $(tooldir)/bin/gnatchop$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(shext); \
+	    $(INSTALL_PROGRAM) $(srcdir)/ada/gnatchop$(shext) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(shext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatchop$(shext); \
+	       $(INSTALL_PROGRAM) gnatchop$(shext) $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatchop$(shext); \
-	    $(INSTALL_PROGRAM) $(srcdir)/ada/gnatchop$(shext) $(bindir)/gnatchop$(shext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatchop$(shext); \
+	    $(INSTALL_PROGRAM) $(srcdir)/ada/gnatchop$(shext) $(DESTDIR)$(bindir)/gnatchop$(shext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatchop-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatchop$(exeext); \
-	    $(INSTALL_PROGRAM) gnatchop-cross$(exeext) $(bindir)/$(target_alias)-gnatchop$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatchop$(exeext); \
-	       $(INSTALL_PROGRAM) gnatchop-cross$(exeext) $(tooldir)/bin/gnatchop$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(exeext); \
+	    $(INSTALL_PROGRAM) gnatchop-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
+	       $(INSTALL_PROGRAM) gnatchop-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatchop$(exeext); \
-	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(bindir)/gnatchop$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
+	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatcmd-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnat$(exeext); \
-	    $(INSTALL_PROGRAM) gnatcmd-cross$(exeext) $(bindir)/$(target_alias)-gnat$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnat$(exeext); \
-	       $(INSTALL_PROGRAM) gnatcmd-cross$(exeext) $(tooldir)/bin/gnat$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnat$(exeext); \
+	    $(INSTALL_PROGRAM) gnatcmd-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnat$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnat$(exeext); \
+	       $(INSTALL_PROGRAM) gnatcmd-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnat$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnat$(exeext); \
-	    $(INSTALL_PROGRAM) gnatcmd$(exeext) $(bindir)/gnat$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnat$(exeext); \
+	    $(INSTALL_PROGRAM) gnatcmd$(exeext) $(DESTDIR)$(bindir)/gnat$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatkr-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatkr$(exeext); \
-	    $(INSTALL_PROGRAM) gnatkr-cross$(exeext) $(bindir)/$(target_alias)-gnatkr$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatkr$(exeext); \
-	       $(INSTALL_PROGRAM) gnatkr-cross$(exeext) $(tooldir)/bin/gnatkr$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatkr$(exeext); \
+	    $(INSTALL_PROGRAM) gnatkr-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatkr$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatkr$(exeext); \
+	       $(INSTALL_PROGRAM) gnatkr-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatkr$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatkr$(exeext); \
-	    $(INSTALL_PROGRAM) gnatkr$(exeext) $(bindir)/gnatkr$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatkr$(exeext); \
+	    $(INSTALL_PROGRAM) gnatkr$(exeext) $(DESTDIR)$(bindir)/gnatkr$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatlink-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatlink$(exeext); \
-	    $(INSTALL_PROGRAM) gnatlink-cross$(exeext) $(bindir)/$(target_alias)-gnatlink$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatlink$(exeext); \
-	       $(INSTALL_PROGRAM) gnatlink-cross$(exeext) $(tooldir)/bin/gnatlink$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatlink$(exeext); \
+	    $(INSTALL_PROGRAM) gnatlink-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatlink$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatlink$(exeext); \
+	       $(INSTALL_PROGRAM) gnatlink-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatlink$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatlink$(exeext); \
-	    $(INSTALL_PROGRAM) gnatlink$(exeext) $(bindir)/gnatlink$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatlink$(exeext); \
+	    $(INSTALL_PROGRAM) gnatlink$(exeext) $(DESTDIR)$(bindir)/gnatlink$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatls-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatls$(exeext); \
-	    $(INSTALL_PROGRAM) gnatls-cross$(exeext) $(bindir)/$(target_alias)-gnatls$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatls$(exeext); \
-	       $(INSTALL_PROGRAM) gnatls-cross$(exeext) $(tooldir)/bin/gnatls$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatls$(exeext); \
+	    $(INSTALL_PROGRAM) gnatls-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatls$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatls$(exeext); \
+	       $(INSTALL_PROGRAM) gnatls-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatls$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatls$(exeext); \
-	    $(INSTALL_PROGRAM) gnatls$(exeext) $(bindir)/gnatls$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatls$(exeext); \
+	    $(INSTALL_PROGRAM) gnatls$(exeext) $(DESTDIR)$(bindir)/gnatls$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatmake-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatmake$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmake-cross$(exeext) $(bindir)/$(target_alias)-gnatmake$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatmake$(exeext); \
-	       $(INSTALL_PROGRAM) gnatmake-cross$(exeext) $(tooldir)/bin/gnatmake$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatmake$(exeext); \
+	    $(INSTALL_PROGRAM) gnatmake-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatmake$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatmake$(exeext); \
+	       $(INSTALL_PROGRAM) gnatmake-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatmake$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatmake$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmake$(exeext) $(bindir)/gnatmake$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatmake$(exeext); \
+	    $(INSTALL_PROGRAM) gnatmake$(exeext) $(DESTDIR)$(bindir)/gnatmake$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatmem-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatmem$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmem-cross$(exeext) $(bindir)/$(target_alias)-gnatmem$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatmem$(exeext); \
+	    $(INSTALL_PROGRAM) gnatmem-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatmem$(exeext); \
 	  else \
-	    $(RM) $(bindir)/gnatmem$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmem$(exeext) $(bindir)/gnatmem$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatmem$(exeext); \
+	    $(INSTALL_PROGRAM) gnatmem$(exeext) $(DESTDIR)$(bindir)/gnatmem$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatprep-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatprep$(exeext); \
-	    $(INSTALL_PROGRAM) gnatprep-cross$(exeext) $(bindir)/$(target_alias)-gnatprep$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatprep$(exeext); \
-	       $(INSTALL_PROGRAM) gnatprep-cross$(exeext) $(tooldir)/bin/gnatprep$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatprep$(exeext); \
+	    $(INSTALL_PROGRAM) gnatprep-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatprep$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext); \
+	       $(INSTALL_PROGRAM) gnatprep-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatprep$(exeext); \
-	    $(INSTALL_PROGRAM) gnatprep$(exeext) $(bindir)/gnatprep$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatprep$(exeext); \
+	    $(INSTALL_PROGRAM) gnatprep$(exeext) $(DESTDIR)$(bindir)/gnatprep$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatpsta-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatpsta$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsta-cross$(exeext) $(bindir)/$(target_alias)-gnatpsta$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatpsta$(exeext); \
-	       $(INSTALL_PROGRAM) gnatpsta-cross$(exeext) $(tooldir)/bin/gnatpsta$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatpsta$(exeext); \
+	    $(INSTALL_PROGRAM) gnatpsta-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatpsta$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatpsta$(exeext); \
+	       $(INSTALL_PROGRAM) gnatpsta-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatpsta$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatpsta$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsta$(exeext) $(bindir)/gnatpsta$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatpsta$(exeext); \
+	    $(INSTALL_PROGRAM) gnatpsta$(exeext) $(DESTDIR)$(bindir)/gnatpsta$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatpsys-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatpsys$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsys-cross$(exeext) $(bindir)/$(target_alias)-gnatpsys$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatpsys$(exeext); \
-	       $(INSTALL_PROGRAM) gnatpsys-cross$(exeext) $(tooldir)/bin/gnatpsys$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatpsys$(exeext); \
+	    $(INSTALL_PROGRAM) gnatpsys-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatpsys$(exeext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatpsys$(exeext); \
+	       $(INSTALL_PROGRAM) gnatpsys-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatpsys$(exeext); \
             fi; \
 	  else \
-	    $(RM) $(bindir)/gnatpsys$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsys$(exeext) $(bindir)/gnatpsys$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatpsys$(exeext); \
+	    $(INSTALL_PROGRAM) gnatpsys$(exeext) $(DESTDIR)$(bindir)/gnatpsys$(exeext); \
 	  fi ; \
     fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatxref-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatxref$(exeext); \
-	    $(INSTALL_PROGRAM) gnatxref-cross$(exeext) $(bindir)/$(target_alias)-gnatxref$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatxref$(exeext); \
+	    $(INSTALL_PROGRAM) gnatxref-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatxref$(exeext); \
 	  else \
-	    $(RM) $(bindir)/gnatxref$(exeext); \
-	    $(INSTALL_PROGRAM) gnatxref$(exeext) $(bindir)/gnatxref$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatxref$(exeext); \
+	    $(INSTALL_PROGRAM) gnatxref$(exeext) $(DESTDIR)$(bindir)/gnatxref$(exeext); \
 	  fi ; \
     fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatfind-cross$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatfind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatfind-cross$(exeext) $(bindir)/$(target_alias)-gnatfind$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatfind$(exeext); \
+	    $(INSTALL_PROGRAM) gnatfind-cross$(exeext) $(DESTDIR)$(bindir)/$(target_alias)-gnatfind$(exeext); \
 	  else \
-	    $(RM) $(bindir)/gnatfind$(exeext); \
-	    $(INSTALL_PROGRAM) gnatfind$(exeext) $(bindir)/gnatfind$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatfind$(exeext); \
+	    $(INSTALL_PROGRAM) gnatfind$(exeext) $(DESTDIR)$(bindir)/gnatfind$(exeext); \
 	  fi ; \
 	fi
 #
@@ -481,13 +481,13 @@ ada.install-common:
 	then \
 	  if [ -f gnatchop$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/gnatchop$(exeext); \
-	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(bindir)/gnatchop$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
+	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
 	  fi ; \
 	  if [ -f gnatlbr$(exeext) ] ; \
 	  then \
-	    $(RM) $(bindir)/gnatlbr$(exeext); \
-	    $(INSTALL_PROGRAM) gnatlbr$(exeext) $(bindir)/gnatlbr$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatlbr$(exeext); \
+	    $(INSTALL_PROGRAM) gnatlbr$(exeext) $(DESTDIR)$(bindir)/gnatlbr$(exeext); \
 	  fi ; \
 	fi
 #
@@ -495,8 +495,8 @@ ada.install-common:
 #
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	    $(RM) $(bindir)/gnatdll$(exeext); \
-	    $(INSTALL_PROGRAM) gnatdll$(exeext) $(bindir)/gnatdll$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
+	    $(INSTALL_PROGRAM) gnatdll$(exeext) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
 	fi
 #
 # Finally, install the library
@@ -513,46 +513,46 @@ ada.install-info:
 ada.install-man:
 
 ada.uninstall:
-	-$(RM) $(bindir)/gnatbind$(exeext)
-	-$(RM) $(bindir)/gnatbl$(exeext)
-	-$(RM) $(bindir)/gnatchop$(exeext)
-	-$(RM) $(bindir)/gnatcmd$(exeext)
-	-$(RM) $(bindir)/gnatdll$(exeext)
-	-$(RM) $(bindir)/gnatkr$(exeext)
-	-$(RM) $(bindir)/gnatlink$(exeext)
-	-$(RM) $(bindir)/gnatls$(exeext)
-	-$(RM) $(bindir)/gnatmake$(exeext)
-	-$(RM) $(bindir)/gnatmem$(exeext)
-	-$(RM) $(bindir)/gnatprep$(exeext)
-	-$(RM) $(bindir)/gnatpsta$(exeext)
-	-$(RM) $(bindir)/gnatpsys$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatbind$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatbl$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatchop$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatcmd$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatkr(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatlink$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatls$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatmake$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatmem$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatprep$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatpsta$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatpsys$(exeext)
-	-$(RM) $(tooldir)/bin/gnatbind$(exeext)
-	-$(RM) $(tooldir)/bin/gnatbl$(exeext)
-	-$(RM) $(tooldir)/bin/gnatchop$(exeext)
-	-$(RM) $(tooldir)/bin/gnatcmd$(exeext)
-	-$(RM) $(tooldir)/bin/gnatdll$(exeext)
-	-$(RM) $(tooldir)/bin/gnatkr$(exeext)
-	-$(RM) $(tooldir)/bin/gnatlink$(exeext)
-	-$(RM) $(tooldir)/bin/gnatls$(exeext)
-	-$(RM) $(tooldir)/bin/gnatmake$(exeext)
-	-$(RM) $(tooldir)/bin/gnatmem$(exeext)
-	-$(RM) $(tooldir)/bin/gnatprep$(exeext)
-	-$(RM) $(tooldir)/bin/gnatpsta$(exeext)
-	-$(RM) $(tooldir)/bin/gnatpsys$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatbind$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatbl$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatcmd$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatkr$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatlink$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatls$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatmake$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatmem$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatprep$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatpsta$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatpsys$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatbind$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatbl$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatcmd$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatkr(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatlink$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatls$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatmake$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatmem$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatprep$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatpsta$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatpsys$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatbind$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatbl$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatcmd$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatdll$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatkr$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatlink$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatls$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatmake$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatmem$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatpsta$(exeext)
+	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatpsys$(exeext)
 # Gnatlbr and Gnatchop are only used on VMS
-	-$(RM) $(bindir)/gnatlbr$(exeext) $(bindir)/gnatchop$(exeext)
+	-$(RM) $(DESTDIR)$(bindir)/gnatlbr$(exeext) $(DESTDIR)$(bindir)/gnatchop$(exeext)
 
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.

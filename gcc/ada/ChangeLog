@@ -1,3 +1,12 @@
+2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (ada.install-common, ada.uninstall):
+	Prepend $(DESTDIR) to the destination directory in all
+	(un)installation commands.
+	* Makefile.in (install-gnatlib): Ditto.  Rewrite $(LN)
+	commands to support DESTDIR with "ln" as well as with
+	"ln -s".
+
 2002-11-19  Release Manager
 
 	* GCC 3.2.1 Released.
