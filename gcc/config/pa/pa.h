@@ -1431,6 +1431,36 @@ while (0)
   if (GET_CODE (INSN) == CALL_INSN					\
       || (GET_CODE (INSN) == JUMP_INSN && ! simplejump_p (insn)))	\
     LENGTH += 1;
+
+/* Millicode insns are actually function calls with some special
+   constraints on arguments and register usage.
+
+   Millicode calls always expect their arguments in the integer argument
+   registers, and always return their result in %r29 (ret1).  They
+   are expected to clobber their arguments, %r1, %r29, and %r31 and
+   nothing else.
+
+   These macros tell reorg that the references to arguments and 
+   register clobbers for millicode calls do not appear to happen 
+   until after the millicode call.  This allows reorg to put insns
+   which set the argument registers into the delay slot of the millicode
+   call -- thus they act more like traditional CALL_INSNs.
+
+   get_attr_type will try to recognize the given insn, so make sure to
+   filter out things it will not accept.  SEQUENCE and USE insns in 
+   particular.  */
+#define INSN_SETS_ARE_DELAYED(X) \
+  ((GET_CODE (X) == INSN			\
+    && GET_CODE (PATTERN (X)) != SEQUENCE	\
+    && GET_CODE (PATTERN (X)) != USE		\
+    && get_attr_type (X) == TYPE_MILLI))
+
+#define INSN_REFERENCES_ARE_DELAYED(X) \
+  ((GET_CODE (X) == INSN			\
+    && GET_CODE (PATTERN (X)) != SEQUENCE	\
+    && GET_CODE (PATTERN (X)) != USE		\
+    && get_attr_type (X) == TYPE_MILLI))	
+
 
 /* Control the assembler format that we output.  */
 
