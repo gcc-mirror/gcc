@@ -39,6 +39,9 @@
 #if defined (__PPC__) && defined (_CALL_SYSV)
 #include <va-ppc.h>
 #else
+#ifdef __sh__
+#include <va-sh.h>
+#else
 
 #ifdef __NeXT__
 
@@ -111,6 +114,7 @@ typedef void *__gnuc_va_list;
 			   ? sizeof (TYPE) : __va_rounded_size (TYPE))))))
 #endif /* big-endian */
 
+#endif /* not sh */
 #endif /* not powerpc with V.4 calling sequence */
 #endif /* not h8300 */
 #endif /* not alpha */
