@@ -8054,14 +8054,33 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		    if (! refers_to_regno_p (i, i + 1, PATTERN (place), 0))
 		      {
 			rtx piece = gen_rtx (REG, word_mode, i);
-			rtx use_insn
-			  = emit_insn_before (gen_rtx (USE, VOIDmode, piece),
-					      place);
+			rtx p;
+
+			/* See if we already placed a USE note for this
+			   register in front of PLACE.  */
+			for (p = place;
+			     GET_CODE (PREV_INSN (p)) == INSN
+			     && GET_CODE (PATTERN (PREV_INSN (p))) == USE;
+			     p = PREV_INSN (p))
+			  if (rtx_equal_p (piece,
+					   XEXP (PATTERN (PREV_INSN (p)), 0)))
+			    {
+			      p = 0;
+			      break;
+			    }
+
+			if (p)
+			  {
+			    rtx use_insn
+			      = emit_insn_before (gen_rtx (USE, VOIDmode,
+							   piece),
+						  p);
+			    REG_NOTES (use_insn)
+			      = gen_rtx (EXPR_LIST, REG_DEAD, piece,
+					 REG_NOTES (use_insn));
+			  }
 
 			all_used = 0;
-			REG_NOTES (use_insn)
-			  = gen_rtx (EXPR_LIST, REG_DEAD, piece,
-				     REG_NOTES (use_insn));
 		      }
 
 		  if (! all_used)
