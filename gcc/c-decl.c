@@ -936,7 +936,7 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
   tree t;
 
   if (TREE_CODE (olddecl) != FUNCTION_DECL
-      || !comptypes (TREE_TYPE (oldtype), TREE_TYPE (newtype), COMPARE_STRICT)
+      || !comptypes (TREE_TYPE (oldtype), TREE_TYPE (newtype))
       || !((TYPE_ARG_TYPES (oldtype) == 0 && DECL_INITIAL (olddecl) == 0)
 	   ||
 	   (TYPE_ARG_TYPES (newtype) == 0 && DECL_INITIAL (newdecl) == 0)))
@@ -1008,7 +1008,7 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 
       /* Type for passing arg must be consistent with that declared
 	 for the arg.  */
-      else if (! comptypes (oldargtype, newargtype, COMPARE_STRICT))
+      else if (! comptypes (oldargtype, newargtype))
 	{
 	  error ("%Jprototype for '%D' declares arg %d with incompatible type",
 		 newdecl, newdecl, i);
@@ -1090,7 +1090,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       return false;
     }
 
-  if (!comptypes (oldtype, newtype, COMPARE_STRICT))
+  if (!comptypes (oldtype, newtype))
     {
       if (TREE_CODE (olddecl) == FUNCTION_DECL
 	  && DECL_BUILT_IN (olddecl) && !C_DECL_DECLARED_BUILTIN (olddecl))
@@ -1099,7 +1099,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	     This is for the ffs and fprintf builtins.  */
 	  tree trytype = match_builtin_function_types (newtype, oldtype);
 
-	  if (trytype && comptypes (newtype, trytype, COMPARE_STRICT))
+	  if (trytype && comptypes (newtype, trytype))
 	    *oldtypep = oldtype = trytype;
 	  else
 	    {
@@ -6008,8 +6008,7 @@ store_parm_decls_oldstyle (tree fndecl, tree arg_info)
 	     declared for the arg.  ISO C says we take the unqualified
 	     type for parameters declared with qualified type.  */
 	  if (! comptypes (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm)),
-			   TYPE_MAIN_VARIANT (TREE_VALUE (type)),
-			   COMPARE_STRICT))
+			   TYPE_MAIN_VARIANT (TREE_VALUE (type))))
 	    {
 	      if (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
 		  == TYPE_MAIN_VARIANT (TREE_VALUE (type)))

@@ -1,3 +1,13 @@
+2004-06-13  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (comptypes, tagged_types_tu_compatible_p,
+	function_types_compatible_p, type_lists_compatible_p): Remove
+	flags parameter.
+	* c-tree.h (comptypes): Likewise.
+	(COMPARE_STRICT): Remove.
+	* c-decl.c, c-lang.c, c-parse.in, c-typeck.c, objc/objc-act.c: All
+	callers changed.
+
 2004-06-13  Eric Christopher  <echristo@redhat.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Improve error message.

@@ -700,7 +700,7 @@ primary:
 		  e1 = TYPE_MAIN_VARIANT (groktypename ($3));
 		  e2 = TYPE_MAIN_VARIANT (groktypename ($5));
 
-		  $$ = comptypes (e1, e2, COMPARE_STRICT)
+		  $$ = comptypes (e1, e2)
 		    ? build_int_2 (1, 0) : build_int_2 (0, 0);
 		}
 	| TYPES_COMPATIBLE_P '(' error ')'

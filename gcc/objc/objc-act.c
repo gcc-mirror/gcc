@@ -1,6 +1,6 @@
 /* Implement classes and message passing for Objective C.
    Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GCC.
@@ -4257,7 +4257,7 @@ check_ivars (tree inter, tree imp)
 
       t1 = TREE_TYPE (intdecls); t2 = TREE_TYPE (impdecls);
 
-      if (!comptypes (t1, t2, false)
+      if (!comptypes (t1, t2)
 	  || !tree_int_cst_equal (TREE_VALUE (TREE_VALUE (rawintdecls)),
 				  TREE_VALUE (TREE_VALUE (rawimpdecls))))
 	{
@@ -7612,8 +7612,7 @@ comp_method_with_proto (tree method, tree proto)
   /* install return type */
   TREE_TYPE (function1_template) = groktypename (TREE_TYPE (proto));
 
-  return comptypes (TREE_TYPE (METHOD_DEFINITION (method)), function1_template,
-		    false);
+  return comptypes (TREE_TYPE (METHOD_DEFINITION (method)), function1_template);
 }
 
 /* Return 1 if TYPE1 is equivalent to TYPE2.  */
