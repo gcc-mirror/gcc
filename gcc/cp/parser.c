@@ -12226,7 +12226,7 @@ cp_parser_member_declaration (cp_parser* parser)
 			 }
 		     }
 		 }
-	       if (!type)
+	       if (!type || !TYPE_P (type))
 		 error ("friend declaration does not name a class or "
 			"function");
 	       else
