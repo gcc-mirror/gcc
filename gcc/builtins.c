@@ -6075,6 +6075,45 @@ fold_trunc_transparent_mathfn (tree exp)
   return 0;
 }
 
+/* EXP is assumed to be builtin call which can narrow the FP type of
+   the argument, for instance lround((double)f) -> lroundf (f).  */
+
+static tree
+fold_fixed_mathfn (tree exp)
+{
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arg;
+
+  if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+
+  /* If argument is already integer valued, and we don't need to worry
+     about setting errno, there's no need to perform rounding.  */
+  if (! flag_errno_math && integer_valued_real_p (arg))
+    return fold (build1 (FIX_TRUNC_EXPR, TREE_TYPE (exp), arg));
+
+  if (optimize)
+    {
+      tree ftype = TREE_TYPE (arg);
+      tree arg0 = strip_float_extensions (arg);
+      tree newtype = TREE_TYPE (arg0);
+      tree decl;
+
+      if (TYPE_PRECISION (newtype) < TYPE_PRECISION (ftype)
+	  && (decl = mathfn_built_in (newtype, fcode)))
+	{
+	  arglist =
+	    build_tree_list (NULL_TREE, fold_convert (newtype, arg0));
+	  return build_function_call_expr (decl, arglist);
+	}
+    }
+  return 0;
+}
+
 /* Fold function call to builtin cabs, cabsf or cabsl.  ARGLIST
    is the argument list and TYPE is the return type.  Return
    NULL_TREE if no if no simplification can be made.  */
@@ -6307,7 +6346,7 @@ fold_builtin_lround (tree exp)
 	}
     }
 
-  return 0;
+  return fold_fixed_mathfn (exp);
 }
 
 /* Fold function call to builtin ffs, clz, ctz, popcount and parity
@@ -7419,6 +7458,14 @@ fold_builtin (tree exp)
     case BUILT_IN_LLROUNDF:
     case BUILT_IN_LLROUNDL:
       return fold_builtin_lround (exp);
+
+    case BUILT_IN_LRINT:
+    case BUILT_IN_LRINTF:
+    case BUILT_IN_LRINTL:
+    case BUILT_IN_LLRINT:
+    case BUILT_IN_LLRINTF:
+    case BUILT_IN_LLRINTL:
+      return fold_fixed_mathfn (exp);
 
     case BUILT_IN_FFS:
     case BUILT_IN_FFSL:
