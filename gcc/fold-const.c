@@ -5751,7 +5751,8 @@ fold (expr)
 				  REAL_VALUE_NEGATE (TREE_REAL_CST (arg1)))));
 	  /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
 	  /* a CMP (-0) -> a CMP 0  */
-	  if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
+	  if (TREE_CODE (arg1) == REAL_CST
+	      && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
 	    return fold (build (code, type, arg0,
 				build_real (TREE_TYPE (arg1), dconst0)));
 	}
