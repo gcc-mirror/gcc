@@ -1,3 +1,15 @@
+Wed Dec  9 09:12:40 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.h (struct handler_info): Add handler_number field.
+	* except.c (gen_exception_label): EH labels no longer need to be
+	on the permanent obstack.
+	(get_new_handler): Set the label number field.
+	(output_exception_table_entry): Regenerate handler label reference 
+	from the label number field.
+	(init_eh): Remove a blank line.
+	* integrate.c (get_label_from_map): Labels no longer need to be
+	on the permanent obstack.
+
 Tue Dec  8 22:04:33 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i960/i960.h (CONST_COSTS, case CONST_INT): Accept power2_operand

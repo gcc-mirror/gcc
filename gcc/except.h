@@ -172,7 +172,8 @@ void set_exception_version_code                 PROTO((int));
 
 typedef struct handler_info 
 {
-  rtx  handler_label;
+  rtx handler_label;
+  int handler_number;
   void *type_info;
   struct handler_info *next;
 } handler_info;
