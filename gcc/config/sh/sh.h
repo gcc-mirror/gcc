@@ -2811,20 +2811,25 @@ while (0)
    If SECONDARY*_RELOAD_CLASS says something about the src/dst pair,
    it uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
+
+#define REGCLASS_HAS_GENERAL_REG(rclass) \
+((rclass)==GENERAL_REGS||(rclass)==R0_REGS||(rclass)==SIBCALL_REGS)
+/* NB SIBCALL_REGS are not strictly general, as they include TR0-TR4 */
+
 #define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) \
  (((((DSTCLASS) == T_REGS) || ((DSTCLASS) == PR_REGS)) ? 10		\
    : ((((DSTCLASS) == FP0_REGS || (DSTCLASS) == FP_REGS			\
 	|| (DSTCLASS) == DF_REGS || (DSTCLASS) == DF_HI_REGS)		\
-       && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\
-      || (((DSTCLASS) == GENERAL_REGS || (DSTCLASS) == R0_REGS)		\
+       && REGCLASS_HAS_GENERAL_REG (SRCCLASS))				\
+      || (REGCLASS_HAS_GENERAL_REG (DSTCLASS)				\
 	  && ((SRCCLASS) == FP0_REGS || (SRCCLASS) == FP_REGS		\
 	      || (SRCCLASS) == DF_REGS || (SRCCLASS) == DF_HI_REGS)))	\
    ? (TARGET_SHMEDIA ? 4						\
       : TARGET_FMOVD ? 8 : 12)						\
    : (((DSTCLASS) == FPUL_REGS						\
-       && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\
-      || (SRCCLASS == FPUL_REGS						\
-	  && ((DSTCLASS) == GENERAL_REGS || (DSTCLASS) == R0_REGS)))	\
+       && REGCLASS_HAS_GENERAL_REG (SRCCLASS))				\
+      || ((SRCCLASS) == FPUL_REGS					\
+	  && REGCLASS_HAS_GENERAL_REG (DSTCLASS)))			\
    ? 5									\
    : (((DSTCLASS) == FPUL_REGS						\
        && ((SRCCLASS) == PR_REGS || (SRCCLASS) == MAC_REGS		\
@@ -2832,11 +2837,15 @@ while (0)
       || ((SRCCLASS) == FPUL_REGS					\
 	  && ((DSTCLASS) == PR_REGS || (DSTCLASS) == MAC_REGS)))	\
    ? 7									\
-   : (((SRCCLASS) == TARGET_REGS && (DSTCLASS) != GENERAL_REGS)		\
-      || ((DSTCLASS) == TARGET_REGS && (SRCCLASS) != GENERAL_REGS))	\
+   : (((SRCCLASS) == TARGET_REGS					\
+       && ! REGCLASS_HAS_GENERAL_REG (DSTCLASS))			\
+      || ((DSTCLASS) == TARGET_REGS					\
+	  && ! REGCLASS_HAS_GENERAL_REG (SRCCLASS)))			\
    ? 20									\
-   : (((SRCCLASS) == FPSCR_REGS && (DSTCLASS) != GENERAL_REGS)		\
-      || ((DSTCLASS) == FPSCR_REGS && (SRCCLASS) != GENERAL_REGS))	\
+   : (((SRCCLASS) == FPSCR_REGS						\
+       && ! REGCLASS_HAS_GENERAL_REG (DSTCLASS))			\
+      || ((DSTCLASS) == FPSCR_REGS					\
+	   && ! REGCLASS_HAS_GENERAL_REG (SRCCLASS)))			\
    ? 4									\
    : 2) * ((MODE) == V16SFmode ? 8 : (MODE) == V4SFmode ? 2 : 1))
 
