@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES	"\
 -Dunix -Dmips -Dsgi -DSVR3 -Dhost_mips -DMIPSEB -DSYSTYPE_SYSV \
--Asystem(unix) -Asystem(svr3) -Acpu(mips) -Amachine(mips)"
+-Asystem=unix -Asystem=svr3 -Acpu=mips -Amachine=mips"
 
 #define STARTFILE_SPEC	"%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}"
 

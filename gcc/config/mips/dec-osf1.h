@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "\
 -D__ANSI_COMPAT -DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD \
 -Dbsd4_2 -Dhost_mips -Dmips -Dosf -Dunix \
--Asystem(unix) -Asystem(xpg4) -Acpu(mips) -Amachine(mips)"
+-Asystem=unix -Asystem=xpg4 -Acpu=mips -Amachine=mips"
 
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \

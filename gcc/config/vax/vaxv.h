@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define SCCS_DIRECTIVE
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dvax -Dunix -Asystem(unix) -Asystem(svr3) -Acpu(vax) -Amachine(vax)"
+#define CPP_PREDEFINES "-Dvax -Dunix -Asystem=unix -Asystem=svr3 -Acpu=vax -Amachine=vax"
 
 /* Output #ident as a .ident.  */
 

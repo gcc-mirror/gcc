@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES "\
 -Dunix -D__osf__ -D_LONGLONG -DSYSTYPE_BSD \
--D_SYSTYPE_BSD -Asystem(unix) -Asystem(xpg4)"
+-D_SYSTYPE_BSD -Asystem=unix -Asystem=xpg4"
 
 /* Accept DEC C flags for multithreaded programs.  We use _PTHREAD_USE_D4
    instead of PTHREAD_USE_D4 since both have the same effect and the former

@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
    %{pthread:-D_REENTRANT -D_PTHREADS}"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -Dlinux -Asystem(posix)"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -Dlinux -Asystem=posix"
 
 #undef ASM_SPEC
 #define ASM_SPEC  "%{!mb:-little} %{mrelax:-relax}"

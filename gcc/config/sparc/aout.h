@@ -23,4 +23,4 @@ Boston, MA 02111-1307, USA.  */
 #include "aoutos.h"		/* A.out definitions */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-Dsparc -Acpu=sparc -Amachine=sparc"

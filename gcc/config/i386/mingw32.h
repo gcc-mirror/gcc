@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_WIN32 -DWIN32 \
   -D__MINGW32__=0.2 -D__MSVCRT__ -DWINNT -D_X86_=1 \
-  -Asystem(winnt)"
+  -Asystem=winnt"
 
 /* Specific a different directory for the standard include files.  */
 #undef STANDARD_INCLUDE_DIR

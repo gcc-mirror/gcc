@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
    Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Asystem(svr3)"
+#define CPP_PREDEFINES "-Dunix -Asystem=svr3"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) \

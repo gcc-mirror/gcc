@@ -40,8 +40,8 @@
 #define NEEDS_UNTYPED_CALL 1
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -D__embedded__ -Asystem(embedded) \
-  -Amachine(mc68000)"
+#define CPP_PREDEFINES "-Dmc68000 -D__embedded__ -Asystem=embedded \
+  -Amachine=mc68000"
 
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
    profiling, or libg.a.  */

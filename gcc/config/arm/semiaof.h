@@ -21,7 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES \
-    "-Darm -Dsemi -Acpu(arm) -Amachine(arm)"
+    "-Darm -Dsemi -Acpu=arm -Amachine=arm"
 
 #define ASM_SPEC "%{g -g} -arch 4 \
 -apcs 3%{mapcs-32:/32bit}%{mapcs-26:/26bit}%{!mapcs-26:%{!macps-32:/32bit}}"

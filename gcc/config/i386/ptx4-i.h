@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 /* This used to define X86, but james@bigtex.cactus.org says that
    is supposed to be defined optionally by user programs--not by default.  */
 #define CPP_PREDEFINES \
-  "-Dunix -D_SEQUENT_ -Asystem(unix) -Asystem(ptx4)"
+  "-Dunix -D_SEQUENT_ -Asystem=unix -Asystem=ptx4"
 
 /* This is how to output assembly code to define a `float' constant.
    We always have to use a .long pseudo-op to do this because the native

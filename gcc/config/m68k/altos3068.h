@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -DPORTAR -Dmc68k32 -Uvax -Dm68k -Dunix -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -DPORTAR -Dmc68k32 -Uvax -Dm68k -Dunix -Asystem=unix  -Acpu=m68k -Amachine=m68k"
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 

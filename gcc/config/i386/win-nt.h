@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA. */
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -D_cdecl=__attribute__((__cdecl__)) \
-  -Asystem(unix) -Asystem(winnt)"
+  -Asystem=unix -Asystem=winnt"
 
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"

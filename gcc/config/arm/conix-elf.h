@@ -172,7 +172,7 @@ func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 #endif
      
 #define CPP_PREDEFINES \
-  "-D__arm__ -D__CONIX__ -Acpu(arm) -Amachine(arm) -D__ELF__"
+  "-D__arm__ -D__CONIX__ -Acpu=arm -Amachine=arm -D__ELF__"
 
 /* Now get the routine arm-elf definitions.  */
 #include "arm/elf.h"

@@ -44,9 +44,9 @@ Boston, MA 02111-1307, USA.  */
    GCC on other 68000 systems.  */
 
 #ifdef MOTOROLA
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews700 -D__motorola__ -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews700 -D__motorola__ -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #else
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews700 -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews700 -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #endif
 
 /* These conditionals tested for different submodels,
@@ -55,22 +55,22 @@ Boston, MA 02111-1307, USA.  */
 
 #if 0
 #ifdef news800
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews800 -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews800 -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #endif
 #ifdef news900
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews900 -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews900 -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #endif
 #ifdef news1500
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1500 -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1500 -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #endif
 #ifdef news1700
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1700 -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1700 -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #endif
 #ifdef news1800
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1800 -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1800 -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #endif
 #ifdef news1900
-#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1900 -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dmc68030 -Dnews1900 -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 #endif
 #endif
 

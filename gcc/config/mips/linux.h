@@ -63,12 +63,12 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #if TARGET_ENDIAN_DEFAULT == 0
 #define CPP_PREDEFINES "-DMIPSEL -D_MIPSEL -Dunix -Dmips -D_mips \
--DR3000 -D_R3000 -Dlinux -Asystem(posix) -Acpu(mips) \
--Amachine(mips) -D__ELF__ -D__PIC__ -D__pic__"
+-DR3000 -D_R3000 -Dlinux -Asystem=posix -Acpu=mips \
+-Amachine=mips -D__ELF__ -D__PIC__ -D__pic__"
 #else
 #define CPP_PREDEFINES "-DMIPSEB -D_MIPSEB -Dunix -Dmips -D_mips \
--DR3000 -D_R3000 -Dlinux -Asystem(posix) -Acpu(mips) \
--Amachine(mips) -D__ELF__ -D__PIC__ -D__pic__"
+-DR3000 -D_R3000 -Dlinux -Asystem=posix -Acpu=mips \
+-Amachine=mips -D__ELF__ -D__PIC__ -D__pic__"
 #endif
 
 #undef SUBTARGET_CPP_SIZE_SPEC

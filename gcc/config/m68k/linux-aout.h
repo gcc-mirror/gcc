@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_COMMENT_START "|"
 
 #define CPP_PREDEFINES \
-  "-Dunix -Dmc68000 -Dmc68020 -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(m68k) -Amachine(m68k)"
+  "-Dunix -Dmc68000 -Dmc68020 -Dlinux -Asystem=unix -Asystem=posix -Acpu=m68k -Amachine=m68k"
 
 #undef CPP_SPEC
 #if TARGET_DEFAULT & MASK_68881

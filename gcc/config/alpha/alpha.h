@@ -272,15 +272,15 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 /* Attempt to describe CPU characteristics to the preprocessor.  */
 
 /* Corresponding to amask... */
-#define CPP_AM_BWX_SPEC	"-D__alpha_bwx__ -Acpu(bwx)"
-#define CPP_AM_MAX_SPEC	"-D__alpha_max__ -Acpu(max)"
-#define CPP_AM_FIX_SPEC	"-D__alpha_fix__ -Acpu(fix)"
-#define CPP_AM_CIX_SPEC	"-D__alpha_cix__ -Acpu(cix)"
+#define CPP_AM_BWX_SPEC	"-D__alpha_bwx__ -Acpu=bwx"
+#define CPP_AM_MAX_SPEC	"-D__alpha_max__ -Acpu=max"
+#define CPP_AM_FIX_SPEC	"-D__alpha_fix__ -Acpu=fix"
+#define CPP_AM_CIX_SPEC	"-D__alpha_cix__ -Acpu=cix"
 
 /* Corresponding to implver... */
-#define CPP_IM_EV4_SPEC	"-D__alpha_ev4__ -Acpu(ev4)"
-#define CPP_IM_EV5_SPEC	"-D__alpha_ev5__ -Acpu(ev5)"
-#define CPP_IM_EV6_SPEC	"-D__alpha_ev6__ -Acpu(ev6)"
+#define CPP_IM_EV4_SPEC	"-D__alpha_ev4__ -Acpu=ev4"
+#define CPP_IM_EV5_SPEC	"-D__alpha_ev5__ -Acpu=ev5"
+#define CPP_IM_EV6_SPEC	"-D__alpha_ev6__ -Acpu=ev6"
 
 /* Common combinations.  */
 #define CPP_CPU_EV4_SPEC	"%(cpp_im_ev4)"
@@ -318,7 +318,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 #ifndef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
-%{!undef:-Acpu(alpha) -Amachine(alpha) -D__alpha -D__alpha__ \
+%{!undef:-Acpu=alpha -Amachine=alpha -D__alpha -D__alpha__ \
 %{mcpu=ev4|mcpu=21064:%(cpp_cpu_ev4) }\
 %{mcpu=ev5|mcpu=21164:%(cpp_cpu_ev5) }\
 %{mcpu=ev56|mcpu=21164a:%(cpp_cpu_ev56) }\

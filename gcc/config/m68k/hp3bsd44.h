@@ -11,7 +11,7 @@
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dmc68020 -Dhp300 -Dhp9000 -Dunix -D__BSD_4_4__ -Asystem(unix)  -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -Dmc68020 -Dhp300 -Dhp9000 -Dunix -D__BSD_4_4__ -Asystem=unix  -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 
 /* No more libg.a */
 

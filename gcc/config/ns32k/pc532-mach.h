@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ns32k/pc532.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dns32532 -DPC532 -DMACH=1 -Asystem(unix) -Asystem(mach) -Acpu(ns32k) -Amachine(ns32k)"
+#define CPP_PREDEFINES "-Dns32532 -DPC532 -DMACH=1 -Asystem=unix -Asystem=mach -Acpu=ns32k -Amachine=ns32k"
 
 /* There's a bug in the setjmp implementation that strikes
    if the caller of setjmp doesn't have a frame pointer.  */

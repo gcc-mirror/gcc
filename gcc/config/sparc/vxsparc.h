@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC ""
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-Dsparc -Acpu=sparc -Amachine=sparc"
 
 /* Note that we define CPU here even if the user has specified -ansi.
    This violates user namespace, but the VxWorks headers, and potentially

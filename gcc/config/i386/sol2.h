@@ -64,7 +64,7 @@ Boston, MA 02111-1307, USA.  */
 /* Add "sun" to the list of symbols defined for SVR4.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-Dunix -D__svr4__ -D__SVR4 -Dsun -Asystem(svr4)"
+  "-Dunix -D__svr4__ -D__SVR4 -Dsun -Asystem=svr4"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) \

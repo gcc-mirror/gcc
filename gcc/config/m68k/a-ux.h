@@ -27,14 +27,14 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)	/* 68020, 68881 */
 
 #define CPP_PREDEFINES "-Dunix -Dm68k -DAUX -DmacII \
--Asystem(unix) -Asystem(AUX) -Acpu(m68k) -Amachine(m68k) -Amachine(macII)"
+-Asystem=unix -Asystem=AUX -Acpu=m68k -Amachine=m68k -Amachine=macII"
 
 #define CPP_SPEC \
 "%{!msoft-float:%{!ansi:-Dmc68881 }-D__HAVE_68881__ }\
--Acpu(mc68000) -D__mc68000__ %{!ansi:-Dmc68000 }\
-%{!mc68000:%{!m68000:-Acpu(mc68020) -D__mc68020__ %{!ansi:-Dmc68020 }}}\
-%{m68030:-Acpu(mc68030) -D__mc68030__ %{!ansi:-Dmc68030 }}\
-%{m68040:-Acpu(mc68040) -D__mc68040__ %{!ansi:-Dmc68040 }}\
+-Acpu=mc68000 -D__mc68000__ %{!ansi:-Dmc68000 }\
+%{!mc68000:%{!m68000:-Acpu=mc68020 -D__mc68020__ %{!ansi:-Dmc68020 }}}\
+%{m68030:-Acpu=mc68030 -D__mc68030__ %{!ansi:-Dmc68030 }}\
+%{m68040:-Acpu=mc68040 -D__mc68040__ %{!ansi:-Dmc68040 }}\
 %{!ansi:%{!traditional:-D__STDC__=2 }}\
 %{sbsd:-D_BSD_SOURCE -DBSD }%{ZB:-D_BSD_SOURCE -DBSD }\
 %{ssysv:-D_SYSV_SOURCE -DSYSV -DUSG }%{ZS:-D_SYSV_SOURCE -DSYSV -DUSG }\

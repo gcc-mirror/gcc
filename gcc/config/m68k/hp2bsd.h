@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dmc68010 -Dhp200 -Dunix -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -Dmc68010 -Dhp200 -Dunix -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 
 /* Link with libg.a when debugging, for dbx's sake.  */
 

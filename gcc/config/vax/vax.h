@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dvax -D__vax__ -Dunix -Asystem(unix) -Asystem(bsd) -Acpu(vax) -Amachine(vax)"
+#define CPP_PREDEFINES "-Dvax -D__vax__ -Dunix -Asystem=unix -Asystem=bsd -Acpu=vax -Amachine=vax"
 
 /* Use -J option for long branch support with Unix assembler. */
 

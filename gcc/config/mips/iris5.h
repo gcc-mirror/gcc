@@ -70,7 +70,7 @@ Boston, MA 02111-1307, USA.  */
  "-Dunix -Dmips -Dsgi -Dhost_mips -DMIPSEB -D_MIPSEB -DSYSTYPE_SVR4 \
   -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
   -D_MIPS_SIM=_MIPS_SIM_ABI32 -D_MIPS_SZPTR=32 \
-  -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
+  -Asystem=unix -Asystem=svr4 -Acpu=mips -Amachine=sgi"
 
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\

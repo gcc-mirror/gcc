@@ -75,7 +75,7 @@ while (0)
 
 #define CPP_PREDEFINES \
   "-Dm68k -Dunix -D__svr4__ -D__motorola__ \
- -Asystem(unix) -Asystem(svr4) -Acpu(m68k) -Amachine(m68k)"
+ -Asystem=unix -Asystem=svr4 -Acpu=m68k -Amachine=m68k"
 
 /* Test to see if the target includes a 68881 by default, and use CPP_SPEC
    to control whether or not __HAVE_68881__ is defined by default or not.

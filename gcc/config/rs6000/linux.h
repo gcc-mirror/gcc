@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
- "-DPPC -D__ELF__ -Dpowerpc -Acpu(powerpc) -Amachine(powerpc)"
+ "-DPPC -D__ELF__ -Dpowerpc -Acpu=powerpc -Amachine=powerpc"
 
 #undef	CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"

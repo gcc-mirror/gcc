@@ -21,9 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11)
-#define CPP_PREDEFINES "-Dhppa -Dunix -Dhp9000 -Dspectrum -DREVARGV -Dhp700 -DHP700 -Dparisc -D__pa_risc -DPARISC -DBYTE_MSF -DBIT_MSF -Asystem(unix) -Asystem(mach) -Acpu(hppa) -Amachine(hppa)"
+#define CPP_PREDEFINES "-Dhppa -Dunix -Dhp9000 -Dspectrum -DREVARGV -Dhp700 -DHP700 -Dparisc -D__pa_risc -DPARISC -DBYTE_MSF -DBIT_MSF -Asystem=unix -Asystem=mach -Acpu=hppa -Amachine=hppa"
 #else
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Dparisc -D__pa_risc -DPARISC -DBYTE_MSF -DBIT_MSF -Asystem(unix) -Asystem(mach) -Acpu(hppa) -Amachine(hppa)"
+#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Dparisc -D__pa_risc -DPARISC -DBYTE_MSF -DBIT_MSF -Asystem=unix -Asystem=mach -Acpu=hppa -Amachine=hppa"
 #endif
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and

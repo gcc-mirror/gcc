@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 /* Amend common OpenBSD definitions for vax target.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__unix__ -D__vax__ -D__OpenBSD__ -Asystem(unix) -Asystem(OpenBSD) -Acpu(vax) -Amachine(vax)"
+#define CPP_PREDEFINES "-D__unix__ -D__vax__ -D__OpenBSD__ -Asystem=unix -Asystem=OpenBSD -Acpu=vax -Amachine=vax"
 
 /* Layout of source language data types.  */
 

@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "\
 -Dmips -Dhost_mips -Dsony -Dsonyrisc -Dunix \
 -DLANGUAGE_C -DMIPSEB -DSYSTYPE_SYSV \
--Asystem(unix) -Asystem(svr3) -Acpu(mips) -Amachine(mips)"
+-Asystem=unix -Asystem=svr3 -Acpu=mips -Amachine=mips"
 
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
 

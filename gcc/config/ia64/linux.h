@@ -6,7 +6,7 @@
 /* ??? Maybe this should be in sysv4.h?  */
 #define CPP_PREDEFINES "\
 -D__ia64 -D__ia64__ -D__linux -D__linux__ -D_LONGLONG -Dlinux -Dunix \
--D__LP64__ -D__ELF__ -Asystem(linux) -Acpu(ia64) -Amachine(ia64)"
+-D__LP64__ -D__ELF__ -Asystem=linux -Acpu=ia64 -Amachine=ia64"
 
 /* ??? ia64 gas doesn't accept standard svr4 assembler options?  */
 #undef ASM_SPEC

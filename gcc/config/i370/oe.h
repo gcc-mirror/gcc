@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-DGCC -Dgcc -DUNIX -Dunix -Dopenedition -D__i370__ -Asystem(openedition) -Asystem(unix) -Acpu(i370) -Amachine(i370)"
+#define CPP_PREDEFINES "-DGCC -Dgcc -DUNIX -Dunix -Dopenedition -D__i370__ -Asystem=openedition -Asystem=unix -Acpu=i370 -Amachine=i370"
 
 /* Include system common definitions */
 

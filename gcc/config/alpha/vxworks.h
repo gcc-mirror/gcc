@@ -28,8 +28,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
--D__vxworks -D__alpha_vxworks -Asystem(vxworks) \
--Asystem(embedded) -D_LONGLONG"
+-D__vxworks -D__alpha_vxworks -Asystem=vxworks \
+-Asystem=embedded -D_LONGLONG"
 
 /* VxWorks does all the library stuff itself.  */
 

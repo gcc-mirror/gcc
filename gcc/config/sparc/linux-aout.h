@@ -69,7 +69,7 @@ Boston, MA 02111-1307, USA.  */
 #undef MAX_WCHAR_TYPE_SIZE
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix)"
+#define CPP_PREDEFINES "-Dunix -Dsparc -Dlinux -Asystem=unix -Asystem=posix"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC \

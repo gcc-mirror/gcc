@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES \
  "-Dunix -Dmips -Dsgi -Dhost_mips -DMIPSEB -D_MIPSEB -DSYSTYPE_SVR4 \
   -D_LONGLONG -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
-  -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
+  -Asystem=unix -Asystem=svr4 -Acpu=mips -Amachine=sgi"
 
 #undef SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\

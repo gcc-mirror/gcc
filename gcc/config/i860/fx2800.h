@@ -264,7 +264,7 @@ Boston, MA 02111-1307, USA.  */
    the i860 running Concentrix 2.x.  */
 
 #undef CPP_PREDEFINES 
-#define CPP_PREDEFINES "-Di860 -Dunix -DBSD4_3 -Dalliant -Asystem(unix) -Asystem(bsd) -Acpu(i860) -Amachine(i860)"
+#define CPP_PREDEFINES "-Di860 -Dunix -DBSD4_3 -Dalliant -Asystem=unix -Asystem=bsd -Acpu=i860 -Amachine=i860"
 
 #undef I860_REG_PREFIX
 #undef ASM_COMMENT_START

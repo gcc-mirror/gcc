@@ -27,6 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "aoutos.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm88000 -Dm88k -Acpu(m88k) -Amachine(m88k)"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Acpu=m88k -Amachine=m88k"
 
 /* end of m88k-aout.h */

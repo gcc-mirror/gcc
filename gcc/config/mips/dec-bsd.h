@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-D__ANSI_COMPAT \
 -DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD -Dbsd4_4 -Dhost_mips -Dmips \
 -Dunix -D_mips -D_unix -D_host_mips -D_MIPSEL -D_R3000 \
--Asystem(unix) -Asystem(bsd) -Amachine(mips)"
+-Asystem=unix -Asystem=bsd -Amachine=mips"
 #endif
 
 /* Always uses GNU ld.  */

@@ -47,9 +47,9 @@ extern const char * const *h8_reg_names;
    %{!mh:%{!ms:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
    %{mh:-D__SIZE_TYPE__=unsigned\\ long -D__PTRDIFF_TYPE__=long} \
    %{ms:-D__SIZE_TYPE__=unsigned\\ long -D__PTRDIFF_TYPE__=long} \
-   %{!mh:%{!ms:-Acpu(h8300) -Amachine(h8300)}} \
-   %{mh:-Acpu(h8300h) -Amachine(h8300h)} \
-   %{ms:-Acpu(h8300s) -Amachine(h8300s)} \
+   %{!mh:%{!ms:-Acpu=h8300 -Amachine=h8300}} \
+   %{mh:-Acpu=h8300h -Amachine=h8300h} \
+   %{ms:-Acpu=h8300s -Amachine=h8300s} \
    %{!mint32:-D__INT_MAX__=32767} %{mint32:-D__INT_MAX__=2147483647}"
 
 #define LINK_SPEC "%{mh:-m h8300h} %{ms:-m h8300s}"

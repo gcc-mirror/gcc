@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #define MULTILIB_DEFAULTS { "mnumerics" }
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Acpu(i960) -Amachine(i960)"
+#define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Acpu=i960 -Amachine=i960"
 
 /* Name to predefine in the preprocessor for processor variations.  */
 #define	CPP_SPEC "%{mic*:-D__i960\

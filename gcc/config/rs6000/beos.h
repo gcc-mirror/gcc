@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 /* __POWERPC__ must be defined for some header files */
-#define CPP_PREDEFINES "-D__BEOS__ -D__POWERPC__ -Asystem(beos) -Acpu(powerpc) -Amachine(powerpc)"
+#define CPP_PREDEFINES "-D__BEOS__ -D__POWERPC__ -Asystem=beos -Acpu=powerpc -Amachine=powerpc"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_cpu)"

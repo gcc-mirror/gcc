@@ -66,7 +66,7 @@ Boston, MA 02111-1307, USA. */
 #define CPP_PREDEFINES "-D_WIN32 -DWINNT -D_X86_=1 \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
-  -Asystem(winnt)"
+  -Asystem=winnt"
 
 #undef STARTFILE_SPEC
 

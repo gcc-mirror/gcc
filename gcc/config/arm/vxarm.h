@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 "
 
 #undef  CPP_PREDEFINES
-#define CPP_PREDEFINES  "-D__vxworks -Acpu(arm) -Amachine(arm)"
+#define CPP_PREDEFINES  "-D__vxworks -Acpu=arm -Amachine=arm"
 
 /* VxWorks does all the library stuff itself.  */
 #undef  LIB_SPEC

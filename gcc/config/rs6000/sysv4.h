@@ -1052,7 +1052,7 @@ do {									\
 #define	TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
 
 #define	CPP_PREDEFINES \
-  "-DPPC -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(powerpc)"
+  "-DPPC -Dunix -D__svr4__ -Asystem=unix -Asystem=svr4 -Acpu=powerpc -Amachine=powerpc"
 
 /* Pass various options to the assembler.  */
 /* Override svr4.h definition.  */
@@ -1210,11 +1210,11 @@ do {									\
 
 #define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_SYSV"
 
-#define CPP_ENDIAN_BIG_SPEC "-D_BIG_ENDIAN -D__BIG_ENDIAN__ -Amachine(bigendian)"
+#define CPP_ENDIAN_BIG_SPEC "-D_BIG_ENDIAN -D__BIG_ENDIAN__ -Amachine=bigendian"
 
-#define CPP_ENDIAN_LITTLE_SPEC "-D_LITTLE_ENDIAN -D__LITTLE_ENDIAN__ -Amachine(littleendian)"
+#define CPP_ENDIAN_LITTLE_SPEC "-D_LITTLE_ENDIAN -D__LITTLE_ENDIAN__ -Amachine=littleendian"
 
-#define CPP_ENDIAN_SOLARIS_SPEC "-D__LITTLE_ENDIAN__ -Amachine(littleendian)"
+#define CPP_ENDIAN_SOLARIS_SPEC "-D__LITTLE_ENDIAN__ -Amachine=littleendian"
 
 /* For solaris, don't define _LITTLE_ENDIAN, it conflicts with a header file.  */
 #define	CPP_ENDIAN_SPEC \
@@ -1369,14 +1369,14 @@ do {									\
   %{!ansi:							\
     %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			\
     %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		\
--Asystem(unix) -Asystem(posix)"
+-Asystem=unix -Asystem=posix"
 #else
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__		\
 %{!undef:							\
   %{!ansi:							\
     %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			\
     %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		\
--Asystem(unix) -Asystem(posix) %{pthread:-D_REENTRANT}"
+-Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
 #endif
 
 /* Solaris support.  */
@@ -1419,7 +1419,7 @@ do {									\
 #define CPP_OS_SOLARIS_SPEC "-D__ppc -D__sun__=1 -D__unix__ -D__svr4__  -D__SVR4__ \
 %{!undef:%{!ansi:%{!std=*:-Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__} \
                %{std=gnu*:-Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__}}} \
--Amachine(prep)"
+-Amachine=prep"
 
 /* VxWorks support.  */
 /* VxWorks does all the library stuff itself.  */

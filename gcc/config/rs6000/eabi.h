@@ -33,4 +33,4 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-DPPC -D__embedded__ -Asystem(embedded) -Acpu(powerpc) -Amachine(powerpc)"
+  "-DPPC -D__embedded__ -Asystem=embedded -Acpu=powerpc -Amachine=powerpc"

@@ -57,11 +57,11 @@ Boston, MA 02111-1307, USA.  */
 #if TARGET_ENDIAN_DEFAULT != 0
 #define CPP_PREDEFINES "-D__SYSTYPE_BSD__ -D__NO_LEADING_UNDERSCORES__ \
 -D__GP_SUPPORT__ -D__MIPSEB__ -D__unix__  -D__OpenBSD__ -D__mips__ \
--Asystem(unix) -Asystem(OpenBSD) -Acpu(mips) -Amachine(mips) -Aendian(big)"
+-Asystem=unix -Asystem=OpenBSD -Acpu=mips -Amachine=mips -Aendian=big"
 #else
 #define CPP_PREDEFINES "-D__SYSTYPE_BSD__ -D__NO_LEADING_UNDERSCORES__ \
 -D__GP_SUPPORT__ -D__MIPSEL__ -D__unix__  -D__OpenBSD__ -D__mips__ \
--Asystem(unix) -Asystem(OpenBSD) -Acpu(mips) -Amachine(mips) -Aendian(little)"
+-Asystem=unix -Asystem=OpenBSD -Acpu=mips -Amachine=mips -Aendian=little"
 #endif
 
 /* Layout of source language data types.  */

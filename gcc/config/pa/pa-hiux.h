@@ -23,4 +23,4 @@ Boston, MA 02111-1307, USA.  */
 
 /* Predefines are the one noteworthy difference between HPUX and HIUX.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dhppa -DPWB -Dunix -D__H3050R -D__H3050RX -Asystem(unix) -Asystem(hiux) -Acpu(hppa) -Amachine(hppa)"
+#define CPP_PREDEFINES "-Dhppa -DPWB -Dunix -D__H3050R -D__H3050RX -Asystem=unix -Asystem=hiux -Acpu=hppa -Amachine=hppa"

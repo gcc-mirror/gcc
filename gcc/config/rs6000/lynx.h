@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_SIGNED_CHAR 1
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Acpu(rs6000) -Amachine(rs6000) -Asystem(lynx) -Asystem(unix) -DLynx -D_IBMR2 -Dunix -Drs6000 -Dlynx -DLYNX"
+#define CPP_PREDEFINES "-Acpu=rs6000 -Amachine=rs6000 -Asystem=lynx -Asystem=unix -DLynx -D_IBMR2 -Dunix -Drs6000 -Dlynx -DLYNX"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-T0x10001000 -H0x1000 -D0x20000000 -btextro -bhalt:4 -bnodelcsect -bnso -bro -bnoglink %{v} %{b*}"

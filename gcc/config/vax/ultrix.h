@@ -19,7 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES " -Dvax -Dunix -Dultrix -Dbsd4_2 -D__vax -D__unix -D__ultrix -D__bsd4_2 -Asystem(unix) -Asystem(bsd) -Acpu(vax) -Amachine(vax)"
+#define CPP_PREDEFINES " -Dvax -Dunix -Dultrix -Dbsd4_2 -D__vax -D__unix -D__ultrix -D__bsd4_2 -Asystem=unix -Asystem=bsd -Acpu=vax -Amachine=vax"
 
 /* These are as defined in /usr/include/sys/stdtypes.h.
    These values are for ultrix 4.2 on the vax.  */

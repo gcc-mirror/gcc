@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "sparc/sparc.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu=sparc -Amachine=sparc"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparclite)");

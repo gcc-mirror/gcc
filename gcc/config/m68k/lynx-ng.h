@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dmc68000 -DM68K -DLynx -DIBITS32 -Asystem(unix) -Asystem(lynx) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dmc68000 -DM68K -DLynx -DIBITS32 -Asystem=unix -Asystem=lynx -Acpu=m68k -Amachine=m68k"
 
 /* Provide required defaults for linker switches.  */
 

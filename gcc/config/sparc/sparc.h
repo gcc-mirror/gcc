@@ -216,7 +216,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    CPP_PREFINES.  Also, -D values in CPP_SUBTARGET_SPEC don't get turned into
    foo, __foo and __foo__.  */
 
-#define CPP_PREDEFINES "-Dsparc -Dsun -Dunix -Asystem(unix) -Asystem(bsd)"
+#define CPP_PREDEFINES "-Dsparc -Dsun -Dunix -Asystem=unix -Asystem=bsd"
 
 /* Define macros to distinguish architectures.  */
 
@@ -249,14 +249,14 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #ifdef SPARC_BI_ARCH
 
 #define CPP_ARCH32_SPEC "-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
--D__GCC_NEW_VARARGS__ -Acpu(sparc) -Amachine(sparc)"
+-D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
 #define CPP_ARCH64_SPEC "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
--D__arch64__ -Acpu(sparc64) -Amachine(sparc64)"
+-D__arch64__ -Acpu=sparc64 -Amachine=sparc64"
 
 #else
 
-#define CPP_ARCH32_SPEC "-D__GCC_NEW_VARARGS__ -Acpu(sparc) -Amachine(sparc)"
-#define CPP_ARCH64_SPEC "-D__arch64__ -Acpu(sparc64) -Amachine(sparc64)"
+#define CPP_ARCH32_SPEC "-D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
+#define CPP_ARCH64_SPEC "-D__arch64__ -Acpu=sparc64 -Amachine=sparc64"
 
 #endif
 

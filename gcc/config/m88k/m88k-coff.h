@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "m88k/m88k.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm88000 -Dm88k -Acpu(m88k) -Amachine(m88k)"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Acpu=m88k -Amachine=m88k"
 
 #define SDB_DEBUGGING_INFO
 

@@ -64,7 +64,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* AIX 3.2 defined _AIX32, but older versions do not.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_IBMR2 -D_AIX -Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
+#define CPP_PREDEFINES "-D_IBMR2 -D_AIX -Asystem=unix -Asystem=aix -Acpu=rs6000 -Amachine=rs6000"
 
 /* AIX 3.1 uses bit 15 in CROR as the magic nop.  */
 #undef RS6000_CALL_GLUE

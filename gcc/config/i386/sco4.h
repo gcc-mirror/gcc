@@ -63,7 +63,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
- "-Asystem(svr3)"
+ "-Asystem=svr3"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) \

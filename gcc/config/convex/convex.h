@@ -98,7 +98,7 @@ extern int target_flags;
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dconvex -Dunix -Asystem(unix) -Acpu(convex) -Amachine(convex)"
+#define CPP_PREDEFINES "-Dconvex -Dunix -Asystem=unix -Acpu=convex -Amachine=convex"
 
 /* Print subsidiary information on the compiler version in use.  */
 

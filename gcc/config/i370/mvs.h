@@ -35,9 +35,9 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #if defined(LE370)
-#define CPP_PREDEFINES "-DGCC -Dgcc -DMVS -Dmvs -DLE370 -Asystem(mvs) -Acpu(i370) -Amachine(i370)"
+#define CPP_PREDEFINES "-DGCC -Dgcc -DMVS -Dmvs -DLE370 -Asystem=mvs -Acpu=i370 -Amachine=i370"
 #else
-#define CPP_PREDEFINES "-DGCC -Dgcc -DMVS -Dmvs -Asystem(mvs) -Acpu(i370) -Amachine(i370)"
+#define CPP_PREDEFINES "-DGCC -Dgcc -DMVS -Dmvs -Asystem=mvs -Acpu=i370 -Amachine=i370"
 #endif
 
 /* Include system common definitions */

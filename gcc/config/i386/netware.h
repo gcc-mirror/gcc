@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* These surely require augmentation */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-DAPX386 -D__i386__ -D__netware__ -Asystem(netware) -Acpu(i386) -Amachine(i386)"
+  "-DAPX386 -D__i386__ -D__netware__ -Asystem=netware -Acpu=i386 -Amachine=i386"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "short unsigned int"

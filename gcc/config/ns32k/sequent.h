@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (32000, Sequent syntax)");
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dns32000 -Dsequent -Dunix -Asystem(unix) -Asystem(bsd) -Acpu(ns32k) -Amachine(ns32k)"
+#define CPP_PREDEFINES "-Dns32000 -Dsequent -Dunix -Asystem=unix -Asystem=bsd -Acpu=ns32k -Amachine=ns32k"
 
 /* Link with libg.a when debugging, for dbx's sake.  */
 

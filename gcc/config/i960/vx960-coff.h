@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 /* Predefine vxworks.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Dvxworks -Acpu(i960) -Amachine(i960)"
+#define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Dvxworks -Acpu=i960 -Amachine=i960"
 
 /* The VxWorks header files expect the compiler to define CPU to a
    magic number.  Note that we define CPU here even if the user

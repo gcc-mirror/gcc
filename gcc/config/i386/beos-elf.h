@@ -90,7 +90,7 @@ Boston, MA 02111-1307, USA.  */
 -D__stdcall=__attribute__((__stdcall__)) \
 -D__cdecl=__attribute__((__cdecl__)) \
 -D__declspec(x)=__attribute__((x)) \
--Asystem(beos)"
+-Asystem=beos"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{!no-fPIC:%{!no-fpic:-D__PIC__ -D__pic__}}"

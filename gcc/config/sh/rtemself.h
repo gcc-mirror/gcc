@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Drtems -D__rtems__ \
-  -Asystem(rtems) -Acpu(sh) -Amachine(sh)"
+  -Asystem=rtems -Acpu=sh -Amachine=sh"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS

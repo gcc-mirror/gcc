@@ -76,7 +76,7 @@ Boston, MA 02111-1307, USA.  */
 /* These are the ones defined by Apollo, plus mc68000 for uniformity with
    GCC on other 68000 systems.  */
 
-#define CPP_PREDEFINES "-Dapollo -Daegis -Dunix -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dapollo -Daegis -Dunix -Asystem=unix  -Acpu=m68k -Amachine=m68k"
 
 /* cpp has to support a #sccs directive for the /usr/include files */
 

@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
--Asystem(unix) -Acpu(i386) -Amachine(i386) \
+-Asystem=unix -Acpu=i386 -Amachine=i386 \
 %{!ansi:-Di386} -D__i386 -D__i386__ \
 %{march=i386:-DCPU=I80386} \
 %{march=i486:-DCPU=I80486 %(cpp_486)} \

@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Di860 -Dunix -Asystem(unix) -Asystem(svr4) -Acpu(i860) -Amachine(i860)"
+#define CPP_PREDEFINES "-Di860 -Dunix -Asystem=unix -Asystem=svr4 -Acpu=i860 -Amachine=i860"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (i860)");

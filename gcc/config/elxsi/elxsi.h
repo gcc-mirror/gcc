@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Delxsi -Dunix -Asystem(unix) -Acpu(elxsi) -Amachine(elxsi)"
+#define CPP_PREDEFINES "-Delxsi -Dunix -Asystem=unix -Acpu=elxsi -Amachine=elxsi"
 
 /* Print subsidiary information on the compiler version in use.  */
 

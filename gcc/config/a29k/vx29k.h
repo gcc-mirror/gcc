@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef  CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -Acpu(a29k) -Amachine(a29k) -D__vxworks -D__vxworks_5"
+#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -Acpu=a29k -Amachine=a29k -D__vxworks -D__vxworks_5"
 
 /* Vxworks header files require that the macro CPU be set.
    We could define it in CPP_PREDEFINES, but the value is (or will be)
