@@ -318,7 +318,8 @@ get_tinfo_decl (tree type)
   if (COMPLETE_TYPE_P (type) 
       && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
-      error ("cannot create type information for type `%T' because its size is variable", 
+      error ("cannot create type information for type %qT because "
+             "its size is variable", 
 	     type);
       return error_mark_node;
     }
@@ -570,8 +571,8 @@ build_dynamic_cast_1 (tree type, tree expr)
 		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
 		{
 	          tree expr = throw_bad_cast ();
-		  warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
-			      old_expr, type);
+		  warning ("dynamic_cast of %q#D to %q#T can never succeed",
+                           old_expr, type);
 	          /* Bash it to the expected type.  */
 	          TREE_TYPE (expr) = type;
 		  return expr;
@@ -584,8 +585,8 @@ build_dynamic_cast_1 (tree type, tree expr)
 	      if (TREE_CODE (op) == VAR_DECL
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
-		  warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
-			      op, type);
+		  warning ("dynamic_cast of %q#D to %q#T can never succeed",
+                           op, type);
 		  retval = build_int_cst (type, 0); 
 		  return retval;
 		}
@@ -663,8 +664,8 @@ build_dynamic_cast_1 (tree type, tree expr)
     errstr = "source type is not polymorphic";
 
  fail:
-  error ("cannot dynamic_cast `%E' (of type `%#T') to type `%#T' (%s)",
-	    expr, exprtype, type, errstr);
+  error ("cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)",
+         expr, exprtype, type, errstr);
   return error_mark_node;
 }
 

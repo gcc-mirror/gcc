@@ -1,3 +1,9 @@
+2004-10-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* g++.dg/overload/pmf1.C: Adjust quoting marks.
+	* g++.dg/warn/incomplete1.C: Likewise.
+	* g++.dg/template/qualttp20.C: Likewise.
+
 2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17881

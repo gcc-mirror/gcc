@@ -49,7 +49,7 @@ error_not_base_type (tree basetype, tree type)
 {
   if (TREE_CODE (basetype) == FUNCTION_DECL)
     basetype = DECL_CONTEXT (basetype);
-  error ("type `%T' is not a base type for type `%T'", basetype, type);
+  error ("type %qT is not a base type for type %qT", basetype, type);
   return error_mark_node;
 }
 
@@ -84,9 +84,9 @@ readonly_error (tree arg, const char* string, int soft)
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-        fmt = "%s of data-member `%D' in read-only structure";
+        fmt = "%s of data-member %qD in read-only structure";
       else
-        fmt = "%s of read-only data-member `%D'";
+        fmt = "%s of read-only data-member %qD";
       (*fn) (fmt, string, TREE_OPERAND (arg, 1));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
@@ -94,22 +94,22 @@ readonly_error (tree arg, const char* string, int soft)
       if (DECL_LANG_SPECIFIC (arg)
 	  && DECL_IN_AGGR_P (arg)
 	  && !TREE_STATIC (arg))
-	fmt = "%s of constant field `%D'";
+	fmt = "%s of constant field %qD";
       else
-	fmt = "%s of read-only variable `%D'";
+	fmt = "%s of read-only variable %qD";
       (*fn) (fmt, string, arg);
     }
   else if (TREE_CODE (arg) == PARM_DECL)
-    (*fn) ("%s of read-only parameter `%D'", string, arg);
+    (*fn) ("%s of read-only parameter %qD", string, arg);
   else if (TREE_CODE (arg) == INDIRECT_REF
            && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
            && (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
                || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
-    (*fn) ("%s of read-only reference `%D'", string, TREE_OPERAND (arg, 0));
+    (*fn) ("%s of read-only reference %qD", string, TREE_OPERAND (arg, 0));
   else if (TREE_CODE (arg) == RESULT_DECL)
-    (*fn) ("%s of read-only named return value `%D'", string, arg);
+    (*fn) ("%s of read-only named return value %qD", string, arg);
   else if (TREE_CODE (arg) == FUNCTION_DECL)
-    (*fn) ("%s of function `%D'", string, arg);
+    (*fn) ("%s of function %qD", string, arg);
   else
     (*fn) ("%s of read-only location", string);
 }
@@ -289,30 +289,30 @@ abstract_virtuals_error (tree decl, tree type)
 	return 0;
 
       if (TREE_CODE (decl) == VAR_DECL)
-	cp_error_at ("cannot declare variable `%+D' to be of abstract "
-		     "type `%T'", decl, type);
+	cp_error_at ("cannot declare variable %q+D to be of abstract "
+		     "type %qT", decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
-	cp_error_at ("cannot declare parameter `%+D' to be of abstract "
-		     "type `%T'", decl, type);
+	cp_error_at ("cannot declare parameter %q+D to be of abstract "
+		     "type %qT", decl, type);
       else if (TREE_CODE (decl) == FIELD_DECL)
-	cp_error_at ("cannot declare field `%+D' to be of abstract "
-		     "type `%T'", decl, type);
+	cp_error_at ("cannot declare field %q+D to be of abstract "
+		     "type %qT", decl, type);
       else if (TREE_CODE (decl) == FUNCTION_DECL
 	       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	cp_error_at ("invalid abstract return type for member function `%+#D'",
+	cp_error_at ("invalid abstract return type for member function %q+#D",
 		     decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
-	cp_error_at ("invalid abstract return type for function `%+#D'", 
+	cp_error_at ("invalid abstract return type for function %q+#D", 
 		     decl);
       else if (TREE_CODE (decl) == IDENTIFIER_NODE)
 	/* Here we do not have location information, so use error instead
 	   of cp_error_at.  */
-	error ("invalid abstract type `%T' for `%E'", type, decl);
+	error ("invalid abstract type %qT for %qE", type, decl);
       else
-	cp_error_at ("invalid abstract type for `%+D'", decl);
+	cp_error_at ("invalid abstract type for %q+D", decl);
     }
   else
-    error ("cannot allocate an object of abstract type `%T'", type);
+    error ("cannot allocate an object of abstract type %qT", type);
 
   /* Only go through this once.  */
   if (VEC_length (tree, pure))
@@ -321,7 +321,7 @@ abstract_virtuals_error (tree decl, tree type)
       tree fn;
       
       inform ("%J  because the following virtual functions are pure "
-	      "within `%T':", TYPE_MAIN_DECL (type), type);
+	      "within %qT:", TYPE_MAIN_DECL (type), type);
 
       for (ix = 0; VEC_iterate (tree, pure, ix, fn); ix++)
 	inform ("%J\t%#D", fn, fn);
@@ -331,7 +331,7 @@ abstract_virtuals_error (tree decl, tree type)
       VEC_truncate (tree, pure, 0);
     }
   else
-    inform ("%J  since type `%T' has pure virtual functions", 
+    inform ("%J  since type %qT has pure virtual functions", 
 	    TYPE_MAIN_DECL (type), type);
 
   return 1;
@@ -374,7 +374,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
 		     || TREE_CODE (value) == PARM_DECL
 		     || TREE_CODE (value) == FIELD_DECL))
     {
-      (*p_msg_at) ("`%D' has incomplete type", value);
+      (*p_msg_at) ("%qD has incomplete type", value);
       decl = 1;
     }
  retry:
@@ -386,15 +386,15 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (!decl)
-        (*p_msg) ("invalid use of undefined type `%#T'", type);
+        (*p_msg) ("invalid use of undefined type %q#T", type);
       if (!TYPE_TEMPLATE_INFO (type))
-	(*p_msg_at) ("forward declaration of `%#T'", type);
+	(*p_msg_at) ("forward declaration of %q#T", type);
       else
-	(*p_msg_at) ("declaration of `%#T'", type);
+	(*p_msg_at) ("declaration of %q#T", type);
       break;
 
     case VOID_TYPE:
-      (*p_msg) ("invalid use of `%T'", type);
+      (*p_msg) ("invalid use of %qT", type);
       break;
 
     case ARRAY_TYPE:
@@ -408,7 +408,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
 
     case OFFSET_TYPE:
     bad_member:
-      (*p_msg) ("invalid use of member (did you forget the `&' ?)");
+      (*p_msg) ("invalid use of member (did you forget the %<&%> ?)");
       break;
 
     case TEMPLATE_TYPE_PARM:
@@ -419,7 +419,8 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
       if (value && TREE_CODE (value) == COMPONENT_REF)
         goto bad_member;
       else if (value && TREE_CODE (value) == ADDR_EXPR)
-        (*p_msg) ("address of overloaded function with no contextual type information");
+        (*p_msg) ("address of overloaded function with no contextual "
+                  "type information");
       else if (value && TREE_CODE (value) == OVERLOAD)
         (*p_msg) ("overloaded function with no contextual type information");
       else
@@ -577,7 +578,8 @@ store_init_value (tree decl, tree init)
 
       if (TREE_CODE (init) == TREE_LIST)
 	{
-	  error ("constructor syntax used, but no constructor declared for type `%T'", type);
+	  error ("constructor syntax used, but no constructor declared "
+                 "for type %qT", type);
 	  init = build_constructor (NULL_TREE, nreverse (init));
 	}
     }
@@ -752,10 +754,10 @@ digest_init (tree type, tree init, tree* tail)
 	}
       while (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
-	  pedwarn ("braces around scalar initializer for `%T'", type);
+	  pedwarn ("braces around scalar initializer for %qT", type);
 	  init = CONSTRUCTOR_ELTS (init);
 	  if (TREE_CHAIN (init))
-	    pedwarn ("ignoring extra initializers for `%T'", type);
+	    pedwarn ("ignoring extra initializers for %qT", type);
 	  init = TREE_VALUE (init);
 	}
 
@@ -767,7 +769,7 @@ digest_init (tree type, tree init, tree* tail)
 
   if (COMPLETE_TYPE_P (type) && ! TREE_CONSTANT (TYPE_SIZE (type)))
     {
-      error ("variable-sized object of type `%T' may not be initialized",
+      error ("variable-sized object of type %qT may not be initialized",
 		type);
       return error_mark_node;
     }
@@ -778,7 +780,8 @@ digest_init (tree type, tree init, tree* tail)
 	{
 	  if (TYPE_NON_AGGREGATE_CLASS (type))
 	    {
-	      error ("subobject of type `%T' must be initialized by constructor, not by `%E'",
+	      error ("subobject of type %qT must be initialized by "
+                     "constructor, not by %qE",
 		     type, init);
 	      return error_mark_node;
 	    }
@@ -1009,23 +1012,22 @@ process_init_constructor (tree type, tree init, tree* elts)
 	      /* Warn when some struct elements are implicitly initialized.  */
 	      if (warn_missing_field_initializers
 	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
-		warning ("missing initializer for member `%D'", field);
+		warning ("missing initializer for member %qD", field);
 	    }
 	  else
 	    {
 	      if (TREE_READONLY (field))
-		error ("uninitialized const member `%D'", field);
+		error ("uninitialized const member %qD", field);
 	      else if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
-		error ("member `%D' with uninitialized const fields",
-			  field);
+		error ("member %qD with uninitialized const fields", field);
 	      else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
-		error ("member `%D' is uninitialized reference", field);
+		error ("member %qD is uninitialized reference", field);
 
 	      /* Warn when some struct elements are implicitly initialized
 		 to zero.  */
 	      if (warn_missing_field_initializers
 	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
-		warning ("missing initializer for member `%D'", field);
+		warning ("missing initializer for member %qD", field);
 
 	      if (! zero_init_p (TREE_TYPE (field)))
 		next1 = build_zero_init (TREE_TYPE (field),
@@ -1078,16 +1080,16 @@ process_init_constructor (tree type, tree init, tree* elts)
 	      if (temp)
 		field = temp, win = 1;
 	      else
-		error ("no field `%D' in union being initialized",
-			  TREE_PURPOSE (tail));
+		error ("no field %qD in union being initialized",
+                       TREE_PURPOSE (tail));
 	    }
 	  if (!win)
 	    TREE_VALUE (tail) = error_mark_node;
 	}
       else if (field == 0)
 	{
-	  error ("union `%T' with no named members cannot be initialized",
-		    type);
+	  error ("union %qT with no named members cannot be initialized",
+                 type);
 	  TREE_VALUE (tail) = error_mark_node;
 	}
 
@@ -1248,7 +1250,7 @@ build_x_arrow (tree expr)
 
       if (last_rval == NULL_TREE)
 	{
-	  error ("base operand of `->' has non-pointer type `%T'", type);
+	  error ("base operand of %<->%> has non-pointer type %qT", type);
 	  return error_mark_node;
 	}
 
@@ -1272,9 +1274,9 @@ build_x_arrow (tree expr)
     }
 
   if (types_memoized)
-    error ("result of `operator->()' yields non-pointer result");
+    error ("result of %<operator->()%> yields non-pointer result");
   else
-    error ("base operand of `->' is not a pointer");
+    error ("base operand of %<->%> is not a pointer");
   return error_mark_node;
 }
 
@@ -1298,7 +1300,8 @@ build_m_component_ref (tree datum, tree component)
   ptrmem_type = TREE_TYPE (component);
   if (!TYPE_PTR_TO_MEMBER_P (ptrmem_type))
     {
-      error ("`%E' cannot be used as a member pointer, since it is of type `%T'", 
+      error ("%qE cannot be used as a member pointer, since it is of "
+             "type %qT", 
 	     component, ptrmem_type);
       return error_mark_node;
     }
@@ -1306,8 +1309,9 @@ build_m_component_ref (tree datum, tree component)
   objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));  
   if (! IS_AGGR_TYPE (objtype))
     {
-      error ("cannot apply member pointer `%E' to `%E', which is of non-aggregate type `%T'",
-		component, datum, objtype);
+      error ("cannot apply member pointer %qE to %qE, which is of "
+             "non-aggregate type %qT",
+             component, datum, objtype);
       return error_mark_node;
     }
 
@@ -1327,7 +1331,8 @@ build_m_component_ref (tree datum, tree component)
       if (!binfo)
 	{
 	mismatch:
-	  error ("pointer to member type `%T' incompatible with object type `%T'",
+	  error ("pointer to member type %qT incompatible with object "
+                 "type %qT",
 		 type, objtype);
 	  return error_mark_node;
 	}
@@ -1549,10 +1554,10 @@ require_complete_eh_spec_types (tree fntype, tree decl)
 	{
 	  if (decl)
 	    error
-	      ("call to function `%D' which throws incomplete type `%#T'",
+	      ("call to function %qD which throws incomplete type %q#T",
 	       decl, type);
 	  else
-	    error ("call to function which throws incomplete type `%#T'",
+	    error ("call to function which throws incomplete type %q#T",
 		   decl);
 	}
     }

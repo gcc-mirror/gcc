@@ -1,3 +1,41 @@
+2004-10-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Convert diagnostics to use quoting flag q 7/n
+	* typeck.c (composite_pointer_type_r, composite_pointer_type, 
+	cxx_sizeof_or_alignof_type, cxx_sizeof_or_alignof_expr, 
+	string_conv_p, build_class_member_access_expr, 
+	build_class_member_access_expr, lookup_destructor, 
+	finish_class_member_access_expr, build_indirect_ref, 
+	get_member_function_from_ptrfunc, build_function_call, 
+	convert_arguments, build_binary_op, pointer_diff, build_unary_op, 
+	check_for_casting_away_constness, build_static_cast, 
+	build_reinterpret_cast, build_const_cast, build_c_cast, 
+	build_modify_expr, get_delta_difference, build_ptrmemfunc, 
+	dubious_conversion_warnings, convert_for_assignment, 
+	convert_for_initialization, 
+	maybe_warn_about_returning_address_of_local, check_return_expr): 
+	Use quoting marks.
+
+	* typeck2.c (error_not_base_type, readonly_error, 
+	abstract_virtuals_error, cxx_incomplete_type_diagnostic, 
+	store_init_value, digest_init, build_x_arrow, 
+	build_m_component_ref, require_complete_eh_spec_types): Likewise.
+
+	* tree.c (cp_build_qualified_type_real, 
+	handle_java_interface_attribute, handle_init_priority_attribute):
+	Likewise.
+
+	* semantics.c (finish_asm_stmt, finish_non_static_data_member, 
+	finish_pseudo_destructor_expr, 
+	check_template_template_default_arg, begin_class_definition, 
+	finish_base_specifier, qualified_name_lookup_error, 
+	finish_id_expression, finish_typeof): Likewise.
+
+	* search.c (lookup_base, check_final_overrider,
+	look_for_overrides_r): Likewise.
+
+	* rtti.c (get_tinfo_decl, build_dynamic_cast_1): Likewise.
+
 2004-10-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17867
