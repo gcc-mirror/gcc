@@ -514,7 +514,8 @@ find_class (const char *classname, int classname_length, JCF *jcf,
 	  strcpy (java_buffer, path_name);
 	  l = strlen (java_buffer);
 	  for (m = 0; m < classname_length; ++m)
-	    java_buffer[m + l] = (classname[m] == '.' ? '/' : classname[m]);
+	    java_buffer[m + l] = (classname[m] == '.'
+				  ? DIR_SEPARATOR : classname[m]);
 	  strcpy (java_buffer + m + l, ".java");
 	  java = caching_stat (java_buffer, &java_buf);
 	  if (java == 0)
