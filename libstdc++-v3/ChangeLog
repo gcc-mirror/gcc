@@ -17,6 +17,12 @@
 	* libsupc++/Makefile.am (CXXCOMPILE): Same here.
 	* libsupc++/Makefile.in: Regenerate.
 
+	* include/c_std/*: Merge with shadow.
+	* include/c_std/bits/*: Same.
+
+	* shadow: Remove directory.
+	* shadow/*: De-populate.
+	
 2000-10-11  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Comment out
