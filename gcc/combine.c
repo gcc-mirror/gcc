@@ -5574,26 +5574,28 @@ simplify_logical (rtx x)
 
       if (GET_CODE (op0) == AND)
 	{
-	  x = apply_distributive_law
+	  rtx tmp = apply_distributive_law
 	    (gen_binary (AND, mode,
 			 gen_binary (IOR, mode, XEXP (op0, 0), op1),
 			 gen_binary (IOR, mode, XEXP (op0, 1),
 				     copy_rtx (op1))));
 
-	  if (GET_CODE (x) != IOR)
-	    return x;
+	  if (GET_CODE (tmp) != IOR
+	      && rtx_cost (tmp, SET) < rtx_cost (x, SET))
+	    return tmp;
 	}
 
       if (GET_CODE (op1) == AND)
 	{
-	  x = apply_distributive_law
+	  rtx tmp = apply_distributive_law
 	    (gen_binary (AND, mode,
 			 gen_binary (IOR, mode, XEXP (op1, 0), op0),
 			 gen_binary (IOR, mode, XEXP (op1, 1),
 				     copy_rtx (op0))));
 
-	  if (GET_CODE (x) != IOR)
-	    return x;
+	  if (GET_CODE (tmp) != IOR
+	      && rtx_cost (tmp, SET) < rtx_cost (x, SET))
+	    return tmp;
 	}
 
       /* Convert (ior (ashift A CX) (lshiftrt A CY)) where CX+CY equals the

@@ -1,3 +1,10 @@
+2005-01-23  Roger Sayle  <roger@eyesopen.com>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* combine.c (simplify_logical): Only simplify logical expressions
+	of the form ior(and(x,y),z) by the inverse distributive law if the
+	result is cheaper than the original.
+
 2005-01-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alias.c, c-common.h, c-incpath.c, c-incpath.h, expr.c,
