@@ -1420,6 +1420,102 @@ mark_critical_edges ()
     }
 }
 
+/* Split a block BB after insn INSN creating a new fallthru edge.
+   Return the new edge.  Note that to keep other parts of the compiler happy,
+   this function renumbers all the basic blocks so that the new
+   one has a number one greater than the block split.  */
+
+edge
+split_block (bb, insn)
+     basic_block bb;
+     rtx insn;
+{
+  basic_block new_bb;
+  edge new_edge;
+  edge e;
+  rtx bb_note;
+  int i, j;
+
+  if (BLOCK_FOR_INSN (insn) != bb)
+    abort ();
+
+  /* There is no point splitting the block after its end.  */
+  if (bb->end == insn)
+    return 0;
+
+  /* Create the new structures.  */
+  new_bb = (basic_block) obstack_alloc (function_obstack, sizeof (*new_bb));
+  new_edge = (edge) xcalloc (1, sizeof (*new_edge));
+  n_edges++;
+
+  memset (new_bb, 0, sizeof (*new_bb));
+
+  new_bb->head = NEXT_INSN (insn);
+  new_bb->end = bb->end;
+  bb->end = insn;
+
+  new_bb->succ = bb->succ;
+  bb->succ = new_edge;
+  new_bb->pred = new_edge;
+  new_bb->count = bb->count;
+  new_bb->loop_depth = bb->loop_depth;
+
+  new_edge->src = bb;
+  new_edge->dest = new_bb;
+  new_edge->flags = EDGE_FALLTHRU;
+  new_edge->probability = REG_BR_PROB_BASE;
+  new_edge->count = bb->count;
+
+  /* Redirect the src of the successor edges of bb to point to new_bb.  */
+  for (e = new_bb->succ; e; e = e->succ_next)
+    e->src = new_bb;
+  
+  /* Place the new block just after the block being split.  */
+  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
+
+  /* Some parts of the compiler expect blocks to be number in
+     sequential order so insert the new block immediately after the
+     block being split..  */
+  j = bb->index;
+  for (i = n_basic_blocks - 1; i > j + 1; --i)
+    {
+      basic_block tmp = BASIC_BLOCK (i - 1);
+      BASIC_BLOCK (i) = tmp;
+      tmp->index = i;
+    }
+
+  BASIC_BLOCK (i) = new_bb;
+  new_bb->index = i;
+
+  /* Create the basic block note.  */
+  bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK,
+			      new_bb->head);
+  NOTE_BASIC_BLOCK (bb_note) = new_bb;
+  new_bb->head = bb_note;
+
+  update_bb_for_insn (new_bb);
+
+  if (bb->global_live_at_start)
+    {
+      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
+      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
+      COPY_REG_SET (new_bb->global_live_at_end, bb->global_live_at_end);
+
+      /* We now have to calculate which registers are live at the end
+	 of the split basic block and at the start of the new basic
+	 block.  Start with those registers that are known to be live
+	 at the end of the original basic block and get
+	 propagate_block to determine which registers are live.  */
+      COPY_REG_SET (new_bb->global_live_at_start, bb->global_live_at_end);
+      propagate_block (new_bb, new_bb->global_live_at_start, NULL, 0);
+      COPY_REG_SET (new_bb->global_live_at_end, 
+		    new_bb->global_live_at_start);
+    }
+
+  return new_edge;
+}
+
+
 /* Split a (typically critical) edge.  Return the new block.
    Abort on abnormal edges.
 
@@ -6424,6 +6520,28 @@ count_or_remove_death_notes (blocks, kill)
 
   return count;
 }
+
+
+/* Update insns block within BB.  */
+
+void 
+update_bb_for_insn (bb)
+     basic_block bb;
+{
+  rtx insn;
+
+  if (! basic_block_for_insn)
+    return;
+
+  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+    {
+      set_block_for_insn (insn, bb);
+
+      if (insn == bb->end)
+	break;
+    }
+}
+
 
 /* Record INSN's block as BB.  */
 
