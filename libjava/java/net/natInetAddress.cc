@@ -118,7 +118,7 @@ java::net::InetAddress::aton (jstring host)
       blen = 4;
     }
 #endif
-#ifdef HAVE_INET_PTON
+#if defined (HAVE_INET_PTON) && defined (HAVE_INET6)
   char inet6_addr[16];
   if (len == 0 && inet_pton (AF_INET6, hostname, inet6_addr) > 0)
     {
