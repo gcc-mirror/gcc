@@ -66,7 +66,7 @@
       r1= etime (tarray1)
       if (r1.ne.tarray1(1)+tarray1(2))
      +     write (6,*) '*** ETIME didn''t return sum of the array: ',
-     +     r1, ' /= ', tarray1
+     +     r1, ' /= ', tarray1(1), '+', tarray1(2)
       r2= dtime (tarray2)
       if (abs (r1-r2).gt.1.0) write (6,*)
      +     'Results of ETIME and DTIME differ by more than a second:',
@@ -79,7 +79,7 @@
       write (6,*) 'IDATE d,m,y: ',idat
       print *,  '... and the VXT version: ', i,j,k
       call time(line(:8))
-      print *, line(:8)
+      print *, 'TIME: ', line(:8)
       write (6,*) 'SECNDS(0.0) returns: ',secnds(0.0)
       write (6,*) 'SECOND returns: ', second()
       call dumdum(r1)

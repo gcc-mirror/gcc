@@ -192,10 +192,17 @@ ${srcdir}/configure: ${srcdir}/configure.in
 	rm -f config.cache && cd ${srcdir} && autoconf && rm -f config.cache
 ${srcdir}/libU77/configure: ${srcdir}/libU77/configure.in
 	rm -f libU77/config.cache && cd ${srcdir}/libU77 && autoconf && rm -f config.cache
+f2c.h Makefile: $(srcdir)/Makefile.in config.status
+	$(SHELL) config.status
+config.status: $(srcdir)/configure
+	$(SHELL) config.status --recheck
 
 f2c.h: $(srcdir)/f2c.h.in
 
-info install-info clean-info check dvi:
+info install-info clean-info dvi:
+
+check:
+	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install:
 	$(INSTALL_DATA) $(lib) $(libdir)/$(lib).n

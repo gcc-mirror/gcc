@@ -82,7 +82,7 @@ distclean realclean maintainer-clean: clean
 $(OBJS): $(F2C_H) config.h
 
 check:
-	-$(G77DIR)g77 -B$(G77DIR) -g $(srcdir)/u77-test.f $(lib) && ./a.out
+	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f $(lib) && ./a.out
 	rm -f a.out
 
 access_.o: access_.c

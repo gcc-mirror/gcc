@@ -1,3 +1,12 @@
+1998-02-17  Dave Love  <d.love@dl.ac.uk>
+
+	* libU77/u77-test.f: Tweak some o/p.
+
+	* libU77/Makefile.in (check): Use -L for new directory structure.
+
+	* Makefile.in (check): Run the u77 check.
+	(config.status,	Makefile): New targets.
+
 Wed Feb 11 01:46:20 1998  Manfred Hollstein <manfred@s-direktnet.de>
 
 	* Makefile.in ($(lib)): Call $(AR) repeatedly to avoid overflowing
