@@ -1868,24 +1868,30 @@ select_or_iter_stmt:
 	| do_stmt_start error
  		{ }
 	| FOR
-	  '(' xexpr ';'
-		{ stmt_count++;
-		  $3 = build_stmt (EXPR_STMT, $3); 
-		  $<ttype>$ = build_stmt (FOR_STMT, $3, NULL_TREE,
+		{ $<ttype>$ = build_stmt (FOR_STMT, NULL_TREE, NULL_TREE,
 					  NULL_TREE, NULL_TREE);
-		  add_stmt ($<ttype>$);
-		}
+		  add_stmt ($<ttype>$); } 
+	  '(' for_init_stmt
+		{ stmt_count++;
+		  RECHAIN_STMTS ($<ttype>2, FOR_INIT_STMT ($<ttype>2)); }
 	  xexpr ';'
-                { FOR_COND ($<ttype>5) = $6; }
+                { FOR_COND ($<ttype>2) = $6; }
 	  xexpr ')'
-		{ FOR_EXPR ($<ttype>5) = $9; }
+		{ FOR_EXPR ($<ttype>2) = $9; }
 	  c99_block_lineno_labeled_stmt
-                { RECHAIN_STMTS ($<ttype>5, FOR_BODY ($<ttype>5)); }
+                { RECHAIN_STMTS ($<ttype>2, FOR_BODY ($<ttype>2)); }
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
 		  $<ttype>$ = c_start_case ($3); }
 	  c99_block_lineno_labeled_stmt
                 { c_finish_case (); }
+	;
+
+for_init_stmt:
+	  xexpr ';'
+		{ add_stmt (build_stmt (EXPR_STMT, $1)); } 
+	| decl
+		{ check_for_loop_decls (); }
 	;
 
 /* Parse a single real statement, not including any labels.  */

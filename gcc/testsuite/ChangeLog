@@ -1,3 +1,8 @@
+2000-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-fordecl-1.c, gcc.dg/c99-fordecl-1.c,
+	gcc.dg/c99-fordecl-2.c: New tests.
+
 2000-11-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/zerolen-1.c: Rename from 20001115-1.c.

@@ -6924,6 +6924,55 @@ c_expand_body (fndecl, nested_p)
       
 }
 
+/* Check the declarations given in a for-loop for satisfying the C99
+   constraints.  */
+void
+check_for_loop_decls ()
+{
+  tree t;
+
+  if (!flag_isoc99)
+    {
+      /* If we get here, declarations have been used in a for loop without
+	 the C99 for loop scope.  This doesn't make much sense, so don't
+	 allow it.  */
+      error ("`for' loop initial declaration used outside C99 mode");
+      return;
+    }
+  /* C99 subclause 6.8.5 paragraph 3:
+
+       [#3]  The  declaration  part  of  a for statement shall only
+       declare identifiers for objects having storage class auto or
+       register.
+
+     It isn't clear whether, in this sentence, "identifiers" binds to
+     "shall only declare" or to "objects" - that is, whether all identifiers
+     declared must be identifiers for objects, or whether the restriction
+     only applies to those that are.  (A question on this in comp.std.c
+     in November 2000 received no answer.)  We implement the strictest
+     interpretation, to avoid creating an extension which later causes
+     problems.  */
+
+  for (t = gettags (); t; t = TREE_CHAIN (t))
+    {
+      if (TREE_PURPOSE (t) != 0)
+	error ("`%s %s' declared in `for' loop initial declaration",
+	       (TREE_CODE (TREE_VALUE (t)) == RECORD_TYPE ? "struct"
+		: TREE_CODE (TREE_VALUE (t)) == UNION_TYPE ? "union"
+		: "enum"),
+	       IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+    }
+  for (t = getdecls (); t; t = TREE_CHAIN (t))
+    {
+      if (TREE_CODE (t) != VAR_DECL && DECL_NAME (t))
+	error_with_decl (t, "declaration of non-variable `%s' in `for' loop initial declaration");
+      else if (TREE_STATIC (t))
+	error_with_decl (t, "declaration of static variable `%s' in `for' loop initial declaration");
+      else if (DECL_EXTERNAL (t))
+	error_with_decl (t, "declaration of `extern' variable `%s' in `for' loop initial declaration");
+    }
+}
+
 /* Save and restore the variables in this file and elsewhere
    that keep track of the progress of compilation of the current function.
    Used for nested functions.  */
