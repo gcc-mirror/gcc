@@ -1,3 +1,7 @@
+2002-02-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/cast-qual-2.c: New test.
+
 2002-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020201-4.c: New test.
