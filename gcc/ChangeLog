@@ -1,3 +1,8 @@
+Tue Jul  7 00:36:41 1998  Ulrich Drepper <drepper@cygnus.com>
+
+	* i386.c (ix86_epilogue): For pentium processors, try to deallocate
+	4 or 8 byte stacks with pop instructions instead of an add instruction.
+
 Tue Jul  7 00:30:08 1998  Klaus Kaempf <kkaempf@rmi.de>
 
 	* alpha.c: Include tree.h before expr.h.

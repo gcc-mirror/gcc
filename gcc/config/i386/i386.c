@@ -2353,14 +2353,57 @@ ix86_epilogue (do_rtl)
 
   else if (tsize)
     {
-      /* If there is no frame pointer, we must still release the frame. */
-      xops[0] = GEN_INT (tsize);
+      /* Intel's docs say that for 4 or 8 bytes of stack frame one should
+	 use `pop' and not `add'.  */
+      int use_pop = tsize == 4;
 
-      if (do_rtl)
-	emit_insn (gen_rtx (SET, VOIDmode, xops[2],
-			    gen_rtx (PLUS, SImode, xops[2], xops[0])));
+      /* Use two pops only for the Pentium processors.  */
+      if (tsize == 8 && !TARGET_386 && !TARGET_486)
+	{
+	  rtx retval = current_function_return_rtx;
+
+	  xops[1] = gen_rtx_REG (SImode, 1);	/* %edx */
+
+	  /* This case is a bit more complex.  Since we cannot pop into
+	     %ecx twice we need a second register.  But this is only
+	     available if the return value is not of DImode in which
+	     case the %edx register is not available.  */
+	  use_pop = (retval == NULL
+		     || ! reg_overlap_mentioned_p (xops[1], retval));
+	}
+
+      if (use_pop)
+	{
+	  xops[0] = gen_rtx_REG (SImode, 2);	/* %ecx */
+
+	  if (do_rtl)
+	    {
+	      /* We have to prevent the two pops here from being scheduled.
+		 GCC otherwise would try in some situation to put other
+		 instructions in between them which has a bad effect.  */
+	      emit_insn (gen_blockage ());
+	      emit_insn (gen_pop (xops[0]));
+	      if (tsize == 8)
+		emit_insn (gen_pop (xops[1]));
+	    }
+	  else
+	    {
+	      output_asm_insn ("pop%L0 %0", xops);
+	      if (tsize == 8)
+		output_asm_insn ("pop%L1 %1", xops);
+	    }
+	}
       else
-	output_asm_insn (AS2 (add%L2,%0,%2), xops);
+	{
+	  /* If there is no frame pointer, we must still release the frame. */
+	  xops[0] = GEN_INT (tsize);
+
+	  if (do_rtl)
+	    emit_insn (gen_rtx (SET, VOIDmode, xops[2],
+				gen_rtx (PLUS, SImode, xops[2], xops[0])));
+	  else
+	    output_asm_insn (AS2 (add%L2,%0,%2), xops);
+	}
     }
 
 #ifdef FUNCTION_BLOCK_PROFILER_EXIT
