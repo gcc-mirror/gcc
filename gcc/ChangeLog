@@ -1,3 +1,8 @@
+2002-04-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/invoke.texi: Remove Chill references.
+	* doc/gcc.texi: Update last modified date.
+
 2002-04-19  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Define.

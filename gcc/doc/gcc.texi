@@ -102,7 +102,7 @@ included in the section entitled ``GNU Free Documentation License''.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 7 January 2002
+@center Last updated 20 April 2002
 @sp 1
 
 @center for GCC @value{version-GCC}
