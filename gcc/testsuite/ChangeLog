@@ -1,3 +1,11 @@
+2001-09-27  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/execute/loop-2e.x: This is a manifestation of a
+	long-standing bug on i686, apparently.  
+	* gcc.c-torture/execute/loop-2c.x: New file.
+	* gcc.c-torture/execute/loop-2d.x: New file.
+	* gcc.c-torture/execute/loop-3c.x: New file.
+
 2001-09-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/20000625-2.c: Correct line number.
