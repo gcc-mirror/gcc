@@ -108,9 +108,9 @@ do {							\
    field to be treated as structures and not as the type of their
    field.  Without this a structure with a single char will be
    returned just like a char variable and that is wrong on HP-UX
-   IA64.  TARGET_STRUCT_ARG_REG_LITTLE_ENDIAN triggers the special
-   structure handling, this macro simply ensures that single field
-   structures are always treated like structures.  */
+   IA64.  */
+
+#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) (TREE_CODE (TREE_TYPE (FIELD)) != REAL_TYPE || (MODE == TFmode && !INTEL_EXTENDED_IEEE_FORMAT))
 
 /* ASM_OUTPUT_EXTERNAL_LIBCALL defaults to just a globalize_label call,
    but that doesn't put out the @function type information which causes
@@ -122,18 +122,6 @@ do {								\
   (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0));	\
   ASM_OUTPUT_TYPE_DIRECTIVE (FILE, XSTR (FUN, 0), "function");	\
 } while (0)
-
-#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) (TREE_CODE (TREE_TYPE (FIELD)) != REAL_TYPE || (MODE == TFmode && !INTEL_EXTENDED_IEEE_FORMAT))
-
-/* Override the setting of FUNCTION_ARG_REG_LITTLE_ENDIAN in
-   defaults.h.  Setting this to true means that we are not passing
-   structures in registers in the "normal" big-endian way.  See
-   See section 8.5 of the "Itanium Software Conventions and Runtime
-   Architecture", specifically Table 8-1 and the explanation of Byte 0
-   alignment and LSB alignment and a description of how structures
-   are passed.  */
-
-#define FUNCTION_ARG_REG_LITTLE_ENDIAN 1
 
 #undef FUNCTION_ARG_PADDING
 #define FUNCTION_ARG_PADDING(MODE, TYPE) \
