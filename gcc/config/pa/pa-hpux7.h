@@ -40,9 +40,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Like the default, except no -lg.  */
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-L/lib/libp/ -lc}%{pg:-L/lib/libp/ -lc}"
 
-/* Control how gcc finds libgcc.a and how it passes -L options.  */
-#define LINK_LIBGCC_SPECIAL
-#define RELATIVE_PREFIX_NOT_LINKDIR
-
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -D_HPUX_SOURCE"
