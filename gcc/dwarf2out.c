@@ -12153,12 +12153,6 @@ dwarf2out_decl (tree decl)
       return;
 
     case FUNCTION_DECL:
-      /* Ignore this FUNCTION_DECL if it refers to a builtin declaration of a
-	 builtin function.  Explicit programmer-supplied declarations of
-	 these same functions should NOT be ignored however.  */
-      if (DECL_EXTERNAL (decl) && DECL_BUILT_IN (decl))
-	return;
-
       /* What we would really like to do here is to filter out all mere
 	 file-scope declarations of file-scope functions which are never
 	 referenced later within this translation unit (and keep all of ones

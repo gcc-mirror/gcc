@@ -327,10 +327,9 @@ cgraph_analyze_function (struct cgraph_node *node)
   cgraph_create_edges (decl, DECL_SAVED_TREE (decl));
 
   node->local.inlinable = tree_inlinable_function_p (decl);
-  if (!DECL_ESTIMATED_INSNS (decl))
-    DECL_ESTIMATED_INSNS (decl)
+  if (!node->local.self_insns)
+    node->local.self_insns
       = (*lang_hooks.tree_inlining.estimate_num_insns) (decl);
-  node->local.self_insns = DECL_ESTIMATED_INSNS (decl);
   if (node->local.inlinable)
     node->local.disregard_inline_limits
       = (*lang_hooks.tree_inlining.disregard_inline_limits) (decl);

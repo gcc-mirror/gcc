@@ -1,3 +1,8 @@
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	Bug 13856
+	* gcc.dg/visibility-8.c: New testcase.
+
 2004-02-07 Geoffrey Keating  <geoffk@geoffk.org>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 

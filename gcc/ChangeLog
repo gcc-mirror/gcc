@@ -1,5 +1,23 @@
 2004-02-07  Zack Weinberg  <zack@codesourcery.com>
 
+	Bug 13856
+	* c-decl.c (diagnose_mismatched_decls): Only give special
+	treatment when olddecl is DECL_BUILT_IN, if C_DECL_INVISIBLE
+	is also true.
+	(merge_decls): Don't clear DECL_BUILT_IN_CLASS and
+	DECL_FUNCTION_CODE when defining a built-in function.
+	Don't update DECL_ESTIMATED_INSNS.
+	* dwarf2out.c (dwarf2out_decl): Don't ignore built-in
+	FUNCTION_DECLs.
+	* tree.h: Delete DECL_ESTIMATED_INSNS.
+	* tree-inline.c (struct inline_data): Delete inlined_insns field.
+	(expand_call_inline, optimize_inline_calls): Don't update
+	DECL_ESTIMATED_INSNS nor inlined_insns.
+	* cgraphunit.c (cgraph_analyze_function): Don't update
+	DECL_ESTIMATED_INSNS.
+
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
 	* c-common.c (shadow_warning): Delete.
 	* c-common.h (free_parser_stacks, shadow_warning, sw_kind): Delete.
 	* c-decl.c (warn_if_shadowing): Issue shadow warnings directly.

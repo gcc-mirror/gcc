@@ -939,7 +939,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
      unless OLDDECL is a builtin.  OLDDECL will be discarded in any case.  */
   if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
-      if (TREE_CODE (olddecl) != FUNCTION_DECL || !DECL_BUILT_IN (olddecl))
+      if (TREE_CODE (olddecl) != FUNCTION_DECL
+          || !DECL_BUILT_IN (olddecl) || !C_DECL_INVISIBLE (olddecl))
 	{
 	  error ("%J'%D' redeclared as different kind of symbol",
 		 newdecl, newdecl);
@@ -956,7 +957,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
   if (!comptypes (oldtype, newtype, COMPARE_STRICT))
     {
-      if (TREE_CODE (olddecl) == FUNCTION_DECL && DECL_BUILT_IN (olddecl))
+      if (TREE_CODE (olddecl) == FUNCTION_DECL
+	  && DECL_BUILT_IN (olddecl) && C_DECL_INVISIBLE (olddecl))
 	{
 	  /* Accept harmless mismatch in function types.
 	     This is for the ffs and fprintf builtins.  */
@@ -1034,6 +1036,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 can't validate the argument list) the built-in definition is
 	 overridden, but optionally warn this was a bad choice of name.  */
       if (DECL_BUILT_IN (olddecl)
+	  && C_DECL_INVISIBLE (olddecl)
 	  && (!TREE_PUBLIC (newdecl)
 	      || (DECL_INITIAL (newdecl)
 		  && !TYPE_ARG_TYPES (TREE_TYPE (newdecl)))))
@@ -1428,20 +1431,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 
       if (DECL_BUILT_IN (olddecl))
 	{
-	  /* Get rid of any built-in function if we have a function
-	     definition.  */
-	  if (new_is_definition)
-	    {
-	      TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
-	      DECL_BUILT_IN_CLASS (olddecl) = NOT_BUILT_IN;
-	    }
-	  else
-	    {
-	      /* If redeclaring a builtin function, and not a definition,
-		 it stays built in.  */
-	      DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
-	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
-	    }
+	  /* If redeclaring a builtin function, it stays built in.  */
+	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
+	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	}
 
       /* Also preserve various other info from the definition.  */
@@ -1451,7 +1443,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
 	  DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
-	  DECL_ESTIMATED_INSNS (newdecl) = DECL_ESTIMATED_INSNS (olddecl);
 	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 
 	  /* Set DECL_INLINE on the declaration if we've got a body

@@ -95,9 +95,6 @@ typedef struct inline_data
   int in_target_cleanup_p;
   /* A list of the functions current function has inlined.  */
   varray_type inlined_fns;
-  /* The approximate number of instructions we have inlined in the
-     current call stack.  */
-  int inlined_insns;
   /* We use the same mechanism to build clones that we do to perform
      inlining.  However, there are a few places where we need to
      distinguish between those two situations.  This flag is true if
@@ -1569,11 +1566,6 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
      the equivalent inlined version either.  */
   TREE_USED (*tp) = 1;
 
-  /* Our function now has more statements than it did before.  */
-  DECL_ESTIMATED_INSNS (VARRAY_TREE (id->fns, 0)) += DECL_ESTIMATED_INSNS (fn);
-  /* For accounting, subtract one for the saved call/ret.  */
-  id->inlined_insns += DECL_ESTIMATED_INSNS (fn) - 1;
-
   /* Update callgraph if needed.  */
   if (id->decl)
     {
@@ -1589,11 +1581,6 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
     id->current_decl = old_decl;
   }
   VARRAY_POP (id->fns);
-
-  /* If we've returned to the top level, clear out the record of how
-     much inlining has been done.  */
-  if (VARRAY_ACTIVE_SIZE (id->fns) == id->first_inlined_fn)
-    id->inlined_insns = 0;
 
   /* Don't walk into subtrees.  We've already handled them above.  */
   *walk_subtrees = 0;
@@ -1634,9 +1621,6 @@ optimize_inline_calls (tree fn)
   /* Don't allow recursion into FN.  */
   VARRAY_TREE_INIT (id.fns, 32, "fns");
   VARRAY_PUSH_TREE (id.fns, fn);
-  if (!DECL_ESTIMATED_INSNS (fn))
-    DECL_ESTIMATED_INSNS (fn) 
-      = (*lang_hooks.tree_inlining.estimate_num_insns) (fn);
   /* Or any functions that aren't finished yet.  */
   prev_fn = NULL_TREE;
   if (current_function_decl)

@@ -1,5 +1,11 @@
 2004-02-07  Zack Weinberg  <zack@codesourcery.com>
 
+	Bug 13856
+	* optimize.c (maybe_clone_body): Don't update DECL_ESTIMATED_INSNS.
+	* decl.c (duplicate_decls, start_function): Likewise.
+
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
 	* name-lookup.c (pushdecl): Issue shadow warnings directly.
 	* parser.c (free_parser_stacks): Delete.
 
