@@ -1,3 +1,8 @@
+2003-09-26  Per Bothner  <pbothner@apple.com>
+
+	* dbxout.c (dbxout_typedefs):  Output typedefs in forward order.
+	No longer any need to reverse by recursion.
+
 2003-09-26  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 
