@@ -1,3 +1,8 @@
+2002-03-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in: Increase required makeinfo version to 4.1.
+	* configure: Regenerate.
+
 2002-03-04  Geoffrey Keating  <geoffk@redhat.com>
 
 	* .cvsignore: Remove *.info* and genrtl*; these files are generated
