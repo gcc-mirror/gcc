@@ -2766,6 +2766,74 @@ build_decl_attribute_variant (tree ddecl, tree attribute)
   return ddecl;
 }
 
+/* Borrowed from hashtab.c iterative_hash implementation.  */
+#define mix(a,b,c) \
+{ \
+  a -= b; a -= c; a ^= (c>>13); \
+  b -= c; b -= a; b ^= (a<< 8); \
+  c -= a; c -= b; c ^= ((b&0xffffffff)>>13); \
+  a -= b; a -= c; a ^= ((c&0xffffffff)>>12); \
+  b -= c; b -= a; b = (b ^ (a<<16)) & 0xffffffff; \
+  c -= a; c -= b; c = (c ^ (b>> 5)) & 0xffffffff; \
+  a -= b; a -= c; a = (a ^ (c>> 3)) & 0xffffffff; \
+  b -= c; b -= a; b = (b ^ (a<<10)) & 0xffffffff; \
+  c -= a; c -= b; c = (c ^ (b>>15)) & 0xffffffff; \
+}
+
+
+/* Produce good hash value combining VAL and VAL2.  */
+static inline hashval_t
+iterative_hash_hashval_t (hashval_t val, hashval_t val2)
+{
+  /* the golden ratio; an arbitrary value.  */
+  hashval_t a = 0x9e3779b9;
+
+  mix (a, val, val2);
+  return val2;
+}
+
+/* Produce good hash value combining PTR and VAL2.  */
+static inline hashval_t
+iterative_hash_pointer (void *ptr, hashval_t val2)
+{
+  if (sizeof (ptr) == sizeof (hashval_t))
+    return iterative_hash_hashval_t ((size_t) ptr, val2);
+  else
+    {
+      hashval_t a = (hashval_t) (size_t) ptr;
+      /* Avoid warnings about shifting of more than the width of the type on
+         hosts that won't execute this path.  */
+      int zero = 0;
+      hashval_t b = (hashval_t) ((size_t) ptr >> (sizeof (hashval_t) * 8 + zero));
+      mix (a, b, val2);
+      return val2;
+    }
+}
+
+/* Produce good hash value combining VAL and VAL2.  */
+static inline hashval_t
+iterative_hash_host_wide_int (HOST_WIDE_INT val, hashval_t val2)
+{
+  if (sizeof (HOST_WIDE_INT) == sizeof (hashval_t))
+    return iterative_hash_hashval_t (val, val2);
+  else
+    {
+      hashval_t a = (hashval_t) val;
+      /* Avoid warnings about shifting of more than the width of the type on
+         hosts that won't execute this path.  */
+      int zero = 0;
+      hashval_t b = (hashval_t) (val >> (sizeof (hashval_t) * 8 + zero));
+      mix (a, b, val2);
+      if (sizeof (HOST_WIDE_INT) > 2 * sizeof (hashval_t))
+	{
+	  hashval_t a = (hashval_t) (val >> (sizeof (hashval_t) * 16 + zero));
+	  hashval_t b = (hashval_t) (val >> (sizeof (hashval_t) * 24 + zero));
+	  mix (a, b, val2);
+	}
+      return val2;
+    }
+}
+
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
    is ATTRIBUTE.
 
@@ -3908,97 +3976,92 @@ iterative_hash_expr (tree t, hashval_t val)
   char class;
 
   if (t == NULL_TREE)
-    return iterative_hash_object (t, val);
+    return iterative_hash_pointer (t, val);
 
   code = TREE_CODE (t);
-  class = TREE_CODE_CLASS (code);
 
-  if (class == 'd'
-      || TREE_CODE (t) == VALUE_HANDLE)
+  switch (code)
     {
-      /* Decls we can just compare by pointer.  */
-      val = iterative_hash_object (t, val);
-    }
-  else if (class == 'c')
-    {
-      /* Alas, constants aren't shared, so we can't rely on pointer
-	 identity.  */
-      if (code == INTEGER_CST)
-	{
-	  val = iterative_hash_object (TREE_INT_CST_LOW (t), val);
-	  val = iterative_hash_object (TREE_INT_CST_HIGH (t), val);
-	}
-      else if (code == REAL_CST)
-	{
-	  unsigned int val2 = real_hash (TREE_REAL_CST_PTR (t));
+    /* Alas, constants aren't shared, so we can't rely on pointer
+       identity.  */
+    case INTEGER_CST:
+      val = iterative_hash_host_wide_int (TREE_INT_CST_LOW (t), val);
+      return iterative_hash_host_wide_int (TREE_INT_CST_HIGH (t), val);
+    case REAL_CST:
+      {
+	unsigned int val2 = real_hash (TREE_REAL_CST_PTR (t));
 
-	  val = iterative_hash (&val2, sizeof (unsigned int), val);
-	}
-      else if (code == STRING_CST)
-	val = iterative_hash (TREE_STRING_POINTER (t),
-			      TREE_STRING_LENGTH (t), val);
-      else if (code == COMPLEX_CST)
-	{
-	  val = iterative_hash_expr (TREE_REALPART (t), val);
-	  val = iterative_hash_expr (TREE_IMAGPART (t), val);
-	}
-      else if (code == VECTOR_CST)
-	val = iterative_hash_expr (TREE_VECTOR_CST_ELTS (t), val);
-      else
-	abort ();
-    }
-  else if (IS_EXPR_CODE_CLASS (class))
-    {
-      val = iterative_hash_object (code, val);
+	return iterative_hash_hashval_t (val2, val);
+      }
+    case STRING_CST:
+      return iterative_hash (TREE_STRING_POINTER (t),
+			     TREE_STRING_LENGTH (t), val);
+    case COMPLEX_CST:
+      val = iterative_hash_expr (TREE_REALPART (t), val);
+      return iterative_hash_expr (TREE_IMAGPART (t), val);
+    case VECTOR_CST:
+      return iterative_hash_expr (TREE_VECTOR_CST_ELTS (t), val);
 
-      /* Don't hash the type, that can lead to having nodes which
-	 compare equal according to operand_equal_p, but which
-	 have different hash codes.  */
-      if (code == NOP_EXPR
-	  || code == CONVERT_EXPR
-	  || code == NON_LVALUE_EXPR)
-	{
-	  /* Make sure to include signness in the hash computation.  */
-	  val += TYPE_UNSIGNED (TREE_TYPE (t));
-	  val = iterative_hash_expr (TREE_OPERAND (t, 0), val);
-	}
+    case SSA_NAME:
+    case VALUE_HANDLE:
+      /* we can just compare by pointer.  */
+      return iterative_hash_pointer (t, val);
 
-      if (commutative_tree_code (code))
-	{
-	  /* It's a commutative expression.  We want to hash it the same
-	     however it appears.  We do this by first hashing both operands
-	     and then rehashing based on the order of their independent
-	     hashes.  */
-	  hashval_t one = iterative_hash_expr (TREE_OPERAND (t, 0), 0);
-	  hashval_t two = iterative_hash_expr (TREE_OPERAND (t, 1), 0);
-	  hashval_t t;
-
-	  if (one > two)
-	    t = one, one = two, two = t;
-
-	  val = iterative_hash_object (one, val);
-	  val = iterative_hash_object (two, val);
-	}
-      else
-	for (i = first_rtl_op (code) - 1; i >= 0; --i)
-	  val = iterative_hash_expr (TREE_OPERAND (t, i), val);
-    }
-  else if (code == TREE_LIST)
-    {
+    case TREE_LIST:
       /* A list of expressions, for a CALL_EXPR or as the elements of a
 	 VECTOR_CST.  */
       for (; t; t = TREE_CHAIN (t))
 	val = iterative_hash_expr (TREE_VALUE (t), val);
-    }
-  else if (code == SSA_NAME)
-    {
-      val = iterative_hash_object (SSA_NAME_VERSION (t), val);
-      val = iterative_hash_expr (SSA_NAME_VAR (t), val);
-    }
-  else
-    abort ();
+      return val;
+    default:
+      class = TREE_CODE_CLASS (code);
 
-  return val;
+      if (class == 'd')
+	{
+	  /* Decls we can just compare by pointer.  */
+	  val = iterative_hash_pointer (t, val);
+	}
+      else if (IS_EXPR_CODE_CLASS (class))
+	{
+	  val = iterative_hash_object (code, val);
+
+	  /* Don't hash the type, that can lead to having nodes which
+	     compare equal according to operand_equal_p, but which
+	     have different hash codes.  */
+	  if (code == NOP_EXPR
+	      || code == CONVERT_EXPR
+	      || code == NON_LVALUE_EXPR)
+	    {
+	      /* Make sure to include signness in the hash computation.  */
+	      val += TYPE_UNSIGNED (TREE_TYPE (t));
+	      val = iterative_hash_expr (TREE_OPERAND (t, 0), val);
+	    }
+
+	  else if (commutative_tree_code (code))
+	    {
+	      /* It's a commutative expression.  We want to hash it the same
+		 however it appears.  We do this by first hashing both operands
+		 and then rehashing based on the order of their independent
+		 hashes.  */
+	      hashval_t one = iterative_hash_expr (TREE_OPERAND (t, 0), 0);
+	      hashval_t two = iterative_hash_expr (TREE_OPERAND (t, 1), 0);
+	      hashval_t t;
+
+	      if (one > two)
+		t = one, one = two, two = t;
+
+	      val = iterative_hash_hashval_t (one, val);
+	      val = iterative_hash_hashval_t (two, val);
+	    }
+	  else
+	    for (i = first_rtl_op (code) - 1; i >= 0; --i)
+	      val = iterative_hash_expr (TREE_OPERAND (t, i), val);
+	}
+      else
+	abort ();
+      return val;
+      break;
+    }
 }
 
 /* Constructors for pointer, array and function types.
