@@ -730,9 +730,9 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	    }
 	  else
 	    {
-	      TREE_SET_CODE (TREE_OPERAND (dummy_cond, 0), cond_code);
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 0) = op0;
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1) = op1;
+	      TREE_SET_CODE (COND_EXPR_COND (dummy_cond), cond_code);
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 0) = op0;
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 1) = op1;
 	    }
 
 	  /* If the conditional folds to an invariant, then we are done,
@@ -1805,9 +1805,9 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	    }
           else
 	    {
-	      TREE_SET_CODE (TREE_OPERAND (dummy_cond, 0), GT_EXPR);
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 0) = op;
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1)
+	      TREE_SET_CODE (COND_EXPR_COND (dummy_cond), GT_EXPR);
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 0) = op;
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 1)
 		= integer_zero_node;
 	    }
 	  val = simplify_cond_and_lookup_avail_expr (dummy_cond, NULL, false);
@@ -1857,18 +1857,18 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	    }
 	  else
 	    {
-	      TREE_SET_CODE (TREE_OPERAND (dummy_cond, 0), LE_EXPR);
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 0) = op;
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1)
+	      TREE_SET_CODE (COND_EXPR_COND (dummy_cond), LE_EXPR);
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 0) = op;
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 1)
 		= build_int_cst (type, 0);
 	    }
 	  val = simplify_cond_and_lookup_avail_expr (dummy_cond, NULL, false);
 
 	  if (!val)
 	    {
-	      TREE_SET_CODE (TREE_OPERAND (dummy_cond, 0), GE_EXPR);
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 0) = op;
-	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1)
+	      TREE_SET_CODE (COND_EXPR_COND (dummy_cond), GE_EXPR);
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 0) = op;
+	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 1)
 		= build_int_cst (type, 0);
 
 	      val = simplify_cond_and_lookup_avail_expr (dummy_cond,

@@ -3224,7 +3224,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
 
     case COND_EXPR:
-      x = TREE_OPERAND (t, 0);
+      x = COND_EXPR_COND (t);
       if (TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE)
 	{
 	  error ("non-boolean used in condition");

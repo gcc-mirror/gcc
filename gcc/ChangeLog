@@ -1,3 +1,13 @@
+2004-11-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (verify_expr): Replace TREE_OPERAND with
+	COND_EXPR_COND.
+	* tree-if-conv.c (tree_if_convert_cond_expr): Likewise.
+	* tree-ssa-dom.c (thread_across_edge): Likewise.
+	* tree-vectorizer.c (vect_transform_loop_bound): Replace
+	TREE_OPERAND with COND_EXPR_COND, COND_EXPR_THEN, or
+	COND_EXPR_ELSE.
+
 2004-11-15  Eric Christopher  <echristo@redhat.com>
 
 	* sched-deps.c (set_sched_group_p): Delete.

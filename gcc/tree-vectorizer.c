@@ -2860,7 +2860,7 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
   gcc_assert (bsi_stmt (loop_exit_bsi) == orig_cond_expr);
 
   /* new loop exit test:  */
-  lb_type = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (orig_cond_expr, 0), 1));
+  lb_type = TREE_TYPE (TREE_OPERAND (COND_EXPR_COND (orig_cond_expr), 1));
   if (!symbol_niters)
     new_loop_bound = fold_convert (lb_type, 
 				   build_int_cst (unsigned_type_node, 
@@ -2876,7 +2876,8 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
 		   indx_after_incr, new_loop_bound);
 
   cond_stmt = build3 (COND_EXPR, TREE_TYPE (orig_cond_expr), cond,
-	TREE_OPERAND (orig_cond_expr, 1), TREE_OPERAND (orig_cond_expr, 2));
+		      COND_EXPR_THEN (orig_cond_expr),
+		      COND_EXPR_ELSE (orig_cond_expr));
 
   bsi_insert_before (&loop_exit_bsi, cond_stmt, BSI_SAME_STMT);   
 

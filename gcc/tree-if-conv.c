@@ -277,7 +277,7 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
 
   gcc_assert (TREE_CODE (stmt) == COND_EXPR);
 
-  c = TREE_OPERAND (stmt, 0);
+  c = COND_EXPR_COND (stmt);
 
   /* Create temp. for condition.  */
   if (!is_gimple_condexpr (c))
