@@ -1,5 +1,10 @@
 2002-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (movsf_1): Allow moving SF values in MMX
+	registers.
+
+2002-02-04  Jakub Jelinek  <jakub@redhat.com>
+
 	* combine.c (recog_for_combine): Create a dummy insn with PATTERN
 	pat for recog.
 
