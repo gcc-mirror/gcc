@@ -76,22 +76,25 @@ extern int target_flags;
 /* Use PowerPC architecture instructions.  */
 #define MASK_POWERPC		0x04
 
-/* Use PowerPC extended FP instruction including sqrt and fsel.  */
-#define MASK_PPCFPX		0x08
+/* Use PowerPC General Purpose group optional instructions, e.g. fsqrt.  */
+#define MASK_PPC_GPOPT		0x08
+
+/* Use PowerPC Graphics group optional instructions, e.g. fsel.  */
+#define MASK_PPC_GFXOPT		0x10
 
 /* Use PowerPC-64 architecture instructions.  */
-#define MASK_POWERPC64		0x10
+#define MASK_POWERPC64		0x20
 
 /* Use revised mnemonic names defined for PowerPC architecture.  */
-#define MASK_NEW_MNEMONICS	0x20
+#define MASK_NEW_MNEMONICS	0x40
 
 /* Disable placing fp constants in the TOC; can be turned on when the
    TOC overflows.  */
-#define MASK_NO_FP_IN_TOC	0x40
+#define MASK_NO_FP_IN_TOC	0x80
 
 /* Disable placing symbol+offset constants in the TOC; can be turned on when
    the TOC overflows.  */
-#define MASK_NO_SUM_IN_TOC	0x80
+#define MASK_NO_SUM_IN_TOC	0x100
 
 /* Output only one TOC entry per module.  Normally linking fails if
    there are more than 16K unique variables/constants in an executable.  With
@@ -100,12 +103,13 @@ extern int target_flags;
 
    This is at the cost of having 2 extra loads and one extra store per
    function, and one less allocatable register.  */
-#define MASK_MINIMAL_TOC	0x100
+#define MASK_MINIMAL_TOC	0x200
 
 #define TARGET_POWER			(target_flags & MASK_POWER)
 #define TARGET_POWER2			(target_flags & MASK_POWER2)
 #define TARGET_POWERPC			(target_flags & MASK_POWERPC)
-#define TARGET_PPCFPX			(target_flags & MASK_PPCFPX)
+#define TARGET_PPC_GPOPT		(target_flags & MASK_PPC_GPOPT)
+#define TARGET_PPC_GFXOPT		(target_flags & MASK_PPC_GFXOPT)
 #define TARGET_POWERPC64		(target_flags & MASK_POWERPC64)
 #define TARGET_NEW_MNEMONICS		(target_flags & MASK_NEW_MNEMONICS)
 #define TARGET_NO_FP_IN_TOC		(target_flags & MASK_NO_FP_IN_TOC)
@@ -126,10 +130,13 @@ extern int target_flags;
   {"no-power2",		- MASK_POWER2},				\
   {"no-power",		- (MASK_POWER | MASK_POWER2)},		\
   {"powerpc",		MASK_POWERPC},				\
-  {"no-powerpc",	- (MASK_POWERPC | MASK_PPCFPX | MASK_POWERPC64)}, \
-  {"powerpc-fpx",	MASK_POWERPC | MASK_PPCFPX},	\
-  {"no-powerpc-fpx",	- MASK_PPCFPX},			\
-  {"powerpc64",		MASK_POWERPC | MASK_PPCFPX | MASK_POWERPC64},	\
+  {"no-powerpc",	- (MASK_POWERPC | MASK_PPC_GPOPT 	\
+			   | MASK_PPC_GFXOPT | MASK_POWERPC64)}, \
+  {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT},		\
+  {"no-powerpc-gpopt",	- MASK_PPC_GPOPT},			\
+  {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT},	\
+  {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT},			\
+  {"powerpc64",		MASK_POWERPC | MASK_POWERPC64},		\
   {"no-powerpc64",	-MASK_POWERPC64},			\
   {"new-mnemonics",	MASK_NEW_MNEMONICS},			\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS},			\
