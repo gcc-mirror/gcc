@@ -12984,9 +12984,8 @@ start_enum (name)
    ENUMTYPE is the type object and VALUES a list of name-value pairs.  */
 
 void
-finish_enum (enumtype, attributes)
+finish_enum (enumtype)
      tree enumtype;
-     tree attributes;
 {
   tree pair;
   tree minnode;
@@ -12997,8 +12996,6 @@ finish_enum (enumtype, attributes)
   int highprec; 
   int precision;
 
-  cplus_decl_attributes (enumtype, attributes, NULL_TREE);
-  
   /* We built up the VALUES in reverse order.  */
   TYPE_VALUES (enumtype) = nreverse (TYPE_VALUES (enumtype));
 
@@ -13077,14 +13074,11 @@ finish_enum (enumtype, attributes)
   else
     fixup_signed_type (enumtype);
 
-  if (flag_short_enums || TYPE_PACKED (enumtype) ||
-      (precision > TYPE_PRECISION (integer_type_node)))
-    {
-      /* Use the width of the narrowest normal C type which is wide
-	 enough.  */
-      TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
-						  (precision, 1));
-    }
+  if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
+    /* Use the width of the narrowest normal C type which is wide
+       enough.  */
+    TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
+						(precision, 1));
   else
     TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
 
