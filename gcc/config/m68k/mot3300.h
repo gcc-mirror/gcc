@@ -441,15 +441,15 @@ do { union { float f; long l;} tem;			\
       union { float f; int i; } u1;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
       u1.f = u.d;							\
-      /* Use hex representation even if CODE is f, as needs it.  */	\
+      /* Use hex representation even if CODE is f.  as needs it.  */	\
       if (CODE == 'f')							\
         fprintf (FILE, "&0x%x", u1.i);					\
       else								\
         fprintf (FILE, "&0x%x", u1.i); }				\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
     { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      fprintf (FILE, "&0x%x%x", u.i[0], u.i[1]); }			\
+      PRINT_OPERAND_EXTRACT_FLOAT (X);					\
+      fprintf (FILE, "&0x%08x%08x", u.i[0], u.i[1]); }			\
   else { putc ('&', FILE); output_addr_const (FILE, X); }}
 
 #undef PRINT_OPERAND_ADDRESS
