@@ -1,5 +1,18 @@
 2004-08-11  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm-protos.h (arm_finalize_pic) Rename ...
+	(arm_load_pic_register): ... to this.
+	* config/arm/arm.c (arm_finalize_pic): Rename ...
+	(arm_load_pic_register): ... to this.  Always output insns at the
+	current location.  Load via low reg in thumb mode.
+	(arm_expand_prologue): Call arm_load_pic_register.
+	(thumb_expand_prologue): Ditto.
+	* config/arm/arm.h (FINALIZE_PIC): Remove.
+	* config/arm/arm.md (builtin_setjmp_receiver): Call
+	arm_load_pic_register.
+
+2004-08-11  Paul Brook  <paul@codesourcery.com>
+
 	* arm.c (thumb_force_lr_save): Add prototype.
 	(thumb_compute_save_reg_mask): New function.
 	(thumb_find_work_register): New function.

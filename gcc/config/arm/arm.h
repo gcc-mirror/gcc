@@ -2277,8 +2277,6 @@ extern const char * arm_pic_register_string;
    data addresses in memory.  */
 #define PIC_OFFSET_TABLE_REGNUM arm_pic_register
 
-#define FINALIZE_PIC arm_finalize_pic (1)
-
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)					\
