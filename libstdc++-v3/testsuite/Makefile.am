@@ -103,14 +103,8 @@ site.exp: Makefile
 	@test ! -f site.exp || mv site.exp site.bak
 	@mv site.tmp site.exp
 
-# This is automatically run after the generated check-DEJAGNU rule.
-check-local: check-abi
-
 baseline_file = ${baseline_dir}/baseline_symbols.txt
 extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
-
-current_symbols.txt: ${extract_symvers} ../src/.libs/libstdc++.so
-	  -@(${extract_symvers} ../src/.libs/libstdc++.so current_symbols.txt)
 
 baseline_symbols:
 	-@(output=${baseline_file}; \
@@ -133,7 +127,7 @@ new-abi-baseline:
 if GLIBCXX_TEST_ABI
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
-check-abi: baseline_symbols current_symbols.txt site.exp
+check-abi: baseline_symbols site.exp
 	-@runtest --tool libstdc++ abi.exp
 else
 check-abi:
