@@ -2227,7 +2227,8 @@ pp_cfg_jump (pretty_printer *buffer, basic_block bb)
    by INDENT spaces, with details given by FLAGS.  */
 
 static void
-dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent)
+dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
+		     int flags)
 {
   edge e;
 
@@ -2239,6 +2240,19 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent)
   if (e && e->dest != bb->next_bb)
     {
       INDENT (indent);
+
+      if ((flags & TDF_LINENO) && e->goto_locus)
+	{
+	  pp_character (buffer, '[');
+	  if (e->goto_locus->file)
+	    {
+	      pp_string (buffer, e->goto_locus->file);
+	      pp_string (buffer, " : ");
+	    }
+	  pp_decimal_int (buffer, e->goto_locus->line);
+	  pp_string (buffer, "] ");
+	}
+
       pp_cfg_jump (buffer, e->dest);
       pp_newline (buffer);
     }
@@ -2276,7 +2290,7 @@ dump_generic_bb_buff (pretty_printer *buffer, basic_block bb,
       pp_newline (buffer);
     }
 
-  dump_implicit_edges (buffer, bb, indent);
+  dump_implicit_edges (buffer, bb, indent, flags);
 
   if (flags & TDF_BLOCKS)
     dump_bb_end (buffer, bb, indent, flags);

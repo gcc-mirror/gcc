@@ -142,6 +142,9 @@ struct edge_def GTY((chain_next ("%h.pred_next")))
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
 
+  /* Location of any goto implicit in the edge, during tree-ssa.  */
+  location_t *goto_locus;
+
   int flags;			/* see EDGE_* below  */
   int probability;		/* biased by REG_BR_PROB_BASE */
   gcov_type count;		/* Expected number of executions calculated

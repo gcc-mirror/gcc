@@ -1,3 +1,10 @@
+2004-06-09  Richard Henderson  <rth@redhat.com>
+
+	* basic-block.h (struct edge_def): Add goto_locus.
+	* tree-cfg.c (make_goto_expr_edges): Set it.
+	(disband_implicit_edges): Use it.
+	* tree-pretty-print.c (dump_implicit_edges): Print it.
+
 2004-06-08  Anil Paranjpe <anilp1@kpitcummins.com>
 
 	* h8300.md (ldm_h8300s_4): Fix condition for expander.
