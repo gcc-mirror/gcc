@@ -12,6 +12,9 @@ Sat Jun 13 11:46:38 1998  Anders Blomdell <anders.blomdell@control.lth.se>
 
 Sat Jun 13 08:26:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload1.c (reload_cse_regno_equal_p): If -ffloat-store, don't
+	consider a MEM in FP mode as equal.
+
 	* varasm.c (assemble_variable): Never put decl with specified section
 	name into bss.
 
