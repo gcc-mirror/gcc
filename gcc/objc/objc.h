@@ -126,6 +126,7 @@ struct objc_class {
   struct objc_class* sibling_class;
 
   struct objc_protocol_list *protocols;	      /* Protocols conformed to */
+  void* gc_object_type;
 };
 
 #ifndef __OBJC__

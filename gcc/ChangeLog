@@ -1,3 +1,48 @@
+Thu Sep  3 00:37:55 1998  Ovidiu Predescu  <ovidiu@aracnet.com>
+
+	Added support for the Boehm's garbage collector.
+	* configure.in: Handle --enable-objc-gc.
+	* configure: Rebuilt.
+	* Makefile.in (CHECK_TARGETS): Add check-objc.
+	(check-objc): New rule.
+	* objc/Make-lang.in: Build a different Objective-C library that
+ 	runs with the Boehm's collector.
+	* objc/encoding.c (objc_round_acc_size_for_types): New function.
+	* objc/encoding.c: Correctly compute the size of compound types in
+ 	the presence of bitfields. Skip the variable name of the type if
+ 	any. Added support for long long.
+	* objc/encoding.h (_C_GCINVISIBLE): New specifier.
+	(_F_GCINVISIBLE): New mask.
+	* objc/gc.c: New file. Compute the type memory mask associated with
+	a class based on the runtime information.
+	* objc/misc.c: Added the hooks that use the Boehm's collector
+ 	allocation functions.
+	* objc/objc-act.c (build_class_template): Generate a new class
+ 	member (gc_object_type) to hold the class' type memory mask.
+	(build_shared_structure_initializer): Initialize the new member to
+	NULL.
+	(encode_complete_bitfield): New function. Generate the new
+ 	encoding.
+	(encode_field_decl): Generate the new encoding only for the GNU
+	runtime.
+	* objc/objc-api.h (_C_LNG_LNG, _C_ULNG_LNG): New specifiers for the
+	long long types.
+	(class_get_gc_object_type): New function to mark a pointer instance
+	variable as a weak pointer.
+	* objc/objc-features.texi: New file.
+	* objc/objc.h (gc_object_type): New class member.
+	* objc/objects.c (class_create_instance): Create a typed memory
+ 	object when compiled with Boehm's collector support.
+	* objc/sendmsg.c (__objc_init_install_dtable): Call
+ 	__objc_send_initialize instead of setting the initialize flag.
+	(__objc_send_initialize): Call __objc_generate_gc_type_description
+ 	to generate the class type memory mask. Rewrite the code that
+ 	sends the +initialize so that it is called only once (bug report
+ 	and fix from Ronald Pijnacker <Ronald.Pijnacker@best.ms.philips.com>).
+	* testsuite/objc: New testsuite for Objective-C type encoding.
+	* testsuite/lib/objc-torture.exp: New file.
+	* testsuite/lib/objc.exp: New file.
+
 Wed Sep  2 14:47:36 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* jump.c (jump_optimize): In if/then/else transformations, add

@@ -244,10 +244,7 @@ __objc_init_install_dtable(id receiver, SEL op)
       /* Install real dtable for factory methods */
       __objc_install_dispatch_table_for_class (receiver->class_pointer);
 
-      if (strcmp (sel_get_name (op), "initialize"))
-	__objc_send_initialize((Class)receiver);
-      else
-	CLS_SETINITIALIZED((Class)receiver);
+      __objc_send_initialize((Class)receiver);
     }
   objc_mutex_unlock(__objc_runtime_mutex);
 }
@@ -273,36 +270,36 @@ __objc_send_initialize(Class class)
     {
       CLS_SETINITIALIZED(class);
       CLS_SETINITIALIZED(class->class_pointer);
-      
+
+      /* Create the garbage collector type memory description */
+      __objc_generate_gc_type_description (class);
+
       if(class->super_class)
 	__objc_send_initialize(class->super_class);
 
       {
-	SEL 	op = sel_register_name ("initialize");
-	Class	tmpclass = class;
-	IMP	imp = 0;
+	SEL 	     op = sel_register_name ("initialize");
+	IMP	     imp = 0;
+        MethodList_t method_list = class->class_pointer->methods;
 
-	while (!imp && tmpclass) {
-	  MethodList_t method_list = tmpclass->class_pointer->methods;
+        while (method_list) {
+	  int i;
+          Method_t method;
 
-	  while(!imp && method_list) {
-	    int i;
-	    Method_t method;
+          for (i = 0; i< method_list->method_count; i++) {
+	    method = &(method_list->method_list[i]);
+            if (method->method_name
+                && method->method_name->sel_id == op->sel_id) {
+	      imp = method->method_imp;
+              break;
+            }
+          }
 
-	    for (i=0;i<method_list->method_count;i++) {
-	      method = &(method_list->method_list[i]);
-	      if (method->method_name
-		  && method->method_name->sel_id == op->sel_id) {
-	        imp = method->method_imp;
-	        break;
-	      }
-	    }
+          if (imp)
+            break;
 
-	    method_list = method_list->method_next;
+          method_list = method_list->method_next;
 
-	  }
-
-	  tmpclass = tmpclass->super_class;
 	}
 	if (imp)
 	    (*imp)((id)class, op);

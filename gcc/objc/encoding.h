@@ -32,26 +32,28 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include "objc/objc-api.h"
 
-#define _C_CONST    'r'
-#define _C_IN       'n'
-#define _C_INOUT    'N'
-#define _C_OUT      'o'
-#define _C_BYCOPY   'O'
-#define _C_ONEWAY   'V'
+#define _C_CONST	'r'
+#define _C_IN		'n'
+#define _C_INOUT	'N'
+#define _C_OUT      	'o'
+#define _C_BYCOPY	'O'
+#define _C_ONEWAY	'V'
+#define _C_GCINVISIBLE	'!'
 
-#define _F_CONST    0x01
-#define _F_IN       0x01
-#define _F_OUT      0x02
-#define _F_INOUT    0x03
-#define _F_BYCOPY   0x04
-#define _F_ONEWAY   0x08
-
+#define _F_CONST	0x01
+#define _F_IN		0x01
+#define _F_OUT		0x02
+#define _F_INOUT	0x03
+#define _F_BYCOPY	0x04
+#define _F_ONEWAY	0x08
+#define _F_GCINVISIBLE	0x10
 
 int objc_aligned_size (const char* type);
 int objc_sizeof_type (const char* type);
 int objc_alignof_type (const char* type);
 int objc_aligned_size (const char* type);
 int objc_promoted_size (const char* type);
+
 const char* objc_skip_type_qualifiers (const char* type);
 const char* objc_skip_typespec (const char* type);
 const char* objc_skip_offset (const char* type);
@@ -71,5 +73,25 @@ char* method_get_nth_argument (struct objc_method* m,
 
 unsigned objc_get_type_qualifiers (const char* type);
 
+
+struct objc_struct_layout 
+{
+  const char *original_type;
+  const char *type;
+  const char *prev_type;
+  unsigned int record_size;
+  unsigned int record_align;
+};
+
+void objc_layout_structure (const char *type,
+                            struct objc_struct_layout *layout);
+BOOL  objc_layout_structure_next_member (struct objc_struct_layout *layout);
+void objc_layout_finish_structure (struct objc_struct_layout *layout,
+                                   unsigned int *size,
+                                   unsigned int *align);
+void objc_layout_structure_get_info (struct objc_struct_layout *layout,
+                                     unsigned int *offset,
+                                     unsigned int *align,
+                                     const char **type);
 
 #endif /* __encoding_INCLUDE_GNU */
