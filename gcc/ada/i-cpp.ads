@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,15 +41,16 @@ package Interfaces.CPP is
    package S   renames System;
    package SSE renames System.Storage_Elements;
 
-   --  This package corresponds to Ada.Tags but applied to tagged types
-   --  which are 'imported' from C++ and correspond to exactly to a C++
-   --  Class.  GNAT doesn't know about the structure od the C++ dispatch
-   --  table (Vtable) but always access it through the procedural interface
-   --  defined below, thus the implementation of this package (the body) can
-   --  be customized to another C++ compiler without any change in the
-   --  compiler code itself as long as this procedural interface is
-   --  respected. Note that Ada.Tags defines a very similar procedural
-   --  interface to the regular Ada Dispatch Table.
+   --  This package corresponds to Ada.Tags but applied to tagged
+   --  types which are 'imported' from C++ and correspond exactly to a
+   --  C++ Class. GNAT doesn't know about the structure of the C++
+   --  dispatch table (Vtable) but always accesses it through the
+   --  procedural interface defined below, thus the implementation of
+   --  this package (the body) can be customized to another C++
+   --  compiler without any change in the compiler code itself as long
+   --  as this procedural interface is respected. Note that Ada.Tags
+   --  defines a very similar procedural interface to the regular Ada
+   --  Dispatch Table.
 
    type Vtable_Ptr is private;
 
@@ -95,7 +96,7 @@ private
 
    CPP_DT_Prologue_Size : constant SSE.Storage_Count :=
                             SSE.Storage_Count
-                              (2 * (Standard'Address_Size / S.Storage_Unit));
+                              (1 * (Standard'Address_Size / S.Storage_Unit));
    --  Size of the first part of the dispatch table
 
    CPP_DT_Entry_Size : constant SSE.Storage_Count :=
@@ -110,7 +111,7 @@ private
 
    CPP_TSD_Entry_Size : constant SSE.Storage_Count :=
                           SSE.Storage_Count
-                            (Standard'Address_Size / S.Storage_Unit);
+                            (1 * (Standard'Address_Size / S.Storage_Unit));
    --  Size of each ancestor tag entry in the TSD
 
    procedure CPP_Inherit_DT

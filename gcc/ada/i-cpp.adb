@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Tags;                use Ada.Tags;
-with Interfaces.C;            use Interfaces.C;
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
 with Unchecked_Conversion;
@@ -60,10 +59,8 @@ package body Interfaces.CPP is
    type Vtable_Entry_Array is array (Positive range <>) of Vtable_Entry;
 
    type VTable is record
-      Unused1   : C.short;
-      Unused2   : C.short;
-      TSD       : Type_Specific_Data_Ptr;
       Prims_Ptr : Vtable_Entry_Array (Positive);
+      TSD       : Type_Specific_Data_Ptr;
    end record;
 
    --------------------------------------------------------
