@@ -2610,7 +2610,9 @@ output_function_prologue (file, size)
   /* The function's label and associated .PROC must never be
      separated and must be output *after* any profiling declarations
      to avoid changing spaces/subspaces within a procedure.  */
+#ifdef OBJ_SOM
   ASM_OUTPUT_LABEL (file, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+#endif
   fputs ("\t.PROC\n", file);
 
   /* hppa_expand_prologue does the dirty work now.  We just need

@@ -1,5 +1,20 @@
 Wed Jun 30 03:31:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in (hppa*-*-*): Add som.h or elf.h to tm_file as
+	appropriate.
+	* configure: Rebuilt.
+	(hppa1.1-*-pro*, hppa1.1-*-rtems*): Define target_cpu_default.
+	* pa.h: Include dbxelf.h.  Delete various dbx/stabs related
+	definitions made redundant by dbxelf.h inclusion.  Delete
+	lots of definitions related to assembly output that are
+	specific to the SOM object format.
+	* pa.c (output_function_prologue): Do not emit the function's
+	name for OBJ_ELF.
+	* pa-pro-end.h (STARTFILE_SPEC): Undefine before redefining.
+	* pa-pro.h: Deleted.
+	* som.h: New file with SOM specific definitions.
+	* elf.h: New file with ELF specific definitions.
+
 	* elfos.h (const_section): Output a tab before assembler directives.
 	(ctors_section, dtors_section): Likewise.
 	(ASM_OUTPUT_SECTION_NAME): Likewise.
