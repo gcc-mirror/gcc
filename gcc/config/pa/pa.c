@@ -984,9 +984,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 
 	      /* Add back in the constant part if needed.  */
 	      if (const_part != NULL)
-		emit_insn (gen_rtx (SET, mode, operand0,
-				    plus_constant (operand0,
-						   XEXP (const_part, 0))));
+		expand_inc (operand0, const_part);
 	      return 1;
 	    }
 	  return 1;
@@ -1059,7 +1057,7 @@ singlemove_string (operands)
       v.f = REAL_VALUE_TRUNCATE (SFmode, u.d);
       i = v.i;
 
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, i);
+      operands[1] = GEN_INT (i);
 
       /* See if we can handle this constant in a single instruction.  */
       if (cint_ok_for_move (INTVAL (operands[1])))
@@ -1511,7 +1509,7 @@ output_block_move (operands, size_is_constant)
 	  else
 	    {
 	      /* Store the last, partial word.  */
-	      operands[4] = gen_rtx (CONST_INT, VOIDmode, n_bytes % 4);
+	      operands[4] = GEN_INT (n_bytes % 4);
 	      output_asm_insn ("stbys,e %2,%4(0,%0)", operands);
 	    }
 	  return "";
@@ -1566,7 +1564,7 @@ output_block_move (operands, size_is_constant)
     {
       /* Size is compile-time determined, and also not
 	 very small (such small cases are handled above).  */
-      operands[4] = gen_rtx (CONST_INT, VOIDmode, n_bytes - 4);
+      operands[4] = GEN_INT (n_bytes - 4);
       output_asm_insn ("ldo %4(0),%2", operands);
     }
   else
@@ -1592,7 +1590,7 @@ output_block_move (operands, size_is_constant)
 	{
 	  /* Read the entire word of the source block tail.  */
 	  output_asm_insn ("ldw 0(0,%1),%3", operands);
-	  operands[4] = gen_rtx (CONST_INT, VOIDmode, n_bytes % 4);
+	  operands[4] = GEN_INT (n_bytes % 4);
 	  output_asm_insn ("stbys,e %3,%4(0,%0)", operands);
 	}
     }
@@ -1758,7 +1756,7 @@ output_and (operands)
 	  if (len == 0)
 	    abort ();
 
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, len);
+	  operands[2] = GEN_INT (len);
 	  return "extru %1,31,%2,%0";
 	}
       else
@@ -1769,8 +1767,8 @@ output_and (operands)
 	  p = 31 - ls0;
 	  len = ls1 - ls0;
 
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, p);
-	  operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
+	  operands[2] = GEN_INT (p);
+	  operands[3] = GEN_INT (len);
 	  return "depi 0,%2,%3,%0";
 	}
     }
@@ -1802,8 +1800,8 @@ output_ior (operands)
   p = 31 - bs0;
   len = bs1 - bs0;
 
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, p);
-  operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
+  operands[2] = GEN_INT (p);
+  operands[3] = GEN_INT (len);
   return "depi -1,%2,%3,%0";
 }
 
