@@ -1,3 +1,10 @@
+2001-02-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* extend.texi (Extended Asm): Do not say that semicolon is always
+	a valid line-breaking character for GNU assemblers.  Use
+	newline-tab as the most commonly supported syntax.  Use
+	newline-tab rather than semicolon in multi-insn examples.
+
 2001-02-05  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* Makefile.in (gcc_gxx_target_include_dir): Use $(target_alias).

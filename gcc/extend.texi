@@ -2959,17 +2959,20 @@ inputs or outputs of the @code{asm}, as the @samp{memory} clobber does
 not count as a side-effect of the @code{asm}.
 
 You can put multiple assembler instructions together in a single
-@code{asm} template, separated either with newlines (written as
-@samp{\n}) or with semicolons if the assembler allows such semicolons.
-The GNU assembler allows semicolons and most Unix assemblers seem to do
-so.  The input operands are guaranteed not to use any of the clobbered
+@code{asm} template, separated by the characters normally used in assembly
+code for the system.  A combination that works in most places is a newline
+to break the line, plus a tab character to move to the instruction field
+(written as @samp{\n\t}).  Sometimes semicolons can be used, if the
+assembler allows semicolons as a line-breaking character.  Note that some
+assembler dialects use semicolons to start a comment.
+The input operands are guaranteed not to use any of the clobbered
 registers, and neither will the output operands' addresses, so you can
 read and write the clobbered registers as many times as you like.  Here
 is an example of multiple instructions in a template; it assumes the
 subroutine @code{_foo} accepts arguments in registers 9 and 10:
 
 @example
-asm ("movl %0,r9;movl %1,r10;call _foo"
+asm ("movl %0,r9\n\tmovl %1,r10\n\tcall _foo"
      : /* no outputs */
      : "g" (from), "g" (to)
      : "r9", "r10");
@@ -2987,7 +2990,7 @@ instruction, you must include a branch and a label in the @code{asm}
 construct, as follows:
 
 @example
-asm ("clr %0;frob %1;beq 0f;mov #1,%0;0:"
+asm ("clr %0\n\tfrob %1\n\tbeq 0f\n\tmov #1,%0\n0:"
      : "g" (result)
      : "g" (input));
 @end example
