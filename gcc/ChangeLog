@@ -1,3 +1,8 @@
+2001-09-06  Richard Henderson  <rth@redhat.com>
+
+	* simplify-rtx.c (simplify_binary_operation): Simplify contents
+	of CONST.
+
 2001-09-06  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Fix DWARF2 register
