@@ -1,3 +1,12 @@
+Sun Oct 24 15:46:44 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips/bsd-5.h (ASM_OUTPUT_ASCII): Constify a char*.
+	* mips/iris4.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/mips-5.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/mips.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/svr3-5.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/svr4-5.h (ASM_OUTPUT_ASCII): Likewise.
+
 Sun Oct 24 15:35:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* output.h (ctors_section, dtors_section, bss_section): Prototype.
