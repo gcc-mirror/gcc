@@ -3117,7 +3117,7 @@
 
 (define_expand "fix_truncsfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "")
-	(fix:SI (match_operand:SF 1 "s_register_operand"  "")))]
+	(fix:SI (fix:SF (match_operand:SF 1 "s_register_operand"  ""))))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS)
@@ -3133,7 +3133,7 @@
 
 (define_insn "*arm_fix_truncsfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r")
-	(fix:SI (match_operand:SF 1 "s_register_operand" "f")))]
+	(fix:SI (fix:SF (match_operand:SF 1 "s_register_operand" "f"))))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "fix%?z\\t%0, %1"
   [(set_attr "type" "f_2_r")
@@ -3142,7 +3142,7 @@
 
 (define_expand "fix_truncdfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "")
-	(fix:SI (match_operand:DF 1 "s_register_operand"  "")))]
+	(fix:SI (fix:DF (match_operand:DF 1 "s_register_operand"  ""))))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS)
@@ -3156,7 +3156,7 @@
 
 (define_insn "*arm_fix_truncdfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r")
-	(fix:SI (match_operand:DF 1 "s_register_operand" "f")))]
+	(fix:SI (fix:DF (match_operand:DF 1 "s_register_operand" "f"))))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "fix%?z\\t%0, %1"
   [(set_attr "type" "f_2_r")

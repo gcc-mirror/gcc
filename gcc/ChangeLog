@@ -1,3 +1,10 @@
+2003-03-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (fix_truncsfsi2, fix_truncdfsi2, arm_fix_truncsfsi2)
+	(arm_fix_truncdfsi2): Add missing fix in floating point mode before
+	conversion to integer.
+	* cirrus.md (cirrus_truncsfsi2, cirrus_truncdfsi2): Likewise.
+
 2003-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.def: Fix typo and improve grammar.
