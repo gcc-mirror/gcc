@@ -644,7 +644,7 @@ fix = {
     hackname = avoid_wchar_t_type;
 
     select    = "^[ \t]*typedef[ \t].*[ \t]wchar_t[ \t]*;";
-    bypass    = "we must use the C\\+\\+ compiler's type";
+    bypass    = "__cplusplus";
     bypass    = "_LINUX_NLS_H";
     bypass    = "XFree86: xc/lib/X11/Xlib\\.h";
 
