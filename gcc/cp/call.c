@@ -2726,7 +2726,7 @@ build_user_type_conversion (tree totype, tree expr, int flags)
 
 /* Find the possibly overloaded set of functions corresponding to a
    call of the form SCOPE::NAME (...). NAME might be a
-   TEMPLATE_ID_EXPR, OVERLOAD, _DECL, IDENTIFIER_NODE or LOOKUP_EXPR. */
+   TEMPLATE_ID_EXPR, OVERLOAD, _DECL, IDENTIFIER_NODE or LOOKUP_EXPR.  */
 
 tree
 resolve_scoped_fn_name (tree scope, tree name)
@@ -2916,7 +2916,7 @@ build_new_function_call (tree fn, tree args)
    required by the allocation, and is updated if that is changed here.
    *COOKIE_SIZE is non-NULL if a cookie should be used.  If this
    function determines that no cookie should be used, after all,
-   *COOKIE_SIZE is set to NULL_TREE. */
+   *COOKIE_SIZE is set to NULL_TREE.  */
 
 tree
 build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
@@ -5786,7 +5786,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
       
       /* We don't want to complain about `X::operator T1 ()'
 	 beating `X::operator T2 () const', when T2 is a no less
-	 cv-qualified version of T1. */
+	 cv-qualified version of T1.  */
       if (DECL_CONTEXT (w->fn) == DECL_CONTEXT (l->fn)
 	  && !DECL_CONSTRUCTOR_P (w->fn) && !DECL_CONSTRUCTOR_P (l->fn))
 	{

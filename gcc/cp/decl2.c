@@ -883,7 +883,7 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
   if (value == void_type_node)
     return value;
 
-  /* Pass friend decls back. */
+  /* Pass friend decls back.  */
   if ((TREE_CODE (value) == FUNCTION_DECL
        || TREE_CODE (value) == TEMPLATE_DECL)
       && DECL_CONTEXT (value) != current_class_type)
@@ -2641,7 +2641,7 @@ finish_file ()
   	 the virtual table for a template class may cause the
  	 instantiation of members of that class.  If we write out
  	 vtables then we remove the class from our list so we don't
- 	 have to look at it again. */
+ 	 have to look at it again.  */
  
       while (keyed_classes != NULL_TREE
  	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
@@ -2674,7 +2674,7 @@ finish_file ()
  	 cause other variables to be needed.  We stick new elements
  	 (and old elements that we may need to reconsider) at the end
  	 of the array, then shift them back to the beginning once we're
- 	 done. */
+ 	 done.  */
   
       n_old = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls);
       for (i = 0; i < n_old; ++i)
@@ -2688,7 +2688,7 @@ finish_file ()
   
       /* The only elements we want to keep are the new ones.  Copy
   	 them to the beginning of the array, then get rid of the
-  	 leftovers. */
+  	 leftovers.  */
       n_new = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls) - n_old;
       memmove (&VARRAY_TREE (unemitted_tinfo_decls, 0),
   	       &VARRAY_TREE (unemitted_tinfo_decls, n_old),
@@ -2851,7 +2851,7 @@ finish_file ()
     } 
   while (reconsider);
 
-  /* All used inline functions must have a definition at this point. */
+  /* All used inline functions must have a definition at this point.  */
   for (i = 0; i < deferred_fns_used; ++i)
     {
       tree decl = VARRAY_TREE (deferred_fns, i);
@@ -4304,7 +4304,7 @@ validate_nonmember_using_decl (tree decl, tree *scope, tree *name)
       return NULL_TREE;
     }
   *name = DECL_NAME (decl);
-  /* Make a USING_DECL. */
+  /* Make a USING_DECL.  */
   return push_using_decl (*scope, *name);
 }
 

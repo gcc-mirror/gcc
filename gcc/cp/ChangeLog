@@ -1,3 +1,19 @@
+2003-07-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c: Fix comment formatting.
+	* class.c: Likewise.
+	* cp-tree.h: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* error.c: Likewise.
+	* method.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* typeck.c: Likewise.
+
 2003-07-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11345

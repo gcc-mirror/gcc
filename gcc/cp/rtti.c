@@ -73,7 +73,7 @@ Boston, MA 02111-1307, USA.  */
 /* The IDENTIFIER_NODE naming the real class.  */
 #define TINFO_REAL_NAME(NODE) TREE_PURPOSE (NODE)
 
-/* A varray of all tinfo decls that haven't yet been emitted. */
+/* A varray of all tinfo decls that haven't yet been emitted.  */
 varray_type unemitted_tinfo_decls;
 
 static tree build_headof (tree);
@@ -373,7 +373,7 @@ get_tinfo_decl (tree type)
       /* Remember the type it is for.  */
       TREE_TYPE (name) = type;
 
-      /* Add decl to the global array of tinfo decls. */
+      /* Add decl to the global array of tinfo decls.  */
       my_friendly_assert (unemitted_tinfo_decls != 0, 20030312);
       VARRAY_PUSH_TREE (unemitted_tinfo_decls, d);
     }

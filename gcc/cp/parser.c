@@ -115,7 +115,7 @@ typedef struct cp_token_cache GTY (())
   cp_token_block *last;
 } cp_token_cache;
 
-/* Prototypes. */
+/* Prototypes.  */
 
 static cp_token_cache *cp_token_cache_new 
   (void);
@@ -1065,7 +1065,7 @@ typedef enum cp_parser_id_kind
 
 typedef enum cp_parser_declarator_kind
 {
-  /* We want an abstract declartor. */
+  /* We want an abstract declartor.  */
   CP_PARSER_DECLARATOR_ABSTRACT,
   /* We want a named declarator.  */
   CP_PARSER_DECLARATOR_NAMED,
@@ -1264,7 +1264,7 @@ typedef struct cp_parser GTY(())
      processing.
 
      These lists can only be processed once the outermost class being
-     defined is complete. */
+     defined is complete.  */
   tree unparsed_functions_queues;
 
   /* The number of classes whose definitions are currently in
@@ -2439,7 +2439,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  cp_parser_error (parser, "expected primary-expression");
 	  return error_mark_node;
 	}
-      /* Fall through. */
+      /* Fall through.  */
 
       /* An id-expression can start with either an identifier, a
 	 `::' as the beginning of a qualified-id, or the "operator"
@@ -2748,7 +2748,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		/* Const variables or static data members of integral
 		   or enumeration types initialized with constant
                    expressions (or dependent expressions - in this case
-                   the check will be done at instantiation time). */
+                   the check will be done at instantiation time).  */
 		&& !(TREE_CODE (decl) == VAR_DECL
 		     && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
 		     && DECL_INITIAL (decl)
@@ -4240,7 +4240,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
       cp_parser_require (parser, CPP_SCOPE, "`::'");
     }
   /* If the next token is not a `~', then there might be some
-     additional qualification. */
+     additional qualification.  */
   else if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMPL))
     {
       /* Look for the type-name.  */
@@ -4313,7 +4313,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	  {
 	    tree operand;
 	    
-	    /* Consume the `sizeof' token.   */
+	    /* Consume the `sizeof' token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the operand.  */
 	    operand = cp_parser_sizeof_operand (parser, keyword);
@@ -6465,7 +6465,7 @@ cp_parser_block_declaration (cp_parser *parser,
      init-declarator-list , init-declarator 
 
    If FUNCTION_DEFINITION_ALLOWED_P is TRUE, then we also recognize a
-   function-definition as a simple-declaration.   */
+   function-definition as a simple-declaration.  */
 
 static void
 cp_parser_simple_declaration (cp_parser* parser, 
@@ -8877,7 +8877,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
 	     Also, `new struct S' or `sizeof (struct S)' never results in the
 	     definition of a new type; a new type can only be declared in a
-	     declaration context.   */
+	     declaration context.  */
 
 	  type = xref_tag (tag_type, identifier, 
 			   /*attributes=*/NULL_TREE,
@@ -9634,7 +9634,7 @@ cp_parser_init_declarator (cp_parser* parser,
 
       /* If the entity being declared is a function, pretend that we
 	 are in its scope.  If it is a `friend', it may have access to
-	 things that would not otherwise be accessible. */
+	 things that would not otherwise be accessible.  */
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
 	  saved_current_function_decl = current_function_decl;
@@ -9987,7 +9987,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      
 	      goto handle_declarator;
 	    }
-	  /* Otherwise, we must be done. */
+	  /* Otherwise, we must be done.  */
 	  else
 	    break;
 	}
@@ -11179,7 +11179,7 @@ cp_parser_initializer_clause (cp_parser* parser)
 
    Returns a TREE_LIST.  The TREE_VALUE of each node is an expression
    for the initializer.  If the TREE_PURPOSE is non-NULL, it is the
-   IDENTIFIER_NODE naming the field to initialize.   */
+   IDENTIFIER_NODE naming the field to initialize.  */
 
 static tree
 cp_parser_initializer_list (cp_parser* parser)
@@ -11413,7 +11413,7 @@ cp_parser_class_specifier (cp_parser* parser)
   /* Start the class.  */
   type = begin_class_definition (type);
   if (type == error_mark_node)
-    /* If the type is erroneous, skip the entire body of the class. */
+    /* If the type is erroneous, skip the entire body of the class.  */
     cp_parser_skip_to_closing_brace (parser);
   else
     /* Parse the member-specification.  */
