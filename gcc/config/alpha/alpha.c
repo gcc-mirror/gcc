@@ -939,7 +939,26 @@ reg_no_subreg_operand (op, mode)
     return 0;
   return register_operand (op, mode);
 }
-
+
+/* Recognize a addition operation that includes a constant.  Used to
+   convince reload to canonize (plus (plus reg c1) c2) during register
+   elimination.  */
+
+int
+addition_operation (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return 0;
+  if (GET_CODE (op) == PLUS
+      && register_operand (XEXP (op, 0), mode)
+      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op, 1)), 'K'))
+    return 1;
+  return 0;
+}
+
 /* Return 1 if this function can directly return via $26.  */
 
 int
@@ -950,7 +969,7 @@ direct_return ()
 	  && current_function_outgoing_args_size == 0
 	  && current_function_pretend_args_size == 0);
 }
-
+
 /* REF is an alignable memory location.  Place an aligned SImode
    reference into *PALIGNED_MEM and the number of bits to shift into
    *PBITNUM.  SCRATCH is a free register for use in reloading out
@@ -1025,6 +1044,53 @@ get_unaligned_address (ref, extra_offset)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
   return plus_constant (base, offset + extra_offset);
+}
+
+/* Loading and storing HImode or QImode values to and from memory
+   usually requires a scratch register.  The exceptions are loading
+   QImode and HImode from an aligned address to a general register
+   unless byte instructions are permitted. 
+
+   We also cannot load an unaligned address or a paradoxical SUBREG
+   into an FP register. 
+
+   We also cannot do integral arithmetic into FP regs, as might result
+   from register elimination into a DImode fp register.  */
+
+enum reg_class
+secondary_reload_class (class, mode, x, in)
+     enum reg_class class;
+     enum machine_mode mode;
+     rtx x;
+     int in;
+{
+  if ((GET_CODE (x) == MEM
+       || (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+       || (GET_CODE (x) == SUBREG
+	   && (GET_CODE (SUBREG_REG (x)) == MEM
+	       || (GET_CODE (SUBREG_REG (x)) == REG
+		   && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER))))
+      && ((class == FLOAT_REGS
+	   && (mode == SImode || mode == HImode || mode == QImode))
+	  || ((mode == QImode || mode == HImode)
+	      && ! TARGET_BWX && ! aligned_memory_operand (x, mode))))
+    return GENERAL_REGS;
+
+  if (class == FLOAT_REGS)
+    {
+      if (GET_CODE (x) == MEM && GET_CODE (XEXP (x, 0)) == AND)
+	return GENERAL_REGS;
+
+      if (GET_CODE (x) == SUBREG
+	  && (GET_MODE_SIZE (GET_MODE (x))
+	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	return GENERAL_REGS;
+
+      if (in && INTEGRAL_MODE_P (mode) && ! general_operand (x, mode))
+	return GENERAL_REGS;
+    }
+
+  return NO_REGS;
 }
 
 /* Subfunction of the following function.  Update the flags of any MEM

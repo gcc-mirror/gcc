@@ -66,10 +66,13 @@ extern int any_memory_operand PROTO ((rtx, enum machine_mode));
 extern int reg_not_elim_operand PROTO ((rtx, enum machine_mode));
 extern int normal_memory_operand PROTO ((rtx, enum machine_mode));
 extern int reg_no_subreg_operand PROTO ((rtx, enum machine_mode));
+extern int addition_operation PROTO ((rtx, enum machine_mode));
 
 extern void get_aligned_mem PROTO ((rtx, rtx *, rtx *));
 extern rtx get_unaligned_address PROTO ((rtx, int));
-
+extern enum reg_class secondary_reload_class PROTO ((enum reg_class,
+						     enum machine_mode, 
+						     rtx, int));
 extern void alpha_set_memflags PROTO ((rtx, rtx));
 extern rtx alpha_emit_set_const PROTO ((rtx, enum machine_mode,
 					HOST_WIDE_INT, int));

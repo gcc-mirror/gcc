@@ -815,42 +815,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    We also cannot load an unaligned address or a paradoxical SUBREG into an
    FP register.   */
 
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN)			\
-(((GET_CODE (IN) == MEM 						\
-   || (GET_CODE (IN) == REG && REGNO (IN) >= FIRST_PSEUDO_REGISTER)	\
-   || (GET_CODE (IN) == SUBREG						\
-       && (GET_CODE (SUBREG_REG (IN)) == MEM				\
-	   || (GET_CODE (SUBREG_REG (IN)) == REG			\
-	       && REGNO (SUBREG_REG (IN)) >= FIRST_PSEUDO_REGISTER))))	\
-  && (((CLASS) == FLOAT_REGS						\
-       && ((MODE) == SImode || (MODE) == HImode || (MODE) == QImode))	\
-      || (((MODE) == QImode || (MODE) == HImode)			\
-	  && ! TARGET_BWX && ! aligned_memory_operand (IN, MODE))))	\
- ? GENERAL_REGS								\
- : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == MEM			\
-    && GET_CODE (XEXP (IN, 0)) == AND) ? GENERAL_REGS			\
- : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == SUBREG			\
-    && (GET_MODE_SIZE (GET_MODE (IN))					\
-	> GET_MODE_SIZE (GET_MODE (SUBREG_REG (IN))))) ? GENERAL_REGS	\
- : NO_REGS)
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN) \
+  secondary_reload_class((CLASS), (MODE), (IN), 1)
 
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,OUT)			\
-(((GET_CODE (OUT) == MEM 						\
-   || (GET_CODE (OUT) == REG && REGNO (OUT) >= FIRST_PSEUDO_REGISTER)	\
-   || (GET_CODE (OUT) == SUBREG						\
-       && (GET_CODE (SUBREG_REG (OUT)) == MEM				\
-	   || (GET_CODE (SUBREG_REG (OUT)) == REG			\
-	       && REGNO (SUBREG_REG (OUT)) >= FIRST_PSEUDO_REGISTER)))) \
-  && ((((MODE) == HImode || (MODE) == QImode)				\
-       && (! TARGET_BWX || (CLASS) == FLOAT_REGS))			\
-      || ((MODE) == SImode && (CLASS) == FLOAT_REGS)))			\
- ? GENERAL_REGS								\
- : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == MEM			\
-    && GET_CODE (XEXP (OUT, 0)) == AND) ? GENERAL_REGS			\
- : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == SUBREG			\
-    && (GET_MODE_SIZE (GET_MODE (OUT))					\
-	> GET_MODE_SIZE (GET_MODE (SUBREG_REG (OUT))))) ? GENERAL_REGS	\
- : NO_REGS)
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,OUT) \
+  secondary_reload_class((CLASS), (MODE), (OUT), 0)
 
 /* If we are copying between general and FP registers, we need a memory
    location unless the FIX extension is available.  */
@@ -2340,7 +2309,8 @@ do {									\
   {"any_memory_operand", {MEM}},					\
   {"hard_fp_register_operand", {SUBREG, REG}},				\
   {"reg_not_elim_operand", {SUBREG, REG}},				\
-  {"reg_no_subreg_operand", {REG}},
+  {"reg_no_subreg_operand", {REG}},					\
+  {"addition_operation", {PLUS}},
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \
