@@ -538,7 +538,7 @@ changequote(,)dnl
 gcc_version_trigger=${libgcj_basedir}/../gcc/version.c
 gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
-tool_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include
+tool_include_dir='$(libdir)/gcc/$(target_alias)/'${gcc_version}/include
 changequote([,])dnl
 AC_SUBST(tool_include_dir)
 AC_SUBST(gcc_version)
