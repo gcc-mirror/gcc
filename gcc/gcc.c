@@ -665,7 +665,8 @@ static const char *cpp_unique_options =
  %{nostdinc*} %{C} %{v} %{I*} %{P} %{$} %I\
  %{MD:-M -MF %W{!o: %b.d}%W{o*:%.d%*}}\
  %{MMD:-MM -MF %W{!o: %b.d}%W{o*:%.d%*}}\
- %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*} %{!E:%{M|MD|MM|MMD:%{o*:-MQ %*}}}\
+ %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
+ %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -674,7 +675,7 @@ static const char *cpp_unique_options =
  %{ffreestanding:-D__STDC_HOSTED__=0} %{fno-hosted:-D__STDC_HOSTED__=0}\
  %{!ffreestanding:%{!fno-hosted:-D__STDC_HOSTED__=1}} %{remap}\
  %{g3:-dD} %{H} %C %{D*&U*&A*} %{i*} %Z %i\
- %{E:%W{o*}}";
+ %{E|M|MM:%W{o*}}";
 
 /* This contains cpp options which are common with cc1_options and are passed
    only when preprocessing only to avoid duplication.  */
