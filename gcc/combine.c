@@ -4184,7 +4184,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	    			   > GET_MODE_SIZE (mode)
 				   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
 	    			   mode,
-				   XEXP (XEXP (XEXP (x, 0), 0), 0), mode);
+				   XEXP (XEXP (x, 0), 0), mode);
 
       /*  (float_truncate (float x)) is (float x)  */
       if (GET_CODE (XEXP (x, 0)) == FLOAT

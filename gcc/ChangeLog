@@ -1,3 +1,8 @@
+Tue Feb 11 19:03:22 MET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (combine_simplify_rtx): Fix folding of
+	nested float_truncates.
+
 2003-02-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): Fix a typo.
