@@ -95,17 +95,21 @@ mark_reference_fields (field, low, high, ubit,
   for (; field != NULL_TREE; field = TREE_CHAIN (field))
     {
       HOST_WIDE_INT offset;
+      HOST_WIDE_INT size_bytes;
 
       if (FIELD_STATIC (field))
 	continue;
 
       offset = int_byte_position (field);
+      size_bytes = int_size_in_bytes (TREE_TYPE (field));
       if (JREFERENCE_TYPE_P (TREE_TYPE (field))
 	  /* An `object' of type gnu.gcj.RawData is actually non-Java
 	     data.  */
 	  && TREE_TYPE (field) != rawdata_ptr_type_node)
 	{
 	  unsigned int count;
+	  unsigned int size_words;
+	  unsigned int i;
 
 	  /* If this reference slot appears to overlay a slot we think
 	     we already covered, then we are doomed.  */
@@ -113,11 +117,19 @@ mark_reference_fields (field, low, high, ubit,
 	    abort ();
 
 	  count = offset * BITS_PER_UNIT / POINTER_SIZE;
+	  size_words = size_bytes * BITS_PER_UNIT / POINTER_SIZE;
 
 	  *last_set_index = count;
-	  /* First word in object corresponds to most significant byte
-	     of bitmap.  */
-	  set_bit (low, high, ubit - count - 1);
+	     
+	  /* First word in object corresponds to most significant byte of 
+	     bitmap. 
+	     
+	     In the case of a multiple-word record, we set pointer 
+	     bits for all words in the record. This is conservative, but the 
+	     size_words != 1 case is impossible in regular java code. */
+	  for (i = 0; i < size_words; ++i)
+	    set_bit (low, high, ubit - count - i - 1);
+
 	  if (count > ubit - 2)
 	    *pointer_after_end = 1;
 
@@ -172,6 +184,9 @@ get_boehm_type_descriptor (tree type)
 
   /* Warning avoidance.  */
   ubit = (unsigned int) bit;
+
+  if (type == class_type_node)
+    return PROCEDURE_OBJECT_DESCRIPTOR;
 
   field = TYPE_FIELDS (type);
   mark_reference_fields (field, &low, &high, ubit,
