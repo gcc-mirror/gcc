@@ -1352,7 +1352,7 @@ bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean b
 	echo "$$msg"; \
 	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
 	@echo "Building runtime libraries"; \
-	$(MAKE) all
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all
 
 .PHONY: cross
 cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
