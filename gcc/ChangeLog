@@ -1,3 +1,17 @@
+2003-03-18  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (MASK_PROFILE_KERNEL): Define.
+	(TARGET_PROFILE_KERNEL): Define.
+	(SUBTARGET_SWITCHES): Handle -mprofile-kernel.
+	(PROFILE_BEFORE_PROLOGUE): Don't define.
+	(PROFILE_KERNEL): Remove hacks.
+	* config/rs6000/rs6000.c (TARGET_PROFILE_KERNEL): Define default.
+	(rs6000_stack_info): No need to save lr if just for profiling when
+	TARGET_KERNEL_PROFILE.
+	(output_profile_hook): Output nothing when TARGET_KERNEL_PROFILE.
+	(output_function_profiler): Localize label generation.  Emit code
+	for kernel profiling.
+
 2003-03-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
