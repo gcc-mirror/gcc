@@ -2247,13 +2247,14 @@ write_header ()
    returns a nonnegative number which is the insn code number for the\n\
    pattern that matched.  This is the same as the order in the machine\n\
    description of the entry that matched.  This number can be used as an\n\
-   index into `insn_data' and other tables.\n\
-\n\
+   index into `insn_data' and other tables.\n");
+  puts ("\
    The third argument to recog is an optional pointer to an int.  If\n\
    present, recog will accept a pattern if it matches except for missing\n\
    CLOBBER expressions at the end.  In that case, the value pointed to by\n\
    the optional pointer will be set to the number of CLOBBERs that need\n\
-   to be added (it should be initialized to zero by the caller).  If it\n\
+   to be added (it should be initialized to zero by the caller).  If it");
+  puts ("\
    is set nonzero, the caller should allocate a PARALLEL of the\n\
    appropriate size, copy the initial entries, and call add_clobbers\n\
    (found in insn-emit.c) to fill in the CLOBBERs.\n\
