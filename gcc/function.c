@@ -2645,7 +2645,9 @@ optimize_bit_field (body, insn, equiv_mem)
 	      while (GET_CODE (dest) == SUBREG
 		     && SUBREG_WORD (dest) == 0
 		     && (GET_MODE_CLASS (GET_MODE (dest))
-			 == GET_MODE_CLASS (GET_MODE (SUBREG_REG (dest)))))
+			 == GET_MODE_CLASS (GET_MODE (SUBREG_REG (dest))))
+		     && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
+			 <= UNITS_PER_WORD))
 		dest = SUBREG_REG (dest);
 
 	      validate_change (insn, &SET_DEST (body), dest, 1);
