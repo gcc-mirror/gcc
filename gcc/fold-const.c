@@ -4825,7 +4825,7 @@ fold_single_bit_test (code, arg0, arg1, result_type)
       if (arg00 != NULL_TREE)
 	{
 	  tree stype = (*lang_hooks.types.signed_type) (TREE_TYPE (arg00));
-	  return fold (build (code == EQ_EXPR ? GE_EXPR : LT_EXPR, type,
+	  return fold (build (code == EQ_EXPR ? GE_EXPR : LT_EXPR, result_type,
 			      convert (stype, arg00),
 			      convert (stype, integer_zero_node)));
 	}

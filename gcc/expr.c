@@ -9998,9 +9998,12 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
   if ((code == NE || code == EQ)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
       && integer_pow2p (TREE_OPERAND (arg0, 1)))
-    return expand_expr (fold_single_bit_test (code == NE ? NE_EXPR : EQ_EXPR,
-					      arg0, arg1, type), 
-			target, VOIDmode, EXPAND_NORMAL);
+    {
+      tree type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
+      return expand_expr (fold_single_bit_test (code == NE ? NE_EXPR : EQ_EXPR,
+						arg0, arg1, type), 
+			  target, VOIDmode, EXPAND_NORMAL);
+    }
 
   /* Now see if we are likely to be able to do this.  Return if not.  */
   if (! can_compare_p (code, operand_mode, ccp_store_flag))
