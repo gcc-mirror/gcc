@@ -2481,16 +2481,22 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	if (GET_CODE (body) == ASM_INPUT)
 	  {
+	    const char *string = XSTR (body, 0);
+
 	    /* There's no telling what that did to the condition codes.  */
 	    CC_STATUS_INIT;
 	    if (prescan > 0)
 	      break;
-	    if (! app_on)
+
+	    if (string[0])
 	      {
-		fputs (ASM_APP_ON, file);
-		app_on = 1;
+		if (! app_on)
+		  {
+		    fputs (ASM_APP_ON, file);
+		    app_on = 1;
+		  }
+		fprintf (asm_out_file, "\t%s\n", string);
 	      }
-	    fprintf (asm_out_file, "\t%s\n", XSTR (body, 0));
 	    break;
 	  }
 
@@ -2506,12 +2512,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    if (prescan > 0)
 	      break;
 
-	    if (! app_on)
-	      {
-		fputs (ASM_APP_ON, file);
-		app_on = 1;
-	      }
-
 	    /* Get out the operand values.  */
 	    string = decode_asm_operands (body, ops, NULL, NULL, NULL);
 	    /* Inhibit aborts on what would otherwise be compiler bugs.  */
@@ -2519,7 +2519,16 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    this_is_asm_operands = insn;
 
 	    /* Output the insn using them.  */
-	    output_asm_insn (string, ops);
+	    if (string[0])
+	      {
+		if (! app_on)
+		  {
+		    fputs (ASM_APP_ON, file);
+		    app_on = 1;
+		  }
+	        output_asm_insn (string, ops);
+	      }
+
 	    this_is_asm_operands = 0;
 	    break;
 	  }
