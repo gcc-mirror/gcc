@@ -1,3 +1,11 @@
+2003-08-29  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/natInetAddressWin32.cc,
+	java/net/natNetworkInterfaceWin32.cc,
+	java/net/natPlainDatagramSocketImplWin32.cc,
+	java/net/natPlainSocketImplWin32.cc:
+	Removed code enclosed in DISABLE_JAVA_NET defines.
+
 2003-08-26  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* Makefile.am: (write_entries_to_file) New parameterized
