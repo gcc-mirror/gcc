@@ -1,3 +1,12 @@
+2003-01-14  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	PR objc/7993
+        * objc-act.c (is_private): Do not emit the 'instance variable %s
+        is declared private' error.
+        (is_public): Emit the error after calling is_private.
+        (lookup_objc_ivar): If the instance variable is private, return 0
+        - the instance variable is invisible here.
+       
 2004-01-12  Marc Espie <espie@openbsd.org>
 
 	* system.h: handle YYBYACC like YYBISON.

@@ -5848,11 +5848,7 @@ is_private (decl)
 {
   if (TREE_PRIVATE (decl)
       && ! is_ivar (CLASS_IVARS (implementation_template), DECL_NAME (decl)))
-    {
-      error ("instance variable `%s' is declared private",
-	     IDENTIFIER_POINTER (DECL_NAME (decl)));
-      return 1;
-    }
+    return 1;
   else
     return 0;
 }
@@ -5894,7 +5890,14 @@ is_public (expr, identifier)
 			   == CATEGORY_IMPLEMENTATION_TYPE))
 		      && (CLASS_NAME (objc_implementation_context)
 			  == TYPE_NAME (basetype))))
-		return ! is_private (decl);
+                {
+                  int private = is_private (decl);
+                  if (private)
+                    error ("instance variable '%s' si declared private",
+                           IDENTIFIER_POINTER (DECL_NAME (decl)));
+
+                  return !private;
+                }
 
 	      error ("instance variable `%s' is declared %s",
 		     IDENTIFIER_POINTER (identifier),
@@ -8524,7 +8527,7 @@ lookup_objc_ivar (id)
   else if (objc_method_context && (decl = is_ivar (objc_ivar_chain, id)))
     {
       if (is_private (decl))
-	return error_mark_node;
+	return 0;
       else
         return build_ivar_reference (id);
     }
