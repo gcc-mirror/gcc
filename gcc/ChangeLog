@@ -1,3 +1,8 @@
+2001-10-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_legitimate_pic_operand): Kludge around
+	missing CONSTANT_P test in core GCC.
+
 2001-10-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmain.c (struct printer): New member source.
