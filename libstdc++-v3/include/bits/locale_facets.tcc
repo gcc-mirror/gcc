@@ -42,7 +42,6 @@
 #include <cctype>    // For isspace
 #include <limits>    // For numeric_limits
 #include <bits/streambuf_iterator.h>
-#include <vector>	
 #include <typeinfo>  // For bad_cast.
 
 namespace std
@@ -72,9 +71,9 @@ namespace std
     use_facet(const locale& __loc)
     {
       size_t __i = _Facet::id._M_index;
-      locale::_Impl::__vec_facet* __facet = __loc._M_impl->_M_facets;
-      const locale::facet* __fp = (*__facet)[__i]; 
-      if (__fp == 0 || __i >= __facet->size())
+      locale::_Impl::__vec_facet& __facet = __loc._M_impl->_M_facets;
+      const locale::facet* __fp = __facet[__i]; 
+      if (__fp == 0 || __i >= __facet.size())
         __throw_bad_cast();
       return static_cast<const _Facet&>(*__fp);
     }
@@ -84,8 +83,8 @@ namespace std
     has_facet(const locale& __loc) throw()
     {
       size_t __i = _Facet::id._M_index;
-      locale::_Impl::__vec_facet* __facet = __loc._M_impl->_M_facets;
-      return (__i < __facet->size() && (*__facet)[__i] != 0);
+      locale::_Impl::__vec_facet& __facet = __loc._M_impl->_M_facets;
+      return (__i < __facet.size() && __facet[__i] != 0);
     }
 
 

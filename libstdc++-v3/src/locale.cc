@@ -500,7 +500,7 @@ namespace std
     {
       size_t __i = ctype<char>::id._M_index;
       const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<char>&>(* (*(__tmp->_M_facets))[__i]);
+      return static_cast<const ctype<char>&>(*(__tmp->_M_facets[__i]));
     }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
@@ -510,7 +510,7 @@ namespace std
     {
       size_t __i = ctype<wchar_t>::id._M_index;
       const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<wchar_t>&>(* (*(__tmp->_M_facets))[__i]);
+      return static_cast<const ctype<wchar_t>&>(*(__tmp->_M_facets[__i]));
     }
 #endif
 

@@ -36,31 +36,25 @@ namespace std
   locale::_Impl::
   ~_Impl() throw()
   {
-    __vec_facet::iterator it = _M_facets->begin();
-    for (; it != _M_facets->end(); ++it)
-      if (*it)
-	(*it)->_M_remove_reference();
-    delete _M_facets;
+    __vec_facet::iterator __it = _M_facets.begin();
+    __vec_facet::iterator __end = _M_facets.end();
+    for (; __it != __end; ++__it)
+      if (*__it)
+	(*__it)->_M_remove_reference();
   }
 
   // Clone existing _Impl object.
   locale::_Impl::
   _Impl(const _Impl& __imp, size_t __refs)
-  : _M_references(__refs), _M_facets(0) // XXX
+  : _M_references(__refs) // XXX
   {
-    try
-      {  _M_facets = new __vec_facet(*(__imp._M_facets)); }
-    catch(...) 
-      {
-	delete _M_facets;
-	__throw_exception_again;
-      }
+    _M_facets = __imp._M_facets;
+    for (size_t __i = 0; __i < _S_num_categories; ++__i)
+      _M_names[__i] = __imp._M_names[__i];
 
-    for (size_t i = 0; i < _S_num_categories; ++i)
-      _M_names[i] = __imp._M_names[i];
-
-    __vec_facet::iterator __it = _M_facets->begin();
-    for (; __it != _M_facets->end(); ++__it)
+    __vec_facet::iterator __it = _M_facets.begin();
+    __vec_facet::iterator __end = _M_facets.end();
+    for (; __it != __end; ++__it)
       if (*__it)
 	(*__it)->_M_add_reference();
   }
@@ -68,7 +62,7 @@ namespace std
   // Construct named _Impl, including the standard "C" locale.
   locale::_Impl::
   _Impl(string __str, size_t __refs)
-  : _M_references(__refs), _M_facets(0)
+  : _M_references(__refs)
   {
     // Initialize the underlying locale model, which also checks to
     // see if the given name is valid.
@@ -81,14 +75,7 @@ namespace std
     if (__str != "C" && __str != "POSIX")
       __cloc_c = __cloc;
 
-    // Allocate facet container.
-    try
-      {  _M_facets = new __vec_facet(_S_num_facets, NULL); }
-    catch(...) 
-      {
-	delete _M_facets;
-	__throw_exception_again;
-      }
+    _M_facets = __vec_facet(_S_num_facets, NULL);
 
     // Name all the categories.
     for (size_t i = 0; i < _S_num_categories; ++i)
@@ -162,12 +149,11 @@ namespace std
   _M_replace_facet(const _Impl* __imp, const locale::id* __idp)
   {
     size_t __index = __idp->_M_index;
-    if (__index == 0 
-	|| __imp->_M_facets->size() <= __index 
-	|| (*(__imp->_M_facets))[__index] == 0)
+    if (__index == 0 || __imp->_M_facets.size() <= __index 
+	|| __imp->_M_facets[__index] == 0)
       __throw_runtime_error("no locale facet");
 	
-    _M_install_facet(__idp, (*(__imp->_M_facets))[__index]); 
+    _M_install_facet(__idp, __imp->_M_facets[__index]); 
   }
 
   void
@@ -180,14 +166,13 @@ namespace std
 	if (!__index)
 	  __index = 1 + __exchange_and_add(&locale::id::_S_highwater, 1);
 	
-	if (__index >= _M_facets->size())
-	  _M_facets->resize(__index + 1, 0);  // might throw
+	if (__index >= _M_facets.size())
+	  _M_facets.resize(__index + 1, 0);  // might throw
 
-	facet*& __fpr = (*_M_facets)[__index];
+	facet*& __fpr = _M_facets[__index];
 	if (__fpr)
 	  {
-	    // Replacing an existing facet.
-	    // Order matters, here:
+	    // Replacing an existing facet. Order matters.
 	    __fp->_M_add_reference();
 	    __fpr->_M_remove_reference();
 	    __fpr = __fp;
@@ -197,7 +182,7 @@ namespace std
 	    // Installing a newly created facet into an empty
 	    // _M_facets container, say a newly-constructed,
 	    // swanky-fresh _Impl.
-	    (*_M_facets)[__index] = __fp;
+	    _M_facets[__index] = __fp;
 	  }
       }
   }
