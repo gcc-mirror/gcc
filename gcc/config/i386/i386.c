@@ -546,7 +546,7 @@ rtx ix86_compare_op1 = NULL_RTX;
 
 /* The encoding characters for the four TLS models present in ELF.  */
 
-static char const tls_model_chars[] = "GLil";
+static char const tls_model_chars[] = " GLil";
 
 #define MAX_386_STACK_LOCALS 3
 /* Size of the register save area.  */
@@ -3007,7 +3007,7 @@ tls_symbolic_operand (op, mode)
 
   if (symbol_str[0] != '%')
     return 0;
-  return strchr (tls_model_chars, symbol_str[1]) - tls_model_chars + 1;
+  return strchr (tls_model_chars, symbol_str[1]) - tls_model_chars;
 }
 
 static int
@@ -5490,13 +5490,12 @@ legitimize_address (x, oldx, mode)
       debug_rtx (x);
     }
 
-  /* Note that tls_symbolic_operand return is biased by 1 to return true.  */
   log = tls_symbolic_operand (x, mode);
   if (log)
     {
       rtx dest, base, off, pic;
 
-      switch (log - 1)
+      switch (log)
         {
         case TLS_MODEL_GLOBAL_DYNAMIC:
 	  dest = gen_reg_rtx (Pmode);

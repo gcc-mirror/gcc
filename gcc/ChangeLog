@@ -1,3 +1,11 @@
+2002-05-24  Richard Henderson  <rth@redhat.com>
+
+	* flags.h (TLS_MODEL_GLOBAL_DYNAMIC): Set to 1.
+	* toplev.c (flag_tls_default) Set to TLS_MODEL_GLOBAL_DYNAMIC.
+	* config/i386/i386.c (tls_model_chars): Add leading space.
+	(tls_symbolic_operand): Don't bias by 1.
+	(legitimize_address): Don't unbias by 1.
+
 2002-05-24  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
 	* lcm.c (optimize_mode_switching): Change bb used as indices
