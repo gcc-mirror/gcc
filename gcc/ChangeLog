@@ -1,5 +1,8 @@
 Tue Nov  4 12:30:28 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* dwarf2out.c (expand_builtin_dwarf_reg_size): New variable mode.
+	Convert CCmode to word_mode before calling GET_MODE_SIZE.
+
 	* acconfig.h (HAVE_INTTYPES_H): Undef.
 	* configure.in (inttypes.h): Check for conflicts between sys/types.h
 	and inttypes.h, and verify that intmax_t is defined.

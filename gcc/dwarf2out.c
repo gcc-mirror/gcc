@@ -520,6 +520,7 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
      tree reg_tree;
      rtx target;
 {
+  enum machine_mode mode;
   int size;
   struct reg_size_range ranges[5];
   tree t, t2;
@@ -535,7 +536,15 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
       if (DWARF_FRAME_REGNUM (i) == DWARF_FRAME_RETURN_COLUMN)
 	continue;
 
-      size = GET_MODE_SIZE (reg_raw_mode[i]);
+      mode = reg_raw_mode[i];
+      /* CCmode is arbitrarily given a size of 4 bytes.  It is more useful
+	 to use the same size as word_mode, since that reduces the number
+	 of ranges we need.  It should not matter, since the result should
+	 never be used for a condition code register anyways.  */
+      if (mode == CCmode)
+	mode = word_mode;
+      size = GET_MODE_SIZE (mode);
+
       if (size != last_size)
 	{
 	  ranges[n_ranges].beg = i;
