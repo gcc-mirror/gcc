@@ -1,5 +1,12 @@
 2004-07-05  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* gnu/gcj/runtime/VMClassLoader.java (init): Check classpath entry
+	before passing to URL constructor. Rethrow any MalformedURLException
+	as a RuntimeException. Catch MalformedURLException specifically, not
+	all exceptions.
+	
+2004-07-05  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* java/util/Locale.java (readObject): Intern strings read from object
 	stream.
 
