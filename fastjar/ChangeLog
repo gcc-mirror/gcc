@@ -1,3 +1,13 @@
+2005-03-28  Marcin Dalecki  <martin@dalecki.de>
+
+	* jartool.c (main): Indentation fixlet.
+	(add_entry): Likewise.
+	(init_args): Don't use K&R style.
+	(jt_strdup): Likewise.
+	(get_next_arg): Add explicit '(void)'.
+	(init_headers): Likewise.
+	(version): Likewise.
+
 2005-03-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.am (fastjar_TEXINFOS): Add gcc-vers.texi.
