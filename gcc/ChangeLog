@@ -1,3 +1,15 @@
+2002-06-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	h8300_shift_needs_scratch_p.
+	* config/h8300/h8300.c (h8300_shift_needs_scratch_p): New.
+	* config/h8300/h8300.h (OK_FOR_R): New.
+	(OK_FOR_S): Likewise.
+	(OK_FOR_T): Likewise.
+	(EXTRA_CONSTRAINT): Call OK_FOR_R, OK_FOR_S, and OK_FOR_T.
+	* config/h8300/h8300.md (anonymous shift patterns): Use
+	constraints R, S, and T.
+
 Sat Jun  1 11:23:22 CEST 2002  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* basic-block.h (struct basic_block_def): New field loop_father.
