@@ -192,7 +192,7 @@ output_call (insn, address, argcount)
 
   /* If there are args, point AP to them. */
   if (set_ap)
-    output_asm_insn ("mov sp,ap");
+    output_asm_insn ("mov sp,ap", 0);
 
   /* If we are passing an arg count, convert it to words and push it. */
   if (TARGET_ARGCOUNT)
@@ -207,7 +207,7 @@ output_call (insn, address, argcount)
   /* If we clobbered AP, reload it if it is live. */
   if (set_ap)
     if (ap_reload_needed (insn))
-      output_asm_insn ("ld.w 12(fp),ap");
+      output_asm_insn ("ld.w 12(fp),ap", 0);
 
   /* If we pushed an arg count, pop it and the args. */
   if (TARGET_ARGCOUNT)
