@@ -133,7 +133,7 @@ extern int target_flags;
 /* this section is borrowed from the vax version since the */
 /* formats are the same in both of the architectures	   */
 
-#define CHECK_FLOAT_VALUE(MODE, D, OVEFLOW) \
+#define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
   if (OVERFLOW)								\
     (D) = 1.7014117331926443e+38;					\
   else if ((MODE) == SFmode)						\
