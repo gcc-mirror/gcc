@@ -738,8 +738,8 @@ install: installdirs install-host install-target
 
 .PHONY: install-host-nogcc
 install-host-nogcc: [+
-  FOR host_modules +] \
-    maybe-install-[+module+][+
+  FOR host_modules +][+ IF (not (= (get "module") "gcc")) +] \
+    maybe-install-[+module+][+ ENDIF +][+
   ENDFOR host_modules +]
 
 .PHONY: install-host
@@ -1196,7 +1196,7 @@ ENDIF raw_cxx +]
 
 GCC_STRAP_TARGETS = bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean bootstrap4 bootstrap4-lean bubblestrap quickstrap cleanstrap restrap
 .PHONY: $(GCC_STRAP_TARGETS)
-$(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
+$(GCC_STRAP_TARGETS): all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -1229,7 +1229,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	echo "Building runtime libraries"; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
-profiledbootstrap: all-bootstrap configure-gcc
+profiledbootstrap: all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -1363,7 +1363,7 @@ objext = .o
 # Real targets act phony if they depend on phony targets; this hack
 # prevents gratuitous rebuilding of stage 1.
 prebootstrap:
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-bootstrap
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-prebootstrap
 	$(STAMP) prebootstrap
 
 # Flags to pass to stage2 and later makes.
@@ -1534,7 +1534,7 @@ stagefeedback-start::
 	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../gcc/&",' | $(SHELL); } && \
 	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../gcc/&",' | $(SHELL); }
 
-profiledbootstrap: all-bootstrap configure-gcc
+profiledbootstrap: all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -1559,127 +1559,128 @@ profiledbootstrap: all-bootstrap configure-gcc
 # Dependencies between different modules
 # --------------------------------------
 
+# Generic dependencies for target modules on host stuff, especially gcc
+[+ FOR target_modules +]
+configure-target-[+module+]: maybe-all-gcc
+[+ ENDFOR target_modules +]
+
+[+ FOR lang_env_dependencies +]
+configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
+[+ IF cxx +]configure-target-[+module+]: maybe-all-target-libstdc++-v3
+[+ ENDIF cxx +][+ ENDFOR lang_env_dependencies +]
+
 # There are two types of dependencies here: 'hard' dependencies, where one
 # module simply won't build without the other; and 'soft' dependencies, where
 # if the depended-on module is missing, the depending module will do without
 # or find a substitute somewhere (perhaps installed).  Soft dependencies
-# are specified by depending on a 'maybe-' target.  If you're not sure,
+# are made here to depend on a 'maybe-' target.  If you're not sure,
 # it's safer to use a soft dependency.
 
-# Build modules
-all-build-bison: maybe-all-build-texinfo
-all-build-flex: maybe-all-build-texinfo
-all-build-libiberty: maybe-all-build-texinfo
-all-build-m4: maybe-all-build-libiberty maybe-all-build-texinfo
+[+ ;; These Scheme functions build the bulk of the dependencies.
+   ;; dep-target builds a string like "maybe-all-MODULE_KIND-gcc",
+   ;; where "maybe-" is only included if HARD is true, and all-gcc
+   ;; is taken from VAR-NAME.
+   (define dep-target (lambda (module-kind var-name hard)
+      (string-append
+         (if hard "" "maybe-")
+         (dep-subtarget var-name)
+         module-kind
+         (dep-module var-name)
+      )))
 
-# Host modules specific to gcc.
-# GCC needs to identify certain tools.
-# GCC also needs the information exported by the intl configure script.
-configure-gcc: maybe-configure-intl maybe-configure-binutils maybe-configure-gas maybe-configure-ld maybe-configure-bison maybe-configure-flex
-all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-texinfo maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee maybe-all-libcpp
-configure-libcpp: maybe-configure-libiberty maybe-configure-intl
-all-libcpp: maybe-all-libiberty maybe-all-intl
-# This is a slightly kludgy method of getting dependencies on 
-# all-build-libiberty correct; it would be better to build it every time.
-all-gcc: maybe-all-build-libiberty
-all-bootstrap: [+ FOR host_modules +][+ IF bootstrap +]maybe-all-[+module+] [+ ENDIF bootstrap +][+ ENDFOR host_modules +]
+   ;; make-dep builds a dependency from the MODULE and ON AutoGen vars.
+   (define make-dep (lambda (module-kind)
+      (string-append
+         (dep-target module-kind "module" #t) ": "
+         (dep-target module-kind "on" (exist? "hard")))))
 
-# Host modules specific to gdb.
-# GDB needs to know that the simulator is being built.
-configure-gdb: maybe-configure-itcl maybe-configure-tcl maybe-configure-tk maybe-configure-sim
+   ;; dep-subtarget extracts everything up to the first dash in the given
+   ;; AutoGen variable, for example it extracts "all-" out of "all-gcc".
+   (define dep-subtarget (lambda (var-name)
+      (substring (get var-name) 0 (+ 1 (string-index (get var-name) #\-)))))
+
+   ;; dep-module extracts everything up to the first dash in the given
+   ;; AutoGen variable, for example it extracts "gcc" out of "all-gcc".
+   (define dep-module (lambda (var-name)
+      (substring (get var-name) (+ 1 (string-index (get var-name) #\-)))))
+
+   ;; dep-stage builds a string for the prefix of a bootstrap stage.
+   (define dep-stage (lambda ()
+      (string-append
+	 "stage"
+	 (get "id")
+	 "-")))
+
+   ;; dep-maybe is the same as the AutoGen expression "- hard 'maybe-'"
+   ;; but is written in Scheme.
+   (define dep-maybe (lambda ()
+      (if (exist? "hard") "" "maybe-")))
+
+   ;; dep-kind returns "normal" is the dependency is on an "install" target,
+   ;; or if the LHS module is not bootstrapped.  It returns "bootstrap" for
+   ;; configure or build dependencies between bootstrapped modules; it returns
+   ;; "prebootstrap" for configure or build dependencies of bootstrapped
+   ;; modules on a non-bootstrapped modules (e.g. gcc on bison).  All this
+   ;; is only necessary for host modules.
+   (define dep-kind (lambda ()
+      (if (or (= (dep-subtarget "on") "install-")
+	      (=* (dep-module "on") "build-")
+	      (=* (dep-module "on") "target-"))
+          "normal"
+
+          (if (hash-ref boot-modules (dep-module "module"))
+              (if (hash-ref boot-modules (dep-module "on"))
+	          "bootstrap"
+	          "prebootstrap")
+	      "normal"))))
+
+   ;; We now build the hash table that is used by dep-kind.
+   (define boot-modules (make-hash-table 113))
+   (define preboot-modules (make-hash-table 37))
++]
+
+[+ FOR host_modules +][+
+   (if (exist? "bootstrap")
+       (hash-create-handle! boot-modules (get "module") #t))
+   "" +][+ ENDFOR host_modules +]
+
+# With all the machinery above in place, it is pretty easy to generate
+# dependencies.  Host dependencies are a bit more complex because we have
+# to check for bootstrap/prebootstrap dependencies.  To resolve
+# prebootstrap dependencies, prebootstrap modules are gathered in
+# a hash table.
+[+ FOR dependencies +][+ (make-dep "") +]
+[+ CASE (dep-kind) +][+
+   == "prebootstrap"
+     +][+ (hash-create-handle! preboot-modules (dep-module "on") #t) "" +][+
+   == "bootstrap"
+     +][+ FOR bootstrap_stage +]
+[+ (make-dep (dep-stage)) +][+
+       ENDFOR bootstrap_stage +]
+[+ ESAC +][+
+ENDFOR dependencies +]
+
+# Now build the prebootstrap dependencies.
+[+ FOR host_modules +][+
+   IF (hash-ref preboot-modules (get "module")) +]
+all-prebootstrap: maybe-all-[+module+][+
+   ENDIF +][+
+ENDFOR host_modules +]
+
+# Unless toplevel bootstrap is going, bootstrapped packages are actually
+# prebootstrapped, with the exception of gcc.  Another wart that will go
+# away with toplevel bootstrap.
+@if gcc-no-bootstrap
+[+ FOR host_modules +][+
+   IF (and (not (= (get "module") "gcc"))
+	   (hash-ref boot-modules (get "module"))) +]
+all-prebootstrap: maybe-all-[+module+][+
+   ENDIF +][+
+ENDFOR host_modules +]
+@endif gcc-no-bootstrap
+
 GDB_TK = @GDB_TK@
-all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-mmalloc maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
-install-gdb: maybe-install-tcl maybe-install-tk maybe-install-itcl maybe-install-tix maybe-install-libgui
-configure-libgui: maybe-configure-tcl maybe-configure-tk
-all-libgui: maybe-all-tcl maybe-all-tk maybe-all-itcl
-
-# Host modules specific to binutils.
-configure-bfd: configure-libiberty
-all-bfd: maybe-all-libiberty maybe-all-intl
-all-binutils: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-flex maybe-all-bison maybe-all-byacc maybe-all-intl
-# We put install-opcodes before install-binutils because the installed
-# binutils might be on PATH, and they might need the shared opcodes
-# library.
-install-binutils: maybe-install-opcodes
-# libopcodes depends on libbfd
-install-opcodes: maybe-install-bfd
-all-gas: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-intl
-all-gprof: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-intl
-all-ld: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-intl
-all-opcodes: maybe-all-bfd maybe-all-libiberty
-
-# Other host modules in the 'src' repository.
-all-dejagnu: maybe-all-tcl maybe-all-expect maybe-all-tk
-configure-expect: maybe-configure-tcl maybe-configure-tk
-all-expect: maybe-all-tcl maybe-all-tk
-configure-itcl: maybe-configure-tcl maybe-configure-tk
-all-itcl: maybe-all-tcl maybe-all-tk
-# We put install-tcl before install-itcl because itcl wants to run a
-# program on installation which uses the Tcl libraries.
-install-itcl: maybe-install-tcl
-all-sid: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-tcl maybe-all-tk
-install-sid: maybe-install-tcl maybe-install-tk
-all-sim: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-readline maybe-configure-gdb
-configure-tk: maybe-configure-tcl
-all-tk: maybe-all-tcl
-configure-tix: maybe-configure-tcl maybe-configure-tk
-all-tix: maybe-all-tcl maybe-all-tk
-all-texinfo: maybe-all-libiberty
-
-# Other host modules.  Warning, these are not well tested.
-all-autoconf: maybe-all-m4 maybe-all-texinfo
-all-automake: maybe-all-m4 maybe-all-texinfo
-all-bison: maybe-all-texinfo
-all-diff: maybe-all-libiberty
-all-fastjar: maybe-all-zlib maybe-all-libiberty
-all-fileutils: maybe-all-libiberty
-all-flex: maybe-all-libiberty maybe-all-bison maybe-all-byacc
-all-gzip: maybe-all-libiberty
-all-hello: maybe-all-libiberty
-all-m4: maybe-all-libiberty maybe-all-texinfo
-all-make: maybe-all-libiberty maybe-all-intl
-all-patch: maybe-all-libiberty
-all-prms: maybe-all-libiberty
-all-recode: maybe-all-libiberty
-all-sed: maybe-all-libiberty
-all-send-pr: maybe-all-prms
-all-tar: maybe-all-libiberty
-all-uudecode: maybe-all-libiberty
-
-ALL_GCC = maybe-all-gcc
-ALL_GCC_C = $(ALL_GCC) maybe-all-target-newlib maybe-all-target-libgloss
-ALL_GCC_CXX = $(ALL_GCC_C) maybe-all-target-libstdc++-v3
-
-# Target modules specific to gcc.
-configure-target-boehm-gc: $(ALL_GCC_C) maybe-configure-target-qthreads
-configure-target-fastjar: maybe-configure-target-zlib
-all-target-fastjar: maybe-all-target-zlib maybe-all-target-libiberty
-configure-target-libada: $(ALL_GCC_C)
-configure-target-libgfortran: $(ALL_GCC_C)
-configure-target-libffi: $(ALL_GCC_C) 
-configure-target-libjava: $(ALL_GCC_C) maybe-configure-target-zlib maybe-configure-target-boehm-gc maybe-configure-target-qthreads maybe-configure-target-libffi
-all-target-libjava: maybe-all-fastjar maybe-all-target-zlib maybe-all-target-boehm-gc maybe-all-target-qthreads maybe-all-target-libffi
-configure-target-libobjc: $(ALL_GCC_C)
-all-target-libobjc: maybe-all-target-libiberty
-configure-target-libstdc++-v3: $(ALL_GCC_C)
-all-target-libstdc++-v3: maybe-all-target-libiberty
-configure-target-zlib: $(ALL_GCC_C)
-
-# Target modules in the 'src' repository.
-configure-target-examples: $(ALL_GCC_C)
-configure-target-libgloss: $(ALL_GCC)
-all-target-libgloss: maybe-configure-target-newlib
-configure-target-libiberty: $(ALL_GCC)
-configure-target-libtermcap: $(ALL_GCC_C)
-configure-target-newlib: $(ALL_GCC)
-configure-target-rda: $(ALL_GCC_C)
-configure-target-winsup: $(ALL_GCC_C)
-all-target-winsup: maybe-all-target-libiberty maybe-all-target-libtermcap
-
-# Other target modules.  Warning, these are not well tested.
-configure-target-gperf: $(ALL_GCC_CXX)
-all-target-gperf: maybe-all-target-libiberty maybe-all-target-libstdc++-v3
-configure-target-qthreads: $(ALL_GCC_C)
+all-gdb: $(gdbnlmrequirements) $(GDB_TK)
 
 # Serialization dependencies.  Host configures don't work well in parallel to
 # each other, due to contention over config.cache.  Target configures and 

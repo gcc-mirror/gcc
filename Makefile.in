@@ -1889,7 +1889,6 @@ install-host-nogcc:  \
     maybe-install-find \
     maybe-install-flex \
     maybe-install-gas \
-    maybe-install-gcc \
     maybe-install-gawk \
     maybe-install-gettext \
     maybe-install-gnuserv \
@@ -28305,7 +28304,7 @@ maintainer-clean-target-libada:
 
 GCC_STRAP_TARGETS = bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean bootstrap4 bootstrap4-lean bubblestrap quickstrap cleanstrap restrap
 .PHONY: $(GCC_STRAP_TARGETS)
-$(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
+$(GCC_STRAP_TARGETS): all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -28338,7 +28337,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	echo "Building runtime libraries"; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
-profiledbootstrap: all-bootstrap configure-gcc
+profiledbootstrap: all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -28472,7 +28471,7 @@ objext = .o
 # Real targets act phony if they depend on phony targets; this hack
 # prevents gratuitous rebuilding of stage 1.
 prebootstrap:
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-bootstrap
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-prebootstrap
 	$(STAMP) prebootstrap
 
 # Flags to pass to stage2 and later makes.
@@ -29176,7 +29175,7 @@ stagefeedback-start::
 	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../gcc/&",' | $(SHELL); } && \
 	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../gcc/&",' | $(SHELL); }
 
-profiledbootstrap: all-bootstrap configure-gcc
+profiledbootstrap: all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -29201,127 +29200,518 @@ profiledbootstrap: all-bootstrap configure-gcc
 # Dependencies between different modules
 # --------------------------------------
 
+# Generic dependencies for target modules on host stuff, especially gcc
+
+configure-target-libstdc++-v3: maybe-all-gcc
+
+configure-target-libmudflap: maybe-all-gcc
+
+configure-target-newlib: maybe-all-gcc
+
+configure-target-libgfortran: maybe-all-gcc
+
+configure-target-libobjc: maybe-all-gcc
+
+configure-target-libtermcap: maybe-all-gcc
+
+configure-target-winsup: maybe-all-gcc
+
+configure-target-libgloss: maybe-all-gcc
+
+configure-target-libiberty: maybe-all-gcc
+
+configure-target-gperf: maybe-all-gcc
+
+configure-target-examples: maybe-all-gcc
+
+configure-target-libffi: maybe-all-gcc
+
+configure-target-libjava: maybe-all-gcc
+
+configure-target-zlib: maybe-all-gcc
+
+configure-target-boehm-gc: maybe-all-gcc
+
+configure-target-qthreads: maybe-all-gcc
+
+configure-target-rda: maybe-all-gcc
+
+configure-target-libada: maybe-all-gcc
+
+
+
+configure-target-boehm-gc: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-gperf: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-gperf: maybe-all-target-libstdc++-v3
+
+configure-target-libada: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libgfortran: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libjava: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-libjava: maybe-all-target-libstdc++-v3
+
+configure-target-libobjc: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libstdc++-v3: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-zlib: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-examples: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libtermcap: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-rda: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-winsup: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-qthreads: maybe-all-target-newlib maybe-all-target-libgloss
+
+
 # There are two types of dependencies here: 'hard' dependencies, where one
 # module simply won't build without the other; and 'soft' dependencies, where
 # if the depended-on module is missing, the depending module will do without
 # or find a substitute somewhere (perhaps installed).  Soft dependencies
-# are specified by depending on a 'maybe-' target.  If you're not sure,
+# are made here to depend on a 'maybe-' target.  If you're not sure,
 # it's safer to use a soft dependency.
 
-# Build modules
+
+
+
+
+# With all the machinery above in place, it is pretty easy to generate
+# dependencies.  Host dependencies are a bit more complex because we have
+# to check for bootstrap/prebootstrap dependencies.  To resolve
+# prebootstrap dependencies, prebootstrap modules are gathered in
+# a hash table.
 all-build-bison: maybe-all-build-texinfo
+all-build-byacc: maybe-all-build-texinfo
 all-build-flex: maybe-all-build-texinfo
+all-build-flex: maybe-all-build-bison
+all-build-flex: maybe-all-build-byacc
+all-build-flex: maybe-all-build-m4
 all-build-libiberty: maybe-all-build-texinfo
-all-build-m4: maybe-all-build-libiberty maybe-all-build-texinfo
+all-build-m4: maybe-all-build-texinfo
+configure-gcc: maybe-configure-intl
 
-# Host modules specific to gcc.
-# GCC needs to identify certain tools.
-# GCC also needs the information exported by the intl configure script.
-configure-gcc: maybe-configure-intl maybe-configure-binutils maybe-configure-gas maybe-configure-ld maybe-configure-bison maybe-configure-flex
-all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-texinfo maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee maybe-all-libcpp
-configure-libcpp: maybe-configure-libiberty maybe-configure-intl
-all-libcpp: maybe-all-libiberty maybe-all-intl
-# This is a slightly kludgy method of getting dependencies on 
-# all-build-libiberty correct; it would be better to build it every time.
+configure-stage1-gcc: maybe-configure-stage1-intl
+configure-stage2-gcc: maybe-configure-stage2-intl
+configure-stage3-gcc: maybe-configure-stage3-intl
+configure-stage4-gcc: maybe-configure-stage4-intl
+configure-stageprofile-gcc: maybe-configure-stageprofile-intl
+configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
+configure-gcc: maybe-configure-binutils
+
+configure-stage1-gcc: maybe-configure-stage1-binutils
+configure-stage2-gcc: maybe-configure-stage2-binutils
+configure-stage3-gcc: maybe-configure-stage3-binutils
+configure-stage4-gcc: maybe-configure-stage4-binutils
+configure-stageprofile-gcc: maybe-configure-stageprofile-binutils
+configure-stagefeedback-gcc: maybe-configure-stagefeedback-binutils
+configure-gcc: maybe-configure-gas
+
+configure-stage1-gcc: maybe-configure-stage1-gas
+configure-stage2-gcc: maybe-configure-stage2-gas
+configure-stage3-gcc: maybe-configure-stage3-gas
+configure-stage4-gcc: maybe-configure-stage4-gas
+configure-stageprofile-gcc: maybe-configure-stageprofile-gas
+configure-stagefeedback-gcc: maybe-configure-stagefeedback-gas
+configure-gcc: maybe-configure-ld
+
+configure-stage1-gcc: maybe-configure-stage1-ld
+configure-stage2-gcc: maybe-configure-stage2-ld
+configure-stage3-gcc: maybe-configure-stage3-ld
+configure-stage4-gcc: maybe-configure-stage4-ld
+configure-stageprofile-gcc: maybe-configure-stageprofile-ld
+configure-stagefeedback-gcc: maybe-configure-stagefeedback-ld
+configure-gcc: maybe-configure-bison
+configure-gcc: maybe-configure-flex
+all-gcc: all-libiberty
+
+all-stage1-gcc: all-stage1-libiberty
+all-stage2-gcc: all-stage2-libiberty
+all-stage3-gcc: all-stage3-libiberty
+all-stage4-gcc: all-stage4-libiberty
+all-stageprofile-gcc: all-stageprofile-libiberty
+all-stagefeedback-gcc: all-stagefeedback-libiberty
+all-gcc: maybe-all-intl
+
+all-stage1-gcc: maybe-all-stage1-intl
+all-stage2-gcc: maybe-all-stage2-intl
+all-stage3-gcc: maybe-all-stage3-intl
+all-stage4-gcc: maybe-all-stage4-intl
+all-stageprofile-gcc: maybe-all-stageprofile-intl
+all-stagefeedback-gcc: maybe-all-stagefeedback-intl
+all-gcc: maybe-all-texinfo
+all-gcc: maybe-all-bison
+all-gcc: maybe-all-byacc
+all-gcc: maybe-all-flex
+all-gcc: maybe-all-binutils
+
+all-stage1-gcc: maybe-all-stage1-binutils
+all-stage2-gcc: maybe-all-stage2-binutils
+all-stage3-gcc: maybe-all-stage3-binutils
+all-stage4-gcc: maybe-all-stage4-binutils
+all-stageprofile-gcc: maybe-all-stageprofile-binutils
+all-stagefeedback-gcc: maybe-all-stagefeedback-binutils
+all-gcc: maybe-all-gas
+
+all-stage1-gcc: maybe-all-stage1-gas
+all-stage2-gcc: maybe-all-stage2-gas
+all-stage3-gcc: maybe-all-stage3-gas
+all-stage4-gcc: maybe-all-stage4-gas
+all-stageprofile-gcc: maybe-all-stageprofile-gas
+all-stagefeedback-gcc: maybe-all-stagefeedback-gas
+all-gcc: maybe-all-ld
+
+all-stage1-gcc: maybe-all-stage1-ld
+all-stage2-gcc: maybe-all-stage2-ld
+all-stage3-gcc: maybe-all-stage3-ld
+all-stage4-gcc: maybe-all-stage4-ld
+all-stageprofile-gcc: maybe-all-stageprofile-ld
+all-stagefeedback-gcc: maybe-all-stagefeedback-ld
+all-gcc: maybe-all-zlib
+
+all-stage1-gcc: maybe-all-stage1-zlib
+all-stage2-gcc: maybe-all-stage2-zlib
+all-stage3-gcc: maybe-all-stage3-zlib
+all-stage4-gcc: maybe-all-stage4-zlib
+all-stageprofile-gcc: maybe-all-stageprofile-zlib
+all-stagefeedback-gcc: maybe-all-stagefeedback-zlib
+all-gcc: maybe-all-libbanshee
+
+all-stage1-gcc: maybe-all-stage1-libbanshee
+all-stage2-gcc: maybe-all-stage2-libbanshee
+all-stage3-gcc: maybe-all-stage3-libbanshee
+all-stage4-gcc: maybe-all-stage4-libbanshee
+all-stageprofile-gcc: maybe-all-stageprofile-libbanshee
+all-stagefeedback-gcc: maybe-all-stagefeedback-libbanshee
+all-gcc: all-libcpp
+
+all-stage1-gcc: all-stage1-libcpp
+all-stage2-gcc: all-stage2-libcpp
+all-stage3-gcc: all-stage3-libcpp
+all-stage4-gcc: all-stage4-libcpp
+all-stageprofile-gcc: all-stageprofile-libcpp
+all-stagefeedback-gcc: all-stagefeedback-libcpp
 all-gcc: maybe-all-build-libiberty
-all-bootstrap: maybe-all-binutils maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-gas maybe-all-intl maybe-all-ld maybe-all-libcpp maybe-all-libbanshee maybe-all-libiberty maybe-all-texinfo maybe-all-zlib 
+configure-libcpp: configure-libiberty
 
-# Host modules specific to gdb.
-# GDB needs to know that the simulator is being built.
-configure-gdb: maybe-configure-itcl maybe-configure-tcl maybe-configure-tk maybe-configure-sim
-GDB_TK = @GDB_TK@
-all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-mmalloc maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
-install-gdb: maybe-install-tcl maybe-install-tk maybe-install-itcl maybe-install-tix maybe-install-libgui
-configure-libgui: maybe-configure-tcl maybe-configure-tk
-all-libgui: maybe-all-tcl maybe-all-tk maybe-all-itcl
+configure-stage1-libcpp: configure-stage1-libiberty
+configure-stage2-libcpp: configure-stage2-libiberty
+configure-stage3-libcpp: configure-stage3-libiberty
+configure-stage4-libcpp: configure-stage4-libiberty
+configure-stageprofile-libcpp: configure-stageprofile-libiberty
+configure-stagefeedback-libcpp: configure-stagefeedback-libiberty
+configure-libcpp: maybe-configure-intl
 
-# Host modules specific to binutils.
+configure-stage1-libcpp: maybe-configure-stage1-intl
+configure-stage2-libcpp: maybe-configure-stage2-intl
+configure-stage3-libcpp: maybe-configure-stage3-intl
+configure-stage4-libcpp: maybe-configure-stage4-intl
+configure-stageprofile-libcpp: maybe-configure-stageprofile-intl
+configure-stagefeedback-libcpp: maybe-configure-stagefeedback-intl
+all-libcpp: all-libiberty
+
+all-stage1-libcpp: all-stage1-libiberty
+all-stage2-libcpp: all-stage2-libiberty
+all-stage3-libcpp: all-stage3-libiberty
+all-stage4-libcpp: all-stage4-libiberty
+all-stageprofile-libcpp: all-stageprofile-libiberty
+all-stagefeedback-libcpp: all-stagefeedback-libiberty
+all-libcpp: maybe-all-intl
+
+all-stage1-libcpp: maybe-all-stage1-intl
+all-stage2-libcpp: maybe-all-stage2-intl
+all-stage3-libcpp: maybe-all-stage3-intl
+all-stage4-libcpp: maybe-all-stage4-intl
+all-stageprofile-libcpp: maybe-all-stageprofile-intl
+all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
+configure-gdb: maybe-configure-itcl
+configure-gdb: maybe-configure-tcl
+configure-gdb: maybe-configure-tk
+configure-gdb: maybe-configure-sim
+all-gdb: maybe-all-libiberty
+all-gdb: maybe-all-opcodes
+all-gdb: maybe-all-bfd
+all-gdb: maybe-all-mmalloc
+all-gdb: maybe-all-readline
+all-gdb: maybe-all-bison
+all-gdb: maybe-all-byacc
+all-gdb: maybe-all-sim
+install-gdb: maybe-install-tcl
+install-gdb: maybe-install-tk
+install-gdb: maybe-install-itcl
+install-gdb: maybe-install-tix
+install-gdb: maybe-install-libgui
+configure-libgui: maybe-configure-tcl
+configure-libgui: maybe-configure-tk
+all-libgui: maybe-all-tcl
+all-libgui: maybe-all-tk
+all-libgui: maybe-all-itcl
 configure-bfd: configure-libiberty
-all-bfd: maybe-all-libiberty maybe-all-intl
-all-binutils: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-flex maybe-all-bison maybe-all-byacc maybe-all-intl
-# We put install-opcodes before install-binutils because the installed
-# binutils might be on PATH, and they might need the shared opcodes
-# library.
-install-binutils: maybe-install-opcodes
-# libopcodes depends on libbfd
-install-opcodes: maybe-install-bfd
-all-gas: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-intl
-all-gprof: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-intl
-all-ld: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-intl
-all-opcodes: maybe-all-bfd maybe-all-libiberty
 
-# Other host modules in the 'src' repository.
-all-dejagnu: maybe-all-tcl maybe-all-expect maybe-all-tk
-configure-expect: maybe-configure-tcl maybe-configure-tk
-all-expect: maybe-all-tcl maybe-all-tk
-configure-itcl: maybe-configure-tcl maybe-configure-tk
-all-itcl: maybe-all-tcl maybe-all-tk
-# We put install-tcl before install-itcl because itcl wants to run a
-# program on installation which uses the Tcl libraries.
+configure-stage1-bfd: configure-stage1-libiberty
+configure-stage2-bfd: configure-stage2-libiberty
+configure-stage3-bfd: configure-stage3-libiberty
+configure-stage4-bfd: configure-stage4-libiberty
+configure-stageprofile-bfd: configure-stageprofile-libiberty
+configure-stagefeedback-bfd: configure-stagefeedback-libiberty
+all-bfd: maybe-all-libiberty
+
+all-stage1-bfd: maybe-all-stage1-libiberty
+all-stage2-bfd: maybe-all-stage2-libiberty
+all-stage3-bfd: maybe-all-stage3-libiberty
+all-stage4-bfd: maybe-all-stage4-libiberty
+all-stageprofile-bfd: maybe-all-stageprofile-libiberty
+all-stagefeedback-bfd: maybe-all-stagefeedback-libiberty
+all-bfd: maybe-all-intl
+
+all-stage1-bfd: maybe-all-stage1-intl
+all-stage2-bfd: maybe-all-stage2-intl
+all-stage3-bfd: maybe-all-stage3-intl
+all-stage4-bfd: maybe-all-stage4-intl
+all-stageprofile-bfd: maybe-all-stageprofile-intl
+all-stagefeedback-bfd: maybe-all-stagefeedback-intl
+all-binutils: maybe-all-libiberty
+
+all-stage1-binutils: maybe-all-stage1-libiberty
+all-stage2-binutils: maybe-all-stage2-libiberty
+all-stage3-binutils: maybe-all-stage3-libiberty
+all-stage4-binutils: maybe-all-stage4-libiberty
+all-stageprofile-binutils: maybe-all-stageprofile-libiberty
+all-stagefeedback-binutils: maybe-all-stagefeedback-libiberty
+all-binutils: maybe-all-opcodes
+
+all-stage1-binutils: maybe-all-stage1-opcodes
+all-stage2-binutils: maybe-all-stage2-opcodes
+all-stage3-binutils: maybe-all-stage3-opcodes
+all-stage4-binutils: maybe-all-stage4-opcodes
+all-stageprofile-binutils: maybe-all-stageprofile-opcodes
+all-stagefeedback-binutils: maybe-all-stagefeedback-opcodes
+all-binutils: maybe-all-bfd
+
+all-stage1-binutils: maybe-all-stage1-bfd
+all-stage2-binutils: maybe-all-stage2-bfd
+all-stage3-binutils: maybe-all-stage3-bfd
+all-stage4-binutils: maybe-all-stage4-bfd
+all-stageprofile-binutils: maybe-all-stageprofile-bfd
+all-stagefeedback-binutils: maybe-all-stagefeedback-bfd
+all-binutils: maybe-all-flex
+all-binutils: maybe-all-bison
+all-binutils: maybe-all-byacc
+all-binutils: maybe-all-intl
+
+all-stage1-binutils: maybe-all-stage1-intl
+all-stage2-binutils: maybe-all-stage2-intl
+all-stage3-binutils: maybe-all-stage3-intl
+all-stage4-binutils: maybe-all-stage4-intl
+all-stageprofile-binutils: maybe-all-stageprofile-intl
+all-stagefeedback-binutils: maybe-all-stagefeedback-intl
+install-binutils: maybe-install-opcodes
+install-opcodes: maybe-install-bfd
+all-gas: maybe-all-libiberty
+
+all-stage1-gas: maybe-all-stage1-libiberty
+all-stage2-gas: maybe-all-stage2-libiberty
+all-stage3-gas: maybe-all-stage3-libiberty
+all-stage4-gas: maybe-all-stage4-libiberty
+all-stageprofile-gas: maybe-all-stageprofile-libiberty
+all-stagefeedback-gas: maybe-all-stagefeedback-libiberty
+all-gas: maybe-all-opcodes
+
+all-stage1-gas: maybe-all-stage1-opcodes
+all-stage2-gas: maybe-all-stage2-opcodes
+all-stage3-gas: maybe-all-stage3-opcodes
+all-stage4-gas: maybe-all-stage4-opcodes
+all-stageprofile-gas: maybe-all-stageprofile-opcodes
+all-stagefeedback-gas: maybe-all-stagefeedback-opcodes
+all-gas: maybe-all-bfd
+
+all-stage1-gas: maybe-all-stage1-bfd
+all-stage2-gas: maybe-all-stage2-bfd
+all-stage3-gas: maybe-all-stage3-bfd
+all-stage4-gas: maybe-all-stage4-bfd
+all-stageprofile-gas: maybe-all-stageprofile-bfd
+all-stagefeedback-gas: maybe-all-stagefeedback-bfd
+all-gas: maybe-all-intl
+
+all-stage1-gas: maybe-all-stage1-intl
+all-stage2-gas: maybe-all-stage2-intl
+all-stage3-gas: maybe-all-stage3-intl
+all-stage4-gas: maybe-all-stage4-intl
+all-stageprofile-gas: maybe-all-stageprofile-intl
+all-stagefeedback-gas: maybe-all-stagefeedback-intl
+all-gprof: maybe-all-libiberty
+all-gprof: maybe-all-bfd
+all-gprof: maybe-all-opcodes
+all-gprof: maybe-all-intl
+all-ld: maybe-all-libiberty
+
+all-stage1-ld: maybe-all-stage1-libiberty
+all-stage2-ld: maybe-all-stage2-libiberty
+all-stage3-ld: maybe-all-stage3-libiberty
+all-stage4-ld: maybe-all-stage4-libiberty
+all-stageprofile-ld: maybe-all-stageprofile-libiberty
+all-stagefeedback-ld: maybe-all-stagefeedback-libiberty
+all-ld: maybe-all-bfd
+
+all-stage1-ld: maybe-all-stage1-bfd
+all-stage2-ld: maybe-all-stage2-bfd
+all-stage3-ld: maybe-all-stage3-bfd
+all-stage4-ld: maybe-all-stage4-bfd
+all-stageprofile-ld: maybe-all-stageprofile-bfd
+all-stagefeedback-ld: maybe-all-stagefeedback-bfd
+all-ld: maybe-all-opcodes
+
+all-stage1-ld: maybe-all-stage1-opcodes
+all-stage2-ld: maybe-all-stage2-opcodes
+all-stage3-ld: maybe-all-stage3-opcodes
+all-stage4-ld: maybe-all-stage4-opcodes
+all-stageprofile-ld: maybe-all-stageprofile-opcodes
+all-stagefeedback-ld: maybe-all-stagefeedback-opcodes
+all-ld: maybe-all-bison
+all-ld: maybe-all-byacc
+all-ld: maybe-all-flex
+all-ld: maybe-all-intl
+
+all-stage1-ld: maybe-all-stage1-intl
+all-stage2-ld: maybe-all-stage2-intl
+all-stage3-ld: maybe-all-stage3-intl
+all-stage4-ld: maybe-all-stage4-intl
+all-stageprofile-ld: maybe-all-stageprofile-intl
+all-stagefeedback-ld: maybe-all-stagefeedback-intl
+all-opcodes: maybe-all-bfd
+
+all-stage1-opcodes: maybe-all-stage1-bfd
+all-stage2-opcodes: maybe-all-stage2-bfd
+all-stage3-opcodes: maybe-all-stage3-bfd
+all-stage4-opcodes: maybe-all-stage4-bfd
+all-stageprofile-opcodes: maybe-all-stageprofile-bfd
+all-stagefeedback-opcodes: maybe-all-stagefeedback-bfd
+all-opcodes: maybe-all-libiberty
+
+all-stage1-opcodes: maybe-all-stage1-libiberty
+all-stage2-opcodes: maybe-all-stage2-libiberty
+all-stage3-opcodes: maybe-all-stage3-libiberty
+all-stage4-opcodes: maybe-all-stage4-libiberty
+all-stageprofile-opcodes: maybe-all-stageprofile-libiberty
+all-stagefeedback-opcodes: maybe-all-stagefeedback-libiberty
+all-dejagnu: maybe-all-tcl
+all-dejagnu: maybe-all-expect
+all-dejagnu: maybe-all-tk
+configure-expect: maybe-configure-tcl
+configure-expect: maybe-configure-tk
+all-expect: maybe-all-tcl
+all-expect: maybe-all-tk
+configure-itcl: maybe-configure-tcl
+configure-itcl: maybe-configure-tk
+all-itcl: maybe-all-tcl
+all-itcl: maybe-all-tk
 install-itcl: maybe-install-tcl
-all-sid: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-tcl maybe-all-tk
-install-sid: maybe-install-tcl maybe-install-tk
-all-sim: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-readline maybe-configure-gdb
 configure-tk: maybe-configure-tcl
 all-tk: maybe-all-tcl
-configure-tix: maybe-configure-tcl maybe-configure-tk
-all-tix: maybe-all-tcl maybe-all-tk
-all-texinfo: maybe-all-libiberty
-
-# Other host modules.  Warning, these are not well tested.
-all-autoconf: maybe-all-m4 maybe-all-texinfo
-all-automake: maybe-all-m4 maybe-all-texinfo
+configure-tix: maybe-configure-tcl
+configure-tix: maybe-configure-tk
+all-tix: maybe-all-tcl
+all-tix: maybe-all-tk
+all-sid: maybe-all-libiberty
+all-sid: maybe-all-bfd
+all-sid: maybe-all-opcodes
+all-sid: maybe-all-tcl
+all-sid: maybe-all-tk
+install-sid: maybe-install-tcl
+install-sid: maybe-install-tk
+all-sim: maybe-all-libiberty
+all-sim: maybe-all-bfd
+all-sim: maybe-all-opcodes
+all-sim: maybe-all-readline
+all-sim: maybe-configure-gdb
+all-fastjar: maybe-all-zlib
+all-fastjar: maybe-all-texinfo
+all-fastjar: maybe-all-libiberty
+all-autoconf: maybe-all-m4
+all-autoconf: maybe-all-texinfo
+all-automake: maybe-all-m4
+all-automake: maybe-all-texinfo
+all-automake: maybe-all-autoconf
+all-bison: maybe-all-intl
 all-bison: maybe-all-texinfo
-all-diff: maybe-all-libiberty
-all-fastjar: maybe-all-zlib maybe-all-libiberty
-all-fileutils: maybe-all-libiberty
-all-flex: maybe-all-libiberty maybe-all-bison maybe-all-byacc
-all-gzip: maybe-all-libiberty
-all-hello: maybe-all-libiberty
-all-m4: maybe-all-libiberty maybe-all-texinfo
-all-make: maybe-all-libiberty maybe-all-intl
-all-patch: maybe-all-libiberty
+all-diff: maybe-all-intl
+all-diff: maybe-all-texinfo
+all-fileutils: maybe-all-intl
+all-fileutils: maybe-all-texinfo
+all-flex: maybe-all-bison
+all-flex: maybe-all-byacc
+all-flex: maybe-all-intl
+all-flex: maybe-all-m4
+all-flex: maybe-all-texinfo
+all-gzip: maybe-all-intl
+all-gzip: maybe-all-zlib
+all-gzip: maybe-all-texinfo
+all-hello: maybe-all-intl
+all-hello: maybe-all-texinfo
+all-m4: maybe-all-intl
+all-m4: maybe-all-texinfo
+all-make: maybe-all-intl
+all-make: maybe-all-texinfo
+all-patch: maybe-all-texinfo
+all-make: maybe-all-texinfo
 all-prms: maybe-all-libiberty
-all-recode: maybe-all-libiberty
-all-sed: maybe-all-libiberty
+all-recode: maybe-all-texinfo
+all-sed: maybe-all-texinfo
 all-send-pr: maybe-all-prms
-all-tar: maybe-all-libiberty
-all-uudecode: maybe-all-libiberty
-
-ALL_GCC = maybe-all-gcc
-ALL_GCC_C = $(ALL_GCC) maybe-all-target-newlib maybe-all-target-libgloss
-ALL_GCC_CXX = $(ALL_GCC_C) maybe-all-target-libstdc++-v3
-
-# Target modules specific to gcc.
-configure-target-boehm-gc: $(ALL_GCC_C) maybe-configure-target-qthreads
+all-tar: maybe-all-texinfo
+all-uudecode: maybe-all-texinfo
+configure-target-boehm-gc: maybe-configure-target-qthreads
 configure-target-fastjar: maybe-configure-target-zlib
-all-target-fastjar: maybe-all-target-zlib maybe-all-target-libiberty
-configure-target-libada: $(ALL_GCC_C)
-configure-target-libgfortran: $(ALL_GCC_C)
-configure-target-libffi: $(ALL_GCC_C) 
-configure-target-libjava: $(ALL_GCC_C) maybe-configure-target-zlib maybe-configure-target-boehm-gc maybe-configure-target-qthreads maybe-configure-target-libffi
-all-target-libjava: maybe-all-fastjar maybe-all-target-zlib maybe-all-target-boehm-gc maybe-all-target-qthreads maybe-all-target-libffi
-configure-target-libobjc: $(ALL_GCC_C)
+all-target-fastjar: maybe-all-target-zlib
+all-target-fastjar: maybe-all-target-libiberty
+configure-target-libjava: maybe-configure-target-zlib
+configure-target-libjava: maybe-configure-target-boehm-gc
+configure-target-libjava: maybe-configure-target-qthreads
+configure-target-libjava: maybe-configure-target-libffi
+all-target-libjava: maybe-all-fastjar
+all-target-libjava: maybe-all-target-zlib
+all-target-libjava: maybe-all-target-boehm-gc
+all-target-libjava: maybe-all-target-qthreads
+all-target-libjava: maybe-all-target-libffi
 all-target-libobjc: maybe-all-target-libiberty
-configure-target-libstdc++-v3: $(ALL_GCC_C)
 all-target-libstdc++-v3: maybe-all-target-libiberty
-configure-target-zlib: $(ALL_GCC_C)
-
-# Target modules in the 'src' repository.
-configure-target-examples: $(ALL_GCC_C)
-configure-target-libgloss: $(ALL_GCC)
 all-target-libgloss: maybe-configure-target-newlib
-configure-target-libiberty: $(ALL_GCC)
-configure-target-libtermcap: $(ALL_GCC_C)
-configure-target-newlib: $(ALL_GCC)
-configure-target-rda: $(ALL_GCC_C)
-configure-target-winsup: $(ALL_GCC_C)
-all-target-winsup: maybe-all-target-libiberty maybe-all-target-libtermcap
+all-target-winsup: maybe-all-target-libiberty
+all-target-winsup: maybe-all-target-libtermcap
 
-# Other target modules.  Warning, these are not well tested.
-configure-target-gperf: $(ALL_GCC_CXX)
-all-target-gperf: maybe-all-target-libiberty maybe-all-target-libstdc++-v3
-configure-target-qthreads: $(ALL_GCC_C)
+
+# Now build the prebootstrap dependencies.
+
+all-prebootstrap: maybe-all-bison
+all-prebootstrap: maybe-all-byacc
+all-prebootstrap: maybe-all-flex
+all-prebootstrap: maybe-all-texinfo
+
+# Unless toplevel bootstrap is going, bootstrapped packages are actually
+# prebootstrapped, with the exception of gcc.  Another wart that will go
+# away with toplevel bootstrap.
+@if gcc-no-bootstrap
+
+all-prebootstrap: maybe-all-bfd
+all-prebootstrap: maybe-all-opcodes
+all-prebootstrap: maybe-all-binutils
+all-prebootstrap: maybe-all-gas
+all-prebootstrap: maybe-all-intl
+all-prebootstrap: maybe-all-ld
+all-prebootstrap: maybe-all-libcpp
+all-prebootstrap: maybe-all-libbanshee
+all-prebootstrap: maybe-all-libiberty
+all-prebootstrap: maybe-all-zlib
+@endif gcc-no-bootstrap
+
+GDB_TK = @GDB_TK@
+all-gdb: $(gdbnlmrequirements) $(GDB_TK)
 
 # Serialization dependencies.  Host configures don't work well in parallel to
 # each other, due to contention over config.cache.  Target configures and 
