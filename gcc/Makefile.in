@@ -767,6 +767,7 @@ $(srcdir)/configure: $(srcdir)/configure.in
 $(srcdir)/config.in: $(srcdir)/cstamp-h.in
 $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 	cd $(srcdir) && autoheader
+	@rm -f $(srcdir)/cstamp-h.in
 	echo timestamp > $(srcdir)/cstamp-h.in
 auto-host.h: cstamp-h ; @true
 cstamp-h: config.in config.status
@@ -1959,8 +1960,11 @@ stmp-headers:
 	touch $@
 
 fixinc.sh :
-	cd ../contrib/fixinc ; CC=$(CC) MAKE=$(MAKE) CFLAGS=$(CFLAGS) \
-		$(SHELL) mkfixinc.sh $(target) $(srcdir)
+	INSTALLDIR=`cd $(srcdir) ; pwd` \
+	CC=$(CC) MAKE=$(MAKE) CFLAGS="$(CFLAGS)" ; \
+	export INSTALLDIR CC MAKE CFLAGS ; \
+		( cd ../contrib/fixinc ; \
+		$(SHELL) mkfixinc.sh $(target) $$INSTALLDIR )
 
 # Build fixed copies of system files.
 stmp-fixinc: $(FIXINCLUDES) gsyslimits.h

@@ -1,3 +1,9 @@
+Fri May 29 00:57:37 1998  Bruce Korb <korbb@datadesign.com>
+
+	* Makefile.in (cstamp-h.in): Remove before trying to recreate.
+	(fixinc.sh): Set some additional environment variables before
+	calling mkfixinc.sh.
+
 Thu May 28 12:57:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload.c (find_reloads): Do not force a reloads of match_operators.
