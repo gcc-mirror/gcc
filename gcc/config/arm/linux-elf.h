@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef SUBTARGET_DEFAULT_APCS26
 /* Default is to use APCS-32 mode.  */
-# define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SHORT_BYTE)
+# define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_MMU_TRAPS)
 # ifdef SUBTARGET_OLD_LINKER
 #  define SUBTARGET_EXTRA_LINK_SPEC	\
 	" %{mapcs-26:-m elf32arm26} %{!mapcs-26:-m elf32arm}"
@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 	{ "mlittle-endian", "mhard-float", "mapcs-32", "mno-thumb-interwork" }
 # define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
 #else	/* default is APCS-26 */
-# define TARGET_DEFAULT (ARM_FLAG_SHORT_BYTE)
+# define TARGET_DEFAULT (ARM_FLAG_MMU_TRAPS)
 # ifdef SUBTARGET_OLD_LINKER
 #  define SUBTARGET_LINK_SPEC	\
 	" %{mapcs-32:-m elf32arm} %{!mapcs-32:-m elf32arm26}"
