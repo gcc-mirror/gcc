@@ -1,3 +1,21 @@
+1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (fndecl_as_string, type_as_string,
+	type_as_string_real, args_as_string, decl_as_string,
+	expr_as_string, code_as_string, language_as_string,
+	parm_as_string, op_as_string, assop_as_string, cv_as_string,
+	lang_decl_name, cp_file_of, lang_printable_name): Constify a char*.
+
+	* errfn.c (cp_printer): Likewise.
+
+	* error.c (cp_printer, fndecl_as_string, type_as_string_real,
+	type_as_string, expr_as_string, decl_as_string, lang_decl_name,
+	cp_file_of, code_as_string, language_as_string, parm_as_string,
+	op_as_string, assop_as_string, args_as_string, cv_as_string):
+	Likewise.
+
+	* tree.c (lang_printable_name): Likewise.
+
 1999-08-28  Richard Henderson  <rth@cygnus.com>
 
 	* decl2.c (arg_assoc_class): Bail if the class is a builtin type.

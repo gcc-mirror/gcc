@@ -1460,7 +1460,7 @@ is_aggr_type_2 (t1, t2)
 
 #define PRINT_RING_SIZE 4
 
-char *
+const char *
 lang_printable_name (decl, v)
      tree decl;
      int v;

@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
    with all memory management; the functions in this file will not free
    the char*s returned.  See error.c for an example use of this code.  */
 
-typedef char* cp_printer PROTO((tree, int));
+typedef const char *cp_printer PROTO((tree, int));
 extern cp_printer * cp_printers[256];
 
 /* Whether or not we should try to be quiet for errors and warnings; this is

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 
-typedef char* cp_printer ();
+typedef const char *cp_printer ();
 
 #define A args_as_string
 #define C code_as_string
@@ -1871,7 +1871,7 @@ dump_unary_op (opstring, t, nop)
 
 /* Print a function decl with exception specification included. */
 
-char *
+const char *
 fndecl_as_string (fndecl, print_default_args_p)
      tree fndecl;
      int print_default_args_p;
@@ -1891,7 +1891,7 @@ fndecl_as_string (fndecl, print_default_args_p)
    when describing a typedef, we use the name of the type described,
    rather than the name of the typedef.  */
 
-char *
+const char *
 type_as_string_real (typ, v, canonical_name)
      tree typ;
      int v;
@@ -1907,7 +1907,7 @@ type_as_string_real (typ, v, canonical_name)
 }
 
 
-char *
+const char *
 type_as_string (typ, v)
      tree typ;
      int v;
@@ -1915,7 +1915,7 @@ type_as_string (typ, v)
   return type_as_string_real (typ, v, 0);
 }
 
-char *
+const char *
 expr_as_string (decl, v)
      tree decl;
      int v ATTRIBUTE_UNUSED;
@@ -1932,7 +1932,7 @@ expr_as_string (decl, v)
 /* A cross between type_as_string and fndecl_as_string.
    Only called from substitute_nice_name.  */
 
-char *
+const char *
 decl_as_string (decl, v)
      tree decl;
      int v;
@@ -1948,7 +1948,7 @@ decl_as_string (decl, v)
 
 /* Generate the three forms of printable names for lang_printable_name.  */
 
-char *
+const char *
 lang_decl_name (decl, v)
      tree decl;
      int v;
@@ -1980,7 +1980,7 @@ lang_decl_name (decl, v)
 }
   
 
-char *
+const char *
 cp_file_of (t)
      tree t;
 {
@@ -2018,7 +2018,7 @@ cp_line_of (t)
   return line;
 }
 
-char *
+const char *
 code_as_string (c, v)
      enum tree_code c;
      int v ATTRIBUTE_UNUSED;
@@ -2026,7 +2026,7 @@ code_as_string (c, v)
   return tree_code_name [c];
 }
 
-char *
+const char *
 language_as_string (c, v)
      enum languages c;
      int v ATTRIBUTE_UNUSED;
@@ -2050,7 +2050,7 @@ language_as_string (c, v)
 
 /* Return the proper printed version of a parameter to a C++ function.  */
 
-char *
+const char *
 parm_as_string (p, v)
      int p;
      int v ATTRIBUTE_UNUSED;
@@ -2062,7 +2062,7 @@ parm_as_string (p, v)
   return digit_buffer;
 }
 
-char *
+const char *
 op_as_string (p, v)
      enum tree_code p;
      int v ATTRIBUTE_UNUSED;
@@ -2076,7 +2076,7 @@ op_as_string (p, v)
   return buf;
 }
 
-char *
+const char *
 assop_as_string (p, v)
      enum tree_code p;
      int v ATTRIBUTE_UNUSED;
@@ -2090,7 +2090,7 @@ assop_as_string (p, v)
   return buf;
 }
 
-char *
+const char *
 args_as_string (p, v)
      tree p;
      int v;
@@ -2115,7 +2115,7 @@ args_as_string (p, v)
   return (char *)obstack_base (&scratch_obstack);
 }
 
-char *
+const char *
 cv_as_string (p, v)
      tree p;
      int v ATTRIBUTE_UNUSED;
