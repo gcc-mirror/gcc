@@ -650,7 +650,6 @@ rename_insn_1 (ptr, data)
 
   switch (GET_CODE (x))
     {
-    case CLOBBER:
     case SET:
       {
 	rtx *destp = &SET_DEST (x);
