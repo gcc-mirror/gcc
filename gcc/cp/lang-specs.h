@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
   {".cpp", "@c++", 0},
   {".c++", "@c++", 0},
   {".C",   "@c++", 0},
+  {".CPP", "@c++", 0},
   {"@c++",
     "%{E|M|MM:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
        %(cpp_options) %2 %(cpp_debug_options)}\

@@ -792,6 +792,7 @@ C header file (not to be compiled or linked).
 @itemx @var{file}.cp
 @itemx @var{file}.cxx
 @itemx @var{file}.cpp
+@itemx @var{file}.CPP
 @itemx @var{file}.c++
 @itemx @var{file}.C
 C++ source code which must be preprocessed.  Note that in @samp{.cxx},
@@ -983,7 +984,7 @@ Display the version number and copyrights of the invoked GCC.
 @cindex suffixes for C++ source
 @cindex C++ source file suffixes
 C++ source files conventionally use one of the suffixes @samp{.C},
-@samp{.cc}, @samp{.cpp}, @samp{.c++}, @samp{.cp}, or @samp{.cxx};
+@samp{.cc}, @samp{.cpp}, @samp{.CPP}, @samp{.c++}, @samp{.cp}, or @samp{.cxx};
 preprocessed C++ files use the suffix @samp{.ii}.  GCC recognizes
 files with these names and compiles them as C++ programs even if you
 call the compiler the same way as for compiling C programs (usually with

@@ -1,3 +1,9 @@
+2002-12-19  Devang Patel  <dpatel@apple.com>
+	* gcc.c (struct default_compiler): Recognizes input file name with
+	.CPP extension as C++ source files
+	* cp/lang-spec.h: Same
+	* doc/invoke.texi:  Add documentation for .CPP support.
+	
 2002-12-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR 8553
