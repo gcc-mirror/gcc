@@ -1,4 +1,9 @@
-2002-02-26  Richard Henderson  <rth@redhat.com>
+2002-02-26  Kelley Cook  <kelleycook@comcast.net>
+
+	* config/i386/i386.c (print_operand): Don't append ATT-style
+	length suffixs to x87 opcodes when in Intel mode.
+
+2002-02-26  Ryan T. Sammartino <ryants@shaw.ca>
 
 	* emit-rtl.c (gen_const_vector_0): Remove TYPE argument.
 	(init_emit_once): Update calls.

@@ -5731,11 +5731,14 @@ print_operand (file, x, code)
 	case 'z':
 	  /* 387 opcodes don't get size suffixes if the operands are
 	     registers.  */
-
 	  if (STACK_REG_P (x))
 	    return;
 
-	  /* this is the size of op from size of operand */
+	  /* Likewise if using Intel opcodes.  */
+	  if (ASSEMBLER_DIALECT == ASM_INTEL)
+	    return;
+
+	  /* This is the size of op from size of operand.  */
 	  switch (GET_MODE_SIZE (GET_MODE (x)))
 	    {
 	    case 2:
