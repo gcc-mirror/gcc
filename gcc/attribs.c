@@ -1268,6 +1268,13 @@ handle_deprecated_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
+/* Keep a list of vector type nodes we created in handle_vector_size_attribute,
+   to prevent us from duplicating type nodes unnecessarily.
+   The normal mechanism to prevent duplicates is to use type_hash_canon, but
+   since we want to distinguish types that are essentially identical (except
+   for their debug representation), we use a local list here.  */
+static tree vector_type_node_list = 0;
+
 /* Handle a "vector_size" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -1281,7 +1288,8 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
 {
   unsigned HOST_WIDE_INT vecsize, nunits;
   enum machine_mode mode, orig_mode, new_mode;
-  tree type = *node, new_type;
+  tree type = *node, new_type = NULL_TREE;
+  tree type_list_node;
 
   *no_add_attrs = true;
 
@@ -1337,11 +1345,34 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
 	break;
       }
 
-  if (new_mode == VOIDmode)
-    error ("no vector mode with the size and type specified could be found");
-  else
+    if (new_mode == VOIDmode)
     {
-      tree index, array, rt;
+      error ("no vector mode with the size and type specified could be found");
+      return NULL_TREE;
+    }
+
+  for (type_list_node = vector_type_node_list; type_list_node;
+       type_list_node = TREE_CHAIN (type_list_node))
+    {
+      tree other_type = TREE_VALUE (type_list_node);
+      tree record = TYPE_DEBUG_REPRESENTATION_TYPE (other_type);
+      tree fields = TYPE_FIELDS (record);
+      tree field_type = TREE_TYPE (fields);
+      tree array_type = TREE_TYPE (field_type);
+      if (TREE_CODE (fields) != FIELD_DECL
+	  || TREE_CODE (field_type) != ARRAY_TYPE)
+	abort ();
+
+      if (TYPE_MODE (other_type) == mode && type == array_type)
+	{
+	  new_type = other_type;
+	  break;
+	}
+    }
+
+  if (new_type == NULL_TREE)
+    {
+      tree index, array, rt, list_node;
 
       new_type = (*lang_hooks.types.type_for_mode) (new_mode,
 						    TREE_UNSIGNED (type));
@@ -1367,10 +1398,14 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
       layout_type (rt);
       TYPE_DEBUG_REPRESENTATION_TYPE (new_type) = rt;
 
-      /* Build back pointers if needed.  */
-      *node = vector_size_helper (*node, new_type);
+      list_node = build_tree_list (NULL, new_type);
+      TREE_CHAIN (list_node) = vector_type_node_list;
+      vector_type_node_list = list_node;
     }
-    
+
+  /* Build back pointers if needed.  */
+  *node = vector_size_helper (*node, new_type);
+
   return NULL_TREE;
 }
 
