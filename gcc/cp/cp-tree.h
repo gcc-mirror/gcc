@@ -1566,9 +1566,18 @@ struct lang_type
    (also distinct from the copies in the TYPE_BINFO hierarchy.)  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
 
-/* The BINFO (if any) for the virtual baseclass T of the class C.  */
+/* The BINFO (if any) for the virtual baseclass T of the class C from
+   the CLASSTYPE_VBASECLASSES list.  */
 #define BINFO_FOR_VBASE(T, C) \
   (binfo_member (T, CLASSTYPE_VBASECLASSES (C)))
+
+/* For a non-virtual BINFO, the BINFO itself; for a virtual BINFO, the
+   BINFO_FOR_VBASE.  C is the most derived class for the hierarchy
+   containing BINFO.  */
+#define CANONICAL_BINFO(BINFO, C)		\
+  (TREE_VIA_VIRTUAL (BINFO) 			\
+   ? BINFO_FOR_VBASE (BINFO_TYPE (BINFO), C) 	\
+   : BINFO)
 
 /* Number of direct baseclasses of NODE.  */
 #define CLASSTYPE_N_BASECLASSES(NODE) \
@@ -1704,11 +1713,14 @@ struct lang_type
 #define SET_BINFO_VTABLE_PATH_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED3(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_3(NODE)=1))
 #define CLEAR_BINFO_VTABLE_PATH_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED3(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_3(NODE)=0))
 
-/* Nonzero means that this class has a new vtable.  */
-#define BINFO_NEW_VTABLE_MARKED(NODE) \
-  (TREE_VIA_VIRTUAL(NODE)?CLASSTYPE_MARKED4(BINFO_TYPE(NODE)):TREE_LANG_FLAG_4(NODE))
-#define SET_BINFO_NEW_VTABLE_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED4(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_4(NODE)=1))
-#define CLEAR_BINFO_NEW_VTABLE_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED4(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_4(NODE)=0))
+/* Nonzero means B (a BINFO) needs a new vtable.  B is part of the
+   hierarchy dominated by C.  */
+#define BINFO_NEW_VTABLE_MARKED(B, C) \
+  (TREE_LANG_FLAG_4 (CANONICAL_BINFO (B, C)))
+#define SET_BINFO_NEW_VTABLE_MARKED(B, C) \
+  (BINFO_NEW_VTABLE_MARKED (B, C) = 1)
+#define CLEAR_BINFO_NEW_VTABLE_MARKED(B, C) \
+  (BINFO_NEW_VTABLE_MARKED (B, C) = 0)
 
 /* Nonzero means this class has done dfs_pushdecls.  */
 #define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
