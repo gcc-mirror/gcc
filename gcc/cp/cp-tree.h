@@ -3759,6 +3759,7 @@ extern void warn_extern_redeclared_static (tree, tree);
 extern const char *cxx_comdat_group             (tree);
 extern bool cp_missing_noreturn_ok_p		(tree);
 extern void initialize_artificial_var            (tree, tree);
+extern tree check_var_type (tree, tree);
 
 extern bool have_extern_spec;
 
