@@ -1,5 +1,5 @@
 /* Help friends in C++.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -370,16 +370,20 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 
 	  if (is_friend_template)
 	    decl = DECL_TI_TEMPLATE (push_template_decl (decl));
+	  else if (template_class_depth (current_class_type))
+	    decl = push_template_decl_real (decl, /*is_friend=*/1);
 
+	  /* We can't do lookup in a type that involves template
+	     parameters.  Instead, we rely on tsubst_friend_function
+	     to check the validity of the declaration later.  */
+	  if (uses_template_parms (ctype))
+	    add_friend (current_class_type, decl);
 	  /* A nested class may declare a member of an enclosing class
 	     to be a friend, so we do lookup here even if CTYPE is in
 	     the process of being defined.  */
-	  if (TYPE_SIZE (ctype) != 0 || TYPE_BEING_DEFINED (ctype))
+	  else if (TYPE_SIZE (ctype) != 0 || TYPE_BEING_DEFINED (ctype))
 	    {
-	      /* But, we defer looup in template specializations until
-		 they are fully specialized.  */
-	      if (template_class_depth (ctype) == 0)
-		decl = check_classfn (ctype, decl);
+	      decl = check_classfn (ctype, decl);
 
 	      if (decl)
 		add_friend (current_class_type, decl);

@@ -11653,7 +11653,7 @@ unary_op_p (name)
   return (name == ansi_opname [(int) TRUTH_NOT_EXPR]
 	  || name == ansi_opname [(int) BIT_NOT_EXPR]
 	  || name == ansi_opname [(int) COMPONENT_REF]
-	  || OPERATOR_TYPENAME_P (name));
+	  || IDENTIFIER_TYPENAME_P (name));
 }
 
 /* Do a little sanity-checking on how they declared their operator.  */
@@ -11744,7 +11744,7 @@ grok_op_properties (decl, virtualp, friendp)
 	 an enumeration, or a reference to an enumeration.  13.4.0.6 */
       if (! methodp || DECL_STATIC_FUNCTION_P (decl))
 	{
-	  if (OPERATOR_TYPENAME_P (name)
+	  if (IDENTIFIER_TYPENAME_P (name)
 	      || name == ansi_opname[(int) CALL_EXPR]
 	      || name == ansi_opname[(int) MODIFY_EXPR]
 	      || name == ansi_opname[(int) COMPONENT_REF]

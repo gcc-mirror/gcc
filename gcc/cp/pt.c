@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998, 1999 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -4436,7 +4436,6 @@ instantiate_class_template (type)
 {
   tree template, args, pattern, t;
   tree typedecl;
-  int is_partial_instantiation;
 
   if (type == error_mark_node)
     return error_mark_node;
@@ -4457,9 +4456,33 @@ instantiate_class_template (type)
   /* Figure out which arguments are being used to do the
      instantiation.  */
   args = CLASSTYPE_TI_ARGS (type);
-  is_partial_instantiation = uses_template_parms (args);
+  PARTIAL_INSTANTIATION_P (type) = uses_template_parms (args);
 
-  if (is_partial_instantiation)
+  if (pedantic && PARTIAL_INSTANTIATION_P (type))
+    /* If this is a partial instantiation, then we can't instantiate
+       the type; there's no telling whether or not one of the
+       template parameters might eventually be instantiated to some
+       value that results in a specialization being used.  For
+       example, consider:
+
+         template <class T>
+         struct S {};
+
+         template <class U> 
+         void f(S<U>);
+	     
+         template <> 
+         struct S<int> {};
+
+       Now, the `S<U>' in `f<int>' is the specialization, not an
+       instantiation of the original template.  Mark the type as
+       complete, in the same way that we do for a definition of a
+       template class.  */
+    goto end;
+
+  /* Determine what specialization of the original template to
+     instantiate.  */
+  if (PARTIAL_INSTANTIATION_P (type))
     /* There's no telling which specialization is appropriate at this
        point.  Since all peeking at the innards of this partial
        instantiation are extensions (like the "implicit typename"
@@ -4500,8 +4523,38 @@ instantiate_class_template (type)
   else
     pattern = TREE_TYPE (template);
 
+  /* If the template we're instantiating is incomplete, then clearly
+     there's nothing we can do.  */
   if (TYPE_SIZE (pattern) == NULL_TREE)
     goto end;
+
+  /* If this is a partial instantiation, don't tsubst anything.  We will
+     only use this type for implicit typename, so the actual contents don't
+     matter.  All that matters is whether a particular name is a type.  */
+  if (PARTIAL_INSTANTIATION_P (type))
+    {
+      /* The fields set here must be kept in sync with those cleared
+	 in begin_class_definition.  */
+      TYPE_BINFO_BASETYPES (type) = TYPE_BINFO_BASETYPES (pattern);
+      TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
+      TYPE_METHODS (type) = TYPE_METHODS (pattern);
+      CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
+      /* Pretend that the type is complete, so that we will look
+	 inside it during name lookup and such.  */
+      TYPE_SIZE (type) = integer_zero_node;
+      goto end;
+    }
+
+  /* If we've recursively instantiated too many templates, stop.  */
+  if (! push_tinst_level (type))
+    goto end;
+
+  /* Now we're really doing the instantiation.  Mark the type as in
+     the process of being defined.  */
+  TYPE_BEING_DEFINED (type) = 1;
+
+  maybe_push_to_top_level (uses_template_parms (type));
+  pushclass (type, 0);
 
   if (t)
     {
@@ -4530,31 +4583,6 @@ instantiate_class_template (type)
       else
 	args = inner_args;
     }
-
-  if (pedantic && is_partial_instantiation)
-    {
-      /* If this is a partial instantiation, then we can't instantiate
-	 the type; there's no telling whether or not one of the
-	 template parameters might eventually be instantiated to some
-	 value that results in a specialization being used.  We do
-	 mark the type as complete so that, for example, declaring one
-	 of its members to be a friend will not be rejected.  */
-      TYPE_SIZE (type) = integer_zero_node;
-      goto end;
-    }
-
-  TYPE_BEING_DEFINED (type) = 1;
-
-  if (! push_tinst_level (type))
-    goto end;
-
-  maybe_push_to_top_level (uses_template_parms (type));
-  pushclass (type, 0);
-
-  /* We must copy the arguments to the permanent obstack since
-     during the tsubst'ing below they may wind up in the
-     DECL_TI_ARGS of some instantiated member template.  */
-  args = copy_to_permanent (args);
 
   if (flag_external_templates)
     {
@@ -4608,18 +4636,10 @@ instantiate_class_template (type)
   TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
   TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
 
-  /* If this is a partial instantiation, don't tsubst anything.  We will
-     only use this type for implicit typename, so the actual contents don't
-     matter.  All that matters is whether a particular name is a type.  */
-  if (is_partial_instantiation)
-    {
-      TYPE_BINFO_BASETYPES (type) = TYPE_BINFO_BASETYPES (pattern);
-      TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
-      TYPE_METHODS (type) = TYPE_METHODS (pattern);
-      CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
-      TYPE_SIZE (type) = integer_zero_node;
-      goto done_with_instantiation;
-    }
+  /* We must copy the arguments to the permanent obstack since
+     during the tsubst'ing below they may wind up in the
+     DECL_TI_ARGS of some instantiated member template.  */
+  args = copy_to_permanent (args);
 
   {
     tree binfo = TYPE_BINFO (type);
@@ -4850,10 +4870,7 @@ instantiate_class_template (type)
   TYPE_BEING_DEFINED (type) = 0;
   repo_template_used (type);
 
- done_with_instantiation:
-  TYPE_BEING_DEFINED (type) = 0;
   popclass (0);
-
   pop_from_top_level ();
   pop_tinst_level ();
 
@@ -5382,9 +5399,7 @@ tsubst_decl (t, args, type, in_decl)
 	  = tsubst_aggr_type (DECL_CONTEXT (t), args, t, /*entering_scope=*/1);
 	DECL_CLASS_CONTEXT (r) = ctx;
 
-	if (member && !strncmp (OPERATOR_TYPENAME_FORMAT,
-				IDENTIFIER_POINTER (DECL_NAME (r)),
-				sizeof (OPERATOR_TYPENAME_FORMAT) - 1))
+	if (member && IDENTIFIER_TYPENAME_P (DECL_NAME (r)))
 	  /* Type-conversion operator.  Reconstruct the name, in
 	     case it's the name of one of the template's parameters.  */
 	  DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));

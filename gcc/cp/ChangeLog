@@ -1,3 +1,26 @@
+1999-01-06  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (IDENTIFIER_TYPENAME_P): Use OPERATOR_TYPENAME_FORMAT
+	here. 
+	(lang_type): Add is_partial_instantiation.  Decrease width of
+	dummy. 
+	(PARTIAL_INSTANTIATION_P): New macro.
+	(OPERATOR_TYPENAME_P): Remove.
+	* decl.c (unary_op_p): Use IDENTIFIER_TYPENAME_P, not
+	OPERATOR_TYPENAME_P. 
+	(grok_op_properties): Likewise.
+	* friend.c (do_friend): Handle friends that are member functions
+	correctly. 
+	* lex.c (init_parse): Use OPERATOR_TYPENAME_FORMAT.
+	* pt.c (instantiate_class_template): Rework for clarity.  Avoid
+	leaving TYPE_BEING_DEFINED set in obscure cases.  Don't do
+	any more partial instantiation than is absolutely necessary for
+	implicit typename.  Set PARTIAL_INSTANTIATION_P.
+	(tsubst_decl): Use IDENTIFIER_TYPENAME_P.
+	* semantics.c (begin_class_definition): Handle partial
+	specializations of a type that was previously partially
+	instantiated. 
+	
 Wed Jan  6 03:18:53 1999  Mark Elbrecht  <snowball3@usa.net.
 
 	* g++spec.c (LIBSTDCXX): Provide default definition.
