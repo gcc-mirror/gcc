@@ -2437,7 +2437,7 @@ vect_analyze_loop_form (struct loop *loop)
       edge e = loop->single_exit;
       if (!(e->flags & EDGE_ABNORMAL))
 	{
-	  loop_split_edge_with (e, NULL);
+	  split_loop_exit_edge (e);
 	  if (vect_print_dump_info (REPORT_DETAILS, loop_loc))
 	    fprintf (vect_dump, "split exit edge.");
 	}
