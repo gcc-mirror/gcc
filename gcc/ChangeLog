@@ -1,3 +1,7 @@
+2002-05-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/tm.texi: Fix typo.
+
 2002-05-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-common.c (c_common_init): Set options->unsigned_char from
