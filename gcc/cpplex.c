@@ -1106,12 +1106,23 @@ parse_string (pfile, list, token, terminator)
 	  if (is_vspace (c))
 	    {
 	      /* Drop a backslash newline, and continue. */
+	      U_CHAR *old = namebuf;
+	      while (namebuf > list->namebuf && is_hspace (namebuf[-1]))
+		namebuf--;
 	      if (namebuf > list->namebuf && namebuf[-1] == '\\')
 		{
 		  handle_newline (cur, buffer->rlimit, c);
 		  namebuf--;
+		  if (old[-1] != '\\')
+		    {
+		      buffer->cur = cur;
+		      cpp_warning (pfile,
+				   "backslash and newline separated by space");
+		    }
 		  continue;
 		}
+	      else
+		namebuf = old;
 
 	      cur--;
 
@@ -1516,37 +1527,40 @@ lex_line (pfile, list)
 	  handle_newline (cur, buffer->rlimit, c);
 	  if (PREV_TOKEN_TYPE == CPP_BACKSLASH)
 	    {
-	      if (IMMED_TOKEN ())
-		{
-		  /* Remove the escaped newline.  Then continue to process
-		     any interrupted name or number.  */
-		  cur_token--;
-		  /* Backslash-newline may not be immediately followed by
-		     EOF (C99 5.1.1.2).  */
-		  if (cur >= buffer->rlimit)
-		    {
-		      cpp_pedwarn (pfile, "backslash-newline at end of file");
-		      break;
-		    }
-		  if (IMMED_TOKEN ())
-		    {
-		      cur_token--;
-		      if (cur_token->type == CPP_NAME)
-			goto continue_name;
-		      else if (cur_token->type == CPP_NUMBER)
-			goto continue_number;
-		      cur_token++;
-		    }
-		  /* Remember whitespace setting.  */
-		  flags = cur_token->flags;
-		  break;
-		}
-	      else
+	      /* backslash space newline is still treated as backslash-newline;
+		 we think this is standard conforming, with some reservations
+		 about actually _using_ the weasel words in C99 5.1.1.2
+		 (translation phase 1 is allowed to do whatever it wants to
+		 your input as long as it's documented).  */
+	      if (! IMMED_TOKEN ())
 		{
 		  buffer->cur = cur;
 		  cpp_warning (pfile,
 			       "backslash and newline separated by space");
 		}
+	      
+	      /* Remove the escaped newline.  Then continue to process
+		 any interrupted name or number.  */
+	      cur_token--;
+	      /* Backslash-newline may not be immediately followed by
+		 EOF (C99 5.1.1.2).  */
+	      if (cur >= buffer->rlimit)
+		{
+		  cpp_pedwarn (pfile, "backslash-newline at end of file");
+		  break;
+		}
+	      if (IMMED_TOKEN ())
+		{
+		  cur_token--;
+		  if (cur_token->type == CPP_NAME)
+		    goto continue_name;
+		  else if (cur_token->type == CPP_NUMBER)
+		    goto continue_number;
+		  cur_token++;
+		}
+	      /* Remember whitespace setting.  */
+	      flags = cur_token->flags;
+	      break;
 	    }
 	  else if (MIGHT_BE_DIRECTIVE ())
 	    {
@@ -3186,12 +3200,6 @@ _cpp_get_token (pfile)
 
       if (is_macro_disabled (pfile, node->value.expansion, token))
 	return token;
-
-      if (pfile->cur_context > CPP_STACK_MAX)
-	{
-	  cpp_error (pfile, "macros nested too deep invoking '%s'", node->name);
-	  return token;
-	}
 
       if (push_macro_context (pfile, token))
 	return token;

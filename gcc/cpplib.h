@@ -246,9 +246,6 @@ struct cpp_buffer
      or for -Wtraditional, and only once per file (otherwise it would
      be far too noisy).  */
   char warned_cplusplus_comments;
-
-  /* True if this buffer's data is mmapped.  */
-  char mapped;
 };
 
 struct file_name_map_list;
