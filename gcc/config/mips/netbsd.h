@@ -175,7 +175,10 @@ do {									 \
 	 size_directive_output = 1;					 \
 	 fprintf (FILE, "%s", SIZE_ASM_OP);				 \
 	 assemble_name (FILE, name);					 \
-	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
+	 fprintf (FILE, ",");						 \
+	 fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,			 \
+		  int_size_in_bytes (TREE_TYPE (DECL)));		 \
+	 fprintf (FILE, "\n");						 \
        }								 \
    } while (0)
 
