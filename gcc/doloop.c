@@ -621,11 +621,23 @@ doloop_modify_runtime (loop, iterations_max,
 
   if (loop->scan_start)
     {
+      rtx iteration_var = loop_info->iteration_var;
       struct loop_ivs *ivs = LOOP_IVS (loop);
-      struct iv_class *bl
-	= REG_IV_CLASS (ivs, REGNO (loop_info->iteration_var));
+      struct iv_class *bl;
 
-      if (INSN_LUID (bl->biv->insn) < INSN_LUID (loop->scan_start))
+      if (REG_IV_TYPE (ivs, REGNO (iteration_var)) == BASIC_INDUCT)
+	bl = REG_IV_CLASS (ivs, REGNO (iteration_var));
+      else if (REG_IV_TYPE (ivs, REGNO (iteration_var)) == GENERAL_INDUCT)
+	{
+	  struct induction *v = REG_IV_INFO (ivs, REGNO (iteration_var));
+	  bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
+	}
+      else
+	/* Iteration var must be an induction variable to get here.  */
+	abort();
+
+      if (INSN_UID (bl->biv->insn) < max_uid_for_loop
+	  && INSN_LUID (bl->biv->insn) < INSN_LUID (loop->scan_start))
 	{
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,
