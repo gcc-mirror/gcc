@@ -1,3 +1,7 @@
+2003-04-10  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/i386/i386.c (ix86_ms_bitfield_layout_p): Fix formatting.
+
 2003-04-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/lib2funcs.S (__xtensa_sync_caches): Flush data cache
