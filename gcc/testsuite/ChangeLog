@@ -1,3 +1,7 @@
+2002-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020218-1.c: New test.
+
 2002-01-21  David.Billinghurst <David.Billinghurst@riotinto.com>
 
 	* lib/prune.exp (prune_gcc_output): Prune "At global scope"

@@ -1,3 +1,8 @@
+2002-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_function_arg_regno_p): Never return
+	true for 64-bit mode only SSE registers in 32-bit mode.
+
 2002-01-21  Kazu Hirata  <kazu@hxi.com>
 
 	* unwind-dw2.c: Fix formatting.

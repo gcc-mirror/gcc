@@ -1483,7 +1483,8 @@ ix86_function_arg_regno_p (regno)
 {
   int i;
   if (!TARGET_64BIT)
-    return regno < REGPARM_MAX || (TARGET_SSE && SSE_REGNO_P (regno));
+    return (regno < REGPARM_MAX
+	    || (TARGET_SSE && SSE_REGNO_P (regno) && !fixed_regs[regno]));
   if (SSE_REGNO_P (regno) && TARGET_SSE)
     return true;
   /* RAX is used as hidden argument to va_arg functions.  */
