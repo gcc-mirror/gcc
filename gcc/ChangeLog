@@ -1,3 +1,8 @@
+2001-08-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmacro.c (enter_macro_context): Push macro expansions even
+	if empty.
+
 2001-08-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.c: Include integrate.h to silence warning.
