@@ -577,6 +577,7 @@ pop_function_context ()
   temp_slots = p->temp_slots;
   temp_slot_level = p->temp_slot_level;
   current_function_epilogue_delay_list = p->epilogue_delay_list;
+  reg_renumber = 0;
 
   restore_tree_status (p);
   restore_storage_status (p);
