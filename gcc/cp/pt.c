@@ -519,15 +519,7 @@ determine_specialization (template_id, decl, targs_out,
 	tmpl = DECL_TI_TEMPLATE (fn);
       else if (TREE_CODE (fn) != TEMPLATE_DECL
 	       || (need_member_template && !is_member_template (fn)))
-	{
-	  if (decls_match (decl, fn) && 0)
-	    {
-	      cp_error ("`template <>' applied to non-specialization `%D'",
-			fn);
-	      return NULL_TREE;
-	    }
-	  continue;
-	}
+	continue;
       else
 	tmpl = fn;
 
@@ -572,7 +564,8 @@ determine_specialization (template_id, decl, targs_out,
     {
     no_match:
       if (complain)
-	cp_error ("`%D' does not match any template declaration", decl);
+	cp_error ("`%D' does not match any template declaration",
+		  template_id);
       
       return NULL_TREE;
     }
@@ -581,7 +574,8 @@ determine_specialization (template_id, decl, targs_out,
     ambiguous:
       if (complain)
 	{
-	  cp_error ("ambiguous template specialization `%D'", decl);
+	  cp_error ("ambiguous template specialization `%D'",
+		    template_id);
 	  print_candidates (templates);
 	}
       return NULL_TREE;

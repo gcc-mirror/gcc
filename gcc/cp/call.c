@@ -3107,19 +3107,15 @@ standard_conversion (to, from, expr)
     {
       enum tree_code ufcode = TREE_CODE (TREE_TYPE (from));
       enum tree_code utcode = TREE_CODE (TREE_TYPE (to));
-      tree nconv = NULL_TREE;
 
-      if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (from)),
-		     TYPE_MAIN_VARIANT (TREE_TYPE (to)), 1))
-	nconv = conv;
-      else if (utcode == VOID_TYPE && ufcode != OFFSET_TYPE
-	       && ufcode != FUNCTION_TYPE)
+      if (utcode == VOID_TYPE && ufcode != OFFSET_TYPE
+	  && ufcode != FUNCTION_TYPE)
 	{
 	  from = build_pointer_type
 	    (cp_build_type_variant (void_type_node,
 				    TYPE_READONLY (TREE_TYPE (from)),
 				    TYPE_VOLATILE (TREE_TYPE (from))));
-	  nconv = build_conv (PTR_CONV, from, conv);
+	  conv = build_conv (PTR_CONV, from, conv);
 	}
       else if (ufcode == OFFSET_TYPE && utcode == OFFSET_TYPE)
 	{
@@ -3133,7 +3129,7 @@ standard_conversion (to, from, expr)
 	    {
 	      from = build_offset_type (tbase, TREE_TYPE (TREE_TYPE (from)));
 	      from = build_pointer_type (from);
-	      nconv = build_conv (PMEM_CONV, from, conv);
+	      conv = build_conv (PMEM_CONV, from, conv);
 	    }
 	}
       else if (IS_AGGR_TYPE (TREE_TYPE (from))
@@ -3145,14 +3141,14 @@ standard_conversion (to, from, expr)
 					    TYPE_READONLY (TREE_TYPE (from)),
 					    TYPE_VOLATILE (TREE_TYPE (from)));
 	      from = build_pointer_type (from);
-	      nconv = build_conv (PTR_CONV, from, conv);
+	      conv = build_conv (PTR_CONV, from, conv);
 	    }
 	}
 
-      if (nconv && comptypes (from, to, 1))
-	conv = nconv;
-      else if (nconv && comp_ptr_ttypes (TREE_TYPE (to), TREE_TYPE (from)))
-	conv = build_conv (QUAL_CONV, to, nconv);
+      if (comptypes (from, to, 1))
+	/* OK */;
+      else if (comp_ptr_ttypes (TREE_TYPE (to), TREE_TYPE (from)))
+	conv = build_conv (QUAL_CONV, to, conv);
       else if (ptr_reasonably_similar (TREE_TYPE (to), TREE_TYPE (from)))
 	{
 	  conv = build_conv (PTR_CONV, to, conv);
