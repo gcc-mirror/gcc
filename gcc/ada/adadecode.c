@@ -35,10 +35,11 @@
 #include "system.h"
 #else
 #include <stdio.h>
+#include <ctype.h>
+#define ISDIGIT(c) isdigit(c)
 #define PARMS(ARGS) ARGS
 #endif
 
-#include <ctype.h>
 #include "adadecode.h"
 
 static void add_verbose (const char *, char *);
@@ -207,7 +208,7 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
     int n_digits = 0;
 
     if (len > 1)
-      while (isdigit ((int) ada_name[(int) len - 1 - n_digits]))
+      while (ISDIGIT ((int) ada_name[(int) len - 1 - n_digits]))
 	n_digits++;
 
     /* Check if we have $ or __ before digits.  */
