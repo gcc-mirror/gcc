@@ -1,3 +1,10 @@
+2004-05-14  Steven Bosscher  <stevenb@suse.de>
+
+	PR opt/14472
+	* tree-tailcall.c (process_assignment): Use STRIP_NOPS to
+	ignore type conversions that do not inhibit tail calling.
+	(find_tail_calls): Likewise.
+
 2004-05-14  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Reorganize
