@@ -497,33 +497,6 @@ if test x"${with_libs}" != x ; then
   done
 fi
 
-# If both --with-headers and --with-libs are specified, default to
-# --without-newlib.
-if test x"${with_headers}" != x && test x"${with_libs}" != x ; then
-  if test x"${with_newlib}" = x ; then
-    with_newlib=no
-  fi
-fi
-
-# Recognize --with-newlib/--without-newlib.
-if test x${with_newlib} = xno ; then
-  skipdirs="${skipdirs} target-newlib"
-elif test x${with_newlib} = xyes ; then
-  skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
-fi
-
-# Default to using --with-stabs for certain targets.
-if test x${with_stabs} = x ; then
-  case "${target}" in
-  mips*-*-irix6*)
-    ;;
-  mips*-*-* | alpha*-*-osf*)
-    with_stabs=yes;
-    withoptions="${withoptions} --with-stabs"
-    ;;
-  esac
-fi
-
 # Handle ${copy_dirs}
 set fnord ${copy_dirs}
 shift
@@ -554,6 +527,32 @@ while test $# != 0 ; do
   fi
   shift; shift
 done
+
+# If both --with-headers and --with-libs are specified, default to
+# --without-newlib.
+if test x"${with_headers}" != x && test x"${with_libs}" != x ; then
+  if test x"${with_newlib}" = x ; then
+    with_newlib=no
+  fi
+fi
+
+# Recognize --with-newlib/--without-newlib.
+case ${with_newlib} in
+  no) skipdirs="${skipdirs} target-newlib" ;;
+  yes) skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'` ;;
+esac
+
+# Default to using --with-stabs for certain targets.
+if test x${with_stabs} = x ; then
+  case "${target}" in
+  mips*-*-irix6*)
+    ;;
+  mips*-*-* | alpha*-*-osf*)
+    with_stabs=yes;
+    withoptions="${withoptions} --with-stabs"
+    ;;
+  esac
+fi
 
 # Configure extra directories which are host specific
 
