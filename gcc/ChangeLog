@@ -1,3 +1,9 @@
+2004-12-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac: Move TL_AC_GCC_VERSION into initialization section.
+	Set libstdcxx_incdir directly.
+	* configure: Regenerate.
+
 2004-12-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-dom.c (record_equivalences_from_phis): Remove an

@@ -1,3 +1,9 @@
+2004-12-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.if: Delete.
+	* configure.in: Set libstdcxx_incdir directly.
+	* configure: Regenerate.
+
 2004-12-02  Eric Christopher  <echristo@redhat.com>
 
 	* Makefile.tpl (clean-target-libgcc): Make change in correct place.

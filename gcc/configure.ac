@@ -100,6 +100,8 @@ AC_MSG_ERROR([
 *** and run configure again.])
 fi
 
+TL_AC_GCC_VERSION([$srcdir/..])
+
 # -----------
 # Directories
 # -----------
@@ -137,7 +139,7 @@ if test x${gcc_gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
     gcc_gxx_include_dir='${libsubdir}/include/c++'
   else
-    topsrcdir=${srcdir}/.. . ${srcdir}/../config.if
+    libstdcxx_incdir=c++/${gcc_version}
 changequote(<<, >>)dnl
     gcc_gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/"${libstdcxx_incdir}
 changequote([, ])dnl
@@ -1378,8 +1380,6 @@ xm_file="ansidecl.h ${xm_file}"
 # --------
 # UNSORTED
 # --------
-
-TL_AC_GCC_VERSION([$srcdir/..])
 
 changequote(,)dnl
 # Compile in configure arguments.
