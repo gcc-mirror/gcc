@@ -485,6 +485,10 @@ extern int flag_unwind_tables;
 
 extern int flag_asynchronous_unwind_tables;
 
+/* Nonzero means allow for forced unwinding.  */
+
+extern int flag_forced_unwind_exceptions;
+
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
 
