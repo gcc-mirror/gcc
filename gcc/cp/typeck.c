@@ -2880,7 +2880,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
   tree build_type = 0;
 
   /* Nonzero means after finally constructing the expression
-     give it this type.  Otherwise, give it type RESULT_TYPE.  */
+     convert it to this type.  */
   tree final_type = 0;
 
   /* Nonzero if this is an operation like MIN or MAX which can
@@ -3155,34 +3155,39 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  else
 	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
 			type0, type1);
+
+	  if (result_type == NULL_TREE)
+	    result_type = ptr_type_node;
 	}
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
-	op1 = null_pointer_node;
+	result_type = type0;
       else if (code1 == POINTER_TYPE && TREE_CODE (op0) == INTEGER_CST
 	       && integer_zerop (op0))
-	op0 = null_pointer_node;
+	result_type = type1;
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
+	  result_type = type0;
 	  error ("ANSI C++ forbids comparison between pointer and integer");
-	  op1 = convert (TREE_TYPE (op0), op1);
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
+	  result_type = type1;
 	  error ("ANSI C++ forbids comparison between pointer and integer");
-	  op0 = convert (TREE_TYPE (op1), op0);
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
 	{
 	  op0 = build_component_ref (op0, index_identifier, 0, 0);
 	  op1 = integer_zero_node;
+	  result_type = TREE_TYPE (op0);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1) && TREE_CODE (op0) == INTEGER_CST
 	       && integer_zerop (op0))
 	{
 	  op0 = build_component_ref (op1, index_identifier, 0, 0);
 	  op1 = integer_zero_node;
+	  result_type = TREE_TYPE (op0);
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && TYPE_PTRMEMFUNC_P (type1)
 	       && (TYPE_PTRMEMFUNC_FN_TYPE (type0)
@@ -3258,11 +3263,6 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	{
 	  return build_binary_op (code, op1, op0, 1);
 	}
-
-      type0 = TREE_TYPE (op0);
-      type1 = TREE_TYPE (op1);
-      if (result_type == NULL_TREE)
-	result_type = type0;
       break;
 
     case MAX_EXPR:
@@ -3272,29 +3272,15 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	shorten = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
-	  if (! comp_target_types (type0, type1, 1))
+	  if (comp_target_types (type0, type1, 1))
+	    result_type = common_type (type0, type1);
+	  else
 	    {
 	      cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
 			  type0, type1);
 	      result_type = ptr_type_node;
 	    }
-#if 0
-	  else if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
-		   != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
-	    cp_pedwarn ("comparison of %scomplete and %scomplete pointers",
-			TYPE_SIZE (TREE_TYPE (type0)) == 0 ? "in" : "",
-			TYPE_SIZE (TREE_TYPE (type1)) == 0 ? "in" : "",
-			type0, type1);
-	  else if (pedantic
-		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C++ forbids ordered comparisons of pointers to functions");
-#endif
-	  else
-	    result_type = common_type (type0, type1);
 	}
-
-      if (result_type == NULL_TREE)
-	result_type = type0;
       break;
 
     case LE_EXPR:
@@ -3307,50 +3293,37 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
-	  if (! comp_target_types (type0, type1, 1))
-	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
-			type0, type1);
-#if 0
-	  else if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
-		   != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
-	    cp_pedwarn ("comparison of %scomplete and %scomplete pointers",
-			TYPE_SIZE (TREE_TYPE (type0)) == 0 ? "in" : "",
-			TYPE_SIZE (TREE_TYPE (type1)) == 0 ? "in" : "",
-			type0, type1);
-	  else if (pedantic 
-		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C++ forbids ordered comparisons of pointers to functions");
-#endif
-	  else
+	  if (comp_target_types (type0, type1, 1))
 	    result_type = common_type (type0, type1);
+	  else
+	    {
+	      cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
+			  type0, type1);
+	      result_type = ptr_type_node;
+	    }
 	}
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
-	op1 = null_pointer_node;
+	result_type = type0;
       else if (code1 == POINTER_TYPE && TREE_CODE (op0) == INTEGER_CST
 	       && integer_zerop (op0))
-	op0 = null_pointer_node;
+	result_type = type1;
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
+	  result_type = type0;
 	  if (pedantic)
 	    pedwarn ("ANSI C++ forbids comparison between pointer and integer");
 	  else if (! flag_traditional)
 	    warning ("comparison between pointer and integer");
-	  op1 = convert (TREE_TYPE (op0), op1);
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
+	  result_type = type1;
 	  if (pedantic)
 	    pedwarn ("ANSI C++ forbids comparison between pointer and integer");
 	  else if (! flag_traditional)
 	    warning ("comparison between pointer and integer");
-	  op0 = convert (TREE_TYPE (op1), op0);
 	}
-
-      type0 = TREE_TYPE (op0);
-      type1 = TREE_TYPE (op1);
-      if (result_type == NULL_TREE)
-	result_type = type0;
       break;
     }
 
@@ -3496,26 +3469,38 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	  int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
 
-	  tree comp_type = TREE_TYPE (op0);
-
 	  int unsignedp0, unsignedp1;
 	  tree primop0 = get_narrower (op0, &unsignedp0);
 	  tree primop1 = get_narrower (op1, &unsignedp1);
 
 	  /* Give warnings for comparisons between signed and unsigned
-	     quantities that may fail.  Do not warn if the signed quantity
-	     is an unsuffixed integer literal (or some static constant
-	     expression involving such literals) and it is positive.
-	     Do not warn if the comparison is being done in a signed type,
-	     since the signed type will only be chosen if it can represent
-	     all the values of the unsigned type.  */
+	     quantities that may fail.  */
 	  /* Do the checking based on the original operand trees, so that
 	     casts will be considered, but default promotions won't be.  */
-	  if (TREE_UNSIGNED (comp_type)
-	      && ((op0_signed && (TREE_CODE (orig_op0) != INTEGER_CST
-				  || tree_int_cst_sgn (orig_op0) == -1))
-		  || (op1_signed && (TREE_CODE (orig_op1) != INTEGER_CST
-				     || tree_int_cst_sgn (orig_op1) == -1))))
+
+	  /* Do not warn if the comparison is being done in a signed type,
+	     since the signed type will only be chosen if it can represent
+	     all the values of the unsigned type.  */
+	  if (! TREE_UNSIGNED (result_type))
+	    /* OK */;
+	  /* Do not warn if the signed quantity is an unsuffixed
+	     integer literal (or some static constant expression
+	     involving such literals) and it is non-negative.  */
+	  else if ((op0_signed && TREE_CODE (orig_op0) == INTEGER_CST
+		    && tree_int_cst_sgn (orig_op0) >= 0)
+		   || (op1_signed && TREE_CODE (orig_op1) == INTEGER_CST
+		       && tree_int_cst_sgn (orig_op1) >= 0))
+	    /* OK */;
+	  /* Do not warn if the comparison is an equality operation,
+	     the unsigned quantity is an integral constant and it does
+	     not use the most significant bit of result_type.  */
+	  else if ((resultcode == EQ_EXPR || resultcode == NE_EXPR)
+		   && ((op0_signed && TREE_CODE (orig_op1) == INTEGER_CST
+			&& int_fits_type_p (orig_op1, signed_type (result_type))
+			|| (op1_signed && TREE_CODE (orig_op0) == INTEGER_CST
+			    && int_fits_type_p (orig_op0, signed_type (result_type))))))
+	    /* OK */;
+	  else
 	    warning ("comparison between signed and unsigned");
 
 	  /* Warn if two unsigned values are being compared in a size
@@ -3526,8 +3511,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	     have all bits set that are set in the ~ operand when it is
 	     extended.  */
 
-	  else if (TREE_CODE (primop0) == BIT_NOT_EXPR
-		   ^ TREE_CODE (primop1) == BIT_NOT_EXPR)
+	  if (TREE_CODE (primop0) == BIT_NOT_EXPR
+	      ^ TREE_CODE (primop1) == BIT_NOT_EXPR)
 	    {
 	      if (TREE_CODE (primop0) == BIT_NOT_EXPR)
 		primop0 = get_narrower (TREE_OPERAND (op0, 0), &unsignedp0);
@@ -3556,7 +3541,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 		    }
 
 		  bits = TYPE_PRECISION (TREE_TYPE (primop));
-		  if (bits < TYPE_PRECISION (comp_type)
+		  if (bits < TYPE_PRECISION (result_type)
 		      && bits < HOST_BITS_PER_LONG && unsignedp)
 		    {
 		      mask = (~ (HOST_WIDE_INT) 0) << bits;
@@ -3566,9 +3551,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 		}
 	      else if (unsignedp0 && unsignedp1
 		       && (TYPE_PRECISION (TREE_TYPE (primop0))
-			   < TYPE_PRECISION (comp_type))
+			   < TYPE_PRECISION (result_type))
 		       && (TYPE_PRECISION (TREE_TYPE (primop1))
-			   < TYPE_PRECISION (comp_type)))
+			   < TYPE_PRECISION (result_type)))
 		warning ("comparison of promoted ~unsigned with unsigned");
 	    }
 	}
@@ -3582,7 +3567,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 
   if (!result_type)
     {
-      binary_op_error (error_code);
+      cp_error ("invalid operands `%T' and `%T' to binary `%O'",
+		TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), error_code);
       return error_mark_node;
     }
 
@@ -4467,7 +4453,7 @@ mark_addressable (exp)
 	   be non-zero in the case of processing a default function.
 	   The second may be non-zero in the case of a template function.  */
 	x = DECL_MAIN_VARIANT (x);
-	if ((DECL_INLINE (x) || DECL_PENDING_INLINE_INFO (x))
+	if ((DECL_THIS_INLINE (x) || DECL_PENDING_INLINE_INFO (x))
 	    && (DECL_CONTEXT (x) == NULL_TREE
 		|| TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (x))) != 't'
 		|| ! CLASSTYPE_INTERFACE_ONLY (DECL_CONTEXT (x))))

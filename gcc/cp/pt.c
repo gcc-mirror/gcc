@@ -1450,6 +1450,7 @@ tsubst (t, args, nargs, in_decl)
 	TREE_STATIC (r) = 0;
 	DECL_INTERFACE_KNOWN (r) = 0;
 	DECL_INLINE (r) = DECL_INLINE (t);
+	DECL_THIS_INLINE (r) = DECL_THIS_INLINE (t);
 	{
 #if 0				/* Maybe later.  -jason  */
 	  struct tinst_level *til = tinst_for_decl();
@@ -1751,6 +1752,7 @@ instantiate_template (tmpl, targ_ptr)
   else if (t->text)
     {
       SET_DECL_IMPLICIT_INSTANTIATION (fndecl);
+      repo_template_used (fndecl);
       p = (struct pending_inline *) permalloc (sizeof (struct pending_inline));
       p->parm_vec = t->parm_vec;
       p->bindings = targs;
@@ -2384,7 +2386,7 @@ do_pending_expansions ()
 	DECIDE (0);
 
       if (DECL_EXPLICIT_INSTANTIATION (t))
-	DECIDE (! DECL_EXTERNAL (t));
+	DECIDE (DECL_NOT_REALLY_EXTERN (t));
       else if (! flag_implicit_templates)
 	DECIDE (0);
 
@@ -2486,6 +2488,22 @@ add_pending_template (pt)
   p->id = pt;
 }
 
+void
+mark_function_instantiated (result, extern_p)
+     tree result;
+     int extern_p;
+{
+  if (DECL_TEMPLATE_INSTANTIATION (result))
+    SET_DECL_EXPLICIT_INSTANTIATION (result);
+  TREE_PUBLIC (result) = 1;
+
+  if (! extern_p)
+    {
+      DECL_INTERFACE_KNOWN (result) = 1;
+      DECL_NOT_REALLY_EXTERN (result) = 1;
+    }
+}
+
 /* called from the parser.  */
 void
 do_function_instantiation (declspecs, declarator, storage)
@@ -2495,10 +2513,17 @@ do_function_instantiation (declspecs, declarator, storage)
   tree name = DECL_NAME (decl);
   tree fn = IDENTIFIER_GLOBAL_VALUE (name);
   tree result = NULL_TREE;
+  int extern_p = 0;
   if (fn)
     {
       for (fn = get_first_fn (fn); fn; fn = DECL_CHAIN (fn))
-	if (TREE_CODE (fn) == TEMPLATE_DECL)
+	if (decls_match (fn, decl)
+	    && DECL_DEFER_OUTPUT (fn))
+	  {
+	    result = fn;
+	    break;
+	  }
+	else if (TREE_CODE (fn) == TEMPLATE_DECL)
 	  {
 	    int ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (fn));
 	    tree *targs = (tree *) malloc (sizeof (tree) * ntparms);
@@ -2518,27 +2543,40 @@ do_function_instantiation (declspecs, declarator, storage)
 	  }
     }
   if (! result)
-    cp_error ("no matching template for `%D' found", decl);
+    {
+      cp_error ("no matching template for `%D' found", decl);
+      return;
+    }
 
   if (flag_external_templates)
     return;
 
-  SET_DECL_EXPLICIT_INSTANTIATION (result);
-  TREE_PUBLIC (result) = 1;
-
   if (storage == NULL_TREE)
-    {
-      DECL_INTERFACE_KNOWN (result) = 1;
-      DECL_EXTERNAL (result) = 0;
-      TREE_STATIC (result) = 1;
-    }
-  else if (storage == ridpointers[(int) RID_EXTERN])
     ;
+  else if (storage == ridpointers[(int) RID_EXTERN])
+    extern_p = 1;
   else
     cp_error ("storage class `%D' applied to template instantiation",
 	      storage);
+  mark_function_instantiated (result, extern_p);
 }
 
+void
+mark_class_instantiated (t, extern_p)
+     tree t;
+     int extern_p;
+{
+  SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
+  SET_CLASSTYPE_INTERFACE_KNOWN (t);
+  CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
+  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
+  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = extern_p;
+  if (! extern_p)
+    {
+      CLASSTYPE_DEBUG_REQUESTED (t) = 1;
+      rest_of_type_compilation (t, 1);
+    }
+}     
 void
 do_type_instantiation (name, storage)
      tree name, storage;
@@ -2578,18 +2616,7 @@ do_type_instantiation (name, storage)
     }
 
   if (! CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
-    {
-      SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
-      SET_CLASSTYPE_INTERFACE_KNOWN (t);
-      CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
-      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
-      TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = extern_p;
-      if (! extern_p)
-	{
-	  CLASSTYPE_DEBUG_REQUESTED (t) = 1;
-	  rest_of_type_compilation (t, 1);
-	}
-    }
+    mark_class_instantiated (t, extern_p);
   
   {
     tree tmp;
@@ -2615,8 +2642,7 @@ do_type_instantiation (name, storage)
 	if (! extern_p)
 	  {
 	    DECL_INTERFACE_KNOWN (tmp) = 1;
-	    DECL_EXTERNAL (tmp) = 0;
-	    TREE_STATIC (tmp) = 1;
+	    DECL_NOT_REALLY_EXTERN (tmp) = 1;
 	  }
       }
 

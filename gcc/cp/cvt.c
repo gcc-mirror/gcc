@@ -1090,10 +1090,7 @@ convert_to_aggr (type, expr, msgp, protect)
     return NULL_TREE;
 
   fntype = TREE_TYPE (function);
-  if (DECL_INLINE (function) && TREE_CODE (function) == FUNCTION_DECL)
-    function = build1 (ADDR_EXPR, build_pointer_type (fntype), function);
-  else
-    function = default_conversion (function);
+  function = default_conversion (function);
 
   result = build_nt (CALL_EXPR, function,
 		     convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),

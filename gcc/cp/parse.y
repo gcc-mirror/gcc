@@ -897,6 +897,8 @@ template_instantiate_once:
 		  pop_obstacks ();
 		  end_template_instantiation ($1);
 
+		  repo_template_used (t);
+
                   /* Now go after the methods & class data.  */
                   instantiate_member_templates ($1);
 

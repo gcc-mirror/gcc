@@ -780,9 +780,14 @@ init_exception_processing ()
   push_lang_context (lang_name_c);
 
   catch_match_fndecl =
-    define_function ("__throw_type_match",
-		     build_function_type (integer_type_node,
-					  tree_cons (NULL_TREE, string_type_node, tree_cons (NULL_TREE, ptr_type_node, void_list_node))),
+    define_function (flag_rtti
+		     ? "__throw_type_match_rtti"
+		     : "__throw_type_match",
+		     build_function_type (ptr_type_node,
+					  tree_cons (NULL_TREE, ptr_type_node,
+						     tree_cons (NULL_TREE, ptr_type_node,
+								tree_cons (NULL_TREE, ptr_type_node,
+									   void_list_node)))),
 		     NOT_BUILT_IN,
 		     pushdecl,
 		     0);
@@ -1131,6 +1136,31 @@ expand_leftover_cleanups ()
     }
 }
 
+/* Build a type value for use at runtime for a exp that is thrown or
+   matched against by the exception handling system.  */
+static tree
+build_eh_type (exp)
+     tree exp;
+{
+  char *typestring;
+  tree type;
+
+  if (flag_rtti)
+    {
+      exp = build_typeid (exp);
+      return build1 (ADDR_EXPR, ptr_type_node, exp);
+    }
+  type = TREE_TYPE (exp);
+
+  /* peel back references, so they match. */
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+
+  typestring = build_overload_name (type, 1, 1);
+  exp = combine_strings (build_string (strlen (typestring)+1, typestring));
+  return build1 (ADDR_EXPR, ptr_type_node, exp);
+}
+
 /* call this to start a catch block. Typename is the typename, and identifier
    is the variable to place the object in or NULL if the variable doesn't
    matter.  If typename is NULL, that means its a "catch (...)" or catch
@@ -1142,8 +1172,7 @@ expand_start_catch_block (declspecs, declarator)
 {
   rtx false_label_rtx;
   rtx protect_label_rtx;
-  tree type;
-  tree decl;
+  tree decl = NULL_TREE;
   tree init;
 
   if (! doing_eh (1))
@@ -1151,33 +1180,6 @@ expand_start_catch_block (declspecs, declarator)
 
   /* Create a binding level for the parm.  */
   expand_start_bindings (0);
-
-  if (declspecs)
-    {
-      tree init_type;
-      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
-
-      /* Figure out the type that the initializer is. */
-      init_type = TREE_TYPE (decl);
-      if (TREE_CODE (init_type) != REFERENCE_TYPE)
-	init_type = build_reference_type (init_type);
-
-      init = convert_from_reference (save_expr (make_tree (init_type, saved_throw_value)));
-      
-      /* Do we need the below two lines? */
-      /* Let `finish_decl' know that this initializer is ok.  */
-      DECL_INITIAL (decl) = init;
-      /* This needs to be preallocated under the try block,
-	 in a union of all catch variables. */
-      pushdecl (decl);
-      type = TREE_TYPE (decl);
-
-      /* peel back references, so they match. */
-      if (TREE_CODE (type) == REFERENCE_TYPE)
-	type = TREE_TYPE (type);
-    }
-  else
-    type = NULL_TREE;
 
   /* These are saved for the exception table.  */
   push_rtl_perm ();
@@ -1187,34 +1189,50 @@ expand_start_catch_block (declspecs, declarator)
   push_label_entry (&false_label_stack, false_label_rtx);
   push_label_entry (&false_label_stack, protect_label_rtx);
 
-  if (type)
+  if (declspecs)
     {
-      tree params;
-      char *typestring;
+      tree exp;
       rtx call_rtx, return_value_rtx;
-      tree catch_match_fcall;
-      tree catchmatch_arg, argval;
+      tree init_type;
 
-      typestring = build_overload_name (type, 1, 1);
+      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
 
-      params = tree_cons (NULL_TREE,
-			 combine_strings (build_string (strlen (typestring)+1, typestring)),
-			 tree_cons (NULL_TREE,
-				    make_tree (ptr_type_node, saved_throw_type),
-				    NULL_TREE));
-      catch_match_fcall = build_function_call (CatchMatch, params);
-      call_rtx = expand_call (catch_match_fcall, NULL_RTX, 0);
+      if (decl == NULL_TREE)
+	{
+	  error ("invalid catch parameter");
+	  return;
+	}
+
+      /* Figure out the type that the initializer is. */
+      init_type = TREE_TYPE (decl);
+      if (TREE_CODE (init_type) != REFERENCE_TYPE)
+	init_type = build_reference_type (init_type);
+
+      exp = make_tree (ptr_type_node, saved_throw_value);
+      exp = tree_cons (NULL_TREE,
+		       build_eh_type (decl),
+		       tree_cons (NULL_TREE,
+				  make_tree (ptr_type_node, saved_throw_type),
+				  tree_cons (NULL_TREE, exp, NULL_TREE)));
+      exp = build_function_call (CatchMatch, exp);
+      call_rtx = expand_call (exp, NULL_RTX, 0);
       assemble_external (TREE_OPERAND (CatchMatch, 0));
 
-      return_value_rtx =
-	hard_function_value (integer_type_node, catch_match_fcall);
+      return_value_rtx = hard_function_value (ptr_type_node, exp);
 
       /* did the throw type match function return TRUE? */
-      emit_cmp_insn (return_value_rtx, const0_rtx, NE, NULL_RTX,
+      emit_cmp_insn (return_value_rtx, const0_rtx, EQ, NULL_RTX,
 		    GET_MODE (return_value_rtx), 0, 0);
 
       /* if it returned FALSE, jump over the catch block, else fall into it */
-      emit_jump_insn (gen_bne (false_label_rtx));
+      emit_jump_insn (gen_beq (false_label_rtx));
+
+      init = convert_from_reference (save_expr (make_tree (init_type, call_rtx)));
+
+      /* Do we need the below two lines? */
+      /* Let `finish_decl' know that this initializer is ok.  */
+      DECL_INITIAL (decl) = init;
+      decl = pushdecl (decl);
       finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   else
@@ -1535,7 +1553,6 @@ expand_throw (exp)
      tree exp;
 {
   rtx label;
-  tree type;
 
   if (! doing_eh (1))
     return;
@@ -1548,26 +1565,28 @@ expand_throw (exp)
 
   if (exp)
     {
+      tree throw_type;
+      rtx throw_type_rtx;
+      rtx throw_value_rtx;
+
       /* throw expression */
       /* First, decay it. */
       exp = default_conversion (exp);
-      type = TREE_TYPE (exp);
 
-      {
-	char *typestring = build_overload_name (type, 1, 1);
-	tree throw_type = build1 (ADDR_EXPR, ptr_type_node, combine_strings (build_string (strlen (typestring)+1, typestring)));
-	rtx throw_type_rtx = expand_expr (throw_type, NULL_RTX, VOIDmode, 0);
-	rtx throw_value_rtx;
+      /* Make a copy of the thrown object.  WP 15.1.5  */
+      exp = build_new (NULL_TREE, TREE_TYPE (exp),
+		       build_tree_list (NULL_TREE, exp),
+		       0);
 
-	/* Make a copy of the thrown object.  WP 15.1.5  */
-	exp = build_new (NULL_TREE, type, build_tree_list (NULL_TREE, exp), 0);
+      if (exp == error_mark_node)
+	error ("  in thrown expression");
 
-	if (exp == error_mark_node)
-	  error ("  in thrown expression");
-	throw_value_rtx = expand_expr (exp, NULL_RTX, VOIDmode, 0);
-	emit_move_insn (saved_throw_value, throw_value_rtx);
-	emit_move_insn (saved_throw_type, throw_type_rtx);
-      }
+      throw_type = build_eh_type (build_indirect_ref (exp, NULL_PTR));
+      throw_type_rtx = expand_expr (throw_type, NULL_RTX, VOIDmode, 0);
+
+      throw_value_rtx = expand_expr (exp, NULL_RTX, VOIDmode, 0);
+      emit_move_insn (saved_throw_value, throw_value_rtx);
+      emit_move_insn (saved_throw_type, throw_type_rtx);
     }
   else
     {
@@ -1665,6 +1684,7 @@ build_throw (e)
     {
       e = build1 (THROW_EXPR, void_type_node, e);
       TREE_SIDE_EFFECTS (e) = 1;
+      TREE_USED (e) = 1;
     }
   return e;
 }

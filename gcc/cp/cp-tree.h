@@ -954,9 +954,11 @@ struct lang_decl_flags
   unsigned saved_inline : 1;
   unsigned use_template : 2;
 
-  unsigned declared_static : 1;
+  unsigned c_static : 1;
   unsigned nonconverting : 1;
-  unsigned dummy : 6;
+  unsigned declared_inline : 1;
+  unsigned not_really_extern : 1;
+  unsigned dummy : 4;
 
   tree access;
   tree context;
@@ -1234,9 +1236,13 @@ struct lang_decl
 #define DELTA2_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, 0, 0), delta2_identifier, 0, 0))
 #define PFN_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, 0, 0), pfn_identifier, 0, 0))
 
-/* Nonzero for VAR_DECL and FUNCTION_DECL node means that `external' was
+/* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  */
 #define DECL_THIS_EXTERN(NODE) (DECL_LANG_FLAG_2(NODE))
+
+/* Nonzero for VAR_DECL and FUNCTION_DECL node means that `static' was
+   specified in its declaration.  */
+#define DECL_THIS_STATIC(NODE) (DECL_LANG_FLAG_6(NODE))
 
 /* Nonzero for SAVE_EXPR if used to initialize a PARM_DECL.  */
 #define PARM_DECL_EXPR(NODE) (TREE_LANG_FLAG_2(NODE))
@@ -1338,13 +1344,26 @@ struct lang_decl
 /* We know what we're doing with this decl now.  */
 #define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
 
-/* This decl was declared to have internal linkage.  */
-#define DECL_DECLARED_STATIC(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.declared_static)
+/* This decl was declared or deduced to have internal linkage.  This is
+   only meaningful if TREE_PUBLIC is set.  */
+#define DECL_C_STATIC(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.c_static)
+
+/* This function was declared inline.  This flag controls the linkage
+   semantics of 'inline'; whether or not the function is inlined is
+   controlled by DECL_INLINE.  */
+#define DECL_THIS_INLINE(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.declared_inline)
+
+/* DECL_EXTERNAL must be set on a decl until the decl is actually emitted,
+   so that assemble_external will work properly.  So we have this flag to
+   tell us whether the decl is really not external.  */
+#define DECL_NOT_REALLY_EXTERN(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.not_really_extern)
 
 #define DECL_PUBLIC(NODE) \
-  (TREE_CODE (NODE) == FUNCTION_DECL ? ! DECL_DECLARED_STATIC (NODE) \
-   : TREE_PUBLIC (NODE))
+  (TREE_CODE (NODE) == FUNCTION_DECL \
+   ? ! DECL_C_STATIC (NODE) : TREE_PUBLIC (NODE))
 
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 

@@ -2575,14 +2575,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
     if (TREE_CODE (function) == FUNCTION_DECL)
       {
 	is_constructor = DECL_CONSTRUCTOR_P (function);
-	if (DECL_INLINE (function))
-	  function = build1 (ADDR_EXPR, build_pointer_type (fntype), function);
-	else
-	  {
-	    assemble_external (function);
-	    TREE_USED (function) = 1;
-	    function = default_conversion (function);
-	  }
+	TREE_USED (function) = 1;
+	function = default_conversion (function);
       }
     else
       {
