@@ -1,44 +1,44 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 19.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 19</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/05/30 21:54:59 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 19.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 19</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.5 2001/09/15 00:41:11 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 19:  Diagnostics</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 19:  Diagnostics</a></h1>
 
-<P>Chapter 19 deals with program diagnostics, such as exceptions
+<p>Chapter 19 deals with program diagnostics, such as exceptions
    and assertions.  You know, all the things we wish weren't even
    necessary at all.
-</P>
+</p>
 
 
 <!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">Adding data to exceptions</A>
-   <LI><A HREF="#2">Exception class hierarchy diagram</A>
-   <LI><A HREF="#3">Concept checkers -- <STRONG>new and improved!</STRONG></A>
-</UL>
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">Adding data to exceptions</a>
+   <li><a href="#2">Exception class hierarchy diagram</a>
+   <li><a href="#3">Concept checkers -- <strong>new and improved!</strong></a>
+</ul>
 
-<HR>
+<hr>
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">Adding data to exceptions</A></H2>
-   <P>The standard exception classes carry with them a single string as
+<h2><a name="1">Adding data to exceptions</a></h2>
+   <p>The standard exception classes carry with them a single string as
       data (usually describing what went wrong or where the 'throw' took
       place).  It's good to remember that you can add your own data to
       these exceptions when extending the heirarchy:
-   </P>
+   </p>
    <PRE>
    using std::runtime_error;
    struct My_Exception : public runtime_error
@@ -53,71 +53,71 @@
        DBID   id;     // some user-defined type
    };
    </PRE>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">Exception class hierarchy diagram</A></H2>
-   <P>At one point we were going to make up a PDF of the exceptions
+<hr>
+<h2><a name="2">Exception class hierarchy diagram</a></h2>
+   <p>At one point we were going to make up a PDF of the exceptions
       hierarchy, akin to the one done for the I/O class hierarchy.
       Time was our enemy.  Since then we've moved to Doxygen, which has
       the useful property of not sucking.  Specifically, when the source
       code is changed, the diagrams are automatically brought up to date.
       For the old way, we had to update the diagrams separately.
-   </P>
-   <P>There are several links to the Doxygen-generated pages from
-      <A HREF="../documentation.html">here</A>.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>There are several links to the Doxygen-generated pages from
+      <a href="../documentation.html">here</a>.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="3">Concept checkers -- <STRONG>new and improved!</STRONG></A></H2>
-   <P>Better taste!  Less fat!  Literally!</P>
-   <P>In 1999, SGI added <EM>concept checkers</EM> to their implementation
+<hr>
+<h2><a name="3">Concept checkers -- <strong>new and improved!</strong></a></h2>
+   <p>Better taste!  Less fat!  Literally!</p>
+   <p>In 1999, SGI added <em>concept checkers</em> to their implementation
       of the STL:  code which checked the template parameters of
       instantiated pieces of the STL, in order to insure that the parameters
       being used met the requirements of the standard.  For example,
       the Standard requires that types passed as template parameters to
-      <TT>vector</TT> be &quot;Assignable&quot; (which means what you think
+      <code>vector</code> be &quot;Assignable&quot; (which means what you think
       it means).  The checking was done during compilation, and none of
       the code was executed at runtime.
-   </P>
-   <P>Unfortunately, the size of the compiler files grew significantly
+   </p>
+   <p>Unfortunately, the size of the compiler files grew significantly
       as a result.  The checking code itself was cumbersome.  And bugs
       were found in it on more than one occasion.
-   </P>
-   <P>The primary author of the checking code, Jeremy Siek, had already
+   </p>
+   <p>The primary author of the checking code, Jeremy Siek, had already
       started work on a replcement implementation.  The new code has been
       formally reviewed and accepted into
-      <A HREF="http://www.boost.org/libs/concept_check/concept_check.htm">the
-      Boost libraries</A>, and we are pleased to incorporate it into the
+      <a href="http://www.boost.org/libs/concept_check/concept_check.htm">the
+      Boost libraries</a>, and we are pleased to incorporate it into the
       GNU C++ library.
-   </P>
-   <P>The new version imposes a much smaller space overhead on the generated
+   </p>
+   <p>The new version imposes a much smaller space overhead on the generated
       object file.  The checks are also cleaner and easier to read and
       understand.
-   </P>
-   <P>Right now they are off by default.  More will be added once
+   </p>
+   <p>Right now they are off by default.  More will be added once
       GCC 3.0 is released and we have time to revisit this topic.
-   </P>
+   </p>
 
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.4 2001/05/30 21:54:59 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.5 2001/09/15 00:41:11 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

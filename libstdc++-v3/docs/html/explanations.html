@@ -1,74 +1,74 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, GCC, g++">
-   <META NAME="DESCRIPTION" CONTENT="Explanatory notes about libstdc++-v3.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>Explanatory notes about libstdc++-v3 design</TITLE>
-<LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.10 2001/04/20 08:59:25 bkoz Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, GCC, g++">
+   <meta NAME="DESCRIPTION" CONTENT="Explanatory notes about libstdc++-v3.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>Explanatory notes about libstdc++-v3 design</title>
+<link REL=StyleSheet HREF="lib3styles.css">
+<!-- $Id: explanations.html,v 1.1 2001/07/09 19:37:01 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Explanatory notes about libstdc++-v3
-design</A></H1>
+<h1 CLASS="centered"><a name="top">Explanatory notes about libstdc++-v3
+design</a></h1>
 
-<P>The latest version of this document is always available at
-   <A HREF="http://gcc.gnu.org/onlinedocs/libstdc++/explanations.html">
-   http://gcc.gnu.org/onlinedocs/libstdc++/explanations.html</A>.
-</P>
+<p>The latest version of this document is always available at
+   <a href="http://gcc.gnu.org/onlinedocs/libstdc++/explanations.html">
+   http://gcc.gnu.org/onlinedocs/libstdc++/explanations.html</a>.
+</p>
 
-<P>To the <A HREF="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</A>.
+<p>To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
 
 
 <!-- ####################################################### -->
-<HR>
-<A NAME="cstdio"><H3>&quot;I/O packages&quot;, <TT>--enable-cstdio</TT></H3></A>
-<P>In addition to all the nifty things which C++ can do for I/O, its library
+<hr>
+<a name="cstdio"><h3>&quot;I/O packages&quot;, <code>--enable-cstdio</code></h3></a>
+<p>In addition to all the nifty things which C++ can do for I/O, its library
    also includes all of the I/O capabilites of C.  Making them work together
    can be a challenge, not only
-   <A HREF="27_io/howto.html#8">for the programmer</A> but for the
+   <a href="27_io/howto.html#8">for the programmer</a> but for the
    implementors as well.
-</P>
-<P>There are two ways to do a C++ library:  the cool way, and the easy way.
+</p>
+<p>There are two ways to do a C++ library:  the cool way, and the easy way.
    More specifically, the cool-but-easy-to-get-wrong way, and the
    easy-to-guarantee-correct-behavior way.  For 3.0, the easy way is used.
-</P>
-<P>Choosing 'stdio' is the easy way.  It builds a C++ library which forwards
+</p>
+<p>Choosing 'stdio' is the easy way.  It builds a C++ library which forwards
    all operations to the C library.  Many of the C++ I/O functions are
    specified in the standard 'as if' they called a certain C function; the
    easiest way to get it correct is to actually call that function.  The
    disadvantage is that the C++ code will run slower (fortunately, the layer
    is thin).
-</P>
-<P>Choosing 'libio' is the cool way; it allows C++ and C to share some
+</p>
+<p>Choosing 'libio' is the cool way; it allows C++ and C to share some
    buffers.  It's disabled because of tricky synchronization issues.  Other
    cool ways (various methods of sharing resources between C and C++
    facilities, instead of layering) are possible.  This approach can speed
    up I/O significantly.
-</P>
-<P>Other packages are possible.  For a new package, a header must be
+</p>
+<p>Other packages are possible.  For a new package, a header must be
    written to provide types like streamsize (usually just a typedef), as
-   well as some internal types like<TT> __c_file_type </TT> and
-   <TT> __c_lock </TT> (for the stdio case, these are FILE (as in
+   well as some internal types like<code> __c_file_type </code> and
+   <code> __c_lock </code> (for the stdio case, these are FILE (as in
    &quot;FILE*&quot;) and a simple POSIX mutex, respectively).  An
-   interface class called <TT> __basic_file </TT> must also be filled in;
+   interface class called <code> __basic_file </code> must also be filled in;
    as an example, for the stdio case, these member functions are all
    inline calles to fread, fwrite, etc.
-</P>
-<P>Return <A HREF="#top">to the top of the page</A> or
-   <A HREF="http://gcc.gnu.org/libstdc++/">to the homepage</A>.
-</P>
+</p>
+<p>Return <a href="#top">to the top of the page</a> or
+   <a href="http://gcc.gnu.org/libstdc++/">to the homepage</a>.
+</p>
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
-$Id$
-</EM></P>
+<hr>
+<P CLASS="fineprint"><em>
+$Id: explanations.html,v 1.1 2001/07/09 19:37:01 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

@@ -1,95 +1,95 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 25.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 25</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.3 2001/05/30 21:55:02 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 25.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 25</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.4 2001/09/15 00:41:11 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 25:  Algorithms</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 25:  Algorithms</a></h1>
 
-<P>Chapter 25 deals with the generalized subroutines for automatically
+<p>Chapter 25 deals with the generalized subroutines for automatically
    transforming lemmings into gold.
-</P>
+</p>
 
 
 <!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">Prerequisites</A>
-   <LI><A HREF="#2">Topic</A>
-</UL>
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">Prerequisites</a>
+   <li><a href="#2">Topic</a>
+</ul>
 
-<HR>
+<hr>
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">Prerequisites</A></H2>
-   <P>The neatest accomplishment of the algorithms chapter is that all the
+<h2><a name="1">Prerequisites</a></h2>
+   <p>The neatest accomplishment of the algorithms chapter is that all the
       work is done via iterators, not containers directly.  This means two
       important things:
-      <OL>
-        <LI>Anything that behaves like an iterator can be used in one of
+      <ol>
+        <li>Anything that behaves like an iterator can be used in one of
             these algorithms.  Raw pointers make great candidates, thus
             built-in arrays are fine containers, as well as your own iterators.
-        <LI>The algorithms do not (and cannot) affect the container as a
+        <li>The algorithms do not (and cannot) affect the container as a
             whole; only the things between the two iterator endpoints.  If
             you pass a range of iterators only enclosing the middle third of
             a container, then anything outside that range is inviolate.
-      </OL>
-   </P>
-   <P>Even strings can be fed through the algorithms here, although the
+      </ol>
+   </p>
+   <p>Even strings can be fed through the algorithms here, although the
       string class has specialized versions of many of these functions (for
-      example, <TT>string::find()</TT>).  Most of the examples on this
+      example, <code>string::find()</code>).  Most of the examples on this
       page will use simple arrays of integers as a playground for
       algorithms, just to keep things simple.
-      <A NAME="Nsize">The use of <B>N</B></A> as a size in the examples is
+      <a name="Nsize">The use of <B>N</B></a> as a size in the examples is
       to keep things easy to read but probably won't be legal code.  You can
       use wrappers such as those described in the
-      <A HREF="../23_containers/howto.html">containers chapter</A> to keep
+      <a href="../23_containers/howto.html">containers chapter</a> to keep
       real code readable.
-   </P>
-   <P>The single thing that trips people up the most is the definition of 
-      <EM>range</EM> used with iterators; the famous
+   </p>
+   <p>The single thing that trips people up the most is the definition of 
+      <em>range</em> used with iterators; the famous
       &quot;past-the-end&quot; rule that everybody loves to hate.  The
-      <A HREF="../24_iterators/howto.html#2">iterators chapter</A> of this
+      <a href="../24_iterators/howto.html#2">iterators chapter</a> of this
       document has a complete explanation of this simple rule that seems to
-      cause so much confusion.  Once you get <EM>range</EM> into your head
+      cause so much confusion.  Once you get <em>range</em> into your head
       (it's not that hard, honest!), then the algorithms are a cakewalk.
-   </P>
-   <P>
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">Topic</A></H2>
-   <P>Blah.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+<hr>
+<h2><a name="2">Topic</a></h2>
+   <p>Blah.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.3 2001/05/30 21:55:02 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.4 2001/09/15 00:41:11 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

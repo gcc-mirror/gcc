@@ -1,101 +1,101 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 23.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 23</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.7 2001/08/24 20:34:34 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 23.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 23</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.8 2001/09/15 00:41:11 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 23:  Containers</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 23:  Containers</a></h1>
 
-<P>Chapter 23 deals with container classes and what they offer.
-</P>
+<p>Chapter 23 deals with container classes and what they offer.
+</p>
 
-
-<!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">Making code unaware of the container/array difference</A>
-   <LI><A HREF="#2">Variable-sized bitmasks</A>
-   <LI><A HREF="#3">Containers and multithreading</A>
-   <LI><A HREF="#4">&quot;Hinting&quot; during insertion</A>
-   <LI><A HREF="#5">Bitmasks and string arguments</A>
-</UL>
-
-<HR>
 
 <!-- ####################################################### -->
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">Making code unaware of the container/array difference</a>
+   <li><a href="#2">Variable-sized bitmasks</a>
+   <li><a href="#3">Containers and multithreading</a>
+   <li><a href="#4">&quot;Hinting&quot; during insertion</a>
+   <li><a href="#5">Bitmasks and string arguments</a>
+</ul>
 
-<H2><A NAME="1">Making code unaware of the container/array difference</A></H2>
-   <P>You're writing some code and can't decide whether to use builtin
+<hr>
+
+<!-- ####################################################### -->
+
+<h2><a name="1">Making code unaware of the container/array difference</a></h2>
+   <p>You're writing some code and can't decide whether to use builtin
       arrays or some kind of container.  There are compelling reasons 
       to use one of the container classes, but you're afraid that you'll
       eventually run into difficulties, change everything back to arrays,
       and then have to change all the code that uses those data types to
       keep up with the change.
-   </P>
-   <P>If your code makes use of the standard algorithms, this isn't as
+   </p>
+   <p>If your code makes use of the standard algorithms, this isn't as
       scary as it sounds.  The algorithms don't know, nor care, about
       the kind of &quot;container&quot; on which they work, since the
       algorithms are only given endpoints to work with.  For the container
-      classes, these are iterators (usually <TT>begin()</TT> and
-      <TT>end()</TT>, but not always).  For builtin arrays, these are
+      classes, these are iterators (usually <code>begin()</code> and
+      <code>end()</code>, but not always).  For builtin arrays, these are
       the address of the first element and the
-      <A HREF="../24_iterators/howto.html#2">past-the-end</A> element.
-   </P>
-   <P>Some very simple wrapper functions can hide all of that from the
+      <a href="../24_iterators/howto.html#2">past-the-end</a> element.
+   </p>
+   <p>Some very simple wrapper functions can hide all of that from the
       rest of the code.  For example, a pair of functions called
-      <TT>beginof</TT> can be written, one that takes an array, another
+      <code>beginof</code> can be written, one that takes an array, another
       that takes a vector.  The first returns a pointer to the first
-      element, and the second returns the vector's <TT>begin()</TT>
+      element, and the second returns the vector's <code>begin()</code>
       iterator.
-   </P>
-   <P>The functions should be made template functions, and should also 
+   </p>
+   <p>The functions should be made template functions, and should also 
       be declared inline.  As pointed out in the comments in the code 
-      below, this can lead to <TT>beginof</TT> being optimized out of
+      below, this can lead to <code>beginof</code> being optimized out of
       existence, so you pay absolutely nothing in terms of increased
       code size or execution time.
-   </P>
-   <P>The result is that if all your algorithm calls look like
+   </p>
+   <p>The result is that if all your algorithm calls look like
       <PRE>
    std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);</PRE>
       then the type of foo can change from an array of ints to a vector
       of ints to a deque of ints and back again, without ever changing any
       client code.
-   </P>
-   <P>This author has a collection of such functions, called &quot;*of&quot;
+   </p>
+   <p>This author has a collection of such functions, called &quot;*of&quot;
       because they all extend the builtin &quot;sizeof&quot;.  It started
       with some Usenet discussions on a transparent way to find the length
       of an array.  A simplified and much-reduced version for easier
-      reading is <A HREF="wrappers_h.txt">given here</A>.
-   </P>
-   <P>Astute readers will notice two things at once:  first, that the
-      container class is still a <TT>vector&lt;T&gt;</TT> instead of a
-      more general <TT>Container&lt;T&gt;</TT>.  This would mean that
-      three functions for <TT>deque</TT> would have to be added, another
-      three for <TT>list</TT>, and so on.  This is due to problems with
+      reading is <a href="wrappers_h.txt">given here</a>.
+   </p>
+   <p>Astute readers will notice two things at once:  first, that the
+      container class is still a <code>vector&lt;T&gt;</code> instead of a
+      more general <code>Container&lt;T&gt;</code>.  This would mean that
+      three functions for <code>deque</code> would have to be added, another
+      three for <code>list</code>, and so on.  This is due to problems with
       getting template resolution correct; I find it easier just to 
       give the extra three lines and avoid confusion.
-   </P>
-   <P>Second, the line
+   </p>
+   <p>Second, the line
       <PRE>
     inline unsigned int lengthof (T (&amp;)[sz]) { return sz; } </PRE>
       looks just weird!  Hint:  unused parameters can be left nameless.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">Variable-sized bitmasks</A></H2>
-   <P>No, you cannot write code of the form
+<hr>
+<h2><a name="2">Variable-sized bitmasks</a></h2>
+   <p>No, you cannot write code of the form
       <!-- Careful, the leading spaces in PRE show up directly. -->
       <PRE>
       #include &lt;bitset&gt;
@@ -105,30 +105,30 @@
           std::bitset&lt;n&gt;   bits;
           ....
       } </PRE>
-      because <TT>n</TT> must be known at compile time.  Your compiler is
+      because <code>n</code> must be known at compile time.  Your compiler is
       correct; it is not a bug.  That's the way templates work.  (Yes, it
-      <EM>is</EM> a feature.)
-   </P>
-   <P>There are a couple of ways to handle this kind of thing.  Please
+      <em>is</em> a feature.)
+   </p>
+   <p>There are a couple of ways to handle this kind of thing.  Please
       consider all of them before passing judgement.  They include, in
       no particular order:
-      <UL>
-        <LI>A very large N in <TT>bitset&lt;N&gt;</TT>.
-        <LI>A container&lt;bool&gt;.
-        <LI>Extremely weird solutions.
-      </UL>
-   </P>
-   <P><B>A very large N in <TT>bitset&lt;N&gt;</TT>.&nbsp;&nbsp;</B>  It has
+      <ul>
+        <li>A very large N in <code>bitset&lt;N&gt;</code>.
+        <li>A container&lt;bool&gt;.
+        <li>Extremely weird solutions.
+      </ul>
+   </p>
+   <p><B>A very large N in <code>bitset&lt;N&gt;</code>.&nbsp;&nbsp;</B>  It has
       been pointed out a few times in newsgroups that N bits only takes up
       (N/8) bytes on most systems, and division by a factor of eight is pretty
       impressive when speaking of memory.  Half a megabyte given over to a
       bitset (recall that there is zero space overhead for housekeeping info;
       it is known at compile time exactly how large the set is) will hold over
       four million bits.  If you're using those bits as status flags (e.g.,
-      &quot;changed&quot;/&quot;unchanged&quot; flags), that's a <EM>lot</EM>
+      &quot;changed&quot;/&quot;unchanged&quot; flags), that's a <em>lot</em>
       of state.
-   </P>
-   <P>You can then keep track of the &quot;maximum bit used&quot; during some
+   </p>
+   <p>You can then keep track of the &quot;maximum bit used&quot; during some
       testing runs on representative data, make note of how many of those bits
       really need to be there, and then reduce N to a smaller number.  Leave
       some extra space, of course.  (If you plan to write code like the 
@@ -136,73 +136,73 @@
       may have to talk your compiler into allowing that much stack space;
       there may be zero space overhead, but it's all allocated inside the
       object.)
-   </P>
-   <P><B>A container&lt;bool&gt;.&nbsp;&nbsp;</B>  The Committee made provision
+   </p>
+   <p><B>A container&lt;bool&gt;.&nbsp;&nbsp;</B>  The Committee made provision
       for the space savings possible with that (N/8) usage previously mentioned,
       so that you don't have to do wasteful things like
-      <TT>Container&lt;char&gt;</TT> or <TT>Container&lt;short int&gt;</TT>.
-      Specifically, <TT>vector&lt;bool&gt;</TT> is required to be
+      <code>Container&lt;char&gt;</code> or <code>Container&lt;short int&gt;</code>.
+      Specifically, <code>vector&lt;bool&gt;</code> is required to be
       specialized for that space savings.
-   </P>
-   <P>The problem is that <TT>vector&lt;bool&gt;</TT> doesn't behave like a
+   </p>
+   <p>The problem is that <code>vector&lt;bool&gt;</code> doesn't behave like a
       normal vector anymore.  There have been recent journal articles which
       discuss the problems (the ones by Herb Sutter in the May and
       July/August 1999 issues of
-      <EM>C++ Report</EM> cover it well).  Future revisions of the ISO C++
-      Standard will change the requirement for <TT>vector&lt;bool&gt;</TT>
-      specialization.  In the meantime, <TT>deque&lt;bool&gt;</TT> is
+      <em>C++ Report</em> cover it well).  Future revisions of the ISO C++
+      Standard will change the requirement for <code>vector&lt;bool&gt;</code>
+      specialization.  In the meantime, <code>deque&lt;bool&gt;</code> is
       recommended (although its behavior is sane, you probably will not get
       the space savings, but the allocation scheme is different than that
       of vector).
-   </P>
-   <P><B>Extremely weird solutions.&nbsp;&nbsp;</B>  If you have access to
+   </p>
+   <p><B>Extremely weird solutions.&nbsp;&nbsp;</B>  If you have access to
       the compiler and linker at runtime, you can do something insane, like
       figuring out just how many bits you need, then writing a temporary 
-      source code file.  That file contains an instantiation of <TT>bitset</TT>
+      source code file.  That file contains an instantiation of <code>bitset</code>
       for the required number of bits, inside some wrapper functions with
       unchanging signatures.  Have your program then call the
       compiler on that file using Position Independant Code, then open the
       newly-created object file and load those wrapper functions.  You'll have
-      an instantiation of <TT>bitset&lt;N&gt;</TT> for the exact <TT>N</TT>
+      an instantiation of <code>bitset&lt;N&gt;</code> for the exact <code>N</code>
       that you need at the time.  Don't forget to delete the temporary files.
-      (Yes, this <EM>can</EM> be, and <EM>has been</EM>, done.)
-   </P>
+      (Yes, this <em>can</em> be, and <em>has been</em>, done.)
+   </p>
    <!-- I wonder if this next paragraph will get me in trouble... -->
-   <P>This would be the approach of either a visionary genius or a raving
+   <p>This would be the approach of either a visionary genius or a raving
       lunatic, depending on your programming and management style.  Probably
       the latter.
-   </P>
-   <P>Which of the above techniques you use, if any, are up to you and your
+   </p>
+   <p>Which of the above techniques you use, if any, are up to you and your
       intended application.  Some time/space profiling is indicated if it
       really matters (don't just guess).  And, if you manage to do anything
       along the lines of the third category, the author would love to hear
       from you...
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="3">Containers and multithreading</A></H2>
-   <P>This section will mention some of the problems in designing MT
+<hr>
+<h2><a name="3">Containers and multithreading</a></h2>
+   <p>This section will mention some of the problems in designing MT
       programs that use Standard containers.  For information on other
       aspects of multithreading (e.g., the library as a whole), see
       the Received Wisdom on Chapter 17.  This section only applies
       when gcc and libstdc++-v3 were configured with --enable-threads.
-   </P>
-   <P>Two excellent pages to read when working with templatized containers
+   </p>
+   <p>Two excellent pages to read when working with templatized containers
       and threads are
-      <A HREF="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
-      http://www.sgi.com/tech/stl/thread_safety.html</A> and
-      <A HREF="http://www.sgi.com/tech/stl/Allocators.html">SGI's
-      http://www.sgi.com/tech/stl/Allocators.html</A>.  The
+      <a href="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
+      http://www.sgi.com/tech/stl/thread_safety.html</a> and
+      <a href="http://www.sgi.com/tech/stl/Allocators.html">SGI's
+      http://www.sgi.com/tech/stl/Allocators.html</a>.  The
       libstdc++-v3 uses the same definition of thread safety
       when discussing design.  A key point that beginners may miss is the
       fourth major paragraph of the first page mentioned above
       (&quot;For most clients,&quot;...), pointing
       out that locking must nearly always be done outside the container,
       by client code (that'd be you, not us *grin*).
-      <EM>However, please take caution when considering the discussion
+      <em>However, please take caution when considering the discussion
       about the user-level configuration of the mutex lock
       implementation inside the STL container-memory allocator on that
       page.  For the sake of this discussion, libstdc++-v3 configures
@@ -222,38 +222,38 @@
       but you may have two internal ABIs in play within the
       application.  This might produce races, memory leaks and fatal
       crashes.  In any multithreaded application using STL, this
-      is the first thing to study well before blaming the allocator.</EM>
-   </P>
-   <P>You didn't read it, did you?  *sigh*  I'm serious, go read the
+      is the first thing to study well before blaming the allocator.</em>
+   </p>
+   <p>You didn't read it, did you?  *sigh*  I'm serious, go read the
       SGI page.  It's really good and doesn't take long, and makes most
       of the points that would otherwise have to be made here (and does
       a better job).
-   </P>
-   <P>That's much better.  Now, the issue of MT has been brought up on
+   </p>
+   <p>That's much better.  Now, the issue of MT has been brought up on
       the libstdc++-v3 mailing list as well as the main GCC mailing list
       several times.  The Chapter 17 HOWTO has some links into the mail
       archives, so you can see what's been thrown around.  The usual
       container (or pseudo-container, depending on how you look at it)
-      that people have in mind is <TT>string</TT>, which is one of the
+      that people have in mind is <code>string</code>, which is one of the
       points where libstdc++ departs from the SGI STL.  As of the
       2.90.8 snapshot, the libstdc++-v3 string class is safe for
       certain kinds of multithreaded access.
-   </P>
-   <P>For implementing a container which does its own locking, it is
+   </p>
+   <p>For implementing a container which does its own locking, it is
       trivial to (as SGI suggests) provide a wrapper class which obtains
       the lock, performs the container operation, then releases the lock.
-      This could be templatized <EM>to a certain extent</EM>, on the
+      This could be templatized <em>to a certain extent</em>, on the
       underlying container and/or a locking mechanism.  Trying to provide
       a catch-all general template solution would probably be more trouble
       than it's worth.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="4">&quot;Hinting&quot; during insertion</A></H2>
-   <P>Section [23.1.2], Table 69, of the C++ standard lists this function
+<hr>
+<h2><a name="4">&quot;Hinting&quot; during insertion</a></h2>
+   <p>Section [23.1.2], Table 69, of the C++ standard lists this function
       for all of the associative containers (map, set, etc):
       <PRE>
       a.insert(p,t);</PRE>
@@ -263,86 +263,86 @@
       specifies nothing more.  (LWG Issue #233, currently in review,
       addresses this topic, but I will ignore it here because it is not yet
       finalized.)
-   </P>
-   <P>Here we'll describe how the hinting works in the libstdc++-v3
+   </p>
+   <p>Here we'll describe how the hinting works in the libstdc++-v3
       implementation, and what you need to do in order to take advantage of
       it.  (Insertions can change from logarithmic complexity to amortized
       constant time, if the hint is properly used.)  Also, since the current
       implementation is based on the SGI STL one, these points may hold true
       for other library implementations also, since the HP/SGI code is used
       in a lot of places.
-   </P>
-   <P>In the following text, the phrases <EM>greater than</EM> and <EM>less
-      than</EM> refer to the results of the strict weak ordering imposed on
+   </p>
+   <p>In the following text, the phrases <em>greater than</em> and <em>less
+      than</em> refer to the results of the strict weak ordering imposed on
       the container by its comparison object, which defaults to (basically)
       &quot;&lt;&quot;.  Using those phrases is semantically sloppy, but I
       didn't want to get bogged down in syntax.  I assume that if you are
       intelligent enough to use your own comparison objects, you are also
       intelligent enough to assign &quot;greater&quot; and &quot;lesser&quot;
       their new meanings in the next paragraph.  *grin*
-   </P>
-   <P>If the <TT>hint</TT> parameter ('p' above) is equivalent to:
-     <UL>
-      <LI><TT>begin()</TT>, then the item being inserted should have a key
+   </p>
+   <p>If the <code>hint</code> parameter ('p' above) is equivalent to:
+     <ul>
+      <li><code>begin()</code>, then the item being inserted should have a key
           less than all the other keys in the container.  The item will
           be inserted at the beginning of the container, becoming the new
-          entry at <TT>begin()</TT>.
-      <LI><TT>end()</TT>, then the item being inserted should have a key
+          entry at <code>begin()</code>.
+      <li><code>end()</code>, then the item being inserted should have a key
           greater than all the other keys in the container.  The item will
           be inserted at the end of the container, becoming the new entry
-          at <TT>end()</TT>.
-      <LI>neither <TT>begin()</TT> nor <TT>end()</TT>, then:  Let <TT>h</TT>
-          be the entry in the container pointed to by <TT>hint</TT>, that
-          is, <TT>h = *hint</TT>.  Then the item being inserted should have
-          a key less than that of <TT>h</TT>, and greater than that of the
-          item preceeding <TT>h</TT>.  The new item will be inserted
-          between <TT>h</TT> and <TT>h</TT>'s predecessor.
-     </UL>
-   </P>
-   <P>For <TT>multimap</TT> and <TT>multiset</TT>, the restrictions are
+          at <code>end()</code>.
+      <li>neither <code>begin()</code> nor <code>end()</code>, then:  Let <code>h</code>
+          be the entry in the container pointed to by <code>hint</code>, that
+          is, <code>h = *hint</code>.  Then the item being inserted should have
+          a key less than that of <code>h</code>, and greater than that of the
+          item preceeding <code>h</code>.  The new item will be inserted
+          between <code>h</code> and <code>h</code>'s predecessor.
+     </ul>
+   </p>
+   <p>For <code>multimap</code> and <code>multiset</code>, the restrictions are
       slightly looser:  &quot;greater than&quot; should be replaced by
       &quot;not less than&quot; and &quot;less than&quot; should be replaced
       by &quot;not greater than.&quot;  (Why not replace greater with
       greater-than-or-equal-to?  You probably could in your head, but the
       mathematicians will tell you that it isn't the same thing.)
-   </P>
-   <P>If the conditions are not met, then the hint is not used, and the
-      insertion proceeds as if you had called <TT> a.insert(t) </TT>
-      instead.  (<STRONG>Note </STRONG> that GCC releases prior to 3.0.2
-      had a bug in the case with <TT>hint == begin()</TT> for the
-      <TT>map</TT> and <TT>set</TT> classes.  You should not use a hint
+   </p>
+   <p>If the conditions are not met, then the hint is not used, and the
+      insertion proceeds as if you had called <code> a.insert(t) </code>
+      instead.  (<strong>Note </strong> that GCC releases prior to 3.0.2
+      had a bug in the case with <code>hint == begin()</code> for the
+      <code>map</code> and <code>set</code> classes.  You should not use a hint
       argument in those releases.)
-   </P>
-   <P>This behavior goes well with other container's <TT>insert()</TT>
+   </p>
+   <p>This behavior goes well with other container's <code>insert()</code>
       functions which take an iterator:  if used, the new item will be
       inserted before the iterator passed as an argument, same as the other
       containers.  The exception
-      (in a sense) is with a hint of <TT>end()</TT>:  the new item will
-      actually be inserted after <TT>end()</TT>, but it also becomes the
-      new <TT>end()</TT>.
-   </P>
-   <P><STRONG>Note </STRONG> also that the hint in this implementation is a
+      (in a sense) is with a hint of <code>end()</code>:  the new item will
+      actually be inserted after <code>end()</code>, but it also becomes the
+      new <code>end()</code>.
+   </p>
+   <p><strong>Note </strong> also that the hint in this implementation is a
       one-shot.  The insertion-with-hint routines check the immediately
       surrounding entries to ensure that the new item would in fact belong
       there.  If the hint does not point to the correct place, then no
       further local searching is done; the search begins from scratch in
       logarithmic time.  (Further local searching would only increase the
       time required when the hint is too far off.)
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="5">Bitmasks and string arguments</A></H2>
-   <P>Bitmasks do not take char* nor const char* arguments in their
+<hr>
+<h2><a name="5">Bitmasks and string arguments</a></h2>
+   <p>Bitmasks do not take char* nor const char* arguments in their
       constructors.  This is something of an accident, but you can read
       about the problem:  follow the library's &quot;Links&quot; from the
       homepage, and from the C++ information &quot;defect reflector&quot;
       link, select the library issues list.  Issue number 116 describes the
       problem.
-   </P>
-   <P>For now you can simply make a temporary string object using the
+   </p>
+   <p>For now you can simply make a temporary string object using the
       constructor expression:
       <PRE>
       std::bitset&lt;5&gt; b ( std::string(&quot;10110&quot;) );
@@ -351,21 +351,21 @@
       <PRE>
       std::bitset&lt;5&gt; b ( &quot;10110&quot; );    // invalid
       </PRE>
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
  
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.7 2001/08/24 20:34:34 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.8 2001/09/15 00:41:11 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

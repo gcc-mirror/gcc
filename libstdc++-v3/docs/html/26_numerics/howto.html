@@ -1,108 +1,108 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 26.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 26</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 26.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 26</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.3 2001/05/30 21:55:03 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 26:  Numerics</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 26:  Numerics</a></h1>
 
-<P>Chapter 26 deals with building block abstractions to aid in
+<p>Chapter 26 deals with building block abstractions to aid in
    numerical computing:
-   <UL>
-     <LI>Template data structures such as <TT>valarray&lt;&gt;</TT>
-         and <TT>complex&lt;&gt;</TT>.
-     <LI>Template numerical functions such as <TT>accumulate</TT>;
-         <TT>inner_product</TT>; <TT>partial_sum</TT> and
-         <TT>adjacent_difference</TT>.
-   </UL>
+   <ul>
+     <li>Template data structures such as <code>valarray&lt;&gt;</code>
+         and <code>complex&lt;&gt;</code>.
+     <li>Template numerical functions such as <code>accumulate</code>;
+         <code>inner_product</code>; <code>partial_sum</code> and
+         <code>adjacent_difference</code>.
+   </ul>
    All of the Standard C math functions are of course included in C++,
-   and overloaded versions for <TT>long</TT>, <TT>float</TT>, and
-   <TT>long double</TT> have been added for all of them.
-</P>
+   and overloaded versions for <code>long</code>, <code>float</code>, and
+   <code>long double</code> have been added for all of them.
+</p>
 
 <!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">Complex Number Processing</A>
-   <LI><A HREF="#2">Array Processing</A>
-   <LI><A HREF="#3">Numerical Functions</A>
-   <LI><A HREF="#4">C99</A>
-</UL>
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">Complex Number Processing</a>
+   <li><a href="#2">Array Processing</a>
+   <li><a href="#3">Numerical Functions</a>
+   <li><a href="#4">C99</a>
+</ul>
 
-<HR>
+<hr>
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">Complex Number Processing</A></H2>
-   <P>Using <TT>complex&lt;&gt;</TT> becomes even more comple- er, sorry,
-      <EM>complicated</EM>, with the not-quite-gratuitously-incompatible
+<h2><a name="1">Complex Number Processing</a></h2>
+   <p>Using <code>complex&lt;&gt;</code> becomes even more comple- er, sorry,
+      <em>complicated</em>, with the not-quite-gratuitously-incompatible
       addition of complex types to the C language.  David Tribble has
       compiled a list of C++98 and C99 conflict points; his description of
       C's new type versus those of C++ and how to get them playing together
       nicely is
-<A HREF="http://home.flash.net/~dtribble/text/cdiffs.htm#C99.complex">here</A>.
-   </P>
-   <P><TT>complex&lt;&gt;</TT> is intended to be instantiated with a
+<a href="http://home.flash.net/~dtribble/text/cdiffs.htm#C99.complex">here</a>.
+   </p>
+   <p><code>complex&lt;&gt;</code> is intended to be instantiated with a
       floating-point type.  As long as you meet that and some other basic
       requirements, then the resulting instantiation has all of the usual
-      math operators defined, as well as definitions of <TT>op&lt;&lt;</TT>
-      and <TT>op&gt;&gt;</TT> that work with iostreams: <TT>op&lt;&lt;</TT>
-      prints <TT>(u,v)</TT> and <TT>op&gt;&gt;</TT> can read <TT>u</TT>,
-      <TT>(u)</TT>, and <TT>(u,v)</TT>.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+      math operators defined, as well as definitions of <code>op&lt;&lt;</code>
+      and <code>op&gt;&gt;</code> that work with iostreams: <code>op&lt;&lt;</code>
+      prints <code>(u,v)</code> and <code>op&gt;&gt;</code> can read <code>u</code>,
+      <code>(u)</code>, and <code>(u,v)</code>.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">Array Processing</A></H2>
-   <P>One of the major reasons why FORTRAN can chew through numbers so well
+<hr>
+<h2><a name="2">Array Processing</a></h2>
+   <p>One of the major reasons why FORTRAN can chew through numbers so well
       is that it is defined to be free of pointer aliasing, an assumption
       that C89 is not allowed to make, and neither is C++.  C99 adds a new
-      keyword, <TT>restrict</TT>, to apply to individual pointers.  The C++
+      keyword, <code>restrict</code>, to apply to individual pointers.  The C++
       solution is contained in the library rather than the language
       (although many vendors can be expected to add this to their compilers
       as an extension).
-   </P>
-   <P>That library solution is a set of two classes, five template classes,
+   </p>
+   <p>That library solution is a set of two classes, five template classes,
       and &quot;a whole bunch&quot; of functions.  The classes are required
       to be free of pointer aliasing, so compilers can optimize the
       daylights out of them the same way that they have been for FORTRAN.
-      They are collectively called <TT>valarray</TT>, although strictly
+      They are collectively called <code>valarray</code>, although strictly
       speaking this is only one of the five template classes, and they are
       designed to be familiar to people who have worked with the BLAS
       libraries before.
-   </P>
-   <P>Some more stuff should go here once somebody has time to write it.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Some more stuff should go here once somebody has time to write it.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="3">Numerical Functions</A></H2>
-   <P>There are four generalized functions in the &lt;numeric&gt; header
+<hr>
+<h2><a name="3">Numerical Functions</a></h2>
+   <p>There are four generalized functions in the &lt;numeric&gt; header
       that follow the same conventions as those in &lt;algorithm&gt;.  Each
       of them is overloaded:  one signature for common default operations,
       and a second for fully general operations.  Their names are
       self-explanatory to anyone who works with numerics on a regular basis:
-      <UL>
-        <LI><TT>accumulate</TT>
-        <LI><TT>inner_product</TT>
-        <LI><TT>partial_sum</TT>
-        <LI><TT>adjacent_difference</TT>
-      </UL>
-   </P>
-   <P>Here is a simple example of the two forms of <TT>accumulate</TT>.
+      <ul>
+        <li><code>accumulate</code>
+        <li><code>inner_product</code>
+        <li><code>partial_sum</code>
+        <li><code>adjacent_difference</code>
+      </ul>
+   </p>
+   <p>Here is a simple example of the two forms of <code>accumulate</code>.
       <PRE>
    int   ar[50];
    int   someval = somefunction();
@@ -114,50 +114,50 @@
    int  product   = std::accumulate(ar,ar+50,1,std::multiplies&lt;int&gt;());
       </PRE>
       The first call adds all the members of the array, using zero as an
-      initial value for <TT>sum</TT>.  The second does the same, but uses
-      <TT>someval</TT> as the starting value (thus, <TT>sum_stuff == sum +
-      someval</TT>).  The final call uses the second of the two signatures,
+      initial value for <code>sum</code>.  The second does the same, but uses
+      <code>someval</code> as the starting value (thus, <code>sum_stuff == sum +
+      someval</code>).  The final call uses the second of the two signatures,
       and multiplies all the members of the array; here we must obviously
       use 1 as a starting value instead of 0.
-   </P>
-   <P>The other three functions have similar dual-signature forms.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>The other three functions have similar dual-signature forms.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="4">C99</A></H2>
-   <P>In addition to the other topics on this page, we'll note here some
+<hr>
+<h2><a name="4">C99</a></h2>
+   <p>In addition to the other topics on this page, we'll note here some
       of the C99 features that appear in libstdc++-v3.
-   </P>
-   <P>The C99 features depend on the <TT>--enable-c99</TT> configure flag.
+   </p>
+   <p>The C99 features depend on the <code>--enable-c99</code> configure flag.
       This flag is already on by default, but it can be disabled by the
       user.  Also, the configuration machinery will disable it if the
       neccessary support for C99 (e.g., header files) cannot be found.
-   </P>
-   <P>As of GCC 3.0, C99 support includes classification functions
-      such as <TT>isnormal</TT>, <TT>isgreater</TT>, <TT>isnan</TT>, etc.
-      The functions used for 'long long' support such as <TT>strtoll</TT>
-      are supported, as is the <TT>lldiv_t</TT> typedef.  Also supported
+   </p>
+   <p>As of GCC 3.0, C99 support includes classification functions
+      such as <code>isnormal</code>, <code>isgreater</code>, <code>isnan</code>, etc.
+      The functions used for 'long long' support such as <code>strtoll</code>
+      are supported, as is the <code>lldiv_t</code> typedef.  Also supported
       are the wide character functions using 'long long', like
-      <TT>wcstoll</TT>.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+      <code>wcstoll</code>.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.3 2001/05/30 21:55:03 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

@@ -1,53 +1,53 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 20.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 20</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 20.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 20</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.4 2001/05/30 21:55:00 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 20:  General Utilities</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 20:  General Utilities</a></h1>
 
-<P>Chapter 20 deals with utility classes and functions, such as
-   the oft-debated <TT>auto_ptr&lt;&gt;</TT>.
-</P>
+<p>Chapter 20 deals with utility classes and functions, such as
+   the oft-debated <code>auto_ptr&lt;&gt;</code>.
+</p>
 
-
-<!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1"><TT>auto_ptr</TT> is not omnipotent</A>
-   <LI><A HREF="#2"><TT>auto_ptr</TT> inside container classes</A>
-   <LI><A HREF="#3">Functors</A>
-   <LI><A HREF="#4">Pairs</A>
-</UL>
-
-<HR>
 
 <!-- ####################################################### -->
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1"><code>auto_ptr</code> is not omnipotent</a>
+   <li><a href="#2"><code>auto_ptr</code> inside container classes</a>
+   <li><a href="#3">Functors</a>
+   <li><a href="#4">Pairs</a>
+</ul>
 
-<H2><A NAME="1"><TT>auto_ptr</TT> is not omnipotent</A></H2>
-   <P>I'm not going to try and explain all of the fun and delicious
+<hr>
+
+<!-- ####################################################### -->
+
+<h2><a name="1"><code>auto_ptr</code> is not omnipotent</a></h2>
+   <p>I'm not going to try and explain all of the fun and delicious
       things that can happen with misuse of the auto_ptr class template
       (called AP here), nor am I going to try and teach you how to use
       AP safely in the presence of copying.  The AP class is a really
       nifty idea for a smart pointer, but it is one of the dumbest of
       all the smart pointers -- and that's fine.
-   </P>
-   <P>AP is not meant to be a supersmart solution to all resource
+   </p>
+   <p>AP is not meant to be a supersmart solution to all resource
       leaks everywhere.  Neither is it meant to be an effective form
       of garbage collection (although it can help, a little bit).
-      And it can <EM>not</EM> be used for arrays!
-   </P>
-   <P>AP <EM>is</EM> meant to prevent nasty leaks in the presence of
-      exceptions.  That's <EM>all</EM>.  This code is AP-friendly:
+      And it can <em>not</em> be used for arrays!
+   </p>
+   <p>AP <em>is</em> meant to prevent nasty leaks in the presence of
+      exceptions.  That's <em>all</em>.  This code is AP-friendly:
       <PRE>
     // not a recommend naming scheme, but good for web-based FAQs
     typedef std::auto_ptr&lt;MyClass&gt;  APMC;
@@ -64,10 +64,10 @@
         function_taking_MyClass_pointer (ap.get());
     }
       </PRE>When an exception gets thrown, the instance of MyClass that's
-      been created on the heap will be <TT>delete</TT>'d as the stack is
-      unwound past <TT>func()</TT>.
-   </P>
-   <P>Changing that code as follows is <EM>not</EM> AP-friendly:
+      been created on the heap will be <code>delete</code>'d as the stack is
+      unwound past <code>func()</code>.
+   </p>
+   <p>Changing that code as follows is <em>not</em> AP-friendly:
       <PRE>
         APMC  ap (new MyClass[22]);
       </PRE>You will get the same problems as you would without the use
@@ -77,20 +77,20 @@
         ...
         delete array;                      // ...but single-object delete
       </PRE>
-   </P>
-   <P>AP cannot tell whether the pointer you've passed at creation points
+   </p>
+   <p>AP cannot tell whether the pointer you've passed at creation points
       to one or many things.  If it points to many things, you are about
       to die.  AP is trivial to write, however, so you could write your
-      own <TT>auto_array_ptr</TT> for that situation (in fact, this has
+      own <code>auto_array_ptr</code> for that situation (in fact, this has
       been done many times; check the mailing lists, Usenet, Boost, etc).
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2"><TT>auto_ptr</TT> inside container classes</A></H2>
-   <P>All of the <A HREF="../23_containers/howto.html">containers</A>
+<hr>
+<h2><a name="2"><code>auto_ptr</code> inside container classes</a></h2>
+   <p>All of the <a href="../23_containers/howto.html">containers</a>
       described in the standard library require their contained types
       to have, among other things, a copy contructor like this:
       <PRE>
@@ -100,18 +100,18 @@
     };
       </PRE>
       Note the const keyword; the object being copied shouldn't change.
-      The template class <TT>auto_ptr</TT> (called AP here) does not
+      The template class <code>auto_ptr</code> (called AP here) does not
       meet this requirement.  Creating a new AP by copying an existing
       one transfers ownership of the pointed-to object, which means that
       the AP being copied must change, which in turn means that the
       copy ctors of AP do not take const objects.
-   </P>
-   <P>The resulting rule is simple:  <EM>Never ever use a container of
-      auto_ptr objects.</EM>  The standard says that undefined behavior
+   </p>
+   <p>The resulting rule is simple:  <em>Never ever use a container of
+      auto_ptr objects.</em>  The standard says that undefined behavior
       is the result, but it is guaranteed to be messy.
-   </P>
-   <P>To prevent you from doing this to yourself, the
-      <A HREF="../19_diagnostics/howto.html#3">concept checks</A> built
+   </p>
+   <p>To prevent you from doing this to yourself, the
+      <a href="../19_diagnostics/howto.html#3">concept checks</a> built
       in to this implementation will issue an error if you try to
       compile code like this:
       <PRE>
@@ -124,85 +124,85 @@
     }
       </PRE>
       Should you try this with the checks enabled, you will see an error.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="3">Functors</A></H2>
-   <P>If you don't know what functors are, you're not alone.  Many people
+<hr>
+<h2><a name="3">Functors</a></h2>
+   <p>If you don't know what functors are, you're not alone.  Many people
       get slightly the wrong idea.  In the interest of not reinventing
       the wheel, we will refer you to the introduction to the functor
       concept written by SGI as part of their STL, in
-      <A HREF="http://www.sgi.com/Technology/STL/functors.html">their
-      http://www.sgi.com/Technology/STL/functors.html</A>.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+      <a href="http://www.sgi.com/Technology/STL/functors.html">their
+      http://www.sgi.com/Technology/STL/functors.html</a>.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
-<HR>
-<H2><A NAME="4">Pairs</A></H2>
-   <P>The <TT>pair&lt;T1,T2&gt;</TT> is a simple and handy way to
+<hr>
+<h2><a name="4">Pairs</a></h2>
+   <p>The <code>pair&lt;T1,T2&gt;</code> is a simple and handy way to
       carry around a pair of objects.  One is of type T1, and another of
       type T2; they may be the same type, but you don't get anything
       extra if they are.  The two members can be accessed directly, as
-      <TT>.first</TT> and <TT>.second</TT>.
-   </P>
-   <P>Construction is simple.  The default ctor initializes each member
+      <code>.first</code> and <code>.second</code>.
+   </p>
+   <p>Construction is simple.  The default ctor initializes each member
       with its respective default ctor.  The other simple ctor,
       <PRE>
     pair (const T1&amp; x, const T2&amp; y);
-      </PRE>does what you think it does, <TT>first</TT> getting <TT>x</TT>
-      and <TT>second</TT> getting <TT>y</TT>.
-   </P>
-   <P>There is a copy constructor, but it requires that your compiler
+      </PRE>does what you think it does, <code>first</code> getting <code>x</code>
+      and <code>second</code> getting <code>y</code>.
+   </p>
+   <p>There is a copy constructor, but it requires that your compiler
       handle member function templates:
       <PRE>
     template &lt;class U, class V&gt; pain (const pair&lt;U,V&gt;&amp; p);
       </PRE>The compiler will convert as necessary from U to T1 and from
       V to T2 in order to perform the respective initializations.
-   </P>
-   <P>The comparison operators are done for you.  Equality
-      of two <TT>pair&lt;T1,T2&gt;</TT>s is defined as both <TT>first</TT>
-      members comparing equal and both <TT>second</TT> members comparing
+   </p>
+   <p>The comparison operators are done for you.  Equality
+      of two <code>pair&lt;T1,T2&gt;</code>s is defined as both <code>first</code>
+      members comparing equal and both <code>second</code> members comparing
       equal; this simply delegates responsibility to the respective
-      <TT>operator==</TT> functions (for types like MyClass) or builtin
+      <code>operator==</code> functions (for types like MyClass) or builtin
       comparisons (for types like int, char, etc).
-   </P>
-   <P>The less-than operator is a bit odd the first time you see it.  It
+   </p>
+   <p>The less-than operator is a bit odd the first time you see it.  It
       is defined as evaluating to:
       <PRE>
     x.first  &lt;  y.first  ||
         ( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
       </PRE>
-      The other operators are not defined using the <TT>rel_ops</TT>
+      The other operators are not defined using the <code>rel_ops</code>
       functions above, but their semantics are the same.
-   </P>
-   <P>Finally, there is a template function called <TT>make_pair</TT>
+   </p>
+   <p>Finally, there is a template function called <code>make_pair</code>
       that takes two references-to-const objects and returns an
       instance of a pair instantiated on their respective types:
       <PRE>
     pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
       </PRE>
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.4 2001/05/30 21:55:00 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>

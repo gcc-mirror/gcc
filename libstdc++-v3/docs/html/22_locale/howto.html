@@ -1,21 +1,21 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
-   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 22.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
-   <TITLE>libstdc++-v3 HOWTO:  Chapter 22</TITLE>
-<LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/08/08 02:48:58 bkoz Exp $ -->
-</HEAD>
-<BODY>
+<html>
+<head>
+   <meta HcodeP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 22.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 HOWTO:  Chapter 22</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.5 2001/09/15 00:41:11 pme Exp $ -->
+</head>
+<body>
 
-<H1 CLASS="centered"><A NAME="top">Chapter 22:  Localization</A></H1>
+<h1 CLASS="centered"><a name="top">Chapter 22:  Localization</a></h1>
 
-<P>Chapter 22 deals with the C++ localization facilities.
-</P>
+<p>Chapter 22 deals with the C++ localization facilities.
+</p>
 <!-- I wanted to write that sentence in something requiring an exotic font,
      like Cryllic or Kanji.  Probably more work than such cuteness is worth,
      but I still think it'd be funny.
@@ -23,33 +23,33 @@
 
 
 <!-- ####################################################### -->
-<HR>
-<H1>Contents</H1>
-<UL>
-   <LI><A HREF="#1">class locale</A>
-   <LI><A HREF="#2">class codecvt</A>
-   <LI><A HREF="#3">class ctype</A>
-   <LI><A HREF="#4">class messages</A>
-   <LI><A HREF="#5">Bjarne Stroustrup on Locales</A>
-   <LI><A HREF="#6">Nathan Myers on Locales</A>   
-   <LI><A HREF="#7">Correct Transformations</A>
-</UL>
+<hr>
+<h1>Contents</h1>
+<ul>
+   <li><a href="#1">class locale</a>
+   <li><a href="#2">class codecvt</a>
+   <li><a href="#3">class ctype</a>
+   <li><a href="#4">class messages</a>
+   <li><a href="#5">Bjarne Stroustrup on Locales</a>
+   <li><a href="#6">Nathan Myers on Locales</a>   
+   <li><a href="#7">Correct Transformations</a>
+</ul>
 
 <!-- ####################################################### -->
 
-<HR>
-<H2><A NAME="1">class locale</A></H2>
-   <P> Notes made during the implementation of locales can be found 
-       <A HREF="locale.html">here</A>.
-   </P>
+<hr>
+<h2><a name="1">class locale</a></h2>
+   <p> Notes made during the implementation of locales can be found 
+       <a href="locale.html">here</a>.
+   </p>
 
-<HR>
-<H2><A NAME="2">class codecvt</A></H2>
-   <P> Notes made during the implementation of codecvt can be found 
-       <A HREF="codecvt.html">here</A>.
-   </P>
+<hr>
+<h2><a name="2">class codecvt</a></h2>
+   <p> Notes made during the implementation of codecvt can be found 
+       <a href="codecvt.html">here</a>.
+   </p>
 
-   <P> The following is the abstract from the implementation notes:
+   <p> The following is the abstract from the implementation notes:
    <BLOCKQUOTE>
    The standard class codecvt attempts to address conversions between
    different character encoding schemes. In particular, the standard
@@ -66,68 +66,68 @@
    implementation-provided extended functionality are given.
    </BLOCKQUOTE>
 
-<HR>
-<H2><A NAME="3">class ctype</A></H2>
-   <P> Notes made during the implementation of ctype can be found 
-       <A HREF="ctype.html">here</A>.
-   </P>
+<hr>
+<h2><a name="3">class ctype</a></h2>
+   <p> Notes made during the implementation of ctype can be found 
+       <a href="ctype.html">here</a>.
+   </p>
 
-<HR>
-<H2><A NAME="4">class messages</A></H2>
-   <P> Notes made during the implementation of messages can be found 
-       <A HREF="messages.html">here</A>.
-   </P>
+<hr>
+<h2><a name="4">class messages</a></h2>
+   <p> Notes made during the implementation of messages can be found 
+       <a href="messages.html">here</a>.
+   </p>
 
-<HR>
-<H2><A NAME="5">Stroustrup on Locales</A></H2>
-   <P>Dr. Bjarne Stroustrup has released a
-      <A HREF="http://www.research.att.com/~bs/3rd_loc0.html">pointer</A>
+<hr>
+<h2><a name="5">Stroustrup on Locales</a></h2>
+   <p>Dr. Bjarne Stroustrup has released a
+      <a href="http://www.research.att.com/~bs/3rd_loc0.html">pointer</a>
       to Appendix D of his book,
-      <A HREF="http://www.research.att.com/~bs/3rd.html">The C++
-      Programming Language (3rd Edition)</A>.  It is a detailed
+      <a href="http://www.research.att.com/~bs/3rd.html">The C++
+      Programming Language (3rd Edition)</a>.  It is a detailed
       description of locales and how to use them.
-   </P>
-   <P>He also writes:
-      <BLOCKQUOTE><EM>
+   </p>
+   <p>He also writes:
+      <BLOCKQUOTE><em>
       Please note that I still consider this detailed description of
       locales beyond the needs of most C++ programmers. It is written
       with experienced programmers in mind and novices will do best to
       avoid it.
-      </EM></BLOCKQUOTE>
-   </P>
+      </em></BLOCKQUOTE>
+   </p>
 
-<HR>
-<H2><A NAME="6">Nathan Myers on Locales</A></H2>
-   <P> An article entitled &quot;The Standard C++ Locale&quot; was
+<hr>
+<h2><a name="6">Nathan Myers on Locales</a></h2>
+   <p> An article entitled &quot;The Standard C++ Locale&quot; was
        published in Dr. Dobb's Journal and can be found
-      <A HREF="http://www.cantrip.org/locale.html">here</A>.
-   </P>
+      <a href="http://www.cantrip.org/locale.html">here</a>.
+   </p>
 
-<HR>
-<H2><A NAME="7">Correct Transformations</A></H2>
+<hr>
+<h2><a name="7">Correct Transformations</a></h2>
    <!-- Jumping directly here from chapter 21. -->
-   <P>A very common question on newsgroups and mailing lists is, &quot;How
+   <p>A very common question on newsgroups and mailing lists is, &quot;How
       do I do &lt;foo&gt; to a character string?&quot; where &lt;foo&gt; is
       a task such as changing all the letters to uppercase, to lowercase,
       testing for digits, etc.  A skilled and conscientious programmer
       will follow the question with another, &quot;And how do I make the
       code portable?&quot;
-   </P>
-   <P>(Poor innocent programmer, you have no idea the depths of trouble
+   </p>
+   <p>(Poor innocent programmer, you have no idea the depths of trouble
       you are getting yourself into.  'Twould be best for your sanity if
       you dropped the whole idea and took up basket weaving instead.  No?
       Fine, you asked for it...)
-   </P>
-   <P>The task of changing the case of a letter or classifying a character
+   </p>
+   <p>The task of changing the case of a letter or classifying a character
       as numeric, graphical, etc, all depends on the cultural context of the
       program at runtime.  So, first you must take the portability question
       into account.  Once you have localized the program to a particular
       natural language, only then can you perform the specific task.
       Unfortunately, specializing a function for a human language is not
       as simple as declaring
-      <TT> extern &quot;Danish&quot; int tolower (int); </TT>.
-   </P>
-   <P>The C++ code to do all this proceeds in the same way.  First, a locale
+      <code> extern &quot;Danish&quot; int tolower (int); </code>.
+   </p>
+   <p>The C++ code to do all this proceeds in the same way.  First, a locale
       is created.  Then member functions of that locale are called to
       perform minor tasks.  Continuing the example from Chapter 21, we wish
       to use the following convenience functions:
@@ -141,19 +141,19 @@
        tolower (charT c, const locale&amp; loc) const;
    }</PRE>
       This function extracts the appropriate &quot;facet&quot; from the
-      locale <EM>loc</EM> and calls the appropriate member function of that
-      facet, passing <EM>c</EM> as its argument.  The resulting character
+      locale <em>loc</em> and calls the appropriate member function of that
+      facet, passing <em>c</em> as its argument.  The resulting character
       is returned.
-   </P>
-   <P>For the C/POSIX locale, the results are the same as calling the
-      classic C <TT>toupper/tolower</TT> function that was used in previous
+   </p>
+   <p>For the C/POSIX locale, the results are the same as calling the
+      classic C <code>toupper/tolower</code> function that was used in previous
       examples.  For other locales, the code should Do The Right Thing.
-   </P>
-   <P>Of course, these functions take a second argument, and the
+   </p>
+   <p>Of course, these functions take a second argument, and the
       transformation algorithm's operator argument can only take a single
       parameter.  So we write simple wrapper structs to handle that.
-   </P>
-   <P>The next-to-final version of the code started in Chapter 21 looks like:
+   </p>
+   <p>The next-to-final version of the code started in Chapter 21 looks like:
       <PRE>
    #include &lt;iterator&gt;    // for back_inserter
    #include &lt;locale&gt;
@@ -200,23 +200,23 @@
                       up
                      );
    }</PRE>
-   </P>
-   <P>The final version of the code uses <TT>bind2nd</TT> to eliminate
+   </p>
+   <p>The final version of the code uses <code>bind2nd</code> to eliminate
       the wrapper structs, but the resulting code is tricky.  I have not
       shown it here because no compilers currently available to me will
       handle it.
-   </P>
+   </p>
 
 
 <!-- ####################################################### -->
 
-<HR>
-<P CLASS="fineprint"><EM>
+<hr>
+<P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.4 2001/08/08 02:48:58 bkoz Exp $
-</EM></P>
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<br> $Id: howto.html,v 1.5 2001/09/15 00:41:11 pme Exp $
+</em></p>
 
 
-</BODY>
-</HTML>
+</body>
+</html>
