@@ -2342,19 +2342,6 @@ do {									\
 
 #define DWARF_LINE_MIN_INSTR_LENGTH 2
 
-#undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP	".section\t.init"
-#undef FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP	".section\t.fini"
-
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC \
-  "crt1.o%s crti.o%s crtbegin.o%s"
-
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "crtend.o%s crtn.o%s"
-
 /* SH constant pool breaks the devices in crtstuff.c to control section
    in where code resides.  We have to write it as asm code.  */
 #define CRT_CALL_STATIC_FUNCTION(func) \
