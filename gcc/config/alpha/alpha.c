@@ -1158,7 +1158,7 @@ alpha_builtin_saveregs (arglist)
 
   addr = force_operand (addr, NULL_RTX);
 
--  /* Allocate the va_list constructor */
+  /* Allocate the va_list constructor */
   block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
