@@ -15,6 +15,9 @@ Thu Aug  3 15:53:03 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 2000-08-03  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c: Fix a comment typo.
+	* h8300.h (OK_FOR_U): Accept a 32-bit constant address on H8/S.
+
 	* jump.c: Fix formatting.
 
 	* toplev.c: Fix formatting.
