@@ -1,5 +1,11 @@
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/warn/inline1.C: New test.
+	* g++.old-deja/g++.brendan/crash64.C: Remove spurious inlines.
+	* g++.old-deja/g++.jason/synth10.C: Likewise.
+	* g++.old-deja/g++.mike/net31.C: Likewise.
+	* g++.old-deja/g++.mike/p8786.C: Likewise.
+
 	* g++.dg/template/friend10.C: New test.
 	* g++.dg/template/conv5.C: New test.
 

@@ -1,5 +1,11 @@
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/4803
+	* decl2.c (mark_used): Defer inline functions.
+	(finish_file): Merge deferred_fns loops. Check all used
+	inline functions have a definition.
+	* method.c (make_thunk): Thunks are not inline.
+
 	PR c++/5116, c++/764
 	* call.c (build_new_op): Make sure template class operands are
 	instantiated.
