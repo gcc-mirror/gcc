@@ -604,6 +604,8 @@ extern char *note_insn_name[];
     for the function arguments.
    ORIGINAL_DECL_INITIAL is a pointer to the original DECL_INITIAL for the
     function.
+   INLINE_REGNO_REG_RTX, INLINE_REGNO_POINTER_FLAG, and
+    INLINE_REGNO_POINTER_ALIGN are pointers to the corresponding arrays.
 
    We want this to lay down like an INSN.  The PREV_INSN field
    is always NULL.  The NEXT_INSN field always points to the
@@ -623,6 +625,9 @@ extern char *note_insn_name[];
 #define OUTGOING_ARGS_SIZE(RTX) ((RTX)->fld[13].rtint)
 #define ORIGINAL_ARG_VECTOR(RTX) ((RTX)->fld[14].rtvec)
 #define ORIGINAL_DECL_INITIAL(RTX) ((RTX)->fld[15].rtx)
+#define INLINE_REGNO_REG_RTX(RTX) ((RTX)->fld[16].rtvec)
+#define INLINE_REGNO_POINTER_FLAG(RTX) ((RTX)->fld[16].rtstr)
+#define INLINE_REGNO_POINTER_ALIGN(RTX) ((RTX)->fld[17].rtstr)
 
 /* In FUNCTION_FLAGS we save some variables computed when emitting the code
    for the function and which must be `or'ed into the current flag values when
@@ -720,7 +725,8 @@ extern rtx gen_reg_rtx			PROTO((enum machine_mode));
 extern rtx gen_label_rtx		PROTO((void));
 extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int,
 					       int, int, rtx, rtx, int, int,
-					       rtvec, rtx));
+					       rtvec, rtx,
+					       rtvec, char *, char *));
 extern rtx gen_lowpart_common		PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart			PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart_if_possible	PROTO((enum machine_mode, rtx));
