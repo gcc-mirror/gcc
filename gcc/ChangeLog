@@ -1,3 +1,12 @@
+1999-12-14  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (class_scope_p): New fn.
+	(gen_subprogram_die): Use it.
+	(gen_variable_die): Use it.  Tweak logic.
+	(gen_struct_or_union_type_die): Check context_die to determine
+	if we're function-local.
+	(dwarf2out_decl): Check DECL_BUILT_IN, not DECL_FUNCTION_CODE.
+
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (check_dbra_loop): Can't reverse a biv that has
