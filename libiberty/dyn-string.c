@@ -1,5 +1,5 @@
 /* An abstract string datatype.
-   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -44,15 +44,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "libiberty.h"
 #include "dyn-string.h"
-
-/* If this file is being compiled for inclusion in the C++ runtime
-   library, as part of the demangler implementation, we don't want to
-   abort if an allocation fails.  Instead, percolate an error code up
-   through the call chain.  */
-
-#if defined(IN_LIBGCC2) || defined(IN_GLIBCPP_V3)
-#define RETURN_ON_ALLOCATION_FAILURE
-#endif
 
 /* Performs in-place initialization of a dyn_string struct.  This
    function can be used with a dyn_string struct on the stack or
