@@ -1,5 +1,13 @@
 2003-12-09  Bernardo Innocenti  <bernie@develer.com>
 
+	* include/c_compatibility/iso646.h, include/c_compatibility/limits.h,
+	include/c_compatibility/locale.h, include/c_compatibility/stdio.h,
+	include/c_compatibility/string.h, include/c_compatibility/time.h,
+	include/c_compatibility/wchar.h, include/c_compatibility/wctype.h:
+	Remove trailing whitespace.
+
+2003-12-09  Bernardo Innocenti  <bernie@develer.com>
+
 	* include/c_std/cmath.tcc, include/c_std/std_cassert.h,
 	include/c_std/std_cctype.h, include/c_std/std_cmath.h,
 	include/c_std/std_cstddef.h, include/c_std/std_cstdio.h,

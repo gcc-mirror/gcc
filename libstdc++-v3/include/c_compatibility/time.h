@@ -31,7 +31,7 @@
 #define _GLIBCXX_TIME_H 1
 
 #include <ctime>
- 
+
 // Get rid of those macros defined in <time.h> in lieu of real functions.
 #undef clock
 #undef difftime

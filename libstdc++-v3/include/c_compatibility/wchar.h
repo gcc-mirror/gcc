@@ -52,15 +52,15 @@ using std::swscanf;
 using std::vfwprintf;
 #if _GLIBCXX_HAVE_VFWSCANF
 using std::vfwscanf;
-#endif 
+#endif
 using std::vswprintf;
 #if _GLIBCXX_HAVE_VSWSCANF
 using std::vswscanf;
-#endif 
+#endif
 using std::vwprintf;
 #if _GLIBCXX_HAVE_VWSCANF
 using std::vwscanf;
-#endif 
+#endif
 using std::wprintf;
 using std::wscanf;
 using std::getwc;
@@ -77,7 +77,7 @@ using std::wcrtomb;
 using std::wcstod;
 #if _GLIBCXX_HAVE_WCSTOF
 using std::wcstof;
-#endif 
+#endif
 using std::wcstol;
 using std::wcstoul;
 using std::wcscpy;
