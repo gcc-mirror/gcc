@@ -2704,177 +2704,51 @@
 ;; These are the main define_expand's used to make conditional moves.
 
 (define_expand "movsicc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:SI 0 "register_operand" "")
-	(if_then_else:DI (match_dup 5)
+  [(set (match_operand:SI 0 "register_operand" "")
+	(if_then_else:DI (match_operand 1 "comparison_operator" "")
 			 (match_operand:SI 2 "reg_or_8bit_operand" "")
 			 (match_operand:SI 3 "reg_or_8bit_operand" "")))]
   ""
   "
 {
-  rtx op0,op1;
-  enum rtx_code code = GET_CODE (operands[1]), code2 = NE;
-
-  if (alpha_compare_fp_p)
+  if ((operands[1] = alpha_emit_conditional_move (operands[1], SImode)) == 0)
     FAIL;
-  switch (code)
-    {
-    case EQ: case LE: case LT:
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case NE:
-      code = code2 = EQ;
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case GE:
-      code = LE;
-      op0 = force_reg (DImode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    case GT:
-      code = LT;
-      op0 = force_reg (DImode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    default:
-      FAIL;
-    }
-  operands[1] = gen_rtx (code, DImode, op0, op1);
-  operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_rtx (code2, VOIDmode, operands[4], CONST0_RTX (DImode));
 }")
 
 (define_expand "movdicc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:DI 0 "register_operand" "")
-	(if_then_else:DI (match_dup 5)
+  [(set (match_operand:DI 0 "register_operand" "")
+	(if_then_else:DI (match_operand 1 "comparison_operator" "")
 			 (match_operand:DI 2 "reg_or_8bit_operand" "")
 			 (match_operand:DI 3 "reg_or_8bit_operand" "")))]
   ""
   "
 {
-  rtx op0,op1;
-  enum rtx_code code = GET_CODE (operands[1]), code2 = NE;
-
-  if (alpha_compare_fp_p)
+  if ((operands[1] = alpha_emit_conditional_move (operands[1], DImode)) == 0)
     FAIL;
-  switch (code)
-    {
-    case EQ: case LE: case LT:
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case NE:
-      code = code2 = EQ;
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case GE:
-      code = LE;
-      op0 = force_reg (DImode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    case GT:
-      code = LT;
-      op0 = force_reg (DImode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    default:
-      FAIL;
-    }
-  operands[1] = gen_rtx (code, DImode, op0, op1);
-  operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_rtx (code2, VOIDmode, operands[4], CONST0_RTX (DImode));
 }")
 
 (define_expand "movsfcc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:SF 0 "register_operand" "")
-	(if_then_else:SF (match_dup 5)
-			 (match_operand:SF 2 "reg_or_fp0_operand" "")
-			 (match_operand:SF 3 "reg_or_fp0_operand" "")))]
+  [(set (match_operand:SF 0 "register_operand" "")
+	(if_then_else:SF (match_operand 1 "comparison_operator" "")
+			 (match_operand:SF 2 "reg_or_8bit_operand" "")
+			 (match_operand:SF 3 "reg_or_8bit_operand" "")))]
   ""
   "
 {
-  rtx op0,op1;
-  enum rtx_code code = GET_CODE (operands[1]), code2 = NE;
-
-  if (!alpha_compare_fp_p)
+  if ((operands[1] = alpha_emit_conditional_move (operands[1], SFmode)) == 0)
     FAIL;
-  switch (code)
-    {
-    case EQ: case LE: case LT:
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case NE:
-      /* There isn't a cmptne insn.  */
-      code = code2 = EQ;
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case GE:
-      code = LE;
-      op0 = force_reg (DFmode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    case GT:
-      code = LT;
-      op0 = force_reg (DFmode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    default:
-      FAIL;
-    }
-  operands[1] = gen_rtx (code, DFmode, op0, op1);
-  operands[4] = gen_reg_rtx (DFmode);
-  operands[5] = gen_rtx (code2, VOIDmode, operands[4], CONST0_RTX (DFmode));
 }")
 
 (define_expand "movdfcc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
-   (set (match_operand:DF 0 "register_operand" "")
-	(if_then_else:DF (match_dup 5)
-			 (match_operand:DF 2 "reg_or_fp0_operand" "")
-			 (match_operand:DF 3 "reg_or_fp0_operand" "")))]
+  [(set (match_operand:DF 0 "register_operand" "")
+	(if_then_else:DF (match_operand 1 "comparison_operator" "")
+			 (match_operand:DF 2 "reg_or_8bit_operand" "")
+			 (match_operand:DF 3 "reg_or_8bit_operand" "")))]
   ""
   "
 {
-  rtx op0,op1;
-  enum rtx_code code = GET_CODE (operands[1]), code2 = NE;
-
-  if (!alpha_compare_fp_p)
+  if ((operands[1] = alpha_emit_conditional_move (operands[1], DFmode)) == 0)
     FAIL;
-  switch (code)
-    {
-    case EQ: case LE: case LT:
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case NE:
-      /* There isn't a cmptne insn.  */
-      code = code2 = EQ;
-      op0 = alpha_compare_op0;
-      op1 = alpha_compare_op1;
-      break;
-    case GE:
-      code = LE;
-      op0 = force_reg (DFmode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    case GT:
-      code = LT;
-      op0 = force_reg (DFmode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
-    default:
-      FAIL;
-    }
-  operands[1] = gen_rtx (code, DFmode, op0, op1);
-  operands[4] = gen_reg_rtx (DFmode);
-  operands[5] = gen_rtx (code2, VOIDmode, operands[4], CONST0_RTX (DFmode));
 }")
 
 ;; These define_split definitions are used in cases when comparisons have
