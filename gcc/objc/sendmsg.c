@@ -236,28 +236,34 @@ static void __objc_send_initialize(Class class)
 	__objc_send_initialize(class->super_class);
 
       {
-	MethodList_t method_list = class->class_pointer->methods;
-	SEL op = sel_register_name ("initialize");
+	SEL 	op = sel_register_name ("initialize");
+	Class	tmpclass = class;
+	IMP	imp = 0;
 
-	/* If not found then we'll search the list.  */
-	while (method_list)
-	  {
+	while (!imp && tmpclass) {
+	  MethodList_t method_list = tmpclass->class_pointer->methods;
+
+	  while(!imp && method_list) {
 	    int i;
+	    Method_t method;
 
-	    /* Search the method list.  */
-	    for (i = 0; i < method_list->method_count; ++i)
-	      {
-		Method_t method = &method_list->method_list[i];
-		
-		
-		if (method->method_name->sel_id == op->sel_id)
-		  (*method->method_imp)((id) class, op);
+	    for (i=0;i<method_list->method_count;i++) {
+	      method = &(method_list->method_list[i]);
+	      if (method->method_name->sel_id == op->sel_id) {
+	        imp = method->method_imp;
+	        break;
 	      }
+	    }
 
-	    /* The method wasn't found.  Follow the link to the next list of
-	       methods.  */
 	    method_list = method_list->method_next;
+
 	  }
+
+	  tmpclass = tmpclass->super_class;
+	}
+	if (imp)
+	    (*imp)((id)class, op);
+		
       }
     }
 }  
