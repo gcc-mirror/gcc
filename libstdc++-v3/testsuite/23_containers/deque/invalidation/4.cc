@@ -77,5 +77,5 @@ template class __gnu_cxx::__mt_alloc<int>;
 int main()
 {
   test04();
-  return !test;
+  return 0;
 }

@@ -61,5 +61,5 @@ template class __gnu_cxx::__mt_alloc<std::_List_node<int> >;
 int main()
 {
   test01();
-  return !test;
+  return 0;
 }
