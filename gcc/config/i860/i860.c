@@ -8,20 +8,20 @@
    Hacked substantially by Ron Guilmette (rfg@netcom.com) to cater
    to the whims of the System V Release 4 assembler.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
+along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
@@ -48,14 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
-static rtx find_addr_reg PARAMS ((rtx));
-static int reg_clobbered_p PARAMS ((rtx, rtx));
-static const char *singlemove_string PARAMS ((rtx *));
-static const char *load_opcode PARAMS ((enum machine_mode, const char *, rtx));
-static const char *store_opcode PARAMS ((enum machine_mode, const char *, rtx));
-static void output_size_for_block_move PARAMS ((rtx, rtx, rtx));
-static void i860_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void i860_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static rtx find_addr_reg (rtx);
 
 #ifndef I860_REG_PREFIX
 #define I860_REG_PREFIX ""
@@ -70,9 +63,7 @@ rtx i860_compare_op0, i860_compare_op1;
 /* Return non-zero if this pattern, can be evaluated safely, even if it
    was not asked for.  */
 int
-safe_insn_src_p (op, mode)
-     rtx op;
-     enum machine_mode mode;
+safe_insn_src_p (rtx op, enum machine_mode mode)
 {
   /* Just experimenting.  */
 
@@ -134,9 +125,7 @@ safe_insn_src_p (op, mode)
    Return 0 if neither.  */
 
 static int
-reg_clobbered_p (reg, in)
-     rtx reg;
-     rtx in;
+reg_clobbered_p (rtx reg, rtx in)
 {
   register enum rtx_code code;
 
@@ -202,9 +191,7 @@ reg_clobbered_p (reg, in)
    appears in the dest position of a SET insn in a conditional
    branch's delay slot.  AFTER is the label to start looking from.  */
 int
-operand_clobbered_before_used_after (op, after)
-     rtx op;
-     rtx after;
+operand_clobbered_before_used_after (rtx op, rtx after)
 {
   /* Just experimenting.  */
   if (GET_CODE (op) == CC0)
@@ -270,9 +257,7 @@ operand_clobbered_before_used_after (op, after)
 /* Return non-zero if this pattern, as a source to a "SET",
    is known to yield an instruction of unit size.  */
 int
-single_insn_src_p (op, mode)
-     rtx op;
-     enum machine_mode mode;
+single_insn_src_p (rtx op, enum machine_mode mode)
 {
   switch (GET_CODE (op))
     {
@@ -369,9 +354,7 @@ single_insn_src_p (op, mode)
 /* Return non-zero only if OP is a register of mode MODE,
    or const0_rtx.  */
 int
-reg_or_0_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+reg_or_0_operand (rtx op, enum machine_mode mode)
 {
   return (op == const0_rtx || register_operand (op, mode)
 	  || op == CONST0_RTX (mode));
@@ -381,9 +364,7 @@ reg_or_0_operand (op, mode)
    address add/subtract insn (such as add %o1,7,%l2) of mode MODE.  */
 
 int
-arith_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+arith_operand (rtx op, enum machine_mode mode)
 {
   return (register_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op)));
@@ -392,9 +373,7 @@ arith_operand (op, mode)
 /* Return 1 if OP is a valid first operand for a logical insn of mode MODE.  */
 
 int
-logic_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+logic_operand (rtx op, enum machine_mode mode)
 {
   return (register_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && LOGIC_INT (op)));
@@ -403,9 +382,7 @@ logic_operand (op, mode)
 /* Return 1 if OP is a valid first operand for a shift insn of mode MODE.  */
 
 int
-shift_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+shift_operand (rtx op, enum machine_mode mode)
 {
   return (register_operand (op, mode)
           || (GET_CODE (op) == CONST_INT));
@@ -415,9 +392,7 @@ shift_operand (op, mode)
    or an add insn of mode MODE.  */
 
 int
-compare_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+compare_operand (rtx op, enum machine_mode mode)
 {
   return (register_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op) && LOGIC_INT (op)));
@@ -427,9 +402,7 @@ compare_operand (op, mode)
    operand of a bte or btne insn.  */
 
 int
-bte_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+bte_operand (rtx op, enum machine_mode mode)
 {
   return (register_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
@@ -439,9 +412,7 @@ bte_operand (op, mode)
 /* Return 1 if OP is an indexed memory reference of mode MODE.  */
 
 int
-indexed_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+indexed_operand (rtx op, enum machine_mode mode)
 {
   return (GET_CODE (op) == MEM && GET_MODE (op) == mode
 	  && GET_CODE (XEXP (op, 0)) == PLUS
@@ -454,9 +425,7 @@ indexed_operand (op, mode)
    with mode MODE.  */
 
 int
-load_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+load_operand (rtx op, enum machine_mode mode)
 {
   return (memory_operand (op, mode) || indexed_operand (op, mode));
 }
@@ -465,9 +434,7 @@ load_operand (op, mode)
    range constraining immediate operands in add/subtract insns.  */
 
 int
-small_int (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+small_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
@@ -476,9 +443,7 @@ small_int (op, mode)
    range constraining immediate operands in logic insns.  */
 
 int
-logic_int (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+logic_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT && LOGIC_INT (op));
 }
@@ -489,9 +454,7 @@ logic_int (op, mode)
    can't handle yet.  */
 
 int
-call_insn_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (op) == MEM
       && (CONSTANT_ADDRESS_P (XEXP (op, 0))
@@ -507,8 +470,7 @@ call_insn_operand (op, mode)
    for moving operands[1] into operands[0] as a fullword.  */
 
 static const char *
-singlemove_string (operands)
-     rtx *operands;
+singlemove_string (rtx *operands)
 {
   if (GET_CODE (operands[0]) == MEM)
     {
@@ -582,8 +544,7 @@ singlemove_string (operands)
    with operands OPERANDS.  */
 
 const char *
-output_move_double (operands)
-     rtx *operands;
+output_move_double (rtx *operands)
 {
   enum { REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype0, optype1;
   rtx latehalf[2];
@@ -756,8 +717,7 @@ output_move_double (operands)
 }
 
 const char *
-output_fp_move_double (operands)
-     rtx *operands;
+output_fp_move_double (rtx *operands)
 {
   /* If the source operand is any sort of zero, use f0 instead.  */
 
@@ -826,8 +786,7 @@ output_fp_move_double (operands)
    ADDR can be effectively incremented by incrementing REG.  */
 
 static rtx
-find_addr_reg (addr)
-     rtx addr;
+find_addr_reg (rtx addr)
 {
   while (GET_CODE (addr) == PLUS)
     {
@@ -855,10 +814,7 @@ find_addr_reg (addr)
    This string is in static storage.   */
 
 static const char *
-load_opcode (mode, args, reg)
-     enum machine_mode mode;
-     const char *args;
-     rtx reg;
+load_opcode (enum machine_mode mode, const char *args, rtx reg)
 {
   static char buf[30];
   const char *opcode;
@@ -902,10 +858,7 @@ load_opcode (mode, args, reg)
    This string is in static storage.   */
 
 static const char *
-store_opcode (mode, args, reg)
-     enum machine_mode mode;
-     const char *args;
-     rtx reg;
+store_opcode (enum machine_mode mode, const char *args, rtx reg)
 {
   static char buf[30];
   const char *opcode;
@@ -953,8 +906,7 @@ store_opcode (mode, args, reg)
    It may alter the values of operands[0] and operands[1].  */
 
 const char *
-output_store (operands)
-     rtx *operands;
+output_store (rtx *operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
   rtx address = XEXP (operands[0], 0);
@@ -994,8 +946,7 @@ output_store (operands)
    It may alter the values of operands[0] and operands[1].  */
 
 const char *
-output_load (operands)
-     rtx *operands;
+output_load (rtx *operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
   rtx address = XEXP (operands[1], 0);
@@ -1041,8 +992,7 @@ output_load (operands)
    All cases are handled here.  */
 
 void
-output_load_address (operands)
-     rtx *operands;
+output_load_address (rtx *operands)
 {
   rtx base, offset;
 
@@ -1113,8 +1063,7 @@ output_load_address (operands)
    right to subtract on this machine, so right now we don't.)  */
 
 static void
-output_size_for_block_move (size, reg, align)
-     rtx size, reg, align;
+output_size_for_block_move (rtx size, rtx reg, rtx align)
 {
   rtx xoperands[3];
 
@@ -1146,8 +1095,7 @@ output_size_for_block_move (size, reg, align)
    OPERANDS[4..6] are pseudos we can safely clobber as temps.  */
 
 const char *
-output_block_move (operands)
-     rtx *operands;
+output_block_move (rtx *operands)
 {
   /* A vector for our computed operands.  Note that load_output_address
      makes use of (and can clobber) up to the 8th element of this vector.  */
@@ -1367,10 +1315,7 @@ output_block_move (operands)
    the code to use the DBR pass.  */
 
 const char *
-output_delayed_branch (template, operands, insn)
-     const char *template;
-     rtx *operands;
-     rtx insn;
+output_delayed_branch (const char *template, rtx *operands, rtx insn)
 {
   rtx src = XVECEXP (PATTERN (insn), 0, 1);
   rtx dest = XVECEXP (PATTERN (insn), 0, 0);
@@ -1481,8 +1426,7 @@ output_delayed_branch (template, operands, insn)
 
 /* Output a newly constructed insn DELAY_INSN.  */
 const char *
-output_delay_insn (delay_insn)
-     rtx delay_insn;
+output_delay_insn (rtx delay_insn)
 {
   const char *template;
   int insn_code_number;
@@ -1540,8 +1484,7 @@ output_delay_insn (delay_insn)
    grok floating literals in instruction operand contexts.  */
 
 unsigned long
-sfmode_constant_to_ulong (x)
-     rtx x;
+sfmode_constant_to_ulong (rtx x)
 {
   REAL_VALUE_TYPE d;
   unsigned long l;
@@ -1659,9 +1602,7 @@ static int must_preserve_r1;
 static unsigned must_preserve_bytes;
 
 static void
-i860_output_function_prologue (asm_file, local_bytes)
-     register FILE *asm_file;
-     register HOST_WIDE_INT local_bytes;
+i860_output_function_prologue (FILE *asm_file, HOST_WIDE_INT local_bytes)
 {
   register HOST_WIDE_INT frame_lower_bytes;
   register HOST_WIDE_INT frame_upper_bytes;
@@ -1980,9 +1921,7 @@ typedef struct TDESC {
 } TDESC;
 
 static void
-i860_output_function_epilogue (asm_file, local_bytes)
-     register FILE *asm_file;
-     register HOST_WIDE_INT local_bytes;
+i860_output_function_epilogue (FILE *asm_file, HOST_WIDE_INT local_bytes)
 {
   register HOST_WIDE_INT frame_upper_bytes;
   register HOST_WIDE_INT frame_lower_bytes;
@@ -2111,7 +2050,7 @@ i860_output_function_epilogue (asm_file, local_bytes)
 
 /* Expand a library call to __builtin_saveregs.  */
 rtx
-i860_saveregs ()
+i860_saveregs (void)
 {
   rtx fn = gen_rtx_SYMBOL_REF (Pmode, "__builtin_saveregs");
   rtx save = gen_reg_rtx (Pmode);
@@ -2130,7 +2069,7 @@ i860_saveregs ()
 }
 
 tree
-i860_build_va_list ()
+i860_build_va_list (void)
 {
   tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
   tree record;
@@ -2242,8 +2181,7 @@ i860_va_start (tree valist, rtx nextarg)
 #endif
 
 rtx
-i860_va_arg (valist, type)
-     tree valist, type;
+i860_va_arg (tree valist, tree type)
 {
   tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
   tree type_ptr_node, t;

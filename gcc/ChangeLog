@@ -1,5 +1,17 @@
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
+	* config/i860/i860.c: Replace all occurrences of 'GNU CC' with 'GCC'.
+	Remove all uses of the PARAMS macro.  Remove superflous prototypes.
+	Convert all function definitions from traditional to ISO C90 syntax.
+	* config/i860/i860-protos.h: Replace all occurrences of 'GNU CC'
+	with 'GCC'.  Remove all uses of the PARAMS macro.
+	* config/i860/i860.h: Replace all occurrences of 'GNU CC' with 'GCC'.
+	* config/i860/i860.md: Likewise.
+	* config/i860/sysv4.h: Likewise.
+	* config/i860/varargs.asm: Likewise.
+
+2003-08-22  Jason Eckhardt  <jle@rice.edu>
+
 	* config/i860/i860-protos.h (i860_va_start): Remove 'stdarg_p'
 	argument.
 	(tdesc_section): Add prototype.
