@@ -2059,8 +2059,21 @@ try_combine (i3, i2, i1)
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 0)),
 				  XVECEXP (newpat, 0, 1)))
     {
-      newi2pat = XVECEXP (newpat, 0, 1);
-      newpat = XVECEXP (newpat, 0, 0);
+      /* Normally, it doesn't matter which of the two is done first,
+	 but it does if one references cc0.  In that case, it has to
+	 be first.  */
+#ifdef HAVE_cc0
+      if (reg_referenced_p (cc0_rtx, XVECEXP (newpat, 0, 0)))
+	{
+	  newi2pat = XVECEXP (newpat, 0, 0);
+	  newpat = XVECEXP (newpat, 0, 1);
+	}
+      else
+#endif
+	{
+	  newi2pat = XVECEXP (newpat, 0, 1);
+	  newpat = XVECEXP (newpat, 0, 0);
+	}
 
       i2_code_number
 	= recog_for_combine (&newi2pat, i2, &new_i2_notes, &i2_scratches);
