@@ -1,7 +1,11 @@
+2000-07-11  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp/cmdlne-C.c: New.
+
 2000-07-09  Neil Booth  <NeilB@earthling.net>
 
-	* testsuite/gcc.dg/cpp/directiv.c: New tests.
-	* testsuite/gcc.dg/cpp/undef1.c: Update.
+	* gcc.dg/cpp/directiv.c: New tests.
+	* gcc.dg/cpp/undef1.c: Update.
 
 2000-07-08  Angela Marie Thomas <angela@cygnus.com>
 

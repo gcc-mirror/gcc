@@ -1,5 +1,9 @@
 2000-07-11  Neil Booth  <NeilB@earthling.net>
 
+	* cpp.texi: Update.
+
+2000-07-11  Neil Booth  <NeilB@earthling.net>
+
 	* cppinit.c: (cpp_reader_init): Allow digraphs by default.
 	(handle_option): Set digraphs according to standard.
 	Merge OPT_lang_c89 handler with OPT_std_c89.

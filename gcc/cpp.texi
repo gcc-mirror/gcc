@@ -83,9 +83,9 @@ It is called a macro processor because it allows you to define
 The C preprocessor is intended only for macro processing of C, C++ and
 Objective C source files.  For macro processing of other files, you are
 strongly encouraged to use alternatives like M4, which will likely give
-you better results and avoid many problems.  For example, the C
-preprocessor sometimes outputs extra white space to avoid inadvertent C
-token concatenation, and this may cause problems with other languages.
+you better results and avoid many problems.  For example, normally the C
+preprocessor does not preserve arbitrary whitespace verbatim, but
+instead replaces each sequence with a single space.
 
 For use on C-like source files, the C preprocessor provides four
 separate facilities that you can use as you see fit:
@@ -2908,11 +2908,14 @@ and will be sent to a program which might be confused by the
 
 @item -C
 @findex -C
-Do not discard comments: pass them through to the output file.
-Comments appearing in arguments of a macro call will be copied to the
-output before the expansion of the macro call.
+Do not discard comments.  All comments are passed through to the output
+file, except for comments in processed directives, which are deleted
+along with the directive.  Comments appearing in the expansion list of a
+macro will be preserved, and appear in place wherever the macro is
+invoked.
 
-You should be prepared for unwanted side effects when using -C.  For
+You should be prepared for side effects when using -C; it causes the
+preprocessor to treat comments as tokens in their own right.  For
 example, macro redefinitions that were trivial when comments were
 replaced by a single space might become significant when comments are
 retained.  Also, comments appearing at the start of what would be a
