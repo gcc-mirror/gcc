@@ -187,7 +187,8 @@ Dialog (Frame parent, String title, boolean modal, GraphicsConfiguration gc)
 {
   super (parent, gc);
 
-  this.title = title;
+  // A null title is equivalent to an empty title  
+  this.title = (title != null) ? title : "";
   this.modal = modal;
   visible = false;
 
@@ -254,8 +255,9 @@ public
 Dialog (Dialog parent, String title, boolean modal, GraphicsConfiguration gc)
 {
   super (parent, parent.getGraphicsConfiguration ());
-  
-  this.title = title;
+
+  // A null title is equivalent to an empty title  
+  this.title = (title != null) ? title : "";
   this.modal = modal;
   visible = false;
 
@@ -289,7 +291,9 @@ getTitle()
 public synchronized void
 setTitle(String title)
 {
-  this.title = title;
+  // A null title is equivalent to an empty title  
+  this.title = (title != null) ? title : "";
+
   if (peer != null)
     {
       DialogPeer d = (DialogPeer) peer;

@@ -147,6 +147,11 @@ public
 FileDialog(Frame parent, String title, int mode)
 {
   super(parent, title, true);
+  
+  if ((mode != LOAD) && (mode != SAVE))
+    throw new IllegalArgumentException (
+      "Mode argument must be either LOAD or SAVE");
+
   setMode (mode);
 }
 

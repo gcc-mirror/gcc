@@ -1,5 +1,11 @@
 2004-01-05  Fernando Nasser  <fnasser@redhat.com>
 
+	* java/awt/Dialog.java (constructor): Accept null title as per spec.
+	* java/awt/FileDialog.java (constructor): Throw exception on invalid
+	argument as per spec.
+
+2004-01-05  Fernando Nasser  <fnasser@redhat.com>
+
 	* java/awt/Choice.java (add): Leave posting of ItemEvents to peer.
 	(insert): Ditto.
 	(remove): Ditto.  Also, Check for valid argument.
