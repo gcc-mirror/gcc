@@ -1,5 +1,10 @@
 2005-03-15  Feng Wang  <fengwang@nudt.edu.cn>
 
+	* trans-stmt.c (gfc_trans_label_assign): Don't set DECL_ARTIFICIAL flag
+	to zero on label_tree.
+
+2005-03-15  Feng Wang  <fengwang@nudt.edu.cn>
+
 	PR fortran/18827
 	* io.c (resolve_tag): Add checking on assigned label.
 	(match_dt_format): Does not set symbol assign attribute.

@@ -120,8 +120,6 @@ gfc_trans_label_assign (gfc_code * code)
 
   if (code->label->defined == ST_LABEL_TARGET)
     {
-      /* Shouldn't need to set this flag. Reserve for optimization bug.  */
-      DECL_ARTIFICIAL (label_tree) = 0;
       label_tree = gfc_build_addr_expr (pvoid_type_node, label_tree);
       len_tree = integer_minus_one_node;
     }
