@@ -4125,8 +4125,9 @@ warn_for_assignment (msg, opname, function, argnum)
    arithmetic-combinations of integers.  */
 
 static tree
-initializer_constant_valid_p (value)
+initializer_constant_valid_p (value, endtype)
      tree value;
+     tree endtype;
 {
   switch (TREE_CODE (value))
     {
@@ -4142,29 +4143,30 @@ initializer_constant_valid_p (value)
       return TREE_OPERAND (value, 0);
 
     case NON_LVALUE_EXPR:
-      return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+      return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
 
     case CONVERT_EXPR:
     case NOP_EXPR:
       /* Allow conversions between pointer types.  */
       if (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE)
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
       /* Allow conversions between real types.  */
       if (TREE_CODE (TREE_TYPE (value)) == REAL_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == REAL_TYPE)
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
       /* Allow length-preserving conversions between integer types.  */
       if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE
 	  && tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (value)),
 				 TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
       /* Allow conversions between integer types only if explicit value.  */
       if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE)
 	{
-	  tree inner = initializer_constant_valid_p (TREE_OPERAND (value, 0));
+	  tree inner = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						     endtype);
 	  if (inner == null_pointer_node)
 	    return null_pointer_node;
 	  return 0;
@@ -4174,16 +4176,23 @@ initializer_constant_valid_p (value)
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE
 	  && tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (value)),
 				 TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
       /* Allow conversions to union types if the value inside is okay.  */
       if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
       return 0;
 
     case PLUS_EXPR:
+      if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
+	  && TYPE_PRECISION (TREE_TYPE (value)) < POINTER_SIZE)
+	return 0;
       {
-	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0));
-	tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1));
+	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						    endtype);
+	tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
+						    endtype);
 	/* If either term is absolute, use the other terms relocation.  */
 	if (valid0 == null_pointer_node)
 	  return valid1;
@@ -4193,9 +4202,14 @@ initializer_constant_valid_p (value)
       }
 
     case MINUS_EXPR:
+      if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
+	  && TYPE_PRECISION (TREE_TYPE (value)) < POINTER_SIZE)
+	return 0;
       {
-	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0));
-	tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1));
+	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						    endtype);
+	tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
+						    endtype);
 	/* Win if second argument is absolute.  */
 	if (valid1 == null_pointer_node)
 	  return valid0;
@@ -4247,7 +4261,7 @@ store_init_value (decl, init)
       value = error_mark_node;
     }
   else if (TREE_STATIC (decl)
-	   && initializer_constant_valid_p (value) == 0)
+	   && initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
     {
       error ("initializer for static variable uses complicated arithmetic");
       value = error_mark_node;
@@ -4637,7 +4651,8 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 		      " for `%s'", ofwhat);
 	  inside_init = error_mark_node;
 	}
-      else if (require_constant && initializer_constant_valid_p (inside_init) == 0)
+      else if (require_constant
+	       && initializer_constant_valid_p (inside_init, TREE_TYPE (inside_init)) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
 		      " for `%s'", ofwhat);
@@ -4668,7 +4683,8 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 		      " for `%s'", ofwhat);
 	  element = error_mark_node;
 	}
-      else if (require_constant && initializer_constant_valid_p (element) == 0)
+      else if (require_constant
+	       && initializer_constant_valid_p (element, TREE_TYPE (element)) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
 		      " for `%s'", ofwhat);
@@ -4772,7 +4788,8 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 		      " for `%s'", ofwhat);
 	  inside_init = error_mark_node;
 	}
-      else if (require_constant && initializer_constant_valid_p (inside_init) == 0)
+      else if (require_constant
+	       && initializer_constant_valid_p (inside_init, TREE_TYPE (inside_init)) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
 		      " for `%s'", ofwhat);
@@ -5045,7 +5062,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	    erroneous = 1;
 	  else if (!TREE_CONSTANT (next1))
 	    allconstant = 0;
-	  else if (initializer_constant_valid_p (next1) == 0)
+	  else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
 	    allsimple = 0;
 
 	  /* Now store NEXT1 in the list, I elements from the *end*.
@@ -5146,7 +5163,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	    erroneous = 1;
 	  else if (!TREE_CONSTANT (next1))
 	    allconstant = 0;
-	  else if (initializer_constant_valid_p (next1) == 0)
+	  else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
 	    allsimple = 0;
 
 	  /* Now store NEXT1 in the list, I elements from the *end*.
@@ -5234,7 +5251,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	erroneous = 1;
       else if (!TREE_CONSTANT (next1))
 	allconstant = 0;
-      else if (initializer_constant_valid_p (next1) == 0)
+      else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
 	allsimple = 0;
       members = tree_cons (field, next1, members);
     }
