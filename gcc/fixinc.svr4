@@ -41,7 +41,7 @@ exit 1
 fi
 
 # Directory in which to store the results.
-LIB=${1-${LIB-/usr/local/lib/gcc-include}}
+LIB=${1?"fixincludes: output directory not specified"}
 
 # Make sure it exists.
 if [ ! -d $LIB ]; then
