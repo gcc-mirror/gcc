@@ -1,3 +1,14 @@
+2002-02-18  Carlo Wood  <carlo@gnu.org>
+
+	PR c++/5390
+	* cplus-dem.c (demangle_integral_value): Accept multi-digit
+	numbers that do not start with an underscore; This is needed
+	for integer template parameters. This doesn't break anything
+	because multi-digit numbers are never followed by a digit.
+	* testsuite/demangle-expected: Corrected all mangled test
+	cases with multi-digit template parameters: g++ 2.95.x does
+	not generate underscores around these parameters.
+
 2002-02-05  Jason Merrill  <jason@redhat.com>
 
 	* cplus-dem.c (flags): Add DMGL_VERBOSE

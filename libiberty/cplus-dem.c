@@ -1787,7 +1787,7 @@ demangle_integral_value (work, mangled, s)
 
       /* By default, we let the number decide whether we shall consume an
 	 underscore.  */
-      int consume_following_underscore = 0;
+      int multidigit_without_leading_underscore = 0;
       int leave_following_underscore = 0;
 
       success = 0;
@@ -1804,15 +1804,26 @@ demangle_integral_value (work, mangled, s)
 	     `m'-prefix we must do it here, using consume_count and
 	     adjusting underscores: we have to consume the underscore
 	     matching the prepended one.  */
-	  consume_following_underscore = 1;
+	  multidigit_without_leading_underscore = 1;
 	  string_appendn (s, "-", 1);
 	  (*mangled) += 2;
 	}
       else if (**mangled == '_')
 	{
 	  /* Do not consume a following underscore;
-	     consume_following_underscore will consume what should be
+	     multidigit_without_leading_underscore will consume what should be
 	     consumed.  */
+	  leave_following_underscore = 1;
+	}
+      else
+	{
+	  /* Since consume_count_with_underscores does not handle
+	     multi-digit numbers that do not start with an underscore,
+	     and this number can be an integer template parameter,
+	     we have to call consume_count. */
+	  multidigit_without_leading_underscore = 1;
+	  /* These multi-digit numbers never end on an underscore,
+	     so if there is one then don't eat it. */
 	  leave_following_underscore = 1;
 	}
 
@@ -1820,7 +1831,7 @@ demangle_integral_value (work, mangled, s)
 	 underscore, since consume_count_with_underscores expects
 	 the leading underscore (that we consumed) if it is to handle
 	 multi-digit numbers.  */
-      if (consume_following_underscore)
+      if (multidigit_without_leading_underscore)
 	value = consume_count (mangled);
       else
 	value = consume_count_with_underscores (mangled);
@@ -1838,7 +1849,7 @@ demangle_integral_value (work, mangled, s)
 	     is wrong.  If other (arbitrary) cases are followed by an
 	     underscore, we need to do something more radical.  */
 
-	  if ((value > 9 || consume_following_underscore)
+	  if ((value > 9 || multidigit_without_leading_underscore)
 	      && ! leave_following_underscore
 	      && **mangled == '_')
 	    (*mangled)++;
