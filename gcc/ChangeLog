@@ -1,3 +1,10 @@
+2004-01-22  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (function_arg) Handle 
+	vector register special in function without prototype.
+	(function_arg_advance): Vector parameters get always
+	GPRs allocated for the linux64 target.
+
 2004-01-21  Andrew Pinski  <apinski@apple.com>
 
 	PR target/13785
