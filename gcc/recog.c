@@ -43,7 +43,9 @@ Boston, MA 02111-1307, USA.  */
 /* Import from final.c: */
 extern rtx alter_subreg ();
 
+static void validate_replace_rtx_1 PROTO((rtx *, rtx, rtx, rtx));
 static rtx *find_single_use_1 PROTO((rtx, rtx *));
+static rtx *find_constant_term_loc PROTO((rtx *));
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
