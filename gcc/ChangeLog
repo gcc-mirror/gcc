@@ -1,5 +1,16 @@
 2004-01-17  Daniel Jacobowitz  <drow@mvista.com>
 
+	* rtl.h (emit_insn_before_sameloc, emit_jump_insn_before_sameloc)
+	(emit_call_insn_before_sameloc, emit_insn_after_sameloc)
+	(emit_jump_insn_after_sameloc, emit_call_insn_after_sameloc): New
+	macros.
+	* reload1.c (emit_reload_insns): Use them.
+	* emit-rtl.c (emit_insn_before_sameloc, emit_insn_after_sameloc)
+	(emit_jump_insn_after_sameloc, emit_call_insn_after_sameloc): Check
+	for NULL PATTERN.
+
+2004-01-17  Daniel Jacobowitz  <drow@mvista.com>
+
 	* final.c (SEEN_BB, SEEN_NOTE, SEEN_EMITTED): Define.
 	(final_scan_insn): Update to take an additional SEEN argument.  Emit
 	a line note after the prologue.  Make static.
