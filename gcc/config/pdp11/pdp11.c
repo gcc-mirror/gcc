@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
+#include "flags.h"
 
 /*
 #define FPU_REG_P(X)	((X)>=8 && (X)<14)
@@ -97,9 +98,6 @@ output_function_prologue(stream, size)
   FILE *stream;
   int size;
 {							       
-    extern char call_used_regs[];					
-    extern int frame_pointer_needed;				
-
     int fsize = ((size) + 1) & ~1;      				
     int regno, nregs, i;						
     int offset = 0;
@@ -196,7 +194,6 @@ output_function_epilogue(stream, size)
   FILE *stream;
   int size;
 {								
-    extern char call_used_regs[];					
     extern int may_call_alloca;
 
     int fsize = ((size) + 1) & ~1;      				
