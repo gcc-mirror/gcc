@@ -1,3 +1,8 @@
+Tue Aug 26 17:54:56 1997  Michael P. Hayes  (michaelh@ongaonga.chch.cri.nz>
+
+	* loop.c (check_final_value): Don't miss a biv increment in a
+	parallel.
+
 Tue Aug 26 12:03:49 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* dwarfout.c (dwarfout_file_scope_decl, case TYPE_DECL): Check
