@@ -1,3 +1,9 @@
+2004-11-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18299
+	* tree-inline.c (copy_body_r): Change "t = t" to empty
+	statement instead of "t".
+
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* modulo-sched.c (create_partial_schedule,
