@@ -1,5 +1,11 @@
 2003-12-09  Bernardo Innocenti  <bernie@develer.com>
 
+	* include/c/std_cctype.h, include/c/std_cmath.h,
+	include/c/std_cstdlib.h include/c/std_cwchar.h,
+	include/c/std_cwctype.h: Remove trailing whitespace.
+
+2003-12-09  Bernardo Innocenti  <bernie@develer.com>
+
 	* include/backward/algo.h, include/backward/algobase.h,
 	include/backward/alloc.h, include/backward/complex.h,
 	include/backward/defalloc.h, include/backward/function.h,

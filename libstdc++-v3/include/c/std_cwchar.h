@@ -49,9 +49,9 @@
 #ifndef _GLIBCXX_HAVE_MBSTATE_T
 namespace std
 {
-  extern "C" 
+  extern "C"
   {
-    typedef struct 
+    typedef struct
     {
       int __fill[6];
     } mbstate_t;
@@ -59,4 +59,4 @@ namespace std
 }
 #endif
 
-#endif 
+#endif

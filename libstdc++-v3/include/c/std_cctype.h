@@ -38,4 +38,4 @@
 
 #include_next <ctype.h>
 
-#endif 
+#endif
