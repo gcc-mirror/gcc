@@ -1,5 +1,8 @@
 2004-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* local-alloc.c (block_alloc): Replace IN_RANGE with simple
+	comparison.
+
 	* doc/c-tree.texi (CONSTRUCTOR): Mention RANGE_EXPRs.
 
 2004-12-16  Mark Dettinger  <dettinge@de.ibm.com>
