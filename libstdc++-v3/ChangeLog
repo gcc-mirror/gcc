@@ -1,3 +1,8 @@
+2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/sstream.tcc (pbackfail): Shorten a bit (6 lines)
+	the innermost 'if' by factoring out some code.
+
 2003-04-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in:  Test for libintl.h.

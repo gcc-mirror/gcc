@@ -55,23 +55,18 @@ namespace std
       // Order these tests done in is unspecified by the standard.
       if (__testpos)
 	{
-	  if (traits_type::eq(traits_type::to_char_type(__c),
-			      this->_M_in_cur[-1])
-	      && !__testeof)
+	  const bool __testeq = traits_type::eq(traits_type::to_char_type(__c),
+						this->_M_in_cur[-1]);
+	  
+	  --this->_M_in_cur;
+	  if (!__testeof && __testeq)
+	    __ret = __c;
+	  else if (__testeof)
+	    __ret = traits_type::not_eof(__c);
+	  else
 	    {
-	      --this->_M_in_cur;
-	      __ret = __c;
-	    }
-	  else if (!__testeof)
-	    {
-	      --this->_M_in_cur;
 	      *this->_M_in_cur = traits_type::to_char_type(__c);
 	      __ret = __c;
-	    }
-	  else if (__testeof)
-	    {
-	      --this->_M_in_cur;
-	      __ret = traits_type::not_eof(__c);
 	    }
 	}
       return __ret;
