@@ -49,6 +49,26 @@ struct natThread
   struct natThread *next;
 };
 
+// We use this for its side effects: it lets us lock a mutex directly
+// and not lose if an exception is thrown.
+class locker
+{
+private:
+  _Jv_Mutex_t *mutex;
+
+public:
+  locker (_Jv_Mutex_t *m)
+    : mutex (m)
+  {
+    _Jv_MutexLock (mutex);
+  }
+
+  ~locker ()
+  {
+    _Jv_MutexUnlock (mutex);
+  }
+};
+
 // This is called from the constructor to initialize the native side
 // of the Thread.
 void
@@ -153,12 +173,14 @@ java::lang::Thread::join (jlong millis, jint nanos)
 
 
   // Now wait for: (1) an interrupt, (2) the thread to exit, or (3)
-  // the timeout to occur.
-  _Jv_MutexLock (&curr_nt->interrupt_mutex);
-  _Jv_CondWait (&curr_nt->interrupt_cond,
+  // the timeout to occur.  Use a `locker' object because _Jv_CondWait
+  // can throw an exception.
+  {
+    locker l (&curr_nt->interrupt_mutex);
+    _Jv_CondWait (&curr_nt->interrupt_cond,
 		  &curr_nt->interrupt_mutex,
 		  millis, nanos);
-  _Jv_MutexUnlock (&curr_nt->interrupt_mutex);
+  }
 
   // Now the join has completed, one way or another.  Update the
   // joiners list to account for this.
@@ -224,10 +246,12 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
   // We use a condition variable to implement sleeping so that an
   // interrupt can wake us up.
   natThread *nt = (natThread *) current->data;
-  _Jv_MutexLock (&nt->interrupt_mutex);
-  _Jv_CondWait (&nt->interrupt_cond, &nt->interrupt_mutex,
+  {
+    // Use a locker because _Jv_CondWait can throw an exception.
+    locker l (&nt->interrupt_mutex);
+    _Jv_CondWait (&nt->interrupt_cond, &nt->interrupt_mutex,
 		  millis, nanos);
-  _Jv_MutexUnlock (&nt->interrupt_mutex);
+  }
 
   if (current->isInterrupted ())
     _Jv_Throw (new InterruptedException);
