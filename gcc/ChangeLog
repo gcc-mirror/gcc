@@ -1,3 +1,8 @@
+Mon Sep 21 22:48:09 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Recognize i[34567]86-*-openbsd* and handle it like
+	NetBSD.
+
 Mon Sep 21 22:05:28 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Revert this patch.

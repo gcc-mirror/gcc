@@ -1003,8 +1003,10 @@ changequote([,])dnl
 		fixincludes=fixinc.wrap
 		tmake_file=i386/t-freebsd
 		;;
+	# We are hoping OpenBSD is still close enough to NetBSD that we can
+	# share the configurations.
 changequote(,)dnl
-	i[34567]86-*-netbsd*)
+	i[34567]86-*-netbsd* | i[34567]86-*-openbsd*)
 changequote([,])dnl
 		tm_file=i386/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
