@@ -517,6 +517,24 @@ namespace tr1
     struct has_virtual_destructor
     : public false_type { };
 
+  template<typename>
+    struct is_signed
+    : public false_type { };
+  _DEFINE_SPEC(0, is_signed, signed char, true)
+  _DEFINE_SPEC(0, is_signed, short, true)
+  _DEFINE_SPEC(0, is_signed, int, true)
+  _DEFINE_SPEC(0, is_signed, long, true)
+  _DEFINE_SPEC(0, is_signed, long long, true)
+
+  template<typename>
+    struct is_unsigned
+    : public false_type { };
+  _DEFINE_SPEC(0, is_unsigned, unsigned char, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned short, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned int, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned long, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned long long, true)
+
   template<typename _Tp>
     struct alignment_of
     : public integral_constant<std::size_t, __alignof__(_Tp)> { };

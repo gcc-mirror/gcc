@@ -1,3 +1,15 @@
+2005-01-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_signed and is_unsigned.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_signed/is_signed.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_signed/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_unsigned/is_unsigned.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_unsigned/typedefs.cc: Likewise.
+
 2005-01-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 34.
