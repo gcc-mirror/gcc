@@ -72,6 +72,7 @@ ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
 endif # CANADIAN
 
 GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -L$(here) $(JC1FLAGS) -c
+GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
 JAVAC = $(GCJ) -C
 
@@ -128,9 +129,10 @@ libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
-libgcj_la_LDFLAGS = -L../libstdc++ -rpath $(toolexeclibdir) \
+libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgcj_la_LINK = $(GCJLINK)
 
 libgcjawt_la_SOURCES = ## Nothing
 EXTRA_libgcjawt_la_SOURCES = $(awt_java_source_files)
@@ -139,6 +141,7 @@ libgcjawt_la_LIBADD = $(awto_files)
 libgcjawt_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgcjawt_la_LINK = $(GCJLINK)
 
 ## Make the .class files depend on the .zip file.  This seems
 ## backwards, but is right.  This doesn't catch all the .class files,
@@ -361,9 +364,8 @@ EXTRA_jv_convert_SOURCES = $(convert_source_files)
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
 jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
-	-rpath `if test -d ../libstdc++; then cd ../libstdc++; pwd; fi` -rpath $(toolexeclibdir)
-jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) \
-	-o jv-convert
+	-rpath $(toolexeclibdir)
+jv_convert_LINK = $(GCJLINK)
 ## We explicitly link in the libraries we need.  This way we don't
 ## need -nodefaultlibs, so we can still rely on gcj picking up the
 ## system libraries we need (via the specs file).
@@ -380,9 +382,8 @@ gij_SOURCES = gij.cc
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
-gij_LDFLAGS = -rpath `if test -d ../libstdc++; then cd ../libstdc++; pwd; fi` -rpath $(toolexeclibdir)
-gij_LINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) \
-	-o gij
+gij_LDFLAGS = -rpath $(toolexeclibdir)
+gij_LINK = $(GCJLINK)
 ## We explicitly link in the libraries we need.  This way we don't
 ## need -nodefaultlibs, so we can still rely on gcj picking up the
 ## system libraries we need (via the specs file).
