@@ -1,5 +1,10 @@
 Sun Oct 26 11:32:16 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* Makefile.in (bootstrap-lean): Combined with `normal' bootstrap
+	targets using "$@" to provide support for similar but not identical
+	targets without having to duplicate code.
+	(bootstrap4): New goal.
+
 	* Makefile.in (compare, compare-lean, compare3): Combined to one
 	ruleset determining actions to be performed via $@.
 	(compare4, compare4-lean): New targets.
