@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.7.8 -*- Autoconf -*-
+# generated automatically by aclocal 1.7.9 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
@@ -613,7 +613,10 @@ AC_DEFUN(GLIBCXX_CHECK_LFS, [
       [#include <unistd.h>
        #include <stdio.h>
       ],
-      [fopen64("t", "w");
+      [FILE* fp;
+       fopen64("t", "w");
+       fseeko64(fp, 0, SEEK_CUR);
+       ftello64(fp);
        lseek64(1, 0, SEEK_CUR);],	
       [glibcxx_cv_LFS=yes],
       [glibcxx_cv_LFS=no])
@@ -2009,7 +2012,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.7"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.7.8])])
+	 [AM_AUTOMAKE_VERSION([1.7.9])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 

@@ -600,7 +600,10 @@ AC_DEFUN(GLIBCXX_CHECK_LFS, [
       [#include <unistd.h>
        #include <stdio.h>
       ],
-      [fopen64("t", "w");
+      [FILE* fp;
+       fopen64("t", "w");
+       fseeko64(fp, 0, SEEK_CUR);
+       ftello64(fp);
        lseek64(1, 0, SEEK_CUR);],	
       [glibcxx_cv_LFS=yes],
       [glibcxx_cv_LFS=no])

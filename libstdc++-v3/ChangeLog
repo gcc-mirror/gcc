@@ -1,3 +1,13 @@
+2003-11-21  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12882 (partial)
+	* acinclude.m4 (GLIBCXX_CHECK_LFS): Check fseeko64
+	and ftello64 too.
+	* include/ext/stdio_sync_filebuf.h (seekoff): Use fseeko64
+	and ftello64 if available.
+	* aclocal.m4: Regenerate.
+	* configure: Ditto.
+
 2003-11-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/debug/formatter.h: Use _Tp as template argument.
