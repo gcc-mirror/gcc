@@ -118,7 +118,8 @@ namespace _GLIBCXX_STD
 
       void
       _M_deallocate(_Tp* __p, size_t __n)
-      { if (__p)
+      {
+	if (__p)
 	  _M_impl.deallocate(__p, __n);
       }
     };
@@ -198,9 +199,10 @@ namespace _GLIBCXX_STD
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
       : _Base(__n, __a)
-      { this->_M_impl._M_finish = std::uninitialized_fill_n(this->
-							    _M_impl._M_start,
-							    __n, __value); }
+      {
+	std::uninitialized_fill_n(this->_M_impl._M_start, __n, __value);
+	this->_M_impl._M_finish = this->_M_impl._M_start + __n;
+      }
 
       /**
        *  @brief  Create a %vector with default elements.
@@ -212,10 +214,10 @@ namespace _GLIBCXX_STD
       explicit
       vector(size_type __n)
       : _Base(__n, allocator_type())
-      { this->_M_impl._M_finish = std::uninitialized_fill_n(this->
-							    _M_impl._M_start,
-							    __n,
-							    value_type()); }
+      {
+	std::uninitialized_fill_n(this->_M_impl._M_start, __n, value_type());
+	this->_M_impl._M_finish = this->_M_impl._M_start + __n;	
+      }
 
       /**
        *  @brief  %Vector copy constructor.
@@ -231,8 +233,7 @@ namespace _GLIBCXX_STD
       { this->_M_impl._M_finish = std::uninitialized_copy(__x.begin(),
 							  __x.end(),
 							  this->
-							  _M_impl._M_start);
-      }
+							  _M_impl._M_start); }
 
       /**
        *  @brief  Builds a %vector from a range.
@@ -777,9 +778,8 @@ namespace _GLIBCXX_STD
         {
 	  this->_M_impl._M_start = _M_allocate(__n);
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-	  this->_M_impl._M_finish = std::uninitialized_fill_n(this->
-							      _M_impl._M_start,
-							      __n, __value);
+	  std::uninitialized_fill_n(this->_M_impl._M_start, __n, __value);
+	  this->_M_impl._M_finish = this->_M_impl._M_end_of_storage;
 	}
 
       // Called by the range constructor to implement [23.1.1]/9

@@ -1,5 +1,17 @@
 2004-07-14  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/16505
+	* include/bits/stl_uninitialized.h (uninitialized_fill_n): Fix
+	the signature to return void, as per 20.4.4.3.
+	* include/bits/stl_vector.h (vector::vector(size_type,
+	const value_type&, const allocator_type&), vector::vector(size_type),
+	vector::_M_initialize_dispatch): Adjust callers.
+	* include/bits/vector.tcc (vector<>::_M_fill_assign,
+	vector<>::_M_fill_insert): Likewise.
+	* testsuite/20_util/memory/16505.cc: New.
+
+2004-07-14  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/22_locale/locale/cons/12658_thread-1.cc,
 	12658_thread-2.cc: Use __gnu_test::try_named_locale.
 
