@@ -1,3 +1,9 @@
+1999-12-30  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* i386.c (ix86_expand_fp_compare): In non-sahf non-TARGET_IEEE
+	case, expand GT comparisons correctly.  Fix a comment before this
+	part of the code.
+
 1999-12-30  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* dwarfout.c: Include "frame.h"	
