@@ -3922,7 +3922,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
     register int first_mode;
     register int last_mode;
     register char *opname;
-    register char suffix;
+    register int suffix;
 {
   register int mode;
   register unsigned opname_len = strlen (opname);
@@ -3960,7 +3960,7 @@ static void
 init_integral_libfuncs (optable, opname, suffix)
     register optab optable;
     register char *opname;
-    register char suffix;
+    register int suffix;
 {
   init_libfuncs (optable, SImode, TImode, opname, suffix);
 }
@@ -3974,7 +3974,7 @@ static void
 init_floating_libfuncs (optable, opname, suffix)
     register optab optable;
     register char *opname;
-    register char suffix;
+    register int suffix;
 {
   init_libfuncs (optable, SFmode, TFmode, opname, suffix);
 }
@@ -3988,7 +3988,7 @@ static void
 init_complex_libfuncs (optable, opname, suffix)
     register optab optable;
     register char *opname;
-    register char suffix;
+    register int suffix;
 {
   init_libfuncs (optable, SCmode, TCmode, opname, suffix);
 }
