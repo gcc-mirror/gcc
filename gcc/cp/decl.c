@@ -3452,6 +3452,8 @@ pushdecl (x)
 	    }
 	}
 
+      check_template_shadow (x);
+
       if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_FUNCTION_MEMBER_P (x))
 	{
 	  t = push_overloaded_decl (x, 1);
@@ -3671,16 +3673,6 @@ pushdecl (x)
 	      if (warnstring)
 		warning (warnstring, IDENTIFIER_POINTER (name));
 	    }
-	  /* Check to see if decl redeclares a template parameter. */
- 	  if (oldlocal && (current_class_type || current_function_decl) 
- 	      && current_template_parms)
- 	    {
- 	      if (decl_template_parm_p (oldlocal))
- 		{
-		  cp_error ("re-using name of template parameter `%T' in this scope", name);
- 		  cp_error_at (" previously declared here `%#D'", oldlocal);
- 		}
- 	    }
 	}
 
       if (TREE_CODE (x) == FUNCTION_DECL)
@@ -3816,7 +3808,6 @@ pushdecl_class_level (x)
 	     Types, enums, and static vars are checked here; other
 	     members are checked in finish_struct.  */
 	  tree icv = IDENTIFIER_CLASS_VALUE (name);
-	  tree ilv = IDENTIFIER_LOCAL_VALUE (name);
 
 	  if (icv && icv != x
 	      && flag_optional_diags
@@ -3831,17 +3822,7 @@ pushdecl_class_level (x)
 			     icv);
 	    }
 
-	  /* Check to see if decl redeclares a template parameter. */
-	  if (ilv && ! decls_match (ilv, x)
-	      && (current_class_type || current_function_decl) 
-	      && current_template_parms)
-	    {
-	      if (decl_template_parm_p (ilv))
-		{
-		  cp_error ("re-using name of template parameter `%T' in this scope", name);
-		  cp_error_at (" previously declared here `%#D'", ilv);
-		}
-	    }
+	  check_template_shadow (x);
 	}
 
       push_class_level_binding (name, x);
@@ -11842,19 +11823,9 @@ xref_tag (code_type_node, name, globalize)
 
   if (! globalize)
     {
-      if (t && (TREE_CODE (t) == TEMPLATE_TYPE_PARM 
-			    || TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM))
-	{
-	  cp_error ("redeclaration of template type-parameter `%T'", name);
-	  cp_error_at ("  previously declared here `%#D'", 
-		       TEMPLATE_TYPE_DECL (t));
-	}
-      if (t && TYPE_CONTEXT (t) && got_type)
-	ref = t;
-      else
-	/* If we know we are defining this tag, only look it up in
-	   this scope and don't try to find it as a type.  */
-	ref = lookup_tag (code, name, b, 1);
+      /* If we know we are defining this tag, only look it up in
+	 this scope and don't try to find it as a type.  */
+      ref = lookup_tag (code, name, b, 1);
     }
   else
     {
@@ -13783,6 +13754,8 @@ start_method (declspecs, declarator, attrlist)
 	}
       return void_type_node;
     }
+
+  check_template_shadow (fndecl);
 
   DECL_THIS_INLINE (fndecl) = 1;
 

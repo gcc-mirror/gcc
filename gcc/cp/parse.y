@@ -913,10 +913,7 @@ apparent_template_type:
 	  template_type
 	| identifier '<' template_arg_list_opt '>'
 	    .finish_template_type
-		{
-		  cp_error ("template class %T was not declared yet", $1);
-		  $$ = $5;
-		}
+		{ $$ = $5; }
 
 self_template_type:
 	  SELFNAME  '<' template_arg_list_opt template_close_bracket

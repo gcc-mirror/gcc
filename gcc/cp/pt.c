@@ -1206,6 +1206,8 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      ("default argument specified in explicit specialization");
 	    break;
 	  }
+      if (current_lang_name == lang_name_c)
+	cp_error ("template specialization with C linkage");
     }
 
   if (specialization || member_specialization || explicit_instantiation)
@@ -1513,8 +1515,33 @@ int decl_template_parm_p (old_decl)
   return 0;
 }
 
+/* Complain if DECL shadows a template parameter.
 
- /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
+   [temp.local]: A template-parameter shall not be redeclared within its
+   scope (including nested scopes).  */
+
+void
+check_template_shadow (decl)
+     tree decl;
+{
+  if (current_template_parms 
+      && IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl)))
+    {
+      tree olddecl = IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl));
+
+      /* We check for decl != olddecl to avoid bogus errors for using a
+	 name inside a class.  We check TPFI to avoid duplicate errors for
+	 inline member templates.  */
+      if (decl != olddecl && decl_template_parm_p (olddecl)
+	  && ! TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
+	{
+	  cp_error_at ("declaration of `%#D'", decl);
+	  cp_error_at (" shadows template parm `%#D'", olddecl);
+	}
+    }
+}
+
+/* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
    ORIG_LEVEL, DECL, and TYPE.  */
 
 static tree
@@ -2471,22 +2498,9 @@ convert_nontype_argument (type, expr)
        Check this first since if expr_type is the unknown_type_node
        we would otherwise complain below.  */
     ;
-  else if (INTEGRAL_TYPE_P (expr_type) 
-	   || TYPE_PTRMEM_P (expr_type) 
-	   || TYPE_PTRMEMFUNC_P (expr_type)
-	   /* The next two are g++ extensions.  */
-	   || TREE_CODE (expr_type) == REAL_TYPE
-	   || TREE_CODE (expr_type) == COMPLEX_TYPE)
-    {
-      if (! TREE_CONSTANT (expr))
-	{
-	non_constant:
-	  cp_error ("non-constant `%E' cannot be used as template argument",
-		    expr);
-	  return NULL_TREE;
-	}
-    }
-  else if (TYPE_PTR_P (expr_type) 
+  else if (TYPE_PTR_P (expr_type)
+	   || TREE_CODE (expr_type) == ARRAY_TYPE
+	   || TREE_CODE (type) == REFERENCE_TYPE
 	   /* If expr is the address of an overloaded function, we
 	      will get the unknown_type_node at this point.  */
 	   || expr_type == unknown_type_node)
@@ -2495,21 +2509,27 @@ convert_nontype_argument (type, expr)
       tree e = expr;
       STRIP_NOPS (e);
 
-      if (TREE_CODE (e) != ADDR_EXPR)
+      if (TREE_CODE (type) == REFERENCE_TYPE
+	  || TREE_CODE (expr_type) == ARRAY_TYPE)
+	referent = e;
+      else
 	{
-	bad_argument:
-	  cp_error ("`%E' is not a valid template argument", expr);
-	  error ("it must be %s%s with external linkage",
-		 TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
-		 ? "a pointer to " : "",
-		 TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == FUNCTION_TYPE
-		 ? "a function" : "an object");
-	  return NULL_TREE;
+	  if (TREE_CODE (e) != ADDR_EXPR)
+	    {
+	    bad_argument:
+	      cp_error ("`%E' is not a valid template argument", expr);
+	      error ("it must be %s%s with external linkage",
+		     TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+		     ? "a pointer to " : "",
+		     TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == FUNCTION_TYPE
+		     ? "a function" : "an object");
+	      return NULL_TREE;
+	    }
+
+	  referent = TREE_OPERAND (e, 0);
+	  STRIP_NOPS (referent);
 	}
 
-      referent = TREE_OPERAND (e, 0);
-      STRIP_NOPS (referent);
-      
       if (TREE_CODE (referent) == STRING_CST)
 	{
 	  cp_error ("string literal %E is not a valid template argument", 
@@ -2529,10 +2549,20 @@ convert_nontype_argument (type, expr)
 	  return error_mark_node;
 	}
     }
-  else if (TREE_CODE (expr) == VAR_DECL)
+  else if (INTEGRAL_TYPE_P (expr_type) 
+	   || TYPE_PTRMEM_P (expr_type) 
+	   || TYPE_PTRMEMFUNC_P (expr_type)
+	   /* The next two are g++ extensions.  */
+	   || TREE_CODE (expr_type) == REAL_TYPE
+	   || TREE_CODE (expr_type) == COMPLEX_TYPE)
     {
-      if (!TREE_PUBLIC (expr))
-	goto bad_argument;
+      if (! TREE_CONSTANT (expr))
+	{
+	non_constant:
+	  cp_error ("non-constant `%E' cannot be used as template argument",
+		    expr);
+	  return NULL_TREE;
+	}
     }
   else 
     {
@@ -2556,7 +2586,7 @@ convert_nontype_argument (type, expr)
       expr = digest_init (type, expr, (tree*) 0);
 
       if (TREE_CODE (expr) != INTEGER_CST)
-	/* Curiously, some TREE_CONSTNAT integral expressions do not
+	/* Curiously, some TREE_CONSTANT integral expressions do not
 	   simplify to integer constants.  For example, `3 % 0',
 	   remains a TRUNC_MOD_EXPR.  */
 	goto non_constant;
@@ -3415,10 +3445,11 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
     }
   else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
     {
-      if (CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (d1)) == NULL_TREE)
-	return error_mark_node;
-      template = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d1));
-      d1 = DECL_NAME (template);
+      if (CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (d1)))
+	{
+	  template = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d1));
+	  d1 = DECL_NAME (template);
+	}
     }
   else if (TREE_CODE (d1) == ENUMERAL_TYPE 
 	   || (TREE_CODE_CLASS (TREE_CODE (d1)) == 't' 
@@ -3442,7 +3473,10 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
      We don't want to do that, but we have to deal with the situation, so
      let's give them some syntax errors to chew on instead of a crash.  */
   if (! template)
-    return error_mark_node;
+    {
+      cp_error ("`%T' is not a template", d1);
+      return error_mark_node;
+    }
 
   if (context == NULL_TREE)
     context = global_namespace;

@@ -1849,7 +1849,8 @@ cp_line_of (t)
   int line = 0;
   if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
     line = DECL_SOURCE_LINE (DECL_CONTEXT (t));
-  if (TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t))
+  if (TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t)
+      && TYPE_MAIN_DECL (TREE_TYPE (t)))
     t = TREE_TYPE (t);
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')

@@ -347,6 +347,9 @@ check_dtor_name (basetype, name)
 {
   name = TREE_OPERAND (name, 0);
 
+  if (name == error_mark_node)
+    return error_mark_node;
+
   if (TREE_CODE (name) == TYPE_DECL)
     name = TREE_TYPE (name);
   else if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
