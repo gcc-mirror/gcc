@@ -753,6 +753,8 @@ decode_signature_piece (stream, signature, limit, need_space)
     case 'Z': ctype = "jboolean";  goto printit;
     case 'V': ctype = "void";  goto printit;
     case 'L':
+      /* Print a leading "::" so we look in the right namespace.  */
+      fputs ("::", stream);
       ++signature;
       while (*signature && *signature != ';')
 	{
@@ -988,6 +990,10 @@ print_cxx_classname (stream, prefix, jcf, index)
     return 0;
 
   fputs (prefix, stream);
+
+  /* Print a leading "::" so we look in the right namespace.  */
+  fputs ("::", stream);
+
   while (s < limit)
     {
       c = UTF8_GET (s, limit);
