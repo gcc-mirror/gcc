@@ -150,10 +150,9 @@ extern int target_flags;
     { "5200", (MASK_5200)},						\
     { "68851", 0},							\
     { "no-68851", 0},							\
-    { "68302", 0},							\
-    { "no-68302", 0},							\
-    { "68332", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
-    { "no-68332", 0},							\
+    { "68302", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
+    { "68332", - (MASK_68060|MASK_68040|MASK_BITFIELD)},		\
+    { "68332", MASK_68020},						\
     SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
