@@ -1,5 +1,21 @@
 1998-08-26  Mark Mitchell  <mark@markmitchell.com>
 
+	* cp-tree.h (finish_enum): Change prototype.
+	* decl.c (finish_enum): Use TYPE_VALUES, rather than taking a
+	VALUES parameter.  Don't try to compute mins/maxs if
+	processing_template_decl. 
+	* parse.y (structsp): Use new calling sequence for finish_enum.
+	* pt.c (tsubst_enum): Likewise.  Take the new type as input.  
+	(lookup_template_class): Remove unused variables.  Tweak.
+	Register enums on instantiation list before substituting
+	enumeration constants.
+	(tsubst_decl): Remove unused variables.
+	(regenerate_decl_from_template): Likewise.
+	
+	* decl.c (duplicate_decls): Don't obliterate the
+	DECL_TEMPLATE_INFO for a template if we're not replacing it with
+	anything. 
+
 	* lex.c (do_identifier): Fix typo in comment.
 
 Wed Aug 26 10:54:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
