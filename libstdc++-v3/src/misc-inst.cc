@@ -37,6 +37,7 @@
 #include <ostream>
 #include <algorithm>
 #include <vector>
+#include <bits/atomicity.h>
 
 namespace std
 {
@@ -66,6 +67,9 @@ namespace std
   template 
     basic_istream<wchar_t>& 
     getline(basic_istream<wchar_t>&, wstring&);
+#endif
+#ifdef _GLIBCPP_INST_ATOMICITY_LOCK
+  template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
 #endif
 
 #if 1
