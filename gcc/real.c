@@ -3230,19 +3230,24 @@ static void
 encode_ibm_extended (const struct real_format *fmt, long *buf,
 		     const REAL_VALUE_TYPE *r)
 {
-  REAL_VALUE_TYPE u, v;
+  REAL_VALUE_TYPE u, normr, v;
   const struct real_format *base_fmt;
 
   base_fmt = fmt->qnan_msb_set ? &ieee_double_format : &mips_double_format;
 
+  /* Renormlize R before doing any arithmetic on it.  */
+  normr = *r;
+  if (normr.class == rvc_normal)
+    normalize (&normr);
+
   /* u = IEEE double precision portion of significand.  */
-  u = *r;
+  u = normr;
   round_for_format (base_fmt, &u);
   encode_ieee_double (base_fmt, &buf[0], &u);
 
-  if (r->class == rvc_normal)
+  if (u.class == rvc_normal)
     {
-      do_add (&v, r, &u, 1);
+      do_add (&v, &normr, &u, 1);
       round_for_format (base_fmt, &v);
       encode_ieee_double (base_fmt, &buf[2], &v);
     }
