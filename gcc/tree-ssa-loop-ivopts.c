@@ -701,17 +701,36 @@ determine_biv_step (tree phi)
   return step;
 }
 
-/* Returns false if INDEX is a ssa name that occurs in an
+/* Returns true if EXP is a ssa name that occurs in an abnormal phi node.  */
+
+static bool
+abnormal_ssa_name_p (tree exp)
+{
+  if (!exp)
+    return false;
+
+  if (TREE_CODE (exp) != SSA_NAME)
+    return false;
+
+  return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp) != 0;
+}
+
+/* Returns false if BASE or INDEX contains a ssa name that occurs in an
    abnormal phi node.  Callback for for_each_index.  */
 
 static bool
-idx_contains_abnormal_ssa_name_p (tree base ATTRIBUTE_UNUSED, tree *index,
+idx_contains_abnormal_ssa_name_p (tree base, tree *index,
 				  void *data ATTRIBUTE_UNUSED)
 {
-  if (TREE_CODE (*index) != SSA_NAME)
-    return true;
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
+      if (abnormal_ssa_name_p (TREE_OPERAND (base, 2)))
+	return false;
+      if (abnormal_ssa_name_p (TREE_OPERAND (base, 3)))
+	return false;
+    }
 
-  return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (*index) == 0;
+  return !abnormal_ssa_name_p (*index);
 }
 
 /* Returns true if EXPR contains a ssa name that occurs in an
@@ -1146,6 +1165,39 @@ find_interesting_uses_cond (struct ivopts_data *data, tree stmt, tree *cond_p)
   record_use (data, cond_p, civ, stmt, USE_COMPARE);
 }
 
+/* Returns true if expression EXPR is obviously invariant in LOOP,
+   i.e. if all its operands are defined outside of the LOOP.  */
+
+static bool
+expr_invariant_in_loop_p (struct loop *loop, tree expr)
+{
+  basic_block def_bb;
+  unsigned i, len;
+
+  if (is_gimple_min_invariant (expr))
+    return true;
+
+  if (TREE_CODE (expr) == SSA_NAME)
+    {
+      def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (expr));
+      if (def_bb
+	  && flow_bb_inside_loop_p (loop, def_bb))
+	return false;
+
+      return true;
+    }
+
+  if (!EXPR_P (expr))
+    return false;
+
+  len = first_rtl_op (TREE_CODE (expr));
+  for (i = 0; i < len; i++)
+    if (!expr_invariant_in_loop_p (loop, TREE_OPERAND (expr, i)))
+      return false;
+
+  return true;
+}
+
 /* Cumulates the steps of indices into DATA and replaces their values with the
    initial ones.  Returns false when the value of the index cannot be determined.
    Callback for for_each_index.  */
@@ -1162,10 +1214,35 @@ idx_find_step (tree base, tree *idx, void *data)
 {
   struct ifs_ivopts_data *dta = data;
   struct iv *iv;
-  tree step, type, iv_type, iv_step, lbound;
-  basic_block def_bb;
+  tree step, type, iv_type, iv_step, lbound, off;
   struct loop *loop = dta->ivopts_data->current_loop;
-  
+
+  if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF
+      || TREE_CODE (base) == ALIGN_INDIRECT_REF)
+    return false;
+
+  /* If base is a component ref, require that the offset of the reference
+     is invariant.  */
+  if (TREE_CODE (base) == COMPONENT_REF)
+    {
+      off = component_ref_field_offset (base);
+      return expr_invariant_in_loop_p (loop, off);
+    }
+
+  /* If base is array, first check whether we will be able to move the
+     reference out of the loop (in order to take its address in strength
+     reduction).  In order for this to work we need both lower bound
+     and step to be loop invariants.  */
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
+      step = array_ref_element_size (base);
+      lbound = array_ref_low_bound (base);
+
+      if (!expr_invariant_in_loop_p (loop, step)
+	  || !expr_invariant_in_loop_p (loop, lbound))
+	return false;
+    }
+
   if (TREE_CODE (*idx) != SSA_NAME)
     return true;
 
@@ -1183,27 +1260,10 @@ idx_find_step (tree base, tree *idx, void *data)
   if (TREE_CODE (base) == ARRAY_REF)
     {
       step = array_ref_element_size (base);
-      lbound = array_ref_low_bound (base);
 
       /* We only handle addresses whose step is an integer constant.  */
       if (TREE_CODE (step) != INTEGER_CST)
 	return false;
-
-      /* We need the lower bound to be invariant in loop, since otherwise
-	 we are unable to initialize a new induction variable created
-	 in strength reduction -- we need to take the address of the
-	 reference in front of the loop.  */
-      if (is_gimple_min_invariant (lbound))
-	; /* Nothing to do.  */
-      else if (TREE_CODE (lbound) != SSA_NAME)
-	return false;
-      else
-	{
-	  def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (lbound));
-	  if (def_bb
-	      && flow_bb_inside_loop_p (loop, def_bb))
-	    return false;
-	}
     }
   else
     /* The step for pointer arithmetics already is 1 byte.  */
@@ -1269,9 +1329,10 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
       || zero_p (step))
     goto fail;
 
-  if (TREE_CODE (base) == INDIRECT_REF
-      || TREE_CODE (base) == ALIGN_INDIRECT_REF
-      || TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
+  gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
+  gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
+
+  if (TREE_CODE (base) == INDIRECT_REF)
     base = TREE_OPERAND (base, 0);
   else
     base = build_addr (base);
@@ -1701,9 +1762,10 @@ add_address_candidates (struct ivopts_data *data,
 
       if (base != TREE_OPERAND (iv->base, 0))
 	{ 
-	  if (TREE_CODE (base) == INDIRECT_REF
-	      || TREE_CODE (base) == ALIGN_INDIRECT_REF
-	      || TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
+	  gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
+	  gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
+
+	  if (TREE_CODE (base) == INDIRECT_REF)
 	    base = TREE_OPERAND (base, 0);
 	  else
 	    base = build_addr (base);
@@ -3805,11 +3867,26 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
    for_each_index.  */
 
 static bool
-idx_remove_ssa_names (tree base ATTRIBUTE_UNUSED, tree *idx,
+idx_remove_ssa_names (tree base, tree *idx,
 		      void *data ATTRIBUTE_UNUSED)
 {
+  tree *op;
+
   if (TREE_CODE (*idx) == SSA_NAME)
     *idx = SSA_NAME_VAR (*idx);
+
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
+      op = &TREE_OPERAND (base, 2);
+      if (*op
+	  && TREE_CODE (*op) == SSA_NAME)
+	*op = SSA_NAME_VAR (*op);
+      op = &TREE_OPERAND (base, 3);
+      if (*op
+	  && TREE_CODE (*op) == SSA_NAME)
+	*op = SSA_NAME_VAR (*op);
+    }
+
   return true;
 }
 
@@ -3837,9 +3914,10 @@ rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
 
   if (!var || TREE_CODE (with) != SSA_NAME)
     goto do_rewrite;
-  if (TREE_CODE (var) == INDIRECT_REF
-      || TREE_CODE (var) == ALIGN_INDIRECT_REF
-      || TREE_CODE (var) == MISALIGNED_INDIRECT_REF)
+
+  gcc_assert (TREE_CODE (var) != ALIGN_INDIRECT_REF);
+  gcc_assert (TREE_CODE (var) != MISALIGNED_INDIRECT_REF);
+  if (TREE_CODE (var) == INDIRECT_REF)
     var = TREE_OPERAND (var, 0);
   if (TREE_CODE (var) == SSA_NAME)
     {
@@ -3876,19 +3954,15 @@ rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
 do_rewrite:
 
   orig = NULL_TREE;
-  if (TREE_CODE (*op) == INDIRECT_REF
-      || TREE_CODE (*op) == ALIGN_INDIRECT_REF
-      || TREE_CODE (*op) == MISALIGNED_INDIRECT_REF)
+  gcc_assert (TREE_CODE (*op) != ALIGN_INDIRECT_REF);
+  gcc_assert (TREE_CODE (*op) != MISALIGNED_INDIRECT_REF);
+
+  if (TREE_CODE (*op) == INDIRECT_REF)
     orig = REF_ORIGINAL (*op);
   if (!orig)
     orig = unshare_and_remove_ssa_names (*op);
 
-  if (TREE_CODE (bvar) == ALIGN_INDIRECT_REF)
-    *op = build1 (ALIGN_INDIRECT_REF, TREE_TYPE (*op), with);
-  else if (TREE_CODE (bvar) == MISALIGNED_INDIRECT_REF)
-    *op = build2 (MISALIGNED_INDIRECT_REF, TREE_TYPE (*op), with, TREE_OPERAND (*op, 1));
-  else
-    *op = build1 (INDIRECT_REF, TREE_TYPE (*op), with);
+  *op = build1 (INDIRECT_REF, TREE_TYPE (*op), with);
 
   /* Record the original reference, for purposes of alias analysis.  */
   REF_ORIGINAL (*op) = orig;

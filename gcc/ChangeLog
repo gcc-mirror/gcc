@@ -1,3 +1,21 @@
+2004-09-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR bootstrap/17591
+	* tree-ssa-loop-im.c (for_each_index): Call callback for component_refs
+	with varying offset.
+	* tree-ssa-loop-ivopts.c (abnormal_ssa_name_p): New function.
+	(idx_contains_abnormal_ssa_name_p): Scan step and lower bound for
+	ARRAY_REFS.
+	(expr_invariant_in_loop_p): New function.
+	(idx_find_step): Handle step and lower bound for ARRAY_REFs.  Handle
+	component_ref_field_offset for COMPONENT_REFs.  Do not allow
+	ALIGN_INDIRECT_REFs and MISALIGNED_INDIRECT_REFs.
+	(add_address_candidates): Do not handle ALIGN_INDIRECT_REFs and
+	MISALIGNED_INDIRECT_REFs.
+	(idx_remove_ssa_names): Handle step and lower bound for ARRAY_REFs.
+	(rewrite_address_base): Do not handle ALIGN_INDIRECT_REFs and
+	MISALIGNED_INDIRECT_REFs.
+
 2004-09-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/11459
