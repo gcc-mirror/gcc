@@ -3343,8 +3343,8 @@ emit_move_insn_1 (x, y)
       int stack = push_operand (x, GET_MODE (x));
 
 #ifdef PUSH_ROUNDING
-      /* In case we output to the stack, but the size is smaller machine can
-	 push exactly, we need to use move instructions.  */
+      /* In case we output to the stack, but the size is smaller than the
+	 machine can push exactly, we need to use move instructions.  */
       if (stack
 	  && (PUSH_ROUNDING (GET_MODE_SIZE (submode))
 	      != GET_MODE_SIZE (submode)))
