@@ -44,7 +44,10 @@ extern "C" {
 typedef unsigned int (*htab_hash) PARAMS ((const void *));
 
 /* Compare a table entry with a possible entry.  The entry already in
-   the table always comes first.  */
+   the table always comes first, so the second element can be of a
+   different type (but in this case htab_find and htab_find_slot
+   cannot be used; instead the variants that accept a hash value
+   must be used).  */
 typedef int (*htab_eq) PARAMS ((const void *, const void *));
 
 /* Cleanup function called whenever a live element is removed from
@@ -52,9 +55,10 @@ typedef int (*htab_eq) PARAMS ((const void *, const void *));
 typedef void (*htab_del) PARAMS ((void *));
   
 /* Function called by htab_traverse for each live element.  The first
-   arg is the element, the second arg is the auxiliary pointer handed
-   to htab_traverse.  Return 1 to continue scan, 0 to stop.  */
-typedef int (*htab_trav) PARAMS ((void *, void *));
+   arg is the slot of the element (which can be passed to htab_clear_slot
+   if desired), the second arg is the auxiliary pointer handed to
+   htab_traverse.  Return 1 to continue scan, 0 to stop.  */
+typedef int (*htab_trav) PARAMS ((void **, void *));
 
 /* Hash tables are of the following type.  The structure
    (implementation) of this type is not needed for using the hash
@@ -104,6 +108,10 @@ extern void	htab_empty	PARAMS ((htab_t));
 
 extern void    *htab_find	PARAMS ((htab_t, const void *));
 extern void   **htab_find_slot	PARAMS ((htab_t, const void *, int));
+extern void    *htab_find_with_hash		PARAMS ((htab_t, const void *,
+							 unsigned int));
+extern void   **htab_find_slot_with_hash	PARAMS ((htab_t, const void *,
+							 unsigned int, int));
 extern void	htab_clear_slot	PARAMS ((htab_t, void **));
 extern void	htab_remove_elt	PARAMS ((htab_t, void *));
 

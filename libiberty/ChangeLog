@@ -1,3 +1,14 @@
+2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* hashtab.c (find_empty_slot_for_expand): New function.
+	(htab_expand): Use it instead of htab_find_slot.
+	(htab_find_with_hash): Renamed from htab_find; now accepts extra
+	argument HASH.
+	(htab_find_slot_with_hash): Likewise for htab_find_slot.
+	(htab_find): New wrapper function.
+	(htab_find_slot): Likewise.
+	(htab_traverse): Pass slot, not entry, to called function.
+
 2000-03-09  Alex Samuel  <samuel@codesourcery.com>
 
 	* Makefile.in (CFILES): Add partition.c.
