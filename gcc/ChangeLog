@@ -1,3 +1,8 @@
+2000-04-22  Richard Henderson  <rth@cygnus.com>
+
+	* predict.c (expected_value_to_br_prob): Don't bomb if op1 of
+	the collected condition is not a constant.
+
 2000-04-22  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h: New file.

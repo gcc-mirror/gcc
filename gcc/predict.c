@@ -248,9 +248,19 @@ expected_value_to_br_prob ()
 	}
 
       /* Collect the branch condition, hopefully relative to EV_REG.  */
+      /* ???  At present we'll miss things like
+		(expected_value (eq r70 0))
+		(set r71 -1)
+		(set r80 (lt r70 r71))
+		(set pc (if_then_else (ne r80 0) ...))
+	 as canonicalize_condition will render this to us as 
+		(lt r70, r71)
+	 Could use cselib to try and reduce this further.  */
       cond = XEXP (SET_SRC (PATTERN (insn)), 0);
       cond = canonicalize_condition (insn, cond, 0, NULL, ev_reg);
-      if (! cond || XEXP (cond, 0) != ev_reg)
+      if (! cond
+	  || XEXP (cond, 0) != ev_reg
+	  || GET_CODE (XEXP (cond, 1)) != CONST_INT)
 	continue;
 
       /* Substitute and simplify.  Given that the expression we're 
