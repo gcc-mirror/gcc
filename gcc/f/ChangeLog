@@ -1,5 +1,10 @@
 2000-11-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
+	* root.texi: Remove non-historical EGCS reference.
+	Set current g77 version to 0.5.26.
+
+2000-11-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
 	* com.c (ffecom_stabilize_aggregate_) case RTL_EXPR:
 	Abort.
 

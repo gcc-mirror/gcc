@@ -3,7 +3,7 @@
 @c (e.g. a release branch in the CVS repository for gcc),
 @c clear this and set the version information correctly.
 @set DEVELOPMENT
-@set version-g77 0.5.25
+@set version-g77 0.5.26
 @set version-gcc 2.97
 
 @c GCC-G77 indicates this is the GCC (2.95 or later) version of g77.
@@ -23,11 +23,6 @@
 @ifset GCC-G77
 @set which-g77 GCC-@value{version-gcc}
 @set which-gcc GCC
-@end ifset
-
-@ifset EGCS-G77
-@set which-g77 EGCS-@value{version-egcs}
-@set which-gcc EGCS
 @end ifset
 
 @ifset FSF-G77
