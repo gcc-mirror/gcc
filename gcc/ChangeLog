@@ -1,3 +1,13 @@
+2003-01-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR other/7341
+	* invoke.texi (ftest-coverage): Fix broken cross-reference.
+	Change @code to @command for gcov command.
+
+	* gcc.texi: Adjust title of gcov section.
+	Adjust copyright.
+	* gcov.texi: Likewise.
+
 2003-01-22  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/8423
