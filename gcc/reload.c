@@ -4074,7 +4074,6 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
       /* Unshare the MEM rtx so we can safely alter it.  */
       if (memrefloc)
 	{
-	  rtx oldref = *memrefloc;
 	  *memrefloc = copy_rtx (*memrefloc);
 	  loc = &XEXP (*memrefloc, 0);
 	}
@@ -4206,7 +4205,6 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
       if (memrefloc && GET_CODE (ad) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (ad))
 	{
-	  rtx oldref = *memrefloc;
 	  *memrefloc = copy_rtx (*memrefloc);
 	  loc = &XEXP (*memrefloc, 0);
 	}
