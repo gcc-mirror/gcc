@@ -587,7 +587,7 @@ insn_unit (insn)
 	 range, don't cache it.  */
       if (FUNCTION_UNITS_SIZE < HOST_BITS_PER_SHORT
 	  || unit >= 0
-	  || (~unit & ((1 << (HOST_BITS_PER_SHORT - 1)) - 1)) == 0)
+	  || (unit & ~((1 << (HOST_BITS_PER_SHORT - 1)) - 1)) == 0)
       INSN_UNIT (insn) = unit;
     }
   return (unit > 0 ? unit - 1 : unit);

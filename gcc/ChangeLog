@@ -1,3 +1,9 @@
+Mon Oct 11 23:35:19 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Tue Aug 17 22:06:11 1999  Jan Hubicka  <hubicka@freesoft.cz>
+	* haifa-sched.c (insn_unit): Fix typo on out of range test.
+	* sched.c (insn_unit): Likewise.
+
 Sun Oct 10 20:58:27 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (scc patterns): Disable most SImode variants if
