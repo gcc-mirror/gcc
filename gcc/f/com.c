@@ -1712,7 +1712,7 @@ ffecom_overlap_ (tree dest_decl, tree dest_offset, tree dest_size,
 	return TRUE;
 
       source_decl = source_tree;
-      source_offset = size_zero_node;
+      source_offset = bitsize_zero_node;
       source_size = TYPE_SIZE (TREE_TYPE (TREE_TYPE (source_tree)));
       break;
 
@@ -9086,9 +9086,9 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 				 *offset, TREE_OPERAND (t, 1)));
 	  /* Convert offset (presumably in bytes) into canonical units
 	     (presumably bits).  */
-	  *offset = fold (build (MULT_EXPR, TREE_TYPE (*offset),
-				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (t))),
-				 *offset));
+	  *offset = size_binop (MULT_EXPR,
+				convert (bitsizetype, *offset),
+				TYPE_SIZE (TREE_TYPE (TREE_TYPE (t))));
 	  break;
 	}
       /* Not a COMMON reference, so an unrecognized pattern.  */
@@ -9249,18 +9249,17 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset,
 	    || (*decl == error_mark_node))
 	  return;
 
-	*offset
-	  = size_binop (MULT_EXPR,
-			TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))),
-			convert (sizetype,
-				 fold (build (MINUS_EXPR, TREE_TYPE (element),
-					      element,
-					      TYPE_MIN_VALUE
-					      (TYPE_DOMAIN
-					       (TREE_TYPE (array)))))));;
+	/* Calculate ((element - base) * NBBY) + init_offset.  */
+	*offset = fold (build (MINUS_EXPR, TREE_TYPE (element),
+			       element,
+			       TYPE_MIN_VALUE (TYPE_DOMAIN
+					       (TREE_TYPE (array)))));
 
-	*offset = size_binop (PLUS_EXPR, convert (sizetype, init_offset),
-			      *offset);
+	*offset = size_binop (MULT_EXPR,
+			      convert (bitsizetype, *offset),
+			      TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))));
+
+	*offset = size_binop (PLUS_EXPR, init_offset, *offset);
 
 	*size = TYPE_SIZE (TREE_TYPE (t));
 	return;
