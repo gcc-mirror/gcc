@@ -1,5 +1,10 @@
 Fri Dec  7 07:06:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* final.c (bb_head, bb_tail, bb_file_label_num, bb_func_label_num):
+	Deleted; were used only by BB profiler code.
+	(sbb_head, sbb_tail, sbb_label_num): Likewise.
+	(end_final): Delete now-unused vars I, PTR, and SPTR.
+
 	* expr.c (store_field): Remove warning.
 	(expand_expr, case COMPONENT_REF, case VIEW_CONVERT_EXPR): Likewise.
 	(highest_pow2_factor, case MIN_EXPR, case MAX_EXPR): Add cases.

@@ -212,11 +212,6 @@ struct bb_list
   int func_label_num;		/* LPBC<n> label # for stored function name */
 };
 
-static struct bb_list *bb_head	= 0;		/* Head of basic block list */
-static struct bb_list **bb_tail = &bb_head;	/* Ptr to store next bb ptr */
-static int bb_file_label_num	= -1;		/* Current label # for file */
-static int bb_func_label_num	= -1;		/* Current label # for func */
-
 /* Linked list to hold the strings for each file and function name output.  */
 
 struct bb_str
@@ -226,10 +221,6 @@ struct bb_str
   int label_num;		/* label number */
   int length;			/* string length */
 };
-
-static struct bb_str *sbb_head	= 0;		/* Head of string list.  */
-static struct bb_str **sbb_tail	= &sbb_head;	/* Ptr to store next bb str */
-static int sbb_label_num	= 0;		/* Last label used */
 
 #ifdef HAVE_ATTR_length
 static int asm_insn_count	PARAMS ((rtx));
@@ -276,15 +267,11 @@ void
 end_final (filename)
      const char *filename;
 {
-  int i;
-
   if (profile_arc_flag)
     {
       char name[20];
       int align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
       int size, rounded;
-      struct bb_list *ptr;
-      struct bb_str *sptr;
       int long_bytes = LONG_TYPE_SIZE / BITS_PER_UNIT;
       int gcov_type_bytes = GCOV_TYPE_SIZE / BITS_PER_UNIT;
       int pointer_bytes = POINTER_SIZE / BITS_PER_UNIT;
@@ -1710,8 +1697,6 @@ final_end_function ()
       && dwarf2out_do_frame ())
     dwarf2out_end_epilogue ();
 #endif
-
-  bb_func_label_num = -1;	/* not in function, nuke label # */
 }
 
 /* Output assembler code for some insns: all or part of a function.
