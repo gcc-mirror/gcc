@@ -1,7 +1,7 @@
 // 981203 bkoz
 // g++/14664 + test
 // Build don't link: 
-// Special g++ Options: -fno-const-strings
+// Special g++ Options: -fpermissive -w
 
 char foo[26];
 
