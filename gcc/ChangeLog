@@ -1,3 +1,10 @@
+2000-02-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (c4x_compare_op0, c4x_compare_op1): Move ...
+	(c4x_regclass_map, c4x_caller_save_map, c4x_rpts_cycles): Ditto.
+	(c4x_cpu_version): Ditto.
+	* config/c4x/c4x-protos.h: ... here.
+
 2000-02-04  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (add_abstract_origin_attribute): Don't call
