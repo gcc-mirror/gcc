@@ -2274,6 +2274,7 @@ do {                                                                    \
 		? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));		\
       case PROCESSOR_RIOS2:						\
       case PROCESSOR_MPCCORE:						\
+      case PROCESSOR_PPC604e:						\
         return COSTS_N_INSNS (2);					\
       case PROCESSOR_PPC601:						\
         return COSTS_N_INSNS (5);					\
@@ -2310,6 +2311,7 @@ do {                                                                    \
       case PROCESSOR_PPC603:						\
 	return COSTS_N_INSNS (37);					\
       case PROCESSOR_PPC604:						\
+      case PROCESSOR_PPC604e:						\
       case PROCESSOR_PPC620:						\
 	return COSTS_N_INSNS (20);					\
       }									\
