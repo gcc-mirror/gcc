@@ -57,11 +57,6 @@ extern struct obstack *saveable_obstack;
 extern struct obstack temporary_obstack;
 extern struct obstack permanent_obstack;
 
-/* This is true if the user specified a `.java' file on the command
-   line.  Otherwise it is 0.  FIXME: this is temporary, until our
-   .java parser is fully working.  */
-int saw_java_source = 0;
-
 /* The class we are currently processing. */
 tree current_class = NULL_TREE;
 
@@ -482,24 +477,21 @@ read_class (name)
 
   /* Search in current zip first.  */
   if (find_in_current_zip (IDENTIFIER_POINTER (name), &jcf) == 0)
-    /* FIXME: until the `.java' parser is fully working, we only
-       look for a .java file when one was mentioned on the
-       command line.  This lets us test the .java parser fairly
-       easily, without compromising our ability to use the
-       .class parser without fear.  */
-    if (find_class (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name),
-		     &this_jcf, saw_java_source) == 0)
-      {
-	pop_obstacks ();	/* FIXME: one pop_obstack() per function */
-	return 0;
-      }
-    else
-      {
-        this_jcf.seen_in_zip = 0;
-        current_jcf = &this_jcf;
-	if (this_jcf.outofsynch)
-	  jcf_out_of_synch (current_jcf);
-      }
+    {
+      if (find_class (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name),
+		      &this_jcf, 1) == 0)
+	{
+	  pop_obstacks ();	/* FIXME: one pop_obstack() per function */
+	  return 0;
+	}
+      else
+	{
+	  this_jcf.seen_in_zip = 0;
+	  current_jcf = &this_jcf;
+	  if (this_jcf.outofsynch)
+	    jcf_out_of_synch (current_jcf);
+	}
+    }
   else
     current_jcf = jcf;
 
@@ -800,10 +792,6 @@ yyparse ()
 	  int twice = 0;
 
 	  int len = strlen (list);
-	  /* FIXME: this test is only needed until our .java parser is
-	     fully capable.  */
-	  if (len > 5 && ! strcmp (&list[len - 5], ".java"))
-	    saw_java_source = 1;
 
 	  if (*list != '/' && several_files)
 	    obstack_grow (&temporary_obstack, "./", 2);

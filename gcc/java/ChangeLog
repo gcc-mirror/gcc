@@ -13,6 +13,12 @@ Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
         check.
         * expr.c (expand_java_arraystore): Likewise. 
 
+Wed Nov 24 17:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * jcf-parse.c (saw_java_source): Global variable removed.
+        (read_class): Don't use `saw_java_source'. Added extra braces.
+        (yyparse): Code setting `saw_java_source' removed.
+
 1999-11-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (emit_handlers): Zero catch_clauses after emitting them.
