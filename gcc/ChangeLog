@@ -1,3 +1,7 @@
+Wed Apr 28 00:14:41 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Apr 27 19:50:25 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* rtl.h (REG_EH_REGION): Update comment to indicate a value of -1
