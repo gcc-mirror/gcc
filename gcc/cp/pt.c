@@ -5290,6 +5290,13 @@ unify (tparms, targs, ntparms, parm, arg, strict)
   if (arg == parm)
     return 0;
 
+  /* We can't remove cv-quals when strict.  */
+  if (strict && TREE_CODE (arg) == TREE_CODE (parm)
+      && TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
+      && (TYPE_READONLY (arg) < TYPE_READONLY (parm)
+	  || TYPE_VOLATILE (arg) < TYPE_VOLATILE (parm)))
+    return 1;
+
   switch (TREE_CODE (parm))
     {
     case TYPENAME_TYPE:
