@@ -1,3 +1,9 @@
+2004-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/18725
+	* tree-cfg.c (tree_node_can_be_shared): Error_mark_node can be
+	shared always.
+
 2004-11-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/18712
