@@ -1,3 +1,10 @@
+2003-10-06  Roger Sayle  <roger@eyesopen.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* optabs.c (prepare_float_lib_cmp): Avoid searching for REG_RETVAL
+	instruction by using LCT_CONST and then calling emit_libcall_block
+	ourselves.
+
 2003-10-06  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
         PR optimization/11974
