@@ -240,6 +240,11 @@ static int dialect_number;
 
 static char *line_note_exists;
 
+#ifdef HAVE_conditional_execution
+/* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
+rtx current_insn_predicate;
+#endif
+
 /* Linked list to hold line numbers for each basic block.  */
 
 struct bb_list {
@@ -2875,6 +2880,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 #ifdef FINAL_PRESCAN_INSN
 	FINAL_PRESCAN_INSN (insn, recog_data.operand, recog_data.n_operands);
+#endif
+
+#ifdef HAVE_conditional_execution
+	if (GET_CODE (PATTERN (insn)) == COND_EXEC)
+	  current_insn_predicate = COND_EXEC_TEST (PATTERN (insn));
+	else
+	  current_insn_predicate = NULL_RTX;
 #endif
 
 #ifdef HAVE_cc0
