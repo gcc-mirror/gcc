@@ -1,3 +1,10 @@
+Wed Sep 23 22:32:31 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* rtl.h (init_virtual_regs): New function.
+	* emit-rtl.c (init_virtual_regs): Define.
+	(insn_emit): Use it.
+	* integrate.c (save_for_inline_copying): Likewise.
+
 Wed Sep 23 16:22:01 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/thumb.h: The following patches were made by Jim Wilson:
