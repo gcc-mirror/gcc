@@ -88,6 +88,17 @@ Boston, MA 02111-1307, USA.  */
    eliminate the warning.  */
 static int __attribute__ ((__unused__)) target_flags = 0;
 
+
+/*  FIXME: while this file has no business including tm.h, this
+    definitely has no business defining this macro but it
+    is only way around without really rewritting this file,
+    should look after the branch of 3.4 to fix this.  */
+#define rs6000_special_round_type_align(STRUCT, COMPUTED, SPECIFIED)	\
+  ((TYPE_FIELDS (STRUCT) != 0						\
+    && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode)			\
+   ? MAX (MAX (COMPUTED, SPECIFIED), 64)				\
+   : MAX (COMPUTED, SPECIFIED))
+
 /*
   return the size of an object specified by type
 */
