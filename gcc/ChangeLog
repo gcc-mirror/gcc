@@ -1,3 +1,9 @@
+2004-10-09  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/spe.h (atosfix16, atosfix32, atosfix64, atoufix16,
+	atoufix32, atoufix64, strtosfix16, strtosfix32, strtosfix64,
+	strtoufix16, strtoufix32, strtoufix64): Declare.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/16999
