@@ -116,9 +116,10 @@ typedef struct rtx_def
   /* 1 in an INSN if it can call another function.
      LINK_COST_FREE in an INSN_LIST.  */
   unsigned int call : 1;
-  /* 1 in a MEM or REG if value of this expression will never change
-     during the current function, even though it is not
-     manifestly constant.
+  /* 1 in a REG if value of this expression will never change during
+     the current function, even though it is not manifestly constant.
+     1 in a MEM if contents of memory are constant.  This does not
+     necessarily mean that the value of this expression is constant.
      1 in a SUBREG if it is from a promoted variable that is unsigned.
      1 in a SYMBOL_REF if it addresses something in the per-function
      constants pool.

@@ -1566,6 +1566,7 @@ true_dependence (mem, mem_mode, x, varies)
      int (*varies) PARAMS ((rtx));
 {
   register rtx x_addr, mem_addr;
+  rtx base;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -1581,6 +1582,12 @@ true_dependence (mem, mem_mode, x, varies)
      cases optimally, but the possible performance loss should be
      negligible.  */
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
+    return 0;
+
+  base = find_base_term (x);
+  if (base && (GET_CODE (base) == LABEL_REF
+	       || (GET_CODE (base) == SYMBOL_REF
+		   && CONSTANT_POOL_ADDRESS_P (base))))
     return 0;
 
   if (mem_mode == VOIDmode)
@@ -1627,6 +1634,7 @@ write_dependence_p (mem, x, writep)
 {
   rtx x_addr, mem_addr;
   rtx fixed_scalar;
+  rtx base;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -1637,8 +1645,18 @@ write_dependence_p (mem, x, writep)
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
      have occurred somewhere before MEM.  */
-  if (!writep && RTX_UNCHANGING_P (mem))
-    return 0;
+  if (! writep)
+    {
+      if (RTX_UNCHANGING_P (mem))
+	return 0;
+
+      base = find_base_term (mem);
+      if (base && (GET_CODE (base) == LABEL_REF
+		   || (GET_CODE (base) == SYMBOL_REF
+		       && CONSTANT_POOL_ADDRESS_P (base))))
+	return 0;
+    }
+
 
   x_addr = get_addr (XEXP (x, 0));
   mem_addr = get_addr (XEXP (mem, 0));
