@@ -1,3 +1,7 @@
+2004-11-11  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/precedence-1.c: New test.
+
 2004-11-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.misc-tests/linkage.exp: Handle biarch GCC for powerpc64.
