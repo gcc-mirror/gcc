@@ -518,8 +518,12 @@ dbxout_source_file (file, filename)
       fprintf (file, "%s ", ASM_STABS_OP);
       output_quoted_string (file, filename);
       fprintf (file, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
-      text_section ();
-      ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Ltext", source_label_number);
+      if (current_function_decl
+	  && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
+	; /* Don't change section amid function.  */
+      else
+	text_section ();
+      ASM_OUTPUT_INTERNAL_LABEL (file, "Ltext", source_label_number);
       source_label_number++;
 #endif
       lastfile = filename;
