@@ -1,5 +1,13 @@
 2004-09-09  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/17055
+	* fold-const.c (build_zero_vector): New function to construct a
+	vector (either floating point or integer) of zeros.
+	(fold_convert): Internally, enable conversions of integer zero
+	to arbitrary vector types, using the new build_zero_vector.
+
+2004-09-09  Roger Sayle  <roger@eyesopen.com>
+
 	* config/i386/i386.c (ix86_expand_ashlsi3_const): New function to
 	expand a left shift by an immediate constant as either an ashl or
 	a sequence of additions.

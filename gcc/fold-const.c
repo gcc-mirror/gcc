@@ -89,6 +89,7 @@ static tree negate_expr (tree);
 static tree split_tree (tree, enum tree_code, tree *, tree *, tree *, int);
 static tree associate_trees (tree, tree, enum tree_code, tree);
 static tree const_binop (enum tree_code, tree, tree, int);
+static tree build_zero_vector (tree);
 static tree fold_convert_const (enum tree_code, tree, tree);
 static enum tree_code invert_tree_comparison (enum tree_code, bool);
 static enum comparison_code comparison_to_compcode (enum tree_code);
@@ -1677,6 +1678,23 @@ size_diffop (tree arg0, tree arg1)
 							arg1, arg0)));
 }
 
+/* Construct a vector of zero elements of vector type TYPE.  */
+
+static tree
+build_zero_vector (tree type)
+{
+  tree elem, list;
+  int i, units;
+
+  elem = fold_convert_const (NOP_EXPR, TREE_TYPE (type), integer_zero_node);
+  units = TYPE_VECTOR_SUBPARTS (type);
+
+  list = NULL_TREE;
+  for (i = 0; i < units; i++)
+    list = tree_cons (NULL_TREE, elem, list);
+  return build_vector (type, list);
+}
+
 
 /* Attempt to fold type conversion operation CODE of expression ARG1 to
    type TYPE.  If no simplification can be done return NULL_TREE.  */
@@ -1940,6 +1958,8 @@ fold_convert (tree type, tree arg)
 	}
       
     case VECTOR_TYPE:
+      if (integer_zerop (arg))
+	return build_zero_vector (type);
       gcc_assert (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
       gcc_assert (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
 		  || TREE_CODE (orig) == VECTOR_TYPE);
