@@ -1752,9 +1752,8 @@ AMD Am29k-family processors.  These are normally used in embedded
 applications.  This configuration corresponds to AMD's standard calling
 sequence and binary interface and is compatible with other 29k tools.
 
-AMD has abandoned this processor, and most variants are obsoleted in GCC
-3.1.  We are preserving the a29k-*-udi and a29k-*-coff configurations
-for one more release.
+AMD has abandoned this processor.  All existing a29k targets are obsoleted
+in GCC 3.1.
 
 You may need to make a variant of the file @file{a29k.h} for your
 particular configuration.
