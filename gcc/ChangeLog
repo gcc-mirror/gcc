@@ -1,5 +1,10 @@
 2004-07-15  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_adjust_insn_length): Fix handling of
+	calls in mips16 code.
+
+2004-07-15  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md: In the mips16 li/neg splitter, use SImode for
 	the destination of the li as well as for the neg.
 
