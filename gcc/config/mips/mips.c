@@ -2214,7 +2214,17 @@ mips_move_2words (operands, insn)
 		    }
 		  else
 #endif
-		    ret = "li.d\t%0,%1";
+		    /* GNU as emits 64-bit code for li.d if the ISA is 3
+		       or higher.  For !TARGET_64BIT && gp registers we
+		       need to avoid this by using two li instructions
+		       instead.  */
+		    if (mips_isa >= 3 && !TARGET_64BIT && !FP_REG_P (regno0))
+		      {
+			split_double (op1, operands + 2, operands + 3);
+			ret = "li\t%0,%2\n\tli\t%D0,%3";
+		      }
+		    else
+		      ret = "li.d\t%0,%1";
 		}
 
 	      else if (TARGET_64BIT)

@@ -1,3 +1,9 @@
+Mon Oct  4 16:48:16 1999  Diego Novillo <dnovillo@cygnus.com>
+                          Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* config/mips/mips.c (mips_move_2words): Split doubles if
+	ISA >= 3, !TARGET_64BIT, and destination is not an FP register.
+
 Mon Oct  4 21:47:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (struct decision_test): New.
