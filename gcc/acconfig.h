@@ -114,6 +114,9 @@
 /* Define to enable the use of a default linker. */
 #undef DEFAULT_LINKER
 
+/* Define if host mkdir takes a single argument. */
+#undef MKDIR_TAKES_ONE_ARG
+
 /* Define to the name of the distribution.  */
 #undef PACKAGE
 
