@@ -1860,7 +1860,13 @@ sched_analyze_2 (x, insn)
     case POST_DEC:
     case PRE_INC:
     case POST_INC:
-      /* These read and modify the result; just consider them writes.  */
+      /* These both read and modify the result.  We must handle them as writes
+	 to get proper dependencies for following instructions.  We must handle
+	 them as reads to get proper dependencies from this to previous
+	 instructions.  Thus we need to pass them to both sched_analyze_1
+	 and sched_analyze_2.  We must call sched_analyze_2 first in order
+	 to get the proper antecedent for the read.  */
+      sched_analyze_2 (XEXP (x, 0), insn);
       sched_analyze_1 (x, insn);
       return;
     }
