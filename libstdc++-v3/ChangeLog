@@ -1,3 +1,7 @@
+2002-07-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/fstream.cc: Add _GLIBCPP_USE_WCHAR_T guards.
+
 2002-07-31  Simon Whomsley  <whomsley@avacadcam.com>
 
 	* docs/html/22_locale/howto.html: Fix.
