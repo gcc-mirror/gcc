@@ -50,7 +50,7 @@ jar_SOURCES = jartool.c dostime.c compress.c pushback.c shift.c jartool.h \
 zipfile.h dostime.h compress.h pushback.h shift.h
 jar_LDADD = $(ZLIBS) $(LIBIBERTY)
 jar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
-jar_CPPFLAGS = -DWITH_SHIFT_DOWN
+jar_CPPFLAGS = $(AM_CPPFLAGS) -DWITH_SHIFT_DOWN
 
 grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h \
 zipfile.h dostime.h compress.h pushback.h

@@ -1,3 +1,8 @@
+2004-07-07  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am (jar_CPPFLAGS): Add AM_CPPFLAGS.
+	* Makefile.in: Regenerate.
+
 2004-07-06  Matthias Klose  <doko@debian.org>
 
 	* Makefile.in: Regenerate.
