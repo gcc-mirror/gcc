@@ -4695,7 +4695,8 @@ validate_nonmember_using_decl (decl, scope, name)
       *name = TREE_OPERAND (decl, 1);
     }
   else if (TREE_CODE (decl) == IDENTIFIER_NODE
-           || TREE_CODE (decl) == TYPE_DECL)
+           || TREE_CODE (decl) == TYPE_DECL
+	   || TREE_CODE (decl) == TEMPLATE_DECL)
     {
       *scope = global_namespace;
       *name = decl;

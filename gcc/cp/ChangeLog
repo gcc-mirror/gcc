@@ -1,3 +1,8 @@
+1998-11-21  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl2.c (validate_nonmember_using_decl): Allow using templates
+	from the global namespace.
+
 1998-11-21  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Handle specifying template args to member function templates.
