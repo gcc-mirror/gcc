@@ -2365,8 +2365,6 @@ extern int ip2k_reorg_merge_qimode;
 
 /* Miscellaneous macros to describe machine specifics. */
 
-#define STORE_FLAG_VALUE	1
-
 #define IS_PSEUDO_P(R)	(REGNO (R) >= FIRST_PSEUDO_REGISTER)
 
 /* Default calculations would cause DWARF address sizes to be 2 bytes,

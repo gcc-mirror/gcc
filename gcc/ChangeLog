@@ -1,3 +1,31 @@
+2003-06-14  Roger Sayle  <roger@eyesopen.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* rtl.h (STORE_FLAG_VALUE): Remove default definition from here.
+	* defaults.h (STORE_FLAG_VALUE): Move default definition to here.
+	* doc/tm.texi (STORE_FLAG_VALUE): Document the default value.
+
+	* config/alpha/alpha.h (STORE_FLAG_VALUE): Remove definition.
+	* config/arc/arc.h (STORE_FLAG_VALUE): Likewise.
+	* config/arm/arm.h (STORE_FLAG_VALUE): Likewise.
+	* config/cris/cris.h (STORE_FLAG_VALUE): Likewise.
+	* config/i370/i370.h (STORE_FLAG_VALUE): Likewise.
+	* config/i386/i386.h (STORE_FLAG_VALUE): Likewise.
+	* config/i960/i960.h (STORE_FLAG_VALUE): Likewise.
+	* config/ia64/ia64.h (STORE_FLAG_VALUE): Likewise.
+	* config/ip2k/ip2k.h (STORE_FLAG_VALUE): Likewise.
+	* config/m32r/m32r.h (STORE_FLAG_VALUE): Likewise.
+	* config/mcore/mcore.h (STORE_FLAG_VALUE): Likewise.
+	* config/mips/mips.h (STORE_FLAG_VALUE): Likewise.
+	* config/mmix/mmix.h (STORE_FLAG_VALUE): Likewise.
+	* config/ns32k/ns32k.h (STORE_FLAG_VALUE): Likewise.
+	* config/pa/pa.h (STORE_FLAG_VALUE): Likewise.
+	* config/pdp11/pdp11.h (STORE_FLAG_VALUE): Likewise.
+	* config/sh/sh.h (STORE_FLAG_VALUE): Likewise.
+	* config/sparc/sparc.h (STORE_FLAG_VALUE): Likewise.
+	* config/v850/v850.h (STORE_FLAG_VALUE): Likewise.
+	* config/xtensa/xtensa.h (STORE_FLAG_VALUE): Likewise.
+
 2003-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* opts.sh (POSIXLY_CORRECT): Unset it.

@@ -2577,11 +2577,6 @@ enum ix86_builtins
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
-
-#define STORE_FLAG_VALUE 1
-
 /* When a prototype says `char' or `short', really pass an `int'.
    (The 386 can't easily push less than an int.)  */
 

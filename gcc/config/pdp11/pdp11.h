@@ -918,11 +918,6 @@ extern int may_call_alloca;
 #define SELECT_CC_MODE(OP,X,Y)	\
 (GET_MODE_CLASS(GET_MODE(X)) == MODE_FLOAT? CCFPmode : CCmode)
 
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
-
-/* #define STORE_FLAG_VALUE 1 */
-
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */

@@ -877,10 +877,7 @@ enum reg_class
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)	(OUTPREC != 16)
 
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
-
-/* #define STORE_FLAG_VALUE (-1) */
+/* ??? Investigate defining STORE_FLAG_VALUE to (-1).  */
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
 

@@ -1313,8 +1313,6 @@ zbss_section ()								\
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-#define STORE_FLAG_VALUE 1
-
 #define MULDI3_LIBCALL  "__muldi3"
 #define UCMPDI2_LIBCALL "__ucmpdi2"
 #define CMPDI2_LIBCALL  "__cmpdi2"
