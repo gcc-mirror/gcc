@@ -61,7 +61,8 @@ extern void expand_eh_region_end_cleanup	PARAMS ((tree));
 extern void expand_start_all_catch		PARAMS ((void));
 
 /* Begin a catch clause.  TYPE is an object to be matched by the
-   runtime, or null if this is a catch-all clause.  */
+   runtime, or a list of such objects, or null if this is a catch-all
+   clause.  */
 extern void expand_start_catch			PARAMS ((tree));
 
 /* End a catch clause.  Control will resume after the try/catch block.  */
