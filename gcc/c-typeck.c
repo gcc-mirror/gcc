@@ -4607,6 +4607,38 @@ digest_init (type, init, require_constant, constructor_constant)
       return error_mark_node;
     }
 
+  /* Traditionally, you can write  struct foo x = 0;
+     and it initializes the first element of x to 0.  */
+  if (flag_traditional)
+    {
+      tree top = 0, prev = 0;
+      while (TREE_CODE (type) == RECORD_TYPE
+	     || TREE_CODE (type) == ARRAY_TYPE
+	     || TREE_CODE (type) == QUAL_UNION_TYPE
+	     || TREE_CODE (type) == UNION_TYPE)
+	{
+	  tree temp = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+	  if (prev == 0)
+	    top = temp;
+	  else
+	    TREE_OPERAND (prev, 1) = build_tree_list (NULL_TREE, temp);
+	  prev = temp;
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    type = TREE_TYPE (type);
+	  else if (TYPE_FIELDS (type))
+	    type = TREE_TYPE (TYPE_FIELDS (type));
+	  else
+	    {
+	      error_init ("invalid initializer%s", " for `%s'", NULL);
+	      return error_mark_node;
+	    }
+	}
+      TREE_OPERAND (prev, 1)
+	= build_tree_list (NULL_TREE,
+			   digest_init (type, init, require_constant,
+					constructor_constant));
+      return top;
+    }
   error_init ("invalid initializer%s", " for `%s'", NULL);
   return error_mark_node;
 }
