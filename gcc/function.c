@@ -2841,13 +2841,14 @@ purge_addressof_1 (loc, insn, force, in_dest)
       rtx sub = copy_rtx (XEXP (XEXP (x, 0), 0));
       rtx insns;
 
-      if (validate_change (insn, loc, sub, 0))
+      if (validate_change (insn, loc, sub, 0)
+	  || validate_replace_rtx (x, sub, insn))
 	return;
 
       start_sequence ();
-      if (! validate_change (insn, loc,
-			     force_operand (sub, NULL_RTX),
-			     0))
+      sub = force_operand (sub, NULL_RTX);
+      if (! validate_change (insn, loc, sub, 0)
+	  && ! validate_replace_rtx (x, sub, insn))
 	abort ();
 
       insns = get_insns ();
