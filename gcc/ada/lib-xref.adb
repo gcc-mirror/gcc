@@ -377,6 +377,15 @@ package body Lib.Xref is
             then
                null;
 
+            --  For now, ignore case of parameter to entry, since we don't deal
+            --  correctly with the case of multiple accepts for the same entry.
+            --  To deal with this we would have to put the flag on the body
+            --  entity, but that's not easy, since everyone references the spec
+            --  entity. To be looked at later to improve this case ???
+
+            elsif Ekind (Scope (E)) = E_Entry then
+               null;
+
             --  Here we issue the warning, since this is a real reference
 
             else
