@@ -1274,7 +1274,7 @@ hack ((union foo) x);
 @cindex functions in arbitrary sections
 @cindex @code{volatile} applied to function
 @cindex @code{const} applied to function
-@cindex functions with @code{printf} or @code{scanf} style arguments
+@cindex functions with @code{printf}, @code{scanf} or @code{strftime} style arguments
 @cindex functions that are passed arguments in registers on the 386
 @cindex functions that pop the argument stack on the 386
 @cindex functions that do not pop the argument stack on the 386
@@ -1378,9 +1378,9 @@ return @code{void}.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute
-The @code{format} attribute specifies that a function takes @code{printf}
-or @code{scanf} style arguments which should be type-checked against a
-format string.  For example, the declaration:
+The @code{format} attribute specifies that a function takes @code{printf},
+@code{scanf}, or @code{strftime} style arguments which should be type-checked
+against a format string.  For example, the declaration:
 
 @smallexample
 extern int
@@ -1394,7 +1394,8 @@ for consistency with the @code{printf} style format string argument
 @code{my_format}.
 
 The parameter @var{archetype} determines how the format string is
-interpreted, and should be either @code{printf} or @code{scanf}.  The
+interpreted, and should be either @code{printf}, @code{scanf}, or
+@code{strftime}.  The
 parameter @var{string-index} specifies which argument is the format
 string argument (starting from 1), while @var{first-to-check} is the
 number of the first argument to check against the format string.  For
@@ -1411,7 +1412,7 @@ The @code{format} attribute allows you to identify your own functions
 which take format strings as arguments, so that GNU CC can check the
 calls to these functions for errors.  The compiler always checks formats
 for the ANSI library functions @code{printf}, @code{fprintf},
-@code{sprintf}, @code{scanf}, @code{fscanf}, @code{sscanf},
+@code{sprintf}, @code{scanf}, @code{fscanf}, @code{sscanf}, @code{strftime},
 @code{vprintf}, @code{vfprintf} and @code{vsprintf} whenever such
 warnings are requested (using @samp{-Wformat}), so there is no need to
 modify the header file @file{stdio.h}.
@@ -1431,18 +1432,19 @@ my_dgettext (char *my_domain, const char *my_format)
 
 @noindent
 causes the compiler to check the arguments in calls to
-@code{my_dgettext} whose result is passed to a @code{printf} or
-@code{scanf} type function for consistency with the @code{printf} style
-format string argument @code{my_format}.
+@code{my_dgettext} whose result is passed to a @code{printf},
+@code{scanf}, or @code{strftime} type function for consistency with the
+@code{printf} style format string argument @code{my_format}.
 
 The parameter @var{string-index} specifies which argument is the format
 string argument (starting from 1).
 
 The @code{format-arg} attribute allows you to identify your own
 functions which modify format strings, so that GNU CC can check the
-calls to @code{printf} and @code{scanf} function whose operands are a
-call to one of your own function.  The compiler always treats
-@code{gettext}, @code{dgettext}, and @code{dcgettext} in this manner.
+calls to @code{printf}, @code{scanf}, or @code{strftime} function whose
+operands are a call to one of your own function.  The compiler always
+treats @code{gettext}, @code{dgettext}, and @code{dcgettext} in this
+manner.
 
 @item section ("section-name")
 @cindex @code{section} function attribute
