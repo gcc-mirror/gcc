@@ -1794,7 +1794,7 @@ cmpsi_operand (op, mode)
       rtx op;
       enum machine_mode mode;
 {
-  if (general_operand (op, mode))
+  if (nonimmediate_operand (op, mode))
     return 1;
 
   if (GET_CODE (op) == AND
