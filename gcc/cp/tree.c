@@ -41,6 +41,7 @@ static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
 static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
 static int lvalue_p_1 PROTO((tree, int));
+static int equal_function PROTO((tree, tree));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -1395,6 +1396,20 @@ build_overload (decl, chain)
   return ovl_cons (decl, chain);
 }
 
+/* Returns true iff functions are equivalent. Equivalent functions are
+   not identical only if one is a function-local extern function.
+   This assumes that function-locals don't have TREE_PERMANENT.  */
+
+static int
+equal_functions (fn1, fn2)
+     tree fn1;
+     tree fn2;
+{
+  if (!TREE_PERMANENT (fn1) || !TREE_PERMANENT (fn2))
+    return decls_match (fn1, fn2);
+  return fn1 == fn2;
+}
+
 /* True if fn is in ovl. */
 
 int
@@ -1405,9 +1420,9 @@ ovl_member (fn, ovl)
   if (ovl == NULL_TREE)
     return 0;
   if (TREE_CODE (ovl) != OVERLOAD)
-    return decls_match (ovl, fn);
+    return equal_functions (ovl, fn);
   for (; ovl; ovl = OVL_CHAIN (ovl))
-    if (decls_match (OVL_FUNCTION (ovl), fn))
+    if (equal_functions (OVL_FUNCTION (ovl), fn))
       return 1;
   return 0;
 }
