@@ -440,8 +440,9 @@ public class Vector extends AbstractList
       throw new ArrayIndexOutOfBoundsException(index + " > " + elementCount);
 
     if (elementCount == elementData.length)
-      ensureCapacity(++elementCount);
-    modCount++;
+      ensureCapacity(elementCount + 1);
+    ++modCount;
+    ++elementCount;
     System.arraycopy(elementData, index, elementData, index + 1,
 		     elementCount - 1 - index);
     elementData[index] = obj;
@@ -755,7 +756,11 @@ public class Vector extends AbstractList
       {
 	System.arraycopy(elementData, toIndex, elementData, fromIndex, 
 	                 elementCount - toIndex);
+	// Clear unused elements so objects can be collected.
+	int save = elementCount;
 	elementCount -= (toIndex - fromIndex);
+	for (int i = elementCount; i < save; ++i)
+	  elementData[i] = null;
       }
   }
 }
