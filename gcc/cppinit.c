@@ -512,7 +512,6 @@ cpp_create_reader (lang)
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
   /* Set up static tokens.  */
-  pfile->date.type = CPP_EOF;
   pfile->avoid_paste.type = CPP_PADDING;
   pfile->avoid_paste.val.source = NULL;
   pfile->eof.type = CPP_EOF;
@@ -640,6 +639,8 @@ static const struct builtin builtin_array[] =
   B("__BASE_FILE__",	 BT_BASE_FILE),
   B("__LINE__",		 BT_SPECLINE),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
+  /* Keep builtins not used for -traditional-cpp at the end, and
+     update init_builtins() if any more are added.  */
   B("_Pragma",		 BT_PRAGMA),
   B("__STDC__",		 BT_STDC),
 };
@@ -684,10 +685,12 @@ init_builtins (pfile)
      cpp_reader *pfile;
 {
   const struct builtin *b;
+  size_t n = ARRAY_SIZE (builtin_array);
 
-  for(b = builtin_array;
-      b < (builtin_array + ARRAY_SIZE (builtin_array));
-      b++)
+  if (CPP_OPTION (pfile, traditional))
+    n -= 2;
+
+  for(b = builtin_array; b < builtin_array + n; b++)
     {
       cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
       hp->type = NT_MACRO;

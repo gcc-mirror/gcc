@@ -370,9 +370,9 @@ struct cpp_reader
      for include files.  (Altered as we get more of them.)  */
   unsigned int max_include_len;
 
-  /* Date and time tokens.  Calculated together if either is requested.  */
-  cpp_token date;
-  cpp_token time;
+  /* Date and time text.  Calculated together if either is requested.  */
+  const uchar *date;
+  const uchar *time;
 
   /* EOF token, and a token forcing paste avoidance.  */
   cpp_token avoid_paste;
@@ -475,7 +475,8 @@ extern bool _cpp_save_parameter		PARAMS ((cpp_reader *, cpp_macro *,
 extern bool _cpp_arguments_ok		PARAMS ((cpp_reader *, cpp_macro *,
 						 const cpp_hashnode *,
 						 unsigned int));
-
+extern const uchar *_cpp_builtin_macro_text PARAMS ((cpp_reader *,
+						     cpp_hashnode *));
 /* In cpphash.c */
 extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));
 extern void _cpp_destroy_hashtable	PARAMS ((cpp_reader *));
@@ -532,6 +533,8 @@ extern void _cpp_set_trad_context PARAMS ((cpp_reader *));
 extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
 extern bool _cpp_expansions_different_trad PARAMS ((const cpp_macro *,
 						    const cpp_macro *));
+extern uchar *_cpp_copy_replacement_text PARAMS ((const cpp_macro *, uchar *));
+extern size_t _cpp_replacement_text_len PARAMS ((const cpp_macro *));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1
