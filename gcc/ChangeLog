@@ -1,3 +1,8 @@
+2000-04-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* Makefile.in (stmp-int-hdrs): Make include subdir here...
+	(stmp-fixproto): ...rather than here.
+
 Mon Apr  3 00:50:06 2000  Jason Eckhardt <jle@cygnus.com>
 
 	* pa.c (print_operand): Compute 'base' only inside the code paths
