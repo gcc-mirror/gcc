@@ -3567,6 +3567,10 @@ output_constant_pool (fnname, fndecl)
     done: ;
     }
 
+#ifdef ASM_OUTPUT_POOL_EPILOGUE
+  ASM_OUTPUT_POOL_EPILOGUE (asm_out_file, fnname, fndecl, pool_offset);
+#endif
+
   /* Done with this pool.  */
   first_pool = last_pool = 0;
 }
