@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -251,7 +251,7 @@ struct JNINativeInterface
 
   jobject  (*NewGlobalRef)                 (JNIEnv *, jobject);
   void     (*DeleteGlobalRef)              (JNIEnv *, jobject);
-  void     (*DeleteLocalRef)               (JNIEnv *, jobject);;
+  void     (*DeleteLocalRef)               (JNIEnv *, jobject);
   jboolean (*IsSameObject)                 (JNIEnv *, jobject, jobject);
 
   jobject  (*NewLocalRef)		   (JNIEnv *, jobject);
