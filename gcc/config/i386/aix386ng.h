@@ -1,6 +1,6 @@
 /* Definitions for IBM PS2 running AIX/386.
    From: Minh Tran-Le <TRANLE@intellicorp.com>
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -132,8 +132,7 @@ const_section ()							\
 
 # undef EXTRA_SECTION_FUNCTIONS
 # define EXTRA_SECTION_FUNCTIONS				\
-  CONST_SECTION_FUNCTION					\
-  BSS_SECTION_FUNCTION
+  CONST_SECTION_FUNCTION
 
 /* for collect2 */
 # define OBJECT_FORMAT_COFF
