@@ -2268,6 +2268,7 @@ c_init_decl_processing ()
 {
   tree endlink;
   tree ptr_ftype_void, ptr_ftype_ptr;
+  const char *save_input_filename;
 
   /* Adds some ggc roots, and reserved words for c-parse.in.  */
   c_parse_init ();
@@ -2280,6 +2281,11 @@ c_init_decl_processing ()
   /* Make the binding_level structure for global names.  */
   pushlevel (0);
   global_binding_level = current_binding_level;
+  /* Declarations from c_common_nodes_and_builtins must not be associated
+     with this input file, lest we get differences between using and not
+     using preprocessed headers.  */
+  save_input_filename = input_filename;
+  input_filename = NULL;
 
   build_common_tree_nodes (flag_signed_char);
 
@@ -2306,6 +2312,8 @@ c_init_decl_processing ()
   ptr_ftype_ptr
     = build_function_type (ptr_type_node,
 			   tree_cons (NULL_TREE, ptr_type_node, endlink));
+
+  input_filename = save_input_filename;
 
   pedantic_lvalues = pedantic;
 
