@@ -1,3 +1,42 @@
+2001-08-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* c-lex.c (map): Make const.
+	(cb_file_change): Update for callback passing a line map.
+	Don't assume we have a previous map.  Remove sanity check
+	about popping too many files.
+	* cpperror.c (print_location): Make map const.
+	* cppfiles.c (stack_include_file): Update; line maps now hold sysp.
+	(cpp_make_system_header): Similarly.
+	(search_from): Similarly.
+	(_cpp_execute_include): Don't remember where we came from.
+	* cpphash.h (struct cpp_buffer): Remove return_to_line, sysp.
+	(struct cpp_reader): Make map const.
+	(CPP_IN_SYSTEM_HEADER, _cpp_do_file_change): Update.
+	* cpplib.c (do_line): Update; line maps now hold sysp.
+	(cpp_push_buffer): Similarly.
+	(_cpp_do_file_change): Similarly; callback with map instead.
+	(cpp_get_line_maps): Constify return value.
+	(_cpp_pop_buffer): Update.
+	* cpplib.h (struct cpp_file_change): Remove.
+	(struct cpp_callbacks): Update.
+	(cpp_get_line_maps): Constify return value.
+	* cppmacro.c (_cpp_create_definition): Update.
+	* cppmain.c (struct printer): Constify map.
+	(maybe_print_line): Similarly.
+	(print_line): Similarly.  Deduce flags 1 and 2 here.
+	(cb_file_change): Update.
+	* line-map.c (free_line_maps): Warn regardless.
+	(add_line_map): Return pointer to const.  When passed NULL to_file
+	with LC_LEAVE, use the obvious values for the return point so the
+	caller doesn't have to figure them out.
+	(lookup_line): Return pointer to const.
+	(print_containing_files): Take pointer to const.
+	* line-map.h (struct line_map): New members reason, sysp.
+	(add_line_map): Return pointer to const.
+	(lookup_line): Similarly.
+	(print_containing_files): Take pointer to const.
+
 2001-08-10  Roman Zippel  <zippel@linux-m68k.org>
 	    Richard Henderson  <rth@redhat.com>
 

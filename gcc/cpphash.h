@@ -66,7 +66,7 @@ struct cpp_chunk
 typedef struct cpp_pool cpp_pool;
 struct cpp_pool
 {
-  struct cpp_chunk *cur, *locked, *first;
+  struct cpp_chunk *cur, *locked;
   unsigned char *pos;		/* Current position.  */
   unsigned int align;
   unsigned int locks;
