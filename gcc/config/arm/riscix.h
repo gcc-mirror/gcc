@@ -20,17 +20,36 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* Translation to find startup files.  On RISCiX boxes, gcrt0.o is in
-   /usr/lib.  */
-#define STARTFILE_SPEC  \
-  "%{pg:/usr/lib/gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
+/* Translation to find startup files.  On RISC iX boxes,
+   crt0, mcrt0 and gcrt0.o are in /usr/lib.  */
+#define STARTFILE_SPEC  "\
+  %{pg:/usr/lib/mcrt0.o%s}\
+  %{!pg:%{p:/usr/lib/mcrt0.o%s}\
+        %{!p:%{g:/usr/lib/gcrt0.o%s}\
+        %{!g:/usr/lib/crt0.o%s}}}"
+
+
+/* RISC iX has no concept of -lg */
+/* If -static is specified then link with -lc_n */
+
+#ifndef LIB_SPEC
+#define LIB_SPEC "\
+  %{g*:-lg}\
+  %{!p:%{!pg:%{!static:-lc}%{static:-lc_n}}}\
+  %{p:-lc_p}\
+  %{pg:-lc_p}"
+#endif
+  
+/* The RISC iX assembler never deletes any symbols from the object module;
+   and, by default, ld doesn't either.  -X causes local symbols starting
+   with 'L' to be deleted, which is what we want.  */
+#ifndef LINK_SPEC
+#define LINK_SPEC "-X"
+#endif
 
 #ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES  \
     "-Darm -Driscix -Dunix -Asystem(unix) -Acpu(arm) -Amachine(arm)"
-#endif
-#if 0
-#define CPP_PREDEFINES  "-Darm -Driscos -Acpu(arm) -Amachine(arm)"
 #endif
 
 #ifndef CPP_SPEC
@@ -78,33 +97,32 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is used in ASM_FILE_START */
 #define ARM_OS_NAME "RISCiX"
 
-#ifdef riscos
-#define TARGET_WHEN_DEBUGGING  3
-#else
-#define TARGET_WHEN_DEBUGGING  1
-#endif
-
-/* 'char' is signed by default on RISCiX, unsigned on RISCOS.  */
-#ifdef riscos
+/* Unsigned chars produces much better code than signed.  */
 #define DEFAULT_SIGNED_CHAR  0
-#else
-#define DEFAULT_SIGNED_CHAR  1
-#endif
 
-/* Define this if the target system supports the function atexit form the
+/* Define this if the target system supports the function atexit from the
    ANSI C standard.  If this is not defined, and INIT_SECTION_ASM_OP is not
    defined, a default exit function will be provided to support C++.  
    The man page only describes on_exit, but atexit is also there.  */
 #define HAVE_ATEXIT 1
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or niether. */
+   must define both, or neither. */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 #endif
 
+/* size_t is "unsigned int" in RISCiX */
+#define SIZE_TYPE unsigned int
+
+/* ptrdiff_t is "int" in RISCiX */
+#define PTRDIFF_TYPE int
+
+/* Maths operation domain error number, EDOM */
+#define TARGET_EDOM 33
 #include "arm/arm.h"
 
 /* The native RISCiX assembler does not support stabs of any kind; because
