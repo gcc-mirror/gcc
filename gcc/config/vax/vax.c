@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for VAX.
-   Copyright (C) 1987, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1987, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -52,6 +52,7 @@ static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx);
 static int vax_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
 static bool vax_rtx_costs (rtx, int, int, int *);
+static rtx vax_struct_value_rtx (tree, int);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -77,6 +78,12 @@ static bool vax_rtx_costs (rtx, int, int, int *);
 #define TARGET_RTX_COSTS vax_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST vax_address_cost
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX vax_struct_value_rtx
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -773,4 +780,11 @@ vax_output_mi_thunk (FILE * file,
   fprintf (file, "\tjmp ");						
   assemble_name (file,  XSTR (XEXP (DECL_RTL (function), 0), 0));	
   fprintf (file, "+2\n");						
+}
+
+static rtx
+vax_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		      int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, VAX_STRUCT_VALUE_REGNUM);
 }
