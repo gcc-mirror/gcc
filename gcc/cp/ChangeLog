@@ -1,3 +1,8 @@
+2003-04-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10527
+	* error.c (dump_expr): Correctly handling of NEW_EXPR.4
+
 2003-04-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* call.c (build_operator_new_call): Fix typo.
