@@ -2002,8 +2002,8 @@ literal_section ()						\
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
-  fprintf (FILE, "\t.%s $%d\n", TARGET_WINDOWS_NT ? "long" : "gprel32", \
-	   (VALUE) + 32)
+  fprintf (FILE, "\t.%s $L%d\n", TARGET_WINDOWS_NT ? "long" : "gprel32", \
+	   (VALUE))
 
 /* This is how to output an assembler line
    that says to advance the location counter
