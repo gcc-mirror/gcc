@@ -1,3 +1,14 @@
+Mon Jun  8 14:40:02 1998  John Wehle  (john@feith.com)
+
+	* i386.md (movsf_push, movsf_mem): Remove.
+	(movsf_push): Rename from movsf_push_nomove and move in front of
+	movsf; allow memory operands during and after reload.
+	(movsf_push_memory): New pattern.
+	(movsf): Don't bother checking for push_operand.  If TARGET_MOVE and
+	both operands refer to memory then force operand[1] into a register.
+	(movsf_normal): Change to unnamed pattern.
+	Likewise for movdf, movxf, and friends.
+
 Mon Jun  8 13:18:04 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
 
 	* Makefile.in (TREE_H): Add tree-check.h.
