@@ -1,3 +1,10 @@
+2003-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (function_arg_partial_nregs) [TARGET_ARCH64]:
+	Return 0 for all complex modes whose size is lesser or equal to
+	a word.  Add a ??? comment for the condition used with 16-byte
+	aligned modes.
+
 2003-11-01  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* .cvsignore: Remove c-parse* and tradcif.c.

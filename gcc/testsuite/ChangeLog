@@ -1,3 +1,7 @@
+2003-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/complex-1.c: New test.
+
 2003-11-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12796

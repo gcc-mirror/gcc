@@ -5429,14 +5429,19 @@ function_arg_partial_nregs (const struct sparc_args *cum,
 	      && slotno == SPARC_INT_ARG_MAX - 1)
 	    return 1;
 	}
-      else if ((GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-		&& GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
 	       || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
 		   && ! (TARGET_FPU && named)))
 	{
+	  /* The complex types are passed as packed types.  */
+	  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+	    return 0;
+
 	  if (GET_MODE_ALIGNMENT (mode) == 128)
 	    {
 	      slotno += slotno & 1;
+
+	      /* ??? The mode needs 3 slots?  */
 	      if (slotno == SPARC_INT_ARG_MAX - 2)
 		return 1;
 	    }
