@@ -3,6 +3,8 @@ Fri Aug 15 12:49:56 1997  Jeffrey A Law  (law@cygnus.com)
 	* version.c: Change the version string to look like:
 	egcs-2.90.00 970814 (gcc2-970802 experimental).
 
+	* loop.c (is_conditional_branch): Make definition match declaration.
+
 	* gcc.c: Take out experimental snapshot warning message.
 
 Fri Aug 15 13:43:39 1997  Michael Meissner  <meissner@cygnus.com>
