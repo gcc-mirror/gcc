@@ -1,5 +1,17 @@
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/6753
+	* config/i386/i386.md (sse_movdfcc, sse_movdfcc_eq): Use Y instead
+	of x in constraints for clarity.
+	(sse_mov?fcc split): abort if op2 == op3.
+	(sse_movsfcc_const0_1, sse_movsfcc_const0_2, sse_movsfcc_const0_3,
+	sse_movsfcc_const0_4): Add earlyclobber.
+	(sse_movdfcc_const0_1, sse_movdfcc_const0_2, sse_movdfcc_const0_3,
+	sse_movdfcc_const0_4): Likewise.  Use DFmode, not SFmode.
+	Use Y instead of x in constraints.
+
+2002-05-23  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/6643
 	* emit-rtl.c (widen_memory_access): Only call compare_tree_int
 	if DECL_SIZE_UNIT is INTEGER_CST.

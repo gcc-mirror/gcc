@@ -2,6 +2,8 @@
 
 	* gcc.dg/20020517-1.c: New test.
 
+	* gcc.dg/20020523-1.c: New test.
+
 2002-05-22  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/loop-2c.x: Remove, the test should pass
