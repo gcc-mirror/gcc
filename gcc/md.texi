@@ -1822,8 +1822,10 @@ to store the specified value in the part of the register that corresponds
 to mode @var{m}.  The effect on the rest of the register is undefined.
 
 This class of patterns is special in several ways.  First of all, each
-of these names @emph{must} be defined, because there is no other way
-to copy a datum from one place to another.
+of these names up to and including full word size @emph{must} be defined,
+because there is no other way to copy a datum from one place to another.
+If there are patterns accepting operands in larger modes,
+@samp{mov@var{m}} must be defined for integer modes of those sizes.
 
 Second, these patterns are not used solely in the RTL generation pass.
 Even the reload pass can generate move insns to copy values from stack
