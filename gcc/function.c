@@ -3339,6 +3339,7 @@ assign_parms (fndecl, second_time)
 	     may need to do it in a wider mode.  */
 
 	  register rtx parmreg;
+	  int regno;
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
 	  if (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
@@ -3461,18 +3462,40 @@ assign_parms (fndecl, second_time)
 #endif /* FUNCTION_ARG_CALLEE_COPIES */
 
 	  /* In any case, record the parm's desired stack location
-	     in case we later discover it must live in the stack.  */
-	  if (REGNO (parmreg) >= nparmregs)
+	     in case we later discover it must live in the stack. 
+
+	     If it is a COMPLEX value, store the stack location for both
+	     halves.  */
+
+	  if (GET_CODE (parmreg) == CONCAT)
+	    regno = MAX (REGNO (XEXP (parmreg, 0)), REGNO (XEXP (parmreg, 1)));
+	  else
+	    regno = REGNO (parmreg);
+
+	  if (regno >= nparmregs)
 	    {
 	      rtx *new;
 	      int old_nparmregs = nparmregs;
-	      nparmregs = REGNO (parmreg) + 5;
+
+	      nparmregs = regno + 5;
 	      new = (rtx *) oballoc (nparmregs * sizeof (rtx));
 	      bcopy (parm_reg_stack_loc, new, old_nparmregs * sizeof (rtx));
-	      bzero (new + old_nparmregs, (nparmregs - old_nparmregs) * sizeof (rtx));
+	      bzero (new + old_nparmregs,
+		     (nparmregs - old_nparmregs) * sizeof (rtx));
 	      parm_reg_stack_loc = new;
 	    }
-	  parm_reg_stack_loc[REGNO (parmreg)] = stack_parm;
+
+	  if (GET_CODE (parmreg) == CONCAT)
+	    {
+	      enum machine_mode submode = GET_MODE (XEXP (parmreg, 0));
+
+	      parm_reg_stack_loc[REGNO (gen_lowpart (submode, parmreg))]
+	        = gen_lowpart (submode, stack_parm);
+	      parm_reg_stack_loc[REGNO (gen_highpart (submode, parmreg))]
+		= gen_highpart (submode, stack_parm);
+	    }
+	  else
+	    parm_reg_stack_loc[REGNO (parmreg)] = stack_parm;
 
 	  /* Mark the register as eliminable if we did no conversion
 	     and it was copied from memory at a fixed offset,
