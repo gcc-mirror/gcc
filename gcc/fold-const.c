@@ -3506,7 +3506,29 @@ fold_truthop (code, truth_type, lhs, rhs)
       && ! FLOAT_TYPE_P (TREE_TYPE (rl_arg))
       && simple_operand_p (rl_arg)
       && simple_operand_p (rr_arg))
-    return build (code, truth_type, lhs, rhs);
+    {
+      /* Convert (a != 0) || (b != 0) into (a | b) != 0.  */
+      if (code == TRUTH_OR_EXPR
+	  && lcode == NE_EXPR && integer_zerop (lr_arg)
+	  && rcode == NE_EXPR && integer_zerop (rr_arg)
+	  && TREE_TYPE (ll_arg) == TREE_TYPE (rl_arg))
+	return build (NE_EXPR, truth_type,
+		      build (BIT_IOR_EXPR, TREE_TYPE (ll_arg),
+			     ll_arg, rl_arg),
+		      integer_zero_node);
+
+      /* Convert (a == 0) && (b == 0) into (a | b) == 0.  */
+      if (code == TRUTH_AND_EXPR
+	  && lcode == EQ_EXPR && integer_zerop (lr_arg)
+	  && rcode == EQ_EXPR && integer_zerop (rr_arg)
+	  && TREE_TYPE (ll_arg) == TREE_TYPE (rl_arg))
+	return build (EQ_EXPR, truth_type,
+		      build (BIT_IOR_EXPR, TREE_TYPE (ll_arg),
+			     ll_arg, rl_arg),
+		      integer_zero_node);
+
+      return build (code, truth_type, lhs, rhs);
+    }
 
   /* See if the comparisons can be merged.  Then get all the parameters for
      each side.  */
