@@ -127,6 +127,19 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	exit 0 ;;
     *:AIX:2:3)
 	if grep bos325 /usr/include/stdio.h >/dev/null 2>&1; then
+		sed 's/^		//' << EOF >dummy.c
+		#include <sys/systemcfg.h>
+
+		main()
+			{
+			if (!__power_pc())
+				exit(1);
+			puts("powerpc-ibm-aix3.2.5");
+			exit(0);
+			}
+EOF
+		${CC-cc} dummy.c -o dummy && ./dummy && rm dummy.c dummy && exit 0
+		rm -f dummy.c dummy
 		echo rs6000-ibm-aix3.2.5
 	elif grep bos324 /usr/include/stdio.h >/dev/null 2>&1; then
 		echo rs6000-ibm-aix3.2.4
