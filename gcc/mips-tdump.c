@@ -755,7 +755,7 @@ void
 print_global_hdr (ptr)
      struct filehdr *ptr;
 {
-  char *time = ctime ((off_t *)&ptr->f_timdat);
+  char *time = ctime ((time_t *)&ptr->f_timdat);
   ushort flags = ptr->f_flags;
 
   printf("Global file header:\n");
