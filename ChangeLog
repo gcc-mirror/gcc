@@ -1,3 +1,7 @@
+2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* MAINTAINERS (gcov): Add myself and Jan Hubicka.
+
 2003-04-19  Kean Johnston  <jkj@sco.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
