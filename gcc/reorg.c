@@ -4066,11 +4066,20 @@ relax_delay_slots (first)
 	  if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
 	      && redundant_insn (trial, insn, 0))
 	    {
-	      trial = next_active_insn (trial);
-	      if (trial == 0)
-		target_label = find_end_label ();
-	      else
-		target_label = get_label_before (trial);
+	      rtx tmp;
+
+	      /* Figure out where to emit the special USE insn so we don't
+		 later incorrectly compute register live/death info.  */
+	      tmp = next_active_insn (trial);
+	      if (tmp == 0)
+		tmp = find_end_label ();
+
+	      /* Insert the special USE insn and update dataflow info.  */
+              update_block (trial, tmp);
+
+	      /* Now emit a label before the special USE insn, and
+		 redirect our jump to the new label.  */ 
+	      target_label = get_label_before (PREV_INSN (tmp));
 	      reorg_redirect_jump (delay_insn, target_label);
 	      next = insn;
 	      continue;
