@@ -60,6 +60,11 @@ namespace std
     basic_ios<_CharT, _Traits>&
     basic_ios<_CharT, _Traits>::copyfmt(const basic_ios& __rhs)
     {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 292. effects of a.copyfmt (a)
+      if (this == &__rhs)
+	return *this;
+
       // Per 27.1.1, do not call imbue, yet must trash all caches
       // associated with imbue()
 
