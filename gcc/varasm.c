@@ -206,7 +206,7 @@ static enum in_section { no_section, in_text, in_data, in_named
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL_TREE)
 #endif
-     
+
 /* Text of section name when in_section == in_named.  */
 static const char *in_named_name;
 
@@ -621,7 +621,7 @@ decode_reg_name (asmspec)
 
       /* Get rid of confusing prefixes.  */
       asmspec = strip_reg_name (asmspec);
-	
+
       /* Allow a decimal number as a "register name".  */
       for (i = strlen (asmspec) - 1; i >= 0; i--)
 	if (! (asmspec[i] >= '0' && asmspec[i] <= '9'))
@@ -697,7 +697,7 @@ make_decl_rtl (decl, asmspec)
 	  && !DECL_REGISTER (decl)))
     abort ();
   /* And that we were not given a type or a label.  */
-  else if (TREE_CODE (decl) == TYPE_DECL 
+  else if (TREE_CODE (decl) == TYPE_DECL
 	   || TREE_CODE (decl) == LABEL_DECL)
     abort ();
 
@@ -772,7 +772,7 @@ make_decl_rtl (decl, asmspec)
 	     kludge to avoid setting DECL_RTL to frame_pointer_rtx.  */
 
 	  SET_DECL_RTL (decl,
-			gen_rtx_REG (DECL_MODE (decl), 
+			gen_rtx_REG (DECL_MODE (decl),
 				     FIRST_PSEUDO_REGISTER));
 	  REGNO (DECL_RTL (decl)) = reg_number;
 	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
@@ -1082,7 +1082,7 @@ assemble_start_function (decl, fnname)
   if (align_functions_log > align)
     {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-      ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file, 
+      ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file,
 				 align_functions_log, align_functions-1);
 #else
       ASM_OUTPUT_ALIGN (asm_out_file, align_functions_log);
@@ -1271,14 +1271,14 @@ asm_emit_uninitialised (decl, name, size, rounded)
     asm_dest_local
   }
   destination = asm_dest_local;
-  
+
   if (TREE_PUBLIC (decl))
     {
 #if defined ASM_EMIT_BSS
       if (! DECL_COMMON (decl))
 	destination = asm_dest_bss;
       else
-#endif      
+#endif
 	destination = asm_dest_common;
     }
 
@@ -1401,7 +1401,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Make sure ENCODE_SECTION_INFO is invoked before we set ASM_WRITTEN.  */
   decl_rtl = DECL_RTL (decl);
- 
+
   TREE_ASM_WRITTEN (decl) = 1;
 
   /* Do no output if -fsyntax-only.  */
@@ -1498,14 +1498,14 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
       rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
-      
+
 /* Don't continue this line--convex cc version 4.1 would lose.  */
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
-         warning_with_decl 
+         warning_with_decl
            (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
 #endif
-       
+
       asm_emit_uninitialised (decl, name, size, rounded);
 
       return;
@@ -1519,7 +1519,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     {
 #ifdef ASM_WEAKEN_LABEL
-      if (DECL_WEAK (decl)) 
+      if (DECL_WEAK (decl))
 	{
 	  ASM_WEAKEN_LABEL (asm_out_file, name);
 	   /* Remove this variable from the pending weak list so that
@@ -1690,7 +1690,7 @@ assemble_name (file, name)
   tree id;
 
   STRIP_NAME_ENCODING (real_name, name);
-  if (flag_prefix_function_name 
+  if (flag_prefix_function_name
       && ! memcmp (real_name, CHKR_PREFIX, CHKR_PREFIX_SIZE))
     real_name = real_name + CHKR_PREFIX_SIZE;
 
@@ -1916,7 +1916,7 @@ assemble_integer (x, size, align, force)
     {
       enum machine_mode omode, imode;
       unsigned int i;
- 
+
       omode = mode_for_size (BITS_PER_UNIT, MODE_INT, 0);
       imode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
 
@@ -2333,7 +2333,7 @@ struct constant_descriptor
   const char *label;
   rtx rtl;
   /* Make sure the data is reasonably aligned.  */
-  union 
+  union
   {
     unsigned char contents[1];
 #ifdef HAVE_LONG_DOUBLE
@@ -2361,7 +2361,7 @@ static htab_t const_str_htab;
 
 /* Mark a const_hash_table descriptor for GC.  */
 
-static void 
+static void
 mark_const_hash_entry (ptr)
      void *ptr;
 {
@@ -2376,7 +2376,7 @@ mark_const_hash_entry (ptr)
 
 /* Mark the hash-table element X (which is really a pointer to an
    struct deferred_string *).  */
-   
+
 static int
 mark_const_str_htab_1 (x, data)
      void **x;
@@ -2388,7 +2388,7 @@ mark_const_str_htab_1 (x, data)
 
 /* Mark a const_str_htab for GC.  */
 
-static void 
+static void
 mark_const_str_htab (htab)
      void *htab;
 {
@@ -2529,7 +2529,7 @@ const_hash (exp)
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return const_hash (TREE_OPERAND (exp, 0)) * 7 + 2;
-      
+
     default:
       /* A language specific constant. Just hash the code.  */
       return (int) code % MAX_HASH_TABLE;
@@ -2655,7 +2655,7 @@ compare_constant_1 (exp, p)
 	  p += sizeof length;
 
 	  /* For record constructors, insist that the types match.
-	     For arrays, just verify both constructors are for arrays. 
+	     For arrays, just verify both constructors are for arrays.
 	     Then insist that either both or none have any TREE_PURPOSE
 	     values.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
@@ -2898,7 +2898,7 @@ record_constant_1 (exp)
 	  obstack_grow (&permanent_obstack, (char *) &type, sizeof type);
 	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
 	    obstack_grow (&permanent_obstack, &mode, sizeof mode);
-			  
+
 	  obstack_grow (&permanent_obstack, (char *) &have_purpose,
 			sizeof have_purpose);
 
@@ -3166,18 +3166,18 @@ output_constant_def (exp, defer)
      the label number already assigned.  */
 
   hash = const_hash (exp) % MAX_HASH_TABLE;
-      
+
   for (desc = const_hash_table[hash]; desc; desc = desc->next)
     if (compare_constant (exp, desc))
       break;
-      
+
   if (desc == 0)
     {
       /* No constant equal to EXP is known to have been output.
 	 Make a constant descriptor to enter EXP in the hash table.
 	 Assign the label number and record it in the descriptor for
 	 future calls to this function to find.  */
-	  
+
       /* Create a string containing the label name, in LABEL.  */
       labelno = const_labelno++;
       ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
@@ -3186,7 +3186,7 @@ output_constant_def (exp, defer)
       desc->next = const_hash_table[hash];
       desc->label = ggc_strdup (label);
       const_hash_table[hash] = desc;
-  
+
       /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
       desc->rtl
 	= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
@@ -3390,7 +3390,7 @@ init_varasm_status (f)
 
 /* Mark PC for GC.  */
 
-static void 
+static void
 mark_pool_constant (pc)
      struct pool_constant *pc;
 {
@@ -3526,7 +3526,7 @@ decode_rtx_const (mode, x, value)
       case LABEL_REF:
 	/* For a LABEL_REF, compare labels.  */
 	value->un.addr.base = XEXP (value->un.addr.base, 0);
-	
+
       default:
 	break;
       }
@@ -3608,7 +3608,7 @@ record_constant_rtx (mode, x)
 {
   struct constant_descriptor *ptr;
 
-  ptr = ((struct constant_descriptor *) 
+  ptr = ((struct constant_descriptor *)
 	 xcalloc (1, (offsetof (struct constant_descriptor, u)
 		      + sizeof (struct rtx_const))));
   decode_rtx_const (mode, x, (struct rtx_const *) ptr->u.contents);
@@ -3870,7 +3870,7 @@ output_constant_pool (fnname, fndecl)
 	      x = const0_rtx;
 	    }
 	  break;
-	  
+
 	default:
 	  break;
 	}
@@ -4162,7 +4162,7 @@ initializer_constant_valid_p (value, endtype)
 	return
 	  initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)),
 					endtype);
-	
+
       return TREE_STATIC (value) ? null_pointer_node : 0;
 
     case INTEGER_CST:
@@ -4345,7 +4345,7 @@ output_constant (exp, size, align)
      That way we get the constant (we hope) inside it.  Also, strip off any
      NOP_EXPR that converts between two record, union, array, or set types
      or a CONVERT_EXPR that converts to a union TYPE.  */
-  while ((TREE_CODE (exp) == NOP_EXPR 
+  while ((TREE_CODE (exp) == NOP_EXPR
 	  && (TREE_TYPE (exp) == TREE_TYPE (TREE_OPERAND (exp, 0))
 	      || AGGREGATE_TYPE_P (TREE_TYPE (exp))))
 	 || (TREE_CODE (exp) == CONVERT_EXPR
@@ -4482,7 +4482,7 @@ array_size_for_constructor (val)
     return 0;
 
   /* Compute the total number of array elements.  */
-  i = size_binop (MINUS_EXPR, convert (sizetype, max_index), 
+  i = size_binop (MINUS_EXPR, convert (sizetype, max_index),
 		  convert (sizetype,
 			   TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)))));
   i = size_binop (PLUS_EXPR, i, convert (sizetype, integer_one_node));
@@ -4607,7 +4607,7 @@ output_constructor (exp, size, align)
 
 	  /* Find the alignment of this element.  */
 	  align2 = min_align (align, BITS_PER_UNIT * pos);
-	  
+
 	  /* Determine size this element should occupy.  */
 	  if (field)
 	    {
@@ -4799,9 +4799,9 @@ output_constructor (exp, size, align)
     assemble_zeros (size - total_bytes);
 }
 
-/* This structure contains any weak symbol declarations waiting to be
-   emitted.  */
 
+/* This structure contains any weak symbol declarations waiting
+   to be emitted.  */
 struct weak_syms
 {
   struct weak_syms * next;
@@ -4812,8 +4812,8 @@ struct weak_syms
 static struct weak_syms * weak_decls;
 
 /* Add function NAME to the weak symbols list.  VALUE is a weak alias
-   associatd with NAME.  */
-   
+   associated with NAME.  */
+
 int
 add_weak (name, value)
      const char *name;
@@ -4878,7 +4878,6 @@ weak_finish ()
 /* Remove NAME from the pending list of weak symbols.  This prevents
    the compiler from emitting multiple .weak directives which confuses
    some assemblers.  */
-
 static void
 remove_from_pending_weak_list (name)
      const char *name;
@@ -4890,12 +4889,12 @@ remove_from_pending_weak_list (name)
     {
       t = *p;
       if (strcmp (name, t->name) == 0)
-	{
-	  *p = t->next;
-	  free (t);
-	}
+        {
+          *p = t->next;
+          free (t);
+        }
       else
-	p = &(t->next);
+        p = &(t->next);
     }
 }
 

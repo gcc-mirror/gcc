@@ -256,17 +256,10 @@ do {									   \
   DECL_SECTION_NAME (DECL) = build_string (len, string);		   \
 } while (0)
 
-/* There's no point providing a default definition of __CTOR_LIST__
-   since people are expected either to use crtbegin.o, or an equivalent,
-   or provide their own definition.  */
-#define CTOR_LISTS_DEFINED_EXTERNALLY
-
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_rdata
- 
-#define INVOKE__main
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
@@ -282,12 +275,24 @@ void FN ()                                                            \
       in_section = ENUM;                                              \
     }                                                                 \
 }
+
+/* On elf, we *do* have support for the .init and .fini sections, and we
+   can put stuff in there to be executed before and after `main'.  We let
+   crtstuff.c and other files know this by defining the following symbols.
+   The definitions say how to change sections to the .init and .fini
+   sections.  This is the same for all known elf assemblers.  */
+
+#undef  INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP     "\t.section\t.init"
+#undef  FINI_SECTION_ASM_OP
+#define FINI_SECTION_ASM_OP     "\t.section\t.fini"
+
 /* Don't set the target flags, this is done by the linker script */
 #undef LIB_SPEC
 #define LIB_SPEC ""
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "crtbegin%O%s %{!mno-crt0:crt0%O%s}"
+#define STARTFILE_SPEC "crti%O%s crtbegin%O%s %{!mno-crt0:crt0%O%s}"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend%O%s"
+#define ENDFILE_SPEC "crtend%O%s crtn%O%s"

@@ -20,10 +20,6 @@ Boston, MA 02111-1307, USA.  */
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_rdata, in_sbss
 
-#undef INVOKE__main
-#undef NAME__MAIN
-#undef SYMBOL__MAIN
-
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \

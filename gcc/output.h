@@ -135,6 +135,10 @@ extern void leaf_renumber_regs_insn PARAMS ((rtx));
 /* Locate the proper template for the given insn-code.  */
 extern const char *get_insn_template PARAMS ((int, rtx));
 
+/* Add function NAME to the weak symbols list.  VALUE is a weak alias
+   associated with NAME.  */
+extern int add_weak PARAMS ((const char *, const char *));
+
 /* Functions in flow.c */
 extern void allocate_for_life_analysis	PARAMS ((void));
 extern int regno_uninitialized		PARAMS ((int));

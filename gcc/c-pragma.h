@@ -41,11 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HANDLE_PRAGMA_PACK 1
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
-
-#ifdef HANDLE_PRAGMA_WEAK
-extern int add_weak PARAMS ((const char *, const char *));
-#endif /* HANDLE_PRAGMA_WEAK */
-
 extern void init_pragma PARAMS ((void));
 
 /* Duplicate prototypes for the register_pragma stuff and the typedef for
