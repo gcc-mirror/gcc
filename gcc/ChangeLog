@@ -1,3 +1,13 @@
+2002-04-12  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/4191
+	* config/d30v/d30v.h (INIT_SECTION_ASM_OP): Don't undef.
+
+	* flow.c (mark_used_reg): Manage reg_cond_dead properly for
+	modes spanning multiple hard regs.
+
+	* recog.c (peephole2_optimize): Rebuild jump labels as needed.
+
 2002-04-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (output_millicode_call): Check attribute type as well as length
@@ -32,7 +42,7 @@
 	* config.gcc (ia64-*-freebsd*): Fix ordering of tm_files to match
 	all other *-*-freebsd* targets.
 
-2002-04-11  Richard Sandiford  <rsand
+2002-04-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/extend.texi: Remove old claim that typedefs cannot have
 	an alignment attribute.

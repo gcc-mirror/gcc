@@ -3570,6 +3570,10 @@ mark_used_reg (pbi, reg, cond, insn)
   /* Mark the register as being live.  */
   for (i = regno_first; i <= regno_last; ++i)
     {
+#ifdef HAVE_conditional_execution
+      int this_was_live = REGNO_REG_SET_P (pbi->reg_live, i);
+#endif
+
       SET_REGNO_REG_SET (pbi->reg_live, i);
 
 #ifdef HAVE_conditional_execution
@@ -3581,7 +3585,7 @@ mark_used_reg (pbi, reg, cond, insn)
 	  struct reg_cond_life_info *rcli;
 	  rtx ncond;
 
-	  if (some_was_live)
+	  if (this_was_live)
 	    {
 	      node = splay_tree_lookup (pbi->reg_cond_dead, i);
 	      if (node == NULL)
@@ -3623,7 +3627,7 @@ mark_used_reg (pbi, reg, cond, insn)
 	      SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond, 0)));
 	    }
 	}
-      else if (some_was_live)
+      else if (this_was_live)
 	{
 	  /* The register may have been conditionally live previously, but
 	     is now unconditionally live.  Remove it from the conditionally
