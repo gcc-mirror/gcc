@@ -60,8 +60,8 @@ import java.io.ObjectOutputStream;
  * @author         Jon Zeppieri
  * @author         Jochen Hoenicke
  * @author	   Bryce McKinlay
- * @version        $Revision: 1.2 $
- * @modified       $Id: HashMap.java,v 1.2 2000/12/11 03:47:47 bryce Exp $
+ * @version        $Revision: 1.3 $
+ * @modified       $Id: HashMap.java,v 1.3 2000/12/17 09:15:51 bryce Exp $
  */
 public class HashMap extends AbstractMap
   implements Map, Cloneable, Serializable
@@ -69,7 +69,7 @@ public class HashMap extends AbstractMap
   /** Default number of buckets. This is the value the JDK 1.3 uses. Some 
     * early documentation specified this value as 101. That is incorrect. */
   private static final int DEFAULT_CAPACITY = 11;  
-  /** The defaulty load factor; this is explicitly specified by Sun */
+  /** The defaulty load factor; this is explicitly specified by the spec. */
   private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
   private static final long serialVersionUID = 362498820763181265L;
@@ -104,56 +104,14 @@ public class HashMap extends AbstractMap
    * Class to represent an entry in the hash table. Holds a single key-value
    * pair.
    */
-  static class Entry implements Map.Entry
+  static class Entry extends BasicMapEntry
   {
-    Object key;
-    Object value;
     Entry next;
     
     Entry(Object key, Object value)
     {
-      this.key = key;
-      this.value = value;
+      super(key, value);
     }
-
-    public boolean equals(Object o)
-    {
-      if (!(o instanceof Map.Entry))
-        return false;
-      Map.Entry e = (Map.Entry) o;
-      return (key == null ? e.getKey() == null : key.equals(e.getKey())
-              && value == null ? e.getValue() == null : 
-	         value.equals(e.getValue()));
-    }
-    
-    public Object getKey()
-    {
-      return key;
-    }
-    
-    public Object getValue()
-    {
-      return value;
-    }
-    
-    public int hashCode()
-    {
-      int kc = (key == null ? 0 : key.hashCode());
-      int vc = (value == null ? 0 : value.hashCode());
-      return kc ^ vc;
-    }
-    
-    public Object setValue(Object newVal)
-    {
-      Object r = value;
-      value = newVal;
-      return r;
-    }
-    
-    public String toString()
-    {
-      return key + "=" + value;
-    }    
   }
 
   /**
@@ -368,9 +326,9 @@ public class HashMap extends AbstractMap
       {
         Map.Entry e = (Map.Entry) itr.next();
 	// Optimize in case the Entry is one of our own.
-	if (e instanceof Entry)
+	if (e instanceof BasicMapEntry)
 	  {
-	    Entry entry = (Entry) e;
+	    BasicMapEntry entry = (BasicMapEntry) e;
 	    put(entry.key, entry.value);
 	  }
 	else
@@ -660,8 +618,8 @@ public class HashMap extends AbstractMap
    * as per the Javasoft spec.
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.2 $
-   * @modified     $Id: HashMap.java,v 1.2 2000/12/11 03:47:47 bryce Exp $
+   * @version      $Revision: 1.3 $
+   * @modified     $Id: HashMap.java,v 1.3 2000/12/17 09:15:51 bryce Exp $
    */
   class HashIterator implements Iterator
   {

@@ -929,6 +929,7 @@ java/util/AbstractSequentialList.java \
 java/util/AbstractSet.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
+java/util/BasicMapEntry.java \
 java/util/BitSet.java \
 java/util/Calendar.java	\
 java/util/Collection.java \
