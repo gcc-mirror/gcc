@@ -1,5 +1,22 @@
 2000-01-16  Anthony Green  <green@cygnus.com>
 
+	* libjava.lang/pr133.out: New file.
+	* libjava.lang/pr133.java: New file.
+
+	* libjava.lang/pr100.xpo: New file.
+	* libjava.lang/pr100.java: New file.
+
+2000-01-16  Anthony Green  <green@cygnus.com>
+
+	* libjava.lang/pr93.xpo: New file.
+	* libjava.lang/pr93.java: New file.
+
+2000-01-16  Anthony Green  <green@cygnus.com>
+
+	* libjava.lang/lang.exp: Handle regexp matches correctly.
+
+2000-01-16  Anthony Green  <green@cygnus.com>
+
 	* libjava.lang/pr83.out: New file.
 	* libjava.lang/pr83.java: New file.
 
