@@ -5,6 +5,8 @@ Sun May 24 09:38:17 1998  John Wehle  (john@feith.com)
 
 Sun May 24 08:59:27 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* genattrtab.c (optimize): Define.
+
 	* configure.lang: Fix substitution of target_alias.
 
 Sat May 23 22:31:17 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
