@@ -1,3 +1,7 @@
+2004-07-10  James E Wilson  <wilson@specifixinc.com>
+
+	* config/gofast.h (gofast_maybe_init_libfuncs): Use SImode for litodp.
+
 2004-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* Backport from mainline:
