@@ -1,0 +1,2 @@
+# Find all of the declarations from the header files
+FIXPROTO_DEFINES= -D__EXTENSIONS__
