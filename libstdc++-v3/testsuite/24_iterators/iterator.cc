@@ -1,4 +1,4 @@
-// 24.1.5 Random accesss iterators
+// 24.1.5 Random access iterators
 // 24.3.1 Iterator traits
 // (basic_string and vector implementations)
 //

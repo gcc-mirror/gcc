@@ -113,7 +113,7 @@ case "${target_os}" in
 esac
 
 
-# Set any flags dependant on the full target triplet.
+# Set any flags dependent on the full target triplet.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${target}" in
    *-*-aix[456789]*)

@@ -40,7 +40,7 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 {
   __cxa_exception *header = __get_exception_header_from_ue (exc);
 
-  // If we havn't been caught by a foreign handler, then this is
+  // If we haven't been caught by a foreign handler, then this is
   // some sort of unwind error.  In that case just die immediately.
   if (code != _URC_FOREIGN_EXCEPTION_CAUGHT)
     __terminate (header->terminateHandler);

@@ -873,7 +873,7 @@
 2000-11-23  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/ios_base.h (ios_base::failure::~failure,
-	ios_base::failure::what): Move defintion to ...
+	ios_base::failure::what): Move definition to ...
 
 	* src/ios.cc (ios_base::failure::~failure): ... here.
 	src/ios.cc (ios::failure::what): Likewise.
@@ -2043,7 +2043,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_OS): Link to os_defines.h.
 	* aclocal.m4: Regenerate.
-	* config/os/*/bits/os_defintes: Adjust copyright dates.
+	* config/os/*/bits/os_defines: Adjust copyright dates.
 	
 2000-10-08  Phil Edwards  <pme@sources.redhat.com>
 
@@ -2768,7 +2768,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	__codecvt_abstract_base in an attempt to point some light this way...
 	Move __enc_traits and codecvt bits to codecvt.h.
 	* src/locale-inst.cc: Remove codecvt<wchar_t, wchar_t, mbstate_t>
-	explicit instantiation. Separate out codecvt instantations, simplify.
+	explicit instantiation. Separate out codecvt instantiations, simplify.
 	* src/locale.cc: Move codecvt bits to codecvt.cc
 
 2000-08-15  Alexandre Oliva  <aoliva@redhat.com>
@@ -4796,7 +4796,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(ctype<wchar_t>): Same.
 	Move _S_touppper to _M_toupper and initialize in ctor.
 	Move _S_tolower  to _M_tolower and initialize in ctor.	
-	Move _S_table to _M_ctable and intialize in ctor.
+	Move _S_table to _M_ctable and initialize in ctor.
 	* bits/locale_facets.h (std): And here.
 	* src/locale.cc (std): Tweak.
 	* config/gnu-linux/ctype.cc: Change initialization here.
@@ -4807,7 +4807,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/localefwd.h: Tweak.
 	* bits/std_streambuf.h: Tweak formatting.
 
-	* testsuite/27_io/filebuf.cc: Remove BUFSIZ dependancies.
+	* testsuite/27_io/filebuf.cc: Remove BUFSIZ dependencies.
 
 2000-03-05  Chip Salzenberg  <chip@valinux.com>
 
@@ -4822,7 +4822,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         * std/strstream:  New file.
         * stl/bits/std_strstream.h:  New file.
         * bits/std_streambuf.h:  Add public access.
-        * src/Makefile.am:  Add strstream sources to list of dependancies.
+        * src/Makefile.am:  Add strstream sources to list of dependencies.
         * src/Makefile.in:  Regenerate.
 
 2000-03-03 2000  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
@@ -5318,7 +5318,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* math/complex-stub.h (nan): And here.
 	
 	* Makefile.am (rebuild-stamp): Remove libio and libio
-	dependancies.  Plan to take out libio subdir and just merge with
+	dependencies.  Plan to take out libio subdir and just merge with
 	libio in top level gcc directory. Of course, this assumes there is
 	a libio in the top level directory (ie ../src_dir). This will
 	probably change the way this library is configured by default.
@@ -5928,7 +5928,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 1999-12-08  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/sstream.tcc (stringbuf::seekoff): Long overdue revamp. Make
-	in and out buffers update independantly.
+	in and out buffers update independently.
 
 	* bits/basic_ios.h: Minor formatting.
 	* bits/fstream.tcc (std): Fix indentation.
@@ -7161,7 +7161,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/std_sstream.h (_M_init_stringbuf): New function.
 	* bits/sstream.tcc: Tweak.
 	
-	* docs/27_io/iostreams_heirarchy.pdf: New file.
+	* docs/27_io/iostreams_hierarchy.pdf: New file.
 	
 	* docs/17_intro/CHECKLIST (basic_string<char>): Validation and
 	acceptance. Wooo-hoo!
@@ -7611,7 +7611,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
  	converting "long double" to struct long_double. Probably should be
  	done with one macro (HAVE_STRTOLD) at configure time.
 
-	* bits/std_cmath.h: Comment out pow(double, int) defintion as
+	* bits/std_cmath.h: Comment out pow(double, int) definition as
  	gives re-declaration under hpux10.20. Revert previous change, as
  	kills linux/x86, solaris 2.7, hpux builds. These should be done
  	using autoconf, see std_cctype.h and the solutions started in
@@ -8804,7 +8804,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* bits/char_traits.h: Remove fpos definitions from here. . .
 	* bits/fpos.h: New file, put them here. Eventually, this may allow
-	the severing of char_traits and fpos dependancies.
+	the severing of char_traits and fpos dependencies.
 	* src/Makefile.in: Add fpos.h.
 	* src/Makefile.am: Ditto.
 	* bits/std_string.h: Add fpos.h include here.
@@ -9698,7 +9698,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* bits/basic_string.h: Disable non-standard ctor declarations.
 	* bits/string.tcc: Disable definitions as well.
-	* src/string.cc: Disable <ios> dependancies.
+	* src/string.cc: Disable <ios> dependencies.
 	* bits/sbuf_iter.h (std): Add default to template parameter for
 	ostreambuf_iterator and istreambuf_iterator.
 	* bits/std_iosfwd.h: Change istreambuf_iterator to

@@ -1,5 +1,25 @@
 2001-11-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* ChangeLog, docs/doxygen/maint.cfg.in, docs/doxygen/user.cfg.in,
+	docs/doxygen/doxygroups.cc, docs/doxygen/Intro.3,
+	docs/html/17_intro/BUGS, docs/html/17_intro/C++STYLE,
+	docs/html/17_intro/CHECKLIST, docs/html/17_intro/DESIGN,
+	docs/html/17_intro/howto.html, docs/html/17_intro/porting.html,
+	docs/html/17_intro/porting.texi, docs/html/18_support/howto.html,
+	docs/html/19_diagnostics/howto.html, docs/html/20_util/howto.html,
+	docs/html/21_strings/howto.html,
+	docs/html/23_containers/howto.html,
+	docs/html/26_numerics/howto.html, docs/html/27_io/howto.html,
+	docs/html/27_io/binary_iostreams_kuehl.txt,
+	docs/html/ext/sgiexts.html, docs/html/faq/index.html,
+	docs/html/faq/index.txt, testsuite/24_iterators/iterator.cc,
+	include/bits/basic_file.h, include/bits/locale_facets.h,
+	include/bits/locale_facets.tcc, include/bits/std_sstream.h,
+	include/ext/ropeimpl.h, include/ext/stl_rope.h,
+	libsupc++/tinfo.cc, libsupc++/cxxabi.h, libsupc++/typeinfo,
+	libsupc++/eh_throw.cc, acinclude.m4, aclocal.m4, configure,
+	configure.target, ChangeLog-2000: Fix spelling errors.
+
 	* config/locale/moneypunct_members_gnu.cc,
 	include/bits/locale_facets.h: Fix spelling errors.
 

@@ -1841,7 +1841,7 @@ namespace std
       // NB: In IEE 1003.1-200x, and perhaps other locale models, it
       // is possible that the format character will be longer than one
       // character. Possibilities include 'E' or 'O' followed by a
-      // format charcter: if __mod is not the default argument, assume
+      // format character: if __mod is not the default argument, assume
       // it's a valid modifier.
       char_type __fmt[4];
       __fmt[0] = __ctype.widen('%'); 

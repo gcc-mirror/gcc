@@ -253,7 +253,7 @@ cases it may actually be excessive.
 
 To implement a library which does not use exceptions directly is
 not difficult given minor compiler support (to "turn off" exceptions
-and ignore exception contructs), and results in no great library
+and ignore exception constructs), and results in no great library
 maintenance difficulties.  To be precise, given "-fno-exceptions",
 the compiler should treat "try" blocks as ordinary blocks, and
 "catch" blocks as dead code to ignore or eliminate.  Compiler

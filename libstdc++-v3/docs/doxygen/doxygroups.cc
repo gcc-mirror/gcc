@@ -67,7 +67,7 @@ following:
 As an example of the first case, @c vector is required to use a contiguous
 memory layout, while other sequences such as @c deque are not.
 
-The prime reason for chosing one sequence over another should be based on
+The prime reason for choosing one sequence over another should be based on
 the second category of differences, algorithmic complexity.  For example, if
 you need to perform many inserts and removals from the middle of a sequence,
 @c list would be ideal.  But if you need to perform constant-time access to

@@ -173,8 +173,8 @@ LIB_AC_PROG_CXX
   # at least currently, we never actually build a program, so we never
   # need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
   # fails, because we are probably configuring with a cross compiler
-  # which cant create executables.  So we include AC_EXEEXT to keep
-  # automake happy, but we dont execute it, since we dont care about
+  # which can't create executables.  So we include AC_EXEEXT to keep
+  # automake happy, but we don't execute it, since we don't care about
   # the result.
   if false; then
     # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands

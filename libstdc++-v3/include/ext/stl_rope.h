@@ -340,7 +340,7 @@ identity_element(_Rope_Concat_fn<_CharT, _Alloc>)
 // that doesn't work, since it makes it impossible to define generic
 // equality on rope iterators.  According to the draft standard, the
 // template parameters for such an equality operator cannot be inferred
-// from the occurence of a member class as a parameter.
+// from the occurrence of a member class as a parameter.
 // (SGI compilers in fact allow this, but the __result wouldn't be
 // portable.)
 // Similarly, some of the static member functions are member functions
@@ -543,7 +543,7 @@ struct _Rope_RopeLeaf : public _Rope_RopeRep<_CharT,_Alloc> {
   public:
     // Apparently needed by VC++
     // The data fields of leaves are allocated with some
-    // extra space, to accomodate future growth and for basic
+    // extra space, to accommodate future growth and for basic
     // character types, to hold a trailing eos character.
     enum { _S_alloc_granularity = 8 };
     static size_t _S_rounded_up_size(size_t __n) {
@@ -845,7 +845,7 @@ class _Rope_iterator_base
   public:
     typedef _Alloc _allocator_type; // used in _Rope_rotate, VC++ workaround
     typedef _Rope_RopeRep<_CharT,_Alloc> _RopeRep;
-        // Borland doesnt want this to be protected.
+        // Borland doesn't want this to be protected.
   protected:
     enum { _S_path_cache_len = 4 }; // Must be <= 9.
     enum { _S_iterator_buf_len = 15 };
@@ -1321,7 +1321,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
                                           const _CharT* __iter, size_t __slen)
                 // As above, but one reference to __r is about to be
                 // destroyed.  Thus the pieces may be recycled if all
-                // relevent reference counts are 1.
+                // relevant reference counts are 1.
 #           ifdef __GC
                 // We can't really do anything since refcounts are unavailable.
                 { return _S_concat_char_iter(__r, __iter, __slen); }
