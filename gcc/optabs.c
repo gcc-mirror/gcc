@@ -180,6 +180,11 @@ rtx fixunstfsi_libfunc;
 rtx fixunstfdi_libfunc;
 rtx fixunstfti_libfunc;
 
+#ifdef GPC
+/* from emit-rtl.c */
+extern rtx gen_highpart();
+#endif
+
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
 
@@ -824,6 +829,228 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       delete_insns_since (last);
     }
 
+#ifdef GPC
+  /* We need to open-code the complex type operations: '+, -, * and /' */
+
+  /* At this point we allow operations between two similar complex
+     numbers, and also if one of the operands is not a complex number
+     but rather of MODE_FLOAT or MODE_INT. However, the caller
+     must make sure that the MODE of the non-complex operand matches
+     the SUBMODE of the complex operand.
+     @@ Perhaps the conversion to complex numbers should be somewhere else.
+     @@ This is not tested very much.
+   */
+
+  if (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
+    { rtx real0 = (rtx) 0;
+      rtx imag0 = (rtx) 0;
+      rtx real1 = (rtx) 0;
+      rtx imag1 = (rtx) 0;
+      rtx realr;
+      rtx imagr;
+      rtx res;
+      rtx seq;
+      rtx equiv_value;
+
+      /* Find the correct mode for the real and imaginary parts */
+      enum machine_mode submode =
+	mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
+		       class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
+		       0);
+
+      if (submode == BLKmode)
+	abort ();
+
+      if (! target)
+	target = gen_reg_rtx (mode);
+
+      start_sequence ();
+
+      realr = gen_lowpart  (submode, target);
+      imagr = gen_highpart (submode, target);
+
+      if (GET_MODE (op0) == mode)
+	{
+	  real0 = gen_lowpart  (submode, op0);
+	  imag0 = gen_highpart (submode, op0);
+	}
+      else
+	real0 = op0;
+
+      if (GET_MODE (op1) == mode)
+	{
+	  real1 = gen_lowpart  (submode, op1);
+	  imag1 = gen_highpart (submode, op1);
+	}
+      else
+	real1 = op1;
+
+      if (! real0 || ! real1 || ! (imag0 || imag1))
+	abort ();
+
+      switch (binoptab->code) {
+      case PLUS:
+      case MINUS:
+	  res = expand_binop (submode, binoptab, real0, real1,
+			      realr, unsignedp, methods);
+	  if (res != realr)
+	    emit_move_insn (realr, res);
+
+	  if (imag0 && imag1)
+	    res = expand_binop (submode, binoptab, imag0, imag1,
+				imagr, unsignedp, methods);
+	  else if (imag0)
+	    res = imag0;
+	  else if (binoptab->code == MINUS)
+	    res = expand_unop (submode, neg_optab, imag1, imagr, unsignedp);
+	  else
+	    res = imag1;
+
+	  if (res != imagr)
+	    emit_move_insn (imagr, res);
+	  break;
+      case MULT:
+	  /* (a+ib) * (c+id) = (ac-bd) + i(ad+cb) */
+
+	  res = expand_binop (submode, binoptab, real0, real1,
+			      realr, unsignedp, methods);
+
+	  if (imag0 && imag1)
+	    {
+	      rtx temp =
+		expand_binop (submode, sub_optab, res,
+			      expand_binop (submode, binoptab, imag0, imag1,
+					    0, unsignedp, methods),
+			      realr, unsignedp, methods);
+
+	      if (temp != realr)
+		emit_move_insn (realr, temp);
+
+	      res = expand_binop (submode, add_optab,
+				  expand_binop (submode, binoptab,
+						real0, imag1,
+						0, unsignedp, methods),
+				  expand_binop (submode, binoptab,
+						real1, imag0,
+						0, unsignedp, methods),
+				  imagr, unsignedp, methods);
+	      if (res != imagr)
+		emit_move_insn (imagr, res);
+	    }
+	  else
+	    {
+	      if (res != realr)
+		emit_move_insn (realr, res);
+
+	      if (imag0)
+		res = expand_binop (submode, binoptab,
+				    real1, imag0, imagr, unsignedp, methods);
+	      else
+		res = expand_binop (submode, binoptab,
+				    real0, imag1, imagr, unsignedp, methods);
+	      if (res != imagr)
+		emit_move_insn (imagr, res);
+	    }
+	  break;
+      case DIV:
+	  /* (c+id)/(a+ib) == ((c+id)*(a-ib))/(a*a+b*b) */
+	  
+	  if (! imag1)
+	    { /* Simply divide the real and imaginary parts by `a' */
+	      res = expand_binop (submode, binoptab, real0, real1,
+				  realr, unsignedp, methods);
+	      if (res != realr)
+		emit_move_insn (realr, res);
+
+	      res = expand_binop (submode, binoptab, imag0, real1,
+				  imagr, unsignedp, methods);
+	      if (res != imagr)
+		emit_move_insn (imagr, res);
+	    }
+	  else /* Divider is of complex type */
+	    {  /* X/(a+ib) */
+
+	      rtx divider;
+	      rtx real_t;
+	      rtx imag_t;
+	      
+	      optab mulopt = unsignedp ? umul_widen_optab : smul_optab;
+
+	      /* Divider: a*a + b*b */
+	      divider = expand_binop (submode, add_optab,
+				     expand_binop (submode, mulopt,
+						   real1, real1,
+						   0, unsignedp, methods),
+				     expand_binop (submode, mulopt,
+						   imag1, imag1,
+						   0, unsignedp, methods),
+				     0, unsignedp, methods);
+
+	      if (! imag0) /* ((c)(a-ib))/divider */
+		{
+		  /* Calculate the divident */
+		  real_t = expand_binop (submode, mulopt, real0, real1,
+					 0, unsignedp, methods);
+		  
+		  imag_t =
+		    expand_unop (submode, neg_optab,
+				 expand_binop (submode, mulopt, real0, imag1,
+					       0, unsignedp, methods),
+				 0, unsignedp);
+		}
+	      else /* ((c+id)(a-ib))/divider */
+		{
+		  /* Calculate the divident */
+		  real_t = expand_binop (submode, add_optab,
+					 expand_binop (submode, mulopt,
+						       real0, real1,
+						       0, unsignedp, methods),
+					 expand_binop (submode, mulopt,
+						       imag0, imag1,
+						       0, unsignedp, methods),
+					 0, unsignedp, methods);
+		  
+		  imag_t = expand_binop (submode, sub_optab,
+					 expand_binop (submode, mulopt,
+						       real0, imag1,
+						       0, unsignedp, methods),
+					 expand_binop (submode, mulopt,
+						       real1, imag0,
+						       0, unsignedp, methods),
+					 0, unsignedp, methods);
+
+		}
+
+	      res = expand_binop (submode, binoptab, real_t, divider,
+				  realr, unsignedp, methods);
+	      if (res != realr)
+		emit_move_insn (realr, res);
+
+	      res = expand_binop (submode, binoptab, imag_t, divider,
+				  imagr, unsignedp, methods);
+	      if (res != imagr)
+		emit_move_insn (imagr, res);
+	    }
+	  break;
+	  
+	default:
+	  abort ();
+	}
+
+      seq = gen_sequence ();
+      end_sequence ();
+
+      if (binoptab->code != UNKNOWN)
+	equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
+      else
+	equiv_value = 0;
+	  
+      emit_no_conflict_block (seq, target, op0, op1, equiv_value);
+      
+      return target;
+    }
+#endif /* GPC */
+
   /* It can't be open-coded in this mode.
      Use a library call if one is available and caller says that's ok.  */
 
@@ -1144,8 +1371,18 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
   register rtx temp;
   rtx last = get_last_insn ();
   rtx pat;
+#ifdef GPC
+  enum machine_mode submode;
+#endif
 
   class = GET_MODE_CLASS (mode);
+
+#ifdef GPC
+  if (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
+    submode = mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
+			     class == MODE_COMPLEX_INT ?
+			       MODE_INT : MODE_FLOAT, 0);
+#endif /* GPC */
 
   op0 = protect_from_queue (op0, 0);
 
@@ -4631,7 +4868,7 @@ init_optabs ()
   memcpy_libfunc = gen_rtx (SYMBOL_REF, Pmode, "memcpy");
   bcopy_libfunc = gen_rtx (SYMBOL_REF, Pmode, "bcopy");
   memcmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "memcmp");
-  bcmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "bcmp");
+  bcmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__gcc_bcmp");
   memset_libfunc = gen_rtx (SYMBOL_REF, Pmode, "memset");
   bzero_libfunc = gen_rtx (SYMBOL_REF, Pmode, "bzero");
 
