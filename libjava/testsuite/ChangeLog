@@ -1,3 +1,8 @@
+2003-01-31  Mark Wielaard  <mark@klomp.org>
+ 
+	* lib/libjava.exp (libjava_prune_warnings): Remove all unreachable
+	bytecode warnings.
+
 2003-01-28  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.xfail: More lexer tests now pass.
