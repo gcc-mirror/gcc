@@ -566,6 +566,11 @@ int flag_permissive;
 
 int flag_enforce_eh_specs = 1;
 
+/* Nonzero means warn about things that will change when compiling
+   with an ABI-compliant compiler.  */
+
+int warn_abi = 0;
+
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit = 1;

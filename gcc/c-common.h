@@ -737,6 +737,11 @@ extern int flag_permissive;
 
 extern int flag_enforce_eh_specs;
 
+/* Nonzero means warn about things that will change when compiling
+   with an ABI-compliant compiler.  */
+
+extern int warn_abi;
+
 /* Nonzero means warn about implicit declarations.  */
 
 extern int warn_implicit;
