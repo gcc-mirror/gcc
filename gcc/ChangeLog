@@ -15,6 +15,7 @@
 	* config/s390/s390.c: Likewise.
 	* config/ia64/ia64.c: Likewse
 	* config/ia64/ia64-protos.h: Likewise.
+	* config/ia64/ia64-c.c: Likewise.
 
 2003-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

@@ -1,5 +1,5 @@
 /* Definitions of C specific functions for GNU compiler.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com>
 
 This file is part of GCC.
@@ -30,11 +30,10 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tm_p.h"
 
-static void ia64_hpux_add_pragma_builtin PARAMS ((tree func));
+static void ia64_hpux_add_pragma_builtin (tree func);
 
 void
-ia64_hpux_handle_builtin_pragma (pfile)
-	cpp_reader *pfile ATTRIBUTE_UNUSED;
+ia64_hpux_handle_builtin_pragma (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   /* #pragma builtin name, name, name */
 
@@ -173,8 +172,7 @@ static const c89_mathlib_names c89_mathlib_name_list [] =
 };
 
 static void
-ia64_hpux_add_pragma_builtin (func)
-	tree func;
+ia64_hpux_add_pragma_builtin (tree func)
 {
   size_t i;
 
