@@ -170,6 +170,10 @@ extern int target_flags;
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 64
 
+/* ALIGN FRAMES on double word boundaries */
+
+#define SPARC_STACK_ALIGN(LOC) (((LOC)+7) & 0xfffffff8)
+
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
 
