@@ -66,7 +66,7 @@ public class JobSheets extends EnumSyntax
    *
    * @return the class <code>JobSheets</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobSheets.class;
   }
@@ -76,7 +76,7 @@ public class JobSheets extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "job-sheets";
   }

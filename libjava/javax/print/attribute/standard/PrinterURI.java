@@ -35,12 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.print.attribute.standard;
 
 import java.net.URI;
+
 import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.URISyntax;
-
 
 /**
  * @author Michael Koch (konqueror@gmx.de)

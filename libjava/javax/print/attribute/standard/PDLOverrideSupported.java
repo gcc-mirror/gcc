@@ -67,7 +67,7 @@ public class PDLOverrideSupported extends EnumSyntax
    *
    * @return the class <code>PDLOverrideSupported</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PDLOverrideSupported.class;
   }
@@ -77,7 +77,7 @@ public class PDLOverrideSupported extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "pdl-override-supported";
   }

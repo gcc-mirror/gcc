@@ -73,7 +73,7 @@ public final class OrientationRequested extends EnumSyntax
    *
    * @return the class <code>OrientationRequested</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return OrientationRequested.class;
   }
@@ -83,7 +83,7 @@ public final class OrientationRequested extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "orientation-requested";
   }

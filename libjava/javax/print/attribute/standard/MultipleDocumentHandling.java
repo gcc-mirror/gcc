@@ -66,7 +66,7 @@ public class MultipleDocumentHandling extends EnumSyntax
    *
    * @return the class <code>MultipleDocumentHandling</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return MultipleDocumentHandling.class;
   }
@@ -76,7 +76,7 @@ public class MultipleDocumentHandling extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "multiple-document-handling";
   }

@@ -62,7 +62,7 @@ public final class JobKOctetsSupported extends SetOfIntegerSyntax
    *
    * @return the class <code>ColorSupported</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobKOctetsSupported.class;
   }
@@ -72,7 +72,7 @@ public final class JobKOctetsSupported extends SetOfIntegerSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "job-k-octets-supported";
   }

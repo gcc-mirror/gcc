@@ -67,7 +67,7 @@ public class PrinterIsAcceptingJobs extends EnumSyntax
    *
    * @return the class <code>PrinterIsAcceptingJobs</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PrinterIsAcceptingJobs.class;
   }
@@ -77,7 +77,7 @@ public class PrinterIsAcceptingJobs extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "printer-is-accepting-jobs";
   }

@@ -84,7 +84,7 @@ public final class Copies extends IntegerSyntax
    *
    * @return the class <code>Copies</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return Copies.class;
   }
@@ -94,7 +94,7 @@ public final class Copies extends IntegerSyntax
    *
    * @return the string "copies"
    */
-  public final String getName()
+  public String getName()
   {
     return "copies";
   }

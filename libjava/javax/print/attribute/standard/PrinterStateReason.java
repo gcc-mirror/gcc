@@ -35,11 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.print.attribute.standard;
 
 import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
-
 
 /**
  * @author Michael Koch (konqueror@gmx.de)
@@ -123,7 +123,7 @@ public class PrinterStateReason extends EnumSyntax
    *
    * @return the class <code>PrintStateReason</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PrinterStateReason.class;
   }
@@ -133,7 +133,7 @@ public class PrinterStateReason extends EnumSyntax
    *
    * @return the string "printer-state-reason"
    */
-  public final String getName()
+  public String getName()
   {
     return "printer-state-reason";
   }

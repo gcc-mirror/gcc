@@ -83,7 +83,7 @@ public final class NumberOfInterveningJobs extends IntegerSyntax
    *
    * @return the class <code>NumberOfInterveningJobs</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return NumberOfInterveningJobs.class;
   }
@@ -93,7 +93,7 @@ public final class NumberOfInterveningJobs extends IntegerSyntax
    *
    * @return the string "number-of-intervening-jobs"
    */
-  public final String getName()
+  public String getName()
   {
     return "number-of-intervening-jobs";
   }

@@ -62,7 +62,7 @@ public final class JobImpressionsSupported extends SetOfIntegerSyntax
    *
    * @return the class <code>JobImpressionsSupported</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobImpressionsSupported.class;
   }
@@ -72,7 +72,7 @@ public final class JobImpressionsSupported extends SetOfIntegerSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "job-impressions-supported";
   }

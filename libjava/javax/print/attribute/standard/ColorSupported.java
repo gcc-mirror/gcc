@@ -67,7 +67,7 @@ public final class ColorSupported extends EnumSyntax
    *
    * @return the class <code>ColorSupported</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return ColorSupported.class;
   }
@@ -77,7 +77,7 @@ public final class ColorSupported extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "color-supported";
   }

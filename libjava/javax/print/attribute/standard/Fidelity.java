@@ -68,7 +68,7 @@ public final class Fidelity extends EnumSyntax
    *
    * @return the class <code>Fidelity</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return Fidelity.class;
   }
@@ -78,7 +78,7 @@ public final class Fidelity extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "fidelity";
   }

@@ -83,7 +83,7 @@ public final class PagesPerMinuteColor extends IntegerSyntax
    *
    * @return the class <code>PagesPerMinuteColor</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PagesPerMinuteColor.class;
   }
@@ -93,7 +93,7 @@ public final class PagesPerMinuteColor extends IntegerSyntax
    *
    * @return the string "pages-per-minute-color"
    */
-  public final String getName()
+  public String getName()
   {
     return "pages-per-minute-color";
   }

@@ -79,7 +79,7 @@ public class ReferenceUriSchemesSupported extends EnumSyntax
    *
    * @return the class <code>ReferenceUriSchemesSupported</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return ReferenceUriSchemesSupported.class;
   }
@@ -89,7 +89,7 @@ public class ReferenceUriSchemesSupported extends EnumSyntax
    *
    * @return the string "reference-uri-schemes-supported"
    */
-  public final String getName()
+  public String getName()
   {
     return "reference-uri-schemes-supported";
   }

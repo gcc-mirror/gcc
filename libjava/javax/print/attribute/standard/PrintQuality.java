@@ -68,7 +68,7 @@ public class PrintQuality extends EnumSyntax
    *
    * @return the class <code>PrintQuality</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PrintQuality.class;
   }
@@ -78,7 +78,7 @@ public class PrintQuality extends EnumSyntax
    *
    * @return the string "print-quality"
    */
-  public final String getName()
+  public String getName()
   {
     return "print-quality";
   }

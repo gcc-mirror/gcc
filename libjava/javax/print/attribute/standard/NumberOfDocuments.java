@@ -83,7 +83,7 @@ public final class NumberOfDocuments extends IntegerSyntax
    *
    * @return the class <code>NumberOfDocuments</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return NumberOfDocuments.class;
   }
@@ -93,7 +93,7 @@ public final class NumberOfDocuments extends IntegerSyntax
    *
    * @return the string "number-of-documents"
    */
-  public final String getName()
+  public String getName()
   {
     return "number-of-documents";
   }

@@ -35,9 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.print.attribute.standard;
 
 import java.util.Locale;
+
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.TextSyntax;
 
@@ -81,7 +83,7 @@ public final class OutputDeviceAssigned extends TextSyntax
    *
    * @return the class <code>OutputDeviceAssigned</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return OutputDeviceAssigned.class;
   }
@@ -91,7 +93,7 @@ public final class OutputDeviceAssigned extends TextSyntax
    *
    * @return the string "output-device-assigned"
    */
-  public final String getName()
+  public String getName()
   {
     return "output-device-assigned";
   }

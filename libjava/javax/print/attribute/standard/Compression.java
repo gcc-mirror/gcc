@@ -69,7 +69,7 @@ public class Compression extends EnumSyntax
    *
    * @return the class <code>Compression</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return Compression.class;
   }
@@ -79,7 +79,7 @@ public class Compression extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "compression";
   }

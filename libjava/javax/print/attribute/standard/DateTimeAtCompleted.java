@@ -35,12 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.print.attribute.standard;
 
 import java.util.Date;
+
 import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintJobAttribute;
-
 
 /**
  * @author Michael Koch (konqueror@gmx.de)
@@ -82,7 +83,7 @@ public final class DateTimeAtCompleted extends DateTimeSyntax
    *
    * @return the class <code>DateTimeAtCompleted</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return DateTimeAtCompleted.class;
   }
@@ -92,7 +93,7 @@ public final class DateTimeAtCompleted extends DateTimeSyntax
    *
    * @return the string "date-time-at-completed"
    */
-  public final String getName()
+  public String getName()
   {
     return "date-time-at-completed";
   }

@@ -85,7 +85,7 @@ public class Finishings extends EnumSyntax
    *
    * @return the class <code>Finishings</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return Finishings.class;
   }
@@ -95,7 +95,7 @@ public class Finishings extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "finishings";
   }

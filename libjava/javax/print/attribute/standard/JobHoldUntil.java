@@ -35,9 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.print.attribute.standard;
 
 import java.util.Date;
+
 import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
@@ -82,7 +84,7 @@ public final class JobHoldUntil extends DateTimeSyntax
    *
    * @return the class <code>JobHoldUntil</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobHoldUntil.class;
   }
@@ -92,7 +94,7 @@ public final class JobHoldUntil extends DateTimeSyntax
    *
    * @return the string "job-hold-until"
    */
-  public final String getName()
+  public String getName()
   {
     return "job-hold-until";
   }

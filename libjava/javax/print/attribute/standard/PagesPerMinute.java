@@ -1,5 +1,5 @@
 /* PagesPerMinute.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,13 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.print.attribute.standard;
 
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintServiceAttribute;
 
 /**
- * @author Michael Koch
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PagesPerMinute extends IntegerSyntax
   implements PrintServiceAttribute
@@ -83,7 +84,7 @@ public final class PagesPerMinute extends IntegerSyntax
    *
    * @return the class <code>PagesPerMinute</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PagesPerMinute.class;
   }
@@ -93,7 +94,7 @@ public final class PagesPerMinute extends IntegerSyntax
    *
    * @return the string "pages-per-minute"
    */
-  public final String getName()
+  public String getName()
   {
     return "pages-per-minute";
   }

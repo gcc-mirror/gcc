@@ -83,7 +83,7 @@ public final class JobKOctetsProcessed extends IntegerSyntax
    *
    * @return the class <code>JobKOctetsProcessed</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobKOctetsProcessed.class;
   }
@@ -93,7 +93,7 @@ public final class JobKOctetsProcessed extends IntegerSyntax
    *
    * @return the string "job-k-octets-processed"
    */
-  public final String getName()
+  public String getName()
   {
     return "job-k-octets-processed";
   }
