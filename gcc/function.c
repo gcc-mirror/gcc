@@ -1014,7 +1014,11 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	      && SET_DEST (PATTERN (insn)) == var
 	      && rtx_equal_p (SET_SRC (PATTERN (insn)), var))
 	    {
-	      next = delete_insn (insn);
+	      /* In unoptimized compilation, we shouldn't call delete_insn
+		 except in jump.c doing warnings.  */
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
 	      if (insn == last_parm_insn)
 		last_parm_insn = PREV_INSN (next);
 	    }
