@@ -1,3 +1,7 @@
+2001-04-27  Jason Merrill  <jason_merrill@redhat.com>
+
+	* except.c (get_exception_filter): word_mode, not Pmode.
+
 2001-04-26  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/sparc/sparc.md (movsf_no_f_insn): Add more alternatives
