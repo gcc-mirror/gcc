@@ -1,5 +1,9 @@
 2001-10-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* g++.dg/template/unify2.C: New test.
+
+2001-10-14  Richard Sandiford  <rsandifo@redhat.com>
+
 	* g++.dg/other/exception-specification.C: New test
 
 2001-10-13  Tom Rix  <trix@redhat.com>
