@@ -1,5 +1,7 @@
 Thu Nov 11 19:45:24 1999  Jim Wilson  <wilson@cygnus.com>
 
+	* loop.c (invariant_p, case MEM): Put MEM_VOLATILE_P check back.
+
 	* dbxout.c (dbxout_type, case INTEGER_TYPE): Handle too large
 	unsigned types.
 
