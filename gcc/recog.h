@@ -91,6 +91,7 @@ extern rtx *find_single_use		PROTO((rtx, rtx, rtx *));
 extern int general_operand		PROTO((rtx, enum machine_mode));
 extern int address_operand		PROTO((rtx, enum machine_mode));
 extern int register_operand		PROTO((rtx, enum machine_mode));
+extern int pmode_register_operand	PROTO((rtx, enum machine_mode));
 extern int scratch_operand		PROTO((rtx, enum machine_mode));
 extern int immediate_operand		PROTO((rtx, enum machine_mode));
 extern int const_int_operand		PROTO((rtx, enum machine_mode));

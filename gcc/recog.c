@@ -1027,6 +1027,16 @@ register_operand (op, mode)
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 }
 
+/* Return 1 for a register in Pmode; ignore the tested mode.  */
+
+int
+pmode_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return register_operand (op, Pmode);
+}
+
 /* Return 1 if OP should match a MATCH_SCRATCH, i.e., if it is a SCRATCH
    or a hard register.  */
 

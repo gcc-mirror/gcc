@@ -299,16 +299,21 @@ print_rtx (in_rtx)
       case 'u':
 	if (XEXP (in_rtx, i) != NULL)
 	  {
-	    if (GET_CODE (XEXP (in_rtx, i)) != CODE_LABEL)
+	    rtx sub = XEXP (in_rtx, i);
+	    enum rtx_code subc = GET_CODE (sub);
+
+	    if (subc != CODE_LABEL
+		&& subc != NOTE
+		&& GET_RTX_CLASS (subc) != 'i')
 	      goto do_e;
 
 	    if (flag_dump_unnumbered)
 	      fputc ('#', outfile);
 	    else
-	      fprintf (outfile, " %d", INSN_UID (XEXP (in_rtx, i)));
+	      fprintf (outfile, " %d", INSN_UID (sub));
 	  }
 	else
-	  fputs (" 0", outfile);
+	  fputs (" (nil)", outfile);
 	sawclose = 0;
 	break;
 
