@@ -1,5 +1,5 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    hacked by Brendan Kehoe (brendan@cygnus.com).
 
@@ -638,7 +638,7 @@ user_harshness (type, parmtype, parm)
 	continue;
 
       if (tmp = convert_harshness (type, TREE_VALUE (conv), NULL_TREE),
-	  tmp.code < USER_CODE)
+	  tmp.code < USER_CODE && tmp.distance >= 0)
 	{
 	  if (winner)
 	    return EVIL_CODE;
@@ -662,7 +662,7 @@ can_convert (to, from)
 {
   struct harshness_code h;
   h = convert_harshness (to, from, NULL_TREE);
-  return h.code < USER_CODE;
+  return h.code < USER_CODE && h.distance >= 0;
 }
 
 int
@@ -671,7 +671,7 @@ can_convert_arg (to, from, arg)
 {
   struct harshness_code h;
   h = convert_harshness (to, from, arg);
-  return h.code < USER_CODE;
+  return h.code < USER_CODE && h.distance >= 0;
 }
 
 #ifdef DEBUG_MATCHING
@@ -1824,7 +1824,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    basetype = SIGNATURE_TYPE (basetype);
 
 	  if ((IS_SIGNATURE (basetype)
-	       && (instance_ptr = build_optr_ref (instance)))
+	       && (instance_ptr = instance))
 	      || (lvalue_p (instance)
 		  && (instance_ptr = build_unary_op (ADDR_EXPR, instance, 0)))
 	      || (instance_ptr = unary_complex_lvalue (ADDR_EXPR, instance)))
@@ -1865,7 +1865,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      instance_ptr = build_unary_op (ADDR_EXPR, instance, 0);
 	    }
 	  /* @@ Should we call comp_target_types here?  */
-	  inst_ptr_basetype = TREE_TYPE (TREE_TYPE (instance_ptr));
+	  if (IS_SIGNATURE (basetype))
+	    inst_ptr_basetype = basetype;
+	  else
+	    inst_ptr_basetype = TREE_TYPE (TREE_TYPE (instance_ptr));
 	  if (TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (inst_ptr_basetype))
 	    basetype = inst_ptr_basetype;
 	  else
@@ -1960,7 +1963,15 @@ build_method_call (instance, name, parms, basetype_path, flags)
       parmtypes = chainon (parmtypes, last);
     }
 
-  if (instance)
+  if (instance && IS_SIGNATURE (basetype))
+    {
+      /* @@ Should this be the constp/volatilep flags for the optr field
+	 of the signature pointer?  */
+      constp = TYPE_READONLY (basetype);
+      volatilep = TYPE_VOLATILE (basetype);
+      parms = tree_cons (NULL_TREE, instance_ptr, parms);
+    }
+  else if (instance)
     {
       /* TREE_READONLY (instance) fails for references.  */
       constp = TYPE_READONLY (TREE_TYPE (TREE_TYPE (instance_ptr)));
