@@ -1,3 +1,9 @@
+2003-06-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* safe-ctype.h (HC_UNKNOWN, HC_ASCII, HC_EBCDIC): Rename to
+	HOST_CHARSET_UNKNOWN, HOST_CHARSET_ASCII, HOST_CHARSET_EBCDIC
+	respectively.
+
 2003-06-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* safe-ctype.h (HC_UNKNOWN, HC_ASCII, HC_EBCDIC, HOST_CHARSET):
