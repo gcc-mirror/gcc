@@ -20,3 +20,5 @@ $(T)crt2$(objext): $(srcdir)/config/darwin-crt2.c $(GCC_PASSES) \
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-darwin.c \
   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
 LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c
+
+TARGET_LIBGCC2_CFLAGS = -fPIC

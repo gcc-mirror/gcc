@@ -1653,7 +1653,7 @@ powerpc-*-beos*)
 	;;
 powerpc-*-darwin*)
 	tm_file="${tm_file} rs6000/darwin.h"
-	tmake_file="t-darwin rs6000/t-darwin"
+	tmake_file="t-darwin t-slibgcc-darwin rs6000/t-darwin"
 	extra_headers=altivec.h
 	# override ppc default
 	need_64bit_hwint=
