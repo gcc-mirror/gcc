@@ -1,3 +1,9 @@
+2003-04-07  Richard Henderson  <rth@redhat.com>
+
+        PR opt/8634
+        * function.c (purge_addressof_1): Don't try arithmetics for
+        unchanging memories.
+
 2003-04-07  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Suites): Document testing support for
