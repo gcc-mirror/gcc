@@ -1,5 +1,7 @@
 1999-08-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.c (cplus_unsave_expr_now): Don't return a value.
+
 	* semantics.c (do_poplevel): Always initialize the return value.
 
 1999-08-26  Gavin Romig-Koch  <gavin@cygnus.com>
