@@ -1,3 +1,9 @@
+2004-09-23  P.J. Darcy  <darcypj@us.ibm.com>
+
+	* gthr-tpf.h: New file.
+	* config.gcc (s390x-ibm-tpf*): Add thread_file='tpf'.
+	* gthr.h: Use gthr-tpf.h on TPF OS.
+
 2004-09-23 Jeff Law  <law@redhat.com>
 
 	* tree-ssa-ccp.c (get_default_value): Use SSA_NAME_VALUE rather

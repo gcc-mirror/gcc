@@ -1675,6 +1675,7 @@ s390x-ibm-tpf*)
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	out_file=s390/s390.c
 	tmake_file="t-slibgcc-elf-ver s390/t-crtstuff s390/t-tpf"
+	thread_file='tpf'
 	;;
 sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
 sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \

@@ -361,6 +361,7 @@ thread_host_headers = \
 	${host_builddir}/gthr.h \
 	${host_builddir}/gthr-single.h \
 	${host_builddir}/gthr-posix.h \
+	${host_builddir}/gthr-tpf.h \
 	${host_builddir}/gthr-default.h
 
 pch_input = ${host_builddir}/stdc++.h
@@ -525,6 +526,14 @@ ${host_builddir}/gthr-posix.h: ${toplevel_srcdir}/gcc/gthr-posix.h \
 	    -e 's/SUPPORTS_WEAK/__GXX_WEAK__/g' \
 	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-posix.h > $@
+
+${host_builddir}/gthr-tpf.h: ${toplevel_srcdir}/gcc/gthr-tpf.h \
+				   stamp-${host_alias}
+	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
+	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
+	    -e 's/SUPPORTS_WEAK/__GXX_WEAK__/g' \
+	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
+	    < ${toplevel_srcdir}/gcc/gthr-tpf.h > $@
 
 ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 				   stamp-${host_alias}
