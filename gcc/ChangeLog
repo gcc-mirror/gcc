@@ -1,4 +1,8 @@
-2000-07-17  Mark Elbrecht  <snowball3@bigfoot.com>
+2000-08-04  Donn Terry (donnte@microsoft.com)
+
+	* prefix.c (translate_name): Don't strip trailing DIR_SEPARATOR.
+
+2000-08-04  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* i386/x-djgpp: Delete code that conditionally modifies target_alias.
 	Delete code that conditionally modifies 'version'.
