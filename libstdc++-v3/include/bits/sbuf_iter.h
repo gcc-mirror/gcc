@@ -38,7 +38,7 @@ namespace std
 {
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator
-    : public iterator<output_iterator_tag, _CharT, void, void, void>
+    : public iterator<output_iterator_tag, void, void, void, void>
     {
     public:
       // Types:

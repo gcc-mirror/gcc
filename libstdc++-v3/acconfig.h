@@ -1,11 +1,5 @@
 // acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
 
-// Define if GCC support for __complex__ float is buggy.
-#undef _GLIBCPP_BUGGY_FLOAT_COMPLEX
-
-// Define if GCC support for __complex__ is buggy.
-#undef _GLIBCPP_BUGGY_COMPLEX
-
 // Include support for multiple threads, e.g., in the I/O package.
 #undef _GLIBCPP_USE_THREADS
 

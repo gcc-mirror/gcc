@@ -277,7 +277,6 @@ namespace std
 	_M_buf_size_opt = 0;
 	_M_mode = ios_base::openmode(0);
 	_M_buf_locale_init = false;
-
       }
 
       // Locales:

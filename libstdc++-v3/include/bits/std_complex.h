@@ -41,11 +41,10 @@
 
 #include <bits/c++config.h>
 #include <bits/std_cmath.h>
-#include <bits/std_iosfwd.h>
+#include <bits/std_sstream.h>
 
 namespace std
 {
-
   // Forward declarations
   template<typename _Tp> class complex;
   template<> class complex<float>;
@@ -346,11 +345,47 @@ namespace std
 
   template<typename _Tp, typename _CharT, class _Traits>
     basic_istream<_CharT, _Traits>&
-    operator>>(basic_istream<_CharT, _Traits>&, complex<_Tp>&);
+    operator>>(basic_istream<_CharT, _Traits>& __is, complex<_Tp>& __x)
+    {
+      _Tp __re_x, __im_x;
+      _CharT __ch;
+      __is >> __ch;
+      if (__ch == '(') 
+	{
+	  __is >> __re_x >> __ch;
+	  if (__ch == ',') 
+	    {
+	      __is >> __im_x >> __ch;
+	      if (__ch == ')') 
+		__x = complex<_Tp>(__re_x, __im_x);
+	      else
+		__is.setstate(ios_base::failbit);
+	    }
+	  else if (__ch == ')') 
+	    __x = complex<_Tp>(__re_x, _Tp(0));
+	  else
+	    __is.setstate(ios_base::failbit);
+	}
+      else 
+	{
+	  __is.putback(__ch);
+	  __is >> __re_x;
+	  __x = complex<_Tp>(__re_x, _Tp(0));
+	}
+      return __is;
+    }
 
   template<typename _Tp, typename _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>&, const complex<_Tp>&);
+    operator<<(basic_ostream<_CharT, _Traits>& __os, const complex<_Tp>& __x)
+    {
+      basic_ostringstream<_CharT, _Traits> __s;
+      __s.flags(__os.flags());
+      __s.imbue(__os.getloc());
+      __s.precision(__os.precision());
+      __s << '(' << __x.real() << "," << __x.imag() << ')';
+      return __os << __s.str();
+    }
 
   // Values
   template<typename _Tp>

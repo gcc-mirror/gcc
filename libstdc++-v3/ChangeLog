@@ -1,3 +1,45 @@
+2001-05-30  Benjamin Kosnik  <bkoz@redat.com>
+
+	* acconfig.h (_GLIBCPP_BUGGY_FLOAT_COMPLEX): Remove.
+	(_GLIBCPP_BUGGY_COMPLEX): Remove.
+	* config.h.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT): Remove.
+	* aclocal.m4: Regenerate.
+	* configure.in: Don't call it.
+	* configure: Regenerate.
+
+	libstdc++/2970
+	* src/complex_io.cc (operator<<(ostream&, const complex&): Fix.
+	* testsuite/26_numerics/complex_inserters_extractors.cc (test01):
+	New test.
+
+	libstdc++/2985
+	* include/bits/std_complex.h: Include sstream. Put definitions for
+	complex inserters and extractors here, and remove them from...
+	* src/complex_io.cc: ...here.
+	* include/bits/basic_ios.h (basic_ios::__numput_type): Add _Traits
+	parameter.
+	(basic_ios::__numget_type): Same.
+	* include/bits/std_istream.h: Same.
+	* include/bits/std_ostream.h: Same.
+	* include/bits/sbuf_iter.h (ostreambuf_iterator): Fix typo in base
+	class iterator template arguments.
+	* src/locale-inst.cc: Add explicit has_facet instantiations.
+	* include/bits/basic_ios.h (basic_ios::_M_get_fctype_ios): Remove.
+	(_M_get_fnumput): Remove.
+	(_M_get_fnumget): Remove.
+	(basic_ios::_M_check_facet): New function.
+	(basic_ios::_M_cache_facets): New function.
+	* include/bits/basic_ios.tcc: Definition for _M_cache_facets.
+	(basic_ios::imbue): Call _M_cache_facets.
+	(basic_ios::init): Same.
+	* include/bits/istream.tcc: Format, use _M_check_facet.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/locale_facets.tcc (__output_float): Change
+	signature, add _Traits.
+	* testsuite/26_numerics/complex_inserters_extractors.cc (test02):
+	New test.
+
 2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/bits/c++config (__USE_MALLOC): Do not define it.
