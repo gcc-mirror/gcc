@@ -9,6 +9,10 @@
 	* c-opts.c (c_common_handle_option): Remove all write access
 	to explicit_flag_signed_bitfields.
 
+	* cgraph.c (cgraph_varpool_n_nodes): Remove.
+	(cgraph_varpool_node): Don't access cgraph_varpool_n_nodes.
+	* cgraph.h: Remove the corresponding declaration.
+
 2005-01-23  Roger Sayle  <roger@eyesopen.com>
 	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
