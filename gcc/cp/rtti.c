@@ -79,24 +79,11 @@ init_rtti_processing ()
     (class_type_node, get_identifier ("type_info"), 1);
   if (flag_honor_std)
     pop_namespace ();
-  if (!new_abi_rtti_p ())
-    {
-      tinfo_decl_id = get_identifier ("__tf");
-      tinfo_decl_type = build_function_type
-        (build_reference_type
-          (build_qualified_type
-            (type_info_type_node, TYPE_QUAL_CONST)),
-         void_list_node);
-      tinfo_var_id = get_identifier ("__ti");
-    }
-  else
-    {
-      /* FIXME: These identifier prefixes are not set in stone yet.  */
-      tinfo_decl_id = get_identifier ("__ti");
-      tinfo_var_id = get_identifier ("__tn");
-      tinfo_decl_type = build_qualified_type
-                          (type_info_type_node, TYPE_QUAL_CONST);
-    }
+  /* FIXME: These identifier prefixes are not set in stone yet.  */
+  tinfo_decl_id = get_identifier ("__ti");
+  tinfo_var_id = get_identifier ("__tn");
+  tinfo_decl_type = 
+    build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
 }
 
 /* Given a pointer to an object with at least one virtual table
@@ -150,11 +137,7 @@ build_headof (exp)
 
   /* Under the new ABI, the offset-to-top field is at index -2 from
      the vptr.  */
-  if (new_abi_rtti_p ())
-    index = build_int_2 (-2, -1);
-  /* But under the old ABI, it is at offset zero.  */
-  else
-    index = integer_zero_node;
+  index = build_int_2 (-2, -1);
 
   aref = build_vtbl_ref (build_indirect_ref (exp, NULL_PTR), index);
 
@@ -253,14 +236,8 @@ get_tinfo_decl_dynamic (exp)
 	  exp = build_indirect_ref (exp, NULL_PTR);
 	}
 
-      /* The RTTI information is always in the vtable, but it's at
-	 different indices depending on the ABI.  */
-      if (new_abi_rtti_p ())
-	index = integer_minus_one_node;
-      else if (flag_vtable_thunks)
-	index = integer_one_node;
-      else
-	index = integer_zero_node;
+      /* The RTTI information is at index -1.  */
+      index = integer_minus_one_node;
       t = build_vfn_ref ((tree *) 0, exp, index);
       TREE_TYPE (t) = build_pointer_type (tinfo_decl_type);
       return t;
@@ -397,9 +374,7 @@ tinfo_from_decl (expr)
 {
   tree t;
   
-  if (!new_abi_rtti_p ())
-    t = build_call (expr, NULL_TREE);
-  else if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
+  if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
     t = build_indirect_ref (expr, NULL);
   else
     t = expr;
@@ -717,67 +692,34 @@ build_dynamic_cast_1 (type, expr)
 	  if (tc == REFERENCE_TYPE)
 	    expr1 = build_unary_op (ADDR_EXPR, expr1, 0);
 
-          if (!new_abi_rtti_p ())
-            {
-	      tree expr2 = build_headof (expr1);
-	      tree td1 = expr;
-
-	      if (tc == POINTER_TYPE)
-	        td1 = build_indirect_ref (td1, NULL_PTR);
-  	      td1 = get_tinfo_decl_dynamic (td1);
-	  
-              elems = tree_cons
-	        (NULL_TREE, td1, tree_cons
-	          (NULL_TREE, td2, tree_cons
-	            (NULL_TREE, boff, tree_cons
-	              (NULL_TREE, expr2, tree_cons
-	                (NULL_TREE, td3, tree_cons
-		          (NULL_TREE, expr1, NULL_TREE))))));
-	    }
-	  else
-	    elems = tree_cons
-	      (NULL_TREE, expr1, tree_cons
-	        (NULL_TREE, td3, tree_cons
-  	          (NULL_TREE, td2, tree_cons
-                    (NULL_TREE, boff, NULL_TREE))));
+	  elems = tree_cons
+	    (NULL_TREE, expr1, tree_cons
+	     (NULL_TREE, td3, tree_cons
+	      (NULL_TREE, td2, tree_cons
+	       (NULL_TREE, boff, NULL_TREE))));
 
 	  dcast_fn = dynamic_cast_node;
 	  if (!dcast_fn)
 	    {
 	      tree tmp;
 	      tree tinfo_ptr;
-	      tree ns = new_abi_rtti_p () ? abi_node : global_namespace;
+	      tree ns = abi_node;
 	      const char *name;
 	      
 	      push_nested_namespace (ns);
-	      if (!new_abi_rtti_p ())
-	        {
-    	          tinfo_ptr = build_pointer_type (tinfo_decl_type);
-  	          name = "__dynamic_cast_2";
-	          tmp = tree_cons
-		    (NULL_TREE, tinfo_ptr, tree_cons
-		      (NULL_TREE, tinfo_ptr, tree_cons
-	                (NULL_TREE, integer_type_node, tree_cons
-		          (NULL_TREE, ptr_type_node, tree_cons
-		            (NULL_TREE, tinfo_ptr, tree_cons
-		              (NULL_TREE, ptr_type_node, void_list_node))))));
-	        }
-	      else
-	        {
-                  tinfo_ptr = xref_tag (class_type_node,
-                                        get_identifier ("__class_type_info"),
-                                        1);
-                    
-                  tinfo_ptr = build_pointer_type
-                                (build_qualified_type
-                                  (tinfo_ptr, TYPE_QUAL_CONST));
-  	          name = "__dynamic_cast";
-  	          tmp = tree_cons
-	            (NULL_TREE, const_ptr_type_node, tree_cons
-	              (NULL_TREE, tinfo_ptr, tree_cons
-	                (NULL_TREE, tinfo_ptr, tree_cons
-	                  (NULL_TREE, ptrdiff_type_node, void_list_node))));
-	        }
+	      tinfo_ptr = xref_tag (class_type_node,
+				    get_identifier ("__class_type_info"),
+				    1);
+	      
+	      tinfo_ptr = build_pointer_type
+		(build_qualified_type
+		 (tinfo_ptr, TYPE_QUAL_CONST));
+	      name = "__dynamic_cast";
+	      tmp = tree_cons
+		(NULL_TREE, const_ptr_type_node, tree_cons
+		 (NULL_TREE, tinfo_ptr, tree_cons
+		  (NULL_TREE, tinfo_ptr, tree_cons
+		   (NULL_TREE, ptrdiff_type_node, void_list_node))));
 	      tmp = build_function_type (ptr_type_node, tmp);
 	      dcast_fn = build_library_fn_ptr (name, tmp);
               pop_nested_namespace (ns);
@@ -1134,8 +1076,6 @@ synthesize_tinfo_var (target_type, real_name)
   tree var_type = NULL_TREE;
   int non_public = 0;
   
-  my_friendly_assert (new_abi_rtti_p (), 20000118);
-
   switch (TREE_CODE (target_type))
     {
     case POINTER_TYPE:

@@ -430,17 +430,6 @@ int flag_inline_trees = 0;
 
 int max_tinst_depth = 50;
 
-/* The name-mangling scheme to use.  Must be 1 or greater to support
-   template functions with identical types, but different template
-   arguments.  */
-int name_mangling_version = 2;
-
-/* Nonzero if squashed mangling is to be performed. 
-   This uses the B and K codes to reference previously seen class types 
-   and class qualifiers.       */
-
-int flag_do_squangling;
-
 /* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
 
 int flag_vtable_gc;
@@ -507,7 +496,6 @@ lang_f_options[] =
   {"permissive", &flag_permissive, 1},
   {"repo", &flag_use_repository, 1},
   {"rtti", &flag_rtti, 1},
-  {"squangle", &flag_do_squangling, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"use-cxa-atexit", &flag_use_cxa_atexit, 1},
   {"vtable-gc", &flag_vtable_gc, 1},
@@ -525,8 +513,9 @@ static const char * const unsupported_options[] = {
   "enum-int-equiv",
   "guiding-decls",
   "nonnull-objects",
-  "this-is-variable",
+  "squangle",
   "strict-prototype",
+  "this-is-variable",
 };
 
 /* Compare two option strings, pointed two by P1 and P2, for use with
@@ -617,8 +606,10 @@ cxx_decode_option (argc, argv)
 	  = read_integral_parameter (option_value, p - 2, max_tinst_depth);
       else if ((option_value
                 = skip_leading_substring (p, "name-mangling-version-")))
-	name_mangling_version 
-	  = read_integral_parameter (option_value, p - 2, name_mangling_version);
+	{
+	  warning ("-fname-mangling-version is no longer supported");
+	  return 1;
+	}
       else if ((option_value
                 = skip_leading_substring (p, "dump-translation-unit=")))
 	{
@@ -3581,8 +3572,7 @@ finish_file ()
 
   timevar_push (TV_VARCONST);
 
-  if (new_abi_rtti_p ())
-    emit_support_tinfos ();
+  emit_support_tinfos ();
   
   do 
     {
@@ -3602,8 +3592,7 @@ finish_file ()
       
       /* Write out needed type info variables. Writing out one variable
          might cause others to be needed.  */
-      if (new_abi_rtti_p ()
-          && walk_globals (tinfo_decl_p, emit_tinfo_decl, /*data=*/0))
+      if (walk_globals (tinfo_decl_p, emit_tinfo_decl, /*data=*/0))
 	reconsider = 1;
 
       /* The list of objects with static storage duration is built up
