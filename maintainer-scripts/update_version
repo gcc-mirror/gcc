@@ -25,7 +25,7 @@ BRANCHES="${BRANCHES} HEAD"
 CURR_DATE=`/bin/date +"%Y%m%d"`
 
 # version is contained within a char*
-textstring_FILES="gcc/gcc/version.c gcc/gcc/ada/gnatvsn.ads gcc/gcc/f/version.c gcc/libf2c/libF77/Version.c gcc/libf2c/libI77/Version.c gcc/libf2c/libU77/Version.c"
+textstring_FILES="gcc/gcc/version.c"
 
 # version is contained within a #define
 cppdefine_FILES="gcc/libstdc++-v3/include/bits/c++config"
