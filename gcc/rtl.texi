@@ -458,10 +458,29 @@ Stored in the @code{integrated} field and printed as @samp{/i}.
 
 @findex RTX_FRAME_RELATED_P
 @item RTX_FRAME_RELATED_P (@var{x})
-Nonzero in an insn or expression which is part of a function
-prologue and sets the stack pointer, sets the frame pointer, or saves a 
-register. This flag is required for exception handling support
-on targets with RTL prologues.
+Nonzero in an insn or expression which is part of a function prologue
+and sets the stack pointer, sets the frame pointer, or saves a register.
+This flag should also be set on an instruction that sets up a temporary
+register to use in place of the frame pointer.
+
+In particular, on RISC targets where there are limits on the sizes of
+immediate constants, it is sometimes impossible to reach the register
+save area directly from the stack pointer.  In that case, a temporary
+register is used that is near enough to the register save area, and the
+Canonical Frame Address, i.e., DWARF2's logical frame pointer, register
+must (temporarily) be changed to be this temporary register.  So, the
+instruction that sets this temporary register must be marked as
+@code{RTX_FRAME_RELATED_P}.
+
+If the marked instruction is overly complex (defined in terms of what
+@code{dwarf2out_frame_debug_expr} can handle), you will also have to
+create a @code{REG_FRAME_RELATED_EXPR} note and attach it to the
+instruction.  This note should contain a simple expression of the
+computation performed by this instruction, i.e., one that
+@code{dwarf2out_frame_debug_expr} can handle.
+
+This flag is required for exception handling support on targets with RTL
+prologues.
 
 @findex SYMBOL_REF_USED
 @cindex @code{used}, in @code{symbol_ref}
