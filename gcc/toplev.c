@@ -1132,9 +1132,9 @@ lang_independent_options f_options[] =
    "Generate code to check bounds before dereferencing pointers and arrays" },
   {"single-precision-constant", &flag_single_precision_constant, 1,
    "Convert floating point constant to single precision constant"},
-  {"time-report", &time_report,
+  {"time-report", &time_report, 1,
    "Report time taken by each compiler pass at end of run"},
-  {"mem-report", &mem_report,
+  {"mem-report", &mem_report, 1,
    "Report on permanent memory allocation at end of run"},
 };
 
