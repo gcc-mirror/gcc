@@ -1,3 +1,7 @@
+1999-01-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Fix conversion of 0 to pmf.
+
 1999-01-25  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (decls_match): Return 1 if old and new are identical.
