@@ -1,3 +1,14 @@
+2002-02-19  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/5696:
+	* verify.cc (is_assignable_from_slow): Never call
+	_Jv_IsAssignableFrom.
+	(verify_instructions_0): Added new debug statement.
+	(state::print): Print information about whether local has
+	changed.
+	(state::merge): Don't call note_variable when merging locals.
+	(state::set_exception): Removed old FIXME comment.
+
 2002-02-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/net/natPlainDatagramSocketImpl.cc (bind): Call setsockopt to
