@@ -734,6 +734,7 @@ push_reload (in, out, inloc, outloc, class,
 {
   register int i;
   int dont_share = 0;
+  int dont_remove_subreg = 0;
   rtx *in_subreg_loc = 0, *out_subreg_loc = 0;
   int secondary_in_reload = -1, secondary_out_reload = -1;
   enum insn_code secondary_in_icode = CODE_FOR_nothing;
@@ -902,6 +903,7 @@ push_reload (in, out, inloc, outloc, class,
     {
       push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), NULL_PTR,
 		   GENERAL_REGS, VOIDmode, VOIDmode, 0, 0, opnum, type);
+      dont_remove_subreg = 1;
     }
 
 
@@ -963,6 +965,35 @@ push_reload (in, out, inloc, outloc, class,
       outmode = GET_MODE (out);
     }
 
+  /* Similar issue for (SUBREG:M1 (REG:M2 ...) ...) for a hard register R where
+     either M1 is not valid for R or M2 is wider than a word but we only
+     need one word to store an M2-sized quantity in R.
+
+     However, we must reload the inner reg *as well as* the subreg in
+     that case.  In this case, the inner reg is an in-out reload.  */
+
+  if (out != 0 && GET_CODE (out) == SUBREG
+      && GET_CODE (SUBREG_REG (out)) == REG
+      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
+      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (out)), outmode)
+	  || (GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
+	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
+		  > UNITS_PER_WORD)
+	      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
+		   / UNITS_PER_WORD)
+		  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (out)),
+				       GET_MODE (SUBREG_REG (out)))))))
+    {
+      if (type == RELOAD_OTHER)
+	abort ();
+
+      dont_remove_subreg = 1;
+      push_reload (SUBREG_REG (out), SUBREG_REG (out), &SUBREG_REG (out),
+		   &SUBREG_REG (out), ALL_REGS, VOIDmode, VOIDmode, 0, 0,
+		   opnum, RELOAD_OTHER);
+    }
+
+
   /* If IN appears in OUT, we can't share any input-only reload for IN.  */
   if (in != 0 && out != 0 && GET_CODE (out) == MEM
       && (GET_CODE (in) == REG || GET_CODE (in) == MEM)
@@ -973,14 +1004,16 @@ push_reload (in, out, inloc, outloc, class,
      simplifies some of the cases below.  */
 
   if (in != 0 && GET_CODE (in) == SUBREG && GET_CODE (SUBREG_REG (in)) == REG
-      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER)
+      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+      && ! dont_remove_subreg)
     in = gen_rtx (REG, GET_MODE (in),
 		  REGNO (SUBREG_REG (in)) + SUBREG_WORD (in));
 
   /* Similarly for OUT.  */
   if (out != 0 && GET_CODE (out) == SUBREG
       && GET_CODE (SUBREG_REG (out)) == REG
-      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER)
+      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
+      && ! dont_remove_subreg)
     out = gen_rtx (REG, GET_MODE (out),
 		  REGNO (SUBREG_REG (out)) + SUBREG_WORD (out));
 
