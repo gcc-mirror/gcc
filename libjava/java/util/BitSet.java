@@ -56,7 +56,7 @@ public final class BitSet implements Cloneable, Serializable
       int bit = pos % 64;
       int offset = pos / 64;
       ensure (offset);
-      bits[offset] &= ~ (1 << bit);
+      bits[offset] &= ~ (1L << bit);
     }
 
   public Object clone ()
@@ -97,7 +97,7 @@ public final class BitSet implements Cloneable, Serializable
       if (offset >= bits.length)
 	return false;
 
-      return (bits[offset] & (1 << bit)) == 0 ? false : true;
+      return (bits[offset] & (1L << bit)) == 0 ? false : true;
     }
 
   public int hashCode ()
@@ -125,7 +125,7 @@ public final class BitSet implements Cloneable, Serializable
       int bit = pos % 64;
       int offset = pos / 64;
       ensure (offset);
-      bits[offset] |= 1 << bit;
+      bits[offset] |= 1L << bit;
     }
 
   public int size ()
