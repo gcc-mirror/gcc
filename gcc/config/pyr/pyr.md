@@ -1,5 +1,5 @@
 ;; GNU C machine description for Pyramid 90x, 9000, MIServer Series
-;; Copyright (C) 1989, 1990 Free Software Foundation, Inc.
+;; Copyright (C) 1989, 1990, 1995 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -224,7 +224,7 @@
 	(compare (match_operand:HI 0 "nonimmediate_operand" "r,m")
 		 (match_operand:HI 1 "nonimmediate_operand" "m,r")))]
   "(!TRULY_UNSIGNED_COMPARE_P (GET_CODE (XEXP (SET_SRC (PATTERN (NEXT_INSN (insn))), 0))))
-   && (GET_CODE (operands[0]) != GET_CODE (operands[1]))"
+   && ((GET_CODE (operands[0]) == MEM) != (GET_CODE (operands[1]) == MEM))"
   "*
 {
   rtx br_insn = NEXT_INSN (insn);
@@ -306,7 +306,7 @@
   [(set (cc0)
 	(compare (match_operand:QI 0 "nonimmediate_operand" "r,m")
 		 (match_operand:QI 1 "nonimmediate_operand" "m,r")))]
-  "(GET_CODE (operands[0]) != GET_CODE (operands[1]))"
+  "((GET_CODE (operands[0]) == MEM) != (GET_CODE (operands[1]) == MEM))"
   "*
 {
   rtx br_insn = NEXT_INSN (insn);
