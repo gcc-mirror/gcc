@@ -1,3 +1,9 @@
+2001-12-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* expr.c (expand_expr, case ADDR_EXPR): Don't honor
+	flag_force_addr for modifier != EXPAND_CONST_ADDRESS,
+	modifier != EXPAND_INITIALIZER and modifier != EXPAND_SUM.
+
 Thu Dec 13 20:30:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (copy_blkmode_from_reg): Add missing braces to eliminate
