@@ -810,6 +810,16 @@ libiconv library files in @file{@var{dir}/lib}.
 @item --with-system-zlib
 Use installed zlib rather than that included with GCC@.  This option
 only applies if the Java front end is being built.
+
+@item --enable-obsolete
+Enable configuration for an obsoleted system.  If you attempt to
+configure GCC for a system (build, host, or target) which has been
+obsoleted, and you do not specify this flag, configure will halt with an
+error message.
+
+All support for systems which have been obsoleted in one release of GCC
+is removed entirely in the next major release, unless someone steps
+forward to maintain the port.
 @end table
 
 Some options which only apply to building cross compilers:
@@ -1535,9 +1545,7 @@ These lists are updated as new information becomes available.
 @item
 @uref{#ix86-sequent-bsd,,i?86-sequent-bsd}
 @item
-@uref{#ix86-sequent-ptx1*,,i?86-sequent-ptx1*, i?86-sequent-ptx2*}
-@item
-@uref{#ix86-*-sysv3*,,i?86-*-sysv3*}
+@uref{#ix86-sequent-ptx1*,,i?86-sequent-ptx1*, i?86-sequent-ptx2*, i?86-sequent-sysv3*}
 @item
 @uref{#i860-intel-osf*,,i860-intel-osf*}
 @item
@@ -1563,7 +1571,7 @@ These lists are updated as new information becomes available.
 @item
 @uref{#m68k-bull-sysv,,m68k-bull-sysv}
 @item
-@uref{#m68k-crds-unox,,m68k-crds-unox}
+@uref{#m68k-crds-unos,,m68k-crds-unos}
 @item
 @uref{#m68k-hp-hpux,,m68k-hp-hpux}
 @item
@@ -1682,7 +1690,7 @@ These lists are updated as new information becomes available.
 <hr>
 @end html
 @heading @anchor{1750a-*-*}1750a-*-*
-MIL-STD-1750A processors.
+MIL-STD-1750A processors.  This target is obsoleted in GCC 3.1.
 
 The MIL-STD-1750A cross configuration produces output for
 @code{as1750}, an assembler/linker available under the GNU General Public
@@ -1725,10 +1733,12 @@ GCC@.
 @end html
 @heading @anchor{a29k}a29k
 AMD Am29k-family processors.  These are normally used in embedded
-applications.  There are no standard Unix configurations.
-This configuration
-corresponds to AMD's standard calling sequence and binary interface
-and is compatible with other 29k tools.
+applications.  This configuration corresponds to AMD's standard calling
+sequence and binary interface and is compatible with other 29k tools.
+
+AMD has abandoned this processor, and most variants are obsoleted in GCC
+3.1.  We are preserving the a29k-*-udi and a29k-*-coff configurations
+for one more release.
 
 You may need to make a variant of the file @file{a29k.h} for your
 particular configuration.
@@ -1764,6 +1774,8 @@ shared libraries.
 Systems using processors that implement the DEC Alpha architecture and
 are running the DEC/Compaq Unix (DEC OSF/1, Digital UNIX, or Compaq
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
+
+Support for versions before Tru64 UNIX V4.0 is obsoleted in GCC 3.1.
 
 In Tru64 UNIX V5.1, Compaq introduced a new assembler that does not
 currently (2001-06-13) work with @command{mips-tfile}.  As a workaround,
@@ -1898,6 +1910,8 @@ We require GNU binutils 2.10 or newer.
 @end html
 @heading @anchor{arm-*-riscix}arm-*-riscix
 The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.
+This configuration is obsoleted in GCC 3.1.
+
 If you are running a version of RISC iX prior to 1.2 then you must
 specify the version number during configuration.  Note that the
 assembler shipped with RISC iX does not support stabs debugging
@@ -2052,6 +2066,8 @@ place.  FreeBSD 2.2.7 has been known to bootstrap completely; however,
 it is unknown which version of binutils was used (it is assumed that it
 was the system copy in @file{/usr/bin}) and C++ EH failures were noted.
 
+Support for FreeBSD 1 is obsoleted in GCC 3.1.
+
 For FreeBSD using the ELF file format: DWARF 2 debugging is now the
 default for all CPU architectures.  It had been the default on
 FreeBSD/alpha since its inception.  You may use @option{-gstabs} instead
@@ -2086,6 +2102,8 @@ Shared @file{libgcc_s.so} is now built and installed by default.
 @heading @anchor{elxsi-elxsi-bsd}elxsi-elxsi-bsd
 The Elxsi's C compiler has known limitations that prevent it from
 compiling GCC@.  Please contact @email{mrs@@wrs.com} for more details.
+
+Support for this processor is obsoleted in GCC 3.1.
 
 @html
 </p>
@@ -2230,7 +2248,9 @@ glibc 2.2.4 whether patches for GCC 3.0 are needed.  You can use glibc
 @heading @anchor{ix86-*-linux*oldld}i?86-*-linux*oldld
 Use this configuration to generate @file{a.out} binaries on Linux-based
 GNU systems if you do not have gas/binutils version 2.5.2 or later
-installed.  This is an obsolete configuration.
+installed.
+
+This configuration is obsoleted in GCC 3.1.
 
 @html
 </p>
@@ -2384,6 +2404,8 @@ have installed.
 <hr>
 @end html
 @heading @anchor{ix86-*-isc}i?86-*-isc
+This configuration is obsoleted in GCC 3.1.
+
 It may be a good idea to link with GNU malloc instead of the malloc that
 comes with the system.
 
@@ -2394,15 +2416,9 @@ In ISC version 4.1, @command{sed} core dumps when building
 </p>
 <hr>
 @end html
-@heading @anchor{ix86-*-esix}i?86-*-esix
-It may be good idea to link with GNU malloc instead of the malloc that
-comes with the system.
-
-@html
-</p>
-<hr>
-@end html
 @heading @anchor{ix86-ibm-aix}i?86-ibm-aix
+This configuration is obsoleted in GCC 3.1.
+
 You need to use GAS version 2.1 or later, and LD from
 GNU binutils version 2.2 or later.
 
@@ -2411,30 +2427,30 @@ GNU binutils version 2.2 or later.
 <hr>
 @end html
 @heading @anchor{ix86-sequent-bsd}i?86-sequent-bsd
+This configuration is obsoleted in GCC 3.1.
+
 Go to the Berkeley universe before compiling.
 
 @html
 </p>
 <hr>
 @end html
-@heading @anchor{ix86-sequent-ptx1*}i?86-sequent-ptx1*, i?86-sequent-ptx2*
+@heading @anchor{ix86-sequent-ptx1*}i?86-sequent-ptx1*, i?86-sequent-ptx2*, i?86-sequent-sysv3*
+This configuration is obsoleted in GCC 3.1.
+
 You must install GNU @command{sed} before running @command{configure}.
 
-@html
-</p>
-<hr>
-@end html
-@heading @anchor{#ix86-*-sysv3*}i?86-*-sysv3*
 The @code{fixproto} shell script may trigger a bug in the system shell.
 If you encounter this problem, upgrade your operating system or
 use @command{bash} (the GNU shell) to run @code{fixproto}.
-
 
 @html
 </p>
 <hr>
 @end html
 @heading @anchor{i860-intel-osf*}i860-intel-osf*
+All support for the i860 processor is obsoleted in GCC 3.1.
+
 On the Intel Paragon (an i860 machine), if you are using operating
 system version 1.0, you will get warnings or errors about redefinition
 of @code{va_arg} when you build GCC@.
@@ -2629,7 +2645,9 @@ applications.  There are no standard Unix configurations.
 <hr>
 @end html
 @heading @anchor{m68k-altos}m68k-altos
-Altos 3068.  You must use the GNU assembler, linker and debugger.
+Altos 3068.  This configuration is obsoleted in GCC 3.1.
+
+You must use the GNU assembler, linker and debugger.
 Also, you must fix a kernel bug.
 
 @html
@@ -2638,6 +2656,8 @@ Also, you must fix a kernel bug.
 @end html
 @heading @anchor{m68k-apple-aux}m68k-apple-aux
 Apple Macintosh running A/UX@.
+This configuration is obsoleted in GCC 3.1.
+
 You may configure GCC  to use either the system assembler and
 linker or the GNU assembler and linker.  You should use the GNU configuration
 if you can, especially if you also want to use G++.  You enable
@@ -2666,7 +2686,10 @@ bootstrap.  Binaries are available from the OSU-CIS archive, at
 <hr>
 @end html
 @heading @anchor{m68k-bull-sysv}m68k-bull-sysv
-Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01.  GCC works
+Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01.
+This configuration is obsoleted in GCC 3.1.
+
+GCC works
 either with native assembler or GNU assembler.  You can use
 GNU assembler with native COFF generation by providing @option{--with-gnu-as} to
 the configure script or use GNU assembler with stabs-in-COFF encapsulation
@@ -2678,7 +2701,7 @@ assembler or for availability of the DPX/2 port of GAS, contact
 </p>
 <hr>
 @end html
-@heading @anchor{m68k-crds-unox}m68k-crds-unox
+@heading @anchor{m68k-crds-unos}m68k-crds-unos
 Use @samp{configure unos} for building on Unos.
 
 The Unos assembler is named @code{casm} instead of @code{as}.  For some
@@ -2778,6 +2801,7 @@ to look like:
 <hr>
 @end html
 @heading @anchor{m68k-*-nextstep*}m68k-*-nextstep*
+These configurations are obsoleted in GCC 3.1.
 
 Current GCC versions probably do not work on version 2 of the NeXT
 operating system.
@@ -2864,6 +2888,8 @@ It is reported that you may need the GNU assembler on this platform.
 @end html
 @heading @anchor{m88k-*-svr3}m88k-*-svr3
 Motorola m88k running the AT&T/Unisoft/Motorola V.3 reference port.
+These configurations are obsoleted in GCC 3.1.
+
 These systems tend to use the Green Hills C, revision 1.8.5, as the
 standard C compiler.  There are apparently bugs in this compiler that
 result in object files differences between stage 2 and stage 3.  If this
@@ -2880,7 +2906,10 @@ if you have one.
 <hr>
 @end html
 @heading @anchor{m88k-*-dgux}m88k-*-dgux
-Motorola m88k running DG/UX@.  To build 88open BCS native or cross
+Motorola m88k running DG/UX@.
+These configurations are obsoleted in GCC 3.1.
+
+To build 88open BCS native or cross
 compilers on DG/UX, specify the configuration name as
 @samp{m88k-*-dguxbcs} and build in the 88open BCS software development
 environment.  To build ELF native or cross compilers on DG/UX, specify
@@ -2897,7 +2926,10 @@ configuration based on the current software development environment.
 <hr>
 @end html
 @heading @anchor{m88k-tektronix-sysv3}m88k-tektronix-sysv3
-Tektronix XD88 running UTekV 3.2e.  Do not turn on
+Tektronix XD88 running UTekV 3.2e.
+These configurations are obsoleted in GCC 3.1.
+
+Do not turn on
 optimization while building stage1 if you bootstrap with
 the buggy Green Hills compiler.  Also, the bundled LAI
 System V NFS is buggy so if you build in an NFS mounted
@@ -2942,8 +2974,10 @@ linker unless you pass an explicit @option{-shared} or
 @option{-call_shared} switch.
 
 @heading @anchor{mips-mips-bsd}mips-mips-bsd
-MIPS machines running the MIPS operating system in BSD mode.  It's
-possible that some old versions of the system lack the functions
+MIPS machines running the MIPS operating system in BSD mode.
+These configurations are obsoleted in GCC 3.1.
+
+It's possible that some old versions of the system lack the functions
 @code{memcpy}, @code{memmove}, @code{memcmp}, and @code{memset}.  If your
 system lacks these, you must remove or undo the definition of
 @code{TARGET_MEM_FUNCTIONS} in @file{mips-bsd.h}.
@@ -2962,6 +2996,8 @@ compilers, you may need to add @option{-Wf,-XNg1500 -Olimit 3000}.
 <hr>
 @end html
 @heading @anchor{mips-dec-*}mips-dec-*
+These configurations are obsoleted in GCC 3.1.
+
 MIPS-based DECstations can support three different personalities:
 Ultrix, DEC OSF/1, and OSF/rose.  (Alpha-based DECstation products have
 a configuration name beginning with @samp{alpha*-dec}.)  To configure GCC
@@ -2994,6 +3030,8 @@ compilers, you may need to add @option{-Wf,-XNg1500 -Olimit 3000}.
 <hr>
 @end html
 @heading @anchor{mips-mips-riscos*}mips-mips-riscos*
+These configurations are obsoleted in GCC 3.1.
+
 If you use the MIPS C compiler to bootstrap, it may be necessary
 to increase its table size for switch statements with the
 @option{-Wf,-XNg1500} option.  If you use the @option{-O2}
@@ -3036,6 +3074,7 @@ avoiding a linker bug.
 <hr>
 @end html
 @heading @anchor{mips-sgi-irix4}mips-sgi-irix4
+This configuration is obsoleted in GCC 3.1.
 
 In order to compile GCC on an SGI running IRIX 4, the ``c.hdr.lib''
 option must be installed from the CD-ROM supplied from Silicon Graphics.
@@ -3193,17 +3232,19 @@ information about using GCC on IRIX platforms.
 <hr>
 @end html
 @heading @anchor{mips-sony-sysv}mips-sony-sysv
-Sony MIPS NEWS@.  This works in NEWSOS 5.0.1, but not in 5.0.2 (which
-uses ELF instead of COFF)@.  Support for 5.0.2 will probably be provided
-soon by volunteers.  In particular, the linker does not like the
-code generated by GCC when shared libraries are linked in.
+Sony MIPS NEWS@.  This configuration is obsoleted in GCC 3.1.
 
+This works in NEWSOS 5.0.1, but not in 5.0.2 (which uses ELF instead of
+COFF)@.  In particular, the linker does not like the code generated by
+GCC when shared libraries are linked in.
 
 @html
 </p>
 <hr>
 @end html
 @heading @anchor{ns32k-encore}ns32k-encore
+This configuration is obsoleted in GCC 3.1.
+
 Encore ns32000 system.  Encore systems are supported only under BSD@.
 
 @html
@@ -3211,15 +3252,19 @@ Encore ns32000 system.  Encore systems are supported only under BSD@.
 <hr>
 @end html
 @heading @anchor{ns32k-*-genix}ns32k-*-genix
-National Semiconductor ns32000 system.  Genix has bugs in @code{alloca}
-and @code{malloc}; you must get the compiled versions of these from GNU
-Emacs.
+National Semiconductor ns32000 system. This configuration is obsoleted
+in GCC 3.1.
+
+Genix has bugs in @code{alloca} and @code{malloc}; you must get the
+compiled versions of these from GNU Emacs.
 
 @html
 </p>
 <hr>
 @end html
 @heading @anchor{ns32k-sequent}ns32k-sequent
+This configuration is obsoleted in GCC 3.1.
+
 Go to the Berkeley universe before compiling.
 
 @html
@@ -3227,9 +3272,11 @@ Go to the Berkeley universe before compiling.
 <hr>
 @end html
 @heading @anchor{ns32k-utek}ns32k-utek
-UTEK ns32000 system (``merlin'').  The C compiler that comes with this
-system cannot compile GCC; contact @samp{tektronix!reed!mason} to get
-binaries of GCC for bootstrapping.
+UTEK ns32000 system (``merlin'').  This configuration is obsoleted in
+GCC 3.1.
+
+The C compiler that comes with this system cannot compile GCC; contact
+@samp{tektronix!reed!mason} to get binaries of GCC for bootstrapping.
 
 
 @html
@@ -3359,13 +3406,14 @@ PowerPC system in little endian mode running Windows NT@.
 <hr>
 @end html
 @heading @anchor{romp-*-aos}romp-*-aos, romp-*-mach
-The only operating systems supported for the IBM RT PC are AOS and
-MACH@.  GCC does not support AIX running on the RT@.  We recommend you
-compile GCC with an earlier version of itself; if you compile GCC
-with @command{hc}, the Metaware compiler, it will work, but you will get
-mismatches between the stage 2 and stage 3 compilers in various files.
-These errors are minor differences in some floating-point constants and
-can be safely ignored; the stage 3 compiler is correct.
+These configurations are obsoleted in GCC 3.1.
+
+We recommend you compile GCC with an earlier version of itself; if you
+compile GCC with @command{hc}, the Metaware compiler, it will work, but
+you will get mismatches between the stage 2 and stage 3 compilers in
+various files.  These errors are minor differences in some
+floating-point constants and can be safely ignored; the stage 3 compiler
+is correct.
 
 @html
 </p>
@@ -3649,6 +3697,7 @@ in some cases (for example, when @code{alloca} is used).
 @heading @anchor{we32k-*-*}we32k-*-*
 These computers are also known as the 3b2, 3b5, 3b20 and other similar
 names.  (However, the 3b1 is actually a 68000.)
+These configurations are obsoleted in GCC 3.1.
 
 Don't use @option{-g} when compiling with the system's compiler.  The
 system's linker seems to be unable to handle such a large program with
@@ -3751,6 +3800,13 @@ several years and may suffer from bitrot.  Support from some systems
 has been removed from GCC 3: fx80, ns32-ns-genix, pyramid, tahoe,
 gmicro, spur; most of these targets had not been updated since GCC
 version 1.
+
+We are planning to remove support for more older systems, starting in
+GCC 3.1.  Each release will have a list of ``obsoleted'' systems.
+Support for these systems is still present in that release, but
+@command{configure} will fail unless the @option{--enable-obsolete}
+option is given.  Unless a maintainer steps forward, support for
+these systems will be removed from the next release of GCC@.
 
 Support for older systems as targets for cross-compilation is less
 problematic than support for them as hosts for GCC; if an enthusiast

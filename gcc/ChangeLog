@@ -1,3 +1,15 @@
+2002-04-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-lex.c (lex_charconst): Call convert to get constant in
+	proper type; don't just smash the type field.
+	Fixes PR c/6300.
+
+	* config.gcc: Add list of obsolete configurations.  Disallow
+	building these without --enable-obsolete.
+	* doc/install.texi: Document --enable-obsolete and obsoletion
+	policy.  Mention obsoletion of individual targets in
+	appropriate places.
+
 2002-04-22  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sol2-bi.h (ASM_DEBUG_SPEC): New.
