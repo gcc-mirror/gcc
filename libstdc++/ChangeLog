@@ -1,3 +1,10 @@
+Thu Feb 25 02:21:22 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Thu Feb 18 19:53:17 1999  Marc Espie <espie@cvs.openbsd.org>
+	* configure.in: Handle OpenBSD with and without threads.
+	* config/openbsd.ml: New file.
+	* config/openbsd.mt: New file.
+
 Mon Nov 23 09:44:26 1998  Richard Henderson <rth@cygnus.com>
 
 	* configure.in: Append mh-ppcpic and mh-elfalphapic as appropriate.

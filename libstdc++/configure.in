@@ -55,6 +55,7 @@ if [ "${shared}" = "yes" ]; then
     *-*-irix[56]*)	frags="${frags} irix5.ml" ;;
     *-*-linux*aout*)	;;
     *-*-linux*)		frags="${frags} linux.ml" ;;
+    *-*-openbsd*)		frags="${frags} openbsd.ml" ;;
     *-*-sysv4*)		frags="${frags} elf.ml" ;;
     *-*-solaris*)	frags="${frags} sol2shm.ml" ;;
     *-*-sunos4*)	frags="${frags} sunos4.ml" ;;
@@ -67,6 +68,10 @@ case "${target}" in
   alpha*-*-linux-gnulibc1)	frags="${frags} linux.mt" ;;
   powerpc*-*-linux-gnulibc1)	frags="${frags} linux.mt" ;;
   *-*-linux-gnu)		frags="${frags} linux.mt" ;;
+  *-*-openbsd*)		
+  	case "x${enable_threads}" in
+		xyes|xposix)	frags="${frags} openbsd.mt" ;;
+	esac;;
   m68k-motorola-sysv)		frags="${frags} delta.mt" ;;
 esac
 
