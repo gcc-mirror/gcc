@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.14 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -102,7 +102,7 @@ package Freeze is
    --      These have a delayed freeze. Gigi will generate code to evaluate
    --      the initialization expression if present and store it in a temp.
    --      The actual object is created at the point of the freeze, and if
-   --      neccessary initialized by copying the value of this temporary.
+   --      necessary initialized by copying the value of this temporary.
 
    --    Formal Parameters
    --

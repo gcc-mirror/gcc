@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -228,7 +228,7 @@ package body GNAT.Directory_Operations is
 
       procedure Var (K : in out Positive);
       --  Translate variable name starting at position K with the associated
-      --  environement value.
+      --  environment value.
 
       procedure Free is
          new Unchecked_Deallocation (String, OS_Lib.String_Access);
@@ -304,7 +304,7 @@ package body GNAT.Directory_Operations is
 
             if Path (E) = '}' then
 
-               --  OK found, translate with environement value
+               --  OK found, translate with environment value
 
                declare
                   Env : OS_Lib.String_Access :=

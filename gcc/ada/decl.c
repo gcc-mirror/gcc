@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.5 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -3395,7 +3395,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 				 returns_by_ref,
 				 Function_Returns_With_DSP (gnat_entity));
 
-	/* ??? For now, don't consider nested fuctions pure.  */
+	/* ??? For now, don't consider nested functions pure.  */
 	if (! global_bindings_p ())
 	  pure_flag = 0;
 

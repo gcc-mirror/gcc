@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.108 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -113,7 +113,7 @@ package Osint is
    --
    --  Initialize may terminate execution if the parameters are invalid or some
    --  other fatal error is encountered. The interface is set up to
-   --  accomodate scanning a series of files (e.g. as the result of
+   --  accommodate scanning a series of files (e.g. as the result of
    --  wild card references in DOS, or an expanded list of source files
    --  in Unix). Of course it is perfectly possible to ignore this in
    --  the implementation and provide for opening only one file.
@@ -425,7 +425,7 @@ package Osint is
    --    3. The information could be written to a separate file, whose name is
    --       related to the name of the source file by a fixed convention.
 
-   --  Which of these three methods is chosen depends on the contraints of the
+   --  Which of these three methods is chosen depends on the constraints of the
    --  host operating system. The interface described here is independent of
    --  which of these approaches is used.
 

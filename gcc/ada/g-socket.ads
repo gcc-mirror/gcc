@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.22 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --              Copyright (C) 2001 Ada Core Technologies, Inc.              --
 --                                                                          --
@@ -48,7 +48,7 @@ package GNAT.Sockets is
    --  Sockets are designed to provide a consistent communication
    --  facility between applications. This package provides an
    --  Ada-like interface similar to the one proposed as part of the
-   --  BSD socket layer. This is a system independant thick binding.
+   --  BSD socket layer. This is a system independent thick binding.
    --  Here is a typical example of what you can do.
 
    --  with GNAT.Sockets; use GNAT.Sockets;
@@ -771,7 +771,7 @@ package GNAT.Sockets is
    --  Return True if Socket is present in Item
 
    --  C select() waits for a number of file descriptors to change
-   --  status. Usually, three independant sets of descriptors are
+   --  status. Usually, three independent sets of descriptors are
    --  watched (read, write and exception). A timeout gives an upper
    --  bound on the amount of time elapsed before select returns.
    --  This function blocks until an event occurs. On some platforms,

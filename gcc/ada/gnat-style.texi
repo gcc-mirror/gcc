@@ -366,7 +366,7 @@ a follows:
 
 @noindent
 The "elsif", "else" and "end if" always line up with the "if" keyword. The
-prefered location for splitting the line is before "and" or "or". The
+preferred location for splitting the line is before "and" or "or". The
 continuation of a condition is indented with two spaces or as many as needed
 to make nesting clear.
 As exception, if conditions are closely related either of the following is

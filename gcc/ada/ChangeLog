@@ -1,3 +1,16 @@
+2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* 86numaux.adb, a-tigeau.ads, a-wtgeau.ads, decl.c, exp_ch6.adb,
+	exp_ch9.adb, exp_util.adb, fname-sf.ads, freeze.ads, g-awk.adb,
+	g-comlin.ads, g-dirope.adb, g-dyntab.ads, g-socket.ads,
+	g-table.ads, g-traceb.ads, gnat-style.texi, gnatchop.adb, init.c,
+	layout.adb, layout.ads, mdllfile.ads, mlib-fil.ads, osint.ads,
+	s-fatgen.adb, s-imgrea.adb, s-taprop.ads, s-tasdeb.ads,
+	sem_aggr.adb, sem_attr.adb, sem_case.ads, sem_ch13.adb,
+	sem_ch3.adb, sem_elab.adb, sem_maps.ads, sem_res.adb,
+	sem_util.ads, sinfo.ads, sinput.ads, table.adb, table.ads,
+	types.ads, urealp.adb: Fix spelling errors.
+
 2001-10-27  Laurent Guerby <guerby@acm.org>
 
 	* trans.c (gigi): Fix non determinism leading to bootstrap

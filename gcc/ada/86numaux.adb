@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---                            $Revision: 1.15 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1998-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -49,7 +49,7 @@ package body Ada.Numerics.Aux is
    for FPU_Stack_Pointer'Size use 3;
 
    type FPU_Status_Word is record
-      B   : Boolean; -- FPU Busy (for 8087 compatability only)
+      B   : Boolean; -- FPU Busy (for 8087 compatibility only)
       ES  : Boolean; -- Error Summary Status
       SF  : Boolean; -- Stack Fault
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -6208,7 +6208,7 @@ package Sinfo is
       --  to unchecked conversion, and these are most conveniently performed
       --  in the specialized back-end.
 
-      --  To accomodate this requirement, for such back ends, the following
+      --  To accommodate this requirement, for such back ends, the following
       --  special node is generated recording an unchecked conversion that
       --  needs to be validated. The back end should post an appropriate
       --  error message if the unchecked conversion is invalid or warrants

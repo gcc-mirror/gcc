@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.552 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -5457,7 +5457,7 @@ package body Sem_Attr is
 
       when Attribute_Small =>
 
-         --  The floating-point case is present only for Ada 83 compatability.
+         --  The floating-point case is present only for Ada 83 compatibility.
          --  Note that strictly this is an illegal addition, since we are
          --  extending an Ada 95 defined attribute, but we anticipate an
          --  ARG ruling that will permit this.

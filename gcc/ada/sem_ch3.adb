@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -5259,7 +5259,7 @@ package body Sem_Ch3 is
 
                   --  The following is only useful for the benefit of generic
                   --  instances but it does not interfere with other
-                  --  processsing for the non-generic case so we do it in all
+                  --  processing for the non-generic case so we do it in all
                   --  cases (for generics this statement is executed when
                   --  processing the generic definition, see comment at the
                   --  begining of this if statement).

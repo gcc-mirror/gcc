@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -199,7 +199,7 @@ pragma Preelaborate (Types);
    --  character in the source buffer. As noted above, diffferent source
    --  buffers have different ranges, so it is possible to tell from a
    --  Source_Ptr value which source it refers to. Note that negative numbers
-   --  are allowed to accomodate the following special values.
+   --  are allowed to accommodate the following special values.
 
    No_Location : constant Source_Ptr := -1;
    --  Value used to indicate no source position set in a node

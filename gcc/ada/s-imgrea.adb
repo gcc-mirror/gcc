@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.45 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -158,7 +158,7 @@ package body System.Img_Real is
 
       Digs : String (1 .. 2 * Field_Max + 16);
       --  Array used to hold digits of converted integer value. This is a
-      --  large enough buffer to accomodate ludicrous values of Fore and Aft.
+      --  large enough buffer to accommodate ludicrous values of Fore and Aft.
 
       Ndigs : Natural;
       --  Number of digits stored in Digs (and also subscript of last digit)

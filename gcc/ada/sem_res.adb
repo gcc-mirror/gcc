@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.4 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -787,7 +787,7 @@ package body Sem_Res is
       type Kind_Test is access function (E : Entity_Id) return Boolean;
 
       function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
-      --  Determine whether E is an acess type declared by an access decla-
+      --  Determine whether E is an access type declared by an access decla-
       --  ration, and  not an (anonymous) allocator type.
 
       function Operand_Type_In_Scope (S : Entity_Id) return Boolean;
@@ -5008,7 +5008,7 @@ package body Sem_Res is
 
       --  If we are taking the reference of a volatile entity, then treat
       --  it as a potential modification of this entity. This is much too
-      --  conservative, but is neccessary because remove side effects can
+      --  conservative, but is necessary because remove side effects can
       --  result in transformations of normal assignments into reference
       --  sequences that otherwise fail to notice the modification.
 

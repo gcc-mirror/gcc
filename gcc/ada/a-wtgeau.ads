@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $                              --
+--                            $Revision: 1.1 $                              --
 --                                                                          --
 --          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -74,7 +74,7 @@ package Ada.Wide_Text_IO.Generic_Aux is
    procedure Check_On_One_Line (File : File_Type; Length : Integer);
    --  Check to see if item of length Integer characters can fit on
    --  current line. Call New_Line if not, first checking that the
-   --  line length can accomodate Length characters, raise Layout_Error
+   --  line length can accommodate Length characters, raise Layout_Error
    --  if item is too large for a single line.
 
    function Is_Blank (C : Character) return Boolean;

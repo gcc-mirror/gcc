@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 2000-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -64,7 +64,7 @@ package Layout is
 
    procedure Set_Discrete_RM_Size (Def_Id : Entity_Id);
    --  Set proper RM_Size for discrete size, this is normally the minimum
-   --  number of bits to accomodate the range given, except in the case
+   --  number of bits to accommodate the range given, except in the case
    --  where the subtype statically matches the first subtype, in which
    --  case the size must be copied from the first subtype. For generic
    --  types, the RM_Size is simply set to zero. This routine also sets

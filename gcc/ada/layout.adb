@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.33 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --            Copyright (C) 2001 Free Software Foundation, Inc.             --
 --                                                                          --
@@ -2042,7 +2042,7 @@ package body Layout is
 
       --  For access types, set size/alignment. This is system address
       --  size, except for fat pointers (unconstrained array access types),
-      --  where the size is two times the address size, to accomodate the
+      --  where the size is two times the address size, to accommodate the
       --  two pointers that are required for a fat pointer (data and
       --  template). Note that E_Access_Protected_Subprogram_Type is not
       --  an access type for this purpose since it is not a pointer but is
@@ -2072,7 +2072,7 @@ package body Layout is
 
          --  For other access types, we use either address size, or, if
          --  a fat pointer is used (pointer-to-unconstrained array case),
-         --  twice the address size to accomodate a fat pointer.
+         --  twice the address size to accommodate a fat pointer.
 
          else
             declare

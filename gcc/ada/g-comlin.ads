@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.24 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --            Copyright (C) 1999-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -227,7 +227,7 @@ package GNAT.Command_Line is
    --  Returns parameter associated with the last switch returned by Getopt.
    --  If no parameter was associated with the last switch, or no previous
    --  call has been made to Get_Argument, raises Invalid_Parameter.
-   --  If the last switch was associated with an optionnal argument and this
+   --  If the last switch was associated with an optional argument and this
    --  argument was not found on the command line, Parameter returns an empty
    --  string
 

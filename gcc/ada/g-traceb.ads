@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.11 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --           Copyright (C) 1999-2000 Ada Core Technologies, Inc.            --
 --                                                                          --
@@ -45,7 +45,7 @@
 
 --  To analyze the code locations later using addr2line or gdb, the necessary
 --  units must be compiled with the debugging switch -g in the usual manner.
---  Note that it is not necesary to compile with -g to use Call_Chain. In
+--  Note that it is not necessary to compile with -g to use Call_Chain. In
 --  other words, the following sequence of steps can be used:
 
 --     Compile without -g
