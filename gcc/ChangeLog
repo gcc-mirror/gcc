@@ -1,3 +1,8 @@
+2000-12-05  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/Makefile.*: make these more consistent
+	* fixinc/mkfixincl.sh: enable BeOS fixincludes
+
 2000-12-05  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (warn_if_unused_value): Move side effects test earlier.

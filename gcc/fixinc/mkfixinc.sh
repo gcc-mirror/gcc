@@ -30,9 +30,6 @@ case $build in
 
 	*-*-beos* )
 		MAKE="${MAKE} -f ${srcdir}/Makefile.BEOS srcdir=${srcdir}"
-		# Remove the following line to enable fixincludes
-		# (Makefile.BEOS is empty until Monday 12/4/00 :)
-		fixincludes=
 		;;
 
 	* )
