@@ -1,5 +1,9 @@
 2003-03-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/10091
+	* typeck.c (build_class_member_access_expr): Compare 
+	TYPE_MAIN_VARIANTs.
+
 	* decl.c (finish_function): Don't skip a block.
 
 	PR c++/9993
