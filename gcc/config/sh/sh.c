@@ -1937,7 +1937,7 @@ find_barrier (num_mova, mova, from)
       if (GET_CODE (from) == BARRIER)
 	{
 	  found_barrier = from;
-	  /* If we are at the end of the function, or in fron of an alignemnt
+	  /* If we are at the end of the function, or in front of an alignemnt
 	     instruction, we need not insert an extra alignment.  We prefer
 	     this kind of barrier.  */
 	
@@ -3178,7 +3178,7 @@ machine_dependent_reorg (first)
 
   /* The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
      also has an effect on the register that holds the addres of the sfunc.
-     Insert an extra dummy insn in fron of each sfunc that pretends to
+     Insert an extra dummy insn in front of each sfunc that pretends to
      use this register.  */
   if (flag_delayed_branch)
     {
