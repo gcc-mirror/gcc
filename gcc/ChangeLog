@@ -1,3 +1,9 @@
+2001-03-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c (INCLUDE_LEN_FUDGE, ENOMEM): Delete.
+	(cpp_included, find_include_file): Update.
+	(_cpp_compare_file_date): Make else unconditional.
+
 2001-03-10  kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 	* config/sh/sh.h (LEGITIMATE_PIC_OPERAND_P): Defined.
