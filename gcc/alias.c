@@ -1957,6 +1957,14 @@ nonoverlapping_memrefs_p (x, y)
       moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
       exprx = t;
     }
+  else if (TREE_CODE (exprx) == INDIRECT_REF)
+    {
+      exprx = TREE_OPERAND (exprx, 0);
+      if (flag_argument_noalias < 2
+	  || TREE_CODE (exprx) != PARM_DECL)
+	return 0;
+    }
+
   moffsety = MEM_OFFSET (y);
   if (TREE_CODE (expry) == COMPONENT_REF)
     {
@@ -1965,6 +1973,13 @@ nonoverlapping_memrefs_p (x, y)
 	return 0;
       moffsety = adjust_offset_for_component_ref (expry, moffsety);
       expry = t;
+    }
+  else if (TREE_CODE (expry) == INDIRECT_REF)
+    {
+      expry = TREE_OPERAND (expry, 0);
+      if (flag_argument_noalias < 2
+	  || TREE_CODE (expry) != PARM_DECL)
+	return 0;
     }
 
   if (! DECL_P (exprx) || ! DECL_P (expry))

@@ -1,3 +1,10 @@
+2002-07-21  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (set_mem_attributes): Preserve indirection of PARM_DECL
+	when flag_argument_noalias == 2.
+	* alias.c (nonoverlapping_memrefs_p): Handle that.
+	* print-rtl.c (print_mem_expr): Likewise.
+
 2002-07-21  Hartmut Schirmer  <hartmut.schirmer@arcor.de>
 
 	* libgcc2.c (__divdi3, __moddi3): Use unary minus operator
