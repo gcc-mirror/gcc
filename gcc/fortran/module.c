@@ -3269,6 +3269,11 @@ write_symbol1 (pointer_info * p)
   if (p->type != P_SYMBOL || p->u.wsym.state != NEEDS_WRITE)
     return 0;
 
+  /* FIXME: This shouldn't be necessary, but it works around
+     deficiencies in the module loader or/and symbol handling.  */
+  if (p->u.wsym.sym->module[0] == '\0' && p->u.wsym.sym->attr.dummy)
+    strcpy (p->u.wsym.sym->module, module_name);
+
   p->u.wsym.state = WRITTEN;
   write_symbol (p->integer, p->u.wsym.sym);
 
