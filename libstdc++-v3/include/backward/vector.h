@@ -58,7 +58,7 @@
 
 #include "backward_warning.h"
 #include "algobase.h"
-#include "alloc.h"  
+#include "alloc.h"
 #include <vector>
 
 using std::vector;

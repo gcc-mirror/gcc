@@ -31,7 +31,7 @@
 #include "backward_warning.h"
 #include "iostream.h"
 
-#endif 
+#endif
 
 // Local Variables:
 // mode:C++
