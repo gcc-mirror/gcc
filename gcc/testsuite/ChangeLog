@@ -1,3 +1,9 @@
+2005-04-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/backspace.f, gfortran.dg/g77_intrinsics_funcs.f,
+	gfortran.dg/g77_intrinsics_sub.f, gfortran.dg/negative_unit.f,
+	gfortran.dg/g77/12002.f: Correct dejagnu syntax.
+
 2005-04-05  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* gfortran.dg/pr18025.f90: Change {dg-do run} to { dg-do run }.
