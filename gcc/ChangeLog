@@ -1,3 +1,8 @@
+2004-02-24  Michael Matz  <matz@suse.de>
+
+	* config/i386/i386.c (ix86_comp_type_attributes): Check for
+	regparm attributes.
+
 2004-02-24  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.md (spe_fix_truncsfsi2): Delete.
