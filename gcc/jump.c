@@ -3528,6 +3528,29 @@ returnjump_p (insn)
   return for_each_rtx (&PATTERN (insn), returnjump_p_1, NULL);
 }
 
+/* Return true if INSN is a jump that only transfers control and
+   nothing more.  */
+
+int
+onlyjump_p (insn)
+     rtx insn;
+{
+  rtx set;
+
+  if (GET_CODE (insn) != JUMP_INSN)
+    return 0;
+
+  set = single_set (insn);
+  if (set == NULL)
+    return 0;
+  if (GET_CODE (SET_DEST (set)) != PC)
+    return 0;
+  if (side_effects_p (SET_SRC (set)))
+    return 0;
+
+  return 1;
+}
+
 #ifdef HAVE_cc0
 
 /* Return 1 if X is an RTX that does nothing but set the condition codes

@@ -1,3 +1,10 @@
+Sat Aug  7 19:32:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (onlyjump_p): New function.
+	* rtl.h: Declare it.
+	* flow.c (delete_unreachable_blocks): Use onlyjump_p instead
+	of condjump_p in calling tidy_fallthru_edge and merge_blocks.
+
 Sat Aug  7 17:09:36 1999  Richard Henderson  <rth@cygnus.com>
 
 	* global.c (build_insn_chain): Use EXECUTE_IF_SET_IN_REG_SET
