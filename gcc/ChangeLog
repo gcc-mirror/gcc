@@ -1,3 +1,12 @@
+Wed Sep 15 11:04:43 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* function.c (assign_parms): Delete arg SECOND_TIME.  Don't test it,
+	behave as if it's zero in all cases.
+	(expand_function_start): Adjust call to assign_parms.
+	* tree.h (assign_parms): Adjust prototype.
+	* objc/objc-act.c (hack_method_prototype): Adjust call to
+	assign_parms.
+
 Tue Sep 14 21:47:06 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (FIXED_BASE_PLUS_P): Do not consider referneces to
