@@ -1,3 +1,8 @@
+Tue Nov 25 14:03:43 1997  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (stmp-complex, bigstmp-complex): Changed to
+	xxxx-complx.
+
 Mon Nov 24 14:41:33 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Use ln -f -s, not ln -s -f.

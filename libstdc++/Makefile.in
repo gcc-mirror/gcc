@@ -159,7 +159,7 @@ COMFUNCS = MAIN ADDCC ADDCF ADDFC SUBCC SUBCF SUBFC MULCC MULCF MULFC DIVCC \
 	   CONJ NORM COS COSH EXP LOG POWCC POWCF POWCI POWFC SIN SINH SQRT
 COMIO    = EXTRACT INSERT
 
-stmp-complex: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
+stmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	      ${srcdir}/std/complext.cc ${srcdir}/std/dcomplex.h \
 	      ${srcdir}/std/ldcomplex.h
 	for N in $(COMFUNCS) $(COMIO); do \
@@ -188,7 +188,7 @@ stmp-complex: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	  $(COMPILE.cc) -DLD -D$${N} ${srcdir}/cinst.cc -o ld$${N}.o; \
 	  if [ $$? -eq 0 ]; then true; else exit 1; fi; \
 	done
-	touch stmp-complex
+	touch stmp-complx
 
 bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	         ${srcdir}/std/complext.cc ${srcdir}/std/dcomplex.h \
@@ -241,7 +241,7 @@ bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	else true ; fi
 	$(COMPILE.cc) -DLD `for N in $(COMIO); do echo " -D$${N}"; done` \
 	  $(srcdir)/cinst.cc -o ldcomio.o
-	touch bigstmp-complex
+	touch bigstmp-complx
 
 .PHONY: install
 install:
