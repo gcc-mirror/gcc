@@ -6,7 +6,6 @@
 /* { dg-options "" } */
 /* { dg-options "-O0 -m64" { target sparc64-*-* } } */
 /* { dg-options "-O0 -m64" { target sparcv9-*-* } } */
-/* { dg-options "-O0 -m64" { target sparc-*-solaris* } } */
 /* { dg-options "" { target sparc-*-solaris2.[0-6] } } */
 /* { dg-options "" { target sparc-*-solaris2.[0-6].* } } */
 

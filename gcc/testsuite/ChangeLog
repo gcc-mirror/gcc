@@ -1,3 +1,11 @@
+2001-05-15  Mark Mitchell (admin)  <mitchell@nunki.dbai.tuwien.ac.at>
+
+	* gcc.dg/ultrasp2.c: Don't run it with -m64 on sparc-*-*.
+
+2001-05-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/c99-float-1.c: XFAIL portions on Solaris.
+
 Mon May 14 20:26:20 2001  Mark P Mitchell  <mark@codesourcery.com>
 
 	* gcc.c-torture/execute/20010122-1.x: XFAIL on MIPS.
