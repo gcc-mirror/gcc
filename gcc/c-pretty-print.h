@@ -36,14 +36,25 @@ typedef enum
 
 /* The data type used to bundle information necessary for pretty-printing
    a C or C++ entity.  */
-typedef struct c_pretty_print_info *c_pretty_printer;
+typedef struct c_pretty_print_info c_pretty_printer;
 
 /* The type of a C pretty-printer 'member' function.  */
-typedef void (*c_pretty_print_fn) (c_pretty_printer, tree);
+typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
 
+/* The datatype that contains information necessary for pretty-printing
+   a tree that represents a C construct.  Any pretty-printer for a
+   language using C/c++ syntax can derive from this datatype and reuse
+   facilities provided here.  It can do so by having a subobject of type
+   c_pretty_printer and override the macro pp_c_base to return a pointer
+   to that subobject.  Such a pretty-printer has the responsability to
+   initialize the pp_base() part, then call pp_c_pretty_printer_init
+   to set up the components that are specific to the C pretty-printer.
+   A derived pretty-printer can override any function listed in the
+   vtable below.  See cp/cxx-pretty-print.h and cp/cxx-pretty-print.c
+   for an example of derivation.  */
 struct c_pretty_print_info
 {
-  struct pretty_print_info base;
+  pretty_printer base;
   /* Points to the first element of an array of offset-list.
      Not used yet.  */
   int *offset_list;
@@ -56,12 +67,16 @@ struct c_pretty_print_info
   c_pretty_print_fn declaration_specifiers;
   c_pretty_print_fn declarator;
   c_pretty_print_fn abstract_declarator;
-  c_pretty_print_fn type_specifier;
+  c_pretty_print_fn direct_abstract_declarator;
+  c_pretty_print_fn type_specifier_seq;
   c_pretty_print_fn direct_declarator;
-  c_pretty_print_fn parameter_declaration;
+  c_pretty_print_fn ptr_operator;
+  c_pretty_print_fn parameter_list;
   c_pretty_print_fn type_id;
+  c_pretty_print_fn simple_type_specifier;
   c_pretty_print_fn function_specifier;
   c_pretty_print_fn storage_class_specifier;
+  c_pretty_print_fn initializer;
 
   c_pretty_print_fn statement;
 
@@ -69,12 +84,14 @@ struct c_pretty_print_info
   c_pretty_print_fn primary_expression;
   c_pretty_print_fn postfix_expression;
   c_pretty_print_fn unary_expression;
-  c_pretty_print_fn initializer;
   c_pretty_print_fn multiplicative_expression;
   c_pretty_print_fn conditional_expression;
   c_pretty_print_fn assignment_expression;
+  c_pretty_print_fn expression;
 };
 
+/* Override the pp_base macro.  Derived pretty-printers should not
+   touch this macro.  Instead they should override pp_c_base instead.  */
 #undef pp_base
 #define pp_base(PP)  (&pp_c_base (PP)->base)
 
@@ -88,16 +105,22 @@ struct c_pretty_print_info
    pp_c_base (PPI)->declaration_specifiers (pp_c_base (PPI), D)
 #define pp_abstract_declarator(PP, D)             \
    pp_c_base (PP)->abstract_declarator (pp_c_base (PP), D)
-#define pp_type_specifier(PPI, D)                 \
-   pp_c_base (PPI)->type_specifier (pp_c_base (PPI), D)
+#define pp_type_specifier_seq(PPI, D)             \
+   pp_c_base (PPI)->type_specifie_seqr (pp_c_base (PPI), D)
 #define pp_declarator(PPI, D)                     \
    pp_c_base (PPI)->declarator (pp_c_base (PPI), D)
 #define pp_direct_declarator(PPI, D)              \
    pp_c_base (PPI)->direct_declarator (pp_c_base (PPI), D)
-#define pp_parameter_declaration(PPI, T)          \
-  pp_c_base (PPI)->parameter_declaration (pp_c_base (PPI), T)
+#define pp_direct_abstract_declarator(PP, D)      \
+   pp_c_base (PP)->direct_abstract_declarator (pp_c_base (PP), D)
+#define pp_ptr_operator(PP, D)                    \
+   pp_c_base (PP)->ptr_operator (pp_c_base (PP), D)
+#define pp_parameter_list(PPI, T)                 \
+  pp_c_base (PPI)->parameter_list (pp_c_base (PPI), T)
 #define pp_type_id(PPI, D)                        \
   pp_c_base (PPI)->type_id (pp_c_base (PPI), D)
+#define pp_simple_type_specifier(PP, T)           \
+  pp_c_base (PP)->simple_type_specifier (pp_c_base (PP), T)
 #define pp_function_specifier(PP, D)              \
   pp_c_base (PP)->function_specifier (pp_c_base (PP), D)
 #define pp_storage_class_specifier(PP, D)         \
@@ -122,37 +145,54 @@ struct c_pretty_print_info
   pp_c_base (PPI)->conditional_expression (pp_c_base (PPI), E)
 #define pp_assignment_expression(PPI, E)          \
    pp_c_base (PPI)->assignment_expression (pp_c_base (PPI), E)
+#define pp_expression(PP, E)                      \
+   pp_c_base (PP)->expression (pp_c_base (PP), E)
 
 
 /* Returns the c_pretty_printer base object of PRETTY-PRINTER.  This
    macro must be overridden by any subclass of c_pretty_print_info.  */
 #define pp_c_base(PP)  (PP)
 
-extern void pp_c_pretty_printer_init (c_pretty_printer);
+extern void pp_c_pretty_printer_init (c_pretty_printer *);
+void pp_c_whitespace (c_pretty_printer *);
+void pp_c_left_paren (c_pretty_printer *);
+void pp_c_right_paren (c_pretty_printer *);
+void pp_c_dot (c_pretty_printer *);
+void pp_c_ampersand (c_pretty_printer *);
+void pp_c_arrow (c_pretty_printer *);
+void pp_c_semicolon (c_pretty_printer *);
+void pp_c_space_for_pointer_operator (c_pretty_printer *, tree);
 
 /* Declarations.  */
-void pp_c_function_definition (c_pretty_printer, tree);
-void pp_c_attributes (c_pretty_printer, tree);
-void pp_c_type_qualifier_list (c_pretty_printer, tree);
-void pp_c_parameter_declaration_clause (c_pretty_printer, tree);
-void pp_c_declaration (c_pretty_printer, tree);
-void pp_c_declarator (c_pretty_printer, tree);
-void pp_c_direct_declarator (c_pretty_printer, tree);
-void pp_c_specifier_qualifier_list (c_pretty_printer, tree);
-void pp_c_type_id (c_pretty_printer, tree);
+void pp_c_function_definition (c_pretty_printer *, tree);
+void pp_c_attributes (c_pretty_printer *, tree);
+void pp_c_type_qualifier_list (c_pretty_printer *, tree);
+void pp_c_parameter_type_list (c_pretty_printer *, tree);
+void pp_c_declaration (c_pretty_printer *, tree);
+void pp_c_declaration_specifiers (c_pretty_printer *, tree);
+void pp_c_declarator (c_pretty_printer *, tree);
+void pp_c_direct_declarator (c_pretty_printer *, tree);
+void pp_c_specifier_qualifier_list (c_pretty_printer *, tree);
+void pp_c_function_specifier (c_pretty_printer *, tree);
+void pp_c_type_id (c_pretty_printer *, tree);
+void pp_c_direct_abstract_declarator (c_pretty_printer *, tree);
+void pp_c_type_specifier (c_pretty_printer *, tree);
+void pp_c_storage_class_specifier (c_pretty_printer *, tree);
 /* Statements.  */
-void pp_c_statement (c_pretty_printer, tree);
+void pp_c_statement (c_pretty_printer *, tree);
 /* Expressions.  */
-void pp_c_expression (c_pretty_printer, tree);
-void pp_c_logical_or_expression (c_pretty_printer, tree);
-void pp_c_expression_list (c_pretty_printer, tree);
-void pp_c_unary_expression (c_pretty_printer, tree);
-void pp_c_cast_expression (c_pretty_printer, tree);
-void pp_c_postfix_expression (c_pretty_printer, tree);
-void pp_c_initializer (c_pretty_printer, tree);
-void pp_c_constant (c_pretty_printer, tree);
-void pp_c_id_expression (c_pretty_printer, tree);
-void pp_c_identifier (c_pretty_printer, const char *);
-void pp_c_string_literal (c_pretty_printer, tree);
+void pp_c_expression (c_pretty_printer *, tree);
+void pp_c_logical_or_expression (c_pretty_printer *, tree);
+void pp_c_expression_list (c_pretty_printer *, tree);
+void pp_c_call_argument_list (c_pretty_printer *, tree);
+void pp_c_unary_expression (c_pretty_printer *, tree);
+void pp_c_cast_expression (c_pretty_printer *, tree);
+void pp_c_postfix_expression (c_pretty_printer *, tree);
+void pp_c_primary_expression (c_pretty_printer *, tree);
+void pp_c_init_declarator (c_pretty_printer *, tree);
+void pp_c_constant (c_pretty_printer *, tree);
+void pp_c_id_expression (c_pretty_printer *, tree);
+void pp_c_identifier (c_pretty_printer *, const char *);
+void pp_c_string_literal (c_pretty_printer *, tree);
 
 #endif /* GCC_C_PRETTY_PRINTER */

@@ -951,6 +951,7 @@ extern HOST_WIDE_INT c_common_get_alias_set (tree);
 extern bool c_promoting_integer_type_p (tree);
 extern int self_promoting_args_p (tree);
 extern tree strip_array_types (tree);
+extern tree strip_pointer_operator (tree);
 
 /* This function resets the parsers' state in preparation for parsing
    a new file.  */

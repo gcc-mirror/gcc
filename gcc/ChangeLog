@@ -1,3 +1,84 @@
+2003-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_maybe_newline_and_indent): New macro.
+	* c-pretty-print.h (c_pretty_printer): Now typedef to the
+	structure.  Be consistent with pretty-print.h abd cxx-pretty-print.h
+	(struct c_pretty_print_info): Document.  Add new fields.
+	(pp_type_specifier_seq): Rename from pp_c_type_specifier.
+	(pp_direct_abstract_declarator): New macro.
+	(pp_ptr_operator): Likewise.
+	(pp_simple_type_specifier): Likewise.
+	(pp_expression): Likewise.
+	(pp_parameter_list): Rename from pp_parameter_declaration.
+	* c-pretty-print.c (pp_c_whitespace): Now a function.
+	(pp_c_left_paren): Likewise.
+	(pp_c_right_paren): Likewise.
+	(pp_c_dot): Likewise.
+	(pp_c_ampersand): Likewise.
+	(pp_c_arrow): Likewise.
+	(pp_c_semicolon): Likewise.
+	(pp_c_type_cast): New function.
+	(pp_c_space_for_pointer_operator): Likewise.
+	(pp_c_call_argument_list): Likewise.
+	(pp_c_cv_qualifier): Adjust prototype.
+	(pp_c_type_qualifier_list): Likewise.
+	(pp_c_pointer): Likewise.  Handle REFERENCE_TYPE here.
+	(pp_c_type_specifier): Rename from pp_c_simple_type_specifier.
+	Adjust to follow standard grammar.
+	(pp_c_specifier_qualifier_list): Adjusr prototype.  Handle
+	REFERENCE_TYPE.  Tidy.
+	(pp_c_parameter_type_list): Adjust prototype.  Tidy.
+	(pp_c_parameter_declaration): Remove.
+	(pp_c_abstract_declarator): Adjust prototype.
+	(pp_c_direct_abstract_declarator): Likewise.
+	(pp_c_type_id): Likewise.
+	(pp_c_storage_class_specifier): Likewise. 
+	(pp_c_function_specifier): Likewise.
+	(pp_c_declaration_specifiers): Likewise.
+	(pp_c_direct_declarator): Likewise.
+	(pp_c_declarator): Likewise.
+	(pp_c_declarator): Likewise.
+	(pp_c_declaration): Likewise.
+	(pp_c_attributes): Likewise.  Tidy.
+	(pp_c_function_definition): Adjust prototype.
+	(pp_c_char): Likewise.
+	(pp_c_string_literal): Likewise.
+	(pp_c_integer_constant): Likewise.
+	(pp_c_character_constant): Likewise.
+	(pp_c_bool_constant): Likewise.
+	(pp_c_enumeration_constant): Likewise.
+	(pp_c_floating_constant): Likewise.
+	(pp_c_constant): Likewise.
+	(pp_c_identifier): Likewise.
+	(pp_c_primary_expression): Likewise.  Remove TARGET_EXPR case.  Tidy.
+	(pp_c_initializer): Adjust prototype.
+	(pp_c_init_declarator): Likewise.
+	(pp_c_initializer_list): Likewise.
+	(pp_c_id_expression): Likewise.
+	(pp_c_postfix_expression): Likewise.
+	(pp_c_expression_list): Likewise.
+	(pp_c_unary_expression): Likewise.
+	(pp_c_cast_expression): Likewise.
+	(pp_c_multiplicative_expression): Likewise.
+	(pp_c_additive_expression): Likewise.
+	(pp_c_shift_expression): Likewise.
+	(pp_c_relational_expression): Likewise.
+	(pp_c_equality_expression): Likewise.
+	(pp_c_and_expression): Likewise.
+	(pp_c_exclusive_or_expression): Likewise.
+	(pp_c_inclusive_or_expression): Likewise.
+	(pp_c_logical_and_expression): Likewise.
+	(pp_c_logical_or_expression): Likewise.
+	(pp_c_conditional_expression): Likewise.
+	(pp_c_assignment_expression): Likewise.
+	(pp_c_expression): Likewise.  Tidy.
+	(pp_c_statement): Likewise.  Document.
+	(pp_c_pretty_printer_init): Adjust prototype. Tidy.
+
+	* c-lang.c (c_initialize_diagnostics): Update.
+	* c-common.h (strip_pointer_operator): Declare.
+	* c-common.c (strip_pointer_operator): Define.
+
 2003-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8795

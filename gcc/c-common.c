@@ -3547,6 +3547,15 @@ strip_array_types (tree type)
   return type;
 }
 
+/* Recursively remove any '*' or '&' operator from TYPE.  */
+tree
+strip_pointer_operator (tree t)
+{
+  while (POINTER_TYPE_P (t))
+    t = TREE_TYPE (t);
+  return t;
+}
+
 static tree expand_unordered_cmp (tree, tree, enum tree_code, enum tree_code);
 
 /* Expand a call to an unordered comparison function such as
