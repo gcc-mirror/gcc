@@ -6739,8 +6739,9 @@ ia64_reorg (insns)
   if (optimize == 0)
     split_all_insns (0);
 
-  update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
-				    PROP_DEATH_NOTES);
+  /* ??? update_life_info_in_dirty_blocks fails to terminate during
+     non-optimizing bootstrap.  */
+  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES, PROP_DEATH_NOTES);
 
   if (ia64_flag_schedule_insns2)
     {
