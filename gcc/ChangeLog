@@ -1,3 +1,9 @@
+2003-10-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11753
+	* config/sparc/sparc.md (length attribute) [fcc branch]: Add 1 to
+	the length in the non-V9 case.
+
 2003-09-30  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Honor
