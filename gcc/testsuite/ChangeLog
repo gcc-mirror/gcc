@@ -1,3 +1,9 @@
+2003-10-08  Giovanni Bajo <giovannibajo@libero.it>
+
+	PR c++/11097
+	* g++.dg/other/error5.C: Modify the error message.
+	* g++.dg/lookup/using8.C: New test.
+
 2003-10-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/darwin-abi-2.c: New file.
