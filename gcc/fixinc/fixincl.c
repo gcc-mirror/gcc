@@ -338,6 +338,10 @@ load_file ( fname )
   if (stbf.st_size == 0)
     return (char*)NULL;
 
+  /*  Make the data map size one larger than the file size for documentation
+      purposes.  Truth is that there will be a following NUL character if
+      the file size is not a multiple of the page size.  If it is a multiple,
+      then this adjustment sometimes fails anyway.  */
   data_map_size = stbf.st_size+1;
   data_map_fd   = open (fname, O_RDONLY);
   ttl_data_size += data_map_size-1;
@@ -352,8 +356,14 @@ load_file ( fname )
 
 #ifdef HAVE_MMAP_FILE
   curr_data_mapped = BOOL_TRUE;
-  res = (char*)mmap ((void*)NULL, data_map_size, PROT_READ, MAP_PRIVATE,
-                     data_map_fd, 0);
+
+  /*  IF the file size is a multiple of the page size,
+      THEN sometimes you will seg fault trying to access a trailing byte */
+  if ((stbf.st_size & (PAGESIZE-1)) == 0)
+    res = (char*)BAD_ADDR;
+  else
+    res = (char*)mmap ((void*)NULL, data_map_size, PROT_READ,
+                       MAP_PRIVATE, data_map_fd, 0);
   if (res == (char*)BAD_ADDR)
     {
       curr_data_mapped = BOOL_FALSE;
