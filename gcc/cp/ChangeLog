@@ -1,3 +1,7 @@
+2002-12-31  Neil Booth  <neil@daikokuya.co.uk>
+
+	* .cvsignore: Remove.
+
 2002-12-31  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* call.c, class.c, cp-lang.c, cp-tree.h, cvt.c, dump.c, error.c,
