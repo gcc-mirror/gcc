@@ -130,6 +130,8 @@ extern char *getenv ();
 /* VMS-specific definitions */
 #ifdef VMS
 #include <descrip.h>
+#include <ssdef.h>
+#include <syidef.h>
 #define open(fname,mode,prot)	VMS_open (fname,mode,prot)
 #define fopen(fname,mode)	VMS_fopen (fname,mode)
 #define freopen(fname,mode,ofile) VMS_freopen (fname,mode,ofile)
@@ -1732,6 +1734,63 @@ main (argc, argv)
 
   if (!inhibit_predefs) {
     char *p = (char *) alloca (strlen (predefs) + 1);
+
+#ifdef VMS
+    struct dsc$descriptor_s lcl_name;
+    struct item_list {
+      unsigned short length;  /* input length */
+      unsigned short code;    /* item code */   
+      unsigned long dptr;     /* data ptr */
+      unsigned long lptr;     /* output length ptr */
+    };
+
+    unsigned long syi_length;
+    char syi_data[16];
+
+    struct item_list items[] = {
+      { 16, SYI$_VERSION, 0, 0 },
+      { 0, 0, 0, 0 }
+    };
+
+    items[0].dptr = (unsigned long)syi_data;
+    items[0].lptr = (unsigned long)(&syi_length);
+
+    if (SYS$GETSYIW (0, 0, 0, items, NULL, NULL, NULL, NULL) == SS$_NORMAL)
+      {
+	unsigned long vms_version_value;
+	char *vers;
+
+	vers = syi_data;
+	vms_version_value = 0;
+
+	if (*vers == 'V')
+	  vers++;
+	if (isdigit (*vers))
+	  {
+	    vms_version_value = (*vers - '0') * 10000000;
+	  }
+	vers++;
+	if (*vers == '.')
+	  {
+	    vers++;
+	    if (isdigit (*vers))
+	      {
+		vms_version_value += (*vers - '0') * 100000;
+	      }
+	  }
+
+	if (vms_version_value > 0)
+	  {
+	    char versbuf[32];
+
+	    sprintf (versbuf, "__VMS_VER=%08ld", vms_version_value);
+	    if (debug_output)
+	      output_line_directive (fp, &outbuf, 0, same_file);
+	    make_definition (versbuf, &outbuf);
+	  }
+      }
+#endif
+
     strcpy (p, predefs);
     while (*p) {
       char *q;
