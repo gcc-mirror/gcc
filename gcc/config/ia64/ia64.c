@@ -6889,7 +6889,8 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 		 guarantee issuing all insns on the same cycle for
 		 Itanium 1, we need to issue 2 nops after the first M
 		 insn (MnnMII where n is a nop insn).  */
-	      || (type == TYPE_M && ia64_tune == PROCESSOR_ITANIUM
+	      || ((type == TYPE_M || type == TYPE_A)
+		  && ia64_tune == PROCESSOR_ITANIUM
 		  && !bundle_end_p && pos == 1))
 	    issue_nops_and_insn (curr_state, 2, insn, bundle_end_p,
 				 only_bundle_end_p);
