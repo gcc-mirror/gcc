@@ -1,5 +1,21 @@
 2004-06-30  Richard Henderson  <rth@redhat.com>
 
+	* gimplify.c (gimplify_compound_lval): Take fallback argument
+	instead of want_lvalue.
+	(gimplify_call_expr): Take want_value argument instead of test
+	function.  Gimplify arguments to val only if reg_type; otherwise
+	allow lvalue forms.
+	(gimplify_expr): Update gimplify_compound_lval and gimplify_call_expr
+	calls.
+	* tree-gimple.c: Update GIMPLE grammer.  Use true/false not 1/0.
+	Tidy commentary globally.
+	(get_call_expr_in): Remove RETURN_EXPR handling.  Tidy.
+	* tree-gimple.h (is_gimple_call_addr): Mark extern.
+
+	* gimplify.c (gimplify_modify_expr_to_memcpy): Fix typo.
+
+2004-06-30  Richard Henderson  <rth@redhat.com>
+
 	* tree-gimple.c (right_assocify_expr): Kill
 	(rationalize_compound_expr): Kill.
 	* tree-gimple.h: Likewise.
