@@ -1,3 +1,11 @@
+2001-07-20  David Billinghurst <David.Billinghurst@riotinto.org>
+
+	* g77.f-torture/compile/pr3743.f:  New test
+
+2001-07-20  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* g77.f-torture/execute/f90-intrinsic-bit.f: New test
+
 2001-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.pt/static3.C: Removed alpha*-*-osf* XFAIL.
