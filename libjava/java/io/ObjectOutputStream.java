@@ -354,16 +354,20 @@ public class ObjectOutputStream extends OutputStream
 		ObjectStreamClass[] hierarchy =
 		  ObjectStreamClass.getObjectStreamClasses (clazz);
 
-		boolean has_write;
 		for (int i=0; i < hierarchy.length; i++)
 		  {
 		    currentObjectStreamClass = hierarchy[i];
 
 		    fieldsAlreadyWritten = false;
-		    has_write = currentObjectStreamClass.hasWriteMethod ();
-
-		    writeFields (obj, currentObjectStreamClass.fields,
-				 has_write);
+		    if (currentObjectStreamClass.hasWriteMethod ())
+		      {
+			setBlockDataMode (true);
+			callWriteMethod (obj, currentObjectStreamClass);
+			setBlockDataMode (false);
+			realOutput.writeByte (TC_ENDBLOCKDATA);
+		      }
+		    else
+		      writeFields (obj, currentObjectStreamClass);
 		  }
 
 		currentObject = null;
@@ -424,7 +428,7 @@ public class ObjectOutputStream extends OutputStream
     throws IOException, NotActiveException
   {
     markFieldsWritten ();
-    writeFields (currentObject, currentObjectStreamClass.fields, false);
+    writeFields (currentObject, currentObjectStreamClass);
   }
 
 
@@ -1145,22 +1149,12 @@ public class ObjectOutputStream extends OutputStream
   }
 
 
-  // writes out FIELDS of OBJECT.  If CALL_WRITE_METHOD is true, use
-  // object's writeObject (ObjectOutputStream), otherwise use default
-  // serialization.  FIELDS are already in canonical order.
-  private void writeFields (Object obj,
-			    ObjectStreamField[] fields,
-			    boolean call_write_method) throws IOException
+  // writes out FIELDS of OBJECT for the specified ObjectStreamClass.
+  // FIELDS are already in canonical order.
+  private void writeFields (Object obj, ObjectStreamClass osc)
+    throws IOException
   {
-    if (call_write_method)
-      {
-	setBlockDataMode (true);
-	callWriteMethod (obj);
-	setBlockDataMode (false);
-	realOutput.writeByte (TC_ENDBLOCKDATA);
-	return;
-      }
-
+    ObjectStreamField[] fields = osc.fields;
     boolean oldmode = setBlockDataMode (false);
     String field_name;
     Class type;
@@ -1170,23 +1164,23 @@ public class ObjectOutputStream extends OutputStream
 	type = fields[i].getType ();
 
 	if (type == Boolean.TYPE)
-	  realOutput.writeBoolean (getBooleanField (obj, field_name));
+	  realOutput.writeBoolean (getBooleanField (obj, osc.forClass(), field_name));
 	else if (type == Byte.TYPE)
-	  realOutput.writeByte (getByteField (obj, field_name));
+	  realOutput.writeByte (getByteField (obj, osc.forClass(), field_name));
 	else if (type == Character.TYPE)
-	  realOutput.writeChar (getCharField (obj, field_name));
+	  realOutput.writeChar (getCharField (obj, osc.forClass(), field_name));
 	else if (type == Double.TYPE)
-	  realOutput.writeDouble (getDoubleField (obj, field_name));
+	  realOutput.writeDouble (getDoubleField (obj, osc.forClass(), field_name));
 	else if (type == Float.TYPE)
-	  realOutput.writeFloat (getFloatField (obj, field_name));
+	  realOutput.writeFloat (getFloatField (obj, osc.forClass(), field_name));
 	else if (type == Integer.TYPE)
-	  realOutput.writeInt (getIntField (obj, field_name));
+	  realOutput.writeInt (getIntField (obj, osc.forClass(), field_name));
 	else if (type == Long.TYPE)
-	  realOutput.writeLong (getLongField (obj, field_name));
+	  realOutput.writeLong (getLongField (obj, osc.forClass(), field_name));
 	else if (type == Short.TYPE)
-	  realOutput.writeShort (getShortField (obj, field_name));
+	  realOutput.writeShort (getShortField (obj, osc.forClass(), field_name));
 	else
-	  writeObject (getObjectField (obj, field_name,
+	  writeObject (getObjectField (obj, osc.forClass(), field_name,
 				       fields[i].getTypeString ()));
       }
     setBlockDataMode (oldmode);
@@ -1212,9 +1206,9 @@ public class ObjectOutputStream extends OutputStream
   }
 
 
-  private void callWriteMethod (Object obj) throws IOException
+  private void callWriteMethod (Object obj, ObjectStreamClass osc) throws IOException
   {
-    Class klass = obj.getClass ();
+    Class klass = osc.forClass();
     try
       {
 	Class classArgs[] = {ObjectOutputStream.class};
@@ -1243,12 +1237,11 @@ public class ObjectOutputStream extends OutputStream
       }
   }
 
-  private boolean getBooleanField (Object obj, String field_name)
+  private boolean getBooleanField (Object obj, Class klass, String field_name)
     throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	boolean b = f.getBoolean (obj);
 	return b;
@@ -1259,11 +1252,10 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private byte getByteField (Object obj, String field_name) throws IOException
+  private byte getByteField (Object obj, Class klass, String field_name) throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	byte b = f.getByte (obj);
 	return b;
@@ -1274,11 +1266,10 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private char getCharField (Object obj, String field_name) throws IOException
+  private char getCharField (Object obj, Class klass, String field_name) throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	char b = f.getChar (obj);
 	return b;
@@ -1289,12 +1280,11 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private double getDoubleField (Object obj, String field_name)
+  private double getDoubleField (Object obj, Class klass, String field_name)
     throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	double b = f.getDouble (obj);
 	return b;
@@ -1305,12 +1295,11 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private float getFloatField (Object obj, String field_name)
+  private float getFloatField (Object obj, Class klass, String field_name)
     throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	float b = f.getFloat (obj);
 	return b;
@@ -1321,11 +1310,10 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private int getIntField (Object obj, String field_name) throws IOException
+  private int getIntField (Object obj, Class klass, String field_name) throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	int b = f.getInt (obj);
 	return b;
@@ -1336,11 +1324,10 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private long getLongField (Object obj, String field_name) throws IOException
+  private long getLongField (Object obj, Class klass, String field_name) throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	long b = f.getLong (obj);
 	return b;
@@ -1351,12 +1338,11 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private short getShortField (Object obj, String field_name)
+  private short getShortField (Object obj, Class klass, String field_name)
     throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	short b = f.getShort (obj);
 	return b;
@@ -1367,12 +1353,11 @@ public class ObjectOutputStream extends OutputStream
       }    
   }
 
-  private Object getObjectField (Object obj, String field_name,
+  private Object getObjectField (Object obj, Class klass, String field_name,
 				 String type_code) throws IOException
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	Object o = f.get (obj);
 	// FIXME: We should check the type_code here

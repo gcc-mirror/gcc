@@ -1,3 +1,43 @@
+2003-03-14  Jeroen Frijters  <jeroen@sumatra.nl>
+
+	* java/io/ObjectInputStream.java (readObject): Cleaned up the class
+	hierarchy loop.
+	(readFields(Object,ObjectStreamField[],boolean)): Changed argument
+	list to Object,ObjectStreamClass, moved callReadMethod code up into
+	readObject and added Class argument to all setXxxField calls.
+	(callReadMethod): Changed Class argument to ObjectStreamClass to be
+	consistent with ObjectOutputStream and to facilitate caching the
+	Method in the future.
+	(setBooleanField): Added Class argument.
+	(setByteField): Likewise.
+	(setCharField): Likewise.
+	(setDoubleField): Likewise.
+	(setFloatField): Likewise.
+	(setIntField): Likewise.
+	(setLongField): Likewise.
+	(setShortField): Likewise.
+	(setObjectField): Likewise.
+	* java/io/ObjectOutputStream.java (writeObject): Cleaned up the
+	class hierarchy loop.
+	(defaultWriteObject): Call writeFields with new argument list.
+	(writeFields(Object,ObjectStreamField[],boolean): Changed argument
+	list to Object,ObjectStreamClass, moved callWriteMethod up into
+	writeObject and added Class argument to all getXxxField calls.
+	(callWriteMethod): Added ObjectStreamClass argument to be able to
+	get the proper class to call getMethod on (each class can have (or
+	not have) its own writeObject method).
+	(getBooleanField): Added Class argument.
+	(getByteField): Likewise.
+	(getCharField): Likewise.
+	(getDoubleField): Likewise.
+	(getFloatField): Likewise.
+	(getIntField): Likewise.
+	(getLongField): Likewise.
+	(getShortField): Likewise.
+	(getObjectField): Likewise.
+	* java/io/ObjectStreamClass.java (hasReadMethod): Added method to
+	facilitate caching the Method object in the future.
+
 2003-03-10  2003-02-27  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* include/jvm.h: removed declaration of _Jv_ThisExecutable()

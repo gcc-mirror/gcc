@@ -368,35 +368,24 @@ public class ObjectInputStream extends InputStream
 	      ObjectStreamClass[] hierarchy =
 		ObjectStreamClass.getObjectStreamClasses (clazz);
 	      
-	      boolean has_read;
 	      for (int i=0; i < hierarchy.length; i++)
 		{
 		  this.currentObjectStreamClass = hierarchy[i];
 		  
 		  dumpElementln ("Reading fields of "
 				 + this.currentObjectStreamClass.getName ());
-		  
-		  has_read = true;
-		  
-		  try
-		    {
-		      this.currentObjectStreamClass.forClass ().
-			getDeclaredMethod ("readObject", readObjectParams);
-		    }
-		  catch (NoSuchMethodException e)
-		    {
-		      has_read = false;
-		    }
 
 		  // XXX: should initialize fields in classes in the hierarchy
 		  // that aren't in the stream
 		  // should skip over classes in the stream that aren't in the
 		  // real classes hierarchy
-		  readFields (obj, this.currentObjectStreamClass.fields,
-			      has_read, this.currentObjectStreamClass);
-
-		  if (has_read)
+		  
+		  if (this.currentObjectStreamClass.hasReadMethod())
 		    {
+		      fieldsAlreadyRead = false;
+		      boolean oldmode = setBlockDataMode (true);
+		      callReadMethod (obj, this.currentObjectStreamClass);
+		      setBlockDataMode (oldmode);
 		      dumpElement ("ENDBLOCKDATA? ");
 		      try
 			{
@@ -414,6 +403,10 @@ public class ObjectInputStream extends InputStream
 			{
 			  dumpElementln ("no, got IOException");
 			}
+		    }
+		  else
+		    {
+		      readFields (obj, currentObjectStreamClass);
 		    }
 		}
 
@@ -487,9 +480,7 @@ public class ObjectInputStream extends InputStream
       throw new NotActiveException ("defaultReadObject called but fields already read from stream (by defaultReadObject or readFields)");
 
     boolean oldmode = setBlockDataMode(false);
-    readFields (this.currentObject,
-		this.currentObjectStreamClass.fields,
-		false, this.currentObjectStreamClass);
+    readFields (this.currentObject, this.currentObjectStreamClass);
     setBlockDataMode(oldmode);
 
     fieldsAlreadyRead = true;
@@ -1220,20 +1211,10 @@ public class ObjectInputStream extends InputStream
   }
 
 
-  private void readFields (Object obj, ObjectStreamField[] stream_fields,
-			   boolean call_read_method,
-			   ObjectStreamClass stream_osc)
+  private void readFields (Object obj, ObjectStreamClass stream_osc)
     throws ClassNotFoundException, IOException
   {
-    if (call_read_method)
-      {
-	fieldsAlreadyRead = false;
-	boolean oldmode = setBlockDataMode (true);
-	callReadMethod (obj, stream_osc.forClass ());
-	setBlockDataMode (oldmode);
-	return;
-      }
-
+    ObjectStreamField[] stream_fields = stream_osc.fields;
     ObjectStreamField[] real_fields =
       ObjectStreamClass.lookup (stream_osc.forClass ()).fields;
 
@@ -1299,7 +1280,7 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setBooleanField (obj, field_name, value);
+		  setBooleanField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else if (type == Byte.TYPE)
 	      {
@@ -1308,7 +1289,7 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setByteField (obj, field_name, value);
+		  setByteField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else if (type == Character.TYPE)
 	      {
@@ -1317,7 +1298,7 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setCharField (obj, field_name, value);
+		  setCharField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else if (type == Double.TYPE)
 	      {
@@ -1326,7 +1307,7 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setDoubleField (obj, field_name, value);
+		  setDoubleField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else if (type == Float.TYPE)
 	      {
@@ -1335,7 +1316,7 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setFloatField (obj, field_name, value);
+		  setFloatField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else if (type == Integer.TYPE)
 	      {
@@ -1344,7 +1325,7 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setIntField (obj, field_name, value);
+		  setIntField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else if (type == Long.TYPE)
 	      {
@@ -1353,7 +1334,7 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setLongField (obj, field_name, value);
+		  setLongField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else if (type == Short.TYPE)
 	      {
@@ -1362,14 +1343,14 @@ public class ObjectInputStream extends InputStream
 		if (!default_initialize && set_value)
 		  dumpElementln ("  " + field_name + ": " + value);
 		if (set_value)
-		  setShortField (obj, field_name, value);
+		  setShortField (obj, stream_osc.forClass (), field_name, value);
 	      }
 	    else
 	      {
 		Object value =
 		  default_initialize ? null : readObject ();
 		if (set_value)
-		  setObjectField (obj, field_name,
+		  setObjectField (obj, stream_osc.forClass (), field_name,
 				  real_field.getTypeString (), value);
 	      }
 	  }
@@ -1451,8 +1432,9 @@ public class ObjectInputStream extends InputStream
     return klass.getDeclaredMethod(name, args);
   }
 
-  private void callReadMethod (Object obj, Class klass) throws IOException
+  private void callReadMethod (Object obj, ObjectStreamClass osc) throws IOException
   {
+    Class klass = osc.forClass();
     try
       {
 	Class classArgs[] = {ObjectInputStream.class};
@@ -1486,12 +1468,11 @@ public class ObjectInputStream extends InputStream
 
   private native void callConstructor (Class clazz, Object obj);
 
-  private void setBooleanField (Object obj, String field_name,
+  private void setBooleanField (Object obj, Class klass, String field_name,
 				boolean val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setBoolean (obj, val);
@@ -1501,12 +1482,11 @@ public class ObjectInputStream extends InputStream
       }    
   }
 
-  private void setByteField (Object obj, String field_name,
+  private void setByteField (Object obj, Class klass, String field_name,
 			     byte val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setByte (obj, val);
@@ -1516,12 +1496,11 @@ public class ObjectInputStream extends InputStream
       }    
   }
 
-  private void setCharField (Object obj, String field_name,
+  private void setCharField (Object obj, Class klass, String field_name,
 			     char val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setChar (obj, val);
@@ -1531,12 +1510,11 @@ public class ObjectInputStream extends InputStream
       }    
   }
 
-  private void setDoubleField (Object obj, String field_name,
+  private void setDoubleField (Object obj, Class klass, String field_name,
 			       double val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setDouble (obj, val);
@@ -1546,12 +1524,11 @@ public class ObjectInputStream extends InputStream
       }    
   }
 
-  private void setFloatField (Object obj, String field_name,
+  private void setFloatField (Object obj, Class klass, String field_name,
 			      float val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setFloat (obj, val);
@@ -1561,12 +1538,11 @@ public class ObjectInputStream extends InputStream
       }    
   }
 
-  private void setIntField (Object obj, String field_name,
+  private void setIntField (Object obj, Class klass, String field_name,
 			    int val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setInt (obj, val);
@@ -1577,12 +1553,11 @@ public class ObjectInputStream extends InputStream
   }
 
 
-  private void setLongField (Object obj, String field_name,
+  private void setLongField (Object obj, Class klass, String field_name,
 			     long val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setLong (obj, val);
@@ -1593,12 +1568,11 @@ public class ObjectInputStream extends InputStream
   }
 
 
-  private void setShortField (Object obj, String field_name,
+  private void setShortField (Object obj, Class klass, String field_name,
 			      short val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	f.setShort (obj, val);
@@ -1609,12 +1583,11 @@ public class ObjectInputStream extends InputStream
   }
 
 
-  private void setObjectField (Object obj, String field_name, String type_code,
+  private void setObjectField (Object obj, Class klass, String field_name, String type_code,
 			       Object val)
   {
     try
       {
-	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
 	f.setAccessible(true);
 	// FIXME: We should check the type_code here
