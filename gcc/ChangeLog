@@ -1,4 +1,8 @@
-Wed Mar 11 14:26:52 1998  Jeffrey A Law  (law@cygnus.com)
+Sun Mar 15 23:17:30 1998  Jeffrey A Law  (law@cygnus.com)
+
+        * m68k.h: Fix mis-applied fix from the mainline branch.
+
+Wed Mar 10 14:26:52 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rtlanal.c (optimize): Declare.
 
