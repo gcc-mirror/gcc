@@ -1,6 +1,6 @@
 2004-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* tree.h: Fix a comment typo.
+	* tree.h: Fix comment typos.
 
 2004-11-13  Steven Bosscher  <stevenb@suse.de>
 
