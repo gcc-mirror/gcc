@@ -4975,6 +4975,8 @@ arg_assoc_type (k, type)
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
       return 0;
+    case TYPENAME_TYPE:
+      return 0;
     case LANG_TYPE:
       if (type == unknown_type_node)
 	return 0;
