@@ -4852,6 +4852,7 @@ pre_insert_copy_insn (expr, insn)
 	     "PRE: bb %d, insn %d, copy expression %d in insn %d to reg %d\n",
 	      BLOCK_NUM (insn), INSN_UID (new_insn), indx,
 	      INSN_UID (insn), regno);
+  update_ld_motion_stores (expr);
 }
 
 /* Copy available expressions that reach the redundant expression
