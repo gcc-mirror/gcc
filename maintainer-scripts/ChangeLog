@@ -1,3 +1,8 @@
+2001-08-06  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* update_web_docs (PREPROCESS): Rename to WWWPREPROCESS.
+	Preprocess the entire web site, not just the install docs.
+
 2001-06-25  Phil Edwards  <pme@sources.redhat.com>
 
 	* update_version:  Add command-line argument capability, also

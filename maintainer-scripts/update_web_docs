@@ -8,7 +8,7 @@ PATH=/usr/local/bin:$PATH
 
 WWWBASE=/www/gcc/htdocs
 WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
-PREPROCESS=/www/gcc/bin/preprocess
+WWWPREPROCESS='/www/gcc/bin/preprocess -r'
 
 # Process options -rrelease and -ddirectory
 RELEASE=""
@@ -162,10 +162,9 @@ if [ "$RELEASE" = "HEAD" ]; then
   export DESTDIR
   $WORKDIR/gcc/gcc/doc/install.texi2html
 
-  for file in `ls $DESTDIR`
-  do
-    $PREPROCESS install/$file
-  done 
+  # Preprocess the entire web site, not just the install docs!
+  echo "Invoking $WWWPREPROCESS"
+  $WWWPREPROCESS
 fi
 
 # Clean up behind us.
