@@ -1,3 +1,9 @@
+Thu Nov 19 12:59:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Call AC_HEADER_SYS_WAIT.
+
+	* pexecute.c: Include sys/wait.h when !IN_GCC.
+
 Fri Nov 13 19:18:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Check for calloc.
