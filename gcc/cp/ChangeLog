@@ -1,4 +1,4 @@
-2004-10-05  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+2004-10-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert diagnostics to use quoting flag q 6/n
 	* pt.c (finish_member_template_decl, check_specialization_scope, 
