@@ -1,3 +1,15 @@
+Thu Mar  8 21:09:10 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (AAB_dgux_int_varargs): Don't use HTML
+	entities.
+	* fixinc/fixincl.x: Regenerate.
+
+Thu Mar  8 21:09:10 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (AAA_standards): Undo <standards.h> breakage
+	on Tru64 UNIX.
+	* fixinc/fixincl.x: Regenerate.
+
 Thu Mar  8 19:42:08 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (move_for_stack_reg): Avoid non-popint fst for
