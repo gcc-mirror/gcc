@@ -1,3 +1,9 @@
+2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8281
+	* config/sparc/sparc.md (movdi_insn_sp32_v9): Remove 'f-f' alternative.
+	(movdi reg/reg split): Match only on sparc32, and v9 when int regs.
+
 2003-03-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/alpha/elf.h (ASM_OUTPUT_ALIGNED_BSS): Remove unnecessary
