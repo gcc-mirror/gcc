@@ -3151,7 +3151,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      && REGNO (dest_reg) >= FIRST_PSEUDO_REGISTER
 	      && reg_iv_type[REGNO (dest_reg)] != NOT_BASIC_INDUCT)
 	    {
-	      if (basic_induction_var (SET_SRC (set), dest_reg,
+	      if (basic_induction_var (SET_SRC (set), dest_reg, p,
 				      &inc_val, &mult_val))
 		{
 		  /* It is a possible basic induction variable.
@@ -4637,12 +4637,11 @@ update_giv_derive (p)
 }
 
 /* Check whether an insn is an increment legitimate for a basic induction var.
-   X is the source of the insn.
+   X is the source of insn P.
    DEST_REG is the putative biv, also the destination of the insn.
    We accept patterns of these forms:
-     REG = REG + INVARIANT
+     REG = REG + INVARIANT (includes REG = REG - CONSTANT)
      REG = INVARIANT + REG
-     REG = REG - CONSTANT
 
    If X is suitable, we return 1, set *MULT_VAL to CONST1_RTX,
    and store the additive term into *INC_VAL.
@@ -4650,25 +4649,51 @@ update_giv_derive (p)
    If X is an assignment of an invariant into DEST_REG, we set
    *MULT_VAL to CONST0_RTX, and store the invariant into *INC_VAL.
 
-   Otherwise we return 0.  */
+   We also want to detect a BIV when it corresponds to a variable
+   whose mode was promoted via PROMOTED_MODE.  In that case, an increment
+   of the variable may be a PLUS that adds a SUBREG of that variable to
+   an invariant and then sign- or zero-extends the result of the PLUS
+   into the variable.
+
+   Most GIVs in such cases will be in the promoted mode, since that is the
+   probably the natural computation mode (and almost certainly the mode
+   used for addresses) on the machine.  So we view the pseudo-reg containing
+   the variable as the BIV, as if it were simply incremented.
+
+   Note that treating the entire pseudo as a BIV will result in making
+   simple increments to any GIVs based on it.  However, if the variable
+   overflows in its declared mode but not its promoted mode, the result will
+   be incorrect.  This is acceptable if the variable is signed, since 
+   overflows in such cases are undefined, but not if it is unsigned, since
+   those overflows are defined.  So we only check for SIGN_EXTEND and
+   not ZERO_EXTEND.
+
+   If we cannot find a biv, we return 0.  */
 
 static int
-basic_induction_var (x, dest_reg, inc_val, mult_val)
+basic_induction_var (x, dest_reg, p, inc_val, mult_val)
      register rtx x;
+     rtx p;
      rtx dest_reg;
      rtx *inc_val;
      rtx *mult_val;
 {
   register enum rtx_code code;
   rtx arg;
+  rtx insn, set = 0;
 
   code = GET_CODE (x);
   switch (code)
     {
     case PLUS:
-      if (XEXP (x, 0) == dest_reg)
+      if (XEXP (x, 0) == dest_reg
+	  || (GET_CODE (XEXP (x, 0)) == SUBREG
+	      && SUBREG_PROMOTED_VAR_P (XEXP (x, 0))
+	      && SUBREG_REG (XEXP (x, 0)) == dest_reg))
  	arg = XEXP (x, 1);
-      else if (XEXP (x, 1) == dest_reg)
+      else if (XEXP (x, 1) == dest_reg
+	       || (GET_CODE (XEXP (x, 1)) == SUBREG
+		   && SUBREG_PROMOTED_VAR_P (XEXP (x, 1))))
 	arg = XEXP (x, 0);
       else
  	return 0;
@@ -4676,26 +4701,40 @@ basic_induction_var (x, dest_reg, inc_val, mult_val)
       if (invariant_p (arg) != 1)
 	return 0;
 
-      *inc_val = arg;
+      *inc_val = convert_to_mode (GET_MODE (dest_reg), arg, 0);;
       *mult_val = const1_rtx;
       return 1;
 
-    case MINUS:
-      if (XEXP (x, 0) == dest_reg
- 	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
- 	*inc_val = GEN_INT (- INTVAL (XEXP (x, 1)));
-      else
- 	return 0;
+    case SUBREG:
+      /* If this is a SUBREG for a promoted variable, check the inner
+	 value.  */
+      if (SUBREG_PROMOTED_VAR_P (x))
+	  return basic_induction_var (SUBREG_REG (x), dest_reg, p,
+				    inc_val, mult_val);
 
-      *mult_val = const1_rtx;
-      return 1;
+    case REG:
+      /* If this register is assigned in the previous insn, look at its
+	 source, but don't go outside the loop or past a label.  */
+
+      for (insn = PREV_INSN (p);
+	   (insn && GET_CODE (insn) == NOTE
+	    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
+	   insn = PREV_INSN (insn))
+	;
+
+      if (insn)
+	set = single_set (insn);
+
+      if (set != 0 && SET_DEST (set) == x)
+	return basic_induction_var (SET_SRC (set), dest_reg, insn,
+				    inc_val, mult_val);
+      /* ... fall through ... */
 
       /* Can accept constant setting of biv only when inside inner most loop.
   	 Otherwise, a biv of an inner loop may be incorrectly recognized
 	 as a biv of the outer loop,
 	 causing code to be moved INTO the inner loop.  */
     case MEM:
-    case REG:
       if (invariant_p (x) != 1)
 	return 0;
     case CONST_INT:
@@ -4703,12 +4742,35 @@ basic_induction_var (x, dest_reg, inc_val, mult_val)
     case CONST:
       if (loops_enclosed == 1)
  	{
-	  *inc_val = x;
+	  *inc_val = convert_to_mode (GET_MODE (dest_reg), x, 0);;
  	  *mult_val = const0_rtx;
  	  return 1;
  	}
       else
  	return 0;
+
+    case SIGN_EXTEND:
+      return basic_induction_var (XEXP (x, 0), dest_reg, p,
+				  inc_val, mult_val);
+    case ASHIFTRT:
+      /* Similar, since this can be a sign extension.  */
+      for (insn = PREV_INSN (p);
+	   (insn && GET_CODE (insn) == NOTE
+	    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
+	   insn = PREV_INSN (insn))
+	;
+
+      if (insn)
+	set = single_set (insn);
+
+      if (set && SET_DEST (set) == XEXP (x, 0)
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) >= 0
+	  && GET_CODE (SET_SRC (set)) == ASHIFT
+	  && XEXP (x, 1) == XEXP (SET_SRC (set), 1))
+	return basic_induction_var (XEXP (SET_SRC (set), 0), dest_reg, insn,
+				    inc_val, mult_val);
+      return 0;
 
     default:
       return 0;
