@@ -23,10 +23,7 @@ public class Class_1
     printIsAssignableFrom(int[].class, int[].class, true);
     printIsAssignableFrom(C[].class, D.class, false);
     printIsAssignableFrom(C[].class, D[].class, true);
-    // Known compiler limitation prevents next case from compiling.
-    // printIsAssignableFrom(C[].class, C[][].class, false);
-    System.out.println("printIsAssignableFrom(C[].class, C[][].class, false);" +
-      " case uncompilable due to known compiler limitation.");
+    printIsAssignableFrom(C[].class, C[][].class, false);
 
     printIsAssignableFrom(Object.class, I.class, true);
     printIsAssignableFrom(I.class, I.class, true);

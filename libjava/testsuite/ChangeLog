@@ -1,5 +1,19 @@
 2000-12-15  Tom Tromey  <tromey@redhat.com>
 
+	* libjava.lang/stub.xfail: New file.
+	* libjava.lang/pr83.xfail: New file.
+	* libjava.lang/err8.xfail: New file.
+	* libjava.lang/err7.xfail: New file.
+	* libjava.lang/Shazam.xfail: New file.
+	* libjava.lang/err11.xfail: New file.
+
+	* libjava.lang/instinit2.java: Renamed class to `instinit2'.
+
+	* libjava.lang/anon3.out: Fixed typo.
+
+	* libjava.lang/Class_1.java (main): Uncommented out previously
+	failing code; now it works
+
 	* lib/libjava.exp (libjava_tcompile): New proc.
 	(test_libjava_from_source): Use it.
 	(test_libjava_from_javac): Likewise.

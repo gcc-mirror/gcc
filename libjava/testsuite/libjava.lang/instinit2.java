@@ -1,10 +1,10 @@
-// Class ii2
+// Class instinit2
 // Generated on Wed Feb  2 17:52:49 PST 2000
 // The instance initializer throws a checked exception. This is OK
 // since the constructors declares it in its `throws' clause -- at
 // least that's what the specs are saying.
 
-class ii2 {
+class instinit2 {
 
     String buffer = "Oink Oink!";
 
@@ -14,16 +14,16 @@ class ii2 {
             throw new Exception ("It just oinked");
     }
 
-    ii2 () throws Exception
+    instinit2 () throws Exception
     {
         System.out.println ("Ctor");
     }
 
     public static void main (String[] arg)
     {
-        System.out.println ("Testing class `ii2'...");
+        System.out.println ("Testing class `instinit2'...");
         try {
-            System.out.println (new ii2 ().buffer);
+            System.out.println (new instinit2 ().buffer);
         } catch (Exception e) {
             System.out.println (e.toString());
         }
