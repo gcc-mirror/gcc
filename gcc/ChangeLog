@@ -1,3 +1,10 @@
+Fri Aug 30 00:33:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* doc/cpp.texi (__NEXT_RUNTIME__): Extended documentation.
+	* doc/invoke.texi (-fnext-runtime, -Wno-protocol, -Wselector):
+	Extended, updated documentation.
+	(-Wundeclared-selector): Documented.
+
 2002-08-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/chorus.h: Consistently define *_DEBUGGING_INFO with
