@@ -1,5 +1,26 @@
 2001-08-31  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Removed
+	EnumerationChain, added DoubleEnumeration.
+	(nat_source_files): Added natResourceBundle.cc.
+	* java/util/natResourceBundle.cc: New file.
+	* gnu/java/util/DoubleEnumeration.java: New file.
+	* gnu/gcj/util/EnumerationChain.java: Removed.
+	* java/beans/VetoableChangeSupport.java: Merged with Classpath.
+	* java/util/ResourceBundle.java: Merged with Classpath.
+	* java/util/StringTokenizer.java: Merged with Classpath.
+	* java/util/Locale.java: Merged with Classpath.
+	* java/util/Random.java: Merged with Classpath.
+	* java/util/PropertyResourceBundle.java: Merged with Classpath.
+	* java/util/ListResourceBundle.java: Merged with Classpath.
+	* java/util/ConcurrentModificationException.java: Re-merged with
+	Classpath.
+	* java/util/EmptyStackException.java: Likewise.
+	* java/util/MissingResourceException.java: Likewise.
+	* java/util/NoSuchElementException.java: Likewise.
+	* java/util/TooManyListenersException.java: Likewise.
+
 	* java/io/ByteArrayOutputStream.java: Re-merged with Classpath.
 	* java/io/OptionalDataException.java: Merged with Classpath.
 
