@@ -1,5 +1,17 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (print_operand): Remove '%Y' and '%y'.
+	(mips_expand_4s_compare_builtin): Redefine CCV4 to be 0 if all
+	registers are false and -1 if all registers are true.
+	(mips_expand_ps_compare_builtin): Likewise CCV2.  Use subregs for
+	MIPS_CMP_UPPER and MIPS_CMP_LOWER.
+	* config/mips/mips.md (mips_cond_move_tf_ps): Use %Q rather than %y.
+	(bc1any4t, bc1any4f): Adjust for new CCV4 interpretation.
+	(bc1any2t, bc1any2f): Likewise CCV2.
+	(bc1upper2t, bc1lower2t, bc1upper2f, bc1lower2f): Delete.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (UNSPEC_MOVE_TF_PS): New.
 	* config/mips/mips-ps-3d.md (mips_cond_move_tf_ps): Express as an
 	UNSPEC rather than an IF_THEN_ELSE.
