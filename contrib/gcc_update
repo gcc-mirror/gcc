@@ -7,11 +7,11 @@
 # By default all command-line options are passed to `cvs update` in
 # addition to $UPDATE_OPTIONS (defined below). If the first parameter
 # reads --nostdflags, $UPDATE_OPTIONS as well as this parameter itself
-# are omitted. 
-# 
+# are omitted.
+#
 # If the first parameter reads --patch, the second parameter is considered
 # a patch file.
-# 
+#
 # If the first parameter is --touch, no cvs operation will be performed,
 # only generated files that appear to be out of date in the local tree
 # will be touched.
@@ -65,7 +65,6 @@ texinfo/util/Makefile.in: texinfo/util/Makefile.am texinfo/configure.in texinfo/
 gcc/configure: gcc/configure.in
 gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
 gcc/config.in: gcc/cstamp-h.in
-gcc/c-gperf.h: gcc/c-parse.gperf
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/tradcif.c: gcc/tradcif.y
 # And then, language-specific files
@@ -112,7 +111,7 @@ touch_files () {
 touch_files_reexec () {
     echo "Adjusting file timestamps"
     exec ${CONFIG_SHELL-/bin/sh} $self --touch
-}    
+}
 
 # This functions applies a patch to an existing tree.
 apply_patch () {
@@ -138,7 +137,7 @@ fi
 
 case "$1" in
 # First of all, check whether we are going to process a patch.
---patch) 
+--patch)
     if test "$#" != 2; then
         echo "$1" expects only one argument >&2
 	exit 1
@@ -192,7 +191,7 @@ fi
 
 echo "Updating CVS tree"
 cvs -q update ${1+"$@"}
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
     (touch_files_reexec)
     echo "CVS update of full tree failed." >&2
     exit 1
