@@ -41,7 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifdef PUSH_ROUNDING
 
-#if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNARD)
+#if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
 #define PUSH_ARGS_REVERSED	/* If it's last to first */
 #endif
 
