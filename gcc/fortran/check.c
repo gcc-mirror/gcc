@@ -1554,6 +1554,20 @@ gfc_check_scan (gfc_expr * x, gfc_expr * y, gfc_expr * z)
 
 
 try
+gfc_check_selected_int_kind (gfc_expr * r)
+{
+
+  if (type_check (r, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (r, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_selected_real_kind (gfc_expr * p, gfc_expr * r)
 {
   if (p == NULL && r == NULL)

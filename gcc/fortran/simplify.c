@@ -592,7 +592,7 @@ gfc_simplify_ceiling (gfc_expr * e, gfc_expr * k)
   gfc_expr *ceil, *result;
   int kind;
 
-  kind = get_kind (BT_REAL, k, "CEILING", gfc_default_real_kind);
+  kind = get_kind (BT_INTEGER, k, "CEILING", gfc_default_integer_kind);
   if (kind == -1)
     return &gfc_bad_expr;
 
@@ -1017,7 +1017,7 @@ gfc_simplify_floor (gfc_expr * e, gfc_expr * k)
   mpfr_t floor;
   int kind;
 
-  kind = get_kind (BT_REAL, k, "FLOOR", gfc_default_real_kind);
+  kind = get_kind (BT_INTEGER, k, "FLOOR", gfc_default_integer_kind);
   if (kind == -1)
     gfc_internal_error ("gfc_simplify_floor(): Bad kind");
 

@@ -94,6 +94,7 @@ try gfc_check_reshape (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_scale (gfc_expr *, gfc_expr *);
 try gfc_check_scan (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_second_sub (gfc_expr *);
+try gfc_check_selected_int_kind (gfc_expr *);
 try gfc_check_selected_real_kind (gfc_expr *, gfc_expr *);
 try gfc_check_set_exponent (gfc_expr *, gfc_expr *);
 try gfc_check_shape (gfc_expr *);
