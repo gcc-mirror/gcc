@@ -1,3 +1,7 @@
+2000-12-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/execute/20001201.f: New test.
+
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c99-array-nonobj-1.c: No longer XFAIL.
