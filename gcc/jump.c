@@ -869,6 +869,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  emit_insn_after_with_line_notes (PATTERN (temp), 
 						   PREV_INSN (insn), temp);
 		  delete_insn (temp);
+		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
 		}
 	    }
 
@@ -916,6 +917,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		     PREV_INSN (insn), temp3);
 		  delete_insn (temp);
 		  delete_insn (temp3);
+		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
 		}
 	    }
 
@@ -967,6 +969,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 						   PREV_INSN (insn), temp3);
 		  delete_insn (temp);
 		  delete_insn (temp3);
+		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
 		}
 	    }
 #endif /* HAVE_cc0 */
