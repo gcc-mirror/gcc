@@ -57,6 +57,8 @@ Boston, MA 02111-1307, USA. */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{mdll:dllcrt1%O%s} %{!mdll:crt1%O%s}"
 
+#define MATH_LIBRARY "-lcrtdll"
+
 /* Output STRING, a string representing a filename, to FILE.  We canonicalize
    it to be in MS-DOS format.  */
 #define OUTPUT_QUOTED_STRING(FILE, STRING) \
