@@ -186,16 +186,15 @@ static tree add_stmt_to_compound PROTO ((tree, tree, tree));
 static tree add_stmt_to_block PROTO ((tree, tree, tree));
 static tree patch_exit_expr PROTO ((tree));
 static tree build_labeled_block PROTO ((int, tree));
-static tree generate_labeled_block PROTO (());
-static tree complete_labeled_statement PROTO ((tree, tree));
+static tree finish_labeled_statement PROTO ((tree, tree));
 static tree build_bc_statement PROTO ((int, int, tree));
 static tree patch_bc_statement PROTO ((tree));
 static tree patch_loop_statement PROTO ((tree));
 static tree build_new_loop PROTO ((tree));
 static tree build_loop_body PROTO ((int, tree, int));
-static tree complete_loop_body PROTO ((int, tree, tree, int));
+static tree finish_loop_body PROTO ((int, tree, tree, int));
 static tree build_debugable_stmt PROTO ((int, tree));
-static tree complete_for_loop PROTO ((int, tree, tree, tree));
+static tree finish_for_loop PROTO ((int, tree, tree, tree));
 static tree patch_switch_statement PROTO ((tree));
 static tree string_constant_concatenation PROTO ((tree, tree));
 static tree build_string_concatenation PROTO ((tree, tree));
@@ -210,7 +209,7 @@ static void check_thrown_exceptions PROTO ((int, tree));
 static int check_thrown_exceptions_do PROTO ((tree));
 static void purge_unchecked_exceptions PROTO ((tree));
 static void check_throws_clauses PROTO ((tree, tree, tree));
-static void complete_method_declaration PROTO ((tree));
+static void finish_method_declaration PROTO ((tree));
 static tree build_super_invocation PROTO (());
 static int verify_constructor_circularity PROTO ((tree, tree));
 static char *constructor_circularity_msg PROTO ((tree, tree));
@@ -825,7 +824,7 @@ method_declaration:
 		  source_start_java_method (current_function_decl);
 		}
 	method_body
-		{ complete_method_declaration ($3); }
+		{ finish_method_declaration ($3); }
 |	method_header error
 		{YYNOT_TWICE yyerror ("'{' expected"); RECOVER;}
 ;
@@ -955,7 +954,7 @@ constructor_declaration:
 		  source_start_java_method (current_function_decl);
 		}
 	constructor_body
-		{ complete_method_declaration ($3); }
+		{ finish_method_declaration ($3); }
 ;
 
 constructor_header:
@@ -1236,22 +1235,14 @@ label_decl:
 
 labeled_statement:
 	label_decl statement
-		{ 
-		  $$ = complete_labeled_statement ($1, $2);
-		  pop_labeled_block ();
-		  POP_LABELED_BLOCK ();
-		}
+		{ $$ = finish_labeled_statement ($1, $2); }
 |	identifier error
 		{yyerror ("':' expected"); RECOVER;}
 ;
 
 labeled_statement_nsi:
 	label_decl statement_nsi
-		{ 
-		  $$ = complete_labeled_statement ($1, $2);
-		  pop_labeled_block ();
-		  POP_LABELED_BLOCK ();
-		}
+		{ $$ = finish_labeled_statement ($1, $2); }
 ;
 
 /* We concentrate here a bunch of error handling rules that we couldn't write
@@ -1435,7 +1426,7 @@ while_expression:
 
 while_statement:
 	while_expression statement
-		{ $$ = complete_loop_body (0, NULL_TREE, $2, 0); }
+		{ $$ = finish_loop_body (0, NULL_TREE, $2, 0); }
 |	WHILE_TK error
 		{YYERROR_NOW; yyerror ("'(' expected"); RECOVER;}
 |	WHILE_TK OP_TK error
@@ -1446,7 +1437,7 @@ while_statement:
 
 while_statement_nsi:
 	while_expression statement_nsi
-		{ $$ = complete_loop_body (0, NULL_TREE, $2, 0); }
+		{ $$ = finish_loop_body (0, NULL_TREE, $2, 0); }
 ;
 
 do_statement_begin:
@@ -1460,15 +1451,15 @@ do_statement_begin:
 
 do_statement: 
 	do_statement_begin statement WHILE_TK OP_TK expression CP_TK SC_TK
-		{ $$ = complete_loop_body ($4.location, $5, $2, 1); }
+		{ $$ = finish_loop_body ($4.location, $5, $2, 1); }
 ;
 
 for_statement:
 	for_begin SC_TK expression SC_TK for_update CP_TK statement
-		{ $$ = complete_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7); }
+		{ $$ = finish_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7); }
 |	for_begin SC_TK SC_TK for_update CP_TK statement
 		{ 
-		  $$ = complete_for_loop (0, NULL_TREE, $4, $6);
+		  $$ = finish_for_loop (0, NULL_TREE, $4, $6);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
 		  LOOP_EXPR_BODY_CONDITION_EXPR (LOOP_EXPR_BODY ($$), 0) = 
 		    empty_stmt_node;
@@ -1483,10 +1474,10 @@ for_statement:
 
 for_statement_nsi:
 	for_begin SC_TK expression SC_TK for_update CP_TK statement_nsi
-		{ $$ = complete_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7);}
+		{ $$ = finish_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7);}
 |	for_begin SC_TK SC_TK for_update CP_TK statement_nsi
 		{ 
-		  $$ = complete_for_loop (0, NULL_TREE, $4, $6);
+		  $$ = finish_for_loop (0, NULL_TREE, $4, $6);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
 		  LOOP_EXPR_BODY_CONDITION_EXPR (LOOP_EXPR_BODY ($$), 0) = 
 		    empty_stmt_node;
@@ -3469,7 +3460,7 @@ fix_method_argument_names (orig_arg, meth)
 /* Complete the method declaration with METHOD_BODY.  */
 
 static void
-complete_method_declaration (method_body)
+finish_method_declaration (method_body)
      tree method_body;
 {
   BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (current_function_decl)) = method_body;
@@ -7817,15 +7808,18 @@ java_complete_lhs (node)
 	node = patch_switch_statement (node);
 
       if (TREE_OPERAND (node, 0) == error_mark_node)
-	return error_mark_node;
-      TREE_TYPE (nn) = TREE_TYPE (node) = void_type_node;
-      /* If we returned something different, that's because we
-         inserted a label. Pop the label too. */
-      if (nn != node)
+	nn = error_mark_node;
+      else
 	{
-	  if (CAN_COMPLETE_NORMALLY (node))
-	    CAN_COMPLETE_NORMALLY (nn) = 1;
-	  POP_LABELED_BLOCK ();
+	  TREE_TYPE (nn) = TREE_TYPE (node) = void_type_node;
+	  /* If we returned something different, that's because we
+	     inserted a label. Pop the label too. */
+	  if (nn != node)
+	    {
+	      if (CAN_COMPLETE_NORMALLY (node))
+		CAN_COMPLETE_NORMALLY (nn) = 1;
+	      POP_LABELED_BLOCK ();
+	    }
 	}
       POP_LOOP ();
       return nn;
@@ -10390,30 +10384,35 @@ patch_if_else_statement (node)
 
 /* Action taken when a lableled statement is parsed. a new
    LABELED_BLOCK_EXPR is created. No statement is attached to the
-   label, yet.  */
+   label, yet.  LABEL can be NULL_TREE for artificially-generated blocks. */
 
 static tree
 build_labeled_block (location, label)
      int location;
      tree label;
 {
-  tree label_name = merge_qualified_name (label_id, label);
+  tree label_name ;
   tree label_decl, node;
-
-  /* Issue an error if we try to reuse a label that was previously
-     declared */
-  if (IDENTIFIER_LOCAL_VALUE (label_name))
+  if (label == NULL_TREE || label == continue_identifier_node)
+    label_name = label;
+  else
     {
-      EXPR_WFL_LINECOL (wfl_operator) = location;
-      parse_error_context (wfl_operator, "Declaration of `%s' shadows "
-			     "a previous label declaration",
-			     IDENTIFIER_POINTER (label));
-      EXPR_WFL_LINECOL (wfl_operator) = 
-        EXPR_WFL_LINECOL (IDENTIFIER_LOCAL_VALUE (label_name));
-      parse_error_context (wfl_operator, "This is the location of the "
-			   "previous declaration of label `%s'",
-			   IDENTIFIER_POINTER (label));
-      java_error_count--;
+      label_name = merge_qualified_name (label_id, label);
+      /* Issue an error if we try to reuse a label that was previously
+	 declared */
+      if (IDENTIFIER_LOCAL_VALUE (label_name))
+	{
+	  EXPR_WFL_LINECOL (wfl_operator) = location;
+	  parse_error_context (wfl_operator, "Declaration of `%s' shadows "
+			       "a previous label declaration",
+			       IDENTIFIER_POINTER (label));
+	  EXPR_WFL_LINECOL (wfl_operator) = 
+	    EXPR_WFL_LINECOL (IDENTIFIER_LOCAL_VALUE (label_name));
+	  parse_error_context (wfl_operator, "This is the location of the "
+			       "previous declaration of label `%s'",
+			       IDENTIFIER_POINTER (label));
+	  java_error_count--;
+	}
     }
 
   label_decl = create_label_decl (label_name);
@@ -10423,20 +10422,10 @@ build_labeled_block (location, label)
   return node;
 }
 
-/* Generate a label crafting a unique name for it. This is used to
-   implicitely label loops that aren't the body part of labeled
-   statement.  */
-
-static tree
-generate_labeled_block ()
-{
-  return build_labeled_block (0, generate_name ());
-}
-
 /* A labeled statement LBE is attached a statement.  */
 
 static tree
-complete_labeled_statement (lbe, statement)
+finish_labeled_statement (lbe, statement)
      tree lbe;			/* Labeled block expr */
      tree statement;
 {
@@ -10449,9 +10438,10 @@ complete_labeled_statement (lbe, statement)
   if (TREE_CODE (statement) == LOOP_EXPR && IS_FOR_LOOP_P (statement))
     {
       java_method_add_stmt (current_function_decl, lbe);
-      return exit_block ();
+      lbe = exit_block ();
     }
-
+  pop_labeled_block ();
+  POP_LABELED_BLOCK ();
   return lbe;
 }
 
@@ -10503,7 +10493,7 @@ build_loop_body (location, condition, reversed)
   condition = build_debugable_stmt (location, condition);
   TREE_SIDE_EFFECTS (condition) = 1;
 
-  body = generate_labeled_block ();
+  body = build_labeled_block (0, continue_identifier_node);
   first = (reversed ? body : condition);
   second = (reversed ? condition : body);
   return 
@@ -10516,7 +10506,7 @@ build_loop_body (location, condition, reversed)
    loop list.  */
 
 static tree
-complete_loop_body (location, condition, body, reversed)
+finish_loop_body (location, condition, body, reversed)
      int location;
      tree condition, body;
      int reversed;
@@ -10538,16 +10528,16 @@ complete_loop_body (location, condition, body, reversed)
   return to_return;
 }
 
-/* Tailored version of complete_loop_body for FOR loops, when FOR
+/* Tailored version of finish_loop_body for FOR loops, when FOR
    loops feature the condition part */
 
 static tree
-complete_for_loop (location, condition, update, body)
+finish_for_loop (location, condition, update, body)
     int location;
     tree condition, update, body;
 {
   /* Put the condition and the loop body in place */
-  tree loop = complete_loop_body (location, condition, body, 0);
+  tree loop = finish_loop_body (location, condition, body, 0);
   /* LOOP is the current loop which has been now popped of the loop
      stack. Install the update block */
   LOOP_EXPR_BODY_UPDATE_BLOCK (LOOP_EXPR_BODY (loop)) = update;
@@ -10555,28 +10545,21 @@ complete_for_loop (location, condition, update, body)
 }
 
 /* If the loop isn't surrounded by a labeled statement, create one and
-   insert LOOP as it's body.  */
+   insert LOOP as its body.  */
 
 static tree
 patch_loop_statement (loop)
      tree loop;
 {
-  tree loop_label, to_return_as_loop;
-
-  if (LOOP_HAS_LABEL_P (loop))
+  if (! LOOP_HAS_LABEL_P (loop))
     {
-      loop_label = ctxp->current_labeled_block;
-      to_return_as_loop = loop;
-    }
-  else
-    {
-      loop_label = generate_labeled_block ();
+      tree loop_label = build_labeled_block (0, NULL_TREE);
       LABELED_BLOCK_BODY (loop_label) = loop;
       PUSH_LABELED_BLOCK (loop_label);
-      to_return_as_loop = loop_label;
+      loop = loop_label;
     }
-  TREE_TYPE (to_return_as_loop) = void_type_node;
-  return to_return_as_loop;
+  TREE_TYPE (loop) = void_type_node;
+  return loop;
 }
 
 /* 14.13, 14.14: break and continue Statements */
@@ -10620,98 +10603,63 @@ patch_bc_statement (node)
      tree node;
 {
   tree bc_label = EXIT_BLOCK_LABELED_BLOCK (node), target_stmt;
-  int is_unlabeled = 0;
+  tree labeled_block = ctxp->current_labeled_block;
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
  
-  /* Not having a target means that the break/continue statement is
-     unlabeled. We try to find a decent label for it */
-  if (!bc_label)
-    {
-      is_unlabeled = 1;
-      /* There should be a loop/switch to branch to */
-      if (ctxp->current_loop)
-	{
-	  if (TREE_CODE (ctxp->current_loop) == LOOP_EXPR)
-	    {
-	      /* At that stage, we're in the loop body, which is
-		 encapsulated around a LABELED_BLOCK_EXPR. So searching
-		 the current loop label requires us to consider the
-		 labeled block before the current one. */
-	      if (!LOOP_HAS_LABEL_SKIP_P (ctxp->current_loop))
-		fatal ("unlabeled loop has no installed label -- "
-		       "patch_bc_statement");
-	      bc_label = TREE_CHAIN (ctxp->current_labeled_block);
-	    }
-	  /* For a SWITCH statement, this is the current one */
-	  else
-	    bc_label = ctxp->current_labeled_block;
-	}
-      /* Not having a loop to break/continue to is an error */
-      else
-	{
-	  parse_error_context (wfl_operator, "`%s' must be in loop%s",
-			       (IS_BREAK_STMT_P (node) ? "break" : "continue"),
-			       (IS_BREAK_STMT_P (node) ? " or switch" : ""));
-	  return error_mark_node;
-	}
-    }
   /* Having an identifier here means that the target is unknown. */
-  else if (TREE_CODE (bc_label) == IDENTIFIER_NODE)
+  if (bc_label != NULL_TREE && TREE_CODE (bc_label) == IDENTIFIER_NODE)
     {
       parse_error_context (wfl_operator, "No label definition found for `%s'",
 			   IDENTIFIER_POINTER (bc_label));
       return error_mark_node;
     }
-
-  /* Find the statement we're targeting. */
-  target_stmt = LABELED_BLOCK_BODY (bc_label);
-
-  /* Target loop is slightly burrowed in the case of a for loop, it
-     appears at the first sight to be a block. */
-  if (TREE_CODE (target_stmt) == BLOCK)
+  if (! IS_BREAK_STMT_P (node))
     {
-      tree sub = BLOCK_SUBBLOCKS (target_stmt);
-      if (sub && TREE_CODE (sub) == COMPOUND_EXPR && TREE_OPERAND (sub, 1)
-	  && TREE_CODE (TREE_OPERAND (sub, 1)) == LOOP_EXPR)
-	target_stmt = TREE_OPERAND (sub, 1);
-    }
-
-  /* 14.13 The break Statement */
-  if (IS_BREAK_STMT_P (node))
-    {
-      /* Named break are always fine, as far as they have a target
-         (already verified). Anonymous break need to target
-         while/do/for/switch */
-      if (is_unlabeled &&
-	  !(TREE_CODE (target_stmt) == LOOP_EXPR        /* do/while/for */
-	    || TREE_CODE (target_stmt) == SWITCH_EXPR)) /* switch */
+      /* It's a continue statement. */
+      for (;; labeled_block = TREE_CHAIN (labeled_block))
 	{
-	  parse_error_context (wfl_operator, 
-			       "`break' must be in loop or switch");
-	  return error_mark_node;
+	  if (labeled_block == NULL_TREE)
+	    {
+	      if (bc_label == NULL_TREE)
+		parse_error_context (wfl_operator,
+				     "`continue' must be in loop");
+	      else
+		parse_error_context (wfl_operator,
+				     "continue label `%d' does not name a loop",
+				     IDENTIFIER_POINTER (bc_label));
+	      return error_mark_node;
+	    }
+	  if ((DECL_NAME (LABELED_BLOCK_LABEL (labeled_block))
+	       == continue_identifier_node)
+	      && (bc_label == NULL_TREE
+		  || TREE_CHAIN (labeled_block) == bc_label))
+	    {
+	      bc_label = labeled_block;
+	      break;
+	    }
 	}
-      /* If previously unlabeled, install the new found label */
-      if (is_unlabeled)
-	EXIT_BLOCK_LABELED_BLOCK (node) = bc_label;
     }
-  /* 14.14 The continue Statement */
-  /* The continue statement must always target a loop, unnamed or not. */
-  else 
+  else if (!bc_label)
     { 
-      if (TREE_CODE (target_stmt) != LOOP_EXPR) /* do/while/for */
+      for (;; labeled_block = TREE_CHAIN (labeled_block))
 	{
-	  parse_error_context (wfl_operator, "`continue' must be in loop");
-	  return error_mark_node;
+	  if (labeled_block == NULL_TREE)
+	    {
+	      parse_error_context (wfl_operator,
+				     "`break' must be in loop or switch");
+	      return error_mark_node;
+	    }
+	  target_stmt = LABELED_BLOCK_BODY (labeled_block);
+	  if (TREE_CODE (target_stmt) == SWITCH_EXPR
+	      || TREE_CODE (target_stmt) == LOOP_EXPR)
+	    {
+	      bc_label = labeled_block;
+	      break;
+	    }
 	}
-      /* Everything looks good. We can fix the `continue' jump to go
-	 at the place in the loop were the continue is.  For unlabeled
-	 continue, the continuation point is the current labeled
-	 block, by construction. */
-      if (is_unlabeled)
-	EXIT_BLOCK_LABELED_BLOCK (node) = 
-	  bc_label = ctxp->current_labeled_block;
     }
 
+  EXIT_BLOCK_LABELED_BLOCK (node) = bc_label;
   CAN_COMPLETE_NORMALLY (bc_label) = 1;
 
   /* Our break/continue don't return values. */
