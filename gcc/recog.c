@@ -76,6 +76,7 @@ init_recog_no_volatile ()
   volatile_ok = 0;
 }
 
+void
 init_recog ()
 {
   volatile_ok = 1;
