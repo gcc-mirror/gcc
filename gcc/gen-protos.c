@@ -40,6 +40,7 @@ hashf (name, len, hashsize)
 
 int hash_tab[HASH_SIZE];
 int verbose = 0;
+char *progname;
 
 sstring linebuf;
 
@@ -62,6 +63,10 @@ main (argc, argv)
   FILE *outf = stdout;
   int next_index = 0;
   int i, i0;
+
+  i = strlen (argv[0]);
+  while (i > 0 && argv[i-1] != '/') --i;
+  progname = &argv[i];
 
   fprintf (outf, "struct fn_decl std_protos[] = {\n");
 
