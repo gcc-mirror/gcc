@@ -1,3 +1,8 @@
+2000-11-10  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/localefwd.h (_Count_ones<>::_S_halfcount,
+	_Count_ones<>::_S_count): Turn into enumerators.
+
 2000-11-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/bits/codecvt.h (codecvt::do_out): Make it const-correct.

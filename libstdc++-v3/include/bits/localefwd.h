@@ -49,27 +49,27 @@ namespace std
            unsigned int _Mask = (~0u >> _Shift) >
     struct _Count_ones;
 
+  // It is preferable to use enumerators instead of integral static data
+  // members to avoid emission of superflous variables -- gdr.
   template<unsigned int _Num, unsigned int _Mask>
     struct _Count_ones<_Num, 0, _Mask> 
-    { static const unsigned int _S_count = _Num; };
-
-  template<unsigned int _Num, unsigned int _Mask>
-    const unsigned int _Count_ones<_Num, 0, _Mask>::_S_count;
+    {
+      enum
+      {
+        _S_count = _Num
+      };
+    };
 
   template<unsigned int _Num, int _Shift, unsigned int _Mask>
     struct _Count_ones 
     {
-      static const unsigned int _S_halfcount =
-        _Count_ones<_Num, _Shift/2, (_Mask^((~_Mask)>>(_Shift/2))) >::_S_count;
-      static const unsigned int _S_count
-      = (_S_halfcount&_Mask) + ((_S_halfcount>>_Shift)&_Mask);
+      enum
+      {
+        _S_halfcount = _Count_ones<_Num, _Shift/2,
+                                   (_Mask^((~_Mask)>>(_Shift/2))) >::_S_count,
+        _S_count = (_S_halfcount&_Mask) + ((_S_halfcount>>_Shift)&_Mask)
+      };
     };
-
-  template<unsigned int _Num, int _Shift, unsigned int _Mask>
-    const unsigned int _Count_ones<_Num, _Shift, _Mask>::_S_count;
-
-  template<unsigned int _Num, int _Shift, unsigned int _Mask>
-    const unsigned int _Count_ones<_Num, _Shift, _Mask>::_S_halfcount;
 
   // 22.1.1 Locale
   template<typename _Tp> class allocator;
