@@ -166,7 +166,7 @@ instead of in the original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 8 February 2001
+@center Last updated 18 March 2001
 @sp 1
 @c The version number appears five times more in this file.
 
@@ -605,63 +605,11 @@ the compiler.  In one case, this was traced down to a bug in
 @code{make}.  Either ignore the problem or switch to GNU Make.
 
 @item
-If you have installed a program known as purify, you may find that it
-causes errors while linking @code{enquire}, which is part of building
-GCC.  The fix is to get rid of the file @code{real-ld} which purify
-installs---so that GCC won't try to use it.
-
-@item
 On GNU/Linux SLS 1.01, there is a problem with @file{libc.a}: it does not
 contain the obstack functions.  However, GCC assumes that the obstack
 functions are in @file{libc.a} when it is the GNU C library.  To work
 around this problem, change the @code{__GNU_LIBRARY__} conditional
 around line 31 to @samp{#if 1}.
-
-@item
-On some 386 systems, building the compiler never finishes because
-@code{enquire} hangs due to a hardware problem in the motherboard---it
-reports floating point exceptions to the kernel incorrectly.  You can
-install GCC except for @file{float.h} by patching out the command to
-run @code{enquire}.  You may also be able to fix the problem for real by
-getting a replacement motherboard.  This problem was observed in
-Revision E of the Micronics motherboard, and is fixed in Revision F.
-It has also been observed in the MYLEX MXA-33 motherboard.
-
-If you encounter this problem, you may also want to consider removing
-the FPU from the socket during the compilation.  Alternatively, if you
-are running SCO Unix, you can reboot and force the FPU to be ignored.
-To do this, type @samp{hd(40)unix auto ignorefpu}.
-
-@item
-On some 386 systems, GCC crashes trying to compile @file{enquire.c}.
-This happens on machines that don't have a 387 FPU chip.  On 386
-machines, the system kernel is supposed to emulate the 387 when you
-don't have one.  The crash is due to a bug in the emulator.
-
-One of these systems is the Unix from Interactive Systems: 386/ix.
-On this system, an alternate emulator is provided, and it does work.
-To use it, execute this command as super-user:
-
-@example
-ln /etc/emulator.rel1 /etc/emulator
-@end example
-
-@noindent
-and then reboot the system.  (The default emulator file remains present
-under the name @file{emulator.dflt}.)
-
-Try using @file{/etc/emulator.att}, if you have such a problem on the
-SCO system.
-
-Another system which has this problem is Esix.  We don't know whether it
-has an alternate emulator that works.
-
-On NetBSD 0.8, a similar problem manifests itself as these error messages:
-
-@example
-enquire.c: In function `fprop':
-enquire.c:2328: floating overflow
-@end example
 
 @item
 On SCO systems, when compiling GCC with the system's compiler,
@@ -847,16 +795,6 @@ On HP-UX version 8.05, but not on 8.07 or more recent versions,
 the @code{fixproto} shell script triggers a bug in the system shell.
 If you encounter this problem, upgrade your operating system or
 use BASH (the GNU shell) to run @code{fixproto}.
-
-@item
-Some versions of the Pyramid C compiler are reported to be unable to
-compile GCC.  You must use an older version of GCC for
-bootstrapping.  One indication of this problem is if you get a crash
-when GCC compiles the function @code{muldi3} in file @file{libgcc2.c}.
-
-You may be able to succeed by getting GCC version 1, installing it,
-and using it to compile GCC version 2.  The bug in the Pyramid C
-compiler does not seem to affect GCC version 1.
 
 @item
 There may be similar problems on System V Release 3.1 on 386 systems.
