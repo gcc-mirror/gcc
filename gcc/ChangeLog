@@ -1,3 +1,16 @@
+2001-07-16  Richard Henderson  <rth@redhat.com>
+
+	* hard-reg-set.h (regs_invalidated_by_call): Declare.
+	* regclass.c (regs_invalidated_by_call): Move from cse.c.
+	(init_reg_sets_1): Move initialization from cse_main.
+	* cse.c (regs_invalidated_by_call): Move to regclass.c.
+	(cse_main): Move its initialization also.
+	* df.c (df_insn_refs_record): Use regs_invalidated_by_call.
+	* flow.c (propagate_one_insn): Likewise.
+	* gcse.c (compute_hash_table): Likewise.
+	(compute_kill_rd, compute_store_table): Likewise.
+	* sched-deps.c (sched_analyze_1): Likewise.
+
 Mon Jul 16 18:07:07 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcse.c (pre_insert_copy_insn): Use gen_move_insn instead of
@@ -385,12 +398,12 @@ Thu Jul 12 16:48:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-07-11  Timothy Wall  <twall@redhat.com>
 
-        * config.gcc: Add configuration for AIX5/IA64.
-        * config/ia64/aix.h: New.  AIX5/IA64-specific configuration.
-        * config/ia64/crt[in].asm: New.  Generic static ctor/dtor
+	* config.gcc: Add configuration for AIX5/IA64.
+	* config/ia64/aix.h: New.  AIX5/IA64-specific configuration.
+	* config/ia64/crt[in].asm: New.  Generic static ctor/dtor
 	support prefix/suffix code.
-        * config/ia64/t-aix: New.  Makefile fragment.
-        * config/ia64/unwind-aix.c: New.  Unwind table entry lookup.
+	* config/ia64/t-aix: New.  Makefile fragment.
+	* config/ia64/unwind-aix.c: New.  Unwind table entry lookup.
 
 2001-07-11  Kazu Hirata  <kazu@hxi.com>
 
@@ -1395,8 +1408,8 @@ Fri Jul  6 11:47:59 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-07-05  H.J. Lu  (hjl@gnu.org)
 
-        * config/mips/mips.c (mips_parse_cpu): New function to parse
-        -march=*/-mcpu=*.
+	* config/mips/mips.c (mips_parse_cpu): New function to parse
+	-march=*/-mcpu=*.
 
 2001-07-05  Jim Wilson  <wilson@redhat.com>
 
@@ -1482,7 +1495,7 @@ Fri Jul  6 11:47:59 2001  Jeffrey A Law  (law@cygnus.com)
 2001-07-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cppinit.c (remove_dup_dirs): Inform if a system include
-        directory is being reordered.
+	directory is being reordered.
 	* doc/invoke.texi (Directory Options): GCC warns if you hide a
 	system include.
 	* doc/cpp.texi (Search Paths): Likewise.
@@ -1756,8 +1769,8 @@ Mon Jul  2 15:33:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-07-02  Steve Ellcey  <sje@cup.hp.com>
 
-        * config/ia64/t-ia64: Change LIB1ASMFUNCS to use single underscore.
-        * config/ia64/lib1funcs.asm: Change macro names to match t-ia64.
+	* config/ia64/t-ia64: Change LIB1ASMFUNCS to use single underscore.
+	* config/ia64/lib1funcs.asm: Change macro names to match t-ia64.
 
 2001-07-02  Zack Weinberg  <zackw@stanford.edu>
 

@@ -618,7 +618,9 @@ sched_analyze_1 (deps, x, insn)
 		SET_REGNO_REG_SET (reg_pending_clobbers, r);
 
 	      /* Function calls clobber all call_used regs.  */
-	      if (global_regs[r] || (code == SET && call_used_regs[r]))
+	      if (global_regs[r]
+		  || (code == SET
+		      && TEST_HARD_REG_BIT (regs_invalidated_by_call, r)))
 		for (u = deps->last_function_call; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	    }

@@ -1268,14 +1268,9 @@ df_insn_refs_record (df, bb, insn)
 
 	  if (df->flags & DF_HARD_REGS)
 	    {
-	      /* Each call clobbers all call-clobbered regs that are not
-		 global or fixed and have not been explicitly defined
-		 in the call pattern.  */
+	      /* Kill all registers invalidated by a call.  */
 	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		if (call_used_regs[i] 
-		    && ! global_regs[i]
-		    && ! fixed_regs[i]
-		    && ! df_insn_regno_def_p (df, bb, insn, i))
+		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
 		  {
 		    rtx reg_clob = df_reg_clobber_gen (i);
 		    df_defs_record (df, reg_clob, bb, insn);

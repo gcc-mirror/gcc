@@ -4948,8 +4948,7 @@ propagate_one_insn (pbi, insn)
 
 	  /* Calls change all call-used and global registers.  */
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (call_used_regs[i] && ! global_regs[i]
-		&& ! fixed_regs[i])
+	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
 	      {
 		/* We do not want REG_UNUSED notes for these registers.  */
 		mark_set_1 (pbi, CLOBBER, gen_rtx_REG (reg_raw_mode[i], i),

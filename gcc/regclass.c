@@ -116,7 +116,16 @@ int n_non_fixed_regs;
    and are also considered fixed.  */
 
 char global_regs[FIRST_PSEUDO_REGISTER];
-  
+
+/* Contains 1 for registers that are set or clobbered by calls.  */
+/* ??? Ideally, this would be just call_used_regs plus global_regs, but
+   for someone's bright idea to have call_used_regs strictly include
+   fixed_regs.  Which leaves us guessing as to the set of fixed_regs
+   that are actually preserved.  We know for sure that those associated
+   with the local stack frame are safe, but scant others.  */
+
+HARD_REG_SET regs_invalidated_by_call;
+
 /* Table of register numbers in the order in which to try to use them.  */
 #ifdef REG_ALLOC_ORDER
 int reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
@@ -410,6 +419,7 @@ init_reg_sets_1 ()
   CLEAR_HARD_REG_SET (fixed_reg_set);
   CLEAR_HARD_REG_SET (call_used_reg_set);
   CLEAR_HARD_REG_SET (call_fixed_reg_set);
+  CLEAR_HARD_REG_SET (regs_invalidated_by_call);
 
   memcpy (call_fixed_regs, fixed_regs, sizeof call_fixed_regs);
 
@@ -428,7 +438,34 @@ init_reg_sets_1 ()
 	SET_HARD_REG_BIT (call_fixed_reg_set, i);
       if (CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (i)))
 	SET_HARD_REG_BIT (losing_caller_save_reg_set, i);
+
+      /* There are a couple of fixed registers that we know are safe to
+	 exclude from being clobbered by calls:
+
+	 The frame pointer is always preserved across calls.  The arg pointer
+	 is if it is fixed.  The stack pointer usually is, unless
+	 RETURN_POPS_ARGS, in which case an explicit CLOBBER will be present.
+	 If we are generating PIC code, the PIC offset table register is
+	 preserved across calls, though the target can override that.  */
+	 
+      if (i == STACK_POINTER_REGNUM || i == FRAME_POINTER_REGNUM)
+	;
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+      else if (i == HARD_FRAME_POINTER_REGNUM)
+	;
+#endif
+#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
+      else if (i == ARG_POINTER_REGNUM && fixed_regs[i])
+	;
+#endif
+#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+      else if (i == PIC_OFFSET_TABLE_REGNUM && flag_pic)
+	;
+#endif
+      else if (call_used_regs[i] || global_regs[i])
+	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
     }
+
   memset (contains_reg_of_mode, 0, sizeof (contains_reg_of_mode));
   memset (allocatable_regs_of_mode, 0, sizeof (allocatable_regs_of_mode));
   for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)

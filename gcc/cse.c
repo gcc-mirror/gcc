@@ -346,11 +346,6 @@ static struct cse_reg_info *cached_cse_reg_info;
 
 static HARD_REG_SET hard_regs_in_table;
 
-/* A HARD_REG_SET containing all the hard registers that are invalidated
-   by a CALL_INSN.  */
-
-static HARD_REG_SET regs_invalidated_by_call;
-
 /* CUID of insn that starts the basic block currently being cse-processed.  */
 
 static int cse_basic_block_start;
@@ -7071,37 +7066,6 @@ cse_main (f, nregs, after_loop, file)
 	/* Give a line number note the same cuid as preceding insn.  */
 	INSN_CUID (insn) = i;
     }
-
-  /* Initialize which registers are clobbered by calls.  */
-
-  CLEAR_HARD_REG_SET (regs_invalidated_by_call);
-
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if ((call_used_regs[i]
-	 /* Used to check !fixed_regs[i] here, but that isn't safe;
-	    fixed regs are still call-clobbered, and sched can get
-	    confused if they can "live across calls".
-
-	    The frame pointer is always preserved across calls.  The arg
-	    pointer is if it is fixed.  The stack pointer usually is, unless
-	    RETURN_POPS_ARGS, in which case an explicit CLOBBER
-	    will be present.  If we are generating PIC code, the PIC offset
-	    table register is preserved across calls.  */
-
-	 && i != STACK_POINTER_REGNUM
-	 && i != FRAME_POINTER_REGNUM
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	 && i != HARD_FRAME_POINTER_REGNUM
-#endif
-#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	 && ! (i == ARG_POINTER_REGNUM && fixed_regs[i])
-#endif
-#if !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
-	 && ! (i == PIC_OFFSET_TABLE_REGNUM && flag_pic)
-#endif
-	 )
-	|| global_regs[i])
-      SET_HARD_REG_BIT (regs_invalidated_by_call, i);
 
   ggc_push_context ();
 
