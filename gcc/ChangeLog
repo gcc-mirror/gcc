@@ -1,3 +1,8 @@
+Sun Jul 26 01:11:12 1998  H.J. Lu  (hjl@gnu.org)
+
+	* i386.c (output_to_reg): Add code to emulate non-popping DImode
+	case.
+
 Sun Jul 26 01:01:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* regmove.c (regmove_optimize): Fix typo initializing regmove_bb_head.

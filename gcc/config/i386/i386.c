@@ -891,6 +891,17 @@ output_to_reg (dest, dies, scratch_mem)
     {
       if (dies)
 	output_asm_insn (AS1 (fistp%z3,%y0), xops);
+      else if (GET_MODE (xops[3]) == DImode && ! dies)
+	{
+	  /* There is no DImode version of this without a stack pop, so
+	     we must emulate it.  It doesn't matter much what the second
+	     instruction is, because the value being pushed on the FP stack
+	     is not used except for the following stack popping store.
+	     This case can only happen without optimization, so it doesn't
+	     matter that it is inefficient.  */
+	  output_asm_insn (AS1 (fistp%z3,%0), xops);
+	  output_asm_insn (AS1 (fild%z3,%0), xops);
+	}
       else
 	output_asm_insn (AS1 (fist%z3,%y0), xops);
     }
