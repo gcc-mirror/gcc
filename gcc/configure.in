@@ -1109,7 +1109,7 @@ fi
 if test -n "$extra_modes" && test -f $srcdir/config/$extra_modes; then
   extra_modes_file='$(srcdir)'/config/${extra_modes}
   AC_SUBST(extra_modes_file)
-  AC_DEFINE_UNQUOTED(EXTRA_MODES_FILE, "$extra_modes",
+  AC_DEFINE_UNQUOTED(EXTRA_MODES_FILE, "config/$extra_modes",
   [Define to the name of a file containing a list of extra machine modes
    for this architecture.])
   AC_DEFINE(EXTRA_CC_MODES, 1,
@@ -1319,35 +1319,69 @@ rm -f symtest.tem
 out_object_file=`basename $out_file .c`.o
 
 tm_file_list=
+tm_include_list=
 for f in $tm_file; do
   case $f in
-    ansidecl.h )
-       tm_file_list="${tm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
     defaults.h )
-       tm_file_list="${tm_file_list} \$(srcdir)/$f" ;;
-    *) tm_file_list="${tm_file_list} \$(srcdir)/config/$f" ;;
+       tm_file_list="${tm_file_list} \$(srcdir)/$f"
+       tm_include_list="${tm_include_list} $f"
+       ;;
+    * )
+       tm_file_list="${tm_file_list} \$(srcdir)/config/$f"
+       tm_include_list="${tm_include_list} config/$f"
+       ;;
   esac
 done
 
 tm_p_file_list=
+tm_p_include_list=
 for f in $tm_p_file; do
   case $f in
     tm-preds.h )
-       tm_p_file_list="${tm_p_file_list} $f" ;;
-    *) tm_p_file_list="${tm_p_file_list} \$(srcdir)/config/$f" ;;
+       tm_p_file_list="${tm_p_file_list} $f"
+       tm_p_include_list="${tm_p_include_list} $f"
+       ;;
+    * )
+       tm_p_file_list="${tm_p_file_list} \$(srcdir)/config/$f"
+       tm_p_include_list="${tm_p_include_list} config/$f"
+  esac
+done
+
+xm_file_list=
+xm_include_list=
+for f in $xm_file; do
+  case $f in
+    ansidecl.h )
+       xm_file_list="${xm_file_list} \$(srcdir)/../include/$f"
+       xm_include_list="${xm_include_list} $f"
+       ;;
+    auto-host.h )
+       xm_file_list="${xm_file_list} $f"
+       xm_include_list="${xm_include_list} $f"
+       ;;
+    * )
+       xm_file_list="${xm_file_list} \$(srcdir)/config/$f"
+       xm_include_list="${xm_include_list} config/$f"
+       ;;
   esac
 done
 
 host_xm_file_list=
+host_xm_include_list=
 for f in $host_xm_file; do
   case $f in
     ansidecl.h )
-       host_xm_file_list="${host_xm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
+       host_xm_file_list="${host_xm_file_list} \$(srcdir)/../include/$f"
+       host_xm_include_list="${host_xm_include_list} $f"
+       ;;
     auto-host.h )
-       host_xm_file_list="${host_xm_file_list} $f" ;;
-    defaults.h )
-       host_xm_file_list="${host_xm_file_list} \$(srcdir)/$f" ;;
-    *) host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f" ;;
+       host_xm_file_list="${host_xm_file_list} $f"
+       host_xm_include_list="${host_xm_include_list} $f"
+       ;;
+    * )
+       host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f"
+       host_xm_include_list="${host_xm_include_list} config/$f"
+       ;;
   esac
 done
 
@@ -1355,12 +1389,17 @@ build_xm_file_list=
 for f in $build_xm_file; do
   case $f in
     ansidecl.h )
-       build_xm_file_list="${build_xm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
+       build_xm_file_list="${build_xm_file_list} \$(srcdir)/../include/$f"
+       build_xm_include_list="${build_xm_include_list} $f"
+       ;;
     auto-build.h | auto-host.h )
-       build_xm_file_list="${build_xm_file_list} $f" ;;
-    defaults.h )
-       host_xm_file_list="${host_xm_file_list} \$(srcdir)/$f" ;;
-    *) build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f" ;;
+       build_xm_file_list="${build_xm_file_list} $f"
+       build_xm_include_list="${build_xm_include_list} $f"
+       ;;
+    * )
+       build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f"
+       build_xm_include_list="${build_xm_include_list} config/$f"
+       ;;
   esac
 done
 
@@ -2869,7 +2908,7 @@ AC_SUBST(all_stagestuff)
 AC_SUBST(build_exeext)
 AC_SUBST(build_install_headers_dir)
 AC_SUBST(build_xm_file_list)
-AC_SUBST(build_xm_file)
+AC_SUBST(build_xm_include_list)
 AC_SUBST(build_xm_defines)
 AC_SUBST(check_languages)
 AC_SUBST(cc_set_by_configure)
@@ -2892,7 +2931,7 @@ AC_SUBST(gcc_version_trigger)
 AC_SUBST(host_exeext)
 AC_SUBST(host_extra_gcc_objs)
 AC_SUBST(host_xm_file_list)
-AC_SUBST(host_xm_file)
+AC_SUBST(host_xm_include_list)
 AC_SUBST(host_xm_defines)
 AC_SUBST(out_host_hook_obj)
 AC_SUBST(install)
@@ -2909,11 +2948,12 @@ AC_SUBST(quoted_stage_prefix_set_by_configure)
 AC_SUBST(symbolic_link)
 AC_SUBST(thread_file)
 AC_SUBST(tm_file_list)
-AC_SUBST(tm_file)
+AC_SUBST(tm_include_list)
 AC_SUBST(tm_defines)
 AC_SUBST(tm_p_file_list)
-AC_SUBST(tm_p_file)
-AC_SUBST(xm_file)
+AC_SUBST(tm_p_include_list)
+AC_SUBST(xm_file_list)
+AC_SUBST(xm_include_list)
 AC_SUBST(xm_defines)
 AC_SUBST(target_alias)
 AC_SUBST(c_target_objs)

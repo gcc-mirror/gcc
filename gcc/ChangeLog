@@ -1,3 +1,25 @@
+2003-08-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (tm_file): Rename tm_include_list.
+	(tm_p_file): Rename tm_p_include_list.
+	(build_xm_file): Rename build_xm_include_list.
+	(host_xm_file): Rename host_xm_include_list.
+	(xm_file): Rename xm_include_list.
+	(xm_file_list): Add to be substituted.
+	(cs-config.h, cs-bconfig.h, cs-tconfig.h, cs-tm.h, cs-tm_p.h):
+	Update to match.
+	(bt-load.o): Add missing dependency on $(TM_H).
+	* configure.in: Prefix value of EXTRA_MODES_FILE with config/.
+	For each of tm_file, tm_p_file, xm_file, host_xm_file, and
+	build_xm_file, generate both *_file_list and *_include_list
+	values from it.  (xm_file_list was formerly not being generated.)
+	In *_include_list, prefix the names of all headers found in
+	$(srcdir)/config with config/.  In each loop, consider only
+	the special case files that can actually appear in that list.
+	AC_SUBST all *_file_list and all *_include_list variables; do
+	not AC_SUBST the plain *_file variables.
+	* configure: Regenerate.
+
 2003-08-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfg.c (dump_edge_info): Add name of loop_exit edge flag.
