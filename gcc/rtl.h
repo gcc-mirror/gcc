@@ -562,7 +562,11 @@ enum reg_note
 
   /* Indicates that an indirect jump is a non-local goto instead of a 
      computed goto.  */
-  REG_NON_LOCAL_GOTO
+  REG_NON_LOCAL_GOTO,
+
+  /* This kind of note is generated at each to `setjmp',
+     and similar functions that can return twice.  */
+  REG_SETJMP
 };
 
 /* The base value for branch probability notes.  */
@@ -659,10 +663,6 @@ enum insn_note
      enabling that optimizer to determine whether control can fall
      off the end of the function body without a return statement.  */
   NOTE_INSN_FUNCTION_END,
-
-  /* This kind of note is generated just after each call to `setjmp',
-     and similar functions that can return twice.  */
-  NOTE_INSN_SETJMP,
 
   /* This marks the point immediately after the last prologue insn.  */
   NOTE_INSN_PROLOGUE_END,

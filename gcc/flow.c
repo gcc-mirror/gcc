@@ -5706,8 +5706,8 @@ propagate_block (bb, live, local_set, cond_local_set, flags)
       /* If this is a call to `setjmp' et al, warn if any
 	 non-volatile datum is live.  */
       if ((flags & PROP_REG_INFO)
-	  && GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+	  && GET_CODE (insn) == CALL
+	  && find_reg_note (insn, REG_SETJMP, NULL))
 	IOR_REG_SET (regs_live_at_setjmp, pbi->reg_live);
 
       prev = propagate_one_insn (pbi, insn);

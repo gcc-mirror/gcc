@@ -2512,19 +2512,6 @@ find_and_verify_loops (f, loops)
 	    current_loop = next_loop;
 	    break;
 
-	  case NOTE_INSN_SETJMP:
-	    /* In this case, we must invalidate our current loop and any
-	       enclosing loop.  */
-	    for (loop = current_loop; loop; loop = loop->outer)
-	      {
-		loop->invalid = 1;
-		if (loop_dump_stream)
-		  fprintf (loop_dump_stream,
-			   "\nLoop at %d ignored due to setjmp.\n",
-			   INSN_UID (loop->start));
-	      }
-	    break;
-
 	  case NOTE_INSN_LOOP_CONT:
 	    current_loop->cont = insn;
 	    break;
@@ -2544,6 +2531,21 @@ find_and_verify_loops (f, loops)
 	  default:
 	    break;
 	  }
+
+      if (GET_CODE (insn) == CALL
+	  && find_reg_note (insn, REG_SETJMP, NULL))
+	{
+	  /* In this case, we must invalidate our current loop and any
+	     enclosing loop.  */
+	  for (loop = current_loop; loop; loop = loop->outer)
+	    {
+	      loop->invalid = 1;
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream,
+			 "\nLoop at %d ignored due to setjmp.\n",
+			 INSN_UID (loop->start));
+	    }
+	}
 
       /* Note that this will mark the NOTE_INSN_LOOP_END note as being in the
 	 enclosing loop, but this doesn't matter.  */

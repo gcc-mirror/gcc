@@ -6461,13 +6461,11 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	    for (i = 0; i < valuenregs; ++i)
 	      if (call_used_regs[valueno + i])
 		return 0;
-	}
-
 #ifdef NON_SAVING_SETJMP
-      if (NON_SAVING_SETJMP && GET_CODE (p) == NOTE
-	  && NOTE_LINE_NUMBER (p) == NOTE_INSN_SETJMP)
-	return 0;
+	  if (NON_SAVING_SETJMP && find_reg_note (p, REG_SETJMP, NULL))
+	    return 0;
 #endif
+	}
 
       if (INSN_P (p))
 	{

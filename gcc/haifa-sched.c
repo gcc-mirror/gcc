@@ -1071,8 +1071,7 @@ unlink_other_notes (insn, tail)
 	PREV_INSN (next) = prev;
 
       /* See sched_analyze to see how these are handled.  */
-      if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP
-	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
+      if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_RANGE_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_RANGE_END
@@ -1537,7 +1536,7 @@ move_insn1 (insn, last)
   return insn;
 }
 
-/* Search INSN for REG_SAVE_NOTE note pairs for NOTE_INSN_SETJMP,
+/* Search INSN for REG_SAVE_NOTE note pairs for
    NOTE_INSN_{LOOP,EHREGION}_{BEG,END}; and convert them back into
    NOTEs.  The REG_SAVE_NOTE note following first one is contains the
    saved value for NOTE_BLOCK_NUMBER which is useful for
@@ -1558,15 +1557,8 @@ reemit_notes (insn, last)
 	{
 	  enum insn_note note_type = INTVAL (XEXP (note, 0));
 
-	  if (note_type == NOTE_INSN_SETJMP)
-	    {
-	      retval = emit_note_after (NOTE_INSN_SETJMP, insn);
-	      CONST_OR_PURE_CALL_P (retval) = CONST_OR_PURE_CALL_P (note);
-	      remove_note (insn, note);
-	      note = XEXP (note, 1);
-	    }
-	  else if (note_type == NOTE_INSN_RANGE_BEG
-                   || note_type == NOTE_INSN_RANGE_END)
+	  if (note_type == NOTE_INSN_RANGE_BEG
+              || note_type == NOTE_INSN_RANGE_END)
 	    {
 	      last = emit_note_before (note_type, last);
 	      remove_note (insn, note);

@@ -1017,13 +1017,17 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 
   /* Mark registers CLOBBERED or used by called function.  */
   if (GET_CODE (insn) == CALL_INSN)
-    for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-      {
-	if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	  sched_analyze_1 (deps, XEXP (link, 0), insn);
-	else
-	  sched_analyze_2 (deps, XEXP (link, 0), insn);
-      }
+    {
+      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+	{
+	  if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	    sched_analyze_1 (deps, XEXP (link, 0), insn);
+	  else
+	    sched_analyze_2 (deps, XEXP (link, 0), insn);
+	}
+      if (find_reg_note (insn, REG_SETJMP, NULL))
+	schedule_barrier_found = 1;
+    }
 
   if (GET_CODE (insn) == JUMP_INSN)
     {
@@ -1094,8 +1098,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	  if (INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_BEG
 	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_END
 	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_BEG
-	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_END
-	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_SETJMP)
+	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_END)
 	    schedule_barrier_found = 1;
 
 	  link = XEXP (link, 1);
@@ -1277,15 +1280,14 @@ sched_analyze (deps, head, tail)
 	     past a void call (i.e. it does not explicitly set the hard
 	     return reg).  */
 
-	  /* If this call is followed by a NOTE_INSN_SETJMP, then assume that
+	  /* If this call has REG_SETJMP, then assume that
 	     all registers, not just hard registers, may be clobbered by this
 	     call.  */
 
 	  /* Insn, being a CALL_INSN, magically depends on
 	     `last_function_call' already.  */
 
-	  if (NEXT_INSN (insn) && GET_CODE (NEXT_INSN (insn)) == NOTE
-	      && NOTE_LINE_NUMBER (NEXT_INSN (insn)) == NOTE_INSN_SETJMP)
+	  if (find_reg_note (insn, REG_SETJMP, NULL))
 	    {
 	      for (i = 0; i < deps->max_reg; i++)
 		{
@@ -1301,16 +1303,6 @@ sched_analyze (deps, head, tail)
 		  free_INSN_LIST_list (&reg_last->uses);
 		}
 	      reg_pending_sets_all = 1;
-
-	      /* Add a pair of REG_SAVE_NOTEs which we will later
-		 convert back into a NOTE_INSN_SETJMP note.  See
-		 reemit_notes for why we use a pair of NOTEs.  */
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_SAVE_NOTE,
-						  GEN_INT (0),
-						  REG_NOTES (insn));
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_SAVE_NOTE,
-						  GEN_INT (NOTE_INSN_SETJMP),
-						  REG_NOTES (insn));
 	    }
 	  else
 	    {
@@ -1375,9 +1367,7 @@ sched_analyze (deps, head, tail)
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END
-		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
-		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
 	{
 	  rtx rtx_region;
 

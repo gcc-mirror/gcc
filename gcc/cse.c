@@ -6855,8 +6855,8 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
       /* Don't cse over a call to setjmp; on some machines (eg VAX)
 	 the regs restored by the longjmp come from
 	 a later time than the setjmp.  */
-      if (GET_CODE (p) == NOTE
-	  && NOTE_LINE_NUMBER (p) == NOTE_INSN_SETJMP)
+      if (PREV_INSN (p) && GET_CODE (PREV_INSN (p)) == CALL_INSN
+	  && find_reg_note (PREV_INSN (p), REG_SETJMP, NULL))
 	break;
 
       /* A PARALLEL can have lots of SETs in it,
@@ -6906,7 +6906,8 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
 	  for (q = PREV_INSN (JUMP_LABEL (p)); q; q = PREV_INSN (q))
 	    if ((GET_CODE (q) != NOTE
 		 || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END
-		 || NOTE_LINE_NUMBER (q) == NOTE_INSN_SETJMP)
+		 || (PREV_INSN (q) && GET_CODE (PREV_INSN (q)) == CALL_INSN
+		     && find_reg_note (PREV_INSN (q), REG_SETJMP, NULL)))
 		&& (GET_CODE (q) != CODE_LABEL || LABEL_NUSES (q) != 0))
 	      break;
 
