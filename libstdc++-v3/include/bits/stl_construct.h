@@ -90,6 +90,16 @@ namespace std
 
   /**
    * @if maint
+   * Destroy the object pointed to by a pointer type.
+   * @endif
+   */
+  template <class _Tp>
+    inline void
+    _Destroy(_Tp* __pointer)
+    { __pointer->~_Tp(); }
+
+  /**
+   * @if maint
    * Destroy a range of objects with nontrivial destructors.  
    *
    * This is a helper function used only by _Destroy().
@@ -98,7 +108,7 @@ namespace std
   template <class _ForwardIterator>
     inline void
     __destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
-    { for ( ; __first != __last; ++__first) _Destroy(&*__first); }
+    { for ( ; __first != __last; ++__first) std::_Destroy(&*__first); }
 
   /**
    * @if maint
@@ -116,16 +126,6 @@ namespace std
 
   /**
    * @if maint
-   * Destroy the object pointed to by a pointer type.
-   * @endif
-   */
-  template <class _Tp>
-    inline void
-    _Destroy(_Tp* __pointer)
-    { __pointer->~_Tp(); }
-  
-  /**
-   * @if maint
    * Destroy a range of objects.  If the value_type of the object has
    * a trivial destructor, the compiler should optimize all of this
    * away, otherwise the objects' destructors must be invoked.
@@ -140,7 +140,7 @@ namespace std
       typedef typename __type_traits<_Value_type>::has_trivial_destructor
                        _Has_trivial_destructor;
 
-      __destroy_aux(__first, __last, _Has_trivial_destructor());
+      std::__destroy_aux(__first, __last, _Has_trivial_destructor());
     }
 } // namespace std
 

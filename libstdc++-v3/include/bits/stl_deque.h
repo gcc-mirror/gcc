@@ -723,7 +723,7 @@ namespace std
     */
     deque(const deque& __x)
       : _Base(__x.get_allocator(), __x.size()) 
-      { uninitialized_copy(__x.begin(), __x.end(), this->_M_start); }
+      { std::uninitialized_copy(__x.begin(), __x.end(), this->_M_start); }
   
     /**
      *  @brief  Builds a %deque from a range.
@@ -753,7 +753,7 @@ namespace std
      *  themselves are pointers, the pointed-to memory is not touched in any
      *  way.  Managing the pointer is the user's responsibilty.
     */
-    ~deque() { _Destroy(this->_M_start, this->_M_finish); }
+    ~deque() { std::_Destroy(this->_M_start, this->_M_finish); }
   
     /**
      *  @brief  %Deque assignment operator.
@@ -1021,7 +1021,7 @@ namespace std
     push_front(const value_type& __x) 
     {
       if (this->_M_start._M_cur != this->_M_start._M_first) {
-        _Construct(this->_M_start._M_cur - 1, __x);
+        std::_Construct(this->_M_start._M_cur - 1, __x);
         --this->_M_start._M_cur;
       }
       else
@@ -1040,7 +1040,7 @@ namespace std
     push_back(const value_type& __x)
     {
       if (this->_M_finish._M_cur != this->_M_finish._M_last - 1) {
-        _Construct(this->_M_finish._M_cur, __x);
+        std::_Construct(this->_M_finish._M_cur, __x);
         ++this->_M_finish._M_cur;
       }
       else
@@ -1059,7 +1059,7 @@ namespace std
     pop_front()
     {
       if (this->_M_start._M_cur != this->_M_start._M_last - 1) {
-        _Destroy(this->_M_start._M_cur);
+        std::_Destroy(this->_M_start._M_cur);
         ++this->_M_start._M_cur;
       }
       else 
@@ -1079,7 +1079,7 @@ namespace std
     {
       if (this->_M_finish._M_cur != this->_M_finish._M_first) {
         --this->_M_finish._M_cur;
-        _Destroy(this->_M_finish._M_cur);
+        std::_Destroy(this->_M_finish._M_cur);
       }
       else
         _M_pop_back_aux();
@@ -1292,12 +1292,12 @@ namespace std
         size_type __len = std::distance(__first, __last);
         if (__len > size()) {
           _ForwardIterator __mid = __first;
-          advance(__mid, size());
-          copy(__first, __mid, begin());
+          std::advance(__mid, size());
+          std::copy(__first, __mid, begin());
           insert(end(), __mid, __last);
         }
         else
-          erase(copy(__first, __last, begin()), end());
+          erase(std::copy(__first, __last, begin()), end());
       }
   
     // Called by assign(n,t), and the range assign when it turns out to be the
@@ -1307,13 +1307,13 @@ namespace std
     {
       if (__n > size())
       {
-        fill(begin(), end(), __val);
+        std::fill(begin(), end(), __val);
         insert(end(), __n - size(), __val);
       }
       else
       {
         erase(begin() + __n, end());
-        fill(begin(), end(), __val);
+        std::fill(begin(), end(), __val);
       }
     }
   
@@ -1469,7 +1469,7 @@ namespace std
                          const deque<_Tp, _Alloc>& __y)
   {
     return __x.size() == __y.size() &&
-           equal(__x.begin(), __x.end(), __y.begin());
+           std::equal(__x.begin(), __x.end(), __y.begin());
   }
   
   /**

@@ -1,5 +1,12 @@
 2003-07-02  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/stl_bvector.h: Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+	* include/bits/stl_construct.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+
+2003-07-02  Paolo Carlini  <pcarlini@unitus.it>
+
 	* testsuite/22_locale/num_put/put/char/7.cc: Include
 	<testsuite_hooks.h>, tweak.
 	* testsuite/22_locale/num_put/put/wchar_t/7.cc: Likewise.
