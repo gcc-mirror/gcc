@@ -1947,15 +1947,16 @@ use_group_regs (call_fusage, regs)
 {
   int i;
 
-  /* Check for a NULL entry, used to indicate that the parameter goes
-     both on the stack and in registers.  */
-  if (XEXP (XVECEXP (regs, 0, 0), 0))
-    i = 0;
-  else
-    i = 1;
+  for (i = 0; i < XVECLEN (regs, 0); i++)
+    {
+      rtx reg = XEXP (XVECEXP (regs, 0, i), 0);
 
-  for (; i < XVECLEN (regs, 0); i++)
-    use_reg (call_fusage, XEXP (XVECEXP (regs, 0, i), 0));
+      /* A NULL entry means the parameter goes both on the stack and in
+	 registers.  This can also be a MEM for targets that pass values
+	 partially on the stack and partially in registers.  */
+      if (reg != 0 && GET_CODE (reg) == REG)
+	use_reg (call_fusage, reg);
+    }
 }
 
 /* Generate several move instructions to clear LEN bytes of block TO.
