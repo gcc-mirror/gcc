@@ -1090,6 +1090,15 @@ Enable automatic template instantiation.  This option also implies
 @samp{-fno-implicit-templates}.  @xref{Template Instantiation}, for more
 information.
 
+@item -fsquangle
+@item -fno-squangle
+@samp{-fsquangle} will enable a compressed form of name mangling for
+identifiers. In particular, it helps to shorten very long names by recognizing
+types and class names which occur more than once, replacing them with special
+short ID codes.  This option also requires any C++ libraries being used to
+be compiled with this option as well.  The compiler has this disabled (the
+equivalent of @samp{-fno-squangle}) by default.
+
 @item -fthis-is-variable
 Permit assignment to @code{this}.  The incorporation of user-defined
 free store management into C++ has made assignment to @samp{this} an
