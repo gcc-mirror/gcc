@@ -325,7 +325,7 @@ java/io/ObjectOutputStream$$PutField.h: java/io/ObjectOutputStream.class
 ## Headers we maintain by hand and which we want to install.
 extra_headers = java/lang/Object.h java/lang/Class.h
 
-$(extra_headers):
+$(extra_headers) $(srcdir)/java/lang/Object.h $(srcdir)/java/lang/Class.h:
 	@:
 
 ## Install the headers.  It is fairly ugly that we have to do this by
