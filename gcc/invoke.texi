@@ -1130,6 +1130,12 @@ This flag is not useful when compiling with -fvtable-thunks.
 Like all options that change the ABI, all C++ code, @emph{including
 libgcc} must be built with the same setting of this option.
 
+@item -fmessage-length=@var{n}
+Try to format error messages so that they fit on lines of about @var{n}
+characters.  The deafult is 72 characters.  If @var{n} is zero, then to
+line-wrapping will be done; each error message will appear on a single
+line.
+
 @item -fno-implicit-templates
 Never emit code for non-inline templates which are instantiated
 implicitly (i.e. by use); only emit code for explicit instantiations.
