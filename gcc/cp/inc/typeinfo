@@ -38,10 +38,10 @@ private:
   type_info (const type_info&);
 
 protected:
-  const char *_name;
+  const char *__name;
 
 protected:
-  explicit type_info (const char *n): _name (n) { }
+  explicit type_info (const char *__n): __name (__n) { }
 
 public:
   // the public interface
@@ -50,42 +50,43 @@ public:
   // type. Uniqueness must use the _name value, not object address.
   bool before (const type_info& arg) const;
   const char* name () const
-    { return _name; }
-  bool operator== (const type_info& arg) const;
-  bool operator!= (const type_info& arg) const
-    { return !operator== (arg); }
+    { return __name; }
+  bool operator== (const type_info& __arg) const;
+  bool operator!= (const type_info& __arg) const
+    { return !operator== (__arg); }
 
 #else
   // In new abi we can rely on type_info's being unique,
   // and therefore address comparisons are sufficient.
-  bool before (const type_info& arg) const
-    { return this < &arg; }
+  bool before (const type_info& __arg) const
+    { return this < &__arg; }
   const char* name () const
-    { return _name; }
-  bool operator== (const type_info& arg) const
-    { return &arg == this; }
-  bool operator!= (const type_info& arg) const
-    { return !operator== (arg); }
+    { return __name; }
+  bool operator== (const type_info& __arg) const
+    { return &__arg == this; }
+  bool operator!= (const type_info& __arg) const
+    { return !operator== (__arg); }
 #endif
 
   // the internal interface
 #if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 public:
   // return true if this is a pointer type of some kind
-  virtual bool is_pointer_p () const;
+  virtual bool __is_pointer_p () const;
   // return true if this is a function type
-  virtual bool is_function_p () const;
+  virtual bool __is_function_p () const;
 
   // Try and catch a thrown type. Store an adjusted pointer to the caught type
   // in THR_OBJ. If THR_TYPE is not a pointer type, then THR_OBJ points to the
   // thrown object. If THR_TYPE is a pointer type, then THR_OBJ is the pointer
   // itself. OUTER indicates the number of outer pointers, and whether they
   // were const qualified.
-  virtual bool do_catch (const type_info *thr_type, void **thr_obj,
-                         unsigned outer) const;
+  virtual bool __do_catch (const type_info *__thr_type, void **__thr_obj,
+                         unsigned __outer) const;
 
   // internally used during catch matching
-  virtual bool do_upcast (const __cxxabiv1::__class_type_info *target, void **obj_ptr) const;
+  virtual bool __do_upcast (const __cxxabiv1::__class_type_info *__target,
+			    void **__obj_ptr) const;
 #endif
 };
 
