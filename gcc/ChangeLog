@@ -1,3 +1,8 @@
+Tue Dec 16 20:11:36 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* ginclude/stdarg.h: Undo BeOS changes, they break hpux.
+	* ginclude/varargs.h: Likewise.
+
 Tue Dec 16 00:32:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
