@@ -53,7 +53,7 @@ extern frv_cpu_t frv_cpu_type;			/* value of -mcpu= */
 
 /* Define functions defined in frv.c */
 extern void frv_expand_prologue			(void);
-extern void frv_expand_epilogue			(int);
+extern void frv_expand_epilogue			(bool);
 extern void frv_override_options		(void);
 extern void frv_optimization_options		(int, int);
 extern void frv_conditional_register_usage	(void);
@@ -225,7 +225,7 @@ extern int even_acc_operand		(rtx, enum machine_mode);
 extern int quad_acc_operand		(rtx, enum machine_mode);
 extern int accg_operand			(rtx, enum machine_mode);
 extern rtx frv_matching_accg_for_acc	(rtx);
-extern void frv_expand_fdpic_call	(rtx *, int);
+extern void frv_expand_fdpic_call	(rtx *, bool, bool);
 extern rtx frv_gen_GPsym2reg		(rtx, rtx);
 #endif
 

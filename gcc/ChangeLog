@@ -1,5 +1,25 @@
 2004-05-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/frv/frv-protos.h (frv_expand_epilogue,
+	frv_expand_fdpic_call): Add bool argument.
+	* config/frv/frv.c (frv_function_ok_for_sibcall): New.
+	(TARGET_FUNCTION_OK_FOR_SIBCALL): Define to it.
+	(frv_expand_epilogue): Use new argument to decide whether to emit
+	return instruction or copy the return address to LR.
+	(frv_expand_fdpic_call): Inline PLT entry when emitting direct
+	sibcalls.
+	(sibcall_operand): New.
+	* config/frv/frv.h (PREDICATE_CODES): call_operand doesn't match
+	PLUS nor LABEL_REF.  Add sibcall_operand.
+	* config/frv/frv.md (call, call_value): Pass false to
+	frv_expand_fdpic_call.
+	(call_fdpicdi, call_value_fdpicdi): Insert %i0 in calll.
+	(sibcall, sibcall_internal, sibcall_fdpicdi, sibcall_value,
+	sibcall_value_internal, sibcall_value_fdpicdi): New.
+	(return_unsigned_true, return_unsigned_false): New.
+	(epilogue): Adjust call to frv_expand_epilogue.
+	(sibcall_epilogue): New.
+
 	* config/frv/frv.h (ASM_SPEC): Pass -mno-fdpic as -mnopic.
 	(CPP_SPEC, CPP_SIMPLE_SPEC): Undefine __FRV_ACC__ and __FRV_FPR__
 	before redefining them.
