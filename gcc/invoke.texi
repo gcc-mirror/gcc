@@ -102,13 +102,14 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @smallexample
--fall-virtual  -fdollars-in-identifiers  -felide-constructors
--fenum-int-equiv  -fexternal-templates  -ffor-scope  
--fno-for-scope  -fhandle-signatures -fhonor-std -fmemoize-lookups  
--fname-mangling-version-@var{n}  -fno-default-inline  
--fno-gnu-keywords -fnonnull-objects -fguiding-decls
--foperator-names  -fno-optional-diags -fstrict-prototype  -fthis-is-variable
--ftemplate-depth-@var{n}  -nostdinc++  -traditional  +e@var{n}
+-fno-access-control  -fcheck-new  -fconserve-space  -fdollars-in-identifiers
+-fno-elide-constructors  -fexternal-templates  -ffor-scope  
+-fno-for-scope  -fno-gnu-keywords  -fguiding-decls  -fhandle-signatures
+-fhonor-std -fhuge-objects  -fno-implicit-templates  -finit-priority
+-fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
+-foperator-names  -fno-optional-diags  -frepo  -fstrict-prototype
+-fsquangle  -ftemplate-depth-@var{n}  -fthis-is-variable  -fvtable-thunks
+-nostdinc++
 @end smallexample
 
 @item Warning Options
@@ -127,7 +128,7 @@ in the following sections.
 -Wno-non-template-friend -Wold-style-cast  -Woverloaded-virtual  
 -Wparentheses -Wpointer-arith  -Wredundant-decls  -Wreorder  
 -Wreturn-type -Wshadow  -Wsign-compare  -Wstrict-prototypes  
--Wswitch -Wsynth  -Wtemplate-debugging  -Wtraditional  
+-Wswitch -Wsynth  -Wtraditional  
 -Wtrigraphs -Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
 -Wunknown-pragmas
 @end smallexample
@@ -404,7 +405,7 @@ in the following sections.
 -fpcc-struct-return  -fpic  -fPIC
 -freg-struct-return  -fshared-data  -fshort-enums
 -fshort-double  -fvolatile  -fvolatile-global
--fverbose-asm -fpack-struct  -fstack-check  +e0  +e1
+-fverbose-asm -fpack-struct  -fstack-check
 -fargument-alias  -fargument-noalias
 -fargument-noalias-global
 @end smallexample
@@ -764,12 +765,6 @@ literal characters @samp{x} and @samp{a} respectively.  Without
 @w{@samp{-traditional}}, @samp{\x} is a prefix for the hexadecimal
 representation of a character, and @samp{\a} produces a bell.
 
-@item
-In C++ programs, assignment to @code{this} is permitted with
-@samp{-traditional}.  (The option @samp{-fthis-is-variable} also has
-this effect.)
-@end itemize
-
 You may wish to use @samp{-fno-builtin} as well as @samp{-traditional}
 if your program uses names that are normally GNU C builtin functions for
 other purposes of its own.
@@ -908,11 +903,11 @@ regardless of what language your program is in.  For example, you
 might compile a file @code{firstClass.C} like this:
 
 @example
-g++ -g -felide-constructors -O -c firstClass.C
+g++ -g -frepo -O -c firstClass.C
 @end example
 
 @noindent
-In this example, only @samp{-felide-constructors} is an option meant
+In this example, only @samp{-frepo} is an option meant
 only for C++ programs; you can use the other options with any
 language supported by GNU CC.
 
@@ -923,23 +918,16 @@ Here is a list of options that are @emph{only} for compiling C++ programs:
 Turn off all access checking.  This switch is mainly useful for working
 around bugs in the access control code.
 
-@item -fall-virtual
-Treat all possible member functions as virtual, implicitly.
-All member functions (except for constructor functions and @code{new} or
-@code{delete} member operators) are treated as virtual functions of the
-class where they appear.
-
-This does not mean that all calls to these member functions will be made
-through the internal table of virtual functions.  Under some
-circumstances, the compiler can determine that a call to a given virtual
-function can be made directly; in these cases the calls are direct in
-any case.
-
 @item -fcheck-new
 Check that the pointer returned by @code{operator new} is non-null
 before attempting to modify the storage allocated.  The current Working
 Paper requires that @code{operator new} never return a null pointer, so
 this check is normally unnecessary.
+
+An alternative to using this option is to specify that your
+@code{operator new} does not throw any exceptions; if you declare it
+@samp{throw()}, g++ will check the return value.  See also @samp{new
+(nothrow)}.
 
 @item -fconserve-space
 Put uninitialized or runtime-initialized global variables into the
@@ -949,6 +937,9 @@ flag and your program mysteriously crashes after @code{main()} has
 completed, you may have an object that is being destroyed twice because
 two definitions were merged.
 
+This option is no longer useful on most targets, now that support has
+been added for putting variables into BSS without making them common.
+
 @item -fdollars-in-identifiers
 Accept @samp{$} in identifiers.  You can also explicitly prohibit use of
 @samp{$} with the option @samp{-fno-dollars-in-identifiers}.  (GNU C allows
@@ -956,10 +947,11 @@ Accept @samp{$} in identifiers.  You can also explicitly prohibit use of
 Traditional C allowed the character @samp{$} to form part of
 identifiers.  However, ANSI C and C++ forbid @samp{$} in identifiers.
 
-@item -fenum-int-equiv
-Anachronistically permit implicit conversion of @code{int} to
-enumeration types.  Current C++ allows conversion of @code{enum} to
-@code{int}, but not the other way around.
+@item -fno-elide-constructors
+The C++ standard allows an implementation to omit creating a temporary
+which is only used to initialize another object of the same type.
+Specifying this option disables that optimization, and forces g++ to
+call the copy constructor in all cases.
 
 @item -fexternal-templates
 Cause template instantiations to obey @samp{#pragma interface} and
@@ -1008,12 +1000,9 @@ be instantiated.  This behavior reflects the C++ language prior to
 September 1996, when guiding declarations were removed.
 
 This option implies @samp{-fname-mangling-version-0}, and will not work
-with other name mangling versions.
-
-@item -fno-implicit-templates
-Never emit code for templates which are instantiated implicitly (i.e. by
-use); only emit code for explicit instantiations.  @xref{Template
-Instantiation}, for more information.
+with other name mangling versions.  Like all options that change the
+ABI, all C++ code, @emph{including libgcc.a} must be built with the same
+setting of this option.
 
 @item -fhandle-signatures
 Recognize the @code{signature} and @code{sigof} keywords for specifying
@@ -1031,11 +1020,17 @@ by default, ignore @code{namespace-declarations},
 @item -fhuge-objects
 Support virtual function calls for objects that exceed the size
 representable by a @samp{short int}.  Users should not use this flag by
-default; if you need to use it, the compiler will tell you so.  If you
-compile any of your code with this flag, you must compile @emph{all} of
-your code with this flag (including the C++ library, if you use it).
+default; if you need to use it, the compiler will tell you so.
 
 This flag is not useful when compiling with -fvtable-thunks.
+
+Like all options that change the ABI, all C++ code, @emph{including
+libgcc} must be built with the same setting of this option.
+
+@item -fno-implicit-templates
+Never emit code for templates which are instantiated implicitly (i.e. by
+use); only emit code for explicit instantiations.  @xref{Template
+Instantiation}, for more information.
 
 @item -finit-priority
 Support @samp{__attribute__ ((init_priority (n)))} for controlling the
@@ -1047,58 +1042,6 @@ To save space, do not emit out-of-line copies of inline functions
 controlled by @samp{#pragma implementation}.  This will cause linker
 errors if these functions are not inlined everywhere they are called.
 
-@item -fmemoize-lookups
-@itemx -fsave-memoized
-Use heuristics to compile faster.  These heuristics are not enabled by
-default, since they are only effective for certain input files.  Other
-input files compile more slowly.
-
-The first time the compiler must build a call to a member function (or
-reference to a data member), it must (1) determine whether the class
-implements member functions of that name; (2) resolve which member
-function to call (which involves figuring out what sorts of type
-conversions need to be made); and (3) check the visibility of the member
-function to the caller.  All of this adds up to slower compilation.
-Normally, the second time a call is made to that member function (or
-reference to that data member), it must go through the same lengthy
-process again.  This means that code like this:
-
-@smallexample
-cout << "This " << p << " has " << n << " legs.\n";
-@end smallexample
-
-@noindent
-makes six passes through all three steps.  By using a software cache, a
-``hit'' significantly reduces this cost.  Unfortunately, using the cache
-introduces another layer of mechanisms which must be implemented, and so
-incurs its own overhead.  @samp{-fmemoize-lookups} enables the software
-cache.
-
-Because access privileges (visibility) to members and member functions
-may differ from one function context to the next, G++ may need to flush
-the cache.  With the @samp{-fmemoize-lookups} flag, the cache is flushed
-after every function that is compiled.  The @samp{-fsave-memoized} flag
-enables the same software cache, but when the compiler determines that
-the context of the last function compiled would yield the same access
-privileges of the next function to compile, it preserves the cache.
-This is most helpful when defining many member functions for the same
-class: with the exception of member functions which are friends of other
-classes, each member function has exactly the same access privileges as
-every other, and the cache need not be flushed.
-
-The code that implements these flags has rotted; you should probably
-avoid using them.
-
-@item -fstrict-prototype
-Within an @samp{extern "C"} linkage specification, treat a function
-declaration with no arguments, such as @samp{int foo ();}, as declaring
-the function to take no arguments.  Normally, such a declaration means
-that the function @code{foo} can take any combination of arguments, as
-in C.  @samp{-pedantic} implies @samp{-fstrict-prototype} unless
-overridden with @samp{-fno-strict-prototype}.
-
-This flag no longer affects declarations with C++ linkage.
-
 @item -fname-mangling-version-@var{n}
 Control the way in which names are mangled.  Version 0 is compatible
 with versions of g++ before 2.8.  Version 1 is the default.  Version 1
@@ -1109,15 +1052,6 @@ given this declaration:
 @example
 template <class T, class U> void foo(T t);
 @end example
-
-@item -fno-nonnull-objects
-Don't assume that a reference is initialized to refer to a valid object.
-Although the current C++ Working Paper prohibits null references, some
-old code may rely on them, and you can use @samp{-fno-nonnull-objects}
-to turn on checking.
-
-At the moment, the compiler only does this checking for conversions to
-virtual base classes.
 
 @item -foperator-names
 Recognize the operator name keywords @code{and}, @code{bitand},
@@ -1135,6 +1069,19 @@ Enable automatic template instantiation.  This option also implies
 @samp{-fno-implicit-templates}.  @xref{Template Instantiation}, for more
 information.
 
+@item -fstrict-prototype
+Within an @samp{extern "C"} linkage specification, treat a function
+declaration with no arguments, such as @samp{int foo ();}, as declaring
+the function to take no arguments.  Normally, such a declaration means
+that the function @code{foo} can take any combination of arguments, as
+in C.  @samp{-pedantic} implies @samp{-fstrict-prototype} unless
+overridden with @samp{-fno-strict-prototype}.
+
+Specifying this option will also suppress implicit declarations of
+functions.
+
+This flag no longer affects declarations with C++ linkage.
+
 @item -fsquangle
 @itemx -fno-squangle
 @samp{-fsquangle} will enable a compressed form of name mangling for
@@ -1143,6 +1090,15 @@ types and class names which occur more than once, replacing them with special
 short ID codes.  This option also requires any C++ libraries being used to
 be compiled with this option as well.  The compiler has this disabled (the
 equivalent of @samp{-fno-squangle}) by default.
+
+Like all options that change the ABI, all C++ code, @emph{including
+libgcc.a} must be built with the same setting of this option.
+
+@item -ftemplate-depth-@var{n}
+Set the maximum instantiation depth for template classes to @var{n}.
+A limit on the template instantiation depth is needed to detect
+endless recursions during template class instantiation. ANSI/ISO C++
+conforming programs must not rely on a maximum depth greater than 17.
 
 @item -fthis-is-variable
 Permit assignment to @code{this}.  The incorporation of user-defined
@@ -1161,26 +1117,13 @@ offsets for adjusting the @samp{this} pointer at the call site.  Newer
 implementations store a single pointer to a @samp{thunk} function which
 does any necessary adjustment and then calls the target function.
 
-This option also enables a heuristic for controlling emission of
-vtables; if a class has any non-inline virtual functions, the vtable
-will be emitted in the translation unit containing the first one of
-those.
-
-@item -ftemplate-depth-@var{n}
-Set the maximum instantiation depth for template classes to @var{n}.
-A limit on the template instantiation depth is needed to detect
-endless recursions during template class instantiation. ANSI/ISO C++
-conforming programs must not rely on a maximum depth greater than 17.
+Like all options that change the ABI, all C++ code, @emph{including
+libgcc.a} must be built with the same setting of this option.
 
 @item -nostdinc++
 Do not search for header files in the standard directories specific to
 C++, but do still search the other standard directories.  (This option
 is used when building the C++ library.)
-
-@item -traditional
-For C++ programs (in addition to the effects that apply to both C and
-C++), this has the same effect as @samp{-fthis-is-variable}.
-@xref{C Dialect Options,, Options Controlling C Dialect}.
 @end table
 
 In addition, these optimization, warning, and code generation options
@@ -1189,23 +1132,19 @@ have meanings only for C++ programs:
 @table @code
 @item -fno-default-inline
 Do not assume @samp{inline} for functions defined inside a class scope.
-@xref{Optimize Options,,Options That Control Optimization}.
+@xref{Optimize Options,,Options That Control Optimization}.  Note that these
+functions will have linkage like inline functions; they just won't be
+inlined by default.
 
 @item -Wno-non-template-friend
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @item -Wold-style-cast
 @itemx -Woverloaded-virtual
-@itemx -Wtemplate-debugging
 Warnings that apply only to C++ programs.  @xref{Warning
 Options,,Options to Request or Suppress Warnings}.
 
 @item -Weffc++
 Warn about violation of some style rules from Effective C++ by Scott Myers.
-
-@item +e@var{n}
-Control how virtual function definitions are used, in a fashion
-compatible with @code{cfront} 1.x.  @xref{Code Gen Options,,Options for
-Code Generation Conventions}.
 @end table
 
 @node Warning Options
@@ -5985,24 +5924,6 @@ significant data size overhead, though it does not affect execution.
 
 This option is on by default for languages that support exception
 handling (such as C++), and off for those that don't (such as C).
-
-@item +e0
-@itemx +e1
-Control whether virtual function definitions in classes are used to
-generate code, or only to define interfaces for their callers.  (C++
-only).
-
-These options are provided for compatibility with @code{cfront} 1.x
-usage; the recommended alternative GNU C++ usage is in flux.  @xref{C++
-Interface,,Declarations and Definitions in One Header}.
-
-With @samp{+e0}, virtual function definitions in classes are declared
-@code{extern}; the declaration is used only as an interface
-specification, not to generate code for the virtual functions (in this
-compilation).
-
-With @samp{+e1}, G++ actually generates the code implementing virtual
-functions defined in the code, and makes them publicly visible.
 
 @cindex aliasing of parameters
 @cindex parameters, aliased
