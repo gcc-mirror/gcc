@@ -1312,12 +1312,12 @@
    (set_attr "type" "gload,fload")])
 
 (define_insn "*movqi_internal"
-  [(set (match_operand:QI 0 "move_destination_operand" "=d,d,m,m,?f,?f,?d,?m,f")
-	(match_operand:QI 1 "move_source_operand"       "L,d,d,O, d, f, f, f,GO"))]
+  [(set (match_operand:QI 0 "move_destination_operand" "=d,d,m,m,?f,?f,?d,?m,f,d,f")
+	(match_operand:QI 1 "move_source_operand"       "L,d,d,O, d, f, f, f,GO,!m,!m"))]
   "register_operand(operands[0], QImode) || reg_or_0_operand (operands[1], QImode)"
   "* return output_move_single (operands, insn);"
   [(set_attr "length" "4")
-   (set_attr "type" "int,int,gstore,gstore,movgf,fsconv,movfg,fstore,movgf")])
+   (set_attr "type" "int,int,gstore,gstore,movgf,fsconv,movfg,fstore,movgf,gload,fload")])
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
@@ -1341,12 +1341,12 @@
    (set_attr "type" "gload,fload")])
 
 (define_insn "*movhi_internal"
-  [(set (match_operand:HI 0 "move_destination_operand" "=d,d,d,m,m,?f,?f,?d,?m,f")
-	(match_operand:HI 1 "move_source_operand"       "L,n,d,d,O, d, f, f, f,GO"))]
+  [(set (match_operand:HI 0 "move_destination_operand" "=d,d,d,m,m,?f,?f,?d,?m,f,d,f")
+	(match_operand:HI 1 "move_source_operand"       "L,n,d,d,O, d, f, f, f,GO,!m,!m"))]
   "register_operand(operands[0], HImode) || reg_or_0_operand (operands[1], HImode)"
   "* return output_move_single (operands, insn);"
-  [(set_attr "length" "4,8,4,4,4,4,4,4,4,4")
-   (set_attr "type" "int,multi,int,gstore,gstore,movgf,fsconv,movfg,fstore,movgf")])
+  [(set_attr "length" "4,8,4,4,4,4,4,4,4,4,4,4")
+   (set_attr "type" "int,multi,int,gstore,gstore,movgf,fsconv,movfg,fstore,movgf,gload,fload")])
 
 ;; Split 2 word load of constants into sethi/setlo instructions
 (define_split
@@ -1402,6 +1402,14 @@
 ;; The resulting sequences for loading constants into FPRs are preferable
 ;; even when we're not generating PIC code.
 
+;; However, if we don't accept input from memory at all in the generic
+;; movsi pattern, reloads for asm instructions that reference pseudos
+;; that end up assigned to memory will fail to match, because we
+;; recognize them right after they're emitted, and we don't
+;; re-recognize them again after the substitution for memory.  So keep
+;; a memory constraint available, just make sure reload won't be
+;; tempted to use it.
+
 (define_insn "*movsi_load"
   [(set (match_operand:SI 0 "register_operand" "=d,f")
 	(match_operand:SI 1 "frv_load_operand" "m,m"))]
@@ -1436,12 +1444,12 @@
    (set_attr "length" "4")])
 
 (define_insn "*movsi_internal"
-  [(set (match_operand:SI 0 "move_destination_operand" "=d,d,d,m,m,z,d,d,f,f,m,?f,?z")
-	(match_operand:SI 1 "move_source_operand"      "L,n,d,d,O,d,z,f,d,f,f,GO,GO"))]
+  [(set (match_operand:SI 0 "move_destination_operand" "=d,d,d,m,m,z,d,d,f,f,m,?f,?z,d,f")
+	(match_operand:SI 1 "move_source_operand"      "L,n,d,d,O,d,z,f,d,f,f,GO,GO,!m,!m"))]
   "register_operand (operands[0], SImode) || reg_or_0_operand (operands[1], SImode)"
   "* return output_move_single (operands, insn);"
-  [(set_attr "length" "4,8,4,4,4,4,4,4,4,4,4,4,4")
-   (set_attr "type" "int,multi,int,gstore,gstore,spr,spr,movfg,movgf,fsconv,fstore,movgf,spr")])
+  [(set_attr "length" "4,8,4,4,4,4,4,4,4,4,4,4,4,4,4")
+   (set_attr "type" "int,multi,int,gstore,gstore,spr,spr,movfg,movgf,fsconv,fstore,movgf,spr,gload,fload")])
 
 ;; Split 2 word load of constants into sethi/setlo instructions
 (define_insn_and_split "*movsi_2word"

@@ -1,3 +1,8 @@
+2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/frv/frv.md (movqi_internal, movhi_internal,
+	movsi_internal): Add backup alternatives for memory inputs.
+
 2004-07-28  Matt Austern  <austern@apple.com>
 
 	* config/darwin.c (darwin_one_byte_bool): New global variable.
