@@ -4820,7 +4820,15 @@ next_member:
       for (i = 0; i < n_switches; i++)
 	if (!strncmp (switches[i].part1, filter, p - filter)
 	    && check_live_switch (i, p - filter))
-	  give_switch (i, 0, include_blanks);
+	  {
+	    if (elide_switch)
+	      {
+		switches[i].live_cond = SWITCH_IGNORE;
+		switches[i].validated = 1;
+	      }
+	    else
+	      give_switch (i, 0, include_blanks);
+	  }
     }
   else
     {
