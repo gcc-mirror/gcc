@@ -1,3 +1,8 @@
+2002-10-29  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (extv, extzv, insv): Set size of referenced
+	memory after adjusting to BLKmode.
+
 2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (MASK_*): New.
