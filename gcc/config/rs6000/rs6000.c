@@ -3426,7 +3426,6 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 		      adjust_address (operands[1], SImode, 4));
       return;
     }
-#if 0
     else if (mode == DImode && TARGET_POWERPC64
                && GET_CODE (operands[0]) == REG
                && GET_CODE (operands[1]) == MEM && optimize > 0
@@ -3462,11 +3461,11 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 			gen_rtx_LSHIFTRT (DImode, operands[1], GEN_INT (32)));
         emit_move_insn (adjust_address (operands[0], SImode, 0),
 			simplify_gen_subreg (SImode, reg, DImode, 0));
+        emit_move_insn (reg, operands[1]);
         emit_move_insn (adjust_address (operands[0], SImode, 4),
-			simplify_gen_subreg (SImode, operands[1], DImode, 0));
+			simplify_gen_subreg (SImode, reg, DImode, 0));
         return;
       }
-#endif
   
   if (!no_new_pseudos)
     {
