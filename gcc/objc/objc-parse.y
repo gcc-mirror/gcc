@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 #include "output.h"
+#include "toplev.h"
 
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
