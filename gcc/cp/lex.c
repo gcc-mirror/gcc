@@ -1974,11 +1974,7 @@ check_newline ()
 	      && getch () == 'e'
 	      && ((c = getch ()) == ' ' || c == '\t'))
 	    {
-#ifdef DWARF_DEBUGGING_INFO
-	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
-		  && (write_symbols == DWARF_DEBUG))
-	        dwarfout_define (lineno, get_directive_line (finput));
-#endif /* DWARF_DEBUGGING_INFO */
+	      debug_define (lineno, get_directive_line (finput));
 	      goto skipline;
 	    }
 	}
@@ -1990,11 +1986,7 @@ check_newline ()
 	      && getch () == 'f'
 	      && ((c = getch ()) == ' ' || c == '\t'))
 	    {
-#ifdef DWARF_DEBUGGING_INFO
-	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
-		  && (write_symbols == DWARF_DEBUG))
-	        dwarfout_undef (lineno, get_directive_line (finput));
-#endif /* DWARF_DEBUGGING_INFO */
+	      debug_undef (lineno, get_directive_line (finput));
 	      goto skipline;
 	    }
 	}
@@ -2233,15 +2225,7 @@ linenum:
 	      p->name = input_filename;
 	      input_file_stack = p;
 	      input_file_stack_tick++;
-#ifdef DBX_DEBUGGING_INFO
-	      if (write_symbols == DBX_DEBUG)
-		dbxout_start_new_source_file (input_filename);
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-	      if (debug_info_level == DINFO_LEVEL_VERBOSE
-		  && write_symbols == DWARF_DEBUG)
-		dwarfout_start_new_source_file (input_filename);
-#endif /* DWARF_DEBUGGING_INFO */
+	      debug_start_source_file (input_filename);
 	      in_system_header = entering_system_header;
 	      if (c_header_level)
 		++c_header_level;
@@ -2270,15 +2254,7 @@ linenum:
 		  input_file_stack = p->next;
 		  free (p);
 		  input_file_stack_tick++;
-#ifdef DBX_DEBUGGING_INFO
-		  if (write_symbols == DBX_DEBUG)
-		    dbxout_resume_previous_source_file ();
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-		  if (debug_info_level == DINFO_LEVEL_VERBOSE
-		      && write_symbols == DWARF_DEBUG)
-		    dwarfout_resume_previous_source_file (input_file_stack->line);
-#endif /* DWARF_DEBUGGING_INFO */
+		  debug_end_source_file (input_file_stack->line);
 		}
 	      else
 		error ("#-lines for entering and leaving files don't match");
@@ -4332,7 +4308,6 @@ handle_cp_pragma (pname)
   else if (! strcmp (pname, "interface"))
     {
       tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
-      int warned_already = 0;
       char *main_filename = input_filename;
 
       main_filename = FILE_NAME_NONDIRECTORY (main_filename);
@@ -4348,17 +4323,11 @@ handle_cp_pragma (pname)
 	      return -1;
 	    }
 	  main_filename = TREE_STRING_POINTER (yylval.ttype);
-	}
-
-      while (token != END_OF_LINE)
-	{
-	  if (!warned_already && extra_warnings)
-	    {
-	      warning ("garbage after `#pragma interface' ignored");
-	      warned_already = 1;
-	    }
 	  token = real_yylex ();
 	}
+
+      if (token != END_OF_LINE)
+	warning ("garbage after `#pragma interface' ignored");
 
 #ifndef NO_LINKAGE_HEURISTICS
       write_virtuals = 3;
@@ -4394,7 +4363,6 @@ handle_cp_pragma (pname)
   else if (! strcmp (pname, "implementation"))
     {
       tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
-      int warned_already = 0;
       char *main_filename = main_input_filename ? main_input_filename : input_filename;
 
       main_filename = FILE_NAME_NONDIRECTORY (main_filename);
@@ -4408,17 +4376,11 @@ handle_cp_pragma (pname)
 	      return -1;
 	    }
 	  main_filename = TREE_STRING_POINTER (yylval.ttype);
-	}
-
-      while (token != END_OF_LINE)
-	{
-	  if (!warned_already && extra_warnings)
-	    {
-	      warning ("garbage after `#pragma implementation' ignored");
-	      warned_already = 1;
-	    }
 	  token = real_yylex ();
 	}
+
+      if (token != END_OF_LINE)
+	warning ("garbage after `#pragma implementation' ignored");
 
 #ifndef NO_LINKAGE_HEURISTICS
       if (write_virtuals == 3)

@@ -3179,8 +3179,7 @@ reference_binding (rto, from, expr, flags)
   else
     conv = NULL_TREE;
 
-  if (! conv && TYPE_READONLY (to) && ! TYPE_VOLATILE (to)
-      && (flags & LOOKUP_NO_TEMP_BIND) == 0)
+  if (! conv)
     {
       conv = standard_conversion
 	(TYPE_MAIN_VARIANT (to), strip_top_quals (from), expr);
@@ -3192,15 +3191,10 @@ reference_binding (rto, from, expr, flags)
 	  if (TREE_CODE (TREE_OPERAND (conv, 0)) == BASE_CONV)
 	    TREE_OPERAND (conv, 0) = TREE_OPERAND (TREE_OPERAND (conv, 0), 0);
 	}
-    }
-
-  if (! conv)
-    {
-      conv = standard_conversion
-	(TYPE_MAIN_VARIANT (to), strip_top_quals (from), expr);
-      if (conv)
+      if (conv && ! (TYPE_READONLY (to) && ! TYPE_VOLATILE (to)
+		     && (flags & LOOKUP_NO_TEMP_BIND) == 0))
 	ICS_BAD_FLAG (conv) = 1;
-    }	
+    }
 
   return conv;
 }
@@ -4149,7 +4143,7 @@ print_z_candidates (candidates)
 	}
       else
 	cp_error_at ("%s %+D%s", str, candidates->fn,
-		     candidates->viable == -1 ? " <bad>" : "");
+		     candidates->viable == -1 ? " <near match>" : "");
       str = "               "; 
     }
 }
@@ -4189,7 +4183,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     }
   for (; ctors; ctors = DECL_CHAIN (ctors))
     {
-      if ((flags & LOOKUP_ONLYCONVERTING) && DECL_NONCONVERTING_P (ctors))
+      if (DECL_NONCONVERTING_P (ctors))
 	continue;
 
       candidates = add_function_candidate (candidates, ctors, args, flags);
@@ -4259,13 +4253,16 @@ build_user_type_conversion_1 (totype, expr, flags)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
      NULL_TREE, cand->fn, cand->convs, cand->basetype_path);
   ICS_USER_FLAG (cand->second_conv) = 1;
+  if (cand->viable == -1)
+    ICS_BAD_FLAG (cand->second_conv) = 1;
 
   return cand;
 }
 
 tree
 build_user_type_conversion (totype, expr, flags)
-     tree totype, expr, flags;
+     tree totype, expr;
+     int flags;
 {
   struct z_candidate *cand
     = build_user_type_conversion_1 (totype, expr, flags);
@@ -5237,7 +5234,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       mem_args = tree_cons (NULL_TREE, instance_ptr, args);
       for (; t; t = DECL_CHAIN (t))
 	{
-	  /* XXX copy-init should go through build_user_type_conversion.  */
+	  /* We can end up here for copy-init of same or base class.  */
 	  if (name == ctor_identifier
 	      && (flags & LOOKUP_ONLYCONVERTING)
 	      && DECL_NONCONVERTING_P (t))

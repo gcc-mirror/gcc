@@ -425,6 +425,21 @@ expand_start_catch_block (declspecs, declarator)
   tree decl = NULL_TREE;
   tree init;
 
+  if (processing_template_decl)
+    {
+      if (declspecs)
+	{
+	  decl = grokdeclarator (declarator, declspecs, CATCHPARM,
+				 1, NULL_TREE);
+	  pushdecl (decl);
+	  decl = build_min_nt (DECL_STMT, copy_to_permanent (declarator),
+			       copy_to_permanent (declspecs),
+			       NULL_TREE);
+	  add_tree (decl);
+	}
+      return;
+    }
+
   if (! doing_eh (1))
     return;
 

@@ -27,9 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "cp-tree.h"
 
-#undef NULL
-#define NULL 0
-
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 
 rtx

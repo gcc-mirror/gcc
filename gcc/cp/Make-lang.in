@@ -72,13 +72,13 @@ C++ c++: cc1plus
 .PHONY: C++ c++
 
 # Create the compiler driver for g++.
-g++: $(srcdir)/cp/g++.c $(CONFIG_H) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ $(srcdir)/cp/g++.c $(LIBS)
+g++: $(srcdir)/cp/g++.c $(CONFIG_H) choose-temp.o pexecute.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ $(srcdir)/cp/g++.c choose-temp.o pexecute.o $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
-g++-cross: $(srcdir)/cp/g++.c version.o $(LIBDEPS)
+g++-cross: $(srcdir)/cp/g++.c choose-temp.o pexecute.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ \
-	   -DGCC_NAME=\"$(GCC_CROSS_NAME)\" $(srcdir)/cp/g++.c version.o $(LIBS)
+	   -DGCC_NAME=\"$(GCC_CROSS_NAME)\" $(srcdir)/cp/g++.c choose-temp.o pexecute.o $(LIBS)
 
 cxxmain.o: cplus-dem.c demangle.h
 	rm -f cxxmain.c
@@ -150,6 +150,7 @@ cplib2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 	    touch cplib2.ready; \
 	  fi; \
 	  rm -f cplib2.new; \
+	else true ; \
 	fi
 	@if [ -f cplib2.ready ]; then true; else \
 	  touch cplib2.ready; \
@@ -225,13 +226,13 @@ c++.maintainer-clean:
 # Stage hooks:
 # The main makefile has already created stage?/cp.
 
-c++.stage1:
+c++.stage1: stage1-start
 	-mv cp/*$(objext) stage1/cp
-c++.stage2:
+c++.stage2: stage2-start
 	-mv cp/*$(objext) stage2/cp
-c++.stage3:
+c++.stage3: stage3-start
 	-mv cp/*$(objext) stage3/cp
-c++.stage4:
+c++.stage4: stage4-start
 	-mv cp/*$(objext) stage4/cp
 
 # Maintenance hooks:

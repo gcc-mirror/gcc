@@ -2543,8 +2543,11 @@ dfs_debug_mark (binfo)
     return;
 
   /* We can't do the TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
-     does not support name references between translation units.  */
-  if (write_symbols == DWARF_DEBUG)
+     does not support name references between translation units.  Well, we
+     could, but that would mean putting global labels in the debug output
+     before each exported type and each of its functions and static data
+     members.  */
+  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
     {
       rest_of_type_compilation (t, global_bindings_p ());
       return;

@@ -27,9 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "assert.h"
 
-#undef NULL
-#define NULL 0
-
 #ifndef INT_TYPE_SIZE
 #define INT_TYPE_SIZE BITS_PER_WORD
 #endif
@@ -1364,7 +1361,7 @@ build_m_desc (decl)
 		tree_cons (NULL_TREE, vcontext,
 		   tree_cons (NULL_TREE, build_t_desc (TREE_TYPE (TREE_TYPE (decl)),
 						       ! IS_AGGR_TYPE (taggr)),
-		      tree_cons (NULL_TREE, build_c_cast (build_pointer_type (default_function_type), build_unary_op (ADDR_EXPR, decl, 0), 0),
+		      tree_cons (NULL_TREE, build_c_cast (build_pointer_type (default_function_type), build_unary_op (ADDR_EXPR, decl, 0)),
 			 tree_cons (NULL_TREE, parm_count,
 			    tree_cons (NULL_TREE, req_count,
 			       build_tree_list (NULL_TREE, build_unary_op (ADDR_EXPR, parm_types, 0)))))))));

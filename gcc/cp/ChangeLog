@@ -1,9 +1,164 @@
-Tue Nov 12 08:39:17 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+Mon Nov 25 15:16:41 1996  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * decl.c (cp_finish_decl): In MINIMAL_PARSE_MODE, only try to use
-        the DECL_VINDEX of DECL if it's set.
+	* Make-lang.in (c++.stage[1234]): Depend upon stage[1-4]-start, so
+	that make -j3 bootstrap works better.
 
-        * tree.c (mapcar): Handle RTL_EXPR.
+Sun Nov 24 02:09:39 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (pushtag): Do pushdecl for anon tags.
+
+Thu Nov 21 16:30:24 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (c_expand_return): Fix logic.
+	(unary_complex_lvalue): Avoid unused warning on address of INIT_EXPR.
+
+	* decl.c (grokfndecl): Also note_debug_info_needed on ctype here.
+
+Wed Nov 20 18:47:31 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* g++.c (main): Make sure arglist has a final NULL entry.  Add
+ 	PEXECUTE_LAST to the flags passed to pexecute, as otherwise
+ 	stdin/stdout of the invoked program are redirected to
+ 	nowheresville.
+
+Tue Nov 19 16:12:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (implicitly_declare): Set DECL_ARTIFICIAL.
+
+Tue Nov 19 15:48:19 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (resolve_offset_ref): Handle obj.vfn better.
+	* typeck.c (build_component_ref): Set TREE_TYPE on result from
+	build_vfn_ref.
+
+Tue Nov 19 13:14:33 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (convert_for_assignment): Also handle anachronistic
+	implicit conversions from (::*)() to cv void*.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+
+Mon Nov 18 17:05:26 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (handle_cp_pragma): Fix bogus warning.
+
+Mon Nov 18 16:10:43 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Avoid thinking a POINTER_TYPE
+ 	(METHOD_TYPE) is a TYPE_PTRMEMFUNC_P.
+
+Thu Nov 14 23:18:17 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct_1): Support DWARF2_DEBUG.
+	* search.c (dfs_debug_mark): Likewise.
+	* decl2.c (finish_vtable_vardecl): Likewise.
+	* decl.c (pushtag, finish_enum): Likewise.
+	* lex.c (check_newline): Use debug_* instead of calling *out
+ 	functions directly.
+
+Thu Nov 14 15:21:46 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* Make-lang.in (cplib2.ready): Add else clause to avoid problems
+	on some picky hosts.
+
+Wed Nov 13 12:32:07 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct_1): A class has a non-trivial copy
+ 	constructor if it has virtual functions.
+
+	* cvt.c (cp_convert): Always call a constructor.
+
+	* call.c (reference_binding): Still tack on a REF_BIND
+ 	for bad conversions.
+	(build_user_type_conversion_1): Propagate ICS_BAD_FLAG.
+
+	* typeck.c (convert_arguments): Pass LOOKUP_ONLYCONVERTING.
+	(c_expand_return): Likewise.
+	* typeck2.c (digest_init): Likewise for { }.
+	* init.c (expand_aggr_init_1): Keep the CONSTRUCTOR handling.
+	* cvt.c (cp_convert): Handle failure better.
+
+Wed Nov 13 11:51:20 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* g++.c (main): Also set PEXECUTE_SEARCH, to make the invocation
+	of GCC be path-relative. 
+
+Wed Nov 13 11:27:16 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
+
+	* Make-lang.in (g++-cross): G++-cross doesn't need version.o, but
+	it does need choose-temp.o and pexecute.o.
+
+Wed Nov 13 07:53:38 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* g++.c (error) [!HAVE_VPRINTF]: Put error back for the only time
+	that we still use it.
+	(P_tmpdir, R_OK, W_OK, X_OK) [__MSDOS__]: Delete unnecessary macros.
+
+Wed Nov 13 02:00:26 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (expand_default_init): Avoid calling constructors to 
+	initialize reference temps.
+
+	* cvt.c (convert_to_reference): Fix.
+
+Tue Nov 12 19:10:07 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (cp_convert): Simplify for flag_ansi_overloading.
+	(convert_to_reference): Likewise.
+	* typeck.c (convert_for_initialization): Likewise.
+	* init.c (expand_default_init): Likewise.
+	(expand_aggr_init_1): Likewise.
+	* cp-tree.h (CONV_NONCONVERTING): Lose.
+	* typeck.c (build_c_cast): Lose allow_nonconverting parm.
+	* *.c: Adjust.
+	* call.c (build_user_type_conversion_1): Assume LOOKUP_ONLYCONVERTING.
+
+Tue Nov 12 16:29:04 1996  Brendan Kehoe  <brendan@canuck.cygnus.com>
+
+	* pt.c (tsubst_expr): Reverse args to expand_start_catch_block.
+
+Tue Nov 12 15:26:17 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (expand_aggr_init_1): Don't crash on non-constructor
+	TARGET_EXPR.
+
+Tue Nov 12 14:00:50 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* g++.c: Include gansidecl.h.
+	(VPROTO, PVPROTO, VA_START): Delete.
+	(choose_temp_base_try, choose_temp_base, perror_exec,
+	run_dos) [__MSDOS__]: Delete fns.
+	(pfatal_with_name): Delete fn.
+	(temp_filename): Declare like in gcc.c.
+	(pexecute, pwait, choose_temp_base): Declare from gcc.c.
+	(error_count, signal_count): Define.
+	(error): Delete both definitions.
+	(PEXECUTE_{FIRST,LAST,SEARCH,VERBOSE}): Define from gcc.c.
+	(pfatal_pexecute): Add fn from gcc.c.
+	(main): Rename local VERBOSE var to VERBOSE_FLAG.  Rewrite the
+	code to use the pexecute stuff also used by gcc.c.
+	(MIN_FATAL_STATUS): Define.
+	* Make-lang.in (g++): Add dependency on and linking with
+	choose-temp.o and pexecute.o.
+
+	* cp-tree.h: Include gansidecl.h.
+	(STDIO_PROTO): Delete #undef/#define.
+	* cvt.c (NULL): Delete #undef/#define.
+	* expr.c (NULL): Likewise.
+	* init.c (NULL): Likewise.
+	* rtti.c (NULL): Likewise.
+	* xref.c (NULL): Likewise.
+
+	* cp-tree.h (build_user_type_conversion): Add prototype.
+	* call.c (build_user_type_conversion): Delete prototype.  Correct
+	decl of FLAGS arg to be an int.
+	* cvt.c (build_user_type_conversion): Likewise.
+
+Tue Nov 12 12:16:20 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.def: Add TRY_BLOCK and HANDLER.
+	* except.c (expand_start_catch_block): Support templates.
+	* parse.y (try_block, handler_seq): Likewise.
+	* pt.c (tsubst_expr): Support TRY_BLOCK and HANDLER.
 
 Mon Nov 11 13:57:31 1996  Jason Merrill  <jason@yorick.cygnus.com>
 

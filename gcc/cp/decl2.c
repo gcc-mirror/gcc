@@ -2423,8 +2423,7 @@ finish_vtable_vardecl (prev, vars)
       if (TREE_TYPE (DECL_INITIAL (vars)) == 0)
 	store_init_value (vars, DECL_INITIAL (vars));
 
-#ifdef DWARF_DEBUGGING_INFO
-      if (write_symbols == DWARF_DEBUG)
+      if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
 	{
 	  /* Mark the VAR_DECL node representing the vtable itself as a
 	     "gratuitous" one, thereby forcing dwarfout.c to ignore it.
@@ -2449,7 +2448,6 @@ finish_vtable_vardecl (prev, vars)
 
 	  DECL_IGNORED_P (vars) = 1;
 	}
-#endif /* DWARF_DEBUGGING_INFO */
 
       rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
       return 1;
@@ -3190,7 +3188,7 @@ reparse_absdcl_as_casts (decl, expr)
     {
       type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
       decl = TREE_OPERAND (decl, 0);
-      expr = build_c_cast (type, expr, 0);
+      expr = build_c_cast (type, expr);
     }
 
   return expr;

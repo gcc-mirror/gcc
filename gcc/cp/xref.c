@@ -61,9 +61,6 @@ int flag_gnu_xref;
 #ifndef FALSE
 #define FALSE 0
 #endif
-#ifndef NULL
-#define NULL 0
-#endif
 
 #define PALLOC(typ) ((typ *) calloc(1,sizeof(typ)))
 
