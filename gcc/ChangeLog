@@ -1,5 +1,11 @@
 2004-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* defaults.h (CASE_VECTOR_PC_RELATIVE): Provide the default.
+	* expr.c (CASE_VECTOR_PC_RELATIVE): Remove.
+	* stmt.c (CASE_VECTOR_PC_RELATIVE): Likewise.
+
+2004-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* stmt.c (HAVE_casesi): Define it not already defined.
 	(HAVE_tablejump): Likewise.
 	(expand_end_case_type): Resort to the binary tree method if
