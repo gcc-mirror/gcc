@@ -388,6 +388,29 @@ ior_operand (op, mode)
 }
 
 int
+lhs_lshift_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return register_operand (op, mode) || lhs_lshift_cint_operand (op, mode);
+}
+
+/* True iff OP is a CONST_INT of the forms 0...0xxxx or 0...01...1xxxx.
+   Such values can be the left hand side x in (x << r), using the zvdepi
+   instruction.  */
+int
+lhs_lshift_cint_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  unsigned x;
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+  x = INTVAL (op) >> 4;
+  return (x & (x + 1)) == 0;
+}
+
+int
 arith32_operand (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -2361,6 +2384,20 @@ print_operand (file, x, code)
       if (GET_CODE (x) == CONST_INT)
 	{
 	  fprintf (file, "%d", ~INTVAL (x));
+	  return;
+	}
+      abort();
+    case 'L':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  fprintf (file, "%d", 32 - (INTVAL (x) & 31));
+	  return;
+	}
+      abort();
+    case 'P':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  fprintf (file, "%d", 31 - (INTVAL (x) & 31));
 	  return;
 	}
       abort();
