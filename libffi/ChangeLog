@@ -1,3 +1,13 @@
+2003-01-13 Andreas Tobler <a.tobler@schweiz.ch>
+
+	* libffi/src/ffitest.c
+         add closure testcases
+
+2003-01-13 Kevin B. Hendricks <khendricks@ivey.uwo.ca>
+
+	* libffi/src/powerpc/ffi.c
+         fix alignment bug for float (4 byte aligned iso 8 byte)
+
 2003-01-09  Geoffrey Keating  <geoffk@apple.com>
 
 	* src/powerpc/ffi_darwin.c: Remove RCS version string.
