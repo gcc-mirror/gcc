@@ -42,24 +42,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        pp_c_whitespace (PP);                 \
    } while (0)
 
-#define pp_c_left_bracket(PP)         \
-  do {                                \
-    pp_left_bracket (PP);             \
-    pp_base (PP)->padding = pp_none;  \
-  } while (0)
-
-#define pp_c_right_bracket(PP)        \
-  do {                                \
-    pp_right_bracket (PP);            \
-    pp_base (PP)->padding = pp_none;  \
-  } while (0)
-
-#define pp_c_star(PP)                 \
-  do {                                \
-    pp_star (PP);                     \
-    pp_base (PP)->padding = pp_none;  \
-  } while (0)
-
 /* literal  */
 static void pp_c_char (c_pretty_printer *, int);
 
@@ -120,6 +102,20 @@ pp_c_right_brace (c_pretty_printer *pp)
 }
 
 void
+pp_c_left_bracket (c_pretty_printer *pp)
+{
+  pp_left_bracket (pp);
+  pp_base (pp)->padding = pp_none;
+}
+
+void
+pp_c_right_bracket (c_pretty_printer *pp)
+{
+  pp_right_bracket (pp);
+  pp_base (pp)->padding = pp_none;
+}
+
+void
 pp_c_dot (c_pretty_printer *pp)
 {
   pp_dot (pp);
@@ -134,6 +130,13 @@ pp_c_ampersand (c_pretty_printer *pp)
 }
 
 void
+pp_c_star (c_pretty_printer *pp)
+{
+  pp_star (pp);
+  pp_base (pp)->padding = pp_none;
+}
+
+void
 pp_c_arrow (c_pretty_printer *pp)
 {
   pp_arrow (pp);
@@ -144,6 +147,20 @@ void
 pp_c_semicolon (c_pretty_printer *pp)
 {
   pp_semicolon (pp);
+  pp_base (pp)->padding = pp_none;
+}
+
+void
+pp_c_complement (c_pretty_printer *pp)
+{
+  pp_complement (pp);
+  pp_base (pp)->padding = pp_none;
+}
+
+void
+pp_c_exclamation (c_pretty_printer *pp)
+{
+  pp_exclamation (pp);
   pp_base (pp)->padding = pp_none;
 }
 

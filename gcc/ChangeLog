@@ -1,3 +1,14 @@
+2004-05-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.c (pp_c_left_bracket): Make a function.
+	(pp_c_right_bracket): Likewise.
+	(pp_c_star): Likewise.
+	(pp_c_ampersand): Define.
+	* c-pretty-print.h (pp_c_left_bracket): Declare.
+	(pp_c_right_bracket): Likewise.
+	(pp_c_star): Likewise.
+	(pp_c_ampersand): Likewise.
+
 2004-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sol2.h (__enable_execute_stack): ANSIfy function

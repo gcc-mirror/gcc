@@ -1,5 +1,5 @@
 /* Various declarations for the C and C++ pretty-printers.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -159,10 +159,15 @@ void pp_c_left_paren (c_pretty_printer *);
 void pp_c_right_paren (c_pretty_printer *);
 void pp_c_left_brace (c_pretty_printer *);
 void pp_c_right_brace (c_pretty_printer *);
+void pp_c_left_bracket (c_pretty_printer *);
+void pp_c_right_bracket (c_pretty_printer *);
 void pp_c_dot (c_pretty_printer *);
 void pp_c_ampersand (c_pretty_printer *);
+void pp_c_star (c_pretty_printer *);
 void pp_c_arrow (c_pretty_printer *);
 void pp_c_semicolon (c_pretty_printer *);
+void pp_c_complement (c_pretty_printer *);
+void pp_c_exclamation (c_pretty_printer *);
 void pp_c_space_for_pointer_operator (c_pretty_printer *, tree);
 
 /* Declarations.  */
