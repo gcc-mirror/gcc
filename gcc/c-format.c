@@ -831,7 +831,7 @@ static const format_kind_info format_types_orig[] =
     asm_fprintf_flag_specs, asm_fprintf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_EMPTY_PREC_OK,
     'w', 0, 'p', 0, 'L',
-    &integer_type_node, &integer_type_node
+    NULL, NULL
   },
   { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL, 
     scanf_flag_specs, scanf_flag_pairs,

@@ -34,9 +34,6 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   asm_fprintf ("%.7d\n", i);
   asm_fprintf ("%+9.4d\n", i);
   asm_fprintf ("%.3ld\n", l);
-  asm_fprintf ("%*d\n", i1, i);
-  asm_fprintf ("%.*d\n", i2, i);
-  asm_fprintf ("%*.*ld\n", i1, i2, l);
   asm_fprintf ("%d %lu\n", i, ul);
 
   /* Extensions provided in asm_fprintf.  */
@@ -58,8 +55,9 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   asm_fprintf ("%d", l); /* { dg-warning "format" "bad argument types" } */
   asm_fprintf ("%wd", l); /* { dg-warning "format" "bad argument types" } */
   asm_fprintf ("%d", ll); /* { dg-warning "format" "bad argument types" } */
-  asm_fprintf ("%*.*d", l, i2, i); /* { dg-warning "field" "bad * argument types" } */
-  asm_fprintf ("%*.*d", i1, l, i); /* { dg-warning "field" "bad * argument types" } */
+  asm_fprintf ("%*d\n", i1, i); /* { dg-warning "format" "bad * argument types" } */
+  asm_fprintf ("%.*d\n", i2, i); /* { dg-warning "format" "bad * argument types" } */
+  asm_fprintf ("%*.*ld\n", i1, i2, l); /* { dg-warning "format" "bad * argument types" } */
   asm_fprintf ("%ld", i); /* { dg-warning "format" "bad argument types" } */
   asm_fprintf ("%s", n); /* { dg-warning "format" "bad argument types" } */
 
