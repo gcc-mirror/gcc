@@ -1,3 +1,7 @@
+2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/rs6000/sysv4.h (LIB_LINUX_SPEC): Give -lpthread before -lc.
+
 2003-09-17  Richard Henderson  <rth@redhat.com>
 
 	* cfg.c (dump_flow_info): Skip register dump if reg_n_info null.
