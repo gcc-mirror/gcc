@@ -5130,7 +5130,8 @@ struct case_bit_test
 
 /* Determine whether "1 << x" is relatively cheap in word_mode.  */
 
-static bool lshift_cheap_p ()
+static
+bool lshift_cheap_p (void)
 {
   static bool init = false;
   static bool cheap = true;
@@ -5150,9 +5151,8 @@ static bool lshift_cheap_p ()
    number of case nodes, i.e. the node with the most cases gets
    tested first.  */
 
-static int case_bit_test_cmp (p1, p2)
-     const void *p1;
-     const void *p2;
+static
+int case_bit_test_cmp (const void *p1, const void *p2)
 {
   const struct case_bit_test *d1 = p1;
   const struct case_bit_test *d2 = p2;

@@ -574,7 +574,7 @@ emit_bincl_stab (const char *name)
 /* If there are pending bincls then it is time to emit all of them.  */
 
 static inline void
-emit_pending_bincls_if_required ()
+emit_pending_bincls_if_required (void)
 {
   if (pending_bincls)
     emit_pending_bincls ();
@@ -583,7 +583,7 @@ emit_pending_bincls_if_required ()
 /* Emit all pending bincls.  */
 
 static void
-emit_pending_bincls ()
+emit_pending_bincls (void)
 {
   struct dbx_file *f = current_file;
 
@@ -616,7 +616,7 @@ emit_pending_bincls ()
 #else
 
 static inline void
-emit_pending_bincls_if_required () {}
+emit_pending_bincls_if_required (void) {}
 #endif
 
 /* Change to reading from a new source file.  Generate a N_BINCL stab.  */

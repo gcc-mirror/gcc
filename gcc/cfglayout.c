@@ -1084,8 +1084,7 @@ cfg_layout_duplicate_bb (basic_block bb, edge e)
 }
 
 void
-cfg_layout_initialize_rbi (bb)
-     basic_block bb;
+cfg_layout_initialize_rbi (basic_block bb)
 {
   if (bb->rbi)
     abort ();
@@ -1097,7 +1096,7 @@ cfg_layout_initialize_rbi (bb)
    CFG layout changes.  It keeps LOOPS up-to-date if not null.  */
 
 void
-cfg_layout_initialize ()
+cfg_layout_initialize (void)
 {
   basic_block bb;
 
