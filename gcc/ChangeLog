@@ -1,3 +1,8 @@
+2002-03-18  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.h (PREDICATE_CODES): Add PARALLEL to
+        any_operand.
+
 2002-03-17  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_emit_set_const_1): Build add insns
