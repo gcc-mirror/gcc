@@ -5019,25 +5019,29 @@ These @samp{-m} options are defined for the i386 family of computers:
 @table @code
 @item -mcpu=@var{cpu type}
 Assume the defaults for the machine type @var{cpu type} when scheduling
-instructions.  The choices for @var{cpu type} are: @samp{i386},
-@samp{i486}, @samp{i586} (@samp{pentium}), @samp{pentium}, @samp{i686}
-(@samp{pentiumpro}) and @samp{pentiumpro}. While picking a specific
-@var{cpu type} will schedule things appropriately for that particular
-chip, the compiler will not generate any code that does not run on the
-i386 without the @samp{-march=@var{cpu type}} option being used.
+instructions.  The choices for @var{cpu type} are:
+
+@multitable @columnfractions .20 .20 .20 .20
+@item @samp{i386} @tab @samp{i486} @tab @samp{i586} @tab @samp{i686}
+@item @samp{pentium} @tab @samp{pentiumpro} @tab @samp{k6}
+@end multitable
+
+While picking a specific @var{cpu type} will schedule things appropriately
+for that particular chip, the compiler will not generate any code that
+does not run on the i386 without the @samp{-march=@var{cpu type}} option
+being used.
 
 @item -march=@var{cpu type}
 Generate instructions for the machine type @var{cpu type}.  The choices
-for @var{cpu type} are: @samp{i386}, @samp{i486}, @samp{pentium}, and
-@samp{pentiumpro}.  Specifying @samp{-march=@var{cpu type}} implies
-@samp{-mcpu=@var{cpu type}}.
+for @var{cpu type} are the same as for @samp{-mcpu}.  Moreover, 
+specifying @samp{-march=@var{cpu type}} implies @samp{-mcpu=@var{cpu type}}.
 
 @item -m386
 @itemx -m486
 @itemx -mpentium
 @itemx -mpentiumpro
 Synonyms for -mcpu=i386, -mcpu=i486, -mcpu=pentium, and -mcpu=pentiumpro
-respectively.
+respectively.  These synonyms are depricated.
 
 @item -mieee-fp
 @itemx -mno-ieee-fp
