@@ -607,10 +607,9 @@ ia64_compute_frame_size (size)
   total_size = IA64_STACK_ALIGN (tmp);
   extra_size = total_size - tmp + 16;
 
-  /* If this is a leaf routine (BR_REG (0) is not live), and if there is no
-     stack space needed for register saves, then don't allocate the 16 byte
-     scratch area.  */
-  if (total_size == 16 && ! regs_ever_live[BR_REG (0)])
+  /* If this is a leaf routine, and if there is no stack space needed for
+     register saves, then don't allocate the 16 byte scratch area.  */
+  if (total_size == 16 && current_function_is_leaf)
     {
       total_size = 0;
       extra_size = 0;
@@ -812,17 +811,8 @@ ia64_expand_prologue ()
   rtx insn, offset;
   int i, locals, inputs, outputs, rotates;
   int frame_size = ia64_compute_frame_size (get_frame_size ());
-  int leaf_function;
   int epilogue_p;
   edge e;
-
-  /* ??? This seems like a leaf_function_p bug.  It calls get_insns which
-     returns the first insn of the current sequence, not the first insn
-     of the function.  We work around this by pushing to the topmost
-     sequence first.  */
-  push_topmost_sequence ();
-  leaf_function = leaf_function_p ();
-  pop_topmost_sequence ();
 
   /* If there is no epilogue, then we don't need some prologue insns.  We
      need to avoid emitting the dead prologue insns, because flow will complain
@@ -941,7 +931,7 @@ ia64_expand_prologue ()
      locals and outputs are both zero sized.  Since we have already allocated
      two locals for rp and ar.pfs, we check for two locals.  */
   /* Leaf functions can use output registers as call-clobbered temporaries.  */
-  if (locals == 2 && outputs == 0 && leaf_function)
+  if (locals == 2 && outputs == 0 && current_function_is_leaf)
     {
       /* If there is no alloc, but there are input registers used, then we
 	 need a .regstk directive.  */
@@ -966,13 +956,11 @@ ia64_expand_prologue ()
       /* Emit a save of BR_REG (0) if we call other functions.
 	 Do this even if this function doesn't return, as EH
          depends on this to be able to unwind the stack.  */
-      if (! leaf_function)
+      if (! current_function_is_leaf)
 	{
 	  rtx ia64_rp_reg;
 
 	  ia64_rp_regno = LOC_REG (locals - 2);
-	  reg_names[RETURN_ADDRESS_REGNUM] = reg_names[ia64_rp_regno];
-
 	  ia64_rp_reg = gen_rtx_REG (DImode, ia64_rp_regno);
 	  insn = emit_move_insn (ia64_rp_reg, gen_rtx_REG (DImode,
 							   BR_REG (0)));
@@ -984,6 +972,10 @@ ia64_expand_prologue ()
 		 appear dead and will elicit a warning from flow.  */
 	      emit_insn (gen_rtx_USE (VOIDmode, ia64_rp_reg));
 	    }
+
+	  /* Fix up the return address placeholder.  */
+	  if (regs_ever_live[RETURN_ADDRESS_POINTER_REGNUM])
+	    XINT (return_address_pointer_rtx, 0) = ia64_rp_regno;
 	}
       else
 	ia64_rp_regno = 0;
@@ -2113,6 +2105,9 @@ ia64_init_machine_status (p)
 {
   p->machine =
     (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
+
+  /* Reset from the previous function's potential modifications.  */
+  XINT (return_address_pointer_rtx, 0) = RETURN_ADDRESS_POINTER_REGNUM;
 }
 
 static void
