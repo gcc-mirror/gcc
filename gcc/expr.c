@@ -1728,11 +1728,14 @@ gen_push_operand ()
 
    ALIGN (in bytes) is maximum alignment we can assume.
 
-   If PARTIAL is nonzero, then copy that many of the first words
-   of X into registers starting with REG, and push the rest of X.
+   If PARTIAL and REG are both nonzero, then copy that many of the first
+   words of X into registers starting with REG, and push the rest of X.
    The amount of space pushed is decreased by PARTIAL words,
    rounded *down* to a multiple of PARM_BOUNDARY.
    REG must be a hard register in this case.
+   If REG is zero but PARTIAL is not, take any all others actions for an
+   argument partially in registers, but do not actually load any
+   registers.
 
    EXTRA is the amount in bytes of extra space to leave next to this arg.
    This is ignored if an argument block has already been allocated.
@@ -2042,7 +2045,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
   /* If part should go in registers, copy that part
      into the appropriate registers.  Do this now, at the end,
      since mem-to-mem copies above may do function calls.  */
-  if (partial > 0)
+  if (partial > 0 && reg != 0)
     move_block_to_reg (REGNO (reg), x, partial, mode);
 
   if (extra && args_addr == 0 && where_pad == stack_direction)
