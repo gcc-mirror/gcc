@@ -3,6 +3,6 @@
 
 #include <alloc.h>
 
-template class __default_alloc_template<false, 0>;
+template class __default_alloc_template<__NODE_ALLOCATOR_THREADS, 0>;
 
 template class  __malloc_alloc_template<0>;
