@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "hashtab.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -252,30 +253,34 @@ int (*lang_get_alias_set) PARAMS ((tree));
    codes are made.  */
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
 
-/* Each hash table slot is a bucket containing a chain
-   of these structures.  */
+/* Since we cannot rehash a type after it is in the table, we have to
+   keep the hash code.  */
 
 struct type_hash
 {
-  struct type_hash *next;	/* Next structure in the bucket.  */
-  unsigned int hashcode;	/* Hash code of this type.  */
-  tree type;			/* The type recorded here.  */
+  unsigned long hash;
+  tree type;
 };
 
-/* Now here is the hash table.  When recording a type, it is added
-   to the slot whose index is the hash code mod the table size.
-   Note that the hash table is used for several kinds of types
-   (function types, array types and array index range types, for now).
-   While all these live in the same table, they are completely independent,
-   and the hash code is computed differently for each of these.  */
+/* Initial size of the hash table (rounded to next prime). */
+#define TYPE_HASH_INITIAL_SIZE 1000
 
-#define TYPE_HASH_SIZE 59
-struct type_hash *type_hash_table[TYPE_HASH_SIZE];
+/* Now here is the hash table.  When recording a type, it is added to
+   the slot whose index is the hash code.  Note that the hash table is
+   used for several kinds of types (function types, array types and
+   array index range types, for now).  While all these live in the
+   same table, they are completely independent, and the hash code is
+   computed differently for each of these.  */
+
+htab_t type_hash_table;
 
 static void build_real_from_int_cst_1 PARAMS ((PTR));
 static void set_type_quals PARAMS ((tree, int));
 static void append_random_chars PARAMS ((char *));
 static void mark_type_hash PARAMS ((void *));
+static int type_hash_eq PARAMS ((const void*, const void*));
+static unsigned int type_hash_hash PARAMS ((const void*));
+static void print_type_hash_statistics PARAMS((void));
 
 /* If non-null, these are language-specific helper functions for
    unsave_expr_now.  If present, LANG_UNSAVE is called before its
@@ -328,11 +333,9 @@ init_obstacks ()
   ggc_add_tree_root (hash_table, sizeof hash_table / sizeof (tree));
 
   /* Initialize the hash table of types.  */
-  bzero ((char *) type_hash_table,
-	 sizeof type_hash_table / sizeof type_hash_table[0]);
-  ggc_add_root (type_hash_table,
-		sizeof type_hash_table / sizeof type_hash_table [0],
-		sizeof type_hash_table[0], mark_type_hash);
+  type_hash_table = htab_create (TYPE_HASH_INITIAL_SIZE, type_hash_hash, 
+				 type_hash_eq, 0);
+  ggc_add_root (&type_hash_table, 1, sizeof type_hash_table, mark_type_hash);
   ggc_add_tree_root (global_trees, TI_MAX);
   ggc_add_tree_root (integer_types, itk_none);
 }
@@ -3963,6 +3966,49 @@ type_hash_list (list)
   return hashcode;
 }
 
+/* These are the Hashtable callback functions.  */
+
+/* Returns true if the types are equal.  */
+
+static int
+type_hash_eq (va, vb)
+     const void *va;
+     const void *vb;
+{
+  const struct type_hash *a = va, *b = vb;
+  if (a->hash == b->hash
+      && TREE_CODE (a->type) == TREE_CODE (b->type)
+      && TREE_TYPE (a->type) == TREE_TYPE (b->type)
+      && attribute_list_equal (TYPE_ATTRIBUTES (a->type),
+			       TYPE_ATTRIBUTES (b->type))
+      && TYPE_ALIGN (a->type) == TYPE_ALIGN (b->type)
+      && (TYPE_MAX_VALUE (a->type) == TYPE_MAX_VALUE (b->type)
+	  || tree_int_cst_equal (TYPE_MAX_VALUE (a->type),
+				 TYPE_MAX_VALUE (b->type)))
+      && (TYPE_MIN_VALUE (a->type) == TYPE_MIN_VALUE (b->type)
+	  || tree_int_cst_equal (TYPE_MIN_VALUE (a->type),
+				 TYPE_MIN_VALUE (b->type)))
+      /* Note that TYPE_DOMAIN is TYPE_ARG_TYPES for FUNCTION_TYPE.  */
+      && (TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type)
+	  || (TYPE_DOMAIN (a->type)
+	      && TREE_CODE (TYPE_DOMAIN (a->type)) == TREE_LIST
+	      && TYPE_DOMAIN (b->type)
+	      && TREE_CODE (TYPE_DOMAIN (b->type)) == TREE_LIST
+	      && type_list_equal (TYPE_DOMAIN (a->type),
+				  TYPE_DOMAIN (b->type)))))
+    return 1;
+  return 0;
+}
+
+/* Return the cached hash value.  */
+
+static unsigned int
+type_hash_hash (item)
+     const void *item;
+{
+  return ((const struct type_hash*)item)->hash;
+}
+
 /* Look in the type hash table for a type isomorphic to TYPE.
    If one is found, return it.  Otherwise return 0.  */
 
@@ -3971,36 +4017,19 @@ type_hash_lookup (hashcode, type)
      unsigned int hashcode;
      tree type;
 {
-  register struct type_hash *h;
+  struct type_hash *h, in;
 
   /* The TYPE_ALIGN field of a type is set by layout_type(), so we
      must call that routine before comparing TYPE_ALIGNs. */
   layout_type (type);
 
-  for (h = type_hash_table[hashcode % TYPE_HASH_SIZE]; h; h = h->next)
-    if (h->hashcode == hashcode
-	&& TREE_CODE (h->type) == TREE_CODE (type)
-	&& TREE_TYPE (h->type) == TREE_TYPE (type)
-        && attribute_list_equal (TYPE_ATTRIBUTES (h->type),
-				   TYPE_ATTRIBUTES (type))
-	&& TYPE_ALIGN (h->type) == TYPE_ALIGN (type)
-	&& (TYPE_MAX_VALUE (h->type) == TYPE_MAX_VALUE (type)
-	    || tree_int_cst_equal (TYPE_MAX_VALUE (h->type),
-				   TYPE_MAX_VALUE (type)))
-	&& (TYPE_MIN_VALUE (h->type) == TYPE_MIN_VALUE (type)
-	    || tree_int_cst_equal (TYPE_MIN_VALUE (h->type),
-				   TYPE_MIN_VALUE (type)))
-	/* Note that TYPE_DOMAIN is TYPE_ARG_TYPES for FUNCTION_TYPE.  */
-	&& (TYPE_DOMAIN (h->type) == TYPE_DOMAIN (type)
-	    || (TYPE_DOMAIN (h->type)
-		&& TREE_CODE (TYPE_DOMAIN (h->type)) == TREE_LIST
-		&& TYPE_DOMAIN (type)
-		&& TREE_CODE (TYPE_DOMAIN (type)) == TREE_LIST
-		&& type_list_equal (TYPE_DOMAIN (h->type),
-				    TYPE_DOMAIN (type)))))
-      return h->type;
+  in.hash = hashcode;
+  in.type = type;
 
-  return 0;
+  h = htab_find_with_hash (type_hash_table, &in, hashcode);
+  if (h)
+    return h->type;
+  return NULL_TREE;
 }
 
 /* Add an entry to the type-hash-table
@@ -4011,13 +4040,14 @@ type_hash_add (hashcode, type)
      unsigned int hashcode;
      tree type;
 {
-  register struct type_hash *h;
+  struct type_hash *h;
+  void **loc;
 
   h = (struct type_hash *) permalloc (sizeof (struct type_hash));
-  h->hashcode = hashcode;
+  h->hash = hashcode;
   h->type = type;
-  h->next = type_hash_table[hashcode % TYPE_HASH_SIZE];
-  type_hash_table[hashcode % TYPE_HASH_SIZE] = h;
+  loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, 1);
+  *(struct type_hash**)loc = h;
 }
 
 /* Given TYPE, and HASHCODE its hash code, return the canonical
@@ -4064,19 +4094,35 @@ type_hash_canon (hashcode, type)
   return type;
 }
 
-/* Mark ARG (which is really a struct type_hash **) for GC.  */
+/* Callback function for htab_traverse.  */
+
+static int
+mark_hash_entry (entry, param)
+     void **entry;
+     void *param ATTRIBUTE_UNUSED;
+{
+  struct type_hash *p = *(struct type_hash **)entry;
+  ggc_mark_tree (p->type);
+  /* Continue scan.  */
+  return 1;
+}
+
+/* Mark ARG (which is really a htab_t *) for GC.  */
 
 static void
 mark_type_hash (arg)
      void *arg;
 {
-  struct type_hash *t = *(struct type_hash **) arg;
+  htab_t t = *(htab_t *) arg;
+  htab_traverse (t, mark_hash_entry, 0);
+}
 
-  while (t)
-    {
-      ggc_mark_tree (t->type);
-      t = t->next;
-    }
+static void
+print_type_hash_statistics ()
+{
+  fprintf (stderr, "Type hash: size %d, %d elements, %f collisions\n",
+	   htab_size (type_hash_table), htab_elements (type_hash_table),
+	   htab_collisions (type_hash_table));
 }
 
 /* Compute a hash code for a list of attributes (chain of TREE_LIST nodes
@@ -5249,6 +5295,7 @@ dump_tree_statistics ()
   print_obstack_statistics ("temporary_obstack", &temporary_obstack);
   print_obstack_statistics ("momentary_obstack", &momentary_obstack);
   print_obstack_statistics ("temp_decl_obstack", &temp_decl_obstack);
+  print_type_hash_statistics ();
   print_lang_statistics ();
 }
 
