@@ -708,7 +708,7 @@ void
 init_outgoing_cpool ()
 {
   current_constant_pool_data_ref = NULL_TREE;
-  outgoing_cpool = (struct CPool *)xmalloc (sizeof (struct CPool));
+  outgoing_cpool = xmalloc (sizeof (struct CPool));
   memset (outgoing_cpool, 0, sizeof (struct CPool));
 }
 
@@ -1059,7 +1059,7 @@ java_parse_file (set_yydebug)
 	fatal_io_error ("can't open %s", IDENTIFIER_POINTER (name));
       
 #ifdef IO_BUFFER_SIZE
-      setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE),
+      setvbuf (finput, xmalloc (IO_BUFFER_SIZE),
 	       _IOFBF, IO_BUFFER_SIZE);
 #endif
       input_filename = IDENTIFIER_POINTER (name);

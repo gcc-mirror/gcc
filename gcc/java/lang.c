@@ -559,8 +559,8 @@ java_init (filename)
 		error ("couldn't determine target name for dependency tracking");
 	      else
 		{
-		  char *buf = (char *) xmalloc (dot - filename +
-						3 + sizeof (TARGET_OBJECT_SUFFIX));
+		  char *buf = xmalloc (dot - filename +
+				       3 + sizeof (TARGET_OBJECT_SUFFIX));
 		  strncpy (buf, filename, dot - filename);
 
 		  /* If emitting class files, we might have multiple
@@ -633,12 +633,12 @@ put_decl_string (str, len)
       if (decl_buf == NULL)
 	{
 	  decl_buflen = len + 100;
-	  decl_buf = (char *) xmalloc (decl_buflen);
+	  decl_buf = xmalloc (decl_buflen);
 	}
       else
 	{
 	  decl_buflen *= 2;
-	  decl_buf = (char *) xrealloc (decl_buf, decl_buflen);
+	  decl_buf = xrealloc (decl_buf, decl_buflen);
 	}
     }
   strcpy (decl_buf + decl_bufpos, str);

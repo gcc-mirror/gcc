@@ -150,7 +150,7 @@ add_assume_compiled (ident, excludep)
 {
   assume_compiled_node *parent;
   assume_compiled_node *node = 
-    (assume_compiled_node *) xmalloc (sizeof (assume_compiled_node));
+    xmalloc (sizeof (assume_compiled_node));
 
   node->ident = xstrdup (ident);
   node->excludep = excludep;
@@ -160,8 +160,7 @@ add_assume_compiled (ident, excludep)
 
   if (NULL == assume_compiled_tree)
     {
-      assume_compiled_tree = 
-	(assume_compiled_node *) xmalloc (sizeof (assume_compiled_node));
+      assume_compiled_tree = xmalloc (sizeof (assume_compiled_node));
       assume_compiled_tree->ident = "";
       assume_compiled_tree->excludep = 0;
       assume_compiled_tree->sibling = NULL;
@@ -232,7 +231,7 @@ ident_subst (old_name, old_length, prefix, old_char, new_char, suffix)
 #ifdef __GNUC__
   char buffer[i];
 #else
-  char *buffer = (char *)alloca  (i);
+  char *buffer = alloca (i);
 #endif
   strcpy (buffer, prefix);
   for (i = 0; i < old_length; i++)
@@ -613,7 +612,7 @@ add_method_1 (this_class, access_flags, name, function_type)
   DECL_CONTEXT (fndecl) = this_class;
 
   DECL_LANG_SPECIFIC (fndecl)
-    = (struct lang_decl *) ggc_alloc_cleared (sizeof (struct lang_decl));
+    = ggc_alloc_cleared (sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (fndecl)->desc = LANG_DECL_FUNC;
 
   /* Initialize the static initializer test table.  */

@@ -455,10 +455,10 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
   /* Allocate and zero out the buffer, since we don't explicitly put a
      null pointer when we're copying it below.  */
   buflen = jcf_path_max_len () + classname_length + 10;
-  buffer = (char *) ALLOC (buflen);
+  buffer = ALLOC (buflen);
   memset (buffer, 0, buflen);
 
-  java_buffer = (char *) alloca (buflen);
+  java_buffer = alloca (buflen);
 
   jcf->java_source = 0;
 

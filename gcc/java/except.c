@@ -153,8 +153,7 @@ link_handler (range, outer)
   /* Handle overlapping ranges by splitting the new range.  */
   if (range->start_pc < outer->start_pc || range->end_pc > outer->end_pc)
     {
-      struct eh_range *h
-	= (struct eh_range *) xmalloc (sizeof (struct eh_range));
+      struct eh_range *h = xmalloc (sizeof (struct eh_range));
       if (range->start_pc < outer->start_pc)
 	{
 	  h->start_pc = range->start_pc;
@@ -286,7 +285,7 @@ add_handler (start_pc, end_pc, handler, type)
       prev = ptr;
     }
 
-  h = (struct eh_range *) xmalloc (sizeof (struct eh_range));
+  h = xmalloc (sizeof (struct eh_range));
   h->start_pc = start_pc;
   h->end_pc = end_pc;
   h->first_child = NULL;
