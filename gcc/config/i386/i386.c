@@ -2106,11 +2106,11 @@ ix86_expand_epilogue (emit_return)
     {
       rtx popc = GEN_INT (current_function_pops_args);
 
-      /* i386 can only pop 32K bytes (maybe 64K?  Is it signed?).  If
-	 asked to pop more, pop return address, do explicit add, and jump
-	 indirectly to the caller. */
+      /* i386 can only pop 64K bytes.  If asked to pop more, pop
+	 return address, do explicit add, and jump indirectly to the
+	 caller. */
 
-      if (current_function_pops_args >= 32768)
+      if (current_function_pops_args >= 65536)
 	{
 	  rtx ecx = gen_rtx_REG (SImode, 2);
 
