@@ -196,7 +196,7 @@ if test $version_specific_libs = yes; then
   # and header files if --enable-version-specific-runtime-libs option
   # is selected.
   changequote(,)dnl
-  glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  glibcpp_toolexecdir='$(libdir)/gcc/$(target_alias)'
   glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
   changequote([,])dnl
 fi

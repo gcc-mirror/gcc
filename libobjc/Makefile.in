@@ -43,7 +43,7 @@ glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 top_builddir = .
 
 libdir = $(exec_prefix)/lib
-libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
+libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
 
 # Multilib support variables.
 MULTISRCTOP =

@@ -1,3 +1,9 @@
+2003-08-27  Alexander Malmberg  <alexander@malmberg.org>
+
+	* Makefile.in, aclocal.m4: Update to $(libdir)/gcc/ instead of
+	(libdir)/gcc-lib/ when installing.
+	* configure: Regenerate.
+
 Thu Jul 10 10:27:43 2003  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	libobjc/9969
