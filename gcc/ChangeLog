@@ -1,3 +1,7 @@
+Sat Apr 18 17:55:57 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386.md (fix_truncsfdi2+[123]): Add + to operand 1 constraints.
+
 Sun Mar 15 23:39:10 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Update for egcs-1.0.2 release.
