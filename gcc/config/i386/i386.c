@@ -5956,6 +5956,33 @@ i386_dwarf_output_addr_const (file, x)
   fputc ('\n', file);
 }
 
+/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+   We need to emit DTP-relative relocations.  */
+
+void
+i386_output_dwarf_dtprel (file, size, x)
+     FILE *file;
+     int size;
+     rtx x;
+{
+  switch (size)
+    {
+    case 4:
+      fputs (ASM_LONG, file);
+      break;
+    case 8:
+#ifdef ASM_QUAD
+      fputs (ASM_QUAD, file);
+      break;
+#endif
+    default:
+      abort ();
+   }
+  
+  output_addr_const (file, x);
+  fputs ("@DTPOFF", file);
+}
+
 /* In the name of slightly smaller debug output, and to cater to
    general assembler losage, recognize PIC+GOTOFF and turn it back
    into a direct symbol reference.  */
