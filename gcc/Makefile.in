@@ -137,6 +137,10 @@ srcdir = .
 # Common prefix for installation directories.
 # NOTE: This directory must exist when you start installation.
 prefix = /usr/local
+# Directory in which to put localized header files. On the systems with
+# gcc as the native cc, `local_prefix' may not be `prefix' which is
+# `/usr'.
+local_prefix = $(prefix)
 # Directory in which to put host dependent programs and libraries
 exec_prefix = $(prefix)
 # Directory in which to put the executable for the command `gcc'
@@ -1176,7 +1180,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(local_prefix)/include\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DTOOLDIR=\"$(tooldir)/\" \
