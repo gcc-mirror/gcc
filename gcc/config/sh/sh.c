@@ -1600,8 +1600,16 @@ gen_shl_sext (dest, left_rtx, size_rtx, source)
     case 5:
       {
 	int i = 16 - size;
-	emit_insn (gen_shl_sext_ext (dest, source, GEN_INT (16 - insize),
-				     GEN_INT (16)));
+	if (! rtx_equal_function_value_matters
+	    && ! reload_in_progress && ! reload_completed)
+	  emit_insn (gen_shl_sext_ext (dest, source, left_rtx, size_rtx));
+	else
+	  {
+	    operands[0] = dest;
+	    operands[2] = GEN_INT (16 - insize);
+	    gen_shifty_hi_op (ASHIFT, operands);
+	    emit_insn (gen_extendhisi2 (dest, gen_lowpart (HImode, dest)));
+	  }
 	/* Don't use gen_ashrsi3 because it generates new pseudos.  */
 	while (--i >= 0)
 	  gen_ashift (ASHIFTRT, 1, dest);
