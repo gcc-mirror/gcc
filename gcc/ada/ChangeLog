@@ -1,3 +1,7 @@
+2001-12-23  Richard Henderson  <rth@redhat.com>
+
+	* 5nosinte.ads: Get definition of "int" from Interfaces.C.
+
 2001-12-23  Florian Weimer  <fw@deneb.enyo.de>
 
 	* gnat-style.texi (Declarations and Types): Remove ancient style

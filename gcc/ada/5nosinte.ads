@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.8 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -36,8 +36,11 @@
 
 --  This is the no tasking version
 
+with Interfaces.C;
 package System.OS_Interface is
    pragma Preelaborate;
+
+   subtype int            is Interfaces.C.int;
 
    -------------
    -- Signals --
