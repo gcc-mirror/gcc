@@ -1,3 +1,8 @@
+2003-09-03  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (enum builtin_type): Delete unused enumeration.
+	* Make-lang.in (java/builtins.o): Remove built-types.def dependency.
+
 2003-08-28  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Extensions): Document gcjlib URLs.
