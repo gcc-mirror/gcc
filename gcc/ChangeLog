@@ -1,3 +1,7 @@
+Thu Oct 8 11:31:01 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Thu Oct  8 12:21:14 1998  Richard Frith-Macdonald <richard@brainstorm.co.uk>
 
 	* c-lex.c (remember_protocol_qualifiers): Handle RID_BYREF.
