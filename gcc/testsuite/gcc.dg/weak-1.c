@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-options "-fno-common" } */
+
 /* COFF does not support weak, and dg doesn't support UNSUPPORTED.  */
 /* { dg-do compile { xfail *-*-coff i?86-pc-cygwin } } */
 
