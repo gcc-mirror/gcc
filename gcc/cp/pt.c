@@ -2718,7 +2718,9 @@ push_template_decl_real (decl, is_friend)
     {
       SET_TYPE_TEMPLATE_INFO (TREE_TYPE (tmpl), info);
       if ((!ctx || TREE_CODE (ctx) != FUNCTION_DECL)
-	  && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE)
+	  && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
+	  /* Don't change the name if we've already set it up.  */
+	  && !IDENTIFIER_TEMPLATE (DECL_NAME (decl)))
 	DECL_NAME (decl) = classtype_mangled_name (TREE_TYPE (decl));
     }
   else if (DECL_LANG_SPECIFIC (decl))
