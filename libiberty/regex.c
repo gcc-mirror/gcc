@@ -612,7 +612,7 @@ typedef enum
 # define UCHAR_T unsigned char
 # define COMPILED_BUFFER_VAR bufp->buffer
 # define OFFSET_ADDRESS_SIZE 2
-# if defined __STDC__ && __STDC__
+# if defined (__STDC__) || defined (HAVE_STRINGIZE)
 #  define PREFIX(name) byte_##name
 # else
 #  define PREFIX(name) byte_/**/name
@@ -626,7 +626,7 @@ typedef enum
 #  define COMPILED_BUFFER_VAR wc_buffer
 #  define OFFSET_ADDRESS_SIZE 1 /* the size which STORE_NUMBER macro use */
 #  define CHAR_CLASS_SIZE ((__alignof__(wctype_t)+sizeof(wctype_t))/sizeof(CHAR_T)+1)
-#  if defined __STDC__ && __STDC__
+#  if defined (__STDC__) || defined (HAVE_STRINGIZE)
 #   define PREFIX(name) wcs_##name
 #   define ARG_PREFIX(name) c##name
 #  else
