@@ -1,3 +1,8 @@
+2004-06-08  Bernardo Innocenti  <bernie@develer.com>
+
+	* modulo-sched.c: Compile only when INSN_SCHEDULING is
+	defined.
+
 2004-06-08  Jeff Law  <law@redhat.com>
 
         * doc/contrib.texi: Add entries for Stefan Olsson and

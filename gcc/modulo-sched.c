@@ -49,6 +49,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "df.h"
 #include "ddg.h"
 
+#ifdef INSN_SCHEDULING
 
 /* This file contains the implementation of the Swing Modulo Scheduler,
    described in the following references:
@@ -2123,3 +2124,5 @@ rotate_partial_schedule (partial_schedule_ptr ps, int start_cycle)
   ps->max_cycle -= start_cycle;
   ps->min_cycle -= start_cycle;
 }
+
+#endif /* INSN_SCHEDULING*/
