@@ -341,8 +341,6 @@ static const char *default_constant_string_class_name;
 /* The OCTI_... enumeration itself is in objc/objc-act.h.  */
 tree objc_global_trees[OCTI_MAX];
 
-int objc_receiver_context;
-
 static void handle_impent			PARAMS ((struct imp_entry *));
 
 struct imp_entry *imp_list = 0;
@@ -8311,8 +8309,8 @@ lookup_objc_ivar (id)
 {
   tree decl;
 
-  if (objc_receiver_context && !strcmp (IDENTIFIER_POINTER (id), "super"))
-    /* we have a message to super */
+  if (objc_method_context && !strcmp (IDENTIFIER_POINTER (id), "super"))
+    /* We have a message to super.  */
     return get_super_receiver ();
   else if (objc_method_context && (decl = is_ivar (objc_ivar_chain, id)))
     {

@@ -1,3 +1,12 @@
+2002-07-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-parse.in (designator): Enable designated initializers if ObjC.
+	(objcmessageexpr): Remove references to objc_receiver_context.
+	* objc/objc-act.h (objc_receiver_context): Remove decl.
+	* objc/objc-act.c (objc_receiver_context): Remove.
+	(lookup_objc_ivar): Test objc_method_context instead of
+	objc_receiver_context.
+
 Tue Jul  2 18:45:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (print_operand, case 'N'): Allow zero vector.

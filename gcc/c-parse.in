@@ -29,7 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 31 /* shift/reduce conflicts, and 1 reduce/reduce conflict.  */
+%expect 32 /* shift/reduce conflicts, and 1 reduce/reduce conflict.  */
 end ifobjc
 ifc
 %expect 10 /* shift/reduce conflicts, and no reduce/reduce conflicts.  */
@@ -1566,17 +1566,12 @@ designator_list:
 designator:
 	  '.' identifier
 		{ set_init_label ($2); }
-	/* These are for labeled elements.  The syntax for an array element
-	   initializer conflicts with the syntax for an Objective-C message,
-	   so don't include these productions in the Objective-C grammar.  */
-ifc
 	| '[' expr_no_commas ELLIPSIS expr_no_commas ']'
 		{ set_init_index ($2, $4);
 		  if (pedantic)
 		    pedwarn ("ISO C forbids specifying range of elements to initialize"); }
 	| '[' expr_no_commas ']'
 		{ set_init_index ($2, NULL_TREE); }
-end ifc
 	;
 
 nested_function:
@@ -3223,14 +3218,8 @@ receiver:
 	;
 
 objcmessageexpr:
-	  '['
-		{ objc_receiver_context = 1; }
-	  receiver
-		{ objc_receiver_context = 0; }
-	  messageargs ']'
-		{
-		  $$ = build_tree_list ($3, $5);
-		}
+	  '[' receiver messageargs ']'
+		{ $$ = build_tree_list ($2, $3); }
 	;
 
 selectorarg:

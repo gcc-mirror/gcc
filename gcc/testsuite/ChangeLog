@@ -1,3 +1,7 @@
+2002-07-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/desig-init-1.m: New test.
+
 2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6716
