@@ -290,6 +290,7 @@ output_function_epilogue (stream, size)
   int fsize = (size + 3) & -4;
   int big = 0;
   rtx insn = get_last_insn ();
+  int restore_from_sp = 0;
   
   /* If the last insn was a BARRIER, we don't have to write any code.  */
   if (GET_CODE (insn) == NOTE)
@@ -337,8 +338,10 @@ output_function_epilogue (stream, size)
 	mask |= 1 << regno;
       }
   offset = foffset + nregs * 4;
+  restore_from_sp = ! frame_pointer_needed
+	     || (! current_function_calls_alloca && leaf_function_p ());
   if (offset + fsize >= 0x8000
-      && frame_pointer_needed
+      && ! restore_from_sp
       && (mask || fmask || fpoffset))
     {
 #ifdef MOTOROLA
@@ -374,7 +377,7 @@ output_function_epilogue (stream, size)
 			     offset + fsize, reg_names[i]);
 #endif
 	      }
-            else if (! frame_pointer_needed)
+            else if (restore_from_sp)
 	      {
 #ifdef MOTOROLA
 		asm_fprintf (stream, "\t%Omove.l (%Rsp)+,%s\n",
@@ -415,7 +418,7 @@ output_function_epilogue (stream, size)
 		       offset + fsize, mask);
 #endif
 	}
-      else if (! frame_pointer_needed)
+      else if (restore_from_sp)
 	{
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tmovm.l (%Rsp)+,%0I0x%x\n", mask);
@@ -452,7 +455,7 @@ output_function_epilogue (stream, size)
 		       foffset + fsize, fmask);
 #endif
 	}
-      else if (! frame_pointer_needed)
+      else if (restore_from_sp)
 	{
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tfmovm (%Rsp)+,%0I0x%x\n", fmask);
@@ -491,7 +494,7 @@ output_function_epilogue (stream, size)
 			   fpoffset + fsize, reg_names[regno]);
 #endif
 	    }
-	  else if (! frame_pointer_needed)
+	  else if (restore_from_sp)
 	    {
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tfpmovd (%Rsp)+,%s\n",
@@ -1051,11 +1054,7 @@ legitimize_pic_address (orig, mode, reg)
 
 typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ } CONST_METHOD;
 
-use_movq (i)
-     int i;
-{
-  return (i >= -128 && i <= 127);
-}
+#define USE_MOVQ(i)	((unsigned)((i) + 128) <= 255)
 
 CONST_METHOD
 const_method (constant)
@@ -1065,21 +1064,21 @@ const_method (constant)
   unsigned u;
 
   i = INTVAL (constant);
-  if (use_movq (i))
+  if (USE_MOVQ (i))
     return MOVQ;
   /* if -256 < N < 256 but N is not in range for a moveq
      N^ff will be, so use moveq #N^ff, dreg; not.b dreg. */
-  if (use_movq (i ^ 0xff))
+  if (USE_MOVQ (i ^ 0xff))
     return NOTB;
   /* Likewise, try with not.w */
-  if (use_movq (i ^ 0xffff))
+  if (USE_MOVQ (i ^ 0xffff))
     return NOTW;
   /* This is the only value where neg.w is useful */
   if (i == -65408)
     return NEGW;
   /* Try also with swap */
   u = i;
-  if (use_movq ((u >> 16) | (u << 16)))
+  if (USE_MOVQ ((u >> 16) | (u << 16)))
     return SWAP;
   /* Otherwise, use move.l */
   return MOVL;
