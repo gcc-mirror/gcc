@@ -1,3 +1,11 @@
+2002-09-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/misc-inst.cc: Remove some instantiations.
+	
+	* testsuite/abi_check.cc: Make output results more verbose.
+	
+	* config/os/gnu-linux/ctype_base.h: Remove shadow headers injections.
+
 2002-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/locale/generic/messages_members.cc: Add specialization for

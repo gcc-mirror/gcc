@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,20 +33,6 @@
   
 // Information as gleaned from /usr/include/ctype.h
   
-#if _GLIBCPP_USE_SHADOW_HEADERS
-  using _C_legacy::_ISspace;
-  using _C_legacy::_ISprint;
-  using _C_legacy::_IScntrl;
-  using _C_legacy::_ISupper;
-  using _C_legacy::_ISlower;
-  using _C_legacy::_ISalpha;
-  using _C_legacy::_ISdigit;
-  using _C_legacy::_ISpunct;
-  using _C_legacy::_ISxdigit;
-  using _C_legacy::_ISalnum;
-  using _C_legacy::_ISgraph;
-#endif
-
   struct ctype_base
   {
     // Non-standard typedefs.

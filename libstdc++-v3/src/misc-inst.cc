@@ -70,24 +70,7 @@ namespace std
 
 #if 1
   // XXX
-  // 2002-05-24 These are no longer needed and should be deleted.
-
-  // algorithm
-  typedef  _Char_traits_match<char, char_traits<char> > char_match;
-
-  template 
-    const char*  
-    find_if<const char *, char_match>
-    (const char *, const char *, char_match, random_access_iterator_tag);
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  typedef  _Char_traits_match<wchar_t, char_traits<wchar_t> > wchar_match;
-
-  template const wchar_t*  
-    find_if<const wchar_t*, wchar_match>
-    (const wchar_t*, const wchar_t*, wchar_match, random_access_iterator_tag);
-#endif
-  
+  // 2002-05-24 These are no longer needed and should eventually be deleted.
   template 
     string* 
     __uninitialized_fill_n_aux<string*, size_t, string>

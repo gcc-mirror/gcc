@@ -56,23 +56,53 @@ struct symbol_info
 };
 
 bool 
-operator==(const symbol_info& lhs, const symbol_info& rhs)
+check_compatible(const symbol_info& lhs, const symbol_info& rhs, 
+		 bool verbose = false)
 {
+  using namespace std;
   bool ret = true;
+  const char tab = '\t';
 
   // Check to see if symbol_infos are compatible.
-  ret &= lhs.type == rhs.type;
-  ret &= lhs.name == rhs.name;
-  ret &= lhs.size == rhs.size;
+  if (lhs.type != rhs.type)
+    {
+      ret = false;
+      if (verbose)
+	{
+	  cout << tab << "incompatible types" << endl;
+	}
+    }
+  
+  if (lhs.name != rhs.name)
+    {
+      ret = false;
+      if (verbose)
+	{
+	  cout << tab << "incompatible names" << endl;
+	}
+    }
+
+  if (lhs.size != rhs.size)
+    {
+      ret = false;
+      if (verbose)
+	{
+	  cout << tab << "incompatible sizes" << endl;
+	}
+    }
 
   // Expect something more sophisticated eventually.
-  ret &= lhs.version == rhs.version;
+  if (lhs.version != rhs.version)
+    {
+      ret = false;
+      if (verbose)
+	{
+	  cout << tab << "incompatible versions" << endl;
+	}
+    }
+
   return ret;
 }
-
-bool 
-operator!=(const symbol_info& lhs, const symbol_info& rhs)
-{ return !(lhs == rhs); }
 
 template<typename _CharT, typename _Traits>
   std::basic_ostream<_CharT, _Traits>&
@@ -188,8 +218,8 @@ typedef std::deque<std::string>				symbol_names;
 typedef __gnu_cxx::hash_map<const char*, symbol_info> 	symbol_infos;
 
 void
-collect_symbol_data(const char* file, symbol_infos& symbols, 
-		    symbol_names& names)
+create_symbol_data(const char* file, symbol_infos& symbols, 
+		   symbol_names& names)
 {
   // Parse list of symbols in file into vectors of symbol_info.
   // For 3.2.0 on x86/linux, this usually is
@@ -213,6 +243,21 @@ collect_symbol_data(const char* file, symbol_infos& symbols,
     }
 }
 
+void
+report_symbol_info(const symbol_info& symbol, std::size_t n)
+{
+  using namespace std;
+  const char tab = '\t';
+  cout << tab << n << endl;
+  cout << tab << "symbol"<< endl;
+  cout << tab << symbol.name << endl;
+
+  // Add any other information to display here.
+  cout << tab << "demangled symbol"<< endl;
+  cout << tab << symbol.name_demangled << endl;
+
+  cout << endl;
+}
 
 int main(int argc, char** argv)
 {
@@ -275,8 +320,8 @@ int main(int argc, char** argv)
   symbol_names  baseline_names;
   symbol_infos  test_symbols;
   symbol_names  test_names;
-  collect_symbol_data(baseline_file, baseline_symbols, baseline_names);
-  collect_symbol_data(test_file, test_symbols, test_names);
+  create_symbol_data(baseline_file, baseline_symbols, baseline_names);
+  create_symbol_data(test_file, test_symbols, test_names);
 
   // Basic sanity check. (Was: error checking, what's that?)
   const symbol_names::size_type baseline_size = baseline_names.size();
@@ -323,28 +368,31 @@ int main(int argc, char** argv)
   vector<symbol_pair> incompatible;
   for (size_t i = 0; i < shared_size; ++i)
     {
-      symbol_info binfo = baseline_symbols[shared_names[i].first.c_str()];
-      symbol_info tinfo = test_symbols[shared_names[i].second.c_str()];
-      if (binfo != tinfo)
-	incompatible.push_back(symbol_pair(binfo, tinfo));
+      symbol_info base = baseline_symbols[shared_names[i].first.c_str()];
+      symbol_info test = test_symbols[shared_names[i].second.c_str()];
+      if (!check_compatible(base, test))
+	incompatible.push_back(symbol_pair(base, test));
     }
 
-  // Output data.
+  // Report results.
   cout << test_names.size() << " added symbols " << endl;
   for (size_t j = 0; j < test_names.size() ; ++j)
-    cout << '\t' << test_names[j] << endl;
+    report_symbol_info(test_symbols[test_names[j].c_str()], j + 1);
 
   cout << missing_names.size() << " missing symbols " << endl;
   for (size_t j = 0; j < missing_names.size() ; ++j)
-    cout << '\t' << missing_names[j] << endl;
+    report_symbol_info(baseline_symbols[missing_names[j].c_str()], j + 1);
 
   cout << incompatible.size() << " incompatible symbols " << endl;
   for (size_t j = 0; j < incompatible.size() ; ++j)
     {
-      cout << "baseline symbol_info:" << endl;
-      cout << incompatible[j].first << endl;
-      cout << "test symbol_info:" << endl;
-      cout << incompatible[j].second << endl;
+      // First, report name.
+      const symbol_info& base = incompatible[j].first;
+      const symbol_info& test = incompatible[j].second;
+      report_symbol_info(test, j + 1);
+
+      // Second, report reason or reasons incompatible.
+      check_compatible(base, test, true);
     }
 
   return 0;
