@@ -1,3 +1,8 @@
+2003-12-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/compile/981223-1.x: Add -mb-step to command line
+	options on ia64-*-* instead of XFAILing the test case.
+
 2003-12-16  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* testsuite/gcc.dg/altivec-10.c: Test vec_cmple and vec_all_numeric.
