@@ -79,7 +79,7 @@ An online, ``live'' version of this document
 (derived directly from the mainline, development version
 of @code{g77} within @code{gcc})
 is available via
-@uref{http://www.gnu.org/software/gcc/onlinedocs/g77_bugs.html}.
+@uref{http://www.gnu.org/software/gcc/onlinedocs/g77/Trouble.html}.
 Follow the ``Known Bugs'' link.
 
 The following information was last updated on @value{last-update-bugs}:

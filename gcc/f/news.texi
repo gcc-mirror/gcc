@@ -148,7 +148,7 @@ An online, ``live'' version of this document
 (derived directly from the mainline, development version
 of @command{g77} within @command{gcc})
 is available at
-@uref{http://www.gnu.org/software/gcc/onlinedocs/g77_news.html}.
+@uref{http://www.gnu.org/software/gcc/onlinedocs/g77/News.html}.
 @end ifclear
 
 The following information was last updated on @value{last-update-news}:
