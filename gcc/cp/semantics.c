@@ -1299,6 +1299,11 @@ finish_class_definition (t, components, attributes, semi)
   if (semi)
     note_got_semicolon (t);
 
+  /* If we got any attributes in class_head, xref_tag will stick them in
+     TREE_TYPE of the type.  Grab them now.  */
+  attributes = chainon (TREE_TYPE (t), attributes);
+  TREE_TYPE (t) = NULL_TREE;
+
   if (TREE_CODE (t) == ENUMERAL_TYPE)
     ;
   else

@@ -2085,6 +2085,8 @@ aggr:
 		{ error ("type qualifier `%s' not allowed after struct or class", IDENTIFIER_POINTER ($2)); }
 	| aggr AGGR
 		{ error ("no body nor ';' separates two class, struct or union declarations"); }
+	| aggr attributes
+		{ $$ = build_decl_list ($2, $1); }
 	;
 
 named_class_head_sans_basetype:

@@ -4319,6 +4319,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 		icv = NULL_TREE;
 
 	      if (icv
+		  && flag_optional_diags
 		  /* Don't complain about constructors.  */
 		  && name != constructor_name (current_class_type)
 		  /* Or inherited names.  */

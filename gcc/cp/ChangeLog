@@ -1,3 +1,19 @@
+1998-07-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (xref_tag): Handle attributes between 'class' and name.
+	* parse.y (aggr): Likewise.
+	* semantics.c (finish_class_definition): Likewise.
+	* Makefile.in (EXPECTED): Adjust.
+
+	* cp-tree.h: Declare flag_optional_diags and warn_multichar.
+	* decl2.c: Define them.
+	(lang_decode_option): Handle them.
+	* lang-options.h: Add -foptional-diags.
+	* class.c (finish_struct): Don't complain about multiple meanings of 
+	name if -fno-optional-diags.
+	* decl.c (pushdecl_class_level): Likewise.
+	* lex.c (real_yylex): Check warn_multichar.
+
 1998-07-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_tag): Use CP_DECL_CONTEXT.

@@ -75,6 +75,8 @@ Boston, MA 02111-1307, USA.  */
   "-fno-nonnull-objects",
   "-foperator-names",
   "-fno-operator-names",
+  "-foptional-diags",
+  "-fno-optional-diags",
   "-frepo",
   "-fno-repo",
   "-fsave-memoized",

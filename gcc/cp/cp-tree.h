@@ -465,6 +465,9 @@ extern int flag_guiding_decls;
    and class qualifiers.       */
 extern int flag_do_squangling;
 
+/* Nonzero if we want to issue diagnostics that the standard says are not
+   required.  */
+extern int flag_optional_diags;
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
@@ -1706,6 +1709,9 @@ extern int flag_detailed_statistics;
    same name as a virtual in the base class, but fails to match the
    type signature of any virtual function in the base class.  */
 extern int warn_overloaded_virtual;
+
+/* Nonzero means warn about use of multicharacter literals.  */
+extern int warn_multichar;
 
 /* in c-common.c */
 extern void declare_function_name               PROTO((void));
