@@ -2226,6 +2226,40 @@ finish_member_declaration (tree decl)
       maybe_add_class_template_decl_list (current_class_type, decl, 
 					  /*friend_p=*/0);
     }
+
+  if (pch_file)
+    note_decl_for_pch (decl);
+}
+
+/* DECL has been declared while we are building a PCH file.  Perform
+   actions that we might normally undertake lazily, but which can be
+   performed now so that they do not have to be performed in
+   translation units which include the PCH file.  */
+
+void
+note_decl_for_pch (tree decl)
+{
+  gcc_assert (pch_file);
+
+  /* A non-template inline function with external linkage will always
+     be COMDAT.  As we must eventually determine the linkage of all
+     functions, and as that causes writes to the data mapped in from
+     the PCH file, it's advantageous to mark the functions at this
+     point.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && TREE_PUBLIC (decl)
+      && DECL_DECLARED_INLINE_P (decl)
+      && !DECL_IMPLICIT_INSTANTIATION (decl))
+    {
+      comdat_linkage (decl);
+      DECL_INTERFACE_KNOWN (decl) = 1;
+    }
+  
+  /* There's a good chance that we'll have to mangle names at some
+     point, even if only for emission in debugging information.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      || TREE_CODE (decl) == FUNCTION_DECL)
+    mangle_decl (decl);
 }
 
 /* Finish processing a complete template declaration.  The PARMS are

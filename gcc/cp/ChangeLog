@@ -1,3 +1,10 @@
+2004-12-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (note_decl_for_pch): New function.
+	* class.c (build_clone): Call note_decl_for_pch.
+	* semantics.c (finish_member_declaration): Likewise.
+	(note_decl_for_pch): New function.
+
 2004-12-17  Steven Bosscher  <stevenb@suse.de>
 
 	* init.c (build_zero_init): max_index is the number of

@@ -4188,6 +4188,7 @@ extern void check_accessibility_of_qualified_id (tree, tree, tree);
 extern tree finish_qualified_id_expr            (tree, tree, bool, bool);
 extern void simplify_aggr_init_expr		(tree *);
 extern void finalize_nrv			(tree *, tree, tree);
+extern void note_decl_for_pch                   (tree);
 
 /* in tree.c */
 extern void lang_check_failed			(const char *, int,
