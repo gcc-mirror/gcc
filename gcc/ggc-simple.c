@@ -28,8 +28,13 @@
 #include "hash.h"
 
 /* Debugging flags.  */
-#undef GGC_DUMP
+
+/* Zap memory before freeing to catch dangling pointers.  */
 #define GGC_POISON
+
+/* Log alloc and release.  Don't enable this unless you want a
+   really really lot of data.  */
+#undef GGC_DUMP
 
 /* Global lists of roots, rtxs, and trees.  */
 
@@ -115,6 +120,11 @@ init_ggc PROTO ((void))
 {
   /* Initialize the global context.  */
   ggc_push_context ();
+
+#ifdef GGC_DUMP
+  dump = fopen ("zgcdump", "w");
+  setlinebuf (dump);
+#endif
 }
 
 /* Start a new GGC context.  Memory allocated in previous contexts
@@ -123,8 +133,7 @@ init_ggc PROTO ((void))
 void
 ggc_push_context PROTO ((void))
 {
-  struct ggc_status *gs = (struct ggc_status *) xmalloc (sizeof (*gs));
-  bzero (gs, sizeof (*gs));
+  struct ggc_status *gs = (struct ggc_status *) xcalloc (1, sizeof (*gs));
   gs->next = ggc_chain;
   ggc_chain = gs;
 }
@@ -194,8 +203,7 @@ ggc_alloc_rtx (nslots)
   struct ggc_rtx *n;
   int size = sizeof(*n) + (nslots-1) * sizeof(rtunion);
 
-  n = (struct ggc_rtx *) xmalloc (size);
-  bzero ((char *) n, size);
+  n = (struct ggc_rtx *) xcalloc (1, size);
   n->chain = ggc_chain->rtxs;
   ggc_chain->rtxs = n;
 
@@ -215,8 +223,7 @@ ggc_alloc_rtvec (nelt)
   struct ggc_rtvec *v;
   int size = sizeof (*v) + (nelt - 1) * sizeof (rtx);
 
-  v = (struct ggc_rtvec *) xmalloc (size);
-  bzero ((char *) v, size);
+  v = (struct ggc_rtvec *) xcalloc (1, size);
   v->chain = ggc_chain->vecs;
   ggc_chain->vecs = v;
 
@@ -236,8 +243,7 @@ ggc_alloc_tree (length)
   struct ggc_tree *n;
   int size = sizeof(*n) - sizeof(n->tree) + length;
 
-  n = (struct ggc_tree *) xmalloc (size);
-  bzero ((char *) n, size);
+  n = (struct ggc_tree *) xcalloc (1, size);
   n->chain = ggc_chain->trees;
   ggc_chain->trees = n;
 
@@ -284,8 +290,7 @@ ggc_alloc_string (contents, length)
 }
 
 
-/* Freeing a bit of rtl isn't quite as simple as calling free, there are
-   a few associated bits that might need freeing as well.  */
+/* Freeing a bit of rtl is as simple as calling free.  */
 
 static void
 ggc_free_rtx (r)
@@ -757,7 +762,7 @@ ggc_collect ()
   if (!quiet_flag)
     {
       time = (time + 500) / 1000;
-      fprintf (stderr, "%d,%d,%d,%d %d.%03d}", n_rtxs, n_vecs, n_trees,
+      fprintf (stderr, "%dr,%dv,%dt,%ds %d.%03d}", n_rtxs, n_vecs, n_trees,
 	       n_strings, time / 1000, time % 1000);
     }
 }
@@ -876,16 +881,6 @@ ggc_mark_tree_hash_table_ptr (elt)
 {
   ggc_mark_tree_hash_table (*(struct hash_table **) elt);
 }
-
-#ifdef GGC_DUMP
-/* Don't enable this unless you want a really really lot of data.  */
-static void __attribute__((constructor))
-init(void)
-{
-  dump = fopen ("zgcdump", "w");
-  setlinebuf (dump);
-}
-#endif
 
 #if 0
 /* GDB really should have a memory search function.  Since this is just
