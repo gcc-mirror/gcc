@@ -1,3 +1,11 @@
+2003-07-01  Richard Henderson  <rth@redhat.com>
+	    (blame to: Loren James Rittle  <ljrittle@acm.org>)
+
+	* real.h (ieee_extended_intel_96_round_53_format): New.
+	* real.c (ieee_extended_intel_96_round_53_format): New.
+	* config/i386/freebsd.h (SUBTARGET_OVERRIDE_OPTIONS): Use it
+	for XFmode and TFmode.
+
 2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/contrib.texi: Fix typos.
