@@ -1190,6 +1190,10 @@ extern int rs6000_sysv_varargs_p;
 /* Align an address */
 #define ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
 
+/* Initialize data used by insn expanders.  This is called from
+   init_emit, once for each function, before code is generated. */
+#define INIT_EXPANDERS rs6000_init_expanders ()
+
 /* Size of V.4 varargs area in bytes */
 #define RS6000_VARARGS_SIZE \
   ((GP_ARG_NUM_REG * (TARGET_32BIT ? 4 : 8)) + (FP_ARG_NUM_REG * 8) + 8)
@@ -1197,7 +1201,6 @@ extern int rs6000_sysv_varargs_p;
 /* Offset of V.4 varargs area */
 #define RS6000_VARARGS_OFFSET						\
   (ALIGN (current_function_outgoing_args_size, 8)			\
-   + ALIGN (rs6000_fpmem_size, 8)					\
    + RS6000_SAVE_AREA)
 
 /* Offset within stack frame to start allocating local variables at.
@@ -1211,7 +1214,6 @@ extern int rs6000_sysv_varargs_p;
 
 #define STARTING_FRAME_OFFSET						\
   (ALIGN (current_function_outgoing_args_size, 8)			\
-   + ALIGN (rs6000_fpmem_size, 8)					\
    + RS6000_VARARGS_AREA						\
    + RS6000_SAVE_AREA)
 
@@ -1223,7 +1225,6 @@ extern int rs6000_sysv_varargs_p;
    machines.  See `function.c' for details.  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
   (ALIGN (current_function_outgoing_args_size, 8)			\
-   + ALIGN (rs6000_fpmem_size, 8)					\
    + (STACK_POINTER_OFFSET))
 
 /* If we generate an insn to push BYTES bytes,
@@ -3009,6 +3010,7 @@ do {									\
 extern int flag_pic;
 extern int optimize;
 extern int flag_expensive_optimizations;
+extern int frame_pointer_needed;
 
 /* Declare functions in rs6000.c */
 extern void output_options ();
@@ -3071,6 +3073,9 @@ extern int addrs_ok_for_quad_peep ();
 extern enum reg_class secondary_reload_class ();
 extern int ccr_bit ();
 extern void rs6000_finalize_pic ();
+extern void rs6000_save_machine_status ();
+extern void rs6000_restore_machine_status ();
+extern void rs6000_init_expanders ();
 extern void print_operand ();
 extern void print_operand_address ();
 extern int first_reg_to_save ();
