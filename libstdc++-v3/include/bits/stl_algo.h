@@ -533,8 +533,11 @@ _OutputIter transform(_InputIter __first, _InputIter __last,
 {
   // concept requirements
   __glibcpp_function_requires(_InputIteratorConcept<_InputIter>);
+/* XXX
   __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
+        // should be "the type returned by _UnaryOperation"
         typename iterator_traits<_InputIter>::value_type>);
+*/
 
   for ( ; __first != __last; ++__first, ++__result)
     *__result = __unary_op(*__first);
@@ -550,9 +553,11 @@ _OutputIter transform(_InputIter1 __first1, _InputIter1 __last1,
   // concept requirements
   __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
   __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+/* XXX
   __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-        // XXX really should be "the type returned by _BinaryOperation"
+        // should be "the type returned by _BinaryOperation"
         typename iterator_traits<_InputIter1>::value_type>);
+*/
 
   for ( ; __first1 != __last1; ++__first1, ++__first2, ++__result)
     *__result = __binary_op(*__first1, *__first2);
