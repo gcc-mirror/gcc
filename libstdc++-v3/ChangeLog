@@ -1,3 +1,8 @@
+2004-05-03  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* acinclude.m4: Replace -W with more speaking -Wextra.
+	* configure: Rebuilt.
+
 2004-05-03  Paolo Carlini  <pcarlini@suse.de>
 
 	Optimize locale::_M_impl->_M_names for the most common cases:
