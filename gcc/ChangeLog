@@ -1,3 +1,9 @@
+Thu May 17 19:48:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (validate_replace_rtx_1): Use "TO" mode if not VOIDmode
+	when calling simplify_subreg.  This is needed to allow replacing
+	of expression of one mode by expression of different mode.
+
 Thu May 17 19:40:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c  (simplify_subreg): Avoid creating of incorrect subregs.

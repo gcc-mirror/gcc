@@ -582,7 +582,9 @@ validate_replace_rtx_1 (loc, from, to, object)
       if (rtx_equal_p (SUBREG_REG (x), from))
         {
 	  rtx temp;
-	  temp = simplify_subreg (GET_MODE (x), to, GET_MODE (SUBREG_REG (x)),
+	  temp = simplify_subreg (GET_MODE (x), to,
+			 	  GET_MODE (to) != VOIDmode
+				  ? GET_MODE (to) : GET_MODE (SUBREG_REG (x)),
 				  SUBREG_BYTE (x));
 	  if (temp)
 	    {
