@@ -36,7 +36,14 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC ""
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Acpu(sparc) -Amachine(sparc) -DCPU=SPARC"
+#define CPP_PREDEFINES "-Dsparc -Acpu(sparc) -Amachine(sparc)"
+
+/* Note that we define CPU here even if the user has specified -ansi.
+   This violates user namespace, but the VxWorks headers, and potentially
+   user code, all explicitly rely upon the definition of CPU in order to get
+   the proper processor information.  */
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu) -DCPU=SPARC"
 
 #undef PTRDIFF_TYPE
 #undef SIZE_TYPE
