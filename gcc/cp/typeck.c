@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "target.h"
 #include "convert.h"
+#include "c-common.h"
 
 static tree convert_for_assignment (tree, tree, const char *, tree, int);
 static tree cp_pointer_int_sum (enum tree_code, tree, tree);
@@ -919,6 +920,8 @@ comp_array_types (tree t1, tree t2, bool allow_redeclaration)
 bool
 comptypes (tree t1, tree t2, int strict)
 {
+  int retval;
+
   if (t1 == t2)
     return true;
 
@@ -1014,6 +1017,12 @@ comptypes (tree t1, tree t2, int strict)
       else if ((strict & COMPARE_DERIVED) && DERIVED_FROM_P (t2, t1))
 	return true;
       
+      /* We may be dealing with Objective-C instances...  */
+      if (TREE_CODE (t1) == RECORD_TYPE
+	  && (retval = objc_comptypes (t1, t2, 0) >= 0))
+         return retval;
+      /* ...but fall through if we are not.  */
+
       return false;
 
     case OFFSET_TYPE:
