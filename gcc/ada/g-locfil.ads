@@ -1,0 +1,67 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         GNAT COMPILER COMPONENTS                         --
+--                                                                          --
+--                      G N A T . L O C K _ F I L E S                       --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                            $Revision: 1.2 $
+--                                                                          --
+--           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT;  see file COPYING.  If not, write --
+-- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
+-- MA 02111-1307, USA.                                                      --
+--                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
+--                                                                          --
+-- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+--                                                                          --
+------------------------------------------------------------------------------
+
+   --  This package contains the necessary routines for using files for the
+   --  purpose of providing realiable system wide locking capability.
+
+package GNAT.Lock_Files is
+pragma Preelaborate;
+
+   Lock_Error : exception;
+   --  Exception raised if file cannot be locked
+
+   procedure Lock_File
+     (Directory      : String;
+      Lock_File_Name : String;
+      Wait           : Duration := 1.0;
+      Retries        : Natural  := Natural'Last);
+   --  Create a lock file Lock_File_Name in directory Directory. If the file
+   --  cannot be locked because someone already owns the lock, this procedure
+   --  waits Wait seconds and retries at most Retries times. If the file
+   --  still cannot be locked, Lock_Error is raised. The default is to try
+   --  every second, almost forever (Natural'Last times).
+
+   procedure Lock_File
+     (Lock_File_Name : String;
+      Wait           : Duration := 1.0;
+      Retries        : Natural  := Natural'Last);
+   --  See above. The full lock file path is given as one string.
+
+   procedure Unlock_File (Directory : String; Lock_File_Name : String);
+   --  Unlock a file
+
+   procedure Unlock_File (Lock_File_Name : String);
+   --  Unlock a file whose full path is given in Lock_File_Name
+
+end GNAT.Lock_Files;
