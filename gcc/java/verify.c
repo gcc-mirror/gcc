@@ -232,7 +232,7 @@ merge_type_state (label)
   int cur_length = stack_pointer + nlocals;
   tree vec = LABEL_TYPE_STATE (label);
   tree return_map;
-  if (vec == NULL_TREE || !LABEL_VERIFIED (label))
+  if (vec == NULL_TREE)
     {
       if (!vec)
 	{

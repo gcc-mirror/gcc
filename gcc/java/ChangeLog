@@ -1,5 +1,10 @@
 2001-01-21  Per Bothner  <per@bothner.com>
 
+	* verify.c (merge_type_state):  Stil may have to merge even if
+	LABEL_VERIFIED (label).
+
+2001-01-21  Per Bothner  <per@bothner.com>
+
 	* parse.y (method_header):  Don't set the DECL_NAME of a FUNCTION_DECL
 	to a EXPR_WITH_FILE_LOCATION - that is just too fragile and wrong.
 
