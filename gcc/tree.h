@@ -331,7 +331,7 @@ struct tree_common GTY(())
    nowarning_flag:
 
        TREE_NO_WARNING in
-           ... any expr node
+           ... any expr or decl node
 */
 
 /* Define accessors for the fields that all tree nodes have
@@ -751,7 +751,10 @@ extern void tree_operand_check_failed (int, enum tree_code,
 #define CLEANUP_EH_ONLY(NODE) ((NODE)->common.static_flag)
 
 /* In an expr node (usually a conversion) this means the node was made
-   implicitly and should not lead to any sort of warning.  */
+   implicitly and should not lead to any sort of warning.  In a decl node,
+   warnings concerning the decl should be suppressed.  This is used at
+   least for used-before-set warnings, and it set after one warning is
+   emitted.  */
 #define TREE_NO_WARNING(NODE) ((NODE)->common.nowarning_flag)
 
 /* In an INTEGER_CST, REAL_CST, COMPLEX_CST, or VECTOR_CST this means
