@@ -78,6 +78,9 @@ Tue May 28 21:16:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-05-22  David Edelsohn  <edelsohn@gnu.org>
 	    Jeff Law <law@redhat.com>
 
+	* optabs.c (expand_binop): Fix nwords sign warnings.
+	generate pseudo for add_optab.
+
 	* sched-deps.c (sched_analyze): Do not clear SCHED_GROUP_P.
 	* haifa-sched.c (move_insn): Clear SCHED_GROUP_P after it is used.
 
