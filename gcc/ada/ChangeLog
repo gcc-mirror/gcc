@@ -1,3 +1,7 @@
+2001-10-11  Robert Dewar  <dewar@gnat.com>
+
+	* validsw.adb: Properly save -gnatVn status.
+
 2001-10-11  Robert Dewar <dewar@gnat.com>
 	
 	* usage.adb: Add lines for V switch.
