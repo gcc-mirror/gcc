@@ -7395,7 +7395,7 @@ add_abstract_origin_attribute (die, origin)
 {
   dw_die_ref origin_die = NULL;
 
-  if (die->die_tag != DW_TAG_subprogram)
+  if (TREE_CODE (origin) != FUNCTION_DECL)
     {
       /* We may have gotten separated from the block for the inlined
 	 function, if we're in an exception handler or some such; make
