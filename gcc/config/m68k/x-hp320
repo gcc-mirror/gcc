@@ -12,3 +12,6 @@ TAROUTOPTS = xpf
 # You must set CFLAGS to empty on version 5.
 
 # You must get alloca.c from GNU Emacs.
+
+# So putenv and other functions get seen by fixproto.
+FIXPROTO_DEFINES = -D_HPUX_SOURCE
