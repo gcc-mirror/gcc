@@ -1,5 +1,9 @@
 2001-03-13  Per Bothner  <per@bothner.com>
 
+	* jvspec.c (lang_specific_driver):  Fix -C handling.
+	Check -save-temps to see if temp @FILE should be deleted.
+	Follow-up to/fix for February 16 patch.
+
 	* verify.c (verify_jvm_instructions):  Better error msgs for dup.
 	(type_stack_dup):  Remove no-longer neded error check.
 
