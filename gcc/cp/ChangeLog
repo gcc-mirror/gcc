@@ -1,3 +1,35 @@
+2001-04-24  Nathan Sidwell <nathan@codesourcery.com>
+
+	Lazy __FUNCTION__ generation.
+	* cp-tree.def (FUNCTION_NAME): Remove.
+	* cp-tree.h (function_name_declared_p): Remove.
+	(cp_fname_init): Prototype.
+	* decl.c (init_decl_processing): Don't generate __FUNCTION__ et al ids,
+	don't call declare_function_name. Call start_fname_decls.
+	(cp_make_fname_decl): Adjust parameters. Generate the name. Don't
+	clobber the line number.
+	(cp_fname_init): New function.
+	(start_function): Call start_fname_decls.
+	(finish_function): Call finish_fname_decls.
+	* lex.c (reswords): Add slots for __FUNCTION__ et al.
+	(rid_to_yy): Add mappings for __FUNCTION__ et al.
+	* optimize.c (maybe_clone_body): Remove function_name_declared_p.
+	* parse.y (VAR_FUNC_NAME): New token.
+	(primary): Add VAR_FUNC_NAME.
+	* pt.c (tsubst_decl): Adjust a DECL_PRETTY_FUNCTION_P's
+	generation.
+	(tsubst, FUNCTION_NAME case): Remove.
+	(tsubst_copy, FUNCTION_NAME case): Remove.
+	(tsubst_expr, DECL_STMT case): Be careful with a
+	DECL_PRETTY_FUNCTION_P.
+	(instantiate_decl): Remove function_name_declared_p.
+	* semantics.c (begin_compound_statement): Don't call
+	declare_function_name here.
+	(setup_vtbl_ptr). Don't save & restore function_name_declared_p.
+	(finish_translation_unit): Call finish_fname_decls.
+	(expand_body): Remove function_name_declared_p.
+	* typeck2.c (digest_init): Allow any ERROR_MARK.
+
 2001-04-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (tsubst_decl): Use VOID_TYPE_P.

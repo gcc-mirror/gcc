@@ -5987,10 +5987,9 @@ tsubst_decl (t, args, type)
 	/* For __PRETTY_FUNCTION__ we have to adjust the initializer.  */
 	if (DECL_PRETTY_FUNCTION_P (r))
 	  {
-	    DECL_INITIAL (r) = tsubst (DECL_INITIAL (t),
-				       args,
-				       /*complain=*/1,
-				       NULL_TREE);
+	    const char *name = (*decl_printable_name)
+	      			(current_function_decl, 2);
+	    DECL_INITIAL (r) = cp_fname_init (name);
 	    TREE_TYPE (r) = TREE_TYPE (DECL_INITIAL (r));
 	  }
 
@@ -6794,24 +6793,6 @@ tsubst (t, args, complain, in_decl)
 	return TREE_TYPE (e1); 
       }
 
-    case FUNCTION_NAME:
-      {
-	const char *name;
-	int len;
-	tree type;
-	tree str;
-
-	/* This code should match declare_hidden_char_array in
-	   c-common.c.  */
-	name = (*decl_printable_name) (current_function_decl, 2);
-	len = strlen (name) + 1;
-	type =  build_array_type (char_type_node, 
-				  build_index_type (size_int (len)));
-	str = build_string (len, name);
-	TREE_TYPE (str) = type;
-	return str;
-      }
-
     default:
       sorry ("use of `%s' in template",
 	     tree_code_name [(int) TREE_CODE (t)]);
@@ -7172,9 +7153,6 @@ tsubst_copy (t, args, complain, in_decl)
 					in_decl),
 			   tsubst (TREE_TYPE (t), args, complain, in_decl));
 
-    case FUNCTION_NAME:
-      return tsubst (t, args, complain, in_decl);
-
     default:
       return t;
     }
@@ -7254,7 +7232,10 @@ tsubst_expr (t, args, complain, in_decl)
 	  {
 	    init = DECL_INITIAL (decl);
 	    decl = tsubst (decl, args, complain, in_decl);
-	    init = tsubst_expr (init, args, complain, in_decl);
+	    if (DECL_PRETTY_FUNCTION_P (decl))
+	      init = DECL_INITIAL (decl);
+	    else
+	      init = tsubst_expr (init, args, complain, in_decl);
 	    if (decl != error_mark_node)
 	      {
                 if (TREE_CODE (decl) != TYPE_DECL)
@@ -9933,10 +9914,6 @@ instantiate_decl (d, defer_ok)
 
       /* Set up context.  */
       start_function (NULL_TREE, d, NULL_TREE, SF_PRE_PARSED);
-
-      /* We already set up __FUNCTION__, etc., so we don't want to do
-	 it again now.  */
-      function_name_declared_p = 1;
 
       /* Substitute into the body of the function.  */
       tsubst_expr (DECL_SAVED_TREE (code_pattern), args,

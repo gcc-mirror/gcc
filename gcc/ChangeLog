@@ -1,3 +1,54 @@
+2001-04-24  Zack Weinberg  <zackw@stanford.edu>
+	    Nathan Sidwell <nathan@codesourcery.com>
+
+	Lazy __FUNCTION__ generation.
+	* c-common.h (RID_FUNCTION_NAME, RID_PRETTY_FUNCTION_NAME,
+	RID_C99_FUNCTION_NAME): New _RIDs.
+	(CTI_FUNCTION_ID, CTI_PRETTY_FUNCTION_ID, CTI_FUNC_ID): Remove.
+	(CTI_FUNCTION_NAME_DECL, CTI_PRETTY_FUNCTION_NAME_DECL,
+	CTI_C99_FUNCTION_NAME_DECL, CTI_SAVED_FUNCTION_NAME_DECLS): New
+	global tree slots.
+	(function_id_node, pretty_function_id_node, func_id_node): Remove.
+	(c99_function_name_decl_node, function_name_decl_node,
+	pretty_function_name_decl_node, saved_function_name_decls):
+	Declare.
+	(struct language_function): Remove x_function_name_declared_p.
+	(make_fname_decl): Remove a parameter.
+	(declare_function_names): Remove prototype.
+	(start_fname_decls, finish_fname_decls): Prototype.
+	(fname_as_string): Likewise.
+	(fname_string, fname_decl): Likewise.
+	* c-common.c (make_fname_decl): Adjust.
+	(struct fname_var_t): New struct.
+	(fname_vars): New static array.
+	(declare_function_name): Remove.
+	(start_fname_decls, finish_fname_decls): New functions.
+	(fname_as_string): New function from remnants of
+	declare_function_name.
+	(fname_string, fname_decl): New functions.
+
+	* c-decl.c (c_function_name_declared_p): Remove.
+	(init_decl_processing): Don't generate __FUNCTION__ et al ids,
+	don't call declare_function_name. Call start_fname_decls.
+	(c_make_fname_decl): Adjust parameters. Generate the name. Don't
+	clobber the line number. Call finish_decl.
+	(start_function): Call start_fname_decls.
+	(finish_function): Call finish_fname_decls.
+	Remove c_function_name_declared_p.
+	(push_c_function_context): Don't push c_function_name_declared_p.
+	(pop_c_function_context): Don't pop c_function_name_declared_p.
+	(c_begin_compound_stmt): Don't check c_function_name_declared_p.
+	* c-parse.in (STRING_FUNC_NAME, VAR_FUNC_NAME): New tokens.
+	(program): Call finish_fname_decls for C.
+	(primary): Add VAR_FUNC_NAME.
+	(reswords): Add slots for __FUNCTION__ et al.
+	(rid_to_yy): Add mappings for __FUNCTION__ et al.
+	(yylexname): If it's a STRING_FUNC_NAME generate the function name
+	now. Don't look for VAR_DECLs containing __FUNCTION__ et al.
+	* c-semantics.c (prune_unused_decls): Remove.
+	(finish_stmt_tree): Don't call prune_unused_decls.
+	(genrtl_decl_stmt): Don't prune unused decls here.
+
 2001-04-24  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor): If a SYMBOL_REF is in the

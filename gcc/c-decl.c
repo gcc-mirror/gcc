@@ -104,11 +104,6 @@ static struct stmt_tree_s c_stmt_tree;
 
 static tree c_scope_stmt_stack;
 
-/* Nonzero if __FUNCTION__ and its ilk have been declared in this
-   function.  */
-
-static int c_function_name_declared_p;
-
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
    that have names.  Here so we can clear out their names' definitions
    at the end of the function.  */
@@ -279,7 +274,7 @@ static tree grokdeclarator		PARAMS ((tree, tree, enum decl_context,
 						 int));
 static tree grokparms			PARAMS ((tree, int));
 static void layout_array_type		PARAMS ((tree));
-static tree c_make_fname_decl           PARAMS ((tree, const char *, int));
+static tree c_make_fname_decl           PARAMS ((tree, int));
 static void c_expand_body               PARAMS ((tree, int));
 
 /* C-specific option variables.  */
@@ -3093,13 +3088,8 @@ init_decl_processing ()
 
   pedantic_lvalues = pedantic;
 
-  /* Create the global bindings for __FUNCTION__, __PRETTY_FUNCTION__,
-     and __func__.  */
-  function_id_node = get_identifier ("__FUNCTION__");
-  pretty_function_id_node = get_identifier ("__PRETTY_FUNCTION__");
-  func_id_node = get_identifier ("__func__");
   make_fname_decl = c_make_fname_decl;
-  declare_function_name ();
+  start_fname_decls ();
 
   start_identifier_warnings ();
 
@@ -3132,30 +3122,33 @@ init_decl_processing ()
    are string merging candidates, which is wrong for C99's __func__.  FIXME.  */
 
 static tree
-c_make_fname_decl (id, name, type_dep)
+c_make_fname_decl (id, type_dep)
      tree id;
-     const char *name;
-     int type_dep ATTRIBUTE_UNUSED;
+     int type_dep;
 {
+  const char *name = fname_as_string (type_dep);
   tree decl, type, init;
   size_t length = strlen (name);
 
   type =  build_array_type
           (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
-	   build_index_type (build_int_2 (length, 0)));
+	   build_index_type (size_int (length)));
 
   decl = build_decl (VAR_DECL, id, type);
+  /* We don't push the decl, so have to set its context here. */
+  DECL_CONTEXT (decl) = current_function_decl;
+  
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
-  TREE_ASM_WRITTEN (decl) = 1;
-  DECL_SOURCE_LINE (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_IN_SYSTEM_HEADER (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
+  
   init = build_string (length + 1, name);
   TREE_TYPE (init) = type;
   DECL_INITIAL (decl) = init;
-  finish_decl (pushdecl (decl), init, NULL_TREE);
+
+  TREE_USED (decl) = 1;
+  
+  finish_decl (decl, init, NULL_TREE);
 
   return decl;
 }
@@ -3487,9 +3480,9 @@ finish_decl (decl, init, asmspec_tree)
     asmspec = TREE_STRING_POINTER (asmspec_tree);
 
   /* If `start_decl' didn't like having an initialization, ignore it now.  */
-
   if (init != 0 && DECL_INITIAL (decl) == 0)
     init = 0;
+  
   /* Don't crash if parm is initialized.  */
   if (TREE_CODE (decl) == PARM_DECL)
     init = 0;
@@ -3507,7 +3500,6 @@ finish_decl (decl, init, asmspec_tree)
     }
 
   /* Deduce size of array from initialization, if not already known */
-
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == 0
       && TREE_CODE (decl) != TYPE_DECL)
@@ -6029,6 +6021,8 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
 
   immediate_size_expand = old_immediate_size_expand;
 
+  start_fname_decls ();
+  
   return 1;
 }
 
@@ -6656,6 +6650,8 @@ finish_function (nested)
 #endif
 	}
     }
+  
+  finish_fname_decls ();
 
   /* Tie off the statement tree for this function.  */
   finish_stmt_tree (&DECL_SAVED_TREE (fndecl));
@@ -6674,7 +6670,6 @@ finish_function (nested)
 	 function.  For a nested function, this value is used in
 	 pop_c_function_context and then reset via pop_function_context.  */
       current_function_decl = NULL;
-      c_function_name_declared_p = 0;
     }
 }
 
@@ -6916,7 +6911,6 @@ push_c_function_context (f)
 
   p->base.x_stmt_tree = c_stmt_tree;
   p->base.x_scope_stmt_stack = c_scope_stmt_stack;
-  p->base.x_function_name_declared_p = c_function_name_declared_p;
   p->named_labels = named_labels;
   p->shadowed_labels = shadowed_labels;
   p->returns_value = current_function_returns_value;
@@ -6954,7 +6948,6 @@ pop_c_function_context (f)
 
   c_stmt_tree = p->base.x_stmt_tree;
   c_scope_stmt_stack = p->base.x_scope_stmt_stack;
-  c_function_name_declared_p = p->base.x_function_name_declared_p;
   named_labels = p->named_labels;
   shadowed_labels = p->shadowed_labels;
   current_function_returns_value = p->returns_value;
@@ -7087,13 +7080,6 @@ c_begin_compound_stmt ()
 
   /* Create the COMPOUND_STMT.  */
   stmt = add_stmt (build_stmt (COMPOUND_STMT, NULL_TREE));
-  /* If we haven't already declared __FUNCTION__ and its ilk then this
-     is the opening curly brace of the function.  Declare them now.  */
-  if (!c_function_name_declared_p)
-    {
-      c_function_name_declared_p = 1;
-      declare_function_name ();
-    }
 
   return stmt;
 }

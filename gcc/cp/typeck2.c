@@ -470,6 +470,11 @@ digest_init (type, init, tail)
 				  && TREE_VALUE (init) == error_mark_node))
     return error_mark_node;
 
+  if (TREE_CODE (init) == ERROR_MARK)
+    /* __PRETTY_FUNCTION__'s initializer is a bogus expression inside
+       a template function. This gets substituted during instantiation. */
+    return init;
+  
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);

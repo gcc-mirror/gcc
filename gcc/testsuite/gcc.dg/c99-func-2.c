@@ -6,6 +6,5 @@
 void
 foo (void)
 {
-  __func__ "foo"; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "parse error" "__func__ not string constant" { xfail *-*-* } 9 } */
+  __func__ "foo"; /* { dg-error "parse error" "before string constant" } */
 }

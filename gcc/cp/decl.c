@@ -138,7 +138,7 @@ static tree get_atexit_node PARAMS ((void));
 static tree get_dso_handle_node PARAMS ((void));
 static tree start_cleanup_fn PARAMS ((void));
 static void end_cleanup_fn PARAMS ((void));
-static tree cp_make_fname_decl PARAMS ((tree, const char *, int));
+static tree cp_make_fname_decl PARAMS ((tree, int));
 static void initialize_predefined_identifiers PARAMS ((void));
 static tree check_special_function_return_type
   PARAMS ((special_function_kind, tree, tree));
@@ -6519,6 +6519,7 @@ init_decl_processing ()
 
   {
     tree bad_alloc_type_node, newtype, deltype;
+    
     if (flag_honor_std)
       push_namespace (std_identifier);
     bad_alloc_type_node = xref_tag
@@ -6526,7 +6527,8 @@ init_decl_processing ()
     if (flag_honor_std)
       pop_namespace ();
     newtype = build_exception_variant
-      (ptr_ftype_sizetype, add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1));
+      (ptr_ftype_sizetype, add_exception_specifier
+       (NULL_TREE, bad_alloc_type_node, -1));
     deltype = build_exception_variant (void_ftype_ptr, empty_except_spec);
     push_cp_library_fn (NEW_EXPR, newtype);
     push_cp_library_fn (VEC_NEW_EXPR, newtype);
@@ -6553,13 +6555,8 @@ init_decl_processing ()
   if (! supports_one_only ())
     flag_weak = 0;
 
-  /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
-  function_id_node = get_identifier ("__FUNCTION__");
-  pretty_function_id_node = get_identifier ("__PRETTY_FUNCTION__");
-  func_id_node = get_identifier ("__func__");
-
   make_fname_decl = cp_make_fname_decl;
-  declare_function_name ();
+  start_fname_decls ();
 
   /* Prepare to check format strings against argument lists.  */
   init_function_format_info ();
@@ -6607,57 +6604,68 @@ init_decl_processing ()
   ggc_add_tree_root (&free_bindings, 1);
 }
 
+/* Generate an initializer for a function naming variable from
+   NAME. NAME may be NULL, in which case we generate a special
+   ERROR_MARK node which should be replaced later. */
+
+tree
+cp_fname_init (name)
+     const char *name;
+{
+  tree domain = NULL_TREE;
+  tree type;
+  tree init = NULL_TREE;
+  size_t length = 0;
+
+  if (name)
+    {
+      length = strlen (name);
+      domain = build_index_type (size_int (length));
+      init = build_string (length + 1, name);
+    }
+  
+  type = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
+  type = build_cplus_array_type (type, domain);
+
+  if (init)
+    TREE_TYPE (init) = type;
+  else
+    /* We don't know the value until instantiation time. Make
+       something which will be digested now, but replaced later. */
+    init = build (ERROR_MARK, type);
+  
+  return init;
+}
+
 /* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give the
    decl, NAME is the initialization string and TYPE_DEP indicates whether
    NAME depended on the type of the function. We make use of that to detect
-   __PRETTY_FUNCTION__ inside a template fn.  Because we build a tree for
-   the function before emitting any of it, we don't need to treat the
-   VAR_DECL specially. We can decide whether to emit it later, if it was
-   used.  */
+   __PRETTY_FUNCTION__ inside a template fn. This is being done
+   lazily at the point of first use, so we musn't push the decl now.  */
 
 static tree
-cp_make_fname_decl (id, name, type_dep)
+cp_make_fname_decl (id, type_dep)
      tree id;
-     const char *name;
      int type_dep;
 {
-  tree decl, type, init;
-  size_t length = strlen (name);
-  tree domain = NULL_TREE;
+  const char *name = (type_dep && processing_template_decl
+		      ? NULL : fname_as_string (type_dep));
+  tree init = cp_fname_init (name);
+  tree decl = build_decl (VAR_DECL, id, TREE_TYPE (init));
 
-  if (!processing_template_decl)
-    type_dep = 0;
-  if (!type_dep)
-    domain = build_index_type (size_int (length));
-
-  type =  build_cplus_array_type
-          (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
-	   domain);
-
-  decl = build_decl (VAR_DECL, id, type);
+  /* As we don't push the decl here, we must set the context. */
+  DECL_CONTEXT (decl) = current_function_decl;
+  DECL_PRETTY_FUNCTION_P (decl) = type_dep;
+      
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
-  DECL_SOURCE_LINE (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_IN_SYSTEM_HEADER (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  pushdecl (decl);
-  if (processing_template_decl)
-    decl = push_template_decl (decl);
-  if (type_dep)
-    {
-      init = build (FUNCTION_NAME, type);
-      DECL_PRETTY_FUNCTION_P (decl) = 1;
-    }
-  else
-    {
-      init = build_string (length + 1, name);
-      TREE_TYPE (init) = type;
-    }
   DECL_INITIAL (decl) = init;
-  cp_finish_decl (decl, init, NULL_TREE, LOOKUP_ONLYCONVERTING);
+  
+  TREE_USED (decl) = 1;
 
-  /* We will have to make sure we only emit this, if it is actually used. */
+  cp_finish_decl (decl, init, NULL_TREE, LOOKUP_ONLYCONVERTING);
+      
   return decl;
 }
 
@@ -12966,6 +12974,7 @@ finish_enum (enumtype)
       if (scope && TREE_CODE (scope) == FUNCTION_DECL)
 	add_stmt (build_min (TAG_DEFN, enumtype));
 
+
       return;
     }
 
@@ -13602,6 +13611,8 @@ start_function (declspecs, declarator, attrs, flags)
       DECL_CONTEXT (dtor_label) = current_function_decl;
     }
 
+  start_fname_decls ();
+  
   store_parm_decls (current_function_parms);
 
   return 1;
@@ -13931,6 +13942,8 @@ finish_function (flags)
 
   my_friendly_assert (building_stmt_tree (), 20000911);
 
+  finish_fname_decls ();
+  
   /* For a cloned function, we've already got all the code we need;
      there's no need to add any extra bits.  */
   if (!DECL_CLONED_FUNCTION_P (fndecl))

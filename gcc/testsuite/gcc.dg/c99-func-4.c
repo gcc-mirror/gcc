@@ -6,5 +6,5 @@
 void
 foo (void)
 {
-  char *p = __func__; /* { dg-error "discards" "__func__ pointer to const" { xfail *-*-* } } */
+  char *p = __func__; /* { dg-error "discards" "__func__ pointer to const" } */
 }

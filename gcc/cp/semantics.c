@@ -852,16 +852,6 @@ begin_compound_stmt (has_no_scope)
        to accidentally keep a block *inside* the scopeless block.  */ 
     keep_next_level (0);
 
-  /* If this is the outermost block of the function, declare the
-     variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
-  if (cfun
-      && !function_name_declared_p
-      && !has_no_scope)
-    {
-      function_name_declared_p = 1;
-      declare_function_name ();
-    }
-
   return r;
 }
 
@@ -1180,7 +1170,6 @@ setup_vtbl_ptr (member_init_list, base_init_list)
     {
       tree if_stmt;
       tree compound_stmt;
-      int saved_cfnd;
 
       /* If the dtor is empty, and we know there is not any possible
 	 way we could use any vtable entries, before they are possibly
@@ -1201,12 +1190,7 @@ setup_vtbl_ptr (member_init_list, base_init_list)
       finish_if_stmt_cond (boolean_true_node, if_stmt);
       current_vcalls_possible_p = &IF_COND (if_stmt);
 
-      /* Don't declare __PRETTY_FUNCTION__ and friends here when we
-	 open the block for the if-body.  */
-      saved_cfnd = function_name_declared_p;
-      function_name_declared_p = 1;
       compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-      function_name_declared_p = saved_cfnd;
 
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function
@@ -1706,6 +1690,10 @@ finish_translation_unit ()
   pop_everything ();
   while (current_namespace != global_namespace)
     pop_namespace ();
+
+  /* Do file scope __FUNCTION__ et al. */
+  finish_fname_decls ();
+  
   finish_file ();
 }
 
@@ -2471,11 +2459,6 @@ expand_body (fn)
 
   genrtl_start_function (fn);
   current_function_is_thunk = DECL_THUNK_P (fn);
-
-  /* We don't need to redeclare __FUNCTION__, __PRETTY_FUNCTION__, or
-     any of the other magic variables we set up when starting a
-     function body.  */
-  function_name_declared_p = 1;
 
   /* Expand the body.  */
   expand_stmt (DECL_SAVED_TREE (fn));

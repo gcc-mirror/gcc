@@ -402,6 +402,8 @@ CONSTRAINT(ridbits_fit, RID_LAST_MODIFIER < sizeof(unsigned long) * CHAR_BIT);
 static const struct resword reswords[] =
 {
   { "_Complex",		RID_COMPLEX,	0 },
+  { "__FUNCTION__",	RID_FUNCTION_NAME, 0 },
+  { "__PRETTY_FUNCTION__", RID_PRETTY_FUNCTION_NAME, 0 },
   { "__alignof", 	RID_ALIGNOF,	0 },
   { "__alignof__",	RID_ALIGNOF,	0 },
   { "__asm",		RID_ASM,	0 },
@@ -414,6 +416,7 @@ static const struct resword reswords[] =
   { "__const",		RID_CONST,	0 },
   { "__const__",	RID_CONST,	0 },
   { "__extension__",	RID_EXTENSION,	0 },
+  { "__func__",		RID_C99_FUNCTION_NAME,	0 },
   { "__imag",		RID_IMAGPART,	0 },
   { "__imag__",		RID_IMAGPART,	0 },
   { "__inline",		RID_INLINE,	0 },
@@ -584,6 +587,10 @@ const short rid_to_yy[RID_MAX] =
   /* RID_PTRBASE */	0,
   /* RID_PTREXTENT */	0,
   /* RID_PTRVALUE */	0,
+
+  /* RID_FUNCTION_NAME */	VAR_FUNC_NAME,
+  /* RID_PRETTY_FUNCTION_NAME */ VAR_FUNC_NAME,
+  /* RID_c99_FUNCTION_NAME */	VAR_FUNC_NAME,
 
   /* C++ */
   /* RID_BOOL */	TYPESPEC,

@@ -48,8 +48,6 @@ void (*lang_expand_stmt) PARAMS ((tree));
    variables and labels do not require any RTL generation.  */
 void (*lang_expand_decl_stmt) PARAMS ((tree));
 
-static tree prune_unused_decls PARAMS ((tree *, int *, void *));
-
 /* Create an empty statement tree rooted at T.  */
 
 void
@@ -73,8 +71,9 @@ add_stmt (t)
   /* Add T to the statement-tree.  */
   TREE_CHAIN (last_tree) = t;
   last_tree = t;
+  
   /* When we expand a statement-tree, we must know whether or not the
-     statements are full-expresions.  We record that fact here.  */
+     statements are full-expressions.  We record that fact here.  */
   STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p ();
 
   /* Keep track of the number of statements in this function.  */
@@ -105,7 +104,7 @@ add_decl_stmt (decl)
    returns a new TREE_LIST representing the top of the SCOPE_STMT
    stack.  The TREE_PURPOSE is the new SCOPE_STMT.  If BEGIN_P is
    zero, returns a TREE_LIST whose TREE_VALUE is the new SCOPE_STMT,
-   and whose TREE_PURPOSE is the matching SCOPE_STMT iwth
+   and whose TREE_PURPOSE is the matching SCOPE_STMT with
    SCOPE_BEGIN_P set.  */
 
 tree
@@ -141,61 +140,6 @@ add_scope_stmt (begin_p, partial_p)
   return top;
 }
 
-/* Remove declarations of internal variables that are not used from a
-   stmt tree.  To qualify, the variable must have a name and must have
-   a zero DECL_SOURCE_LINE.  We tried to remove all variables for
-   which TREE_USED was false, but it turns out that there's tons of
-   variables for which TREE_USED is false but that are still in fact
-   used.  */
-
-static tree
-prune_unused_decls (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
-{
-  tree t = *tp;
-
-  if (t == NULL_TREE)
-    return error_mark_node;
-
-  if (TREE_CODE (t) == DECL_STMT)
-    {
-      tree d = DECL_STMT_DECL (t);
-      if (!TREE_USED (d) && DECL_NAME (d) && DECL_SOURCE_LINE (d) == 0)
-	{
-	  *tp = TREE_CHAIN (t);
-	  /* Recurse on the new value of tp, otherwise we will skip
-	     the next statement.  */
-	  return prune_unused_decls (tp, walk_subtrees, data);
-	}
-    }
-  else if (TREE_CODE (t) == SCOPE_STMT)
-    {
-      /* Remove all unused decls from the BLOCK of this SCOPE_STMT.  */
-      tree block = SCOPE_STMT_BLOCK (t);
-
-      if (block)
-	{
-	  tree *vp;
-
-	  for (vp = &BLOCK_VARS (block); *vp; )
-	    {
-	      tree v = *vp;
-	      if (! TREE_USED (v) && DECL_NAME (v) && DECL_SOURCE_LINE (v) == 0)
-		*vp = TREE_CHAIN (v);  /* drop */
-	      else
-		vp = &TREE_CHAIN (v);  /* advance */
-	    }
-	  /* If there are now no variables, the entire BLOCK can be dropped.
-	     (This causes SCOPE_NULLIFIED_P (t) to be true.)  */
-	  if (BLOCK_VARS (block) == NULL_TREE)
-	    SCOPE_STMT_BLOCK (t) = NULL_TREE;
-	}
-    }
-  return NULL_TREE;
-}
-
 /* Finish the statement tree rooted at T.  */
 
 void
@@ -208,9 +152,6 @@ finish_stmt_tree (t)
   stmt = TREE_CHAIN (*t);
   *t = stmt;
   last_tree = NULL_TREE;
-
-  /* Remove unused decls from the stmt tree.  */
-  walk_stmt_tree (t, prune_unused_decls, NULL);
 
   if (cfun && stmt)
     {
@@ -420,15 +361,7 @@ genrtl_decl_stmt (t)
 				DECL_ANON_UNION_ELEMS (decl));
     }
   else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
-    {
-      if (DECL_ARTIFICIAL (decl) && ! TREE_USED (decl))
-	/* Do not emit unused decls. This is not just an
-	   optimization. We really do not want to emit
-	   __PRETTY_FUNCTION__ etc, if they're never used.  */
-	DECL_IGNORED_P (decl) = 1;
-      else
-	make_rtl_for_local_static (decl);
-    }
+    make_rtl_for_local_static (decl);
   else if (TREE_CODE (decl) == LABEL_DECL 
 	   && C_DECLARED_LABEL_FLAG (decl))
     declare_nonlocal_label (decl);
