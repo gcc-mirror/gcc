@@ -931,6 +931,29 @@ next_tokenrun (run)
   return run->next;
 }
 
+/* Allocate a single token that is invalidated at the same time as the
+   rest of the tokens on the line.  Has its line and col set to the
+   same as the last lexed token, so that diagnostics appear in the
+   right place.  */
+cpp_token *
+_cpp_temp_token (pfile)
+     cpp_reader *pfile;
+{
+  cpp_token *old, *result;
+
+  old = pfile->cur_token - 1;
+  if (pfile->cur_token == pfile->cur_run->limit)
+    {
+      pfile->cur_run = next_tokenrun (pfile->cur_run);
+      pfile->cur_token = pfile->cur_run->base;
+    }
+
+  result = pfile->cur_token++;
+  result->line = old->line;
+  result->col = old->col;
+  return result;
+}
+
 /* Lex a token into RESULT (external interface).  Takes care of issues
    like directive handling, token lookahead, multiple include
    opimisation and skipping.  */
@@ -1057,6 +1080,8 @@ _cpp_lex_direct (pfile)
       buffer->saved_flags = BOL;
       if (! pfile->state.in_directive)
 	{
+	  if (pfile->state.parsing_args == 2)
+	    buffer->saved_flags |= PREV_WHITE;
 	  if (!pfile->keep_tokens)
 	    {
 	      pfile->cur_run = &pfile->base_run;
@@ -1476,17 +1501,14 @@ cpp_type2name (type)
   return (const char *) token_spellings[type].name;
 }
 
-/* Writes the spelling of token to FP.  Separate from cpp_spell_token
-   for efficiency - to avoid double-buffering.  Also, outputs a space
-   if PREV_WHITE is flagged.  */
+/* Writes the spelling of token to FP, without any preceding space.
+   Separated from cpp_spell_token for efficiency - to avoid stdio
+   double-buffering.  */
 void
 cpp_output_token (token, fp)
      const cpp_token *token;
      FILE *fp;
 {
-  if (token->flags & PREV_WHITE)
-    putc (' ', fp);
-
   switch (TOKEN_SPELL (token))
     {
     case SPELL_OPERATOR:
@@ -1729,20 +1751,22 @@ cpp_avoid_paste (pfile, token1, token2)
 }
 
 /* Output all the remaining tokens on the current line, and a newline
-   character, to FP.  Leading whitespace is removed.  */
+   character, to FP.  Leading whitespace is removed.  If there are
+   macros, special token padding is not performed.  */
 void
 cpp_output_line (pfile, fp)
      cpp_reader *pfile;
      FILE *fp;
 {
-  cpp_token token;
+  const cpp_token *token;
 
-  cpp_get_token (pfile, &token);
-  token.flags &= ~PREV_WHITE;
-  while (token.type != CPP_EOF)
+  token = cpp_get_token (pfile);
+  while (token->type != CPP_EOF)
     {
-      cpp_output_token (&token, fp);
-      cpp_get_token (pfile, &token);
+      cpp_output_token (token, fp);
+      token = cpp_get_token (pfile);
+      if (token->flags & PREV_WHITE)
+	putc (' ', fp);
     }
 
   putc ('\n', fp);

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 
@@ -8,20 +8,24 @@
    not be a macro invocation.  Also, multiple macro invocations spread
    across many lines.
 
-   Neil Booth, 1 Dec 2000.  */
+   Neil Booth, 1 Dec 2000, 23 Sep 2001.  */
 
 #define str(x) #x
 #define f(x) x
+#define glue(x, y) x ## y
+#define EMPTY
 
 /* The correct output is shown here.  Note the spaces, and the way
    everything after the invocation of f appears on the same line.
 
+ 44 ;
 f
 bar
 g "1 2" bam baz
 
 */
 
+glue (EMPTY 4, 4) EMPTY;
 f
 bar
 f (g) str
@@ -33,9 +37,10 @@ f (g) str
 
 /*
    { dg-final { if ![file exists spacing1.i] { return }                   } }
+   { dg-final { if \{ [grep spacing1.i " 44 ;"] != "" \}  \{              } }
    { dg-final { if \{ [grep spacing1.i "f.*bar"] == "" \} \{              } }
    { dg-final { if \{ [grep spacing1.i "^bar"] != "" \}   \{              } }
    { dg-final { if \{ [grep spacing1.i "g \"1 2\" bam baz"] != "" \} \{   } }
-   { dg-final { return \} \} \}                                           } }
+   { dg-final { return \} \} \} \}                                        } }
    { dg-final { fail "spacing1.c: spacing and new-line preservation"      } }
 */

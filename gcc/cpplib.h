@@ -134,6 +134,7 @@ struct file_name_map_list;
 \
   TK(CPP_COMMENT,	SPELL_STRING)	/* Only if output comments.  */ \
   TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
+  OP(CPP_PADDING,	"")		/* Whitespace for cpp0.  */	\
   OP(CPP_EOF,		"EOL")		/* End of line or file.  */
 
 #define OP(e, s) e,
@@ -164,8 +165,7 @@ struct cpp_string
 #define PASTE_LEFT	(1 << 3) /* If on LHS of a ## operator.  */
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
-#define AVOID_LPASTE	(1 << 6) /* Check left for accidental pastes.  */
-#define BOL		(1 << 7) /* Token at beginning of line.  */
+#define BOL		(1 << 6) /* Token at beginning of line.  */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 12 bytes on 32-bit hosts and 16 bytes on 64-bit hosts.  */
@@ -179,6 +179,7 @@ struct cpp_token
   union
   {
     cpp_hashnode *node;		/* An identifier.  */
+    const cpp_token *source;	/* Inherit padding from this token.  */
     struct cpp_string str;	/* A string, or number.  */
     unsigned int arg_no;	/* Argument no. for a CPP_MACRO_ARG.  */
     unsigned char c;		/* Character represented by CPP_OTHER.  */
@@ -234,6 +235,9 @@ struct cpp_options
 
   /* The language we're preprocessing.  */
   enum c_lang lang;
+
+  /* Nonzero means to return spacing characters for stand-alone CPP.  */
+  unsigned char spacing;
 
   /* Non-0 means -v, so print the full set of include dirs.  */
   unsigned char verbose;
@@ -497,7 +501,7 @@ extern int cpp_avoid_paste PARAMS ((cpp_reader *, const cpp_token *,
 				    const cpp_token *));
 extern enum cpp_ttype cpp_can_paste PARAMS ((cpp_reader *, const cpp_token *,
 					     const cpp_token *, int *));
-extern void cpp_get_token PARAMS ((cpp_reader *, cpp_token *));
+extern const cpp_token *cpp_get_token PARAMS ((cpp_reader *));
 extern const unsigned char *cpp_macro_definition PARAMS ((cpp_reader *,
 						  const cpp_hashnode *));
 extern void _cpp_backup_tokens PARAMS ((cpp_reader *, unsigned int));

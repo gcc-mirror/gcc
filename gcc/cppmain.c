@@ -32,6 +32,7 @@ struct printer
 {
   FILE *outf;			/* Stream to write to.  */
   const struct line_map *map;	/* Logical to physical line mappings.  */
+  const cpp_token *prev;	/* Previous token.  */
   unsigned int line;		/* Line currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
 };
@@ -43,7 +44,7 @@ static void setup_callbacks PARAMS ((void));
 
 /* General output routines.  */
 static void scan_translation_unit PARAMS ((cpp_reader *));
-static void check_multiline_token PARAMS ((cpp_string *));
+static void check_multiline_token PARAMS ((const cpp_string *));
 static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
 static void print_line PARAMS ((const struct line_map *, unsigned int,
@@ -144,6 +145,7 @@ do_preprocessing (argc, argv)
      cause a linemarker to be output by maybe_print_line.  */
   print.line = (unsigned int) -1;
   print.printed = 0;
+  print.prev = 0;
   print.map = 0;
   
   /* Open the output now.  We must do so even if no_output is on,
@@ -219,22 +221,43 @@ static void
 scan_translation_unit (pfile)
      cpp_reader *pfile;
 {
-  unsigned int index;
-  cpp_token tokens[2], *token;
+  bool avoid_paste = false;
+  const cpp_token *source = NULL;
 
-  for (index = 0;; index = 1 - index)
+  for (;;)
     {
-      token = &tokens[index];
-      cpp_get_token (pfile, token);
+      const cpp_token *token = cpp_get_token (pfile);
+
+      if (token->type == CPP_PADDING)
+	{
+	  avoid_paste = true;
+	  if (source == NULL
+	      || (!(source->flags & PREV_WHITE) && token->val.source == NULL))
+	    source = token->val.source;
+	  continue;
+	}
 
       if (token->type == CPP_EOF)
 	break;
 
-      if ((token->flags & (PREV_WHITE | AVOID_LPASTE | BOL)) == AVOID_LPASTE
-	  && cpp_avoid_paste (pfile, &tokens[1 - index], token))
-	token->flags |= PREV_WHITE;
+      /* Subtle logic to output a space if and only if necessary.  */
+      if (avoid_paste)
+	{
+	  if (source == NULL)
+	    source = token;
+	  if (source->flags & PREV_WHITE
+	      || (print.prev && cpp_avoid_paste (pfile, print.prev, token))
+	      || (print.prev == NULL && token->type == CPP_HASH))
+	    putc (' ', print.outf);
+	}
+      else if (token->flags & PREV_WHITE)
+	putc (' ', print.outf);
 
+      avoid_paste = false;
+      source = NULL;
+      print.prev = token;
       cpp_output_token (token, print.outf);
+
       if (token->type == CPP_STRING || token->type == CPP_WSTRING
 	  || token->type == CPP_COMMENT)
 	check_multiline_token (&token->val.str);
@@ -244,7 +267,7 @@ scan_translation_unit (pfile)
 /* Adjust print.line for newlines embedded in tokens.  */
 static void
 check_multiline_token (str)
-     cpp_string *str;
+     const cpp_string *str;
 {
   unsigned int i;
 
@@ -324,6 +347,7 @@ cb_line_change (pfile, token, parsing_args)
 
   maybe_print_line (print.map, token->line);
   print.printed = 1;
+  print.prev = 0;
 
   /* Supply enough spaces to put this token in its original column,
      one space per column greater than 2, since scan_translation_unit

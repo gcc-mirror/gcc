@@ -1,3 +1,47 @@
+2001-09-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (cb_def_pragma): Update.
+	(c_lex): Update, and skip padding.
+	* cppexp.c (lex, parse_defined): Update, remove unused variable.
+	* cpphash.h (struct toklist): Delete.
+	(union utoken): New.
+	(struct cpp_context): Update.
+	(struct cpp_reader): New members eof, avoid_paste.
+	(_cpp_temp_token): New.
+	* cppinit.c (cpp_create_reader): Update.
+	* cpplex.c (_cpp_temp_token): New.
+	(_cpp_lex_direct): Add PREV_WHITE when parsing args.
+	(cpp_output_token): Don't print leading whitespace.
+	(cpp_output_line): Update.
+	* cpplib.c (glue_header_name, parse_include, get__Pragma_string,
+	do_include_common, do_line, do_ident, do_pragma,
+	do_pragma_dependency, _cpp_do__Pragma, parse_answer,
+	parse_assertion): Update.
+	(get_token_no_padding): New.
+	* cpplib.h (CPP_PADDING): New.
+	(AVOID_LPASTE): Delete.
+	(struct cpp_token): New union member source.
+	(cpp_get_token): Update.
+	* cppmacro.c (macro_arg): Convert to use pointers to const tokens.
+	(builtin_macro, paste_all_tokens, paste_tokens, funlike_invocation_p,
+	replace_args, quote_string, stringify_arg, parse_arg, next_context,
+	enter_macro_context, expand_arg, _cpp_pop_context, cpp_scan_nooutput,
+	_cpp_backup_tokens, _cpp_create_definition): Update.
+	(push_arg_context): Delete.
+	(padding_token, push_token_context, push_ptoken_context): New.
+	(make_string_token, make_number_token): Update, rename.
+	(cpp_get_token): Update to handle tokens as pointers to const,
+	and insert padding appropriately.
+	* cppmain.c (struct printer): New member prev.
+	(check_multiline_token): Constify.
+	(do_preprocessing, cb_line_change): Update.
+	(scan_translation_unit): Update to handle spacing.
+	* scan-decls.c (get_a_token): New.
+	(skip_to_closing_brace, scan_decls): Update.
+	* fix-header.c (read_scan_file): Update.
+
+	* doc/cpp.texi: Update.
+
 2001-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-aux-info.c (affix_data_type): Use ATTRIBUTE_MALLOC.  Avoid
