@@ -1911,6 +1911,7 @@ contains_placeholder_p (exp)
 	  return contains_placeholder_p (TREE_OPERAND (exp, 0));
 	case 2:
 	  return (code != RTL_EXPR
+		  && code != CONSTRUCTOR
 		  && ! (code == SAVE_EXPR && SAVE_EXPR_RTL (exp) != 0)
 		  && code != WITH_RECORD_EXPR
 		  && (contains_placeholder_p (TREE_OPERAND (exp, 0))
@@ -1963,7 +1964,7 @@ substitute_in_expr (exp, f, r)
 						   f, r)));
 
 	case 2:
-	  if (code == RTL_EXPR)
+	  if (code == RTL_EXPR || code == CONSTRUCTOR)
 	    abort ();
 
 	  return fold (build (code, TREE_TYPE (exp),
