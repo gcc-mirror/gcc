@@ -23,9 +23,9 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
 
 /* Default to -mips4.  */
-#define TARGET_DEFAULT MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT
 #define MIPS_ISA_DEFAULT 4
-#define MULTILIB_DEFAULTS { "EB", "mips4" }
+#define MIPS_ABI_DEFAULT ABI_64
+#define MULTILIB_DEFAULTS { "mabi=64" }
 
 #include "mips/iris5gas.h"
 #include "mips/abi64.h"
@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_IDENTIFY_LANGUAGE
 
 /* Irix 5 stuff that we don't need for Irix 6.  */
+/* ??? We do need this for the -mabi=32 switch though.  */
 #undef ASM_OUTPUT_UNDEF_FUNCTION
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #undef ASM_DECLARE_FUNCTION_SIZE
@@ -66,6 +67,8 @@ Boston, MA 02111-1307, USA.  */
 #define PUBNAMES_SECTION	".debug_pubnames,1,0,0,1"
 #define ARANGES_SECTION		".debug_aranges,1,0,0,1"
 
+/* ??? If no mabi=X option give, but a mipsX option is, then should depend
+   on the mipsX option.  */
 #undef ASM_SPEC
 #if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
 /* GAS */
@@ -82,7 +85,8 @@ Boston, MA 02111-1307, USA.  */
 %{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
 %{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{membedded-pic}"
+%{membedded-pic} \
+%{mabi=32: -32}%{mabi=n32: -n32}%{!mabi=32:%{!mabi=n32: -64}}"
 
 #else
 /* not GAS */
@@ -98,9 +102,9 @@ Boston, MA 02111-1307, USA.  */
 	%{K}} \
 %{G*} %{EB} %{EL} %{v:-show} \
 %{mips1} %{mips2} %{mips3} %{mips4} \
-%{!mips1: %{!mips2: %{!mips3: %{!mips4: -mips4}}}} \
 %{noasmopt:-O0} %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
--g0 -G 0 %{membedded-pic}"
+-g0 -G 0 %{membedded-pic} \
+%{mabi=32: -32}%{mabi=n32: -n32}%{!mabi=32:%{!mabi=n32: -64}}"
 
 #endif
 
@@ -154,7 +158,7 @@ rdata_section ()							\
 {									\
   if (in_section != in_rdata)						\
     {									\
-      if (mips_isa >= 3)						\
+      if (mips_abi != ABI_32)						\
 	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_64);	\
       else								\
 	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_32);	\
@@ -232,7 +236,7 @@ while (0)
 #define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN)	\
 do								\
   {								\
-    if (mips_isa >= 3)						\
+    if (mips_abi != ABI_32)					\
       {								\
 	fputs ("\t.section\t.bss\n", STREAM);			\
 	ASM_DECLARE_OBJECT_NAME (STREAM, NAME, 0);		\
@@ -245,34 +249,31 @@ do								\
   }								\
 while (0)
 
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(STREAM,PREFIX,NUM)			\
-  fprintf (STREAM, ".%s%d:\n", PREFIX, NUM)
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX (mips_abi == ABI_32 ? "$" : ".")
 
-/* This is how to store into the string LABEL
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  */
-
-#undef ASM_GENERATE_INTERNAL_LABEL
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
-  sprintf (LABEL, "*.%s%d", PREFIX, NUM)
-
-#undef STARTFILE_SPEC
 /* Profiling is supported via libprof1.a not -lc_p as in Irix 3.  */
+/* ??? If no mabi=X option give, but a mipsX option is, then should depend
+   on the mipsX option.  */
+#undef STARTFILE_SPEC
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
-  "%{mips1:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
-   %{mips2:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
-   %{!mips1:%{!mips2:%{pg:/usr/lib64/gcrt1.o}%{!pg:%{p:/usr/lib64/mcrt1.o /usr/lib64/libprof1.a}%{!p:/usr/lib64/crt1.o}}}}"
+  "%{mabi=32:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
+   %{mabi=n32:%{pg:/usr/lib32/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mcrt1.o%s /usr/lib32/libprof1.a%s}%{!p:/usr/lib32/crt1.o%s}}} \
+   %{!mabi=32:%{!mabi=n32:%{pg:/usr/lib64/gcrt1.o}%{!pg:%{p:/usr/lib64/mcrt1.o /usr/lib64/libprof1.a}%{!p:/usr/lib64/crt1.o}}}}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{p:libprof1.a%s}%{pg:libprof1.a%s} -lc"
 
+/* ??? If no mabi=X option give, but a mipsX option is, then should depend
+   on the mipsX option.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{mips1:crtn.o%s}%{mips2:crtn.o%s}%{!mips1:%{!mips2:/usr/lib64/crtn.o}}"
+  "%{mabi=32:crtn.o%s}%{mabi=n32:/usr/lib32/crtn.o%s}\
+   %{!mabi=32:%{!mabi=n32:/usr/lib64/crtn.o}}"
 
+/* ??? If no mabi=X option give, but a mipsX option is, then should depend
+   on the mipsX option.  */
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
@@ -280,7 +281,8 @@ while (0)
 %{call_shared} %{no_archive} %{exact_version} \
 %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
 %{rpath} \
--_SYSTYPE_SVR4"
+-_SYSTYPE_SVR4 \
+%{mabi=32: -32}%{mabi=n32: -n32}%{!mabi=32:%{!mabi=n32: -64}}"
 
 /* ??? Debugging does not work.  We get many assembler core dumps,
    and even some linker core dumps.  */
