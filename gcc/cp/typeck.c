@@ -2151,7 +2151,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		  if (DECL_STATIC_FUNCTION_P (TREE_VALUE (fndecls)))
 		    {
 		      tree fndecl = TREE_VALUE (fndecls);
-		      enforce_access (TREE_PURPOSE (fndecls), fndecl);
+		      enforce_access (basetype_path, fndecl);
 		      mark_used (fndecl);
 		      return fndecl;
 		    }
@@ -2221,7 +2221,8 @@ build_component_ref (datum, component, basetype_path, protect)
 	  else
 	    addr = convert_pointer_to (base, addr);
 	  datum = build_indirect_ref (addr, NULL_PTR);
-	  my_friendly_assert (datum != error_mark_node, 311);
+	  if (datum == error_mark_node)
+	    return error_mark_node;
 	}
       basetype = base;
  

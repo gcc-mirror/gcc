@@ -635,15 +635,7 @@ tree
 convert_pointer_to (binfo, expr)
      tree binfo, expr;
 {
-  tree type;
-
-  if (TREE_CODE (binfo) == TREE_VEC)
-    type = BINFO_TYPE (binfo);
-  else if (IS_AGGR_TYPE (binfo))
-    type = binfo;
-  else
-    type = binfo;
-  return convert_pointer_to_real (type, expr);
+  return convert_pointer_to_real (binfo, expr);
 }
 
 /* C++ conversions, preference to static cast conversions.  */

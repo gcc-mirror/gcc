@@ -61,10 +61,10 @@ static tree build_this PARAMS ((tree));
 static struct z_candidate * splice_viable PARAMS ((struct z_candidate *));
 static int any_viable PARAMS ((struct z_candidate *));
 static struct z_candidate * add_template_candidate
-	PARAMS ((struct z_candidate *, tree, tree, tree, tree, int,
+	PARAMS ((struct z_candidate *, tree, tree, tree, tree, tree, int,
 	       unification_kind_t));
 static struct z_candidate * add_template_candidate_real
-	PARAMS ((struct z_candidate *, tree, tree, tree, tree, int,
+	PARAMS ((struct z_candidate *, tree, tree, tree, tree, tree, int,
 	       tree, unification_kind_t));
 static struct z_candidate * add_template_conv_candidate 
         PARAMS ((struct z_candidate *, tree, tree, tree, tree));
@@ -81,7 +81,7 @@ static struct z_candidate * build_builtin_candidate
 static struct z_candidate * add_conv_candidate 
 	PARAMS ((struct z_candidate *, tree, tree, tree));
 static struct z_candidate * add_function_candidate 
-	PARAMS ((struct z_candidate *, tree, tree, int));
+	PARAMS ((struct z_candidate *, tree, tree, tree, int));
 static tree implicit_conversion PARAMS ((tree, tree, tree, int));
 static tree standard_conversion PARAMS ((tree, tree, tree));
 static tree reference_binding PARAMS ((tree, tree, tree, int));
@@ -91,7 +91,7 @@ static int is_subseq PARAMS ((tree, tree));
 static int maybe_handle_ref_bind PARAMS ((tree*, tree*));
 static void maybe_handle_implicit_object PARAMS ((tree*));
 static struct z_candidate * add_candidate PARAMS ((struct z_candidate *,
-						 tree, tree, int));
+						   tree, tree, int));
 static tree source_type PARAMS ((tree));
 static void add_warning PARAMS ((struct z_candidate *, struct z_candidate *));
 static int reference_related_p PARAMS ((tree, tree));
@@ -879,7 +879,7 @@ convert_class_to_reference (t, s, expr)
     {
       tree fns = TREE_VALUE (conversions);
 
-      while (fns)
+      for (; fns; fns = OVL_NEXT (fns))
 	{
 	  tree f = OVL_CURRENT (fns);
 	  tree t2 = TREE_TYPE (TREE_TYPE (f));
@@ -891,7 +891,7 @@ convert_class_to_reference (t, s, expr)
 	    {
 	      candidates 
 		= add_template_candidate (candidates,
-					  f,
+					  f, s,
 					  NULL_TREE,
 					  arglist,
 					  build_reference_type (t),
@@ -914,13 +914,11 @@ convert_class_to_reference (t, s, expr)
 	  else if (TREE_CODE (t2) == REFERENCE_TYPE
 		   && reference_compatible_p (t, TREE_TYPE (t2)))
 	    candidates 
-	      = add_function_candidate (candidates, f, arglist, 
+	      = add_function_candidate (candidates, f, s, arglist, 
 					LOOKUP_NORMAL);
 
 	  if (candidates != old_candidates)
-	    candidates->basetype_path = TREE_PURPOSE (conversions);
-
-	  fns = OVL_NEXT (fns);
+	    candidates->basetype_path = TYPE_BINFO (s);
 	}
     }
 
@@ -1235,12 +1233,15 @@ add_candidate (candidates, fn, convs, viable)
 
 /* Create an overload candidate for the function or method FN called with
    the argument list ARGLIST and add it to CANDIDATES.  FLAGS is passed on
-   to implicit_conversion.  */
+   to implicit_conversion.
+
+   CTYPE, if non-NULL, is the type we want to pretend this function
+   comes from for purposes of overload resolution.  */
 
 static struct z_candidate *
-add_function_candidate (candidates, fn, arglist, flags)
+add_function_candidate (candidates, fn, ctype, arglist, flags)
      struct z_candidate *candidates;
-     tree fn, arglist;
+     tree fn, ctype, arglist;
      int flags;
 {
   tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
@@ -1307,25 +1308,31 @@ add_function_candidate (candidates, fn, arglist, flags)
       tree arg = TREE_VALUE (argnode);
       tree argtype = lvalue_type (arg);
       tree t;
+      int is_this;
 
       if (parmnode == void_list_node)
 	break;
+
+      is_this = (i == 0 && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+		 && ! DECL_CONSTRUCTOR_P (fn));
 
       if (parmnode)
 	{
 	  tree parmtype = TREE_VALUE (parmnode);
 
-	  /* [over.match.funcs] For conversion functions, the function is
-	     considered to be a member of the class of the implicit object
-	     argument for the purpose of defining the type of the implicit
-	     object parameter.
+	  /* The type of the implicit object parameter ('this') for
+	     overload resolution is not always the same as for the
+	     function itself; conversion functions are considered to
+	     be members of the class being converted, and functions
+	     introduced by a using-declaration are considered to be
+	     members of the class that uses them.
 
-	     Since build_over_call ignores the ICS for the `this' parameter,
-	     we can just change the parm type.  */
-	  if (DECL_CONV_FN_P (fn) && i == 0)
+	     Since build_over_call ignores the ICS for the `this'
+	     parameter, we can just change the parm type.  */
+	  if (ctype && is_this)
 	    {
 	      parmtype
-		= build_qualified_type (TREE_TYPE (argtype),
+		= build_qualified_type (ctype,
 					TYPE_QUALS (TREE_TYPE (parmtype)));
 	      parmtype = build_pointer_type (parmtype);
 	    }
@@ -1338,8 +1345,7 @@ add_function_candidate (candidates, fn, arglist, flags)
 	  ICS_ELLIPSIS_FLAG (t) = 1;
 	}
 
-      if (i == 0 && t && TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
-	  && ! DECL_CONSTRUCTOR_P (fn))
+      if (t && is_this)
 	ICS_THIS_FLAG (t) = 1;
 
       TREE_VEC_ELT (convs, i) = t;
@@ -2090,16 +2096,16 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
    TMPL is the template.  EXPLICIT_TARGS are any explicit template
    arguments.  ARGLIST is the arguments provided at the call-site.
    The RETURN_TYPE is the desired type for conversion operators.  If
-   OBJ is NULL_TREE, FLAGS are as for add_function_candidate.  If an
-   OBJ is supplied, FLAGS are ignored, and OBJ is as for
+   OBJ is NULL_TREE, FLAGS and CTYPE are as for add_function_candidate.
+   If an OBJ is supplied, FLAGS and CTYPE are ignored, and OBJ is as for
    add_conv_candidate.  */
 
 static struct z_candidate*
-add_template_candidate_real (candidates, tmpl, explicit_targs,
+add_template_candidate_real (candidates, tmpl, ctype, explicit_targs,
 			     arglist, return_type, flags,
 			     obj, strict)
      struct z_candidate *candidates;
-     tree tmpl, explicit_targs, arglist, return_type;
+     tree tmpl, ctype, explicit_targs, arglist, return_type;
      int flags;
      tree obj;
      unification_kind_t strict;
@@ -2124,7 +2130,8 @@ add_template_candidate_real (candidates, tmpl, explicit_targs,
     /* Aha, this is a conversion function.  */
     cand = add_conv_candidate (candidates, fn, obj, arglist);
   else
-    cand = add_function_candidate (candidates, fn, arglist, flags);
+    cand = add_function_candidate (candidates, fn, ctype,
+				   arglist, flags);
   if (DECL_TI_TEMPLATE (fn) != tmpl)
     /* This situation can occur if a member template of a template
        class is specialized.  Then, instantiate_template might return
@@ -2152,16 +2159,16 @@ add_template_candidate_real (candidates, tmpl, explicit_targs,
 
 
 static struct z_candidate *
-add_template_candidate (candidates, tmpl, explicit_targs, 
+add_template_candidate (candidates, tmpl, ctype, explicit_targs, 
 			arglist, return_type, flags, strict)
      struct z_candidate *candidates;
-     tree tmpl, explicit_targs, arglist, return_type;
+     tree tmpl, ctype, explicit_targs, arglist, return_type;
      int flags;
      unification_kind_t strict;
 {
   return 
-    add_template_candidate_real (candidates, tmpl, explicit_targs,
-				 arglist, return_type, flags,
+    add_template_candidate_real (candidates, tmpl, ctype,
+				 explicit_targs, arglist, return_type, flags,
 				 NULL_TREE, strict);
 }
 
@@ -2172,8 +2179,8 @@ add_template_conv_candidate (candidates, tmpl, obj, arglist, return_type)
      tree tmpl, obj, arglist, return_type;
 {
   return 
-    add_template_candidate_real (candidates, tmpl, NULL_TREE, arglist,
-				 return_type, 0, obj, DEDUCE_CONV);
+    add_template_candidate_real (candidates, tmpl, NULL_TREE, NULL_TREE,
+				 arglist, return_type, 0, obj, DEDUCE_CONV);
 }
 
 
@@ -2290,12 +2297,12 @@ build_user_type_conversion_1 (totype, expr, flags)
 	{
 	  templates = tree_cons (NULL_TREE, ctor, templates);
 	  candidates = 
-	    add_template_candidate (candidates, ctor,
+	    add_template_candidate (candidates, ctor, totype,
 				    NULL_TREE, args, NULL_TREE, flags,
 				    DEDUCE_CALL);
 	} 
       else 
-	candidates = add_function_candidate (candidates, ctor,
+	candidates = add_function_candidate (candidates, ctor, totype,
 					     args, flags); 
 
       if (candidates) 
@@ -2336,16 +2343,23 @@ build_user_type_conversion_1 (totype, expr, flags)
 	    tree fn = OVL_CURRENT (fns);
 	    struct z_candidate *old_candidates = candidates;
 
+	    /* [over.match.funcs] For conversion functions, the function is
+	       considered to be a member of the class of the implicit object
+	       argument for the purpose of defining the type of the implicit
+	       object parameter.
+
+	       So we pass fromtype as CTYPE to add_*_candidate.  */
+
 	    if (TREE_CODE (fn) == TEMPLATE_DECL)
 	      {
 		templates = tree_cons (NULL_TREE, fn, templates);
 		candidates = 
-		  add_template_candidate (candidates, fn, NULL_TREE,
+		  add_template_candidate (candidates, fn, fromtype, NULL_TREE,
 					  args, totype, flags,
 					  DEDUCE_CONV);
 	      } 
 	    else 
-	      candidates = add_function_candidate (candidates, fn,
+	      candidates = add_function_candidate (candidates, fn, fromtype,
 						   args, flags); 
 
 	    if (candidates != old_candidates)
@@ -2356,7 +2370,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 		     0, convflags);
 
 		candidates->second_conv = ics;
-		candidates->basetype_path = TREE_PURPOSE (convs);
+		candidates->basetype_path = TYPE_BINFO (fromtype);
 
 		if (ics == NULL_TREE)
 		  candidates->viable = 0;
@@ -2491,21 +2505,17 @@ build_new_function_call (fn, args)
       for (t1 = fn; t1; t1 = OVL_CHAIN (t1))
 	{
 	  tree t = OVL_FUNCTION (t1);
-	  struct z_candidate *old_candidates = candidates;
 
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
 	    {
 	      templates = tree_cons (NULL_TREE, t, templates);
 	      candidates = add_template_candidate
-		(candidates, t, explicit_targs, args, NULL_TREE,
+		(candidates, t, NULL_TREE, explicit_targs, args, NULL_TREE,
 		 LOOKUP_NORMAL, DEDUCE_CALL);  
 	    }
 	  else if (! template_only)
 	    candidates = add_function_candidate
-	      (candidates, t, args, LOOKUP_NORMAL);
-
-	  if (candidates != old_candidates)
-	    candidates->basetype_path = CP_DECL_CONTEXT (t);
+	      (candidates, t, NULL_TREE, args, LOOKUP_NORMAL);
 	}
 
       if (! any_viable (candidates))
@@ -2572,7 +2582,7 @@ build_object_call (obj, args)
 
   if (fns)
     {
-      tree base = TREE_PURPOSE (fns);
+      tree base = BINFO_TYPE (TREE_PURPOSE (fns));
       mem_args = tree_cons (NULL_TREE, build_this (obj), args);
 
       for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
@@ -2581,16 +2591,16 @@ build_object_call (obj, args)
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    {
 	      candidates 
-		= add_template_candidate (candidates, fn, NULL_TREE,
+		= add_template_candidate (candidates, fn, base, NULL_TREE,
 					  mem_args, NULL_TREE, 
 					  LOOKUP_NORMAL, DEDUCE_CALL);
 	    }
 	  else
 	    candidates = add_function_candidate
-	      (candidates, fn, mem_args, LOOKUP_NORMAL);
+	      (candidates, fn, base, mem_args, LOOKUP_NORMAL);
 
 	  if (candidates)
-	    candidates->basetype_path = base;
+	    candidates->basetype_path = TYPE_BINFO (type);
 	}
     }
 
@@ -2617,9 +2627,6 @@ build_object_call (obj, args)
 	      }
 	    else
 	      candidates = add_conv_candidate (candidates, fn, obj, args);
-
-	    if (candidates)
-	      candidates->basetype_path = TREE_PURPOSE (convs);
 	  }
     }
 
@@ -3184,12 +3191,13 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	{
 	  templates = tree_cons (NULL_TREE, fn, templates);
 	  candidates 
-	    = add_template_candidate (candidates, fn, NULL_TREE,
+	    = add_template_candidate (candidates, fn, NULL_TREE, NULL_TREE,
 				      arglist, TREE_TYPE (fnname),
 				      flags, DEDUCE_CALL); 
 	}
       else
-	candidates = add_function_candidate (candidates, fn, arglist, flags);
+	candidates = add_function_candidate (candidates, fn, NULL_TREE,
+					     arglist, flags);
     }
 
   if (IS_AGGR_TYPE (TREE_TYPE (arg1)))
@@ -3203,7 +3211,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 
   if (fns)
     {
-      tree basetype = TREE_PURPOSE (fns);
+      tree basetype = BINFO_TYPE (TREE_PURPOSE (fns));
       mem_arglist = tree_cons (NULL_TREE, build_this (arg1), TREE_CHAIN (arglist));
       for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
 	{
@@ -3220,16 +3228,16 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	      /* A member template. */
 	      templates = tree_cons (NULL_TREE, fn, templates);
 	      candidates 
-		= add_template_candidate (candidates, fn, NULL_TREE,
+		= add_template_candidate (candidates, fn, basetype, NULL_TREE,
 					  this_arglist,  TREE_TYPE (fnname),
 					  flags, DEDUCE_CALL); 
 	    }
 	  else
 	    candidates = add_function_candidate
-	      (candidates, fn, this_arglist, flags);
+	      (candidates, fn, basetype, this_arglist, flags);
 
-	  if (candidates) 
-	    candidates->basetype_path = basetype;
+	  if (candidates)
+	    candidates->basetype_path = TYPE_BINFO (TREE_TYPE (arg1));
 	}
     }
 
@@ -3547,7 +3555,7 @@ build_op_delete_call (code, addr, size, flags, placement)
     {
       if (TREE_CODE (fns) == TREE_LIST)
 	/* Member functions.  */
-	enforce_access (TREE_PURPOSE (fns), fn);
+	enforce_access (type, fn);
       return build_function_call (fn, tree_cons (NULL_TREE, addr, args));
     }
 
@@ -3567,7 +3575,7 @@ build_op_delete_call (code, addr, size, flags, placement)
     {
       if (BASELINK_P (fns))
 	/* Member functions.  */
-	enforce_access (TREE_PURPOSE (fns), fn);
+	enforce_access (type, fn);
       return build_function_call
 	(fn, tree_cons (NULL_TREE, addr,
 			build_tree_list (NULL_TREE, size)));
@@ -4254,6 +4262,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     return error_mark_node;
   if (fns)
     {
+      tree base = BINFO_TYPE (TREE_PURPOSE (fns));
       tree fn = TREE_VALUE (fns);
       if (name == ctor_identifier && TYPE_USES_VIRTUAL_BASECLASSES (basetype)
 	  && ! (flags & LOOKUP_HAS_IN_CHARGE))
@@ -4282,16 +4291,16 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	      /* A member template. */
 	      templates = tree_cons (NULL_TREE, t, templates);
 	      candidates = 
-		add_template_candidate (candidates, t, explicit_targs,
+		add_template_candidate (candidates, t, base, explicit_targs,
 					this_arglist,
 					TREE_TYPE (name), flags, DEDUCE_CALL); 
 	    }
 	  else if (! template_only)
-	    candidates = add_function_candidate (candidates, t,
+	    candidates = add_function_candidate (candidates, t, base,
 						 this_arglist, flags);
 
 	  if (candidates)
-	    candidates->basetype_path = TREE_PURPOSE (fns);
+	    candidates->basetype_path = basetype_path;
 	}
     }
 

@@ -1,3 +1,32 @@
+2000-02-26  Jason Merrill  <jason@casey.cygnus.com>
+
+	Implement class scope using-declarations for functions.
+	* class.c (handle_using_decl): Call add_method for used functions.
+	Use IDENTIFIER_CLASS_VALUE to check for conflicts.
+	(add_method): Used functions are hidden by local functions.
+	(check_bases_and_members): Handle using-decls before finalizing
+	CLASSTYPE_METHOD_VEC.
+	* call.c (add_function_candidate): Add ctype parm; if non-zero,
+	override the type of 'this' accordingly.
+	(add_template_candidate, add_template_candidate_real): Add ctype parm.
+	(convert_class_to_reference, build_user_type_conversion_1, 
+	build_new_function_call, build_object_call, build_new_op,
+	build_new_method_call): Pass ctype parm.
+
+	* search.c (lookup_member): Put rval_binfo, not basetype_path, in
+	the baselink.
+	* call.c (convert_class_to_reference, build_user_type_conversion_1, 
+	build_new_function_call, build_object_call, build_new_op,
+	build_new_method_call, build_op_delete_call): Don't get basetype_path
+	from a baselink.
+	* typeck.c (build_component_ref): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	(resolve_offset_ref): Don't call enforce_access.  
+	Call build_scoped_ref.
+	* typeck2.c (build_scoped_ref): Simplify.  Do nothing if it
+	would cause an error or if -pedantic.
+	* class.c (alter_access): Lose binfo parm.
+
 2000-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (simplify_aggr_init_exprs_p): Don't walk into
