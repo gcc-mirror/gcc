@@ -2518,6 +2518,24 @@ get_first_nonparm_insn ()
   return get_insns ();
 }
 
+/* Return the first NOTE_INSN_BLOCK_BEG note in the function.
+   Crash if there is none.  */
+
+rtx
+get_first_block_beg ()
+{
+  register rtx searcher;
+  register rtx insn = get_first_nonparm_insn ();
+
+  for (searcher = insn; searcher; searcher = NEXT_INSN (searcher))
+    if (GET_CODE (searcher) == NOTE
+	&& NOTE_LINE_NUMBER (searcher) == NOTE_INSN_BLOCK_BEG)
+      return searcher;
+
+  abort ();	/* Invalid call to this function.  (See comments above.)  */
+  return NULL_RTX;
+}
+
 /* Return 1 if EXP returns an aggregate value, for which an address
    must be passed to the function or returned by the function.  */
 
