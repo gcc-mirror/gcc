@@ -122,7 +122,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -159,7 +159,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -186,7 +186,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -223,7 +223,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -250,7 +250,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -277,7 +277,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -304,7 +304,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -332,7 +332,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 	      __throw_exception_again;
 	    }
@@ -359,7 +359,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -387,7 +387,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -414,7 +414,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -441,7 +441,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -468,7 +468,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -499,7 +499,7 @@ namespace std
 	     {
 	       // 27.6.2.5.1 Common requirements.
 	       // Turn this on without causing an ios::failure to be thrown.
-	       this->setstate(ios_base::badbit);
+	       this->_M_setstate(ios_base::badbit);
 	       if ((this->exceptions() & ios_base::badbit) != 0)
 		 __throw_exception_again;
 	     }
@@ -531,7 +531,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -565,7 +565,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -604,7 +604,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -647,7 +647,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -698,7 +698,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -739,7 +739,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -763,7 +763,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -790,7 +790,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -826,7 +826,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -856,7 +856,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -887,7 +887,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -922,7 +922,7 @@ namespace std
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
+	      this->_M_setstate(ios_base::badbit);
 	      if ((this->exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -998,7 +998,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      __in.setstate(ios_base::badbit);
+	      __in._M_setstate(ios_base::badbit);
 	      if ((__in.exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }
@@ -1055,7 +1055,7 @@ namespace std
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
-	      __in.setstate(ios_base::badbit);
+	      __in._M_setstate(ios_base::badbit);
 	      if ((__in.exceptions() & ios_base::badbit) != 0)
 		__throw_exception_again;
 	    }

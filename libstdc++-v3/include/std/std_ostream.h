@@ -73,6 +73,26 @@ namespace std
       typedef num_put<_CharT, __ostreambuf_iter>        __numput_type;
       typedef ctype<_CharT>           			__ctype_type;
 
+      template<typename _CharT2, typename _Traits2>
+        friend basic_ostream<_CharT2, _Traits2>&
+        operator<<(basic_ostream<_CharT2, _Traits2>&, _CharT2);
+ 
+      template<typename _Traits2>
+        friend basic_ostream<char, _Traits2>&
+        operator<<(basic_ostream<char, _Traits2>&, char);
+ 
+      template<typename _CharT2, typename _Traits2>
+        friend basic_ostream<_CharT2, _Traits2>&
+        operator<<(basic_ostream<_CharT2, _Traits2>&, const _CharT2*);
+ 
+      template<typename _Traits2>
+        friend basic_ostream<char, _Traits2>&
+        operator<<(basic_ostream<char, _Traits2>&, const char*);
+ 
+      template<typename _CharT2, typename _Traits2>
+        friend basic_ostream<_CharT2, _Traits2>&
+        operator<<(basic_ostream<_CharT2, _Traits2>&, const char*);
+
       // [27.6.2.2] constructor/destructor
       /**
        *  @brief  Base constructor.
