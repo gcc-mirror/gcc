@@ -1,3 +1,7 @@
+Wed May 24 14:41:11 1995  H.J. Lu  (hjl@nynexst.com)
+
+	* Make-lang.in (cxxmain.o): Replace single quotes with backslashes.
+
 Mon May 22 17:38:48 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* Make-lang.in (g++, g++-cross, cc1plus, DEMANGLER_PROG):
