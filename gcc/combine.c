@@ -9646,6 +9646,7 @@ record_dead_and_set_regs_1 (dest, setter)
       else if (GET_CODE (setter) == SET
 	       && GET_CODE (SET_DEST (setter)) == SUBREG
 	       && SUBREG_REG (SET_DEST (setter)) == dest
+	       && GET_MODE_BITSIZE (GET_MODE (dest)) <= BITS_PER_WORD
 	       && subreg_lowpart_p (SET_DEST (setter)))
 	record_value_for_reg (dest, record_dead_insn,
 			      gen_lowpart_for_combine (GET_MODE (dest),
