@@ -1,3 +1,8 @@
+2001-12-04  DJ Delorie  <dj@redhat.com>
+
+	* fixinc/fixincl.c (initialize): Avoid problemsome macro
+	parameter names (PR 3388).
+
 2001-12-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_address): Fix typo.
