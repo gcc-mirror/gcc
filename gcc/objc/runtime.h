@@ -30,7 +30,7 @@ You should have received a copy of the GNU General Public License along with
 #include <stdio.h>
 #include <ctype.h>
 
-#include "stdarg.h"		/* for varargs and va_list's */
+#include "gstdarg.h"		/* for varargs and va_list's */
 #include "gstddef.h"		/* so noone else will get system versions */
 #include "assert.h"
 
