@@ -81,7 +81,6 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "scan.h"
 
-extern char *strcpy();
 sstring buf;
 int verbose = 0;
 int partial_count = 0;
@@ -93,7 +92,6 @@ int missing_extra_stuff = 0;
 char *inf_buffer;
 char *inf_limit;
 char *inf_ptr;
-long int inf_size;
 
 /* Certain standard files get extra treatment */
 
@@ -123,7 +121,7 @@ int seen_errno = 0;
 void xfree (ptr)
      char *ptr;
 {
-  free(ptr);
+  free (ptr);
 }
 
 #define obstack_chunk_alloc xmalloc
@@ -135,7 +133,7 @@ struct fn_decl *
 lookup_std_proto (name)
      char *name;
 {
-  int i = hash(name) % HASH_SIZE;
+  int i = hash (name) % HASH_SIZE;
   int i0 = i;
   for (;;)
     {
@@ -147,7 +145,7 @@ lookup_std_proto (name)
 	return fn;
       i = (i+1) % HASH_SIZE;
       if (i == i0)
-	abort();
+	abort ();
     }
 }
 
@@ -205,7 +203,7 @@ recognized_macro (fname)
   /* Since fname is a macro, don't require a prototype for it. */
   if (fn && REQUIRED (fn))
     {
-      CLEAR_REQUIRED(fn);
+      CLEAR_REQUIRED (fn);
       required_unseen_count--;
     }
 
@@ -274,7 +272,7 @@ recognized_function (fname, kind, rtype, args, file_seen, line_seen)
   /* Remove the function from the list of required function. */
   if (fn && REQUIRED (fn))
     {
-      CLEAR_REQUIRED(fn);
+      CLEAR_REQUIRED (fn);
       required_unseen_count--;
     }
 
@@ -294,17 +292,17 @@ recognized_function (fname, kind, rtype, args, file_seen, line_seen)
 
   if (fn == NULL)
     return;
-  if (fn->params[0] == '\0' || strcmp(fn->params, "void") == 0)
+  if (fn->params[0] == '\0' || strcmp (fn->params, "void") == 0)
     return;
 
   /* We only have a partial function declaration,
      so remember that we have to add a complete prototype. */
   partial_count++;
   partial = (struct partial_proto*)
-    obstack_alloc (&scan_file_obstack, sizeof(struct partial_proto));
-  partial->fname = obstack_alloc (&scan_file_obstack, strlen(fname) + 1);
+    obstack_alloc (&scan_file_obstack, sizeof (struct partial_proto));
+  partial->fname = obstack_alloc (&scan_file_obstack, strlen (fname) + 1);
   strcpy (partial->fname, fname);
-  partial->rtype = obstack_alloc (&scan_file_obstack, strlen(rtype) + 1);
+  partial->rtype = obstack_alloc (&scan_file_obstack, strlen (rtype) + 1);
   strcpy (partial->rtype, rtype);
   partial->line_seen = line_seen;
   partial->fn = fn;
@@ -323,7 +321,7 @@ read_scan_file (scan_file)
      FILE *scan_file;
 {
   char **rptr;
-  obstack_init(&scan_file_obstack); 
+  obstack_init (&scan_file_obstack); 
 
   scan_decls (scan_file);
 
@@ -409,7 +407,9 @@ char *
 strdup (str)
      char *str;
 {
-  return strcpy((char*)malloc (strlen (str) + 1), str);
+  char *copy = (char *) xmalloc (strlen (str) + 1);
+  strcpy (copy, str);
+  return copy;
 }
 
 /* Returns 1 iff the file is properly protected from multiple inclusion:
@@ -420,7 +420,7 @@ strdup (str)
  */
 
 #define INF_GET() (inf_ptr < inf_limit ? *(unsigned char*)inf_ptr++ : EOF)
-#define INF_UNGET() inf_ptr--
+#define INF_UNGET(c) ((c)!=EOF && inf_ptr--)
 
 int
 inf_skip_spaces (c)
@@ -429,16 +429,16 @@ inf_skip_spaces (c)
   for (;;)
     {
       if (c == ' ' || c == '\t')
-	c = INF_GET();
+	c = INF_GET ();
       else if (c == '/')
 	{
-	  c = INF_GET();
+	  c = INF_GET ();
 	  if (c != '*')
 	    {
-	      INF_UNGET();
+	      INF_UNGET (c);
 	      return '/';
 	    }
-	  c = INF_GET();
+	  c = INF_GET ();
 	  for (;;)
 	    {
 	      if (c == EOF)
@@ -449,8 +449,8 @@ inf_skip_spaces (c)
 		    source_lineno++, lineno++;
 		  c = INF_GET ();
 		}
-	      else if ((c = INF_GET()) == '/')
-		return INF_GET();
+	      else if ((c = INF_GET ()) == '/')
+		return INF_GET ();
 	    }
 	}
       else
@@ -472,9 +472,9 @@ inf_read_upto (str, delim)
       ch = INF_GET ();
       if (ch == EOF || ch == delim)
 	break;
-      SSTRING_PUT(str, ch);
+      SSTRING_PUT (str, ch);
     }
-  MAKE_SSTRING_SPACE(str, 1);
+  MAKE_SSTRING_SPACE (str, 1);
   *str->ptr = 0;
   return ch;
 }
@@ -485,17 +485,17 @@ inf_scan_ident (s, c)
      int c;
 {
   s->ptr = s->base;
-  if (isalpha(c) || c == '_')
+  if (isalpha (c) || c == '_')
     {
       for (;;)
 	{
-	  SSTRING_PUT(s, c);
+	  SSTRING_PUT (s, c);
 	  c = INF_GET ();
-	  if (c == EOF || !(isalnum(c) || c == '_'))
+	  if (c == EOF || !(isalnum (c) || c == '_'))
 	    break;
 	}
     }
-  MAKE_SSTRING_SPACE(s, 1);
+  MAKE_SSTRING_SPACE (s, 1);
   *s->ptr = 0;
   return c;
 }
@@ -526,17 +526,17 @@ check_protection (ifndef_line, endif_line)
   if (c != '#')
     return 0;
   c = inf_scan_ident (&buf, inf_skip_spaces (' '));
-  if (SSTRING_LENGTH(&buf) == 0 || strcmp (buf.base, "ifndef") != 0)
+  if (SSTRING_LENGTH (&buf) == 0 || strcmp (buf.base, "ifndef") != 0)
     return 0;
 
   /* So far so good: We've seen an initial #ifndef. */
   *ifndef_line = lineno;
   c = inf_scan_ident (&buf, inf_skip_spaces (c));
-  if (SSTRING_LENGTH(&buf) == 0 || c == EOF)
+  if (SSTRING_LENGTH (&buf) == 0 || c == EOF)
     return 0;
   protect_name = strdup (buf.base);
 
-  INF_UNGET();
+  INF_UNGET (c);
   c = inf_read_upto (&buf, '\n');
   if (c == EOF)
     return 0;
@@ -544,7 +544,7 @@ check_protection (ifndef_line, endif_line)
 
   for (;;)
     {
-      c = inf_skip_spaces(' ');
+      c = inf_skip_spaces (' ');
       if (c == EOF)
 	return 0;
       if (c == '\n')
@@ -555,7 +555,7 @@ check_protection (ifndef_line, endif_line)
       if (c != '#')
 	goto skip_to_eol;
       c = inf_scan_ident (&buf, inf_skip_spaces (' '));
-      if (SSTRING_LENGTH(&buf) == 0)
+      if (SSTRING_LENGTH (&buf) == 0)
 	;
       else if (!strcmp (buf.base, "ifndef")
 	  || !strcmp (buf.base, "ifdef") || !strcmp (buf.base, "if"))
@@ -579,7 +579,7 @@ check_protection (ifndef_line, endif_line)
 	    goto skip_to_eol;
 	  c = inf_skip_spaces (c);
 	  c = inf_scan_ident (&buf, c);
-	  if (buf.base[0] > 0 && strcmp(buf.base, protect_name) == 0)
+	  if (buf.base[0] > 0 && strcmp (buf.base, protect_name) == 0)
 	    define_seen = 1;
 	}
     skip_to_eol:
@@ -587,7 +587,7 @@ check_protection (ifndef_line, endif_line)
 	{
 	  if (c == '\n' || c == EOF)
 	    break;
-	  c = INF_GET();
+	  c = INF_GET ();
 	}
       if (c == EOF)
 	return 0;
@@ -611,7 +611,7 @@ check_protection (ifndef_line, endif_line)
 }
 
 int
-main(argc, argv)
+main (argc, argv)
      int argc;
      char **argv;
 {
@@ -623,7 +623,7 @@ main(argc, argv)
   int ifndef_line;
   int endif_line;
   long to_read;
-
+  long int inf_size;
 
   if (argv[0] && argv[0][0])
     progname = argv[0];
@@ -646,7 +646,7 @@ main(argc, argv)
   for (i = 1, cptr = argv[4]; *cptr; cptr++)
     if (*cptr == ' ') i++;
   /* Find the list of prototypes required for this include file. */ 
-  required_functions = (char**)xmalloc((i+1) * sizeof(char*));
+  required_functions = (char**)xmalloc ((i+1) * sizeof (char*));
   for (cptr = argv[4], cptr0 = cptr, pptr = required_functions, done = 0; 
        !done; cptr++)
     {
@@ -656,13 +656,13 @@ main(argc, argv)
 	  *cptr = '\0';
 	  if (cptr > cptr0)
 	    {
-	      struct fn_decl *fn = lookup_std_proto(cptr0);
+	      struct fn_decl *fn = lookup_std_proto (cptr0);
 	      *pptr++ = cptr0;
 	      if (fn == NULL)
 		fprintf (stderr, "Internal error:  No prototype for %s\n",
 			 cptr0);
 	      else
-		SET_REQUIRED(fn);
+		SET_REQUIRED (fn);
 	    }
 	  cptr0 = cptr + 1;
 	}
@@ -713,6 +713,10 @@ main(argc, argv)
 
   close (inf_fd);
 
+  /* If file doesn't end with '\n', add one. */
+  if (inf_limit > inf_buffer && inf_limit[-1] != '\n')
+    inf_limit++;
+
   outf = fopen (argv[3], "w");
   if (outf == NULL)
     {
@@ -727,8 +731,8 @@ main(argc, argv)
   if (check_protection (&ifndef_line, &endif_line))
     {
 #if 0
-      fprintf(stderr, "#ifndef %s on line %d; #endif on line %d\n",
-	     protect_name, ifndef_line, endif_line);
+      fprintf (stderr, "#ifndef %s on line %d; #endif on line %d\n",
+	       protect_name, ifndef_line, endif_line);
 #endif
       lbrac_line = ifndef_line+1;
       rbrac_line = endif_line;
@@ -752,14 +756,14 @@ main(argc, argv)
       for (;;)
 	{
 	  struct fn_decl *fn;
-	  c = INF_GET();
+	  c = INF_GET ();
 	  if (c == EOF)
 	    break;
 	  if (isalpha (c) || c == '_')
 	    {
 	      struct partial_proto *partial;
 	      c = inf_scan_ident (&buf, c);
-	      INF_UNGET();
+	      INF_UNGET (c);
 	      fputs (buf.base, outf);
 	      fn = lookup_std_proto (buf.base);
 	      /* We only want to edit the declaration matching the one
@@ -780,7 +784,7 @@ main(argc, argv)
 		      else
 			{
 			  putc ('(', outf);
-			  INF_UNGET();
+			  INF_UNGET (c);
 			}
 		    }
 		  else
