@@ -1,3 +1,8 @@
+2002-03-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* combine.c (simplify_comparison <ASHIFTRT, LSHIFTRT>): Correct
+	test for overflow of constant.
+
 2002-03-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/2623
