@@ -27,7 +27,7 @@ srcdir = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 target_alias = @target_alias@
-version = @version@
+gcc_version = @gcc_version@
 
 bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
@@ -36,7 +36,7 @@ mandir = $(prefix)/man
 infodir = $(prefix)/info
 includedir = $(prefix)/include
 docdir = $(datadir)/doc
-libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
+libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
 
 TO_TOPDIR = ..
 

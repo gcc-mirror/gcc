@@ -701,10 +701,31 @@ if [ "${program_prefix}" != "" ] ; then
     program_transform_name="-e s,^,${program_prefix}, ${program_transform_name}"
 fi
 
-# If gcc's sources are available, extract its version number which is used by
-# $libsubdir.
-if [ -f $srcdir/gcc/version.c ]; then
-    gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${srcdir}/gcc/version.c`
+# Check whether --with-gcc-version was given.
+if [ "${with_gcc_version+set}" = set ]; then
+    gcc_version="$with_gcc_version"
+else
+    if [ "${srcdir}" = "." ] ; then
+	if [ "${with_target_subdir}" != "." ] ; then
+	    topsrcdir=${with_multisrctop}../..
+	else
+	    topsrcdir=${with_multisrctop}..
+	fi
+    else
+	case ${srcdir} in
+	    */*/* )	# Need to do this only in subdirectories.
+		topsrcdir=${srcdir}/..
+		;;
+	    * )		# We are already in the topsrcdir.
+		topsrcdir=${srcdir}
+		;;
+	esac
+    fi
+    # If gcc's sources are available, extract its version number which is used by
+    # $libsubdir.
+    if [ -f ${topsrcdir}/gcc/version.c ] ; then
+	gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${topsrcdir}/gcc/version.c`
+    fi
 fi
 
 # If CC and CXX are not set in the environment, and the Makefile
@@ -1447,7 +1468,7 @@ if [ -z "${norecursion}" -a -n "${configdirs}" ] ; then
 			if [ ! -z "${recprog}" ] ; then
 	                        if eval ${config_shell} ${recprog} ${verbose} ${buildopt} --host=${host_alias} --target=${target_alias} \
         	                        ${prefixoption} ${tmpdiroption} ${exec_prefixoption} \
-                	                ${srcdiroption} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
+                	                ${srcdiroption} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} --with-gcc-version=${gcc_version} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
 	                                true
         	                else
 					echo Configure in `pwd` failed, exiting. 1>&2
