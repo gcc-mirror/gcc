@@ -1,3 +1,7 @@
+Wed Dec  5 07:33:45 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* configure, configure.in: Use temp file for long sed commands.
+
 2001-12-03  Laurent Guerby  <guerby@acm.org>
 
 	* config.sub: Update to version 1.232 on subversion.

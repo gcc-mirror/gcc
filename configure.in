@@ -1554,20 +1554,23 @@ qCXX_FOR_TARGET=`echo "$CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
 # macros.
 qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 
-sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
-    -e "s%^TARGET_CONFIGARGS[ 	]*=.*$%TARGET_CONFIGARGS = ${targargs}%" \
-    -e "s%^FLAGS_FOR_TARGET[ 	]*=.*$%FLAGS_FOR_TARGET = ${FLAGS_FOR_TARGET}%" \
-    -e "s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = ${CC_FOR_TARGET}%" \
-    -e "s%^CHILL_FOR_TARGET[ 	]*=.*$%CHILL_FOR_TARGET = ${CHILL_FOR_TARGET}%" \
-    -e "s%^GCJ_FOR_TARGET[      ]*=.*$%GCJ_FOR_TARGET = ${GCJ_FOR_TARGET}%" \
-    -e "s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = ${qCXX_FOR_TARGET}%" \
-    -e "s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = ${qqCXX_FOR_TARGET}%" \
-    -e "s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%" \
-    -e "s%^BUILD_SUBDIR[ 	]*=.*$%BUILD_SUBDIR = ${build_subdir}%" \
-    -e "s%^BUILD_CONFIGARGS[ 	]*=.*$%BUILD_CONFIGARGS = ${buildargs}%" \
-    -e "s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%" \
-       Makefile > Makefile.tem
-rm -f Makefile
+sedtemp=sed.$$
+cat >$sedtemp <<EOF
+s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:
+s%^TARGET_CONFIGARGS[ 	]*=.*$%TARGET_CONFIGARGS = ${targargs}%
+s%^FLAGS_FOR_TARGET[ 	]*=.*$%FLAGS_FOR_TARGET = ${FLAGS_FOR_TARGET}%
+s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = ${CC_FOR_TARGET}%
+s%^CHILL_FOR_TARGET[ 	]*=.*$%CHILL_FOR_TARGET = ${CHILL_FOR_TARGET}%
+s%^GCJ_FOR_TARGET[      ]*=.*$%GCJ_FOR_TARGET = ${GCJ_FOR_TARGET}%
+s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = ${qCXX_FOR_TARGET}%
+s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = ${qqCXX_FOR_TARGET}%
+s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%
+s%^BUILD_SUBDIR[ 	]*=.*$%BUILD_SUBDIR = ${build_subdir}%
+s%^BUILD_CONFIGARGS[ 	]*=.*$%BUILD_CONFIGARGS = ${buildargs}%
+s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%
+EOF
+sed -f $sedtemp Makefile > Makefile.tem
+rm -f Makefile $sedtemp
 mv -f Makefile.tem Makefile
 
 #

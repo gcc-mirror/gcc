@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.38 $"
+version="$Revision: 1.39 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -1370,9 +1370,14 @@ EOF
             # remove any form feeds.
             if [ -z "${subdirs}" ]; then
                 rm -f ${subdir}/Makefile.tm2
-                sed -e "s:^SUBDIRS[ 	]*=.*$:SUBDIRS = ${configdirs}:" \
-                    -e "s:^NONSUBDIRS[ 	]*=.*$:NONSUBDIRS = ${noconfigdirs}:" \
+                sedtemp=sed.$$
+                cat >$sedtemp <<EOF
+s:^SUBDIRS[ 	]*=.*$:SUBDIRS = ${configdirs}:
+s:^NONSUBDIRS[ 	]*=.*$:NONSUBDIRS = ${noconfigdirs}:
+EOF
+                sed -f $sedtemp \
                     ${subdir}/Makefile.tem > ${subdir}/Makefile.tm2
+                rm -f $sedtemp
                 rm -f ${subdir}/Makefile.tem
                 mv ${subdir}/Makefile.tm2 ${subdir}/Makefile.tem
 	    fi
