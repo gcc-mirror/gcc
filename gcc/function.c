@@ -3730,7 +3730,7 @@ assign_parms (fndecl, second_time)
 #ifdef STRICT_ARGUMENT_NAMING
       int named_arg = 1;
 #else
-      int named_arg = ! last_name;
+      int named_arg = ! last_named;
 #endif
 
       if (TREE_TYPE (parm) == error_mark_node
