@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.281 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -104,11 +104,6 @@ package body Freeze is
    --  adjusted by rep clauses. What this procedure does is to make sure
    --  that if a foreign convention is specified, and no specific size
    --  is given, then the size must be at least Integer'Size.
-
-   procedure Freeze_Fixed_Point_Type (Typ : Entity_Id);
-   --  Freeze fixed point type. For fixed-point types, we have to defer
-   --  setting the size and bounds till the freeze point, since they are
-   --  potentially affected by the presence of size and small clauses.
 
    procedure Freeze_Static_Object (E : Entity_Id);
    --  If an object is frozen which has Is_Statically_Allocated set, then

@@ -698,8 +698,15 @@ package body Lib.Xref is
 
                               if Tref /= Etype (Tref) then
                                  Tref := First_Subtype (Etype (Tref));
-                                 Left := '<';
-                                 Right := '>';
+
+                                 --  Set brackets for derived type, but don't
+                                 --  override pointer case since the fact that
+                                 --  something is a pointer is more important
+
+                                 if Left /= '(' then
+                                    Left := '<';
+                                    Right := '>';
+                                 end if;
 
                               --  If non-derived ptr, get designated type
 

@@ -1555,8 +1555,7 @@ package body Sem_Attr is
             then
                Set_Address_Taken (Entity (P));
 
-            elsif ((Ekind (Entity (P)) = E_Task_Type
-                      or else Ekind (Entity (P)) = E_Protected_Type)
+            elsif (Is_Concurrent_Type (Etype (Entity (P)))
                     and then Etype (Entity (P)) = Base_Type (Entity (P)))
               or else Ekind (Entity (P)) = E_Package
               or else Is_Generic_Unit (Entity (P))
@@ -3740,7 +3739,8 @@ package body Sem_Attr is
       --  array subtype. Sets the variables Index_Lo and Index_Hi to the low
       --  and high bound expressions for the index referenced by the attribute
       --  designator (i.e. the first index if no expression is present, and
-      --  the N'th index if the value N is present as an expression).
+      --  the N'th index if the value N is present as an expression). Also
+      --  used for First and Last of scalar types.
 
       ---------------
       -- Aft_Value --
@@ -4015,6 +4015,14 @@ package body Sem_Attr is
 
          elsif Is_Scalar_Type (P_Type) then
             Ityp := P_Type;
+
+            if Is_Fixed_Point_Type (P_Type)
+              and then not Is_Frozen (Base_Type (P_Type))
+              and then Compile_Time_Known_Value (Type_Low_Bound (P_Type))
+              and then Compile_Time_Known_Value (Type_High_Bound (P_Type))
+            then
+               Freeze_Fixed_Point_Type (Base_Type (P_Type));
+            end if;
 
          --  For array case, get type of proper index
 

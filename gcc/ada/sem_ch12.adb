@@ -3050,12 +3050,6 @@ package body Sem_Ch12 is
       elsif In_Open_Scopes (Gen_Unit) then
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
-      elsif Contains_Instance_Of (Gen_Unit, Current_Scope, Gen_Id) then
-         Error_Msg_Node_2 := Current_Scope;
-         Error_Msg_NE
-           ("circular Instantiation: & instantiated in &!", N, Gen_Unit);
-         Circularity_Detected := True;
-
       elsif K = E_Procedure
         and then Ekind (Gen_Unit) /= E_Generic_Procedure
       then
@@ -3088,6 +3082,14 @@ package body Sem_Ch12 is
          then
             Gen_Unit := Renamed_Object (Gen_Unit);
             Set_Entity (Gen_Id, Gen_Unit);
+         end if;
+
+         if Contains_Instance_Of (Gen_Unit, Current_Scope, Gen_Id) then
+            Error_Msg_Node_2 := Current_Scope;
+            Error_Msg_NE
+              ("circular Instantiation: & instantiated in &!", N, Gen_Unit);
+            Circularity_Detected := True;
+            return;
          end if;
 
          if In_Extended_Main_Source_Unit (N) then
