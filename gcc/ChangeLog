@@ -1,3 +1,8 @@
+2004-04-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/invoke.texi (Precompiled Headers): Warn about known
+	problems.
+
 2004-04-08  Joel Sherrill <joel@oarcorp.com>
 
 	PR ada/14538
