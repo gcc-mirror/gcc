@@ -580,6 +580,10 @@ extern rtx expand_and PROTO((rtx, rtx, rtx));
 extern rtx emit_store_flag PROTO((rtx, enum rtx_code, rtx, rtx,
 				  enum machine_mode, int, int));
 
+/* Like emit_store_flag, but always succeeds.  */
+extern rtx emit_store_flag_force PROTO((rtx, enum rtx_code, rtx, rtx,
+					enum machine_mode, int, int));
+
 /* Functions from loop.c:  */
 
 /* Given a JUMP_INSN, return a description of the test being made.  */
