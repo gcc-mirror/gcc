@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.63 $"
+#define VERSION_INFO2   "$Revision: 1.64 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.63 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.64 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -1085,7 +1085,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    of an argument with the specified mode and type.  If it is not defined,
    `PARM_BOUNDARY' is used for all arguments.  */
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  (((TYPE) ? TYPE_ALIGN (TYPE) : GET_MODE_SIZE (MODE)) <= PARM_BOUNDARY \
+  (((TYPE) ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) <= PARM_BOUNDARY \
     ? PARM_BOUNDARY : 2 * PARM_BOUNDARY)
 
 /* Generate necessary RTL for __builtin_saveregs().
