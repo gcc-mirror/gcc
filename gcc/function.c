@@ -4902,8 +4902,6 @@ init_function_start (subr, filename, line)
      char *filename;
      int line;
 {
-  char *junk;
-
   if (output_bytecode)
     {
       this_function_decl = subr;
@@ -4951,7 +4949,7 @@ init_function_start (subr, filename, line)
 
   init_const_rtx_hash_table ();
 
-  current_function_name = (*decl_printable_name) (subr, &junk);
+  current_function_name = (*decl_printable_name) (subr, 2);
 
   /* Nonzero if this is a nested function that uses a static chain.  */
 
