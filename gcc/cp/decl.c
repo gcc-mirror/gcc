@@ -11680,8 +11680,6 @@ store_parm_decls ()
       expand_start_bindings (0);
     }
 
-  last_parm_cleanup_insn = get_last_insn ();
-
   if (! processing_template_decl && flag_exceptions)
     {
       /* Do the starting of the exception specifications, if we have any.  */
@@ -11689,6 +11687,7 @@ store_parm_decls ()
 	expand_start_eh_spec ();
     }
 
+  last_parm_cleanup_insn = get_last_insn ();
   last_dtor_insn = get_last_insn ();
 }
 

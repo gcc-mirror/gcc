@@ -7,6 +7,8 @@
 
   for more information.
 
+* Member function templates are now supported.
+
 * New flags -Wsign-promo (warn about potentially confusing promotions in
   overload resolution), -Wno-pmf-conversion (don't warn about converting
   from a bound member function pointer to function pointer).
