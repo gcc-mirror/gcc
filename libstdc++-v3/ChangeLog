@@ -1,3 +1,9 @@
+2003-06-26  Nathan C. Myers  <ncm-nospam@cantrip.org>
+            Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/performance/filebuf_copy.cc: New, testing char
+	by char file copy.
+
 2003-06-26  Paolo Carlini  <pcarlini@unitus.it>
             Nathan C. Myers  <ncm-nospam@cantrip.org>
 
