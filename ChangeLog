@@ -1,3 +1,8 @@
+2003-10-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* ltcf-cxx.sh (irix5*, irix6*): Prefix -soname and its arg with ${wl}.
+	* ltconfig (irix5*, irix6*): Don't override version_type.
+
 2003-10-05  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* configure.in: Allow explicit specification of CFLAGS_FOR_BUILD.
