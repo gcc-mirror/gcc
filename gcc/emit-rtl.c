@@ -1200,7 +1200,7 @@ gen_highpart (mode, x)
   /* simplify_gen_subreg is not guaranteed to return a valid operand for
      the target if we have a MEM.  gen_highpart must return a valid operand,
      emitting code if necessary to do so.  */
-  if (GET_CODE (result) == MEM)
+  if (result != NULL_RTX && GET_CODE (result) == MEM)
     result = validize_mem (result);
 
   if (!result)

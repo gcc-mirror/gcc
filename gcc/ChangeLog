@@ -1,3 +1,7 @@
+2002-01-06  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* emit-rtl.c (gen_highpart): Add check for NULL_RTX.
+
 2002-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc/objc-act.c (handle_impent): Use assemble_variable to emit
