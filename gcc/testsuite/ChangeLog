@@ -1,3 +1,8 @@
+2004-11-27  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/mips-movcc-[123].c: Pass the ?: expressions to other
+	functions.
+
 2004-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/17825
