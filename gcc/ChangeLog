@@ -1,3 +1,8 @@
+2004-06-08  Jeff Law  <law@redhat.com>
+
+        * doc/contrib.texi: Add entries for Stefan Olsson and
+        Ola Ronnerup.
+
 2004-06-08  DJ Delorie  <dj@redhat.com>
 
 	* toplev.c (floor_log2_wide): Replace loop with faster bit
