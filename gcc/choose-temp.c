@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
-#if ! defined (_WIN32) && ! defined (NO_SYS_FILE_H)
+#ifndef NO_SYS_FILE_H
 #include <sys/types.h>
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
