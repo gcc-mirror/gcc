@@ -20,7 +20,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #undef _doprnt
 
-#ifdef TEST /* Make sure to use the internal one. */
+#ifdef TEST /* Make sure to use the internal one.  */
 #define _doprnt my_doprnt
 #endif
 
@@ -28,8 +28,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
   do { \
 	 const int value = abs (va_arg (ap, int)); \
 	 char buf[32]; \
-	 ptr++; /* Go past the asterisk. */ \
-	 *sptr = '\0'; /* NULL terminate sptr. */ \
+	 ptr++; /* Go past the asterisk.  */ \
+	 *sptr = '\0'; /* NULL terminate sptr.  */ \
 	 sprintf(buf, "%d", value); \
 	 strcat(sptr, buf); \
 	 while (*sptr) sptr++; \
@@ -47,8 +47,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
   do { \
 	int result; \
 	TYPE value = va_arg (ap, TYPE); \
-	*sptr++ = *ptr++; /* Copy the type specifier. */ \
-	*sptr = '\0'; /* NULL terminate sptr. */ \
+	*sptr++ = *ptr++; /* Copy the type specifier.  */ \
+	*sptr = '\0'; /* NULL terminate sptr.  */ \
 	result = fprintf(stream, specifier, value); \
 	if (result == -1) \
 	  return -1; \
@@ -71,31 +71,31 @@ _doprnt (format, ap, stream)
   
   while (*ptr != '\0')
     {
-      if (*ptr != '%') /* While we have regular characters, print them. */
+      if (*ptr != '%') /* While we have regular characters, print them.  */
 	PRINT_CHAR(*ptr);
       else /* We got a format specifier! */
 	{
 	  char * sptr = specifier;
 	  int wide_width = 0, short_width = 0;
 	  
-	  *sptr++ = *ptr++; /* Copy the % and move forward. */
+	  *sptr++ = *ptr++; /* Copy the % and move forward.  */
 
-	  while (strchr ("-+ #0", *ptr)) /* Move past flags. */
+	  while (strchr ("-+ #0", *ptr)) /* Move past flags.  */
 	    *sptr++ = *ptr++;
 
 	  if (*ptr == '*')
 	    COPY_VA_INT;
 	  else
-	    while (ISDIGIT(*ptr)) /* Handle explicit numeric value. */
+	    while (ISDIGIT(*ptr)) /* Handle explicit numeric value.  */
 	      *sptr++ = *ptr++;
 	  
 	  if (*ptr == '.')
 	    {
-	      *sptr++ = *ptr++; /* Copy and go past the period. */
+	      *sptr++ = *ptr++; /* Copy and go past the period.  */
 	      if (*ptr == '*')
 		COPY_VA_INT;
 	      else
-		while (ISDIGIT(*ptr)) /* Handle explicit numeric value. */
+		while (ISDIGIT(*ptr)) /* Handle explicit numeric value.  */
 		  *sptr++ = *ptr++;
 	    }
 	  while (strchr ("hlL", *ptr))
@@ -129,7 +129,7 @@ _doprnt (format, ap, stream)
 	      {
 		/* Short values are promoted to int, so just copy it
                    as an int and trust the C library printf to cast it
-                   to the right width. */
+                   to the right width.  */
 		if (short_width)
 		  PRINT_TYPE(int);
 		else
@@ -147,7 +147,7 @@ _doprnt (format, ap, stream)
 #if defined(__GNUC__) || defined(HAVE_LONG_LONG)
 			PRINT_TYPE(long long);
 #else
-			PRINT_TYPE(long); /* Fake it and hope for the best. */
+			PRINT_TYPE(long); /* Fake it and hope for the best.  */
 #endif
 			break;
 		      } /* End of switch (wide_width) */
@@ -167,7 +167,7 @@ _doprnt (format, ap, stream)
 #if defined(__GNUC__) || defined(HAVE_LONG_DOUBLE)
 		    PRINT_TYPE(long double);
 #else
-		    PRINT_TYPE(double); /* Fake it and hope for the best. */
+		    PRINT_TYPE(double); /* Fake it and hope for the best.  */
 #endif
 		  }
 	      }

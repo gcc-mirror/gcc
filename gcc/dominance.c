@@ -95,7 +95,7 @@ struct dom_info
      is true for every basic block bb, but not the opposite.  */
   basic_block *dfs_to_bb;
 
-  /* This is the next free DFS number when creating the DFS tree or forest. */
+  /* This is the next free DFS number when creating the DFS tree or forest.  */
   unsigned int dfsnum;
   /* The number of nodes in the DFS tree (==dfsnum-1).  */
   unsigned int nodes;
@@ -193,7 +193,7 @@ calc_dfs_tree_nonrec (di, bb, reverse)
      basic_block bb;
      enum cdi_direction reverse;
 {
-  /* We never call this with bb==EXIT_BLOCK_PTR (ENTRY_BLOCK_PTR if REVERSE). */
+  /* We never call this with bb==EXIT_BLOCK_PTR (ENTRY_BLOCK_PTR if REVERSE).  */
   /* We call this _only_ if bb is not already visited.  */
   edge e;
   TBB child_i, my_i = 0;

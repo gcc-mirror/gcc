@@ -79,7 +79,7 @@ enum complexity_type {ziv, strong_siv, weak_siv, weak_zero_siv,
 
 /* Given a def/use one can chase the next chain to follow the def/use
    for that variable.  Alternately one can sequentially follow each
-   element of def_use_chain. */
+   element of def_use_chain.  */
 
 typedef struct def_use
 {
@@ -104,7 +104,7 @@ typedef struct def_use
 /* Given a loop* one can chase the next_nest chain to follow the nested
    loops for that loop.  Alternately one can sequentially follow each
    element of loop_chain and check outer_loop to get all loops
-   contained within a certain loop. */
+   contained within a certain loop.  */
 
 typedef struct loop
 {
@@ -118,11 +118,11 @@ typedef struct loop
   enum loop_status_type status;
   /* loop* for loop contained in this loop */
   struct loop *next_nest;
-  /* induction variables for this loop.  Currently only the index variable. */
+  /* induction variables for this loop.  Currently only the index variable.  */
   struct induction *ind;
 } loop;
 
-/* Pointed to by loop. One per induction variable. */
+/* Pointed to by loop. One per induction variable.  */
 
 typedef struct induction
 {
@@ -134,11 +134,11 @@ typedef struct induction
   int  low_bound;
   /* upper bound */
   int  high_bound;
-  /* next induction variable for this loop.  Currently null. */
+  /* next induction variable for this loop.  Currently null.  */
   struct induction *next;
 } induction;
 
-/* Pointed to by def/use.  One per dependence. */
+/* Pointed to by def/use.  One per dependence.  */
 
 typedef struct dependence
 {
@@ -163,11 +163,11 @@ typedef struct subscript
   int offset;
   /* our name */
   const char *variable;
-  /* next subscript term.  Currently null. */
+  /* next subscript term.  Currently null.  */
   struct subscript *next;
 } subscript;
 
-/* Remember the destination the front end encountered. */
+/* Remember the destination the front end encountered.  */
 
 static tree dest_to_remember;
 
@@ -221,7 +221,7 @@ int have_dependence_p PARAMS ((rtx, rtx, enum direction_type[], int[]));
 void end_dependence_analysis PARAMS ((void));
 
 /* Build dependence chain 'dep_chain', which is used by have_dependence_p,
-   for the function given by EXP. */
+   for the function given by EXP.  */
 
 void
 init_dependence_analysis (exp)
@@ -433,7 +433,7 @@ add_loop (loop_node, outer_loop, nloop)
 }
 
 /* Update LOOP_DEF if for loop's COND_NODE and INCR_NODE define an index that
-   is a normalized induction variable. */
+   is a normalized induction variable.  */
 
 static int
 find_induction_variable (init_node, cond_node, incr_node, loop_def)
@@ -579,7 +579,7 @@ get_low_bound (node, variable)
 
 
 /* Return the ordinal subscript position for IND_VAR if it is an induction
-   variable contained in OUTER_LOOP, otherwise return -1. */
+   variable contained in OUTER_LOOP, otherwise return -1.  */
 
 static int
 have_induction_variable (outer_loop, ind_var)
@@ -605,7 +605,7 @@ have_induction_variable (outer_loop, ind_var)
   return -1;
 }
 
-/* Chain the nodes of 'loop_chain'. */
+/* Chain the nodes of 'loop_chain'.  */
 
 static void
 link_loops ()
@@ -627,7 +627,7 @@ link_loops ()
     }
 }
 
-/* Check the dependence for each member of 'def_use_chain'. */
+/* Check the dependence for each member of 'def_use_chain'.  */
 
 static void
 get_node_dependence ()
@@ -645,7 +645,7 @@ get_node_dependence ()
     }
 }
 
-/* Check the dependence for definition DU. */
+/* Check the dependence for definition DU.  */
 
 static void
 check_node_dependence (du)
@@ -807,7 +807,7 @@ check_node_dependence (du)
     }
 }
 
-/* Get the COEFFICIENTS and offset for def/use DU. */
+/* Get the COEFFICIENTS and offset for def/use DU.  */
 
 static int
 get_coefficients (du, coefficients)
@@ -851,7 +851,7 @@ get_coefficients (du, coefficients)
   return array_count;
 }
 
-/* Get the COEFFICIENTS and offset for NODE having TYPE and defined in DU. */
+/* Get the COEFFICIENTS and offset for NODE having TYPE and defined in DU.  */
 
 static int
 get_one_coefficient (node, coefficients, du, type)
@@ -940,7 +940,7 @@ get_one_coefficient (node, coefficients, du, type)
   return 0;
 }
 
-/* Adjust the COEFFICIENTS as if loop LOOP_PTR were normalized to start at 0. */
+/* Adjust the COEFFICIENTS as if loop LOOP_PTR were normalized to start at 0.  */
 
 static void
 normalize_coefficients (coefficients, loop_ptr, count)
@@ -1091,7 +1091,7 @@ siv_test (icoefficients, ocoefficients, direction, distance, loop_ptr, sub)
   coef_diff = icoefficients[sub].offset - ocoefficients[sub].offset;
   /* strong_siv requires equal coefficients.  weak_crossing_siv requires
      coefficients to have equal absolute value.  weak_zero_siv uses the
-     nonzero coefficient. */
+     nonzero coefficient.  */
 
   if (ocoefficients[sub].coefficient == INT_MIN)
     coef = icoefficients[sub].coefficient;
@@ -1180,7 +1180,7 @@ gcd_test (icoefficients, ocoefficients, direction, distance, loop_ptr, sub)
 	}
     }
   /* ?? gcd does not yield direction and distance.  Wolfe's direction
-     vector hierarchy can be used to give this. */
+     vector hierarchy can be used to give this.  */
 }     
 
 /* Find the gcd of X and Y using Euclid's algorithm */
@@ -1263,7 +1263,7 @@ merge_dependencies (direction, distance, loop_count, subscript_count)
     }
 }
 
-/* Dump ARRAY_REF NODE. */
+/* Dump ARRAY_REF NODE.  */
 
 static void
 dump_array_ref (node)
@@ -1299,7 +1299,7 @@ dump_array_ref (node)
     }
 }
 
-/* Dump def/use DU. */
+/* Dump def/use DU.  */
 
 #if 0
 static void
@@ -1346,7 +1346,7 @@ dump_one_node (du, seen)
     }
 }
 
-/* Dump dependence info. */
+/* Dump dependence info.  */
 
 static void
 dump_node_dependence (void)
@@ -1373,7 +1373,7 @@ dump_node_dependence (void)
 
 /* Return the index into 'dep_chain' if there is a dependency for destination
    dest_to_remember (set by remember_dest_for_dependence) and source node.
-   Called by the front end, which adds the index onto a MEM rtx. */
+   Called by the front end, which adds the index onto a MEM rtx.  */
 
 int
 search_dependence (node)
@@ -1402,7 +1402,7 @@ search_dependence (node)
   return 0;
 }
 
-/* Remember a destination NODE for search_dependence. */
+/* Remember a destination NODE for search_dependence.  */
 
 void
 remember_dest_for_dependence (node)
@@ -1422,7 +1422,7 @@ remember_dest_for_dependence (node)
 #endif
 
 /* Return 1 along with the dependence DIRECTION and DISTANCE if there is a 
-   dependence from dest_rtx to src_rtx. */
+   dependence from dest_rtx to src_rtx.  */
 
 int
 have_dependence_p (dest_rtx, src_rtx, direction, distance)
@@ -1461,7 +1461,7 @@ have_dependence_p (dest_rtx, src_rtx, direction, distance)
   return 0;
 }
 
-/* Cleanup when dependency analysis is complete. */
+/* Cleanup when dependency analysis is complete.  */
 
 void
 end_dependence_analysis ()

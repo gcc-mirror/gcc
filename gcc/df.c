@@ -1176,7 +1176,7 @@ df_uses_record (df, loc, ref_type, bb, insn)
       /* Catch the def of the register being modified.  */
       df_ref_record (df, XEXP (x, 0), &XEXP (x, 0), bb, insn, DF_REF_REG_DEF);
 
-      /* ... Fall through to handle uses ... */
+      /* ... Fall through to handle uses ...  */
 
     default:
       break;
@@ -1600,7 +1600,7 @@ df_ud_chain_create (df, blocks)
 
 
 /* Use depth first order, and the worklist, to figure out what block
-   to look at next. */
+   to look at next.  */
 
 static int
 df_visit_next (df, blocks)

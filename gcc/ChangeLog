@@ -1,3 +1,22 @@
+2001-08-08  Kazu Hirata  <kazu@hxi.com>
+
+	* dbxout.c: Fix comment formatting.
+	* dependence.c: Likewise.
+	* df.c: Likewise.
+	* diagnostic.c: Likewise.
+	* dominance.c: Likewise.
+	* doprint.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* except.c: Likewise.
+	* explow.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* flow.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+
 2001-08-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* global.c (retry_global_alloc): Avoid shadowing allocno.

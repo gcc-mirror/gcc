@@ -2382,7 +2382,7 @@ output_bound_representation (bound, dim_num, u_or_l)
 	   comprehend that a missing upper bound specification in a
 	   array type used for a storage class `auto' local array variable
 	   indicates that the upper bound is both unknown (at compile-
-	   time) and unknowable (at run-time) due to optimization. */
+	   time) and unknowable (at run-time) due to optimization.  */
 
 	if (! optimize)
 	  {
@@ -2584,7 +2584,7 @@ field_byte_offset (decl)
 
      The value we deduce is then used (by the callers of this routine) to
      generate AT_location and AT_bit_offset attributes for fields (both
-     bit-fields and, in the case of AT_location, regular fields as well). */
+     bit-fields and, in the case of AT_location, regular fields as well).  */
 
   /* Figure out the bit-distance from the start of the structure to the
      "deepest" bit of the bit-field.  */
