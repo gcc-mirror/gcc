@@ -445,28 +445,6 @@ namespace _GLIBCXX_STD
 	return __p;
       }
 
-      /**
-       *  @if maint
-       *  Allocates space for a new node and default-constructs a new
-       *  instance of @c value_type in it.
-       *  @endif
-       */
-      _Node*
-      _M_create_node()
-      {
-	_Node* __p = this->_M_get_node();
-	try
-	  {
-	    this->get_allocator().construct(&__p->_M_data);
-	  }
-	catch(...)
-	  {
-	    _M_put_node(__p);
-	    __throw_exception_again;
-	  }
-	return __p;
-      }
-
     public:
       // [23.2.2.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
