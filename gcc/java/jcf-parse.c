@@ -562,10 +562,6 @@ read_class (tree name)
 /* Load CLASS_OR_NAME. CLASS_OR_NAME can be a mere identifier if
    called from the parser, otherwise it's a RECORD_TYPE node. If
    VERBOSE is 1, print error message on failure to load a class. */
-
-/* Replace calls to load_class by having callers call read_class directly
-   - and then perhaps rename read_class to load_class.  FIXME */
-
 void
 load_class (tree class_or_name, int verbose)
 {
@@ -581,7 +577,12 @@ load_class (tree class_or_name, int verbose)
     name = TYPE_NAME (TREE_PURPOSE (class_or_name));
   /* Or it's a type in the making */
   else
-    name = DECL_NAME (TYPE_NAME (class_or_name));
+    {
+      /* If the class is from source code, then it must already be loaded.  */
+      if (CLASS_FROM_SOURCE_P (class_or_name))
+        return;
+      name = DECL_NAME (TYPE_NAME (class_or_name));
+    }
 
   saved = name;
   while (1)

@@ -1,3 +1,20 @@
+2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
+	    Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/1207, java/16178
+	* jcf-parse.c (load_class): Return immediately if passed a type decl
+	where CLASS_FROM_SOURCE_P is set. Remove FIXME.
+	* parse.y (do_resolve_class): Remove checks for CLASS_FROM_SOURCE_P
+	before calling load_class.
+	(qualify_and_find): Likewise.
+	(find_in_imports_on_demand): Likewise.
+	(find_applicable_accessible_methods_list): Likewise.
+
+2004-06-24  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* parse.y (java_layout_seen_class_methods): Don't call load_class
+	on class defined by source parser.
+
 2004-06-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* parse.y (set_nested_class_simple_name_value): Removed.
