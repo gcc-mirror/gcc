@@ -1,3 +1,8 @@
+2004-02-19  Jeff Law  <law@redhat.com>
+ 
+	* fold-const.c (invert_truthvalue): Do not call invert_tree_comparison
+	for unordered comparison codes.
+
 2004-02-19  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* reload1.c (reload): Correct comment.

@@ -2636,6 +2636,14 @@ invert_truthvalue (tree arg)
 	  && code != NE_EXPR
 	  && code != EQ_EXPR)
 	return build1 (TRUTH_NOT_EXPR, type, arg);
+      else if (code == UNORDERED_EXPR
+	       || code == ORDERED_EXPR
+	       || code == UNEQ_EXPR
+	       || code == UNLT_EXPR
+	       || code == UNLE_EXPR
+	       || code == UNGT_EXPR
+	       || code == UNGE_EXPR)
+	return build1 (TRUTH_NOT_EXPR, type, arg);
       else
 	return build (invert_tree_comparison (code), type,
 		      TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
