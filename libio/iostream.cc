@@ -965,15 +965,25 @@ int istream::_skip_ws()
 
 ostream& ends(ostream& outs)
 {
-    if (outs.opfx())
+    if (outs.opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  outs._strbuf);
 	outs.put('\0');
+	outs.osfx();
+	_IO_cleanup_region_end (0);
+    }
     return outs;
 }
 
 ostream& endl(ostream& outs)
 {
-    if (outs.opfx())
+    if (outs.opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  outs._strbuf);
         flush(outs.put('\n'));
+	outs.osfx();
+	_IO_cleanup_region_end (0);
+    }
     return outs;
 }
 

@@ -1,3 +1,8 @@
+2000-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* iostream.cc (ends): Release the acquired lock.
+	(endl): Likewise.
+
 2000-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* iostream.cc (ostream::operator<<(double n)) [__GLIBC_MINOR__ >= 2]:
