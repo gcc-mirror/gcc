@@ -55,7 +55,7 @@ extern enum debug_info_level debug_info_level;
 
 /* Nonzero means use GNU-only extensions in the generated symbolic
    debugging information.  */
-extern int use_gnu_debug_info_extensions;
+extern bool use_gnu_debug_info_extensions;
 
 /* Nonzero means emit debugging information only for symbols which are used.  */
 extern int flag_debug_only_used_symbols;

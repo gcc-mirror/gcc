@@ -128,6 +128,20 @@ bool warn_unused_value;
 /* Hack for cooperation between set_Wunused and set_Wextra.  */
 static bool maybe_warn_unused_parameter;
 
+/* Type(s) of debugging information we are producing (if any).  See
+   flags.h for the definitions of the different possible types of
+   debugging information.  */
+enum debug_info_type write_symbols = NO_DEBUG;
+
+/* Level of debugging information we are producing.  See flags.h for
+   the definitions of the different possible levels.  */
+enum debug_info_level debug_info_level = DINFO_LEVEL_NONE;
+
+/* Nonzero means use GNU-only extensions in the generated symbolic
+   debugging information.  Currently, this only has an effect when
+   write_symbols is set to DBX_DEBUG, XCOFF_DEBUG, or DWARF_DEBUG.  */
+bool use_gnu_debug_info_extensions;
+
 /* Columns of --help display.  */
 static unsigned int columns = 80;
 
@@ -152,6 +166,8 @@ static void print_help (void);
 static void print_param_help (void);
 static void print_filtered_help (unsigned int flag);
 static unsigned int print_switch (const char *text, unsigned int indent);
+static void set_debug_level (enum debug_info_type type, int extended,
+			     const char *arg);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -1383,7 +1399,46 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_g:
-      decode_g_option (arg);
+      set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg);
+      break;
+
+    case OPT_gcoff:
+      set_debug_level (SDB_DEBUG, false, arg);
+      break;
+
+    case OPT_gdwarf:
+      if (*arg)
+	{
+	  error ("use -gdwarf -gN for DWARF v1 level N, "
+		 "and -gdwarf-2 for DWARF v2" );
+	  break;
+	}
+
+      /* Fall through.  */
+    case OPT_gdwarf_:
+      set_debug_level (DWARF_DEBUG, code == OPT_gdwarf_, arg);
+      break;
+
+    case OPT_gdwarf_2:
+      set_debug_level (DWARF2_DEBUG, false, arg);
+      break;
+
+    case OPT_ggdb:
+      set_debug_level (NO_DEBUG, 2, arg);
+      break;
+
+    case OPT_gstabs:
+    case OPT_gstabs_:
+      set_debug_level (DBX_DEBUG, code == OPT_gstabs_, arg);
+      break;
+
+    case OPT_gvms:
+      set_debug_level (VMS_DEBUG, false, arg);
+      break;
+
+    case OPT_gxcoff:
+    case OPT_gxcoff_:
+      set_debug_level (XCOFF_DEBUG, code == OPT_gxcoff_, arg);
       break;
 
     case OPT_m:
@@ -1505,6 +1560,60 @@ fast_math_flags_set_p (void)
 	  && !flag_errno_math);
 }
 
+/* Handle a debug output -g switch.  EXTENDED is true or false to support
+   extended output (2 is special and means "-ggdb" was given).  */
+static void
+set_debug_level (enum debug_info_type type, int extended, const char *arg)
+{
+  static bool type_explicit;
+
+  use_gnu_debug_info_extensions = extended;
+
+  if (type == NO_DEBUG)
+    {
+      if (write_symbols == NO_DEBUG)
+	{
+	  write_symbols = PREFERRED_DEBUGGING_TYPE;
+
+	  if (extended == 2)
+	    {
+#ifdef DWARF2_DEBUGGING_INFO
+	      write_symbols = DWARF2_DEBUG;
+#elif defined DBX_DEBUGGING_INFO
+	      write_symbols = DBX_DEBUG;
+#endif
+	    }
+
+	  if (write_symbols == NO_DEBUG)
+	    warning ("target system does not support debug output");
+	}
+    }
+  else
+    {
+      /* Does it conflict with an already selected type?  */
+      if (type_explicit && write_symbols != NO_DEBUG && type != write_symbols)
+	error ("debug format \"%s\" conflicts with prior selection",
+	       debug_type_names[type]);
+      write_symbols = type;
+      type_explicit = true;
+    }
+
+  /* A debug flag without a level defaults to level 2.  */
+  if (*arg == '\0')
+    {
+      if (!debug_info_level)
+	debug_info_level = 2;
+    }
+  else
+    {
+      debug_info_level = integral_argument (arg);
+      if (debug_info_level == (unsigned int) -1)
+	error ("unrecognised debug output level \"%s\"", arg);
+      else if (debug_info_level > 3)
+	error ("debug output level %s is too high", arg);
+    }
+}
+
 /* Output --help text.  */
 static void
 print_help (void)
@@ -1532,7 +1641,7 @@ print_help (void)
       print_filtered_help (1U << i);
     }
 
-  display_help ();
+  display_target_options ();
 }
 
 /* Print the help for --param.  */
