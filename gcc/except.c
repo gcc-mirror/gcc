@@ -723,21 +723,41 @@ static void
 receive_exception_label (handler_label)
      rtx handler_label;
 {
+  rtx around_label = NULL_RTX;
+
+  if (! flag_new_exceptions || exceptions_via_longjmp)
+    {
+      around_label = gen_label_rtx ();
+      emit_jump (around_label);
+      emit_barrier ();
+    }
+
   emit_label (handler_label);
   
+  if (! exceptions_via_longjmp)
+    {
 #ifdef HAVE_exception_receiver
-  if (! exceptions_via_longjmp)
-    if (HAVE_exception_receiver)
-      emit_insn (gen_exception_receiver ());
+      if (HAVE_exception_receiver)
+       emit_insn (gen_exception_receiver ());
+      else
 #endif
-
 #ifdef HAVE_nonlocal_goto_receiver
-  if (! exceptions_via_longjmp)
-    if (HAVE_nonlocal_goto_receiver)
-      emit_insn (gen_nonlocal_goto_receiver ());
+      if (HAVE_nonlocal_goto_receiver)
+       emit_insn (gen_nonlocal_goto_receiver ());
+      else
 #endif
-}
+       { /* Nothing */ }
+    }
+  else
+    {
+#ifndef DONT_USE_BUILTIN_SETJMP
+      expand_builtin_setjmp_receiver (handler_label);
+#endif
+    }
 
+  if (around_label)
+    emit_label (around_label);
+}
 
 struct func_eh_entry 
 {
@@ -1320,7 +1340,7 @@ static void
 start_dynamic_handler ()
 {
   rtx dhc, dcc;
-  rtx x, arg, buf;
+  rtx arg, buf;
   int size;
 
 #ifndef DONT_USE_BUILTIN_SETJMP
@@ -1362,18 +1382,17 @@ start_dynamic_handler ()
   buf = plus_constant (XEXP (arg, 0), GET_MODE_SIZE (Pmode)*2);
 
 #ifdef DONT_USE_BUILTIN_SETJMP
-  x = emit_library_call_value (setjmp_libfunc, NULL_RTX, 1, SImode, 1,
-			       buf, Pmode);
-  /* If we come back here for a catch, transfer control to the handler.  */
-  jumpif_rtx (x, ehstack.top->entry->exception_handler_label);
-#else
   {
-    /* A label to continue execution for the no exception case.  */
-    rtx noex = gen_label_rtx();
-    x = expand_builtin_setjmp (buf, NULL_RTX, noex,
-			       ehstack.top->entry->exception_handler_label);
-    emit_label (noex);
+    rtx x;
+    x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_CONST,
+                                TYPE_MODE (integer_type_node), 1,
+                                buf, Pmode);
+    /* If we come back here for a catch, transfer control to the handler.  */
+    jumpif_rtx (x, ehstack.top->entry->exception_handler_label);
   }
+#else
+  expand_builtin_setjmp_setup (buf,
+                              ehstack.top->entry->exception_handler_label);
 #endif
 
   /* We are committed to this, so update the handler chain.  */

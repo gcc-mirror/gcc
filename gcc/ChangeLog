@@ -28,6 +28,21 @@
 	struct_value_incoming_rtx or static_chain_rtx as pointing
 	to stack memory.
 
+	Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
+	* builtins.c (expand_builtin_setjmp_setup): Set
+	current_function_has_nonlocal_label.
+
+	2000-12-03  Richard Henderson  <rth@redhat.com>
+	* builtins.c (expand_builtin_setjmp_setup): New.
+	(expand_builtin_setjmp_receiver): New.
+	(expand_builtin_setjmp): Split out _setup and _receiver functions.
+	Move argument parsing in from ...
+	(expand_builtin): ... here.
+	* except.c (receive_exception_label): Branch around receiver
+	unless new-style exceptions.  Call expand_builtin_setjmp_receiver.
+	(start_dynamic_handler): Call expand_builtin_setjmp_setup.
+	* expr.h: Update builtin setjmp decls.
+
 2000-12-22  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* calls.c (emit_call_1): Fall back to call_pop/call_value_pop if no
