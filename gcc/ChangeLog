@@ -1,3 +1,8 @@
+2001-05-16  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2asm.c (eh_data_format_name): Add names for "pointer size"
+	variants of non-absolute encodings.
+
 Wed May 16 13:38:21 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa32-regs.h (HARD_REGNO_MODE_OK): Allow TI/TFmode values in
