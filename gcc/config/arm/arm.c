@@ -36,6 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "reload.h"
 #include "tree.h"
+#include "expr.h"
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
@@ -56,8 +57,10 @@ rtx arm_compare_op0, arm_compare_op1;
 int arm_compare_fp;
 
 /* What type of cpu are we compiling for? */
-
 enum processor_type arm_cpu;
+
+/* Waht type of floating point are we compiling for? */
+enum floating_point_type arm_fpu;
 
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
    must report the mode of the memory reference from PRINT_OPERAND to
@@ -1627,7 +1630,8 @@ arm_gen_movstrqi (operands)
 	abort ();
 
       /* The bytes we want are in the top end of the word */
-      emit_insn (gen_lshrsi3 (tmp, part_bytes_reg, 8 * (4 - last_bytes)));
+      emit_insn (gen_lshrsi3 (tmp, part_bytes_reg,
+			      GEN_INT (8 * (4 - last_bytes))));
       part_bytes_reg = tmp;
       
       while (last_bytes)
