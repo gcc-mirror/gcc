@@ -23,14 +23,18 @@ Boston, MA 02111-1307, USA.  */
 /* Write out the correct language type definition for the header files.  
    Unless we have assembler language, write out the symbols for C.  */
 #define CPP_SPEC "\
-%{!.S:	-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}  \
-%{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.cc:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
-%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
-%{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
-%{mieee:-D_IEEE_FP} \
-%{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT}"
+%{!undef:\
+%{.S:-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY }}\
+%{.cc|.cxx|.C:-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus }\
+%{.m:-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C }\
+%{!.S:%{!.cc:%{!.cxx:%{!.C:%{!.m:-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C }}}}}}\
+%{mieee:-D_IEEE_FP }\
+%{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT }}\
+%(cpp_cpu) %(cpp_subtarget)"
+
+#ifndef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC ""
+#endif
 
 /* Set the spec to use for signed char.  The default tests the above macro
    but DEC's compiler can't handle the conditional in a "constant"
@@ -239,6 +243,88 @@ extern char *alpha_mlat_string;	/* For -mmemory-latency= */
   {"trap-precision=",	&alpha_tp_string},	\
   {"memory-latency=",	&alpha_mlat_string},	\
 }
+
+/* Attempt to describe CPU characteristics to the preprocessor.  */
+
+/* Corresponding to amask... */
+#define CPP_AM_BWX_SPEC	"-D__alpha_bwx__ -Acpu(bwx)"
+#define CPP_AM_MAX_SPEC	"-D__alpha_max__ -Acpu(max)"
+#define CPP_AM_CIX_SPEC	"-D__alpha_cix__ -Acpu(cix)"
+
+/* Corresponding to implver... */
+#define CPP_IM_EV4_SPEC	"-D__alpha_ev4__ -Acpu(ev4)"
+#define CPP_IM_EV5_SPEC	"-D__alpha_ev5__ -Acpu(ev5)"
+#define CPP_IM_EV6_SPEC	"-D__alpha_ev6__ -Acpu(ev6)"
+
+/* Common combinations.  */
+#define CPP_CPU_EV4_SPEC	"%(cpp_im_ev4)"
+#define CPP_CPU_EV5_SPEC	"%(cpp_im_ev5)"
+#define CPP_CPU_EV56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx)"
+#define CPP_CPU_PCA56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx) %(cpp_am_max)"
+#define CPP_CPU_EV6_SPEC	"%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_cix)"
+
+#ifndef CPP_CPU_DEFAULT_SPEC
+# if TARGET_CPU_DEFAULT & MASK_CPU_EV6
+#  define CPP_CPU_DEFAULT_SPEC		CPP_CPU_EV6_SPEC
+# else
+#  if TARGET_CPU_DEFAULT & MASK_CPU_EV5
+#   if TARGET_CPU_DEFAULT & MASK_MAX
+#    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_PCA56_SPEC
+#   else
+#    if TARGET_CPU_DEFAULT & MASK_BWX
+#     define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV56_SPEC
+#    else
+#     define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV5_SPEC
+#    endif
+#   endif
+#  else
+#   define CPP_CPU_DEFAULT_SPEC		CPP_CPU_EV4_SPEC
+#  endif
+# endif
+#endif /* CPP_CPU_DEFAULT_SPEC */
+
+#ifndef CPP_CPU_SPEC
+#define CPP_CPU_SPEC "\
+%{!undef:-Acpu(alpha) -Amachine(alpha) -D__alpha -D__alpha__ \
+%{mcpu=ev4|mcpu=21064:%(cpp_cpu_ev4) }\
+%{mcpu=ev5|mcpu=21164:%(cpp_cpu_ev5) }\
+%{mcpu=ev56|mcpu=21164a:%(cpp_cpu_ev56) }\
+%{mcpu=pca56|mcpu=21164pc|mcpu=21164PC:%(cpp_cpu_pca56) }\
+%{mcpu=ev6|mcpu=21264:%(cpp_cpu_ev6) }\
+%{!mcpu*:%(cpp_cpu_default) }}"
+#endif
+
+/* This macro defines names of additional specifications to put in the
+   specs that can be used in various specifications like CC1_SPEC.  Its
+   definition is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
+#endif
+
+#define EXTRA_SPECS				\
+  { "cpp_am_bwx", CPP_AM_BWX_SPEC },		\
+  { "cpp_am_max", CPP_AM_MAX_SPEC },		\
+  { "cpp_am_cix", CPP_AM_CIX_SPEC },		\
+  { "cpp_im_ev4", CPP_IM_EV4_SPEC },		\
+  { "cpp_im_ev5", CPP_IM_EV5_SPEC },		\
+  { "cpp_im_ev6", CPP_IM_EV6_SPEC },		\
+  { "cpp_cpu_ev4", CPP_CPU_EV4_SPEC },		\
+  { "cpp_cpu_ev5", CPP_CPU_EV5_SPEC },		\
+  { "cpp_cpu_ev56", CPP_CPU_EV56_SPEC },	\
+  { "cpp_cpu_pca56", CPP_CPU_PCA56_SPEC },	\
+  { "cpp_cpu_ev6", CPP_CPU_EV6_SPEC },		\
+  { "cpp_cpu_default", CPP_CPU_DEFAULT_SPEC },	\
+  { "cpp_cpu", CPP_CPU_SPEC },			\
+  { "cpp_subtarget", CPP_SUBTARGET_SPEC },	\
+  SUBTARGET_EXTRA_SPECS
+
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
@@ -1209,7 +1295,7 @@ do {						\
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.
    FRAMEADDR is the frame pointer of the COUNT frame, or the frame pointer of
-   the COUNT-1 frame if RETURN_ADDR_IN_PREVIOUS_FRAME} is defined.  */
+   the COUNT-1 frame if RETURN_ADDR_IN_PREVIOUS_FRAME is defined.  */
 
 #define RETURN_ADDR_RTX  alpha_return_addr
 extern struct rtx_def *alpha_return_addr ();

@@ -22,9 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_DEFAULT (MASK_FP | MASK_FPREGS | MASK_GAS)
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "\
--D__alpha -D__alpha__ -D__linux__ -D__linux -D_LONGLONG -Dnetbsd -Dunix \
--Asystem(linux) -Acpu(alpha) -Amachine(alpha) " SUB_CPP_PREDEFINES
+#define CPP_PREDEFINES "-D_LONGLONG -Dnetbsd -Dunix " SUB_CPP_PREDEFINES
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
