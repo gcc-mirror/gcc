@@ -228,7 +228,6 @@ unlikely_text_section (void)
 	{
 	  in_section = in_unlikely_executed_text;
 	  fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
-	  ASM_OUTPUT_ALIGN (asm_out_file, 2);
 	}
       
       if (!unlikely_section_label_printed)
@@ -236,6 +235,10 @@ unlikely_text_section (void)
 	  fprintf (asm_out_file, "__%s_unlikely_section:\n", 
 		   current_function_name ());
 	  unlikely_section_label_printed = true;
+
+	  /* Make sure that we have approprate alignment for instructions
+	     in this section.  */
+	  assemble_align (FUNCTION_BOUNDARY);
 	}
     }
 }

@@ -7,6 +7,10 @@
 	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Likewise.
 	* doc/invoke.texi: Update to match.
 
+	* varasm.c (unlikely_text_section): Use assemble_align instead of
+	ASM_OUTPUT_ALIGN.  Use it in the correct place with an approximately
+	correct alignment argument.
+
 2004-04-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload1.c (emit_reload_insns): Set reg_has_output_reload to one
