@@ -1,6 +1,6 @@
 // interpret.cc - Code for the interpreter
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -678,7 +678,11 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
-	NULLCHECK (sp[0].o);
+	// We don't use NULLCHECK here because we can't rely on that
+	// working if the method is final.  So instead we do an
+	// explicit test.
+	if (! sp[0].o)
+	  throw new java::lang::NullPointerException ();
 
 	if (rmeth->vtable_index == -1)
 	  {

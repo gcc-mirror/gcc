@@ -1,3 +1,9 @@
+2001-02-12  Jeff Sturm  <jeff.sturm@commerceone.com>
+            Tom Tromey  <tromey@redhat.com>
+
+	* interpret.cc (continue1): [insn_invokevirtual] Do an explicit
+	null pointer check.
+
 2001-02-09  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/Timer.java: New version from Classpath.
