@@ -712,10 +712,8 @@ expand_epilogue ()
   size = total_frame_size ();
 
   if (DECL_RESULT (current_function_decl)
-      && DECL_RTL (DECL_RESULT (current_function_decl))
-      && REG_P (DECL_RTL (DECL_RESULT (current_function_decl))))
-    temp_regno = (REGNO (DECL_RTL (DECL_RESULT (current_function_decl))) == 4
-		  ? 0 : 4);
+      && POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
+    temp_regno = 0;
   else
     temp_regno = 4;
 
