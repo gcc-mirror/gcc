@@ -1928,8 +1928,6 @@ rewrite_trees (var_map map, tree *values)
 		      && (DEF_FROM_PTR (def_p) == USE_OP (uses, 0)))
 		    remove = 1;
 		}
-	      if (changed & !remove)
-		modify_stmt (stmt);
 	    }
 
 	  /* Remove any stmts marked for removal.  */
@@ -2370,6 +2368,9 @@ remove_ssa_form (FILE *dump, var_map map, int flags)
 	}
     }
 
+  /* we no longer maintain the SSA operand cache at this point.  */
+  fini_ssa_operands ();
+
   /* If any copies were inserted on edges, analyze and insert them now.  */
   perform_edge_inserts (dump_file);
 
@@ -2457,7 +2458,6 @@ insert_backedge_copies (void)
 		    bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
 		  else
 		    bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
-		  modify_stmt (stmt);
 		  SET_PHI_ARG_DEF (phi, i, name);
 		}
 	    }

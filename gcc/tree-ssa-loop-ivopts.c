@@ -4835,6 +4835,7 @@ rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
       new_name = make_ssa_name (new_var, copy);
     }
   TREE_OPERAND (copy, 0) = new_name;
+  update_stmt (copy);
   bsi_insert_before (bsi, copy, BSI_SAME_STMT);
   with = new_name;
 
@@ -4898,7 +4899,7 @@ rewrite_use_compare (struct ivopts_data *data,
 	bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
 
       *use->op_p = build2 (compare, boolean_type_node, var, op);
-      modify_stmt (use->stmt);
+      update_stmt (use->stmt);
       return;
     }
 
@@ -4999,19 +5000,24 @@ compute_phi_arg_on_exit (edge exit, tree stmts, tree op)
   if (!single_pred_p (exit->dest))
     split_loop_exit_edge (exit);
 
-  if (TREE_CODE (stmts) == STATEMENT_LIST)
-    {
-      for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
-	protect_loop_closed_ssa_form (exit, tsi_stmt (tsi));
-    }
-  else
-    protect_loop_closed_ssa_form (exit, stmts);
-
   /* Ensure there is label in exit->dest, so that we can
      insert after it.  */
   tree_block_label (exit->dest);
   bsi = bsi_after_labels (exit->dest);
-  bsi_insert_after (&bsi, stmts, BSI_CONTINUE_LINKING);
+
+  if (TREE_CODE (stmts) == STATEMENT_LIST)
+    {
+      for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
+        {
+	  bsi_insert_after (&bsi, tsi_stmt (tsi), BSI_NEW_STMT);
+	  protect_loop_closed_ssa_form (exit, bsi_stmt (bsi));
+	}
+    }
+  else
+    {
+      bsi_insert_after (&bsi, stmts, BSI_NEW_STMT);
+      protect_loop_closed_ssa_form (exit, bsi_stmt (bsi));
+    }
 
   if (!op)
     return;
@@ -5130,7 +5136,7 @@ rewrite_use (struct ivopts_data *data,
       default:
 	gcc_unreachable ();
     }
-  modify_stmt (use->stmt);
+  update_stmt (use->stmt);
 }
 
 /* Rewrite the uses using the selected induction variables.  */

@@ -1939,7 +1939,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       COND_EXPR_COND (exitcond) = build (testtype,
 					 boolean_type_node,
 					 newupperbound, ivvarinced);
-      modify_stmt (exitcond);
+      update_stmt (exitcond);
       VEC_replace (tree, new_ivs, i, ivvar);
 
       i++;
@@ -1951,11 +1951,21 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 
   for (i = 0; VEC_iterate (tree, old_ivs, i, oldiv); i++)
     {
-      int j;
-      dataflow_t imm = get_immediate_uses (SSA_NAME_DEF_STMT (oldiv));
-      for (j = 0; j < num_immediate_uses (imm); j++)
+      imm_use_iterator imm_iter;
+      use_operand_p imm_use;
+      tree oldiv_def;
+      tree oldiv_stmt = SSA_NAME_DEF_STMT (oldiv);
+
+      gcc_assert (TREE_CODE (oldiv_stmt) == PHI_NODE
+		  || NUM_DEFS (STMT_DEF_OPS (oldiv_stmt)) == 1);
+      if (TREE_CODE (oldiv_stmt) == PHI_NODE)
+	oldiv_def = PHI_RESULT (oldiv_stmt);
+      else
+	oldiv_def = DEF_OP (STMT_DEF_OPS (oldiv_stmt), 0);
+
+      FOR_EACH_IMM_USE_SAFE (imm_use, imm_iter, oldiv_def)
 	{
-	  tree stmt = immediate_use (imm, j);
+	  tree stmt = USE_STMT (imm_use);
 	  use_operand_p use_p;
 	  ssa_op_iter iter;
 	  gcc_assert (TREE_CODE (stmt) != PHI_NODE);
@@ -1980,7 +1990,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 		     expression.  */
 		  bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
 		  propagate_value (use_p, newiv);
-		  modify_stmt (stmt);
+		  update_stmt (stmt);
 		  
 		}
 	    }
@@ -2067,16 +2077,15 @@ stmt_is_bumper_for_loop (struct loop *loop, tree stmt)
   tree use;
   tree def;
   def_optype defs = STMT_DEF_OPS (stmt);
-  dataflow_t imm;
-  int i;
+  imm_use_iterator iter;
+  use_operand_p use_p;
   
   if (NUM_DEFS (defs) != 1)
     return false;
   def = DEF_OP (defs, 0);
-  imm = get_immediate_uses (stmt);
-  for (i = 0; i < num_immediate_uses (imm); i++)
+  FOR_EACH_IMM_USE_FAST (use_p, iter, def)
     {
-      use = immediate_use (imm, i);
+      use = USE_STMT (use_p);
       if (TREE_CODE (use) == PHI_NODE)
 	{
 	  if (phi_loop_edge_uses_def (loop, use, def))

@@ -109,21 +109,26 @@ find_bb_for_arg (tree phi, tree def)
    used in, so that you only have one place you can sink it to.  */
 
 static bool
-all_immediate_uses_same_place (dataflow_t imm)
+all_immediate_uses_same_place (tree stmt)
 {
-  int i;
-  tree firstuse;
+  tree firstuse = NULL_TREE;
+  ssa_op_iter op_iter;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  tree var;
 
-  if (imm == NULL || num_immediate_uses (imm) < 2)
-    return true;
-  firstuse = immediate_use (imm, 0);
-
-  for (i = 1; i < num_immediate_uses (imm); i++)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, op_iter, SSA_OP_ALL_DEFS)
     {
-      tree immuse = immediate_use (imm, i);
-      if (immuse != firstuse)
-	return false;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
+        {
+	  if (firstuse == NULL_TREE)
+	    firstuse = USE_STMT (use_p);
+	  else
+	    if (firstuse != USE_STMT (use_p))
+	      return false;
+	}
     }
+
   return true;
 }
 
@@ -215,24 +220,43 @@ is_hidden_global_store (tree stmt)
 /* Find the nearest common dominator of all of the immediate uses in IMM.  */
 
 static basic_block
-nearest_common_dominator_of_uses (dataflow_t imm)
+nearest_common_dominator_of_uses (tree stmt)
 {  
   bitmap blocks = BITMAP_ALLOC (NULL);
   basic_block commondom;
-  int i;
   unsigned int j;
   bitmap_iterator bi;
+  ssa_op_iter op_iter;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  tree var;
+
   bitmap_clear (blocks);
-  for (i = 0; i < num_immediate_uses (imm); i++)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, op_iter, SSA_OP_ALL_DEFS)
     {
-      tree usestmt = immediate_use (imm, i);
-      basic_block useblock;
-      if (TREE_CODE (usestmt) == PHI_NODE)
-	{
-	  int j;
-	  for (j = 0; j < PHI_NUM_ARGS (usestmt); j++)
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
+        {
+	  tree usestmt = USE_STMT (use_p);
+	  basic_block useblock;
+	  if (TREE_CODE (usestmt) == PHI_NODE)
 	    {
-	      useblock = PHI_ARG_EDGE (usestmt, j)->src;
+	      int j;
+	      for (j = 0; j < PHI_NUM_ARGS (usestmt); j++)
+		{
+		  useblock = PHI_ARG_EDGE (usestmt, j)->src;
+		  /* Short circuit. Nothing dominates the entry block.  */
+		  if (useblock == ENTRY_BLOCK_PTR)
+		    {
+		      BITMAP_FREE (blocks);
+		      return NULL;
+		    }
+		  bitmap_set_bit (blocks, useblock->index);
+		}
+	    }
+	  else
+	    {
+	      useblock = bb_for_stmt (usestmt);
+
 	      /* Short circuit. Nothing dominates the entry block.  */
 	      if (useblock == ENTRY_BLOCK_PTR)
 		{
@@ -241,18 +265,6 @@ nearest_common_dominator_of_uses (dataflow_t imm)
 		}
 	      bitmap_set_bit (blocks, useblock->index);
 	    }
-	}
-      else
-	{
-	  useblock = bb_for_stmt (usestmt);
-
-	  /* Short circuit. Nothing dominates the entry block.  */
-	  if (useblock == ENTRY_BLOCK_PTR)
-	    {
-	      BITMAP_FREE (blocks);
-	      return NULL;
-	    }
-	  bitmap_set_bit (blocks, useblock->index);
 	}
     }
   commondom = BASIC_BLOCK (bitmap_first_set_bit (blocks));
@@ -271,16 +283,28 @@ nearest_common_dominator_of_uses (dataflow_t imm)
 static tree
 statement_sink_location (tree stmt, basic_block frombb)
 {
-  dataflow_t imm = get_immediate_uses (stmt);
   tree use, def;
+  use_operand_p one_use = NULL_USE_OPERAND_P;
   basic_block sinkbb;
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
   stmt_ann_t ann;
   tree rhs;
+  imm_use_iterator imm_iter;
 
-  if (imm == NULL)
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
+    {
+      FOR_EACH_IMM_USE_FAST (one_use, imm_iter, def)
+	{
+	  break;
+	}
+      if (one_use != NULL_USE_OPERAND_P)
+        break;
+    }
+
+  /* Return if there are no immediate uses of this stmt.  */
+  if (one_use == NULL_USE_OPERAND_P)
     return NULL;
 
   if (TREE_CODE (stmt) != MODIFY_EXPR)
@@ -314,8 +338,7 @@ statement_sink_location (tree stmt, basic_block frombb)
       || TREE_CODE (rhs) == EXC_PTR_EXPR
       || TREE_CODE (rhs) == FILTER_EXPR
       || is_hidden_global_store (stmt)
-      || ann->has_volatile_ops
-      || num_immediate_uses (imm) == 0)
+      || ann->has_volatile_ops)
     return NULL;
   
   FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
@@ -337,9 +360,9 @@ statement_sink_location (tree stmt, basic_block frombb)
      common dominator of all the immediate uses.  For PHI nodes, we have to
      find the nearest common dominator of all of the predecessor blocks, since
      that is where insertion would have to take place.  */
-  if (!all_immediate_uses_same_place (imm))
+  if (!all_immediate_uses_same_place (stmt))
     {
-      basic_block commondom = nearest_common_dominator_of_uses (imm);
+      basic_block commondom = nearest_common_dominator_of_uses (stmt);
      
       if (commondom == frombb)
 	return NULL;
@@ -371,7 +394,7 @@ statement_sink_location (tree stmt, basic_block frombb)
       return first_stmt (commondom);
     }
 
-  use = immediate_use (imm, 0);
+  use = USE_STMT (one_use);
   if (TREE_CODE (use) != PHI_NODE)
     {
       sinkbb = bb_for_stmt (use);
@@ -527,13 +550,11 @@ execute_sink_code (void)
   connect_infinite_loops_to_exit ();
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);
-  compute_immediate_uses (TDFA_USE_OPS | TDFA_USE_VOPS, NULL);
   sink_code_in_bb (EXIT_BLOCK_PTR); 
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "Sunk statements:%d\n", sink_stats.sunk);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
-  free_df ();
   loop_optimizer_finalize (loops, dump_file);
 }
 

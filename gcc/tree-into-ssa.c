@@ -438,7 +438,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
   /* Mark all the blocks that have definitions for each variable in the
      VARS_TO_RENAME bitmap.  */
   stmt = bsi_stmt (bsi);
-  get_stmt_operands (stmt);
+  update_stmt_if_modified (stmt);
 
   REWRITE_THIS_STMT (stmt) = 0;
 
@@ -1346,6 +1346,7 @@ rewrite_into_ssa (bool all)
 static void
 rewrite_all_into_ssa (void)
 {
+  init_ssa_operands ();
   rewrite_into_ssa (true);
 }
 
@@ -1583,7 +1584,7 @@ ssa_mark_def_sites (struct dom_walk_data *walk_data,
   /* Mark all the blocks that have definitions for each variable in the
      names_to_rename bitmap.  */
   stmt = bsi_stmt (bsi);
-  get_stmt_operands (stmt);
+  update_stmt_if_modified (stmt);
 
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */

@@ -232,14 +232,12 @@ cfg_blocks_get (void)
 static void
 add_ssa_edge (tree var, bool is_varying)
 {
-  tree stmt = SSA_NAME_DEF_STMT (var);
-  dataflow_t df = get_immediate_uses (stmt);
-  int num_uses = num_immediate_uses (df);
-  int i;
+  imm_use_iterator iter;
+  use_operand_p use_p;
 
-  for (i = 0; i < num_uses; i++)
+  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
-      tree use_stmt = immediate_use (df, i);
+      tree use_stmt = USE_STMT (use_p);
 
       if (!DONT_SIMULATE_AGAIN (use_stmt)
 	  && !STMT_IN_SSA_EDGE_WORKLIST (use_stmt))
@@ -507,7 +505,6 @@ ssa_prop_fini (void)
   cfg_blocks = NULL;
   sbitmap_free (bb_in_list);
   sbitmap_free (executable_blocks);
-  free_df ();
 }
 
 

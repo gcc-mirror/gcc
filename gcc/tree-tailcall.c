@@ -668,7 +668,7 @@ adjust_return_value (basic_block bb, tree m, tree a)
     }
 
   TREE_OPERAND (ret_stmt, 0) = var;
-  modify_stmt (ret_stmt);
+  update_stmt (ret_stmt);
 }
 
 /* Eliminates tail call described by T.  TMP_VARS is a list of

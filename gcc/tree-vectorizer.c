@@ -170,7 +170,6 @@ static void rename_variables_in_loop (struct loop *);
   General Vectorization Utilities
  *************************************************************************/
 static void vect_set_dump_settings (void);
-static bool need_imm_uses_for (tree);
 
 /* vect_dump will be set to stderr or dump_file if exist.  */
 FILE *vect_dump;
@@ -1815,19 +1814,6 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
 }
 
 
-/* Function need_imm_uses_for.
-
-   Return whether we ought to include information for 'var'
-   when calculating immediate uses.  For this pass we only want use
-   information for non-virtual variables.  */
-
-static bool
-need_imm_uses_for (tree var)
-{
-  return is_gimple_reg (var);
-}
-
-
 /* Function vectorize_loops.
    
    Entry Point to loop vectorization phase.  */
@@ -1853,8 +1839,6 @@ vectorize_loops (struct loops *loops)
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa ();
 #endif
-
-  compute_immediate_uses (TDFA_USE_OPS, need_imm_uses_for);
 
   /*  ----------- Analyze loops. -----------  */
 
@@ -1886,7 +1870,6 @@ vectorize_loops (struct loops *loops)
 
   /*  ----------- Finalize. -----------  */
 
-  free_df ();
   for (i = 1; i < loops_num; i++)
     {
       struct loop *loop = loops->parray[i];

@@ -1013,7 +1013,7 @@ strip_builtin_expect (void)
 	      && TREE_CHAIN (arglist))
 	    {
 	      TREE_OPERAND (stmt, 1) = TREE_VALUE (arglist);
-	      modify_stmt (stmt);
+	      update_stmt (stmt);
 	    }
 	}
     }

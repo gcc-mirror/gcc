@@ -971,12 +971,13 @@ single_reachable_address (struct loop *loop, tree stmt,
   tree *queue = xmalloc (sizeof (tree) * max_uid);
   sbitmap seen = sbitmap_alloc (max_uid);
   unsigned in_queue = 1;
-  dataflow_t df;
-  unsigned i, n;
+  unsigned i;
   struct sra_data sra_data;
   tree call;
   tree val;
   ssa_op_iter iter;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
 
   sbitmap_zero (seen);
 
@@ -1034,22 +1035,40 @@ single_reachable_address (struct loop *loop, tree stmt,
 	}
 
       /* Find uses of virtual names.  */
-      df = get_immediate_uses (stmt);
-      n = num_immediate_uses (df);
+      if (TREE_CODE (stmt) == PHI_NODE)
+        {
+	  if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (stmt))))
+	    FOR_EACH_IMM_USE_FAST (use_p, imm_iter, PHI_RESULT (stmt))
+	      {	      
+		tree imm_stmt = USE_STMT (use_p);
 
-      for (i = 0; i < n; i++)
-	{
-	  stmt = immediate_use (df, i);
+		if (TEST_BIT (seen, get_stmt_uid (imm_stmt)))
+		  continue;
 
-	  if (!flow_bb_inside_loop_p (loop, bb_for_stmt (stmt)))
-	    continue;
+		if (!flow_bb_inside_loop_p (loop, bb_for_stmt (imm_stmt)))
+		  continue;
 
-	  if (TEST_BIT (seen, get_stmt_uid (stmt)))
-	    continue;
-	  SET_BIT (seen, get_stmt_uid (stmt));
+		SET_BIT (seen, get_stmt_uid (imm_stmt));
 
-	  queue[in_queue++] = stmt;
+		queue[in_queue++] = imm_stmt;
+	      }
 	}
+      else
+	FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_DEFS)
+	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, val)
+	    {
+	      tree imm_stmt = USE_STMT (use_p);
+
+	      if (TEST_BIT (seen, get_stmt_uid (imm_stmt)))
+		continue;
+
+	      if (!flow_bb_inside_loop_p (loop, bb_for_stmt (imm_stmt)))
+		continue;
+
+	      SET_BIT (seen, get_stmt_uid (imm_stmt));
+
+	      queue[in_queue++] = imm_stmt;
+	    }
     }
 
   free (queue);
@@ -1083,7 +1102,7 @@ rewrite_mem_refs (tree tmp_var, struct mem_ref *mem_refs)
 	}
 
       *mem_refs->ref = tmp_var;
-      modify_stmt (mem_refs->stmt);
+      update_stmt (mem_refs->stmt);
     }
 }
 
@@ -1337,8 +1356,6 @@ determine_lsm (struct loops *loops)
 	stmt_ann (bsi_stmt (bsi))->uid = max_stmt_uid++;
     }
 
-  compute_immediate_uses (TDFA_USE_VOPS, NULL);
-
   /* Pass the loops from the outermost.  For each virtual operand loop phi node
      check whether all the references inside the loop correspond to a single
      address, and if so, move them.  */
@@ -1358,7 +1375,6 @@ determine_lsm (struct loops *loops)
 	  loop = loop->outer;
 	  if (loop == loops->tree_root)
 	    {
-	      free_df ();
 	      loop_commit_inserts ();
 	      return;
 	    }

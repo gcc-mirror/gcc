@@ -172,6 +172,7 @@ tree
 make_ssa_name (tree var, tree stmt)
 {
   tree t;
+  ssa_imm_use_t *imm;
 
   gcc_assert (DECL_P (var)
 	      || TREE_CODE (var) == INDIRECT_REF);
@@ -207,6 +208,11 @@ make_ssa_name (tree var, tree stmt)
   SSA_NAME_DEF_STMT (t) = stmt;
   SSA_NAME_PTR_INFO (t) = NULL;
   SSA_NAME_IN_FREE_LIST (t) = 0;
+  imm = &(SSA_NAME_IMM_USE_NODE (t));
+  imm->use = NULL;
+  imm->prev = imm;
+  imm->next = imm;
+  imm->stmt = t;
 
   return t;
 }
@@ -248,10 +254,26 @@ release_ssa_name (tree var)
     {
       tree saved_ssa_name_var = SSA_NAME_VAR (var);
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
+      ssa_imm_use_t *imm = &(SSA_NAME_IMM_USE_NODE (var));
+
+#ifdef ENABLE_CHECKING
+      verify_imm_links (stderr, var);
+#endif
+      while (imm->next != imm)
+        {
+	  delink_imm_use (imm->next);
+	}
+#ifdef ENABLE_CHECKING
+      if (imm->next != imm)
+        abort();
+#endif
 
       VARRAY_TREE (ssa_names, SSA_NAME_VERSION (var)) = NULL;
       memset (var, 0, tree_size (var));
 
+      imm->prev = imm;
+      imm->next = imm;
+      imm->stmt = var;
       /* First put back the right tree node so that the tree checking
 	 macros do not complain.  */
       TREE_SET_CODE (var, SSA_NAME);

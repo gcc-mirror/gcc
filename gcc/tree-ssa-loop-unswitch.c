@@ -249,7 +249,7 @@ tree_unswitch_single_loop (struct loops *loops, struct loop *loop, int num)
       else
 	break;
 
-      modify_stmt (stmt);
+      update_stmt (stmt);
       i++;
     }
 

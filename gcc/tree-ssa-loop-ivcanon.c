@@ -97,7 +97,7 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
   COND_EXPR_COND (cond) = build2 (cmp, boolean_type_node,
 				  var,
 				  build_int_cst (type, 0));
-  modify_stmt (cond);
+  update_stmt (cond);
 }
 
 /* Computes an estimated number of insns in LOOP.  */
@@ -170,19 +170,20 @@ try_unroll_loop_completely (struct loops *loops ATTRIBUTE_UNUSED,
     {
       old_cond = COND_EXPR_COND (cond);
       COND_EXPR_COND (cond) = dont_exit;
-      modify_stmt (cond);
+      update_stmt (cond);
 
       if (!tree_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					       loops, n_unroll, NULL,
 					       NULL, NULL, NULL, 0))
 	{
 	  COND_EXPR_COND (cond) = old_cond;
+	  update_stmt (cond);
 	  return false;
 	}
     }
   
   COND_EXPR_COND (cond) = do_exit;
-  modify_stmt (cond);
+  update_stmt (cond);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Unrolled loop %d completely.\n", loop->num);
