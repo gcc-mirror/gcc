@@ -270,10 +270,6 @@ void df_refs_reg_replace (struct df *, bitmap, struct df_link *, rtx, rtx);
 
 static int df_def_dominates_all_uses_p (struct df *, struct ref *def);
 static int df_def_dominates_uses_p (struct df *, struct ref *def, bitmap);
-static struct ref *df_bb_regno_last_use_find (struct df *, basic_block,
-					      unsigned int);
-static struct ref *df_bb_regno_first_def_find (struct df *, basic_block,
-					       unsigned int);
 static struct ref *df_bb_insn_regno_last_use_find (struct df *, basic_block,
 						   rtx, unsigned int);
 static struct ref *df_bb_insn_regno_first_def_find (struct df *, basic_block,
@@ -2688,6 +2684,34 @@ df_insn_regno_def_p (struct df *df, basic_block bb ATTRIBUTE_UNUSED,
   return 0;
 }
 
+/* Finds the reference corresponding to the definition of REG in INSN.
+   DF is the dataflow object.  */
+
+struct ref *
+df_find_def (struct df *df, rtx insn, rtx reg)
+{
+  struct df_link *defs;
+
+  for (defs = DF_INSN_DEFS (df, insn); defs; defs = defs->next)
+    if (rtx_equal_p (DF_REF_REG (defs->ref), reg))
+      return defs->ref;
+
+  return NULL;
+}
+
+/* Return 1 if REG is referenced in INSN, zero otherwise.  */ 
+
+int
+df_reg_used (struct df *df, rtx insn, rtx reg)
+{
+  struct df_link *uses;
+
+  for (uses = DF_INSN_USES (df, insn); uses; uses = uses->next)
+    if (rtx_equal_p (DF_REF_REG (uses->ref), reg))
+      return 1; 
+
+  return 0;
+}
 
 static int
 df_def_dominates_all_uses_p (struct df *df ATTRIBUTE_UNUSED, struct ref *def)
@@ -2884,7 +2908,7 @@ df_bb_regs_lives_compare (struct df *df, basic_block bb, rtx reg1, rtx reg2)
 
 
 /* Return last use of REGNO within BB.  */
-static struct ref *
+struct ref *
 df_bb_regno_last_use_find (struct df *df, basic_block bb, unsigned int regno)
 {
   struct df_link *link;
@@ -2905,7 +2929,7 @@ df_bb_regno_last_use_find (struct df *df, basic_block bb, unsigned int regno)
 
 
 /* Return first def of REGNO within BB.  */
-static struct ref *
+struct ref *
 df_bb_regno_first_def_find (struct df *df, basic_block bb, unsigned int regno)
 {
   struct df_link *link;
@@ -2924,6 +2948,31 @@ df_bb_regno_first_def_find (struct df *df, basic_block bb, unsigned int regno)
   return 0;
 }
 
+/* Return last def of REGNO within BB.  */
+struct ref *
+df_bb_regno_last_def_find (struct df *df, basic_block bb, unsigned int regno)
+{
+  struct df_link *link;
+  struct ref *last_def = NULL;
+  int in_bb = 0;
+
+  /* This assumes that the reg-def list is ordered such that for any
+     BB, the first def is found first.  However, since the BBs are not
+     ordered, the first def in the chain is not necessarily the first
+     def in the function.  */
+  for (link = df->regs[regno].defs; link; link = link->next)
+    {
+      struct ref *def = link->ref;
+      /* The first time in the desired block.  */ 
+      if (DF_REF_BB (def) == bb)
+	  in_bb = 1;
+      /* The last def in the desired block.  */
+      else if (in_bb)
+        return last_def;
+      last_def = def;
+    }
+  return last_def;
+}
 
 /* Return first use of REGNO inside INSN within BB.  */
 static struct ref *

@@ -580,6 +580,15 @@ specific ``mode'' and minimizes the number of mode changes required to
 satisfy all users.  What these modes are, and what they apply to are
 completely target-specific.  The source is located in @file{lcm.c}.
 
+@cindex modulo scheduling
+@cindex sms, swing, software pipelining
+@item Modulo scheduling 
+
+This pass looks at innermost loops and reorders their instructions 
+by overlapping different iterations.  Modulo scheduling is performed 
+immediately before instruction scheduling.
+The pass is located in (@file{modulo-sched.c}).  
+
 @item Instruction scheduling
 
 This pass looks for instructions whose output will not be available by

@@ -291,6 +291,15 @@ extern int df_bb_regs_lives_compare (struct df *, basic_block, rtx, rtx);
 
 extern rtx df_bb_single_def_use_insn_find (struct df *, basic_block, rtx,
 					   rtx);
+extern struct ref *df_bb_regno_last_use_find (struct df *, basic_block, unsigned int);
+
+extern struct ref *df_bb_regno_first_def_find (struct df *, basic_block, unsigned int);
+
+extern struct ref *df_bb_regno_last_def_find (struct df *, basic_block, unsigned int);
+
+extern struct ref *df_find_def (struct df *, rtx, rtx);
+
+extern int df_reg_used (struct df *, rtx, rtx);
 
 
 /* Functions for debugging from GDB.  */

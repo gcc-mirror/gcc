@@ -54,7 +54,6 @@ static void change_scope (rtx, tree, tree);
 
 void verify_insn_chain (void);
 static void fixup_fallthru_exit_predecessor (void);
-static rtx duplicate_insn_chain (rtx, rtx);
 static tree insn_scope (rtx);
 static void update_unlikely_executed_notes (basic_block);
 
@@ -973,7 +972,7 @@ cfg_layout_can_duplicate_bb_p (basic_block bb)
   return true;
 }
 
-static rtx
+rtx
 duplicate_insn_chain (rtx from, rtx to)
 {
   rtx insn, last;

@@ -289,7 +289,7 @@ in the following sections.
 -floop-optimize -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
--fmove-all-movables  -fnew-ra  -fno-branch-count-reg @gol
+-fmodulo-sched -fmove-all-movables  -fnew-ra  -fno-branch-count-reg @gol
 -fno-default-inline  -fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
@@ -3278,7 +3278,7 @@ Annotate the assembler output with miscellaneous debugging information.
 Dump after computing branch probabilities, to @file{@var{file}.12.bp}.
 @item B
 @opindex dB
-Dump after block reordering, to @file{@var{file}.31.bbro}.
+Dump after block reordering, to @file{@var{file}.32.bbro}.
 @item c
 @opindex dc
 Dump after instruction combination, to the file @file{@var{file}.20.combine}.
@@ -3288,15 +3288,15 @@ Dump after the first if conversion, to the file @file{@var{file}.14.ce1}.
 Also dump after the second if conversion, to the file @file{@var{file}.21.ce2}.
 @item d
 @opindex dd
-Dump after branch target load optimization, to to @file{@var{file}.32.btl}.
-Also dump after delayed branch scheduling, to @file{@var{file}.36.dbr}.
+Dump after branch target load optimization, to to @file{@var{file}.33.btl}.
+Also dump after delayed branch scheduling, to @file{@var{file}.37.dbr}.
 @item D
 @opindex dD
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
 @item E
 @opindex dE
-Dump after the third if conversion, to @file{@var{file}.30.ce3}.
+Dump after the third if conversion, to @file{@var{file}.31.ce3}.
 @item f
 @opindex df
 Dump after control and data flow analysis, to @file{@var{file}.11.cfg}.
@@ -3306,7 +3306,7 @@ Also dump after life analysis, to @file{@var{file}.19.life}.
 Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.07.addressof}.
 @item g
 @opindex dg
-Dump after global register allocation, to @file{@var{file}.25.greg}.
+Dump after global register allocation, to @file{@var{file}.26.greg}.
 @item G
 @opindex dG
 Dump after GCSE, to @file{@var{file}.08.gcse}.
@@ -3323,40 +3323,43 @@ Dump after sibling call optimizations, to @file{@var{file}.02.sibling}.
 Dump after the first jump optimization, to @file{@var{file}.04.jump}.
 @item k
 @opindex dk
-Dump after conversion from registers to stack, to @file{@var{file}.34.stack}.
+Dump after conversion from registers to stack, to @file{@var{file}.35.stack}.
 @item l
 @opindex dl
-Dump after local register allocation, to @file{@var{file}.24.lreg}.
+Dump after local register allocation, to @file{@var{file}.25.lreg}.
 @item L
 @opindex dL
 Dump after loop optimization passes, to @file{@var{file}.09.loop} and
 @file{@var{file}.16.loop2}.
+@item m
+@opindex dm
+Dump after modulo scheduling, to @file{@var{file}.23.sms}. 
 @item M
 @opindex dM
 Dump after performing the machine dependent reorganization pass, to
-@file{@var{file}.35.mach}.
+@file{@var{file}.36.mach}.
 @item n
 @opindex dn
-Dump after register renumbering, to @file{@var{file}.29.rnreg}.
+Dump after register renumbering, to @file{@var{file}.30.rnreg}.
 @item N
 @opindex dN
 Dump after the register move pass, to @file{@var{file}.22.regmove}.
 @item o
 @opindex do
-Dump after post-reload optimizations, to @file{@var{file}.26.postreload}.
+Dump after post-reload optimizations, to @file{@var{file}.27.postreload}.
 @item r
 @opindex dr
 Dump after RTL generation, to @file{@var{file}.01.rtl}.
 @item R
 @opindex dR
-Dump after the second scheduling pass, to @file{@var{file}.33.sched2}.
+Dump after the second scheduling pass, to @file{@var{file}.34.sched2}.
 @item s
 @opindex ds
 Dump after CSE (including the jump optimization that sometimes follows
 CSE), to @file{@var{file}.06.cse}.
 @item S
 @opindex dS
-Dump after the first scheduling pass, to @file{@var{file}.23.sched}.
+Dump after the first scheduling pass, to @file{@var{file}.24.sched}.
 @item t
 @opindex dt
 Dump after the second CSE pass (including the jump optimization that
@@ -3376,10 +3379,10 @@ Dump after the value profile transformations, to @file{@var{file}.13.vpt}.
 Also dump after variable tracking, to @file{@var{file}.35.vartrack}.
 @item w
 @opindex dw
-Dump after the second flow pass, to @file{@var{file}.27.flow2}.
+Dump after the second flow pass, to @file{@var{file}.28.flow2}.
 @item z
 @opindex dz
-Dump after the peephole pass, to @file{@var{file}.28.peephole2}.
+Dump after the peephole pass, to @file{@var{file}.29.peephole2}.
 @item Z
 @opindex dZ
 Dump after constructing the web, to @file{@var{file}.17.web}.
@@ -4003,6 +4006,12 @@ arrays or initialized constant variables with integral or floating point
 types.  Languages like C or C++ require each non-automatic variable to
 have distinct location, so using this option will result in non-conforming
 behavior.
+
+@item -fmodulo-sched
+@opindex fmodulo-sched
+Perform swing modulo scheduling immediately before the first scheduling
+pass.  This pass looks at innermost loops and reorders their
+instructions by overlapping different iterations.
 
 @item -fnew-ra
 @opindex fnew-ra

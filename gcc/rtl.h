@@ -2461,6 +2461,10 @@ extern void simplify_using_condition (rtx, rtx *, struct bitmap_head_def *);
 /* In ra.c.  */
 extern void reg_alloc (void);
 
+/* In modulo-sched.c.  */
+#ifdef BUFSIZ
+extern void sms_schedule (FILE *);
+#endif
 
 struct rtl_hooks
 {

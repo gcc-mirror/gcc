@@ -229,6 +229,29 @@ DEFPARAM(PARAM_MAX_UNSWITCH_LEVEL,
 	"The maximum number of unswitchings in a single loop",
 	3)
 
+DEFPARAM(PARAM_MAX_SMS_LOOP_NUMBER,
+	 "max-sms-loop-number",
+	 "Maximum number of loops to perform swing modulo scheduling on \
+	  (mainly for debugging)",
+	 -1)
+
+/* This parameter is used to tune SMS MAX II calculations.  */
+DEFPARAM(PARAM_SMS_MAX_II_FACTOR,
+	 "sms-max-ii-factor",
+	 "A factor for tuning the upper bound that swing modulo scheduler uses \
+	  for scheduling a loop",
+	 100)
+DEFPARAM(PARAM_SMS_DFA_HISTORY,
+	 "sms-dfa-history",
+	 "The number of cycles the swing modulo scheduler considers when \
+	  checking conflicts using DFA",
+	 0)
+DEFPARAM(PARAM_SMS_LOOP_AVERAGE_COUNT_THRESHOLD,
+	 "sms-loop-average-count-threshold",
+	 "A threshold on the average loop count considered by the swing modulo \
+	  scheduler",
+	 0)
+
 DEFPARAM(HOT_BB_COUNT_FRACTION,
 	 "hot-bb-count-fraction",
 	 "Select fraction of the maximal count of repetitions of basic block in \

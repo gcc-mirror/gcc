@@ -466,6 +466,10 @@ fmessage-length=
 Common RejectNegative Joined UInteger
 -fmessage-length=<number>	Limit diagnostics to <number> characters per line.  0 suppresses line-wrapping
 
+fmodulo-sched
+Common
+Perform SMS based modulo scheduling before the first scheduling pass
+
 fmove-all-movables
 Common
 Force all loop invariant computations out of loops
