@@ -551,6 +551,7 @@ push_state (gfc_state_data * p, gfc_compile_state new_state, gfc_symbol * sym)
   p->previous = gfc_state_stack;
   p->sym = sym;
   p->head = p->tail = NULL;
+  p->do_variable = NULL;
 
   gfc_state_stack = p;
 }
@@ -1911,6 +1912,28 @@ parse_select_block (void)
 }
 
 
+/* Given a symbol, make sure it is not an iteration variable for a DO
+   statement.  This subroutine is called when the symbol is seen in a
+   context that causes it to become redefined.  If the symbol is an
+   iterator, we generate an error message and return nonzero.  */
+
+int 
+gfc_check_do_variable (gfc_symtree *st)
+{
+  gfc_state_data *s;
+
+  for (s=gfc_state_stack; s; s = s->previous)
+    if (s->do_variable == st)
+      {
+	gfc_error_now("Variable '%s' at %C cannot be redefined inside "
+		      "loop beginning at %L", st->name, &s->tail->loc);
+	return 1;
+      }
+
+  return 0;
+}
+  
+
 /* Checks to see if the current statement label closes an enddo.
    Returns 0 if not, 1 if closes an ENDDO correctly, or 2 (and issues
    an error) if it incorrectly closes an ENDDO.  */
@@ -1965,13 +1988,21 @@ parse_do_block (void)
   gfc_statement st;
   gfc_code *top;
   gfc_state_data s;
+  gfc_symtree *stree;
 
   s.ext.end_do_label = new_st.label;
+
+  if (new_st.ext.iterator != NULL)
+    stree = new_st.ext.iterator->var->symtree;
+  else
+    stree = NULL;
 
   accept_statement (ST_DO);
 
   top = gfc_state_stack->tail;
   push_state (&s, COMP_DO, gfc_new_block);
+
+  s.do_variable = stree;
 
   top->block = new_level (top);
   top->block->op = EXEC_DO;
@@ -2506,6 +2537,7 @@ gfc_parse_file (void)
   top.sym = NULL;
   top.previous = NULL;
   top.head = top.tail = NULL;
+  top.do_variable = NULL;
 
   gfc_state_stack = &top;
 
