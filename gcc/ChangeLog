@@ -1,5 +1,11 @@
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.md (anonymous movhi pattern): Don't move (reg n) to
+	(mem (pre_dec (reg n))
+	(anonymous movsi pattern): Likewise.
+
+2001-08-29  Kazu Hirata  <kazu@hxi.com>
+
 	* h8300.h (RETURN_ADDR_RTX): New.
 
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
