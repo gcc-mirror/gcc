@@ -1,5 +1,9 @@
 2003-06-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
+	* gcc_release: Do not update gcc_latest_snapshot tag any longer.
+
+2003-06-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
 	* snapshot-index.html: Use F77 instead of G77 front end.
 	Remove link to CodeSourcery snapshots which was not up-to-date.
 	Do not refer to gcc-bugs@gcc.gnu.org any longer.
