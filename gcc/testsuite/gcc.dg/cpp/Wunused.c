@@ -1,7 +1,8 @@
-/* Copyright (C) 2002 Free Software Foundation, Inc.  */
+/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options -Wunused-macros } */
+/* Duplicate command line options should not warn.  */
+/* { dg-options "-Wunused-macros -Dfoo -Dfoo" } */
 
 /* Test everything related to -Wunused-macros.
 

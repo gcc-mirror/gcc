@@ -1,3 +1,7 @@
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppinit.c (cpp_finish_options): Set first_unused_line to -1.
+
 2003-03-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*extzv_16_8): New.
