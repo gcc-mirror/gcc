@@ -4574,6 +4574,7 @@ output_func_epilogue (f, frame_size)
  epilogue_done:
 
   /* insn_addresses isn't allocated when not optimizing */
+  /* ??? The previous comment is incorrect.  Clarify.  */
 
   if (optimize > 0)
     arm_increase_location (code_size
