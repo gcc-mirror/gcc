@@ -146,7 +146,7 @@ static bool readonly_data_expr (tree);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_cabs (tree, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
-static tree fold_builtin_cabs (tree, tree, tree);
+static tree fold_builtin_cabs (tree, tree);
 static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
@@ -5939,12 +5939,12 @@ fold_trunc_transparent_mathfn (tree exp)
   return 0;
 }
 
-/* Fold function call to builtin cabs, cabsf or cabsl.  FNDECL is the
-   function's DECL, ARGLIST is the argument list and TYPE is the return
-   type.  Return NULL_TREE if no simplification can be made.  */
+/* Fold function call to builtin cabs, cabsf or cabsl.  ARGLIST
+   is the argument list and TYPE is the return type.  Return
+   NULL_TREE if no if no simplification can be made.  */
 
 static tree
-fold_builtin_cabs (tree fndecl ATTRIBUTE_UNUSED, tree arglist, tree type)
+fold_builtin_cabs (tree arglist, tree type)
 {
   tree arg;
 
@@ -6849,7 +6849,7 @@ fold_builtin (tree exp)
     case BUILT_IN_CABS:
     case BUILT_IN_CABSF:
     case BUILT_IN_CABSL:
-      return fold_builtin_cabs (fndecl, arglist, type);
+      return fold_builtin_cabs (arglist, type);
 
     case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
