@@ -1594,6 +1594,10 @@ classify_argument (mode, type, classes, bit_offset)
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + (bit_offset % 64) / 8 + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
+  /* Variable sized entities are always passed/returned in memory.  */
+  if (bytes < 0)
+    return 0;
+
   if (type && AGGREGATE_TYPE_P (type))
     {
       int i;

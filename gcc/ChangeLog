@@ -1,3 +1,7 @@
+Tue Aug 27 19:51:05 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (classify_argument): Handle variable sized objects.
+
 Tue Aug 27 19:18:16 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc): Fix RTL sharing problem
