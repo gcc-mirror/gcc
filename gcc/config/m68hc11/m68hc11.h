@@ -851,6 +851,7 @@ extern enum reg_class m68hc11_tmp_regs_class;
    (C) == 'L' ? ((VALUE) >= -65536 && (VALUE) <= 65535) : \
    (C) == 'M' ? ((VALUE) & 0x0ffffL) == 0 : \
    (C) == 'N' ? ((VALUE) == 1 || (VALUE) == -1) : \
+   (C) == 'I' ? ((VALUE) >= -2 && (VALUE) <= 2) : \
    (C) == 'O' ? (VALUE) == 16 : \
    (C) == 'P' ? ((VALUE) <= 2 && (VALUE) >= -8) : 0)
 
