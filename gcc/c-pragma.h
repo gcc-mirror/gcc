@@ -47,17 +47,17 @@ extern struct cpp_reader* parse_in;
 #define HANDLE_PRAGMA_PACK 1
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
-extern void init_pragma PARAMS ((void));
+extern void init_pragma (void);
 
 /* Front-end wrapper for pragma registration to avoid dragging
    cpplib.h in almost everywhere.  */
 extern void c_register_pragma
 	PARAMS ((const char *, const char *,
-		 void (*) PARAMS ((struct cpp_reader *))));
-extern void maybe_apply_pragma_weak PARAMS ((tree));
-extern tree maybe_apply_renaming_pragma PARAMS ((tree, tree));
-extern void add_to_renaming_pragma_list PARAMS ((tree, tree));
+		 void (*) (struct cpp_reader *)));
+extern void maybe_apply_pragma_weak (tree);
+extern tree maybe_apply_renaming_pragma (tree, tree);
+extern void add_to_renaming_pragma_list (tree, tree);
 
-extern int c_lex PARAMS ((tree *));
+extern int c_lex (tree *);
 
 #endif /* GCC_C_PRAGMA_H */
