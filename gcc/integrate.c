@@ -1739,8 +1739,11 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   emit_line_note (input_filename, lineno);
 
   if (structure_value_addr)
-    return gen_rtx (MEM, TYPE_MODE (type),
-		    memory_address (TYPE_MODE (type), structure_value_addr));
+    {
+      target = gen_rtx (MEM, TYPE_MODE (type),
+			memory_address (TYPE_MODE (type), structure_value_addr));
+      MEM_IN_STRUCT_P (target) = 1;
+    }
   return target;
 }
 
