@@ -1,3 +1,8 @@
+2004-06-12  Andreas Jaeger  <aj@suse.de>
+
+	* libgcc-std.ver: Add __unorddf2 and __unordsf2 with version 3.3.4.
+	* libgcc-darwin.ver: Likewise.
+
 2004-06-12  Peter Jakubek  <peter@laseranimation.com>
 
 	* reload.c (find_reloads): Force reload for pseudo registers on big
@@ -10,7 +15,7 @@
 	exit blocks.
 
 2004-06-11  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix Bug 15899
 	Fix Bug 15460
 	* tree.h (SSA_NAME_VALUE): New macro.
@@ -187,10 +192,10 @@
 	* tree-into-ssa.c (mark_def_sites): Rename occurences of vdef
 	to v_may_def. Also add code to mark statements with
 	V_MUST_DEFs as definition sites.
-	(rewrite_stmt): Rename occurences of vdef to v_may_def. Also 
+	(rewrite_stmt): Rename occurences of vdef to v_may_def. Also
 	add code to register new V_MUST_DEFs made by the statement.
 	* tree-outof-ssa.c (VIRTUAL_PARTITION): Update comments.
-	(check_replaceable): Rename occurences of vdef to v_may_def. Also 
+	(check_replaceable): Rename occurences of vdef to v_may_def. Also
 	add check for V_MUST_DEFs.
 	(find_replaceable_in_bb): Ditto.
 	* tree-pretty-print.c (dump_vops): Rename occurences of vdef
@@ -200,13 +205,13 @@
 	(mark_all_v_must_defs): New function.
 	(create_scalar_copies): Replace call to mark_all_vdefs with
 	calls to mark_all_v_may_defs and mark_all_v_must_defs.
-	(scalarize_structures): Rename occurences of vdef to v_may_def. 
+	(scalarize_structures): Rename occurences of vdef to v_may_def.
 	Also add a check for V_MUST_DEFs.
 	(scalarize_modify_expr): Rename occurences of vdef to v_may_def.
 	* tree-ssa-alias.c (global_var): Update comment.
 	(compute_may_aliases): Ditto.
 	(compute_points_to_and_addr_escape): Rename occurences of vdef
-	to v_may_def. Also add code to mark variables in V_MUST_DEF 
+	to v_may_def. Also add code to mark variables in V_MUST_DEF
 	operands as being written to.
 	(group_aliases): Update comment.
 	(maybe_create_global_var): Ditto.
@@ -214,18 +219,18 @@
 	Also add a check for V_MUST_DEFs on GIMPLE registers.
 	(replace_immediate_uses): Rename occurences of vdef to v_may_def.
 	* tree-ssa-ccp.c (visit_stmt): Rename occurences of vdef
-	to v_may_def. Also add code to mark all V_MUST_DEF operands 
+	to v_may_def. Also add code to mark all V_MUST_DEF operands
 	VARYING.
 	(initialize): Ditto.
 	(set_rhs): Rename occurences of vdef to v_may_def. Also add
 	code to update SSA_NAMEs in V_MUST_DEFs.
 	* tree-ssa-copy.c (cprop_into_stmt): Rename occurences of vdef
 	to v_may_def.
-	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Rename 
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Rename
 	occurences of vdef to v_may_def. Also add code to mark statements
 	with V_MUST_DEFs as necessary.
 	(propagate_necessity): Rename occurences of vdef to v_may_def.
-	* tree-ssa-dom.c (redirect_edges_and_update_ssa_graph): Rename 
+	* tree-ssa-dom.c (redirect_edges_and_update_ssa_graph): Rename
 	occurences of vdef to v_may_def. Also add code to mark operands
 	in V_MUST_DEFs for renaming.
 	(eliminate_redundant_computations): Rename occurences of vdef
@@ -244,10 +249,10 @@
 	* tree-ssa-live.c (create_ssa_var_map): Rename occurences of vdef
 	to v_may_def. Also add code to mark V_MUST_DEF operands as being
 	used in virtual operators.
-	* tree-ssa-loop.c (mark_defs_for_rewrite): Rename occurences of 
+	* tree-ssa-loop.c (mark_defs_for_rewrite): Rename occurences of
 	vdef to v_may_def. Also add code to mark V_MUST_DEF operands for
 	renaming.
-	* tree-ssa-operands.c (opf_kill_def): New flag for killing 
+	* tree-ssa-operands.c (opf_kill_def): New flag for killing
 	definitions.
 	(build_vdefs): Renamed to...
 	(build_v_may_defs): This.
@@ -316,7 +321,7 @@
 	with calls to remove_v_may_defs and remove_v_must_defs.
 	(process_left_occs_and_kills): Rename occurences of vdef to v_may_def.
 	Also add code that marks left occurences of operands in V_MUST_DEFs.
-	* tree-tailcall.c (find_tail_calls): Rename occurences of vdef 
+	* tree-tailcall.c (find_tail_calls): Rename occurences of vdef
 	to v_may_def. Also add check for V_MUST_DEFs.
 	(eliminate_tail_call):Rename occurences of vdef to v_may_def.
 
@@ -353,7 +358,7 @@
 
 2004-06-10  Jason Merrill  <jason@redhat.com>
 
-	* target.h (struct gcc_target): Change gimplify_va_arg_expr 
+	* target.h (struct gcc_target): Change gimplify_va_arg_expr
 	hook signature.
 	* tree-gimple.h: Adjust.
 	* config/alpha/alpha.c (alpha_gimplify_va_arg): Adjust.
@@ -389,7 +394,7 @@
 	df_bb_reg_def_chain_create, df_bb_reg_use_chain_create,
 	df_bb_rd_local_compute, df_bb_ru_local_compute, df_bb_lr_local_compute,
 	df_analyse_1, df_insn_modify): Support analysing only a part of the cfg.
-	
+
 	(dataflow_set_a_op_b, dataflow_set_copy): New functions.
 	(df_rd_transfer_function, df_ru_transfer_function,
 	df_lr_transfer_function): Type of bitmaps changed to void *.
@@ -441,7 +446,7 @@
 
 2004-06-09  Daniel Berlin <dberlin@dberlin.org>
 
-	* tree-ssa.c (verify_ssa): Verify that vdefs/makes_aliased_stores 
+	* tree-ssa.c (verify_ssa): Verify that vdefs/makes_aliased_stores
 	match.
 
 2004-06-09  Roger Sayle  <roger@eyesopen.com>
@@ -452,7 +457,7 @@
 	(nondestructive_fold_unary_to_constant) <BIT_NOT_EXPR>: Likewise.
 
 2004-06-09  Richard Henderson  <rth@redhat.com>
- 
+
 	PR middle-end/15228
 	* function.c (assign_parms): Always set_mem_align with the computed
 	FUNCTION_ARG_BOUNDARY.  Don't clear stack_parm if !STRICT_ALIGNMENT.
@@ -558,7 +563,7 @@
 	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): New fn.
 	(TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
 	* alias.c (get_varargs_alias_set): Just return 0 for now.
-	
+
 	* c-objc-common.c (c_tree_printer): Improve handling of %T.
 
 2004-06-09  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -583,7 +588,7 @@
 	(sched_analyze): When the previous basic block ended in a CALL_INSN,
 	initialize in_post_call_group_p as post_call_initial.
 	(init_deps): initialize in_post_call_group_p to not_post_call.
-	
+
 2004-06-09  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/6637
@@ -652,7 +657,7 @@
 	* gimple-low.c (struct lower_data): Replace the_return_label and
 	one_return_stmt with return_statements.
 	(lower_function_body): Process the entire list of return_statements.
-	(lower_return_expr): Check source value before unifying return_exprs.   
+	(lower_return_expr): Check source value before unifying return_exprs.
 	* gimplify.c (gimplify_return_expr): Force the use of a temporary
 	for !aggregate_value_p.
 	* tree-gimple.c: Update RETURN_EXPR grammer.
@@ -1183,7 +1188,7 @@
 
 2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
 
- 	PR objc/7993
+	PR objc/7993
 	* objc-act.c (is_private): Do not emit the 'instance variable %s
 	is declared private' error.
 	(is_public): Emit the error after calling is_private.
