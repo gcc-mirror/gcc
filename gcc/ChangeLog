@@ -1,3 +1,9 @@
+Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* loop.c (scan_loop): Don't mark separate insns out of a libcall
+	for moving.
+	(move_movables): Abort if we see the first insn of a libcall.
+
 2002-09-04  Richard Henderson  <rth@redhat.com>
 
 	* builtin-types.def (BT_FN_FLOAT): New.
