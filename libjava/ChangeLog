@@ -1,3 +1,8 @@
+2002-08-14  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
+	* java/lang/natPosixProcess.cc (cleanup): Added `path' argument.
+	(startProcess): Allocate path for chdir in async-signal-safe way.
+
 2002-08-13  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	Fix for PR libgcj/7570 and PR libgcj/7578:
