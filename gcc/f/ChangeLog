@@ -1,3 +1,7 @@
+1998-07-15  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.texi: Regenerated.
+
 Mon Jul 13 18:45:06 1998  Craig Burley  <burley@gnu.org>
 
 	* Make-lang.in (f77.rebuilt): Fix to depend on
