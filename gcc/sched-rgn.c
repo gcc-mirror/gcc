@@ -117,6 +117,7 @@ static int *out_edges;
 static int is_cfg_nonregular (void);
 static int build_control_flow (struct edge_list *);
 static void new_edge (int, int);
+static bool sched_is_disabled_for_current_region_p (void);
 
 /* A region is the main entity for interblock scheduling: insns
    are allowed to move between blocks in the same region, along
@@ -2332,6 +2333,37 @@ debug_dependencies (void)
   fprintf (sched_dump, "\n");
 }
 
+/* Returns true if all the basic blocks of the current region have
+   NOTE_DISABLE_SCHED_OF_BLOCK which means not to schedule that region.  */
+static bool
+sched_is_disabled_for_current_region_p (void)
+{
+  rtx first_bb_insn, last_bb_insn, insn;
+  int bb;
+
+  for (bb = 0; bb < current_nr_blocks; bb++)
+    {
+      bool disable_sched = false;
+      /* Searching for NOTE_DISABLE_SCHED_OF_BLOCK note between the
+         start and end of the basic block. */
+      get_block_head_tail (BB_TO_BLOCK (bb), &first_bb_insn,
+			   &last_bb_insn);
+      for (insn = last_bb_insn; insn != NULL && insn != first_bb_insn;
+           insn = PREV_INSN (insn))
+      	if (GET_CODE (insn) == NOTE
+	    && (NOTE_LINE_NUMBER (insn)
+	        == NOTE_DISABLE_SCHED_OF_BLOCK))
+          {
+              disable_sched = true;
+	      break;
+          }
+      if (! disable_sched)
+	return false;
+    }
+
+  return true;
+}
+
 /* Schedule a region.  A region is either an inner loop, a loop-free
    subroutine, or a single basic block.  Each bb in the region is
    scheduled after its flow predecessors.  */
@@ -2346,6 +2378,11 @@ schedule_region (int rgn)
   /* Set variables for the current region.  */
   current_nr_blocks = RGN_NR_BLOCKS (rgn);
   current_blocks = RGN_BLOCKS (rgn);
+
+  /* Don't schedule region that is marked by
+     NOTE_DISABLE_SCHED_OF_BLOCK.  */
+  if (sched_is_disabled_for_current_region_p ())
+    return;
 
   init_deps_global ();
 

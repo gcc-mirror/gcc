@@ -1,3 +1,19 @@
+2004-08-08  Mostafa Hagog  <mustafa@il.ibm.com>
+	Ayal Zaks <zaks@il.ibm.com>
+
+	* common.opt (freschedule-modulo-scheduled-loops): New flag.
+	* final.c (final_scan_insn): Handle NOTE_DISABLE_SCHED_OF_BLOCK.
+	* modulo-sched.c (sms_schedule): Emit a note to disable scheduling
+	when -freschedule-modulo-scheduled-loops flag is not specified.
+	(sms_schedule_by_order, ps_insn_advance_column, add_node_to_ps,
+	add_node_to_ps, ps_has_conflicts, ps_add_node_check_conflicts):
+	More accurate placing of insn in row of partial schedule.
+	(ps_insn_find_column): New function.
+	* rtl.h (NOTE_DISABLE_SCHED_OF_BLOCK): New note.
+	* sched-rgn.c (sched_is_disabled_for_current_region_p): New.
+	(schedule_region): Use sched_is_disabled_for_current_region_p.
+	* docs/invoke.texi: Document -freschedule-modulo-scheduled-loops.
+
 2004-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_clrmem): Revert the last
