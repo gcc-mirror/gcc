@@ -101,6 +101,7 @@ Boston, MA 02111-1307, USA.  */
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
+      DECL_ANTICIPATED (in FUNCTION_DECL).
 
    Usage of language-independent fields in a language-dependent manner:
    
@@ -2490,6 +2491,10 @@ extern int flag_new_for_scope;
    scope) declared in a local scope.  */
 #define DECL_LOCAL_FUNCTION_P(NODE) \
   DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
+
+/* Nonzero if NODE is a FUNCTION_DECL for a built-in function, and we have
+   not yet seen a prototype for that function.  */
+#define DECL_ANTICIPATED(NODE) DECL_LANG_FLAG_7 (FUNCTION_DECL_CHECK (NODE))
 
 /* This _DECL represents a compiler-generated entity.  */
 #define SET_DECL_ARTIFICIAL(NODE) (DECL_ARTIFICIAL (NODE) = 1)

@@ -6770,6 +6770,12 @@ builtin_function (name, type, code, class, libname)
   if (libname)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (libname);
   make_function_rtl (decl);
+
+  /* Warn if a function in the namespace for users
+     is used without an occasion to consider it declared.  */
+  if (name[0] != '_' || name[1] != '_')
+    DECL_ANTICIPATED (decl) = 1;
+
   return decl;
 }
 
