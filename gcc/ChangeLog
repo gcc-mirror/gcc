@@ -1,3 +1,9 @@
+Wed Jun 23 00:48:21 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (expand_expr): STRIP_NOPS before checking against
+	MAX_INTEGER_COMPUTATION_MODE
+	(check_max_integer_computation_mode): Likewise.
+
 Tue Jun 22 20:23:43 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* md.texi (smul@var{m}3_highpart): Add missing 's' prefix.
