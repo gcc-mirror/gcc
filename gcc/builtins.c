@@ -708,8 +708,6 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
      longer copying around a value that we don't care about.  */
   gcc_assert (value == const1_rtx);
 
-  current_function_calls_longjmp = 1;
-
   last = get_last_insn ();
 #ifdef HAVE_builtin_longjmp
   if (HAVE_builtin_longjmp)

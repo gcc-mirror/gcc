@@ -435,7 +435,7 @@ emit_call_1 (rtx funexp, tree fntree, tree fndecl ATTRIBUTE_UNUSED,
 
       if (rounded_stack_size != 0)
 	{
-	  if (ecf_flags & (ECF_SP_DEPRESSED | ECF_NORETURN | ECF_LONGJMP))
+	  if (ecf_flags & (ECF_SP_DEPRESSED | ECF_NORETURN))
 	    /* Just pretend we did the pop.  */
 	    stack_pointer_delta -= rounded_stack_size;
 	  else if (flag_defer_pop && inhibit_defer_pop == 0
@@ -525,7 +525,7 @@ special_function_p (tree fndecl, int flags)
 
 	  if (tname[1] == 'i'
 	      && ! strcmp (tname, "siglongjmp"))
-	    flags |= ECF_LONGJMP;
+	    flags |= ECF_NORETURN;
 	}
       else if ((tname[0] == 'q' && tname[1] == 's'
 		&& ! strcmp (tname, "qsetjmp"))
@@ -535,7 +535,7 @@ special_function_p (tree fndecl, int flags)
 
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))
-	flags |= ECF_LONGJMP;
+	flags |= ECF_NORETURN;
     }
 
   return flags;
@@ -2174,7 +2174,7 @@ expand_call (tree exp, rtx target, int ignore)
       || !targetm.function_ok_for_sibcall (fndecl, exp)
       /* Functions that do not return exactly once may not be sibcall
          optimized.  */
-      || (flags & (ECF_RETURNS_TWICE | ECF_LONGJMP | ECF_NORETURN))
+      || (flags & (ECF_RETURNS_TWICE | ECF_NORETURN))
       || TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr)))
       /* If the called function is nested in the current one, it might access
          some of the caller's arguments, but could clobber them beforehand if
@@ -2753,7 +2753,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 if nonvolatile values are live.  For functions that cannot return,
 	 inform flow that control does not fall through.  */
 
-      if ((flags & (ECF_NORETURN | ECF_LONGJMP)) || pass == 0)
+      if ((flags & ECF_NORETURN) || pass == 0)
 	{
 	  /* The barrier must be emitted
 	     immediately after the CALL_INSN.  Some ports emit more
@@ -2778,9 +2778,6 @@ expand_call (tree exp, rtx target, int ignore)
 	      pending_stack_adjust = 0;
 	    }
 	}
-
-      if (flags & ECF_LONGJMP)
-	current_function_calls_longjmp = 1;
 
       /* If value type not void, return an rtx for the value.  */
 
@@ -2979,7 +2976,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  normal_call_insns = insns;
 
 	  /* Verify that we've deallocated all the stack we used.  */
-	  gcc_assert ((flags & (ECF_NORETURN | ECF_LONGJMP))
+	  gcc_assert ((flags & ECF_NORETURN)
 		      || (old_stack_allocated
 			  == stack_pointer_delta - pending_stack_adjust));
 	}
@@ -3694,7 +3691,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      if nonvolatile values are live.  For functions that cannot return,
      inform flow that control does not fall through.  */
 
-  if (flags & (ECF_NORETURN | ECF_LONGJMP))
+  if (flags & ECF_NORETURN)
     {
       /* The barrier note must be emitted
 	 immediately after the CALL_INSN.  Some ports emit more than

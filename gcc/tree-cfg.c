@@ -552,7 +552,7 @@ make_exit_edges (basic_block bb)
 	 such a bloody pain to avoid creating edges for this case since
 	 all we do is remove these edges when we're done building the
 	 CFG.  */
-      if (call_expr_flags (last) & (ECF_NORETURN | ECF_LONGJMP))
+      if (call_expr_flags (last) & ECF_NORETURN)
 	{
 	  make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
 	  return;
@@ -2546,7 +2546,7 @@ is_ctrl_altering_stmt (tree t)
 	return true;
 
       /* A CALL_EXPR also alters control flow if it does not return.  */
-      if (call_expr_flags (call) & (ECF_NORETURN | ECF_LONGJMP))
+      if (call_expr_flags (call) & ECF_NORETURN)
 	return true;
     }
 
@@ -5148,8 +5148,7 @@ need_fake_edge_p (tree t)
      leads to different results from -fbranch-probabilities.  */
   call = get_call_expr_in (t);
   if (call
-      && !(call_expr_flags (call) & 
-	   (ECF_NORETURN | ECF_LONGJMP | ECF_ALWAYS_RETURN)))
+      && !(call_expr_flags (call) & (ECF_NORETURN | ECF_ALWAYS_RETURN)))
     return true;
 
   if (TREE_CODE (t) == ASM_EXPR

@@ -6693,10 +6693,6 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 	    for (i = 0; i < valuenregs; ++i)
 	      if (call_used_regs[valueno + i])
 		return 0;
-#ifdef NON_SAVING_SETJMP
-	  if (NON_SAVING_SETJMP && find_reg_note (p, REG_SETJMP, NULL))
-	    return 0;
-#endif
 	}
 
       if (INSN_P (p))

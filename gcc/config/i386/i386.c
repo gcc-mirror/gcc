@@ -924,9 +924,6 @@ static bool ix86_must_pass_in_stack (enum machine_mode mode, tree type);
 static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
 
-#if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
-static void ix86_svr3_asm_out_constructor (rtx, int);
-#endif
 /* This function is only used on Solaris.  */
 static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
   ATTRIBUTE_UNUSED;
@@ -3709,23 +3706,12 @@ symbolic_reference_mentioned_p (rtx op)
    body of a function.  Do this only if the epilogue is simple, needing a
    couple of insns.  Prior to reloading, we can't tell how many registers
    must be saved, so return 0 then.  Return 0 if there is no frame
-   marker to de-allocate.
-
-   If NON_SAVING_SETJMP is defined and true, then it is not possible
-   for the epilogue to be simple, so return 0.  This is a special case
-   since NON_SAVING_SETJMP will not cause regs_ever_live to change
-   until final, but jump_optimize may need to know sooner if a
-   `return' is OK.  */
+   marker to de-allocate.  */
 
 int
 ix86_can_use_return_insn_p (void)
 {
   struct ix86_frame frame;
-
-#ifdef NON_SAVING_SETJMP
-  if (NON_SAVING_SETJMP && current_function_calls_setjmp)
-    return 0;
-#endif
 
   if (! reload_completed || frame_pointer_needed)
     return 0;
@@ -14373,17 +14359,6 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
     }
 }
-
-#if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
-static void
-ix86_svr3_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
-{
-  init_section ();
-  fputs ("\tpushl $", asm_out_file);
-  assemble_name (asm_out_file, XSTR (symbol, 0));
-  fputc ('\n', asm_out_file);
-}
-#endif
 
 #if TARGET_MACHO
 

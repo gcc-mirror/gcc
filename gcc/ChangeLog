@@ -1,3 +1,34 @@
+2004-11-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* function.h (struct function): Remove calls_longjmp.
+	(current_function_calls_longjmp): Delete.
+	* tree.h (ECF_LONGJMP): Delete.
+	(ECF_SIBCALL, ECF_PURE, ECF_SP_DEPRESSED, ECF_ALWAYS_RETURN)
+	(ECF_LIBCALL_BLOCK): Everybody slide down one.
+	(ECF_CONST, ECF_NORETURN, ECF_SIBCALL): Clarify comments.
+	* builtins.c (expand_builtin_longjmp): Don't set
+	current_function_calls_longjmp.
+	* calls.c (special_function_p): Mark longjmp and siglongjmp
+	with ECF_NORETURN, not ECF_LONGJMP.
+	(emit_call_1, expand_call, emit_library_call_value_1):
+	Don't check for ECF_LONGJMP.
+	* tree-cfg.c (make_exit_edges, is_ctrl_altering_stmt)
+	(need_fake_edge_p): Likewise.
+
+	* config/avr/avr.h, config/ip2k/ip2k.h: Don't define NON_SAVING_SETJMP.
+	* system.h: Poison NON_SAVING_SETJMP.
+	* function.c (use_register_for_decl)
+	* gcse.c (compute_hash_table_work, compute_store_table)
+	* postreload-gcse.c (record_opr_changes)
+	* reload.c (find_equiv_reg)
+	* reload1.c (reload)
+	* config/i386/i386.c (ix86_can_use_return_insn_p):
+	Remove code conditional on NON_SAVING_SETJMP.
+	* doc/tm.texi: Delete documentation of NON_SAVING_SETJMP.
+
+	* config/i386/sysv3.h: Delete file.
+	* config/i386/i386.c (ix86_svr3_asm_out_constructor): Delete.
+
 2004-11-23  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (vect_analyze_operations): Don't vectorize if
@@ -64,7 +95,7 @@
 	removed.
 	(DYNAMIC_CHAIN_ADDRESS): Use TARGET_PACKED_STACK.
 	* config/s390/s390.md ("allocate_stack", "restore_stack_block")
-	("save_stack_nonlocal", "restore_stack_nonlocal"): Modified to reflect 
+	("save_stack_nonlocal", "restore_stack_nonlocal"): Modified to reflect
 	the change in target switch semantics.
 	* config/s390/tpf.h (TARGET_DEFAULT_BACKCHAIN): Removed.
 	(TARGET_DEFAULT): MASK_BACKCHAIN added.
@@ -72,10 +103,10 @@
 
 2004-11-23  Uros Bizjak  <uros@kss-loka.si>
 
-        PR rtl-optimization/18614
-        * simplify-rtx.c (simplify_binary_operation): Do not
-        simplify inner elements of constant arguments of
-        VEC_CONCAT insn.
+	PR rtl-optimization/18614
+	* simplify-rtx.c (simplify_binary_operation): Do not
+	simplify inner elements of constant arguments of
+	VEC_CONCAT insn.
 
 2004-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -110,7 +141,7 @@
 	* tree-vectorizer.c (vect_create_data_ref_ptr): Use
 	lang_hooks.types.type_for_size instead of integer_type_node for the
 	type of ptr_update.
-	
+
 2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
 
 	* config.gcc (h8300-*-rtems*): Use h8300/t-rtems.
@@ -189,7 +220,7 @@
 	logbdf2, logbxf2, ilogbsi2, *f2xm1xf2, *fscalexf4, expsf2,
 	expdf2, expxf2, exp10sf2, exp10df2, exp10xf2, exp2sf2, exp2df2,
 	exp2xf2, expm1df2, expm1sf2, expm1xf2, frndintxf2, rintdf2,
-	rintsf2, rintxf2, frndintxf2_floor, floordf2, floorsf2, 
+	rintsf2, rintxf2, frndintxf2_floor, floordf2, floorsf2,
 	floorxf2, frndintxf2_ceil, ceildf2, ceilsf2, ceilxf2,
 	frndintxf2_trunc, btruncdf2, btruncsf2, btruncxf2,
 	frndintxf2_mask_pm, nearbyintdf2, nearbyintsf2, nearbyintxf2):
@@ -222,7 +253,7 @@
 2004-11-22  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (clean_predicate_lists): Clean all basic blocks.
-	
+
 2004-11-22  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (if_convertable_phi_p): Rename to ...
@@ -235,7 +266,7 @@
 	(if_convertible_bb_p): ... new name.
 	(if_convertable_loop_p): Rename to ...
 	(if_convertible_loop_p): ... new name.
-	
+
 2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/18444
@@ -319,7 +350,7 @@
 
 2004-11-22 Daniel Berlin  <dberlin@dberlin.org>
 
-        * tree-ssa.c (verify_ssa): SSA_OP_ALL_USES should be
+	* tree-ssa.c (verify_ssa): SSA_OP_ALL_USES should be
 	SSA_OP_ALL_USES | SSA_OP_ALL_KILLS for verification purposes.
 
 2004-11-22  David Edelsohn  <edelsohn@gnu.org>
@@ -426,7 +457,7 @@
 	(vect_update_niters_after_peeling): Use type of niters instead of
 	integer_type.
 	(vect_transform_loop): Unify handling of known and unknown loop bound
-	cases. Call make_loop_iterate_ntimes instead of 
+	cases. Call make_loop_iterate_ntimes instead of
 	vect_transform_loop_bound.
 
 2004-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -443,7 +474,7 @@
 2004-11-22 Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config.gcc: Use t-slibgcc-elf to build libgcc_s.so on
-        m32r*linux.
+	m32r*linux.
 	* config/m32r/t-linux (SHLIB_MAPFILES): Override to use
 	m32r/libgcc-glibc.ver.
 	* config/m32r/libgcc-glibc.ver: Add New file.
@@ -679,8 +710,8 @@
 
 2004-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * simplify-rtx.c (simplify_ternary_operation): Use
-        gen_int_mode.
+	* simplify-rtx.c (simplify_ternary_operation): Use
+	gen_int_mode.
 
 2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -733,12 +764,12 @@
 	(slpeel_tree_peel_loop_to_edge): Call slpeel_make_loop_iterate_ntimes
 	without last two arguments. Update single_exit of loops.
 	(vect_update_niters_after_peeling): Removed. Its functionality was
-	moved to vect_do_peeling_for_alignment. 
+	moved to vect_do_peeling_for_alignment.
 	(vect_do_peeling_for_loop_bound): New name for function previously
 	called vect_transform_for_unknown_loop_bound.
 	(vect_transform_loop_bound): Call slpeel_make_loop_iterate_ntimes
 	instead of code that duplicates the same functionality.
-	(vect_do_peeling_for_alignment): Functionality of   
+	(vect_do_peeling_for_alignment): Functionality of
 	vect_update_niters_after_peeling moved here.
 	(vect_transform_loop): Unify call to vect_do_peeling_for_loop_bound -
 	previously named vect_transform_for_unknown_loop_bound - for both known
@@ -912,7 +943,7 @@
 	altivec_lvx_4sf): Rename and replace with ...
 	(altivec_lvx_<mode>): ... mode macro version.
 	(altivec_stvx_4si, altivec_stvx_8hi, altivec_stvx_16qi,
-	altivec_stvx_4sf): Rename and replace with ... 
+	altivec_stvx_4sf): Rename and replace with ...
 	(altivec_stvx_<mode>): ... mode macro version.
 	(movv4si, movv8hi, movv16qi, movv4sf}): Replace with ...
 	(mov<mode>): ... mode macro version.
@@ -977,10 +1008,10 @@
 
 2004-11-18  Uros Bizjak  <uros@kss-loka.si>
 
-        * configure/i386/i386.md (*fix_trunch_1): Add "&& 1" to
-        insn split constraint.
-        (define_peephole2): Remove unneeded "&& 1" from peephole2
-        constraints.
+	* configure/i386/i386.md (*fix_trunch_1): Add "&& 1" to
+	insn split constraint.
+	(define_peephole2): Remove unneeded "&& 1" from peephole2
+	constraints.
 
 2004-11-18  Ben Elliston  <bje@au.ibm.com>
 
@@ -996,7 +1027,7 @@
 
 	* config/i386/i386.c (i386_solaris_elf_named_section): Mark with
 	ATTRIBUTE_UNUSED.
-  
+
 2004-11-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* defaults.h, config/darwin.h: Don't define TARGET_SUPPORTS_HIDDEN.

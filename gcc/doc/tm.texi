@@ -1983,14 +1983,6 @@ controlled by target switches, then GCC will automatically avoid using
 these registers when the target switches are opposed to them.)
 @end defmac
 
-@defmac NON_SAVING_SETJMP
-If this macro is defined and has a nonzero value, it means that
-@code{setjmp} and related functions fail to save the registers, or that
-@code{longjmp} fails to restore them.  To compensate, the compiler
-avoids putting variables in registers in functions that use
-@code{setjmp}.
-@end defmac
-
 @defmac INCOMING_REGNO (@var{out})
 Define this macro if the target machine has register windows.  This C
 expression returns the register number as seen by the called function

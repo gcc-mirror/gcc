@@ -357,9 +357,6 @@ struct function GTY(())
   /* Nonzero if function being compiled can call setjmp.  */
   unsigned int calls_setjmp : 1;
 
-  /* Nonzero if function being compiled can call longjmp.  */
-  unsigned int calls_longjmp : 1;
-
   /* Nonzero if function being compiled can call alloca,
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
@@ -449,7 +446,6 @@ extern int trampolines_created;
 #define current_function_returns_pointer (cfun->returns_pointer)
 #define current_function_calls_setjmp (cfun->calls_setjmp)
 #define current_function_calls_alloca (cfun->calls_alloca)
-#define current_function_calls_longjmp (cfun->calls_longjmp)
 #define current_function_calls_eh_return (cfun->calls_eh_return)
 #define current_function_has_computed_jump (cfun->has_computed_jump)
 #define current_function_contains_functions (cfun->contains_functions)
