@@ -48,3 +48,10 @@ foo7(void)
 {
   foo6();
 } /* { dg-bogus "warning:" "this function should not get any warnings" } */
+
+extern void foo8(void) __attribute__ ((__noreturn__));
+void
+foo8(void)
+{
+  foo7();
+} /* { dg-warning "`noreturn' function does return" "detect return from tail call" } */
