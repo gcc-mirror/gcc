@@ -128,15 +128,17 @@ do {									\
 
 #define ASM_OUTPUT_ASCII(file, p, size)			\
 do {							\
-  int i;						\
-  for (i = 0; i < (size); i++)				\
+  size_t i, limit = (size);				\
+  for (i = 0; i < limit; i++)				\
     {							\
       register int c = (p)[i];				\
       if ((i / 40) * 40 == i)				\
-      if (i == 0)					\
-        fprintf ((file), "\t.ascii \"");		\
-      else						\
-        fprintf ((file), "\"\n\t.ascii \"");		\
+        {						\
+          if (i == 0)					\
+            fprintf ((file), "\t.ascii \"");		\
+          else						\
+            fprintf ((file), "\"\n\t.ascii \"");	\
+        }						\
       if (c == '\"' || c == '\\')			\
         putc ('\\', (file));				\
       if (c >= ' ' && c < 0177)				\
@@ -144,7 +146,7 @@ do {							\
       else						\
         {						\
           fprintf ((file), "\\%o", c);			\
-          if (i < (size) - 1 && ISDIGIT ((p)[i + 1]))	\
+          if (i < limit - 1 && ISDIGIT ((p)[i + 1]))	\
           fprintf ((file), "\"\n\t.ascii \"");		\
         }						\
     }							\

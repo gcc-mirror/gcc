@@ -78,8 +78,8 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
 do {							\
   const unsigned char *s;				\
-  int i;						\
-  for (i = 0, s = (const unsigned char *)(PTR); i < (LEN); s++, i++) \
+  size_t i, limit = (LEN);						\
+  for (i = 0, s = (const unsigned char *)(PTR); i < limit; s++, i++) \
     {							\
       if ((i % 8) == 0)					\
 	fputs ("\n\t.byte\t", (FILE));			\

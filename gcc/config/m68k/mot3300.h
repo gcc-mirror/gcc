@@ -418,7 +418,7 @@ do { long l;					\
 
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
-  do { register int sp = 0, lp = 0;				\
+  do { register size_t sp = 0, lp = 0, limit = (LEN);		\
     fprintf ((FILE), "%s", ASM_BYTE_OP);			\
   loop:								\
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\')	\
@@ -427,7 +427,7 @@ do { long l;					\
     else							\
       { lp += 5;						\
 	fprintf ((FILE), "0x%x", (PTR)[sp]); }			\
-    if (++sp < (LEN))						\
+    if (++sp < limit)						\
       {	if (lp > 60)						\
 	  { lp = 0;						\
 	    fprintf ((FILE), "\n%s", ASCII_DATA_ASM_OP); }	\

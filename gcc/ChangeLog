@@ -1,5 +1,34 @@
 2001-12-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* clipper/clix.h (ASM_OUTPUT_ASCII): Avoid signed/unsigned
+	warnings.
+	* convex.h (ASM_OUTPUT_ASCII): Likewise.
+	* i370.h (ASM_OUTPUT_ASCII): Likewise.
+	* i386/att.h (ASM_OUTPUT_ASCII): Likewise.
+	* i386/i386-interix.h (ASM_OUTPUT_ASCII): Likewise.
+	* i386/i386elf.h (ASM_OUTPUT_ASCII): Likewise.
+	* i386/ptx4-i.h (ASM_OUTPUT_ASCII): Likewise.
+	* i386/sco5.h (ASM_OUTPUT_ASCII): Likewise.
+	* i386/sun386.h (ASM_OUTPUT_ASCII): Likewise.
+	* i386/sysv4.h (ASM_OUTPUT_ASCII): Likewise.
+	* i860/bsd.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/3b1.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/amix.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/atari.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/crds.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/hp320.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/m68kv4.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/mot3300.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/sgs.h (ASM_OUTPUT_ASCII): Likewise.
+	* m68k/tower-as.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/bsd-5.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/mips-5.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/svr3-5.h (ASM_OUTPUT_ASCII): Likewise.
+	* mips/svr4-5.h (ASM_OUTPUT_ASCII): Likewise.
+	* ns32k/encore.h (ASM_OUTPUT_ASCII): Likewise.
+	* vax/vaxv.h (ASM_OUTPUT_ASCII): Likewise.
+	* we32k/we32k.h (ASM_OUTPUT_ASCII): Likewise.
+
 	* i386/uwin.h (MD_STARTFILE_PREFIX): Avoid redefinition warnings.
 	* interix.h (TARGET_MEM_FUNCTIONS): Likewise.
 	* psos.h (CPP_PREDEFINES): Likewise.
