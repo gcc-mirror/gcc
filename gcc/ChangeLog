@@ -1,5 +1,10 @@
 2000-12-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
+	* install.texi (Configurations): Remove obsolete documentation for
+	hppa*-*-*.
+
+2000-12-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
 	* install.texi (Installation): Remove obsolete description for
 	libstdc++ which is now an integral part of GCC.
 	
