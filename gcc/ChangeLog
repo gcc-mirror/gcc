@@ -1,3 +1,8 @@
+2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (legitimize_tls_address): Handle constant offsets
+	added to TLS symbol addresses.
+
 2004-07-11  Richard Henderson  <rth@redhat.com>
 
 	* expmed.c (init_expmed): Use stack-local structures for 

@@ -2913,6 +2913,18 @@ legitimize_tls_address (rtx addr, rtx reg)
 	}
     }
 
+  else if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == PLUS
+	   && GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT)
+    {
+      new = XEXP (XEXP (addr, 0), 0);
+      if (GET_CODE (new) != SYMBOL_REF)
+	new = gen_rtx_CONST (Pmode, new);
+
+      new = legitimize_tls_address (new, reg);
+      new = plus_constant (new, INTVAL (XEXP (XEXP (addr, 0), 1)));
+      new = force_operand (new, 0);
+    }
+
   else
     abort ();  /* for now ... */
 
