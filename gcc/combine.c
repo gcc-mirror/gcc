@@ -1809,10 +1809,21 @@ try_combine (i3, i2, i1)
 	  /* It is possible that both insns now set the destination of I3.
 	     If so, we must show an extra use of it.  */
 
-	  if (insn_code_number >= 0 && GET_CODE (SET_DEST (i3set)) == REG
-	      && GET_CODE (SET_DEST (i2set)) == REG
-	      && REGNO (SET_DEST (i3set)) == REGNO (SET_DEST (i2set)))
-	    reg_n_sets[REGNO (SET_DEST (i2set))]++;
+	  if (insn_code_number >= 0)
+	    {
+	      rtx new_i3_dest = SET_DEST (i3set);
+	      rtx new_i2_dest = SET_DEST (i2set);
+
+	      while (GET_CODE (new_i3_dest) == ZERO_EXTRACT
+		     || GET_CODE (new_i3_dest) == STRICT_LOW_PART
+		     || GET_CODE (new_i3_dest) == SUBREG)
+		new_i3_dest = XEXP (new_i3_dest, 0);
+
+	      if (GET_CODE (new_i3_dest) == REG
+		  && GET_CODE (new_i2_dest) == REG
+		  && REGNO (new_i3_dest) == REGNO (new_i2_dest))
+		reg_n_sets[REGNO (SET_DEST (i2set))]++;
+	    }
 	}
 
       /* If we can split it and use I2DEST, go ahead and see if that
