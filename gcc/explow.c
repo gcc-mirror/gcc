@@ -49,6 +49,10 @@ trunc_int_for_mode (c, mode)
 {
   int width = GET_MODE_BITSIZE (mode);
 
+  /* You want to truncate to a _what_?  */
+  if (! SCALAR_INT_MODE_P (mode))
+    abort ();
+
   /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
   if (mode == BImode)
     return c & 1 ? STORE_FLAG_VALUE : 0;

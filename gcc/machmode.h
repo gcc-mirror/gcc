@@ -75,6 +75,11 @@ extern const enum mode_class mode_class[NUM_MACHINE_MODES];
   (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT	\
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT)
 
+/* Nonzero if MODE is a scalar integral mode.  */
+#define SCALAR_INT_MODE_P(MODE)			\
+  (GET_MODE_CLASS (MODE) == MODE_INT		\
+   || GET_MODE_CLASS (MODE) == MODE_PARTIAL_INT)
+
 /* Get the size in bytes of an object of mode MODE.  */
 
 extern const unsigned char mode_size[NUM_MACHINE_MODES];
