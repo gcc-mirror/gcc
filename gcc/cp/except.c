@@ -766,7 +766,7 @@ alloc_eh_object (type)
 		generate a label for the throw block
 	4. jump to the throw block label.  */
 
-tree
+static tree
 expand_throw (exp)
      tree exp;
 {
