@@ -1,5 +1,5 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) for
    Network Computing Devices, August, September, October, November 1990.
@@ -3463,6 +3463,8 @@ output_compile_unit_die (arg)
     language_attribute (LANG_C_PLUS_PLUS);
   else if (strcmp (language_string, "GNU Ada") == 0)
     language_attribute (LANG_ADA83);
+  else if (strcmp (language_string, "GNU F77") == 0)
+    language_attribute (LANG_FORTRAN77);
   else if (flag_traditional)
     language_attribute (LANG_C);
   else
