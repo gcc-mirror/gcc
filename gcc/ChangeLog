@@ -1,3 +1,9 @@
+Fri Dec  6 15:44:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
+	Merged from basic improvements branch (excerpt):
+
+	2002-11-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+	* config/sh/sh.h (SH_DBX_REGISTER_NUMBER): Handle PR_MEDIA_REG.
+
 2002-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (expand_expr) <case COND_EXPR>: Never modify exp in place.

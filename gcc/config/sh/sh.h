@@ -2962,6 +2962,8 @@ while (0)
    ? ((REGNO) - FIRST_TARGET_REG + 68) \
    : (REGNO) == PR_REG \
    ? (TARGET_SH5 ? 241 : 17) \
+   : (REGNO) == PR_MEDIA_REG \
+   ? (TARGET_SH5 ? 18 : -1) \
    : (REGNO) == T_REG \
    ? (TARGET_SH5 ? 242 : 18) \
    : (REGNO) == GBR_REG \
