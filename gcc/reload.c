@@ -4241,6 +4241,23 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       rld[i].nregs = CLASS_MAX_NREGS (rld[i].class, rld[i].mode);
     }
 
+  /* Special case a simple move with an input reload and a
+     destination of a hard reg, if the hard reg is ok, use it.  */
+  for (i = 0; i < n_reloads; i++)
+    if (rld[i].when_needed == RELOAD_FOR_INPUT
+	&& GET_CODE (PATTERN (insn)) == SET
+ 	&& GET_CODE (SET_DEST (PATTERN (insn))) == REG
+ 	&& SET_SRC (PATTERN (insn)) == rld[i].in)
+      {
+ 	rtx dest = SET_DEST (PATTERN (insn));
+	unsigned int regno = REGNO (dest);
+
+ 	if (regno < FIRST_PSEUDO_REGISTER
+ 	    && TEST_HARD_REG_BIT (reg_class_contents[rld[i].class], regno)
+ 	    && HARD_REGNO_MODE_OK (regno, rld[i].mode))
+ 	  rld[i].reg_rtx = dest;
+      }
+
   return retval;
 }
 
