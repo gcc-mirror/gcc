@@ -2260,9 +2260,14 @@ do { ip = &instack[indepth];		\
 	}
       }
 
-      /* Recognize preprocessor directives only when reading
-	 directly from a file.  */
-      if (ip->fname == 0)
+      /* If this is expanding a macro definition, don't recognize
+	 preprocessor directives.  */
+      if (ip->macro != 0)
+	goto randomchar;
+      /* If this is expand_into_temp_buffer, recognize them
+	 only after an actual newline at this level,
+	 not at the beginning of the input level.  */
+      if (ip->fname == 0 && beg_of_line == ip->buf)
 	goto randomchar;
       if (ident_length)
 	goto specialchar;
