@@ -1,3 +1,8 @@
+2003-06-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10845
+	* g++.dg/template/member3.C: New test.
+
 2003-06-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10939

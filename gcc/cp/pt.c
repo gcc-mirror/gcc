@@ -8616,7 +8616,8 @@ try_class_unification (tparms, targs, parm, arg)
   tree copy_of_targs;
 
   if (!CLASSTYPE_TEMPLATE_INFO (arg)
-      || CLASSTYPE_TI_TEMPLATE (arg) != CLASSTYPE_TI_TEMPLATE (parm))
+      || (most_general_template (CLASSTYPE_TI_TEMPLATE (arg)) 
+	  != most_general_template (CLASSTYPE_TI_TEMPLATE (parm))))
     return NULL_TREE;
 
   /* We need to make a new template argument vector for the call to
