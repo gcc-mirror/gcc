@@ -4286,6 +4286,7 @@ extern tree binfo_for_vbase                     PARAMS ((tree, tree));
 extern void fixup_all_virtual_upcast_offsets    PARAMS ((tree));
 
 /* in semantics.c */
+extern void init_cp_semantics                   PARAMS ((void));
 extern void finish_expr_stmt                    PARAMS ((tree));
 extern tree begin_if_stmt                       PARAMS ((void));
 extern void finish_if_stmt_cond                 PARAMS ((tree, tree));
@@ -4375,14 +4376,7 @@ extern void do_pushlevel                        PARAMS ((void));
 extern tree do_poplevel                         PARAMS ((void));
 extern void finish_mem_initializers             PARAMS ((tree));
 
-extern void genrtl_try_block                    PARAMS ((tree));
-extern void genrtl_handler                      PARAMS ((tree));
-extern void genrtl_catch_block                  PARAMS ((tree));
-extern void genrtl_ctor_stmt                    PARAMS ((tree));
-extern void genrtl_subobject                    PARAMS ((tree));
-extern tree genrtl_do_poplevel                  PARAMS ((void));
 extern void clear_out_block                     PARAMS ((void));
-extern void genrtl_named_return_value           PARAMS ((void));
 extern tree begin_global_stmt_expr              PARAMS ((void));
 extern tree finish_global_stmt_expr             PARAMS ((tree));
 

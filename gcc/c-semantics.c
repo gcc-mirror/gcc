@@ -36,6 +36,10 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "timevar.h"
 
+/* If non-NULL, the address of a language-specific function for
+   expanding statements.  */
+void (*lang_expand_stmt) PARAMS ((tree));
+
 static tree prune_unused_decls PARAMS ((tree *, int *, void *));
 
 /* Create an empty statement tree rooted at T.  */
@@ -643,15 +647,110 @@ genrtl_decl_cleanup (decl, cleanup)
     expand_decl_cleanup (decl, cleanup);
 }
 
+/* We're about to expand T, a statement.  Set up appropriate context
+   for the substitution.  */
+
+void
+prep_stmt (t)
+     tree t;
+{
+  if (!STMT_LINENO_FOR_FN_P (t))
+    lineno = STMT_LINENO (t);
+  current_stmt_tree ()->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
+}
+
 /* Generate the RTL for the statement T, its substatements, and any
    other statements at its nesting level. */
 
-tree
+void
 expand_stmt (t)
      tree t;
 {
-  tree rval;
-  rval = lang_expand_stmt (t);
-  return rval;
+  while (t && t != error_mark_node)
+    {
+      int saved_stmts_are_full_exprs_p;
+
+      /* Set up context appropriately for handling this statement.  */
+      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+      prep_stmt (t);
+
+      switch (TREE_CODE (t))
+	{
+	case RETURN_STMT:
+	  genrtl_return_stmt (RETURN_EXPR (t));
+	  break;
+
+	case EXPR_STMT:
+	  genrtl_expr_stmt (EXPR_STMT_EXPR (t));
+	  break;
+
+	case DECL_STMT:
+	  genrtl_decl_stmt (t);
+	  break;
+
+	case FOR_STMT:
+	  genrtl_for_stmt (t);
+	  break;
+
+	case WHILE_STMT:
+	  genrtl_while_stmt (t);
+	  break;
+
+	case DO_STMT:
+	  genrtl_do_stmt (t);
+	  break;
+
+	case IF_STMT:
+	  genrtl_if_stmt (t);
+	  break;
+
+	case COMPOUND_STMT:
+	  genrtl_compound_stmt (t);
+	  break;
+
+	case BREAK_STMT:
+	  genrtl_break_stmt ();
+	  break;
+
+	case CONTINUE_STMT:
+	  genrtl_continue_stmt ();
+	  break;
+
+	case SWITCH_STMT:
+	  genrtl_switch_stmt (t);
+	  break;
+
+	case CASE_LABEL:
+	  genrtl_case_label (CASE_LOW (t), CASE_HIGH (t));
+	  break;
+
+	case LABEL_STMT:
+	  expand_label (LABEL_STMT_LABEL (t));
+	  break;
+
+	case GOTO_STMT:
+	  genrtl_goto_stmt (GOTO_DESTINATION (t));
+	  break;
+
+	case ASM_STMT:
+	  genrtl_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t),
+			   ASM_OUTPUTS (t), ASM_INPUTS (t), ASM_CLOBBERS (t));
+	  break;
+
+	default:
+	  if (lang_expand_stmt)
+	    (*lang_expand_stmt) (t);
+	  else 
+	    abort ();
+	  break;
+	}
+
+      /* Restore saved state.  */
+      current_stmt_tree ()->stmts_are_full_exprs_p = 
+	saved_stmts_are_full_exprs_p;
+
+      /* Go on to the next statement in this scope.  */
+      t = TREE_CHAIN (t);
+    }
 }
 

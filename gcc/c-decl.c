@@ -7000,17 +7000,6 @@ do_case (low_value, high_value)
     }
 }
 
-/* Language specific handler of tree nodes used when generating RTL
-   from a tree.  */
-
-tree
-lang_expand_stmt (t)
-     tree t ATTRIBUTE_UNUSED;
-{
-  abort ();
-  return NULL_TREE;
-}
-
 /* Accessor to set the 'current_function_name_declared' flag.  */
 
 void
