@@ -1,5 +1,13 @@
 Fri Nov 26 10:59:12 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.md (QImode patterns): Remove '*' before the 'r' constraints.
+	* i386.h (procesor_costs): Add movzbl_load field.
+	(HARD_REGNO_MODE_OK): Accept QImode on non PARTIAL_REGISTER_STALL in
+	non-Q registers, accept DImode registers anywhere.
+	(Q_CLASS_P): New.
+	(MEMORY_MOVE_COST): Calculate QImode moves correctly.
+	* i386.c (*_cost): Set value for movxbl_load field.
+
 	* (addsi): New add to lea splitter.
 	(ashlsi): Likewise.
 	(lea to add/shift peep2): New.

@@ -62,6 +62,7 @@ struct processor_costs {
   int mult_bit;			/* cost of multiply per each bit set */
   int divide;			/* cost of a divide/mod */
   int large_insn;		/* insns larger than this cost more */
+  int movzbl_load;		/* cost of loading using movzbl */
   int int_load[3];		/* cost of loading integer registers
 				   in QImode, HImode and SImode relative
 				   to reg-reg move (2).  */
@@ -704,13 +705,11 @@ extern int ix86_arch;
    ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
        || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
       && GET_MODE_UNIT_SIZE (MODE) <= (LONG_DOUBLE_TYPE_SIZE == 96 ? 12 : 8))\
-   /* Only allow DImode in even registers.  */			\
-   : (MODE) == DImode && ((REGNO) & 1) ? 0			\
-   /* The first four integer regs can hold any mode.  */	\
    : (REGNO) < 4 ? 1						\
    /* Other regs cannot do byte accesses.  */			\
    : (MODE) != QImode ? 1					\
-   : reload_in_progress || reload_completed)
+   : reload_in_progress || reload_completed			\
+     || !TARGET_PARTIAL_REG_STALL)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -842,6 +841,8 @@ enum reg_class
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 #define FLOAT_CLASS_P(CLASS) (reg_class_subset_p (CLASS, FLOAT_REGS))
+
+#define Q_CLASS_P(CLASS) (reg_class_subset_p (CLASS, Q_REGS))
 
 /* Give names of register classes as strings for dump file.   */
 
@@ -1993,7 +1994,11 @@ while (0)
 
    If moving between registers and memory is more expensive than
    between two registers, you should define this macro to express the
-   relative cost.  */
+   relative cost.  
+ 
+   Model also increased moving costs of QImode registers in non
+   Q_REGS classes.
+ */
 
 #define MEMORY_MOVE_COST(MODE,CLASS,IN)					\
   (FLOAT_CLASS_P (CLASS)						\
@@ -2003,7 +2008,10 @@ while (0)
 	 ? (IN ? ix86_cost->fp_load[1] : ix86_cost->fp_store[1])	\
 	 : (IN ? ix86_cost->fp_load[2] : ix86_cost->fp_store[2])))	\
    : (GET_MODE_SIZE (MODE)==1						\
-      ? (IN ? ix86_cost->int_load[0] : ix86_cost->int_store[0])		\
+      ? (IN ? (Q_CLASS_P (CLASS) ? ix86_cost->int_load[0]		\
+				 : ix86_cost->movzbl_load)		\
+	    : (Q_CLASS_P (CLASS) ? ix86_cost->int_store[0]		\
+				 : ix86_cost->int_store[0] + 4))	\
       : (GET_MODE_SIZE (MODE)==2					\
 	 ? (IN ? ix86_cost->int_load[1] : ix86_cost->int_store[1])	\
 	 : ((IN ? ix86_cost->int_load[2] : ix86_cost->int_store[2])	\
