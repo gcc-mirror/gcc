@@ -1207,12 +1207,12 @@ VAX operand formatting codes:
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
     { REAL_VALUE_TYPE r; char dstr[30];					\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      REAL_VALUE_TO_DECIMAL (r, "%.20e", dstr);				\
+      REAL_VALUE_TO_DECIMAL (r, dstr, -1);				\
       fprintf (FILE, "$0f%s", dstr); }					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
     { REAL_VALUE_TYPE r; char dstr[30];					\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      REAL_VALUE_TO_DECIMAL (r, "%.20e", dstr);				\
+      REAL_VALUE_TO_DECIMAL (r, dstr, -1);				\
       fprintf (FILE, "$0%c%s", ASM_DOUBLE_CHAR, dstr); }		\
   else { putc ('$', FILE); output_addr_const (FILE, X); }}
 

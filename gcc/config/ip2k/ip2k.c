@@ -3058,7 +3058,7 @@ asm_output_float (file, n)
   char dstr[100];
   
   REAL_VALUE_TO_TARGET_SINGLE (n, val);
-  REAL_VALUE_TO_DECIMAL (n, "%g", dstr);
+  REAL_VALUE_TO_DECIMAL (n, dstr, -1);
   fprintf (file, "\t.long 0x%08lx\t/* %s */\n",val, dstr);
 }
 

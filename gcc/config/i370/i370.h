@@ -1371,7 +1371,7 @@ enum reg_class
             char buf[50];						\
             REAL_VALUE_TYPE rval;					\
             REAL_VALUE_FROM_CONST_DOUBLE(rval, XV);			\
-            REAL_VALUE_TO_DECIMAL (rval, HOST_WIDE_INT_PRINT_DEC, buf);	\
+            REAL_VALUE_TO_DECIMAL (rval, buf, -1);			\
 	    if (GET_MODE (XV) == SFmode)				\
 	      {								\
 		mvs_page_lit += 4;					\
@@ -1665,7 +1665,7 @@ enum reg_class
             char buf[50];						\
             REAL_VALUE_TYPE rval;					\
             REAL_VALUE_FROM_CONST_DOUBLE(rval, XV);			\
-            REAL_VALUE_TO_DECIMAL (rval, HOST_WIDE_INT_PRINT_DEC, buf);	\
+            REAL_VALUE_TO_DECIMAL (rval, buf, -1);			\
 	    if (GET_MODE (XV) == SFmode)				\
 	      {								\
 		mvs_page_lit += 4;					\

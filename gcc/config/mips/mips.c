@@ -5888,7 +5888,7 @@ print_operand (file, op, letter)
       char s[30];
 
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-      REAL_VALUE_TO_DECIMAL (d, "%.20e", s);
+      REAL_VALUE_TO_DECIMAL (d, s, -1);
       fprintf (file, s);
     }
 

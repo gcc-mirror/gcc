@@ -1,3 +1,8 @@
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
+	* target.h (ffetarget_print_real1, ffetarget_print_real2): Update
+	call to REAL_VALUE_TO_DECIMAL.
+
 2002-08-31  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c: Don't set flag_finite_math_only by default.

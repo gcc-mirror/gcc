@@ -1295,7 +1295,7 @@ debug_real (r)
 {
   char dstr[30];
 
-  REAL_VALUE_TO_DECIMAL (r, "%.20g", dstr);
+  REAL_VALUE_TO_DECIMAL (r, dstr, -1);
   fprintf (stderr, "%s", dstr);
 }
 
@@ -1380,17 +1380,70 @@ etarsingle (r)
 /* Convert X to a decimal ASCII string S for output to an assembly
    language file.  Note, there is no standard way to spell infinity or
    a NaN, so these values may require special treatment in the tm.h
-   macros.  */
+   macros. 
+
+   The argument DIGITS is the number of decimal digits to print,
+   or -1 to indicate "enough", i.e. DECIMAL_DIG for for the target.  */
 
 void
-ereal_to_decimal (x, s)
+ereal_to_decimal (x, s, digits)
      REAL_VALUE_TYPE x;
      char *s;
+     int digits;
 {
   UEMUSHORT e[NE];
-
   GET_REAL (&x, e);
-  etoasc (e, s, 20);
+
+  /* Find DECIMAL_DIG for the target.  */
+  if (digits < 0)
+    switch (TARGET_FLOAT_FORMAT)
+      {
+      case IEEE_FLOAT_FORMAT:
+	switch (LONG_DOUBLE_TYPE_SIZE)
+	  {
+	  case 32:
+	    digits = 9;
+	    break;
+	  case 64:
+	    digits = 17;
+	    break;
+	  case 128:
+	    if (!INTEL_EXTENDED_IEEE_FORMAT)
+	      {
+		digits = 36;
+		break;
+	      }
+	    /* FALLTHRU */
+	  case 96:
+	    digits = 21;
+	    break;
+
+	  default:
+	    abort ();
+	  }
+	break;
+
+      case VAX_FLOAT_FORMAT:
+	digits = 18; /* D_FLOAT */
+	break;
+
+      case IBM_FLOAT_FORMAT:
+	digits = 18;
+	break;
+
+      case C4X_FLOAT_FORMAT:
+	digits = 11;
+	break;
+
+      default:
+	abort ();
+      }
+	      
+  /* etoasc interprets digits as places after the decimal point.
+     We interpret digits as total decimal digits, which IMO is
+     more useful.  Since the output will have one digit before
+     the point, subtract one.  */
+  etoasc (e, s, digits - 1);
 }
 
 /* Compare X and Y.  Return 1 if X > Y, 0 if X == Y, -1 if X < Y,

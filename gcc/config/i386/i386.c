@@ -6610,7 +6610,7 @@ print_operand (file, x, code)
       char dstr[30];
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-      REAL_VALUE_TO_DECIMAL (r, "%.22e", dstr);
+      REAL_VALUE_TO_DECIMAL (r, dstr, -1);
       fprintf (file, "%s", dstr);
     }
 
@@ -6621,7 +6621,7 @@ print_operand (file, x, code)
       char dstr[30];
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-      REAL_VALUE_TO_DECIMAL (r, "%.22e", dstr);
+      REAL_VALUE_TO_DECIMAL (r, dstr, -1);
       fprintf (file, "%s", dstr);
     }
 

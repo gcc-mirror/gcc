@@ -1761,7 +1761,7 @@ i960_print_operand (file, x, code)
 	}
 
       REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-      REAL_VALUE_TO_DECIMAL (d, "%#g", dstr);
+      REAL_VALUE_TO_DECIMAL (d, dstr, -1);
       fprintf (file, "0f%s", dstr);
       return;
     }

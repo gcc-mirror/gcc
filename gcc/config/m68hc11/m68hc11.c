@@ -2264,7 +2264,7 @@ print_operand (file, op, letter)
       char dstr[30];
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      REAL_VALUE_TO_DECIMAL (r, "%.20g", dstr);
+      REAL_VALUE_TO_DECIMAL (r, dstr, -1);
       asm_fprintf (file, "%I0r%s", dstr);
     }
   else

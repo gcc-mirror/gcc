@@ -524,7 +524,7 @@ print_rtx (in_rtx)
 	  char s[30];
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (val, in_rtx);
-	  REAL_VALUE_TO_DECIMAL (val, "%.16g", s);
+	  REAL_VALUE_TO_DECIMAL (val, s, -1);
 	  fprintf (outfile, " [%s]", s);
 	}
       break;

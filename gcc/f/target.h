@@ -1493,13 +1493,13 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 #define ffetarget_print_real1(f,l) \
   ({ REAL_VALUE_TYPE lr; \
      lr = ffetarget_cvt_r1_to_rv_ ((l)); \
-     REAL_VALUE_TO_DECIMAL (lr, bad_fmt_val??, ffetarget_string_); \
+     REAL_VALUE_TO_DECIMAL (lr, ffetarget_string_, -1); \
      fputs (ffetarget_string_, (f)); \
    })
 #define ffetarget_print_real2(f,l) \
   ({ REAL_VALUE_TYPE lr; \
      lr = ffetarget_cvt_r2_to_rv_ (&((l).v[0])); \
-     REAL_VALUE_TO_DECIMAL (lr, bad_fmt_val??, ffetarget_string_); \
+     REAL_VALUE_TO_DECIMAL (lr, ffetarget_string_, -1); \
      fputs (ffetarget_string_, (f)); \
    })
 #define ffetarget_real1_one(res) ffetarget_cvt_rv_to_r1_ (dconst1, *(res))

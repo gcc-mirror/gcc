@@ -1,3 +1,33 @@
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
+	* real.c (ereal_to_decimal): Add digits parameter.
+	* real.h (REAL_VALUE_TO_DECIMAL): Remove format; add digits parameter.
+	* c-pretty-print.c (pp_c_real_literal): Update call.
+	* print-rtl.c (print_rtx): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* sched-vis.c (print_value): Likewise.
+	* config/arc/arc.c (arc_print_operand): Likewise.
+	* config/c4x/c4x.c (c4x_print_operand): Likewise.
+	* config/i370/i370.h (PRINT_OPERAND): Likewise.
+	* config/i386/i386.c (print_operand): Likewise.
+	* config/i960/i960.c (i960_print_operand): Likewise.
+	* config/ip2k/ip2k.c (asm_output_float): Likewise.
+	* config/m32r/m32r.c (m32r_print_operand): Likewise.
+	* config/m68hc11/m68hc11.c (print_operand): Likewise.
+	* config/m68k/hp320.h (PRINT_OPERAND, ASM_OUTPUT_FLOAT_OPERAND,
+	ASM_OUTPUT_DOUBLE_OPERAND, ASM_OUTPUT_LONG_DOUBLE_OPERAND): Likewise.
+	* config/m68k/m68k.h (ASM_OUTPUT_FLOAT_OPERAND, 
+	ASM_OUTPUT_DOUBLE_OPERAND, ASM_OUTPUT_LONG_DOUBLE_OPERAND): Likewise.
+	* config/m68k/sun2o4.h (ASM_OUTPUT_FLOAT_OPERAND,
+	ASM_OUTPUT_DOUBLE_OPERAND): Likewise.
+	* config/m68k/sun3.h (ASM_OUTPUT_FLOAT_OPERAND,
+	ASM_OUTPUT_DOUBLE_OPERAND): Likewise.
+	* config/mips/mips.c (print_operand): Likewise.
+	* config/ns32k/ns32k.c (print_operand): Likewise.
+	* config/pdp11/pdp11.h (PRINT_OPERAND): Likewise.
+	* config/vax/vax.h (PRINT_OPERAND): Likewise.
+	* doc/tm.texi (REAL_VALUE_TO_DECIMAL): Update docs.
+
 2002-09-04  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/elf.h (TARGET_SECTION_TYPE_FLAGS): Define to
