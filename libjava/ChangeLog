@@ -1,3 +1,8 @@
+2001-10-22  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/GregorianCalendar.java (getGregorianChange): Removed
+	`date' argument.
+
 2001-10-22  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* gnu/gcj/convert/JIS0208_to_Unicode.cc: Declare java_exceptions pragma.

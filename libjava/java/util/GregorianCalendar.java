@@ -175,7 +175,7 @@ public class GregorianCalendar extends Calendar
    * Gets the date of the switch from Julian dates to Gregorian dates.
    * @return the date of the change.
    */
-  public final Date getGregorianChange(Date date)
+  public final Date getGregorianChange()
   {
     return new Date(gregorianCutover);
   }
