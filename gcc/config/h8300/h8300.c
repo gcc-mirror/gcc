@@ -4434,21 +4434,24 @@ h8300_tiny_constant_address_p (rtx x)
 
   unsigned HOST_WIDE_INT addr;
 
-  /* We accept symbols declared with tiny_data.  */
-  if (GET_CODE (x) == SYMBOL_REF)
-    return (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_TINY_DATA) != 0;
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      /* We accept symbols declared with tiny_data.  */
+      return (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_TINY_DATA) != 0;
 
-  if (GET_CODE (x) != CONST_INT)
-    return 0;
+    case CONST_INT:
+      addr = INTVAL (x);
+      return (TARGET_NORMAL_MODE
+	      || (TARGET_H8300H
+		  && (IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4)))
+	      || (TARGET_H8300S
+		  && (IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4))));
 
-  addr = INTVAL (x);
+    default:
+      return 0;
+    }
 
-  return (0
-	  || TARGET_NORMAL_MODE
-	  || (TARGET_H8300H
-	      && (IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4)))
-	  || (TARGET_H8300S
-	      && (IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4))));
 }
 
 int
