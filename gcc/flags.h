@@ -420,10 +420,6 @@ extern int flag_gnu_linker;
 /* Tag all structures with __attribute__(packed) */
 extern int flag_pack_struct;
 
-/* 1 if alias checking is enabled: symbols do not alias each other
-   and parameters do not alias the current stack frame.  */
-extern int flag_alias_check;
-
 /* This flag is only tested if alias checking is enabled.
    0 if pointer arguments may alias each other.  True in C.
    1 if pointer arguments may not alias each other but may alias

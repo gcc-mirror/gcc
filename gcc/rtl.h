@@ -1371,6 +1371,7 @@ extern int true_dependence		PROTO ((rtx, enum machine_mode, rtx,
 extern int read_dependence		PROTO ((rtx, rtx));
 extern int anti_dependence		PROTO ((rtx, rtx));
 extern int output_dependence		PROTO ((rtx, rtx));
+extern void init_alias_once		PROTO ((void));
 extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
 

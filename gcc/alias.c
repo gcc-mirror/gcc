@@ -293,7 +293,7 @@ record_base_value (regno, val)
      int regno;
      rtx val;
 {
-  if (!flag_alias_check || regno >= reg_base_value_size)
+  if (regno >= reg_base_value_size)
     return;
   if (GET_CODE (val) == REG)
     {
@@ -606,12 +606,6 @@ base_alias_check (x, y)
    being referenced as a side effect.  This can happen when using AND to
    align memory references, as is done on the Alpha.
 
-   We recognize the following cases of non-conflicting memory:
-
-	(1) addresses involving the frame pointer cannot conflict
-	    with addresses involving static variables.
-	(2) static variables with different addresses cannot conflict.
-
    Nice to notice that varying addresses cannot conflict with fp if no
    local variables had their addresses taken, but that's too hard now.  */
 
@@ -646,40 +640,8 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
       return 0;
     }
 
-  if (y == frame_pointer_rtx || y == hard_frame_pointer_rtx
-      || y == stack_pointer_rtx || y == arg_pointer_rtx)
-    {
-      rtx t = y;
-      int tsize = ysize;
-      y = x; ysize = xsize;
-      x = t; xsize = tsize;
-    }
-
-  if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-      || x == stack_pointer_rtx || x == arg_pointer_rtx)
-    {
-      rtx y1;
-
-      if (CONSTANT_P (y))
-	return 0;
-
-      if (GET_CODE (y) == PLUS
-	  && canon_rtx (XEXP (y, 0)) == x
-	  && (y1 = canon_rtx (XEXP (y, 1)))
-	  && GET_CODE (y1) == CONST_INT)
-	{
-	  c += INTVAL (y1);
-	  return (xsize <= 0 || ysize <= 0
-		  || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
-	}
-
-      if (GET_CODE (y) == PLUS
-	  && (y1 = canon_rtx (XEXP (y, 0)))
-	  && CONSTANT_P (y1))
-	return 0;
-
-      return 1;
-    }
+  /* This code used to check for conflicts involving stack references and
+     globals but the base address alias code now handles these cases.  */
 
   if (GET_CODE (x) == PLUS)
     {
@@ -708,16 +670,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	  else if (GET_CODE (y1) == CONST_INT)
 	    return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
 
-	  /* Handle case where we cannot understand iteration operators,
-	     but we notice that the base addresses are distinct objects.  */
-	  /* ??? Is this still necessary? */
-	  x = find_symbolic_term (x);
-	  if (x == 0)
-	    return 1;
-	  y = find_symbolic_term (y);
-	  if (y == 0)
-	    return 1;
-	  return rtx_equal_for_memref_p (x, y);
+	  return 1;
 	}
       else if (GET_CODE (x1) == CONST_INT)
 	return memrefs_conflict_p (xsize, x0, ysize, y, c - INTVAL (x1));
@@ -854,16 +807,10 @@ true_dependence (mem, mem_mode, x, varies)
      rtx x;
      int (*varies)();
 {
-  rtx x_addr, mem_addr;
+  register rtx x_addr, mem_addr;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
-
-  x_addr = XEXP (x, 0);
-  mem_addr = XEXP (mem, 0);
-
-  if (flag_alias_check && ! base_alias_check (x_addr, mem_addr))
-    return 0;
 
   /* If X is an unchanging read, then it can't possibly conflict with any
      non-unchanging store.  It may conflict with an unchanging write though,
@@ -875,8 +822,14 @@ true_dependence (mem, mem_mode, x, varies)
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
-  x_addr = canon_rtx (x_addr);
-  mem_addr = canon_rtx (mem_addr);
+  x_addr = canon_rtx (XEXP (x, 0));
+  mem_addr = canon_rtx (XEXP (mem, 0));
+
+  /* Calling base_alias_check after canon_rtx detects more nonconflicting
+     accesses at the cost of increased memory use. */
+  if (! base_alias_check (x_addr, mem_addr))
+    return 0;
+
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
@@ -917,11 +870,10 @@ anti_dependence (mem, x)
      rtx mem;
      rtx x;
 {
+  rtx x_addr, mem_addr;
+
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
-
-  if (flag_alias_check && ! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
-    return 0;
 
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
@@ -931,15 +883,21 @@ anti_dependence (mem, x)
   if (RTX_UNCHANGING_P (mem))
     return 0;
 
-  return (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
-			      SIZE_FOR_MODE (x), XEXP (x, 0), 0)
+  x_addr = XEXP (x, 0);
+  mem_addr = XEXP (mem, 0);
+
+  if (! base_alias_check (x_addr, mem_addr))
+    return 0;
+
+  return (memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
+			      SIZE_FOR_MODE (x), x_addr, 0)
 	  && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
 		&& GET_MODE (mem) != QImode
-		&& GET_CODE (XEXP (mem, 0)) != AND
+		&& GET_CODE (mem_addr) != AND
 		&& ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
 	  && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
 		&& GET_MODE (x) != QImode
-		&& GET_CODE (XEXP (x, 0)) != AND
+		&& GET_CODE (x_addr) != AND
 		&& ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem)));
 }
 
@@ -953,11 +911,12 @@ output_dependence (mem, x)
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
-  if (flag_alias_check && !base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
-    return 0;
-
   x = canon_rtx (x);
   mem = canon_rtx (mem);
+
+  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
+    return 0;
+
   return (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 			      SIZE_FOR_MODE (x), XEXP (x, 0), 0)
 	  && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
@@ -970,6 +929,26 @@ output_dependence (mem, x)
 		&& ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem)));
 }
 
+
+static HARD_REG_SET argument_registers;
+
+void
+init_alias_once ()
+{
+  register int i;
+
+#ifndef OUTGOING_REGNO
+#define OUTGOING_REGNO(N) N
+#endif
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    /* Check whether this register can hold an incoming pointer
+       argument.  FUNCTION_ARG_REGNO_P tests outgoing register
+       numbers, so translate if necessary due to register windows. */
+    if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i))
+	&& HARD_REGNO_MODE_OK (i, Pmode))
+      SET_HARD_REG_BIT (argument_registers, i);
+}
+
 void
 init_alias_analysis ()
 {
@@ -977,8 +956,6 @@ init_alias_analysis ()
   int changed, pass;
   register int i;
   register rtx insn;
-  rtx note;
-  rtx set;
 
   reg_known_value_size = maxreg;
 
@@ -992,17 +969,14 @@ init_alias_analysis ()
   bzero (reg_known_equiv_p + FIRST_PSEUDO_REGISTER,
 	 (maxreg - FIRST_PSEUDO_REGISTER) * sizeof (char));
 
-  if (flag_alias_check)
-    {
-      /* Overallocate reg_base_value to allow some growth during loop
-	 optimization.  Loop unrolling can create a large number of
-	 registers.  */
-      reg_base_value_size = maxreg * 2;
-      reg_base_value = (rtx *)oballoc (reg_base_value_size * sizeof (rtx));
-      new_reg_base_value = (rtx *)alloca (reg_base_value_size * sizeof (rtx));
-      reg_seen = (char *)alloca (reg_base_value_size);
-      bzero ((char *) reg_base_value, reg_base_value_size * sizeof (rtx));
-    }
+  /* Overallocate reg_base_value to allow some growth during loop
+     optimization.  Loop unrolling can create a large number of
+     registers.  */
+  reg_base_value_size = maxreg * 2;
+  reg_base_value = (rtx *)oballoc (reg_base_value_size * sizeof (rtx));
+  new_reg_base_value = (rtx *)alloca (reg_base_value_size * sizeof (rtx));
+  reg_seen = (char *)alloca (reg_base_value_size);
+  bzero ((char *) reg_base_value, reg_base_value_size * sizeof (rtx));
 
   /* The basic idea is that each pass through this loop will use the
      "constant" information from the previous pass to propagate alias
@@ -1010,7 +984,7 @@ init_alias_analysis ()
 
      This could get expensive if the assignment chains are long.  Maybe
      we should throttle the number of iterations, possibly based on
-     the optimization level.
+     the optimization level or flag_expensive_optimizations.
 
      We could propagate more information in the first pass by making use
      of REG_N_SETS to determine immediately that the alias information
@@ -1022,13 +996,10 @@ init_alias_analysis ()
 
      The state of the arrays for the set chain in question does not matter
      since the program has undefined behavior.  */
-  changed = 1;
-  pass = 0;
-  while (changed && pass < MAX_ALIAS_LOOP_PASSES)
-    {
-      /* Keep track of the pass number so we can break out of the loop.  */
-      pass++;
 
+  pass = 0;
+  do
+    {
       /* Assume nothing will change this iteration of the loop.  */
       changed = 0;
 
@@ -1040,112 +1011,99 @@ init_alias_analysis ()
 	 loop, so we're copying arguments.  */
       copying_arguments = 1;
 
-      /* Only perform initialization of the arrays if we're actually
-	 performing alias analysis. */
-      if (flag_alias_check)
-	{
-	  /* Wipe the potential alias information clean for this pass.  */
-	  bzero ((char *) new_reg_base_value,
-		 reg_base_value_size * sizeof (rtx));
+      /* Wipe the potential alias information clean for this pass.  */
+      bzero ((char *) new_reg_base_value, reg_base_value_size * sizeof (rtx));
 
-	  /* Wipe the reg_seen array clean.  */
-	  bzero ((char *) reg_seen, reg_base_value_size);
+      /* Wipe the reg_seen array clean.  */
+      bzero ((char *) reg_seen, reg_base_value_size);
 
-	  /* Mark all hard registers which may contain an address.
-	     The stack, frame and argument pointers may contain an address.
-	     An argument register which can hold a Pmode value may contain
-	     an address even if it is not in BASE_REGS.
+      /* Mark all hard registers which may contain an address.
+	 The stack, frame and argument pointers may contain an address.
+	 An argument register which can hold a Pmode value may contain
+	 an address even if it is not in BASE_REGS.
 
-	     The address expression is VOIDmode for an argument and
-	     Pmode for other registers.  */
-#ifndef OUTGOING_REGNO
-#define OUTGOING_REGNO(N) N
-#endif
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    /* Check whether this register can hold an incoming pointer
-	       argument.  FUNCTION_ARG_REGNO_P tests outgoing register
-	       numbers, so translate if necessary due to register windows. */
-	    if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i))
-		&& HARD_REGNO_MODE_OK (i, Pmode))
-	      new_reg_base_value[i] = gen_rtx (ADDRESS, VOIDmode,
-					       gen_rtx (REG, Pmode, i));
+	 The address expression is VOIDmode for an argument and
+	 Pmode for other registers.  */
 
-	  new_reg_base_value[STACK_POINTER_REGNUM]
-	    = gen_rtx (ADDRESS, Pmode, stack_pointer_rtx);
-	  new_reg_base_value[ARG_POINTER_REGNUM]
-	    = gen_rtx (ADDRESS, Pmode, arg_pointer_rtx);
-	  new_reg_base_value[FRAME_POINTER_REGNUM]
-	    = gen_rtx (ADDRESS, Pmode, frame_pointer_rtx);
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (argument_registers, i))
+	  new_reg_base_value[i] = gen_rtx (ADDRESS, VOIDmode,
+					   gen_rtx (REG, Pmode, i));
+
+      new_reg_base_value[STACK_POINTER_REGNUM]
+	= gen_rtx (ADDRESS, Pmode, stack_pointer_rtx);
+      new_reg_base_value[ARG_POINTER_REGNUM]
+	= gen_rtx (ADDRESS, Pmode, arg_pointer_rtx);
+      new_reg_base_value[FRAME_POINTER_REGNUM]
+	= gen_rtx (ADDRESS, Pmode, frame_pointer_rtx);
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	  new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
-	    = gen_rtx (ADDRESS, Pmode, hard_frame_pointer_rtx);
+      new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
+	= gen_rtx (ADDRESS, Pmode, hard_frame_pointer_rtx);
 #endif
-	  if (struct_value_incoming_rtx
-	      && GET_CODE (struct_value_incoming_rtx) == REG)
-	    new_reg_base_value[REGNO (struct_value_incoming_rtx)]
-	      = gen_rtx (ADDRESS, Pmode, struct_value_incoming_rtx);
+      if (struct_value_incoming_rtx
+	  && GET_CODE (struct_value_incoming_rtx) == REG)
+	new_reg_base_value[REGNO (struct_value_incoming_rtx)]
+	  = gen_rtx (ADDRESS, Pmode, struct_value_incoming_rtx);
 
-	  if (static_chain_rtx
-	      && GET_CODE (static_chain_rtx) == REG)
-	    new_reg_base_value[REGNO (static_chain_rtx)]
-	      = gen_rtx (ADDRESS, Pmode, static_chain_rtx);
-	}
+      if (static_chain_rtx
+	  && GET_CODE (static_chain_rtx) == REG)
+	new_reg_base_value[REGNO (static_chain_rtx)]
+	  = gen_rtx (ADDRESS, Pmode, static_chain_rtx);
 
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
-	  if (flag_alias_check && GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
+	      rtx note, set;
 	      /* If this insn has a noalias note, process it,  Otherwise,
 	         scan for sets.  A simple set will have no side effects
 	         which could change the base value of any other register. */
-	      rtx noalias_note;
+
 	      if (GET_CODE (PATTERN (insn)) == SET
-		  && (noalias_note = find_reg_note (insn,
-						    REG_NOALIAS, NULL_RTX)))
+		  && (find_reg_note (insn, REG_NOALIAS, NULL_RTX)))
 		record_set (SET_DEST (PATTERN (insn)), 0);
 	      else
 		note_stores (PATTERN (insn), record_set);
+
+	      set = single_set (insn);
+
+	      if (set != 0
+		  && GET_CODE (SET_DEST (set)) == REG
+		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
+		  && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
+		       && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
+		      || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
+		  && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
+		{
+		  int regno = REGNO (SET_DEST (set));
+		  reg_known_value[regno] = XEXP (note, 0);
+		  reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
+		}
 	    }
 	  else if (GET_CODE (insn) == NOTE
 		   && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
 	    copying_arguments = 0;
-
-	  if ((set = single_set (insn)) != 0
-	      && GET_CODE (SET_DEST (set)) == REG
-	      && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-	      && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
-		   && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
-		  || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
-	      && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
-	    {
-	      int regno = REGNO (SET_DEST (set));
-	      reg_known_value[regno] = XEXP (note, 0);
-	      reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
-	    }
 	}
 
       /* Now propagate values from new_reg_base_value to reg_base_value.  */
-      if (flag_alias_check)
-	for (i = 0; i < reg_base_value_size; i++)
-	  {
-	    if (new_reg_base_value[i]
-	        && new_reg_base_value[i] != reg_base_value[i]
-	        && !rtx_equal_p (new_reg_base_value[i], reg_base_value[i]))
-	      {
-	        reg_base_value[i] = new_reg_base_value[i];
-	        changed = 1;
-	      }
-	  }
+      for (i = 0; i < reg_base_value_size; i++)
+	{
+	  if (new_reg_base_value[i]
+	      && new_reg_base_value[i] != reg_base_value[i]
+	      && ! rtx_equal_p (new_reg_base_value[i], reg_base_value[i]))
+	    {
+	      reg_base_value[i] = new_reg_base_value[i];
+	      changed = 1;
+	    }
+	}
     }
+  while (changed && ++pass < MAX_ALIAS_LOOP_PASSES);
 
   /* Fill in the remaining entries.  */
   for (i = FIRST_PSEUDO_REGISTER; i < maxreg; i++)
     if (reg_known_value[i] == 0)
       reg_known_value[i] = regno_reg_rtx[i];
-
-  if (! flag_alias_check)
-    return;
 
   /* Simplify the reg_base_value array so that no register refers to
      another register, except to special registers indirectly through

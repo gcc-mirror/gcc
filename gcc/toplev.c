@@ -672,9 +672,6 @@ int flag_prefix_function_name = 0;
 
 int flag_regmove = 0;
 
-/* 1 if alias checking is on (by default, when -O).  */
-int flag_alias_check = 0;
-
 /* 0 if pointer arguments may alias each other.  True in C.
    1 if pointer arguments may not alias each other but may alias
    global variables.
@@ -752,7 +749,6 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"pack-struct", &flag_pack_struct, 1},
   {"stack-check", &flag_stack_check, 1},
   {"bytecode", &output_bytecode, 1},
-  {"alias-check", &flag_alias_check, 1},
   {"argument-alias", &flag_argument_noalias, 0},
   {"argument-noalias", &flag_argument_noalias, 1},
   {"argument-noalias-global", &flag_argument_noalias, 2},
@@ -2277,6 +2273,7 @@ compile_file (name)
   init_expr_once ();
   init_loop ();
   init_reload ();
+  init_alias_once ();
 
   if (flag_caller_saves)
     init_caller_save ();
@@ -3897,7 +3894,6 @@ main (argc, argv, envp)
 #ifdef CAN_DEBUG_WITHOUT_FP
       flag_omit_frame_pointer = 1;
 #endif
-      flag_alias_check = 1;
     }
 
   if (optimize >= 2)
