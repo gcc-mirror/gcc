@@ -3045,21 +3045,11 @@ scan_prog_file (prog_name, which_pass)
 
 #ifdef COLLECT_EXPORT_LIST
 
-/* This new function is used to decide whether we should
-   generate import list for an object or to use it directly.  */
+/* Never generate import list (gcc-2.95 branch).  */
 static int
 use_import_list (prog_name)
      char *prog_name;
 {
-  char *p;
-
-  /* If we do not build a shared object then import list should not be used.  */
-  if (! shared_obj) return 0;
-
-  /* Currently we check only for libgcc, but this can be changed in future.  */
-  p = strstr (prog_name, "libgcc.a");
-  if (p != 0 && (strlen (p) == sizeof ("libgcc.a") - 1))
-    return 1;
   return 0;
 }
 
