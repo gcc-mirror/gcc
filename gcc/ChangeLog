@@ -5,6 +5,14 @@ Sat Nov 28 19:32:33 1998  Jeffrey A Law  (law@cygnus.com)
 	
 Sat Nov 28 19:20:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* bc-emit.c, caller-save.c, calls.c, combine.c: Call gen_rtx_FOO.
+	* cse.c, dwarf2out.c, emit-rtl.c, except.c, explow.c: Likewise.
+	* expmed.c expr.c, final.c, function.c, genpeep.c, halfpic.c: Likewise.
+	* integrate.c, jump.c, local-alloc.c, loop.c, optabs.c: Likewise.
+	* profile.c, recog.c, reg-stack.c, regclass.c, regmove.c: Likewise.
+	* reload.c, reload1.c, reorg.c, sched.c, stmt.c, stupid.c: Likewise.
+	* unroll.c, varasm.c: Likewise.
+
 	* Makefile.in (*.o): Depend on system.h.
 	* system.h (ANSI_PROTOTYPES): Add definition.
 	* *.c, c-parse.in, cexp.y: Include system.h and delete any
