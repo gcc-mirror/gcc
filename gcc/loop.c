@@ -5998,6 +5998,8 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val, location)
 	       || (GET_CODE (SET_DEST (set)) == SUBREG
 		   && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
 		       <= UNITS_PER_WORD)
+		   && (GET_MODE_CLASS (GET_MODE (SET_DEST (set)))
+		       == MODE_INT)
 		   && SUBREG_REG (SET_DEST (set)) == x))
 	      && basic_induction_var (SET_SRC (set),
 				      (GET_MODE (SET_SRC (set)) == VOIDmode
@@ -7762,7 +7764,8 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 	    }
 	}
     }
-  else if (INTVAL (bl->biv->add_val) > 0)
+  else if (GET_CODE (bl->biv->add_val) == CONST_INT
+	   && INTVAL (bl->biv->add_val) > 0)
     {
       /* Try to change inc to dec, so can apply above optimization.  */
       /* Can do this if:

@@ -1688,7 +1688,7 @@ changequote([,])dnl
 		extra_headers=math-68881.h
 		;;
 	m68000-hp-hpux*)		# HP 9000 series 300
-		xm_file="xm_alloca.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG NO_SYS_SIGLIST"
 		if test x$gas = xyes
 		then
@@ -1889,7 +1889,7 @@ changequote([,])dnl
 		extra_headers=math-68881.h
 		;;
 	m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
-		xm_file="xm_alloca.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG NO_SYS_SIGLIST"
 		if test x$gas = xyes
 		then
@@ -1905,7 +1905,7 @@ changequote([,])dnl
 		float_format=m68k
 		;;
 	m68k-hp-hpux*)	# HP 9000 series 300
-		xm_file="xm_alloca.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG NO_SYS_SIGLIST"
 		if test x$gas = xyes
 		then

@@ -1,3 +1,22 @@
+Mon Dec 27 07:32:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Fri Sep  3 10:16:37 HST 1999  Glen Nakamura  <glen.nakamura@usa.net>
+	* cccp.c (rescan): Fixed obp pointer handling around call to
+	check_expand subroutine.
+
+	Thu Sep 16 00:46:35 1999  Geoff Keating  <geoffk@cygnus.com>
+	* loop.c (basic_induction_var): A non-integer variable which is
+	being set by a paradoxical subreg is probably not a biv.
+
+	1999-08-31 12:20 -0700 Zack Weinberg <zack@bitmover.com>
+	* loop.c (check_dbra_loop): Check bl->biv->add_val is a
+	CONST_INT before using its INTVAL.
+
+	Tue Nov  2 15:27:31 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+	* configure.in (m68k-hp-hpux*, xm_alloca.h): The underscore should
+	have been an hyphen, fixed.
+	* configure: Rebuilt.
+
 Thu Dec 23 11:59:56 1999  Jeffrey A Law  (law@cygnus.com)
 
 	1999-12-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
