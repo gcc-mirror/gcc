@@ -24,34 +24,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "c-common.h"
 
-/* Each C symbol points to three linked lists of c_binding structures.
-   These describe the values of the identifier in the three different
-   namespaces defined by the language.  The contents of these lists
-   are private to c-decl.c.  */
-
-struct c_binding;
-
-/* Language-dependent contents of an identifier.  */
-
-struct lang_identifier GTY(())
-{
-  struct c_common_identifier common_id;
-  struct c_binding *symbol_binding; /* vars, funcs, constants, typedefs */
-  struct c_binding *tag_binding;    /* struct/union/enum tags */
-  struct c_binding *label_binding;  /* labels */
-};
-
-/* The resulting tree type.  */
-
-union lang_tree_node
-  GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *)TYPE_NEXT_VARIANT (&%h.generic) : (union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
-{
-  union tree_node GTY ((tag ("0"),
-			desc ("tree_node_structure (&%h)")))
-    generic;
-  struct lang_identifier GTY ((tag ("1"))) identifier;
-};
+/* struct lang_identifier is private to c-decl.c, but langhooks.c needs to
+   know how big it is.  This is sanity-checked in c-decl.c.  */
+#define C_SIZEOF_STRUCT_LANG_IDENTIFIER \
+  (sizeof (struct c_common_identifier) + 3 * sizeof (void *))
 
 /* Language-specific declaration information.  */
 
