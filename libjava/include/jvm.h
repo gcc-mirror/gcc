@@ -290,6 +290,12 @@ void _Jv_GCRegisterDisappearingLink (jobject *objp);
    implement soft references.  */
 jboolean _Jv_GCCanReclaimSoftReference (jobject obj);
 
+/* Register a finalizer for a String object.  This is only used by
+   the intern() implementation.  */
+void _Jv_RegisterStringFinalizer (jobject str);
+/* This is called to actually finalize a possibly-intern()d String.  */
+void _Jv_FinalizeString (jobject str);
+
 /* Return approximation of total size of heap.  */
 long _Jv_GCTotalMemory (void);
 /* Return approximation of total free memory.  */
