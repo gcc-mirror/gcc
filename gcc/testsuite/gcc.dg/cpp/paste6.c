@@ -7,6 +7,6 @@
 extern int foo(int x);
 
 #define bar(x) foo(x)
-#define baz(x) bar(##x)  /* { dg-warning "nothing can be pasted" } */
+#define baz(x) bar(##x)
 
-int quux(int y) { return baz(y); }
+int quux(int y) { return baz(y); }  /* { dg-warning "valid preprocessing" } */

@@ -26,5 +26,5 @@
    { dg-warning "previous"  "prev def ro"   { target *-*-* } 11 }
    { dg-warning "previous"  "prev def va"   { target *-*-* } 14 }
 
-   { dg-warning "varargs"   "named varargs" { target *-*-* } 14 }
-   { dg-warning "varargs"   "anon varargs"  { target *-*-* } 15 } */ 
+   { dg-warning "named variable"   "named"  { target *-*-* } 14 }
+   { dg-warning "anonymous variable" "anon" { target *-*-* } 15 } */ 

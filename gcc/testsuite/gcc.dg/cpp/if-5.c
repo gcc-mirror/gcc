@@ -2,11 +2,8 @@
    Jakub Jelinek <jakub@redhat.com>.  */
 /* { dg-do preprocess } */
 
-#ifdef 0  /* { dg-error "with invalid argument" } */
-#error not seen
+#ifdef 0  /* { dg-error "macro names" } */
 #endif
 
-#ifndef 0  /* { dg-error "with invalid argument" } */
-#else
-#error not seen
+#ifndef 0  /* { dg-error "macro names" } */
 #endif

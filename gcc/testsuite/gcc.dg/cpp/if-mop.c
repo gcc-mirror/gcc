@@ -2,6 +2,8 @@
 
 /* { dg-do preprocess } */
 
+/* Source: Neil Booth.  */
+
 /* Various illegal expressions with missing components.  */
 
 #if		/* { dg-error "no expression" "empty #if" } */
