@@ -1,3 +1,11 @@
+2000-04-07  Richard Henderson  <rth@cygnus.com>
+
+	* basic-block.h (merge_blocks_nomove): Declare.
+	(tidy_fallthru_edge): Declare.
+	* flow.c (merge_blocks_nomove): Document as merging into previous
+	blocks.  Remove cruft from between blocks; remove all edges out of A.
+	(tidy_fallthru_edge): Export.
+
 2000-04-06  Alex Samuel  <samuel@codesourcery.com>
 
 	* ssa.c (compute_conservative_reg_partition): Declare with

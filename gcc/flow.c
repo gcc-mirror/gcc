@@ -302,10 +302,8 @@ static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
 							  basic_block));
 static int merge_blocks_move_successor_nojumps PARAMS ((basic_block,
 							basic_block));
-static void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 static int merge_blocks			PARAMS ((edge,basic_block,basic_block));
 static void try_merge_blocks		PARAMS ((void));
-static void tidy_fallthru_edge		PARAMS ((edge,basic_block,basic_block));
 static void tidy_fallthru_edges		PARAMS ((void));
 static int verify_wide_reg_1		PARAMS ((rtx *, void *));
 static void verify_wide_reg		PARAMS ((int, rtx, rtx));
@@ -2032,6 +2030,109 @@ can_delete_label_p (label)
   return 1;
 }
 
+/* Blocks A and B are to be merged into a single block A.  The insns
+   are already contiguous, hence `nomove'.  */
+
+void
+merge_blocks_nomove (a, b)
+     basic_block a, b;
+{
+  edge e;
+  rtx b_head, b_end, a_end;
+  rtx del_first = NULL_RTX, del_last = NULL_RTX;
+  int b_empty = 0;
+
+  /* If there was a CODE_LABEL beginning B, delete it.  */
+  b_head = b->head;
+  b_end = b->end;
+  if (GET_CODE (b_head) == CODE_LABEL)
+    {
+      /* Detect basic blocks with nothing but a label.  This can happen
+	 in particular at the end of a function.  */
+      if (b_head == b_end)
+	b_empty = 1;
+      del_first = del_last = b_head;
+      b_head = NEXT_INSN (b_head);
+    }
+
+  /* Delete the basic block note.  */
+  if (GET_CODE (b_head) == NOTE 
+      && NOTE_LINE_NUMBER (b_head) == NOTE_INSN_BASIC_BLOCK)
+    {
+      if (b_head == b_end)
+	b_empty = 1;
+      if (! del_last)
+	del_first = b_head;
+      del_last = b_head;
+      b_head = NEXT_INSN (b_head);
+    }
+
+  /* If there was a jump out of A, delete it.  */
+  a_end = a->end;
+  if (GET_CODE (a_end) == JUMP_INSN)
+    {
+      rtx prev;
+
+      prev = prev_nonnote_insn (a_end);
+      if (!prev) 
+	prev = a->head;
+
+      del_first = a_end;
+
+#ifdef HAVE_cc0
+      /* If this was a conditional jump, we need to also delete
+	 the insn that set cc0.  */
+      if (prev && sets_cc0_p (prev))
+	{
+          rtx tmp = prev;
+	  prev = prev_nonnote_insn (prev);
+	  if (!prev)
+	    prev = a->head;
+	  del_first = tmp;
+	}
+#endif
+
+      a_end = prev;
+    }
+
+  /* Delete everything marked above as well as crap that might be
+     hanging out between the two blocks.  */
+  flow_delete_insn_chain (del_first, del_last);
+
+  /* Normally there should only be one successor of A and that is B, but
+     partway though the merge of blocks for conditional_execution we'll
+     be merging a TEST block with THEN and ELSE successors.  Free the
+     whole lot of them and hope the caller knows what they're doing.  */
+  while (a->succ)
+    remove_edge (a->succ);
+
+  /* Adjust the edges out of B for the new owner.  */
+  for (e = b->succ; e ; e = e->succ_next)
+    e->src = a;
+  a->succ = b->succ;
+
+  /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
+  b->pred = b->succ = NULL;
+
+  /* Reassociate the insns of B with A.  */
+  if (!b_empty)
+    {
+      if (basic_block_for_insn)
+	{
+	  BLOCK_FOR_INSN (b_head) = a;
+	  while (b_head != b_end)
+	    {
+	      b_head = NEXT_INSN (b_head);
+	      BLOCK_FOR_INSN (b_head) = a;
+	    }
+	}
+      a_end = b_end;
+    }
+  a->end = a_end;
+
+  expunge_block (b);
+}
+
 /* Blocks A and B are to be merged into a single block.  A has no incoming
    fallthru edge, so it can be moved before B without adding or modifying
    any jumps (aside from the jump from A to B).  */
@@ -2143,95 +2244,6 @@ merge_blocks_move_successor_nojumps (a, b)
     }
 
   return 1;
-}
-
-/* Blocks A and B are to be merged into a single block.  The insns
-   are already contiguous, hence `nomove'.  */
-
-static void
-merge_blocks_nomove (a, b)
-     basic_block a, b;
-{
-  edge e;
-  rtx b_head, b_end, a_end;
-  int b_empty = 0;
-
-  /* If there was a CODE_LABEL beginning B, delete it.  */
-  b_head = b->head;
-  b_end = b->end;
-  if (GET_CODE (b_head) == CODE_LABEL)
-    {
-      /* Detect basic blocks with nothing but a label.  This can happen
-	 in particular at the end of a function.  */
-      if (b_head == b_end)
-	b_empty = 1;
-      b_head = flow_delete_insn (b_head);
-    }
-
-  /* Delete the basic block note.  */
-  if (GET_CODE (b_head) == NOTE 
-      && NOTE_LINE_NUMBER (b_head) == NOTE_INSN_BASIC_BLOCK)
-    {
-      if (b_head == b_end)
-	b_empty = 1;
-      b_head = flow_delete_insn (b_head);
-    }
-
-  /* If there was a jump out of A, delete it.  */
-  a_end = a->end;
-  if (GET_CODE (a_end) == JUMP_INSN)
-    {
-      rtx prev;
-
-      prev = prev_nonnote_insn (a_end);
-      if (!prev) 
-	prev = a->head;
-
-#ifdef HAVE_cc0
-      /* If this was a conditional jump, we need to also delete
-	 the insn that set cc0.  */
-
-      if (prev && sets_cc0_p (prev))
-	{
-          rtx tmp = prev;
-	  prev = prev_nonnote_insn (prev);
-	  if (!prev)
-	    prev = a->head;
-	  flow_delete_insn (tmp);
-	}
-#endif
-
-      /* Note that a->head != a->end, since we should have at least a
-	 bb note plus the jump, so prev != insn.  */
-      flow_delete_insn (a_end);
-      a_end = prev;
-    }
-
-  /* By definition, there should only be one successor of A, and that is
-     B.  Free that edge struct.  */
-  n_edges--;
-  free (a->succ);
-
-  /* Adjust the edges out of B for the new owner.  */
-  for (e = b->succ; e ; e = e->succ_next)
-    e->src = a;
-  a->succ = b->succ;
-
-  /* Reassociate the insns of B with A.  */
-  if (!b_empty)
-    {
-      BLOCK_FOR_INSN (b_head) = a;
-      while (b_head != b_end)
-	{
-	  b_head = NEXT_INSN (b_head);
-	  BLOCK_FOR_INSN (b_head) = a;
-	}
-      a_end = b_head;
-    }
-  a->end = a_end;
-  
-  /* Compact the basic block array.  */
-  expunge_block (b);
 }
 
 /* Attempt to merge basic blocks that are potentially non-adjacent.  
@@ -2366,7 +2378,7 @@ try_merge_blocks ()
 /* The given edge should potentially be a fallthru edge.  If that is in
    fact true, delete the jump and barriers that are in the way.  */
 
-static void
+void
 tidy_fallthru_edge (e, b, c)
      edge e;
      basic_block b, c;
