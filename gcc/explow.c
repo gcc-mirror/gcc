@@ -356,8 +356,6 @@ break_out_memory_refs (x)
   return x;
 }
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-
 /* Given X, a memory address in ptr_mode, convert it to an address
    in Pmode, or vice versa (TO_MODE says which way).  We take advantage of
    the fact that pointers are not allowed to overflow by commuting arithmetic
@@ -366,12 +364,21 @@ break_out_memory_refs (x)
 
 rtx
 convert_memory_address (to_mode, x)
-     enum machine_mode to_mode;
+     enum machine_mode to_mode ATTRIBUTE_UNUSED;
      rtx x;
 {
-  enum machine_mode from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
+#ifndef POINTERS_EXTEND_UNSIGNED
+  return x;
+#else /* defined(POINTERS_EXTEND_UNSIGNED) */
+  enum machine_mode from_mode;
   rtx temp;
   enum rtx_code code;
+
+  /* If X already has the right mode, just return it.  */
+  if (GET_MODE (x) == to_mode)
+    return x;
+
+  from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
 
   /* Here we handle some special cases.  If none of them apply, fall through
      to the default case.  */
@@ -436,8 +443,8 @@ convert_memory_address (to_mode, x)
 
   return convert_modes (to_mode, from_mode,
 			x, POINTERS_EXTEND_UNSIGNED);
+#endif /* defined(POINTERS_EXTEND_UNSIGNED) */
 }
-#endif
 
 /* Given a memory address or facsimile X, construct a new address,
    currently equivalent, that is stable: future stores won't change it.

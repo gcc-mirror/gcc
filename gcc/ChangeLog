@@ -1,11 +1,20 @@
+2003-12-24  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline:
+
+	2003-09-18  Mark Mitchell  <mark@codesourcery.com>
+	* explow.c (convert_memory_address): Define even when
+	POINTERS_EXTEND_UNSIGNED is not defined.  Do nothing if the address
+        is already in the right mode.
+
 2003-12-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/13475
 	Backport from mainline:
 		2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
 
-		* expr.c (const_vector_from_tree): Initialize remaining elements
-		to 0.
+		* expr.c (const_vector_from_tree): Initialize remaining
+		elements to 0.
 
 2003-12-23  Kazu Hirata  <kazu@cs.umass.edu>
 
