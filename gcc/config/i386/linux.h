@@ -234,7 +234,7 @@ Boston, MA 02111-1307, USA.  */
    signal-turned-exceptions for them.  There's also no configure-run for
    the target, so we can't check on (e.g.) HAVE_SYS_UCONTEXT_H.  Using the
    target libc1 macro should be enough.  */
-#ifndef USE_GNULIBC_1
+#if !(defined (USE_GNULIBC_1) || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 0))
 #include <signal.h>
 #include <sys/ucontext.h>
 
