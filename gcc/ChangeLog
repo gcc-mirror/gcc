@@ -1,3 +1,25 @@
+2002-04-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/6413
+	* function.h: (struct function): Add profile_label_no field.
+	(current_function_profile_label_no): Define.
+	* function.c: (profile_label_no): New static var.
+	(expand_function_start): Increment it, and copy to
+	current_function_profile_label_no.
+	* output.h (profile_label_no): Delete.
+	* final.c (profile_label_no): Delete.
+	(profile_function): Use current_function_profile_label_no.
+	(final_end_function): Don't increment profile_label_no here.
+	* config/i386/i386.c (ix86_osf_output_function_prologue): Replace
+	profile_label_no with current_function_profile_label_no.
+	* config/pa/pa.c (current_function_number): Delete.
+	(pa_output_function_prologue): Don't output profile label here.
+	(hppa_profile_hook): Use label_no param rather than
+	current_function_number.
+	(FUNC_BEGIN_PROLOG_LABEL): Move to ..
+	* config/pa/pa.h: .. here.
+	(FUNCTION_PROFILER): Output profile label here.
+
 2002-04-23  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h (vec_step): Remove extraneous

@@ -364,6 +364,9 @@ struct function
   /* Highest label number in current function.  */
   int inl_max_label_num;
 
+  /* Profile label number.  */
+  int profile_label_no;
+
   /* For md files.  */
 
   /* tm.h can use this to store whatever it likes.  */
@@ -508,6 +511,7 @@ extern int virtuals_instantiated;
 #define current_function_return_rtx (cfun->return_rtx)
 #define current_function_instrument_entry_exit (cfun->instrument_entry_exit)
 #define current_function_profile (cfun->profile)
+#define current_function_profile_label_no (cfun->profile_label_no)
 #define current_function_limit_stack (cfun->limit_stack)
 #define current_function_uses_pic_offset_table (cfun->uses_pic_offset_table)
 #define current_function_uses_const_pool (cfun->uses_const_pool)

@@ -170,10 +170,6 @@ char regs_ever_live[FIRST_PSEUDO_REGISTER];
 
 int frame_pointer_needed;
 
-/* Assign unique numbers to labels generated for profiling.  */
-
-int profile_label_no;
-
 /* Number of unmatched NOTE_INSN_BLOCK_BEG notes we have seen.  */
 
 static int block_depth;
@@ -1595,7 +1591,7 @@ profile_function (file)
 #ifndef NO_PROFILE_COUNTERS
   data_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LP", profile_label_no);
+  ASM_OUTPUT_INTERNAL_LABEL (file, "LP", current_function_profile_label_no);
   assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, align, 1);
 #endif
 
@@ -1625,7 +1621,7 @@ profile_function (file)
 #endif
 #endif
 
-  FUNCTION_PROFILER (file, profile_label_no);
+  FUNCTION_PROFILER (file, current_function_profile_label_no);
 
 #if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (cxt)
@@ -1675,8 +1671,6 @@ final_end_function ()
       && dwarf2out_do_frame ())
     dwarf2out_end_epilogue ();
 #endif
-
-  profile_label_no++;
 }
 
 /* Output assembler code for some insns: all or part of a function.
