@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -137,6 +137,8 @@ package GNAT.Sockets.Constants is
    MSG_PEEK           : constant :=            2; --  Peek at incoming data
    MSG_EOR            : constant :=          128; --  Send end of record
    MSG_WAITALL        : constant :=          256; --  Wait for full reception
+   MSG_NOSIGNAL       : constant :=        16384; --  No SIGPIPE on send
+   MSG_Forced_Flags   : constant := MSG_NOSIGNAL;
 
    --------------------
    -- Socket options --

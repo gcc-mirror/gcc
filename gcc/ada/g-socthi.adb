@@ -61,9 +61,12 @@ package body GNAT.Sockets.Thin is
    --  two attempts on a blocking operation.
 
    Thread_Blocking_IO : Boolean := True;
+   --  Comment required for this ???
 
    Unknown_System_Error : constant C.Strings.chars_ptr :=
                             C.Strings.New_String ("Unknown system error");
+
+   --  Comments required for following functions ???
 
    function Syscall_Accept
      (S       : C.int;
@@ -121,6 +124,9 @@ package body GNAT.Sockets.Thin is
       Protocol : C.int) return C.int;
    pragma Import (C, Syscall_Socket, "socket");
 
+   procedure Disable_SIGPIPE (S : C.int);
+   pragma Import (C, Disable_SIGPIPE, "__gnat_disable_sigpipe");
+
    function  Non_Blocking_Socket (S : C.int) return Boolean;
    procedure Set_Non_Blocking_Socket (S : C.int; V : Boolean);
 
@@ -160,6 +166,7 @@ package body GNAT.Sockets.Thin is
          Discard := Syscall_Ioctl (R, Constants.FIONBIO, Val'Unchecked_Access);
       end if;
 
+      Disable_SIGPIPE (R);
       return R;
    end C_Accept;
 
@@ -377,7 +384,7 @@ package body GNAT.Sockets.Thin is
          Discard := Syscall_Ioctl (R, Constants.FIONBIO, Val'Unchecked_Access);
          Set_Non_Blocking_Socket (R, False);
       end if;
-
+      Disable_SIGPIPE (R);
       return R;
    end C_Socket;
 
