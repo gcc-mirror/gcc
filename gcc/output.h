@@ -468,6 +468,7 @@ extern rtx this_is_asm_operands;
 /* Decide whether DECL needs to be in a writable section.
    RELOC is the same as for SELECT_SECTION.  */
 extern bool decl_readonly_section PARAMS ((tree, int));
+extern bool decl_readonly_section_1 PARAMS ((tree, int, int));
 
 /* User label prefix in effect for this compilation.  */
 extern const char *user_label_prefix;
@@ -508,6 +509,9 @@ extern bool named_section_first_declaration PARAMS((const char *));
 union tree_node;
 extern unsigned int default_section_type_flags PARAMS ((union tree_node *,
 							const char *, int));
+extern unsigned int default_section_type_flags_1 PARAMS ((union tree_node *,
+							  const char *,
+							  int, int));
 
 extern void default_no_named_section PARAMS ((const char *, unsigned int));
 extern void default_elf_asm_named_section PARAMS ((const char *, unsigned int));
@@ -530,13 +534,17 @@ extern void default_select_section PARAMS ((tree, int,
 					    unsigned HOST_WIDE_INT));
 extern void default_elf_select_section PARAMS ((tree, int,
 						unsigned HOST_WIDE_INT));
+extern void default_elf_select_section_1 PARAMS ((tree, int,
+						  unsigned HOST_WIDE_INT, int));
 extern void default_unique_section PARAMS ((tree, int));
+extern void default_unique_section_1 PARAMS ((tree, int, int));
 extern void default_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						unsigned HOST_WIDE_INT));
 extern void default_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						    unsigned HOST_WIDE_INT));
 extern const char *default_strip_name_encoding PARAMS ((const char *));
 extern bool default_binds_local_p PARAMS ((tree));
+extern bool default_binds_local_p_1 PARAMS ((tree, int));
 extern void default_globalize_label PARAMS ((FILE *, const char *));
 
 /* Emit data for vtable gc for GNU binutils.  */

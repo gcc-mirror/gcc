@@ -1,3 +1,16 @@
+2002-09-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* varasm.c (default_section_type_flags): Append _1 to name with
+	shlib parameter.  Use original name to call new function with
+	implicit flag_pic.
+	(decl_readonly_section): Likewise.
+	(default_elf_select_section): Likewise.
+	(default_unique_section): Likewise.
+	(default_bind_local_p): Likewise.
+	(categorize_decl_for_section): Add shlib parameter to use in place
+	of implicit flag_pic.
+	* output.h: Declare new functions with _1 and shlib argument.
+
 2002-09-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi: Fix typos, formatting problems, and obvious

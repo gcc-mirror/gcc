@@ -4691,11 +4691,21 @@ default_section_type_flags (decl, name, reloc)
      const char *name;
      int reloc;
 {
+  return default_section_type_flags_1 (decl, name, reloc, flag_pic);
+}
+
+unsigned int
+default_section_type_flags_1 (decl, name, reloc, shlib)
+     tree decl;
+     const char *name;
+     int reloc;
+     int shlib;
+{
   unsigned int flags;
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
-  else if (decl && decl_readonly_section (decl, reloc))
+  else if (decl && decl_readonly_section_1 (decl, reloc, shlib))
     flags = 0;
   else
     flags = SECTION_WRITE;
@@ -4913,12 +4923,14 @@ enum section_category
   SECCAT_TBSS
 };
 
-static enum section_category categorize_decl_for_section PARAMS ((tree, int));
+static enum section_category
+categorize_decl_for_section PARAMS ((tree, int, int));
 
 static enum section_category
-categorize_decl_for_section (decl, reloc)
+categorize_decl_for_section (decl, reloc, shlib)
      tree decl;
      int reloc;
+     int shlib;
 {
   enum section_category ret;
 
@@ -4940,16 +4952,16 @@ categorize_decl_for_section (decl, reloc)
 	       || TREE_SIDE_EFFECTS (decl)
 	       || ! TREE_CONSTANT (DECL_INITIAL (decl)))
 	{
-	  if (flag_pic && (reloc & 2))
+	  if (shlib && (reloc & 2))
 	    ret = SECCAT_DATA_REL;
-	  else if (flag_pic && reloc)
+	  else if (shlib && reloc)
 	    ret = SECCAT_DATA_REL_LOCAL;
 	  else
 	    ret = SECCAT_DATA;
 	}
-      else if (flag_pic && (reloc & 2))
+      else if (shlib && (reloc & 2))
 	ret = SECCAT_DATA_REL_RO;
-      else if (flag_pic && reloc)
+      else if (shlib && reloc)
 	ret = SECCAT_DATA_REL_RO_LOCAL;
       else if (flag_merge_constants < 2)
 	/* C and C++ don't allow different variables to share the same
@@ -4963,7 +4975,7 @@ categorize_decl_for_section (decl, reloc)
     }
   else if (TREE_CODE (decl) == CONSTRUCTOR)
     {
-      if ((flag_pic && reloc)
+      if ((shlib && reloc)
 	  || TREE_SIDE_EFFECTS (decl)
 	  || ! TREE_CONSTANT (decl))
 	ret = SECCAT_DATA;
@@ -4999,7 +5011,16 @@ decl_readonly_section (decl, reloc)
      tree decl;
      int reloc;
 {
-  switch (categorize_decl_for_section (decl, reloc))
+  return decl_readonly_section_1 (decl, reloc, flag_pic);
+}
+
+bool
+decl_readonly_section_1 (decl, reloc, shlib)
+     tree decl;
+     int reloc;
+     int shlib;
+{
+  switch (categorize_decl_for_section (decl, reloc, shlib))
     {
     case SECCAT_RODATA:
     case SECCAT_RODATA_MERGE_STR:
@@ -5021,7 +5042,17 @@ default_elf_select_section (decl, reloc, align)
      int reloc;
      unsigned HOST_WIDE_INT align;
 {
-  switch (categorize_decl_for_section (decl, reloc))
+  default_elf_select_section_1 (decl, reloc, align, flag_pic);
+}
+
+void
+default_elf_select_section_1 (decl, reloc, align, shlib)
+     tree decl;
+     int reloc;
+     unsigned HOST_WIDE_INT align;
+     int shlib;
+{
+  switch (categorize_decl_for_section (decl, reloc, shlib))
     {
     case SECCAT_TEXT:
       /* We're not supposed to be called on FUNCTION_DECLs.  */
@@ -5085,12 +5116,21 @@ default_unique_section (decl, reloc)
      tree decl;
      int reloc;
 {
+  default_unique_section_1 (decl, reloc, flag_pic);
+}
+
+void
+default_unique_section_1 (decl, reloc, shlib)
+     tree decl;
+     int reloc;
+     int shlib;
+{
   bool one_only = DECL_ONE_ONLY (decl);
   const char *prefix, *name;
   size_t nlen, plen;
   char *string;
 
-  switch (categorize_decl_for_section (decl, reloc))
+  switch (categorize_decl_for_section (decl, reloc, shlib))
     {
     case SECCAT_TEXT:
       prefix = one_only ? ".gnu.linkonce.t." : ".text.";
@@ -5205,6 +5245,14 @@ bool
 default_binds_local_p (exp)
      tree exp;
 {
+  return default_binds_local_p_1 (exp, flag_pic);
+}
+
+bool
+default_binds_local_p_1 (exp, shlib)
+     tree exp;
+     int shlib;
+{
   bool local_p;
 
   /* A non-decl is an entry in the constant pool.  */
@@ -5224,7 +5272,7 @@ default_binds_local_p (exp)
     local_p = false;
   /* If PIC, then assume that any global name can be overridden by
      symbols resolved from other modules.  */
-  else if (flag_pic)
+  else if (shlib)
     local_p = false;
   /* Uninitialized COMMON variable may be unified with symbols
      resolved from other modules.  */
