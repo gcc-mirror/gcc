@@ -35,14 +35,15 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "\
   %{mcpu=itanium:-D__itanium__} \
-  -D__LP64__ -D__LONG_MAX__=9223372036854775807L \
+  %{mlp64:-D__LP64__ -D__LONG_MAX__=9223372036854775807L} \
   %{!ansi:%{!std=c*:%{!std=i*: -D_HPUX_SOURCE -D__STDC_EXT__}}} \
   -D__fpreg=long\\ double \
   -D__float80=long\\ double \
   -D__float128=long\\ double"
 
 #undef ASM_SPEC
-#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic}"
+#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic} \
+  %{milp32:-milp32} %{mlp64:-mlp64}"
 
 #undef ENDFILE_SPEC
 
@@ -65,6 +66,18 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
+
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+  { "ilp32",    MASK_ILP32,     "Generate ILP32 code" }, \
+  { "lp64",    -MASK_ILP32,     "Generate LP64 code" },
+
+/* A C expression whose value is zero if pointers that need to be extended
+   from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
+   greater then zero if they are zero-extended and less then zero if the
+   ptr_extend instruction should be used.  */
+
+#define POINTERS_EXTEND_UNSIGNED -1
 
 #define DONT_USE_BUILTIN_SETJMP
 #define JMP_BUF_SIZE  (8 * 76)

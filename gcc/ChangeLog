@@ -1,3 +1,26 @@
+2001-07-19  Steve Ellcey <sje@cup.hp.com>
+
+	* tm.texi (POINTERS_EXTEND_UNSIGNED) Modify definition.
+	* optabs.c (can_extend_p) Check HAVE_ptr_extend for a specialized
+	pointer extension instruction.
+	* combine.c (nonzero_bits,num_sign_bit_copies) Likewise.
+	* simplify-rtx.c (simplify_unary_operation) Likewise.
+	* explow.c (convert_memory_address) Check value of 
+	POINTERS_EXTEND_UNSIGNED to avoid some conversions when
+	less than zero.
+	* config/ia64/t-hpux (LIBGCC, INSTALL_LIBGCC, MULTILIB_OPTIONS,
+	MULTILIB_DIRNAMES, MULTILIB_MATCHES) Add multilib support.
+	* config/ia64/hpux.h (CPP_SPEC, ASM_SPEC, SUBTARGET_SWITCHES)
+	Add Multilib Support.
+	(POINTERS_EXTEND_UNSIGNED)  Define for ILP32 support.
+	* config/ia64/ia64.h (MASK_ILP32, TARGET_ILP32, SUBTARGET_SWITCHES)
+	Add Multilib Support.
+	(POINTER_SIZE, LONG_TYPE_SIZE, MAX_LONG_TYPE_SIZE) Modify for ILP32
+	support.
+	* config/ia64/ia64.c (rtx_needs_barrier) Add support for addp4.
+	* config/ia64/ia64.md (ptr_extend) New instruction to "swizzle"
+	a 32 bit HP-UX pointer into a 64 bit HP-UX pointer.
+
 2001-07-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* simplify-rtx.c (simplify_replace_rtx): Try to obtain mode from

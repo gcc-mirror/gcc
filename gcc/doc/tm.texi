@@ -954,9 +954,11 @@ you must define @code{POINTERS_EXTEND_UNSIGNED}.
 
 @findex POINTERS_EXTEND_UNSIGNED
 @item POINTERS_EXTEND_UNSIGNED
-A C expression whose value is nonzero if pointers that need to be
+A C expression whose value is greater than zero if pointers that need to be
 extended from being @code{POINTER_SIZE} bits wide to @code{Pmode} are to
-be zero-extended and zero if they are to be sign-extended.
+be zero-extended and zero if they are to be sign-extended.  If the value
+is less then zero then there must be an "ptr_extend" instruction that
+extends a pointer from @code{POINTER_SIZE} to @code{Pmode}.
 
 You need not define this macro if the @code{POINTER_SIZE} is equal
 to the width of @code{Pmode}.

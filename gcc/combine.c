@@ -7905,7 +7905,7 @@ nonzero_bits (x, mode)
   switch (code)
     {
     case REG:
-#ifdef POINTERS_EXTEND_UNSIGNED
+#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
       /* If pointers extend unsigned and this is a pointer in Pmode, say that
 	 all the bits above ptr_mode are known to be zero.  */
       if (POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
@@ -8182,7 +8182,7 @@ nonzero_bits (x, mode)
 	/* If pointers extend unsigned and this is an addition or subtraction
 	   to a pointer in Pmode, all the bits above ptr_mode are known to be
 	   zero.  */
-	if (POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
+	if (POINTERS_EXTEND_UNSIGNED > 0 && GET_MODE (x) == Pmode
 	    && (code == PLUS || code == MINUS)
 	    && GET_CODE (XEXP (x, 0)) == REG && REG_POINTER (XEXP (x, 0)))
 	  nonzero &= GET_MODE_MASK (ptr_mode);
@@ -8363,7 +8363,7 @@ num_sign_bit_copies (x, mode)
     {
     case REG:
 
-#ifdef POINTERS_EXTEND_UNSIGNED
+#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
       /* If pointers extend signed and this is a pointer in Pmode, say that
 	 all the bits above ptr_mode are known to be sign bit copies.  */
       if (! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode && mode == Pmode

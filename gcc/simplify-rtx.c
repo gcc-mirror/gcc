@@ -699,7 +699,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	      && GET_CODE (XEXP (XEXP (op, 0), 1)) == LABEL_REF)
 	    return XEXP (op, 0);
 
-#ifdef POINTERS_EXTEND_UNSIGNED
+#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
 	  if (! POINTERS_EXTEND_UNSIGNED
 	      && mode == Pmode && GET_MODE (op) == ptr_mode
 	      && (CONSTANT_P (op)
@@ -711,9 +711,9 @@ simplify_unary_operation (code, mode, op, op_mode)
 #endif
 	  break;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
+#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
 	case ZERO_EXTEND:
-	  if (POINTERS_EXTEND_UNSIGNED
+	  if (POINTERS_EXTEND_UNSIGNED > 0
 	      && mode == Pmode && GET_MODE (op) == ptr_mode
 	      && (CONSTANT_P (op)
 		  || (GET_CODE (op) == SUBREG
