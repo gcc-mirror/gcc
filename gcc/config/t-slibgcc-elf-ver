@@ -6,11 +6,12 @@ SHLIB_NAME = @shlib_base_name@.so
 SHLIB_SONAME = @shlib_base_name@.so.1
 SHLIB_MAP = @shlib_map_file@
 SHLIB_OBJS = @shlib_objs@
+SHLIB_LC = -lc
 
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	-Wl,--soname=$(SHLIB_SONAME) \
 	-Wl,--version-script=$(SHLIB_MAP) \
-	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) -lc && \
+	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) $(SHLIB_LC) && \
 	rm -f $(SHLIB_SONAME) && \
 	$(LN_S) $(SHLIB_NAME) $(SHLIB_SONAME)
 # $(slibdir) double quoted to protect it from expansion while building

@@ -2079,6 +2079,8 @@ should properly complete the bootstrap).  Other CPU architectures
 supported by FreeBSD will require additional configuration tuning in, at
 the very least, both boehm-gc and libffi.
 
+Shared @file{libgcc_s.so} is now built and installed by default.
+
 @html
 </p>
 <hr>
