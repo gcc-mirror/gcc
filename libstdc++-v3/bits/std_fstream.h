@@ -61,7 +61,7 @@ namespace std {
       typedef codecvt<char_type, char, __state_type>    __codecvt_type;
       typedef typename __codecvt_type::result 	        __res_type;
       
-      friend ios_base; // For sync_with_stdio.
+      friend class ios_base; // For sync_with_stdio.
 
     private:
       // Data Members:
