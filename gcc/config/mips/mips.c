@@ -276,6 +276,7 @@ static void iris6_asm_named_section		PARAMS ((const char *,
 static int iris_section_align_entry_eq		PARAMS ((const void *, const void *));
 static hashval_t iris_section_align_entry_hash	PARAMS ((const void *));
 static int iris6_section_align_1		PARAMS ((void **, void *));
+static void iris6_file_start			PARAMS ((void));
 static void iris6_file_end			PARAMS ((void));
 #endif
 static int mips_adjust_cost			PARAMS ((rtx, rtx, rtx, int));
@@ -292,6 +293,7 @@ static int mips_use_dfa_pipeline_interface      PARAMS ((void));
 static bool mips_rtx_costs			PARAMS ((rtx, int, int, int *));
 static int mips_address_cost                    PARAMS ((rtx));
 static void mips_encode_section_info            PARAMS ((tree, rtx, int));
+static void mips_file_start			PARAMS ((void));
 static void mips_file_end			PARAMS ((void));
 
 /* Structure to be filled in by compute_frame_size with register
@@ -875,12 +877,17 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mips_reorg
 
+#undef TARGET_ASM_FILE_START
 #undef TARGET_ASM_FILE_END
 #ifdef TARGET_IRIX6
+#define TARGET_ASM_FILE_START iris6_file_start
 #define TARGET_ASM_FILE_END iris6_file_end
 #else
+#define TARGET_ASM_FILE_START mips_file_start
 #define TARGET_ASM_FILE_END mips_file_end
 #endif
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6101,11 +6108,10 @@ mips_output_ascii (stream, string_param, len)
    relevant .comm/.lcomm/.extern/.sdata declaration when the code is
    processed, it generates a two instruction sequence.  */
 
-void
-mips_asm_file_start (stream)
-     FILE *stream;
+static void
+mips_file_start ()
 {
-  ASM_OUTPUT_SOURCE_FILENAME (stream, main_input_filename);
+  default_file_start ();
 
   /* Versions of the MIPS assembler before 2.20 generate errors if a branch
      inside of a .set noreorder section jumps to a label outside of the .set
@@ -6113,7 +6119,7 @@ mips_asm_file_start (stream)
      fixing the bug.  */
 
   if (TARGET_MIPS_AS && optimize && flag_delayed_branch)
-    fprintf (stream, "\t.set\tnobopt\n");
+    fprintf (asm_out_file, "\t.set\tnobopt\n");
 
   if (TARGET_GAS)
     {
@@ -6141,14 +6147,12 @@ mips_asm_file_start (stream)
 	 because in this way we can avoid creating an allocated section.  We
 	 do not want this section to take up any space in the running
 	 executable.  */
-      fprintf (stream, "\t.section .mdebug.%s\n", abi_string);
+      fprintf (asm_out_file, "\t.section .mdebug.%s\n", abi_string);
 
       /* Restore the default section.  */
-      fprintf (stream, "\t.previous\n");
+      fprintf (asm_out_file, "\t.previous\n");
 #endif
     }
-
-
 
   /* Generate the pseudo ops that System V.4 wants.  */
 #ifndef ABICALLS_ASM_OP
@@ -6156,13 +6160,13 @@ mips_asm_file_start (stream)
 #endif
   if (TARGET_ABICALLS)
     /* ??? but do not want this (or want pic0) if -non-shared? */
-    fprintf (stream, "%s\n", ABICALLS_ASM_OP);
+    fprintf (asm_out_file, "%s\n", ABICALLS_ASM_OP);
 
   if (TARGET_MIPS16)
-    fprintf (stream, "\t.set\tmips16\n");
+    fprintf (asm_out_file, "\t.set\tmips16\n");
 
   if (flag_verbose_asm)
-    fprintf (stream, "\n%s -G value = %d, Arch = %s, ISA = %d\n",
+    fprintf (asm_out_file, "\n%s -G value = %d, Arch = %s, ISA = %d\n",
 	     ASM_COMMENT_START,
 	     mips_section_threshold, mips_arch_info->name, mips_isa);
 }
@@ -10336,15 +10340,13 @@ iris6_asm_output_align (file, log)
    switching games so that we can emit a .section directive at the
    beginning of the file with the proper alignment attached.  */
 
-void
-iris6_asm_file_start (stream)
-     FILE *stream;
+static void
+iris6_file_start ()
 {
-  mips_asm_file_start (stream);
+  mips_file_start ();
 
   iris_orig_asm_out_file = asm_out_file;
-  stream = tmpfile ();
-  asm_out_file = stream;
+  asm_out_file = tmpfile ();
 
   iris_section_align_htab = htab_create (31, iris_section_align_entry_hash,
 					 iris_section_align_entry_eq, NULL);

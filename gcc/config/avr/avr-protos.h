@@ -22,7 +22,6 @@
 
 
 extern int    function_arg_regno_p              PARAMS ((int r));
-extern void   asm_file_start                    PARAMS ((FILE *file));
 extern void   avr_init_once                     PARAMS ((void));
 extern void   avr_override_options              PARAMS ((void));
 extern void   avr_optimization_options		PARAMS ((int level, int size));

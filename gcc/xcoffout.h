@@ -138,8 +138,8 @@ extern const char *xcoff_lastfile;
 
 /* Write out main source file name using ".file" rather than ".stabs".
    We don't actually do this here, because the assembler gets confused if there
-   is more than one .file directive.  ASM_FILE_START in config/rs6000/rs6000.h
-   is already emitting a .file directory, so we don't output one here also.
+   is more than one .file directive.  rs6000_xcoff_file_start is already
+   emitting a .file directory, so we don't output one here also.
    Initialize xcoff_lastfile.  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(FILE,FILENAME) \
   xcoff_lastfile = (FILENAME)

@@ -30,7 +30,6 @@ extern HOST_WIDE_INT alpha_initial_elimination_offset (unsigned int,
 						       unsigned int);
 extern int alpha_pv_save_size (void);
 extern int alpha_using_fp (void);
-extern void alpha_write_verstamp (FILE *);
 extern void alpha_expand_prologue (void);
 extern void alpha_expand_epilogue (void);
 extern void alpha_output_filename (FILE *, const char *);
@@ -169,7 +168,6 @@ extern void unicosmk_add_extern (const char *);
 extern void unicosmk_output_align (FILE *, int);
 extern char * unicosmk_text_section (void);
 extern char * unicosmk_data_section (void);
-extern void unicosmk_asm_file_start (FILE *);
 extern void unicosmk_output_common (FILE *, const char *, int, int);
 extern int unicosmk_initial_elimination_offset (int, int);
 #endif

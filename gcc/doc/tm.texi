@@ -6190,19 +6190,38 @@ instructions do.
 @cindex output of assembler code
 
 @c prevent bad page break with this line
-This describes the overall framework of an assembler file.
+This describes the overall framework of an assembly file.
 
-@table @code
-@findex ASM_FILE_START
-@item ASM_FILE_START (@var{stream})
-A C expression which outputs to the stdio stream @var{stream}
-some appropriate text to go at the start of an assembler file.
+@deftypefn {Target Hook} void TARGET_ASM_FILE_START ()
+@findex default_file_start
+Output to @code{asm_out_file} any text which the assembler expects to
+find at the beginning of a file.  The default behavior is controlled
+by two flags, documented below.  Unless your target's assembler is
+quite unusual, if you override the default, you should call
+@code{default_file_start} at some point in your target hook.  This
+lets other target files rely on these variables.
+@end deftypefn
 
-Normally this macro is defined to output a line containing
-@samp{#NO_APP}, which is a comment that has no effect on most
-assemblers but tells the GNU assembler that it can save time by not
-checking for certain assembler constructs.
-@end table
+@deftypevr {Target Hook} bool TARGET_ASM_FILE_START_APP_OFF
+If this flag is true, the text of the macro @code{ASM_APP_OFF} will be
+printed as the very first line in the assembly file, unless
+@option{-fverbose-asm} is in effect.  (If that macro has been defined
+to the empty string, this variable has no effect.)  With the normal
+definition of @code{ASM_APP_OFF}, the effect is to notify the GNU
+assembler that it need not bother stripping comments or extra
+whitespace from its input.  This allows it to work a bit faster.
+
+The default is false.  You should not set it to true unless you have
+verified that your port does not generate any extra whitespace or
+comments that will cause GAS to issue errors in NO_APP mode.
+@end deftypevr
+
+@deftypevr {Target Hook} bool TARGET_ASM_FILE_START_FILE_DIRECTIVE
+If this flag is true, @code{output_file_directive} will be called
+for the primary source file, immediately after printing
+@code{ASM_APP_OFF} (if that is enabled).  Most ELF assemblers expect
+this to be done.  The default is false.
+@end deftypevr
 
 @deftypefn {Target Hook} void TARGET_ASM_FILE_END ()
 Output to @code{asm_out_file} any text which the assembler expects

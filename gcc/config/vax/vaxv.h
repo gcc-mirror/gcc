@@ -40,9 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 
 /* The .file command should always begin the output.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) \
-output_file_directive ((FILE), main_input_filename)
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \

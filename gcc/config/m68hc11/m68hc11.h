@@ -1511,17 +1511,6 @@ do {                                                                    \
 #define TARGET_ASM_CONSTRUCTOR  m68hc11_asm_out_constructor
 #define TARGET_ASM_DESTRUCTOR   m68hc11_asm_out_destructor
 
-/* This is how to begin an assembly language file.  Most svr4 assemblers want
-   at least a .file directive to come first, and some want to see a .version
-   directive come right after that.  Here we just establish a default
-   which generates only the .file directive.  If you need a .version
-   directive for any specific target, you should override this definition
-   in the target-specific file which includes this one.  */
-
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)                            \
-    m68hc11_asm_file_start ((FILE), main_input_filename)
-
 /* Comment character */
 #define ASM_COMMENT_START	";"
 

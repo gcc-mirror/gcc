@@ -3276,17 +3276,6 @@ typedef struct mips_args {
 
 /* Control the assembler format that we output.  */
 
-/* Output at beginning of assembler file.
-   If we are optimizing to use the global pointer, create a temporary
-   file to hold all of the text stuff, and write it out to the end.
-   This is needed because the MIPS assembler is evidently one pass,
-   and if it hasn't seen the relevant .comm/.lcomm/.extern/.sdata
-   declaration when the code is processed, it generates a two
-   instruction sequence.  */
-
-#undef ASM_FILE_START
-#define ASM_FILE_START(STREAM) mips_asm_file_start (STREAM)
-
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 

@@ -134,7 +134,7 @@ extern int ia64_register_move_cost PARAMS((enum machine_mode, enum reg_class,
 					   enum reg_class));
 extern int ia64_epilogue_uses PARAMS((int));
 extern int ia64_eh_uses PARAMS((int));
-extern void emit_safe_across_calls PARAMS((FILE *));
+extern void emit_safe_across_calls PARAMS((void));
 extern void ia64_init_builtins PARAMS((void));
 extern void ia64_override_options PARAMS((void));
 extern int ia64_dbx_register_number PARAMS((int));

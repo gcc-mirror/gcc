@@ -3229,6 +3229,10 @@ struct machine_function GTY(())
 #define ix86_save_varrargs_registers (cfun->machine->save_varrargs_registers)
 #define ix86_optimize_mode_switching (cfun->machine->optimize_mode_switching)
 
+/* Control behavior of x86_file_start.  */
+#define X86_FILE_START_VERSION_DIRECTIVE false
+#define X86_FILE_START_FLTUSED false
+
 /*
 Local variables:
 version-control: t

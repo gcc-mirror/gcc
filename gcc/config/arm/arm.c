@@ -147,6 +147,7 @@ static void arm_encode_section_info (tree, rtx, int);
 static void aof_globalize_label (FILE *, const char *);
 static void aof_dump_imports (FILE *);
 static void aof_dump_pic_table (FILE *);
+static void aof_file_start (void);
 static void aof_file_end (void);
 #endif
 
@@ -169,6 +170,8 @@ static void aof_file_end (void);
 #define TARGET_ASM_ALIGNED_SI_OP "\tDCD\t"
 #undef TARGET_ASM_GLOBALIZE_LABEL
 #define TARGET_ASM_GLOBALIZE_LABEL aof_globalize_label
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START aof_file_start
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END aof_file_end
 #else
@@ -12836,6 +12839,37 @@ aof_globalize_label (FILE *stream, const char *name)
   default_globalize_label (stream, name);
   if (! strcmp (name, "main"))
     arm_main_function = 1;
+}
+
+static void
+aof_file_start ()
+{
+  fputs ("__r0\tRN\t0\n", asm_out_file);
+  fputs ("__a1\tRN\t0\n", asm_out_file);
+  fputs ("__a2\tRN\t1\n", asm_out_file);
+  fputs ("__a3\tRN\t2\n", asm_out_file);
+  fputs ("__a4\tRN\t3\n", asm_out_file);
+  fputs ("__v1\tRN\t4\n", asm_out_file);
+  fputs ("__v2\tRN\t5\n", asm_out_file);
+  fputs ("__v3\tRN\t6\n", asm_out_file);
+  fputs ("__v4\tRN\t7\n", asm_out_file);
+  fputs ("__v5\tRN\t8\n", asm_out_file);
+  fputs ("__v6\tRN\t9\n", asm_out_file);
+  fputs ("__sl\tRN\t10\n", asm_out_file);
+  fputs ("__fp\tRN\t11\n", asm_out_file);
+  fputs ("__ip\tRN\t12\n", asm_out_file);
+  fputs ("__sp\tRN\t13\n", asm_out_file);
+  fputs ("__lr\tRN\t14\n", asm_out_file);
+  fputs ("__pc\tRN\t15\n", asm_out_file);
+  fputs ("__f0\tFN\t0\n", asm_out_file);
+  fputs ("__f1\tFN\t1\n", asm_out_file);
+  fputs ("__f2\tFN\t2\n", asm_out_file);
+  fputs ("__f3\tFN\t3\n", asm_out_file);
+  fputs ("__f4\tFN\t4\n", asm_out_file);
+  fputs ("__f5\tFN\t5\n", asm_out_file);
+  fputs ("__f6\tFN\t6\n", asm_out_file);
+  fputs ("__f7\tFN\t7\n", asm_out_file);
+  text_section ();
 }
 
 static void

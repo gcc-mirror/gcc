@@ -220,6 +220,7 @@ static void sh_media_init_builtins PARAMS ((void));
 static rtx sh_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static void sh_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					HOST_WIDE_INT, tree));
+static void sh_file_start PARAMS ((void));
 static int flow_dependent_p PARAMS ((rtx, rtx));
 static void flow_dependent_p_1 PARAMS ((rtx, rtx, void *));
 static int shiftcosts PARAMS ((rtx));
@@ -258,6 +259,11 @@ static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
 
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START sh_file_start
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES sh_insert_attributes
@@ -1302,26 +1308,38 @@ output_ieee_ccmpeq (insn, operands)
   return output_branchy_insn (NE, "bt\t%l9\\;fcmp/eq\t%1,%0", insn, operands);
 }
 
-/* Output to FILE the start of the assembler file.  */
+/* Output the start of the assembler file.  */
 
-void
-output_file_start (file)
-     FILE *file;
+static void
+sh_file_start ()
 {
-  output_file_directive (file, main_input_filename);
+  default_file_start ();
 
-  /* Switch to the data section so that the coffsem symbol
-     isn't in the text section.  */
-  data_section ();
+  if (TARGET_ELF)
+    /* We need to show the text section with the proper
+       attributes as in TEXT_SECTION_ASM_OP, before dwarf2out
+       emits it without attributes in TEXT_SECTION, else GAS
+       will complain.  We can teach GAS specifically about the
+       default attributes for our choice of text section, but
+       then we would have to change GAS again if/when we change
+       the text section name.  */
+    fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
+  else
+    /* Switch to the data section so that the coffsem symbol
+       isn't in the text section.  */
+    data_section ();
 
   if (TARGET_LITTLE_ENDIAN)
-    fprintf (file, "\t.little\n");
+    fputs ("\t.little\n", asm_out_file);
 
-  if (TARGET_SHCOMPACT)
-    fprintf (file, "\t.mode\tSHcompact\n");
-  else if (TARGET_SHMEDIA)
-    fprintf (file, "\t.mode\tSHmedia\n\t.abi\t%i\n",
-	     TARGET_SHMEDIA64 ? 64 : 32);
+  if (!TARGET_ELF)
+    {
+      if (TARGET_SHCOMPACT)
+	fputs ("\t.mode\tSHcompact\n", asm_out_file);
+      else if (TARGET_SHMEDIA)
+	fprintf (asm_out_file, "\t.mode\tSHmedia\n\t.abi\t%i\n",
+		 TARGET_SHMEDIA64 ? 64 : 32);
+    }
 }
 
 /* Check if PAT includes UNSPEC_CALLER unspec pattern.  */

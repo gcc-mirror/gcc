@@ -29,13 +29,8 @@ Boston, MA 02111-1307, USA. */
 
 /* Assembler, linker, library, and startfile spec's.  */
 
-/* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */
-
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-  do { output_file_directive ((FILE), main_input_filename);	\
-     } while (0)
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 /* This says how to output an assembler line
    to define a global common symbol.  */

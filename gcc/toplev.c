@@ -4819,9 +4819,7 @@ init_asm_output (const char *name)
 
   if (!flag_syntax_only)
     {
-#ifdef ASM_FILE_START
-      ASM_FILE_START (asm_out_file);
-#endif
+      targetm.asm_out.file_start ();
 
 #ifdef ASM_COMMENT_START
       if (flag_verbose_asm)

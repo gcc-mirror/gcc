@@ -1548,35 +1548,6 @@ fini_section ()							\
 
 
 /* Overall Framework of an Assembler File.  */
-/* We need to have a data section we can identify so that we can set
-   the DP register back to a data pointer in the small memory model.
-   This is only required for ISRs if we are paranoid that someone
-   may have quietly changed this register on the sly.  */
-
-#define ASM_FILE_START(FILE)					\
-{								\
-    int dspversion = 0;						\
-    if (TARGET_C30) dspversion = 30;				\
-    if (TARGET_C31) dspversion = 31;				\
-    if (TARGET_C32) dspversion = 32;				\
-    if (TARGET_C33) dspversion = 33;                            \
-    if (TARGET_C40) dspversion = 40;				\
-    if (TARGET_C44) dspversion = 44;				\
-    fprintf (FILE, "\t.version\t%d\n", dspversion);		\
-    fprintf (FILE, "\t.file\t");				\
-    if (TARGET_TI)						\
-      {								\
-        const char *p;						\
-        const char *after_dir = main_input_filename;		\
-	for (p = main_input_filename; *p; p++)			\
-	  if (*p == '/')					\
-	    after_dir = p + 1;					\
-	output_quoted_string (FILE, after_dir);			\
-      }								\
-    else							\
-      output_quoted_string (FILE, main_input_filename);		\
-    fputs ("\n\t.data\ndata_sec:\n", FILE);			\
-}
 
 #define ASM_COMMENT_START ";"
 

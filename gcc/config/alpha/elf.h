@@ -49,27 +49,6 @@ Boston, MA 02111-1307, USA.    */
 #undef  ASM_SPEC
 #define ASM_SPEC  "%{G*} %{relax:-relax} %{!gstabs*:-no-mdebug}%{gstabs*:-mdebug}"
 
-/* Output at beginning of assembler file.  */
-#undef  ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-do {								\
-  if (write_symbols == DBX_DEBUG)				\
-    {								\
-      alpha_write_verstamp (FILE);				\
-      output_file_directive (FILE, main_input_filename);	\
-    }								\
-  fprintf (FILE, "\t.set noat\n");				\
-  fprintf (FILE, "\t.set noreorder\n");				\
-  if (TARGET_EXPLICIT_RELOCS)					\
-    fprintf (FILE, "\t.set nomacro\n");				\
-  if (TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)	\
-    {								\
-      fprintf (FILE, "\t.arch %s\n",				\
-               (TARGET_CPU_EV6 ? "ev6"				\
-                : TARGET_MAX ? "pca56" : "ev56"));		\
-    }								\
-} while (0)
-
 #undef  IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident\t"
 

@@ -5363,6 +5363,18 @@ default_internal_label (stream, prefix, labelno)
   ASM_OUTPUT_LABEL (stream, buf);
 }
 
+/* This is the default behavior at the beginning of a file.  It's
+   controlled by two other target-hook toggles.  */
+void
+default_file_start ()
+{
+  if (targetm.file_start_app_off && !flag_verbose_asm)
+    fputs (ASM_APP_OFF, asm_out_file);
+
+  if (targetm.file_start_file_directive)
+    output_file_directive (asm_out_file, main_input_filename);
+}
+
 /* This is a generic routine suitable for use as TARGET_ASM_FILE_END
    which emits a special section directive used to indicate whether or
    not this object file needs an executable stack.  This is primarily

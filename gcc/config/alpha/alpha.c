@@ -6780,20 +6780,6 @@ alpha_does_function_need_gp (void)
   return 0;
 }
 
-/* Write a version stamp.  Don't write anything if we are running as a
-   cross-compiler.  Otherwise, use the versions in /usr/include/stamp.h.  */
-
-#ifdef HAVE_STAMP_H
-#include <stamp.h>
-#endif
-
-void
-alpha_write_verstamp (FILE *file ATTRIBUTE_UNUSED)
-{
-#ifdef MS_STAMP
-  fprintf (file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);
-#endif
-}
 
 /* Helper function to set RTX_FRAME_RELATED_P on instructions, including
    sequences.  */
@@ -8687,6 +8673,36 @@ alpha_reorg (void)
     }
 }
 
+#if !TARGET_ABI_UNICOSMK
+
+#ifdef HAVE_STAMP_H
+#include <stamp.h>
+#endif
+
+static void
+alpha_file_start (void)
+{
+  default_file_start ();
+#ifdef MS_STAMP
+  fprintf (file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);
+#endif
+
+  fputs ("\t.set noreorder\n", asm_out_file);
+  fputs ("\t.set volatile\n", asm_out_file);
+  if (!TARGET_ABI_OPEN_VMS)
+    fputs ("\t.set noat\n", asm_out_file);
+  if (TARGET_EXPLICIT_RELOCS)
+    fputs ("\t.set nomacro\n", asm_out_file);
+  if (TARGET_SUPPORT_ARCH | TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)
+    fprintf (asm_out_file,
+	     "\t.arch %s\n",
+	     TARGET_CPU_EV6 ? "ev6"	   
+	     : (TARGET_CPU_EV5
+		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5")
+		: "ev4"));
+}
+#endif
+
 #ifdef OBJECT_FORMAT_ELF
 
 /* Switch to the section to which we should output X.  The only thing
@@ -9728,14 +9744,14 @@ unicosmk_output_dex (FILE *file)
 
 /* Output text that to appear at the beginning of an assembler file.  */
 
-void 
-unicosmk_asm_file_start (FILE *file)
+static void 
+unicosmk_file_start (void)
 {
   int i;
 
-  fputs ("\t.ident\t", file);
-  unicosmk_output_module_name (file);
-  fputs ("\n\n", file);
+  fputs ("\t.ident\t", asm_out_file);
+  unicosmk_output_module_name (asm_out_file);
+  fputs ("\n\n", asm_out_file);
 
   /* The Unicos/Mk assembler uses different register names. Instead of trying
      to support them, we simply use micro definitions.  */
@@ -9746,12 +9762,12 @@ unicosmk_asm_file_start (FILE *file)
      register.  */
 
   for (i = 0; i < 32; ++i)
-    fprintf (file, "$%d <- r%d\n", i, i);
+    fprintf (asm_out_file, "$%d <- r%d\n", i, i);
 
   for (i = 0; i < 32; ++i)
-    fprintf (file, "$f%d <- f%d\n", i, i);
+    fprintf (asm_out_file, "$f%d <- f%d\n", i, i);
 
-  putc ('\n', file);
+  putc ('\n', asm_out_file);
 
   /* The .align directive fill unused space with zeroes which does not work
      in code sections. We define the macro 'gcc@code@align' which uses nops
@@ -9759,24 +9775,24 @@ unicosmk_asm_file_start (FILE *file)
      biggest possible alignment since . refers to the current offset from
      the beginning of the section.  */
 
-  fputs ("\t.macro gcc@code@align n\n", file);
-  fputs ("gcc@n@bytes = 1 << n\n", file);
-  fputs ("gcc@here = . % gcc@n@bytes\n", file);
-  fputs ("\t.if ne, gcc@here, 0\n", file);
-  fputs ("\t.repeat (gcc@n@bytes - gcc@here) / 4\n", file);
-  fputs ("\tbis r31,r31,r31\n", file);
-  fputs ("\t.endr\n", file);
-  fputs ("\t.endif\n", file);
-  fputs ("\t.endm gcc@code@align\n\n", file);
+  fputs ("\t.macro gcc@code@align n\n", asm_out_file);
+  fputs ("gcc@n@bytes = 1 << n\n", asm_out_file);
+  fputs ("gcc@here = . % gcc@n@bytes\n", asm_out_file);
+  fputs ("\t.if ne, gcc@here, 0\n", asm_out_file);
+  fputs ("\t.repeat (gcc@n@bytes - gcc@here) / 4\n", asm_out_file);
+  fputs ("\tbis r31,r31,r31\n", asm_out_file);
+  fputs ("\t.endr\n", asm_out_file);
+  fputs ("\t.endif\n", asm_out_file);
+  fputs ("\t.endm gcc@code@align\n\n", asm_out_file);
 
   /* Output extern declarations which should always be visible.  */
-  unicosmk_output_default_externs (file);
+  unicosmk_output_default_externs (asm_out_file);
 
   /* Open a dummy section. We always need to be inside a section for the
      section-switching code to work correctly.
      ??? This should be a module id or something like that. I still have to
      figure out what the rules for those are.  */
-  fputs ("\n\t.psect\t$SG00000,data\n", file);
+  fputs ("\n\t.psect\t$SG00000,data\n", asm_out_file);
 }
 
 /* Output text to appear at the end of an assembler file. This includes all
@@ -9876,6 +9892,18 @@ unicosmk_need_dex (rtx x ATTRIBUTE_UNUSED)
 
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
 #define TARGET_ASM_FUNCTION_END_PROLOGUE alpha_output_function_end_prologue
+
+#if TARGET_ABI_UNICOSMK
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START unicosmk_file_start
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END unicosmk_file_end
+#else
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START alpha_file_start
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+#endif
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST alpha_adjust_cost

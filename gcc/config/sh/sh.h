@@ -152,6 +152,9 @@ extern int target_flags;
 #define IEEE_BIT (1<<30)
 #define SAVE_ALL_TR_BIT (1<<2)
 
+/* Nonzero if this is an ELF target - compile time only */
+#define TARGET_ELF 0
+
 /* Nonzero if we should dump out instruction size info.  */
 #define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
 
@@ -2971,10 +2974,6 @@ while (0)
    assembler language.  The compiler assumes that the comment will end at
    the end of the line.  */
 #define ASM_COMMENT_START "!"
-
-/* The text to go at the start of the assembler file.  */
-#define ASM_FILE_START(STREAM) \
-  output_file_start (STREAM)
 
 #define ASM_APP_ON  		""
 #define ASM_APP_OFF  		""

@@ -100,25 +100,8 @@ Boston, MA 02111-1307, USA.  */
 /* We are using GAS.  */
 #define TARGET_GAS 1
 
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) \
-do {								\
-  if (TARGET_64BIT)						\
-    fputs("\t.LEVEL 2.0w\n", FILE);				\
-  else if (TARGET_PA_20)					\
-    fputs("\t.LEVEL 2.0\n", FILE);				\
-  else if (TARGET_PA_11)					\
-    fputs("\t.LEVEL 1.1\n", FILE);				\
-  else								\
-    fputs("\t.LEVEL 1.0\n", FILE);				\
-  if (profile_flag)						\
-    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, "_mcount", "function");	\
-  if (write_symbols != NO_DEBUG)				\
-    {								\
-      output_file_directive ((FILE), main_input_filename);	\
-      fputs ("\t.version\t\"01.01\"\n", FILE);			\
-    }								\
-} while (0)
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START pa_hpux64_gas_file_start
 
 /* This is how we output a null terminated string.  */
 #undef STRING_ASM_OP
@@ -221,28 +204,8 @@ do {								\
 /* This target uses the ELF object file format.  */
 #define OBJECT_FORMAT_ELF
 
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-do {								\
-  if (TARGET_64BIT)						\
-    fputs("\t.LEVEL 2.0w\n", FILE);				\
-  else if (TARGET_PA_20)					\
-    fputs("\t.LEVEL 2.0\n", FILE);				\
-  else if (TARGET_PA_11)					\
-    fputs("\t.LEVEL 1.1\n", FILE);				\
-  else								\
-    fputs("\t.LEVEL 1.0\n", FILE);				\
-  fputs("\t.SPACE $PRIVATE$,SORT=16\n\
-\t.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31\n\
-\t.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82\n\
-\t.SPACE $TEXT$,SORT=8\n\
-\t.SUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=44\n\
-\t.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE);	\
-  if (profile_flag)						\
-    fprintf (FILE, "\t.IMPORT _mcount, CODE\n");		\
-  if (write_symbols != NO_DEBUG)				\
-    output_file_directive ((FILE), main_input_filename);	\
-} while (0)
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START pa_hpux64_hpas_file_start
 
 #undef TEXT_SECTION_ASM_OP
 #define TEXT_SECTION_ASM_OP		"\t.SUBSPA $CODE$\n"

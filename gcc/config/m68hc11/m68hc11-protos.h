@@ -33,8 +33,6 @@ extern int m68hc11_initial_elimination_offset PARAMS((int, int));
 extern void expand_prologue PARAMS((void));
 extern void expand_epilogue PARAMS((void));
 
-extern void m68hc11_asm_file_start PARAMS((FILE*, const char*));
-
 #ifdef TREE_CODE
 extern void m68hc11_function_arg_advance PARAMS((CUMULATIVE_ARGS*,
                                                  enum machine_mode,

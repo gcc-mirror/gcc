@@ -31,12 +31,6 @@
 			%{pg:gcrti.o%s}%{!pg:crti.o%s} \
 			crtbegin.o%s"
 
-/* Output at beginning/end of assembler file.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)                            \
-  (output_file_directive ((FILE), main_input_filename), \
-   asm_file_start (FILE))
-
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 

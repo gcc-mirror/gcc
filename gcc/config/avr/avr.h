@@ -1687,18 +1687,6 @@ progmem_section ()							      \
    This macro is irrelevant if there is no separate readonly data
    section.  */
 
-#define ASM_FILE_START(STREAM) asm_file_start (STREAM)
-/* A C expression which outputs to the stdio stream STREAM some
-   appropriate text to go at the start of an assembler file.
-
-   Normally this macro is defined to output a line containing
-   `#NO_APP', which is a comment that has no effect on most
-   assemblers but tells the GNU assembler that it can save time by not
-   checking for certain assembler constructs.
-
-   On systems that use SDB, it is necessary to output certain
-   commands; see `attasm.h'.  */
-
 #define ASM_COMMENT_START " ; "
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will

@@ -94,6 +94,7 @@ static tree arc_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, boo
 static bool arc_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void arc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void arc_file_start PARAMS ((void));
 static void arc_internal_label PARAMS ((FILE *, const char *, unsigned long));
 static bool arc_rtx_costs PARAMS ((rtx, int, int, int *));
 static int arc_address_cost PARAMS ((rtx));
@@ -110,6 +111,8 @@ static int arc_address_cost PARAMS ((rtx));
 #define TARGET_ASM_FUNCTION_PROLOGUE arc_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE arc_output_function_epilogue
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START arc_file_start
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE arc_attribute_table
 #undef TARGET_ASM_INTERNAL_LABEL
@@ -1657,11 +1660,11 @@ arc_initialize_trampoline (tramp, fnaddr, cxt)
 /* Set the cpu type and print out other fancy things,
    at the top of the file.  */
 
-void
-arc_asm_file_start (file)
-     FILE *file;
+static void
+arc_file_start ()
 {
-  fprintf (file, "\t.cpu %s\n", arc_cpu_string);
+  default_file_start ();
+  fprintf (asm_out_file, "\t.cpu %s\n", arc_cpu_string);
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.

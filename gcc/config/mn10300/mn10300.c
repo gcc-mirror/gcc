@@ -58,6 +58,7 @@ Boston, MA 02111-1307, USA.  */
 static int mn10300_address_cost_1 PARAMS ((rtx, int *));
 static int mn10300_address_cost PARAMS ((rtx));
 static bool mn10300_rtx_costs PARAMS ((rtx, int, int, int *));
+static void mn10300_file_start PARAMS ((void));
 
 
 /* Initialize the GCC target structure.  */
@@ -69,21 +70,20 @@ static bool mn10300_rtx_costs PARAMS ((rtx, int, int, int *));
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST mn10300_address_cost
 
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START mn10300_file_start
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-void
-asm_file_start (file)
-     FILE *file;
+static void
+mn10300_file_start ()
 {
-  fprintf (file, "#\tGCC For the Matsushita MN10300\n");
-  if (optimize)
-    fprintf (file, "# -O%d\n", optimize);
-  else
-    fprintf (file, "\n\n");
+  default_file_start ();
 
   if (TARGET_AM33)
-    fprintf (file, "\t.am33\n");
-  output_file_directive (file, main_input_filename);
+    fprintf (asm_out_file, "\t.am33\n");
 }
 
 

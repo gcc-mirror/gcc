@@ -87,8 +87,8 @@
    Don't do this until the fixed IBM assembler is more generally available.
    When this becomes permanently defined, the ASM_OUTPUT_EXTERNAL,
    ASM_OUTPUT_EXTERNAL_LIBCALL, and RS6000_OUTPUT_BASENAME macros will no
-   longer be needed.  Also, the extern declaration of mcount in ASM_FILE_START
-   will no longer be needed.  */
+   longer be needed.  Also, the extern declaration of mcount in 
+   rs6000_xcoff_file_start will no longer be needed.  */
 
 /* #define ASM_SPEC "-u %(asm_cpu)" */
 

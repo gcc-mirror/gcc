@@ -1392,24 +1392,6 @@ call_ ## FUNC (void)						\
 
 /* Node: File Framework */
 
-/* NO_APP *only at file start* means faster assembly.
-   It also means comments are not allowed.
-   In some cases comments will be output for debugging purposes.
-   Make sure they are allowed then.  */
-/* Override previous definitions (elfos.h).  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(STREAM)					\
-  do								\
-    {								\
-      if (TARGET_PDEBUG || flag_print_asm_name)			\
-	fprintf ((STREAM), "#APP\n");				\
-      else							\
-	fprintf ((STREAM), "#NO_APP\n");			\
-      if (TARGET_ELF)						\
-	output_file_directive ((STREAM), main_input_filename);	\
-    }								\
-  while (0)
-
 /* We don't want an .ident for gcc.  To avoid that but still support
    #ident, we override ASM_OUTPUT_IDENT and, since the gcc .ident is its
    only use besides ASM_OUTPUT_IDENT, undef IDENT_ASM_OP from elfos.h.  */

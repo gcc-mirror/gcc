@@ -356,8 +356,6 @@ current_section_flags ()						\
 /* SGI assembler needs all sorts of extra help to do alignment properly.  */
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN iris6_asm_output_align
-#undef ASM_FILE_START
-#define ASM_FILE_START  iris6_asm_file_start
 
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (32768*8)

@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PTRDIFF_TYPE
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
-#undef ASM_FILE_START
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #undef TARGET_VERSION
 #undef CPP_SPEC
@@ -1516,9 +1515,6 @@ do {									\
 /*#define LEGITIMATE_PIC_OPERAND_P(X)*/
 
 /* Control the assembler format that we output.  */
-
-/* Output at beginning of assembler file.  */
-#define ASM_FILE_START(FILE) m32r_asm_file_start (FILE)
 
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will

@@ -25,13 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)						\
-  do {									\
-	output_file_directive (FILE, main_input_filename);		\
-	if (ix86_asm_dialect == ASM_INTEL)				\
-	  fputs ("\t.intel_syntax\n", FILE);				\
-  } while (0)
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 #define TARGET_VERSION fprintf (stderr, " (i386 Linux/ELF)");
 

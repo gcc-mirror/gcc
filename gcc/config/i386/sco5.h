@@ -44,12 +44,9 @@ Boston, MA 02111-1307, USA.  */
 #define CTORS_SECTION_ASM_OP		"\t.section\t.ctors, \"aw\""
 #define DTORS_SECTION_ASM_OP		"\t.section\t.dtors, \"aw\""
 
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)						\
-do {									\
-  output_file_directive((FILE),main_input_filename);			\
-  fprintf ((FILE), "\t.version\t\"01.01\"\n");				\
-} while (0)
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+#undef X86_FILE_START_VERSION_DIRECTIVE
+#define X86_FILE_START_VERSION_DIRECTIVE true
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named

@@ -1487,9 +1487,6 @@ extern struct dsp16xx_frame_info current_frame_info;
 
 /* THE OVERALL FRAMEWORK OF AN ASSEMBLER FILE */
 
-/* Output at beginning of assembler file.  */
-#define ASM_FILE_START(FILE) coff_dsp16xx_file_start (FILE) 
-
 /* A C string constant describing how to begin a comment in the target
    assembler language.  */
 #define ASM_COMMENT_START ""

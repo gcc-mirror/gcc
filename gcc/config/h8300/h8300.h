@@ -1030,10 +1030,6 @@ struct cum_arg
 
 /* Control the assembler format that we output.  */
 
-/* Output at beginning/end of assembler file.  */
-
-#define ASM_FILE_START(FILE) asm_file_start (FILE)
-
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 

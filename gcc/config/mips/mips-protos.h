@@ -28,8 +28,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern HOST_WIDE_INT	compute_frame_size PARAMS ((HOST_WIDE_INT));
 extern int		mips_initial_elimination_offset PARAMS ((int, int));
-extern void		mips_asm_file_start PARAMS ((FILE *));
-extern void		iris6_asm_file_start PARAMS ((FILE *));
 extern void		iris6_asm_output_align PARAMS ((FILE *, unsigned));
 extern const char *	current_section_name PARAMS ((void));
 extern unsigned int	current_section_flags PARAMS ((void));

@@ -1,3 +1,151 @@
+2003-06-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* target.h (asm_out.file_start, file_start_app_off,
+	file_start_file_directive): New hooks.
+	* target-def.h (TARGET_ASM_FILE_START_FILE_DIRECTIVE,
+	TARGET_ASM_FILE_START_APP_OFF, TARGET_ASM_FILE_START):
+	New hook-definition macros.
+	* doc/tm.texi: Document new hooks; remove docs of ASM_FILE_START.
+	* varasm.c (default_file_start): New.
+	* output.h: Prototype it.
+	* toplev.c (init_asm_output): Use targetm.asm_out.file_start.
+	* system.h: Poison ASM_FILE_START.
+
+	* config/alpha/alpha.c (alpha_write_verstamp): Delete.
+	(alpha_file_start): New, define if !TARGET_ABI_UNICOSMK.
+	(unicosmk_asm_file_start): Rename unicosmk_file_start,
+	make static, take no arguments.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_END,
+	TARGET_ASM_FILE_START_FILE_DIRECTIVE): Set as appropriate.
+	* config/alpha/unicosmk.h: Don't define ASM_FILE_START nor
+	TARGET_ASM_FILE_END.  Remove reference to ASM_FILE_START in
+	comment.
+	* config/arc/arc.c (arc_asm_file_start): Rename
+	arc_file_start, take no arguments, make static.
+	(TARGET_ASM_FILE_START): Set it.
+	* config/arm/arm.c (aof_file_start): New static function.
+	(TARGET_ASM_FILE_START): Set it, when appropriate.
+	* config/arm/coff.h, config/arm/elf.h:
+	Set TARGET_ASM_FILE_START_APP_OFF to true.
+	* config/avr/avr.c (asm_file_start): Rename avr_file_start,
+	take no arguments, make static.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_FILE_DIRECTIVE):
+	Set them.
+	* config/c4x/c4x.c (c4x_file_start): New static function.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_FILE_DIRECTIVE):
+	Set them.
+	* config/cris/cris.c (cris_file_start): New static function.
+	(TARGET_ASM_FILE_START): Set it.
+	* config/dsp16xx/dsp16xx.c (coff_dsp16xx_file_start): Rename
+	dsp16xx_file_start, make static.
+	(luxworks_dsp16xx_file_start): Delete.
+	(TARGET_ASM_FILE_START): Set it.
+	* config/h8300/h8300.c (asm_file_start): Rename
+	h8300_file_start, make static, take no arguments.
+	(TARGET_ASM_FILE_START): Set it.
+	* config/i370/i370.c (i370_file_start): New static function.
+	(TARGET_ASM_FILE_START): Set it.
+	* config/i386/i386.c (x86_file_start): New static function.
+	(TARGET_ASM_FILE_START): Set it.
+	* config/i386/i386.h (X86_FILE_START_VERSION_DIRECTIVE,
+	X86_FILE_START_FLTUSED): New macros, default to false.
+	* config/i386/i386-interix.h: Override X86_FILE_START_FLTUSED to 1.
+	* config/i386/sysv4.h, config/i386/sco5.h: Override
+	X86_FILE_START_VERSION_DIRECTIVE to true.
+	* config/ia64/ia64.c (ia64_file_start): New static function.
+	(TARGET_ASM_FILE_START): Set it.
+	(emit_safe_across_calls): Take no arguments.
+	* config/ia64/ia64.md: Update to match.
+	* config/m32r/m32r.c (m32r_asm_file_start): Rename
+	m32r_file_start, make static, take no arguments.
+	(TARGET_ASM_FILE_START): Set it.
+	* config/m68hc11/m68hc11.c (m68hc11_asm_file_start): Rename
+	m68hc11_file_start, make static, take no arguments.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_FILE_DIRECTIVE): Set.
+	(print_options): Delete.
+	* config/m68k/m68k.c (m68k_hp320_file_start): New static function.
+	(TARGET_ASM_FILE_START_APP_OFF): Set.
+	* config/m68k/hp320.h: Set TARGET_ASM_FILE_START to
+	m68k_hp320_file_start.
+	* config/mips/mips.c (iris6_asm_file_start, mips_asm_file_start):
+	Make static, take no arguments.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_FILE_DIRECTIVE): Set.
+	* config/mmix/mmix.c (mmix_asm_file_start): Rename
+	mmix_file_start, make static, take no arguments.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_FILE_DIRECTIVE): Set.
+	* config/mn10300/mn10300.c (asm_file_start): Rename
+	mn10300_file_start, make static, take no arguments.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_FILE_DIRECTIVE): Set.
+	* config/ns32k/ns32k.c (TARGET_ASM_FILE_START_APP_OFF): Set.
+	* config/pa/pa.c (pa_file_start_level, pa_file_start_space,
+	pa_file_start_file, pa_file_start_mcount, pa_elf_file_start,
+	pa_som_file_start, pa_linux_file_start, pa_hpux64_gas_file_start,
+	pa_hpux64_hpas_file_start): New static functions.
+	* config/pa/elf.h: Set TARGET_ASM_FILE_START to pa_elf_file_start.
+	* config/pa/pa-linux.h: Set TARGET_ASM_FILE_START to
+	pa_linux_file_start.
+	* config/pa/pa64-hpux.h: Set TARGET_ASM_FILE_START to
+	pa_hpux64_gas_file_start or pa_hpux64_hpas_file_start, as
+	appropriate.
+	* config/pa/som.h: Set TARGET_ASM_FILE_START to pa_som_file_start.
+	* config/rs6000/rs6000.c: Include xcoffout.h when TARGET_XCOFF.
+	(rs6000_file_start): Make static, take no arguments.  Reset
+	default_cpu under certain conditions.
+	(rs6000_xcoff_file_start): New function.
+	* config/rs6000/rs6000.h (TARGET_ASM_FILE_START): Set.
+	* config/rs6000/xcoff.h (TARGET_ASM_FILE_START,
+	TARGET_ASM_FILE_START_FILE_DIRECTIVE): Override.
+	* config/sh/sh.c (output_file_start): Rename
+	sh_file_start, make static, take no arguments.  Merge in old
+	code from sh/elf.h's ASM_FILE_START, conditioned on TARGET_ELF.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_FILE_DIRECTIVE): Set.
+	* config/sh/sh.c (TARGET_ELF): Define to 0.
+	* config/sh/elf.h (TARGET_ELF): Redefine to 1.
+	* config/v850/v850.c (asm_file_start): Delete.
+	(TARGET_ASM_FILE_START_FILE_DIRECTIVE): Set.
+	* config/vax/vax.c (vax_file_start): New static function.
+	(TARGET_ASM_FILE_START, TARGET_ASM_FILE_START_APP_OFF): Set.
+
+	* config/darwin.h: Override ASM_FILE_START_FILE_DIRECTIVE to false.
+	* config/elfos.h, config/svr3.h, config/arm/elf.h, config/arm/pe.h
+	* config/i386/att.h, config/i386/gas.h, config/i386/linux.h
+	* config/i386/sysv4.h, config/i386/sco5.h, config/i960/i960-coff.h
+	* config/m68k/coff.h, config/m68k/hp320.h, config/mcore/mcore-pe.h
+	* config/vax/vaxv.h: Set ASM_FILE_START_FILE_DIRECTIVE to true.
+
+	* config/darwin.h, config/elfos.h, config/alpha/elf.h
+	* config/alpha/openbsd.h, config/alpha/osf.h, config/alpha/vms.h
+	* config/arc/arc.h, config/arm/aof.h, config/arm/aout.h
+	* config/arm/coff.h, config/arm/elf.h, config/arm/pe.h
+	* config/avr/avr.h, config/c4x/c4x.h, config/cris/cris.h
+	* config/dsp16xx/dsp16xx.h, config/h8300/elf.h, config/h8300/h8300.h
+	* config/i370/i370.h, config/i386/att.h, config/i386/gas.h
+	* config/i386/i386-interix.h, config/i386/linux.h, config/i386/sysv4.h
+	* config/i386/sco5.h, config/i960/i960-coff.h, config/i960/i960.h
+	* config/ia64/ia64.h, config/ia64/sysv4.h, config/m32r/m32r.h
+	* config/m68hc11/m68hc11.h, config/m68k/coff.h, config/m68k/m68k.h
+	* config/mcore/mcore-pe.h, config/mips/iris6.h, config/mips/mips.h
+	* config/mmix/mmix.h, config/mn10300/mn10300.h, config/ns32k/ns32k.h
+	* config/pa/elf.h, config/pa/pa-linux.h, config/pa/pa64-hpux.h
+	* config/pa/som.h, config/pdp11/pdp11.h, config/rs6000/linux64.h
+	* config/rs6000/lynx.h, config/rs6000/xcoff.h, config/sh/elf.h
+	* config/sh/sh.h, config/sparc/sparc.h, config/v850/v850.h
+	* config/vax/vax.h, config/vax/vaxv.h: Don't (re)define ASM_FILE_START.
+
+	* config/alpha/alpha-protos.h, config/arc/arc-protos.h
+	* config/avr/avr-protos.h, config/dsp16xx/dsp16xx-protos.h
+	* config/h8300/h8300-protos.h, config/ia64/ia64-protos.h
+	* config/m32r/m32r-protos.h, config/m68hc11/m68hc11-protos.h
+	* config/mips/mips-protos.h, config/mmix/mmix-protos.h
+	* config/mn10300/mn10300-protos.h, config/rs6000/rs6000-protos.h
+	* config/sh/sh-protos.h, config/v850/v850-protos.h: Update.
+
+	* xcoffout.h, config/rs6000/aix.h, config/rs6000/xcoff.h:
+	Remove reference to ASM_FILE_START in comment.
+	* config/arm/aof.h, config/arm/aout.h, config/arm/freebsd.h
+	* config/arm/linux-gas.h, config/arm/netbsd-elf.h
+	* config/arm/netbsd.h: Delete definition of ARM_OS_NAME.
+
 2003-06-19  Graeme Peterson <gp@qnx.com>
 
 	* gcc.c (target_sysroot_suffix, target_sysroot_hdrs_suffix,
@@ -36,8 +184,8 @@
 
 2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * expr.c (const_vector_from_tree): Initialize remaining elements
-        to 0.
+	* expr.c (const_vector_from_tree): Initialize remaining elements
+	to 0.
 
 2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -96,8 +244,8 @@
 
 2003-06-18  Richard Henderson  <rth@redhat.com>
 
-        * config/ia64/unwind-ia64.c (_Unwind_GetCFA): New.
-        (_Unwind_FindEnclosingFunction): Implement.
+	* config/ia64/unwind-ia64.c (_Unwind_GetCFA): New.
+	(_Unwind_FindEnclosingFunction): Implement.
 
 2003-06-18  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -107,7 +255,7 @@
 	INSN_SCHEDULING is defined.
 
 2003-06-18  Stephen Clarke <stephen.clarke@superh.com>
-            J"orn Rennecke <joern.rennecke@superh.com>
+	    J"orn Rennecke <joern.rennecke@superh.com>
 
 	* bt-load.c: New file.
 	* Makefile.in (OBJS): Include bt-load.o
@@ -164,17 +312,17 @@
 2003-06-18  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: Add an extra_header for ARM targets.
-        Support configuring with --with-cpu=iwmmxt.
+	Support configuring with --with-cpu=iwmmxt.
 	* doc/invoke.texi: Document new value for -mcpu= ARM switch.
-        * config/arm/aof.h (REGISTER_NAMES): Add iwmmxt register
+	* config/arm/aof.h (REGISTER_NAMES): Add iwmmxt register
 	names.  Fix formatting.
-        * config/arm/aout.h (REGISTER_NAMES): Add iwmmxt register
+	* config/arm/aout.h (REGISTER_NAMES): Add iwmmxt register
 	names.
-        * config/arm/arm-protos.h (arm_emit_vector_const): New
+	* config/arm/arm-protos.h (arm_emit_vector_const): New
 	prototype.
 	(arm_output_load_gr): New prototype.
 	* config/arm/arm.c (extra_reg_names1): Delete.
-        (TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN, FL_IWMMXT,
+	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN, FL_IWMMXT,
 	* arch_is_iwmmxt): Define.
 	(all_cores, all_architecture): Add entry for iwmmxt.
 	(arm_override_options): Add support for iwmmxt.
@@ -193,47 +341,47 @@
 	(add_minipool_backward_ref, add_minipool_offsets,
 	dump_minipool, push_minipool_fix): Likewise.
 	(struct builtin_description): New struct.
-        (builtin_description): New array of iwmmxt builtin functions.
-        (arm_init_iwmmxt_builtins): New function.
-        (arm_init_builtins): New function.
-        (safe_vector_operand): New function.
-        (arm_expand_binop_builtin): New function.
-        (arm_expand_unop_builtin): New function.
-        (arm_expand_builtin): New function.
-        (arm_emit_vector_const): New function.
-        (arm_output_load_gr): New function.
-        * config/arm/arm.h (TARGET_CPU_iwmmxt, TARGET_IWMMXT,
+	(builtin_description): New array of iwmmxt builtin functions.
+	(arm_init_iwmmxt_builtins): New function.
+	(arm_init_builtins): New function.
+	(safe_vector_operand): New function.
+	(arm_expand_binop_builtin): New function.
+	(arm_expand_unop_builtin): New function.
+	(arm_expand_builtin): New function.
+	(arm_emit_vector_const): New function.
+	(arm_output_load_gr): New function.
+	* config/arm/arm.h (TARGET_CPU_iwmmxt, TARGET_IWMMXT,
 	TARGET_REALLY_IWMMXT, arm_arch_iwmmxt, IWMMXT_ALIGNMENT,
 	TYPE_NEEDS_IWMMXT_ALIGNMENT, ADJUST_FIELD_ALIGN,
 	DATA_ALIGNMENT, LOCAL_ALIGNMENT, VECTOR_MODE_SUPPORTED_P): Define.
-        (BIGGEST_ALIGNMENT): Set to 64 if ATPCS support is enabled.
-        (CPP_CPU_ARCH_SPEC): Add entries for iwmmxt.
-        (FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ORDER,
+	(BIGGEST_ALIGNMENT): Set to 64 if ATPCS support is enabled.
+	(CPP_CPU_ARCH_SPEC): Add entries for iwmmxt.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ORDER,
 	reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS,
 	REG_CLASS_FOR_LETTER): Add iwmmxt registers.
-        (SUBTARGET_CONDITIONAL_REGISTER_USAGE): Disable iwmmxt
+	(SUBTARGET_CONDITIONAL_REGISTER_USAGE): Disable iwmmxt
 	registers unless the iwmmxt target is selected.
-        (FIRST_IWMMXT_GR_REGNUM, LAST_IWMMXT_GR_REGNUM,
+	(FIRST_IWMMXT_GR_REGNUM, LAST_IWMMXT_GR_REGNUM,
 	FIRST_IWMMXT_REGNUM, LAST_IWMMXT_REGNUM, IS_IWMMXT_REGNUM,
 	IS_IWMMXT_GR_REGNUM): Define.
-        (FIRST_PSEUDO_REGISTER): Bump to 63.
-        (struct machine_function): Add sibcall_blocked field.
-        (Struct CUMULATIVE_ARGS): Add iwmmxt_nregs, named_count and
+	(FIRST_PSEUDO_REGISTER): Bump to 63.
+	(struct machine_function): Add sibcall_blocked field.
+	(Struct CUMULATIVE_ARGS): Add iwmmxt_nregs, named_count and
 	nargs fields.
-        (enum arm_builtins): New enum list.
-        * config/arm/arm.md (UNSPEC_WSHUFH, UNSPEC_WACC,
+	(enum arm_builtins): New enum list.
+	* config/arm/arm.md (UNSPEC_WSHUFH, UNSPEC_WACC,
 	UNSPEC_TMOVMSK, UNSPEC_WSAD, UNSPEC_WSADZ, UNSPEC_WMACS,
 	UNSPEC_WMACU, UNSPEC_WMACSZ, UNSPEC_WMACUZ, UNSPEC_CLRDI,
 	UNSPEC_WMADDS, UNSPEC_WMADDU): New unspecs.
 	(VUNSPEC_TMRC, VUNSPEC_TMCR, VUNSPEC_ALIGN8, VUNSPEC_WCMP_EQ,
 	VUNSPEC_WCMP_GTU, VUNSPEC_WCMP_GT): New vunspecs.
-        (movv2si, movv4hi, movv8qi): New expands for vector moves.
-        Include iwmmxt.md.
+	(movv2si, movv4hi, movv8qi): New expands for vector moves.
+	Include iwmmxt.md.
 	* config/arm/t-xscale-elf (MULTILIB_OPITONS): Add iwmmxt
 	multilib.
-        (MULTILIB_DIRNAMES, MULTILIB_REDUNDANT_DIRS): Likewise.
-        * config/arm/mmintrin.h: New ARM specific header file.
-        * config/arm/iwmmx.md: New iWMMXt specific machine patterns.
+	(MULTILIB_DIRNAMES, MULTILIB_REDUNDANT_DIRS): Likewise.
+	* config/arm/mmintrin.h: New ARM specific header file.
+	* config/arm/iwmmx.md: New iWMMXt specific machine patterns.
 
 2003-06-18  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -337,7 +485,7 @@
 	* config/ns32k/NOTES: Likewise.
 
 2003-06-17  Ranjit Mathew  <rmathew@hotmail.com>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/sourcebuild.texi (libgcj Tests): Simplify instructions on how
 	to run Java runtime tests separately.

@@ -919,9 +919,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: File Framework */
 
-#define ASM_FILE_START(STREAM) \
- mmix_asm_file_start (STREAM)
-
 /* While any other punctuation character but ";" would do, we prefer "%"
    or "!"; "!" is an unary operator and so will not be mistakenly included
    in correctly formed expressions.  The hash character adds mass; catches

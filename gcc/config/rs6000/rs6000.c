@@ -51,6 +51,9 @@
 #include "langhooks.h"
 #include "reload.h"
 #include "cfglayout.h"
+#if TARGET_XCOFF
+#include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
+#endif
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
@@ -235,6 +238,7 @@ static void rs6000_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					    HOST_WIDE_INT, tree));
 static rtx rs6000_emit_set_long_const PARAMS ((rtx,
   HOST_WIDE_INT, HOST_WIDE_INT));
+static void rs6000_file_start PARAMS ((void));
 #if TARGET_ELF
 static unsigned int rs6000_elf_section_type_flags PARAMS ((tree, const char *,
 							   int));
@@ -259,6 +263,7 @@ static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						     unsigned HOST_WIDE_INT));
 static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
 static unsigned int rs6000_xcoff_section_type_flags PARAMS ((tree, const char *, int));
+static void rs6000_xcoff_file_start PARAMS ((void));
 static void rs6000_xcoff_file_end PARAMS ((void));
 #endif
 #if TARGET_MACHO
@@ -941,15 +946,22 @@ optimization_options (level, size)
 
 /* Do anything needed at the start of the asm file.  */
 
-void
-rs6000_file_start (file, default_cpu)
-     FILE *file;
-     const char *default_cpu;
+static void
+rs6000_file_start ()
 {
   size_t i;
   char buffer[80];
   const char *start = buffer;
   struct rs6000_cpu_select *ptr;
+  const char *default_cpu = TARGET_CPU_DEFAULT;
+  FILE *file = asm_out_file;
+
+  default_file_start ();
+
+#ifdef TARGET_BI_ARCH
+  if ((TARGET_DEFAULT ^ target_flags) & MASK_64BIT)
+    default_cpu = 0;
+#endif
 
   if (flag_verbose_asm)
     {
@@ -14177,6 +14189,40 @@ rs6000_xcoff_section_type_flags (decl, name, reloc)
 		 ? UNITS_PER_FP_WORD : MIN_UNITS_PER_WORD);
 
   return flags | (exact_log2 (align) & SECTION_ENTSIZE);
+}
+
+/* Output at beginning of assembler file.
+
+   Initialize the section names for the RS/6000 at this point.
+
+   Specify filename, including full path, to assembler.
+
+   We want to go into the TOC section so at least one .toc will be emitted.
+   Also, in order to output proper .bs/.es pairs, we need at least one static
+   [RW] section emitted.
+
+   Finally, declare mcount when profiling to make the assembler happy.  */
+
+static void
+rs6000_xcoff_file_start ()
+{
+  rs6000_gen_section_name (&xcoff_bss_section_name,
+			   main_input_filename, ".bss_");
+  rs6000_gen_section_name (&xcoff_private_data_section_name,
+			   main_input_filename, ".rw_");
+  rs6000_gen_section_name (&xcoff_read_only_section_name,
+			   main_input_filename, ".ro_");
+
+  fputs ("\t.file\t", asm_out_file);
+  output_quoted_string (asm_out_file, main_input_filename);
+  fputc ('\n', asm_out_file);
+  toc_section ();
+  if (write_symbols != NO_DEBUG)
+    private_data_section ();
+  text_section ();
+  if (profile_flag)
+    fprintf (asm_out_file, "\t.extern %s\n", RS6000_MCOUNT);
+  rs6000_file_start ();
 }
 
 /* Output at end of assembler file.

@@ -92,16 +92,8 @@ Boston, MA 02111-1307, USA.  */
 /* The global __fltused is necessary to cause the printf/scanf routines
    for outputting/inputting floating point numbers to be loaded.  Since this
    is kind of hard to detect, we just do it all the time.  */
-
-#ifdef ASM_FILE_START
-#undef ASM_FILE_START
-#endif
-#define ASM_FILE_START(FILE) \
-  do {  fprintf (FILE, "\t.file\t");                            \
-        output_quoted_string (FILE, dump_base_name);            \
-        fprintf (FILE, "\n");                                   \
-        fprintf (FILE, ".global\t__fltused\n");                 \
-  } while (0)
+#undef X86_FILE_START_FLTUSED
+#define X86_FILE_START_FLTUSED 1
 
 /* A table of bytes codes used by the ASM_OUTPUT_ASCII and
    ASM_OUTPUT_LIMITED_STRING macros.  Each byte in the table

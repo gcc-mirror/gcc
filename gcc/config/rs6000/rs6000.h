@@ -2429,6 +2429,8 @@ extern int toc_initialized;
     }									\
    while (0)
 
+#define TARGET_ASM_FILE_START rs6000_file_start
+
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 

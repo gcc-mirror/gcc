@@ -106,29 +106,7 @@ Boston, MA 02111-1307, USA.  */
 #define DATA_SECTION_ASM_OP "\t.data"
 #define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
-/* Output at beginning of assembler file.  We override the definition
-   from <linux.h> so that we can get the proper .LEVEL directive.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) \
-  do								\
-    {								\
-      if (write_symbols != NO_DEBUG)				\
-	{							\
-	  output_file_directive (FILE, main_input_filename);	\
-	  fputs ("\t.version\t\"01.01\"\n", FILE);		\
-	}							\
-      if (TARGET_64BIT)						\
-	fputs("\t.LEVEL 2.0w\n", FILE);				\
-      else if (TARGET_PA_20)					\
-	fputs("\t.LEVEL 2.0\n", FILE);				\
-      else if (TARGET_PA_11)					\
-	fputs("\t.LEVEL 1.1\n", FILE);				\
-      else							\
-	fputs("\t.LEVEL 1.0\n", FILE);				\
-      if (profile_flag)						\
-	fputs ("\t.IMPORT _mcount, CODE\n", FILE);		\
-    }								\
-   while (0)
+#define TARGET_ASM_FILE_START pa_linux_file_start
 
 /* We want local labels to start with period if made with asm_fprintf.  */
 #undef LOCAL_LABEL_PREFIX

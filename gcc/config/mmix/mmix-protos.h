@@ -33,7 +33,6 @@ extern int mmix_register_move_cost
   PARAMS ((enum machine_mode, enum reg_class, enum reg_class));
 extern const char *mmix_text_section_asm_op PARAMS ((void));
 extern const char *mmix_data_section_asm_op PARAMS ((void));
-extern void mmix_asm_file_start PARAMS ((FILE *));
 extern void mmix_asm_output_source_filename PARAMS ((FILE *, const char *));
 extern void mmix_output_quoted_string PARAMS ((FILE *, const char *, int));
 extern void mmix_asm_output_source_line  PARAMS ((FILE *, int));
