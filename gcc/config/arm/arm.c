@@ -5342,7 +5342,7 @@ get_jump_table_size (insn)
   /* ADDR_VECs only take room if read-only data does into the text
      section.  */
   if (JUMP_TABLES_IN_TEXT_SECTION
-#if !defined(READONLY_DATA_SECTION)
+#if !defined(READONLY_DATA_SECTION) && !defined(READONLY_DATA_SECTION_ASM_OP)
       || 1
 #endif
       )

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with COFF object format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002
    Free Software Foundation, Inc.
    Contributed by Doug Evans (devans@cygnus.com).
    
@@ -76,42 +76,12 @@ Boston, MA 02111-1307, USA.  */
    more efficient, but for Thumb it's better to put them out of band.  */
 #define JUMP_TABLES_IN_TEXT_SECTION (TARGET_ARM)
 
-#undef  READONLY_DATA_SECTION
-#define READONLY_DATA_SECTION	rdata_section
-#undef  RDATA_SECTION_ASM_OP
-#define RDATA_SECTION_ASM_OP	"\t.section .rdata"
+#undef  READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP	"\t.section .rdata"
 #undef  CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	"\t.section .ctors,\"x\""
 #undef  DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP	"\t.section .dtors,\"x\""
-
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS SUBTARGET_EXTRA_SECTIONS in_rdata
-
-#define SUBTARGET_EXTRA_SECTIONS
-
-/* A list of extra section function definitions.  */
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS \
-  RDATA_SECTION_FUNCTION	\
-  SUBTARGET_EXTRA_SECTION_FUNCTIONS
-
-#define SUBTARGET_EXTRA_SECTION_FUNCTIONS
-
-#define RDATA_SECTION_FUNCTION \
-void								\
-rdata_section ()						\
-{								\
-  if (in_section != in_rdata)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", RDATA_SECTION_ASM_OP);	\
-      in_section = in_rdata;					\
-    }								\
-}
 
 /* Support the ctors/dtors sections for g++.  */
 

@@ -1062,34 +1062,11 @@ struct cum_arg
 /* The assembler op to get a word, 2 bytes for the H8/300, 4 for H8/300H.  */
 #define ASM_WORD_OP	(TARGET_H8300 ? "\t.word\t" : "\t.long\t")
 
-/* We define a readonly data section solely to remove readonly data
-   from the instruction stream.  This can improve relaxing in two significant
-   ways.  First it's more likely that references to readonly data
-   can be done with a 16bit absolute address since they'll be in low
-   memory.  Second, it's more likely that jsr instructions can be
-   turned into bsr instructions since read-only data is not in the
-   instruction stream.  */
-#define READONLY_DATA_SECTION readonly_data
-
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 #define DATA_SECTION_ASM_OP "\t.section .data"
 #define BSS_SECTION_ASM_OP "\t.section .bss"
 #define INIT_SECTION_ASM_OP "\t.section .init"
 #define READONLY_DATA_SECTION_ASM_OP "\t.section .rodata"
-
-#define EXTRA_SECTIONS in_readonly_data
-
-#define EXTRA_SECTION_FUNCTIONS						\
-extern void readonly_data PARAMS ((void));				\
-void									\
-readonly_data ()							\
-{									\
-  if (in_section != in_readonly_data)					\
-    {									\
-      fprintf (asm_out_file, "%s\n", READONLY_DATA_SECTION_ASM_OP);	\
-      in_section = in_readonly_data;					\
-    }									\
-}
 
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\

@@ -1526,14 +1526,14 @@ do {									\
 #define SDATA_SECTION_ASM_OP	"\t.section .sdata"
 #define SBSS_SECTION_ASM_OP	"\t.section .sbss"
 /* This one is for svr4.h.  */
-#undef  CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP	"\t.section .rodata"
+#undef  READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP	"\t.section .rodata"
 
 /* A list of names for sections other than the standard two, which are
    `in_text' and `in_data'.  You need not define this macro
    on a system with no other sections (that GCC needs to use).  */
 #undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss, in_const
+#define EXTRA_SECTIONS in_sdata, in_sbss
 
 /* One or more functions to be defined in "varasm.c".  These
    functions should do jobs analogous to those of `text_section' and
@@ -1541,7 +1541,6 @@ do {									\
    macro if you do not define `EXTRA_SECTIONS'.  */
 #undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS	\
-  CONST_SECTION_FUNCTION	\
   SDATA_SECTION_FUNCTION	\
   SBSS_SECTION_FUNCTION
 

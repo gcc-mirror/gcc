@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1999, 2000
+   Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1999, 2000, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -164,7 +164,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #undef TEXT_SECTION_ASM_OP
 #undef DATA_SECTION_ASM_OP
-#undef READONLY_DATA_SECTION
+#undef READONLY_DATA_SECTION_ASM_OP
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #undef ASM_OUTPUT_ALIGN

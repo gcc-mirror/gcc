@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com> and
                   Reva Cuthbertson <reva@cup.hp.com>
 
@@ -85,8 +85,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define JMP_BUF_SIZE  (8 * 76)
 
-#undef CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP    "\t.section\t.rodata,\t\"a\",\t\"progbits\""
+#undef READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP \
+  "\t.section\t.rodata,\t\"a\",\t\"progbits\""
 
 #undef BITS_BIG_ENDIAN
 #define BITS_BIG_ENDIAN 1

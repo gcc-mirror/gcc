@@ -3329,7 +3329,7 @@ m88k_select_section (decl, reloc, align)
   if (TREE_CODE (decl) == STRING_CST)
     {
       if (! flag_writable_strings)
-	const_section ();
+	readonly_data_section ();
       else if (TREE_STRING_LENGTH (decl) <= m88k_gp_threshold)
 	sdata_section ();
       else
@@ -3346,10 +3346,10 @@ m88k_select_section (decl, reloc, align)
 		   && !TREE_CONSTANT (DECL_INITIAL (decl))))
 	data_section ();
       else
-	const_section ();
+	readonly_data_section ();
     }
   else
-    const_section ();
+    readonly_data_section ();
 }
 
 /* Adjust the cost of INSN based on the relationship between INSN that

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARClite w/o FPU, COFF.
-   Copyright (C) 1994, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 2000, 2002 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com).
 
 This file is part of GNU CC.
@@ -31,18 +31,6 @@ Boston, MA 02111-1307, USA.  */
 /* Support the ctors and dtors sections for g++.  */
 
 #undef INIT_SECTION_ASM_OP
-
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const
-
-/* A list of extra section function definitions.  */
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION
 
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY

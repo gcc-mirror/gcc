@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
@@ -293,10 +293,10 @@ func_ptr __DTOR_END__[1] = { (func_ptr) (-1) }
 
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)      \
-{                                               \
-  if (flag_pic && symbolic_operand ((RTX), (MODE))) \
-    data_section ();                            \
-  else                                          \
-    const_section ();                           \
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)		\
+{							\
+  if (flag_pic && symbolic_operand ((RTX), (MODE)))	\
+    data_section ();					\
+  else							\
+    readonly_data_section ();				\
 }

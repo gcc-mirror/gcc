@@ -1,3 +1,89 @@
+2002-05-18  Richard Henderson  <rth@redhat.com>
+
+	* final.c (HAVE_READONLY_DATA_SECTION): New.
+	(shorten_branches): Use it instead of ifdefs.
+	* varasm.c (enum in_section): Add in_readonly_data.
+	(text_section, data_section): Tidy.
+	(readonly_data_section): Use READONLY_DATA_SECTION_ASM_OP if present.
+
+	* config/darwin.h, config/nextstep.h, config/h8300/elf.h,
+	config/i860/paragon.h, config/m68k/dpx2.h, config/m68k/hp320.h
+	(READONLY_DATA_SECTION): Don't undef.
+
+	* config/alpha/unicosmk.h, config/h8300/elf.h, config/i386/aix386ng.h,
+	config/i860/paragon.h, config/m68k/dpx2.h, config/m68k/hp320.h,
+	config/rs6000/lynx.h (READONLY_DATA_SECTION_ASM_OP): Undef.
+
+	* config/elfos.h, config/svr3.h, config/alpha/alpha-interix.h,
+	config/alpha/elf.h, config/c4x/c4x.h, config/i386/i386-interix.h,
+	config/i386/sco5.h, config/i386/svr3gas.h, config/i860/sysv3.h,
+	config/m88k/m88k.h, config/pa/pa64-hpux.h (USE_CONST_SECTION): Remove.
+
+	* config/elfos.h, config/netware.h, config/alpha/alpha-interix.h,
+	config/alpha/elf.h, config/alpha/vms.h, config/arc/arc.h,
+	config/arm/coff.h, config/c4x/c4x.h, config/dsp16xx/dsp16xx.h,
+	config/i386/dgux.h, config/i386/i386-interix.h, config/i386/sco5.h,
+	config/ia64/hpux.h, config/m32r/m32r.h, config/m68k/tower-as.h,
+	config/m88k/m88k.h, config/mcore/mcore-pe.h, config/mips/iris6.h,
+	config/mips/mips.h, config/mmix/mmix.h, config/pa/pa64-hpux.h,
+	config/sparc/sysv4.h (READONLY_DATA_SECTION_ASM_OP): Rename from
+	CONST_SECTION_ASM_OP/READONLY_SECTION_ASM_OP/RDATA_SECTION_ASM_OP.
+
+	* config/elfos.h, config/netware.h, config/1750a/1750a.h,
+	config/a29k/a29k.h, config/alpha/alpha-interix.h, config/alpha/alpha.h,
+	config/arm/coff.h, config/h8300/h8300.h, config/i386/aix386ng.h,
+	config/i386/i386-interix.h, config/i386/osfrose.h, config/mmix/mmix.h,
+	config/pa/pa64-hpux.h, config/sparc/litecoff.h
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Remove.
+
+	* config/elfos.h, config/netware.h, config/svr3.h,
+	config/alpha/alpha-interix.h, config/alpha/alpha.h, config/alpha/elf.h,
+	config/arm/coff.h, config/c4x/c4x.h, config/dsp16xx/dsp16xx.h,
+	config/h8300/h8300.h, config/i386/i386-interix.h,
+	config/i386/osfrose.h, config/i386/svr3gas.h, config/mmix/mmix.h,
+	config/pa/pa64-hpux.h (READONLY_DATA_SECTION): Remove.
+
+	* config/elfos.h, config/netware.h, config/svr3.h,
+	config/alpha/alpha-interix.h, config/alpha/alpha.h, config/alpha/elf.h,
+	config/c4x/c4x.h, config/i386/aix386ng.h, config/i386/i386-interix.h,
+	config/i386/sco5.h, config/i386/svr3gas.h, config/mmix/mmix.h,
+	config/pa/pa64-hpux.h (CONST_SECTION_FUNCTION): Remove.
+
+	* config/lynx.h, config/svr3.h, config/alpha/elf.h, config/alpha/vms.h,
+	config/c4x/c4x.h, config/dsp16xx/dsp16xx.h, config/i386/sco5.h,
+	config/i386/svr3gas.h, config/i860/sysv3.h, config/i860/sysv4.h,
+	config/ia64/sysv4.h, config/m32r/m32r.h, config/m88k/m88k.h,
+	config/mcore/mcore-elf.h, config/mcore/mcore-pe.h, config/mips/elf.h,
+	config/mips/elf64.h, config/mips/iris6.h, config/mips/linux.h,
+	config/mips/mips.h, config/mips/rtems64.h, config/mips/vxworks.h,
+	config/rs6000/sysv4.h, config/v850/v850.h
+	(EXTRA_SECTIONS): Remove in_const/in_rdata.
+	(EXTRA_SECTION_FUNCTIONS): Remove accompanying function.
+
+	* config/svr3.h, config/c4x/c4x.h, config/i386/dgux.h,
+	config/i386/sco5.h, config/i386/svr3gas.h, config/ia64/aix.h,
+	config/m88k/dgux.h, config/mcore/mcore-pe.h, config/mmix/mmix.h,
+	config/sparc/sysv4.h (SELECT_RTX_SECTION): Use readonly_data_section.
+	* config/alpha/alpha.c (alpha_start_function): Likewise.
+	(alpha_write_linkage): Likewise.
+	* config/m32r/m32r.c (m32r_select_section): Likewise.
+	* config/m88k/m88k.c (m88k_select_section): Likewise.
+	* config/mips/mips.c (mips_select_rtx_section): Likewise.
+	* config/rs6000/rs6000.c (rs6000_select_rtx_section): Likewise.
+	(rs6000_elf_select_section): Likewise.
+	* config/v850/v850.c (v850_select_section): Likewise.
+
+	* config/1750a/1750a.h, config/i860/sysv3.h
+	(READONLY_DATA_SECTION_ASM_OP): New.
+	READONLY_DATA_SECTION_ASM_OP.
+	* config/i386/interix.c, config/i386/winnt.c
+	(i386_pe_unique_section): Always use .rdata prefix.
+	* config/pa/som.h (readonly_data): Always switch to read-only section.
+	(READONLY_DATA_SECTION): Predicate on flag_pic.
+	* config/we32k/we32k.h (READONLY_DATA_SECTION): Remove parenthesis.
+	* doc/tm.texi (READONLY_DATA_SECTION_ASM_OP): New.
+	(READONLY_DATA_SECTION): Update.
+
 2002-05-18  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* c-common.c (c_common_post_options): Warn if -Wformat-zero-length

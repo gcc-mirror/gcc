@@ -431,12 +431,11 @@ do {									\
 /* Besides the usual ELF sections, we need a toc section.  */
 /* Override elfos.h definition.  */
 #undef	EXTRA_SECTIONS
-#define	EXTRA_SECTIONS in_const, in_toc, in_sdata, in_sdata2, in_sbss, in_init, in_fini
+#define	EXTRA_SECTIONS in_toc, in_sdata, in_sdata2, in_sbss, in_init, in_fini
 
 /* Override elfos.h definition.  */
 #undef	EXTRA_SECTION_FUNCTIONS
 #define	EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
   TOC_SECTION_FUNCTION							\
   SDATA_SECTION_FUNCTION						\
   SDATA2_SECTION_FUNCTION						\

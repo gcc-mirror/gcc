@@ -169,7 +169,6 @@ extern struct rtx_def *mips_load_reg4;	/* 4th reg to check for load delay */
 extern int mips_string_length;		/* length of strings for mips16 */
 
 /* Functions to change what output section we are using.  */
-extern void		rdata_section PARAMS ((void));
 extern void		sdata_section PARAMS ((void));
 extern void		sbss_section PARAMS ((void));
 
@@ -4534,7 +4533,7 @@ while (0)
 	if (TREE_PUBLIC (DECL) && DECL_NAME (DECL))			\
 	  ASM_GLOBALIZE_LABEL (STREAM, NAME);				\
 	    								\
-	READONLY_DATA_SECTION ();					\
+	readonly_data_section ();					\
 	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	\
 	mips_declare_object (STREAM, NAME, "", ":\n\t.space\t%u\n",	\
 	    (SIZE));							\
@@ -4676,7 +4675,7 @@ do {									\
 {									\
   const char *p = STRING;						\
   int size = strlen (p) + 1;						\
-  rdata_section ();							\
+  readonly_data_section ();						\
   assemble_string (p, size);						\
 }
 
@@ -4689,15 +4688,13 @@ do {									\
 #define TEXT_SECTION_ASM_OP	"\t.text"	/* instructions */
 #define DATA_SECTION_ASM_OP	"\t.data"	/* large data */
 #define SDATA_SECTION_ASM_OP	"\t.sdata"	/* small data */
-#define RDATA_SECTION_ASM_OP	"\t.rdata"	/* read-only data */
-#undef READONLY_DATA_SECTION
-#define READONLY_DATA_SECTION	rdata_section
+#define READONLY_DATA_SECTION_ASM_OP	"\t.rdata"	/* read-only data */
 #define SMALL_DATA_SECTION	sdata_section
 
 /* What other sections we support other than the normal .data/.text.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_rdata
+#define EXTRA_SECTIONS in_sdata
 
 /* Define the additional functions to select our additional sections.  */
 
@@ -4718,16 +4715,6 @@ sdata_section ()							\
     {									\
       fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
       in_section = in_sdata;						\
-    }									\
-}									\
-									\
-void									\
-rdata_section ()							\
-{									\
-  if (in_section != in_rdata)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", RDATA_SECTION_ASM_OP);		\
-      in_section = in_rdata;						\
     }									\
 }
 

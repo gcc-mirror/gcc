@@ -2890,7 +2890,7 @@ v850_select_section (exp, reloc, align)
 
         default:
           if (is_const)
-	    const_section ();
+	    readonly_data_section ();
 	  else
 	    data_section ();
 	  break;
@@ -2899,10 +2899,10 @@ v850_select_section (exp, reloc, align)
   else if (TREE_CODE (exp) == STRING_CST)
     {
       if (! flag_writable_strings)
-	const_section ();
+	readonly_data_section ();
       else
 	data_section ();
     }
   else
-    const_section ();
+    readonly_data_section ();
 }

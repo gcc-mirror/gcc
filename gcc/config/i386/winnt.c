@@ -445,15 +445,8 @@ i386_pe_unique_section (decl, reloc)
      without a .rdata section.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     prefix = ".text$";
-/* else if (DECL_INITIAL (decl) == 0
-	   || DECL_INITIAL (decl) == error_mark_node)
-    prefix = ".bss";  */
   else if (DECL_READONLY_SECTION (decl, reloc))
-#ifdef READONLY_DATA_SECTION
     prefix = ".rdata$";
-#else
-    prefix = ".text$";
-#endif
   else
     prefix = ".data$";
   len = strlen (name) + strlen (prefix);

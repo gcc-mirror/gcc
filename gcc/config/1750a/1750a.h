@@ -889,16 +889,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define ASM_APP_OFF "; ASM_APP_OFF\n"
 
-
-#define EXTRA_SECTIONS  in_readonly_data
-
 #define EXTRA_SECTION_FUNCTIONS		\
-    extern void const_section PARAMS ((void));			\
-    void const_section()					\
-    {								\
-	fprintf(asm_out_file,"\tkonst\n");			\
-	current_section = Konst;				\
-    }								\
     void check_section(sect)					\
 	 enum section sect;					\
     {								\
@@ -920,9 +911,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	}							\
     }
 
-		
-/* Function that switches to the read-only data section (optional) */
-#define READONLY_DATA_SECTION	const_section
+#define READONLY_DATA_SECTION_ASM_OP "\tkonst"
 
 /* Output before program init section */
 #define INIT_SECTION_ASM_OP "\n\tinit     ; init_section\n"

@@ -250,7 +250,34 @@ do {  \
 /* Supposedly the assembler rejects the command if there is no tab!  */
 #define READONLY_DATA_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n"
 
-#define READONLY_DATA_SECTION readonly_data
+#define EXTRA_SECTIONS in_readonly_data
+
+#define EXTRA_SECTION_FUNCTIONS						\
+extern void readonly_data PARAMS ((void));				\
+void									\
+readonly_data ()							\
+{									\
+  if (in_section != in_readonly_data)					\
+    {									\
+      in_section = in_readonly_data;					\
+      fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
+    }									\
+}
+
+/* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
+   which reference data within the $TEXT$ space (for example constant
+   strings in the $LIT$ subspace).
+
+   The assemblers (GAS and HP as) both have problems with handling
+   the difference of two symbols which is the other correct way to
+   reference constant data during PIC code generation.
+
+   So, there's no way to reference constant data which is in the
+   $TEXT$ space during PIC generation.  Instead place all constant
+   data into the $PRIVATE$ subspace (this reduces sharing, but it
+   works correctly).  */
+
+#define READONLY_DATA_SECTION (flag_pic ? data_section : readonly_data)
 
 /* Output before writable data.  */
 
@@ -267,38 +294,6 @@ do {  \
 
    So, we force exception information into the data section.  */
 #define TARGET_ASM_EXCEPTION_SECTION data_section
-
-/* Define the .bss section for ASM_OUTPUT_LOCAL to use.  */
-
-#define EXTRA_SECTIONS in_readonly_data
-
-/* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
-   which reference data within the $TEXT$ space (for example constant
-   strings in the $LIT$ subspace).
-
-   The assemblers (GAS and HP as) both have problems with handling
-   the difference of two symbols which is the other correct way to
-   reference constant data during PIC code generation.
-
-   So, there's no way to reference constant data which is in the
-   $TEXT$ space during PIC generation.  Instead place all constant
-   data into the $PRIVATE$ subspace (this reduces sharing, but it
-   works correctly).  */
-
-#define EXTRA_SECTION_FUNCTIONS						\
-extern void readonly_data PARAMS ((void));				\
-void									\
-readonly_data ()							\
-{									\
-  if (in_section != in_readonly_data)					\
-    {									\
-      if (flag_pic)							\
-	fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);		\
-      else								\
-	fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
-      in_section = in_readonly_data;					\
-    }									\
-}
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.

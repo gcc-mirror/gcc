@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Sparc running System V.4
-   Copyright (C) 1991, 1992, 1995, 1996, 1997, 1998, 2000
+   Copyright (C) 1991, 1992, 1995, 1996, 1997, 1998, 2000, 2002
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef INIT_SECTION_ASM_OP
 #undef FINI_SECTION_ASM_OP
-#undef CONST_SECTION_ASM_OP
+#undef READONLY_DATA_SECTION_ASM_OP
 #undef TYPE_OPERAND_FMT
 #undef PUSHSECTION_FORMAT
 #undef STRING_ASM_OP
@@ -70,12 +70,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)	\
-{						\
-  if (flag_pic && symbolic_operand ((RTX), (MODE))) \
-    data_section ();				\
-  else						\
-    const_section ();				\
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)		\
+{							\
+  if (flag_pic && symbolic_operand ((RTX), (MODE)))	\
+    data_section ();					\
+  else							\
+    readonly_data_section ();				\
 }
 
 /* Define the names of various pseudo-op used by the Sparc/svr4 assembler.
@@ -143,7 +143,7 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define TEXT_SECTION_ASM_OP	"\t.section\t\".text\""
 #define DATA_SECTION_ASM_OP	"\t.section\t\".data\""
 #define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
-#define CONST_SECTION_ASM_OP	"\t.section\t\".rodata\""
+#define READONLY_DATA_SECTION_ASM_OP "\t.section\t\".rodata\""
 #define INIT_SECTION_ASM_OP	"\t.section\t\".init\""
 #define FINI_SECTION_ASM_OP	"\t.section\t\".fini\""
 

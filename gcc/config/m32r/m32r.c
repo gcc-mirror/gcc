@@ -331,7 +331,7 @@ m32r_select_section (decl, reloc, align)
   if (TREE_CODE (decl) == STRING_CST)
     {
       if (! flag_writable_strings)
-	const_section ();
+	readonly_data_section ();
       else
 	data_section ();
     }
@@ -347,10 +347,10 @@ m32r_select_section (decl, reloc, align)
 		   && !TREE_CONSTANT (DECL_INITIAL (decl))))
 	data_section ();
       else
-	const_section ();
+	readonly_data_section ();
     }
   else
-    const_section ();
+    readonly_data_section ();
 }
 
 /* Encode section information of DECL, which is either a VAR_DECL,

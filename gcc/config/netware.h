@@ -61,36 +61,9 @@ Boston, MA 02111-1307, USA.  */
 #undef	HAS_INIT_SECTION
 #undef	INIT_SECTION_ASM_OP
 
-#undef	READONLY_DATA_SECTION
-#define	READONLY_DATA_SECTION	const_section 
-
-#undef	CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP    ".section\t.rodata"
+#undef	READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP    ".section\t.rodata"
 #undef	CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\""
 #undef	DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP	".section\t.dtors,\"x\""
-
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const
-
-/* A list of extra section function definitions.  */
-
-#undef	EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION
-
-#undef	CONST_SECTION_FUNCTION
-#define CONST_SECTION_FUNCTION                                          \
-void                                                                    \
-const_section ()                                                        \
-{                                                                       \
-  if (in_section != in_const)                                      	\
-    {                                                                   \
-      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);             \
-      in_section = in_const;                                            \
-    }                                                                   \
-}

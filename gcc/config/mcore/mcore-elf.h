@@ -42,13 +42,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define EXPORTS_SECTION_ASM_OP	"\t.section .exports"
 
-#define SUBTARGET_EXTRA_SECTIONS in_const, in_exports
+#define SUBTARGET_EXTRA_SECTIONS in_exports
 
 #define SUBTARGET_EXTRA_SECTION_FUNCTIONS	\
-  CONST_SECTION_FUNCTION			\
-  EXPORT_SECTION_FUNCTION			\
-
-/* CONST_SECTION_FUNCTION is defined svr4.h.  */
+  EXPORT_SECTION_FUNCTION
 
 #define EXPORT_SECTION_FUNCTION 				\
 void								\
@@ -62,8 +59,7 @@ exports_section ()						\
 }
 
 #define SUBTARGET_SWITCH_SECTIONS		\
-  case in_exports: exports_section (); break;	\
-  case in_const: const_section (); break;
+  case in_exports: exports_section (); break;
 
 
 #define MCORE_EXPORT_NAME(STREAM, NAME)			\

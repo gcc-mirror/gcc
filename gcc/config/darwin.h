@@ -483,7 +483,6 @@ objc_section_init ()				\
     }						\
 }
 
-#undef	READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION const_section
 
 #undef	TARGET_ASM_SELECT_SECTION
