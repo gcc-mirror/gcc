@@ -814,8 +814,10 @@ do									      \
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
 
-/* MOVE_RATIO is the number of move instructions that is better than a
-   block move.  Make this large on clipper, since the block move is very
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction pairs, we will do a movstr or libcall instead.
+
+   Make this large on clipper, since the block move is very
    inefficient with small blocks, and the hard register needs of the
    block move require much reload work. */
 

@@ -1495,9 +1495,8 @@ extern void final_prescan_insn ();
 
 #define FIXUNS_TRUNC_LIKE_FIX_TRUNC
 
-/* Max number of bytes we can move to or from memory
-   in one reasonably fast instruction.  */
-
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction pairs, we will do a movstr or libcall instead.  */
 #define MOVE_MAX 8
 
 /* Largest number of bytes of an object that can be placed in a register.

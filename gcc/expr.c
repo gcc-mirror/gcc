@@ -222,8 +222,8 @@ extern tree truthvalue_conversion       PROTO((tree));
 static char direct_load[NUM_MACHINE_MODES];
 static char direct_store[NUM_MACHINE_MODES];
 
-/* MOVE_RATIO is the number of move instructions that is better than
-   a block move.  */
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction sequences, we will do a movstr or libcall instead.  */
 
 #ifndef MOVE_RATIO
 #if defined (HAVE_movstrqi) || defined (HAVE_movstrhi) || defined (HAVE_movstrsi) || defined (HAVE_movstrdi) || defined (HAVE_movstrti)

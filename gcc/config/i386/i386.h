@@ -1805,10 +1805,10 @@ while (0)
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
 
-/* The number of scalar move insns which should be generated instead
-   of a string move insn or a library call.  Increasing the value
-   will always make code faster, but eventually incurs high cost in
-   increased code size.
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction pairs, we will do a movstr or libcall instead.
+   Increasing the value will always make code faster, but eventually
+   incurs high cost in increased code size.
 
    If you don't define this, a reasonable default is used.
 
