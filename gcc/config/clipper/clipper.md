@@ -203,22 +203,21 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "memory_operand" "=o,m")
-	(match_operand:DF 1 "register_operand" "r,f"))]
+	(match_operand:DF 1 "register_operand" "rf,f"))]
   ""
   "*
 {
-  if (which_alternative == 0)		/* r -> o */
-    {
-      rtx xops[4];
-      xops[0] = operands[0];
-      xops[1] = adj_offsettable_operand (operands[0], 4);
-      xops[2] = operands[1];
-      xops[3] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
-      output_asm_insn (\"storw  %2,%0\;storw  %3,%1\", xops);
-      return \"\";
-    }
+  rtx xops[4];
 
-  return \"stord  %1,%0\";		/* f-> m */
+  if (REGNO (operands[1]) >= 16)	/* f -> m */
+    return \"stord  %1,%0\";
+
+  xops[0] = operands[0];		/* r -> o */
+  xops[1] = adj_offsettable_operand (operands[0], 4);
+  xops[2] = operands[1];
+  xops[3] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+  output_asm_insn (\"storw  %2,%0\;storw  %3,%1\", xops);
+  return \"\";
 }"
 [(set_attr "type" "store,store")
  (set_attr "cc" "clobber,unchanged")])
