@@ -39,7 +39,7 @@ package java.text;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 from http://www.javasoft.com.
@@ -180,7 +180,7 @@ public class RuleBasedCollator extends Collator
    * collation elements. It contains an instruction which specifies the new
    * state of the generator. The sequence of instruction should not contain
    * RESET (it is used by
-   * {@link #mergeRules(int,java.lang.String,java.util.Vector,java.util.Vector)})
+   * {@link #mergeRules(int,java.lang.String,java.util.ArrayList,java.util.ArrayList)})
    * as a temporary state while merging two sets of instructions.
    */
   final static class CollationSorter
@@ -304,10 +304,9 @@ public class RuleBasedCollator extends Collator
    * @param patch Rules to be merged into the repository.
    * @throws ParseException if it is impossible to find an anchor point for the new rules.
    */
-  private void mergeRules(int offset, String starter, Vector main, Vector patch)
+  private void mergeRules(int offset, String starter, ArrayList main, ArrayList patch)
     throws ParseException 
   {
-    Enumeration elements = main.elements();
     int insertion_point = -1;
     int max_length = 0;
     
@@ -323,11 +322,11 @@ public class RuleBasedCollator extends Collator
 	
 	while (j < main.size())
 	  {
-	    CollationSorter rule1 = (CollationSorter) patch.elementAt(i);
-	    CollationSorter rule2 = (CollationSorter) main.elementAt(j);
+	    CollationSorter rule1 = (CollationSorter) patch.get(i);
+	    CollationSorter rule2 = (CollationSorter) main.get(j);
 	    
 	    if (rule1.textElement.equals(rule2.textElement))
-	      main.removeElementAt(j);
+	      main.remove(j);
 	    else
 	      j++;
 	  }
@@ -336,7 +335,7 @@ public class RuleBasedCollator extends Collator
     // Find the insertion point... O(N)
     for (int i = 0; i < main.size(); i++)
       {
-	CollationSorter sorter = (CollationSorter) main.elementAt(i);
+	CollationSorter sorter = (CollationSorter) main.get(i);
 	int length = findPrefixLength(starter, sorter.textElement);
 		
 	if (length > max_length)
@@ -362,24 +361,24 @@ public class RuleBasedCollator extends Collator
 	 * sequence. The rest of the subsequence must be appended
 	 * to the end of the sequence.
 	 */
-	CollationSorter sorter = (CollationSorter) patch.elementAt(0);
+	CollationSorter sorter = (CollationSorter) patch.get(0);
 	CollationSorter expansionPrefix =
-	  (CollationSorter) main.elementAt(insertion_point-1);
+	  (CollationSorter) main.get(insertion_point-1);
 	
 	sorter.expansionOrdering = starter.substring(max_length); // Skip the first good prefix element
 		
-	main.insertElementAt(sorter, insertion_point);
+	main.add(insertion_point, sorter);
 	
 	/*
 	 * This is a new set of rules. Append to the list.
 	 */
-	patch.removeElementAt(0);
+	patch.remove(0);
 	insertion_point++;
       }
 
     // Now insert all elements of patch at the insertion point.
     for (int i = 0; i < patch.size(); i++)
-      main.insertElementAt(patch.elementAt(i), i+insertion_point);
+      main.add(i+insertion_point, patch.get(i));
   }
 
   /**
@@ -397,7 +396,7 @@ public class RuleBasedCollator extends Collator
    * @throws ParseException if something turned wrong during the parsing. To get details
    * decode the message.
    */
-  private int subParseString(boolean stop_on_reset, Vector v,
+  private int subParseString(boolean stop_on_reset, ArrayList v,
 			     int base_offset, String rules)
     throws ParseException
   {
@@ -506,7 +505,7 @@ main_parse_loop:
 	     * indicated by the text element.
 	     */
 	    String subrules = rules.substring(i);
-	    Vector sorted_rules = new Vector();
+	    ArrayList sorted_rules = new ArrayList();
 	    int idx;
 
 	    // Parse the subrules but do not iterate through all
@@ -591,10 +590,10 @@ main_parse_loop:
    * @throws ParseException if something turned wrong during the parsing. To get details
    * decode the message.
    */
-  private Vector parseString(String rules) 
+  private ArrayList parseString(String rules) 
     throws ParseException
   {
-    Vector v = new Vector();
+    ArrayList v = new ArrayList();
 
     // result of the first subParseString is not absolute (may be -1 or a
     // positive integer). But we do not care.
@@ -607,10 +606,10 @@ main_parse_loop:
    * This method uses the sorting instructions built by {@link #parseString}
    * to build collation elements which can be directly used to sort strings.
    *
-   * @param parsedElements Parsed instructions stored in a Vector.
+   * @param parsedElements Parsed instructions stored in a ArrayList.
    * @throws ParseException if the order of the instructions are not valid.
    */
-  private void buildCollationVector(Vector parsedElements)
+  private void buildCollationVector(ArrayList parsedElements)
     throws ParseException
   {
     int primary_seq = 0;
@@ -622,13 +621,13 @@ main_parse_loop:
     final boolean DECREASING = false;
     final boolean INCREASING = true;
     boolean secondaryType = INCREASING;
-    Vector v = new Vector();
+    ArrayList v = new ArrayList();
 
     // elts is completely sorted.
 element_loop:
     for (int i = 0; i < parsedElements.size(); i++)
       {
-	CollationSorter elt = (CollationSorter) parsedElements.elementAt(i);
+	CollationSorter elt = (CollationSorter) parsedElements.get(i);
 	boolean ignoreChar = false;
 
 	switch (elt.comparisonType)
@@ -947,7 +946,7 @@ element_loop:
   public CollationKey getCollationKey(String source)
   {
     CollationElementIterator cei = getCollationElementIterator(source);
-    Vector vect = new Vector(25);
+    ArrayList vect = new ArrayList();
 
     int ord = cei.next();
     cei.reset(); //set to start of string
