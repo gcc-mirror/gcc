@@ -18,9 +18,15 @@ proc libjava_prune_warnings {text} {
     set len [llength $tlist]
     for {set i [expr {$len - 1}]} {$i >= 2} {incr i -1} {
 	if {[string match "*unreachable bytecode*" [lindex $tlist $i]]} {
-	    # Delete this line and the previous two lines.
-	    set tlist [lreplace $tlist [expr {$i - 2}] $i]
-	    incr i -2
+	    # Delete this line, all other unreachable warnings and the previous
+	    # two lines containing the method and class.
+	    set j [expr {$i - 1}]
+	    while {[string match "*unreachable bytecode*" [lindex $tlist $j]]} {
+		incr j -1
+	    }
+	    incr j -1
+	    set tlist [lreplace $tlist $j $i]
+	    set i $j
 	}
     }
     return [join $tlist \n]
