@@ -3322,7 +3322,8 @@ finish_struct_1 (t, warn_anon)
 
       last_x = x;
 
-      if (TREE_CODE (x) == TYPE_DECL)
+      if (TREE_CODE (x) == TYPE_DECL
+	  || TREE_CODE (x) == TEMPLATE_DECL)
 	continue;
 
       /* If we've gotten this far, it's a data member, possibly static,
@@ -5174,8 +5175,8 @@ instantiate_type (lhstype, rhs, complain)
 		    tree t = make_scratch_vec (n);
 		    int i;
 		    i = type_unification
-		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), 
-		       &TREE_VEC_ELT (t, 0), TYPE_ARG_TYPES (TREE_TYPE (elem)),
+		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), t,
+		       TYPE_ARG_TYPES (TREE_TYPE (elem)),
 		       TYPE_ARG_TYPES (lhstype), explicit_targs, 1, 1);
 		    if (i == 0)
 		      {

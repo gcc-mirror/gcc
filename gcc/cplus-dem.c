@@ -197,7 +197,8 @@ static const struct optable
   {"min",	  "<?",		0},		/* old */
   {"mn",	  "<?",		DMGL_ANSI},	/* pseudo-ansi */
   {"nop",	  "",		0},		/* old (for operator=) */
-  {"rm",	  "->*",	DMGL_ANSI}	/* ansi */
+  {"rm",	  "->*",	DMGL_ANSI},	/* ansi */
+  {"sz",          "sizeof ",    DMGL_ANSI}      /* pseudo-ansi */
 };
 
 
@@ -329,6 +330,10 @@ forget_types PARAMS ((struct work_stuff *));
 
 static void
 string_prepends PARAMS ((string *, string *));
+
+static int 
+demangle_template_value_parm PARAMS ((struct work_stuff*, 
+				      const char**, string*)); 
 
 /*  Translate count to integer, consuming tokens in the process.
     Conversion terminates on the first non-digit character.
@@ -996,6 +1001,270 @@ demangle_template_template_parm (work, mangled, tname)
 }
 
 static int
+demangle_integral_value (work, mangled, s)
+     struct work_stuff *work;
+     const char** mangled;
+     string* s;
+{
+  int success;
+
+  if (**mangled == 'E')
+    {
+      int need_operator = 0;
+      
+      success = 1;
+      string_appendn (s, "(", 1);
+      (*mangled)++;
+      while (success && **mangled != 'W' && **mangled != '\0')
+	{
+	  if (need_operator)
+	    {
+	      size_t i;
+	      size_t len;
+
+	      success = 0;
+
+	      len = strlen (*mangled);
+
+	      for (i = 0; 
+		   i < sizeof (optable) / sizeof (optable [0]);
+		   ++i)
+		{
+		  size_t l = strlen (optable[i].in);
+
+		  if (l <= len
+		      && memcmp (optable[i].in, *mangled, l) == 0)
+		    {
+		      string_appendn (s, " ", 1);
+		      string_append (s, optable[i].out);
+		      string_appendn (s, " ", 1);
+		      success = 1;
+		      (*mangled) += l;
+		      break;
+		    }
+		}
+
+	      if (!success)
+		break;
+	    }
+	  else
+	    need_operator = 1;
+
+	  success = demangle_template_value_parm (work, mangled, s);
+	}
+
+      if (**mangled != 'W')
+	  success = 0;
+      else 
+	{
+	  string_appendn (s, ")", 1);
+	  (*mangled)++;
+	}
+    }
+  else if (**mangled == 'Q')
+    success = demangle_qualified (work, mangled, s, 0, 1);
+  else
+    {
+      success = 0;
+
+      if (**mangled == 'm')
+	{
+	  string_appendn (s, "-", 1);
+	  (*mangled)++;
+	}
+      while (isdigit (**mangled))	
+	{
+	  string_appendn (s, *mangled, 1);
+	  (*mangled)++;
+	  success = 1;
+	}
+    }
+  
+  return success;
+}
+
+static int 
+demangle_template_value_parm (work, mangled, s)
+     struct work_stuff *work;
+     const char **mangled;
+     string* s;
+{
+  const char *old_p = *mangled;
+  int is_pointer = 0;
+  int is_real = 0;
+  int is_integral = 0;
+  int is_char = 0;
+  int is_bool = 0;
+  int done = 0;
+  int success = 1;
+
+  while (*old_p && !done)
+    {	
+      switch (*old_p)
+	{
+	case 'P':
+	case 'p':
+	case 'R':
+	  done = is_pointer = 1;
+	  break;
+	case 'C':	/* const */
+	case 'S':	/* explicitly signed [char] */
+	case 'U':	/* unsigned */
+	case 'V':	/* volatile */
+	case 'F':	/* function */
+	case 'M':	/* member function */
+	case 'O':	/* ??? */
+	case 'J':	/* complex */
+	  old_p++;
+	  continue;
+	case 'E':       /* expression */
+	case 'Q':	/* qualified name */
+	  done = is_integral = 1;
+	  break;
+	case 'T':	/* remembered type */
+	  abort ();
+	  break;
+	case 'v':	/* void */
+	  abort ();
+	  break;
+	case 'x':	/* long long */
+	case 'l':	/* long */
+	case 'i':	/* int */
+	case 's':	/* short */
+	case 'w':	/* wchar_t */
+	  done = is_integral = 1;
+	  break;
+	case 'b':	/* bool */
+	  done = is_bool = 1;
+	  break;
+	case 'c':	/* char */
+	  done = is_char = 1;
+	  break;
+	case 'r':	/* long double */
+	case 'd':	/* double */
+	case 'f':	/* float */
+	  done = is_real = 1;
+	  break;
+	default:
+	  /* it's probably user defined type, let's assume
+	     it's integral, it seems hard to figure out
+	     what it really is */
+	  done = is_integral = 1;
+	}
+    }
+  if (**mangled == 'Y')
+    {
+      /* The next argument is a template parameter. */
+      int idx;
+
+      (*mangled)++;
+      idx = consume_count_with_underscores (mangled);
+      if (idx == -1 
+	  || (work->tmpl_argvec && idx >= work->ntmpl_args)
+	  || consume_count_with_underscores (mangled) == -1)
+	return -1;
+      if (work->tmpl_argvec)
+	string_append (s, work->tmpl_argvec[idx]);
+      else
+	{
+	  char buf[10];
+	  sprintf(buf, "T%d", idx);
+	  string_append (s, buf);
+	}
+    }
+  else if (is_integral)
+    success = demangle_integral_value (work, mangled, s);
+  else if (is_char)
+    {
+      char tmp[2];
+      int val;
+      if (**mangled == 'm')
+	{
+	  string_appendn (s, "-", 1);
+	  (*mangled)++;
+	}
+      string_appendn (s, "'", 1);
+      val = consume_count(mangled);
+      if (val == 0)
+	return -1;
+      tmp[0] = (char)val;
+      tmp[1] = '\0';
+      string_appendn (s, &tmp[0], 1);
+      string_appendn (s, "'", 1);
+    }
+  else if (is_bool)
+    {
+      int val = consume_count (mangled);
+      if (val == 0)
+	string_appendn (s, "false", 5);
+      else if (val == 1)
+	string_appendn (s, "true", 4);
+      else
+	success = 0;
+    }
+  else if (is_real)
+    {
+      if (**mangled == 'm')
+	{
+	  string_appendn (s, "-", 1);
+	  (*mangled)++;
+	}
+      while (isdigit (**mangled))	
+	{
+	  string_appendn (s, *mangled, 1);
+	  (*mangled)++;
+	}
+      if (**mangled == '.') /* fraction */
+	{
+	  string_appendn (s, ".", 1);
+	  (*mangled)++;
+	  while (isdigit (**mangled))	
+	    {
+	      string_appendn (s, *mangled, 1);
+	      (*mangled)++;
+	    }
+	}
+      if (**mangled == 'e') /* exponent */
+	{
+	  string_appendn (s, "e", 1);
+	  (*mangled)++;
+	  while (isdigit (**mangled))	
+	    {
+	      string_appendn (s, *mangled, 1);
+	      (*mangled)++;
+	    }
+	}
+    }
+  else if (is_pointer)
+    {
+      int symbol_len = consume_count (mangled);
+      if (symbol_len == 0)
+	return -1;
+      if (symbol_len == 0)
+	string_appendn (s, "0", 1);
+      else
+	{
+	  char *p = xmalloc (symbol_len + 1), *q;
+	  strncpy (p, *mangled, symbol_len);
+	  p [symbol_len] = '\0';
+	  q = cplus_demangle (p, work->options);
+	  string_appendn (s, "&", 1);
+	  if (q)
+	    {
+	      string_append (s, q);
+	      free (q);
+	    }
+	  else
+	    string_append (s, p);
+	  free (p);
+	}
+      *mangled += symbol_len;
+    }
+
+  return success;
+}
+
+static int
 demangle_template (work, mangled, tname, trawname, is_type)
      struct work_stuff *work;
      const char **mangled;
@@ -1004,18 +1273,10 @@ demangle_template (work, mangled, tname, trawname, is_type)
      int is_type;
 {
   int i;
-  int is_pointer;
-  int is_real;
-  int is_integral;
-  int is_char;
-  int is_bool;
   int r;
   int need_comma = 0;
   int success = 0;
-  int done;
-  const char *old_p;
   const char *start;
-  int symbol_len;
   int is_java_array = 0;
   string temp;
 
@@ -1148,13 +1409,7 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	  string* s;
 
 	  /* otherwise, value parameter */
-	  old_p  = *mangled;
-	  is_pointer = 0;
-	  is_real = 0;
-	  is_integral = 0;
-          is_char = 0;
-	  is_bool = 0;
-	  done = 0;
+
 	  /* temp is initialized in do_type */
 	  success = do_type (work, mangled, &temp);
 	  /*
@@ -1180,193 +1435,16 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	  else
 	    s = tname;
 
-	  while (*old_p && !done)
-	    {	
-	      switch (*old_p)
-		{
-		case 'P':
-		case 'p':
-		case 'R':
-		  done = is_pointer = 1;
-		  break;
-		case 'C':	/* const */
-		case 'S':	/* explicitly signed [char] */
-		case 'U':	/* unsigned */
-		case 'V':	/* volatile */
-		case 'F':	/* function */
-		case 'M':	/* member function */
-		case 'O':	/* ??? */
-		case 'J':	/* complex */
-		  old_p++;
-		  continue;
-		case 'Q':	/* qualified name */
-		  done = is_integral = 1;
-		  break;
-		case 'T':	/* remembered type */
-		  abort ();
-		  break;
-		case 'v':	/* void */
-		  abort ();
-		  break;
-		case 'x':	/* long long */
-		case 'l':	/* long */
-		case 'i':	/* int */
-		case 's':	/* short */
-		case 'w':	/* wchar_t */
-		  done = is_integral = 1;
-		  break;
-		case 'b':	/* bool */
-		  done = is_bool = 1;
-		  break;
-		case 'c':	/* char */
-		  done = is_char = 1;
-		  break;
-		case 'r':	/* long double */
-		case 'd':	/* double */
-		case 'f':	/* float */
-		  done = is_real = 1;
-		  break;
-		default:
-		  /* it's probably user defined type, let's assume
-		     it's integral, it seems hard to figure out
-		     what it really is */
-		  done = is_integral = 1;
-		}
-	    }
-	  if (**mangled == 'Y')
-	    {
-	      /* The next argument is a template parameter. */
-	      int idx;
+	  success = demangle_template_value_parm (work, mangled, s);
 
-	      (*mangled)++;
-	      idx = consume_count_with_underscores (mangled);
-	      if (idx == -1 
-		  || (work->tmpl_argvec && idx >= work->ntmpl_args)
-		  || consume_count_with_underscores (mangled) == -1)
-		{
-		  success = 0;
-		  if (!is_type)
-		    string_delete (s);
-		  break;
-		}
-	      if (work->tmpl_argvec)
-		string_append (s, work->tmpl_argvec[idx]);
-	      else
-		{
-		  char buf[10];
-		  sprintf(buf, "T%d", idx);
-		  string_append (s, buf);
-		}
-	    }
-	  else if (is_integral)
+	  if (!success)
 	    {
-	      if (**mangled == 'm')
-		{
-		  string_appendn (s, "-", 1);
-		  (*mangled)++;
-		}
-	      while (isdigit (**mangled))	
-		{
-		  string_appendn (s, *mangled, 1);
-		  (*mangled)++;
-		}
+	      if (!is_type)
+		string_delete (s);
+	      success = 0;
+	      break;
 	    }
-	  else if (is_char)
-	    {
-	      char tmp[2];
-	      int val;
-              if (**mangled == 'm')
-                {
-                  string_appendn (s, "-", 1);
-                  (*mangled)++;
-                }
-	      string_appendn (s, "'", 1);
-              val = consume_count(mangled);
-	      if (val == 0)
-		{
-		  success = 0;
-		  if (!is_type)
-		    string_delete (s);
-		  break;
-                }
-              tmp[0] = (char)val;
-              tmp[1] = '\0';
-              string_appendn (s, &tmp[0], 1);
-	      string_appendn (s, "'", 1);
-	    }
-	  else if (is_bool)
-	    {
-	      int val = consume_count (mangled);
-	      if (val == 0)
-		string_appendn (s, "false", 5);
-	      else if (val == 1)
-		string_appendn (s, "true", 4);
-	      else
-		success = 0;
-	    }
-	  else if (is_real)
-	    {
-	      if (**mangled == 'm')
-		{
-		  string_appendn (s, "-", 1);
-		  (*mangled)++;
-		}
-	      while (isdigit (**mangled))	
-		{
-		  string_appendn (s, *mangled, 1);
-		  (*mangled)++;
-		}
-	      if (**mangled == '.') /* fraction */
-		{
-		  string_appendn (s, ".", 1);
-		  (*mangled)++;
-		  while (isdigit (**mangled))	
-		    {
-		      string_appendn (s, *mangled, 1);
-		      (*mangled)++;
-		    }
-		}
-	      if (**mangled == 'e') /* exponent */
-		{
-		  string_appendn (s, "e", 1);
-		  (*mangled)++;
-		  while (isdigit (**mangled))	
-		    {
-		      string_appendn (s, *mangled, 1);
-		      (*mangled)++;
-		    }
-		}
-	    }
-	  else if (is_pointer)
-	    {
-	      symbol_len = consume_count (mangled);
-	      if (symbol_len == 0)
-		{
-		  success = 0;
-		  if (!is_type)
-		    string_delete (s);
-		  break;
-		}
-	      if (symbol_len == 0)
-		string_appendn (s, "0", 1);
-	      else
-		{
-		  char *p = xmalloc (symbol_len + 1), *q;
-		  strncpy (p, *mangled, symbol_len);
-		  p [symbol_len] = '\0';
-		  q = cplus_demangle (p, work->options);
-		  string_appendn (s, "&", 1);
-		  if (q)
-		    {
-		      string_append (s, q);
-		      free (q);
-		    }
-		  else
-		    string_append (s, p);
-		  free (p);
-		}
-	      *mangled += symbol_len;
-	    }
+
 	  if (!is_type)
 	    {
 	      int len = s->p - s->b;

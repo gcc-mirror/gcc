@@ -471,6 +471,16 @@ build_underscore_int (i)
     OB_PUTC ('_');
 }
 
+static void
+build_overload_scope_ref (value)
+     tree value;
+{
+  OB_PUTC2 ('Q', '2');
+  numeric_output_need_bar = 0;
+  build_mangled_name (TREE_OPERAND (value, 0), 0, 0);
+  build_overload_identifier (TREE_OPERAND (value, 1));
+}
+
 /* Encoding for an INTEGER_CST value.  */
 
 static void
@@ -479,13 +489,70 @@ build_overload_int (value, in_template)
      int in_template;
 {
   if (in_template && TREE_CODE (value) != INTEGER_CST)
-    /* We don't ever want this output, but it's inconvenient not to
-       be able to build the string.  This should cause assembler
-       errors we'll notice.  */
     {
-      static int n;
-      sprintf (digit_buffer, " *%d", n++);
-      OB_PUTCP (digit_buffer);
+      if (TREE_CODE (value) == SCOPE_REF)
+	{
+	  build_overload_scope_ref (value);
+	  return;
+	}
+
+      OB_PUTC ('E');
+      numeric_output_need_bar = 0;
+
+      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (value))))
+	{
+	  int i;
+	  int operands = tree_code_length[(int) TREE_CODE (value)];
+	  tree id;
+	  char* name;
+
+	  id = ansi_opname [(int) TREE_CODE (value)];
+	  my_friendly_assert (id != NULL_TREE, 0);
+	  name = IDENTIFIER_POINTER (id);
+	  my_friendly_assert (name[0] == '_' && name[1] == '_', 0);
+
+	  for (i = 0; i < operands; ++i)
+	    {
+	      tree operand;
+	      enum tree_code tc;
+
+	      /* We just outputted either the `E' or the name of the
+		 operator.  */
+	      numeric_output_need_bar = 0;
+
+	      if (i != 0)
+		/* Skip the leading underscores.  */
+		OB_PUTCP (name + 2);
+
+	      operand = TREE_OPERAND (value, i);
+	      tc = TREE_CODE (operand);
+
+	      if (TREE_CODE_CLASS (tc) == 't')
+		/* We can get here with sizeof, e.g.:
+		     
+		   template <class T> void f(A<sizeof(T)>);  */
+		process_overload_item (operand, 0);
+	      else if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (tc)))
+		build_overload_int (operand, in_template);
+	      else
+		build_overload_value (TREE_TYPE (operand),
+				      operand,
+				      in_template);
+	    }
+	}
+      else
+	{
+	  /* We don't ever want this output, but it's
+	     inconvenient not to be able to build the string.
+	     This should cause assembler errors we'll notice.  */
+	    
+	  static int n;
+	  sprintf (digit_buffer, " *%d", n++);
+	  OB_PUTCP (digit_buffer);
+	}
+
+      OB_PUTC ('W');
+      numeric_output_need_bar = 0;
       return;
     }
 
@@ -497,12 +564,14 @@ build_overload_int (value, in_template)
 	{
 	  /* need to print a DImode value in decimal */
 	  dicat (TREE_INT_CST_LOW (value), TREE_INT_CST_HIGH (value));
+	  numeric_output_need_bar = 1;
 	  return;
 	}
       /* else fall through to print in smaller mode */
     }
   /* Wordsize or smaller */
   icat (TREE_INT_CST_LOW (value));
+  numeric_output_need_bar = 1;
 }
 
 
@@ -531,8 +600,11 @@ build_overload_value (type, value, in_template)
   while (TREE_CODE (value) == NON_LVALUE_EXPR
 	 || TREE_CODE (value) == NOP_EXPR)
     value = TREE_OPERAND (value, 0);
-  my_friendly_assert (TREE_CODE (type) == PARM_DECL, 242);
-  type = TREE_TYPE (type);
+
+  if (TREE_CODE (type) == PARM_DECL)
+    type = TREE_TYPE (type);
+
+  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (type)) == 't', 0);
 
   if (numeric_output_need_bar)
     {
@@ -569,7 +641,6 @@ build_overload_value (type, value, in_template)
     case BOOLEAN_TYPE:
       {
 	build_overload_int (value, in_template);
-	numeric_output_need_bar = 1;
 	return;
       }
     case REAL_TYPE:
@@ -672,7 +743,6 @@ build_overload_value (type, value, in_template)
 		    {
 		      OB_PUTC ('i');
 		      build_overload_int (a3, in_template);
-		      numeric_output_need_bar = 1;
 		      return;
 		    }
 		}
@@ -683,7 +753,6 @@ build_overload_value (type, value, in_template)
       if (TREE_CODE (value) == INTEGER_CST)
 	{
 	  build_overload_int (value, in_template);
-	  numeric_output_need_bar = 1;
 	  return;
 	}
       else if (TREE_CODE (value) == TEMPLATE_PARM_INDEX)
@@ -707,13 +776,7 @@ build_overload_value (type, value, in_template)
 	  return;
 	}
       else if (TREE_CODE (value) == SCOPE_REF)
-	{
-	  OB_PUTC2 ('Q', '1');
-	  numeric_output_need_bar = 0;
-	  build_mangled_name (TREE_OPERAND (value, 0), 0, 0);
-	  build_overload_identifier (TREE_OPERAND (value, 1));
-	  return;
-	}
+	build_overload_scope_ref (value);
       else
 	my_friendly_abort (71);
       break; /* not really needed */
@@ -865,7 +928,10 @@ build_qualified_name (decl)
   if (TREE_CODE (decl) == TYPE_DECL
       && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl) && !flag_do_squangling)
     {
-      OB_PUTID (DECL_ASSEMBLER_NAME (decl));
+      tree id = DECL_ASSEMBLER_NAME (decl);
+      OB_PUTID (id);
+      if (isdigit (IDENTIFIER_POINTER (id) [IDENTIFIER_LENGTH (id) - 1]))
+	numeric_output_need_bar = 1;
       return;
     }
 
@@ -907,11 +973,7 @@ build_qualified_name (decl)
   if (i > 1)
     {
       OB_PUTC ('Q');
-      if (i > 9)
-	OB_PUTC ('_');
-      icat (i);
-      if (i > 9)
-	OB_PUTC ('_');
+      build_underscore_int (i);
       numeric_output_need_bar = 0;
     }
   build_overload_nested_name (decl);

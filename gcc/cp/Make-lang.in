@@ -107,7 +107,6 @@ cxxmain.o: cplus-dem.c demangle.h
 	$(LN_S) $(srcdir)/cplus-dem.c cxxmain.c
 	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DVERSION=\"$(version)\" cxxmain.c
-	rm -f cxxmain.c
 
 $(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(LIBS) -o $@ \
