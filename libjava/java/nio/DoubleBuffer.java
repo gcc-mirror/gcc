@@ -41,8 +41,8 @@ import gnu.java.nio.DoubleBufferImpl;
 
 public abstract class DoubleBuffer extends Buffer implements Comparable
 {
-  protected double [] backing_buffer;
-  protected int array_offset;
+  int array_offset;
+  double[] backing_buffer;
 
   public static DoubleBuffer allocateDirect(int capacity)
   {
@@ -108,7 +108,7 @@ public abstract class DoubleBuffer extends Buffer implements Comparable
   public DoubleBuffer put (double[] src, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
-      put(src[i]);
+      put (src [i]);
 
     return this;
   }

@@ -41,8 +41,8 @@ import gnu.java.nio.IntBufferImpl;
 
 public abstract class IntBuffer extends Buffer implements Comparable
 {
-  protected int [] backing_buffer;
-  protected int array_offset;
+  int array_offset;
+  int[] backing_buffer;
 
   public static IntBuffer allocateDirect(int capacity)
   {

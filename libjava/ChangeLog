@@ -1,6 +1,28 @@
 2003-05-10  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/CharBuffer.java
+	(offset): Make it package-private.
+	(backing_buffer): Likewise.
+	* java/nio/DoubleBuffer.java
+	(offset): Make it package-private.
+	(backing_buffer): Likewise.
+	(put): Reformatted.
+	* java/nio/FloatBuffer.java
+	(offset): Make it package-private.
+	(backing_buffer): Likewise.
+	* java/nio/IntBuffer.java
+	(offset): Make it package-private.
+	(backing_buffer): Likewise.
+	* java/nio/LongBuffer.java
+	(offset): Make it package-private.
+	(backing_buffer): Likewise.
+	* java/nio/ShortBuffer.java
+	(offset): Make it package-private.
+	(backing_buffer): Likewise.
+
+2003-05-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/CharBuffer.java
 	(put): Fixed precondtion check.
 	(toString): Make it work without backing array.
 	(put): Skip one level of method calling.
