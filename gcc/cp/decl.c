@@ -7765,7 +7765,7 @@ grokdeclarator (const cp_declarator *declarator,
 	   && ! bitfield)
     {
       error ("abstract declarator %qT used as declaration", type);
-      unqualified_id = make_anon_name ();
+      return error_mark_node;
     }
 
   /* Only functions may be declared using an operator-function-id.  */
