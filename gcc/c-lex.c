@@ -31,6 +31,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "c-parse.h"
 
+#include <ctype.h>
+
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
 #include <locale.h>
@@ -883,8 +885,6 @@ handle_sysv_pragma (input, c)
 
 #endif /* HANDLE_SYSV_PRAGMA */
 
-#define isalnum(char) ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9'))
-#define isdigit(char) (char >= '0' && char <= '9')
 #define ENDFILE -1  /* token that represents end-of-file */
 
 /* Read an escape sequence, returning its equivalent as a character,
