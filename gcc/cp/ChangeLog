@@ -1,5 +1,11 @@
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9336
+	* decl2.c (do_nonmember_using_decl): Do not call duplicate decls
+	to merge old and new declarations.
+
+2003-03-11  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/9924
 	* decl2.c (do_nonmember_using_decl): Ignore anticipated builtins.
 

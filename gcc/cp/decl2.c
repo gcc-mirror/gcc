@@ -4545,12 +4545,6 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
     {
       tree tmp, tmp1;
 
-      if (oldval && !is_overloaded_fn (oldval))
-	{
-	  duplicate_decls (OVL_CURRENT (decls.value), oldval);
-	  oldval = NULL_TREE;
-	}
-
       *newval = oldval;
       for (tmp = decls.value; tmp; tmp = OVL_NEXT (tmp))
 	{
@@ -4613,12 +4607,12 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
   else 
     {
       *newval = decls.value;
-      if (oldval)
-	duplicate_decls (*newval, oldval);
+      if (oldval && !decls_match (*newval, oldval))
+	error ("`%D' is already declared in this scope", name);
     } 
 
   *newtype = decls.type;
-  if (oldtype && *newtype && oldtype != *newtype)
+  if (oldtype && *newtype && !same_type_p (oldtype, *newtype))
     {
       error ("using declaration `%D' introduced ambiguous type `%T'",
 		name, oldtype);
