@@ -1,3 +1,13 @@
+2001-06-08  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/2874:
+	* libjava.mauve/mauve.exp (gcj_run_mauve_tests): New proc.
+	(test_mauve): Return 0 on failure.
+	* lib/libjava.exp (test_libjava_from_source): Remove generated
+	files if test is successful.
+	(test_libjava_from_javac): Likewise.
+	(gcj_cleanup): New proc.
+
 2001-06-05  Jeff Sturm  <jsturm@one-point.com>
 
 	* lib/libjava.exp (libjava_arguments): Build with `-no-install'

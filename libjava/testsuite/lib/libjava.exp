@@ -188,6 +188,21 @@ proc libjava_find_lib {dir name} {
     return ""
 }
 
+# Remove a bunch of files.
+proc gcj_cleanup {args} {
+    foreach file $args {
+	if {[string match *.o $file]} {
+	    verbose "removing [file rootname $file].lo"
+	    file delete -force [file rootname $file].lo
+	}
+	file delete -force -- $file
+	verbose "removing $file"
+    }
+    # It is simplest to do this instead of trying to figure out what
+    # bits in .libs ought to be removed.
+    catch {system "rm -rf .libs"}
+}
+
 # Compute arguments needed for compiler.  MODE is a libtool mode:
 # either compile or link.
 proc libjava_arguments {{mode compile}} {
@@ -383,6 +398,8 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	set errname "$errname $compile_args"
     }
 
+    set removeList [list $executable]
+
     set x [prune_warnings \
 	     [libjava_tcompile $srcfile "$executable" $target $args]]
     if {[info exists opts(xfail-gcj)]} {
@@ -393,6 +410,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 
 	if {[info exists opts(shouldfail)]} {
 	    pass "$errname compilation from source"
+	    eval gcj_cleanup $removeList
 	    return
 	}
 
@@ -419,9 +437,11 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	    untested "$errname execution from source compiled test"
 	    untested "$errname output from source compiled test"
 	}
+	eval gcj_cleanup $removeList
 	return
     }
     if {[info exists opts(no-link)]} {
+	eval gcj_cleanup $removeList
 	return
     }
 
@@ -467,6 +487,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
     if { $passed == 1 } {
 	pass "$errname output from source compiled test"
+	eval gcj_cleanup $removeList
     } else {
 	clone_output "expected was $expected"
 	clone_output "output was $output"
@@ -542,6 +563,8 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     }
     pass "$errname byte compilation"
 
+    set removeList {}
+
     # Find name to use for --main, and name of all class files.
     set jvscan [find_jvscan]
     verbose "jvscan is $jvscan"
@@ -572,6 +595,8 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	set file [join [split $file .] /]
 	lappend class_files $objdir/$file.class
     }
+
+    eval lappend removeList $class_files
 
     # Usually it is an error for a test program not to have a `main'
     # method.  However, for no-exec tests it is ok.  Treat no-link
@@ -615,18 +640,20 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	    set executable [file rootname [file tail $c_file]].o
 	    set x [prune_warnings \
 		     [libjava_tcompile $c_file "$executable" $type $args]]
+	    lappend removeList $executable
 	    if {$x != ""} {
 		break
 	    }
 	}
     } else {
-	# This is no evil: we de-listify CLASS_FILES so that we can
+	# This is so evil: we de-listify CLASS_FILES so that we can
 	# turn around and quote the `$' in it for the shell.  I really
 	# hate DejaGNU.  It is so !@#$!@# unpredictable.
 	set hack ""
 	foreach stupid $class_files {
 	    set hack "$hack $stupid"
 	}
+	lappend removeList $executable
 	set x [prune_warnings \
 		 [libjava_tcompile $hack "$executable" $type $args]]
     }
@@ -650,6 +677,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	    untested "$errname execution from bytecode->native test"
 	    untested "$errname output from bytecode->native test"
 	}
+	eval gcj_cleanup $removeList
 	return
     }
 
@@ -662,7 +690,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     $status "$errname execution from bytecode->native test"
     if { $status != "pass" } {
 	untested "$errname output from bytecode->native test"
-	return;
+	return
     }
 
     verbose "resultfile is $resultfile"
@@ -695,6 +723,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     }
     if { $passed == 1 } {
 	pass "$errname output from bytecode->native test"
+	eval gcj_cleanup $removeList
     } else {
 	clone_output "expected was $expected"
 	clone_output "output was $output"
