@@ -771,6 +771,9 @@ struct tree_type
     containing function, or else yields NULL_TREE if the given decl has "file scope".  */
 #define DECL_CONTEXT(NODE) ((NODE)->decl.context)
 #define DECL_FIELD_CONTEXT(NODE) ((NODE)->decl.context)
+/* In a DECL this is the field where configuration dependent machine
+   attributes are store */
+#define DECL_MACHINE_ATTRIBUTES(NODE) ((NODE)->decl.machine_attributes)
 /* In a FIELD_DECL, this is the field position, counting in bits,
    of the bit closest to the beginning of the structure.  */
 #define DECL_FIELD_BITPOS(NODE) ((NODE)->decl.arguments)
@@ -1013,6 +1016,7 @@ struct tree_decl
   union tree_node *abstract_origin;
   union tree_node *assembler_name;
   union tree_node *section_name;
+  union tree_node *machine_attributes;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
@@ -1214,6 +1218,7 @@ extern tree make_tree ();
    are not made. */
 
 extern tree build_type_attribute_variant PROTO((tree, tree));
+extern tree build_decl_attribute_variant PROTO((tree, tree));
 
 /* Given a type node TYPE, and CONSTP and VOLATILEP, return a type
    for the same kind of data as TYPE describes.
