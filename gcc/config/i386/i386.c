@@ -2806,7 +2806,7 @@ save_386_machine_status (p)
      struct function *p;
 {
   p->machine = (struct machine_function *) xmalloc (sizeof i386_stack_locals);
-  bcopy (i386_stack_locals, p->machine->i386_stack_locals,
+  bcopy ((char *) i386_stack_locals, (char *) p->machine->i386_stack_locals,
 	 sizeof i386_stack_locals);
 }
 
@@ -2814,7 +2814,7 @@ void
 restore_386_machine_status (p)
      struct function *p;
 {
-  bcopy (p->machine->i386_stack_locals, i386_stack_locals,
+  bcopy ((char *) p->machine->i386_stack_locals, (char *) i386_stack_locals,
 	 sizeof i386_stack_locals);
   free (p->machine);
 }
