@@ -1,5 +1,10 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cfgloop.c (flow_loops_update): Remove.
+	* cfgloop.h: Remove the corresponding prototype.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* conflict.c (mark_reg, conflict_graph_compute): Remove.
 	* basic-block.h: Remove the prototype for
 	conflict_graph_compute.
