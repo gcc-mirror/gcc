@@ -44,6 +44,18 @@
   any cleanup for that parameter is performed in the caller, as specified
   by the ia64 C++ ABI, rather than the called function as before.
 
+* G++ now supports the "named return value optimization":  for code like
+
+    A f () {
+      A a;
+      ...
+      return a;
+    }
+
+  G++ will allocate 'a' in the return value slot, so that the return
+  becomes a no-op.  For this to work, all return statements in the function
+  must return the same variable.
+
 *** Changes in GCC 3.0:
 
 * Support for guiding declarations has been removed.
