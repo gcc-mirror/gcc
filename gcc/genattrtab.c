@@ -5529,6 +5529,10 @@ write_complex_function (unit, name, connection)
 	}
     }
 
+  /* This default case should not be needed, but gcc's analysis is not
+     good enough to realize that the default case is not needed for the
+     second switch statement.  */
+  printf ("    default:\n      abort ();\n");
   printf ("    }\n}\n\n");
 }
 
