@@ -421,6 +421,7 @@ dump_type (t, flags)
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       {
 	tree args = TYPE_TI_ARGS (t);
+	dump_qualifiers (t, after);
 	print_tree_identifier (scratch_buffer, TYPE_IDENTIFIER (t));
 	print_template_argument_list_start (scratch_buffer);
         dump_template_argument_list (args, flags);
