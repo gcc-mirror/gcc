@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "function.h"
-#include "obstack.h"
 #include "toplev.h"
 #include "cpplib.h"
 #include "c-lex.h"
@@ -2086,8 +2085,6 @@ v850_interrupt_function_p (func)
 }
 
 
-extern struct obstack * saveable_obstack;
-
 void
 v850_encode_data_area (decl)
      tree decl;
@@ -2134,7 +2131,7 @@ v850_encode_data_area (decl)
 	return;
     }
 
-  newstr = obstack_alloc (saveable_obstack, len + 2);
+  newstr = ggc_alloc_string (NULL, len + 2);
 
   strcpy (newstr + 1, str);
 
