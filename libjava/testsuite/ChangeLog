@@ -1,3 +1,7 @@
+2001-03-29  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* libjava.lang/instinit2.out: Fixed.
+
 2001-03-20  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.compile/uesc.java: New file.
