@@ -1294,7 +1294,7 @@ yylex ()
 	      {
 		char *p1 = token_buffer;
 		/* Check for "0.0" and variants;
-		   Sunos 4 spuriously returns ERANGE for them.  */
+		   SunOS 4 spuriously returns ERANGE for them.  */
 		while (*p1 == '0') p1++;
 		if (*p1 == '.')
 		  {

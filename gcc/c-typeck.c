@@ -5172,7 +5172,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       return;
     }
 
-  /* Record the contents of OUTPUTS before it is modifed.  */
+  /* Record the contents of OUTPUTS before it is modified.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     o[i] = TREE_VALUE (tail);
 
