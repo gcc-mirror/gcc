@@ -43,6 +43,16 @@ Boston, MA 02111-1307, USA.  */
    output code for the next function appropriate for an interrupt handler.  */
 int pragma_interrupt;
 
+/* This is set by the trap_exit attribute for functions.   It specifies
+   a trap number to be used in a trapa instruction at function exit
+   (instead of an rte instruction).  */
+int trap_exit;
+
+/* This is used by the sp_switch attribute for functions.  It specifies
+   a variable holding the address of the stack the interrupt function
+   should switch to/from at entry/exit.  */
+rtx sp_switch;
+
 /* This is set by #pragma trapa, and is similar to the above, except that
    the compiler doesn't emit code to preserve all registers.  */
 static int pragma_trapa;
@@ -160,7 +170,7 @@ print_operand_address (stream, x)
    according to modifier code.
 
    '.'  print a .s if insn needs delay slot
-   '@'  print rte or rts depending upon pragma interruptness
+   '@'  print trap, rte or rts depending upon pragma interruptness
    '#'  output a nop if there is nothing to put in the delay slot
    'O'  print a constant without the #
    'R'  print the LSW of a dp value - changes if in little endian
@@ -181,7 +191,9 @@ print_operand (stream, x, code)
 	fprintf (stream, ".s");
       break;
     case '@':
-      if (pragma_interrupt)
+      if (trap_exit)
+	fprintf (stream, "trapa #%d", trap_exit);
+      else if (pragma_interrupt)
 	fprintf (stream, "rte");
       else
 	fprintf (stream, "rts");
@@ -2670,6 +2682,10 @@ sh_expand_prologue ()
         }
     }
 
+  /* If we're supposed to switch stacks at function entry, do so now.  */
+  if (sp_switch)
+    emit_insn (gen_sp_switch_1 ());
+
   push_regs (live_regs_mask, live_regs_mask2);
 
   output_stack_adjust (-get_frame_size (), stack_pointer_rtx, 3);
@@ -2712,6 +2728,10 @@ sh_expand_epilogue ()
 
   output_stack_adjust (extra_push + current_function_pretend_args_size,
 		       stack_pointer_rtx, 7);
+
+  /* Switch back to the normal stack if necessary.  */
+  if (sp_switch)
+    emit_insn (gen_sp_switch_2 ());
 }
 
 /* Clear variables at function end.  */
@@ -2721,7 +2741,8 @@ function_epilogue (stream, size)
      FILE *stream;
      int size;
 {
-  pragma_interrupt = pragma_trapa = pragma_nosave_low_regs = 0;
+  trap_exit = pragma_interrupt = pragma_trapa = pragma_nosave_low_regs = 0;
+  sp_switch = NULL_RTX;
 }
 
 rtx
@@ -2847,6 +2868,76 @@ handle_pragma (file, t)
 
   return retval;
 }
+/* Return nonzero if ATTR is a valid attribute for DECL.
+   ATTRIBUTES are any existing attributes and ARGS are the arguments
+   supplied with ATTR.
+
+   Supported attributes:
+
+   interrupt_handler -- specifies this function is an interrupt handler.
+
+   sp_switch -- specifies an alternate stack for an interrupt handler
+   to run on.
+
+   trap_exit -- use a trapa to exit an interrupt function intead of
+   an rte instruction.  */
+
+int
+sh_valid_machine_decl_attribute (decl, attributes, attr, args)
+     tree decl;
+     tree attributes;
+     tree attr;
+     tree args;
+{
+  int retval = 0;
+
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    return 0;
+
+  if (is_attribute_p ("interrupt_handler", attr))
+    {
+      pragma_interrupt = 1;
+      return 1;
+    }
+
+  if (is_attribute_p ("sp_switch", attr))
+    {
+      /* The sp_switch attribute only has meaning for interrupt functions.  */
+      if (!pragma_interrupt)
+	return 0;
+
+      /* sp_switch must have an argument.  */
+      if (!args || TREE_CODE (args) != TREE_LIST)
+	return 0;
+
+      /* The argument must be a constant string.  */
+      if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+	return 0;
+
+      sp_switch = gen_rtx (SYMBOL_REF, VOIDmode,
+			   TREE_STRING_POINTER (TREE_VALUE (args)));
+      return 1;
+    }
+
+  if (is_attribute_p ("trap_exit", attr))
+    {
+      /* The trap_exit attribute only has meaning for interrupt functions.  */
+      if (!pragma_interrupt)
+	return 0;
+
+      /* trap_exit must have an argument.  */
+      if (!args || TREE_CODE (args) != TREE_LIST)
+	return 0;
+
+      /* The argument must be a constant integer.  */
+      if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
+	return 0;
+
+      trap_exit = TREE_INT_CST_LOW (TREE_VALUE (args));
+      return 1;
+    }
+}
+
 
 /* Predicates used by the templates.  */
 
