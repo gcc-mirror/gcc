@@ -1654,11 +1654,7 @@ print_operand_address (file, addr)
 	int n = INTVAL (addr);
 	if (TARGET_H8300)
 	  n = (int) (short) n;
-	if (n < 0)
-	  /* ??? Why the special case for -ve values?  */
-	  fprintf (file, "-%d", -n);
-	else
-	  fprintf (file, "%d", n);
+	fprintf (file, "%d", n);
 	break;
       }
 
