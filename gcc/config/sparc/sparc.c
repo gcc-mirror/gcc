@@ -5269,24 +5269,20 @@ sparc_emit_float_lib_cmp (x, y, comparison)
   switch (comparison)
     {
     default:
-      emit_cmp_insn (result, const0_rtx, NE,
-		     NULL_RTX, mode, 0, 0);
+      emit_cmp_insn (result, const0_rtx, NE, NULL_RTX, mode, 0);
       break;
     case ORDERED:
     case UNORDERED:
-      emit_cmp_insn (result, GEN_INT(3),
-		     (comparison == UNORDERED) ? EQ : NE,
-		     NULL_RTX, mode, 0, 0);
+      emit_cmp_insn (result, GEN_INT(3), comparison == UNORDERED ? EQ : NE,
+		     NULL_RTX, mode, 0);
       break;
     case UNGT:
     case UNGE:
       emit_cmp_insn (result, const1_rtx,
-		     (comparison == UNGT) ? GT : NE,
-		     NULL_RTX, mode, 0, 0);
+		     comparison == UNGT ? GT : NE, NULL_RTX, mode, 0);
       break;
     case UNLE:
-      emit_cmp_insn (result, const2_rtx, NE,
-		     NULL_RTX, mode, 0, 0);
+      emit_cmp_insn (result, const2_rtx, NE, NULL_RTX, mode, 0);
       break;
     case UNLT:
       tem = gen_reg_rtx (mode);
@@ -5294,8 +5290,7 @@ sparc_emit_float_lib_cmp (x, y, comparison)
 	emit_insn (gen_andsi3 (tem, result, const1_rtx));
       else
 	emit_insn (gen_anddi3 (tem, result, const1_rtx));
-      emit_cmp_insn (tem, const0_rtx, NE,
-		     NULL_RTX, mode, 0, 0);
+      emit_cmp_insn (tem, const0_rtx, NE, NULL_RTX, mode, 0);
       break;
     case UNEQ:
     case LTGT:
@@ -5309,9 +5304,8 @@ sparc_emit_float_lib_cmp (x, y, comparison)
 	emit_insn (gen_andsi3 (tem2, tem, const2_rtx));
       else
 	emit_insn (gen_anddi3 (tem2, tem, const2_rtx));
-      emit_cmp_insn (tem2, const0_rtx,
-		     (comparison == UNEQ) ? EQ : NE,
-		     NULL_RTX, mode, 0, 0);
+      emit_cmp_insn (tem2, const0_rtx, comparison == UNEQ ? EQ : NE,
+		     NULL_RTX, mode, 0);
       break;
     }
 }
