@@ -28,7 +28,6 @@
 
 	* config/i386/gmm_malloc.h: New file.
 
->>>>>>> 2.4781
 2004-08-03  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (machopic_output_stub):  Align Darwin stubs.
