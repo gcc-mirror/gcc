@@ -286,11 +286,16 @@ install_to_libdir: all
 	fi
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
+# This is tricky.  Even though CC in the Makefile contains
+# multilib-specific flags, it's overridden by FLAGS_TO_PASS from the
+# default multilib, so we have to take LIBCFLAGS into account as well,
+# since it will be passed the multilib flags.
+MULTIOSDIR = `$(CC) $(LIBCFLAGS) -print-multi-os-directory`
 install_to_tooldir: all
-	${mkinstalldirs} $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`
-	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)n
-	( cd $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory` ; $(RANLIB) $(TARGETLIB)n )
-	mv -f $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)n $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)
+	${mkinstalldirs} $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)
+	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)n
+	( cd $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR) ; $(RANLIB) $(TARGETLIB)n )
+	mv -f $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)n $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 # needed-list is used by libstdc++.  NEEDED is the list of functions
