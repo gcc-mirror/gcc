@@ -1,3 +1,10 @@
+2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (diagnostic_finish): Rename to output_flush.
+	(clear_disgnostic_info): Rename to output_clear_data.  Use false
+	instead of 0 for boolean value.
+	Adjust function call throughout.
+
 Sun Jun  2 19:15:27 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (commit_one_edge_insertion): Fix warning.

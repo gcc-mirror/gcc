@@ -59,7 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define diagnostic_msg output_buffer_text_cursor (diagnostic_buffer)
 
 /* Prototypes.  */
-static void diagnostic_finish PARAMS ((output_buffer *));
+static void output_flush PARAMS ((output_buffer *));
 static void output_do_verbatim PARAMS ((output_buffer *,
 					const char *, va_list *));
 static void output_buffer_to_stream PARAMS ((output_buffer *));
@@ -89,7 +89,7 @@ static void output_append_r PARAMS ((output_buffer *, const char *, int));
 static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
 static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
 				     const char *));
-static void clear_diagnostic_info PARAMS ((output_buffer *));
+static void output_clear_data PARAMS ((output_buffer *));
 
 static void default_diagnostic_starter PARAMS ((output_buffer *,
 						diagnostic_context *));
@@ -276,15 +276,15 @@ output_clear_message_text (buffer)
   output_text_length (buffer) = 0;
 }
 
-/* Zero out any diagnostic data used so far by BUFFER.  */
+/* Zero out any formatting data used so far by BUFFER.  */
 
 static void
-clear_diagnostic_info (buffer)
+output_clear_data (buffer)
      output_buffer *buffer;
 {
   output_buffer_text_cursor (buffer) = NULL;
   output_buffer_ptr_to_format_args (buffer) = NULL;
-  prefix_was_emitted_for (buffer) = 0;
+  prefix_was_emitted_for (buffer) = false;
   output_indentation (buffer) = 0;
 }
 
@@ -304,7 +304,7 @@ init_output_buffer (buffer, prefix, maximum_length)
   output_prefixing_rule (buffer) = diagnostic_prefixing_rule (global_dc);
   output_set_prefix (buffer, prefix);
   output_text_length (buffer) = 0;
-  clear_diagnostic_info (buffer);
+  output_clear_data (buffer);
 }
 
 /* Reinitialize BUFFER.  */
@@ -314,7 +314,7 @@ output_clear (buffer)
      output_buffer *buffer;
 {
   output_clear_message_text (buffer);
-  clear_diagnostic_info (buffer);
+  output_clear_data (buffer);
 }
 
 /* Finishes constructing a NULL-terminated character string representing
@@ -907,7 +907,7 @@ diagnostic_for_decl (decl, msgid, args_ptr, warn)
       output_buffer_ptr_to_format_args (diagnostic_buffer) = args_ptr;
       output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
       format_with_decl (diagnostic_buffer, decl);
-      diagnostic_finish ((output_buffer *) global_dc);
+      output_flush (&global_dc->buffer);
       output_destroy_prefix (diagnostic_buffer);
 
       output_buffer_state (diagnostic_buffer) = os;
@@ -915,6 +915,51 @@ diagnostic_for_decl (decl, msgid, args_ptr, warn)
   diagnostic_lock--;
 }
 
+/* Flush the content of BUFFER onto the attached stream.  */
+
+static void
+output_flush (buffer)
+     output_buffer *buffer;
+{
+  output_buffer_to_stream (buffer);
+  output_clear_data (buffer);
+  fputc ('\n', output_buffer_attached_stream (buffer));
+  fflush (output_buffer_attached_stream (buffer));
+}
+
+/* Helper subroutine of output_verbatim and verbatim. Do the appropriate
+   settings needed by BUFFER for a verbatim formatting.  */
+
+static void
+output_do_verbatim (buffer, msgid, args_ptr)
+     output_buffer *buffer;
+     const char *msgid;
+     va_list *args_ptr;
+{
+  output_state os;
+
+  os = output_buffer_state (buffer);
+  output_prefix (buffer) = NULL;
+  output_prefixing_rule (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
+  output_buffer_text_cursor (buffer) = _(msgid);
+  output_buffer_ptr_to_format_args (buffer) = args_ptr;
+  output_set_maximum_length (buffer, 0);
+  output_format (buffer);
+  output_buffer_state (buffer) = os;
+}
+
+/* Output MESSAGE verbatim into BUFFER.  */
+
+void
+output_verbatim VPARAMS ((output_buffer *buffer, const char *msgid, ...))
+{
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, output_buffer *, buffer);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  output_do_verbatim (buffer, msgid, &ap);
+  VA_CLOSE (ap);
+}
 
 /* Count an error or warning.  Return 1 if the message should be printed.  */
 
@@ -974,7 +1019,7 @@ fatal_io_error VPARAMS ((const char *msgid, ...))
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
   output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
-  diagnostic_finish ((output_buffer *) global_dc);
+  output_flush (&global_dc->buffer);
   output_buffer_state (diagnostic_buffer) = os;
   VA_CLOSE (ap);
   exit (FATAL_EXIT_CODE);
@@ -996,7 +1041,7 @@ pedwarn VPARAMS ((const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
-/* Issue a pedantic waring about DECL.  */
+/* Issue a pedantic warning about DECL.  */
 
 void
 pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
@@ -1053,7 +1098,7 @@ sorry VPARAMS ((const char *msgid, ...))
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
   output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
-  diagnostic_finish ((output_buffer *) global_dc);
+  output_flush (&global_dc->buffer);
   output_buffer_state (diagnostic_buffer) = os;
   VA_CLOSE (ap);
 }
@@ -1281,51 +1326,6 @@ warning VPARAMS ((const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
-/* Flush diagnostic_buffer content on stderr.  */
-
-static void
-diagnostic_finish (buffer)
-     output_buffer *buffer;
-{
-  output_buffer_to_stream (buffer);
-  clear_diagnostic_info (buffer);
-  fputc ('\n', output_buffer_attached_stream (buffer));
-  fflush (output_buffer_attached_stream (buffer));
-}
-
-/* Helper subroutine of output_verbatim and verbatim. Do the appropriate
-   settings needed by BUFFER for a verbatim formatting.  */
-
-static void
-output_do_verbatim (buffer, msgid, args_ptr)
-     output_buffer *buffer;
-     const char *msgid;
-     va_list *args_ptr;
-{
-  output_state os;
-
-  os = output_buffer_state (buffer);
-  output_prefix (buffer) = NULL;
-  output_prefixing_rule (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
-  output_buffer_text_cursor (buffer) = _(msgid);
-  output_buffer_ptr_to_format_args (buffer) = args_ptr;
-  output_set_maximum_length (buffer, 0);
-  output_format (buffer);
-  output_buffer_state (buffer) = os;
-}
-
-/* Output MESSAGE verbatim into BUFFER.  */
-
-void
-output_verbatim VPARAMS ((output_buffer *buffer, const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, output_buffer *, buffer);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  output_do_verbatim (buffer, msgid, &ap);
-  VA_CLOSE (ap);
-}
 
 /* Same as above but use diagnostic_buffer.  */
 
@@ -1363,7 +1363,7 @@ report_diagnostic (dc)
       (*diagnostic_starter (dc)) (diagnostic_buffer, dc);
       output_format (diagnostic_buffer);
       (*diagnostic_finalizer (dc)) (diagnostic_buffer, dc);
-      diagnostic_finish ((output_buffer *) global_dc);
+      output_flush (&global_dc->buffer);
       output_buffer_state (diagnostic_buffer) = os;
     }
 
@@ -1379,7 +1379,7 @@ static void
 error_recursion ()
 {
   if (diagnostic_lock < 3)
-    diagnostic_finish ((output_buffer *) global_dc);
+    output_flush (&global_dc->buffer);
 
   fnotice (stderr,
 	   "Internal compiler error: Error reporting routines re-entered.\n");
