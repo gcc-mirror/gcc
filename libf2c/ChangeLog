@@ -1,3 +1,7 @@
+Mon Jun  3 22:21:23 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (s-libe77): Add WARN_CFLAGS.
+
 Sun Jun  2 10:32:35 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libI77/dfe.c (s_rdfe, s_wdfe): Wrap parentheses around

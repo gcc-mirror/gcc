@@ -175,7 +175,7 @@ s-libe77: f2cext.c
 	do \
 	  echo $${name}; \
 	  $(LIBTOOL) --mode=compile $(CC) -c -I. -I$(srcdir) -I../../include \
-	    $(CPPFLAGS) $(CFLAGS) -DL$${name} $(srcdir)/f2cext.c \
+	    $(CPPFLAGS) $(WARN_CFLAGS) $(CFLAGS) -DL$${name} $(srcdir)/f2cext.c \
 	    -o libE77/L$${name}.lo ; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  echo libE77/L$${name}.lo >> $@.T; \
