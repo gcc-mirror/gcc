@@ -6735,7 +6735,7 @@ tsubst_function_type (tree t,
     return error_mark_node;
   /* The standard does not presently indicate that creation of a
      function type with an invalid return type is a deduction failure.
-     However, that is clearly analagous to creating an array of "void"
+     However, that is clearly analogous to creating an array of "void"
      or a reference to a reference.  This is core issue #486.  */ 
   if (TREE_CODE (return_type) == ARRAY_TYPE
       || TREE_CODE (return_type) == FUNCTION_TYPE)
