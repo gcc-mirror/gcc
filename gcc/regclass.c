@@ -147,6 +147,10 @@ enum reg_class reg_class_subunion[N_REG_CLASSES][N_REG_CLASSES];
 
 enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
 
+/* Array containing all of the register names */
+
+char *reg_names[] = REGISTER_NAMES;
+
 /* Indexed by n, gives number of times (REG n) is set or clobbered.
    This information remains valid for the rest of the compilation
    of the current function; it is used to control register allocation.
