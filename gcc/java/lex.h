@@ -35,7 +35,7 @@ extern int   lineno;
 /* A Unicode character, as read from the input file  */
 typedef unsigned short unicode_t;
 
-#ifdef HAVE_ICONV
+#ifdef HAVE_ICONV_H
 #include <iconv.h>
 #endif /* HAVE_ICONV */
 
