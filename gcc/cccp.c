@@ -3740,7 +3740,7 @@ handle_directive (ip, op)
 		*cp++ = *xp++;
 		SKIP_WHITE_SPACE (xp);
 	      }
-	    } else {
+	    } else if (traditional && xp < bp) {
 	      *cp++ = *xp++;
 	    }
 	    break;
