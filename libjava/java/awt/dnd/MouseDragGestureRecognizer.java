@@ -96,36 +96,36 @@ public abstract class MouseDragGestureRecognizer
 
   public void mouseClicked (MouseEvent e)
   {
-    // FIXME: implement this
+    // Do nothing in here by default.
   }
 
   public void mousePressed (MouseEvent e)
   {
-    // FIXME: implement this
+    // Do nothing in here by default.
   }
 
   public void mouseReleased (MouseEvent e)
   {
-    // FIXME: implement this
+    // Do nothing in here by default.
   }
 
   public void mouseEntered (MouseEvent e)
   {
-    // FIXME: implement this
+    // Do nothing in here by default.
   }
 
   public void mouseExited (MouseEvent e)
   {
-    // FIXME: implement this
+    // Do nothing in here by default.
   }
 
   public void mouseDragged (MouseEvent e)
   {
-    // FIXME: implement this
+    // Do nothing in here by default.
   }
 
   public void mouseMoved (MouseEvent e)
   {
-    // FIXME: implement this
+    // Do nothing in here by default.
   }
 } // class MouseDragGestureRecognizer

@@ -1,5 +1,26 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/List.java
+	(setMultipleSelections): Deprecated.
+	(delItem): Deprecated.
+	* java/awt/MenuComponent.java
+	(getPeer): Deprecated.
+	* java/awt/ScrollPane.java
+	(addNotify): getPeer() is deprecated. Use isDisplayable() instead.
+	* java/awt/dnd/MouseDragGestureRecognizer.java
+	(mouseClicked): Added comment.
+	(mousePressed): Added comment.
+	(mouseReleased): Added comment.
+	(mouseEntered): Added comment.
+	(mouseExited): Added comment.
+	(mouseDragged): Added comment.
+	(mouseMoved): Added comment.
+	* java/awt/event/KeyEvent.java
+	(KeyEvent): Deprecated.
+	(setModifiers): Deprecated.
+	
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileChannelImpl.java
 	(fd): Type FileDescriptor instead of int.
 	(lengthInternal): Removed.
