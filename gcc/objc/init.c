@@ -340,6 +340,7 @@ __objc_init_protocols (struct objc_protocol_list* protos)
   if (!proto_class)
     {
       unclaimed_proto_list = list_cons (protos, unclaimed_proto_list);
+      objc_mutex_unlock(__objc_runtime_mutex);
       return;
     }
 
