@@ -694,7 +694,8 @@ generate_struct_by_value_array ()
 void
 lang_init_options ()
 {
-  parse_in = cpp_create_reader (CLK_GNUC89);
+  parse_in = cpp_create_reader (CLK_OBJC);
+  c_language = clk_objective_c;
 }
 
 void
