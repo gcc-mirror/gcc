@@ -1,5 +1,11 @@
 2004-02-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* acinclude.m4: Remove old no-executables workaround;
+	add new no-executables workaround.
+	* aclocal.m4: Regenerate.
+	* configure.in: Change prereqs to autoconf 2.57.
+	* configure: Regenerate with autoconf 2.57.
+
 	* configure.in: Use NCN_TARGET_NONCANONICAL and friends.
 	* configure: Regenerate.
 	* Makefile.am: Use target_noncanonical variable from configure.
