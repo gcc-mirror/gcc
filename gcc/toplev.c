@@ -3697,6 +3697,12 @@ static void
 display_target_options ()
 {
   int undoc,i;
+  static bool displayed = false;
+
+  /* Avoid double printing for --help --target-help.  */
+  if (displayed)
+    return;
+  displayed = true;
 
   if (ARRAY_SIZE (target_switches) > 1
 #ifdef TARGET_OPTIONS
