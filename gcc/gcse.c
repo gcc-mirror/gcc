@@ -4541,10 +4541,10 @@ bypass_conditional_jumps ()
 	      {
 		if (setcc)
 		  break;
-		if (GET_CODE (PATTERN (setcc)) != SET)
+		if (GET_CODE (PATTERN (insn)) != SET)
 		  break;
 
-		dest = SET_DEST (PATTERN (setcc));
+		dest = SET_DEST (PATTERN (insn));
 		if (REG_P (dest) || CC0_P (dest))
 		  setcc = insn;
 		else

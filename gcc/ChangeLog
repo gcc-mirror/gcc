@@ -1,3 +1,50 @@
+Sun Jun  2 23:02:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (emit_prefetch_instructions): Properly place the address computation.
+
+Sun Jun  2 22:56:48 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (basic_block_for_insn, BLOCK_FOR_INSN): Kill.
+	(set_block_for_insn): Turn into macro.
+	* cfgbuild.c (find_basic_block): Do not clear basic_block_for_insn.
+	* cfglayout.c (insn_scopes): Kill.
+	(scope_to_insns_initialize): Do not use insn_scopes.
+	(scope_to_insns_finalize): Likewise.
+	(duplicate_insn_chain): Likewise.
+	(cfg_layout_initialize, cfg_layout_finalize): Do not turn scopes to notes.
+	* cfgrtl.c (basic_block_for_insn): Kill.
+	(delete_insn_and_edges, delete_insn_chain_and_edges): Simplify.
+	(create_basic_block_structure): Use reorder_insns.
+	(compute_bb_for_insn): Do not use basic_block_for_insn.
+	(merge_blocks_nomove): Likewise.
+	(update_bb_for_insn): Likewise.
+	(verify_flow_info): Likewise.
+	(set_block_for_insn): Kill.
+	* combine.c (try_combine): Update gen_rtx_INSN call.
+	* emit-rtl.c (gen_label_rtx): Update gen_rtx_CODE_LABEL call.
+	(mark_insn_raw, make_jump_insn_raw, make_call_insn_raw): Clear
+	scopes and BBs.
+	(add_insn_after, add_insn_before, remove_insn, reorder_insns): Simplify.
+	(emit_note_before, emit_note_after, emit_line_note_after, emit_note):
+	Clear BB.
+	(emit_insns_after): Simplify.
+	(emit_copy_of_insn_after): Copy scope.
+	* final.c (final_start_function): Lower scopes.
+	* flow.c (check_function_return_warnings): Do not rely on deleted insn.
+	* integrate.c (copy_insn_list): Cope scopes.
+	* jump.c (duplicate_loop_exit_test): LIkewise; simplify.
+	* loop.c (loop_optimize): Do not care block notes.
+	* print-rtl.c (print_rtx): Print BB.
+	* recog.c (apply_change_group): Simplify.
+	* rtl.c (copy_rtx): Handle 'B'.
+	* rtl.def (INSN, CALL_INSN, JUMP_INSN, NOTE): Add extra fields.
+	* rtl.h (Field accessors): Update indexes.
+	* sched-ebb.c (schedule_ebbs): Do not lower notes.
+	* sched-rgn.c (schedule_insns): Likewise.
+	* toplev.c (rest_of_compilation): Lower notes.
+	* unroll.c (unroll_loop): Do not care scoping notes.
+	(copy_loop_body): Copy scopes.
+
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 config/h8300:

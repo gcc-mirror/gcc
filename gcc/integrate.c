@@ -1334,6 +1334,7 @@ copy_insn_list (insns, map, static_chain_value)
       switch (GET_CODE (insn))
 	{
 	case INSN:
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  pattern = PATTERN (insn);
 	  set = single_set (insn);
 	  copy = 0;
@@ -1507,6 +1508,7 @@ copy_insn_list (insns, map, static_chain_value)
 	  break;
 
 	case JUMP_INSN:
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  if (map->integrating && returnjump_p (insn))
 	    {
 	      if (map->local_return_label == 0)
@@ -1553,6 +1555,7 @@ copy_insn_list (insns, map, static_chain_value)
 	  /* If this is a CALL_PLACEHOLDER insn then we need to copy the
 	     three attached sequences: normal call, sibling call and tail
 	     recursion.  */
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
 	    {
 	      rtx sequence[3];

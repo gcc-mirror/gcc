@@ -2175,8 +2175,8 @@ gen_label_rtx ()
 {
   rtx label;
 
-  label = gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX,
-			      NULL_RTX, label_num++, NULL, NULL);
+  label = gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX, NULL_RTX,
+		  	      NULL, label_num++, NULL, NULL);
 
   LABEL_NUSES (label) = 0;
   LABEL_ALTERNATE_NAME (label) = NULL;
@@ -3253,6 +3253,8 @@ make_insn_raw (pattern)
   INSN_CODE (insn) = -1;
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
+  INSN_SCOPE (insn) = NULL;
+  BLOCK_FOR_INSN (insn) = NULL;
 
 #ifdef ENABLE_RTL_CHECKING
   if (insn
@@ -3285,6 +3287,8 @@ make_jump_insn_raw (pattern)
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
   JUMP_LABEL (insn) = NULL;
+  INSN_SCOPE (insn) = NULL;
+  BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
 }
@@ -3305,6 +3309,8 @@ make_call_insn_raw (pattern)
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
   CALL_INSN_FUNCTION_USAGE (insn) = NULL;
+  INSN_SCOPE (insn) = NULL;
+  BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
 }
@@ -3369,8 +3375,8 @@ add_insn_after (insn, after)
 	abort ();
     }
 
-  if (basic_block_for_insn
-      && (unsigned int) INSN_UID (after) < basic_block_for_insn->num_elements
+  if (GET_CODE (after) != BARRIER
+      && GET_CODE (insn) != BARRIER
       && (bb = BLOCK_FOR_INSN (after)))
     {
       set_block_for_insn (insn, bb);
@@ -3438,8 +3444,8 @@ add_insn_before (insn, before)
 	abort ();
     }
 
-  if (basic_block_for_insn
-      && (unsigned int) INSN_UID (before) < basic_block_for_insn->num_elements
+  if (GET_CODE (before) != BARRIER
+      && GET_CODE (insn) != BARRIER
       && (bb = BLOCK_FOR_INSN (before)))
     {
       set_block_for_insn (insn, bb);
@@ -3518,8 +3524,7 @@ remove_insn (insn)
       if (stack == 0)
 	abort ();
     }
-  if (basic_block_for_insn
-      && (unsigned int) INSN_UID (insn) < basic_block_for_insn->num_elements
+  if (GET_CODE (insn) != BARRIER
       && (bb = BLOCK_FOR_INSN (insn)))
     {
       if (INSN_P (insn))
@@ -3596,16 +3601,13 @@ reorder_insns (from, to, after)
 
   reorder_insns_nobb (from, to, after);
 
-  if (basic_block_for_insn
-      && (unsigned int) INSN_UID (after) < basic_block_for_insn->num_elements
+  if (GET_CODE (after) != BARRIER
       && (bb = BLOCK_FOR_INSN (after)))
     {
       rtx x;
       bb->flags |= BB_DIRTY;
 
-      if (basic_block_for_insn
-	  && ((unsigned int) INSN_UID (from)
-	      < basic_block_for_insn->num_elements)
+      if (GET_CODE (from) != BARRIER
 	  && (bb2 = BLOCK_FOR_INSN (from)))
 	{
 	  if (bb2->end == to)
@@ -3913,6 +3915,7 @@ emit_note_before (subtype, before)
   INSN_UID (note) = cur_insn_uid++;
   NOTE_SOURCE_FILE (note) = 0;
   NOTE_LINE_NUMBER (note) = subtype;
+  BLOCK_FOR_INSN (note) = NULL;
 
   add_insn_before (note, before);
   return note;
@@ -4033,6 +4036,7 @@ emit_note_after (subtype, after)
   INSN_UID (note) = cur_insn_uid++;
   NOTE_SOURCE_FILE (note) = 0;
   NOTE_LINE_NUMBER (note) = subtype;
+  BLOCK_FOR_INSN (note) = NULL;
   add_insn_after (note, after);
   return note;
 }
@@ -4057,6 +4061,7 @@ emit_line_note_after (file, line, after)
   INSN_UID (note) = cur_insn_uid++;
   NOTE_SOURCE_FILE (note) = file;
   NOTE_LINE_NUMBER (note) = line;
+  BLOCK_FOR_INSN (note) = NULL;
   add_insn_after (note, after);
   return note;
 }
@@ -4152,14 +4157,15 @@ emit_insns_after (first, after)
   if (!first)
     return after;
 
-  if (basic_block_for_insn
-      && (unsigned int) INSN_UID (after) < basic_block_for_insn->num_elements
+  if (GET_CODE (after) != BARRIER
       && (bb = BLOCK_FOR_INSN (after)))
     {
       bb->flags |= BB_DIRTY;
       for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
-	set_block_for_insn (last, bb);
-      set_block_for_insn (last, bb);
+        if (GET_CODE (last) != BARRIER)
+	  set_block_for_insn (last, bb);
+      if (GET_CODE (last) != BARRIER)
+        set_block_for_insn (last, bb);
       if (bb->end == after)
 	bb->end = last;
     }
@@ -4295,6 +4301,7 @@ emit_note (file, line)
   INSN_UID (note) = cur_insn_uid++;
   NOTE_SOURCE_FILE (note) = file;
   NOTE_LINE_NUMBER (note) = line;
+  BLOCK_FOR_INSN (note) = NULL;
   add_insn (note);
   return note;
 }
@@ -5211,6 +5218,8 @@ emit_copy_of_insn_after (insn, after)
 
   /* Update LABEL_NUSES.  */
   mark_jump_label (PATTERN (new), new, 0);
+
+  INSN_SCOPE (new) = INSN_SCOPE (insn);
 
   /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
      make them.  */

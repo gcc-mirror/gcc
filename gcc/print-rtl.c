@@ -475,6 +475,11 @@ print_rtx (in_rtx)
 	sawclose = 0;
 	break;
 
+      case 'B':
+	if (XBBDEF (in_rtx, i))
+	  fprintf (outfile, " %i", XBBDEF (in_rtx, i)->index);
+	break;
+
       default:
 	fprintf (stderr,
 		 "switch format wrong in rtl.print_rtx(). format was: %c.\n",

@@ -69,6 +69,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"
 #include "expr.h"
 #include "profile.h"
+#include "cfglayout.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -1671,7 +1672,7 @@ final_start_function (first, file, optimize)
   if (write_symbols)
     {
       remove_unnecessary_notes ();
-      reorder_blocks ();
+      scope_to_insns_finalize ();
       number_blocks (current_function_decl);
       /* We never actually put out begin/end notes for the top-level
 	 block in the function.  But, conceptually, that block is
