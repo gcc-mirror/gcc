@@ -1,0 +1,125 @@
+#   Copyright (C) 2002 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+# This test checks whether MIPS ELF configurations pass the right
+# ABI flags to the assembler.  An ABI flag should always be passed
+# unless MEABI is selected.
+
+load_lib gcc-dg.exp
+
+# Only run this test on MIPS ELF targets
+if {![istarget mips*-*-*] || [gcc_target_object_format] != "elf"} {
+    return
+}
+
+# A list of all assembler ABI flags.  We should use SGI-compatible
+# flags where possible.
+set asm_abi_flags {-32 -n32 -64 -mabi=o64 -mabi=eabi}
+
+# Return true if the configuration uses MEABI by default.
+proc is_meabi_config {} {
+    return [expr {[istarget mipsisa32*-*-elf*]
+		  || [istarget mipsisa32el-*-elf*]
+		  || [istarget mipsisa64-*-elf*]
+		  || [istarget mipsisa64el-*-elf*]
+		  || [istarget mipsisa64sr71k-*-elf*]}]
+}
+
+# Try to assemble mips-abi.s (an empty file), passing -v in order to
+# get the assembler command line.  Check whether an appropriate ABI
+# flag is passed.
+#
+# NAME is a name for the pass/fail line.
+# ABIS is a list of acceptable assembler ABI flags, or "" if no
+#   ABI flag is expected.
+# FLAGS is a list of options for gcc.
+proc check_mips_abi {name abis flags} {
+    global srcdir subdir asm_abi_flags
+
+    lappend flags "-v"
+    set lines [gcc_target_compile "$srcdir/$subdir/mips-abi.s" \
+				  "mips-abi.o" object \
+				  [list "additional_flags=$flags"]]
+    set good 0
+    set bad 0
+    foreach line [split $lines "\n"] {
+	# Find the assembler command line.
+	if {[string first "$srcdir/$subdir/mips-abi.s" $line] >= 0} {
+	    foreach arg [split $line " "] {
+		# Count the number of matching and non-matching
+		# ABI options.
+		if {[lsearch -exact $abis $arg] >= 0} {
+		    incr good
+		} elseif {[lsearch -exact $asm_abi_flags $arg] >= 0} {
+		    incr bad
+		}
+	    }
+	}
+    }
+    if {$good == ($abis != "") && $bad == 0} {
+	pass "mips-abi $name"
+    } else {
+	fail "mips-abi $name"
+    }
+}
+
+# Collect the default target flags.
+set default_flags ""
+set target [target_info name]
+if {[info exists CFLAGS_FOR_TARGET]} {
+    append default_flags " $CFLAGS_FOR_TARGET"
+}
+if {[board_info $target exists cflags]} {
+    append default_flags " [board_info $target cflags]"
+}
+if {[board_info $target exists multilib_flags]} {
+    append default_flags " [board_info $target multilib_flags]"
+}
+
+# See whether the default command line specifies an ABI.
+set default_abi ""
+foreach flag $default_flags {
+    if {[string first "-mabi" $flag] == 0} {
+	set default_abi $flag
+    }
+}
+
+# If the command line does specify an ABI, just check for the
+# appropriate assembler flag.
+switch -- $default_abi {
+    -mabi=meabi { check_mips_abi "MEABI" "" "" }
+    -mabi=eabi { check_mips_abi "EABI" "-mabi=eabi" "" }
+    -mabi=32 { check_mips_abi "o32" "-32" "" }
+    -mabi=n32 { check_mips_abi "n32" "-n32" "" }
+    -mabi=o64 { check_mips_abi "o64" "-mabi=o64" "" }
+    -mabi=64 { check_mips_abi "n64" "-64" "" }
+    "" {
+	# MEABI configs shouldn't pass an ABI flag by default
+	# but the others should.  It doesn't seem worthwhile
+	# duplicating the configuration to ABI logic here,
+	# so just accept any ABI.
+	if {[is_meabi_config]} {
+	    check_mips_abi "default" "" ""
+	} else {
+	    check_mips_abi "default" $asm_abi_flags ""
+	}
+	# See whether passing a -mabi flag does the right thing.
+	# Only try ABIs that the SGI assembler also understands.
+	check_mips_abi "o32" "-32" "-mabi=32"
+	check_mips_abi "n32" "-n32" "-mabi=n32"
+	check_mips_abi "64" "-64" "-mabi=64"
+    }
+}
