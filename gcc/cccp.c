@@ -4138,7 +4138,9 @@ is_system_include (filename)
 
 /* Process the contents of include file FNAME, already open on descriptor F,
    with output to OP.
-   SYSTEM_HEADER_P is 1 if this file was specified using <...>.
+   SYSTEM_HEADER_P is 1 if this file resides in any one of the known
+   "system" include directories (as decided by the `is_system_include'
+   function above).
    DIRPTR is the link in the dir path through which this file was found,
    or 0 if the file name was absolute.  */
 
