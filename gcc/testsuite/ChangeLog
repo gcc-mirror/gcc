@@ -1,3 +1,7 @@
+2004-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/builtins-30.c: Move dg-warning marks to the proper lines.
+
 2004-01-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/c90-array-lval-7.c, gcc.dg/c99-array-lval-7.c: New tests.

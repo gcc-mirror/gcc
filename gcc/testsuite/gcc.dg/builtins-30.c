@@ -7,21 +7,21 @@ extern double strtod (const char *, char **);
 /* A built-in function may be overridden by an old-style definition
    specifying too few arguments... */
 double nan ()
-{
-  return strtod ("nan", 0);  /* { dg-warning "shadowing built-in" } */
+{  /* { dg-warning "shadowing built-in" } */
+  return strtod ("nan", 0);
 }
 
 /* the right number, but the wrong type, arguments... */
 float nanf (foo)
-     int foo UNUSED;
+     int foo UNUSED;  /* { dg-warning "shadowing built-in" } */
 {
-  return strtod ("nan", 0);  /* { dg-warning "shadowing built-in" } */
+  return strtod ("nan", 0);
 }
 
 /* or too many arguments.  */
 long double nanl (foo, bar)
-     const char *foo UNUSED;
+     const char *foo UNUSED;  /* { dg-warning "shadowing built-in" } */
      int bar UNUSED;
 {
-  return strtod ("nan", 0);  /* { dg-warning "shadowing built-in" } */
+  return strtod ("nan", 0);
 }
