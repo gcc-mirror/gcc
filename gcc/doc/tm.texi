@@ -4042,6 +4042,12 @@ Define this macro as a C expression that is nonzero for registers that are
 used by the epilogue or the @samp{return} pattern.  The stack and frame
 pointer registers are already be assumed to be used as needed.
 
+@findex EH_USES
+@item EH_USES (@var{regno})
+Define this macro as a C expression that is nonzero for registers that are
+used by the exception handling mechanism, and so should be considered live
+on entry to an exception edge.
+
 @findex DELAY_SLOTS_FOR_EPILOGUE
 @item DELAY_SLOTS_FOR_EPILOGUE
 Define this macro if the function epilogue contains delay slots to which
