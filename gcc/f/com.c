@@ -14797,7 +14797,7 @@ init_decl_processing ()
   ffe_init_0 ();
 }
 
-void
+char *
 init_parse (filename)
      char *filename;
 {
@@ -14826,6 +14826,8 @@ init_parse (filename)
 #if BUILT_FOR_270
   print_error_function = lang_print_error_function;
 #endif
+
+  return filename;
 }
 
 void
