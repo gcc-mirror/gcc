@@ -1,3 +1,8 @@
+2004-01-13  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13474
+	* g++.dg/template/array3.C: New test.
+
 2004-01-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* g++.dg/ext/lvalue1.C: No longer expected to fail.
