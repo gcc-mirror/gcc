@@ -1134,6 +1134,17 @@ dump_function_name (tree t, int flags)
 {
   tree name = DECL_NAME (t);
 
+  /* We can get here with a decl that was synthesized by language-
+     independent machinery (e.g. coverage.c) in which case it won't
+     have a lang_specific structure attached and DECL_CONSTRUCTOR_P
+     will crash.  In this case it is safe just to print out the
+     literal name.  */
+  if (!DECL_LANG_SPECIFIC (t))
+    {
+      pp_tree_identifier (cxx_pp, name);
+      return;
+    }
+
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
@@ -1163,7 +1174,7 @@ dump_function_name (tree t, int flags)
   else
     dump_decl (name, flags);
 
-  if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
+  if (DECL_TEMPLATE_INFO (t)
       && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
       && (DECL_TEMPLATE_SPECIALIZATION (t)
 	  || TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
