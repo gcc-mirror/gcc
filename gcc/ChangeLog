@@ -1,3 +1,8 @@
+2002-03-26  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_valid_move): Allow move from
+	a register into the MAC16 accumulator.
+
 2002-03-26  Hartmut Penner  <hpenner@de.ibm.com>
 
         * config/s390/s390.c (s390_emit_epilogue): Change epilogue
