@@ -1,3 +1,8 @@
+2002-02-19  Loren Rittle <ljrittle@acm.org>
+
+	* include/Makefile.am: Use CONFIG_HEADER instead of ad hoc names.
+	* include/Makefile.in: Rebuilt.
+
 2002-02-18  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* testsuite/22_locale/collate_byname.cc (test01): Replace size4

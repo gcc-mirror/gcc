@@ -362,7 +362,7 @@ ${target_builddir}/stamp-target: ${target_headers} stamp-${target_alias}
 	fi
 
 # Target includes dynamic.
-${target_builddir}/c++config.h: ${glibcpp_builddir}/config.h \
+${target_builddir}/c++config.h: ${CONFIG_HEADER} \
 				${glibcpp_srcdir}/include/bits/c++config \
 				stamp-${target_alias}
 	@cat ${glibcpp_srcdir}/include/bits/c++config > $@ ;\
@@ -370,7 +370,7 @@ ${target_builddir}/c++config.h: ${glibcpp_builddir}/config.h \
 	    -e 's/PACKAGE/_GLIBCPP_PACKAGE/g' \
 	    -e 's/VERSION/_GLIBCPP_VERSION/g' \
 	    -e 's/WORDS_/_GLIBCPP_WORDS_/g' \
-	    < ${glibcpp_builddir}/config.h >> $@ ;\
+	    < ${CONFIG_HEADER} >> $@ ;\
 	echo "#endif // _CPP_CPPCONFIG_" >>$@
 
 # Target includes for threads
