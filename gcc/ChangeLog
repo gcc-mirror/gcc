@@ -1,3 +1,11 @@
+2002-07-27  Stan Shebs  <shebs@apple.com>
+
+	* configure.in: Rename config_gtfiles to target_gtfiles.
+	* configure: Regenerate.
+	* doc/gty.texi: Update reference.
+	* config.gcc (powerpc-*-darwin*): Set target_gtfiles
+	instead of appending to it.
+
 2002-07-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (function_arg_advance): SPE vararg
