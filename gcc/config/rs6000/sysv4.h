@@ -56,8 +56,7 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define	MASK_LITTLE_ENDIAN	0x04000000	/* Target is little endian.  */
 #define	MASK_REGNAMES		0x02000000	/* Use alternate register names.  */
 #define	MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args.  */
-#define MASK_LONG_DOUBLE_128	0x00800000	/* Use IEEE quad long double.  */
-#define MASK_NO_BITFIELD_WORD	0x00400000	/* Bitfields cannot cross word boundaries */
+#define MASK_NO_BITFIELD_WORD	0x00800000	/* Bitfields cannot cross word boundaries */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define	TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
@@ -66,7 +65,6 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define	TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
 #define	TARGET_REGNAMES		(target_flags & MASK_REGNAMES)
 #define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
-#define TARGET_LONG_DOUBLE_128	(target_flags & MASK_LONG_DOUBLE_128)
 #define TARGET_NO_BITFIELD_WORD	(target_flags & MASK_NO_BITFIELD_WORD)
 #define	TARGET_TOC		((target_flags & MASK_64BIT)		\
 				 || ((target_flags & (MASK_RELOCATABLE	\
@@ -126,10 +124,6 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
     N_("Produce big endian code.") },					\
   { "big",		-MASK_LITTLE_ENDIAN,				\
     N_("Produce big endian code.") },					\
-  { "long-double-64",	-MASK_LONG_DOUBLE_128,				\
-    N_("Use 64 bit long doubles") },					\
-  { "long-double-128",	 MASK_LONG_DOUBLE_128, 				\
-    N_("Use 128 bit long doubles") },					\
   { "no-toc",		 0, N_("no description yet") },			\
   { "toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
   { "full-toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
@@ -365,22 +359,6 @@ do {									\
 /* Override svr4.h definition.  */
 #undef	WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
-
-/* Define for support of TFmode long double and REAL_ARITHMETIC.
-   PowerPC SVR4 ABI says that long double is 4 words.  */
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
-
-/* Constant which presents upper bound of the above value.  */
-#define MAX_LONG_DOUBLE_TYPE_SIZE 128
-
-/* Define this to set long double type size to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#ifdef __LONG_DOUBLE_128__
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
-#else
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-#endif
 
 /* Make int foo : 8 not cause structures to be aligned to an int boundary.  */
 /* Override elfos.h definition.  */

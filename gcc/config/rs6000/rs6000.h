@@ -217,6 +217,9 @@ extern int target_flags;
 /* Enhance the current ABI with AltiVec extensions.  */
 #define MASK_ALTIVEC_ABI	0x00100000
 
+/* Use 128-bit long double.  */
+#define MASK_LONG_DOUBLE_128	0x00200000
+
 #define TARGET_POWER		(target_flags & MASK_POWER)
 #define TARGET_POWER2		(target_flags & MASK_POWER2)
 #define TARGET_POWERPC		(target_flags & MASK_POWERPC)
@@ -237,6 +240,7 @@ extern int target_flags;
 #define TARGET_SCHED_PROLOG	(target_flags & MASK_SCHED_PROLOG)
 #define TARGET_ALTIVEC		(target_flags & MASK_ALTIVEC)
 #define TARGET_ALTIVEC_ABI	(target_flags & MASK_ALTIVEC_ABI)
+#define TARGET_LONG_DOUBLE_128	(target_flags & MASK_LONG_DOUBLE_128)
 
 #define TARGET_32BIT		(! TARGET_64BIT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
@@ -341,6 +345,10 @@ extern int target_flags;
 			N_("Generate fused multiply/add instructions")},\
   {"no-fused-madd",	MASK_NO_FUSED_MADD,				\
 			N_("Don't generate fused multiply/add instructions")},\
+  {"long-double-64",	-MASK_LONG_DOUBLE_128,				\
+			N_("Use 64 bit long doubles") },		\
+  {"long-double-128",	 MASK_LONG_DOUBLE_128, 				\
+			N_("Use 128 bit long doubles") },		\
   {"sched-prolog",      MASK_SCHED_PROLOG,                              \
 			""},						\
   {"no-sched-prolog",   -MASK_SCHED_PROLOG,                             \
@@ -576,7 +584,18 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* A C expression for the size in bits of the type `long double' on
    the target machine.  If you don't define this, the default is two
    words.  */
-#define LONG_DOUBLE_TYPE_SIZE 64
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
+
+/* Constant which presents upper bound of the above value.  */
+#define MAX_LONG_DOUBLE_TYPE_SIZE 128
+
+/* Define this to set long double type size to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#ifdef __LONG_DOUBLE_128__
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#endif
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */

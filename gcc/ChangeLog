@@ -1,3 +1,16 @@
+2001-11-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (rs6000_emit_eh_toc_restore): Remove ALIGN parm.
+
+	* rs6000.c (rs6000_emit_move): Add TFmode case.
+	* sysv4.h (MASK_LONG_DOUBLE_128, TARGET_LONG_DOUBLE_128,
+	LONG_DOUBLE_TYPE_SIZE, MAX_LONG_DOUBLE_TYPE_SIZE,
+	LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Move from here...
+	* rs6000.h: ... to here.
+	* rs6000.md (movtf, extenddftf2, extendsftf2, trunctfdf2,
+	trunctfsf2, floatditf2, floatsitf2, fix_trunctfdi2,
+	fix_trunctfsi2, negtf2, abstf2, nabstf2): New patterns.
+
 Tue Nov 20 06:41:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (get_mem_attrs): Fix typo.
