@@ -39,9 +39,7 @@ exception statement from your version. */
 package javax.security.auth.x500;
 
 import gnu.java.security.OID;
-import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;
-import gnu.java.security.der.DEREncodingException;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 
@@ -59,7 +57,6 @@ import java.io.StringReader;
 import java.security.Principal;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -68,7 +65,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 public final class X500Principal implements Principal, Serializable
 {
