@@ -1,3 +1,20 @@
+2004-04-24  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/15002 (continued)
+	* include/bits/istream.tcc (basic_istream<>::getline(char_type*,
+	streamsize, char_type)): Use traits::find/copy in a loop to speed
+	up greatly the function in the common case (I/O buffer size >> 1).
+
+2004-04-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/getline/char/4.cc: New.	
+
+	* include/bits/istream.tcc (getline(basic_istream<>&,
+	basic_string<>&, _CharT)): Change to use sgetc()/snextc() instead
+	of sbumpc(), consistently with the other functions, thus also
+	dealing correctly with the case of exceeded string::max_size().
+
 2004-04-24  Matthias Klose  <doko@debian.org>
 
 	Jonathan Wakely  <cow@compsoc.man.ac.uk>
