@@ -1,3 +1,17 @@
+Sat Apr 29 12:25:17 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (FIRST_DATA_REGNUM,
+	LAST_DATA_REGNUM, FIRST_ADDRESS_REGNUM, LAST_ADDRESS_REGNUM,
+	FIRST_EXTENDED_REGNUM, LAST_EXTENDED_REGNUM): New macros.
+	(REGNO_SP_P): Redefine in terms of STACK_POINTER_REGNUM.
+	(REGNO_DATA_P, REGNO_ADDRESS_P, REGNO_EXTENDED_P,
+	REGNO_AM33_P): Redefine in terms of the new macros.
+	(CONDITIONAL_REGISTER_USAGE, REGNO_REG_CLASS): Likewise.
+	(FUNCTION_VALUE, LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P,
+	STRUCT_VALUE): Likewise.
+	(STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM,
+	ARG_POINTER_REGNUM, STATIC_CHAIN_REGNUM): Likewise.  Moved.
+
 Sat Apr 29 01:18:45 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* regmove.c (struct record_stack_memrefs_data): New.
