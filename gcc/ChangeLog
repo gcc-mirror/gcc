@@ -1,3 +1,9 @@
+2003-10-06  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+        PR optimization/11974
+        * optabs.c (expand_unop): Promote libcall outmode according to
+        hard_libcall_value.
+
 2003-10-06  Zack Weinberg  <zack@codesourcery.com>
 
 	* real.h (REAL_MODE_FORMAT): New macro.
