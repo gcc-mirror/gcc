@@ -5157,9 +5157,22 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  break;
 
       if (x == 0)
-	pedwarn ("%s has no %s",
-		 TREE_CODE (t) == UNION_TYPE ? _("union") : _("struct"),
-		 fieldlist ? _("named members") : _("members"));
+	{
+	  if (TREE_CODE (t) == UNION_TYPE)
+	    {
+	      if (fieldlist)
+		pedwarn ("union has no named members");
+	      else
+		pedwarn ("union has no members");
+	    }
+	  else
+	    {
+	      if (fieldlist)
+		pedwarn ("struct has no named members");
+	      else
+		pedwarn ("struct has no members");
+	    }
+	}
     }
 
   /* Install struct as DECL_CONTEXT of each field decl.
