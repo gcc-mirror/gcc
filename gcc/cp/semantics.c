@@ -580,7 +580,6 @@ genrtl_try_block (t)
 
       if (FN_TRY_BLOCK_P (t))
 	{
-	  end_protect_partials ();
 	  expand_start_all_catch ();
 	  in_function_try_handler = 1;
 	  expand_stmt (TRY_HANDLERS (t));
@@ -1216,6 +1215,10 @@ setup_vtbl_ptr (member_init_list, base_init_list)
       finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
       finish_then_clause (if_stmt);
       finish_if_stmt ();
+
+      /* And insert cleanups for our bases and members so that they
+         will be properly destroyed if we throw.  */
+      push_base_cleanups ();
     }
 
   /* Always keep the BLOCK node associated with the outermost pair of
@@ -2559,8 +2562,6 @@ static void
 genrtl_start_function (fn)
      tree fn;
 {
-  tree parm;
-
   /* Tell everybody what function we're processing.  */
   current_function_decl = fn;
   /* Get the RTL machinery going for this function.  */

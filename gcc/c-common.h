@@ -37,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       STMT_IS_FULL_EXPR_P (in _STMT)
    2: STMT_LINENO_FOR_FN_P (in _STMT)
    3: SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
+      COMPOUND_STMT_BODY_BLOCK (in COMPOUND_STMT)
    4: SCOPE_PARTIAL_P (in SCOPE_STMT)
 */
 
@@ -761,6 +762,10 @@ extern tree build_break_stmt                    PARAMS ((void));
 extern tree build_return_stmt                   PARAMS ((tree));
 
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
+
+/* Used by the C++ frontend to mark the block around the member
+   initializers and cleanups.  */
+#define COMPOUND_STMT_BODY_BLOCK(NODE)	TREE_LANG_FLAG_3 (NODE)
 
 extern void c_expand_asm_operands		PARAMS ((tree, tree, tree, tree, int, const char *, int));
 

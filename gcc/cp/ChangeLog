@@ -1,5 +1,28 @@
 2001-12-13  Jason Merrill  <jason@redhat.com>
 
+	* Make-lang.in (parse.h): Separate rule, just depend on parse.c.
+
+	Use cleanups to run base and member destructors.
+	* init.c (push_base_cleanups): New function, split out from...
+	(build_delete): ...here.  Lose !TYPE_HAS_DESTRUCTOR code.
+	* decl.c (finish_destructor_body): Move vbase destruction code to
+	push_base_cleanups.
+	(begin_function_body, finish_function_body): New fns.
+	(finish_function): Move [cd]tor handling and call_poplevel to
+	finish_function_body.
+	(pushdecl): Skip the new level.
+	* semantics.c (genrtl_try_block): Don't call end_protect_partials.
+	(setup_vtbl_ptr): Call push_base_cleanups.
+	* method.c (synthesize_method): Call {begin,end}_function_body.
+	* pt.c (tsubst_expr): Handle COMPOUND_STMT_BODY_BLOCK.
+	* cp-tree.h: Declare new fns.
+	* parse.y (function_body, .begin_function_body): New nonterminals.
+	(fndef, pending_inline, function_try_block): Use function_body.
+	(ctor_initializer_opt, function_try_block): No longer has a value.
+	(base_init): Remove .set_base_init token.
+	(.set_base_init, compstmt_or_error): Remove.
+	* Make-lang.in (parse.c): Expect two fewer s/r conflicts.
+
 	* optimize.c (maybe_clone_body): Fix parameter updating.
 
 2001-12-12  Jason Merrill  <jason@redhat.com>

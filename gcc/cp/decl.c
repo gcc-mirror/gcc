@@ -4188,8 +4188,8 @@ pushdecl (x)
 		     them there.  */
 		  struct binding_level *b = current_binding_level->level_chain;
 
-		  if (cleanup_label)
-		    b = b->level_chain;
+		  /* Skip the ctor/dtor cleanup level.  */
+		  b = b->level_chain;
 
 		  /* ARM $8.3 */
 		  if (b->parm_flag == 1)
@@ -13920,105 +13920,28 @@ save_function_data (decl)
     }
 }
 
-/* At the end of every constructor we generate to code to return
-   `this'.  Do that now.  */
+/* Add a note to mark the end of the main body of the constructor.  This is
+   used to end the cleanup regions for fully-constructed bases and
+   members.  */
 
 static void
 finish_constructor_body ()
 {
-  /* Mark the end of the constructor.  */
+  /* Mark the end of the cleanups for a partially constructed object.
+
+     ??? These should really be handled automatically by closing the block,
+     as with the destructor cleanups; the only difference is that these are
+     only run if an exception is thrown.  */
   add_stmt (build_stmt (CTOR_STMT));
 }
 
-/* At the end of every destructor we generate code to restore virtual
-   function tables to the values desired by base classes and to call
-   to base class destructors.  Do that now.  */
+/* At the end of every destructor we generate code to delete the object if
+   necessary.  Do that now.  */
 
 static void
 finish_destructor_body ()
 {
-  tree compound_stmt;
   tree exprstmt;
-
-  /* Create a block to contain all the extra code.  */
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-
-  /* Any return from a destructor will end up here.  */
-  add_stmt (build_stmt (LABEL_STMT, dtor_label));
-
-  /* Generate the code to call destructor on base class.  If this
-     destructor belongs to a class with virtual functions, then set
-     the virtual function table pointer to represent the type of our
-     base class.  */
-
-  /* This side-effect makes call to `build_delete' generate the code
-     we have to have at the end of this destructor.  `build_delete'
-     will set the flag again.  */
-  TYPE_HAS_DESTRUCTOR (current_class_type) = 0;
-
-  exprstmt = build_delete (current_class_type,
-			   current_class_ref,
-			   sfk_base_destructor,
-			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
-			   0);
-
-  if (exprstmt != error_mark_node
-      && (TREE_CODE (exprstmt) != NOP_EXPR
-	  || TREE_OPERAND (exprstmt, 0) != integer_zero_node
-	  || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)))
-    {
-      if (exprstmt != void_zero_node)
-	/* Don't call `expand_expr_stmt' if we're not going to do
-	   anything, since -Wall will give a diagnostic.  */
-	finish_expr_stmt (exprstmt);
-
-      /* Run destructors for all virtual baseclasses.  */
-      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	{
-	  tree vbases;
-	  tree if_stmt;
-
-	  if_stmt = begin_if_stmt ();
-	  finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
-				      current_in_charge_parm,
-				      integer_two_node),
-			       if_stmt);
-
-	  vbases = CLASSTYPE_VBASECLASSES (current_class_type);
-	  /* The CLASSTYPE_VBASECLASSES list is in initialization
-	     order, so we have to march through it in reverse order.  */
-	  for (vbases = nreverse (copy_list (vbases));
-	       vbases;
-	       vbases = TREE_CHAIN (vbases))
-	    {
-	      tree vbase = TREE_VALUE (vbases);
-	      tree base_type = BINFO_TYPE (vbase);
-
-	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (base_type))
-		{
-                  tree base_ptr_type = build_pointer_type (base_type);
-	          tree expr = current_class_ptr;
-	          
-	          /* Convert to the basetype here, as we know the layout is
-                     fixed. What is more, if we let build_method_call do it,
-                     it will use the vtable, which may have been clobbered
-                     by the deletion of our primary base.  */
-                  
-                  expr = build1 (NOP_EXPR, base_ptr_type, expr);
-	          expr = build (PLUS_EXPR, base_ptr_type, expr,
-	                        BINFO_OFFSET (vbase));
-	          expr = build_indirect_ref (expr, NULL);
-	          expr = build_method_call (expr, base_dtor_identifier,
-	                                    NULL_TREE, vbase,
-	                                    LOOKUP_NORMAL);
-		  finish_expr_stmt (expr);
-		}
-	    }
-
-	  finish_then_clause (if_stmt);
-	  finish_if_stmt ();
-	}
-    }
 
   /* In a virtual destructor, we must call delete.  */
   if (DECL_VIRTUAL_P (current_function_decl))
@@ -14028,10 +13951,10 @@ finish_destructor_body ()
 
       /* [class.dtor]
 
-	 At the point of definition of a virtual destructor (including
-	 an implicit definition), non-placement operator delete shall
-	 be looked up in the scope of the destructor's class and if
-	 found shall be accessible and unambiguous.  */
+      At the point of definition of a virtual destructor (including
+      an implicit definition), non-placement operator delete shall
+      be looked up in the scope of the destructor's class and if
+      found shall be accessible and unambiguous.  */
       exprstmt = build_op_delete_call
 	(DELETE_EXPR, current_class_ptr, virtual_size,
 	 LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
@@ -14045,20 +13968,58 @@ finish_destructor_body ()
       finish_then_clause (if_stmt);
       finish_if_stmt ();
     }
-
-  /* Close the block we started above.  */
-  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
 }
+
+/* Do the necessary processing for the beginning of a function body, which
+   in this case includes member-initializers, but not the catch clauses of
+   a function-try-block.  Currently, this means opening a binding level
+   for the member-initializers (in a ctor) and member cleanups (in a dtor).
+   In other functions, this isn't necessary, but it doesn't hurt.  */
+
+tree
+begin_function_body ()
+{
+  tree stmt = begin_compound_stmt (0);
+  COMPOUND_STMT_BODY_BLOCK (stmt) = 1;
+  return stmt;
+}
+
+/* Do the processing for the end of a function body.  Currently, this means
+   closing out the cleanups for fully-constructed bases and members, and in
+   the case of the destructor, deleting the object if desired.  Again, this
+   is only meaningful for [cd]tors, since they are the only functions where
+   there is a significant distinction between the main body and any
+   function catch clauses.  Handling, say, main() return semantics here
+   would be wrong, as flowing off the end of a function catch clause for
+   main() would also need to return 0.  */
+
+void
+finish_function_body (compstmt)
+     tree compstmt;
+{
+  if (processing_template_decl)
+    /* Do nothing now.  */;
+  else if (DECL_DESTRUCTOR_P (current_function_decl))
+    /* Any return from a destructor will end up here.  Put it before the
+       cleanups so that an explicit return doesn't duplicate them.  */
+    add_stmt (build_stmt (LABEL_STMT, dtor_label));
+
+  /* Close the block; in a destructor, run the member cleanups.  */
+  finish_compound_stmt (0, compstmt);
+
+  if (processing_template_decl)
+    /* Do nothing now.  */;
+  else if (DECL_CONSTRUCTOR_P (current_function_decl))
+    finish_constructor_body ();
+  else if (DECL_DESTRUCTOR_P (current_function_decl))
+    finish_destructor_body ();
+}  
 
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition.
 
    FLAGS is a bitwise or of the following values:
-     1 - CALL_POPLEVEL
-       An extra call to poplevel (and expand_end_bindings) must be
-       made to take care of the binding contour for the base
-       initializers.  This is only relevant for constructors.
      2 - INCLASS_INLINE
        We just finished processing the body of an in-class inline
        function definition.  (This processing will have taken place
@@ -14070,7 +14031,6 @@ finish_function (flags)
 {
   register tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
-  int call_poplevel = (flags & 1) != 0;
   int inclass_inline = (flags & 2) != 0;
   int nested;
 
@@ -14094,15 +14054,7 @@ finish_function (flags)
      there's no need to add any extra bits.  */
   if (!DECL_CLONED_FUNCTION_P (fndecl))
     {
-      if (DECL_CONSTRUCTOR_P (fndecl))
-	{
-	  finish_constructor_body ();
-	  if (call_poplevel)
-	    do_poplevel ();
-	}
-      else if (DECL_DESTRUCTOR_P (fndecl) && !processing_template_decl)
-	finish_destructor_body ();
-      else if (DECL_MAIN_P (fndecl))
+      if (DECL_MAIN_P (current_function_decl))
 	{
 	  /* Make it so that `main' always returns 0 by default.  */
 #ifdef VMS_TARGET

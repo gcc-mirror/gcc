@@ -385,7 +385,7 @@ cp_parse_init ()
 %token <pi> PRE_PARSED_FUNCTION_DECL 
 %type <ttype> component_constructor_declarator
 %type <ttype> fn.def2 return_id constructor_declarator
-%type <itype> ctor_initializer_opt function_try_block
+%type <ttype> .begin_function_body
 %type <ttype> named_class_head_sans_basetype
 %type <ftype> class_head named_class_head 
 %type <ftype> named_complex_class_head_sans_basetype 
@@ -747,9 +747,7 @@ datadef:
 
 ctor_initializer_opt:
 	  nodecls
-		{ $$ = 0; }
 	| base_init
-		{ $$ = 1; }
 	;
 
 maybe_return_init:
@@ -763,11 +761,18 @@ eat_saved_input:
 	| END_OF_SAVED_INPUT
 	;
 
+function_body:
+	  .begin_function_body ctor_initializer_opt compstmt
+		{
+		  finish_function_body ($1);
+		}
+	;
+
 fndef:
-	  fn.def1 maybe_return_init ctor_initializer_opt compstmt_or_error
-		{ expand_body (finish_function ((int)$3)); }
+	  fn.def1 maybe_return_init function_body
+		{ expand_body (finish_function (0)); }
 	| fn.def1 maybe_return_init function_try_block
-		{ expand_body (finish_function ((int)$3)); }
+		{ expand_body (finish_function (0)); }
 	| fn.def1 maybe_return_init error
 		{ }
 	;
@@ -890,25 +895,21 @@ return_init:
 	;
 
 base_init:
-	  ':' .set_base_init member_init_list
+	  ':' member_init_list
 		{
-		  if ($3.new_type_flag == 0)
+		  if (! DECL_CONSTRUCTOR_P (current_function_decl))
+		    error ("only constructors take base initializers");
+		  else if ($2.new_type_flag == 0)
 		    error ("no base or member initializers given following ':'");
 
-		  finish_mem_initializers ($3.t);
+		  finish_mem_initializers ($2.t);
 		}
 	;
 
-.set_base_init:
+.begin_function_body:
 	  /* empty */
 		{
-		  if (DECL_CONSTRUCTOR_P (current_function_decl))
-		    /* Make a contour for the initializer list.  */
-		    do_pushlevel ();
-		  else if (current_class_type == NULL_TREE)
-		    error ("base initializers not allowed for non-member functions");
-		  else if (! DECL_CONSTRUCTOR_P (current_function_decl))
-		    error ("only constructors take base initializers");
+		  $$ = begin_function_body ();
 		}
 	;
 
@@ -2208,14 +2209,14 @@ initlist:
 	;
 
 pending_inline:
-	  PRE_PARSED_FUNCTION_DECL maybe_return_init ctor_initializer_opt compstmt_or_error
+	  PRE_PARSED_FUNCTION_DECL maybe_return_init function_body
 		{
-		  expand_body (finish_function ((int)$3 | 2));
+		  expand_body (finish_function (2));
 		  process_next_inline ($1);
 		}
 	| PRE_PARSED_FUNCTION_DECL maybe_return_init function_try_block
 		{ 
-		  expand_body (finish_function ((int)$3 | 2)); 
+		  expand_body (finish_function (2)); 
                   process_next_inline ($1);
 		}
 	| PRE_PARSED_FUNCTION_DECL maybe_return_init error
@@ -3328,13 +3329,6 @@ label_decl:
 		}
 	;
 
-/* This is the body of a function definition.
-   It causes syntax errors to ignore to the next openbrace.  */
-compstmt_or_error:
-	  compstmt
-	| error compstmt
-	;
-
 compstmt:
 	  save_lineno '{'
                 { $<ttype>$ = begin_compound_stmt (0); }
@@ -3499,13 +3493,10 @@ simple_stmt:
 function_try_block:
 	  TRY
 		{ $<ttype>$ = begin_function_try_block (); }
-	  ctor_initializer_opt compstmt
+	  function_body
 		{ finish_function_try_block ($<ttype>2); }
 	  handler_seq
-		{
-		  finish_function_handler_sequence ($<ttype>2);
-		  $$ = $3;
-		}
+		{ finish_function_handler_sequence ($<ttype>2); }
 	;
 
 try_block:

@@ -1,3 +1,7 @@
+2001-12-13  Jason Merrill  <jason@redhat.com>
+
+	* c-common.h (COMPOUND_STMT_BODY_BLOCK): New macro.
+
 2001-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md (eh_set_lr_di): Change scratch
@@ -20,10 +24,10 @@ Thu Dec 13 20:30:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-12-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_override_options): Add
-        SUBSUBTARGET_OVERRIDE_OPTIONS.
+	* config/rs6000/rs6000.c (rs6000_override_options): Add
+	SUBSUBTARGET_OVERRIDE_OPTIONS.
 
-        * config/rs6000/eabialtivec.h: New file.
+	* config/rs6000/eabialtivec.h: New file.
 
 	* config/rs6000/linuxaltivec.h: New file.
 
