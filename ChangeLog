@@ -1,3 +1,7 @@
+2004-01-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* MAINTAINERS: Add myself as a MIPS maintainer.
+
 2004-01-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Use ./config.cache, not config.cache.
