@@ -1963,7 +1963,9 @@ get_abstract_virtuals (type)
 	{
 	  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals));
 	  tree base_fndecl = TREE_OPERAND (base_pfn, 0);
-	  if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
+	  if (DECL_NEEDS_FINAL_OVERRIDER_P (base_fndecl))
+	    cp_error ("`%#D' needs a final overrider", base_fndecl);
+	  else if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
 	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, abstract_virtuals);
 	  virtuals = TREE_CHAIN (virtuals);
 	}

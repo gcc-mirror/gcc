@@ -2141,8 +2141,15 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
        field = TREE_CHAIN (field))
     {
       tree decl;
-      if (TREE_CODE (field) != FIELD_DECL)
+
+      if (DECL_ARTIFICIAL (field))
 	continue;
+      if (TREE_CODE (field) != FIELD_DECL)
+	{
+	  cp_pedwarn_at ("`%#D' invalid; an anonymous union can only have non-static data members",
+			 field);
+	  continue;
+	}
 
       if (TREE_PRIVATE (field))
 	cp_pedwarn_at ("private member `%#D' in anonymous union", field);
