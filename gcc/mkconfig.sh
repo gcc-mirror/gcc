@@ -67,6 +67,12 @@ case $output in
     ;;
 esac
 
+# Prevent obstack.c from thinking it can do i18n of its error message
+# when it's being linked against a build-side program.
+echo '#ifdef GENERATOR_FILE'
+echo '# undef ENABLE_NLS'
+echo '#endif'
+
 ) > $output.T
 
 # Avoid changing the actual file if possible.
