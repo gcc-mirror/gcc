@@ -1394,7 +1394,7 @@ AC_ARG_ENABLE(libstdcxx_pch,
 changequote(<<, >>)dnl
 <<  --enable-libstdcxx-pch     build pre-compiled libstdc++ includes [default=>>GLIBCXX_ENABLE_PCH_DEFAULT],
 changequote([, ])dnl
-[case "${enableval}" in
+[case ${enableval} in
  yes) enable_libstdcxx_pch=yes ;;
  no)  enable_libstdcxx_pch=no ;;
  *)   AC_MSG_ERROR([Unknown argument to enable/disable PCH]) ;;
@@ -1402,27 +1402,30 @@ changequote([, ])dnl
 enable_libstdcxx_pch=GLIBCXX_ENABLE_PCH_DEFAULT)dnl
 
   if test x$enable_libstdcxx_pch = xyes; then
-    ac_test_CXXFLAGS="${CXXFLAGS+set}"
-    ac_save_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS='-Werror -Winvalid-pch -Wno-deprecated -x c++-header'
-
-    AC_MSG_CHECKING([for compiler that seems to compile .gch files])
-    if test x${pch_comp+set} != xset; then
-      AC_CACHE_VAL(pch_comp, [
+    AC_CACHE_CHECK([for pch support], [libstdcxx_cv_pch_comp],[
         AC_LANG_SAVE
         AC_LANG_CPLUSPLUS
-        AC_TRY_COMPILE([#include <math.h>], ,
-                       [pch_comp=yes], [pch_comp=no])
+	ac_save_CXXFLAGS=$CXXFLAGS
+	CXXFLAGS="$CXXFLAGS -Werror -Winvalid-pch -Wno-deprecated"
+	echo '#include <math.h>' > conftest.h
+	if ${CXX-g++} $CXXFLAGS $CPPFLAGS -x c++-header conftest.h \
+		-o conftest.h.gch 1>&5 2>&1 &&
+	   echo '#error "pch failed"' > conftest.h &&
+	   echo '#include "conftest.h"' > conftest.C &&
+	   ${CXX-g++} -c $CXXFLAGS $CPPFLAGS conftest.C 1>&5 2>&1 ; then
+	  libstdcxx_cv_pch_comp=yes
+	else
+	  libstdcxx_cv_pch_comp=no
+	fi
+	rm -f conftest*
+	CXXFLAGS=$ac_save_CXXFLAGS
         AC_LANG_RESTORE
-      ])
-    fi
-    AC_MSG_RESULT([$pch_comp])
-
-    CXXFLAGS="$ac_save_CXXFLAGS"
+    ])
   fi
 
-  if test x"$enable_libstdcxx_pch" = xyes && test x"$pch_comp" = xno; then
-    enable_pch=no
+  if test x"$enable_libstdcxx_pch" = xyes &&
+     test x"$libstdcxx_cv_pch_comp" = xno; then
+    enable_libstdcxx_pch=no
   fi
 
   AC_MSG_CHECKING([for enabled PCH])
