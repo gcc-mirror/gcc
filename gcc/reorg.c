@@ -1239,7 +1239,7 @@ get_jump_flags (insn, label)
   return flags;
 }
 
-/* Return 1 if DEST is a destination that will be branched to rarely (the
+/* Return 1 if INSN is a destination that will be branched to rarely (the
    return point of a function); return 2 if DEST will be branched to very
    rarely (a call to a function that doesn't return).  Otherwise,
    return 0.  */
@@ -1249,11 +1249,14 @@ rare_destination (insn)
      rtx insn;
 {
   int jump_count = 0;
+  rtx next;
 
-  for (; insn; insn = NEXT_INSN (insn))
+  for (; insn; insn = next)
     {
       if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	insn = XVECEXP (PATTERN (insn), 0, 0);
+
+      next = NEXT_INSN (insn);
 
       switch (GET_CODE (insn))
 	{
@@ -1270,7 +1273,7 @@ rare_destination (insn)
 	    return 1;
 	  else if (simplejump_p (insn)
 		   && jump_count++ < 10)
-	    insn = JUMP_LABEL (insn);
+	    next = JUMP_LABEL (insn);
 	  else
 	    return 0;
 	}
