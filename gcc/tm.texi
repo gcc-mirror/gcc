@@ -1828,6 +1828,9 @@ When the machine has more than 32 registers, an integer does not suffice.
 Then the integers are replaced by sub-initializers, braced groupings containing
 several integers.  Each sub-initializer must be suitable as an initializer
 for the type @code{HARD_REG_SET} which is defined in @file{hard-reg-set.h}.
+In this situation, the first integer in each sub-initializer corresponds to
+registers 0 through 31, the second integer to registers 32 through 63, and
+so on.
 
 @findex REGNO_REG_CLASS
 @item REGNO_REG_CLASS (@var{regno})
