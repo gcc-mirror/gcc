@@ -666,7 +666,6 @@ array_type:
 		{ 
 		  int osb = pop_current_osb (ctxp);
 		  tree t = build_java_array_type (($1), -1);
-		  CLASS_LOADED_P (t) = 1;
 		  while (--osb)
 		    t = build_unresolved_array_type (t);
 		  $$ = t;
@@ -3268,7 +3267,6 @@ build_array_from_name (type, type_wfl, name, ret_name)
       if (JPRIMITIVE_TYPE_P (type))
 	{
 	  type = build_java_array_type (type, -1);
-	  CLASS_LOADED_P (type) = 1;
 	  more_dims--;
 	}
       /* Otherwise, if we have a WFL for this type, use it (the type
@@ -3311,11 +3309,7 @@ build_unresolved_array_type (type_or_wfl)
   /* TYPE_OR_WFL might be an array on a resolved type. In this case,
      just create a array type */
   if (TREE_CODE (type_or_wfl) == RECORD_TYPE)
-    {
-      tree type = build_java_array_type (type_or_wfl, -1);
-      CLASS_LOADED_P (type) = CLASS_LOADED_P (type_or_wfl);
-      return type;
-    }
+    return build_java_array_type (type_or_wfl, -1);
 
   obstack_1grow (&temporary_obstack, '[');
   obstack_grow0 (&temporary_obstack,
@@ -3659,6 +3653,7 @@ maybe_create_class_interface_decl (decl, raw_name, qualified_name, cl)
   else
     DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
   CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) = 1;
+  CLASS_PARSED_P (TREE_TYPE (decl)) = 1;
   CLASS_FROM_CURRENTLY_COMPILED_P (TREE_TYPE (decl)) =
     IS_A_COMMAND_LINE_FILENAME_P (EXPR_WFL_FILENAME_NODE (cl));
 
@@ -5285,7 +5280,6 @@ safe_layout_class (class)
   current_class = save_current_class;
   input_filename = save_input_filename;
   lineno = save_lineno;
-  CLASS_LOADED_P (class) = 1;
 }
 
 static tree
@@ -5506,7 +5500,6 @@ resolve_class (enclosing, class_type, decl, cl)
       while (base != name)
 	{
 	  resolved_type = build_java_array_type (resolved_type, -1);
-	  CLASS_LOADED_P (resolved_type) = 1;
 	  name--;
 	}
       /* A TYPE_NAME that is a TYPE_DECL was set in
@@ -7313,9 +7306,6 @@ java_layout_classes ()
     {
       current_class = TREE_TYPE (TREE_VALUE (current));
       layout_class (current_class);
-
-      /* From now on, the class is considered completely loaded */
-      CLASS_LOADED_P (current_class) = 1;
 
       /* Error reported by the caller */
       if (java_error_count)
@@ -9152,7 +9142,6 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  if (decl == error_mark_node)
 	    return 1;
 	  *type_found = type = QUAL_DECL_TYPE (decl);
-	  CLASS_LOADED_P (type) = 1;
 	  continue;
 
 	case CONVERT_EXPR:
@@ -9465,8 +9454,6 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		  && !CLASS_LOADED_P (field_decl_type)
 		  && !TYPE_ARRAY_P (field_decl_type))
 		resolve_and_layout (field_decl_type, NULL_TREE);
-	      if (TYPE_ARRAY_P (field_decl_type))
-		CLASS_LOADED_P (field_decl_type) = 1;
 	      
 	      /* Check on accessibility here */
 	      if (not_accessible_p (current_class, field_decl,
@@ -13989,11 +13976,7 @@ resolve_type_during_patch (type)
 			       IDENTIFIER_POINTER (EXPR_WFL_NODE (type)));
 	  return NULL_TREE;
 	}
-      else
-	{
-	  CLASS_LOADED_P (TREE_TYPE (type_decl)) = 1;
-	  return TREE_TYPE (type_decl);
-	}
+      return TREE_TYPE (type_decl);
     }
   return type;
 }

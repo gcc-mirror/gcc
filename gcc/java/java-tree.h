@@ -73,7 +73,7 @@ struct JCF;
    Usage of TYPE_LANG_FLAG_?:
    0: CLASS_ACCESS0_GENERATED_P (in RECORD_TYPE)
    1: TYPE_ARRAY_P (in RECORD_TYPE).
-   2: CLASS_LOADED_P (in RECORD_TYPE).
+   2: CLASS_PARSED_P (in RECORD_TYPE).
    3: CLASS_FROM_SOURCE_P (in RECORD_TYPE).
    4: CLASS_P (in RECORD_TYPE).
    5: CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (in RECORD_TYPE)
@@ -1306,8 +1306,13 @@ extern tree *type_map;
 /* FIXME this use of TREE_TYPE conflicts with something or other. */
 #define TYPE_ARRAY_ELEMENT(ATYPE) TREE_TYPE(ATYPE)
 
-/* True if class TYPE has been loaded. */
-#define CLASS_LOADED_P(TYPE) TYPE_LANG_FLAG_2 (TYPE)
+/* True if class TYPE has been loaded (i.e. parsed plus laid out).
+   (The check for CLASS_PARSED_P is needed because of Object and Class.) */
+#define CLASS_LOADED_P(TYPE) (TYPE_SIZE (TYPE) != NULL_TREE \
+			      && (CLASS_PARSED_P(TYPE) || TYPE_ARRAY_P(TYPE)))
+
+/* True if class TYPE has been parsed (first pass). */
+#define CLASS_PARSED_P(TYPE) TYPE_LANG_FLAG_2 (TYPE)
 
 /* True if class TYPE was defined in Java source code. */
 #define CLASS_FROM_SOURCE_P(TYPE) TYPE_LANG_FLAG_3 (TYPE)
