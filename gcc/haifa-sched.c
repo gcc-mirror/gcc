@@ -2036,12 +2036,26 @@ compute_trg_info (trg)
 
       if (sp->is_valid)
 	{
+	  char *update_blocks;
+
+	  /* Compute split blocks and store them in bblst_table.
+	     The TO block of every split edge is a split block.  */
 	  sp->split_bbs.first_member = &bblst_table[bblst_last];
 	  sp->split_bbs.nr_members = el.nr_members;
 	  for (j = 0; j < el.nr_members; bblst_last++, j++)
 	    bblst_table[bblst_last] =
 	      TO_BLOCK (rgn_edges[el.first_member[j]]);
 	  sp->update_bbs.first_member = &bblst_table[bblst_last];
+
+	  /* Compute update blocks and store them in bblst_table.
+	     For every split edge, look at the FROM block, and check
+	     all out edges.  For each out edge that is not a split edge,
+	     add the TO block to the update block list.  This list can end
+	     up with a lot of duplicates.  We need to weed them out to avoid
+	     overrunning the end of the bblst_table.  */
+	  update_blocks = (char *) alloca (n_basic_blocks);
+	  bzero (update_blocks, n_basic_blocks);
+
 	  update_idx = 0;
 	  for (j = 0; j < el.nr_members; j++)
 	    {
@@ -2049,14 +2063,18 @@ compute_trg_info (trg)
 	      fst_edge = nxt_edge = OUT_EDGES (check_block);
 	      do
 		{
-		  for (k = 0; k < el.nr_members; k++)
-		    if (EDGE_TO_BIT (nxt_edge) == el.first_member[k])
-		      break;
-
-		  if (k >= el.nr_members)
+		  if (! update_blocks[TO_BLOCK (nxt_edge)])
 		    {
-		      bblst_table[bblst_last++] = TO_BLOCK (nxt_edge);
-		      update_idx++;
+		      for (k = 0; k < el.nr_members; k++)
+			if (EDGE_TO_BIT (nxt_edge) == el.first_member[k])
+			  break;
+
+		      if (k >= el.nr_members)
+			{
+			  bblst_table[bblst_last++] = TO_BLOCK (nxt_edge);
+			  update_blocks[TO_BLOCK (nxt_edge)] = 1;
+			  update_idx++;
+			}
 		    }
 
 		  nxt_edge = NEXT_OUT (nxt_edge);
@@ -2065,6 +2083,9 @@ compute_trg_info (trg)
 	    }
 	  sp->update_bbs.nr_members = update_idx;
 
+	  /* Make sure we didn't overrun the end of bblst_table.  */
+	  if (bblst_last > bblst_size)
+	    abort ();
 	}
       else
 	{
@@ -5903,12 +5924,11 @@ schedule_block (bb, rgn_n_insns)
 					       * sizeof (candidate));
 
       bblst_last = 0;
-      /* ??? It is not clear why bblst_size is computed this way.  The original
-	 number was clearly too small as it resulted in compiler failures.
-	 Multiplying by the original number by 2 (to account for update_bbs
-	 members) seems to be a reasonable solution.  */
-      /* ??? Or perhaps there is a bug somewhere else in this file?  */
-      bblst_size = (current_nr_blocks - bb) * rgn_nr_edges * 2;
+      /* bblst_table holds split blocks and update blocks for each block after
+	 the current one in the region.  split blocks and update blocks are
+	 the TO blocks of region edges, so there can be at most rgn_nr_edges
+	 of them.  */
+      bblst_size = (current_nr_blocks - bb) * rgn_nr_edges;
       bblst_table = (int *) xmalloc (bblst_size * sizeof (int));
 
       bitlst_table_last = 0;
