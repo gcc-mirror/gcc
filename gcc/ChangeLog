@@ -1,5 +1,7 @@
 Wed Feb 24 17:47:28 1999  Jim Wilson  <wilson@cygnus.com>
 
+	* dbxout.c (gstab.h): Use if CROSS_COMPILE.
+
 	* dwarf2out.c (add_location_or_const_value_attribute):  Add big
 	endian correction for parms passed in regs but living on the stack.
 
