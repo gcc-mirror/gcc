@@ -1,3 +1,10 @@
+2004-07-14  Per Bothner  <per@bothner.com>
+
+	* c-typeck.c (emit_side_effect_warnings):  Use EXPR_HAS_LOCATION
+	instead of EXPR_LOCUS in a boolean context, which is always true
+	if --enable-mapped-location.
+	* stmt.c (warn_if_unused_value):  Likewise.  Also use EXPR_LOCATION.
+
 2004-07-14  Richard Henderson  <rth@redhat.com>
 
 	* dominance.c (struct dom_info): Add fake_exit_edge.

@@ -1634,8 +1634,8 @@ warn_if_unused_value (tree exp, location_t locus)
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     return 0;
 
-  if (EXPR_LOCUS (exp))
-    locus = *EXPR_LOCUS (exp);
+  if (EXPR_HAS_LOCATION (exp))
+    locus = EXPR_LOCATION (exp);
 
   switch (TREE_CODE (exp))
     {

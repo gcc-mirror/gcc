@@ -6582,7 +6582,7 @@ emit_side_effect_warnings (tree expr)
     {
       if (!VOID_TYPE_P (TREE_TYPE (expr)) && !TREE_NO_WARNING (expr))
 	warning ("%Hstatement with no effect",
-		 EXPR_LOCUS (expr) ? EXPR_LOCUS (expr) : &input_location);
+		 EXPR_HAS_LOCATION (expr) ? EXPR_LOCUS (expr) : &input_location);
     }
   else if (warn_unused_value)
     warn_if_unused_value (expr, input_location);
