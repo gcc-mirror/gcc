@@ -6663,7 +6663,7 @@
 		       (const_int 67108860)))] ; 0x03fffffc
   "TARGET_ARM"
   "
-  operands[1] = gen_rtx_REG (CC_NOOVmode, 24);
+  operands[1] = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
   ")
 
 (define_insn "*check_arch2"

@@ -1,3 +1,8 @@
+2003-02-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.mc (return_address_mask): Use CC_REGNUM for the condition code
+	register number.
+
 2003-02-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
