@@ -1,3 +1,7 @@
+Sat Sep  5 14:23:31 1998  Torbjorn Granlund <tege@matematik.su.se>
+
+	* m68k.md (zero_extendsidi2): Fix typo.
+
 Tue Sep  1 01:58:38 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs-1.1 released.
