@@ -1,5 +1,8 @@
 Sun Jul  5 23:58:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (simplify_comparison): Do not commute a AND into
+	a paradoxical SUBREG if not WORD_REGISTER_OPERATIONS.
+
 	* i386/freebsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Protect with
 	HAVE_GAS_MAX_SKIP_P2ALIGN.
 	* i386/linux.h: Likewise.
