@@ -61,8 +61,7 @@
 
 // Note that the obvious and elegant approach of
 //
-//#define glibcpp_function_requires(C)      \
-//            boost::function_requires< boost::C >()
+//#define glibcpp_function_requires(C) boost::function_requires< boost::C >()
 //
 // won't work due to concept templates with more than one parameter, e.g.,
 // BinaryPredicateConcept.  The preprocessor tries to split things up on

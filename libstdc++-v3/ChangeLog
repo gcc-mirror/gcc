@@ -1,3 +1,9 @@
+2003-04-15  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/bits/concept_check.h: Fix multi-line comment.
+	* testsuite/17_intro/headers.cc (dg-options): Add -Wall -Wsystem-header
+	when target is *-*-freebsd*.
+
 2003-04-14  M. Warner Losh  <imp@bsdimp.com>
 
 	* include/std/std_fstream.h: Add required typename.
