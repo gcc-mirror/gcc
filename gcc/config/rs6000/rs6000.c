@@ -838,6 +838,11 @@ print_operand (file, x, code)
       asm_fprintf (file, RS6000_CALL_GLUE);
       return;
 
+    case '*':
+      /* Write the register number of the TOC register.  */
+      fputs (TARGET_MINIMAL_TOC ? "30" : "2", file);
+      return;
+
     case 'A':
       /* If X is a constant integer whose low-order 5 bits are zero,
 	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
