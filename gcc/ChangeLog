@@ -1,3 +1,8 @@
+2000-05-03  Rodney Brown  <RodneyBrown@pmsc.com>
+
+	* config/mcore/mcore.c: Replacing inclusion of "stdio,h" with
+	inclusion of "system.h".
+
 Wed May  3 11:43:53 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_encode_section_info): Add check for
