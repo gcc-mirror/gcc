@@ -1,3 +1,8 @@
+2003-07-08  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.h (HAVE_AS_DWARF2_DEBUG_LINE): Don't define
+	as .file/.loc directives are incompatible with linker relaxation.
+
 2003-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/11420
