@@ -2078,13 +2078,6 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 	   && TREE_CODE (decl) == TYPE_DECL)
     TIMEVAR (symout_time, sdbout_symbol (decl, 0));
 #endif
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG
-      && top_level
-      && (TREE_CODE (decl) == TYPE_DECL
-	  || (TREE_CODE (decl) == VAR_DECL && DECL_INITIAL (decl))))
-    TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
-#endif
 }
 
 /* Called after finishing a record, union or enumeral type.  */
