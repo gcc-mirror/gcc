@@ -261,7 +261,7 @@ open_file (pfile, filename)
 
 /* Place the file referenced by INC into a new buffer on PFILE's
    stack.  If there are errors, or the file should not be re-included,
-   a null buffer is pushed.  */
+   a null (zero-length) buffer is pushed.  */
 
 static void
 stack_include_file (pfile, inc)
@@ -281,16 +281,27 @@ stack_include_file (pfile, inc)
   if (CPP_OPTION (pfile, print_deps) > deps_sysp && !inc->include_count)
     deps_add_dep (pfile->deps, inc->name);
 
-  /* We don't want multiple include guard advice for the main file.  */
-  if (pfile->buffer)
-    inc->include_count++;
-
-  /* Not in cache?  */
-  if (! inc->buffer)
-    read_include_file (pfile, inc);
-
   if (! DO_NOT_REREAD (inc))
-    len = inc->st.st_size;
+    {
+      /* Not in cache?  */
+      if (! inc->buffer)
+	read_include_file (pfile, inc);
+      len = inc->st.st_size;
+
+      if (pfile->buffer)
+	{
+	  /* We don't want MI guard advice for the main file.  */
+	  inc->include_count++;
+
+	  /* Handle -H option.  */
+	  if (CPP_OPTION (pfile, print_include_names))
+	    {
+	      for (fp = pfile->buffer; fp; fp = fp->prev)
+		putc ('.', stderr);
+	      fprintf (stderr, " %s\n", inc->name);
+	    }
+	}
+    }
 
   /* Push a buffer.  */
   fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name);
@@ -335,9 +346,6 @@ read_include_file (pfile, inc)
 #if MMAP_THRESHOLD
   static int pagesize = -1;
 #endif
-
-  if (DO_NOT_REREAD (inc))
-    return;
 
   if (S_ISREG (inc->st.st_mode))
     {
@@ -459,7 +467,7 @@ cpp_included (pfile, fname)
      const char *fname;
 {
   struct search_path *path;
-  char *name;
+  char *name, *n;
   splay_tree_node nd;
 
   if (IS_ABSOLUTE_PATHNAME (fname))
@@ -476,11 +484,12 @@ cpp_included (pfile, fname)
       memcpy (name, path->name, path->len);
       name[path->len] = '/';
       strcpy (&name[path->len + 1], fname);
-      _cpp_simplify_pathname (name);
       if (CPP_OPTION (pfile, remap))
-	name = remap_filename (pfile, name, path);
+	n = remap_filename (pfile, name, path);
+      else
+	n = _cpp_simplify_pathname (name);
 
-      nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) name);
+      nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) n);
       if (nd && nd->value)
 	return 1;
     }
@@ -502,15 +511,14 @@ find_include_file (pfile, header, include_next)
   const char *fname = (const char *) header->val.str.text;
   struct search_path *path;
   struct include_file *file;
-  char *name;
+  char *name, *n;
 
   if (IS_ABSOLUTE_PATHNAME (fname))
     return open_file (pfile, fname);
 
   /* For #include_next, skip in the search path past the dir in which
-     the current file was found.  If this is the last directory in the
-     search path, don't include anything.  If the current file was
-     specified with an absolute path, use the normal search logic.  */
+     the current file was found, but if it was found via an absolute
+     path use the normal search logic.  */
   if (include_next && pfile->buffer->inc->foundhere)
     path = pfile->buffer->inc->foundhere->next;
   else if (header->type == CPP_HEADER_NAME)
@@ -531,11 +539,12 @@ find_include_file (pfile, header, include_next)
       memcpy (name, path->name, path->len);
       name[path->len] = '/';
       strcpy (&name[path->len + 1], fname);
-      _cpp_simplify_pathname (name);
       if (CPP_OPTION (pfile, remap))
-	name = remap_filename (pfile, name, path);
+	n = remap_filename (pfile, name, path);
+      else
+	n = _cpp_simplify_pathname (name);
 
-      file = open_file (pfile, name);
+      file = open_file (pfile, n);
       if (file)
 	{
 	  file->foundhere = path;
@@ -632,14 +641,14 @@ handle_missing_header (pfile, fname, angle_brackets)
 	  deps_add_dep (pfile->deps, p);
 	}
     }
-  /* If -M was specified, and this header file won't be added to
-     the dependency list, then don't count this as an error,
-     because we can still produce correct output.  Otherwise, we
-     can't produce correct output, because there may be
-     dependencies we need inside the missing file, and we don't
-     know what directory this missing file exists in. */
+  /* If -M was specified, then don't count this as an error, because
+     we can still produce correct output.  Otherwise, we can't produce
+     correct output, because there may be dependencies we need inside
+     the missing file, and we don't know what directory this missing
+     file exists in.  FIXME: Use a future cpp_diagnotic_with_errno ()
+     for both of these cases.  */
   else if (CPP_PRINT_DEPS (pfile) && ! print_dep)
-    cpp_warning (pfile, "No include path in which to find %s", fname);
+    cpp_warning (pfile, "%s: %s", fname, xstrerror (errno));
   else
     cpp_error_from_errno (pfile, fname);
 }
@@ -679,20 +688,8 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 
       stack_include_file (pfile, inc);
 
-      if (! DO_NOT_REREAD (inc))
-	{
-	  if (no_reinclude)
-	    _cpp_never_reread (inc);
-
-	  /* Handle -H option.  */
-	  if (CPP_OPTION (pfile, print_include_names))
-	    {
-	      cpp_buffer *fp = pfile->buffer;
-	      while ((fp = fp->prev) != NULL)
-		putc ('.', stderr);
-	      fprintf (stderr, " %s\n", inc->name);
-	    }
-	}
+      if (no_reinclude)
+	_cpp_never_reread (inc);
     }
 }
 
@@ -753,7 +750,7 @@ _cpp_pop_file_buffer (pfile, buf)
     pfile->include_depth--;
 
   /* Record the inclusion-preventing macro and its definedness.  */
-  if (pfile->mi_state == MI_OUTSIDE && inc->cmacro != NEVER_REREAD)
+  if (pfile->mi_state == MI_OUTSIDE && inc->cmacro == NULL)
     {
       /* This could be NULL meaning no controlling macro.  */
       inc->cmacro = pfile->mi_cmacro;
@@ -931,6 +928,8 @@ read_name_map (pfile, dirname)
 	      strcpy (ptr->map_to + dirlen + 1, to);
 	      free (to);
 	    }	      
+	  /* Simplify the result now.  */
+	  _cpp_simplify_pathname (ptr->map_to);
 
 	  ptr->map_next = map_list_ptr->map_list_map;
 	  map_list_ptr->map_list_map = ptr;
@@ -949,8 +948,8 @@ read_name_map (pfile, dirname)
   return map_list_ptr->map_list_map;
 }  
 
-/* Remap NAME based on the file_name_map (if any) for LOC. */
-
+/* Remap an unsimplified path NAME based on the file_name_map (if any)
+   for LOC.  */
 static char *
 remap_filename (pfile, name, loc)
      cpp_reader *pfile;
@@ -959,21 +958,21 @@ remap_filename (pfile, name, loc)
 {
   struct file_name_map *map;
   const char *from, *p;
-  char *dir, *dname;
-
-  /* Get a null-terminated path.  */
-  dname = alloca (loc->len + 1);
-  memcpy (dname, loc->name, loc->len);
-  dname[loc->len] = '\0';
+  char *dir;
 
   if (! loc->name_map)
     {
+      /* Get a null-terminated path.  */
+      char *dname = alloca (loc->len + 1);
+      memcpy (dname, loc->name, loc->len);
+      dname[loc->len] = '\0';
+
       loc->name_map = read_name_map (pfile, dname);
       if (! loc->name_map)
 	return name;
     }
   
-  /* FIXME: this doesn't look right - NAME has been simplified.  */
+  /* This works since NAME has not been simplified yet.  */
   from = name + loc->len + 1;
   
   for (map = loc->name_map; map; map = map->map_next)
@@ -1016,9 +1015,9 @@ remap_filename (pfile, name, loc)
    //quux		//quux  (POSIX allows leading // as a namespace escape)
 
    Guarantees no trailing slashes. All transforms reduce the length
-   of the string.
+   of the string.  Returns PATH;
  */
-void
+char *
 _cpp_simplify_pathname (path)
     char *path;
 {
@@ -1134,5 +1133,5 @@ _cpp_simplify_pathname (path)
     
     *to = '\0';
 
-    return;
+    return path;
 }
