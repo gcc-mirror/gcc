@@ -1,3 +1,8 @@
+Mon Mar 23 07:12:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* final.c (only_leaf_regs_used): If pic_offset_table_rtx used,
+	make sure it is a permitted register.
+
 Sun Mar 22 06:57:04 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expmed.c (extract_bit_field): Don't confuse SUBREG_WORD with
