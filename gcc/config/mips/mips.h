@@ -1255,9 +1255,7 @@ do {                                                  \
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (! FP_REG_P (REGNO)							\
 	? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD) \
-        : (TARGET_SINGLE_FLOAT						\
-	   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG) \
-	   : (((GET_MODE_SIZE (MODE) + 7) / 8) << (TARGET_FLOAT64 == 0))))
+	: ((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
    MODE.  In 32 bit mode, require that DImode and DFmode be in even
