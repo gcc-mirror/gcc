@@ -1271,12 +1271,6 @@ package body Sem_Ch8 is
          Set_Corresponding_Spec (N, Rename_Spec);
          Set_Corresponding_Body (Unit_Declaration_Node (Rename_Spec), New_S);
 
-         --  The body is created when the entity is frozen. If the context
-         --  is generic, freeze_all is not invoked, so we need to indicate
-         --  that the entity has a completion.
-
-         Set_Has_Completion (Rename_Spec, Inside_A_Generic);
-
          if Ada_Version = Ada_83 and then Comes_From_Source (N) then
             Error_Msg_N ("(Ada 83) renaming cannot serve as a body", N);
          end if;
@@ -1286,10 +1280,13 @@ package body Sem_Ch8 is
          Set_Public_Status (New_S);
 
          --  Indicate that the entity in the declaration functions like
-         --  the corresponding body, and is not a new entity.
+         --  the corresponding body, and is not a new entity. The body will
+         --  be constructed later at the freeze point, so indicate that
+         --  the completion has not been seen yet.
 
          Set_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
+         Set_Has_Completion (Rename_Spec, False);
 
       else
          Generate_Definition (New_S);
@@ -1406,6 +1403,22 @@ package body Sem_Ch8 is
             end if;
 
             Check_Frozen_Renaming (N, Rename_Spec);
+
+            --  Check explicitly that renamed entity is not intrinsic, because
+            --  in in a generic the renamed body is not built. In this case,
+            --  the renaming_as_body is a completion.
+
+            if Inside_A_Generic then
+               if Is_Frozen (Rename_Spec)
+                 and then Is_Intrinsic_Subprogram (Old_S)
+               then
+                  Error_Msg_N
+                    ("subprogram in renaming_as_body cannot be intrinsic",
+                       Name (N));
+               end if;
+
+               Set_Has_Completion (Rename_Spec);
+            end if;
 
          elsif Ekind (Old_S) /= E_Operator then
             Check_Mode_Conformant (New_S, Old_S);
@@ -3133,6 +3146,30 @@ package body Sem_Ch8 is
 
                Nvis_Messages;
                return;
+
+            elsif
+              Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
+            then
+               --  A use-clause in the body of a system file creates a
+               --  conflict with some entity in a user scope, while rtsfind
+               --  is active. Keep only the entity that comes from another
+               --  predefined unit.
+
+               E2 := E;
+               while Present (E2) loop
+                  if Is_Predefined_File_Name
+                    (Unit_File_Name (Get_Source_Unit (Sloc (E2))))
+                  then
+                     E := E2;
+                     goto Found;
+                  end if;
+
+                  E2 := Homonym (E2);
+               end loop;
+
+               --  Entity must exist because predefined unit is correct.
+
+               raise Program_Error;
 
             else
                Nvis_Messages;
