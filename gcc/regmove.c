@@ -1007,6 +1007,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		    }
 		}
 	    }
+          if (! flag_regmove)
+            continue;
 
 #ifdef REGISTER_CONSTRAINTS
 	  if (! find_matches (insn, &match))

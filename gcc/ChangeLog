@@ -1,3 +1,8 @@
+Mon Nov 16 04:23:06 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regmove.c (regmove_optimize): Don't do anything but
+	optimize_reg_copy[123] when flag_regmove is not set.
+
 Sat Nov 14 15:05:07 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (addsi3, subsi3): Revise 5 Nov change to store DImode
