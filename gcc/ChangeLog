@@ -1,5 +1,11 @@
 2001-08-09  Graham Stott  <grahams@redhat.com>
 
+	* sched-vis.c (MAX_VISUAL_NO_UNIT): Define.
+	(vis_no_unit): Use it.
+	(visualize_no_unit): Add the insn only if room exists.
+
+2001-08-09  Graham Stott  <grahams@redhat.com>
+
 	* predict.c (estimate_probability): Replace magic numbers with 
 	appropriate enumeration. 	
 
