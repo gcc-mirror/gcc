@@ -237,6 +237,12 @@ Boston, MA 02111-1307, USA.  */
 #undef LD_INIT_SWITCH
 #undef LD_FINI_SWITCH
 
+/* The following are needed for us to be able to use winnt.c, but are not
+   otherwise meaningful to Interix.  (The functions that use these are
+   never called because we don't do DLLs.) */
+#define TARGET_NOP_FUN_DLLIMPORT 1
+#define drectve_section()  /* nothing */
+
 #define EH_FRAME_IN_DATA_SECTION
 
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rdata,\"r\""

@@ -1,3 +1,11 @@
+2002-08-05  Douglas B Rupp  <rupp@gnat.com>
+
+	* config.gcc (i[34567]86-*-interix*): Replace interix.o with winnt.o
+	* config/i386/i386-interix.h (TARGET_NOP_FUN_DLLIMPORT,
+	drectve_section): Define.
+	* config/i386/t-interix: Replace interix.o rule with winnt.o.
+	* config/i386/interix.c: Remove.
+
 2002-08-05  Geoffrey Keating  <geoffk@redhat.com>
 
 	* attribs.c: Don't include obstack.h.
