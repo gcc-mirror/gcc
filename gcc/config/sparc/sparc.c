@@ -2399,7 +2399,7 @@ output_move_quad (operands)
 	  /* Do the loads in the right order; can't overwrite our address
 	     register. */
 	  use_ldx = TARGET_ARCH64 && !FP_REG_P (reg);
-	  return mov_by_64[!load_late_half[0]][mem != op1][use_ldx];
+	  return mov_by_64[!load_late_half[0]][mem == op1][use_ldx];
 	}
     }
 
