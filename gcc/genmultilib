@@ -1,6 +1,6 @@
 #!/bin/sh 
 # Generates multilib.h.
-#   Copyright (C) 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2002 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -120,6 +120,9 @@ enable_multilib=$8
 
 echo "static const char *const multilib_raw[] = {"
 
+mkdir tmpmultilib.$$ || exit 1
+cd tmpmultilib.$$ || exit 1
+
 # What we want to do is select all combinations of the sets in
 # options.  Each combination which includes a set of mutually
 # exclusive options must then be output multiple times, once for each
@@ -161,11 +164,8 @@ chmod +x tmpmultilib
 
 combinations=`initial=/ ./tmpmultilib ${options}`
 
-rm -f tmpmultilib
-
 # If there exceptions, weed them out now
 if [ -n "${exceptions}" ]; then
-  rm -f tmpmultilib2
   cat >tmpmultilib2 <<\EOF
 #!/bin/sh
 # This recursive script weeds out any combination of multilib
@@ -187,7 +187,6 @@ cat >>tmpmultilib2 <<\EOF
 EOF
   chmod +x tmpmultilib2
   combinations=`./tmpmultilib2 ${combinations}`
-  rm -f ./tmpmultilib2
 fi
 
 # Construct a sed pattern which will convert option names to directory
@@ -371,6 +370,7 @@ moptions=`echo ${options} | sed -e 's,[ 	][ 	]*, ,g'`
 echo ""
 echo "static const char *multilib_options = \"${moptions}\";"
 
-rm -f tmpmultilib2
+cd ..
+rm -r tmpmultilib.$$
 
 exit 0

@@ -1,5 +1,7 @@
 2002-12-16  Geoffrey Keating  <geoffk@apple.com>
 
+	* genmultilib: Create temporary files in unique subdirectory.
+
 	* gcc.c (validate_switches): Allow '@' as a switch name.
 
 2002-12-16  Loren J. Rittle  <ljrittle@acm.org>
