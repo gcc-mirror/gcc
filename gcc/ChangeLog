@@ -1,3 +1,9 @@
+2003-02-07  Richard Henderson  <rth@redhat.com>
+
+        PR 9226
+        * gcse.c (local_cprop_find_used_regs): New.
+        (local_cprop_pass): Use it.
+
 Fri Feb  7 22:26:51 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse2_nandv2di3):  Fix.
