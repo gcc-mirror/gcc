@@ -1,3 +1,7 @@
+2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/crash40.C: New test.
+
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/20010122-1.c: Fix declaration of alloca.
