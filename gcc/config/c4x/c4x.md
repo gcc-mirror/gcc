@@ -966,7 +966,7 @@
 (define_split
   [(set (match_operand:QI 0 "std_reg_operand" "")
         (match_operand:QI 1 "symbolic_address_operand" ""))]
-  "! TARGET_C3X && ! TARGET_TI"
+  "reload_completed && ! TARGET_C3X && ! TARGET_TI"
   [(set (match_dup 0) (high:QI (match_dup 1)))
    (set (match_dup 0) (lo_sum:QI (match_dup 0) (match_dup 1)))]
   "")
@@ -1207,7 +1207,7 @@
   [(set (match_operand:QI 0 "std_reg_operand" "")
         (match_operand:QI 1 "symbolic_address_operand" ""))
    (clobber (reg:QI 16))]
-  "! TARGET_C3X && ! TARGET_TI"
+  "reload_completed && ! TARGET_C3X && ! TARGET_TI"
   [(set (match_dup 0) (high:QI (match_dup 1)))
    (set (match_dup 0) (lo_sum:QI (match_dup 0) (match_dup 1)))]
   "")
@@ -1220,10 +1220,9 @@
   [(set (match_operand:QI 0 "reg_operand" "")
         (match_operand:QI 1 "symbolic_address_operand" ""))
    (clobber (reg:QI 16))]
-  "! TARGET_SMALL 
-   && (TARGET_C3X || TARGET_TI
-       || (reload_completed
-           && ! std_reg_operand (operands[0], QImode)))"
+  "reload_completed
+   && ! TARGET_SMALL 
+   && (TARGET_C3X || TARGET_TI || ! std_reg_operand (operands[0], QImode))"
   [(set (match_dup 2) (high:QI (match_dup 3)))
    (set (match_dup 0) (match_dup 4))
    (use (match_dup 1))]
@@ -1244,10 +1243,9 @@
   [(set (match_operand:QI 0 "reg_operand" "")
         (match_operand:QI 1 "symbolic_address_operand" ""))
    (clobber (reg:QI 16))]
-  "TARGET_SMALL
-   && (TARGET_C3X || TARGET_TI
-       || (reload_completed
-           && ! std_reg_operand (operands[0], QImode)))"
+  "reload_completed
+   && TARGET_SMALL
+   && (TARGET_C3X || TARGET_TI || ! std_reg_operand (operands[0], QImode))"
   [(set (match_dup 0) (match_dup 2))
    (use (match_dup 1))]
   "

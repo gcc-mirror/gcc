@@ -4102,7 +4102,7 @@ group1_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_GROUP1_REG (op);
+  return REG_P (op) && (! reload_completed || IS_GROUP1_REG (op));
 }
 
 
@@ -4122,11 +4122,11 @@ group1_mem_operand (op, mode)
 	  rtx op0 = XEXP (op, 0);
 	  rtx op1 = XEXP (op, 1);
 
-	  if (((GET_CODE (op0) == REG) && IS_GROUP1_REG (op0))
-	      || ((GET_CODE (op1) == REG) && IS_GROUP1_REG (op1)))
+	  if ((REG_P (op0) && (! reload_completed || IS_GROUP1_REG (op0)))
+	      || (REG_P (op1) && (! reload_completed || IS_GROUP1_REG (op1))))
 	    return 1;
 	}
-      else if ((REG_P (op)) && IS_GROUP1_REG (op))
+      else if ((REG_P (op)) && (! reload_completed || IS_GROUP1_REG (op)))
 	return 1;
     }
 
@@ -4145,7 +4145,7 @@ arx_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_ADDR_REG (op);
+  return REG_P (op) && (! reload_completed || IS_ADDR_REG (op));
 }
 
 
@@ -4159,7 +4159,7 @@ c4x_arn_reg_operand (op, mode, regno)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && (REGNO (op) == regno);
+  return REG_P (op) && (! reload_completed || (REGNO (op) == regno));
 }
 
 
@@ -4184,16 +4184,16 @@ c4x_arn_mem_operand (op, mode, regno)
 	  op = XEXP (op, 0);
 
 	case REG:
-          if (REG_P (op) && (REGNO (op) == regno))
-	    return 1;
-	  break;
+          return REG_P (op) && (! reload_completed || (REGNO (op) == regno));
 
 	case PRE_MODIFY:
 	case POST_MODIFY:
-          if (REG_P (XEXP (op, 0)) && (REGNO (XEXP (op, 0)) == regno))
+          if (REG_P (XEXP (op, 0)) && (! reload_completed 
+				       || (REGNO (XEXP (op, 0)) == regno)))
 	    return 1;
           if (REG_P (XEXP (XEXP (op, 1), 1))
-	      && (REGNO (XEXP (XEXP (op, 1), 1)) == regno))
+	      && (! reload_completed
+		  || (REGNO (XEXP (XEXP (op, 1), 1)) == regno)))
 	    return 1;
 	  break;
 
@@ -4202,8 +4202,10 @@ c4x_arn_mem_operand (op, mode, regno)
 	    rtx op0 = XEXP (op, 0);
 	    rtx op1 = XEXP (op, 1);
 
-	    if (((GET_CODE (op0) == REG) && (REGNO (op0) == regno)) 
-	        || ((GET_CODE (op1) == REG) && (REGNO (op1) == regno)))
+	    if ((REG_P (op0) && (! reload_completed
+				 || (REGNO (op0) == regno)))
+	        || (REG_P (op1) && (! reload_completed
+				    || (REGNO (op1) == regno))))
 	      return 1;
 	  }
 	  break;
@@ -4899,7 +4901,7 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
 {
   /* Don't worry about this until we know what registers have been
      assigned.  */
-  if (! reload_completed)
+  if (flag_schedule_insns == 0 && ! reload_completed)
     return 0;
 
   /* How do we handle dependencies where a read followed by another
