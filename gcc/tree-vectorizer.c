@@ -574,7 +574,7 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
 
    - IS_NEW_LOOP: TRUE if LOOP is a new loop (a duplicated copy of another
         "original" loop).  FALSE if LOOP is an original loop (not a newly 
-        created copy).  The SSA_NAME_AUX fields of the defs in the origianl
+        created copy).  The SSA_NAME_AUX fields of the defs in the original
         loop are the corresponding new ssa-names used in the new duplicated
         loop copy.  IS_NEW_LOOP indicates which of the two args of the phi 
         nodes in UPDATE_BB takes the original ssa-name, and which takes the 
@@ -929,14 +929,14 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
         case, first-loop is the newly created loop, and second-loop is LOOP.
    - NITERS: the number of iterations that LOOP iterates.
    - FIRST_NITERS: the number of iterations that the first-loop should iterate.
-   - UPDATE_FIRST_LOOP_COUNT:  specified whether this function is responssible
+   - UPDATE_FIRST_LOOP_COUNT:  specified whether this function is responsible
         for updating the loop bound of the first-loop to FIRST_NITERS.  If it
         is false, the caller of this function may want to take care of this
-        (this can be usefull is we don't want new stmts added to first-loop).
+        (this can be useful if we don't want new stmts added to first-loop).
 
    Output:
    The function returns a pointer to the new loop-copy, or NULL if it failed
-   to perform the trabsformation.
+   to perform the transformation.
 
    The function generates two if-then-else guards: one before the first loop,
    and the other before the second loop:
