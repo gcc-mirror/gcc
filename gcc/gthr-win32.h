@@ -81,16 +81,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef BOOL
 
 /* Key structure for maintaining thread specific storage */
-static DWORD	__gthread_objc_data_tls = (DWORD)-1;
+static DWORD	__gthread_objc_data_tls = (DWORD) -1;
 
 /* Backend initialization functions */
 
 /* Initialize the threads subsystem.  */
 int
-__gthread_objc_init_thread_system(void)
+__gthread_objc_init_thread_system (void)
 {
   /* Initialize the thread storage key */
-  if ((__gthread_objc_data_tls = TlsAlloc()) != (DWORD)-1)
+  if ((__gthread_objc_data_tls = TlsAlloc ()) != (DWORD) -1)
     return 0;
   else
     return -1;
@@ -98,10 +98,10 @@ __gthread_objc_init_thread_system(void)
 
 /* Close the threads subsystem.  */
 int
-__gthread_objc_close_thread_system(void)
+__gthread_objc_close_thread_system (void)
 {
-  if (__gthread_objc_data_tls != (DWORD)-1)
-    TlsFree(__gthread_objc_data_tls);
+  if (__gthread_objc_data_tls != (DWORD) -1)
+    TlsFree (__gthread_objc_data_tls);
   return 0;
 }
 
@@ -109,21 +109,21 @@ __gthread_objc_close_thread_system(void)
 
 /* Create a new thread of execution.  */
 objc_thread_t
-__gthread_objc_thread_detach(void (*func)(void *arg), void *arg)
+__gthread_objc_thread_detach (void (*func)(void *arg), void *arg)
 {
   DWORD	thread_id = 0;
   HANDLE win32_handle;
 
-  if (!(win32_handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func,
-				    arg, 0, &thread_id)))
+  if (!(win32_handle = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) func,
+				     arg, 0, &thread_id)))
     thread_id = 0;
 
-  return (objc_thread_t)thread_id;
+  return (objc_thread_t) thread_id;
 }
 
 /* Set the current thread's priority.  */
 int
-__gthread_objc_thread_set_priority(int priority)
+__gthread_objc_thread_set_priority (int priority)
 {
   int sys_priority = 0;
 
@@ -142,7 +142,7 @@ __gthread_objc_thread_set_priority(int priority)
     }
 
   /* Change priority */
-  if (SetThreadPriority(GetCurrentThread(), sys_priority))
+  if (SetThreadPriority (GetCurrentThread (), sys_priority))
     return 0;
   else
     return -1;
@@ -150,11 +150,11 @@ __gthread_objc_thread_set_priority(int priority)
 
 /* Return the current thread's priority.  */
 int
-__gthread_objc_thread_get_priority(void)
+__gthread_objc_thread_get_priority (void)
 {
   int sys_priority;
 
-  sys_priority = GetThreadPriority(GetCurrentThread());
+  sys_priority = GetThreadPriority (GetCurrentThread ());
 
   switch (sys_priority)
     {
@@ -179,17 +179,17 @@ __gthread_objc_thread_get_priority(void)
 
 /* Yield our process time to another thread.  */
 void
-__gthread_objc_thread_yield(void)
+__gthread_objc_thread_yield (void)
 {
-  Sleep(0);
+  Sleep (0);
 }
 
 /* Terminate the current thread.  */
 int
-__gthread_objc_thread_exit(void)
+__gthread_objc_thread_exit (void)
 {
   /* exit the thread */
-  ExitThread(__objc_thread_exit_status);
+  ExitThread (__objc_thread_exit_status);
 
   /* Failed if we reached here */
   return -1;
@@ -197,16 +197,16 @@ __gthread_objc_thread_exit(void)
 
 /* Returns an integer value which uniquely describes a thread.  */
 objc_thread_t
-__gthread_objc_thread_id(void)
+__gthread_objc_thread_id (void)
 {
-  return (objc_thread_t)GetCurrentThreadId();
+  return (objc_thread_t) GetCurrentThreadId ();
 }
 
 /* Sets the thread's local storage pointer.  */
 int
-__gthread_objc_thread_set_data(void *value)
+__gthread_objc_thread_set_data (void *value)
 {
-  if (TlsSetValue(__gthread_objc_data_tls, value))
+  if (TlsSetValue (__gthread_objc_data_tls, value))
     return 0;
   else
     return -1;
@@ -214,16 +214,16 @@ __gthread_objc_thread_set_data(void *value)
 
 /* Returns the thread's local storage pointer.  */
 void *
-__gthread_objc_thread_get_data(void)
+__gthread_objc_thread_get_data (void)
 {
   DWORD lasterror;
   void *ptr;
 
-  lasterror = GetLastError();
+  lasterror = GetLastError ();
 
-  ptr = TlsGetValue(__gthread_objc_data_tls);          /* Return thread data.  */
+  ptr = TlsGetValue (__gthread_objc_data_tls);          /* Return thread data.  */
 
-  SetLastError( lasterror );
+  SetLastError (lasterror);
 
   return ptr;
 }
@@ -232,9 +232,9 @@ __gthread_objc_thread_get_data(void)
 
 /* Allocate a mutex.  */
 int
-__gthread_objc_mutex_allocate(objc_mutex_t mutex)
+__gthread_objc_mutex_allocate (objc_mutex_t mutex)
 {
-  if ((mutex->backend = (void *)CreateMutex(NULL, 0, NULL)) == NULL)
+  if ((mutex->backend = (void *) CreateMutex (NULL, 0, NULL)) == NULL)
     return -1;
   else
     return 0;
@@ -242,19 +242,19 @@ __gthread_objc_mutex_allocate(objc_mutex_t mutex)
 
 /* Deallocate a mutex.  */
 int
-__gthread_objc_mutex_deallocate(objc_mutex_t mutex)
+__gthread_objc_mutex_deallocate (objc_mutex_t mutex)
 {
-  CloseHandle((HANDLE)(mutex->backend));
+  CloseHandle ((HANDLE) (mutex->backend));
   return 0;
 }
 
 /* Grab a lock on a mutex.  */
 int
-__gthread_objc_mutex_lock(objc_mutex_t mutex)
+__gthread_objc_mutex_lock (objc_mutex_t mutex)
 {
   int status;
 
-  status = WaitForSingleObject((HANDLE)(mutex->backend), INFINITE);
+  status = WaitForSingleObject ((HANDLE) (mutex->backend), INFINITE);
   if (status != WAIT_OBJECT_0 && status != WAIT_ABANDONED)
     return -1;
   else
@@ -263,11 +263,11 @@ __gthread_objc_mutex_lock(objc_mutex_t mutex)
 
 /* Try to grab a lock on a mutex.  */
 int
-__gthread_objc_mutex_trylock(objc_mutex_t mutex)
+__gthread_objc_mutex_trylock (objc_mutex_t mutex)
 {
   int status;
 
-  status = WaitForSingleObject((HANDLE)(mutex->backend), 0);
+  status = WaitForSingleObject ((HANDLE) (mutex->backend), 0);
   if (status != WAIT_OBJECT_0 && status != WAIT_ABANDONED)
     return -1;
   else
@@ -276,9 +276,9 @@ __gthread_objc_mutex_trylock(objc_mutex_t mutex)
 
 /* Unlock the mutex */
 int
-__gthread_objc_mutex_unlock(objc_mutex_t mutex)
+__gthread_objc_mutex_unlock (objc_mutex_t mutex)
 {
-  if (ReleaseMutex((HANDLE)(mutex->backend)) == 0)
+  if (ReleaseMutex ((HANDLE) (mutex->backend)) == 0)
     return -1;
   else
     return 0;
@@ -288,7 +288,7 @@ __gthread_objc_mutex_unlock(objc_mutex_t mutex)
 
 /* Allocate a condition.  */
 int
-__gthread_objc_condition_allocate(objc_condition_t condition)
+__gthread_objc_condition_allocate (objc_condition_t condition)
 {
   /* Unimplemented.  */
   return -1;
@@ -296,7 +296,7 @@ __gthread_objc_condition_allocate(objc_condition_t condition)
 
 /* Deallocate a condition.  */
 int
-__gthread_objc_condition_deallocate(objc_condition_t condition)
+__gthread_objc_condition_deallocate (objc_condition_t condition)
 {
   /* Unimplemented.  */
   return -1;
@@ -304,7 +304,7 @@ __gthread_objc_condition_deallocate(objc_condition_t condition)
 
 /* Wait on the condition */
 int
-__gthread_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
+__gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
 {
   /* Unimplemented.  */
   return -1;
@@ -312,7 +312,7 @@ __gthread_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
 
 /* Wake up all threads waiting on this condition.  */
 int
-__gthread_objc_condition_broadcast(objc_condition_t condition)
+__gthread_objc_condition_broadcast (objc_condition_t condition)
 {
   /* Unimplemented.  */
   return -1;
@@ -320,7 +320,7 @@ __gthread_objc_condition_broadcast(objc_condition_t condition)
 
 /* Wake up one thread waiting on this condition.  */
 int
-__gthread_objc_condition_signal(objc_condition_t condition)
+__gthread_objc_condition_signal (objc_condition_t condition)
 {
   /* Unimplemented.  */
   return -1;
@@ -384,10 +384,10 @@ extern int __gthr_win32_mutex_unlock (__gthread_mutex_t *);
 static inline int
 __gthread_once (__gthread_once_t *once, void (*func) (void))
 {
-  if ( __gthread_active_p ())
+  if (__gthread_active_p ())
     return __gthr_win32_once (once, func);
   else
-    return -1;	
+    return -1;
 }
 
 static inline int
@@ -402,11 +402,11 @@ __gthread_key_dtor (__gthread_key_t key, void *ptr)
   /* Nothing needed.  */
   return 0;
 }
-  
- static inline int
+
+static inline int
 __gthread_key_delete (__gthread_key_t key)
 {
-   return __gthr_win32_key_delete (key);
+  return __gthr_win32_key_delete (key);
 }
 
 static inline void *
@@ -442,7 +442,7 @@ __gthread_mutex_trylock (__gthread_mutex_t *mutex)
   if (__gthread_active_p ())
     return __gthr_win32_mutex_trylock (mutex);
   else
-    return 0;	
+    return 0;
 }
 
 static inline int
@@ -451,7 +451,7 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
   if (__gthread_active_p ())
     return __gthr_win32_mutex_unlock (mutex);
   else
-    return 0;	
+    return 0;
 }
 
 #else /* ! __GTHREAD_HIDE_WIN32API */
@@ -532,11 +532,11 @@ __gthread_getspecific (__gthread_key_t key)
   DWORD lasterror;
   void *ptr;
 
-  lasterror = GetLastError();
+  lasterror = GetLastError ();
 
-  ptr = TlsGetValue(key);
+  ptr = TlsGetValue (key);
 
-  SetLastError( lasterror );
+  SetLastError (lasterror);
 
   return ptr;
 }
