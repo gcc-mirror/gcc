@@ -1,3 +1,8 @@
+Fri Oct  2 01:16:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reg-stack.c (straighten_stack): Do nothing if the virtual stack is
+	empty or has a single entry.
+
 Sat Sep  5 23:29:39 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32.h (ASM_OUTPUT_SECTION_NAME): Don't check for
