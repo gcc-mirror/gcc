@@ -2306,16 +2306,16 @@ __unwind_function(void *ptr)
   /* Undo current frame */
   asm("movl %ebp,%esp");
   asm("popl %ebp");
-  asm("# like ret, but stay here");
+  /* like ret, but stay here */
   asm("addl $4,%esp");
   
   /* Now, undo previous frame. */
   /* This is a test routine, as we have to dynamically probe to find out
      what to pop for certain, this is just a guess. */
   asm("leal -16(%ebp),%esp");
-  asm("pop %eax # really for popl %ebx");
-  asm("pop %eax # really for popl %esi");
-  asm("pop %eax # really for popl %edi");
+  asm("pop %eax"); /* really for popl %ebx */
+  asm("pop %eax"); /* really for popl %esi */
+  asm("pop %eax"); /* really for popl %edi */
   asm("movl %ebp,%esp");
   asm("popl %ebp");
 
