@@ -1119,7 +1119,8 @@
          && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
    && ! (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
    && ! reload_completed
-   && reg_overlap_mentioned_p (operands[0], operands[1]))"
+   && reg_overlap_mentioned_p (operands[0], operands[1]))
+   && ! EXTRA_CONSTRAINT_Q (operands[1])"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
@@ -1537,15 +1538,12 @@
 			  (const_int 1))
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
-   (parallel[(set (match_dup 5) (ashift:SI (match_dup 5) (const_int 2)))
-		(clobber (reg:SI 18))])
+   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 5)))
    (set (reg:SI 0) (label_ref (match_operand 3 "" "")))
-   (set (reg:SI 0) (mem:SI (plus:SI (reg:SI 0) (match_dup 5))))
-
-;;   (parallel[(set (reg:SI 0) (plus:SI (reg:SI 0)
-;;				      (mem:HI (plus:SI (reg:SI 0)
-;;						       (match_dup 5)))))
-;;	     (set (match_dup 6) (mem:HI (plus:SI (reg:SI 0) (match_dup 6))))])
+   (parallel[(set (reg:SI 0) (plus:SI (reg:SI 0)
+				      (mem:HI (plus:SI (reg:SI 0)
+						       (match_dup 6)))))
+	     (set (match_dup 6) (mem:HI (plus:SI (reg:SI 0) (match_dup 6))))])
    (set (pc) (reg:SI 0))]
   ""
   "
@@ -1553,7 +1551,7 @@
   operands[1] = copy_to_mode_reg (SImode, operands[1]);
   operands[2] = copy_to_mode_reg (SImode, operands[2]);
   operands[5] = gen_reg_rtx (SImode);
-
+  operands[6] = gen_reg_rtx (SImode);
 }")
 
 (define_insn "casesi_worker"
