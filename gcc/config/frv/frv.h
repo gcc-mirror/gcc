@@ -1885,7 +1885,7 @@ struct machine_function GTY(())
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)		\
   frv_function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
 
-/* extern int frv_function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS, int, Tree, int));  */
+/* extern int frv_function_arg_partial_nregs (CUMULATIVE_ARGS, int, Tree, int);  */
 
 /* A C expression that indicates when an argument must be passed by reference.
    If nonzero for an argument, a copy of that argument is made in memory and a
@@ -2180,11 +2180,7 @@ struct machine_function GTY(())
 extern int _write (int, const void *, unsigned);			\
 									\
 void									\
-__trampoline_setup (addr, size, fnaddr, sc)				\
-     short * addr;							\
-     int size;								\
-     int fnaddr;							\
-     int sc;								\
+__trampoline_setup (short * addr, int size, int fnaddr, int sc)		\
 {									\
   extern short __trampoline_template[];					\
   short * to = addr;							\
@@ -2565,7 +2561,7 @@ __asm__("\n"								\
 
 #define SDATA_SECTION_FUNCTION						\
 void									\
-sdata_section ()							\
+sdata_section (void)							\
 {									\
   if (in_section != in_sdata)						\
     {									\
@@ -2576,7 +2572,7 @@ sdata_section ()							\
 
 #define FIXUP_SECTION_FUNCTION						\
 void									\
-fixup_section ()							\
+fixup_section (void)							\
 {									\
   if (in_section != in_fixup)						\
     {									\
