@@ -1,3 +1,18 @@
+2003-11-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.h (USE_FP_FOR_ARG_P): Move to rs6000.c.
+	(USE_ALTIVEC_FOR_ARG_P): Likewise.
+	* config/rs6000/rs6000.c (USE_FP_FOR_ARG_P): Move from rs6000.h.
+	Take a pointer as the CUM parameter.  Update callers.
+	(USE_ALTIVEC_FOR_ARG_P): Likewise.  Also correct for Darwin/AIX
+	32-bit ABIs.
+	(function_arg_advance): Use USE_ALTIVEC_FOR_ARG_P.  Correct case
+	of vector parameters as named arguments of stdarg function.
+	(function_arg): Likewise.
+
+	* config/rs6000/darwin.h (ASM_SPEC): Use -force_cpusubtype_ALL when
+	-maltivec is specified, not the non-existent -faltivec.
+
 2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_function_value): Declare.
