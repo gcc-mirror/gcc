@@ -1856,6 +1856,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
     case BLOCK:
     case RECORD_TYPE:
     case CHAR_TYPE:
+    case PLACEHOLDER_EXPR:
       /* None of these have subtrees other than those already walked
          above.  */
       break;
