@@ -1995,21 +1995,9 @@ __do_global_dtors ()
 #ifdef DO_GLOBAL_DTORS_BODY
   DO_GLOBAL_DTORS_BODY;
 #else
-  unsigned nptrs = (unsigned HOST_WIDE_INT) __DTOR_LIST__[0];
-  unsigned i;
-
-  /* Some systems place the number of pointers
-     in the first word of the table.
-     On other systems, that word is -1.
-     In all cases, the table is null-terminated.  */
-
-  /* If the length is not recorded, count up to the null.  */
-  if (nptrs == -1)
-    for (nptrs = 0; __DTOR_LIST__[nptrs + 1] != 0; nptrs++);
-
-  /* GNU LD format.  */
-  for (i = nptrs; i >= 1; i--)
-    __DTOR_LIST__[i] ();
+  func_ptr *p;
+  for (p = __DTOR_LIST__ + 1; *p; )
+    (*p++) ();
 #endif
 }
 
