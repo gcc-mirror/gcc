@@ -1,5 +1,5 @@
 /* MessageFormat.java - Localized message formatting.
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -373,17 +373,14 @@ public class MessageFormat extends Format
 	    if (formatter instanceof ChoiceFormat)
 	      {
 		StringBuffer buf = new StringBuffer ();
-		// FIXME: don't actually know what is correct here.
-		// Can a sub-format refer to any argument, or just
-		// the single argument passed to it?  Must test
-		// against JDK.
 		formatter.format(thisArg, buf, ignore);
 		MessageFormat mf = new MessageFormat ();
 		mf.setLocale(locale);
 		mf.applyPattern(buf.toString());
-		formatter = mf;
+		mf.format(arguments, appendBuf, ignore);
 	      }
-	    formatter.format(thisArg, appendBuf, ignore);
+	    else
+	      formatter.format(thisArg, appendBuf, ignore);
 	  }
 
 	appendBuf.append(elements[i].trailer);
