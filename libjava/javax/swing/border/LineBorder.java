@@ -297,6 +297,15 @@ public class LineBorder
   
   
   /**
+   * Returns the color of the line.
+   */
+  public Color getLineColor()
+  {
+    return lineColor;
+  }
+  
+  
+  /**
    * Returns the thickness of the line in pixels.
    */
   public int getThickness()

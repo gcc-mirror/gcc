@@ -60,9 +60,11 @@ public class SoftBevelBorder
 {
   /**
    * Determined using the <code>serialver</code> tool
-   * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
+   * of Sun JDK 1.4.1_01 on GNU/Linux 2.4.20. Interestingly,
+   * the Apple/Sun JDK 1.3.1 on MacOS X 10.1.5 gives a different
+   * value, namely -6658357140774549493L.
    */
-  static final long serialVersionUID = -6658357140774549493L;
+  static final long serialVersionUID = 5248789787305979975L;
 
 
   /**
