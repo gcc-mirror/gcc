@@ -46,6 +46,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* #undef HAVE_ATEXIT */
 
 #define I860_STRICT_ABI_PROLOGUES
+
+/* There is no avoiding this; -L does not exist at all (in Concentrix 2.2).  */
 #define LINK_LIBGCC_SPECIAL 1
 
 /* Most of the Alliant-specific definitions here are to get stab info that
