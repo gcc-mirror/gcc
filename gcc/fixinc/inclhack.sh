@@ -1078,7 +1078,7 @@ extern "C" {\
     #
     # Fix  31:  Ioctl_Fix_Ctrl
     #
-    if ( test -n "`egrep 'CTRL[ 	]' ${file}`"
+    if ( test -n "`egrep 'CTRL[ 	]*\\(' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       ioctl_fix_ctrl"
@@ -2166,8 +2166,7 @@ void	(*signal(...))(...);\
 	./rpc/clnt.h | \
 	./rpc/svc.h | \
 	./rpc/xdr.h )
-    if ( test -n "`egrep '\\(\\*[a-z][a-z_]*\\)\\(\\)' ${file}`" -a \
-              -z "`egrep '^[a-zA-Z0-9_ 	]*\\(\\*[a-z][a-z_]*\\)\\([ 	]*[a-zA-Z.].*\\)' ${file}`"
+    if ( test -n "`egrep '\\(\\*[a-z][a-z_]*\\)\\(\\)' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       sun_auth_proto"
