@@ -1299,10 +1299,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      parameter declarations.  */
   pushlevel (0);
 
-  /* Make a fresh binding contour that we can easily remove.  */
-  pushlevel (0);
-  expand_start_bindings (0);
-
   /* Expand the function arguments.  Do this first so that any
      new registers get created before we allocate the maps.  */
 
@@ -1737,6 +1733,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     }
   else
     abort ();
+
+  /* Make a fresh binding contour that we can easily remove.  Do this after
+     expanding our arguments so cleanups are properly scoped.  */
+  pushlevel (0);
+  expand_start_bindings (0);
 
   /* Make new label equivalences for the labels in the called function.  */
   for (i = min_labelno; i < max_labelno; i++)

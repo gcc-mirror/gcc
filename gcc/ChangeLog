@@ -1,3 +1,8 @@
+Tue Sep 16 14:22:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* integrate.c (expand_inline_function): Move expand_start_bindings
+	after expanding the arguments.
+
 Tue Sep 16 11:13:46 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* expr.c (expand_expr): Remove previous incorrect change.
