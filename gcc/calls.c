@@ -4565,8 +4565,14 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	    }
 	}
 
-      /*  If parm is passed both in stack and in register and offset is 
-	  greater than reg_parm_stack_space, split the offset.  */
+      /* Special handling is required if part of the parameter lies in the
+	 register parameter area.  The argument may be copied into the stack
+	 slot using memcpy(), but the original contents of the register
+	 parameter area will be restored after the memcpy() call.
+
+	 To ensure that the part that lies in the register parameter area
+	 is copied correctly, we emit a separate push for that part.  This
+	 push should be small enough to avoid a call to memcpy().  */
 #ifndef STACK_PARMS_IN_REG_PARM_AREA
       if (arg->reg && arg->pass_on_stack)
 #else
