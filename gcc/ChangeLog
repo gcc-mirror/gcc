@@ -1,3 +1,8 @@
+Thu Jul  8 19:15:51 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* unroll.c (unroll_loops): Don't delete named CODE_LABEL or
+	NOTE_INSN_DELETED_LABEL note.
+
 Thu Jul  8 14:18:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* m68k.c (output_function_prologue): Add pic register to mask
