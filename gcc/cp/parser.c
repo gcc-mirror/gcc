@@ -233,7 +233,7 @@ static cp_token *cp_lexer_peek_token
   PARAMS ((cp_lexer *));
 static cp_token *cp_lexer_peek_nth_token
   PARAMS ((cp_lexer *, size_t));
-static bool cp_lexer_next_token_is
+static inline bool cp_lexer_next_token_is
   PARAMS ((cp_lexer *, enum cpp_ttype));
 static bool cp_lexer_next_token_is_not
   PARAMS ((cp_lexer *, enum cpp_ttype));
@@ -251,11 +251,11 @@ static void cp_lexer_commit_tokens
   PARAMS ((cp_lexer *));
 static void cp_lexer_rollback_tokens
   PARAMS ((cp_lexer *));
-static void cp_lexer_set_source_position_from_token 
+static inline void cp_lexer_set_source_position_from_token 
   PARAMS ((cp_lexer *, const cp_token *));
 static void cp_lexer_print_token
   PARAMS ((FILE *, cp_token *));
-static bool cp_lexer_debugging_p 
+static inline bool cp_lexer_debugging_p 
   PARAMS ((cp_lexer *));
 static void cp_lexer_start_debugging
   PARAMS ((cp_lexer *)) ATTRIBUTE_UNUSED;
@@ -368,19 +368,37 @@ cp_lexer_new_from_tokens (cp_token_cache *tokens)
   return lexer;
 }
 
-/* Non-zero if we are presently saving tokens.  */
+/* Returns non-zero if debugging information should be output.  */
 
-static int
-cp_lexer_saving_tokens (lexer)
-     const cp_lexer *lexer;
+static inline bool
+cp_lexer_debugging_p (cp_lexer *lexer)
 {
-  return VARRAY_ACTIVE_SIZE (lexer->saved_tokens) != 0;
+  return lexer->debugging_p;
+}
+
+/* Set the current source position from the information stored in
+   TOKEN.  */
+
+static inline void
+cp_lexer_set_source_position_from_token (lexer, token)
+     cp_lexer *lexer ATTRIBUTE_UNUSED;
+     const cp_token *token;
+{
+  /* Ideally, the source position information would not be a global
+     variable, but it is.  */
+
+  /* Update the line number.  */
+  if (token->type != CPP_EOF)
+    {
+      lineno = token->line_number;
+      input_filename = token->file_name;
+    }
 }
 
 /* TOKEN points into the circular token buffer.  Return a pointer to
    the next token in the buffer.  */
 
-static cp_token *
+static inline cp_token *
 cp_lexer_next_token (lexer, token)
      cp_lexer *lexer;
      cp_token *token;
@@ -389,6 +407,15 @@ cp_lexer_next_token (lexer, token)
   if (token == lexer->buffer_end)
     token = lexer->buffer;
   return token;
+}
+
+/* Non-zero if we are presently saving tokens.  */
+
+static int
+cp_lexer_saving_tokens (lexer)
+     const cp_lexer *lexer;
+{
+  return VARRAY_ACTIVE_SIZE (lexer->saved_tokens) != 0;
 }
 
 /* Return a pointer to the token that is N tokens beyond TOKEN in the
@@ -916,25 +943,6 @@ cp_lexer_rollback_tokens (lexer)
   VARRAY_POP (lexer->saved_tokens);
 }
 
-/* Set the current source position from the information stored in
-   TOKEN.  */
-
-static void
-cp_lexer_set_source_position_from_token (lexer, token)
-     cp_lexer *lexer ATTRIBUTE_UNUSED;
-     const cp_token *token;
-{
-  /* Ideally, the source position information would not be a global
-     variable, but it is.  */
-
-  /* Update the line number.  */
-  if (token->type != CPP_EOF)
-    {
-      lineno = token->line_number;
-      input_filename = token->file_name;
-    }
-}
-
 /* Print a representation of the TOKEN on the STREAM.  */
 
 static void
@@ -1005,15 +1013,6 @@ cp_lexer_print_token (stream, token)
       || (token->type == CPP_KEYWORD 
 	  && TREE_CODE (token->value) == IDENTIFIER_NODE))
     fprintf (stream, " %s", IDENTIFIER_POINTER (token->value));
-}
-
-/* Returns non-zero if debugging information should be output.  */
-
-static bool
-cp_lexer_debugging_p (lexer)
-     cp_lexer *lexer;
-{
-  return lexer->debugging_p;
 }
 
 /* Start emitting debugging information.  */
@@ -1747,7 +1746,7 @@ static void cp_parser_abort_tentative_parse
   PARAMS ((cp_parser *));
 static bool cp_parser_parse_definitely
   PARAMS ((cp_parser *));
-static bool cp_parser_parsing_tentatively
+static inline bool cp_parser_parsing_tentatively
   PARAMS ((cp_parser *));
 static bool cp_parser_committed_to_tentative_parse
   PARAMS ((cp_parser *));
@@ -1799,6 +1798,15 @@ static void cp_parser_perform_deferred_access_checks
   PARAMS ((tree));
 static tree cp_parser_scope_through_which_access_occurs
   (tree, tree, tree);
+
+/* Returns non-zero if we are parsing tentatively.  */
+
+static inline bool
+cp_parser_parsing_tentatively (parser)
+     cp_parser *parser;
+{
+  return parser->context->next != NULL;
+}
 
 /* Returns non-zero if TOKEN is a string literal.  */
 
@@ -3467,18 +3475,17 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       /* Spot cases that cannot be the beginning of a
 	 nested-name-specifier.  On the second and subsequent times
 	 through the loop, we look for the `template' keyword.  */
-      if (success 
-	  && cp_lexer_next_token_is_keyword (parser->lexer,
-					     RID_TEMPLATE))
+      token = cp_lexer_peek_token (parser->lexer);
+      if (success && token->keyword == RID_TEMPLATE)
 	;
       /* A template-id can start a nested-name-specifier.  */
-      else if (cp_lexer_next_token_is (parser->lexer, CPP_TEMPLATE_ID))
+      else if (token->type == CPP_TEMPLATE_ID)
 	;
       else
 	{
 	  /* If the next token is not an identifier, then it is
 	     definitely not a class-or-namespace-name.  */
-	  if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+	  if (token->type != CPP_NAME)
 	    break;
 	  /* If the following token is neither a `<' (to begin a
 	     template-id), nor a `::', then we are not looking at a
@@ -14844,15 +14851,6 @@ cp_parser_parse_definitely (parser)
   cp_parser_context_free_list = context;
 
   return !error_occurred;
-}
-
-/* Returns non-zero if we are parsing tentatively.  */
-
-static bool
-cp_parser_parsing_tentatively (parser)
-     cp_parser *parser;
-{
-  return parser->context->next != NULL;
 }
 
 /* Returns true if we are parsing tentatively -- but have decided that
