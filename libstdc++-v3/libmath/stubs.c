@@ -72,9 +72,9 @@ log10f(float x)
 
 #ifndef _GLIBCPP_HAVE_POWF
 float
-powf(float x)
+powf(float x, float y)
 {
-  return (float) pow(x);
+  return (float) pow(x, y);
 }
 #endif
 
