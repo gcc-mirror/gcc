@@ -1963,9 +1963,13 @@ offsettable_address_p (strictp, mode, y)
   /* The offset added here is chosen as the maximum offset that
      any instruction could need to add when operating on something
      of the specified mode.  We assume that if Y and Y+c are
-     valid addresses then so is Y+d for all 0<d<c.  */
-
-  z = plus_constant (y, mode_sz - 1);
+     valid addresses then so is Y+d for all 0<d<c.  adjust_address will
+     go inside a LO_SUM here, so we do so as well.  */
+  if (GET_CODE (y) == LO_SUM)
+    z = gen_rtx_LO_SUM (GET_MODE (y), XEXP (y, 0),
+			plus_constant (XEXP (y, 1), mode_sz - 1));
+  else
+    z = plus_constant (y, mode_sz - 1);
 
   /* Use QImode because an odd displacement may be automatically invalid
      for any wider mode.  But it should be valid for a single byte.  */
