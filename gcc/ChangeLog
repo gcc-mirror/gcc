@@ -1,3 +1,7 @@
+Sun Apr 19 20:17:32 1998  Niklas Hallqvist  <niklas@petra.appli.se>
+
+	* m68k.c (notice_update_cc): Use modified_in_p to check for update.
+
 Sun Apr 19 18:48:07 1998  K. Richard Pixley  <rich@kyoto.noir.com>
 
 	* fixincludes: Discard empty C++ comments.
