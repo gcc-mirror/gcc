@@ -12456,6 +12456,10 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	  place = i3;
 	  break;
 
+	case REG_VALUE_PROFILE:
+	  /* Just get rid of this note, as it is unused later anyway.  */
+	  break;
+
 	case REG_VTABLE_REF:
 	  /* ??? Should remain with *a particular* memory load.  Given the
 	     nature of vtable data, the last insn seems relatively safe.  */

@@ -684,6 +684,11 @@ enum reg_note
      return.  */
   REG_BR_PROB,
 
+  /* REG_VALUE_PROFILE is attached when the profile is read in to an insn
+     before that the code to profile the value is inserted.  It contains
+     the results of profiling.  */
+  REG_VALUE_PROFILE,
+
   /* Attached to a call insn; indicates that the call is malloc-like and
      that the pointer returned cannot alias anything else.  */
   REG_NOALIAS,

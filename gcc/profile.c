@@ -117,6 +117,7 @@ static rtx gen_const_delta_profiler (struct histogram_value *, unsigned,
 static unsigned instrument_edges (struct edge_list *);
 static void instrument_values (unsigned, struct histogram_value *);
 static void compute_branch_probabilities (void);
+static void compute_value_histograms (unsigned, struct histogram_value *);
 static gcov_type * get_exec_counts (void);
 static basic_block find_group (basic_block);
 static void union_groups (basic_block, basic_block);
@@ -601,6 +602,57 @@ compute_branch_probabilities (void)
   free_aux_for_blocks ();
 }
 
+/* Load value histograms for N_VALUES values whose description is stored
+   in VALUES array from .da file.  */
+static void
+compute_value_histograms (unsigned n_values, struct histogram_value *values)
+{
+  unsigned i, j, t, any;
+  unsigned n_histogram_counters[GCOV_N_VALUE_COUNTERS];
+  gcov_type *histogram_counts[GCOV_N_VALUE_COUNTERS];
+  gcov_type *act_count[GCOV_N_VALUE_COUNTERS];
+  gcov_type *aact_count;
+ 
+  for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
+    n_histogram_counters[t] = 0;
+
+  for (i = 0; i < n_values; i++)
+    n_histogram_counters[(int) (values[i].type)] += values[i].n_counters;
+
+  any = 0;
+  for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
+    {
+      histogram_counts[t] =
+	get_coverage_counts (COUNTER_FOR_HIST_TYPE (t),
+			     n_histogram_counters[t], &profile_info);
+      if (histogram_counts[t])
+	any = 1;
+      act_count[t] = histogram_counts[t];
+    }
+  if (!any)
+    return;
+
+  for (i = 0; i < n_values; i++)
+    {
+      rtx hist_list = NULL_RTX;
+      t = (int) (values[i].type);
+
+      aact_count = act_count[t];
+      act_count[t] += values[i].n_counters;
+      for (j = values[i].n_counters; j > 0; j--)
+	hist_list = alloc_EXPR_LIST (0, GEN_INT (aact_count[j - 1]), hist_list);
+      hist_list = alloc_EXPR_LIST (0, copy_rtx (values[i].value), hist_list);
+      hist_list = alloc_EXPR_LIST (0, GEN_INT (values[i].type), hist_list);
+      REG_NOTES (values[i].insn) =
+	      alloc_EXPR_LIST (REG_VALUE_PROFILE, hist_list,
+			       REG_NOTES (values[i].insn));
+    }
+
+  for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
+    if (histogram_counts[t])
+      free (histogram_counts[t]);
+}
+
 /* Instrument and/or analyze program behavior based on program flow graph.
    In either case, this function builds a flow graph for the function being
    compiled.  The flow graph is stored in BB_GRAPH.
@@ -886,7 +938,11 @@ branch_prob (void)
     }
 
   if (flag_branch_probabilities)
-    compute_branch_probabilities ();
+    {
+      compute_branch_probabilities ();
+      if (flag_profile_values)
+	compute_value_histograms (n_values, values);
+    }
 
   /* For each edge not on the spanning tree, add counting code as rtl.  */
   if (profile_arc_flag

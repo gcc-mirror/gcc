@@ -286,13 +286,24 @@ typedef HOST_WIDEST_INT gcov_type;
 #define GCOV_COUNTER_ARCS 	0  /* Arc transitions.  */
 #define GCOV_COUNTERS_SUMMABLE	1  /* Counters which can be
 				      summaried.  */
+#define GCOV_FIRST_VALUE_COUNTER 1 /* The first of counters used for value
+				      profiling.  They must form a consecutive
+				      interval and their order must match
+				      the order of HIST_TYPEs in
+				      value-prof.h.  */
 #define GCOV_COUNTER_V_INTERVAL	1  /* Histogram of value inside an interval.  */
 #define GCOV_COUNTER_V_POW2	2  /* Histogram of exact power2 logarithm
 				      of a value.  */
 #define GCOV_COUNTER_V_SINGLE	3  /* The most common value of expression.  */
 #define GCOV_COUNTER_V_DELTA	4  /* The most common difference between
 				      consecutive values of expression.  */
+#define GCOV_LAST_VALUE_COUNTER 4  /* The last of counters used for value
+				      profiling.  */
 #define GCOV_COUNTERS		5
+
+/* Number of counters used for value profiling.  */
+#define GCOV_N_VALUE_COUNTERS \
+  (GCOV_LAST_VALUE_COUNTER - GCOV_FIRST_VALUE_COUNTER + 1)
   
   /* A list of human readable names of the counters */
 #define GCOV_COUNTER_NAMES	{"arcs", "interval", "pow2", "single", "delta"}
