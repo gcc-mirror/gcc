@@ -18,6 +18,7 @@
    Don't declare malloc, instead cast the value, Richard Stallman, Nov 91.
    Include sys/types.h before signal.h, Apr 92.
    Support NO_LONG_DOUBLE_IO in f_define and f_rep; new fn fake_f_rep, Apr 92.
+   Enclose -f output in #ifndef _FLOAT_H___, Richard Stallman, May 92.
 
    COMPILING
    With luck and a following wind, just the following will work:
@@ -682,6 +683,10 @@ int main(argc, argv) int argc; char *argv[]; {
 
 	if (L) printf("%slimits.h%s\n", co, oc);
 	if (F) printf("%sfloat.h%s\n", co, oc);
+	if (F) {
+		printf ("#ifndef _FLOAT_H___\n");
+		printf ("#define _FLOAT_H___\n");
+	}
 #ifdef ID
 	printf("%sProduced on %s by enquire version %s, CWI, Amsterdam%s\n",
 	       co, ID, VERSION, oc);
@@ -751,6 +756,9 @@ int main(argc, argv) int argc; char *argv[]; {
 			co, (total+511)/512, oc);
 	}
 #endif
+	if (F) {
+		printf ("#endif %s _FLOAT_H___%s\n", co, oc);
+	}
 	farewell(bugs);
 	return bugs; /* To keep compilers and lint happy */
 }
