@@ -39,7 +39,7 @@ integer G77_hostnm_0 (char *name, ftnlen Lname)
     if (ret==0) {
 	/* Pad with blanks (assuming gethostname will make an error
            return if it can't fit in the null). */
-	for (i=strlen(name); i<=Lname; i++)
+	for (i=strlen(name); i<Lname; i++)
 	    name[i] = ' ';
     }
     return ret;
