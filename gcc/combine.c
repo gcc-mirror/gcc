@@ -1301,9 +1301,14 @@ combinable_i3pat (rtx i3, rtx *loc, rtx i2dest, rtx i1dest,
 	     || GET_CODE (inner_dest) == ZERO_EXTRACT)
 	inner_dest = XEXP (inner_dest, 0);
 
-      /* Check for the case where I3 modifies its output, as
-	 discussed above.  */
-      if ((inner_dest != dest
+      /* Check for the case where I3 modifies its output, as discussed
+	 above.  We don't want to prevent pseudos from being combined
+	 into the address of a MEM, so only prevent the combination if
+	 i1 or i2 set the same MEM.  */
+      if ((inner_dest != dest &&
+	   (GET_CODE (inner_dest) != MEM
+	    || rtx_equal_p (i2dest, inner_dest)
+	    || (i1dest && rtx_equal_p (i1dest, inner_dest)))
 	   && (reg_overlap_mentioned_p (i2dest, inner_dest)
 	       || (i1dest && reg_overlap_mentioned_p (i1dest, inner_dest))))
 
