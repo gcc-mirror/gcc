@@ -1907,7 +1907,10 @@ rtl_verify_flow_info_1 (void)
 	  if (e->flags & EDGE_FALLTHRU)
 	    n_fallthru++, fallthru = e;
 
-	  if ((e->flags & ~(EDGE_DFS_BACK | EDGE_CAN_FALLTHRU | EDGE_IRREDUCIBLE_LOOP)) == 0)
+	  if ((e->flags & ~(EDGE_DFS_BACK
+			    | EDGE_CAN_FALLTHRU
+			    | EDGE_IRREDUCIBLE_LOOP
+			    | EDGE_LOOP_EXIT)) == 0)
 	    n_branch++;
 
 	  if (e->flags & EDGE_ABNORMAL_CALL)

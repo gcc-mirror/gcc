@@ -38,6 +38,7 @@
 #include "optabs.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "cfgloop.h"
 
 
 #ifndef HAVE_conditional_execution
@@ -110,7 +111,36 @@ static int dead_or_predicable (basic_block, basic_block, basic_block,
 			       basic_block, int);
 static void noce_emit_move_insn (rtx, rtx);
 static rtx block_has_only_trap (basic_block);
+static void mark_loop_exit_edges (void);
 
+/* Sets EDGE_LOOP_EXIT flag for all loop exits.  */
+static void
+mark_loop_exit_edges ()
+{
+  struct loops loops;
+  basic_block bb;
+  edge e;
+  
+  flow_loops_find (&loops, LOOP_TREE);
+  
+  if (loops.num > 1)
+    {
+      FOR_EACH_BB (bb)
+	{
+	  for (e = bb->succ; e; e = e->succ_next)
+	    {
+	      if (find_common_loop (bb->loop_father, e->dest->loop_father)
+		  != bb->loop_father)
+		e->flags |= EDGE_LOOP_EXIT;
+	      else
+		e->flags &= ~EDGE_LOOP_EXIT;
+	    }
+	}
+    }
+
+  flow_loops_free (&loops);
+}
+
 /* Count the number of non-jump active insns in BB.  */
 
 static int
@@ -2111,6 +2141,11 @@ find_if_header (basic_block test_bb, int pass)
       || (else_edge->flags & EDGE_COMPLEX))
     return NULL;
 
+  /* Nor exit the loop.  */
+  if ((then_edge->flags & EDGE_LOOP_EXIT)
+      || (else_edge->flags & EDGE_LOOP_EXIT))
+    return NULL;
+
   /* The THEN edge is canonically the one that falls through.  */
   if (then_edge->flags & EDGE_FALLTHRU)
     ;
@@ -3076,6 +3111,8 @@ if_convert (int x_life_data_ok)
   num_updated_if_blocks = 0;
   num_removed_blocks = 0;
   life_data_ok = (x_life_data_ok != 0);
+
+  mark_loop_exit_edges ();
 
   /* Free up basic_block_for_insn so that we don't have to keep it
      up to date, either here or in merge_blocks.  */

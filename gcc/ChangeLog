@@ -1,3 +1,13 @@
+2003-07-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (ifcvt.o): Add cfgloop.h.
+	* basic-block.h (EDGE_LOOP_EXIT): New flag.
+	* cfgrtl.c (rtl_verify_flow_info_1): Handle it correctly.
+	* ifcvt.c: Include cfgloop.h.
+	(mark_loop_exit_edges): New static function.
+	(if_convert): Call it.
+	(find_if_header): Ignore branches out of loops.
+
 2003-07-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (simplify_comparison): Don't share rtx when converting 

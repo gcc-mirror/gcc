@@ -152,7 +152,8 @@ typedef struct edge_def {
 					   flow.  */
 #define EDGE_IRREDUCIBLE_LOOP	128	/* Part of irreducible loop.  */
 #define EDGE_SIBCALL		256	/* Edge from sibcall to exit.  */
-#define EDGE_ALL_FLAGS		511
+#define EDGE_LOOP_EXIT		512	/* Exit of a loop.  */
+#define EDGE_ALL_FLAGS		1023
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
