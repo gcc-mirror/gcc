@@ -1,3 +1,8 @@
+2003-01-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* parser.c (cp_parser_late_parsing_for_member): Don't cast to void.
+	(cp_parser_late_parsing_default_args): Likewise.
+
 2003-01-10  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* cfns.gperf: ANSIfy function declarations.
