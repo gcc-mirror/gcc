@@ -5259,11 +5259,13 @@ thread_prologue_and_epilogue_insns (f)
 
 	      NEXT_INSN (PREV_INSN (tem)) = NEXT_INSN (tem);
 	      PREV_INSN (NEXT_INSN (tem)) = PREV_INSN (tem);
-	      if (! first_use)
-		first_use = tem;
-	      if (last_use)
-		NEXT_INSN (last_use) = tem;
-	      else
+	      if (first_use)
+		{
+		  NEXT_INSN (tem) = first_use;
+		  PREV_INSN (first_use) = tem;
+		}
+	      first_use = tem;
+	      if (!last_use)
 		last_use = tem;
 	    }
 
