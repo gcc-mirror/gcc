@@ -82,7 +82,7 @@ static tree get_vtable_name PROTO((tree));
 static tree get_derived_offset PROTO((tree, tree));
 static tree get_basefndecls PROTO((tree, tree));
 static void set_rtti_entry PROTO((tree, tree, tree));
-static tree build_vtable PROTO((tree, tree));
+static void build_vtable PROTO((tree, tree));
 static void prepare_fresh_vtable PROTO((tree, tree));
 static void fixup_vtable_deltas1 PROTO((tree, tree));
 static void fixup_vtable_deltas PROTO((tree, int, tree));
@@ -695,7 +695,7 @@ set_rtti_entry (virtuals, offset, type)
    approximation that it is the same as the one which is the head of
    the association list.  */
 
-static tree
+static void
 build_vtable (binfo, type)
      tree binfo, type;
 {
@@ -705,6 +705,11 @@ build_vtable (binfo, type)
   if (binfo)
     {
       tree offset;
+
+      if (BINFO_NEW_VTABLE_MARKED (binfo))
+	/* We have already created a vtable for this base, so there's
+	   no need to do it again.  */
+	return;
 
       virtuals = copy_list (BINFO_VIRTUALS (binfo));
       decl = build_lang_decl (VAR_DECL, name, 
@@ -752,7 +757,6 @@ build_vtable (binfo, type)
 
   binfo = TYPE_BINFO (type);
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
-  return decl;
 }
 
 /* Give TYPE a new virtual function table which is initialized
@@ -786,6 +790,11 @@ prepare_fresh_vtable (binfo, for_type)
 #ifdef JOINER
   joiner = JOINER;
 #endif
+
+  if (BINFO_NEW_VTABLE_MARKED (binfo))
+    /* We already created a vtable for this base.  There's no need to
+       do it again.  */
+    return;
 
   basetype = TYPE_MAIN_VARIANT (BINFO_TYPE (binfo));
 
@@ -2414,15 +2423,9 @@ modify_one_vtable (binfo, t, fndecl)
   if (flag_rtti)
     {
       if (binfo == TYPE_BINFO (t))
-	{
-	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
-	    build_vtable (TYPE_BINFO (DECL_CONTEXT (TYPE_VFIELD (t))), t);
-	}
+	build_vtable (TYPE_BINFO (DECL_CONTEXT (TYPE_VFIELD (t))), t);
       else
-	{
-	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
-	    prepare_fresh_vtable (binfo, t);
-	}
+	prepare_fresh_vtable (binfo, t);
     }
   if (fndecl == NULL_TREE)
     return;
@@ -2462,22 +2465,16 @@ modify_one_vtable (binfo, t, fndecl)
 	  this_offset = ssize_binop (MINUS_EXPR, offset, base_offset);
 
 	  if (binfo == TYPE_BINFO (t))
-	    {
-	      /* In this case, it is *type*'s vtable we are modifying.
-		 We start with the approximation that it's vtable is that
-		 of the immediate base class.  */
-	      if (! BINFO_NEW_VTABLE_MARKED (binfo))
-		build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
-	    }
+	    /* In this case, it is *type*'s vtable we are modifying.
+	       We start with the approximation that it's vtable is
+	       that of the immediate base class.  */
+	      build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
 	  else
-	    {
-	      /* This is our very own copy of `basetype' to play with.
-		 Later, we will fill in all the virtual functions
-		 that override the virtual functions in these base classes
-		 which are not defined by the current type.  */
-	      if (! BINFO_NEW_VTABLE_MARKED (binfo))
-		prepare_fresh_vtable (binfo, t);
-	    }
+	    /* This is our very own copy of `basetype' to play with.
+	       Later, we will fill in all the virtual functions that
+	       override the virtual functions in these base classes
+	       which are not defined by the current type.  */
+	    prepare_fresh_vtable (binfo, t);
 
 #ifdef NOTQUITE
 	  cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo)));
@@ -2558,22 +2555,17 @@ fixup_vtable_deltas1 (binfo, t)
 	    {
 	      /* Make sure we can modify the derived association with immunity.  */
 	      if (binfo == TYPE_BINFO (t))
-		{
-		  /* In this case, it is *type*'s vtable we are modifying.
-		     We start with the approximation that it's vtable is that
-		     of the immediate base class.  */
-		  if (! BINFO_NEW_VTABLE_MARKED (binfo))
-		    build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
-		}
+		/* In this case, it is *type*'s vtable we are modifying.
+		   We start with the approximation that it's vtable is that
+		   of the immediate base class.  */
+		build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
 	      else
-		{
-		  /* This is our very own copy of `basetype' to play with.
-		     Later, we will fill in all the virtual functions
-		     that override the virtual functions in these base classes
-		     which are not defined by the current type.  */
-		  if (! BINFO_NEW_VTABLE_MARKED (binfo))
-		    prepare_fresh_vtable (binfo, t);
-		}
+		/* This is our very own copy of `basetype' to play
+		   with.  Later, we will fill in all the virtual
+		   functions that override the virtual functions in
+		   these base classes which are not defined by the
+		   current type.  */
+		prepare_fresh_vtable (binfo, t);
 
 	      modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
 				   this_offset,
@@ -4405,14 +4397,10 @@ finish_struct_1 (t)
 	    }
 	  build_vtable (NULL_TREE, t);
 	}
-      else
-	{
-	  /* Here we know enough to change the type of our virtual
-	     function table, but we will wait until later this function.  */
-
-	  if (! BINFO_NEW_VTABLE_MARKED (TYPE_BINFO (t)))
-	    build_vtable (CLASSTYPE_PRIMARY_BINFO (t), t);
-	}
+      else if (! BINFO_NEW_VTABLE_MARKED (TYPE_BINFO (t)))
+	/* Here we know enough to change the type of our virtual
+	   function table, but we will wait until later this function.  */
+	build_vtable (CLASSTYPE_PRIMARY_BINFO (t), t);
 
       /* If this type has basetypes with constructors, then those
 	 constructors might clobber the virtual function table.  But
