@@ -872,6 +872,48 @@ for file in elf_abi.h elf.h; do
   fi
 done
 
+# IRIX 4.0.5 <rpc/auth.h> uses struct sockaddr in prototype without
+# previous definition.
+file=rpc/auth.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/rpc 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, undefined type
+  sed -e '/authdes_create.*struct sockaddr/i\
+struct sockaddr;' \
+    ${LIB}/$file > ${LIB}/$file.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# IRIX 4.0.5 <rpc/xdr.h> uses struct __file_s in prototype without previous
+# definition.
+file=rpc/xdr.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/rpc 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, undefined type
+  sed -e '/xdrstdio_create.*struct __file_s/i\
+struct __file_s;' \
+    ${LIB}/$file > ${LIB}/$file.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # Same problem with a file from SunOS 4.1.3 : a header file containing
 # the string "//" embedded in "/**/"
 file=sbusdev/audiovar.h
@@ -1102,6 +1144,24 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, nested comment
   sed -e 's@^\( \*	int protocol;  \)/\*@\1*/ /*@' \
+    ${LIB}/$file > ${LIB}/$file.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
+file=rpc/rpc.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/rpc 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, nested comment
+  sed -e 's@^\(/\*.*rpc/auth_des.h>.*\)/\*@\1*/ /*@' \
     ${LIB}/$file > ${LIB}/$file.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
