@@ -1,3 +1,10 @@
+2001-04-26  Nathan Sidwell <nathan@codesourcery.com>
+
+	* mangle.c (write_chars): New macro.
+	(hwint_to_ascii): New function
+	(write_number): Use it.
+	(write_integer_cst): Deal with really big numbers.
+
 2001-04-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (maybe_clone_body): Copy TREE_PUBLIC before emitting
