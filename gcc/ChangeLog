@@ -1,3 +1,26 @@
+2001-07-16  Daniel Berlin  <dan@cgsoftware.com>
+
+        * gcse.c: Include df.h for use as a dataflow analyzer.
+        Remove regvec.
+        Declaration of reg_set_info: gone.
+        New df_analyzer variable used by store motion.
+        (reg_set_info): Deleted.
+        (mark_mem_regs): New function, analyze regs used by a mem.
+        (store_ops_ok): Use dataflow analyzer results to determine if
+        necessary regs are changed in the block.
+        (find_moveable_store): Remove check for symbol ref, we can handle
+        much more complex expressions now.
+        (compute_store_table): Remove most of the code, it's unnecessary
+        now that the dataflow analyzer records the info for us.
+        (store_killed_after): Add parameter to say whether to do the
+        store_ops_okay test, used to speed up testing when we already know
+        the answer, and just want to know if the store itself was killed.
+        (build_store_vector): Largely rewritten to calculate the various
+        vectors properly, and somewhat optimized.
+        (store_motion): Init the df_analyzer, get REG_DEF chains. 
+        Also handle trapping expressions (since mems almost always trap)
+        (simple_mem): Redefine what a simple mem is.
+
 2001-08-03  DJ Delorie  <dj@redhat.com>
 
 	* ifcvt.c (noce_get_alt_condition): Don't make an auxiliary
