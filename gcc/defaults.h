@@ -690,4 +690,9 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define EXIT_IGNORE_STACK 0
 #endif
 
+/* Assume that case vectors are not pc-relative.  */
+#ifndef CASE_VECTOR_PC_RELATIVE
+#define CASE_VECTOR_PC_RELATIVE 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

@@ -58,11 +58,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "predict.h"
 #include "optabs.h"
 #include "target.h"
-
-/* Assume that case vectors are not pc-relative.  */
-#ifndef CASE_VECTOR_PC_RELATIVE
-#define CASE_VECTOR_PC_RELATIVE 0
-#endif
 
 /* Functions and data structures for expanding case statements.  */
 
