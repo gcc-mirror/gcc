@@ -1,3 +1,7 @@
+1998-06-29  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/980628-3.f: Remove mail headers.
+
 Sun Jun 28 12:49:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/execute/980628-4.f: New test from Craig.
