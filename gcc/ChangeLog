@@ -66,7 +66,6 @@ Wed May 12 07:27:31 1999  Craig Burley  <craig@jcb-sc.com>
 	* flags.h: Declare flag_errno_math.
 	* toplev.c: Define flag_errno_math.
 
->>>>>>> 1.3645
 Tue May 11 23:55:49 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fixproto: Change "mkdir" calls to "mkdir -p"
