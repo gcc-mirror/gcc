@@ -1,3 +1,7 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* extend.texi (extended asm): Fix typo.
+
 Sat Apr 28 10:32:26 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (propagate_block_delete_insn): Handle deletion of ADDR_VEC
