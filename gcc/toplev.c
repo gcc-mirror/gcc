@@ -1002,7 +1002,7 @@ report_error_function (file)
 	{
 	  fprintf (stderr, " from %s:%d", p->name, p->line);
 	  if (p->next)
-	    fprintf (stderr, ",");
+	    fprintf (stderr, ",\n                ");
 	}
       fprintf (stderr, ":\n");
       last_error_tick = input_file_stack_tick;
