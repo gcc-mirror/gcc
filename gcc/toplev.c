@@ -1246,7 +1246,7 @@ really_sorry (s, v, v2)
   if (input_filename)
     fprintf (stderr, "%s:%d: ", input_filename, lineno);
   else
-    fprintf (stderr, "c++: ");
+    fprintf (stderr, "%s: ", progname);
 
   fprintf (stderr, "sorry, not implemented: ");
   fprintf (stderr, s, v, v2);
