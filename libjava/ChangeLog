@@ -1,3 +1,9 @@
+2002-05-02  David S. Miller  <davem@redhat.com>
+
+	PR bootstrap/6525
+	* include/dwarf2-signal.h (INIT_SEGV, INIT_FPE): Don't use
+	__libc_sigaction on Sparc.
+
 2002-05-02  Jerome Marc  <marcjero@yahoo.com>
 
 	* java/net/natPlainSocketImpl.cc: Include sys/ioctl.h and
