@@ -1460,6 +1460,8 @@ machine_dependent_reorg (first)
 
 	  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
 	    {
+	      if (REG_NOTE_KIND (link) != 0)
+		continue;
 	      set = single_set (XEXP (link, 0));
 	      if (set && rtx_equal_p (reg, SET_DEST (set)))
 		{
