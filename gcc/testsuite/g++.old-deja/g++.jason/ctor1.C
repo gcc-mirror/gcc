@@ -3,7 +3,7 @@
 extern "C"
 {
   struct xx {
-    void (*xx)(void);
+    void (*xx)(void);		// ERROR - field with name of class
     int x,y;
   };
 }

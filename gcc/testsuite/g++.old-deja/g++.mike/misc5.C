@@ -7,5 +7,5 @@ struct S1 {
   static int S1;		// ERROR - uses same name 9.3
 };
 struct S2 {
-  union { int ii; float S2; };	// ERROR - uses same name 9.3 , XFAIL *-*-*
+  union { int ii; float S2; };	// ERROR - uses same name 9.3
 };
