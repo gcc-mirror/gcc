@@ -51,6 +51,11 @@ extern char *concat PARAMS ((const char *, ...));
 
 extern int fdmatch PARAMS ((int fd1, int fd2));
 
+/* Get the working directory.  The result is cached, so don't call
+   chdir() between calls to getpwd().  */
+
+extern char * getpwd PARAMS ((void));
+
 /* Get the amount of time the process has run, in microseconds.  */
 
 extern long get_run_time PARAMS ((void));
