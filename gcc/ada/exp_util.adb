@@ -2386,8 +2386,8 @@ package body Exp_Util is
             --  component of the record, then the component may be unaligned.
 
             if Is_Packed (Etype (P))
-              and then Represented_As_Scalar (Etype (P))
-              and then First_Entity (Etype (Entity (P))) /= C
+              and then Represented_As_Scalar (Etype (C))
+              and then First_Entity (Scope (C)) /= C
             then
                return True;
             end if;
@@ -3212,7 +3212,7 @@ package body Exp_Util is
 
    --  At the current time, the only types that we return False for (i.e.
    --  where we decide we know they cannot generate large temps) are ones
-   --  where we know the size is 128 bits or less at compile time, and we
+   --  where we know the size is 256 bits or less at compile time, and we
    --  are still not doing a thorough job on arrays and records ???
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
@@ -3295,7 +3295,7 @@ package body Exp_Util is
       E            : Node_Id;
 
       function Side_Effect_Free (N : Node_Id) return Boolean;
-      --  Determines if the tree N represents an expession that is known
+      --  Determines if the tree N represents an expression that is known
       --  not to have side effects, and for which no processing is required.
 
       function Side_Effect_Free (L : List_Id) return Boolean;
@@ -3639,7 +3639,7 @@ package body Exp_Util is
       elsif Nkind (Exp) = N_Unchecked_Type_Conversion
         and then Nkind (Expression (Exp)) = N_Explicit_Dereference
       then
-         Remove_Side_Effects (Expression (Exp), Variable_Ref);
+         Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
          Scope_Suppress := Svg_Suppress;
          return;
 
@@ -3647,7 +3647,7 @@ package body Exp_Util is
       --  the side effects in the expression. This is important in several
       --  circumstances: for change of representations, and also when this
       --  is a view conversion to a smaller object, where gigi can end up
-      --  its own temporary of the wrong size.
+      --  creating its own temporary of the wrong size.
 
       --  ??? this transformation is inhibited for elementary types that are
       --  not involved in a change of representation because it causes
@@ -3657,7 +3657,7 @@ package body Exp_Util is
         and then (not Is_Elementary_Type (Underlying_Type (Exp_Type))
                    or else Nkind (Parent (Exp)) = N_Assignment_Statement)
       then
-         Remove_Side_Effects (Expression (Exp), Variable_Ref);
+         Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
          Scope_Suppress := Svg_Suppress;
          return;
 
