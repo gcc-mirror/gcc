@@ -315,6 +315,7 @@ c4x_output_ascii (stream, ptr, len)
   char sbuf[C4X_ASCII_LIMIT + 1];
   int s, l, special, first, onlys;
 
+  first = 0;
   if (len)
     {
       fprintf (stream, "\t.byte\t");
@@ -4854,4 +4855,182 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
     }
   else
     abort ();
+}
+
+void
+c4x_init_builtins ()
+{
+  tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
+
+  builtin_function ("abs",
+		    build_function_type
+		    (integer_type_node, 
+		     tree_cons (NULL_TREE, integer_type_node, endlink)),
+ 		    C4X_BUILTIN_ABS, BUILT_IN_MD, NULL_PTR);
+  builtin_function ("fabs",
+ 		    build_function_type
+		    (double_type_node, 
+		     tree_cons (NULL_TREE, double_type_node, endlink)),
+ 		    C4X_BUILTIN_FABS, BUILT_IN_MD, NULL_PTR);
+  builtin_function ("labs",
+		    build_function_type 
+		    (long_integer_type_node, 
+		     tree_cons (NULL_TREE, long_integer_type_node, endlink)),
+		    C4X_BUILTIN_LABS, BUILT_IN_MD, NULL_PTR);
+  builtin_function ("fast_ftoi",
+		    build_function_type 
+		    (integer_type_node,
+		     tree_cons (NULL_TREE, double_type_node, endlink)),
+		    C4X_BUILTIN_FIX, BUILT_IN_MD, NULL_PTR);
+  builtin_function ("ansi_ftoi",
+		    build_function_type 
+		    (integer_type_node, 
+		     tree_cons (NULL_TREE, double_type_node, endlink)),
+		    C4X_BUILTIN_FIX_ANSI, BUILT_IN_MD, NULL_PTR);
+  if (TARGET_C3X)
+    builtin_function ("fast_imult",
+		      build_function_type
+		      (integer_type_node, 
+		       tree_cons (NULL_TREE, integer_type_node,
+				  tree_cons (NULL_TREE,
+					     integer_type_node, endlink))),
+		      C4X_BUILTIN_MPYI, BUILT_IN_MD, NULL_PTR);
+  else
+    {
+      builtin_function ("toieee",
+		        build_function_type 
+			(double_type_node,
+			 tree_cons (NULL_TREE, double_type_node, endlink)),
+		        C4X_BUILTIN_TOIEEE, BUILT_IN_MD, NULL_PTR);
+      builtin_function ("frieee",
+		        build_function_type
+			(double_type_node, 
+			 tree_cons (NULL_TREE, double_type_node, endlink)),
+		        C4X_BUILTIN_FRIEEE, BUILT_IN_MD, NULL_PTR);
+      builtin_function ("fast_invf",
+		        build_function_type 
+			(double_type_node, 
+			 tree_cons (NULL_TREE, double_type_node, endlink)),
+		        C4X_BUILTIN_RCPF, BUILT_IN_MD, NULL_PTR);
+    }
+}
+
+
+rtx
+c4x_expand_builtin (exp, target, subtarget, mode, ignore)
+     tree exp;
+     rtx target;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg0, arg1;
+  rtx r0, r1;
+
+  switch (fcode)
+    {
+    case C4X_BUILTIN_ABS:
+      arg0 = TREE_VALUE (arglist);
+      r0 = expand_expr (arg0, NULL_RTX, QImode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (! target || ! register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+      emit_insn (gen_absqi2 (target, r0));
+      return target;
+
+    case C4X_BUILTIN_FABS:
+      arg0 = TREE_VALUE (arglist);
+      r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (! target || ! register_operand (target, QFmode))
+	target = gen_reg_rtx (QFmode);
+      emit_insn (gen_absqf2 (target, r0));
+      return target;
+
+    case C4X_BUILTIN_LABS:
+      arg0 = TREE_VALUE (arglist);
+      r0 = expand_expr (arg0, NULL_RTX, QImode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (! target || ! register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+      emit_insn (gen_absqi2 (target, r0));
+      return target;
+
+    case C4X_BUILTIN_FIX:
+      arg0 = TREE_VALUE (arglist);
+      r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (! target || ! register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+      emit_insn (gen_fixqfqi_clobber (target, r0));
+      return target;
+
+    case C4X_BUILTIN_FIX_ANSI:
+      arg0 = TREE_VALUE (arglist);
+      r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (! target || ! register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+      emit_insn (gen_fix_truncqfqi2 (target, r0));
+      return target;
+
+    case C4X_BUILTIN_MPYI:
+      if (! TARGET_C3X)
+	break;
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      r0 = expand_expr (arg0, NULL_RTX, QImode, 0);
+      r1 = expand_expr (arg1, NULL_RTX, QImode, 0);
+      r0 = protect_from_queue (r0, 0);
+      r1 = protect_from_queue (r1, 0);
+      if (! target || ! register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+      emit_insn (gen_mulqi3_24_clobber (target, r0, r1));
+      return target;
+
+    case C4X_BUILTIN_TOIEEE:
+      if (TARGET_C3X)
+	break;
+      arg0 = TREE_VALUE (arglist);
+      r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (! target || ! register_operand (target, QFmode))
+	target = gen_reg_rtx (QFmode);
+      emit_insn (gen_toieee (target, r0));
+      return target;
+
+    case C4X_BUILTIN_FRIEEE:
+      if (TARGET_C3X)
+	break;
+      arg0 = TREE_VALUE (arglist);
+      if (TREE_CODE (arg0) == VAR_DECL || TREE_CODE (arg0) == PARM_DECL)
+	put_var_into_stack (arg0);
+      r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (register_operand (r0, QFmode))
+	{
+	  r1 = assign_stack_local (QFmode, GET_MODE_SIZE (QFmode), 0);
+	  emit_move_insn (r1, r0);
+	  r0 = r1;
+	}
+      if (! target || ! register_operand (target, QFmode))
+	target = gen_reg_rtx (QFmode);
+      emit_insn (gen_frieee (target, r0));
+      return target;
+
+    case C4X_BUILTIN_RCPF:
+      if (TARGET_C3X)
+	break;
+      arg0 = TREE_VALUE (arglist);
+      r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
+      r0 = protect_from_queue (r0, 0);
+      if (! target || ! register_operand (target, QFmode))
+	target = gen_reg_rtx (QFmode);
+      emit_insn (gen_rcpfqf_clobber (target, r0));
+      return target;
+    }
+  return NULL_RTX;
 }
