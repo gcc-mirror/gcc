@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,23 +29,6 @@ with Namet;    use Namet;
 with Output;   use Output;
 
 package body Butil is
-
-   --------------------------
-   -- Get_Unit_Name_String --
-   --------------------------
-
-   procedure Get_Unit_Name_String (U : Unit_Name_Type) is
-   begin
-      Get_Name_String (U);
-
-      if Name_Buffer (Name_Len) = 's' then
-         Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (spec)";
-      else
-         Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (body)";
-      end if;
-
-      Name_Len := Name_Len + 5;
-   end Get_Unit_Name_String;
 
    ----------------------
    -- Is_Internal_Unit --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,10 +47,6 @@ package Butil is
 
    function Uname_Less (U1, U2 : Unit_Name_Type) return Boolean;
    --  Determines if the unit name U1 is alphabetically before U2
-
-   procedure Get_Unit_Name_String (U : Unit_Name_Type);
-   --  Compute unit name with (body) or (spec) after as required. On return
-   --  the result is stored in Name_Buffer and Name_Len is the length.
 
    procedure Write_Unit_Name (U : Unit_Name_Type);
    --  Output unit name with (body) or (spec) after as required. On return
