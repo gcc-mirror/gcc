@@ -1,3 +1,7 @@
+Sat Mar 13 17:37:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (sched_analyze_1): Only clear reg_last_uses on a SET.
+
 Sat Mar 13 11:36:16 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (arm_split_constant): Don't try to force a constant to
