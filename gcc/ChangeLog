@@ -1,3 +1,8 @@
+2004-09-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (rtl.o, bitmap.o): Correct dependencies, remove
+	unnecessary commands.
+
 2004-09-06  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* Makefile.in (rtl.o): Remove -DGENERATOR_FILE.
@@ -422,20 +427,20 @@
 
 2004-09-03  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/9997
-        * cfgexpand.c (LOCAL_ALIGNMENT): Provide default.
-        (STACK_ALIGNMENT_NEEDED, FRAME_GROWS_DOWNWARD): Likewise.
-        (struct stack_var, EOC, stack_vars, stack_vars_alloc, stack_vars_num,
-        stack_vars_sorted, stack_vars_conflict, stack_vars_conflict_alloc,
-        frame_phase, get_decl_align_unit, add_stack_var, triangular_index,
-        resize_stack_vars_conflict, add_stack_var_conflict,
-        stack_var_conflict_p, add_alias_set_conflicts, stack_var_size_cmp,
-        union_stack_vars, partition_stack_vars, dump_stack_var_partition,
-        expand_one_stack_var_at, expand_stack_vars, expand_one_stack_var,
+	PR middle-end/9997
+	* cfgexpand.c (LOCAL_ALIGNMENT): Provide default.
+	(STACK_ALIGNMENT_NEEDED, FRAME_GROWS_DOWNWARD): Likewise.
+	(struct stack_var, EOC, stack_vars, stack_vars_alloc, stack_vars_num,
+	stack_vars_sorted, stack_vars_conflict, stack_vars_conflict_alloc,
+	frame_phase, get_decl_align_unit, add_stack_var, triangular_index,
+	resize_stack_vars_conflict, add_stack_var_conflict,
+	stack_var_conflict_p, add_alias_set_conflicts, stack_var_size_cmp,
+	union_stack_vars, partition_stack_vars, dump_stack_var_partition,
+	expand_one_stack_var_at, expand_stack_vars, expand_one_stack_var,
 	expand_one_static_var, expand_one_hard_reg_var,
 	expand_one_register_var, expand_one_error_var, defer_stack_allocation,
 	expand_one_var, expand_used_vars_for_block, clear_tree_used): New.
-        (expand_used_vars): Rewrite.
+	(expand_used_vars): Rewrite.
 	* Makefile.in (cfgexpand.o): Update dependencies.
 
 2004-09-04  Jan Hubicka  <jh@suse.cz>
