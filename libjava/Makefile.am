@@ -469,6 +469,9 @@ all_java_source_files = \
 
 all_java_class_files = $(all_java_source_files:.java=.class)
 
+all_property_files = $(property_files) $(jgss_property_files) \
+    java/util/logging/logging.properties
+
 ## Build property files into the library.
 property_files = \
 gnu/regexp/MessagesBundle.properties \
@@ -498,9 +501,16 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) @libgcj.sourcelist
 ## Note that we explicitly want to include directory information.
-	find java gnu javax org -type d -o -type f -name '*.class' | \
-	  sed -e '/\/\./d' -e '/\/xlib/d' | \
-	  $(ZIP) cfM0E@ $@
+	(find java gnu javax org -type d -o -type f -name '*.class'; \
+## Ugly code to avoid "echo -C".  Must separate each entry by a newline
+## Gross but easy.
+	for file in $(all_property_files); do \
+	  echo "x-C" | sed -e 's/^.//'; \
+	  echo $(srcdir); \
+	  echo $$file; \
+	done) | \
+	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
+	  $(ZIP) -cfM0E@ $@
 
 # This next rule seems backward, but reflects the fact
 # that 1) all classfiles are compiled in one go when the
@@ -516,12 +526,19 @@ else # !ONESTEP
 .java.class:
 	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $<
 
-libgcj-@gcc_version@.jar: $(all_java_class_files)
+libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
 	-@rm -f libgcj-@gcc_version@.jar
 ## Note that we explicitly want to include directory information.
-	find java gnu javax org -type d -o -type f -name '*.class' | \
-	  sed -e '/\/\./d' -e '/\/xlib/d' | \
-	  $(ZIP) cfM0E@ $@
+	(find java gnu javax org -type d -o -type f -name '*.class'; \
+## Ugly code to avoid "echo -C".  Must separate each entry by a newline
+## Gross but easy.
+	for file in $(all_property_files); do \
+	  echo "x-C" | sed -e 's/^.//'; \
+	  echo $(srcdir); \
+	  echo $$file; \
+	done) | \
+	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
+	  $(ZIP) -cfM0E@ $@
 
 endif
 
