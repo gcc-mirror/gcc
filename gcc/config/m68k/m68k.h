@@ -1414,20 +1414,12 @@ __transfer_from_trampoline ()					\
    || (GET_CODE (X) == PLUS						\
        && LEGITIMATE_BASE_REG_P (XEXP (X, 0))				\
        && GET_CODE (XEXP (X, 1)) == CONST_INT				\
-       && (TARGET_68020 || (unsigned) INTVAL (XEXP (X, 1)) + 0x8000) < 0x10000)		\
+       && (TARGET_68020							\
+	   || ((unsigned) INTVAL (XEXP (X, 1)) + 0x8000) < 0x10000))	\
    || (GET_CODE (X) == PLUS && XEXP (X, 0) == pic_offset_table_rtx 	\
        && flag_pic && GET_CODE (XEXP (X, 1)) == SYMBOL_REF)		\
    || (GET_CODE (X) == PLUS && XEXP (X, 0) == pic_offset_table_rtx 	\
        && flag_pic && GET_CODE (XEXP (X, 1)) == LABEL_REF))		\
-
-#if 0
-/* This should replace the last two (non-pic) lines
-   except that Sun's assembler does not seem to handle such operands.  */
-       && (TARGET_68020 ? CONSTANT_ADDRESS_P (XEXP (X, 1))		\
-	   : (GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	      && ((unsigned) INTVAL (XEXP (X, 1)) + 0x8000) < 0x10000))))
-#endif
-
 
 #define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
 { if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR; }
