@@ -733,19 +733,19 @@ C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
 
 # Language-independent object files.
 
-OBJS = diagnostic.o version.o tree.o print-tree.o stor-layout.o fold-const.o  \
- function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o real.o  \
- builtins.o intl.o varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o genrtl.o   \
- dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o alias.o gcse.o  \
- integrate.o jump.o cse.o loop.o doloop.o unroll.o flow.o combine.o varray.o  \
- regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o \
- insn-peep.o reorg.o haifa-sched.o final.o recog.o reg-stack.o regrename.o    \
- insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o    \
- profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o	      \
- mbchar.o splay-tree.o graph.o sbitmap.o resource.o hash.o predict.o	      \
- lists.o ggc-common.o $(GGC) stringpool.o simplify-rtx.o ssa.o bb-reorder.o   \
+OBJS = diagnostic.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
+ function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o real.o \
+ builtins.o intl.o varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o genrtl.o  \
+ dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o alias.o gcse.o \
+ integrate.o jump.o cse.o loop.o doloop.o unroll.o flow.o combine.o varray.o \
+ regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o\
+ insn-peep.o reorg.o haifa-sched.o final.o recog.o reg-stack.o regrename.o   \
+ insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o   \
+ profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o	     \
+ mbchar.o splay-tree.o graph.o sbitmap.o resource.o hash.o predict.o	     \
+ lists.o ggc-common.o $(GGC) stringpool.o simplify-rtx.o ssa.o bb-reorder.o  \
  sibcall.o conflict.o timevar.o ifcvt.o dominance.o dependence.o dce.o \
- sched-vis.o sched-deps.o sched-rgn.o sched-ebb.o hashtab.o
+ sched-vis.o sched-deps.o sched-rgn.o sched-ebb.o hashtab.o cselib.o
 
 BACKEND = toplev.o libbackend.a
 
@@ -1412,6 +1412,9 @@ jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    toplev.h $(INSN_ATTR_H)
 
 simplify-rtx.o : simplify-rtx.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
+   hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
+   output.h function.h $(GGC_H) $(OBSTACK_H)
+cselib.o : cselib.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
    output.h function.h cselib.h $(GGC_H) $(OBSTACK_H)
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
