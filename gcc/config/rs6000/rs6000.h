@@ -1621,6 +1621,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
     case PROCESSOR_PPC620:				\
       return COSTS_N_INSNS (20);			\
     }							\
+  case FFS:						\
+    return COSTS_N_INSNS (4);				\
   case MEM:						\
     /* MEM should be slightly more expensive than (plus (reg) (const)) */ \
     return 5;
