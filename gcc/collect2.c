@@ -249,7 +249,9 @@ static char *import_file;	        /* <xxx>.p for AIX import list.  */
 char *ldout;				/* File for ld errors.  */
 static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
+#ifdef LDD_SUFFIX
 static char *ldd_file_name;		/* pathname of ldd (or equivalent) */
+#endif
 static char *strip_file_name;		/* pathname of strip */
 char *c_file_name;		        /* pathname of gcc */
 static char *initname, *fininame;	/* names of init and fini funcs */
@@ -960,9 +962,6 @@ main (argc, argv)
   char *ld_suffix	= "ld";
   char *full_ld_suffix	= ld_suffix;
   char *real_ld_suffix	= "real-ld";
-#ifdef CROSS_COMPILE
-  char *full_real_ld_suffix = real_ld_suffix;
-#endif
   char *collect_ld_suffix = "collect-ld";
   char *nm_suffix	= "nm";
   char *full_nm_suffix	= nm_suffix;
@@ -1107,12 +1106,6 @@ main (argc, argv)
   strcpy (full_ld_suffix, target_machine);
   strcat (full_ld_suffix, "-");
   strcat (full_ld_suffix, ld_suffix);
-
-  full_real_ld_suffix
-    = xcalloc (strlen (real_ld_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_real_ld_suffix, target_machine);
-  strcat (full_real_ld_suffix, "-");
-  strcat (full_real_ld_suffix, real_ld_suffix);
 
 #if 0
   full_gld_suffix
