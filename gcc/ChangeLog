@@ -1,3 +1,8 @@
+2003-12-23  Matthias Klose  <doko@debian.org>
+
+	* config/mips/linux.h (LIB_SPEC): Use -lpthread when
+	-pthread was specified.
+
 2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/13394
@@ -14,16 +19,16 @@
 2003-12-22  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
         PR target/11271
-	* reload.c: Revert last backport from mainline.  It breaks s390. 
+	* reload.c: Revert last backport from mainline.  It breaks s390.
 
 2003-12-21  Roger Sayle  <roger@eyesopen.com>
 
 	* config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Define _ILP32
 	when compiling in ILP32 mode.
 
-2003-12-21  Gabriel Dos Reis <gdr@integrable-solutions.net>	
+2003-12-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
-    Backport from mainline:	
+    Backport from mainline:
     2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	    PR target/11271
@@ -18409,4 +18414,3 @@ cp:
 	* mips.h (FUNCTION_ARG_REGNO_P): Fix parentheses.
 
 See ChangeLog.7 for earlier changes.
-
