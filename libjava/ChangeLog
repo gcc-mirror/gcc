@@ -1,3 +1,11 @@
+2005-02-15  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.am (libgcj_la_SOURCES): Move all sources ...
+	(libgcj0_convenience_la_SOURCES): ... here.
+	(libgcj_la_LIBADD): Add libgcj0_convenience.la.
+	(libgcj_la_DEPENDENCIES): Include libgcj_la_LIBADD.
+	* Makefile.in: Regenerate.
+
 2005-02-14  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jawt.c: New file.
