@@ -1,3 +1,12 @@
+Thu May 27 13:04:52 1999  H.J. Lu  (hjl@gnu.org)
+
+	* i386.c (output_fp_cc0_set): Don't check the JUMP_INSN code for
+	conditional move.
+	(notice_update_cc, output_float_compare): Enable TARGET_CMOVE support.
+	(output_float_compare, output_fp_cc0_set): Fix the FLOAT comparison
+	for IEEE math and CC_FCOMI.
+	(put_jump_code): No IEEE if CC_FCOMI is set.
+
 1999-05-27  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* fold-const.c (fold_truthop): Make the field reference unsigned
