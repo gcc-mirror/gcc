@@ -57,11 +57,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)			\
-    do {							\
-	fputs ("\tlda $27,_mcount\n", (FILE));			\
-	fputs ("\tjsr $26,($27),_mcount\n", (FILE));		\
-	fputs ("\tldgp $29,0($26)\n", (FILE));			\
-    } while (0);
+	fputs ("\tjsr $28,_mcount\n", (FILE))
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS
@@ -77,9 +73,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
    This differs from the standard version in that:
 
-   We do not initialize the "hint" field because it is not the case
-   that the target is in range of something on the stack.  We save
-   a bogus branch-prediction cache line load by not setting "hint".
+   We do not initialize the "hint" field because it only has an 8k
+   range and so the target is in range of something on the stack. 
+   Omitting the hint saves a bogus branch-prediction cache line load.
 
    Linux always has an executable stack -- no need for a system call.
  */
