@@ -12652,8 +12652,8 @@ patch_assignment (tree node, tree wfl_op1)
   new_rhs = try_builtin_assignconv (wfl_op1, lhs_type, rhs);
 
   /* 5.2 If it failed, try a reference conversion */
-  if (!new_rhs && (new_rhs = try_reference_assignconv (lhs_type, rhs)))
-    lhs_type = promote_type (rhs_type);
+  if (!new_rhs)
+    new_rhs = try_reference_assignconv (lhs_type, rhs);
 
   /* 15.25.2 If we have a compound assignment, convert RHS into the
      type of the LHS */
