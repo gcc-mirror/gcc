@@ -1,4 +1,4 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19980617\n";
+static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19980907\n";
 
 /*
 */
@@ -293,6 +293,8 @@ wrtfmt.c:
 		 floating-point numbers (containing either a decimal point
 		 or an exponent field) as errors when they appear as list
 		 input for integer data. */
+/* 7 Sept. 1998: move e_wdfe from sfe.c to dfe.c, where it was originally.
+		 Why did it ever move to sfe.c? */
 
 
 

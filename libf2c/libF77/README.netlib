@@ -106,3 +106,7 @@ one-line shell script
 or (on some systems)
 
 	exec /usr/bin/ar lts $1 >/dev/null
+
+If your compiler complains about the signal calls in main.c, s_paus.c,
+and signal_.c, you may need to adjust signal1.h suitably.  See the
+comments in signal1.h.

@@ -1,3 +1,12 @@
+1999-03-17  Craig Burley  <craig@jcb-sc.com>
+
+	Update to Netlib version of 1999-03-17:
+	* libF77/F77_aloc.c, libF77/README.netlib, libF77/dtime_.c,
+	libF77/etime_.c, libF77/signal1.h0, libI77/Version.c,
+	libI77/dfe.c, libI77/endfile.c, libI77/lread.c,
+	libI77/sfe.c, readme.netlib, changes.netlib:
+	See changes.netlib for info.
+
 1999-03-06  Craig Burley  <craig@jcb-sc.com>
 
 	Mon Dec 21 23:03:54 1998 Hans-Peter Nilsson <hp@axis.se>:

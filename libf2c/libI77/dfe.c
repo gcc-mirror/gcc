@@ -138,3 +138,9 @@ integer e_rdfe(Void)
 	en_fio();
 	return(0);
 }
+
+integer e_wdfe(Void)
+{
+	f__init = 1;
+	return en_fio();
+}
