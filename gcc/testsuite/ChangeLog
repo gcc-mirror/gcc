@@ -1,3 +1,8 @@
+2003-09-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7939
+	* g++.dg/template/crash11.C: New test.
+
 2003-09-16  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
