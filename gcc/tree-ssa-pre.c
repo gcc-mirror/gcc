@@ -358,7 +358,7 @@ phi_trans_lookup (tree e, basic_block pred)
   struct expr_pred_trans_d ept;
   ept.e = e;
   ept.pred = pred;
-  ept.hashcode = vn_compute (e, (unsigned long) pred);
+  ept.hashcode = vn_compute (e, (unsigned long) pred, NULL);
   slot = htab_find_slot_with_hash (phi_translate_table, &ept, ept.hashcode,
 				   NO_INSERT);
   if (!slot)
@@ -379,13 +379,14 @@ phi_trans_add (tree e, tree v, basic_block pred)
   new_pair->e = e;
   new_pair->pred = pred;
   new_pair->v = v;
-  new_pair->hashcode = vn_compute (e, (unsigned long) pred);
+  new_pair->hashcode = vn_compute (e, (unsigned long) pred, NULL);
   slot = htab_find_slot_with_hash (phi_translate_table, new_pair,
 				   new_pair->hashcode, INSERT);
   if (*slot)
     free (*slot);
   *slot = (void *) new_pair;
 }
+
 
 /* Add expression E to the expression set of value V.  */
 
@@ -748,7 +749,7 @@ debug_value_set (value_set_t set, const char *setname, int blockindex)
    part of the translated expression.  */
 
 static tree
-phi_translate (tree expr, value_set_t set,  basic_block pred,
+phi_translate (tree expr, value_set_t set, basic_block pred,
 	       basic_block phiblock)
 {
   tree phitrans = NULL;
@@ -788,7 +789,7 @@ phi_translate (tree expr, value_set_t set,  basic_block pred,
 	    create_tree_ann (newexpr);
 	    TREE_OPERAND (newexpr, 0) = newop1 == oldop1 ? oldop1 : get_value_handle (newop1);
 	    TREE_OPERAND (newexpr, 1) = newop2 == oldop2 ? oldop2 : get_value_handle (newop2);
-	    vn_lookup_or_add (newexpr);
+	    vn_lookup_or_add (newexpr, NULL);
 	    expr = newexpr;
 	    phi_trans_add (oldexpr, newexpr, pred);	    
 	  }
@@ -815,7 +816,7 @@ phi_translate (tree expr, value_set_t set,  basic_block pred,
 	    memcpy (newexpr, expr, tree_size (expr));
 	    create_tree_ann (newexpr);	 
 	    TREE_OPERAND (newexpr, 0) = get_value_handle (newop1);
-	    vn_lookup_or_add (newexpr);
+	    vn_lookup_or_add (newexpr, NULL);
 	    expr = newexpr;
 	    phi_trans_add (oldexpr, newexpr, pred);
 	  }
@@ -840,7 +841,7 @@ phi_translate (tree expr, value_set_t set,  basic_block pred,
 	      tree val;
 	      if (is_undefined_value (PHI_ARG_DEF (phi, i)))
 		return NULL;
-	      val = vn_lookup_or_add (PHI_ARG_DEF (phi, i));
+	      val = vn_lookup_or_add (PHI_ARG_DEF (phi, i), NULL);
 	      return PHI_ARG_DEF (phi, i);
 	    }
       }
@@ -867,7 +868,7 @@ phi_translate_set (value_set_t dest, value_set_t set, basic_block pred,
     } 
 }
 
-/* Find the leader for a value (IE the name representing that
+/* Find the leader for a value (i.e., the name representing that
    value) in a given set, and return it.  Return NULL if no leader is
    found.  */
 
@@ -878,9 +879,11 @@ find_leader (value_set_t set, tree val)
 
   if (val == NULL)
     return NULL;
+
   /* True constants represent themselves.  */
   if (TREE_CODE_CLASS (TREE_CODE (val)) == 'c')
     return val;
+
   /* Invariants are still represented by values, since they may be
      more than a single _CST node.  */  
   if (TREE_CONSTANT (val))
@@ -899,6 +902,7 @@ find_leader (value_set_t set, tree val)
 	    return node->expr;
 	}
     }
+
   return NULL;
 }
 
@@ -1241,7 +1245,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
       
     }
   v = get_value_handle (expr);
-  vn_add (name, v);
+  vn_add (name, v, NULL);
   insert_into_set (NEW_SETS (block), name);
   value_insert_into_set (AVAIL_OUT (block), name);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1406,7 +1410,7 @@ insert_aux (basic_block block)
 			  temp = create_tmp_var (type, "prephitmp");
 			  add_referenced_tmp_var (temp);
 			  temp = create_phi_node (temp, block);
-			  vn_add (PHI_RESULT (temp), val);
+			  vn_add (PHI_RESULT (temp), val, NULL);
 
 #if 0
 			  if (!set_contains_value (AVAIL_OUT (block), val))
@@ -1476,41 +1480,95 @@ insert (void)
 }
 
 
-/* Return true if EXPR has no defining statement in this procedure,
-   *AND* isn't a live-on-entry parameter.  */
+/* Return true if VAR is an SSA variable with no defining statement in
+   this procedure, *AND* isn't a live-on-entry parameter.  */
 
 static bool
 is_undefined_value (tree expr)
-{  
-#ifdef ENABLE_CHECKING
-  /* We should never be handed DECL's  */
-  if (DECL_P (expr))
+{
+  return (TREE_CODE (expr) == SSA_NAME
+          && IS_EMPTY_STMT (SSA_NAME_DEF_STMT (expr))
+	  /* PARM_DECLs and hard registers are always defined.  */
+	  && TREE_CODE (SSA_NAME_VAR (expr)) != PARM_DECL
+	  && !DECL_HARD_REGISTER (SSA_NAME_VAR (expr)));
+}
+
+
+/* Given an SSA variable VAR and an expression EXPR, compute the value
+   number for EXPR and create a value handle (VAL) for it.  If VAR and
+   EXPR are not the same, associate VAL with VAR.  Finally, add VAR to
+   S1 and its value handle to S2.
+
+   VUSES represent the virtual use operands associated with EXPR (if
+   any). They are used when computing the hash value for EXPR.  */
+
+static inline void
+add_to_sets (tree var, tree expr, vuse_optype vuses, value_set_t s1,
+	     value_set_t s2)
+{
+  tree val = vn_lookup_or_add (expr, vuses);
+
+  /* VAR and EXPR may be the same when processing statements for which
+     we are not computing value numbers (e.g., non-assignments, or
+     statements that make aliased stores).  In those cases, we are
+     only interested in making VAR available as its own value.  */
+  if (var != expr)
+    vn_add (var, val, vuses);
+
+  insert_into_set (s1, var);
+  value_insert_into_set (s2, var);
+}
+
+
+/* Given a unary or binary expression EXPR, create and return a new
+   expresion with the same structure as EXPR but with its operands
+   replaced with the value handles of each of the operands of EXPR.
+   Insert EXPR's operands into the EXP_GEN set for BLOCK.
+
+   VUSES represent the virtual use operands associated with EXPR (if
+   any). They are used when computing the hash value for EXPR.  */
+
+static inline tree
+create_value_expr_from (tree expr, basic_block block, vuse_optype vuses)
+{
+  int i;
+  enum tree_code code = TREE_CODE (expr);
+  tree vexpr;
+
+#if defined ENABLE_CHECKING
+  if (TREE_CODE_CLASS (code) != '1'
+      && TREE_CODE_CLASS (code) != '2')
     abort ();
 #endif
 
-  if (TREE_CODE (expr) == SSA_NAME)
+  if (TREE_CODE_CLASS (code) == '1')
+    vexpr = pool_alloc (unary_node_pool);
+  else
+    vexpr = pool_alloc (binary_node_pool);
+
+  memcpy (vexpr, expr, tree_size (expr));
+
+  for (i = 0; i < TREE_CODE_LENGTH (code); i++)
     {
-      /* XXX: Is this the correct test?  */
-      if (TREE_CODE (SSA_NAME_VAR (expr)) == PARM_DECL)
-	return false;
-      if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (expr)))
-	return true;
+      tree op = TREE_OPERAND (expr, i);
+      tree val = vn_lookup_or_add (op, vuses);
+      if (!is_undefined_value (op))
+	value_insert_into_set (EXP_GEN (block), op);
+      TREE_OPERAND (vexpr, i) = val;
     }
 
-  return false;
+  return vexpr;
 }
+
 
 /* Compute the AVAIL set for BLOCK.
    This function performs value numbering of the statements in BLOCK. 
    The AVAIL sets are built from information we glean while doing this
-   value numbering, since the AVAIL sets contain only entry per
+   value numbering, since the AVAIL sets contain only one entry per
    value.
-
    
    AVAIL_IN[BLOCK] = AVAIL_OUT[dom(BLOCK)].
-   AVAIL_OUT[BLOCK] = AVAIL_IN[BLOCK] U PHI_GEN[BLOCK] U
-   TMP_GEN[BLOCK].
-*/
+   AVAIL_OUT[BLOCK] = AVAIL_IN[BLOCK] U PHI_GEN[BLOCK] U TMP_GEN[BLOCK].  */
 
 static void
 compute_avail (basic_block block)
@@ -1530,7 +1588,7 @@ compute_avail (basic_block block)
 	    {
 	      tree val;
 	      tree def = default_def (param);
-	      val = vn_lookup_or_add (def);
+	      val = vn_lookup_or_add (def, NULL);
 	      insert_into_set (TMP_GEN (block), def);
 	      value_insert_into_set (AVAIL_OUT (block), def);
 	    }
@@ -1542,169 +1600,91 @@ compute_avail (basic_block block)
       tree stmt, phi;
       basic_block dom;
 
+      /* Initially, the set of available values in BLOCK is that of
+	 its immediate dominator.  */
       dom = get_immediate_dominator (CDI_DOMINATORS, block);
       if (dom)
 	set_copy (AVAIL_OUT (block), AVAIL_OUT (dom));
 
+      /* Generate values for PHI nodes.  */
       for (phi = phi_nodes (block); phi; phi = PHI_CHAIN (phi))
-	{
-	  /* Ignore virtual PHIs until we can do PRE on expressions
-	     with virtual operands.  */
-	  if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
-	    continue;
+	add_to_sets (PHI_RESULT (phi), PHI_RESULT (phi), NULL,
+		     PHI_GEN (block), AVAIL_OUT (block));
 
-	  vn_lookup_or_add (PHI_RESULT (phi));
-	  value_insert_into_set (AVAIL_OUT (block), PHI_RESULT (phi));
-	  insert_into_set (PHI_GEN (block), PHI_RESULT (phi));
-	}
-
+      /* Now compute value numbers and populate value sets with all
+	 the expressions computed in BLOCK.  */
       for (bsi = bsi_start (block); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
-	  tree op0, op1;
+	  stmt_ann_t ann;
+	  size_t j;
+
 	  stmt = bsi_stmt (bsi);
+	  ann = stmt_ann (stmt);
 	  get_stmt_operands (stmt);
-	  
-	  if (NUM_VUSES (STMT_VUSE_OPS (stmt))
-	      || NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt))
-	      || NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt))
-	      || stmt_ann (stmt)->has_volatile_ops)
+
+	  /* We are only interested in assignments of the form
+	     X_i = EXPR, where EXPR represents an "interesting"
+	     computation, it has no volatile operands and X_i
+	     doesn't flow through an abnormal edge.  */
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && !ann->has_volatile_ops
+	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
+	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (stmt, 0)))
 	    {
-	      size_t j;
-	      for (j = 0; j < NUM_DEFS (STMT_DEF_OPS (stmt)); j++)
+	      tree lhs = TREE_OPERAND (stmt, 0);
+	      tree rhs = TREE_OPERAND (stmt, 1);
+	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
+
+	      STRIP_USELESS_TYPE_CONVERSION (rhs);
+
+	      if (TREE_CODE_CLASS (TREE_CODE (rhs)) == '1'
+		  || TREE_CODE_CLASS (TREE_CODE (rhs)) == '2')
 		{
-		  tree def = DEF_OP (STMT_DEF_OPS (stmt), j);
-		  vn_lookup_or_add (def);
-		  insert_into_set (TMP_GEN (block), def);
-		  value_insert_into_set (AVAIL_OUT (block), def);
+		  /* For binary and unary expressions, create a duplicate
+		     expression with the operands replaced with the value
+		     handles of the original RHS.  */
+		  tree newt = create_value_expr_from (rhs, block, vuses);
+		  add_to_sets (lhs, newt, vuses, TMP_GEN (block),
+			       AVAIL_OUT (block));
+		  value_insert_into_set (EXP_GEN (block), newt);
+		  continue;
 		}
-	      for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
+	      else if (TREE_CODE (rhs) == SSA_NAME
+		       || is_gimple_min_invariant (rhs))
 		{
-		  tree use = USE_OP (STMT_USE_OPS (stmt), j);
-		  if (TREE_CODE (use) == SSA_NAME)
-		    {
-		      vn_lookup_or_add (use);
-		      insert_into_set (TMP_GEN (block), use);
-		      value_insert_into_set (AVAIL_OUT (block), use);
-		    }
+		  /* Compute a value number for the RHS of the statement
+		    and add its value to the AVAIL_OUT set for the block.
+		    Add the LHS to TMP_GEN.  */
+		  add_to_sets (lhs, rhs, vuses, TMP_GEN (block), 
+			       AVAIL_OUT (block));
+
+		  if (TREE_CODE (rhs) == SSA_NAME
+		      && !is_undefined_value (rhs))
+		    value_insert_into_set (EXP_GEN (block), rhs);
+		  continue;
 		}
-	      continue;
 	    }
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR)
+	  /* For any other statement that we don't recognize, simply
+	     make the names generated by the statement available in
+	     AVAIL_OUT and TMP_GEN.  */
+	  for (j = 0; j < NUM_DEFS (STMT_DEF_OPS (stmt)); j++)
 	    {
-	      op0 = TREE_OPERAND (stmt, 0);
-	      if (TREE_CODE (op0) != SSA_NAME)
-		continue;
-	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
-		continue;
-	      op1 = TREE_OPERAND (stmt, 1);
-	      STRIP_USELESS_TYPE_CONVERSION (op1);
-	      if (is_gimple_min_invariant (op1))
-		{
-		  vn_add (op0, vn_lookup_or_add (op1));
-		  insert_into_set (TMP_GEN (block), op0);
-		  value_insert_into_set (AVAIL_OUT (block), op0);
-		}
-	      else if (TREE_CODE_CLASS (TREE_CODE (op1)) == '2')
-		{
-		  tree bop1, bop2;
-		  tree val, val1, val2;
-		  tree newt;
-		  bop1 = TREE_OPERAND (op1, 0);
-		  bop2 = TREE_OPERAND (op1, 1);
-		  val1 = vn_lookup_or_add (bop1);
-		  val2 = vn_lookup_or_add (bop2);
- 
-		  newt = pool_alloc (binary_node_pool);
-		  memcpy (newt, op1, tree_size (op1));
-		  TREE_OPERAND (newt, 0) = val1;
-		  TREE_OPERAND (newt, 1) = val2;
-		  val = vn_lookup_or_add (newt);
-		  vn_add (op0, val);
-		  if (!is_undefined_value (bop1))
-		    value_insert_into_set (EXP_GEN (block), bop1);
-		  if (!is_undefined_value (bop2))
-		    value_insert_into_set (EXP_GEN (block), bop2);
-		  value_insert_into_set (EXP_GEN (block), newt);
-		  insert_into_set (TMP_GEN (block), op0);
-		  value_insert_into_set (AVAIL_OUT (block), op0);  
-		}
-	      else if (TREE_CODE_CLASS (TREE_CODE (op1)) == '1'
-		       && !is_gimple_cast (op1))
-		{
-		  tree uop;
-		  tree val, val1;
-		  tree newt;
-		  uop = TREE_OPERAND (op1, 0);
-		  val1 = vn_lookup_or_add (uop);
-		  newt = pool_alloc (unary_node_pool);
-		  memcpy (newt, op1, tree_size (op1));
-		  TREE_OPERAND (newt, 0) = val1;
-		  val = vn_lookup_or_add (newt);
-		  vn_add (op0, val);
-		  if (!is_undefined_value (uop))
-		    value_insert_into_set (EXP_GEN (block), uop);
-		  value_insert_into_set (EXP_GEN (block), newt);
-		  insert_into_set (TMP_GEN (block), op0);
-		  value_insert_into_set (AVAIL_OUT (block), op0);
-		}
-	      else if (TREE_CODE (op1) == SSA_NAME)
-		{
-		  tree val = vn_lookup_or_add (op1);
-		  vn_add (op0, val);
-		  if (!is_undefined_value (op1))
-		    value_insert_into_set (EXP_GEN (block), op1);
-		  insert_into_set (TMP_GEN (block), op0);
-		  value_insert_into_set (AVAIL_OUT (block), op0);
-		}
-	      else
-		{
-		  size_t j;
-		  for (j = 0; j < NUM_DEFS (STMT_DEF_OPS (stmt)); j++)
-		    {
-		      tree def = DEF_OP (STMT_DEF_OPS (stmt), j);
-		      vn_lookup_or_add (def);
-		      insert_into_set (TMP_GEN (block), def);
-		      value_insert_into_set (AVAIL_OUT (block), def);
-		      if (def != op0)
-			abort ();
-		    }
-		  for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
-		    {
-		      tree use = USE_OP (STMT_USE_OPS (stmt), j);
-		      if (TREE_CODE (use) == SSA_NAME)
-			{
-			  vn_lookup_or_add (use);
-			  insert_into_set (TMP_GEN (block), use);
-			  value_insert_into_set (AVAIL_OUT (block), use);
-			}
-		    }
-		}
+	      tree def = DEF_OP (STMT_DEF_OPS (stmt), j);
+	      add_to_sets (def, def, NULL, TMP_GEN (block),
+			    AVAIL_OUT (block));
 	    }
-	  else
+
+	  for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
 	    {
-	      size_t j;
-	      for (j = 0; j < NUM_DEFS (STMT_DEF_OPS (stmt)); j++)
-		{
-		  tree def = DEF_OP (STMT_DEF_OPS (stmt), j);
-		  vn_lookup_or_add (def);
-		  insert_into_set (TMP_GEN (block), def);
-		  value_insert_into_set (AVAIL_OUT (block), def);
-		}
-	      for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
-		{
-		  tree use = USE_OP (STMT_USE_OPS (stmt), j);
-		  if (TREE_CODE (use) == SSA_NAME)
-		    {
-		      vn_lookup_or_add (use);
-		      insert_into_set (TMP_GEN (block), use);
-		      value_insert_into_set (AVAIL_OUT (block), use);
-		    }
-		}
+	      tree use = USE_OP (STMT_USE_OPS (stmt), j);
+	      add_to_sets (use, use, NULL, TMP_GEN (block),
+			    AVAIL_OUT (block));
 	    }
 	}
     }
 
+  /* Compute available sets for the dominator children of BLOCK.  */
   for (son = first_dom_son (CDI_DOMINATORS, block);
        son;
        son = next_dom_son (CDI_DOMINATORS, son))
@@ -1727,77 +1707,70 @@ eliminate (void)
         {
           tree stmt = bsi_stmt (i);
 
-          if (NUM_VUSES (STMT_VUSE_OPS (stmt))
-              || NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt))
-	      || NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt))
-	      || stmt_ann (stmt)->has_volatile_ops)
-            continue;
-
-          /* Lookup the RHS of the expression, see if we have an
-	     available computation for it. If so, replace the RHS with
+	  /* Lookup the RHS of the expression, see if we have an
+	     available computation for it.  If so, replace the RHS with
 	     the available computation.  */
-	  if (TREE_CODE (stmt) == MODIFY_EXPR)
-            {
-              tree t = TREE_OPERAND (stmt, 0);
-              tree expr = TREE_OPERAND (stmt, 1);
-              tree sprime;
-	      /* There is no point in eliminating NOP_EXPR, it isn't
-		 supposed to generate any code.  */
-	      if (TREE_CODE (expr) == NOP_EXPR
-		  || (TREE_CODE_CLASS (TREE_CODE (expr)) != '2' 
-		   && TREE_CODE_CLASS (TREE_CODE (expr)) != '1'))
-		continue;
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
+	      && TREE_CODE (TREE_OPERAND (stmt ,1)) != SSA_NAME
+	      && !is_gimple_min_invariant (TREE_OPERAND (stmt, 1))
+	      && !stmt_ann (stmt)->has_volatile_ops)
+	    {
+	      tree lhs = TREE_OPERAND (stmt, 0);
+	      tree *rhs_p = &TREE_OPERAND (stmt, 1);
+	      tree sprime;
+	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
 
-	      sprime = find_leader (AVAIL_OUT (b), vn_lookup (t));
-              if (sprime 
-		  && sprime != t 
-		  && may_propagate_copy (sprime, TREE_OPERAND (stmt, 1)))
-                {
+	      sprime = find_leader (AVAIL_OUT (b), vn_lookup (lhs, vuses));
+	      if (sprime 
+		  && sprime != lhs
+		  && (TREE_CODE (*rhs_p) != SSA_NAME
+		      || may_propagate_copy (*rhs_p, sprime)))
+		{
+		  if (sprime == *rhs_p)
+		    abort ();
+
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file, "Replaced ");
-		      print_generic_expr (dump_file, expr, 0);
+		      print_generic_expr (dump_file, *rhs_p, 0);
 		      fprintf (dump_file, " with ");
 		      print_generic_expr (dump_file, sprime, 0);
 		      fprintf (dump_file, " in ");
 		      print_generic_stmt (dump_file, stmt, 0);
 		    }
 		  pre_stats.eliminations++;
-                  propagate_tree_value (&TREE_OPERAND (stmt, 1), sprime);
-                  modify_stmt (stmt);
-                }
-            }
+		  propagate_tree_value (rhs_p, sprime);
+		  modify_stmt (stmt);
+		}
+	    }
         }
     }
 }
 
 
-/* Main entry point to the SSA-PRE pass.
-
-   PHASE indicates which dump file from the DUMP_FILES array to use when
-   dumping debugging information.  */
+/* Initialize data structures used by PRE.  */
 
 static void
-execute_pre (void)
+init_pre (void)
 {
   size_t tsize;
   basic_block bb;
+
+  vn_init ();
   memset (&pre_stats, 0, sizeof (pre_stats));
   FOR_ALL_BB (bb)
-    {
-      bb->aux = xcalloc (1, sizeof (struct bb_value_sets));
-    }
+    bb->aux = xcalloc (1, sizeof (struct bb_value_sets));
+
   phi_translate_table = htab_create (511, expr_pred_trans_hash,
-				     expr_pred_trans_eq,
-				     free);
+				     expr_pred_trans_eq, free);
   value_set_pool = create_alloc_pool ("Value sets",
 				      sizeof (struct value_set), 30);
   value_set_node_pool = create_alloc_pool ("Value set nodes",
-				       sizeof (struct value_set_node), 30);
+				           sizeof (struct value_set_node), 30);
   calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-  tsize = tree_size (build (PLUS_EXPR, void_type_node, NULL_TREE,
-			    NULL_TREE));
+  tsize = tree_size (build (PLUS_EXPR, void_type_node, NULL_TREE, NULL_TREE));
   binary_node_pool = create_alloc_pool ("Binary tree nodes", tsize, 30);
   tsize = tree_size (build1 (NEGATE_EXPR, void_type_node, NULL_TREE));
   unary_node_pool = create_alloc_pool ("Unary tree nodes", tsize, 30);
@@ -1809,39 +1782,15 @@ execute_pre (void)
       TMP_GEN (bb) = set_new (false);
       AVAIL_OUT (bb) = set_new (true);
     }
+}
 
-  compute_avail (ENTRY_BLOCK_PTR);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      FOR_ALL_BB (bb)
-	{
-	  print_value_set (dump_file, EXP_GEN (bb), "exp_gen", bb->index);
-	  print_value_set (dump_file, TMP_GEN (bb), "tmp_gen", bb->index);
-	  print_value_set (dump_file, AVAIL_OUT (bb), "avail_out", bb->index);
-	}
-    }
+/* Deallocate data structures used by PRE.  */
 
-  /* Insert can get quite slow on an incredibly large number of basic
-     blocks due to some quadratic behavior.  Until this behavior is
-     fixed, don't run it when he have an incredibly large number of
-     bb's.  If we aren't going to run insert, there is no point in
-     computing ANTIC, either, even though it's plenty fast.  */
- 
-  if (n_basic_blocks < 4000)
-    {
-      compute_antic ();
-      
-      insert ();
-    }
-  eliminate ();
-  
-  if (dump_file && (dump_flags & TDF_STATS))
-    {
-      fprintf (dump_file, "Insertions:%d\n", pre_stats.insertions);
-      fprintf (dump_file, "New PHIs:%d\n", pre_stats.phis);
-      fprintf (dump_file, "Eliminated:%d\n", pre_stats.eliminations);
-    }
+static void
+fini_pre (void)
+{
+  basic_block bb;
 
   free_alloc_pool (value_set_pool);
   free_alloc_pool (value_set_node_pool);
@@ -1855,6 +1804,65 @@ execute_pre (void)
       bb->aux = NULL;
     }
   free_dominance_info (CDI_POST_DOMINATORS);
+  vn_delete ();
+}
+
+
+/* Main entry point to the SSA-PRE pass.  DO_FRE is true if the caller
+   only wants to do full redundancy elimination.  */
+
+static void
+execute_pre (bool do_fre)
+{
+  init_pre ();
+
+  /* Collect and value number expressions computed in each basic
+     block.  */
+  compute_avail (ENTRY_BLOCK_PTR);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      basic_block bb;
+
+      FOR_ALL_BB (bb)
+	{
+	  print_value_set (dump_file, EXP_GEN (bb), "exp_gen", bb->index);
+	  print_value_set (dump_file, TMP_GEN (bb), "tmp_gen", bb->index);
+	  print_value_set (dump_file, AVAIL_OUT (bb), "avail_out", bb->index);
+	}
+    }
+
+  /* Insert can get quite slow on an incredibly large number of basic
+     blocks due to some quadratic behavior.  Until this behavior is
+     fixed, don't run it when he have an incredibly large number of
+     bb's.  If we aren't going to run insert, there is no point in
+     computing ANTIC, either, even though it's plenty fast.  */
+  if (!do_fre && n_basic_blocks < 4000)
+    {
+      compute_antic ();
+      insert ();
+    }
+
+  /* Remove all the redundant expressions.  */
+  eliminate ();
+  
+  if (dump_file && (dump_flags & TDF_STATS))
+    {
+      fprintf (dump_file, "Insertions:%d\n", pre_stats.insertions);
+      fprintf (dump_file, "New PHIs:%d\n", pre_stats.phis);
+      fprintf (dump_file, "Eliminated:%d\n", pre_stats.eliminations);
+    }
+
+  fini_pre ();
+}
+
+
+/* Gate and execute functions for PRE.  */
+
+static void
+do_pre (void)
+{
+  execute_pre (false);
 }
 
 static bool
@@ -1867,11 +1875,42 @@ struct tree_opt_pass pass_pre =
 {
   "pre",				/* name */
   gate_pre,				/* gate */
-  execute_pre,				/* execute */
+  do_pre,				/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_PRE,				/* tv_id */
+  PROP_no_crit_edges | PROP_cfg | PROP_ssa,/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_ggc_collect | TODO_verify_ssa /* todo_flags_finish */
+};
+
+
+/* Gate and execute functions for FRE.  */
+
+static void
+do_fre (void)
+{
+  execute_pre (true);
+}
+
+static bool
+gate_fre (void)
+{
+  return flag_tree_fre != 0;
+}
+
+struct tree_opt_pass pass_fre =
+{
+  "fre",				/* name */
+  gate_fre,				/* gate */
+  do_fre,				/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_FRE,				/* tv_id */
   PROP_no_crit_edges | PROP_cfg | PROP_ssa,/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */

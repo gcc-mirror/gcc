@@ -38,6 +38,39 @@ typedef struct basic_block_def *basic_block;
 #endif
 
 /*---------------------------------------------------------------------------
+		      Attributes for SSA_NAMEs.
+  
+  NOTE: These structures are stored in struct tree_ssa_name
+  but are only used by the tree optimizers, so it makes better sense
+  to declare them here to avoid recompiling unrelated files when
+  making changes.
+---------------------------------------------------------------------------*/
+
+/* Aliasing information for SSA_NAMEs representing pointer variables.  */
+struct ptr_info_def GTY(())
+{
+  /* Nonzero if points-to analysis couldn't determine where this pointer
+     is pointing to.  */
+  unsigned int pt_anything : 1;
+
+  /* Nonzero if this pointer is the result of a call to malloc.  */
+  unsigned int pt_malloc : 1;
+
+  /* Nonzero if the value of this pointer escapes the current function.  */
+  unsigned int value_escapes_p : 1;
+
+  /* Set of variables that this pointer may point to.  */
+  bitmap pt_vars;
+
+  /* If this pointer has been dereferenced, and points-to information is
+     more precise than type-based aliasing, indirect references to this
+     pointer will be represented by this memory tag, instead of the type
+     tag computed by TBAA.  */
+  tree name_mem_tag;
+};
+
+
+/*---------------------------------------------------------------------------
 		   Tree annotations stored in tree_common.ann
 ---------------------------------------------------------------------------*/
 enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, STMT_ANN };
@@ -554,8 +587,6 @@ extern void debug_dominator_optimization_stats (void);
 extern void propagate_value (use_operand_p, tree);
 extern void propagate_tree_value (tree *, tree);
 extern void replace_exp (use_operand_p, tree);
-extern bool cprop_into_stmt (tree, varray_type);
-extern void cprop_into_successor_phis (basic_block, varray_type, bitmap);
 
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);
@@ -578,12 +609,12 @@ void print_value_expressions (FILE *, tree);
 
 
 /* In tree-vn.c  */
-bool expressions_equal_p (tree e1, tree e2);
+bool expressions_equal_p (tree, tree);
 tree get_value_handle (tree);
-hashval_t vn_compute (tree, hashval_t);
-tree vn_lookup_or_add (tree);
-void vn_add (tree, tree);
-tree vn_lookup (tree);
+hashval_t vn_compute (tree, hashval_t, vuse_optype);
+tree vn_lookup_or_add (tree, vuse_optype);
+void vn_add (tree, tree, vuse_optype);
+tree vn_lookup (tree, vuse_optype);
 void vn_init (void);
 void vn_delete (void);
 

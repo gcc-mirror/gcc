@@ -700,6 +700,9 @@ enum pta_type
   };
 extern enum pta_type flag_tree_points_to;
 
+/* Enable FRE (Full Redundancy Elimination) on trees.  */
+extern int flag_tree_fre;
+
 /* Nonzero means put zero initialized data in the bss section.  */
 extern int flag_zero_initialized_in_bss;
 
