@@ -1,3 +1,10 @@
+Sat May  6 06:25:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (get_subtarget): New function.
+	(force_operand, expand_expr, do_store_flag): Use it.
+
+	* toplev.c (compile_file): Don't take strlen of NAME if null.
+
 2000-05-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* xcoffout.c (xcoff_current_include_file,
