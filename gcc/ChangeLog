@@ -2,7 +2,8 @@
 
 	* calls.c (expand_call): Don't emit reg notes for a sibcall.
 
-2000-05-01  Richard Henderson  <rth@cygnus.com>
+	* flow.c (calculate_global_regs_live): Skip for_each_successor_phi
+	if not in SSA form.
 
 	* ifcvt.c (if_convert): Only verify_flow_info if ENABLE_CHECKING.
 
