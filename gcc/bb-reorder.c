@@ -103,7 +103,6 @@ typedef struct reorder_block_def {
   int flags;
   int index;
   basic_block add_jump;
-  edge succ;
   rtx eff_head;
   rtx eff_end;
   scope scope;
@@ -114,7 +113,6 @@ static struct reorder_block_def rbd_init
     0,			/* flags */
     0,			/* index */
     NULL,		/* add_jump */
-    NULL,		/* succ */
     NULL_RTX,		/* eff_head */
     NULL_RTX,		/* eff_end */
     NULL		/* scope */
@@ -133,9 +131,6 @@ static struct reorder_block_def rbd_init
 #define REORDER_BLOCK_ADD_JUMP(bb) \
   ((reorder_block_def) (bb)->aux)->add_jump
 
-#define REORDER_BLOCK_SUCC(bb) \
-  ((reorder_block_def) (bb)->aux)->succ
-
 #define REORDER_BLOCK_EFF_HEAD(bb) \
   ((reorder_block_def) (bb)->aux)->eff_head
 
@@ -149,13 +144,9 @@ static struct reorder_block_def rbd_init
 static int reorder_index;
 static basic_block reorder_last_visited;
 
-enum reorder_skip_type {REORDER_SKIP_BEFORE, REORDER_SKIP_AFTER,
-			REORDER_SKIP_BLOCK_END};
-
 
 /* Local function prototypes.  */
-static rtx skip_insns_between_block	PARAMS ((basic_block,
-						 enum reorder_skip_type));
+static rtx skip_insns_after_block	PARAMS ((basic_block));
 static basic_block get_common_dest	PARAMS ((basic_block, basic_block));
 static basic_block chain_reorder_blocks	PARAMS ((edge, basic_block));
 static void make_reorder_chain		PARAMS ((basic_block));
@@ -176,113 +167,52 @@ static void free_scope_forest		PARAMS ((scope_forest_info *));
 void dump_scope_forest			PARAMS ((scope_forest_info *));
 static void dump_scope_forest_1		PARAMS ((scope, int));
 
-/* Skip over insns BEFORE or AFTER BB which are typically associated with
-   basic block BB.  */
+/* Skip over inter-block insns occurring after BB which are typically
+   associated with BB (e.g., barriers). If there are any such insns,
+   we return the last one. Otherwise, we return the end of BB.  */
 
 static rtx
-skip_insns_between_block (bb, skip_type)
+skip_insns_after_block (bb)
      basic_block bb;
-     enum reorder_skip_type skip_type;
 {
   rtx insn, last_insn;
 
-  if (skip_type == REORDER_SKIP_BEFORE)
+  last_insn = bb->end;
+
+  if (bb == EXIT_BLOCK_PTR)
+    return 0;
+
+  for (insn = NEXT_INSN (bb->end); 
+       insn;
+       last_insn = insn, insn = NEXT_INSN (insn))
     {
-      if (bb == ENTRY_BLOCK_PTR)
-	return 0;
+      if (bb->index + 1 != n_basic_blocks
+	  && insn == BASIC_BLOCK (bb->index + 1)->head)
+	break;
 
-      last_insn = bb->head;
-      for (insn = PREV_INSN (bb->head);
-	   insn && insn != BASIC_BLOCK (bb->index - 1)->end;
-	   last_insn = insn, insn = PREV_INSN (insn))
+      if (GET_CODE (insn) == BARRIER
+	  || GET_CODE (insn) == JUMP_INSN 
+	  || (GET_CODE (insn) == NOTE
+	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
+		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)))
+	continue;
+
+      if (GET_CODE (insn) == CODE_LABEL
+	  && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
+	  && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
+	      || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
 	{
-	  if (NEXT_INSN (insn) != last_insn)
-	    break;
-
-	  if (GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_END)
-	    continue;
-	  
-	  break;
-	}
-    }
-  else
-    {
-      last_insn = bb->end;
-
-      if (bb == EXIT_BLOCK_PTR)
-	return 0;
-
-      for (insn = NEXT_INSN (bb->end); 
-	   insn;
-	   last_insn = insn, insn = NEXT_INSN (insn))
-	{
-	  if (bb->index + 1 != n_basic_blocks
-	      && insn == BASIC_BLOCK (bb->index + 1)->head)
-	    break;
-
-	  if (GET_CODE (insn) == BARRIER
-	      || GET_CODE (insn) == JUMP_INSN 
-	      || (GET_CODE (insn) == NOTE
-		  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
-		      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)))
-	    continue;
-
-	  if (GET_CODE (insn) == CODE_LABEL
-	      && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
-	      && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
-		  || GET_CODE (PATTERN
-			       (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
-	    {
-	      insn = NEXT_INSN (insn);
-	      continue;
-	    }
-
-	  /* Skip to next non-deleted insn.  */
-	  if (GET_CODE (insn) == NOTE
-	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED
-		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))
-	    continue; 
-
-	  break;
+	  insn = NEXT_INSN (insn);
+	  continue;
 	}
 
-      if (skip_type == REORDER_SKIP_BLOCK_END)
-	{
-	  int found_block_end = 0;
+      /* Skip to next non-deleted insn.  */
+      if (GET_CODE (insn) == NOTE
+	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))
+	continue; 
 
-	  for (; insn; last_insn = insn, insn = NEXT_INSN (insn))
-	    {
-	      if (bb->index + 1 != n_basic_blocks
-		  && insn == BASIC_BLOCK (bb->index + 1)->head)
-		break;
-
-	      if (GET_CODE (insn) == NOTE
-		  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-		{
-		  found_block_end = 1;
-		  continue;
-		}
-
-	      if (GET_CODE (insn) == NOTE
-		  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
-		continue;
-
-	      if (GET_CODE (insn) == NOTE
-		  && NOTE_LINE_NUMBER (insn) >= 0
-		  && NEXT_INSN (insn)
-		  && GET_CODE (NEXT_INSN (insn)) == NOTE
-		  && (NOTE_LINE_NUMBER (NEXT_INSN (insn))
-		      == NOTE_INSN_BLOCK_END))
-		continue;
-	      break;
-	    }
-
-	  if (! found_block_end)
-	    last_insn = 0;
-	}
+      break;
     }
 
   return last_insn;
@@ -566,8 +496,6 @@ make_reorder_chain (bb)
       if (REORDER_BLOCK_FLAGS (e->dest) & REORDER_BLOCK_VISITED)
 	REORDER_BLOCK_FLAGS (e->dest) &= ~REORDER_BLOCK_HEAD;
 	
-      REORDER_BLOCK_SUCC (bb) = e;
-
       visited_edge = e->dest;
 
       reorder_last_visited = chain_reorder_blocks (e, bb);
@@ -1410,8 +1338,7 @@ reorder_basic_blocks ()
   for (i = 0; i < n_basic_blocks; i++)
     {
       basic_block bbi = BASIC_BLOCK (i);
-      REORDER_BLOCK_EFF_END (bbi)
-	= skip_insns_between_block (bbi, REORDER_SKIP_AFTER);
+      REORDER_BLOCK_EFF_END (bbi) = skip_insns_after_block (bbi);
       if (i == 0)
 	REORDER_BLOCK_EFF_HEAD (bbi) = get_insns ();
       else 
