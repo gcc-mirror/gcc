@@ -1,3 +1,8 @@
+Sat Aug  7 17:09:36 1999  Richard Henderson  <rth@cygnus.com>
+
+	* global.c (build_insn_chain): Use EXECUTE_IF_SET_IN_REG_SET
+	to invert loops.  Simplify block scanning.
+
 Sat Aug  7 02:11:13 1999  Bernd Schmidt <bernds@cygnus.co.uk>
 
 	* gcse.c (hash_scan_set): Treat SYMBOL_REFs like CONST_INTs.

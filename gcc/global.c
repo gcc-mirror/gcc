@@ -271,7 +271,7 @@ static void set_preference	PROTO((rtx, rtx));
 static void dump_conflicts	PROTO((FILE *));
 static void reg_becomes_live	PROTO((rtx, rtx));
 static void reg_dies		PROTO((int, enum machine_mode));
-static void build_insn_chain	PROTO((rtx));
+static void build_insn_chain	PROTO((void));
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
    FILE is a file to output debugging information on,
@@ -578,7 +578,7 @@ global_alloc (file)
   if (n_basic_blocks > 0)
 #endif
     {
-      build_insn_chain (get_insns ());
+      build_insn_chain ();
       retval = reload (get_insns (), 1, file);
     }
 
@@ -1667,96 +1667,88 @@ reg_dies (regno, mode)
 /* Walk the insns of the current function and build reload_insn_chain,
    and record register life information.  */
 static void
-build_insn_chain (first)
-     rtx first;
+build_insn_chain ()
 {
   struct insn_chain **p = &reload_insn_chain;
   struct insn_chain *prev = 0;
-  int b = 0;
+  int b;
 
   live_relevant_regs = ALLOCA_REG_SET ();
 
-  for (; first; first = NEXT_INSN (first))
+  for (b = n_basic_blocks - 1; b >= 0; --b)
     {
-      struct insn_chain *c;
+      basic_block bb = BASIC_BLOCK (b);
+      rtx insn, end;
+      int i;
 
-      if (first == BLOCK_HEAD (b))
+      CLEAR_REG_SET (live_relevant_regs);
+
+      EXECUTE_IF_SET_IN_REG_SET (bb->global_live_at_start, 0, i,
 	{
-	  int i;
-	  CLEAR_REG_SET (live_relevant_regs);
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, i)
-		&& ! TEST_HARD_REG_BIT (eliminable_regset, i))
-	      SET_REGNO_REG_SET (live_relevant_regs, i);
+	  if ((i < FIRST_PSEUDO_REGISTER
+	       && ! TEST_HARD_REG_BIT (eliminable_regset, i))
+	      || (i >= FIRST_PSEUDO_REGISTER
+		  && reg_renumber[i] >= 0))
+	    SET_REGNO_REG_SET (live_relevant_regs, i);
+	});
 
-	  for (; i < max_regno; i++)
-	    if (reg_renumber[i] >= 0
-		&& REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, i))
-	      SET_REGNO_REG_SET (live_relevant_regs, i);
-	}
-
-      if (GET_CODE (first) != NOTE && GET_CODE (first) != BARRIER)
+      insn = bb->head, end = bb->end;
+      while (1)
 	{
-	  c = new_insn_chain ();
-	  c->prev = prev;
-	  prev = c;
-	  *p = c;
-	  p = &c->next;
-	  c->insn = first;
-	  c->block = b;
+	  struct insn_chain *c;
 
-	  COPY_REG_SET (c->live_before, live_relevant_regs);
-
-	  if (GET_RTX_CLASS (GET_CODE (first)) == 'i')
+	  if (GET_CODE (insn) != NOTE)
 	    {
-	      rtx link;
+	      c = new_insn_chain ();
+	      c->prev = prev;
+	      prev = c;
+	      *p = c;
+	      p = &c->next;
+	      c->insn = insn;
+	      c->block = b;
 
-	      /* Mark the death of everything that dies in this instruction.  */
+	      COPY_REG_SET (c->live_before, live_relevant_regs);
 
-	      for (link = REG_NOTES (first); link; link = XEXP (link, 1))
-		if (REG_NOTE_KIND (link) == REG_DEAD
-		    && GET_CODE (XEXP (link, 0)) == REG)
-		  reg_dies (REGNO (XEXP (link, 0)), GET_MODE (XEXP (link, 0)));
+	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+		{
+		  rtx link;
 
-	      /* Mark everything born in this instruction as live.  */
+		  /* Mark the death of everything that dies in this
+		     instruction.  */
+		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+		    if (REG_NOTE_KIND (link) == REG_DEAD
+			&& GET_CODE (XEXP (link, 0)) == REG)
+		      reg_dies (REGNO (XEXP (link, 0)),
+				GET_MODE (XEXP (link, 0)));
 
-	      note_stores (PATTERN (first), reg_becomes_live);
+		  /* Mark everything born in this instruction as live.  */
+		  note_stores (PATTERN (insn), reg_becomes_live);
+		}
+
+	      /* Remember which registers are live at the end of the insn,
+		 before killing those with REG_UNUSED notes.  */
+	      COPY_REG_SET (c->live_after, live_relevant_regs);
+
+	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+		{
+		  rtx link;
+
+		  /* Mark anything that is set in this insn and then unused
+		     as dying.  */
+		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+		    if (REG_NOTE_KIND (link) == REG_UNUSED
+			&& GET_CODE (XEXP (link, 0)) == REG)
+		      reg_dies (REGNO (XEXP (link, 0)),
+				GET_MODE (XEXP (link, 0)));
+		}
 	    }
 
-	  /* Remember which registers are live at the end of the insn, before
-	     killing those with REG_UNUSED notes.  */
-	  COPY_REG_SET (c->live_after, live_relevant_regs);
-
-	  if (GET_RTX_CLASS (GET_CODE (first)) == 'i')
-	    {
-	      rtx link;
-
-	      /* Mark anything that is set in this insn and then unused as dying.  */
-
-	      for (link = REG_NOTES (first); link; link = XEXP (link, 1))
-		if (REG_NOTE_KIND (link) == REG_UNUSED
-		    && GET_CODE (XEXP (link, 0)) == REG)
-		  reg_dies (REGNO (XEXP (link, 0)), GET_MODE (XEXP (link, 0)));
-	    }
-	}
-
-      if (first == BLOCK_END (b))
-	b++;
-
-      /* Stop after we pass the end of the last basic block.  Verify that
-	 no real insns are after the end of the last basic block.
-
-	 We may want to reorganize the loop somewhat since this test should
-	 always be the right exit test.  */
-      if (b == n_basic_blocks)
-	{
-	  for (first = NEXT_INSN (first) ; first; first = NEXT_INSN (first))
-	    if (GET_RTX_CLASS (GET_CODE (first)) == 'i'
-		&& GET_CODE (PATTERN (first)) != USE)
-	      abort ();
-	  break;
+	  if (insn == end)
+	    break;
+	  insn = NEXT_INSN (insn);
 	}
     }
+
   FREE_REG_SET (live_relevant_regs);
   *p = 0;
 }
