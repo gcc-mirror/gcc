@@ -437,7 +437,8 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *  - size_t      _M_map_size
  *  - iterator    _M_start, _M_finish
  *  
- *  map_size is at least 8.  map is an array of map_size pointers-to-"nodes".
+ *  map_size is at least 8.  %map is an array of map_size pointers-to-"nodes".
+ *  (The name has nothing to do with the std::map class.)
  *  
  *  A "node" has no specific type name as such, but it is referred to as
  *  "node" in this file.  It is a simple array-of-Tp.  If Tp is very large,
@@ -451,18 +452,18 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *  memory pool.  There are 20 hours left in the year; perhaps I can fix
  *  this before 2002.
  *  
- *  Not every pointer in the map array will point to a node.  If the initial
- *  number of elements in the deque is small, the /middle/ map pointers will
+ *  Not every pointer in the %map array will point to a node.  If the initial
+ *  number of elements in the deque is small, the /middle/ %map pointers will
  *  be valid, and the ones at the edges will be unused.  This same situation
- *  will arise as the map grows:  available map pointers, if any, will be on
- *  the ends.  As new nodes are created, only a subset of the map's pointers
+ *  will arise as the %map grows:  available %map pointers, if any, will be on
+ *  the ends.  As new nodes are created, only a subset of the %map's pointers
  *  need to be copied "outward".
  *
  *  Class invariants:
  * - For any nonsingular iterator i:
- *    - i.node points to a member of the map array.  (Yes, you read that
+ *    - i.node points to a member of the %map array.  (Yes, you read that
  *      correctly:  i.node does not actually point to a node.)  The member of
- *      the map array is what actually points to the node.
+ *      the %map array is what actually points to the node.
  *    - i.first == *(i.node)    (This points to the node (first Tp element).)
  *    - i.last  == i.first + node_size
  *    - i.cur is a pointer in the range [i.first, i.last).  NOTE:
@@ -478,10 +479,10 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *   that range are uninitialized storage.  Otherwise, [start.cur, start.last)
  *   and [finish.first, finish.cur) are initialized objects, and [start.first,
  *   start.cur) and [finish.cur, finish.last) are uninitialized storage.
- * - [map, map + map_size) is a valid, non-empty range.  
+ * - [%map, %map + map_size) is a valid, non-empty range.  
  * - [start.node, finish.node] is a valid range contained within 
- *   [map, map + map_size).  
- * - A pointer in the range [map, map + map_size) points to an allocated node
+ *   [%map, %map + map_size).  
+ * - A pointer in the range [%map, %map + map_size) points to an allocated node
  *   if and only if the pointer is in the range [start.node, finish.node].
  *
  *  Here's the magic:  nothing in deque is "aware" of the discontiguous storage!

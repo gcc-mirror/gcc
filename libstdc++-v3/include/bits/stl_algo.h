@@ -2756,8 +2756,15 @@ __result, __binary_pred, _IterType());
     }
 
 
-  // Binary search (lower_bound, upper_bound, equal_range, binary_search).
-
+  /**
+   *  @brief Finds the first position in which @a val could be inserted
+   *         without changing the ordering.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @return  An iterator pointing to the first element "not less than" @a val.
+   *  @ingroup binarysearch
+  */
   template<typename _ForwardIter, typename _Tp>
     _ForwardIter
     lower_bound(_ForwardIter __first, _ForwardIter __last, const _Tp& __val)
@@ -2793,6 +2800,19 @@ __result, __binary_pred, _IterType());
       return __first;
     }
 
+  /**
+   *  @brief Finds the first position in which @a val could be inserted
+   *         without changing the ordering.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @param  comp    A functor to use for comparisons.
+   *  @return  An iterator pointing to the first element "not less than" @a val.
+   *  @ingroup binarysearch
+   *
+   *  The comparison function should have the same effects on ordering as
+   *  the function used for the initial sort.
+  */
   template<typename _ForwardIter, typename _Tp, typename _Compare>
     _ForwardIter
     lower_bound(_ForwardIter __first, _ForwardIter __last,
@@ -2824,6 +2844,15 @@ __result, __binary_pred, _IterType());
       return __first;
     }
 
+  /**
+   *  @brief Finds the last position in which @a val could be inserted
+   *         without changing the ordering.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @return  An iterator pointing to the first element greater than @a val.
+   *  @ingroup binarysearch
+  */
   template<typename _ForwardIter, typename _Tp>
     _ForwardIter
     upper_bound(_ForwardIter __first, _ForwardIter __last, const _Tp& __val)
@@ -2856,6 +2885,19 @@ __result, __binary_pred, _IterType());
       return __first;
     }
 
+  /**
+   *  @brief Finds the last position in which @a val could be inserted
+   *         without changing the ordering.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @param  comp    A functor to use for comparisons.
+   *  @return  An iterator pointing to the first element greater than @a val.
+   *  @ingroup binarysearch
+   *
+   *  The comparison function should have the same effects on ordering as
+   *  the function used for the initial sort.
+  */
   template<typename _ForwardIter, typename _Tp, typename _Compare>
     _ForwardIter
     upper_bound(_ForwardIter __first, _ForwardIter __last,
@@ -2887,6 +2929,22 @@ __result, __binary_pred, _IterType());
       return __first;
     }
 
+  /**
+   *  @brief Finds the largest subrange in which @a val could be inserted
+   *         at any place in it without changing the ordering.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @return  An pair of iterators defining the subrange.
+   *  @ingroup binarysearch
+   *
+   *  This is equivalent to
+   *  @code
+   *    std::make_pair(lower_bound(first, last, val),
+   *                   upper_bound(first, last, val))
+   *  @endcode
+   *  but does not actually call those functions.
+  */
   template<typename _ForwardIter, typename _Tp>
     pair<_ForwardIter, _ForwardIter>
     equal_range(_ForwardIter __first, _ForwardIter __last, const _Tp& __val)
@@ -2925,6 +2983,23 @@ __result, __binary_pred, _IterType());
       return pair<_ForwardIter, _ForwardIter>(__first, __first);
     }
 
+  /**
+   *  @brief Finds the largest subrange in which @a val could be inserted
+   *         at any place in it without changing the ordering.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @param  comp    A functor to use for comparisons.
+   *  @return  An pair of iterators defining the subrange.
+   *  @ingroup binarysearch
+   *
+   *  This is equivalent to
+   *  @code
+   *    std::make_pair(lower_bound(first, last, val, comp),
+   *                   upper_bound(first, last, val, comp))
+   *  @endcode
+   *  but does not actually call those functions.
+  */
   template<typename _ForwardIter, typename _Tp, typename _Compare>
     pair<_ForwardIter, _ForwardIter>
     equal_range(_ForwardIter __first, _ForwardIter __last, const _Tp& __val,
@@ -2963,6 +3038,17 @@ __result, __binary_pred, _IterType());
       return pair<_ForwardIter, _ForwardIter>(__first, __first);
     }
 
+  /**
+   *  @brief Determines whether an element exists in a range.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @return  True if @a val (or its equivelent) is in [@a first,@a last ].
+   *  @ingroup binarysearch
+   *
+   *  Note that this does not actually return an iterator to @a val.  For
+   *  that, use std::find or a container's specialized find member functions.
+  */
   template<typename _ForwardIter, typename _Tp>
     bool
     binary_search(_ForwardIter __first, _ForwardIter __last,
@@ -2979,6 +3065,21 @@ __result, __binary_pred, _IterType());
       return __i != __last && !(__val < *__i);
     }
 
+  /**
+   *  @brief Determines whether an element exists in a range.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @param  comp    A functor to use for comparisons.
+   *  @return  True if @a val (or its equivelent) is in [@a first,@a last ].
+   *  @ingroup binarysearch
+   *
+   *  Note that this does not actually return an iterator to @a val.  For
+   *  that, use std::find or a container's specialized find member functions.
+   *
+   *  The comparison function should have the same effects on ordering as
+   *  the function used for the initial sort.
+  */
   template<typename _ForwardIter, typename _Tp, typename _Compare>
     bool
     binary_search(_ForwardIter __first, _ForwardIter __last,
@@ -2995,8 +3096,22 @@ __result, __binary_pred, _IterType());
       return __i != __last && !__comp(__val, *__i);
     }
 
-  // merge, with and without an explicitly supplied comparison function.
-
+  /**
+   *  @brief Merges two sorted ranges.
+   *  @param  first1  An iterator.
+   *  @param  first2  Another iterator.
+   *  @param  last1   Another iterator.
+   *  @param  last2   Another iterator.
+   *  @param  result  An iterator pointing to the end of the merged range.
+   *  @return  An iterator pointing to the first element "not less than" @a val.
+   *
+   *  Merges the ranges [first1,last1) and [first2,last2) into the sorted range
+   *  [result, result + (last1-first1) + (last2-first2)).  Both input ranges
+   *  must be sorted, and the output range must not overlap with either of
+   *  the input ranges.  The sort is @e stable, that is, for equivalent
+   *  elements in the two ranges, elements from the first range will always
+   *  come before elements from the second.
+  */
   template<typename _InputIter1, typename _InputIter2, typename _OutputIter>
     _OutputIter
     merge(_InputIter1 __first1, _InputIter1 __last1,
@@ -3028,6 +3143,26 @@ __result, __binary_pred, _IterType());
       return copy(__first2, __last2, copy(__first1, __last1, __result));
     }
 
+  /**
+   *  @brief Merges two sorted ranges.
+   *  @param  first1  An iterator.
+   *  @param  first2  Another iterator.
+   *  @param  last1   Another iterator.
+   *  @param  last2   Another iterator.
+   *  @param  result  An iterator pointing to the end of the merged range.
+   *  @param  comp    A functor to use for comparisons.
+   *  @return  An iterator pointing to the first element "not less than" @a val.
+   *
+   *  Merges the ranges [first1,last1) and [first2,last2) into the sorted range
+   *  [result, result + (last1-first1) + (last2-first2)).  Both input ranges
+   *  must be sorted, and the output range must not overlap with either of
+   *  the input ranges.  The sort is @e stable, that is, for equivalent
+   *  elements in the two ranges, elements from the first range will always
+   *  come before elements from the second.
+   *
+   *  The comparison function should have the same effects on ordering as
+   *  the function used for the initial sort.
+  */
   template<typename _InputIter1, typename _InputIter2, typename _OutputIter,
 	   typename _Compare>
     _OutputIter
@@ -3061,8 +3196,11 @@ __result, __binary_pred, _IterType());
       return copy(__first2, __last2, copy(__first1, __last1, __result));
     }
 
-  // inplace_merge and its auxiliary functions.
-
+  /**
+   *  @if maint
+   *  This is a helper function for the merge routines.
+   *  @endif
+  */
   template<typename _BidirectionalIter, typename _Distance>
     void
     __merge_without_buffer(_BidirectionalIter __first,
@@ -3102,6 +3240,11 @@ __result, __binary_pred, _IterType());
 			     __len1 - __len11, __len2 - __len22);
     }
 
+  /**
+   *  @if maint
+   *  This is a helper function for the merge routines.
+   *  @endif
+  */
   template<typename _BidirectionalIter, typename _Distance, typename _Compare>
     void
     __merge_without_buffer(_BidirectionalIter __first,
@@ -3142,6 +3285,11 @@ __result, __binary_pred, _IterType());
 			     __len1 - __len11, __len2 - __len22, __comp);
     }
 
+  /**
+   *  @if maint
+   *  This is a helper function for the merge routines.
+   *  @endif
+  */
   template<typename _BidirectionalIter1, typename _BidirectionalIter2,
 	   typename _Distance>
     _BidirectionalIter1
@@ -3170,6 +3318,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @if maint
+   *  This is a helper function for the merge routines.
+   *  @endif
+  */
   template<typename _BidirectionalIter1, typename _BidirectionalIter2,
 	   typename _BidirectionalIter3>
     _BidirectionalIter3
@@ -3199,6 +3352,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @if maint
+   *  This is a helper function for the merge routines.
+   *  @endif
+  */
   template<typename _BidirectionalIter1, typename _BidirectionalIter2,
 	   typename _BidirectionalIter3, typename _Compare>
     _BidirectionalIter3
@@ -3229,6 +3387,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @if maint
+   *  This is a helper function for the merge routines.
+   *  @endif
+  */
   template<typename _BidirectionalIter, typename _Distance, typename _Pointer>
     void
     __merge_adaptive(_BidirectionalIter __first,
@@ -3273,6 +3436,11 @@ __result, __binary_pred, _IterType());
 	  }
     }
 
+  /**
+   *  @if maint
+   *  This is a helper function for the merge routines.
+   *  @endif
+  */
   template<typename _BidirectionalIter, typename _Distance, typename _Pointer,
 	   typename _Compare>
     void
@@ -3320,6 +3488,23 @@ __result, __binary_pred, _IterType());
 	  }
     }
 
+  /**
+   *  @brief Merges two sorted ranges in place.
+   *  @param  first   An iterator.
+   *  @param  middle  Another iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  Merges two sorted and consecutive ranges, [first,middle) and
+   *  [middle,last), and puts the result in [first,last).  The output will
+   *  be sorted.  The sort is @e stable, that is, for equivalent
+   *  elements in the two ranges, elements from the first range will always
+   *  come before elements from the second.
+   *
+   *  If enough additional memory is available, this takes (last-first)-1
+   *  comparisons.  Otherwise an NlogN algorithm is used, where N is
+   *  distance(first,last).
+  */
   template<typename _BidirectionalIter>
     void
     inplace_merge(_BidirectionalIter __first,
@@ -3350,6 +3535,27 @@ __result, __binary_pred, _IterType());
 			 __buf.begin(), _DistanceType(__buf.size()));
     }
 
+  /**
+   *  @brief Merges two sorted ranges in place.
+   *  @param  first   An iterator.
+   *  @param  middle  Another iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A functor to use for comparisons.
+   *  @return  Nothing.
+   *
+   *  Merges two sorted and consecutive ranges, [first,middle) and
+   *  [middle,last), and puts the result in [first,last).  The output will
+   *  be sorted.  The sort is @e stable, that is, for equivalent
+   *  elements in the two ranges, elements from the first range will always
+   *  come before elements from the second.
+   *
+   *  If enough additional memory is available, this takes (last-first)-1
+   *  comparisons.  Otherwise an NlogN algorithm is used, where N is
+   *  distance(first,last).
+   *
+   *  The comparison function should have the same effects on ordering as
+   *  the function used for the initial sort.
+  */
   template<typename _BidirectionalIter, typename _Compare>
     void
     inplace_merge(_BidirectionalIter __first,
