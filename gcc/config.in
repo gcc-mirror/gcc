@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -482,13 +482,13 @@
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
 
-/* Define if the target architecture needs extra machine modes to represent
-   the results of comparisons. */
-#undef EXTRA_CC_MODES
-
 /* Define to the name of a file containing a list of extra machine modes
    for this architecture. */
 #undef EXTRA_MODES_FILE
+
+/* Define if the target architecture needs extra machine modes to represent
+   the results of comparisons. */
+#undef EXTRA_CC_MODES
 
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
@@ -581,6 +581,9 @@
 
 /* Define 0/1 to force the choice for exception handling model. */
 #undef CONFIG_SJLJ_EXCEPTIONS
+
+/* Define if gcc should use -lunwind. */
+#undef USE_LIBUNWIND_EXCEPTIONS
 
 
 /* Bison unconditionally undefines `const' if neither `__STDC__' nor
