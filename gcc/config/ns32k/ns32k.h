@@ -330,7 +330,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, FRAME_POINTER_REG, STACK_POI
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)  (CLASS)
+/* We return GENERAL_REGS instead of GEN_AND_MEM_REGS.
+   The latter offers no real additional possibilities
+   and can cause spurious secondary reloading.  */ 
+#define PREFERRED_RELOAD_CLASS(X,CLASS) \
+ ((CLASS) == GEN_AND_MEM_REGS ? GENERAL_REGS : (CLASS))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
