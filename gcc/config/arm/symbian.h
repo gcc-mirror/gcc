@@ -50,6 +50,11 @@
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "crti%O%s crtbegin%O%s"
 
+/* Do not link with any libraries by default.  On Symbian OS, the user
+   must supply all required libraries on the command line.  */
+#undef LIB_SPEC
+#define LIB_SPEC ""
+
 /* Support the "dllimport" attribute.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
 

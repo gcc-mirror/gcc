@@ -1,3 +1,8 @@
+2004-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/symbian.h (LIB_SPEC): Define to empty.
+	* config/arm/t-symbian (SHLIB_LC): Likewise.
+
 2004-09-02  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/bpabi.c (__aeabi_ul2d, __aeabi_ul2f): Remove.
