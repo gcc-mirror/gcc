@@ -1,3 +1,11 @@
+2004-09-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR 15886
+	Backport from mainline:
+	2004-06-11  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (ALLOCATE_INITIAL_VALUE): Use return_address_pointer_rtx.
+
 2004-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Correct alignment of
