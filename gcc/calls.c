@@ -1884,7 +1884,11 @@ expand_call (exp, target, ignore)
      Mark all register-parms as living through the call, putting these USE
      insns in the CALL_INSN_FUNCTION_USAGE field.  */
 
+#ifdef LOAD_ARGS_REVERSED
+  for (i = num_actuals - 1; i >= 0; i--)
+#else
   for (i = 0; i < num_actuals; i++)
+#endif
     {
       rtx reg = args[i].reg;
       int partial = args[i].partial;
