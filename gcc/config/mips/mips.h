@@ -170,7 +170,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 			   0x00800000	/* Store uninitialized
 					   consts in rodata */
 #define MASK_FIX_R4000	   0x01000000	/* Work around R4000 errata.  */
-#define MASK_FIX_SB1       0x02000000   /* Work around SB-1 errata.  */
+#define MASK_FIX_R4400	   0x02000000	/* Work around R4400 errata.  */
+#define MASK_FIX_SB1	   0x04000000	/* Work around SB-1 errata.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -251,6 +252,9 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 					/* Work around R4000 errata.  */
 #define TARGET_FIX_R4000	(target_flags & MASK_FIX_R4000)
+
+					/* Work around R4400 errata.  */
+#define TARGET_FIX_R4400		(target_flags & MASK_FIX_R4400)
 
 /* True if we should use NewABI-style relocation operators for
    symbolic addresses.  This is never true for mips16 code,
@@ -596,6 +600,10 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Work around R4000 errata")},					\
   {"no-fix-r4000",	 -MASK_FIX_R4000,				\
      N_("Don't work around R4000 errata")},				\
+  {"fix-r4400",		  MASK_FIX_R4400,				\
+     N_("Work around R4400 errata")},					\
+  {"no-fix-r4400",	 -MASK_FIX_R4400,				\
+     N_("Don't work around R4400 errata")},				\
   {"check-zero-division",-MASK_NO_CHECK_ZERO_DIV,			\
      N_("Trap on integer divide by zero")},				\
   {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV,			\
