@@ -527,7 +527,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	tree arglist = TREE_OPERAND (exp, 1);
 
 	if (fndecl
-	    && DECL_BUILT_IN (fndecl)
+	    && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 	    && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
 	    && arglist != NULL_TREE
 	    && TREE_CHAIN (arglist) != NULL_TREE)
