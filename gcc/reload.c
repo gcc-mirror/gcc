@@ -3142,7 +3142,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	      case 'E':
 	      case 'F':
-		if (GET_CODE (operand) == CONST_DOUBLE)
+		if (GET_CODE (operand) == CONST_DOUBLE
+		    || (GET_CODE (operand) == CONST_VECTOR
+			&& (GET_MODE_CLASS (GET_MODE (operand))
+			    == MODE_VECTOR_FLOAT)))
 		  win = 1;
 		break;
 

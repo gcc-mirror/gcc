@@ -1,4 +1,10 @@
-Tue Jul 23 21:02:16 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Tue Jul 23 21:49:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* recog.c (asm_operand_ok): Allow float CONST_VECTORs for 'F'.
+	(constrain_operands): Likewise.
+	* regclass.c (record_reg_classes): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* doc/md.texi: Likewise.
 
 	* reload.c (find_reloads_toplev): Use simplify_gen_subreg.
 	* simplify-rtx.c (simplify_subreg): When converting to a non-int
