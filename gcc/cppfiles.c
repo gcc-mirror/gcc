@@ -654,7 +654,7 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 	{
 	  char *p;
 	  struct file_name_list *ptr;
-	  int len = strlen (ptr->name);
+	  int len;
 
 	  /* If requested as a system header, assume it belongs in
 	     the first system header directory. */
@@ -663,6 +663,7 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 	  else
 	    ptr = CPP_OPTION (pfile, quote_include);
 
+	  len = strlen (ptr->name);
 	  p = (char *) alloca (len + strlen (fname) + 2);
 	  if (len)
 	    {
