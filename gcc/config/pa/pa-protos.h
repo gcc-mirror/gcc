@@ -44,6 +44,7 @@ extern const char *output_move_double PARAMS ((rtx *));
 extern const char *output_fp_move_double PARAMS ((rtx *));
 extern const char *output_block_move PARAMS ((rtx *, int));
 extern const char *output_cbranch PARAMS ((rtx *, int, int, int, rtx));
+extern const char *output_lbranch PARAMS ((rtx, rtx));
 extern const char *output_bb PARAMS ((rtx *, int, int, int, rtx, int));
 extern const char *output_bvb PARAMS ((rtx *, int, int, int, rtx, int));
 extern const char *output_dbra PARAMS ((rtx *, rtx, int));

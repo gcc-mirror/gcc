@@ -1,3 +1,21 @@
+2003-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR 10062
+	* config/pa/pa-hpux.h (TARGET_HPUX_UNWIND_LIBRARY): Redefine.
+	* pa-protos.h (output_lbranch): New prototype.
+	* pa.c (compute_frame_size): Change size of the frame marker on the
+	64-bit ports to 48 bytes.
+	(pa_output_function_prologue): Document why SAVE_SP is set.
+	(hppa_expand_prologue): Save previous stack pointer into frame marker
+	on targets which use the hpux unwind library.
+	(output_cbranch): Use output_lbranch.
+	(output_lbranch): New function to output long unconditional branches.
+	* pa.h (TARGET_HPUX_UNWIND_LIBRARY): Define.
+	(STACK_POINTER_OFFSET): Update offset for 48-byte frame marker on
+	64-bit ports.
+	* pa.md (jump): Use output_lbranch.
+	(allocate_stack): New expander for dynamic stack allocation.
+
 2003-03-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* toplev.c (independent_decode_option): Return success for --help,
