@@ -1,3 +1,31 @@
+2003-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/ios_base_storage.cc (main): Call
+	set_memory_limits.
+
+2003-02-28  Brad Spencer  <spencer@infointeractive.com>
+            Nathan Myers  <ncm@cantrip.org>
+	
+	* src/Makefile.am (stamp-debug): Clean.
+	* src/Makefile.in: Regenerate.
+
+2002-02-28  Loren J. Rittle  <ljrittle@acm.org>
+
+	* src/Makefile.am: Resolve non-portable use of $<.
+	* src/Makefile.in: Rebuilt.
+
+2002-02-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in (GLIBCPP_ENABLE_CXX_FLAGS):  Do not pass arguments,
+	let the defaults work.
+	* configure:  Regenerate.
+
+2002-02-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4:  Remove trailing whitespace.
+	(GLIBCPP_ENABLE_CXX_FLAGS):  Fix.
+	* aclocal.m4, configure:  Regenerate.
+
 2003-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
         * configure.in (GLIBCPP_ENABLE_DEBUG): Default to none.

@@ -1049,11 +1049,11 @@ dnl Check to see if debugging libraries are to be built.
 dnl
 dnl GLIBCPP_ENABLE_DEBUG
 dnl
-dnl --enable-debug 
+dnl --enable-debug
 dnl builds a separate set of debugging libraries in addition to the
 dnl normal (shared, static) libstdc++ binaries.
 dnl
-dnl --disable-debug 
+dnl --disable-debug
 dnl builds only one (non-debug) version of libstdc++.
 dnl
 dnl --enable-debug-flags=FLAGS
@@ -1066,7 +1066,7 @@ AC_DEFUN(GLIBCPP_ENABLE_DEBUG, [dnl
 define([GLIBCPP_ENABLE_DEBUG_DEFAULT], ifelse($1, yes, yes, no))dnl
 AC_ARG_ENABLE(debug,
 changequote(<<, >>)dnl
-<<  --enable-debug          extra debugging, turn off optimization [default=>>GLIBCPP_ENABLE_DEBUG_DEFAULT],
+<<  --enable-debug          build extra debug library [default=>>GLIBCPP_ENABLE_DEBUG_DEFAULT],
 changequote([, ])dnl
 [case "${enableval}" in
  yes) enable_debug=yes ;;
@@ -1076,7 +1076,7 @@ changequote([, ])dnl
 enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
 AC_MSG_CHECKING([for additional debug build])
 AC_MSG_RESULT($enable_debug)
-AM_CONDITIONAL(GLIBCPP_BUILD_DEBUG, test "$enable_debug" = yes)	
+AM_CONDITIONAL(GLIBCPP_BUILD_DEBUG, test "$enable_debug" = yes)
 ])
 
 
@@ -1084,8 +1084,8 @@ dnl Check for explicit debug flags.
 dnl
 dnl GLIBCPP_ENABLE_DEBUG_FLAGS
 dnl
-dnl --enable-debug-flags='-O1' 
-dnl is a general method for passing flags to be used when 
+dnl --enable-debug-flags='-O1'
+dnl is a general method for passing flags to be used when
 dnl building debug libraries with --enable-debug.
 dnl
 dnl --disable-debug-flags does nothing.
@@ -1096,7 +1096,7 @@ AC_DEFUN(GLIBCPP_ENABLE_DEBUG_FLAGS, [dnl
 define([GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
 AC_ARG_ENABLE(debug_flags,
 changequote(<<, >>)dnl
-<<  --enable-debug-flags=FLAGS    pass compiler FLAGS when building debug 
+<<  --enable-debug-flags=FLAGS    pass compiler FLAGS when building debug
 	                library;[default=>>GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT],
 changequote([, ])dnl
 [case "${enableval}" in
@@ -1108,15 +1108,15 @@ enable_debug_flags=GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT)dnl
 
 dnl Option parsed, now set things appropriately
 case x"$enable_debug" in
-    xyes) 
+    xyes)
         case "$enable_debug_flags" in
-	  none) 
+	  none)
             DEBUG_FLAGS="-g3 -O0";;
 	  -*) #valid input
 	    DEBUG_FLAGS="${enableval}"
         esac
-        ;; 
-    xno)   
+        ;;
+    xno)
         DEBUG_FLAGS=""
         ;;
 esac
@@ -1144,21 +1144,21 @@ dnl       If "default flags" is an empty string (or "none"), the effect is
 dnl       the same as --disable or --enable=no.
 AC_DEFUN(GLIBCPP_ENABLE_CXX_FLAGS, [dnl
 define([GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
+AC_MSG_CHECKING([for extra compiler flags for building])
 AC_ARG_ENABLE(cxx_flags,
 changequote(<<, >>)dnl
 <<  --enable-cxx-flags=FLAGS      pass compiler FLAGS when building library;
-                                [default=>>GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT],
+                                  [default=>>GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT],
 changequote([, ])dnl
-enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')
-
-case "x$enable_cxx_flags" in
- xyes)   
-        AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
- xno | xnone | x)  
-        enable_cxx_flags='' ;;
- *)      
-        enable_cxx_flags="$enableval" ;;
-esac	
+[case "x$enable_cxx_flags" in
+  xyes)
+    AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
+  xno | xnone | x)
+    enable_cxx_flags='' ;;
+  *)
+    enable_cxx_flags="$enableval" ;;
+esac],
+enable_cxx_flags=GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT)
 
 dnl Run through flags (either default or command-line) and set anything
 dnl extra (e.g., #defines) that must accompany particular g++ options.
@@ -1173,6 +1173,7 @@ if test -n "$enable_cxx_flags"; then
   done
 fi
 EXTRA_CXX_FLAGS="$enable_cxx_flags"
+AC_MSG_RESULT($EXTRA_CXX_FLAGS)
 AC_SUBST(EXTRA_CXX_FLAGS)
 ])
 

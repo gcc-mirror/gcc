@@ -52,7 +52,7 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
 CONFIG_CXXFLAGS = \
-	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@ @DEBUG_FLAGS@ 
+	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@ 
 
 # Warning flags to use.
 WARN_CXXFLAGS = \
@@ -83,25 +83,25 @@ target_sources = \
 	time_members.cc
 
 codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCODECVT_CC@ . || true
 
 collate_members.cc: ${glibcpp_srcdir}/@CCOLLATE_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCOLLATE_CC@ . || true
 
 ctype_members.cc: ${glibcpp_srcdir}/@CCTYPE_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCTYPE_CC@ . || true
 
 messages_members.cc: ${glibcpp_srcdir}/@CMESSAGES_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CMESSAGES_CC@ . || true
 
 monetary_members.cc: ${glibcpp_srcdir}/@CMONEY_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CMONEY_CC@ . || true
 
 numeric_members.cc: ${glibcpp_srcdir}/@CNUMERIC_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CNUMERIC_CC@ . || true
 
 time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CTIME_CC@ . || true
 
 # Source files linked in via configuration/make substitution for a
 # particular target, but with ad hoc naming rules.
@@ -110,10 +110,10 @@ target_sources_extra = \
 	c++locale.cc 
 
 c++locale.cc: ${glibcpp_srcdir}/@CLOCALE_CC@
-	@LN_S@ $< ./$@ || true
+	@LN_S@ ${glibcpp_srcdir}/@CLOCALE_CC@ ./$@ || true
 
 basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
-	@LN_S@ $< ./$@ || true
+	@LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_CC@ ./$@ || true
 
 # Sources present in the src directory.
 sources = \
@@ -240,13 +240,12 @@ stamp-debug:
 	if test ! -d ${debugdir}; then \
 	  mkdir -p ${debugdir}; \
 	  (cd ${debugdir}; \
-	  cp ../Makefile .; \
-	  sed 's/top_builddir = ../top_builddir = ..\/../g' \
-	  < Makefile > temp.1; \
-	  sed 's/all-local: build_debug/all-local:/g' < temp.1 > temp.2; \
-	  sed 's/install-data-local: install_debug/install-data-local:/g' \
-	  < temp.2 > temp.3; \
-          mv temp.3 Makefile) ; \
+	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
+	      -e 's/srcdir = \.\./srcdir = ..\/../' \
+	      -e 's/glibcpp_basedir = \.\./glibcpp_basedir = ..\/../' \
+	      -e 's/all-local: build_debug/all-local:/' \
+	      -e 's/install-data-local: install_debug/install-data-local:/' \
+	  < ../Makefile > Makefile) ; \
 	fi; \
 	echo `date` > stamp-debug; 
 
