@@ -1572,7 +1572,8 @@ dbxout_symbol (decl, local)
 	  /* Effectively do build_pointer_type, but don't cache this type,
 	     since it might be temporary whereas the type it points to
 	     might have been saved for inlining.  */
-	  type = make_node (REFERENCE_TYPE);
+	  /* Don't use REFERENCE_TYPE because dbx can't handle that.  */
+	  type = make_node (POINTER_TYPE);
 	  TREE_TYPE (type) = TREE_TYPE (decl);
 	}
       else if (GET_CODE (DECL_RTL (decl)) == MEM
