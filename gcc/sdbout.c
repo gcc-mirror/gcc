@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -101,12 +101,20 @@ void sdbout_init ();
 void sdbout_symbol ();
 void sdbout_types();
 
-static void sdbout_typedefs ();
-static void sdbout_syms ();
-static void sdbout_one_type ();
-static void sdbout_queue_anonymous_type ();
-static void sdbout_dequeue_anonymous_types ();
-static int plain_type_1 ();
+static char *gen_fake_label		PROTO((void));
+static int plain_type			PROTO((tree));
+static int template_name_p		PROTO((tree));
+static void sdbout_record_type_name	PROTO((tree));
+static int plain_type_1			PROTO((tree, int));
+static void sdbout_block		PROTO((tree));
+static void sdbout_syms			PROTO((tree));
+static void sdbout_queue_anonymous_type	PROTO((tree));
+static void sdbout_dequeue_anonymous_types PROTO((void));
+static void sdbout_type			PROTO((tree));
+static void sbdout_field_types		PROTO((tree));
+static void sdbout_one_type		PROTO((tree));
+static void sdbout_parms		PROTO((tree));
+static void sdbout_reg_parms		PROTO((tree));
 
 /* Define the default sizes for various types.  */
 
@@ -293,13 +301,6 @@ sdbout_init (asm_file, input_file_name, syms)
 	&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__vtbl_ptr_type"))
       sdbout_symbol (t, 0);
 #endif  
-
-#if 0 /* Nothing need be output for the predefined types.  */
-  /* Get all permanent types that have typedef names,
-     and output them all, except for those already output.  */
-
-  sdbout_typedefs (syms);
-#endif
 }
 
 #if 0
@@ -1319,7 +1320,7 @@ sdbout_parms (parms)
 	    PUT_SDB_DEF (name);
 	    PUT_SDB_INT_VAL (DBX_REGISTER_NUMBER (REGNO (best_rtl)));
 	    PUT_SDB_SCL (C_REGPARM);
-	    PUT_SDB_TYPE (plain_type (TREE_TYPE (parms), 0));
+	    PUT_SDB_TYPE (plain_type (TREE_TYPE (parms)));
 	    PUT_SDB_ENDEF;
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
@@ -1342,7 +1343,7 @@ sdbout_parms (parms)
 	    PUT_SDB_INT_VAL (DEBUGGER_ARG_OFFSET (current_sym_value,
 						  XEXP (DECL_RTL (parms), 0)));
 	    PUT_SDB_SCL (C_ARG);
-	    PUT_SDB_TYPE (plain_type (TREE_TYPE (parms), 0));
+	    PUT_SDB_TYPE (plain_type (TREE_TYPE (parms)));
 	    PUT_SDB_ENDEF;
 	  }
       }
@@ -1380,7 +1381,7 @@ sdbout_reg_parms (parms)
 	    PUT_SDB_DEF (name);
 	    PUT_SDB_INT_VAL (DBX_REGISTER_NUMBER (REGNO (DECL_RTL (parms))));
 	    PUT_SDB_SCL (C_REG);
-	    PUT_SDB_TYPE (plain_type (TREE_TYPE (parms), 0));
+	    PUT_SDB_TYPE (plain_type (TREE_TYPE (parms)));
 	    PUT_SDB_ENDEF;
 	  }
 	/* Report parms that live in memory but not where they were passed.  */
