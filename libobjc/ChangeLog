@@ -1,3 +1,7 @@
+2004-05-25  Daniel Jacobowitz  <drow@false.org>
+
+	* Makefile.in: Add .NOEXPORT.
+
 2004-05-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	Merge from the libobjc-branch
