@@ -1,3 +1,9 @@
+Tue Mar 17 10:33:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config-ml.in: After building symlink tree call make distclean
+	if a Makefile got linked into ${ml_dir}/${ml_libdir}; this happens
+	to be the case for libiberty.
+
 Tue Mar 17 10:22:37 1998  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* configure: When making link, also check the current
