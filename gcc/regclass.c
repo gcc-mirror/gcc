@@ -762,7 +762,7 @@ fix_register (name, fixed, call_used)
 	{
 	  fixed_regs[i] = fixed;
 	  call_used_regs[i] = call_used;
-#ifdef CALL_REALLY_USED_REGS
+#ifdef CALL_REALLY_USED_REGISTERS
 	  if (fixed == 0)
 	    call_really_used_regs[i] = call_used;
 #endif
