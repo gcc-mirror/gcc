@@ -1,6 +1,6 @@
 2004-09-30  Tom Tromey  <tromey@redhat.com>
 
-i	* java/text/MessageFormat.java (Field): Constructor now
+	* java/text/MessageFormat.java (Field): Constructor now
 	protected.
 
 2004-09-30  Tom Tromey  <tromey@redhat.com>
