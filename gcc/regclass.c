@@ -772,7 +772,7 @@ regclass_init ()
 }
 
 /* Dump register costs.  */
-void
+static void
 dump_regclass (dump)
      FILE *dump;
 {

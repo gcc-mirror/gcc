@@ -1,3 +1,10 @@
+Sun Nov 28 00:48:15 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* integrate.c (mark_stores): Function definition made void, to match
+	previous declaration.
+	* regclass.c (dump_regclass): Ditto.
+	* Makefile.in (WARN_CFLAGS): Macro augmented by `-Wtraditional'.
+
 Sat Nov 27 08:38:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_constructor): Use EXACT_DIV_EXPR when dividend is
