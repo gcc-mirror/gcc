@@ -1,3 +1,7 @@
+2001-06-09  Peter Jakubek <pjak@snafu.de>
+
+	* config/m68k/m68k.md (ashrdi_const): Fix right shift by 16.
+
 2001-06-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Use @defcodeindex for the index of options.  Add
