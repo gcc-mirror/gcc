@@ -1,3 +1,9 @@
+2002-02-20  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/os/mingw32/bits/ctype_noninline.h
+	(ctype<char>::ctype): Remove default args from parm list.
+	* config/os/djgpp/bits/ctype_noninline.h: Same. 
+
 2002-02-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/std_iomanip.h: Inline, tweaks.
