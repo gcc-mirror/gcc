@@ -1,3 +1,7 @@
+2000-10-30  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* etc: Remove directory from GCC.
+
 2000-10-16  Michael Meissner  <meissner@redhat.com>
 
 	* configure (gcc/configargs.h): Only create if there is a build GCC
