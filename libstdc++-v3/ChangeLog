@@ -1,3 +1,8 @@
+2004-05-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/abi.html (libgcc_s): Additions suggested by Matthias Klose.
+	* docs/doxygen/Intro.3: Subtractions suggested by Phil Edwards.
+
 2004-05-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/istream.tcc (ignore): Remove redundant line.

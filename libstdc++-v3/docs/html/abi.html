@@ -168,7 +168,10 @@ on ELF systems).</p>
     <li>gcc-3.3.1: libgcc_s.so.1</li>
     <li>gcc-3.3.2: libgcc_s.so.1</li>
     <li>gcc-3.3.3: libgcc_s.so.1</li>
-    <li>gcc-3.4.0: libgcc_s.so.1</li>
+    <li>gcc-3.4.0: on m68k-linux and hppa-linux this is either libgcc_s.so.1
+    (when configuring <code>--with-sjlj-exceptions</code>) or
+    libgcc_s.so.2. For all others, this is libgcc_s.so.1.
+    </li>
     </ul>
     <p></p>
     </li>
