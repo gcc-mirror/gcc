@@ -1541,30 +1541,6 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
     }
 }
 
-/* Find all variables within the gimplified statement that were not previously
-   visible to the function and add them to the referenced variables list.  */
-
-static tree
-find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
-			    void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (TREE_CODE (t) == VAR_DECL && !var_ann (t))
-    add_referenced_tmp_var (t);
-
-  if (IS_TYPE_OR_DECL_P (t))
-    *walk_subtrees = 0;
-
-  return NULL;
-}
-
-static inline void
-find_new_referenced_vars (tree *stmt_p)
-{
-  walk_tree (stmt_p, find_new_referenced_vars_1, NULL, NULL);
-}
-
 /* Generate an assignment VAR = INIT, where INIT may need gimplification.
    Add the result to *LIST_P.  */
 

@@ -981,9 +981,7 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
   v_may_defs_after = NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt));
   v_must_defs_after = NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt));
 
-  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, 
-			     SSA_OP_VMAYDEF | SSA_OP_VUSE | SSA_OP_VMUSTDEF)
-
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_ALL_OPERANDS)
     {
       if (DECL_P (val))
 	{
@@ -1003,4 +1001,28 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
     bitmap_a_or_b (vars_to_rename, vars_to_rename, vars_in_vops_to_rename);
 
   BITMAP_XFREE (vars_in_vops_to_rename);
+}
+
+/* Find all variables within the gimplified statement that were not previously
+   visible to the function and add them to the referenced variables list.  */
+
+static tree
+find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
+			    void *data ATTRIBUTE_UNUSED)
+{
+  tree t = *tp;
+
+  if (TREE_CODE (t) == VAR_DECL && !var_ann (t))
+    add_referenced_tmp_var (t);
+
+  if (IS_TYPE_OR_DECL_P (t))
+    *walk_subtrees = 0;
+
+  return NULL;
+}
+
+void
+find_new_referenced_vars (tree *stmt_p)
+{
+  walk_tree (stmt_p, find_new_referenced_vars_1, NULL, NULL);
 }
