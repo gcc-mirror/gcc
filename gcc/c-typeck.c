@@ -2453,6 +2453,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
 
+	      int unsignedp0, unsignedp1;
+	      tree primop0 = get_narrower (op0, &unsignedp0);
+	      tree primop1 = get_narrower (op1, &unsignedp1);
+
 	      /* Avoid spurious warnings for comparison with enumerators.  */
  
 	      xop0 = orig_op0;
@@ -2492,6 +2496,61 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		/* OK */;
 	      else
 		warning ("comparison between signed and unsigned");
+
+	      /* Warn if two unsigned values are being compared in a size
+		 larger than their original size, and one (and only one) is the
+		 result of a `~' operator.  This comparison will always fail.
+
+		 Also warn if one operand is a constant, and the constant
+		 does not have all bits set that are set in the ~ operand
+		 when it is extended.  */
+
+	      if ((TREE_CODE (primop0) == BIT_NOT_EXPR)
+		  != (TREE_CODE (primop1) == BIT_NOT_EXPR))
+		{
+		  if (TREE_CODE (primop0) == BIT_NOT_EXPR)
+		    primop0 = get_narrower (TREE_OPERAND (primop0, 0),
+					    &unsignedp0);
+		  else
+		    primop1 = get_narrower (TREE_OPERAND (primop1, 0),
+					    &unsignedp1);
+	      
+		  if (TREE_CODE (primop0) == INTEGER_CST
+		      || TREE_CODE (primop1) == INTEGER_CST)
+		    {
+		      tree primop;
+		      long constant, mask;
+		      int unsignedp, bits;
+
+		      if (TREE_CODE (primop0) == INTEGER_CST)
+			{
+			  primop = primop1;
+			  unsignedp = unsignedp1;
+			  constant = TREE_INT_CST_LOW (primop0);
+			}
+		      else
+			{
+			  primop = primop0;
+			  unsignedp = unsignedp0;
+			  constant = TREE_INT_CST_LOW (primop1);
+			}
+
+		      bits = TYPE_PRECISION (TREE_TYPE (primop));
+		      if (bits < TYPE_PRECISION (result_type)
+			  && bits < HOST_BITS_PER_LONG && unsignedp)
+			{
+			  mask = (~0L) << bits;
+			  if ((mask & constant) != mask)
+			    warning ("comparison of promoted ~unsigned with constant");
+			}
+		    }
+		  else if (unsignedp0 && unsignedp1
+			   && (TYPE_PRECISION (TREE_TYPE (primop0))
+			       < TYPE_PRECISION (result_type))
+			   && (TYPE_PRECISION (TREE_TYPE (primop1))
+			       < TYPE_PRECISION (result_type)))
+		    warning ("comparison of promoted ~unsigned with unsigned");
+		}
 	    }
 	}
     }
