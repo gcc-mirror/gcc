@@ -1,3 +1,9 @@
+2004-12-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/17456
+	* cvt.c (convert_to_void): Set expr to void_zero_node after
+	overload failure.
+
 2004-12-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/16806
