@@ -56,6 +56,50 @@ namespace std
   template class num_get<C, istreambuf_iterator<C> >;
   template class num_put<C, ostreambuf_iterator<C> >; 
   template
+    istreambuf_iterator<C>
+    num_get<C, istreambuf_iterator<C> >::
+    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		   ios_base&, ios_base::iostate&,
+		   long&) const;
+
+  template
+    istreambuf_iterator<C>
+    num_get<C, istreambuf_iterator<C> >::
+    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		   ios_base&, ios_base::iostate&, 
+		   unsigned short&) const;
+
+  template
+    istreambuf_iterator<C>
+    num_get<C, istreambuf_iterator<C> >::
+    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		   ios_base&, ios_base::iostate&,
+		   unsigned int&) const;
+
+  template
+    istreambuf_iterator<C>
+    num_get<C, istreambuf_iterator<C> >::
+    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		   ios_base&, ios_base::iostate&,
+		   unsigned long&) const;
+
+#ifdef _GLIBCXX_USE_LONG_LONG
+  template
+    istreambuf_iterator<C>
+    num_get<C, istreambuf_iterator<C> >::
+    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		   ios_base&, ios_base::iostate&,
+		   long long&) const;
+
+  template
+    istreambuf_iterator<C>
+    num_get<C, istreambuf_iterator<C> >::
+    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		   ios_base&, ios_base::iostate&,
+		   unsigned long long&) const;
+#endif
+
+  template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
     _M_insert_int(ostreambuf_iterator<C>, ios_base&, C, 

@@ -1,3 +1,32 @@
+2003-12-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/c_locale.cc (__convert_to_v(long&),
+	__convert_to_v(unsigned long&), __convert_to_v(long long&),
+	__convert_to_v(unsigned long long&): Remove.
+	(__convert_to_v(float&), __convert_to_v(double&),
+	__convert_to_v(long double&)): Remove last unused parameter.
+	* config/locale/gnu/c_locale.cc: Likewise.
+	* include/bits/locale_facets.h: Likewise.
+	(num_get::_M_extract_int): Update declaration.
+	(class __num_base): Tweak _S_ie and _S_iE according to the
+	_S_atoms_in changes.
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int):
+	Provide directly the final _ValueT, not a string: accumulate
+	the result checking for overflow at each digit.
+	(num_get::do_get(bool&), num_get::do_get(long&),
+	num_get::do_get(unsigned short&), num_get::do_get(unsigned int&),
+	num_get::do_get(unsigned long&), num_get::do_get(long long&),
+	num_get::do_get(unsigned long long&), num_get::do_get(void*&)):
+	Use the new _M_extract_int, simplify.
+	* src/locale-inst.cc (num_get::_M_extract_int(long&),
+	num_get::_M_extract_int(unsigned short&),
+	num_get::_M_extract_int(unsigned int&),
+	num_get::_M_extract_int(unsigned long&),
+	num_get::_M_extract_int(long long&),
+	num_get::_M_extract_int(unsigned long long&): Instantiate.
+	* src/locale_facets.cc (__num_base::_S_atoms_in): Reorder
+        the chars in the natural order: abcdefABCDEF.
+
 2003-12-08  David S. Miller  <davem@redhat.com>
 
 	PR libstdc++/12496

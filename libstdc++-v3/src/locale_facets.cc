@@ -53,7 +53,7 @@ namespace std
   const money_base::pattern 
   money_base::_S_default_pattern =  { {symbol, sign, none, value} };
 
-  const char* __num_base::_S_atoms_in = "-+xX0123456789eEabcdfABCDF";
+  const char* __num_base::_S_atoms_in = "-+xX0123456789abcdefABCDEF";
   const char* __num_base::_S_atoms_out ="-+xX0123456789abcdef0123456789ABCDEF";
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
