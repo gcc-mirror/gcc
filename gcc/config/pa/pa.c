@@ -1957,11 +1957,7 @@ print_operand (file, x, code)
 	case EQ:
 	  fprintf (file, "=");  break;
 	case NE:
-	  if (code == 'C')
-	    fprintf (file, "<>");
-	  else
-	    fprintf (file, "!=");
-	  break;
+	  fprintf (file, "<>"); break;
 	case GT:
 	  fprintf (file, ">");  break;
 	case GE:
@@ -1989,11 +1985,7 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  if (code == 'N')
-	    fprintf (file, "<>");
-	  else
-	    fprintf (file, "!=");
-	  break;
+	  fprintf (file, "<>"); break;
 	case NE:
 	  fprintf (file, "=");  break;
 	case GT:
