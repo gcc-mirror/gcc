@@ -130,17 +130,14 @@ namespace __cxxabiv1
 	// Possible _GLOBAL__ extension?
 	if (!std::strncmp(mangled_name, "_GLOBAL__", 9) 
 	    && (mangled_name[9] == 'D' || mangled_name[9] == 'I')
-	    && mangled_name[10] == '_' && mangled_name[11] == '_' 
-	    && mangled_name[12] == 'Z')
+	    && mangled_name[10] == '_')
 	{
 	  if (mangled_name[9] == 'D')
 	    result.assign("global destructors keyed to ", 28);
 	  else
 	    result.assign("global constructors keyed to ", 29);
-	  int cnt = session_type::
-	      decode_encoding(result, mangled_name + 13, INT_MAX);
-	  if (cnt < 0 || mangled_name[cnt + 13] != 0)
-	    return failure(invalid_mangled_name, status);
+	  // Output the disambiguation part as-is.
+	  result += mangled_name + 11;
 	  return finish(result.data(), result.size(), buf, n, status);
 	}
       }
