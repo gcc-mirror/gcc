@@ -3012,6 +3012,8 @@
     case 7:
     case 8:
       return \"st\\t%1, %0\";
+    default:
+      abort();
     }
 }"
   [(set_attr "type" "fpmove,move,move,move,*,load,fpload,fpstore,store")
@@ -3057,6 +3059,8 @@
     case 7:
     case 8:
       return \"st\\t%r1, %0\";
+    default:
+      abort();
     }
 }"
   [(set_attr "type" "fpmove,move,move,move,*,load,fpload,fpstore,store")
@@ -3104,6 +3108,8 @@
     case 8:
     case 9:
       return \"st\\t%r1, %0\";
+    default:
+      abort();
     }
 }"
   [(set_attr "type" "fpmove,fpmove,move,move,move,*,load,fpload,fpstore,store")
