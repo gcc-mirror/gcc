@@ -190,10 +190,6 @@ static struct induction **addr_combined_regs;
 static rtx *splittable_regs;
 
 /* Indexed by register number, if this is a splittable induction variable,
-   this indicates if it was made from a derived giv.  */
-static char *derived_regs;
-
-/* Indexed by register number, if this is a splittable induction variable,
    then this will hold the number of instructions in the loop that modify
    the induction variable.  Used to ensure that only the last insn modifying
    a split iv will update the original iv of the dest.  */
@@ -806,7 +802,6 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
      to access the splittable_regs[] and addr_combined_regs[] arrays.  */
 
   splittable_regs = (rtx *) xcalloc (maxregnum, sizeof (rtx));
-  derived_regs = (char *) xcalloc (maxregnum, sizeof (char));
   splittable_regs_updates = (int *) xcalloc (maxregnum, sizeof (int));
   addr_combined_regs
     = (struct induction **) xcalloc (maxregnum, sizeof (struct induction *));
@@ -872,14 +867,6 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 			   r);
 	      }
 	  }
-      /* Givs that have been created from multiple biv increments always have
-	 local registers.  */
-      for (r = ivs->first_increment_giv; r <= ivs->last_increment_giv; r++)
-	{
-	  local_regno[r] = 1;
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Marked reg %d as local\n", r);
-	}
     }
 
   /* If this loop requires exit tests when unrolled, check to see if we
@@ -1346,7 +1333,6 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
     }
   free (map->insn_map);
   free (splittable_regs);
-  free (derived_regs);
   free (splittable_regs_updates);
   free (addr_combined_regs);
   free (local_regno);
@@ -1792,8 +1778,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 		 we might accidentally delete insns generated immediately
 		 below by emit_unrolled_add.  */
 
-	      if (! derived_regs[regno])
-		giv_inc = calculate_giv_inc (set, insn, regno);
+	      giv_inc = calculate_giv_inc (set, insn, regno);
 
 	      /* Now find all address giv's that were combined with this
 		 giv 'v'.  */
@@ -1880,23 +1865,12 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	      dest_reg_was_split = 1;
 
 	      giv_dest_reg = SET_DEST (set);
-	      if (derived_regs[regno])
-		{
-		  /* ??? This relies on SET_SRC (SET) to be of
-		     the form (plus (reg) (const_int)), and thus
-		     forces recombine_givs to restrict the kind
-		     of giv derivations it does before unrolling.  */
-		  giv_src_reg = XEXP (SET_SRC (set), 0);
-		  giv_inc = XEXP (SET_SRC (set), 1);
-		}
-	      else
-		{
-		  giv_src_reg = giv_dest_reg;
-		  /* Compute the increment value for the giv, if it wasn't
-		     already computed above.  */
-		  if (giv_inc == 0)
-		    giv_inc = calculate_giv_inc (set, insn, regno);
-		}
+	      giv_src_reg = giv_dest_reg;
+	      /* Compute the increment value for the giv, if it wasn't
+		 already computed above.  */
+	      if (giv_inc == 0)
+		giv_inc = calculate_giv_inc (set, insn, regno);
+
 	      src_regno = REGNO (giv_src_reg);
 
 	      if (unroll_type == UNROLL_COMPLETELY)
@@ -2726,10 +2700,6 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 	      /* Line above always fails if INSN was moved by loop opt.  */
 	      || (uid_luid[REGNO_LAST_UID (REGNO (v->dest_reg))]
 		  >= INSN_LUID (loop->end)))
-	  /* Givs made from biv increments are missed by the above test, so
-	     test explicitly for them.  */
-	  && (REGNO (v->dest_reg) < ivs->first_increment_giv
-	      || REGNO (v->dest_reg) > ivs->last_increment_giv)
 	  && ! (final_value = v->final_value))
 	continue;
 
@@ -2831,7 +2801,6 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		}
 
 	      splittable_regs[REGNO (v->new_reg)] = value;
-	      derived_regs[REGNO (v->new_reg)] = v->derived_from != 0;
 	    }
 	  else
 	    {
@@ -2890,25 +2859,6 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		  struct induction *same = v->same;
 		  rtx new_reg = v->new_reg;
 		  record_base_value (REGNO (tem), v->add_val, 0);
-
-		  if (same && same->derived_from)
-		    {
-		      /* calculate_giv_inc doesn't work for derived givs.
-			 copy_loop_body works around the problem for the
-			 DEST_REG givs themselves, but it can't handle
-			 DEST_ADDR givs that have been combined with
-			 a derived DEST_REG giv.
-			 So Handle V as if the giv from which V->SAME has
-			 been derived has been combined with V.
-			 recombine_givs only derives givs from givs that
-			 are reduced the ordinary, so we need not worry
-			 about same->derived_from being in turn derived.  */
-
-		      same = same->derived_from;
-		      new_reg = express_from (same, v);
-		      new_reg = replace_rtx (new_reg, same->dest_reg,
-					     same->new_reg);
-		    }
 
 		  /* If the address giv has a constant in its new_reg value,
 		     then this constant can be pulled out and put in value,
@@ -3017,17 +2967,6 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 				 INSN_UID (v->insn));
 		      continue;
 		    }
-		  if (v->same && v->same->derived_from)
-		    {
-		      /* Handle V as if the giv from which V->SAME has
-			 been derived has been combined with V.  */
-
-		      v->same = v->same->derived_from;
-		      v->new_reg = express_from (v->same, v);
-		      v->new_reg = replace_rtx (v->new_reg, v->same->dest_reg,
-						v->same->new_reg);
-		    }
-
 		}
 
 	      /* Store the value of dest_reg into the insn.  This sharing
@@ -3050,7 +2989,6 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		     Make sure that it's giv is marked as splittable here.  */
 
 		  splittable_regs[REGNO (v->new_reg)] = value;
-		  derived_regs[REGNO (v->new_reg)] = v->derived_from != 0;
 
 		  /* Make it appear to depend upon itself, so that the
 		     giv will be properly split in the main loop above.  */
@@ -3093,11 +3031,6 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 	  int count = 1;
 	  if (! v->ignore)
 	    count = ivs->reg_biv_class[REGNO (v->src_reg)]->biv_count;
-
-	  if (count > 1 && v->derived_from)
-	     /* In this case, there is one set where the giv insn was and one
-		set each after each biv increment.  (Most are likely dead.)  */
-	    count++;
 
 	  splittable_regs_updates[REGNO (v->new_reg)] = count;
 	}
