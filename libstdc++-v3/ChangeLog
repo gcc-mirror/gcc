@@ -10,6 +10,8 @@
 
 2001-03-12  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/backward/vector.h: Include std_vector.h.
+
 	* include/bits/istream.tcc (basic_istream<_CharT, _Traits>&
 	operator>>(basic_istream<_CharT, _Traits>& __in, _CharT* __s)):
 	Fix typo.
