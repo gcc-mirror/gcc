@@ -1,5 +1,8 @@
 Sun Mar 28 00:44:27 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* sdbout.c (sdbout_symbol): Do not call build_pointer_type, build
+	one on the fly and do not cache the result.
+
 	* gcc.cps, cpp.cps: Delete unwanted files.
 
 Sat Mar 27 23:37:40 EST 1999  John Wehle  (john@feith.com)
