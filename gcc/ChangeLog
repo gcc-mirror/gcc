@@ -1,3 +1,8 @@
+2003-11-19  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (print_reg): Handle QI and HI modes for
+	non Q regs.
+
 2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* config/config.gcc (powerpc-*-darwin*): Add libgcc build
