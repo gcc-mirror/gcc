@@ -1,3 +1,8 @@
+Wed Mar 18 12:41:43 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (make_implicit_typename): Only change the type of a 
+	TYPENAME_TYPE.
+
 Wed Mar 18 10:09:51 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* semantics.c: New file, containing routines to perform the

@@ -4592,8 +4592,9 @@ make_implicit_typename (context, t)
     }
   else
     retval = make_typename_type (context, DECL_NAME (t));
-  
-  TREE_TYPE (retval) = TREE_TYPE (t);
+
+  if (TREE_CODE (retval) == TYPENAME_TYPE)
+    TREE_TYPE (retval) = TREE_TYPE (t);
   return retval;
 }
 
