@@ -1,3 +1,8 @@
+1999-11-07  Anthony Green  <green@trip.cygnus.com>
+
+	* java/util/zip/ZipFile.java: Compute the offset of the ZipEntry
+	data correctly.
+
 1999-11-05  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natThread.cc (destroy): Removed incorrect comment.

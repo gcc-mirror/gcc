@@ -122,10 +122,13 @@ public class ZipFile implements ZipConstants
   public InputStream getInputStream(ZipEntry ze)  throws IOException
   {
     byte[] buffer = new byte[(int) ze.getSize()];
-    int data_offset = ZipConstants.LOCAL_FILE_HEADER_SIZE + name.length();
-    if (ze.extra != null)
-      data_offset += ze.extra.length;
-    file.seek(ze.relativeOffset + data_offset);
+
+    /* Read the size of the extra field, and skip to the start of the
+       data.  */
+    file.seek (ze.relativeOffset + ZipConstants.LOCAL_FILE_HEADER_SIZE - 2);
+    int extraFieldLength = readu2();
+    file.skipBytes (ze.getName().length() + extraFieldLength);
+
     file.readFully(buffer);
 
     InputStream is = new ByteArrayInputStream (buffer);
