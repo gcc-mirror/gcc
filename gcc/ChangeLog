@@ -1,5 +1,17 @@
 Thu Apr 16 22:41:02 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (build_control_flow): Accept raw data as inputs
+	instead of computing it locally.  Callers changed.
+	(find_rgns): Several new arguments.  Callers changed.
+	Generally clean up and comment better.  Use dominators to
+	identify reducible loops.  Convert some flag arrays to bitmaps.
+	Convert most of the code to work on pred/succ lists instead of
+	an edge table.  Add comments for future improvements.
+	(schedule_insns): Allocate temporary tables for flow data, call
+	routines to compute flow data and pass it along to children as
+	arguments.
+	(debug_control_flow): Delete.  Use dump_bb_data instead.
+
 	* basic-block.h (compute_dominators): Declare.
 
 	* flow.c (dump_sbitmap, dump_sbitmap_vector): New debugging

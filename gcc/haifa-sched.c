@@ -519,7 +519,8 @@ extern rtx forced_labels;
 
 static int is_cfg_nonregular PROTO ((void));
 void debug_control_flow PROTO ((void));
-static int build_control_flow PROTO ((void));
+static int build_control_flow PROTO ((int_list_ptr *, int_list_ptr *,
+				      int *, int *));
 static void new_edge PROTO ((int, int));
 
 
@@ -560,7 +561,8 @@ static int *containing_rgn;
 
 void debug_regions PROTO ((void));
 static void find_single_block_region PROTO ((void));
-static void find_rgns PROTO ((void));
+static void find_rgns PROTO ((int_list_ptr *, int_list_ptr *,
+			      int *, int *, sbitmap *));
 static int too_large PROTO ((int, int *, int *));
 
 extern void debug_live PROTO ((int, int));
@@ -1133,51 +1135,6 @@ is_cfg_nonregular ()
   return 0;
 }
 
-/* Print the control flow graph, for debugging purposes.
-   Callable from the debugger.  */
-
-void
-debug_control_flow ()
-{
-  int i, e, next;
-
-  fprintf (dump, ";;   --------- CONTROL FLOW GRAPH --------- \n\n");
-
-  for (i = 0; i < n_basic_blocks; i++)
-    {
-      fprintf (dump, ";;\tBasic block %d: first insn %d, last %d.\n",
-	       i,
-	       INSN_UID (basic_block_head[i]),
-	       INSN_UID (basic_block_end[i]));
-
-      fprintf (dump, ";;\tPredecessor blocks:");
-      for (e = IN_EDGES (i); e; e = next)
-	{
-	  fprintf (dump, " %d", FROM_BLOCK (e));
-
-	  next = NEXT_IN (e);
-
-	  if (next == IN_EDGES (i))
-	    break;
-	}
-
-      fprintf (dump, "\n;;\tSuccesor blocks:");
-      for (e = OUT_EDGES (i); e; e = next)
-	{
-	  fprintf (dump, " %d", TO_BLOCK (e));
-
-	  next = NEXT_OUT (e);
-
-	  if (next == OUT_EDGES (i))
-	    break;
-	}
-
-      fprintf (dump, " \n\n");
-
-    }
-}
-
-
 /* Build the control flow graph and set nr_edges.
 
    Instead of trying to build a cfg ourselves, we rely on flow to
@@ -1187,32 +1144,15 @@ debug_control_flow ()
    prevent cross block scheduling.  */
 
 static int
-build_control_flow ()
+build_control_flow (s_preds, s_succs, num_preds, num_succs)
+     int_list_ptr *s_preds;
+     int_list_ptr *s_succs;
+     int *num_preds;
+     int *num_succs;
 {
   int i;
-  int_list_ptr *s_preds;
-  int_list_ptr *s_succs;
   int_list_ptr succ;
-  int *num_preds;
-  int *num_succs;
   int unreachable;
-
-  /* The scheduler runs after flow; therefore, we can't blindly call
-     back into find_basic_blocks since doing so could invalidate the
-     info in basic_block_live_at_start.
-
-     Consider a block consisting entirely of dead stores; after life
-     analysis it would be a block of NOTE_INSN_DELETED notes.  If
-     we call find_basic_blocks again, then the block would be removed
-     entirely and invalidate our the register live information.
-
-     We could (should?) recompute register live information.  Doing
-     so may even be beneficial.  */
-  s_preds = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
-  s_succs = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
-  num_preds = (int *) alloca (n_basic_blocks * sizeof (int));
-  num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
-  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
   /* Count the number of edges in the cfg.  */
   nr_edges = 0;
@@ -1249,9 +1189,6 @@ build_control_flow ()
   /* increment by 1, since edge 0 is unused.  */
   nr_edges++;
 
-  /* For now.  This will move as more and more of haifa is converted
-     to using the cfg code in flow.c  */
-  free_bb_mem ();
   return unreachable;
 }
 
@@ -1495,212 +1432,225 @@ too_large (block, num_bbs, num_insns)
   if (max_hdr[blk] == -1)                                            \
     max_hdr[blk] = hdr;                                              \
   else if (dfs_nr[max_hdr[blk]] > dfs_nr[hdr])                       \
-         inner[hdr] = 0;                                             \
+         RESET_BIT (inner, hdr);                                     \
   else if (dfs_nr[max_hdr[blk]] < dfs_nr[hdr])                       \
          {                                                           \
-            inner[max_hdr[blk]] = 0;                                 \
+            RESET_BIT (inner,max_hdr[blk]);			     \
             max_hdr[blk] = hdr;                                      \
          }                                                           \
 }
 
 
-/* Find regions for interblock scheduling: a loop-free procedure, a reducible
-   inner loop, or a basic block not contained in any other region.
-   The procedures control flow graph is traversed twice.
-   First traversal, a DFS, finds the headers of inner loops  in the graph,
-   and verifies that there are no unreacable blocks.
-   Second traversal processes headers of inner loops, checking that the
-   loop is reducible.  The loop blocks that form a region are put into the
-   region's blocks list in topological order.
+/* Find regions for interblock scheduling.
 
-   The following variables are changed by the function: rgn_nr, rgn_table,
-   rgn_bb_table, block_to_bb and containing_rgn.  */
+   A region for scheduling can be:
+
+     * A loop-free procedure, or
+
+     * A reducible inner loop, or
+
+     * A basic block not contained in any other region.
+
+
+   ?!? In theory we could build other regions based on extended basic
+   blocks or reverse extended basic blocks.  Is it worth the trouble?
+
+   Loop blocks that form a region are put into the region's block list
+   in topological order.
+
+   This procedure stores its results into the following global (ick) variables
+
+     * rgn_nr
+     * rgn_table
+     * rgn_bb_table
+     * block_to_bb
+     * containing region
+
+
+   We use dominator relationships to avoid making regions out of non-reducible
+   loops.
+
+   This procedure needs to be converted to work on pred/succ lists instead
+   of edge tables.  That would simplify it somewhat.  */
 
 static void
-find_rgns ()
+find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
+     int_list_ptr *s_preds;
+     int_list_ptr *s_succs;
+     int *num_preds;
+     int *num_succs;
+     sbitmap *dom;
 {
   int *max_hdr, *dfs_nr, *stack, *queue, *degree;
-  char *header, *inner, *passed, *in_stack, *in_queue, no_loops = 1;
-  int node, child, loop_head, i, j, fst_edge, head, tail;
+  char no_loops = 1;
+  int node, child, loop_head, i, j, head, tail;
   int count = 0, sp, idx = 0, current_edge = out_edges[0];
   int num_bbs, num_insns;
   int too_large_failure;
 
-  /*
-     The following data structures are computed by the first traversal and
-     are used by the second traversal:
-     header[i] - flag set if the block i is the header of a loop.
-     inner[i] - initially set. It is reset if the the block i is the header
-     of a non-inner loop.
-     max_hdr[i] - the header of the inner loop containing block i.
-     (for a block i not in an inner loop it may be -1 or the
-     header of the most inner loop containing the block).
+  /* Note if an edge has been passed.  */
+  sbitmap passed;
 
-     These data structures are used by the first traversal only:
-     stack - non-recursive DFS implementation which uses a stack of edges.
-     sp - top of the stack of edges
-     dfs_nr[i] - the DFS ordering of block i.
-     in_stack[i] - flag set if the block i is in the DFS stack.
+  /* Note if a block is a natural loop header.  */
+  sbitmap header;
 
-     These data structures are used by the second traversal only:
-     queue - queue containing the blocks of the current region.
-     head and tail - queue boundaries.
-     in_queue[i] - flag set if the block i is in queue */
+  /* Note if a block is an natural inner loop header.  */
+  sbitmap inner;
 
-  /* function's inner arrays allocation and initialization */
+  /* Note if a block is in the block queue. */
+  sbitmap in_queue;
+
+  /* Perform a DFS traversal of the cfg.  Identify loop headers, inner loops
+     and a mapping from block to its loop header (if the block is contained
+     in a loop, else -1).
+
+     Store results in HEADER, INNER, and MAX_HDR respectively, these will
+     be used as inputs to the second traversal.
+
+     STACK, SP and DFS_NR are only used during the first traversal.  */
+
+  /* Allocate and initialize variables for the first traversal.  */
   max_hdr = (int *) alloca (n_basic_blocks * sizeof (int));
   dfs_nr = (int *) alloca (n_basic_blocks * sizeof (int));
   bzero ((char *) dfs_nr, n_basic_blocks * sizeof (int));
   stack = (int *) alloca (nr_edges * sizeof (int));
-  queue = (int *) alloca (n_basic_blocks * sizeof (int));
 
-  inner = (char *) alloca (n_basic_blocks * sizeof (char));
-  header = (char *) alloca (n_basic_blocks * sizeof (char));
-  bzero ((char *) header, n_basic_blocks * sizeof (char));
-  passed = (char *) alloca (nr_edges * sizeof (char));
-  bzero ((char *) passed, nr_edges * sizeof (char));
-  in_stack = (char *) alloca (nr_edges * sizeof (char));
-  bzero ((char *) in_stack, nr_edges * sizeof (char));
+  inner = sbitmap_alloc (n_basic_blocks);
+  sbitmap_ones (inner);
 
-  in_queue = (char *) alloca (n_basic_blocks * sizeof (char));
+  header = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (header);
+
+  passed = sbitmap_alloc (nr_edges);
+  sbitmap_zero (passed);
+
+  in_queue = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (in_queue);
 
   for (i = 0; i < n_basic_blocks; i++)
-    {
-      inner[i] = 1;
-      max_hdr[i] = -1;
-    }
+    max_hdr[i] = -1;
 
-  /* First traversal: DFS, finds inner loops in control flow graph */
+  /* DFS traversal to find inner loops in the cfg.  */
 
   sp = -1;
   while (1)
     {
-      if (current_edge == 0 || passed[current_edge])
+      if (current_edge == 0 || TEST_BIT (passed, current_edge))
 	{
-	  /*  Here, if  current_edge <  0, this is  a leaf  block.
-	     Otherwise current_edge  was already passed.  Note that in
-	     the latter case, not  only current_edge but also  all its
-	     NEXT_OUT edges are also passed.   We have to "climb up on
-	     edges in  the  stack", looking for the  first  (already
-	     passed) edge whose NEXT_OUT was not passed yet.  */
-
-	  while (sp >= 0 && (current_edge == 0 || passed[current_edge]))
+	  /* We have reached a leaf node or a node that was already
+	     proc4essed.  Pop edges off the stack until we find
+	     an edge that has not yet been processed.  */
+	  while (sp >= 0
+		 && (current_edge == 0 || TEST_BIT (passed, current_edge)))
 	    {
+	      /* Pop entry off the stack.  */
 	      current_edge = stack[sp--];
 	      node = FROM_BLOCK (current_edge);
 	      child = TO_BLOCK (current_edge);
-	      in_stack[child] = 0;
-	      if (max_hdr[child] >= 0 && in_stack[max_hdr[child]])
+	      if (max_hdr[child] >= 0 && TEST_BIT (dom[node], max_hdr[child]))
 		UPDATE_LOOP_RELATIONS (node, max_hdr[child]);
 	      current_edge = NEXT_OUT (current_edge);
 	    }
 
-	  /* stack empty - the whole graph is traversed.  */
-	  if (sp < 0 && passed[current_edge])
+	  /* See if have finished the DFS tree traversal.  */
+	  if (sp < 0 && TEST_BIT (passed, current_edge))
 	    break;
+
+	  /* Nope, continue the traversal with the popped node.  */
 	  continue;
 	}
 
+      /* Process a node.  */
       node = FROM_BLOCK (current_edge);
-      dfs_nr[node] = ++count;
-      in_stack[node] = 1;
       child = TO_BLOCK (current_edge);
+      dfs_nr[node] = ++count;
 
-      /* found a loop header */
-      if (in_stack[child])
+      /* If the successor block dominates the current block, then
+	 we've found a natural loop, record the header block for
+	 future reference.  */
+      if (TEST_BIT (dom[node], child))
 	{
 	  no_loops = 0;
-	  header[child] = 1;
-	  max_hdr[child] = child;
+	  SET_BIT (header, child);
 	  UPDATE_LOOP_RELATIONS (node, child);
-	  passed[current_edge] = 1;
+	  SET_BIT (passed, current_edge);
 	  current_edge = NEXT_OUT (current_edge);
 	  continue;
 	}
 
-      /* the  child was already visited once, no need to go down from
-         it, everything is traversed there.  */
+      /* If the child was already visited, then there is no need to visit
+	 it again.  Just update the loop relationships and restart
+	 with a new edge.  */
       if (dfs_nr[child])
 	{
-	  if (max_hdr[child] >= 0 && in_stack[max_hdr[child]])
+	  if (max_hdr[child] >= 0 && TEST_BIT (dom[node], max_hdr[child]))
 	    UPDATE_LOOP_RELATIONS (node, max_hdr[child]);
-	  passed[current_edge] = 1;
+	  SET_BIT (passed, current_edge);
 	  current_edge = NEXT_OUT (current_edge);
 	  continue;
 	}
 
-      /* this is a step down in the dfs traversal */
+      /* Push an entry on the stack and continue DFS traversal.  */
       stack[++sp] = current_edge;
-      passed[current_edge] = 1;
+      SET_BIT (passed, current_edge);
       current_edge = OUT_EDGES (child);
-    }				/* while (1); */
-
-  /* Second travsersal: find reducible inner loops, and sort
-     topologically the blocks of each region */
-  degree = dfs_nr;		/* reuse dfs_nr array - it is not needed anymore */
-  bzero ((char *) in_queue, n_basic_blocks * sizeof (char));
-
-  if (no_loops)
-    header[0] = 1;
-
-  /* compute the in-degree of every block in the graph */
-  for (i = 0; i < n_basic_blocks; i++)
-    {
-      fst_edge = IN_EDGES (i);
-      if (fst_edge > 0)
-	{
-	  degree[i] = 1;
-	  current_edge = NEXT_IN (fst_edge);
-	  while (fst_edge != current_edge)
-	    {
-	      ++degree[i];
-	      current_edge = NEXT_IN (current_edge);
-	    }
-	}
-      else
-	degree[i] = 0;
     }
 
-  /* pass through all graph blocks, looking for headers of inner loops */
+  /* ?!? This might be a good place to detect unreachable loops and
+     avoid problems with them by forcing single block scheduling.  */
+  if (no_loops)
+    SET_BIT (header, 0);
+
+  /* Second travsersal:find reducible inner loops and topologically sort
+     block of each region.  */
+
+  /* Gross.  To avoid wasting memory, the second pass uses the dfs_nr array
+     to hold degree counts.  */
+  degree = dfs_nr;
+
+  /* Compute the in-degree of every block in the graph */
+  for (i = 0; i < n_basic_blocks; i++)
+    degree[i] = num_preds[i];
+
+  queue = (int *) alloca (n_basic_blocks * sizeof (int));
+
+  /* Find blocks which are inner loop headers.  */
   for (i = 0; i < n_basic_blocks; i++)
     {
-
-      if (header[i] && inner[i])
+      if (TEST_BIT (header, i) && TEST_BIT (inner, i))
 	{
+	  int_list_ptr ps;
 
-	  /* i is a header of a potentially reducible inner loop, or
-	     block 0 in a subroutine with no loops at all */
+	  /* I is a header of a reducible inner loop, or block 0 in a
+	     subroutine with no loops at all.  */
 	  head = tail = -1;
 	  too_large_failure = 0;
 	  loop_head = max_hdr[i];
 
-	  /* decrease in_degree of all i's successors, (this is needed
-	     for the topological ordering) */
-	  fst_edge = current_edge = OUT_EDGES (i);
-	  if (fst_edge > 0)
-	    {
-	      do
-		{
-		  --degree[TO_BLOCK (current_edge)];
-		  current_edge = NEXT_OUT (current_edge);
-		}
-	      while (fst_edge != current_edge);
-	    }
+	  /* Decrease degree of all I's successors for topological
+	     ordering.  */
+	  for (ps = s_succs[i]; ps; ps = ps->next)
+	    if (INT_LIST_VAL (ps) != EXIT_BLOCK
+		&& INT_LIST_VAL (ps) != ENTRY_BLOCK)
+	      --degree[INT_LIST_VAL (ps)];
 
-	  /* estimate # insns, and count # blocks in the region.  */
+	  /* Estimate # insns, and count # blocks in the region.  */
 	  num_bbs = 1;
-	  num_insns = INSN_LUID (basic_block_end[i]) - INSN_LUID (basic_block_head[i]);
+	  num_insns
+	    = INSN_LUID (basic_block_end[i]) - INSN_LUID (basic_block_head[i]);
 
 
-	  /* find all loop latches, if it is a true loop header, or
-	     all leaves if the graph has no loops at all */
+	  /* Find all loop latches (blocks which back edges to the loop
+	     header) or all the leaf blocks in the cfg has no loops.
+
+	     Place those blocks into the queue.  */
 	  if (no_loops)
 	    {
 	      for (j = 0; j < n_basic_blocks; j++)
-		if (out_edges[j] == 0)	/* a leaf */
+		if (num_succs[j] == 0)
 		  {
 		    queue[++tail] = j;
-		    in_queue[j] = 1;
+		    SET_BIT (in_queue, j);
 
 		    if (too_large (j, &num_bbs, &num_insns))
 		      {
@@ -1711,14 +1661,20 @@ find_rgns ()
 	    }
 	  else
 	    {
-	      fst_edge = current_edge = IN_EDGES (i);
-	      do
+	      int_list_ptr ps;
+
+	      for (ps = s_preds[i]; ps; ps = ps->next)
 		{
-		  node = FROM_BLOCK (current_edge);
-		  if (max_hdr[node] == loop_head && node != i)	/* a latch */
+		  node = INT_LIST_VAL (ps);
+
+		  if (node == ENTRY_BLOCK || node == EXIT_BLOCK)
+		    continue;
+ 
+		  if (max_hdr[node] == loop_head && node != i)
 		    {
+		      /* This is a loop latch.  */
 		      queue[++tail] = node;
-		      in_queue[node] = 1;
+		      SET_BIT (in_queue, node);
 
 		      if (too_large (node, &num_bbs, &num_insns))
 			{
@@ -1726,31 +1682,62 @@ find_rgns ()
 			  break;
 			}
 		    }
-		  current_edge = NEXT_IN (current_edge);
+		  
 		}
-	      while (fst_edge != current_edge);
 	    }
 
-	  /* Put in queue[] all blocks that belong to the loop.  Check
-	     that the loop is reducible, traversing back from the loop
-	     latches up to the loop header.  */
+	  /* Now add all the blocks in the loop to the queue.
+
+	     We know the loop is a natural loop; however the algorithm
+	     above will not always mark certain blocks as being in the
+	     loop.  Consider:
+		node   children
+		 a	  b,c
+		 b	  c
+		 c	  a,d
+		 d	  b
+
+
+	     The algorithm in the DFS traversal may not mark B & D as part
+	     of the loop (ie they will not have max_hdr set to A).
+
+	     We know they can not be loop latches (else they would have
+	     had max_hdr set since they'd have a backedge to a dominator
+	     block).  So we don't need them on the initial queue.
+
+	     We know they are part of the loop because they are dominated
+	     by the loop header and can be reached by a backwards walk of
+	     the edges starting with nodes on the initial queue.
+
+	     It is safe and desirable to include those nodes in the
+	     loop/scheduling region.  To do so we would need to decrease
+	     the degree of a node if it is the target of a backedge
+	     within the loop itself as the node is placed in the queue.
+
+	     We do not do this because I'm not sure that the actual
+	     scheduling code will properly handle this case. ?!? */
+	
 	  while (head < tail && !too_large_failure)
 	    {
+	      int_list_ptr ps;
 	      child = queue[++head];
-	      fst_edge = current_edge = IN_EDGES (child);
-	      do
-		{
-		  node = FROM_BLOCK (current_edge);
 
-		  if (max_hdr[node] != loop_head)
-		    {		/* another entry to loop, it is irreducible */
+	      for (ps = s_preds[child]; ps; ps = ps->next)
+		{
+		  node = INT_LIST_VAL (ps);
+
+		  /* See discussion above about nodes not marked as in
+		     this loop during the initial DFS traversal.  */
+		  if (node == ENTRY_BLOCK || node == EXIT_BLOCK
+		      || max_hdr[node] != loop_head)
+		    {
 		      tail = -1;
 		      break;
 		    }
-		  else if (!in_queue[node] && node != i)
+		  else if (!TEST_BIT (in_queue, node) && node != i)
 		    {
 		      queue[++tail] = node;
-		      in_queue[node] = 1;
+		      SET_BIT (in_queue, node);
 
 		      if (too_large (node, &num_bbs, &num_insns))
 			{
@@ -1758,14 +1745,12 @@ find_rgns ()
 			  break;
 			}
 		    }
-		  current_edge = NEXT_IN (current_edge);
 		}
-	      while (fst_edge != current_edge);
 	    }
 
 	  if (tail >= 0 && !too_large_failure)
 	    {
-	      /* Place the loop header into list of region blocks */
+	      /* Place the loop header into list of region blocks.  */
 	      degree[i] = -1;
 	      rgn_bb_table[idx] = i;
 	      RGN_NR_BLOCKS (nr_regions) = num_bbs;
@@ -1773,12 +1758,13 @@ find_rgns ()
 	      CONTAINING_RGN (i) = nr_regions;
 	      BLOCK_TO_BB (i) = count = 0;
 
-	      /* remove blocks from queue[], (in topological order), when
-	         their  in_degree becomes 0.  We  scan  the queue over and
-	         over  again until   it is empty.   Note: there may be a more
-	         efficient way to do it.  */
+	      /* Remove blocks from queue[] when their in degree becomes
+		 zero.  Repeat until no blocks are left on the list.  This
+		 produces a topological list of blocks in the region.  */
 	      while (tail >= 0)
 		{
+		  int_list_ptr ps;
+
 		  if (head < 0)
 		    head = tail;
 		  child = queue[head];
@@ -1789,17 +1775,11 @@ find_rgns ()
 		      BLOCK_TO_BB (child) = ++count;
 		      CONTAINING_RGN (child) = nr_regions;
 		      queue[head] = queue[tail--];
-		      fst_edge = current_edge = OUT_EDGES (child);
 
-		      if (fst_edge > 0)
-			{
-			  do
-			    {
-			      --degree[TO_BLOCK (current_edge)];
-			      current_edge = NEXT_OUT (current_edge);
-			    }
-			  while (fst_edge != current_edge);
-			}
+		      for (ps = s_succs[child]; ps; ps = ps->next)
+			if (INT_LIST_VAL (ps) != ENTRY_BLOCK
+			    && INT_LIST_VAL (ps) != EXIT_BLOCK)
+			  --degree[INT_LIST_VAL (ps)];
 		    }
 		  else
 		    --head;
@@ -1809,7 +1789,8 @@ find_rgns ()
 	}
     }
 
-  /* define each of all other blocks as a region itself */
+  /* Any block that did not end up in a region is placed into a region
+     by itself.  */
   for (i = 0; i < n_basic_blocks; i++)
     if (degree[i] >= 0)
       {
@@ -1820,7 +1801,11 @@ find_rgns ()
 	BLOCK_TO_BB (i) = 0;
       }
 
-}				/* find_rgns */
+  free (passed);
+  free (header);
+  free (inner);
+  free (in_queue);
+}
 
 
 /* functions for regions scheduling information */
@@ -8436,20 +8421,53 @@ schedule_insns (dump_file)
 	}
       else
 	{
+	  int_list_ptr *s_preds, *s_succs;
+	  int *num_preds, *num_succs;
+	  sbitmap *dom, *pdom;
+
+	  s_preds = (int_list_ptr *) alloca (n_basic_blocks
+					     * sizeof (int_list_ptr));
+	  s_succs = (int_list_ptr *) alloca (n_basic_blocks
+					     * sizeof (int_list_ptr));
+	  num_preds = (int *) alloca (n_basic_blocks * sizeof (int));
+	  num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
+	  dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+	  pdom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+
+	  /* The scheduler runs after flow; therefore, we can't blindly call
+	     back into find_basic_blocks since doing so could invalidate the
+	     info in basic_block_live_at_start.
+
+	     Consider a block consisting entirely of dead stores; after life
+	     analysis it would be a block of NOTE_INSN_DELETED notes.  If
+	     we call find_basic_blocks again, then the block would be removed
+	     entirely and invalidate our the register live information.
+
+	     We could (should?) recompute register live information.  Doing
+	     so may even be beneficial.  */
+
+	  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
+
+	  /* Compute the dominators and post dominators.  We don't currently use
+	     post dominators, but we should for speculative motion analysis.  */
+	  compute_dominators (dom, pdom, s_preds, s_succs);
+
 	  /* build_control_flow will return nonzero if it detects unreachable
 	     blocks or any other irregularity with the cfg which prevents
 	     cross block scheduling.  */
-	  if (build_control_flow () != 0)
+	  if (build_control_flow (s_preds, s_succs, num_preds, num_succs) != 0)
 	    find_single_block_region ();
 	  else
-	    find_rgns ();
+	    find_rgns (s_preds, s_succs, num_preds, num_succs, dom);
 
 	  if (sched_verbose >= 3)
-	    {
-	      debug_control_flow ();
-	      debug_regions ();
-	    }
+	    debug_regions ();
 
+	  /* For now.  This will move as more and more of haifa is converted
+	     to using the cfg code in flow.c  */
+	  free_bb_mem ();
+	  free (dom);
+	  free (pdom);
 	}
     }
 
