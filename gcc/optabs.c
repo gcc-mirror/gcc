@@ -2865,7 +2865,6 @@ expand_copysign (rtx op0, rtx op1, rtx target)
 {
   enum machine_mode mode = GET_MODE (op0);
   const struct real_format *fmt;
-  int bitpos;
   bool op0_is_abs;
   rtx temp;
 
@@ -2882,10 +2881,6 @@ expand_copysign (rtx op0, rtx op1, rtx target)
   if (fmt == NULL || !fmt->has_signed_zero)
     return NULL_RTX;
 
-  bitpos = fmt->signbit_rw;
-  if (bitpos < 0)
-    return NULL_RTX;
-
   op0_is_abs = false;
   if (GET_CODE (op0) == CONST_DOUBLE)
     {
@@ -2894,17 +2889,21 @@ expand_copysign (rtx op0, rtx op1, rtx target)
       op0_is_abs = true;
     }
 
-  if (GET_CODE (op0) == CONST_DOUBLE
-      || (neg_optab->handlers[mode].insn_code != CODE_FOR_nothing
-          && abs_optab->handlers[mode].insn_code != CODE_FOR_nothing))
+  if (fmt->signbit_ro >= 0
+      && (GET_CODE (op0) == CONST_DOUBLE
+	  || (neg_optab->handlers[mode].insn_code != CODE_FOR_nothing
+	      && abs_optab->handlers[mode].insn_code != CODE_FOR_nothing)))
     {
       temp = expand_copysign_absneg (mode, op0, op1, target,
-				     bitpos, op0_is_abs);
+				     fmt->signbit_ro, op0_is_abs);
       if (temp)
 	return temp;
     }
 
-  return expand_copysign_bit (mode, op0, op1, target, bitpos, op0_is_abs);
+  if (fmt->signbit_rw < 0)
+    return NULL_RTX;
+  return expand_copysign_bit (mode, op0, op1, target,
+			      fmt->signbit_rw, op0_is_abs);
 }
 
 /* Generate an instruction whose insn-code is INSN_CODE,

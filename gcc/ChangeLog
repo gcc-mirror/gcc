@@ -1,3 +1,12 @@
+2005-03-15  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* real.c (c4x_single_format, c4x_extended_format): Provide values
+	for signbit_ro for c4x's single and extended floating point formats.
+	* optabs.c (expand_copysign): Use the floating point format's
+	signbit_ro for expanding via expand_copysign_absneg, and it's
+	signbit_rw field for expanding via expand_copysign_bit.
+
 2005-03-15  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.h (unknown_alignment_for_access_p): Replaced by
