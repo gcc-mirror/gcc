@@ -1,3 +1,23 @@
+Fri Jun 25 13:35:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.c: Rebuilt.
+
+	* parse.y (resolve_package): Fixed bogus return statement.
+	(patch_method_invocation): Resolve method invocation beginning with
+ 	a package name qualifier.
+
+	* parse.y (java_complete_lhs): When doing cross referencing, don't
+ 	try to keep file location on a WFL expanded as a CALL_EXPR.
+
+	* parse.y (finish_method_declaration): Insert a RETURN_EXPR when
+ 	compiling to class file a void method with an empty method body.
+  	As a side effect, the bytecode backend will generate the
+ 	appropriate `return' instruction.
+	
+	* parse.y (lookup_package_type_and_set_next): New function prototype.
+	(resolve_package): Search current and imported packages.
+	(lookup_package_type_and_set_next): New function.
+
 1999-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Make-lang.in (java.stage1): Depend on stage1-start.
