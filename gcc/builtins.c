@@ -2746,6 +2746,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || fcode == BUILT_IN_FSQRT || fcode == BUILT_IN_MEMSET
 	  || fcode == BUILT_IN_MEMCPY || fcode == BUILT_IN_MEMCMP
 	  || fcode == BUILT_IN_BCMP || fcode == BUILT_IN_BZERO
+	  || fcode == BUILT_IN_INDEX || fcode == BUILT_IN_RINDEX
+	  || fcode == BUILT_IN_STRCHR || fcode == BUILT_IN_STRRCHR
 	  || fcode == BUILT_IN_STRLEN || fcode == BUILT_IN_STRCPY
 	  || fcode == BUILT_IN_STRSTR || fcode == BUILT_IN_STRPBRK
 	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS
@@ -2888,12 +2890,14 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
       
+    case BUILT_IN_INDEX:
     case BUILT_IN_STRCHR:
       target = expand_builtin_strchr (arglist, target, mode);
       if (target)
 	return target;
       break;
 
+    case BUILT_IN_RINDEX:
     case BUILT_IN_STRRCHR:
       target = expand_builtin_strrchr (arglist, target, mode);
       if (target)
