@@ -1283,6 +1283,22 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	       clobbered by the function.  */
 	    if (GET_CODE (XVECEXP (body, 0, 0)) == CALL_INSN)
 	      CC_STATUS_INIT;
+
+	    /* Following a conditional branch sequence, we have a new basic
+	       block.  */
+	    if (profile_block_flag)
+	      {
+		rtx insn = XVECEXP (body, 0, 0);
+		rtx body = PATTERN (insn);
+
+		if ((GET_CODE (insn) == JUMP_INSN && GET_CODE (body) == SET
+		     && GET_CODE (SET_SRC (body)) != LABEL_REF)
+		    || (GET_CODE (insn) == JUMP_INSN
+			&& GET_CODE (body) == PARALLEL
+			&& GET_CODE (XVECEXP (body, 0, 0)) == SET
+			&& GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) != LABEL_REF))
+		  new_block = 1;
+	      }
 	    break;
 	  }
 
@@ -1333,12 +1349,15 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  }
 #endif
 
-	/* Following a conditional branch, we have a new basic block.  */
-	if ((GET_CODE (insn) == JUMP_INSN && GET_CODE (body) == SET
-	     && GET_CODE (SET_SRC (body)) != LABEL_REF)
-	    || (GET_CODE (insn) == JUMP_INSN && GET_CODE (body) == PARALLEL
-		&& GET_CODE (XVECEXP (body, 0, 0)) == SET
-		&& GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) != LABEL_REF))
+	/* Following a conditional branch, we have a new basic block.
+	   But if we are inside a sequence, the new block starts after the
+	   last insn of the sequence.  */
+	if (profile_block_flag && final_sequence == 0
+	    && ((GET_CODE (insn) == JUMP_INSN && GET_CODE (body) == SET
+		 && GET_CODE (SET_SRC (body)) != LABEL_REF)
+		|| (GET_CODE (insn) == JUMP_INSN && GET_CODE (body) == PARALLEL
+		    && GET_CODE (XVECEXP (body, 0, 0)) == SET
+		    && GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) != LABEL_REF)))
 	  new_block = 1;
 
 #ifndef STACK_REGS
