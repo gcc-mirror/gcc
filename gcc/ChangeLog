@@ -1,3 +1,7 @@
+2002-05-20  H.J. Lu  (hjl@gnu.org)
+
+	* gcc/config/mips/linux.h (SDB_DEBUGGING_INFO): Undefine.
+
 2002-05-20  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm-wince-pe.h (ASM_SPEC): Pass -mcpu and -march
