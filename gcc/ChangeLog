@@ -1,3 +1,8 @@
+Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
+			      Eric Botcazou <ebotcazou@libertysurf.fr>
+	PR opt/8492
+	* gcse.c (one_cprop_pass): Delete unreachable blocks.
+
 2003-01-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
         * reload.c (maybe_memory_address_p): New function.
