@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -270,6 +270,11 @@ package Opt is
    --  Set True (-gnatD switch) to debug generated expanded code instead
    --  of the original source code. Causes debugging information to be
    --  written with respect to the generated code file that is written.
+
+   Default_Exit_Status : Int := 0;
+   --  GNATBIND
+   --  Set the default exit status value. Set by the -Xnnn switch for the
+   --  binder.
 
    Default_Sec_Stack_Size : Int := -1;
    --  GNATBIND

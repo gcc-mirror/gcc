@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for Enumeration_Type'Wide_Width
+--  This package contains routines used for Enumeration_Type'Wide_[Wide_]Width
 
 with System.WCh_Con;
 
@@ -42,8 +42,7 @@ pragma Pure (WWd_Enum);
      (Names   : String;
       Indexes : System.Address;
       Lo, Hi  : Natural;
-      EM      : System.WCh_Con.WC_Encoding_Method)
-      return    Natural;
+      EM      : System.WCh_Con.WC_Encoding_Method) return Natural;
    --  Used to compute Enum'Wide_Width where Enum is an enumeration subtype
    --  other than those defined in package Standard. Names is a string with
    --  a lower bound of 1 containing the characters of all the enumeration
@@ -65,8 +64,7 @@ pragma Pure (WWd_Enum);
      (Names   : String;
       Indexes : System.Address;
       Lo, Hi  : Natural;
-      EM      : System.WCh_Con.WC_Encoding_Method)
-      return    Natural;
+      EM      : System.WCh_Con.WC_Encoding_Method) return Natural;
    --  Identical to Wide_Width_Enumeration_8 except that it handles types
    --  using array (0 .. Num) of Natural_16 for the Indexes table.
 
@@ -74,9 +72,29 @@ pragma Pure (WWd_Enum);
      (Names   : String;
       Indexes : System.Address;
       Lo, Hi  : Natural;
-      EM      : System.WCh_Con.WC_Encoding_Method)
-      return    Natural;
+      EM      : System.WCh_Con.WC_Encoding_Method) return Natural;
    --  Identical to Wide_Width_Enumeration_8 except that it handles types
    --  using array (0 .. Num) of Natural_32 for the Indexes table.
+
+   function Wide_Wide_Width_Enumeration_8
+     (Names   : String;
+      Indexes : System.Address;
+      Lo, Hi  : Natural;
+      EM      : System.WCh_Con.WC_Encoding_Method) return Natural;
+   --  Same function for Wide_Wide_Width attribute
+
+   function Wide_Wide_Width_Enumeration_16
+     (Names   : String;
+      Indexes : System.Address;
+      Lo, Hi  : Natural;
+      EM      : System.WCh_Con.WC_Encoding_Method) return Natural;
+   --  Same function for Wide_Wide_Width attribute
+
+   function Wide_Wide_Width_Enumeration_32
+     (Names   : String;
+      Indexes : System.Address;
+      Lo, Hi  : Natural;
+      EM      : System.WCh_Con.WC_Encoding_Method) return Natural;
+   --  Same function for Wide_Wide_Width attribute
 
 end System.WWd_Enum;

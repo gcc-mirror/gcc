@@ -16,8 +16,13 @@
 package Ada.Strings is
 pragma Pure (Strings);
 
-   Space      : constant Character      := ' ';
-   Wide_Space : constant Wide_Character := ' ';
+   Space           : constant Character           := ' ';
+   Wide_Space      : constant Wide_Character      := ' ';
+
+   --  The following declaration is for Ada 2005 (AI-285)
+
+   Wide_Wide_Space : constant Wide_Wide_Character := ' ';
+   pragma Ada_05 (Wide_Wide_Space);
 
    Length_Error, Pattern_Error, Index_Error, Translation_Error : exception;
 

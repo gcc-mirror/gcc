@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
---                   c                                                       --
+--                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             S E M _ C H 1 3                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -301,7 +301,6 @@ package body Sem_Ch13 is
       then
          Error_Msg_N ("cannot specify attribute for subtype", Nam);
          return;
-
       end if;
 
       --  Switch on particular attribute
@@ -1364,6 +1363,45 @@ package body Sem_Ch13 is
             end if;
          end Storage_Pool;
 
+         -----------------
+         -- Stream_Size --
+         -----------------
+
+         when Attribute_Stream_Size => Stream_Size : declare
+            Size : constant Uint := Static_Integer (Expr);
+
+         begin
+            if Has_Stream_Size_Clause (U_Ent) then
+               Error_Msg_N ("Stream_Size already given for &", Nam);
+
+            elsif Is_Elementary_Type (U_Ent) then
+               if Size /= System_Storage_Unit
+                    and then
+                  Size /= System_Storage_Unit * 2
+                    and then
+                  Size /= System_Storage_Unit * 4
+                     and then
+                  Size /= System_Storage_Unit * 8
+               then
+                  Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
+                  Error_Msg_N
+                    ("stream size for elementary type must be a"
+                       & " power of 2 and at least ^", N);
+
+               elsif RM_Size (U_Ent) > Size then
+                  Error_Msg_Uint_1 := RM_Size (U_Ent);
+                  Error_Msg_N
+                    ("stream size for elementary type must be a"
+                       & " power of 2 and at least ^", N);
+               end if;
+
+               Set_Has_Stream_Size_Clause (U_Ent);
+
+            else
+               Error_Msg_N ("Stream_Size cannot be given for &", Nam);
+            end if;
+         end Stream_Size;
+
          ----------------
          -- Value_Size --
          ----------------
@@ -1499,7 +1537,6 @@ package body Sem_Ch13 is
          when others =>
             Error_Msg_N
               ("attribute& cannot be set with definition clause", N);
-
       end case;
 
       --  The test for the type being frozen must be performed after
@@ -1669,10 +1706,11 @@ package body Sem_Ch13 is
          Error_Msg_N ("duplicate enumeration rep clause ignored", N);
          return;
 
-      --  Don't allow rep clause if root type is standard [wide_]character
+      --  Don't allow rep clause for standard [wide_[wide_]]character
 
       elsif Root_Type (Enumtype) = Standard_Character
         or else Root_Type (Enumtype) = Standard_Wide_Character
+        or else Root_Type (Enumtype) = Standard_Wide_Wide_Character
       then
          Error_Msg_N ("enumeration rep clause not allowed for this type", N);
          return;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -938,7 +938,7 @@ package body Sprint is
             end if;
 
             Write_Char_Sloc (''');
-            Write_Char_Code (Char_Literal_Value (Node));
+            Write_Char_Code (UI_To_CC (Char_Literal_Value (Node)));
             Write_Char (''');
 
          when N_Code_Statement =>
@@ -1363,6 +1363,34 @@ package body Sprint is
                Write_Str_With_Col_Check (" with private");
             end if;
 
+         when N_Formal_Abstract_Subprogram_Declaration =>
+            Write_Indent_Str_Sloc ("with ");
+            Sprint_Node (Specification (Node));
+
+            Write_Str_With_Col_Check (" is abstract");
+
+            if Box_Present (Node) then
+               Write_Str_With_Col_Check (" <>");
+            elsif Present (Default_Name (Node)) then
+               Write_Str_With_Col_Check (" ");
+               Sprint_Node (Default_Name (Node));
+            end if;
+
+            Write_Char (';');
+
+         when N_Formal_Concrete_Subprogram_Declaration =>
+            Write_Indent_Str_Sloc ("with ");
+            Sprint_Node (Specification (Node));
+
+            if Box_Present (Node) then
+               Write_Str_With_Col_Check (" is <>");
+            elsif Present (Default_Name (Node)) then
+               Write_Str_With_Col_Check (" is ");
+               Sprint_Node (Default_Name (Node));
+            end if;
+
+            Write_Char (';');
+
          when N_Formal_Discrete_Type_Definition =>
             Write_Str_With_Col_Check_Sloc ("<>");
 
@@ -1423,19 +1451,6 @@ package body Sprint is
 
          when N_Formal_Signed_Integer_Type_Definition =>
             Write_Str_With_Col_Check_Sloc ("range <>");
-
-         when N_Formal_Subprogram_Declaration =>
-            Write_Indent_Str_Sloc ("with ");
-            Sprint_Node (Specification (Node));
-
-            if Box_Present (Node) then
-               Write_Str_With_Col_Check (" is <>");
-            elsif Present (Default_Name (Node)) then
-               Write_Str_With_Col_Check (" is ");
-               Sprint_Node (Default_Name (Node));
-            end if;
-
-            Write_Char (';');
 
          when N_Formal_Type_Declaration =>
             Write_Indent_Str_Sloc ("type ");

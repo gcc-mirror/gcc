@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -498,6 +498,21 @@ package VMS_Data is
    --   current unit. This is useful for code audit purposes, and also may be
    --   used to improve code generation in some cases.
 
+   S_Bind_Return  : aliased constant S := "/RETURN_CODES="                 &
+                                            "POSIX "                       &
+                                               "!-X1 "                     &
+                                            "VMS "                         &
+                                               "-X1";
+   --        /RETURN_CODES=POSIX (D)
+   --        /RETURN_CODES=VMS
+   --
+   --   Specifies the style of default exit code returned. Must be used in
+   --   conjunction with and match the Link qualifer with same name.
+   --
+   --        POSIX (D)   Return Posix success (0) by default.
+   --
+   --        VMS         Return VMS success (1) by default.
+
    S_Bind_RTS     : aliased constant S := "/RUNTIME_SYSTEM=|"              &
                                             "--RTS=|";
    --      /RUNTIME_SYSTEM=xxx
@@ -636,6 +651,7 @@ package VMS_Data is
       S_Bind_Report  'Access,
       S_Bind_ReportX 'Access,
       S_Bind_Restr   'Access,
+      S_Bind_Return  'Access,
       S_Bind_RTS     'Access,
       S_Bind_Search  'Access,
       S_Bind_Shared  'Access,
@@ -3368,7 +3384,8 @@ package VMS_Data is
    --        /RETURN_CODES=VMS
    --
    --   Specifies the style of codes returned by
-   --   Ada.Command_Line.Set_Exit_Status.
+   --   Ada.Command_Line.Set_Exit_Status. Must be used in conjunction with
+   --   and match the Bind qualifer with the same name.
    --
    --        POSIX (D)   Return Posix compatible exit codes.
    --
@@ -4473,7 +4490,7 @@ package VMS_Data is
 
    S_Pretty_Align  : aliased constant S := "/ALIGN="                       &
                                            "DEFAULT "                      &
-                                               "-A1234 "                   &
+                                               "-A12345 "                  &
                                            "OFF "                          &
                                                "-A0 "                      &
                                            "COLONS "                       &
@@ -4483,7 +4500,9 @@ package VMS_Data is
                                            "STATEMENTS "                   &
                                                "-A3 "                      &
                                            "ARROWS "                       &
-                                              "-A4";
+                                               "-A4 "                      &
+                                           "COMPONENT_CLAUSES "            &
+                                               "-A5";
    --        /ALIGN[=align-option, align-option, ...]
    --
    --   Set alignments. By default, all alignments (colons in declarations,
@@ -4492,11 +4511,14 @@ package VMS_Data is
    --
    --   align-option may be one of the following:
    --
-   --      OFF (D)      Set all alignments to OFF
-   --      COLONS       Set alignments of colons in declarations to ON
-   --      DECLARATIONS Set alignments of initialisations in declarations to ON
-   --      STATEMENTS   Set alignments of assignments statements to ON
-   --      ARROWS       Set alignments of arrow delimiters to ON.
+   --      OFF (D)           Set all alignments to OFF
+   --      COLONS            Set alignments of colons in declarations to ON
+   --      DECLARATIONS      Set alignments of initialisations in declarations
+   --                        to ON
+   --      STATEMENTS        Set alignments of assignments statements to ON
+   --      ARROWS            Set alignments of arrow delimiters to ON.
+   --      COMPONENT_CLAUSES Set alignments of AT keywords in component
+   --                        clauses ON
    --
    --   Specifying one of the ON options without first specifying the OFF
    --   option has no effect, because by default all alignments are set to ON.

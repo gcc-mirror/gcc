@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -250,7 +250,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       /* Set the current function to be the elaboration procedure and gimplify
 	 what we have.  */
       current_function_decl = info->elab_proc;
-      gimplify_body (&gnu_body, info->elab_proc, false);
+      gimplify_body (&gnu_body, info->elab_proc, true);
 
       /* We should have a BIND_EXPR, but it may or may not have any statements
 	 in it.  If it doesn't have any, we have nothing to do.  */
@@ -2549,7 +2549,8 @@ gnat_to_gnu (Node_Id gnat_node)
       else
 	gnu_result
 	  = force_fit_type
-	    (build_int_cst (gnu_result_type, Char_Literal_Value (gnat_node)),
+	    (build_int_cst
+	      (gnu_result_type, UI_To_CC (Char_Literal_Value (gnat_node))),
 	     false, false, false);
       break;
 
@@ -2747,7 +2748,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Object_Renaming_Declaration:
       gnat_temp = Defining_Entity (gnat_node);
 
-      /* Don't do anything if this renaming is handled by the front end.  or if
+      /* Don't do anything if this renaming is handled by the front end or if
 	 we are just annotating types and this object has a composite or task
 	 type, don't elaborate it.  We return the result in case it has any
 	 SAVE_EXPRs in it that need to be evaluated here.  */
@@ -3023,11 +3024,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	if (Null_Record_Present (gnat_node))
 	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL_TREE);
 
-	else if (TREE_CODE (gnu_aggr_type) == RECORD_TYPE)
-	  gnu_result
-	    = assoc_to_constructor (First (Component_Associations (gnat_node)),
-				    gnu_aggr_type);
-	else if (TREE_CODE (gnu_aggr_type) == UNION_TYPE)
+	else if (TREE_CODE (gnu_aggr_type) == UNION_TYPE
+		 && TYPE_UNCHECKED_UNION_P (gnu_aggr_type))
 	  {
 	    /* The first element is the discrimant, which we ignore.  The
 	       next is the field we're building.  Convert the expression
@@ -3041,6 +3039,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_result = convert (gnu_field_type,
 				  gnat_to_gnu (Expression (gnat_assoc)));
 	  }
+	else if (TREE_CODE (gnu_aggr_type) == RECORD_TYPE
+		 || TREE_CODE (gnu_aggr_type) == UNION_TYPE)
+	  gnu_result
+	    = assoc_to_constructor (First (Component_Associations (gnat_node)),
+				    gnu_aggr_type);
 	else if (TREE_CODE (gnu_aggr_type) == ARRAY_TYPE)
 	  gnu_result = pos_to_constructor (First (Expressions (gnat_node)),
 					   gnu_aggr_type,
@@ -3542,7 +3545,6 @@ gnat_to_gnu (Node_Id gnat_node)
 		&& Nkind (Expression (gnat_node)) == N_Function_Call)
 	      gnu_ret_val = call_to_gnu (Expression (gnat_node),
 					 &gnu_result_type, gnu_lhs);
-
 	    else
 	      {
 		gnu_ret_val = gnat_to_gnu (Expression (gnat_node));

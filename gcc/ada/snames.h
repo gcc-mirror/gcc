@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -129,57 +129,61 @@ extern unsigned char Get_Attribute_Id (int);
 #define  Attr_Small                         81
 #define  Attr_Storage_Size                  82
 #define  Attr_Storage_Unit                  83
-#define  Attr_Tag                           84
-#define  Attr_Target_Name                   85
-#define  Attr_Terminated                    86
-#define  Attr_To_Address                    87
-#define  Attr_Type_Class                    88
-#define  Attr_UET_Address                   89
-#define  Attr_Unbiased_Rounding             90
-#define  Attr_Unchecked_Access              91
-#define  Attr_Unconstrained_Array           92
-#define  Attr_Universal_Literal_String      93
-#define  Attr_Unrestricted_Access           94
-#define  Attr_VADS_Size                     95
-#define  Attr_Val                           96
-#define  Attr_Valid                         97
-#define  Attr_Value_Size                    98
-#define  Attr_Version                       99
-#define  Attr_Wide_Character_Size          100
-#define  Attr_Wide_Width                   101
-#define  Attr_Width                        102
-#define  Attr_Word_Size                    103
+#define  Attr_Stream_Size                   84
+#define  Attr_Tag                           85
+#define  Attr_Target_Name                   86
+#define  Attr_Terminated                    87
+#define  Attr_To_Address                    88
+#define  Attr_Type_Class                    89
+#define  Attr_UET_Address                   90
+#define  Attr_Unbiased_Rounding             91
+#define  Attr_Unchecked_Access              92
+#define  Attr_Unconstrained_Array           93
+#define  Attr_Universal_Literal_String      94
+#define  Attr_Unrestricted_Access           95
+#define  Attr_VADS_Size                     96
+#define  Attr_Val                           97
+#define  Attr_Valid                         98
+#define  Attr_Value_Size                    99
+#define  Attr_Version                      100
+#define  Attr_Wchar_T_Size                 101
+#define  Attr_Wide_Wide_Width              102
+#define  Attr_Wide_Width                   103
+#define  Attr_Width                        104
+#define  Attr_Word_Size                    105
 
-#define  Attr_Adjacent                     104
-#define  Attr_Ceiling                      105
-#define  Attr_Copy_Sign                    106
-#define  Attr_Floor                        107
-#define  Attr_Fraction                     108
-#define  Attr_Image                        109
-#define  Attr_Input                        110
-#define  Attr_Machine                      111
-#define  Attr_Max                          112
-#define  Attr_Min                          113
-#define  Attr_Model                        114
-#define  Attr_Pred                         115
-#define  Attr_Remainder                    116
-#define  Attr_Rounding                     117
-#define  Attr_Succ                         118
-#define  Attr_Truncation                   119
-#define  Attr_Value                        120
-#define  Attr_Wide_Image                   121
-#define  Attr_Wide_Value                   122
+#define  Attr_Adjacent                     106
+#define  Attr_Ceiling                      107
+#define  Attr_Copy_Sign                    108
+#define  Attr_Floor                        109
+#define  Attr_Fraction                     110
+#define  Attr_Image                        111
+#define  Attr_Input                        112
+#define  Attr_Machine                      113
+#define  Attr_Max                          114
+#define  Attr_Min                          115
+#define  Attr_Model                        116
+#define  Attr_Pred                         117
+#define  Attr_Remainder                    118
+#define  Attr_Rounding                     119
+#define  Attr_Succ                         120
+#define  Attr_Truncation                   121
+#define  Attr_Value                        122
+#define  Attr_Wide_Image                   123
+#define  Attr_Wide_Wide_Image              124
+#define  Attr_Wide_Value                   125
+#define  Attr_Wide_Wide_Value              126
 
-#define  Attr_Output                       123
-#define  Attr_Read                         124
-#define  Attr_Write                        125
+#define  Attr_Output                       127
+#define  Attr_Read                         128
+#define  Attr_Write                        129
 
-#define  Attr_Elab_Body                    126
-#define  Attr_Elab_Spec                    127
-#define  Attr_Storage_Pool                 128
+#define  Attr_Elab_Body                    130
+#define  Attr_Elab_Spec                    131
+#define  Attr_Storage_Pool                 132
 
-#define  Attr_Base                         129
-#define  Attr_Class                        130
+#define  Attr_Base                         133
+#define  Attr_Class                        134
 
 /* Define the function to check if a Name_Id value is a valid pragma */
 
@@ -289,66 +293,65 @@ extern unsigned char Get_Pragma_Id (int);
 #define  Pragma_Inline_Always                85
 #define  Pragma_Inline_Generic               86
 #define  Pragma_Inspection_Point             87
-#define  Pragma_Interface                    88
-#define  Pragma_Interface_Name               89
-#define  Pragma_Interrupt_Handler            90
-#define  Pragma_Interrupt_Priority           91
-#define  Pragma_Java_Constructor             92
-#define  Pragma_Java_Interface               93
-#define  Pragma_Keep_Names                   94
-#define  Pragma_Link_With                    95
-#define  Pragma_Linker_Alias                 96
-#define  Pragma_Linker_Options               97
-#define  Pragma_Linker_Section               98
-#define  Pragma_List                         99
-#define  Pragma_Machine_Attribute           100
-#define  Pragma_Main                        101
-#define  Pragma_Main_Storage                102
-#define  Pragma_Memory_Size                 103
-#define  Pragma_No_Return                   104
-#define  Pragma_Obsolescent                 105
-#define  Pragma_Optimize                    106
-#define  Pragma_Optional_Overriding         107
-#define  Pragma_Overriding                  108
-#define  Pragma_Pack                        109
-#define  Pragma_Page                        110
-#define  Pragma_Passive                     111
-#define  Pragma_Preelaborate                112
-#define  Pragma_Priority                    113
-#define  Pragma_Psect_Object                114
-#define  Pragma_Pure                        115
-#define  Pragma_Pure_Function               116
-#define  Pragma_Remote_Call_Interface       117
-#define  Pragma_Remote_Types                118
-#define  Pragma_Share_Generic               119
-#define  Pragma_Shared                      120
-#define  Pragma_Shared_Passive              121
-#define  Pragma_Source_Reference            122
-#define  Pragma_Stream_Convert              123
-#define  Pragma_Subtitle                    124
-#define  Pragma_Suppress_All                125
-#define  Pragma_Suppress_Debug_Info         126
-#define  Pragma_Suppress_Initialization     127
-#define  Pragma_System_Name                 128
-#define  Pragma_Task_Info                   129
-#define  Pragma_Task_Name                   130
-#define  Pragma_Task_Storage                131
-#define  Pragma_Thread_Body                 132
-#define  Pragma_Time_Slice                  133
-#define  Pragma_Title                       134
-#define  Pragma_Unchecked_Union             135
-#define  Pragma_Unimplemented_Unit          136
-#define  Pragma_Unreferenced                137
-#define  Pragma_Unreserve_All_Interrupts    138
-#define  Pragma_Volatile                    139
-#define  Pragma_Volatile_Components         140
-#define  Pragma_Weak_External               141
+#define  Pragma_Interface_Name               88
+#define  Pragma_Interrupt_Handler            89
+#define  Pragma_Interrupt_Priority           90
+#define  Pragma_Java_Constructor             91
+#define  Pragma_Java_Interface               92
+#define  Pragma_Keep_Names                   93
+#define  Pragma_Link_With                    94
+#define  Pragma_Linker_Alias                 95
+#define  Pragma_Linker_Options               96
+#define  Pragma_Linker_Section               97
+#define  Pragma_List                         98
+#define  Pragma_Machine_Attribute            99
+#define  Pragma_Main                        100
+#define  Pragma_Main_Storage                101
+#define  Pragma_Memory_Size                 102
+#define  Pragma_No_Return                   103
+#define  Pragma_Obsolescent                 104
+#define  Pragma_Optimize                    105
+#define  Pragma_Optional_Overriding         106
+#define  Pragma_Pack                        107
+#define  Pragma_Page                        108
+#define  Pragma_Passive                     109
+#define  Pragma_Preelaborate                110
+#define  Pragma_Priority                    111
+#define  Pragma_Psect_Object                112
+#define  Pragma_Pure                        113
+#define  Pragma_Pure_Function               114
+#define  Pragma_Remote_Call_Interface       115
+#define  Pragma_Remote_Types                116
+#define  Pragma_Share_Generic               117
+#define  Pragma_Shared                      118
+#define  Pragma_Shared_Passive              119
+#define  Pragma_Source_Reference            120
+#define  Pragma_Stream_Convert              121
+#define  Pragma_Subtitle                    122
+#define  Pragma_Suppress_All                123
+#define  Pragma_Suppress_Debug_Info         124
+#define  Pragma_Suppress_Initialization     125
+#define  Pragma_System_Name                 126
+#define  Pragma_Task_Info                   127
+#define  Pragma_Task_Name                   128
+#define  Pragma_Task_Storage                129
+#define  Pragma_Thread_Body                 130
+#define  Pragma_Time_Slice                  131
+#define  Pragma_Title                       132
+#define  Pragma_Unchecked_Union             133
+#define  Pragma_Unimplemented_Unit          134
+#define  Pragma_Unreferenced                135
+#define  Pragma_Unreserve_All_Interrupts    136
+#define  Pragma_Volatile                    137
+#define  Pragma_Volatile_Components         138
+#define  Pragma_Weak_External               139
 
 /* The following are deliberately out of alphabetical order, see Snames */
 
-#define  Pragma_AST_Entry                   142
-#define  Pragma_Storage_Size                143
-#define  Pragma_Storage_Unit                144
+#define  Pragma_AST_Entry                   140
+#define  Pragma_Interface                   141
+#define  Pragma_Storage_Size                142
+#define  Pragma_Storage_Unit                143
 
 /* Define the numeric values for the conventions.  */
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,8 +55,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "&"
      (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Unbounded_Wide_String
+      Right : Unbounded_Wide_String) return Unbounded_Wide_String
    is
       L_Length : constant Natural := Left.Last;
       R_Length : constant Natural := Right.Last;
@@ -77,8 +76,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "&"
      (Left  : Unbounded_Wide_String;
-      Right : Wide_String)
-      return  Unbounded_Wide_String
+      Right : Wide_String) return Unbounded_Wide_String
    is
       L_Length : constant Natural := Left.Last;
       Result   : Unbounded_Wide_String;
@@ -96,8 +94,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "&"
      (Left  : Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Unbounded_Wide_String
+      Right : Unbounded_Wide_String) return Unbounded_Wide_String
    is
       R_Length : constant Natural := Right.Last;
       Result   : Unbounded_Wide_String;
@@ -116,8 +113,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "&"
      (Left  : Unbounded_Wide_String;
-      Right : Wide_Character)
-      return  Unbounded_Wide_String
+      Right : Wide_Character) return Unbounded_Wide_String
    is
       Result : Unbounded_Wide_String;
 
@@ -135,8 +131,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "&"
      (Left  : Wide_Character;
-      Right : Unbounded_Wide_String)
-      return  Unbounded_Wide_String
+      Right : Unbounded_Wide_String) return Unbounded_Wide_String
    is
       Result : Unbounded_Wide_String;
 
@@ -157,8 +152,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "*"
      (Left  : Natural;
-      Right : Wide_Character)
-      return  Unbounded_Wide_String
+      Right : Wide_Character) return Unbounded_Wide_String
    is
       Result : Unbounded_Wide_String;
 
@@ -174,9 +168,8 @@ package body Ada.Strings.Wide_Unbounded is
    end "*";
 
    function "*"
-     (Left   : Natural;
-      Right  : Wide_String)
-      return   Unbounded_Wide_String
+     (Left  : Natural;
+      Right : Wide_String) return Unbounded_Wide_String
    is
       Len    : constant Natural := Right'Length;
       K      : Positive;
@@ -198,8 +191,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "*"
      (Left  : Natural;
-      Right : Unbounded_Wide_String)
-      return  Unbounded_Wide_String
+      Right : Unbounded_Wide_String) return Unbounded_Wide_String
    is
       Len    : constant Natural := Right.Last;
       K      : Positive;
@@ -226,8 +218,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "<"
      (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return
@@ -236,8 +227,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "<"
      (Left  : Unbounded_Wide_String;
-      Right : Wide_String)
-      return  Boolean
+      Right : Wide_String) return Boolean
    is
    begin
       return Left.Reference (1 .. Left.Last) < Right;
@@ -245,8 +235,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "<"
      (Left  : Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return Left < Right.Reference (1 .. Right.Last);
@@ -258,8 +247,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "<="
      (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return
@@ -268,8 +256,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "<="
      (Left  : Unbounded_Wide_String;
-      Right : Wide_String)
-      return  Boolean
+      Right : Wide_String) return Boolean
    is
    begin
       return Left.Reference (1 .. Left.Last) <= Right;
@@ -277,8 +264,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "<="
      (Left  : Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return Left <= Right.Reference (1 .. Right.Last);
@@ -290,8 +276,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "="
      (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return
@@ -300,8 +285,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "="
      (Left  : Unbounded_Wide_String;
-      Right : Wide_String)
-      return  Boolean
+      Right : Wide_String) return Boolean
    is
    begin
       return Left.Reference (1 .. Left.Last) = Right;
@@ -309,8 +293,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "="
      (Left  : Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return Left = Right.Reference (1 .. Right.Last);
@@ -322,8 +305,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function ">"
      (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return
@@ -332,8 +314,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function ">"
      (Left  : Unbounded_Wide_String;
-      Right : Wide_String)
-      return  Boolean
+      Right : Wide_String) return Boolean
    is
    begin
       return Left.Reference (1 .. Left.Last) > Right;
@@ -341,8 +322,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function ">"
      (Left  : Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return Left > Right.Reference (1 .. Right.Last);
@@ -354,8 +334,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function ">="
      (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return
@@ -364,8 +343,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function ">="
      (Left  : Unbounded_Wide_String;
-      Right : Wide_String)
-      return  Boolean
+      Right : Wide_String) return Boolean
    is
    begin
       return Left.Reference (1 .. Left.Last) >= Right;
@@ -373,8 +351,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function ">="
      (Left  : Wide_String;
-      Right : Unbounded_Wide_String)
-      return  Boolean
+      Right : Unbounded_Wide_String) return Boolean
    is
    begin
       return Left >= Right.Reference (1 .. Right.Last);
@@ -438,11 +415,11 @@ package body Ada.Strings.Wide_Unbounded is
    -----------
 
    function Count
-     (Source   : Unbounded_Wide_String;
-      Pattern  : Wide_String;
-      Mapping  : Wide_Maps.Wide_Character_Mapping :=
-                        Wide_Maps.Identity)
-      return     Natural
+     (Source  : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping :=
+                  Wide_Maps.Identity)
+      return Natural
    is
    begin
       return Wide_Search.Count
@@ -450,10 +427,9 @@ package body Ada.Strings.Wide_Unbounded is
    end Count;
 
    function Count
-     (Source   : Unbounded_Wide_String;
-      Pattern  : Wide_String;
-      Mapping  : Wide_Maps.Wide_Character_Mapping_Function)
-      return     Natural
+     (Source  : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
    is
    begin
       return Wide_Search.Count
@@ -461,9 +437,8 @@ package body Ada.Strings.Wide_Unbounded is
    end Count;
 
    function Count
-     (Source   : Unbounded_Wide_String;
-      Set      : Wide_Maps.Wide_Character_Set)
-      return     Natural
+     (Source : Unbounded_Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set) return Natural
    is
    begin
       return Wide_Search.Count (Source.Reference (1 .. Source.Last), Set);
@@ -476,8 +451,7 @@ package body Ada.Strings.Wide_Unbounded is
    function Delete
      (Source  : Unbounded_Wide_String;
       From    : Positive;
-      Through : Natural)
-      return    Unbounded_Wide_String
+      Through : Natural) return Unbounded_Wide_String
    is
    begin
       return To_Unbounded_Wide_String
@@ -515,8 +489,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function Element
      (Source : Unbounded_Wide_String;
-      Index  : Positive)
-      return   Wide_Character
+      Index  : Positive) return Wide_Character
    is
    begin
       if Index <= Source.Last then
@@ -581,8 +554,7 @@ package body Ada.Strings.Wide_Unbounded is
    function Head
      (Source : Unbounded_Wide_String;
       Count  : Natural;
-      Pad    : Wide_Character := Wide_Space)
-      return   Unbounded_Wide_String
+      Pad    : Wide_Character := Wide_Space) return Unbounded_Wide_String
    is
    begin
       return
@@ -609,12 +581,11 @@ package body Ada.Strings.Wide_Unbounded is
    -----------
 
    function Index
-     (Source   : Unbounded_Wide_String;
-      Pattern  : Wide_String;
-      Going    : Strings.Direction := Strings.Forward;
-      Mapping  : Wide_Maps.Wide_Character_Mapping :=
-                        Wide_Maps.Identity)
-      return     Natural
+     (Source  : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Going   : Strings.Direction := Strings.Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping :=
+                        Wide_Maps.Identity) return Natural
    is
    begin
       return Wide_Search.Index
@@ -622,11 +593,10 @@ package body Ada.Strings.Wide_Unbounded is
    end Index;
 
    function Index
-     (Source   : Unbounded_Wide_String;
-      Pattern  : Wide_String;
-      Going    : Direction := Forward;
-      Mapping  : Wide_Maps.Wide_Character_Mapping_Function)
-      return Natural
+     (Source  : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
    is
    begin
       return Wide_Search.Index
@@ -637,8 +607,7 @@ package body Ada.Strings.Wide_Unbounded is
      (Source : Unbounded_Wide_String;
       Set    : Wide_Maps.Wide_Character_Set;
       Test   : Strings.Membership := Strings.Inside;
-      Going  : Strings.Direction  := Strings.Forward)
-      return   Natural
+      Going  : Strings.Direction  := Strings.Forward) return Natural
    is
    begin
       return Wide_Search.Index
@@ -647,8 +616,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function Index_Non_Blank
      (Source : Unbounded_Wide_String;
-      Going  : Strings.Direction := Strings.Forward)
-      return   Natural
+      Going  : Strings.Direction := Strings.Forward) return Natural
    is
    begin
       return Wide_Search.Index_Non_Blank
@@ -672,8 +640,7 @@ package body Ada.Strings.Wide_Unbounded is
    function Insert
      (Source   : Unbounded_Wide_String;
       Before   : Positive;
-      New_Item : Wide_String)
-      return     Unbounded_Wide_String
+      New_Item : Wide_String) return Unbounded_Wide_String
    is
    begin
       return To_Unbounded_Wide_String
@@ -715,11 +682,10 @@ package body Ada.Strings.Wide_Unbounded is
    ---------------
 
    function Overwrite
-     (Source    : Unbounded_Wide_String;
-      Position  : Positive;
-      New_Item  : Wide_String)
-      return      Unbounded_Wide_String is
-
+     (Source   : Unbounded_Wide_String;
+      Position : Positive;
+      New_Item : Wide_String) return Unbounded_Wide_String
+   is
    begin
       return To_Unbounded_Wide_String
         (Wide_Fixed.Overwrite
@@ -800,11 +766,10 @@ package body Ada.Strings.Wide_Unbounded is
    -------------------
 
    function Replace_Slice
-     (Source   : Unbounded_Wide_String;
-      Low      : Positive;
-      High     : Natural;
-      By       : Wide_String)
-      return     Unbounded_Wide_String
+     (Source : Unbounded_Wide_String;
+      Low    : Positive;
+      High   : Natural;
+      By     : Wide_String) return Unbounded_Wide_String
    is
    begin
       return
@@ -836,8 +801,7 @@ package body Ada.Strings.Wide_Unbounded is
    function Slice
      (Source : Unbounded_Wide_String;
       Low    : Positive;
-      High   : Natural)
-      return   Wide_String
+      High   : Natural) return Wide_String
    is
    begin
       --  Note: test of High > Length is in accordance with AI95-00128
@@ -857,9 +821,8 @@ package body Ada.Strings.Wide_Unbounded is
    function Tail
      (Source : Unbounded_Wide_String;
       Count  : Natural;
-      Pad    : Wide_Character := Wide_Space)
-      return   Unbounded_Wide_String is
-
+      Pad    : Wide_Character := Wide_Space) return Unbounded_Wide_String
+   is
    begin
       return To_Unbounded_Wide_String
         (Wide_Fixed.Tail (Source.Reference (1 .. Source.Last), Count, Pad));
@@ -884,11 +847,9 @@ package body Ada.Strings.Wide_Unbounded is
    ------------------------------
 
    function To_Unbounded_Wide_String
-     (Source : Wide_String)
-      return   Unbounded_Wide_String
+     (Source : Wide_String) return Unbounded_Wide_String
    is
       Result : Unbounded_Wide_String;
-
    begin
       Result.Last          := Source'Length;
       Result.Reference     := new Wide_String (1 .. Source'Length);
@@ -896,11 +857,10 @@ package body Ada.Strings.Wide_Unbounded is
       return Result;
    end To_Unbounded_Wide_String;
 
-   function To_Unbounded_Wide_String (Length : Natural)
-      return Unbounded_Wide_String
+   function To_Unbounded_Wide_String
+     (Length : Natural) return Unbounded_Wide_String
    is
       Result : Unbounded_Wide_String;
-
    begin
       Result.Last      := Length;
       Result.Reference := new Wide_String (1 .. Length);
@@ -912,8 +872,7 @@ package body Ada.Strings.Wide_Unbounded is
    --------------------
 
    function To_Wide_String
-     (Source : Unbounded_Wide_String)
-      return   Wide_String
+     (Source : Unbounded_Wide_String) return Wide_String
    is
    begin
       return Source.Reference (1 .. Source.Last);
@@ -925,8 +884,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function Translate
      (Source  : Unbounded_Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping)
-      return    Unbounded_Wide_String
+      Mapping : Wide_Maps.Wide_Character_Mapping) return Unbounded_Wide_String
    is
    begin
       return To_Unbounded_Wide_String
@@ -944,7 +902,7 @@ package body Ada.Strings.Wide_Unbounded is
    function Translate
      (Source  : Unbounded_Wide_String;
       Mapping : Wide_Maps.Wide_Character_Mapping_Function)
-      return    Unbounded_Wide_String
+      return Unbounded_Wide_String
    is
    begin
       return To_Unbounded_Wide_String
@@ -965,8 +923,7 @@ package body Ada.Strings.Wide_Unbounded is
 
    function Trim
      (Source : Unbounded_Wide_String;
-      Side   : Trim_End)
-      return   Unbounded_Wide_String
+      Side   : Trim_End) return Unbounded_Wide_String
    is
    begin
       return To_Unbounded_Wide_String
@@ -988,8 +945,7 @@ package body Ada.Strings.Wide_Unbounded is
    function Trim
      (Source : Unbounded_Wide_String;
       Left   : Wide_Maps.Wide_Character_Set;
-      Right  : Wide_Maps.Wide_Character_Set)
-      return   Unbounded_Wide_String
+      Right  : Wide_Maps.Wide_Character_Set) return Unbounded_Wide_String
    is
    begin
       return To_Unbounded_Wide_String

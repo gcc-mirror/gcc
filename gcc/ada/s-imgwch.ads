@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2000 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Wide_Character'Image
+--  Wide_[Wide_]Character'Image
 
 with System.WCh_Con;
 
@@ -39,10 +39,18 @@ package System.Img_WChar is
 pragma Pure (Img_WChar);
 
    function Image_Wide_Character
-     (V    : Wide_Character;
-      EM   : System.WCh_Con.WC_Encoding_Method)
-      return String;
-   --  Computes Wode_Character'Image (V) and returns the computed result,
+     (V  : Wide_Character;
+      EM : System.WCh_Con.WC_Encoding_Method) return String;
+   --  Computes Wide_Character'Image (V) and returns the computed result,
+   --  The argument EM is a constant representing the encoding method in use.
+   --  The encoding method used is guaranteed to be consistent across a
+   --  given program execution and to correspond to the method used in the
+   --  source programs.
+
+   function Image_Wide_Wide_Character
+     (V  : Wide_Wide_Character;
+      EM : System.WCh_Con.WC_Encoding_Method) return String;
+   --  Computes Wide_Wide_Character'Image (V) and returns the computed result,
    --  The argument EM is a constant representing the encoding method in use.
    --  The encoding method used is guaranteed to be consistent across a
    --  given program execution and to correspond to the method used in the

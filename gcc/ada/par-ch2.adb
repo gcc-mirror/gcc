@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,6 +54,21 @@ package body Ch2 is
       --  All set if we do indeed have an identifier
 
       if Token = Tok_Identifier then
+
+         --  Ada 2005 (AI-284): Compiling in Ada95 mode we notify
+         --  that interface, overriding, and synchronized are
+         --  new reserved words
+
+         if Ada_Version = Ada_95 then
+            if Token_Name = Name_Overriding
+              or else Token_Name = Name_Synchronized
+              or else (Token_Name = Name_Interface
+                        and then Prev_Token /= Tok_Pragma)
+            then
+               Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
+            end if;
+         end if;
+
          Ident_Node := Token_Node;
          Scan; -- past Identifier
          return Ident_Node;
@@ -251,9 +266,21 @@ package body Ch2 is
          Style.Check_Pragma_Name;
       end if;
 
-      Ident_Node := P_Identifier;
+      --  Ada 2005 (AI-284): INTERFACE is a new reserved word but it is
+      --  allowed as a pragma name.
+
+      if Ada_Version >= Ada_05
+        and then Token = Tok_Interface
+      then
+         Pragma_Name := Name_Interface;
+         Ident_Node  := Token_Node;
+         Scan; -- past INTERFACE
+      else
+         Ident_Node := P_Identifier;
+         Delete_Node (Ident_Node);
+      end if;
+
       Set_Chars (Pragma_Node, Pragma_Name);
-      Delete_Node (Ident_Node);
 
       --  See if special INTERFACE/IMPORT check is required
 

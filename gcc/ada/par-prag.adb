@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -306,10 +306,13 @@ begin
 
       --  This pragma must be processed at parse time, since we want to set
       --  the Ada version properly at parse time to recognize the appropriate
-      --  Ada version syntax.
+      --  Ada version syntax. However, it is only the zero argument form that
+      --  must be processed at parse time.
 
       when Pragma_Ada_05 =>
-         Ada_Version := Ada_05;
+         if Arg_Count = 0 then
+            Ada_Version := Ada_05;
+         end if;
 
       -----------
       -- Debug --
@@ -1060,7 +1063,6 @@ begin
            Pragma_Normalize_Scalars            |
            Pragma_Optimize                     |
            Pragma_Optional_Overriding          |
-           Pragma_Overriding                   |
            Pragma_Pack                         |
            Pragma_Passive                      |
            Pragma_Polling                      |

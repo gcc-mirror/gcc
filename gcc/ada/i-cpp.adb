@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,9 +34,32 @@
 with Ada.Tags;                use Ada.Tags;
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
-with Unchecked_Conversion;
 
 package body Interfaces.CPP is
+
+--  Structure of the Dispatch Table
+
+--           +-----------------------+
+--           |     Offset_To_Top     |
+--           +-----------------------+
+--           | Typeinfo_Ptr/TSD_Ptr  |----> Type Specific Data
+--  Tag ---> +-----------------------+      +-------------------+
+--           |        table of       |      | inheritance depth |
+--           :     primitive ops     :      +-------------------+
+--           |        pointers       |      |   expanded name   |
+--           +-----------------------+      +-------------------+
+--                                          |   external tag    |
+--                                          +-------------------+
+--                                          |   Hash table link |
+--                                          +-------------------+
+--                                          | Remotely Callable |
+--                                          +-------------------+
+--                                          | Rec Ctrler offset |
+--                                          +-------------------+
+--                                          | table of          |
+--                                          :   ancestor        :
+--                                          |      tags         |
+--                                          +-------------------+
 
    --  The declarations below need (extensive) comments ???
 
@@ -57,27 +80,32 @@ package body Interfaces.CPP is
      Pfn : System.Address;
    end record;
 
-   type Type_Specific_Data_Ptr is access all Type_Specific_Data;
    type Vtable_Entry_Array is array (Positive range <>) of Vtable_Entry;
 
    type VTable is record
-      Prims_Ptr : Vtable_Entry_Array (Positive);
-      TSD       : Type_Specific_Data_Ptr;
+      --  Offset_To_Top : Integer;
+      --  Typeinfo_Ptr  : System.Address; -- TSD is currently also here???
+      Prims_Ptr  : Vtable_Entry_Array (Positive);
    end record;
+   --  Note: See comment in a-tags.adb explaining why the components
+   --        Offset_To_Top and Typeinfo_Ptr have been commented out.
+   --  -----------------------------------------------------------------------
+   --  The size of the Prims_Ptr array actually depends on the tagged type to
+   --  which it applies. For each tagged type, the expander computes the
+   --  actual array size, allocates the Dispatch_Table record accordingly, and
+   --  generates code that displaces the base of the record after the
+   --  Typeinfo_Ptr component. For this reason the first two components have
+   --  been commented in the previous declaration. The access to these
+   --  components is done by means of local functions.
 
-   --------------------------------------------------------
-   -- Unchecked Conversions for Tag, Vtable_Ptr, and TSD --
-   --------------------------------------------------------
+   ---------------------------
+   -- Unchecked Conversions --
+   ---------------------------
 
-   function To_Type_Specific_Data_Ptr is
-     new Unchecked_Conversion (Address, Type_Specific_Data_Ptr);
+   type Int_Ptr is access Integer;
 
-   function To_Address is
-     new Unchecked_Conversion (Type_Specific_Data_Ptr, Address);
-
-   ---------------------------------------------
-   -- Unchecked Conversions for String Fields --
-   ---------------------------------------------
+   function To_Int_Ptr is
+      new Unchecked_Conversion (System.Address, Int_Ptr);
 
    function To_Cstring_Ptr is
      new Unchecked_Conversion (Address, Cstring_Ptr);
@@ -90,8 +118,20 @@ package body Interfaces.CPP is
    -----------------------
 
    function Length (Str : Cstring_Ptr) return Natural;
-   --  Length of string represented by the given pointer (treating the
-   --  string as a C-style string, which is Nul terminated).
+   --  Length of string represented by the given pointer (treating the string
+   --  as a C-style string, which is Nul terminated).
+
+   function Offset_To_Top (T : Vtable_Ptr) return Integer;
+   --  Returns the current value of the offset_to_top component available in
+   --  the prologue of the dispatch table.
+
+   function Typeinfo_Ptr (T : Vtable_Ptr) return System.Address;
+   --  Returns the current value of the typeinfo_ptr component available in
+   --  the prologue of the dispatch table.
+
+   pragma Unreferenced (Offset_To_Top);
+   pragma Unreferenced (Typeinfo_Ptr);
+   --  These functions will be used for full compatibility with the C++ ABI
 
    -----------------------
    -- CPP_CW_Membership --
@@ -101,9 +141,9 @@ package body Interfaces.CPP is
      (Obj_Tag : Vtable_Ptr;
       Typ_Tag : Vtable_Ptr) return Boolean
    is
-      Pos : constant Integer := Obj_Tag.TSD.Idepth - Typ_Tag.TSD.Idepth;
+      Pos : constant Integer := TSD (Obj_Tag).Idepth - TSD (Typ_Tag).Idepth;
    begin
-      return Pos >= 0 and then Obj_Tag.TSD.Ancestor_Tags (Pos) = Typ_Tag;
+      return Pos >= 0 and then TSD (Obj_Tag).Ancestor_Tags (Pos) = Typ_Tag;
    end CPP_CW_Membership;
 
    ---------------------------
@@ -112,7 +152,7 @@ package body Interfaces.CPP is
 
    function CPP_Get_Expanded_Name (T : Vtable_Ptr) return Address is
    begin
-      return To_Address (T.TSD.Expanded_Name);
+      return To_Address (TSD (T).Expanded_Name);
    end CPP_Get_Expanded_Name;
 
    --------------------------
@@ -121,7 +161,7 @@ package body Interfaces.CPP is
 
    function CPP_Get_External_Tag (T : Vtable_Ptr) return Address is
    begin
-      return To_Address (T.TSD.External_Tag);
+      return To_Address (TSD (T).External_Tag);
    end CPP_Get_External_Tag;
 
    -------------------------------
@@ -130,7 +170,7 @@ package body Interfaces.CPP is
 
    function CPP_Get_Inheritance_Depth (T : Vtable_Ptr) return Natural is
    begin
-      return T.TSD.Idepth;
+      return TSD (T).Idepth;
    end CPP_Get_Inheritance_Depth;
 
    -------------------------
@@ -170,8 +210,11 @@ package body Interfaces.CPP is
    -----------------
 
    function CPP_Get_TSD  (T : Vtable_Ptr) return Address is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - CPP_DT_Typeinfo_Ptr_Size);
    begin
-      return To_Address (T.TSD);
+      return TSD_Ptr.all;
    end CPP_Get_TSD;
 
    --------------------
@@ -198,21 +241,22 @@ package body Interfaces.CPP is
      (Old_TSD : Address;
       New_Tag : Vtable_Ptr)
    is
-      TSD : constant Type_Specific_Data_Ptr :=
-              To_Type_Specific_Data_Ptr (Old_TSD);
+      Old_TSD_Ptr : constant Type_Specific_Data_Ptr :=
+                      To_Type_Specific_Data_Ptr (Old_TSD);
 
-      New_TSD : Type_Specific_Data renames New_Tag.TSD.all;
+      New_TSD_Ptr : constant Type_Specific_Data_Ptr :=
+                      TSD (New_Tag);
 
    begin
-      if TSD /= null then
-         New_TSD.Idepth := TSD.Idepth + 1;
-         New_TSD.Ancestor_Tags (1 .. New_TSD.Idepth)
-           := TSD.Ancestor_Tags (0 .. TSD.Idepth);
+      if Old_TSD_Ptr /= null then
+         New_TSD_Ptr.Idepth := Old_TSD_Ptr.Idepth + 1;
+         New_TSD_Ptr.Ancestor_Tags (1 .. New_TSD_Ptr.Idepth) :=
+           Old_TSD_Ptr.Ancestor_Tags (0 .. Old_TSD_Ptr.Idepth);
       else
-         New_TSD.Idepth := 0;
+         New_TSD_Ptr.Idepth := 0;
       end if;
 
-      New_TSD.Ancestor_Tags (0) := New_Tag;
+      New_TSD_Ptr.Ancestor_Tags (0) := New_Tag;
    end CPP_Inherit_TSD;
 
    ---------------------------
@@ -221,7 +265,7 @@ package body Interfaces.CPP is
 
    procedure CPP_Set_Expanded_Name (T : Vtable_Ptr; Value : Address) is
    begin
-      T.TSD.Expanded_Name := To_Cstring_Ptr (Value);
+      TSD (T).Expanded_Name := To_Cstring_Ptr (Value);
    end CPP_Set_Expanded_Name;
 
    --------------------------
@@ -230,7 +274,7 @@ package body Interfaces.CPP is
 
    procedure CPP_Set_External_Tag (T : Vtable_Ptr; Value : Address) is
    begin
-      T.TSD.External_Tag := To_Cstring_Ptr (Value);
+      TSD (T).External_Tag := To_Cstring_Ptr (Value);
    end CPP_Set_External_Tag;
 
    -------------------------------
@@ -242,7 +286,7 @@ package body Interfaces.CPP is
       Value : Natural)
    is
    begin
-      T.TSD.Idepth := Value;
+      TSD (T).Idepth := Value;
    end CPP_Set_Inheritance_Depth;
 
    -----------------------------
@@ -285,8 +329,11 @@ package body Interfaces.CPP is
    -----------------
 
    procedure CPP_Set_TSD (T : Vtable_Ptr; Value : Address) is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - CPP_DT_Typeinfo_Ptr_Size);
    begin
-      T.TSD := To_Type_Specific_Data_Ptr (Value);
+      TSD_Ptr.all := Value;
    end CPP_Set_TSD;
 
    --------------------
@@ -314,7 +361,7 @@ package body Interfaces.CPP is
    -------------------
 
    function Expanded_Name (T : Vtable_Ptr) return String is
-      Result : constant Cstring_Ptr := T.TSD.Expanded_Name;
+      Result : constant Cstring_Ptr := TSD (T).Expanded_Name;
    begin
       return Result (1 .. Length (Result));
    end Expanded_Name;
@@ -324,7 +371,7 @@ package body Interfaces.CPP is
    ------------------
 
    function External_Tag (T : Vtable_Ptr) return String is
-      Result : constant Cstring_Ptr := T.TSD.External_Tag;
+      Result : constant Cstring_Ptr := TSD (T).External_Tag;
    begin
       return Result (1 .. Length (Result));
    end External_Tag;
@@ -343,5 +390,39 @@ package body Interfaces.CPP is
 
       return Len - 1;
    end Length;
+
+   ------------------
+   -- Offset_To_Top --
+   ------------------
+
+   function Offset_To_Top (T : Vtable_Ptr) return Integer is
+      use type System.Storage_Elements.Storage_Offset;
+
+      TSD_Ptr : constant Int_Ptr
+        := To_Int_Ptr (To_Address (T) - CPP_DT_Prologue_Size);
+   begin
+      return TSD_Ptr.all;
+   end Offset_To_Top;
+
+   ------------------
+   -- Typeinfo_Ptr --
+   ------------------
+
+   function Typeinfo_Ptr (T : Vtable_Ptr) return System.Address is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - CPP_DT_Typeinfo_Ptr_Size);
+   begin
+      return TSD_Ptr.all;
+   end Typeinfo_Ptr;
+
+   ---------
+   -- TSD --
+   ---------
+
+   function TSD (T : Vtable_Ptr) return Type_Specific_Data_Ptr is
+   begin
+      return To_Type_Specific_Data_Ptr (CPP_Get_TSD (T));
+   end TSD;
 
 end Interfaces.CPP;

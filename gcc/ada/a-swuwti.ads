@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,9 +32,9 @@
 ------------------------------------------------------------------------------
 
 --  This child package of Ada.Strings.Wide_Unbounded provides specialized
---  Text_IO routines that work directly with unbounded strings, avoiding the
---  inefficiencies of access via the standard interface, and also taking
---  direct advantage of the variable length semantics of these strings.
+--  Wide_Text_IO routines that work directly with unbounded wide strings,
+--  avoiding the inefficiencies of access via the standard interface, and also
+--  taking direct advantage of the variable length semantics of these strings.
 
 with Ada.Wide_Text_IO;
 
@@ -43,11 +43,16 @@ package Ada.Strings.Wide_Unbounded.Wide_Text_IO is
    function Get_Line
      return Unbounded_Wide_String;
    function Get_Line
-     (File : Ada.Wide_Text_IO.File_Type)
-      return Unbounded_Wide_String;
+     (File : Ada.Wide_Text_IO.File_Type) return Unbounded_Wide_String;
    --  Reads up to the end of the current line, returning the result
    --  as an unbounded string of appropriate length. If no File parameter
    --  is present, input is from Current_Input.
+
+   procedure Get_Line
+     (File : Ada.Wide_Text_IO.File_Type;
+      Item : out Unbounded_Wide_String);
+   procedure Get_Line (Item : out Unbounded_Wide_String);
+   --  Similar to the above, but in procedure form with an out parameter
 
    procedure Put
      (U : Unbounded_Wide_String);

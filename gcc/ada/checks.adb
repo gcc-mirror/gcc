@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2591,19 +2591,28 @@ package body Checks is
          then
             case Msg_K is
                when Components =>
-                  Error_Msg_N
-                    ("(Ada 2005) NULL not allowed in null-excluding " &
-                     "components", Expr);
+                  Apply_Compile_Time_Constraint_Error
+                     (N      => Expr,
+                      Msg    => "(Ada 2005) NULL not allowed in"
+                                  & " null-excluding components?",
+                      Reason => CE_Null_Not_Allowed,
+                      Rep    => False);
 
                when Formals =>
-                  Error_Msg_N
-                    ("(Ada 2005) NULL not allowed in null-excluding formals",
-                     Expr);
+                  Apply_Compile_Time_Constraint_Error
+                     (N      => Expr,
+                      Msg    => "(Ada 2005) NULL not allowed in"
+                                  & " null-excluding formals?",
+                      Reason => CE_Null_Not_Allowed,
+                      Rep    => False);
 
                when Objects =>
-                  Error_Msg_N
-                    ("(Ada 2005) NULL not allowed in null-excluding objects",
-                     Expr);
+                  Apply_Compile_Time_Constraint_Error
+                     (N      => Expr,
+                      Msg    => "(Ada 2005) NULL not allowed in"
+                                  & " null-excluding objects?",
+                      Reason => CE_Null_Not_Allowed,
+                      Rep    => False);
             end case;
          end if;
       end Check_Null_Not_Allowed;
@@ -3478,6 +3487,15 @@ package body Checks is
                   Set_Do_Range_Check (N, True);
                   return;
                end if;
+
+            --  Ditto if the prefix is an explicit dereference whose
+            --  designated type is unconstrained.
+
+            elsif Nkind (Prefix (P)) = N_Explicit_Dereference
+              and then not Is_Constrained (Atyp)
+            then
+               Set_Do_Range_Check (N, True);
+               return;
             end if;
 
             Indx := First_Index (Atyp);

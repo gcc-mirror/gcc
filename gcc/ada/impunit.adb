@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 2000-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,25 +26,29 @@
 
 with Lib;   use Lib;
 with Namet; use Namet;
-with Opt;   use Opt;
 
 package body Impunit is
 
    subtype File_Name_8 is String (1 .. 8);
    type File_List is array (Nat range <>) of File_Name_8;
 
-   --  The following is a giant string containing the concenated names
-   --  of all non-implementation internal files, i.e. the complete list
-   --  of files for internal units which a program may legitimately WITH.
+   ------------------
+   -- Ada 95 Units --
+   ------------------
 
-   --  Note that this list should match the list of units documented in
-   --  the "GNAT Library" section of the GNAT Reference Manual.
+   --  The following is a giant string list containing the names of all
+   --  non-implementation internal files, i.e. the complete list of files for
+   --  internal units which a program may legitimately WITH when operating in
+   --  either Ada 95 or Ada 05 mode.
 
-   Non_Imp_File_Names : constant File_List := (
+   --  Note that this list should match the list of units documented in the
+   --  "GNAT Library" section of the GNAT Reference Manual.
 
-   -----------------------------------------------
-   -- Ada Hierarchy Units from Reference Manual --
-   -----------------------------------------------
+   Non_Imp_File_Names_95 : constant File_List := (
+
+   ------------------------------------------------------
+   -- Ada Hierarchy Units from Ada-83 Reference Manual --
+   ------------------------------------------------------
 
      "a-astaco",    -- Ada.Asynchronous_Task_Control
      "a-calend",    -- Ada.Calendar
@@ -53,7 +57,6 @@ package body Impunit is
      "a-chlat1",    -- Ada.Characters.Latin_1
      "a-comlin",    -- Ada.Command_Line
      "a-decima",    -- Ada.Decimal
-     "a-direct",    -- Ada.Directories
      "a-direio",    -- Ada.Direct_IO
      "a-dynpri",    -- Ada.Dynamic_Priorities
      "a-except",    -- Ada.Exceptions
@@ -144,6 +147,7 @@ package body Impunit is
      "a-cwila9",    -- Ada.Characters.Wide_Latin_9
      "a-diocst",    -- Ada.Direct_IO.C_Streams
      "a-einuoc",    -- Ada.Exceptions.Is_Null_Occurrence
+     "a-elchha",    -- Ada.Exceptions.Last_Chance_Handler
      "a-exctra",    -- Ada.Exceptions.Traceback
      "a-siocst",    -- Ada.Sequential_IO.C_Streams
      "a-ssicst",    -- Ada.Streams.Stream_IO.C_Streams
@@ -305,32 +309,126 @@ package body Impunit is
      "s-wchcnv",    -- System.Wch_Cnv
      "s-wchcon");   -- System.Wch_Con
 
-   -------------------------
-   -- Implementation_Unit --
-   -------------------------
+   --------------------
+   -- Ada 2005 Units --
+   --------------------
 
-   function Implementation_Unit (U : Unit_Number_Type) return Boolean is
+   --  The following units should be used only in Ada 05 mode
+
+   Non_Imp_File_Names_05 : constant File_List := (
+
+   --------------------------------------------------------
+   -- Ada Hierarchy Units from Ada 2005 Reference Manual --
+   --------------------------------------------------------
+
+     "a-cdlili",    -- Ada.Containers.Doubly_Linked_Lists
+     "a-cgaaso",    -- Ada.Containers.Generic_Anonymous_Array_Sort
+     "a-cgarso",    -- Ada.Containers.Generic_Array_Sort
+     "a-cgcaso",    -- Ada.Containers.Generic_Constrained_Array_Sort
+     "a-chtgke",    -- Ada.Containers.Hash_Tables.Generic_Keys
+     "a-chtgop",    -- Ada.Containers.Hash_Tables.Generic_Operations
+     "a-cidlli",    -- Ada.Containers.Indefinite_Doubly_Linked_Lists
+     "a-cihama",    -- Ada.Containers.Indefinite_Hashed_Maps
+     "a-cihase",    -- Ada.Containers.Indefinite_Hashed_Sets
+     "a-ciorma",    -- Ada.Containers.Indefinite_Ordered_Maps
+     "a-ciormu",    -- Ada.Containers.Indefinite_Ordered_Multisets
+     "a-ciorse",    -- Ada.Containers.Indefinite_Ordered_Sets
+     "a-cohama",    -- Ada.Containers.Hashed_Maps
+     "a-cohase",    -- Ada.Containers.Hashed_Sets
+     "a-cohata",    -- Ada.Containers.Hash_Tables
+     "a-coinve",    -- Ada.Containers.Indefinite_Vectors
+     "a-contai",    -- Ada.Containers
+     "a-convec",    -- Ada.Containers.Vectors
+     "a-coorma",    -- Ada.Containers.Ordered_Maps
+     "a-coormu",    -- Ada.Containers.Ordered_Multisets
+     "a-coorse",    -- Ada.Containers.Ordered_Sets
+     "a-coprnu",    -- Ada.Containers.Prime_Numbers
+     "a-crbltr",    -- Ada.Containers.Red_Black_Trees
+     "a-crbtgk",    -- Ada.Containers.Red_Black_Trees.Generic_Keys
+     "a-crbtgo",    -- Ada.Containers.Red_Black_Trees.Generic_Operations
+     "a-direct",    -- Ada.Directories
+     "a-rbtgso",    -- Ada.Containers.Red_Black_Trees.Generic_Set_Operations
+     "a-secain",    -- Ada.Strings.Equal_Case_Insensitive
+     "a-shcain",    -- Ada.Strings.Hash_Case_Insensitive
+     "a-slcain",    -- Ada.Strings.Less_Case_Insensitive
+     "a-strhas",    -- Ada.Strings.Hash
+     "a-stunha",    -- Ada.Strings.Unbounded.Hash
+     "a-stwiha",    -- Ada.Strings.Wide_Hash
+     "a-stzbou",    -- Ada.Strings.Wide_Wide_Bounded
+     "a-stzfix",    -- Ada.Strings.Wide_Wide_Fixed
+     "a-stzhas",    -- Ada.Strings.Wide_Wide_Hash
+     "a-stzmap",    -- Ada.Strings.Wide_Wide_Maps
+     "a-stzunb",    -- Ada.Strings.Wide_Wide_Unbounded
+     "a-swunha",    -- Ada.Strings.Wide_Unbounded.Hash
+     "a-szmzco",    -- Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants;
+     "a-szunha",    -- Ada.Strings.Wide_Wide_Unbounded.Hash
+     "a-tiunio",    -- Ada.Text_IO.Unbounded_IO;
+     "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO;
+     "a-zttest",    -- Ada.Wide_Wide_Text_IO.Text_Streams
+     "a-ztexio",    -- Ada.Wide_Wide_Text_IO
+     "a-zzunio",    -- Ada.Wide_Wide_Text_IO.Wide_Wide_Unbounded_IO
+
+   ------------------------------------------------------
+   -- RM Required Additions to Ada 2005 for GNAT Types --
+   ------------------------------------------------------
+
+     "a-lfztio",    -- Ada.Long_Float_Wide_Wide_Text_IO
+     "a-liztio",    -- Ada.Long_Integer_Wide_Wide_Text_IO
+     "a-llfzti",    -- Ada.Long_Long_Float_Wide_Wide_Text_IO
+     "a-llizti",    -- Ada.Long_Long_Integer_Wide_Wide_Text_IO
+     "a-sfztio",    -- Ada.Short_Float_Wide_Wide_Text_IO
+     "a-siztio",    -- Ada.Short_Integer_Wide_Wide_Text_IO
+     "a-ssizti",    -- Ada.Short_Short_Integer_Wide_Wide_Text_IO
+     "a-ztcstr",    -- Ada.Wide_Wide_Text_IO.C_Streams
+
+   ----------------------------------------
+   -- GNAT Defined Additions to Ada 2005 --
+   ----------------------------------------
+
+     "a-chzla1",    -- Ada.Characters.Wide_Wide_Latin_1
+     "a-chzla9",    -- Ada.Characters.Wide_Wide_Latin_9
+     "a-szuzti",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO
+
+   ---------------------------
+   -- GNAT Special IO Units --
+   ---------------------------
+
+   --  See Ada 95 section for further information. These packages are for the
+   --  implementation of the Wide_Wide_Text_IO generic packages.
+
+     "a-ztdeio",    -- Ada.Wide_Wide_Text_IO.Decimal_IO
+     "a-ztenio",    -- Ada.Wide_Wide_Text_IO.Enumeration_IO
+     "a-ztfiio",    -- Ada.Wide_Wide_Text_IO.Fixed_IO
+     "a-ztflio",    -- Ada.Wide_Wide_Text_IO.Float_IO
+     "a-ztinio",    -- Ada.Wide_Wide_Text_IO.Integer_IO
+     "a-ztmoio",    -- Ada.Wide_Wide_Text_IO.Modular_IO
+
+   ------------------------
+   -- GNAT Library Units --
+   ------------------------
+
+     "g-zstspl");   -- GNAT.Wide_Wide_String_Split
+
+   ----------------------
+   -- Get_Kind_Of_Unit --
+   ----------------------
+
+   function Get_Kind_Of_Unit (U : Unit_Number_Type) return Kind_Of_Unit is
       Fname : constant File_Name_Type := Unit_File_Name (U);
 
    begin
-      --  All units are OK in GNAT mode
-
-      if GNAT_Mode then
-         return False;
-      end if;
-
-      --  If length of file name is greater than 12, definitely OK!
+      --  If length of file name is greater than 12, not predefined.
       --  The value 12 here is an 8 char name with extension .ads.
 
       if Length_Of_Name (Fname) > 12 then
-         return False;
+         return Not_Predefined_Unit;
       end if;
 
       --  Otherwise test file name
 
       Get_Name_String (Fname);
 
-      --  Definitely OK if file name does not start with a- g- s- i-
+      --  Not predefined if file name does not start with a- g- s- i-
 
       if Name_Len < 3
         or else Name_Buffer (2) /= '-'
@@ -342,14 +440,14 @@ package body Impunit is
                    and then
                  Name_Buffer (1) /= 's')
       then
-         return False;
+         return Not_Predefined_Unit;
       end if;
 
-      --  Definitely OK if file name does not end in .ads. This can
+      --  Not predefined if file name does not end in .ads. This can
       --  happen when non-standard file names are being used.
 
       if Name_Buffer (Name_Len - 3 .. Name_Len) /= ".ads" then
-         return False;
+         return Not_Predefined_Unit;
       end if;
 
       --  Otherwise normalize file name to 8 characters
@@ -360,42 +458,48 @@ package body Impunit is
          Name_Buffer (Name_Len) := ' ';
       end loop;
 
-      --  Definitely OK if name is in list
+      --  See if name is in 95 list
 
-      for J in Non_Imp_File_Names'Range loop
-         if Name_Buffer (1 .. 8) = Non_Imp_File_Names (J) then
-            return False;
+      for J in Non_Imp_File_Names_95'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_95 (J) then
+            return Ada_95_Unit;
          end if;
       end loop;
 
-      --  Only remaining special possibilities are children of
-      --  System.RPC and System.Garlic and special files of the
-      --  form System.Aux...
+      --  See if name is in 05 list
+
+      for J in Non_Imp_File_Names_05'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J) then
+            return Ada_05_Unit;
+         end if;
+      end loop;
+
+      --  Only remaining special possibilities are children of System.RPC and
+      --  System.Garlic and special files of the form System.Aux...
 
       Get_Name_String (Unit_Name (U));
 
       if Name_Len > 12
         and then Name_Buffer (1 .. 11) = "system.rpc."
       then
-         return False;
+         return Ada_95_Unit;
       end if;
 
       if Name_Len > 15
         and then Name_Buffer (1 .. 14) = "system.garlic."
       then
-         return False;
+         return Ada_95_Unit;
       end if;
 
       if Name_Len > 11
         and then Name_Buffer (1 .. 10) = "system.aux"
       then
-         return False;
+         return Ada_95_Unit;
       end if;
 
       --  All tests failed, this is definitely an implementation unit
 
-      return True;
-
-   end Implementation_Unit;
+      return Implementation_Unit;
+   end Get_Kind_Of_Unit;
 
 end Impunit;

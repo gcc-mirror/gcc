@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Exceptions;
-
 with System.HTable;
-
-with Unchecked_Conversion;
 
 pragma Elaborate_All (System.HTable);
 
@@ -43,25 +40,27 @@ package body Ada.Tags is
 
 --  Structure of the GNAT Dispatch Table
 
---   +----------------------+
---   |      TSD pointer  ---|-----> Type Specific Data
---   +----------------------+       +-------------------+
---   | table of             |       | inheritance depth |
---   :   primitive ops      :       +-------------------+
---   |     pointers         |       |   expanded name   |
---   +----------------------+       +-------------------+
---                                  |   external tag    |
---                                  +-------------------+
---                                  |   Hash table link |
---                                  +-------------------+
---                                  | Remotely Callable |
---                                  +-------------------+
---                                  | Rec Ctrler offset |
---                                  +-------------------+
---                                  | table of          |
---                                  :   ancestor        :
---                                  |      tags         |
---                                  +-------------------+
+--           +-----------------------+
+--           |     Offset_To_Top     |
+--           +-----------------------+
+--           | Typeinfo_Ptr/TSD_Ptr  |----> Type Specific Data
+--  Tag ---> +-----------------------+      +-------------------+
+--           |        table of       |      | inheritance depth |
+--           :     primitive ops     :      +-------------------+
+--           |        pointers       |      |   expanded name   |
+--           +-----------------------+      +-------------------+
+--                                          |   external tag    |
+--                                          +-------------------+
+--                                          |   Hash table link |
+--                                          +-------------------+
+--                                          | Remotely Callable |
+--                                          +-------------------+
+--                                          | Rec Ctrler offset |
+--                                          +-------------------+
+--                                          | table of          |
+--                                          :   ancestor        :
+--                                          |      tags         |
+--                                          +-------------------+
 
    subtype Cstring is String (Positive);
    type Cstring_Ptr is access all Cstring;
@@ -69,12 +68,12 @@ package body Ada.Tags is
    type Tag_Table is array (Natural range <>) of Tag;
    pragma Suppress_Initialization (Tag_Table);
    pragma Suppress (Index_Check, On => Tag_Table);
-   --  We suppress index checks because the declared size in the record
-   --  below is a dummy size of one (see below).
+   --  We suppress index checks because the declared size in the record below
+   --  is a dummy size of one (see below).
 
    type Wide_Boolean is new Boolean;
-   --  This name should probably be changed sometime ??? and indeed
-   --  probably this field could simply be of type Standard.Boolean.
+   --  This name should probably be changed sometime ??? and indeed probably
+   --  this field could simply be of type Standard.Boolean.
 
    type Type_Specific_Data is record
       Idepth             : Natural;
@@ -85,31 +84,48 @@ package body Ada.Tags is
       RC_Offset          : SSE.Storage_Offset;
       Ancestor_Tags      : Tag_Table (0 .. 1);
    end record;
-   --  The size of the Ancestor_Tags array actually depends on the tagged
-   --  type to which it applies.  We are using the same mechanism as for
-   --  the Prims_Ptr array in the Dispatch_Table record.  See comments
-   --  below for more details.
+   --  The size of the Ancestor_Tags array actually depends on the tagged type
+   --  to which it applies. We are using the same mechanism as for the
+   --  Prims_Ptr array in the Dispatch_Table record. See comments below for
+   --  more details.
 
    type Dispatch_Table is record
-      TSD       : Type_Specific_Data_Ptr;
-      Prims_Ptr : Address_Array (1 .. 1);
+      --  Offset_To_Top : Integer := 0;
+      --  Typeinfo_Ptr  : System.Address; -- Currently TSD is also here???
+      Prims_Ptr    : Address_Array (Positive);
    end record;
-   --  The size of the Prims_Ptr array actually depends on the tagged
-   --  type to which it applies. For each tagged type, the expander
-   --  computes the actual array size, and allocates the Dispatch_Table
-   --  record accordingly.
+
+   --  Note on the commented out fields of the Dispatch_Table
+   --  ------------------------------------------------------
+   --  According to the C++ ABI the components Offset_To_Top and Typeinfo_Ptr
+   --  are stored just "before" the dispatch table (that is, the Prims_Ptr
+   --  table), and they are referenced with negative offsets referring to the
+   --  base of the dispatch table. The _Tag (or the VTable_Ptr in C++ termi-
+   --  nology) must point to the base of the virtual table, just after these
+   --  components, to point to the Prims_Ptr table. For this purpose the
+   --  expander generates a Prims_Ptr table that has enough space for these
+   --  additional components, and generates code that displaces the _Tag to
+   --  point after these components.
+   --  -----------------------------------------------------------------------
+
+   --  The size of the Prims_Ptr array actually depends on the tagged type to
+   --  which it applies. For each tagged type, the expander computes the
+   --  actual array size, allocates the Dispatch_Table record accordingly, and
+   --  generates code that displaces the base of the record after the
+   --  Typeinfo_Ptr component. For this reason the first two components have
+   --  been commented in the previous declaration. The access to these
+   --  components is done by means of local functions.
    --
-   --  To avoid the use of discriminants to define the actual size
-   --  of the dispatch table, we used to declare the tag as a pointer
-   --  to a record that contains an arbitrary array of addresses, using
-   --  Positive as its index. This ensures that there are never range
-   --  checks when accessing the dispatch table, but it prevents GDB
-   --  from displaying tagged types properly. A better approach is
-   --  to declare this record type as holding a small number of addresses,
-   --  and to explicitly suppress checks on it.
+   --  To avoid the use of discriminants to define the actual size of the
+   --  dispatch table, we used to declare the tag as a pointer to a record
+   --  that contains an arbitrary array of addresses, using Positive as its
+   --  index. This ensures that there are never range checks when accessing
+   --  the dispatch table, but it prevents GDB from displaying tagged types
+   --  properly. A better approach is to declare this record type as holding a
+   --  small number of addresses, and to explicitly suppress checks on it.
    --
-   --  Note that in both cases, this type is never allocated, and serves
-   --  only to declare the corresponding access type.
+   --  Note that in both cases, this type is never allocated, and serves only
+   --  to declare the corresponding access type.
 
    ---------------------------------------------
    -- Unchecked Conversions for String Fields --
@@ -121,13 +137,34 @@ package body Ada.Tags is
    function To_Address is
      new Unchecked_Conversion (Cstring_Ptr, System.Address);
 
+   -----------------------------------------------------------
+   -- Unchecked Conversions for the component offset_to_top --
+   -----------------------------------------------------------
+
+   type Int_Ptr is access Integer;
+
+   function To_Int_Ptr is
+      new Unchecked_Conversion (System.Address, Int_Ptr);
+
    -----------------------
    -- Local Subprograms --
    -----------------------
 
    function Length (Str : Cstring_Ptr) return Natural;
-   --  Length of string represented by the given pointer (treating the
-   --  string as a C-style string, which is Nul terminated).
+   --  Length of string represented by the given pointer (treating the string
+   --  as a C-style string, which is Nul terminated).
+
+   function Offset_To_Top (T : Tag) return Integer;
+   --  Returns the current value of the offset_to_top component available in
+   --  the prologue of the dispatch table.
+
+   function Typeinfo_Ptr (T : Tag) return System.Address;
+   --  Returns the current value of the typeinfo_ptr component available in
+   --  the prologue of the dispatch table.
+
+   pragma Unreferenced (Offset_To_Top);
+   pragma Unreferenced (Typeinfo_Ptr);
+   --  These functions will be used for full compatibility with the C++ ABI
 
    -------------------------
    -- External_Tag_HTable --
@@ -135,9 +172,9 @@ package body Ada.Tags is
 
    type HTable_Headers is range 1 .. 64;
 
-   --  The following internal package defines the routines used for
-   --  the instantiation of a new System.HTable.Static_HTable (see
-   --  below). See spec in g-htable.ads for details of usage.
+   --  The following internal package defines the routines used for the
+   --  instantiation of a new System.HTable.Static_HTable (see below). See
+   --  spec in g-htable.ads for details of usage.
 
    package HTable_Subprograms is
       procedure Set_HT_Link (T : Tag; Next : Tag);
@@ -195,7 +232,7 @@ package body Ada.Tags is
 
       function Get_HT_Link (T : Tag) return Tag is
       begin
-         return T.TSD.HT_Link;
+         return TSD (T).HT_Link;
       end Get_HT_Link;
 
       ----------
@@ -216,7 +253,7 @@ package body Ada.Tags is
 
       procedure Set_HT_Link (T : Tag; Next : Tag) is
       begin
-         T.TSD.HT_Link := Next;
+         TSD (T).HT_Link := Next;
       end Set_HT_Link;
 
    end HTable_Subprograms;
@@ -241,9 +278,9 @@ package body Ada.Tags is
    --     = Typ'tag
 
    function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean is
-      Pos : constant Integer := Obj_Tag.TSD.Idepth - Typ_Tag.TSD.Idepth;
+      Pos : constant Integer := TSD (Obj_Tag).Idepth - TSD (Typ_Tag).Idepth;
    begin
-      return Pos >= 0 and then Obj_Tag.TSD.Ancestor_Tags (Pos) = Typ_Tag;
+      return Pos >= 0 and then TSD (Obj_Tag).Ancestor_Tags (Pos) = Typ_Tag;
    end CW_Membership;
 
    -------------------
@@ -251,7 +288,7 @@ package body Ada.Tags is
    -------------------
 
    function Expanded_Name (T : Tag) return String is
-      Result : constant Cstring_Ptr := T.TSD.Expanded_Name;
+      Result : constant Cstring_Ptr := TSD (T).Expanded_Name;
    begin
       return Result (1 .. Length (Result));
    end Expanded_Name;
@@ -261,7 +298,7 @@ package body Ada.Tags is
    ------------------
 
    function External_Tag (T : Tag) return String is
-      Result : constant Cstring_Ptr := T.TSD.External_Tag;
+      Result : constant Cstring_Ptr := TSD (T).External_Tag;
    begin
       return Result (1 .. Length (Result));
    end External_Tag;
@@ -272,7 +309,7 @@ package body Ada.Tags is
 
    function Get_Expanded_Name (T : Tag) return System.Address is
    begin
-      return To_Address (T.TSD.Expanded_Name);
+      return To_Address (TSD (T).Expanded_Name);
    end Get_Expanded_Name;
 
    ----------------------
@@ -281,7 +318,7 @@ package body Ada.Tags is
 
    function Get_External_Tag (T : Tag) return System.Address is
    begin
-      return To_Address (T.TSD.External_Tag);
+      return To_Address (TSD (T).External_Tag);
    end Get_External_Tag;
 
    ---------------------------
@@ -290,7 +327,7 @@ package body Ada.Tags is
 
    function Get_Inheritance_Depth (T : Tag) return Natural is
    begin
-      return T.TSD.Idepth;
+      return TSD (T).Idepth;
    end Get_Inheritance_Depth;
 
    -------------------------
@@ -311,7 +348,7 @@ package body Ada.Tags is
 
    function Get_RC_Offset (T : Tag) return SSE.Storage_Offset is
    begin
-      return T.TSD.RC_Offset;
+      return TSD (T).RC_Offset;
    end Get_RC_Offset;
 
    ---------------------------
@@ -320,7 +357,7 @@ package body Ada.Tags is
 
    function Get_Remotely_Callable (T : Tag) return Boolean is
    begin
-      return T.TSD.Remotely_Callable = True;
+      return TSD (T).Remotely_Callable = True;
    end Get_Remotely_Callable;
 
    -------------
@@ -328,8 +365,11 @@ package body Ada.Tags is
    -------------
 
    function Get_TSD  (T : Tag) return System.Address is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
    begin
-      return To_Address (T.TSD);
+      return TSD_Ptr.all;
    end Get_TSD;
 
    ----------------
@@ -353,20 +393,21 @@ package body Ada.Tags is
    -----------------
 
    procedure Inherit_TSD (Old_TSD : System.Address; New_Tag : Tag) is
-      TSD     : constant Type_Specific_Data_Ptr :=
-                  To_Type_Specific_Data_Ptr (Old_TSD);
-      New_TSD : Type_Specific_Data renames New_Tag.TSD.all;
+      Old_TSD_Ptr  : constant Type_Specific_Data_Ptr :=
+                       To_Type_Specific_Data_Ptr (Old_TSD);
+      New_TSD_Ptr  : constant Type_Specific_Data_Ptr :=
+                       TSD (New_Tag);
 
    begin
-      if TSD /= null then
-         New_TSD.Idepth := TSD.Idepth + 1;
-         New_TSD.Ancestor_Tags (1 .. New_TSD.Idepth)
-                            := TSD.Ancestor_Tags (0 .. TSD.Idepth);
+      if Old_TSD_Ptr /= null then
+         New_TSD_Ptr.Idepth := Old_TSD_Ptr.Idepth + 1;
+         New_TSD_Ptr.Ancestor_Tags (1 .. New_TSD_Ptr.Idepth) :=
+           Old_TSD_Ptr.Ancestor_Tags (0 .. Old_TSD_Ptr.Idepth);
       else
-         New_TSD.Idepth := 0;
+         New_TSD_Ptr.Idepth := 0;
       end if;
 
-      New_TSD.Ancestor_Tags (0) := New_Tag;
+      New_TSD_Ptr.Ancestor_Tags (0) := New_Tag;
    end Inherit_TSD;
 
    ------------------
@@ -389,7 +430,6 @@ package body Ada.Tags is
          declare
             Msg1 : constant String := "unknown tagged type: ";
             Msg2 : String (1 .. Msg1'Length + External'Length);
-
          begin
             Msg2 (1 .. Msg1'Length) := Msg1;
             Msg2 (Msg1'Length + 1 .. Msg1'Length + External'Length) :=
@@ -430,7 +470,7 @@ package body Ada.Tags is
      (Obj : System.Address;
       T   : Tag) return SSE.Storage_Count
    is
-      Parent_Tag : constant Tag := T.TSD.Ancestor_Tags (1);
+      Parent_Tag : constant Tag := TSD (T).Ancestor_Tags (1);
       --  The tag of the parent type through the dispatch table
 
       F : constant Acc_Size := To_Acc_Size (Parent_Tag.Prims_Ptr (1));
@@ -449,7 +489,7 @@ package body Ada.Tags is
 
    function Parent_Tag (T : Tag) return Tag is
    begin
-      return T.TSD.Ancestor_Tags (1);
+      return TSD (T).Ancestor_Tags (1);
    end Parent_Tag;
 
    ------------------
@@ -467,7 +507,7 @@ package body Ada.Tags is
 
    procedure Set_Expanded_Name (T : Tag; Value : System.Address) is
    begin
-      T.TSD.Expanded_Name := To_Cstring_Ptr (Value);
+      TSD (T).Expanded_Name := To_Cstring_Ptr (Value);
    end Set_Expanded_Name;
 
    ----------------------
@@ -476,7 +516,7 @@ package body Ada.Tags is
 
    procedure Set_External_Tag (T : Tag; Value : System.Address) is
    begin
-      T.TSD.External_Tag := To_Cstring_Ptr (Value);
+      TSD (T).External_Tag := To_Cstring_Ptr (Value);
    end Set_External_Tag;
 
    ---------------------------
@@ -488,7 +528,7 @@ package body Ada.Tags is
       Value : Natural)
    is
    begin
-      T.TSD.Idepth := Value;
+      TSD (T).Idepth := Value;
    end Set_Inheritance_Depth;
 
    -------------------------
@@ -510,7 +550,7 @@ package body Ada.Tags is
 
    procedure Set_RC_Offset (T : Tag; Value : SSE.Storage_Offset) is
    begin
-      T.TSD.RC_Offset := Value;
+      TSD (T).RC_Offset := Value;
    end Set_RC_Offset;
 
    ---------------------------
@@ -520,9 +560,9 @@ package body Ada.Tags is
    procedure Set_Remotely_Callable (T : Tag; Value : Boolean) is
    begin
       if Value then
-         T.TSD.Remotely_Callable := True;
+         TSD (T).Remotely_Callable := True;
       else
-         T.TSD.Remotely_Callable := False;
+         TSD (T).Remotely_Callable := False;
       end if;
    end Set_Remotely_Callable;
 
@@ -531,8 +571,44 @@ package body Ada.Tags is
    -------------
 
    procedure Set_TSD (T : Tag; Value : System.Address) is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
    begin
-      T.TSD := To_Type_Specific_Data_Ptr (Value);
+      TSD_Ptr.all := Value;
    end Set_TSD;
+
+   -------------------
+   -- Offset_To_Top --
+   -------------------
+
+   function Offset_To_Top (T : Tag) return Integer is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Int_Ptr :=
+                  To_Int_Ptr (To_Address (T) - DT_Prologue_Size);
+   begin
+      return TSD_Ptr.all;
+   end Offset_To_Top;
+
+   ------------------
+   -- Typeinfo_Ptr --
+   ------------------
+
+   function Typeinfo_Ptr (T : Tag) return System.Address is
+      use type System.Storage_Elements.Storage_Offset;
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+   begin
+      return TSD_Ptr.all;
+   end Typeinfo_Ptr;
+
+   ---------
+   -- TSD --
+   ---------
+
+   function TSD (T : Tag) return Type_Specific_Data_Ptr is
+   begin
+      return To_Type_Specific_Data_Ptr (Get_TSD (T));
+   end TSD;
 
 end Ada.Tags;

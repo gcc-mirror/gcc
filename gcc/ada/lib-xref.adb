@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -261,8 +261,16 @@ package body Lib.Xref is
    begin
       pragma Assert (Nkind (E) in N_Entity);
 
+      --  Check for obsolescent reference to ASCII
+
       if E = Standard_ASCII then
          Check_Restriction (No_Obsolescent_Features, N);
+      end if;
+
+      --  Warn if reference to Ada 2005 entity not in Ada 2005 mode
+
+      if Is_Ada_2005 (E) and then Ada_Version < Ada_05 then
+         Error_Msg_NE ("& is only defined in Ada 2005?", N, E);
       end if;
 
       --  Never collect references if not in main source unit. However,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,7 +124,6 @@ package Atree is
    --   Field4
    --   Field5           Five fields holding Union_Id values
 
-   --   Char_CodeN       Synonym for FieldN typed as Char_Code
    --   ElistN           Synonym for FieldN typed as Elist_Id
    --   ListN            Synonym for FieldN typed as List_Id
    --   NameN            Synonym for FieldN typed as Name_Id
@@ -133,14 +132,14 @@ package Atree is
    --   UintN            Synonym for FieldN typed as Uint (Empty = Uint_0)
    --   UrealN           Synonym for FieldN typed as Ureal
 
-   --   Note: the actual usage of FieldN (i.e. whether it contains a Char_Code,
-   --   Elist_Id, List_Id, Name_Id, Node_Id, String_Id, Uint or Ureal), depends
-   --   on the value in Nkind. Generally the access to this field is always via
-   --   the functional interface, so the field names Char_CodeN, ElistN, ListN,
-   --   NameN, NodeN, StrN, UintN and UrealN are used only in the bodies of the
-   --   access functions (i.e. in the bodies of Sinfo and Einfo). These access
-   --   functions contain debugging code that checks that the use is consistent
-   --   with Nkind and Ekind values.
+   --   Note: the actual usage of FieldN (i.e. whether it contains a Elist_Id,
+   --   List_Id, Name_Id, Node_Id, String_Id, Uint or Ureal), depends on the
+   --   value in Nkind. Generally the access to this field is always via the
+   --   functional interface, so the field names ElistN, ListN, NameN, NodeN,
+   --   StrN, UintN and UrealN are used only in the bodies of the access
+   --   functions (i.e. in the bodies of Sinfo and Einfo). These access
+   --   functions contain debugging code that checks that the use is
+   --   consistent with Nkind and Ekind values.
 
    --   However, in specialized circumstances (examples are the circuit in
    --   generic instantiation to copy trees, and in the tree dump routine),
@@ -988,9 +987,6 @@ package Atree is
       function Name2 (N : Node_Id) return Name_Id;
       pragma Inline (Name2);
 
-      function Char_Code2 (N : Node_Id) return Char_Code;
-      pragma Inline (Char_Code2);
-
       function Str3 (N : Node_Id) return String_Id;
       pragma Inline (Str3);
 
@@ -998,6 +994,9 @@ package Atree is
       --  the Field value being Empty. If an Empty value is found then
       --  Uint_0 is returned. This avoids the rather tricky requirement
       --  of initializing all Uint fields in nodes and entities.
+
+      function Uint2 (N : Node_Id) return Uint;
+      pragma Inline (Uint2);
 
       function Uint3 (N : Node_Id) return Uint;
       pragma Inline (Uint3);
@@ -1910,11 +1909,11 @@ package Atree is
       procedure Set_Name2 (N : Node_Id; Val : Name_Id);
       pragma Inline (Set_Name2);
 
-      procedure Set_Char_Code2 (N : Node_Id; Val : Char_Code);
-      pragma Inline (Set_Char_Code2);
-
       procedure Set_Str3 (N : Node_Id; Val : String_Id);
       pragma Inline (Set_Str3);
+
+      procedure Set_Uint2 (N : Node_Id; Val : Uint);
+      pragma Inline (Set_Uint2);
 
       procedure Set_Uint3 (N : Node_Id; Val : Uint);
       pragma Inline (Set_Uint3);
@@ -2780,9 +2779,9 @@ package Atree is
                Field4 : Union_Id;
                Field5 : Union_Id;
                --  Five general use fields, which can contain Node_Id, List_Id,
-               --  Elist_Id, String_Id, Name_Id, or Char_Code values depending
-               --  on the values in Nkind and (for extended nodes), in Ekind.
-               --  See packages Sinfo and Einfo for details of their use.
+               --  Elist_Id, String_Id, or Name_Id values depending on the
+               --  values in Nkind and (for extended nodes), in Ekind. See
+               --  packages Sinfo and Einfo for details of their use.
 
             --  Extension (second component) of extended node
 

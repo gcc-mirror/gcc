@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,8 +154,8 @@ package Stringt is
    --  ASCII graphics (except for double quote) are output literally.
    --  The double quote appears as two successive double quotes.
    --  All other codes, are output as described for Write_Char_Code. For
-   --  example, the string created by folding "A" & ASCII.LF & "Hello" will
-   --  print as "A["0a"]Hello". A No_String value prints simply as "no string"
+   --  example, the string created by folding "A" & ASCII.HT & "Hello" will
+   --  print as "A["09"]Hello". A No_String value prints simply as "no string"
    --  without surrounding quote marks.
 
 private

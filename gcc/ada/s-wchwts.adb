@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,133 +31,94 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces;     use Interfaces;
 with System.WCh_Con; use System.WCh_Con;
-with System.WCh_JIS; use System.WCh_JIS;
+with System.WCh_Cnv; use System.WCh_Cnv;
 
 package body System.WCh_WtS is
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Store_UTF_32_Character
+     (U  : UTF_32_Code;
+      S  : out String;
+      P  : in out Integer;
+      EM : WC_Encoding_Method);
+   --  Stores the string representation of the wide or wide wide character
+   --  whose code is given as U, starting at S (P + 1). P is incremented to
+   --  point to the last character stored. Raises CE if character cannot be
+   --  stored using the given encoding method.
+
+   ----------------------------
+   -- Store_UTF_32_Character --
+   ----------------------------
+
+   procedure Store_UTF_32_Character
+     (U  : UTF_32_Code;
+      S  : out String;
+      P  : in out Integer;
+      EM : WC_Encoding_Method)
+   is
+      procedure Out_Char (C : Character);
+      pragma Inline (Out_Char);
+      --  Procedure to increment P and store C at S (P)
+
+      procedure Store_Chars is new UTF_32_To_Char_Sequence (Out_Char);
+
+      --------------
+      -- Out_Char --
+      --------------
+
+      procedure Out_Char (C : Character) is
+      begin
+         P := P + 1;
+         S (P) := C;
+      end Out_Char;
+
+   begin
+      Store_Chars (U, EM);
+   end Store_UTF_32_Character;
 
    ---------------------------
    -- Wide_String_To_String --
    ---------------------------
 
    function Wide_String_To_String
-     (S    : Wide_String;
-      EM   : WC_Encoding_Method)
-      return String
+     (S  : Wide_String;
+      EM : WC_Encoding_Method) return String
    is
       R  : String (1 .. 5 * S'Length); -- worst case length!
       RP : Natural;
-      C1 : Character;
-      C2 : Character;
+
+   begin
+      RP := 0;
+      for SP in S'Range loop
+         Store_UTF_32_Character (Wide_Character'Pos (S (SP)), R, RP, EM);
+      end loop;
+
+      return R (1 .. RP);
+   end Wide_String_To_String;
+
+   --------------------------------
+   -- Wide_Wide_Sring_To_String --
+   --------------------------------
+
+   function Wide_Wide_String_To_String
+     (S  : Wide_Wide_String;
+      EM : WC_Encoding_Method) return String
+   is
+      R  : String (1 .. 7 * S'Length); -- worst case length!
+      RP : Natural;
 
    begin
       RP := 0;
 
       for SP in S'Range loop
-         declare
-            C   : constant Wide_Character := S (SP);
-            CV  : constant Unsigned_16    := Wide_Character'Pos (C);
-            Hex : constant array (Unsigned_16 range 0 .. 15) of Character :=
-                    "0123456789ABCDEF";
-
-         begin
-            if CV <= 127 then
-               RP := RP + 1;
-               R (RP) := Character'Val (CV);
-
-            else
-               case EM is
-
-                  --  Hex ESC sequence encoding
-
-                  when WCEM_Hex =>
-                     if CV <= 16#FF# then
-                        RP := RP + 1;
-                        R (RP) := Character'Val (CV);
-
-                     else
-                        R (RP + 1) := ASCII.ESC;
-                        R (RP + 2) := Hex (Shift_Right (CV, 12));
-                        R (RP + 3) := Hex (Shift_Right (CV, 8)  and 16#000F#);
-                        R (RP + 4) := Hex (Shift_Right (CV, 4)  and 16#000F#);
-                        R (RP + 5) := Hex (CV                   and 16#000F#);
-                        RP := RP + 5;
-                     end if;
-
-                  --  Upper bit shift (internal code = external code)
-
-                  when WCEM_Upper =>
-                     R (RP + 1) := Character'Val (Shift_Right (CV, 8));
-                     R (RP + 2) := Character'Val (CV and 16#FF#);
-                     RP := RP + 2;
-
-                  --  Upper bit shift (EUC)
-
-                  when WCEM_EUC =>
-                     JIS_To_EUC (C, C1, C2);
-                     R (RP + 1) := C1;
-                     R (RP + 2) := C2;
-                     RP := RP + 2;
-
-                  --  Upper bit shift (Shift-JIS)
-
-                  when WCEM_Shift_JIS =>
-                     JIS_To_Shift_JIS (C, C1, C2);
-                     R (RP + 1) := C1;
-                     R (RP + 2) := C2;
-                     RP := RP + 2;
-
-                  --  Upper bit shift (UTF-8)
-
-                  --    16#0080#-16#07ff#: 2#110xxxxx# 2#10xxxxxx#
-                  --    16#0800#-16#ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
-
-                  when WCEM_UTF8 =>
-                     if CV < 16#0800# then
-                        R (RP + 1) :=
-                          Character'Val (2#11000000# or Shift_Right (CV, 6));
-                        R (RP + 2) :=
-                          Character'Val (2#10000000# or (CV and 2#00111111#));
-                        RP := RP + 2;
-
-                     else
-                        R (RP + 1) :=
-                          Character'Val (2#11100000# or Shift_Right (CV, 12));
-                        R (RP + 2) :=
-                          Character'Val (2#10000000# or
-                                          (Shift_Right (CV, 6) and
-                                                               2#00111111#));
-                        R (RP + 3) :=
-                          Character'Val (2#10000000# or (CV and 2#00111111#));
-                        RP := RP + 3;
-                     end if;
-
-                  --  Brackets encoding
-
-                  when WCEM_Brackets =>
-                     if CV <= 16#FF# then
-                        RP := RP + 1;
-                        R (RP) := Character'Val (CV);
-
-                     else
-                        R (RP + 1) := '[';
-                        R (RP + 2) := '"';
-                        R (RP + 3) := Hex (Shift_Right (CV, 12));
-                        R (RP + 4) := Hex (Shift_Right (CV, 8)  and 16#000F#);
-                        R (RP + 5) := Hex (Shift_Right (CV, 4)  and 16#000F#);
-                        R (RP + 6) := Hex (CV                   and 16#000F#);
-                        R (RP + 7) := '"';
-                        R (RP + 8) := ']';
-                        RP := RP + 8;
-                     end if;
-
-               end case;
-            end if;
-         end;
+         Store_UTF_32_Character (Wide_Wide_Character'Pos (S (SP)), R, RP, EM);
       end loop;
 
       return R (1 .. RP);
-   end Wide_String_To_String;
+   end Wide_Wide_String_To_String;
 
 end System.WCh_WtS;

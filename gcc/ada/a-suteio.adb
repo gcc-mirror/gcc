@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,6 @@ package body Ada.Strings.Unbounded.Text_IO is
    begin
       Get_Line (Buffer, Last);
       Str1 := new String'(Buffer (1 .. Last));
-
       while Last = Buffer'Last loop
          Get_Line (Buffer, Last);
          Str2 := new String'(Str1.all & Buffer (1 .. Last));
@@ -72,7 +71,6 @@ package body Ada.Strings.Unbounded.Text_IO is
    begin
       Get_Line (File, Buffer, Last);
       Str1 := new String'(Buffer (1 .. Last));
-
       while Last = Buffer'Last loop
          Get_Line (File, Buffer, Last);
          Str2 := new String'(Str1.all & Buffer (1 .. Last));
@@ -82,6 +80,47 @@ package body Ada.Strings.Unbounded.Text_IO is
 
       Set_String (Result, Str1);
       return Result;
+   end Get_Line;
+
+   procedure Get_Line (Item : out Unbounded_String) is
+      Buffer : String (1 .. 1000);
+      Last   : Natural;
+      Str1   : String_Access;
+      Str2   : String_Access;
+
+   begin
+      Get_Line (Buffer, Last);
+      Str1 := new String'(Buffer (1 .. Last));
+      while Last = Buffer'Last loop
+         Get_Line (Buffer, Last);
+         Str2 := new String'(Str1.all & Buffer (1 .. Last));
+         Free (Str1);
+         Str1 := Str2;
+      end loop;
+
+      Set_String (Item, Str1);
+   end Get_Line;
+
+   procedure Get_Line
+     (File : Ada.Text_IO.File_Type;
+      Item : out Unbounded_String)
+   is
+      Buffer : String (1 .. 1000);
+      Last   : Natural;
+      Str1   : String_Access;
+      Str2   : String_Access;
+
+   begin
+      Get_Line (File, Buffer, Last);
+      Str1 := new String'(Buffer (1 .. Last));
+      while Last = Buffer'Last loop
+         Get_Line (Buffer, Last);
+         Str2 := new String'(Str1.all & Buffer (1 .. Last));
+         Free (Str1);
+         Str1 := Str2;
+      end loop;
+
+      Set_String (Item, Str1);
    end Get_Line;
 
    ---------

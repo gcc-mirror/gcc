@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1733,7 +1733,7 @@ package body Exp_Ch6 is
         and then Present (Controlling_Argument (N))
         and then not Java_VM
       then
-         Expand_Dispatch_Call (N);
+         Expand_Dispatching_Call (N);
 
          --  The following return is worrisome. Is it really OK to
          --  skip all remaining processing in this procedure ???

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,12 +49,4 @@ pragma Pure (String_Ops);
    function Str_Concat_CC (X, Y : Character) return String;
    --  Concatenate two characters
 
-   procedure Str_Normalize (A : in out String);
-   --  Initialize String object if pragma Normalize_Scalars is in effect.
-
-   procedure Wide_Str_Normalize (A : in out Wide_String);
-   --  Ditto for Wide_String.
-
-   pragma Inline (Str_Normalize);
-   pragma Inline (Wide_Str_Normalize);
 end System.String_Ops;

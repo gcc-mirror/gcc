@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for Wide_Character'Width
+--  This package contains the routines used for Wide_[Wide_]Character'Width
 
 with System.WCh_Con;
 
@@ -40,10 +40,14 @@ pragma Pure (Wid_WChar);
 
    function Width_Wide_Character
      (Lo, Hi : Wide_Character;
-      EM     : System.WCh_Con.WC_Encoding_Method)
-      return   Natural;
+      EM     : System.WCh_Con.WC_Encoding_Method) return Natural;
    --  Compute Width attribute for non-static type derived from Wide_Character.
    --  The arguments are the low and high bounds for the type. EM is the
    --  wide-character encoding method.
+
+   function Width_Wide_Wide_Character
+     (Lo, Hi : Wide_Wide_Character;
+      EM     : System.WCh_Con.WC_Encoding_Method) return Natural;
+   --  Same function for type derived from Wide_Wide_Character
 
 end System.Wid_WChar;

@@ -650,7 +650,9 @@ package Sinfo is
    --    Procedure calls, the Controlling_Argument is one of the actuals.
    --    For a function that has a dispatching result, it is an entity in
    --    the context of the call that can provide a tag, or else it is the
-   --    tag of the root type of the class.
+   --    tag of the root type of the class. It can also specify a tag
+   --    directly rather than being a tagged object. The latter is needed
+   --    by the implementations of AI-239 and AI-260.
 
    --  Conversion_OK (Flag14-Sem)
    --    A flag set on type conversion nodes to indicate that the conversion
@@ -669,6 +671,13 @@ package Sinfo is
    --    entry declarations of protected types, and in generic units. It
    --    points to the defining entity for the corresponding body (NOT the
    --    node for the body itself).
+
+   --  Corresponding_Formal_Spec (Node3-Sem)
+   --  This field is set in subprogram renaming declarations, where it points
+   --  to the defining entity for a formal subprogram in the case where the
+   --  renaming corresponds to a generic formal subprogram association in an
+   --  instantiation. The field is Empty if the renaming does not correspond
+   --  to such a formal association.
 
    --  Corresponding_Generic_Association (Node5-Sem)
    --    This field is defined for object declarations and object renaming
@@ -1666,6 +1675,12 @@ package Sinfo is
       --  using the standard literal format. Such literals are listed by
       --  Sprint using the notation [numerator / denominator].
 
+      --  Note: the value of an integer literal node created by the front end
+      --  is never outside the range of values of the base type. However, it
+      --  can be the case that the value is outside the range of the
+      --  particular subtype. This happens in the case of integer overflows
+      --  with checks suppressed.
+
       --  N_Integer_Literal
       --  Sloc points to literal
       --  Original_Entity (Node2-Sem) If not Empty, holds Named_Number that
@@ -1709,7 +1724,7 @@ package Sinfo is
       --  N_Character_Literal
       --  Sloc points to literal
       --  Chars (Name1) contains the Name_Id for the identifier
-      --  Char_Literal_Value (Char_Code2) contains the literal value
+      --  Char_Literal_Value (Uint2) contains the literal value
       --  Entity (Node4-Sem)
       --  Associated_Node (Node4-Sem)
       --  Has_Private_View (Flag11-Sem) set in generic units.
@@ -4382,6 +4397,7 @@ package Sinfo is
       --  Name (Node2)
       --  Parent_Spec (Node4-Sem)
       --  Corresponding_Spec (Node5-Sem)
+      --  Corresponding_Formal_Spec (Node3-Sem)
       --  From_Default (Flag6-Sem)
 
       -----------------------------------------
@@ -5679,9 +5695,33 @@ package Sinfo is
       -----------------------------------------
 
       --  FORMAL_SUBPROGRAM_DECLARATION ::=
+      --    FORMAL_CONCRETE_SUBPROGRAM_DECLARATION
+      --  | FORMAL_ABSTRACT_SUBPROGRAM_DECLARATION
+
+      --------------------------------------------------
+      -- 12.6  Formal Concrete Subprogram Declaration --
+      --------------------------------------------------
+
+      --  FORMAL_CONCRETE_SUBPROGRAM_DECLARATION ::=
       --    with SUBPROGRAM_SPECIFICATION [is SUBPROGRAM_DEFAULT];
 
-      --  N_Formal_Subprogram_Declaration
+      --  N_Formal_Concrete_Subprogram_Declaration
+      --  Sloc points to WITH
+      --  Specification (Node1)
+      --  Default_Name (Node2) (set to Empty if no subprogram default)
+      --  Box_Present (Flag15)
+
+      --  Note: if no subprogram default is present, then Name is set
+      --  to Empty, and Box_Present is False.
+
+      --------------------------------------------------
+      -- 12.6  Formal Abstract Subprogram Declaration --
+      --------------------------------------------------
+
+      --  FORMAL_ABSTRACT_SUBPROGRAM_DECLARATION ::=
+      --    with SUBPROGRAM_SPECIFICATION is abstract [SUBPROGRAM_DEFAULT];
+
+      --  N_Formal_Abstract_Subprogram_Declaration
       --  Sloc points to WITH
       --  Specification (Node1)
       --  Default_Name (Node2) (set to Empty if no subprogram default)
@@ -5697,8 +5737,9 @@ package Sinfo is
       --  SUBPROGRAM_DEFAULT ::= DEFAULT_NAME | <>
 
       --  There is no separate node in the tree for a subprogram default.
-      --  Instead the parent (N_Formal_Subprogram_Declaration) node contains
-      --  the default name or box indication, as needed.
+      --  Instead the parent (N_Formal_Concrete_Subprogram_Declaration
+      --  or N_Formal_Abstract_Subprogram_Declaration) node contains the
+      --  default name or box indication, as needed.
 
       ------------------------
       -- 12.6  Default Name --
@@ -6720,6 +6761,8 @@ package Sinfo is
       N_Exception_Declaration,
       N_Exception_Handler,
       N_Floating_Point_Definition,
+      N_Formal_Abstract_Subprogram_Declaration,
+      N_Formal_Concrete_Subprogram_Declaration,
       N_Formal_Decimal_Fixed_Point_Definition,
       N_Formal_Derived_Type_Definition,
       N_Formal_Discrete_Type_Definition,
@@ -6729,7 +6772,6 @@ package Sinfo is
       N_Formal_Package_Declaration,
       N_Formal_Private_Type_Definition,
       N_Formal_Signed_Integer_Type_Definition,
-      N_Formal_Subprogram_Declaration,
       N_Generic_Association,
       N_Handled_Sequence_Of_Statements,
       N_Index_Or_Discriminant_Constraint,
@@ -6795,6 +6837,10 @@ package Sinfo is
    subtype N_Entity is Node_Kind range
      N_Defining_Character_Literal ..
      N_Defining_Operator_Symbol;
+
+   subtype N_Formal_Subprogram_Declaration is Node_Kind range
+     N_Formal_Abstract_Subprogram_Declaration ..
+     N_Formal_Concrete_Subprogram_Declaration;
 
    subtype N_Generic_Declaration is Node_Kind range
      N_Generic_Package_Declaration ..
@@ -7005,7 +7051,7 @@ package Sinfo is
      (N : Node_Id) return Boolean;    -- Flag15
 
    function Char_Literal_Value
-     (N : Node_Id) return Char_Code;  -- Char_Code2
+     (N : Node_Id) return Uint;       -- Uint2
 
    function Chars
      (N : Node_Id) return Name_Id;    -- Name1
@@ -7072,6 +7118,9 @@ package Sinfo is
 
    function Corresponding_Body
      (N : Node_Id) return Node_Id;    -- Node5
+
+   function Corresponding_Formal_Spec
+     (N : Node_Id) return Node_Id;    -- Node3
 
    function Corresponding_Generic_Association
      (N : Node_Id) return Node_Id;    -- Node5
@@ -7800,7 +7849,7 @@ package Sinfo is
      (N : Node_Id; Val : Boolean := True);    -- Flag5
 
    procedure Set_Char_Literal_Value
-     (N : Node_Id; Val : Char_Code);          -- Char_Code2
+     (N : Node_Id; Val : Uint);               -- Uint2
 
    procedure Set_Chars
      (N : Node_Id; Val : Name_Id);            -- Name1
@@ -7867,6 +7916,9 @@ package Sinfo is
 
    procedure Set_Corresponding_Body
      (N : Node_Id; Val : Node_Id);            -- Node5
+
+   procedure Set_Corresponding_Formal_Spec
+     (N : Node_Id; Val : Node_Id);            -- Node3
 
    procedure Set_Corresponding_Generic_Association
      (N : Node_Id; Val : Node_Id);            -- Node5
@@ -8572,6 +8624,7 @@ package Sinfo is
    pragma Inline (Controlling_Argument);
    pragma Inline (Conversion_OK);
    pragma Inline (Corresponding_Body);
+   pragma Inline (Corresponding_Formal_Spec);
    pragma Inline (Corresponding_Generic_Association);
    pragma Inline (Corresponding_Integer_Value);
    pragma Inline (Corresponding_Spec);
@@ -8834,6 +8887,7 @@ package Sinfo is
    pragma Inline (Set_Controlling_Argument);
    pragma Inline (Set_Conversion_OK);
    pragma Inline (Set_Corresponding_Body);
+   pragma Inline (Set_Corresponding_Formal_Spec);
    pragma Inline (Set_Corresponding_Generic_Association);
    pragma Inline (Set_Corresponding_Integer_Value);
    pragma Inline (Set_Corresponding_Spec);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,11 +142,11 @@ package body Exp_Disp is
    --  Check if the type has a private view or if the public view appears
    --  in the visible part of a package spec.
 
-   --------------------------
-   -- Expand_Dispatch_Call --
-   --------------------------
+   -----------------------------
+   -- Expand_Dispatching_Call --
+   -----------------------------
 
-   procedure Expand_Dispatch_Call (Call_Node : Node_Id) is
+   procedure Expand_Dispatching_Call (Call_Node : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (Call_Node);
       Call_Typ : constant Entity_Id  := Etype (Call_Node);
 
@@ -154,21 +154,25 @@ package body Exp_Disp is
       Param_List : constant List_Id := Parameter_Associations (Call_Node);
       Subp       : Entity_Id        := Entity (Name (Call_Node));
 
-      CW_Typ        : Entity_Id;
-      New_Call      : Node_Id;
-      New_Call_Name : Node_Id;
-      New_Params    : List_Id := No_List;
-      Param         : Node_Id;
-      Res_Typ       : Entity_Id;
-      Subp_Ptr_Typ  : Entity_Id;
-      Subp_Typ      : Entity_Id;
-      Typ           : Entity_Id;
-      Eq_Prim_Op    : Entity_Id := Empty;
+      CW_Typ          : Entity_Id;
+      New_Call        : Node_Id;
+      New_Call_Name   : Node_Id;
+      New_Params      : List_Id := No_List;
+      Param           : Node_Id;
+      Res_Typ         : Entity_Id;
+      Subp_Ptr_Typ    : Entity_Id;
+      Subp_Typ        : Entity_Id;
+      Typ             : Entity_Id;
+      Eq_Prim_Op      : Entity_Id := Empty;
+      Controlling_Tag : Node_Id;
 
       function New_Value (From : Node_Id) return Node_Id;
       --  From is the original Expression. New_Value is equivalent to a call
       --  to Duplicate_Subexpr with an explicit dereference when From is an
-      --  access parameter
+      --  access parameter.
+
+      function Controlling_Type (Subp : Entity_Id) return Entity_Id;
+      --  Returns the tagged type for which Subp is a primitive subprogram
 
       ---------------
       -- New_Value --
@@ -176,7 +180,6 @@ package body Exp_Disp is
 
       function New_Value (From : Node_Id) return Node_Id is
          Res : constant Node_Id := Duplicate_Subexpr (From);
-
       begin
          if Is_Access_Type (Etype (From)) then
             return Make_Explicit_Dereference (Sloc (From), Res);
@@ -185,10 +188,45 @@ package body Exp_Disp is
          end if;
       end New_Value;
 
-   --  Start of processing for Expand_Dispatch_Call
+      ----------------------
+      -- Controlling_Type --
+      ----------------------
+
+      function Controlling_Type (Subp : Entity_Id) return Entity_Id is
+      begin
+         if Ekind (Subp) = E_Function
+           and then Has_Controlling_Result (Subp)
+         then
+            return Base_Type (Etype (Subp));
+
+         else
+            declare
+               Formal : Entity_Id := First_Formal (Subp);
+
+            begin
+               while Present (Formal) loop
+                  if Is_Controlling_Formal (Formal) then
+                     if Is_Access_Type (Etype (Formal)) then
+                        return Base_Type (Designated_Type (Etype (Formal)));
+                     else
+                        return Base_Type (Etype (Formal));
+                     end if;
+                  end if;
+
+                  Next_Formal (Formal);
+               end loop;
+            end;
+         end if;
+
+         --  Controlling type not found (should never happen)
+
+         return Empty;
+      end Controlling_Type;
+
+   --  Start of processing for Expand_Dispatching_Call
 
    begin
-      --  If this is an inherited operation that was overriden, the body
+      --  If this is an inherited operation that was overridden, the body
       --  that is being called is its alias.
 
       if Present (Alias (Subp))
@@ -198,17 +236,31 @@ package body Exp_Disp is
          Subp := Alias (Subp);
       end if;
 
-      --  Expand_Dispatch is called directly from the semantics, so we need
-      --  a check to see whether expansion is active before proceeding
+      --  Expand_Dispatching_Call is called directly from the semantics,
+      --  so we need a check to see whether expansion is active before
+      --  proceeding.
 
       if not Expander_Active then
          return;
       end if;
 
-      --  Definition of the ClassWide Type and the Tagged type
+      --  Definition of the class-wide type and the tagged type
 
-      if Is_Access_Type (Etype (Ctrl_Arg)) then
+      --  If the controlling argument is itself a tag rather than a tagged
+      --  object, then use the class-wide type associated with the subprogram's
+      --  controlling type. This case can occur when a call to an inherited
+      --  primitive has an actual that originated from a default parameter
+      --  given by a tag-indeterminate call and when there is no other
+      --  controlling argument providing the tag (AI-239 requires dispatching).
+      --  This capability of dispatching directly by tag is also needed by the
+      --  implementation of AI-260 (for the generic dispatching constructors).
+
+      if Etype (Ctrl_Arg) = RTE (RE_Tag) then
+         CW_Typ := Class_Wide_Type (Controlling_Type (Subp));
+
+      elsif Is_Access_Type (Etype (Ctrl_Arg)) then
          CW_Typ := Designated_Type (Etype (Ctrl_Arg));
+
       else
          CW_Typ := Etype (Ctrl_Arg);
       end if;
@@ -291,7 +343,7 @@ package body Exp_Disp is
             elsif No (Find_Controlling_Arg (Param)) then
                Append_To (New_Params, Relocate_Node (Param));
 
-            --  No tag check for function dispatching on result it the
+            --  No tag check for function dispatching on result if the
             --  Tag given by the context is this one
 
             elsif Find_Controlling_Arg (Param) = Ctrl_Arg then
@@ -362,7 +414,7 @@ package body Exp_Disp is
       if  Etype (Subp) = Typ then
          Res_Typ := CW_Typ;
       else
-         Res_Typ :=  Etype (Subp);
+         Res_Typ := Etype (Subp);
       end if;
 
       Subp_Typ := Create_Itype (E_Subprogram_Type, Call_Node);
@@ -389,9 +441,9 @@ package body Exp_Disp is
                Set_Scope (New_Formal, Subp_Typ);
 
                --  Change all the controlling argument types to be class-wide
-               --  to avoid a recursion in dispatching
+               --  to avoid a recursion in dispatching.
 
-               if Is_Controlling_Actual (Param) then
+               if Is_Controlling_Formal (New_Formal) then
                   Set_Etype (New_Formal, Etype (Param));
                end if;
 
@@ -443,6 +495,20 @@ package body Exp_Disp is
       Set_Etype (Subp_Ptr_Typ, Subp_Ptr_Typ);
       Set_Directly_Designated_Type (Subp_Ptr_Typ, Subp_Typ);
 
+      --  If the controlling argument is a value of type Ada.Tag then
+      --  use it directly.  Otherwise, the tag must be extracted from
+      --  the controlling object.
+
+      if Etype (Ctrl_Arg) = RTE (RE_Tag) then
+         Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
+
+      else
+         Controlling_Tag :=
+           Make_Selected_Component (Loc,
+             Prefix => Duplicate_Subexpr_Move_Checks (Ctrl_Arg),
+             Selector_Name => New_Reference_To (DTC_Entity (Subp), Loc));
+      end if;
+
       --  Generate:
       --   Subp_Ptr_Typ!(Get_Prim_Op_Address (Ctrl._Tag, pos));
 
@@ -454,9 +520,7 @@ package body Exp_Disp is
 
             --  Vptr
 
-              Make_Selected_Component (Loc,
-                Prefix => Duplicate_Subexpr_Move_Checks (Ctrl_Arg),
-                Selector_Name => New_Reference_To (DTC_Entity (Subp), Loc)),
+              Controlling_Tag,
 
             --  Position
 
@@ -468,11 +532,10 @@ package body Exp_Disp is
              Name => New_Call_Name,
              Parameter_Associations => New_Params);
 
-         --  if this is a dispatching "=", we must first compare the tags so
+         --  If this is a dispatching "=", we must first compare the tags so
          --  we generate: x.tag = y.tag and then x = y
 
          if Subp = Eq_Prim_Op then
-
             Param := First_Actual (Call_Node);
             New_Call :=
               Make_And_Then (Loc,
@@ -504,7 +567,7 @@ package body Exp_Disp is
 
       Rewrite (Call_Node, New_Call);
       Analyze_And_Resolve (Call_Node, Call_Typ);
-   end Expand_Dispatch_Call;
+   end Expand_Dispatching_Call;
 
    -------------
    -- Fill_DT --
@@ -651,6 +714,11 @@ package body Exp_Disp is
       --  or
       --    DT_Ptr : Vtable_Ptr := Vtable_Ptr!(DT'Address);   CPP case
 
+      --  According to the C++ ABI, the base of the vtable is located
+      --  after the following prologue: Offset_To_Top, Typeinfo_Ptr.
+      --  Hence, move the pointer to the base of the vtable down, after
+      --  this prologue.
+
       Append_To (Result,
         Make_Object_Declaration (Loc,
           Defining_Identifier => DT_Ptr,
@@ -658,9 +726,15 @@ package body Exp_Disp is
           Object_Definition   => New_Reference_To (Generalized_Tag, Loc),
           Expression          =>
             Unchecked_Convert_To (Generalized_Tag,
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Reference_To (DT, Loc),
-                Attribute_Name => Name_Address))));
+              Make_Op_Add (Loc,
+                Left_Opnd =>
+                  Unchecked_Convert_To (RTE (RE_Storage_Offset),
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Reference_To (DT, Loc),
+                      Attribute_Name => Name_Address)),
+                Right_Opnd =>
+                  Make_DT_Access_Action (Typ,
+                    DT_Prologue_Size, No_List)))));
 
       --  Generate code to define the boolean that controls registration, in
       --  order to avoid multiple registrations for tagged types defined in

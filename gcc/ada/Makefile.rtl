@@ -1,5 +1,5 @@
 # Makefile.rtl for GNU Ada Compiler (GNAT).
-#   Copyright (C) 2003 Free Software Foundation, Inc.
+#   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -75,13 +75,40 @@ GNATRTL_TASKING_OBJS= \
 GNATRTL_NONTASKING_OBJS= \
   a-caldel$(objext) \
   a-calend$(objext) \
+  a-cdlili$(objext) \
+  a-cgaaso$(objext) \
+  a-cgarso$(objext) \
+  a-cgcaso$(objext) \
   a-chahan$(objext) \
   a-charac$(objext) \
   a-chlat1$(objext) \
   a-chlat9$(objext) \
+  a-chtgke$(objext) \
+  a-chtgop$(objext) \
+  a-chzla1$(objext) \
+  a-chzla9$(objext) \
+  a-cidlli$(objext) \
+  a-cihama$(objext) \
+  a-cihase$(objext) \
+  a-ciorma$(objext) \
+  a-ciormu$(objext) \
+  a-ciorse$(objext) \
+  a-cohama$(objext) \
+  a-cohase$(objext) \
+  a-cohata$(objext) \
+  a-coinve$(objext) \
   a-colien$(objext) \
   a-colire$(objext) \
   a-comlin$(objext) \
+  a-contai$(objext) \
+  a-convec$(objext) \
+  a-coorma$(objext) \
+  a-coormu$(objext) \
+  a-coorse$(objext) \
+  a-coprnu$(objext) \
+  a-crbltr$(objext) \
+  a-crbtgk$(objext) \
+  a-crbtgo$(objext) \
   a-cwila1$(objext) \
   a-cwila9$(objext) \
   a-decima$(objext) \
@@ -102,12 +129,16 @@ GNATRTL_NONTASKING_OBJS= \
   a-iwteio$(objext) \
   a-lfteio$(objext) \
   a-lfwtio$(objext) \
+  a-lfztio$(objext) \
   a-liteio$(objext) \
   a-liwtio$(objext) \
+  a-liztio$(objext) \
   a-llftio$(objext) \
   a-llfwti$(objext) \
+  a-llfzti$(objext) \
   a-llitio$(objext) \
   a-lliwti$(objext) \
+  a-llizti$(objext) \
   a-ncelfu$(objext) \
   a-ngcefu$(objext) \
   a-ngcoty$(objext) \
@@ -127,20 +158,28 @@ GNATRTL_NONTASKING_OBJS= \
   a-nuflra$(objext) \
   a-numaux$(objext) \
   a-numeri$(objext) \
+  a-rbtgso$(objext) \
+  a-secain$(objext) \
   a-sequio$(objext) \
   a-sfteio$(objext) \
   a-sfwtio$(objext) \
+  a-sfztio$(objext) \
+  a-shcain$(objext) \
   a-siocst$(objext) \
   a-siteio$(objext) \
   a-siwtio$(objext) \
+  a-siztio$(objext) \
+  a-slcain$(objext) \
   a-ssicst$(objext) \
   a-ssitio$(objext) \
   a-ssiwti$(objext) \
+  a-ssizti$(objext) \
   a-stmaco$(objext) \
   a-storio$(objext) \
   a-strbou$(objext) \
   a-stream$(objext) \
   a-strfix$(objext) \
+  a-strhas$(objext) \
   a-string$(objext) \
   a-strmap$(objext) \
   a-strsea$(objext) \
@@ -148,15 +187,30 @@ GNATRTL_NONTASKING_OBJS= \
   a-strunb$(objext) \
   a-ststio$(objext) \
   a-stunau$(objext) \
+  a-stunha$(objext) \
   a-stwibo$(objext) \
   a-stwifi$(objext) \
+  a-stwiha$(objext) \
   a-stwima$(objext) \
   a-stwise$(objext) \
   a-stwisu$(objext) \
   a-stwiun$(objext) \
+  a-stzbou$(objext) \
+  a-stzfix$(objext) \
+  a-stzhas$(objext) \
+  a-stzmap$(objext) \
+  a-stzsea$(objext) \
+  a-stzsup$(objext) \
+  a-stzunb$(objext) \
   a-suteio$(objext) \
-  a-swuwti$(objext) \
   a-swmwco$(objext) \
+  a-swunau$(objext) \
+  a-swunha$(objext) \
+  a-swuwti$(objext) \
+  a-szmzco$(objext) \
+  a-szunau$(objext) \
+  a-szunha$(objext) \
+  a-szuzti$(objext) \
   a-tags$(objext) \
   a-teioed$(objext) \
   a-textio$(objext) \
@@ -176,6 +230,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-timoio$(objext) \
   a-tiocst$(objext) \
   a-titest$(objext) \
+  a-tiunio$(objext) \
   a-unccon$(objext) \
   a-uncdea$(objext) \
   a-witeio$(objext) \
@@ -196,6 +251,26 @@ GNATRTL_NONTASKING_OBJS= \
   a-wtmoau$(objext) \
   a-wtmoio$(objext) \
   a-wttest$(objext) \
+  a-wwunio$(objext) \
+  a-ztcoau$(objext) \
+  a-ztcoio$(objext) \
+  a-ztcstr$(objext) \
+  a-ztdeau$(objext) \
+  a-ztdeio$(objext) \
+  a-ztedit$(objext) \
+  a-ztenau$(objext) \
+  a-ztenio$(objext) \
+  a-ztexio$(objext) \
+  a-ztfiio$(objext) \
+  a-ztflau$(objext) \
+  a-ztflio$(objext) \
+  a-ztgeau$(objext) \
+  a-ztinau$(objext) \
+  a-ztinio$(objext) \
+  a-ztmoau$(objext) \
+  a-ztmoio$(objext) \
+  a-zttest$(objext) \
+  a-zzunio$(objext) \
   ada$(objext) \
   calendar$(objext) \
   g-arrspl$(objext) \
@@ -256,7 +331,9 @@ GNATRTL_NONTASKING_OBJS= \
   g-table$(objext) \
   g-tasloc$(objext) \
   g-traceb$(objext) \
+  g-utf_32$(objext) \
   g-wistsp$(objext) \
+  g-zstspl$(objext) \
   gnat$(objext) \
   i-c$(objext) \
   i-cexten$(objext) \

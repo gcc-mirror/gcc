@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,6 +63,32 @@ package body Interfaces.C is
       return False;
    end Is_Nul_Terminated;
 
+   --  Case of char16_array
+
+   function Is_Nul_Terminated (Item : char16_array) return Boolean is
+   begin
+      for J in Item'Range loop
+         if Item (J) = char16_nul then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_Nul_Terminated;
+
+   --  Case of char32_array
+
+   function Is_Nul_Terminated (Item : char32_array) return Boolean is
+   begin
+      for J in Item'Range loop
+         if Item (J) = char32_nul then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_Nul_Terminated;
+
    ------------
    -- To_Ada --
    ------------
@@ -78,8 +104,7 @@ package body Interfaces.C is
 
    function To_Ada
      (Item     : char_array;
-      Trim_Nul : Boolean := True)
-      return     String
+      Trim_Nul : Boolean := True) return String
    is
       Count : Natural;
       From  : size_t;
@@ -119,10 +144,10 @@ package body Interfaces.C is
    --  Convert char_array to String (procedure form)
 
    procedure To_Ada
-     (Item       : char_array;
-      Target     : out String;
-      Count      : out Natural;
-      Trim_Nul   : Boolean := True)
+     (Item     : char_array;
+      Target   : out String;
+      Count    : out Natural;
+      Trim_Nul : Boolean := True)
    is
       From : size_t;
       To   : Positive;
@@ -173,8 +198,7 @@ package body Interfaces.C is
 
    function To_Ada
      (Item     : wchar_array;
-      Trim_Nul : Boolean := True)
-      return     Wide_String
+      Trim_Nul : Boolean := True) return Wide_String
    is
       Count : Natural;
       From  : size_t;
@@ -214,13 +238,13 @@ package body Interfaces.C is
    --  Convert wchar_array to Wide_String (procedure form)
 
    procedure To_Ada
-     (Item       : wchar_array;
-      Target     : out Wide_String;
-      Count      : out Natural;
-      Trim_Nul   : Boolean := True)
+     (Item     : wchar_array;
+      Target   : out Wide_String;
+      Count    : out Natural;
+      Trim_Nul : Boolean := True)
    is
-      From   : size_t;
-      To     : Positive;
+      From : size_t;
+      To   : Positive;
 
    begin
       if Trim_Nul then
@@ -254,7 +278,192 @@ package body Interfaces.C is
             To   := To + 1;
          end loop;
       end if;
+   end To_Ada;
 
+   --  Convert char16_t to Wide_Character
+
+   function To_Ada (Item : char16_t) return Wide_Character is
+   begin
+      return Wide_Character'Val (char16_t'Pos (Item));
+   end To_Ada;
+
+   --  Convert char16_array to Wide_String (function form)
+
+   function To_Ada
+     (Item     : char16_array;
+      Trim_Nul : Boolean := True) return Wide_String
+   is
+      Count : Natural;
+      From  : size_t;
+
+   begin
+      if Trim_Nul then
+         From := Item'First;
+
+         loop
+            if From > Item'Last then
+               raise Terminator_Error;
+            elsif Item (From) = char16_t'Val (0) then
+               exit;
+            else
+               From := From + 1;
+            end if;
+         end loop;
+
+         Count := Natural (From - Item'First);
+
+      else
+         Count := Item'Length;
+      end if;
+
+      declare
+         R : Wide_String (1 .. Count);
+
+      begin
+         for J in R'Range loop
+            R (J) := To_Ada (Item (size_t (J) + (Item'First - 1)));
+         end loop;
+
+         return R;
+      end;
+   end To_Ada;
+
+   --  Convert char16_array to Wide_String (procedure form)
+
+   procedure To_Ada
+     (Item     : char16_array;
+      Target   : out Wide_String;
+      Count    : out Natural;
+      Trim_Nul : Boolean := True)
+   is
+      From : size_t;
+      To   : Positive;
+
+   begin
+      if Trim_Nul then
+         From := Item'First;
+         loop
+            if From > Item'Last then
+               raise Terminator_Error;
+            elsif Item (From) = char16_t'Val (0) then
+               exit;
+            else
+               From := From + 1;
+            end if;
+         end loop;
+
+         Count := Natural (From - Item'First);
+
+      else
+         Count := Item'Length;
+      end if;
+
+      if Count > Target'Length then
+         raise Constraint_Error;
+
+      else
+         From := Item'First;
+         To   := Target'First;
+
+         for J in 1 .. Count loop
+            Target (To) := To_Ada (Item (From));
+            From := From + 1;
+            To   := To + 1;
+         end loop;
+      end if;
+   end To_Ada;
+
+   --  Convert char32_t to Wide_Wide_Character
+
+   function To_Ada (Item : char32_t) return Wide_Wide_Character is
+   begin
+      return Wide_Wide_Character'Val (char32_t'Pos (Item));
+   end To_Ada;
+
+   --  Convert char32_array to Wide_Wide_String (function form)
+
+   function To_Ada
+     (Item     : char32_array;
+      Trim_Nul : Boolean := True) return Wide_Wide_String
+   is
+      Count : Natural;
+      From  : size_t;
+
+   begin
+      if Trim_Nul then
+         From := Item'First;
+
+         loop
+            if From > Item'Last then
+               raise Terminator_Error;
+            elsif Item (From) = char32_t'Val (0) then
+               exit;
+            else
+               From := From + 1;
+            end if;
+         end loop;
+
+         Count := Natural (From - Item'First);
+
+      else
+         Count := Item'Length;
+      end if;
+
+      declare
+         R : Wide_Wide_String (1 .. Count);
+
+      begin
+         for J in R'Range loop
+            R (J) := To_Ada (Item (size_t (J) + (Item'First - 1)));
+         end loop;
+
+         return R;
+      end;
+   end To_Ada;
+
+   --  Convert char32_array to Wide_Wide_String (procedure form)
+
+   procedure To_Ada
+     (Item     : char32_array;
+      Target   : out Wide_Wide_String;
+      Count    : out Natural;
+      Trim_Nul : Boolean := True)
+   is
+      From : size_t;
+      To   : Positive;
+
+   begin
+      if Trim_Nul then
+         From := Item'First;
+         loop
+            if From > Item'Last then
+               raise Terminator_Error;
+            elsif Item (From) = char32_t'Val (0) then
+               exit;
+            else
+               From := From + 1;
+            end if;
+         end loop;
+
+         Count := Natural (From - Item'First);
+
+      else
+         Count := Item'Length;
+      end if;
+
+      if Count > Target'Length then
+         raise Constraint_Error;
+
+      else
+         From := Item'First;
+         To   := Target'First;
+
+         for J in 1 .. Count loop
+            Target (To) := To_Ada (Item (From));
+            From := From + 1;
+            To   := To + 1;
+         end loop;
+      end if;
    end To_Ada;
 
    ----------
@@ -272,8 +481,7 @@ package body Interfaces.C is
 
    function To_C
      (Item       : String;
-      Append_Nul : Boolean := True)
-      return       char_array
+      Append_Nul : Boolean := True) return char_array
    is
    begin
       if Append_Nul then
@@ -292,12 +500,11 @@ package body Interfaces.C is
       --  Append_Nul False
 
       else
-
-         --  A nasty case, if the string is null, we must return
-         --  a null char_array. The lower bound of this array is
-         --  required to be zero (RM B.3(50)) but that is of course
-         --  impossible given that size_t is unsigned. According to
-         --  Ada 2005 AI-258, the result is to raise Constraint_Error.
+         --  A nasty case, if the string is null, we must return a null
+         --  char_array. The lower bound of this array is required to be zero
+         --  (RM B.3(50)) but that is of course impossible given that size_t
+         --  is unsigned. According to Ada 2005 AI-258, the result is to raise
+         --  Constraint_Error.
 
          if Item'Length = 0 then
             raise Constraint_Error;
@@ -365,8 +572,7 @@ package body Interfaces.C is
 
    function To_C
      (Item       : Wide_String;
-      Append_Nul : Boolean := True)
-      return       wchar_array
+      Append_Nul : Boolean := True) return wchar_array
    is
    begin
       if Append_Nul then
@@ -383,19 +589,14 @@ package body Interfaces.C is
          end;
 
       else
-         --  A nasty case, if the string is null, we must return
-         --  a null char_array. The lower bound of this array is
-         --  required to be zero (RM B.3(50)) but that is of course
-         --  impossible given that size_t is unsigned. This needs
-         --  ARG resolution, but for now GNAT returns bounds 1 .. 0
+         --  A nasty case, if the string is null, we must return a null
+         --  wchar_array. The lower bound of this array is required to be zero
+         --  (RM B.3(50)) but that is of course impossible given that size_t
+         --  is unsigned. According to Ada 2005 AI-258, the result is to raise
+         --  Constraint_Error.
 
          if Item'Length = 0 then
-            declare
-               R : wchar_array (1 .. 0);
-
-            begin
-               return R;
-            end;
+            raise Constraint_Error;
 
          else
             declare
@@ -438,6 +639,180 @@ package body Interfaces.C is
                raise Constraint_Error;
             else
                Target (To) := wide_nul;
+               Count := Item'Length + 1;
+            end if;
+
+         else
+            Count := Item'Length;
+         end if;
+      end if;
+   end To_C;
+
+   --  Convert Wide_Character to char16_t
+
+   function To_C (Item : Wide_Character) return char16_t is
+   begin
+      return char16_t'Val (Wide_Character'Pos (Item));
+   end To_C;
+
+   --  Convert Wide_String to char16_array (function form)
+
+   function To_C
+     (Item       : Wide_String;
+      Append_Nul : Boolean := True) return char16_array
+   is
+   begin
+      if Append_Nul then
+         declare
+            R : char16_array (0 .. Item'Length);
+
+         begin
+            for J in Item'Range loop
+               R (size_t (J - Item'First)) := To_C (Item (J));
+            end loop;
+
+            R (R'Last) := char16_t'Val (0);
+            return R;
+         end;
+
+      else
+         --  A nasty case, if the string is null, we must return a null
+         --  char16_array. The lower bound of this array is required to be zero
+         --  (RM B.3(50)) but that is of course impossible given that size_t
+         --  is unsigned. According to Ada 2005 AI-258, the result is to raise
+         --  Constraint_Error.
+
+         if Item'Length = 0 then
+            raise Constraint_Error;
+
+         else
+            declare
+               R : char16_array (0 .. Item'Length - 1);
+
+            begin
+               for J in size_t range 0 .. Item'Length - 1 loop
+                  R (J) := To_C (Item (Integer (J) + Item'First));
+               end loop;
+
+               return R;
+            end;
+         end if;
+      end if;
+   end To_C;
+
+   --  Convert Wide_String to char16_array (procedure form)
+
+   procedure To_C
+     (Item       : Wide_String;
+      Target     : out char16_array;
+      Count      : out size_t;
+      Append_Nul : Boolean := True)
+   is
+      To : size_t;
+
+   begin
+      if Target'Length < Item'Length then
+         raise Constraint_Error;
+
+      else
+         To := Target'First;
+         for From in Item'Range loop
+            Target (To) := To_C (Item (From));
+            To := To + 1;
+         end loop;
+
+         if Append_Nul then
+            if To > Target'Last then
+               raise Constraint_Error;
+            else
+               Target (To) := char16_t'Val (0);
+               Count := Item'Length + 1;
+            end if;
+
+         else
+            Count := Item'Length;
+         end if;
+      end if;
+   end To_C;
+
+   --  Convert Wide_Character to char32_t
+
+   function To_C (Item : Wide_Wide_Character) return char32_t is
+   begin
+      return char32_t'Val (Wide_Wide_Character'Pos (Item));
+   end To_C;
+
+   --  Convert Wide_Wide_String to char32_array (function form)
+
+   function To_C
+     (Item       : Wide_Wide_String;
+      Append_Nul : Boolean := True) return char32_array
+   is
+   begin
+      if Append_Nul then
+         declare
+            R : char32_array (0 .. Item'Length);
+
+         begin
+            for J in Item'Range loop
+               R (size_t (J - Item'First)) := To_C (Item (J));
+            end loop;
+
+            R (R'Last) := char32_t'Val (0);
+            return R;
+         end;
+
+      else
+         --  A nasty case, if the string is null, we must return a null
+         --  char32_array. The lower bound of this array is required to be zero
+         --  (RM B.3(50)) but that is of course impossible given that size_t
+         --  is unsigned. According to Ada 2005 AI-258, the result is to raise
+         --  Constraint_Error.
+
+         if Item'Length = 0 then
+            raise Constraint_Error;
+
+         else
+            declare
+               R : char32_array (0 .. Item'Length - 1);
+
+            begin
+               for J in size_t range 0 .. Item'Length - 1 loop
+                  R (J) := To_C (Item (Integer (J) + Item'First));
+               end loop;
+
+               return R;
+            end;
+         end if;
+      end if;
+   end To_C;
+
+   --  Convert Wide_Wide_String to char32_array (procedure form)
+
+   procedure To_C
+     (Item       : Wide_Wide_String;
+      Target     : out char32_array;
+      Count      : out size_t;
+      Append_Nul : Boolean := True)
+   is
+      To : size_t;
+
+   begin
+      if Target'Length < Item'Length then
+         raise Constraint_Error;
+
+      else
+         To := Target'First;
+         for From in Item'Range loop
+            Target (To) := To_C (Item (From));
+            To := To + 1;
+         end loop;
+
+         if Append_Nul then
+            if To > Target'Last then
+               raise Constraint_Error;
+            else
+               Target (To) := char32_t'Val (0);
                Count := Item'Length + 1;
             end if;
 

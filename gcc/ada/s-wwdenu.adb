@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,16 +38,15 @@ with Unchecked_Conversion;
 
 package body System.WWd_Enum is
 
-   ------------------------------
-   -- Wide_Width_Enumeration_8 --
-   ------------------------------
+   -----------------------------------
+   -- Wide_Wide_Width_Enumeration_8 --
+   -----------------------------------
 
-   function Wide_Width_Enumeration_8
+   function Wide_Wide_Width_Enumeration_8
      (Names   : String;
       Indexes : System.Address;
       Lo, Hi  : Natural;
-      EM      : WC_Encoding_Method)
-      return    Natural
+      EM      : WC_Encoding_Method) return Natural
    is
       W : Natural;
 
@@ -62,14 +61,123 @@ package body System.WWd_Enum is
 
    begin
       W := 0;
+      for J in Lo .. Hi loop
+         declare
+            WS : constant Wide_Wide_String :=
+                   String_To_Wide_Wide_String
+                     (Names (Natural (IndexesT (J)) ..
+                             Natural (IndexesT (J + 1)) - 1), EM);
+         begin
+            W := Natural'Max (W, WS'Length);
+         end;
+      end loop;
 
+      return W;
+   end Wide_Wide_Width_Enumeration_8;
+
+   ------------------------------------
+   -- Wide_Wide_Width_Enumeration_16 --
+   ------------------------------------
+
+   function Wide_Wide_Width_Enumeration_16
+     (Names   : String;
+      Indexes : System.Address;
+      Lo, Hi  : Natural;
+      EM      : WC_Encoding_Method) return Natural
+   is
+      W : Natural;
+
+      type Natural_16 is range 0 .. 2 ** 15 - 1;
+      type Index_Table is array (Natural) of Natural_16;
+      type Index_Table_Ptr is access Index_Table;
+
+      function To_Index_Table_Ptr is
+        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+
+      IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
+
+   begin
+      W := 0;
+      for J in Lo .. Hi loop
+         declare
+            WS : constant Wide_Wide_String :=
+                   String_To_Wide_Wide_String
+                     (Names (Natural (IndexesT (J)) ..
+                             Natural (IndexesT (J + 1)) - 1), EM);
+         begin
+            W := Natural'Max (W, WS'Length);
+         end;
+      end loop;
+
+      return W;
+   end Wide_Wide_Width_Enumeration_16;
+
+   ------------------------------------
+   -- Wide_Wide_Width_Enumeration_32 --
+   ------------------------------------
+
+   function Wide_Wide_Width_Enumeration_32
+     (Names   : String;
+      Indexes : System.Address;
+      Lo, Hi  : Natural;
+      EM      : WC_Encoding_Method) return Natural
+   is
+      W : Natural;
+
+      type Natural_32 is range 0 .. 2 ** 31 - 1;
+      type Index_Table is array (Natural) of Natural_32;
+      type Index_Table_Ptr is access Index_Table;
+
+      function To_Index_Table_Ptr is
+        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+
+      IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
+
+   begin
+      W := 0;
+      for J in Lo .. Hi loop
+         declare
+            WS : constant Wide_Wide_String :=
+                   String_To_Wide_Wide_String
+                     (Names (Natural (IndexesT (J)) ..
+                             Natural (IndexesT (J + 1)) - 1), EM);
+         begin
+            W := Natural'Max (W, WS'Length);
+         end;
+      end loop;
+
+      return W;
+   end Wide_Wide_Width_Enumeration_32;
+
+   ------------------------------
+   -- Wide_Width_Enumeration_8 --
+   ------------------------------
+
+   function Wide_Width_Enumeration_8
+     (Names   : String;
+      Indexes : System.Address;
+      Lo, Hi  : Natural;
+      EM      : WC_Encoding_Method) return Natural
+   is
+      W : Natural;
+
+      type Natural_8 is range 0 .. 2 ** 7 - 1;
+      type Index_Table is array (Natural) of Natural_8;
+      type Index_Table_Ptr is access Index_Table;
+
+      function To_Index_Table_Ptr is
+        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+
+      IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
+
+   begin
+      W := 0;
       for J in Lo .. Hi loop
          declare
             WS : constant Wide_String :=
-              String_To_Wide_String
-                (Names (Natural (IndexesT (J)) ..
-                        Natural (IndexesT (J + 1)) - 1), EM);
-
+                   String_To_Wide_String
+                     (Names (Natural (IndexesT (J)) ..
+                             Natural (IndexesT (J + 1)) - 1), EM);
          begin
             W := Natural'Max (W, WS'Length);
          end;
@@ -86,8 +194,7 @@ package body System.WWd_Enum is
      (Names   : String;
       Indexes : System.Address;
       Lo, Hi  : Natural;
-      EM      : WC_Encoding_Method)
-      return    Natural
+      EM      : WC_Encoding_Method) return Natural
    is
       W : Natural;
 
@@ -102,14 +209,12 @@ package body System.WWd_Enum is
 
    begin
       W := 0;
-
       for J in Lo .. Hi loop
          declare
             WS : constant Wide_String :=
-              String_To_Wide_String
-                (Names (Natural (IndexesT (J)) ..
-                        Natural (IndexesT (J + 1)) - 1), EM);
-
+                   String_To_Wide_String
+                     (Names (Natural (IndexesT (J)) ..
+                             Natural (IndexesT (J + 1)) - 1), EM);
          begin
             W := Natural'Max (W, WS'Length);
          end;
@@ -126,8 +231,7 @@ package body System.WWd_Enum is
      (Names   : String;
       Indexes : System.Address;
       Lo, Hi  : Natural;
-      EM      : WC_Encoding_Method)
-      return    Natural
+      EM      : WC_Encoding_Method) return Natural
    is
       W : Natural;
 
@@ -142,14 +246,12 @@ package body System.WWd_Enum is
 
    begin
       W := 0;
-
       for J in Lo .. Hi loop
          declare
             WS : constant Wide_String :=
-              String_To_Wide_String
-                (Names (Natural (IndexesT (J)) ..
-                        Natural (IndexesT (J + 1)) - 1), EM);
-
+                   String_To_Wide_String
+                     (Names (Natural (IndexesT (J)) ..
+                             Natural (IndexesT (J + 1)) - 1), EM);
          begin
             W := Natural'Max (W, WS'Length);
          end;

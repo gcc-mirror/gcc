@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Rident;   use Rident;
 with Scans;    use Scans;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
+with Uintp;    use Uintp;
 
 package body Scn is
 
@@ -64,7 +65,7 @@ package body Scn is
       case Token is
          when Tok_Char_Literal =>
             Token_Node := New_Node (N_Character_Literal, Token_Ptr);
-            Set_Char_Literal_Value (Token_Node, Character_Code);
+            Set_Char_Literal_Value (Token_Node, UI_From_CC (Character_Code));
             Set_Chars (Token_Node, Token_Name);
 
          when Tok_Identifier =>

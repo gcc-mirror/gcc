@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -517,19 +517,22 @@ package body Exp_Prag is
                   Rewrite (Expression (Lang1),
                     Make_Character_Literal (Loc,
                       Chars => Name_uV,
-                      Char_Literal_Value => Get_Char_Code ('V')));
+                      Char_Literal_Value =>
+                        UI_From_Int (Character'Pos ('V'))));
                   Analyze (Expression (Lang1));
 
                   Rewrite (Expression (Lang2),
                     Make_Character_Literal (Loc,
                       Chars => Name_uM,
-                      Char_Literal_Value => Get_Char_Code ('M')));
+                      Char_Literal_Value =>
+                        UI_From_Int (Character'Pos ('M'))));
                   Analyze (Expression (Lang2));
 
                   Rewrite (Expression (Lang3),
                     Make_Character_Literal (Loc,
                       Chars => Name_uS,
-                      Char_Literal_Value => Get_Char_Code ('S')));
+                      Char_Literal_Value =>
+                        UI_From_Int (Character'Pos ('S'))));
                   Analyze (Expression (Lang3));
 
                   if Exception_Code (Id) /= No_Uint then

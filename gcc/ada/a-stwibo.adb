@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,18 +40,16 @@ package body Ada.Strings.Wide_Bounded is
       ---------
 
       function "*"
-        (Left  : in Natural;
-         Right : in Wide_Character)
-         return  Bounded_Wide_String
+        (Left  : Natural;
+         Right : Wide_Character) return Bounded_Wide_String
       is
       begin
          return Times (Left, Right, Max_Length);
       end "*";
 
       function "*"
-        (Left  : in Natural;
-         Right : in Wide_String)
-         return  Bounded_Wide_String
+        (Left  : Natural;
+         Right : Wide_String) return Bounded_Wide_String
       is
       begin
          return Times (Left, Right, Max_Length);
@@ -62,39 +60,37 @@ package body Ada.Strings.Wide_Bounded is
       ---------------
 
       function Replicate
-        (Count : in Natural;
-         Item  : in Wide_Character;
-         Drop  : in Strings.Truncation := Strings.Error)
-         return  Bounded_Wide_String
+        (Count : Natural;
+         Item  : Wide_Character;
+         Drop  : Strings.Truncation := Strings.Error)
+         return Bounded_Wide_String
       is
       begin
          return Super_Replicate (Count, Item, Drop, Max_Length);
       end Replicate;
 
       function Replicate
-        (Count : in Natural;
-         Item  : in Wide_String;
-         Drop  : in Strings.Truncation := Strings.Error)
-         return  Bounded_Wide_String
+        (Count : Natural;
+         Item  : Wide_String;
+         Drop  : Strings.Truncation := Strings.Error)
+         return Bounded_Wide_String
       is
       begin
          return Super_Replicate (Count, Item, Drop, Max_Length);
       end Replicate;
 
-
-      -----------------------
-      -- To_Bounded_String --
-      -----------------------
+      ----------------------------
+      -- To_Bounded_Wide_String --
+      ----------------------------
 
       function To_Bounded_Wide_String
-        (Source : in Wide_String;
-         Drop   : in Strings.Truncation := Strings.Error)
-         return   Bounded_Wide_String
+        (Source : Wide_String;
+         Drop   : Strings.Truncation := Strings.Error)
+         return Bounded_Wide_String
       is
       begin
          return To_Super_String (Source, Max_Length, Drop);
       end To_Bounded_Wide_String;
 
    end Generic_Bounded_Length;
-
 end Ada.Strings.Wide_Bounded;

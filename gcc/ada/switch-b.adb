@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -349,6 +349,12 @@ package body Switch.B is
             Ptr := Ptr + 1;
             All_Sources := False;
             Check_Source_Files := False;
+
+         --  Processing for X switch
+
+         when 'X' =>
+            Ptr := Ptr + 1;
+            Scan_Pos (Switch_Chars, Max, Ptr, Default_Exit_Status);
 
          --  Processing for z switch
 

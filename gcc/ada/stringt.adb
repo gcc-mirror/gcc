@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -355,19 +355,19 @@ package body Stringt is
 
    procedure Write_Char_Code (Code : Char_Code) is
 
-      procedure Write_Hex_Byte (J : Natural);
-      --  Write single hex digit
+      procedure Write_Hex_Byte (J : Char_Code);
+      --  Write single hex byte (value in range 0 .. 255) as two digits
 
       --------------------
       -- Write_Hex_Byte --
       --------------------
 
-      procedure Write_Hex_Byte (J : Natural) is
-         Hexd : constant String := "0123456789abcdef";
-
+      procedure Write_Hex_Byte (J : Char_Code) is
+         Hexd : constant array (Char_Code range 0 .. 15) of Character :=
+                  "0123456789abcdef";
       begin
-         Write_Char (Hexd (J / 16 + 1));
-         Write_Char (Hexd (J mod 16 + 1));
+         Write_Char (Hexd (J / 16));
+         Write_Char (Hexd (J mod 16));
       end Write_Hex_Byte;
 
    --  Start of processing for Write_Char_Code
@@ -380,11 +380,19 @@ package body Stringt is
          Write_Char ('[');
          Write_Char ('"');
 
-         if Code > 16#FF# then
-            Write_Hex_Byte (Natural (Code / 256));
+         if Code > 16#FF_FFFF# then
+            Write_Hex_Byte (Code / 2 ** 24);
          end if;
 
-         Write_Hex_Byte (Natural (Code mod 256));
+         if Code > 16#FFFF# then
+            Write_Hex_Byte ((Code / 2 ** 16) mod 256);
+         end if;
+
+         if Code > 16#FF# then
+            Write_Hex_Byte ((Code / 256) mod 256);
+         end if;
+
+         Write_Hex_Byte (Code mod 256);
          Write_Char ('"');
          Write_Char (']');
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -291,8 +291,8 @@ package body ALI.Util is
                --  set the Interface flag in the Withs table, so that its
                --  dependant are not considered for elaboration order.
 
-               if ALIs.Table (Idread).Interface then
-                  Withs.Table (W).Interface := True;
+               if ALIs.Table (Idread).SAL_Interface then
+                  Withs.Table (W).SAL_Interface  := True;
                   Interface_Library_Unit := True;
 
                   --  Set the entry in the Interfaces hash table, so that other
@@ -313,7 +313,7 @@ package body ALI.Util is
             --  set the flag in the entry of the Withs table.
 
             elsif Interface_Library_Unit and then Interfaces.Get (Afile) then
-               Withs.Table (W).Interface := True;
+               Withs.Table (W).SAL_Interface := True;
             end if;
          end loop;
       end loop;

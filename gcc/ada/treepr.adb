@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -627,19 +627,6 @@ package body Treepr is
          Write_Str (" (Ureal = ");
          Write_Int (Int (Val));
          Write_Char (')');
-
-      elsif Val in Char_Code_Range then
-         Write_Str ("Character code = ");
-
-         declare
-            C : constant Char_Code := Char_Code (Val - Char_Code_Bias);
-
-         begin
-            Write_Int (Int (C));
-            Write_Str (" ('");
-            Write_Char_Code (C);
-            Write_Str ("')");
-         end;
 
       else
          Print_Str ("****** Incorrect value = ");

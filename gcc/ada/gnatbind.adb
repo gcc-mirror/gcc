@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,7 +120,7 @@ procedure Gnatbind is
          Max_Storage_At_Blocking  => True,
          --  Not checkable at compile time
 
-         others                   => False);
+         others => False);
 
       Additional_Restrictions_Listed : Boolean := False;
       --  Set True if we have listed header for restrictions
@@ -337,8 +337,8 @@ procedure Gnatbind is
             Opt.Bind_Alternate_Main_Name := True;
             Opt.Alternate_Main_Name := new String'(Argv (3 .. Argv'Last));
 
-         --  All other options are single character and are handled
-         --  by Scan_Binder_Switches.
+         --  All other options are single character and are handled by
+         --  Scan_Binder_Switches.
 
          else
             Scan_Binder_Switches (Argv);
@@ -438,10 +438,10 @@ begin
    Osint.Add_Default_Search_Dirs;
 
    --  Carry out package initializations. These are initializations which
-   --  might logically be performed at elaboration time, but Namet at
-   --  least can't be done that way (because it is used in the Compiler),
-   --  and we decide to be consistent. Like elaboration, the order in
-   --  which these calls are made is in some cases important.
+   --  might logically be performed at elaboration time, but Namet at least
+   --  can't be done that way (because it is used in the Compiler), and we
+   --  decide to be consistent. Like elaboration, the order in which these
+   --  calls are made is in some cases important.
 
    Csets.Initialize;
    Namet.Initialize;
@@ -481,7 +481,7 @@ begin
       Write_Str ("GNATBIND ");
       Write_Str (Gnat_Version_String);
       Write_Eol;
-      Write_Str ("Copyright 1995-2004 Free Software Foundation, Inc.");
+      Write_Str ("Copyright 1995-2005 Free Software Foundation, Inc.");
       Write_Eol;
    end if;
 
@@ -562,7 +562,7 @@ begin
       --  ALI files.
 
       for Index in ALIs.First .. ALIs.Last loop
-         ALIs.Table (Index).Interface := False;
+         ALIs.Table (Index).SAL_Interface := False;
       end loop;
 
       --  Add System.Standard_Library to list to ensure that these files are
@@ -654,7 +654,7 @@ begin
                Write_Eol;
 
                for J in Elab_Order.First .. Elab_Order.Last loop
-                  if not Units.Table (Elab_Order.Table (J)).Interface then
+                  if not Units.Table (Elab_Order.Table (J)).SAL_Interface then
                      Write_Str ("   ");
                      Write_Unit_Name
                        (Units.Table (Elab_Order.Table (J)).Uname);
@@ -680,7 +680,7 @@ begin
          Total_Warnings := Total_Warnings + Warnings_Detected;
    end;
 
-   --  All done. Set proper exit status.
+   --  All done. Set proper exit status
 
    Finalize_Binderr;
    Namet.Finalize;

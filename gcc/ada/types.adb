@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -153,6 +153,16 @@ package body Types is
    end Get_Hex_String;
 
    ------------------------
+   -- Get_Wide_Character --
+   ------------------------
+
+   function Get_Wide_Character (C : Char_Code) return Wide_Character is
+   begin
+      pragma Assert (C <= 65535);
+      return Wide_Character'Val (C);
+   end Get_Wide_Character;
+
+   ------------------------
    -- In_Character_Range --
    ------------------------
 
@@ -160,6 +170,15 @@ package body Types is
    begin
       return (C <= 255);
    end In_Character_Range;
+
+   -----------------------------
+   -- In_Wide_Character_Range --
+   -----------------------------
+
+   function In_Wide_Character_Range (C : Char_Code) return Boolean is
+   begin
+      return (C <= 65535);
+   end In_Wide_Character_Range;
 
    ---------------------
    -- Make_Time_Stamp --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,8 +59,10 @@ package Stand is
       S_Boolean,
       S_Character,
       S_Wide_Character,
+      S_Wide_Wide_Character,
       S_String,
       S_Wide_String,
+      S_Wide_Wide_String,
       S_Duration,
 
       S_Short_Short_Integer,
@@ -92,12 +94,13 @@ package Stand is
       S_Storage_Error,
       S_Tasking_Error,
 
-      --  Binary Operators declared in package Standard.
+      --  Binary Operators declared in package Standard
 
       S_Op_Add,
       S_Op_And,
       S_Op_Concat,
       S_Op_Concatw,
+      S_Op_Concatww,
       S_Op_Divide,
       S_Op_Eq,
       S_Op_Expon,
@@ -250,8 +253,10 @@ package Stand is
    Standard_ASCII               : Entity_Id renames SE (S_ASCII);
    Standard_Character           : Entity_Id renames SE (S_Character);
    Standard_Wide_Character      : Entity_Id renames SE (S_Wide_Character);
+   Standard_Wide_Wide_Character : Entity_Id renames SE (S_Wide_Wide_Character);
    Standard_String              : Entity_Id renames SE (S_String);
    Standard_Wide_String         : Entity_Id renames SE (S_Wide_String);
+   Standard_Wide_Wide_String    : Entity_Id renames SE (S_Wide_Wide_String);
 
    Standard_Boolean             : Entity_Id renames SE (S_Boolean);
    Standard_False               : Entity_Id renames SE (S_False);
@@ -283,6 +288,7 @@ package Stand is
    Standard_Op_And              : Entity_Id renames SE (S_Op_And);
    Standard_Op_Concat           : Entity_Id renames SE (S_Op_Concat);
    Standard_Op_Concatw          : Entity_Id renames SE (S_Op_Concatw);
+   Standard_Op_Concatww         : Entity_Id renames SE (S_Op_Concatww);
    Standard_Op_Divide           : Entity_Id renames SE (S_Op_Divide);
    Standard_Op_Eq               : Entity_Id renames SE (S_Op_Eq);
    Standard_Op_Expon            : Entity_Id renames SE (S_Op_Expon);

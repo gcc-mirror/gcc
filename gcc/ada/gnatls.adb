@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,11 +52,12 @@ procedure Gnatls is
    --  Name of the env. variable that contains path name(s) of directories
    --  where project files may reside.
 
+   --  NOTE : The following string may be used by other tools, such as GPS. So
+   --  it can only be modified if these other uses are checked and coordinated.
+
    Project_Search_Path : constant String := "Project Search Path:";
    --  Label displayed in verbose mode before the directories in the project
-   --  search path.
-   --  NOTE: This string may be used by other tools, such as GPS; so, it
-   --        should not be modified inconsiderately.
+   --  search path. Do not modify without checking NOTE above.
 
    No_Project_Default_Dir : constant String := "-";
 
@@ -549,6 +550,7 @@ procedure Gnatls is
          --  Remove any encoding info (%s or %b)
 
          Get_Name_String (N);
+
          if Name_Len > 2
            and then Name_Buffer (Name_Len - 1) = '%'
          then
@@ -977,7 +979,7 @@ procedure Gnatls is
                U.Internal            or
                U.Is_Generic          or
                U.Init_Scalars        or
-               U.Interface           or
+               U.SAL_Interface       or
                U.Body_Needed_For_SAL or
                U.Elaborate_Body
             then
@@ -1032,8 +1034,8 @@ procedure Gnatls is
                   Write_Str (" Init_Scalars");
                end if;
 
-               if U.Interface then
-                  Write_Str (" Interface");
+               if U.SAL_Interface then
+                  Write_Str (" SAL_Interface");
                end if;
 
                if U.Body_Needed_For_SAL then
@@ -1247,6 +1249,7 @@ procedure Gnatls is
                --  Scan the file line by line
 
                while Index < Buffer'Last loop
+
                   --  Find the end of line
 
                   Last := Index;
@@ -1448,10 +1451,9 @@ procedure Gnatls is
          Output_Status (ST, Verbose => True);
          Write_Eol;
       end loop;
-
    end Usage;
 
---   Start of processing for Gnatls
+--  Start of processing for Gnatls
 
 begin
    --  Initialize standard packages
@@ -1498,7 +1500,7 @@ begin
       Write_Str ("GNATLS ");
       Write_Str (Gnat_Version_String);
       Write_Eol;
-      Write_Str ("Copyright 1997-2004 Free Software Foundation, Inc.");
+      Write_Str ("Copyright 1997-2005 Free Software Foundation, Inc.");
       Write_Eol;
       Write_Eol;
       Write_Str ("Source Search Path:");
@@ -1583,6 +1585,7 @@ begin
                   Add_Default_Dir := False;
 
                elsif First /= Last or else Project_Path (First) /= '.' then
+
                   --  If the directory is ".", skip it as it is the current
                   --  directory and it is already the first directory in the
                   --  project path.
@@ -1755,7 +1758,6 @@ begin
                   Write_Str ("depends upon");
                   Write_Eol;
                   Write_Str ("   ");
-
                else
                   Write_Eol;
                end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -410,8 +410,10 @@ package body Sem_Ch5 is
                      and then Can_Never_Be_Null (Entity (Lhs)))
                    or else Can_Never_Be_Null (Etype (Lhs)))
       then
-         Error_Msg_N
-           ("(Ada 2005) NULL not allowed in null-excluding objects", Lhs);
+         Apply_Compile_Time_Constraint_Error
+           (N      => Lhs,
+            Msg    => "(Ada 2005) NULL not allowed in null-excluding objects?",
+            Reason => CE_Null_Not_Allowed);
       end if;
 
       if Is_Scalar_Type (T1) then

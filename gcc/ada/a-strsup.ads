@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,8 +63,7 @@ pragma Preelaborate (Superbounded);
    function To_Super_String
      (Source     : String;
       Max_Length : Natural;
-      Drop       : Truncation := Error)
-      return       Super_String;
+      Drop       : Truncation := Error) return Super_String;
    --  Note the additional parameter Max_Length, which specifies the maximum
    --  length setting of the resulting Super_String value.
 
@@ -73,34 +72,35 @@ pragma Preelaborate (Superbounded);
 
    function Super_To_String (Source : Super_String) return String;
 
+   procedure Set_Super_String
+     (Target : out Super_String;
+      Source : String;
+      Drop   : Truncation := Error);
+
    function Super_Append
-     (Left, Right : Super_String;
-      Drop        : Truncation  := Error)
-      return        Super_String;
+     (Left  : Super_String;
+      Right : Super_String;
+      Drop  : Truncation  := Error) return Super_String;
 
    function Super_Append
      (Left  : Super_String;
       Right : String;
-      Drop  : Truncation := Error)
-      return  Super_String;
+      Drop  : Truncation := Error) return Super_String;
 
    function Super_Append
      (Left  : String;
       Right : Super_String;
-      Drop  : Truncation := Error)
-      return  Super_String;
+      Drop  : Truncation := Error) return Super_String;
 
    function Super_Append
      (Left  : Super_String;
       Right : Character;
-      Drop  : Truncation := Error)
-      return  Super_String;
+      Drop  : Truncation := Error) return Super_String;
 
    function Super_Append
      (Left  : Character;
       Right : Super_String;
-      Drop  : Truncation := Error)
-      return  Super_String;
+      Drop  : Truncation := Error) return Super_String;
 
    procedure Super_Append
      (Source   : in out Super_String;
@@ -118,33 +118,28 @@ pragma Preelaborate (Superbounded);
       Drop     : Truncation  := Error);
 
    function Concat
-     (Left, Right : Super_String)
-      return        Super_String;
+     (Left  : Super_String;
+      Right : Super_String) return Super_String;
 
    function Concat
      (Left  : Super_String;
-      Right : String)
-      return  Super_String;
+      Right : String) return Super_String;
 
    function Concat
      (Left  : String;
-      Right : Super_String)
-      return  Super_String;
+      Right : Super_String) return Super_String;
 
    function Concat
      (Left  : Super_String;
-      Right : Character)
-      return  Super_String;
+      Right : Character) return Super_String;
 
    function Concat
      (Left  : Character;
-      Right : Super_String)
-      return  Super_String;
+      Right : Super_String) return Super_String;
 
    function Super_Element
      (Source : Super_String;
-      Index  : Positive)
-      return   Character;
+      Index  : Positive) return Character;
 
    procedure Super_Replace_Element
      (Source : in out Super_String;
@@ -154,70 +149,82 @@ pragma Preelaborate (Superbounded);
    function Super_Slice
      (Source : Super_String;
       Low    : Positive;
-      High   : Natural)
-      return   String;
+      High   : Natural) return String;
 
-   function "="  (Left, Right : Super_String) return Boolean;
+   function Super_Slice
+     (Source : Super_String;
+      Low    : Positive;
+      High   : Natural) return Super_String;
 
-   function Equal (Left, Right : Super_String) return Boolean renames "=";
+   procedure Super_Slice
+     (Source : Super_String;
+      Target : out Super_String;
+      Low    : Positive;
+      High   : Natural);
+
+   function "="
+     (Left  : Super_String;
+      Right : Super_String) return Boolean;
 
    function Equal
      (Left  : Super_String;
-      Right : String)
-      return  Boolean;
+      Right : Super_String) return Boolean renames "=";
+
+   function Equal
+     (Left  : Super_String;
+      Right : String) return Boolean;
 
    function Equal
      (Left  : String;
-      Right : Super_String)
-      return  Boolean;
-
-   function Less (Left, Right : Super_String) return Boolean;
+      Right : Super_String) return Boolean;
 
    function Less
      (Left  : Super_String;
-      Right : String)
-      return  Boolean;
+      Right : Super_String) return Boolean;
+
+   function Less
+     (Left  : Super_String;
+      Right : String) return Boolean;
 
    function Less
      (Left  : String;
-      Right : Super_String)
-      return  Boolean;
-
-   function Less_Or_Equal (Left, Right : Super_String) return Boolean;
+      Right : Super_String) return Boolean;
 
    function Less_Or_Equal
      (Left  : Super_String;
-      Right : String)
-      return  Boolean;
+      Right : Super_String) return Boolean;
+
+   function Less_Or_Equal
+     (Left  : Super_String;
+      Right : String) return Boolean;
 
    function Less_Or_Equal
      (Left  : String;
-      Right : Super_String)
-      return  Boolean;
-
-   function Greater  (Left, Right : Super_String) return Boolean;
+      Right : Super_String) return Boolean;
 
    function Greater
      (Left  : Super_String;
-      Right : String)
-      return  Boolean;
+      Right : Super_String) return Boolean;
+
+   function Greater
+     (Left  : Super_String;
+      Right : String) return Boolean;
 
    function Greater
      (Left  : String;
-      Right : Super_String)
-      return  Boolean;
-
-   function Greater_Or_Equal (Left, Right : Super_String) return Boolean;
+      Right : Super_String) return Boolean;
 
    function Greater_Or_Equal
      (Left  : Super_String;
-      Right : String)
-      return  Boolean;
+      Right : Super_String) return Boolean;
+
+   function Greater_Or_Equal
+     (Left  : Super_String;
+      Right : String) return Boolean;
 
    function Greater_Or_Equal
      (Left  : String;
-      Right : Super_String)
-      return  Boolean;
+      Right : Super_String) return Boolean;
 
    ----------------------
    -- Search Functions --
@@ -227,44 +234,63 @@ pragma Preelaborate (Superbounded);
      (Source  : Super_String;
       Pattern : String;
       Going   : Direction := Forward;
-      Mapping : Maps.Character_Mapping := Maps.Identity)
-      return    Natural;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural;
 
    function Super_Index
      (Source  : Super_String;
       Pattern : String;
       Going   : Direction := Forward;
-      Mapping : Maps.Character_Mapping_Function)
-      return    Natural;
+      Mapping : Maps.Character_Mapping_Function) return Natural;
 
    function Super_Index
      (Source : Super_String;
       Set    : Maps.Character_Set;
       Test   : Membership := Inside;
-      Going  : Direction  := Forward)
-      return   Natural;
+      Going  : Direction  := Forward) return Natural;
+
+   function Super_Index
+     (Source  : Super_String;
+      Pattern : String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural;
+
+   function Super_Index
+     (Source  : Super_String;
+      Pattern : String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping_Function) return Natural;
+
+   function Super_Index
+     (Source : Super_String;
+      Set    : Maps.Character_Set;
+      From   : Positive;
+      Test   : Membership := Inside;
+      Going  : Direction := Forward) return Natural;
 
    function Super_Index_Non_Blank
      (Source : Super_String;
-      Going  : Direction := Forward)
-      return   Natural;
+      Going  : Direction := Forward) return Natural;
+
+   function Super_Index_Non_Blank
+     (Source : Super_String;
+      From   : Positive;
+      Going  : Direction := Forward) return Natural;
 
    function Super_Count
      (Source  : Super_String;
       Pattern : String;
-      Mapping : Maps.Character_Mapping := Maps.Identity)
-      return    Natural;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural;
 
    function Super_Count
      (Source  : Super_String;
       Pattern : String;
-      Mapping : Maps.Character_Mapping_Function)
-      return    Natural;
+      Mapping : Maps.Character_Mapping_Function) return Natural;
 
    function Super_Count
      (Source : Super_String;
-      Set    : Maps.Character_Set)
-      return   Natural;
+      Set    : Maps.Character_Set) return Natural;
 
    procedure Super_Find_Token
      (Source : Super_String;
@@ -278,9 +304,8 @@ pragma Preelaborate (Superbounded);
    ------------------------------------
 
    function Super_Translate
-     (Source   : Super_String;
-      Mapping  : Maps.Character_Mapping)
-      return     Super_String;
+     (Source  : Super_String;
+      Mapping : Maps.Character_Mapping) return Super_String;
 
    procedure Super_Translate
      (Source   : in out Super_String;
@@ -288,8 +313,7 @@ pragma Preelaborate (Superbounded);
 
    function Super_Translate
      (Source  : Super_String;
-      Mapping : Maps.Character_Mapping_Function)
-      return    Super_String;
+      Mapping : Maps.Character_Mapping_Function) return Super_String;
 
    procedure Super_Translate
      (Source  : in out Super_String;
@@ -300,26 +324,24 @@ pragma Preelaborate (Superbounded);
    ---------------------------------------
 
    function Super_Replace_Slice
-     (Source   : Super_String;
-      Low      : Positive;
-      High     : Natural;
-      By       : String;
-      Drop     : Truncation := Error)
-      return     Super_String;
+     (Source : Super_String;
+      Low    : Positive;
+      High   : Natural;
+      By     : String;
+      Drop   : Truncation := Error) return Super_String;
 
    procedure Super_Replace_Slice
-     (Source   : in out Super_String;
-      Low      : Positive;
-      High     : Natural;
-      By       : String;
-      Drop     : Truncation := Error);
+     (Source  : in out Super_String;
+      Low     : Positive;
+      High    : Natural;
+      By      : String;
+      Drop    : Truncation := Error);
 
    function Super_Insert
      (Source   : Super_String;
       Before   : Positive;
       New_Item : String;
-      Drop     : Truncation := Error)
-      return     Super_String;
+      Drop     : Truncation := Error) return Super_String;
 
    procedure Super_Insert
      (Source   : in out Super_String;
@@ -328,11 +350,10 @@ pragma Preelaborate (Superbounded);
       Drop     : Truncation := Error);
 
    function Super_Overwrite
-     (Source    : Super_String;
-      Position  : Positive;
-      New_Item  : String;
-      Drop      : Truncation := Error)
-      return      Super_String;
+     (Source   : Super_String;
+      Position : Positive;
+      New_Item : String;
+      Drop     : Truncation := Error) return Super_String;
 
    procedure Super_Overwrite
      (Source    : in out Super_String;
@@ -343,8 +364,7 @@ pragma Preelaborate (Superbounded);
    function Super_Delete
      (Source  : Super_String;
       From    : Positive;
-      Through : Natural)
-      return    Super_String;
+      Through : Natural) return Super_String;
 
    procedure Super_Delete
      (Source  : in out Super_String;
@@ -357,18 +377,16 @@ pragma Preelaborate (Superbounded);
 
    function Super_Trim
      (Source : Super_String;
-      Side   : Trim_End)
-      return   Super_String;
+      Side   : Trim_End) return Super_String;
 
    procedure Super_Trim
      (Source : in out Super_String;
       Side   : Trim_End);
 
    function Super_Trim
-     (Source  : Super_String;
+     (Source : Super_String;
       Left   : Maps.Character_Set;
-      Right  : Maps.Character_Set)
-      return   Super_String;
+      Right  : Maps.Character_Set) return Super_String;
 
    procedure Super_Trim
      (Source : in out Super_String;
@@ -379,26 +397,24 @@ pragma Preelaborate (Superbounded);
      (Source : Super_String;
       Count  : Natural;
       Pad    : Character := Space;
-      Drop   : Truncation := Error)
-      return   Super_String;
+      Drop   : Truncation := Error) return Super_String;
 
    procedure Super_Head
      (Source : in out Super_String;
       Count  : Natural;
-      Pad    : Character  := Space;
+      Pad    : Character := Space;
       Drop   : Truncation := Error);
 
    function Super_Tail
      (Source : Super_String;
       Count  : Natural;
-      Pad    : Character  := Space;
-      Drop   : Truncation := Error)
-      return Super_String;
+      Pad    : Character := Space;
+      Drop   : Truncation := Error) return Super_String;
 
    procedure Super_Tail
      (Source : in out Super_String;
       Count  : Natural;
-      Pad    : Character  := Space;
+      Pad    : Character := Space;
       Drop   : Truncation := Error);
 
    ------------------------------------
@@ -412,46 +428,39 @@ pragma Preelaborate (Superbounded);
    function Times
      (Left       : Natural;
       Right      : Character;
-      Max_Length : Positive)
-      return       Super_String;
+      Max_Length : Positive) return Super_String;
    --  Note the additional parameter Max_Length
 
    function Times
      (Left       : Natural;
       Right      : String;
-      Max_Length : Positive)
-      return       Super_String;
+      Max_Length : Positive) return Super_String;
    --  Note the additional parameter Max_Length
 
    function Times
      (Left  : Natural;
-      Right : Super_String)
-      return  Super_String;
+      Right : Super_String) return Super_String;
 
    function Super_Replicate
      (Count      : Natural;
       Item       : Character;
       Drop       : Truncation := Error;
-      Max_Length : Positive)
-      return       Super_String;
+      Max_Length : Positive) return Super_String;
    --  Note the additional parameter Max_Length
 
    function Super_Replicate
      (Count      : Natural;
       Item       : String;
       Drop       : Truncation := Error;
-      Max_Length : Positive)
-      return       Super_String;
+      Max_Length : Positive) return Super_String;
    --  Note the additional parameter Max_Length
 
    function Super_Replicate
      (Count : Natural;
       Item  : Super_String;
-      Drop  : Truncation := Error)
-      return  Super_String;
+      Drop  : Truncation := Error) return Super_String;
 
 private
-
       --  Pragma Inline declarations
 
       pragma Inline ("=");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -497,12 +497,15 @@ package body Exp_Attr is
    --  Start of processing for Expand_N_Attribute_Reference
 
    begin
-      --  Do required validity checking
+      --  Do required validity checking, if enabled. Do not apply check to
+      --  output parameters of an Asm instruction, since the value of this
+      --  is not set till after the attribute has been elaborated.
 
-      if Validity_Checks_On and Validity_Check_Operands then
+      if Validity_Checks_On and then Validity_Check_Operands
+        and then Id /= Attribute_Asm_Output
+      then
          declare
             Expr : Node_Id;
-
          begin
             Expr := First (Expressions (N));
             while Present (Expr) loop
@@ -1901,7 +1904,7 @@ package body Exp_Attr is
                   --  Now we need to get the entity for the call, and construct
                   --  a function call node, where we preset a reference to Dnn
                   --  as the controlling argument (doing an unchecked
-                  --  conversion to the classwide tagged type to make it
+                  --  conversion to the class-wide tagged type to make it
                   --  look like a real tagged object).
 
                   Fname := Find_Prim_Op (Rtyp, TSS_Stream_Input);
@@ -2397,8 +2400,6 @@ package body Exp_Attr is
                               Right_Opnd =>
                                 Make_Integer_Literal (Loc,
                                   Intval => 1))))))));
-
-
 
          end if;
 
@@ -3153,7 +3154,7 @@ package body Exp_Attr is
             Rewrite (Prefix (N), New_Occurrence_Of (Entity (Pref), Loc));
             return;
 
-         --  For x'Size applied to an object of a class wide type, transform
+         --  For x'Size applied to an object of a class-wide type, transform
          --  X'Size into a call to the primitive operation _Size applied to X.
 
          elsif Is_Class_Wide_Type (Ptyp) then
@@ -3232,8 +3233,7 @@ package body Exp_Attr is
          --  Common processing for record and array component case
 
          if Siz /= 0 then
-            Rewrite (N,
-              Make_Integer_Literal (Loc, Siz));
+            Rewrite (N, Make_Integer_Literal (Loc, Siz));
 
             Analyze_And_Resolve (N, Typ);
 
@@ -3363,6 +3363,29 @@ package body Exp_Attr is
             end if;
          end if;
       end Storage_Size;
+
+      -----------------
+      -- Stream_Size --
+      -----------------
+
+      when Attribute_Stream_Size => Stream_Size : declare
+         Ptyp : constant Entity_Id := Etype (Pref);
+         Size : Int;
+
+      begin
+         --  If we have a Stream_Size clause for this type use it, otherwise
+         --  the Stream_Size if the size of the type.
+
+         if Has_Stream_Size_Clause (Ptyp) then
+            Size := UI_To_Int
+              (Static_Integer (Expression (Stream_Size_Clause (Ptyp))));
+         else
+            Size := UI_To_Int (Esize (Ptyp));
+         end if;
+
+         Rewrite (N, Make_Integer_Literal (Loc, Intval => Size));
+         Analyze_And_Resolve (N, Typ);
+      end Stream_Size;
 
       ----------
       -- Succ --
@@ -3998,6 +4021,39 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Standard_Wide_String);
       end Wide_Image;
 
+      ---------------------
+      -- Wide_Wide_Image --
+      ---------------------
+
+      --  We expand typ'Wide_Wide_Image (X) into
+
+      --    String_To_Wide_Wide_String
+      --      (typ'Image (X), Wide_Character_Encoding_Method)
+
+      --  This works in all cases because String_To_Wide_Wide_String converts
+      --  any wide character escape sequences resulting from the Image call to
+      --  the proper Wide_Character equivalent
+
+      --  not quite right for typ = Wide_Wide_Character ???
+
+      when Attribute_Wide_Wide_Image => Wide_Wide_Image :
+      begin
+         Rewrite (N,
+           Make_Function_Call (Loc,
+             Name => New_Reference_To
+               (RTE (RE_String_To_Wide_Wide_String), Loc),
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix         => Pref,
+                 Attribute_Name => Name_Image,
+                 Expressions    => Exprs),
+
+               Make_Integer_Literal (Loc,
+                 Intval => Int (Wide_Character_Encoding_Method)))));
+
+         Analyze_And_Resolve (N, Standard_Wide_Wide_String);
+      end Wide_Wide_Image;
+
       ----------------
       -- Wide_Value --
       ----------------
@@ -4036,6 +4092,53 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Wide_Value;
 
+      ---------------------
+      -- Wide_Wide_Value --
+      ---------------------
+
+      --  We expand typ'Wide_Value_Value (X) into
+
+      --    typ'Value
+      --      (Wide_Wide_String_To_String (X, Wide_Character_Encoding_Method))
+
+      --  Wide_Wide_String_To_String is a runtime function that converts its
+      --  wide string argument to String, converting any non-translatable
+      --  characters into appropriate escape sequences. This preserves the
+      --  required semantics of Wide_Wide_Value in all cases, and results in a
+      --  very simple implementation approach.
+
+      --  It's not quite right where typ = Wide_Wide_Character, because the
+      --  encoding method may not cover the whole character type ???
+
+      when Attribute_Wide_Wide_Value => Wide_Wide_Value :
+      begin
+         Rewrite (N,
+           Make_Attribute_Reference (Loc,
+             Prefix         => Pref,
+             Attribute_Name => Name_Value,
+
+             Expressions    => New_List (
+               Make_Function_Call (Loc,
+                 Name =>
+                   New_Reference_To (RTE (RE_Wide_Wide_String_To_String), Loc),
+
+                 Parameter_Associations => New_List (
+                   Relocate_Node (First (Exprs)),
+                   Make_Integer_Literal (Loc,
+                     Intval => Int (Wide_Character_Encoding_Method)))))));
+
+         Analyze_And_Resolve (N, Typ);
+      end Wide_Wide_Value;
+
+      ---------------------
+      -- Wide_Wide_Width --
+      ---------------------
+
+      --  Wide_Wide_Width attribute is handled in separate unit Exp_Imgv
+
+      when Attribute_Wide_Wide_Width =>
+         Exp_Imgv.Expand_Width_Attribute (N, Wide_Wide);
+
       ----------------
       -- Wide_Width --
       ----------------
@@ -4043,7 +4146,7 @@ package body Exp_Attr is
       --  Wide_Width attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Wide_Width =>
-         Exp_Imgv.Expand_Width_Attribute (N, Wide => True);
+         Exp_Imgv.Expand_Width_Attribute (N, Wide);
 
       -----------
       -- Width --
@@ -4052,7 +4155,7 @@ package body Exp_Attr is
       --  Width attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Width =>
-         Exp_Imgv.Expand_Width_Attribute (N, Wide => False);
+         Exp_Imgv.Expand_Width_Attribute (N, Normal);
 
       -----------
       -- Write --
@@ -4318,7 +4421,6 @@ package body Exp_Attr is
                     New_Reference_To (Base_Type (Etype (Prefix (N))), Loc),
                   Attribute_Name => Cnam)),
           Reason => CE_Overflow_Check_Failed));
-
    end Expand_Pred_Succ;
 
    ------------------------
@@ -4354,7 +4456,6 @@ package body Exp_Attr is
       end if;
 
       return Proc;
-
    end Find_Inherited_TSS;
 
    ----------------------------

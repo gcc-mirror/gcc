@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,8 +46,8 @@ pragma Pure (WCh_Con);
    -------------------------------------
 
    --  A wide character encoding method is a method for uniquely representing
-   --  a Wide_Character value using a one or more Character values. Three
-   --  types of encoding method are supported by GNAT:
+   --  a Wide_Character or Wide_Wide_Character value using a one or more
+   --  Character values. Three types of encoding method are supported by GNAT:
 
    --    An escape encoding method uses ESC as the first character of the
    --    sequence, and subsequent characters determine the wide character
@@ -62,9 +62,10 @@ pragma Pure (WCh_Con);
    --    Any character in the lower half (16#00# .. 16#7F#) represents
    --    itself as a single character.
 
-   --    The brackets notation, where a wide character is represented
-   --    by the sequence ["xx"] or ["xxxx"] where xx are hexadecimal
-   --    characters.
+   --    The brackets notation, where a wide character is represented by the
+   --    sequence ["xx"] or ["xxxx"] or ["xxxxxx"] where xx are hexadecimal
+   --    characters. Note that currently this is the only encoding that
+   --    supports the full UTF-32 range.
 
    --  Note that GNAT does not currently support escape-in, escape-out
    --  encoding methods, where an escape sequence is used to set a mode
@@ -130,25 +131,32 @@ pragma Pure (WCh_Con);
    --  An ISO 10646-1 BMP/Unicode wide character is represented in
    --  UCS Transformation Format 8 (UTF-8) as defined in Annex R of ISO
    --  10646-1/Am.2.  Depending on the character value, a Unicode character
-   --  is represented as the one, two, or three byte sequence
+   --  is represented as the one to six byte sequence.
    --
-   --    16#0000#-16#007f#: 2#0xxxxxxx#
-   --    16#0080#-16#07ff#: 2#110xxxxx# 2#10xxxxxx#
-   --    16#0800#-16#ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
+   --    16#0000_0000#-16#0000_007f#: 2#0xxxxxxx#
+   --    16#0000_0080#-16#0000_07ff#: 2#110xxxxx# 2#10xxxxxx#
+   --    16#0000_0800#-16#0000_ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
+   --    16#0001_0000#-16#001F_FFFF#: 2#11110xxx# 2#10xxxxxx# 2#10xxxxxx#
+   --                                 2#10xxxxxx#
+   --    16#0020_0000#-16#03FF_FFFF#: 2#111110xx# 2#10xxxxxx# 2#10xxxxxx#
+   --                                 2#10xxxxxx# 2#10xxxxxx#
+   --    16#0400_0000#-16#7FFF_FFFF#: 2#1111110x# 2#10xxxxxx# 2#10xxxxxx#
+   --                                 2#10xxxxxx# 2#10xxxxxx# 2#10xxxxxx#
    --
-   --  where the xxx bits correspond to the left-padded bits of the the
+   --  where the xxx bits correspond to the left-padded bits of the
    --  16-bit character value. Note that all lower half ASCII characters
    --  are represented as ASCII bytes and all upper half characters and
-   --  other wide characters are represented as sequences of upper-half
-   --  (The full UTF-8 scheme allows for encoding 31-bit characters as
-   --  6-byte sequences, but in this implementation, all UTF-8 sequences
-   --  of four or more bytes length will raise a Constraint_Error, as
-   --  will all illegal UTF-8 sequences.)
+   --  other wide characters are represented as sequences of upper-half.
 
    WCEM_Brackets : constant WC_Encoding_Method := 6;
-   --  A wide character is represented as the sequence ["abcd"] where abcd
-   --  are four hexadecimal characters. In this mode, the sequence ["ab"]
-   --  is also recognized for the case of character codes in the range 0-255.
+   --  A wide character is represented using one of the following sequences:
+   --
+   --    ["xx"]
+   --    ["xxxx"]
+   --    ["xxxxxx"]
+   --    ["xxxxxxxx"]
+   --
+   --  where xx are hexadecimal digits representing the character code.
 
    WC_Encoding_Letters : constant array (WC_Encoding_Method) of Character :=
      (WCEM_Hex       => 'h',
@@ -170,8 +178,8 @@ pragma Pure (WCh_Con);
    --  Encoding methods using an upper half character (16#80#..16#FF) at
    --  the start of the sequence.
 
-   WC_Longest_Sequence : constant := 8;
-   --  The longest number of characters that can be used for a wide
-   --  character sequence for any of the active encoding methods.
+   WC_Longest_Sequence : constant := 10;
+   --  The longest number of characters that can be used for a wide character
+   --  or wide wide character sequence for any of the active encoding methods.
 
 end System.WCh_Con;

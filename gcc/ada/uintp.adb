@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1559,6 +1559,15 @@ package body Uintp is
       end;
    end UI_Expon;
 
+   ----------------
+   -- UI_From_CC --
+   ----------------
+
+   function UI_From_CC (Input : Char_Code) return Uint is
+   begin
+      return UI_From_Dint (Dint (Input));
+   end UI_From_CC;
+
    ------------------
    -- UI_From_Dint --
    ------------------
@@ -2383,6 +2392,39 @@ package body Uintp is
          return UI_Add (Left, -Right);
       end if;
    end UI_Sub;
+
+   --------------
+   -- UI_To_CC --
+   --------------
+
+   function UI_To_CC (Input : Uint) return Char_Code is
+   begin
+      if Direct (Input) then
+         return Char_Code (Direct_Val (Input));
+
+      --  Case of input is more than one digit
+
+      else
+         declare
+            In_Length : constant Int := N_Digits (Input);
+            In_Vec    : UI_Vector (1 .. In_Length);
+            Ret_CC    : Char_Code;
+
+         begin
+            Init_Operand (Input, In_Vec);
+
+            --  We assume value is positive
+
+            Ret_CC := 0;
+            for Idx in In_Vec'Range loop
+               Ret_CC := Ret_CC * Char_Code (Base) +
+                                  Char_Code (abs In_Vec (Idx));
+            end loop;
+
+            return Ret_CC;
+         end;
+      end if;
+   end UI_To_CC;
 
    ----------------
    -- UI_To_Int --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,7 +76,7 @@ package Exp_Disp is
    --  Class case check that no pragma CPP_Virtual is missing  and that the
    --  DT_Position are coherent
 
-   procedure Expand_Dispatch_Call (Call_Node : Node_Id);
+   procedure Expand_Dispatching_Call (Call_Node : Node_Id);
    --  Expand the call to the operation through the dispatch table and perform
    --  the required tag checks when appropriate. For CPP types the call is
    --  done through the Vtable (tag checks are not relevant)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3458,6 +3458,22 @@ package body Sem_Attr is
       when Attribute_Storage_Unit =>
          Standard_Attribute (Ttypes.System_Storage_Unit);
 
+      -----------------
+      -- Stream_Size --
+      -----------------
+
+      when Attribute_Stream_Size =>
+         Check_E0;
+         Check_Type;
+
+         if Is_Entity_Name (P)
+           and then Is_Elementary_Type (Entity (P))
+         then
+            Set_Etype (N, Universal_Integer);
+         else
+            Error_Attr ("invalid prefix for % attribute", P);
+         end if;
+
       ----------
       -- Succ --
       ----------
@@ -3801,6 +3817,19 @@ package body Sem_Attr is
          Validate_Non_Static_Attribute_Function_Call;
       end Wide_Image;
 
+      ---------------------
+      -- Wide_Wide_Image --
+      ---------------------
+
+      when Attribute_Wide_Wide_Image => Wide_Wide_Image :
+      begin
+         Check_Scalar_Type;
+         Set_Etype (N, Standard_Wide_Wide_String);
+         Check_E1;
+         Resolve (E1, P_Base_Type);
+         Validate_Non_Static_Attribute_Function_Call;
+      end Wide_Wide_Image;
+
       ----------------
       -- Wide_Value --
       ----------------
@@ -3816,6 +3845,31 @@ package body Sem_Attr is
          Set_Etype (N, P_Type);
          Validate_Non_Static_Attribute_Function_Call;
       end Wide_Value;
+
+      ---------------------
+      -- Wide_Wide_Value --
+      ---------------------
+
+      when Attribute_Wide_Wide_Value => Wide_Wide_Value :
+      begin
+         Check_E1;
+         Check_Scalar_Type;
+
+         --  Set Etype before resolving expression because expansion
+         --  of expression may require enclosing type.
+
+         Set_Etype (N, P_Type);
+         Validate_Non_Static_Attribute_Function_Call;
+      end Wide_Wide_Value;
+
+      ---------------------
+      -- Wide_Wide_Width --
+      ---------------------
+
+      when Attribute_Wide_Wide_Width =>
+         Check_E0;
+         Check_Scalar_Type;
+         Set_Etype (N, Universal_Integer);
 
       ----------------
       -- Wide_Width --
@@ -4919,12 +4973,12 @@ package body Sem_Attr is
 
       when Attribute_Enum_Rep =>
 
-         --  For an enumeration type with a non-standard representation
-         --  use the Enumeration_Rep field of the proper constant. Note
-         --  that this would not work for types Character/Wide_Character,
-         --  since no real entities are created for the enumeration
-         --  literals, but that does not matter since these two types
-         --  do not have non-standard representations anyway.
+         --  For an enumeration type with a non-standard representation use
+         --  the Enumeration_Rep field of the proper constant. Note that this
+         --  will not work for types Character/Wide_[Wide-]Character, since no
+         --  real entities are created for the enumeration literals, but that
+         --  does not matter since these two types do not have non-standard
+         --  representations anyway.
 
          if Is_Enumeration_Type (P_Type)
            and then Has_Non_Standard_Rep (P_Type)
@@ -5653,11 +5707,23 @@ package body Sem_Attr is
       -- Remainder --
       ---------------
 
-      when Attribute_Remainder =>
-         Fold_Ureal (N,
-           Eval_Fat.Remainder
-             (P_Root_Type, Expr_Value_R (E1), Expr_Value_R (E2)),
-           Static);
+      when Attribute_Remainder => Remainder : declare
+         X : constant Ureal := Expr_Value_R (E1);
+         Y : constant Ureal := Expr_Value_R (E2);
+
+      begin
+         if UR_Is_Zero (Y) then
+            Apply_Compile_Time_Constraint_Error
+              (N, "division by zero in Remainder",
+               CE_Overflow_Check_Failed,
+               Warn => not Static);
+
+            Check_Expressions;
+            return;
+         end if;
+
+         Fold_Ureal (N, Eval_Fat.Remainder (P_Root_Type, X, Y), Static);
+      end Remainder;
 
       -----------
       -- Round --
@@ -5832,7 +5898,7 @@ package body Sem_Attr is
                   --  Size_Clause field for a subtype when Has_Size_Clause
                   --  is False. Consider:
 
-                  --    type x is range 1 .. 64;                         g
+                  --    type x is range 1 .. 64;
                   --    for x'size use 12;
                   --    subtype y is x range 0 .. 3;
 
@@ -5892,6 +5958,13 @@ package body Sem_Attr is
          else
             Fold_Ureal (N, Small_Value (P_Type), True);
          end if;
+
+      -----------------
+      -- Stream_Size --
+      -----------------
+
+      when Attribute_Stream_Size =>
+         null;
 
       ----------
       -- Succ --
@@ -6100,6 +6173,22 @@ package body Sem_Attr is
       when Attribute_Wide_Image =>
          null;
 
+      ---------------------
+      -- Wide_Wide_Image --
+      ---------------------
+
+      --  Wide_Wide_Image is a scalar attribute but is never static, because it
+      --  is not a static function (having a non-scalar argument (RM 4.9(22)).
+
+      when Attribute_Wide_Wide_Image =>
+         null;
+
+      ---------------------
+      -- Wide_Wide_Width --
+      ---------------------
+
+      --  Processing for Wide_Wide_Width is combined with Width
+
       ----------------
       -- Wide_Width --
       ----------------
@@ -6110,9 +6199,11 @@ package body Sem_Attr is
       -- Width --
       -----------
 
-      --  This processing also handles the case of Wide_Width
+      --  This processing also handles the case of Wide_[Wide_]Width
 
-      when Attribute_Width | Attribute_Wide_Width => Width :
+      when Attribute_Width |
+           Attribute_Wide_Width |
+           Attribute_Wide_Wide_Width => Width :
       begin
          if Compile_Time_Known_Bounds (P_Type) then
 
@@ -6193,10 +6284,11 @@ package body Sem_Attr is
                      W := 0;
 
                   --  Width for types derived from Standard.Character
-                  --  and Standard.Wide_Character.
+                  --  and Standard.Wide_[Wide_]Character.
 
                   elsif R = Standard_Character
-                    or else R = Standard_Wide_Character
+                     or else R = Standard_Wide_Character
+                     or else R = Standard_Wide_Wide_Character
                   then
                      W := 0;
 
@@ -6206,6 +6298,8 @@ package body Sem_Attr is
 
                         --  Assume all wide-character escape sequences are
                         --  same length, so we can quit when we reach one.
+
+                        --  Is this right for UTF-8?
 
                         if J > 255 then
                            if Id = Attribute_Wide_Width then
@@ -6299,8 +6393,8 @@ package body Sem_Attr is
                               Get_Decoded_Name_String (Chars (L));
                               Wt := Nat (Name_Len);
 
-                           --  For Wide_Width, use encoded name, and then
-                           --  adjust for the encoding.
+                           --  For Wide_[Wide_]Width, use encoded name, and
+                           --  then adjust for the encoding.
 
                            else
                               Get_Name_String (Chars (L));
@@ -6386,11 +6480,11 @@ package body Sem_Attr is
            Attribute_Value                    |
            Attribute_Wchar_T_Size             |
            Attribute_Wide_Value               |
+           Attribute_Wide_Wide_Value          |
            Attribute_Word_Size                |
            Attribute_Write                    =>
 
          raise Program_Error;
-
       end case;
 
       --  At the end of the case, one more check. If we did a static evaluation
@@ -7347,6 +7441,9 @@ package body Sem_Attr is
 
                when Attribute_Wide_Value =>
                   Resolve (First (Expressions (N)), Standard_Wide_String);
+
+               when Attribute_Wide_Wide_Value =>
+                  Resolve (First (Expressions (N)), Standard_Wide_Wide_String);
 
                when others => null;
             end case;
