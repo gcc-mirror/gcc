@@ -2305,25 +2305,6 @@ fix = {
 
 
 /*
- *  Add a `static' declaration of `getrnge' into <regexp.h>.
- *
- *  Don't do this if there is already a `static void getrnge' declaration
- *  present, since this would cause a redeclaration error.  Solaris 2.x has
- *  such a declaration.
- */
-#ifdef SVR4
-fix = {
-    hackname = static_getrnge;
-    files    = regexp.h;
-    bypass   = "static void getrnge";
-    sed      = "/^static int[ \t]*size;/c\\\n"
-               "static int      size ;\\\n\\\n"
-               "static int getrnge ();";
-};
-#endif
-
-
-/*
  *  a missing semi-colon at the end of the statsswtch structure definition.
  */
 fix = {
@@ -2987,6 +2968,35 @@ fix = {
     sed      = 's/const extern/extern const/g';
 };
 #endif
+
+
+/*
+ *  Some SysV r4 systems, including Sequent's DYNIX/ptx, use the local
+ *  function 'getrnge' in <regexp.h> before they declare it.  For these
+ *  systems add a 'static int' declaration of 'getrnge' into <regexp.h>
+ *  early on.
+ *
+ *  'getrnge' traditionally manipulates a file-scope global called 'size',
+ *  so put the declaration right after the declaration of 'size'.
+ *
+ *  Don't do this if there is already a `static void getrnge' declaration
+ *  present, since this would cause a redeclaration error.  Solaris 2.x has
+ *  such a declaration.
+ */
+fix = {
+    hackname  = svr4_undeclared_getrnge;
+    files     = regexp.h;
+    select    = "getrnge";
+    bypass    = "static void getrnge";
+    c_fix     = format;
+    c_fix_arg = "%0\n"
+                "static int getrnge ();";
+    c_fix_arg = "^static int[ \t]+size;";
+    test_text = "static int size;\n"
+                "/* stuff which calls getrnge() */\n"
+                "static getrnge()\n"
+                "{}";
+};
 
 
 /*
