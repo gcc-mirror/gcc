@@ -2212,10 +2212,12 @@ insn_first_p (insn, reference)
 
   for (p = insn, q = reference; ; p = NEXT_INSN (p), q = NEXT_INSN (q))
     {
-      if (p == reference || ! q)
-	return 1;
+      /* Start with test for not first so that INSN == REFERENCE yields not
+	 first.  */
       if (q == insn || ! p)
 	return 0;
+      if (p == reference || ! q)
+	return 1;
     }
 }
 

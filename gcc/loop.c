@@ -3784,13 +3784,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  && (! condjump_p (insn)
 		      || (JUMP_LABEL (insn) != 0
 			  && JUMP_LABEL (insn) != scan_start
-			  && (INSN_UID (JUMP_LABEL (insn)) >= max_uid_for_loop
-			      || (INSN_UID (p) < max_uid_for_loop
-				  ? (INSN_LUID (JUMP_LABEL (insn))
-				     <= INSN_LUID (p))
-				  : (INSN_UID (insn) >= max_uid_for_loop
-				     || (INSN_LUID (JUMP_LABEL (insn))
-					 < INSN_LUID (insn))))))))
+			  && ! loop_insn_first_p (p, JUMP_LABEL (insn)))))
 		{
 		  maybe_multiple = 1;
 		  break;
@@ -3856,7 +3850,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
       if (not_every_iteration && GET_CODE (p) == CODE_LABEL
 	  && no_labels_between_p (p, loop_end)
-	  && insn_first_p (p, loop_cont))
+	  && loop_insn_first_p (p, loop_cont))
 	not_every_iteration = 0;
     }
 
@@ -4031,7 +4025,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	         in-between when biv_toal_increment returns nonzero both times
 		 but we test it here in case some day some real cfg analysis
 		 gets used to set always_computable.  */
-	      && ((insn_first_p (bl2->biv->insn, bl->biv->insn)
+	      && ((loop_insn_first_p (bl2->biv->insn, bl->biv->insn)
 		   && no_labels_between_p (bl2->biv->insn, bl->biv->insn))
 		  || (! reg_used_between_p (bl->biv->src_reg, bl->biv->insn,
 					    bl2->biv->insn)
@@ -4090,7 +4084,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		      && ! reg_used_between_p (giv, bl->init_insn, loop_start))
 		    delete_insn (bl->init_insn);
 		}
-	      else if (! insn_first_p (bl2->biv->insn, bl->biv->insn))
+	      else if (! loop_insn_first_p (bl2->biv->insn, bl->biv->insn))
 		{
 		  rtx p = PREV_INSN (giv_insn);
 		  while (INSN_UID (p) >= max_uid_for_loop)
@@ -4453,7 +4447,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
       if (not_every_iteration && GET_CODE (p) == CODE_LABEL
 	  && no_labels_between_p (p, loop_end)
-	  && insn_first_p (p, loop_cont))
+	  && loop_insn_first_p (p, loop_cont))
 	not_every_iteration = 0;
     }
 
@@ -5664,13 +5658,10 @@ check_final_value (v, loop_start, loop_end, n_iterations)
 
 	      if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p)
 		  && LABEL_NAME (JUMP_LABEL (p))
-		  && ((INSN_UID (JUMP_LABEL (p)) >= max_uid_for_loop)
-		      || (INSN_UID (v->insn) >= max_uid_for_loop)
-		      || (INSN_UID (last_giv_use) >= max_uid_for_loop)
-		      || (INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (v->insn)
-			  && INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (loop_start))
-		      || (INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (last_giv_use)
-			  && INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (loop_end))))
+		  && ((loop_insn_first_p (JUMP_LABEL (p), v->insn)
+		       && loop_insn_first_p (loop_start, JUMP_LABEL (p)))
+		      || (loop_insn_first_p (last_giv_use, JUMP_LABEL (p))
+			  && loop_insn_first_p (JUMP_LABEL (p), loop_end))))
 		{
 		  v->replaceable = 0;
 		  v->not_replaceable = 1;
@@ -7749,9 +7740,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  if (v->giv_type == DEST_REG
 		      && reg_mentioned_p (v->dest_reg,
 					  XEXP (loop_store_mems, 0))
-		      && (INSN_UID (v->insn) >= max_uid_for_loop
-			  || (INSN_LUID (v->insn)
-			      > INSN_LUID (first_loop_store_insn))))
+		      && loop_insn_first_p (first_loop_store_insn, v->insn))
 		    reversible_mem_store = 0;
 		}
 	    }
