@@ -195,7 +195,8 @@ tree global_var;
    The concept of 'escaping' is the same one used in the Java world.  When
    a pointer or an ADDR_EXPR escapes, it means that it has been exposed
    outside of the current function.  So, assignment to global variables,
-   function arguments and returning a pointer are all escape sites.
+   function arguments and returning a pointer are all escape sites, as are
+   conversions between pointers and integers.
 
    This is where we are currently limited.  Since not everything is renamed
    into SSA, we lose track of escape properties when a pointer is stashed
@@ -661,22 +662,6 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 
 	  if (stmt_escapes_p)
 	    block_ann->has_escape_site = 1;
-
-	  /* Special case for silly ADDR_EXPR tricks
-	     (gcc.c-torture/unsorted/pass.c).  If this statement is an
-	     assignment to a non-pointer variable and the RHS takes the
-	     address of a variable, assume that the variable on the RHS is
-	     call-clobbered.  We could add the LHS to the list of
-	     "pointers" and follow it to see if it really escapes, but it's
-	     not worth the pain.  */
-	  if (addr_taken
-	      && TREE_CODE (stmt) == MODIFY_EXPR
-	      && !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 0))))
-	    EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i, bi)
-	      {
-		tree var = referenced_var (i);
-		mark_call_clobbered (var);
-	      }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
 	    {
@@ -2047,6 +2032,16 @@ is_escape_site (tree stmt, size_t *num_calls_p)
       /* If we couldn't recognize the LHS of the assignment, assume that it
 	 is a non-local store.  */
       if (lhs == NULL_TREE)
+	return true;
+
+      /* If the RHS is a conversion between a pointer and an integer, the
+	 pointer escapes since we can't track the integer.  */
+      if ((TREE_CODE (TREE_OPERAND (stmt, 1)) == NOP_EXPR
+	   || TREE_CODE (TREE_OPERAND (stmt, 1)) == CONVERT_EXPR
+	   || TREE_CODE (TREE_OPERAND (stmt, 1)) == VIEW_CONVERT_EXPR)
+	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND
+					(TREE_OPERAND (stmt, 1), 0)))
+	  && !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 1))))
 	return true;
 
       /* If the LHS is an SSA name, it can't possibly represent a non-local

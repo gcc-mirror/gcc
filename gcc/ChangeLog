@@ -1,5 +1,10 @@
 2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-ssa-alias.c (compute_points_to_and_addr_escapes): Remove
+	special code for assigning to non-pointer.
+	(is_escape_site): If RHS is a conversion between pointer and integer
+	types,	this is an escape site.
+
 	* gcse.c (insert_store): Error if try to insert store on abnormal edge.
 	(store_motion): Don't move store if any edge we'd want to move it
 	to is abnormal.
