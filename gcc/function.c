@@ -424,7 +424,8 @@ struct fixup_replacement
 
 static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
 static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
-				       enum machine_mode, enum machine_mode));
+				       enum machine_mode, enum machine_mode,
+				       int));
 static void fixup_var_refs	PROTO((rtx, enum machine_mode, int));
 static struct fixup_replacement
   *find_fixup_replacement	PROTO((struct fixup_replacement **, rtx));
@@ -1261,7 +1262,7 @@ put_var_into_stack (decl)
 
   if (GET_CODE (reg) == REG)
     put_reg_into_stack (function, reg, TREE_TYPE (decl),
-			promoted_mode, decl_mode);
+			promoted_mode, decl_mode, TREE_SIDE_EFFECTS (decl));
   else if (GET_CODE (reg) == CONCAT)
     {
       /* A CONCAT contains two pseudos; put them both in the stack.
@@ -1270,19 +1271,21 @@ put_var_into_stack (decl)
       tree part_type = TREE_TYPE (TREE_TYPE (decl));
 #ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
-      put_reg_into_stack (function, XEXP (reg, 1),
-			  part_type, part_mode, part_mode);
-      put_reg_into_stack (function, XEXP (reg, 0),
-			  part_type, part_mode, part_mode);
+      put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
+			  part_mode, TREE_SIDE_EFFECTS (decl));
+      put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
+			  part_mode, TREE_SIDE_EFFECTS (decl));
 #else
-      put_reg_into_stack (function, XEXP (reg, 0),
-			  part_type, part_mode, part_mode);
-      put_reg_into_stack (function, XEXP (reg, 1),
-			  part_type, part_mode, part_mode);
+      put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
+			  part_mode, TREE_SIDE_EFFECTS (decl));
+      put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
+			  part_mode, TREE_SIDE_EFFECTS (decl));
 #endif
 
       /* Change the CONCAT into a combined MEM for both parts.  */
       PUT_CODE (reg, MEM);
+      MEM_VOLATILE_P (reg) = MEM_VOLATILE_P (XEXP (reg, 0));
+
       /* The two parts are in memory order already.
 	 Use the lower parts address as ours.  */
       XEXP (reg, 0) = XEXP (XEXP (reg, 0), 0);
@@ -1295,14 +1298,16 @@ put_var_into_stack (decl)
 /* Subroutine of put_var_into_stack.  This puts a single pseudo reg REG
    into the stack frame of FUNCTION (0 means the current function).
    DECL_MODE is the machine mode of the user-level data type.
-   PROMOTED_MODE is the machine mode of the register.  */
+   PROMOTED_MODE is the machine mode of the register.
+   VOLATILE_P is nonzero if this is for a "volatile" decl.  */
 
 static void
-put_reg_into_stack (function, reg, type, promoted_mode, decl_mode)
+put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p)
      struct function *function;
      rtx reg;
      tree type;
      enum machine_mode promoted_mode, decl_mode;
+     int volatile_p;
 {
   rtx new = 0;
 
@@ -1322,11 +1327,11 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode)
 	new = assign_stack_local (decl_mode, GET_MODE_SIZE (decl_mode), 0);
     }
 
+  PUT_MODE (reg, decl_mode);
   XEXP (reg, 0) = XEXP (new, 0);
   /* `volatil' bit means one thing for MEMs, another entirely for REGs.  */
-  REG_USERVAR_P (reg) = 0;
+  MEM_VOLATILE_P (reg) = volatile_p;
   PUT_CODE (reg, MEM);
-  PUT_MODE (reg, decl_mode);
 
   /* If this is a memory ref that contains aggregate components,
      mark it as such for cse and loop optimize.  */
