@@ -1,3 +1,11 @@
+2004-05-18  Ulrich Weigand  <uweigand@de.ibm.com>
+	
+	PR middle-end/15054
+	* expr.c (expand_expr_real): Do not call preserve_temp_slots 
+	on a TARGET_EXPR temp.
+	* function.c (assign_stack_temp_for_type): Set 'keep' flag for
+	TARGET_EXPR temp slots.
+
 2004-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR optimization/15100
