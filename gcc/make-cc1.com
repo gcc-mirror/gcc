@@ -26,8 +26,10 @@ $ EDIT :=	edit
 $!
 $!	Compiler options
 $!
-$ CFLAGS =	"/debug/cc1_options=""-mpcc-alignment""/incl=([],[.config.])"
-$! CFLAGS =	"/noopt/incl=([],[.config])"
+$ CFLAGS =	"/noVerbose/Debug/CC1=""-mpcc-alignment"""
+$! CFLAGS =	"/noOpt"		!uncomment for VAXC
+$ CINCL1 =	"/Incl=[]"			!stage 1 -I flags
+$ CINCL2 =	"/Incl=([],[.ginclude])"	!stage 2,3,... flags
 $!
 $!	Link options
 $!
@@ -36,7 +38,7 @@ $!
 $!	Link libraries
 $!
 $ LIBS :=	gnu_cc:[000000]gcclib.olb/libr,sys$library:vaxcrtl.olb/libr
-$! LIBS :=	alloca.obj,sys$library:vaxcrtl.olb/libr
+$! LIBS :=	alloca.obj,sys$library:vaxcrtl.olb/Libr   !uncomment for VAXC
 $!
 $!
 $!  First we figure out what needs to be done.  This is sort of like a limited
@@ -80,6 +82,7 @@ $i=0
 $DO_ALL = 0
 $DO_LINK = 0
 $DO_DEBUG = 0
+$DO_CC1PLUS = 0
 $open cfile$ compilers.list
 $cinit:read cfile$ compilername/end=cinit_done
 $DO_'compilername'=0
@@ -118,6 +121,18 @@ $if DO_CC1.eq.1 then	echo "   Link C compiler (gcc-cc1.exe)."
 $if DO_CC1PLUS.eq.1 then echo "   Link C++ compiler (gcc-cc1plus.exe)."
 $if DO_CC1OBJ.eq.1 then echo "   Link objective-C compiler (gcc-cc1obj.exe)."
 $if DO_DEBUG.eq.1 then echo  "   Link images to run under debugger."
+$!
+$! Update CFLAGS with appropriate CINCLx value.
+$!
+$if f$edit(f$extract(0,3,CC),"LOWERCASE").nes."gcc" then goto stage1
+$if f$search("gcc-cc1.exe").eqs."" then goto stage1
+$if f$file_attr("gnu_cc:[000000]gcc-cc1.exe","FID").nes.-
+    f$file_attr("gcc-cc1.exe","FID") then goto stage1
+$ CFLAGS = CFLAGS + CINCL2
+$ goto cinclX
+$stage1:
+$ CFLAGS = CFLAGS + CINCL1
+$cinclX:
 $!
 $! Test and see if we need these messages or not.  The -1 switch gives it away.
 $!
@@ -333,6 +348,7 @@ $               close jfile$
 $       endif
 $!'f$verify(0)
 $no_bison:
+$	 echo " (Ignore any warning about not finding file ""bison.simple"".)"
 $	endif
 $!
 $if f$extract(0,5,flnm).eqs."insn-" then call generate 'flnm'.c
