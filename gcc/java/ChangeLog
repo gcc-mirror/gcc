@@ -1,3 +1,32 @@
+2001-02-14  Tom Tromey  <tromey@redhat.com>
+            Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+        Fix for PR java/1261.
+        * typeck.c (build_java_array_type): Add public `clone' method to
+        arrays.
+        * parse.y (resolve_qualified_expression_name): Use current_class
+	when checking for inaccessibility.
+        (patch_method_invocation): Fixed error message when accessibility
+	denied.  Added `from_super' argument.
+
+2001-02-14  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (resolve_class): Don't build a fake decl. Use the one
+	already built.
+	* typeck.c (build_java_array_type): Build and assign decl to array
+	type.
+
+2001-02-14  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (not_accessible_p): Changed leading comment. Added extra
+	`where' argument. Use it to enforce protected access rules.
+	(resolve_qualified_expression_name): Added extra argument to
+	not_accessible_p.
+	(patch_method_invocation): Use argument `primary' to provide
+	not_accessible_p with an extra argument.
+	(lookup_method_invoke): Added extra argument to not_accessible_p.
+	(search_applicable_method_list): Likewise.
+
 2001-02-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (resolve_qualified_expression_name): Try to resolve as

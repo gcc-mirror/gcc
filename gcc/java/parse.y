@@ -124,7 +124,7 @@ static tree resolve_expression_name PARAMS ((tree, tree *));
 static tree maybe_create_class_interface_decl PARAMS ((tree, tree, tree, tree));
 static int check_class_interface_creation PARAMS ((int, int, tree, 
 						  tree, tree, tree));
-static tree patch_method_invocation PARAMS ((tree, tree, tree, 
+static tree patch_method_invocation PARAMS ((tree, tree, tree, int,
 					    int *, tree *));
 static int breakdown_qualified PARAMS ((tree *, tree *, tree));
 static tree resolve_and_layout PARAMS ((tree, tree));
@@ -197,7 +197,7 @@ static tree maybe_access_field PARAMS ((tree, tree, tree));
 static int complete_function_arguments PARAMS ((tree));
 static int check_for_static_method_reference PARAMS ((tree, tree, tree, 
 						      tree, tree));
-static int not_accessible_p PARAMS ((tree, tree, int));
+static int not_accessible_p PARAMS ((tree, tree, tree, int));
 static void check_deprecation PARAMS ((tree, tree));
 static int class_in_current_package PARAMS ((tree));
 static tree build_if_else_statement PARAMS ((int, tree, tree, tree));
@@ -5480,14 +5480,9 @@ resolve_class (enclosing, class_type, decl, cl)
 	  CLASS_LOADED_P (resolved_type) = 1;
 	  name--;
 	}
-      /* Build a fake decl for this, since this is what is expected to
-         be returned.  */
-      resolved_type_decl =
-	build_decl (TYPE_DECL, TYPE_NAME (resolved_type), resolved_type);
-      /* Figure how those two things are important for error report. FIXME */
-      DECL_SOURCE_LINE (resolved_type_decl) = 0;
-      DECL_SOURCE_FILE (resolved_type_decl) = input_filename;
-      TYPE_NAME (class_type) = TYPE_NAME (resolved_type);
+      /* A TYPE_NAME that is a TYPE_DECL was set in
+         build_java_array_type, return it. */
+      resolved_type_decl = TYPE_NAME (resolved_type);
     }
   TREE_TYPE (class_type) = resolved_type;
   return resolved_type_decl;
@@ -9034,7 +9029,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    CALL_USING_SUPER (qual_wfl) = 1;
 	  location = (TREE_CODE (qual_wfl) == CALL_EXPR ?
 		      EXPR_WFL_LINECOL (TREE_OPERAND (qual_wfl, 0)) : 0);
-	  *where_found = patch_method_invocation (qual_wfl, decl, type, 
+	  *where_found = patch_method_invocation (qual_wfl, decl, type,
+						  from_super,
 						  &is_static, &ret_decl);
 	  if (*where_found == error_mark_node)
 	    {
@@ -9287,7 +9283,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      return 1;
 	    }
 
-	  if (not_accessible_p (TREE_TYPE (decl), decl, 0))
+	  if (not_accessible_p (TREE_TYPE (decl), decl, type, 0))
 	    {
 	      parse_error_context 
 		(qual_wfl, "Can't access %s field `%s.%s' from `%s'",
@@ -9407,7 +9403,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		CLASS_LOADED_P (field_decl_type) = 1;
 	      
 	      /* Check on accessibility here */
-	      if (not_accessible_p (type, field_decl, from_super))
+	      if (not_accessible_p (current_class, field_decl,
+				    TREE_TYPE (decl), from_super))
 		{
 		  parse_error_context 
 		    (qual_wfl,
@@ -9494,12 +9491,16 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 }
 
 /* 6.6 Qualified name and access control. Returns 1 if MEMBER (a decl)
-   can't be accessed from REFERENCE (a record type). This should be
-   used when decl is a field or a method.*/
+   can't be accessed from REFERENCE (a record type). If MEMBER
+   features a protected access, we then use WHERE which, if non null,
+   holds the type of MEMBER's access that is checked against
+   6.6.2.1. This function should be used when decl is a field or a
+   method.  */
 
 static int
-not_accessible_p (reference, member, from_super)
+not_accessible_p (reference, member, where, from_super)
      tree reference, member;
+     tree where;
      int from_super;
 {
   int access_flag = get_access_flags_from_decl (member);
@@ -9524,6 +9525,12 @@ not_accessible_p (reference, member, from_super)
       /* If accessed with the form `super.member', then access is granted */
       if (from_super)
 	return 0;
+
+      /* If where is active, access was made through a
+	 qualifier. Access is granted if the type of the qualifier is
+	 or is a sublass of the type the access made from (6.6.2.1.)  */
+      if (where && !inherits_from_p (where, reference))
+	return 1;
 
       /* Otherwise, access is granted if occuring from the class where
 	 member is declared or a subclass of it. Find the right
@@ -9663,8 +9670,10 @@ maybe_access_field (decl, where, type)
    used. IS_STATIC is set to 1 if the invoked function is static. */
 
 static tree
-patch_method_invocation (patch, primary, where, is_static, ret_decl)
+patch_method_invocation (patch, primary, where, from_super,
+                        is_static, ret_decl)
      tree patch, primary, where;
+     int from_super;
      int *is_static;
      tree *ret_decl;
 {
@@ -9898,19 +9907,21 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 
   /* Check accessibility, position the is_static flag, build and
      return the call */
-  if (not_accessible_p (DECL_CONTEXT (current_function_decl), list, 0))
+  if (not_accessible_p (DECL_CONTEXT (current_function_decl), list,
+			(primary ? TREE_TYPE (TREE_TYPE (primary)) : 
+			 NULL_TREE), from_super))
     {
-      char *fct_name = xstrdup (lang_printable_name (list, 0));
-      int ctor_p = DECL_CONSTRUCTOR_P (list);
-      parse_error_context 
-	(wfl, "Can't access %s %s `%s%s.%s' from `%s'",
-	 java_accstring_lookup (get_access_flags_from_decl (list)),
-	 (ctor_p ? "constructor" : "method"),
-	 (ctor_p ? 
-	  "" : lang_printable_name_wls (TREE_TYPE (TREE_TYPE (list)), 0)), 
-	 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (list)))), 
-	 fct_name, IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
-      free (fct_name);
+      char *fct_name = (char *) IDENTIFIER_POINTER (DECL_NAME (list));
+      char *access = java_accstring_lookup (get_access_flags_from_decl (list));
+      char *klass = (char *) IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (list))));
+      char *refklass = (char *) IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class)));
+      char *what = (char *) (DECL_CONSTRUCTOR_P (list)
+			     ? "constructor" : "method");
+      /* FIXME: WFL yields the wrong message here but I don't know
+	 what else to use.  */
+      parse_error_context (wfl,
+			   "Can't access %s %s `%s.%s' from `%s'",
+			   access, what, klass, fct_name, refklass);
       PATCH_METHOD_RETURN_ERROR ();
     }
   check_deprecation (wfl, list);
@@ -10338,7 +10349,7 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
 	{
 	  tree cm = TREE_VALUE (current);
 	  char string [4096];
-	  if (!cm || not_accessible_p (class, cm, 0))
+	  if (!cm || not_accessible_p (class, cm, NULL_TREE, 0))
 	    continue;
 	  sprintf 
 	    (string, "  `%s' in `%s'%s",
@@ -10532,7 +10543,7 @@ search_applicable_methods_list (lc, method, name, arglist, list, all_list)
 	{
 	  /* Retain accessible methods only */
 	  if (!not_accessible_p (DECL_CONTEXT (current_function_decl), 
-				 method, 0))
+				 method, NULL_TREE, 0))
 	    *list = tree_cons (NULL_TREE, method, *list);
 	  else
 	    /* Also retain all selected method here */
@@ -11409,9 +11420,11 @@ java_complete_lhs (node)
 	{
 	  tree decl, wfl = TREE_OPERAND (node, 0);
 	  int in_this = CALL_THIS_CONSTRUCTOR_P (node);
+	  int from_super = (EXPR_WFL_NODE (TREE_OPERAND (node, 0)) ==
+                           super_identifier_node);
 
-	  node = patch_method_invocation (node, NULL_TREE, 
-					  NULL_TREE, 0, &decl);
+	  node = patch_method_invocation (node, NULL_TREE, NULL_TREE,
+					  from_super, 0, &decl);
 	  if (node == error_mark_node)
 	    return error_mark_node;
 
@@ -11462,7 +11475,7 @@ java_complete_lhs (node)
              class. TESTME, FIXME */
 	  tree lvalue = java_stabilize_reference (TREE_OPERAND (node, 0)); 
 
-	  /* Hand stablize the lhs on both places */
+	  /* Hand stabilize the lhs on both places */
 	  TREE_OPERAND (node, 0) = lvalue;
 	  TREE_OPERAND (TREE_OPERAND (node, 1), 0) = 
 	    (flag_emit_class_files ? lvalue : save_expr (lvalue));
