@@ -1,3 +1,7 @@
+Tue Dec  8 13:11:04 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (current_function_decl): Tweak declaration.
+
 Tue Dec  8 10:23:52 1998  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c (flag_isoc9x): Default off.
