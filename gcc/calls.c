@@ -1787,8 +1787,7 @@ expand_call (exp, target, ignore)
 	     we just use a normal move insn.  */
 	  nregs = (partial ? partial
 		   : (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
-		      ? ((int_size_in_bytes (TREE_TYPE (args[i].tree_value))
-			  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+		      ? -1
 		      : 0));
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
@@ -1809,9 +1808,16 @@ expand_call (exp, target, ignore)
 #endif
 
 	  else if (args[i].partial == 0 || args[i].pass_on_stack)
-	    move_block_to_reg (REGNO (reg),
-			       validize_mem (args[i].value), nregs,
-			       args[i].mode);
+	    {
+	      /* This value might be zero, if the argument is a zero size
+		 structure with no fields, so we can't use it to set nregs
+		 above.  */
+	      nregs = ((int_size_in_bytes (TREE_TYPE (args[i].tree_value))
+			+ (UNITS_PER_WORD - 1)) / UNITS_PER_WORD);
+	      move_block_to_reg (REGNO (reg),
+				 validize_mem (args[i].value), nregs,
+				 args[i].mode);
+	    }
 	
 	  push_to_sequence (use_insns);
 	  if (nregs == 0)
