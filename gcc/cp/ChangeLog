@@ -1,3 +1,9 @@
+2002-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6695
+	* pt.c (tsubst_friend_class): Substitute into the context of the
+	friend before using it.
+
 2002-06-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (xref_tag): Change prototype.
