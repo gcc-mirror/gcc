@@ -1064,8 +1064,7 @@ alter_access (tree t, tree fdecl, tree access)
   if (!DECL_LANG_SPECIFIC (fdecl))
     retrofit_lang_decl (fdecl);
 
-  if (DECL_DISCRIMINATOR_P (fdecl))
-    abort ();
+  my_friendly_assert (!DECL_DISCRIMINATOR_P (fdecl), 20030624);
 
   elem = purpose_member (t, DECL_ACCESS (fdecl));
   if (elem)
@@ -1087,7 +1086,7 @@ alter_access (tree t, tree fdecl, tree access)
     }
   else
     {
-      perform_or_defer_access_check (t, fdecl);
+      perform_or_defer_access_check (TYPE_BINFO (t), fdecl);
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }

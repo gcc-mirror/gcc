@@ -1226,11 +1226,22 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 
   const char *errstr = 0;
 
-  /* Sanity check.  */
-  if (TREE_CODE (name) != IDENTIFIER_NODE)
-    abort ();
+  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 20030624);
 
-  if (xbasetype == current_class_type && TYPE_BEING_DEFINED (xbasetype)
+  if (TREE_CODE (xbasetype) == TREE_VEC)
+    {
+      type = BINFO_TYPE (xbasetype);
+      basetype_path = xbasetype;
+    }
+  else
+    {
+      my_friendly_assert (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)), 20030624);
+      type = xbasetype;
+      basetype_path = TYPE_BINFO (type);
+      my_friendly_assert (!BINFO_INHERITANCE_CHAIN (basetype_path), 980827);
+    }
+
+  if (type == current_class_type && TYPE_BEING_DEFINED (type)
       && IDENTIFIER_CLASS_VALUE (name))
     {
       tree field = IDENTIFIER_CLASS_VALUE (name);
@@ -1240,21 +1251,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 	   been looked up.  Just return the cached value.  */
 	return field;
     }
-
-  if (TREE_CODE (xbasetype) == TREE_VEC)
-    {
-      type = BINFO_TYPE (xbasetype);
-      basetype_path = xbasetype;
-    }
-  else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
-    {
-      type = xbasetype;
-      basetype_path = TYPE_BINFO (type);
-      my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path) == NULL_TREE,
-			  980827);
-    }
-  else
-    abort ();
 
   complete_type (type);
 
@@ -1291,7 +1287,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
      In the case of overloaded function names, access control is
      applied to the function selected by overloaded resolution.  */
   if (rval && protect && !is_overloaded_fn (rval))
-    perform_or_defer_access_check (xbasetype, rval);
+    perform_or_defer_access_check (basetype_path, rval);
 
   if (errstr && protect)
     {

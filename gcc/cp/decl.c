@@ -5525,7 +5525,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 	    }
 
 	  if (complain & tf_error)
-	    perform_or_defer_access_check (context, tmpl);
+	    perform_or_defer_access_check (TYPE_BINFO (context), tmpl);
 
 	  return lookup_template_class (tmpl,
 					TREE_OPERAND (fullname, 1),
@@ -5555,7 +5555,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 		}
 
 	      if (complain & tf_error)
-		perform_or_defer_access_check (context, t);
+		perform_or_defer_access_check (TYPE_BINFO (context), t);
 
 	      if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
 		t = TREE_TYPE (t);
@@ -5612,7 +5612,7 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
 	}
       
       if (complain & tf_error)
-	perform_or_defer_access_check (context, tmpl);
+	perform_or_defer_access_check (TYPE_BINFO (context), tmpl);
 
       return tmpl;
     }

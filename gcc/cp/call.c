@@ -4071,7 +4071,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       /* If the FN is a member function, make sure that it is
 	 accessible.  */
       if (DECL_CLASS_SCOPE_P (fn))
-	perform_or_defer_access_check (type, fn);
+	perform_or_defer_access_check (TYPE_BINFO (type), fn);
 
       if (pass == 0)
 	args = tree_cons (NULL_TREE, addr, args);
@@ -4098,6 +4098,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 bool
 enforce_access (tree basetype_path, tree decl)
 {
+  my_friendly_assert (TREE_CODE (basetype_path) == TREE_VEC, 20030624);
+  
   if (!accessible_p (basetype_path, decl))
     {
       if (TREE_PRIVATE (decl))

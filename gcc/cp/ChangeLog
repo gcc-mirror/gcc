@@ -1,3 +1,25 @@
+2003-06-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (enforce_access): Assert we get a binfo.
+	(build_op_delete_call): Pass a binfo to
+	perform_or_defer_access_check.
+	* class.c (alter_access): Likewise.
+	* decl.c (make_typename_type): Likewise.
+	(make_unbound_class_template): Likewise.
+	* lex.c (do_identifier): Likewise.
+	* method.c (hack_identifier): Likewise.
+	* parser.c (cp_parser_lookup_name): Likewise.
+	* search.c (lookup_member): Likewise. Move IDENTIFIER_CLASS_VALUE
+	test.
+	* semantics.c (finish_non_static_data_member): Likewise.
+	(perform_or_defer_access_check): Expect a binfo.
+	* typeck.c (comptypes): Expect types.
+
+	* mangle.c (find_substitution): Don't pass a non-type to same_type_p
+	* friend.c (make_friend_class): Likewise.
+	* pt.c (check_default_tmpl_args): Likewise.
+	(lookup_template_class): Likewise.
+
 Tue Jun 24 15:30:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* method.c (thunk_labelno): Move outside ifdef block to make garbage
@@ -41,7 +63,7 @@ Mon Jun 23 19:41:27 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-23  Jakub Jelinek  <jakub@redhat.com>
 
-	* mangle.c (hash_type): val is the TREE_LIST itself, not a pointer
+	* mangle.c (hash_type): Val is the TREE_LIST itself, not a pointer
 	to it.
 
 2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>

@@ -883,7 +883,9 @@ comptypes (tree t1, tree t2, int strict)
   /* Suppress errors caused by previously reported errors */
   if (t2 == error_mark_node)
     return false;
-
+  
+  my_friendly_assert (TYPE_P (t1) && TYPE_P (t2), 20030623);
+  
   /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
      current instantiation.  */
   if (TREE_CODE (t1) == TYPENAME_TYPE)

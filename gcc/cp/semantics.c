@@ -262,16 +262,18 @@ void perform_deferred_access_checks (void)
 }
 
 /* Defer checking the accessibility of DECL, when looked up in
-   CLASS_TYPE.  */
+   BINFO.  */
 
-void perform_or_defer_access_check (tree class_type, tree decl)
+void perform_or_defer_access_check (tree binfo, tree decl)
 {
   tree check;
 
+  my_friendly_assert (TREE_CODE (binfo) == TREE_VEC, 20030623);
+  
   /* If we are not supposed to defer access checks, just check now.  */
   if (deferred_access_stack->deferring_access_checks_kind == dk_no_deferred)
     {
-      enforce_access (class_type, decl);
+      enforce_access (binfo, decl);
       return;
     }
   /* Exit if we are in a context that no access checking is performed.  */
@@ -282,13 +284,11 @@ void perform_or_defer_access_check (tree class_type, tree decl)
   for (check = deferred_access_stack->deferred_access_checks;
        check;
        check = TREE_CHAIN (check))
-    if (TREE_VALUE (check) == decl
-	&& TYPE_P (TREE_PURPOSE (check))
-	&& same_type_p (TREE_PURPOSE (check), class_type))
+    if (TREE_VALUE (check) == decl && TREE_PURPOSE (check) == binfo)
       return;
   /* If not, record the check.  */
   deferred_access_stack->deferred_access_checks
-    = tree_cons (class_type, decl,
+    = tree_cons (binfo, decl,
 		 deferred_access_stack->deferred_access_checks);
 }
 
@@ -1255,7 +1255,7 @@ finish_non_static_data_member (tree decl, tree qualifying_scope)
 	  return error_mark_node;
 	}
 
-      perform_or_defer_access_check (access_type, decl);
+      perform_or_defer_access_check (TYPE_BINFO (access_type), decl);
 
       /* If the data member was named `C::M', convert `*this' to `C'
 	 first.  */

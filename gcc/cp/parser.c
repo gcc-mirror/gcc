@@ -13353,7 +13353,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 						       object_type,
 						       parser->scope);
       if (qualifying_type)
-	perform_or_defer_access_check (qualifying_type, decl);
+	perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl);
     }
 
   return decl;
