@@ -1,3 +1,9 @@
+2003-04-04  Loren James Rittle  <ljrittle@acm.org>
+
+	* fixinc/inclhack.def (bsd_stdio_attrs_conflict): New.
+	* fixinc/fixincl.x: Rebuilt.
+	* fixinc/tests/base/stdio.h: Regenerated.
+
 2003-04-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov.c (accumulate_line_counts): Fix span tree merge bug.

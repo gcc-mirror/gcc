@@ -19,6 +19,13 @@ extern int getopt(int, char *const[], const char *);
 #endif  /* ALPHA_GETOPT_CHECK */
 
 
+#if defined( BSD_STDIO_ATTRS_CONFLICT_CHECK )
+#define _BSD_STRING(_BSD_X) _BSD_STRINGX(_BSD_X)
+#define _BSD_STRINGX(_BSD_X) #_BSD_X
+int vfscanf(FILE *, const char *, __builtin_va_list) __asm__ (_BSD_STRING(__USER_LABEL_PREFIX__) "__svfscanf");
+#endif  /* BSD_STDIO_ATTRS_CONFLICT_CHECK */
+
+
 #if defined( HPUX11_VSNPRINTF_CHECK )
 extern int vsnprintf(char *, _hpux_size_t, const char *, __gnuc_va_list);
 #endif  /* HPUX11_VSNPRINTF_CHECK */

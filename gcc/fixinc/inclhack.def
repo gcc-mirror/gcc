@@ -724,6 +724,26 @@ fix = {
 
 
 /*
+ *  Various systems derived from BSD4.4 contain a macro definition
+ *  for vfscanf that interacts badly with requirements of builtin-attrs.def.
+ *  Known to be fixed in FreeBSD 5 system headers.
+ */
+fix = {
+    hackname  = bsd_stdio_attrs_conflict;
+    mach      = *-*-*bsd*;
+    mach      = *-*-*darwin*;
+    files     = stdio.h;
+    select    = "^#define[ \t]*vfscanf[ \t]*__svfscanf[ \t]*$";
+    c_fix     = format;
+    c_fix_arg = '#define _BSD_STRING(_BSD_X) _BSD_STRINGX(_BSD_X)' "\n"
+		'#define _BSD_STRINGX(_BSD_X) #_BSD_X' "\n"
+		'int vfscanf(FILE *, const char *, __builtin_va_list) '
+		'__asm__ (_BSD_STRING(__USER_LABEL_PREFIX__) "__svfscanf");';
+    test_text = '#define  vfscanf	__svfscanf';
+};
+
+
+/*
  *  check for broken assert.h that needs stdio.h
  */
 fix = {
