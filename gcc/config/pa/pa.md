@@ -1154,7 +1154,7 @@
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8)))])
 
@@ -1177,7 +1177,7 @@
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8)))])
 
@@ -1200,7 +1200,7 @@
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8)))])
 
@@ -1222,7 +1222,7 @@
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8)))])
 
@@ -1244,7 +1244,7 @@
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8)))])
 
@@ -1266,7 +1266,96 @@
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+;; Branch on Variable Bit patterns.
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (ne (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "register_operand" "q"))
+	     (const_int 0))
+	 (label_ref (match_operand 2 "" ""))
+	 (pc)))]
+  ""
+  "*
+{
+  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
+		     get_attr_length (insn), 0, insn, 0);
+}"
+[(set_attr "type" "cbranch")
+ (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (ne (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "register_operand" "q"))
+	     (const_int 0))
+	 (pc)
+	 (label_ref (match_operand 2 "" ""))))]
+  ""
+  "*
+{
+  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
+		     get_attr_length (insn), 1, insn, 0);
+}"
+[(set_attr "type" "cbranch")
+ (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (eq (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "register_operand" "q"))
+	     (const_int 0))
+	 (label_ref (match_operand 2 "" ""))
+	 (pc)))]
+  ""
+  "*
+{
+  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
+		     get_attr_length (insn), 0, insn, 1);
+}"
+[(set_attr "type" "cbranch")
+ (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (eq (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "register_operand" "q"))
+	     (const_int 0))
+	 (pc)
+	 (label_ref (match_operand 2 "" ""))))]
+  ""
+  "*
+{
+  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
+		     get_attr_length (insn), 1, insn, 1);
+}"
+[(set_attr "type" "cbranch")
+ (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8)))])
 
@@ -2943,12 +3032,29 @@
   "* return output_mul_insn (0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-			    (const_int 0))
-			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
-			    (const_int 0)))
-		   (const_int 4)
-		   (const_int 24)))])
+     (cond [
+;; Target (or stub) within reach
+            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+                     (const_int 240000))
+                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0)))
+            (const_int 4)
+
+;; NO_SPACE_REGS
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+                (const_int 0))
+            (const_int 8)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+;; same as NO_SPACE_REGS code
+            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0))
+                 (eq (symbol_ref "flag_pic")
+                     (const_int 0)))
+            (const_int 8)]
+
+;; Out of range and either PIC or PORTABLE_RUNTIME
+	  (const_int 24)))])
 
 ;;; Division and mod.
 (define_expand "divsi3"
@@ -2980,12 +3086,29 @@
    return output_div_insn (operands, 0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-			    (const_int 0))
-			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
-			    (const_int 0)))
-		   (const_int 4)
-		   (const_int 24)))])
+     (cond [
+;; Target (or stub) within reach
+            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+                     (const_int 240000))
+                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0)))
+            (const_int 4)
+
+;; NO_SPACE_REGS
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+                (const_int 0))
+            (const_int 8)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+;; same as NO_SPACE_REGS code
+            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0))
+                 (eq (symbol_ref "flag_pic")
+                     (const_int 0)))
+            (const_int 8)]
+
+;; Out of range and either PIC or PORTABLE_RUNTIME
+	  (const_int 24)))])
 
 (define_expand "udivsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -3016,12 +3139,29 @@
    return output_div_insn (operands, 1, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-			    (const_int 0))
-			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
-			    (const_int 0)))
-		   (const_int 4)
-		   (const_int 24)))])
+     (cond [
+;; Target (or stub) within reach
+            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+                     (const_int 240000))
+                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0)))
+            (const_int 4)
+
+;; NO_SPACE_REGS
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+                (const_int 0))
+            (const_int 8)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+;; same as NO_SPACE_REGS code
+            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0))
+                 (eq (symbol_ref "flag_pic")
+                     (const_int 0)))
+            (const_int 8)]
+
+;; Out of range and either PIC or PORTABLE_RUNTIME
+	  (const_int 24)))])
 
 (define_expand "modsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -3049,12 +3189,29 @@
   return output_mod_insn (0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-			    (const_int 0))
-			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
-			    (const_int 0)))
-		   (const_int 4)
-		   (const_int 24)))])
+     (cond [
+;; Target (or stub) within reach
+            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+                     (const_int 240000))
+                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0)))
+            (const_int 4)
+
+;; NO_SPACE_REGS
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+                (const_int 0))
+            (const_int 8)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+;; same as NO_SPACE_REGS code
+            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0))
+                 (eq (symbol_ref "flag_pic")
+                     (const_int 0)))
+            (const_int 8)]
+
+;; Out of range and either PIC or PORTABLE_RUNTIME
+	  (const_int 24)))])
 
 (define_expand "umodsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -3082,12 +3239,29 @@
   return output_mod_insn (1, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-			    (const_int 0))
-			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
-			    (const_int 0)))
-		   (const_int 4)
-		   (const_int 24)))])
+     (cond [
+;; Target (or stub) within reach
+            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+                     (const_int 240000))
+                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0)))
+            (const_int 4)
+
+;; NO_SPACE_REGS
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+                (const_int 0))
+            (const_int 8)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+;; same as NO_SPACE_REGS code
+            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0))
+                 (eq (symbol_ref "flag_pic")
+                     (const_int 0)))
+            (const_int 8)]
+
+;; Out of range and either PIC or PORTABLE_RUNTIME
+	  (const_int 24)))])
 
 ;;- and instructions
 ;; We define DImode `and` so with DImode `not` we can get
@@ -3738,7 +3912,7 @@
 ;; on whether or not we can add the proper offset to %r2 with an ldo
 ;; instruction.
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-		    (const_int 8188))
+		    (const_int 8184))
            (const_int 4)]
 	  (const_int 8)))])
 
@@ -3832,8 +4006,11 @@
   if (GET_CODE (op) == SYMBOL_REF)
     call_insn = emit_call_insn (gen_call_internal_symref (op, operands[1]));
   else
-    call_insn = emit_call_insn (gen_call_internal_reg (force_reg (SImode, op),
-						       operands[1]));
+    {
+      rtx tmpreg = gen_rtx (REG, SImode, 22);
+      emit_move_insn (tmpreg, force_reg (SImode, op));
+      call_insn = emit_call_insn (gen_call_internal_reg (operands[1]));
+    }
 
   if (flag_pic)
     {
@@ -3847,6 +4024,16 @@
       emit_move_insn (pic_offset_table_rtx,
 		      gen_rtx (REG, SImode, PIC_OFFSET_TABLE_REGNUM_SAVED));
       emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+
+      /* Gross.  We have to keep the scheduler from moving the restore
+	 of the PIC register away from the call.  SCHED_GROUP_P is
+	 supposed to do this, but for some reason the compiler will
+	 go into an infinite loop when we use that.
+
+	 This method (blockage insn) may make worse code (then again
+	 it may not since calls are nearly blockages anyway), but at
+	 least it should work.  */
+      emit_insn (gen_blockage ());
     }
   DONE;
 }")
@@ -3864,39 +4051,91 @@
 }"
   [(set_attr "type" "call")
    (set (attr "length")
+;;       If we're sure that we can either reach the target or that the
+;;	 linker can use a long-branch stub, then the length is 4 bytes.
+;;
+;;	 For long-calls the length will be either 52 bytes (non-pic)
+;;	 or 68 bytes (pic).  */
+;;	 Else we have to use a long-call;
       (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
 			(const_int 240000))
 		    (const_int 4)
-		    (if_then_else (ne (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
+		    (if_then_else (eq (symbol_ref "flag_pic")
 				      (const_int 0))
-				  (const_int 64)
-				  (const_int 52))))])
+				  (const_int 52)
+				  (const_int 68))))])
 
 (define_insn "call_internal_reg"
-  [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
-	 (match_operand 1 "" "i"))
+  [(call (mem:SI (reg:SI 22))
+	 (match_operand 0 "" "i"))
    (clobber (reg:SI 2))
    (use (const_int 1))]
   ""
   "*
 {
-  if (TARGET_FAST_INDIRECT_CALLS)
-    return \"ble 0(%%sr4,%r0)\;copy %%r31,%%r2\";
+  rtx xoperands[2];
 
-  /* Yuk!  bl may not be able to reach $$dyncall.  */
-  if (TARGET_PORTABLE_RUNTIME || TARGET_MILLICODE_LONG_CALLS)
-    return \"copy %r0,%%r22\;ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
-  else
-    return \"copy %r0,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+  /* First the special case for kernels, level 0 systems, etc.  */
+  if (TARGET_NO_SPACE_REGS)
+    return \"ble 0(%%sr4,%%r22)\;copy %%r31,%%r2\";
+
+  /* Now the normal case -- we can reach $$dyncall directly or
+     we're sure that we can get there via a long-branch stub. 
+
+     No need to check target flags as the length uniquely identifies
+     the remaining cases.  */
+  if (get_attr_length (insn) == 8)
+    return \".CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+
+  /* Long millicode call, but we are not generating PIC or portable runtime
+     code.  */
+  if (get_attr_length (insn) == 12)
+    return \"CALL\\tARGW0=GR\;ldil L%%$$dyncall,%%r2\;ble R%%$$dyncall(%%sr4,%%r2)\;copy %%r31,%%r2\";
+
+  /* Long millicode call for portable runtime.  */
+  if (get_attr_length (insn) == 20)
+    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
+
+  /* If we're generating PIC code.  */
+  xoperands[0] = operands[0];
+  xoperands[1] = gen_label_rtx ();
+  output_asm_insn (\"bl .+8,%%r1\", xoperands);
+  output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			     CODE_LABEL_NUMBER (xoperands[1]));
+  output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+  output_asm_insn (\"blr 0,%%r2\", xoperands);
+  output_asm_insn (\"bv,n 0(%%r1)\\n\\tnop\", xoperands);
+  return \"\";
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-			    (const_int 0))
-			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
-			    (const_int 0)))
-		   (const_int 12)
-		   (const_int 24)))])
+     (cond [
+;; First NO_SPACE_REGS
+	    (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+		(const_int 0))
+	    (const_int 8)
+
+;; Target (or stub) within reach
+	    (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+		     (const_int 240000))
+		 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+		     (const_int 0)))
+	    (const_int 8)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+	    (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+		     (const_int 0))
+		 (eq (symbol_ref "flag_pic")
+		     (const_int 0)))
+	    (const_int 12)
+
+	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+		(const_int 0))
+	    (const_int 20)]
+
+;; Out of range PIC case
+	  (const_int 24)))])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -3924,10 +4163,12 @@
 								op,
 								operands[2]));
   else
-    call_insn = emit_call_insn (gen_call_value_internal_reg (operands[0],
-							     force_reg (SImode, op),
-							     operands[2]));
-
+    {
+      rtx tmpreg = gen_rtx (REG, SImode, 22);
+      emit_move_insn (tmpreg, force_reg (SImode, op));
+      call_insn = emit_call_insn (gen_call_value_internal_reg (operands[0],
+							       operands[2]));
+    }
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
@@ -3940,16 +4181,6 @@
       emit_move_insn (pic_offset_table_rtx,
 		      gen_rtx (REG, SImode, PIC_OFFSET_TABLE_REGNUM_SAVED));
       emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
-
-      /* Gross.  We have to keep the scheduler from moving the restore
-	 of the PIC register away from the call.  SCHED_GROUP_P is
-	 supposed to do this, but for some reason the compiler will
-	 go into an infinite loop when we use that.
-
-	 This method (blockage insn) may make worse code (then again
-	 it may not since calls are nearly blockages anyway), but at
-	 least it should work.  */
-      emit_insn (gen_blockage ());
 
       /* Gross.  We have to keep the scheduler from moving the restore
 	 of the PIC register away from the call.  SCHED_GROUP_P is
@@ -3979,40 +4210,92 @@
 }"
   [(set_attr "type" "call")
    (set (attr "length")
+;;       If we're sure that we can either reach the target or that the
+;;	 linker can use a long-branch stub, then the length is 4 bytes.
+;;
+;;	 For long-calls the length will be either 52 bytes (non-pic)
+;;	 or 68 bytes (pic).  */
+;;	 Else we have to use a long-call;
       (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
 			(const_int 240000))
 		    (const_int 4)
-		    (if_then_else (ne (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
+		    (if_then_else (eq (symbol_ref "flag_pic")
 				      (const_int 0))
-				  (const_int 64)
-				  (const_int 52))))])
+				  (const_int 52)
+				  (const_int 68))))])
 
 (define_insn "call_value_internal_reg"
   [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:SI 1 "register_operand" "r"))
-	      (match_operand 2 "" "i")))
+	(call (mem:SI (reg:SI 22))
+	      (match_operand 1 "" "i")))
    (clobber (reg:SI 2))
    (use (const_int 1))]
   ""
   "*
 {
-  if (TARGET_FAST_INDIRECT_CALLS)
-    return \"ble 0(%%sr4,%r1)\;copy %%r31,%%r2\";
+  rtx xoperands[2];
 
-  /* Yuk!  bl may not be able to reach $$dyncall.  */
-  if (TARGET_PORTABLE_RUNTIME || TARGET_MILLICODE_LONG_CALLS)
-    return \"copy %r1,%%r22\;ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
-  else
-    return \"copy %r1,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+  /* First the special case for kernels, level 0 systems, etc.  */
+  if (TARGET_NO_SPACE_REGS)
+    return \"ble 0(%%sr4,%%r22)\;copy %%r31,%%r2\";
+
+  /* Now the normal case -- we can reach $$dyncall directly or
+     we're sure that we can get there via a long-branch stub. 
+
+     No need to check target flags as the length uniquely identifies
+     the remaining cases.  */
+  if (get_attr_length (insn) == 8)
+    return \".CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+
+  /* Long millicode call, but we are not generating PIC or portable runtime
+     code.  */
+  if (get_attr_length (insn) == 12)
+    return \".CALL\\tARGW0=GR\;ldil L%%$$dyncall,%%r2\;ble R%%$$dyncall(%%sr4,%%r2)\;copy %%r31,%%r2\";
+
+  /* Long millicode call for portable runtime.  */
+  if (get_attr_length (insn) == 20)
+    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
+
+  /* If we're generating PIC code.  */
+  xoperands[0] = operands[1];
+  xoperands[1] = gen_label_rtx ();
+  output_asm_insn (\"bl .+8,%%r1\", xoperands);
+  output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			     CODE_LABEL_NUMBER (xoperands[1]));
+  output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+  output_asm_insn (\"blr 0,%%r2\", xoperands);
+  output_asm_insn (\"bv,n 0(%%r1)\\n\\tnop\", xoperands);
+  return \"\";
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-			    (const_int 0))
-			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
-			    (const_int 0)))
-		   (const_int 12)
-		   (const_int 24)))])
+     (cond [
+;; First NO_SPACE_REGS
+	    (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+		(const_int 0))
+	    (const_int 8)
+
+;; Target (or stub) within reach
+	    (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+		     (const_int 240000))
+		 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+		     (const_int 0)))
+	    (const_int 8)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+	    (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+		     (const_int 0))
+		 (eq (symbol_ref "flag_pic")
+		     (const_int 0)))
+	    (const_int 12)
+
+	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+		(const_int 0))
+	    (const_int 20)]
+
+;; Out of range PIC case
+	  (const_int 24)))])
 
 ;; Call subroutine returning any type.
 
@@ -4153,7 +4436,7 @@
 ;; Short branch has length of 4
 ;; Long branch has length of 8
 	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8))
 
@@ -4163,12 +4446,12 @@
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 24)
 	      (const_int 28))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 24)
 	      (const_int 28)))
 ;; Loop counter in memory case.
@@ -4176,12 +4459,12 @@
 	(if_then_else (lt (match_dup 3) (pc))
 	  (if_then_else
 	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		(const_int 8188))
+		(const_int 8184))
 	    (const_int 12)
 	    (const_int 16))
 	  (if_then_else
 	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		(const_int 8188))
+		(const_int 8184))
 	    (const_int 12)
 	    (const_int 16))))))])
 
@@ -4209,7 +4492,7 @@
 ;; Short branch has length of 4
 ;; Long branch has length of 8
 	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8))
 
@@ -4219,12 +4502,12 @@
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 24)
 	      (const_int 28))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 24)
 	      (const_int 28)))
 ;; Loop counter in memory case.
@@ -4232,12 +4515,12 @@
 	(if_then_else (lt (match_dup 3) (pc))
 	  (if_then_else
 	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		(const_int 8188))
+		(const_int 8184))
 	    (const_int 12)
 	    (const_int 16))
 	  (if_then_else
 	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		(const_int 8188))
+		(const_int 8184))
 	    (const_int 12)
 	    (const_int 16))))))])
 
@@ -4260,7 +4543,7 @@
 ;; Short branch has length of 4
 ;; Long branch has length of 8
 	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8))
 
@@ -4270,19 +4553,19 @@
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 12)
 	      (const_int 16))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 12)
 	      (const_int 16)))
 ;; Loop counter in memory case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else
 	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-	      (const_int 8188))
+	      (const_int 8184))
 	  (const_int 8)
 	  (const_int 12)))))])
 
@@ -4306,7 +4589,7 @@
 ;; Short branch has length of 4
 ;; Long branch has length of 8
 	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8188))
+		      (const_int 8184))
            (const_int 4)
 	   (const_int 8))
 
@@ -4316,19 +4599,19 @@
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 12)
 	      (const_int 16))
 	    (if_then_else
 	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8188))
+		  (const_int 8184))
 	      (const_int 12)
 	      (const_int 16)))
 ;; Loop counter in memory case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else
 	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-	      (const_int 8188))
+	      (const_int 8184))
 	  (const_int 8)
 	  (const_int 12)))))])
 

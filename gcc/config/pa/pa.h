@@ -70,24 +70,13 @@ extern int target_flags;
    never cross a space boundary.  Such assumptions are generally safe for
    building kernels and statically linked executables.  Code compiled with
    this option will fail miserably if the executable is dynamically linked
-   or uses nested functions!  */
-#define TARGET_FAST_INDIRECT_CALLS (target_flags & 4)
+   or uses nested functions!
+
+   This is also used to trigger agressive unscaled index addressing.  */
+#define TARGET_NO_SPACE_REGS (target_flags & 4)
 
 /* Allow unconditional jumps in the delay slots of call instructions.  */
 #define TARGET_JUMP_IN_DELAY (target_flags & 8)
-
-/* In rare cases, a millicode call via "bl" can not be turned into
-   a millicode call using "ble" (when SHLIB_INFO subspace is very large).
-
-   This option forces just millicode calls to use inline long-calls
-   This is far more efficient than the old long-call option which forced
-   every function to be called indirectly (as is still the case for
-   TARGET_PORTABLE_RUNTIME).
-
-   ??? What about simple jumps, they can suffer from the same problem.
-   Would require significant surgery in pa.md.  */
-
-#define TARGET_MILLICODE_LONG_CALLS (target_flags & 16)
 
 /* Disable indexed addressing modes.  */
 
@@ -125,16 +114,14 @@ extern int target_flags;
    {"pa-risc-1-1", 1},		\
    {"disable-fpregs", 2},	\
    {"no-disable-fpregs", -2},	\
-   {"fast-indirect-calls", 4},	\
-   {"no-fast-indirect-calls", -4},\
+   {"no-space-regs", 4},	\
+   {"space-regs", -4},\
    {"jump-in-delay", 8},	\
    {"no-jump-in-delay", -8},	\
-   {"millicode-long-calls", 16},\
-   {"no-millicode-long-calls", -16},\
    {"disable-indexing", 32},	\
    {"no-disable-indexing", -32},\
-   {"portable-runtime", 64+16},\
-   {"no-portable-runtime", -(64+16)},\
+   {"portable-runtime", 64},	\
+   {"no-portable-runtime", -64},\
    {"gas", 128},		\
    {"no-gas", -128},		\
    {"soft-float", 256},		\
