@@ -1,3 +1,18 @@
+2004-01-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+        * rtl.def: Add comment about new option in automata_option.
+	
+	* genautomata.c (PROGRESS_OPTION): New macro.
+	(progress_flag): New global variable.
+	(gen_automata_option): Process `progress'.
+	(transform_insn_regexps, check_unit_distributions_to_automata,
+	make_automaton, NDFA_to_DFA, build_automaton, create_automata,
+	expand_automata, write_automata): Print about the progress only if
+	progress_flag.  Remove fflush.
+	(initiate_automaton_gen): Process command line flag `-progress'.
+
+	* doc/md.texi: Describe the new option.
+	
 2004-01-13  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfg.c (dump_bb): Dump entry edges.

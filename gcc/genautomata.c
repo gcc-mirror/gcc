@@ -658,6 +658,8 @@ static struct obstack irp;
 
 #define NDFA_OPTION "-ndfa"
 
+#define PROGRESS_OPTION "-progress"
+
 /* The following flags are set up by function `initiate_automaton_gen'.  */
 
 /* Make automata with nondeterministic reservation by insns (`-ndfa').  */
@@ -679,6 +681,10 @@ static int time_flag;
 /* Flag of creation of description file which contains description of
    result automaton and statistics information (`-v').  */
 static int v_flag;
+
+/* Flag of output of a progress bar showing how many states were
+   generated so far for automaton being processed (`-progress').  */
+static int progress_flag;
 
 /* Flag of generating warning instead of error for non-critical errors
    (`-w').  */
@@ -1932,6 +1938,8 @@ gen_automata_option (rtx def)
     w_flag = 1;
   else if (strcmp (XSTR (def, 0), NDFA_OPTION + 1) == 0)
     ndfa_flag = 1;
+  else if (strcmp (XSTR (def, 0), PROGRESS_OPTION + 1) == 0)
+    progress_flag = 1;
   else
     fatal ("invalid option `%s' in automata_option", XSTR (def, 0));
 }
@@ -5265,8 +5273,8 @@ transform_insn_regexps (void)
 
   transform_time = create_ticker ();
   add_advance_cycle_insn_decl ();
-  fprintf (stderr, "Reservation transformation...");
-  fflush (stderr);
+  if (progress_flag)
+    fprintf (stderr, "Reservation transformation...");
   for (i = 0; i < description->decls_num; i++)
     {
       decl = description->decls [i];
@@ -5275,9 +5283,9 @@ transform_insn_regexps (void)
 	  = transform_regexp (copy_insn_regexp
 			      (DECL_INSN_RESERV (decl)->regexp));
     }
-  fprintf (stderr, "done\n");
+  if (progress_flag)
+    fprintf (stderr, "done\n");
   ticker_off (&transform_time);
-  fflush (stderr);
 }
 
 
@@ -5443,7 +5451,8 @@ check_unit_distributions_to_automata (void)
   decl_t decl;
   int i;
 
-  fprintf (stderr, "Check unit distributions to automata...");
+  if (progress_flag)
+    fprintf (stderr, "Check unit distributions to automata...");
   annotation_message_reported_p = FALSE;
   for (i = 0; i < description->decls_num; i++)
     {
@@ -5453,7 +5462,8 @@ check_unit_distributions_to_automata (void)
 	  (DECL_INSN_RESERV (decl)->name,
 	   DECL_INSN_RESERV (decl)->transformed_regexp);
     }
-  fprintf (stderr, "done\n");
+  if (progress_flag)
+    fprintf (stderr, "done\n");
 }
 
 
@@ -5732,7 +5742,7 @@ make_automaton (automaton_t automaton)
 			      = 1;
                             VLA_PTR_ADD (state_stack, state2);
 			    states_n++;
-			    if (states_n % 100 == 0)
+			    if (progress_flag && states_n % 100 == 0)
 			      fprintf (stderr, ".");
                           }
 			added_arc = add_arc (state, state2, ainsn, 1);
@@ -5763,7 +5773,7 @@ make_automaton (automaton_t automaton)
           state2->it_was_placed_in_stack_for_NDFA_forming = 1;
           VLA_PTR_ADD (state_stack, state2);
 	  states_n++;
-	  if (states_n % 100 == 0)
+	  if (progress_flag && states_n % 100 == 0)
 	    fprintf (stderr, ".");
         }
       if (advance_cycle_ainsn == NULL)
@@ -5934,7 +5944,7 @@ NDFA_to_DFA (automaton_t automaton)
 		  &state_stack))
 	    {
 	      states_n++;
-	      if (states_n % 100 == 0)
+	      if (progress_flag && states_n % 100 == 0)
 		fprintf (stderr, ".");
 	    }
 	}
@@ -6395,25 +6405,35 @@ build_automaton (automaton_t automaton)
   int arcs_num;
 
   ticker_on (&NDFA_time);
-  if (automaton->corresponding_automaton_decl == NULL)
-    fprintf (stderr, "Create anonymous automaton (1 dot is 100 new states):");
-  else
-    fprintf (stderr, "Create automaton `%s' (1 dot is 100 new states):",
-	     automaton->corresponding_automaton_decl->name);
+  if (progress_flag)
+    {
+      if (automaton->corresponding_automaton_decl == NULL)
+	fprintf (stderr, "Create anonymous automaton");
+      else
+	fprintf (stderr, "Create automaton `%s'",
+		 automaton->corresponding_automaton_decl->name);
+      fprintf (stderr, " (1 dot is 100 new states):");
+    }
   make_automaton (automaton);
-  fprintf (stderr, " done\n");
+  if (progress_flag)
+    fprintf (stderr, " done\n");
   ticker_off (&NDFA_time);
   count_states_and_arcs (automaton, &states_num, &arcs_num);
   automaton->NDFA_states_num = states_num;
   automaton->NDFA_arcs_num = arcs_num;
   ticker_on (&NDFA_to_DFA_time);
-  if (automaton->corresponding_automaton_decl == NULL)
-    fprintf (stderr, "Make anonymous DFA (1 dot is 100 new states):");
-  else
-    fprintf (stderr, "Make DFA `%s' (1 dot is 100 new states):",
-	     automaton->corresponding_automaton_decl->name);
+  if (progress_flag)
+    {
+      if (automaton->corresponding_automaton_decl == NULL)
+	fprintf (stderr, "Make anonymous DFA");
+      else
+	fprintf (stderr, "Make DFA `%s'",
+		 automaton->corresponding_automaton_decl->name);
+      fprintf (stderr, " (1 dot is 100 new states):");
+    }
   NDFA_to_DFA (automaton);
-  fprintf (stderr, " done\n");
+  if (progress_flag)
+    fprintf (stderr, " done\n");
   ticker_off (&NDFA_to_DFA_time);
   count_states_and_arcs (automaton, &states_num, &arcs_num);
   automaton->DFA_states_num = states_num;
@@ -6421,13 +6441,17 @@ build_automaton (automaton_t automaton)
   if (!no_minimization_flag)
     {
       ticker_on (&minimize_time);
-      if (automaton->corresponding_automaton_decl == NULL)
-	fprintf (stderr, "Minimize anonymous DFA...");
-      else
-	fprintf (stderr, "Minimize DFA `%s'...",
-		 automaton->corresponding_automaton_decl->name);
+      if (progress_flag)
+	{
+	  if (automaton->corresponding_automaton_decl == NULL)
+	    fprintf (stderr, "Minimize anonymous DFA...");
+	  else
+	    fprintf (stderr, "Minimize DFA `%s'...",
+		     automaton->corresponding_automaton_decl->name);
+	}
       minimize_DFA (automaton);
-      fprintf (stderr, "done\n");
+      if (progress_flag)
+	fprintf (stderr, "done\n");
       ticker_off (&minimize_time);
       count_states_and_arcs (automaton, &states_num, &arcs_num);
       automaton->minimal_DFA_states_num = states_num;
@@ -6851,14 +6875,18 @@ create_automata (void)
        curr_automaton != NULL;
        curr_automaton = curr_automaton->next_automaton)
     {
-      if (curr_automaton->corresponding_automaton_decl == NULL)
-	fprintf (stderr, "Prepare anonymous automaton creation ... ");
-      else
-	fprintf (stderr, "Prepare automaton `%s' creation...",
-		 curr_automaton->corresponding_automaton_decl->name);
+      if (progress_flag)
+	{
+	  if (curr_automaton->corresponding_automaton_decl == NULL)
+	    fprintf (stderr, "Prepare anonymous automaton creation ... ");
+	  else
+	    fprintf (stderr, "Prepare automaton `%s' creation...",
+		     curr_automaton->corresponding_automaton_decl->name);
+	}
       create_alt_states (curr_automaton);
       form_ainsn_with_same_reservs (curr_automaton);
-      fprintf (stderr, "done\n");
+      if (progress_flag)
+	fprintf (stderr, "done\n");
       build_automaton (curr_automaton);
       enumerate_states (curr_automaton);
       ticker_on (&equiv_time);
@@ -9615,6 +9643,7 @@ initiate_automaton_gen (int argc, char **argv)
   time_flag = 0;
   v_flag = 0;
   w_flag = 0;
+  progress_flag = 0;
   for (i = 2; i < argc; i++)
     if (strcmp (argv [i], NO_MINIMIZATION_OPTION) == 0)
       no_minimization_flag = 1;
@@ -9626,6 +9655,8 @@ initiate_automaton_gen (int argc, char **argv)
       w_flag = 1;
     else if (strcmp (argv [i], NDFA_OPTION) == 0)
       ndfa_flag = 1;
+    else if (strcmp (argv [i], PROGRESS_OPTION) == 0)
+      progress_flag = 1;
     else if (strcmp (argv [i], "-split") == 0)
       {
 	if (i + 1 >= argc)
@@ -9796,10 +9827,11 @@ expand_automata (void)
     }
   all_time = create_ticker ();
   check_time = create_ticker ();
-  fprintf (stderr, "Check description...");
-  fflush (stderr);
+  if (progress_flag)
+    fprintf (stderr, "Check description...");
   check_all_description ();
-  fprintf (stderr, "done\n");
+  if (progress_flag)
+    fprintf (stderr, "done\n");
   ticker_off (&check_time);
   generation_time = create_ticker ();
   if (!have_error)
@@ -9815,18 +9847,19 @@ expand_automata (void)
   if (!have_error)
     {
       form_important_insn_automata_lists ();
-      fprintf (stderr, "Generation of attributes...");
-      fflush (stderr);
+      if (progress_flag)
+	fprintf (stderr, "Generation of attributes...");
       make_internal_dfa_insn_code_attr ();
       make_insn_alts_attr ();
       make_default_insn_latency_attr ();
       make_bypass_attr ();
-      fprintf (stderr, "done\n");
+      if (progress_flag)
+	fprintf (stderr, "done\n");
     }
   ticker_off (&generation_time);
   ticker_off (&all_time);
-  fprintf (stderr, "All other genattrtab stuff...");
-  fflush (stderr);
+  if (progress_flag)
+    fprintf (stderr, "All other genattrtab stuff...");
 }
 
 /* The following is top level function to output PHR and to finish
@@ -9834,18 +9867,21 @@ expand_automata (void)
 void
 write_automata (void)
 {
-  fprintf (stderr, "done\n");
+  if (progress_flag)
+    fprintf (stderr, "done\n");
   if (have_error)
     fatal ("Errors in DFA description");
   ticker_on (&all_time);
   output_time = create_ticker ();
-  fprintf (stderr, "Forming and outputting automata tables...");
-  fflush (stderr);
+  if (progress_flag)
+    fprintf (stderr, "Forming and outputting automata tables...");
   output_dfa_max_issue_rate ();
   output_tables ();
-  fprintf (stderr, "done\n");
-  fprintf (stderr, "Output functions to work with automata...");
-  fflush (stderr);
+  if (progress_flag)
+    {
+      fprintf (stderr, "done\n");
+      fprintf (stderr, "Output functions to work with automata...");
+    }
   output_chip_definitions ();
   output_max_insn_queue_index_def ();
   output_internal_min_issue_delay_func ();
@@ -9880,7 +9916,8 @@ write_automata (void)
   output_dfa_clean_insn_cache_func ();
   output_dfa_start_func ();
   output_dfa_finish_func ();
-  fprintf (stderr, "done\n");
+  if (progress_flag)
+    fprintf (stderr, "done\n");
   if (v_flag)
     {
       output_description_file = fopen (output_description_file_name, "w");
@@ -9889,11 +9926,12 @@ write_automata (void)
 	  perror (output_description_file_name);
 	  exit (FATAL_EXIT_CODE);
 	}
-      fprintf (stderr, "Output automata description...");
-      fflush (stderr);
+      if (progress_flag)
+	fprintf (stderr, "Output automata description...");
       output_description ();
       output_automaton_descriptions ();
-      fprintf (stderr, "done\n");
+      if (progress_flag)
+	fprintf (stderr, "done\n");
       output_statistics (output_description_file);
     }
   output_statistics (stderr);

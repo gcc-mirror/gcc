@@ -480,7 +480,10 @@ DEF_RTL_EXPR(DEFINE_AUTOMATON, "define_automaton", "s", 'x')
    o "w" which means generation of warning instead of error for
      non-critical errors.
 
-   o "ndfa" which makes nondeterministic finite state automata.  */
+   o "ndfa" which makes nondeterministic finite state automata.
+
+   o "progress" which means output of a progress bar showing how many
+     states were generated so far for automaton being processed.  */
 DEF_RTL_EXPR(AUTOMATA_OPTION, "automata_option", "s", 'x')
 
 /* (define_reservation string string) names reservation (the first
