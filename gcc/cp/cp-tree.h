@@ -100,6 +100,7 @@ struct diagnostic_context;
       DECL_INVALID_OVERRIDER_P (in a FUNCTION_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
+      DECL_FIELD_IS_BASE (in FIELD_DECL)
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
       DECL_THUNK_P (in a member FUNCTION_DECL)
 
@@ -2549,6 +2550,11 @@ struct lang_decl GTY(())
    erroneously declared PARM_DECL.  */
 #define DECL_THIS_STATIC(NODE) \
   DECL_LANG_FLAG_6 (VAR_FUNCTION_OR_PARM_DECL_CHECK (NODE))
+
+/* Nonzero for FIELD_DECL node means that this field is a base class
+   of the parent object, as opposed to a member field.  */
+#define DECL_FIELD_IS_BASE(NODE) \
+  DECL_LANG_FLAG_6 (FIELD_DECL_CHECK (NODE))
 
 /* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
    flag for this because "A union for which objects or pointers are
