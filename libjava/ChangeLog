@@ -1,3 +1,7 @@
+2005-03-16  Andrew Haley  <aph@redhat.com>
+
+	* boehm.cc (_Jv_MarkObj): Mark the interpreted method line_table.
+
 2005-03-16  Tom Tromey  <tromey@redhat.com>
 
 	* link.cc (ensure_class_linked): Removed #ifdef.
