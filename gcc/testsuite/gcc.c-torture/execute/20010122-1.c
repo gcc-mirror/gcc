@@ -1,7 +1,7 @@
 
 extern void exit (int);
 extern void abort (void);
-extern void *alloca (int);
+extern void *alloca (__SIZE_TYPE__);
 char *dummy (void);
 
 void *save_ret1[6];
