@@ -209,6 +209,8 @@ down the problem:
 <OL>
 <LI> If you are using the incremental collector try turning it off for
 debugging.
+<LI> If you are using shared libraries, try linking statically.  If that works,
+ensure that DYNAMIC_LOADING is defined on your platform.
 <LI> Try to reproduce the problem with fully debuggable unoptimized code.
 This will eliminate the last possibility, as well as making debugging easier.
 <LI> Try replacing any suspect typed allocation and <TT>GC_malloc_atomic</tt>

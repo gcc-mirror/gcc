@@ -103,9 +103,9 @@ HOSTCFLAGS=$(CFLAGS)
 #   See gc_cpp.h for details.  No effect on the C part of the collector.
 #   This is defined implicitly in a few environments.  Must also be defined
 #   by clients that use gc_cpp.h.
-# -DREDIRECT_MALLOC=X causes malloc, realloc, and free to be defined
-#   as aliases for X, GC_realloc, and GC_free, respectively.
-#   Calloc is redefined in terms of the new malloc.  X should
+# -DREDIRECT_MALLOC=X causes malloc, realloc, and free to be
+#   defined as aliases for X, GC_realloc, and GC_free, respectively.
+#   Calloc and strdup are redefined in terms of the new malloc.  X should
 #   be either GC_malloc or GC_malloc_uncollectable, or
 #   GC_debug_malloc_replacement.  (The latter invokes GC_debug_malloc
 #   with dummy source location information, but still results in
@@ -114,7 +114,9 @@ HOSTCFLAGS=$(CFLAGS)
 #   you don't want to (or can't) look at.  It may not work for
 #   existing code, but it often does.  Neither works on all platforms,
 #   since some ports use malloc or calloc to obtain system memory.
-#   (Probably works for UNIX, and win32.)
+#   (Probably works for UNIX, and win32.)  If you build with DBG_HDRS_ALL,
+#   you should only use GC_debug_malloc_replacement as a malloc
+#   replacement.
 # -DREDIRECT_REALLOC=X causes GC_realloc to be redirected to X.
 #   The canonical use is -DREDIRECT_REALLOC=GC_debug_realloc_replacement,
 #   together with -DREDIRECT_MALLOC=GC_debug_malloc_replacement to
@@ -146,8 +148,8 @@ HOSTCFLAGS=$(CFLAGS)
 #   Works for Solaris and Irix.
 # -DUSE_MUNMAP causes memory to be returned to the OS under the right
 #   circumstances.  This currently disables VM-based incremental collection.
-#   This is currently experimental, and works only under some Unix and
-#   Linux versions.
+#   This is currently experimental, and works only under some Unix,
+#   Linux and Windows versions.
 # -DMMAP_STACKS (for Solaris threads) Use mmap from /dev/zero rather than
 #   GC_scratch_alloc() to get stack memory.
 # -DPRINT_BLACK_LIST Whenever a black list entry is added, i.e. whenever
@@ -183,8 +185,12 @@ HOSTCFLAGS=$(CFLAGS)
 #   allocated through the debugging interface.  Affects the amount of
 #   information generated in leak reports.  Only matters on platforms
 #   on which we can quickly generate call stacks, currently Linux/(X86 & SPARC)
-#   and Solaris/SPARC.  Turns on call chain saving on X86.  On X86, client
+#   and Solaris/SPARC and platforms that provide execinfo.h.
+#   Default is zero.  On X86, client
 #   code should NOT be compiled with -fomit-frame-pointer.
+# -DSAVE_CALL_NARGS=<n> Set the number of functions arguments to be
+#   saved with each call frame.  Default is zero.  Ignored if we
+#   don't know how to retrieve arguments on the platform.
 # -DCHECKSUMS reports on erroneously clear dirty bits, and unexpectedly
 #   altered stubborn objects, at substantial performance cost.
 #   Use only for debugging of the incremental collector.
@@ -219,6 +225,14 @@ HOSTCFLAGS=$(CFLAGS)
 #   These may otherwise alter its configuration, or turn off GC altogether.
 #   I don't know of a reason to disable this, except possibly if the
 #   resulting process runs as a privileged user?
+# -DUSE_GLOBAL_ALLOC.  Win32 only.  Use GlobalAlloc instead of
+#   VirtualAlloc to allocate the heap.  May be needed to work around
+#   a Windows NT/2000 issue.  Incompatible with USE_MUNMAP.
+#   See README.win32 for details.
+# -DMAKE_BACK_GRAPH. Enable GC_PRINT_BACK_HEIGHT environment variable.
+#   See README.environment for details.  Experimental. Limited platform
+#   support.  Implies DBG_HDRS_ALL.  All allocation should be done using
+#   the debug interface.
 # -DSTUBBORN_ALLOC allows allocation of "hard to change" objects, and thus
 #   makes incremental collection easier.  Was enabled by default until 6.0.
 #   Rarely used, to my knowledge.
@@ -229,16 +243,16 @@ AR= ar
 RANLIB= ranlib
 
 
-OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o dbg_mlc.o malloc.o stubborn.o checksums.o solaris_threads.o irix_threads.o linux_threads.o typd_mlc.o ptr_chck.o mallocx.o solaris_pthreads.o gcj_mlc.o specific.o gc_dlopen.o
+OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o dbg_mlc.o malloc.o stubborn.o checksums.o solaris_threads.o irix_threads.o linux_threads.o typd_mlc.o ptr_chck.o mallocx.o solaris_pthreads.o gcj_mlc.o specific.o gc_dlopen.o backgraph.o
 
-CSRCS= reclaim.c allchblk.c misc.c alloc.c mach_dep.c os_dep.c mark_rts.c headers.c mark.c obj_map.c pcr_interface.c blacklst.c finalize.c new_hblk.c real_malloc.c dyn_load.c dbg_mlc.c malloc.c stubborn.c checksums.c solaris_threads.c irix_threads.c linux_threads.c typd_mlc.c ptr_chck.c mallocx.c solaris_pthreads.c gcj_mlc.c specific.c gc_dlopen.c
+CSRCS= reclaim.c allchblk.c misc.c alloc.c mach_dep.c os_dep.c mark_rts.c headers.c mark.c obj_map.c pcr_interface.c blacklst.c finalize.c new_hblk.c real_malloc.c dyn_load.c dbg_mlc.c malloc.c stubborn.c checksums.c solaris_threads.c irix_threads.c linux_threads.c typd_mlc.c ptr_chck.c mallocx.c solaris_pthreads.c gcj_mlc.c specific.c gc_dlopen.c backgraph.c
 
 CORD_SRCS=  cord/cordbscs.c cord/cordxtra.c cord/cordprnt.c cord/de.c cord/cordtest.c include/cord.h include/ec.h include/private/cord_pos.h cord/de_win.c cord/de_win.h cord/de_cmds.h cord/de_win.ICO cord/de_win.RC
 
 CORD_OBJS=  cord/cordbscs.o cord/cordxtra.o cord/cordprnt.o
 
 SRCS= $(CSRCS) mips_sgi_mach_dep.s rs6000_mach_dep.s alpha_mach_dep.s \
-    sparc_mach_dep.s include/gc.h include/gc_typed.h \
+    sparc_mach_dep.S include/gc.h include/gc_typed.h \
     include/private/gc_hdrs.h include/private/gc_priv.h \
     include/private/gcconfig.h include/private/gc_pmark.h \
     include/gc_inl.h include/gc_inline.h include/gc_mark.h \
@@ -262,7 +276,7 @@ DOC_FILES= README.QUICK doc/README.Mac doc/README.MacOSX doc/README.OS2 \
 	doc/README.win32 doc/barrett_diagram doc/README \
         doc/README.contributors doc/README.changes doc/gc.man \
 	doc/README.environment doc/tree.html doc/gcdescr.html \
-	doc/README.autoconf doc/README.macros
+	doc/README.autoconf doc/README.macros doc/README.ews4800
 
 TESTS= tests/test.c tests/test_cpp.cc tests/trace_test.c \
 	tests/leak_test.c tests/thread_leak_test.c
@@ -442,13 +456,13 @@ mach_dep.o: $(srcdir)/mach_dep.c $(srcdir)/mips_sgi_mach_dep.s $(srcdir)/mips_ul
 #	./if_mach ALPHA "" $(AS) -o mach_dep.o $(srcdir)/alpha_mach_dep.s
 #	alpha_mach_dep.s assumes that pointers are not saved in fp registers.
 #	Gcc on a 21264 can spill pointers to fp registers.  Oops.
-	./if_mach SPARC SUNOS5 $(AS) -o mach_dep.o $(srcdir)/sparc_mach_dep.s
+	./if_mach SPARC SUNOS5 $(CC) -c -o mach_dep.o $(srcdir)/sparc_mach_dep.S
 	./if_mach SPARC SUNOS4 $(AS) -o mach_dep.o $(srcdir)/sparc_sunos4_mach_dep.s
 	./if_mach SPARC OPENBSD $(AS) -o mach_dep.o $(srcdir)/sparc_sunos4_mach_dep.s
 	./if_mach SPARC NETBSD $(AS) -o mach_dep.o $(srcdir)/sparc_netbsd_mach_dep.s
-	./if_mach IA64 HPUX as $(AS_ABI_FLAG) -o ia64_save_regs_in_stack.o $(srcdir)/ia64_save_regs_in_stack.s
-	./if_mach IA64 HPUX $(CC) -c -o mach_dep1.o $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
-	./if_mach IA64 HPUX ld -r -o mach_dep.o mach_dep1.o ia64_save_regs_in_stack.o
+	./if_mach IA64 "" as $(AS_ABI_FLAG) -o ia64_save_regs_in_stack.o $(srcdir)/ia64_save_regs_in_stack.s
+	./if_mach IA64 "" $(CC) -c -o mach_dep1.o $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
+	./if_mach IA64 "" ld -r -o mach_dep.o mach_dep1.o ia64_save_regs_in_stack.o
 	./if_not_there mach_dep.o $(CC) -c $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
 
 mark_rts.o: $(srcdir)/mark_rts.c $(UTILS)
