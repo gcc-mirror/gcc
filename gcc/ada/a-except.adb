@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,8 +89,118 @@ package body Ada.Exceptions is
    --  Boolean indicating whether tracebacks should be stored in exception
    --  occurrences.
 
+   Zero_Cost_Exceptions : Integer;
+   pragma Import (C, Zero_Cost_Exceptions, "__gl_zero_cost_exceptions");
+   --  Boolean indicating if we are handling exceptions using a zero cost
+   --  mechanism.
+   --
+   --  ??? We currently have two alternatives for this scheme : one using
+   --  front-end tables and one using back-end tables. The former is known to
+   --  only work for GNAT3 and the latter is known to only work for GNAT5.
+   --  Both are present in this implementation and it would be good to have
+   --  separate bodies at some point.
+   --
+   --  Note that although we currently do not support it, the GCC3 back-end
+   --  tables are also potentially useable for setjmp/longjmp processing.
+
    Nline : constant String := String' (1 => ASCII.LF);
    --  Convenient shortcut
+
+   ------------------------------------------------
+   -- Entities to interface with the GCC runtime --
+   ------------------------------------------------
+
+   --  These come from "C++ ABI for Itanium : Exception handling", which is
+   --  the reference for GCC. They are used only when we are relying on
+   --  back-end tables for exception propagation, which in turn is currenly
+   --  only the case for Zero_Cost_Exceptions in GNAT5.
+
+   --  Return codes from the GCC runtime functions used to propagate
+   --  an exception.
+
+   type Unwind_Reason_Code is
+     (URC_NO_REASON,
+      URC_FOREIGN_EXCEPTION_CAUGHT,
+      URC_PHASE2_ERROR,
+      URC_PHASE1_ERROR,
+      URC_NORMAL_STOP,
+      URC_END_OF_STACK,
+      URC_HANDLER_FOUND,
+      URC_INSTALL_CONTEXT,
+      URC_CONTINUE_UNWIND);
+
+   --  ??? pragma Unreferenced is unknown until 3.15, so we need to disable
+   --  warnings around it to fix the bootstrap path.
+
+   pragma Warnings (Off);
+   pragma Unreferenced
+     (URC_NO_REASON,
+      URC_FOREIGN_EXCEPTION_CAUGHT,
+      URC_PHASE2_ERROR,
+      URC_PHASE1_ERROR,
+      URC_NORMAL_STOP,
+      URC_END_OF_STACK,
+      URC_HANDLER_FOUND,
+      URC_INSTALL_CONTEXT,
+      URC_CONTINUE_UNWIND);
+   pragma Warnings (On);
+
+   pragma Convention (C, Unwind_Reason_Code);
+
+   --  Mandatory common header for any exception object handled by the
+   --  GCC unwinding runtime.
+
+   subtype Exception_Class is String (1 .. 8);
+
+   GNAT_Exception_Class : constant Exception_Class
+     := "GNU" & ASCII.NUL & "Ada" & ASCII.NUL;
+
+   type Unwind_Exception is record
+      Class    : Exception_Class := GNAT_Exception_Class;
+      Cleanup  : System.Address  := System.Null_Address;
+      Private1 : Integer;
+      Private2 : Integer;
+   end record;
+
+   pragma Convention (C, Unwind_Exception);
+
+   for Unwind_Exception'Alignment use Standard'Maximum_Alignment;
+
+   --  A GNAT exception object to be dealt with by the personality routine
+   --  called by the GCC unwinding runtime. This structure shall match the
+   --  one in raise.c and is currently experimental as it might be merged
+   --  with the GNAT runtime definition some day.
+
+   type GNAT_GCC_Exception is record
+      Header : Unwind_Exception;
+      --  Exception header first, as required by the ABI.
+
+      Id : Exception_Id;
+      --  Usual Exception identifier
+
+      Handled_By_Others : Boolean;
+      --  Is this exception handled by "when others" ?
+
+      Has_Cleanup : Boolean;
+      --  Did we see any at-end handler while walking up the stack
+      --  searching for a handler ? This is used to determine if we
+      --  start the propagation again after having tried once without
+      --  finding a true handler for the exception.
+
+      Select_Cleanups : Boolean;
+      --  Do we consider at-end handlers as legitimate handlers for the
+      --  exception ? This is used to control the propagation process
+      --  as described in Raise_Current_Excep.
+   end record;
+
+   pragma Convention (C, GNAT_GCC_Exception);
+
+   --  GCC runtime functions used
+
+   function Unwind_RaiseException
+     (E    : access GNAT_GCC_Exception)
+      return Unwind_Reason_Code;
+   pragma Import (C, Unwind_RaiseException, "_Unwind_RaiseException");
 
    -----------------------
    -- Local Subprograms --
@@ -106,30 +216,69 @@ package body Ada.Exceptions is
    procedure ZZZ;
    --  Mark end of procedures in this package
 
-   Address_Image_Length : constant :=
-                            13 + 10 * Boolean'Pos (Standard'Address_Size > 32);
-   --  Length of string returned by Address_Image function
-
    function Address_Image (A : System.Address) return String;
    --  Returns at string of the form 0xhhhhhhhhh for 32-bit addresses
    --  or 0xhhhhhhhhhhhhhhhh for 64-bit addresses. Hex characters are
    --  in lower case.
 
+   procedure Call_Chain (Excep : EOA);
+   --  Store up to Max_Tracebacks in Excep, corresponding to the current
+   --  call chain.
+
    procedure Free
      is new Ada.Unchecked_Deallocation
        (Subprogram_Descriptor_List, Subprogram_Descriptor_List_Ptr);
 
+   procedure Process_Raise_Exception
+     (E                   : Exception_Id;
+      From_Signal_Handler : Boolean);
+   pragma Inline (Process_Raise_Exception);
+   pragma No_Return (Process_Raise_Exception);
+   --  This is the lowest level raise routine. It raises the exception
+   --  referenced by Current_Excep.all in the TSD, without deferring abort
+   --  (the caller must ensure that abort is deferred on entry).
+   --
+   --  This is actually the common implementation for Raise_Current_Excep and
+   --  Raise_From_Signal_Handler, with a couple of operations inhibited when
+   --  called from the latter. The origin of the call is indicated by the
+   --  From_Signal_Handler argument.
+   --
+   --  The Inline pragma is there for efficiency reasons.
+
+   procedure Propagate_Exception_With_FE_Support (Mstate : Machine_State);
+   pragma No_Return (Propagate_Exception_With_FE_Support);
+   --  This procedure propagates the exception represented by the occurrence
+   --  referenced by Current_Excep in the TSD for the current task. M is the
+   --  initial machine state, representing the site of the exception raise
+   --  operation.
+   --
+   --  The procedure searches the front end exception tables for an applicable
+   --  handler, calling Pop_Frame as needed. If and when it locates an
+   --  applicable handler, Enter_Handler is called to actually enter this
+   --  handler. If the search is unable to locate an applicable handler,
+   --  execution is terminated by calling Unhandled_Exception_Terminate.
+
+   procedure Propagate_Exception_With_GCC_Support (Mstate : Machine_State);
+   pragma No_Return (Propagate_Exception_With_GCC_Support);
+   --  This procedure propagates the exception represented by the occurrence
+   --  referenced by Current_Excep in the TSD for the current task. M is the
+   --  initial machine state, representing the site of the exception raise
+   --  operation. It is currently not used and is there for the purpose of
+   --  interface consistency against Propagate_Exception_With_FE_Support.
+   --
+   --  The procedure builds an object suitable for the libgcc processing and
+   --  calls Unwind_RaiseException to actually throw, taking care of handling
+   --  the two phase scheme it implements.
+
    procedure Raise_Current_Excep (E : Exception_Id);
    pragma No_Return (Raise_Current_Excep);
    pragma Export (C, Raise_Current_Excep, "__gnat_raise_nodefer_with_msg");
-   --  This is the lowest level raise routine. It raises the exception
-   --  referenced by Current_Excep.all in the TSD, without deferring
-   --  abort (the caller must ensure that abort is deferred on entry).
-   --  The parameter E is ignored.
+   --  This is a simple wrapper to Process_Raise_Exception setting the
+   --  From_Signal_Handler argument to False.
    --
    --  This external name for Raise_Current_Excep is historical, and probably
-   --  should be changed but for now we keep it, because gdb knows about it.
-   --  The parameter is also present for historical compatibility. ???
+   --  should be changed but for now we keep it, because gdb and gigi know
+   --  about it.
 
    procedure Raise_Exception_No_Defer
       (E : Exception_Id; Message : String := "");
@@ -148,30 +297,73 @@ package body Ada.Exceptions is
 
    procedure Raise_With_Location
      (E : Exception_Id;
-      F : SSL.Big_String_Ptr;
+      F : Big_String_Ptr;
       L : Integer);
    pragma No_Return (Raise_With_Location);
    --  Raise an exception with given exception id value. A filename and line
    --  number is associated with the raise and is stored in the exception
    --  occurrence.
 
+   procedure Raise_With_Location_And_Msg
+     (E : Exception_Id;
+      F : Big_String_Ptr;
+      L : Integer;
+      M : Big_String_Ptr);
+   pragma No_Return (Raise_With_Location_And_Msg);
+   --  Raise an exception with given exception id value. A filename and line
+   --  number is associated with the raise and is stored in the exception
+   --  occurrence and in addition a string message M is appended to this.
+
    procedure Raise_Constraint_Error
-     (File : SSL.Big_String_Ptr; Line : Integer);
+     (File : Big_String_Ptr;
+      Line : Integer);
    pragma No_Return (Raise_Constraint_Error);
-   pragma Export (C, Raise_Constraint_Error, "__gnat_raise_constraint_error");
+   pragma Export
+     (C, Raise_Constraint_Error, "__gnat_raise_constraint_error");
    --  Raise constraint error with file:line information
 
+   procedure Raise_Constraint_Error_Msg
+     (File : Big_String_Ptr;
+      Line : Integer;
+      Msg  : Big_String_Ptr);
+   pragma No_Return (Raise_Constraint_Error_Msg);
+   pragma Export
+     (C, Raise_Constraint_Error_Msg, "__gnat_raise_constraint_error_msg");
+   --  Raise constraint error with file:line + msg information
+
    procedure Raise_Program_Error
-     (File : SSL.Big_String_Ptr; Line : Integer);
+     (File : Big_String_Ptr;
+      Line : Integer);
    pragma No_Return (Raise_Program_Error);
-   pragma Export (C, Raise_Program_Error, "__gnat_raise_program_error");
+   pragma Export
+     (C, Raise_Program_Error, "__gnat_raise_program_error");
    --  Raise program error with file:line information
 
+   procedure Raise_Program_Error_Msg
+     (File : Big_String_Ptr;
+      Line : Integer;
+      Msg  : Big_String_Ptr);
+   pragma No_Return (Raise_Program_Error_Msg);
+   pragma Export
+     (C, Raise_Program_Error_Msg, "__gnat_raise_program_error_msg");
+   --  Raise program error with file:line + msg information
+
    procedure Raise_Storage_Error
-     (File : SSL.Big_String_Ptr; Line : Integer);
+     (File : Big_String_Ptr;
+      Line : Integer);
    pragma No_Return (Raise_Storage_Error);
-   pragma Export (C, Raise_Storage_Error, "__gnat_raise_storage_error");
+   pragma Export
+     (C, Raise_Storage_Error, "__gnat_raise_storage_error");
    --  Raise storage error with file:line information
+
+   procedure Raise_Storage_Error_Msg
+     (File : Big_String_Ptr;
+      Line : Integer;
+      Msg  : Big_String_Ptr);
+   pragma No_Return (Raise_Storage_Error_Msg);
+   pragma Export
+     (C, Raise_Storage_Error_Msg, "__gnat_raise_storage_error_msg");
+   --  Raise storage error with file:line + reason msg information
 
    --  The exception raising process and the automatic tracing mechanism rely
    --  on some careful use of flags attached to the exception occurrence. The
@@ -211,12 +403,16 @@ package body Ada.Exceptions is
 
    procedure Set_Exception_C_Msg
      (Id   : Exception_Id;
-      Msg  : SSL.Big_String_Ptr;
-      Line : Integer := 0);
+      Msg1 : Big_String_Ptr;
+      Line : Integer        := 0;
+      Msg2 : Big_String_Ptr := null);
    --  This routine is called to setup the exception referenced by the
    --  Current_Excep field in the TSD to contain the indicated Id value
-   --  and message. Msg is a null terminated string. when Line > 0,
-   --  Msg is the filename and line the line number of the exception location.
+   --  and message. Msg1 is a null terminated string which is generated
+   --  as the exception message. If line is non-zero, then a colon and
+   --  the decimal representation of this integer is appended to the
+   --  message. When Msg2 is non-null, a space and this additional null
+   --  terminated string is added to the message.
 
    procedure To_Stderr (S : String);
    pragma Export (Ada, To_Stderr, "__gnat_to_stderr");
@@ -260,6 +456,264 @@ package body Ada.Exceptions is
    --  unhandled exception case. The fact that there are two routines
    --  which are somewhat redundant is historical. Notify_Exception
    --  certainly is complete enough, but GDB still uses this routine.
+
+   -----------------------------
+   -- Run-Time Check Routines --
+   -----------------------------
+
+   --  These routines are called from the runtime to raise a specific
+   --  exception with a reason message attached. The parameters are
+   --  the file name and line number in each case. The names are keyed
+   --  to the codes defined in Types.ads and a-types.h (for example,
+   --  the name Rcheck_05 refers to the Reason whose Pos code is 5).
+
+   procedure Rcheck_00 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_01 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_02 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_03 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_04 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_05 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_06 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_07 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_08 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_09 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_10 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_11 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_12 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_13 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_14 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_15 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_16 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_17 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_18 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_19 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_20 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_21 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_22 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_23 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_24 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_25 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_26 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_27 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_28 (File : Big_String_Ptr; Line : Integer);
+
+   pragma Export (C, Rcheck_00, "__gnat_rcheck_00");
+   pragma Export (C, Rcheck_01, "__gnat_rcheck_01");
+   pragma Export (C, Rcheck_02, "__gnat_rcheck_02");
+   pragma Export (C, Rcheck_03, "__gnat_rcheck_03");
+   pragma Export (C, Rcheck_04, "__gnat_rcheck_04");
+   pragma Export (C, Rcheck_05, "__gnat_rcheck_05");
+   pragma Export (C, Rcheck_06, "__gnat_rcheck_06");
+   pragma Export (C, Rcheck_07, "__gnat_rcheck_07");
+   pragma Export (C, Rcheck_08, "__gnat_rcheck_08");
+   pragma Export (C, Rcheck_09, "__gnat_rcheck_09");
+   pragma Export (C, Rcheck_10, "__gnat_rcheck_10");
+   pragma Export (C, Rcheck_11, "__gnat_rcheck_11");
+   pragma Export (C, Rcheck_12, "__gnat_rcheck_12");
+   pragma Export (C, Rcheck_13, "__gnat_rcheck_13");
+   pragma Export (C, Rcheck_14, "__gnat_rcheck_14");
+   pragma Export (C, Rcheck_15, "__gnat_rcheck_15");
+   pragma Export (C, Rcheck_16, "__gnat_rcheck_16");
+   pragma Export (C, Rcheck_17, "__gnat_rcheck_17");
+   pragma Export (C, Rcheck_18, "__gnat_rcheck_18");
+   pragma Export (C, Rcheck_19, "__gnat_rcheck_19");
+   pragma Export (C, Rcheck_20, "__gnat_rcheck_20");
+   pragma Export (C, Rcheck_21, "__gnat_rcheck_21");
+   pragma Export (C, Rcheck_22, "__gnat_rcheck_22");
+   pragma Export (C, Rcheck_23, "__gnat_rcheck_23");
+   pragma Export (C, Rcheck_24, "__gnat_rcheck_24");
+   pragma Export (C, Rcheck_25, "__gnat_rcheck_25");
+   pragma Export (C, Rcheck_26, "__gnat_rcheck_26");
+   pragma Export (C, Rcheck_27, "__gnat_rcheck_27");
+   pragma Export (C, Rcheck_28, "__gnat_rcheck_28");
+
+   ---------------------------------------------
+   -- Reason Strings for Run-Time Check Calls --
+   ---------------------------------------------
+
+   --  These strings are null-terminated and are used by Rcheck_nn. The
+   --  strings correspond to the definitions for Types.RT_Exception_Code.
+
+   use ASCII;
+
+   Rmsg_00 : constant String := "access check failed"              & NUL;
+   Rmsg_01 : constant String := "access parameter is null"         & NUL;
+   Rmsg_02 : constant String := "discriminant check failed"        & NUL;
+   Rmsg_03 : constant String := "divide by zero"                   & NUL;
+   Rmsg_04 : constant String := "explicit raise"                   & NUL;
+   Rmsg_05 : constant String := "index check failed"               & NUL;
+   Rmsg_06 : constant String := "invalid data"                     & NUL;
+   Rmsg_07 : constant String := "length check failed"              & NUL;
+   Rmsg_08 : constant String := "overflow check failed"            & NUL;
+   Rmsg_09 : constant String := "partition check failed"           & NUL;
+   Rmsg_10 : constant String := "range check failed"               & NUL;
+   Rmsg_11 : constant String := "tag check failed"                 & NUL;
+   Rmsg_12 : constant String := "access before elaboration"        & NUL;
+   Rmsg_13 : constant String := "accessibility check failed"       & NUL;
+   Rmsg_14 : constant String := "all guards closed"                & NUL;
+   Rmsg_15 : constant String := "duplicated entry address"         & NUL;
+   Rmsg_16 : constant String := "explicit raise"                   & NUL;
+   Rmsg_17 : constant String := "finalize raised exception"        & NUL;
+   Rmsg_18 : constant String := "invalid data"                     & NUL;
+   Rmsg_19 : constant String := "misaligned address value"         & NUL;
+   Rmsg_20 : constant String := "missing return"                   & NUL;
+   Rmsg_21 : constant String := "potentially blocking operation"   & NUL;
+   Rmsg_22 : constant String := "stubbed subprogram called"        & NUL;
+   Rmsg_23 : constant String := "unchecked union restriction"      & NUL;
+   Rmsg_24 : constant String := "empty storage pool"               & NUL;
+   Rmsg_25 : constant String := "explicit raise"                   & NUL;
+   Rmsg_26 : constant String := "infinite recursion"               & NUL;
+   Rmsg_27 : constant String := "object too large"                 & NUL;
+   Rmsg_28 : constant String := "restriction violation"            & NUL;
+
+   --------------------------------------
+   -- Calls to Run-Time Check Routines --
+   --------------------------------------
+
+   procedure Rcheck_00 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_00'Address));
+   end Rcheck_00;
+
+   procedure Rcheck_01 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_01'Address));
+   end Rcheck_01;
+
+   procedure Rcheck_02 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_02'Address));
+   end Rcheck_02;
+
+   procedure Rcheck_03 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_03'Address));
+   end Rcheck_03;
+
+   procedure Rcheck_04 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_04'Address));
+   end Rcheck_04;
+
+   procedure Rcheck_05 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_05'Address));
+   end Rcheck_05;
+
+   procedure Rcheck_06 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_06'Address));
+   end Rcheck_06;
+
+   procedure Rcheck_07 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_07'Address));
+   end Rcheck_07;
+
+   procedure Rcheck_08 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_08'Address));
+   end Rcheck_08;
+
+   procedure Rcheck_09 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_09'Address));
+   end Rcheck_09;
+
+   procedure Rcheck_10 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_10'Address));
+   end Rcheck_10;
+
+   procedure Rcheck_11 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_11'Address));
+   end Rcheck_11;
+
+   procedure Rcheck_12 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_12'Address));
+   end Rcheck_12;
+
+   procedure Rcheck_13 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_13'Address));
+   end Rcheck_13;
+
+   procedure Rcheck_14 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_14'Address));
+   end Rcheck_14;
+
+   procedure Rcheck_15 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_15'Address));
+   end Rcheck_15;
+
+   procedure Rcheck_16 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_16'Address));
+   end Rcheck_16;
+
+   procedure Rcheck_17 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_17'Address));
+   end Rcheck_17;
+
+   procedure Rcheck_18 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_18'Address));
+   end Rcheck_18;
+
+   procedure Rcheck_19 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_19'Address));
+   end Rcheck_19;
+
+   procedure Rcheck_20 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_20'Address));
+   end Rcheck_20;
+
+   procedure Rcheck_21 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_21'Address));
+   end Rcheck_21;
+
+   procedure Rcheck_22 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_22'Address));
+   end Rcheck_22;
+
+   procedure Rcheck_23 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_23'Address));
+   end Rcheck_23;
+
+   procedure Rcheck_24 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_24'Address));
+   end Rcheck_24;
+
+   procedure Rcheck_25 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_25'Address));
+   end Rcheck_25;
+
+   procedure Rcheck_26 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_26'Address));
+   end Rcheck_26;
+
+   procedure Rcheck_27 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_27'Address));
+   end Rcheck_27;
+
+   procedure Rcheck_28 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_28'Address));
+   end Rcheck_28;
 
    ---------------------------------------
    -- Exception backtracing subprograms --
@@ -307,18 +761,18 @@ package body Ada.Exceptions is
      (N    : Natural;
       Info : in out String;
       Ptr  : in out Natural);
-   --  Append the image of N at the end of the provided information string.
+   --  Append the image of N at the end of the provided information string
 
    procedure Append_Info_NL
      (Info : in out String;
       Ptr  : in out Natural);
-   --  Append a CR/LF couple at the end of the provided information string.
+   --  Append a LF at the end of the provided information string
 
    procedure Append_Info_String
      (S    : String;
       Info : in out String;
       Ptr  : in out Natural);
-   --  Append a string at the end of the provided information string.
+   --  Append a string at the end of the provided information string
 
    --  To build Exception_Information and Tailored_Exception_Information,
    --  we then use three intermediate functions :
@@ -408,22 +862,6 @@ package body Ada.Exceptions is
    procedure Unhandled_Terminate;
    pragma Import (C, Unhandled_Terminate, "__gnat_unhandled_terminate");
 
-   procedure Propagate_Exception (Mstate : Machine_State);
-   pragma No_Return (Propagate_Exception);
-   --  This procedure propagates the exception represented by the occurrence
-   --  referenced by Current_Excep in the TSD for the current task. M is
-   --  the initial machine state, representing the site of the exception
-   --  raise operation. Propagate_Exception searches the exception tables
-   --  for an applicable handler, calling Pop_Frame as needed. If and when
-   --  it locates an applicable handler Propagate_Exception makes a call
-   --  to Enter_Handler to actually enter the handler. If the search is
-   --  unable to locate an applicable handler, execution is terminated by
-   --  calling Unhandled_Exception_Terminate.
-
-   procedure Call_Chain (Excep : EOA);
-   --  Store up to Max_Tracebacks in Excep, corresponding to the current
-   --  call chain.
-
    -----------------------
    -- Polling Interface --
    -----------------------
@@ -503,8 +941,6 @@ package body Ada.Exceptions is
       Ptr  : in out Natural)
    is
    begin
-      Ptr := Ptr + 1;
-      Info (Ptr) := ASCII.CR;
       Ptr := Ptr + 1;
       Info (Ptr) := ASCII.LF;
    end Append_Info_NL;
@@ -823,11 +1259,98 @@ package body Ada.Exceptions is
       return Name (P .. Name'Length);
    end Exception_Name_Simple;
 
-   -------------------------
-   -- Propagate_Exception --
-   -------------------------
+   -----------------------------
+   -- Process_Raise_Exception --
+   -----------------------------
 
-   procedure Propagate_Exception (Mstate : Machine_State) is
+   procedure Process_Raise_Exception
+     (E                   : Exception_Id;
+      From_Signal_Handler : Boolean)
+   is
+      pragma Inspection_Point (E);
+      --  This is so the debugger can reliably inspect the parameter
+
+      Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
+      Mstate_Ptr  : constant Machine_State :=
+                      Machine_State (Get_Machine_State_Addr.all);
+      Excep       : EOA := Get_Current_Excep.all;
+
+   begin
+      --  WARNING : There should be no exception handler for this body
+      --  because this would cause gigi to prepend a setup for a new
+      --  jmpbuf to the sequence of statements. We would then always get
+      --  this new buf in Jumpbuf_Ptr instead of the one for the exception
+      --  we are handling, which would completely break the whole design
+      --  of this procedure.
+
+      --  Processing varies between zero cost and setjmp/lonjmp processing.
+
+      if Zero_Cost_Exceptions /= 0 then
+
+         --  Use the front-end tables to propagate if we have them, otherwise
+         --  resort to the GCC back-end alternative. The backtrace for the
+         --  occurrence is stored while walking up the stack, and thus stops
+         --  in the handler's frame if there is one. Notifications are also
+         --  not performed here since it is not yet known if the exception is
+         --  handled.
+
+         --  Set the machine state unless we are raising from a signal handler
+         --  since it has already been set properly in that case.
+
+         if not From_Signal_Handler then
+            Set_Machine_State (Mstate_Ptr);
+         end if;
+
+         if Subprogram_Descriptors /= null then
+            Propagate_Exception_With_FE_Support (Mstate_Ptr);
+         else
+            Propagate_Exception_With_GCC_Support (Mstate_Ptr);
+         end if;
+
+      else
+
+         --  Compute the backtrace for this occurrence if the corresponding
+         --  binder option has been set and we are not raising from a signal
+         --  handler. Call_Chain takes care of the reraise case.
+
+         if not From_Signal_Handler
+           and then Exception_Tracebacks /= 0
+         then
+            Call_Chain (Excep);
+         end if;
+
+         --  If the jump buffer pointer is non-null, transfer control using
+         --  it. Otherwise announce an unhandled exception (note that this
+         --  means that we have no finalizations to do other than at the outer
+         --  level). Perform the necessary notification tasks in both cases.
+
+         if Jumpbuf_Ptr /= Null_Address then
+
+            if not Excep.Exception_Raised then
+               Excep.Exception_Raised := True;
+               Notify_Handled_Exception (Null_Loc, False, False);
+
+               --  The low level debugger notification is skipped from the
+               --  call above because we do not have the necessary information
+               --  to "feed" it properly.
+
+            end if;
+
+            builtin_longjmp (Jumpbuf_Ptr, 1);
+
+         else
+            Notify_Unhandled_Exception (E);
+            Unhandled_Exception_Terminate;
+         end if;
+      end if;
+
+   end Process_Raise_Exception;
+
+   -----------------------------------------
+   -- Propagate_Exception_With_FE_Support --
+   -----------------------------------------
+
+   procedure Propagate_Exception_With_FE_Support (Mstate : Machine_State) is
       Excep  : constant EOA := Get_Current_Excep.all;
       Loc    : Code_Loc;
       Lo, Hi : Natural;
@@ -872,10 +1395,10 @@ package body Ada.Exceptions is
       FH_Mstate : aliased Machine_State_Record;
       --  Records the machine state for the finalization handler
 
-      FH_Handler : Code_Loc;
+      FH_Handler : Code_Loc := Null_Address;
       --  Record handler address for finalization handler
 
-      FH_Num_Trb : Natural;
+      FH_Num_Trb : Natural := 0;
       --  Save number of tracebacks for finalization handler
 
    begin
@@ -1034,75 +1557,111 @@ package body Ada.Exceptions is
 
       Unhandled_Exception_Terminate;
 
-   end Propagate_Exception;
+   end Propagate_Exception_With_FE_Support;
+
+   ------------------------------------------
+   -- Propagate_Exception_With_GCC_Support --
+   ------------------------------------------
+
+   procedure Propagate_Exception_With_GCC_Support (Mstate : Machine_State) is
+      Excep          : EOA := Get_Current_Excep.all;
+      This_Exception : aliased GNAT_GCC_Exception;
+      Status         : Unwind_Reason_Code;
+
+   begin
+      --  ??? Nothing is currently done for backtracing purposes. We could
+      --  have used the personality routine to record the addresses while
+      --  walking up the stack, but this method has two drawbacks : 1/ the
+      --  trace is incomplete if the exception is handled since we don't walk
+      --  up the frame with the handler, and 2/ we will miss frames if the
+      --  exception propagates through frames for which our personality
+      --  routine is not called (e.g. if C or C++ frames are on the way).
+
+      --  Fill in the useful flags for the personality routine called for each
+      --  frame via the call to Unwind_RaiseException below.
+
+      This_Exception.Id := Excep.Id;
+      This_Exception.Handled_By_Others := not Excep.Id.Not_Handled_By_Others;
+      This_Exception.Has_Cleanup := False;
+
+      --  We are looking for a regular handler first. If there is one, either
+      --  it or the first at-end handler before it will be entered. If there
+      --  is none, control will normally get back to after the call, with
+      --  Has_Cleanup set to true if at least one at-end handler has been
+      --  found while walking up the stack.
+
+      This_Exception.Select_Cleanups := False;
+
+      Status := Unwind_RaiseException (This_Exception'Access);
+
+      --  If we get here we know the exception is not handled, as otherwise
+      --  Unwind_RaiseException arranges for a handler to be entered. We might
+      --  have met cleanups handlers, though, requiring to start again with
+      --  the Select_Cleanups flag set to True.
+
+      --  Before restarting for cleanups, take the necessary steps to enable
+      --  the debugger to gain control while the stack is still intact. Flag
+      --  the occurrence as raised to avoid notifying again in case cleanup
+      --  handlers are entered later.
+
+      if not Excep.Exception_Raised then
+         Excep.Exception_Raised := True;
+         Notify_Unhandled_Exception (Excep.Id);
+      end if;
+
+      --  Now raise again selecting cleanups as true handlers. Only do this if
+      --  we know at least one such handler exists since otherwise we would
+      --  perform a complete stack upwalk for nothing.
+
+      if This_Exception.Has_Cleanup then
+         This_Exception.Select_Cleanups := True;
+         Status := Unwind_RaiseException (This_Exception'Access);
+
+         --  The first cleanup found is entered. It performs its job, raises
+         --  the initial exception again, and the flow goes back to the first
+         --  step above with the stack in a different state.
+      end if;
+
+      --  We get here when there is no handler to be run at all. The debugger
+      --  has been notified before the second step above.
+
+      Unhandled_Exception_Terminate;
+
+   end Propagate_Exception_With_GCC_Support;
+
+   ----------------------------
+   -- Raise_Constraint_Error --
+   ----------------------------
+
+   procedure Raise_Constraint_Error
+     (File : Big_String_Ptr;
+      Line : Integer)
+   is
+   begin
+      Raise_With_Location (Constraint_Error_Def'Access, File, Line);
+   end Raise_Constraint_Error;
+
+   --------------------------------
+   -- Raise_Constraint_Error_Msg --
+   --------------------------------
+
+   procedure Raise_Constraint_Error_Msg
+     (File : Big_String_Ptr;
+      Line : Integer;
+      Msg  : Big_String_Ptr)
+   is
+   begin
+      Raise_With_Location_And_Msg
+        (Constraint_Error_Def'Access, File, Line, Msg);
+   end Raise_Constraint_Error_Msg;
 
    -------------------------
    -- Raise_Current_Excep --
    -------------------------
 
    procedure Raise_Current_Excep (E : Exception_Id) is
-
-      pragma Inspection_Point (E);
-      --  This is so the debugger can reliably inspect the parameter
-
-      Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
-      Mstate_Ptr  : constant Machine_State :=
-                      Machine_State (Get_Machine_State_Addr.all);
-      Excep       : EOA;
-
    begin
-      --  WARNING : There should be no exception handler for this body
-      --  because this would cause gigi to prepend a setup for a new
-      --  jmpbuf to the sequence of statements. We would then always get
-      --  this new buf in Jumpbuf_Ptr instead of the one for the exception
-      --  we are handling, which would completely break the whole design
-      --  of this procedure.
-
-      --  If the jump buffer pointer is non-null, it means that a jump
-      --  buffer was allocated (obviously that happens only in the case
-      --  of zero cost exceptions not implemented, or if a jump buffer
-      --  was manually set up by C code).
-
-      if Jumpbuf_Ptr /= Null_Address then
-         Excep := Get_Current_Excep.all;
-
-         if Exception_Tracebacks /= 0 then
-            Call_Chain (Excep);
-         end if;
-
-         --  Perform the necessary notification tasks if this is not a
-         --  reraise. Actually ask to skip the low level debugger notification
-         --  call since we do not have the necessary information to "feed"
-         --  it properly.
-
-         if not Excep.Exception_Raised then
-            Excep.Exception_Raised := True;
-            Notify_Handled_Exception (Null_Loc, False, False);
-         end if;
-
-         builtin_longjmp (Jumpbuf_Ptr, 1);
-
-      --  If we have no jump buffer, then either zero cost exception
-      --  handling is in place, or we have no handlers anyway. In
-      --  either case we have an unhandled exception. If zero cost
-      --  exception handling is in place, propagate the exception
-
-      elsif Subprogram_Descriptors /= null then
-         Set_Machine_State (Mstate_Ptr);
-         Propagate_Exception (Mstate_Ptr);
-
-      --  Otherwise, we know the exception is unhandled by the absence
-      --  of an allocated jump buffer. Note that this means that we also
-      --  have no finalizations to do other than at the outer level.
-
-      else
-         if Exception_Tracebacks /= 0 then
-            Call_Chain (Get_Current_Excep.all);
-         end if;
-
-         Notify_Unhandled_Exception (E);
-         Unhandled_Exception_Terminate;
-      end if;
+      Process_Raise_Exception (E => E, From_Signal_Handler => False);
    end Raise_Current_Excep;
 
    ---------------------
@@ -1150,51 +1709,12 @@ package body Ada.Exceptions is
 
    procedure Raise_From_Signal_Handler
      (E : Exception_Id;
-      M : SSL.Big_String_Ptr)
+      M : Big_String_Ptr)
    is
-      Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
-      Mstate_Ptr  : constant Machine_State :=
-                      Machine_State (Get_Machine_State_Addr.all);
-
    begin
       Set_Exception_C_Msg (E, M);
       Abort_Defer.all;
-
-      --  Now we raise the exception. The following code is essentially
-      --  identical to the Raise_Current_Excep routine, except that in the
-      --  zero cost exception case, we do not call Set_Machine_State, since
-      --  the signal handler that passed control here has already set the
-      --  machine state directly.
-      --
-      --  We also do not compute the backtrace for the occurrence since going
-      --  through the signal handler is far from trivial and it is not a
-      --  problem to fail providing a backtrace in the "raised from signal
-      --  handler" case.
-
-      --  If the jump buffer pointer is non-null, it means that a jump
-      --  buffer was allocated (obviously that happens only in the case
-      --  of zero cost exceptions not implemented, or if a jump buffer
-      --  was manually set up by C code).
-
-      if Jumpbuf_Ptr /= Null_Address then
-         builtin_longjmp (Jumpbuf_Ptr, 1);
-
-      --  If we have no jump buffer, then either zero cost exception
-      --  handling is in place, or we have no handlers anyway. In
-      --  either case we have an unhandled exception. If zero cost
-      --  exception handling is in place, propagate the exception
-
-      elsif Subprogram_Descriptors /= null then
-         Propagate_Exception (Mstate_Ptr);
-
-      --  Otherwise, we know the exception is unhandled by the absence
-      --  of an allocated jump buffer. Note that this means that we also
-      --  have no finalizations to do other than at the outer level.
-
-      else
-         Notify_Unhandled_Exception (E);
-         Unhandled_Exception_Terminate;
-      end if;
+      Process_Raise_Exception (E => E, From_Signal_Handler => True);
    end Raise_From_Signal_Handler;
 
    ------------------
@@ -1210,61 +1730,101 @@ package body Ada.Exceptions is
    end Raise_No_Msg;
 
    -------------------------
-   -- Raise_With_Location --
-   -------------------------
-
-   procedure Raise_With_Location
-     (E : Exception_Id;
-      F : SSL.Big_String_Ptr;
-      L : Integer) is
-   begin
-      Set_Exception_C_Msg (E, F, L);
-      Abort_Defer.all;
-      Raise_Current_Excep (E);
-   end Raise_With_Location;
-
-   ----------------------------
-   -- Raise_Constraint_Error --
-   ----------------------------
-
-   procedure Raise_Constraint_Error
-     (File : SSL.Big_String_Ptr; Line : Integer) is
-   begin
-      Raise_With_Location (Constraint_Error_Def'Access, File, Line);
-   end Raise_Constraint_Error;
-
-   -------------------------
    -- Raise_Program_Error --
    -------------------------
 
    procedure Raise_Program_Error
-     (File : SSL.Big_String_Ptr; Line : Integer) is
+     (File : Big_String_Ptr;
+      Line : Integer)
+   is
    begin
       Raise_With_Location (Program_Error_Def'Access, File, Line);
    end Raise_Program_Error;
+
+   -----------------------------
+   -- Raise_Program_Error_Msg --
+   -----------------------------
+
+   procedure Raise_Program_Error_Msg
+     (File : Big_String_Ptr;
+      Line : Integer;
+      Msg  : Big_String_Ptr)
+   is
+   begin
+      Raise_With_Location_And_Msg
+        (Program_Error_Def'Access, File, Line, Msg);
+   end Raise_Program_Error_Msg;
 
    -------------------------
    -- Raise_Storage_Error --
    -------------------------
 
    procedure Raise_Storage_Error
-     (File : SSL.Big_String_Ptr; Line : Integer) is
+     (File : Big_String_Ptr;
+      Line : Integer)
+   is
    begin
       Raise_With_Location (Storage_Error_Def'Access, File, Line);
    end Raise_Storage_Error;
+
+   -----------------------------
+   -- Raise_Storage_Error_Msg --
+   -----------------------------
+
+   procedure Raise_Storage_Error_Msg
+     (File : Big_String_Ptr;
+      Line : Integer;
+      Msg  : Big_String_Ptr)
+   is
+   begin
+      Raise_With_Location_And_Msg
+        (Storage_Error_Def'Access, File, Line, Msg);
+   end Raise_Storage_Error_Msg;
 
    ----------------------
    -- Raise_With_C_Msg --
    ----------------------
 
    procedure Raise_With_C_Msg
-     (E    : Exception_Id;
-      M    : SSL.Big_String_Ptr) is
+     (E : Exception_Id;
+      M : Big_String_Ptr)
+   is
    begin
       Set_Exception_C_Msg (E, M);
       Abort_Defer.all;
       Raise_Current_Excep (E);
    end Raise_With_C_Msg;
+
+   -------------------------
+   -- Raise_With_Location --
+   -------------------------
+
+   procedure Raise_With_Location
+     (E : Exception_Id;
+      F : Big_String_Ptr;
+      L : Integer)
+   is
+   begin
+      Set_Exception_C_Msg (E, F, L);
+      Abort_Defer.all;
+      Raise_Current_Excep (E);
+   end Raise_With_Location;
+
+   ---------------------------------
+   -- Raise_With_Location_And_Msg --
+   ---------------------------------
+
+   procedure Raise_With_Location_And_Msg
+     (E : Exception_Id;
+      F : Big_String_Ptr;
+      L : Integer;
+      M : Big_String_Ptr)
+   is
+   begin
+      Set_Exception_C_Msg (E, F, L, M);
+      Abort_Defer.all;
+      Raise_Current_Excep (E);
+   end Raise_With_Location_And_Msg;
 
    --------------------
    -- Raise_With_Msg --
@@ -1513,13 +2073,15 @@ package body Ada.Exceptions is
 
    procedure Set_Exception_C_Msg
      (Id   : Exception_Id;
-      Msg  : Big_String_Ptr;
-      Line : Integer := 0)
+      Msg1 : Big_String_Ptr;
+      Line : Integer        := 0;
+      Msg2 : Big_String_Ptr := null)
    is
       Excep  : constant EOA := Get_Current_Excep.all;
       Val    : Integer := Line;
       Remind : Integer;
       Size   : Integer := 1;
+      Ptr    : Natural;
 
    begin
       Excep.Exception_Raised := False;
@@ -1529,14 +2091,17 @@ package body Ada.Exceptions is
       Excep.Msg_Length       := 0;
       Excep.Cleanup_Flag     := False;
 
-      while Msg (Excep.Msg_Length + 1) /= ASCII.NUL
+      while Msg1 (Excep.Msg_Length + 1) /= ASCII.NUL
         and then Excep.Msg_Length < Exception_Msg_Max_Length
       loop
          Excep.Msg_Length := Excep.Msg_Length + 1;
-         Excep.Msg (Excep.Msg_Length) := Msg (Excep.Msg_Length);
+         Excep.Msg (Excep.Msg_Length) := Msg1 (Excep.Msg_Length);
       end loop;
 
+      --  Append line number if present
+
       if Line > 0 then
+
          --  Compute the number of needed characters
 
          while Val > 0 loop
@@ -1560,6 +2125,24 @@ package body Ada.Exceptions is
                Size := Size + 1;
             end loop;
          end if;
+      end if;
+
+      --  Append second message if present
+
+      if Msg2 /= null
+        and then Excep.Msg_Length + 1 < Exception_Msg_Max_Length
+      then
+         Excep.Msg_Length := Excep.Msg_Length + 1;
+         Excep.Msg (Excep.Msg_Length) := ' ';
+
+         Ptr := 1;
+         while Msg2 (Ptr) /= ASCII.NUL
+           and then Excep.Msg_Length < Exception_Msg_Max_Length
+         loop
+            Excep.Msg_Length := Excep.Msg_Length + 1;
+            Excep.Msg (Excep.Msg_Length) := Msg2 (Ptr);
+            Ptr := Ptr + 1;
+         end loop;
       end if;
    end Set_Exception_C_Msg;
 
@@ -1593,7 +2176,7 @@ package body Ada.Exceptions is
 
       procedure Next_String;
       --  On entry, To points to last character of previous line of the
-      --  message, terminated by CR/LF. On return, From .. To are set to
+      --  message, terminated by LF. On return, From .. To are set to
       --  specify the next string, or From > To if there are no more lines.
 
       procedure Bad_EO is
@@ -1605,15 +2188,15 @@ package body Ada.Exceptions is
 
       procedure Next_String is
       begin
-         From := To + 3;
+         From := To + 2;
 
          if From < S'Last then
             To := From + 1;
 
-            while To < S'Last - 2 loop
+            while To < S'Last - 1 loop
                if To >= S'Last then
                   Bad_EO;
-               elsif S (To + 1) = ASCII.CR then
+               elsif S (To + 1) = ASCII.LF then
                   exit;
                else
                   To := To + 1;
@@ -1631,7 +2214,7 @@ package body Ada.Exceptions is
       else
          X.Cleanup_Flag := False;
 
-         To := S'First - 3;
+         To := S'First - 2;
          Next_String;
 
          if S (From .. From + 15) /= "Exception name: " then
@@ -1885,8 +2468,14 @@ package body Ada.Exceptions is
    type int is new Integer;
 
    procedure Unhandled_Exception_Terminate is
-      Excep : constant EOA    := Get_Current_Excep.all;
-      Msg   : constant String := Exception_Message (Excep.all);
+
+      Excep : constant EOA := Save_Occurrence (Get_Current_Excep.all.all);
+      --  This occurrence will be used to display a message after finalization.
+      --  It is necessary to save a copy here, or else the designated value
+      --  could be overwritten if an exception is raised during finalization
+      --  (even if that exception is caught).
+
+      Msg : constant String := Exception_Message (Excep.all);
 
    --  Start of processing for Unhandled_Exception_Terminate
 

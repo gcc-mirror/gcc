@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.27 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1996-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,6 @@ with Gnatvsn;
 procedure GNATprep is
    pragma Ident (Gnatvsn.Gnat_Version_String);
 
-   Version_String : constant String := "$Revision: 1.27 $";
-
    type Strptr is access String;
 
    Usage_Error : exception;
@@ -58,12 +56,23 @@ procedure GNATprep is
    -- Argument Line Data --
    ------------------------
 
-   Infile_Name  : Strptr;
    Outfile_Name : Strptr;
    Deffile_Name : Strptr;
    --  Names of files
 
-   Infile  : File_Type;
+   type Input;
+   type Input_Ptr is access Input;
+   type Input is record
+      File     : File_Type;
+      Next     : Input_Ptr;
+      Prev     : Input_Ptr;
+      Name     : Strptr;
+      Line_Num : Natural := 0;
+   end record;
+   --  Data for the current input file (main input file or included file
+   --  or definition file).
+
+   Infile  : Input_Ptr := new Input;
    Outfile : File_Type;
    Deffile : File_Type;
 
@@ -100,15 +109,13 @@ procedure GNATprep is
    Line_Length : Natural;
    --  Length of line in Line_Buffer
 
-   Line_Num : Natural;
-   --  Current input file line number
-
    Ptr : Natural;
    --  Input scan pointer for line in Line_Buffer
 
    type Keyword is (K_Not, K_Then, K_If, K_Else, K_End, K_Elsif,
                     K_And, K_Or, K_Open_Paren, K_Close_Paren,
-                    K_Defined, K_Andthen, K_Orelse, K_Equal, K_None);
+                    K_Defined, K_Andthen, K_Orelse, K_Equal, K_Include,
+                    K_None);
    --  Keywords that are recognized on preprocessor lines. K_None indicates
    --  that no keyword was present.
 
@@ -131,6 +138,9 @@ procedure GNATprep is
       If_Line : Positive;
       --  Line number for #if line
 
+      If_Name : Strptr;
+      --  File name of #if line
+
       Else_Line : Natural;
       --  Line number for #else line, zero = no else seen yet
 
@@ -141,6 +151,7 @@ procedure GNATprep is
       --  True if either the #if condition or one of the previously seen
       --  #elsif lines was true, meaning that any future #elsif sections
       --  or the #else section, is to be deleted.
+
    end record;
 
    PP_Depth : Natural;
@@ -162,7 +173,7 @@ procedure GNATprep is
 
    procedure Error (Msg : String);
    --  Post error message with given text. The line number is taken from
-   --  Line_Num, and the column number from Ptr.
+   --  Infile.Line_Num, and the column number from Ptr.
 
    function Eval_Condition
      (Parenthesis : Natural := 0;
@@ -183,6 +194,9 @@ procedure GNATprep is
 
    procedure Help_Page;
    --  Print a help page to summarize the usage of gnatprep
+
+   function Image (N : Natural) return String;
+   --  Returns Natural'Image (N) without the initial space
 
    function Is_Preprocessor_Line return Boolean;
    --  Tests if current line is a preprocessor line, i.e. that its first
@@ -244,7 +258,7 @@ procedure GNATprep is
    -----------
 
    procedure Error (Msg : String) is
-      L : constant String := Natural'Image (Line_Num);
+      L : constant String := Natural'Image (Infile.Line_Num);
       C : constant String := Natural'Image (Ptr);
 
    begin
@@ -419,6 +433,7 @@ procedure GNATprep is
          when K_Equal =>
 
             --  Read the second part of the statement
+
             Skip_Spaces;
             Start_Sym := Ptr;
 
@@ -510,9 +525,9 @@ procedure GNATprep is
    procedure Help_Page is
    begin
       Put_Line (Standard_Error,
-                "GNAT Preprocessor Version " &
-                Version_String (12 .. 15) &
-                " Copyright 1996-2001 Free Software Foundation, Inc.");
+                "GNAT Preprocessor " &
+                Gnatvsn.Gnat_Version_String &
+                " Copyright 1996-2002 Free Software Foundation, Inc.");
       Put_Line (Standard_Error,
                 "Usage: gnatprep [-bcrsu] [-Dsymbol=value] infile " &
                 "outfile [deffile]");
@@ -532,6 +547,16 @@ procedure GNATprep is
       Put_Line (Standard_Error, "   -u  Treat undefined symbols as FALSE");
       New_Line (Standard_Error);
    end Help_Page;
+
+   -----------
+   -- Image --
+   -----------
+
+   function Image (N : Natural) return String is
+      Result : constant String := Natural'Image (N);
+   begin
+      return Result (Result'First + 1 .. Result'Last);
+   end Image;
 
    --------------------------
    -- Is_Preprocessor_Line --
@@ -654,14 +679,16 @@ procedure GNATprep is
    begin
       Open (Deffile, In_File, Deffile_Name.all);
 
-      Line_Num := 0;
+      --  Initialize data for procedure Error
+
+      Infile.Line_Num := 0;
       Current_File_Name := Deffile_Name;
 
       --  Loop through lines in symbol definitions file
 
       while not End_Of_File (Deffile) loop
          Get_Line (Deffile, Line_Buffer, Line_Length);
-         Line_Num := Line_Num + 1;
+         Infile.Line_Num := Infile.Line_Num + 1;
 
          Ptr := 1;
          Skip_Spaces;
@@ -825,6 +852,9 @@ procedure GNATprep is
 
             elsif Matching_Strings (Sym, "'defined") then
                return K_Defined;
+
+            elsif Matching_Strings (Sym, "include") then
+               return K_Include;
 
             elsif Sym = "(" then
                return K_Open_Paren;
@@ -991,8 +1021,8 @@ begin
       begin
          exit when S'Length = 0;
 
-         if Infile_Name = null then
-            Infile_Name := new String'(S);
+         if Infile.Name = null then
+            Infile.Name := new String'(S);
          elsif Outfile_Name = null then
             Outfile_Name := new String'(S);
          elsif Deffile_Name = null then
@@ -1005,7 +1035,7 @@ begin
 
    --  Test we had all the arguments needed
 
-   if Infile_Name = null
+   if Infile.Name = null
      or else Outfile_Name = null
    then
       raise Usage_Error;
@@ -1111,11 +1141,11 @@ begin
    --  Open files and initialize preprocessing
 
    begin
-      Open (Infile,  In_File,  Infile_Name.all);
+      Open (Infile.File,  In_File,  Infile.Name.all);
 
    exception
       when Name_Error =>
-         Put_Line (Standard_Error, "cannot open " & Infile_Name.all);
+         Put_Line (Standard_Error, "cannot open " & Infile.Name.all);
          raise Fatal_Error;
    end;
 
@@ -1128,22 +1158,34 @@ begin
          raise Fatal_Error;
    end;
 
-   if Source_Ref_Pragma then
-      Put_Line
-        (Outfile, "pragma Source_Reference (1, """ & Infile_Name.all & """);");
-   end if;
-
-   Line_Num := 0;
-   Current_File_Name := Infile_Name;
+   Infile.Line_Num := 0;
+   Current_File_Name := Infile.Name;
 
    PP_Depth := 0;
    PP (0).Deleting := False;
 
+   --  We return here after we start reading an include file and after
+   --  we have finished reading an include file.
+
+   <<Read_In_File>>
+
+   --  If we generate Source_Reference pragmas, then generate one
+   --  either with line number 1 for a newly included file, or
+   --  with the number of the next line when we have returned to the
+   --  including file.
+
+   if Source_Ref_Pragma then
+      Put_Line
+        (Outfile, "pragma Source_Reference (" &
+           Image (Infile.Line_Num + 1) &
+           ", """ & Infile.Name.all & """);");
+   end if;
+
    --  Loop through lines in input file
 
-   while not End_Of_File (Infile) loop
-      Get_Line (Infile, Line_Buffer, Line_Length);
-      Line_Num := Line_Num + 1;
+   while not End_Of_File (Infile.File) loop
+      Get_Line (Infile.File, Line_Buffer, Line_Length);
+      Infile.Line_Num := Infile.Line_Num + 1;
 
       --  Handle preprocessor line
 
@@ -1151,6 +1193,112 @@ begin
          K := Scan_Keyword;
 
          case K is
+
+            --  Include file
+
+            when K_Include =>
+               --  Ignore if Deleting is True
+
+               if PP (PP_Depth).Deleting then
+                  goto Output;
+               end if;
+
+               Skip_Spaces;
+
+               if Ptr >= Line_Length then
+                  Error ("no file to include");
+
+               elsif Line_Buffer (Ptr) /= '"' then
+                  Error
+                    ("file to include must be specified as a literal string");
+
+               else
+                  declare
+                     Start_File : constant Positive := Ptr + 1;
+
+                  begin
+                     Ptr := Line_Length;
+
+                     while Line_Buffer (Ptr) = ' '
+                       or else Line_Buffer (Ptr) = ASCII.HT
+                     loop
+                        Ptr := Ptr - 1;
+                     end loop;
+
+                     if Ptr <= Start_File
+                       or else Line_Buffer (Ptr) /= '"'
+                     then
+                        Error ("no string literal for included file");
+
+                     else
+                        if Infile.Next = null then
+                           Infile.Next := new Input;
+                           Infile.Next.Prev := Infile;
+                        end if;
+
+                        Infile := Infile.Next;
+                        Infile.Name :=
+                          new String'(Line_Buffer (Start_File .. Ptr - 1));
+
+                        --  Check for circularity: an file including itself,
+                        --  either directly or indirectly.
+
+                        declare
+                           File : Input_Ptr := Infile.Prev;
+
+                        begin
+                           while File /= null
+                             and then File.Name.all /= Infile.Name.all
+                           loop
+                              File := File.Prev;
+                           end loop;
+
+                           if File /= null then
+                              Infile := Infile.Prev;
+                              Error ("circularity in included files");
+
+                              while File.Prev /= null loop
+                                 File := File.Prev;
+                              end loop;
+
+                              while File /= Infile.Next loop
+                                 Error ('"' & File.Name.all &
+                                          """ includes """ &
+                                          File.Next.Name.all & '"');
+                                 File := File.Next;
+                              end loop;
+
+                           else
+                              --  We have a file name and no circularity.
+                              --  Open the file and record an error if the
+                              --  file cannot be opened.
+
+                              begin
+                                 Open (Infile.File, In_File, Infile.Name.all);
+                                 Current_File_Name := Infile.Name;
+                                 Infile.Line_Num := 0;
+
+                                 --  If we use Source_Reference pragma,
+                                 --  we need to output one for this new file.
+                                 goto Read_In_File;
+
+                              exception
+                                 when Name_Error =>
+
+                                    --  We need to set the input file to
+                                    --  the including file, so that the
+                                    --  line number is correct when reporting
+                                    --  the error.
+
+                                    Infile := Infile.Prev;
+                                    Error ("cannot open """ &
+                                             Infile.Next.Name.all & '"');
+                              end;
+                           end if;
+                        end;
+                     end if;
+                  end;
+               end if;
 
             --  If/Elsif processing
 
@@ -1165,7 +1313,8 @@ begin
                if K = K_If then
                   PP_Depth := PP_Depth + 1;
                   PP (PP_Depth) :=
-                    (If_Line    => Line_Num,
+                    (If_Line    => Infile.Line_Num,
+                     If_Name    => Infile.Name,
                      Else_Line  => 0,
                      Deleting   => False,
                      Match_Seen => PP (PP_Depth - 1).Deleting);
@@ -1202,7 +1351,7 @@ begin
                           ")");
 
                else
-                  PP (PP_Depth).Else_Line := Line_Num;
+                  PP (PP_Depth).Else_Line := Infile.Line_Num;
                   PP (PP_Depth).Deleting := PP (PP_Depth).Match_Seen;
                end if;
 
@@ -1356,9 +1505,25 @@ begin
       end if;
    end loop;
 
+   --  If we have finished reading an included file, close it and continue
+   --  with the next line of the including file.
+
+   if Infile.Prev /= null then
+      Close (Infile.File);
+      Infile := Infile.Prev;
+      Current_File_Name := Infile.Name;
+      goto Read_In_File;
+   end if;
+
    for J in 1 .. PP_Depth loop
-      Error ("no matching #end for #if at line" &
-             Natural'Image (PP (J).If_Line));
+      if PP (J).If_Name = Infile.Name then
+         Error ("no matching #end for #if at line" &
+                Natural'Image (PP (J).If_Line));
+      else
+         Error ("no matching #end for #if at line" &
+                Natural'Image (PP (J).If_Line) &
+                " of file """ & PP (J).If_Name.all & '"');
+      end if;
    end loop;
 
    if Num_Errors = 0 then

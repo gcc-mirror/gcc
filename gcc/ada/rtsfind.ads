@@ -158,7 +158,6 @@ package Rtsfind is
       System_Checked_Pools,
       System_Exception_Table,
       System_Exceptions,
-      System_Delay_Operations,
       System_Exn_Flt,
       System_Exn_Int,
       System_Exn_LFlt,

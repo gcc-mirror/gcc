@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.2 $
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -40,7 +39,7 @@
 --  Note : This file *must* be compiled with debugging information
 
 --  Do not add any dependency to GNARL packages since this package is used
---  in both normal and resticted (ravenscar) environments.
+--  in both normal and restricted (ravenscar) environments.
 
 with System.Task_Info,
      System.Task_Primitives.Operations,
@@ -53,17 +52,11 @@ package body System.Tasking.Debug is
    package STPO renames System.Task_Primitives.Operations;
 
    type Integer_Address is mod 2 ** Standard'Address_Size;
-   type Integer_Address_Ptr is access all Integer_Address;
-
-   function "+" is new
-     Unchecked_Conversion (System.Address, Integer_Address_Ptr);
 
    function "+" is new
      Unchecked_Conversion (Task_ID, Integer_Address);
 
    Hex_Address_Width : constant := (Standard'Address_Size / 4);
-
-   Zero_Pos : constant := Character'Pos ('0');
 
    Hex_Digits : constant array (0 .. Integer_Address'(15)) of Character :=
                   "0123456789abcdef";
@@ -499,7 +492,7 @@ package body System.Tasking.Debug is
       R : Boolean;
 
    begin
-      STPO.Lock_All_Tasks_List;
+      STPO.Lock_RTS;
       C := All_Tasks_List;
 
       while C /= null loop
@@ -507,7 +500,7 @@ package body System.Tasking.Debug is
          C := C.Common.All_Tasks_Link;
       end loop;
 
-      STPO.Unlock_All_Tasks_List;
+      STPO.Unlock_RTS;
    end Resume_All_Tasks;
 
    ----------
@@ -580,7 +573,7 @@ package body System.Tasking.Debug is
       R : Boolean;
 
    begin
-      STPO.Lock_All_Tasks_List;
+      STPO.Lock_RTS;
       C := All_Tasks_List;
 
       while C /= null loop
@@ -588,7 +581,7 @@ package body System.Tasking.Debug is
          C := C.Common.All_Tasks_Link;
       end loop;
 
-      STPO.Unlock_All_Tasks_List;
+      STPO.Unlock_RTS;
    end Suspend_All_Tasks;
 
    ------------------------
@@ -682,6 +675,8 @@ package body System.Tasking.Debug is
       Other_ID : ST.Task_ID;
       Flag     : Character)
    is
+      pragma Warnings (Off, Other_ID);
+
       Self_ID : constant ST.Task_ID := STPO.Self;
 
    begin

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,10 +98,6 @@ package body Exp_Ch9 is
    --  Decls. This object pointer is initialized to a type conversion
    --  of the System.Address pointer passed to entry barrier functions
    --  and entry body procedures.
-
-   function Array_Type (E : Entity_Id; Trec : Node_Id) return Entity_Id;
-   --  Find the array type associated with an entry family in the
-   --  associated record for the task type.
 
    function Build_Accept_Body (Astat : Node_Id) return  Node_Id;
    --  Transform accept statement into a block with added exception handler.
@@ -591,31 +587,6 @@ package body Exp_Ch9 is
       end;
 
    end Add_Private_Declarations;
-
-   ----------------
-   -- Array_Type --
-   ----------------
-
-   function Array_Type (E : Entity_Id; Trec : Node_Id) return Entity_Id is
-      Arr : Entity_Id := First_Component (Trec);
-
-   begin
-      while Present (Arr) loop
-         exit when Ekind (Arr) = E_Component
-           and then Is_Array_Type (Etype (Arr))
-           and then Chars (Arr) = Chars (E);
-
-         Next_Component (Arr);
-      end loop;
-
-      --  This used to return Arr itself, but this caused problems
-      --  when used in expanding a protected type, possibly because
-      --  the record of which it is a component is not frozen yet.
-      --  I am going to try the type instead. This may pose visibility
-      --  problems. ???
-
-      return Etype (Arr);
-   end Array_Type;
 
    -----------------------
    -- Build_Accept_Body --
@@ -3283,7 +3254,7 @@ package body Exp_Ch9 is
          Update_Prival_Subtypes (B_F);
 
          Set_Privals (Spec_Decl, N, Loc);
-         Set_Discriminals (Spec_Decl, N, Loc);
+         Set_Discriminals (Spec_Decl);
          Set_Scope (Func, Scope (Prot));
       else
          Analyze (Cond);
@@ -4408,7 +4379,7 @@ package body Exp_Ch9 is
 
       if Present (Next_Op) then
          Set_Privals (Dec, Next_Op, Loc);
-         Set_Discriminals (Dec, Next_Op, Loc);
+         Set_Discriminals (Dec);
       end if;
 
    end Expand_N_Entry_Body;
@@ -5793,7 +5764,8 @@ package body Exp_Ch9 is
              Condition => Make_Op_Eq (Loc,
                Left_Opnd  => New_Reference_To (Xnam, Loc),
                Right_Opnd =>
-                 New_Reference_To (RTE (RE_No_Rendezvous), Loc))));
+                 New_Reference_To (RTE (RE_No_Rendezvous), Loc)),
+             Reason => PE_All_Guards_Closed));
 
          return Stats;
       end Accept_Or_Raise;
@@ -6756,6 +6728,17 @@ package body Exp_Ch9 is
       New_N : Node_Id;
 
    begin
+      --  Do not attempt expansion if in no run time mode
+
+      if No_Run_Time
+        and then not Restricted_Profile
+      then
+         Disallow_In_No_Run_Time_Mode (N);
+         return;
+      end if;
+
+      --  Here we start the expansion by generating discriminal declarations
+
       Add_Discriminal_Declarations (Declarations (N), Ttyp, Name_uTask, Loc);
 
       --  Add a call to Abort_Undefer at the very beginning of the task
@@ -6922,26 +6905,36 @@ package body Exp_Ch9 is
       Tasktyp   : constant Entity_Id  := Etype (Defining_Identifier (N));
       Tasknm    : constant Name_Id    := Chars (Tasktyp);
       Taskdef   : constant Node_Id    := Task_Definition (N);
-      Proc_Spec : Node_Id;
 
+      Proc_Spec : Node_Id;
       Rec_Decl  : Node_Id;
       Rec_Ent   : Entity_Id;
       Cdecls    : List_Id;
-
       Elab_Decl : Node_Id;
       Size_Decl : Node_Id;
       Body_Decl : Node_Id;
 
    begin
-      if Present (Corresponding_Record_Type (Tasktyp)) then
+      --  Do not attempt expansion if in no run time mode
+
+      if No_Run_Time
+        and then not Restricted_Profile
+      then
+         Disallow_In_No_Run_Time_Mode (N);
          return;
 
-      else
-         Rec_Decl := Build_Corresponding_Record (N, Tasktyp, Loc);
-         Rec_Ent  := Defining_Identifier (Rec_Decl);
-         Cdecls   := Component_Items
-                        (Component_List (Type_Definition (Rec_Decl)));
+      --  If already expanded, nothing to do
+
+      elsif Present (Corresponding_Record_Type (Tasktyp)) then
+         return;
       end if;
+
+      --  Here we will do the expansion
+
+      Rec_Decl := Build_Corresponding_Record (N, Tasktyp, Loc);
+      Rec_Ent  := Defining_Identifier (Rec_Decl);
+      Cdecls   := Component_Items (Component_List
+                                     (Type_Definition (Rec_Decl)));
 
       Qualify_Entity_Names (N);
 
@@ -6994,7 +6987,7 @@ package body Exp_Ch9 is
       --  This is done last, since the corresponding record initialization
       --  procedure will reference the previously created entities.
 
-      --  Fill in the component declarations. First the _Task_Id field:
+      --  Fill in the component declarations. First the _Task_Id field.
 
       Append_To (Cdecls,
         Make_Component_Declaration (Loc,
@@ -7116,7 +7109,7 @@ package body Exp_Ch9 is
       --  Complete the expansion of access types to the current task
       --  type, if any were declared.
 
-      Expand_Previous_Access_Type (N, Tasktyp);
+      Expand_Previous_Access_Type (Tasktyp);
    end Expand_N_Task_Type_Declaration;
 
    -------------------------------
@@ -7462,7 +7455,7 @@ package body Exp_Ch9 is
          Op := First_Protected_Operation (Declarations (N));
 
          if Present (Op) then
-            Set_Discriminals (Parent (Spec_Id), Op, Sloc (N));
+            Set_Discriminals (Parent (Spec_Id));
             Set_Privals (Parent (Spec_Id), Op, Sloc (N));
          end if;
       end if;
@@ -8268,11 +8261,7 @@ package body Exp_Ch9 is
    -- Set_Discriminals --
    ----------------------
 
-   procedure Set_Discriminals
-     (Dec : Node_Id;
-      Op  : Node_Id;
-      Loc : Source_Ptr)
-   is
+   procedure Set_Discriminals (Dec : Node_Id) is
       D       : Entity_Id;
       Pdef    : Entity_Id;
       D_Minal : Entity_Id;
@@ -8495,6 +8484,21 @@ package body Exp_Ch9 is
            and then Is_Array_Type (Etype (Defining_Identifier (N)))
          then
             Update_Array_Bounds (Etype (Defining_Identifier (N)));
+            return OK;
+
+         --  For array components of discriminated records, use the
+         --  base type directly, because it may depend indirectly
+         --  on the discriminants of the protected type. Cleaner would
+         --  be a systematic mechanism to compute actual subtypes of
+         --  private components ???
+
+         elsif Nkind (N) in N_Has_Etype
+           and then Present (Etype (N))
+           and then Is_Array_Type (Etype (N))
+           and then Nkind (N) = N_Selected_Component
+           and then Has_Discriminants (Etype (Prefix (N)))
+         then
+            Set_Etype (N, Base_Type (Etype (N)));
             return OK;
 
          else

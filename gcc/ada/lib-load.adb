@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.86 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -36,12 +36,14 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Osint;    use Osint;
+with Osint.C;  use Osint.C;
 with Output;   use Output;
 with Par;
 with Scn;      use Scn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uname;    use Uname;
 
@@ -241,9 +243,25 @@ package body Lib.Load is
       --  to inline stuff from it. If this is not the case, an error
       --  message will be issued in Rtsfind in any case.
 
+      ------------------------------
+      -- Set_Load_Unit_Dependency --
+      ------------------------------
+
       procedure Set_Load_Unit_Dependency (U : Unit_Number_Type) is
       begin
+         --  Differentiate between pragma No_Run_Time (that can be used
+         --  with a standard installation), and HI-E mode which comes
+         --  with a special installation.
+         --
+         --  For No_Run_Time mode, we do not want to create a dependency
+         --  since the binder would generate references to these units.
+         --  In the case of HI-E, a special run time is provided that do
+         --  not have any elaboration, so it is safe (and useful) to add
+         --  the dependency. In particular, this allows the user to
+         --  recompile run time units, e.g GNAT.IO.
+
          if No_Run_Time
+           and then not High_Integrity_Mode_On_Target
            and then Is_Internal_File_Name (Unit_File_Name (U))
          then
             null;

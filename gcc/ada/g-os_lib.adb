@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,10 +58,15 @@ package body GNAT.OS_Lib is
       Result       : out Integer;
       Pid          : out Process_Id;
       Blocking     : Boolean);
-   --  Internal routine to implement the to Spawn (blocking and non blocking)
+   --  Internal routine to implement the two Spawn (blocking/non blocking)
    --  routines. If Blocking is set to True then the spawn is blocking
    --  otherwise it is non blocking. In this latter case the Pid contains
    --  the process id number. The first three parameters are as in Spawn.
+   --  Note that Spawn_Internal normalizes the argument list before calling
+   --  the low level system spawn routines (see Normalize_Arguments). Note
+   --  that Normalize_Arguments is designed to do nothing if it is called
+   --  more than once, so calling Normalize_Arguments before calling one
+   --  of the spawn routines is fine.
 
    function To_Path_String_Access
      (Path_Addr : Address;
@@ -103,31 +108,31 @@ package body GNAT.OS_Lib is
 
       loop
          declare
-            Quoted   : Boolean := False;
-            Backqd   : Boolean := False;
-            Old_Idx  : Integer;
+            Quoted  : Boolean := False;
+            Backqd  : Boolean := False;
+            Old_Idx : Integer;
 
          begin
             Old_Idx := Idx;
 
             loop
-               --  A vanilla space is the end of an argument
+               --  An unquoted space is the end of an argument
 
-               if not Backqd and then not Quoted
+               if not (Backqd or Quoted)
                  and then Arg_String (Idx) = ' '
                then
                   exit;
 
                --  Start of a quoted string
 
-               elsif not Backqd and then not Quoted
+               elsif not (Backqd or Quoted)
                  and then Arg_String (Idx) = '"'
                then
                   Quoted := True;
 
                --  End of a quoted string and end of an argument
 
-               elsif not Backqd and then Quoted
+               elsif (Quoted and not Backqd)
                  and then Arg_String (Idx) = '"'
                then
                   Idx := Idx + 1;
@@ -319,6 +324,25 @@ package body GNAT.OS_Lib is
       F_Name (F_Name'Last)      := ASCII.NUL;
       return File_Time_Stamp (F_Name'Address);
    end File_Time_Stamp;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Arg : in out String_List_Access) is
+      X : String_Access;
+
+      procedure Free_Array is new Unchecked_Deallocation
+        (Object => String_List, Name => String_List_Access);
+
+   begin
+      for J in Arg'Range loop
+         X := Arg (J);
+         Free (X);
+      end loop;
+
+      Free_Array (Arg);
+   end Free;
 
    ---------------------------
    -- Get_Debuggable_Suffix --
@@ -768,6 +792,82 @@ package body GNAT.OS_Lib is
       return Pid;
    end Non_Blocking_Spawn;
 
+   -------------------------
+   -- Normalize_Arguments --
+   -------------------------
+
+   procedure Normalize_Arguments (Args : in out Argument_List) is
+
+      procedure Quote_Argument (Arg : in out String_Access);
+      --  Add quote around argument if it contains spaces.
+
+      Argument_Needs_Quote : Boolean;
+      pragma Import (C, Argument_Needs_Quote, "__gnat_argument_needs_quote");
+
+      --------------------
+      -- Quote_Argument --
+      --------------------
+
+      procedure Quote_Argument (Arg : in out String_Access) is
+         Res          : String (1 .. Arg'Length * 2);
+         J            : Positive := 1;
+         Quote_Needed : Boolean  := False;
+
+      begin
+         if Arg (Arg'First) /= '"' or else Arg (Arg'Last) /= '"' then
+
+            --  Starting quote
+
+            Res (J) := '"';
+
+            for K in Arg'Range loop
+
+               J := J + 1;
+
+               if Arg (K) = '"' then
+                  Res (J) := '\';
+                  J := J + 1;
+                  Res (J) := '"';
+
+               elsif Arg (K) = ' ' then
+                  Res (J) := Arg (K);
+                  Quote_Needed := True;
+
+               else
+                  Res (J) := Arg (K);
+               end if;
+
+            end loop;
+
+            if Quote_Needed then
+
+               --  Ending quote
+
+               J := J + 1;
+               Res (J) := '"';
+
+               declare
+                  Old : String_Access := Arg;
+
+               begin
+                  Arg := new String'(Res (1 .. J));
+                  Free (Old);
+               end;
+            end if;
+
+         end if;
+      end Quote_Argument;
+
+   begin
+      if Argument_Needs_Quote then
+         for K in Args'Range loop
+            if Args (K) /= null then
+               Quote_Argument (Args (K));
+            end if;
+         end loop;
+      end if;
+   end Normalize_Arguments;
+
    ------------------------
    -- Normalize_Pathname --
    ------------------------
@@ -875,6 +975,10 @@ package body GNAT.OS_Lib is
 
       Reference_Dir : constant String := Get_Directory;
       --  Current directory name specified
+
+      -----------------
+      -- Final_Value --
+      -----------------
 
       function Final_Value (S : String) return String is
       begin
@@ -1280,74 +1384,109 @@ package body GNAT.OS_Lib is
       Pid          : out Process_Id;
       Blocking     : Boolean)
    is
-      type Chars is array (Positive range <>) of aliased Character;
-      type Char_Ptr is access constant Character;
 
-      Command_Len : constant Positive := Program_Name'Length + 1
-                                           + Args_Length (Args);
-      Command_Last : Natural := 0;
-      Command : aliased Chars (1 .. Command_Len);
-      --  Command contains all characters of the Program_Name and Args,
-      --  all terminated by ASCII.NUL characters
+      procedure Spawn (Args : Argument_List);
+      --  Call Spawn.
 
-      Arg_List_Len : constant Positive := Args'Length + 2;
-      Arg_List_Last : Natural := 0;
-      Arg_List : aliased array (1 .. Arg_List_Len) of Char_Ptr;
-      --  List with pointers to NUL-terminated strings of the
-      --  Program_Name and the Args and terminated with a null pointer.
-      --  We rely on the default initialization for the last null pointer.
+      N_Args : Argument_List (Args'Range);
+      --  Normalized arguments
 
-      procedure Add_To_Command (S : String);
-      --  Add S and a NUL character to Command, updating Last
+      -----------
+      -- Spawn --
+      -----------
 
-      function Portable_Spawn (Args : Address) return Integer;
-      pragma Import (C, Portable_Spawn, "__gnat_portable_spawn");
+      procedure Spawn (Args : Argument_List) is
+         type Chars is array (Positive range <>) of aliased Character;
+         type Char_Ptr is access constant Character;
 
-      function Portable_No_Block_Spawn (Args : Address) return Process_Id;
-      pragma Import
-        (C, Portable_No_Block_Spawn, "__gnat_portable_no_block_spawn");
+         Command_Len : constant Positive := Program_Name'Length + 1
+                                              + Args_Length (Args);
+         Command_Last : Natural := 0;
+         Command : aliased Chars (1 .. Command_Len);
+         --  Command contains all characters of the Program_Name and Args,
+         --  all terminated by ASCII.NUL characters
 
-      --------------------
-      -- Add_To_Command --
-      --------------------
+         Arg_List_Len : constant Positive := Args'Length + 2;
+         Arg_List_Last : Natural := 0;
+         Arg_List : aliased array (1 .. Arg_List_Len) of Char_Ptr;
+         --  List with pointers to NUL-terminated strings of the
+         --  Program_Name and the Args and terminated with a null pointer.
+         --  We rely on the default initialization for the last null pointer.
 
-      procedure Add_To_Command (S : String) is
-         First : constant Natural := Command_Last + 1;
+         procedure Add_To_Command (S : String);
+         --  Add S and a NUL character to Command, updating Last
+
+         function Portable_Spawn (Args : Address) return Integer;
+         pragma Import (C, Portable_Spawn, "__gnat_portable_spawn");
+
+         function Portable_No_Block_Spawn (Args : Address) return Process_Id;
+         pragma Import
+           (C, Portable_No_Block_Spawn, "__gnat_portable_no_block_spawn");
+
+         --------------------
+         -- Add_To_Command --
+         --------------------
+
+         procedure Add_To_Command (S : String) is
+            First : constant Natural := Command_Last + 1;
+
+         begin
+            Command_Last := Command_Last + S'Length;
+
+            --  Move characters one at a time, because Command has
+            --  aliased components.
+
+            for J in S'Range loop
+               Command (First + J - S'First) := S (J);
+            end loop;
+
+            Command_Last := Command_Last + 1;
+            Command (Command_Last) := ASCII.NUL;
+
+            Arg_List_Last := Arg_List_Last + 1;
+            Arg_List (Arg_List_Last) := Command (First)'Access;
+         end Add_To_Command;
+
+      --  Start of processing for Spawn
 
       begin
-         Command_Last := Command_Last + S'Length;
+         Add_To_Command (Program_Name);
 
-         --  Move characters one at a time, because Command has
-         --  aliased components.
-
-         for J in S'Range loop
-            Command (First + J - S'First) := S (J);
+         for J in Args'Range loop
+            Add_To_Command (Args (J).all);
          end loop;
 
-         Command_Last := Command_Last + 1;
-         Command (Command_Last) := ASCII.NUL;
-
-         Arg_List_Last := Arg_List_Last + 1;
-         Arg_List (Arg_List_Last) := Command (First)'Access;
-      end Add_To_Command;
+         if Blocking then
+            Pid     := Invalid_Pid;
+            Result  := Portable_Spawn (Arg_List'Address);
+         else
+            Pid     := Portable_No_Block_Spawn (Arg_List'Address);
+            Result  := Boolean'Pos (Pid /= Invalid_Pid);
+         end if;
+      end Spawn;
 
    --  Start of processing for Spawn_Internal
 
    begin
-      Add_To_Command (Program_Name);
+      --  Copy arguments into a local structure
 
-      for J in Args'Range loop
-         Add_To_Command (Args (J).all);
+      for K in N_Args'Range loop
+         N_Args (K) := new String'(Args (K).all);
       end loop;
 
-      if Blocking then
-         Pid     := Invalid_Pid;
-         Result  := Portable_Spawn (Arg_List'Address);
-      else
-         Pid     := Portable_No_Block_Spawn (Arg_List'Address);
-         Result  := Boolean'Pos (Pid /= Invalid_Pid);
-      end if;
+      --  Normalize those arguments
 
+      Normalize_Arguments (N_Args);
+
+      --  Call spawn using the normalized arguments
+
+      Spawn (N_Args);
+
+      --  Free arguments list
+
+      for K in N_Args'Range loop
+         Free (N_Args (K));
+      end loop;
    end Spawn_Internal;
 
    ---------------------------

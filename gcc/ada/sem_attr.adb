@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.7 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,6 @@ with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
 with Sem_Dist; use Sem_Dist;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -231,9 +230,6 @@ package body Sem_Attr is
       --  If the prefix type is an enumeration type, set all its literals
       --  as referenced, since the image function could possibly end up
       --  referencing any of the literals indirectly.
-
-      procedure Check_Enumeration_Type;
-      --  Verify that prefix of attribute N is an enumeration type
 
       procedure Check_Fixed_Point_Type;
       --  Verify that prefix of attribute N is a fixed type
@@ -444,6 +440,10 @@ package body Sem_Attr is
          elsif Is_Entity_Name (P)
            and then Is_Overloadable (Entity (P))
          then
+            if not Is_Library_Level_Entity (Entity (P)) then
+               Check_Restriction (No_Implicit_Dynamic_Code, P);
+            end if;
+
             Build_Access_Subprogram_Type (P);
             return;
 
@@ -453,7 +453,7 @@ package body Sem_Attr is
            and then Is_Overloadable (Entity (Selector_Name (P))))
          then
             if Ekind (Entity (Selector_Name (P))) = E_Entry then
-               Error_Attr ("Prefix of % attribute must be subprogram", P);
+               Error_Attr ("prefix of % attribute must be subprogram", P);
             end if;
 
             Build_Access_Subprogram_Type (Selector_Name (P));
@@ -942,19 +942,6 @@ package body Sem_Attr is
       end Check_Enum_Image;
 
       ----------------------------
-      -- Check_Enumeration_Type --
-      ----------------------------
-
-      procedure Check_Enumeration_Type is
-      begin
-         Check_Type;
-
-         if not Is_Enumeration_Type (P_Type) then
-            Error_Attr ("prefix of % attribute must be enumeration type", P);
-         end if;
-      end Check_Enumeration_Type;
-
-      ----------------------------
       -- Check_Fixed_Point_Type --
       ----------------------------
 
@@ -1342,7 +1329,7 @@ package body Sem_Attr is
          if not Is_Entity_Name (P)
            or else not Is_Type (Entity (P))
          then
-            Error_Attr (" prefix of % attribute must be generic type", N);
+            Error_Attr ("prefix of % attribute must be generic type", N);
 
          elsif Is_Generic_Actual_Type (Entity (P))
            or In_Instance
@@ -1352,12 +1339,12 @@ package body Sem_Attr is
          elsif Is_Generic_Type (Entity (P)) then
             if not Is_Indefinite_Subtype (Entity (P)) then
                Error_Attr
-                 (" prefix of % attribute must be indefinite generic type", N);
+                 ("prefix of % attribute must be indefinite generic type", N);
             end if;
 
          else
             Error_Attr
-              (" prefix of % attribute must be indefinite generic type", N);
+              ("prefix of % attribute must be indefinite generic type", N);
          end if;
 
          Set_Etype (N, Standard_Boolean);
@@ -1549,8 +1536,14 @@ package body Sem_Attr is
          --  applies to other entity-denoting expressions.
 
          if (Is_Entity_Name (P)) then
-            if Is_Subprogram (Entity (P))
-              or else Is_Object (Entity (P))
+            if Is_Subprogram (Entity (P)) then
+               if not Is_Library_Level_Entity (Entity (P)) then
+                  Check_Restriction (No_Implicit_Dynamic_Code, P);
+               end if;
+
+               Set_Address_Taken (Entity (P));
+
+            elsif Is_Object (Entity (P))
               or else Ekind (Entity (P)) = E_Label
             then
                Set_Address_Taken (Entity (P));
@@ -2144,12 +2137,33 @@ package body Sem_Attr is
             end if;
 
          elsif Nkind (P) = N_Indexed_Component then
-            Ent := Entity (Prefix (P));
+            if not Is_Entity_Name (Prefix (P))
+              or else  No (Entity (Prefix (P)))
+              or else Ekind (Entity (Prefix (P))) /= E_Entry_Family
+            then
+               if Nkind (Prefix (P)) = N_Selected_Component
+                 and then Present (Entity (Selector_Name (Prefix (P))))
+                 and then Ekind (Entity (Selector_Name (Prefix (P)))) =
+                                                             E_Entry_Family
+               then
+                  Error_Attr
+                    ("attribute % must apply to entry of current task", P);
 
-            if Ekind (Ent) /= E_Entry_Family then
-               Error_Attr ("invalid entry family name", P);
+               else
+                  Error_Attr ("invalid entry family name", P);
+               end if;
                return;
+
+            else
+               Ent := Entity (Prefix (P));
             end if;
+
+         elsif Nkind (P) = N_Selected_Component
+           and then Present (Entity (Selector_Name (P)))
+           and then Ekind (Entity (Selector_Name (P))) = E_Entry
+         then
+            Error_Attr
+              ("attribute % must apply to entry of current task", P);
 
          else
             Error_Attr ("invalid entry name", N);
@@ -2175,8 +2189,8 @@ package body Sem_Attr is
                   then
                      null;
                   else
-                     Error_Msg_N
-                       ("Count must apply to entry of current task", N);
+                     Error_Attr
+                       ("Attribute % must apply to entry of current task", N);
                   end if;
                end if;
 
@@ -2188,7 +2202,7 @@ package body Sem_Attr is
               and then Ekind (S) /= E_Entry
               and then Ekind (S) /= E_Entry_Family
             then
-               Error_Attr ("Count cannot appear in inner unit", N);
+               Error_Attr ("Attribute % cannot appear in inner unit", N);
 
             elsif Ekind (Scope (Ent)) = E_Protected_Type
               and then not Has_Completion (Scope (Ent))
@@ -2665,28 +2679,6 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Resolve (E2, P_Base_Type);
          Set_Etype (N, P_Base_Type);
-
-      ----------------------------
-      -- Max_Interrupt_Priority --
-      ----------------------------
-
-      when Attribute_Max_Interrupt_Priority =>
-         Standard_Attribute
-           (UI_To_Int
-             (Expr_Value
-               (Expression
-                 (Parent (RTE (RE_Max_Interrupt_Priority))))));
-
-      ------------------
-      -- Max_Priority --
-      ------------------
-
-      when Attribute_Max_Priority =>
-         Standard_Attribute
-           (UI_To_Int
-             (Expr_Value
-               (Expression
-                 (Parent (RTE (RE_Max_Priority))))));
 
       ----------------------------------
       -- Max_Size_In_Storage_Elements --
@@ -3314,20 +3306,6 @@ package body Sem_Attr is
          Set_Etype (N, Standard_Boolean);
          Check_Task_Prefix;
 
-      ----------
-      -- Tick --
-      ----------
-
-      when Attribute_Tick =>
-         Check_Standard_Prefix;
-         Rewrite (N,
-           Make_Real_Literal (Loc,
-             UR_From_Components (
-               Num   => UI_From_Int (Ttypes.System_Tick_Nanoseconds),
-               Den   => UI_From_Int (9),
-               Rbase => 10)));
-         Analyze (N);
-
       ----------------
       -- To_Address --
       ----------------
@@ -3794,7 +3772,7 @@ package body Sem_Attr is
 
          elsif Is_Out_Of_Range (N, T) then
             Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}?");
+              (N, "value not in range of}?", CE_Range_Check_Failed);
 
          elsif not Range_Checks_Suppressed (T) then
             Enable_Range_Check (N);
@@ -4404,7 +4382,8 @@ package body Sem_Attr is
 
       if Raises_Constraint_Error (N) then
          CE_Node :=
-           Make_Raise_Constraint_Error (Sloc (N));
+           Make_Raise_Constraint_Error (Sloc (N),
+             Reason => CE_Range_Check_Failed);
          Set_Etype (CE_Node, Etype (N));
          Set_Raises_Constraint_Error (CE_Node);
          Check_Expressions;
@@ -5261,7 +5240,7 @@ package body Sem_Attr is
                             Expr_Value (Type_Low_Bound (P_Base_Type))
                then
                   Apply_Compile_Time_Constraint_Error
-                    (N, "Pred of type''First");
+                    (N, "Pred of type''First", CE_Overflow_Check_Failed);
                   Check_Expressions;
                   return;
                end if;
@@ -5571,7 +5550,7 @@ package body Sem_Attr is
                             Expr_Value (Type_High_Bound (P_Base_Type))
                then
                   Apply_Compile_Time_Constraint_Error
-                    (N, "Succ of type''Last");
+                    (N, "Succ of type''Last", CE_Overflow_Check_Failed);
                   Check_Expressions;
                   return;
                else
@@ -5677,7 +5656,7 @@ package body Sem_Attr is
                 Expr_Value (E1) > Expr_Value (Type_High_Bound (P_Base_Type))
             then
                Apply_Compile_Time_Constraint_Error
-                 (N, "Val expression out of range");
+                 (N, "Val expression out of range", CE_Range_Check_Failed);
                Check_Expressions;
                return;
             else
@@ -5988,8 +5967,6 @@ package body Sem_Attr is
            Attribute_First_Bit                |
            Attribute_Input                    |
            Attribute_Last_Bit                 |
-           Attribute_Max_Interrupt_Priority   |
-           Attribute_Max_Priority             |
            Attribute_Maximum_Alignment        |
            Attribute_Output                   |
            Attribute_Partition_ID             |
@@ -6000,7 +5977,6 @@ package body Sem_Attr is
            Attribute_Storage_Unit             |
            Attribute_Tag                      |
            Attribute_Terminated               |
-           Attribute_Tick                     |
            Attribute_To_Address               |
            Attribute_UET_Address              |
            Attribute_Unchecked_Access         |
@@ -6262,6 +6238,7 @@ package body Sem_Attr is
                end if;
 
                Resolve (Prefix (P), Etype (Prefix (P)));
+               Generate_Reference (Entity (Selector_Name (P)), P);
 
             elsif Is_Overloaded (P) then
 
@@ -6423,7 +6400,9 @@ package body Sem_Attr is
                        ("?non-local pointer cannot point to local object", P);
                      Error_Msg_N
                        ("?Program_Error will be raised at run time", P);
-                     Rewrite (N, Make_Raise_Program_Error (Loc));
+                     Rewrite (N,
+                       Make_Raise_Program_Error (Loc,
+                         Reason => PE_Accessibility_Check_Failed));
                      Set_Etype (N, Typ);
                      return;
 

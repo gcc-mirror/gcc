@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.34 $                            --
+--                             $Revision$                            --
 --                                                                          --
---             Copyright (C) 1991-1998 Florida State University             --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -49,18 +48,24 @@ package System.Tasking.Utilities is
    ---------------------------------
 
    procedure Make_Independent;
-   --  Move the current task to the outermost level (level 1) of the master
-   --  master hierarchy of the environment task. This is one level further
-   --  out than normal tasks defined in library-level packages (level 2).
-   --  The environment task will wait for level 2 tasks to terminate normally,
-   --  then it will abort all the level 1 tasks. See Finalize_Global_Tasks
+   --  Move the current task to the outermost level (level 2) of the master
+   --  hierarchy of the environment task. That is one level further out
+   --  than normal tasks defined in library-level packages (level 3). The
+   --  environment task will wait for level 3 tasks to terminate normally,
+   --  then it will abort all the level 2 tasks. See Finalize_Global_Tasks
    --  procedure for more information.
    --
    --  This is a dangerous operation, and should only be used on nested tasks
    --  or tasks that depend on any objects that might be finalized earlier than
-   --  the termination of the environment task. It is for internal use by
-   --  GNARL, to prevent such internal server tasks from preventing a
-   --  partition from terminating.
+   --  the termination of the environment task. It is for internal use by the
+   --  GNARL, to prevent such internal server tasks from preventing a partition
+   --  from terminating.
+   --
+   --  Also note that the run time assumes that the parent of an independent
+   --  task is the environment task. If this is not the case, Make_Independent
+   --  will change the task's parent. This assumption is particularly
+   --  important for master level completion and for the computation of
+   --  Independent_Task_Count.
 
    Independent_Task_Count : Natural := 0;
    --  Number of independent task. This counter is incremented each time
@@ -75,7 +80,7 @@ package System.Tasking.Utilities is
 
    procedure Cancel_Queued_Entry_Calls (T : Task_ID);
    --  Cancel any entry calls queued on target task.
-   --  Do not call this while holding any locks.
+   --  Call this while holding T's lock (or RTS_Lock in Single_Lock mode).
 
    procedure Exit_One_ATC_Level (Self_ID : Task_ID);
    pragma Inline (Exit_One_ATC_Level);
@@ -83,9 +88,7 @@ package System.Tasking.Utilities is
    --  This is a bit of common code for all entry calls.
    --  The effect is to exit one level of ATC nesting.
 
-   procedure Abort_One_Task
-     (Self_ID : Task_ID;
-      T       : Task_ID);
+   procedure Abort_One_Task (Self_ID : Task_ID; T : Task_ID);
    --  Similar to Locked_Abort_To_Level (Self_ID, T, 0), but:
    --    (1) caller should be holding no locks
    --    (2) may be called for tasks that have not yet been activated
@@ -95,10 +98,10 @@ package System.Tasking.Utilities is
    --  Abort_Tasks is called to initiate abortion, however, the actual
    --  abortion is done by abortee by means of Abort_Handler
 
-   procedure Make_Passive
-     (Self_ID : Task_ID;
-      Task_Completed : Boolean);
+   procedure Make_Passive (Self_ID : Task_ID; Task_Completed : Boolean);
    --  Update counts to indicate current task is either terminated
-   --  or accepting on a terminate alternative. Call holding no locks.
+   --  or accepting on a terminate alternative.
+   --  Call holding no locks except Global_Task_Lock when calling from
+   --  Terminate_Task, and RTS_Lock when Single_Lock is True.
 
 end System.Tasking.Utilities;

@@ -93,6 +93,13 @@ package body Sem_Ch10 is
    --  N is the compilation unit whose list of context items receives the
    --  implicit with_clauses.
 
+   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id;
+   --  Get defining entity of parent unit of a child unit. In most cases this
+   --  is the defining entity of the unit, but for a child instance whose
+   --  parent needs a body for inlining, the instantiation node of the parent
+   --  has not yet been rewritten as a package declaration, and the entity has
+   --  to be retrieved from the Instance_Spec of the unit.
+
    procedure Implicit_With_On_Parent (Child_Unit : Node_Id; N : Node_Id);
    --  If the main unit is a child unit, implicit withs are also added for
    --  all its ancestors.
@@ -233,7 +240,7 @@ package body Sem_Ch10 is
          Semantics (Lib_Unit);
 
          if not Analyzed (Proper_Body (Unit_Node)) then
-            if Errors_Detected > 0 then
+            if Serious_Errors_Detected > 0 then
                Error_Msg_N ("subunit not analyzed (errors in parent unit)", N);
             else
                Error_Msg_N ("missing stub for subunit", N);
@@ -401,7 +408,7 @@ package body Sem_Ch10 is
          --  Set the entities of all parents in the program_unit_name.
 
          Generate_Parent_References (
-           Unit_Node, Defining_Entity (Unit (Parent_Spec (Unit_Node))));
+           Unit_Node, Get_Parent_Entity (Unit (Parent_Spec (Unit_Node))));
       end if;
 
       --  All components of the context: with-clauses, library unit, ancestors
@@ -1061,7 +1068,7 @@ package body Sem_Ch10 is
 
       Analyze_Subprogram_Body (N);
 
-      if Errors_Detected = 0 then
+      if Serious_Errors_Detected = 0 then
          Analyze_Proper_Body (N, Empty);
       end if;
 
@@ -1619,7 +1626,7 @@ package body Sem_Ch10 is
       Unum : Unit_Number_Type;
       Sel  : Node_Id;
 
-      procedure Decorate_Tagged_Type (T : Entity_Id; Kind : Entity_Kind);
+      procedure Decorate_Tagged_Type (T : Entity_Id);
       --  Set basic attributes of type, including its class_wide type.
 
       function In_Chain (E : Entity_Id) return Boolean;
@@ -1630,7 +1637,7 @@ package body Sem_Ch10 is
       -- Decorate_Tagged_Type --
       --------------------------
 
-      procedure Decorate_Tagged_Type (T : Entity_Id; Kind : Entity_Kind) is
+      procedure Decorate_Tagged_Type (T : Entity_Id) is
          CW : Entity_Id;
 
       begin
@@ -1847,7 +1854,7 @@ package body Sem_Ch10 is
                      --  to type and build its class-wide type.
 
                      Init_Size_Align (Typ);
-                     Decorate_Tagged_Type (Typ, E_Record_Type);
+                     Decorate_Tagged_Type (Typ);
                   end if;
 
                else
@@ -1887,7 +1894,7 @@ package body Sem_Ch10 is
                   Error_Msg_N ("type must be declared tagged", N);
 
                elsif not Analyzed (Decl) then
-                  Decorate_Tagged_Type (Typ, E_Private_Type);
+                  Decorate_Tagged_Type (Typ);
                end if;
 
                Set_Entity (Sel, Typ);
@@ -2175,6 +2182,19 @@ package body Sem_Ch10 is
       New_Nodes_OK := New_Nodes_OK - 1;
    end Expand_With_Clause;
 
+   -----------------------
+   -- Get_Parent_Entity --
+   -----------------------
+
+   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id is
+   begin
+      if Nkind (Unit) = N_Package_Instantiation then
+         return Defining_Entity (Specification (Instance_Spec (Unit)));
+      else
+         return Defining_Entity (Unit);
+      end if;
+   end Get_Parent_Entity;
+
    -----------------------------
    -- Implicit_With_On_Parent --
    -----------------------------
@@ -2187,7 +2207,7 @@ package body Sem_Ch10 is
       P      : constant Node_Id    := Parent_Spec (Child_Unit);
       P_Unit : constant Node_Id    := Unit (P);
 
-      P_Name : Entity_Id := Defining_Entity (P_Unit);
+      P_Name : Entity_Id := Get_Parent_Entity (P_Unit);
       Withn  : Node_Id;
 
       function Build_Ancestor_Name (P : Node_Id)  return Node_Id;
@@ -2518,7 +2538,7 @@ package body Sem_Ch10 is
 
    begin
       P := Unit (Parent_Spec (Lib_Unit));
-      P_Name := Defining_Entity (P);
+      P_Name := Get_Parent_Entity (P);
 
       if Etype (P_Name) = Any_Type then
          return;

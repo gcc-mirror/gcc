@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -525,7 +525,17 @@ package body Sem_Type is
 
    function Covers (T1, T2 : Entity_Id) return Boolean is
    begin
-      pragma Assert (Present (T1) and Present (T2));
+      --  If either operand missing, then this is an error, but ignore
+      --  it (and pretend we have a cover) if errors already detected,
+      --  since this may simply mean we have malformed trees.
+
+      if No (T1) or else No (T2) then
+         if Total_Errors_Detected /= 0 then
+            return True;
+         else
+            raise Program_Error;
+         end if;
+      end if;
 
       --  Simplest case: same types are compatible, and types that have the
       --  same base type and are not generic actuals are compatible. Generic
@@ -869,7 +879,7 @@ package body Sem_Type is
                Get_Next_Interp (I, It);
          end loop;
 
-         if Errors_Detected > 0 then
+         if Serious_Errors_Detected > 0 then
 
             --  After some error, a formal may have Any_Type and yield
             --  a spurious match. To avoid cascaded errors if possible,

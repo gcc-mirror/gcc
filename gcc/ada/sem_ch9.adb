@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.235 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -245,7 +245,7 @@ package body Sem_Ch9 is
 
       if Present (Formals) then
          New_Scope (Ityp);
-         Process_Formals (Ityp, Formals, N);
+         Process_Formals (Formals, N);
          Create_Extra_Formals (Ityp);
          End_Scope;
       end if;
@@ -275,7 +275,7 @@ package body Sem_Ch9 is
          return;
       else
          Set_Entity (Nam, Entry_Nam);
-         Generate_Reference (Entry_Nam, Nam, 'b');
+         Generate_Reference (Entry_Nam, Nam, 'b', Set_Ref => False);
          Style.Check_Identifier (Nam, Entry_Nam);
       end if;
 
@@ -399,7 +399,7 @@ package body Sem_Ch9 is
 
          Set_Actual_Subtypes (N, Current_Scope);
          Analyze (Stats);
-         Process_End_Label (Handled_Statement_Sequence (N), 't');
+         Process_End_Label (Handled_Statement_Sequence (N), 't', Entry_Nam);
          End_Scope;
       end if;
 
@@ -408,7 +408,6 @@ package body Sem_Ch9 is
       Check_Potentially_Blocking_Operation (N);
       Check_References (Entry_Nam, N);
       Set_Entry_Accepted (Entry_Nam);
-
    end Analyze_Accept_Statement;
 
    ---------------------------------
@@ -577,7 +576,7 @@ package body Sem_Ch9 is
 
       else
          Set_Has_Completion (Entry_Name);
-         Generate_Reference (Entry_Name, Id, 'b');
+         Generate_Reference (Entry_Name, Id, 'b', Set_Ref => False);
          Style.Check_Identifier (Id, Entry_Name);
       end if;
 
@@ -607,7 +606,7 @@ package body Sem_Ch9 is
       end if;
 
       Check_References (Entry_Name);
-      Process_End_Label (Handled_Statement_Sequence (N), 't');
+      Process_End_Label (Handled_Statement_Sequence (N), 't', Entry_Name);
       End_Scope;
 
       --  If this is an entry family, remove the loop created to provide
@@ -640,7 +639,7 @@ package body Sem_Ch9 is
       if Present (Formals) then
          Set_Scope (Id, Current_Scope);
          New_Scope (Id);
-         Process_Formals (Id, Formals, Parent (N));
+         Process_Formals (Formals, Parent (N));
          End_Scope;
       end if;
 
@@ -694,7 +693,7 @@ package body Sem_Ch9 is
       if Present (Formals) then
          Set_Scope (Id, Current_Scope);
          New_Scope (Id);
-         Process_Formals (Id, Formals, N);
+         Process_Formals (Formals, N);
          Create_Extra_Formals (Id);
          End_Scope;
       end if;
@@ -744,8 +743,19 @@ package body Sem_Ch9 is
 
    procedure Analyze_Protected_Body (N : Node_Id) is
       Body_Id   : constant Entity_Id := Defining_Identifier (N);
-      Spec_Id   : Entity_Id;
       Last_E    : Entity_Id;
+
+      Spec_Id : Entity_Id;
+      --  This is initially the entity of the protected object or protected
+      --  type involved, but is replaced by the protected type always in the
+      --  case of a single protected declaration, since this is the proper
+      --  scope to be used.
+
+      Ref_Id : Entity_Id;
+      --  This is the entity of the protected object or protected type
+      --  involved, and is the entity used for cross-reference purposes
+      --  (it differs from Spec_Id in the case of a single protected
+      --  object, since Spec_Id is set to the protected type in this case).
 
    begin
       Tasking_Used := True;
@@ -768,7 +778,8 @@ package body Sem_Ch9 is
          return;
       end if;
 
-      Generate_Reference (Spec_Id, Body_Id, 'b');
+      Ref_Id := Spec_Id;
+      Generate_Reference (Ref_Id, Body_Id, 'b', Set_Ref => False);
       Style.Check_Identifier (Body_Id, Spec_Id);
 
       --  The declarations are always attached to the type
@@ -803,7 +814,7 @@ package body Sem_Ch9 is
 
       Check_Completion (Body_Id);
       Check_References (Spec_Id);
-      Process_End_Label (N, 't');
+      Process_End_Label (N, 't', Ref_Id);
       End_Scope;
    end Analyze_Protected_Body;
 
@@ -843,7 +854,9 @@ package body Sem_Ch9 is
          then
             Set_Convention (E, Convention_Protected);
 
-         elsif Is_Task_Type (Etype (E)) then
+         elsif Is_Task_Type (Etype (E))
+           or else Has_Task (Etype (E))
+         then
             Set_Has_Task (Current_Scope);
          end if;
 
@@ -851,7 +864,7 @@ package body Sem_Ch9 is
       end loop;
 
       Check_Max_Entries (N, Max_Protected_Entries);
-      Process_End_Label (N, 'e');
+      Process_End_Label (N, 'e', Current_Scope);
    end Analyze_Protected_Definition;
 
    ----------------------------
@@ -871,6 +884,7 @@ package body Sem_Ch9 is
 
       if Ekind (T) = E_Incomplete_Type then
          T := Full_View (T);
+         Set_Completion_Referenced (T);
       end if;
 
       Set_Ekind              (T, E_Protected_Type);
@@ -1361,8 +1375,17 @@ package body Sem_Ch9 is
 
    procedure Analyze_Task_Body (N : Node_Id) is
       Body_Id : constant Entity_Id := Defining_Identifier (N);
-      Spec_Id : Entity_Id;
       Last_E  : Entity_Id;
+
+      Spec_Id : Entity_Id;
+      --  This is initially the entity of the task or task type involved,
+      --  but is replaced by the task type always in the case of a single
+      --  task declaration, since this is the proper scope to be used.
+
+      Ref_Id : Entity_Id;
+      --  This is the entity of the task or task type, and is the entity
+      --  used for cross-reference purposes (it differs from Spec_Id in
+      --  the case of a single task, since Spec_Id is set to the task type)
 
    begin
       Tasking_Used := True;
@@ -1389,7 +1412,8 @@ package body Sem_Ch9 is
          return;
       end if;
 
-      Generate_Reference (Spec_Id, Body_Id, 'b');
+      Ref_Id := Spec_Id;
+      Generate_Reference (Ref_Id, Body_Id, 'b', Set_Ref => False);
       Style.Check_Identifier (Body_Id, Spec_Id);
 
       --  Deal with case of body of single task (anonymous type was created)
@@ -1443,7 +1467,7 @@ package body Sem_Ch9 is
          end loop;
       end;
 
-      Process_End_Label (Handled_Statement_Sequence (N), 't');
+      Process_End_Label (Handled_Statement_Sequence (N), 't', Ref_Id);
       End_Scope;
    end Analyze_Task_Body;
 
@@ -1475,7 +1499,7 @@ package body Sem_Ch9 is
       end if;
 
       Check_Max_Entries (N, Max_Task_Entries);
-      Process_End_Label (N, 'e');
+      Process_End_Label (N, 'e', Current_Scope);
    end Analyze_Task_Definition;
 
    -----------------------
@@ -1489,11 +1513,13 @@ package body Sem_Ch9 is
    begin
       Tasking_Used := True;
       Check_Restriction (Max_Tasks, N);
+      Check_Restriction (No_Tasking, N);
       T := Find_Type_Name (N);
       Generate_Definition (T);
 
       if Ekind (T) = E_Incomplete_Type then
          T := Full_View (T);
+         Set_Completion_Referenced (T);
       end if;
 
       Set_Ekind              (T, E_Task_Type);

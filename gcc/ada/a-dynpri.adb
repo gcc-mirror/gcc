@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.25 $
+--                             $Revision$
 --                                                                          --
---             Copyright (C) 1991-2001 Florida State University             --
+--          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -56,10 +55,16 @@ with Ada.Exceptions;
 with System.Tasking.Initialization;
 --  used for Defer/Undefer_Abort
 
+with System.Parameters;
+--  used for Single_Lock
+
 with Unchecked_Conversion;
 
 package body Ada.Dynamic_Priorities is
 
+   package STPO renames System.Task_Primitives.Operations;
+
+   use System.Parameters;
    use System.Tasking;
    use Ada.Exceptions;
 
@@ -107,7 +112,7 @@ package body Ada.Dynamic_Priorities is
           Ada.Task_Identification.Current_Task)
    is
       Target  : constant Task_ID := Convert_Ids (T);
-      Self_ID : constant Task_ID := System.Task_Primitives.Operations.Self;
+      Self_ID : constant Task_ID := STPO.Self;
       Error_Message : constant String := "Trying to set the priority of a ";
 
    begin
@@ -121,34 +126,49 @@ package body Ada.Dynamic_Priorities is
            Error_Message & "terminated task");
       end if;
 
-      System.Tasking.Initialization.Defer_Abort (Self_ID);
-      System.Task_Primitives.Operations.Write_Lock (Target);
+      Initialization.Defer_Abort (Self_ID);
+
+      if Single_Lock then
+         STPO.Lock_RTS;
+      end if;
+
+      STPO.Write_Lock (Target);
 
       if Self_ID = Target then
          Target.Common.Base_Priority := Priority;
-         System.Task_Primitives.Operations.Set_Priority (Target, Priority);
-         System.Task_Primitives.Operations.Unlock (Target);
-         System.Task_Primitives.Operations.Yield;
+         STPO.Set_Priority (Target, Priority);
+
+         STPO.Unlock (Target);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
+
+         STPO.Yield;
          --  Yield is needed to enforce FIFO task dispatching.
          --  LL Set_Priority is made while holding the RTS lock so that
          --  it is inheriting high priority until it release all the RTS
          --  locks.
          --  If this is used in a system where Ceiling Locking is
          --  not enforced we may end up getting two Yield effects.
+
       else
          Target.New_Base_Priority := Priority;
          Target.Pending_Priority_Change := True;
          Target.Pending_Action := True;
 
-         System.Task_Primitives.Operations.Wakeup
-           (Target, Target.Common.State);
+         STPO.Wakeup (Target, Target.Common.State);
          --  If the task is suspended, wake it up to perform the change.
          --  check for ceiling violations ???
-         System.Task_Primitives.Operations.Unlock (Target);
 
+         STPO.Unlock (Target);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
       end if;
-      System.Tasking.Initialization.Undefer_Abort (Self_ID);
 
+      Initialization.Undefer_Abort (Self_ID);
    end Set_Priority;
 
 end Ada.Dynamic_Priorities;

@@ -2,13 +2,13 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                            G N A T M A I N                               --
+--                              O S I N T - L                               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001 Free Software Foundation, Inc.               --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,13 +26,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This procedure is the project-aware driver for the GNAT tools.
---  For gnatls, gnatxref, gnatfind and gnatstub, it setup the environment
---  variables ADA_INCLUDE_PATH and ADA_OBJECT_PATH and gather the switches
---  and file names from the project file (if any) and from the common line,
---  then call the non project-aware tool (gnatls, gnatxref, gnatfind or
---  gnatstub).
---  For other tools (compiler, binder, linker, gnatmake), it invokes
---  gnatmake with the proper switches.
+--  This package contains the low level, operating system routines used only
+--  in gnatls for command line processing and file input output.
 
-procedure Gnatmain;
+package Osint.L is
+
+   function More_Lib_Files return Boolean;
+   --  Indicates whether more library information files remain to be processed.
+   --  Returns False right away if no source files, or if all source files
+   --  have been processed.
+
+   function Next_Main_Lib_File return File_Name_Type;
+   --  This function returns the name of the next library info file specified
+   --  on the command line. It is an error to call Next_Main_Lib_File if no
+   --  more library information files exist (i.e. Next_Main_Lib_File may be
+   --  called only if a previous call to More_Lib_Files returned True). This
+   --  name is the simple name, excluding any directory information.
+
+end Osint.L;

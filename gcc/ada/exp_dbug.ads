@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.74 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@
 --  debugger. In accordance with the Dwarf 2.2 specification, certain
 --  type names are encoded to provide information to the debugger.
 
-with Sinfo; use Sinfo;
 with Types; use Types;
 with Uintp; use Uintp;
 with Get_Targ; use Get_Targ;
@@ -63,9 +62,9 @@ package Exp_Dbug is
    --  case of nested procedures.) In addition, we also consider all types
    --  to be global entities, even if they are defined within a procedure.
 
-   --  The reason for full treating all type names as global entities is
-   --  that a number of our type encodings work by having related type
-   --  names, and we need the full qualification to keep this unique.
+   --  The reason for treating all type names as global entities is that
+   --  a number of our type encodings work by having related type names,
+   --  and we need the full qualification to keep this unique.
 
    --  For global entities, the encoded name includes all components of the
    --  fully expanded name (but omitting Standard at the start). For example,
@@ -95,10 +94,6 @@ package Exp_Dbug is
 
    --  The separating dots are translated into double underscores.
 
-   --  Note: there is one exception, which is that on IRIX, for workshop
-   --  back compatibility, dots are retained as dots. In the rest of this
-   --  document we assume the double underscore encoding.
-
       -----------------------------
       -- Handling of Overloading --
       -----------------------------
@@ -107,60 +102,58 @@ package Exp_Dbug is
       --  subprograms, since overloading can legitimately result in a
       --  case of two entities with exactly the same fully qualified names.
       --  To distinguish between entries in a set of overloaded subprograms,
-      --  the encoded names are serialized by adding one of the two suffixes:
+      --  the encoded names are serialized by adding one of the suffixes:
 
       --    $n    (dollar sign)
       --    __nn  (two underscores)
 
-      --  where nn is a serial number (1 for the first overloaded function,
-      --  2 for the second, etc.). The former suffix is used when a dollar
-      --  sign is a valid symbol on the target machine and the latter is
-      --  used when it is not. No suffix need appear on the encoding of
-      --  the first overloading of a subprogram.
+      --  where nn is a serial number (2 for the second overloaded function,
+      --  2 for the third, etc.). We use $ if this symbol is allowed, and
+      --  double underscore if it is not. In the remaining examples in this
+      --  section, we use a $ sign, but the $ is replaced by __ throughout
+      --  these examples if $ sign is not available. A suffix of $1 is
+      --  always omitted (i.e. no suffix implies the first instance).
 
       --  These names are prefixed by the normal full qualification. So
       --  for example, the third instance of the subprogram qrs in package
-      --  yz would have one of the two names:
+      --  yz would have the name:
 
       --    yz__qrs$3
-      --    yz__qrs__3
 
-      --  The serial number always appears at the end as shown, even in the
-      --  case of subprograms nested inside overloaded subprograms, and only
-      --  when the named subprogram is overloaded. For example, consider
-      --  the following situation:
+      --  A more subtle case arises with entities declared within overloaded
+      --  subprograms. If we have two overloaded subprograms, and both declare
+      --  an entity xyz, then the fully expanded name of the two xyz's is the
+      --  same. To distinguish these, we add the same __n suffix at the end of
+      --  the inner entity names.
+
+      --  In more complex cases, we can have multiple levels of overloading,
+      --  and we must make sure to distinguish which final declarative region
+      --  we are talking about. For this purpose, we use a more complex suffix
+      --  which has the form:
+
+      --    $nn_nn_nn ...
+
+      --  where the nn values are the homonym numbers as needed for any of
+      --  the qualifying entities, separated by a single underscore. If all
+      --  the nn values are 1, the suffix is omitted, Otherwise the suffix
+      --  is present (including any values of 1). The following example
+      --  shows how this suffixing works.
 
       --    package body Yz is
-      --      procedure Qrs is               -- Encoded name is yz__qrs
-      --        procedure Tuv is ... end;    -- Encoded name is yz__qrs__tuv
+      --      procedure Qrs is               -- Name is yz__qrs
+      --        procedure Tuv is ... end;    -- Name is yz__qrs__tuv
       --      begin ... end Qrs;
 
-      --      procedure Qrs (X: Integer) is  -- Encoded name is yz__qrs__2
-      --        procedure Tuv is ... end;    -- Encoded name is yz__qrs__tuv
-      --                                     --    (not yz__qrs__2__tuv).
-      --        procedure Tuv (X: INTEGER)   -- Encoded name is yz__qrs__tuv__2
+      --      procedure Qrs (X: Int) is      -- Name is yz__qrs$2
+      --        procedure Tuv is ... end;    -- Name is yz__qrs__tuv$2_1
+      --        procedure Tuv (X: Int) is    -- Name is yz__qrs__tuv$2_2
       --        begin ... end Tuv;
 
-      --        procedure Tuv (X: INTEGER)   -- Encoded name is yz__qrs__tuv__3
+      --        procedure Tuv (X: Float) is  -- Name is yz__qrs__tuv$2_3
+      --          type m is new float;       -- Name is yz__qrs__tuv__m$2_3
       --        begin ... end Tuv;
       --      begin ... end Qrs;
       --    end Yz;
-
-      --  This example also serves to illustrate, a case in which the
-      --  debugging data are currently ambiguous. The two parameterless
-      --  versions of Yz.Qrs.Tuv have the same encoded names in the
-      --  debugging data. However, the actual external symbols (which
-      --  linkers use to resolve references) will be modified with an
-      --  an additional suffix so that they do not clash. Thus, there will
-      --  be cases in which the name of a function shown in the debugging
-      --  data differs from that function's "official" external name, and
-      --  in which several different functions have exactly the same name
-      --  as far as the debugger is concerned. We don't consider this too
-      --  much of a problem, since the only way the user has of referring
-      --  to these functions by name is, in fact, Yz.Qrs.Tuv, so that the
-      --  reference is inherently ambiguous from the user's perspective,
-      --  regardless of internal encodings (in these cases, the debugger
-      --  can provide a menu of options to allow the user to disambiguate).
 
       --------------------
       -- Operator Names --
@@ -217,7 +210,7 @@ package Exp_Dbug is
       --       interpretation 1: entity c in child package a.b
       --       interpretation 2: entity c in nested package b in body of a
 
-      --  It is perfectly valid in both cases for both interpretations to
+      --  It is perfectly legal in both cases for both interpretations to
       --  be valid within a single program. This is a bit of a surprise since
       --  certainly in Ada 83, full qualification was sufficient, but not in
       --  Ada 95. The result is that the above scheme can result in duplicate
@@ -367,10 +360,9 @@ package Exp_Dbug is
       --  from outside of the object, and a non-locking one that is used for
       --  calls from other operations on the same object. The locking operation
       --  simply acquires the lock, and then calls the non-locking version.
-      --  The names of all of these have a prefix constructed from the name
-      --  of the name of the type, the string "PT", and a suffix which is P
-      --  or N, depending on whether this is the protected or non-locking
-      --  version of the operation.
+      --  The names of all of these have a prefix constructed from the name of
+      --  the type, the string "PT", and a suffix which is P or N, depending on
+      --  whether this is the protected/non-locking version of the operation.
 
       --  Given the declaration:
 
@@ -410,7 +402,8 @@ package Exp_Dbug is
    --        or "X_" if the next entity is a subunit)
    --    - the name of the entity
    --    - the string "$" (or "__" if target does not allow "$"), followed
-   --        by homonym number, if the entity is an overloaded subprogram
+   --        by homonym suffix, if the entity is an overloaded subprogram
+   --        or is defined within an overloaded subprogram.
 
    procedure Get_External_Name_With_Suffix
      (Entity : Entity_Id;
@@ -424,12 +417,9 @@ package Exp_Dbug is
    --        or "X_" if the next entity is a subunit)
    --    - the name of the entity
    --    - the string "$" (or "__" if target does not allow "$"), followed
-   --        by homonym number, if the entity is an overloaded subprogram
+   --        by homonym suffix, if the entity is an overloaded subprogram
+   --        or is defined within an overloaded subprogram.
    --    - the string "___" followed by Suffix
-
-   function Get_Entity_Id (External_Name : String) return Entity_Id;
-   --  Find entity in current compilation unit, which has the given
-   --  External_Name.
 
    ----------------------------
    -- Debug Name Compression --
@@ -653,6 +643,22 @@ package Exp_Dbug is
       --   or static values, with the encoding first for the lower bound,
       --   then for the upper bound, as previously described.
 
+      -------------------
+      -- Modular Types --
+      -------------------
+
+      --  A type declared
+
+      --    type x is mod N;
+
+      --  Is encoded as a subrange of an unsigned base type with lower bound
+      --  0 and upper bound N. That is, there is no name encoding. We use
+      --  the standard encodings provided by the debugging format. Thus
+      --  we give these types a non-standard interpretation: the standard
+      --  interpretation of our encoding would not, in general, imply that
+      --  arithmetic on type x was to be performed modulo N (especially not
+      --  when N is not a power of 2).
+
       ------------------
       -- Biased Types --
       ------------------
@@ -760,6 +766,21 @@ package Exp_Dbug is
       --  that contains the variants is replaced by a normal C union.
       --  In this case, the positions are all zero.
 
+      --  Discriminants appear before any variable-length fields that depend
+      --  on them, with one exception. In some cases, a discriminant
+      --  governing the choice of a variant clause may appear in the list
+      --  of fields of an XVE type after the entry for the variant clause
+      --  itself (this can happen in the presence of a representation clause
+      --  for the record type in the source program). However, when this
+      --  happens, the discriminant's position may be determined by first
+      --  applying the rules described in this section, ignoring the variant
+      --  clause. As a result, discriminants can always be located
+      --  independently of the variable-length fields that depend on them.
+
+      --  The size of the ___XVE or ___XVU record or union is set to the
+      --  alignment (in bytes) of the original object so that the debugger
+      --  can calculate the size of the original type.
+
       --  As an example of this encoding, consider the declarations:
 
       --    type Q is array (1 .. V1) of Float;       -- alignment 4
@@ -804,15 +825,6 @@ package Exp_Dbug is
       --  2) The E field does not actually need the alignment indication
       --  but this may not be detected in this case by the conversion
       --  routines.
-
-      --  All discriminants always appear before any variable-length
-      --  fields that depend on them. So they can be located independent
-      --  of the variable-length field, using the standard procedure for
-      --  computing positions described above.
-
-      --  The size of the ___XVE or ___XVU record or union is set to the
-      --  alignment (in bytes) of the original object so that the debugger
-      --  can calculate the size of the original type.
 
       --  3) Our conventions do not cover all XVE-encoded records in which
       --  some, but not all, fields have representation clauses. Such
@@ -1349,80 +1361,5 @@ package Exp_Dbug is
 
    --  the second enumeration literal would be named QU43 and the
    --  value assigned to it would be 1.
-
-   -------------------
-   -- Modular Types --
-   -------------------
-
-   --  A type declared
-
-   --    type x is mod N;
-
-   --  Is encoded as a subrange of an unsigned base type with lower bound
-   --  0 and upper bound N. That is, there is no name encoding; we only use
-   --  the standard encodings provided by the debugging format. Thus,
-   --  we give these types a non-standard interpretation: the standard
-   --  interpretation of our encoding would not, in general, imply that
-   --  arithmetic on type x was to be performed modulo N (especially not
-   --  when N is not a power of 2).
-
-   ---------------------
-   -- Context Clauses --
-   ---------------------
-
-   --  The SGI Workshop debugger requires a very peculiar and nonstandard
-   --  symbol name containing $ signs to be generated that records the
-   --  use clauses that are used in a unit. GDB does not use this name,
-   --  since it takes a different philsophy of universal use visibility,
-   --  with manual resolution of any ambiguities.
-
-   --  The routines and data in this section are used to prepare this
-   --  specialized name, whose exact contents are described below. Gigi
-   --  will output this encoded name only in the SGI case (indeed, not
-   --  only is it useless on other targets, but hazardous, given the use
-   --  of the non-standard character $ rejected by many assemblers.)
-
-   --  "Use" clauses are encoded as follows:
-
-   --    _LSS__ prefix for clauses in a subprogram spec
-   --    _LSB__ prefix for clauses in a subprogram body
-   --    _LPS__ prefix for clauses in a package spec
-   --    _LPB__ prefix for clauses in a package body
-
-   --  Following the prefix is the fully qualified filename, followed by
-   --  '$' separated names of fully qualified units in the "use" clause.
-   --  If a unit appears in both the spec and the body "use" clause, it
-   --  will appear once in the _L[SP]S__ encoding and twice in the _L[SP]B__
-   --  encoding. The encoding appears as a global symbol in the object file.
-
-   ------------------------------------------------------------------------
-   -- Subprograms and Declarations for Handling Context Clause Encodings --
-   ------------------------------------------------------------------------
-
-   procedure Save_Unitname_And_Use_List
-     (Main_Unit_Node : Node_Id;
-      Main_Kind      : Node_Kind);
-   --  Creates a string containing the current compilation unit name
-   --  and a dollar sign delimited list of packages named in a Use_Package
-   --  clause for the compilation unit. Needed for the SGI debugger. The
-   --  procedure is called unconditionally to set the variables declared
-   --  below, then gigi decides whether or not to use the values.
-
-   --  The following variables are used for communication between the front
-   --  end and the debugging output routines in Gigi.
-
-   type Char_Ptr is access all Character;
-   pragma Convention (C, Char_Ptr);
-   --  Character pointers accessed from C
-
-   Spec_Context_List, Body_Context_List : Char_Ptr;
-   --  List of use package clauses for spec and body, respectively, as
-   --  built by the call to Save_Unitname_And_Use_List. Used by gigi if
-   --  these strings are to be output.
-
-   Spec_Filename, Body_Filename : Char_Ptr;
-   --  Filenames for the spec and body, respectively, as built by the
-   --  call to Save_Unitname_And_Use_List. Used by gigi if these strings
-   --  are to be output.
 
 end Exp_Dbug;

@@ -30,6 +30,7 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Errout;      use Errout;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 with Namet;       use Namet;
+with Osint;       use Osint;
 with Prj.Attr;
 with Prj.Com;
 with Prj.Env;
@@ -41,7 +42,9 @@ with Snames;      use Snames;
 
 package body Prj is
 
-   The_Empty_String        : String_Id;
+   The_Empty_String : String_Id;
+
+   Ada_Language     : constant Name_Id := Name_Ada;
 
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
 
@@ -155,7 +158,7 @@ package body Prj is
 
       begin
          if not Projects.Table (Project).Seen then
-            Projects.Table (Project).Seen := False;
+            Projects.Table (Project).Seen := True;
             Action (Project, With_State);
 
             List := Projects.Table (Project).Imported_Projects;
@@ -203,6 +206,10 @@ package body Prj is
          Std_Naming_Data.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
          Std_Naming_Data.Current_Impl_Suffix := Default_Ada_Impl_Suffix;
          Std_Naming_Data.Separate_Suffix     := Default_Ada_Impl_Suffix;
+         Register_Default_Naming_Scheme
+           (Language            => Ada_Language,
+            Default_Spec_Suffix => Default_Ada_Spec_Suffix,
+            Default_Impl_Suffix => Default_Ada_Impl_Suffix);
          Prj.Env.Initialize;
          Prj.Attr.Initialize;
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
@@ -210,6 +217,99 @@ package body Prj is
          Set_Name_Table_Byte (Name_External, Token_Type'Pos (Tok_External));
       end if;
    end Initialize;
+
+   ------------------------------------
+   -- Register_Default_Naming_Scheme --
+   ------------------------------------
+
+   procedure Register_Default_Naming_Scheme
+     (Language            : Name_Id;
+      Default_Spec_Suffix : Name_Id;
+      Default_Impl_Suffix : Name_Id)
+   is
+      Lang : Name_Id;
+      Suffix : Array_Element_Id;
+      Found : Boolean := False;
+      Element : Array_Element;
+
+      Spec_Str : String_Id;
+      Impl_Str : String_Id;
+
+   begin
+      --  The following code is completely uncommented ???
+
+      Get_Name_String (Language);
+      Name_Buffer (1 .. Name_Len) := To_Lower (Name_Buffer (1 .. Name_Len));
+      Lang := Name_Find;
+
+      Get_Name_String (Default_Spec_Suffix);
+      Start_String;
+      Store_String_Chars (Name_Buffer (1 .. Name_Len));
+      Spec_Str := End_String;
+
+      Get_Name_String (Default_Impl_Suffix);
+      Start_String;
+      Store_String_Chars (Name_Buffer (1 .. Name_Len));
+      Impl_Str := End_String;
+
+      Suffix := Std_Naming_Data.Specification_Suffix;
+      Found := False;
+
+      while Suffix /= No_Array_Element and then not Found loop
+         Element := Array_Elements.Table (Suffix);
+
+         if Element.Index = Lang then
+            Found := True;
+            Element.Value.Value := Spec_Str;
+            Array_Elements.Table (Suffix) := Element;
+
+         else
+            Suffix := Element.Next;
+         end if;
+      end loop;
+
+      if not Found then
+         Element :=
+           (Index => Lang,
+            Value => (Kind     => Single,
+                      Location => No_Location,
+                      Default  => False,
+                      Value    => Spec_Str),
+            Next  => Std_Naming_Data.Specification_Suffix);
+         Array_Elements.Increment_Last;
+         Array_Elements.Table (Array_Elements.Last) := Element;
+         Std_Naming_Data.Specification_Suffix := Array_Elements.Last;
+      end if;
+
+      Suffix := Std_Naming_Data.Implementation_Suffix;
+      Found := False;
+
+      while Suffix /= No_Array_Element and then not Found loop
+         Element := Array_Elements.Table (Suffix);
+
+         if Element.Index = Lang then
+            Found := True;
+            Element.Value.Value := Impl_Str;
+            Array_Elements.Table (Suffix) := Element;
+
+         else
+            Suffix := Element.Next;
+         end if;
+      end loop;
+
+      if not Found then
+         Element :=
+           (Index => Lang,
+            Value => (Kind     => Single,
+                      Location => No_Location,
+                      Default  => False,
+                      Value    => Impl_Str),
+            Next  => Std_Naming_Data.Implementation_Suffix);
+         Array_Elements.Increment_Last;
+         Array_Elements.Table (Array_Elements.Last) := Element;
+         Std_Naming_Data.Implementation_Suffix := Array_Elements.Last;
+      end if;
+   end Register_Default_Naming_Scheme;
 
    ------------
    --  Reset --
@@ -285,4 +385,9 @@ package body Prj is
       raise Constraint_Error;
    end Value;
 
+begin
+   --  Make sure that the standard project file extension is compatible
+   --  with canonical case file naming.
+
+   Canonical_Case_File_Name (Project_File_Extension);
 end Prj;

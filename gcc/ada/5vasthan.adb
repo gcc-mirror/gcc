@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.18 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,6 @@ with Ada.Task_Identification;
 with Ada.Exceptions; use Ada.Exceptions;
 
 with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Deallocation;
 
 package body System.AST_Handling is
 
@@ -162,12 +161,6 @@ package body System.AST_Handling is
    function To_AST_Handler is new Ada.Unchecked_Conversion
      (AST_Handler_Data_Ref, System.Aux_DEC.AST_Handler);
 
-   function To_AST_Data_Handler_Ref is new Ada.Unchecked_Conversion
-     (System.Aux_DEC.AST_Handler, AST_Handler_Data_Ref);
-
-   function To_AST_Data_Handler_Ref is new Ada.Unchecked_Conversion
-     (AST_Handler, AST_Handler_Data_Ref);
-
    --  Each time Create_AST_Handler is called, a new value of this record
    --  type is created, containing a copy of the procedure descriptor for
    --  the routine used to handle all AST's (Process_AST), and the Task_Id
@@ -198,9 +191,6 @@ package body System.AST_Handling is
 
    type AST_Handler_Vector is array (Natural range <>) of AST_Handler_Data;
    type AST_Handler_Vector_Ref is access all AST_Handler_Vector;
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => AST_Handler_Vector,
-      Name   => AST_Handler_Vector_Ref);
 
 --  type AST_Vector_Ptr is new Ada.Finalization.Controlled with record
 --  removed due to problem with controlled attribute, consequence is that
@@ -210,9 +200,6 @@ package body System.AST_Handling is
    type AST_Vector_Ptr is record
       Vector : AST_Handler_Vector_Ref;
    end record;
-
-   procedure Finalize (Object : in out AST_Vector_Ptr);
-   --  Used to get rid of allocated AST_Vector's
 
    AST_Vector_Init : AST_Vector_Ptr;
    --  Initial value, treated as constant, Vector will be null.
@@ -307,9 +294,6 @@ package body System.AST_Handling is
 
    type AST_Server_Task_Ptr is access all AST_Server_Task;
    --  Type used to allocate server tasks
-
-   function To_Integer is new Ada.Unchecked_Conversion
-     (ATID.Task_Id, Integer);
 
    -----------------------
    -- Local Subprograms --
@@ -531,15 +515,6 @@ package body System.AST_Handling is
       Actual_Number := 0;
       Total_Number := AST_Service_Queue_Size;
    end Expand_AST_Packet_Pool;
-
-   --------------
-   -- Finalize --
-   --------------
-
-   procedure Finalize (Object : in out AST_Vector_Ptr) is
-   begin
-      Free (Object.Vector);
-   end Finalize;
 
    -----------------
    -- Process_AST --

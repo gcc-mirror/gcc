@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.15 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -30,23 +30,43 @@ with Namet;    use Namet;
 with Output;   use Output;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
-with Fname.UF; use Fname.UF;
 with Types;    use Types;
 
 package body Targparm is
 
    type Targparm_Tags is
-     (AAM, CLA, DEN, DSP, FEL, HIM, LSI, MOV,
-      MRN, SCD, SCP, SNZ, UAM, VMS, ZCD, ZCG, ZCF);
+     (AAM,  --   AAMP;
+      BDC,  --   Backend_Divide_Checks;
+      BOC,  --   Backend_Overflow_Checks;
+      CLA,  --   Command_Line_Args;
+      DEN,  --   Denorm;
+      DSP,  --   Functions_Return_By_DSP;
+      FEL,  --   Frontend_Layout;
+      FFO,  --   Fractional_Fixed_Ops
+      HIM,  --   High_Integrity_Mode;
+      LSI,  --   Long_Shifts_Inlined;
+      MOV,  --   Machine_Overflows;
+      MRN,  --   Machine_Rounds;
+      SCD,  --   Stack_Check_Default;
+      SCP,  --   Stack_Check_Probes;
+      SNZ,  --   Signed_Zeros;
+      UAM,  --   Use_Ada_Main_Program_Name;
+      VMS,  --   OpenVMS;
+      ZCD,  --   ZCX_By_Default;
+      ZCG,  --   GCC_ZCX_Support;
+      ZCF); --   Front_End_ZCX_Support;
 
    Targparm_Flags : array (Targparm_Tags) of Boolean := (others => False);
    --  Flag is set True if corresponding parameter is scanned
 
    AAM_Str : aliased constant Source_Buffer := "AAMP";
+   BDC_Str : aliased constant Source_Buffer := "Backend_Divide_Checks";
+   BOC_Str : aliased constant Source_Buffer := "Backend_Overflow_Checks";
    CLA_Str : aliased constant Source_Buffer := "Command_Line_Args";
    DEN_Str : aliased constant Source_Buffer := "Denorm";
    DSP_Str : aliased constant Source_Buffer := "Functions_Return_By_DSP";
    FEL_Str : aliased constant Source_Buffer := "Frontend_Layout";
+   FFO_Str : aliased constant Source_Buffer := "Fractional_Fixed_Ops";
    HIM_Str : aliased constant Source_Buffer := "High_Integrity_Mode";
    LSI_Str : aliased constant Source_Buffer := "Long_Shifts_Inlined";
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
@@ -63,10 +83,13 @@ package body Targparm is
    type Buffer_Ptr is access constant Source_Buffer;
    Targparm_Str : array (Targparm_Tags) of Buffer_Ptr :=
      (AAM_Str'Access,
+      BDC_Str'Access,
+      BOC_Str'Access,
       CLA_Str'Access,
       DEN_Str'Access,
       DSP_Str'Access,
       FEL_Str'Access,
+      FFO_Str'Access,
       HIM_Str'Access,
       LSI_Str'Access,
       MOV_Str'Access,
@@ -100,9 +123,9 @@ package body Targparm is
       --  Records boolean from system line
 
    begin
-      Name_Buffer (1 .. 6) := "system";
-      Name_Len := 6;
-      N := File_Name_Of_Spec (Name_Find);
+      Name_Buffer (1 .. 10) := "system.ads";
+      Name_Len := 10;
+      N := Name_Find;
       S := Load_Source_File (N);
 
       if S = No_Source_File then
@@ -163,10 +186,13 @@ package body Targparm is
 
                case K is
                   when AAM => AAMP_On_Target                      := Result;
+                  when BDC => Backend_Divide_Checks_On_Target     := Result;
+                  when BOC => Backend_Overflow_Checks_On_Target   := Result;
                   when CLA => Command_Line_Args_On_Target         := Result;
                   when DEN => Denorm_On_Target                    := Result;
                   when DSP => Functions_Return_By_DSP_On_Target   := Result;
                   when FEL => Frontend_Layout_On_Target           := Result;
+                  when FFO => Fractional_Fixed_Ops_On_Target      := Result;
                   when HIM => High_Integrity_Mode_On_Target       := Result;
                   when LSI => Long_Shifts_Inlined_On_Target       := Result;
                   when MOV => Machine_Overflows_On_Target         := Result;

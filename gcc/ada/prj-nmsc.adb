@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 2000-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,29 +26,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Errout;
+with Hostparm;
+with MLib.Tgt;
+with Namet;    use Namet;
+with Osint;    use Osint;
+with Output;   use Output;
+with Prj.Com;  use Prj.Com;
+with Prj.Env;  use Prj.Env;
+with Prj.Util; use Prj.Util;
+with Snames;   use Snames;
+with Stringt;  use Stringt;
+with Types;    use Types;
+
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
-with Errout;                     use Errout;
+
 with GNAT.Case_Util;             use GNAT.Case_Util;
 with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 with GNAT.OS_Lib;                use GNAT.OS_Lib;
-with MLib.Tgt;
-with Namet;                      use Namet;
-with Osint;                      use Osint;
-with Output;                     use Output;
-with Prj.Com;                    use Prj.Com;
-with Prj.Util;                   use Prj.Util;
-with Snames;                     use Snames;
-with Stringt;                    use Stringt;
-with Types;                      use Types;
 
 package body Prj.Nmsc is
 
-   Dir_Sep      : Character renames GNAT.OS_Lib.Directory_Separator;
+   Dir_Sep : Character renames GNAT.OS_Lib.Directory_Separator;
 
-   Error_Report : Put_Line_Access := null;
+   Error_Report    : Put_Line_Access := null;
+   Current_Project : Project_Id := No_Project;
 
    procedure Check_Ada_Naming_Scheme (Naming : Naming_Data);
    --  Check that the package Naming is correct.
@@ -76,17 +81,20 @@ package body Prj.Nmsc is
    --  specific SFN pragma is needed. If the file name corresponds to no
    --  unit, then Unit_Name will be No_Name.
 
-   function Is_Illegal_Append (This : String) return Boolean;
-   --  Returns True if the string This cannot be used as
-   --  a Specification_Append, a Body_Append or a Separate_Append.
+   function Is_Illegal_Suffix
+     (Suffix                          : String;
+      Dot_Replacement_Is_A_Single_Dot : Boolean)
+      return                            Boolean;
+   --  Returns True if the string Suffix cannot be used as
+   --  a spec suffix, a body suffix or a separate suffix.
 
    procedure Record_Source
-     (File_Name        : Name_Id;
-      Path_Name        : Name_Id;
-      Project          : Project_Id;
-      Data             : in out Project_Data;
-      Location         : Source_Ptr;
-      Current_Source   : in out String_List_Id);
+     (File_Name          : Name_Id;
+      Path_Name          : Name_Id;
+      Project            : Project_Id;
+      Data               : in out Project_Data;
+      Location           : Source_Ptr;
+      Current_Source     : in out String_List_Id);
    --  Put a unit in the list of units of a project, if the file name
    --  corresponds to a valid unit name.
 
@@ -106,13 +114,6 @@ package body Prj.Nmsc is
       return      String;
    --  Returns the path name of a (non project) file.
    --  Returns an empty string if file cannot be found.
-
-   function Path_Name_Of
-     (File_Name : String_Id;
-      Directory : String_Id)
-      return      String;
-   --  Same as above except that Directory is a String_Id instead
-   --  of a Name_Id.
 
    ---------------
    -- Ada_Check --
@@ -164,7 +165,7 @@ package body Prj.Nmsc is
             Check_Ada_Name (Element.Index, Unit_Name);
 
             if Unit_Name = No_Name then
-               Error_Msg_Name_1 := Element.Index;
+               Errout.Error_Msg_Name_1 := Element.Index;
                Error_Msg
                  ("{ is not a valid unit name.",
                   Element.Value.Location);
@@ -255,12 +256,12 @@ package body Prj.Nmsc is
                               --  duplicate unit name.
 
                               Record_Source
-                                (File_Name        => File_Name,
-                                 Path_Name        => Path_Name,
-                                 Project          => Project,
-                                 Data             => Data,
-                                 Location         => No_Location,
-                                 Current_Source   => Current_Source);
+                                (File_Name          => File_Name,
+                                 Path_Name          => Path_Name,
+                                 Project            => Project,
+                                 Data               => Data,
+                                 Location           => No_Location,
+                                 Current_Source     => Current_Source);
 
                            else
                               if Current_Verbosity = High then
@@ -309,13 +310,21 @@ package body Prj.Nmsc is
          Source_Dir : String_List_Id := Data.Source_Dirs;
          Element    : String_Element;
          Path_Name  : GNAT.OS_Lib.String_Access;
-         Found      : Boolean := False;
          File       : Name_Id;
+         Path       : Name_Id;
+
+         Found      : Boolean := False;
+         Fname      : String  := File_Name;
 
       begin
+         Canonical_Case_File_Name (Fname);
+         Name_Len := Fname'Length;
+         Name_Buffer (1 .. Name_Len) := Fname;
+         File := Name_Find;
+
          if Current_Verbosity = High then
             Write_Str  ("   Checking """);
-            Write_Str  (File_Name);
+            Write_Str  (Fname);
             Write_Line (""".");
          end if;
 
@@ -332,7 +341,7 @@ package body Prj.Nmsc is
 
             Path_Name :=
               Locate_Regular_File
-              (File_Name,
+              (Fname,
                Get_Name_String (Element.Value));
 
             if Path_Name /= null then
@@ -340,22 +349,19 @@ package body Prj.Nmsc is
                   Write_Line ("OK");
                end if;
 
-               Name_Len := File_Name'Length;
-               Name_Buffer (1 .. Name_Len) := File_Name;
-               File := Name_Find;
                Name_Len := Path_Name'Length;
                Name_Buffer (1 .. Name_Len) := Path_Name.all;
+               Path := Name_Find;
 
-               --  Register the source. Report an error if the file does not
-               --  correspond to a source.
+               --  Register the source if it is an Ada compilation unit..
 
                Record_Source
-                 (File_Name        => File,
-                  Path_Name        => Name_Find,
-                  Project          => Project,
-                  Data             => Data,
-                  Location         => Location,
-                  Current_Source   => Current_Source);
+                 (File_Name          => File,
+                  Path_Name          => Path,
+                  Project            => Project,
+                  Data               => Data,
+                  Location           => Location,
+                  Current_Source     => Current_Source);
                Found := True;
                exit;
 
@@ -367,6 +373,14 @@ package body Prj.Nmsc is
                Source_Dir := Element.Next;
             end if;
          end loop;
+
+         --  It is an error if a source file names in a source list or
+         --  in a source list file is not found.
+
+         if not Found then
+            Errout.Error_Msg_Name_1 := File;
+            Error_Msg ("source file { cannot be found", Location);
+         end if;
 
       end Get_Path_Name_And_Record_Source;
 
@@ -382,8 +396,6 @@ package body Prj.Nmsc is
          Line           : String (1 .. 250);
          Last           : Natural;
          Current_Source : String_List_Id := Nil_String;
-
-         Nmb_Errors : constant Nat := Errors_Detected;
 
       begin
          if Current_Verbosity = High then
@@ -403,7 +415,9 @@ package body Prj.Nmsc is
                Prj.Util.Get_Line (File, Line, Last);
 
                --  If the line is not empty and does not start with "--",
-               --  then it must contains a file name.
+               --  then it should contain a file name. However, if the
+               --  file name does not exist, it may be for another language
+               --  and we don't fail.
 
                if Last /= 0
                  and then (Last = 1 or else Line (1 .. 2) /= "--")
@@ -412,7 +426,6 @@ package body Prj.Nmsc is
                     (File_Name => Line (1 .. Last),
                      Location => Location,
                      Current_Source => Current_Source);
-                  exit when Nmb_Errors /= Errors_Detected;
                end if;
             end loop;
 
@@ -433,7 +446,8 @@ package body Prj.Nmsc is
    begin
       Language_Independent_Check (Project, Report_Error);
 
-      Error_Report := Report_Error;
+      Error_Report    := Report_Error;
+      Current_Project := Project;
 
       Data      := Projects.Table (Project);
       Languages := Prj.Util.Value_Of (Name_Languages, Data.Decl.Attributes);
@@ -609,7 +623,7 @@ package body Prj.Nmsc is
                         else
                            Name_Len := Casing_Image'Length;
                            Name_Buffer (1 .. Name_Len) := Casing_Image;
-                           Error_Msg_Name_1 := Name_Find;
+                           Errout.Error_Msg_Name_1 := Name_Find;
                            Error_Msg
                              ("{ is not a correct Casing",
                               Casing_String.Location);
@@ -806,7 +820,7 @@ package body Prj.Nmsc is
                   begin
                      if Source_File_Path_Name'Length = 0 then
                         String_To_Name_Buffer (Source_List_File.Value);
-                        Error_Msg_Name_1 := Name_Find;
+                        Errout.Error_Msg_Name_1 := Name_Find;
                         Error_Msg
                           ("file with sources { does not exist",
                            Source_List_File.Location);
@@ -989,25 +1003,31 @@ package body Prj.Nmsc is
             --   - start with an alphanumeric
             --   - start with an '_' followed by an alphanumeric
 
-            if Is_Illegal_Append (Specification_Suffix) then
-               Error_Msg_Name_1 := Naming.Current_Spec_Suffix;
+            if Is_Illegal_Suffix
+                 (Specification_Suffix, Dot_Replacement = ".")
+            then
+               Errout.Error_Msg_Name_1 := Naming.Current_Spec_Suffix;
                Error_Msg
                  ("{ is illegal for Specification_Suffix",
                   Naming.Spec_Suffix_Loc);
             end if;
 
-            if Is_Illegal_Append (Implementation_Suffix) then
-               Error_Msg_Name_1 := Naming.Current_Impl_Suffix;
+            if Is_Illegal_Suffix
+                 (Implementation_Suffix, Dot_Replacement = ".")
+            then
+               Errout.Error_Msg_Name_1 := Naming.Current_Impl_Suffix;
                Error_Msg
-                 ("% is illegal for Implementation_Suffix",
+                 ("{ is illegal for Implementation_Suffix",
                   Naming.Impl_Suffix_Loc);
             end if;
 
             if Implementation_Suffix /= Separate_Suffix then
-               if Is_Illegal_Append (Separate_Suffix) then
-                  Error_Msg_Name_1 := Naming.Separate_Suffix;
+               if Is_Illegal_Suffix
+                    (Separate_Suffix, Dot_Replacement = ".")
+               then
+                  Errout.Error_Msg_Name_1 := Naming.Separate_Suffix;
                   Error_Msg
-                    ("{ is illegal for Separate_Append",
+                    ("{ is illegal for Separate_Suffix",
                      Naming.Sep_Suffix_Loc);
                end if;
             end if;
@@ -1124,11 +1144,9 @@ package body Prj.Nmsc is
             Add ('"');
 
             case Msg_Name is
-               when 1 => Add (Error_Msg_Name_1);
-
-               when 2 => Add (Error_Msg_Name_2);
-
-               when 3 => Add (Error_Msg_Name_3);
+               when 1 => Add (Errout.Error_Msg_Name_1);
+               when 2 => Add (Errout.Error_Msg_Name_2);
+               when 3 => Add (Errout.Error_Msg_Name_3);
 
                when others => null;
             end case;
@@ -1141,7 +1159,7 @@ package body Prj.Nmsc is
 
       end loop;
 
-      Error_Report (Error_Buffer (1 .. Error_Last));
+      Error_Report (Error_Buffer (1 .. Error_Last), Current_Project);
    end Error_Msg;
 
    ---------------------
@@ -1252,6 +1270,13 @@ package body Prj.Nmsc is
          First : Positive := File'First;
          Last  : Natural  := File'Last;
 
+         Standard_GNAT : Boolean :=
+                           Naming.Current_Spec_Suffix =
+                                         Default_Ada_Spec_Suffix
+                             and then
+                           Naming.Current_Impl_Suffix =
+                                         Default_Ada_Impl_Suffix;
+
       begin
          --  Check if the end of the file name is Specification_Append
 
@@ -1333,6 +1358,8 @@ package body Prj.Nmsc is
          end if;
 
          Get_Name_String (Naming.Dot_Replacement);
+         Standard_GNAT :=
+           Standard_GNAT and then Name_Buffer (1 .. Name_Len) = "-";
 
          if Name_Buffer (1 .. Name_Len) /= "." then
 
@@ -1414,6 +1441,36 @@ package body Prj.Nmsc is
               (Source  => Src,
                Mapping => Lower_Case_Map);
 
+            --  In the standard GNAT naming scheme, check for special cases:
+            --  children or separates of A, G, I or S, and run time sources.
+
+            if Standard_GNAT and then Src'Length >= 3 then
+               declare
+                  S1 : constant Character := Src (Src'First);
+                  S2 : constant Character := Src (Src'First + 1);
+
+               begin
+                  if S1 = 'a' or else S1 = 'g'
+                    or else S1 = 'i' or else S1 = 's'
+                  then
+                     --  Children or separates of packages A, G, I or S
+
+                     if (Hostparm.OpenVMS and then S2 = '$')
+                       or else (not Hostparm.OpenVMS and then S2 = '~')
+                     then
+                        Src (Src'First + 1) := '.';
+
+                     --  If it is potentially a run time source, disable
+                     --  filling of the mapping file to avoid warnings.
+
+                     elsif S2 = '.' then
+                        Set_Mapping_File_Initial_State_To_Empty;
+                     end if;
+
+                  end if;
+               end;
+            end if;
+
             if Current_Verbosity = High then
                Write_Str  ("      ");
                Write_Line (Src);
@@ -1432,18 +1489,48 @@ package body Prj.Nmsc is
    end Get_Unit;
 
    -----------------------
-   -- Is_Illegal_Append --
+   -- Is_Illegal_Suffix --
    -----------------------
 
-   function Is_Illegal_Append (This : String) return Boolean is
+   function Is_Illegal_Suffix
+     (Suffix                          : String;
+      Dot_Replacement_Is_A_Single_Dot : Boolean)
+      return                            Boolean
+   is
    begin
-      return This'Length = 0
-        or else Is_Alphanumeric (This (This'First))
-        or else Index (This, ".") = 0
-        or else (This'Length >= 2
-                 and then This (This'First) = '_'
-                 and then Is_Alphanumeric (This (This'First + 1)));
-   end Is_Illegal_Append;
+      if Suffix'Length = 0
+        or else Is_Alphanumeric (Suffix (Suffix'First))
+        or else Index (Suffix, ".") = 0
+        or else (Suffix'Length >= 2
+                 and then Suffix (Suffix'First) = '_'
+                 and then Is_Alphanumeric (Suffix (Suffix'First + 1)))
+      then
+         return True;
+      end if;
+
+      --  If dot replacement is a single dot, and first character of
+      --  suffix is also a dot
+
+      if Dot_Replacement_Is_A_Single_Dot
+        and then Suffix (Suffix'First) = '.'
+      then
+         for Index in Suffix'First + 1 .. Suffix'Last loop
+
+            --  If there is another dot
+
+            if Suffix (Index) = '.' then
+
+               --  It is illegal to have a letter following the initial dot
+
+               return Is_Letter (Suffix (Suffix'First + 1));
+            end if;
+         end loop;
+      end if;
+
+      --  Everything is OK
+
+      return False;
+   end Is_Illegal_Suffix;
 
    --------------------------------
    -- Language_Independent_Check --
@@ -1496,6 +1583,8 @@ package body Prj.Nmsc is
                The_Path_Last := The_Path_Last - 1;
             end if;
 
+            Canonical_Case_File_Name (The_Path);
+
             if Current_Verbosity = High then
                Write_Str  ("   ");
                Write_Line (The_Path (The_Path'First .. The_Path_Last));
@@ -1545,11 +1634,13 @@ package body Prj.Nmsc is
                   --  Avoid . and ..
 
                   declare
-                     Path_Name : constant String :=
+                     Path_Name : String :=
                                    The_Path (The_Path'First .. The_Path_Last) &
                                    Name (1 .. Last);
 
                   begin
+                     Canonical_Case_File_Name (Path_Name);
+
                      if Is_Directory (Path_Name) then
 
                         --  We have found a new subdirectory,
@@ -1578,6 +1669,7 @@ package body Prj.Nmsc is
          end if;
 
          String_To_Name_Buffer (From);
+         Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
          Directory    := Name_Buffer (1 .. Name_Len);
          Directory_Id := Name_Find;
 
@@ -1622,7 +1714,7 @@ package body Prj.Nmsc is
 
             begin
                if Root = No_Name then
-                  Error_Msg_Name_1 := Base_Dir;
+                  Errout.Error_Msg_Name_1 := Base_Dir;
                   if Location = No_Location then
                      Error_Msg ("{ is not a valid directory.", Data.Location);
                   else
@@ -1656,7 +1748,7 @@ package body Prj.Nmsc is
 
             begin
                if Path_Name = No_Name then
-                  Error_Msg_Name_1 := Directory_Id;
+                  Errout.Error_Msg_Name_1 := Directory_Id;
                   if Location = No_Location then
                      Error_Msg ("{ is not a valid directory", Data.Location);
                   else
@@ -1747,7 +1839,7 @@ package body Prj.Nmsc is
                     Locate_Directory (Dir_Id, Data.Directory);
 
                   if Data.Object_Directory = No_Name then
-                     Error_Msg_Name_1 := Dir_Id;
+                     Errout.Error_Msg_Name_1 := Dir_Id;
                      Error_Msg
                        ("the object directory { cannot be found",
                         Data.Location);
@@ -1803,7 +1895,7 @@ package body Prj.Nmsc is
                     Locate_Directory (Dir_Id, Data.Directory);
 
                   if Data.Exec_Directory = No_Name then
-                     Error_Msg_Name_1 := Dir_Id;
+                     Errout.Error_Msg_Name_1 := Dir_Id;
                      Error_Msg
                        ("the exec directory { cannot be found",
                         Data.Location);
@@ -2104,9 +2196,55 @@ package body Prj.Nmsc is
 
             --  Check Specification_Suffix
 
-            Data.Naming.Specification_Suffix := Util.Value_Of
-                                                 (Name_Specification_Suffix,
-                                                  Naming.Decl.Arrays);
+            declare
+               Spec_Suffixs : Array_Element_Id :=
+                                Util.Value_Of
+                                  (Name_Specification_Suffix,
+                                   Naming.Decl.Arrays);
+               Suffix  : Array_Element_Id;
+               Element : Array_Element;
+               Suffix2 : Array_Element_Id;
+
+            begin
+               --  If some suffixs have been specified, we make sure that
+               --  for each language for which a default suffix has been
+               --  specified, there is a suffix specified, either the one
+               --  in the project file or if there were noe, the default.
+
+               if Spec_Suffixs /= No_Array_Element then
+                  Suffix := Data.Naming.Specification_Suffix;
+
+                  while Suffix /= No_Array_Element loop
+                     Element := Array_Elements.Table (Suffix);
+                     Suffix2 := Spec_Suffixs;
+
+                     while Suffix2 /= No_Array_Element loop
+                        exit when Array_Elements.Table (Suffix2).Index =
+                          Element.Index;
+                        Suffix2 := Array_Elements.Table (Suffix2).Next;
+                     end loop;
+
+                     --  There is a registered default suffix, but no
+                     --  suffix specified in the project file.
+                     --  Add the default to the array.
+
+                     if Suffix2 = No_Array_Element then
+                        Array_Elements.Increment_Last;
+                        Array_Elements.Table (Array_Elements.Last) :=
+                          (Index => Element.Index,
+                           Value => Element.Value,
+                           Next  => Spec_Suffixs);
+                        Spec_Suffixs := Array_Elements.Last;
+                     end if;
+
+                     Suffix := Element.Next;
+                  end loop;
+
+                  --  Put the resulting array as the specification suffixs
+
+                  Data.Naming.Specification_Suffix := Spec_Suffixs;
+               end if;
+            end;
 
             declare
                Current : Array_Element_Id := Data.Naming.Specification_Suffix;
@@ -2130,9 +2268,54 @@ package body Prj.Nmsc is
 
             --  Check Implementation_Suffix
 
-            Data.Naming.Implementation_Suffix := Util.Value_Of
-                                          (Name_Implementation_Suffix,
-                                           Naming.Decl.Arrays);
+            declare
+               Impl_Suffixs : Array_Element_Id :=
+                 Util.Value_Of
+                   (Name_Implementation_Suffix,
+                    Naming.Decl.Arrays);
+               Suffix  : Array_Element_Id;
+               Element : Array_Element;
+               Suffix2 : Array_Element_Id;
+            begin
+               --  If some suffixs have been specified, we make sure that
+               --  for each language for which a default suffix has been
+               --  specified, there is a suffix specified, either the one
+               --  in the project file or if there were noe, the default.
+
+               if Impl_Suffixs /= No_Array_Element then
+                  Suffix := Data.Naming.Implementation_Suffix;
+
+                  while Suffix /= No_Array_Element loop
+                     Element := Array_Elements.Table (Suffix);
+                     Suffix2 := Impl_Suffixs;
+
+                     while Suffix2 /= No_Array_Element loop
+                        exit when Array_Elements.Table (Suffix2).Index =
+                          Element.Index;
+                        Suffix2 := Array_Elements.Table (Suffix2).Next;
+                     end loop;
+
+                     --  There is a registered default suffix, but no
+                     --  suffix specified in the project file.
+                     --  Add the default to the array.
+
+                     if Suffix2 = No_Array_Element then
+                        Array_Elements.Increment_Last;
+                        Array_Elements.Table (Array_Elements.Last) :=
+                          (Index => Element.Index,
+                           Value => Element.Value,
+                           Next  => Impl_Suffixs);
+                        Impl_Suffixs := Array_Elements.Last;
+                     end if;
+
+                     Suffix := Element.Next;
+                  end loop;
+
+                  --  Put the resulting array as the implementation suffixs
+
+                  Data.Naming.Implementation_Suffix := Impl_Suffixs;
+               end if;
+            end;
 
             declare
                Current : Array_Element_Id := Data.Naming.Implementation_Suffix;
@@ -2154,6 +2337,17 @@ package body Prj.Nmsc is
                end loop;
             end;
 
+            --  Get the exceptions, if any
+
+            Data.Naming.Specification_Exceptions :=
+              Util.Value_Of
+                (Name_Specification_Exceptions,
+                 In_Arrays => Naming.Decl.Arrays);
+
+            Data.Naming.Implementation_Exceptions :=
+              Util.Value_Of
+                (Name_Implementation_Exceptions,
+                 In_Arrays => Naming.Decl.Arrays);
          end if;
       end;
 
@@ -2221,34 +2415,6 @@ package body Prj.Nmsc is
 
    function Path_Name_Of
      (File_Name : String_Id;
-      Directory : String_Id)
-      return      String
-   is
-      Result : String_Access;
-
-   begin
-      String_To_Name_Buffer (File_Name);
-
-      declare
-         The_File_Name : constant String := Name_Buffer (1 .. Name_Len);
-
-      begin
-         String_To_Name_Buffer (Directory);
-         Result := Locate_Regular_File
-           (File_Name => The_File_Name,
-            Path      => Name_Buffer (1 .. Name_Len));
-      end;
-
-      if Result = null then
-         return "";
-      else
-         Canonical_Case_File_Name (Result.all);
-         return Result.all;
-      end if;
-   end Path_Name_Of;
-
-   function Path_Name_Of
-     (File_Name : String_Id;
       Directory : Name_Id)
       return      String
    is
@@ -2274,12 +2440,12 @@ package body Prj.Nmsc is
    -------------------
 
    procedure Record_Source
-     (File_Name        : Name_Id;
-      Path_Name        : Name_Id;
-      Project          : Project_Id;
-      Data             : in out Project_Data;
-      Location         : Source_Ptr;
-      Current_Source   : in out String_List_Id)
+     (File_Name          : Name_Id;
+      Path_Name          : Name_Id;
+      Project            : Project_Id;
+      Data               : in out Project_Data;
+      Location           : Source_Ptr;
+      Current_Source     : in out String_List_Id)
    is
       Unit_Name    : Name_Id;
       Unit_Kind    : Spec_Or_Body;
@@ -2367,18 +2533,18 @@ package body Prj.Nmsc is
                      The_Location := Projects.Table (Project).Location;
                   end if;
 
-                  Error_Msg_Name_1 := Unit_Name;
+                  Errout.Error_Msg_Name_1 := Unit_Name;
                   Error_Msg ("duplicate source {", The_Location);
 
-                  Error_Msg_Name_1 :=
+                  Errout.Error_Msg_Name_1 :=
                     Projects.Table
                       (The_Unit_Data.File_Names (Unit_Kind).Project).Name;
-                  Error_Msg_Name_2 :=
+                  Errout.Error_Msg_Name_2 :=
                     The_Unit_Data.File_Names (Unit_Kind).Path;
                   Error_Msg ("\   project file {, {", The_Location);
 
-                  Error_Msg_Name_1 := Projects.Table (Project).Name;
-                  Error_Msg_Name_2 := Path_Name;
+                  Errout.Error_Msg_Name_1 := Projects.Table (Project).Name;
+                  Errout.Error_Msg_Name_2 := Path_Name;
                   Error_Msg ("\   project file {, {", The_Location);
 
                end if;

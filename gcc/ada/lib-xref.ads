@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1998-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,37 +40,41 @@ package Lib.Xref is
 
    --  Cross-reference sections follow the dependency section (D lines) in
    --  an ALI file, so that they need not be read by gnatbind, gnatmake etc.
-   --
+
    --  A cross reference section has a header of the form
-   --
+
    --     X  dependency-number  filename
-   --
+
    --        This header precedes xref information (entities/references from
    --        the unit, identified by dependency number and file name. The
    --        dependency number is the index into the generated D lines and
    --        is ones origin (i.e. 2 = reference to second generated D line).
-   --
+
    --        Note that the filename here will reflect the original name if
    --        a Source_Reference pragma was encountered (since all line number
    --        references will be with respect to the original file).
-   --
+
    --  The lines following the header look like
-   --
+
    --     line type col level entity renameref typeref ref  ref  ref
-   --
-   --        line is the line number of the referenced entity. It starts
-   --        in column one.
-   --
+
+   --        line is the line number of the referenced entity. The name of
+   --        the entity starts in column col. Columns are numbered from one,
+   --        and if horizontal tab characters are present, the column number
+   --        is computed assuming standard 1,9,17,.. tab stops. For example,
+   --        if the entity is the first token on the line, and is preceded
+   --        by space-HT-space, then the column would be column 10.
+
    --        type is a single letter identifying the type of the entity.
    --        See next section (Cross-Reference Entity Identifiers) for a
    --        full list of the characters used).
-   --
+
    --        col is the column number of the referenced entity
-   --
+
    --        level is a single character that separates the col and
    --        entity fields. It is an asterisk for a top level library
    --        entity that is publicly visible, and space otherwise.
-   --
+
    --        entity is the name of the referenced entity, with casing in
    --        the canical casing for the source file where it is defined.
 
@@ -79,32 +83,33 @@ package Lib.Xref is
    --        a renaming declaration, and the renaming refers to an entity
    --        with a simple identifier or expanded name, then renameref has
    --        the form:
-   --
+
    --            =line:col
-   --
+
    --        Here line:col give the reference to the identifier that
    --        appears in the renaming declaration. Note that we never need
    --        a file entry, since this identifier is always in the current
    --        file in which the entity is declared. Currently, renameref
    --        appears only for the simple renaming case. If the renaming
    --        reference is a complex expressions, then renameref is omitted.
-   --
+   --        Here line/col give line/column as defined above.
+
    --        typeref is the reference for a related type. This part is
    --        optional. It is present for the following cases:
-   --
+
    --          derived types (points to the parent type)   LR=<>
    --          access types (points to designated type)    LR=()
    --          subtypes (points to ancestor type)          LR={}
    --          functions (points to result type)           LR={}
    --          enumeration literals (points to enum type)  LR={}
    --          objects and components (points to type)     LR={}
-   --
+
    --          In the above list LR shows the brackets used in the output,
    --          which has one of the two following forms:
-   --
+
    --            L file | line type col R      user entity
    --            L name-in-lower-case   R      standard entity
-   --
+
    --          For the form for a user entity, file is the dependency number
    --          of the file containing the declaration of the related type.
    --          This number and the following vertical bar are omitted if the
@@ -113,26 +118,32 @@ package Lib.Xref is
    --          specify the location of the relevant type declaration in the
    --          referenced file. For the standard entity form, the name between
    --          the brackets is the normal name of the entity in lower case.
-   --
+
    --     There may be zero or more ref entries on each line
-   --
+
    --        file | line type col [...]
-   --
+
    --           file is the dependency number of the file with the reference.
    --           It and the following vertical bar are omitted if the file is
    --           the same as the previous ref, and the refs for the current
    --           file are first (and do not need a bar).
-   --
+
+   --           line is the line number of the reference
+
+   --           col is the column number of the reference, as defined above.
+
    --           type is one of
-   --              r = reference
-   --              m = modification
    --              b = body entity
    --              c = completion of private or incomplete type
-   --              x = type extension
-   --              i = implicit reference
    --              e = end of spec
+   --              i = implicit reference
+   --              l = label on end line
+   --              m = modification
+   --              p = primitive operation
+   --              r = reference
    --              t = end of body
-   --
+   --              x = type extension
+
    --           b is used for spec entities that are repeated in a body,
    --           including the unit (subprogram, package, task, protected
    --           body, protected entry) name itself, and in the case of a
@@ -141,53 +152,72 @@ package Lib.Xref is
    --           are not considered to be definitions for cross-referencing
    --           purposes, but rather are considered to be references to the
    --           corresponding spec entities, marked with this special type.
-   --
-   --           c is similarly used to mark the completion of a private or
-   --           incomplete type. Again, the completion is not regarded as
-   --           a separate definition, but rather a reference to the initial
-   --           declaration, marked with this special type.
-   --
-   --           x is used to identify the reference as the entity from which
-   --           a tagged type is extended. This allows immediate access to
-   --           the parent of a tagged type.
-   --
-   --           i is used to identify a reference to the entity in a generic
-   --           actual or in a default in a call. The node that denotes the
-   --           entity does not come from source, but it has the Sloc of the
-   --           source node that generates the implicit reference, and it is
-   --           useful to record this one.
-   --
+
+   --           c is similar to b but is used to mark the completion of a
+   --           private or incomplete type. As with b, the completion is not
+   --           regarded as a separate definition, but rather a reference to
+   --           the initial declaration, marked with this special type.
+
    --           e is used to identify the end of a construct in the following
    --           cases:
-   --
+
    --             Block Statement        end [block_IDENTIFIER];
    --             Loop Statement         end loop [loop_IDENTIFIER];
    --             Package Specification  end [[PARENT_UNIT_NAME .] IDENTIFIER];
    --             Task Definition        end [task_IDENTIFIER];
    --             Protected Definition   end [protected_IDENTIFIER];
    --             Record Definition      end record;
-   --
-   --           Note that 'e' entries are special in that you get they appear
-   --           even in referencing units (normally xref entries appear only
+   --             Enumeration Definition );
+
+   --           Note that 'e' entries are special in that they appear even
+   --           in referencing units (normally xref entries appear only
    --           for references in the extended main source unit (see Lib) to
    --           which the ali applies. But 'e' entries are really structural
    --           and simply indicate where packages end. This information can
    --           be used to reconstruct scope information for any entities
-   --           referenced from within the package.
-   --
-   --           t is similarly used to identify the end of a corresponding
+   --           referenced from within the package. The line/column values
+   --           for these entries point to the semicolon ending the construct.
+
+   --           i is used to identify a reference to the entity in a generic
+   --           actual or in a default in a call. The node that denotes the
+   --           entity does not come from source, but it has the Sloc of the
+   --           source node that generates the implicit reference, and it is
+   --           useful to record this one.
+
+   --           l is used to identify the occurrence in the source of the
+   --           name on an end line. This is just a syntactic reference
+   --           which can be ignored for semantic purposes (such as call
+   --           graph construction). Again, in the case of an accept there
+   --           can be multiple l lines.
+
+   --           p is used to mark a primitive operation of the given entity.
+   --           For example, if we have a type Tx, and a primitive operation
+   --           Pq of this type, then an entry in the list of references to
+   --           Tx will point to the declaration of Pq. Note that this entry
+   --           type is unusual because it an implicit rather than explicit,
+   --           and the name of the refrerence does not match the name of the
+   --           entity for which a reference is generated. These entries are
+   --           generated only for entities declared in the extended main
+   --           source unit (main unit itself, its separate spec (if any).
+   --           and all subunits (considered recursively).
+
+   --           t is similar to e. It identifies the end of a corresponding
    --           body (such a reference always links up with a b reference)
-   --
+
    --             Subprogram Body        end [DESIGNATOR];
    --             Package Body           end [[PARENT_UNIT_NAME .] IDENTIFIER];
    --             Task Body              end [task_IDENTIFIER];
    --             Entry Body             end [entry_IDENTIFIER];
    --             Protected Body         end [protected_IDENTIFIER]
    --             Accept Statement       end [entry_IDENTIFIER]];
-   --
+
    --           Note that in the case of accept statements, there can
-   --           be multiple b and T/t entries for the same entity.
-   --
+   --           be multiple b and t entries for the same entity.
+
+   --           x is used to identify the reference as the entity from which
+   --           a tagged type is extended. This allows immediate access to
+   --           the parent of a tagged type.
+
    --           [..] is used for generic instantiation references. These
    --           references are present only if the entity in question is
    --           a generic entity, and in that case the [..] contains the
@@ -199,58 +229,58 @@ package Lib.Xref is
    --           of file numbers in such references follows the normal
    --           rules (present only if needed, and resets the current
    --           file for subsequent references).
-   --
+
    --     Examples:
-   --
+
    --        44B5*Flag_Type{boolean} 5r23 6m45 3|9r35 11r56
-   --
+
    --           This line gives references for the publicly visible Boolean
    --           type Flag_Type declared on line 44, column 5. There are four
    --           references
-   --
+
    --              a reference on line 5, column 23 of the current file
-   --
+
    --              a modification on line 6, column 45 of the current file
-   --
+
    --              a reference on line 9, column 35 of unit number 3
-   --
+
    --              a reference on line 11, column 56 of unit number 3
-   --
+
    --        2U13 p3=2:35 5b13 8r4 12r13 12t15
-   --
+
    --           This line gives references for the non-publicly visible
    --           procedure p3 declared on line 2, column 13. This procedure
    --           renames the procedure whose identifier reference is at
    --           line 2 column 35. There are four references:
-   --
+
    --              the corresponding body entity at line 5, column 13,
    --              of the current file.
-   --
+
    --              a reference (e.g. a call) at line 8 column 4 of the
    --              of the current file.
-   --
+
    --              the END line of the body has an explict reference to
    --              the name of the procedure at line 12, column 13.
-   --
+
    --              the body ends at line 12, column 15, just past this label.
-   --
+
    --        16I9*My_Type<2|4I9> 18r8
-   --
+
    --           This line gives references for the publicly visible Integer
    --           derived type My_Type declared on line 16, column 9. It also
    --           gives references to the parent type declared in the unit
    --           number 2 on line 4, column 9. There is one reference:
-   --
+
    --              a reference (e.g. a variable declaration) at line 18 column
    --              4 of the current file.
-   --
+
    --        10I3*Genv{integer} 3|4I10[6|12]
-   --
+
    --           This line gives a reference for the entity Genv in a generic
    --           package. The reference in file 3, line 4, col 10, refers to
    --           an instance of the generic where the instantiation can be
    --           found in file 6 at line 12.
-   --
+
    --  Continuation lines are used if the reference list gets too long,
    --  a continuation line starts with a period, and then has references
    --  continuing from the previous line. The references are sorted first
@@ -439,15 +469,15 @@ package Lib.Xref is
    --  This procedure is called to record a reference. N is the location
    --  of the reference and E is the referenced entity. Typ is one of:
    --
-   --    'b'  body entity (see below)
+   --    'b'  body entity
    --    'c'  completion of incomplete or private type (see below)
-   --    'E'  end of spec (label present)
-   --    'e'  end of spec (no label present)
+   --    'e'  end of construct
    --    'i'  implicit reference
+   --    'l'  label on end line
    --    'm'  modification
+   --    'p'  primitive operation
    --    'r'  standard reference
-   --    'T'  end of body (label present)
-   --    't'  end of body (no label present)
+   --    't'  end of body
    --    'x'  type extension
    --    ' '  dummy reference (see below)
    --
@@ -459,23 +489,29 @@ package Lib.Xref is
    --  for the spec. The entity in the body is treated as a reference
    --  with type 'b'. Similar handling for references to subprogram formals.
    --
-   --  The call has no effect if N is not in the extended main source unit.
-   --  If N is in the extended main source unit, then the Is_Referenced
-   --  flag of E is set. In addition, if appropriate, a cross-reference
-   --  entry is made. The entry is made if:
+   --  The call has no effect if N is not in the extended main source unit
+   --  This check is omitted for type 'e' references (where it is useful to
+   --  have structural scoping information for other than the main source),
+   --  and for 'p' (since we want to pick up inherited primitive operations
+   --  that are defined in other packages).
    --
-   --    cross-reference collection is enabled
-   --    both entity and reference come from source (or Force is True)
-   --    the entity is one for which xrefs are appropriate
-   --    the type letter is non-blank
-   --    the node N is an identifier, defining identifier, or expanded name
+   --  The call also has no effect if any of the following conditions hold:
    --
-   --  If all these conditions are met, then a cross-reference entry is
-   --  made for later output when Output_References is called.
+   --    cross-reference collection is disabled
+   --    entity does not come from source (and Force is False)
+   --    reference does not come from source (and Force is False)
+   --    the entity is not one for which xrefs are appropriate
+   --    the type letter is blank
+   --    the node N is not an identifier, defining identifier, or expanded name
+   --    the type is 'p' and the entity is not in the extended main source
    --
-   --  Note: the dummy entry is for the convenience of some callers, who
-   --  find it easier to pass a space to suppress the entry than to do a
-   --  specific test. The call has no effect if the type is a space.
+   --  If all these conditions are met, then the Is_Referenced flag of E
+   --  is set (unless Set_Ref is False) and a cross-reference entry is
+   --  recorded for later output when Output_References is called.
+   --
+   --  Note: the dummy space entry is for the convenience of some callers,
+   --  who find it easier to pass a space to suppress the entry than to do
+   --  a specific test. The call has no effect if the type is a space.
    --
    --  The parameter Set_Ref is normally True, and indicates that in
    --  addition to generating a cross-reference, the Referenced flag

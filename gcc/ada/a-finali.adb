@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -51,6 +51,8 @@ package body Ada.Finalization is
    ------------
 
    procedure Adjust (Object : in out Controlled) is
+      pragma Warnings (Off, Object);
+
    begin
       null;
    end Adjust;
@@ -60,11 +62,15 @@ package body Ada.Finalization is
    --------------
 
    procedure Finalize (Object : in out Controlled) is
+      pragma Warnings (Off, Object);
+
    begin
       null;
    end Finalize;
 
    procedure Finalize (Object : in out Limited_Controlled) is
+      pragma Warnings (Off, Object);
+
    begin
       null;
    end Finalize;
@@ -74,11 +80,15 @@ package body Ada.Finalization is
    ----------------
 
    procedure Initialize (Object : in out Controlled) is
+      pragma Warnings (Off, Object);
+
    begin
       null;
    end Initialize;
 
    procedure Initialize (Object : in out Limited_Controlled) is
+      pragma Warnings (Off, Object);
+
    begin
       null;
    end Initialize;

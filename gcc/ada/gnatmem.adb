@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1997-2001, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1997-2002, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -328,8 +328,8 @@ procedure Gnatmem is
          Put_Line (FD, "   silent");
          Put_Line (FD, "   set lang c");
          Put_Line (FD, "   set print address on");
-         Put_Line (FD, "   finish");
-         Put_Line (FD, "   set $gm_addr = $");
+         Put_Line (FD, "   up");
+         Put_Line (FD, "   set $gm_addr = $pc");
          Put_Line (FD, "   printf ""\n\n""");
          Put_Line (FD, "   printf ""ALLOC^0x%x^\n"", $gm_addr");
          Put_Line (FD, "   set print address off");
@@ -341,8 +341,8 @@ procedure Gnatmem is
          Put_Line (FD, "   set lang c");
          Put_Line (FD, "   set $gm_size = size");
          Put_Line (FD, "   set print address on");
-         Put_Line (FD, "   finish");
-         Put_Line (FD, "   set $gm_addr = $");
+         Put_Line (FD, "   up");
+         Put_Line (FD, "   set $gm_addr = $pc");
          Put_Line (FD, "   printf ""\n\n""");
          Put_Line (FD, "   printf ""ALLOC^%d^0x%x^\n"", $gm_size, $gm_addr");
          Put_Line (FD, "   set print address off");
@@ -352,7 +352,7 @@ procedure Gnatmem is
       Put (FD, "   backtrace");
 
       if BT_Depth /= 0 then
-         Put (FD, Integer'Image (BT_Depth));
+         Put (FD, Integer'Image (BT_Depth + 1));
       end if;
 
       New_Line (FD);
@@ -369,12 +369,12 @@ procedure Gnatmem is
       Put_Line (FD, "   printf ""\n\n""");
       Put_Line (FD, "   printf ""DEALL^0x%x^\n"", ptr");
       Put_Line (FD, "   set print address off");
-      Put_Line (FD, "   finish");
+      Put_Line (FD, "   up");
 
       Put (FD, "   backtrace");
 
       if BT_Depth /= 0 then
-         Put (FD, Integer'Image (BT_Depth));
+         Put (FD, Integer'Image (BT_Depth + 1));
       end if;
 
       New_Line (FD);
@@ -434,7 +434,7 @@ procedure Gnatmem is
       New_Line;
       Put ("GNATMEM ");
       Put (Gnat_Version_String);
-      Put_Line (" Copyright 1997-2000 Free Software Foundation, Inc.");
+      Put_Line (" Copyright 1997-2002 Free Software Foundation, Inc.");
       New_Line;
 
       if Cross_Case then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.25 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -145,23 +145,45 @@ package body Sem_Intr is
    ------------------------------
 
    procedure Check_Intrinsic_Operator (E : Entity_Id; N : Node_Id) is
-      Nam : Name_Id := Chars (E);
+      Ret : constant Entity_Id := Etype (E);
+      Nam : constant Name_Id   := Chars (E);
       T1  : Entity_Id;
       T2  : Entity_Id;
-      Ret : constant Entity_Id := Etype (E);
 
    begin
+      --  Aritnmetic operators
+
       if Nam = Name_Op_Add
-        or else Nam = Name_Op_Subtract
-        or else Nam = Name_Op_Multiply
-        or else Nam = Name_Op_Divide
+           or else
+         Nam = Name_Op_Subtract
+           or else
+         Nam = Name_Op_Multiply
+           or else
+         Nam = Name_Op_Divide
+           or else
+         Nam = Name_Op_Rem
+           or else
+         Nam = Name_Op_Mod
+           or else
+         Nam = Name_Op_Abs
       then
          T1 := Etype (First_Formal (E));
 
          if No (Next_Formal (First_Formal (E))) then
 
-            --  previous error in declaration.
-            return;
+            if Nam = Name_Op_Add
+                 or else
+               Nam = Name_Op_Subtract
+                 or else
+               Nam = Name_Op_Abs
+            then
+               T2 := T1;
+
+            else
+               --  Previous error in declaration
+
+               return;
+            end if;
 
          else
             T2 := Etype (Next_Formal (First_Formal (E)));
@@ -170,17 +192,81 @@ package body Sem_Intr is
          if Root_Type (T1) /= Root_Type (T2)
            or else Root_Type (T1) /= Root_Type (Ret)
          then
-            Errint (
-              "types of intrinsic operator must have the same size", E, N);
-
-         elsif not Is_Numeric_Type (T1) then
-            Errint (
-              " intrinsic operator can only apply to numeric types", E, N);
+            Errint
+              ("types of intrinsic operator must have the same size", E, N);
          end if;
+
+      --  Comparison operators
+
+      elsif Nam = Name_Op_Eq
+              or else
+            Nam = Name_Op_Ge
+              or else
+            Nam = Name_Op_Gt
+              or else
+            Nam = Name_Op_Le
+              or else
+            Nam = Name_Op_Lt
+              or else
+            Nam = Name_Op_Ne
+      then
+         T1 := Etype (First_Formal (E));
+
+         if No (Next_Formal (First_Formal (E))) then
+
+            --  Previous error in declaration
+
+            return;
+
+         else
+            T2 := Etype (Next_Formal (First_Formal (E)));
+         end if;
+
+         if Root_Type (T1) /= Root_Type (T2) then
+            Errint
+              ("types of intrinsic operator must have the same size", E, N);
+         end if;
+
+         if Root_Type (Ret) /= Standard_Boolean then
+            Errint
+              ("result type of intrinsic comparison must be boolean", E, N);
+         end if;
+
+      --  Exponentiation
+
+      elsif Nam = Name_Op_Expon then
+         T1 := Etype (First_Formal (E));
+
+         if No (Next_Formal (First_Formal (E))) then
+
+            --  Previous error in declaration
+
+            return;
+
+         else
+            T2 := Etype (Next_Formal (First_Formal (E)));
+         end if;
+
+         if not (Is_Integer_Type (T1)
+                   or else
+                 Is_Floating_Point_Type (T1))
+           or else Root_Type (T1) /= Root_Type (Ret)
+           or else Root_Type (T2) /= Root_Type (Standard_Integer)
+         then
+            Errint ("incorrect operands for intrinsic operator", N, E);
+         end if;
+
+      --  All other operators (are there any?) are not handled
 
       else
          Errint ("incorrect context for ""Intrinsic"" convention", E, N);
+         return;
       end if;
+
+      if not Is_Numeric_Type (T1) then
+         Errint ("intrinsic operator can only apply to numeric types", E, N);
+      end if;
+
    end Check_Intrinsic_Operator;
 
    --------------------------------

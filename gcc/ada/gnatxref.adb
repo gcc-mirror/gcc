@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.21 $
+--                            $Revision$
 --                                                                          --
---         Copyright (C) 1998-2001 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2002 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,13 +25,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Xr_Tabls;
-with Xref_Lib; use Xref_Lib;
-with Ada.Text_IO;
-with Ada.Strings.Fixed;
-with GNAT.Command_Line;
+with Xr_Tabls;     use Xr_Tabls;
+with Xref_Lib;     use Xref_Lib;
+with Osint;        use Osint;
+with Types;        use Types;
+
 with Gnatvsn;
-with Osint;
+with Opt;
+
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Text_IO;       use Ada.Text_IO;
+with GNAT.Command_Line; use GNAT.Command_Line;
 
 procedure Gnatxref is
 
@@ -59,20 +63,25 @@ procedure Gnatxref is
    procedure Parse_Cmd_Line is
    begin
       loop
-         case GNAT.Command_Line.Getopt ("a aI: aO: d f g h I: p: u v") is
+         case
+           GNAT.Command_Line.Getopt
+             ("a aI: aO: d f g h I: nostdinc nostdlib p: u v -RTS=")
+         is
             when ASCII.NUL =>
                exit;
 
             when 'a'    =>
                if GNAT.Command_Line.Full_Switch = "a" then
                   Read_Only := True;
+
                elsif GNAT.Command_Line.Full_Switch = "aI" then
                   Osint.Add_Src_Search_Dir (GNAT.Command_Line.Parameter);
+
                else
                   Osint.Add_Lib_Search_Dir (GNAT.Command_Line.Parameter);
                end if;
 
-            when 'd' =>
+            when 'd'    =>
                Der_Info := True;
 
             when 'f'    =>
@@ -87,6 +96,13 @@ procedure Gnatxref is
             when 'I'    =>
                Osint.Add_Src_Search_Dir (GNAT.Command_Line.Parameter);
                Osint.Add_Lib_Search_Dir (GNAT.Command_Line.Parameter);
+
+            when 'n'    =>
+               if GNAT.Command_Line.Full_Switch = "nostdinc" then
+                  Opt.No_Stdinc := True;
+               elsif GNAT.Command_Line.Full_Switch = "nostlib" then
+                  Opt.No_Stdlib := True;
+               end if;
 
             when 'p'    =>
                declare
@@ -104,6 +120,40 @@ procedure Gnatxref is
             when 'v'    =>
                Vi_Mode := True;
                Search_Unused := False;
+
+            --  The only switch starting with -- recognized is --RTS
+
+            when '-'    =>
+               Opt.No_Stdinc  := True;
+               Opt.RTS_Switch := True;
+
+               declare
+                  Src_Path_Name : String_Ptr :=
+                                    Get_RTS_Search_Dir
+                                      (GNAT.Command_Line.Parameter, Include);
+
+                  Lib_Path_Name : String_Ptr :=
+                                    Get_RTS_Search_Dir
+                                      (GNAT.Command_Line.Parameter, Objects);
+
+               begin
+                  if Src_Path_Name /= null and then Lib_Path_Name /= null then
+                     Add_Search_Dirs (Src_Path_Name, Include);
+                     Add_Search_Dirs (Lib_Path_Name, Objects);
+
+                  elsif Src_Path_Name = null and then Lib_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adainclude and adalib directories");
+
+                  elsif Src_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adainclude directory");
+
+                  elsif  Lib_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adalib directory");
+                  end if;
+               end;
 
             when others =>
                Write_Usage;
@@ -125,7 +175,7 @@ procedure Gnatxref is
                Write_Usage;
             end if;
 
-            Add_File (S);
+            Add_Xref_File (S);
             Have_File := True;
          end;
       end loop;
@@ -138,7 +188,7 @@ procedure Gnatxref is
 
       when GNAT.Command_Line.Invalid_Parameter =>
          Ada.Text_IO.Put_Line ("Parameter missing for : "
-                               & GNAT.Command_Line.Parameter);
+                               & GNAT.Command_Line.Full_Switch);
          Write_Usage;
    end Parse_Cmd_Line;
 
@@ -151,24 +201,30 @@ procedure Gnatxref is
 
    begin
       Put_Line ("GNATXREF " & Gnatvsn.Gnat_Version_String
-                & " Copyright 1998-2001, Ada Core Technologies Inc.");
+                & " Copyright 1998-2002, Ada Core Technologies Inc.");
       Put_Line ("Usage: gnatxref [switches] file1 file2 ...");
       New_Line;
       Put_Line ("  file ... list of source files to xref, " &
                 "including with'ed units");
       New_Line;
       Put_Line ("gnatxref switches:");
-      Put_Line ("   -a      Consider all files, even when the ali file is"
+      Put_Line ("   -a        Consider all files, even when the ali file is"
                 & " readonly");
-      Put_Line ("   -aIdir  Specify source files search path");
-      Put_Line ("   -aOdir  Specify library/object files search path");
-      Put_Line ("   -d      Output derived type information");
-      Put_Line ("   -f      Output full path name");
-      Put_Line ("   -g      Output information only for global symbols");
-      Put_Line ("   -Idir   Like -aIdir -aOdir");
-      Put_Line ("   -p file Use file as the default project file");
-      Put_Line ("   -u      List unused entities");
-      Put_Line ("   -v      Print a 'tags' file for vi");
+      Put_Line ("   -aIdir    Specify source files search path");
+      Put_Line ("   -aOdir    Specify library/object files search path");
+      Put_Line ("   -d        Output derived type information");
+      Put_Line ("   -f        Output full path name");
+      Put_Line ("   -g        Output information only for global symbols");
+      Put_Line ("   -Idir     Like -aIdir -aOdir");
+      Put_Line ("   -nostdinc Don't look for sources in the system default"
+                & " directory");
+      Put_Line ("   -nostdlib Don't look for library files in the system"
+                & " default directory");
+      Put_Line ("   --RTS=dir specify the default source and object search"
+                & " path");
+      Put_Line ("   -p file   Use file as the default project file");
+      Put_Line ("   -u        List unused entities");
+      Put_Line ("   -v        Print a 'tags' file for vi");
       New_Line;
 
       raise Usage_Error;

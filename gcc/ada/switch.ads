@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.17 $                             --
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -26,11 +26,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package scans switches. Note that the body of Usage must be
---  coordinated with the switches that are recognized by this package.
---  The Usage package also acts as the official documentation for the
+--  This package together with a child package appropriate to the client
+--  tool scans switches. Note that the body of the appropraite Usage package
+--  must be coordinated with the switches that are recognized by this package.
+--  These Usage packages also act as the official documentation for the
 --  switches that are recognized. In addition, package Debug documents
 --  the otherwise undocumented debug switches that are also recognized.
+
+with Types; use Types;
 
 package Switch is
 
@@ -55,15 +58,43 @@ package Switch is
    --  Returns True iff Switch_Chars represents a front-end switch,
    --  ie. it starts with -I or -gnat.
 
-   procedure Scan_Front_End_Switches (Switch_Chars : String);
-   procedure Scan_Binder_Switches (Switch_Chars : String);
-   procedure Scan_Make_Switches (Switch_Chars : String);
-   --  Procedures to scan out switches stored in the given string. The first
-   --  character is known to be a valid switch character, and there are no
-   --  blanks or other switch terminator characters in the string, so the
-   --  entire string should consist of valid switch characters, except that
-   --  an optional terminating NUL character is allowed. A bad switch causes
-   --  a fatal error exit and control does not return. The call also sets
-   --  Usage_Requested to True if a ? switch is encountered.
+private
+
+   --  This section contains some common routines used by the tool dependent
+   --  child packages (there is one such child package for each tool that
+   --  uses Switches to scan switches - Compiler/gnatbind/gnatmake/.
+
+   Bad_Switch : exception;
+   --  Exception raised if bad switch encountered
+
+   Bad_Switch_Value : exception;
+   --  Exception raised if bad switch value encountered
+
+   Missing_Switch_Value : exception;
+   --  Exception raised if no switch value encountered
+
+   Too_Many_Output_Files : exception;
+   --  Exception raised if the -o switch is encountered more than once
+
+   Switch_Max_Value : constant := 999;
+   --  Maximum value permitted in switches that take a value
+
+   procedure Scan_Nat
+     (Switch_Chars : String;
+      Max          : Integer;
+      Ptr          : in out Integer;
+      Result       : out Nat);
+   --  Scan natural integer parameter for switch. On entry, Ptr points
+   --  just past the switch character, on exit it points past the last
+   --  digit of the integer value.
+
+   procedure Scan_Pos
+     (Switch_Chars : String;
+      Max          : Integer;
+      Ptr          : in out Integer;
+      Result       : out Pos);
+   --  Scan positive integer parameter for switch. On entry, Ptr points
+   --  just past the switch character, on exit it points past the last
+   --  digit of the integer value.
 
 end Switch;

@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Ada (GNAT).
-#   Copyright (C) 1994, 1995, 1996, 1997, 1997, 1999, 2000, 2001
+#   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
 #   Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
@@ -22,7 +22,7 @@
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
 #
-# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
@@ -47,21 +47,21 @@ shext  =
 
 # Extra flags to pass to recursive makes.
 BOOT_ADAFLAGS= $(ADAFLAGS)
-ADAFLAGS= -W -Wall -gnatpg -gnata
+ADAFLAGS= -gnatpg -gnata
 GNATLIBFLAGS= -W -Wall -gnatpg
 GNATLIBCFLAGS= -g -O2
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 THREAD_KIND=native
+TRACE=no
 GNATBIND = gnatbind
 ADA_FLAGS_TO_PASS = \
-	"ADA_CFLAGS=$(CFLAGS)" \
-	"ADA_FOR_BUILD=$(ADA_FOR_BUILD)" \
-	"ADA_INCLUDE_DIR=$(ADA_INCLUDE_DIR)" \
-	"ADA_RTL_OBJ_DIR=$(ADA_RTL_OBJ_DIR)" \
-	"ADAFLAGS=$(ADAFLAGS)" \
-	"ADA_FOR_TARGET=$(ADA_FOR_TARGET)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
+	"ADA_FOR_BUILD=$(ADA_FOR_BUILD)"	\
+	"ADA_INCLUDE_DIR=$(ADA_INCLUDE_DIR)"	\
+	"ADA_RTL_OBJ_DIR=$(ADA_RTL_OBJ_DIR)"	\
+	"ADAFLAGS=$(ADAFLAGS)"			\
+	"ADA_FOR_TARGET=$(ADA_FOR_TARGET)"	\
+	"INSTALL_DATA=$(INSTALL_DATA)"		\
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)"
 
 # Define the names for selecting Ada in LANGUAGES.
@@ -72,110 +72,79 @@ Ada ada: gnat1$(exeext) gnatbind$(exeext)
 
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
+ADA_TOOLS_FLAGS_TO_PASS=\
+        "CC=../../xgcc -B../../"	\
+        "CFLAGS=$(CFLAGS)"		\
+	"exeext=$(exeext)"              \
+        "ADAFLAGS=$(ADAFLAGS)"		\
+        "ADA_INCLUDES=-I../rts"		\
+	"GNATMAKE=../../gnatmake"	\
+	"GNATLINK=../../gnatlink"	\
+	"GNATBIND=../../gnatbind"
+
 gnat1$(exeext): prefix.o attribs.o $(LIBDEPS) $(BACKEND) force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+	$(MAKE) -C ada $(SUBDIR_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 		../gnat1$(exeext)
 
-gnatbind$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+gnatbind$(exeext): force
+	$(MAKE) -C ada $(SUBDIR_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 		../gnatbind$(exeext)
 
-gnatmake$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatmake$(exeext)
-
-gnatbl$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatbl$(exeext)
-
-gnatchop$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatchop$(exeext)
-
-gnatcmd$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatcmd$(exeext)
-
-gnatlink$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatlink$(exeext)
-
-gnatkr$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatkr$(exeext)
-
-gnatls$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatls$(exeext)
-
-gnatmem$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatmem$(exeext)
-
-gnatprep$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatprep$(exeext)
-
-gnatpsta$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatpsta$(exeext)
-
-gnatpsys$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatpsys$(exeext)
-
-gnatxref$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatxref$(exeext)
-
-gnatfind$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatfind$(exeext)
-
-# Gnatlbr is extra tool only used on VMS
-
-gnatlbr$(exeext): $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-		../gnatlbr$(exeext)
-
-# use target-gcc
+# use target-gcc target-gnatmake target-gnatbind target-gnatlink 
 gnattools: $(GCC_PARTS) force
-	$(MAKE) $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-	   CC="../xgcc -B../" STAGE_PREFIX=../ \
-	   gnatbl$(exeext) gnatchop$(exeext) gnatcmd$(exeext) \
-	   gnatkr$(exeext) gnatlink$(exeext) \
-	   gnatls$(exeext) gnatmake$(exeext) \
-	   gnatprep$(exeext) gnatpsta$(exeext) gnatpsys$(exeext) \
-       gnatxref$(exeext) gnatfind$(exeext) $(EXTRA_GNATTOOLS)
+	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+	   ADA_INCLUDES="-I- -I../rts"\
+	   CC="../../xgcc -B../../" STAGE_PREFIX=../../  gnattools1
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
 
-# use host-gcc
+regnattools: 
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
+
+# use host-gcc host-gnatmake host-gnatbind host-gnatlink
+# put the host RTS dir first in the PATH to hide the default runtime
+# files that are among the sources
+RTS_DIR:=$(dir $(subst \,/,$(shell $(CC) -print-libgcc-file-name)))
 cross-gnattools: force
-	$(MAKE) $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-	   gnatbl$(exeext) gnatchop$(exeext) gnatcmd$(exeext) \
-	   gnatkr$(exeext) gnatlink$(exeext) \
-	   gnatls$(exeext) gnatmake$(exeext) \
-	   gnatprep$(exeext) gnatpsta$(exeext) gnatpsys$(exeext) \
-	   gnatxref$(exeext) gnatfind$(exeext) $(EXTRA_GNATTOOLS)
+	$(MAKE)  -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)\
+	   ADA_INCLUDES="-I$(RTS_DIR)adainclude -I$(RTS_DIR)adalib" \
+	   GNATMAKE="gnatmake" \
+           GNATBIND="gnatbind" \
+           GNATLINK="gnatlink" \
+           LIBGNAT="" \
+	   gnattools1-re gnattools2
+  
+rts-none: force
+	$(MAKE) -C ada  $(FLAGS_TO_PASS) GNATMAKE=../gnatmake rts-none
 
-# use target-gcc
+install-rts-none: force
+	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=none
+
+rts-ravenscar: force
+	$(MAKE) -C ada  $(FLAGS_TO_PASS) GNATMAKE=../gnatmake rts-ravenscar
+
+install-rts-ravenscar: force
+	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=ravenscar
+
 gnatlib: force
 	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
-	   CC="../xgcc -B../" ADAC="../xgcc -B../" STAGE_PREFIX=../ \
 	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	   THREAD_KIND="$(THREAD_KIND)" \
+	   TRACE="$(TRACE)" \
 	   gnatlib
 
-# use target-gcc
 gnatlib-shared: force
 	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
-	   CC="../xgcc -B../" ADAC="../xgcc -B../" STAGE_PREFIX=../ \
 	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	   GNATLIBLDFLAGS="$(GNATLIBLDFLAGS)" \
 	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	   THREAD_KIND="$(THREAD_KIND)" \
+	   TRACE="$(TRACE)" \
 	   gnatlib-shared
 
 # use only for native compiler
@@ -187,7 +156,6 @@ gnat-cross: force
 
 # Build hooks:
 
-ada.all.build: 
 ada.all.cross:
 	-if [ -f gnatbind$(exeext) ] ; \
 	then \
@@ -201,9 +169,9 @@ ada.all.cross:
 	then \
 	  $(MV) gnatchop$(exeext)   gnatchop-cross$(exeext); \
 	fi
-	-if [ -f gnatcmd$(exeext) ] ; \
+	-if [ -f gnat$(exeext) ] ; \
 	then \
-	   $(MV) gnatcmd$(exeext)  gnatcmd-cross$(exeext); \
+	   $(MV) gnat$(exeext)  gnat-cross$(exeext); \
 	fi
 	-if [ -f gnatkr$(exeext) ] ; \
 	then \
@@ -225,6 +193,10 @@ ada.all.cross:
 	then \
 	   $(MV) gnatmem$(exeext)  gnatmem-cross$(exeext); \
 	fi
+	-if [ -f gnatname$(exeext) ] ; \
+	then \
+	   $(MV) gnatname$(exeext)  gnatname-cross$(exeext); \
+	fi
 	-if [ -f gnatprep$(exeext) ] ; \
 	then \
 	   $(MV) gnatprep$(exeext)  gnatprep-cross$(exeext); \
@@ -232,10 +204,6 @@ ada.all.cross:
 	-if [ -f gnatpsta$(exeext) ] ; \
 	then \
 	   $(MV) gnatpsta$(exeext)  gnatpsta-cross$(exeext); \
-	fi
-	-if [ -f gnatpsys$(exeext) ] ; \
-	then \
-	   $(MV) gnatpsys$(exeext)  gnatpsys-cross$(exeext); \
 	fi
 	-if [ -f gnatxref$(exeext) ] ; \
 	then \
@@ -259,7 +227,7 @@ ada.install-normal:
 
 # Install the binder program as $(target_alias)-gnatbind
 # and also as either gnatbind (if native) or $(tooldir)/bin/gnatbind
-# likewise for gnatf, gnatchop, and gnatlink, gnatkr, gnatmake, gnatcmd,
+# likewise for gnatf, gnatchop, and gnatlink, gnatkr, gnatmake, gnat,
 # gnatprep, gnatbl, gnatls, gnatxref, gnatfind
 ada.install-common:
 	-if [ -f gnat1$(exeext) ] ; \
@@ -294,7 +262,7 @@ ada.install-common:
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  if [ -f gnatchop-cross$(exeext) ] ; \
+	  if [ -f gnatchop-cross$(shext) ] ; \
 	  then \
 	    $(RM) $(bindir)/$(target_alias)-gnatchop$(shext); \
 	    $(INSTALL_PROGRAM) $(srcdir)/ada/gnatchop$(shext) $(bindir)/$(target_alias)-gnatchop$(shext); \
@@ -324,17 +292,17 @@ ada.install-common:
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  if [ -f gnatcmd-cross$(exeext) ] ; \
+	  if [ -f gnat-cross$(exeext) ] ; \
 	  then \
 	    $(RM) $(bindir)/$(target_alias)-gnat$(exeext); \
-	    $(INSTALL_PROGRAM) gnatcmd-cross$(exeext) $(bindir)/$(target_alias)-gnat$(exeext); \
+	    $(INSTALL_PROGRAM) gnat-cross$(exeext) $(bindir)/$(target_alias)-gnat$(exeext); \
 	    if [ -d $(tooldir)/bin/. ] ; then \
 	       rm -f $(tooldir)/bin/gnat$(exeext); \
-	       $(INSTALL_PROGRAM) gnatcmd-cross$(exeext) $(tooldir)/bin/gnat$(exeext); \
+	       $(INSTALL_PROGRAM) gnat-cross$(exeext) $(tooldir)/bin/gnat$(exeext); \
             fi; \
 	  else \
 	    $(RM) $(bindir)/gnat$(exeext); \
-	    $(INSTALL_PROGRAM) gnatcmd$(exeext) $(bindir)/gnat$(exeext); \
+	    $(INSTALL_PROGRAM) gnat$(exeext) $(bindir)/gnat$(exeext); \
 	  fi ; \
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
@@ -410,6 +378,17 @@ ada.install-common:
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
+	  if [ -f gnatname-cross$(exeext) ] ; \
+	  then \
+	    $(RM) $(bindir)/$(target_alias)-gnatname$(exeext); \
+	    $(INSTALL_PROGRAM) gnatname-cross$(exeext) $(bindir)/$(target_alias)-gnatname$(exeext); \
+	  else \
+	    $(RM) $(bindir)/gnatname$(exeext); \
+	    $(INSTALL_PROGRAM) gnatname$(exeext) $(bindir)/gnatname$(exeext); \
+	  fi ; \
+	fi
+	-if [ -f gnat1$(exeext) ] ; \
+	then \
 	  if [ -f gnatprep-cross$(exeext) ] ; \
 	  then \
 	    $(RM) $(bindir)/$(target_alias)-gnatprep$(exeext); \
@@ -440,21 +419,6 @@ ada.install-common:
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  if [ -f gnatpsys-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(bindir)/$(target_alias)-gnatpsys$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsys-cross$(exeext) $(bindir)/$(target_alias)-gnatpsys$(exeext); \
-	    if [ -d $(tooldir)/bin/. ] ; then \
-	       rm -f $(tooldir)/bin/gnatpsys$(exeext); \
-	       $(INSTALL_PROGRAM) gnatpsys-cross$(exeext) $(tooldir)/bin/gnatpsys$(exeext); \
-            fi; \
-	  else \
-	    $(RM) $(bindir)/gnatpsys$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsys$(exeext) $(bindir)/gnatpsys$(exeext); \
-	  fi ; \
-    fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
 	  if [ -f gnatxref-cross$(exeext) ] ; \
 	  then \
 	    $(RM) $(bindir)/$(target_alias)-gnatxref$(exeext); \
@@ -475,9 +439,6 @@ ada.install-common:
 	    $(INSTALL_PROGRAM) gnatfind$(exeext) $(bindir)/gnatfind$(exeext); \
 	  fi ; \
 	fi
-#
-# Gnatlbr is only use on VMS
-#
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  if [ -f gnatchop$(exeext) ] ; \
@@ -485,6 +446,11 @@ ada.install-common:
 	    $(RM) $(bindir)/gnatchop$(exeext); \
 	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(bindir)/gnatchop$(exeext); \
 	  fi ; \
+#
+# Gnatlbr is only used on VMS.
+#
+	-if [ -f gnat1$(exeext) ] ; \
+	then \
 	  if [ -f gnatlbr$(exeext) ] ; \
 	  then \
 	    $(RM) $(bindir)/gnatlbr$(exeext); \
@@ -517,44 +483,44 @@ ada.uninstall:
 	-$(RM) $(bindir)/gnatbind$(exeext)
 	-$(RM) $(bindir)/gnatbl$(exeext)
 	-$(RM) $(bindir)/gnatchop$(exeext)
-	-$(RM) $(bindir)/gnatcmd$(exeext)
+	-$(RM) $(bindir)/gnat$(exeext)
 	-$(RM) $(bindir)/gnatdll$(exeext)
 	-$(RM) $(bindir)/gnatkr$(exeext)
 	-$(RM) $(bindir)/gnatlink$(exeext)
 	-$(RM) $(bindir)/gnatls$(exeext)
 	-$(RM) $(bindir)/gnatmake$(exeext)
 	-$(RM) $(bindir)/gnatmem$(exeext)
+	-$(RM) $(bindir)/gnatname$(exeext)
 	-$(RM) $(bindir)/gnatprep$(exeext)
 	-$(RM) $(bindir)/gnatpsta$(exeext)
-	-$(RM) $(bindir)/gnatpsys$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatbind$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatbl$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatchop$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatcmd$(exeext)
+	-$(RM) $(bindir)/$(target_alias)-gnat$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatkr(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatlink$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatls$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatmake$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatmem$(exeext)
+	-$(RM) $(bindir)/$(target_alias)-gnatname$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatprep$(exeext)
 	-$(RM) $(bindir)/$(target_alias)-gnatpsta$(exeext)
-	-$(RM) $(bindir)/$(target_alias)-gnatpsys$(exeext)
 	-$(RM) $(tooldir)/bin/gnatbind$(exeext)
 	-$(RM) $(tooldir)/bin/gnatbl$(exeext)
 	-$(RM) $(tooldir)/bin/gnatchop$(exeext)
-	-$(RM) $(tooldir)/bin/gnatcmd$(exeext)
+	-$(RM) $(tooldir)/bin/gnat$(exeext)
 	-$(RM) $(tooldir)/bin/gnatdll$(exeext)
 	-$(RM) $(tooldir)/bin/gnatkr$(exeext)
 	-$(RM) $(tooldir)/bin/gnatlink$(exeext)
 	-$(RM) $(tooldir)/bin/gnatls$(exeext)
 	-$(RM) $(tooldir)/bin/gnatmake$(exeext)
 	-$(RM) $(tooldir)/bin/gnatmem$(exeext)
+	-$(RM) $(tooldir)/bin/gnatname$(exeext)
 	-$(RM) $(tooldir)/bin/gnatprep$(exeext)
 	-$(RM) $(tooldir)/bin/gnatpsta$(exeext)
-	-$(RM) $(tooldir)/bin/gnatpsys$(exeext)
 # Gnatlbr and Gnatchop are only used on VMS
 	-$(RM) $(bindir)/gnatlbr$(exeext) $(bindir)/gnatchop$(exeext)
-
+
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
@@ -568,22 +534,23 @@ ada.distclean:
 	-$(RM) ada/Makefile
 	-$(RM) gnatbl$(exeext)
 	-$(RM) gnatchop$(exeext)
-	-$(RM) gnatcmd$(exeext)
+	-$(RM) gnat$(exeext)
 	-$(RM) gnatdll$(exeext)
 	-$(RM) gnatkr$(exeext)
 	-$(RM) gnatlink$(exeext)
 	-$(RM) gnatls$(exeext)
 	-$(RM) gnatmake$(exeext)
 	-$(RM) gnatmem$(exeext)
+	-$(RM) gnatname$(exeext)
 	-$(RM) gnatprep$(exeext)
 	-$(RM) gnatpsta$(exeext)
-	-$(RM) gnatpsys$(exeext)
 	-$(RM) gnatfind$(exeext)
 	-$(RM) gnatxref$(exeext)
-# Gnatlbr and Gnatchop are only used on VMS
-	-$(RM) gnatchop$(exeext) gnatlbr$(exeext)
+# Gnatlbr is only used on VMS
+	-$(RM) gnatlbr$(exeext)
 	-$(RM) ada/rts/*
 	-$(RMDIR) ada/rts
+	-$(RM) ada/tools/*
 	-$(RMDIR) ada/tools
 ada.extraclean:
 ada.maintainer-clean:

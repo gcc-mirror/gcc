@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.19 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1992-2000 Free Software Foundation, Inc.        --
 --                                                                          --
@@ -59,9 +59,6 @@ package body Ada.Calendar is
    Ada_Year_Max : constant := 2099;
 
    --  Some basic constants used throughout
-
-   Days_In_Month : constant array (Month_Number) of Day_Number :=
-                     (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 
    function To_Relative_Time (D : Duration) return Time;
 

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.35 $                             --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -223,6 +223,26 @@ package body Ch2 is
       Semicolon_Loc : Source_Ptr;
       Ident_Node    : Node_Id;
       Assoc_Node    : Node_Id;
+      Result        : Node_Id;
+
+      procedure Skip_Pragma_Semicolon;
+      --  Skip past semicolon at end of pragma
+
+      ---------------------------
+      -- Skip_Pragma_Semicolon --
+      ---------------------------
+
+      procedure Skip_Pragma_Semicolon is
+      begin
+         if Token /= Tok_Semicolon then
+            T_Semicolon;
+            Resync_Past_Semicolon;
+         else
+            Scan; -- past semicolon
+         end if;
+      end Skip_Pragma_Semicolon;
+
+   --  Start of processing for P_Pragma
 
    begin
       Pragma_Node := New_Node (N_Pragma, Token_Ptr);
@@ -285,20 +305,26 @@ package body Ch2 is
 
       Semicolon_Loc := Token_Ptr;
 
-      if Token /= Tok_Semicolon then
-         T_Semicolon;
-         Resync_Past_Semicolon;
-      else
-         Scan; -- past semicolon
-      end if;
+      --  Now we have two tasks left, we need to scan out the semicolon
+      --  following the pragma, and we have to call Par.Prag to process
+      --  the pragma. Normally we do them in this order, however, there
+      --  is one exception namely pragma Style_Checks where we like to
+      --  skip the semicolon after processing the pragma, since that way
+      --  the style checks for the scanning of the semicolon follow the
+      --  settings of the pragma.
 
-      if Is_Pragma_Name (Chars (Pragma_Node)) then
+      --  You might think we could just unconditionally do things in
+      --  the opposite order, but there are other pragmas, notably the
+      --  case of pragma Source_File_Name, which assume the semicolon
+      --  is already scanned out.
+
+      if Chars (Pragma_Node) = Name_Style_Checks then
+         Result := Par.Prag (Pragma_Node, Semicolon_Loc);
+         Skip_Pragma_Semicolon;
+         return Result;
+      else
+         Skip_Pragma_Semicolon;
          return Par.Prag (Pragma_Node, Semicolon_Loc);
-
-      else
-         --  Unrecognized pragma, warning generated in Sem_Prag
-
-         return Pragma_Node;
       end if;
 
    exception

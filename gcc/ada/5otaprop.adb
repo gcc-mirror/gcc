@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---             Copyright (C) 1991-2001 Florida State University             --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -91,29 +90,29 @@ package body System.Task_Primitives.Operations is
    use Interfaces.OS2Lib.Errors;
    use Interfaces.OS2Lib.Threads;
    use Interfaces.OS2Lib.Synchronization;
+   use System.Parameters;
    use System.Tasking.Debug;
    use System.Tasking;
    use System.OS_Interface;
    use Interfaces.C;
    use System.OS_Primitives;
 
-   ----------------------
-   --  Local Constants --
-   ----------------------
+   ---------------------
+   -- Local Constants --
+   ---------------------
 
    Max_Locks_Per_Task   : constant := 100;
    Suppress_Owner_Check : constant Boolean := False;
 
-   ------------------
-   --  Local Types --
-   ------------------
+   -----------------
+   -- Local Types --
+   -----------------
 
-   type Microseconds is new IC.long;
    subtype Lock_Range is Integer range 0 .. Max_Locks_Per_Task;
 
-   ------------------
-   --  Local Data  --
-   ------------------
+   -----------------
+   -- Local Data  --
+   -----------------
 
    --  The OS/2 DosAllocThreadLocalMemory API is used to allocate our TCB_Ptr.
 
@@ -138,8 +137,10 @@ package body System.Task_Primitives.Operations is
 
    type PPTLD is access all Access_Thread_Local_Data;
 
-   All_Tasks_L : aliased System.Task_Primitives.RTS_Lock;
-   --  See comments on locking rules in System.Tasking (spec).
+   Single_RTS_Lock : aliased RTS_Lock;
+   --  This is a lock to allow only one thread of control in the RTS at
+   --  a time; it is used to execute in mutual exclusion from all other tasks.
+   --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
    Environment_Task_ID : Task_ID;
    --  A variable to hold Task_ID for the environment task.
@@ -192,15 +193,18 @@ package body System.Task_Primitives.Operations is
    --  handler or to change the execution context of the thread.
    --  So asynchonous transfer of control is not supported.
 
-   -------------------
-   --  Stack_Guard  --
-   -------------------
+   -----------------
+   -- Stack_Guard --
+   -----------------
 
    --  The underlying thread system sets a guard page at the
    --  bottom of a thread stack, so nothing is needed.
    --  ??? Check the comment above
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+      pragma Warnings (Off, T);
+      pragma Warnings (Off, On);
+
    begin
       null;
    end Stack_Guard;
@@ -220,7 +224,6 @@ package body System.Task_Primitives.Operations is
 
    function Self return Task_ID is
       Self_ID : Task_ID renames Thread_Local_Data_Ptr.Self_ID;
-
    begin
       --  Check that the thread local data has been initialized.
 
@@ -252,6 +255,8 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+      pragma Warnings (Off, Level);
+
    begin
       if DosCreateMutexSem
         (ICS.Null_Ptr, L.Mutex'Unchecked_Access, 0, False32) /= NO_ERROR
@@ -312,44 +317,52 @@ package body System.Task_Primitives.Operations is
       L.Owner_ID := Self_ID.all'Address;
    end Write_Lock;
 
-   procedure Write_Lock (L : access RTS_Lock) is
-      Self_ID      : constant Task_ID := Thread_Local_Data_Ptr.Self_ID;
-      Old_Priority : constant Any_Priority :=
-        Self_ID.Common.LL.Current_Priority;
+   procedure Write_Lock
+     (L : access RTS_Lock; Global_Lock : Boolean := False)
+   is
+      Self_ID      : Task_ID;
+      Old_Priority : Any_Priority;
 
    begin
-      --  Increase priority before getting the lock
-      --  to prevent priority inversion
+      if not Single_Lock or else Global_Lock then
+         Self_ID := Thread_Local_Data_Ptr.Self_ID;
+         Old_Priority := Self_ID.Common.LL.Current_Priority;
 
-      Thread_Local_Data_Ptr.Lock_Prio_Level :=
-        Thread_Local_Data_Ptr.Lock_Prio_Level + 1;
+         --  Increase priority before getting the lock
+         --  to prevent priority inversion
 
-      if L.Priority > Old_Priority then
-         Set_Temporary_Priority (Self_ID, L.Priority);
+         Thread_Local_Data_Ptr.Lock_Prio_Level :=
+           Thread_Local_Data_Ptr.Lock_Prio_Level + 1;
+
+         if L.Priority > Old_Priority then
+            Set_Temporary_Priority (Self_ID, L.Priority);
+         end if;
+
+         --  Request the lock and then update the lock owner data
+
+         Must_Not_Fail (DosRequestMutexSem (L.Mutex, SEM_INDEFINITE_WAIT));
+         L.Owner_Priority := Old_Priority;
+         L.Owner_ID := Self_ID.all'Address;
       end if;
-
-      --  Request the lock and then update the lock owner data
-
-      Must_Not_Fail (DosRequestMutexSem (L.Mutex, SEM_INDEFINITE_WAIT));
-      L.Owner_Priority := Old_Priority;
-      L.Owner_ID := Self_ID.all'Address;
    end Write_Lock;
 
    procedure Write_Lock (T : Task_ID) is
    begin
-      --  Request the lock and then update the lock owner data
+      if not Single_Lock then
+         --  Request the lock and then update the lock owner data
 
-      Must_Not_Fail
-        (DosRequestMutexSem (T.Common.LL.L.Mutex, SEM_INDEFINITE_WAIT));
-      T.Common.LL.L.Owner_ID := Null_Address;
+         Must_Not_Fail
+           (DosRequestMutexSem (T.Common.LL.L.Mutex, SEM_INDEFINITE_WAIT));
+         T.Common.LL.L.Owner_ID := Null_Address;
+      end if;
    end Write_Lock;
 
    ---------------
    -- Read_Lock --
    ---------------
 
-   procedure Read_Lock (L : access Lock; Ceiling_Violation : out Boolean)
-      renames Write_Lock;
+   procedure Read_Lock
+     (L : access Lock; Ceiling_Violation : out Boolean) renames Write_Lock;
 
    ------------
    -- Unlock --
@@ -383,53 +396,63 @@ package body System.Task_Primitives.Operations is
       end if;
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock) is
-      Self_ID      : constant Task_ID := Thread_Local_Data_Ptr.Self_ID;
-      Old_Priority : constant Any_Priority := L.Owner_Priority;
+   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
+      Self_ID      : Task_ID;
+      Old_Priority : Any_Priority;
 
    begin
-      --  Check that this task holds the lock
+      if not Single_Lock or else Global_Lock then
+         Self_ID := Thread_Local_Data_Ptr.Self_ID;
+         Old_Priority := L.Owner_Priority;
+         --  Check that this task holds the lock
 
-      pragma Assert (Suppress_Owner_Check
-        or else L.Owner_ID = Self_ID.all'Address);
+         pragma Assert (Suppress_Owner_Check
+           or else L.Owner_ID = Self_ID.all'Address);
 
-      --  Upate the owner data
+         --  Upate the owner data
 
-      L.Owner_ID := Null_Address;
+         L.Owner_ID := Null_Address;
 
-      --  Do the actual unlocking. No more references
-      --  to owner data of L after this point.
+         --  Do the actual unlocking. No more references
+         --  to owner data of L after this point.
 
-      Must_Not_Fail (DosReleaseMutexSem (L.Mutex));
+         Must_Not_Fail (DosReleaseMutexSem (L.Mutex));
 
-      --  Reset priority after unlocking to avoid priority inversion
-      Thread_Local_Data_Ptr.Lock_Prio_Level :=
-        Thread_Local_Data_Ptr.Lock_Prio_Level - 1;
+         --  Reset priority after unlocking to avoid priority inversion
+         Thread_Local_Data_Ptr.Lock_Prio_Level :=
+           Thread_Local_Data_Ptr.Lock_Prio_Level - 1;
 
-      if L.Priority /= Old_Priority then
-         Set_Temporary_Priority (Self_ID, Old_Priority);
+         if L.Priority /= Old_Priority then
+            Set_Temporary_Priority (Self_ID, Old_Priority);
+         end if;
       end if;
    end Unlock;
 
    procedure Unlock (T : Task_ID) is
    begin
-      --  Check the owner data
+      if not Single_Lock then
+         --  Check the owner data
 
-      pragma Assert (Suppress_Owner_Check
-        or else T.Common.LL.L.Owner_ID = Null_Address);
+         pragma Assert (Suppress_Owner_Check
+           or else T.Common.LL.L.Owner_ID = Null_Address);
 
-      --  Do the actual unlocking. No more references
-      --  to owner data of T.Common.LL.L after this point.
+         --  Do the actual unlocking. No more references
+         --  to owner data of T.Common.LL.L after this point.
 
-      Must_Not_Fail (DosReleaseMutexSem (T.Common.LL.L.Mutex));
+         Must_Not_Fail (DosReleaseMutexSem (T.Common.LL.L.Mutex));
+      end if;
    end Unlock;
 
    -----------
    -- Sleep --
    -----------
 
-   procedure Sleep (Self_ID : Task_ID;
-                    Reason   : System.Tasking.Task_States) is
+   procedure Sleep
+     (Self_ID : Task_ID;
+      Reason  : System.Tasking.Task_States)
+   is
+      pragma Warnings (Off, Reason);
+
       Count : aliased ULONG; -- Used to store dummy result
 
    begin
@@ -437,7 +460,12 @@ package body System.Task_Primitives.Operations is
 
       Sem_Must_Not_Fail
         (DosResetEventSem (Self_ID.Common.LL.CV, Count'Unchecked_Access));
-      Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      else
+         Unlock (Self_ID);
+      end if;
 
       --  No problem if we are interrupted here.
       --  If the condition is signaled, DosWaitEventSem will simply not block.
@@ -447,7 +475,11 @@ package body System.Task_Primitives.Operations is
 
       --  Since L was previously accquired, lock operation should not fail.
 
-      Write_Lock (Self_ID);
+      if Single_Lock then
+         Lock_RTS;
+      else
+         Write_Lock (Self_ID);
+      end if;
    end Sleep;
 
    -----------------
@@ -472,6 +504,8 @@ package body System.Task_Primitives.Operations is
       Timedout : out Boolean;
       Yielded  : out Boolean)
    is
+      pragma Warnings (Off, Reason);
+
       Check_Time : constant Duration := OSP.Monotonic_Clock;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
@@ -485,7 +519,12 @@ package body System.Task_Primitives.Operations is
       Sem_Must_Not_Fail
         (DosResetEventSem (Self_ID.Common.LL.CV,
          Count'Unchecked_Access));
-      Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      else
+         Unlock (Self_ID);
+      end if;
 
       Timedout := True;
       Yielded := False;
@@ -529,7 +568,11 @@ package body System.Task_Primitives.Operations is
 
       --  Ensure post-condition
 
-      Write_Lock (Self_ID);
+      if Single_Lock then
+         Lock_RTS;
+      else
+         Write_Lock (Self_ID);
+      end if;
 
       if Timedout then
          Sem_Must_Not_Fail (DosPostEventSem (Self_ID.Common.LL.CV));
@@ -550,7 +593,7 @@ package body System.Task_Primitives.Operations is
       Abs_Time   : Duration;
       Timedout   : Boolean := True;
       Time_Out   : ULONG;
-      Result    : APIRET;
+      Result     : APIRET;
       Count      : aliased ULONG;  --  Used to store dummy result
 
    begin
@@ -559,14 +602,24 @@ package body System.Task_Primitives.Operations is
       --  check for pending abort and priority change below! :(
 
       SSL.Abort_Defer.all;
-      Write_Lock (Self_ID);
+
+      if Single_Lock then
+         Lock_RTS;
+      else
+         Write_Lock (Self_ID);
+      end if;
 
       --  Must reset Cond BEFORE Self_ID is unlocked.
 
       Sem_Must_Not_Fail
         (DosResetEventSem (Self_ID.Common.LL.CV,
          Count'Unchecked_Access));
-      Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      else
+         Unlock (Self_ID);
+      end if;
 
       if Mode = Relative then
          Rel_Time := Time;
@@ -578,6 +631,7 @@ package body System.Task_Primitives.Operations is
 
       if Rel_Time > 0.0 then
          Self_ID.Common.State := Delay_Sleep;
+
          loop
             if Self_ID.Pending_Priority_Change then
                Self_ID.Pending_Priority_Change := False;
@@ -599,15 +653,22 @@ package body System.Task_Primitives.Operations is
          Timedout := Result = ERROR_TIMEOUT;
       end if;
 
-      --  Ensure post-condition
-
-      Write_Lock (Self_ID);
+      if Single_Lock then
+         Lock_RTS;
+      else
+         Write_Lock (Self_ID);
+      end if;
 
       if Timedout then
          Sem_Must_Not_Fail (DosPostEventSem (Self_ID.Common.LL.CV));
       end if;
 
-      Unlock (Self_ID);
+      if Single_Lock then
+         Unlock_RTS;
+      else
+         Unlock (Self_ID);
+      end if;
+
       System.OS_Interface.Yield;
       SSL.Abort_Undefer.all;
    end Timed_Delay;
@@ -617,6 +678,7 @@ package body System.Task_Primitives.Operations is
    ------------
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
+      pragma Warnings (Off, Reason);
    begin
       Sem_Must_Not_Fail (DosPostEventSem (T.Common.LL.CV));
    end Wakeup;
@@ -659,7 +721,6 @@ package body System.Task_Primitives.Operations is
       end if;
 
       if Delta_Priority /= 0 then
-
          --  ??? There is a race-condition here
          --  The TCB is updated before the system call to make
          --  pre-emption in the critical section less likely.
@@ -679,9 +740,12 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Set_Priority
-     (T : Task_ID;
-      Prio : System.Any_Priority;
-      Loss_Of_Inheritance : Boolean := False) is
+     (T                   : Task_ID;
+      Prio                : System.Any_Priority;
+      Loss_Of_Inheritance : Boolean := False)
+   is
+      pragma Warnings (Off, Loss_Of_Inheritance);
+
    begin
       T.Common.Current_Priority := Prio;
       Set_Temporary_Priority (T, Prio);
@@ -702,21 +766,22 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_ID) is
    begin
-
       --  Initialize thread local data. Must be done first.
 
       Thread_Local_Data_Ptr.Self_ID := Self_ID;
       Thread_Local_Data_Ptr.Lock_Prio_Level := 0;
 
-      Lock_All_Tasks_List;
-      for I in Known_Tasks'Range loop
-         if Known_Tasks (I) = null then
-            Known_Tasks (I) := Self_ID;
-            Self_ID.Known_Tasks_Index := I;
+      Lock_RTS;
+
+      for J in Known_Tasks'Range loop
+         if Known_Tasks (J) = null then
+            Known_Tasks (J) := Self_ID;
+            Self_ID.Known_Tasks_Index := J;
             exit;
          end if;
       end loop;
-      Unlock_All_Tasks_List;
+
+      Unlock_RTS;
 
       --  For OS/2, we can set Self_ID.Common.LL.Thread in
       --  Create_Task, since the thread is created suspended.
@@ -725,7 +790,6 @@ package body System.Task_Primitives.Operations is
       --  has been initialized.
 
       --  .... Do we need to do anything with signals for OS/2 ???
-      null;
    end Enter_Task;
 
    --------------
@@ -746,16 +810,18 @@ package body System.Task_Primitives.Operations is
       if DosCreateEventSem (ICS.Null_Ptr,
         Self_ID.Common.LL.CV'Unchecked_Access, 0, True32) = NO_ERROR
       then
-         if DosCreateMutexSem (ICS.Null_Ptr,
-           Self_ID.Common.LL.L.Mutex'Unchecked_Access, 0, False32) /= NO_ERROR
+         if not Single_Lock
+           and then DosCreateMutexSem
+             (ICS.Null_Ptr,
+              Self_ID.Common.LL.L.Mutex'Unchecked_Access,
+              0,
+              False32) /= NO_ERROR
          then
             Succeeded := False;
             Must_Not_Fail (DosCloseEventSem (Self_ID.Common.LL.CV));
          else
             Succeeded := True;
          end if;
-
-         pragma Assert (Self_ID.Common.LL.L.Mutex /= 0);
 
          --  We now want to do the equivalent of:
 
@@ -774,7 +840,7 @@ package body System.Task_Primitives.Operations is
          Succeeded := False;
       end if;
 
-      --  Note: at one time we had anb exception handler here, whose code
+      --  Note: at one time we had an exception handler here, whose code
       --  was as follows:
 
       --  exception
@@ -789,7 +855,6 @@ package body System.Task_Primitives.Operations is
       --  result in messing with Jmpbuf values too early. If and when we get
       --  switched entirely to the new zero-cost exception scheme, we could
       --  put this handler back in!
-
    end Initialize_TCB;
 
    -----------------
@@ -889,12 +954,18 @@ package body System.Task_Primitives.Operations is
 
       procedure Free is new
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
+
    begin
       Must_Not_Fail (DosCloseEventSem (T.Common.LL.CV));
-      Finalize_Lock (T.Common.LL.L'Unchecked_Access);
+
+      if not Single_Lock then
+         Finalize_Lock (T.Common.LL.L'Unchecked_Access);
+      end if;
+
       if T.Known_Tasks_Index /= -1 then
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
+
       Free (Tmp);
    end Finalize_TCB;
 
@@ -916,6 +987,8 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Abort_Task (T : Task_ID) is
+      pragma Warnings (Off, T);
+
    begin
       null;
 
@@ -956,23 +1029,23 @@ package body System.Task_Primitives.Operations is
       return Environment_Task_ID;
    end Environment_Task;
 
-   -------------------------
-   -- Lock_All_Tasks_List --
-   -------------------------
+   --------------
+   -- Lock_RTS --
+   --------------
 
-   procedure Lock_All_Tasks_List is
+   procedure Lock_RTS is
    begin
-      Write_Lock (All_Tasks_L'Access);
-   end Lock_All_Tasks_List;
+      Write_Lock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Lock_RTS;
 
-   ---------------------------
-   -- Unlock_All_Tasks_List --
-   ---------------------------
+   ----------------
+   -- Unlock_RTS --
+   ----------------
 
-   procedure Unlock_All_Tasks_List is
+   procedure Unlock_RTS is
    begin
-      Unlock (All_Tasks_L'Access);
-   end Unlock_All_Tasks_List;
+      Unlock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Unlock_RTS;
 
    ------------------
    -- Suspend_Task --
@@ -1010,11 +1083,10 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize (Environment_Task : Task_ID) is
       Succeeded : Boolean;
-
    begin
       Environment_Task_ID := Environment_Task;
 
-      Initialize_Lock (All_Tasks_L'Access, All_Tasks_Level);
+      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
       --  Initialize the lock used to synchronize chain of all ATCBs.
 
       --  Set ID of environment task.
@@ -1047,7 +1119,6 @@ package body System.Task_Primitives.Operations is
 
       --  Insert here any other special
       --  initialization needed for the environment task.
-
    end Initialize;
 
 begin
@@ -1062,5 +1133,4 @@ begin
 
    Thread_Local_Data_Ptr.Self_ID := null;
    Thread_Local_Data_Ptr.Lock_Prio_Level := 0;
-
 end System.Task_Primitives.Operations;

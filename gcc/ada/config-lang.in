@@ -25,6 +25,7 @@
 # boot_language - "yes" if we need to build this language in stage1
 # compilers	- value to add to $(COMPILERS)
 # stagestuff	- files to add to $(STAGESTUFF)
+# diff_excludes	- files to ignore when building diffs between two versions.
 
 language="ada"
 boot_language=yes
@@ -33,5 +34,7 @@ boot_language_boot_flags='ADAFLAGS="$(BOOT_ADAFLAGS)"'
 compilers="gnat1\$(exeext)"
 
 stagestuff="gnatbind\$(exeext) gnat1\$(exeext)"
+
+diff_excludes="-x ada/a-einfo.h -x ada/a-sinfo.h -x ada/nmake.adb -x ada/nmake.ads -x ada/treeprs.ads -x ada/sysid.ads"
 
 outputs=ada/Makefile

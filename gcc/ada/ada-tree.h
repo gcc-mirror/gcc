@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -115,17 +115,13 @@ enum gnat_tree_code {
     || TREE_CODE (NODE) == UNION_TYPE || TREE_CODE (NODE) == ENUMERAL_TYPE) \
    && TYPE_DUMMY_P (NODE))
 
-/* Nonzero if this corresponds to a type where alignment is guaranteed
-   by other mechanisms (a tagged or packed type).  */
-#define TYPE_ALIGN_OK_P(NODE) TYPE_LANG_FLAG_5 (NODE)
-
 /* For an INTEGER_TYPE, nonzero if TYPE_ACTUAL_BOUNDS is present.  */
 #define TYPE_HAS_ACTUAL_BOUNDS_P(NODE) \
-  TYPE_LANG_FLAG_6 (INTEGER_TYPE_CHECK (NODE))
+  TYPE_LANG_FLAG_5 (INTEGER_TYPE_CHECK (NODE))
 
 /* For a RECORD_TYPE, nonzero if this was made just to supply needed
    padding or alignment.  */
-#define TYPE_IS_PADDING_P(NODE) TYPE_LANG_FLAG_6 (RECORD_TYPE_CHECK (NODE))
+#define TYPE_IS_PADDING_P(NODE) TYPE_LANG_FLAG_5 (RECORD_TYPE_CHECK (NODE))
 
 /* This field is only defined for FUNCTION_TYPE nodes. If the Ada
    subprogram contains no parameters passed by copy in/copy out then this

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.9 $
+--                             $Revision$
 --                                                                          --
---             Copyright (C) 1995-2000 Florida State University             --
+--             Copyright (C) 1995-2002 Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -50,8 +49,14 @@ package System.Tasking.Task_Attributes is
 
    type Node;
    type Access_Node is access all Node;
+   --  This needs comments ???
+
    type Dummy_Wrapper;
    type Access_Dummy_Wrapper is access all Dummy_Wrapper;
+   for Access_Dummy_Wrapper'Storage_Size use 0;
+   --  This is a stand-in for the generic type Wrapper defined in
+   --  Ada.Task_Attributes. The real objects allocated are always
+   --  of type Wrapper, no Dummy_Wrapper objects are ever created.
 
    type Deallocator is access procedure (P : in out Access_Node);
    --  Called to deallocate an Wrapper. P is a pointer to a Node within.
@@ -97,13 +102,6 @@ package System.Tasking.Task_Attributes is
    All_Attributes : Access_Instance;
    --  A linked list of all indirectly access attributes,
    --  which includes all those that require finalization.
-
-   All_Attrs_L : aliased System.Task_Primitives.RTS_Lock;
-   --  Protects In_Use, Next_Indirect_Index, and All_Attributes.
-   --  Deadlock prevention order of locking:
-   --    1) All_Attrs_L
-   --    2) All_Tasks_L
-   --    3) any TCB.L
 
    procedure Initialize_Attributes (T : Task_ID);
    --  Initialize all attributes created via Ada.Task_Attributes for T.

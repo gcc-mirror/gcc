@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -40,7 +40,7 @@
 --  specialized appropriately, or better still, its generic instantiations
 --  should be replaced by efficient machine-specific code.
 
-with Ada.Unchecked_Conversion; use Ada;
+with Ada.Unchecked_Conversion;
 with System;
 package body System.Fat_Gen is
 
@@ -784,11 +784,11 @@ package body System.Fat_Gen is
       --  This assumes that the range IEEE_Emin - 1 .. IEEE_Emax + 1
       --  contains 2**N values, for some N in Natural.
 
-      function To_Float is new Unchecked_Conversion (Float_Rep, T);
+      function To_Float is new Ada.Unchecked_Conversion (Float_Rep, T);
 
       type Float_Access is access all T;
       function To_Address is
-         new Unchecked_Conversion (Float_Access, System.Address);
+         new Ada.Unchecked_Conversion (Float_Access, System.Address);
 
       XA : constant System.Address := To_Address (Float_Access (X));
 

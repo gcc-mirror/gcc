@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.41 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,5 +132,60 @@ pragma Pure (Parameters);
 
    Garbage_Collected : constant Boolean := False;
    --  The storage mode for this system (release on program exit)
+
+   ---------------------
+   -- Tasking Profile --
+   ---------------------
+
+   --  In the following sections, constant parameters are defined to
+   --  allow some optimizations within the tasking run time based on
+   --  restrictions on the tasking features.
+
+   ----------------------
+   -- Locking Strategy --
+   ----------------------
+
+   Single_Lock : constant Boolean := False;
+   --  Indicates whether a single lock should be used within the tasking
+   --  run-time to protect internal structures. If True, a single lock
+   --  will be used, meaning less locking/unlocking operations, but also
+   --  more global contention. In general, Single_Lock should be set to
+   --  True on single processor machines, and to False to multi-processor
+   --  systems, but this can vary from application to application and also
+   --  depends on the scheduling policy.
+
+   -------------------
+   -- Task Abortion --
+   -------------------
+
+   No_Abort : constant Boolean := False;
+   --  This constant indicates whether abort statements and asynchronous
+   --  transfer of control (ATC) are disallowed. If set to True, it is
+   --  assumed that neither construct is used, and the run time does not
+   --  need to defer/undefer abort and check for pending actions at
+   --  completion points. A value of True for No_Abort corresponds to:
+   --  pragma Restrictions (No_Abort_Statements);
+   --  pragma Restrictions (Max_Asynchronous_Select_Nesting => 0);
+
+   ----------------------
+   -- Dynamic Priority --
+   ----------------------
+
+   Dynamic_Priority_Support : constant Boolean := True;
+   --  This constant indicates whether dynamic changes of task priorities
+   --  are allowed (True means normal RM mode in which such changes are
+   --  allowed). In particular, if this is False, then we do not need to
+   --  poll for pending base priority changes at every abort completion
+   --  point. A value of False for Dynamic_Priority_Support corresponds
+   --  to pragma Restrictions (No_Dynamic_Priorities);
+
+   --------------------
+   -- Runtime Traces --
+   --------------------
+
+   Runtime_Traces : constant Boolean := False;
+   --  This constant indicates whether the runtime outputs traces to a
+   --  predefined output or not (True means that traces are output).
+   --  See System.Traces for more details.
 
 end System.Parameters;

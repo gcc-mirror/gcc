@@ -7,9 +7,9 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/VMS)                          --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--          Copyright (C) 2001-2002 Ada Core Technologies, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,13 +65,6 @@ package body System.Machine_State_Operations is
    end record;
    for ICB_Fflags_Bits_Type'Size use 24;
 
-   ICB_Fflags_Bits_Type_Init : constant ICB_Fflags_Bits_Type :=
-     (ExceptIon_Frame    => False,
-      Ast_Frame          => False,
-      Bottom_Of_STACK    => False,
-      Base_Frame         => False,
-      Filler_1           => 0);
-
    type ICB_Hdr_Quad_Type is record
       Context_Length : Unsigned_Longword;
       Fflags_Bits    : ICB_Fflags_Bits_Type;
@@ -84,11 +77,6 @@ package body System.Machine_State_Operations is
       Block_Version  at 7 range 0 .. 7;
    end record;
    for ICB_Hdr_Quad_Type'Size use 64;
-
-   ICB_Hdr_Quad_Type_Init : constant ICB_Hdr_Quad_Type :=
-     (Context_Length => 0,
-      Fflags_Bits    => ICB_Fflags_Bits_Type_Init,
-      Block_Version  => 0);
 
    type Invo_Context_Blk_Type is record
       --
@@ -150,16 +138,6 @@ package body System.Machine_State_Operations is
    end record;
    for Invo_Context_Blk_Type'Size use 4352;
 
-   Invo_Context_Blk_Type_Init : constant Invo_Context_Blk_Type :=
-     (Hdr_Quad             => ICB_Hdr_Quad_Type_Init,
-      Procedure_Descriptor => (0, 0),
-      Program_Counter      => 0,
-      Processor_Status     => 0,
-      Ireg                 => (others => (0, 0)),
-      Freg                 => (others => (0, 0)),
-      System_Defined       => (others => (0, 0)),
-      Filler_1             => (others => ASCII.NUL));
-
    subtype Invo_Handle_Type is Unsigned_Longword;
 
    type Invo_Handle_Access_Type is access all Invo_Handle_Type;
@@ -171,9 +149,6 @@ package body System.Machine_State_Operations is
 
    function To_Machine_State is new Unchecked_Conversion
      (System.Address, Machine_State);
-
-   function To_Code_Loc is new Unchecked_Conversion
-     (Unsigned_Longword, Code_Loc);
 
    ----------------------------
    -- Allocate_Machine_State --
@@ -244,11 +219,8 @@ package body System.Machine_State_Operations is
    ------------------------
 
    procedure Free_Machine_State (M : in out Machine_State) is
-      procedure Gnat_Free (M : in Invo_Handle_Access_Type);
-      pragma Import (C, Gnat_Free, "__gnat_free");
-
    begin
-      Gnat_Free (To_Invo_Handle_Access (M));
+      Memory.Free (Address (M));
       M := Machine_State (Null_Address);
    end Free_Machine_State;
 

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,25 +29,21 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  This is the no tasking version
 
-with Interfaces.C;
 package System.OS_Interface is
    pragma Preelaborate;
-
-   subtype int            is Interfaces.C.int;
 
    -------------
    -- Signals --
    -------------
 
    Max_Interrupt : constant := 2;
-   type Signal is new int range 0 .. Max_Interrupt;
+   type Signal is new Integer range 0 .. Max_Interrupt;
 
    type sigset_t is new Integer;
    type Thread_Id is new Integer;

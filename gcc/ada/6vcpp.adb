@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---            Copyright (C) 2000, Free Software Foundation, Inc.            --
+--         Copyright (C) 2000-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,12 +76,8 @@ package body Interfaces.CPP is
    function To_Type_Specific_Data_Ptr is
      new Unchecked_Conversion (Address, Type_Specific_Data_Ptr);
 
-   function To_Address is new Unchecked_Conversion (Vtable_Ptr, Address);
    function To_Address is
      new Unchecked_Conversion (Type_Specific_Data_Ptr, Address);
-
-   function To_Vtable_Ptr is new Unchecked_Conversion (Tag, Vtable_Ptr);
-   function To_Tag is new Unchecked_Conversion (Vtable_Ptr, Tag);
 
    ---------------------------------------------
    -- Unchecked Conversions for String Fields --

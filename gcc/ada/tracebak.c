@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.2 $
+ *                            $Revision$
  *                                                                          *
  *           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            *
  *                                                                          *
@@ -144,13 +144,42 @@ struct layout
   void *return_address;
 };
 
+#ifdef _WIN32
+/* _image_base__ is the image starting address, no stack addresses should be
+   under this value */
+extern unsigned int _image_base__;
+#define LOWEST_ADDR ((unsigned int) (&_image_base__))
+#else
+#define LOWEST_ADDR 0
+#endif
+
 #define FRAME_LEVEL 0
 #define FRAME_OFFSET 0
 #define SKIP_FRAME 1
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
-  ((CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
+  ((unsigned int)(CURRENT)->return_address < LOWEST_ADDR \
+   || (CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
    || (void *) (CURRENT) < (TOP_STACK))
+
+/* On i386 architecture we check that at the call point we really have a call
+   insn. Possible call instructions are:
+
+   call  addr16        E8 xx xx xx xx
+   call  reg           FF Dx
+   call  off(reg)      FF xx xx
+   lcall addr seg      9A xx xx xx xx xx xx
+
+   This check will not catch all cases but it will increase the backtrace
+   reliability on this architecture.
+*/
+
+#define VALID_STACK_FRAME(ptr) \
+   (((*((ptr) - 3) & 0xff) == 0xe8) \
+    || ((*((ptr) - 4) & 0xff) == 0x9a) \
+    || ((*((ptr) - 2) & 0xff) == 0xff) \
+    || (((*((ptr) - 1) & 0xff00) == 0xff00) \
+        && ((*((ptr) - 1) & 0xf0) == 0xd0)))
 
 #elif defined (__alpha_vxworks)
 
@@ -190,6 +219,10 @@ segv_handler (ignored)
 {
   longjmp (sigsegv_excp, 1);
 }
+#endif
+
+#ifndef VALID_STACK_FRAME
+#define VALID_STACK_FRAME(ptr) 1
 #endif
 
 int
@@ -236,7 +269,8 @@ __gnat_backtrace (array, size, exclude_min, exclude_max)
   cnt = 0;
   while (cnt < size)
     {
-      if (STOP_FRAME (current, top_stack))
+      if (STOP_FRAME (current, top_stack) || 
+	  !VALID_STACK_FRAME((char *)(current->return_address + PC_ADJUST)))
         break;
 
       if (current->return_address < exclude_min

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.67 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -51,7 +50,7 @@ with System.Task_Primitives.Operations;
 --           Unlock
 --           Sleep
 --           Abort_Task
---           Lock/Unlock_All_Tasks_List
+--           Lock/Unlock_RTS
 
 with System.Tasking.Initialization;
 --  Used for Defer_Abort
@@ -65,56 +64,42 @@ with System.Tasking.Queuing;
 with System.Tasking.Debug;
 --  used for Trace
 
+with System.Parameters;
+--  used for Single_Lock
+--           Runtime_Traces
+
+with System.Traces.Tasking;
+--  used for Send_Trace_Info
+
 with Unchecked_Conversion;
 
 package body System.Tasking.Utilities is
 
    package STPO renames System.Task_Primitives.Operations;
 
-   use System.Tasking.Debug;
-   use System.Task_Primitives;
-   use System.Task_Primitives.Operations;
+   use Parameters;
+   use Tasking.Debug;
+   use Task_Primitives;
+   use Task_Primitives.Operations;
 
-   procedure Locked_Abort_To_Level
-     (Self_Id : Task_ID;
-      T       : Task_ID;
-      L       : ATC_Level)
-   renames
-     Initialization.Locked_Abort_To_Level;
+   use System.Traces;
+   use System.Traces.Tasking;
 
-   procedure Defer_Abort (Self_Id : Task_ID) renames
-     System.Tasking.Initialization.Defer_Abort;
-
-   procedure Defer_Abort_Nestable (Self_Id : Task_ID) renames
-     System.Tasking.Initialization.Defer_Abort_Nestable;
-
-   procedure Undefer_Abort (Self_Id : Task_ID) renames
-     System.Tasking.Initialization.Undefer_Abort;
-
-   procedure Undefer_Abort_Nestable (Self_Id : Task_ID) renames
-     System.Tasking.Initialization.Undefer_Abort_Nestable;
-
-   procedure Wakeup_Entry_Caller
-     (Self_Id    : Task_ID;
-      Entry_Call : Entry_Call_Link;
-      New_State  : Entry_Call_State)
-   renames
-     Initialization.Wakeup_Entry_Caller;
-
-   ----------------
-   -- Abort_Task --
-   ----------------
+   --------------------
+   -- Abort_One_Task --
+   --------------------
 
    --  Similar to Locked_Abort_To_Level (Self_ID, T, 0), but:
-   --    (1) caller should be holding no locks
+   --    (1) caller should be holding no locks except RTS_Lock when Single_Lock
    --    (2) may be called for tasks that have not yet been activated
    --    (3) always aborts whole task
 
-   procedure Abort_One_Task
-     (Self_ID : Task_ID;
-      T       : Task_ID)
-   is
+   procedure Abort_One_Task (Self_ID : Task_ID; T : Task_ID) is
    begin
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (T_Abort, Self_ID, T);
+      end if;
+
       Write_Lock (T);
 
       if T.Common.State = Unactivated then
@@ -124,7 +109,7 @@ package body System.Tasking.Utilities is
          Cancel_Queued_Entry_Calls (T);
 
       elsif T.Common.State /= Terminated then
-         Locked_Abort_To_Level (Self_ID, T, 0);
+         Initialization.Locked_Abort_To_Level (Self_ID, T, 0);
       end if;
 
       Unlock (T);
@@ -148,27 +133,23 @@ package body System.Tasking.Utilities is
       P       : Task_ID;
 
    begin
-      --  ????
-      --  Since this is a "potentially blocking operation", we should
-      --  add a separate check here that we are not inside a protected
-      --  operation.
-
-      Defer_Abort_Nestable (Self_Id);
+      Initialization.Defer_Abort_Nestable (Self_Id);
 
       --  ?????
       --  Really should not be nested deferral here.
       --  Patch for code generation error that defers abort before
       --  evaluating parameters of an entry call (at least, timed entry
       --  calls), and so may propagate an exception that causes abort
-      --  to remain undeferred indefinitely.  See C97404B.  When all
+      --  to remain undeferred indefinitely. See C97404B. When all
       --  such bugs are fixed, this patch can be removed.
+
+      Lock_RTS;
 
       for J in Tasks'Range loop
          C := Tasks (J);
          Abort_One_Task (Self_Id, C);
       end loop;
 
-      Lock_All_Tasks_List;
       C := All_Tasks_List;
 
       while C /= null loop
@@ -188,17 +169,16 @@ package body System.Tasking.Utilities is
          C := C.Common.All_Tasks_Link;
       end loop;
 
-      Unlock_All_Tasks_List;
-      Undefer_Abort_Nestable (Self_Id);
+      Unlock_RTS;
+      Initialization.Undefer_Abort_Nestable (Self_Id);
    end Abort_Tasks;
 
    -------------------------------
    -- Cancel_Queued_Entry_Calls --
    -------------------------------
 
-   --  Cancel any entry calls queued on target task. Call this only while
-   --  holding T locked, and nothing more. This should only be called by T,
-   --  unless T is a terminated previously unactivated task.
+   --  This should only be called by T, unless T is a terminated previously
+   --  unactivated task.
 
    procedure Cancel_Queued_Entry_Calls (T : Task_ID) is
       Next_Entry_Call : Entry_Call_Link;
@@ -214,7 +194,6 @@ package body System.Tasking.Utilities is
          Queuing.Dequeue_Head (T.Entry_Queues (J), Entry_Call);
 
          while Entry_Call /= null loop
-
             --  Leave Entry_Call.Done = False, since this is cancelled
 
             Caller := Entry_Call.Self;
@@ -223,7 +202,8 @@ package body System.Tasking.Utilities is
             Level := Entry_Call.Level - 1;
             Unlock (T);
             Write_Lock (Entry_Call.Self);
-            Wakeup_Entry_Caller (Self_Id, Entry_Call, Cancelled);
+            Initialization.Wakeup_Entry_Caller
+              (Self_Id, Entry_Call, Cancelled);
             Unlock (Entry_Call.Self);
             Write_Lock (T);
             Entry_Call.State := Done;
@@ -277,27 +257,6 @@ package body System.Tasking.Utilities is
    -- Make_Independent --
    ----------------------
 
-   --  Move the current task to the outermost level (level 2) of the master
-   --  hierarchy of the environment task. That is one level further out
-   --  than normal tasks defined in library-level packages (level 3). The
-   --  environment task will wait for level 3 tasks to terminate normally,
-   --  then it will abort all the level 2 tasks. See Finalize_Global_Tasks
-   --  procedure for more information.
-
-   --  This is a dangerous operation, and should only be used on nested tasks
-   --  or tasks that depend on any objects that might be finalized earlier than
-   --  the termination of the environment task. It is for internal use by the
-   --  GNARL, to prevent such internal server tasks from preventing a partition
-   --  from terminating.
-
-   --  Also note that the run time assumes that the parent of an independent
-   --  task is the environment task. If this is not the case, Make_Independent
-   --  will change the task's parent. This assumption is particularly
-   --  important for master level completion and for the computation of
-   --  Independent_Task_Count.
-
-   --  See procedures Init_RTS and Finalize_Global_Tasks for related code.
-
    procedure Make_Independent is
       Self_Id               : constant Task_ID := STPO.Self;
       Environment_Task      : constant Task_ID := STPO.Environment_Task;
@@ -309,7 +268,12 @@ package body System.Tasking.Utilities is
          Known_Tasks (Self_Id.Known_Tasks_Index) := null;
       end if;
 
-      Defer_Abort (Self_Id);
+      Initialization.Defer_Abort (Self_Id);
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (Environment_Task);
       Write_Lock (Self_Id);
 
@@ -352,20 +316,19 @@ package body System.Tasking.Utilities is
       end if;
 
       Unlock (Environment_Task);
-      Undefer_Abort (Self_Id);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
+      Initialization.Undefer_Abort (Self_Id);
    end Make_Independent;
 
    ------------------
    -- Make_Passive --
    ------------------
 
-   --  Update counts to indicate current task is either terminated
-   --  or accepting on a terminate alternative. Call holding no locks.
-
-   procedure Make_Passive
-     (Self_ID        : Task_ID;
-      Task_Completed : Boolean)
-   is
+   procedure Make_Passive (Self_ID : Task_ID; Task_Completed : Boolean) is
       C : Task_ID := Self_ID;
       P : Task_ID := C.Common.Parent;
 
@@ -433,8 +396,7 @@ package body System.Tasking.Utilities is
          --  is waiting (with zero Awake_Count) in Phase 2 of
          --  Complete_Master.
 
-         pragma Debug
-           (Debug.Trace (Self_ID, "Make_Passive: Phase 2", 'M'));
+         pragma Debug (Debug.Trace (Self_ID, "Make_Passive: Phase 2", 'M'));
 
          pragma Assert (P /= null);
 
@@ -474,7 +436,6 @@ package body System.Tasking.Utilities is
 
          if P.Common.State = Master_Phase_2_Sleep
            and then C.Master_of_Task = P.Master_Within
-
          then
             pragma Assert (P.Common.Wait_Count > 0);
             P.Common.Wait_Count := P.Common.Wait_Count - 1;
@@ -538,8 +499,8 @@ package body System.Tasking.Utilities is
 
       --  P has non-passive dependents.
 
-      if P.Common.State = Master_Completion_Sleep and then
-         C.Master_of_Task = P.Master_Within
+      if P.Common.State = Master_Completion_Sleep
+        and then C.Master_of_Task = P.Master_Within
       then
          pragma Debug
            (Debug.Trace

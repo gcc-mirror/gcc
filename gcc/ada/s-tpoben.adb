@@ -1,15 +1,14 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--               GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
---     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
---                               E N T R I E S                              --
+--                 SYSTEM.TASKING.PROTECTED_OBJECTS.ENTRIES                 --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.11 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--         Copyright (C) 1998-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -65,12 +63,16 @@ pragma Elaborate_All (System.Tasking.Initialization);
 --  this insures that tasking is initialized if any protected objects are
 --  created.
 
+with System.Parameters;
+--  used for Single_Lock
+
 package body System.Tasking.Protected_Objects.Entries is
 
    package STPO renames System.Task_Primitives.Operations;
 
+   use Parameters;
+   use Task_Primitives.Operations;
    use Ada.Exceptions;
-   use STPO;
 
    Locking_Policy : Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
@@ -93,8 +95,11 @@ package body System.Tasking.Protected_Objects.Entries is
 
       STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
 
-      if Ceiling_Violation then
+      if Single_Lock then
+         Lock_RTS;
+      end if;
 
+      if Ceiling_Violation then
          --  Dip our own priority down to ceiling of lock.
          --  See similar code in Tasking.Entry_Calls.Lock_Server.
 
@@ -103,10 +108,19 @@ package body System.Tasking.Protected_Objects.Entries is
          Self_ID.New_Base_Priority := Object.Ceiling;
          Initialization.Change_Base_Priority (Self_ID);
          STPO.Unlock (Self_ID);
+
+         if Single_Lock then
+            Unlock_RTS;
+         end if;
+
          STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
 
          if Ceiling_Violation then
             Raise_Exception (Program_Error'Identity, "Ceiling Violation");
+         end if;
+
+         if Single_Lock then
+            Lock_RTS;
          end if;
 
          Object.Old_Base_Priority := Old_Base_Priority;
@@ -121,16 +135,24 @@ package body System.Tasking.Protected_Objects.Entries is
          while Entry_Call /= null loop
             Caller := Entry_Call.Self;
             Entry_Call.Exception_To_Raise := Program_Error'Identity;
+
             STPO.Write_Lock (Caller);
             Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
             STPO.Unlock (Caller);
+
             exit when Entry_Call = Object.Entry_Queues (E).Tail;
             Entry_Call := Entry_Call.Next;
          end loop;
       end loop;
 
       Object.Finalized := True;
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       STPO.Unlock (Object.L'Unrestricted_Access);
+
       STPO.Finalize_Lock (Object.L'Unrestricted_Access);
    end Finalize;
 
@@ -142,6 +164,7 @@ package body System.Tasking.Protected_Objects.Entries is
      (Object : Protection_Entries_Access)
       return   Boolean
    is
+      pragma Warnings (Off, Object);
    begin
       return False;
    end Has_Interrupt_Or_Attach_Handler;
@@ -197,6 +220,11 @@ package body System.Tasking.Protected_Objects.Entries is
    procedure Lock_Entries
      (Object : Protection_Entries_Access; Ceiling_Violation : out Boolean) is
    begin
+      if Object.Finalized then
+         Raise_Exception
+           (Program_Error'Identity, "Protected Object is finalized");
+      end if;
+
       --  The lock is made without defering abortion.
 
       --  Therefore the abortion has to be deferred before calling this
@@ -214,6 +242,11 @@ package body System.Tasking.Protected_Objects.Entries is
    procedure Lock_Entries (Object : Protection_Entries_Access) is
       Ceiling_Violation : Boolean;
    begin
+      if Object.Finalized then
+         Raise_Exception
+           (Program_Error'Identity, "Protected Object is finalized");
+      end if;
+
       pragma Assert (STPO.Self.Deferral_Level > 0);
       Write_Lock (Object.L'Access, Ceiling_Violation);
 
@@ -229,6 +262,11 @@ package body System.Tasking.Protected_Objects.Entries is
    procedure Lock_Read_Only_Entries (Object : Protection_Entries_Access) is
       Ceiling_Violation : Boolean;
    begin
+      if Object.Finalized then
+         Raise_Exception
+           (Program_Error'Identity, "Protected Object is finalized");
+      end if;
+
       Read_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then

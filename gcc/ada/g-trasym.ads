@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,11 +35,22 @@
 --  Run-time symbolic traceback support
 
 --  Note: this is only available on selected targets. Currently it is
---  supported on Sparc/Solaris, GNU/Linux, Windows NT, HP-UX, IRIX and Tru64.
+--  supported on Sparc/Solaris, GNU/Linux, Windows NT, HP-UX and Tru64.
 
 --  The routines provided in this package assume that your application has
 --  been compiled with debugging information turned on, since this information
 --  is used to build a symbolic traceback.
+--
+--  In order to retrieve symbolic information, functions in this package will
+--  read on disk all the debug information of the current executable and load
+--  them in memory, causing a significant cpu and memory overhead.
+--
+--  This package is not intended to be used within a shared library,
+--  symbolic tracebacks are only supported for the main executable
+--  and not for shared libraries.
+--
+--  You should consider using off-line symbolic traceback instead, using
+--  addr2line or gdb.
 
 with Ada.Exceptions; use Ada.Exceptions;
 

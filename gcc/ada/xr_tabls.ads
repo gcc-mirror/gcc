@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.18 $
+--                            $Revision$
 --                                                                          --
---         Copyright (C) 1998-2000 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2002 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,25 +112,24 @@ package Xr_Tabls is
    --  The parent declaration (Symbol in file File_Ref at position Line and
    --  Column) information is added to Declaration.
 
-   procedure Add_File
-     (File_Name    : String;
-      File_Existed : out Boolean;
-      Ref          : out File_Reference;
-      Visited      : Boolean := True;
-      Emit_Warning : Boolean := False;
-      Gnatchop_File : String := "";
+   procedure Add_To_Xref_File
+     (File_Name       : String;
+      File_Existed    : out Boolean;
+      Ref             : out File_Reference;
+      Visited         : Boolean := True;
+      Emit_Warning    : Boolean := False;
+      Gnatchop_File   : String  := "";
       Gnatchop_Offset : Integer := 0);
-   --  Add a new reference to a file in the table. Ref is used to return
-   --  the index in the table where this file is stored On exit,
-   --  File_Existed is True if the file was already in the table Visited is
-   --  the value which will be used in the table (if True, the file will
-   --  not be returned by Next_Unvisited_File). If Emit_Warning is True and
-   --  the ali file does not exist or does not have cross-referencing
-   --  informations, then a warning will be emitted.
-   --  Gnatchop_File is the name of the file that File_Name was extracted from
-   --  through a call to "gnatchop -r" (with pragma Source_Reference).
-   --  Gnatchop_Offset should be the index of the first line of File_Name
-   --  withing Gnatchop_File.
+   --  Add a new reference to a file in the table. Ref is used to return the
+   --  index in the table where this file is stored On exit, File_Existed is
+   --  True if the file was already in the table Visited is the value which
+   --  will be used in the table (if True, the file will not be returned by
+   --  Next_Unvisited_File). If Emit_Warning is True and the ali file does
+   --  not exist or does not have cross-referencing information, then a
+   --  warning will be emitted. Gnatchop_File is the name of the file that
+   --  File_Name was extracted from through a call to "gnatchop -r" (using
+   --  pragma Source_Reference). Gnatchop_Offset should be the index of the
+   --  first line of File_Name within the Gnatchop_File.
 
    procedure Add_Line
      (File   : File_Reference;
@@ -162,7 +161,7 @@ package Xr_Tabls is
 
    function First_Body (Decl : Declaration_Reference) return Reference;
    function First_Declaration return Declaration_Reference;
-   function First_Modif  (Decl : Declaration_Reference) return Reference;
+   function First_Modif (Decl : Declaration_Reference) return Reference;
    function First_Reference (Decl : Declaration_Reference) return Reference;
    --  Initialize the iterators
 
@@ -186,16 +185,21 @@ package Xr_Tabls is
    --  Returns the Emit_Warning field of the structure
 
    function Get_Gnatchop_File
-     (File : File_Reference; With_Dir : Boolean := False) return String;
+     (File     : File_Reference;
+      With_Dir : Boolean := False)
+      return     String;
    function Get_Gnatchop_File
-     (Ref : Reference; With_Dir : Boolean := False) return String;
+     (Ref      : Reference;
+      With_Dir : Boolean := False)
+      return     String;
    function Get_Gnatchop_File
-     (Decl : Declaration_Reference; With_Dir : Boolean := False) return String;
+     (Decl     : Declaration_Reference;
+      With_Dir : Boolean := False)
+      return     String;
    --  Return the name of the file that File was extracted from through a
-   --  call to "gnatchop -r".
-   --  The file name for File is returned if File wasn't extracted from such a
-   --  file. The directory will be given only if With_Dir is True.
-
+   --  call to "gnatchop -r". The file name for File is returned if File
+   --  was not extracted from such a file. The directory will be given only
+   --  if With_Dir is True.
 
    function Get_File
      (Decl     : Declaration_Reference;
@@ -213,25 +217,24 @@ package Xr_Tabls is
      (File     : File_Reference;
       With_Dir : Boolean := False;
       Strip    : Natural := 0)
-     return     String;
-   --  Returns the file name (and its directory if With_Dir is True or
-   --  the user as used the -f switch on the command line.
-   --  If Strip is not 0, then the last Strip-th "-..." substrings are
-   --  removed first. For instance, with Strip=2, a file name
-   --  "parent-child1-child2-child3.ali" would be returned as
-   --  "parent-child1.ali". This is used when looking for the ALI file to use
-   --  for a package, since for separates with have to use the parent's ALI.
-   --
-   --  "" is returned if there is no such parent unit
+      return     String;
+   --  Returns the file name (and its directory if With_Dir is True or the
+   --  user has used the -f switch on the command line. If Strip is not 0,
+   --  then the last Strip-th "-..." substrings are removed first. For
+   --  instance, with Strip=2, a file name "parent-child1-child2-child3.ali"
+   --  would be returned as "parent-child1.ali". This is used when looking
+   --  for the ALI file to use for a package, since for separates with have
+   --  to use the parent's ALI. The null string is returned if there is no
+   --  such parent unit
 
-   function Get_File_Ref (Ref : Reference) return File_Reference;
-   function Get_Line (Decl : Declaration_Reference) return String;
-   function Get_Line (Ref : Reference) return String;
-   function Get_Symbol (Decl : Declaration_Reference) return String;
-   function Get_Type (Decl : Declaration_Reference) return Character;
+   function Get_File_Ref (Ref : Reference)              return File_Reference;
+   function Get_Line     (Decl : Declaration_Reference) return String;
+   function Get_Line     (Ref : Reference)              return String;
+   function Get_Symbol   (Decl : Declaration_Reference) return String;
+   function Get_Type     (Decl : Declaration_Reference) return Character;
    --  Functions that return the content of a declaration
 
-   function Get_Source_Line (Ref : Reference) return String;
+   function Get_Source_Line (Ref : Reference)              return String;
    function Get_Source_Line (Decl : Declaration_Reference) return String;
    --  Return the source line associated with the reference
 
@@ -256,7 +259,7 @@ package Xr_Tabls is
    --  by the user
 
    function Next (Decl : Declaration_Reference) return Declaration_Reference;
-   function Next (Ref : Reference) return Reference;
+   function Next (Ref  : Reference)             return Reference;
    --  Returns the next declaration, or Empty_Declaration
 
    function Next_Unvisited_File return File_Reference;
@@ -275,7 +278,6 @@ package Xr_Tabls is
 
    procedure Set_Unvisited (File_Ref : in File_Reference);
    --  Set File_Ref as unvisited. So Next_Unvisited_File will return it.
-
 
 private
    type Project_File (Src_Dir_Length, Obj_Dir_Length : Natural) is record
@@ -308,22 +310,20 @@ private
    Empty_File : constant File_Reference := null;
 
    type File_Record (File_Length : Natural) is record
-      File         : String (1 .. File_Length);
-      Dir          : String_Access   := null;
-      Lines        : Ref_In_File_Ptr := null;
-      Visited      : Boolean         := False;
-      Emit_Warning : Boolean         := False;
-      Gnatchop_File : String_Access  := null;
-      Gnatchop_Offset : Integer      := 0;
-      Next         : File_Reference  := null;
+      File            : String (1 .. File_Length);
+      Dir             : String_Access   := null;
+      Lines           : Ref_In_File_Ptr := null;
+      Visited         : Boolean         := False;
+      Emit_Warning    : Boolean         := False;
+      Gnatchop_File   : String_Access   := null;
+      Gnatchop_Offset : Integer         := 0;
+      Next            : File_Reference  := null;
    end record;
    --  Holds a reference to a source file, that was referenced in at least one
-   --  ALI file.
-   --  Gnatchop_File will contain the name of the file that File was extracted
-   --  From. Gnatchop_Offset contains the index of the first line of File
-   --  within Gnatchop_File. These two fields are used to properly support
+   --  ALI file. Gnatchop_File will contain the name of the file that File was
+   --  extracted From. Gnatchop_Offset contains the index of the first line of
+   --  File within Gnatchop_File. These two fields are used to properly support
    --  gnatchop files and pragma Source_Reference.
-
 
    type Reference_Record;
    type Reference is access all Reference_Record;

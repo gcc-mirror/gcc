@@ -8,7 +8,7 @@
  *                                                                          *
  *                            $Revision$
  *                                                                          *
- *             Copyright (C) 1992-2001, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2002, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,6 +38,9 @@
 #include "tconfig.h"
 #include "tsystem.h"
 #include <sys/stat.h>
+typedef char bool;
+# define true 1
+# define false 0
 #else
 #include "config.h"
 #include "system.h"
@@ -85,8 +88,12 @@ __gnat_unhandled_terminate ()
 #endif
 }
 
-/* Below is the eh personality routine for Ada to be called when the GCC
-   mechanism is used.
+/* Below is the code related to the integration of the GCC mechanism for
+   exception handling.  */
+
+#include "unwind.h"
+
+/* Exception Handling personality routine for Ada.
 
    ??? It is currently inspired from the one for C++, needs cleanups and
    additional comments. It also contains a big bunch of debugging code that
@@ -97,7 +104,6 @@ __gnat_unhandled_terminate ()
 /* ??? Does it make any sense to leave this for the compiler ?   */
 
 #include "dwarf2.h"
-#include "unwind.h"
 #include "unwind-dw2-fde.h"
 #include "unwind-pe.h"
 
@@ -118,11 +124,11 @@ struct lsda_header_info
 
 typedef struct lsda_header_info lsda_header_info;
 
-typedef enum {false = 0, true = 1} bool;
-
 static const unsigned char *
-parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
-		   lsda_header_info *info)
+parse_lsda_header (context, p, info)
+     _Unwind_Context *context;
+     const unsigned char *p;
+     lsda_header_info *info;
 {
   _Unwind_Ptr tmp;
   unsigned char lpstart_encoding;
@@ -135,7 +141,7 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
     p = read_encoded_value (context, lpstart_encoding, p, &info->LPStart);
   else
     info->LPStart = info->Start;
-  
+
   /* Find @TType, the base of the handler and exception spec type data.  */
   info->ttype_encoding = *p++;
   if (info->ttype_encoding != DW_EH_PE_omit)
@@ -155,9 +161,11 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
   return p;
 }
 
-
 static const _Unwind_Ptr
-get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
+get_ttype_entry (context, info, i)
+     _Unwind_Context *context;
+     lsda_header_info *info;
+     long i;
 {
   _Unwind_Ptr ptr;
 
@@ -171,11 +179,10 @@ get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
    library (a-except.adb). The layouts should exactly match, and the "common"
    header is mandated by the exception handling ABI.  */
 
-struct _GNAT_Exception {
+struct _GNAT_Exception
+{
   struct _Unwind_Exception common;
-
   _Unwind_Ptr id;
-
   char handled_by_others;
   char has_cleanup;
   char select_cleanups;
@@ -216,20 +223,20 @@ static int db_specs = 0;
 #define END_DB(what)        } \
                            } while (0);
 
-/* The "action" stuff below if also there for debugging purposes only.  */
+/* The "action" stuff below is also there for debugging purposes only.  */
 
-typedef struct {
+typedef struct
+{
   _Unwind_Action action;
   char * description;
-}  action_description_t;
+} action_description_t;
 
-action_description_t action_descriptions [] = {
-  { _UA_SEARCH_PHASE,  "SEARCH_PHASE" },
-  { _UA_CLEANUP_PHASE, "CLEANUP_PHASE" },
-  { _UA_HANDLER_FRAME, "HANDLER_FRAME" },
-  { _UA_FORCE_UNWIND,  "FORCE_UNWIND" },
-  { -1, (char *)0 }
-};
+static action_description_t action_descriptions[]
+  = {{ _UA_SEARCH_PHASE,  "SEARCH_PHASE" },
+     { _UA_CLEANUP_PHASE, "CLEANUP_PHASE" },
+     { _UA_HANDLER_FRAME, "HANDLER_FRAME" },
+     { _UA_FORCE_UNWIND,  "FORCE_UNWIND" },
+     { -1, 0}};
 
 static void
 decode_actions (actions)
@@ -237,36 +244,30 @@ decode_actions (actions)
 {
   int i;
 
-  action_description_t * a = action_descriptions;
+  action_description_t *a = action_descriptions;
 
   printf ("\n");
-  while (a->description != (char *)0)
-    {
-      if (actions & a->action)
-	{
-	  printf ("%s ", a->description);
-	}
-
-      a ++;
-    }
+  for (; a->description != 0; a++)
+    if (actions & a->action)
+      printf ("%s ", a->description);
 
   printf (" : ");
 }
 
-/* The following is defined from a-except.adb. It's purpose is to enable
+/* The following is defined from a-except.adb. Its purpose is to enable
    automatic backtraces upon exception raise, as provided through the 
    GNAT.Traceback facilities.  */
-extern void
-__gnat_notify_handled_exception (void * handler, bool others, bool db_notify);
+extern void __gnat_notify_handled_exception PARAMS ((void *, bool, bool));
 
 /* Below is the eh personality routine per se.  */
 
 _Unwind_Reason_Code
-__gnat_eh_personality (int version,
-		       _Unwind_Action actions,
-		       _Unwind_Exception_Class exception_class,
-		       struct _Unwind_Exception *ue_header,
-		       struct _Unwind_Context *context)
+__gnat_eh_personality (version, actions, exception_class, ue_header, context)
+     int version;
+     _Unwind_Action actions;
+     _Unwind_Exception_Class exception_class;
+     struct _Unwind_Exception *ue_header;
+     struct _Unwind_Context *context;
 {
   enum found_handler_type
   {
@@ -275,17 +276,14 @@ __gnat_eh_personality (int version,
     found_cleanup,
     found_handler
   } found_type;
-
   lsda_header_info info;
   const unsigned char *language_specific_data;
   const unsigned char *action_record;
   const unsigned char *p;
   _Unwind_Ptr landing_pad, ip;
   int handler_switch_value;
-
   bool hit_others_handler;
-
-  struct _GNAT_Exception * gnat_exception;
+  struct _GNAT_Exception *gnat_exception;
 
   if (version != 1)
     return _URC_FATAL_PHASE1_ERROR;
@@ -293,9 +291,9 @@ __gnat_eh_personality (int version,
   START_DB (DB_PHASES);
   decode_actions (actions);
   END_DB (DB_PHASES);
- 
-  if (strcmp ( ((char *)&exception_class), "GNU") != 0
-      || strcmp ( ((char *)&exception_class)+4, "Ada") != 0)
+
+  if (strcmp ((char *) &exception_class, "GNU") != 0
+      || strcmp (((char *) &exception_class) + 4, "Ada") != 0)
     {
       START_DB (DB_SEARCH);
       printf ("              Exception Class doesn't match for ip = %p\n", ip);
@@ -310,17 +308,13 @@ __gnat_eh_personality (int version,
 
   START_DB (DB_PHASES);
   if (gnat_exception->select_cleanups)
-    {
-      printf ("(select_cleanups) :\n");
-    }
+    printf ("(select_cleanups) :\n");
   else
-    {
-      printf (" :\n");
-    }
+    printf (" :\n");
   END_DB (DB_PHASES);
 
-  language_specific_data = (const unsigned char *)
-    _Unwind_GetLanguageSpecificData (context);
+  language_specific_data
+    = (const unsigned char *) _Unwind_GetLanguageSpecificData (context);
 
   /* If no LSDA, then there are no handlers or cleanups.  */
   if (! language_specific_data)
@@ -335,7 +329,7 @@ __gnat_eh_personality (int version,
       END_DB (DB_FOUND);
       return _URC_CONTINUE_UNWIND;
     }
-  
+
   /* Parse the LSDA header.  */
   p = parse_lsda_header (context, language_specific_data, &info);
   info.ttype_base = base_of_encoded_value (info.ttype_encoding, context);
@@ -347,7 +341,8 @@ __gnat_eh_personality (int version,
   /* Search the call-site table for the action associated with this IP.  */
   while (p < info.action_table)
     {
-      _Unwind_Ptr cs_start, cs_len, cs_lp, cs_action;
+      _Unwind_Ptr cs_start, cs_len, cs_lp;
+      _Unwind_Word cs_action;
 
       /* Note that all call-site encodings are "absolute" displacements.  */
       p = read_encoded_value (0, info.call_site_encoding, p, &cs_start);
@@ -375,20 +370,19 @@ __gnat_eh_personality (int version,
   /* If ip is not present in the table, call terminate.  This is for
      a destructor inside a cleanup, or a library routine the compiler
      was not expecting to throw.
-     
+
      found_type = 
      (actions & _UA_FORCE_UNWIND ? found_nothing : found_terminate);
-  
+
      ??? Does this have a mapping in Ada semantics ?  */
 
   found_type = found_nothing;
-
   goto do_something;
 
  found_something:
 
   found_type = found_nothing;
-  
+
   if (landing_pad == 0)
     {
       /* If ip is present, and has a null landing pad, there are
@@ -406,7 +400,6 @@ __gnat_eh_personality (int version,
   else
     {
       signed long ar_filter, ar_disp;
-
       signed long cleanup_filter = 0;
       signed long handler_filter = 0;
 
@@ -423,7 +416,7 @@ __gnat_eh_personality (int version,
 
       while (1)
 	{
-	  _Unwind_Ptr tmp;
+	  _Unwind_Word tmp;
 
 	  p = action_record;
 	  p = read_sleb128 (p, &tmp); ar_filter = tmp;
@@ -445,20 +438,20 @@ __gnat_eh_personality (int version,
 	  else if (ar_filter > 0)
 	    {
 	      _Unwind_Ptr lp_id = get_ttype_entry (context, &info, ar_filter);
-	      
+
 	      START_DB (DB_MATCH);
 	      printf ("catch_type ");
-	      
+
 	      switch (lp_id)
 		{
 		case GNAT_ALL_OTHERS_ID:
 		  printf ("GNAT_ALL_OTHERS_ID\n");		
 		  break;
-		  
+
 		case GNAT_OTHERS_ID:
 		  printf ("GNAT_OTHERS_ID\n");
 		  break;
-		  
+
 		default:
 		  printf ("%p\n", lp_id);
 		  break;
@@ -476,8 +469,9 @@ __gnat_eh_personality (int version,
 		  gnat_exception->has_cleanup = true;
 		}
 
-	      hit_others_handler = 
-		(lp_id == GNAT_OTHERS_ID && gnat_exception->handled_by_others);
+	      hit_others_handler
+		= (lp_id == GNAT_OTHERS_ID
+		   && gnat_exception->handled_by_others);
 
 	      if (hit_others_handler || lp_id == gnat_exception->id)
 		{
@@ -489,10 +483,9 @@ __gnat_eh_personality (int version,
 		}
 	    }
 	  else
-	    {
-	      /* Negative filter values are for C++ exception specifications.
-		 Should not be there for Ada :/  */
-	    }
+	    /* Negative filter values are for C++ exception specifications.
+	       Should not be there for Ada :/  */
+	    ;
 
 	  if (actions & _UA_SEARCH_PHASE)
 	    {
@@ -504,9 +497,7 @@ __gnat_eh_personality (int version,
 		}
 
 	      if (cleanup_filter)
-		{
-		  found_type = found_cleanup;
-		}
+		found_type = found_cleanup;
 	    }
 
 	  if (actions & _UA_CLEANUP_PHASE)
@@ -517,7 +508,7 @@ __gnat_eh_personality (int version,
 		  handler_switch_value = handler_filter;
 		  break;
 		}
-		
+
 	      if (cleanup_filter)
 		{
 		  found_type = found_cleanup;
@@ -528,20 +519,22 @@ __gnat_eh_personality (int version,
 
 	  if (ar_disp == 0)
 	    break;
+
 	  action_record = p + ar_disp;
 	}
     }
 
  do_something:
-  if (found_type == found_nothing) {
-    START_DB (DB_FOUND);
-    printf ("              => FOUND nothing\n");
-    END_DB (DB_FOUND);
+  if (found_type == found_nothing)
+    {
+      START_DB (DB_FOUND);
+      printf ("              => FOUND nothing\n");
+      END_DB (DB_FOUND);
 
-    return _URC_CONTINUE_UNWIND;
-  }
+      return _URC_CONTINUE_UNWIND;
+    }
 
-   if (actions & _UA_SEARCH_PHASE)
+  if (actions & _UA_SEARCH_PHASE)
     {
       START_DB (DB_FOUND);
       printf ("              => Computing return for SEARCH\n");
@@ -565,7 +558,7 @@ __gnat_eh_personality (int version,
     }
 
  install_context:
-   
+
    START_DB (DB_INSTALL);
    printf ("              => INSTALLING context for filter %d\n",
 	   handler_switch_value);
@@ -579,20 +572,18 @@ __gnat_eh_personality (int version,
        END_DB (DB_INSTALL);
      }
 
-   
+
    /* Signal that we are going to enter a handler, which will typically
       enable the debugger to take control and possibly output an automatic
       backtrace. Note that we are supposed to provide the handler's entry
-      point here but we don't have it.
-    */
-   __gnat_notify_handled_exception
-     ((void *)landing_pad, hit_others_handler, true);
-      
+      point here but we don't have it.  */
+  __gnat_notify_handled_exception ((void *)landing_pad, hit_others_handler,
+				   true);
 
    /* The GNU-Ada exception handlers know how to find the exception
       occurrence without having to pass it as an argument so there
       is no need to feed any specific register with this information.
-	 
+
       This is why the two following lines are commented out.  */
 
    /* _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),
@@ -607,4 +598,22 @@ __gnat_eh_personality (int version,
 }
 
 
-#endif   /* IN_RTS - For eh personality routine   */
+#else   /* IN_RTS - For eh personality routine   */
+
+/* The calls to the GCC runtime interface for exception raising are currently
+   issued from a-except.adb, which is used by both the runtime library and
+   the compiler. As the compiler binary is not linked against the GCC runtime
+   library, we need a stub for this interface in the compiler case.  */
+
+
+_Unwind_Reason_Code
+_Unwind_RaiseException (e)
+     struct _Unwind_Exception *e ATTRIBUTE_UNUSED;
+{
+  /* Since we don't link the compiler with a host libgcc, we should not be
+     using the GCC eh mechanism for the compiler and so expect this function
+     never to be called.  */
+  abort ();
+}
+
+#endif

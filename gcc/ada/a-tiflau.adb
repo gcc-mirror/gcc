@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.16 $                             --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +63,7 @@ package body Ada.Text_IO.Float_Aux is
 
       Item := Scan_Real (Buf, Ptr'Access, Stop);
 
-      Check_End_Of_Field (File, Buf, Stop, Ptr, Width);
+      Check_End_Of_Field (Buf, Stop, Ptr, Width);
    end Get;
 
    ----------

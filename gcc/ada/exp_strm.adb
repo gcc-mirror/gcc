@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.39 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -807,7 +807,10 @@ package body Exp_Strm is
       --  procedure is erroneous, because there are no discriminants to read.
 
       if Is_Unchecked_Union (Typ) then
-         Stms := New_List (Make_Raise_Program_Error (Loc));
+         Stms :=
+           New_List (
+             Make_Raise_Program_Error (Loc,
+               Reason => PE_Unchecked_Union_Restriction));
       end if;
 
       if Is_Non_Empty_List (
@@ -870,7 +873,10 @@ package body Exp_Strm is
       --  because there are no discriminants to write.
 
       if Is_Unchecked_Union (Typ) then
-         Stms := New_List (Make_Raise_Program_Error (Loc));
+         Stms :=
+           New_List (
+             Make_Raise_Program_Error (Loc,
+               Reason => PE_Unchecked_Union_Restriction));
       end if;
 
       if Is_Non_Empty_List (
@@ -890,10 +896,13 @@ package body Exp_Strm is
    --  The function we build looks like
 
    --    function InputN (S : access RST) return Typ is
-   --      C1 : constant Disc_Type_1 := Discr_Type_1'Input (S);
-   --      C2 : constant Disc_Type_1 := Discr_Type_2'Input (S);
+   --      C1 : constant Disc_Type_1;
+   --      Discr_Type_1'Read (S, C1);
+   --      C2 : constant Disc_Type_2;
+   --      Discr_Type_2'Read (S, C2);
    --      ...
-   --      Cn : constant Disc_Type_1 := Discr_Type_n'Input (S);
+   --      Cn : constant Disc_Type_n;
+   --      Discr_Type_n'Read (S, Cn);
    --      V : Typ (C1, C2, .. Cn)
 
    --    begin
@@ -934,14 +943,16 @@ package body Exp_Strm is
             Append_To (Decls,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Make_Defining_Identifier (Loc, Cn),
-                Object_Definition   => New_Occurrence_Of (Etype (Discr), Loc),
-                Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix =>
-                      New_Occurrence_Of
-                        (Stream_Base_Type (Etype (Discr)), Loc),
-                    Attribute_Name => Name_Input,
-                    Expressions => New_List (Make_Identifier (Loc, Name_S)))));
+                Object_Definition =>
+                 New_Occurrence_Of (Etype (Discr), Loc)));
+
+            Append_To (Decls,
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Occurrence_Of (Etype (Discr), Loc),
+                Attribute_Name => Name_Read,
+                Expressions => New_List (
+                  Make_Identifier (Loc, Name_S),
+                  Make_Identifier (Loc, Cn))));
 
             Append_To (Constr, Make_Identifier (Loc, Cn));
 
@@ -1161,7 +1172,9 @@ package body Exp_Strm is
 
          if Present (VP) then
             if Is_Unchecked_Union (Scope (Entity (Name (VP)))) then
-               return New_List (Make_Raise_Program_Error (Sloc (VP)));
+               return New_List (
+                 Make_Raise_Program_Error (Sloc (VP),
+                   Reason => PE_Unchecked_Union_Restriction));
             end if;
 
             V := First_Non_Pragma (Variants (VP));

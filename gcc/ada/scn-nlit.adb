@@ -356,7 +356,7 @@ begin
       --  This is especially useful when parsing garbled input.
 
       elsif Operating_Mode /= Check_Syntax
-        and then (Errors_Detected = 0 or else Try_Semantics)
+        and then (Serious_Errors_Detected = 0 or else Try_Semantics)
       then
          Set_Intval (Token_Node, UI_Num_Value * UI_Base ** UI_Scale);
 

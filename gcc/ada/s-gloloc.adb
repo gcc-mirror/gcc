@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.6 $                               --
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
+--          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,11 +43,10 @@ package body System.Global_Locks is
    Dir_Separator : Character;
    pragma Import (C, Dir_Separator, "__gnat_dir_separator");
 
-   type Lock_File_Entry is
-      record
-         Dir  : String_Access;
-         File : String_Access;
-      end record;
+   type Lock_File_Entry is record
+      Dir  : String_Access;
+      File : String_Access;
+   end record;
 
    Last_Lock  : Lock_Type := Null_Lock;
    Lock_Table : array (Lock_Type range 1 .. 15) of Lock_File_Entry;
@@ -68,8 +67,7 @@ package body System.Global_Locks is
    ------------------
 
    procedure Acquire_Lock
-     (Lock : in out Lock_Type)
-   is
+     (Lock : in out Lock_Type) is
    begin
       Lock_File
         (Lock_Table (Lock).Dir.all,

@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -50,19 +49,15 @@
 
 with Interfaces.C;
 with System.VxWorks;
+
 package System.OS_Interface is
    pragma Preelaborate;
 
-   subtype int            is Interfaces.C.int;
-   subtype short          is Interfaces.C.short;
-   subtype long           is Interfaces.C.long;
-   subtype unsigned       is Interfaces.C.unsigned;
-   subtype unsigned_short is Interfaces.C.unsigned_short;
-   subtype unsigned_long  is Interfaces.C.unsigned_long;
-   subtype unsigned_char  is Interfaces.C.unsigned_char;
-   subtype plain_char     is Interfaces.C.plain_char;
-   subtype size_t         is Interfaces.C.size_t;
-   subtype char           is Interfaces.C.char;
+   subtype int         is Interfaces.C.int;
+   subtype short       is Short_Integer;
+   type long           is new Long_Integer;
+   type unsigned_long  is mod 2 ** long'Size;
+   type size_t         is mod 2 ** Standard'Address_Size;
 
    -----------
    -- Errno --
@@ -83,14 +78,6 @@ package System.OS_Interface is
    -- Signals and Interrupts --
    ----------------------------
 
-   --  In order to support both signal and hardware interrupt handling,
-   --  the ranges of "interrupt IDs" for the vectored hardware interrupts
-   --  and the signals are catenated. In other words, the external IDs
-   --  used to designate signals are relocated beyond the range of the
-   --  vectored interrupts. The IDs given in Ada.Interrupts.Names should
-   --  be used to designate signals; vectored interrupts are designated
-   --  by their interrupt number.
-
    NSIG : constant := 32;
    --  Number of signals on the target OS
    type Signal is new int range 0 .. Interfaces.C."-" (NSIG, 1);
@@ -98,7 +85,7 @@ package System.OS_Interface is
    Max_HW_Interrupt : constant := System.VxWorks.Num_HW_Interrupts - 1;
    type HW_Interrupt is new int range 0 .. Max_HW_Interrupt;
 
-   Max_Interrupt : constant := Max_HW_Interrupt + NSIG;
+   Max_Interrupt : constant := Max_HW_Interrupt;
 
    SIGILL  : constant :=  4; --  illegal instruction (not reset)
    SIGABRT : constant :=  6; --  used by abort, replace SIGIOT in the future
@@ -116,10 +103,9 @@ package System.OS_Interface is
    SIG_SETMASK : constant := 3;
 
    --  The sa_flags in struct sigaction.
-   SA_SIGINFO : constant := 16#0002#;
-   SA_ONSTACK : constant := 16#0004#;
+   SA_SIGINFO   : constant := 16#0002#;
+   SA_ONSTACK   : constant := 16#0004#;
 
-   --  ANSI args and returns from signal().
    SIG_DFL : constant := 0;
    SIG_IGN : constant := 1;
 
@@ -170,6 +156,17 @@ package System.OS_Interface is
       oset : sigset_t_ptr) return int;
    pragma Import (C, pthread_sigmask, "sigprocmask");
 
+   type t_id is new long;
+   subtype Thread_Id is t_id;
+
+   function kill (pid : t_id; sig : Signal) return int;
+   pragma Import (C, kill, "kill");
+
+   --  VxWorks doesn't have getpid; taskIdSelf is the equivalent
+   --  routine.
+   function getpid return t_id;
+   pragma Import (C, getpid, "taskIdSelf");
+
    ----------
    -- Time --
    ----------
@@ -199,261 +196,104 @@ package System.OS_Interface is
      (clock_id : clockid_t; tp : access timespec) return int;
    pragma Import (C, clock_gettime, "clock_gettime");
 
-   -------------------------
-   -- Priority Scheduling --
-   -------------------------
+   type ULONG is new unsigned_long;
 
-   --  Scheduling policies.
-   SCHED_FIFO  : constant := 1;
-   SCHED_RR    : constant := 2;
-   SCHED_OTHER : constant := 4;
+   procedure tickSet (ticks : ULONG);
+   pragma Import (C, tickSet, "tickSet");
 
-   -------------
-   -- Threads --
-   -------------
+   function tickGet return ULONG;
+   pragma Import (C, tickGet, "tickGet");
 
-   type Thread_Body is access
-     function (arg : System.Address) return System.Address;
+   -----------------------------------------------------
+   --  Convenience routine to convert between VxWorks --
+   --  priority and Ada priority.                     --
+   -----------------------------------------------------
 
-   type pthread_t           is private;
-   subtype Thread_Id        is pthread_t;
+   function To_VxWorks_Priority (Priority : in int) return int;
+   pragma Inline (To_VxWorks_Priority);
 
-   null_pthread : constant pthread_t;
+   --------------------------
+   -- VxWorks specific API --
+   --------------------------
 
-   type pthread_mutex_t     is limited private;
-   type pthread_cond_t      is limited private;
-   type pthread_attr_t      is limited private;
-   type pthread_mutexattr_t is limited private;
-   type pthread_condattr_t  is limited private;
-   type pthread_key_t       is private;
-
-   PTHREAD_CREATE_DETACHED : constant := 0;
-   PTHREAD_CREATE_JOINABLE : constant := 1;
-
-   function kill (pid : pthread_t; sig : Signal) return int;
-   pragma Import (C, kill, "kill");
-
-   --  VxWorks doesn't have getpid; taskIdSelf is the equivalent
-   --  routine.
-   function getpid return pthread_t;
-   pragma Import (C, getpid, "taskIdSelf");
-
-   ---------------------------------
-   -- Nonstandard Thread Routines --
-   ---------------------------------
-
-   procedure pthread_init;
-   pragma Inline (pthread_init);
-   --  Vxworks requires this for the moment.
-
-   function taskIdSelf return pthread_t;
+   function taskIdSelf return t_id;
    pragma Import (C, taskIdSelf, "taskIdSelf");
 
-   function taskSuspend (tid : pthread_t) return int;
+   function taskSuspend (tid : t_id) return int;
    pragma Import (C, taskSuspend, "taskSuspend");
 
-   function taskResume (tid : pthread_t) return int;
+   function taskResume (tid : t_id) return int;
    pragma Import (C, taskResume, "taskResume");
 
-   function taskIsSuspended (tid : pthread_t) return int;
+   function taskIsSuspended (tid : t_id) return int;
    pragma Import (C, taskIsSuspended, "taskIsSuspended");
 
    function taskVarAdd
-     (tid  : pthread_t;
-      pVar : access System.Address) return int;
+     (tid : t_id; pVar : System.Address) return int;
    pragma Import (C, taskVarAdd, "taskVarAdd");
 
    function taskVarDelete
-     (tid  : pthread_t;
-      pVar : access System.Address) return int;
+     (tid : t_id; pVar : access System.Address) return int;
    pragma Import (C, taskVarDelete, "taskVarDelete");
 
    function taskVarSet
-     (tid   : pthread_t;
+     (tid   : t_id;
       pVar  : access System.Address;
       value : System.Address) return int;
    pragma Import (C, taskVarSet, "taskVarSet");
 
    function taskVarGet
-     (tid   : pthread_t;
-      pVar  : access System.Address) return int;
+     (tid  : t_id;
+      pVar : access System.Address) return int;
    pragma Import (C, taskVarGet, "taskVarGet");
 
-   function taskInfoGet
-     (tid       : pthread_t;
-      pTaskDesc : access System.VxWorks.TASK_DESC) return int;
-   pragma Import (C, taskInfoGet, "taskInfoGet");
-
    function taskDelay (ticks : int) return int;
+   procedure taskDelay (ticks : int);
    pragma Import (C, taskDelay, "taskDelay");
 
    function sysClkRateGet return int;
    pragma Import (C, sysClkRateGet, "sysClkRateGet");
 
-   --------------------------
-   -- POSIX.1c  Section 11 --
-   --------------------------
+   --  Option flags for taskSpawn
 
-   function pthread_mutexattr_init
-     (attr : access pthread_mutexattr_t) return int;
-   pragma Inline (pthread_mutexattr_init);
+   VX_UNBREAKABLE    : constant := 16#0002#;
+   VX_FP_TASK        : constant := 16#0008#;
+   VX_FP_PRIVATE_ENV : constant := 16#0080#;
+   VX_NO_STACK_FILL  : constant := 16#0100#;
 
-   function pthread_mutexattr_destroy
-     (attr : access pthread_mutexattr_t) return int;
-   pragma Inline (pthread_mutexattr_destroy);
+   function taskSpawn
+     (name          : System.Address;  --  Pointer to task name
+      priority      : int;
+      options       : int;
+      stacksize     : size_t;
+      start_routine : System.Address;
+      arg1          : System.Address;
+      arg2          : int := 0;
+      arg3          : int := 0;
+      arg4          : int := 0;
+      arg5          : int := 0;
+      arg6          : int := 0;
+      arg7          : int := 0;
+      arg8          : int := 0;
+      arg9          : int := 0;
+      arg10         : int := 0) return t_id;
+   pragma Import (C, taskSpawn, "taskSpawn");
 
-   function pthread_mutex_init
-     (mutex : access pthread_mutex_t;
-      attr  : access pthread_mutexattr_t) return int;
-   pragma Inline (pthread_mutex_init);
+   procedure taskDelete (tid : t_id);
+   pragma Import (C, taskDelete, "taskDelete");
 
-   function pthread_mutex_destroy (mutex : access pthread_mutex_t) return int;
-   pragma Inline (pthread_mutex_destroy);
+   function kernelTimeSlice (ticks : int) return int;
+   pragma Import (C, kernelTimeSlice, "kernelTimeSlice");
 
-   function pthread_mutex_lock (mutex : access pthread_mutex_t) return int;
-   pragma Inline (pthread_mutex_lock);
-
-   function pthread_mutex_unlock (mutex : access pthread_mutex_t) return int;
-   pragma Inline (pthread_mutex_unlock);
-
-   function pthread_condattr_init
-     (attr : access pthread_condattr_t) return int;
-   pragma Inline (pthread_condattr_init);
-
-   function pthread_condattr_destroy
-     (attr : access pthread_condattr_t) return int;
-   pragma Inline (pthread_condattr_destroy);
-
-   function pthread_cond_init
-     (cond : access pthread_cond_t;
-      attr : access pthread_condattr_t) return int;
-   pragma Inline (pthread_cond_init);
-
-   function pthread_cond_destroy (cond : access pthread_cond_t) return int;
-   pragma Inline (pthread_cond_destroy);
-
-   function pthread_cond_signal (cond : access pthread_cond_t) return int;
-   pragma Inline (pthread_cond_signal);
-
-   function pthread_cond_wait
-     (cond  : access pthread_cond_t;
-      mutex : access pthread_mutex_t) return int;
-   pragma Inline (pthread_cond_wait);
-
-   function pthread_cond_timedwait
-     (cond    : access pthread_cond_t;
-      mutex   : access pthread_mutex_t;
-      abstime : access timespec) return int;
-   pragma Inline (pthread_cond_timedwait);
-
-   --------------------------
-   -- POSIX.1c  Section 13 --
-   --------------------------
-
-   PTHREAD_PRIO_NONE    : constant := 0;
-   PTHREAD_PRIO_PROTECT : constant := 2;
-   PTHREAD_PRIO_INHERIT : constant := 1;
-
-   function pthread_mutexattr_setprotocol
-     (attr     : access pthread_mutexattr_t;
-      protocol : int) return int;
-   pragma Inline (pthread_mutexattr_setprotocol);
-
-   function pthread_mutexattr_setprioceiling
-     (attr        : access pthread_mutexattr_t;
-      prioceiling : int) return int;
-   pragma Inline (pthread_mutexattr_setprioceiling);
-
-   type struct_sched_param is record
-      sched_priority : int;
-   end record;
-
-   function pthread_setschedparam
-     (thread : pthread_t;
-      policy : int;
-      param  : access struct_sched_param) return int;
-   pragma Inline (pthread_setschedparam);
-
-   function sched_yield return int;
-   pragma Inline (sched_yield);
-
-   function pthread_sched_rr_set_interval (usecs : int) return int;
-   pragma Inline (pthread_sched_rr_set_interval);
-
-   ---------------------------
-   -- P1003.1c - Section 16 --
-   ---------------------------
-
-   function pthread_attr_init (attr : access pthread_attr_t) return int;
-   pragma Inline (pthread_attr_init);
-
-   function pthread_attr_destroy (attr : access pthread_attr_t) return int;
-   pragma Inline (pthread_attr_destroy);
-
-   function pthread_attr_setdetachstate
-     (attr        : access pthread_attr_t;
-      detachstate : int) return int;
-   pragma Inline (pthread_attr_setdetachstate);
-
-   function pthread_attr_setstacksize
-     (attr      : access pthread_attr_t;
-      stacksize : size_t) return int;
-   pragma Inline (pthread_attr_setstacksize);
-
-   function pthread_attr_setname_np
-     (attr : access pthread_attr_t;
-      name : System.Address) return int;
-   --  In VxWorks tasks, we have a non-portable routine to set the
-   --  task name. This makes it really convenient for debugging.
-   pragma Inline (pthread_attr_setname_np);
-
-   function pthread_create
-     (thread        : access pthread_t;
-      attr          : access pthread_attr_t;
-      start_routine : Thread_Body;
-      arg           : System.Address) return int;
-   pragma Inline (pthread_create);
-
-   function pthread_detach (thread : pthread_t) return int;
-   pragma Inline (pthread_detach);
-
-   procedure pthread_exit (status : System.Address);
-   pragma Inline (pthread_exit);
-
-   function pthread_self return pthread_t;
-   pragma Inline (pthread_self);
-
-   function pthread_equal (t1 : pthread_t; t2 : pthread_t) return int;
-   pragma Inline (pthread_equal);
-   --  be careful not to use "=" on thread_t!
-
-   --------------------------
-   -- POSIX.1c  Section 17 --
-   --------------------------
-
-   function pthread_setspecific
-     (key   : pthread_key_t;
-      value : System.Address) return int;
-   pragma Inline (pthread_setspecific);
-
-   function pthread_getspecific (key : pthread_key_t) return System.Address;
-   pragma Inline (pthread_getspecific);
-
-   type destructor_pointer is access procedure (arg : System.Address);
-
-   function pthread_key_create
-     (key        : access pthread_key_t;
-      destructor : destructor_pointer) return int;
-   pragma Inline (pthread_key_create);
-
-   --  VxWorks binary semaphores. These are exported for use by the
-   --  implementation of hardware interrupt handling.
+   function taskPrioritySet
+     (tid : t_id; newPriority : int) return int;
+   pragma Import (C, taskPrioritySet, "taskPrioritySet");
 
    subtype STATUS is int;
    --  Equivalent of the C type STATUS
 
    OK    : constant STATUS := 0;
-   ERROR : constant STATUS := Interfaces.C."-" (1);
+   ERROR : constant STATUS := Interfaces.C.int (-1);
 
    --  Semaphore creation flags.
 
@@ -462,7 +302,7 @@ package System.OS_Interface is
    SEM_DELETE_SAFE    : constant := 4;  -- only valid for binary semaphore
    SEM_INVERSION_SAFE : constant := 8;  -- only valid for binary semaphore
 
-   --  Semaphore initial state flags;
+   --  Semaphore initial state flags
 
    SEM_EMPTY : constant := 0;
    SEM_FULL  : constant := 1;
@@ -472,36 +312,57 @@ package System.OS_Interface is
    WAIT_FOREVER : constant := -1;
    NO_WAIT      : constant := 0;
 
-   type SEM_ID is new long;
-   --  The VxWorks semaphore ID is an integer which is really just
-   --  a pointer to a semaphore structure.
+   --  Error codes (errno).  The lower level 16 bits are the
+   --  error code, with the upper 16 bits representing the
+   --  module number in which the error occurred.  By convention,
+   --  the module number is 0 for UNIX errors.  VxWorks reserves
+   --  module numbers 1-500, with the remaining module numbers
+   --  being available for user applications.
 
-   function semBCreate (Options : int; Initial_State : int) return SEM_ID;
-   --  Create a binary semaphore.  Returns ID, or 0 if memory could not
-   --  be allocated
+   M_objLib                 : constant := 61 * 2**16;
+   --  semTake() failure with ticks = NO_WAIT
+   S_objLib_OBJ_UNAVAILABLE : constant := M_objLib + 2;
+   --  semTake() timeout with ticks > NO_WAIT
+   S_objLib_OBJ_TIMEOUT     : constant := M_objLib + 4;
+
+   type SEM_ID is new System.Address;
+   --  typedef struct semaphore *SEM_ID;
+
+   --  We use two different kinds of VxWorks semaphores: mutex
+   --  and binary semaphores.  A null ID is returned when
+   --  a semaphore cannot be created.
+
+   function semBCreate (options : int; initial_state : int) return SEM_ID;
+   --  Create a binary semaphore. Return ID, or 0 if memory could not
+   --  be allocated.
    pragma Import (C, semBCreate, "semBCreate");
 
-   function semTake (SemID : SEM_ID; Timeout : int) return STATUS;
+   function semMCreate (options : int) return SEM_ID;
+   pragma Import (C, semMCreate, "semMCreate");
+
+   function semDelete (Sem : SEM_ID) return int;
+   --  Delete a semaphore
+   pragma Import (C, semDelete, "semDelete");
+
+   function semGive (Sem : SEM_ID) return int;
+   pragma Import (C, semGive, "semGive");
+
+   function semTake (Sem : SEM_ID; timeout : int) return int;
    --  Attempt to take binary semaphore.  Error is returned if operation
    --  times out
    pragma Import (C, semTake, "semTake");
-
-   function semGive (SemID : SEM_ID) return STATUS;
-   --  Release one thread blocked on the semaphore
-   pragma Import (C, semGive, "semGive");
 
    function semFlush (SemID : SEM_ID) return STATUS;
    --  Release all threads blocked on the semaphore
    pragma Import (C, semFlush, "semFlush");
 
-   function semDelete (SemID : SEM_ID) return STATUS;
-   --  Delete a semaphore
-   pragma Import (C, semDelete, "semDelete");
+   function taskLock return int;
+   pragma Import (C, taskLock, "taskLock");
 
+   function taskUnlock return int;
+   pragma Import (C, taskUnlock, "taskUnlock");
 
 private
-   --  This interface assumes that "unsigned" and "int" are 32-bit entities.
-
    type sigset_t is new long;
 
    type pid_t is new int;
@@ -510,50 +371,5 @@ private
 
    type clockid_t is new int;
    CLOCK_REALTIME : constant clockid_t := 0;
-
-   --  Priority ceilings are now implemented in the body of
-   --  this package.
-
-   type pthread_mutexattr_t is record
-      Flags        : int;   --  mutex semaphore creation flags
-      Prio_Ceiling : int;   --  priority ceiling
-      Protocol     : int;
-   end record;
-
-   type pthread_mutex_t is record
-      Mutex        : SEM_ID;
-      Protocol     : int;
-      Prio_Ceiling : int;  --  priority ceiling of lock
-   end record;
-
-   type pthread_condattr_t is record
-      Flags : int;
-   end record;
-
-   type pthread_cond_t is record
-      Sem     : SEM_ID;   --  VxWorks semaphore ID
-      Waiting : Integer;  --  Number of queued tasks waiting
-   end record;
-
-   type pthread_attr_t is record
-      Stacksize   : size_t;
-      Detachstate : int;
-      Priority    : int;
-      Taskname    : System.Address;
-   end record;
-
-   type pthread_t is new long;
-
-   null_pthread : constant pthread_t := 0;
-
-   type pthread_key_t is new int;
-
-   --  These are to store the pthread_keys that are created with
-   --  pthread_key_create.  Currently, we only need one key.
-
-   Key_Storage  : array (1 .. 10) of aliased System.Address;
-   Keys_Created : Integer;
-
-   Time_Slice : int;
 
 end System.OS_Interface;

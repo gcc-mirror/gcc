@@ -69,7 +69,7 @@ static FILE *gmemfile;
 /* tb_len is the number of call level supported by this module */
 #define TB_LEN 200
 
-static char *tracebk [TB_LEN];
+static char *tracebk[TB_LEN];
 static int cur_tb_len, cur_tb_pos;
 
 extern void convert_addresses		PARAMS ((char *[], int, void *,
@@ -123,10 +123,10 @@ __gnat_gmem_a2l_initialize (exename)
      char *exename;
 {
   extern char **gnat_argv;
-  char s [100];
+  char s[100];
   int l;
 
-  gnat_argv [0] = exename;
+  gnat_argv[0] = exename;
   convert_addresses (tracebk, 1, s, &l);
 }
 
@@ -201,8 +201,8 @@ __gnat_gmem_read_bt_frame (buf)
 
   if (cur_tb_pos >= cur_tb_len)
     {
-      buf [0] = ' ';
-      buf [1] = '\0';
+      buf[0] = ' ';
+      buf[1] = '\0';
       return;
     }
 

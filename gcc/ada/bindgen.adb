@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,10 +37,10 @@ with Hostparm;
 with Namet;       use Namet;
 with Opt;         use Opt;
 with Osint;       use Osint;
+with Osint.B;     use Osint.B;
 with Output;      use Output;
 with Types;       use Types;
 with Sdefault;    use Sdefault;
-with System;      use System;
 
 with GNAT.Heap_Sort_A;     use GNAT.Heap_Sort_A;
 
@@ -63,20 +63,12 @@ package body Bindgen is
    Num_Elab_Calls : Nat := 0;
    --  Number of generated calls to elaboration routines
 
-   subtype chars_ptr is Address;
-
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   procedure WBI (Info : String) renames Osint.Write_Binder_Info;
+   procedure WBI (Info : String) renames Osint.B.Write_Binder_Info;
    --  Convenient shorthand used throughout
-
-   function ABE_Boolean_Required (U : Unit_Id) return Boolean;
-   --  Given a unit id value U, determines if the corresponding unit requires
-   --  an access-before-elaboration check variable, i.e. it is a non-predefined
-   --  body for which no pragma Elaborate, Elaborate_All or Elaborate_Body is
-   --  present, and thus could require ABE checks.
 
    procedure Resolve_Binder_Options;
    --  Set the value of With_GNARL and With_DECGNAT. The latter only on VMS
@@ -162,9 +154,8 @@ package body Bindgen is
 
    function Lt_Linker_Option (Op1, Op2 : Natural) return Boolean;
    --  Compare linker options, when sorting, first according to
-   --  Is_Internal_File (internal files come later) and then by elaboration
-   --  order position (latest to earliest) except its not possible to
-   --  distinguish between a linker option in the spec and one in the body.
+   --  Is_Internal_File (internal files come later) and then by
+   --  elaboration order position (latest to earliest).
 
    procedure Move_Linker_Option (From : Natural; To : Natural);
    --  Move routine for sorting linker options
@@ -208,9 +199,6 @@ package body Bindgen is
    --  If Last is greater than or equal to N, no effect, otherwise store
    --  blanks in Statement_Buffer bumping Last, until Last = N.
 
-   function Value (chars : chars_ptr) return String;
-   --  Return C NUL-terminated string at chars as an Ada string
-
    procedure Write_Info_Ada_C (Ada : String; C : String; Common : String);
    --  For C code case, write C & Common, for Ada case write Ada & Common
    --  to current binder output file using Write_Binder_Info.
@@ -221,31 +209,6 @@ package body Bindgen is
    procedure Write_Statement_Buffer (S : String);
    --  First writes its argument (using Set_String (S)), then writes out the
    --  contents of statement buffer up to Last, and reset Last to 0
-
-   --------------------------
-   -- ABE_Boolean_Required --
-   --------------------------
-
-   function ABE_Boolean_Required (U : Unit_Id) return Boolean is
-      Typ   : constant Unit_Type := Units.Table (U).Utype;
-      Unit : Unit_Id;
-
-   begin
-      if Typ /= Is_Body then
-         return False;
-
-      else
-         Unit := U + 1;
-
-         return (not Units.Table (Unit).Pure)
-                   and then
-                (not Units.Table (Unit).Preelab)
-                   and then
-                (not Units.Table (Unit).Elaborate_Body)
-                   and then
-                (not Units.Table (Unit).Predefined);
-      end if;
-   end ABE_Boolean_Required;
 
    ----------------------
    -- Gen_Adafinal_Ada --
@@ -287,6 +250,7 @@ package body Bindgen is
 
    procedure Gen_Adainit_Ada is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
+
    begin
       WBI ("   procedure " & Ada_Init_Name.all & " is");
 
@@ -343,17 +307,11 @@ package body Bindgen is
 
       Write_Statement_Buffer;
 
-      --  Normal case (not No_Run_Time mode). The global values are
-      --  assigned using the runtime routine Set_Globals (we have to use
-      --  the routine call, rather than define the globals in the binder
-      --  file to deal with cross-library calls in some systems.
+      --  Case of No_Run_Time mode. The only global variable that might
+      --  be needed (by the Ravenscar profile) is the priority of the
+      --  environment. Also no exception tables are needed.
 
       if No_Run_Time_Specified then
-
-         --  Case of No_Run_Time mode. The only global variable that might
-         --  be needed (by the Ravenscar profile) is the priority of the
-         --  environment. Also no exception tables are needed.
-
          if Main_Priority /= No_Main_Priority then
             WBI ("      Main_Priority : Integer;");
             WBI ("      pragma Import (C, Main_Priority," &
@@ -373,8 +331,26 @@ package body Bindgen is
             WBI ("      null;");
          end if;
 
+      --  Normal case (not No_Run_Time mode). The global values are
+      --  assigned using the runtime routine Set_Globals (we have to use
+      --  the routine call, rather than define the globals in the binder
+      --  file to deal with cross-library calls in some systems.
+
       else
+         --  Generate restrictions string
+
+         Set_String ("      Restrictions : constant String :=");
+         Write_Statement_Buffer;
+         Set_String ("        """);
+
+         for J in Restrictions'Range loop
+            Set_Char (Restrictions (J));
+         end loop;
+
+         Set_String (""";");
+         Write_Statement_Buffer;
          WBI ("");
+
          WBI ("      procedure Set_Globals");
          WBI ("        (Main_Priority            : Integer;");
          WBI ("         Time_Slice_Value         : Integer;");
@@ -382,15 +358,16 @@ package body Bindgen is
          WBI ("         Locking_Policy           : Character;");
          WBI ("         Queuing_Policy           : Character;");
          WBI ("         Task_Dispatching_Policy  : Character;");
-         WBI ("         Adafinal                 : System.Address;");
+         WBI ("         Restrictions             : System.Address;");
          WBI ("         Unreserve_All_Interrupts : Integer;");
-         WBI ("         Exception_Tracebacks     : Integer);");
+         WBI ("         Exception_Tracebacks     : Integer;");
+         WBI ("         Zero_Cost_Exceptions     : Integer);");
          WBI ("      pragma Import (C, Set_Globals, ""__gnat_set_globals"");");
-         WBI ("");
 
          --  Import entry point for elaboration time signal handler
          --  installation, and indication of whether it's been called
          --  previously
+
          WBI ("");
          WBI ("      procedure Install_Handler;");
          WBI ("      pragma Import (C, Install_Handler, " &
@@ -446,7 +423,7 @@ package body Bindgen is
          Set_String ("',");
          Write_Statement_Buffer;
 
-         WBI ("         Adafinal                 => System.Null_Address,");
+         WBI ("         Restrictions             => Restrictions'Address,");
 
          Set_String ("         Unreserve_All_Interrupts => ");
 
@@ -462,6 +439,17 @@ package body Bindgen is
          Set_String ("         Exception_Tracebacks     => ");
 
          if Exception_Tracebacks then
+            Set_String ("1");
+         else
+            Set_String ("0");
+         end if;
+
+         Set_String (",");
+         Write_Statement_Buffer;
+
+         Set_String ("         Zero_Cost_Exceptions     => ");
+
+         if Zero_Cost_Exceptions_Specified then
             Set_String ("1");
          else
             Set_String ("0");
@@ -488,6 +476,7 @@ package body Bindgen is
 
    procedure Gen_Adainit_C is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
+
    begin
       WBI ("void " & Ada_Init_Name.all & " ()");
       WBI ("{");
@@ -512,6 +501,8 @@ package body Bindgen is
 
       Write_Statement_Buffer;
 
+      --  No run-time case
+
       if No_Run_Time_Specified then
 
          --  Case of No_Run_Time mode. Set __gl_main_priority if needed
@@ -524,7 +515,20 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
 
+      --  Normal case (run time present)
+
       else
+         --  Generate definition for restrictions string
+
+         Set_String ("   const char *restrictions = """);
+
+         for J in Restrictions'Range loop
+            Set_Char (Restrictions (J));
+         end loop;
+
+         Set_String (""";");
+         Write_Statement_Buffer;
+
          --  Code for normal case (not in No_Run_Time mode)
 
          Gen_Exception_Table_C;
@@ -557,59 +561,68 @@ package body Bindgen is
          end if;
 
          Set_Char   (',');
-         Tab_To (15);
+         Tab_To (20);
          Set_String ("/* Time_Slice_Value           */");
          Write_Statement_Buffer;
 
          Set_String ("      '");
          Set_Char   (ALIs.Table (ALIs.First).WC_Encoding);
          Set_String ("',");
-         Tab_To (15);
+         Tab_To (20);
          Set_String ("/* WC_Encoding                */");
          Write_Statement_Buffer;
 
          Set_String ("      '");
          Set_Char (Locking_Policy_Specified);
          Set_String ("',");
-         Tab_To (15);
+         Tab_To (20);
          Set_String ("/* Locking_Policy             */");
          Write_Statement_Buffer;
 
          Set_String ("      '");
          Set_Char (Queuing_Policy_Specified);
          Set_String ("',");
-         Tab_To (15);
+         Tab_To (20);
          Set_String ("/* Queuing_Policy             */");
          Write_Statement_Buffer;
 
          Set_String ("      '");
          Set_Char (Task_Dispatching_Policy_Specified);
          Set_String ("',");
-         Tab_To (15);
+         Tab_To (20);
          Set_String ("/* Tasking_Dispatching_Policy */");
          Write_Statement_Buffer;
 
          Set_String ("      ");
-         Set_String ("0,");
-         Tab_To (15);
-         Set_String ("/* Finalization routine address, not used anymore */");
+         Set_String ("restrictions");
+         Set_String (",");
+         Tab_To (20);
+         Set_String ("/* Restrictions */");
          Write_Statement_Buffer;
 
          Set_String ("      ");
          Set_Int    (Boolean'Pos (Unreserve_All_Interrupts_Specified));
          Set_String (",");
-         Tab_To (15);
+         Tab_To (20);
          Set_String ("/* Unreserve_All_Interrupts */");
          Write_Statement_Buffer;
 
          Set_String ("      ");
          Set_Int    (Boolean'Pos (Exception_Tracebacks));
-         Set_String (");");
-         Tab_To (15);
+         Set_String (",");
+         Tab_To (20);
          Set_String ("/* Exception_Tracebacks */");
          Write_Statement_Buffer;
 
+         Set_String ("      ");
+         Set_Int    (Boolean'Pos (Zero_Cost_Exceptions_Specified));
+         Set_String (");");
+         Tab_To (20);
+         Set_String ("/* Zero_Cost_Exceptions */");
+         Write_Statement_Buffer;
+
          --  Install elaboration time signal handler
+
          WBI ("   if (__gnat_handler_installed == 0)");
          WBI ("     {");
          WBI ("        __gnat_install_handler ();");
@@ -638,17 +651,6 @@ package body Bindgen is
             --  this entry. It is the same as Unum except when the body
             --  and spec are different and we are currently processing
             --  the body, in which case it is the spec (Unum + 1).
-
-            procedure Set_Elab_Entity;
-            --  Set name of elaboration entity flag
-
-            procedure Set_Elab_Entity is
-            begin
-               Get_Decoded_Name_String_With_Brackets (U.Uname);
-               Name_Len := Name_Len - 2;
-               Set_Casing (U.Icasing);
-               Set_Name_Buffer;
-            end Set_Elab_Entity;
 
          begin
             if U.Utype = Is_Body then
@@ -1173,7 +1175,8 @@ package body Bindgen is
    procedure Gen_Main_Ada is
       Target         : constant String_Ptr := Target_Name;
       VxWorks_Target : constant Boolean :=
-                         Target (Target'Last - 7 .. Target'Last) = "vxworks/";
+        Target (Target'Last - 7 .. Target'Last) = "vxworks/"
+        or else Target (Target'Last - 9 .. Target'Last) = "vxworksae/";
 
    begin
       WBI ("");
@@ -1238,6 +1241,19 @@ package body Bindgen is
          Set_String (""");");
 
          Write_Statement_Buffer;
+         WBI ("");
+      end if;
+
+      --  Generate a reference to Ada_Main_Program_Name. This symbol is
+      --  not referenced elsewhere in the generated program, but is needed
+      --  by the debugger (that's why it is generated in the first place).
+      --  The reference stops Ada_Main_Program_Name from being optimized
+      --  away by smart linkers, such as the AiX linker.
+
+      if Bind_Main_Program then
+         WBI
+           ("      Ensure_Reference : System.Address := " &
+            "Ada_Main_Program_Name'Address;");
          WBI ("");
       end if;
 
@@ -1315,7 +1331,8 @@ package body Bindgen is
    procedure Gen_Main_C is
       Target         : constant String_Ptr := Target_Name;
       VxWorks_Target : constant Boolean :=
-                         Target (Target'Last - 7 .. Target'Last) = "vxworks/";
+        Target (Target'Last - 7 .. Target'Last) = "vxworks/"
+        or else Target (Target'Last - 9 .. Target'Last) = "vxworksae/";
 
    begin
       Set_String ("int ");
@@ -1350,6 +1367,17 @@ package body Bindgen is
          WBI ("    char **argv;");
          WBI ("    char **envp;");
          WBI ("{");
+
+         --  Generate a reference to __gnat_ada_main_program_name. This symbol
+         --  is  not referenced elsewhere in the generated program, but is
+         --  needed by the debugger (that's why it is generated in the first
+         --  place). The reference stops Ada_Main_Program_Name from being
+         --  optimized away by smart linkers, such as the AiX linker.
+
+         if Bind_Main_Program then
+            WBI ("   char *ensure_reference = __gnat_ada_main_program_name;");
+            WBI ("");
+         end if;
 
          if ALIs.Table (ALIs.First).Main_Program = Func then
             WBI ("   int result;");
@@ -1443,7 +1471,10 @@ package body Bindgen is
    ------------------------------
 
    procedure Gen_Object_Files_Options is
-      Lgnat                     : Integer;
+      Lgnat : Natural;
+      --  This keeps track of the position in the sorted set of entries
+      --  in the Linker_Options table of where the first entry from an
+      --  internal file appears.
 
       procedure Write_Linker_Option;
       --  Write binder info linker option.
@@ -1550,10 +1581,40 @@ package body Bindgen is
 
       --  Sort linker options
 
-      Sort (Linker_Options.Last, Move_Linker_Option'Access,
-                                    Lt_Linker_Option'Access);
+      --  This sort accomplishes two important purposes:
 
-      --  Write user linker options
+      --    a) All application files are sorted to the front, and all
+      --       GNAT internal files are sorted to the end. This results
+      --       in a well defined dividing line between the two sets of
+      --       files, for the purpose of inserting certain standard
+      --       library references into the linker arguments list.
+
+      --    b) Given two different units, we sort the linker options so
+      --       that those from a unit earlier in the elaboration order
+      --       comes later in the list. This is a heuristic designed
+      --       to create a more friendly order of linker options when
+      --       the operations appear in separate units. The idea is that
+      --       if unit A must be elaborated before unit B, then it is
+      --       more likely that B references libraries included by A,
+      --       than vice versa, so we want the libraries included by
+      --       A to come after the libraries included by B.
+
+      --  These two criteria are implemented by function Lt_Linker_Option.
+      --  Note that a special case of b) is that specs are elaborated before
+      --  bodies, so linker options from specs come after linker options
+      --  for bodies, and again, the assumption is that libraries used by
+      --  the body are more likely to reference libraries used by the spec,
+      --  than vice versa.
+
+      Sort
+        (Linker_Options.Last,
+         Move_Linker_Option'Access,
+         Lt_Linker_Option'Access);
+
+      --  Write user linker options, i.e. the set of linker options that
+      --  come from all files other than GNAT internal files, Lgnat is
+      --  left set to point to the first entry from a GNAT internal file,
+      --  or past the end of the entriers if there are no internal files.
 
       Lgnat := Linker_Options.Last + 1;
 
@@ -1567,8 +1628,12 @@ package body Bindgen is
          end if;
       end loop;
 
-      if not (No_Run_Time_Specified or else Opt.No_Stdlib) then
+      --  Now we insert standard linker options that must appear after the
+      --  entries from user files, and before the entries from GNAT run-time
+      --  files. The reason for this decision is that libraries referenced
+      --  by internal routines may reference these standard library entries.
 
+      if not (No_Run_Time_Specified or else Opt.No_Stdlib) then
          Name_Len := 0;
 
          if Opt.Shared_Libgnat then
@@ -1577,7 +1642,7 @@ package body Bindgen is
             Add_Str_To_Name_Buffer ("-static");
          end if;
 
-         --  Write directly to avoid -K output.
+         --  Write directly to avoid -K output (why???)
 
          Write_Info_Ada_C ("   --   ", "", Name_Buffer (1 .. Name_Len));
 
@@ -1596,10 +1661,9 @@ package body Bindgen is
          Name_Len := 0;
          Add_Str_To_Name_Buffer ("-lgnat");
          Write_Linker_Option;
-
       end if;
 
-      --  Write internal linker options
+      --  Write linker options from all internal files
 
       for J in Lgnat .. Linker_Options.Last loop
          Get_Name_String (Linker_Options.Table (J).Name);
@@ -1619,22 +1683,8 @@ package body Bindgen is
    ---------------------
 
    procedure Gen_Output_File (Filename : String) is
-
-      function Public_Version return Boolean;
-      --  Return true if the version number contains a 'p'
-
-      function Public_Version return Boolean is
-      begin
-         for J in Gnat_Version_String'Range loop
-            if Gnat_Version_String (J) = 'p'  then
-               return True;
-            end if;
-         end loop;
-
-         return False;
-      end Public_Version;
-
-   --  Start of processing for Gen_Output_File
+      Public_Version : constant Boolean := Gnat_Version_Type = "PUBLIC ";
+      --  Set true if this is the public version of GNAT
 
    begin
       --  Override Ada_Bind_File and Bind_Main_Program for Java since
@@ -1702,7 +1752,8 @@ package body Bindgen is
 
       Target         : constant String_Ptr := Target_Name;
       VxWorks_Target : constant Boolean :=
-                         Target (Target'Last - 7 .. Target'Last) = "vxworks/";
+        Target (Target'Last - 7 .. Target'Last) = "vxworks/"
+        or else Target (Target'Last - 9 .. Target'Last) = "vxworksae/";
 
    begin
       --  Create spec first
@@ -1776,7 +1827,7 @@ package body Bindgen is
          end if;
       end if;
 
-      --  Generate the GNAT_Version and Ada_Main_Program_name info only for
+      --  Generate the GNAT_Version and Ada_Main_Program_Name info only for
       --  the main program. Otherwise, it can lead under some circumstances
       --  to a symbol duplication during the link (for instance when a
       --  C program uses 2 Ada libraries)
@@ -1961,8 +2012,8 @@ package body Bindgen is
       WBI ("");
 
       WBI ("extern void __gnat_set_globals ");
-      WBI (" PARAMS ((int, int, int, int, int, int, ");
-      WBI ("          void (*) PARAMS ((void)), int, int));");
+      WBI (" PARAMS ((int, int, int, int, int, int, const char *,");
+      WBI ("          int, int, int));");
       WBI ("extern void " & Ada_Final_Name.all & " PARAMS ((void));");
       WBI ("extern void " & Ada_Init_Name.all & " PARAMS ((void));");
 
@@ -2602,7 +2653,8 @@ package body Bindgen is
    function Get_Main_Name return String is
       Target         : constant String_Ptr := Target_Name;
       VxWorks_Target : constant Boolean :=
-                         Target (Target'Last - 7 .. Target'Last) = "vxworks/";
+        Target (Target'Last - 7 .. Target'Last) = "vxworks/"
+        or else Target (Target'Last - 9 .. Target'Last) = "vxworksae/";
 
    begin
       --  Explicit name given with -M switch
@@ -2622,7 +2674,7 @@ package body Bindgen is
          --  since we can't have dots in a nested program name. Note that
          --  we do not include the %b at the end of the unit name.
 
-         for J in reverse 1 .. Name_Len - 3 loop
+         for J in reverse 1 .. Name_Len - 2 loop
             if J = 1 or else Name_Buffer (J - 1) = '.' then
                return Name_Buffer (J .. Name_Len - 2);
             end if;
@@ -2643,27 +2695,27 @@ package body Bindgen is
 
    function Lt_Linker_Option (Op1, Op2 : Natural) return Boolean is
    begin
+      --  Sort internal files last
+
       if Linker_Options.Table (Op1).Internal_File
            /=
          Linker_Options.Table (Op2).Internal_File
       then
+         --  Note: following test uses False < True
+
          return Linker_Options.Table (Op1).Internal_File
                   <
-                 Linker_Options.Table (Op2).Internal_File;
-      else
-         if Units.Table (Linker_Options.Table (Op1).Unit).Elab_Position
-              /=
-            Units.Table (Linker_Options.Table (Op2).Unit).Elab_Position
-         then
-            return Units.Table (Linker_Options.Table (Op1).Unit).Elab_Position
-                     >
-                   Units.Table (Linker_Options.Table (Op2).Unit).Elab_Position;
+                Linker_Options.Table (Op2).Internal_File;
 
-         else
-            return Linker_Options.Table (Op1).Original_Pos
-                     <
-                   Linker_Options.Table (Op2).Original_Pos;
-         end if;
+      --  If both internal or both non-internal, sort according to the
+      --  elaboration position. A unit that is elaborated later should
+      --  come earlier in the linker options list.
+
+      else
+         return Units.Table (Linker_Options.Table (Op1).Unit).Elab_Position
+                  >
+                Units.Table (Linker_Options.Table (Op2).Unit).Elab_Position;
+
       end if;
    end Lt_Linker_Option;
 
@@ -2888,31 +2940,6 @@ package body Bindgen is
          Set_Char (' ');
       end loop;
    end Tab_To;
-
-   -----------
-   -- Value --
-   -----------
-
-   function Value (chars : chars_ptr) return String is
-      function Strlen (chars : chars_ptr) return Natural;
-      pragma Import (C, Strlen);
-
-   begin
-      if chars = Null_Address then
-         return "";
-
-      else
-         declare
-            subtype Result_Type is String (1 .. Strlen (chars));
-
-            Result : Result_Type;
-            for Result'Address use chars;
-
-         begin
-            return Result;
-         end;
-      end if;
-   end Value;
 
    ----------------------
    -- Write_Info_Ada_C --

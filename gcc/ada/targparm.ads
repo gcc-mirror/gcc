@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.13 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -49,7 +49,32 @@ package Targparm is
 
    --  The following parameters correspond to the variables defined in the
    --  private part of System (without the terminating _On_Target). Note
-   --  that it is required that all parameters be specified in system.ads.
+   --  that it is required that all parameters defined here be specified
+   --  in the target specific version of system.ads (there are no defaults).
+
+   --  All these parameters should be regarded as read only by all clients
+   --  of the package. The only way they get modified is by calling the
+   --  Get_Target_Parameters routine which reads the values from System.
+
+   -------------------------------
+   -- Backend Arithmetic Checks --
+   -------------------------------
+
+   --  Divide and overflow checks are either done in the front end or
+   --  back end. The front end will generate checks when required unless
+   --  the corresponding parameter here is set to indicate that the back
+   --  end will generate the required checks (or that the checks are
+   --  automatically performed by the hardware in an appropriate form).
+
+   Backend_Divide_Checks_On_Target : Boolean;
+   --  Set True if the back end generates divide checks, or if the hardware
+   --  checks automatically. Set False if the front end must generate the
+   --  required tests using explicit expanded code.
+
+   Backend_Overflow_Checks_On_Target : Boolean;
+   --  Set True if the back end generates arithmetic overflow checks, or if
+   --  the hardware checks automatically. Set False if the front end must
+   --  generate the required tests using explicit expanded code.
 
    -----------------------------------
    -- Control of Exception Handling --
@@ -75,8 +100,7 @@ package Targparm is
    --      available.
 
    ZCX_By_Default_On_Target : Boolean;
-   --  Indicates if zero cost exceptions are active by default. Can be modified
-   --  by the use of -gnatZ and -gnatL switches.
+   --  Indicates if zero cost exceptions are active by default.
 
    GCC_ZCX_Support_On_Target  : Boolean;
    --  Indicates that when ZCX is active the mechanism to be used is the
@@ -224,6 +248,16 @@ package Targparm is
 
    OpenVMS_On_Target : Boolean;
    --  Set to True if target is OpenVMS.
+
+   -------------------------------------------
+   -- Boolean-Valued Fixed-Point Attributes --
+   -------------------------------------------
+
+   Fractional_Fixed_Ops_On_Target : Boolean;
+   --  Set to True for targets that support fixed-by-fixed multiplication
+   --  and division for fixed-point types with a small value equal to
+   --  2 ** (-(T'Object_Size - 1)) and whose values have an absolute
+   --  value less than 1.0.
 
    --------------------------------------------------------------
    -- Handling of Unconstrained Values Returned from Functions --

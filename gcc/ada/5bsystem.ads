@@ -5,11 +5,11 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                            (AIX/PPC Version)
+--                            (AIX/PPC Version)                             --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -60,16 +60,16 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := Standard'Tick;
+   Tick                  : constant := 1.0;
 
    --  Storage-related Declarations
 
    type Address is private;
    Null_Address : constant Address;
 
-   Storage_Unit : constant := Standard'Storage_Unit;
-   Word_Size    : constant := Standard'Word_Size;
-   Memory_Size  : constant := 2 ** Standard'Address_Size;
+   Storage_Unit : constant := 8;
+   Word_Size    : constant := 32;
+   Memory_Size  : constant := 2 ** 32;
 
    --  Address comparison
 
@@ -88,32 +88,18 @@ pragma Pure (System);
    --  Other System-Dependent Declarations
 
    type Bit_Order is (High_Order_First, Low_Order_First);
-   Default_Bit_Order : constant Bit_Order :=
-                         Bit_Order'Val (Standard'Default_Bit_Order);
+   Default_Bit_Order : constant Bit_Order := High_Order_First;
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority : constant Positive := 30;
-
+   Max_Priority           : constant Positive := 30;
    Max_Interrupt_Priority : constant Positive := 31;
 
-   subtype Any_Priority is Integer
-     range 0 .. Standard'Max_Interrupt_Priority;
+   subtype Any_Priority       is Integer      range  0 .. 31;
+   subtype Priority           is Any_Priority range  0 .. 30;
+   subtype Interrupt_Priority is Any_Priority range 31 .. 31;
 
-   subtype Priority is Any_Priority
-     range 0 .. Standard'Max_Priority;
-
-   --  Functional notation is needed in the following to avoid visibility
-   --  problems when this package is compiled through rtsfind in the middle
-   --  of another compilation.
-
-   subtype Interrupt_Priority is Any_Priority
-     range
-       Standard."+" (Standard'Max_Priority,  1) ..
-         Standard'Max_Interrupt_Priority;
-
-   Default_Priority : constant Priority :=
-     Standard."/" (Standard."+" (Priority'First, Priority'Last), 2);
+   Default_Priority : constant Priority := 15;
 
 private
 
@@ -131,8 +117,11 @@ private
    --  of the individual switch values.
 
    AAMP                      : constant Boolean := False;
+   Backend_Divide_Checks     : constant Boolean := False;
+   Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
    Denorm                    : constant Boolean := True;
+   Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
    Functions_Return_By_DSP   : constant Boolean := False;
    Long_Shifts_Inlined       : constant Boolean := True;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.20 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -37,7 +37,7 @@
 --  correspond in size to the standard signed types declared in Standard.
 --  and (unlike the types in Interfaces have corresponding names). It
 --  also contains some related definitions for other specialized types
---  used only by the expander.
+--  used by the compiler in connection with packed array types.
 
 package System.Unsigned_Types is
 pragma Pure (Unsigned_Types);

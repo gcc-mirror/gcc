@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for IRIX/MIPS)                          --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -66,27 +66,26 @@ package body System.Machine_State_Operations is
 
    type Reg_Array is array (0 .. 31) of Uns64;
 
-   type Sigcontext is
-      record
-         SC_Regmask           : Uns32;          --  0
-         SC_Status            : Uns32;          --  4
-         SC_PC                : Uns64;          --  8
-         SC_Regs              : Reg_Array;      --  16
-         SC_Fpregs            : Reg_Array;      --  272
-         SC_Ownedfp           : Uns32;          --  528
-         SC_Fpc_Csr           : Uns32;          --  532
-         SC_Fpc_Eir           : Uns32;          --  536
-         SC_Ssflags           : Uns32;          --  540
-         SC_Mdhi              : Uns64;          --  544
-         SC_Mdlo              : Uns64;          --  552
-         SC_Cause             : Uns64;          --  560
-         SC_Badvaddr          : Uns64;          --  568
-         SC_Triggersave       : Uns64;          --  576
-         SC_Sigset            : Uns64;          --  584
-         SC_Fp_Rounded_Result : Uns64;          --  592
-         SC_Pancake           : Uns64_Array (0 .. 5);
-         SC_Pad               : Uns64_Array (0 .. 26);
-      end record;
+   type Sigcontext is record
+      SC_Regmask           : Uns32;          --  0
+      SC_Status            : Uns32;          --  4
+      SC_PC                : Uns64;          --  8
+      SC_Regs              : Reg_Array;      --  16
+      SC_Fpregs            : Reg_Array;      --  272
+      SC_Ownedfp           : Uns32;          --  528
+      SC_Fpc_Csr           : Uns32;          --  532
+      SC_Fpc_Eir           : Uns32;          --  536
+      SC_Ssflags           : Uns32;          --  540
+      SC_Mdhi              : Uns64;          --  544
+      SC_Mdlo              : Uns64;          --  552
+      SC_Cause             : Uns64;          --  560
+      SC_Badvaddr          : Uns64;          --  568
+      SC_Triggersave       : Uns64;          --  576
+      SC_Sigset            : Uns64;          --  584
+      SC_Fp_Rounded_Result : Uns64;          --  592
+      SC_Pancake           : Uns64_Array (0 .. 5);
+      SC_Pad               : Uns64_Array (0 .. 26);
+   end record;
 
    type Sigcontext_Ptr is access all Sigcontext;
 
@@ -253,11 +252,8 @@ package body System.Machine_State_Operations is
    ------------------------
 
    procedure Free_Machine_State (M : in out Machine_State) is
-      procedure Gnat_Free (M : in Machine_State);
-      pragma Import (C, Gnat_Free, "__gnat_free");
-
    begin
-      Gnat_Free (M);
+      Memory.Free (Address (M));
       M := Machine_State (Null_Address);
    end Free_Machine_State;
 

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.16 $
+--                            $Revision$
 --                                                                          --
---            Copyright (C) 1997-2001 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1997-2002 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -574,23 +574,26 @@ package body Memroot is
       while Last >= 1 and then Line (1) = '#' and then not Main_Found loop
          if F <= BT_Depth then
             Find_Name;
-            Nam := Enter_Name (Line (Curs1 .. Curs2));
-            Main_Found := Line (Curs1 .. Curs2) = "main";
+            --  Skip the __gnat_malloc frame itself
+            if Line (Curs1 .. Curs2) /= "<__gnat_malloc>" then
+               Nam := Enter_Name (Line (Curs1 .. Curs2));
+               Main_Found := Line (Curs1 .. Curs2) = "main";
 
-            Find_File;
+               Find_File;
 
-            if No_File then
-               Fil := No_Name_Id;
-               Lin := No_Name_Id;
-            else
-               Fil := Enter_Name (Line (Curs1 .. Curs2));
+               if No_File then
+                  Fil := No_Name_Id;
+                  Lin := No_Name_Id;
+               else
+                  Fil := Enter_Name (Line (Curs1 .. Curs2));
 
-               Find_Line;
-               Lin := Enter_Name (Line (Curs1 .. Curs2));
+                  Find_Line;
+                  Lin := Enter_Name (Line (Curs1 .. Curs2));
+               end if;
+
+               Frames (F) := Enter_Frame (Nam, Fil, Lin);
+               F := F + 1;
             end if;
-
-            Frames (F) := Enter_Frame (Nam, Fil, Lin);
-            F := F + 1;
          end if;
 
          if No_File then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $                             --
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -177,10 +177,9 @@ package Sem_Ch8 is
    --  re-installing use clauses of parent units. N is the use_clause that
    --  names P (and possibly other packages).
 
-   procedure Use_One_Type (Id : Node_Id; N : Node_Id);
+   procedure Use_One_Type (Id : Node_Id);
    --  Id is the subtype mark from a use type clause. This procedure makes
    --  the primitive operators of the type potentially use-visible.
-   --  N is the Use_Type_Clause that names Id.
 
    procedure Set_Use (L : List_Id);
    --  Find use clauses that are declarative items in a package declaration

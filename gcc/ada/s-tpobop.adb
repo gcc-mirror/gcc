@@ -7,9 +7,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.13 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--         Copyright (C) 1998-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -63,6 +62,7 @@ with System.Task_Primitives.Operations;
 with System.Tasking.Entry_Calls;
 --  used for Wait_For_Completion
 --           Wait_Until_Abortable
+--           Wait_For_Completion_With_Timeout
 
 with System.Tasking.Initialization;
 --  Used for Defer_Abort,
@@ -86,14 +86,24 @@ with System.Tasking.Rendezvous;
 with System.Tasking.Debug;
 --  used for Trace
 
+with System.Parameters;
+--  used for Single_Lock
+--           Runtime_Traces
+
+with System.Traces.Tasking;
+--  used for Send_Trace_Info
+
 package body System.Tasking.Protected_Objects.Operations is
 
    package STPO renames System.Task_Primitives.Operations;
 
+   use Parameters;
    use Task_Primitives;
-   use Tasking;
    use Ada.Exceptions;
    use Entries;
+
+   use System.Traces;
+   use System.Traces.Tasking;
 
    -----------------------
    -- Local Subprograms --
@@ -183,7 +193,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --  has been "cancelled".
 
    --  Enqueued should be true if there is any chance that the call
-   --  is still on a queue.  It seems to be safe to make it True if
+   --  is still on a queue. It seems to be safe to make it True if
    --  the call was Onqueue at some point before return from
    --  Protected_Entry_Call.
 
@@ -192,12 +202,12 @@ package body System.Tasking.Protected_Objects.Operations is
 
    --  ?????
    --  The need for Enqueued is less obvious.
-   --  The  "if enqueued()" tests are not necessary, since both
+   --  The "if enqueued ()" tests are not necessary, since both
    --  Cancel_Protected_Entry_Call and Protected_Entry_Call must
-   --  do the same test internally, with locking.  The one that
+   --  do the same test internally, with locking. The one that
    --  makes cancellation conditional may be a useful heuristic
    --  since at least 1/2 the time the call should be off-queue
-   --  by that point.  The other one seems totally useless, since
+   --  by that point. The other one seems totally useless, since
    --  Protected_Entry_Call must do the same check and then
    --  possibly wait for the call to be abortable, internally.
 
@@ -206,8 +216,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --  No other task can access the call record at this point.
 
    procedure Cancel_Protected_Entry_Call
-     (Block : in out Communication_Block)
-   is
+     (Block : in out Communication_Block) is
    begin
       Entry_Calls.Try_To_Cancel_Entry_Call (Block.Cancelled);
    end Cancel_Protected_Entry_Call;
@@ -248,7 +257,6 @@ package body System.Tasking.Protected_Objects.Operations is
       Ex     : Ada.Exceptions.Exception_Id)
    is
       Entry_Call : constant Entry_Call_Link := Object.Call_In_Progress;
-
    begin
       pragma Debug
        (Debug.Trace (STPO.Self, "Exceptional_Complete_Entry_Body", 'P'));
@@ -257,18 +265,16 @@ package body System.Tasking.Protected_Objects.Operations is
       --  a protected operation.
 
       if Entry_Call /= null then
-
          --  The call was not requeued.
 
          Entry_Call.Exception_To_Raise := Ex;
 
---  ?????
---  The caller should do the following, after return from this
---  procedure, if Call_In_Progress /= null
---       Write_Lock (Entry_Call.Self);
---       Initialization.Wakeup_Entry_Caller (STPO.Self, Entry_Call, Done);
---       Unlock (Entry_Call.Self);
+         --  Wakeup_Entry_Caller will be called from PO_Do_Or_Queue or
+         --  PO_Service_Entries on return.
+      end if;
 
+      if Runtime_Traces then
+         Send_Trace_Info (PO_Done, Entry_Call.Self);
       end if;
    end Exceptional_Complete_Entry_Body;
 
@@ -286,6 +292,7 @@ package body System.Tasking.Protected_Objects.Operations is
       New_Object        : Protection_Entries_Access;
       Ceiling_Violation : Boolean;
       Barrier_Value     : Boolean;
+      Result            : Boolean;
 
    begin
       --  When the Action procedure for an entry body returns, it is either
@@ -318,7 +325,18 @@ package body System.Tasking.Protected_Objects.Operations is
             --  Body of current entry served call to completion
 
             Object.Call_In_Progress := null;
+
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
+            STPO.Write_Lock (Entry_Call.Self);
             Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
+            STPO.Unlock (Entry_Call.Self);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
 
          else
             --  Body of current entry requeued the call
@@ -328,13 +346,23 @@ package body System.Tasking.Protected_Objects.Operations is
 
                --  Call was requeued to a task
 
-               if not Rendezvous.Task_Do_Or_Queue
-                 (Self_ID, Entry_Call,
-                  With_Abort => Entry_Call.Requeue_With_Abort)
-               then
-                  Queuing.Broadcast_Program_Error
-                   (Self_ID, Object, Entry_Call);
+               if Single_Lock then
+                  STPO.Lock_RTS;
                end if;
+
+               Result := Rendezvous.Task_Do_Or_Queue
+                 (Self_ID, Entry_Call,
+                  With_Abort => Entry_Call.Requeue_With_Abort);
+
+               if not Result then
+                  Queuing.Broadcast_Program_Error
+                   (Self_ID, Object, Entry_Call, RTS_Locked => True);
+               end if;
+
+               if Single_Lock then
+                  STPO.Unlock_RTS;
+               end if;
+
                return;
             end if;
 
@@ -392,10 +420,18 @@ package body System.Tasking.Protected_Objects.Operations is
       else
          --  Conditional_Call and With_Abort
 
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
          STPO.Write_Lock (Entry_Call.Self);
          pragma Assert (Entry_Call.State >= Was_Abortable);
          Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Cancelled);
          STPO.Unlock (Entry_Call.Self);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
       end if;
 
    exception
@@ -416,6 +452,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Caller            : Task_ID;
       New_Object        : Protection_Entries_Access;
       Ceiling_Violation : Boolean;
+      Result            : Boolean;
 
    begin
       loop
@@ -433,6 +470,11 @@ package body System.Tasking.Protected_Objects.Operations is
             Object.Call_In_Progress := Entry_Call;
 
             begin
+               if Runtime_Traces then
+                  Send_Trace_Info (PO_Run, Self_ID,
+                                   Entry_Call.Self, Entry_Index (E));
+               end if;
+
                pragma Debug
                 (Debug.Trace (Self_ID, "POSE: start entry body", 'P'));
                Object.Entry_Bodies (
@@ -447,9 +489,18 @@ package body System.Tasking.Protected_Objects.Operations is
             if Object.Call_In_Progress /= null then
                Object.Call_In_Progress := null;
                Caller := Entry_Call.Self;
+
+               if Single_Lock then
+                  STPO.Lock_RTS;
+               end if;
+
                STPO.Write_Lock (Caller);
                Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
                STPO.Unlock (Caller);
+
+               if Single_Lock then
+                  STPO.Unlock_RTS;
+               end if;
 
             else
                --  Call needs to be requeued
@@ -460,12 +511,21 @@ package body System.Tasking.Protected_Objects.Operations is
 
                   --  Call is to be requeued to a task entry
 
-                  if not Rendezvous.Task_Do_Or_Queue
+                  if Single_Lock then
+                     STPO.Lock_RTS;
+                  end if;
+
+                  Result := Rendezvous.Task_Do_Or_Queue
                     (Self_ID, Entry_Call,
-                     With_Abort => Entry_Call.Requeue_With_Abort)
-                  then
+                     With_Abort => Entry_Call.Requeue_With_Abort);
+
+                  if not Result then
                      Queuing.Broadcast_Program_Error
-                      (Self_ID, Object, Entry_Call);
+                       (Self_ID, Object, Entry_Call, RTS_Locked => True);
+                  end if;
+
+                  if Single_Lock then
+                     STPO.Unlock_RTS;
                   end if;
 
                else
@@ -569,29 +629,27 @@ package body System.Tasking.Protected_Objects.Operations is
    --     end if;
    --  end;
 
-   --  See also Cancel_Protected_Entry_Call for code expansion of
-   --  asynchronous entry call.
+   --  See also Cancel_Protected_Entry_Call for code expansion of asynchronous
+   --  entry call.
 
-   --  The initial part of this procedure does not need to lock the
-   --  the calling task's ATCB, up to the point where the call record
-   --  first may be queued (PO_Do_Or_Queue), since before that no
-   --  other task will have access to the record.
+   --  The initial part of this procedure does not need to lock the the calling
+   --  task's ATCB, up to the point where the call record first may be queued
+   --  (PO_Do_Or_Queue), since before that no other task will have access to
+   --  the record.
 
-   --  If this is a call made inside of an abort deferred region,
-   --  the call should be never abortable.
+   --  If this is a call made inside of an abort deferred region, the call
+   --  should be never abortable.
 
-   --  If the call was not queued abortably, we need to wait
-   --  until it is before proceeding with the abortable part.
+   --  If the call was not queued abortably, we need to wait until it is before
+   --  proceeding with the abortable part.
 
-   --  There are some heuristics here, just to save time for
-   --  frequently occurring cases.  For example, we check
-   --  Initially_Abortable to try to avoid calling the procedure
-   --  Wait_Until_Abortable, since the normal case for async.
-   --  entry calls is to be queued abortably.
+   --  There are some heuristics here, just to save time for frequently
+   --  occurring cases. For example, we check Initially_Abortable to try to
+   --  avoid calling the procedure Wait_Until_Abortable, since the normal case
+   --  for async.  entry calls is to be queued abortably.
 
-   --  Another heuristic uses the Block.Enqueued to try to avoid
-   --  calling Cancel_Protected_Entry_Call if the call can be
-   --  served immediately.
+   --  Another heuristic uses the Block.Enqueued to try to avoid calling
+   --  Cancel_Protected_Entry_Call if the call can be served immediately.
 
    procedure Protected_Entry_Call
      (Object              : Protection_Entries_Access;
@@ -609,9 +667,13 @@ package body System.Tasking.Protected_Objects.Operations is
       pragma Debug
         (Debug.Trace (Self_ID, "Protected_Entry_Call", 'P'));
 
+      if Runtime_Traces then
+         Send_Trace_Info (PO_Call, Entry_Index (E));
+      end if;
+
       if Self_ID.ATC_Nesting_Level = ATC_Level'Last then
-         Raise_Exception (Storage_Error'Identity,
-           "not enough ATC nesting levels");
+         Raise_Exception
+           (Storage_Error'Identity, "not enough ATC nesting levels");
       end if;
 
       Initialization.Defer_Abort (Self_ID);
@@ -685,16 +747,29 @@ package body System.Tasking.Protected_Objects.Operations is
          --  Try to avoid an expensive call.
 
          if not Initially_Abortable then
-            Entry_Calls.Wait_Until_Abortable (Self_ID, Entry_Call);
+            if Single_Lock then
+               STPO.Lock_RTS;
+               Entry_Calls.Wait_Until_Abortable (Self_ID, Entry_Call);
+               STPO.Unlock_RTS;
+            else
+               Entry_Calls.Wait_Until_Abortable (Self_ID, Entry_Call);
+            end if;
          end if;
 
       elsif Mode < Asynchronous_Call then
 
          --  Simple_Call or Conditional_Call
 
-         STPO.Write_Lock (Self_ID);
-         Entry_Calls.Wait_For_Completion (Self_ID, Entry_Call);
-         STPO.Unlock (Self_ID);
+         if Single_Lock then
+            STPO.Lock_RTS;
+            Entry_Calls.Wait_For_Completion (Entry_Call);
+            STPO.Unlock_RTS;
+         else
+            STPO.Write_Lock (Self_ID);
+            Entry_Calls.Wait_For_Completion (Entry_Call);
+            STPO.Unlock (Self_ID);
+         end if;
+
          Block.Cancelled := Entry_Call.State = Cancelled;
 
       else
@@ -704,15 +779,14 @@ package body System.Tasking.Protected_Objects.Operations is
 
       Initialization.Undefer_Abort (Self_ID);
       Entry_Calls.Check_Exception (Self_ID, Entry_Call);
-
    end Protected_Entry_Call;
 
    ----------------------------
    -- Protected_Entry_Caller --
    ----------------------------
 
-   function Protected_Entry_Caller (Object : Protection_Entries'Class)
-     return Task_ID is
+   function Protected_Entry_Caller
+     (Object : Protection_Entries'Class) return Task_ID is
    begin
       return Object.Call_In_Progress.Self;
    end Protected_Entry_Caller;
@@ -810,26 +884,22 @@ package body System.Tasking.Protected_Objects.Operations is
       E          : Protected_Entry_Index;
       With_Abort : Boolean)
    is
-      Self_ID       : constant Task_ID := STPO.Self;
-      Entry_Call    : constant Entry_Call_Link := Self_ID.Common.Call;
+      Self_ID    : constant Task_ID := STPO.Self;
+      Entry_Call : constant Entry_Call_Link := Self_ID.Common.Call;
 
    begin
       Initialization.Defer_Abort (Self_ID);
-      STPO.Write_Lock (Self_ID);
+
+      --  We do not need to lock Self_ID here since the call is not abortable
+      --  at this point, and therefore, the caller cannot cancel the call.
+
       Entry_Call.Needs_Requeue := True;
       Entry_Call.Requeue_With_Abort := With_Abort;
       Entry_Call.Called_PO := To_Address (New_Object);
       Entry_Call.Called_Task := null;
-      STPO.Unlock (Self_ID);
       Entry_Call.E := Entry_Index (E);
       Initialization.Undefer_Abort (Self_ID);
    end Requeue_Task_To_Protected_Entry;
-
-   --  ??????
-   --  Do we really need to lock Self_ID above?
-   --  Might the caller be trying to cancel?
-   --  If so, it should fail, since the call state should not be
-   --  abortable while the call is in service.
 
    ---------------------
    -- Service_Entries --
@@ -855,70 +925,90 @@ package body System.Tasking.Protected_Objects.Operations is
       Mode                  : Delay_Modes;
       Entry_Call_Successful : out Boolean)
    is
-      Self_ID           : Task_ID  := STPO.Self;
+      Self_Id           : constant Task_ID  := STPO.Self;
       Entry_Call        : Entry_Call_Link;
       Ceiling_Violation : Boolean;
+      Yielded           : Boolean;
 
    begin
-      if Self_ID.ATC_Nesting_Level = ATC_Level'Last then
+      if Self_Id.ATC_Nesting_Level = ATC_Level'Last then
          Raise_Exception (Storage_Error'Identity,
            "not enough ATC nesting levels");
       end if;
 
-      Initialization.Defer_Abort (Self_ID);
+      if Runtime_Traces then
+         Send_Trace_Info (POT_Call, Entry_Index (E), Timeout);
+      end if;
+
+      Initialization.Defer_Abort (Self_Id);
       Lock_Entries (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
-         Initialization.Undefer_Abort (Self_ID);
+         Initialization.Undefer_Abort (Self_Id);
          raise Program_Error;
       end if;
 
-      Self_ID.ATC_Nesting_Level := Self_ID.ATC_Nesting_Level + 1;
+      Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level + 1;
       pragma Debug
-        (Debug.Trace (Self_ID, "TPEC: exited to ATC level: " &
-         ATC_Level'Image (Self_ID.ATC_Nesting_Level), 'A'));
+        (Debug.Trace (Self_Id, "TPEC: exited to ATC level: " &
+         ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
       Entry_Call :=
-        Self_ID.Entry_Calls (Self_ID.ATC_Nesting_Level)'Access;
+        Self_Id.Entry_Calls (Self_Id.ATC_Nesting_Level)'Access;
       Entry_Call.Next := null;
       Entry_Call.Mode := Timed_Call;
       Entry_Call.Cancellation_Attempted := False;
 
-      if Self_ID.Deferral_Level > 1 then
+      if Self_Id.Deferral_Level > 1 then
          Entry_Call.State := Never_Abortable;
       else
          Entry_Call.State := Now_Abortable;
       end if;
 
       Entry_Call.E := Entry_Index (E);
-      Entry_Call.Prio := STPO.Get_Priority (Self_ID);
+      Entry_Call.Prio := STPO.Get_Priority (Self_Id);
       Entry_Call.Uninterpreted_Data := Uninterpreted_Data;
       Entry_Call.Called_PO := To_Address (Object);
       Entry_Call.Called_Task := null;
       Entry_Call.Exception_To_Raise := Ada.Exceptions.Null_Id;
 
-      PO_Do_Or_Queue (Self_ID, Object, Entry_Call, With_Abort => True);
-      PO_Service_Entries (Self_ID, Object);
+      PO_Do_Or_Queue (Self_Id, Object, Entry_Call, With_Abort => True);
+      PO_Service_Entries (Self_Id, Object);
 
       Unlock_Entries (Object);
 
       --  Try to avoid waiting for completed or cancelled calls.
 
       if Entry_Call.State >= Done then
-         Self_ID.ATC_Nesting_Level := Self_ID.ATC_Nesting_Level - 1;
+         Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level - 1;
          pragma Debug
-           (Debug.Trace (Self_ID, "TPEC: exited to ATC level: " &
-            ATC_Level'Image (Self_ID.ATC_Nesting_Level), 'A'));
+           (Debug.Trace (Self_Id, "TPEC: exited to ATC level: " &
+            ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
          Entry_Call_Successful := Entry_Call.State = Done;
-         Initialization.Undefer_Abort (Self_ID);
-         Entry_Calls.Check_Exception (Self_ID, Entry_Call);
+         Initialization.Undefer_Abort (Self_Id);
+         Entry_Calls.Check_Exception (Self_Id, Entry_Call);
          return;
       end if;
 
+      if Single_Lock then
+         STPO.Lock_RTS;
+      else
+         STPO.Write_Lock (Self_Id);
+      end if;
+
       Entry_Calls.Wait_For_Completion_With_Timeout
-        (Self_ID, Entry_Call, Timeout, Mode);
-      Initialization.Undefer_Abort (Self_ID);
+        (Entry_Call, Timeout, Mode, Yielded);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      else
+         STPO.Unlock (Self_Id);
+      end if;
+
+      --  ??? Do we need to yield in case Yielded is False
+
+      Initialization.Undefer_Abort (Self_Id);
       Entry_Call_Successful := Entry_Call.State = Done;
-      Entry_Calls.Check_Exception (Self_ID, Entry_Call);
+      Entry_Calls.Check_Exception (Self_Id, Entry_Call);
    end Timed_Protected_Entry_Call;
 
    ----------------------------
@@ -953,7 +1043,6 @@ package body System.Tasking.Protected_Objects.Operations is
       With_Abort : Boolean)
    is
       Old : Entry_Call_State := Entry_Call.State;
-
    begin
       pragma Assert (Old < Done);
 
@@ -963,6 +1052,10 @@ package body System.Tasking.Protected_Objects.Operations is
          if Old < Was_Abortable and then
            Entry_Call.State = Now_Abortable
          then
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
             STPO.Write_Lock (Entry_Call.Self);
 
             if Entry_Call.Self.Common.State = Async_Select_Sleep then
@@ -970,6 +1063,11 @@ package body System.Tasking.Protected_Objects.Operations is
             end if;
 
             STPO.Unlock (Entry_Call.Self);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
+
          end if;
 
       elsif Entry_Call.Mode = Conditional_Call then

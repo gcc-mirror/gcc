@@ -1960,6 +1960,13 @@ package body Exp_Fixd is
       Right : constant Node_Id := Right_Opnd (N);
 
    begin
+      --  Suppress expansion of a fixed-by-fixed division if the
+      --  operation is supported directly by the target.
+
+      if Target_Has_Fixed_Ops (Etype (Left), Etype (Right), Etype (N)) then
+         return;
+      end if;
+
       if Etype (Left) = Universal_Real then
          Do_Divide_Universal_Fixed (N);
 
@@ -2100,6 +2107,13 @@ package body Exp_Fixd is
       end Rewrite_Non_Static_Universal;
 
    begin
+      --  Suppress expansion of a fixed-by-fixed multiplication if the
+      --  operation is supported directly by the target.
+
+      if Target_Has_Fixed_Ops (Etype (Left), Etype (Right), Etype (N)) then
+         return;
+      end if;
+
       if Etype (Left) = Universal_Real then
          if Nkind (Left) = N_Real_Literal then
             Do_Multiply_Fixed_Universal (N, Right, Left);

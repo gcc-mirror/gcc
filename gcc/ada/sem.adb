@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.290 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -552,7 +552,7 @@ package body Sem is
          --  a real internal error which we complain about.
 
          when N_Empty =>
-            pragma Assert (Errors_Detected /= 0);
+            pragma Assert (Serious_Errors_Detected /= 0);
             null;
 
          --  A call to analyze the error node is simply ignored, to avoid

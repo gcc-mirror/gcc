@@ -6,7 +6,7 @@
  *                                                                          *
  *                                  Body                                    *
  *                                                                          *
- *                             $Revision: 1.1 $
+ *                             $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -55,44 +55,10 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
-
-/* Standard data type sizes.  Most of these are not used.  */
-
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
-
-#ifndef SHORT_TYPE_SIZE
-#define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
-#endif
-
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifdef OPEN_VMS /* A target macro defined in vms.h */
-#define LONG_TYPE_SIZE 64
-#else
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
-#endif
-
-#ifndef LONG_LONG_TYPE_SIZE
-#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+/* If we don't have a specific size for Ada's equivalent of `long', use that
+   of C.  */
+#ifndef ADA_LONG_TYPE_SIZE
+#define ADA_LONG_TYPE_SIZE LONG_TYPE_SIZE
 #endif
 
 #ifndef WIDEST_HARDWARE_FP_SIZE
@@ -142,7 +108,7 @@ get_target_int_size ()
 Pos
 get_target_long_size ()
 {
-  return LONG_TYPE_SIZE;
+  return ADA_LONG_TYPE_SIZE;
 }
 
 Pos

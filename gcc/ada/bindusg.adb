@@ -31,15 +31,6 @@ with Output; use Output;
 
 procedure Bindusg is
 
-   procedure Write_Switch_Char;
-   --  Write two spaces followed by appropriate switch character
-
-   procedure Write_Switch_Char is
-   begin
-      Write_Str ("  ");
-      Write_Char (Switch_Character);
-   end Write_Switch_Char;
-
 --  Start of processing for Bindusg
 
 begin
@@ -54,207 +45,186 @@ begin
 
    --  Line for -aO switch
 
-   Write_Switch_Char;
-   Write_Str ("aOdir    Specify library files search path");
+   Write_Str ("  -aOdir    Specify library files search path");
    Write_Eol;
 
    --  Line for -aI switch
 
-   Write_Switch_Char;
-   Write_Str ("aIdir    Specify source files search path");
+   Write_Str ("  -aIdir    Specify source files search path");
    Write_Eol;
 
    --  Line for A switch
 
-   Write_Switch_Char;
-   Write_Str ("A        Generate binder program in Ada (default)");
+   Write_Str ("  -A        Generate binder program in Ada (default)");
    Write_Eol;
 
    --  Line for -b switch
 
-   Write_Switch_Char;
-   Write_Str ("b        Generate brief messages to std");
+   Write_Str ("  -b        Generate brief messages to std");
    Write_Str ("err even if verbose mode set");
    Write_Eol;
 
    --  Line for -c switch
 
-   Write_Switch_Char;
-   Write_Str ("c        Check only, no generation of b");
+   Write_Str ("  -c        Check only, no generation of b");
    Write_Str ("inder output file");
    Write_Eol;
 
    --  Line for C switch
 
-   Write_Switch_Char;
-   Write_Str ("C        Generate binder program in C");
+   Write_Str ("  -C        Generate binder program in C");
    Write_Eol;
 
    --  Line for -e switch
 
-   Write_Switch_Char;
-   Write_Str ("e        Output complete list of elabor");
+   Write_Str ("  -e        Output complete list of elabor");
    Write_Str ("ation order dependencies");
    Write_Eol;
 
    --  Line for -E switch
 
-   Write_Switch_Char;
-   Write_Str ("E        Store tracebacks in Exception occurrences");
+   Write_Str ("  -E        Store tracebacks in Exception occurrences");
    Write_Eol;
 
    --  Line for -h switch
 
-   Write_Switch_Char;
-   Write_Str ("h        Output this usage (help) infor");
+   Write_Str ("  -h        Output this usage (help) infor");
    Write_Str ("mation");
    Write_Eol;
 
    --  Lines for -I switch
 
-   Write_Switch_Char;
-   Write_Str ("Idir     Specify library and source files search path");
+   Write_Str ("  -Idir     Specify library and source files search path");
    Write_Eol;
 
-   Write_Switch_Char;
-   Write_Str ("I-       Don't look for sources & library files");
+   Write_Str ("  -I-       Don't look for sources & library files");
    Write_Str (" in default directory");
    Write_Eol;
 
    --  Line for -K switch
 
-   Write_Switch_Char;
-   Write_Str ("K        Give list of linker options specified for link");
+   Write_Str ("  -K        Give list of linker options specified for link");
    Write_Eol;
 
    --  Line for -l switch
 
-   Write_Switch_Char;
-   Write_Str ("l        Output chosen elaboration order");
+   Write_Str ("  -l        Output chosen elaboration order");
    Write_Eol;
 
    --  Line of -L switch
 
-   Write_Switch_Char;
-   Write_Str ("Lxyz     Library build: adainit/final ");
+   Write_Str ("  -Lxyz     Library build: adainit/final ");
    Write_Str ("renamed to xyzinit/final, implies -n");
    Write_Eol;
 
    --  Line for -M switch
 
-   Write_Switch_Char;
-   Write_Str ("Mxyz     Rename generated main program from main to xyz");
+   Write_Str ("  -Mxyz     Rename generated main program from main to xyz");
    Write_Eol;
 
    --  Line for -m switch
 
-   Write_Switch_Char;
-   Write_Str ("mnnn     Limit number of detected error");
+   Write_Str ("  -mnnn     Limit number of detected error");
    Write_Str ("s to nnn (1-999)");
    Write_Eol;
 
    --  Line for -n switch
 
-   Write_Switch_Char;
-   Write_Str ("n        No Ada main program (foreign main routine)");
+   Write_Str ("  -n        No Ada main program (foreign main routine)");
    Write_Eol;
 
    --  Line for -nostdinc
 
-   Write_Switch_Char;
-   Write_Str ("nostdinc Don't look for source files");
+   Write_Str ("  -nostdinc Don't look for source files");
    Write_Str (" in the system default directory");
    Write_Eol;
 
    --  Line for -nostdlib
 
-   Write_Switch_Char;
-   Write_Str ("nostdlib Don't look for library files");
+   Write_Str ("  -nostdlib Don't look for library files");
    Write_Str (" in the system default directory");
    Write_Eol;
 
    --  Line for -o switch
 
-   Write_Switch_Char;
-   Write_Str ("o file   Give the output file name (default is b~xxx.adb) ");
+   Write_Str ("  -o file   Give the output file name (default is b~xxx.adb) ");
    Write_Eol;
 
    --  Line for -O switch
 
-   Write_Switch_Char;
-   Write_Str ("O        Give list of objects required for link");
+   Write_Str ("  -O        Give list of objects required for link");
    Write_Eol;
 
    --  Line for -p switch
 
-   Write_Switch_Char;
-   Write_Str ("p        Pessimistic (worst-case) elaborat");
+   Write_Str ("  -p        Pessimistic (worst-case) elaborat");
    Write_Str ("ion order");
+   Write_Eol;
+
+   --  Line for -r switch
+
+   Write_Str ("  -r        List restrictions that could be a");
+   Write_Str ("pplied to this partition");
    Write_Eol;
 
    --  Line for -s switch
 
-   Write_Switch_Char;
-   Write_Str ("s        Require all source files to be");
+   Write_Str ("  -s        Require all source files to be");
    Write_Str (" present");
    Write_Eol;
 
    --  Line for -Sxx switch
 
-   Write_Switch_Char;
-   Write_Str ("S??      Sin/lo/hi/xx for Initialize_Scalars");
+   Write_Str ("  -S??      Sin/lo/hi/xx for Initialize_Scalars");
    Write_Str (" invalid/low/high/hex");
    Write_Eol;
 
    --  Line for -static
 
-   Write_Switch_Char;
-   Write_Str ("static   Link against a static GNAT run time");
+   Write_Str ("  -static   Link against a static GNAT run time");
    Write_Eol;
 
    --  Line for -shared
 
-   Write_Switch_Char;
-   Write_Str ("shared   Link against a shared GNAT run time");
+   Write_Str ("  -shared   Link against a shared GNAT run time");
    Write_Eol;
 
    --  Line for -t switch
 
-   Write_Switch_Char;
-   Write_Str ("t        Tolerate time stamp and other consistency errors");
+   Write_Str ("  -t        Tolerate time stamp and other consistency errors");
    Write_Eol;
 
    --  Line for -T switch
 
-   Write_Switch_Char;
-   Write_Str ("Tn       Set time slice value to n microseconds (n >= 0)");
+   Write_Str ("  -Tn       Set time slice value to n microseconds (n >= 0)");
    Write_Eol;
 
    --  Line for -v switch
 
-   Write_Switch_Char;
-   Write_Str ("v        Verbose mode. Error messages, ");
+   Write_Str ("  -v        Verbose mode. Error messages, ");
    Write_Str ("header, summary output to stdout");
    Write_Eol;
 
    --  Lines for -w switch
 
-   Write_Switch_Char;
-   Write_Str ("wx       Warning mode. (x=s/e for supp");
+   Write_Str ("  -wx       Warning mode. (x=s/e for supp");
    Write_Str ("ress/treat as error)");
    Write_Eol;
 
    --  Line for -x switch
 
-   Write_Switch_Char;
-   Write_Str ("x        Exclude source files (check ob");
+   Write_Str ("  -x        Exclude source files (check ob");
    Write_Str ("ject consistency only)");
    Write_Eol;
 
    --  Line for -z switch
 
-   Write_Switch_Char;
-   Write_Str ("z        No main subprogram (zero main)");
+   Write_Str ("  -z        No main subprogram (zero main)");
+   Write_Eol;
+
+   --  Line for --RTS
+
+   Write_Str ("  --RTS=dir specify the default source and object search path");
    Write_Eol;
 
    --  Line for sfile

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.42 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +51,10 @@ package Exp_Ch7 is
    --  Typ is a record, and array type having controlled components.
    --  Create the procedures Deep_Initialize, Deep_Adjust and Deep_Finalize
    --  that take care of finalization management at run-time.
+
+   procedure Build_Late_Proc (Typ : Entity_Id; Nam : Name_Id);
+   --  Build one controlling procedure when a late body overrides one of
+   --  the controlling operations.
 
    function Controller_Component (Typ : Entity_Id) return Entity_Id;
    --  Returns the entity of the component whose name is 'Name_uController'

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,9 +63,8 @@ package body System.Arith_64 is
    --  Length doubling subtraction
 
    function "*" (A, B : Uns32) return Uns64;
-   function "*" (A : Uns64; B : Uns32) return Uns64;
    pragma Inline ("*");
-   --  Length doubling multiplications
+   --  Length doubling multiplication
 
    function "/" (A : Uns64; B : Uns32) return Uns64;
    pragma Inline ("/");
@@ -118,11 +117,6 @@ package body System.Arith_64 is
    function "*" (A, B : Uns32) return Uns64 is
    begin
       return Uns64 (A) * Uns64 (B);
-   end "*";
-
-   function "*" (A : Uns64; B : Uns32) return Uns64 is
-   begin
-      return A * Uns64 (B);
    end "*";
 
    ---------

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $                              --
+--                            $Revision$
 --                                                                          --
---     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Version for ???
+
 with Unchecked_Deallocation;
 with Ada.Streams;
 
@@ -43,6 +45,10 @@ pragma Elaborate (System.RPC.Garlic);
 
 package body System.RPC is
 
+   --  ??? general note: the debugging calls are very heavy, especially
+   --  those that create exception handlers in every procedure. Do we
+   --  really still need all this stuff?
+
    use type Ada.Streams.Stream_Element_Count;
    use type Ada.Streams.Stream_Element_Offset;
 
@@ -52,7 +58,7 @@ package body System.RPC is
    Max_Of_Message_Id : constant := 127;
 
    subtype Message_Id_Type is
-      Integer range -Max_Of_Message_Id .. Max_Of_Message_Id;
+     Integer range -Max_Of_Message_Id .. Max_Of_Message_Id;
    --  A message id is either a request id or reply id. A message id is
    --  provided with a message to a receiving stub which uses the opposite
    --  as a reply id. A message id helps to retrieve to which task is
@@ -67,9 +73,9 @@ package body System.RPC is
    type Message_Length_Per_Request is array (Request_Id_Type)
       of Ada.Streams.Stream_Element_Count;
 
-   Header_Size : Ada.Streams.Stream_Element_Count
-      := Streams.Get_Integer_Initial_Size +
-         Streams.Get_SEC_Initial_Size;
+   Header_Size : Ada.Streams.Stream_Element_Count :=
+                   Streams.Get_Integer_Initial_Size +
+                     Streams.Get_SEC_Initial_Size;
    --  Initial size needed for frequently used header streams
 
    Stream_Error : exception;
@@ -94,33 +100,30 @@ package body System.RPC is
           Params_Size  : in Ada.Streams.Stream_Element_Count;
           Result_Size  : in Ada.Streams.Stream_Element_Count;
           Protocol     : in Garlic.Protocol_Access);
-      --  This entry provides an anonymous task a remote call to perform
-      --  This task calls for a
-      --  Request id is provided to construct the reply id by using
-      --  -Request. Partition is used to send the reply message. Params_Size
-      --  is the size of the calling stub Params stream. Then, Protocol
-      --  (used by the environment task previously) allows to extract the
-      --  message following the header (The header is extracted by the
-      --  environment task)
+      --  This entry provides an anonymous task a remote call to perform.
+      --  This task calls for a Request id is provided to construct the
+      --  reply id by using -Request. Partition is used to send the reply
+      --  message. Params_Size is the size of the calling stub Params stream.
+      --  Then Protocol (used by the environment task previously) allows
+      --  extraction of the message following the header (The header is
+      --  extracted by the environment task)
+      --  Note: grammar in above is obscure??? needs cleanup
 
    end Anonymous_Task_Type;
 
    type Anonymous_Task_Access is access Anonymous_Task_Type;
 
-   type Anonymous_Task_List is
-      record
-         Head     : Anonymous_Task_Node_Access;
-         Tail     : Anonymous_Task_Node_Access;
-      end record;
+   type Anonymous_Task_List is record
+      Head     : Anonymous_Task_Node_Access;
+      Tail     : Anonymous_Task_Node_Access;
+   end record;
 
-   type Anonymous_Task_Node is
-      record
-         Element : Anonymous_Task_Access;
-         Next    : Anonymous_Task_Node_Access;
-      end record;
-   --  Types we need to construct a singly linked list of anonymous tasks
-   --  This pool is maintained to avoid a task creation each time a RPC
-   --  occurs
+   type Anonymous_Task_Node is record
+      Element : Anonymous_Task_Access;
+      Next    : Anonymous_Task_Node_Access;
+   end record;
+   --  Types we need to construct a singly linked list of anonymous tasks.
+   --  This pool is maintained to avoid a task creation each time a RPC occurs.
 
    protected Garbage_Collector is
 
@@ -133,6 +136,7 @@ package body System.RPC is
          (Item : in out Anonymous_Task_Node_Access);
       --  Anonymous task pool management : queue this task in the pool
       --  of inactive anonymous tasks.
+
    private
 
       Anonymous_List : Anonymous_Task_Node_Access;
@@ -230,13 +234,16 @@ package body System.RPC is
    ---------------
 
    procedure Head_Node
-     (Index  :    out Packet_Node_Access;
-      Stream : in     Params_Stream_Type) is
+     (Index  : out Packet_Node_Access;
+      Stream : Params_Stream_Type)
+   is
    begin
       Index := Stream.Extra.Head;
-   exception when others =>
-      D (D_Exception, "exception in Head_Node");
-      raise;
+
+   exception
+      when others =>
+         D (D_Exception, "exception in Head_Node");
+         raise;
    end Head_Node;
 
    ---------------
@@ -244,34 +251,37 @@ package body System.RPC is
    ---------------
 
    procedure Tail_Node
-     (Index  :    out Packet_Node_Access;
-      Stream : in     Params_Stream_Type) is
+     (Index  : out Packet_Node_Access;
+      Stream : Params_Stream_Type)
+   is
    begin
       Index := Stream.Extra.Tail;
-   exception when others =>
-      D (D_Exception, "exception in Tail_Node");
-      raise;
+
+   exception
+      when others =>
+         D (D_Exception, "exception in Tail_Node");
+         raise;
    end Tail_Node;
 
    ---------------
    -- Null_Node --
    ---------------
 
-   function Null_Node
-     (Index : in Packet_Node_Access) return Boolean is
+   function Null_Node (Index : in Packet_Node_Access) return Boolean is
    begin
       return Index = null;
-   exception when others =>
-      D (D_Exception, "exception in Null_Node");
-      raise;
+
+   exception
+      when others =>
+         D (D_Exception, "exception in Null_Node");
+         raise;
    end Null_Node;
 
    ----------------------
    -- Delete_Head_Node --
    ----------------------
 
-   procedure Delete_Head_Node
-     (Stream : in out Params_Stream_Type) is
+   procedure Delete_Head_Node (Stream : in out Params_Stream_Type) is
 
       procedure Free is
         new Unchecked_Deallocation
@@ -280,7 +290,6 @@ package body System.RPC is
       Next_Node : Packet_Node_Access := Stream.Extra.Head.Next;
 
    begin
-
       --  Delete head node and free memory usage
 
       Free (Stream.Extra.Head);
@@ -292,19 +301,18 @@ package body System.RPC is
          Stream.Extra.Tail := null;
       end if;
 
-   exception when others =>
-      D (D_Exception, "exception in Delete_Head_Node");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Delete_Head_Node");
+         raise;
    end Delete_Head_Node;
 
    ---------------
    -- Next_Node --
    ---------------
 
-   procedure Next_Node
-     (Node : in out Packet_Node_Access) is
+   procedure Next_Node (Node : in out Packet_Node_Access) is
    begin
-
       --  Node is set to the next node
       --  If not possible, Stream_Error is raised
 
@@ -314,20 +322,20 @@ package body System.RPC is
          Node := Node.Next;
       end if;
 
-   exception when others =>
-      D (D_Exception, "exception in Next_Node");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Next_Node");
+         raise;
    end Next_Node;
 
    ---------------------
    -- Append_New_Node --
    ---------------------
 
-   procedure Append_New_Node
-     (Stream : in out Params_Stream_Type) is
+   procedure Append_New_Node (Stream : in out Params_Stream_Type) is
       Index : Packet_Node_Access;
-   begin
 
+   begin
       --  Set Index to the end of the linked list
 
       Tail_Node (Index, Stream);
@@ -340,7 +348,6 @@ package body System.RPC is
          Stream.Extra.Tail := Stream.Extra.Head;
 
       else
-
          --  The list is not empty : link new node with tail
 
          Stream.Extra.Tail.Next := new Packet_Node;
@@ -348,9 +355,10 @@ package body System.RPC is
 
       end if;
 
-   exception when others =>
-      D (D_Exception, "exception in Append_New_Node");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Append_New_Node");
+         raise;
    end Append_New_Node;
 
    ----------
@@ -360,8 +368,8 @@ package body System.RPC is
    procedure Read
      (Stream : in out Params_Stream_Type;
       Item   : out Ada.Streams.Stream_Element_Array;
-      Last   : out Ada.Streams.Stream_Element_Offset) renames
-      System.RPC.Streams.Read;
+      Last   : out Ada.Streams.Stream_Element_Offset)
+     renames System.RPC.Streams.Read;
 
    -----------
    -- Write --
@@ -369,8 +377,8 @@ package body System.RPC is
 
    procedure Write
      (Stream : in out Params_Stream_Type;
-      Item   : in Ada.Streams.Stream_Element_Array) renames
-      System.RPC.Streams.Write;
+      Item   : in Ada.Streams.Stream_Element_Array)
+     renames System.RPC.Streams.Write;
 
    -----------------------
    -- Garbage_Collector --
@@ -382,12 +390,11 @@ package body System.RPC is
       -- Garbage_Collector.Allocate --
       --------------------------------
 
-      procedure Allocate
-         (Item : out Anonymous_Task_Node_Access) is
+      procedure Allocate (Item : out Anonymous_Task_Node_Access) is
          New_Anonymous_Task_Node : Anonymous_Task_Node_Access;
          Anonymous_Task          : Anonymous_Task_Access;
-      begin
 
+      begin
          --  If the list is empty, allocate a new anonymous task
          --  Otherwise, reuse the first queued anonymous task
 
@@ -404,7 +411,6 @@ package body System.RPC is
             New_Anonymous_Task_Node.all := (Anonymous_Task, null);
 
          else
-
             --  Extract one task from the list
             --  Set the Next field to null to avoid possible bugs
 
@@ -418,27 +424,27 @@ package body System.RPC is
 
          Item := New_Anonymous_Task_Node;
 
-      exception when others =>
-         D (D_Exception, "exception in Allocate (Anonymous Task)");
-         raise;
+      exception
+         when others =>
+            D (D_Exception, "exception in Allocate (Anonymous Task)");
+            raise;
       end Allocate;
 
       ----------------------------------
       -- Garbage_Collector.Deallocate --
       ----------------------------------
 
-      procedure Deallocate
-        (Item : in out Anonymous_Task_Node_Access) is
+      procedure Deallocate (Item : in out Anonymous_Task_Node_Access) is
       begin
-
          --  Enqueue the task in the free list
 
          Item.Next := Anonymous_List;
          Anonymous_List := Item;
 
-      exception when others =>
-         D (D_Exception, "exception in Deallocate (Anonymous Task)");
-         raise;
+      exception
+         when others =>
+            D (D_Exception, "exception in Deallocate (Anonymous Task)");
+            raise;
       end Deallocate;
 
    end Garbage_Collector;
@@ -448,15 +454,16 @@ package body System.RPC is
    ------------
 
    procedure Do_RPC
-     (Partition  : in Partition_ID;
+     (Partition  : Partition_ID;
       Params     : access Params_Stream_Type;
-      Result     : access Params_Stream_Type) is
+      Result     : access Params_Stream_Type)
+   is
       Protocol   : Protocol_Access;
       Request    : Request_Id_Type;
       Header     : aliased Params_Stream_Type (Header_Size);
       R_Length   : Ada.Streams.Stream_Element_Count;
-   begin
 
+   begin
       --  Parameters order :
       --       Opcode   (provided and used by garlic)
       --   (1) Size     (provided by s-rpc and used by garlic)
@@ -538,7 +545,6 @@ package body System.RPC is
          declare
             New_Result : aliased Params_Stream_Type (R_Length);
          begin
-
             --  Adjust the Result stream size right now to be able to load
             --  the stream in one receive call. Create a temporary resutl
             --  that will be substituted to Do_RPC one
@@ -570,7 +576,6 @@ package body System.RPC is
          end;
 
       else
-
          --  Do RPC locally and first wait for Partition_RPC_Receiver to be
          --  set
 
@@ -580,9 +585,10 @@ package body System.RPC is
 
       end if;
 
-   exception when others =>
-      D (D_Exception, "exception in Do_RPC");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Do_RPC");
+         raise;
    end Do_RPC;
 
    ------------
@@ -590,13 +596,14 @@ package body System.RPC is
    ------------
 
    procedure Do_APC
-     (Partition  : in Partition_ID;
-      Params     : access Params_Stream_Type) is
+     (Partition  : Partition_ID;
+      Params     : access Params_Stream_Type)
+   is
       Message_Id : Message_Id_Type := 0;
       Protocol   : Protocol_Access;
       Header     : aliased Params_Stream_Type (Header_Size);
-   begin
 
+   begin
       --  For more informations, see above
       --  Request = 0 as we are not waiting for a reply message
       --  Result length = 0 as we don't expect a result at all
@@ -660,7 +667,6 @@ package body System.RPC is
          declare
             Result   : aliased Params_Stream_Type (0);
          begin
-
             --  Result is here a dummy parameter
             --  No reason to deallocate as it is not allocated at all
 
@@ -672,29 +678,31 @@ package body System.RPC is
 
       end if;
 
-   exception when others =>
-      D (D_Exception, "exception in Do_APC");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Do_APC");
+         raise;
    end Do_APC;
 
    ----------------------------
    -- Establish_RPC_Receiver --
    ----------------------------
 
-   procedure Establish_RPC_Receiver (
-          Partition : in Partition_ID;
-          Receiver  : in RPC_Receiver) is
+   procedure Establish_RPC_Receiver
+     (Partition : in Partition_ID;
+      Receiver  : in RPC_Receiver)
+   is
    begin
-
       --  Set Partition_RPC_Receiver and allow RPC mechanism
 
       Partition_RPC_Receiver := Receiver;
       Partition_Receiver.Set;
       D (D_Elaborate, "Partition_Receiver is set");
 
-   exception when others =>
-      D (D_Exception, "exception in Establish_RPC_Receiver");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Establish_RPC_Receiver");
+         raise;
    end Establish_RPC_Receiver;
 
    ----------------
@@ -705,24 +713,24 @@ package body System.RPC is
       Last_Request : Request_Id_Type := Request_Id_Type'First;
       Current_Rqst : Request_Id_Type := Request_Id_Type'First;
       Current_Size : Ada.Streams.Stream_Element_Count;
+
    begin
-
       loop
+         --  Three services:
 
-         --  Three services :
-         --  New_Request to get an entry in Dispatcher table
-         --  Wait_On for Do_RPC calls
-         --  Wake_Up called by environment task when a Do_RPC receives
-         --  the result of its remote call
+         --    New_Request to get an entry in Dispatcher table
+
+         --    Wait_On for Do_RPC calls
+
+         --    Wake_Up called by environment task when a Do_RPC receives
+         --    the result of its remote call
 
          select
-
-            accept New_Request
-              (Request : out Request_Id_Type) do
+            accept New_Request (Request : out Request_Id_Type) do
                Request := Last_Request;
 
                --  << TODO >>
-               --  Avaibility check
+               --  ??? Avaibility check
 
                if Last_Request = Request_Id_Type'Last then
                   Last_Request := Request_Id_Type'First;
@@ -733,11 +741,10 @@ package body System.RPC is
             end New_Request;
 
          or
-
             accept Wake_Up
-              (Request : in Request_Id_Type;
-               Length  : in Ada.Streams.Stream_Element_Count) do
-
+              (Request : Request_Id_Type;
+               Length  : Ada.Streams.Stream_Element_Count)
+            do
                --  The environment reads the header and has been notified
                --  of the reply id and the size of the result message
 
@@ -747,17 +754,17 @@ package body System.RPC is
             end Wake_Up;
 
             --  << TODO >>
-            --  Must be select with delay for aborted tasks
+            --  ??? Must be select with delay for aborted tasks
 
             select
 
                accept Wait_On (Current_Rqst)
-                 (Length  : out Ada.Streams.Stream_Element_Count) do
+                 (Length  : out Ada.Streams.Stream_Element_Count)
+               do
                   Length := Current_Size;
                end Wait_On;
 
             or
-
                --  To free the Dispatcher when a task is aborted
 
                delay 1.0;
@@ -765,16 +772,15 @@ package body System.RPC is
             end select;
 
          or
-
             terminate;
-
          end select;
 
       end loop;
 
-   exception when others =>
-      D (D_Exception, "exception in Dispatcher body");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Dispatcher body");
+         raise;
    end Dispatcher;
 
    -------------------------
@@ -788,10 +794,9 @@ package body System.RPC is
       Params_S     : Ada.Streams.Stream_Element_Count; --  Params message size
       Result_S     : Ada.Streams.Stream_Element_Count; --  Result message size
       C_Protocol   : Protocol_Access;                  --  Current Protocol
+
    begin
-
       loop
-
          --  Get a new RPC to execute
 
          select
@@ -800,7 +805,8 @@ package body System.RPC is
                Partition    : in Partition_ID;
                Params_Size  : in Ada.Streams.Stream_Element_Count;
                Result_Size  : in Ada.Streams.Stream_Element_Count;
-               Protocol     : in Protocol_Access) do
+               Protocol     : in Protocol_Access)
+            do
                C_Message_Id := Message_Id;
                C_Partition  := Partition;
                Params_S     := Params_Size;
@@ -812,11 +818,11 @@ package body System.RPC is
          end select;
 
          declare
-            Params   : aliased Params_Stream_Type (Params_S);
-            Result   : aliased Params_Stream_Type (Result_S);
-            Header   : aliased Params_Stream_Type (Header_Size);
-         begin
+            Params : aliased Params_Stream_Type (Params_S);
+            Result : aliased Params_Stream_Type (Result_S);
+            Header : aliased Params_Stream_Type (Header_Size);
 
+         begin
             --  We reconstruct all the client context : Params and Result
             --  with the SAME size, then we receive Params from calling stub
 
@@ -863,7 +869,6 @@ package body System.RPC is
                  (Header'Access,
                   Streams.Get_Stream_Size (Result'Access));
 
-
                --  Get a protocol method to comunicate with the remote
                --  partition and give the message size
 
@@ -903,12 +908,10 @@ package body System.RPC is
                  (C_Protocol.all,
                   C_Partition);
                Streams.Deallocate (Header);
-
             end if;
 
             Streams.Deallocate (Params);
             Streams.Deallocate (Result);
-
          end;
 
          --  Enqueue into the anonymous task free list : become inactive
@@ -917,9 +920,10 @@ package body System.RPC is
 
       end loop;
 
-   exception when others =>
-      D (D_Exception, "exception in Anonymous_Task_Type body");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Anonymous_Task_Type body");
+         raise;
    end Anonymous_Task_Type;
 
    -----------------
@@ -934,15 +938,14 @@ package body System.RPC is
       Header       : aliased Params_Stream_Type (Header_Size);
       Protocol     : Protocol_Access;
       Anonymous    : Anonymous_Task_Node_Access;
-   begin
 
+   begin
       --  Wait the Partition_RPC_Receiver to be set
 
       accept Start;
       D (D_Elaborate, "Environment task elaborated");
 
       loop
-
          --  We receive first a fixed size message : the header
          --  Header = Message Id + Message Size
 
@@ -952,10 +955,10 @@ package body System.RPC is
          --  protocol to use to communicate with the calling partition
 
          Garlic.Initiate_Receive
-            (Partition,
-             Message_Size,
-             Protocol,
-             Garlic.Remote_Call);
+           (Partition,
+            Message_Size,
+            Protocol,
+            Garlic.Remote_Call);
          D (D_Communication,
             "Environment task - Receive protocol to talk to active partition" &
             Partition_ID'Image (Partition));
@@ -968,9 +971,9 @@ package body System.RPC is
             "Environment task - Receive Header from partition" &
             Partition_ID'Image (Partition));
          Garlic.Receive
-            (Protocol.all,
-             Partition,
-             Header'Access);
+           (Protocol.all,
+            Partition,
+            Header'Access);
 
          --  Evaluate the remaining size of the message
 
@@ -1001,7 +1004,6 @@ package body System.RPC is
             Dispatcher.Wake_Up (-Message_Id, Result_Size);
 
          else
-
             --  The message was send by a calling stub : get an anonymous
             --  task to perform the job
 
@@ -1027,13 +1029,13 @@ package body System.RPC is
 
       end loop;
 
-   exception when others =>
-      D (D_Exception, "exception in Environment");
-      raise;
+   exception
+      when others =>
+         D (D_Exception, "exception in Environment");
+         raise;
    end Environnement;
 
 begin
-
    --  Set debugging information
 
    Debugging.Set_Environment_Variable ("RPC");

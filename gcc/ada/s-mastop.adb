@@ -7,9 +7,9 @@
 --                                 B o d y                                  --
 --                             (Dummy version)                              --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
---            Copyright (C) 1999-2001 Ada Core Technologies, Inc.           --
+--          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,10 @@
 --  on targets for which zero cost exception handling is not implemented.
 
 package body System.Machine_State_Operations is
+
+   --  Turn off warnings since many unused parameters
+
+   pragma Warnings (Off);
 
    use System.Exceptions;
 
@@ -122,7 +126,8 @@ package body System.Machine_State_Operations is
 
    procedure Set_Signal_Machine_State
      (M       : Machine_State;
-      Context : System.Address) is
+      Context : System.Address)
+   is
    begin
       null;
    end Set_Signal_Machine_State;

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,9 @@
 --
 --  Usage example:
 --
---      Non_Blocking_Spawn (Fd, "ftp machine@domaine");
+--      Non_Blocking_Spawn
+--         (Fd, "ftp",
+--           (1 => new String' ("machine@domaine")));
 --      Timeout := 10000;  --  10 seconds
 --      Expect (Fd, Result, Regexp_Array'(+"\(user\)", +"\(passwd\)"),
 --              Timeout);
@@ -78,12 +80,18 @@
 --  processes, where you can give your own input and output filters every
 --  time characters are read from or written to the process.
 --
---      procedure My_Filter (Descriptor : Process_Descriptor; Str : String) is
+--      procedure My_Filter
+--        (Descriptor : Process_Descriptor'Class;
+--         Str        : String;
+--         User_Data  : System.Address)
+--      is
 --      begin
 --         Put_Line (Str);
 --      end;
 --
---      Fd := Non_Blocking_Spawn ("tail -f a_file");
+--      Non_Blocking_Spawn
+--        (Fd, "tail",
+--         (new String' ("-f"), new String' ("a_file")));
 --      Add_Filter (Fd, My_Filter'Access, Output);
 --      Expect (Fd, Result, "", 0);  --  wait forever
 --
@@ -98,8 +106,9 @@
 --  existing output, it is recommended to do something like:
 --
 --      Expect (Fd, Result, ".*", Timeout => 0);
---            -- empty the buffer, by matching everything (after checking
---            -- if there was any input).
+--      -- Empty the buffer, by matching everything (after checking
+--      -- if there was any input).
+--
 --      Send (Fd, "command");
 --      Expect (Fd, Result, ".."); -- match only on the output of command
 --
@@ -178,6 +187,12 @@ package GNAT.Expect is
    --  Terminate the process and close the pipes to it. It implicitly
    --  does the 'wait' command required to clean up the process table.
    --  This also frees the buffer associated with the process id.
+
+   procedure Close
+     (Descriptor : in out Process_Descriptor;
+      Status     : out Integer);
+   --  Same as above, but also returns the exit status of the process,
+   --  as set for example by the procedure GNAT.OS_Lib.OS_Exit.
 
    procedure Send_Signal
      (Descriptor : Process_Descriptor;
@@ -510,20 +525,6 @@ package GNAT.Expect is
    --  valid process that died while Expect was executing. It is also raised
    --  when Expect receives an end-of-file.
 
-   ------------------------
-   -- Internal functions --
-   ------------------------
-
-   --  The following subprograms are provided so that it is easy to write
-   --  extensions to this package. However, clients should not use these
-   --  routines directly.
-
-   procedure Portable_Execvp (Cmd : String; Args : System.Address);
-   --  Executes, in a portable way, the command Cmd (full path must be
-   --  specified), with the given Args. Note that the first element in Args
-   --  must be the executable name, and the last element must be a null
-   --  pointer
-
 private
    type Filter_List_Elem;
    type Filter_List is access Filter_List_Elem;
@@ -568,7 +569,7 @@ private
    --  newly created process.
 
    type Process_Descriptor is tagged record
-      Pid              : Process_Id := Invalid_Pid;
+      Pid              : aliased Process_Id := Invalid_Pid;
       Input_Fd         : GNAT.OS_Lib.File_Descriptor := GNAT.OS_Lib.Invalid_FD;
       Output_Fd        : GNAT.OS_Lib.File_Descriptor := GNAT.OS_Lib.Invalid_FD;
       Error_Fd         : GNAT.OS_Lib.File_Descriptor := GNAT.OS_Lib.Invalid_FD;
@@ -584,6 +585,18 @@ private
       Last_Match_End   : Natural := 0;
    end record;
 
+   --  The following subprogram is provided for use in the body, and also
+   --  possibly in future child units providing extensions to this package.
+
+   procedure Portable_Execvp
+     (Pid  : access Process_Id;
+      Cmd  : String;
+      Args : System.Address);
    pragma Import (C, Portable_Execvp, "__gnat_expect_portable_execvp");
+   --  Executes, in a portable way, the command Cmd (full path must be
+   --  specified), with the given Args. Args must be an array of string
+   --  pointers. Note that the first element in Args must be the executable
+   --  name, and the last element must be a null pointer. The returned value
+   --  in Pid is the process ID, or zero if not supported on the platform.
 
 end GNAT.Expect;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---                            $Revision: 1.14 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -68,7 +68,10 @@ package body GNAT.Debug_Pools is
      (Pool                     : in out Debug_Pool;
       Storage_Address          : out Address;
       Size_In_Storage_Elements : Storage_Count;
-      Alignment                : Storage_Count) is
+      Alignment                : Storage_Count)
+   is
+      pragma Warnings (Off, Alignment);
+
    begin
       Storage_Address := Alloc (size_t (Size_In_Storage_Elements));
 
@@ -94,8 +97,10 @@ package body GNAT.Debug_Pools is
       Size_In_Storage_Elements : Storage_Count;
       Alignment                : Storage_Count)
    is
+      pragma Warnings (Off, Alignment);
+
       procedure Free (Address : System.Address; Siz : Storage_Count);
-      --  Faked free, that reset all the deallocated storage to "DEADBEEF"
+      --  Fake free, that resets all the deallocated storage to "DEADBEEF"
 
       procedure Free (Address : System.Address; Siz : Storage_Count) is
          DB1 : constant Integer := 16#DEAD#;
@@ -151,6 +156,10 @@ package body GNAT.Debug_Pools is
       Size_In_Storage_Elements : Storage_Count;
       Alignment                : Storage_Count)
    is
+      pragma Warnings (Off, Pool);
+      pragma Warnings (Off, Size_In_Storage_Elements);
+      pragma Warnings (Off, Alignment);
+
       S       : State := Table.Get (Storage_Address);
       Max_Dim : constant := 3;
       Dim     : Integer  := 1;
@@ -216,6 +225,8 @@ package body GNAT.Debug_Pools is
    ------------------
 
    function Storage_Size (Pool : Debug_Pool) return Storage_Count is
+      pragma Warnings (Off, Pool);
+
    begin
       return Storage_Count'Last;
    end Storage_Size;

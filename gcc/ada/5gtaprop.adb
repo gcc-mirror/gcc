@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---              Copyright (C) 1991-2001, Florida State University           --
+--         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -106,15 +105,16 @@ package body System.Task_Primitives.Operations is
    --  The followings are logically constants, but need to be initialized
    --  at run time.
 
-   All_Tasks_L : aliased System.Task_Primitives.RTS_Lock;
-   --  See comments on locking rules in System.Tasking (spec).
+   Single_RTS_Lock : aliased RTS_Lock;
+   --  This is a lock to allow only one thread of control in the RTS at
+   --  a time; it is used to execute in mutual exclusion from all other tasks.
+   --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
    Environment_Task_ID : Task_ID;
    --  A variable to hold Task_ID for the environment task.
 
    Locking_Policy : Character;
-   pragma Import (C, Locking_Policy, "__gl_locking_policy",
-                  "__gl_locking_policy");
+   pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
    Clock_Address : constant System.Address :=
      System.Storage_Elements.To_Address (16#200F90#);
@@ -169,7 +169,7 @@ package body System.Task_Primitives.Operations is
 
    --  Note: mutexes and cond_variables needed per-task basis are
    --        initialized in Initialize_TCB and the Storage_Error is
-   --        handled. Other mutexes (such as All_Tasks_Lock, Memory_Lock...)
+   --        handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
    --        used in RTS is initialized before any status change of RTS.
    --        Therefore rasing Storage_Error in the following routines
    --        should be able to be handled safely.
@@ -267,7 +267,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_lock (L);
 
@@ -275,20 +274,24 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result /= FUNC_ERR);
    end Write_Lock;
 
-   procedure Write_Lock (L : access RTS_Lock) is
+   procedure Write_Lock
+     (L : access RTS_Lock; Global_Lock : Boolean := False)
+   is
       Result : Interfaces.C.int;
-
    begin
-      Result := pthread_mutex_lock (L);
-      pragma Assert (Result = 0);
+      if not Single_Lock or else Global_Lock then
+         Result := pthread_mutex_lock (L);
+         pragma Assert (Result = 0);
+      end if;
    end Write_Lock;
 
    procedure Write_Lock (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
-      Result := pthread_mutex_lock (T.Common.LL.L'Access);
-      pragma Assert (Result = 0);
+      if not Single_Lock then
+         Result := pthread_mutex_lock (T.Common.LL.L'Access);
+         pragma Assert (Result = 0);
+      end if;
    end Write_Lock;
 
    ---------------
@@ -306,131 +309,54 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_unlock (L);
       pragma Assert (Result = 0);
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock) is
+   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : Interfaces.C.int;
-
    begin
-      Result := pthread_mutex_unlock (L);
-      pragma Assert (Result = 0);
+      if not Single_Lock or else Global_Lock then
+         Result := pthread_mutex_unlock (L);
+         pragma Assert (Result = 0);
+      end if;
    end Unlock;
 
    procedure Unlock (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
-      Result := pthread_mutex_unlock (T.Common.LL.L'Access);
-      pragma Assert (Result = 0);
+      if not Single_Lock then
+         Result := pthread_mutex_unlock (T.Common.LL.L'Access);
+         pragma Assert (Result = 0);
+      end if;
    end Unlock;
 
-   -------------
-   --  Sleep  --
-   -------------
+   -----------
+   -- Sleep --
+   -----------
 
    procedure Sleep
      (Self_ID  : ST.Task_ID;
-      Reason   : System.Tasking.Task_States) is
-
+      Reason   : System.Tasking.Task_States)
+   is
       Result : Interfaces.C.int;
-
    begin
-      pragma Assert (Self_ID = Self);
-      Result := pthread_cond_wait (Self_ID.Common.LL.CV'Access,
-        Self_ID.Common.LL.L'Access);
+      if Single_Lock then
+         Result := pthread_cond_wait
+           (Self_ID.Common.LL.CV'Access, Single_RTS_Lock'Access);
+      else
+         Result := pthread_cond_wait
+           (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
+      end if;
+
       --  EINTR is not considered a failure.
       pragma Assert (Result = 0 or else Result = EINTR);
    end Sleep;
 
-   --  Note that we are relying heaviliy here on the GNAT feature
-   --  that Calendar.Time, System.Real_Time.Time, Duration, and
-   --  System.Real_Time.Time_Span are all represented in the same
-   --  way, i.e., as a 64-bit count of nanoseconds.
-   --  This allows us to always pass the timeout value as a Duration.
-
-   --  ?????  .........
-   --  We are taking liberties here with the semantics of the delays.
-   --  That is, we make no distinction between delays on the Calendar clock
-   --  and delays on the Real_Time clock.  That is technically incorrect, if
-   --  the Calendar clock happens to be reset or adjusted.
-   --  To solve this defect will require modification to the compiler
-   --  interface, so that it can pass through more information, to tell
-   --  us here which clock to use!
-
-   --  cond_timedwait will return if any of the following happens:
-   --  1) some other task did cond_signal on this condition variable
-   --     In this case, the return value is 0
-   --  2) the call just returned, for no good reason
-   --     This is called a "spurious wakeup".
-   --     In this case, the return value may also be 0.
-   --  3) the time delay expires
-   --     In this case, the return value is ETIME
-   --  4) this task received a signal, which was handled by some
-   --     handler procedure, and now the thread is resuming execution
-   --     UNIX calls this an "interrupted" system call.
-   --     In this case, the return value is EINTR
-
-   --  If the cond_timedwait returns 0 or EINTR, it is still
-   --  possible that the time has actually expired, and by chance
-   --  a signal or cond_signal occurred at around the same time.
-
-   --  We have also observed that on some OS's the value ETIME
-   --  will be returned, but the clock will show that the full delay
-   --  has not yet expired.
-
-   --  For these reasons, we need to check the clock after return
-   --  from cond_timedwait.  If the time has expired, we will set
-   --  Timedout = True.
-
-   --  This check might be omitted for systems on which the
-   --  cond_timedwait() never returns early or wakes up spuriously.
-
-   --  Annex D requires that completion of a delay cause the task
-   --  to go to the end of its priority queue, regardless of whether
-   --  the task actually was suspended by the delay.  Since
-   --  cond_timedwait does not do this on Solaris, we add a call
-   --  to thr_yield at the end.  We might do this at the beginning,
-   --  instead, but then the round-robin effect would not be the
-   --  same; the delayed task would be ahead of other tasks of the
-   --  same priority that awoke while it was sleeping.
-
-   --  For Timed_Sleep, we are expecting possible cond_signals
-   --  to indicate other events (e.g., completion of a RV or
-   --  completion of the abortable part of an async. select),
-   --  we want to always return if interrupted. The caller will
-   --  be responsible for checking the task state to see whether
-   --  the wakeup was spurious, and to go back to sleep again
-   --  in that case.  We don't need to check for pending abort
-   --  or priority change on the way in our out; that is the
-   --  caller's responsibility.
-
-   --  For Timed_Delay, we are not expecting any cond_signals or
-   --  other interruptions, except for priority changes and aborts.
-   --  Therefore, we don't want to return unless the delay has
-   --  actually expired, or the call has been aborted.  In this
-   --  case, since we want to implement the entire delay statement
-   --  semantics, we do need to check for pending abort and priority
-   --  changes.  We can quietly handle priority changes inside the
-   --  procedure, since there is no entry-queue reordering involved.
-
    -----------------
    -- Timed_Sleep --
    -----------------
-
-   --  This is for use within the run-time system, so abort is
-   --  assumed to be already deferred, and the caller should be
-   --  holding its own ATCB lock.
-   --  Yielded should be False unles we know for certain that the
-   --  operation resulted in the calling task going to the end of
-   --  the dispatching queue for its priority.
-   --  ?????
-   --  This version presumes the worst, so Yielded is always False.
-   --  On some targets, if cond_timedwait always yields, we could
-   --  set Yielded to True just before the cond_timedwait call.
 
    procedure Timed_Sleep
      (Self_ID  : Task_ID;
@@ -461,8 +387,16 @@ package body System.Task_Primitives.Operations is
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
               or else Self_ID.Pending_Priority_Change;
 
-            Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
-              Self_ID.Common.LL.L'Access, Request'Access);
+            if Single_Lock then
+               Result := pthread_cond_timedwait
+                 (Self_ID.Common.LL.CV'Access, Single_RTS_Lock'Access,
+                  Request'Access);
+
+            else
+               Result := pthread_cond_timedwait
+                 (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access,
+                  Request'Access);
+            end if;
 
             exit when Abs_Time <= Monotonic_Clock;
 
@@ -482,10 +416,6 @@ package body System.Task_Primitives.Operations is
    -- Timed_Delay --
    -----------------
 
-   --  This is for use in implementing delay statements, so
-   --  we assume the caller is abort-deferred but is holding
-   --  no locks.
-
    procedure Timed_Delay
      (Self_ID  : Task_ID;
       Time     : Duration;
@@ -495,13 +425,18 @@ package body System.Task_Primitives.Operations is
       Abs_Time   : Duration;
       Request    : aliased struct_timeval;
       Result     : Interfaces.C.int;
-   begin
 
+   begin
       --  Only the little window between deferring abort and
       --  locking Self_ID is the reason we need to
       --  check for pending abort and priority change below! :(
 
       SSL.Abort_Defer.all;
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (Self_ID);
 
       if Mode = Relative then
@@ -523,8 +458,13 @@ package body System.Task_Primitives.Operations is
 
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
-            Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
-              Self_ID.Common.LL.L'Access, Request'Access);
+            if Single_Lock then
+               Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
+                 Single_RTS_Lock'Access, Request'Access);
+            else
+               Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
+                 Self_ID.Common.LL.L'Access, Request'Access);
+            end if;
 
             exit when Abs_Time <= Monotonic_Clock;
 
@@ -538,6 +478,11 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       pthread_yield;
       SSL.Abort_Undefer.all;
    end Timed_Delay;
@@ -578,10 +523,9 @@ package body System.Task_Primitives.Operations is
 
    procedure Wakeup
      (T : ST.Task_ID;
-      Reason : System.Tasking.Task_States) is
-
+      Reason : System.Tasking.Task_States)
+   is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -608,7 +552,6 @@ package body System.Task_Primitives.Operations is
       Loss_Of_Inheritance : Boolean := False)
    is
       Result : Interfaces.C.int;
-
    begin
       T.Common.Current_Priority := Prio;
       Result := pthread_setprio (T.Common.LL.Thread, Interfaces.C.int (Prio));
@@ -631,9 +574,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
-
       Self_ID.Common.LL.Thread := pthread_self;
       Self_ID.Common.LL.LWP := sproc_self;
 
@@ -642,17 +583,17 @@ package body System.Task_Primitives.Operations is
 
       pragma Assert (Result = 0);
 
-      Lock_All_Tasks_List;
+      Lock_RTS;
 
-      for I in Known_Tasks'Range loop
-         if Known_Tasks (I) = null then
-            Known_Tasks (I) := Self_ID;
-            Self_ID.Known_Tasks_Index := I;
+      for J in Known_Tasks'Range loop
+         if Known_Tasks (J) = null then
+            Known_Tasks (J) := Self_ID;
+            Self_ID.Known_Tasks_Index := J;
             exit;
          end if;
       end loop;
 
-      Unlock_All_Tasks_List;
+      Unlock_RTS;
    end Enter_Task;
 
    --------------
@@ -669,31 +610,31 @@ package body System.Task_Primitives.Operations is
    ----------------------
 
    procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
-      Result : Interfaces.C.int;
+      Result    : Interfaces.C.int;
       Cond_Attr : aliased pthread_condattr_t;
 
    begin
-      Initialize_Lock (Self_ID.Common.LL.L'Access, ATCB_Level);
+      if not Single_Lock then
+         Initialize_Lock (Self_ID.Common.LL.L'Access, ATCB_Level);
+      end if;
 
       Result := pthread_condattr_init (Cond_Attr'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
-      if Result /= 0 then
-         Result := pthread_mutex_destroy (Self_ID.Common.LL.L'Access);
-         pragma Assert (Result = 0);
-         Succeeded := False;
-         return;
+      if Result = 0 then
+         Result := pthread_cond_init (Self_ID.Common.LL.CV'Access,
+           Cond_Attr'Access);
+         pragma Assert (Result = 0 or else Result = ENOMEM);
       end if;
-
-      Result := pthread_cond_init (Self_ID.Common.LL.CV'Access,
-        Cond_Attr'Access);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = 0 then
          Succeeded := True;
       else
-         Result := pthread_mutex_destroy (Self_ID.Common.LL.L'Access);
-         pragma Assert (Result = 0);
+         if not Single_Lock then
+            Result := pthread_mutex_destroy (Self_ID.Common.LL.L'Access);
+            pragma Assert (Result = 0);
+         end if;
+
          Succeeded := False;
       end if;
 
@@ -723,6 +664,7 @@ package body System.Task_Primitives.Operations is
         (System.Task_Info.Resource_Vector_T, System.OS_Interface.resource_t);
 
       use System.Task_Info;
+
    begin
       if Stack_Size = Unspecified_Size then
          Adjusted_Stack_Size :=
@@ -809,8 +751,11 @@ package body System.Task_Primitives.Operations is
       Tmp    : Task_ID := T;
 
    begin
-      Result := pthread_mutex_destroy (T.Common.LL.L'Access);
-      pragma Assert (Result = 0);
+      if not Single_Lock then
+         Result := pthread_mutex_destroy (T.Common.LL.L'Access);
+         pragma Assert (Result = 0);
+      end if;
+
       Result := pthread_cond_destroy (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
 
@@ -836,7 +781,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Task (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_kill (T.Common.LL.Thread,
         Interfaces.C.int (System.Interrupt_Management.Abort_Task_Interrupt));
@@ -873,23 +817,23 @@ package body System.Task_Primitives.Operations is
       return Environment_Task_ID;
    end Environment_Task;
 
-   -------------------------
-   -- Lock_All_Tasks_List --
-   -------------------------
+   --------------
+   -- Lock_RTS --
+   --------------
 
-   procedure Lock_All_Tasks_List is
+   procedure Lock_RTS is
    begin
-      Write_Lock (All_Tasks_L'Access);
-   end Lock_All_Tasks_List;
+      Write_Lock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Lock_RTS;
 
-   ---------------------------
-   -- Unlock_All_Tasks_List --
-   ---------------------------
+   ----------------
+   -- Unlock_RTS --
+   ----------------
 
-   procedure Unlock_All_Tasks_List is
+   procedure Unlock_RTS is
    begin
-      Unlock (All_Tasks_L'Access);
-   end Unlock_All_Tasks_List;
+      Unlock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Unlock_RTS;
 
    ------------------
    -- Suspend_Task --
@@ -929,7 +873,7 @@ package body System.Task_Primitives.Operations is
    begin
       Environment_Task_ID := Environment_Task;
 
-      Initialize_Lock (All_Tasks_L'Access, All_Tasks_Level);
+      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
       --  Initialize the lock used to synchronize chain of all ATCBs.
 
       Enter_Task (Environment_Task);

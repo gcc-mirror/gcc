@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Hostparm;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
+with Nlists;   use Nlists;
 with Output;   use Output;
 with Scans;    use Scans;
 with Sinput;   use Sinput;
@@ -71,6 +72,9 @@ package body Errout is
 
    Is_Warning_Msg : Boolean;
    --  Set by Set_Msg_Text to indicate if current message is warning message
+
+   Is_Serious_Error : Boolean;
+   --  Set by Set_Msg_Text to indicate if current message is serious error
 
    Is_Unconditional_Msg : Boolean;
    --  Set by Set_Msg_Text to indicate if current message is unconditional
@@ -160,6 +164,9 @@ package body Errout is
 
       Warn : Boolean;
       --  True if warning message (i.e. insertion character ? appeared)
+
+      Serious : Boolean;
+      --  True if serious error message (not a warning and no | character)
 
       Uncond : Boolean;
       --  True if unconditional message (i.e. insertion character ! appeared)
@@ -399,6 +406,18 @@ package body Errout is
    --  Outputs up to N levels of qualification for the given entity. For
    --  example, the entity A.B.C.D will output B.C. if N = 2.
 
+   function Special_Msg_Delete
+     (Msg  : String;
+      N    : Node_Or_Entity_Id;
+      E    : Node_Or_Entity_Id)
+      return Boolean;
+   --  This function is called from Error_Msg_NEL, passing the message Msg,
+   --  node N on which the error is to be posted, and the entity or node E
+   --  to be used for an & insertion in the message if any. The job of this
+   --  procedure is to test for certain cascaded messages that we would like
+   --  to suppress. If the message is to be suppressed then we return True.
+   --  If the message should be generated (the normal case) False is returned.
+
    procedure Test_Warning_Msg (Msg : String);
    --  Sets Is_Warning_Msg true if Msg is a warning message (contains a
    --  question mark character), and False otherwise.
@@ -506,6 +525,10 @@ package body Errout is
       --  always know that Keep has at least as many continuations as
       --  Delete (since we always delete the shorter sequence).
 
+      ----------------
+      -- Delete_Msg --
+      ----------------
+
       procedure Delete_Msg (Delete, Keep : Error_Msg_Id) is
          D, K : Error_Msg_Id;
 
@@ -521,7 +544,11 @@ package body Errout is
             if Errors.Table (D).Warn then
                Warnings_Detected := Warnings_Detected - 1;
             else
-               Errors_Detected := Errors_Detected - 1;
+               Total_Errors_Detected := Total_Errors_Detected - 1;
+
+               if Errors.Table (D).Serious then
+                  Serious_Errors_Detected := Serious_Errors_Detected - 1;
+               end if;
             end if;
 
             --  Substitute shorter of the two error messages
@@ -602,7 +629,7 @@ package body Errout is
 
    function Compilation_Errors return Boolean is
    begin
-      return Errors_Detected /= 0
+      return Total_Errors_Detected /= 0
         or else (Warnings_Detected /= 0
                   and then Warning_Mode = Treat_As_Error);
    end Compilation_Errors;
@@ -647,6 +674,7 @@ package body Errout is
       w ("  Line     = ", Int (E.Line));
       w ("  Col      = ", Int (E.Col));
       w ("  Warn     = ", E.Warn);
+      w ("  Serious  = ", E.Serious);
       w ("  Uncond   = ", E.Uncond);
       w ("  Msg_Cont = ", E.Msg_Cont);
       w ("  Deleted  = ", E.Deleted);
@@ -679,7 +707,7 @@ package body Errout is
       --  that this is safe in the sense that proceeding will surely bomb.
 
       if Flag_Location < First_Source_Ptr
-        and then Errors_Detected > 0
+        and then Total_Errors_Detected > 0
       then
          return;
       end if;
@@ -976,11 +1004,16 @@ package body Errout is
 
       Orig_Loc : constant Source_Ptr := Original_Location (Flag_Location);
 
-      procedure Handle_Fatal_Error;
-      --  Internal procedure to do all error message handling other than
-      --  bumping the error count and arranging for the message to be output.
+      procedure Handle_Serious_Error;
+      --  Internal procedure to do all error message handling for a serious
+      --  error message, other than bumping the error counts and arranging
+      --  for the message to be output.
 
-      procedure Handle_Fatal_Error is
+      --------------------------
+      -- Handle_Serious_Error --
+      --------------------------
+
+      procedure Handle_Serious_Error is
       begin
          --  Turn off code generation if not done already
 
@@ -991,7 +1024,7 @@ package body Errout is
 
          --  Set the fatal error flag in the unit table unless we are
          --  in Try_Semantics mode. This stops the semantics from being
-         --  performed if we find a parser error. This is skipped if we
+         --  performed if we find a serious error. This is skipped if we
          --  are currently dealing with the configuration pragma file.
 
          if not Try_Semantics
@@ -999,7 +1032,7 @@ package body Errout is
          then
             Set_Fatal_Error (Get_Source_Unit (Orig_Loc));
          end if;
-      end Handle_Fatal_Error;
+      end Handle_Serious_Error;
 
    --  Start of processing for Error_Msg_Internal
 
@@ -1039,7 +1072,7 @@ package body Errout is
 
       if Kill_Message
         and then not All_Errors_Mode
-        and then Errors_Detected /= 0
+        and then Total_Errors_Detected /= 0
       then
          if not Continuation then
             Last_Killed := True;
@@ -1059,7 +1092,10 @@ package body Errout is
       --  where we do this special processing, bypassing message output.
 
       if Ignore_Errors_Enable > 0 then
-         Handle_Fatal_Error;
+         if Is_Serious_Error then
+            Handle_Serious_Error;
+         end if;
+
          return;
       end if;
 
@@ -1075,6 +1111,7 @@ package body Errout is
       Errors.Table (Cur_Msg).Line     := Get_Physical_Line_Number (Orig_Loc);
       Errors.Table (Cur_Msg).Col      := Get_Column_Number (Orig_Loc);
       Errors.Table (Cur_Msg).Warn     := Is_Warning_Msg;
+      Errors.Table (Cur_Msg).Serious  := Is_Serious_Error;
       Errors.Table (Cur_Msg).Uncond   := Is_Unconditional_Msg;
       Errors.Table (Cur_Msg).Msg_Cont := Continuation;
       Errors.Table (Cur_Msg).Deleted  := False;
@@ -1181,13 +1218,17 @@ package body Errout is
       if Errors.Table (Cur_Msg).Warn then
          Warnings_Detected := Warnings_Detected + 1;
       else
-         Errors_Detected := Errors_Detected + 1;
-         Handle_Fatal_Error;
+         Total_Errors_Detected := Total_Errors_Detected + 1;
+
+         if Errors.Table (Cur_Msg).Serious then
+            Serious_Errors_Detected := Serious_Errors_Detected + 1;
+            Handle_Serious_Error;
+         end if;
       end if;
 
       --  Terminate if max errors reached
 
-      if Errors_Detected + Warnings_Detected = Maximum_Errors then
+      if Total_Errors_Detected + Warnings_Detected = Maximum_Errors then
          raise Unrecoverable_Error;
       end if;
 
@@ -1199,30 +1240,7 @@ package body Errout is
 
    procedure Error_Msg_N (Msg : String; N : Node_Or_Entity_Id) is
    begin
-      if No_Warnings (N) then
-         Test_Warning_Msg (Msg);
-
-         if Is_Warning_Msg then
-            return;
-         end if;
-      end if;
-
-      if All_Errors_Mode
-        or else Msg (Msg'Last) = '!'
-        or else OK_Node (N)
-        or else (Msg (1) = '\' and not Last_Killed)
-      then
-         Debug_Output (N);
-         Error_Msg_Node_1 := N;
-         Error_Msg (Msg, Sloc (N));
-
-      else
-         Last_Killed := True;
-      end if;
-
-      if not Is_Warning_Msg then
-         Set_Posted (N);
-      end if;
+      Error_Msg_NEL (Msg, N, N, Sloc (N));
    end Error_Msg_N;
 
    ------------------
@@ -1235,6 +1253,24 @@ package body Errout is
       E   : Node_Or_Entity_Id)
    is
    begin
+      Error_Msg_NEL (Msg, N, E, Sloc (N));
+   end Error_Msg_NE;
+
+   -------------------
+   -- Error_Msg_NEL --
+   -------------------
+
+   procedure Error_Msg_NEL
+     (Msg           : String;
+      N             : Node_Or_Entity_Id;
+      E             : Node_Or_Entity_Id;
+      Flag_Location : Source_Ptr)
+   is
+   begin
+      if Special_Msg_Delete (Msg, N, E) then
+         return;
+      end if;
+
       if No_Warnings (N) or else No_Warnings (E) then
          Test_Warning_Msg (Msg);
 
@@ -1250,7 +1286,7 @@ package body Errout is
       then
          Debug_Output (N);
          Error_Msg_Node_1 := E;
-         Error_Msg (Msg, Sloc (N));
+         Error_Msg (Msg, Flag_Location);
 
       else
          Last_Killed := True;
@@ -1259,7 +1295,7 @@ package body Errout is
       if not Is_Warning_Msg then
          Set_Posted (N);
       end if;
-   end Error_Msg_NE;
+   end Error_Msg_NEL;
 
    -----------------
    -- Error_Msg_S --
@@ -1431,7 +1467,9 @@ package body Errout is
 
          --  Extra blank line if error messages or source listing were output
 
-         if Errors_Detected + Warnings_Detected > 0 or else Full_List then
+         if Total_Errors_Detected + Warnings_Detected > 0
+           or else Full_List
+         then
             Write_Eol;
          end if;
 
@@ -1447,7 +1485,7 @@ package body Errout is
          --  the stdout buffer was flushed, giving an extra line feed after
          --  the prefix.
 
-         if Errors_Detected + Warnings_Detected /= 0
+         if Total_Errors_Detected + Warnings_Detected /= 0
            and then not Brief_Output
            and then (Verbose_Mode or Full_List)
          then
@@ -1465,14 +1503,14 @@ package body Errout is
             Write_Str (" lines: ");
          end if;
 
-         if Errors_Detected = 0 then
+         if Total_Errors_Detected = 0 then
             Write_Str ("No errors");
 
-         elsif Errors_Detected = 1 then
+         elsif Total_Errors_Detected = 1 then
             Write_Str ("1 error");
 
          else
-            Write_Int (Errors_Detected);
+            Write_Int (Total_Errors_Detected);
             Write_Str (" errors");
          end if;
 
@@ -1501,7 +1539,7 @@ package body Errout is
       end if;
 
       if Maximum_Errors /= 0
-        and then Errors_Detected + Warnings_Detected = Maximum_Errors
+        and then Total_Errors_Detected + Warnings_Detected = Maximum_Errors
       then
          Set_Standard_Error;
          Write_Str ("fatal error: maximum errors reached");
@@ -1510,7 +1548,7 @@ package body Errout is
       end if;
 
       if Warning_Mode = Treat_As_Error then
-         Errors_Detected := Errors_Detected + Warnings_Detected;
+         Total_Errors_Detected := Total_Errors_Detected + Warnings_Detected;
          Warnings_Detected := 0;
       end if;
 
@@ -1542,7 +1580,8 @@ package body Errout is
    begin
       Errors.Init;
       Error_Msgs := No_Error_Msg;
-      Errors_Detected := 0;
+      Serious_Errors_Detected := 0;
+      Total_Errors_Detected := 0;
       Warnings_Detected := 0;
       Cur_Msg := No_Error_Msg;
       List_Pragmas.Init;
@@ -1907,7 +1946,11 @@ package body Errout is
             if Errors.Table (E).Warn then
                Warnings_Detected := Warnings_Detected - 1;
             else
-               Errors_Detected := Errors_Detected - 1;
+               Total_Errors_Detected := Total_Errors_Detected - 1;
+
+               if Errors.Table (E).Serious then
+                  Serious_Errors_Detected := Serious_Errors_Detected - 1;
+               end if;
             end if;
 
             return True;
@@ -1996,21 +2039,27 @@ package body Errout is
 
          if Nkind (N) = N_Raise_Constraint_Error
            and then Original_Node (N) /= N
+           and then No (Condition (N))
          then
             --  Warnings may have been posted on subexpressions of
-            --  the original tree. We temporarily replace the raise
-            --  statement with the original expression to remove
-            --  those warnings, whose sloc do not match those of
-            --  any node in the current tree.
+            --  the original tree. We place the original node back
+            --  on the tree to remove those warnings, whose sloc
+            --  do not match those of any node in the current tree.
+            --  Given that we are in unreachable code, this modification
+            --  to the tree is harmless.
 
             declare
-               Old    : Node_Id := N;
                Status : Traverse_Result;
 
             begin
-               Rewrite (N, Original_Node (N));
-               Status := Check_For_Warning (N);
-               Rewrite (N, Old);
+               if Is_List_Member (N) then
+                  Set_Condition (N, Original_Node (N));
+                  Status := Check_All_Warnings (Condition (N));
+               else
+                  Rewrite (N, Original_Node (N));
+                  Status := Check_All_Warnings (N);
+               end if;
+
                return Status;
             end;
 
@@ -2825,6 +2874,9 @@ package body Errout is
          elsif C = '?' then
             null;
 
+         elsif C = '|' then
+            null;
+
          elsif C = ''' then
             Set_Msg_Char (Text (P));
             P := P + 1;
@@ -2887,6 +2939,17 @@ package body Errout is
          Set_Error_Posted (P);
          exit when Nkind (P) not in N_Subexpr;
       end loop;
+
+      --  A special check, if we just posted an error on an attribute
+      --  definition clause, then also set the entity involved as posted.
+      --  For example, this stops complaining about the alignment after
+      --  complaining about the size, which is likely to be useless.
+
+      if Nkind (P) = N_Attribute_Definition_Clause then
+         if Is_Entity_Name (Name (P)) then
+            Set_Error_Posted (Entity (Name (P)));
+         end if;
+      end if;
    end Set_Posted;
 
    -----------------------
@@ -2963,15 +3026,78 @@ package body Errout is
       end if;
    end Set_Warnings_Mode_On;
 
-   ----------------------
-   -- Test_Warning_Msg --
-   ----------------------
+   ------------------------
+   -- Special_Msg_Delete --
+   ------------------------
+
+   function Special_Msg_Delete
+     (Msg  : String;
+      N    : Node_Or_Entity_Id;
+      E    : Node_Or_Entity_Id)
+      return Boolean
+   is
+   begin
+      --  Never delete messages in -gnatdO mode
+
+      if Debug_Flag_OO then
+         return False;
+
+      --  When an atomic object refers to a non-atomic type in the same
+      --  scope, we implicitly make the type atomic. In the non-error
+      --  case this is surely safe (and in fact prevents an error from
+      --  occurring if the type is not atomic by default). But if the
+      --  object cannot be made atomic, then we introduce an extra junk
+      --  message by this manipulation, which we get rid of here.
+
+      --  We identify this case by the fact that it references a type for
+      --  which Is_Atomic is set, but there is no Atomic pragma setting it.
+
+      elsif Msg = "atomic access to & cannot be guaranteed"
+        and then Is_Type (E)
+        and then Is_Atomic (E)
+        and then No (Get_Rep_Pragma (E, Name_Atomic))
+      then
+         return True;
+
+      --  When a size is wrong for a frozen type there is no explicit
+      --  size clause, and other errors have occurred, suppress the
+      --  message, since it is likely that this size error is a cascaded
+      --  result of other errors. The reason we eliminate unfrozen types
+      --  is that messages issued before the freeze type are for sure OK.
+
+      elsif Msg = "size for& too small, minimum allowed is ^"
+        and then Is_Frozen (E)
+        and then Serious_Errors_Detected > 0
+        and then Nkind (N) /= N_Component_Clause
+        and then Nkind (Parent (N)) /= N_Component_Clause
+        and then
+          No (Get_Attribute_Definition_Clause (E, Attribute_Size))
+        and then
+          No (Get_Attribute_Definition_Clause (E, Attribute_Object_Size))
+        and then
+          No (Get_Attribute_Definition_Clause (E, Attribute_Value_Size))
+      then
+         return True;
+
+      --  All special tests complete, so go ahead with message
+
+      else
+         return False;
+      end if;
+   end Special_Msg_Delete;
+
+   ------------------------------
+   -- Test_Warning_Serious_Msg --
+   ------------------------------
 
    procedure Test_Warning_Msg (Msg : String) is
    begin
+      Is_Serious_Error := True;
+
       if Msg'Length > 7 and then Msg (1 .. 7) = "(style)" then
          Is_Warning_Msg := True;
-         return;
+      else
+         Is_Warning_Msg := False;
       end if;
 
       for J in Msg'Range loop
@@ -2979,11 +3105,17 @@ package body Errout is
            and then (J = Msg'First or else Msg (J - 1) /= ''')
          then
             Is_Warning_Msg := True;
-            return;
+
+         elsif Msg (J) = '|'
+           and then (J = Msg'First or else Msg (J - 1) /= ''')
+         then
+            Is_Serious_Error := False;
          end if;
       end loop;
 
-      Is_Warning_Msg := False;
+      if Is_Warning_Msg then
+         Is_Serious_Error := False;
+      end if;
    end Test_Warning_Msg;
 
    --------------------------

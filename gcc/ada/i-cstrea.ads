@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.26 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,16 +33,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-
-
 --  This package is a thin binding to selected functions in the C
 --  library that provide a complete interface for handling C streams.
 
-with Unchecked_Conversion;
 with System.Parameters;
 
 package Interfaces.C_Streams is
-pragma Elaborate_Body (C_Streams);
+   pragma Preelaborate;
 
    --  Note: the reason we do not use the types that are in Interfaces.C is
    --  that we want to avoid dragging in the code in this unit if possible.
@@ -291,56 +288,25 @@ private
    pragma Import (C, full_name, "__gnat_full_name");
 
    --  The following may be implemented as macros, and so are supported
-   --  via an interface function in the a-stdio.c file.
+   --  via an interface function in the a-cstrea.c file.
 
    pragma Import (C, feof,   "__gnat_feof");
    pragma Import (C, ferror, "__gnat_ferror");
    pragma Import (C, fileno, "__gnat_fileno");
 
-   --  Constants in stdio are provided via imported variables that are
-   --  defined in a-cstrea.c using the stdio.h header. It would be cleaner
-   --  if we could import constant directly, but GNAT does not support
-   --  pragma Import for constants ???
-
-   c_constant_EOF      : int;
-
-   c_constant_IOFBF    : int;
-   c_constant_IOLBF    : int;
-   c_constant_IONBF    : int;
-
-   c_constant_SEEK_CUR : int;
-   c_constant_SEEK_END : int;
-   c_constant_SEEK_SET : int;
-
-   c_constant_L_tmpnam : int;
-
-   pragma Import (C, c_constant_EOF, "__gnat_constant_eof");
-   pragma Import (C, c_constant_IOFBF, "__gnat_constant_iofbf");
-   pragma Import (C, c_constant_IOLBF, "__gnat_constant_iolbf");
-   pragma Import (C, c_constant_IONBF, "__gnat_constant_ionbf");
-   pragma Import (C, c_constant_SEEK_CUR, "__gnat_constant_seek_cur");
-   pragma Import (C, c_constant_SEEK_END, "__gnat_constant_seek_end");
-   pragma Import (C, c_constant_SEEK_SET, "__gnat_constant_seek_set");
-   pragma Import (C, c_constant_L_tmpnam, "__gnat_constant_l_tmpnam");
+   pragma Import (C, EOF, "__gnat_constant_eof");
+   pragma Import (C, IOFBF, "__gnat_constant_iofbf");
+   pragma Import (C, IOLBF, "__gnat_constant_iolbf");
+   pragma Import (C, IONBF, "__gnat_constant_ionbf");
+   pragma Import (C, SEEK_CUR, "__gnat_constant_seek_cur");
+   pragma Import (C, SEEK_END, "__gnat_constant_seek_end");
+   pragma Import (C, SEEK_SET, "__gnat_constant_seek_set");
+   pragma Import (C, L_tmpnam, "__gnat_constant_l_tmpnam");
 
    pragma Import (C, stderr, "__gnat_constant_stderr");
    pragma Import (C, stdin,  "__gnat_constant_stdin");
    pragma Import (C, stdout, "__gnat_constant_stdout");
 
-   EOF      : constant int := c_constant_EOF;
-   IOFBF    : constant int := c_constant_IOFBF;
-   IOLBF    : constant int := c_constant_IOLBF;
-   IONBF    : constant int := c_constant_IONBF;
-   SEEK_CUR : constant int := c_constant_SEEK_CUR;
-   SEEK_END : constant int := c_constant_SEEK_END;
-   SEEK_SET : constant int := c_constant_SEEK_SET;
-   L_tmpnam : constant int := c_constant_L_tmpnam;
-
-   type Dummy is access Integer;
-   function To_Address is new Unchecked_Conversion (Dummy, System.Address);
-   --  Used to concoct the null address below
-
-   NULL_Stream : constant FILEs := To_Address (Dummy'(null));
-   --  Value returned (NULL in C) to indicate an fdopen/fopen/tmpfile error
+   NULL_Stream : constant FILEs := System.Null_Address;
 
 end Interfaces.C_Streams;

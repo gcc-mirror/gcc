@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,7 @@
 
 --  This package tends to use fairly low-level Ada in order to not bring
 --  in large portions of the RTL. For example, functions return access
---  to string as part of avoiding functions returning unconstrained types;
---  types related to dates are defined here instead of using the types
---  from Calendar, since use of Calendar forces linking in of tasking code.
+--  to string as part of avoiding functions returning unconstrained types.
 
 --  Except where specifically noted, these routines are portable across
 --  all GNAT implementations on all supported operating systems.
@@ -56,14 +54,24 @@ package GNAT.OS_Lib is
 pragma Elaborate_Body (OS_Lib);
 
    type String_Access is access all String;
-   --  General purpose string access type
+   --  General purpose string access type. Some of the functions in this
+   --  package allocate string results on the heap, and return a value of
+   --  this type. Note that the caller is responsible for freeing this
+   --  String to avoid memory leaks.
 
    procedure Free is new Unchecked_Deallocation
      (Object => String, Name => String_Access);
+   --  This procedure is provided for freeing returned values of type
+   --  String_Access
 
    type String_List is array (Positive range <>) of String_Access;
    type String_List_Access is access all String_List;
    --  General purpose array and pointer for list of string accesses
+
+   procedure Free (Arg : in out String_List_Access);
+   --  Frees the given array and all strings that its elements reference,
+   --  and then sets the argument to null. Provided for freeing returned
+   --  values of this type (including Argument_List_Access).
 
    ---------------------
    -- Time/Date Stuff --
@@ -200,7 +208,7 @@ pragma Elaborate_Body (OS_Lib);
      (Old_Name : String;
       New_Name : String;
       Success  : out Boolean);
-   --  Rename a file. Successis set True or False indicating if the rename is
+   --  Rename a file. Success is set True or False indicating if the rename is
    --  successful.
 
    function Read
@@ -316,22 +324,18 @@ pragma Elaborate_Body (OS_Lib);
 
    function Get_Debuggable_Suffix return String_Access;
    --  Return the debuggable suffix convention. Usually this is the same as
-   --  the convention for Get_Executable_Suffix.
-   --
-   --  Note that this function allocates some memory for the returned value.
-   --  This memory needs to be deallocated after use.
+   --  the convention for Get_Executable_Suffix. The result is allocated on
+   --  the heap and should be freed when no longer needed to avoid storage
+   --  leaks.
 
    function Get_Executable_Suffix return String_Access;
-   --  Return the executable suffix convention.
-   --
-   --  Note that this function allocates some memory for the returned value.
-   --  This memory needs to be deallocated after use.
+   --  Return the executable suffix convention. The result is allocated on
+   --  the heap and should be freed when no longer needed to avoid storage
+   --  leaks.
 
    function Get_Object_Suffix return String_Access;
-   --  Return the object suffix convention.
-   --
-   --  Note that this function allocates some memory for the returned value.
-   --  This memory needs to be deallocated after use.
+   --  Return the object suffix convention. The result is allocated on the
+   --  heap and should be freed when no longer needed to avoid storage leaks.
 
    --  The following section contains low-level routines using addresses to
    --  pass file name and executable name. In each routine the name must be
@@ -392,8 +396,21 @@ pragma Elaborate_Body (OS_Lib);
    --  the number of arguments.
 
    subtype Argument_List_Access is String_List_Access;
-   --  Type used to return an Argument_List without dragging in secondary
-   --  stack.
+   --  Type used to return Argument_List without dragging in secondary stack.
+   --  Note that there is a Free procedure declared for this subtype which
+   --  frees the array and all referenced strings.
+
+   procedure Normalize_Arguments (Args : in out Argument_List);
+   --  Normalize all arguments in the list. This ensure that the argument list
+   --  is compatible with the running OS and will works fine with Spawn and
+   --  Non_Blocking_Spawn for example. If Normalize_Arguments is called twice
+   --  on the same list it will do nothing the second time. Note that Spawn
+   --  and Non_Blocking_Spawn call Normalize_Arguments automatically, but
+   --  since there is a guarantee that a second call does nothing, this
+   --  internal call with have no effect if Normalize_Arguments is called
+   --  before calling Spawn. The call to Normalize_Arguments assumes that
+   --  the individual referenced arguments in Argument_List are on the heap,
+   --  and may free them and reallocate if they are modified.
 
    procedure Spawn
      (Program_Name : String;
@@ -408,15 +425,31 @@ pragma Elaborate_Body (OS_Lib);
    --  argument. On some systems (notably Unix systems) a simple file
    --  name may also work (if the executable can be located in the path).
    --
-   --  Note: Arguments that contain spaces and/or quotes such as
-   --        "--GCC=gcc -v" or "--GCC=""gcc-v""" are not portable
-   --        across OSes. They may or may not have the desired effect.
+   --  Note: Arguments in Args that contain spaces and/or quotes such as
+   --  "--GCC=gcc -v" or "--GCC=""gcc -v""" are not portable across all
+   --  operating systems, and would not have the desired effect if they
+   --  were passed directly to the operating system. To avoid this problem,
+   --  Spawn makes an internal call to Normalize_Arguments, which ensures
+   --  that such arguments are modified in a manner that ensures that the
+   --  desired effect is obtained on all operating systems. The caller may
+   --  call Normalize_Arguments explicitly before the call (e.g. to print
+   --  out the exact form of arguments passed to the operating system). In
+   --  this case the guarantee a second call to Normalize_Arguments has no
+   --  effect ensures that the internal call will not affect the result.
+   --  Note that the implicit call to Normalize_Arguments may free and
+   --  reallocate some of the individual arguments.
+   --
+   --  This function will always set Success to False under VxWorks and
+   --  other similar operating systems which have no notion of the concept
+   --  of a dynamically executable file.
 
    function Spawn
      (Program_Name : String;
       Args         : Argument_List)
       return         Integer;
-   --  Like above, but as function returning the exact exit status
+   --  Similar to the above procedure, but returns the actual status returned
+   --  by the operating system, or -1 under VxWorks and any other similar
+   --  operating systems which have no notion of separately spawnable programs.
 
    type Process_Id is private;
    --  A private type used to identify a process activated by the following
@@ -433,6 +466,9 @@ pragma Elaborate_Body (OS_Lib);
    --  This is a non blocking call. The Process_Id of the spawned process
    --  is returned. Parameters are to be used as in Spawn. If Invalid_Id
    --  is returned the program could not be spawned.
+   --
+   --  This function will always return Invalid_Id under VxWorks, since
+   --  there is no notion of executables under this OS.
 
    procedure Wait_Process (Pid : out Process_Id; Success : out Boolean);
    --  Wait for the completion of any of the processes created by previous
@@ -444,12 +480,17 @@ pragma Elaborate_Body (OS_Lib);
    --  has terminated (matching the value returned from Non_Blocking_Spawn).
    --  Success is set to True if this sub-process terminated successfully.
    --  If Pid = Invalid_Id, there were no subprocesses left to wait on.
+   --
+   --  This function will always set success to False under VxWorks, since
+   --  there is no notion of executables under this OS.
 
    function Argument_String_To_List
      (Arg_String : String)
       return       Argument_List_Access;
    --  Take a string that is a program and it's arguments and parse it into
-   --  an Argument_List.
+   --  an Argument_List. Note that the result is allocated on the heap, and
+   --  must be freed by the programmer (when it is no longer needed) to avoid
+   --  memory leaks.
 
    -------------------
    -- Miscellaneous --
@@ -460,7 +501,9 @@ pragma Elaborate_Body (OS_Lib);
    --  to the empty string if the environment variable does not exist
    --  or has an explicit null value (in some operating systems these
    --  are distinct cases, in others they are not; this interface
-   --  abstracts away that difference.
+   --  abstracts away that difference. The argument is allocated on
+   --  the heap (even in the null case), and needs to be freed explicitly
+   --  when no longer needed to avoid memory leaks.
 
    procedure Setenv (Name : String; Value : String);
    --  Set the value of the environment variable Name to Value. This call
@@ -476,10 +519,12 @@ pragma Elaborate_Body (OS_Lib);
 
    procedure OS_Exit (Status : Integer);
    pragma Import (C, OS_Exit, "__gnat_os_exit");
+   pragma No_Return (OS_Exit);
    --  Exit to OS with given status code (program is terminated)
 
    procedure OS_Abort;
    pragma Import (C, OS_Abort, "abort");
+   pragma No_Return (OS_Abort);
    --  Exit to OS signalling an abort (traceback or other appropriate
    --  diagnostic information should be given if possible, or entry made
    --  to the debugger if that is possible).

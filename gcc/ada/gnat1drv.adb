@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,12 +90,15 @@ begin
    --  nested blocks, so that the outer one handles unrecoverable error.
 
    begin
-      Osint.Initialize (Compiler);
+      --  Lib.Initialize need to be called before Scan_Compiler_Arguments,
+      --  because it initialize a table that is filled by
+      --  Scan_Compiler_Arguments.
+
+      Lib.Initialize;
       Scan_Compiler_Arguments;
       Osint.Add_Default_Search_Dirs;
 
       Sinput.Initialize;
-      Lib.Initialize;
       Sem.Initialize;
       Csets.Initialize;
       Uintp.Initialize;
@@ -107,6 +110,14 @@ begin
       Inline.Initialize;
       Sem_Ch13.Initialize;
 
+      --  Acquire target parameters and perform required setup
+
+      Targparm.Get_Target_Parameters;
+
+      if Targparm.High_Integrity_Mode_On_Target then
+         Set_No_Run_Time_Mode;
+      end if;
+
       --  Output copyright notice if full list mode
 
       if (Verbose_Mode or Full_List)
@@ -114,17 +125,14 @@ begin
       then
          Write_Eol;
          Write_Str ("GNAT ");
+
+         if Targparm.High_Integrity_Mode_On_Target then
+            Write_Str ("Pro High Integrity ");
+         end if;
+
          Write_Str (Gnat_Version_String);
-         Write_Str (" Copyright 1992-2001 Free Software Foundation, Inc.");
+         Write_Str (" Copyright 1992-2002 Free Software Foundation, Inc.");
          Write_Eol;
-      end if;
-
-      --  Acquire target parameters and perform required setup
-
-      Targparm.Get_Target_Parameters;
-
-      if Targparm.High_Integrity_Mode_On_Target then
-         Set_No_Run_Time_Mode;
       end if;
 
       --  Before we do anything else, adjust certain global values for
@@ -171,6 +179,23 @@ begin
             Osint.Fail
               ("Zero Cost Exceptions not supported on this target");
          end if;
+      end if;
+
+      --  Set proper status for overflow checks. We turn on overflow checks
+      --  if -gnatp was not specified, and either -gnato is set or the back
+      --  end takes care of overflow checks. Otherwise we suppress overflow
+      --  checks by default (since front end checks are expensive).
+
+      if not Opt.Suppress_Checks
+        and then (Opt.Enable_Overflow_Checks
+                    or else
+                      (Targparm.Backend_Divide_Checks_On_Target
+                        and
+                       Targparm.Backend_Overflow_Checks_On_Target))
+      then
+         Suppress_Options.Overflow_Checks := False;
+      else
+         Suppress_Options.Overflow_Checks := True;
       end if;
 
       --  Check we have exactly one source file, this happens only in

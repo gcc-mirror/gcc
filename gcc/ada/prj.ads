@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,11 @@ with Types;       use Types;
 
 package Prj is
 
+   Project_File_Extension : String := ".gpr";
+   --  The standard project file name extension.
+   --  It is not a constant, because Canonical_Case_File_Name is called
+   --  on this variable in the body of Prj.
+
    Default_Ada_Spec_Suffix : Name_Id;
    --  The Name_Id for the standard GNAT suffix for Ada spec source file
    --  name ".ads". Initialized by Prj.Initialize.
@@ -47,9 +52,6 @@ package Prj is
    Default_Ada_Impl_Suffix : Name_Id;
    --  The Name_Id for the standard GNAT suffix for Ada body source file
    --  name ".adb". Initialized by Prj.Initialize.
-
-   type Put_Line_Access is access procedure (Line : String);
-   --  Use to customize error reporting in Prj.Proc and Prj.Nmsc.
 
    type Verbosity is (Default, Medium, High);
    --  Verbosity when parsing GNAT Project Files
@@ -396,28 +398,28 @@ package Prj is
 
       Include_Path : String_Access := null;
       --  The cached value of ADA_INCLUDE_PATH for this project file.
-      --  Set by gnatmake (prj.Env.Set_Ada_Paths).
+      --  Set by gnatmake (Prj.Env.Set_Ada_Paths).
       --  Do not use this field directly outside of the compiler, use
       --  Prj.Env.Ada_Source_Path instead.
 
       Objects_Path : String_Access := null;
       --  The cached value of ADA_OBJECTS_PATH for this project file.
-      --  Set by gnatmake (prj.Env.Set_Ada_Paths).
+      --  Set by gnatmake (Prj.Env.Set_Ada_Paths).
       --  Do not use this field directly outside of the compiler, use
-      --  Prj.Env.Ada_Source_Path instead.
+      --  Prj.Env.Ada_Objects_Path instead.
 
       Config_File_Name : Name_Id := No_Name;
       --  The name of the configuration pragmas file, if any.
-      --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
+      --  Set by gnatmake (Prj.Env.Create_Config_Pragmas_File).
 
       Config_File_Temp : Boolean := False;
       --  An indication that the configuration pragmas file is
       --  a temporary file that must be deleted at the end.
-      --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
+      --  Set by gnatmake (Prj.Env.Create_Config_Pragmas_File).
 
       Config_Checked : Boolean := False;
       --  A flag to avoid checking repetitively the configuration pragmas file.
-      --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
+      --  Set by gnatmake (Prj.Env.Create_Config_Pragmas_File).
 
       Language_Independent_Checked : Boolean := False;
       --  A flag that indicates that the project file has been checked
@@ -453,6 +455,11 @@ package Prj is
      Table_Name           => "Prj.Projects");
    --  The set of all project files.
 
+   type Put_Line_Access is access procedure
+     (Line    : String;
+      Project : Project_Id);
+   --  Use to customize error reporting in Prj.Proc and Prj.Nmsc.
+
    procedure Expect (The_Token : Token_Type; Token_Image : String);
    --  Check that the current token is The_Token. If it is not, then
    --  output an error message.
@@ -464,6 +471,17 @@ package Prj is
    procedure Reset;
    --  This procedure resets all the tables that are used when processing a
    --  project file tree. Initialize must be called before the call to Reset.
+
+   procedure Register_Default_Naming_Scheme
+     (Language : Name_Id;
+      Default_Spec_Suffix : Name_Id;
+      Default_Impl_Suffix : Name_Id);
+   --  Register the default suffixs for a given language. These extensions
+   --  will be ignored if the user has specified a new naming scheme in a
+   --  project file.
+   --  Otherwise, this information will be automatically added to Naming_Data
+   --  when a project is processed, in the lists Specification_Suffix and
+   --  Implementation_Suffix.
 
    generic
       type State is limited private;

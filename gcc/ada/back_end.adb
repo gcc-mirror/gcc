@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.23 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -26,25 +26,25 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;   use Atree;
-with Debug;   use Debug;
-with Elists;  use Elists;
-with Lib;     use Lib;
-with Osint;   use Osint;
-with Opt;     use Opt;
-with Osint;   use Osint;
-with Namet;   use Namet;
-with Nlists;  use Nlists;
-with Stand;   use Stand;
-with Sinput;  use Sinput;
-with Stringt; use Stringt;
-with Switch;  use Switch;
-with System;  use System;
-with Types;   use Types;
+with Atree;     use Atree;
+with Debug;     use Debug;
+with Elists;    use Elists;
+with Lib;       use Lib;
+with Osint;     use Osint;
+with Opt;       use Opt;
+with Osint;     use Osint;
+with Osint.C;   use Osint.C;
+with Namet;     use Namet;
+with Nlists;    use Nlists;
+with Stand;     use Stand;
+with Sinput;    use Sinput;
+with Stringt;   use Stringt;
+with Switch;    use Switch;
+with Switch.C;  use Switch.C;
+with System;    use System;
+with Types;     use Types;
 
 package body Back_End is
-
-   --  Local subprograms
 
    -------------------
    -- Call_Back_End --
@@ -209,17 +209,23 @@ package body Back_End is
             Last := Last - 1;
          end if;
 
+         --  For dumpbase and o, skip following argument and do not
+         --  store either the switch or the following argument
+
          if Switch_Chars (First .. Last) = "o"
             or else Switch_Chars (First .. Last) = "dumpbase"
 
          then
             Next_Arg := Next_Arg + 1;
 
+         --  Do not record -quiet switch
+
          elsif Switch_Chars (First .. Last) = "quiet" then
-            null; -- do not record this switch
+            null;
 
          else
             --  Store any other GCC switches
+
             Store_Compilation_Switch (Switch_Chars);
          end if;
       end Scan_Back_End_Switches;
@@ -259,15 +265,15 @@ package body Back_End is
             elsif not Is_Switch (Argv) then -- must be a file name
                Add_File (Argv);
 
+            --  We must recognize -nostdinc to suppress visibility on the
+            --  standard GNAT RTL sources. This is also a gcc switch.
+
+            elsif Argv (Argv'First + 1 .. Argv'Last) = "nostdinc" then
+               Opt.No_Stdinc := True;
+               Scan_Back_End_Switches (Argv);
+
             elsif Is_Front_End_Switch (Argv) then
                Scan_Front_End_Switches (Argv);
-
-               --  ??? Should be done in Scan_Front_End_Switches, after
-               --      Switch is splitted in compiler/make/bind units
-
-               if Argv (2) /= 'I' then
-                  Store_Compilation_Switch (Argv);
-               end if;
 
             --  All non-front-end switches are back-end switches
 

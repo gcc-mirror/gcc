@@ -2,14 +2,13 @@
 --                                                                          --
 --                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
 --                                                                          --
---           S Y S T E M . T A S K I N G . A S Y N C _ D E L A Y S .        --
---                           E N Q U E U E _ R T                            --
+--                  SYSTEM.TASKING.ASYNC_DELAYS.ENQUEUE_RT                  --
 --                                                                          --
 --                                S p e c                                   --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---           Copyright (C) 1998-1999 Ada Core Technologies, Inc.            --
+--          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,5 +41,6 @@
 
 with Ada.Real_Time;
 function System.Tasking.Async_Delays.Enqueue_RT
-  (T : in Ada.Real_Time.Time;
-   D : Delay_Block_Access) return Boolean;
+  (T    : Ada.Real_Time.Time;
+   D    : Delay_Block_Access)
+   return Boolean;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              Specification                               *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision: 1.3 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -35,18 +35,11 @@
 
 DEFTREECODE (TRANSFORM_EXPR, "transform_expr", 'e', 0)
 
-/* Perform an unchecked conversion between the input and the output. 
-   if TREE_ADDRESSABLE is set, it means this is in an LHS; in that case,
-   we can only use techniques, such as pointer punning, that leave the
-   expression a "name".  */
-
-DEFTREECODE (UNCHECKED_CONVERT_EXPR, "unchecked_convert_expr", '1', 1)
-
 /* Dynamically allocate on the stack a number of bytes of memory given
    by operand 0 at the alignment given by operand 1 and return the
    address of the resulting memory.  */
 
-DEFTREECODE (ALLOCATE_EXPR, "allocate_expr", '2', 2)
+DEFTREECODE (ALLOCATE_EXPR, "allocate_expr", 's', 2)
 
 /* A type that is an unconstrained array itself.  This node is never passed
    to GCC. TREE_TYPE is the type of the fat pointer and TYPE_OBJECT_RECORD_TYPE

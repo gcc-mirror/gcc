@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.14 $
+--                             $Revision$
 --                                                                          --
---             Copyright (C) 1995-1999 Florida State University             --
+--             Copyright (C) 1995-2001 Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -40,7 +39,7 @@ with System.Storage_Elements;
 with System.Task_Primitives.Operations;
 --  used for Write_Lock
 --           Unlock
---           Lock/Unlock_All_Tasks_List
+--           Lock/Unlock_RTS
 
 with System.Tasking.Initialization;
 --  used for Defer_Abort
@@ -50,8 +49,8 @@ with Unchecked_Conversion;
 
 package body System.Tasking.Task_Attributes is
 
-   use Task_Primitives.Operations,
-       System.Tasking.Initialization;
+   use Task_Primitives.Operations;
+   use Tasking.Initialization;
 
    function To_Access_Node is new Unchecked_Conversion
      (Access_Address, Access_Node);
@@ -70,7 +69,7 @@ package body System.Tasking.Task_Attributes is
 
    begin
       Defer_Abortion;
-      Write_Lock (All_Attrs_L'Access);
+      Lock_RTS;
 
       --  Remove this instantiation from the list of all instantiations.
 
@@ -93,7 +92,6 @@ package body System.Tasking.Task_Attributes is
       end;
 
       if X.Index /= 0 then
-
          --  Free location of this attribute, for reuse.
 
          In_Use := In_Use and not (2**Natural (X.Index));
@@ -105,8 +103,6 @@ package body System.Tasking.Task_Attributes is
          --  Remove nodes for this attribute from the lists of
          --  all tasks, and deallocate the nodes.
          --  Deallocation does finalization, if necessary.
-
-         Lock_All_Tasks_List;
 
          declare
             C : System.Tasking.Task_ID := All_Tasks_List;
@@ -131,8 +127,7 @@ package body System.Tasking.Task_Attributes is
                      P.Next := Q.Next;
                   end if;
 
-                  --  Can't Deallocate now since we are holding the All_Tasks_L
-                  --  lock.
+                  --  Can't Deallocate now since we are holding RTS_Lock.
 
                   Q.Next := To_Be_Freed;
                   To_Be_Freed := Q;
@@ -142,11 +137,9 @@ package body System.Tasking.Task_Attributes is
                C := C.Common.All_Tasks_Link;
             end loop;
          end;
-
-         Unlock_All_Tasks_List;
       end if;
 
-      Unlock (All_Attrs_L'Access);
+      Unlock_RTS;
 
       while To_Be_Freed /= null loop
          Q := To_Be_Freed;
@@ -193,19 +186,19 @@ package body System.Tasking.Task_Attributes is
    -- Initialize Attributes --
    ---------------------------
 
-   --  This is to be called by System.Task_Stages.Create_Task.
+   --  This is to be called by System.Tasking.Stages.Create_Task.
    --  It relies on their being no concurrent access to this TCB,
-   --  so it does not defer abortion or lock T.L.
+   --  so it does not defer abortion nor lock T.L.
 
    procedure Initialize_Attributes (T : Task_ID) is
       P : Access_Instance;
-
    begin
-      Write_Lock (All_Attrs_L'Access);
+      Lock_RTS;
 
       --  Initialize all the direct-access attributes of this task.
 
       P := All_Attributes;
+
       while P /= null loop
          if P.Index /= 0 then
             T.Direct_Attributes (P.Index) :=
@@ -215,7 +208,7 @@ package body System.Tasking.Task_Attributes is
          P := P.Next;
       end loop;
 
-      Unlock (All_Attrs_L'Access);
+      Unlock_RTS;
 
    exception
       when others => null;

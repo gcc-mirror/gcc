@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -595,7 +595,20 @@ package body Ch5 is
                         Scan; -- past semicolon
                         Statement_Required := False;
 
-                        --  Else we have a missing semicolon
+                     --  A slash following an identifier or a selected
+                     --  component in this situation is most likely a
+                     --  period (have a look at the keyboard :-)
+
+                     elsif Token = Tok_Slash
+                       and then (Nkind (Name_Node) = N_Identifier
+                                   or else
+                                 Nkind (Name_Node) = N_Selected_Component)
+                     then
+                        Error_Msg_SC ("""/"" should be "".""");
+                        Statement_Required := False;
+                        raise Error_Resync;
+
+                     --  Else we have a missing semicolon
 
                      else
                         TF_Semicolon;

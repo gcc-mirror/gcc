@@ -2,13 +2,13 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                            M D L L . F I L E S                           --
+--                              O S I N T - L                               --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001 Free Software Foundation, Inc.               --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,26 +26,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Simple services used by GNATDLL to deal with Filename extension
+package body Osint.L is
 
-package MDLL.Files is
+   --------------------
+   -- More_Lib_Files --
+   --------------------
 
-   No_Ext : constant String := "";
-   --  Used to mark the absence of an extension
+   function More_Lib_Files return Boolean renames  More_Files;
 
-   function Get_Ext (Filename : String) return String;
-   --  Return extension of Filename
+   ------------------------
+   -- Next_Main_Lib_File --
+   ------------------------
 
-   function Is_Ali (Filename : String) return Boolean;
-   --  Test if Filename is an Ada library file (.ali).
+   function Next_Main_Lib_File return File_Name_Type renames Next_Main_File;
 
-   function Is_Obj (Filename : String) return Boolean;
-   --  Test if Filename is an object file (.o or .obj)
-
-   function Ext_To
-     (Filename : String;
-      New_Ext  : String := No_Ext)
-      return     String;
-   --  Return Filename with the extension change to New_Ext
-
-end MDLL.Files;
+begin
+   Set_Program (Gnatls);
+end Osint.L;

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.55 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,13 +25,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Fixed;      use Ada.Strings.Fixed;
-with GNAT.Command_Line;      use GNAT.Command_Line;
-with GNAT.IO_Aux;            use GNAT.IO_Aux;
 with Osint;
 with Output;                 use Output;
 with Types;                  use Types;
 with Unchecked_Deallocation;
+
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+
+with GNAT.Command_Line; use GNAT.Command_Line;
+with GNAT.IO_Aux;       use GNAT.IO_Aux;
 
 package body Xref_Lib is
 
@@ -41,11 +43,6 @@ package body Xref_Lib is
    ---------------------
    -- Local Variables --
    ---------------------
-
-   D   : constant Character := 'D';
-   X   : constant Character := 'X';
-   W   : constant Character := 'W';
-   Dot : constant Character := '.';
 
    Pipe : constant Character := '|';
    --  First character on xref lines in the .ali file
@@ -59,9 +56,6 @@ package body Xref_Lib is
    --  the .ali files
 
    subtype File_Offset is Natural;
-
-   function End_Of_Line_Index (File : ALI_File) return Integer;
-   --  Returns the index of the last character of the current_line
 
    procedure Read_File
      (FD       : File_Descriptor;
@@ -259,41 +253,41 @@ package body Xref_Lib is
          end if;
       end if;
 
-      Add_File (Entity (File_Start .. Line_Start - 1),
+      Add_To_Xref_File (Entity (File_Start .. Line_Start - 1),
                 File_Existed,
                 File_Ref,
                 Visited => True);
       Add_Line (File_Ref, Line_Num, Col_Num);
-      Add_File
+      Add_To_Xref_File
         (ALI_File_Name (Entity (File_Start .. Line_Start - 1)),
          File_Existed, File_Ref,
          Visited => False,
          Emit_Warning => True);
    end Add_Entity;
 
-   --------------
-   -- Add_File --
-   --------------
+   -------------------
+   -- Add_Xref_File --
+   -------------------
 
-   procedure Add_File (File : String) is
+   procedure Add_Xref_File (File : String) is
       File_Ref     : File_Reference := Empty_File;
       File_Existed : Boolean;
       Iterator     : Expansion_Iterator;
 
-      procedure Add_File_Internal (File : String);
+      procedure Add_Xref_File_Internal (File : String);
       --  Do the actual addition of the file
 
-      -----------------------
-      -- Add_File_Internal --
-      -----------------------
+      ----------------------------
+      -- Add_Xref_File_Internal --
+      ----------------------------
 
-      procedure Add_File_Internal (File : String) is
+      procedure Add_Xref_File_Internal (File : String) is
       begin
          --  Case where we have an ALI file, accept it even though this is
          --  not official usage, since the intention is obvious
 
          if Tail (File, 4) = ".ali" then
-            Add_File
+            Add_To_Xref_File
               (File,
                File_Existed,
                File_Ref,
@@ -303,22 +297,22 @@ package body Xref_Lib is
          --  Normal non-ali file case
 
          else
-            Add_File
+            Add_To_Xref_File
               (File,
                File_Existed,
                File_Ref,
                Visited => True);
 
-            Add_File
+            Add_To_Xref_File
               (ALI_File_Name (File),
                File_Existed,
                File_Ref,
                Visited => False,
                Emit_Warning => True);
          end if;
-      end Add_File_Internal;
+      end Add_Xref_File_Internal;
 
-   --  Start of processing for Add_File
+   --  Start of processing for Add_Xref_File
 
    begin
       --  Check if we need to do the expansion
@@ -334,14 +328,14 @@ package body Xref_Lib is
 
             begin
                exit when S'Length = 0;
-               Add_File_Internal (S);
+               Add_Xref_File_Internal (S);
             end;
          end loop;
 
       else
-         Add_File_Internal (File);
+         Add_Xref_File_Internal (File);
       end if;
-   end Add_File;
+   end Add_Xref_File;
 
    -----------------------
    -- Current_Xref_File --
@@ -386,22 +380,6 @@ package body Xref_Lib is
    exception
       when Directory_Error => return String'(1 .. 0 => ' ');
    end Default_Project_File;
-
-   -----------------------
-   -- End_Of_Line_Index --
-   -----------------------
-
-   function End_Of_Line_Index (File : ALI_File) return Integer is
-      Index : Integer := File.Current_Line;
-   begin
-      while Index <= File.Buffer'Last
-        and then File.Buffer (Index) /= ASCII.LF
-      loop
-         Index := Index + 1;
-      end loop;
-
-      return Index;
-   end End_Of_Line_Index;
 
    ---------------
    -- File_Name --
@@ -478,7 +456,10 @@ package body Xref_Lib is
                end if;
 
             elsif Last > 4 and then Dir_Ent (Last - 3 .. Last) = ".ali" then
-               Add_File (Dir_Ent (1 .. Last), File_Existed, File_Ref,
+               Add_To_Xref_File
+                 (Dir_Ent (1 .. Last),
+                  File_Existed,
+                  File_Ref,
                   Visited => False);
                Set_Directory (File_Ref, Current_Obj_Dir);
             end if;
@@ -609,7 +590,7 @@ package body Xref_Lib is
 
       while Ali (Ptr) /= EOF loop
 
-         if Ali (Ptr) = D then
+         if Ali (Ptr) = 'D' then
             --  Found dependency information. Format looks like:
             --  D source-name time-stamp checksum [subunit-name] \
             --    [line:file-name]
@@ -645,14 +626,14 @@ package body Xref_Lib is
                Token := Gnatchop_Name + 1;
             end if;
 
-            Add_File
+            Add_To_Xref_File
               (Ali (File_Start .. File_End),
                File_Existed,
                File.Dep.Table (Num_Dependencies),
                Gnatchop_File => Ali (Token .. Ptr - 1),
                Gnatchop_Offset => Gnatchop_Offset);
 
-         elsif Dependencies and then Ali (Ptr) = W then
+         elsif Dependencies and then Ali (Ptr) = 'W' then
             --  Found with-clause information. Format looks like:
             --     "W debug%s               debug.adb               debug.ali"
 
@@ -662,12 +643,13 @@ package body Xref_Lib is
             Parse_Token (Ali, Ptr, Token);
             Parse_Token (Ali, Ptr, Token);
 
-            Add_File
+            Add_To_Xref_File
               (Ali (Token .. Ptr - 1),
-               File_Existed, File_Ref,
+               File_Existed,
+               File_Ref,
                Visited => False);
 
-         elsif Ali (Ptr) = X then
+         elsif Ali (Ptr) = 'X' then
             --  Found a cross-referencing line - stop processing
 
             File.Current_Line := Ptr;
@@ -852,7 +834,10 @@ package body Xref_Lib is
       Decl_Ref := Add_Declaration
         (File.X_File, Ali (E_Name .. Ptr - 1), E_Line, E_Col, E_Type);
 
-      if Ali (Ptr) = '<' then
+      if Ali (Ptr) = '<'
+        or else Ali (Ptr) = '('
+        or else Ali (Ptr) = '{'
+      then
 
          --  Here we have a type derivation information. The format is
          --  <3|12I45> which means that the current entity is derived from the
@@ -860,115 +845,137 @@ package body Xref_Lib is
          --  unit number is optional. It is specified only if the parent type
          --  is not defined in the current unit.
 
+         --  We could also have something like
+         --  16I9*I<integer>
+         --  that indicates that I derives from the predefined type integer.
+
          Ptr := Ptr + 1;
 
-         Parse_Derived_Info : declare
-            P_Line   : Natural;          --  parent entity line
-            P_Column : Natural;          --  parent entity column
-            P_Type   : Character;        --  parent entity type
-            P_Eun    : Positive;         --  parent entity file number
+         if Ali (Ptr) in '0' .. '9' then
+            Parse_Derived_Info : declare
+               P_Line   : Natural;          --  parent entity line
+               P_Column : Natural;          --  parent entity column
+               P_Type   : Character;        --  parent entity type
+               P_Eun    : Positive;         --  parent entity file number
 
-         begin
-            Parse_Number (Ali, Ptr, P_Line);
-
-            --  If we have a pipe then the first number was the unit number
-
-            if Ali (Ptr) = '|' then
-               P_Eun := P_Line;
-               Ptr := Ptr + 1;
-
-               --  Now we have the line number
-
+            begin
                Parse_Number (Ali, Ptr, P_Line);
 
-            else
-               --  We don't have a unit number specified, so we set P_Eun to
-               --  the current unit.
+               --  If we have a pipe then the first number was the unit number
 
-               for K in Dependencies_Tables.First .. Last (File.Dep) loop
-                  P_Eun := K;
-                  exit when File.Dep.Table (K) = File_Ref;
-               end loop;
-            end if;
+               if Ali (Ptr) = '|' then
+                  P_Eun := P_Line;
+                  Ptr := Ptr + 1;
 
-            --  Then parse the type and column number
+                  --  Now we have the line number
 
-            P_Type := Ali (Ptr);
-            Ptr := Ptr + 1;
-            Parse_Number (Ali, Ptr, P_Column);
+                  Parse_Number (Ali, Ptr, P_Line);
 
-            --  Skip '>'
+               else
+                  --  We don't have a unit number specified, so we set P_Eun to
+                  --  the current unit.
 
-            Ptr := Ptr + 1;
+                  for K in Dependencies_Tables.First .. Last (File.Dep) loop
+                     P_Eun := K;
+                     exit when File.Dep.Table (K) = File_Ref;
+                  end loop;
+               end if;
 
-            --  The derived info is needed only is the derived info mode is on
-            --  or if we want to output the type hierarchy
+               --  Then parse the type and column number
 
-            if Der_Info or else Type_Tree then
-               Add_Parent
-                 (Decl_Ref,
-                  Get_Symbol_Name (P_Eun, P_Line, P_Column),
-                  P_Line,
-                  P_Column,
-                  File.Dep.Table (P_Eun));
-            end if;
+               P_Type := Ali (Ptr);
+               Ptr := Ptr + 1;
+               Parse_Number (Ali, Ptr, P_Column);
 
-            if Type_Tree then
-               Search_Parent_Tree : declare
-                  Pattern         : Search_Pattern;  --  Parent type pattern
-                  File_Pos_Backup : Positive;
+               --  Skip '>', or ')' or '>'
 
-               begin
-                  Add_Entity
-                    (Pattern,
-                     Get_Symbol_Name (P_Eun, P_Line, P_Column)
-                     & ':' & Get_Gnatchop_File (File.Dep.Table (P_Eun))
-                     & ':' & Get_Line (Get_Parent (Decl_Ref))
-                     & ':' & Get_Column (Get_Parent (Decl_Ref)),
+               Ptr := Ptr + 1;
+
+               --  The derived info is needed only is the derived info mode is
+               --  on or if we want to output the type hierarchy
+
+               if Der_Info or else Type_Tree then
+                  Add_Parent
+                    (Decl_Ref,
+                     Get_Symbol_Name (P_Eun, P_Line, P_Column),
+                     P_Line,
+                     P_Column,
+                     File.Dep.Table (P_Eun));
+               end if;
+
+               if Type_Tree then
+                  Search_Parent_Tree : declare
+                     Pattern         : Search_Pattern;  --  Parent type pattern
+                     File_Pos_Backup : Positive;
+
+                  begin
+                     Add_Entity
+                       (Pattern,
+                        Get_Symbol_Name (P_Eun, P_Line, P_Column)
+                        & ':' & Get_Gnatchop_File (File.Dep.Table (P_Eun))
+                        & ':' & Get_Line (Get_Parent (Decl_Ref))
+                        & ':' & Get_Column (Get_Parent (Decl_Ref)),
                      False);
 
-                  --  No default match is needed to look for the parent type
-                  --  since we are using the fully qualified symbol name:
-                  --  symbol:file:line:column
+                     --  No default match is needed to look for the parent type
+                     --  since we are using the fully qualified symbol name:
+                     --  symbol:file:line:column
 
-                  Set_Default_Match (False);
+                     Set_Default_Match (False);
 
-                  --  The parent type is defined in the same unit as the
-                  --  derived type. So we want to revisit the unit.
+                     --  The parent type is defined in the same unit as the
+                     --  derived type. So we want to revisit the unit.
 
-                  File_Pos_Backup   := File.Current_Line;
+                     File_Pos_Backup   := File.Current_Line;
 
-                  if File.Dep.Table (P_Eun) = File_Ref then
+                     if File.Dep.Table (P_Eun) = File_Ref then
 
-                     --  set file pointer at the start of the xref lines
+                        --  set file pointer at the start of the xref lines
 
-                     File.Current_Line := File.Xref_Line;
+                        File.Current_Line := File.Xref_Line;
 
-                     Revisit_ALI_File : declare
-                        File_Existed : Boolean;
-                        File_Ref     : File_Reference;
-                     begin
-                        Add_File
-                          (ALI_File_Name (Get_File (File.Dep.Table (P_Eun))),
-                           File_Existed,
-                           File_Ref,
-                           Visited => False);
-                        Set_Unvisited (File_Ref);
-                     end Revisit_ALI_File;
-                  end if;
+                        Revisit_ALI_File : declare
+                           File_Existed : Boolean;
+                           File_Ref     : File_Reference;
 
-                  Search (Pattern,
-                          Local_Symbols, False, False, Der_Info, Type_Tree);
+                        begin
+                           Add_To_Xref_File
+                             (ALI_File_Name
+                              (Get_File (File.Dep.Table (P_Eun))),
+                              File_Existed,
+                              File_Ref,
+                              Visited => False);
+                           Set_Unvisited (File_Ref);
+                        end Revisit_ALI_File;
+                     end if;
 
-                  File.Current_Line := File_Pos_Backup;
+                     Search (Pattern,
+                             Local_Symbols, False, False, Der_Info, Type_Tree);
 
-                  --  in this mode there is no need to parse the remaining of
-                  --  the lines.
+                     File.Current_Line := File_Pos_Backup;
+                  end Search_Parent_Tree;
+               end if;
+            end Parse_Derived_Info;
 
-                  return;
-               end Search_Parent_Tree;
-            end if;
-         end Parse_Derived_Info;
+         else
+            while Ali (Ptr) /= '>'
+              and then Ali (Ptr) /= ')'
+              and then Ali (Ptr) /= '}'
+            loop
+               Ptr := Ptr + 1;
+            end loop;
+            Ptr := Ptr + 1;
+         end if;
+
+      elsif Ali (Ptr) = '=' then
+         declare
+            P_Line, P_Column : Natural;
+         begin
+            Ptr := Ptr + 1;
+            Parse_Number (Ali, Ptr, P_Line);
+            Ptr := Ptr + 1;
+            Parse_Number (Ali, Ptr, P_Column);
+         end;
       end if;
 
       --  To find the body, we will have to parse the file too
@@ -981,8 +988,8 @@ package body Xref_Lib is
                              Get_Gnatchop_File (File.X_File);
 
          begin
-            Add_File (ALI_File_Name (File_Name),
-               File_Existed, File_Ref, False);
+            Add_To_Xref_File
+              (ALI_File_Name (File_Name), File_Existed, File_Ref, False);
          end;
       end if;
 
@@ -1016,6 +1023,24 @@ package body Xref_Lib is
             --  Insert the reference or body in the table
 
             Add_Reference (Decl_Ref, File_Ref, R_Line, R_Col, R_Type);
+
+            --  Skip generic information, if any
+
+            if Ali (Ptr) = '[' then
+               declare
+                  Num_Nested : Integer := 1;
+               begin
+                  Ptr := Ptr + 1;
+                  while Num_Nested /= 0 loop
+                     if Ali (Ptr) = ']' then
+                        Num_Nested := Num_Nested - 1;
+                     elsif Ali (Ptr) = '[' then
+                        Num_Nested := Num_Nested + 1;
+                     end if;
+                     Ptr := Ptr + 1;
+                  end loop;
+               end;
+            end if;
 
          end loop;
 
@@ -1076,8 +1101,11 @@ package body Xref_Lib is
 
       while (In_Quotes or else
                not (Source (Ptr) = ' '
-                     or else Source (Ptr) = ASCII.HT
-                     or else Source (Ptr) = '<'))
+                    or else Source (Ptr) = ASCII.HT
+                    or else Source (Ptr) = '<'
+                    or else Source (Ptr) = '{'
+                    or else Source (Ptr) = '='
+                    or else Source (Ptr) = '('))
         and then Source (Ptr) >= ' '
       loop
          if Source (Ptr) = '"' then
@@ -1098,7 +1126,7 @@ package body Xref_Lib is
       File_Nr : Natural;
 
    begin
-      while Ali (Ptr) = X loop
+      while Ali (Ptr) = 'X' loop
 
          --  The current line is the start of a new Xref file section,
          --  whose format looks like:

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.5 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-1999 Florida State University              --
+--            Copyright (C) 1991-2001 Florida State University              --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,13 +69,12 @@ package System.Task_Primitives is
 
 --  private
 
-   type Lock is
-      record
-         Mutex          : aliased Interfaces.OS2Lib.Synchronization.HMTX;
-         Priority       : Integer;
-         Owner_Priority : Integer;
-         Owner_ID       : Address;
-      end record;
+   type Lock is record
+      Mutex          : aliased Interfaces.OS2Lib.Synchronization.HMTX;
+      Priority       : Integer;
+      Owner_Priority : Integer;
+      Owner_ID       : Address;
+   end record;
 
    type RTS_Lock is new Lock;
 

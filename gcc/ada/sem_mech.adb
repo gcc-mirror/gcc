@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.16 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -384,8 +384,7 @@ package body Sem_Mech is
                when Convention_Fortran =>
 
                   --  In OpenVMS, pass a character of array of character
-                  --  value using Descriptor(S). Should this also test
-                  --  Debug_Flag_M ???
+                  --  value using Descriptor(S).
 
                   if OpenVMS_On_Target
                     and then (Root_Type (Typ) = Standard_Character
@@ -406,7 +405,6 @@ package body Sem_Mech is
                   --  For now, we pass all other parameters by reference.
                   --  It is not clear that this is right in the long run,
                   --  but it seems to correspond to what gnu f77 wants.
-
 
                   else
                      Set_Mechanism (Formal, By_Reference);

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $                              --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Interfaces.C;
 with System.OS_Interface;
 with System;
 with Unchecked_Conversion;
+
 package body System.Task_Info is
 
    use System.OS_Interface;
@@ -67,52 +68,72 @@ package body System.Task_Info is
       TXTLOCK  => 2,
       DATLOCK  => 4);
 
+   -------------------------------
+   -- Resource_Vector_Functions --
+   -------------------------------
+
    package body Resource_Vector_Functions is
 
-      function "+" (R : Resource_T)
-        return Resource_Vector_T is
+      ---------
+      -- "+" --
+      ---------
+
+      function "+" (R : Resource_T) return Resource_Vector_T is
          Result  : Resource_Vector_T  := NO_RESOURCES;
+
       begin
          Result (Resource_T'Pos (R)) := True;
          return Result;
       end "+";
 
-      function "+" (R1, R2 : Resource_T)
-        return Resource_Vector_T is
+      function "+" (R1, R2 : Resource_T) return Resource_Vector_T is
          Result  : Resource_Vector_T  := NO_RESOURCES;
+
       begin
          Result (Resource_T'Pos (R1)) := True;
          Result (Resource_T'Pos (R2)) := True;
          return Result;
       end "+";
 
-      function "+" (R : Resource_T; S : Resource_Vector_T)
-        return Resource_Vector_T is
+      function "+"
+        (R    : Resource_T;
+         S    : Resource_Vector_T)
+         return Resource_Vector_T
+      is
          Result  : Resource_Vector_T := S;
+
       begin
          Result (Resource_T'Pos (R)) := True;
          return Result;
       end "+";
 
-      function "+" (S : Resource_Vector_T; R : Resource_T)
-        return Resource_Vector_T is
+      function "+"
+        (S    : Resource_Vector_T;
+         R    : Resource_T)
+         return Resource_Vector_T
+      is
          Result  : Resource_Vector_T :=  S;
+
       begin
          Result (Resource_T'Pos (R)) := True;
          return Result;
       end "+";
 
-      function "+" (S1, S2 : Resource_Vector_T)
-        return Resource_Vector_T is
+      function "+" (S1, S2 : Resource_Vector_T) return Resource_Vector_T is
          Result  : Resource_Vector_T;
+
       begin
          Result :=  S1 or S2;
          return Result;
       end "+";
 
-      function "-" (S : Resource_Vector_T; R : Resource_T)
-        return Resource_Vector_T is
+      function "-"
+        (S    : Resource_Vector_T;
+         R    : Resource_T)
+         return Resource_Vector_T
+      is
          Result  : Resource_Vector_T := S;
+
       begin
          Result (Resource_T'Pos (R)) := False;
          return Result;
@@ -120,14 +141,19 @@ package body System.Task_Info is
 
    end Resource_Vector_Functions;
 
+   ---------------
+   -- New_Sproc --
+   ---------------
+
    function New_Sproc (Attr : Sproc_Attributes) return sproc_t is
       Sproc_Attr : aliased sproc_attr_t;
       Sproc      : aliased sproc_t;
       Status     : int;
+
    begin
       Status := sproc_attr_init (Sproc_Attr'Unrestricted_Access);
-      if Status = 0 then
 
+      if Status = 0 then
          Status := sproc_attr_setresources
            (Sproc_Attr'Unrestricted_Access,
             To_Resource_T (Attr.Sproc_Resources));
@@ -136,13 +162,13 @@ package body System.Task_Info is
             if Attr.CPU > Num_Processors then
                raise Invalid_CPU_Number;
             end if;
+
             Status := sproc_attr_setcpu
               (Sproc_Attr'Unrestricted_Access,
                int (Attr.CPU));
          end if;
 
          if Attr.Resident /= NOLOCK then
-
             if Geteuid /= 0 then
                raise Permission_Error;
             end if;
@@ -153,6 +179,7 @@ package body System.Task_Info is
          end if;
 
          if Attr.NDPRI /= NDP_NONE then
+--  ??? why is that comment out, should it be removed ?
 --          if Geteuid /= 0 then
 --             raise Permission_Error;
 --          end if;
@@ -184,13 +211,17 @@ package body System.Task_Info is
       return Sproc;
    end New_Sproc;
 
+   ---------------
+   -- New_Sproc --
+   ---------------
+
    function New_Sproc
      (Sproc_Resources : Resource_Vector_T      := NO_RESOURCES;
       CPU             : CPU_Number             := ANY_CPU;
       Resident        : Page_Locking           := NOLOCK;
       NDPRI           : Non_Degrading_Priority := NDP_NONE)
-      return            sproc_t is
-
+      return            sproc_t
+   is
       Attr : Sproc_Attributes :=
         (Sproc_Resources, CPU, Resident, NDPRI);
 
@@ -198,22 +229,36 @@ package body System.Task_Info is
       return New_Sproc (Attr);
    end New_Sproc;
 
+   -------------------------------
+   -- Unbound_Thread_Attributes --
+   -------------------------------
+
    function Unbound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0)
-      return             Thread_Attributes is
+      return             Thread_Attributes
+   is
    begin
       return (False, Thread_Resources, Thread_Timeslice);
    end Unbound_Thread_Attributes;
+
+   -----------------------------
+   -- Bound_Thread_Attributes --
+   -----------------------------
 
    function Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0;
       Sproc            : sproc_t)
-      return             Thread_Attributes is
+      return             Thread_Attributes
+   is
    begin
       return (True, Thread_Resources, Thread_Timeslice, Sproc);
    end Bound_Thread_Attributes;
+
+   -----------------------------
+   -- Bound_Thread_Attributes --
+   -----------------------------
 
    function Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T      := NO_RESOURCES;
@@ -222,8 +267,8 @@ package body System.Task_Info is
       CPU              : CPU_Number             := ANY_CPU;
       Resident         : Page_Locking           := NOLOCK;
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
-      return             Thread_Attributes is
-
+      return             Thread_Attributes
+   is
       Sproc : sproc_t := New_Sproc
         (Sproc_Resources, CPU, Resident, NDPRI);
 
@@ -231,24 +276,38 @@ package body System.Task_Info is
       return (True, Thread_Resources, Thread_Timeslice, Sproc);
    end Bound_Thread_Attributes;
 
+   -----------------------------------
+   -- New_Unbound_Thread_Attributes --
+   -----------------------------------
+
    function New_Unbound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0)
-      return             Task_Info_Type is
+      return             Task_Info_Type
+   is
    begin
       return new Thread_Attributes'
         (False, Thread_Resources, Thread_Timeslice);
    end New_Unbound_Thread_Attributes;
 
+   ---------------------------------
+   -- New_Bound_Thread_Attributes --
+   ---------------------------------
+
    function New_Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0;
       Sproc            : sproc_t)
-      return             Task_Info_Type is
+      return             Task_Info_Type
+   is
    begin
       return new Thread_Attributes'
         (True, Thread_Resources, Thread_Timeslice, Sproc);
    end  New_Bound_Thread_Attributes;
+
+   ---------------------------------
+   -- New_Bound_Thread_Attributes --
+   ---------------------------------
 
    function New_Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T      := NO_RESOURCES;
@@ -257,8 +316,8 @@ package body System.Task_Info is
       CPU              : CPU_Number             := ANY_CPU;
       Resident         : Page_Locking           := NOLOCK;
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
-      return             Task_Info_Type is
-
+      return             Task_Info_Type
+   is
       Sproc : sproc_t := New_Sproc
         (Sproc_Resources, CPU, Resident, NDPRI);
 

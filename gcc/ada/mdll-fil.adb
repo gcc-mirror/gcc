@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $                              --
+--                            $Revision$                              --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 
 with Ada.Strings.Fixed;
 
-package body MDLL.Files is
+package body MDLL.Fil is
 
    use Ada;
 
@@ -38,9 +38,7 @@ package body MDLL.Files is
    -- Get_Ext --
    -------------
 
-   function Get_Ext (Filename : in String)
-                     return String
-   is
+   function Get_Ext (Filename : String) return String is
       use Strings.Fixed;
       I : constant Natural := Index (Filename, ".", Strings.Backward);
    begin
@@ -55,8 +53,7 @@ package body MDLL.Files is
    -- Is_Ali --
    ------------
 
-   function Is_Ali (Filename : in String)
-                    return Boolean is
+   function Is_Ali (Filename : String) return Boolean is
    begin
       return Get_Ext (Filename) = ".ali";
    end Is_Ali;
@@ -65,9 +62,7 @@ package body MDLL.Files is
    -- Is_Obj --
    ------------
 
-   function Is_Obj (Filename : in String)
-                    return Boolean
-   is
+   function Is_Obj (Filename : String) return Boolean is
       Ext : constant String := Get_Ext (Filename);
    begin
       return Ext = ".o" or else Ext = ".obj";
@@ -77,9 +72,10 @@ package body MDLL.Files is
    -- Ext_To --
    ------------
 
-   function Ext_To (Filename : in String;
-                    New_Ext  : in String := No_Ext)
-                    return String
+   function Ext_To
+     (Filename : String;
+      New_Ext  : String := No_Ext)
+      return     String
    is
       use Strings.Fixed;
       I : constant Natural := Index (Filename, ".", Strings.Backward);
@@ -95,4 +91,4 @@ package body MDLL.Files is
       end if;
    end Ext_To;
 
-end MDLL.Files;
+end MDLL.Fil;

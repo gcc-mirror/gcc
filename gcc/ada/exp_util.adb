@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.8 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,9 +50,11 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
+with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
 package body Exp_Util is
@@ -98,7 +100,6 @@ package body Exp_Util is
    function Build_Task_Record_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      A_Type : Entity_Id;
       Dyn    : Boolean := False)
       return Node_Id;
    --  Build function to generate the image string for a task that is a
@@ -633,7 +634,7 @@ package body Exp_Util is
             T_Id :=
               Make_Defining_Identifier (Loc,
                 New_External_Name (Chars (Selector_Name (Id_Ref)), 'I'));
-            Fun := Build_Task_Record_Image (Loc, Id_Ref, A_Type, Is_Dyn);
+            Fun := Build_Task_Record_Image (Loc, Id_Ref, Is_Dyn);
 
          elsif Nkind (Id_Ref) = N_Indexed_Component then
             T_Id :=
@@ -786,7 +787,6 @@ package body Exp_Util is
    function Build_Task_Record_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      A_Type : Entity_Id;
       Dyn    : Boolean := False)
       return   Node_Id
    is
@@ -1657,7 +1657,6 @@ package body Exp_Util is
                   if Nkind (Parent (P)) = N_Aggregate
                     and then Present (Aggregate_Bounds (Parent (P)))
                     and then Nkind (First (Choices (P))) = N_Others_Choice
-                    and then Nkind (First (Ins_Actions)) /= N_Freeze_Entity
                   then
                      if No (Loop_Actions (P)) then
                         Set_Loop_Actions (P, Ins_Actions);
@@ -2093,11 +2092,19 @@ package body Exp_Util is
          Remove_Handler_Entries (N);
          Remove_Warning_Messages (N);
 
-         --  Recurse into block statements to process declarations/statements
+         --  Recurse into block statements and bodies to process declarations
+         --  and statements
 
-         if Nkind (N) = N_Block_Statement then
+         if Nkind (N) = N_Block_Statement
+           or else Nkind (N) = N_Subprogram_Body
+           or else Nkind (N) = N_Package_Body
+         then
             Kill_Dead_Code (Declarations (N));
             Kill_Dead_Code (Statements (Handled_Statement_Sequence (N)));
+
+            if Nkind (N) = N_Subprogram_Body then
+               Set_Is_Eliminated (Defining_Entity (N));
+            end if;
 
          --  Recurse into composite statement to kill individual statements,
          --  in particular instantiations.
@@ -2167,6 +2174,89 @@ package body Exp_Util is
          end;
       end if;
    end Known_Non_Negative;
+
+   --------------------------
+   -- Target_Has_Fixed_Ops --
+   --------------------------
+
+   Integer_Sized_Small : Ureal;
+   --  Set to 2.0 ** -(Integer'Size - 1) the first time that this
+   --  function is called (we don't want to compute it more than once!)
+
+   Long_Integer_Sized_Small : Ureal;
+   --  Set to 2.0 ** -(Long_Integer'Size - 1) the first time that this
+   --  functoin is called (we don't want to compute it more than once)
+
+   First_Time_For_THFO : Boolean := True;
+   --  Set to False after first call (if Fractional_Fixed_Ops_On_Target)
+
+   function Target_Has_Fixed_Ops
+     (Left_Typ   : Entity_Id;
+      Right_Typ  : Entity_Id;
+      Result_Typ : Entity_Id)
+      return       Boolean
+   is
+      function Is_Fractional_Type (Typ : Entity_Id) return Boolean;
+      --  Return True if the given type is a fixed-point type with a small
+      --  value equal to 2 ** (-(T'Object_Size - 1)) and whose values have
+      --  an absolute value less than 1.0. This is currently limited
+      --  to fixed-point types that map to Integer or Long_Integer.
+
+      ------------------------
+      -- Is_Fractional_Type --
+      ------------------------
+
+      function Is_Fractional_Type (Typ : Entity_Id) return Boolean is
+      begin
+         if Esize (Typ) = Standard_Integer_Size then
+            return Small_Value (Typ) = Integer_Sized_Small;
+
+         elsif Esize (Typ) = Standard_Long_Integer_Size then
+            return Small_Value (Typ) = Long_Integer_Sized_Small;
+
+         else
+            return False;
+         end if;
+      end Is_Fractional_Type;
+
+   --  Start of processing for Target_Has_Fixed_Ops
+
+   begin
+      --  Return False if Fractional_Fixed_Ops_On_Target is false
+
+      if not Fractional_Fixed_Ops_On_Target then
+         return False;
+      end if;
+
+      --  Here the target has Fractional_Fixed_Ops, if first time, compute
+      --  standard constants used by Is_Fractional_Type.
+
+      if First_Time_For_THFO then
+         First_Time_For_THFO := False;
+
+         Integer_Sized_Small :=
+           UR_From_Components
+             (Num   => Uint_1,
+              Den   => UI_From_Int (Standard_Integer_Size - 1),
+              Rbase => 2);
+
+         Long_Integer_Sized_Small :=
+           UR_From_Components
+             (Num   => Uint_1,
+              Den   => UI_From_Int (Standard_Long_Integer_Size - 1),
+              Rbase => 2);
+      end if;
+
+      --  Return True if target supports fixed-by-fixed multiply/divide
+      --  for fractional fixed-point types (see Is_Fractional_Type) and
+      --  the operand and result types are equivalent fractional types.
+
+      return Is_Fractional_Type (Base_Type (Left_Typ))
+        and then Is_Fractional_Type (Base_Type (Right_Typ))
+        and then Is_Fractional_Type (Base_Type (Result_Typ))
+        and then Esize (Left_Typ) = Esize (Right_Typ)
+        and then Esize (Left_Typ) = Esize (Result_Typ);
+   end Target_Has_Fixed_Ops;
 
    -----------------------------
    -- Make_CW_Equivalent_Type --

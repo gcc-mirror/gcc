@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -380,21 +380,55 @@ package body Exp_Ch7 is
    ----------------------
 
    procedure Build_Final_List (N : Node_Id; Typ : Entity_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc  : constant Source_Ptr := Sloc (N);
+      Decl : Node_Id;
 
    begin
       Set_Associated_Final_Chain (Typ,
         Make_Defining_Identifier (Loc,
           New_External_Name (Chars (Typ), 'L')));
 
-      Insert_Action (N,
+      Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier =>
              Associated_Final_Chain (Typ),
           Object_Definition   =>
             New_Reference_To
-              (RTE (RE_List_Controller), Loc)));
+              (RTE (RE_List_Controller), Loc));
+
+      --  The type may have been frozen already, and this is a late
+      --  freezing action, in which case the declaration must be elaborated
+      --  at once. If the call is for an allocator, the chain must also be
+      --  created now, because the freezing of the type does not build one.
+      --  Otherwise, the declaration is one of the freezing actions for a
+      --  user-defined type.
+
+      if Is_Frozen (Typ)
+        or else (Nkind (N) = N_Allocator
+                  and then Ekind (Etype (N)) = E_Anonymous_Access_Type)
+      then
+         Insert_Action (N, Decl);
+      else
+         Append_Freeze_Action (Typ, Decl);
+      end if;
    end Build_Final_List;
+
+   ---------------------
+   -- Build_Late_Proc --
+   ---------------------
+
+   procedure Build_Late_Proc (Typ : Entity_Id; Nam : Name_Id) is
+   begin
+      for Final_Prim in Name_Of'Range loop
+         if Name_Of (Final_Prim) = Nam then
+            Set_TSS (Typ,
+              Make_Deep_Proc (
+                Prim  => Final_Prim,
+                Typ   => Typ,
+                Stmts => Make_Deep_Record_Body (Final_Prim, Typ)));
+         end if;
+      end loop;
+   end Build_Late_Proc;
 
    -----------------------------
    -- Build_Record_Deep_Procs --
@@ -428,18 +462,65 @@ package body Exp_Ch7 is
    ---------------------
 
    function Controlled_Type (T : Entity_Id) return Boolean is
+
+      function Has_Some_Controlled_Component (Rec : Entity_Id) return Boolean;
+      --  If type is not frozen yet, check explicitly among its components,
+      --  because flag is not necessarily set.
+
+      ------------------------------------
+      --  Has_Some_Controlled_Component --
+      ------------------------------------
+
+      function Has_Some_Controlled_Component (Rec : Entity_Id)
+        return Boolean
+      is
+         Comp : Entity_Id;
+
+      begin
+         if Has_Controlled_Component (Rec) then
+            return True;
+
+         elsif not Is_Frozen (Rec) then
+            if Is_Record_Type (Rec) then
+               Comp := First_Entity (Rec);
+
+               while Present (Comp) loop
+                  if not Is_Type (Comp)
+                    and then Controlled_Type (Etype (Comp))
+                  then
+                     return True;
+                  end if;
+
+                  Next_Entity (Comp);
+               end loop;
+
+               return False;
+
+            elsif Is_Array_Type (Rec) then
+               return Is_Controlled (Component_Type (Rec));
+
+            else
+               return Has_Controlled_Component (Rec);
+            end if;
+         else
+            return False;
+         end if;
+      end Has_Some_Controlled_Component;
+
+   --  Start of processing for Controlled_Type
+
    begin
-      --  Class-wide types are considered controlled because they may contain
-      --  an extension that has controlled components
+      --  Class-wide types must be treated as controlled because they may
+      --  contain an extension that has controlled components
 
       return (Is_Class_Wide_Type (T)
                 and then not No_Run_Time
                 and then not In_Finalization_Root (T))
         or else Is_Controlled (T)
-        or else Has_Controlled_Component (T)
+        or else Has_Some_Controlled_Component (T)
         or else (Is_Concurrent_Type (T)
-          and then Present (Corresponding_Record_Type (T))
-          and then Controlled_Type (Corresponding_Record_Type (T)));
+                   and then Present (Corresponding_Record_Type (T))
+                   and then Controlled_Type (Corresponding_Record_Type (T)));
    end Controlled_Type;
 
    --------------------------
@@ -2040,7 +2121,8 @@ package body Exp_Ch7 is
            Make_Exception_Handler (Loc,
              Exception_Choices => New_List (Make_Others_Choice (Loc)),
              Statements        => New_List (
-               Make_Raise_Program_Error (Loc))));
+               Make_Raise_Program_Error (Loc,
+                 Reason => PE_Finalize_Raised_Exception))));
       end if;
 
       Proc_Name := Make_Defining_Identifier (Loc, Deep_Name_Of (Prim));

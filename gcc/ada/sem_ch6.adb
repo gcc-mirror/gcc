@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Ch7;  use Exp_Ch7;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -96,6 +95,8 @@ package body Sem_Ch6 is
 
    type Conformance_Type is
      (Type_Conformant, Mode_Conformant, Subtype_Conformant, Fully_Conformant);
+   --  Conformance type used for following call, meaning matches the
+   --  RM definitions of the corresponding terms.
 
    procedure Check_Conformance
      (New_Id   : Entity_Id;
@@ -707,7 +708,9 @@ package body Sem_Ch6 is
               and then Object_Access_Level (Expr)
                 > Subprogram_Access_Level (Scope_Id)
             then
-               Rewrite (N, Make_Raise_Program_Error (Loc));
+               Rewrite (N,
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Accessibility_Check_Failed));
                Analyze (N);
 
                Error_Msg_N
@@ -785,7 +788,7 @@ package body Sem_Ch6 is
       if Present (Formals) then
          Set_Scope (Designator, Current_Scope);
          New_Scope (Designator);
-         Process_Formals (Designator, Formals, N);
+         Process_Formals (Formals, N);
          End_Scope;
       end if;
 
@@ -829,6 +832,7 @@ package body Sem_Ch6 is
       Conformant   : Boolean;
       Missing_Ret  : Boolean;
       Body_Deleted : Boolean := False;
+      P_Ent        : Entity_Id;
 
    begin
       if Debug_Flag_C then
@@ -916,14 +920,46 @@ package body Sem_Ch6 is
          end if;
       end if;
 
+      --  Do not inline any subprogram that contains nested subprograms,
+      --  since the backend inlining circuit seems to generate uninitialized
+      --  references in this case. We know this happens in the case of front
+      --  end ZCX support, but it also appears it can happen in other cases
+      --  as well. The backend often rejects attempts to inline in the case
+      --  of nested procedures anyway, so little if anything is lost by this.
+
+      --  Do not do this test if errors have been detected, because in some
+      --  error cases, this code blows up, and we don't need it anyway if
+      --  there have been errors, since we won't get to the linker anyway.
+
+      if Serious_Errors_Detected = 0 then
+         P_Ent := Body_Id;
+         loop
+            P_Ent := Scope (P_Ent);
+            exit when No (P_Ent) or else P_Ent = Standard_Standard;
+
+            if Is_Subprogram (P_Ent) and then Is_Inlined (P_Ent) then
+               Set_Is_Inlined (P_Ent, False);
+
+               if Comes_From_Source (P_Ent)
+                 and then Ineffective_Inline_Warnings
+                 and then Has_Pragma_Inline (P_Ent)
+               then
+                  Error_Msg_NE
+                    ("?pragma Inline for & ignored (has nested subprogram)",
+                     Get_Rep_Pragma (P_Ent, Name_Inline), P_Ent);
+               end if;
+            end if;
+         end loop;
+      end if;
+
+      --  Case of fully private operation in the body of the protected type.
+      --  We must create a declaration for the subprogram, in order to attach
+      --  the protected subprogram that will be used in internal calls.
+
       if No (Spec_Id)
         and then Comes_From_Source (N)
         and then Is_Protected_Type (Current_Scope)
       then
-         --  Fully private operation in the body of the protected type. We
-         --  must create a declaration for the subprogram, in order to attach
-         --  the protected subprogram that will be used in internal calls.
-
          declare
             Decl     : Node_Id;
             Plist    : List_Id;
@@ -998,7 +1034,7 @@ package body Sem_Ch6 is
       --  is a spec, the visible entity remains that of the spec.
 
       if Present (Spec_Id) then
-         Generate_Reference (Spec_Id, Body_Id, 'b');
+         Generate_Reference (Spec_Id, Body_Id, 'b', Set_Ref => False);
          Style.Check_Identifier (Body_Id, Spec_Id);
 
          Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
@@ -1050,7 +1086,9 @@ package body Sem_Ch6 is
          end if;
 
          --  Generate references from body formals to spec formals
-         --  and also set the Spec_Entity fields for all formals
+         --  and also set the Spec_Entity fields for all formals. We
+         --  do not set this reference count as a reference for the
+         --  purposes of identifying unreferenced formals however.
 
          if Spec_Id /= Body_Id then
             declare
@@ -1064,6 +1102,7 @@ package body Sem_Ch6 is
                   Generate_Reference (Fs, Fb, 'b');
                   Style.Check_Identifier (Fb, Fs);
                   Set_Spec_Entity (Fb, Fs);
+                  Set_Referenced (Fs, False);
                   Next_Formal (Fs);
                   Next_Formal (Fb);
                end loop;
@@ -1150,47 +1189,14 @@ package body Sem_Ch6 is
 
       elsif  Present (Spec_Id)
         and then Expander_Active
-        and then Has_Pragma_Inline (Spec_Id)
-        and then (Front_End_Inlining
-                   or else
-                 (No_Run_Time and then Is_Always_Inlined (Spec_Id)))
+        and then (Is_Always_Inlined (Spec_Id)
+                    or else (Has_Pragma_Inline (Spec_Id)
+                              and then
+                                (Front_End_Inlining or else No_Run_Time)))
       then
          if Build_Body_To_Inline (N, Spec_Id, Copy_Separate_Tree (N)) then
             null;
          end if;
-      end if;
-
-      --  Here we have a real body, not a stub. First step is to null out
-      --  the subprogram body if we have the special case of no run time
-      --  mode with a predefined unit, and the subprogram is not marked
-      --  as Inline_Always. The reason is that we should never call such
-      --  a routine in no run time mode, and it may in general have some
-      --  statements that we cannot handle in no run time mode.
-
-      --  ASIS note: we do a replace here, because we are really NOT going
-      --  to analyze the original body and declarations at all, so it is
-      --  useless to keep them around, we really are obliterating the body,
-      --  basically creating a specialized no run time version on the fly
-      --  in which the bodies *are* null.
-
-      if No_Run_Time
-        and then Present (Spec_Id)
-        and then Is_Predefined_File_Name
-                   (Unit_File_Name (Get_Source_Unit (Loc)))
-        and then not Is_Always_Inlined (Spec_Id)
-      then
-         Replace (N,
-           Make_Subprogram_Body (Loc,
-             Specification              => Specification (N),
-             Declarations               => Empty_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements         => New_List (
-                   Make_Null_Statement (Loc)),
-                 End_Label          =>
-                   End_Label (Handled_Statement_Sequence (N)))));
-         Set_Corresponding_Spec (N, Spec_Id);
-         Body_Deleted := True;
       end if;
 
       --  Now we can go on to analyze the body
@@ -1200,7 +1206,7 @@ package body Sem_Ch6 is
       Analyze_Declarations (Declarations (N));
       Check_Completion;
       Analyze (HSS);
-      Process_End_Label (HSS, 't');
+      Process_End_Label (HSS, 't', Current_Scope);
       End_Scope;
       Check_Subprogram_Order (N);
 
@@ -2707,7 +2713,8 @@ package body Sem_Ch6 is
       Type_2 : Entity_Id := T2;
 
       function Base_Types_Match (T1, T2 : Entity_Id) return Boolean;
-      --  If neither T1 nor T2 are generic actual types, then verify
+      --  If neither T1 nor T2 are generic actual types, or if they are
+      --  in different scopes (e.g. parent and child instances), then verify
       --  that the base types are equal. Otherwise T1 and T2 must be
       --  on the same subtype chain. The whole purpose of this procedure
       --  is to prevent spurious ambiguities in an instantiation that may
@@ -2730,7 +2737,8 @@ package body Sem_Ch6 is
             --  other ???.
 
             return not Is_Generic_Actual_Type (T1)
-              or else not Is_Generic_Actual_Type (T2);
+              or else not Is_Generic_Actual_Type (T2)
+              or else Scope (T1) /= Scope (T2);
 
          else
             return False;
@@ -3137,7 +3145,13 @@ package body Sem_Ch6 is
                  and then not In_Instance
                then
                   Error_Msg_Sloc := Sloc (E);
-                  Error_Msg_NE ("duplicate body for & declared#", N, E);
+                  if Is_Imported (E) then
+                     Error_Msg_NE
+                      ("body not allowed for imported subprogram & declared#",
+                        N, E);
+                  else
+                     Error_Msg_NE ("duplicate body for & declared#", N, E);
+                  end if;
                end if;
 
             elsif Is_Child_Unit (E)
@@ -3958,6 +3972,7 @@ package body Sem_Ch6 is
       procedure Maybe_Primitive_Operation (Overriding : Boolean := False) is
          Formal : Entity_Id;
          F_Typ  : Entity_Id;
+         B_Typ  : Entity_Id;
 
          function Visible_Part_Type (T : Entity_Id) return Boolean;
          --  Returns true if T is declared in the visible part of
@@ -4010,8 +4025,8 @@ package body Sem_Ch6 is
          -----------------------
 
          function Visible_Part_Type (T : Entity_Id) return Boolean is
-            P : Node_Id := Unit_Declaration_Node (Scope (T));
-            N : Node_Id := First (Visible_Declarations (Specification (P)));
+            P : constant Node_Id := Unit_Declaration_Node (Scope (T));
+            N : Node_Id;
 
          begin
             --  If the entity is a private type, then it must be
@@ -4027,6 +4042,7 @@ package body Sem_Ch6 is
             --  private type is the one in the full view, which does not
             --  indicate that it is the completion of something visible.
 
+            N := First (Visible_Declarations (Specification (P)));
             while Present (N) loop
                if Nkind (N) = N_Full_Type_Declaration
                  and then Present (Defining_Identifier (N))
@@ -4059,16 +4075,20 @@ package body Sem_Ch6 is
                  and then not In_Package_Body (Current_Scope))
            or else Overriding
          then
+            --  For function, check return type
 
-            if Ekind (S) = E_Function
-              and then Scope (Base_Type (Etype (S))) = Current_Scope
-            then
-               Set_Has_Primitive_Operations (Base_Type (Etype (S)));
-               Check_Private_Overriding (Base_Type (Etype (S)));
+            if Ekind (S) = E_Function then
+               B_Typ := Base_Type (Etype (S));
+
+               if Scope (B_Typ) = Current_Scope then
+                  Set_Has_Primitive_Operations (B_Typ);
+                  Check_Private_Overriding (B_Typ);
+               end if;
             end if;
 
-            Formal := First_Formal (S);
+            --  For all subprograms, check formals
 
+            Formal := First_Formal (S);
             while Present (Formal) loop
                if Ekind (Etype (Formal)) = E_Anonymous_Access_Type then
                   F_Typ := Designated_Type (Etype (Formal));
@@ -4076,14 +4096,15 @@ package body Sem_Ch6 is
                   F_Typ := Etype (Formal);
                end if;
 
-               if Scope (Base_Type (F_Typ)) = Current_Scope then
-                  Set_Has_Primitive_Operations (Base_Type (F_Typ));
-                  Check_Private_Overriding (Base_Type (F_Typ));
+               B_Typ := Base_Type (F_Typ);
+
+               if Scope (B_Typ) = Current_Scope then
+                  Set_Has_Primitive_Operations (B_Typ);
+                  Check_Private_Overriding (B_Typ);
                end if;
 
                Next_Formal (Formal);
             end loop;
-
          end if;
       end Maybe_Primitive_Operation;
 
@@ -4446,8 +4467,7 @@ package body Sem_Ch6 is
    ---------------------
 
    procedure Process_Formals
-     (S           : Entity_Id;
-      T           : List_Id;
+     (T           : List_Id;
       Related_Nod : Node_Id)
    is
       Param_Spec  : Node_Id;
@@ -4455,6 +4475,25 @@ package body Sem_Ch6 is
       Formal_Type : Entity_Id;
       Default     : Node_Id;
       Ptype       : Entity_Id;
+
+      function Is_Class_Wide_Default (D : Node_Id) return Boolean;
+      --  Check whether the default has a class-wide type. After analysis
+      --  the default has the type of the formal, so we must also check
+      --  explicitly for an access attribute.
+
+      ---------------------------
+      -- Is_Class_Wide_Default --
+      ---------------------------
+
+      function Is_Class_Wide_Default (D : Node_Id) return Boolean is
+      begin
+         return Is_Class_Wide_Type (Designated_Type (Etype (D)))
+           or else (Nkind (D) =  N_Attribute_Reference
+                      and then Attribute_Name (D) = Name_Access
+                      and then Is_Class_Wide_Type (Etype (Prefix (D))));
+      end Is_Class_Wide_Default;
+
+   --  Start of processing for Process_Formals
 
    begin
       --  In order to prevent premature use of the formals in the same formal
@@ -4524,10 +4563,11 @@ package body Sem_Ch6 is
             --  designated type is also class-wide.
 
             if Ekind (Formal_Type) = E_Anonymous_Access_Type
-              and then Is_Class_Wide_Type (Designated_Type (Etype (Default)))
+              and then Is_Class_Wide_Default (Default)
               and then not Is_Class_Wide_Type (Designated_Type (Formal_Type))
             then
-               Wrong_Type (Default, Formal_Type);
+               Error_Msg_N
+                 ("access to class-wide expression not allowed here", Default);
             end if;
          end if;
 

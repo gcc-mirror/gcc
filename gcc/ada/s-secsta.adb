@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.49 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,6 @@ package body System.Secondary_Stack is
 
    function From_Addr is new Unchecked_Conversion (Address, Stack_Ptr);
    function To_Addr   is new Unchecked_Conversion (Stack_Ptr, System.Address);
-   function To_Stack  is new Unchecked_Conversion (Fixed_Stack_Ptr, Stack_Ptr);
    function To_Fixed  is new Unchecked_Conversion (Stack_Ptr, Fixed_Stack_Ptr);
 
    procedure Free is new Unchecked_Deallocation (Chunk_Id, Chunk_Ptr);

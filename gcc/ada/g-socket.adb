@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--           Copyright (C) 2001-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,7 +112,7 @@ package body GNAT.Sockets is
    function Resolve_Error
      (Error_Value : Integer;
       From_Errno  : Boolean := True)
-     return         Error_Type;
+      return        Error_Type;
    --  Associate an enumeration value (error_type) to en error value
    --  (errno). From_Errno prevents from mixing h_errno with errno.
 
@@ -207,16 +207,14 @@ package body GNAT.Sockets is
    --------------------
 
    procedure Abort_Selector (Selector : Selector_Type) is
+      Buf : Character;
+      Res : C.int;
+
    begin
       --  Send an empty array to unblock C select system call
 
       if Selector.In_Progress then
-         declare
-            Buf : Character;
-            Res : C.int;
-         begin
-            Res := C_Write (C.int (Selector.W_Sig_Socket), Buf'Address, 0);
-         end;
+         Res := C_Write (C.int (Selector.W_Sig_Socket), Buf'Address, 1);
       end if;
    end Abort_Selector;
 
@@ -235,6 +233,7 @@ package body GNAT.Sockets is
 
    begin
       Res := C_Accept (C.int (Server), Sin'Address, Len'Access);
+
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
@@ -364,6 +363,7 @@ package body GNAT.Sockets is
       else
          WSet := Fd_Set (W_Socket_Set.all);
       end if;
+
       Len := C.int'Max (Max (RSet) + 1, Len);
 
       Selector.In_Progress := True;
@@ -384,7 +384,7 @@ package body GNAT.Sockets is
          declare
             Buf : Character;
          begin
-            Res := C_Read (C.int (Selector.R_Sig_Socket), Buf'Address, 0);
+            Res := C_Read (C.int (Selector.R_Sig_Socket), Buf'Address, 1);
          end;
 
          --  Select was resumed because of read signalling socket, but
@@ -568,6 +568,7 @@ package body GNAT.Sockets is
       --  Get the port used by the socket
 
       Res := C_Getsockname (S0, Sin'Address, Len'Access);
+
       if Res = Failure then
          Err := Socket_Errno;
          Res := C_Close (S0);
@@ -575,6 +576,7 @@ package body GNAT.Sockets is
       end if;
 
       Res := C_Listen (S0, 2);
+
       if Res = Failure then
          Err := Socket_Errno;
          Res := C_Close (S0);
@@ -582,6 +584,7 @@ package body GNAT.Sockets is
       end if;
 
       S1 := C_Socket (Constants.AF_INET, Constants.SOCK_STREAM, 0);
+
       if S1 = Failure then
          Err := Socket_Errno;
          Res := C_Close (S0);
@@ -598,6 +601,7 @@ package body GNAT.Sockets is
       --  Do a connect and accept the connection
 
       Res := C_Connect (S1, Sin'Address, Len);
+
       if Res = Failure then
          Err := Socket_Errno;
          Res := C_Close (S0);
@@ -606,6 +610,7 @@ package body GNAT.Sockets is
       end if;
 
       S2 := C_Accept (S0, Sin'Address, Len'Access);
+
       if S2 = Failure then
          Err := Socket_Errno;
          Res := C_Close (S0);
@@ -614,6 +619,7 @@ package body GNAT.Sockets is
       end if;
 
       Res := C_Close (S0);
+
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
@@ -694,6 +700,8 @@ package body GNAT.Sockets is
       Family  : Family_Type := Family_Inet)
       return    Host_Entry_Type
    is
+      pragma Unreferenced (Family);
+
       HA  : aliased In_Addr := To_In_Addr (Address);
       Res : Hostent_Access;
       Err : Integer;
@@ -849,11 +857,12 @@ package body GNAT.Sockets is
 
       end case;
 
-      Res := C_Getsockopt
-        (C.int (Socket),
-         Levels (Level),
-         Options (Name),
-         Add, Len'Unchecked_Access);
+      Res :=
+        C_Getsockopt
+          (C.int (Socket),
+           Levels (Level),
+           Options (Name),
+           Add, Len'Unchecked_Access);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
@@ -1229,7 +1238,7 @@ package body GNAT.Sockets is
    function Resolve_Error
      (Error_Value : Integer;
       From_Errno  : Boolean := True)
-     return         Error_Type
+      return        Error_Type
    is
       use GNAT.Sockets.Constants;
 
@@ -1243,6 +1252,7 @@ package body GNAT.Sockets is
             when others         => return Cannot_Resolve_Error;
          end case;
       end if;
+
       case Error_Value is
          when EACCES          => return Permission_Denied;
          when EADDRINUSE      => return Address_Already_In_Use;
@@ -1537,6 +1547,7 @@ package body GNAT.Sockets is
 
    begin
       Res := C_Shutdown (C.int (Socket), Shutmodes (How));
+
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
@@ -1554,7 +1565,7 @@ package body GNAT.Sockets is
       S : Datagram_Socket_Stream_Access;
 
    begin
-      S := new Datagram_Socket_Stream_Type;
+      S        := new Datagram_Socket_Stream_Type;
       S.Socket := Socket;
       S.To     := Send_To;
       S.From   := Get_Socket_Name (Socket);
@@ -1567,7 +1578,7 @@ package body GNAT.Sockets is
 
    function Stream
      (Socket : Socket_Type)
-     return Stream_Access
+      return   Stream_Access
    is
       S : Stream_Socket_Stream_Access;
 
@@ -1608,7 +1619,7 @@ package body GNAT.Sockets is
                     In_Addr_Access_Pointers.Value (Host.H_Addr_List);
       --  H_Addr_List points to a list of binary addresses (in network
       --  byte order). The list is terminated by a NULL pointer.
-
+      --
       --  H_Length is not used because it is currently only set to 4.
       --  H_Addrtype is always AF_INET
 

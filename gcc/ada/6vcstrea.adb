@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1996-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@
 
 --  This is the Alpha/VMS version.
 
+with Unchecked_Conversion;
 package body Interfaces.C_Streams is
 
    ------------

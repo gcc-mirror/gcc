@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--            Copyright (C) 1991-2002, Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -46,11 +45,13 @@ package body Ada.Real_Time is
    --  Note that Constraint_Error may be propagated
 
    function "*" (Left : Time_Span; Right : Integer) return Time_Span is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time_Span (Duration (Left) * Right);
    end "*";
 
    function "*" (Left : Integer; Right : Time_Span) return Time_Span is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time_Span (Left * Duration (Right));
    end "*";
@@ -62,16 +63,19 @@ package body Ada.Real_Time is
    --  Note that Constraint_Error may be propagated
 
    function "+" (Left : Time; Right : Time_Span) return Time is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time (Duration (Left) + Duration (Right));
    end "+";
 
    function "+" (Left : Time_Span; Right : Time) return Time is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time (Duration (Left) + Duration (Right));
    end "+";
 
    function "+" (Left, Right : Time_Span) return Time_Span is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time_Span (Duration (Left) + Duration (Right));
    end "+";
@@ -83,21 +87,25 @@ package body Ada.Real_Time is
    --  Note that Constraint_Error may be propagated
 
    function "-" (Left : Time; Right : Time_Span) return Time is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time (Duration (Left) - Duration (Right));
    end "-";
 
    function "-" (Left, Right : Time) return Time_Span is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time_Span (Duration (Left) - Duration (Right));
    end "-";
 
    function "-" (Left, Right : Time_Span) return Time_Span is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time_Span (Duration (Left) - Duration (Right));
    end "-";
 
    function "-" (Right : Time_Span) return Time_Span is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time_Span_Zero - Right;
    end "-";
@@ -109,11 +117,13 @@ package body Ada.Real_Time is
    --  Note that Constraint_Error may be propagated
 
    function "/" (Left, Right : Time_Span) return Integer is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Integer (Duration (Left) / Duration (Right));
    end "/";
 
    function "/" (Left : Time_Span; Right : Integer) return Time_Span is
+      pragma Unsuppress (Overflow_Check);
    begin
       return Time_Span (Duration (Left) / Right);
    end "/";
@@ -190,7 +200,7 @@ package body Ada.Real_Time is
          SC := SC - 1;
       end if;
 
-      TS := T - Time (SC);
+      TS := Time_Span (Duration (T) - Duration (SC));
    end Split;
 
    -------------

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--             Copyright (C) 2001-2002 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,6 +126,17 @@ package body Prj.Attr is
 
      "Pgnatstub#" &
      "LVswitches#" &
+
+   --  package Ide
+
+     "Pide#" &
+     "SVremote_host#" &
+     "Sacompiler_command#" &
+     "SVdebugger_command#" &
+     "SVgnatlist#" &
+     "SVvcs_kind#" &
+     "SVvcs_file_check#" &
+     "SVvcs_log_check#" &
 
      "#";
 

@@ -7,9 +7,9 @@
 --                                 B o d y                                  --
 --                            (Version for x86)                             --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@
 with Unchecked_Conversion;
 with System.Storage_Elements;
 with System.Machine_Code; use System.Machine_Code;
+with System.Memory;
 
 package body System.Machine_State_Operations is
 
@@ -54,11 +55,7 @@ package body System.Machine_State_Operations is
 
    function To_Address is new Unchecked_Conversion (Uns32, Address);
 
-   function To_Uns32 is new Unchecked_Conversion (Integer,  Uns32);
-   function To_Uns32 is new Unchecked_Conversion (Address,  Uns32);
-
    type Uns32_Ptr is access all Uns32;
-   function To_Uns32_Ptr is new Unchecked_Conversion (Address, Uns32_Ptr);
    function To_Uns32_Ptr is new Unchecked_Conversion (Uns32,   Uns32_Ptr);
 
    --  Note: the type Uns32 has an alignment of 4. However, in some cases
@@ -178,9 +175,12 @@ package body System.Machine_State_Operations is
    Op_Immed : constant Bits6 := 2#100000#;
 
    Op2_addl_Immed : constant Bits5 := 2#11100#;
+   pragma Unreferenced (Op2_addl_Immed);
+
    Op2_subl_Immed : constant Bits5 := 2#11101#;
 
    type Word_Byte is (Word, Byte);
+   pragma Unreferenced (Byte);
 
    type Ins_addl_subl_byte is record
       Op   : Bits6;           -- Set to Op_Immed
@@ -329,14 +329,11 @@ package body System.Machine_State_Operations is
    ----------------------------
 
    function Allocate_Machine_State return Machine_State is
-
       use System.Storage_Elements;
 
-      function Gnat_Malloc (Size : Storage_Offset) return Machine_State;
-      pragma Import (C, Gnat_Malloc, "__gnat_malloc");
-
    begin
-      return Gnat_Malloc (MState'Max_Size_In_Storage_Elements);
+      return Machine_State
+        (Memory.Alloc (MState'Max_Size_In_Storage_Elements));
    end Allocate_Machine_State;
 
    --------------------
@@ -445,11 +442,8 @@ package body System.Machine_State_Operations is
    ------------------------
 
    procedure Free_Machine_State (M : in out Machine_State) is
-      procedure Gnat_Free (M : in Machine_State);
-      pragma Import (C, Gnat_Free, "__gnat_free");
-
    begin
-      Gnat_Free (M);
+      Memory.Free (Address (M));
       M := Machine_State (Null_Address);
    end Free_Machine_State;
 
@@ -584,7 +578,11 @@ package body System.Machine_State_Operations is
 
    procedure Set_Signal_Machine_State
      (M       : Machine_State;
-      Context : System.Address) is
+      Context : System.Address)
+   is
+      pragma Warnings (Off, M);
+      pragma Warnings (Off, Context);
+
    begin
       null;
    end Set_Signal_Machine_State;

@@ -136,7 +136,7 @@ package GNAT.Directory_Operations is
 
    type Path_Style is (UNIX, DOS, System_Default);
 
-   function Normalize_Pathname
+   function Format_Pathname
      (Path  : Path_Name;
       Style : Path_Style := System_Default)
       return  Path_Name;

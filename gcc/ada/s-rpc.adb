@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.27 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ with Ada.Exceptions; use Ada.Exceptions;
 package body System.RPC is
 
    GNAT : constant Boolean := True;
+   pragma Unreferenced (GNAT);
    --  This dummy entity allows the compiler to recognize that this is the
    --  version of this package that is supplied by GNAT, not by the user.
    --  This is used to cause a compile time error if an attempt is made to
@@ -84,7 +85,6 @@ package body System.RPC is
    begin
       Raise_Exception (Program_Error'Identity, Msg);
    end Write;
-
 
    ------------
    -- Do_RPC --

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.7 $                             --
+--                             $Revision$                             --
 --                                                                          --
---             Copyright (C) 1991-2001 Free Software Foundation, Inc.       --
+--             Copyright (C) 1991-2002 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,6 @@
 --  The pragma Unreserve_All_Interrupts affects the following signal(s):
 --
 --  SIGINT: made available for Ada handlers
---  SIGILL, SIGBUS, SIGSEGV: disconnected from runtime exception mapping
 
 with System.OS_Interface;
 --  used for names of interrupts

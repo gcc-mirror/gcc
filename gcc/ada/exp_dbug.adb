@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
-with Sinput;   use Sinput;
+with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -139,6 +139,19 @@ package body Exp_Dbug is
    --  building this name to realize efficiently that b needs further
    --  qualification.
 
+   --------------------
+   -- Homonym_Suffix --
+   --------------------
+
+   --  The string defined here (and its associated length) is used to
+   --  gather the homonym string that will be appended to Name_Buffer
+   --  when the name is complete. Strip_Suffixes appends to this string
+   --  as does Append_Homonym_Number, and Output_Homonym_Numbers_Suffix
+   --  appends the string to the end of Name_Buffer.
+
+   Homonym_Numbers : String (1 .. 256);
+   Homonym_Len     : Natural := 0;
+
    ----------------------
    -- Local Procedures --
    ----------------------
@@ -149,6 +162,10 @@ package body Exp_Dbug is
    procedure Add_Real_To_Buffer (U : Ureal);
    --  Add nnn_ddd to Name_Buffer, where nnn and ddd are integer values of
    --  the normalized numerator and denominator of the given real value.
+
+   procedure Append_Homonym_Number (E : Entity_Id);
+   --  If the entity E has homonyms in the same scope, then make an entry
+   --  in the Homonym_Numbers array, bumping Homonym_Count accordingly.
 
    function Bounds_Match_Size (E : Entity_Id) return  Boolean;
    --  Determine whether the bounds of E match the size of the type. This is
@@ -171,6 +188,9 @@ package body Exp_Dbug is
    --  sequence in the string S (defined as two underscores
    --  which are preceded and followed by a non-underscore)
 
+   procedure Output_Homonym_Numbers_Suffix;
+   --  If homonym numbers are stored, then output them into Name_Buffer.
+
    procedure Prepend_String_To_Buffer (S : String);
    --  Prepend given string to the contents of the string buffer, updating
    --  the value in Name_Len (i.e. string is added at start of buffer).
@@ -185,12 +205,15 @@ package body Exp_Dbug is
    --  If not already done, replaces the Chars field of the given entity
    --  with the appropriate fully qualified name.
 
-   procedure Strip_BNPE_Suffix (Suffix_Found : in out Boolean);
+   procedure Strip_Suffixes (BNPE_Suffix_Found : in out Boolean);
    --  Given an qualified entity name in Name_Buffer, remove any plain X or
    --  X{nb} qualification suffix. The contents of Name_Buffer is not changed
    --  but Name_Len may be adjusted on return to remove the suffix. If a
-   --  suffix is found and stripped, then Suffix_Found is set to True. If
-   --  no suffix is found, then Suffix_Found is not modified.
+   --  BNPE suffix is found and stripped, then BNPE_Suffix_Found is set to
+   --  True. If no suffix is found, then BNPE_Suffix_Found is not modified.
+   --  This routine also searches for a homonym suffix, and if one is found
+   --  it is also stripped, and the entries are added to the global homonym
+   --  list (Homonym_Numbers) so that they can later be put back.
 
    ------------------------
    -- Add_Real_To_Buffer --
@@ -217,6 +240,57 @@ package body Exp_Dbug is
          Add_Str_To_Name_Buffer (UI_Image_Buffer (1 .. UI_Image_Length));
       end if;
    end Add_Uint_To_Buffer;
+
+   ---------------------------
+   -- Append_Homonym_Number --
+   ---------------------------
+
+   procedure Append_Homonym_Number (E : Entity_Id) is
+
+      procedure Add_Nat_To_H (Nr : Nat);
+      --  Little procedure to append Nr to Homonym_Numbers
+
+      ------------------
+      -- Add_Nat_To_H --
+      ------------------
+
+      procedure Add_Nat_To_H (Nr : Nat) is
+      begin
+         if Nr >= 10 then
+            Add_Nat_To_H (Nr / 10);
+         end if;
+
+         Homonym_Len := Homonym_Len + 1;
+         Homonym_Numbers (Homonym_Len) :=
+           Character'Val (Nr mod 10 + Character'Pos ('0'));
+      end Add_Nat_To_H;
+
+   --  Start of processing for Append_Homonym_Number
+
+   begin
+      if Has_Homonym (E) then
+         declare
+            H  : Entity_Id := Homonym (E);
+            Nr : Nat := 1;
+
+         begin
+            while Present (H) loop
+               if (Scope (H) = Scope (E)) then
+                  Nr := Nr + 1;
+               end if;
+
+               H := Homonym (H);
+            end loop;
+
+            if Homonym_Len > 0 then
+               Homonym_Len := Homonym_Len + 1;
+               Homonym_Numbers (Homonym_Len) := '_';
+            end if;
+
+            Add_Nat_To_H (Nr);
+         end;
+      end if;
+   end Append_Homonym_Number;
 
    -----------------------
    -- Bounds_Match_Size --
@@ -827,15 +901,6 @@ package body Exp_Dbug is
       Name_Buffer (Name_Len + 1) := ASCII.NUL;
    end Get_Encoded_Name;
 
-   -------------------
-   -- Get_Entity_Id --
-   -------------------
-
-   function Get_Entity_Id (External_Name : String) return Entity_Id is
-   begin
-      return Empty;
-   end Get_Entity_Id;
-
    -----------------------
    -- Get_External_Name --
    -----------------------
@@ -867,9 +932,13 @@ package body Exp_Dbug is
          then
             Get_Qualified_Name_And_Append (Scope (Entity));
             Add_Str_To_Name_Buffer ("__");
+            Get_Name_String_And_Append (Chars (Entity));
+            Append_Homonym_Number (Entity);
+
+         else
+            Get_Name_String_And_Append (Chars (Entity));
          end if;
 
-         Get_Name_String_And_Append (Chars (Entity));
       end Get_Qualified_Name_And_Append;
 
    --  Start of processing for Get_External_Name
@@ -934,32 +1003,6 @@ package body Exp_Dbug is
          end if;
 
          Get_Qualified_Name_And_Append (E);
-
-         if Has_Homonym (E) then
-            declare
-               H  : Entity_Id := Homonym (E);
-               Nr : Nat := 1;
-
-            begin
-               while Present (H) loop
-                  if (Scope (H) = Scope (E)) then
-                     Nr := Nr + 1;
-                  end if;
-
-                  H := Homonym (H);
-               end loop;
-
-               if Nr > 1 then
-                  if No_Dollar_In_Label then
-                     Add_Str_To_Name_Buffer ("__");
-                  else
-                     Add_Char_To_Name_Buffer ('$');
-                  end if;
-
-                  Add_Nat_To_Name_Buffer (Nr);
-               end if;
-            end;
-         end if;
       end if;
 
       Name_Buffer (Name_Len + 1) := ASCII.Nul;
@@ -1103,6 +1146,46 @@ package body Exp_Dbug is
       return Name_Find;
    end Make_Packed_Array_Type_Name;
 
+   -----------------------------------
+   -- Output_Homonym_Numbers_Suffix --
+   -----------------------------------
+
+   procedure Output_Homonym_Numbers_Suffix is
+      J : Natural;
+
+   begin
+      if Homonym_Len > 0 then
+
+         --  Check for all 1's, in which case we do not output
+
+         J := 1;
+         loop
+            exit when Homonym_Numbers (J) /= '1';
+
+            --  If we reached end of string we do not output
+
+            if J = Homonym_Len then
+               Homonym_Len := 0;
+               return;
+            end if;
+
+            exit when Homonym_Numbers (J + 1) /= '_';
+            J := J + 2;
+         end loop;
+
+         --  If we exit the loop then suffix must be output
+
+         if No_Dollar_In_Label then
+            Add_Str_To_Name_Buffer ("__");
+         else
+            Add_Char_To_Name_Buffer ('$');
+         end if;
+
+         Add_Str_To_Name_Buffer (Homonym_Numbers (1 .. Homonym_Len));
+         Homonym_Len := 0;
+      end if;
+   end Output_Homonym_Numbers_Suffix;
+
    ------------------------------
    -- Prepend_String_To_Buffer --
    ------------------------------
@@ -1240,12 +1323,17 @@ package body Exp_Dbug is
          Discard : Boolean := False;
 
       begin
+         --  Ignore empty entry (can happen in error cases)
+
+         if No (E) then
+            return;
+
          --  If this we are qualifying entities local to a generic
          --  instance, use the name of the original instantiation,
          --  not that of the anonymous subprogram in the wrapper
          --  package, so that gdb doesn't have to know about these.
 
-         if Is_Generic_Instance (E)
+         elsif Is_Generic_Instance (E)
            and then Is_Subprogram (E)
            and then not Comes_From_Source (E)
            and then not Is_Compilation_Unit (Scope (E))
@@ -1258,7 +1346,7 @@ package body Exp_Dbug is
 
          if Has_Fully_Qualified_Name (E) then
             Get_Name_String (Chars (E));
-            Strip_BNPE_Suffix (Discard);
+            Strip_Suffixes (Discard);
             Full_Qualify_Name (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
             Full_Qualify_Len := Name_Len;
             Set_Has_Fully_Qualified_Name (Ent);
@@ -1285,6 +1373,7 @@ package body Exp_Dbug is
               (Full_Qualify_Len + 1 .. Full_Qualify_Len + Name_Len) :=
                 Name_Buffer (1 .. Name_Len);
             Full_Qualify_Len := Full_Qualify_Len + Name_Len;
+            Append_Homonym_Number (E);
          end if;
 
          if Is_BNPE (E) then
@@ -1367,7 +1456,7 @@ package body Exp_Dbug is
 
          if Has_Qualified_Name (E) then
             Get_Name_String_And_Append (Chars (E));
-            Strip_BNPE_Suffix (BNPE_Suffix_Needed);
+            Strip_Suffixes (BNPE_Suffix_Needed);
 
             --  If the top level name we are adding is itself fully
             --  qualified, then that means that the name that we are
@@ -1395,6 +1484,8 @@ package body Exp_Dbug is
             if Is_BNPE (E) then
                BNPE_Suffix_Needed := True;
             end if;
+
+            Append_Homonym_Number (E);
          end if;
       end Set_Entity_Name;
 
@@ -1409,6 +1500,7 @@ package body Exp_Dbug is
       elsif Ekind (Ent) = E_Enumeration_Literal
         and then Present (Debug_Renaming_Link (Ent))
       then
+         Name_Len := 0;
          Set_Entity_Name (Debug_Renaming_Link (Ent));
          Get_Name_String (Chars (Ent));
          Prepend_String_To_Buffer
@@ -1435,6 +1527,8 @@ package body Exp_Dbug is
       end if;
 
       --  Fall through with a fully qualified name in Name_Buffer/Name_Len
+
+      Output_Homonym_Numbers_Suffix;
 
       --  Add body-nested package suffix if required
 
@@ -1474,250 +1568,6 @@ package body Exp_Dbug is
       Name_Qualify_Units.Append (N);
    end Qualify_Entity_Names;
 
-   --------------------------------
-   -- Save_Unitname_And_Use_List --
-   --------------------------------
-
-   procedure Save_Unitname_And_Use_List
-     (Main_Unit_Node : Node_Id;
-      Main_Kind      : Node_Kind)
-   is
-      INITIAL_NAME_LENGTH : constant := 1024;
-
-      Item       : Node_Id;
-      Pack_Name  : Node_Id;
-
-      Unit_Spec  : Node_Id := 0;
-      Unit_Body  : Node_Id := 0;
-
-      Main_Name : String_Id;
-      --  Fully qualified name of Main Unit
-
-      Unit_Name : String_Id;
-      --  Name of unit specified in a Use clause
-
-      Spec_Unit_Index : Source_File_Index;
-      Spec_File_Name  : File_Name_Type := No_File;
-
-      Body_Unit_Index : Source_File_Index;
-      Body_File_Name : File_Name_Type := No_File;
-
-      type String_Ptr is access all String;
-
-      Spec_File_Name_Str : String_Ptr;
-      Body_File_Name_Str : String_Ptr;
-
-      type Label is record
-        Label_Name  : String_Ptr;
-        Name_Length : Integer;
-        Pos         : Integer;
-      end record;
-
-      Spec_Label : Label;
-      Body_Label : Label;
-
-      procedure Initialize  (L : out Label);
-      --  Initialize label
-
-      procedure Append      (L : in out Label; Ch : Character);
-      --  Append character to label
-
-      procedure Append      (L : in out Label; Str : String);
-      --  Append string to label
-
-      procedure Append_Name (L : in out Label; Unit_Name : String_Id);
-      --  Append name to label
-
-      function  Sufficient_Space
-        (L         : Label;
-         Unit_Name : String_Id)
-         return      Boolean;
-      --  Does sufficient space exist to append another name?
-
-      procedure Append (L : in out Label; Str : String) is
-      begin
-         L.Label_Name (L.Pos + 1 .. L.Pos + Str'Length) := Str;
-         L.Pos := L.Pos + Str'Length;
-      end Append;
-
-      procedure Append (L : in out Label; Ch : Character) is
-      begin
-         L.Pos := L.Pos + 1;
-         L.Label_Name (L.Pos) := Ch;
-      end Append;
-
-      procedure Append_Name (L : in out Label; Unit_Name : String_Id) is
-         Char         : Char_Code;
-         Upper_Offset : constant := Character'Pos ('a') - Character'Pos ('A');
-
-      begin
-         for J in 1 .. String_Length (Unit_Name) loop
-            Char := Get_String_Char (Unit_Name, J);
-
-            if Character'Val (Char) = '.' then
-               Append (L, "__");
-            elsif Character'Val (Char) in 'A' .. 'Z' then
-               Append (L, Character'Val (Char + Upper_Offset));
-            elsif Char /= 0 then
-               Append (L, Character'Val (Char));
-            end if;
-         end loop;
-      end Append_Name;
-
-      procedure Initialize (L : out Label) is
-      begin
-         L.Name_Length := INITIAL_NAME_LENGTH;
-         L.Pos := 0;
-         L.Label_Name := new String (1 .. L.Name_Length);
-      end Initialize;
-
-      function  Sufficient_Space
-        (L         : Label;
-         Unit_Name : String_Id)
-         return      Boolean
-      is
-         Len : Integer := Integer (String_Length (Unit_Name)) + 1;
-
-      begin
-         for J in 1 .. String_Length (Unit_Name) loop
-            if Character'Val (Get_String_Char (Unit_Name, J)) = '.' then
-               Len := Len + 1;
-            end if;
-         end loop;
-
-         return L.Pos + Len < L.Name_Length;
-      end Sufficient_Space;
-
-   --  Start of processing for Save_Unitname_And_Use_List
-
-   begin
-      Initialize (Spec_Label);
-      Initialize (Body_Label);
-
-      case Main_Kind is
-         when N_Package_Declaration =>
-            Main_Name := Full_Qualified_Name
-              (Defining_Unit_Name (Specification (Unit (Main_Unit_Node))));
-            Unit_Spec := Main_Unit_Node;
-            Append (Spec_Label, "_LPS__");
-            Append (Body_Label, "_LPB__");
-
-         when N_Package_Body =>
-            Unit_Spec := Corresponding_Spec (Unit (Main_Unit_Node));
-            Unit_Body := Main_Unit_Node;
-            Main_Name := Full_Qualified_Name (Unit_Spec);
-            Append (Spec_Label, "_LPS__");
-            Append (Body_Label, "_LPB__");
-
-         when N_Subprogram_Body =>
-            Unit_Body := Main_Unit_Node;
-
-            if Present (Corresponding_Spec (Unit (Main_Unit_Node))) then
-               Unit_Spec := Corresponding_Spec (Unit (Main_Unit_Node));
-               Main_Name := Full_Qualified_Name
-                 (Corresponding_Spec (Unit (Main_Unit_Node)));
-            else
-               Main_Name := Full_Qualified_Name
-                 (Defining_Unit_Name (Specification (Unit (Main_Unit_Node))));
-            end if;
-
-            Append (Spec_Label, "_LSS__");
-            Append (Body_Label, "_LSB__");
-
-         when others =>
-            return;
-      end case;
-
-      Append_Name (Spec_Label, Main_Name);
-      Append_Name (Body_Label, Main_Name);
-
-      --  If we have a body, process it first
-
-      if Present (Unit_Body) then
-
-         Item := First (Context_Items (Unit_Body));
-
-         while Present (Item) loop
-            if Nkind (Item) = N_Use_Package_Clause then
-               Pack_Name := First (Names (Item));
-               while Present (Pack_Name) loop
-                  Unit_Name := Full_Qualified_Name (Entity (Pack_Name));
-
-                  if Sufficient_Space (Body_Label, Unit_Name) then
-                     Append (Body_Label, '$');
-                     Append_Name (Body_Label, Unit_Name);
-                  end if;
-
-                  Pack_Name := Next (Pack_Name);
-               end loop;
-            end if;
-
-            Item := Next (Item);
-         end loop;
-      end if;
-
-      while Present (Unit_Spec) and then
-        Nkind (Unit_Spec) /= N_Compilation_Unit
-      loop
-         Unit_Spec := Parent (Unit_Spec);
-      end loop;
-
-      if Present (Unit_Spec) then
-
-         Item := First (Context_Items (Unit_Spec));
-
-         while Present (Item) loop
-            if Nkind (Item) = N_Use_Package_Clause then
-               Pack_Name := First (Names (Item));
-               while Present (Pack_Name) loop
-                  Unit_Name := Full_Qualified_Name (Entity (Pack_Name));
-
-                  if Sufficient_Space (Spec_Label, Unit_Name) then
-                     Append (Spec_Label, '$');
-                     Append_Name (Spec_Label, Unit_Name);
-                  end if;
-
-                  if Sufficient_Space (Body_Label, Unit_Name) then
-                     Append (Body_Label, '$');
-                     Append_Name (Body_Label, Unit_Name);
-                  end if;
-
-                  Pack_Name := Next (Pack_Name);
-               end loop;
-            end if;
-
-            Item := Next (Item);
-         end loop;
-      end if;
-
-      if Present (Unit_Spec) then
-         Append (Spec_Label, Character'Val (0));
-         Spec_Unit_Index := Source_Index (Get_Cunit_Unit_Number (Unit_Spec));
-         Spec_File_Name := Full_File_Name (Spec_Unit_Index);
-         Get_Name_String (Spec_File_Name);
-         Spec_File_Name_Str := new String (1 .. Name_Len + 1);
-         Spec_File_Name_Str (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
-         Spec_File_Name_Str (Name_Len + 1) := Character'Val (0);
-         Spec_Filename := Spec_File_Name_Str (1)'Unrestricted_Access;
-         Spec_Context_List :=
-           Spec_Label.Label_Name.all (1)'Unrestricted_Access;
-      end if;
-
-      if Present (Unit_Body) then
-         Append (Body_Label, Character'Val (0));
-         Body_Unit_Index := Source_Index (Get_Cunit_Unit_Number (Unit_Body));
-         Body_File_Name := Full_File_Name (Body_Unit_Index);
-         Get_Name_String (Body_File_Name);
-         Body_File_Name_Str := new String (1 .. Name_Len + 1);
-         Body_File_Name_Str (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
-         Body_File_Name_Str (Name_Len + 1) := Character'Val (0);
-         Body_Filename := Body_File_Name_Str (1)'Unrestricted_Access;
-         Body_Context_List :=
-           Body_Label.Label_Name.all (1)'Unrestricted_Access;
-      end if;
-
-   end Save_Unitname_And_Use_List;
-
    ---------
    -- SEq --
    ---------
@@ -1737,21 +1587,76 @@ package body Exp_Dbug is
         (Hindex'First + Hindex (CDN_Hash (S.all) mod Hindex'Range_Length));
    end SHash;
 
-   -----------------------
-   -- Strip_BNPE_Suffix --
-   -----------------------
+   --------------------
+   -- Strip_Suffixes --
+   --------------------
 
-   procedure Strip_BNPE_Suffix (Suffix_Found : in out Boolean) is
+   procedure Strip_Suffixes (BNPE_Suffix_Found : in out Boolean) is
+      SL : Natural;
+
    begin
+      --  Search for and strip BNPE suffix
+
       for J in reverse 2 .. Name_Len loop
          if Name_Buffer (J) = 'X' then
             Name_Len := J - 1;
-            Suffix_Found := True;
+            BNPE_Suffix_Found := True;
             exit;
          end if;
 
          exit when Name_Buffer (J) /= 'b' and then Name_Buffer (J) /= 'n';
       end loop;
-   end Strip_BNPE_Suffix;
+
+      --  Search for and strip homonym numbers suffix
+
+      --  Case of __ used for homonym numbers suffix
+
+      if No_Dollar_In_Label then
+         for J in reverse 2 .. Name_Len - 2 loop
+            if Name_Buffer (J) = '_'
+              and then Name_Buffer (J + 1) = '_'
+            then
+               if Name_Buffer (J + 2) in '0' .. '9' then
+                  if Homonym_Len > 0 then
+                     Homonym_Len := Homonym_Len + 1;
+                     Homonym_Numbers (Homonym_Len) := '-';
+                  end if;
+
+                  SL := Name_Len - (J + 1);
+
+                  Homonym_Numbers (Homonym_Len + 1 .. Homonym_Len + SL) :=
+                    Name_Buffer (J + 2 .. Name_Len);
+                  Name_Len := J - 1;
+                  Homonym_Len := Homonym_Len + SL;
+               end if;
+
+               exit;
+            end if;
+         end loop;
+
+      --  Case of $ used for homonym numbers suffix
+
+      else
+         for J in reverse 2 .. Name_Len - 1 loop
+            if Name_Buffer (J) = '$' then
+               if Name_Buffer (J + 1) in '0' .. '9' then
+                  if Homonym_Len > 0 then
+                     Homonym_Len := Homonym_Len + 1;
+                     Homonym_Numbers (Homonym_Len) := '-';
+                  end if;
+
+                  SL := Name_Len - J;
+
+                  Homonym_Numbers (Homonym_Len + 1 .. Homonym_Len + SL) :=
+                    Name_Buffer (J + 1 .. Name_Len);
+                  Name_Len := J - 1;
+                  Homonym_Len := Homonym_Len + SL;
+               end if;
+
+               exit;
+            end if;
+         end loop;
+      end if;
+   end Strip_Suffixes;
 
 end Exp_Dbug;

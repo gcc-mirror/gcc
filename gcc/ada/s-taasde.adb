@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.5 $
+--                             $Revision$
 --                                                                          --
---           Copyright (C) 1998-2001 Ada Core Technologies, Inc.            --
+--         Copyright (C) 1998-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -67,6 +66,13 @@ with System.OS_Primitives;
 with Ada.Task_Identification;
 --  used for Task_ID type
 
+with System.Parameters;
+--  used for Single_Lock
+--           Runtime_Traces
+
+with System.Traces.Tasking;
+--  used for Send_Trace_Info
+
 with Unchecked_Conversion;
 
 package body System.Tasking.Async_Delays is
@@ -76,6 +82,10 @@ package body System.Tasking.Async_Delays is
    package STU renames System.Tasking.Utilities;
    package STI renames System.Tasking.Initialization;
    package OSP renames System.OS_Primitives;
+
+   use Parameters;
+   use System.Traces;
+   use System.Traces.Tasking;
 
    function To_System is new Unchecked_Conversion
      (Ada.Task_Identification.Task_Id, Task_ID);
@@ -127,6 +137,11 @@ package body System.Tasking.Async_Delays is
       --  remove self from timer queue
 
       STI.Defer_Abort_Nestable (D.Self_Id);
+
+      if Single_Lock then
+         STPO.Lock_RTS;
+      end if;
+
       STPO.Write_Lock (Timer_Server_ID);
       Dpred := D.Pred;
       Dsucc := D.Succ;
@@ -145,6 +160,11 @@ package body System.Tasking.Async_Delays is
       STPO.Write_Lock (D.Self_Id);
       STU.Exit_One_ATC_Level (D.Self_Id);
       STPO.Unlock (D.Self_Id);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      end if;
+
       STI.Undefer_Abort_Nestable (D.Self_Id);
    end Cancel_Async_Delay;
 
@@ -164,6 +184,9 @@ package body System.Tasking.Async_Delays is
          return False;
 
       else
+         --  The corresponding call to Undefer_Abort is performed by the
+         --  expanded code (see exp_ch9).
+
          STI.Defer_Abort (STPO.Self);
          Time_Enqueue
            (STPO.Monotonic_Clock
@@ -219,7 +242,10 @@ package body System.Tasking.Async_Delays is
       D.Self_Id := Self_Id;
       D.Resume_Time := T;
 
-      STI.Defer_Abort (Self_Id);
+      if Single_Lock then
+         STPO.Lock_RTS;
+      end if;
+
       STPO.Write_Lock (Timer_Server_ID);
 
       --  Previously, there was code here to dynamically create
@@ -256,7 +282,10 @@ package body System.Tasking.Async_Delays is
       end if;
 
       STPO.Unlock (Timer_Server_ID);
-      STI.Undefer_Abort (Self_Id);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      end if;
    end Time_Enqueue;
 
    ---------------
@@ -273,7 +302,21 @@ package body System.Tasking.Async_Delays is
    ------------------
 
    task body Timer_Server is
-      Next_Wakeup_Time : Duration := Duration'Last;
+      function Get_Next_Wakeup_Time return Duration;
+      --  Used to initialize Next_Wakeup_Time, but also to ensure that
+      --  Make_Independent is called during the elaboration of this task
+
+      --------------------------
+      -- Get_Next_Wakeup_Time --
+      --------------------------
+
+      function Get_Next_Wakeup_Time return Duration is
+      begin
+         STU.Make_Independent;
+         return Duration'Last;
+      end Get_Next_Wakeup_Time;
+
+      Next_Wakeup_Time : Duration := Get_Next_Wakeup_Time;
       Timedout         : Boolean;
       Yielded          : Boolean;
       Now              : Duration;
@@ -282,18 +325,19 @@ package body System.Tasking.Async_Delays is
       Tsucc            : Delay_Block_Access;
       Dequeued_Task    : Task_ID;
 
-      --  Initialize_Timer_Queue returns null, but has critical side-effects
-      --  of initializing the timer queue.
-
    begin
       Timer_Server_ID := STPO.Self;
-      STU.Make_Independent;
 
       --  Initialize the timer queue to empty, and make the wakeup time of the
       --  header node be larger than any real wakeup time we will ever use.
 
       loop
          STI.Defer_Abort (Timer_Server_ID);
+
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
          STPO.Write_Lock (Timer_Server_ID);
 
          --  The timer server needs to catch pending aborts after finalization
@@ -350,6 +394,10 @@ package body System.Tasking.Async_Delays is
             --  the timer queue, but that is OK because we always restart the
             --  next iteration at the head of the queue.
 
+            if Parameters.Runtime_Traces then
+               Send_Trace_Info (E_Kill, Dequeued.Self_Id);
+            end if;
+
             STPO.Unlock (Timer_Server_ID);
             STPO.Write_Lock (Dequeued.Self_Id);
             Dequeued_Task := Dequeued.Self_Id;
@@ -368,6 +416,11 @@ package body System.Tasking.Async_Delays is
          --  an actual delay in this server.
 
          STPO.Unlock (Timer_Server_ID);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
+
          STI.Undefer_Abort (Timer_Server_ID);
       end loop;
    end Timer_Server;

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -436,7 +436,7 @@ package body Sem_Ch5 is
       end if;
 
       Analyze (Handled_Statement_Sequence (N));
-      Process_End_Label (Handled_Statement_Sequence (N), 'e');
+      Process_End_Label (Handled_Statement_Sequence (N), 'e', Ent);
 
       --  Analyze exception handlers if present. Note that the test for
       --  HSS being present is an error defence against previous errors.
@@ -1093,7 +1093,7 @@ package body Sem_Ch5 is
       New_Scope (Ent);
       Analyze_Iteration_Scheme (Iteration_Scheme (N));
       Analyze_Statements (Statements (N));
-      Process_End_Label (N, 'e');
+      Process_End_Label (N, 'e', Ent);
       End_Scope;
    end Analyze_Loop_Statement;
 
@@ -1105,6 +1105,8 @@ package body Sem_Ch5 is
    --  null statement, too bad everything isn't as simple as this!
 
    procedure Analyze_Null_Statement (N : Node_Id) is
+      pragma Warnings (Off, N);
+
    begin
       null;
    end Analyze_Null_Statement;

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.12 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -71,13 +71,48 @@ pragma Preelaborate (Command_Line);
 
    procedure Set_Exit_Status (Code : Exit_Status);
 
-private
+   ------------------------------------
+   -- Note on Interface Requirements --
+   ------------------------------------
 
+   --  If the main program is in Ada, this package works as specified without
+   --  any other work than the normal steps of WITH'ing the package and then
+   --  calling the desired routines.
+
+   --  If the main program is not in Ada, then the information must be made
+   --  available for this package to work correctly. In particular, it is
+   --  required that the global variable "gnat_argc" contain the number of
+   --  arguments, and that the global variable "gnat_argv" points to an
+   --  array of null-terminated strings, the first entry being the command
+   --  name, and the remaining entries being the command arguments.
+
+   --  These correspond to the normal argc/argv variables passed to a C
+   --  main program, and the following is an example of a complete C main
+   --  program that stores the required information:
+
+   --    main(int argc, char **argv, char **envp)
+   --    {
+   --       extern int    gnat_argc;
+   --       extern char **gnat_argv;
+   --       extern char **gnat_envp;
+   --       gnat_argc = argc;
+   --       gnat_argv = argv;
+   --       gnat_envp = envp;
+
+   --       adainit();
+   --       adamain();
+   --       adafinal();
+   --    }
+
+   --  The assignment statements ensure that the necessary information is
+   --  available for finding the command name and command line arguments.
+
+private
    Success : constant Exit_Status := 0;
    Failure : constant Exit_Status := 1;
 
    --  The following locations support the operation of the package
-   --  Ada.Command_Line_Remove, whih provides facilities for logically
+   --  Ada.Command_Line.Remove, whih provides facilities for logically
    --  removing arguments from the command line. If one of the remove
    --  procedures is called in this unit, then Remove_Args/Remove_Count
    --  are set to indicate which arguments are removed. If no such calls

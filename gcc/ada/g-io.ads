@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
 --           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
@@ -36,10 +36,10 @@
 
 --  A simple text I/O package that can be used for simple I/O functions in
 --  user programs as required. This package is also preelaborated, unlike
---  Text_Io, and can thus be with'ed by preelaborated library units.
+--  Text_IO, and can thus be with'ed by preelaborated library units.
 
 --  Note that Data_Error is not raised by these subprograms for bad data.
---  If such checks are needed then the regular Text_IO package such be used.
+--  If such checks are needed then the regular Text_IO package must be used.
 
 package GNAT.IO is
 pragma Preelaborate (IO);

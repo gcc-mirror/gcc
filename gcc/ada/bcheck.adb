@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,6 @@ with ALI.Util; use ALI.Util;
 with Binderr;  use Binderr;
 with Butil;    use Butil;
 with Casing;   use Casing;
-with Debug;    use Debug;
 with Fname;    use Fname;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -359,82 +358,71 @@ package body Bcheck is
    --  Second, all units are verified against the specified restrictions.
 
    procedure Check_Partition_Restrictions is
+      No_Restriction_List : array (All_Restrictions) of Boolean :=
+        (No_Implicit_Conditionals => True,
+         --  This could modify and pessimize generated code
 
-      R : array (Partition_Restrictions) of ALI_Id := (others => No_ALI_Id);
-      --  Record the first unit specifying each partition restriction
+         No_Implicit_Dynamic_Code => True,
+         --  This could modify and pessimize generated code
 
-      V : array (Partition_Restrictions) of ALI_Id := (others => No_ALI_Id);
-      --  Record the last unit violating each partition restriction
+         No_Implicit_Loops        => True,
+         --  This could modify and pessimize generated code
 
-      procedure List_Applicable_Restrictions;
-      --  Output a list of restrictions that may be applied to the partition,
-      --  without causing bind errors.
+         No_Recursion             => True,
+         --  Not checkable at compile time
 
-      ----------------------------------
-      -- List_Applicable_Restrictions --
-      ----------------------------------
+         No_Reentrancy            => True,
+         --  Not checkable at compile time
 
-      procedure List_Applicable_Restrictions is
-         Additional_Restrictions_Listed : Boolean := False;
+         others                   => False);
+      --  Define those restrictions that should be output if the gnatbind -r
+      --  switch is used. Not all restrictions are output for the reasons given
+      --  above in the list, and this array is used to test whether the
+      --  corresponding pragma should be listed. True means that it should not
+      --  be listed.
 
-      begin
-         --  List any restrictions which were not violated and not specified
+      R : array (All_Restrictions) of ALI_Id := (others => No_ALI_Id);
+      --  Record the first unit specifying each compilation unit restriction
 
-         for J in Partition_Restrictions loop
-            if V (J) = No_ALI_Id and R (J) = No_ALI_Id then
-               if not Additional_Restrictions_Listed then
-                  Write_Str ("The following additional restrictions may be" &
-                             " applied to this partition:");
-                  Write_Eol;
-                  Additional_Restrictions_Listed := True;
-               end if;
+      V : array (All_Restrictions) of ALI_Id := (others => No_ALI_Id);
+      --  Record the last unit violating each partition restriction. Note
+      --  that entries in this array that do not correspond to partition
+      --  restrictions can never be modified.
 
-               Write_Str ("pragma Restrictions (");
-
-               declare
-                  S : constant String := Restriction_Id'Image (J);
-
-               begin
-                  Name_Len := S'Length;
-                  Name_Buffer (1 .. Name_Len) := S;
-               end;
-
-               Set_Casing (Mixed_Case);
-               Write_Str (Name_Buffer (1 .. Name_Len));
-               Write_Str (");");
-               Write_Eol;
-            end if;
-         end loop;
-      end List_Applicable_Restrictions;
-
-   --  Start of processing for Check_Partition_Restrictions
+      Additional_Restrictions_Listed : Boolean := False;
+      --  Set True if we have listed header for restrictions
 
    begin
-      Find_Restrictions :
+      --  Loop to find restrictions
+
       for A in ALIs.First .. ALIs.Last loop
-         for J in Partition_Restrictions loop
+         for J in All_Restrictions loop
             if R (J) = No_ALI_Id and ALIs.Table (A).Restrictions (J) = 'r' then
                R (J) := A;
             end if;
          end loop;
-      end loop Find_Restrictions;
+      end loop;
 
-      Find_Violations :
+      --  Loop to find violations
+
       for A in ALIs.First .. ALIs.Last loop
-         for J in Partition_Restrictions loop
+         for J in All_Restrictions loop
             if ALIs.Table (A).Restrictions (J) = 'v'
                and then not Is_Internal_File_Name (ALIs.Table (A).Sfile)
             then
-               --  A violation of a restriction was found, so check whether
-               --  that restriction was actually in effect. If so, give an
-               --  error message.
-
-               --  Note that all such violations found are reported.
+               --  A violation of a restriction was found
 
                V (J) := A;
 
-               if R (J) /= No_ALI_Id then
-                  Report_Violated_Restriction : declare
+               --  If this is a paritition restriction, and the restriction
+               --  was specified in some unit in the partition, then this
+               --  is a violation of the consistency requirement, so we
+               --  generate an appropriate error message.
+
+               if R (J) /= No_ALI_Id
+                 and then J in Partition_Restrictions
+               then
+                  declare
                      M1 : constant String := "% has Restriction (";
                      S  : constant String := Restriction_Id'Image (J);
                      M2 : String (1 .. M1'Length + S'Length + 1);
@@ -455,14 +443,47 @@ package body Bcheck is
                      Error_Msg_Name_1 := ALIs.Table (A).Sfile;
                      Consistency_Error_Msg
                        ("but file % violates this restriction");
-                  end Report_Violated_Restriction;
+                  end;
                end if;
             end if;
          end loop;
-      end loop Find_Violations;
+      end loop;
 
-      if Debug_Flag_R then
-         List_Applicable_Restrictions;
+      --  List applicable restrictions if option set
+
+      if List_Restrictions then
+
+         --  List any restrictions which were not violated and not specified
+
+         for J in All_Restrictions loop
+            if V (J) = No_ALI_Id
+              and then R (J) = No_ALI_Id
+              and then not No_Restriction_List (J)
+            then
+               if not Additional_Restrictions_Listed then
+                  Write_Eol;
+                  Write_Line
+                    ("The following additional restrictions may be" &
+                     " applied to this partition:");
+                  Additional_Restrictions_Listed := True;
+               end if;
+
+               Write_Str ("pragma Restrictions (");
+
+               declare
+                  S : constant String := Restriction_Id'Image (J);
+
+               begin
+                  Name_Len := S'Length;
+                  Name_Buffer (1 .. Name_Len) := S;
+               end;
+
+               Set_Casing (Mixed_Case);
+               Write_Str (Name_Buffer (1 .. Name_Len));
+               Write_Str (");");
+               Write_Eol;
+            end if;
+         end loop;
       end if;
    end Check_Partition_Restrictions;
 

@@ -7,9 +7,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,9 +200,6 @@ package body System.Traceback is
    --  Descriptors.
 
    subtype UWT is Unwind_Table_Region;
-   type UWT_Ptr is access all UWT;
-
-   function To_UWT_Address is new Ada.Unchecked_Conversion (UWT_Ptr, Address);
 
    --  The subprograms imported below are provided by the HP library
 
@@ -598,4 +595,3 @@ package body System.Traceback is
    end Call_Chain;
 
 end System.Traceback;
-

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -292,13 +292,6 @@ begin
          --  make sure that all the necessary information is at hand.
 
          Exp_Ch11.Generate_Unit_Exception_Table;
-
-         --  Save the unit name and list of packages named in Use_Package
-         --  clauses for subsequent use in generating a special symbol for
-         --  the debugger for certain targets that require this.
-
-         Exp_Dbug.Save_Unitname_And_Use_List
-           (Cunit (Main_Unit), Nkind (Unit (Cunit (Main_Unit))));
       end if;
 
       --  List library units if requested
@@ -328,4 +321,12 @@ begin
    --  of -gnatD, where it rewrites all source locations in the tree.
 
    Sprint.Source_Dump;
+
+   --  If a mapping file has been specified by a -gnatem switch,
+   --  update it if there has been some sourcs that were not in the mappings.
+
+   if Mapping_File_Name /= null then
+      Fmap.Update_Mapping_File (Mapping_File_Name.all);
+   end if;
+
 end Frontend;

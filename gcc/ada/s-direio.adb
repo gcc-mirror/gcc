@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.17 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,8 @@ package body System.Direct_IO is
    -------------------
 
    function AFCB_Allocate (Control_Block : Direct_AFCB) return FCB.AFCB_Ptr is
+      pragma Warnings (Off, Control_Block);
+
    begin
       return new Direct_AFCB;
    end AFCB_Allocate;
@@ -71,6 +73,8 @@ package body System.Direct_IO is
    --  No special processing required for Direct_IO close
 
    procedure AFCB_Close (File : access Direct_AFCB) is
+      pragma Warnings (Off, File);
+
    begin
       null;
    end AFCB_Close;

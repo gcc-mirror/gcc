@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.37 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -45,17 +44,15 @@ with System.Task_Primitives.Operations;
 with System.Tasking.Initialization;
 --  used for Wakeup_Entry_Caller
 
+with System.Parameters;
+--  used for Single_Lock
+
 package body System.Tasking.Queuing is
 
-   use System.Task_Primitives.Operations;
-   use System.Tasking.Protected_Objects;
-   use System.Tasking.Protected_Objects.Entries;
-
-   procedure Wakeup_Entry_Caller
-     (Self_ID    : Task_ID;
-      Entry_Call : Entry_Call_Link;
-      New_State  : Entry_Call_State)
-     renames Initialization.Wakeup_Entry_Caller;
+   use Parameters;
+   use Task_Primitives.Operations;
+   use Protected_Objects;
+   use Protected_Objects.Entries;
 
    --  Entry Queues implemented as doubly linked list.
 
@@ -81,11 +78,15 @@ package body System.Tasking.Queuing is
    procedure Broadcast_Program_Error
      (Self_ID      : Task_ID;
       Object       : Protection_Entries_Access;
-      Pending_Call : Entry_Call_Link)
+      Pending_Call : Entry_Call_Link;
+      RTS_Locked   : Boolean := False)
    is
-      Entry_Call   : Entry_Call_Link;
-
+      Entry_Call : Entry_Call_Link;
    begin
+      if Single_Lock and then not RTS_Locked then
+         Lock_RTS;
+      end if;
+
       if Pending_Call /= null then
          Send_Program_Error (Self_ID, Pending_Call);
       end if;
@@ -100,6 +101,10 @@ package body System.Tasking.Queuing is
             Dequeue_Head (Object.Entry_Queues (E), Entry_Call);
          end loop;
       end loop;
+
+      if Single_Lock and then not RTS_Locked then
+         Unlock_RTS;
+      end if;
    end Broadcast_Program_Error;
 
    -----------------
@@ -472,7 +477,9 @@ package body System.Tasking.Queuing is
    is
       Entry_Call  : Entry_Call_Link;
       Temp_Call   : Entry_Call_Link;
-      Entry_Index : Protected_Entry_Index;
+      Entry_Index : Protected_Entry_Index := Null_Entry; -- stop warning
+
+      --  ??? should add comment as to why Entry_Index is always initialized
 
    begin
       Entry_Call := null;
@@ -485,10 +492,12 @@ package body System.Tasking.Queuing is
             for J in Object.Entry_Queues'Range loop
                Temp_Call := Head (Object.Entry_Queues (J));
 
-               if Temp_Call /= null and then
-                 Object.Entry_Bodies (
-                   Object.Find_Body_Index (Object.Compiler_Info, J)).
-                     Barrier (Object.Compiler_Info, J)
+               if Temp_Call /= null
+                 and then
+                   Object.Entry_Bodies
+                     (Object.Find_Body_Index
+                       (Object.Compiler_Info, J)).
+                          Barrier (Object.Compiler_Info, J)
                then
                   if (Entry_Call = null or else
                     Entry_Call.Prio < Temp_Call.Prio)
@@ -505,10 +514,12 @@ package body System.Tasking.Queuing is
             for J in Object.Entry_Queues'Range loop
                Temp_Call := Head (Object.Entry_Queues (J));
 
-               if Temp_Call /= null and then
-                 Object.Entry_Bodies (
-                   Object.Find_Body_Index (Object.Compiler_Info, J)).
-                     Barrier (Object.Compiler_Info, J)
+               if Temp_Call /= null
+                 and then
+                   Object.Entry_Bodies
+                     (Object.Find_Body_Index
+                       (Object.Compiler_Info, J)).
+                          Barrier (Object.Compiler_Info, J)
                then
                   Entry_Call := Temp_Call;
                   Entry_Index := J;
@@ -549,16 +560,16 @@ package body System.Tasking.Queuing is
    is
       Entry_Call  : Entry_Call_Link;
       Temp_Call   : Entry_Call_Link;
-      Entry_Index : Task_Entry_Index;
+      Entry_Index : Task_Entry_Index := Task_Entry_Index'First;
       Temp_Entry  : Task_Entry_Index;
 
    begin
       Open_Alternative := False;
-      Entry_Call := null;
+      Entry_Call       := null;
+      Selection        := No_Rendezvous;
 
       if Priority_Queuing then
-
-      --  Priority Queuing
+         --  Priority queueing case
 
          for J in Open_Accepts'Range loop
             Temp_Entry := Open_Accepts (J).S;
@@ -567,12 +578,11 @@ package body System.Tasking.Queuing is
                Open_Alternative := True;
                Temp_Call := Head (Acceptor.Entry_Queues (Temp_Entry));
 
-               if Temp_Call /= null and then
-                 (Entry_Call = null or else
-                  Entry_Call.Prio < Temp_Call.Prio)
-
+               if Temp_Call /= null
+                 and then (Entry_Call = null
+                   or else Entry_Call.Prio < Temp_Call.Prio)
                then
-                  Entry_Call := Head (Acceptor.Entry_Queues (Temp_Entry));
+                  Entry_Call  := Head (Acceptor.Entry_Queues (Temp_Entry));
                   Entry_Index := Temp_Entry;
                   Selection := J;
                end if;
@@ -580,7 +590,7 @@ package body System.Tasking.Queuing is
          end loop;
 
       else
-         --  FIFO Queuing
+         --  FIFO Queuing case
 
          for J in Open_Accepts'Range loop
             Temp_Entry := Open_Accepts (J).S;
@@ -599,10 +609,7 @@ package body System.Tasking.Queuing is
          end loop;
       end if;
 
-      if Entry_Call = null then
-         Selection := No_Rendezvous;
-
-      else
+      if Entry_Call /= null then
          Dequeue_Head (Acceptor.Entry_Queues (Entry_Index), Entry_Call);
 
          --  Guard is open
@@ -620,12 +627,11 @@ package body System.Tasking.Queuing is
       Entry_Call : Entry_Call_Link)
    is
       Caller : Task_ID;
-
    begin
       Caller := Entry_Call.Self;
       Entry_Call.Exception_To_Raise := Program_Error'Identity;
       Write_Lock (Caller);
-      Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
+      Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
       Unlock (Caller);
    end Send_Program_Error;
 

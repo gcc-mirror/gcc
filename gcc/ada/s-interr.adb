@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -56,13 +55,6 @@
 
 --  There is no more than one interrupt per Server_Task and no more than
 --  one Server_Task per interrupt.
-
---  Within this package, the lock L is used to protect the various status
---  tables. If there is a Server_Task associated with an interrupt, we use
---  the per-task lock of the Server_Task instead so that we protect the
---  status between Interrupt_Manager and Server_Task. Protection among
---  service requests are done using User Request to Interrupt_Manager
---  rendezvous.
 
 with Ada.Task_Identification;
 --  used for Task_ID type
@@ -100,9 +92,6 @@ with System.Interrupt_Management.Operations;
 --           All_Tasks_Mask
 pragma Elaborate_All (System.Interrupt_Management.Operations);
 
-with System.Error_Reporting;
---  used for Shutdown
-
 with System.Task_Primitives.Operations;
 --  used for Write_Lock
 --           Unlock
@@ -137,12 +126,15 @@ with System.Tasking.Initialization;
 --  used for Defer_Abort
 --           Undefer_Abort
 
+with System.Parameters;
+--  used for Single_Lock
+
 with Unchecked_Conversion;
 
 package body System.Interrupts is
 
+   use Parameters;
    use Tasking;
-   use System.Error_Reporting;
    use Ada.Exceptions;
 
    package PRI renames System.Task_Primitives;
@@ -158,11 +150,13 @@ package body System.Interrupts is
    -- Local Tasks --
    -----------------
 
-   --  WARNING: System.Tasking.Utilities performs calls to this task
+   --  WARNING: System.Tasking.Stages performs calls to this task
    --  with low-level constructs. Do not change this spec without synchro-
    --  nizing it.
 
    task Interrupt_Manager is
+      entry Detach_Interrupt_Entries (T : Task_ID);
+
       entry Initialize (Mask : IMNG.Interrupt_Mask);
 
       entry Attach_Handler
@@ -186,8 +180,6 @@ package body System.Interrupts is
          E         : Task_Entry_Index;
          Interrupt : Interrupt_ID);
 
-      entry Detach_Interrupt_Entries (T : Task_ID);
-
       entry Block_Interrupt (Interrupt : Interrupt_ID);
 
       entry Unblock_Interrupt (Interrupt : Interrupt_ID);
@@ -205,9 +197,9 @@ package body System.Interrupts is
 
    type Server_Task_Access is access Server_Task;
 
-   --------------------------------
-   --  Local Types and Variables --
-   --------------------------------
+   -------------------------------
+   -- Local Types and Variables --
+   -------------------------------
 
    type Entry_Assoc is record
       T : Task_ID;
@@ -272,43 +264,13 @@ package body System.Interrupts is
    Access_Hold : Server_Task_Access;
    --  variable used to allocate Server_Task using "new".
 
-   L : aliased PRI.RTS_Lock;
-   --  L protects contents in tables above corresponding to interrupts
-   --  for which Server_ID (T) = null.
-   --
-   --  If Server_ID (T) /= null then protection is via
-   --  per-task (TCB) lock of Server_ID (T).
-   --
-   --  For deadlock prevention, L should not be locked after
-   --  any other lock is held, hence we use PO_Level which is the highest
-   --  lock level for error checking.
-
-   Task_Lock : array (Interrupt_ID'Range) of Boolean := (others => False);
-   --  Boolean flags to give matching Locking and Unlocking. See the comments
-   --  in Lock_Interrupt.
-
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   procedure Lock_Interrupt
-     (Self_ID   : Task_ID;
-      Interrupt : Interrupt_ID);
-   --  protect the tables using L or per-task lock. Set the Boolean
-   --  value Task_Lock if the lock is made using per-task lock.
-   --  This information is needed so that Unlock_Interrupt
-   --  performs unlocking on the same lock. The situation we are preventing
-   --  is, for example, when Attach_Handler is called for the first time
-   --  we lock L and create an Server_Task. For a matching unlocking, if we
-   --  rely on the fact that there is a Server_Task, we will unlock the
-   --  per-task lock.
-
-   procedure Unlock_Interrupt
-     (Self_ID   : Task_ID;
-      Interrupt : Interrupt_ID);
-
    function Is_Registered (Handler : Parameterless_Handler) return Boolean;
-   --  ??? spec needs comments
+   --  See if the Handler has been "pragma"ed using Interrupt_Handler.
+   --  Always consider a null handler as registered.
 
    --------------------
    -- Attach_Handler --
@@ -603,9 +565,6 @@ package body System.Interrupts is
    -- Is_Registered --
    -------------------
 
-   --  See if the Handler has been "pragma"ed using Interrupt_Handler.
-   --  Always consider a null handler as registered.
-
    function Is_Registered (Handler : Parameterless_Handler) return Boolean is
 
       type Fat_Ptr is record
@@ -648,51 +607,6 @@ package body System.Interrupts is
    begin
       return IMNG.Reserve (IMNG.Interrupt_ID (Interrupt));
    end Is_Reserved;
-
-   --------------------
-   -- Lock_Interrupt --
-   --------------------
-
-   --  ?????
-
-   --  This package has been modified several times.
-   --  Do we still need this fancy locking scheme, now that more operations
-   --  are entries of the interrupt manager task?
-
-   --  ?????
-
-   --  More likely, we will need to convert one or more entry calls to
-   --  protected operations, because presently we are violating locking order
-   --  rules by calling a task entry from within the runtime system.
-
-   procedure Lock_Interrupt
-     (Self_ID   : Task_ID;
-      Interrupt : Interrupt_ID)
-   is
-   begin
-      Initialization.Defer_Abort (Self_ID);
-
-      POP.Write_Lock (L'Access);
-
-      if Task_Lock (Interrupt) then
-
-         --  We need to use per-task lock.
-
-         POP.Unlock (L'Access);
-         POP.Write_Lock (Server_ID (Interrupt));
-
-         --  Rely on the fact that once Server_ID is set to a non-null
-         --  value it will never be set back to null.
-
-      elsif Server_ID (Interrupt) /= Null_Task then
-
-         --  We need to use per-task lock.
-
-         Task_Lock (Interrupt) := True;
-         POP.Unlock (L'Access);
-         POP.Write_Lock (Server_ID (Interrupt));
-      end if;
-   end Lock_Interrupt;
 
    ---------------
    -- Reference --
@@ -787,24 +701,6 @@ package body System.Interrupts is
       Interrupt_Manager.Unignore_Interrupt (Interrupt);
    end Unignore_Interrupt;
 
-   ----------------------
-   -- Unlock_Interrupt --
-   ----------------------
-
-   procedure Unlock_Interrupt
-     (Self_ID   : Task_ID;
-      Interrupt : Interrupt_ID)
-   is
-   begin
-      if Task_Lock (Interrupt) then
-         POP.Unlock (Server_ID (Interrupt));
-      else
-         POP.Unlock (L'Access);
-      end if;
-
-      Initialization.Undefer_Abort (Self_ID);
-   end Unlock_Interrupt;
-
    -----------------------
    -- Interrupt_Manager --
    -----------------------
@@ -819,6 +715,7 @@ package body System.Interrupts is
       Ret_Interrupt : Interrupt_ID;
       Old_Mask      : aliased IMNG.Interrupt_Mask;
       Self_ID       : Task_ID := POP.Self;
+      Old_Handler   : Parameterless_Handler;
 
       ---------------------
       --  Local Routines --
@@ -833,9 +730,6 @@ package body System.Interrupts is
       --  This procedure does not do anything if the Interrupt is blocked.
       --  Otherwise, we have to interrupt Server_Task for status change
       --  through abort interrupt.
-
-      --  Following two procedure are named Unprotected... in order to
-      --  indicate that Lock/Unlock_Interrupt operations are needed around.
 
       procedure Unprotected_Exchange_Handler
         (Old_Handler : out Parameterless_Handler;
@@ -925,7 +819,6 @@ package body System.Interrupts is
             --  In case we have an Interrupt Entry installed.
             --  raise a program error. (propagate it to the caller).
 
-            Unlock_Interrupt (Self_ID, Interrupt);
             Raise_Exception (Program_Error'Identity,
               "An interrupt entry is already installed");
          end if;
@@ -935,11 +828,9 @@ package body System.Interrupts is
          --  status of the current_Handler.
 
          if not Static and then User_Handler (Interrupt).Static then
-
             --  Tries to detach a static Interrupt Handler.
             --  raise a program error.
 
-            Unlock_Interrupt (Self_ID, Interrupt);
             Raise_Exception (Program_Error'Identity,
               "Trying to detach a static Interrupt Handler");
          end if;
@@ -971,15 +862,12 @@ package body System.Interrupts is
          New_Handler : in  Parameterless_Handler;
          Interrupt   : in  Interrupt_ID;
          Static      : in  Boolean;
-         Restoration : in  Boolean := False)
-      is
+         Restoration : in  Boolean := False) is
       begin
          if User_Entry (Interrupt).T /= Null_Task then
-
             --  In case we have an Interrupt Entry already installed.
             --  raise a program error. (propagate it to the caller).
 
-            Unlock_Interrupt (Self_ID, Interrupt);
             Raise_Exception (Program_Error'Identity,
               "An interrupt is already installed");
          end if;
@@ -1003,7 +891,6 @@ package body System.Interrupts is
 
                         or else not Is_Registered (New_Handler))
          then
-            Unlock_Interrupt (Self_ID, Interrupt);
             Raise_Exception (Program_Error'Identity,
               "Trying to overwrite a static Interrupt Handler with a " &
               "dynamic Handler");
@@ -1070,7 +957,7 @@ package body System.Interrupts is
 
       System.Tasking.Utilities.Make_Independent;
 
-      --  Environmen task gets its own interrupt mask, saves it,
+      --  Environment task gets its own interrupt mask, saves it,
       --  and then masks all interrupts except the Keep_Unmasked set.
 
       --  During rendezvous, the Interrupt_Manager receives the old
@@ -1125,247 +1012,218 @@ package body System.Interrupts is
       loop
          --  A block is needed to absorb Program_Error exception
 
-         declare
-            Old_Handler : Parameterless_Handler;
-
          begin
             select
+               accept Attach_Handler
+                  (New_Handler : in Parameterless_Handler;
+                   Interrupt   : in Interrupt_ID;
+                   Static      : in Boolean;
+                   Restoration : in Boolean := False)
+               do
+                  Unprotected_Exchange_Handler
+                    (Old_Handler, New_Handler, Interrupt, Static, Restoration);
+               end Attach_Handler;
 
-            accept Attach_Handler
-               (New_Handler : in Parameterless_Handler;
-                Interrupt   : in Interrupt_ID;
-                Static      : in Boolean;
-                Restoration : in Boolean := False)
-            do
-               Lock_Interrupt (Self_ID, Interrupt);
-               Unprotected_Exchange_Handler
-                 (Old_Handler, New_Handler, Interrupt, Static, Restoration);
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Attach_Handler;
+            or
+               accept Exchange_Handler
+                  (Old_Handler : out Parameterless_Handler;
+                   New_Handler : in Parameterless_Handler;
+                   Interrupt   : in Interrupt_ID;
+                   Static      : in Boolean)
+               do
+                  Unprotected_Exchange_Handler
+                    (Old_Handler, New_Handler, Interrupt, Static);
+               end Exchange_Handler;
 
-            or accept Exchange_Handler
-               (Old_Handler : out Parameterless_Handler;
-                New_Handler : in Parameterless_Handler;
-                Interrupt   : in Interrupt_ID;
-                Static      : in Boolean)
-            do
-               Lock_Interrupt (Self_ID, Interrupt);
-               Unprotected_Exchange_Handler
-                 (Old_Handler, New_Handler, Interrupt, Static);
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Exchange_Handler;
+            or
+               accept Detach_Handler
+                 (Interrupt   : in Interrupt_ID;
+                  Static      : in Boolean)
+               do
+                  Unprotected_Detach_Handler (Interrupt, Static);
+               end Detach_Handler;
 
-            or accept Detach_Handler
-               (Interrupt   : in Interrupt_ID;
-                Static      : in Boolean)
-            do
-               Lock_Interrupt (Self_ID, Interrupt);
-               Unprotected_Detach_Handler (Interrupt, Static);
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Detach_Handler;
+            or
+               accept Bind_Interrupt_To_Entry
+                 (T       : Task_ID;
+                  E       : Task_Entry_Index;
+                  Interrupt : Interrupt_ID)
+               do
+                  --  if there is a binding already (either a procedure or an
+                  --  entry), raise Program_Error (propagate it to the caller).
 
-            or accept Bind_Interrupt_To_Entry
-              (T       : Task_ID;
-               E       : Task_Entry_Index;
-               Interrupt : Interrupt_ID)
-            do
-               Lock_Interrupt (Self_ID, Interrupt);
-
-               --  if there is a binding already (either a procedure or an
-               --  entry), raise Program_Error (propagate it to the caller).
-
-               if User_Handler (Interrupt).H /= null
-                 or else User_Entry (Interrupt).T /= Null_Task
-               then
-                  Unlock_Interrupt (Self_ID, Interrupt);
-                  Raise_Exception (Program_Error'Identity,
-                    "A binding for this interrupt is already present");
-               end if;
-
-               --  The interrupt should no longer be ingnored if
-               --  it was ever ignored.
-
-               Ignored (Interrupt) := False;
-               User_Entry (Interrupt) := Entry_Assoc' (T => T, E => E);
-
-               --  Indicate the attachment of Interrupt Entry in ATCB.
-               --  This is need so that when an Interrupt Entry task terminates
-               --  the binding can be cleaned. The call to unbinding must be
-               --  make by the task before it terminates.
-
-               T.Interrupt_Entry := True;
-
-               --  Invoke a corresponding Server_Task if not yet created.
-               --  Place Task_ID info in Server_ID array.
-
-               if Server_ID (Interrupt) = Null_Task then
-
-                  --  When a new Server_Task is created, it should have its
-                  --  signal mask set to the All_Tasks_Mask.
-
-                  IMOP.Set_Interrupt_Mask
-                    (IMOP.All_Tasks_Mask'Access, Old_Mask'Access);
-                  Access_Hold := new Server_Task (Interrupt);
-                  IMOP.Set_Interrupt_Mask (Old_Mask'Access);
-                  Server_ID (Interrupt) :=
-                    To_System (Access_Hold.all'Identity);
-               end if;
-
-               Bind_Handler (Interrupt);
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Bind_Interrupt_To_Entry;
-
-            or accept Detach_Interrupt_Entries (T : Task_ID)
-            do
-               for I in Interrupt_ID'Range loop
-                  if not Is_Reserved (I) then
-                     Lock_Interrupt (Self_ID, I);
-
-                     if User_Entry (I).T = T then
-
-                        --  The interrupt should no longer be ingnored if
-                        --  it was ever ignored.
-
-                        Ignored (I) := False;
-                        User_Entry (I) := Entry_Assoc'
-                          (T => Null_Task, E => Null_Task_Entry);
-                        Unbind_Handler (I);
-                     end if;
-
-                     Unlock_Interrupt (Self_ID, I);
+                  if User_Handler (Interrupt).H /= null
+                    or else User_Entry (Interrupt).T /= Null_Task
+                  then
+                     Raise_Exception (Program_Error'Identity,
+                       "A binding for this interrupt is already present");
                   end if;
-               end loop;
 
-               --  Indicate in ATCB that no Interrupt Entries are attached.
+                  --  The interrupt should no longer be ingnored if
+                  --  it was ever ignored.
 
-               T.Interrupt_Entry := False;
-            end Detach_Interrupt_Entries;
+                  Ignored (Interrupt) := False;
+                  User_Entry (Interrupt) := Entry_Assoc' (T => T, E => E);
 
-            or accept Block_Interrupt (Interrupt : Interrupt_ID) do
-               Lock_Interrupt (Self_ID, Interrupt);
+                  --  Indicate the attachment of Interrupt Entry in ATCB.
+                  --  This is need so that when an Interrupt Entry task
+                  --  terminates the binding can be cleaned. The call to
+                  --  unbinding must be made by the task before it terminates.
 
-               if Blocked (Interrupt) then
-                  Unlock_Interrupt (Self_ID, Interrupt);
-                  return;
-               end if;
+                  T.Interrupt_Entry := True;
 
-               Blocked (Interrupt) := True;
-               Last_Unblocker (Interrupt) := Null_Task;
+                  --  Invoke a corresponding Server_Task if not yet created.
+                  --  Place Task_ID info in Server_ID array.
 
-               --  Mask this task for the given Interrupt so that all tasks
-               --  are masked for the Interrupt.
+                  if Server_ID (Interrupt) = Null_Task then
+                     --  When a new Server_Task is created, it should have its
+                     --  signal mask set to the All_Tasks_Mask.
 
-               IMOP.Thread_Block_Interrupt (IMNG.Interrupt_ID (Interrupt));
+                     IMOP.Set_Interrupt_Mask
+                       (IMOP.All_Tasks_Mask'Access, Old_Mask'Access);
+                     Access_Hold := new Server_Task (Interrupt);
+                     IMOP.Set_Interrupt_Mask (Old_Mask'Access);
+                     Server_ID (Interrupt) :=
+                       To_System (Access_Hold.all'Identity);
+                  end if;
 
-               if User_Handler (Interrupt).H /= null
-                 or else  User_Entry (Interrupt).T /= Null_Task
-               then
-                  --  This is the case where the Server_Task is waiting on
-                  --  "sigwait." Wake it up by sending an Abort_Task_Interrupt
-                  --  so that the Server_Task waits on Cond.
+                  Bind_Handler (Interrupt);
+               end Bind_Interrupt_To_Entry;
 
-                  POP.Abort_Task (Server_ID (Interrupt));
+            or
+               accept Detach_Interrupt_Entries (T : Task_ID) do
+                  for J in Interrupt_ID'Range loop
+                     if not Is_Reserved (J) then
+                        if User_Entry (J).T = T then
+                           --  The interrupt should no longer be ingnored if
+                           --  it was ever ignored.
 
-                  --  Make sure corresponding Server_Task is out of its own
-                  --  sigwait state.
+                           Ignored (J) := False;
+                           User_Entry (J) := Entry_Assoc'
+                             (T => Null_Task, E => Null_Task_Entry);
+                           Unbind_Handler (J);
+                        end if;
+                     end if;
+                  end loop;
 
-                  Ret_Interrupt :=
-                    Interrupt_ID (IMOP.Interrupt_Wait (Intwait_Mask'Access));
-                  pragma Assert
-                    (Ret_Interrupt = Interrupt_ID (IMNG.Abort_Task_Interrupt));
-               end if;
+                  --  Indicate in ATCB that no Interrupt Entries are attached.
 
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Block_Interrupt;
+                  T.Interrupt_Entry := False;
+               end Detach_Interrupt_Entries;
 
-            or accept Unblock_Interrupt (Interrupt : Interrupt_ID) do
-               Lock_Interrupt (Self_ID, Interrupt);
+            or
+               accept Block_Interrupt (Interrupt : Interrupt_ID) do
+                  if Blocked (Interrupt) then
+                     return;
+                  end if;
 
-               if not Blocked (Interrupt) then
-                  Unlock_Interrupt (Self_ID, Interrupt);
-                  return;
-               end if;
+                  Blocked (Interrupt) := True;
+                  Last_Unblocker (Interrupt) := Null_Task;
 
-               Blocked (Interrupt) := False;
-               Last_Unblocker (Interrupt) :=
-                 To_System (Unblock_Interrupt'Caller);
+                  --  Mask this task for the given Interrupt so that all tasks
+                  --  are masked for the Interrupt.
 
-               if User_Handler (Interrupt).H = null
-                 and then User_Entry (Interrupt).T = Null_Task
-               then
-                  --  No handler is attached. Unmask the Interrupt so that
-                  --  the default action can be carried out.
-                  IMOP.Thread_Unblock_Interrupt
-                    (IMNG.Interrupt_ID (Interrupt));
+                  IMOP.Thread_Block_Interrupt (IMNG.Interrupt_ID (Interrupt));
 
-               else
-                  --  The Server_Task must be waiting on the Cond variable
-                  --  since it was being blocked and an Interrupt Hander or
-                  --  an Entry was there. Wake it up and let it change
-                  --  it place of waiting according to its new state.
-                  POP.Wakeup (Server_ID (Interrupt),
-                    Interrupt_Server_Blocked_Interrupt_Sleep);
-               end if;
+                  if User_Handler (Interrupt).H /= null
+                    or else  User_Entry (Interrupt).T /= Null_Task
+                  then
+                     --  This is the case where the Server_Task is waiting on
+                     --  "sigwait." Wake it up by sending an
+                     --  Abort_Task_Interrupt so that the Server_Task waits on
+                     --  Cond.
 
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Unblock_Interrupt;
+                     POP.Abort_Task (Server_ID (Interrupt));
 
-            or accept Ignore_Interrupt (Interrupt : Interrupt_ID) do
-               Lock_Interrupt (Self_ID, Interrupt);
+                     --  Make sure corresponding Server_Task is out of its own
+                     --  sigwait state.
 
-               if Ignored (Interrupt) then
-                  Unlock_Interrupt (Self_ID, Interrupt);
-                  return;
-               end if;
+                     Ret_Interrupt := Interrupt_ID
+                       (IMOP.Interrupt_Wait (Intwait_Mask'Access));
+                     pragma Assert
+                       (Ret_Interrupt =
+                        Interrupt_ID (IMNG.Abort_Task_Interrupt));
+                  end if;
+               end Block_Interrupt;
 
-               Ignored (Interrupt) := True;
+            or
+               accept Unblock_Interrupt (Interrupt : Interrupt_ID) do
+                  if not Blocked (Interrupt) then
+                     return;
+                  end if;
 
-               --  If there is a handler associated with the Interrupt,
-               --  detach it first. In this way we make sure that the
-               --  Server_Task is not on sigwait. This is legal since
-               --  Unignore_Interrupt is to install the default action.
+                  Blocked (Interrupt) := False;
+                  Last_Unblocker (Interrupt) :=
+                    To_System (Unblock_Interrupt'Caller);
 
-               if User_Handler (Interrupt).H /= null then
-                  Unprotected_Detach_Handler
-                    (Interrupt => Interrupt, Static => True);
+                  if User_Handler (Interrupt).H = null
+                    and then User_Entry (Interrupt).T = Null_Task
+                  then
+                     --  No handler is attached. Unmask the Interrupt so that
+                     --  the default action can be carried out.
+                     IMOP.Thread_Unblock_Interrupt
+                       (IMNG.Interrupt_ID (Interrupt));
 
-               elsif User_Entry (Interrupt).T /= Null_Task then
-                  User_Entry (Interrupt) := Entry_Assoc'
-                    (T => Null_Task, E => Null_Task_Entry);
-                  Unbind_Handler (Interrupt);
-               end if;
+                  else
+                     --  The Server_Task must be waiting on the Cond variable
+                     --  since it was being blocked and an Interrupt Hander or
+                     --  an Entry was there. Wake it up and let it change
+                     --  it place of waiting according to its new state.
+                     POP.Wakeup (Server_ID (Interrupt),
+                       Interrupt_Server_Blocked_Interrupt_Sleep);
+                  end if;
+               end Unblock_Interrupt;
 
-               IMOP.Install_Ignore_Action (IMNG.Interrupt_ID (Interrupt));
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Ignore_Interrupt;
+            or
+               accept Ignore_Interrupt (Interrupt : Interrupt_ID) do
+                  if Ignored (Interrupt) then
+                     return;
+                  end if;
 
-            or accept Unignore_Interrupt (Interrupt : Interrupt_ID) do
-               Lock_Interrupt (Self_ID, Interrupt);
-               Ignored (Interrupt) := False;
+                  Ignored (Interrupt) := True;
 
-               --  If there is a handler associated with the Interrupt,
-               --  detach it first. In this way we make sure that the
-               --  Server_Task is not on sigwait. This is legal since
-               --  Unignore_Interrupt is to install the default action.
+                  --  If there is a handler associated with the Interrupt,
+                  --  detach it first. In this way we make sure that the
+                  --  Server_Task is not on sigwait. This is legal since
+                  --  Unignore_Interrupt is to install the default action.
 
-               if User_Handler (Interrupt).H /= null then
-                  Unprotected_Detach_Handler
-                    (Interrupt => Interrupt, Static => True);
+                  if User_Handler (Interrupt).H /= null then
+                     Unprotected_Detach_Handler
+                       (Interrupt => Interrupt, Static => True);
 
-               elsif User_Entry (Interrupt).T /= Null_Task then
-                  User_Entry (Interrupt) := Entry_Assoc'
-                    (T => Null_Task, E => Null_Task_Entry);
-                  Unbind_Handler (Interrupt);
-               end if;
+                  elsif User_Entry (Interrupt).T /= Null_Task then
+                     User_Entry (Interrupt) := Entry_Assoc'
+                       (T => Null_Task, E => Null_Task_Entry);
+                     Unbind_Handler (Interrupt);
+                  end if;
 
-               IMOP.Install_Default_Action (IMNG.Interrupt_ID (Interrupt));
-               Unlock_Interrupt (Self_ID, Interrupt);
-            end Unignore_Interrupt;
+                  IMOP.Install_Ignore_Action (IMNG.Interrupt_ID (Interrupt));
+               end Ignore_Interrupt;
 
+            or
+               accept Unignore_Interrupt (Interrupt : Interrupt_ID) do
+                  Ignored (Interrupt) := False;
+
+                  --  If there is a handler associated with the Interrupt,
+                  --  detach it first. In this way we make sure that the
+                  --  Server_Task is not on sigwait. This is legal since
+                  --  Unignore_Interrupt is to install the default action.
+
+                  if User_Handler (Interrupt).H /= null then
+                     Unprotected_Detach_Handler
+                       (Interrupt => Interrupt, Static => True);
+
+                  elsif User_Entry (Interrupt).T /= Null_Task then
+                     User_Entry (Interrupt) := Entry_Assoc'
+                       (T => Null_Task, E => Null_Task_Entry);
+                     Unbind_Handler (Interrupt);
+                  end if;
+
+                  IMOP.Install_Default_Action (IMNG.Interrupt_ID (Interrupt));
+               end Unignore_Interrupt;
             end select;
 
          exception
-
             --  If there is a program error we just want to propagate it to
             --  the caller and do not want to stop this task.
 
@@ -1373,15 +1231,10 @@ package body System.Interrupts is
                null;
 
             when others =>
-               pragma Assert
-                 (Shutdown ("Interrupt_Manager---exception not expected"));
+               pragma Assert (False);
                null;
          end;
-
       end loop;
-
-      pragma Assert (Shutdown ("Interrupt_Manager---should not get here"));
-
    end Interrupt_Manager;
 
    -----------------
@@ -1439,6 +1292,11 @@ package body System.Interrupts is
 
       loop
          System.Tasking.Initialization.Defer_Abort (Self_ID);
+
+         if Single_Lock then
+            POP.Lock_RTS;
+         end if;
+
          POP.Write_Lock (Self_ID);
 
          if User_Handler (Interrupt).H = null
@@ -1473,6 +1331,10 @@ package body System.Interrupts is
 
             POP.Unlock (Self_ID);
 
+            if Single_Lock then
+               POP.Unlock_RTS;
+            end if;
+
             Ret_Interrupt :=
               Interrupt_ID (IMOP.Interrupt_Wait (Intwait_Mask'Access));
 
@@ -1481,10 +1343,19 @@ package body System.Interrupts is
                --  Inform the Interrupt_Manager of wakeup from above sigwait.
 
                POP.Abort_Task (Interrupt_Manager_ID);
+
+               if Single_Lock then
+                  POP.Lock_RTS;
+               end if;
+
                POP.Write_Lock (Self_ID);
 
             else
                pragma Assert (Ret_Interrupt = Interrupt);
+
+               if Single_Lock then
+                  POP.Lock_RTS;
+               end if;
 
                POP.Write_Lock (Self_ID);
 
@@ -1502,7 +1373,16 @@ package body System.Interrupts is
 
                   POP.Unlock (Self_ID);
 
+                  if Single_Lock then
+                     POP.Unlock_RTS;
+                  end if;
+
                   Tmp_Handler.all;
+
+                  if Single_Lock then
+                     POP.Lock_RTS;
+                  end if;
+
                   POP.Write_Lock (Self_ID);
 
                elsif User_Entry (Interrupt).T /= Null_Task then
@@ -1511,12 +1391,21 @@ package body System.Interrupts is
 
                   --  RTS calls should not be made with self being locked.
 
+                  if Single_Lock then
+                     POP.Unlock_RTS;
+                  end if;
+
                   POP.Unlock (Self_ID);
 
                   System.Tasking.Rendezvous.Call_Simple
                     (Tmp_ID, Tmp_Entry_Index, System.Null_Address);
 
                   POP.Write_Lock (Self_ID);
+
+                  if Single_Lock then
+                     POP.Lock_RTS;
+                  end if;
+
                else
                   --  This is a situation that this task wake up
                   --  receiving an Interrupt and before it get the lock
@@ -1527,17 +1416,19 @@ package body System.Interrupts is
                   IMOP.Interrupt_Self_Process (IMNG.Interrupt_ID (Interrupt));
                end if;
             end if;
-
          end if;
 
          POP.Unlock (Self_ID);
+
+         if Single_Lock then
+            POP.Unlock_RTS;
+         end if;
+
          System.Tasking.Initialization.Undefer_Abort (Self_ID);
 
          --  Undefer abort here to allow a window for this task
          --  to be aborted  at the time of system shutdown.
       end loop;
-
-      pragma Assert (Shutdown ("Server_Task---should not get here"));
    end Server_Task;
 
 --  Elaboration code for package System.Interrupts
@@ -1547,12 +1438,6 @@ begin
    --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent.
 
    Interrupt_Manager_ID := To_System (Interrupt_Manager'Identity);
-
-   --  Initialize the lock L.
-
-   Initialization.Defer_Abort (Self);
-   POP.Initialize_Lock (L'Access, POP.PO_Level);
-   Initialization.Undefer_Abort (Self);
 
    --  During the elaboration of this package body we want RTS to
    --  inherit the interrupt mask from the Environment Task.

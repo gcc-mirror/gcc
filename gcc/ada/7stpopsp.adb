@@ -2,14 +2,13 @@
 --                                                                          --
 --                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
 --                                                                          --
---    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S .   --
---                              S P E C I F I C                             --
+--                SYSTEM.TASK_PRIMITIVES.OPERATIONS.SPECIFIC                --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.1 $                             --
+--                             $Revision$                             --
 --                                                                          --
---            Copyright (C) 1991-1998, Florida State University             --
+--            Copyright (C) 1991-2001, Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,7 +67,7 @@ package body Specific is
    ---------
 
    procedure Set (Self_Id : Task_ID) is
-      Result  : Interfaces.C.int;
+      Result : Interfaces.C.int;
 
    begin
       Result := pthread_setspecific (ATCB_Key, To_Address (Self_Id));

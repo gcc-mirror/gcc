@@ -127,14 +127,14 @@ package body ALI is
 
       function Get_Name (Lower : Boolean := False) return Name_Id;
       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
-      --  length in Name_Len, as well as being returned in Name_Id form). The
-      --  name is adjusted appropriately if it refers to a file that is to be
-      --  substituted by another name as a result of a configuration pragma.
-      --  If Lower is set to true then the Name_Buffer will be converted to
-      --  all lower case. This only happends for systems where file names are
-      --  not case sensitive, and ensures that gnatbind works correctly on
-      --  such systems, regardless of the case of the file name. Note that
-      --  a name can be terminated by a right typeref bracket or '='.
+      --  length in Name_Len, as well as being returned in Name_Id form).
+      --  If Lower is set to True then the Name_Buffer will be converted to
+      --  all lower case, for systems where file names are not case sensitive.
+      --  This ensures that gnatbind works correctly regardless of the case
+      --  of the file name on all systems. The name is terminated by a either
+      --  white space or a typeref bracket or an equal sign except for the
+      --  special case of an operator name starting with a double quite which
+      --  is terminated by another double quote.
 
       function Get_Nat return Nat;
       --  Skip blanks, then scan out an unsigned integer value in Nat range
@@ -305,11 +305,19 @@ package body ALI is
          loop
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := Getc;
-            exit when At_End_Of_Field
-              or else Nextc = ')'
-              or else Nextc = '}'
-              or else Nextc = '>'
-              or else Nextc = '=';
+
+            exit when At_End_Of_Field;
+
+            if Name_Buffer (1) = '"' then
+               exit when Name_Len > 1 and then Name_Buffer (Name_Len) = '"';
+
+            else
+               exit when At_End_Of_Field
+                 or else Nextc = '(' or else Nextc = ')'
+                 or else Nextc = '{' or else Nextc = '}'
+                 or else Nextc = '<' or else Nextc = '>'
+                 or else Nextc = '=';
+            end if;
          end loop;
 
          --  Convert file name to all lower case if file names are not case
@@ -639,14 +647,25 @@ package body ALI is
          Checkc (' ');
          Skip_Space;
 
-         for J in Partition_Restrictions loop
+         for J in All_Restrictions loop
             C := Getc;
+            ALIs.Table (Id).Restrictions (J) := C;
 
-            if C = 'v' or else C = 'r' or else C = 'n' then
-               ALIs.Table (Id).Restrictions (J) := C;
-            else
-               Fatal_Error;
-            end if;
+            case C is
+               when 'v' =>
+                  Restrictions (J) := 'v';
+
+               when 'r' =>
+                  if Restrictions (J) = 'n' then
+                     Restrictions (J) := 'r';
+                  end if;
+
+               when 'n' =>
+                  null;
+
+               when others =>
+                  Fatal_Error;
+            end case;
          end loop;
 
          if At_Eol then
@@ -694,6 +713,8 @@ package body ALI is
 
          if Debug_Flag_U then
             Write_Str (" ----> reading unit ");
+            Write_Int (Int (Units.Last));
+            Write_Str ("  ");
             Write_Unit_Name (Units.Table (Units.Last).Uname);
             Write_Str (" from file ");
             Write_Name (Units.Table (Units.Last).Sfile);
@@ -710,15 +731,22 @@ package body ALI is
               and then Units.Table (Units.Last).Sfile /=
                        Units.Table (Unit_Id (Info)).Sfile
             then
-               --  If Err is set then treat duplicate unit name as an instance
-               --  of a bad ALI format. This is the case of being called from
-               --  gnatmake, and the point is that if anything is wrong with
-               --  the ALI file, then gnatmake should just recompile.
+               --  If Err is set then ignore duplicate unit name. This is the
+               --  case of a call from gnatmake, where the situation can arise
+               --  from substitution of source files. In such situations, the
+               --  processing in gnatmake will always result in any required
+               --  recompilations in any case, and if we consider this to be
+               --  an error we get strange cases (for example when a generic
+               --  instantiation is replaced by a normal package) where we
+               --  read the old ali file, decide to recompile, and then decide
+               --  that the old and new ali files are incompatible.
 
                if Err then
-                  raise Bad_ALI_Format;
+                  null;
 
-               --  If Err is not set, then this is a fatal error
+               --  If Err is not set, then this is a fatal error. This is
+               --  the case of being called from the binder, where we must
+               --  definitely diagnose this as an error.
 
                else
                   Set_Standard_Error;
@@ -991,6 +1019,85 @@ package body ALI is
          Units.Table (Units.Last).Last_With := Withs.Last;
          Units.Table (Units.Last).Last_Arg  := Args.Last;
 
+         --  If there are linker options lines present, scan them
+
+         Name_Len := 0;
+
+         Linker_Options_Loop : while C = 'L' loop
+            Checkc (' ');
+            Skip_Space;
+            Checkc ('"');
+
+            loop
+               C := Getc;
+
+               if C < Character'Val (16#20#)
+                 or else C > Character'Val (16#7E#)
+               then
+                  Fatal_Error;
+
+               elsif C = '{' then
+                  C := Character'Val (0);
+
+                  declare
+                     V : Natural;
+
+                  begin
+                     V := 0;
+                     for J in 1 .. 2 loop
+                        C := Getc;
+
+                        if C in '0' .. '9' then
+                           V := V * 16 +
+                                  Character'Pos (C) - Character'Pos ('0');
+
+                        elsif C in 'A' .. 'F' then
+                           V := V * 16 +
+                                  Character'Pos (C) - Character'Pos ('A') + 10;
+
+                        else
+                           Fatal_Error;
+                        end if;
+                     end loop;
+
+                     Checkc ('}');
+
+                     Add_Char_To_Name_Buffer (Character'Val (V));
+                  end;
+
+               else
+                  if C = '"' then
+                     exit when Nextc /= '"';
+                     C := Getc;
+                  end if;
+
+                  Add_Char_To_Name_Buffer (C);
+               end if;
+            end loop;
+
+            Add_Char_To_Name_Buffer (nul);
+
+            Skip_Eol;
+            C := Getc;
+         end loop Linker_Options_Loop;
+
+         --  Store the linker options entry
+
+         if Name_Len /= 0 then
+            Linker_Options.Increment_Last;
+
+            Linker_Options.Table (Linker_Options.Last).Name :=
+              Name_Enter;
+
+            Linker_Options.Table (Linker_Options.Last).Unit :=
+              Units.Last;
+
+            Linker_Options.Table (Linker_Options.Last).Internal_File :=
+              Is_Internal_File_Name (F);
+
+            Linker_Options.Table (Linker_Options.Last).Original_Pos :=
+              Linker_Options.Last;
+         end if;
       end loop Unit_Loop;
 
       --  End loop through units for one ALI file
@@ -1017,82 +1124,6 @@ package body ALI is
             Units.Table (Units.Last).Utype := Is_Spec_Only;
          end if;
       end if;
-
-      --  If there are linker options lines present, scan them
-
-      while C = 'L' loop
-         Checkc (' ');
-         Skip_Space;
-         Checkc ('"');
-
-         Name_Len := 0;
-         loop
-            C := Getc;
-
-            if C < Character'Val (16#20#)
-              or else C > Character'Val (16#7E#)
-            then
-               Fatal_Error;
-
-            elsif C = '{' then
-               C := Character'Val (0);
-
-               declare
-                  V : Natural;
-
-               begin
-                  V := 0;
-                  for J in 1 .. 2 loop
-                     C := Getc;
-
-                     if C in '0' .. '9' then
-                        V := V * 16 +
-                               Character'Pos (C) - Character'Pos ('0');
-
-                     elsif C in 'A' .. 'F' then
-                        V := V * 16 +
-                               Character'Pos (C) - Character'Pos ('A') + 10;
-
-                     else
-                        Fatal_Error;
-                     end if;
-                  end loop;
-
-                  Checkc ('}');
-
-                  Add_Char_To_Name_Buffer (Character'Val (V));
-               end;
-
-            else
-               if C = '"' then
-                  exit when Nextc /= '"';
-                  C := Getc;
-               end if;
-
-               Add_Char_To_Name_Buffer (C);
-            end if;
-         end loop;
-
-         Add_Char_To_Name_Buffer (nul);
-
-         Skip_Eol;
-         C := Getc;
-
-         Linker_Options.Increment_Last;
-
-         Linker_Options.Table (Linker_Options.Last).Name
-           := Name_Enter;
-
-         Linker_Options.Table (Linker_Options.Last).Unit
-           := ALIs.Table (Id).First_Unit;
-
-         Linker_Options.Table (Linker_Options.Last).Internal_File
-           := Is_Internal_File_Name (F);
-
-         Linker_Options.Table (Linker_Options.Last).Original_Pos
-           := Linker_Options.Last;
-
-      end loop;
 
       --  Scan out external version references and put in hash table
 

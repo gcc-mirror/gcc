@@ -2,14 +2,13 @@
 --                                                                          --
 --                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
 --                                                                          --
---           S Y S T E M . I N T E R R U P T _ M A N A G E M E N T .        --
---                           O P E R A T I O N S                            --
+--                  SYSTEM.INTERRUPT_MANAGEMENT.OPERATIONS                  --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.5 $                             --
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +37,10 @@
 --  This is a NO tasking version of this package.
 
 package body System.Interrupt_Management.Operations is
+
+   --  Turn off warnings since many unused formals
+
+   pragma Warnings (Off);
 
    ----------------------------
    -- Thread_Block_Interrupt --

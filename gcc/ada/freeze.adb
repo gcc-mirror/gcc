@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@ with Exp_Ch11; use Exp_Ch11;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Util; use Exp_Util;
 with Layout;   use Layout;
+with Lib.Xref; use Lib.Xref;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -248,7 +249,18 @@ package body Freeze is
       end if;
 
       if Is_Entity_Name (Nam) then
-         Call_Name := New_Reference_To (Old_S, Loc);
+
+         --  If the renamed entity is a predefined operator, retain full
+         --  name to ensure its visibility.
+
+         if Ekind (Old_S) = E_Operator
+           and then Nkind (Nam) = N_Expanded_Name
+         then
+            Call_Name := New_Copy (Name (N));
+         else
+            Call_Name := New_Reference_To (Old_S, Loc);
+         end if;
+
       else
          Call_Name := New_Copy (Name (N));
 
@@ -291,6 +303,8 @@ package body Freeze is
       --  in the declaration. However, default values that are aggregates
       --  are rewritten when partially analyzed, so we recover the original
       --  aggregate to insure that subsequent conformity checking works.
+      --  Similarly, if the default expression was constant-folded, recover
+      --  the original expression.
 
       Formal := First_Formal (Defining_Entity (Decl));
 
@@ -308,7 +322,10 @@ package body Freeze is
                   Set_Entity (Parameter_Type (Param_Spec), Etype (O_Formal));
                end if;
 
-            elsif Nkind (Default_Value (O_Formal)) = N_Aggregate then
+            elsif Nkind (Default_Value (O_Formal)) = N_Aggregate
+              or else Nkind (Original_Node (Default_Value (O_Formal))) /=
+                                           Nkind (Default_Value (O_Formal))
+            then
                Set_Expression (Param_Spec,
                  New_Copy_Tree (Original_Node (Default_Value (O_Formal))));
             end if;
@@ -409,9 +426,7 @@ package body Freeze is
       --  to give a smaller size.
 
       function Size_Known (T : Entity_Id) return Boolean;
-      --  Recursive function that does all the work.
-      --  Is this right??? isn't recursive case already handled???
-      --  certainly yes for normal call, but what about bogus sem_res call???
+      --  Recursive function that does all the work
 
       function Static_Discriminated_Components (T : Entity_Id) return Boolean;
       --  If T is a constrained subtype, its size is not known if any of its
@@ -468,9 +483,6 @@ package body Freeze is
          if Size_Known_At_Compile_Time (T) then
             return True;
 
-         elsif Error_Posted (T) then
-            return False;
-
          elsif Is_Scalar_Type (T)
            or else Is_Task_Type (T)
          then
@@ -483,6 +495,12 @@ package body Freeze is
                return True;
 
             elsif not Is_Constrained (T) then
+               return False;
+
+            --  Don't do any recursion on type with error posted, since
+            --  we may have a malformed type that leads us into a loop
+
+            elsif Error_Posted (T) then
                return False;
 
             elsif not Size_Known (Component_Type (T)) then
@@ -541,7 +559,14 @@ package body Freeze is
            and then not Is_Generic_Type (T)
            and then Present (Underlying_Type (T))
          then
-            return Size_Known (Underlying_Type (T));
+            --  Don't do any recursion on type with error posted, since
+            --  we may have a malformed type that leads us into a loop
+
+            if Error_Posted (T) then
+               return False;
+            else
+               return Size_Known (Underlying_Type (T));
+            end if;
 
          elsif Is_Record_Type (T) then
             if Is_Class_Wide_Type (T) then
@@ -550,6 +575,12 @@ package body Freeze is
             elsif T /= Base_Type (T) then
                return Size_Known_At_Compile_Time (Base_Type (T))
                  and then Static_Discriminated_Components (T);
+
+            --  Don't do any recursion on type with error posted, since
+            --  we may have a malformed type that leads us into a loop
+
+            elsif Error_Posted (T) then
+               return False;
 
             else
                declare
@@ -1218,6 +1249,17 @@ package body Freeze is
                   end if;
                end;
 
+            --  If this is a constrained subtype of an already frozen type,
+            --  make the subtype frozen as well. It might otherwise be frozen
+            --  in the wrong scope, and a freeze node on subtype has no effect.
+
+            elsif Is_Access_Type (Etype (Comp))
+              and then not Is_Frozen (Designated_Type (Etype (Comp)))
+              and then Is_Itype (Designated_Type (Etype (Comp)))
+              and then Is_Frozen (Base_Type (Designated_Type (Etype (Comp))))
+            then
+               Set_Is_Frozen (Designated_Type (Etype (Comp)));
+
             elsif Is_Array_Type (Etype (Comp))
               and then Is_Access_Type (Component_Type (Etype (Comp)))
               and then Present (Parent (Comp))
@@ -1250,9 +1292,11 @@ package body Freeze is
                   if Present (CC) then
                      Placed_Component := True;
 
-                     if not Size_Known_At_Compile_Time
+                     if Inside_A_Generic then
+                        null;
+
+                     elsif not Size_Known_At_Compile_Time
                               (Underlying_Type (Etype (Comp)))
-                       and then not Inside_A_Generic
                      then
                         Error_Msg_N
                           ("component clause not allowed for variable " &
@@ -1827,9 +1871,12 @@ package body Freeze is
                   Next_Index (Indx);
                end loop;
 
-               --  For base type, propagate flags for component type
+               --  Processing that is done only for base types
 
                if Ekind (E) = E_Array_Type then
+
+                  --  Propagate flags for component type
+
                   if Is_Controlled (Component_Type (E))
                     or else Has_Controlled_Component (Ctyp)
                   then
@@ -1839,18 +1886,16 @@ package body Freeze is
                   if Has_Unchecked_Union (Component_Type (E)) then
                      Set_Has_Unchecked_Union (E);
                   end if;
-               end if;
 
-               --  If packing was requested or if the component size was set
-               --  explicitly, then see if bit packing is required. This
-               --  processing is only done for base types, since all the
-               --  representation aspects involved are type-related. This
-               --  is not just an optimization, if we start processing the
-               --  subtypes, they intefere with the settings on the base
-               --  type (this is because Is_Packed has a slightly different
-               --  meaning before and after freezing).
+                  --  If packing was requested or if the component size was set
+                  --  explicitly, then see if bit packing is required. This
+                  --  processing is only done for base types, since all the
+                  --  representation aspects involved are type-related. This
+                  --  is not just an optimization, if we start processing the
+                  --  subtypes, they intefere with the settings on the base
+                  --  type (this is because Is_Packed has a slightly different
+                  --  meaning before and after freezing).
 
-               if E = Base_Type (E) then
                   declare
                      Csiz : Uint;
                      Esiz : Uint;
@@ -1937,6 +1982,63 @@ package body Freeze is
                            Set_Is_Bit_Packed_Array  (Base_Type (E));
                            Set_Is_Packed            (Base_Type (E));
                         end if;
+                     end if;
+                  end;
+
+               --  Processing that is done only for subtypes
+
+               else
+                  --  Acquire alignment from base type
+
+                  if Unknown_Alignment (E) then
+                     Set_Alignment (E, Alignment (Base_Type (E)));
+                  end if;
+               end if;
+
+               --  Check one common case of a size given where the array
+               --  needs to be packed, but was not so the size cannot be
+               --  honored. This would of course be caught by the backend,
+               --  and indeed we don't catch all cases. The point is that
+               --  we can give a better error message in those cases that
+               --  we do catch with the circuitry here.
+
+               if Present (Size_Clause (E))
+                 and then Known_Static_Esize (E)
+                 and then not Has_Pragma_Pack (E)
+                 and then Number_Dimensions (E) = 1
+                 and then not Has_Component_Size_Clause (E)
+                 and then Known_Static_Component_Size (E)
+               then
+                  declare
+                     Lo, Hi : Node_Id;
+                     Ctyp   : constant Entity_Id := Component_Type (E);
+
+                  begin
+                     Get_Index_Bounds (First_Index (E), Lo, Hi);
+
+                     if Compile_Time_Known_Value (Lo)
+                       and then Compile_Time_Known_Value (Hi)
+                       and then Known_Static_RM_Size (Ctyp)
+                       and then RM_Size (Ctyp) < 64
+                     then
+                        declare
+                           Lov : constant Uint := Expr_Value (Lo);
+                           Hiv : constant Uint := Expr_Value (Hi);
+                           Len : constant Uint :=
+                                   UI_Max (Uint_0, Hiv - Lov + 1);
+
+                        begin
+                           if Esize (E) < Len * Component_Size (E)
+                             and then Esize (E) = Len * RM_Size (Ctyp)
+                           then
+                              Error_Msg_NE
+                                ("size given for& too small",
+                                   Size_Clause (E), E);
+                              Error_Msg_N
+                                ("\explicit pragma Pack is required",
+                                   Size_Clause (E));
+                           end if;
+                        end;
                      end if;
                   end;
                end if;
@@ -2241,10 +2343,10 @@ package body Freeze is
             elsif Has_Discriminants (E)
               and Is_Constrained (E)
             then
-
                declare
                   Constraint : Elmt_Id;
                   Expr       : Node_Id;
+
                begin
                   Constraint := First_Elmt (Discriminant_Constraint (E));
 
@@ -2285,9 +2387,10 @@ package body Freeze is
             then
                declare
                   Prim_List : constant Elist_Id := Primitive_Operations (E);
-                  Prim      : Elmt_Id           := First_Elmt (Prim_List);
+                  Prim      : Elmt_Id;
 
                begin
+                  Prim := First_Elmt (Prim_List);
                   while Present (Prim) loop
                      if Convention (Node (Prim)) = Convention_Ada then
                         Set_Convention (Node (Prim), Convention (E));
@@ -2297,6 +2400,43 @@ package body Freeze is
                   end loop;
                end;
             end if;
+         end if;
+
+         --  Generate primitive operation references for a tagged type
+
+         if Is_Tagged_Type (E)
+           and then not Is_Class_Wide_Type (E)
+         then
+            declare
+               Prim_List : constant Elist_Id := Primitive_Operations (E);
+               Prim      : Elmt_Id;
+               Ent       : Entity_Id;
+
+            begin
+               Prim := First_Elmt (Prim_List);
+               while Present (Prim) loop
+                  Ent := Node (Prim);
+
+                  --  If the operation is derived, get the original for
+                  --  cross-reference purposes (it is the original for
+                  --  which we want the xref, and for which the comes
+                  --  from source test needs to be performed).
+
+                  while Present (Alias (Ent)) loop
+                     Ent := Alias (Ent);
+                  end loop;
+
+                  Generate_Reference (E, Ent, 'p', Set_Ref => False);
+                  Next_Elmt (Prim);
+               end loop;
+
+            --  If we get an exception, then something peculiar has happened
+            --  probably as a result of a previous error. Since this is only
+            --  for non-critical cross-references, ignore the error.
+
+            exception
+               when others => null;
+            end;
          end if;
 
          --  Now that all types from which E may depend are frozen, see
@@ -2316,9 +2456,14 @@ package body Freeze is
          if Has_Size_Clause (E)
            and then not Size_Known_At_Compile_Time (E)
          then
-            Error_Msg_N
-              ("size clause not allowed for variable length type",
-               Size_Clause (E));
+            --  Supress this message if errors posted on E, even if we are
+            --  in all errors mode, since this is often a junk message
+
+            if not Error_Posted (E) then
+               Error_Msg_N
+                 ("size clause not allowed for variable length type",
+                  Size_Clause (E));
+            end if;
          end if;
 
          --  Remaining process is to set/verify the representation information,

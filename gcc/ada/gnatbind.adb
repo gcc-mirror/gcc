@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,11 @@ with Gnatvsn;  use Gnatvsn;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
+with Osint.B;  use Osint.B;
 with Output;   use Output;
 with Switch;   use Switch;
+with Switch.B; use Switch.B;
+with Targparm; use Targparm;
 with Types;    use Types;
 
 procedure Gnatbind is
@@ -86,9 +89,7 @@ procedure Gnatbind is
          Output_File_Name_Seen := True;
 
          if Argv'Length = 0
-           or else (Argv'Length >= 1
-                     and then (Argv (1) = Switch_Character
-                                or else Argv (1) = '-'))
+           or else (Argv'Length >= 1 and then Argv (1) = '-')
          then
             Fail ("output File_Name missing after -o");
 
@@ -96,10 +97,8 @@ procedure Gnatbind is
             Output_File_Name := new String'(Argv);
          end if;
 
-      elsif Argv'Length >= 2
-        and then (Argv (1) = Switch_Character
-                   or else Argv (1) = '-')
-      then
+      elsif Argv'Length >= 2 and then Argv (1) = '-' then
+
          --  -I-
 
          if Argv (2 .. Argv'Last) = "I-" then
@@ -227,9 +226,9 @@ procedure Gnatbind is
          if Argv'Length > 4
            and then Argv (Argv'Last - 3 .. Argv'Last) = ".ali"
          then
-            Set_Main_File_Name (Argv);
+            Add_File (Argv);
          else
-            Set_Main_File_Name (Argv & ".ali");
+            Add_File (Argv & ".ali");
          end if;
       end if;
    end Scan_Bind_Arg;
@@ -237,7 +236,6 @@ procedure Gnatbind is
 --  Start of processing for Gnatbind
 
 begin
-   Osint.Initialize (Binder);
 
    --  Set default for Shared_Libgnat option
 
@@ -315,10 +313,18 @@ begin
    Osint.Add_Default_Search_Dirs;
 
    if Verbose_Mode then
+      Namet.Initialize;
+      Targparm.Get_Target_Parameters;
+
       Write_Eol;
       Write_Str ("GNATBIND ");
+
+      if Targparm.High_Integrity_Mode_On_Target then
+         Write_Str ("Pro High Integrity ");
+      end if;
+
       Write_Str (Gnat_Version_String);
-      Write_Str (" Copyright 1995-2001 Free Software Foundation, Inc.");
+      Write_Str (" Copyright 1995-2002 Free Software Foundation, Inc.");
       Write_Eol;
    end if;
 

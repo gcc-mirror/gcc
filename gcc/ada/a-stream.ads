@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.9 $                              --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -53,7 +53,7 @@ pragma Pure (Streams);
       Stream_Element_Offset range 0 .. Stream_Element_Offset'Last;
 
    type Stream_Element_Array is
-      array (Stream_Element_Offset range <>) of Stream_Element;
+      array (Stream_Element_Offset range <>) of aliased Stream_Element;
 
    procedure Read
      (Stream : in out Root_Stream_Type;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.120 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -103,7 +103,7 @@ package body Expander is
       --  expansion on (see the spec of sem).
 
       --  Finally, expansion is turned off in a regular compilation if there
-      --  are semantic errors. In that case there will be no further expansion,
+      --  are serious errors. In that case there will be no further expansion,
       --  but one cleanup action may be required: if a transient scope was
       --  created (e.g. for a function that returns an unconstrained type)
       --  the scope may still be on the stack, and must be removed explicitly,
@@ -113,7 +113,7 @@ package body Expander is
       if not Expander_Active then
          Set_Analyzed (N, Full_Analysis);
 
-         if Errors_Detected > 0
+         if Serious_Errors_Detected > 0
            and then Scope_Is_Transient
          then
             Scope_Stack.Table
@@ -127,7 +127,6 @@ package body Expander is
          return;
 
       else
-
          Debug_A_Entry ("expanding  ", N);
 
          --  Processing depends on node kind. For full details on the expansion
@@ -473,7 +472,7 @@ package body Expander is
       Expander_Active := Expander_Flags.Table (Expander_Flags.Last);
       Expander_Flags.Decrement_Last;
 
-      if Errors_Detected /= 0 then
+      if Serious_Errors_Detected /= 0 then
          Expander_Active := False;
       end if;
    end Expander_Mode_Restore;

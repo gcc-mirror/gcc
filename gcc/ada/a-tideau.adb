@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.12 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -68,7 +68,7 @@ package body Ada.Text_IO.Decimal_Aux is
       end if;
 
       Item := Scan_Decimal (Buf, Ptr'Access, Stop, Scale);
-      Check_End_Of_Field (File, Buf, Stop, Ptr, Width);
+      Check_End_Of_Field (Buf, Stop, Ptr, Width);
       return Item;
    end Get_Dec;
 
@@ -97,7 +97,7 @@ package body Ada.Text_IO.Decimal_Aux is
       end if;
 
       Item := Scan_Long_Long_Decimal (Buf, Ptr'Access, Stop, Scale);
-      Check_End_Of_Field (File, Buf, Stop, Ptr, Width);
+      Check_End_Of_Field (Buf, Stop, Ptr, Width);
       return Item;
    end Get_LLD;
 

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1997-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,8 @@ with GNAT.OS_Lib;
 with GNAT.Command_Line;
 with Gnatvsn;
 
-with MDLL.Files;
-with MDLL.Tools;
+with MDLL.Fil;
+with MDLL.Utl;
 
 procedure Gnatdll is
 
@@ -62,11 +62,15 @@ procedure Gnatdll is
    --  Check the context before runing any commands to build the library
 
    Syntax_Error  : exception;
+   --  Raised when a syntax error is detected, in this case a usage info will
+   --  be displayed.
+
    Context_Error : exception;
-   --  What are these for ???
+   --  Raised when some files (specifed on the command line) are missing to
+   --  build the DLL.
 
    Help : Boolean := False;
-   --  What is this for ???
+   --  Help will be set to True the usage information is to be displayed.
 
    Version : constant String := Gnatvsn.Gnat_Version_String;
    --  Why should it be necessary to make a copy of this
@@ -75,11 +79,17 @@ procedure Gnatdll is
    --  Default address for non relocatable DLL (Win32)
 
    Lib_Filename        : Unbounded_String := Null_Unbounded_String;
+   --  The DLL filename that will be created (.dll)
+
    Def_Filename        : Unbounded_String := Null_Unbounded_String;
+   --  The definition filename (.def)
+
    List_Filename       : Unbounded_String := Null_Unbounded_String;
+   --  The name of the file containing the objects file to put into the DLL
+
    DLL_Address         : Unbounded_String :=
                            To_Unbounded_String (Default_DLL_Address);
-   --  What are the above ???
+   --  The DLL's base address
 
    Objects_Files : Argument_List_Access := Null_Argument_List_Access;
    --  List of objects to put inside the library
@@ -95,13 +105,18 @@ procedure Gnatdll is
    Bargs_Options : Argument_List_Access := Null_Argument_List_Access;
    --  GNAT linker and binder args options
 
-   type Build_Mode_State is (Import_Lib, Dynamic_Lib, Nil);
-   --  Comments needed ???
+   type Build_Mode_State is (Import_Lib, Dynamic_Lib, Dynamic_Lib_Only, Nil);
+   --  Import_Lib means only the .a file will be created, Dynamic_Lib means
+   --  that both the DLL and the import library will be created.
+   --  Dynamic_Lib_Only means that only the DLL will be created (no import
+   --  library).
 
    Build_Mode             : Build_Mode_State := Nil;
+   --  Will be set when parsing the command line.
+
    Must_Build_Relocatable : Boolean := True;
-   Build_Import           : Boolean := True;
-   --  Comments needed
+   --  True means build a relocatable DLL, will be set to False if a
+   --  non-relocatable DLL must be built.
 
    ------------
    -- Syntax --
@@ -130,6 +145,8 @@ procedure Gnatdll is
       P ("   -e file       Definition file containing exports");
       P ("   -d file       Put objects in the relocatable dynamic "
          & "library <file>");
+      P ("   -b addr       Set base address for the relocatable DLL");
+      P ("                 default address is " & Default_DLL_Address);
       P ("   -a[addr]      Build non-relocatable DLL at address <addr>");
       P ("                 if <addr> is not specified use "
          & Default_DLL_Address);
@@ -159,15 +176,11 @@ procedure Gnatdll is
       use GNAT.Command_Line;
 
       procedure Add_File (Filename : in String);
-      --  add one file to the list of file to handle
+      --  Add one file to the list of file to handle
 
       procedure Add_Files_From_List (List_Filename : in String);
-      --  add the files listed in List_Filename (one by line) to the list
+      --  Add the files listed in List_Filename (one by line) to the list
       --  of file to handle
-
-      procedure Ali_To_Object_List;
-      --  for each ali file in Afiles set put a corresponding object file in
-      --  Ofiles set.
 
       Max_Files   : constant := 5_000;
       Max_Options : constant :=   100;
@@ -196,16 +209,16 @@ procedure Gnatdll is
       B      : Positive := Bopts'First;
       --  A list of -bargs options (B is next entry to be used)
 
+      Build_Import : Boolean := True;
+      --  Set to Fals if option -n if specified (no-import).
+
       --------------
       -- Add_File --
       --------------
 
       procedure Add_File (Filename : in String) is
       begin
-         --  others files are to be put inside the dynamic library
-         --  ??? this makes no sense, should it be "Other files ..."
-
-         if Files.Is_Ali (Filename) then
+         if Fil.Is_Ali (Filename) then
 
             Check (Filename);
 
@@ -215,7 +228,7 @@ procedure Gnatdll is
             Afiles (A) := new String'(Filename);
             A := A + 1;
 
-         elsif Files.Is_Obj (Filename) then
+         elsif Fil.Is_Obj (Filename) then
 
             Check (Filename);
 
@@ -253,18 +266,6 @@ procedure Gnatdll is
          Text_IO.Close (File);
       end Add_Files_From_List;
 
-      ------------------------
-      -- Ali_To_Object_List --
-      ------------------------
-
-      procedure Ali_To_Object_List is
-      begin
-         for K in 1 .. A - 1 loop
-            Ofiles (O) := new String'(Files.Ext_To (Afiles (K).all, "o"));
-            O := O + 1;
-         end loop;
-      end Ali_To_Object_List;
-
    --  Start of processing for Parse_Command_Line
 
    begin
@@ -273,7 +274,7 @@ procedure Gnatdll is
       --  scan gnatdll switches
 
       loop
-         case Getopt ("g h v q k a? d: e: l: n I:") is
+         case Getopt ("g h v q k a? b: d: e: l: n I:") is
 
             when ASCII.Nul =>
                exit;
@@ -326,6 +327,12 @@ procedure Gnatdll is
 
                Must_Build_Relocatable := False;
 
+            when 'b' =>
+
+               DLL_Address := To_Unbounded_String (Parameter);
+
+               Must_Build_Relocatable := True;
+
             when 'e' =>
 
                Def_Filename := To_Unbounded_String (Parameter);
@@ -338,7 +345,7 @@ procedure Gnatdll is
 
                if Def_Filename = Null_Unbounded_String then
                   Def_Filename := To_Unbounded_String
-                    (Files.Ext_To (Parameter, "def"));
+                    (Fil.Ext_To (Parameter, "def"));
                end if;
 
                Build_Mode := Dynamic_Lib;
@@ -419,6 +426,17 @@ procedure Gnatdll is
             "nothing to do.");
       end if;
 
+      --  -n option but no file specified
+
+      if not Build_Import
+        and then A = Afiles'First
+        and then O = Ofiles'First
+      then
+         Exceptions.Raise_Exception
+           (Syntax_Error'Identity,
+            "-n specified but there are no objects to build the library.");
+      end if;
+
       --  Check if we want to build an import library (option -e and
       --  no file specified)
 
@@ -427,6 +445,12 @@ procedure Gnatdll is
         and then O = Ofiles'First
       then
          Build_Mode := Import_Lib;
+      end if;
+
+      --  Check if only a dynamic library must be built.
+
+      if Build_Mode = Dynamic_Lib and then not Build_Import then
+         Build_Mode := Dynamic_Lib_Only;
       end if;
 
       if O /= Ofiles'First then
@@ -495,7 +519,7 @@ begin
       Text_IO.New_Line;
    end if;
 
-   MDLL.Tools.Locate;
+   MDLL.Utl.Locate;
 
    if Help
      or else (MDLL.Verbose and then Ada.Command_Line.Argument_Count = 1)
@@ -521,8 +545,21 @@ begin
                To_String (Lib_Filename),
                To_String (Def_Filename),
                To_String (DLL_Address),
-               Build_Import,
-               Must_Build_Relocatable);
+               Build_Import => True,
+               Relocatable  => Must_Build_Relocatable);
+
+         when Dynamic_Lib_Only =>
+            MDLL.Build_Dynamic_Library
+              (Objects_Files.all,
+               Ali_Files.all,
+               Options.all,
+               Bargs_Options.all,
+               Largs_Options.all,
+               To_String (Lib_Filename),
+               To_String (Def_Filename),
+               To_String (DLL_Address),
+               Build_Import => False,
+               Relocatable  => Must_Build_Relocatable);
 
          when Nil =>
             null;

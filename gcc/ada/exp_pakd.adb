@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -591,7 +591,7 @@ package body Exp_Pakd is
                  Right_Opnd =>
                    Convert_To (Standard_Integer,
                      Make_Attribute_Reference (Loc,
-                       Prefix => New_Occurrence_Of (Styp, Loc),
+                       Prefix         => New_Occurrence_Of (Styp, Loc),
                        Attribute_Name => Name_First)));
 
             --  For larger integer types, subtract first, then convert to
@@ -606,7 +606,7 @@ package body Exp_Pakd is
                      Left_Opnd => Newsub,
                    Right_Opnd =>
                      Make_Attribute_Reference (Loc,
-                       Prefix => New_Occurrence_Of (Styp, Loc),
+                       Prefix         => New_Occurrence_Of (Styp, Loc),
                        Attribute_Name => Name_First)));
             end if;
 
@@ -625,18 +625,18 @@ package body Exp_Pakd is
               Make_Op_Subtract (Loc,
                 Left_Opnd => Convert_To (Standard_Integer,
                   Make_Attribute_Reference (Loc,
-                    Prefix => New_Occurrence_Of (Styp, Loc),
+                    Prefix         => New_Occurrence_Of (Styp, Loc),
                     Attribute_Name => Name_Pos,
-                    Expressions => New_List (Newsub))),
+                    Expressions    => New_List (Newsub))),
 
                 Right_Opnd =>
                   Convert_To (Standard_Integer,
                     Make_Attribute_Reference (Loc,
-                      Prefix => New_Occurrence_Of (Styp, Loc),
+                      Prefix         => New_Occurrence_Of (Styp, Loc),
                       Attribute_Name => Name_Pos,
-                      Expressions => New_List (
+                      Expressions    => New_List (
                         Make_Attribute_Reference (Loc,
-                        Prefix => New_Occurrence_Of (Styp, Loc),
+                        Prefix         => New_Occurrence_Of (Styp, Loc),
                         Attribute_Name => Name_First)))));
          end if;
 
@@ -761,7 +761,7 @@ package body Exp_Pakd is
          end if;
 
          Set_Is_Itype (PAT, True);
-         Set_Is_Packed_Array_Type (PAT, True);
+         Set_Packed_Array_Type (Typ, PAT);
          Analyze (Decl, Suppress => All_Checks);
 
          if Pushed_Scope then
@@ -780,10 +780,11 @@ package body Exp_Pakd is
 
          --  Set remaining fields of packed array type
 
-         Init_Alignment (PAT);
-         Set_Parent     (PAT, Empty);
-         Set_Packed_Array_Type (Typ, PAT);
+         Init_Alignment                (PAT);
+         Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
+         Set_Is_Packed_Array_Type      (PAT, True);
+         Set_Original_Array_Type       (PAT, Typ);
 
          --  We definitely do not want to delay freezing for packed array
          --  types. This is of particular importance for the itypes that
@@ -801,14 +802,17 @@ package body Exp_Pakd is
       procedure Set_PB_Type is
       begin
          --  If the user has specified an explicit alignment for the
-         --  component, take it into account.
+         --  type or component, take it into account.
 
          if Csize <= 2 or else Csize = 4 or else Csize mod 2 /= 0
+           or else Alignment (Typ) = 1
            or else Component_Alignment (Typ) = Calign_Storage_Unit
          then
             PB_Type := RTE (RE_Packed_Bytes1);
 
-         elsif Csize mod 4 /= 0 then
+         elsif Csize mod 4 /= 0
+           or else Alignment (Typ) = 2
+         then
             PB_Type := RTE (RE_Packed_Bytes2);
 
          else
@@ -973,17 +977,28 @@ package body Exp_Pakd is
                 Type_Definition => Typedef);
          end;
 
+         --  Set type as packed array type and install it
+
+         Set_Is_Packed_Array_Type (PAT);
          Install_PAT;
          return;
 
-      --  Case of bit-packing required for unconstrained array. We simply
-      --  use Packed_Bytes{1,2,4} as appropriate, and we do not need to
-      --  construct a special packed array type.
+      --  Case of bit-packing required for unconstrained array. We create
+      --  a subtype that is equivalent to use Packed_Bytes{1,2,4} as needed.
 
       elsif not Is_Constrained (Typ) then
+         PAT :=
+           Make_Defining_Identifier (Loc,
+             Chars => Make_Packed_Array_Type_Name (Typ, Csize));
+
+         Set_Packed_Array_Type (Typ, PAT);
          Set_PB_Type;
-         Set_Packed_Array_Type (Typ, PB_Type);
-         Set_Is_Packed_Array_Type (Packed_Array_Type (Typ), True);
+
+         Decl :=
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => PAT,
+               Subtype_Indication => New_Occurrence_Of (PB_Type, Loc));
+         Install_PAT;
          return;
 
       --  Remaining code is for the case of bit-packing for constrained array
@@ -1453,9 +1468,9 @@ package body Exp_Pakd is
               Make_Procedure_Call_Statement (Loc,
                   Name => New_Occurrence_Of (Set_nn, Loc),
                   Parameter_Associations => New_List (
-                    Make_Attribute_Reference (Loc,
+                    Make_Byte_Aligned_Attribute_Reference (Loc,
                       Attribute_Name => Name_Address,
-                      Prefix => Obj),
+                      Prefix         => Obj),
                     Subscr,
                     Unchecked_Convert_To (Bits_nn,
                       Convert_To (Ctyp, Rhs)))));
@@ -1507,13 +1522,13 @@ package body Exp_Pakd is
                 Left_Opnd => Subscr,
                 Right_Opnd =>
                  Make_Attribute_Reference (Ploc,
-                   Prefix => New_Occurrence_Of (Atyp, Ploc),
+                   Prefix         => New_Occurrence_Of (Atyp, Ploc),
                    Attribute_Name => Name_Component_Size));
 
          elsif Nkind (Pref) = N_Selected_Component then
             Term :=
               Make_Attribute_Reference (Ploc,
-                Prefix => Selector_Name (Pref),
+                Prefix         => Selector_Name (Pref),
                 Attribute_Name => Name_Bit_Position);
 
          else
@@ -1541,7 +1556,7 @@ package body Exp_Pakd is
             Left_Opnd =>
               Unchecked_Convert_To (RTE (RE_Integer_Address),
                 Make_Attribute_Reference (Loc,
-                  Prefix => Pref,
+                  Prefix         => Pref,
                   Attribute_Name => Name_Address)),
 
             Right_Opnd =>
@@ -1619,7 +1634,8 @@ package body Exp_Pakd is
 
                         Right_Opnd =>
                           Convert_To (BT,
-                            New_Occurrence_Of (Standard_True, Loc))))));
+                            New_Occurrence_Of (Standard_True, Loc)))),
+                Reason => CE_Range_Check_Failed));
          end;
       end if;
 
@@ -1701,9 +1717,9 @@ package body Exp_Pakd is
                 Name => New_Occurrence_Of (RTE (E_Id), Loc),
                   Parameter_Associations => New_List (
 
-                    Make_Attribute_Reference (Loc,
+                    Make_Byte_Aligned_Attribute_Reference (Loc,
                       Attribute_Name => Name_Address,
-                      Prefix => L),
+                      Prefix         => L),
 
                     Make_Op_Multiply (Loc,
                       Left_Opnd =>
@@ -1715,9 +1731,9 @@ package body Exp_Pakd is
                       Right_Opnd =>
                         Make_Integer_Literal (Loc, Component_Size (Ltyp))),
 
-                    Make_Attribute_Reference (Loc,
+                    Make_Byte_Aligned_Attribute_Reference (Loc,
                       Attribute_Name => Name_Address,
-                      Prefix => R),
+                      Prefix         => R),
 
                     Make_Op_Multiply (Loc,
                       Left_Opnd =>
@@ -1729,7 +1745,7 @@ package body Exp_Pakd is
                       Right_Opnd =>
                         Make_Integer_Literal (Loc, Component_Size (Rtyp))),
 
-                    Make_Attribute_Reference (Loc,
+                    Make_Byte_Aligned_Attribute_Reference (Loc,
                       Attribute_Name => Name_Address,
                       Prefix => New_Occurrence_Of (Result_Ent, Loc))))));
 
@@ -1841,9 +1857,9 @@ package body Exp_Pakd is
                 Make_Function_Call (Loc,
                   Name => New_Occurrence_Of (Get_nn, Loc),
                   Parameter_Associations => New_List (
-                    Make_Attribute_Reference (Loc,
+                    Make_Byte_Aligned_Attribute_Reference (Loc,
                       Attribute_Name => Name_Address,
-                      Prefix => Obj),
+                      Prefix         => Obj),
                     Subscr))));
          end;
       end if;
@@ -1885,7 +1901,7 @@ package body Exp_Pakd is
           Left_Opnd =>
             Make_Attribute_Reference (Loc,
               Attribute_Name => Name_Length,
-              Prefix => New_Occurrence_Of (Ltyp, Loc)),
+              Prefix         => New_Occurrence_Of (Ltyp, Loc)),
           Right_Opnd =>
             Make_Integer_Literal (Loc, Component_Size (Ltyp)));
 
@@ -1894,7 +1910,7 @@ package body Exp_Pakd is
           Left_Opnd =>
             Make_Attribute_Reference (Loc,
               Attribute_Name => Name_Length,
-              Prefix => New_Occurrence_Of (Rtyp, Loc)),
+              Prefix         => New_Occurrence_Of (Rtyp, Loc)),
           Right_Opnd =>
             Make_Integer_Literal (Loc, Component_Size (Rtyp)));
 
@@ -1934,15 +1950,15 @@ package body Exp_Pakd is
            Make_Function_Call (Loc,
              Name => New_Occurrence_Of (RTE (RE_Bit_Eq), Loc),
              Parameter_Associations => New_List (
-               Make_Attribute_Reference (Loc,
+               Make_Byte_Aligned_Attribute_Reference (Loc,
                  Attribute_Name => Name_Address,
-                 Prefix => L),
+                 Prefix         => L),
 
                LLexpr,
 
-               Make_Attribute_Reference (Loc,
+               Make_Byte_Aligned_Attribute_Reference (Loc,
                  Attribute_Name => Name_Address,
-                 Prefix => R),
+                 Prefix         => R),
 
                RLexpr)));
       end if;
@@ -1995,7 +2011,8 @@ package body Exp_Pakd is
                  Right_Opnd =>
                    Make_Attribute_Reference (Loc,
                      Prefix         => New_Occurrence_Of (CT, Loc),
-                     Attribute_Name => Name_Last))));
+                     Attribute_Name => Name_Last)),
+             Reason => CE_Range_Check_Failed));
       end;
 
       --  Now that that silliness is taken care of, get packed array type
@@ -2052,9 +2069,9 @@ package body Exp_Pakd is
                 Name => New_Occurrence_Of (RTE (RE_Bit_Not), Loc),
                   Parameter_Associations => New_List (
 
-                    Make_Attribute_Reference (Loc,
+                    Make_Byte_Aligned_Attribute_Reference (Loc,
                       Attribute_Name => Name_Address,
-                      Prefix => Opnd),
+                      Prefix         => Opnd),
 
                     Make_Op_Multiply (Loc,
                       Left_Opnd =>
@@ -2066,7 +2083,7 @@ package body Exp_Pakd is
                       Right_Opnd =>
                         Make_Integer_Literal (Loc, Component_Size (Rtyp))),
 
-                    Make_Attribute_Reference (Loc,
+                    Make_Byte_Aligned_Attribute_Reference (Loc,
                       Attribute_Name => Name_Address,
                       Prefix => New_Occurrence_Of (Result_Ent, Loc))))));
 
@@ -2146,13 +2163,11 @@ package body Exp_Pakd is
       --  If we have a specified alignment, see if it is sufficient, if not
       --  then we can't possibly be aligned enough in any case.
 
-      elsif Is_Entity_Name (Obj)
-        and then Known_Alignment (Entity (Obj))
-      then
+      elsif Known_Alignment (Etype (Obj)) then
          --  Alignment required is 4 if size is a multiple of 4, and
          --  2 otherwise (e.g. 12 bits requires 4, 10 bits requires 2)
 
-         if Alignment (Entity (Obj)) < 4 - (Csiz mod 4) then
+         if Alignment (Etype (Obj)) < 4 - (Csiz mod 4) then
             return False;
          end if;
       end if;
@@ -2345,7 +2360,7 @@ package body Exp_Pakd is
             then
                Rewrite (Expr,
                  Make_Attribute_Reference (Loc,
-                   Prefix => New_Occurrence_Of (Expr_Typ, Loc),
+                   Prefix         => New_Occurrence_Of (Expr_Typ, Loc),
                    Attribute_Name => Name_Pos,
                    Expressions    => New_List (Relocate_Node (Expr))));
                Analyze_And_Resolve (Expr, Standard_Natural);

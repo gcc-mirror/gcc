@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.26 $                            --
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -44,8 +43,6 @@ with System.Tasking.Protected_Objects.Entries;
 --  used for Protection_Entries
 
 package System.Tasking.Rendezvous is
-   --  This interface is described in the document
-   --  Gnu Ada Runtime Library Interface (GNARLI).
 
    package STPE renames System.Tasking.Protected_Objects.Entries;
 
@@ -55,7 +52,15 @@ package System.Tasking.Rendezvous is
       Uninterpreted_Data    : System.Address;
       Mode                  : Call_Modes;
       Rendezvous_Successful : out Boolean);
-   --  General entry call
+   --  General entry call used to implement ATC or conditional entry calls.
+   --  Compiler interface only. Do not call from within the RTS.
+   --  Acceptor is the ID of the acceptor task.
+   --  E is the entry index requested.
+   --  Uninterpreted_Data represents the parameters of the entry. It is
+   --  constructed by the compiler for the caller and the callee; therefore,
+   --  the run time never needs to decode this data.
+   --  Mode can be either Asynchronous_Call (ATC) or Conditional_Call.
+   --  Rendezvous_Successful is set to True on return if the call was serviced.
 
    procedure Timed_Task_Entry_Call
      (Acceptor              : Task_ID;
@@ -65,33 +70,174 @@ package System.Tasking.Rendezvous is
       Mode                  : Delay_Modes;
       Rendezvous_Successful : out Boolean);
    --  Timed entry call without using ATC.
+   --  Compiler interface only. Do not call from within the RTS.
+   --  See Task_Entry_Call for details on Acceptor, E and Uninterpreted_Data.
+   --  Timeout is the value of the time out.
+   --  Mode determines whether the delay is relative or absolute.
 
    procedure Call_Simple
      (Acceptor           : Task_ID;
       E                  : Task_Entry_Index;
       Uninterpreted_Data : System.Address);
-   --  Simple entry call
+   --  Simple entry call.
+   --  Compiler interface only. Do not call from within the RTS.
+   --
+   --  source:
+   --     T.E1 (Params);
+   --
+   --  expansion:
+   --    declare
+   --       P : parms := (parm1, parm2, parm3);
+   --       X : Task_Entry_Index := 1;
+   --    begin
+   --       Call_Simple (t._task_id, X, P'Address);
+   --       parm1 := P.param1;
+   --       parm2 := P.param2;
+   --       ...
+   --    end;
 
    procedure Cancel_Task_Entry_Call (Cancelled : out Boolean);
-   --  Cancel pending task entry call
+   --  Cancel pending asynchronous task entry call.
+   --  Compiler interface only. Do not call from within the RTS.
+   --  See Exp_Ch9.Expand_N_Asynchronous_Select for code expansion.
 
    procedure Requeue_Task_Entry
      (Acceptor   : Task_ID;
       E          : Task_Entry_Index;
       With_Abort : Boolean);
+   --  Requeue from a task entry to a task entry.
+   --  Compiler interface only. Do not call from within the RTS.
+   --  The code generation for task entry requeues is different from that for
+   --  protected entry requeues. There is a "goto" that skips around the call
+   --  to Complete_Rendezvous, so that Requeue_Task_Entry must also do the work
+   --  of Complete_Rendezvous. The difference is that it does not report that
+   --  the call's State = Done.
+   --
+   --  source:
+   --     accept e1 do
+   --       ...A...
+   --       requeue e2;
+   --       ...B...
+   --     end e1;
+   --
+   --  expansion:
+   --     A62b : address;
+   --     L61b : label
+   --     begin
+   --        accept_call (1, A62b);
+   --        ...A...
+   --        requeue_task_entry (tTV!(t)._task_id, 2, false);
+   --        goto L61b;
+   --        ...B...
+   --        complete_rendezvous;
+   --        <<L61b>>
+   --     exception
+   --        when others =>
+   --           exceptional_complete_rendezvous (current_exception);
+   --     end;
 
    procedure Requeue_Protected_To_Task_Entry
      (Object     : STPE.Protection_Entries_Access;
       Acceptor   : Task_ID;
       E          : Task_Entry_Index;
       With_Abort : Boolean);
+   --  Requeue from a protected entry to a task entry.
+   --  Compiler interface only. Do not call from within the RTS.
+   --
+   --  source:
+   --     entry e2 when b is
+   --     begin
+   --        b := false;
+   --        ...A...
+   --        requeue t.e2;
+   --     end e2;
+   --
+   --  expansion:
+   --     procedure rPT__E14b (O : address; P : address; E :
+   --       protected_entry_index) is
+   --        type rTVP is access rTV;
+   --        freeze rTVP []
+   --        _object : rTVP := rTVP!(O);
+   --     begin
+   --        declare
+   --           rR : protection renames _object._object;
+   --           vP : integer renames _object.v;
+   --           bP : boolean renames _object.b;
+   --        begin
+   --           b := false;
+   --           ...A...
+   --           requeue_protected_to_task_entry (rR'unchecked_access, tTV!(t).
+   --             _task_id, 2, false);
+   --           return;
+   --        end;
+   --        complete_entry_body (_object._object'unchecked_access, objectF =>
+   --          0);
+   --        return;
+   --     exception
+   --        when others =>
+   --           abort_undefer.all;
+   --           exceptional_complete_entry_body (_object._object'
+   --             unchecked_access, current_exception, objectF => 0);
+   --           return;
+   --     end rPT__E14b;
 
    procedure Selective_Wait
      (Open_Accepts       : Accept_List_Access;
       Select_Mode        : Select_Modes;
       Uninterpreted_Data : out System.Address;
       Index              : out Select_Index);
-   --  Selective wait
+   --  Implement select statement.
+   --  Compiler interface only. Do not call from within the RTS.
+   --  See comments on Accept_Call.
+   --
+   --  source:
+   --     select accept e1 do
+   --           ...A...
+   --        end e1;
+   --        ...B...
+   --     or accept e2;
+   --        ...C...
+   --     end select;
+   --
+   --  expansion:
+   --     A32b : address;
+   --     declare
+   --        A37b : T36b;
+   --        A37b (1) := (null_body => false, s => 1);
+   --        A37b (2) := (null_body => true, s => 2);
+   --        S0 : aliased T36b := accept_list'A37b;
+   --        J1 : select_index := 0;
+   --        procedure e1A is
+   --        begin
+   --           abort_undefer.all;
+   --           ...A...
+   --           <<L31b>>
+   --           complete_rendezvous;
+   --        exception
+   --           when all others =>
+   --              exceptional_complete_rendezvous (get_gnat_exception);
+   --        end e1A;
+   --     begin
+   --        selective_wait (S0'unchecked_access, simple_mode, A32b, J1);
+   --        case J1 is
+   --           when 0 =>
+   --              goto L3;
+   --           when 1 =>
+   --              e1A;
+   --              goto L1;
+   --           when 2 =>
+   --              goto L2;
+   --           when others =>
+   --              goto L3;
+   --        end case;
+   --        <<L1>>
+   --        ...B...
+   --        goto L3;
+   --        <<L2>>
+   --        ...C...
+   --        goto L3;
+   --        <<L3>>
+   --     end;
 
    procedure Timed_Selective_Wait
      (Open_Accepts       : Accept_List_Access;
@@ -101,28 +247,67 @@ package System.Tasking.Rendezvous is
       Mode               : Delay_Modes;
       Index              : out Select_Index);
    --  Selective wait with timeout without using ATC.
+   --  Compiler interface only. Do not call from within the RTS.
 
    procedure Accept_Call
      (E                  : Task_Entry_Index;
       Uninterpreted_Data : out System.Address);
-   --  Accept an entry call
+   --  Accept an entry call.
+   --  Compiler interface only. Do not call from within the RTS.
+   --
+   --  source:
+   --              accept E do  ...A... end E;
+   --  expansion:
+   --              A27b : address;
+   --              L26b : label
+   --              begin
+   --                 accept_call (1, A27b);
+   --                 ...A...
+   --                 complete_rendezvous;
+   --              <<L26b>>
+   --              exception
+   --              when all others =>
+   --                 exceptional_complete_rendezvous (get_gnat_exception);
+   --              end;
+   --
+   --  The handler for Abort_Signal (*all* others) is to handle the case when
+   --  the acceptor is aborted between Accept_Call and the corresponding
+   --  Complete_Rendezvous call. We need to wake up the caller in this case.
+   --
+   --   See also Selective_Wait
 
    procedure Accept_Trivial (E : Task_Entry_Index);
-   --  Accept an entry call that has no parameters and no body
+   --  Accept an entry call that has no parameters and no body.
+   --  Compiler interface only. Do not call from within the RTS.
+   --  This should only be called when there is no accept body, or the accept
+   --  body is empty.
+   --
+   --  source:
+   --               accept E;
+   --  expansion:
+   --               accept_trivial (1);
+   --
+   --  The compiler is also able to recognize the following and
+   --  translate it the same way.
+   --
+   --     accept E do null; end E;
 
    function Task_Count (E : Task_Entry_Index) return Natural;
    --  Return number of tasks waiting on the entry E (of current task)
+   --  Compiler interface only. Do not call from within the RTS.
 
    function Callable (T : Task_ID) return Boolean;
-   --  Return T'CALLABLE
+   --  Return T'Callable
+   --  Compiler interface. Do not call from within the RTS, except for body of
+   --  Ada.Task_Identification.
 
    type Task_Entry_Nesting_Depth is new Task_Entry_Index
      range 0 .. Max_Task_Entry;
 
    function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_ID;
-   --  Return E'Caller.  This will only work if called from within an
-   --  accept statement that is handling E, as required by the
-   --  LRM (C.7.1(14)).
+   --  Return E'Caller. This will only work if called from within an
+   --  accept statement that is handling E, as required by the LRM (C.7.1(14)).
+   --  Compiler interface only. Do not call from within the RTS.
 
    procedure Complete_Rendezvous;
    --  Called by acceptor to wake up caller
@@ -138,13 +323,14 @@ package System.Tasking.Rendezvous is
      (Self_ID    : Task_ID;
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean) return Boolean;
-   --  Call this only with abort deferred and holding lock of Acceptor.
+   --  Call this only with abort deferred and holding no locks, except
+   --  the global RTS lock when Single_Lock is True which must be owned.
    --  Returns False iff the call cannot be served or queued, as is the
    --  case if the caller is not callable; i.e., a False return value
    --  indicates that Tasking_Error should be raised.
    --  Either initiate the entry call, such that the accepting task is
    --  free to execute the rendezvous, queue the call on the acceptor's
-   --  queue, or cancel the call.  Conditional calls that cannot be
+   --  queue, or cancel the call. Conditional calls that cannot be
    --  accepted immediately are cancelled.
 
 end System.Tasking.Rendezvous;

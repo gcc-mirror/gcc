@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -300,7 +300,7 @@ package body Sem_Ch7 is
       HSS := Handled_Statement_Sequence (N);
 
       if Present (HSS) then
-         Process_End_Label (HSS, 't');
+         Process_End_Label (HSS, 't', Spec_Id);
          Analyze (HSS);
 
          --  Check that elaboration code in a preelaborable package body is
@@ -316,7 +316,7 @@ package body Sem_Ch7 is
       --  because the call will use In_Extended_Main_Source_Unit as a check,
       --  and we want to make sure that Corresponding_Stub links are set
 
-      Generate_Reference (Spec_Id, Body_Id, 'b');
+      Generate_Reference (Spec_Id, Body_Id, 'b', Set_Ref => False);
 
       --  For a generic package, collect global references and mark
       --  them on the original body so that they are not resolved
@@ -816,7 +816,7 @@ package body Sem_Ch7 is
          end;
       end if;
 
-      Process_End_Label (N, 'e');
+      Process_End_Label (N, 'e', Id);
    end Analyze_Package_Specification;
 
    --------------------------------------
@@ -851,6 +851,46 @@ package body Sem_Ch7 is
 
    procedure Declare_Inherited_Private_Subprograms (Id : Entity_Id) is
       E : Entity_Id;
+      Op_List        : Elist_Id;
+      Op_Elmt        : Elmt_Id;
+      Op_Elmt_2      : Elmt_Id;
+      Prim_Op        : Entity_Id;
+      New_Op         : Entity_Id;
+      Parent_Subp    : Entity_Id;
+      Found_Explicit : Boolean;
+      Decl_Privates  : Boolean;
+
+      function Is_Primitive_Of (T : Entity_Id; S : Entity_Id) return Boolean;
+      --  Check whether an inherited subprogram is an operation of an
+      --  untagged derived type.
+
+      ---------------------
+      -- Is_Primitive_Of --
+      ---------------------
+
+      function Is_Primitive_Of (T : Entity_Id; S : Entity_Id) return Boolean is
+         Formal : Entity_Id;
+
+      begin
+         if Etype (S) = T then
+            return True;
+
+         else
+            Formal := First_Formal (S);
+
+            while Present (Formal) loop
+               if Etype (Formal) = T then
+                  return True;
+               end if;
+
+               Next_Formal (Formal);
+            end loop;
+
+            return False;
+         end if;
+      end Is_Primitive_Of;
+
+   --  Start of processing for Declare_Inherited_Private_Subprograms
 
    begin
       E := First_Entity (Id);
@@ -862,26 +902,19 @@ package body Sem_Ch7 is
          --  inherited operations that now need to be made visible.
          --  Ditto if the entity is a formal derived type in a child unit.
 
-         if Is_Tagged_Type (E)
-           and then
-             ((Is_Derived_Type (E) and then not Is_Private_Type (E))
+         if ((Is_Derived_Type (E) and then not Is_Private_Type (E))
                or else
              (Nkind (Parent (E)) = N_Private_Extension_Declaration
                and then Is_Generic_Type (E)))
            and then In_Open_Scopes (Scope (Etype (E)))
            and then E = Base_Type (E)
          then
-            declare
-               Op_List        : constant Elist_Id := Primitive_Operations (E);
-               Op_Elmt        : Elmt_Id := First_Elmt (Op_List);
-               Op_Elmt_2      : Elmt_Id;
-               Prim_Op        : Entity_Id;
-               New_Op         : Entity_Id := Empty;
-               Parent_Subp    : Entity_Id;
-               Found_Explicit : Boolean;
-               Decl_Privates  : Boolean := False;
+            if Is_Tagged_Type (E) then
+               Op_List       := Primitive_Operations (E);
+               Op_Elmt       := First_Elmt (Op_List);
+               New_Op        := Empty;
+               Decl_Privates := False;
 
-            begin
                while Present (Op_Elmt) loop
                   Prim_Op := Node (Op_Elmt);
 
@@ -963,7 +996,27 @@ package body Sem_Ch7 is
                then
                   Set_All_DT_Position (E);
                end if;
-            end;
+
+            else
+               --   Non-tagged type, scan forward to locate
+               --   inherited hidden operations.
+
+               Prim_Op := Next_Entity (E);
+
+               while Present (Prim_Op) loop
+                  if Is_Subprogram (Prim_Op)
+                    and then Present (Alias (Prim_Op))
+                    and then not Comes_From_Source (Prim_Op)
+                    and then Is_Internal_Name (Chars (Prim_Op))
+                    and then not Is_Internal_Name (Chars (Alias (Prim_Op)))
+                    and then Is_Primitive_Of (E, Prim_Op)
+                  then
+                     Derive_Subprogram (New_Op, Alias (Prim_Op), E, Etype (E));
+                  end if;
+
+                  Next_Entity (Prim_Op);
+               end loop;
+            end if;
          end if;
 
          Next_Entity (E);
@@ -1355,9 +1408,9 @@ package body Sem_Ch7 is
 
       if Priv_Is_Base_Type then
          Set_Is_Controlled            (Priv, Is_Controlled (Base_Type (Full)));
-         Set_Has_Task                 (Priv, Has_Task      (Base_Type (Full)));
          Set_Finalize_Storage_Only    (Priv, Finalize_Storage_Only
                                                            (Base_Type (Full)));
+         Set_Has_Task                 (Priv, Has_Task      (Base_Type (Full)));
          Set_Has_Controlled_Component (Priv, Has_Controlled_Component
                                                            (Base_Type (Full)));
       end if;

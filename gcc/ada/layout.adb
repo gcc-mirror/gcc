@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---            Copyright (C) 2001 Free Software Foundation, Inc.             --
+--          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -170,6 +170,12 @@ package body Layout is
    --  with specified sizes. On return, the Esize and RM_Size fields of
    --  E are set (either from previously given values, or from the newly
    --  computed values, as appropriate).
+
+   procedure Set_Composite_Alignment (E : Entity_Id);
+   --  This procedure is called for record types and subtypes, and also for
+   --  atomic array types and subtypes. If no alignment is set, and the size
+   --  is 2 or 4 (or 8 if the word size is 8), then the alignment is set to
+   --  match the size.
 
    ----------------------------
    -- Adjust_Esize_Alignment --
@@ -930,16 +936,21 @@ package body Layout is
          Insert_Typ := E;
       end if;
 
-      --  Cannot do anything if Esize of component type unknown
+      --  Deal with component size if base type
 
-      if Unknown_Esize (Ctyp) then
-         return;
-      end if;
+      if Ekind (E) = E_Array_Type then
 
-      --  Set component size if not set already
+         --  Cannot do anything if Esize of component type unknown
 
-      if Unknown_Component_Size (E) then
-         Set_Component_Size (E, Esize (Ctyp));
+         if Unknown_Esize (Ctyp) then
+            return;
+         end if;
+
+         --  Set component size if not set already
+
+         if Unknown_Component_Size (E) then
+            Set_Component_Size (E, Esize (Ctyp));
+         end if;
       end if;
 
       --  (RM 13.3 (48)) says that the size of an unconstrained array
@@ -2263,9 +2274,30 @@ package body Layout is
       if Frontend_Layout_On_Target then
          if Is_Array_Type (E) and then not Is_Bit_Packed_Array (E) then
             Layout_Array_Type (E);
+            return;
          elsif Is_Record_Type (E) then
             Layout_Record_Type (E);
+            return;
          end if;
+
+      --  Special remaining processing for record types with a known size
+      --  of 16, 32, or 64 bits whose alignment is not yet set. For these
+      --  types, we set a corresponding alignment matching the size if
+      --  possible, or as large as possible if not.
+
+      elsif Is_Record_Type (E) and not Debug_Flag_Q then
+         Set_Composite_Alignment (E);
+
+      --  For arrays, we only do this processing for arrays that are
+      --  required to be atomic. Here, we really need to have proper
+      --  alignment, but for the normal case of non-atomic arrays it
+      --  seems better to use the component alignment as the default.
+
+      elsif Is_Array_Type (E)
+        and then Is_Atomic (E)
+        and then not Debug_Flag_Q
+      then
+         Set_Composite_Alignment (E);
       end if;
    end Layout_Type;
 
@@ -2378,6 +2410,58 @@ package body Layout is
          Set_RM_Size (E, RM_Siz);
       end if;
    end Set_And_Check_Static_Size;
+
+   -----------------------------
+   -- Set_Composite_Alignment --
+   -----------------------------
+
+   procedure Set_Composite_Alignment (E : Entity_Id) is
+      Siz   : Uint;
+      Align : Nat;
+
+   begin
+      if Unknown_Alignment (E) then
+         if Known_Static_Esize (E) then
+            Siz := Esize (E);
+
+         elsif Unknown_Esize (E)
+           and then Known_Static_RM_Size (E)
+         then
+            Siz := RM_Size (E);
+
+         else
+            return;
+         end if;
+
+         --  Size is known, alignment is not set
+
+         if Siz = System_Storage_Unit then
+            Align := 1;
+         elsif Siz = 2 * System_Storage_Unit then
+            Align := 2;
+         elsif Siz = 4 * System_Storage_Unit then
+            Align := 4;
+         elsif Siz = 8 * System_Storage_Unit then
+            Align := 8;
+         else
+            return;
+         end if;
+
+         if Align > Maximum_Alignment then
+            Align := Maximum_Alignment;
+         end if;
+
+         if Align > System_Word_Size / System_Storage_Unit then
+            Align := System_Word_Size / System_Storage_Unit;
+         end if;
+
+         Set_Alignment (E, UI_From_Int (Align));
+
+         if Unknown_Esize (E) then
+            Set_Esize (E, UI_From_Int (Align * System_Storage_Unit));
+         end if;
+      end if;
+   end Set_Composite_Alignment;
 
    --------------------------
    -- Set_Discrete_RM_Size --

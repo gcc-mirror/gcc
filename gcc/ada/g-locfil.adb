@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -44,8 +44,8 @@ package body GNAT.Lock_Files is
    ---------------
 
    procedure Lock_File
-     (Directory      : String;
-      Lock_File_Name : String;
+     (Directory      : Path_Name;
+      Lock_File_Name : Path_Name;
       Wait           : Duration := 1.0;
       Retries        : Natural  := Natural'Last)
    is
@@ -56,13 +56,26 @@ package body GNAT.Lock_Files is
       pragma Import (C, Try_Lock, "__gnat_try_lock");
 
    begin
+      --  If a directory separator was provided, just remove the one we have
+      --  added above.
+
+      if Directory (Directory'Last) = Dir_Separator
+        or else Directory (Directory'Last) = '/'
+      then
+         Dir (Dir'Last - 1) := ASCII.Nul;
+      end if;
+
+      --  Try to lock the file Retries times
+
       for I in 0 .. Retries loop
          if Try_Lock (Dir'Address, File'Address) = 1 then
             return;
          end if;
+
          exit when I = Retries;
          delay Wait;
       end loop;
+
       raise Lock_Error;
    end Lock_File;
 
@@ -71,13 +84,15 @@ package body GNAT.Lock_Files is
    ---------------
 
    procedure Lock_File
-     (Lock_File_Name : String;
+     (Lock_File_Name : Path_Name;
       Wait           : Duration := 1.0;
       Retries        : Natural  := Natural'Last)
    is
    begin
       for J in reverse Lock_File_Name'Range loop
-         if Lock_File_Name (J) = Dir_Separator then
+         if Lock_File_Name (J) = Dir_Separator
+           or else Lock_File_Name (J) = '/'
+         then
             Lock_File
               (Lock_File_Name (Lock_File_Name'First .. J - 1),
                Lock_File_Name (J + 1 .. Lock_File_Name'Last),
@@ -94,7 +109,7 @@ package body GNAT.Lock_Files is
    -- Unlock_File --
    -----------------
 
-   procedure Unlock_File (Lock_File_Name : String) is
+   procedure Unlock_File (Lock_File_Name : Path_Name) is
       S : aliased String := Lock_File_Name & ASCII.NUL;
 
       procedure unlink (A : System.Address);
@@ -108,9 +123,15 @@ package body GNAT.Lock_Files is
    -- Unlock_File --
    -----------------
 
-   procedure Unlock_File (Directory : String; Lock_File_Name : String) is
+   procedure Unlock_File (Directory : Path_Name; Lock_File_Name : Path_Name) is
    begin
-      Unlock_File (Directory & Dir_Separator & Lock_File_Name);
+      if Directory (Directory'Last) = Dir_Separator
+        or else Directory (Directory'Last) = '/'
+      then
+         Unlock_File (Directory & Lock_File_Name);
+      else
+         Unlock_File (Directory & Dir_Separator & Lock_File_Name);
+      end if;
    end Unlock_File;
 
 end GNAT.Lock_Files;

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,7 +81,7 @@ package ALI is
    type Main_Program_Type is (None, Proc, Func);
    --  Indicator of whether unit can be used as main program
 
-   type Restrictions_String is array (Partition_Restrictions) of Character;
+   type Restrictions_String is array (All_Restrictions) of Character;
    --  Type used to hold string from R line
 
    type ALIs_Record is record
@@ -363,6 +363,12 @@ package ALI is
    --  Set to blank by Initialize_ALI. Set to the appropriate queuing policy
    --  character if an ali file contains a P line setting the queuing policy.
 
+   Restrictions : Restrictions_String := (others => 'n');
+   --  This array records the cumulative contributions of R lines in all
+   --  ali files. An entry is changed will be set to v if any ali file
+   --  indicates that the restriction is violated, and otherwise will be
+   --  set to r if the restriction is specified by some unit.
+
    Static_Elaboration_Model_Used : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if any ALI file for a
    --  non-internal unit compiled with the static elaboration model is
@@ -447,17 +453,29 @@ package ALI is
    -- Linker_Options Table --
    --------------------------
 
-   --  Each unique linker option (L line) in an ALI file generates
-   --  an entry in the Linker_Options table. Note that only unique
-   --  entries are stored, i.e. if the same entry appears twice, the
-   --  second entry is suppressed. Each entry is a character sequence
-   --  terminated by a NUL character.
+   --  If an ALI file has one of more Linker_Options lines, then a single
+   --  entry is made in this table. If more than one Linker_Options lines
+   --  appears in a given ALI file, then the arguments are concatenated
+   --  to form the entry in this table, using a NUL character as the
+   --  separator, and a final NUL character is appended to the end.
 
    type Linker_Option_Record is record
-      Name          : Name_Id;
-      Unit          : Unit_Id;
+      Name : Name_Id;
+      --  Name entry containing concatenated list of Linker_Options
+      --  arguments separated by NUL and ended by NUL as described above.
+
+      Unit : Unit_Id;
+      --  Unit_Id for the entry
+
       Internal_File : Boolean;
-      Original_Pos  : Positive;
+      --  Set True if the linker options are from an internal file. This is
+      --  used to insert certain standard entries after all the user entries
+      --  but before the entries from the run-time.
+
+      Original_Pos : Positive;
+      --  Keep track of original position in the linker options table. This
+      --  is used to implement a stable sort when we sort the linker options
+      --  table.
    end record;
 
    --  Declare the Linker_Options Table
