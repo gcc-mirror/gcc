@@ -50,6 +50,7 @@
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "cp-tree.h"
 #include "real.h"
 #include "obstack.h"
