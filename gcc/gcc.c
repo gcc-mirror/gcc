@@ -5289,19 +5289,19 @@ give_switch (switchnum, omit_first_word, include_blanks)
 	  if (suffix_subst)
 	    {
 	      unsigned length = strlen (arg);
+	      int dot = 0;
 
 	      while (length-- && !IS_DIR_SEPARATOR (arg[length]))
 		if (arg[length] == '.')
 		  {
 		    ((char *)arg)[length] = 0;
+		    dot = 1;
 		    break;
 		  }
 	      do_spec_1 (arg, 1, NULL);
-	      if (!arg[length])
-		{
-		  ((char *)arg)[length] = '.';
-		  do_spec_1 (suffix_subst, 1, NULL);
-		}
+	      if (dot)
+		((char *)arg)[length] = '.';
+	      do_spec_1 (suffix_subst, 1, NULL);
 	    }
 	  else
 	    do_spec_1 (arg, 1, NULL);
