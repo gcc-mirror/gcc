@@ -2849,7 +2849,27 @@ fold (expr)
     }
   
   kind = TREE_CODE_CLASS (code);
-  if (kind == 'e' || kind == '<' || kind == '1' || kind == '2' || kind == 'r')
+  if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
+    {
+      /* Special case for conversion ops that can have fixed point args.  */
+      arg0 = TREE_OPERAND (t, 0);
+
+      /* Don't use STRIP_NOPS, because signedness of argument type matters.  */
+      if (arg0 != 0)
+	STRIP_TYPE_NOPS (arg0);
+
+      if (arg0 != 0 && TREE_CODE (arg0) != INTEGER_CST
+#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+	  && TREE_CODE (arg0) != REAL_CST
+#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
+	  )
+	/* Note that TREE_CONSTANT isn't enough:
+	   static var addresses are constant but we can't
+	   do arithmetic on them.  */
+	wins = 0;
+    }
+  else if (kind == 'e' || kind == '<'
+	   || kind == '1' || kind == '2' || kind == 'r')
     {
       register int len = tree_code_length[(int) code];
       register int i;
