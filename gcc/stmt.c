@@ -1746,14 +1746,22 @@ warn_if_unused_value (exp)
 	if (TREE_CODE (tem) == MODIFY_EXPR || TREE_CODE (tem) == INIT_EXPR)
 	  return 0;
       }
-      /* ... fall through ... */
+      goto warn;
 
+    case INDIRECT_REF:
+      /* Don't warn about automatic dereferencing of references, since
+	 the user cannot control it.  */
+      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
+	return warn_if_unused_value (TREE_OPERAND (exp, 0));
+      /* ... fall through ... */
+      
     default:
       /* Referencing a volatile value is a side effect, so don't warn.  */
       if ((TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
 	   || TREE_CODE_CLASS (TREE_CODE (exp)) == 'r')
 	  && TREE_THIS_VOLATILE (exp))
 	return 0;
+    warn:
       warning_with_file_and_line (emit_filename, emit_lineno,
 				  "value computed is not used");
       return 1;
