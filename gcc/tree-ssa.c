@@ -497,7 +497,6 @@ init_tree_ssa (void)
   init_ssa_operands ();
   init_ssanames ();
   init_phinodes ();
-  vn_init ();
   global_var = NULL_TREE;
   aliases_computed_p = false;
 }
@@ -528,7 +527,6 @@ delete_tree_ssa (void)
   fini_ssanames ();
   fini_phinodes ();
   fini_ssa_operands ();
-  vn_delete ();
 
   global_var = NULL_TREE;
   BITMAP_XFREE (call_clobbered_vars);

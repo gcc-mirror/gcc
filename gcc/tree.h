@@ -1215,32 +1215,9 @@ struct tree_exp GTY(())
 #define SSA_NAME_VALUE(N) \
    SSA_NAME_CHECK (N)->ssa_name.value_handle
 
-#ifndef GCC_BITMAP_H
-struct bitmap_head_def;
+#ifndef _TREE_FLOW_H
+struct ptr_info_def;
 #endif
-
-/* Aliasing information for SSA_NAMEs representing pointer variables.  */
-struct ptr_info_def GTY(())
-{
-  /* Nonzero if points-to analysis couldn't determine where this pointer
-     is pointing to.  */
-  unsigned int pt_anything : 1;
-
-  /* Nonzero if this pointer is the result of a call to malloc.  */
-  unsigned int pt_malloc : 1;
-
-  /* Nonzero if the value of this pointer escapes the current function.  */
-  unsigned int value_escapes_p : 1;
-
-  /* Set of variables that this pointer may point to.  */
-  struct bitmap_head_def *pt_vars;
-
-  /* If this pointer has been dereferenced, and points-to information is
-     more precise than type-based aliasing, indirect references to this
-     pointer will be represented by this memory tag, instead of the type
-     tag computed by TBAA.  */
-  tree name_mem_tag;
-};
 
 struct tree_ssa_name GTY(())
 {

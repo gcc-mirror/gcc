@@ -773,6 +773,10 @@ ftree-dse
 Common Report Var(flag_tree_dse)
 Enable dead store elimination
 
+ftree-fre
+Common Report Var(flag_tree_fre)
+Enable Full Redundancy Elimination (FRE) on trees
+
 ftree-points-to=
 Common Joined RejectNegative
 

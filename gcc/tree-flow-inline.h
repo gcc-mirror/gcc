@@ -541,10 +541,20 @@ may_propagate_copy (tree dest, tree orig)
       return false;
     }
 
-  return (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest)
-	  && (TREE_CODE (orig) != SSA_NAME
-	      || !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig))
-	  && !DECL_HARD_REGISTER (SSA_NAME_VAR (dest)));
+  /* If ORIG flows in from an abnormal edge, it cannot be propagated.  */
+  if (TREE_CODE (orig) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig))
+    return false;
+
+  /* If DEST is an SSA_NAME that flows from an abnormal edge or if it
+     represents a hard register, then it cannot be replaced.  */
+  if (TREE_CODE (dest) == SSA_NAME
+      && (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest)
+	  || DECL_HARD_REGISTER (SSA_NAME_VAR (dest))))
+    return false;
+
+  /* Anything else is OK.  */
+  return true;
 }
 
 /* Set the default definition for VAR to DEF.  */

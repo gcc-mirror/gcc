@@ -1,3 +1,47 @@
+2004-06-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* common.opt (ftree-fre): New flag.
+	* flags.h (flag_tree_fre): Declare.
+	* opts.c (decode_options): Set.
+	* timevar.def (TV_TREE_FRE): Define.
+	* tree-flow-inline.h (may_propagate_copy): Re-arrange for
+	readability.  Handle destinations that are not SSA_NAMEs.
+	* tree-flow.h (struct ptr_info_def): Move from tree.h
+	(cprop_into_stmt, cprop_into_successor_phis): Remove.
+	(vn_compute, vn_lookup_or_add, vn_add, vn_lookup): Add
+	vuse_optype parameter.
+	* tree-pass.h (pass_fre): Declare.
+	* tree-ssa-copy.c (cprop_operand): Move to tree-ssa-dom.c
+	(cprop_into_stmt): Likewise.
+	(cprop_into_successor_phis): Likewise.
+	* tree-ssa-dom.c (eliminate_redundant_computations): Fix
+	argument ordering in call to may_propagate_copy.
+	* tree-ssa-pre.c (is_undefined_value): Assume hard registers
+	to be always defined.
+	(add_to_sets): New local function.
+	(create_value_expr_from): New local function.
+	(compute_avail): Call them.
+	(eliminate): Don't ignore statements with virtual operands.
+	(init_pre): New local function.
+	(fini_pre): New local function.
+	(execute_pre): Call them.
+	Add argument DO_FRE.  Don't do insertion if DO_FRE is true.
+	(do_pre): New function.
+	(do_fre): New function.
+	(gate_fre): New function.
+	(pass_fre): Declare.
+	* tree-ssa.c (init_tree_ssa): Don't call vn_init.
+	(delete_tree_ssa): Don't call vn_delete.
+	* tree-vn.c (val_expr_pair_d): Add documentation.
+	(vn_compute): Add VUSES argument to incorporate in computing
+	hash values.  Update all callers.
+	(expressions_equal_p): Call operand_equal_p with
+	OEP_PURE_SAME.
+	(vn_add): Add VUSES argument.  Update all callers.
+	(vn_lookup): Likewise.
+	(vn_lookup_or_add): Likewise.
+	* doc/invoke.texi: Document -ftree-fre and -fdump-tree-fre.
+
 2004-06-28  Steven Bosscher  <stevenb@suse.de>
 
 	* config/m32r/m32r.c (m32r_sched_odd_word_p, m32r_adjust_cost,

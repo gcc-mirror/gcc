@@ -262,6 +262,7 @@ in the following sections.
 -fdump-tree-copyrename@r{[}-@var{n}@r{]} @gol
 -fdump-tree-nrv @gol
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
+-fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
 -feliminate-unused-debug-symbols -fmem-report -fprofile-arcs -ftree-based-profiling @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
@@ -313,7 +314,7 @@ in the following sections.
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
 -ftree-pre  -ftree-ccp  -ftree-dce  @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
--ftree-ch -ftree-sra -ftree-ter -ftree-lrs @gol
+-ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -3553,6 +3554,11 @@ Dump each function after CCP.  The file name is made by appending
 Dump trees after partial redundancy elimination.  The file name is made
 by appending @file{.pre} to the source file name.
 
+@item fre
+@opindex fdump-tree-fre
+Dump trees after full redundancy elimination.  The file name is made
+by appending @file{.fre} to the source file name.
+
 @item dce
 @opindex fdump-tree-dce
 Dump each function after dead code elimination.  The file name is made by
@@ -4368,6 +4374,13 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 @item -ftree-pre
 Perform Partial Redundancy Elimination (PRE) on trees.  This flag is
 enabled by default at -O and higher.
+
+@item -ftree-fre
+Perform Full Redundancy Elimination (FRE) on trees.  The difference
+between FRE and PRE is that FRE only considers expressions
+that are computed on all paths leading to the redundant computation.
+This analysis faster than PRE, though it exposes fewer redundancies.
+This flag is enabled by default at -O and higher.
 
 @item -ftree-ccp
 Perform sparse conditional constant propagation (CCP) on trees.  This flag
