@@ -21,6 +21,9 @@
  
 struct T { int i; };
 
+// T must be LessThanComparable to pass concept-checks
+bool operator<(T l, T r) { return l.i < r.i; }
+
 int swap_calls;
 
 namespace std
