@@ -749,9 +749,11 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	    {
 	      indent_to (file, indent + 3);
 	      if (SSA_NAME_PTR_INFO (node))
-		fprintf (file, " ptr-info %p", SSA_NAME_PTR_INFO (node));
+		fprintf (file, " ptr-info %p",
+			 (void *) SSA_NAME_PTR_INFO (node));
 	      if (SSA_NAME_VALUE (node))
-		fprintf (file, " value %p", SSA_NAME_VALUE (node));
+		fprintf (file, " value %p",
+			 (void *) SSA_NAME_VALUE (node));
 	      if (SSA_NAME_AUX (node))
 		fprintf (file, " aux %p", SSA_NAME_AUX (node));
 	    }

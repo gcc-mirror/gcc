@@ -1,3 +1,7 @@
+2004-07-14  Richard Henderson  <rth@redhat.com>
+
+	* print-tree.c (print_node): Fix casts last change.
+
 2004-07-15  Paul Brook  <paul@codesourcery.com>
 
 	* dwarf2out.c (dwarf2out_begin_prologue): Rename IA64_UNWIND_INFO
