@@ -1,3 +1,8 @@
+2004-12-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18493
+	* gcc.dg/switch-8.c: New test case.
+
 2004-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18905
