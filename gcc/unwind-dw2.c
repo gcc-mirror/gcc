@@ -291,7 +291,7 @@ static _Unwind_Word
 execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 		  struct _Unwind_Context *context, _Unwind_Word initial)
 {
-  _Unwind_Word stack[64];	/* ??? Assume this is enough. */
+  _Unwind_Word stack[64];	/* ??? Assume this is enough.  */
   int stack_elt;
 
   stack[0] = initial;

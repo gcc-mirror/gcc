@@ -1,3 +1,18 @@
+2001-08-17  Kazu Hirata  <kazu@hxi.com>
+
+	* sbitmap.c: Fix comment formatting.
+	* sched-deps.c: Likewise.
+	* sibcall.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* ssa.c: Likewise.
+	* ssa-ccp.c: Likewise.
+	* stor-layout.c: Likewise.
+	* timevar.c: Likewise.
+	* toplev.c: Likewise.
+	* unwind-dw2.c: Likewise.
+	* unwind-dw2-fde.c: Likewise.
+	* varasm.c: Likewise.
+
 2001-08-17  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (RETURN_IN_MEMORY): Return types with a size that is varable

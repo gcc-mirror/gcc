@@ -786,7 +786,7 @@ apply_delayed_renames (c)
       if (r->prev_reg == NULL_RTX && !HARD_REGISTER_P (r->old_reg))
 	{
 	  r->new_reg = r->old_reg;
-	  /* We want to restore RENAME_NO_RTX rather than NULL_RTX. */
+	  /* We want to restore RENAME_NO_RTX rather than NULL_RTX.  */
 	  r->prev_reg = RENAME_NO_RTX;
 	}
       else
@@ -1602,14 +1602,14 @@ make_equivalent_phi_alternatives_equivalent (bb, reg_partition)
 		    abort ();
 
 		  /* If the alternatives aren't already in the same
-		     class ... */
+		     class ...  */
 		  if (partition_find (reg_partition, REGNO (*alt)) 
 		      != partition_find (reg_partition, REGNO (*alt2)))
 		    {
 		      /* ... make them so.  */
 		      if (conflicting_hard_regs_p (REGNO (*alt), REGNO (*alt2)))
 			/* It is illegal to unify a hard register with
-			   a different register. */
+			   a different register.  */
 			abort ();
 
 		      partition_union (reg_partition, 
@@ -1698,7 +1698,7 @@ coalesce_if_unconflicting (p, conflicts, reg1, reg2)
 {
   int reg;
 
-  /* Work only on SSA registers. */
+  /* Work only on SSA registers.  */
   if (!CONVERT_REGISTER_TO_SSA_P (reg1) || !CONVERT_REGISTER_TO_SSA_P (reg2))
     return 0;
 

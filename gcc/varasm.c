@@ -803,7 +803,7 @@ make_decl_rtl (decl, asmspec)
 		     "register name given for non-register variable `%s'");
 
   /* Specifying a section attribute on a variable forces it into a
-     non-.bss section, and thus it cannot be common. */
+     non-.bss section, and thus it cannot be common.  */
   if (TREE_CODE (decl) == VAR_DECL
       && DECL_SECTION_NAME (decl) != NULL_TREE
       && DECL_INITIAL (decl) == NULL_TREE
@@ -1754,7 +1754,7 @@ assemble_static_space (size)
   {
     /* Round size up to multiple of BIGGEST_ALIGNMENT bits
        so that each uninitialized object starts on such a boundary.  */
-    /* Variable `rounded' might or might not be used in ASM_OUTPUT_LOCAL. */
+    /* Variable `rounded' might or might not be used in ASM_OUTPUT_LOCAL.  */
     int rounded ATTRIBUTE_UNUSED
       = ((size + (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1)
 	 / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
@@ -2473,7 +2473,7 @@ const_hash (exp)
       return const_hash (TREE_OPERAND (exp, 0)) * 7 + 2;
       
     default:
-      /* A language specific constant. Just hash the code. */
+      /* A language specific constant. Just hash the code.  */
       return (int) code % MAX_HASH_TABLE;
     }
 
@@ -4466,7 +4466,7 @@ output_constructor (exp, size)
 
      There is always a maximum of one element in the chain LINK for unions
      (even if the initializer in a source program incorrectly contains
-     more one). */
+     more one).  */
   for (link = CONSTRUCTOR_ELTS (exp);
        link;
        link = TREE_CHAIN (link),

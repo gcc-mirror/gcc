@@ -2902,7 +2902,7 @@ rest_of_compilation (decl)
 
       if (flag_ssa_dce)
 	{
-	  /* Remove dead code. */
+	  /* Remove dead code.  */
 
 	  timevar_push (TV_SSA_DCE);
 	  open_dump_file (DFI_ssa_dce, decl);

@@ -2415,7 +2415,7 @@ simplify_subreg (outermode, op, innermode, byte)
       /* The SUBREG_BYTE represents offset, as if the value were stored
 	 in memory.  Irritating exception is paradoxical subreg, where
 	 we define SUBREG_BYTE to be 0.  On big endian machines, this
-	 value should be negative.  For a moment, undo this exception. */
+	 value should be negative.  For a moment, undo this exception.  */
       if (byte == 0 && GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
 	{
 	  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
@@ -2538,7 +2538,7 @@ simplify_subreg (outermode, op, innermode, byte)
       res = simplify_subreg (outermode, part, GET_MODE (part), final_offset);
       if (res)
 	return res;
-      /* We can at least simplify it by referring directly to the relevent part. */
+      /* We can at least simplify it by referring directly to the relevent part.  */
       return gen_rtx_SUBREG (outermode, part, final_offset);
     }
 

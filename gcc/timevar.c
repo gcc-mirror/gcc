@@ -113,7 +113,7 @@ static int clocks_to_msec;
 
 /* See timevar.h for an explanation of timing variables.  */
 
-/* This macro evaluates to non-zero if timing variables are enabled. */
+/* This macro evaluates to non-zero if timing variables are enabled.  */
 #define TIMEVAR_ENABLE (time_report)
 
 /* A timing variable.  */
@@ -279,7 +279,7 @@ timevar_push (timevar)
     timevar_accumulate (&stack->timevar->elapsed, &start_time, &now);
 
   /* Reset the start time; from now on, time is attributed to
-     TIMEVAR. */
+     TIMEVAR.  */
   start_time = now;
 
   /* See if we have a previously-allocated stack instance.  If so,
@@ -441,7 +441,7 @@ timevar_print (fp)
     timevar_accumulate (&stack->timevar->elapsed, &start_time, &now);
 
   /* Reset the start time; from now on, time is attributed to
-     TIMEVAR. */
+     TIMEVAR.  */
   start_time = now;
 
   fputs (_("\nExecution times (seconds)\n"), fp);

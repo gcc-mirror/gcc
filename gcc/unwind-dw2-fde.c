@@ -436,11 +436,11 @@ frame_heapsort (struct object *ob, fde_compare_t fde_compare,
 {
   /* For a description of this algorithm, see:
      Samuel P. Harbison, Guy L. Steele Jr.: C, a reference manual, 2nd ed.,
-     p. 60-61. */
+     p. 60-61.  */
   fde ** a = erratic->array;
   /* A portion of the array is called a "heap" if for all i>=0:
      If i and 2i+1 are valid indices, then a[i] >= a[2i+1].
-     If i and 2i+2 are valid indices, then a[i] >= a[2i+2]. */
+     If i and 2i+2 are valid indices, then a[i] >= a[2i+2].  */
 #define SWAP(x,y) do { fde * tmp = x; x = y; y = tmp; } while (0)
   size_t n = erratic->count;
   size_t m = n;
@@ -448,7 +448,7 @@ frame_heapsort (struct object *ob, fde_compare_t fde_compare,
 
   while (m > 0)
     {
-      /* Invariant: a[m..n-1] is a heap. */
+      /* Invariant: a[m..n-1] is a heap.  */
       m--;
       for (i = m; 2*i+1 < n; )
         {
@@ -470,7 +470,7 @@ frame_heapsort (struct object *ob, fde_compare_t fde_compare,
     }
   while (n > 1)
     {
-      /* Invariant: a[0..n-1] is a heap. */
+      /* Invariant: a[0..n-1] is a heap.  */
       n--;
       SWAP (a[0], a[n]);
       for (i = 0; 2*i+1 < n; )
@@ -494,7 +494,7 @@ frame_heapsort (struct object *ob, fde_compare_t fde_compare,
 #undef SWAP
 }
 
-/* Merge V1 and V2, both sorted, and put the result into V1. */
+/* Merge V1 and V2, both sorted, and put the result into V1.  */
 static inline void
 fde_merge (struct object *ob, fde_compare_t fde_compare,
 	   struct fde_vector *v1, struct fde_vector *v2)

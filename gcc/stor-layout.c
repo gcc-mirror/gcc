@@ -274,7 +274,7 @@ int_mode_for_mode (mode)
       if (mode == BLKmode)
         break;
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case MODE_CC:
     default:
@@ -1303,11 +1303,11 @@ layout_type (type)
 	 of the language-specific code.  */
       abort ();
 
-    case BOOLEAN_TYPE:  /* Used for Java, Pascal, and Chill. */
+    case BOOLEAN_TYPE:  /* Used for Java, Pascal, and Chill.  */
       if (TYPE_PRECISION (type) == 0)
-	TYPE_PRECISION (type) = 1; /* default to one byte/boolean. */
+	TYPE_PRECISION (type) = 1; /* default to one byte/boolean.  */
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
@@ -1525,7 +1525,7 @@ layout_type (type)
       }
       break;
 
-    case SET_TYPE:  /* Used by Chill and Pascal. */
+    case SET_TYPE:  /* Used by Chill and Pascal.  */
       if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST
 	  || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST)
 	abort();
