@@ -57,6 +57,11 @@ Boston, MA 02111-1307, USA.  */
 #undef SUBTARGET_CC1_SPEC
 #define SUBTARGET_CC1_SPEC ""
 
+/* #line directives let the O32 assembler create object files that cause the
+   O32 linker to crash.  */
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "%{mabi=32: %{.S:-P}}"
+
 /* We must pass -D_LONGLONG always, even when -ansi is used, because IRIX 6
    system header files require it.  This is OK, because gcc never warns
    when long long is used in system header files.  Alternatively, we can
