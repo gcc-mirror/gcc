@@ -37,5 +37,5 @@ struct stack_level
   int limit;
 };
 
-struct stack_level *push_stack_level ();
-struct stack_level *pop_stack_level ();
+struct stack_level *push_stack_level PROTO((struct obstack *, char *, int));
+struct stack_level *pop_stack_level PROTO((struct stack_level *));
