@@ -3617,7 +3617,6 @@ d30v_mark_machine_status (p)
   if (p->machine == NULL)
     return;
   
-  ggc_mark_rtx (p->machine->ra_rtx);
   ggc_mark_rtx (p->machine->eh_epilogue_sp_ofs);
 }
 
@@ -3655,23 +3654,7 @@ d30v_init_expanders ()
 rtx
 d30v_return_addr ()
 {
-  rtx ret;
-
-  ret = cfun->machine->ra_rtx;
-  
-  if (ret == NULL)
-    {
-      rtx init;
-
-      cfun->machine->ra_rtx = ret = gen_reg_rtx (Pmode);
-
-      init = gen_rtx (SET, VOIDmode, ret, gen_rtx (REG, Pmode, GPR_LINK));
-      push_topmost_sequence ();
-      emit_insn_after (init, get_insns ());
-      pop_topmost_sequence ();
-    }
-
-  return ret;
+  return get_hard_reg_initial_val (Pmode, GPR_LINK);
 }
 
 /* Called to register all of our global variables with the garbage

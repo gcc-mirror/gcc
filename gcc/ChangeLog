@@ -1,3 +1,25 @@
+2001-06-22  DJ Delorie  <dj@redhat.com>
+
+	* config/arm/arm.h (struct machine_function): Remove ra_rtx.
+	* config/arm/arm.c (arm_mark_machine_status): Remove ra_rtx.
+	(arm_return_addr): Use get_hard_reg_initial_val et al.
+	* config/d30v/d30v.h (struct machine_function): Remove ra_rtx.
+	* config/d30v/d30v.c (d30v_mark_machine_status): Remove ra_rtx.
+	(d30v_return_addr): Use get_hard_reg_initial_val et al.
+	* config/rs6000/rs6000.h (struct machine_function): Remove ra_rtx.
+	* config/rs6000/rs6000.c (rs6000_override_options): Don't set
+	mark_machine_status.
+	(rs6000_mark_machine_status): Remove.
+	(rs6000_return_addr): Use get_hard_reg_initial_val.
+	(rs6000_ra_ever_killed): Use has_hard_reg_initial_val.
+	* config/v850/v850.h (INIT_EXPANDERS): Delete.
+	* config/v850/v850.c (struct machine_function): Delete.
+	(v850_init_machine_status): Delete.
+	(v850_mark_machine_status): Delete.
+	(v850_free_machine_status): Delete.
+	(v850_return_addr): Use get_hard_reg_initial_val.
+	(v850_init_expanders): Delete.
+
 Fri Jun 22 19:20:59 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (estimate_bb_frequencies): Do not handle conditional

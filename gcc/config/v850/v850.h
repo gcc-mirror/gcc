@@ -788,10 +788,6 @@ extern int current_function_anonymous_args;
 
 #define EXIT_IGNORE_STACK 1
 
-/* Initialize data used by insn expanders.  This is called from insn_emit,
-   once for every function before code is generated.  */
-#define INIT_EXPANDERS  v850_init_expanders ()
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 

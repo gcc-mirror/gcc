@@ -9606,10 +9606,7 @@ arm_mark_machine_status (p)
   machine_function *machine = p->machine;
 
   if (machine)
-    {
-      ggc_mark_rtx (machine->ra_rtx);
-      ggc_mark_rtx (machine->eh_epilogue_sp_ofs);
-    }
+    ggc_mark_rtx (machine->eh_epilogue_sp_ofs);
 }
 
 static void
@@ -9642,37 +9639,17 @@ arm_return_addr (count, frame)
      int count;
      rtx frame ATTRIBUTE_UNUSED;
 {
-  rtx reg;
-
   if (count != 0)
     return NULL_RTX;
 
-  reg = cfun->machine->ra_rtx;
-  
-  if (reg == NULL)
+  if (TARGET_APCS_32)
+    return get_hard_reg_initial_val (Pmode, LR_REGNUM);
+  else
     {
-      rtx init;
-      
-      /* No rtx yet.  Invent one, and initialize it for r14 (lr) in 
-	 the prologue.  */
-      reg = gen_reg_rtx (Pmode);
-      cfun->machine->ra_rtx = reg;
-      
-      if (!TARGET_APCS_32)
-	init = gen_rtx_AND (Pmode, gen_rtx_REG (Pmode, LR_REGNUM),
+      rtx lr = gen_rtx_AND (Pmode, gen_rtx_REG (Pmode, LR_REGNUM),
 			    GEN_INT (RETURN_ADDR_MASK26));
-      else
-	init = gen_rtx_REG (Pmode, LR_REGNUM);
-
-      init = gen_rtx_SET (VOIDmode, reg, init);
-
-      /* Emit the insn to the prologue with the other argument copies.  */
-      push_topmost_sequence ();
-      emit_insn_after (init, get_insns ());
-      pop_topmost_sequence ();
+      return get_func_hard_reg_initial_val (cfun, lr);
     }
-
-  return reg;
 }
 
 /* Do anything needed before RTL is emitted for each function.  */

@@ -51,9 +51,6 @@ static int  const_costs_int          PARAMS ((HOST_WIDE_INT, int));
 static void substitute_ep_register   PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
 static int  ep_memory_offset         PARAMS ((enum machine_mode, int));
 static void v850_set_data_area       PARAMS ((tree, v850_data_area));
-static void v850_init_machine_status PARAMS ((struct function *));
-static void v850_mark_machine_status PARAMS ((struct function *));
-static void v850_free_machine_status PARAMS ((struct function *));
 
 /* True if the current function has anonymous arguments.  */
 int current_function_anonymous_args;
@@ -2786,36 +2783,6 @@ v850_va_arg (valist, type)
   return addr_rtx;
 }
 
-/* Functions to save and restore machine-specific function data.  */
-struct machine_function
-{
-  /* Records __builtin_return address.  */
-  struct rtx_def * ra_rtx;
-};
-
-static void
-v850_init_machine_status (p)
-     struct function * p;
-{
-  p->machine =
-    (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
-}
-
-static void
-v850_mark_machine_status (p)
-     struct function * p;
-{
-  ggc_mark_rtx (p->machine->ra_rtx);
-}
-
-static void
-v850_free_machine_status (p)
-     struct function * p;
-{
-  free (p->machine);
-  p->machine = NULL;
-}
-
 /* Return an RTX indicating where the return address to the
    calling function can be found.  */
 
@@ -2826,33 +2793,5 @@ v850_return_addr (count)
   if (count != 0)
     return const0_rtx;
 
-  if (cfun->machine->ra_rtx == NULL)
-    {
-      rtx init;
-      
-      /* No rtx yet.  Invent one, and initialize it for r31 (lp) in 
-       the prologue.  */
-      cfun->machine->ra_rtx = gen_reg_rtx (Pmode);
-      
-      init = gen_rtx_REG (Pmode, LINK_POINTER_REGNUM);
-
-      init = gen_rtx_SET (VOIDmode, cfun->machine->ra_rtx, init);
-
-      /* Emit the insn to the prologue with the other argument copies.  */
-      push_topmost_sequence ();
-      emit_insn_after (init, get_insns ());
-      pop_topmost_sequence ();
-    }
-
-  return cfun->machine->ra_rtx;
-}
-
-/* Do anything needed before RTL is emitted for each function.  */
-
-void
-v850_init_expanders ()
-{
-  init_machine_status = v850_init_machine_status;
-  mark_machine_status = v850_mark_machine_status;
-  free_machine_status = v850_free_machine_status;
+  return get_hard_reg_initial_val (Pmode, LINK_POINTER_REGNUM);
 }
