@@ -1,3 +1,10 @@
+2001-06-09  Nicola Pero <nicola@brainstorm.co.uk>
+
+	* gthr-posix.h (__gthread_objc_init_thread_system): If
+	pthread_key_create fails, it's not clear what the return value is.
+	This obvious fix makes sure it always returns -1 if a problem
+	occurs.
+
 2001-06-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Use @defcodeindex for the index of options.  Add
