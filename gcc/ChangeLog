@@ -1,3 +1,8 @@
+2002-08-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree-inline.c (initialize_inlined_parameters): Wrap variable in
+	the macro test controlling its use.
+
 2002-08-18  H.J. Lu  (hjl@gnu.org)
 
 	* config.gcc (*-*-linux*): Set extra_parts="crtbegin.o

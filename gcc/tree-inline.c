@@ -609,10 +609,10 @@ initialize_inlined_parameters (id, args, fn, block)
     {
 #ifndef INLINER_FOR_JAVA
       tree init_stmt;
+      tree cleanup;
 #endif /* not INLINER_FOR_JAVA */
       tree var;
       tree value;
-      tree cleanup;
 
       /* Find the initializer.  */
       value = (*lang_hooks.tree_inlining.convert_parm_for_inlining)
