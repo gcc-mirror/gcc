@@ -1,3 +1,10 @@
+2005-02-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	* stmt.c (emit_case_bit_tests): Call fold_convert instead of convert.
+	(estimate_case_costs): Don't call convert.
+	* expmed.c (expand_shift): Likewise.
+	(make_tree): Call fold_convert instead of convert. 
+
 2005-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19813

@@ -2231,9 +2231,8 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	      tree type = TREE_TYPE (amount);
 	      tree new_amount = make_tree (type, op1);
 	      tree other_amount
-		= fold (build2 (MINUS_EXPR, type, convert
-				(type, build_int_cst
-				 (NULL_TREE, GET_MODE_BITSIZE (mode))),
+		= fold (build2 (MINUS_EXPR, type, 
+				build_int_cst (type, GET_MODE_BITSIZE (mode)),
 				amount));
 
 	      shifted = force_reg (mode, shifted);
@@ -4871,17 +4870,15 @@ make_tree (tree type, rtx x)
 
     case LSHIFTRT:
       t = lang_hooks.types.unsigned_type (type);
-      return fold (convert (type,
-			    build2 (RSHIFT_EXPR, t,
-				    make_tree (t, XEXP (x, 0)),
-				    make_tree (type, XEXP (x, 1)))));
+      return fold_convert (type, build2 (RSHIFT_EXPR, t,
+			    		 make_tree (t, XEXP (x, 0)),
+				    	 make_tree (type, XEXP (x, 1))));
 
     case ASHIFTRT:
       t = lang_hooks.types.signed_type (type);
-      return fold (convert (type,
-			    build2 (RSHIFT_EXPR, t,
-				    make_tree (t, XEXP (x, 0)),
-				    make_tree (type, XEXP (x, 1)))));
+      return fold_convert (type, build2 (RSHIFT_EXPR, t,
+					 make_tree (t, XEXP (x, 0)),
+				    	 make_tree (type, XEXP (x, 1))));
 
     case DIV:
       if (TREE_CODE (type) != REAL_TYPE)
@@ -4889,22 +4886,20 @@ make_tree (tree type, rtx x)
       else
 	t = type;
 
-      return fold (convert (type,
-			    build2 (TRUNC_DIV_EXPR, t,
-				    make_tree (t, XEXP (x, 0)),
-				    make_tree (t, XEXP (x, 1)))));
+      return fold_convert (type, build2 (TRUNC_DIV_EXPR, t,
+				    	 make_tree (t, XEXP (x, 0)),
+				    	 make_tree (t, XEXP (x, 1))));
     case UDIV:
       t = lang_hooks.types.unsigned_type (type);
-      return fold (convert (type,
-			    build2 (TRUNC_DIV_EXPR, t,
-				    make_tree (t, XEXP (x, 0)),
-				    make_tree (t, XEXP (x, 1)))));
+      return fold_convert (type, build2 (TRUNC_DIV_EXPR, t,
+				    	 make_tree (t, XEXP (x, 0)),
+				    	 make_tree (t, XEXP (x, 1))));
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
       t = lang_hooks.types.type_for_mode (GET_MODE (XEXP (x, 0)),
 					  GET_CODE (x) == ZERO_EXTEND);
-      return fold (convert (type, make_tree (t, XEXP (x, 0))));
+      return fold_convert (type, make_tree (t, XEXP (x, 0)));
 
     default:
       t = build_decl (VAR_DECL, NULL_TREE, type);

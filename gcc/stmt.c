@@ -2239,8 +2239,8 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
   qsort (test, count, sizeof(*test), case_bit_test_cmp);
 
   index_expr = fold (build2 (MINUS_EXPR, index_type,
-			     convert (index_type, index_expr),
-			     convert (index_type, minval)));
+			     fold_convert (index_type, index_expr),
+			     fold_convert (index_type, minval)));
   index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
   do_pending_stack_adjust ();
 
@@ -2612,8 +2612,7 @@ static int
 estimate_case_costs (case_node_ptr node)
 {
   tree min_ascii = integer_minus_one_node;
-  tree max_ascii = convert (TREE_TYPE (node->high),
-			    build_int_cst (NULL_TREE, 127));
+  tree max_ascii = build_int_cst (TREE_TYPE (node->high), 127);
   case_node_ptr n;
   int i;
 
