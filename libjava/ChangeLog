@@ -1,5 +1,10 @@
 2000-12-14  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/ResourceBundle.java
+	(getBundle(String,Locale,ClassLoader)): New method.
+	(trySomeGetBundle): Added `loader' argument.
+	(partialGetBundle): Likewise.
+
 	* java/text/NumberFormat.java (groupingUsed, parseIntegerOnly,
 	maximumFractionDigits, maximumIntegerDigits,
 	minimumFractionDigits, minimumIntegerDigits): Now

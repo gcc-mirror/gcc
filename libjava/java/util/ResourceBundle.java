@@ -73,7 +73,8 @@ public abstract class ResourceBundle
   // stripping off the '_' delimited tails until the search name is
   // the same as stopHere.
   private static final ResourceBundle trySomeGetBundle (String bundleName,
-							String stopHere)
+							String stopHere,
+							ClassLoader loader)
     {
       Class rbc;
       ResourceBundle needs_parent = null, r, result = null;
@@ -115,9 +116,9 @@ public abstract class ResourceBundle
 	    }
 
 	  // Look for a properties file.
-	  InputStream i = 
-	    ClassLoader.getSystemResourceAsStream (bundleName.replace ('.', '/') 
-						   + ".properties");
+	  InputStream i = loader.getResourceAsStream (bundleName.replace ('.',
+									  '/')
+						      + ".properties");
 	  if (i != null)
 	    {
 	      try
@@ -151,7 +152,8 @@ public abstract class ResourceBundle
   // Search for bundles, but stop at baseName_language (if required).
   // This is synchronized so that the cache works correctly.
   private static final synchronized ResourceBundle
-    partialGetBundle (String baseName, Locale locale, boolean langStop)
+    partialGetBundle (String baseName, Locale locale, boolean langStop,
+		      ClassLoader loader)
     {
       ResourceBundle rb;
 
@@ -168,7 +170,7 @@ public abstract class ResourceBundle
 			 + (langStop ? ("_" + locale.getLanguage()) : ""));
 
 
-      rb = trySomeGetBundle(bundleName, stopHere);
+      rb = trySomeGetBundle(bundleName, stopHere, loader);
       if (rb != null)
 	resource_cache.put(bundleName, rb);
 
@@ -177,6 +179,13 @@ public abstract class ResourceBundle
 
   public static final ResourceBundle getBundle (String baseName, 
 						Locale locale)
+  {
+    return getBundle (baseName, locale, ClassLoader.getSystemClassLoader ());
+  }
+
+  public static final ResourceBundle getBundle (String baseName, 
+						Locale locale,
+						ClassLoader loader)
     throws MissingResourceException
     {
       ResourceBundle rb;
@@ -185,14 +194,14 @@ public abstract class ResourceBundle
       if (baseName == null)
 	throw new NullPointerException ();
 
-      rb = partialGetBundle(baseName, locale, false);
+      rb = partialGetBundle(baseName, locale, false, loader);
       if (rb != null)
 	return rb;
 
       // Finally, try the default locale.
       if (! locale.equals(Locale.getDefault()))
 	{
-	  rb = partialGetBundle(baseName, Locale.getDefault(), true);
+	  rb = partialGetBundle(baseName, Locale.getDefault(), true, loader);
 	  if (rb != null)
 	    return rb;
 	}
