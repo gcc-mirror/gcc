@@ -1,5 +1,6 @@
-// Copyright (C) 2003
-// Free Software Foundation, Inc.
+// 2004-03-02  Petur Runolfsson  <peturr02@ru.is>
+
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,24 +20,25 @@
 
 // 27.4.3 fpos
 
-// { dg-do compile }
+// { dg-do run { xfail *-*-* } } 
 
-#include <ios>
+#include <iterator>
+#include <limits>
+#include <testsuite_hooks.h>
 
-void test04()
+void test01()
 {
-  std::streampos pos;
-  long n;
+  using namespace std;
+  bool test __attribute__((unused)) = true;  
 
-  // Implicit conversion
-  n = pos; // { dg-error "cannot convert" "" { xfail *-*-* } }
+  typedef istreambuf_iterator<char>::difference_type Distance;
+  typedef numeric_limits<Distance> Limits;
 
-  // Explicit conversion
-  n = static_cast<long>(pos); // { dg-error "invalid static_cast" "" { xfail *-*-* } }
+  VERIFY( Limits::is_specialized );
+  VERIFY( Limits::is_signed );
 }
 
 int main()
 {
-  test04();
-  return 0;
+  test01();
 }

@@ -1,5 +1,6 @@
-// Copyright (C) 2003
-// Free Software Foundation, Inc.
+// 2004-03-02  Petur Runolfsson  <peturr02@ru.is>
+
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,24 +20,33 @@
 
 // 27.4.3 fpos
 
-// { dg-do compile }
+#include <iterator>
+#include <testsuite_hooks.h>
 
-#include <ios>
-
-void test04()
+class Fred
 {
-  std::streampos pos;
-  long n;
+public:
+  Fred(bool)
+  { }
+};
 
-  // Implicit conversion
-  n = pos; // { dg-error "cannot convert" "" { xfail *-*-* } }
+void barney(Fred)
+{ }
 
-  // Explicit conversion
-  n = static_cast<long>(pos); // { dg-error "invalid static_cast" "" { xfail *-*-* } }
+// libstdc++/14320
+void test01()
+{
+  using namespace std;
+  bool test __attribute__((unused)) = true;
+
+  typedef istreambuf_iterator<char>::difference_type Distance;
+  
+  Distance d = 0;
+  barney(d);
 }
 
 int main()
 {
-  test04();
+  test01();
   return 0;
 }

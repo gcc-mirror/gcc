@@ -1,5 +1,18 @@
 2004-03-02  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/14320
+	* include/bits/postypes.h (class streamoff): Remove, now
+	streamoff is just typedef a 64 bit signed integer type.
+	(class fpos): Tweak consistently.
+	* testsuite/27_io/fpos/14320-1.cc: New.
+	* testsuite/27_io/fpos/14320-2.cc: New.
+	* testsuite/27_io/fpos/14320-3.cc: New.
+	* testsuite/27_io/fpos/14320-4.cc: New.
+	* testsuite/27_io/fpos/14320-5.cc: New.
+	* testsuite/27_io/fpos/mbstate_t/4_neg.cc: xfail for now.
+
+2004-03-02  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
 	Reorganize a bit the main parsing loop, thus early detecting
 	an empty value component.
