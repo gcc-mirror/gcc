@@ -899,14 +899,14 @@ struct cum_arg
 
 /* Accept either REG or SUBREG where a register is valid.  */
 
-#define RTX_OK_FOR_BASE_P(X)					\
-  ((REG_P (X) && REG_OK_FOR_BASE_P (X))				\
-   || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))		\
+#define RTX_OK_FOR_BASE_P(X)				\
+  ((REG_P (X) && REG_OK_FOR_BASE_P (X))			\
+   || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))	\
        && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) 	\
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
   if (RTX_OK_FOR_BASE_P (X)) goto ADDR;			\
-  if (CONSTANT_ADDRESS_P (X)) goto ADDR; 		\
+  if (CONSTANT_ADDRESS_P (X)) goto ADDR;		\
   if (GET_CODE (X) == PLUS				\
       && CONSTANT_ADDRESS_P (XEXP (X, 1))		\
       && RTX_OK_FOR_BASE_P (XEXP (X, 0))) goto ADDR;
