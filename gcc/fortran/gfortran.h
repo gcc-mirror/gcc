@@ -1505,15 +1505,14 @@ void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
 
 /* trans-types.c */
-/* FIXME: These should go to symbol.c, really...  */
-int gfc_default_integer_kind (void);
-int gfc_default_real_kind (void);
-int gfc_default_double_kind (void);
-int gfc_default_character_kind (void);
-int gfc_default_logical_kind (void);
-int gfc_default_complex_kind (void);
 int gfc_validate_kind (bt, int, bool);
 extern int gfc_index_integer_kind;
+extern int gfc_default_integer_kind;
+extern int gfc_default_real_kind;
+extern int gfc_default_double_kind;
+extern int gfc_default_character_kind;
+extern int gfc_default_logical_kind;
+extern int gfc_default_complex_kind;
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);

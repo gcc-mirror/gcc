@@ -1392,7 +1392,7 @@ resolve_operator (gfc_expr * e)
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER)
 	{
 	  e->ts.type = BT_LOGICAL;
-	  e->ts.kind = gfc_default_logical_kind ();
+	  e->ts.kind = gfc_default_logical_kind;
 	  break;
 	}
 
@@ -1401,7 +1401,7 @@ resolve_operator (gfc_expr * e)
 	  gfc_type_convert_binary (e);
 
 	  e->ts.type = BT_LOGICAL;
-	  e->ts.kind = gfc_default_logical_kind ();
+	  e->ts.kind = gfc_default_logical_kind;
 	  break;
 	}
 

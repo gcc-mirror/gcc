@@ -70,7 +70,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_pack_derived = 0;
   gfc_option.flag_repack_arrays = 0;
 
-  gfc_option.q_kind = gfc_default_double_kind ();
+  gfc_option.q_kind = gfc_default_double_kind;
   gfc_option.i8 = 0;
   gfc_option.r8 = 0;
   gfc_option.d8 = 0;

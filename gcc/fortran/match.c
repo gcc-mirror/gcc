@@ -2053,7 +2053,7 @@ gfc_match_call (void)
 
       select_sym = select_st->n.sym;
       select_sym->ts.type = BT_INTEGER;
-      select_sym->ts.kind = gfc_default_integer_kind ();
+      select_sym->ts.kind = gfc_default_integer_kind;
       gfc_set_sym_referenced (select_sym);
       c->expr = gfc_get_expr ();
       c->expr->expr_type = EXPR_VARIABLE;

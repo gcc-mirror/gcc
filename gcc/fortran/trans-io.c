@@ -817,7 +817,7 @@ gfc_new_nml_name_expr (char * name)
    nml_name = gfc_get_expr();
    nml_name->ref = NULL;
    nml_name->expr_type = EXPR_CONSTANT;
-   nml_name->ts.kind = gfc_default_character_kind ();
+   nml_name->ts.kind = gfc_default_character_kind;
    nml_name->ts.type = BT_CHARACTER;
    nml_name->value.character.length = strlen(name);
    nml_name->value.character.string = name;

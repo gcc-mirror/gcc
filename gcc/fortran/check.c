@@ -136,7 +136,7 @@ double_check (gfc_expr * d, int n)
   if (type_check (d, n, BT_REAL) == FAILURE)
     return FAILURE;
 
-  if (d->ts.kind != gfc_default_double_kind ())
+  if (d->ts.kind != gfc_default_double_kind)
     {
       must_be (d, n, "double precision");
       return FAILURE;
@@ -774,7 +774,7 @@ gfc_check_ibclr (gfc_expr * i, gfc_expr * pos)
 
   if (type_check (i, 0, BT_INTEGER) == FAILURE
       || type_check (pos, 1, BT_INTEGER) == FAILURE
-      || kind_value_check (pos, 1, gfc_default_integer_kind ()) == FAILURE)
+      || kind_value_check (pos, 1, gfc_default_integer_kind) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -787,7 +787,7 @@ gfc_check_ibits (gfc_expr * i, gfc_expr * pos, gfc_expr * len)
 
   if (type_check (i, 0, BT_INTEGER) == FAILURE
       || type_check (pos, 1, BT_INTEGER) == FAILURE
-      || kind_value_check (pos, 1, gfc_default_integer_kind ()) == FAILURE
+      || kind_value_check (pos, 1, gfc_default_integer_kind) == FAILURE
       || type_check (len, 2, BT_INTEGER) == FAILURE)
     return FAILURE;
 
@@ -801,7 +801,7 @@ gfc_check_ibset (gfc_expr * i, gfc_expr * pos)
 
   if (type_check (i, 0, BT_INTEGER) == FAILURE
       || type_check (pos, 1, BT_INTEGER) == FAILURE
-      || kind_value_check (pos, 1, gfc_default_integer_kind ()) == FAILURE)
+      || kind_value_check (pos, 1, gfc_default_integer_kind) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1036,7 +1036,7 @@ try
 gfc_check_min_max_integer (gfc_actual_arglist * arg)
 {
 
-  return check_rest (BT_INTEGER, gfc_default_integer_kind (), arg);
+  return check_rest (BT_INTEGER, gfc_default_integer_kind, arg);
 }
 
 
@@ -1044,7 +1044,7 @@ try
 gfc_check_min_max_real (gfc_actual_arglist * arg)
 {
 
-  return check_rest (BT_REAL, gfc_default_real_kind (), arg);
+  return check_rest (BT_REAL, gfc_default_real_kind, arg);
 }
 
 
@@ -1052,7 +1052,7 @@ try
 gfc_check_min_max_double (gfc_actual_arglist * arg)
 {
 
-  return check_rest (BT_REAL, gfc_default_double_kind (), arg);
+  return check_rest (BT_REAL, gfc_default_double_kind, arg);
 }
 
 /* End of min/max family.  */
@@ -1545,7 +1545,7 @@ gfc_check_size (gfc_expr * array, gfc_expr * dim)
       if (type_check (dim, 1, BT_INTEGER) == FAILURE)
 	return FAILURE;
 
-      if (kind_value_check (dim, 1, gfc_default_integer_kind ()) == FAILURE)
+      if (kind_value_check (dim, 1, gfc_default_integer_kind) == FAILURE)
 	return FAILURE;
 
       if (dim_rank_check (dim, array, 0) == FAILURE)
@@ -1834,7 +1834,7 @@ gfc_check_random_seed (gfc_expr * size, gfc_expr * put, gfc_expr * get)
       if (variable_check (size, 0) == FAILURE)
 	return FAILURE;
 
-      if (kind_value_check (size, 0, gfc_default_integer_kind ()) == FAILURE)
+      if (kind_value_check (size, 0, gfc_default_integer_kind) == FAILURE)
 	return FAILURE;
     }
 
@@ -1854,7 +1854,7 @@ gfc_check_random_seed (gfc_expr * size, gfc_expr * put, gfc_expr * get)
       if (type_check (put, 1, BT_INTEGER) == FAILURE)
 	return FAILURE;
 
-      if (kind_value_check (put, 1, gfc_default_integer_kind ()) == FAILURE)
+      if (kind_value_check (put, 1, gfc_default_integer_kind) == FAILURE)
 	return FAILURE;
     }
 
@@ -1877,7 +1877,7 @@ gfc_check_random_seed (gfc_expr * size, gfc_expr * put, gfc_expr * get)
       if (variable_check (get, 2) == FAILURE)
 	return FAILURE;
 
-      if (kind_value_check (get, 2, gfc_default_integer_kind ()) == FAILURE)
+      if (kind_value_check (get, 2, gfc_default_integer_kind) == FAILURE)
 	return FAILURE;
     }
 
