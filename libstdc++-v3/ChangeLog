@@ -1,3 +1,16 @@
+2002-11-15  Benjamin Kosnik  <bkoz@redhat.com>
+            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR libstdc++/8230
+	* include/bits/stl_alloc.h: Use builtin_expect for the most
+	obvious limit checks.
+	(__default_alloc_template::allocate): Check for null, throw
+	bad_alloc.
+	* include/bits/vector.tcc: Formatting tweaks.
+	* include/bits/stl_vector.h: Same.	
+	* testsuite/20_util/allocator_members.cc (test02): Add.
+	* testsuite/23_containers/vector_capacity.cc (test03): Add.
+	
 2002-11-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* src/ios.cc [_GLIBCPP_HAVE_UNISTD_H]: Include unistd.h.
