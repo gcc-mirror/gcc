@@ -138,8 +138,13 @@ struct real_format
   /* The maximum integer, x, such that b**(x-1) is representable.  */
   int emax;
 
-  /* The bit position of the sign bit, or -1 for a complex encoding.  */
-  int signbit;
+  /* The bit position of the sign bit, for determining whether a value
+     is positive/negative, or -1 for a complex encoding.  */
+  int signbit_ro;
+
+  /* The bit position of the sign bit, for changing the sign of a number,
+     or -1 for a complex encoding.  */
+  int signbit_rw;
 
   /* Properties of the format.  */
   bool has_nans;

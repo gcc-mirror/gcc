@@ -2182,7 +2182,7 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
   if (fmt == NULL)
     return NULL_RTX;
 
-  bitpos = fmt->signbit;
+  bitpos = fmt->signbit_rw;
   if (bitpos < 0)
     return NULL_RTX;
 
@@ -2882,7 +2882,7 @@ expand_copysign (rtx op0, rtx op1, rtx target)
   if (fmt == NULL || !fmt->has_signed_zero)
     return NULL_RTX;
 
-  bitpos = fmt->signbit;
+  bitpos = fmt->signbit_rw;
   if (bitpos < 0)
     return NULL_RTX;
 
