@@ -4,11 +4,11 @@ int size = 0;
 
 struct X {
     int x;
-    void *operator new[](size_t sz)   {
+    void *operator new[](size_t sz) throw()  {
          size = sz;
          return 0;  
     }
-    void operator delete[] (void *vp) { ::delete[] vp; }  
+    void operator delete[] (void *vp) { ::operator delete(vp); }  
 };
 int main()
 {

@@ -863,7 +863,7 @@ inline ios::~ios() {
 
 
 
-    if (_arrays) delete [] _arrays;
+    operator delete(_arrays);
 }
 }  
 

@@ -1130,6 +1130,11 @@ struct lang_type
    equivalently, no throw specification.  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_NONCOPIED_PARTS (NODE)
 
+/* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'.  */
+#define TYPE_NOTHROW_P(NODE) \
+  (TYPE_RAISES_EXCEPTIONS (NODE) \
+   && TREE_VALUE (TYPE_RAISES_EXCEPTIONS (NODE)) == NULL_TREE)
+
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.level)
 

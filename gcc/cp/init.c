@@ -2260,10 +2260,7 @@ build_new_1 (exp)
       tree t = TREE_OPERAND (rval, 0);
       /* The function.  */
       t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-      t = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (t));
-
-      if (t && TREE_VALUE (t) == NULL_TREE)
-	nothrow = 1;
+      nothrow = TYPE_NOTHROW_P (TREE_TYPE (t));
     }
   check_new = (flag_check_new || nothrow) && ! use_java_new;
 

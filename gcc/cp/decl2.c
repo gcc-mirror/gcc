@@ -1212,6 +1212,10 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       return error_mark_node;
     }
 
+  /* Deleting ptr to void is undefined behaviour [expr.delete/3].  */
+  if (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE)
+    cp_warning ("`%T' is not a pointer-to-object type", type);
+  
   /* An array can't have been allocated by new, so complain.  */
   if (TREE_CODE (t) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
