@@ -1445,6 +1445,11 @@ enum reg_class
 #define INDEX_REG_CLASS INDEX_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
+/* Unused letters:
+    B                 TU W   
+          h jk          vw  z
+*/
+
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #define REG_CLASS_FROM_LETTER(C)	\
@@ -1470,7 +1475,9 @@ enum reg_class
    (C) == 'y' ? TARGET_MMX ? MMX_REGS : NO_REGS :		\
    (C) == 'A' ? AD_REGS :					\
    (C) == 'D' ? DIREG :						\
-   (C) == 'S' ? SIREG : NO_REGS)
+   (C) == 'S' ? SIREG :						\
+   (C) == 'l' ? INDEX_REGS :					\
+   NO_REGS)
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.

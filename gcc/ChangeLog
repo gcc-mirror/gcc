@@ -1,3 +1,19 @@
+2004-12-13  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (insn-preds.o): Depend on REGS_H.
+	* genpreds.c (write_insn_preds_c): Include regs.h.
+	* config/i386/predicates.md (index_register_operand): Use
+	REG_OK_FOR_INDEX_STRICT_P and REG_OK_FOR_INDEX_NONSTRICT_P.
+
+	* config/i386/i386.h (REG_CLASS_FROM_LETTER): Add 'l'.
+	* config/i386/i386.md (lea_general_1, lea_general_1_zext,
+	lea_general_2, lea_general_2_zext, lea_general_3, lea_general_3_zext,
+	adddi_1_rex64, addsi_1, addsi_1_zext, addhi_1_lea, addqi_1_lea,
+	ashldi3_1_rex64, ashlsi3_1, ashlsi3_1_zext, ashlhi3_1_lea,
+	ashlqi3_1_lea): Use 'l' for index register operand.
+	(ashldi3_1_rex64 splitter): Use index_register_operand.
+	(ashlsi3_1 splitter): Be more careful with modes.
+
 2004-12-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/18459
