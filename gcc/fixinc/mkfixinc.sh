@@ -103,10 +103,7 @@ esac
 #
 if test -z "$fixincludes"
 then
-    cat > ${target}  <<-	_EOF_
-	#! /bin/sh
-	exit 0
-	_EOF_
+    (echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
     exit 0
 fi
 
