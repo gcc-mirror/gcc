@@ -250,8 +250,10 @@ static unsigned reg_number		PROTO((rtx));
 #endif
 #define CIE_AFTER_SIZE_LABEL	"LSCIE"
 #define CIE_END_LABEL		"LECIE"
+#define CIE_LENGTH_LABEL	"LLCIE"
 #define FDE_AFTER_SIZE_LABEL	"LSFDE"
 #define FDE_END_LABEL		"LEFDE"
+#define FDE_LENGTH_LABEL	"LLFDE"
 
 /* Definitions of defaults for various types of primitive assembly language
    output operations.  These may be overridden from within the tm.h file,
@@ -372,6 +374,13 @@ static unsigned reg_number		PROTO((rtx));
   } while (0)
 #endif
 
+#ifndef ASM_OUTPUT_DWARF_VALUE4
+#define ASM_OUTPUT_DWARF_VALUE4(FILE,LABEL) \
+  do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+	assemble_name (FILE, LABEL);					\
+  } while (0)
+#endif
+
 #else /* UNALIGNED_INT_ASM_OP */
 
 /* We don't have unaligned support, let's hope the normal output works for
@@ -407,10 +416,27 @@ static unsigned reg_number		PROTO((rtx));
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
   assemble_integer (GEN_INT (VALUE), 4, 1)
 
+#define ASM_OUTPUT_DWARF_VALUE4(FILE,LABEL) \
+  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), 4, 1)
+
 #endif /* UNALIGNED_INT_ASM_OP */
 
+#ifdef SET_ASM_OP
+#ifndef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)	\
+  do {	fprintf ((FILE), "\t%s\t", SET_ASM_OP);				\
+	assemble_name (FILE, SY);					\
+	fprintf ((FILE), ",");						\
+	assemble_name (FILE, HI);					\
+	fprintf ((FILE), "-");						\
+	assemble_name (FILE, LO);					\
+	fprintf ((FILE), "\n");						\
+  } while (0)
+#endif
+#endif /* SET_ASM_OP */
+
 /* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
-   newline is produced.  When flag_debug_asm is asserted, we add commnetary
+   newline is produced.  When flag_debug_asm is asserted, we add commentary
    at the end of the line, so we must avoid output of a newline here.  */
 #ifndef ASM_OUTPUT_DWARF_STRING
 #define ASM_OUTPUT_DWARF_STRING(FILE,P) \
@@ -1487,6 +1513,9 @@ output_call_frame_info (for_eh)
   register dw_cfi_ref cfi;
   unsigned long fde_pad;
   char l1[20], l2[20];
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+  char ld[20];
+#endif
 
   /* Do we want to include a pointer to the exception table?  */
   int eh_ptr = for_eh && exception_table_p ();
@@ -1516,10 +1545,18 @@ output_call_frame_info (for_eh)
   /* Output the CIE. */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+  ASM_GENERATE_INTERNAL_LABEL (ld, CIE_LENGTH_LABEL, for_eh);
+  if (for_eh)
+    ASM_OUTPUT_DWARF_VALUE4 (asm_out_file, ld);
+  else
+    ASM_OUTPUT_DWARF_OFFSET (asm_out_file, ld);
+#else
   if (for_eh)
     ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
   else
     ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
+#endif
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Common Information Entry",
 	     ASM_COMMENT_START);
@@ -1596,6 +1633,9 @@ output_call_frame_info (for_eh)
   /* Pad the CIE out to an address sized boundary.  */
   ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
   ASM_OUTPUT_LABEL (asm_out_file, l2);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+  ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
+#endif
 
   /* Loop through all of the FDE's.  */
   for (i = 0; i < fde_table_in_use; ++i)
@@ -1604,10 +1644,18 @@ output_call_frame_info (for_eh)
 
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i*2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i*2);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+      ASM_GENERATE_INTERNAL_LABEL (ld, FDE_LENGTH_LABEL, for_eh + i*2);
+      if (for_eh)
+	ASM_OUTPUT_DWARF_VALUE4 (asm_out_file, ld);
+      else
+	ASM_OUTPUT_DWARF_OFFSET (asm_out_file, ld);
+#else
       if (for_eh)
 	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
       else
 	ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
+#endif
       if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s FDE Length", ASM_COMMENT_START);
       fputc ('\n', asm_out_file);
@@ -1642,6 +1690,9 @@ output_call_frame_info (for_eh)
       /* Pad the FDE out to an address sized boundary.  */
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
       ASM_OUTPUT_LABEL (asm_out_file, l2);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+      ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
+#endif
     }
 #ifndef EH_FRAME_SECTION
   if (for_eh)
