@@ -1,3 +1,9 @@
+2004-03-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h: Correct #ifdef to test for
+	HAVE_AS_NO_MUL_BUG_ABORT_OPTION, not
+	HAVE_AS_MUL_BUG_ABORT_OPTION.
+
 2004-03-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (put_var_into_stack): If old RTL was ADDRESSOF, update
