@@ -112,6 +112,7 @@ FLEXFLAGS =
 AR = ar
 AR_FLAGS = rc
 DLLTOOL = dlltool
+RANLIB = @RANLIB@
 SHELL = /bin/sh
 # on sysV, define this as cp.
 INSTALL = @INSTALL@
@@ -139,13 +140,6 @@ OUTPUT_OPTION = @OUTPUT_OPTION@
 # case both are empty.
 ZLIB = @zlibdir@ -lz
 ZLIBINC = @zlibinc@
-
-# How to invoke ranlib.
-RANLIB = ranlib
-# Test to use to see whether ranlib exists on the system.
-RANLIB_TEST = \
-  [ -f $(RANLIB) ] \
-  || [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
 
 # Substitution type for target's getgroups 2nd arg.
 TARGET_GETGROUPS_T = @TARGET_GETGROUPS_T@
@@ -958,7 +952,7 @@ compilations: $(BACKEND)
 libbackend.a: $(OBJS)
 	-rm -rf libbackend.a
 	$(AR) $(AR_FLAGS) libbackend.a $(OBJS)
-	if $(RANLIB_TEST) ; then $(RANLIB) libbackend.a ; else true ; fi
+	-$(RANLIB) libbackend.a
 
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
@@ -1907,7 +1901,7 @@ LIBCPP_DEPS =	cpplib.h cpphash.h intl.h system.h
 libcpp.a: $(LIBCPP_OBJS)
 	-rm -rf libcpp.a
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
-	if $(RANLIB_TEST) ; then $(RANLIB) libcpp.a ; else true ; fi
+	-$(RANLIB) libcpp.a
 
 cpp0$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cpp0$(exeext) cppmain.o \

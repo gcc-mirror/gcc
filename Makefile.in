@@ -102,8 +102,6 @@ LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 CXXFLAGS_FOR_TARGET = $(CXXFLAGS)
 LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
 
-RANLIB = ranlib
-
 DLLTOOL = dlltool
 WINDRES = windres
 
@@ -288,7 +286,11 @@ RANLIB_FOR_TARGET = ` \
     echo $$r/binutils/ranlib ; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
-      echo $(RANLIB); \
+      if [ x"$(RANLIB)" != x ]; then \
+         echo $(RANLIB); \
+      else \
+         echo ranlib; \
+      fi; \
     else \
        t='$(program_transform_name)'; echo ranlib | sed -e 's/x/x/' $$t ; \
     fi; \
@@ -399,7 +401,7 @@ EXTRA_HOST_FLAGS = \
 	'DLLTOOL=$(DLLTOOL)' \
 	'LD=$(LD)' \
 	'NM=$(NM)' \
-	'RANLIB=$(RANLIB)' \
+	"`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
 	'WINDRES=$(WINDRES)'
 
 FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
@@ -432,7 +434,7 @@ EXTRA_TARGET_FLAGS = \
 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
 	'LIBCXXFLAGS=$$(LIBCXXFLAGS_FOR_TARGET)' \
 	'NM=$$(NM_FOR_TARGET)' \
-	'RANLIB=$$(RANLIB_FOR_TARGET)' \
+	"`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
 	'WINDRES=$$(WINDRES_FOR_TARGET)'
 
 TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
@@ -453,7 +455,7 @@ EXTRA_GCC_FLAGS = \
 	'HOST_PREFIX=$(HOST_PREFIX)' \
 	'HOST_PREFIX_1=$(HOST_PREFIX_1)' \
 	'NM=$(NM)' \
-	'RANLIB=$(RANLIB)' \
+	"`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
 	'WINDRES=$$(WINDRES_FOR_TARGET)' \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"`echo 'LANGUAGES=$(LANGUAGES)' | sed -e s/.*=$$/XFOO=/`" \
@@ -965,7 +967,7 @@ $(DO_X):
 	    if (cd ./$$i; \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-			"RANLIB=$${RANLIB}" \
+	                "`echo 'RANLIB=$${RANLIB}' | sed -e s/.*=$$/XFOO=/`" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 			$${target}); \
 	    then true; else exit 1; fi; \
@@ -984,7 +986,7 @@ $(DO_X):
 	    if (cd $(TARGET_SUBDIR)/$$i; \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-			"RANLIB=$${RANLIB}" \
+	                "`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 			$${target}); \
 	    then true; else exit 1; fi; \
