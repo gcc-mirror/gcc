@@ -1,3 +1,8 @@
+Tue Sep 14 09:47:41 1999  Andreas Schwab  <schwab@suse.de>
+
+	* stmt.c (expand_end_case): Return right away if the case stack is
+	empty.
+
 Tue Sep 14 01:47:19 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (version.c): Remove rule incorrectly brought in from
