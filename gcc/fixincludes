@@ -142,16 +142,19 @@ if $LINKS; then
 	cd $dest
 	# X gets the dir that the link actually leads to.
 	x=`${PWDCMD}`
+	# Canonicalize ${INPUT} now to minimize the time an
+	# automounter has to change the result of ${PWDCMD}.
+	cinput=`cd ${INPUT}; ${PWDCMD}`
 	# If a link points to ., make a similar link to .
-	if [ $x = $INPUT ]; then
+	if [ $x = ${cinput} ]; then
 	  echo $file '->' . ': Making link'
 	  rm -fr ${LIB}/$file > /dev/null 2>&1
 	  ln -s . ${LIB}/$file > /dev/null 2>&1
 	# If link leads back into ${INPUT},
 	# make a similar link here.
-	elif expr $x : "${INPUT}/.*" > /dev/null; then
+	elif expr $x : "${cinput}/.*" > /dev/null; then
 	  # Y gets the actual target dir name, relative to ${INPUT}.
-	  y=`echo $x | sed -n "s&${INPUT}/&&p"`
+	  y=`echo $x | sed -n "s&${cinput}/&&p"`
 	  # DOTS is the relative path from ${LIB}/$file's dir back to ${LIB}.
 	  dots=`echo "$file" |
 	    sed -e 's@^./@@' -e 's@/./@/@g' -e 's@[^/][^/]*@..@g' -e 's@..$@@'`
