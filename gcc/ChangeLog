@@ -1,3 +1,7 @@
+Mon Sep  1 16:58:57 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* alpha/xm-linux.h (USE_BFD): Undef before define.
+
 Mon Sep  1 16:25:34 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* cse.c (cse_insn): Don't record BLKmode values.
