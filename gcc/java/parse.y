@@ -57,6 +57,8 @@ definitions and other extensions.  */
 #include "real.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "pretty-print.h"
+#include "diagnostic.h"
 #include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
@@ -3141,7 +3143,7 @@ issue_warning_error_from_context (
 #else
 				  tree cl,
 #endif
-				  const char *msg, va_list ap)
+				  const char *msgid, va_list ap)
 {
 #ifdef USE_MAPPED_LOCATION
   source_location saved_location = input_location;
@@ -3151,7 +3153,16 @@ issue_warning_error_from_context (
   const char *saved = ctxp->filename, *saved_input_filename;
 #endif
   char buffer [4096];
-  vsprintf (buffer, msg, ap);
+  text_info text;
+
+  text.err_no = errno;
+  text.args_ptr = &ap;
+  text.format_spec = msgid;
+  pp_format_text (global_dc->printer, &text);
+  strncpy (buffer, pp_formatted_text (global_dc->printer), sizeof (buffer) - 1);
+  buffer[sizeof (buffer) - 1] = '\0';
+  pp_clear_output_area (global_dc->printer);
+
   force_error = 1;
 
 #ifdef USE_MAPPED_LOCATION
@@ -3188,14 +3199,14 @@ issue_warning_error_from_context (
    FUTURE/FIXME:  change cl to be a source_location. */
 
 void
-parse_error_context (tree cl, const char *msg, ...)
+parse_error_context (tree cl, const char *msgid, ...)
 {
   va_list ap;
-  va_start (ap, msg);
+  va_start (ap, msgid);
 #ifdef USE_MAPPED_LOCATION
-  issue_warning_error_from_context (EXPR_LOCATION (cl), msg, ap);
+  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, ap);
 #else
-  issue_warning_error_from_context (cl, msg, ap);
+  issue_warning_error_from_context (cl, msgid, ap);
 #endif
   va_end (ap);
 }
@@ -3204,16 +3215,16 @@ parse_error_context (tree cl, const char *msg, ...)
    FUTURE/FIXME:  change cl to be a source_location. */
 
 static void
-parse_warning_context (tree cl, const char *msg, ...)
+parse_warning_context (tree cl, const char *msgid, ...)
 {
   va_list ap;
-  va_start (ap, msg);
+  va_start (ap, msgid);
 
   do_warning = 1;
 #ifdef USE_MAPPED_LOCATION
-  issue_warning_error_from_context (EXPR_LOCATION (cl), msg, ap);
+  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, ap);
 #else
-  issue_warning_error_from_context (cl, msg, ap);
+  issue_warning_error_from_context (cl, msgid, ap);
 #endif
   do_warning = 0;
   va_end (ap);
