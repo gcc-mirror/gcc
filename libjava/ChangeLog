@@ -1,3 +1,24 @@
+2001-10-15  Hans Boehm <Hans_Boehm@hp.com>
+
+	* java/lang/natObject.cc (heavy_lock): Moved fields
+	old_client_data, old_finalization_proc near beginning.
+	(heavy_lock_finalization_proc): Now inline; changed type of
+	argument.
+	(JV_SYNC_TABLE_SZ): Now 2048.
+	(mp): New global.
+	(spin): `mp' now global.
+	(heavy_lock_obj_finalization_proc): Updated to correctly handle
+	heavy lock finalization.
+	(remove_all_heavy): New function.
+	(maybe_remove_all_heavy): Likewise.
+	(_Jv_MonitorEnter): Throw exception if object is NULL.
+	(_Jv_MonitorExit): Likewise.  Also, clear long lists of unlocked
+	heavy locks.
+	* include/jvm.h (_Jv_AllocTraceTwo): Declare.
+	* nogc.cc (_Jv_AllocTraceTwo): New function.
+	* boehm.cc (trace_two_vtable): New global.
+	(_Jv_AllocTraceTwo): New function.
+
 2001-10-15  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
