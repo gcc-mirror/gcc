@@ -1,3 +1,10 @@
+2002-06-17  Eric Botcazou <ebotcazou@multimania.com>
+            Glen Nakamura <glen@imodulo.com>
+
+	PR optimization/6713
+	* loop.c (loop_givs_rescan): Explicitly delete the insn that
+	sets a non-replaceable giv after issuing the new one.
+
 2002-07-17  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppexp.c (cpp_interpret_integer, append_digit, parse_defined,

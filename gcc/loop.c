@@ -4874,10 +4874,20 @@ loop_givs_rescan (loop, bl, reg_map)
 	}
       else
 	{
+	  rtx original_insn = v->insn;
+
 	  /* Not replaceable; emit an insn to set the original giv reg from
 	     the reduced giv, same as above.  */
-	  loop_insn_emit_after (loop, 0, v->insn,
-				gen_move_insn (v->dest_reg, v->new_reg));
+	  v->insn = loop_insn_emit_after (loop, 0, original_insn,
+					  gen_move_insn (v->dest_reg,
+							 v->new_reg));
+
+	  /* The original insn may have a REG_EQUAL note.  This note is
+	     now incorrect and may result in invalid substitutions later.
+	     We could just delete the note, but we know that the entire
+	     insn is dead, so we might as well save ourselves the bother
+	     and remove the whole thing.  */
+	  delete_insn (original_insn);
 	}
 
       /* When a loop is reversed, givs which depend on the reversed
