@@ -202,7 +202,11 @@ static int report_times;
 /* Nonzero means place this string before uses of /, so that include
    and library files can be found in an alternate location.  */
 
+#ifdef TARGET_SYSTEM_ROOT
 static const char *target_system_root = TARGET_SYSTEM_ROOT;
+#else
+static const char *target_system_root = 0;
+#endif
 
 /* Nonzero means pass the updated target_system_root to the compiler.  */
 
