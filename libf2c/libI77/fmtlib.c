@@ -1,5 +1,6 @@
 /*	@(#)fmtlib.c	1.2	*/
 #define MAXINTLENGTH 23
+#include "config.h"
 
 #include "f2c.h"
 #ifndef Allow_TYQUAD

@@ -1,4 +1,5 @@
 /* read sequential formatted external */
+#include "config.h"
 #include "f2c.h"
 #include "fio.h"
 #include "fmt.h"
