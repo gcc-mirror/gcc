@@ -166,6 +166,12 @@ static inline struct def_blocks_d *get_def_blocks_for (tree);
 static inline struct def_blocks_d *find_def_blocks_for (tree);
 static void htab_statistics (FILE *, htab_t);
 
+/* Use TREE_VISITED to keep track of which statements we want to
+   rename.  When renaming a subset of the variables, not all
+   statements will be processed.  This is decided in mark_def_sites.  */
+#define REWRITE_THIS_STMT(T)	TREE_VISITED (T)
+
+
 /* Get the information associated with NAME.  */
 
 static inline struct ssa_name_info *
@@ -379,14 +385,20 @@ mark_def_sites (struct dom_walk_data *walk_data,
   stmt = bsi_stmt (bsi);
   get_stmt_operands (stmt);
 
+  REWRITE_THIS_STMT (stmt) = 0;
+
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */
 
-  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE | SSA_OP_VUSE | SSA_OP_VMUSTDEFKILL)
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
+			    SSA_OP_USE | SSA_OP_VUSE | SSA_OP_VMUSTDEFKILL)
     {
-      if (prepare_use_operand_for_rename (use_p, &uid)
-	  && !TEST_BIT (kills, uid))
-	set_livein_block (USE_FROM_PTR (use_p), bb);
+      if (prepare_use_operand_for_rename (use_p, &uid))
+	{
+	  REWRITE_THIS_STMT (stmt) = 1;
+	  if (!TEST_BIT (kills, uid))
+	    set_livein_block (USE_FROM_PTR (use_p), bb);
+	}
     }
   
   /* Note that virtual definitions are irrelevant for computing KILLS
@@ -394,7 +406,6 @@ mark_def_sites (struct dom_walk_data *walk_data,
      variable.  However, the operand of a virtual definitions is a use
      of the variable, so it may cause the variable to be considered
      live-on-entry.  */
-
   FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
     {
       if (prepare_use_operand_for_rename (use_p, &uid))
@@ -406,22 +417,24 @@ mark_def_sites (struct dom_walk_data *walk_data,
 	    
           set_livein_block (USE_FROM_PTR (use_p), bb);
 	  set_def_block (DEF_FROM_PTR (def_p), bb, false, false);
+	  REWRITE_THIS_STMT (stmt) = 1;
 	}
     }
 
-  /* Now process the virtual must-defs made by this statement.  */
+  /* Now process the defs and must-defs made by this statement.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF | SSA_OP_VMUSTDEF)
     {
       if (prepare_def_operand_for_rename (def, &uid))
 	{
 	  set_def_block (def, bb, false, false);
 	  SET_BIT (kills, uid);
+	  REWRITE_THIS_STMT (stmt) = 1;
 	}
     }
-
 }
 
-/* Ditto, but works over ssa names.  */
+
+/* Same as mark_def_sites, but works over SSA names.  */
 
 static void
 ssa_mark_def_sites (struct dom_walk_data *walk_data,
@@ -807,7 +820,7 @@ rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     phi nodes we want to add arguments for.  */
 
 static void
-rewrite_virtual_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED, 
+rewrite_virtual_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 			       basic_block bb)
 {
   edge e;
@@ -1099,6 +1112,11 @@ rewrite_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   stmt = bsi_stmt (si);
   ann = stmt_ann (stmt);
 
+  /* If mark_def_sites decided that we don't need to rewrite this
+     statement, ignore it.  */
+  if (!REWRITE_THIS_STMT (stmt))
+    return;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Renaming statement ");
@@ -1126,7 +1144,8 @@ rewrite_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     }
 }
 
-/* Ditto, for rewriting ssa names.  */
+
+/* Same as rewrite_stmt, for rewriting ssa names.  */
 
 static void
 ssa_rewrite_stmt (struct dom_walk_data *walk_data,
@@ -1180,8 +1199,21 @@ ssa_rewrite_stmt (struct dom_walk_data *walk_data,
 static inline void
 rewrite_operand (use_operand_p op_p)
 {
-  if (TREE_CODE (USE_FROM_PTR (op_p)) != SSA_NAME)
-    SET_USE (op_p, get_reaching_def (USE_FROM_PTR (op_p)));
+  tree var = USE_FROM_PTR (op_p);
+  if (TREE_CODE (var) != SSA_NAME)
+    SET_USE (op_p, get_reaching_def (var));
+  else
+    {
+#if defined ENABLE_CHECKING
+      /* If we get to this point, VAR is an SSA_NAME.  If VAR's symbol
+	 was marked for renaming, make sure that its reaching
+	 definition is VAR itself.  Otherwise, something has gone
+	 wrong.  */
+      tree sym = SSA_NAME_VAR (var);
+      if (bitmap_bit_p (vars_to_rename, var_ann (sym)->uid))
+	gcc_assert (var == get_reaching_def (SSA_NAME_VAR (var)));
+#endif
+    }
 }
 
 /* Register DEF (an SSA_NAME) to be a new definition for its underlying
@@ -1509,8 +1541,9 @@ mark_def_site_blocks (void)
 
   /* We no longer need this bitmap, clear and free it.  */
   sbitmap_free (mark_def_sites_global_data.kills);
-
 }
+
+
 /* Main entry point into the SSA builder.  The renaming process
    proceeds in five main phases:
 

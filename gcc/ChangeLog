@@ -1,3 +1,20 @@
+2004-12-10  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-into-ssa.c (REWRITE_THIS_STMT): Define.
+	(mark_def_sites): Clear REWRITE_THIS_STMT for statements that
+	don't need any operands rewritten.
+	(rewrite_stmt): Ignore statements that don't need to be
+	rewritten.
+	(rewrite_operand): Validate that an existing SSA_NAME is
+	identical to the current reaching definition of the operand.
+
+2004-12-10  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-dfa.c (mark_call_clobbered_vars_to_rename): New function.
+	* tree-vectorizer.c (vectorizable_load): Call it.
+	* tree-flow.h (mark_call_clobbered_vars_to_rename): Declare.
+	* tree-sra.c (mark_all_v_defs): Also mark VUSEs for renaming.
+
 2004-12-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* regmove.c (combine_stack_adjustments_for_block): Free

@@ -2643,6 +2643,10 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	  new_bb = bsi_insert_on_edge_immediate (pe, new_stmt);
 	  gcc_assert (!new_bb);
 	  magic = TREE_OPERAND (new_stmt, 0);
+
+	  /* Since we have just created a CALL_EXPR, we may need to
+	     rename call-clobbered variables.  */
+	  mark_call_clobbered_vars_to_rename ();
 	}
       else
 	{
