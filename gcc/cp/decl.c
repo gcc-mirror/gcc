@@ -8397,6 +8397,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   constp = !! RIDBIT_SETP (RID_CONST, specbits) + TYPE_READONLY (type);
   volatilep = !! RIDBIT_SETP (RID_VOLATILE, specbits) + TYPE_VOLATILE (type);
+  type = TYPE_MAIN_VARIANT (type);
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
   virtualp = RIDBIT_SETP (RID_VIRTUAL, specbits);

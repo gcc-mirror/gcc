@@ -3499,7 +3499,8 @@ finish_struct_1 (t, warn_anon)
 		  cp_error_at ("  in declaration of `%D'", x);
 		}
 	      else if (width > TYPE_PRECISION (TREE_TYPE (x))
-		       && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
+		       && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE
+		       && TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE)
 		{
 		  cp_warning_at ("width of `%D' exceeds its type", x);
 		}
