@@ -57,10 +57,12 @@ namespace std
       for (size_t __i = 0; __i < __num_base::_S_iend; ++__i)
 	_M_data->_M_atoms_in[__i] = __num_base::_S_atoms_in[__i];
 
+      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+
       _M_data->_M_truename = "true";
-      _M_data->_M_truename_len = strlen(_M_data->_M_truename);
+      _M_data->_M_truename_size = strlen(_M_data->_M_truename);
       _M_data->_M_falsename = "false";
-      _M_data->_M_falsename_len = strlen(_M_data->_M_falsename);
+      _M_data->_M_falsename_size = strlen(_M_data->_M_falsename);
     }
 
   template<> 
@@ -95,11 +97,13 @@ namespace std
 	  uc = static_cast<unsigned char>(__num_base::_S_atoms_in[__i]);
 	  _M_data->_M_atoms_in[__i] = btowc(uc);
 	}
-      
+
+      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+
       _M_data->_M_truename = L"true";
-      _M_data->_M_truename_len = wcslen(_M_data->_M_truename);
+      _M_data->_M_truename_size = wcslen(_M_data->_M_truename);
       _M_data->_M_falsename = L"false";
-      _M_data->_M_falsename_len = wcslen(_M_data->_M_falsename);
+      _M_data->_M_falsename_size = wcslen(_M_data->_M_falsename);
     }
 
   template<> 

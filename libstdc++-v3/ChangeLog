@@ -1,3 +1,31 @@
+2004-01-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (struct __numpunct_cache):
+	Add member _M_grouping_size, caching the length of _M_grouping.
+	(__numpunct_cache<>::_M_cache): Assign the latter.
+	(__verify_grouping): Move declaration...
+	* include/bits/locale_facets.tcc (__verify_grouping):
+	... here, change signature to take a const char* and a size_t
+	for the grouping; not a template anymore.
+	(__add_grouping, num_put::_M_group_int, num_put::_M_group_float):
+	Likewise change signature and tweak consistently. 
+	(num_get::_M_extract_float, num_get::_M_extract_int,
+	num_put::_M_insert_int, num_put::_M_insert_float,
+	money_get::do_get(string_type&), money_get::do_put(string_type)):
+	Update callers. 
+	* config/locale/generic/numeric_members.cc
+	(numpunct<>::_M_initialize_numpunct): Assign the new member.	
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<>::_M_initialize_numpunct): Likewise.	
+	* src/locale-inst.cc (__add_grouping): Tweak signature.
+	(__verify_grouping): Don't instantiate, not a template anymore.
+
+	* include/bits/locale_facets.h: Rename _M_truename_len ->
+	_M_truename_size, _M_falsename_len -> _M_falsename_size.
+	* include/bits/locale_facets.tcc: Likewise.
+	* config/locale/generic/numeric_members.cc: Likewise.
+	* config/locale/gnu/numeric_members.cc: Likewise.
+
 2004-01-14  Stefan Olsson  <stefan@snon.net>
 
 	* include/ext/mt_allocator.h: Fixups.

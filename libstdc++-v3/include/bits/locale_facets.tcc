@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -150,6 +150,18 @@ namespace std
       }
     };
 
+  // Used by both numeric and monetary facets.
+  // Check to make sure that the __grouping_tmp string constructed in
+  // money_get or num_get matches the canonical grouping for a given
+  // locale.
+  // __grouping_tmp is parsed L to R
+  // 1,222,444 == __grouping_tmp of "\1\3\3"
+  // __grouping is parsed R to L
+  // 1,222,444 == __grouping of "\3" == "\3\3\3"
+  static bool
+  __verify_grouping(const char* __grouping, size_t __grouping_size,
+		    const string& __grouping_tmp);
+
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
@@ -293,8 +305,8 @@ namespace std
 	  if (!__found_dec)
 	    __found_grouping += static_cast<char>(__sep_pos);
 
-	  const string __grouping = __lc->_M_grouping;
-          if (!std::__verify_grouping(__grouping, __found_grouping))
+          if (!std::__verify_grouping(__lc->_M_grouping, __lc->_M_grouping_size,
+				      __found_grouping))
 	    __err |= ios_base::failbit;
         }
 
@@ -485,8 +497,8 @@ namespace std
 	    // Add the ending grouping.
 	    __found_grouping += static_cast<char>(__sep_pos);
 	    
-	    const string __grouping = __lc->_M_grouping;
-	    if (!std::__verify_grouping(__grouping, __found_grouping))
+	    if (!std::__verify_grouping(__lc->_M_grouping, __lc->_M_grouping_size,
+					__found_grouping))
 	      __err |= ios_base::failbit;
 	  }
 
@@ -536,13 +548,13 @@ namespace std
           for (__n = 0; __beg != __end; ++__n, ++__beg)
             {
 	      if (__testf)
-		if (__n < __lc->_M_falsename_len)
+		if (__n < __lc->_M_falsename_size)
 		  __testf = __traits_type::eq(*__beg, __lc->_M_falsename[__n]);
 		else
 		  break;
 
 	      if (__testt)
-		if (__n < __lc->_M_truename_len)
+		if (__n < __lc->_M_truename_size)
 		  __testt = __traits_type::eq(*__beg, __lc->_M_truename[__n]);
 		else
 		  break;
@@ -550,9 +562,9 @@ namespace std
 	      if (!__testf && !__testt)
 		break;      
             }
-	  if (__testf && __n == __lc->_M_falsename_len)
+	  if (__testf && __n == __lc->_M_falsename_size)
 	    __v = 0;
-	  else if (__testt && __n == __lc->_M_truename_len)
+	  else if (__testt && __n == __lc->_M_truename_size)
 	    __v = 1;
 	  else
 	    __err |= ios_base::failbit;
@@ -793,8 +805,8 @@ namespace std
   template<typename _CharT, typename _OutIter>
     void
     num_put<_CharT, _OutIter>::
-    _M_group_int(const string& __grouping, _CharT __sep, ios_base& __io, 
-		 _CharT* __new, _CharT* __cs, int& __len) const
+    _M_group_int(const char* __grouping, size_t __grouping_size, _CharT __sep,
+		 ios_base& __io, _CharT* __new, _CharT* __cs, int& __len) const
     {
       // By itself __add_grouping cannot deal correctly with __cs when
       // ios::showbase is set and ios_base::oct || ios_base::hex.
@@ -817,9 +829,9 @@ namespace std
 	    __new[1] = __cs[1];
 	  }
       _CharT* __p;
-      __p = std::__add_grouping(__new + __off, __sep, __grouping.data(), 
-				__grouping.data() + __grouping.size(),
-				__cs + __off, __cs + __len);
+      __p = std::__add_grouping(__new + __off, __sep, __grouping,
+				__grouping_size, __cs + __off,
+				__cs + __len);
       __len = __p - __new;
     }
 
@@ -854,8 +866,8 @@ namespace std
 	    // number of digits, but no more.
 	    _CharT* __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 								  * __len * 2));
-	    _M_group_int(__lc->_M_grouping, __lc->_M_thousands_sep, __io, 
-			 __cs2, __cs, __len);
+	    _M_group_int(__lc->_M_grouping, __lc->_M_grouping_size,
+			 __lc->_M_thousands_sep, __io, __cs2, __cs, __len);
 	    __cs = __cs2;
 	  }
 	
@@ -878,16 +890,15 @@ namespace std
   template<typename _CharT, typename _OutIter>
     void
     num_put<_CharT, _OutIter>::
-    _M_group_float(const string& __grouping, _CharT __sep, const _CharT* __p, 
-		   _CharT* __new, _CharT* __cs, int& __len) const
+    _M_group_float(const char* __grouping, size_t __grouping_size, _CharT __sep,
+		   const _CharT* __p, _CharT* __new, _CharT* __cs, int& __len) const
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 282. What types does numpunct grouping refer to?
       // Add grouping, if necessary. 
       _CharT* __p2;
       const int __declen = __p ? __p - __cs : __len;
-      __p2 = std::__add_grouping(__new, __sep, __grouping.data(),
-				 __grouping.data() + __grouping.size(),
+      __p2 = std::__add_grouping(__new, __sep, __grouping, __grouping_size,
 				 __cs, __cs + __declen);
       
       // Tack on decimal part.
@@ -1003,8 +1014,8 @@ namespace std
 	  // number of digits, but no more.
 	  _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 								* __len * 2));
-	  _M_group_float(__lc->_M_grouping, __lc->_M_thousands_sep, __p,
-			 __ws2, __ws, __len);
+	  _M_group_float(__lc->_M_grouping, __lc->_M_grouping_size,
+			 __lc->_M_thousands_sep, __p, __ws2, __ws, __len);
 	  __ws = __ws2;
 	}
 
@@ -1044,8 +1055,8 @@ namespace std
 
 	  const _CharT* __name = __v ? __lc->_M_truename 
 	                             : __lc->_M_falsename;
-	  int __len = __v ? __lc->_M_truename_len
-	                  : __lc->_M_falsename_len;
+	  int __len = __v ? __lc->_M_truename_size
+	                  : __lc->_M_falsename_size;
 
 	  const streamsize __w = __io.width();
 	  if (__w > static_cast<streamsize>(__len))
@@ -1308,7 +1319,9 @@ namespace std
 	  // Test for grouping fidelity.
 	  if (__grouping.size() && __grouping_tmp.size())
 	    {
-	      if (!std::__verify_grouping(__grouping, __grouping_tmp))
+	      if (!std::__verify_grouping(__grouping.data(),
+					  __grouping.size(),
+					  __grouping_tmp))
 		__testvalid = false;
 	    }
 	  
@@ -1461,12 +1474,12 @@ namespace std
 		  const char_type __sep = __intl ? __mpt.thousands_sep() 
 		    			         : __mpf.thousands_sep();
 		  const char* __gbeg = __grouping.data();
-		  const char* __gend = __gbeg + __grouping.size();
+		  const size_t __glen = __grouping.size();
 		  const int __n = (__end - __beg) * 2;
 		  _CharT* __ws2 =
        	          static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __n));
 		  _CharT* __ws_end = std::__add_grouping(__ws2, __sep, __gbeg, 
-							 __gend, __beg, __end);
+							 __glen, __beg, __end);
 		  __value.insert(0, __ws2, __ws_end - __ws2);
 		}
 	      else
@@ -2268,13 +2281,12 @@ namespace std
 		    __oldlen - __mod);
     }
 
-  template<typename _CharT>
-    bool
-    __verify_grouping(const basic_string<_CharT>& __grouping, 
-		      const basic_string<_CharT>& __grouping_tmp)
+  bool
+  __verify_grouping(const char* __grouping, size_t __grouping_size,
+		    const string& __grouping_tmp)
     { 
       const size_t __n = __grouping_tmp.size() - 1;
-      const size_t __min = std::min(__n, __grouping.size() - 1);
+      const size_t __min = std::min(__n, __grouping_size - 1);
       size_t __i = __n;
       bool __test = true;
 
@@ -2293,15 +2305,16 @@ namespace std
 
   template<typename _CharT>
     _CharT*
-    __add_grouping(_CharT* __s, _CharT __sep,  
-		   const char* __gbeg, const char* __gend, 
+    __add_grouping(_CharT* __s, _CharT __sep,
+		   const char* __gbeg, size_t __gsize,
 		   const _CharT* __first, const _CharT* __last)
     {
       if (__last - __first > *__gbeg)
 	{
-	  const bool __bump = __gbeg + 1 != __gend;
+	  const bool __bump = __gsize != 1;
 	  __s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
-				    __gend, __first, __last - *__gbeg);
+				    __gsize - __bump, __first,
+				    __last - *__gbeg);
 	  __first = __last - *__gbeg;
 	  *__s++ = __sep;
 	}
