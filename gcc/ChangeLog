@@ -20,6 +20,12 @@ Mon Jul 17 02:37:06 2000  Marc Espie <espie@openbsd.org>
 
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (scan_char_table): Allow "z" length modifiers on
+	diouxXn formats.
+	(check_format_info): Use TYPE_DOMAIN on the type matched against
+	for "z" formats, to retrieve the language size_t rather than the
+	internal one.
+
 	* c-common.c (check_format_info): Do not make a pedantic objection
 	to the 'L' length modifier if used with a floating point type
 	character.
