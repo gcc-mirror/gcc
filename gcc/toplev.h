@@ -55,7 +55,7 @@ extern void _fatal_insn (const char *, rtx, const char *, int, const char *)
 #endif
 extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void warning (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void warning (const char *, ...);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
