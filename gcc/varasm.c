@@ -1597,7 +1597,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (align > MAX_OFILE_ALIGNMENT)
     {
       warning_with_decl (decl,
-	"alignment of `%s' is greater than maximum object file alignment. Using %d.",
+	"alignment of `%s' is greater than maximum object file alignment. Using %d",
                     MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
@@ -1648,7 +1648,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
          warning_with_decl
-           (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
+           (decl, "requested alignment for %s is greater than implemented alignment of %d",rounded);
 #endif
 
       asm_emit_uninitialised (decl, name, size, rounded);

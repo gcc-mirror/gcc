@@ -4255,7 +4255,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	switch (c = *p++)
 	  {
 	  case 0:
-	    fatal ("Invalid specification!  Bug in cc.");
+	    fatal ("Invalid specification!  Bug in cc");
 
 	  case 'b':
 	    obstack_grow (&obstack, input_basename, basename_length);

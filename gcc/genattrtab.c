@@ -1438,7 +1438,7 @@ make_canonical (attr, exp)
       if (! strcmp (XSTR (exp, 0), "*"))
 	{
 	  if (attr == 0 || attr->default_val == 0)
-	    fatal ("(attr_value \"*\") used in invalid context.");
+	    fatal ("(attr_value \"*\") used in invalid context");
 	  exp = attr->default_val->value;
 	}
 
@@ -1827,7 +1827,7 @@ operate_exp (op, left, right)
     }
 
   else
-    fatal ("Badly formed attribute value.");
+    fatal ("Badly formed attribute value");
   /* NOTREACHED */
   return NULL;
 }
@@ -2454,7 +2454,7 @@ make_length_attrs ()
     return;
 
   if (! length_attr->is_numeric)
-    fatal ("length attribute must be numeric.");
+    fatal ("length attribute must be numeric");
 
   length_attr->is_const = 0;
   length_attr->is_special = 1;
@@ -6065,7 +6065,7 @@ main (argc, argv)
   progname = "genattrtab";
 
   if (argc <= 1)
-    fatal ("No input file name.");
+    fatal ("No input file name");
 
   if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);

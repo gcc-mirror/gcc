@@ -905,7 +905,7 @@ cxx_set_yydebug (value)
   extern int yydebug;
   yydebug = value;
 #else
-  warning ("YYDEBUG not defined.");
+  warning ("YYDEBUG not defined");
 #endif
 }
 

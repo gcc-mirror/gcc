@@ -267,7 +267,7 @@ friendly_abort (where, file, line, func)
     /* Say nothing.  */;
   else if (where > 0)
     {
-      error ("Internal error #%d.", where);
+      error ("Internal error #%d", where);
 
       /* Uncount this error, so internal_error will do the right thing.  */
       --errorcount;

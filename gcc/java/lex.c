@@ -1312,7 +1312,7 @@ java_lex (java_lval)
       if (c == '\n' || c == UEOF) /* ULT */
 	{
 	  lineno--;		/* Refer to the line the terminator was seen */
-	  java_lex_error ("String not terminated at end of line.", 0);
+	  java_lex_error ("String not terminated at end of line", 0);
 	  lineno++;
 	}
 

@@ -2526,7 +2526,7 @@ add_file (file_start, file_end_p1)
 		  (shash_t **) 0);
 
       if (file_end_p1 - file_start > (long) PAGE_USIZE-2)
-	fatal ("Filename goes over one page boundary.");
+	fatal ("Filename goes over one page boundary");
 
       /* Push the start of the filename. We assume that the filename
          will be stored at string offset 1.  */
@@ -5608,7 +5608,7 @@ error VPARAMS ((const char *format, ...))
 void
 fancy_abort ()
 {
-  fatal ("Internal abort.");
+  fatal ("Internal abort");
 }
 
 

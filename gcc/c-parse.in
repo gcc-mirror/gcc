@@ -3772,7 +3772,7 @@ c_set_yydebug (value)
 #if YYDEBUG != 0
   yydebug = value;
 #else
-  warning ("YYDEBUG not defined.");
+  warning ("YYDEBUG not defined");
 #endif
 }
 

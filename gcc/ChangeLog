@@ -1,3 +1,27 @@
+2001-12-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-decl.c (duplicate_decls, parmlist_tags_warning): Remove
+	trailing period from diagnostics.
+	* c-lex.c (cb_file_change): Similarly.
+	* cppmacro.c (check_trad_stringification): Similarly.
+	* gcc.c (do_spec_1): Similarly.
+	* genattr.c (main): Similarly.
+	* genattrtab.c (main, operate_exp, make_length_attrs): Similarly.
+	* gencodes.c (main): Similarly.
+	* genconfig.c (main): Similarly.
+	* genconstants.c (main): Similarly.
+	* genemit.c (main): Similarly.
+	* genextract.c (main): Similarly.
+	* genopinit.c (main): Similarly.
+	* genoutput.c (main): Similarly.
+	* genpeep.c (main): Similarly.
+	* genrecog.c (main): Similarly.
+	* mips-tfile.c (add_file, error): Similarly.
+	* profile.c (init_branch_prob): Similarly.
+	* reload1.c (spill_failure): Similarly.
+	* stmt.c (parse_output_constraint): Similarly.
+	* varasm.c (assemble_variable): Similarly.
+
 2001-12-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* m68k.c (init_FPA_table): Provide static prototype.
