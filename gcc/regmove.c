@@ -395,11 +395,11 @@ static int perhaps_ends_bb_p (insn)
       /* A CALL_INSN might be the last insn of a basic block, if it is inside
 	 an EH region or if there are nonlocal gotos.  Note that this test is
 	 very conservative.  */
-      return flag_exceptions || nonlocal_goto_handler_labels;
-
+      if (nonlocal_goto_handler_labels)
+	return 1;
+      /* FALLTHRU */
     default:
-      /* All others never end a basic block.  */
-      return 0;
+      return can_throw_internal (insn);
     }
 }
 
@@ -1061,6 +1061,11 @@ regmove_optimize (f, nregs, regmove_dump_file)
   int pass;
   int i;
   rtx copy_src, copy_dst;
+
+  /* ??? Hack.  Regmove doesn't examine the CFG, and gets mightily
+     confused by non-call exceptions ending blocks.  */
+  if (flag_non_call_exceptions)
+    return;
 
   /* Find out where a potential flags register is live, and so that we
      can supress some optimizations in those zones.  */
