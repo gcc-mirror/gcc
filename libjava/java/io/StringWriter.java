@@ -1,5 +1,5 @@
 /* StringWriter.java -- Writes bytes to a StringBuffer
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,7 +61,7 @@ public class StringWriter extends Writer
    * This method closes the stream.  The contents of the internal buffer
    * can still be retrieved, but future writes are not guaranteed to work.
    */
-  public void close ()
+  public void close () throws IOException
   {
     // JCL says this does nothing.  This seems to violate the Writer
     // contract, in that other methods should still throw an
