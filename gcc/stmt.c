@@ -1242,6 +1242,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      pushlevel (0);
 	      set_block (f->context);
 	      expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1, 1);
+	      do_pending_stack_adjust ();
 	      cleanup_insns = get_insns ();
 	      poplevel (1, 0, 0);
 	      end_sequence ();
