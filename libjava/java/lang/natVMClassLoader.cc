@@ -39,8 +39,8 @@ java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
 {
 #ifdef INTERPRETER
   jclass klass;
-  klass = (jclass) JvAllocObject (&java::lang::Class::class$,
-				  sizeof (_Jv_InterpClass));
+  klass = new java::lang::Class ();
+  klass->aux_info = (void *) _Jv_AllocBytes (sizeof (_Jv_InterpClass));
 
   // Synchronize on the class, so that it is not attempted initialized
   // until we're done loading.

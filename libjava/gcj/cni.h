@@ -20,18 +20,6 @@ details.  */
 
 #include <string.h>
 
-extern inline jobject
-JvAllocObject (jclass cls)
-{
-  return _Jv_AllocObject (cls);
-}
-
-extern inline jobject
-JvAllocObject (jclass cls, jsize sz)
-{
-  return _Jv_AllocObject (cls);
-}
-
 extern "C" jstring _Jv_NewStringUTF (const char *bytes);
 extern "C" void _Jv_InitClass (jclass);
 

@@ -22,7 +22,6 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
-#include <gnu/gcj/runtime/StackTrace.h>
 
 extern "C" {
 #include <ffi.h>
@@ -80,7 +79,7 @@ class _Jv_MethodBase
 {
 protected:
   // The class which defined this method.
-  _Jv_InterpClass *defining_class;
+  jclass defining_class;
 
   // The method description.
   _Jv_Method *self;
@@ -150,6 +149,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   friend class _Jv_BytecodeVerifier;
   friend class gnu::gcj::runtime::NameFinder;
   friend class gnu::gcj::runtime::StackTrace;
+  
 
   friend void _Jv_PrepareClass(jclass);
 
@@ -158,7 +158,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 #endif
 };
 
-class _Jv_InterpClass : public java::lang::Class
+class _Jv_InterpClass
 {
   _Jv_MethodBase **interpreted_methods;
   _Jv_ushort        *field_initializers;
@@ -185,13 +185,15 @@ extern inline void
 _Jv_Defer_Resolution (void *cl, _Jv_Method *meth, void **address)
 {
   int i;
-  _Jv_InterpClass *self = (_Jv_InterpClass *)cl;
+  jclass self = (jclass) cl;
+  _Jv_InterpClass *interp_cl = (_Jv_InterpClass*) self->aux_info;
+
   for (i = 0; i < self->method_count; i++)
     {
       _Jv_Method *m = &self->methods[i];
       if (m == meth)
 	{
-	  _Jv_MethodBase *imeth = self->interpreted_methods[i];
+	  _Jv_MethodBase *imeth = interp_cl->interpreted_methods[i];
 	  *address = imeth->deferred;
 	  imeth->deferred = address;
 	  return;

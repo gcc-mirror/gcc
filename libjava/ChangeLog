@@ -1,3 +1,26 @@
+2004-04-19  Bryce McKinlay  <mckinlay@redhat.com>
+ 
+	* gcj/cni.h (JvAllocObject): Remove these obsolete, 
+	undocumented CNI calls.
+	* include/java-interp.h (_Jv_InterpClass): No longer
+	extends java.lang.Class.
+	* java/lang/Class.h (Class): Add new field `aux_info'.
+	* boehm.cc (_Jv_MarkObj): Update java.lang.Class marking.
+	* defineclass.cc: Remove Class<->_Jv_InterpClass casts.
+	Use Class->aux_info instead.
+	* jni.cc (_Jv_JNI_AllocObject): Use _Jv_AllocObject.
+	* resolve.cc: Remove Class<->_Jv_InterpClass casts.
+	Use Class->aux_info instead.
+	* java/io/natObjectInputStream.cc (allocateObject): Use
+	_Jv_AllocObject.
+	* java/lang/natClass.cc (newInstance): Likewise.
+	* java/lang/natClassLoader.cc (_Jv_NewClass): Likewise.
+	* java/lang/natObject.cc (clone): Likewise.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Likewise.
+	* java/lang/natVMClassLoader.cc (defineClass): Don't use
+	JvAllocObject. Allocate klass->aux_info here for interpreted
+	class.
+	
 2004-04-17  Mark Wielaard  <mark@klomp.org>
 
 	* javax/swing/JToggleButton.java (ToggleButtonModel):

@@ -1723,6 +1723,7 @@ make_class_data (tree type)
   PUSH_FIELD_VALUE (cons, "protectionDomain", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "hack_signers", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "chain", null_pointer_node);
+  PUSH_FIELD_VALUE (cons, "aux_info", null_pointer_node);
 
   FINISH_RECORD_CONSTRUCTOR (cons);
 
