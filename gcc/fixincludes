@@ -922,17 +922,21 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
+  if grep _GCC_SIZE_T ${LIB}/$file >/dev/null
+  then size_t_pattern='<<< do not double-wrap the size_t typedef >>>'
+  else size_t_pattern='typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;'
+  fi
   sed -e 's/int	abort/void	abort/g' \
   -e 's/int	free/void	free/g' \
   -e 's/char[ 	]*\*[ 	]*calloc/void \*	calloc/g' \
   -e 's/char[ 	]*\*[ 	]*malloc/void \*	malloc/g' \
   -e 's/char[ 	]*\*[ 	]*realloc/void \*	realloc/g' \
   -e 's/int[ 	][ 	]*exit/void	exit/g' \
-  -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/i\
+  -e "/$size_t_pattern/"'i\
 #ifndef _GCC_SIZE_T\
 #define _GCC_SIZE_T
 ' \
-  -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/a\
+  -e "/$size_t_pattern/"'a\
 #endif
 ' \
       ${LIB}/$file > ${LIB}/${file}.sed
