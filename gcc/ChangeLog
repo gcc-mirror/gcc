@@ -1,3 +1,7 @@
+2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (get_shift_alg): Remove redundant code.
+
 2003-01-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (__NO_STRING_INLINES): Define.
