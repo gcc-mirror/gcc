@@ -4398,6 +4398,10 @@ those results in a file name that is found, the unmodified program
 name is searched for using the directories specified in your
 @env{PATH} environment variable.
 
+The compiler will check to see if the path provided by the @option{-B}
+refers to a directory, and if necessary it will add a directory
+separator character at the end of the path.
+
 @option{-B} prefixes that effectively specify directory names also apply
 to libraries in the linker, because the compiler translates these
 options into @option{-L} options for the linker.  They also apply to
@@ -4413,6 +4417,10 @@ out of the link if it is not found by those means.
 Another way to specify a prefix much like the @option{-B} prefix is to use
 the environment variable @env{GCC_EXEC_PREFIX}.  @xref{Environment
 Variables}.
+
+As a special kludge, if the path provided by @option{-B} is
+@samp{[foo/]stage<N>/} then it will be replaced by
+@samp{[foo/]include}.  This is to help with boot-strapping the compiler.
 
 @item -specs=@var{file}
 @opindex specs
