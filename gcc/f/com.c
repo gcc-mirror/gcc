@@ -8260,13 +8260,17 @@ ffecom_sym_transform_ (ffesymbol s)
 		assert (ffebld_right (dim) != NULL);
 		if ((ffebld_op (ffebld_right (dim)) == FFEBLD_opSTAR)
 		    || ffecom_doing_entry_)
-		  /* Used to just do high=low.  But for ffecom_tree_
-		     canonize_ref_, it probably is important to correctly
-		     assess the size.  E.g. given COMPLEX C(*),CFUNC and
-		     C(2)=CFUNC(C), overlap can happen, while it can't
-		     for, say, C(1)=CFUNC(C(2)).  */
-		  high = convert (TREE_TYPE (low),
-				  TYPE_MAX_VALUE (TREE_TYPE (low)));
+		  {
+		    /* Used to just do high=low.  But for ffecom_tree_
+		       canonize_ref_, it probably is important to correctly
+		       assess the size.  E.g. given COMPLEX C(*),CFUNC and
+		       C(2)=CFUNC(C), overlap can happen, while it can't
+		       for, say, C(1)=CFUNC(C(2)).  */
+		    /* Even more recently used to set to INT_MAX, but that
+		       broke when some overflow checking went into the back
+		       end.  Now we just leave the upper bound unspecified.  */
+		    high = NULL;
+		  }
 		else
 		  high = ffecom_expr (ffebld_right (dim));
 
@@ -8406,7 +8410,7 @@ ffecom_sym_transform_ (ffesymbol s)
 
 		if (!adjustable
 		    && ((TREE_CODE (low) != INTEGER_CST)
-			|| (TREE_CODE (high) != INTEGER_CST)))
+			|| (high && TREE_CODE (high) != INTEGER_CST)))
 		  adjustable = TRUE;
 
 #if 0				/* Old approach -- see below. */
@@ -8416,7 +8420,7 @@ ffecom_sym_transform_ (ffesymbol s)
 				  low,
 				  ffecom_integer_zero_node);
 
-		if (TREE_CODE (high) != INTEGER_CST)
+		if (high && TREE_CODE (high) != INTEGER_CST)
 		  high = ffecom_3 (COND_EXPR, integer_type_node,
 				   ffecom_adjarray_passed_ (s),
 				   high,
@@ -8432,7 +8436,7 @@ ffecom_sym_transform_ (ffesymbol s)
 		/* ~~~similarly, this fixes dumb0.f.  The C front end
 		   does this, which is why dumb0.c would work.  */
 
-		if (TREE_CODE (high) != INTEGER_CST)
+		if (high && TREE_CODE (high) != INTEGER_CST)
 		  high = variable_size (high);
 
 		type
