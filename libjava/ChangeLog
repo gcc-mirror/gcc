@@ -1,3 +1,8 @@
+2004-10-22  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/net/protocol/http/Connection.java (sendRequest): Fix
+	typo.
+
 2004-10-22  Michael Koch  <konqueror@gmx.de>
 
 	PR libjava/14009
