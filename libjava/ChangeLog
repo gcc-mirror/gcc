@@ -1,5 +1,12 @@
 2001-08-31  Per Bothner  <per@bothner.com>
 
+	* gcj/javaprims.h (_Jv_RegisterClassHook):  New extern declaration.
+	(_Jv_RegisterClassHookDefault):  Likewise.
+	* java/lang/Class.h (_Jv_RegisterClassHookDefault):  Declare as friend.
+	* java/lang/natClassLoader.cc (_Jv_RegisterClassHook):  New variable.
+	(_Jv_RegisterClassHookDefault):  New.function.
+	(_Jv_RegisterClasses):  Call _Jv_RegisterClassHook.
+
 	* java/lang/ClassLoader.java (system):  Remove static field.
 	(getSystemClassLoader):  Get gnu.gcj.runtime.VMClassLoader.instance
 	directly instead of using it to set the system field.

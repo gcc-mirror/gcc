@@ -439,9 +439,8 @@ _Jv_RegisterClasses (jclass *classes)
   for (; *classes; ++classes)
     {
       jclass klass = *classes;
-      jint hash = HASH_UTF (klass->name);
-      klass->next = loaded_classes[hash];
-      loaded_classes[hash] = klass;
+
+      (*_Jv_RegisterClassHook) (klass);
 
       // registering a compiled class causes
       // it to be immediately "prepared".  
@@ -449,6 +448,21 @@ _Jv_RegisterClasses (jclass *classes)
 	klass->state = JV_STATE_COMPILED;
     }
 }
+
+void
+_Jv_RegisterClassHookDefault (jclass klass)
+{
+  jint hash = HASH_UTF (klass->name);
+  klass->next = loaded_classes[hash];
+  loaded_classes[hash] = klass;
+}
+
+// A pointer to a function that actually registers a class.
+// Normally _Jv_RegisterClassHookDefault, but could be some other function
+// that registers the class in e.g. a ClassLoader-local table.
+// Should synchronize on Class:class$ while setting/restore this variable.
+
+void (*_Jv_RegisterClassHook) (jclass cl) = _Jv_RegisterClassHookDefault;
 
 void
 _Jv_RegisterClass (jclass klass)

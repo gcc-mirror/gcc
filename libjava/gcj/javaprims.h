@@ -411,6 +411,8 @@ extern "C" void _Jv_Throw (jthrowable) __attribute__ ((__noreturn__));
 extern "C" void* _Jv_Malloc (jsize) __attribute__((__malloc__));
 extern "C" void* _Jv_Realloc (void *, jsize);
 extern "C" void _Jv_Free (void*);
+extern void (*_Jv_RegisterClassHook) (jclass cl);
+extern "C" void _Jv_RegisterClassHookDefault (jclass);
 
 typedef unsigned short _Jv_ushort __attribute__((__mode__(__HI__)));
 typedef unsigned int _Jv_uint __attribute__((__mode__(__SI__)));

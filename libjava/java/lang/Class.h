@@ -298,6 +298,7 @@ private:
 
   friend void _Jv_WaitForState (jclass, int);
   friend void _Jv_RegisterClasses (jclass *classes);
+  friend void _Jv_RegisterClassHookDefault (jclass klass);
   friend void _Jv_RegisterInitiatingLoader (jclass,java::lang::ClassLoader*);
   friend void _Jv_UnregisterClass (jclass);
   friend jclass _Jv_FindClass (_Jv_Utf8Const *name,
