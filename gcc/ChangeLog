@@ -1,3 +1,7 @@
+2003-05-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (print_operand): Fix uninitialized warning.
+
 2003-05-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c: Reset to prerelease format.
