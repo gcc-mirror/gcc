@@ -3765,10 +3765,28 @@ gen_add2_insn (x, y)
 }
 
 int
-have_add2_insn (mode)
-     enum machine_mode mode;
+have_add2_insn (x, y)
+     rtx x, y;
 {
-  return add_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing;
+  int icode;
+
+  if (GET_MODE (x) == VOIDmode)
+    abort ();
+
+  icode = (int) add_optab->handlers[(int) GET_MODE (x)].insn_code; 
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  if (! ((*insn_data[icode].operand[0].predicate)
+	 (x, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (x, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (y, insn_data[icode].operand[2].mode)))
+    return 0;
+
+  return 1;
 }
 
 /* Generate and return an insn body to subtract Y from X.  */
@@ -3791,10 +3809,28 @@ gen_sub2_insn (x, y)
 }
 
 int
-have_sub2_insn (mode)
-     enum machine_mode mode;
+have_sub2_insn (x, y)
+     rtx x, y;
 {
-  return sub_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing;
+  int icode;
+
+  if (GET_MODE (x) == VOIDmode)
+    abort ();
+
+  icode = (int) sub_optab->handlers[(int) GET_MODE (x)].insn_code; 
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  if (! ((*insn_data[icode].operand[0].predicate)
+	 (x, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (x, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (y, insn_data[icode].operand[2].mode)))
+    return 0;
+
+  return 1;
 }
 
 /* Generate the body of an instruction to copy Y into X.
