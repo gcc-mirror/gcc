@@ -8332,63 +8332,45 @@ expand_expr (exp, target, tmode, modifier)
 	   knows that it should fix up those uses.  */
 	TREE_USED (slot) = 1;
 
+	/* If we have already expanded the slot, so don't do
+	   it again.  (mrs)  */
+	if (DECL_RTL_SET_P (slot))
+	  {
+	    target = DECL_RTL (slot);
+	    if (TREE_OPERAND (exp, 1) == NULL_TREE)
+	      return target;
+	  }
+
 	if (target == 0)
 	  {
-	    if (DECL_RTL_SET_P (slot))
-	      {
-		target = DECL_RTL (slot);
-		/* If we have already expanded the slot, so don't do
-		   it again.  (mrs)  */
-		if (TREE_OPERAND (exp, 1) == NULL_TREE)
-		  return target;
-	      }
-	    else
-	      {
-		target = assign_temp (type, 2, 0, 1);
-		/* All temp slots at this level must not conflict.  */
-		preserve_temp_slots (target);
-		SET_DECL_RTL (slot, target);
-		if (TREE_ADDRESSABLE (slot))
-		  put_var_into_stack (slot);
+	    target = assign_temp (type, 2, 0, 1);
+	    /* All temp slots at this level must not conflict.  */
+	    preserve_temp_slots (target);
+	    SET_DECL_RTL (slot, target);
+	    if (TREE_ADDRESSABLE (slot))
+	      put_var_into_stack (slot);
 
-		/* Since SLOT is not known to the called function
-		   to belong to its stack frame, we must build an explicit
-		   cleanup.  This case occurs when we must build up a reference
-		   to pass the reference as an argument.  In this case,
-		   it is very likely that such a reference need not be
-		   built here.  */
-
-		if (TREE_OPERAND (exp, 2) == 0)
-		  TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
-		cleanups = TREE_OPERAND (exp, 2);
-	      }
+	    /* Since SLOT is not known to the called function
+	       to belong to its stack frame, we must build an explicit
+	       cleanup.  This case occurs when we must build up a reference
+	       to pass the reference as an argument.  In this case,
+	       it is very likely that such a reference need not be
+	       built here.  */
+	    if (TREE_OPERAND (exp, 2) == 0)
+	      TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
+	    cleanups = TREE_OPERAND (exp, 2);
 	  }
 	else
 	  {
 	    /* This case does occur, when expanding a parameter which
 	       needs to be constructed on the stack.  The target
-	       is the actual stack address that we want to initialize.
-	       The function we call will perform the cleanup in this case.  */
-
-	    /* If we have already assigned it space, use that space,
-	       not target that we were passed in, as our target
-	       parameter is only a hint.  */
-	    if (DECL_RTL_SET_P (slot))
-	      {
-		target = DECL_RTL (slot);
-		/* If we have already expanded the slot, so don't do
-                   it again.  (mrs)  */
-		if (TREE_OPERAND (exp, 1) == NULL_TREE)
-		  return target;
-	      }
-	    else
-	      {
-		SET_DECL_RTL (slot, target);
-		/* If we must have an addressable slot, then make sure that
-		   the RTL that we just stored in slot is OK.  */
-		if (TREE_ADDRESSABLE (slot))
-		  put_var_into_stack (slot);
-	      }
+	       is the actual stack address that we want to
+	       initialize.  */
+	    SET_DECL_RTL (slot, target);
+	    /* If we must have an addressable slot, then make sure that
+	       the RTL that we just stored in slot is OK.  */
+	    if (TREE_ADDRESSABLE (slot))
+	      put_var_into_stack (slot);
 	  }
 
 	exp1 = TREE_OPERAND (exp, 3) = TREE_OPERAND (exp, 1);

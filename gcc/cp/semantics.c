@@ -2125,10 +2125,6 @@ cp_expand_stmt (t)
 {
   switch (TREE_CODE (t))
     {
-    case CLEANUP_STMT:
-      genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
-      break;
-
     case CTOR_STMT:
       genrtl_ctor_stmt (t);
       break;
