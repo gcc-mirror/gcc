@@ -3258,6 +3258,9 @@ mark_set_1 (needed, dead, x, insn, significant)
     invalidate_mems_from_autoinc (insn);
 
   if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
+      /* We do not know the size of a BLKmode store, so we do not track
+	 them for redundant store elimination.  */
+      && GET_MODE (reg) != BLKmode
       /* There are no REG_INC notes for SP, so we can't assume we'll see 
 	 everything that invalidates it.  To be safe, don't eliminate any
 	 stores though SP; none of them should be redundant anyway.  */
