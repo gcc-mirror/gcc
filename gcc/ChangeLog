@@ -1,3 +1,25 @@
+2005-04-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/19454
+	PR rtl-optimization/20600
+
+	* combine.c (gen_binary): Remove.
+	(known_cond, simplify_shift_const, find_split_point,
+	combine_simplify_rtx, simplify_if_then_else, simplify_set,
+	simplify_logical, expand_field_assignment, extract_left_shift,
+	force_to_mode, if_then_else_cond, apply_distributive_law,
+	simplify_and_const_int, simplify_shift_const, gen_lowpart_for_combine,
+	simplify_comparison, reversed_comparison): Replace with
+	simplify_gen_binary, simplify_gen_relational or
+	distribute_and_simplify_rtx.
+	(distribute_and_simplify_rtx): New function.
+
+	* config/i386/i386.c (ix86_decompose_address): Look inside SUBREGs
+	to fix addresses involving EBP and ESP.
+	(aligned_operand, legitimate_address_p, ix86_address_cost): Be prepared
+	for SUBREGed registers.
+	(legitimate_address_p): Accept SUBREGed registers.
+
 2005-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19406
