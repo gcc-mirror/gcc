@@ -4700,8 +4700,6 @@ output_jump_label_table (void)
 /* Number of bytes pushed for anonymous args, used to pass information
    between expand_prologue and expand_epilogue.  */
 
-static int extra_push;
-
 /* Adjust the stack by SIZE bytes.  REG holds the rtl of the register to be
    adjusted.  If epilogue_p is zero, this is for a prologue; otherwise, it's
    for an epilogue and a negative value means that it's for a sibcall
@@ -5321,16 +5319,20 @@ sh_expand_prologue (void)
   int d, i;
   int d_rounding = 0;
   int save_flags = target_flags;
+  int pretend_args;
 
   current_function_interrupt = sh_cfun_interrupt_handler_p ();
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
-  output_stack_adjust (-current_function_pretend_args_size
+  pretend_args = current_function_pretend_args_size;
+  if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl)
+      && (NPARM_REGS(SImode)
+	  > current_function_args_info.arg_count[(int) SH_ARG_INT]))
+    pretend_args = 0;
+  output_stack_adjust (-pretend_args
 		       - current_function_args_info.stack_regs * 8,
 		       stack_pointer_rtx, 0, NULL);
-
-  extra_push = 0;
 
   if (TARGET_SHCOMPACT && flag_pic && current_function_args_info.call_cookie)
     /* We're going to use the PIC register to load the address of the
@@ -5388,9 +5390,7 @@ sh_expand_prologue (void)
   /* Emit the code for SETUP_VARARGS.  */
   if (current_function_stdarg)
     {
-      /* This is not used by the SH2E calling convention  */
-      if (TARGET_SH1 && ! TARGET_SH2E && ! TARGET_SH5
-	  && ! (TARGET_HITACHI || sh_cfun_attr_renesas_p ()))
+      if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl))
 	{
 	  /* Push arg regs as if they'd been provided by caller in stack.  */
 	  for (i = 0; i < NPARM_REGS(SImode); i++)
@@ -5404,7 +5404,6 @@ sh_expand_prologue (void)
 		break;
 	      insn = push (rn);
 	      RTX_FRAME_RELATED_P (insn) = 0;
-	      extra_push += 4;
 	    }
 	}
     }
@@ -5904,7 +5903,7 @@ sh_expand_epilogue (bool sibcall_p)
     emit_insn (gen_toggle_sz ());
   target_flags = save_flags;
 
-  output_stack_adjust (extra_push + current_function_pretend_args_size
+  output_stack_adjust (current_function_pretend_args_size
 		       + save_size + d_rounding
 		       + current_function_args_info.stack_regs * 8,
 		       stack_pointer_rtx, e, NULL);
@@ -6789,14 +6788,26 @@ sh_return_in_memory (tree type, tree fndecl)
    later.  Fortunately, we already have two flags that are part of struct
    function that tell if a function uses varargs or stdarg.  */
 static void
-sh_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
-			   enum machine_mode mode ATTRIBUTE_UNUSED,
-			   tree type ATTRIBUTE_UNUSED,
-			   int *pretend_arg_size ATTRIBUTE_UNUSED,
+sh_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
+			   enum machine_mode mode,
+			   tree type,
+			   int *pretend_arg_size,
 			   int second_time ATTRIBUTE_UNUSED)
 {
   if (! current_function_stdarg)
     abort ();
+  if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl))
+    {
+      int named_parm_regs, anon_parm_regs;
+
+      named_parm_regs = (ROUND_REG (*ca, mode)
+			 + (mode == BLKmode
+			    ? ROUND_ADVANCE (int_size_in_bytes (type))
+			    : ROUND_ADVANCE (GET_MODE_SIZE (mode))));
+      anon_parm_regs = NPARM_REGS (SImode) - named_parm_regs;
+      if (anon_parm_regs > 0)
+	*pretend_arg_size = anon_parm_regs * 4;
+    }
 }
 
 static bool
