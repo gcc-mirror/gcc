@@ -1,3 +1,7 @@
+2000-03-19  Warren Levy  <warrenl@cygnus.com>
+
+	* java/awt/Color.java: Rewrote to be more memory efficient (& compile).
+
 2000-03-16  Warren Levy  <warrenl@cygnus.com>
 
 	* java/awt/Color.java: New file.

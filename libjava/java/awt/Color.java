@@ -21,25 +21,24 @@ package java.awt;
 
 public class Color extends Object implements Paint, Serializable
 {
-  public static final Color white =	new Color(0xff, 0xff, 0xff);
-  public static final Color lightGray =	new Color(0xc0, 0xc0, 0xc0);
-  public static final Color gray =	new Color(0x80, 0x80, 0x80);
-  public static final Color darkGray =	new Color(0x40, 0x40, 0x40);
-  public static final Color black =	new Color(0x00, 0x00, 0x00);
-  public static final Color red =	new Color(0xff, 0x00, 0x00);
-  public static final Color pink =	new Color(0xff, 0xaf, 0xaf);
-  public static final Color orange =	new Color(0xff, 0xc8, 0x00);
-  public static final Color yellow =	new Color(0xff, 0xff, 0x00);
-  public static final Color green =	new Color(0x00, 0xff, 0x00);
-  public static final Color magenta =	new Color(0xff, 0x00, 0xff);
-  public static final Color cyan =	new Color(0x00, 0xff, 0xff);
-  public static final Color blue =	new Color(0x00, 0x00, 0xff);
+  public static final Color white =	new Color(0xFFFFFFFF, true);
+  public static final Color lightGray =	new Color(0xFFC0C0C0, true);
+  public static final Color gray =	new Color(0xFF808080, true);
+  public static final Color darkGray =	new Color(0xFF404040, true);
+  public static final Color black =	new Color(0xFF000000, true);
+  public static final Color red =	new Color(0xFFFF0000, true);
+  public static final Color pink =	new Color(0xFFFFAFAF, true);
+  public static final Color orange =	new Color(0xFFFFC800, true);
+  public static final Color yellow =	new Color(0xFFFFFF00, true);
+  public static final Color green =	new Color(0xFF00FF00, true);
+  public static final Color magenta =	new Color(0xFFFF00FF, true);
+  public static final Color cyan =	new Color(0xFF00FFFF, true);
+  public static final Color blue =	new Color(0xFF0000FF, true);
   
   // The internal sRGB representation.
-  private float r;
-  private float g;
-  private float b;
-  private int alpha = 255;
+  // Alpha is bits 24-31, if hasalpha is true.
+  // Red is bits 16-23; Green is bits 8-15; Blue is bits 0-7.
+  private int rgba = 0xFFFFFFFF;
 
   public Color(int rgb)
   {
@@ -48,17 +47,44 @@ public class Color extends Object implements Paint, Serializable
 
   public Color(int rgba, boolean hasalpha)
   {
-    // Alpha is bits 24-31, if hasalpha is true.
-    // Red is bits 16-23; Green is bits 8-15; Blue is bits 0-7.
-    b = rgb & 0xFF;
-    g = (rgb >>= 8) & 0xFF;
-    r = (rgb >>= 8) & 0xFF;
-    if (hasalpha)
-      alpha = (rgb >>= 8) & 0xFF;
+    this.rgba = rgba;
+    if (!hasalpha)
+      rgba |= 0xFF000000;
+  }
+
+  public Color(int r, int g, int b)
+  {
+    this(r, g, b, 0xFF);
+  }
+
+  public Color(int r, int g, int b, int a)
+  {
+    rgba = a << 24 | ((r << 16) & 0x00FF0000) | ((g << 8) & 0x0000FF00) |
+    	   (b & 0x000000FF);
+  }
+
+  public int getRed()
+  {
+    return (rgba >> 16) & 0xFF;
+  }
+
+  public int getGreen()
+  {
+    return (rgba >> 8) & 0xFF;
+  }
+
+  public int getBlue()
+  {
+    return rgba & 0xFF;
+  }
+
+  public int getAlpha()
+  {
+    return (rgba >> 24) & 0xFF;
   }
 
   public int getRGB()
   {
-    return alpha << 24 | r << 16 | g << 8 | b;
+    return rgba;
   }
 }
