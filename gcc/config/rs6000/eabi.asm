@@ -1,7 +1,7 @@
 /*
  * special support for eabi
  *
- *   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+ *   Copyright (C) 1995, 1996, 1998 Free Software Foundation, Inc.
  *   Written By Michael Meissner
  * 
  * This file is free software; you can redistribute it and/or modify it
