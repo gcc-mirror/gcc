@@ -1,3 +1,17 @@
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* defaults.h: Provide default definitions for: CHAR_TYPE_SIZE,
+	SHORT_TYPE_SIZE, INT_TYPE_SIZE, LONG_TYPE_SIZE,
+	LONG_LONG_TYPE_SIZE, WCHAR_TYPE_SIZE, FLOAT_TYPE_SIZE,
+	DOUBLE_TYPE_SIZE, LONG_DOUBLE_TYPE_SIZE, and WCHAR_UNSIGNED.
+
+	* cppexp.c, dwarfout.c, dwarf2out.c, emit-rtl.c, final.c, optabs.c,
+	profile.c, sdbout.c, tradcif.y, tree.c:
+	Include defaults.h if not already included.
+	Don't define the above macros.
+
+	* Makefile.in: Update dependencies.
+
 2000-09-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (add_stmt): Change prototype.
@@ -10,7 +24,7 @@
 	* c-common.c (check_case_value): Handle C++'s extensions to C
 	semantics.
 	* c-commnon.def (CASE_LABEL): Add room for the CASE_LABEL_DECL
-	field. 
+	field.
 	* c-parse.in (stmt): Adjust handling of return statements and case
 	laels.
 	* c-semantics.c (add_stmt): Return the new statement.
@@ -287,7 +301,7 @@ Fri Sep  8 03:26:38 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 	  h8300.h, h8300-protos.h, h8300.c,
 	  i370.h, i370-protos.h, i370.c,
 	  i960.h, i960-protos.h, i960.c,
-	  sh.h, sh-protos.h, sh.c, 
+	  sh.h, sh-protos.h, sh.c,
 	  v850.h, v850-protos.h, v850.c: Convert HANDLE_PRAGMA-based
 	pragmata scheme to use REGISTER_TARGET_PRAGMAS instead.
 
@@ -339,7 +353,7 @@ Thu 07-Sep-2000 21:29:00 BST  Neil Booth  <NeilB@earthling.net>
 	* reload.c (regno_clobbered_p): Accept new arg, MODE, and use it
 	to handle multiword modes correctly.  All callers and the declaration
 	changed.
-  
+
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (prep_stmt): Declare.
@@ -348,7 +362,7 @@ Thu 07-Sep-2000 21:29:00 BST  Neil Booth  <NeilB@earthling.net>
 	* c-semantics.c (lang_expand_stmt): Define.
 	(prep_stmt): New function.
 	(expand_stmt): Handle common statement types here.
-	
+
 2000-09-07  Niibe Yutaka  <gniibe@m17n.org>, Kaz Kojima  <kkojima@rr.iij4u.or.jp>, Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (sh-*-linux*): Added.

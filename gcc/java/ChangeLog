@@ -1,3 +1,8 @@
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* decl.c, expr.c: Include defaults.h if not already included.
+	Don't define the *_TYPE_SIZE macros.
+
 2000-09-09  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* typeck.c (build_java_array_type): Correct first parameter

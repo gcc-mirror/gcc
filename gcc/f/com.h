@@ -84,49 +84,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    to build the libf2c with which g77-generated code is linked, or there
    will probably be bugs, some of them difficult to detect or even trigger.  */
 
-/* Do we need int (for 32-bit or 64-bit systems) or long (16-bit or
-   normally 32-bit) for f2c-type integers? */
-
-#ifndef BITS_PER_WORD
-#define BITS_PER_WORD 32
-#endif
-
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
-
-#ifndef SHORT_TYPE_SIZE
-#define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
-#endif
-
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_LONG_TYPE_SIZE
-#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-#endif
-
-#ifndef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
 /* The C front-end provides __g77_integer and __g77_uinteger types so that
    the appropriately-sized signed and unsigned integer types are available
    for libf2c.  If you change this, also the definitions of those types

@@ -23,22 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
-
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
-
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE INT_TYPE_SIZE
-#endif
+#include "defaults.h"
 
 #ifndef MAX_CHAR_TYPE_SIZE
 #define MAX_CHAR_TYPE_SIZE CHAR_TYPE_SIZE

@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "ggc.h"
 #include "real.h"
+#include "defaults.h"
 
 /* Each optab contains info on how this target machine
    can perform a particular operation
@@ -4669,9 +4670,6 @@ init_optabs ()
     = init_one_libfunc ("cabs");
 
   /* The ffs function operates on `int'.  */
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
   ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
     = init_one_libfunc ("ffs");
 

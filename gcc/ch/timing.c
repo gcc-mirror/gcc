@@ -28,10 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "lex.h"
 #include "toplev.h"
-
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
+#include "defaults.h"
 
 /* set non-zero if input text is forced to lowercase */
 extern int ignore_case;

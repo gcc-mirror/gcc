@@ -276,7 +276,7 @@ convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
 	$(srcdir)/../convert.h
 decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../defaults.h
 except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H) \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
@@ -300,7 +300,8 @@ parse.o : parse.c $(CONFIG_H) $(CHILL_TREE_H) parse.h \
 satisfy.o : satisfy.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../tree.h \
 	$(srcdir)/../flags.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 timing.o : timing.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
-	$(srcdir)/../input.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../input.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
+	$(srcdir)/../defaults.h
 tasking.o : tasking.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) \
 	$(srcdir)/../flags.h $(srcdir)/../input.h \
 	lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h

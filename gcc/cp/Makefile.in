@@ -280,7 +280,7 @@ tree.o : tree.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   ../insn-config.h $(srcdir)/../integrate.h
 ptree.o : ptree.c $(CXX_TREE_H) $(srcdir)/../system.h
 rtti.o : rtti.c $(CXX_TREE_H) $(srcdir)/../flags.h \
-  $(srcdir)/../toplev.h
+  $(srcdir)/../toplev.h $(srcdir)/../defaults.h
 except.o : except.c $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../except.h $(srcdir)/../toplev.h cfns.h
 expr.o : expr.c $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \

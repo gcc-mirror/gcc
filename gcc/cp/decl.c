@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "../hash.h"
-#include "defaults.h"
 #include "ggc.h"
 
 extern int current_class_depth;
@@ -56,14 +55,6 @@ extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 /* Use garbage collection.  */
 
 int ggc_p = 1;
-
-#ifndef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-#endif
-
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
 
 #ifndef BOOL_TYPE_SIZE
 #ifdef SLOW_BYTE_ACCESS

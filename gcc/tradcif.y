@@ -26,6 +26,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 %{
 #include "config.h"
 #include "system.h"
+#include "defaults.h"
 #include <setjmp.h>
 
   int yylex PARAMS ((void));
@@ -44,9 +45,6 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
   /* some external tables of character types */
   extern unsigned char is_idstart[], is_idchar[];
 
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
 %}
 
 %union {

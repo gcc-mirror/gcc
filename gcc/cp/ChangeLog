@@ -1,3 +1,8 @@
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* decl.c, rtti.c: Include defaults.h if not already included.
+	Don't define the *_TYPE_SIZE macros.
+
 2000-09-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (push_switch): Change prototype.

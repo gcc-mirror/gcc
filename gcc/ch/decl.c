@@ -191,6 +191,7 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "rtl.h"
 #include "toplev.h"
+#include "defaults.h"
 
 #define IS_UNKNOWN_TYPE(type) (TYPE_SIZE(type)==0)
 #define BUILTIN_NESTING_LEVEL (-1)
@@ -264,52 +265,6 @@ int current_module_nesting_level = 0;
 /* ??? not all decl nodes are given the most useful possible
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
-#if 0
-/* In grokdeclarator, distinguish syntactic contexts of declarators.  */
-enum decl_context
-{ NORMAL,			/* Ordinary declaration */
-    FUNCDEF,			/* Function definition */
-    PARM,			/* Declaration of parm before function body */
-    FIELD,			/* Declaration inside struct or union */
-    BITFIELD,			/* Likewise but with specified width */
-    TYPENAME};			/* Typename (inside cast or sizeof)  */
-#endif
-
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
-
-#ifndef SHORT_TYPE_SIZE
-#define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
-#endif
-
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_LONG_TYPE_SIZE
-#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-#endif
-
-#ifndef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
 
 /* We let tm.h override the types used here, to handle trivial differences
    such as the choice of unsigned int or long unsigned int for size_t.
