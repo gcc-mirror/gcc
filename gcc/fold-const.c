@@ -1979,8 +1979,8 @@ omit_one_operand (type, result, omitted)
   return t;
 }
 
-/* Return a simplified tree node for the truth-negation of ARG
-   (perhaps by altering ARG).  It is known that ARG is an operation that
+/* Return a simplified tree node for the truth-negation of ARG.  This
+   never alters ARG itself.  We assume that ARG is an operation that
    returns a truth value (0 or 1).  */
 
 tree
@@ -2000,10 +2000,8 @@ invert_truthvalue (arg)
 	  && code != NE_EXPR && code != EQ_EXPR)
 	return build1 (TRUTH_NOT_EXPR, type, arg);
       else
-	{
-	  TREE_SET_CODE (arg, invert_tree_comparison (code));
-	  return arg;
-	}
+	return build (invert_tree_comparison (code),
+		      TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
     }
 
   switch (code)
