@@ -3,7 +3,7 @@
 	* config/m68hc11/m68hc11.c (m68hc11_autoinc_compatible_p): New function.
 	(m68hc11_split_move): Call it to see if the source and destination
 	operands use the same direction auto inc/dec mode, otherwise make the
-	source an offsetable operand and generate an add.
+	source an offsetable memory operand and generate an add.
 
 2002-03-24  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
