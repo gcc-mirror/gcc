@@ -242,8 +242,8 @@ F77_OBJS = \
  f/target.o \
  f/top.o \
  f/type.o \
- f/where.o \
- f/version.o
+ f/version.o \
+ f/where.o
 
 # Language-independent object files.
 OBJS = `cat stamp-objlist | sed -e "s:  : :g" -e "s: : f/:g"`

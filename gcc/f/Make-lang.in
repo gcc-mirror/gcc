@@ -224,10 +224,10 @@ F77_SRCS = \
  $(srcdir)/f/tree.j \
  $(srcdir)/f/type.c \
  $(srcdir)/f/type.h \
- $(srcdir)/f/where.c \
- $(srcdir)/f/where.h \
  $(srcdir)/f/version.c \
- $(srcdir)/f/version.h
+ $(srcdir)/f/version.h \
+ $(srcdir)/f/where.c \
+ $(srcdir)/f/where.h
 
 f771: $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist f/Makefile
 	$(MAKE) -f f/Makefile $(FLAGS_TO_PASS) VPATH=$(srcdir) srcdir=$(srcdir) f771

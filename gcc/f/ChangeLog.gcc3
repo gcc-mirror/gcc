@@ -1,3 +1,8 @@
+Mon Aug 18 09:01:54 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (F77_SRCS): Re-alphabetize.
+	* Make-lang.in (F77_OBJS): Likewise.
+
 Sun Aug 17 08:35:11 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* INSTALL: Rebuilt.
