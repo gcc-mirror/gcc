@@ -5973,7 +5973,7 @@ ip2k_composite_xexp_not_uses_reg_p (rtx x, unsigned int r, int rsz)
 	    && ip2k_composite_xexp_not_uses_reg_p (XEXP (x, 1), r, rsz)
 	    && ip2k_composite_xexp_not_uses_reg_p (XEXP (x, 2), r, rsz));
 
-  if (BINARY_P (x)
+  if (BINARY_P (x))
     return (ip2k_composite_xexp_not_uses_reg_p (XEXP (x, 0), r, rsz)
 	    && ip2k_composite_xexp_not_uses_reg_p (XEXP (x, 1), r, rsz));
 
@@ -6150,14 +6150,14 @@ int
 ip2k_unary_operator (rtx op, enum machine_mode mode)
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && UNARY_P (op);
+	  && UNARY_P (op));
 }
 
 int
 ip2k_binary_operator (rtx op, enum machine_mode mode)
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && ARITHMETIC_P (op);
+	  && ARITHMETIC_P (op));
 }
 
 int
