@@ -1,3 +1,8 @@
+2002-06-19  Chris Demetriou  <cgd@broadcom.com>
+
+        * config/mips/mips.c (mips_emit_prefetch): Use hints which
+	match desired locality.
+
 2002-06-19  Dhananjay R. Deshpande  <dhananjayd@kpit.com>
 
 	* config/h8300/h8300.c (TARGET_INSERT_ATTRIBUTES): Define.
