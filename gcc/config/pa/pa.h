@@ -54,11 +54,6 @@ extern int target_flags;
 
 #define TARGET_KERNEL (target_flags & 4)
 
-/* Generate code that will link against HPUX 8.0 shared libraries.
-   Older linkers and assemblers might not support this. */
-
-#define TARGET_SHARED_LIBS 1 /* was (target_flags & 8) */
-
 /* Force all function calls to indirect addressing via a register.  This
    avoids lossage when the function is very far away from the current PC.
 
@@ -89,8 +84,6 @@ extern int target_flags;
    {"pa-risc-1-1", 1},	\
    {"disable-fpregs", 2},\
    {"kernel", 4},	\
-   {"shared-libs", 8},	\
-   {"no-shared-libs", -8},\
    {"long-calls", 16},	\
    {"disable-indexing", 32},\
    {"trailing-colon", 64},\
@@ -785,12 +778,12 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   (4 >= ((CUM) + FUNCTION_ARG_SIZE ((MODE), (TYPE)))			\
    ? gen_rtx (REG, (MODE),						\
 	      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1			\
-	       ? ((! (TARGET_SHARED_LIBS && current_call_is_indirect)	\
+	       ? ((! current_call_is_indirect				\
 		   && (MODE) == DFmode)					\
 		  ? ((CUM) ? (TARGET_SNAKE ? 50 : 35)			\
 		     : (TARGET_SNAKE ? 46 : 33))			\
 		  : ((CUM) ? 23 : 25))					\
-	       : ((! (TARGET_SHARED_LIBS && current_call_is_indirect)	\
+	       : ((! current_call_is_indirect				\
 		   && (MODE) == SFmode)					\
 		  ? (TARGET_SNAKE ? 44 + 2 * (CUM) : 32  + (CUM))	\
 		  : (27 - (CUM) - FUNCTION_ARG_SIZE ((MODE), (TYPE))))))\
@@ -1693,8 +1686,7 @@ bss_section ()								\
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
 { fprintf (FILE, "\t.word ");			\
-  if (TARGET_SHARED_LIBS			\
-      && function_label_operand (VALUE, VOIDmode))\
+  if (function_label_operand (VALUE, VOIDmode))	\
     fprintf (FILE, "P%%");			\
   output_addr_const (FILE, (VALUE));		\
   fprintf (FILE, "\n");}
