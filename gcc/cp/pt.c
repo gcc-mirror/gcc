@@ -10647,6 +10647,14 @@ instantiate_decl (d, defer_ok)
   my_friendly_assert (TREE_CODE (d) == FUNCTION_DECL
 		      || TREE_CODE (d) == VAR_DECL, 0);
 
+  /* Variables are never deferred; if instantiation is required, they
+     are instantiated right away.  That allows for better code in the
+     case that an expression refers to the value of the variable --
+     if the variable has a constant value the referring expression can
+     take advantage of that fact.  */
+  if (TREE_CODE (d) == VAR_DECL)
+    defer_ok = 0;
+
   /* Don't instantiate cloned functions.  Instead, instantiate the
      functions they cloned.  */
   if (TREE_CODE (d) == FUNCTION_DECL && DECL_CLONED_FUNCTION_P (d))
