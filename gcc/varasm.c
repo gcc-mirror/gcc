@@ -2547,6 +2547,7 @@ output_constant_def_contents (rtx symbol)
 {
   tree exp = SYMBOL_REF_DECL (symbol);
   const char *label = XSTR (symbol, 0);
+  HOST_WIDE_INT size;
 
   /* Make sure any other constants whose addresses appear in EXP
      are assigned label numbers.  */
@@ -2571,17 +2572,20 @@ output_constant_def_contents (rtx symbol)
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
     }
 
-  /* Output the label itself.  */
+  size = int_size_in_bytes (TREE_TYPE (exp));
+  if (TREE_CODE (exp) == STRING_CST)
+    size = MAX (TREE_STRING_LENGTH (exp), size);
+
+  /* Do any machine/system dependent processing of the constant.  */
+#ifdef ASM_DECLARE_CONSTANT_NAME
+  ASM_DECLARE_CONSTANT_NAME (asm_out_file, label, exp, size);
+#else
+  /* Standard thing is just output label for the constant.  */
   ASM_OUTPUT_LABEL (asm_out_file, label);
+#endif /* ASM_DECLARE_CONSTANT_NAME */
 
   /* Output the value of EXP.  */
-  output_constant (exp,
-		   (TREE_CODE (exp) == STRING_CST
-		    ? MAX (TREE_STRING_LENGTH (exp),
-			   int_size_in_bytes (TREE_TYPE (exp)))
-		    : int_size_in_bytes (TREE_TYPE (exp))),
-		   align);
-
+  output_constant (exp, size, align);
 }
 
 /* A constant which was deferred in its original location has been
