@@ -5091,8 +5091,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       else if (processing_template_decl
 	       && classval && TREE_CODE (classval) == TYPE_DECL
 	       && ! currently_open_class (DECL_CONTEXT (classval))
-	       && uses_template_parms (current_class_type)
-	       && ! DECL_ARTIFICIAL (classval))
+	       && uses_template_parms (current_class_type))
 	classval = lookup_field (current_class_type, name, 0, 1);
 
       /* yylex() calls this with -2, since we should never start digging for
@@ -5470,7 +5469,6 @@ init_decl_processing ()
   int wchar_type_size;
   tree temp;
   tree array_domain_type;
-  extern int flag_strict_prototype;
   tree vb_off_identifier = NULL_TREE;
   /* Function type `char *(char *, char *)' and similar ones */
   tree string_ftype_ptr_ptr, int_ftype_string_string;
@@ -5492,12 +5490,9 @@ init_decl_processing ()
   current_lang_name = NULL_TREE;
 
   if (flag_strict_prototype == 2)
-    {
-      if (pedantic)
-	strict_prototypes_lang_c = strict_prototypes_lang_cplusplus;
-    }
-  else
-    strict_prototypes_lang_c = flag_strict_prototype;
+    flag_strict_prototype = pedantic;
+
+  strict_prototypes_lang_c = flag_strict_prototype;
 
   /* Initially, C.  */
   current_lang_name = lang_name_c;

@@ -2754,6 +2754,7 @@ int
 identifier_type (decl)
      tree decl;
 {
+  tree t;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
       if (TREE_CODE (DECL_RESULT (decl)) == TYPE_DECL)
@@ -2763,7 +2764,6 @@ identifier_type (decl)
     }
   if (looking_for_template && really_overloaded_fn (decl))
     {
-      tree t;
       for (t = decl; t != NULL_TREE; t = OVL_CHAIN (t))
 	if (DECL_FUNCTION_TEMPLATE_P (OVL_FUNCTION (t))) 
 	  return PFUNCNAME;
@@ -2772,10 +2772,20 @@ identifier_type (decl)
     return NSNAME;
   if (TREE_CODE (decl) != TYPE_DECL)
     return IDENTIFIER;
-  if (((got_scope && TREE_TYPE (decl) == got_scope)
-       || TREE_TYPE (decl) == current_class_type)
-      && DECL_ARTIFICIAL (decl))
+  if (DECL_ARTIFICIAL (decl) && TREE_TYPE (decl) == current_class_type)
     return SELFNAME;
+
+  /* A constructor declarator for a template type will get here as an
+     implicit typename, a TYPENAME_TYPE with a type.  */
+  t = got_scope;
+  if (t && TREE_CODE (t) == TYPENAME_TYPE)
+    t = TREE_TYPE (t);
+  decl = TREE_TYPE (decl);
+  if (TREE_CODE (decl) == TYPENAME_TYPE)
+    decl = TREE_TYPE (decl);
+  if (t && t == decl)
+    return SELFNAME;
+
   return TYPENAME;
 }
 
@@ -2902,7 +2912,7 @@ do_identifier (token, parsing, args)
 	    cp_error ("`%D' not defined", token);
 	  id = error_mark_node;
 	}
-      else if (in_call)
+      else if (in_call && ! flag_strict_prototype)
 	{
 	  id = implicitly_declare (token);
 	}
@@ -3054,7 +3064,8 @@ do_scoped_id (token, parsing)
 	  LOOKUP_EXPR_GLOBAL (id) = 1;
 	  return id;
 	}
-      if (parsing && (yychar == '(' || yychar == LEFT_RIGHT))
+      if (parsing && (yychar == '(' || yychar == LEFT_RIGHT)
+	  && ! flag_strict_prototype)
 	id = implicitly_declare (token);
       else
 	{

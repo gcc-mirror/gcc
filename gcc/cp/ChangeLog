@@ -1,3 +1,21 @@
+1998-09-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_name_real): Also do implicit typename thing for
+	artificial TYPE_DECLs.
+	* search.c (lookup_field): Likewise.
+	(lookup_fnfields, lookup_field): Adjust for implicit typename kludge.
+	* semantics.c (begin_constructor_declarator): Use enter_scope_of.
+	(enter_scope_of): Extract type from implicit typename.
+	(begin_class_definition): Likewise.
+	* lex.c (identifier_type): Handle implicit typename when checking
+	for SELFNAME.
+
+	* cp-tree.h: Declare flag_strict_prototype.
+	* lex.c (do_scoped_id, do_identifier): Don't implicitly_declare if
+	-fstrict-prototype.
+	* decl.c (init_decl_processing): If -f{no,-}strict-prototype wasn't
+	specified, set it to the value of pedantic.
+
 1998-09-01  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl2.c (arg_assoc): Handle template-id expressions as arguments.

@@ -826,7 +826,6 @@ process_start_catch_block (declspecs, declarator)
 }
 
 
-
 /* Call this to end a catch block.  Its responsible for emitting the
    code to handle jumping back to the correct place, and for emitting
    the label to jump to if this catch block didn't match.  */
