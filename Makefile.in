@@ -151,7 +151,7 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-TARGET_CONFIGDIRS = libiberty libgloss newlib libio librx libstdc++ libg++ winsup
+TARGET_CONFIGDIRS = libiberty libgloss newlib libio librx libstdc++ libg++ libf2c winsup
 
 # Target libraries are put under this directory:
 # Changed by configure to $(target_alias) if cross.
@@ -672,6 +672,7 @@ ALL_TARGET_MODULES = \
 	all-target-librx \
 	all-target-libg++ \
 	all-target-newlib \
+	all-target-libf2c \
 	all-target-winsup \
 	all-target-libgloss \
 	all-target-libiberty \
@@ -686,6 +687,7 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-librx \
 	configure-target-libg++ \
 	configure-target-newlib \
+	configure-target-libf2c \
 	configure-target-winsup \
 	configure-target-libgloss \
 	configure-target-libiberty \
@@ -699,6 +701,7 @@ CHECK_TARGET_MODULES = \
 	check-target-libstdc++ \
 	check-target-libg++ \
 	check-target-newlib \
+	check-target-libf2c \
 	check-target-winsup \
 	check-target-libiberty \
 	check-target-gperf
@@ -710,6 +713,7 @@ INSTALL_TARGET_MODULES = \
 	install-target-libstdc++ \
 	install-target-libg++ \
 	install-target-newlib \
+	install-target-libf2c \
 	install-target-winsup \
 	install-target-libgloss \
 	install-target-libiberty \
@@ -781,6 +785,7 @@ CLEAN_TARGET_MODULES = \
 	clean-target-librx \
 	clean-target-libg++ \
 	clean-target-newlib \
+	clean-target-libf2c \
 	clean-target-winsup \
 	clean-target-libgloss \
 	clean-target-libiberty \
@@ -1431,6 +1436,7 @@ configure-target-librx: $(ALL_GCC) configure-target-newlib
 all-target-librx: configure-target-librx
 configure-target-libstdc++: $(ALL_GCC)
 all-target-libstdc++: configure-target-libstdc++ all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio
+all-target-libf2c: configure-target-libf2c all-gas all-ld all-gcc all-target-libiberty all-target-newlib
 all-m4: all-libiberty
 all-make: all-libiberty
 all-mmalloc:

@@ -1,3 +1,12 @@
+Sun Feb  1 02:40:41 1998  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (TARGET_CONFIGDIRS): Add libf2c.
+	(ALL_TARGET_MODULES, CONFIGURE_TARGET_MODULES): Similarly
+	(CHECK_TARGET_MODULES, INSTALL_TARGET_MODULES): Similarly
+	(CLEAN_TARGET_MODULES): Similarly
+	(all-target-libf2c): Add dependences.
+	* configure.in (target_libs): Add libf2c. 
+
 Wed Jan 28 10:26:37 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Remove passing $(local_prefix)
