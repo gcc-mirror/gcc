@@ -1,5 +1,9 @@
 2000-03-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	* README: Updated.
+
+2000-03-09  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	* java/lang/natClassLoader.cc (_Jv_FindArrayClass): Call
 	_Jv_PrepareConstantTimeTables.
 	* java/lang/natClass.cc (_Jv_PrepareConstantTimeTables): Array
