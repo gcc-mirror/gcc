@@ -184,8 +184,6 @@ int test7 ()
 
 int test8 ()
 {
-#if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
-// old-abi fails this test, by segfaulting in the runtime.
   try
     {
       throw (B **)0;
@@ -203,14 +201,10 @@ int test8 ()
       return 2;
     }
   return -1;
-#endif
-  return 0;
 }
 
 int test9 ()
 {
-#if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
-// old-abi fails this test, by segfaulting in the runtime.
   try
     {
       throw (B **)0;
@@ -228,8 +222,6 @@ int test9 ()
       return 2;
     }
   return -1;
-#endif
-  return 0;
 }
 
 static int (*tests[])() =
