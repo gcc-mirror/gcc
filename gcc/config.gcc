@@ -2527,7 +2527,11 @@ fi
 		for which in cpu tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | default32 | default64 | common \
+			default32 | default64)
+				with_which="with_$which"
+				eval $with_which=
+				;;
+			"" | common \
 			| power | power2 | power3 | power4 \
 			| powerpc | powerpc64 \
 			| rios | rios1 | rios2 | rsc | rsc1 | rs64a \
