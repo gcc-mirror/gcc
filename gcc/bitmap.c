@@ -707,7 +707,7 @@ bitmap_last_set_bit (a)
      bitmap a;
 {
   int i;
-  EXECUTE_IF_SET_IN_BITMAP (a, 0, i, );
+  EXECUTE_IF_SET_IN_BITMAP (a, 0, i, ;);
   if (bitmap_bit_p (a, i))
     return i;
   return -1;
