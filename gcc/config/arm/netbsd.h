@@ -147,3 +147,30 @@ Boston, MA 02111-1307, USA.  */
    requirements.  */
 #undef  DEFAULT_STRUCTURE_SIZE_BOUNDARY
 #define DEFAULT_STRUCTURE_SIZE_BOUNDARY 8
+
+/* Emit code to set up a trampoline and synchronise the caches.  */
+#undef  INITIALIZE_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                      \
+{                                                                      \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 8)),   \
+                 (CXT));                                               \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),  \
+                 (FNADDR));                                            \
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),      \
+                    0, VOIDmode, 2, TRAMP, Pmode,                      \
+                    plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);    \
+}
+
+/* Clear the instruction cache from `BEG' to `END'.  This makes a
+   call to the ARM32_SYNC_ICACHE architecture specific syscall.  */
+#define CLEAR_INSN_CACHE(BEG, END)                                     \
+{                                                                      \
+  extern int sysarch(int number, void *args);                          \
+  struct {                                                             \
+    unsigned int  addr;                                                \
+    int           len;                                                 \
+  } s;                                                                 \
+  s.addr = (unsigned int)(BEG);                                        \
+  s.len = (END) - (BEG);                                               \
+  (void)sysarch(0, &s);                                                \
+}
