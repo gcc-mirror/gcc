@@ -1,3 +1,8 @@
+2001-04-10  Richard Henderson  <rth@redhat.com>
+
+	* typeck.c (build_array_ref): Push the array reference inside
+	COMPOUND_EXPR and COND_EXPR.
+
 2001-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_THIS_INLINE): Rename to DECL_DECLARED_INLINE_P.
