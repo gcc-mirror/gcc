@@ -3907,7 +3907,7 @@ extern tree grokbitfield			PARAMS ((tree, tree, tree));
 extern tree groktypefield			PARAMS ((tree, tree));
 extern tree grokoptypename			PARAMS ((tree, tree));
 extern int copy_assignment_arg_p		PARAMS ((tree, int));
-extern void cplus_decl_attributes		PARAMS ((tree, tree, tree));
+extern void cplus_decl_attributes		PARAMS ((tree *, tree, tree, int));
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
 extern void defer_fn            		PARAMS ((tree));

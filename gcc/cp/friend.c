@@ -447,7 +447,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
     } 
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  cplus_decl_attributes (decl, attributes, prefix_attributes);
+  cplus_decl_attributes (&decl, attributes, prefix_attributes, 0);
 
   return decl;
 }

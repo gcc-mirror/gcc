@@ -1896,27 +1896,27 @@ components_notype:
 component_declarator:
 	  save_filename save_lineno declarator maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes ($$, chainon ($4, prefix_attributes)); }
+		  decl_attributes (&$$, chainon ($4, prefix_attributes), 0); }
 	| save_filename save_lineno
 	  declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes ($$, chainon ($6, prefix_attributes)); }
+		  decl_attributes (&$$, chainon ($6, prefix_attributes), 0); }
 	| save_filename save_lineno ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes ($$, chainon ($5, prefix_attributes)); }
+		  decl_attributes (&$$, chainon ($5, prefix_attributes), 0); }
 	;
 
 component_notype_declarator:
 	  save_filename save_lineno notype_declarator maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes ($$, chainon ($4, prefix_attributes)); }
+		  decl_attributes (&$$, chainon ($4, prefix_attributes), 0); }
 	| save_filename save_lineno
 	  notype_declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes ($$, chainon ($6, prefix_attributes)); }
+		  decl_attributes (&$$, chainon ($6, prefix_attributes), 0); }
 	| save_filename save_lineno ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes ($$, chainon ($5, prefix_attributes)); }
+		  decl_attributes (&$$, chainon ($5, prefix_attributes), 0); }
 	;
 
 /* We chain the enumerators in reverse order.
@@ -2447,7 +2447,7 @@ label:	  CASE expr_no_commas ':'
 		  stmt_count++;
 		  if (label)
 		    {
-		      decl_attributes (label, $5);
+		      decl_attributes (&label, $5, 0);
 		      $$ = add_stmt (build_stmt (LABEL_STMT, label));
 		    }
 		  else

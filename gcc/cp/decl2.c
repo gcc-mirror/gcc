@@ -1531,7 +1531,7 @@ tree
 grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
      tree declarator, declspecs, init, asmspec_tree, attrlist;
 {
-  register tree value;
+  tree value;
   const char *asmspec = 0;
   int flags = LOOKUP_ONLYCONVERTING;
 
@@ -1679,8 +1679,8 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
     value = push_template_decl (value);
 
   if (attrlist)
-    cplus_decl_attributes (value, TREE_PURPOSE (attrlist),
-			   TREE_VALUE (attrlist));
+    cplus_decl_attributes (&value, TREE_PURPOSE (attrlist),
+			   TREE_VALUE (attrlist), 0);
 
   if (TREE_CODE (value) == VAR_DECL)
     {
@@ -1875,19 +1875,20 @@ grok_function_init (decl, init)
 }
 
 void
-cplus_decl_attributes (decl, attributes, prefix_attributes)
-     tree decl, attributes, prefix_attributes;
+cplus_decl_attributes (decl, attributes, prefix_attributes, flags)
+     tree *decl, attributes, prefix_attributes;
+     int flags;
 {
-  if (decl == NULL_TREE || decl == void_type_node)
+  if (*decl == NULL_TREE || *decl == void_type_node)
     return;
 
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    decl = DECL_TEMPLATE_RESULT (decl);
+  if (TREE_CODE (*decl) == TEMPLATE_DECL)
+    decl = &DECL_TEMPLATE_RESULT (*decl);
 
-  decl_attributes (decl, chainon (attributes, prefix_attributes));
+  decl_attributes (decl, chainon (attributes, prefix_attributes), flags);
 
-  if (TREE_CODE (decl) == TYPE_DECL)
-    SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (decl), TREE_TYPE (decl));
+  if (TREE_CODE (*decl) == TYPE_DECL)
+    SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
 }
 
 /* CONSTRUCTOR_NAME:

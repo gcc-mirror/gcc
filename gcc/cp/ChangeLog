@@ -1,3 +1,16 @@
+2001-07-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl2.c (cplus_decl_attributes): Take a pointer to the node to
+	which attributes are to be attached, and a flags argument.  Update
+	call to decl_attributes.
+	(grokfield): Update call to decl_attributes.
+	* class.c (finish_struct): Update call to cplus_decl_attributes.
+	* cp-tree.h (cplus_decl_attributes): Update prototype.
+	* decl.c (start_decl, grokdeclarator, start_function): Update
+	calls to decl_attributes and cplus_decl_attributes.
+	* friend.c (do_friend): Update call to cplus_decl_attributes.
+	* parse.y (parse_bitfield): Update call to cplus_decl_attributes.
+
 2001-07-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (make_rtl_for_nonlocal_decl): Set DECL_C_HARD_REGISTER
