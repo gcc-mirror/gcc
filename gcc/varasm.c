@@ -4724,7 +4724,7 @@ output_constructor (exp, size, align)
 	  /* Output any buffered-up bit-fields preceding this element.  */
 	  if (byte_buffer_in_use)
 	    {
-	      ASM_OUTPUT_BYTE (asm_out_file, byte);
+	      assemble_integer (GEN_INT (byte), 1, BITS_PER_UNIT, 1);
 	      total_bytes++;
 	      byte_buffer_in_use = 0;
 	    }
@@ -4802,7 +4802,7 @@ output_constructor (exp, size, align)
 	      /* Output remnant of any bit field in previous bytes.  */
 	      if (byte_buffer_in_use)
 		{
-		  ASM_OUTPUT_BYTE (asm_out_file, byte);
+		  assemble_integer (GEN_INT (byte), 1, BITS_PER_UNIT, 1);
 		  total_bytes++;
 		  byte_buffer_in_use = 0;
 		}
@@ -4838,7 +4838,7 @@ output_constructor (exp, size, align)
 		 within this element when necessary.  */
 	      while (next_byte != total_bytes)
 		{
-		  ASM_OUTPUT_BYTE (asm_out_file, byte);
+		  assemble_integer (GEN_INT (byte), 1, BITS_PER_UNIT, 1);
 		  total_bytes++;
 		  byte = 0;
 		}
@@ -4924,7 +4924,7 @@ output_constructor (exp, size, align)
 
   if (byte_buffer_in_use)
     {
-      ASM_OUTPUT_BYTE (asm_out_file, byte);
+      assemble_integer (GEN_INT (byte), 1, BITS_PER_UNIT, 1);
       total_bytes++;
     }
 
