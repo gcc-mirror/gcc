@@ -1,3 +1,7 @@
+2004-01-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/invoke.texi (SPARC options): Restructure and update.
+
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* system.h (PROMOTE_FUNCTION_ARGS, STRUCT_VALUE_INCOMING, and
