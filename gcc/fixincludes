@@ -289,7 +289,7 @@ while [ $# != 0 ]; do
 	  /#define[ 	]*[ 	]CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#define[ 	]*[ 	]_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
-	  /#[el]*if/{
+	  /#[	 ]*[el]*if/{
 		s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
 
 		s/ bsd4\([0-9]\) / __bsd4\1__ /g
