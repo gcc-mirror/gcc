@@ -225,7 +225,7 @@ const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS] =
 const char * const reg_note_name[] =
 {
   "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_EQUAL",
-  "REG_WAS_0", "REG_RETVAL", "REG_LIBCALL", "REG_NONNEG",
+  "REG_RETVAL", "REG_LIBCALL", "REG_NONNEG",
   "REG_NO_CONFLICT", "REG_UNUSED", "REG_CC_SETTER", "REG_CC_USER",
   "REG_LABEL", "REG_DEP_ANTI", "REG_DEP_OUTPUT", "REG_BR_PROB",
   "REG_NOALIAS", "REG_SAVE_AREA", "REG_BR_PRED",

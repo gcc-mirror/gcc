@@ -12605,8 +12605,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	  break;
 
 	case REG_NONNEG:
-	case REG_WAS_0:
-	  /* These notes say something about the value of a register prior
+	  /* This note says something about the value of a register prior
 	     to the execution of an insn.  It is too much trouble to see
 	     if the note is still correct in all situations.  It is better
 	     to simply delete it.  */

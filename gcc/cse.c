@@ -5598,41 +5598,6 @@ cse_insn (rtx insn, rtx libcall_insn)
 		 making a new one if one does not already exist.  */
 	      set_unique_reg_note (insn, REG_EQUAL, src_const);
 	    }
-
-	  /* If storing a constant value in a register that
-	     previously held the constant value 0,
-	     record this fact with a REG_WAS_0 note on this insn.
-
-	     Note that the *register* is required to have previously held 0,
-	     not just any register in the quantity and we must point to the
-	     insn that set that register to zero.
-
-	     Rather than track each register individually, we just see if
-	     the last set for this quantity was for this register.  */
-
-	  if (REGNO_QTY_VALID_P (REGNO (dest)))
-	    {
-	      int dest_q = REG_QTY (REGNO (dest));
-	      struct qty_table_elem *dest_ent = &qty_table[dest_q];
-
-	      if (dest_ent->const_rtx == const0_rtx)
-		{
-		  /* See if we previously had a REG_WAS_0 note.  */
-		  rtx note = find_reg_note (insn, REG_WAS_0, NULL_RTX);
-		  rtx const_insn = dest_ent->const_insn;
-
-		  if ((tem = single_set (const_insn)) != 0
-		      && rtx_equal_p (SET_DEST (tem), dest))
-		    {
-		      if (note)
-			XEXP (note, 0) = const_insn;
-		      else
-			REG_NOTES (insn)
-			  = gen_rtx_INSN_LIST (REG_WAS_0, const_insn,
-					       REG_NOTES (insn));
-		    }
-		}
-	    }
 	}
 
       /* Now deal with the destination.  */
@@ -6237,20 +6202,6 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      validate_change (insn, &SET_DEST (sets[0].rtl), src, 1);
 	      validate_change (insn, &SET_SRC (sets[0].rtl), dest, 1);
 	      apply_change_group ();
-
-	      /* If there was a REG_WAS_0 note on PREV, remove it.  Move
-		 any REG_WAS_0 note on INSN to PREV.  */
-	      note = find_reg_note (prev, REG_WAS_0, NULL_RTX);
-	      if (note)
-		remove_note (prev, note);
-
-	      note = find_reg_note (insn, REG_WAS_0, NULL_RTX);
-	      if (note)
-		{
-		  remove_note (insn, note);
-		  XEXP (note, 1) = REG_NOTES (prev);
-		  REG_NOTES (prev) = note;
-		}
 
 	      /* If INSN has a REG_EQUAL note, and this note mentions
 		 REG0, then we must delete it, because the value in

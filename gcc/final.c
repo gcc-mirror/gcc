@@ -2503,9 +2503,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #endif
 
 #if 0
-	/* It's not at all clear why we did this and doing so interferes
-	   with tests we'd like to do to use REG_WAS_0 notes, so let's try
-	   with this out.  */
+	/* It's not at all clear why we did this and doing so used to
+	   interfere with tests that used REG_WAS_0 notes, which are
+	   now gone, so let's try with this out.  */
 
 	/* Mark this insn as having been output.  */
 	INSN_DELETED_P (insn) = 1;

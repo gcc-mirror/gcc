@@ -193,9 +193,6 @@
   ""
   "*
 {
-  if (operands[1] == const1_rtx && reg_was_0_p (insn, operands[0]))
-    return \"incl %0\";
-
   if (GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == CONST)
     {
       if (push_operand (operands[0], SImode))
@@ -230,9 +227,6 @@
   ""
   "*
 {
-  if (operands[1] == const1_rtx && reg_was_0_p (insn, operands[0]))
-    return \"incw %0\";
-
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       int i = INTVAL (operands[1]);
@@ -275,9 +269,6 @@
   ""
   "*
 {
-  if (operands[1] == const1_rtx && reg_was_0_p (insn, operands[0]))
-    return \"incb %0\";
-
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       int i = INTVAL (operands[1]);

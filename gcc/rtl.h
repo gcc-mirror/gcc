@@ -633,12 +633,6 @@ enum reg_note
      but it can be used for cse.  */
   REG_EQUAL,
 
-  /* The register set in this insn held 0 before the insn.  The contents of
-     the note is the insn that stored the 0.  If that insn is deleted or
-     patched to a NOTE, the REG_WAS_0 is inoperative.  The REG_WAS_0 note
-     is actually an INSN_LIST, not an EXPR_LIST.  */
-  REG_WAS_0,
-
   /* This insn copies the return-value of a library call out of the hard reg
      for return values.  This note is actually an INSN_LIST and it points to
      the first insn involved in setting up arguments for the call.  flow.c
