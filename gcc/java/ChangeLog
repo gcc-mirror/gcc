@@ -3,6 +3,11 @@
 	* typeck.c (java_array_type_length, build_prim_array_type):
 	Represent empty arrays by NULL index.
 
+2001-09-06  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* java-tree.h (compile_resource_file): Grouped with other prototypes.
+	* jvspec.c (lang_specific_driver): Removed unused local `ptr.'	
+
 2001-09-06  Anthony Green  <green@redhat.com>
 
 	* class.c (O_BINARY): Define if necessary.

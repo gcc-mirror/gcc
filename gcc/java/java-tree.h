@@ -166,9 +166,6 @@ extern int do_not_fold;
 /* Resource name.  */
 extern char * resource_name;
 
-/* Compile a resource file.  */
-void compile_resource_file PARAMS ((char *, char *));
-
 /* Turned to 1 if -Wall was encountered. See lang.c for their meanings.  */
 extern int flag_wall;
 extern int flag_redundant;
@@ -1023,6 +1020,7 @@ extern tree build_dtable_decl PARAMS ((tree));
 extern tree build_internal_class_name PARAMS ((tree));
 extern tree build_constants_constructor PARAMS ((void));
 extern tree build_ref_from_constant_pool PARAMS ((int));
+void compile_resource_file PARAMS ((char *, char *));
 extern tree build_utf8_ref PARAMS ((tree));
 extern tree ident_subst PARAMS ((const char*, int,
 				const char*, int, int, const char*));
