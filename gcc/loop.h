@@ -51,6 +51,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define REGNO_FIRST_LUID(REGNO) uid_luid[REGNO_FIRST_UID (REGNO)]
 #define REGNO_LAST_LUID(REGNO) uid_luid[REGNO_LAST_UID (REGNO)]
+#define REGNO_LAST_NOTE_LUID(REGNO) uid_luid[REGNO_LAST_NOTE_UID (REGNO)]
 
 
 /* A "basic induction variable" or biv is a pseudo reg that is set

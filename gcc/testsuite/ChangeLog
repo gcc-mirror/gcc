@@ -1,3 +1,7 @@
+2004-05-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* gcc.dg/loop-4.c: New test.
+
 2004-04-29  Matthias Klose  <doko@debian.org>
 
 	Backport:
