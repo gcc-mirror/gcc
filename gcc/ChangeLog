@@ -1,3 +1,7 @@
+2003-04-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ginclude/stddef.h: Provide C++ safe offsetof.
+
 2003-04-22  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* function.c (purge_addressof_1): In (mem (addressof (reg))) case
