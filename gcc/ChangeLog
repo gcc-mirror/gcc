@@ -1,3 +1,7 @@
+2000-01-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* ginclude/stdbool.h:  Support compilation as C++.
+
 Tue Jan  4 01:35:13 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* fold-const.c (make_range): Don't try to reverse an unbounded range.
