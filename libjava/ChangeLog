@@ -1,5 +1,12 @@
 2002-02-24  Adam Megacz  <adam@xwt.org>
 
+	* java/net/natPlainDatagramSocketImpl.cc: Updated #includes
+	for Win32, changed #ifdefs to check WIN32 instead of the
+	(now-obsolete) USE_WINSOCK, and removed support for socket
+	timeouts on Win32 pending further discussion.
+
+2002-02-24  Adam Megacz  <adam@xwt.org>
+
 	* win32-threads.cc (_Jv_ThreadInitData): _Jv_Malloc instead of new
 	* win32-threads.cc (_Jv_ThreadDestroyData): _Jv_Free instead of
 	delete
