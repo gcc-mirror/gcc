@@ -1,3 +1,13 @@
+2003-11-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libgcc2.c (__negdi2, __addvsi3, __addvdi3, __subvsi3, __subvdi3,
+	__mulvsi3, __negvsi2, __negvdi2, __mulvdi3, __lshrdi3, __ashldi3,
+	__ashrdi3, __ffsDI2, __muldi3, __clzDI2, __ctzDI2, __parityDI2,
+	__udivmoddi4, __divdi3, __moddi3, __cmpdi2, __ucmpdi2,
+	__fixunstfDI, __fixunsxfDI, __fixunsdfDI, __fixunssfDI,
+	__floatdixf, __floatditf, __floatdidf, __floatdisf, __gcc_bcmp):
+	Const-ify and/or initialize automatic variables at declaration.
+
 2003-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (divmodsi4): Replace all the uses
