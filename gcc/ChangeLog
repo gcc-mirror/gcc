@@ -1,3 +1,9 @@
+2001-06-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.texi: Use @defcodeindex for the index of options.  Add
+	more index entries.  Use more logical markup where appropriate.
+	Use TeX quotes and dashes.
+
 2001-06-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* unwind-pe.h: Conditionally qualify references to abort with
