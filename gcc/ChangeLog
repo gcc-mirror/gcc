@@ -1,3 +1,10 @@
+2005-01-25  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/mips/linux.h (LIB_SPEC): Remove -rpath-link.
+	* config/mips/linux64.h (LIB_SPEC): Likewise.
+	* config/mn10300/linux.h (LIB_SPEC): Likewise.
+	* config/sh/linux.h (LIB_SPEC): Likewise.
+
 2005-01-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/frv/frv.c (frv_legitimize_tls_address): New.

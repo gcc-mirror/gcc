@@ -33,10 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC "\
 %{shared: -lc} \
-%{!static: \
- %{mabi=n32:-rpath-link %R/lib32:%R/usr/lib32} \
- %{mabi=64:-rpath-link %R/lib64:%R/usr/lib64} \
- %{mabi=32:-rpath-link %R/lib:%R/usr/lib}} \
 %{!shared: %{pthread:-lpthread} \
   %{profile:-lc_p} %{!profile: -lc}}"
 

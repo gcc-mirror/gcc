@@ -1,6 +1,6 @@
 /* Definitions of taret machine for GNU compiler.
    Matsushita AM33/2.0
-   Copyright 2001, 2002 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2005 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
    This file is part of GCC.
@@ -43,7 +43,6 @@
 #undef  LIB_SPEC
 #define LIB_SPEC \
   "%{shared: -lc} \
-   %{!static:-rpath-link %R/lib:%R/usr/lib} \
    %{!shared: %{pthread:-lpthread} \
      %{profile:-lc_p} %{!profile: -lc}}"
 
