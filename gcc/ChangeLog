@@ -1,3 +1,8 @@
+Mon Apr 10 15:40:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sbitmap.c (sbitmap_a_subset_b_p): Rework loop to avoid potential
+	of sequence point problems.
+
 2000-04-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtl.def (ASHIFT, ROTATE, ASHIFTRT, LSHIFTRT, ROTATERT):

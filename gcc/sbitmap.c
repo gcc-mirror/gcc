@@ -265,9 +265,8 @@ sbitmap_a_subset_b_p (a, b)
   unsigned int i;
   sbitmap_ptr ap, bp;
 
-  
-  for (ap = a->elms, bp = b->elms, i = 0; i < a->size; i++)
-    if ((*ap++ | *bp++) != *bp)
+  for (ap = a->elms, bp = b->elms, i = 0; i < a->size; i++, ap++, bp++)
+    if ((*ap | *bp) != *bp)
       return 0;
 
   return 1;
