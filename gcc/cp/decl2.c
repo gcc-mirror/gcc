@@ -683,11 +683,29 @@ substitute_nice_name (decl)
    interface/implementation is not used all the times it should be,
    inform the user.  */
 void
-warn_if_unknown_interface ()
+warn_if_unknown_interface (decl)
+     tree decl;
 {
   static int already_warned = 0;
-  if (++already_warned == 1)
-    warning ("templates that are built with -fexternal-templates should be in files that have #pragma interface/implementation");
+  if (already_warned++)
+    return;
+
+  if (flag_alt_external_templates)
+    {
+      struct tinst_level *til = tinst_for_decl ();
+      int sl = lineno;
+      char *sf = input_filename;
+
+      lineno = til->line;
+      input_filename = til->file;
+      cp_warning ("template `%#D' instantiated in file without #pragma interface",
+		  decl);
+      lineno = sl;
+      input_filename = sf;
+    }
+  else
+    cp_warning_at ("template `%#D' defined in file without #pragma interface",
+		   decl);
 }
 
 /* A subroutine of the parser, to handle a component list.  */
@@ -734,7 +752,7 @@ grok_x_components (specs, components)
 	  else if (IS_SIGNATURE(t))
 	    tcode = signature_type_node;
 	  
-	  t = xref_defn_tag(tcode, TYPE_IDENTIFIER(t), NULL_TREE);
+	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
 	  if (TYPE_CONTEXT(t))
 	    CLASSTYPE_NO_GLOBALIZE(t) = 1;
 	  return NULL_TREE;
@@ -747,7 +765,7 @@ grok_x_components (specs, components)
 	  else
 	    tcode = enum_type_node;
 
-	  t = xref_defn_tag(tcode, TYPE_IDENTIFIER(t), NULL_TREE);
+	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
 	  if (TREE_CODE(t) == UNION_TYPE && TYPE_CONTEXT(t))
 	    CLASSTYPE_NO_GLOBALIZE(t) = 1;
 	  if (TREE_CODE (t) == UNION_TYPE
@@ -1103,12 +1121,15 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 
   if (code == POINTER_TYPE)
     {
+#if 0
+      /* As of Valley Forge, you can delete a pointer to constant.  */
       /* You can't delete a pointer to constant.  */
       if (TREE_READONLY (TREE_TYPE (type)))
 	{
 	  error ("`const *' cannot be deleted");
 	  return error_mark_node;
 	}
+#endif
       /* You also can't delete functions.  */
       if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
 	{
@@ -1288,7 +1309,6 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
       DECL_CONTEXT (value) = current_class_type;
       DECL_CLASS_CONTEXT (value) = current_class_type;
       CLASSTYPE_LOCAL_TYPEDECLS (current_class_type) = 1;
-      pushdecl_class_level (value);
 
       /* If we declare a typedef name for something that has no name,
 	 the typedef name is used for linkage.  See 7.1.3 p4 94/0158. */
@@ -1299,6 +1319,8 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	  TYPE_NAME (TREE_TYPE (value)) = value;
 	  TYPE_STUB_DECL (TREE_TYPE (value)) = value;
 	}
+
+      pushdecl_class_level (value);
       return value;
     }
 

@@ -1539,7 +1539,7 @@ reinit_parse_for_method (yychar, decl)
       t->can_free = 1;
       t->deja_vu = 0;
       if (interface_unknown && processing_template_defn && flag_external_templates && ! DECL_IN_SYSTEM_HEADER (decl))
-	warn_if_unknown_interface ();
+	warn_if_unknown_interface (decl);
       t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
       store_pending_inline (decl, t);
     }
@@ -1700,8 +1700,8 @@ reinit_parse_for_block (yychar, obstackp, is_template)
    When KIND == 6, build default operator = (X&).  */
 
 tree
-cons_up_default_function (type, name, kind)
-     tree type, name;
+cons_up_default_function (type, full_name, kind)
+     tree type, full_name;
      int kind;
 {
   extern tree void_list_node;
@@ -1712,8 +1712,8 @@ cons_up_default_function (type, name, kind)
   tree argtype;
   int retref = 0;
   int complex = 0;
+  tree name = constructor_name (full_name);
 
-  name = constructor_name (name);
   switch (kind)
     {
       /* Destructors.  */
@@ -1750,7 +1750,7 @@ cons_up_default_function (type, name, kind)
       /* Fall through...  */
     case 6:
       retref = 1;
-      declspecs = build_decl_list (NULL_TREE, name);
+      declspecs = build_decl_list (NULL_TREE, full_name);
 
       name = ansi_opname [(int) MODIFY_EXPR];
 

@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 363.  Free: */
+/* First used: 0 (reserved), Last used: 364.  Free: */
 
 static int abortcount = 0;
 
@@ -379,65 +379,131 @@ my_friendly_assert (cond, where)
    for use in initializing a static variable; one that can be an
    element of a "constant" initializer.
 
-   Return 1 if the value is absolute; return 2 if it is relocatable.
+   Return null_pointer_node if the value is absolute;
+   if it is relocatable, return the variable that determines the relocation.
    We assume that VALUE has been folded as much as possible;
    therefore, we do not need to check for such things as
    arithmetic-combinations of integers.  */
 
-static int
-initializer_constant_valid_p (value)
+tree
+initializer_constant_valid_p (value, endtype)
      tree value;
+     tree endtype;
 {
   switch (TREE_CODE (value))
     {
     case CONSTRUCTOR:
-      return TREE_STATIC (value);
+      if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE
+	  && TREE_CONSTANT (value))
+	return
+	  initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)),
+					endtype);
+	
+      return TREE_STATIC (value) ? null_pointer_node : 0;
 
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
-      return 1;
+    case COMPLEX_CST:
+      return null_pointer_node;
 
     case ADDR_EXPR:
-      return 2;
+      return TREE_OPERAND (value, 0);
+
+    case NON_LVALUE_EXPR:
+      return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
 
     case CONVERT_EXPR:
     case NOP_EXPR:
-      /* Allow conversions between types of the same kind.  */
-      if (TREE_CODE (TREE_TYPE (value))
-	  == TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+      /* Allow conversions between pointer types.  */
+      if (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE)
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
+      /* Allow conversions between real types.  */
+      if (TREE_CODE (TREE_TYPE (value)) == REAL_TYPE
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == REAL_TYPE)
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
+      /* Allow length-preserving conversions between integer types.  */
+      if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+
+      /* Allow conversions between other integer types only if
+	 explicit value.  */
+      if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE)
+	{
+	  tree inner = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						     endtype);
+	  if (inner == null_pointer_node)
+	    return null_pointer_node;
+	  return 0;
+	}
+
       /* Allow (int) &foo provided int is as wide as a pointer.  */
       if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE
-	  && ! tree_int_cst_lt (TYPE_SIZE (TREE_TYPE (value)),
-				TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
+
+      /* Likewise conversions from int to pointers.  */
+      if (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == INTEGER_TYPE
+	  && (TYPE_PRECISION (TREE_TYPE (value))
+	      <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
+
+      /* Allow conversions to union types if the value inside is okay.  */
+      if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
+					     endtype);
       return 0;
 
     case PLUS_EXPR:
+      if (TREE_CODE (endtype) == INTEGER_TYPE
+	  && TYPE_PRECISION (endtype) < POINTER_SIZE)
+	return 0;
       {
-	int valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0));
-	int valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1));
-	if (valid0 == 1 && valid1 == 2)
-	  return 2;
-	if (valid0 == 2 && valid1 == 1)
-	  return 2;
+	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						    endtype);
+	tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
+						    endtype);
+	/* If either term is absolute, use the other terms relocation.  */
+	if (valid0 == null_pointer_node)
+	  return valid1;
+	if (valid1 == null_pointer_node)
+	  return valid0;
 	return 0;
       }
 
     case MINUS_EXPR:
+      if (TREE_CODE (endtype) == INTEGER_TYPE
+	  && TYPE_PRECISION (endtype) < POINTER_SIZE)
+	return 0;
       {
-	int valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0));
-	int valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1));
-	if (valid0 == 2 && valid1 == 1)
-	  return 2;
+	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
+						    endtype);
+	tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
+						    endtype);
+	/* Win if second argument is absolute.  */
+	if (valid1 == null_pointer_node)
+	  return valid0;
+	/* Win if both arguments have the same relocation.
+	   Then the value is absolute.  */
+	if (valid0 == valid1)
+	  return null_pointer_node;
 	return 0;
       }
-
-    default:
-      return 0;
     }
+
+  return 0;
 }
 
 /* Perform appropriate conversions on the initial value of a variable,
@@ -583,7 +649,7 @@ store_init_value (decl, init)
     ;
   else if (TREE_STATIC (decl)
 	   && (! TREE_CONSTANT (value)
-	       || ! initializer_constant_valid_p (value)
+	       || ! initializer_constant_valid_p (value, TREE_TYPE (value))
 #if 0
 	       /* A STATIC PUBLIC int variable doesn't have to be
 		  run time inited when doing pic.  (mrs) */
@@ -920,7 +986,7 @@ process_init_constructor (type, init, elts)
 	    erroneous = 1;
 	  else if (!TREE_CONSTANT (next1))
 	    allconstant = 0;
-	  else if (! initializer_constant_valid_p (next1))
+	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 	    allsimple = 0;
 	  members = tree_cons (NULL_TREE, next1, members);
 	}
@@ -984,7 +1050,7 @@ process_init_constructor (type, init, elts)
 	    erroneous = 1;
 	  else if (!TREE_CONSTANT (next1))
 	    allconstant = 0;
-	  else if (! initializer_constant_valid_p (next1))
+	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 	    allsimple = 0;
 	  members = tree_cons (field, next1, members);
 	}
@@ -1001,7 +1067,7 @@ process_init_constructor (type, init, elts)
 		erroneous = 1;
 	      else if (!TREE_CONSTANT (next1))
 		allconstant = 0;
-	      else if (! initializer_constant_valid_p (next1))
+	      else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 		allsimple = 0;
 	      members = tree_cons (field, next1, members);
 	    }
@@ -1082,7 +1148,7 @@ process_init_constructor (type, init, elts)
 	erroneous = 1;
       else if (!TREE_CONSTANT (next1))
 	allconstant = 0;
-      else if (initializer_constant_valid_p (next1) == 0)
+      else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
 	allsimple = 0;
       members = tree_cons (field, next1, members);
     }
@@ -1425,11 +1491,13 @@ build_functional_cast (exp, parms)
       /* this must build a C cast */
       if (parms == NULL_TREE)
 	parms = integer_zero_node;
-      else if (TREE_CHAIN (parms) != NULL_TREE)
+      else
 	{
-	  pedwarn ("initializer list being treated as compound expression");
+	  if (TREE_CHAIN (parms) != NULL_TREE)
+	    pedwarn ("initializer list being treated as compound expression");
 	  parms = build_compound_expr (parms);
 	}
+
       return build_c_cast (type, parms, 1);
     }
 

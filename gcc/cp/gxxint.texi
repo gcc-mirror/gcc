@@ -1193,17 +1193,17 @@ The below points out some flaws in g++'s exception handling, as it now
 stands.
 
 Only exact type matching or reference matching of throw types works.
-Only works on a SPARC machines (like Suns), and i386 machines.  Partial
-support is also in for rs6000, hppa, m68k and mips machines, but a stack
-unwinder called __unwind_function has to be written, and added to
-libgcc2 for them.  All completely constructed temps and local variables
-are cleaned up in all unwinded scopes.  Completed parts of partially
-constructed objects are not cleaned up.  Don't expect exception handling
-to work right if you optimize, in fact the compiler will probably core
-dump.  If two EH regions are the exact same size, the backend cannot
-tell which one is first.  It punts by picking the last one, if they tie.
-This is usually right.  We really should stick in a nop, if they are the
-same size.
+Only works on a SPARC machines (like Suns), i386 machines, arm machines
+and rs6000 machines.  Partial support is also in for alpha, hppa, m68k
+and mips machines, but a stack unwinder called __unwind_function has to
+be written, and added to libgcc2 for them.  All completely constructed
+temps and local variables are cleaned up in all unwinded scopes.
+Completed parts of partially constructed objects are not cleaned up.
+Don't expect exception handling to work right if you optimize, in fact
+the compiler will probably core dump.  If two EH regions are the exact
+same size, the backend cannot tell which one is first.  It punts by
+picking the last one, if they tie.  This is usually right.  We really
+should stick in a nop, if they are the same size.
 
 When we invoke the copy constructor for an exception object because it
 is passed by value, and if we take a hit (exception) inside the copy
@@ -1223,14 +1223,14 @@ implements set compares, not exact list equality.  Type smashing should
 smash exception specifications using set union.
 
 Thrown objects are allocated on the heap, in the usual way, but they are
-never deleted.  They should be deleted by the catch clauses.
+never deleted.  They should be deleted by the catch clauses.  If one
+runs out of heap space, throwing an object will probably never work.
+This could be relaxed some by passing an __in_chrg parameter to track
+who has control over the exception object.
 
-In stmt.c, expand_end_bindings attempts to eliminate the generation of
-destructors for a binding contour if the code would be unreachable (last
-insn == BARRIER). In this case, interim_eh_hook is never called for the
-end of the lifetimes of auto variables, so the compiler generates
-invalid assembler (the end label for the scope is never declared, and
-destructor code isn't generated on the exception path).
+When the backend returns a value, it can create new exception regions
+that need protecting.  The new region should rethrow the object in
+context of the last associated cleanup that ran to completion.
 
 @node Free Store, Concept Index, Exception Handling, Top
 @section Free Store

@@ -2069,7 +2069,9 @@ do_build_copy_constructor (fndecl)
 	   t = TREE_CHAIN (t))
 	{
 	  tree basetype = BINFO_TYPE (t);
-	  tree p = convert (build_reference_type (basetype), parm);
+	  tree p = convert_to_reference
+	    (build_reference_type (basetype), parm,
+	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
 	  current_base_init_list = tree_cons (TYPE_NESTED_NAME (basetype),
 					      p, current_base_init_list);
@@ -2079,10 +2081,12 @@ do_build_copy_constructor (fndecl)
 	{
 	  tree p, basetype = TREE_VEC_ELT (binfos, i);
 	  if (TREE_VIA_VIRTUAL (basetype))
-	    continue;	  
+	    continue; 
 
 	  basetype = BINFO_TYPE (basetype);
-	  p = convert (build_reference_type (basetype), parm);
+	  p = convert_to_reference
+	    (build_reference_type (basetype), parm,
+	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
 	  current_base_init_list = tree_cons (TYPE_NESTED_NAME (basetype),
 					      p, current_base_init_list);
@@ -2153,7 +2157,9 @@ do_build_assign_ref (fndecl)
 	  tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
 	  if (TYPE_HAS_ASSIGN_REF (basetype))
 	    {
-	      tree p = convert (build_reference_type (basetype), parm);
+	      tree p = convert_to_reference
+		(build_reference_type (basetype), parm,
+		 CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	      p = convert_from_reference (p);
 	      p = build_member_call (TYPE_NESTED_NAME (basetype),
 				     ansi_opname [MODIFY_EXPR],

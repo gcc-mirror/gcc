@@ -280,7 +280,7 @@ empty_parms ()
 /* Used in lex.c for parsing pragmas.  */
 %token END_OF_LINE
 
-/* spew.c depends on this being the last token.  Define
+/* lex.c and pt.c depends on this being the last token.  Define
    any new tokens before this one!  */
 %token END_OF_SAVED_INPUT
 
@@ -940,8 +940,7 @@ paren_expr_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' expr ')'
-		{ $$ = build1 (CLEANUP_POINT_EXPR, boolean_type_node, 
-			       bool_truthvalue_conversion ($2)); }
+		{ $$ = condition_conversion ($2); }
 	;
 
 paren_cond_or_null:
@@ -950,16 +949,14 @@ paren_cond_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' condition ')'
-		{ $$ = build1 (CLEANUP_POINT_EXPR, boolean_type_node, 
-			       bool_truthvalue_conversion ($2)); }
+		{ $$ = condition_conversion ($2); }
 	;
 
 xcond:
 	/* empty */
 		{ $$ = NULL_TREE; }
 	| condition
-		{ $$ = build1 (CLEANUP_POINT_EXPR, boolean_type_node, 
-			       bool_truthvalue_conversion ($$)); }
+		{ $$ = condition_conversion ($$); }
 	| error
 		{ $$ = NULL_TREE; }
 	;
@@ -1800,6 +1797,7 @@ type_id:
 typed_declspecs:
 	  typed_typespecs %prec EMPTY
 	| typed_declspecs1
+	;
 
 typed_declspecs1:
 	  declmods typespec
@@ -2151,9 +2149,9 @@ structsp:
 		{ $$ = finish_enum (start_enum (make_anon_name()), NULL_TREE);
 		  check_for_missing_semicolon ($$); }
 	| ENUM identifier
-		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 0); }
+		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
 	| ENUM complex_type_name
-		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 0); }
+		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
 
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly opt.component_decl_list '}'
@@ -2206,16 +2204,11 @@ structsp:
 		    check_for_missing_semicolon ($$); }
 	| class_head  %prec EMPTY
 		{
-#if 0
-  /* It's no longer clear what the following error is supposed to
-     accomplish.  If it turns out to be needed, add a comment why.  */
-		  if (TYPE_BINFO_BASETYPES ($$) && !TYPE_SIZE ($$))
-		    {
-		      error ("incomplete definition of type `%s'",
-			     TYPE_NAME_STRING ($$));
-		      $$ = error_mark_node;
-		    }
-#endif
+		  /* struct B: public A; is not accepted by the WP grammar.  */
+		  if (TYPE_BINFO_BASETYPES ($$) && !TYPE_SIZE ($$)
+		      && ! TYPE_BEING_DEFINED ($$))
+		    cp_error ("base clause without member specification for `%#T'",
+			      $$);
 		}
 	;
 
@@ -2257,6 +2250,12 @@ named_class_head_sans_basetype:
 		{ current_aggr = $$; $$ = $2; }
 	| aggr template_type %prec EMPTY
 		{ current_aggr = $$; $$ = $2; }
+	| specialization
+	;
+
+named_class_head_sans_basetype_defn:
+	  aggr identifier_defn %prec EMPTY
+		{ current_aggr = $$; $$ = $2; }
 	| aggr template_type_name '{'
 		{ yyungetc ('{', 1);
 		aggr2:
@@ -2265,37 +2264,21 @@ named_class_head_sans_basetype:
 		  overload_template_name ($$, 0); }
 	| aggr template_type_name ':'
 		{ yyungetc (':', 1); goto aggr2; }
-	| specialization
 	;
-
-named_class_head_sans_basetype_defn:
-	  aggr identifier_defn %prec EMPTY
-		{ current_aggr = $$; $$ = $2; }
-	;
-
-do_xref: /* empty */ %prec EMPTY
-	{ $<ttype>$ = xref_tag (current_aggr, $<ttype>0, NULL_TREE, 1); }
 
 do_xref_defn: /* empty */ %prec EMPTY
-	{ $<ttype>$ = xref_defn_tag (current_aggr, $<ttype>0, NULL_TREE); }
+        { $<ttype>$ = xref_tag (current_aggr, $<ttype>0, NULL_TREE, 0); }
+	;
 
 named_class_head:
-	  named_class_head_sans_basetype do_xref
-	  maybe_base_class_list %prec EMPTY
-		{
+	  named_class_head_sans_basetype %prec EMPTY
+		{ $$ = xref_tag (current_aggr, $1, NULL_TREE, 1); }
+	| named_class_head_sans_basetype_defn do_xref_defn
+          maybe_base_class_list %prec EMPTY
+		{ 
+		  $$ = $<ttype>2;
 		  if ($3)
-		    $$ = xref_tag (current_aggr, $1, $3, 1);
-		  else
-		    $$ = $<ttype>2;
-		}
-	|
-	  named_class_head_sans_basetype_defn do_xref_defn
-	  maybe_base_class_list %prec EMPTY
-		{
-		  if ($3)
-		    $$ = xref_defn_tag (current_aggr, $1, $3);
-		  else
-		    $$ = $<ttype>2;
+                    xref_basetypes (current_aggr, $1, $<ttype>2, $3); 
 		}
 	;
 
@@ -3472,8 +3455,12 @@ handler_seq:
 	  /* empty */
 	| handler_seq CATCH
 		{ emit_line_note (input_filename, lineno); }
-	  handler_args compstmt
-		{ expand_end_catch_block (); }
+          .pushlevel handler_args compstmt
+		{ expand_end_catch_block ();
+		  expand_end_bindings (getdecls (), kept_level_p (), 1);
+		  poplevel (kept_level_p (), 1, 0);
+		  pop_momentary ();
+		}
 	;
 
 type_specifier_seq:

@@ -113,7 +113,7 @@ cp_convert_to_pointer (type, expr)
   register tree intype = TREE_TYPE (expr);
   register enum tree_code form = TREE_CODE (intype);
   
-  if (form == POINTER_TYPE)
+  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
     {
       intype = TYPE_MAIN_VARIANT (intype);
 
@@ -632,31 +632,49 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 {
   register tree type = TYPE_MAIN_VARIANT (TREE_TYPE (reftype));
   register tree intype = TREE_TYPE (expr);
-  register enum tree_code form = TREE_CODE (intype);
   tree rval = NULL_TREE;
+  tree rval_as_conversion = NULL_TREE;
+  int i;
 
-  if (form == REFERENCE_TYPE)
-    intype = TREE_TYPE (intype);
+  if (TREE_CODE (intype) == REFERENCE_TYPE)
+    my_friendly_abort (364);
+
   intype = TYPE_MAIN_VARIANT (intype);
 
-  if (((convtype & CONV_STATIC) && comptypes (type, intype, -1))
-      || ((convtype & CONV_IMPLICIT) && comptypes (type, intype, 0)))
+  i = comp_target_types (type, intype, 0);
+
+  if (i <= 0 && (convtype & CONV_IMPLICIT) && IS_AGGR_TYPE (intype)
+      && ! (flags & LOOKUP_NO_CONVERSION))
+    {
+      /* Look for a user-defined conversion to lvalue that we can use.  */
+
+      rval_as_conversion = build_type_conversion (CONVERT_EXPR, type, expr, 1);
+
+      if (rval_as_conversion && rval_as_conversion != error_mark_node
+	  && real_lvalue_p (rval_as_conversion))
+	{
+	  expr = rval_as_conversion;
+	  rval_as_conversion = NULL_TREE;
+	  intype = type;
+	  i = 1;
+	}
+    }
+
+  if (((convtype & CONV_STATIC) && i == -1)
+      || ((convtype & CONV_IMPLICIT) && i == 1))
     {
       if (flags & LOOKUP_COMPLAIN)
 	{
 	  tree ttl = TREE_TYPE (reftype);
 	  tree ttr;
 	  
-	  if (form == REFERENCE_TYPE)
-	    ttr = TREE_TYPE (TREE_TYPE (expr));
-	  else
-	    {
-	      int r = TREE_READONLY (expr);
-	      int v = TREE_THIS_VOLATILE (expr);
-	      ttr = cp_build_type_variant (TREE_TYPE (expr), r, v);
-	    }
+	  {
+	    int r = TREE_READONLY (expr);
+	    int v = TREE_THIS_VOLATILE (expr);
+	    ttr = cp_build_type_variant (TREE_TYPE (expr), r, v);
+	  }
 
-	  if (! lvalue_p (expr) &&
+	  if (! real_lvalue_p (expr) &&
 	      (decl == NULL_TREE || ! TYPE_READONLY (ttl)))
 	    {
 	      if (decl)
@@ -678,33 +696,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	    }
 	}
 
-      if (form == REFERENCE_TYPE)
-	{
-	  tree type = TREE_TYPE (expr);
-	  TREE_TYPE (expr) = build_pointer_type (TREE_TYPE (type));
-	  rval = cp_convert (build_pointer_type (TREE_TYPE (reftype)), expr,
-			     convtype, flags);
-	  TREE_TYPE (expr) = type;
-	  TREE_TYPE (rval) = reftype;
-	  if (TREE_CODE (rval) == PLUS_EXPR || TREE_CODE (rval) == MINUS_EXPR)
-	    TREE_TYPE (TREE_OPERAND (rval, 0))
-	      = TREE_TYPE (TREE_OPERAND (rval, 1)) = reftype;
-	  return rval;
-	}
-
       return build_up_reference (reftype, expr, flags,
 				 ! (convtype & CONV_CONST));
-    }
-
-  if ((convtype & CONV_IMPLICIT)
-      && IS_AGGR_TYPE (intype)
-      && ! (flags & LOOKUP_NO_CONVERSION)
-      && (rval = build_type_conversion (CONVERT_EXPR, reftype, expr, 1)))
-    {
-      if (rval == error_mark_node)
-	cp_error ("conversion from `%T' to `%T' is ambiguous",
-		  intype, reftype);
-      return rval;
     }
   else if ((convtype & CONV_REINTERPRET) && lvalue_p (expr))
     {
@@ -715,7 +708,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 
       /* B* bp; A& ar = (A&)bp; is valid, but it's probably not what they
          meant.  */
-      if (form == POINTER_TYPE
+      if (TREE_CODE (intype) == POINTER_TYPE
 	  && (comptypes (TREE_TYPE (intype), type, -1)))
 	cp_warning ("casting `%T' to `%T' does not dereference pointer",
 		    intype, reftype);
@@ -728,16 +721,18 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
     }
   else if (decl)
     {
-      tree rval_as_conversion = NULL_TREE;
       tree rval_as_ctor = NULL_TREE;
       
-      if (IS_AGGR_TYPE (intype)
-	  && (rval = build_type_conversion (CONVERT_EXPR, type, expr, 1)))
+      if (rval_as_conversion)
 	{
-	  if (rval == error_mark_node)
-	    return rval;
-
-	  rval_as_conversion = build_up_reference (reftype, rval, flags, 1);
+	  if (rval_as_conversion == error_mark_node)
+	    {
+	      cp_error ("conversion from `%T' to `%T' is ambiguous",
+			intype, reftype);
+	      return error_mark_node;
+	    }
+	  rval_as_conversion = build_up_reference (reftype, rval_as_conversion,
+						   flags, 1);
 	}
       
       /* Definitely need to go through a constructor here.  */
@@ -815,7 +810,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       return rval;
     }
 
-  my_friendly_assert (form != OFFSET_TYPE, 189);
+  my_friendly_assert (TREE_CODE (intype) != OFFSET_TYPE, 189);
 
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
@@ -1206,8 +1201,10 @@ cp_convert (type, expr, convtype, flags)
       || TREE_CODE (TREE_TYPE (e)) == ERROR_MARK)
     return error_mark_node;
 
-  /* Trivial conversion: cv-qualifiers do not matter on rvalues.  */
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (e)))
+  if (IS_AGGR_TYPE (type) && (convtype & CONV_FORCE_TEMP))
+    /* We need a new temporary; don't take this shortcut.  */;
+  else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (e)))
+    /* Trivial conversion: cv-qualifiers do not matter on rvalues.  */
     return fold (build1 (NOP_EXPR, type, e));
   
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
@@ -1227,10 +1224,12 @@ cp_convert (type, expr, convtype, flags)
       code = TREE_CODE (type);
     }
 
+#if 0
   if (code == REFERENCE_TYPE)
     return fold (convert_to_reference (type, e, convtype, flags, NULL_TREE));
   else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
     e = convert_from_reference (e);
+#endif
 
   if (TREE_CODE (e) == OFFSET_REF)
     e = resolve_offset_ref (e);
@@ -1266,7 +1265,7 @@ cp_convert (type, expr, convtype, flags)
 	return truthvalue_conversion (e);
       return fold (convert_to_integer (type, e));
     }
-  if (code == POINTER_TYPE)
+  if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (cp_convert_to_pointer (type, e));
   if (code == REAL_TYPE)
     {
@@ -1458,7 +1457,7 @@ convert_force (type, expr, convtype)
       return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1);
     }
 
-  return cp_convert (type, e, CONV_OLD_CONVERT|convtype, 0);
+  return cp_convert (type, e, CONV_C_CAST|convtype, 0);
 }
 
 /* Subroutine of build_type_conversion.  */
@@ -1484,9 +1483,9 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
 	return NULL_TREE;
       return error_mark_node;
     }
-  if (TREE_CODE (TREE_TYPE (rval)) == REFERENCE_TYPE
-      && TREE_CODE (xtype) != REFERENCE_TYPE)
-    rval = default_conversion (rval);
+
+  if (IS_AGGR_TYPE (TREE_TYPE (rval)))
+    return rval;
 
   if (warn_cast_qual
       && TREE_TYPE (xtype)

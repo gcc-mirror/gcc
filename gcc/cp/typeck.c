@@ -2382,11 +2382,13 @@ build_function_call_real (function, params, require_complete, flags)
 	     function, coerced_params, NULL_TREE);
 
     TREE_SIDE_EFFECTS (result) = 1;
+
     if (! require_complete)
-      return result;
+      return convert_from_reference (result);
     if (value_type == void_type_node)
       return result;
-    return require_complete_type (result);
+    result = require_complete_type (result);
+    return convert_from_reference (result);
   }
 }
 
@@ -2462,6 +2464,9 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
     {
       register tree type = typetail ? TREE_VALUE (typetail) : 0;
       register tree val = TREE_VALUE (valtail);
+
+      if (val == error_mark_node)
+	continue;
 
       if (type == void_type_node)
 	{
@@ -2987,9 +2992,6 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
       result_type = boolean_type_node;
-      op0 = bool_truthvalue_conversion (op0);
-      op1 = bool_truthvalue_conversion (op1);
-      converted = 1;
       break;
 
       /* Shift operations: result has same type as first operand;
@@ -3779,17 +3781,17 @@ build_x_unary_op (code, xarg)
   return build_unary_op (code, xarg, 0);
 }
 
-/* Just like truthvalue_conversion, but we want a BOOLEAN_TYPE */
+/* Just like truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
+   
 tree
-bool_truthvalue_conversion (expr)
+condition_conversion (expr)
      tree expr;
 {
-  /* We really want to preform the optimizations in truthvalue_conversion
-     but, not this way. */
-  /* expr = truthvalue_conversion (expr); */
-  return convert (boolean_type_node, expr);
+  tree t = convert (boolean_type_node, expr);
+  t = fold (build1 (CLEANUP_POINT_EXPR, boolean_type_node, t));
+  return t;
 }
-
+			       
 /* C++: Must handle pointers to members.
 
    Perhaps type instantiation should be extended to handle conversion
@@ -3927,7 +3929,7 @@ build_unary_op (code, xarg, noconvert)
       break;
 
     case TRUTH_NOT_EXPR:
-      arg = bool_truthvalue_conversion (arg);
+      arg = convert (boolean_type_node, arg);
       val = invert_truthvalue (arg);
       if (arg != error_mark_node)
 	return val;
@@ -4538,7 +4540,7 @@ build_conditional_expr (ifexp, op1, op2)
       ifexp = op1 = save_expr (ifexp);
     }
 
-  ifexp = bool_truthvalue_conversion (ifexp);
+  ifexp = truthvalue_conversion (ifexp);
 
   if (TREE_CODE (ifexp) == ERROR_MARK)
     return error_mark_node;
@@ -4895,6 +4897,16 @@ build_compound_expr (list)
 		break_out_cleanups (TREE_VALUE (list)), rest);
 }
 
+#ifdef __GNUC__
+__inline
+#endif
+int
+null_ptr_cst_p (t)
+     tree t;
+{
+  return (TREE_CODE (t) == INTEGER_CST && integer_zerop (t));
+}
+
 tree build_static_cast (type, expr)
    tree type, expr;
 {
@@ -4904,12 +4916,104 @@ tree build_static_cast (type, expr)
 tree build_reinterpret_cast (type, expr)
    tree type, expr;
 {
+  tree intype = TREE_TYPE (expr);
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+  if (TYPE_PTRMEMFUNC_P (intype))
+    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
+
+  if (! POINTER_TYPE_P (type) && ! TREE_CODE (type) == INTEGER_TYPE)
+    {
+      cp_error ("reinterpret_cast cannot convert to type `%T'", type);
+      return error_mark_node;
+    }
+  if (! POINTER_TYPE_P (intype) && ! TREE_CODE (intype) == INTEGER_TYPE)
+    {
+      cp_error ("reinterpret_cast cannot convert from type `%T'", type);
+      return error_mark_node;
+    }
+  if (TREE_CODE (type) == INTEGER_TYPE && TREE_CODE (intype) != POINTER_TYPE)
+    {
+      cp_error ("reinterpret_cast cannot convert non-pointer type `%T' to `%T'",
+		intype, type);
+      return error_mark_node;
+    }
+  if (TREE_CODE (intype) == INTEGER_TYPE && TREE_CODE (type) != POINTER_TYPE)
+    {
+      cp_error ("reinterpret_cast cannot convert `%T' to non-pointer type `%T'",
+		intype, type);
+      return error_mark_node;
+    }
+
+  if (TREE_CODE (type) == POINTER_TYPE && TREE_CODE (intype) == POINTER_TYPE)
+    expr = convert (ptr_type_node, expr);
+
   return build_c_cast (type, expr, 0);
 }
 
 tree build_const_cast (type, expr)
    tree type, expr;
 {
+  tree intype = TREE_TYPE (expr);
+  tree t1, t2;
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+  if (TYPE_PTRMEMFUNC_P (intype))
+    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
+
+  if (! POINTER_TYPE_P (type))
+    {
+      cp_error ("const_cast cannot convert to non-pointer type `%T'", type);
+      return error_mark_node;
+    }
+  if (TREE_CODE (type) == REFERENCE_TYPE && ! real_lvalue_p (expr))
+    {
+      cp_error ("const_cast cannot convert rvalue to type `%T'", type);
+      return error_mark_node;
+    }
+  if (TREE_CODE (type) == POINTER_TYPE && TREE_CODE (intype) != POINTER_TYPE)
+    {
+      cp_error ("const_cast cannot convert non-pointer type `%T' to type `%T'",
+		intype, type);
+      return error_mark_node;
+    }
+
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      t1 = TREE_TYPE (type);
+      t2 = intype;
+    }
+  else
+    {
+      t1 = TREE_TYPE (type);
+      t2 = TREE_TYPE (intype);
+
+      for (; TREE_CODE (t1) == POINTER_TYPE && TREE_CODE (t2) == POINTER_TYPE;
+	   t1 = TREE_TYPE (t1), t2 = TREE_TYPE (t2))
+	;
+    }
+
+  if (TREE_CODE (t1) == OFFSET_TYPE && TREE_CODE (t2) == OFFSET_TYPE)
+    {
+      if (TYPE_OFFSET_BASETYPE (t1) != TYPE_OFFSET_BASETYPE (t2))
+	{
+	  cp_error ("const_cast cannot convert between pointers to members of different types `%T' and `%T'",
+		    TYPE_OFFSET_BASETYPE (t2), TYPE_OFFSET_BASETYPE (t1));
+	  return error_mark_node;
+	}
+      t1 = TREE_TYPE (t1);
+      t2 = TREE_TYPE (t2);
+    }
+
+  if (TYPE_MAIN_VARIANT (t1) != TYPE_MAIN_VARIANT (t2))
+    {
+      cp_error ("const_cast cannot convert unrelated type `%T' to `%T'",
+		t2, t1);
+      return error_mark_node;
+    }
+
   return build_c_cast (type, expr, 0);
 }
 
@@ -4930,8 +5034,9 @@ build_c_cast (type, expr, allow_nonconverting)
     return error_mark_node;
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
-     Strip such NOP_EXPRs, since VALUE is being used in non-lvalue context.  */
-  if (TREE_CODE (value) == NOP_EXPR
+     Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
+  if (TREE_CODE (type) != REFERENCE_TYPE
+      && TREE_CODE (value) == NOP_EXPR
       && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
     value = TREE_OPERAND (value, 0);
 
@@ -4989,7 +5094,8 @@ build_c_cast (type, expr, allow_nonconverting)
     }
   else
     {
-      tree otype, ovalue;
+      tree otype;
+      int flag;
 
       /* Convert functions and arrays to pointers and
 	 convert references to their expanded types,
@@ -5041,17 +5147,28 @@ build_c_cast (type, expr, allow_nonconverting)
 	warning ("cast to pointer from integer of different size");
 #endif
 
-      if (TREE_READONLY_DECL_P (value))
-	value = decl_constant_value (value);
+      flag = allow_nonconverting ? CONV_NONCONVERTING : 0;
 
-      ovalue = value;
-      value = convert_force (type, value, allow_nonconverting?CONV_NONCONVERTING:0);
-
-      /* Ignore any integer overflow caused by the cast.  */
-      if (TREE_CODE (value) == INTEGER_CST)
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	value = (convert_from_reference
+		 (convert_to_reference (type, value, CONV_OLD_CONVERT|flag,
+					LOOKUP_COMPLAIN, NULL_TREE)));
+      else
 	{
-	  TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
-	  TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
+	  tree ovalue;
+
+	  if (TREE_READONLY_DECL_P (value))
+	    value = decl_constant_value (value);
+
+	  ovalue = value;
+	  value = convert_force (type, value, flag);
+
+	  /* Ignore any integer overflow caused by the cast.  */
+	  if (TREE_CODE (value) == INTEGER_CST)
+	    {
+	      TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
+	      TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
+	    }
 	}
     }
 
@@ -5064,11 +5181,7 @@ build_c_cast (type, expr, allow_nonconverting)
 	  && TREE_CODE (value) == INTEGER_CST
 	  && TREE_CODE (expr) == INTEGER_CST
 	  && TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE))
-    {
-      tree nvalue = build1 (NOP_EXPR, type, value);
-      TREE_CONSTANT (nvalue) = TREE_CONSTANT (value);
-      return nvalue;
-    }
+    value = non_lvalue (value);
 
   return value;
 }
@@ -5667,7 +5780,8 @@ build_modify_expr (lhs, modifycode, rhs)
     {
       if (flag_this_is_variable > 0
 	  && DECL_NAME (current_function_decl) != NULL_TREE
-	  && current_class_name != DECL_NAME (current_function_decl))
+	  && (DECL_NAME (current_function_decl)
+	      != constructor_name (current_class_type)))
 	warning ("assignment to `this' not in constructor or destructor");
       current_function_just_assigned_this = 1;
     }
@@ -6724,12 +6838,15 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       rhs = resolve_offset_ref (rhs);
       if (rhs == error_mark_node)
 	return error_mark_node;
-      rhstype = TREE_TYPE (rhs);
-      coder = TREE_CODE (rhstype);
     }
 
+  if (TREE_CODE (TREE_TYPE (rhs)) == REFERENCE_TYPE)
+    rhs = convert_from_reference (rhs);
+
   if ((TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE
-       && TREE_CODE (type) != ARRAY_TYPE && TREE_CODE (type) != REFERENCE_TYPE)
+       && TREE_CODE (type) != ARRAY_TYPE
+       && (TREE_CODE (type) != REFERENCE_TYPE
+	   || TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE))
       || TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE
       || TREE_CODE (TREE_TYPE (rhs)) == METHOD_TYPE)
     rhs = default_conversion (rhs);
@@ -7166,7 +7283,8 @@ c_expand_return (retval)
 	  /* Here is where we finally get RETVAL into RESULT.
 	     `expand_return' does the magic of protecting
 	     RESULT from cleanups.  */
-	  retval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (result), retval);
+	  retval = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (result),
+				 retval));
 	  /* This part _must_ come second, because expand_return looks for
 	     the INIT_EXPR as the toplevel node only.  :-( */
 	  retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
@@ -7278,8 +7396,9 @@ c_expand_start_case (exp)
 	exp = index;
     }
 
-  expand_start_case (1, build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp),
-		     type, "switch statement");
+  expand_start_case
+    (1, fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp)),
+     type, "switch statement");
 
   return exp;
 }
