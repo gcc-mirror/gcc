@@ -1,5 +1,11 @@
 2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.md (movsi): Only use floating point
+	register alternatives when operands are already fprs.
+	(movdi_31, movdi_64): Likewise.
+
+2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.md (reload_base, ltorg): Remove.
 	* s390.c (s390_stop_dump_lit_p, s390_dump_literal_pool, 
 	s390_asm_output_pool_prologue, s390_pool_start_insn): Remove.
