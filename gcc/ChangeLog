@@ -1,3 +1,13 @@
+2003-03-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_BSS): Remove unnecessary
+	globalize_label.
+
+	Merge from mainline.
+	2003-01-13  Andreas Schwab  <schwab@suse.de>
+	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_LOCAL): Output type
+	directive.
+
 2003-03-23  Glen Nakamura <glen@imodulo.com>
 
 	PR c/8224
