@@ -1,3 +1,8 @@
+1999-01-19 08:10 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* Makefile.in: Fix typos in previous change.  
+	(rtsdummy.o): Don't depend on gvarargs.h.
+
 Mon Jan 18 04:47:34 1999  Jeffrey A Law  (law@cygnus.com)
 			  Hans-Peter Nilsson  <hp@axis.se>
 

@@ -104,12 +104,12 @@ exh.o: exh.c rtltypes.h
 retmem.o: retmem.c
 unhex.o: unhex.c
 unhex1.o: unhex1.c
-rtsdummy.o: rtsdummy.c gvarargs.h rtltypes.h
+rtsdummy.o: rtsdummy.c rtltypes.h
 terminate.o: terminate.c rtltypes.h
 basicio.o: basicio.c fileio.h
 chillstdio.o: chillstdio.c iomodes.h
 delete.o: delete.c fileio.h
-eoln.o: eoln.c fileio
+eoln.o: eoln.c fileio.h
 existing.o: existing.c fileio.h
 format.o: format.c bitstring.h auxtypes.h iomodes.h format.h fileio.h ioerror.h
 getassoc.o: getassoc.c fileio.h
