@@ -1,5 +1,5 @@
 /* Arc2D.java -- represents an arc in 2-D space
-   Copyright (C) 2002 Free Software Foundation
+   Copyright (C) 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -126,9 +126,11 @@ public abstract class Arc2D extends RectangularShape
    */
   public Point2D getStartPoint()
   {
-    double angle = getAngleStart() * (-180 / Math.PI);
-    double x = (Math.cos(angle) * getWidth() + getX()) / 2;
-    double y = (Math.sin(angle) * getHeight() + getY()) / 2;
+    double angle = Math.toRadians(getAngleStart());
+    double rx = getWidth() / 2;
+    double ry = getHeight() / 2;
+    double x = getX() + rx + rx * Math.cos(angle);
+    double y = getY() + ry - ry * Math.sin(angle);
     return new Point2D.Double(x, y);
   }
 
@@ -139,9 +141,11 @@ public abstract class Arc2D extends RectangularShape
    */
   public Point2D getEndPoint()
   {
-    double angle = (getAngleStart() + getAngleExtent()) * (-180 / Math.PI);
-    double x = (Math.cos(angle) * getWidth() + getX()) / 2;
-    double y = (Math.sin(angle) * getHeight() + getY()) / 2;
+    double angle = Math.toRadians(getAngleStart() + getAngleExtent());
+    double rx = getWidth() / 2;
+    double ry = getHeight() / 2;
+    double x = getX() + rx + rx * Math.cos(angle);
+    double y = getY() + ry - ry * Math.sin(angle);
     return new Point2D.Double(x, y);
   }
 
@@ -280,9 +284,10 @@ public abstract class Arc2D extends RectangularShape
    */
   public void setAngleStart(Point2D p)
   {
-    double x = ((p.getX() * 2) - getX()) / getWidth();
-    double y = ((p.getY() * 2) - getY()) / getHeight();
-    setAngleStart(Math.atan2(y, x) * (-180 / Math.PI));
+    // Normalize.
+    double x = p.getX() - (getX() + getWidth() / 2);
+    double y = p.getY() - (getY() + getHeight() / 2);
+    setAngleStart(Math.toDegrees(Math.atan2(y, x)));
   }
 
   /**
@@ -303,12 +308,12 @@ public abstract class Arc2D extends RectangularShape
     double my = getY();
     double mw = getWidth();
     double mh = getHeight();
-    x1 = ((x1 * 2) - mx) / mw;
-    y1 = ((y1 * 2) - my) / mh;
-    x2 = ((x2 * 2) - mx) / mw;
-    y2 = ((y2 * 2) - my) / mh;
-    double start = Math.atan2(y1, x1) * (-180 / Math.PI);
-    double extent = Math.atan2(y2, x2) * (-180 / Math.PI) - start;
+    x1 = x1 - (mx + mw / 2);
+    y1 = y1 - (my + mh / 2);
+    x2 = x2 - (mx + mw / 2);
+    y2 = y2 - (my + mh / 2);
+    double start = Math.toDegrees(Math.atan2(y1, x1));
+    double extent = Math.toDegrees(Math.atan2(y2, x2)) - start;
     if (extent < 0)
       extent += 360;
     setAngleStart(start);
@@ -372,8 +377,31 @@ public abstract class Arc2D extends RectangularShape
     double extent = getAngleExtent();
     if (Math.abs(extent) >= 360)
       return makeBounds(getX(), getY(), getWidth(), getHeight());
-    // XXX Finish implementing.
-    throw new Error("not implemented");
+
+    // Find the minimal bounding box.  This determined by its extrema,
+    // which are the center, the endpoints of the arc, and any local
+    // maximum contained by the arc.
+    double rX = getWidth() / 2;
+    double rY = getHeight() / 2;
+    double centerX = getX() + rX;
+    double centerY = getY() + rY;
+
+    Point2D p1 = getStartPoint();
+    Rectangle2D result = makeBounds(p1.getX(), p1.getY(), 0, 0);
+    result.add(getEndPoint());
+
+    if (type == PIE)
+      result.add(centerX, centerY);
+    if (containsAngle(0))
+      result.add(centerX + rX, centerY);
+    if (containsAngle(90))
+      result.add(centerX, centerY - rY);
+    if (containsAngle(180))
+      result.add(centerX - rX, centerY);
+    if (containsAngle(270))
+      result.add(centerX, centerY + rY);
+
+    return result;
   }
 
   /**
@@ -390,16 +418,29 @@ public abstract class Arc2D extends RectangularShape
 
   /**
    * Tests if the given angle, in degrees, is included in the arc.
-   *
-   * XXX Does this normalize all angles to -180 - 180 first?
+   * All angles are normalized to be between 0 and 360 degrees.
    *
    * @param a the angle to test
    * @return true if it is contained
    */
   public boolean containsAngle(double a)
   {
-    // XXX Implement.
-    throw new Error("not implemented");
+    double start = getAngleStart();
+    double end = start + getAngleExtent();
+
+    start %= 360;
+    if (start < 0)
+      start += 360;
+
+    end %= 360;
+    if (end < 0)
+      end += 360;
+
+    a %= 360;
+    if (a < 0)
+      a += 360;
+
+    return a >= start && a <= end;
   }
 
   /**
