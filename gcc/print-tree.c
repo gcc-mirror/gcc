@@ -601,12 +601,13 @@ print_node (file, prefix, node, indent)
 	case TREE_VEC:
 	  len = TREE_VEC_LENGTH (node);
 	  for (i = 0; i < len; i++)
-	    {
-	      char temp[10];
-	      sprintf (temp, "elt %d", i);
-	      indent_to (file, indent + 4);
-	      print_node_brief (file, temp, TREE_VEC_ELT (node, i), 0);
-	    }
+	    if (TREE_VEC_ELT (node, i))
+	      {
+		char temp[10];
+		sprintf (temp, "elt %d", i);
+		indent_to (file, indent + 4);
+		print_node_brief (file, temp, TREE_VEC_ELT (node, i), 0);
+	      }
 	  break;
 
 	case OP_IDENTIFIER:
