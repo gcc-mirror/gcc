@@ -1943,7 +1943,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  else
 	    /* When dividing two signed integers, you have to promote to int.
 	       E.g. (short) -32868 / (short) -1 doesn't fit in a short.  */
-	    shorten = TREE_UNSIGNED (op0);
+	    shorten = TREE_UNSIGNED (orig_op0);
 	  common = 1;
 	}
       break;
