@@ -2981,19 +2981,19 @@ duplicate_decls (tree newdecl, tree olddecl)
 	       && DECL_UNINLINABLE (olddecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
 	{
-	  warning_with_decl (newdecl,
-			     "function `%s' redeclared as inline");
-	  warning_with_decl (olddecl,
-			     "previous declaration of function `%s' with attribute noinline");
+	  warning ("%Hfunction '%D' redeclared as inline",
+                   &DECL_SOURCE_LOCATION (newdecl), newdecl);
+	  warning ("%Hprevious declaration of '%D' with attribute noinline",
+                   &DECL_SOURCE_LOCATION (olddecl), olddecl);
 	}
       else if (DECL_DECLARED_INLINE_P (olddecl)
 	       && DECL_UNINLINABLE (newdecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
 	{
-	  warning_with_decl (newdecl,
-			     "function `%s' redeclared with attribute noinline");
-	  warning_with_decl (olddecl,
-			     "previous declaration of function `%s' was inline");
+	  warning ("%Hfunction '%D' redeclared with attribute noinline",
+                   &DECL_SOURCE_LOCATION (newdecl), newdecl);
+	  warning ("%Hprevious declaration of '%D' was inline",
+                   &DECL_SOURCE_LOCATION (olddecl), olddecl);
 	}
     }
 
@@ -7090,8 +7090,8 @@ start_decl (tree declarator,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning_with_decl (decl,
-		       "inline function `%s' given attribute noinline");
+    warning ("%Hinline function '%D' given attribute noinline",
+             &DECL_SOURCE_LOCATION (decl), decl);
 
   if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -13434,8 +13434,8 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
 
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
-    warning_with_decl (decl1,
-		       "inline function `%s' given attribute noinline");
+    warning ("%Hinline function '%D' given attribute noinline",
+             &DECL_SOURCE_LOCATION (decl1), decl1);
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
     /* This is a constructor, we must ensure that any default args
