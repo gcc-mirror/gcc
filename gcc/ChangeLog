@@ -2,7 +2,8 @@
 
 	* config/arm/semi.h (SUBTARGET_EXTRA_SPECS): Define.
 	(SUBTARGET_EXTRA_ASM_SPEC): Define to empty string.
-	(ASM_SPEC): Call subtarget_extra_asm_spec.
+	(ASM_SPEC): Call subtarget_extra_asm_spec.  Don't
+	pass -mapcs-* options to assembler.
 	* config/arm/elf.h (SUBTARGET_EXTRA_SPECS): Define.
 	(SUBTARGET_EXTRA_ASM_SPEC): Define to empty string.
 	(ASM_SPEC): Call subtarget_extra_asm_spec.
