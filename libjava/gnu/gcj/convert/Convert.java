@@ -22,9 +22,9 @@ public class Convert
   static void help ()
   {
     System.out.println("Usage: jv-convert [OPTIONS] [INPUTFILE [OUTPUTFILE]]");
-    System.out.println("");
+    System.out.println();
     System.out.println("Convert from one encoding to another.");
-    System.out.println("");
+    System.out.println();
     System.out.println("   --encoding FROM");
     System.out.println("   --from FROM        use FROM as source encoding name");
     System.out.println("   --to TO            use TO as target encoding name");
@@ -33,16 +33,18 @@ public class Convert
     System.out.println("   --reverse          swap FROM and TO encodings");
     System.out.println("   --help             print this help, then exit");
     System.out.println("   --version          print version number, then exit");
-    System.out.println("");
+    System.out.println();
     System.out.println("`-' as a file name argument can be used to refer to stdin or stdout.");
     System.exit(0);
   }
 
   static void version ()
   {
-    System.out.println("jv-convert (GNU libgcj) "
+    System.out.println("jv-convert (GNU "
+		       + System.getProperty("java.vm.name")
+		       + ") "
 		       + System.getProperty("java.vm.version"));
-    System.out.println("");
+    System.out.println();
     System.out.println("Copyright 1999, 2002 Free Software Foundation");
     System.out.println("This is free software; see the source for copying conditions.  There is NO");
     System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");

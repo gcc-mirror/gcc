@@ -1,5 +1,9 @@
 2002-01-09  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/gcj/convert/Convert.java (version): Use java.vm.name
+	property.
+	(help, version): Use println(), not println("").
+
 	For PR libgcj/5303:
 	* gnu/gcj/convert/Convert.java (error): Program is called
 	`jv-convert'.  Print GNU-style message.  Exit with status 1, not
