@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-7, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
