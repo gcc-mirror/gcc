@@ -1425,7 +1425,7 @@ clear_const_double_mem ()
 struct addr_const
 {
   rtx base;
-  int offset;
+  HOST_WIDE_INT offset;
 };
 
 static void
@@ -1548,7 +1548,8 @@ const_hash (exp)
 	 Instead, we include the array size because the constructor could
 	 be shorter.  */
       if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-	hi = ((int) TREE_TYPE (exp) & ((1 << HASHBITS) - 1)) % MAX_HASH_TABLE;
+	hi = ((HOST_WIDE_INT) TREE_TYPE (exp) & ((1 << HASHBITS) - 1))
+	  % MAX_HASH_TABLE;
       else
 	hi = ((5 + int_size_in_bytes (TREE_TYPE (exp)))
 	       & ((1 << HASHBITS) - 1)) % MAX_HASH_TABLE;
@@ -2048,7 +2049,7 @@ static struct pool_sym *const_rtx_sym_hash_table[MAX_RTX_HASH_TABLE];
    The argument is XSTR (... , 0)  */
 
 #define SYMHASH(LABEL)	\
-  ((((int) (LABEL)) & ((1 << HASHBITS) - 1))  % MAX_RTX_HASH_TABLE)
+  ((((HOST_WIDE_INT) (LABEL)) & ((1 << HASHBITS) - 1))  % MAX_RTX_HASH_TABLE)
 
 /* Initialize constant pool hashing for next function.  */
 
