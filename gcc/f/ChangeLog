@@ -1,3 +1,7 @@
+1999-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.h: Handle sparc64 the same way as alpha.
+
 Sun Nov 28 21:39:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (ffecom_file_, ffecom_file, file_buf,

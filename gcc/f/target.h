@@ -247,7 +247,7 @@ typedef long long ffetargetOffset;
 #define ffetargetOffset_f "ll"
 
 #if FFETARGET_okINTEGER1
-#ifndef __alpha__
+#if !defined(__alpha__) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__)))
 typedef long int ffetargetInteger1;
 #define ffetargetInteger1_f "l"
 #else
@@ -288,7 +288,7 @@ typedef ? ffetargetInteger8;
 ?
 #endif
 #if FFETARGET_okLOGICAL1
-#ifndef __alpha__
+#if !defined(__alpha__) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__)))
 typedef long int ffetargetLogical1;
 #define ffetargetLogical1_f "l"
 #else
@@ -330,7 +330,7 @@ typedef ? ffetargetLogical8;
 #endif
 #if FFETARGET_okREAL1
 #ifdef REAL_ARITHMETIC
-#ifndef __alpha__
+#if !defined(__alpha__) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__)))
 typedef long int ffetargetReal1;
 #define ffetargetReal1_f "l"
 #define ffetarget_cvt_r1_to_rv_ REAL_VALUE_UNTO_TARGET_SINGLE
@@ -354,7 +354,7 @@ typedef float ffetargetReal1;
 #endif
 #if FFETARGET_okREAL2
 #ifdef REAL_ARITHMETIC
-#ifndef __alpha__
+#if !defined(__alpha__) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__)))
 typedef struct
   {
     long int v[2];
@@ -1496,7 +1496,7 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 #define ffetarget_init_2()
 #define ffetarget_init_3()
 #define ffetarget_init_4()
-#ifndef __alpha__
+#if !defined(__alpha__) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__)))
 #define ffetarget_integerdefault_is_magical(i) \
   (((unsigned long int) i) == FFETARGET_integerBIG_MAGICAL)
 #else
