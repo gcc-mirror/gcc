@@ -1,3 +1,7 @@
+2001-10-06  Ulrich Weigand  <uweigand@de.ibm.com>
+ 
+        * config/s390/s390.c (s390_va_arg): Use set_mem_alias_set.
+
 2001-10-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gccbug.in (CATEGORIES): Add ada.
