@@ -396,7 +396,7 @@ make_reorder_chain_1 (bb, prev)
 
       /* Find the normal taken edge and the normal fallthru edge.
          Note that there may in fact be other edges due to
-	 asynchronous_exceptions. 
+	 flag_non_call_exceptions. 
 
 	 Note, conditional jumps with other side effects may not
 	 be fully optimized.  In this case it is possible for

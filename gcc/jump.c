@@ -1447,7 +1447,7 @@ find_cross_jump (e1, e2, minimum, f1, f2)
       /* Avoid moving insns across EH regions if either of the insns
 	 can throw.  */
       if (flag_exceptions
-	  && (asynchronous_exceptions || GET_CODE (i1) == CALL_INSN)
+	  && (flag_non_call_exceptions || GET_CODE (i1) == CALL_INSN)
 	  && !in_same_eh_region (i1, i2))
 	break;
 

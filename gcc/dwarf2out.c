@@ -951,7 +951,7 @@ dwarf2out_stack_adjust (insn)
   long offset;
   const char *label;
 
-  if (! asynchronous_exceptions && GET_CODE (insn) == CALL_INSN)
+  if (! flag_non_call_exceptions && GET_CODE (insn) == CALL_INSN)
     {
       /* Extract the size of the args from the CALL rtx itself.  */
 
@@ -968,7 +968,7 @@ dwarf2out_stack_adjust (insn)
 
   /* If only calls can throw, and we have a frame pointer,
      save up adjustments until we see the CALL_INSN.  */
-  else if (! asynchronous_exceptions
+  else if (! flag_non_call_exceptions
 	   && cfa.reg != STACK_POINTER_REGNUM)
     return;
 
