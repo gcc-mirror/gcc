@@ -1,3 +1,7 @@
+Tue Sep  9 17:38:47 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* stl_config.h (__STL_MEMBER_TEMPLATES): Enable.
+
 Tue Aug  5 17:06:01 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* deque.h, function.h, hashtable.h, list.h, rope.h, ropeimpl.h,

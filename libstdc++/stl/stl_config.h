@@ -88,6 +88,7 @@
 #     define __STL_NEED_EXPLICIT
 #   else
 #     define __STL_CLASS_PARTIAL_SPECIALIZATION
+#     define __STL_MEMBER_TEMPLATES
 #   endif
 #   ifdef __EXCEPTIONS
 #     define __STL_USE_EXCEPTIONS
