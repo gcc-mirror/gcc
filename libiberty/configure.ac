@@ -477,11 +477,11 @@ fi
 
 # Figure out which version of pexecute to use.
 case "${host}" in
-     *-*-mingw* | *-*-winnt*)	pexecute=pex-win32.o  ;;
-     *-*-msdosdjgpp*)		pexecute=pex-djgpp.o  ;;
-     *-*-msdos*)		pexecute=pex-msdos.o  ;;
-     *-*-os2-emx*)		pexecute=pex-os2.o    ;;
-     *)				pexecute=pex-unix.o   ;;
+     *-*-mingw* | *-*-winnt*)	pexecute=./pex-win32.o  ;;
+     *-*-msdosdjgpp*)		pexecute=./pex-djgpp.o  ;;
+     *-*-msdos*)		pexecute=./pex-msdos.o  ;;
+     *-*-os2-emx*)		pexecute=./pex-os2.o    ;;
+     *)				pexecute=./pex-unix.o   ;;
 esac
 AC_SUBST(pexecute)
 
@@ -495,6 +495,15 @@ else
   INSTALL_DEST=tooldir
 fi
 AC_SUBST(INSTALL_DEST)
+
+L=""
+for l in x $LIBOBJS; do
+  case $l in
+    x) ;;
+    *) L="$L ./$l" ;;
+  esac
+done
+LIBOBJS="$L"
 
 # We need multilib support, but only if configuring for the target.
 AC_OUTPUT(Makefile testsuite/Makefile,

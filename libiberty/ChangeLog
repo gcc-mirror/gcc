@@ -1,3 +1,12 @@
+2004-01-22  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in: Convert to ./ throughout.  Rebuild dependencies
+	with explicit build rules.
+	(VPATH): Remove.
+	(.c.o): Poison.
+	* configure.ac (pexecute, LIBOBJS): Add ./ .
+	* maint-tool: Build dependencies with explicit rules.
+
 2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* strdup.c (strdup): Constify the argument.
