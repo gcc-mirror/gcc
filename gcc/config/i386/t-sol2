@@ -15,13 +15,13 @@ gmon.o:	$(srcdir)/config/i386/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
 # the comments with sed.  This bug may only be in the Early Access releases.
 crt1.o: $(srcdir)/config/i386/sol2-c1.asm
 	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-c1.asm >crt1.s
-	$(GCC_FOR_TARGET) -o crt1.o crt1.s
+	$(GCC_FOR_TARGET) -c -o crt1.o crt1.s
 crti.o: $(srcdir)/config/i386/sol2-ci.asm
 	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-ci.asm >crti.s
-	$(GCC_FOR_TARGET) -o crti.o crti.s
+	$(GCC_FOR_TARGET) -c -o crti.o crti.s
 crtn.o: $(srcdir)/config/i386/sol2-cn.asm
 	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-cn.asm >crtn.s
-	$(GCC_FOR_TARGET) -o crtn.o crtn.s
+	$(GCC_FOR_TARGET) -c -o crtn.o crtn.s
 
 # We need to use -fPIC when we are using gcc to compile the routines in
 # crtstuff.c.  This is only really needed when we are going to use gcc/g++
