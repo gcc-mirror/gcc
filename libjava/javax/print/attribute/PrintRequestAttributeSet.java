@@ -46,10 +46,10 @@ public interface PrintRequestAttributeSet extends AttributeSet
    * Adds the specified attribute value to this attribute set
    * if it is not already present.
    */
-  public boolean add (Attribute attribute);
+  boolean add (Attribute attribute);
 
   /**
    * Adds all of the elements in the specified set to this attribute.
    */
-  public boolean addAll (AttributeSet attributes);
+  boolean addAll (AttributeSet attributes);
 }

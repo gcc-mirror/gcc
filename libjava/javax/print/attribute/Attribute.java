@@ -44,7 +44,7 @@ import java.io.Serializable;
  */
 public interface Attribute extends Serializable
 {
-  public Class getCategory ();
+  Class getCategory ();
 
-  public String getName ();
+  String getName ();
 }
