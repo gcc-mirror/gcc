@@ -49,17 +49,36 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern int target_flags;
 #define ISIZE_BIT  1
 #define FAST_BIT   2
-#define MULSI3_BIT 4
+
 #define MAC_BIT    8
 #define RTL_BIT    16
 #define DT_BIT     32
 #define DALIGN_BIT 64
+#define SH0_BIT	128
+#define SH1_BIT	256
+#define SH2_BIT	512
+#define SH3_BIT	1024
+#define C_BIT	2048
+#define R_BIT     (1<<12)
+#define SPACE_BIT (1<<13)
 
-/* Nonzero if we should generate code using muls.l insn */
-#define TARGET_HAS_MULSI3 (target_flags & MULSI3_BIT)
+/* Nonzero if we should generate code using type 0 insns */
+#define TARGET_SH0 (target_flags & SH0_BIT)
+
+/* Nonzero if we should generate code using type 1 insns */
+#define TARGET_SH1 (target_flags & SH1_BIT)
+
+/* Nonzero if we should generate code using type 2 insns */
+#define TARGET_SH2 (target_flags & SH2_BIT)
+
+/* Nonzero if we should generate code using type 3 insns */
+#define TARGET_SH3 (target_flags & SH3_BIT)
 
 /* Nonzero if we should generate faster code rather than smaller code */
 #define TARGET_FASTCODE   (target_flags & FAST_BIT)
+
+/* Nonzero if we should generate faster code rather than smaller code */
+#define TARGET_SMALLCODE   (target_flags & SPACE_BIT)
 
 /* Nonzero if we should dump out instruction size info */
 #define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
@@ -70,26 +89,41 @@ extern int target_flags;
 /* Nonzero if we should dump the rtl in the assembly file. */
 #define TARGET_DUMP_RTL	  (target_flags & RTL_BIT)
 
-/* Nonzero if the target has a decrement and test instruction .*/
-#define TARGET_HAS_DT     (target_flags & DT_BIT)
+/* Nonzero if we should dump the rtl somewher else. */
+#define TARGET_DUMP_R	  (target_flags & R_BIT)
 
 /* Nonzero to align doubles on 64 bit boundaries */
 #define TARGET_ALIGN_DOUBLE (target_flags & DALIGN_BIT)
 
+
+/* Nonzero if Combine dumping wanted */
+#define TARGET_CDUMP (target_flags & C_BIT)
+
 #define TARGET_SWITCHES  	\
 { {"isize", 	( ISIZE_BIT)  },\
-  {"space", 	(-FAST_BIT)   },\
-  {"hasmulsi",  ( MULSI3_BIT) },\
-  {"hasdt", 	( DT_BIT)     },\
+  {"space", 	( SPACE_BIT)   },\
+  {"0",	        ( SH0_BIT) },\
+  {"1",	        ( SH1_BIT) },\
+  {"2",	        ( SH2_BIT) },\
+  {"3",	        ( SH3_BIT) },\
   {"ac",  	( MAC_BIT)    },\
   {"dalign",  	( DALIGN_BIT) },\
+  {"c",  	( C_BIT) },\
+  {"r",  	( RTL_BIT) },\
+  {"R",  	( R_BIT) },\
   {"",   	TARGET_DEFAULT} \
 }
 
 #define TARGET_DEFAULT  FAST_BIT
 
+#define OVERRIDE_OPTIONS override_options();
+
 
 /* Target machine storage Layout.  */
+
+/* Define to use software floating point emulator for REAL_ARITHMETIC and
+   decimal <-> binary conversion. */
+#define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
@@ -163,8 +197,7 @@ extern int target_flags;
 
 	r0-r3		scratch
 	r4-r7		args in and out
-	r8-r11		call saved
-	r12		
+	r8-r12		call saved
 	r13		assembler temp
 	r14		frame pointer
 	r15		stack pointer
@@ -195,11 +228,9 @@ extern int target_flags;
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
- /*  r0  r1  r2  r3  r4  r5  r6  r7  r8 
-     r9  r10 r11 r12 r13 r14 r15 ap  pr  t   gbr mh   ml */
+ /*  r0  r1  r2  r3  r4  r5  r6  r7  r8  r9  r10 r11 r12 r13 r14 r15 ap  pr  t   gbr mh   ml */
 #define FIXED_REGISTERS  \
-   { 0,  0,  0,  0,  0,  0,  0,  0,  0, 		\
-     0,  0,  0,  0,  1,  0,  1,  1,  1,  1,  1, 1,   1}
+   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  1,  1,  0,  1,  1, 1,   1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -208,11 +239,9 @@ extern int target_flags;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 
- /*  r0  r1  r2  r3  r4  r5  r6  r7  r8 
-     r9  r10 r11 r12 r13 r14 r15 ap  pr  t   gbr mh  ml */
+ /*  r0  r1  r2  r3  r4  r5  r6  r7  r8 r9  r10 r11 r12 r13 r14 r15 ap  pr  t   gbr mh  ml */
 #define CALL_USED_REGISTERS \
-   { 1,  1,  1,  1,  1,  1,  1,  1,  0, \
-     0,  0,  0,  1,  1,  0,  1,  1,  1,  1,  1, 1, 1}
+   { 1,  1,  1,  1,  1,  1,  1,  1,  0, 0,  0,  0,  0,  1,  0,  1,  1,  0,  1,  1, 1, 1}
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -252,7 +281,9 @@ extern int target_flags;
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
    via the stack pointer) in functions that seem suitable.  */
-#define FRAME_POINTER_REQUIRED	0
+
+
+#define FRAME_POINTER_REQUIRED	(get_frame_size() > 1000)
 
 /* Definitions for register eliminations.
 
@@ -288,12 +319,10 @@ extern int target_flags;
 /* Register in which the static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM	13
 
-/* If the structure value address is not passed in a register, define
-   this as an expression returning an RTX for the place
-   where the address is passed.  If it returns 0, the address is
-   passed as an "invisible" first argument. */
+/* The register in which a struct value address is passed */
 
-#define STRUCT_VALUE 0
+#define STRUCT_VALUE_REGNUM 3
+
 
 
 /* Define the classes of registers for register constraints in the
@@ -372,7 +401,7 @@ extern int regno_reg_class[];
 
 /* The order in which register should be allocated.  */
 #define REG_ALLOC_ORDER  \
-  { 1,2,3,0,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21}
+  { 1,2,3,7,4,5,6,0,8,9,10,11,12,13,14,15,16,17,18,19,20,21}
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  R0_REGS
@@ -392,13 +421,13 @@ extern enum reg_class reg_class_from_letter[];
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 	I: arithmetic operand -127..128, as used in add, sub, etc
-	L: logical operand 0..255, as used in add, or, etc.
+	L: logical operand 0..255, as used in and, or, etc.
 	M: constant 1
 	K: shift operand 1,2,8 or 16 */
 
 
-#define CONST_OK_FOR_I(VALUE) ((VALUE)>= -128 && (VALUE) <= 127)
-#define CONST_OK_FOR_L(VALUE) ((VALUE)>= 0 && (VALUE) <= 255)
+#define CONST_OK_FOR_I(VALUE) (((int)(VALUE))>= -128 && ((int)(VALUE)) <= 127)
+#define CONST_OK_FOR_L(VALUE) (((int)(VALUE))>=    0 && ((int)(VALUE)) <= 255)
 #define CONST_OK_FOR_M(VALUE) ((VALUE)==1)
 #define CONST_OK_FOR_K(VALUE) ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
 
@@ -422,7 +451,7 @@ extern enum reg_class reg_class_from_letter[];
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS)  (CLASS)
+#define PREFERRED_RELOAD_CLASS(X, CLASS)  CLASS
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
@@ -605,19 +634,13 @@ extern int current_function_anonymous_args;
   current_function_anonymous_args = 1;
 
 
-/* Generate assembly output for the start of a function.  */
-
-#define FUNCTION_PROLOGUE(STREAM, SIZE)  \
-  output_prologue ((STREAM), (SIZE))
-
 /* Call the function profiler with a given profile label. */
 
-#define FUNCTION_PROFILER(STREAM,LABELNO)  		\
-{							\
-    fprintf(STREAM, "\tsts.l	pr,@-r15\n");		\
-    fprintf(STREAM, "\tjsr\tmcount\n");			\
-    fprintf(STREAM, "\tor	r0,r0\n");		\
-    fprintf(STREAM, "\t.long\tLP%d\n", (LABELNO));	\
+#define FUNCTION_PROFILER(STREAM,LABELNO)			\
+{								\
+	fprintf(STREAM, "	trapa	#5\n");			\
+ 	fprintf(STREAM, "	.align	2\n");			\
+	fprintf(STREAM, "	.long	LP%d\n", (LABELNO));	\
 }
 
 
@@ -628,16 +651,11 @@ extern int current_function_anonymous_args;
 
 #define EXIT_IGNORE_STACK 0
 
-/* Generate the assembly code for function exit. */
+/* Generate the assembly code for function exit 
+   Just dump out any accumulated constant table.*/
 
 #define FUNCTION_EPILOGUE(STREAM, SIZE)  \
-  output_epilogue ((STREAM), (SIZE))
-
-#define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN,N) \
-  (get_attr_in_delay_slot(INSN) == IN_DELAY_SLOT_YES)  
-
-#define DELAY_SLOTS_FOR_EPILOGUE \
-  delay_slots_for_epilogue();
+  dump_constants(0);  
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
@@ -703,27 +721,19 @@ extern int current_function_anonymous_args;
 /* Maximum number of registers that can appear in a valid memory 
    address. */
 
-#define MAX_REGS_PER_ADDRESS 1
+#define MAX_REGS_PER_ADDRESS 4
 
 /* Recognize any constant value that is a valid address.  */
 
 #define CONSTANT_ADDRESS_P(X) 	\
   (GET_CODE (X) == LABEL_REF)
-#if 0
-
-   || GET_CODE (X) == SYMBOL_REF	\
-   || GET_CODE (X) == CONST_INT 	\
-   || GET_CODE (X) == CONST)
-
-#endif
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
 
-   On the SH, allow any thing but a double */
+   On the SH, allow anything but a double */
 
-#define LEGITIMATE_CONSTANT_P(X) \
-  (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode)
+#define LEGITIMATE_CONSTANT_P(X)  (GET_CODE(X) != CONST_DOUBLE)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -733,24 +743,32 @@ extern int current_function_anonymous_args;
    The symbol REG_OK_STRICT causes the latter definition to be used.  */
 
 #ifndef REG_OK_STRICT
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  (REGNO(X) <= 16 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
+    	(REGNO (X) <= 16 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-    (REGNO(X)==0||REGNO(X)>=FIRST_PSEUDO_REGISTER)
-#define REG_OK_FOR_PRE_POST_P(X) (REGNO(X) <= 16)
+    	(REGNO (X) == 0 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+
+#define REG_OK_FOR_PRE_POST_P(X) \
+  	(REGNO (X) <= 16)
+
 #else
 
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X)  REGNO_OK_FOR_BASE_P (REGNO (X))
+#define REG_OK_FOR_BASE_P(X)	\
+	REGNO_OK_FOR_BASE_P (REGNO (X))
+
 /* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X)  REGNO_OK_FOR_INDEX_P (REGNO (X))
+#define REG_OK_FOR_INDEX_P(X) 	\
+  	REGNO_OK_FOR_INDEX_P (REGNO (X))
+
 #define REG_OK_FOR_PRE_POST_P(X)  \
-	 (REGNO (X) <= 16 || (unsigned) reg_renumber[REGNO (X)] <=16)
+	(REGNO (X) <= 16 || (unsigned) reg_renumber[REGNO (X)] <=16)
 #endif
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -759,6 +777,7 @@ extern int current_function_anonymous_args;
    that wants to use this address.
 
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS.  */
+
 #define BASE_REGISTER_RTX_P(X)  \
   (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))
 
@@ -777,14 +796,20 @@ extern int current_function_anonymous_args;
 	  --REG
 */
 
-/* A legitimate index for a QI or HI is 0, SI and above can be any 
-   number 0..64 */
+/* The SH allows a displacement in a QI or HI amode, but only when the 
+   other operand is R0. GCC doesn't handle this very well, so we forgo
+   all of that.
+
+   A legitimate index for a QI or HI is 0, SI and above can be any 
+   number 0..63 */
 
 #define GO_IF_LEGITIMATE_INDEX(MODE, REGNO, OP, LABEL)  \
   do {							\
     if (GET_CODE (OP) == CONST_INT) 			\
       {							\
-	if (GET_MODE_SIZE (MODE) < 4 && INTVAL(OP) == 0)\
+	if (0&&GET_MODE_SIZE (MODE) == 2 && ((unsigned)INTVAL(OP)) <=30)\
+	  goto LABEL;					\
+	if (0&&GET_MODE_SIZE (MODE) == 1 && ((unsigned)INTVAL(OP)) <=15)\
 	  goto LABEL;					\
 	if (GET_MODE_SIZE (MODE) >=4 			\
 	    && ((unsigned)INTVAL(OP)) < 64)		\
@@ -793,32 +818,37 @@ extern int current_function_anonymous_args;
   } while(0)
 
 
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL) \
-{									\
-  if (BASE_REGISTER_RTX_P (X))						\
-    goto LABEL;								\
-  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	\
-	   && GET_CODE (XEXP (X, 0)) == REG				\
-	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))			\
-    goto LABEL;								\
-  else if (GET_CODE (X) == PLUS)					\
-    {									\
-      rtx xop0 = XEXP(X,0);						\
-      rtx xop1 = XEXP(X,1);						\
-      if (BASE_REGISTER_RTX_P (xop0))					\
-	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL);	\
-      else if (BASE_REGISTER_RTX_P (xop1))				\
-	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	\
-    }									\
-  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)	\
-	   && GET_CODE (XEXP (X, 0)) == REG				\
-	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))			\
-    goto LABEL;								\
-}
-
-
-/* Try machine-dependent ways of modifying an illegitimate address
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)                  \
+{ 								  \
+  if (BASE_REGISTER_RTX_P (X))					  \
+    goto LABEL;							  \
+  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)  \
+	   && GET_CODE (XEXP (X, 0)) == REG			  \
+	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))		  \
+    goto LABEL;							  \
+  else if (GET_CODE (X) == PLUS || GET_CODE(X) == LO_SUM) 	  \
+    {								  \
+      rtx xop0 = XEXP(X,0);					  \
+      rtx xop1 = XEXP(X,1);					  \
+      if (GET_MODE_SIZE(MODE) >= 4 && BASE_REGISTER_RTX_P (xop0)) \
+	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL); \
+      if (GET_MODE_SIZE(MODE) >= 4 && BASE_REGISTER_RTX_P (xop1)) \
+	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL); \
+      if (GET_MODE_SIZE(MODE)<=4) {				  \
+	if(BASE_REGISTER_RTX_P(xop1) &&			 	  \
+	   INDEX_REGISTER_RTX_P(xop0)) goto LABEL;		  \
+	if(INDEX_REGISTER_RTX_P(xop1) &&			  \
+	   BASE_REGISTER_RTX_P(xop0)) goto LABEL;		  \
+      }							 	  \
+    }								  \
+  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)  \
+	   && GET_CODE (XEXP (X, 0)) == REG			  \
+	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))		  \
+    goto LABEL;                                                   \
+}								   
+								   
+								   
+/* Try machine-dependent ways of modifying an illegitimate address 
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.c.
 
@@ -926,17 +956,21 @@ extern int current_function_anonymous_args;
     if (CONST_OK_FOR_I (INTVAL(RTX)))           \
       return 1;					\
     else					\
-      return 5;					\
+      return 8;					\
   case CONST: 					\
   case LABEL_REF:				\
   case SYMBOL_REF:				\
-    return 6;					\
+    return 5;					\
   case CONST_DOUBLE:				\
       return 10;
 
 #define RTX_COSTS(X, CODE, OUTER_CODE)			\
   case MULT:						\
-    return COSTS_N_INSNS (TARGET_HAS_MULSI3 ? 2 : 20); 	\
+    return COSTS_N_INSNS (multcosts (X));		\
+  case ASHIFT:						\
+  case ASHIFTRT:					\
+  case LSHIFT:						\
+    return COSTS_N_INSNS (shiftcosts (X)) ;		\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
@@ -954,14 +988,18 @@ extern int current_function_anonymous_args;
 */
 
 #define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS)  \
-    ((DSTCLASS ==T_REGS) ? 10 : 2)
+	((DSTCLASS == T_REGS) ? 10 : 1)
 
 /* Assembler output control */
 
 /* The text to go at the start of the assembler file */
-#define ASM_FILE_START(STREAM) \
-  fprintf (STREAM,"! GCC for the Hitachi Super-H\n");  	\
-  output_file_directive (STREAM, main_input_filename);
+#define ASM_FILE_START(STREAM) 							\
+  output_file_start (STREAM, f_options, sizeof f_options / sizeof f_options[0], \
+		     W_options, sizeof W_options / sizeof W_options[0]); 	
+
+
+#define ASM_FILE_END(STREAM) \
+  dump_constants(0);  
 
 #define ASM_APP_ON  ""
 #define ASM_APP_OFF  ""
@@ -971,9 +1009,78 @@ extern int current_function_anonymous_args;
 
 
 /* Switch to the text or data segment.  */
-#define TEXT_SECTION_ASM_OP  ".text"
-#define DATA_SECTION_ASM_OP  ".data"
+#define TEXT_SECTION_ASM_OP  "\t.text"
+#define DATA_SECTION_ASM_OP  "\t.data"
+#define CTORS_SECTION_ASM_OP "\t.section\t.ctors\n"
+#define DTORS_SECTION_ASM_OP "\t.section\t.dtors\n"
 
+#define EXTRA_SECTIONS in_ctors, in_dtors
+#define EXTRA_SECTION_FUNCTIONS                              \
+void							     \
+ctors_section() 					     \
+{							     \
+  if (in_section != in_ctors)				     \
+    {							     \
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);  \
+      in_section = in_ctors;				     \
+    }							     \
+}							     \
+void							     \
+dtors_section() 					     \
+{							     \
+  if (in_section != in_dtors)				     \
+    {							     \
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);  \
+      in_section = in_dtors;				     \
+    }							     \
+}							      
+
+#define ASM_OUTPUT_SECTION(file, nam) \
+   do { fprintf (file, "\t.section\t%s\n", nam); } while(0) 
+
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
+   do { ctors_section();  fprintf(FILE,"\t.long\t_%s\n", NAME); } while (0)
+
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
+   do {  dtors_section();  fprintf(FILE,"\t.long\t_%s\n", NAME); } while (0)
+
+
+#undef DO_GLOBAL_CTORS_BODY                     
+#define DO_GLOBAL_CTORS_BODY			\
+{						\
+  typedef (*pfunc)();				\
+  extern pfunc __ctors[];			\
+  extern pfunc __ctors_end[];			\
+  pfunc *p;					\
+  for (p = __ctors; p < __ctors_end; p++)	\
+    {						\
+      (*p)();					\
+    }						\
+}						
+
+#undef DO_GLOBAL_DTORS_BODY			 
+#define DO_GLOBAL_DTORS_BODY                    \
+{						\
+  typedef (*pfunc)();				\
+  extern pfunc __dtors[];			\
+  extern pfunc __dtors_end[];			\
+  pfunc *p;					\
+  for (p = __dtors; p < __dtors_end; p++)	\
+    {						\
+      (*p)();					\
+    }						\
+}						 
+
+
+
+#define ASM_OUTPUT_REG_PUSH(file, v) \
+  fprintf (file, "\tmov.l	r%s,-@r15\n", v);
+
+#define ASM_OUTPUT_REG_POP(file, v) \
+  fprintf (file, "\tmov.l	@r15+,r%s\n", v);
+
+
+  
 /* The assembler's names for the registers.  RFP need not always be used as
    the Real framepointer; it can also be used as a normal general register.
    Note that the name `fp' is horribly misleading since `fp' is in fact only
@@ -1048,22 +1155,20 @@ extern int current_function_anonymous_args;
 
 /* This is how to output an assembler line defining a `double' */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-      {									\
-	long t[2];							\
-	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
-	fprintf (FILE, "\t.long\t0x%lx\n\t.long\t0x%lx\n",		\
-		  t[0], t[1]);						\
-      }									\
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
+do { char dstr[30];					\
+     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
+     fprintf (FILE, "\t.double %s\n", dstr);		\
+   } while (0)
+
 
 /* This is how to output an assembler line defining a `float' constant.  */
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)		\
+do { char dstr[30];					\
+     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
+     fprintf (FILE, "\t.float %s\n", dstr);		\
+   } while (0)
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  {									\
-	long t;								\
-	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
-	fprintf (FILE, "\t.long\t0x%lx\n", t);				\
-  }									\
 
 #define ASM_OUTPUT_INT(STREAM, EXP)  	\
   (fprintf (STREAM, "\t.long\t"),      	\
@@ -1123,7 +1228,7 @@ extern int current_function_anonymous_args;
 /* Only perform branch elimination (by making instructions conditional) if
    we're optimising.  Otherwise it's of no use anyway.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)  \
-    final_prescan_insn (INSN, OPVEC, NOPERANDS)
+     final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
@@ -1136,7 +1241,7 @@ extern int current_function_anonymous_args;
 #define PRINT_OPERAND_ADDRESS(STREAM,X)  print_operand_address (STREAM, X)
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  ((CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '!')
+  ((CHAR)=='.' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '!')
 
 
 /* Define the information needed to generate branch insns.  This is stored
@@ -1147,7 +1252,7 @@ extern struct rtx_def *sh_compare_op0;
 extern struct rtx_def *sh_compare_op1;
 extern struct rtx_def *prepare_scc_operands();
 
-
+extern enum attr_cpu sh_cpu;	/* target cpu */
 
 /* Declare functions defined in sh.c and used in templates. */
 
@@ -1159,3 +1264,8 @@ extern char *output_movepcrel();
 
 #define ADJUST_INSN_LENGTH(insn, length) \
   adjust_insn_length (insn, insn_lengths)
+
+
+
+
+
