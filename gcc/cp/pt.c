@@ -4887,7 +4887,7 @@ tsubst_friend_class (friend_tmpl, args)
 /* Returns zero if TYPE cannot be completed later due to circularity.
    Otherwise returns one.  */
 
-int
+static int
 can_complete_type_without_circularity (type)
      tree type;
 {

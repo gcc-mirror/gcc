@@ -1,3 +1,8 @@
+2002-07-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (can_complete_type_without_circularity): Add static to
+	function definition.
+
 2002-07-05  Jim Wilson  <wilson@redhat.com>
 
 	* decl.c (mark_named_label_lists): Add missing & in call to
