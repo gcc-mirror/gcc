@@ -41,6 +41,8 @@
 #include <bits/std_ios.h>	// For ios_base
 #ifdef _GLIBCPP_USE_WCHAR_T
 # include <bits/std_cwctype.h>	// For wctype_t
+# include <iconv.h>		// For codecvt using iconv, iconv_t
+# include <langinfo.h>		// For codecvt using nl_langinfo
 #endif 
 
 namespace std
@@ -78,11 +80,10 @@ namespace std
     _Use_facet_failure_handler(const locale&)
     { throw _Bad_use_facet(); }
 
-  // 22.2.1  The ctype category
+  // 22.2.1.1  Template class ctype
   // Include host-specific ctype enums for ctype_base.
   #include <bits/ctype_base.h>
 
-  // 22.2.1.1  Template class ctype
   // __ctype_abstract_base is the common base for ctype<_CharT>.  
   template<typename _CharT>
     class __ctype_abstract_base : public locale::facet, public ctype_base
@@ -207,6 +208,9 @@ namespace std
       virtual 
       ~ctype() { }
     };
+
+  template<typename _CharT>
+    locale::id ctype<_CharT>::id;
 
   // 22.2.1.3  ctype specializations
   template<>
@@ -395,6 +399,9 @@ namespace std
     ctype_byname<char>::ctype_byname(const char*, size_t refs);
 
 
+  // 22.2.1.5  Template class codecvt
+  #include <bits/codecvt.h>
+
   template<typename _CharT, typename _InIter>
     class _Numeric_get;  // forward
 
@@ -494,6 +501,13 @@ namespace std
       static void 
       _S_callback(ios_base::event __event, ios_base& __ios, int __ix) throw();
     };
+
+  template<typename _CharT>
+    int _Format_cache<_CharT>::_S_pword_ix;
+
+  template<typename _CharT>
+    const char _Format_cache<_CharT>::
+    _S_literals[] = "-+xX0123456789abcdef0123456789ABCDEF";
 
    template<> _Format_cache<char>::_Format_cache();
 #ifdef _GLIBCPP_USE_WCHAR_T
@@ -679,6 +693,9 @@ namespace std
 	     void*&) const;
     };
 
+  template<typename _CharT, typename _InIter>
+    locale::id num_get<_CharT, _InIter>::id;
+
   // Declare specialized extraction member function.
   template<>
     void
@@ -788,6 +805,9 @@ namespace std
       do_put(iter_type, ios_base&, char_type __fill, const void* __v) const;
     };
 
+  template <typename _CharT, typename _OutIter>
+    locale::id num_put<_CharT, _OutIter>::id;
+
   template<typename _CharT>
     class _Punct : public locale::facet
     {
@@ -841,7 +861,6 @@ namespace std
 	_M_thousands_sep = __t;
 	_M_grouping = __g;
       }
-
     };
 
   template<typename _CharT>
@@ -887,7 +906,6 @@ namespace std
 	_M_truename = __t;
 	_M_falsename = __f;
       }
-	
     };
 
   template<typename _CharT>
@@ -901,11 +919,14 @@ namespace std
 
       explicit 
       numpunct(size_t __refs = 0) : _Numpunct<_CharT>(__refs) { }
-    protected:
 
+    protected:
       virtual 
       ~numpunct() { }
     };
+
+  template<typename _CharT>
+    locale::id numpunct<_CharT>::id;
 
   template<> 
     numpunct<char>::numpunct(size_t __refs): _Numpunct<char>(__refs)
@@ -1000,6 +1021,9 @@ namespace std
       virtual 
       ~collate() { }
     };
+
+  template<typename _CharT>
+    locale::id collate<_CharT>::id;
 
   template<>
     class collate<char> : public _Collate<char>
@@ -1171,6 +1195,9 @@ namespace std
     };
 
   template<typename _CharT, typename _InIter>
+    locale::id time_get<_CharT, _InIter>::id;
+
+  template<typename _CharT, typename _InIter>
     class time_get_byname : public time_get<_CharT, _InIter>
     {
     public:
@@ -1218,6 +1245,9 @@ namespace std
 	     char /*__format*/, char /*__mod*/) const
       { return __s; }
     };
+
+  template<typename _CharT, typename _OutIter>
+    locale::id time_put<_CharT, _OutIter>::id;
 
   template<typename _CharT, typename _OutIter>
     class time_put_byname : public time_put<_CharT, _OutIter>
@@ -1276,6 +1306,9 @@ namespace std
       { return __s; }
     };
 
+  template<typename _CharT, typename _InIter>
+    locale::id money_get<_CharT, _InIter>::id;
+
   template<typename _CharT, typename _OutIter>
     class money_put : public locale::facet
     {
@@ -1313,6 +1346,9 @@ namespace std
 	     const string_type& /*__digits*/) const
       { return __s; }
     };
+
+  template<typename _CharT, typename _OutIter>
+    locale::id money_put<_CharT, _OutIter>::id;
 
   struct money_base
   {
@@ -1405,6 +1441,12 @@ namespace std
     };
 
   template<typename _CharT, bool _Intl>
+    locale::id moneypunct<_CharT, _Intl>::id;
+
+  template<typename _CharT, bool _Intl>
+    const bool moneypunct<_CharT, _Intl>::intl;
+
+  template<typename _CharT, bool _Intl>
     class moneypunct_byname : public moneypunct<_CharT,_Intl>
     {
     public:
@@ -1419,6 +1461,9 @@ namespace std
       virtual 
       ~moneypunct_byname() { }
     };
+
+  template<typename _CharT, bool _Intl>
+    const bool moneypunct_byname<_CharT, _Intl>::intl;
 
   template<>
     moneypunct_byname<char, false>::
@@ -1494,6 +1539,9 @@ namespace std
       virtual 
       ~messages() { }
     };
+
+  template<typename _CharT>
+    locale::id messages<_CharT>::id;
 
   template<typename _CharT>
     class messages_byname : public messages<_CharT>
@@ -1584,7 +1632,6 @@ namespace std
     inline _CharT 
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
-
 } // namespace std
 
 #endif	/* _CPP_BITS_LOCFACETS_H */
@@ -1592,4 +1639,3 @@ namespace std
 // Local Variables:
 // mode:c++
 // End:
-

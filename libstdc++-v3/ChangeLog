@@ -1,3 +1,25 @@
+2000-12-22  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
+
+	Attempt to make locale visible in gdb.
+	* include/bits/std_locale.h: Remove codecvt.h include.
+	* include/bits/locale_facets.h: Add here, after ctype decls.
+	* include/bits/codecvt.h: Remove std namespace, as assumed to be
+	in std now.
+
+	* include/bits/locale_facets.h: Consistently move generic static
+	member definitions directly after generic facet declarations.
+	* include/bits/locale_facets.tcc: From here.
+
+	* src/locale.cc: Organize locale::id static definitions for
+	required facets.
+	* src/codecvt.cc (codecvt<char...>): Remove locale::id definition.
+	(codecvt<wchar_t...>): Same.
+	* src/localename: And here.
+	
+	* include/bits/localefwd.h (_Count_ones): Change _S_count to _M_count.
+	Same for _M_halfcount.
+	(std): make locale::_Impl protected. CHANGE BACK
+
 2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* mknumeric_limits: Output to temporary files, and rename them at
