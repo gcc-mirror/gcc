@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+/* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 
@@ -16,7 +16,7 @@
 :: : : : : :^:
 : : : .. . 0
 
-It relies on the fact that even preprocessing C we bother to separate
+It relies on the fact that even when preprocessing C we bother to separate
 the colons of C++'s :: operator.  If we confine this behaviour to C++
 in future, this test needs to change.  */
 
