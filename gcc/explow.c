@@ -456,7 +456,8 @@ memory_address (enum machine_mode mode, rtx x)
 	x = break_out_memory_refs (x);
 
       /* At this point, any valid address is accepted.  */
-      GO_IF_LEGITIMATE_ADDRESS (mode, x, win);
+      if (memory_address_p (mode, x))
+	goto win;
 
       /* If it was valid before but breaking out memory refs invalidated it,
 	 use it the old way.  */
