@@ -2855,9 +2855,9 @@ scan_prog_file (prog_name, which_pass)
 			{
 			case 1:
 			  if (! is_shared) add_to_list (&constructors, name);
+#ifdef COLLECT_EXPORT_LIST
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
-#ifdef COLLECT_EXPORT_LIST
 			  /* If this symbol was undefined and we are building
 			     an import list, we should add a symbol to this
 			     list.  */
@@ -2870,9 +2870,9 @@ scan_prog_file (prog_name, which_pass)
 
 			case 2:
 			  if (! is_shared) add_to_list (&destructors, name);
+#ifdef COLLECT_EXPORT_LIST
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
-#ifdef COLLECT_EXPORT_LIST
 			  /* If this symbol was undefined and we are building
 			     an import list, we should add a symbol to this
 			     list.  */
