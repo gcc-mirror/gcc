@@ -126,7 +126,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
-do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
+do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
      ASM_OUTPUT_INTERNAL_LABEL ((FILE), PREFIX, NUM);			\
    } while (0)
 
