@@ -11840,9 +11840,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		     {
 		       tree s = TREE_VALUE (specifier);
 
-		       if (TREE_CODE (s) == IDENTIFIER_NODE
-			   && IDENTIFIER_GLOBAL_VALUE (s))
-			 type = IDENTIFIER_GLOBAL_VALUE (s);
+		       if (TREE_CODE (s) == IDENTIFIER_NODE)
+                         get_global_value_if_present (s, &type);
 		       if (TREE_CODE (s) == TYPE_DECL)
 			 s = TREE_TYPE (s);
 		       if (TYPE_P (s))

@@ -4192,12 +4192,9 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 static tree
 call_builtin_trap (void)
 {
-  tree fn = get_identifier ("__builtin_trap");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
-    abort ();
+  tree fn = IDENTIFIER_GLOBAL_VALUE (get_identifier ("__builtin_trap"));
 
+  my_friendly_assert (fn != NULL, 20030927);
   fn = build_call (fn, NULL_TREE);
   fn = build (COMPOUND_EXPR, integer_type_node, fn, integer_zero_node);
   return fn;
