@@ -1,3 +1,10 @@
+2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.c (expand_prologue): Use push/pop to 
+	allocate 4-bytes of locals on 68HC11.
+	(expand_epilogue): Likewise.
+	(m68hc11_memory_move_cost): Increase cost of HI/QI soft registers.
+
 2003-01-15  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (ASM_SPEC): Handle -m68hcs12; Pass -mshort
