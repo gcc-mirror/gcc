@@ -1,3 +1,19 @@
+2003-02-25  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9825
+	* src/fstream.cc
+	(basic_filebuf<char/wchar_t>::_M_underflow_common): When
+	__bump is true (uflow), always increment the read pointer
+	(_M_in_cur) before returning successfully.
+	* testsuite/27_io/filebuf_virtuals.cc (test11): Add.
+
+2003-02-25  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_sstream.h (str()): the size of the
+	current string may be different from the initial one
+	whenever _M_out_end > _M_out_beg.
+	* testsuite/27_io/stringbuf_members.cc (test07): Add.
+
 2003-02-21  Phil Edwards  <pme@gcc.gnu.org>
 
 	* config/cpu/generic/atomicity.h (_Atomic_add_mutex):  Fix declaration.

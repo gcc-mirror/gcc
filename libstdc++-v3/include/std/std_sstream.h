@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -140,7 +140,7 @@ namespace std
 	    // _M_string, and may not be the correct size of the
 	    // current stringbuf internal buffer.
 	    __size_type __len = _M_string.size();
-	    if (_M_out_cur > _M_out_beg)
+	    if (_M_out_end > _M_out_beg)
 	      __len = max(__size_type(_M_out_end - _M_out_beg), __len);
 	    return __string_type(_M_out_beg, _M_out_beg + __len);
 	  }

@@ -71,7 +71,8 @@ const char carray_02[] = "memphis, new orleans, and savanah";
 const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 const char name_03[] = "filebuf_virtuals-3.txt"; // empty file, need to create
-
+const char name_04[] = "filebuf_virtuals-4.txt"; // empty file, need to create
+const char name_05[] = "filebuf_virtuals-5.txt"; // empty file, need to create
 
 class derived_filebuf: public std::filebuf
 {
@@ -607,14 +608,14 @@ void test10()
   {
     ofstream out;
     out.imbue(loc);
-    out.open("filebuf_virtuals-4.txt");
+    out.open(name_04);
     copy(str.begin(), str.end(),
 	 ostreambuf_iterator<char>(out));
   }
 
   {
     ifstream in;
-    in.open("filebuf_virtuals-4.txt");
+    in.open(name_04);
     copy(istreambuf_iterator<char>(in),
 	 istreambuf_iterator<char>(),
 	 back_inserter(tmp));
@@ -622,6 +623,28 @@ void test10()
 
   VERIFY( tmp.size() == str.size() );
   VERIFY( tmp == str );
+}
+
+// libstdc++/9825
+void test11()
+{
+  using namespace std;
+  bool test = true;
+
+  filebuf fbuf;
+
+  fbuf.open(name_05, ios_base::in|ios_base::out|ios_base::trunc);
+  fbuf.sputn("crazy bees!", 11);
+  fbuf.pubseekoff(0, ios_base::beg);
+  fbuf.sbumpc();
+  fbuf.sputbackc('x');
+  filebuf::int_type c = fbuf.sbumpc();
+  VERIFY( c == 'x' );
+  c = fbuf.sbumpc();
+  VERIFY( c == 'r' );
+  c = fbuf.sbumpc();
+  VERIFY( c == 'a' );
+  fbuf.close();  
 }
 
 main() 
@@ -638,5 +661,6 @@ main()
   test08();
   test09();
   test10();
+  test11();
   return 0;
 }
