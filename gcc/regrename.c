@@ -75,24 +75,28 @@ ext_basic_blocks;
 #define DESTINATION 1
 #define SOURCE 2
 
-static void build_def_use PARAMS ((int, ext_basic_blocks *, HARD_REG_SET *,
-				   def_uses *, sbitmap *));
-static int replace_reg_in_block
-  PARAMS ((def_uses *, varray_type *, int, rtx, int));
-static int consider_def PARAMS ((rtx, int, def_uses *, int));
-static int consider_available PARAMS ((rtx, int, HARD_REG_SET *, int, def_uses *, int));
-static rtx rr_replace_reg PARAMS ((rtx, rtx, rtx, int, rtx, int *));
-static int consider_use PARAMS ((rtx, int, int, int));
-static int condmove_p PARAMS ((rtx));
-static void dump_def_use_chain PARAMS ((HARD_REG_SET *, def_uses *,
-					varray_type *));
-static void dump_ext_bb_info PARAMS ((int, ext_basic_blocks *));
-static void find_ext_basic_blocks PARAMS ((ext_basic_blocks *));
-static void find_one_ext_basic_block PARAMS ((int, basic_block, sbitmap *,
-					      ext_basic_blocks *));
-static enum reg_class get_reg_class PARAMS ((rtx, rtx, int, enum reg_class));
-static rtx regno_first_use_in PARAMS ((int, rtx));
-
+static void build_def_use		PARAMS ((int, ext_basic_blocks *,
+						 HARD_REG_SET *, def_uses *,
+						 sbitmap *));
+static int replace_reg_in_block		PARAMS ((def_uses *, varray_type *,
+						 int, rtx, unsigned int));
+static int consider_def			PARAMS ((rtx, int, def_uses *, int));
+static int consider_available		PARAMS ((rtx, int, HARD_REG_SET *,
+						 int, def_uses *, int));
+static rtx rr_replace_reg		PARAMS ((rtx, rtx, rtx, int, rtx,
+						 int *));
+static int consider_use			PARAMS ((rtx, int, int, int));
+static int condmove_p			PARAMS ((rtx));
+static void dump_def_use_chain		PARAMS ((HARD_REG_SET *, def_uses *,
+						 varray_type *));
+static void dump_ext_bb_info		PARAMS ((int, ext_basic_blocks *));
+static void find_ext_basic_blocks	PARAMS ((ext_basic_blocks *));
+static void find_one_ext_basic_block	PARAMS ((int, basic_block, sbitmap *,
+						 ext_basic_blocks *));
+static enum reg_class get_reg_class	PARAMS ((rtx, rtx, int,
+						 enum reg_class));
+static rtx regno_first_use_in		PARAMS ((unsigned int, rtx));
+
 void
 regrename_optimize ()
 {
@@ -100,7 +104,6 @@ regrename_optimize ()
   rtx insn;
   def_uses du;
   ext_basic_blocks ebb;
-
 
   /* Registers used in a given class */
   HARD_REG_SET class_regs;
@@ -133,11 +136,11 @@ regrename_optimize ()
   VARRAY_RTX_INIT (uid_ruid, UID_RUID_HIGH_BOUND + 1, "uid_ruid");
   VARRAY_LONG_INIT (uid_rbid, UID_RUID_HIGH_BOUND + 1, "uid_rbid");
 
-  ebb.basic_block =
-    sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  ebb.basic_block
+    = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
   sbitmap_vector_zero (ebb.basic_block, n_basic_blocks);
-  ebb.exit =
-    sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  ebb.exit
+    = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
   sbitmap_vector_zero (ebb.exit, n_basic_blocks);
 
   find_ext_basic_blocks (&ebb);
@@ -149,26 +152,27 @@ regrename_optimize ()
     if (TEST_BIT (ebb.basic_block[b], b))
       {
 	for (eb = du.high_bound = 0; eb < n_basic_blocks; eb++)
-	  {
-	    if (TEST_BIT (ebb.basic_block[b], eb))
-	      {
-		basic_block bb = BASIC_BLOCK (eb);
-		/* Calculate high bound for uid_ruid and allocate if necessary */
-		for (insn = bb->head;
-		     insn != NEXT_INSN (bb->end);
-		     du.high_bound++, insn = NEXT_INSN (insn))
-		  {
-		    int uid_ruid_high_bound = VARRAY_SIZE (uid_ruid);
-		    if (du.high_bound + 4 >= uid_ruid_high_bound)
-		      {
-			VARRAY_GROW (uid_ruid, uid_ruid_high_bound * 2);
-			VARRAY_GROW (uid_rbid, uid_ruid_high_bound * 2);
-		      }
-		    VARRAY_RTX (uid_ruid, du.high_bound) = insn;
-		    VARRAY_LONG (uid_rbid, du.high_bound) = eb;
-		  }
-	      }
-	  }
+	  if (TEST_BIT (ebb.basic_block[b], eb))
+	    {
+	      basic_block bb = BASIC_BLOCK (eb);
+
+	      /* Calculate high bound for uid_ruid and allocate if necessary */
+	      for (insn = bb->head;
+		   insn != NEXT_INSN (bb->end);
+		   du.high_bound++, insn = NEXT_INSN (insn))
+		{
+		  int uid_ruid_high_bound = VARRAY_SIZE (uid_ruid);
+
+		  if (du.high_bound + 4 >= uid_ruid_high_bound)
+		    {
+		      VARRAY_GROW (uid_ruid, uid_ruid_high_bound * 2);
+		      VARRAY_GROW (uid_rbid, uid_ruid_high_bound * 2);
+		    }
+
+		  VARRAY_RTX (uid_ruid, du.high_bound) = insn;
+		  VARRAY_LONG (uid_rbid, du.high_bound) = eb;
+		}
+	    }
 
 	CLEAR_HARD_REG_SET (null_bitmap);
 	CLEAR_HARD_REG_SET (class_regs);
@@ -177,27 +181,28 @@ regrename_optimize ()
 	CLEAR_HARD_REG_SET (tmp_bitmap);
 	CLEAR_HARD_REG_SET (renamed_regs);
 
-	du.defs =
-	  sbitmap_vector_alloc (FIRST_PSEUDO_REGISTER, du.high_bound + 1);
+	du.defs
+	  = sbitmap_vector_alloc (FIRST_PSEUDO_REGISTER, du.high_bound + 1);
 	sbitmap_vector_zero (du.defs, FIRST_PSEUDO_REGISTER);
-	du.uses =
-	  sbitmap_vector_alloc (FIRST_PSEUDO_REGISTER, du.high_bound + 1);
+	du.uses
+	  = sbitmap_vector_alloc (FIRST_PSEUDO_REGISTER, du.high_bound + 1);
 	sbitmap_vector_zero (du.uses, FIRST_PSEUDO_REGISTER);
 	du.require_call_save_reg = sbitmap_alloc (du.high_bound + 1);
 	sbitmap_zero (du.require_call_save_reg);
 	defs_live_exit = sbitmap_alloc (du.high_bound + 1);
 	sbitmap_zero (defs_live_exit);
 
-	du.def_class = xrealloc
-	  (du.def_class,
-	   sizeof (enum reg_class) * FIRST_PSEUDO_REGISTER * du.high_bound);
+	du.def_class
+	  = xrealloc (du.def_class,
+		      (sizeof (enum reg_class) * FIRST_PSEUDO_REGISTER
+		       * du.high_bound));
 
-	du.use_class = xrealloc
-	  (du.use_class,
-	   sizeof (enum reg_class) * FIRST_PSEUDO_REGISTER * du.high_bound);
+	du.use_class
+	  = xrealloc (du.use_class,
+		      (sizeof (enum reg_class) * FIRST_PSEUDO_REGISTER
+		       * du.high_bound));
 
-	build_def_use (b, &ebb, &regs_used, &du,
-		       &defs_live_exit);
+	build_def_use (b, &ebb, &regs_used, &du, &defs_live_exit);
 
 	if (rtl_dump_file)
 	  {
@@ -211,17 +216,18 @@ regrename_optimize ()
 	   as it just treats them as a big basic block. */
 
 	COPY_HARD_REG_SET (tmp_bitmap, regs_used);
-	REG_SET_TO_HARD_REG_SET (global_live_at_start, BASIC_BLOCK (b)->global_live_at_start);
+	REG_SET_TO_HARD_REG_SET (global_live_at_start,
+				 BASIC_BLOCK (b)->global_live_at_start);
 	IOR_HARD_REG_SET (tmp_bitmap, global_live_at_start);
 	for (eb = 0; eb < n_basic_blocks; eb++)
-	  {
-	    if (TEST_BIT (ebb.basic_block[b], eb))
-	      {
-		basic_block bb = BASIC_BLOCK (eb);
-		REG_SET_TO_HARD_REG_SET (global_live_at_end, bb->global_live_at_end);
-		IOR_HARD_REG_SET (tmp_bitmap, global_live_at_end);
-	      }
-	  }
+	  if (TEST_BIT (ebb.basic_block[b], eb))
+	    {
+	      basic_block bb = BASIC_BLOCK (eb);
+
+	      REG_SET_TO_HARD_REG_SET (global_live_at_end,
+				       bb->global_live_at_end);
+	      IOR_HARD_REG_SET (tmp_bitmap, global_live_at_end);
+	    }
 
 	def_idx = xcalloc (du.high_bound, sizeof (int));
 
@@ -239,56 +245,53 @@ regrename_optimize ()
 	    /* Find def_idx[N] where hbound of N is the number of 
 	       definitions of this register in this block. and def_idx
 	       is the ordinal position of this insn in the block. */
-	    for (i = 0, def_idx[def_cnt] = 0;
-		 i < du.high_bound;
-		 i++)
-	      {
-		if (TEST_BIT (du.defs[r], i)
-		    && consider_def (VARRAY_RTX (uid_ruid, i), r,
-				     &du, i))
-		  {
-		    int first_use = 1;
-		    def_idx[def_cnt] = i;
+	    for (i = 0, def_idx[def_cnt] = 0; i < du.high_bound; i++)
+	      if (TEST_BIT (du.defs[r], i)
+		  && consider_def (VARRAY_RTX (uid_ruid, i), r, &du, i))
+		{
+		  int first_use = 1;
+		  def_idx[def_cnt] = i;
 
-		    /* Only consider definitions that have a use. */
-		    for (use_idx = i + 1; use_idx < du.high_bound;
-			 use_idx++)
-		      {
-			if (TEST_BIT (du.uses[r], use_idx))
-			  {
-			    if (consider_use (VARRAY_RTX (uid_ruid, use_idx), r,
-					      VARRAY_LONG (uid_rbid, i),
-					   VARRAY_LONG (uid_rbid, use_idx)))
-			      {
-				if (first_use)
-				  {
-				    first_use = 0;
-				    def_cnt++;
-				  }
-			      }
-			    else
-			      {
-				/* Don't consider def if we don't want this use */
-				if (!first_use)
-				  def_cnt--;
-				break;
-			      }
-			  }
-			if (TEST_BIT (du.defs[r], use_idx))
-			  break;
-		      }
-		    /* Scan until the next def to avoid renaming
-		       parameter registers. */
-		    /* ??? consider using CALL_INSN_FUNCTION_USAGE */
-		    for (call_idx = i; call_idx <= use_idx; call_idx++)
-		      if (VARRAY_RTX (uid_ruid, call_idx)
-			  && GET_CODE (VARRAY_RTX (uid_ruid, call_idx))
-			  == CALL_INSN)
+		  /* Only consider definitions that have a use. */
+		  for (use_idx = i + 1; use_idx < du.high_bound; use_idx++)
+		    {
+		      if (TEST_BIT (du.uses[r], use_idx))
 			{
-			  SET_BIT (du.require_call_save_reg, i);
+			  if (consider_use (VARRAY_RTX (uid_ruid, use_idx), r,
+					    VARRAY_LONG (uid_rbid, i),
+					    VARRAY_LONG (uid_rbid, use_idx)))
+			    {
+			      if (first_use)
+				{
+				  first_use = 0;
+				  def_cnt++;
+				}
+			    }
+			  else
+			    {
+			      /* Don't consider def if we don't want this
+				 use.  */
+			      if (!first_use)
+				def_cnt--;
+
+			      break;
+			    }
 			}
-		  }
-	      }
+
+		      if (TEST_BIT (du.defs[r], use_idx))
+			break;
+		    }
+
+		  /* Scan until the next def to avoid renaming
+		     parameter registers. */
+		  /* ??? consider using CALL_INSN_FUNCTION_USAGE */
+		  for (call_idx = i; call_idx <= use_idx; call_idx++)
+		    if (VARRAY_RTX (uid_ruid, call_idx)
+			&& (GET_CODE (VARRAY_RTX (uid_ruid, call_idx))
+			    == CALL_INSN))
+		      SET_BIT (du.require_call_save_reg, i);
+		}
+
 	    if (def_cnt < 2)
 	      continue;
 
@@ -303,8 +306,9 @@ regrename_optimize ()
 			(GET_CODE (VARRAY_RTX (uid_ruid,
 					       def_idx[def]))) == 'i'))
 		  {
-		    rtx reg_use = regno_first_use_in
-		    (r, PATTERN (VARRAY_RTX (uid_ruid, def_idx[def])));
+		    rtx reg_use
+		      = regno_first_use_in
+			(r, PATTERN (VARRAY_RTX (uid_ruid, def_idx[def])));
 
 		    if (!reg_use)
 		      break;
@@ -314,7 +318,7 @@ regrename_optimize ()
 		      break;
 #endif
 		    rc = (int) DU_REG_CLASS (du.def_class,
-				      r, du.high_bound, def_idx[def]);
+					     r, du.high_bound, def_idx[def]);
 		    COPY_HARD_REG_SET (avail_regs,
 				   reg_class_contents[(enum reg_class) rc]);
 		    AND_COMPL_HARD_REG_SET (avail_regs, tmp_bitmap);
@@ -323,25 +327,26 @@ regrename_optimize ()
 		    /* No available registers in this class */
 		    GO_IF_HARD_REG_EQUAL (avail_regs, null_bitmap,
 					  no_available_regs);
+
 		    for (ar_idx = 0; ar_idx < FIRST_PSEUDO_REGISTER
 			 && TEST_HARD_REG_BIT (avail_regs, ar_idx); ar_idx++)
 		      ;
+
 		    if (ar_idx == FIRST_PSEUDO_REGISTER)
 		      goto no_available_regs;
 
 		    /* Only try register renaming if there is an available
 		       register in this class. */
-		    for (ar_idx = 0;
-			 ar_idx < FIRST_PSEUDO_REGISTER;
-			 ar_idx++)
+		    for (ar_idx = 0; ar_idx < FIRST_PSEUDO_REGISTER; ar_idx++)
 		      {
 #ifdef REG_ALLOC_ORDER
 			avail_reg = reg_alloc_order[ar_idx];
 #else
 			avail_reg = ar_idx;
 #endif
-			if (consider_available (reg_use, avail_reg, &avail_regs,
-						rc, &du, def_idx[def]))
+			if (consider_available (reg_use, avail_reg,
+						&avail_regs, rc, &du,
+						def_idx[def]))
 			  break;
 		      }
 
@@ -360,8 +365,11 @@ regrename_optimize ()
 			    if (TEST_BIT (du.require_call_save_reg,
 					  def_idx[def]))
 			      fprintf (rtl_dump_file, " crosses a call");
-			    fprintf (rtl_dump_file, ". No available registers\n");
+
+			    fprintf (rtl_dump_file,
+				     ". No available registers\n");
 			  }
+
 			goto try_next_def;
 		      }
 
@@ -371,35 +379,51 @@ regrename_optimize ()
 		    /* Replace in destination.  Replace in source for
 		       remainder of block until new register is defined
 		       again */
-		    replace_ok = replace_reg_in_block
-		      (&du, &uid_ruid, def_idx[def], reg_use, avail_reg);
+		    replace_ok
+		      = replace_reg_in_block (&du, &uid_ruid, def_idx[def],
+					      reg_use, avail_reg);
+
 		    /* Replace failed, so restore previous register */
 		    if (!replace_ok)
 		      {
 			replace_reg_in_block (&du, &uid_ruid, def_idx[def],
-					    gen_rtx_REG (GET_MODE (reg_use),
-							 avail_reg),
+					      gen_rtx_REG (GET_MODE (reg_use),
+							   avail_reg),
 					      REGNO (reg_use));
+
 			if (rtl_dump_file)
-			  fprintf (rtl_dump_file,
-				   "Register %s in class %s Renaming as %s would not satisfy constraints\n",
-				   reg_names[r], reg_class_names[rc],
-				   reg_names[avail_reg]);
+			  {
+			    fprintf (rtl_dump_file,
+				     "Register %s in class %s Renaming as %s ",
+				     reg_names[r], reg_class_names[rc],
+				     reg_names[avail_reg]);
+			    fprintf (rtl_dump_file,
+				     "would not satisfy constraints\n");
+			  }
 		      }
+
 		    else if (rtl_dump_file)
-		      fprintf (rtl_dump_file,
-		       "Register %s in class %s Renamed as %s at insn %d\n",
-			       reg_names[r], reg_class_names[rc],
-			       reg_names[avail_reg],
-			    INSN_UID (VARRAY_RTX (uid_ruid, def_idx[def])));
+		      {
+			fprintf (rtl_dump_file,
+				 "Register %s in class %s Renamed as %s ",
+				 reg_names[r], reg_class_names[rc],
+				 reg_names[avail_reg]);
+			fprintf (rtl_dump_file, "at insn %d\n",
+				 INSN_UID (VARRAY_RTX (uid_ruid,
+						       def_idx[def])));
+		      }
 		  }
+
 	      try_next_def:
 		continue;
 	      }
+
 	    sbitmap_zero (du.defs[r]);
+
 	  no_available_regs:
 	    continue;
 	  }
+
 	free (def_idx);
 	sbitmap_vector_free (du.defs);
 	sbitmap_vector_free (du.uses);
@@ -429,7 +453,8 @@ build_def_use (b, ebb, regs_used, du, defs_live_exit)
      sbitmap *defs_live_exit;
 {
   rtx insn;
-  int eb, inum, r;
+  int eb, inum;
+  unsigned int r;
 
   inum = 0;
   for (eb = 0; eb < n_basic_blocks; eb++)
@@ -452,9 +477,7 @@ build_def_use (b, ebb, regs_used, du, defs_live_exit)
 	  CLEAR_RESOURCE (&insn_sets);
 	  mark_set_resources (insn, &insn_sets, 0, MARK_DEST);
 
-	  for (r = 0;
-	       r < FIRST_PSEUDO_REGISTER;
-	       r++)
+	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	    {
 	      if (!TEST_HARD_REG_BIT (insn_sets.regs, r))
 		continue;
@@ -462,31 +485,32 @@ build_def_use (b, ebb, regs_used, du, defs_live_exit)
 	      SET_HARD_REG_BIT (*regs_used, r);
 	      if (REGNO_REG_SET_P (bb->global_live_at_end, r))
 		SET_BIT (*defs_live_exit, inum);
+
 	      if (!insn_sets.memory)
 		SET_BIT (du->defs[r], inum);
-	      DU_REG_CLASS (du->def_class, r, du->high_bound, inum) = get_reg_class
-		(insn, regno_first_use_in (r, PATTERN (insn)),
-		 DESTINATION, NO_REGS);
+
+	      DU_REG_CLASS (du->def_class, r, du->high_bound, inum)
+		= get_reg_class (insn, regno_first_use_in (r, PATTERN (insn)),
+				 DESTINATION, NO_REGS);
 	    }
 
 	  CLEAR_RESOURCE (&insn_res);
 	  mark_referenced_resources (insn, &insn_res, 0);
 
-	  for (r = 0;
-	       r < FIRST_PSEUDO_REGISTER;
-	       r++)
+	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	    {
 	      if (!TEST_HARD_REG_BIT (insn_res.regs, r))
 		continue;
 
 	      SET_HARD_REG_BIT (*regs_used, r);
 	      SET_BIT (du->uses[r], inum);
-	      DU_REG_CLASS (du->use_class, r, du->high_bound, inum) = get_reg_class
-		(insn, regno_use_in (r, PATTERN (insn)),
-		 SOURCE, NO_REGS);
+	      DU_REG_CLASS (du->use_class, r, du->high_bound, inum)
+		= get_reg_class (insn, regno_use_in (r, PATTERN (insn)),
+				 SOURCE, NO_REGS);
 	    }
 	}
     }
+
   free_resource_info ();
 }
 
@@ -499,23 +523,24 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
      varray_type *uid_ruid;
      int def;
      rtx reg_def;
-     int avail_reg;
+     unsigned int avail_reg;
 {
   int du_idx, status = 1;
-  int r = REGNO (reg_def);
+  unsigned int r = REGNO (reg_def);
   rtx death_note;
   rtx new_reg = gen_rtx_REG (GET_MODE (reg_def), avail_reg);
 
+  rr_replace_reg (PATTERN (VARRAY_RTX (*uid_ruid, def)), reg_def, new_reg,
+		  DESTINATION, VARRAY_RTX (*uid_ruid, def), &status);
 
-  rr_replace_reg (PATTERN (VARRAY_RTX (*uid_ruid, def)), reg_def,
-		  new_reg, DESTINATION, VARRAY_RTX (*uid_ruid, def),
-		  &status);
   if (!status)
     return status;
 
   death_note = find_reg_note (VARRAY_RTX (*uid_ruid, def), REG_DEAD, reg_def);
   if (!death_note)
-    death_note = find_reg_note (VARRAY_RTX (*uid_ruid, def), REG_UNUSED, reg_def);
+    death_note = find_reg_note (VARRAY_RTX (*uid_ruid, def), REG_UNUSED,
+				reg_def);
+
   if (death_note)
     rr_replace_reg (death_note, reg_def, new_reg, 0,
 		    VARRAY_RTX (*uid_ruid, def), &status);
@@ -524,10 +549,11 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
     {
       rtx reg_use;
       rtx new_reg;
+
       if (GET_RTX_CLASS (GET_CODE (VARRAY_RTX (*uid_ruid, du_idx))) != 'i')
 	continue;
-      reg_use = regno_use_in (r, PATTERN (VARRAY_RTX (*uid_ruid, du_idx)));
 
+      reg_use = regno_use_in (r, PATTERN (VARRAY_RTX (*uid_ruid, du_idx)));
       if (reg_use && TEST_BIT (du->uses[r], du_idx))
 	{
 	  new_reg = gen_rtx_REG (GET_MODE (reg_use), avail_reg);
@@ -542,14 +568,17 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
 	  if (death_note)
 	    rr_replace_reg (death_note, reg_use, new_reg, 0,
 			    VARRAY_RTX (*uid_ruid, def), &status);
+
 	  SET_BIT (du->uses[avail_reg], du_idx);
 	  RESET_BIT (du->uses[r], du_idx);
 	  if (!status)
 	    return status;
 	}
+
       if (TEST_BIT (du->defs[r], du_idx))
 	break;
     }
+
   return status;
 }
 
@@ -584,6 +613,7 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
 	  else
 	    return gen_rtx_REG (GET_MODE (x), REGNO (reg_use));
 	}
+
       return x;
 
     case SET:
@@ -592,15 +622,15 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
 				       replace_type, insn, status);
       else if (replace_type == SOURCE)
 	{
-	  int dest_subregno;
+	  unsigned int dest_subregno;
+	  int had_subreg = GET_CODE (SET_DEST (x)) == SUBREG;
 
-	  if (GET_CODE (SET_DEST (x)) == SUBREG)
+	  if (had_subreg)
 	    dest_subregno = REGNO (XEXP (SET_DEST (x), 0));
-	  else
-	    dest_subregno = 0;
 
 	  SET_SRC (x) = rr_replace_reg (SET_SRC (x), reg_use, reg_sub,
 					replace_type, insn, status);
+
 	  /* If the replacement register is not part of the source
 	     then it may be part of a source mem operand. */
 	  if (GET_CODE (SET_DEST (x)) == MEM
@@ -609,9 +639,8 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
 	      || GET_CODE (SET_DEST (x)) == STRICT_LOW_PART)
 	    SET_DEST (x) = rr_replace_reg (SET_DEST (x), reg_use, reg_sub,
 					   replace_type, insn, status);
-	  /* shared rtl sanity check */
-	  if (dest_subregno
-	      && dest_subregno != REGNO (XEXP (SET_DEST (x), 0)))
+	  /* Shared rtl sanity check. */
+	  if (had_subreg && dest_subregno != REGNO (XEXP (SET_DEST (x), 0)))
 	    {
 	      *status = 0;
 	      return x;
@@ -622,16 +651,18 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
       if (n >= 0)
 	{
 	  int id;
+
 	  extract_insn (insn);
 
 	  /* Any MATCH_DUP's which are REGs must still match */
 	  for (id = insn_data[n].n_dups - 1; id >= 0; id--)
 	    {
 	      int opno = recog_data.dup_num[id];
+
 	      if (GET_CODE (*recog_data.dup_loc[id]) == REG
 		  && GET_CODE (*recog_data.operand_loc[opno]) == REG
-		  && (REGNO (*recog_data.dup_loc[id]) !=
-		      REGNO (*recog_data.operand_loc[opno])))
+		  && (REGNO (*recog_data.dup_loc[id])
+		      != REGNO (*recog_data.operand_loc[opno])))
 		*status = 0;
 	    }
 
@@ -659,6 +690,7 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
       if (fmt[i] == 'E')
 	{
 	  register int xv;
+
 	  for (xv = 0; xv < XVECLEN (x, i); xv++)
 	    {
 	      XVECEXP (x, i, xv) = rr_replace_reg (XVECEXP (x, i, xv), reg_use,
@@ -679,6 +711,7 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
 	    }
 	}
     }
+
   return x;
 }
 
@@ -689,8 +722,8 @@ static int
 consider_def (insn, regno, du, inum)
      rtx insn;
      int regno;
-     def_uses *du;
-     int inum;
+     def_uses *du ATTRIBUTE_UNUSED;
+     int inum ATTRIBUTE_UNUSED;
 {
   /* Don't rename windowed registers across a call */
 #ifdef INCOMING_REGNO
@@ -733,12 +766,11 @@ consider_use (insn, regno, def_block, use_block)
      then insure another predecessor does not also define this register */
   if (def_block != use_block)
     for (e = ub->pred; e; e = e->pred_next)
-      {
-	if (e->src->index != def_block
-	    && e->src->index != -1
-	    && REGNO_REG_SET_P (BASIC_BLOCK (e->src->index)->global_live_at_end, regno))
-	  return 0;
-      }
+      if (e->src->index != def_block
+	  && e->src->index != -1
+	  && REGNO_REG_SET_P (BASIC_BLOCK (e->src->index)->global_live_at_end,
+			      regno))
+	return 0;
 
   /* Don't consider conditional moves.  Predicate architectures may
      use two complementary conditional moves and the regno shouldn't change */
@@ -755,11 +787,8 @@ consider_use (insn, regno, def_block, use_block)
 	return 0;
 
       /* Don't consider register if the only use is in a USE */
-      if (reg_mentioned_p (gen_rtx_USE (VOIDmode, reg_use),
-			   PATTERN (insn)))
-	return 0;
-      else
-	return 1;
+      return ! reg_mentioned_p (gen_rtx_USE (VOIDmode, reg_use),
+				PATTERN (insn));
     }
   else
     return 0;
@@ -810,17 +839,13 @@ consider_available (reg_use, avail_reg, avail_regs, rc, du, inum)
 #endif
       )
       || (TEST_BIT (du->require_call_save_reg, inum)
-	  && (call_used_regs[avail_reg] || call_used_regs[REGNO (reg_use)]
-	  )))
+	  && (call_used_regs[avail_reg] || call_used_regs[REGNO (reg_use)])))
     return 0;
 
   /* If register is a callee-saved register it must be saved in the frame. 
      call saved registers can not be added to regs_ever_live after reload,
      as it would invalidate most elimination offsets */
-  if (regs_ever_live[avail_reg] || call_used_regs[avail_reg])
-    return 1;
-
-  return 0;
+  return regs_ever_live[avail_reg] || call_used_regs[avail_reg];
 }
 
 /* Return 1 if INSN is a conditional move */
@@ -829,11 +854,9 @@ static int
 condmove_p (insn)
      rtx insn;
 {
-  if (GET_CODE (insn) == INSN
-      && GET_CODE (PATTERN (insn)) == SET
-      && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
-    return 1;
-  return 0;
+  return (GET_CODE (insn) == INSN
+	  && GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE);
 }
 
 /* Searches X for the first reference to REGNO, returning the rtx of the
@@ -841,7 +864,7 @@ condmove_p (insn)
 
 static rtx
 regno_first_use_in (regno, x)
-     int regno;
+     unsigned int regno;
      rtx x;
 {
   register const char *fmt;
@@ -859,13 +882,14 @@ regno_first_use_in (regno, x)
 	  if ((tem = regno_first_use_in (regno, XEXP (x, i))))
 	    return tem;
 	}
+
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  if ((tem = regno_first_use_in (regno, XVECEXP (x, i, j))))
 	    return tem;
     }
 
-  return NULL_RTX;
+  return 0;
 }
 
 /* Dump def/use chain DU to RTL_DUMP_FILE, given insns in UID_RUID and
@@ -877,14 +901,14 @@ dump_def_use_chain (global_live_at_end, du, uid_ruid)
      def_uses *du;
      varray_type *uid_ruid;
 {
-  int r, inum;
-
+  unsigned int r;
+  int inum;
+  
   for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
     {
       int set = 0;
-      for (inum = 0;
-	   inum <= du->high_bound;
-	   inum++)
+
+      for (inum = 0; inum <= du->high_bound; inum++)
 	{
 	  rtx insn = VARRAY_RTX (*uid_ruid, inum);
 #if 0
@@ -892,6 +916,7 @@ dump_def_use_chain (global_live_at_end, du, uid_ruid)
 	      || GET_RTX_CLASS (GET_CODE
 				(insn)) != 'i')
 	    continue;
+
 	  reg_use = regno_first_use_in (r, PATTERN (insn));
 	  if (!reg_use)
 	    continue;
@@ -908,11 +933,13 @@ dump_def_use_chain (global_live_at_end, du, uid_ruid)
 		fprintf (rtl_dump_file, "Live at Exit ");
 	      set = 1;
 	    }
+
 	  if (TEST_BIT (du->defs[r], inum))
 	    fprintf (rtl_dump_file, "=%d ", INSN_UID (insn));
 	  if (TEST_BIT (du->uses[r], inum))
 	    fprintf (rtl_dump_file, "%d ", INSN_UID (insn));
 	}
+
       if (set)
 	fprintf (rtl_dump_file, "\n");
     }
@@ -926,30 +953,30 @@ dump_ext_bb_info (eb, ebb)
      ext_basic_blocks *ebb;
 {
   int b;
+  int have_ebb = 0;
 
-  {
-    int have_ebb = 0;
-    for (b = 0; b < n_basic_blocks; b++)
-      {
-	if (TEST_BIT (ebb->basic_block[eb], b))
-	  {
-	    if (!have_ebb)
-	      {
+  for (b = 0; b < n_basic_blocks; b++)
+    {
+      if (TEST_BIT (ebb->basic_block[eb], b))
+	{
+	  if (!have_ebb)
+	    {
 #ifndef RENAME_EXTENDED_BLOCKS
-		fprintf (rtl_dump_file, "\nBasic block %d: ", b);
+	      fprintf (rtl_dump_file, "\nBasic block %d: ", b);
 #else
-		fprintf (rtl_dump_file, "\nExtended basic block %d: ", b);
+	      fprintf (rtl_dump_file, "\nExtended basic block %d: ", b);
 #endif
-		have_ebb = 1;
-	      }
-	    fprintf (rtl_dump_file, "%d ", b);
-	  }
-	if (TEST_BIT (ebb->exit[eb], b))
-	  fprintf (rtl_dump_file, "(exit) ");
-      }
-    if (have_ebb)
-      fprintf (rtl_dump_file, "\n");
-  }
+	      have_ebb = 1;
+	    }
+	  fprintf (rtl_dump_file, "%d ", b);
+	}
+
+      if (TEST_BIT (ebb->exit[eb], b))
+	fprintf (rtl_dump_file, "(exit) ");
+    }
+
+  if (have_ebb)
+    fprintf (rtl_dump_file, "\n");
 }
 
 /* Initialize EBB with extended basic block info if RENAME_EXTENDED_BLOCKS is
@@ -974,6 +1001,7 @@ find_ext_basic_blocks (ebb)
 #else
   for (b = 0; b < n_basic_blocks; b++)
     {
+
       basic_block bb = BASIC_BLOCK (b);
       if (!TEST_BIT (bb_processed, b))
 	{
@@ -1007,13 +1035,9 @@ find_one_ext_basic_block (entry, bb, bb_processed, ebb)
       {
 	if (!e->dest->pred->pred_next
 	    && (!TEST_BIT (*bb_processed, e->dest->index)))
-	  {
-	    find_one_ext_basic_block (entry, e->dest, bb_processed, ebb);
-	  }
+	  find_one_ext_basic_block (entry, e->dest, bb_processed, ebb);
 	else
-	  {
-	    SET_BIT (ebb->exit[entry], bb->index);
-	  }
+	  SET_BIT (ebb->exit[entry], bb->index);
       }
 }
 
@@ -1036,17 +1060,16 @@ get_reg_class (insn, reg_use, type, default_class)
   preprocess_constraints ();
 
   if (type == DESTINATION)
-    for (id = 0; id < recog_data.n_operands; id++)
-      {
+    {
+      for (id = 0; id < recog_data.n_operands; id++)
 	if (rtx_equal_p (recog_data.operand[id], reg_use))
 	  break;
-      }
+    }
+
   else if (type == SOURCE)
     for (id = recog_data.n_operands - 1; id >= 0; id--)
-      {
-	if (rtx_equal_p (recog_data.operand[id], reg_use))
-	  break;
-      }
+      if (rtx_equal_p (recog_data.operand[id], reg_use))
+	break;
 
   if (id == -1 || id == recog_data.n_operands)
     return default_class;
