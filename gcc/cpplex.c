@@ -675,8 +675,8 @@ parse_string (pfile, token, terminator)
 	  /* Character constants and header names may not extend over
 	     multiple lines.  In Standard C, neither may strings.
 	     Unfortunately, we accept multiline strings as an
-	     extension.  */
-	  if (terminator != '"')
+	     extension, except in #include family directives.  */
+	  if (terminator != '"' || pfile->state.angled_headers)
 	    {
 	      unterminated (pfile, terminator);
 	      break;

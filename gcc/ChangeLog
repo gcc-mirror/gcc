@@ -1,5 +1,10 @@
 2000-11-04  Neil Booth  <neilb@earthling.net>
 
+        * cpplex.c (parse_string): Don't allow multiline strings in
+        #include family directives.
+
+2000-11-04  Neil Booth  <neilb@earthling.net>
+
 	* cpplib.c (do_line): Only warn pedantically if not reading
         preprocessed input.
 
