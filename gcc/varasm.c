@@ -406,7 +406,7 @@ make_decl_rtl (decl, asmspec, top_level)
      char *asmspec;
      int top_level;
 {
-  register char *name;
+  register char *name = 0;
   int reg_number;
 
   if (output_bytecode)
@@ -520,6 +520,9 @@ make_decl_rtl (decl, asmspec, top_level)
 	      name = obstack_copy0 (saveable_obstack, label, strlen (label));
 	      var_labelno++;
 	    }
+
+	  if (name == 0)
+	    abort ();
 
 	  DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl),
 				     gen_rtx (SYMBOL_REF, Pmode, name));
