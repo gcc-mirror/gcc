@@ -147,8 +147,9 @@
 
 	* doc/md.texi: Ditto.
 	
-	2001-12-20  Naveen Sharma,Nitin Gupta     <naveens@noida.hcltech.com,niting@noida.hcltech.com>
-
+	2001-12-20  Naveen Sharma  <naveens@noida.hcltech.com>
+		    Nitin Gupta  <niting@noida.hcltech.com>
+	
 	* config/sh/sh.c (sh_use_dfa_interface): New function.
 
 	(sh_issue_rate): New Function.
