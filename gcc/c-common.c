@@ -4802,141 +4802,23 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
      mean time, I suspect using doubles won't harm the bootstrap here.  */
 
   const double log10_2 = .30102999566398119521;
-  const double log10_16 = 1.20411998265592478085;
-  const double log10_b
-    = TARGET_FLOAT_FORMAT == IBM_FLOAT_FORMAT ? log10_16 : log10_2;
-
-  const int log2_b = TARGET_FLOAT_FORMAT == IBM_FLOAT_FORMAT ? 4 : 1;
+  double log10_b;
+  const struct real_format *fmt;
 
   char name[64], buf[128];
-  int mant_dig, max_exp, min_exp;
   int dig, min_10_exp, max_10_exp;
   int decimal_dig;
 
-  /* ??? This information should be shared with real.c.  */
+  fmt = real_format_for_mode[TYPE_MODE (type) - QFmode];
 
-#ifndef INTEL_EXTENDED_IEEE_FORMAT
-#define INTEL_EXTENDED_IEEE_FORMAT 0
-#endif
-#ifndef TARGET_G_FLOAT
-#define TARGET_G_FLOAT 0
-#endif
-
-  switch (TARGET_FLOAT_FORMAT)
-    {
-    case IEEE_FLOAT_FORMAT:
-      switch (TYPE_PRECISION (type))
-	{
-	case 32:
-	  /* ??? Handle MIPS r5900, which doesn't implement Inf or NaN,
-	     but rather reuses the largest exponent as a normal number.  */
-	  mant_dig = 24;
-	  min_exp = -125;
-	  max_exp = 128;
-	  break;
-	case 64:
-	  mant_dig = 53;
-	  min_exp = -1021;
-	  max_exp = 1024;
-	  break;
-	case 128:
-	  if (!INTEL_EXTENDED_IEEE_FORMAT)
-	    {
-	      mant_dig = 113;
-	      min_exp = -16381;
-	      max_exp = 16384;
-	      break;
-	    }
-	  /* FALLTHRU */
-	case 96:
-	  mant_dig = 64;
-	  max_exp = 16384;
-	  if (INTEL_EXTENDED_IEEE_FORMAT)
-	    min_exp = -16381;
-	  else
-	    /* ??? Otherwise assume m68k.  */
-	    min_exp = -16382;
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-
-    case VAX_FLOAT_FORMAT:
-      switch (TYPE_PRECISION (type))
-	{
-	case 32: /* F_FLOAT */
-	  mant_dig = 24;
-	  min_exp = -127;
-	  max_exp = 127;
-	  break;
-	case 64: /* G_FLOAT or D_FLOAT */
-	  if (TARGET_G_FLOAT)
-	    {
-	      mant_dig = 53;
-	      min_exp = -1023;
-	      max_exp = 1023;
-	    }
-	  else
-	    {
-	      mant_dig = 56;
-	      min_exp = -127;
-	      max_exp = 127;
-	    }
-	  break;
-	case 128: /* H_FLOAT */
-	  mant_dig = 113;
-	  min_exp = -16383;
-	  max_exp = 16383;
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-
-    case IBM_FLOAT_FORMAT:
-      switch (TYPE_PRECISION (type))
-	{
-	case 32:
-	  mant_dig = 6;
-	  min_exp = -64;
-	  max_exp = 63;
-	  break;
-	case 64:
-	  mant_dig = 14;
-	  min_exp = -64;
-	  max_exp = 63;
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-      
-    case C4X_FLOAT_FORMAT:
-      switch (TYPE_PRECISION (type))
-	{
-	case 32:
-	  mant_dig = 24;
-	  min_exp = -126;
-	  max_exp = 128;
-	  break;
-	case 64:
-	  mant_dig = 32;
-	  min_exp = -126;
-	  max_exp = 128;
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-
-    default:
-      abort ();
-    }
+  /* The radix of the exponent representation.  */
+  if (type == float_type_node)
+    builtin_define_with_int_value ("__FLT_RADIX__", fmt->b);
+  log10_b = log10_2 * fmt->log2_b;
 
   /* The number of radix digits, p, in the floating-point significand.  */
   sprintf (name, "__%s_MANT_DIG__", name_prefix);
-  builtin_define_with_int_value (name, mant_dig);
+  builtin_define_with_int_value (name, fmt->p);
 
   /* The number of decimal digits, q, such that any floating-point number
      with q decimal digits can be rounded into a floating-point number with
@@ -4945,37 +4827,37 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
 	p log10 b			if b is a power of 10
  	floor((p - 1) log10 b)		otherwise
   */
-  dig = (mant_dig - 1) * log10_b;
+  dig = (fmt->p - 1) * log10_b;
   sprintf (name, "__%s_DIG__", name_prefix);
   builtin_define_with_int_value (name, dig);
 
   /* The minimum negative int x such that b**(x-1) is a normalized float.  */
   sprintf (name, "__%s_MIN_EXP__", name_prefix);
-  sprintf (buf, "(%d)", min_exp);
+  sprintf (buf, "(%d)", fmt->emin);
   builtin_define_with_value (name, buf, 0);
 
   /* The minimum negative int x such that 10**x is a normalized float,
 
-	  ceil (log10 (b ** (min_exp - 1)))
-	= ceil (log10 (b) * (min_exp - 1))
+	  ceil (log10 (b ** (emin - 1)))
+	= ceil (log10 (b) * (emin - 1))
 
-     Recall that min_exp is negative, so the integer truncation calculates
+     Recall that emin is negative, so the integer truncation calculates
      the ceiling, not the floor, in this case.  */
-  min_10_exp = (min_exp - 1) * log10_b;
+  min_10_exp = (fmt->emin - 1) * log10_b;
   sprintf (name, "__%s_MIN_10_EXP__", name_prefix);
   sprintf (buf, "(%d)", min_10_exp);
   builtin_define_with_value (name, buf, 0);
 
   /* The maximum int x such that b**(x-1) is a representable float.  */
   sprintf (name, "__%s_MAX_EXP__", name_prefix);
-  builtin_define_with_int_value (name, max_exp);
+  builtin_define_with_int_value (name, fmt->emax);
 
   /* The maximum int x such that 10**x is in the range of representable
      finite floating-point numbers,
 
-	  floor (log10((1 - b**-p) * b**max_exp))
-	= floor (log10(1 - b**-p) + log10(b**max_exp))
-	= floor (log10(1 - b**-p) + log10(b)*max_exp)
+	  floor (log10((1 - b**-p) * b**emax))
+	= floor (log10(1 - b**-p) + log10(b**emax))
+	= floor (log10(1 - b**-p) + log10(b)*emax)
 
      The safest thing to do here is to just compute this number.  But since
      we don't link cc1 with libm, we cannot.  We could implement log10 here
@@ -4996,7 +4878,7 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
      Hand-waving aside, crunching all of the sets of constants above by hand
      does not yield a case for which the first term is significant, which
      in the end is all that matters.  */
-  max_10_exp = max_exp * log10_b;
+  max_10_exp = fmt->emax * log10_b;
   sprintf (name, "__%s_MAX_10_EXP__", name_prefix);
   builtin_define_with_int_value (name, max_10_exp);
 
@@ -5010,7 +4892,7 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
      The only macro we care about is this number for the widest supported
      floating type, but we want this value for rendering constants below.  */
   {
-    double d_decimal_dig = 1 + mant_dig * log10_b;
+    double d_decimal_dig = 1 + fmt->p * log10_b;
     decimal_dig = d_decimal_dig;
     if (decimal_dig < d_decimal_dig)
       decimal_dig++;
@@ -5023,40 +4905,49 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
      constants.  */
 
   /* The maximum representable finite floating-point number,
-     (1 - b**-p) * b**max_exp  */
+     (1 - b**-p) * b**emax  */
   {
     int i, n;
     char *p;
 
     strcpy (buf, "0x0.");
-    n = mant_dig * log2_b;
+    n = fmt->p * fmt->log2_b;
     for (i = 0, p = buf + 4; i + 3 < n; i += 4)
       *p++ = 'f';
     if (i < n)
       *p++ = "08ce"[n - i];
-    sprintf (p, "p%d", max_exp * log2_b);
+    sprintf (p, "p%d", fmt->emax * fmt->log2_b);
   }
   sprintf (name, "__%s_MAX__", name_prefix);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
 
   /* The minimum normalized positive floating-point number,
-     b**(min_exp-1).  */
+     b**(emin-1).  */
   sprintf (name, "__%s_MIN__", name_prefix);
-  sprintf (buf, "0x1p%d", (min_exp - 1) * log2_b);
+  sprintf (buf, "0x1p%d", (fmt->emin - 1) * fmt->log2_b);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
 
   /* The difference between 1 and the least value greater than 1 that is
      representable in the given floating point type, b**(1-p).  */
   sprintf (name, "__%s_EPSILON__", name_prefix);
-  sprintf (buf, "0x1p%d", (1 - mant_dig) * log2_b);
+  sprintf (buf, "0x1p%d", (1 - fmt->p) * fmt->log2_b);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
 
   /* For C++ std::numeric_limits<T>::denorm_min.  The minimum denormalized
-     positive floating-point number, b**(min_exp-p).  Winds up being zero
-     for targets that don't support denormals.  */
+     positive floating-point number, b**(emin-p).  Zero for formats that
+     don't support denormals.  */
   sprintf (name, "__%s_DENORM_MIN__", name_prefix);
-  sprintf (buf, "0x1p%d", (min_exp - mant_dig) * log2_b);
-  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
+  if (fmt->has_denorm)
+    {
+      sprintf (buf, "0x1p%d", (fmt->emin - fmt->p) * fmt->log2_b);
+      builtin_define_with_hex_fp_value (name, type, decimal_dig,
+					buf, fp_suffix);
+    }
+  else
+    {
+      sprintf (buf, "0.0%s", fp_suffix);
+      builtin_define_with_value (name, buf, 0);
+    }
 }
 
 /* Hook that registers front end and target-specific built-ins.  */
@@ -5113,11 +5004,6 @@ cb_register_builtins (pfile)
   builtin_define_type_precision ("__LONG_DOUBLE_BIT__", long_double_type_node);
 
   /* float.h needs to know these.  */
-
-  /* The radix of the exponent representation.  */
-  builtin_define_with_int_value ("__FLT_RADIX__",
-			         (TARGET_FLOAT_FORMAT == IBM_FLOAT_FORMAT
-			          ? 16 : 2));
 
   builtin_define_with_int_value ("__FLT_EVAL_METHOD__",
 				 TARGET_FLT_EVAL_METHOD);

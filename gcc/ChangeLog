@@ -1,5 +1,10 @@
 2002-09-21  Richard Henderson  <rth@redhat.com>
 
+	* c-common.c (builtin_define_float_constants): Use real_format
+	to get the floating-point parameters.
+
+2002-09-21  Richard Henderson  <rth@redhat.com>
+
 	* real.c (struct real_format): Move to real.h.
 	(real_format_for_mode): Rename from fmt_for_mode; update all users;
 	initialize with ieee defaults.
