@@ -1626,7 +1626,7 @@ install-fixincludes: install-headers
 	done; \
 	rm -rf *
 # Install fixed copies of system files.
-	for dir in /usr/include $(OTHER_FIXINCLUDES_DIRS); do \
+	for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
 	  if [ -d $$dir ]; \
 	  then \
 	    $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $$dir $(srcdir); \
