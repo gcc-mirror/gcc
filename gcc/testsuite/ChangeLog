@@ -5,6 +5,7 @@
 
 2004-06-12  Bud Davis  <bdavis9659@comcast.net>
 
+	PR fortran/15655
 	* gfortran.fortran-torture/execute/getarg_1.f90: New test.
 
 2004-06-12  Bud Davis  <bdavis9659@comcast.net>
