@@ -4419,6 +4419,10 @@ s390_mainpool_start (void)
 
   if (pool->size >= 4096)
     {
+      /* We're going to chunkify the pool, so remove the main
+	 pool placeholder insn.  */
+      remove_insn (pool->pool_insn);
+
       s390_free_pool (pool);
       pool = NULL;
     }

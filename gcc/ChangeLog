@@ -1,3 +1,8 @@
+2004-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_mainpool_start): Delete the main pool
+	placeholder insn when chunkifying the pool.
+
 2004-02-18  Per Bothner  <per@bothner.com>
 
 	* cpphash.h (struct cpp_buffer):  Restore return_at_eof field.  This
