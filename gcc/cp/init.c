@@ -66,9 +66,8 @@ void init_init_processing ()
   BI_header_type = make_lang_type (RECORD_TYPE);
   nelts_identifier = get_identifier ("nelts");
   fields[0] = build_lang_decl (FIELD_DECL, nelts_identifier, sizetype);
-  TYPE_ALIGN (BI_header_type) = BIGGEST_ALIGNMENT;
   finish_builtin_type (BI_header_type, "__new_cookie", fields,
-		       0, BI_header_type);
+		       0, double_type_node);
   BI_header_size = size_in_bytes (BI_header_type);
 
   ggc_add_tree_root (&BI_header_type, 1);
