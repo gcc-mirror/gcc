@@ -45,7 +45,7 @@
 
 (define_attr "cpu" "700,7100,7100LC,7200,8000" (const (symbol_ref "pa_cpu_attr")))
 
-;; Length (in # of insns).
+;; Length (in # of bytes).
 (define_attr "length" ""
   (cond [(eq_attr "type" "load,fpload")
 	 (if_then_else (match_operand 1 "symbolic_memory_operand" "")
