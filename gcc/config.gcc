@@ -323,7 +323,7 @@ case $machine in
 	fi
 	;;
 *-*-netbsd*)
-	tmake_file="t-libc-ok t-netbsd"
+	tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd"
 	xm_defines=POSIX
 	gas=yes
 	gnu_ld=yes

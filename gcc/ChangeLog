@@ -1,3 +1,7 @@
+2002-03-04  Krister Walfridsson  <cato@df.lth.se>
+
+	* config.gcc (*-*-netbsd*): Add t-slibgcc-elf-ver to tmake_file.
+
 2002-03-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure.in: Increase required makeinfo version to 4.1.
