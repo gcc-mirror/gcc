@@ -1,3 +1,7 @@
+Sat Nov 28 17:25:22 1998  Christopher Faylor <cgf@cygnus.com>
+
+	* pexecute.c: Remove obsolete ifdefed cygwin code.
+
 Fri Nov 27 13:26:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* choose-temp.c: Always include libiberty.h.  Avoid redundancies.
