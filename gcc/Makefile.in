@@ -1416,9 +1416,10 @@ s-specs : Makefile
 
 options.c: $(lang_opt_files) $(srcdir)/opts.sh options.h intl.h
 
-options.h: $(lang_opt_files) $(srcdir)/opts.sh
-	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh options.c options.h \
-		$(lang_opt_files)
+options.h: $(lang_opt_files) $(srcdir)/opts.sh Makefile
+	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh \
+               '$(SHELL) $(srcdir)/move-if-change' \
+               options.c options.h $(lang_opt_files)
 
 dumpvers: dumpvers.c
 
