@@ -1,3 +1,10 @@
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.in: Check for wchar.h, mbstowcs, and wcswidth.
+	* configure, config.in: Regenerate.
+	* intl.c (gcc_gettext_width): New function.
+	* intl.h: Prototype it.
+
 2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (TARGET_SWITCHES): Fix -mnominmax option;
@@ -52,7 +59,7 @@
 	* configure: Regenerate.
 	* config.in: Regenerate.
 	* config/alpha/t-crtfm: Use -frandom-seed.
-	
+
 	* doc/extend.texi (Empty Structures): New.
 
 	* c-pch.c: Include flags.h.  Add comments to routines.

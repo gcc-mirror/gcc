@@ -2508,9 +2508,9 @@ print_z_candidates (struct z_candidate *candidates)
   print_z_candidate (str, candidates);
   if (candidates->next)
     {
-      /* Indent successive candidates by the length of the translation of
-	 the above string.  */
-      size_t len = strlen (str) + 1;
+      /* Indent successive candidates by the width of the translation
+	 of the above string.  */
+      size_t len = gcc_gettext_width (str) + 1;
       char *spaces = alloca (len);
       memset (spaces, ' ', len-1);
       spaces[len] = '\0';

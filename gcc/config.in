@@ -162,6 +162,9 @@
 /* Define if you have the lstat function.  */
 #undef HAVE_LSTAT
 
+/* Define if you have the mbstowcs function.  */
+#undef HAVE_MBSTOWCS
+
 /* Define if you have the mempcpy function.  */
 #undef HAVE_MEMPCPY
 
@@ -215,6 +218,9 @@
 
 /* Define if you have the tsearch function.  */
 #undef HAVE_TSEARCH
+
+/* Define if you have the wcswidth function.  */
+#undef HAVE_WCSWIDTH
 
 /* Define if you have the <argz.h> header file.  */
 #undef HAVE_ARGZ_H
@@ -278,6 +284,9 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Define if you have the <wchar.h> header file.  */
+#undef HAVE_WCHAR_H
 
 /* Define to enable the use of a default linker. */
 #undef DEFAULT_LINKER
