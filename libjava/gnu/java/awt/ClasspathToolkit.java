@@ -48,6 +48,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.image.ColorModel;
+import java.awt.image.ImageProducer;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
@@ -330,5 +331,18 @@ public abstract class ClasspathToolkit
       throw (IllegalArgumentException) new IllegalArgumentException(path)
         .initCause(muex);
     }
+  }
+  
+  /**
+   * Creates an ImageProducer from the specified URL. The image is assumed
+   * to be in a recognised format. If the toolkit does not implement the
+   * image format or the image format is not recognised, null is returned.
+   * This default implementation is overriden by the Toolkit implementations.
+   *
+   * @param url URL to read image data from.
+   */
+  public ImageProducer createImageProducer(URL url)
+  {
+    return null;
   }
 }

@@ -61,4 +61,23 @@ class Connection extends URLConnection
     connect();
     return new CoreInputStream(core);
   }
+  
+  public String getHeaderField(String field)
+  {
+    try
+      {
+	if (!connected)
+	  connect();
+
+	if (field.equals("content-type"))
+          return guessContentTypeFromName(name);
+	else if (field.equals("content-length"))
+          return Long.toString(core.length);
+      }
+    catch (IOException e)
+      {
+        // Fall through.
+      }
+    return null;
+  }  
 }

@@ -2119,6 +2119,7 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
+gnu/java/net/DefaultContentHandlerFactory.java \
 gnu/java/net/HeaderFieldHelper.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
@@ -3089,7 +3090,7 @@ libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -3389,7 +3390,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/locale/LocaleInformation_zh_HK.P \
 .deps/gnu/java/locale/LocaleInformation_zh_SG.P \
 .deps/gnu/java/locale/LocaleInformation_zh_TW.P \
-.deps/gnu/java/math/MPN.P .deps/gnu/java/net/HeaderFieldHelper.P \
+.deps/gnu/java/math/MPN.P \
+.deps/gnu/java/net/DefaultContentHandlerFactory.P \
+.deps/gnu/java/net/HeaderFieldHelper.P \
 .deps/gnu/java/net/PlainDatagramSocketImpl.P \
 .deps/gnu/java/net/PlainSocketImpl.P .deps/gnu/java/net/URLParseError.P \
 .deps/gnu/java/net/natPlainDatagramSocketImpl.P \
