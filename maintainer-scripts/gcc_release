@@ -299,7 +299,7 @@ build_diffs() {
   old_vers=${old_file%.tar.gz}
   old_vers=${old_vers#gcc-}
   inform "Building diffs against version $old_vers"
-  for f in gcc gcc-ada gcc-chill gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
+  for f in gcc gcc-ada gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
     old_tar=${old_dir}/${f}-${old_vers}.tar.gz
     new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.gz
     if [ -e $old_tar ] && [ -e $new_tar ]; then
