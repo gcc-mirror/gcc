@@ -34,6 +34,7 @@
 #include "flags.h"
 #include "ggc.h"
 #include "rtl.h"
+#include "output.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -46,6 +47,7 @@
 
 static tree expand_cond PROTO((tree));
 static tree maybe_convert_cond PROTO((tree));
+static tree simplify_aggr_init_exprs_r PROTO((tree *, int *, void *));
 
 /* Record the fact that STMT was the last statement added to the
    statement tree.  */

@@ -297,7 +297,8 @@ repo.o : repo.c $(CXX_TREE_H) \
   $(srcdir)/../toplev.h $(srcdir)/../ggc.h
 semantics.o: semantics.c $(CXX_TREE_H) lex.h \
   $(srcdir)/../except.h $(srcdir)/../toplev.h \
-  $(srcdir)/../flags.h $(srcdir)/../ggc.h $(RTL_H)
+  $(srcdir)/../flags.h $(srcdir)/../ggc.h \
+  $(srcdir)/../output.h $(RTL_H) 
 dump.o: dump.c $(CXX_TREE_H)
 optimize.o: optimize.c $(CXX_TREE_H) \
   $(srcdir)/../rtl.h $(srcdir)/../integrate.h ../insn-config.h
