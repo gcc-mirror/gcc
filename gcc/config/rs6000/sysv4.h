@@ -1061,7 +1061,7 @@ scrti.o%s"
 	%{traditional:values-Xt.o%s} \
 	%{!traditional:values-Xa.o%s}} \
 	%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
-    %{!shared: %{!symbolic: -lc %{!static: -ldl} }}}"
+    %{!shared: %{!symbolic: -lc }}}"
 #endif
 
 #ifndef	STARTFILE_SOLARIS_SPEC
