@@ -1,6 +1,6 @@
 /* Subroutines needed by GCC output code on some machines.  */
 /* Compile this file with the Unix C compiler!  */
-/* Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+/* Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -24,9 +24,10 @@ You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* As a special exception, if you link this library with files
-   compiled with GCC to produce an executable, this does not cause
-   the resulting executable to be covered by the GNU General Public License.
+/* As a special exception, if you link this library with other files,
+   some of which are compiled with GCC, to produce an executable,
+   this library does not by itself cause the resulting executable
+   to be covered by the GNU General Public License.
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
