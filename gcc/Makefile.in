@@ -1320,8 +1320,11 @@ c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
-c-options.h c-options.c: c.opt $(srcdir)/opts.sh
+c-options.c: c.opt $(srcdir)/opts.sh
 	$(SHELL) $(srcdir)/opts.sh c-options.c c-options.h $(srcdir)/c.opt
+
+c-options.h: c-options.c
+	@true
 
 c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(C_COMMON_H) c-pragma.h flags.h toplev.h langhooks.h \
