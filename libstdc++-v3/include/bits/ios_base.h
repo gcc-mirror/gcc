@@ -1,6 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,6 +41,8 @@
 #define _CPP_BITS_IOSBASE_H 1
 
 #pragma GCC system_header
+
+#include <bits/atomicity.h>
 
 namespace std
 {
@@ -244,17 +247,18 @@ namespace std
       _Callback_list* 		_M_next;
       ios_base::event_callback 	_M_fn;
       int 			_M_index;
-      int 			_M_refcount;  // 0 means one reference.
+      _Atomic_word		_M_refcount;  // 0 means one reference.
     
       _Callback_list(ios_base::event_callback __fn, int __index, 
 		     _Callback_list* __cb)
       : _M_next(__cb), _M_fn(__fn), _M_index(__index), _M_refcount(0) { }
       
       void 
-      _M_add_reference() { ++_M_refcount; } // XXX MT
-      
+      _M_add_reference() { __atomic_add(&_M_refcount, 1); }
+
       int 
-      _M_remove_reference() { return _M_refcount--; }  // 0 => OK to delete
+      _M_remove_reference() { return __exchange_and_add(&_M_refcount, -1); }
+      // 0 => OK to delete
     };
 
      _Callback_list*  	_M_callbacks;

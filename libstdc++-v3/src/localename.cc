@@ -178,7 +178,7 @@ namespace std
       {
 	size_t& __index = __idp->_M_index;
 	if (!__index)
-	  __index = ++locale::id::_S_highwater;  // XXX MT
+	  __index = 1 + __exchange_and_add(&locale::id::_S_highwater, 1);
 	
 	if (__index >= _M_facets->size())
 	  _M_facets->resize(__index + 1, 0);  // might throw
