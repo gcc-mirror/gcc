@@ -1424,21 +1424,18 @@ legitimate_address_p (mode, addr, strict)
     }
 
   /* Validate base register */
+  /* Don't allow SUBREG's here, it can lead to spill failures when the base
+     is one word out of a two word structure, which is represented internally
+     as a DImode int.  */
   if (base)
     {
-      if (GET_CODE (base) == SUBREG)
+      if (GET_CODE (base) != REG)
 	{
-	  if (GET_CODE (SUBREG_REG (base)) != REG || SUBREG_WORD (base) != 0)
-	    {
-	      ADDR_INVALID ("Base SUBREG is not of a REG.\n", base);
-	      return FALSE;
-	    }
-
-	  base = SUBREG_REG (base);
+	  ADDR_INVALID ("Base is not a register.\n", base);
+	  return FALSE;
 	}
 
-      if (GET_CODE (base) != REG
-	  || ( strict && !REG_OK_FOR_BASE_STRICT_P (base))
+      if ((strict && !REG_OK_FOR_BASE_STRICT_P (base))
 	  || (!strict && !REG_OK_FOR_BASE_NONSTRICT_P (base)))
 	{
 	  ADDR_INVALID ("Base is not valid.\n", base);
@@ -1447,21 +1444,18 @@ legitimate_address_p (mode, addr, strict)
     }
 
   /* Validate index register */
+  /* Don't allow SUBREG's here, it can lead to spill failures when the index
+     is one word out of a two word structure, which is represented internally
+     as a DImode int.  */
   if (indx)
     {
-      if (GET_CODE (indx) == SUBREG)
+      if (GET_CODE (indx) != REG)
 	{
-	  if (GET_CODE (SUBREG_REG (indx)) != REG || SUBREG_WORD (indx) != 0)
-	    {
-	      ADDR_INVALID ("Index SUBREG is not of a REG.", indx);
-	      return FALSE;
-	    }
-
-	  indx = SUBREG_REG (indx);
+	  ADDR_INVALID ("Index is not a register.\n", indx);
+	  return FALSE;
 	}
 
-      if (GET_CODE (indx) != REG
-	  || ( strict && !REG_OK_FOR_INDEX_STRICT_P (indx))
+      if ((strict && !REG_OK_FOR_INDEX_STRICT_P (indx))
 	  || (!strict && !REG_OK_FOR_INDEX_NONSTRICT_P (indx)))
 	{
 	  ADDR_INVALID ("Index is not valid.\n", indx);
