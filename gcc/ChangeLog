@@ -1,3 +1,7 @@
+2003-01-26  Andreas Jaeger  <aj@suse.de>
+
+	* df.c: Remove prototype of unused function df_regno_rtl_debug.
+
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (FPBIT_FUNCS): Added _sf_to_tf.
