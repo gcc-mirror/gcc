@@ -6919,6 +6919,11 @@ expand_expr (exp, target, tmode, modifier)
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
+		if (TREE_ADDRESSABLE (slot))
+		  {
+		    TREE_ADDRESSABLE (slot) = 0;
+		    mark_addressable (slot);
+		  }
 
 		/* Since SLOT is not known to the called function
 		   to belong to its stack frame, we must build an explicit
