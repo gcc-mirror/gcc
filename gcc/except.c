@@ -1224,6 +1224,7 @@ expand_leftover_cleanups ()
 	    }
 	}
 
+      do_pending_stack_adjust ();
       free (entry);
     }
 }
