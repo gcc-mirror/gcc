@@ -1784,20 +1784,7 @@ operate_exp (op, left, right)
 	  /* If the resulting cond is trivial (all alternatives
 	     give the same value), optimize it away.  */
 	  if (allsame)
-	    {
-	      if (!ggc_p)
-		obstack_free (rtl_obstack, newexp);
-	      return operate_exp (op, left, XEXP (right, 1));
-	    }
-
-	  /* If the result is the same as the RIGHT operand,
-	     just use that.  */
-	  if (rtx_equal_p (newexp, right))
-	    {
-	      if (!ggc_p)
-		obstack_free (rtl_obstack, newexp);
-	      return right;
-	    }
+	    return operate_exp (op, left, XEXP (right, 1));
 
 	  return newexp;
 	}
@@ -1843,20 +1830,12 @@ operate_exp (op, left, right)
       /* If the cond is trivial (all alternatives give the same value),
 	 optimize it away.  */
       if (allsame)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, newexp);
-	  return operate_exp (op, XEXP (left, 1), right);
-	}
+	return operate_exp (op, XEXP (left, 1), right);
 
       /* If the result is the same as the LEFT operand,
 	 just use that.  */
       if (rtx_equal_p (newexp, left))
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, newexp);
-	  return left;
-	}
+	return left;
 
       return newexp;
     }
@@ -2675,18 +2654,12 @@ simplify_cond (exp, insn_code, insn_index)
 
   if (len == 0)
     {
-      if (!ggc_p)
-	obstack_free (rtl_obstack, first_spacer);
       if (GET_CODE (defval) == COND)
 	return simplify_cond (defval, insn_code, insn_index);
       return defval;
     }
   else if (allsame)
-    {
-      if (!ggc_p)
-	obstack_free (rtl_obstack, first_spacer);
-      return exp;
-    }
+    return exp;
   else
     {
       rtx newexp = rtx_alloc (COND);
@@ -3200,7 +3173,6 @@ simplify_test_exp (exp, insn_code, insn_index)
   struct insn_ent *ie;
   int i;
   rtx newexp = exp;
-  char *spacer = (char *) obstack_finish (rtl_obstack);
 
   /* Don't re-simplify something we already simplified.  */
   if (RTX_UNCHANGING_P (exp) || MEM_IN_STRUCT_P (exp))
@@ -3212,19 +3184,11 @@ simplify_test_exp (exp, insn_code, insn_index)
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
       SIMPLIFY_ALTERNATIVE (left);
       if (left == false_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return false_rtx;
-	}
+	return false_rtx;
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
       SIMPLIFY_ALTERNATIVE (right);
       if (left == false_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return false_rtx;
-	}
+	return false_rtx;
 
       /* If either side is an IOR and we have (eq_attr "alternative" ..")
 	 present on both sides, apply the distributive law since this will
@@ -3253,11 +3217,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 	left = simplify_and_tree (left, &right, insn_code, insn_index);
 
       if (left == false_rtx || right == false_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return false_rtx;
-	}
+	return false_rtx;
       else if (left == true_rtx)
 	{
 	  return right;
@@ -3313,30 +3273,18 @@ simplify_test_exp (exp, insn_code, insn_index)
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
       SIMPLIFY_ALTERNATIVE (left);
       if (left == true_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return true_rtx;
-	}
+	return true_rtx;
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
       SIMPLIFY_ALTERNATIVE (right);
       if (right == true_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return true_rtx;
-	}
+	return true_rtx;
 
       right = simplify_or_tree (right, &left, insn_code, insn_index);
       if (left == XEXP (exp, 0) && right == XEXP (exp, 1))
 	left = simplify_or_tree (left, &right, insn_code, insn_index);
 
       if (right == true_rtx || left == true_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return true_rtx;
-	}
+	return true_rtx;
       else if (left == false_rtx)
 	{
 	  return right;
@@ -3420,17 +3368,9 @@ simplify_test_exp (exp, insn_code, insn_index)
 	return XEXP (left, 0);
 
       if (left == false_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return true_rtx;
-	}
+	return true_rtx;
       else if (left == true_rtx)
-	{
-	  if (!ggc_p)
-	    obstack_free (rtl_obstack, spacer);
-	  return false_rtx;
-	}
+	return false_rtx;
 
       /* Try to apply De`Morgan's laws.  */
       else if (GET_CODE (left) == IOR)
@@ -3564,7 +3504,6 @@ optimize_attrs ()
 	  for (iv = insn_code_values[i]; iv; iv = iv->next)
 	    {
 	      struct obstack *old = rtl_obstack;
-	      char *spacer = (char *) obstack_finish (temp_obstack);
 
 	      attr = iv->attr;
 	      av = iv->av;
@@ -3593,8 +3532,6 @@ optimize_attrs ()
 		  insert_insn_ent (av, ie);
 		  something_changed = 1;
 		}
-	      if (!ggc_p)
-		obstack_free (temp_obstack, spacer);
 	    }
 	}
     }

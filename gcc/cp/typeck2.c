@@ -1266,7 +1266,7 @@ add_exception_specifier (list, spec, complain)
           break;
       if (!probe)
         {
-          spec = build_decl_list (NULL_TREE, spec);
+          spec = build_tree_list (NULL_TREE, spec);
           TREE_CHAIN (spec) = list;
           list = spec;
         }

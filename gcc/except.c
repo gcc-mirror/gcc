@@ -503,15 +503,11 @@ create_rethrow_ref (region_num)
   char *ptr;
   char buf[60];
 
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
-
   ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", region_num);
   ptr = ggc_alloc_string (buf, -1);
   def = gen_rtx_SYMBOL_REF (Pmode, ptr);
   SYMBOL_REF_NEED_ADJUST (def) = 1;
 
-  pop_obstacks ();
   return def;
 }
 
@@ -1104,10 +1100,6 @@ add_partial_entry (handler)
 {
   expand_eh_region_start ();
 
-  /* Make sure the entry is on the correct obstack.  */
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
-
   /* Because this is a cleanup action, we may have to protect the handler
      with __terminate.  */
   handler = protect_with_terminate (handler);
@@ -1121,7 +1113,6 @@ add_partial_entry (handler)
   /* Add this entry to the front of the list.  */
   TREE_VALUE (protect_list) 
     = tree_cons (NULL_TREE, handler, TREE_VALUE (protect_list));
-  pop_obstacks ();
 }
 
 /* Emit code to get EH context to current function.  */
@@ -1136,8 +1127,6 @@ call_get_eh_context ()
     {
       tree fntype;
       fn = get_identifier ("__get_eh_context");
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
       fntype = build_pointer_type (build_pointer_type
 				   (build_pointer_type (void_type_node)));
       fntype = build_function_type (fntype, NULL_TREE);
@@ -1148,7 +1137,6 @@ call_get_eh_context ()
       TREE_READONLY (fn) = 1;
       make_decl_rtl (fn, NULL_PTR, 1);
       assemble_external (fn);
-      pop_obstacks ();
 
       ggc_add_tree_root (&fn, 1);
     }
@@ -2043,15 +2031,8 @@ expand_rethrow (label)
 void
 begin_protect_partials ()
 {
-  /* Put the entry on the function obstack.  */
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
-
   /* Push room for a new list.  */
   protect_list = tree_cons (NULL_TREE, NULL_TREE, protect_list);
-
-  /* We're done with the function obstack now.  */
-  pop_obstacks ();
 }
 
 /* End all the pending exception regions on protect_list. The handlers
@@ -2091,10 +2072,6 @@ protect_with_terminate (e)
     {
       tree handler, result;
 
-      /* All cleanups must be on the function_obstack.  */
-      push_obstacks_nochange ();
-      resume_temporary_allocation ();
-
       handler = make_node (RTL_EXPR);
       TREE_TYPE (handler) = void_type_node;
       RTL_EXPR_RTL (handler) = const0_rtx;
@@ -2111,8 +2088,6 @@ protect_with_terminate (e)
       TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (e);
       TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
       TREE_READONLY (result) = TREE_READONLY (e);
-
-      pop_obstacks ();
 
       e = result;
     }

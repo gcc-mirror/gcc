@@ -25,8 +25,6 @@
 #include "tm_p.h"
 #include "ggc.h"
 
-int ggc_p = 0;
-
 void ATTRIBUTE_NORETURN
 lang_mark_tree (t)
      union tree_node *t ATTRIBUTE_UNUSED;

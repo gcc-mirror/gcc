@@ -94,9 +94,6 @@ enum decl_context
 			: "long long unsigned int"))
 #endif
 
-/* Do GC.  */
-int ggc_p = 1;
-
 /* Nonzero if we have seen an invalid cross reference
    to a struct, union, or enum, but not yet printed the message.  */
 

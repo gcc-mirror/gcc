@@ -85,17 +85,6 @@ unsigned int max_reg_before_loop;
 /* The value to pass to the next call of reg_scan_update.  */
 static int loop_max_reg;
 
-/* This obstack is used in product_cheap_p to allocate its rtl.  It
-   may call gen_reg_rtx which, in turn, may reallocate regno_reg_rtx.
-   If we used the same obstack that it did, we would be deallocating
-   that array.  */
-
-static struct obstack temp_obstack;
-
-/* This is where the pointer to the obstack being used for RTL is stored.  */
-
-extern struct obstack *rtl_obstack;
-
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
@@ -288,18 +277,11 @@ static int reg_address_cost;
 void
 init_loop ()
 {
-  char *free_point = (char *) oballoc (1);
   rtx reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
   reg_address_cost = address_cost (reg, SImode);
 
   copy_cost = COSTS_N_INSNS (1);
-
-  /* Free the objects we just allocated.  */
-  obfree (free_point);
-
-  /* Initialize the obstack used for rtl in product_cheap_p.  */
-  gcc_obstack_init (&temp_obstack);
 }
 
 /* Compute the mapping from uids to luids.
@@ -4420,6 +4402,29 @@ egress:
   VARRAY_FREE (ivs->reg_iv_type);
   VARRAY_FREE (ivs->reg_iv_info);
   free (ivs->reg_biv_class);
+  {
+    struct iv_class *iv = ivs->loop_iv_list;
+
+    while (iv) {
+      struct iv_class *next = iv->next;
+      struct induction *induction;
+      struct induction *next_induction;
+
+      for (induction = iv->biv; induction; induction = next_induction)
+	{
+	  next_induction = induction->next_iv;
+	  free (induction);
+	}
+      for (induction = iv->giv; induction; induction = next_induction)
+	{
+	  next_induction = induction->next_iv;
+	  free (induction);
+	}
+
+      free (iv);
+      iv = next;
+    }
+  }
   if (reg_map)
     free (reg_map);
 }
@@ -4457,7 +4462,7 @@ check_insn_for_bivs (loop, p, not_every_iteration, maybe_multiple)
 	         Create and initialize an induction structure for it.  */
 
 	      struct induction *v
-		= (struct induction *) oballoc (sizeof (struct induction));
+		= (struct induction *) xmalloc (sizeof (struct induction));
 
 	      record_biv (loop, v, p, dest_reg, inc_val, mult_val, location,
 			  not_every_iteration, maybe_multiple);
@@ -4524,7 +4529,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 					     &last_consec_insn))))
 	{
 	  struct induction *v
-	    = (struct induction *) oballoc (sizeof (struct induction));
+	    = (struct induction *) xmalloc (sizeof (struct induction));
 
 	  /* If this is a library call, increase benefit.  */
 	  if (find_reg_note (p, REG_RETVAL, NULL_RTX))
@@ -4653,7 +4658,7 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
 	  {
 	    /* Found one; record it.  */
 	    struct induction *v
-	      = (struct induction *) oballoc (sizeof (struct induction));
+	      = (struct induction *) xmalloc (sizeof (struct induction));
 
 	    record_giv (loop, v, insn, src_reg, addr_placeholder, mult_val,
 			add_val, ext_val, benefit, DEST_ADDR,
@@ -4733,7 +4738,7 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
     {
       /* Create and initialize new iv_class.  */
 
-      bl = (struct iv_class *) oballoc (sizeof (struct iv_class));
+      bl = (struct iv_class *) xmalloc (sizeof (struct iv_class));
 
       bl->regno = REGNO (dest_reg);
       bl->biv = 0;
@@ -5538,23 +5543,16 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, ext_val,
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
   rtx orig_x = x;
-  char *storage;
 
   /* If this is an invariant, forget it, it isn't a giv.  */
   if (loop_invariant_p (loop, x) == 1)
     return 0;
 
-  /* See if the expression could be a giv and get its form.
-     Mark our place on the obstack in case we don't find a giv.  */
-  storage = (char *) oballoc (0);
   *pbenefit = 0;
   *ext_val = NULL_RTX;
   x = simplify_giv_expr (loop, x, ext_val, pbenefit);
   if (x == 0)
-    {
-      obfree (storage);
-      return 0;
-    }
+    return 0;
 
   switch (GET_CODE (x))
     {
@@ -6944,8 +6942,6 @@ product_cheap_p (a, b)
 {
   int i;
   rtx tmp;
-  struct obstack *old_rtl_obstack = rtl_obstack;
-  char *storage = (char *) obstack_alloc (&temp_obstack, 0);
   int win = 1;
 
   /* If only one is constant, make it B.  */
@@ -6964,7 +6960,6 @@ product_cheap_p (a, b)
      code for the multiply and see if a call or multiply, or long sequence
      of insns is generated.  */
 
-  rtl_obstack = &temp_obstack;
   start_sequence ();
   expand_mult (GET_MODE (a), a, b, NULL_RTX, 0);
   tmp = gen_sequence ();
@@ -7000,11 +6995,6 @@ product_cheap_p (a, b)
 	   && GET_CODE (XVECEXP (tmp, 0, 0)) == SET
 	   && GET_CODE (SET_SRC (XVECEXP (tmp, 0, 0))) == MULT)
     win = 0;
-
-  /* Free any storage we obtained in generating this multiply and restore rtl
-     allocation to its normal obstack.  */
-  obstack_free (&temp_obstack, storage);
-  rtl_obstack = old_rtl_obstack;
 
   return win;
 }

@@ -1591,7 +1591,7 @@ insert (x, classp, hash, mode)
   else
     {
       n_elements_made++;
-      elt = (struct table_elt *) oballoc (sizeof (struct table_elt));
+      elt = (struct table_elt *) xmalloc (sizeof (struct table_elt));
     }
 
   elt->exp = x;
@@ -7017,10 +7017,8 @@ cse_main (f, nregs, after_loop, file)
   memory_extend_rtx = gen_rtx_ZERO_EXTEND (VOIDmode, NULL_RTX);
 #endif
 
-  /* Discard all the free elements of the previous function
-     since they are allocated in the temporarily obstack.  */
-  bzero ((char *) table, sizeof table);
-  free_element_chain = 0;
+  /* Reset the counter indicating how many elements have been made
+     thus far.  */
   n_elements_made = 0;
 
   /* Find the largest uid.  */
@@ -7075,8 +7073,7 @@ cse_main (f, nregs, after_loop, file)
 	|| global_regs[i])
       SET_HARD_REG_BIT (regs_invalidated_by_call, i);
 
-  if (ggc_p)
-    ggc_push_context ();
+  ggc_push_context ();
 
   /* Loop over basic blocks.
      Compute the maximum number of qty's needed for each basic block
@@ -7135,7 +7132,7 @@ cse_main (f, nregs, after_loop, file)
 	  cse_jumps_altered |= old_cse_jumps_altered;
 	}
 
-      if (ggc_p && cse_altered)
+      if (cse_altered)
 	ggc_collect ();
 
 #ifdef USE_C_ALLOCA
@@ -7143,8 +7140,7 @@ cse_main (f, nregs, after_loop, file)
 #endif
     }
 
-  if (ggc_p)
-    ggc_pop_context ();
+  ggc_pop_context ();
 
   if (max_elements_made < n_elements_made)
     max_elements_made = n_elements_made;

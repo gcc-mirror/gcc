@@ -1,3 +1,75 @@
+2000-10-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (temporary_obstack): Remove.
+	(make_class): Don't mess with obstascks.
+	(push_class): Likewise.
+	(set_super_info): Likewise.
+	(add_method_1): Likewise.
+	(add_method): Likewise.
+	(add_field): Likewise.
+	(build_utf8_ref): Likewise.
+	(build_class_ref): Likewise.
+	(build_static_field_ref): Likewise.
+	(finish_class): Likewise.
+	(push_super_field): Likewise.
+	(layout_class): Likewise.
+	(layout_class_methods): Likewise.
+	(init_class_processing): Likewise.
+	* constants.c (get_tag_node): Likewise.
+	(build_constant_data_ref): Likewise.
+	* decl.c (ggc_p): Remove.
+	(copy_lang_decl): Use ggc_alloc.
+	(complete_start_java_method): Don't mess with obstacks.
+	(start_java_method): Likewise.
+	(end_java_method): Likewise.
+	* except.c (link_handler): Use xmalloc.
+	(free_eh_ranges): New function.
+	(method_init_exceptions): Use it.
+	(add_handler): Use xmalloc.
+	(expand_start_java_handler): Don't mess with obstacks.
+	(prepare_eh_table_type): Likewise.
+	(expand_end_java_handler): Likewise.
+	* expr.c (push_value): Likewise.
+	(create_label_decl): Likewise.
+	(build_jni_stub): Likewise.
+	(java_lang_expand_expr): Likewise.
+	(note_instructions): Use xrealloc.
+	(java_push_constant_from_pool): Don't mess with obstacks.
+	(process_jvm_instruction): Likewise.
+	* java-tree.h (cyclic_inheritance_report): Remove duplicate
+	declaration.
+	* jcf-parse.c (get_constant): Don't mess with obstacks.
+	(read_class): Likewise.
+	(jcf_parse): Likewise.
+	* lex.c (expresion_obstack): Remove.
+	(java_lex): Don't use obstack_free.
+	* parse.h (exit_java_complete_class): Don't mess with obstacks.
+	(MANGLE_OUTER_LOCAL_VARIABLE_NAME): Adjust.
+	(MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID): Likewise.
+	(MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STRING): Likewise.
+	* parse.y (gaol): Add more GC roots.
+	(add_inner_class_fields): Adjust calls to MANGLE_* macros.
+	(lookup_field_wrapper): Likewise.
+	(obtain_incomplete_type): Don't mess with obstacks.
+	(build_alias_initializer_paramter_list): Adjust calls to MANGLE_*
+	macros.
+	(craft_constructor): Don't mess with obstacks.
+	(safe_layout_class): Likewise.
+	(java_complete_class): Likewise.
+	(source_end_java_method): Likewise.
+	(build_outer_field_access_methods): Likewise.
+	(build_outer_method_access_method): Likewise.
+	(maybe_build_thisn_access_method): Likewise.
+	(build_dot_class_method_invocation): Likewise.
+	(java_complete_tree): Likewise.
+	(java_complete_lhs): Likewise.
+	(do_merge_string_cste): Likewise.
+	(patch_string_cst): Likewise.
+	(array_constructor_check_entry): Likewise.
+	* typeck.c (build_java_array_type): Likewise.
+	(parse_signature_string): Likewise.
+	(build_java_signature): Likewise.
+	
 2000-10-12  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR gcj/356:

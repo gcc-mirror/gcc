@@ -46,13 +46,10 @@ void
 debug_tree (node)
      tree node;
 {
-  char *object = (char *) oballoc (0);
-
-  table = (struct bucket **) oballoc (HASH_SIZE * sizeof (struct bucket *));
+  table = (struct bucket **) permalloc (HASH_SIZE * sizeof (struct bucket *));
   bzero ((char *) table, HASH_SIZE * sizeof (struct bucket *));
   print_node (stderr, "", node, 0);
   table = 0;
-  obfree (object);
   fprintf (stderr, "\n");
 }
 
@@ -224,7 +221,7 @@ print_node (file, prefix, node, indent)
       }
 
   /* Add this node to the table.  */
-  b = (struct bucket *) oballoc (sizeof (struct bucket));
+  b = (struct bucket *) permalloc (sizeof (struct bucket));
   b->node = node;
   b->next = table[hash];
   table[hash] = b;
@@ -267,22 +264,6 @@ print_node (file, prefix, node, indent)
       print_node (file, "type", TREE_TYPE (node), indent + 4);
       if (TREE_TYPE (node))
 	indent_to (file, indent + 3);
-
-      if (!ggc_p)
-	{
-	  print_obstack_name ((char *) node, file, "");
-	  indent_to (file, indent + 3);
-	}
-    }
-
-  /* If a permanent object is in the wrong obstack, or the reverse, warn.  */
-  if (!ggc_p && object_permanent_p (node) != TREE_PERMANENT (node))
-    {
-      if (TREE_PERMANENT (node))
-	fputs (" !!permanent object in non-permanent obstack!!", file);
-      else
-	fputs (" !!non-permanent object in permanent obstack!!", file);
-      indent_to (file, indent + 3);
     }
 
   if (TREE_SIDE_EFFECTS (node))
@@ -303,8 +284,6 @@ print_node (file, prefix, node, indent)
     fputs (" used", file);
   if (TREE_NOTHROW (node))
     fputs (" nothrow", file);
-  if (!ggc_p && TREE_PERMANENT (node))
-    fputs (" permanent", file);
   if (TREE_PUBLIC (node))
     fputs (" public", file);
   if (TREE_PRIVATE (node))

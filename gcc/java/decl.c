@@ -57,10 +57,6 @@ static tree check_local_unnamed_variable PARAMS ((tree, tree, tree));
    before static field references.  */
 extern int always_initialize_class_p;
 
-/* Use garbage collection.  */
-
-int ggc_p = 1;
-
 /* The DECL_MAP is a mapping from (index, type) to a decl node.
    If index < max_locals, it is the index of a local variable.
    if index >= max_locals, then index-max_locals is a stack slot.
@@ -1558,7 +1554,7 @@ copy_lang_decl (node)
   int lang_decl_size
     = TREE_CODE (node) == VAR_DECL ? sizeof (struct lang_decl_var)
     : sizeof (struct lang_decl);
-  struct lang_decl *x = (struct lang_decl *) oballoc (lang_decl_size);
+  struct lang_decl *x = (struct lang_decl *) ggc_alloc (lang_decl_size);
   bcopy ((PTR) DECL_LANG_SPECIFIC (node), (PTR) x, lang_decl_size);
   DECL_LANG_SPECIFIC (node) = x;
 }
@@ -1733,10 +1729,6 @@ complete_start_java_method (fndecl)
 		       emit_init_test_initialization, 0);
     }
 
-  /* Allocate further tree nodes temporarily during compilation
-     of this function only.  */
-  temporary_allocation ();
-
 #if 0
       /* If this fcn was already referenced via a block-scope `extern' decl (or
          an implicit decl), propagate certain information about the usage. */
@@ -1812,7 +1804,7 @@ start_java_method (fndecl)
 
   i = DECL_MAX_LOCALS(fndecl) + DECL_MAX_STACK(fndecl);
   decl_map = make_tree_vec (i);
-  type_map = (tree *) oballoc (i * sizeof (tree));
+  type_map = (tree *) xrealloc (type_map, i * sizeof (tree));
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   fprintf (stderr, "%s:\n", (*decl_printable_name) (fndecl, 2));
@@ -1891,7 +1883,6 @@ end_java_method ()
   rest_of_compilation (fndecl);
 
   current_function_decl = NULL_TREE;
-  permanent_allocation (1);
   asynchronous_exceptions = flag_asynchronous_exceptions;
 }
 

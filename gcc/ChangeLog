@@ -1,3 +1,291 @@
+2000-10-12  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove obstacks.  
+	* Makefile.in (ggc-callbacks.o): Remove target.
+	(flow.o): Depend on GGC_H.  
+	* alias.c (init_alias_analysis):
+	Remove ggc_p conditionals.
+	(end_alias_analysis): Likewise.  
+	* basic-block.h (init_flow): New function.
+	(allocate_reg_life_data): Declare.  
+	* bb-reorder.c	(function_obstack): Replace with ...
+	(flow_obstack): ... new variable.
+	(fixup_reorder_chain): Use it.  
+	* c-decl.c (ggc_p): Remove.
+	(caller-save.c): Don't call oballoc/obfree.  
+	* combine.c (struct
+	undobuf): Remove storage.
+	(try_combine): Don't call oballoc.
+	(undo_all): Don't call obfree.  
+	* cse.c (insert): Use xmalloc, not
+	oballoc.
+	(cse_main): Adjust accordingly.  
+	* dwarf2out.c (save_rtx): Remove
+	obstack code.
+	(dwarf2out_init): Remove ggc_p conditionals.  
+	* emit-rtl.c (rtl_obstack): Remove.
+	(gen_rtx_CONST_INT): Remove ggc_p conditionals.
+	(make_insn_raw): Likewise.
+	(emit_insn_before): Likewise.
+	(emit_insn_after): Likewise.
+	(emit_insn): Likewise.
+	(gen_sequence): Likewise.
+	(copy_insn_1): Remove handling of `b' RTL components.
+	(init_emit_once): Remove ggc_p conditionals.  
+	* except.c (create_rethrow_ref): Don't fool with obstacks.
+	(add_partial_entry): Likewise.
+	(call_get_eh_context): Likewise.
+	(begin_protect_partials): Likewise.
+	(protect_with_terminate): Likewise.  
+	* explow.c
+	(plus_constant_wide): Likewise.  
+	* expr.c (init_expr_once):
+	Likewise.
+	(emit_block_move): Likewise.
+	(clear_storage): Likewise.
+	(expand_expr): Likewise.  
+	* flow.c (function_obstack): Remove.
+	(flow_obstack): New variable.
+	(flow_firstobj): Likewise.
+	(create_base_block): Use the flow_obstack.
+	(split_block): Likewise.
+	(split_edge): Likewise.
+	(calculate_global_regs_live): Likewise.
+	(allocate_bb_life_data): Make it static.  Likewiwse.
+	(init_flow): New function.
+	(size_int_type_wide): Remove ggc_p conditionals.  
+	* function.c
+	(push_function_context_to): Don't call save_tree_status.
+	(pop_function_context_from): Or restore_tree_status.
+	(assign_stack_local_1): Don't call push_obstacks.
+	(find_fixup_replacement): Use xmalloc.
+	(fixup_var_refs_insns): Free the storage.
+	(insns_for_mem_walk): Don't mess with obstacks.
+	(instantiate_decls): Likewise.
+	(trampoline_address): Likewise.
+	(expand_function_end): Likewise.  
+	* function.h (sturct function):
+	Remove obstack-related variables.
+	(save_tree_status): Don't declare.
+	(restore_tree_status): Likewise.  
+	* gcse.c (compute_can_copy):
+	Don't call oballoc/obfree.  
+	* genattrtab.c (operate_exp): Remove
+	ggc_p conditionals.
+	(simplify_cond): Likewise.
+	(simplify_test_exp): Don't mess with obstacks.
+	(optimize_attrs): Likewise.  
+	* gengenrtl.c (gendef): Don't include
+	ggc_p conditionals.  
+	* ggc-callbacks.c (ggc_p): Remove.  
+	*
+	ggc-none.c (ggc_p): Remove.  
+	* ggc.h (ggc_p): Don't declare.  
+	*
+	integrate.c (save_for_inline): Don't mess with obstacks.
+	(integrate_decl_tree): Likewise.
+	(output_inline_function): Likewise.  
+	* lists.c
+	(init_EXPR_INSN_LIST_cache): Likewise.  
+	* loop.c (temp_obstack):
+	Remove.
+	(rtl_obstack): Likewise.
+	(init_loop): Don't mess with obstacks.
+	(reg_address_cost): Free BIVs and GIVs.
+	(check_insns_for_bivs): Use xmalloc, not oballoc.
+	(find_mem_givs): Likewise.
+	(record_biv): Likewise.
+	(general_induction_var): Likewise.
+	(product_cheap_p): Likewse.  
+	* optabs.c (init_one_libfunc): Remove
+	ggc_p conditional.  
+	* print-tree.c (debug_tree): Don't use
+	oballoc/obfree.
+	(print_node): Likewise.  
+	* profile.c (output_func_start_profiler):
+	Remove call to temporary_allocation.  
+	* reload1.c
+	(eliminate_regs_in_insn): Don't mess with obstacks.  
+	* resource.c
+	(mark_target_live_regs): Use xmalloc.
+	(free_resource_info): Free the memory.  
+	* rtl.c (rtl_obstack):
+	Remove.
+	(rtvec_alloc): Don't mess with obstacks.
+	(rtx_alloc): Likewise.
+	(rtx_free): Remove.
+	(copy_rtx): Don't handle `b' cases.
+	(read_rtx): Use a local rtl_obstack.  
+	* rtl.h (oballoc): Remove.
+	(obfree): Likewise.
+	(pop_obstacks): Likewise.
+	(push_obstacks): Likewise.
+	(allocate_bb_life_data): Likewise.
+	(allocate_reg_life_data): Likewise.
+	(rtx_free): Likewise.  
+	* sdbout.c (sdbout_queue_anonymous_type):
+	Use tree_cons, not saveable_tree_cons.  
+	* simplify-rtx.c
+	(cselib_init): Don't mess with obstacks.  
+	* stmt.c
+	(mark_block_nesting): Mark the label_chain.
+	(epxand_label): Use ggc_alloc, not oballoc.
+	(clear_last_expr): Don't mess with obstacks.
+	(expand_decl_cleanup): Likewise.
+	(expand_dcc_cleanup): Likewise.
+	(expand_dhc_cleanup): Likewise.
+	(expand_anon_union_decl): Likewise.
+	(add_case_node): Use xmalloc, not oballoc.
+	(free_case_nodes): New function.
+	(expand_end_case): Call it.  
+	* stor-layout.c (layout_type): Don't
+	mess with obstacks.
+	(layout_type): Likewise.  
+	* toplev.c (wrapup_global_declarations):
+	Likewise.
+	(compile_file): Remove ggc_p conditionals.
+	(rest_of_compilation): Call init_flow.  Remove ggc_p conditionals.
+	(decode_f_option): Remove ggc_p conditionals.  
+	* tree.c
+	(function_maybepermanent_obstack): Remove.
+	(maybepermanent_obstack): Likewise.
+	(function_obstack): Likewise.
+	(tmeporary_obstack): Likewise.
+	(momentary_obstack): Likewise.
+	(temp_decl_obstack): Likewise.
+	(saveable_obstack): Likewise.
+	(rtl_obstack): Likewise.
+	(current_obstack): Likewise.
+	(expression_obstack): Likewise.
+	(struct obstack_stack): Likewise.
+	(obstack_stack): Likewise.
+	(obstack_stack_obstack): Likewise.
+	(maybepermanent_firstobj): Likewise.
+	(temporary_firstobj): Likewise.
+	(momentary_firstobj): Likewise.
+	(temp_decl_firstobj): Likewise.
+	(momentary_function_firstobj): Likewise.
+	(all_types_permanent): Likewise.
+	(struct momentary_level): Likewise.
+	(momentary_stack): Likewise.
+	(init_obstacks): Remove initialization of removed obstacks.
+	(save_tree_status): Remove.
+	(restore_tree_status): Likewise.
+	(temporary_allocation): Liekwise.
+	(end_temporary_allocation): Liekwise.
+	(resume_temporary_allocation): Likewise.
+	(saveable_allocation): Likewise.
+	(push_obstacks): Likewise.
+	(push_obstacks_nochange): Likewise.
+	(pop_obstacks): Likewise.
+	(allocation_temporary_p): Likewise.
+	(permanent_allocation): Likewise.
+	(preserve_data): Likewise.
+	(preserve_initializer): Likewise.
+	(rtl_in_current_obstack): Likewise.
+	(rtl_in_saveable_obstack): Likewise.
+	(oballoc): Likewise.
+	(obfree): Likewise.
+	(savealloc): Likewise.
+	(expralloc): Likewise.
+	(print_obstack_name): Likewise.
+	(debug_obstack): Likewise.
+	(object_permanent_p): Likewise.
+	(push_momentary): Likewise.
+	(perserve_momentary): Likewise.
+	(clear_momentary): Likewise.
+	(pop_momentary): Likewise.
+	(pop_momentary_nofree): Likewise.
+	(suspend_momentary): Likewise.
+	(resume_momentary): Likewise.
+	(make_node): Don't set TREE_PERMANENT.
+	(copy_node): Remove ggc_p conditionals.  Don't set TYPE_OBSTACK.
+	Don't set TREE_PERMANENT.
+	(get_identifier): Remove ggc_p conditionals.
+	(build_string): Likewise.
+	(make_tree_vec): Likewise.
+	(build_decl_list): Remove.
+	(build_expr_list): Likewise.
+	(tree_cons): Remove ggc_p conditionals.
+	(decl_tree_cons): Remove.
+	(expr_tree_cons): Likewise.
+	(perm_tree_cons): Likewise.
+	(temp_tree_cons): Likewise.
+	(saveable_tree_cons): Likewise.
+	(build1): Remove ggc_p conditionals.
+	(build_parse_node): Likewise.
+	(build_type_attribute_variant): Don't mess with obstacks.
+	(build_type_copy): Likewise.
+	(type_hash_canon): Likewise.
+	(build_pointer_type): Likewise.
+	(build_reference_type): Likewise.
+	(build_index_type): Likewise.
+	(build_range_type): Likewise.
+	(dump_tree_statistics): Don't print obstack information.  
+	* tree.h
+	(struct tree_common): Remove permanent_flag.
+	(TREE_PERMANENT): Remove.
+	(TREE_SET_PERMANENT): Likewise.
+	(TYPE_OBSTACK): Likewise.
+	(struct tree_type): Remove obstack.
+	(oballoc): Remove.
+	(savealloc): Likewise.
+	(build_decl_list): Likewise.
+	(build_expr_list): Likewise.
+	(perm_tree_cons): Likewise.
+	(temp_tree_cons): Likewise.
+	(saveable_tree_cons): Likewise.
+	(decl_tree_cons): Likewise.
+	(expr_tree_cons): Likewise.
+	(suspend_momentary): Likewise.
+	(allocation_temporary_p): Likewise.
+	(resume_momentary): Likewise.
+	(push_obstacks_nochange): Likewise.
+	(permanent_allocation): Likewise.
+	(push_momentary): Likewise.
+	(clear_momentary): Likewise.
+	(pop_momentary): Likewise.
+	(end_temporary_allocation): Likewise.
+	(pop_obstacks): Likewise.
+	(push_obstacks): Likewise.
+	(pop_momentary_nofree): LIkewise.
+	(preserve_momentary): Likewise.
+	(saveable_allocation): Likewise.
+	(temporary_allocation): Likewise.
+	(resume_temporary_allocation): Likewise.
+	(perserve_initializer): Likewise.
+	(debug_obstack): Likewise.
+	(rtl_in_current_obstack): Likewise.
+	(rtl_in_saveable_obstack): Likewise.
+	(obfree): Likewise.  
+	* varasm.c (current_obstack): Remove.
+	(saveable_obstack): Remove.
+	(rtl_obstack): Remove.
+	(immed_double_const): Don't mess with obstacks.
+	(immed_real_cons): Likewise.
+	(output_constant_def): Likewise.
+	(init_varasm_status): Use xcalloc.
+	(mark_pool_constant): Mark the pool constant itself.
+	(free_varasm_status): Free memory.
+	(decode_rtx_const): Call bzero directly, rather than expanding it
+	inline.
+	(record_rtx_const): Don't mess with obstacks.
+	(force_const_mem): Likewise.
+	* config/arm/arm.c (arm_encode_call_attribute): Remove ggc_p
+	conditionals.
+	(aof_pic_entry): Likewise.
+	* config/ia64/ia64.c (ia64_encode_section_info): Likewise.
+	* config/m32r/m32r.c (m32r_encode_section_info): Likewise.
+	* config/pa/pa.c (saveable_obstack): Remove.
+	(rtl_obstack): Likewise.
+	(current_obstack): Likewise.
+	(output_call): Don't mess with obstacks.
+	(hppa_encode_label): Remove ggc_p conditionals.
+	* config/romp/romp.c (get_symref): Don't mess with obstacks.
+	* config/rs6000/rs6000.c (output_toc): Remove ggc_p conditional.
+	(rs6000_encode_section_info): Likewise.
+	* config/sh/sh.c (get_fpscr_rtx): Likewise.
+	
 Thu Oct 12 16:02:31 MET DST 2000 Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (adddi3, subdi3 splitters): Update for new pattern.

@@ -109,7 +109,6 @@ static void add_stored_regs		PARAMS ((rtx, rtx, void *));
 void
 init_caller_save ()
 {
-  char *first_obj = (char *) oballoc (0);
   rtx addr_reg;
   int offset;
   rtx address;
@@ -218,8 +217,6 @@ init_caller_save ()
       }
 
   end_sequence ();
-
-  obfree (first_obj);
 }
 
 /* Initialize save areas by showing that we haven't allocated any yet.  */

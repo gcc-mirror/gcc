@@ -168,12 +168,10 @@ Boston, MA 02111-1307, USA.  */
 #define EPILOGUE_USES(REGNO)  0
 #endif
 
-/* The contents of the current function definition are allocated
-   in this obstack, and all are freed at the end of the function.
-   For top-level functions, this is temporary_obstack.
-   Separate obstacks are made for nested functions.  */
+/* The obstack on which the flow graph components are allocated.  */
 
-extern struct obstack *function_obstack;
+struct obstack flow_obstack;
+static char *flow_firstobj;
 
 /* Number of basic blocks in the current function.  */
 
@@ -439,6 +437,7 @@ static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
+static void allocate_bb_life_data	PARAMS ((void));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -942,7 +941,7 @@ create_basic_block (index, head, end, bb_note)
 	 the same lifetime by allocating it off the function obstack
 	 rather than using malloc.  */
 
-      bb = (basic_block) obstack_alloc (function_obstack, sizeof (*bb));
+      bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*bb));
       memset (bb, 0, sizeof (*bb));
 
       if (GET_CODE (head) == CODE_LABEL)
@@ -1479,7 +1478,7 @@ split_block (bb, insn)
     return 0;
 
   /* Create the new structures.  */
-  new_bb = (basic_block) obstack_alloc (function_obstack, sizeof (*new_bb));
+  new_bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*new_bb));
   new_edge = (edge) xcalloc (1, sizeof (*new_edge));
   n_edges++;
 
@@ -1532,8 +1531,8 @@ split_block (bb, insn)
 
   if (bb->global_live_at_start)
     {
-      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
-      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
+      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       COPY_REG_SET (new_bb->global_live_at_end, bb->global_live_at_end);
 
       /* We now have to calculate which registers are live at the end
@@ -1584,7 +1583,7 @@ split_edge (edge_in)
   }
 
   /* Create the new structures.  */
-  bb = (basic_block) obstack_alloc (function_obstack, sizeof (*bb));
+  bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*bb));
   edge_out = (edge) xcalloc (1, sizeof (*edge_out));
   n_edges++;
 
@@ -1593,8 +1592,8 @@ split_edge (edge_in)
   /* ??? This info is likely going to be out of date very soon.  */
   if (old_succ->global_live_at_start)
     {
-      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
-      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
+      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       COPY_REG_SET (bb->global_live_at_start, old_succ->global_live_at_start);
       COPY_REG_SET (bb->global_live_at_end, old_succ->global_live_at_start);
     }
@@ -3356,7 +3355,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
       if (bb->local_set == NULL)
 	{
-	  bb->local_set = OBSTACK_ALLOC_REG_SET (function_obstack);
+	  bb->local_set = OBSTACK_ALLOC_REG_SET (&flow_obstack);
 	  rescan = 1;
 	}
       else
@@ -3465,7 +3464,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 /* Allocate the permanent data structures that represent the results
    of life analysis.  Not static since used also for stupid life analysis.  */
 
-void
+static void
 allocate_bb_life_data ()
 {
   register int i;
@@ -3474,16 +3473,16 @@ allocate_bb_life_data ()
     {
       basic_block bb = BASIC_BLOCK (i);
 
-      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
-      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
+      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
     }
 
   ENTRY_BLOCK_PTR->global_live_at_end
-    = OBSTACK_ALLOC_REG_SET (function_obstack);
+    = OBSTACK_ALLOC_REG_SET (&flow_obstack);
   EXIT_BLOCK_PTR->global_live_at_start
-    = OBSTACK_ALLOC_REG_SET (function_obstack);
+    = OBSTACK_ALLOC_REG_SET (&flow_obstack);
 
-  regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (function_obstack);
+  regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (&flow_obstack);
 }
 
 void
@@ -8362,4 +8361,24 @@ reg_set_to_hard_reg_set (to, from)
 	 return;
        SET_HARD_REG_BIT (*to, i);
      });
+}
+
+/* Called once at intialization time.  */
+
+void
+init_flow ()
+{
+  static int initialized;
+
+  if (!initialized)
+    {
+      gcc_obstack_init (&flow_obstack);
+      flow_firstobj = (char *) obstack_alloc (&flow_obstack, 0);
+      initialized = 1;
+    }
+  else
+    {
+      obstack_free (&flow_obstack, flow_firstobj);
+      flow_firstobj = (char *) obstack_alloc (&flow_obstack, 0);
+    }
 }

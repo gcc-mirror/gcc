@@ -1860,7 +1860,7 @@ size_int_type_wide (number, type)
   static int init_p = 0;
   tree t;
 
-  if (ggc_p && ! init_p)
+  if (! init_p)
     {
       ggc_add_tree_root ((tree *) size_table,
 			 sizeof size_table / sizeof (tree));
@@ -1877,20 +1877,10 @@ size_int_type_wide (number, type)
 	  if (TREE_TYPE (t) == type)
 	    return t;
 
-      if (! ggc_p)
-	{
-	  /* Make this a permanent node.  */
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
-	}
-
       t = build_int_2 (number, 0);
       TREE_TYPE (t) = type;
       TREE_CHAIN (t) = size_table[number];
       size_table[number] = t;
-
-      if (! ggc_p)
-	pop_obstacks ();
 
       return t;
     }

@@ -407,7 +407,6 @@ build_java_array_type (element_type, length)
   TYPE_ARRAY_ELEMENT (t) = element_type;
 
   /* Add length pseudo-field. */
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   fld = build_decl (FIELD_DECL, get_identifier ("length"), int_type_node);
   TYPE_FIELDS (t) = fld;
   DECL_CONTEXT (fld) = t;
@@ -447,7 +446,6 @@ build_java_array_type (element_type, length)
 #endif
       TYPE_ALIGN (t) = desired_align;
     }
-  pop_obstacks ();
 
   /* We could layout_class, but that loads java.lang.Object prematurely.
    * This is called by the parser, and it is a bad idea to do load_class
@@ -552,7 +550,6 @@ parse_signature_string (sig_string, sig_length)
   const unsigned char *str = sig_string;
   const unsigned char *limit = str + sig_length;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   if (str < limit && str[0] == '(')
     {
       tree argtype_list = NULL_TREE;
@@ -572,7 +569,6 @@ parse_signature_string (sig_string, sig_length)
     result_type = parse_signature_type (&str, limit);
   if (str != limit)
     error ("junk at end of signature string");
-  pop_obstacks ();
   return result_type;
 }
 
@@ -633,7 +629,6 @@ build_java_signature (type)
      tree type;
 {
   tree sig, t;
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   while (TREE_CODE (type) == POINTER_TYPE)
     type = TREE_TYPE (type);
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
@@ -705,7 +700,6 @@ build_java_signature (type)
 	}
       TYPE_SIGNATURE (type) = sig;
     }
-  pop_obstacks ();
   return sig;
 }
 

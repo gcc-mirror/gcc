@@ -1717,10 +1717,7 @@ arm_encode_call_attribute (decl, flag)
   if (DECL_WEAK (decl) && flag == SHORT_CALL_FLAG_CHAR)
     return;
   
-  if (ggc_p)
-    newstr = ggc_alloc_string (NULL, len + 2);
-  else
-    newstr = permalloc (len + 2);
+  newstr = ggc_alloc_string (NULL, len + 2);
 
   sprintf (newstr, "%c%s", flag, str);
 
@@ -9743,10 +9740,7 @@ aof_pic_entry (x)
 	 polluting even more code with ifdefs, and because it never
 	 contains anything useful until we assign to it here.  */
       ggc_add_rtx_root (&aof_pic_label, 1);
-      /* This needs to persist throughout the compilation.  */
-      end_temporary_allocation ();
       aof_pic_label = gen_rtx_SYMBOL_REF (Pmode, "x$adcons");
-      resume_temporary_allocation ();
     }
 
   for (offset = 0, chainp = &aof_pic_chain; *chainp;

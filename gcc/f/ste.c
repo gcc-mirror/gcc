@@ -440,8 +440,6 @@ ffeste_end_block_ (ffestw block)
 
   free (b);
 
-  clear_momentary ();
-
   ffecom_end_compstmt ();
 }
 
@@ -482,8 +480,6 @@ ffeste_end_stmt_(void)
 
   free (b);
 
-  clear_momentary ();
-
   ffecom_end_compstmt ();
 }
 
@@ -493,7 +489,6 @@ ffeste_end_stmt_(void)
 #define ffeste_end_block_(b)	\
   do				\
     {				\
-      clear_momentary ();	\
       ffecom_end_compstmt ();	\
     } while(0)
 #define ffeste_start_stmt_() ffeste_start_block_(NULL)
@@ -501,10 +496,8 @@ ffeste_end_stmt_(void)
 
 #endif  /* ! defined (ENABLE_CHECKING) */
 
-/* Begin an iterative DO loop.  Pass the block to start if applicable.
-
-   NOTE: Does _two_ push_momentary () calls, which the caller must
-   undo (by calling ffeste_end_iterdo_).  */
+/* Begin an iterative DO loop.  Pass the block to start if
+   applicable.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
@@ -572,8 +565,6 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
     }
 
   tincr_saved = ffecom_save_tree (tincr);
-
-  preserve_momentary ();
 
   /* Want to have tstart, tend for just this statement. */
 
@@ -1210,7 +1201,6 @@ ffeste_io_ialist_ (bool have_err,
   static tree f2c_alist_struct = NULL_TREE;
   tree t;
   tree ttype;
-  int yes;
   tree field;
   tree inits, initn;
   bool constantp = TRUE;
@@ -1277,8 +1267,6 @@ ffeste_io_ialist_ (bool have_err,
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
-  yes = suspend_momentary ();
-
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_alist_%d",
 						  mynumber++),
@@ -1286,8 +1274,6 @@ ffeste_io_ialist_ (bool have_err,
   TREE_STATIC (t) = 1;
   t = ffecom_start_decl (t, 1);
   ffecom_finish_decl (t, inits, 0);
-
-  resume_momentary (yes);
 
   /* Prepare run-time expressions.  */
 
@@ -1343,7 +1329,6 @@ ffeste_io_cilist_ (bool have_err,
   static tree f2c_cilist_struct = NULL_TREE;
   tree t;
   tree ttype;
-  int yes;
   tree field;
   tree inits, initn;
   bool constantp = TRUE;
@@ -1489,8 +1474,6 @@ ffeste_io_cilist_ (bool have_err,
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
-  yes = suspend_momentary ();
-
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_cilist_%d",
 						  mynumber++),
@@ -1498,8 +1481,6 @@ ffeste_io_cilist_ (bool have_err,
   TREE_STATIC (t) = 1;
   t = ffecom_start_decl (t, 1);
   ffecom_finish_decl (t, inits, 0);
-
-  resume_momentary (yes);
 
   /* Prepare run-time expressions.  */
 
@@ -1569,7 +1550,6 @@ ffeste_io_cllist_ (bool have_err,
   static tree f2c_close_struct = NULL_TREE;
   tree t;
   tree ttype;
-  int yes;
   tree field;
   tree inits, initn;
   tree ignore;			/* Ignore length info for certain fields. */
@@ -1625,8 +1605,6 @@ ffeste_io_cllist_ (bool have_err,
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
-  yes = suspend_momentary ();
-
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_cllist_%d",
 						  mynumber++),
@@ -1634,8 +1612,6 @@ ffeste_io_cllist_ (bool have_err,
   TREE_STATIC (t) = 1;
   t = ffecom_start_decl (t, 1);
   ffecom_finish_decl (t, inits, 0);
-
-  resume_momentary (yes);
 
   /* Prepare run-time expressions.  */
 
@@ -1692,7 +1668,6 @@ ffeste_io_icilist_ (bool have_err,
   static tree f2c_icilist_struct = NULL_TREE;
   tree t;
   tree ttype;
-  int yes;
   tree field;
   tree inits, initn;
   bool constantp = TRUE;
@@ -1839,8 +1814,6 @@ ffeste_io_icilist_ (bool have_err,
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
-  yes = suspend_momentary ();
-
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_icilist_%d",
 						  mynumber++),
@@ -1848,8 +1821,6 @@ ffeste_io_icilist_ (bool have_err,
   TREE_STATIC (t) = 1;
   t = ffecom_start_decl (t, 1);
   ffecom_finish_decl (t, inits, 0);
-
-  resume_momentary (yes);
 
   /* Prepare run-time expressions.  */
 
@@ -1940,7 +1911,6 @@ ffeste_io_inlist_ (bool have_err,
   static tree f2c_inquire_struct = NULL_TREE;
   tree t;
   tree ttype;
-  int yes;
   tree field;
   tree inits, initn;
   bool constantp = TRUE;
@@ -2095,8 +2065,6 @@ ffeste_io_inlist_ (bool have_err,
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
-  yes = suspend_momentary ();
-
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_inlist_%d",
 						  mynumber++),
@@ -2104,8 +2072,6 @@ ffeste_io_inlist_ (bool have_err,
   TREE_STATIC (t) = 1;
   t = ffecom_start_decl (t, 1);
   ffecom_finish_decl (t, inits, 0);
-
-  resume_momentary (yes);
 
   /* Prepare run-time expressions.  */
 
@@ -2196,7 +2162,6 @@ ffeste_io_olist_ (bool have_err,
   static tree f2c_open_struct = NULL_TREE;
   tree t;
   tree ttype;
-  int yes;
   tree field;
   tree inits, initn;
   tree ignore;			/* Ignore length info for certain fields. */
@@ -2280,8 +2245,6 @@ ffeste_io_olist_ (bool have_err,
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
-  yes = suspend_momentary ();
-
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_olist_%d",
 						  mynumber++),
@@ -2289,8 +2252,6 @@ ffeste_io_olist_ (bool have_err,
   TREE_STATIC (t) = 1;
   t = ffecom_start_decl (t, 1);
   ffecom_finish_decl (t, inits, 0);
-
-  resume_momentary (yes);
 
   /* Prepare run-time expressions.  */
 
@@ -2974,8 +2935,6 @@ ffeste_R810 (ffestw block, unsigned long casenum)
 	  c->previous_stmt = c->previous_stmt->previous_stmt;
 	}
       while ((c != (ffestwCase) &s->first_rel) && (casenum == c->casenum));
-
-    clear_momentary ();
   }
 #else
 #error
@@ -3305,8 +3264,6 @@ ffeste_R838 (ffelab label, ffebld target)
 				   target_tree,
 				   label_tree);
 	expand_expr_stmt (expr_tree);
-
-	clear_momentary ();
       }
   }
 #else
@@ -3340,8 +3297,6 @@ ffeste_R839 (ffebld target)
       error ("ASSIGNed GOTO target variable is too small");
 
     expand_computed_goto (convert (TREE_TYPE (null_pointer_node), t));
-
-    clear_momentary ();
   }
 #else
 #error
@@ -3556,8 +3511,6 @@ ffeste_R842 (ffebld expr)
     TREE_SIDE_EFFECTS (callit) = 1;
 
     expand_expr_stmt (callit);
-
-    clear_momentary ();
   }
 #else
 #error
@@ -3641,8 +3594,6 @@ ffeste_R843 (ffebld expr)
     TREE_SIDE_EFFECTS (callit) = 1;
 
     expand_expr_stmt (callit);
-
-    clear_momentary ();
   }
 #if 0				/* Old approach for phantom g77 run-time
 				   library. */
@@ -3668,8 +3619,6 @@ ffeste_R843 (ffebld expr)
     TREE_SIDE_EFFECTS (callit) = 1;
 
     expand_expr_stmt (callit);
-
-    clear_momentary ();
   }
 #endif
 #else
@@ -4998,9 +4947,6 @@ ffeste_R1001 (ffests s)
     TREE_CONSTANT (t) = 1;
     TREE_STATIC (t) = 1;
 
-    push_obstacks_nochange ();
-    end_temporary_allocation ();
-
     var = ffecom_lookup_label (ffeste_label_formatdef_);
     if ((var != NULL_TREE)
 	&& (TREE_CODE (var) == VAR_DECL))
@@ -5018,9 +4964,6 @@ ffeste_R1001 (ffests s)
 	expand_decl (var);
 	expand_decl_init (var);
       }
-
-    resume_temporary_allocation ();
-    pop_obstacks ();
 
     ffeste_label_formatdef_ = NULL;
   }

@@ -121,21 +121,11 @@ zap_lists (dummy)
 void 
 init_EXPR_INSN_LIST_cache ()
 {
-  if (ggc_p)
+  static int initialized;
+  if (!initialized)
     {
-      static int initialized;
-      if (!initialized)
-        {
-          initialized = 1;
-          ggc_add_root (&unused_expr_list, 1, 1, zap_lists);
-        }
-
-      /* No need to squish the lists across functions with GC enabled.  */
-    }
-  else
-    {
-      unused_expr_list = NULL;
-      unused_insn_list = NULL;
+      initialized = 1;
+      ggc_add_root (&unused_expr_list, 1, 1, zap_lists);
     }
 }
 

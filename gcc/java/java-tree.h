@@ -602,8 +602,6 @@ extern struct CPool *outgoing_cpool;
 
 extern char *cyclic_inheritance_report;
 
-extern char *cyclic_inheritance_report;
-
 struct lang_identifier
 {
   struct tree_identifier ignore;

@@ -200,7 +200,7 @@ make_call_declarator (target, parms, cv_qualifiers, exception_specification)
      tree target, parms, cv_qualifiers, exception_specification;
 {
   target = build_parse_node (CALL_EXPR, target, 
-			     decl_tree_cons (parms, cv_qualifiers, NULL_TREE),
+			     tree_cons (parms, cv_qualifiers, NULL_TREE),
 			     /* The third operand is really RTL.  We
 				shouldn't put anything there.  */
 			     NULL_TREE);

@@ -321,10 +321,7 @@ gendef (format)
      the memory and initializes it.  */
   puts ("{");
   puts ("  rtx rt;");
-  puts ("  if (ggc_p)");
-  printf ("    rt = ggc_alloc_rtx (%d);\n", (int) strlen (format));
-  puts ("  else");
-  printf ("    rt = obstack_alloc_rtx (%d);\n", (int) strlen (format));
+  printf ("  rt = ggc_alloc_rtx (%d);\n", (int) strlen (format));
 
   puts ("  memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));\n");
   puts ("  PUT_CODE (rt, code);");

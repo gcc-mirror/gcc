@@ -426,7 +426,7 @@ static void mark_block_nesting          PARAMS ((struct nesting *));
 static void mark_case_nesting           PARAMS ((struct nesting *));
 static void mark_case_node		PARAMS ((struct case_node *));
 static void mark_goto_fixup             PARAMS ((struct goto_fixup *));
-
+static void free_case_nodes             PARAMS ((case_node_ptr));
 
 void
 using_eh_for_cleanups ()
@@ -485,8 +485,11 @@ mark_block_nesting (n)
       ggc_mark_tree (n->data.block.cleanups);
       ggc_mark_tree (n->data.block.outer_cleanups);
 
-      for (l = n->data.block.label_chain; l != NULL; l = l->next)
-	ggc_mark_tree (l->label);
+      for (l = n->data.block.label_chain; l != NULL; l = l->next) 
+	{
+	  ggc_mark (l);
+	  ggc_mark_tree (l->label);
+	}
 
       ggc_mark_rtx (n->data.block.last_unconditional_cleanup);
 
@@ -748,7 +751,7 @@ expand_label (label)
 
   if (stack_block_stack != 0)
     {
-      p = (struct label_chain *) oballoc (sizeof (struct label_chain));
+      p = (struct label_chain *) ggc_alloc (sizeof (struct label_chain));
       p->next = stack_block_stack->data.block.label_chain;
       stack_block_stack->data.block.label_chain = p;
       p->label = label;
@@ -2093,14 +2096,11 @@ clear_last_expr ()
 tree
 expand_start_stmt_expr ()
 {
-  int momentary;
   tree t;
 
   /* Make the RTL_EXPR node temporary, not momentary,
      so that rtl_expr_chain doesn't become garbage.  */
-  momentary = suspend_momentary ();
   t = make_node (RTL_EXPR);
-  resume_momentary (momentary);
   do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (t);
   NO_DEFER_POP;
@@ -3998,10 +3998,6 @@ expand_decl_cleanup (decl, cleanup)
 
 	  emit_move_insn (flag, const1_rtx);
 
-	  /* All cleanups must be on the function_obstack.  */
-	  push_obstacks_nochange ();
-	  resume_temporary_allocation ();
-
 	  cond = build_decl (VAR_DECL, NULL_TREE, type_for_mode (word_mode, 1));
 	  DECL_RTL (cond) = flag;
 
@@ -4011,18 +4007,12 @@ expand_decl_cleanup (decl, cleanup)
 			   cleanup, integer_zero_node);
 	  cleanup = fold (cleanup);
 
-	  pop_obstacks ();
-
 	  cleanups = thisblock->data.block.cleanup_ptr;
 	}
 
-      /* All cleanups must be on the function_obstack.  */
-      push_obstacks_nochange ();
-      resume_temporary_allocation ();
       cleanup = unsave_expr (cleanup);
-      pop_obstacks ();
 
-      t = *cleanups = temp_tree_cons (decl, cleanup, *cleanups);
+      t = *cleanups = tree_cons (decl, cleanup, *cleanups);
 
       if (! cond_context)
 	/* If this block has a cleanup, it belongs in stack_block_stack.  */
@@ -4114,15 +4104,11 @@ expand_dcc_cleanup (decl)
 
   /* Record the cleanup for the dynamic handler chain.  */
 
-  /* All cleanups must be on the function_obstack.  */
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
   cleanup = make_node (POPDCC_EXPR);
-  pop_obstacks ();
 
   /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
   thisblock->data.block.cleanups
-    = temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
+    = tree_cons (decl, cleanup, thisblock->data.block.cleanups);
 
   /* If this block has a cleanup, it belongs in stack_block_stack.  */
   stack_block_stack = thisblock;
@@ -4156,15 +4142,11 @@ expand_dhc_cleanup (decl)
 
   /* Record the cleanup for the dynamic handler chain.  */
 
-  /* All cleanups must be on the function_obstack.  */
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
   cleanup = make_node (POPDHC_EXPR);
-  pop_obstacks ();
 
   /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
   thisblock->data.block.cleanups
-    = temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
+    = tree_cons (decl, cleanup, thisblock->data.block.cleanups);
 
   /* If this block has a cleanup, it belongs in stack_block_stack.  */
   stack_block_stack = thisblock;
@@ -4239,8 +4221,8 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 
       if (cleanup != 0)
 	thisblock->data.block.cleanups
-	  = temp_tree_cons (decl_elt, cleanup_elt,
-			    thisblock->data.block.cleanups);
+	  = tree_cons (decl_elt, cleanup_elt,
+		       thisblock->data.block.cleanups);
     }
 }
 
@@ -4713,7 +4695,7 @@ add_case_node (low, high, label, duplicate)
      Copy LOW, HIGH so they are on temporary rather than momentary
      obstack and will thus survive till the end of the case statement.  */
 
-  r = (struct case_node *) oballoc (sizeof (struct case_node));
+  r = (struct case_node *) xmalloc (sizeof (struct case_node));
   r->low = copy_node (low);
 
   /* If the bounds are equal, turn this into the one-value case.  */
@@ -5247,6 +5229,20 @@ check_for_full_enumeration_handling (type)
 #endif /* 0 */
 }
 
+/* Free CN, and its children.  */
+
+static void 
+free_case_nodes (cn)
+     case_node_ptr cn;
+{
+  if (cn) 
+    {
+      free_case_nodes (cn->left);
+      free_case_nodes (cn->right);
+      free (cn);
+    }
+}
+
 
 /* Terminate a case (Pascal) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
@@ -5634,6 +5630,7 @@ expand_end_case (orig_index)
   if (thiscase->exit_label)
     emit_label (thiscase->exit_label);
 
+  free_case_nodes (case_stack->data.case_stmt.case_list);
   POPSTACK (case_stack);
 
   free_temp_slots ();

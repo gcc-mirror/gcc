@@ -1230,24 +1230,12 @@ void
 layout_type (type)
      tree type;
 {
-  int old;
-
   if (type == 0)
     abort ();
 
   /* Do nothing if type has been laid out before.  */
   if (TYPE_SIZE (type))
     return;
-
-  /* Make sure all nodes we allocate are not momentary; they must last
-     past the current statement.  */
-  old = suspend_momentary ();
-
-  /* Put all our nodes into the same obstack as the type.  Also,
-     make expressions saveable (this is a no-op for permanent types).  */
-
-  push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
-  saveable_allocation ();
 
   switch (TREE_CODE (type))
     {
@@ -1535,9 +1523,6 @@ layout_type (type)
       && TREE_CODE (type) != UNION_TYPE
       && TREE_CODE (type) != QUAL_UNION_TYPE)
     finalize_type_size (type);
-
-  pop_obstacks ();
-  resume_momentary (old);
 
   /* If this type is created before sizetype has been permanently set,
      record it so set_sizetype can fix it up.  */

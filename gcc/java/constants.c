@@ -335,11 +335,7 @@ get_tag_node (tag)
     }
 
   if (tag_nodes[tag] == NULL_TREE)
-    {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      tag_nodes[tag] = build_int_2 (tag, 0);
-      pop_obstacks ();
-    }
+    tag_nodes[tag] = build_int_2 (tag, 0);
   return tag_nodes[tag];
 }
 
@@ -402,13 +398,11 @@ build_constant_data_ref ()
     {
       tree decl;
       tree decl_name = mangled_classname ("_CD_", current_class);
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       decl = build_decl (VAR_DECL, decl_name,
 			 build_array_type (ptr_type_node,
 					   one_elt_array_domain_type));
       TREE_STATIC (decl) = 1;
       make_decl_rtl (decl, NULL, 1);
-      pop_obstacks ();
       TYPE_CPOOL_DATA_REF (current_class) = current_constant_pool_data_ref
 	= build1 (ADDR_EXPR, ptr_type_node, decl);
     }

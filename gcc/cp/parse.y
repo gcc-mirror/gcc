@@ -120,12 +120,12 @@ frob_specs (specs_attrs, lookups)
   split_specs_attrs (specs_attrs, &current_declspecs, &prefix_attributes);
   if (current_declspecs
       && TREE_CODE (current_declspecs) != TREE_LIST)
-    current_declspecs = build_decl_list (NULL_TREE, current_declspecs);
+    current_declspecs = build_tree_list (NULL_TREE, current_declspecs);
   if (have_extern_spec && !used_extern_spec)
     {
-      current_declspecs = decl_tree_cons (NULL_TREE, 
-					  get_identifier ("extern"), 
-					  current_declspecs);
+      current_declspecs = tree_cons (NULL_TREE, 
+				     get_identifier ("extern"), 
+				     current_declspecs);
       used_extern_spec = 1;
     }
 }
@@ -1472,7 +1472,7 @@ expr_or_declarator_intern:
 		{
 		  /* Provide support for '(' attributes '*' declarator ')'
 		     etc */
-		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		  $$ = tree_cons ($1, $2, NULL_TREE);
 		}
 	;
 
@@ -1571,7 +1571,7 @@ primary:
 		  tree type;
 
 		  type = hash_tree_cons (NULL_TREE, $1, NULL_TREE);
-		  type = groktypename (build_decl_list (type, NULL_TREE));
+		  type = groktypename (build_tree_list (type, NULL_TREE));
 		  $$ = build_functional_cast (type, $3);
 		}
 	| functional_cast
@@ -1776,20 +1776,20 @@ fcast_or_absdcl:
 /* ISO type-id (8.1) */
 type_id:
 	  typed_typespecs absdcl
-		{ $$.t = build_decl_list ($1.t, $2); 
+		{ $$.t = build_tree_list ($1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_cv_qualifiers absdcl
-		{ $$.t = build_decl_list ($1.t, $2); 
+		{ $$.t = build_tree_list ($1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec absdcl
-		{ $$.t = build_decl_list (build_decl_list (NULL_TREE, $1.t),
+		{ $$.t = build_tree_list (build_tree_list (NULL_TREE, $1.t),
 					  $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_typespecs  %prec EMPTY
-		{ $$.t = build_decl_list ($1.t, NULL_TREE);
+		{ $$.t = build_tree_list ($1.t, NULL_TREE);
 		  $$.new_type_flag = $1.new_type_flag;  }
 	| nonempty_cv_qualifiers  %prec EMPTY
-		{ $$.t = build_decl_list ($1.t, NULL_TREE); 
+		{ $$.t = build_tree_list ($1.t, NULL_TREE); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	;
 
@@ -1807,23 +1807,23 @@ typed_declspecs:
 
 typed_declspecs1:
 	  declmods typespec
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, $1.t); 
+		{ $$.t = tree_cons (NULL_TREE, $2.t, $1.t); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	| typespec reserved_declspecs  %prec HYPERUNARY
-		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, $2); 
+		{ $$.t = tree_cons (NULL_TREE, $1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec reserved_typespecquals reserved_declspecs
-		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, chainon ($2, $3)); 
+		{ $$.t = tree_cons (NULL_TREE, $1.t, chainon ($2, $3)); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| declmods typespec reserved_declspecs
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
+		{ $$.t = tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	| declmods typespec reserved_typespecquals
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
+		{ $$.t = tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	| declmods typespec reserved_typespecquals reserved_declspecs
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t,
-					 chainon ($3, chainon ($4, $1.t))); 
+		{ $$.t = tree_cons (NULL_TREE, $2.t,
+				    chainon ($3, chainon ($4, $1.t))); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	;
 
@@ -1832,18 +1832,18 @@ reserved_declspecs:
 		{ if (extra_warnings)
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($$));
-		  $$ = build_decl_list (NULL_TREE, $$); }
+		  $$ = build_tree_list (NULL_TREE, $$); }
 	| reserved_declspecs typespecqual_reserved
-		{ $$ = decl_tree_cons (NULL_TREE, $2.t, $$); }
+		{ $$ = tree_cons (NULL_TREE, $2.t, $$); }
 	| reserved_declspecs SCSPEC
 		{ if (extra_warnings)
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
-		  $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+		  $$ = tree_cons (NULL_TREE, $2, $$); }
 	| reserved_declspecs attributes
-		{ $$ = decl_tree_cons ($2, NULL_TREE, $1); }
+		{ $$ = tree_cons ($2, NULL_TREE, $1); }
 	| attributes
-		{ $$ = decl_tree_cons ($1, NULL_TREE, NULL_TREE); }
+		{ $$ = tree_cons ($1, NULL_TREE, NULL_TREE); }
 	;
 
 /* List of just storage classes and type modifiers.
@@ -1898,24 +1898,24 @@ declmods:
 
 typed_typespecs:
 	  typespec  %prec EMPTY
-		{ $$.t = build_decl_list (NULL_TREE, $1.t); 
+		{ $$.t = build_tree_list (NULL_TREE, $1.t); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_cv_qualifiers typespec
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, $1.t); 
+		{ $$.t = tree_cons (NULL_TREE, $2.t, $1.t); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	| typespec reserved_typespecquals
-		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, $2); 
+		{ $$.t = tree_cons (NULL_TREE, $1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_cv_qualifiers typespec reserved_typespecquals
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
+		{ $$.t = tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	;
 
 reserved_typespecquals:
 	  typespecqual_reserved
-		{ $$ = build_decl_list (NULL_TREE, $1.t); }
+		{ $$ = build_tree_list (NULL_TREE, $1.t); }
 	| reserved_typespecquals typespecqual_reserved
-		{ $$ = decl_tree_cons (NULL_TREE, $2.t, $1); }
+		{ $$ = tree_cons (NULL_TREE, $2.t, $1); }
 	;
 
 /* A typespec (but not a type qualifier).
@@ -2304,7 +2304,7 @@ aggr:
 	| aggr AGGR
 		{ error ("no body nor ';' separates two class, struct or union declarations"); }
 	| aggr attributes
-		{ $$ = build_decl_list ($2, $1); }
+		{ $$ = build_tree_list ($2, $1); }
 	;
 
 named_class_head_sans_basetype:
@@ -2734,10 +2734,10 @@ enumerator:
 /* ISO new-type-id (5.3.4) */
 new_type_id:
 	  type_specifier_seq new_declarator
-		{ $$.t = build_decl_list ($1.t, $2); 
+		{ $$.t = build_tree_list ($1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| type_specifier_seq  %prec EMPTY
-		{ $$.t = build_decl_list ($1.t, NULL_TREE); 
+		{ $$.t = build_tree_list ($1.t, NULL_TREE); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	/* GNU extension to allow arrays of arbitrary types with
 	   non-constant dimension.  */
@@ -2746,7 +2746,7 @@ new_type_id:
 		  if (pedantic)
 		    pedwarn ("ISO C++ forbids array dimensions with parenthesized type in new");
 		  $$.t = build_parse_node (ARRAY_REF, TREE_VALUE ($2.t), $5);
-		  $$.t = build_decl_list (TREE_PURPOSE ($2.t), $$.t);
+		  $$.t = build_tree_list (TREE_PURPOSE ($2.t), $$.t);
 		  $$.new_type_flag = $2.new_type_flag;
 		}
 	;
@@ -2755,7 +2755,7 @@ cv_qualifiers:
 	  /* empty */  %prec EMPTY
 		{ $$ = NULL_TREE; }
 	| cv_qualifiers CV_QUALIFIER
-		{ $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+		{ $$ = tree_cons (NULL_TREE, $2, $$); }
 	;
 
 nonempty_cv_qualifiers:
@@ -2790,7 +2790,7 @@ after_type_declarator_intern:
                 {
 		  /* Provide support for '(' attributes '*' declarator ')'
 		     etc */
-		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		  $$ = tree_cons ($1, $2, NULL_TREE);
 		}
 	;
 
@@ -2869,7 +2869,7 @@ notype_declarator_intern:
                 {
 		  /* Provide support for '(' attributes '*' declarator ')'
 		     etc */
-		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		  $$ = tree_cons ($1, $2, NULL_TREE);
 		}
 	;
 	
@@ -3170,7 +3170,7 @@ absdcl_intern:
                 {
 		  /* Provide support for '(' attributes '*' declarator ')'
 		     etc */
-		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		  $$ = tree_cons ($1, $2, NULL_TREE);
 		}
 	;
 	
@@ -3653,7 +3653,7 @@ named_parm:
 		{ $$.t = build_tree_list ($1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec declarator
-		{ $$.t = build_tree_list (build_decl_list (NULL_TREE, $1.t),
+		{ $$.t = build_tree_list (build_tree_list (NULL_TREE, $1.t),
 					  $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_declspecs1 absdcl

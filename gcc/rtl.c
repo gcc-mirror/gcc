@@ -32,13 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
 
-/* Obstack used for allocating RTL objects.
-   Between functions, this is the permanent_obstack.
-   While parsing and expanding a function, this is maybepermanent_obstack
-   so we can save it if it is an inline function.
-   During optimization and output, this is function_obstack.  */
-
-extern struct obstack *rtl_obstack;
 
 /* Calculate the format for CONST_DOUBLE.  This depends on the relative
    widths of HOST_WIDE_INT and REAL_VALUE_TYPE.
@@ -312,12 +305,7 @@ rtvec_alloc (n)
 {
   rtvec rt;
 
-  if (ggc_p)
-    rt = ggc_alloc_rtvec (n);
-  else
-    rt = (rtvec) obstack_alloc (rtl_obstack,
-				sizeof (struct rtvec_def)
-				+ ((n - 1) * sizeof (rtx)));
+  rt = ggc_alloc_rtvec (n);
   /* clear out the vector */
   memset (&rt->elem[0], 0, n * sizeof (rtx));
 
@@ -335,12 +323,7 @@ rtx_alloc (code)
   rtx rt;
   int n = GET_RTX_LENGTH (code);
 
-  if (ggc_p)
-    rt = ggc_alloc_rtx (n);
-  else
-    rt = (rtx) obstack_alloc (rtl_obstack,
-			      sizeof (struct rtx_def)
-			      + ((n - 1) * sizeof (rtunion)));
+  rt = ggc_alloc_rtx (n);
 
   /* We want to clear everything up to the FLD array.  Normally, this
      is one int, but we don't want to assume that and it isn't very
@@ -351,15 +334,6 @@ rtx_alloc (code)
   return rt;
 }
 
-/* Free the rtx X and all RTL allocated since X.  */
-
-void
-rtx_free (x)
-     rtx x;
-{
-  if (!ggc_p)
-    obstack_free (rtl_obstack, x);
-}
 
 /* Create a new copy of an rtx.
    Recursively copies the operands of the rtx,
@@ -448,14 +422,6 @@ copy_rtx (orig)
 		XVECEXP (copy, i, j) = copy_rtx (XVECEXP (orig, i, j));
 	    }
 	  break;
-
-	case 'b':
-	  {
-	    bitmap new_bits = BITMAP_OBSTACK_ALLOC (rtl_obstack);
-	    bitmap_copy (new_bits, XBITMAP (orig, i));
-	    XBITMAP (copy, i) = new_bits;
-	    break;
-	  }
 
 	case 't':
 	case 'w':
@@ -923,12 +889,23 @@ read_rtx (infile)
   int tmp_int;
   HOST_WIDE_INT tmp_wide;
 
+  /* Obstack used for allocating RTL objects.  */
+  static struct obstack rtl_obstack;
+  static int initialized;
+
   /* Linked list structure for making RTXs: */
   struct rtx_list
     {
       struct rtx_list *next;
       rtx value;		/* Value of this node.  */
     };
+
+  if (!initialized) {
+    _obstack_begin (&rtl_obstack,0, 0,
+		    (void *(*) PARAMS ((long))) xmalloc,
+		    (void (*) PARAMS ((void *))) free);
+    initialized = 1;
+  }
 
   c = read_skip_spaces (infile); /* Should be open paren.  */
   if (c != '(')
@@ -1083,7 +1060,7 @@ read_rtx (infile)
 		     newline and tab.  */
 		  if (c == ';')
 		    {
-		      obstack_grow (rtl_obstack, "\\n\\t", 4);
+		      obstack_grow (&rtl_obstack, "\\n\\t", 4);
 		      continue;
 		    }
 		  if (c == '\n')
@@ -1092,11 +1069,11 @@ read_rtx (infile)
 	      else if (c == '"')
 		break;
 
-	      obstack_1grow (rtl_obstack, c);
+	      obstack_1grow (&rtl_obstack, c);
 	    }
 
-	  obstack_1grow (rtl_obstack, 0);
-	  stringbuf = (char *) obstack_finish (rtl_obstack);
+	  obstack_1grow (&rtl_obstack, 0);
+	  stringbuf = (char *) obstack_finish (&rtl_obstack);
 
 	  if (saw_paren)
 	    {

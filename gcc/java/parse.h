@@ -111,7 +111,6 @@ extern tree stabilize_reference PARAMS ((tree));
 /* Misc. */
 #define exit_java_complete_class()		\
   {						\
-    pop_obstacks ();				\
     return;					\
   }
 
@@ -229,11 +228,14 @@ extern tree stabilize_reference PARAMS ((tree));
    scope local variables.  */
 #define MANGLE_OUTER_LOCAL_VARIABLE_NAME(N, O)				\
   {									\
+    char *mangled_name;							\
     obstack_grow (&temporary_obstack, "val$", 4);			\
-    obstack_grow (&temporary_obstack, 					\
+    obstack_grow (&temporary_obstack,					\
 		  IDENTIFIER_POINTER ((O)), IDENTIFIER_LENGTH ((O)));	\
     obstack_1grow (&temporary_obstack, '\0');				\
-    (N) = obstack_finish (&temporary_obstack);  			\
+    mangled_name = obstack_finish (&temporary_obstack);			\
+    (N) = get_identifier (mangled_name);				\
+    obstack_free (&temporary_obstack, mangled_name);			\
   }
 
 /* Build the string parm$<O> and store in into the identifier N. This
@@ -241,19 +243,25 @@ extern tree stabilize_reference PARAMS ((tree));
    initialize outer scope aliases.  */
 #define MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID(N, O)		\
   {									\
+    char *mangled_name;							\
     obstack_grow (&temporary_obstack, "parm$", 5);			\
     obstack_grow (&temporary_obstack, 					\
 		  IDENTIFIER_POINTER ((O)), IDENTIFIER_LENGTH ((O)));	\
     obstack_1grow (&temporary_obstack, '\0');				\
-    (N) = obstack_finish (&temporary_obstack);  			\
+    mangled_name = obstack_finish (&temporary_obstack);			\
+    (N) = get_identifier (mangled_name);				\
+    obstack_free (&temporary_obstack, mangled_name);			\
   }
 
 #define MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR(N, S)	\
   {								\
+    char *mangled_name;							\
     obstack_grow (&temporary_obstack, "parm$", 5);		\
     obstack_grow (&temporary_obstack, (S), strlen ((S)));	\
     obstack_1grow (&temporary_obstack, '\0');			\
-    (N) = obstack_finish (&temporary_obstack);			\
+    mangled_name = obstack_finish (&temporary_obstack);			\
+    (N) = get_identifier (mangled_name);				\
+    obstack_free (&temporary_obstack, mangled_name);			\
   }
 
 /* Skip THIS and artificial parameters found in function decl M and

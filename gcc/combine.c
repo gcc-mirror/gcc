@@ -337,9 +337,6 @@ struct undo
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
    num_undo says how many are currently recorded.
 
-   storage is nonzero if we must undo the allocation of new storage.
-   The value of storage is what to pass to obfree.
-
    other_insn is nonzero if we have modified some other insn in the process
    of working on subst_insn.  It must be verified too.
 
@@ -350,7 +347,6 @@ struct undo
 
 struct undobuf
 {
-  char *storage;
   struct undo *undos;
   struct undo *frees;
   struct undo *previous_undos;
@@ -1529,10 +1525,6 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 
   combine_attempts++;
   undobuf.other_insn = 0;
-
-  /* Save the current high-water-mark so we can free storage if we didn't
-     accept this combination.  */
-  undobuf.storage = (char *) oballoc (0);
 
   /* Reset the hard register usage information.  */
   CLEAR_HARD_REG_SET (newpat_used_regs);
@@ -2784,7 +2776,6 @@ undo_all ()
       undobuf.frees = undo;
     }
 
-  obfree (undobuf.storage);
   undobuf.undos = undobuf.previous_undos = 0;
 
   /* Clear this here, so that subsequent get_last_value calls are not

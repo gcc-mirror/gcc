@@ -49,7 +49,7 @@ static FILE *repo_file;
 static char *old_args, *old_dir, *old_main;
 
 extern int flag_use_repository;
-extern struct obstack temporary_obstack;
+static struct obstack temporary_obstack;
 extern struct obstack permanent_obstack;
 
 #define IDENTIFIER_REPO_USED(NODE)   (TREE_LANG_FLAG_3 (NODE))
@@ -335,6 +335,7 @@ init_repo (filename)
 
   ggc_add_tree_root (&pending_repo, 1);
   ggc_add_tree_root (&original_repo, 1);
+  gcc_obstack_init (&temporary_obstack);
 
   open_repo_file (filename);
 

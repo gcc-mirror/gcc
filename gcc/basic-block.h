@@ -521,12 +521,14 @@ extern void estimate_probability        PARAMS ((struct loops *));
 extern void expected_value_to_br_prob	PARAMS ((void));
 
 /* In flow.c */
+extern void init_flow                   PARAMS ((void));
 extern void reorder_basic_blocks	PARAMS ((void));
 extern void dump_bb			PARAMS ((basic_block, FILE *));
 extern void debug_bb			PARAMS ((basic_block));
 extern void debug_bb_n			PARAMS ((int));
 extern void dump_regset			PARAMS ((regset, FILE *));
 extern void debug_regset		PARAMS ((regset));
+extern void allocate_reg_life_data      PARAMS ((void));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about

@@ -24,10 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with
    an external gc library that might be linked in.  */
 
-/* Language-specific code defines this variable to be either one (if
-   it wants garbage collection), or zero (if it does not).  */
-extern int ggc_p;
-
 /* These structures are defined in various headers throughout the
    compiler.  However, rather than force everyone who includes this
    header to include all the headers in which they are declared, we

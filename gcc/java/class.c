@@ -59,7 +59,7 @@ static tree mangle_field PARAMS ((tree, tree));
 static rtx registerClass_libfunc;
 
 extern struct obstack permanent_obstack;
-extern struct obstack temporary_obstack;
+struct obstack temporary_obstack;
 
 /* The compiler generates different code depending on whether or not
    it can assume certain classes have been compiled down to native
@@ -272,7 +272,6 @@ tree
 make_class ()
 {
   tree type;
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   type = make_node (RECORD_TYPE);
 #ifdef JAVA_USE_HANDLES
   tree field1 = build_decl (FIELD_DECL, get_identifier ("obj"),
@@ -290,7 +289,6 @@ make_class ()
   TYPE_BINFO (type) = make_tree_vec (6);
 #endif
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
-  pop_obstacks ();
 
   return type;
 }
@@ -327,7 +325,6 @@ push_class (class_type, class_name)
   const char *save_input_filename = input_filename;
   int save_lineno = lineno;
   tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   CLASS_P (class_type) = 1;
   input_filename = IDENTIFIER_POINTER (source_name);
   lineno = 0;
@@ -353,7 +350,6 @@ push_class (class_type, class_name)
   }
 #endif
 
-  pop_obstacks ();
   return decl;
 }
 
@@ -384,7 +380,6 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
   if (super_class)
     total_supers++;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   TYPE_BINFO_BASETYPES (this_class) = make_tree_vec (total_supers);
   if (super_class)
     {
@@ -396,7 +391,6 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
 	= super_binfo;
       CLASS_HAS_SUPER (this_class) = 1;
     }
-  pop_obstacks ();
 
   if (access_flags & ACC_PUBLIC)    CLASS_PUBLIC (class_decl) = 1;
   if (access_flags & ACC_FINAL)     CLASS_FINAL (class_decl) = 1;
@@ -649,7 +643,6 @@ add_method_1 (handle_class, access_flags, name, function_type)
      tree function_type;
 {
   tree method_type, fndecl;
-  push_obstacks (&permanent_obstack, &permanent_obstack);
 
   method_type = build_java_method_type (function_type,
 					handle_class, access_flags);
@@ -667,7 +660,6 @@ add_method_1 (handle_class, access_flags, name, function_type)
 
   TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
   TYPE_METHODS (handle_class) = fndecl;
-  pop_obstacks ();
 
   if (access_flags & ACC_PUBLIC) METHOD_PUBLIC (fndecl) = 1;
   if (access_flags & ACC_PROTECTED) METHOD_PROTECTED (fndecl) = 1;
@@ -702,13 +694,11 @@ add_method (this_class, access_flags, name, method_sig)
   tree handle_class = CLASS_TO_HANDLE_TYPE (this_class);
   tree function_type, fndecl;
   const unsigned char *sig = (const unsigned char*)IDENTIFIER_POINTER (method_sig);
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   if (sig[0] != '(')
     fatal ("bad method signature");
   function_type = get_type_from_signature (method_sig);
   fndecl = add_method_1 (handle_class, access_flags, name, function_type);
   set_java_signature (TREE_TYPE (fndecl), method_sig);
-  pop_obstacks ();
   return fndecl;
 }
 
@@ -721,10 +711,7 @@ add_field (class, name, field_type, flags)
 {
   int is_static = (flags & ACC_STATIC) != 0;
   tree field;
-  /* Push the obstack of field_type ? FIXME */
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   field = build_decl (is_static ? VAR_DECL : FIELD_DECL, name, field_type);
-  pop_obstacks ();
   TREE_CHAIN (field) = TYPE_FIELDS (class);
   TYPE_FIELDS (class) = field;
   DECL_CONTEXT (field) = class;
@@ -820,7 +807,6 @@ build_utf8_ref (name)
   if (ref != NULL_TREE)
     return ref;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   ctype = make_node (RECORD_TYPE);
   str_type = build_prim_array_type (unsigned_byte_type_node,
 				    name_len + 1); /* Allow for final '\0'. */
@@ -872,7 +858,6 @@ build_utf8_ref (name)
   make_decl_rtl (decl, (char*) 0, 1);
   ref = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
   IDENTIFIER_UTF8_REF (name) = ref;
-  pop_obstacks ();
   return ref;
 }
 
@@ -898,7 +883,6 @@ build_class_ref (type)
 	  decl = IDENTIFIER_GLOBAL_VALUE (decl_name);
 	  if (decl == NULL_TREE)
 	    {
-	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	      decl = build_decl (VAR_DECL, decl_name, class_type_node);
 	      DECL_SIZE (decl) = TYPE_SIZE (class_type_node);
 	      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (class_type_node);
@@ -911,7 +895,6 @@ build_class_ref (type)
 	      pushdecl_top_level (decl);
 	      if (is_compiled == 1)
 		DECL_EXTERNAL (decl) = 1;
-	      pop_obstacks ();
 	    }
 	}
       else
@@ -957,7 +940,6 @@ build_class_ref (type)
 	  decl = IDENTIFIER_GLOBAL_VALUE (decl_name);
 	  if (decl == NULL_TREE)
 	    {
-	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	      decl = build_decl (VAR_DECL, decl_name, class_type_node);
 	      TREE_STATIC (decl) = 1;
 	      TREE_PUBLIC (decl) = 1;
@@ -965,7 +947,6 @@ build_class_ref (type)
 	      pushdecl_top_level (decl);
 	      if (is_compiled == 1)
 		DECL_EXTERNAL (decl) = 1;
-	      pop_obstacks ();
 	    }
 	}
 
@@ -976,11 +957,9 @@ build_class_ref (type)
     {
       int index;
       tree cl;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       index = alloc_class_constant (type);
       cl = build_ref_from_constant_pool (index); 
       TREE_TYPE (cl) = promote_type (class_ptr_type);
-      pop_obstacks ();
       return cl;
     }
 }
@@ -995,9 +974,7 @@ build_static_field_ref (fdecl)
     {
       if (DECL_RTL (fdecl) == 0)
 	{
-	  push_obstacks (&permanent_obstack, &permanent_obstack);
 	  make_decl_rtl (fdecl, NULL, 1);
-	  pop_obstacks ();
 	  if (is_compiled == 1)
 	    DECL_EXTERNAL (fdecl) = 1;
 	}
@@ -1502,9 +1479,7 @@ finish_class ()
 	      || ! METHOD_PRIVATE (method)
 	      || saw_native_method)
 	    {
-	      temporary_allocation ();
 	      output_inline_function (method);
-	      permanent_allocation (1);
 	      /* Scan the list again to see if there are any earlier
                  methods to emit. */
 	      method = type_methods;
@@ -1749,9 +1724,7 @@ push_super_field (this_class, super_class)
   /* Don't insert the field if we're just re-laying the class out. */ 
   if (TYPE_FIELDS (this_class) && !DECL_NAME (TYPE_FIELDS (this_class)))
     return;
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   base_decl = build_decl (FIELD_DECL, NULL_TREE, super_class);
-  pop_obstacks ();
   DECL_IGNORED_P (base_decl) = 1;
   TREE_CHAIN (base_decl) = TYPE_FIELDS (this_class);
   TYPE_FIELDS (this_class) = base_decl;
@@ -1814,6 +1787,7 @@ layout_class (this_class)
   if (CLASS_BEING_LAIDOUT (this_class))
     {
       char buffer [1024];
+      char *report;
       tree current;
       
       sprintf (buffer, " with `%s'",
@@ -1831,7 +1805,9 @@ layout_class (this_class)
 	  obstack_grow (&temporary_obstack, buffer, strlen (buffer));
 	}
       obstack_1grow (&temporary_obstack, '\0');
-      cyclic_inheritance_report = obstack_finish (&temporary_obstack);
+      report = obstack_finish (&temporary_obstack);
+      cyclic_inheritance_report = ggc_strdup (report);
+      obstack_free (&temporary_obstack, report);
       TYPE_SIZE (this_class) = error_mark_node;
       return;
     }
@@ -1883,7 +1859,6 @@ layout_class_methods (this_class)
   if (TYPE_NVIRTUALS (this_class))
     return;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   super_class = CLASSTYPE_SUPER (this_class);
   handle_type = CLASS_TO_HANDLE_TYPE (this_class);
 
@@ -1909,7 +1884,6 @@ layout_class_methods (this_class)
 #ifdef JAVA_USE_HANDLES
   layout_type (handle_type);
 #endif
-  pop_obstacks ();
 }
 
 /* A sorted list of all C++ keywords.  */
@@ -2230,4 +2204,5 @@ init_class_processing ()
   registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterClass");
   ggc_add_tree_root (&registered_class, 1);
   ggc_add_rtx_root (&registerClass_libfunc, 1);
+  gcc_obstack_init (&temporary_obstack);
 }

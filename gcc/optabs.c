@@ -4471,8 +4471,7 @@ rtx
 init_one_libfunc (name)
      register const char *name;
 {
-  if (ggc_p)
-    name = ggc_alloc_string (name, -1);
+  name = ggc_strdup (name);
 
   return gen_rtx_SYMBOL_REF (Pmode, name);
 }

@@ -54,8 +54,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    when it comes to building decls:
 
    Internal Function (one we define, not just declare as extern):
-   int yes;
-   yes = suspend_momentary ();
    if (is_nested) push_f_function_context ();
    start_function (get_identifier ("function_name"), function_type,
 		   is_nested, is_public);
@@ -66,13 +64,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    ffecom_end_compstmt ();
    finish_function (is_nested);
    if (is_nested) pop_f_function_context ();
-   if (is_nested) resume_momentary (yes);
 
    Everything Else:
-   int yes;
    tree d;
    tree init;
-   yes = suspend_momentary ();
    // fill in external, public, static, &c for decl, and
    // set DECL_INITIAL to error_mark_node if going to initialize
    // set is_top_level TRUE only if not at top level and decl
@@ -80,7 +75,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    d = start_decl (decl, is_top_level);
    init = ...;	// if have initializer
    finish_decl (d, init, is_top_level);
-   resume_momentary (yes);
 
 */
 
@@ -2698,22 +2692,11 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
   bool cmplxfunc;		/* Use f2c way of returning COMPLEX. */
   bool multi;			/* Master fn has multiple return types. */
   bool altreturning = FALSE;	/* This entry point has alternate returns. */
-  int yes;
   int old_lineno = lineno;
   const char *old_input_filename = input_filename;
 
   input_filename = ffesymbol_where_filename (fn);
   lineno = ffesymbol_where_filelinenum (fn);
-
-  /* c-parse.y indeed does call suspend_momentary and not only ignores the
-     return value, but also never calls resume_momentary, when starting an
-     outer function (see "fndef:", "setspecs:", and so on).  So g77 does the
-     same thing.  It shouldn't be a problem since start_function calls
-     temporary_allocation, but it might be necessary.  If it causes a problem
-     here, then maybe there's a bug lurking in gcc.  NOTE: This identical
-     comment appears twice in thist file.  */
-
-  suspend_momentary ();
 
   ffecom_doing_entry_ = TRUE;	/* Don't bother with array dimensions. */
 
@@ -2835,8 +2818,6 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 
   /* Build dummy arg list for this entry point. */
 
-  yes = suspend_momentary ();
-
   if (charfunc || cmplxfunc)
     {				/* Prepend arg for where result goes. */
       tree type;
@@ -2873,8 +2854,6 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 
   ffecom_push_dummy_decls_ (ffesymbol_dummyargs (fn), FALSE);
 
-  resume_momentary (yes);
-
   store_parm_decls (0);
 
   ffecom_start_compstmt ();
@@ -2885,16 +2864,12 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 
   if (multi)
     {
-      yes = suspend_momentary ();
-
       multi_retval = ffecom_get_invented_identifier ("__g77_%s",
 						     "multi_retval");
       multi_retval = build_decl (VAR_DECL, multi_retval,
 				 ffecom_multi_type_node_);
       multi_retval = start_decl (multi_retval, FALSE);
       finish_decl (multi_retval, NULL_TREE, FALSE);
-
-      resume_momentary (yes);
     }
   else
     multi_retval = NULL_TREE;	/* Not actually ref'd if !multi. */
@@ -3045,8 +3020,6 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 					 call));
 	expand_return (result);
       }
-
-    clear_momentary ();
   }
 
   ffecom_end_compstmt ();
@@ -6112,8 +6085,6 @@ ffecom_finish_global_ (ffeglobal global)
       || !ffeglobal_common_have_size (global))
     return global;		/* No need to make common, never ref'd. */
 
-  suspend_momentary ();
-
   DECL_EXTERNAL (cbt) = 0;
 
   /* Give the array a size now.  */
@@ -6172,8 +6143,6 @@ ffecom_finish_symbol_transform_ (ffesymbol s)
   if ((ffesymbol_where (s) == FFEINFO_whereCOMMON)
       && (ffesymbol_hook (s).decl_tree != error_mark_node))
     {
-      int yes = suspend_momentary ();
-
       /* This isn't working, at least for dbxout.  The .s file looks
 	 okay to me (burley), but in gdb 4.9 at least, the variables
 	 appear to reside somewhere outside of the common area, so
@@ -6182,8 +6151,6 @@ ffecom_finish_symbol_transform_ (ffesymbol s)
 	 with EQUIVALENCE, sadly...see similar #if later.  */
       ffecom_member_phase2_ (ffesymbol_storage (ffesymbol_common (s)),
 			     ffesymbol_storage (s));
-
-      resume_momentary (yes);
     }
 
   return s;
@@ -6297,7 +6264,6 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
   tree result;
   bool charfunc = (bt == FFEINFO_basictypeCHARACTER);
   static bool recurse = FALSE;
-  int yes;
   int old_lineno = lineno;
   const char *old_input_filename = input_filename;
 
@@ -6326,8 +6292,6 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
   assert (!recurse);
   recurse = TRUE;
 
-  yes = suspend_momentary ();
-
   push_f_function_context ();
 
   if (charfunc)
@@ -6349,8 +6313,6 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
      entirely internal to our code, and gcc has the ability to return COMPLEX
      directly as a value.  */
 
-  yes = suspend_momentary ();
-
   if (charfunc)
     {				/* Prepend arg for where result goes. */
       tree type;
@@ -6370,8 +6332,6 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
     result = NULL_TREE;		/* Not ref'd if !charfunc. */
 
   ffecom_push_dummy_decls_ (ffesymbol_dummyargs (s), TRUE);
-
-  resume_momentary (yes);
 
   store_parm_decls (0);
 
@@ -6404,8 +6364,6 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
 					DECL_RESULT (current_function_decl),
 					ffecom_expr (expr)));
 	}
-
-      clear_momentary ();
     }
 
   ffecom_end_compstmt ();
@@ -6414,8 +6372,6 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
   finish_function (1);
 
   pop_f_function_context ();
-
-  resume_momentary (yes);
 
   recurse = FALSE;
 
@@ -6515,8 +6471,6 @@ ffecom_init_zero_ (tree decl)
       assemble_variable (decl, TREE_PUBLIC (decl) ? 1 : 0, 0, 1);
     }
 
-  push_momentary ();
-
   if ((TREE_CODE (type) != ARRAY_TYPE)
       && (TREE_CODE (type) != RECORD_TYPE)
       && (TREE_CODE (type) != UNION_TYPE)
@@ -6524,25 +6478,15 @@ ffecom_init_zero_ (tree decl)
     init = convert (type, integer_zero_node);
   else if (!incremental)
     {
-      int momentary = suspend_momentary ();
-
       init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
       TREE_CONSTANT (init) = 1;
       TREE_STATIC (init) = 1;
-
-      resume_momentary (momentary);
     }
   else
     {
-      int momentary = suspend_momentary ();
-
       assemble_zeros (int_size_in_bytes (type));
       init = error_mark_node;
-
-      resume_momentary (momentary);
     }
-
-  pop_momentary_nofree ();
 
   return init;
 }
@@ -7339,23 +7283,12 @@ ffecom_start_progunit_ ()
   bool main_program = FALSE;
   int old_lineno = lineno;
   const char *old_input_filename = input_filename;
-  int yes;
 
   assert (fn != NULL);
   assert (ffesymbol_hook (fn).decl_tree == NULL_TREE);
 
   input_filename = ffesymbol_where_filename (fn);
   lineno = ffesymbol_where_filelinenum (fn);
-
-  /* c-parse.y indeed does call suspend_momentary and not only ignores the
-     return value, but also never calls resume_momentary, when starting an
-     outer function (see "fndef:", "setspecs:", and so on).  So g77 does the
-     same thing.  It shouldn't be a problem since start_function calls
-     temporary_allocation, but it might be necessary.  If it causes a problem
-     here, then maybe there's a bug lurking in gcc.  NOTE: This identical
-     comment appears twice in thist file.  */
-
-  suspend_momentary ();
 
   switch (ffecom_primary_entry_kind_)
     {
@@ -7468,8 +7401,6 @@ ffecom_start_progunit_ ()
       ffeglobal_set_hook (g, current_function_decl);
     }
 
-  yes = suspend_momentary ();
-
   /* Arg handling needs exec-transitioned ffesymbols to work with.  But
      exec-transitioning needs current_function_decl to be filled in.  So we
      do these things in two phases. */
@@ -7532,8 +7463,6 @@ ffecom_start_progunit_ ()
       ffecom_push_dummy_decls_ (arglist, FALSE);
     }
 
-  resume_momentary (yes);
-
   if (TREE_CODE (current_function_decl) != ERROR_MARK)
     store_parm_decls (main_program ? 1 : 0);
 
@@ -7572,7 +7501,6 @@ ffecom_sym_transform_ (ffesymbol s)
   ffeinfoBasictype bt;
   ffeinfoKindtype kt;
   ffeglobal g;
-  int yes;
   int old_lineno = lineno;
   const char *old_input_filename = input_filename;
 
@@ -7698,9 +7626,7 @@ ffecom_sym_transform_ (ffesymbol s)
 		break;
 	      }
 
-	    yes = suspend_momentary ();
 	    type = ffecom_type_localvar_ (s, bt, kt);
-	    resume_momentary (yes);
 
 	    if (type == error_mark_node)
 	      {
@@ -7713,7 +7639,6 @@ ffecom_sym_transform_ (ffesymbol s)
 	      {			/* Child of EQUIVALENCE parent. */
 		ffestorag est;
 		tree et;
-		int yes;
 		ffetargetOffset offset;
 
 		est = ffestorag_parent (st);
@@ -7724,8 +7649,6 @@ ffecom_sym_transform_ (ffesymbol s)
 
 		if (! TREE_STATIC (et))
 		  put_var_into_stack (et);
-
-		yes = suspend_momentary ();
 
 		offset = ffestorag_modulo (est)
 		  + ffestorag_offset (ffesymbol_storage (s))
@@ -7747,15 +7670,11 @@ ffecom_sym_transform_ (ffesymbol s)
 		TREE_CONSTANT (t) = staticp (et);
 
 		addr = TRUE;
-
-		resume_momentary (yes);
 	      }
 	    else
 	      {
 		tree initexpr;
 		bool init = ffesymbol_is_init (s);
-
-		yes = suspend_momentary ();
 
 		t = build_decl (VAR_DECL,
 				ffecom_get_identifier_ (ffesymbol_text (s)),
@@ -7805,8 +7724,6 @@ ffecom_sym_transform_ (ffesymbol s)
 		    assert (0 == compare_tree_int (DECL_SIZE_UNIT (t),
 						   ffestorag_size (st)));
 		  }
-
-		resume_momentary (yes);
 	      }
 	  }
 	  break;
@@ -7839,19 +7756,14 @@ ffecom_sym_transform_ (ffesymbol s)
 	  if ((ffecom_num_entrypoints_ != 0)
 	      && (ffecom_master_bt_ == FFEINFO_basictypeNONE))
 	    {
-	      yes = suspend_momentary ();
-
 	      assert (ffecom_multi_retval_ != NULL_TREE);
 	      t = ffecom_1 (INDIRECT_REF, ffecom_multi_type_node_,
 			    ffecom_multi_retval_);
 	      t = ffecom_2 (COMPONENT_REF, ffecom_tree_type[bt][kt],
 			    t, ffecom_multi_fields_[bt][kt]);
 
-	      resume_momentary (yes);
 	      break;
 	    }
-
-	  yes = suspend_momentary ();
 
 	  t = build_decl (VAR_DECL,
 			  ffecom_get_identifier_ (ffesymbol_text (s)),
@@ -7862,7 +7774,6 @@ ffecom_sym_transform_ (ffesymbol s)
 
 	  ffecom_func_result_ = t;
 
-	  resume_momentary (yes);
 	  break;
 
 	case FFEINFO_whereDUMMY:
@@ -8208,7 +8119,6 @@ ffecom_sym_transform_ (ffesymbol s)
 	    tree ct;
 	    ffestorag st = ffesymbol_storage (s);
 	    tree type;
-	    int yes;
 
 	    cs = ffesymbol_common (s);	/* The COMMON area itself.  */
 	    if (st != NULL)	/* Else not laid out. */
@@ -8216,8 +8126,6 @@ ffecom_sym_transform_ (ffesymbol s)
 		ffecom_transform_common_ (cs);
 		st = ffesymbol_storage (s);
 	      }
-
-	    yes = suspend_momentary ();
 
 	    type = ffecom_type_localvar_ (s, bt, kt);
 
@@ -8261,8 +8169,6 @@ ffecom_sym_transform_ (ffesymbol s)
 
 		addr = TRUE;
 	      }
-
-	    resume_momentary (yes);
 	  }
 	  break;
 
@@ -8619,7 +8525,6 @@ static ffesymbol
 ffecom_sym_transform_assign_ (ffesymbol s)
 {
   tree t;			/* Transformed thingy. */
-  int yes;
   int old_lineno = lineno;
   const char *old_input_filename = input_filename;
 
@@ -8637,8 +8542,6 @@ ffecom_sym_transform_assign_ (ffesymbol s)
     }
 
   assert (!ffecom_transform_only_dummies_);
-
-  yes = suspend_momentary ();
 
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_ASSIGN_%s",
@@ -8682,8 +8585,6 @@ ffecom_sym_transform_assign_ (ffesymbol s)
 
   t = start_decl (t, FALSE);
   finish_decl (t, NULL_TREE, FALSE);
-
-  resume_momentary (yes);
 
   ffesymbol_hook (s).assign_tree = t;
 
@@ -8886,7 +8787,6 @@ ffecom_transform_equiv_ (ffestorag eqst)
   tree init;
   tree high;
   bool is_init = ffestorag_is_init (eqst);
-  int yes;
 
   assert (eqst != NULL);
 
@@ -8940,8 +8840,6 @@ ffecom_transform_equiv_ (ffestorag eqst)
   ffestorag_drive (ffestorag_list_equivs (eqst),
 		   &ffecom_member_phase1_,
 		   eqst);
-
-  yes = suspend_momentary ();
 
   high = build_int_2 ((ffestorag_size (eqst)
 		       + ffestorag_modulo (eqst)) - 1, 0);
@@ -9008,8 +8906,6 @@ ffecom_transform_equiv_ (ffestorag eqst)
   ffestorag_drive (ffestorag_list_equivs (eqst),
 		   &ffecom_member_phase2_,
 		   eqst);
-
-  resume_momentary (yes);
 }
 
 #endif
@@ -9027,11 +8923,8 @@ ffecom_transform_namelist_ (ffesymbol s)
   tree nvarsinit;
   tree field;
   tree high;
-  int yes;
   int i;
   static int mynumber = 0;
-
-  yes = suspend_momentary ();
 
   nmlt = build_decl (VAR_DECL,
 		     ffecom_get_invented_identifier ("__g77_namelist_%d",
@@ -9094,8 +8987,6 @@ ffecom_transform_namelist_ (ffesymbol s)
   finish_decl (nmlt, nmlinits, FALSE);
 
   nmlt = ffecom_1 (ADDR_EXPR, build_pointer_type (nmltype), nmlt);
-
-  resume_momentary (yes);
 
   return nmlt;
 }
@@ -9590,10 +9481,7 @@ ffecom_vardesc_ (ffebld expr)
       tree typeinit;
       tree field;
       tree varinits;
-      int yes;
       static int mynumber = 0;
-
-      yes = suspend_momentary ();
 
       var = build_decl (VAR_DECL,
 			ffecom_get_invented_identifier ("__g77_vardesc_%d",
@@ -9656,8 +9544,6 @@ ffecom_vardesc_ (ffebld expr)
 
       var = ffecom_1 (ADDR_EXPR, build_pointer_type (vardesctype), var);
 
-      resume_momentary (yes);
-
       ffesymbol_hook (s).vardesc_tree = var;
     }
 
@@ -9674,7 +9560,6 @@ ffecom_vardesc_array_ (ffesymbol s)
   tree item = NULL_TREE;
   tree var;
   int i;
-  int yes;
   static int mynumber = 0;
 
   for (i = 0, list = NULL_TREE, b = ffesymbol_namelist (s);
@@ -9694,8 +9579,6 @@ ffecom_vardesc_array_ (ffesymbol s)
 	}
     }
 
-  yes = suspend_momentary ();
-
   item = build_array_type (build_pointer_type (ffecom_type_vardesc_ ()),
 			   build_range_type (integer_type_node,
 					     integer_one_node,
@@ -9710,8 +9593,6 @@ ffecom_vardesc_array_ (ffesymbol s)
   DECL_INITIAL (var) = error_mark_node;
   var = start_decl (var, FALSE);
   finish_decl (var, list, FALSE);
-
-  resume_momentary (yes);
 
   return var;
 }
@@ -9732,7 +9613,6 @@ ffecom_vardesc_dims_ (ffesymbol s)
     tree backlist;
     tree item = NULL_TREE;
     tree var;
-    int yes;
     tree numdim;
     tree numelem;
     tree baseoff = NULL_TREE;
@@ -9805,8 +9685,6 @@ ffecom_vardesc_dims_ (ffesymbol s)
     numdim = build_tree_list (NULL_TREE, numdim);
     TREE_CHAIN (numdim) = numelem;
 
-    yes = suspend_momentary ();
-
     item = build_array_type (ffecom_f2c_ftnlen_type_node,
 			     build_range_type (integer_type_node,
 					       integer_zero_node,
@@ -9825,8 +9703,6 @@ ffecom_vardesc_dims_ (ffesymbol s)
     finish_decl (var, list, FALSE);
 
     var = ffecom_1 (ADDR_EXPR, build_pointer_type (item), var);
-
-    resume_momentary (yes);
 
     return var;
   }
@@ -11126,7 +11002,6 @@ ffecom_end_transition ()
       tree dt;
       tree t;
       tree var;
-      int yes;
       static int number = 0;
 
       callee = ffebld_head (item);
@@ -11137,8 +11012,6 @@ ffecom_end_transition ()
 	  s = ffecom_sym_transform_ (s);
 	  t = ffesymbol_hook (s).decl_tree;
 	}
-
-      yes = suspend_momentary ();
 
       dt = build_pointer_type (TREE_TYPE (t));
 
@@ -11157,8 +11030,6 @@ ffecom_end_transition ()
       t = ffecom_1 (ADDR_EXPR, dt, t);
 
       finish_decl (var, t, FALSE);
-
-      resume_momentary (yes);
     }
 
   /* This handles any COMMON areas that weren't referenced but have, for
@@ -12817,7 +12688,6 @@ tree
 ffecom_make_tempvar (const char *commentary, tree type,
 		     ffetargetCharacterSize size, int elements)
 {
-  int yes;
   tree t;
   static int mynumber;
 
@@ -12825,8 +12695,6 @@ ffecom_make_tempvar (const char *commentary, tree type,
 
   if (type == error_mark_node)
     return error_mark_node;
-
-  yes = suspend_momentary ();
 
   if (size != FFETARGET_charactersizeNONE)
     type = build_array_type (type,
@@ -12847,8 +12715,6 @@ ffecom_make_tempvar (const char *commentary, tree type,
 
   t = start_decl (t, FALSE);
   finish_decl (t, NULL_TREE, FALSE);
-
-  resume_momentary (yes);
 
   return t;
 }
@@ -13670,7 +13536,6 @@ bison_rule_pushlevel_ ()
   emit_line_note (input_filename, lineno);
   pushlevel (0);
   clear_last_expr ();
-  push_momentary ();
   expand_start_bindings (0);
 }
 
@@ -13687,7 +13552,6 @@ bison_rule_compstmt_ ()
   emit_line_note (input_filename, lineno);
   expand_end_bindings (getdecls (), keep, 0);
   t = poplevel (keep, 1, 0);
-  pop_momentary ();
 
   return t;
 }
@@ -13988,7 +13852,6 @@ finish_decl (tree decl, tree init, bool is_top_level)
 {
   register tree type = TREE_TYPE (decl);
   int was_incomplete = (DECL_SIZE (decl) == 0);
-  int temporary = allocation_temporary_p ();
   bool at_top_level = (current_binding_level == global_binding_level);
   bool top_level = is_top_level || at_top_level;
 
@@ -14016,11 +13879,6 @@ finish_decl (tree decl, tree init, bool is_top_level)
 	  DECL_INITIAL (decl) = init = 0;
 	}
     }
-
-  /* Pop back to the obstack that is current for this binding level. This is
-     because MAXINDEX, rtl, etc. to be made below must go in the permanent
-     obstack.  But don't discard the temporary data yet.  */
-  pop_obstacks ();
 
   /* Deduce size of array from initialization, if not already known */
 
@@ -14101,46 +13959,6 @@ finish_decl (tree decl, tree init, bool is_top_level)
 				0);
     }
 
-  if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
-      && temporary
-  /* DECL_INITIAL is not defined in PARM_DECLs, since it shares space with
-     DECL_ARG_TYPE.  */
-      && TREE_CODE (decl) != PARM_DECL)
-    {
-      /* We need to remember that this array HAD an initialization, but
-	 discard the actual temporary nodes, since we can't have a permanent
-	 node keep pointing to them.  */
-      /* We make an exception for inline functions, since it's normal for a
-	 local extern redeclaration of an inline function to have a copy of
-	 the top-level decl's DECL_INLINE.  */
-      if ((DECL_INITIAL (decl) != 0)
-	  && (DECL_INITIAL (decl) != error_mark_node))
-	{
-	  /* If this is a const variable, then preserve the
-	     initializer instead of discarding it so that we can optimize
-	     references to it.  */
-	  /* This test used to include TREE_STATIC, but this won't be set
-	     for function level initializers.  */
-	  if (TREE_READONLY (decl))
-	    {
-	      preserve_initializer ();
-
-	      /* The initializer and DECL must have the same (or equivalent
-		 types), but if the initializer is a STRING_CST, its type
-		 might not be on the right obstack, so copy the type
-		 of DECL.  */
-	      TREE_TYPE (DECL_INITIAL (decl)) = type;
-	    }
-	  else
-	    DECL_INITIAL (decl) = error_mark_node;
-	}
-    }
-
-  /* If we have gone back from temporary to permanent allocation, actually
-     free the temporary space that we no longer need.  */
-  if (temporary && !allocation_temporary_p ())
-    permanent_allocation (0);
-
   /* At the end of a declaration, throw away any variable type sizes of types
      defined inside that declaration.  There is no use computing them in the
      following function definition.  */
@@ -14190,22 +14008,16 @@ finish_function (int nested)
 
       /* If this is a nested function, protect the local variables in the stack
 	 above us from being collected while we're compiling this function.  */
-      if (ggc_p && nested)
+      if (nested)
 	ggc_push_context ();
 
       /* Run the optimizers and output the assembler code for this function.  */
       rest_of_compilation (fndecl);
 
       /* Undo the GC context switch.  */
-      if (ggc_p && nested)
+      if (nested)
 	ggc_pop_context ();
     }
-
-  /* Free all the tree nodes making up this function.  */
-  /* Switch back to allocating nodes permanently until we start another
-     function.  */
-  if (!nested)
-    permanent_allocation (1);
 
   if (TREE_CODE (fndecl) != ERROR_MARK
       && !nested
@@ -14435,8 +14247,6 @@ push_parm_decl (tree parm)
 
   immediate_size_expand = 0;
 
-  push_obstacks_nochange ();
-
   /* Fill in arg stuff.  */
 
   DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
@@ -14517,9 +14327,6 @@ start_decl (tree decl, bool is_top_level)
      level anyway.  */
   assert (!is_top_level || !at_top_level);
 
-  /* The corresponding pop_obstacks is in finish_decl.  */
-  push_obstacks_nochange ();
-
   if (DECL_INITIAL (decl) != NULL_TREE)
     {
       assert (DECL_INITIAL (decl) == error_mark_node);
@@ -14549,14 +14356,6 @@ start_decl (tree decl, bool is_top_level)
       else if (TREE_CODE (TREE_TYPE (tem)) == ARRAY_TYPE
 	       && DECL_INITIAL (tem) != 0)
 	expand_decl (tem);
-    }
-
-  if (DECL_INITIAL (tem) != NULL_TREE)
-    {
-      /* When parsing and digesting the initializer, use temporary storage.
-	 Do this even if we will ignore the value.  */
-      if (at_top_level)
-	temporary_allocation ();
     }
 
   return tem;
@@ -14639,11 +14438,6 @@ start_function (tree name, tree type, int nested, int public)
       DECL_RESULT (current_function_decl)
 	= build_decl (RESULT_DECL, NULL_TREE, restype);
     }
-
-  if (!nested)
-    /* Allocate further tree nodes temporarily during compilation of this
-       function only.  */
-    temporary_allocation ();
 
   if (!nested && (TREE_CODE (current_function_decl) != ERROR_MARK))
     TREE_ADDRESSABLE (current_function_decl) = 1;
@@ -15801,10 +15595,6 @@ unsigned_type (type)
 
   return type;
 }
-
-/* Callback routines for garbage collection.  */
-
-int ggc_p = 1;
 
 void 
 lang_mark_tree (t)
