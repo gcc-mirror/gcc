@@ -1,6 +1,6 @@
 /* Subroutines needed by GCC output code on some machines.  */
 /* Compile this file with the Unix C compiler!  */
-/* Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
+/* Copyright (C) 1987, 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -74,10 +74,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef perform_lshrsi3
 #define perform_lshrsi3(a, b) return a >> b
-#endif
-
-#ifndef perform_lshlsi3
-#define perform_lshlsi3(a, b) return a << b
 #endif
 
 #ifndef perform_ashrsi3
@@ -293,15 +289,6 @@ __lshrsi3 (a, b)
      unsigned nongcc_SI_type a, b;
 {
   perform_lshrsi3 (a, b);
-}
-#endif
-
-#ifdef L_lshlsi3
-nongcc_SI_type
-__lshlsi3 (a, b)
-     unsigned nongcc_SI_type a, b;
-{
-  perform_lshlsi3 (a, b);
 }
 #endif
 
