@@ -1140,14 +1140,6 @@ do_pragma (cpp_reader *pfile)
 	}
     }
 
-  /* FIXME.  This is an awful kludge to get the front ends to update
-     their notion of line number for diagnostic purposes.  The line
-     number should be passed to the handler and they should do it
-     themselves.  Stand-alone CPP must ignore us, otherwise it will
-     prefix the directive with spaces, hence the 1.  Ugh.  */
-  if (pfile->cb.line_change)
-    pfile->cb.line_change (pfile, token, 1);
-
   if (p)
     p->u.handler (pfile);
   else if (pfile->cb.def_pragma)
