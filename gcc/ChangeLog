@@ -1,3 +1,9 @@
+2003-11-29  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/10333
+	* c-parse.in (typespec_reserved_nonattr): Reject typeof on
+	bit-fields.
+
 2003-11-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	* stmt.c (expand_asm_operands): Check whether force_const_mem
