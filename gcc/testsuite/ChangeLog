@@ -1,6 +1,8 @@
 2004-06-30  Nitin Yewale <nitiny@kpitcummins.com>
 
-	* gcc.dg/h8300-ice2.c : New test
+	* gcc.dg/Wunreachable-8.C: New test.
+
+	* gcc.dg/h8300-ice2.c : New test.
 
 2004-06-30  Tobias Schlueter  <tobias.shclueter@physik.uni-muenchen.de>
 
