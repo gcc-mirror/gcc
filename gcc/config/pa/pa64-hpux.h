@@ -47,10 +47,12 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:\
-       %{!pg: %{!threads:-lc} %{threads:-lcma -lc_r}}\
-       %{pg: -L/usr/lib/pa20_64/libp/ -lgprof -lc}}\
-     %{p: -L/usr/lib/pa20_64/libp/ -lprof -lc}} /usr/lib/pa20_64/milli.a"
+     %{!p:%{!pg: -lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+     %{pg: -L/usr/lib/pa20_64/libp/ -lgprof -lc\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}\
+     %{p: -L/usr/lib/pa20_64/libp/ -lprof -lc\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+   /usr/lib/pa20_64/milli.a"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
