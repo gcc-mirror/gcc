@@ -124,8 +124,8 @@ htab_t type_hash_table;
 
 static void set_type_quals PARAMS ((tree, int));
 static void append_random_chars PARAMS ((char *));
-static int type_hash_eq PARAMS ((const void*, const void*));
-static unsigned int type_hash_hash PARAMS ((const void*));
+static int type_hash_eq PARAMS ((const void *, const void *));
+static unsigned int type_hash_hash PARAMS ((const void *));
 static void print_type_hash_statistics PARAMS((void));
 static void finish_vector_type PARAMS((tree));
 static tree make_vector PARAMS ((enum machine_mode, tree, int));
@@ -233,12 +233,12 @@ tree_size (node)
 
     case 'x':  /* something random, like an identifier.  */
       {
-	  size_t length;
-	  length = (sizeof (struct tree_common)
-		    + TREE_CODE_LENGTH (code) * sizeof (char *));
-	  if (code == TREE_VEC)
-	    length += (TREE_VEC_LENGTH (node) - 1) * sizeof (char *);
-	  return length;
+	size_t length;
+	length = (sizeof (struct tree_common)
+		  + TREE_CODE_LENGTH (code) * sizeof (char *));
+	if (code == TREE_VEC)
+	  length += (TREE_VEC_LENGTH (node) - 1) * sizeof (char *);
+	return length;
       }
 
     default:
@@ -263,12 +263,12 @@ make_node (code)
   tree_node_kind kind;
 #endif
   struct tree_common ttmp;
-  
+
   /* We can't allocate a TREE_VEC without knowing how many elements
      it will have.  */
   if (code == TREE_VEC)
     abort ();
-  
+
   TREE_SET_CODE ((tree)&ttmp, code);
   length = tree_size ((tree)&ttmp);
 
@@ -494,7 +494,7 @@ build_vector (type, vals)
       over1 |= TREE_OVERFLOW (value);
       over2 |= TREE_CONSTANT_OVERFLOW (value);
     }
-  
+
   TREE_OVERFLOW (v) = over1;
   TREE_CONSTANT_OVERFLOW (v) = over2;
 
@@ -618,11 +618,11 @@ make_tree_vec (len)
      int len;
 {
   tree t;
-  int length = (len-1) * sizeof (tree) + sizeof (struct tree_vec);
+  int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
 
 #ifdef GATHER_STATISTICS
-  tree_node_counts[(int)vec_kind]++;
-  tree_node_sizes[(int)vec_kind] += length;
+  tree_node_counts[(int) vec_kind]++;
+  tree_node_sizes[(int) vec_kind] += length;
 #endif
 
   t = ggc_alloc_tree (length);
@@ -1063,8 +1063,8 @@ chainon (op1, op2)
       TREE_CHAIN (t1) = op2;
 #ifdef ENABLE_TREE_CHECKING
       for (t2 = op2; t2; t2 = TREE_CHAIN (t2))
-        if (t2 == t1)
-          abort ();  /* Circularity created.  */
+	if (t2 == t1)
+	  abort ();  /* Circularity created.  */
 #endif
       return op1;
     }
@@ -2313,7 +2313,7 @@ build1 (code, type, node)
 #endif
 
 #ifdef ENABLE_CHECKING
-  if (TREE_CODE_CLASS (code) == '2' 
+  if (TREE_CODE_CLASS (code) == '2'
       || TREE_CODE_CLASS (code) == '<'
       || TREE_CODE_LENGTH (code) != 1)
     abort ();
@@ -2498,7 +2498,7 @@ tree
 build_type_attribute_variant (ttype, attribute)
      tree ttype, attribute;
 {
-  if ( ! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
+  if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
       unsigned int hashcode;
       tree ntype;
@@ -3055,7 +3055,7 @@ mark_tree_hashtable_entry (entry, data)
   return 1;
 }
 
-/* Mark ARG (which is really a htab_t whose slots are trees) for 
+/* Mark ARG (which is really a htab_t whose slots are trees) for
    GC.  */
 
 void
@@ -3099,8 +3099,8 @@ int
 attribute_list_equal (l1, l2)
      tree l1, l2;
 {
-   return attribute_list_contained (l1, l2)
-	  && attribute_list_contained (l2, l1);
+  return attribute_list_contained (l1, l2)
+	 && attribute_list_contained (l2, l1);
 }
 
 /* Given two lists of attributes, return true if list L2 is
@@ -3260,7 +3260,7 @@ tree_int_cst_compare (t1, t2)
     return -1;
   else if (tree_int_cst_lt (t2, t1))
     return 1;
-  else 
+  else
     return 0;
 }
 
@@ -4407,7 +4407,7 @@ clean_symbol_name (p)
 	   ))
       *p = '_';
 }
-  
+
 /* Generate a name for a function unique to this translation unit.
    TYPE is some string to identify the purpose of this function to the
    linker or collect2.  */
@@ -4832,17 +4832,17 @@ initializer_zerop (init)
     case CONSTRUCTOR:
       {
 	if (AGGREGATE_TYPE_P (TREE_TYPE (init)))
-	{
-	  tree aggr_init = TREE_OPERAND (init, 1);
-	  
-	  while (aggr_init)
-	    {
-	      if (! initializer_zerop (TREE_VALUE (aggr_init)))
-		return false;
-	      aggr_init = TREE_CHAIN (aggr_init);
-	    }
-	  return true;
-	}
+	  {
+	    tree aggr_init = TREE_OPERAND (init, 1);
+
+	    while (aggr_init)
+	      {
+		if (! initializer_zerop (TREE_VALUE (aggr_init)))
+		  return false;
+		aggr_init = TREE_CHAIN (aggr_init);
+	      }
+	    return true;
+	  }
 	return false;
       }
     default:

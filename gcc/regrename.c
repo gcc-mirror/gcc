@@ -177,7 +177,7 @@ merge_overlapping_regs (b, pset, chain)
 		 reg's live range.  */
 	      if (t != chain)
 		IOR_HARD_REG_SET (*pset, live);
-	      clear_dead_regs (&live, REG_UNUSED, REG_NOTES (insn));  
+	      clear_dead_regs (&live, REG_UNUSED, REG_NOTES (insn));
 	    }
 	  insn = NEXT_INSN (insn);
 	}
@@ -231,10 +231,10 @@ regrename_optimize ()
       if (frame_pointer_needed)
 	{
 	  int i;
-	  
+
 	  for (i = HARD_REGNO_NREGS (FRAME_POINTER_REGNUM, Pmode); i--;)
 	    SET_HARD_REG_BIT (unavailable, FRAME_POINTER_REGNUM + i);
-	  
+
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
 	  for (i = HARD_REGNO_NREGS (HARD_FRAME_POINTER_REGNUM, Pmode); i--;)
 	    SET_HARD_REG_BIT (unavailable, HARD_FRAME_POINTER_REGNUM + i);
@@ -253,7 +253,7 @@ regrename_optimize ()
 	  int i;
 
 	  all_chains = this->next_chain;
-	  
+
 #if 0 /* This just disables optimization opportunities.  */
 	  /* Only rename once we've seen the reg more than once.  */
 	  if (! TEST_HARD_REG_BIT (regs_seen, reg))
@@ -309,9 +309,9 @@ regrename_optimize ()
 		    || (! regs_ever_live[new_reg + i]
 			&& ! call_used_regs[new_reg + i])
 #ifdef LEAF_REGISTERS
-		    /* We can't use a non-leaf register if we're in a 
+		    /* We can't use a non-leaf register if we're in a
 		       leaf function.  */
-		    || (current_function_is_leaf 
+		    || (current_function_is_leaf
 			&& !LEAF_REGISTERS[new_reg + i])
 #endif
 #ifdef HARD_REGNO_RENAME_OK
@@ -346,7 +346,7 @@ regrename_optimize ()
 		       reg_names[reg], INSN_UID (last->insn));
 	      if (last->need_caller_save_reg)
 		fprintf (rtl_dump_file, " crosses a call");
-	      }
+	    }
 
 	  if (best_new_reg == -1)
 	    {
@@ -445,7 +445,7 @@ scan_rtx_reg (insn, loc, class, action, type, earlyclobber)
       if (*this->loc == cc0_rtx)
 	p = &this->next_chain;
       else
-        {
+	{
 	  int regno = REGNO (*this->loc);
 	  int nregs = HARD_REGNO_NREGS (regno, GET_MODE (*this->loc));
 	  int exact_match = (regno == this_regno && nregs == this_nregs);
@@ -462,7 +462,7 @@ scan_rtx_reg (insn, loc, class, action, type, earlyclobber)
 	      if (! exact_match)
 		abort ();
 
-	      /* ??? Class NO_REGS can happen if the md file makes use of 
+	      /* ??? Class NO_REGS can happen if the md file makes use of
 		 EXTRA_CONSTRAINTS to match registers.  Which is arguably
 		 wrong, but there we are.  Since we know not what this may
 		 be replaced with, terminate the chain.  */
@@ -705,7 +705,7 @@ scan_rtx (insn, loc, class, action, type, earlyclobber)
       return;
 
     case ZERO_EXTRACT:
-    case SIGN_EXTRACT: 
+    case SIGN_EXTRACT:
       scan_rtx (insn, &XEXP (x, 0), class, action,
 		type == OP_IN ? OP_IN : OP_INOUT, earlyclobber);
       scan_rtx (insn, &XEXP (x, 1), class, action, OP_IN, 0);
@@ -787,7 +787,7 @@ build_def_use (bb)
 	  icode = recog_memoized (insn);
 	  extract_insn (insn);
 	  if (! constrain_operands (1))
-	    fatal_insn_not_found (insn);	
+	    fatal_insn_not_found (insn);
 	  preprocess_constraints ();
 	  alt = which_alternative;
 	  n_ops = recog_data.n_operands;
@@ -814,14 +814,14 @@ build_def_use (bb)
 		      recog_data.operand_type[i], 0);
 
 	  /* Step 2: Close chains for which we have reads outside operands.
-	     We do this by munging all operands into CC0, and closing 
+	     We do this by munging all operands into CC0, and closing
 	     everything remaining.  */
 
 	  for (i = 0; i < n_ops; i++)
 	    {
 	      old_operands[i] = recog_data.operand[i];
 	      /* Don't squash match_operator or match_parallel here, since
-		 we don't know that all of the contained registers are 
+		 we don't know that all of the contained registers are
 		 reachable by proper operands.  */
 	      if (recog_data.constraints[i][0] == '\0')
 		continue;
@@ -953,7 +953,7 @@ build_def_use (bb)
 		    enum reg_class class = recog_op_alt[i][alt].class;
 
 		    if (GET_CODE (op) == REG
-		        && REGNO (op) == ORIGINAL_REGNO (op))
+			&& REGNO (op) == ORIGINAL_REGNO (op))
 		      continue;
 
 		    scan_rtx (insn, loc, class, mark_write, OP_OUT,
@@ -1017,11 +1017,11 @@ dump_def_use_chain (chains)
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
    we have the most scheduling freedom.  As a side effect, we also clean
-   up some silly register allocation decisions made by reload.  This 
+   up some silly register allocation decisions made by reload.  This
    code may be obsoleted by a new register allocator.  */
 
 /* For each register, we have a list of registers that contain the same
-   value.  The OLDEST_REGNO field points to the head of the list, and 
+   value.  The OLDEST_REGNO field points to the head of the list, and
    the NEXT_REGNO field runs through the list.  The MODE field indicates
    what mode the data is known to be in; this field is VOIDmode when the
    register is not known to contain valid data.  */
@@ -1059,7 +1059,7 @@ static bool replace_oldest_value_addr PARAMS ((rtx *, enum reg_class,
 					       struct value_data *));
 static bool replace_oldest_value_mem PARAMS ((rtx, rtx, struct value_data *));
 static bool copyprop_hardreg_forward_1 PARAMS ((basic_block,
-						 struct value_data *));
+						struct value_data *));
 extern void debug_value_data PARAMS ((struct value_data *));
 #ifdef ENABLE_CHECKING
 static void validate_value_data PARAMS ((struct value_data *));
@@ -1086,7 +1086,7 @@ kill_value_regno (regno, vd)
   else if ((next = vd->e[regno].next_regno) != INVALID_REGNUM)
     {
       for (i = next; i != INVALID_REGNUM; i = vd->e[i].next_regno)
-        vd->e[i].oldest_regno = next;
+	vd->e[i].oldest_regno = next;
     }
 
   vd->e[regno].mode = VOIDmode;
@@ -1187,7 +1187,7 @@ kill_clobbered_value (x, set, data)
     kill_value (x, vd);
 }
 
-/* Called through note_stores.  If X is set, not clobbered, kill its 
+/* Called through note_stores.  If X is set, not clobbered, kill its
    current value and install it as the root of its own value list.  */
 
 static void
@@ -1201,7 +1201,7 @@ kill_set_value (x, set, data)
     {
       kill_value (x, vd);
       if (REG_P (x))
-        set_value_regno (REGNO (x), GET_MODE (x), vd);
+	set_value_regno (REGNO (x), GET_MODE (x), vd);
     }
 }
 
@@ -1467,7 +1467,7 @@ replace_oldest_value_addr (loc, class, mode, insn, vd)
 
 	if (locI)
 	  changed |= replace_oldest_value_addr (locI, INDEX_REG_CLASS, mode,
-					        insn, vd);
+						insn, vd);
 	if (locB)
 	  changed |= replace_oldest_value_addr (locB,
 						MODE_BASE_REG_CLASS (mode),
@@ -1502,7 +1502,7 @@ replace_oldest_value_addr (loc, class, mode, insn, vd)
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  changed |= replace_oldest_value_addr (&XVECEXP (x, i, j), class,
-					        mode, insn, vd);
+						mode, insn, vd);
     }
 
   return changed;
@@ -1548,7 +1548,7 @@ copyprop_hardreg_forward_1 (bb, vd)
       set = single_set (insn);
       extract_insn (insn);
       if (! constrain_operands (1))
-	fatal_insn_not_found (insn);	
+	fatal_insn_not_found (insn);
       preprocess_constraints ();
       alt = which_alternative;
       n_ops = recog_data.n_operands;
@@ -1618,7 +1618,7 @@ copyprop_hardreg_forward_1 (bb, vd)
 		    fprintf (rtl_dump_file,
 			     "insn %u: replaced reg %u with %u\n",
 			     INSN_UID (insn), regno, REGNO (new));
-	          changed = true;
+		  changed = true;
 		  goto did_replacement;
 		}
 	    }
@@ -1680,7 +1680,7 @@ copyprop_hardreg_forward_1 (bb, vd)
 	    }
 	  else if (GET_CODE (recog_data.operand[i]) == MEM)
 	    replaced = replace_oldest_value_mem (recog_data.operand[i],
-					         insn, vd);
+						 insn, vd);
 
 	  /* If we performed any replacement, update match_dups.  */
 	  if (replaced)
@@ -1741,13 +1741,13 @@ copyprop_hardreg_forward ()
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queueing of blocks.  */
       if (bb->pred
-	  && ! bb->pred->pred_next 
+	  && ! bb->pred->pred_next
 	  && ! (bb->pred->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
 	  && bb->pred->src->index != ENTRY_BLOCK
 	  && bb->pred->src->index < b)
 	all_vd[b] = all_vd[bb->pred->src->index];
       else
-        init_value_data (all_vd + b);
+	init_value_data (all_vd + b);
 
       if (copyprop_hardreg_forward_1 (bb, all_vd + b))
 	need_refresh = true;
