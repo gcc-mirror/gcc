@@ -374,7 +374,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
 	case OPTION_version:
 	  printf ("\
-GNU Fortran %s (Fortran Frontend version %s)\n\
+GNU Fortran (GCC %s) %s\n\
 Copyright (C) 2002 Free Software Foundation, Inc.\n\
 \n\
 GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Submit a problem report to a GNATS site.
-# Copyright (C) 1993, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1993, 2000, 2001, 2002 Free Software Foundation, Inc.
 # Contributed by Brendan Kehoe (brendan@cygnus.com), based on a
 # version written by Heinz G. Seidl (hgs@cygnus.com).
 #
@@ -183,7 +183,14 @@ while [ $# -gt 0 ]; do
     -l | -CL | --lisp) FORMAT=lisp ;;
     --request-id) REQUEST_ID=true ;;
     -h | --help) echo "$USAGE"; $REMOVE_TEMP; exit 0 ;;
-    -V | --version) echo "$VERSION"; $REMOVE_TEMP; exit 0 ;;
+    -V | --version) cat <<EOF
+gccbug (GCC) $DEFAULT_RELEASE
+Copyright (C) 2002 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+EOF
+	$REMOVE_TEMP; exit 0 ;;
     -*) echo "$USAGE" ; $REMOVE_TEMP; exit 1 ;;
     *) echo "$USAGE" ; $REMOVE_TEMP; exit 1
  esac

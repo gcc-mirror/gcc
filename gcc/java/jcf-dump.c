@@ -1,7 +1,7 @@
 /* Program to dump out a Java(TM) .class file.
    Functionally similar to Sun's javap.
 
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -822,8 +822,8 @@ help ()
 static void
 version ()
 {
-  printf ("jcf-dump (%s)\n\n", version_string);
-  printf ("Copyright (C) 2001 Free Software Foundation, Inc.\n");
+  printf ("jcf-dump (GCC) %s\n\n", version_string);
+  printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
   exit (0);
