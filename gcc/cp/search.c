@@ -2557,8 +2557,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 		(build_indirect_ref (addr, NULL_PTR),
 		 DECL_CONTEXT (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))));
 	      expand_expr_stmt
-		(build_modify_expr (ref, NOP_EXPR,
-				    build_unary_op (ADDR_EXPR, nvtbl, 0)));
+		(build_modify_expr (ref, NOP_EXPR, nvtbl));
 	    }
 	  assemble_external (vtbl);
 	  aref = build_array_ref (vtbl, idx);
