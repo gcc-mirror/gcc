@@ -8510,8 +8510,8 @@ num_sign_bit_copies (x, mode)
       if (! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
 	  && (code == PLUS || code == MINUS)
 	  && GET_CODE (XEXP (x, 0)) == REG && REG_POINTER (XEXP (x, 0)))
-	result = MAX ((GET_MODE_BITSIZE (Pmode)
-		       - GET_MODE_BITSIZE (ptr_mode) + 1),
+	result = MAX ((int)(GET_MODE_BITSIZE (Pmode)
+			    - GET_MODE_BITSIZE (ptr_mode) + 1),
 		      result);
 #endif
       return result;
