@@ -1,3 +1,8 @@
+Sat Dec 18 20:30:15 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-typeck.c (c_expand_start_case): Don't warn for long switch
+	in system headers.
+
 Sat Dec 18 16:28:43 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c: Minor reformatting.

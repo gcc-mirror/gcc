@@ -6714,6 +6714,7 @@ c_expand_start_case (exp)
       type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
       if (warn_traditional
+	  && ! in_system_header
 	  && (type == long_integer_type_node
 	      || type == long_unsigned_type_node))
 	pedwarn ("`long' switch expression not converted to `int' in ANSI C");
