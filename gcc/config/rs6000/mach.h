@@ -20,7 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#include "rs6000.h"
+#include "rs6000/rs6000.h"
 
 /* We don't define AIX under MACH; instead we define `unix'.  */
 #undef CPP_PREDEFINES
