@@ -58,6 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "debug.h"
 #include "target.h"
+#include "varray.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
@@ -481,6 +482,8 @@ static int print_struct_values = 0;
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
+static varray_type deferred_fns;
+
 /* Post-switch processing.  */
 static void
 objc_post_options ()
@@ -607,13 +610,36 @@ objc_init (filename)
 
   objc_act_parse_init ();
 
+  VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
+  ggc_add_tree_varray_root (&deferred_fns, 1);
+
   return filename;
+}
+
+/* Register a function tree, so that its optimization and conversion
+   to RTL is only done at the end of the compilation.  */
+
+int
+defer_fn (fn)
+     tree fn;
+{
+  VARRAY_PUSH_TREE (deferred_fns, fn);
+
+  return 1;
 }
 
 void
 finish_file ()
 {
-  c_objc_common_finish_file ();
+  int i;
+
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
+    /* Don't output the same function twice.  We may run into such
+       situations when an extern inline function is later given a
+       non-extern-inline definition.  */
+    if (! TREE_ASM_WRITTEN (VARRAY_TREE (deferred_fns, i)))
+      c_expand_deferred_function (VARRAY_TREE (deferred_fns, i));
+  VARRAY_FREE (deferred_fns);
 
   finish_objc ();		/* Objective-C finalization */
 
