@@ -1,3 +1,8 @@
+2000-05-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* stmt (expand_end_case): Reorder conversion sequence for jump
+	table to avoid extra truncations.
+
 Wed May 31 01:31:42 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* ifcvt.c (cond_exec_process_if_block): Do nothing if the last insn

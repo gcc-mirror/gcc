@@ -5579,10 +5579,10 @@ expand_end_case (orig_index)
 #ifdef HAVE_tablejump
 	  if (! win && HAVE_tablejump)
 	    {
-	      index_expr = convert (thiscase->data.case_stmt.nominal_type,
-				    fold (build (MINUS_EXPR, index_type,
-						 index_expr, minval)));
-	      index_type = TREE_TYPE (index_expr);
+	      index_type = thiscase->data.case_stmt.nominal_type;
+	      index_expr = fold (build (MINUS_EXPR, index_type,
+			                convert (index_type, index_expr),
+				        convert (index_type, minval)));
 	      index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
 	      emit_queue ();
 	      index = protect_from_queue (index, 0);
