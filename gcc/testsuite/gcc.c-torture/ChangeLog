@@ -1,3 +1,8 @@
+1999-09-08  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* noncompile/noncompile.exp: Add poison-1.c.
+	* noncompile/poison-1.c: New file.
+
 1999-09-06  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* execute/va-arg-9.c: New test.

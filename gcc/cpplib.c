@@ -625,8 +625,9 @@ check_macro_name (pfile, symname, assertion)
 }
 
 /* Process a #define command.
-KEYWORD is the keyword-table entry for #define,
-or NULL for a "predefined" macro.  */
+   KEYWORD is the keyword-table entry for #define,
+   or NULL for a "predefined" macro,
+   or the keyword-table entry for #pragma in the case of a #pragma poison.  */
 
 static int
 do_define (pfile, keyword)
@@ -638,9 +639,15 @@ do_define (pfile, keyword)
   HASHNODE *hp;
   long here;
   U_CHAR *macro, *buf, *end;
+  enum node_type new_type;
 
   here = CPP_WRITTEN (pfile);
   copy_rest_of_line (pfile);
+
+  if (keyword == NULL || keyword->type == T_DEFINE)
+    new_type = T_MACRO;
+  else
+    new_type = T_POISON;
 
   /* Copy out the line so we can pop the token buffer. */
   buf = pfile->token_buffer + here;
@@ -663,30 +670,40 @@ do_define (pfile, keyword)
       /* Redefining a precompiled key is ok.  */
       if (hp->type == T_PCSTRING)
 	ok = 1;
+      /* Redefining a poisoned identifier is even worse than `not ok'.  */
+      else if (hp->type == T_POISON)
+	ok = -1;
       /* Redefining a macro is ok if the definitions are the same.  */
       else if (hp->type == T_MACRO)
 	ok = ! compare_defs (pfile, mdef.defn, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST || hp->type == T_STDC)
         ok = ! CPP_OPTIONS (pfile)->done_initializing;
-      /* Print the warning if it's not ok.  */
-      if (!ok)
+      /* Print the warning or error if it's not ok.  */
+      if (ok <= 0)
 	{
-	  cpp_pedwarn (pfile, "`%.*s' redefined", mdef.symlen, mdef.symnam);
+	  if (hp->type == T_POISON)
+	    cpp_error (pfile, "redefining poisoned `%.*s'", 
+		       mdef.symlen, mdef.symnam);
+	  else
+	    cpp_pedwarn (pfile, "`%.*s' redefined", mdef.symlen, mdef.symnam);
 	  if (hp->type == T_MACRO)
 	    cpp_pedwarn_with_file_and_line (pfile, hp->value.defn->file,
 					    hp->value.defn->line,
 			"this is the location of the previous definition");
 	}
-      /* Replace the old definition.  */
-      hp->type = T_MACRO;
-      hp->value.defn = mdef.defn;
+      if (hp->type != T_POISON)
+	{
+	  /* Replace the old definition.  */
+	  hp->type = new_type;
+	  hp->value.defn = mdef.defn;
+	}
     }
   else
-    cpp_install (pfile, mdef.symnam, mdef.symlen, T_MACRO,
+    cpp_install (pfile, mdef.symnam, mdef.symlen, new_type,
 		 (char *) mdef.defn, hashcode);
 
-  if (keyword)
+  if (keyword != NULL && keyword->type == T_DEFINE)
     {
       if (CPP_OPTIONS (pfile)->debug_output
 	  || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
@@ -1425,9 +1442,14 @@ do_undef (pfile, keyword)
 	 need to pass through all effective #undef commands.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
 	pass_thru_directive (name, sym_length, pfile, keyword);
-      if (hp->type != T_MACRO)
-	cpp_warning (pfile, "undefining `%s'", hp->name);
-      delete_macro (hp);
+      if (hp->type == T_POISON)
+	cpp_error (pfile, "cannot undefine poisoned `%s'", hp->name);
+      else 
+	{
+	  if (hp->type != T_MACRO)
+	    cpp_warning (pfile, "undefining `%s'", hp->name);
+	  delete_macro (hp);
+	}
     }
 
   return 0;
@@ -1578,6 +1600,65 @@ do_pragma (pfile, keyword)
         cpp_warning (pfile,
 	  "`#pragma implementation' for `%s' appears after file is included",
 		     fcopy);
+    }
+  else if (!strncmp (buf, "poison", 6))
+    {
+      /* Poison these symbols so that all subsequent usage produces an
+	 error message.  */
+      U_CHAR *p = buf + 6;
+      size_t plen;
+      U_CHAR *syms;
+      int writeit;
+
+      SKIP_WHITE_SPACE (p);
+      plen = strlen(p) + 1;
+
+      syms = (U_CHAR *) alloca (plen);
+      memcpy (syms, p, plen);
+
+      /* As a rule, don't include #pragma poison commands in output,  
+         unless the user asks for them.  */
+      writeit = (CPP_OPTIONS (pfile)->debug_output
+		 || CPP_OPTIONS (pfile)->dump_macros == dump_definitions
+		 || CPP_OPTIONS (pfile)->dump_macros == dump_names);
+
+      if (writeit)
+	CPP_SET_WRITTEN (pfile, here);
+      else
+	CPP_SET_WRITTEN (pfile, here-8);
+
+      if (writeit)
+	{
+	  CPP_RESERVE (pfile, plen + 7);
+	  CPP_PUTS_Q (pfile, "poison", 7);
+	}
+
+      while (*syms != '\0')
+	{
+	  U_CHAR *end = syms;
+	  
+	  while (is_idchar[*end])
+	    end++;
+
+	  if (!is_hor_space[*end] && *end != '\0')
+	    {
+	      cpp_error (pfile, "invalid #pragma poison directive");
+	      return 1;
+	    }
+
+	  if (cpp_push_buffer (pfile, syms, end - syms) != NULL)
+	    {
+	      do_define (pfile, keyword);
+	      cpp_pop_buffer (pfile);
+	    }
+	  if (writeit)
+	    {
+	      CPP_PUTC_Q (pfile, ' ');
+	      CPP_PUTS_Q (pfile, syms, end - syms);
+	    }
+	  syms = end;
+	  SKIP_WHITE_SPACE (syms);
+	}
     }
 
   return 0;
@@ -1806,6 +1887,11 @@ do_xifdef (pfile, keyword)
 	{
 	  control_macro = (U_CHAR *) xmalloc (ident_length + 1);
 	  bcopy (ident, control_macro, ident_length + 1);
+	}
+      if (hp != NULL && hp->type == T_POISON)
+	{
+	  cpp_error (pfile, "attempt to use poisoned `%s'", hp->name);
+	  skip = !skip;
 	}
     }
   else

@@ -600,6 +600,7 @@ enum node_type {
  T_MACRO,	/* macro defined by `#define' */
  T_DISABLED,	/* macro temporarily turned off for rescan */
  T_PCSTRING,	/* precompiled string (hashval is KEYDEF *) */
+ T_POISON,	/* defined with `#pragma poison' */
  T_UNUSED	/* Used for something not defined.  */
  };
 

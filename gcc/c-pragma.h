@@ -61,13 +61,12 @@ extern int add_weak PROTO((char *, char *));
 #endif /* HANDLE_PRAGMA_WEAK */
 
 
-#if defined HANDLE_PRAGMA_PACK || defined HANDLE_PRAGMA_WEAK
 /* Define HANDLE_GENERIC_PRAGMAS if any kind of front-end pragma
    parsing is to be done.  The code in GCC's generic C source files
    will only look for the definition of this constant.  They will
-   ignore definitions of HANDLE_PRAGMA_PACK and so on.  */
+   ignore definitions of HANDLE_PRAGMA_PACK and so on. 
+   With #pragma poison, this is always set.  */
 #define HANDLE_GENERIC_PRAGMAS 1
-#endif
 
 
 #ifdef HANDLE_GENERIC_PRAGMAS
@@ -91,6 +90,7 @@ enum pragma_state
   ps_push, ps_pushcomma, ps_pushid, ps_pushcomma2,
   ps_pop, ps_popcomma,
 #endif
+  ps_poison,
   ps_bad
 };
 

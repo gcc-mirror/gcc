@@ -300,6 +300,10 @@ handle_pragma_token (string, token)
 	    ret_val = 1; /* Ignore the pragma.  */
 	  break;
 #endif /* HANDLE_PRAGMA_WEAK */
+
+	case ps_poison:
+	  ret_val = 1;
+	  break;
 	}
 
       type = state = ps_start;
@@ -338,9 +342,11 @@ handle_pragma_token (string, token)
 #ifdef HANDLE_PRAGMA_WEAK
       if (strcmp (string, "weak") == 0)
 	type = state = ps_weak;
-#endif	  
+#endif
+      if (strcmp (string, "poison") == 0)
+	type = state = ps_poison;
       break;
-      
+
 #ifdef HANDLE_PRAGMA_WEAK
     case ps_weak:
       name = permalloc (strlen (string) + 1);
@@ -485,7 +491,12 @@ handle_pragma_token (string, token)
 	state = ps_bad;
       break;
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
-      
+
+    case ps_poison:
+      if (token && TREE_CODE (token) != IDENTIFIER_NODE)
+	state = ps_bad;
+      break;
+
     case ps_bad:
     case ps_done:
       break;

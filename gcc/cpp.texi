@@ -551,6 +551,7 @@ in the C preprocessor.
 * Concatenation::    Building tokens from parts taken from macro arguments.
 * Undefining::       Cancelling a macro's definition.
 * Redefining::       Changing a macro's definition.
+* Poisoning::        Ensuring a macro is never defined or used.
 * Macro Pitfalls::   Macros can confuse the unwary.  Here we explain
                        several common problems and strange features.
 @end menu
@@ -1370,7 +1371,7 @@ The same form of @samp{#undef} directive will cancel definitions with
 arguments or definitions that don't expect arguments.  The @samp{#undef}
 directive has no effect when used on a name not currently defined as a macro.
 
-@node Redefining, Macro Pitfalls, Undefining, Macros
+@node Redefining, Poisoning, Undefining, Macros
 @subsection Redefining Macros
 
 @cindex redefining macros
@@ -1404,7 +1405,28 @@ where there was no whitespace at all.
 
 Recall that a comment counts as whitespace.
 
-@node Macro Pitfalls,, Redefining, Macros
+@node Poisoning, Macro Pitfalls, Redefining, Macros
+@subsection Poisoning Macros
+@cindex poisoning macros
+
+Sometimes, there is an identifier that you want to remove completely
+from your program, and make sure that it never creeps back in.  To
+enforce this, the @samp{#pragma poison} directive can be used.
+@samp{#pragma poison} is followed by a list of identifiers to poison,
+and takes effect for the rest of the source.  You cannot @samp{#undef} a
+poisoned identifier or test to see if it's defined with @samp{#ifdef}.
+
+For example,
+
+@example
+#pragma poison printf sprintf fprintf
+sprintf(some_string, "hello");
+@end example
+
+@noindent
+will produce an error.
+
+@node Macro Pitfalls,, Poisoning, Macros
 @subsection Pitfalls and Subtleties of Macros
 @cindex problems with macros
 @cindex pitfalls of macros

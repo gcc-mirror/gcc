@@ -1020,6 +1020,13 @@ special_symbol (hp, pfile)
 	return;
       }
 
+    case T_POISON:
+      cpp_error (pfile, "attempt to use poisoned `%s'.", hp->name);
+      CPP_RESERVE (pfile, 1);
+      CPP_PUTC_Q (pfile, '0');
+      CPP_NUL_TERMINATE_Q (pfile);
+      break;
+
     default:
       cpp_fatal (pfile, "cpplib internal error: invalid special hash type");
       return;

@@ -27,6 +27,7 @@ Written by Per Bothner 1994.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
+#include "cpphash.h"
 
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
@@ -445,6 +446,7 @@ cpp_lex (pfile, skip_evaluation)
 	  int paren = 0, len;
 	  cpp_buffer *ip = CPP_BUFFER (pfile);
 	  U_CHAR *tok;
+	  HASHNODE *hp;
 
 	  cpp_skip_hspace (pfile);
 	  if (*ip->cur == '(')
@@ -469,9 +471,14 @@ cpp_lex (pfile, skip_evaluation)
 		goto oops;
 	      ++ip->cur;
 	    }
-	  if (cpp_lookup (pfile, tok, len, -1))
-	    op.value = 1;
-
+	  hp = cpp_lookup (pfile, tok, len, -1);
+	  if (hp != NULL)
+	    {
+	      if (hp->type == T_POISON)
+		cpp_error (pfile, "attempt to use poisoned `%s'", hp->name);
+	      else
+		op.value = 1;
+	    }
 	}
       return op;
 
