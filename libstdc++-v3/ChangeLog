@@ -1,3 +1,9 @@
+2004-12-19  Dhruv Matani  <dhruvbird@gmx.net>
+	
+	* docs/html/20_util/allocator.html: Correct link.
+	* docs/html/ext/ballocator_doc.txt: Remove.
+	* docs/html/ext/ballocator_doc.html: Add.
+
 2004-12-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/18997
