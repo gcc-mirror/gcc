@@ -1,3 +1,8 @@
+Tue Mar 23 09:00:39 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/riscix1.h (SUBTARGET_SWITCHES): Add doc string.
+	* config/arm/riscix1-1.h (SUBTARGET_SWITCHES): Add doc string.
+
 Tue Mar 23 07:50:20 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c: Include hash.h.

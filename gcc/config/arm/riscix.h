@@ -79,8 +79,10 @@ Boston, MA 02111-1307, USA.  */
 /* None of these is actually used in cc1.  If we don't define them in target
    switches cc1 complains about them.  For the sake of argument lets allocate
    bit 31 of target flags for such options.  */
-#define SUBTARGET_SWITCHES \
-{"bsd", 0x80000000}, {"xopen", 0x80000000}, {"no-symrename", 0x80000000},
+#define SUBTARGET_SWITCHES 		\
+{"bsd", 0x80000000, ""},		\
+{"xopen", 0x80000000, ""},		\
+{"no-symrename", 0x80000000, ""},
     
 
 /* Run-time Target Specification.  */
