@@ -74,7 +74,7 @@ Boston, MA 02111-1307, USA.  */
 /* Target OS builtins.  */
 #define TARGET_OS_CPP_BUILTINS()			\
 do {							\
-	if (iso_flag)					\
+	if (flag_iso)					\
 	  builtin_define("_ANSI_C_SOURCE");		\
 	builtin_define("_AIX");				\
 	builtin_define("_AIX64");			\

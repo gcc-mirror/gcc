@@ -1,3 +1,7 @@
+2002-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ia64/aix.h (TARGET_OS_CPP_BUILTINS): Fix typo.
+
 2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Follow spelling conventions.
