@@ -1648,6 +1648,11 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       || ureg == sreg
       /* Don't try to connect two different hardware registers.  */
       || (ureg < FIRST_PSEUDO_REGISTER && sreg < FIRST_PSEUDO_REGISTER)
+      /* Don't use a hard reg that might be spilled.  */
+      || (ureg < FIRST_PSEUDO_REGISTER
+	  && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (ureg)))
+      || (sreg < FIRST_PSEUDO_REGISTER
+	  && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (sreg)))
       /* Don't connect two different machine modes if they have different
 	 implications as to which registers may be used.  */
       || !MODES_TIEABLE_P (GET_MODE (usedreg), GET_MODE (setreg)))

@@ -1,5 +1,8 @@
 Mon Mar  8 16:04:44 1999  Jim Wilson  <wilson@cygnus.com>
 
+	* local-alloc.c (combine_regs): Don't combine if we have a hard reg
+	for which CLASS_LIKELY_SPILLED_P is true.
+
 	* unroll.c (loop_iterations): Only call loop_find_equiv_value if we
 	have a REG or SUBREG.
 
