@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.30 $"
+version="$Revision: 1.31 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -161,6 +161,10 @@ case "${progname}" in
         PATH=$PATH:${PWD=`pwd`} ; export PATH
         ;;
 esac
+
+# Export original configure arguments for use by sub-configures.
+TOPLEVEL_CONFIGURE_ARGUMENTS="$progname $@"
+export TOPLEVEL_CONFIGURE_ARGUMENTS
 
 # Loop over all args
 
@@ -400,10 +404,6 @@ do
 		;;
 	esac
 done
-
-# Remember the pristine configure arguments for later.  $arguments gets
-# built up with further defaults in preparation for recursion.
-original_arguments=$arguments
 
 # process host and target
 
@@ -1603,14 +1603,6 @@ if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then
                         cd ${POPDIR}
                 fi
         done
-fi
-
-# Remember configure arguments for later.
-if [ -d gcc ]; then
-	cat > gcc/configargs.h <<EOF
-/* Generated automatically. */
-static const char configuration_arguments[] = "$original_arguments";
-EOF
 fi
 
 # Perform the same cleanup as the trap handler, minus the "exit 1" of course,
