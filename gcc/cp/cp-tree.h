@@ -4317,7 +4317,6 @@ extern tree build_min				PARAMS ((enum tree_code, tree,
 extern tree build_min_nt			PARAMS ((enum tree_code, ...));
 extern tree build_cplus_new			PARAMS ((tree, tree));
 extern tree get_target_expr			PARAMS ((tree));
-extern tree break_out_calls			PARAMS ((tree));
 extern tree build_cplus_method_type		PARAMS ((tree, tree, tree));
 extern tree build_cplus_staticfn_type		PARAMS ((tree, tree, tree));
 extern tree build_cplus_array_type		PARAMS ((tree, tree));

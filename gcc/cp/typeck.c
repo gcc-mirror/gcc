@@ -5502,44 +5502,8 @@ build_modify_expr (lhs, modifycode, rhs)
   if (newrhs == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (newrhs) == COND_EXPR)
-    {
-      tree lhs1;
-      tree cond = TREE_OPERAND (newrhs, 0);
-
-      if (TREE_SIDE_EFFECTS (lhs))
-	cond = build_compound_expr (tree_cons
-				    (NULL_TREE, lhs,
-				     build_tree_list (NULL_TREE, cond)));
-
-      /* Cannot have two identical lhs on this one tree (result) as preexpand
-	 calls will rip them out and fill in RTL for them, but when the
-	 rtl is generated, the calls will only be in the first side of the
-	 condition, not on both, or before the conditional jump! (mrs) */
-      lhs1 = break_out_calls (lhs);
-
-      if (lhs == lhs1)
-	/* If there's no change, the COND_EXPR behaves like any other rhs.  */
-	result = build (modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
-			lhstype, lhs, newrhs);
-      else
-	{
-	  tree result_type = TREE_TYPE (newrhs);
-	  /* We have to convert each arm to the proper type because the
-	     types may have been munged by constant folding.  */
-	  result
-	    = build (COND_EXPR, result_type, cond,
-		     build_modify_expr (lhs, modifycode,
-					cp_convert (result_type,
-						    TREE_OPERAND (newrhs, 1))),
-		     build_modify_expr (lhs1, modifycode,
-					cp_convert (result_type,
-						    TREE_OPERAND (newrhs, 2))));
-	}
-    }
-  else
-    result = build (modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
-		    lhstype, lhs, newrhs);
+  result = build (modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
+		  lhstype, lhs, newrhs);
 
   TREE_SIDE_EFFECTS (result) = 1;
 
