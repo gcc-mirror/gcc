@@ -8731,7 +8731,7 @@ simplify_comparison (code, pop0, pop1)
 	      && ((INTVAL (XEXP (op0, 1)) + ! equality_comparison_p)
 		  < HOST_BITS_PER_WIDE_INT)
 	      && ((const_op
-		   &  ((HOST_WIDE_INT) 1 << INTVAL (XEXP (op0, 1))) - 1) == 0)
+		   & (((HOST_WIDE_INT) 1 << INTVAL (XEXP (op0, 1))) - 1)) == 0)
 	      && mode_width <= HOST_BITS_PER_WIDE_INT
 	      && (nonzero_bits (XEXP (op0, 0), mode)
 		  & ~ (mask >> (INTVAL (XEXP (op0, 1))
