@@ -4577,10 +4577,7 @@ update_flow_info (notes, first, last, orig_insn)
   /* If any insn, except the last, uses the register set by the last insn,
      then we need a new REG_DEAD note on that insn.  In this case, there
      would not have been a REG_DEAD note for this register in the original
-     insn because it was used and set within one insn.
-
-     There is no new REG_DEAD note needed if the last insn uses the register
-     that it is setting.  */
+     insn because it was used and set within one insn.  */
 
   set = single_set (last);
   if (set)
@@ -4596,10 +4593,31 @@ update_flow_info (notes, first, last, orig_insn)
 	  /* Global registers are always live, so the code below does not
 	     apply to them.  */
 	  && (REGNO (dest) >= FIRST_PSEUDO_REGISTER
-	      || ! global_regs[REGNO (dest)])
-	  && ! reg_overlap_mentioned_p (dest, SET_SRC (set)))
+	      || ! global_regs[REGNO (dest)]))
 	{
-	  for (insn = PREV_INSN (last); ; insn = PREV_INSN (insn))
+	  rtx stop_insn = PREV_INSN (first);
+
+	  /* If the last insn uses the register that it is setting, then
+	     we don't want to put a REG_DEAD note there.  Search backwards
+	     to find the first insn that sets but does not use DEST.  */
+
+	  insn = last;
+	  if (reg_overlap_mentioned_p (dest, SET_SRC (set)))
+	    {
+	      for (insn = PREV_INSN (insn); insn != first;
+		   insn = PREV_INSN (insn))
+		{
+		  if ((set = single_set (insn))
+		      && reg_mentioned_p (dest, SET_DEST (set))
+		      && ! reg_overlap_mentioned_p (dest, SET_SRC (set)))
+		    break;
+		}
+	    }
+
+	  /* Now find the first insn that uses but does not set DEST.  */
+
+	  for (insn = PREV_INSN (insn); insn != stop_insn;
+	       insn = PREV_INSN (insn))
 	    {
 	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 		  && reg_mentioned_p (dest, PATTERN (insn))
@@ -4625,8 +4643,6 @@ update_flow_info (notes, first, last, orig_insn)
 		      break;
 		    }
 		}
-	      if (insn == first)
-		break;
 	    }
 	}
     }
