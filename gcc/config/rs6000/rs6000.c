@@ -1868,28 +1868,17 @@ output_prolog (file, size)
   int total_size = (basic_size + size + current_function_outgoing_args_size);
   char buf[256];
 
-  /* If this is eabi, call __eabi with main, but do so before the minimal TOC
-     is setup, so we can't use the normal mechanism.  */
-#if defined(USING_SVR4_H) && defined(NAME__MAIN) && !defined(INVOKE__main)
-  int main_p = 0;
-
-  if (IDENTIFIER_LENGTH (DECL_NAME (current_function_decl)) == 4
-      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main"))
-    {
-      main_p = 1;
-      regs_ever_live[65] = 1;
-    }
-#endif
-
   /* Round size to multiple of 8 bytes.  */
   total_size = (total_size + 7) & ~7;
 
   /* Write .extern for any function we will call to save and restore fp
      values.  */
+#ifndef USING_SVR4_H
   if (first_fp_reg < 62)
     fprintf (file, "\t.extern %s%d%s\n\t.extern %s%d%s\n",
 	     SAVE_FP_PREFIX, first_fp_reg - 32, SAVE_FP_SUFFIX,
 	     RESTORE_FP_PREFIX, first_fp_reg - 32, RESTORE_FP_SUFFIX);
+#endif
 
   /* Write .extern for truncation routines, if needed.  */
   if (rs6000_trunc_used && ! trunc_defined)
@@ -1918,8 +1907,13 @@ output_prolog (file, size)
 
   /* If we have to call a function to save fpr's, or if we are doing profiling,
      then we will be using LR.  */
-  if (first_fp_reg < 62 || profile_flag)
+  if (profile_flag)
     regs_ever_live[65] = 1;
+
+#ifndef USING_SVR4_H
+  if (first_fp_reg < 62)
+    regs_ever_live[65] = 1;
+#endif
 
   /* If we use the link register, get it into r0.  */
   if (regs_ever_live[65])
@@ -1937,7 +1931,19 @@ output_prolog (file, size)
   else if (first_fp_reg == 63)
     asm_fprintf (file, "\tstfd 31,-8(1)\n");
   else if (first_fp_reg != 64)
-    asm_fprintf (file, "\tbl %s%d%s\n", SAVE_FP_PREFIX, first_fp_reg - 32, SAVE_FP_SUFFIX);
+    {
+#ifndef USING_SVR4_H
+      asm_fprintf (file, "\tbl %s%d%s\n", SAVE_FP_PREFIX, first_fp_reg - 32, SAVE_FP_SUFFIX);
+#else
+      int regno, loc;
+
+      for (regno = first_fp_reg,
+	   loc = - (64 - first_fp_reg) * 8;
+	   regno < 64;
+	   regno++, loc += 8)
+	asm_fprintf (file, "\tstfd %d,%d(1)\n", regno - 32, loc);
+#endif
+    }
 
   /* Now save gpr's.  */
   if (! TARGET_MULTIPLE || first_reg == 31)
@@ -1983,12 +1989,6 @@ output_prolog (file, size)
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
     asm_fprintf (file, "\tmr 31,1\n");
-
-  /* If this is eabi, call __eabi before loading up the minimal TOC */
-#if defined(USING_SVR4_H) && defined(NAME__MAIN) && !defined(INVOKE__main)
-  if (main_p)
-    fprintf (file, "\tbl %s\n", NAME__MAIN);
-#endif
 
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
@@ -2122,7 +2122,21 @@ output_epilog (file, size)
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
       if (first_fp_reg < 62)
-	asm_fprintf (file, "\tb %s%d%s\n", RESTORE_FP_PREFIX, first_fp_reg - 32, RESTORE_FP_SUFFIX);
+	{
+#ifndef USING_SVR4_H
+	  asm_fprintf (file, "\tb %s%d%s\n", RESTORE_FP_PREFIX, first_fp_reg - 32, RESTORE_FP_SUFFIX);
+#else
+	  int regno, loc;
+
+	  for (regno = first_fp_reg,
+	       loc = - (64 - first_fp_reg) * 8;
+	       regno < 64;
+	       regno++, loc += 8)
+	    asm_fprintf (file, "\tlfd %d,%d(1)\n", regno - 32, loc);
+
+	  asm_fprintf (file, "\t{br|blr}\n");
+#endif
+	}
       else
 	asm_fprintf (file, "\t{br|blr}\n");
     }
