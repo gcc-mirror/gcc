@@ -8448,7 +8448,7 @@ source_end_java_method ()
     }
 
   current_function_decl = NULL_TREE;
-  /*  permanent_allocation (1); */
+  permanent_allocation (1);
   java_parser_context_restore_global ();
   asynchronous_exceptions = flag_asynchronous_exceptions;
 }
@@ -12842,6 +12842,7 @@ patch_string_cst (node)
       node = get_identifier (TREE_STRING_POINTER (node));
       location = alloc_name_constant (CONSTANT_String, node);
       node = build_ref_from_constant_pool (location);
+      pop_obstacks ();
     }
   TREE_TYPE (node) = string_ptr_type_node;
   TREE_CONSTANT (node) = 1;
