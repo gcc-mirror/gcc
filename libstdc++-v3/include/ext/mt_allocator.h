@@ -837,7 +837,12 @@ namespace __gnu_cxx
   volatile __mt_alloc<_Tp>::_S_thread_freelist_first = NULL;
 
   template<typename _Tp> __gthread_mutex_t
+#ifdef __GTHREAD_MUTEX_INIT
   __mt_alloc<_Tp>::_S_thread_freelist_mutex = __GTHREAD_MUTEX_INIT;
+#else
+  // XXX
+  __mt_alloc<_Tp>::_S_thread_freelist_mutex;
+#endif
 
   /*
    * Actual initialization in _S_init()
