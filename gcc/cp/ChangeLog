@@ -1,3 +1,15 @@
+Mon Apr  6 02:25:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_call): Still evaluate the actual argument.
+	* class.c (is_empty_class): Update for -fnew-abi.
+
+	* decl2.c: -fnew-abi implies -fsquangle.
+
+	* method.c (do_build_assign_ref): Don't do anything to copy
+	an empty class.
+	(do_build_copy_constructor): Likewise.
+	* call.c (build_over_call): Likewise.
+
 Sat Apr  4 18:43:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (avoid_overlap): Return a value.

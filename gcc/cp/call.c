@@ -525,7 +525,8 @@ build_call (function, result_type, parms)
 	  TREE_TYPE (t) = TREE_TYPE (TREE_VALUE (tmp));
 	  RTL_EXPR_RTL (t) = const0_rtx;
 	  RTL_EXPR_SEQUENCE (t) = NULL_RTX;
-	  TREE_VALUE (tmp) = t;
+	  TREE_VALUE (tmp) = build (COMPOUND_EXPR, TREE_TYPE (t),
+				    TREE_VALUE (tmp), t);
 	}
 
   function = build_nt (CALL_EXPR, function, parms, NULL_TREE);
@@ -3351,6 +3352,12 @@ build_over_call (fn, convs, args, flags)
 	{
 	  tree to = stabilize_reference
 	    (build_indirect_ref (TREE_VALUE (args), 0));
+
+	  /* Don't copy the padding byte; it might not have been allocated
+	     if to is a base subobject.  */
+	  if (is_empty_class (DECL_CLASS_CONTEXT (fn)))
+	    return to;
+
 	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
 	  TREE_SIDE_EFFECTS (val) = 1;
 	  return build_unary_op (ADDR_EXPR, val, 0);
@@ -3358,10 +3365,16 @@ build_over_call (fn, convs, args, flags)
     }
   else if (DECL_NAME (fn) == ansi_opname[MODIFY_EXPR]
 	   && copy_args_p (fn)
-	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CONTEXT (fn)))
+	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CLASS_CONTEXT (fn)))
     {
       tree to = stabilize_reference
 	(build_indirect_ref (TREE_VALUE (converted_args), 0));
+
+      /* Don't copy the padding byte; it might not have been allocated
+	 if to is a base subobject.  */
+      if (is_empty_class (DECL_CLASS_CONTEXT (fn)))
+	return to;
+
       arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
       val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
       TREE_SIDE_EFFECTS (val) = 1;

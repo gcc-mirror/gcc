@@ -2047,7 +2047,11 @@ do_build_copy_constructor (fndecl)
     parm = TREE_CHAIN (parm);
   parm = convert_from_reference (parm);
 
-  if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type))
+  if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type)
+      && is_empty_class (current_class_type))
+    /* Don't copy the padding byte; it might not have been allocated
+       if *this is a base subobject.  */;
+  else if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type))
     {
       t = build (INIT_EXPR, void_type_node, current_class_ref, parm);
       TREE_SIDE_EFFECTS (t) = 1;
@@ -2159,7 +2163,11 @@ do_build_assign_ref (fndecl)
 
   parm = convert_from_reference (parm);
 
-  if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type))
+  if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type)
+      && is_empty_class (current_class_type))
+    /* Don't copy the padding byte; it might not have been allocated
+       if *this is a base subobject.  */;
+  else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type))
     {
       tree t = build (MODIFY_EXPR, void_type_node, current_class_ref, parm);
       TREE_SIDE_EFFECTS (t) = 1;

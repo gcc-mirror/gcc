@@ -5486,7 +5486,13 @@ is_empty_class (type)
 {
   tree t;
 
-  if (! IS_AGGR_TYPE (type) || TYPE_BINFO_BASETYPES (type))
+  if (! IS_AGGR_TYPE (type))
+    return 0;
+
+  if (flag_new_abi)
+    return CLASSTYPE_SIZE (type) == integer_zero_node;
+
+  if (TYPE_BINFO_BASETYPES (type))
     return 0;
   t = TYPE_FIELDS (type);
   while (t && TREE_CODE (t) != FIELD_DECL)
