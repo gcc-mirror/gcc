@@ -1,3 +1,8 @@
+2003-10-09  Tom Tromey  <tromey@redhat.com>
+
+	* decl.c (java_init_decl_processing): Declare signers field.
+	* class.c (make_class_data): Set signers field.
+
 2003-10-09  Jason Merrill  <jason@redhat.com>
 
 	* parse.y (patch_assignment): Use make_node to create a BLOCK.
