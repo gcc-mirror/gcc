@@ -42,6 +42,7 @@ exception statement from your version. */
 
 #ifdef JVM_SUN
   struct state_table *native_state_table;
+  struct state_table *native_global_ref_table;
 #endif
 
 jmethodID setBoundsCallbackID;

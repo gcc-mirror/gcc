@@ -48,12 +48,16 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
 {
   void *ptr;
 
+  /* Remove entries from state tables */
+  NSA_DEL_GLOBAL_REF (env, obj);
   ptr = NSA_DEL_PTR (env, obj);
 
+  gdk_threads_enter ();
+  
   /* For now the native state for any object must be a widget.
      However, a subclass could override dispose() if required.  */
-  gdk_threads_enter ();
   gtk_widget_destroy (GTK_WIDGET (ptr));
+
   gdk_threads_leave ();
 }
 
@@ -548,11 +552,11 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObjec
 }
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals
-  (JNIEnv *env, jobject peer_obj)
+  (JNIEnv *env, jobject obj)
 {
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, peer_obj);
+  void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  g_assert (gref);
 
   gdk_threads_enter ();
 
@@ -567,7 +571,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignal
   /* Connect EVENT signal, which happens _before_ any specific signal. */
 
   g_signal_connect (GTK_OBJECT (ptr), "event", 
-                    G_CALLBACK (pre_event_handler), peer_obj);
+                    G_CALLBACK (pre_event_handler), *gref);
 
   gdk_threads_leave ();
 }

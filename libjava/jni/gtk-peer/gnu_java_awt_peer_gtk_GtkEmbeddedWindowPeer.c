@@ -47,8 +47,11 @@ Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create
   GtkWidget *window;
   GtkWidget *vbox, *layout;
 
-  gdk_threads_enter ();
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
 
+  gdk_threads_enter ();
+  
   window = gtk_plug_new (window_id);
 
   vbox = gtk_vbox_new (0, 0);

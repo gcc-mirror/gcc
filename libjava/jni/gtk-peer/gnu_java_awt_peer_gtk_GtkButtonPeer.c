@@ -46,10 +46,16 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
 {
   GtkWidget *button;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   gdk_threads_enter ();
+  
   button = gtk_button_new();
   gtk_widget_show (button);
+
   gdk_threads_leave ();
+
   NSA_SET_PTR (env, obj, button);
 }
 
@@ -74,7 +80,8 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkButtonPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
-  void *ptr = NSA_GET_PTR (env, obj);
+  /* FIXME: Do we need to connect any signals here? Otherwise just do not
+     override parent method. */
 
   /* Connect the superclass signals.  */
   Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, obj);

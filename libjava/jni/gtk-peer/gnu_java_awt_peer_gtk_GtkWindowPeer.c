@@ -74,7 +74,11 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   void *window_parent;
   GtkWidget *vbox, *layout;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   gdk_threads_enter ();
+  
   window_widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   window = GTK_WINDOW (window_widget);
 
@@ -179,9 +183,9 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
+  void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  g_assert (gref);
 
   gdk_threads_enter ();
 
@@ -189,22 +193,22 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
 
   /* Connect signals for window event support. */
   g_signal_connect (G_OBJECT (ptr), "delete-event",
-		    G_CALLBACK (window_delete_cb), obj);
+		    G_CALLBACK (window_delete_cb), *gref);
 
   g_signal_connect (G_OBJECT (ptr), "destroy-event",
-		    G_CALLBACK (window_destroy_cb), obj);
+		    G_CALLBACK (window_destroy_cb), *gref);
 
   g_signal_connect (G_OBJECT (ptr), "show",
-		    G_CALLBACK (window_show_cb), obj);
+		    G_CALLBACK (window_show_cb), *gref);
 
   g_signal_connect (G_OBJECT (ptr), "focus-in-event",
-		    G_CALLBACK (window_focus_in_cb), obj);
+		    G_CALLBACK (window_focus_in_cb), *gref);
 
   g_signal_connect (G_OBJECT (ptr), "focus-out-event",
-		    G_CALLBACK (window_focus_out_cb), obj);
+		    G_CALLBACK (window_focus_out_cb), *gref);
 
   g_signal_connect (G_OBJECT (ptr), "window-state-event",
-		    G_CALLBACK (window_window_state_cb), obj);
+		    G_CALLBACK (window_window_state_cb), *gref);
 
   gdk_threads_leave ();
 

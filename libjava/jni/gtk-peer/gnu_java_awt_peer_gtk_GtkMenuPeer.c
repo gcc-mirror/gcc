@@ -92,9 +92,13 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
   GtkWidget *menu_title, *menu;
   const char *str;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   str = (*env)->GetStringUTFChars (env, label, NULL);
 
   gdk_threads_enter ();
+  
   menu = gtk_menu_new ();
   
   menu_title = gtk_menu_item_new_with_label (str);
@@ -104,6 +108,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
   gtk_widget_show (menu_title);
 
   NSA_SET_PTR (env, obj, menu_title);
+
   gdk_threads_leave ();
 
   (*env)->ReleaseStringUTFChars (env, label, str);
