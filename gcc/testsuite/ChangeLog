@@ -1,3 +1,12 @@
+2004-01-12  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/12826
+	* gcc.dg/20040112-1.c: New.
+
+	* gcc.dg/dwarf-die[1-7].c: Move to...
+	* gcc.dg/debug/dwarf2/dwarf-die[1-7].c: ... here.
+	* gcc.dg/debug/dwarf2/dwarf2.exp: New.
+
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR c++/4100
