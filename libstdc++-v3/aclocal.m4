@@ -1328,6 +1328,7 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 
   # Check for the existence of <math.h> functions used if C99 is enabled.
   ac_c99_math=yes;
+  AC_MSG_CHECKING([for ISO C99 support in <math.h>])
   AC_TRY_COMPILE([#include <math.h>],[fpclassify(0.0);],, [ac_c99_math=no])
   AC_TRY_COMPILE([#include <math.h>],[isfinite(0.0);],, [ac_c99_math=no])
   AC_TRY_COMPILE([#include <math.h>],[isinf(0.0);],, [ac_c99_math=no])
@@ -1343,19 +1344,10 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 	         [islessgreater(0.0,0.0);],, [ac_c99_math=no])
   AC_TRY_COMPILE([#include <math.h>],
 	         [isunordered(0.0,0.0);],, [ac_c99_math=no])
-  AC_MSG_CHECKING([for ISO C99 support in <math.h>])
   AC_MSG_RESULT($ac_c99_math)
 
   # Check for the existence in <stdlib.h> of lldiv_t, et. al.
   ac_c99_stdlib=yes;
-  AC_TRY_COMPILE([#include <stdlib.h>],
-	         [char* tmp; strtoll("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>],
-	         [char* tmp; strtoull("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>], [llabs(10);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>], [lldiv(10,1);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>], [atoll("10");],, [ac_c99_stdlib=no])
-	
   AC_MSG_CHECKING([for lldiv_t declaration])
   AC_CACHE_VAL(ac_c99_lldiv_t, [
   AC_TRY_COMPILE([#include <stdlib.h>], 
@@ -1363,21 +1355,29 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
                    [ac_c99_lldiv_t=yes], [ac_c99_lldiv_t=no])
   ])
   AC_MSG_RESULT($ac_c99_lldiv_t)
+
+  AC_MSG_CHECKING([for ISO C99 support in <stdlib.h>])
+  AC_TRY_COMPILE([#include <stdlib.h>],
+	         [char* tmp; strtoll("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
+  AC_TRY_COMPILE([#include <stdlib.h>],
+	         [char* tmp; strtoull("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
+  AC_TRY_COMPILE([#include <stdlib.h>], [llabs(10);],, [ac_c99_stdlib=no])
+  AC_TRY_COMPILE([#include <stdlib.h>], [lldiv(10,1);],, [ac_c99_stdlib=no])
+  AC_TRY_COMPILE([#include <stdlib.h>], [atoll("10");],, [ac_c99_stdlib=no])
   if test x"$ac_c99_lldiv_t" = x"no"; then
     ac_c99_stdlib=no; 
   fi; 
-  AC_MSG_CHECKING([for ISO C99 support in <stdlib.h>])
   AC_MSG_RESULT($ac_c99_stdlib)
 
   # Check for the existence of <wchar.h> functions used if C99 is enabled.
   ac_c99_wchar=yes;
+  AC_MSG_CHECKING([for ISO C99 support in <wchar.h>])
   AC_TRY_COMPILE([#include <wchar.h>], 
 	         [wcstold(L"10.0", NULL);],, [ac_c99_wchar=no])
   AC_TRY_COMPILE([#include <wchar.h>], 
 	         [wcstoll(L"10", NULL, 10);],, [ac_c99_wchar=no])
   AC_TRY_COMPILE([#include <wchar.h>], 
 	         [wcstoull(L"10", NULL, 10);],, [ac_c99_wchar=no])
-  AC_MSG_CHECKING([for ISO C99 support in <wchar.h>])
   AC_MSG_RESULT($ac_c99_wchar)
 
   AC_MSG_CHECKING([for enabled ISO C99 support])
