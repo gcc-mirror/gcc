@@ -1,5 +1,7 @@
 2002-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* parse.y (parse_finish_call_expr): Check lookup_member result.
+
 	PR c++/7015
 	* semantic.c (finish_asm_stmt): Fix operand/output_operands
 	thinko.
