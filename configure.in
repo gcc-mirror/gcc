@@ -1019,7 +1019,7 @@ case "${target}" in
            use_gnu_ld=no
     fi
     ;;
-  sparc-*-solaris*)
+  sparc-*-solaris* | sparc64-*-solaris* | sparcv9-*-solaris*)
     ;;
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld ${libstdcxx_version} opcodes target-libgloss ${libgcj}"
