@@ -176,7 +176,7 @@ rebuild_jump_labels (f)
    It works because `delete_insn' checks the value of `optimize'
    and refrains from actually deleting when that is 0.  */
 
-void
+static void
 jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
      rtx f;
      int cross_jump;

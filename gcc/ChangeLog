@@ -1,3 +1,8 @@
+Sun Apr 11 07:43:44 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jump.c (jump_optimize_1): Make the definition static to match
+	the prototype.
+
 Sat Apr 10 22:51:53 1999  Jan Hubicka <hubicka@limax.paru.cas.cz>
 
 	* flow.c (life_analysis): New parameter remove_dead_code.
