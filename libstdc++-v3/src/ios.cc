@@ -190,16 +190,10 @@ namespace std
     // Explicitly call dtors to free any memory that is dynamically
     // allocated by filebuf ctor or member functions, but don't
     // deallocate all memory by calling operator delete.
-    cout.flush();
-    cerr.flush();
-    clog.flush();
     buf_cout.~filebuf();
     buf_cin.~filebuf();
     buf_cerr.~filebuf();
 #ifdef _GLIBCPP_USE_WCHAR_T
-    wcout.flush();
-    wcerr.flush();
-    wclog.flush();
     buf_wcout.~wfilebuf();
     buf_wcin.~wfilebuf();
     buf_wcerr.~wfilebuf();

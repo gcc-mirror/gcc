@@ -1,3 +1,17 @@
+2002-04-02  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	libstdc++/5268
+	* src/ios.cc: (ios_base::Init::_S_ios_destroy): Remove flush calls.
+	* testsuite/27_io/ios_init.cc (tests04): Add test.
+
+	libstdc++/3983
+	* include/bits/basic_ios.h (basic_ios::_M_get_fctype_ios): Remove.
+	(basic_ios::_M_ios_fctype): Consistently name to _M_fctype.
+	* include/bits/basic_ios.tcc: Same. Remove outdated comments.
+	* include/bits/istream.tcc: Use _M_fctype, make consistent with
+	ostream.
+	* testsuite/27_io/ios_init.cc (tests03): Add test.
+	
 2002-04-02  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/Makefile.am (install-data-local):  Use mkinstalldirs.
