@@ -495,7 +495,7 @@ namespace std
   inline long double 
   tanh(long double __x) { return ::tanh(static_cast<double>(__x)); }
 #endif
-} // std
+} 
 
 
 #if _GLIBCPP_USE_C99
@@ -556,7 +556,7 @@ namespace __gnu_cxx
      int 
      __capture_isunordered(_Tp __f1, _Tp __f2) 
      { return isunordered(__f1, __f2); }
-} // namespace __gnu_cxx
+} 
 #endif
 
 #undef fpclassify
@@ -651,3 +651,6 @@ namespace std
 #endif
 
 #endif
+
+
+

@@ -32,7 +32,8 @@
 #ifndef _CPP_BITS_CMATH_TCC
 #define _CPP_BITS_CMATH_TCC 1
 
-namespace std {
+namespace std 
+{
   export template<typename _Tp>
     _Tp
     __cmath_power(_Tp __x, unsigned int __n)

@@ -34,106 +34,128 @@
 #ifndef _CPP_CSTDIO
 #define _CPP_CSTDIO 1
 
+#include <bits/c++config.h>
 #include <bits/std_cstddef.h>
 
 #pragma GCC system_header
 #include_next <stdio.h>
 
 // Get rid of those macros defined in <stdio.h> in lieu of real functions.
-#undef remove
-#undef rename
-#undef tmpfile
-#undef tmpnam
+#undef clearerr
 #undef fclose
+#undef feof
+#undef ferror
 #undef fflush
-#undef fopen
-#undef freopen
-#undef setbuf
-#undef setvbuf
-#undef fprintf
-#undef fscanf
-#undef printf
-#undef scanf
-#undef sprintf
-#undef sscanf
-#undef vfprintf
-#undef vfscanf
-#undef vprintf
-#undef vscanf
-#undef vsprintf
-#undef vsscanf
 #undef fgetc
+#undef fgetpos
 #undef fgets
+#undef fopen
+#undef fprintf
 #undef fputc
 #undef fputs
-#undef getc
-#undef getchar
-#undef gets
-#undef putc
-#undef putchar
-#undef puts
-#undef ungetc
 #undef fread
-#undef fwrite
-#undef fgetpos
+#undef freopen
+#undef fscanf
 #undef fseek
 #undef fsetpos
 #undef ftell
-#undef rewind
-#undef clearerr
-#undef feof
-#undef ferror
+#undef fwrite
+#undef getc
+#undef getchar
+#undef gets
 #undef perror
+#undef printf
+#undef putc
+#undef putchar
+#undef puts
+#undef remove
+#undef rename
+#undef rewind
+#undef scanf
+#undef setbuf
+#undef setvbuf
+#undef sprintf
+#undef sscanf
+#undef tmpfile
+#undef tmpnam
+#undef ungetc
+#undef vfprintf
+#undef vprintf
+#undef vsprintf
 
 namespace std 
 {
   using ::FILE;
   using ::fpos_t;
 
-  using ::remove;
-  using ::rename;
-  using ::tmpfile;
-  using ::tmpnam;
+  using ::clearerr;
   using ::fclose;
+  using ::feof;
+  using ::ferror;
   using ::fflush;
-  using ::fopen;
-  using ::freopen;
-  using ::setbuf;
-  using ::setvbuf;
-  using ::fprintf;
-  using ::fscanf;
-  using ::printf;
-  using ::scanf;
-  using ::sprintf;
-  using ::sscanf;
-  using ::vfprintf;
-  using ::vfscanf;
-  using ::vprintf;
-  using ::vscanf;
-  using ::vsprintf;
-  using ::vsscanf;
   using ::fgetc;
+  using ::fgetpos;
   using ::fgets;
+  using ::fopen;
+  using ::fprintf;
   using ::fputc;
   using ::fputs;
-  using ::getc;
-  using ::getchar;
-  using ::gets;
-  using ::putc;
-  using ::putchar;
-  using ::puts;
-  using ::ungetc;
   using ::fread;
-  using ::fwrite;
-  using ::fgetpos;
+  using ::freopen;
+  using ::fscanf;
   using ::fseek;
   using ::fsetpos;
   using ::ftell;
-  using ::rewind;
-  using ::clearerr;
-  using ::feof;
-  using ::ferror;
+  using ::fwrite;
+  using ::getc;
+  using ::getchar;
+  using ::gets;
   using ::perror;
+  using ::printf;
+  using ::putc;
+  using ::putchar;
+  using ::puts;
+  using ::remove;
+  using ::rename;
+  using ::rewind;
+  using ::scanf;
+  using ::setbuf;
+  using ::setvbuf;
+  using ::sprintf;
+  using ::sscanf;
+  using ::tmpfile;
+  using ::tmpnam;
+  using ::ungetc;
+  using ::vfprintf;
+  using ::vprintf;
+  using ::vsprintf;
 }
+
+#if _GLIBCPP_USE_C99
+
+#undef snprintf
+#undef vfscanf
+#undef vscanf
+#undef vsnprintf
+#undef vsscanf
+
+namespace __gnu_cxx
+{
+  using ::snprintf;
+  using ::vfscanf;
+  using ::vscanf;
+  using ::vsnprintf;
+  using ::vsscanf;
+}
+
+namespace std
+{
+  using __gnu_cxx::snprintf;
+  using __gnu_cxx::vfscanf;
+  using __gnu_cxx::vscanf;
+  using __gnu_cxx::vsnprintf;
+  using __gnu_cxx::vsscanf;
+}
+#endif 
 
 #endif

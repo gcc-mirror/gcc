@@ -41,92 +41,91 @@
 #include_next <stdlib.h>
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
+#undef abort
+#undef abs
+#undef atexit
 #undef atof
 #undef atoi
 #undef atol
+#undef bsearch
+#undef calloc
+#undef div
+#undef exit
+#undef free
+#undef getenv
+#undef labs
+#undef ldiv
+#undef malloc
+#undef mblen
+#undef mbstowcs
+#undef mbtowc
+#undef qsort
+#undef rand
+#undef realloc
+#undef srand
 #undef strtod
-#undef strtof
 #undef strtol
 #undef strtoul
-#undef rand
-#undef srand
-#undef calloc
-#undef free
-#undef malloc
-#undef realloc
-#undef abort
-#undef atexit
-#undef exit
-//#undef _Exit
-#undef getenv
 #undef system
-#undef bsearch
-#undef qsort
-#undef abs
-#undef labs
-#undef llabs
-#undef div
-#undef ldiv
-#undef lldiv
-#undef mblen
-#undef mbtowc
-#undef wctomb
-#undef mbstowcs
 #undef wcstombs
-#undef atoll
-#undef strtoll
-#undef strtoull
-#undef strtold
+#undef wctomb
 
 namespace std 
 {
   using ::div_t;
   using ::ldiv_t;
 
+  using ::abort;
+  using ::abs;
+  using ::atexit;
   using ::atof;
   using ::atoi;
   using ::atol;
+  using ::bsearch;
+  using ::calloc;
+  using ::div;
+  using ::exit;
+  using ::free;
+  using ::getenv;
+  using ::labs;
+  using ::ldiv;
+  using ::malloc;
+  using ::mblen;
+  using ::mbstowcs;
+  using ::mbtowc;
+  using ::qsort;
+  using ::rand;
+  using ::realloc;
+  using ::srand;
   using ::strtod;
-#if _GLIBCPP_HAVE_STRTOF
-  using ::strtof;
-#endif
   using ::strtol;
   using ::strtoul;
-  using ::rand;
-  using ::srand;
-  using ::calloc;
-  using ::free;
-  using ::malloc;
-  using ::realloc;
-  using ::abort;
-  using ::atexit;
-  using ::exit;
-  // using ::_Exit;
-  using ::getenv;
   using ::system;
-  using ::bsearch;
-  using ::qsort;
-  using ::abs;
-  using ::labs;
-  using ::div;
-  using ::ldiv;
-  using ::mblen;
-  using ::mbtowc;
-  using ::wctomb;
-  using ::mbstowcs;
   using ::wcstombs;
+  using ::wctomb;
 
   inline long 
   abs(long __i) { return labs(__i); }
 
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
-} // namespace std
+} 
 
 #if _GLIBCPP_USE_C99
+
+#undef _Exit
+#undef llabs
+#undef lldiv
+#undef atoll
+#undef strtoll
+#undef strtoull
+#undef strtof
+#undef strtold
+
 namespace __gnu_cxx
 {
   using ::lldiv_t;
+  using ::_Exit;
 
   inline long long 
   abs(long long __x) { return __x >= 0 ? __x : -__x; }
@@ -143,27 +142,25 @@ namespace __gnu_cxx
   { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
   using ::atoll;
+  using ::strtof;
   using ::strtoll;
   using ::strtoull;
-
-#ifdef _GLIBCPP_HAVE_STRTOLD
   using ::strtold; 
-#endif
-} // namespace __gnu_cxx
+} 
 
 namespace std
 {
   using __gnu_cxx::lldiv_t;
+  using __gnu_cxx::_Exit;
   using __gnu_cxx::abs;
   using __gnu_cxx::llabs; 
   using __gnu_cxx::div;
   using __gnu_cxx::lldiv;
   using __gnu_cxx::atoll;
+  using __gnu_cxx::strtof;
   using __gnu_cxx::strtoll;
   using __gnu_cxx::strtoull;
-#ifdef _GLIBCPP_HAVE_STRTOLD
   using __gnu_cxx::strtold;
-#endif
 }
 #endif
 
