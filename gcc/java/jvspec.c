@@ -1,6 +1,6 @@
  /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -61,7 +61,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define MATH_LIBRARY "-lm"
 #endif
 
-extern char *xmalloc PROTO((size_t));
+extern GENERIC_PTR xmalloc PROTO((size_t));
 extern int do_spec		PROTO((char *));
 extern char *input_filename;
 extern size_t input_filename_length;
