@@ -1,3 +1,7 @@
+Mon Mar 13 01:00:55 2000  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* stw.h (struct _ffestw_): Change type of uses_ to int.
+
 Fri Feb 18 13:36:50 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* g77spec.c (lang_specific_driver): Use GCCBUGURL.
