@@ -1,5 +1,5 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
 
 This file is part of GNU CC.
@@ -3002,15 +3002,21 @@ type_attribute (type, decl_const, decl_volatile)
   register enum tree_code code = TREE_CODE (type);
   register int root_type_modified;
 
-  if (TREE_CODE (type) == ERROR_MARK)
+  if (code == ERROR_MARK)
     return;
 
   /* Handle a special case.  For functions whose return type is void,
      we generate *no* type attribute.  (Note that no object may have
      type `void', so this only applies to function return types.  */
 
-  if (TREE_CODE (type) == VOID_TYPE)
+  if (code == VOID_TYPE)
     return;
+
+  /* If this is a subtype, find the underlying type.  Eventually,
+     this should write out the appropriate subtype info.  */
+  while ((code == INTEGER_TYPE || code == REAL_TYPE)
+	 && TREE_TYPE (type) != 0)
+    type = TREE_TYPE (type), code = TREE_CODE (type);
 
   root_type_modified = (code == POINTER_TYPE || code == REFERENCE_TYPE
 			|| decl_const || decl_volatile
