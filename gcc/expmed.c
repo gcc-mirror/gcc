@@ -203,6 +203,61 @@ negate_rtx (mode, x)
 
   return result;
 }
+
+/* Report on the availability of insv/extv/extzv and the desired mode
+   of each of their operands.  Returns MAX_MACHINE_MODE if HAVE_foo
+   is false; else the mode of the specified operand.  If OPNO is -1,
+   all the caller cares about is whether the insn is available.  */
+enum machine_mode
+mode_for_extraction (pattern, opno)
+     enum extraction_pattern pattern;
+     int opno;
+{
+  const struct insn_data *data;
+
+  switch (pattern)
+    {
+    case EP_insv:
+#ifdef HAVE_insv
+      if (HAVE_insv)
+	{
+	  data = &insn_data[CODE_FOR_insv];
+	  break;
+	}
+#endif
+      return MAX_MACHINE_MODE;
+
+    case EP_extv:
+#ifdef HAVE_extv
+      if (HAVE_extv)
+	{
+	  data = &insn_data[CODE_FOR_extv];
+	  break;
+	}
+#endif
+      return MAX_MACHINE_MODE;
+
+    case EP_extzv:
+#ifdef HAVE_extzv
+      if (HAVE_extzv)
+	{
+	  data = &insn_data[CODE_FOR_extzv];
+	  break;
+	}
+#endif
+      return MAX_MACHINE_MODE;
+    }
+
+  if (opno == -1)
+    return VOIDmode;
+
+  /* Everyone who uses this function used to follow it with
+     if (result == VOIDmode) result = word_mode; */
+  if (data->operand[opno].mode == VOIDmode)
+    return word_mode;
+  return data->operand[opno].mode;
+}
+
 
 /* Generate code to store value from rtx VALUE
    into a bit-field within structure STR_RTX
@@ -234,15 +289,13 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   unsigned HOST_WIDE_INT offset = bitnum / unit;
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   register rtx op0 = str_rtx;
-#ifdef HAVE_insv
+
   unsigned HOST_WIDE_INT insv_bitsize;
   enum machine_mode op_mode;
 
-  op_mode = insn_data[(int) CODE_FOR_insv].operand[3].mode;
-  if (op_mode == VOIDmode)
-    op_mode = word_mode;
-  insv_bitsize = GET_MODE_BITSIZE (op_mode);
-#endif
+  op_mode = mode_for_extraction (EP_insv, 3);
+  if (op_mode != MAX_MACHINE_MODE)
+    insv_bitsize = GET_MODE_BITSIZE (op_mode);
 
   /* It is wrong to have align==0, since every object is aligned at
      least at a bit boundary.  This usually means a bug elsewhere.  */
@@ -475,8 +528,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   /* Now OFFSET is nonzero only if OP0 is memory
      and is therefore always measured in bytes.  */
 
-#ifdef HAVE_insv
-  if (HAVE_insv
+  if (op_mode != MAX_MACHINE_MODE
       && GET_MODE (value) != BLKmode
       && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
       /* Ensure insv's size is wide enough for this field.  */
@@ -617,7 +669,6 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
     }
   else
     insv_loses:
-#endif
     /* Insv is not available; store using shifts and boolean ops.  */
     store_fixed_bit_field (op0, offset, bitsize, bitpos, value, align);
   return value;
@@ -981,28 +1032,18 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
   enum machine_mode int_mode;
-#ifdef HAVE_extv
   unsigned HOST_WIDE_INT extv_bitsize;
   enum machine_mode extv_mode;
-#endif
-#ifdef HAVE_extzv
   unsigned HOST_WIDE_INT extzv_bitsize;
   enum machine_mode extzv_mode;
-#endif
 
-#ifdef HAVE_extv
-  extv_mode = insn_data[(int) CODE_FOR_extv].operand[0].mode;
-  if (extv_mode == VOIDmode)
-    extv_mode = word_mode;
-  extv_bitsize = GET_MODE_BITSIZE (extv_mode);
-#endif
+  extv_mode = mode_for_extraction (EP_extv, 0);
+  if (extv_mode != MAX_MACHINE_MODE)
+    extv_bitsize = GET_MODE_BITSIZE (extv_mode);
 
-#ifdef HAVE_extzv
-  extzv_mode = insn_data[(int) CODE_FOR_extzv].operand[0].mode;
-  if (extzv_mode == VOIDmode)
-    extzv_mode = word_mode;
-  extzv_bitsize = GET_MODE_BITSIZE (extzv_mode);
-#endif
+  extzv_mode = mode_for_extraction (EP_extzv, 0);
+  if (extzv_mode != MAX_MACHINE_MODE)
+    extzv_bitsize = GET_MODE_BITSIZE (extzv_mode);
 
   /* Discount the part of the structure before the desired byte.
      We need to know how many bytes are safe to reference after it.  */
@@ -1236,8 +1277,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
   if (unsignedp)
     {
-#ifdef HAVE_extzv
-      if (HAVE_extzv
+      if (extzv_mode != MAX_MACHINE_MODE
 	  && (extzv_bitsize >= bitsize)
 	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
 		&& (bitsize + bitpos > extzv_bitsize)))
@@ -1369,14 +1409,12 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	}
       else
         extzv_loses:
-#endif
       target = extract_fixed_bit_field (int_mode, op0, offset, bitsize, 
 					bitpos, target, 1, align);
     }
   else
     {
-#ifdef HAVE_extv
-      if (HAVE_extv
+      if (extv_mode != MAX_MACHINE_MODE
 	  && (extv_bitsize >= bitsize)
 	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
 		&& (bitsize + bitpos > extv_bitsize)))
@@ -1503,7 +1541,6 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	} 
       else
 	extv_loses:
-#endif
       target = extract_fixed_bit_field (int_mode, op0, offset, bitsize, 
 					bitpos, target, 0, align);
     }
@@ -2000,7 +2037,8 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 	     that is in range, try a rotate in the opposite direction.  */
 
 	  if (temp == 0 && GET_CODE (op1) == CONST_INT
-	      && INTVAL (op1) > 0 && INTVAL (op1) < GET_MODE_BITSIZE (mode))
+	      && INTVAL (op1) > 0
+	      && (unsigned int) INTVAL (op1) < GET_MODE_BITSIZE (mode))
 	    temp = expand_binop (mode,
 				 left ? rotr_optab : rotl_optab,
 				 shifted, 

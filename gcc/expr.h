@@ -715,6 +715,14 @@ extern rtx hard_libcall_value PARAMS ((enum machine_mode));
    of STACK_BOUNDARY / BITS_PER_UNIT.  */
 extern rtx round_push PARAMS ((rtx));
 
+/* Return the mode desired by operand N of a particular bitfield
+   insert/extract insn, or MAX_MACHINE_MODE if no such insn is
+   available.  */
+
+enum extraction_pattern { EP_insv, EP_extv, EP_extzv };
+extern enum machine_mode
+mode_for_extraction PARAMS ((enum extraction_pattern, int));
+
 extern rtx store_bit_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT,
 				    enum machine_mode, rtx,
