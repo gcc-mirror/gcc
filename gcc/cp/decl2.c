@@ -2396,14 +2396,24 @@ comdat_linkage (decl)
 {
   if (flag_weak)
     make_decl_one_only (decl);
-  else if (TREE_CODE (decl) == FUNCTION_DECL || DECL_VIRTUAL_P (decl))
-    /* We can just emit functions and vtables statically; having
-       multiple copies is (for the most part) only a waste of space.
-       There is at least one correctness issue, however: the address
-       of a template instantiation with external linkage should be the
+  else if (TREE_CODE (decl) == FUNCTION_DECL 
+	   || (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl)))
+    /* We can just emit function and compiler-generated variables
+       statically; having multiple copies is (for the most part) only
+       a waste of space.  
+
+       There are two correctness issues, however: the address of a
+       template instantiation with external linkage should be the
        same, independent of what translation unit asks for the
        address, and this will not hold when we emit multiple copies of
-       the function.  However, there's little else we can do.  */
+       the function.  However, there's little else we can do.  
+
+       Also, by default, the typeinfo implementation for the new ABI
+       assumes that there will be only one copy of the string used as
+       the name for each type.  Therefore, if weak symbols are
+       unavailable, the run-time library should perform a more
+       conservative check; it should perform a string comparison,
+       rather than an address comparison.  */
     TREE_PUBLIC (decl) = 0;
   else
     {
