@@ -1,3 +1,8 @@
+Wed Oct 28 23:09:25 1998  Robert Lipe  <robertl@dgii.com>
+
+	* sco5.h (SUBTARGET_SWITCHES): Add documentation for OpenServer-
+	specific compiler switches.
+
 Wed Oct 28 21:05:53 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (c-common.o): Depend on c-pragma.h.  Use $(RTL_H) instead
