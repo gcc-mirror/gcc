@@ -1,3 +1,10 @@
+2003-04-24  Alexander Kabaev <kan@FreeBSD.ORG>
+
+	* config/sparc/sparc.md (umulsidi3, mulsidi3): Avoid using
+	const_umulsidi3_sp32 and const_mulsidi3_sp32 on 64bit targets 
+	where they might be not present. Use their _sp64 equivalent
+	instead.
+
 Thu Apr 24 20:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (cvtsi2sdq): Fix typo in previous patch.
