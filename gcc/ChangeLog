@@ -1,3 +1,10 @@
+2004-03-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (icacheflush): Reorder operands to make match_scratch operand
+	last.
+	* pa.h (INITIALIZE_TRAMPOLINE): Remove unnecessary scratch argument
+	from calls to gen_icacheflush.
+
 2004-03-06  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (MASK_LONG_DOUBLE_128): New.
