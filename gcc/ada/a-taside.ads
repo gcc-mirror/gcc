@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -64,8 +64,8 @@ package Ada.Task_Identification is
 
 private
 
-   type Task_Id is new System.Tasking.Task_ID;
+   type Task_Id is new System.Tasking.Task_Id;
 
-   Null_Task_ID : constant Task_Id := Task_Id (System.Tasking.Null_Task);
+   Null_Task_Id : constant Task_Id := Task_Id (System.Tasking.Null_Task);
 
 end Ada.Task_Identification;

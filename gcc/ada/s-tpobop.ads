@@ -95,7 +95,7 @@ package System.Tasking.Protected_Objects.Operations is
    pragma Inline (Service_Entries);
 
    procedure PO_Service_Entries
-     (Self_ID       : Task_ID;
+     (Self_ID       : Task_Id;
       Object        : Entries.Protection_Entries_Access;
       Unlock_Object : Boolean := True);
    --  Service all entry queues of the specified object, executing the
@@ -176,7 +176,7 @@ package System.Tasking.Protected_Objects.Operations is
    --  Return the number of entry calls to E on Object.
 
    function Protected_Entry_Caller
-     (Object : Entries.Protection_Entries'Class) return Task_ID;
+     (Object : Entries.Protection_Entries'Class) return Task_Id;
    --  Return value of E'Caller, where E is the protected entry currently
    --  being handled. This will only work if called from within an entry
    --  body, as required by the LRM (C.7.1(14)).
@@ -184,7 +184,7 @@ package System.Tasking.Protected_Objects.Operations is
    --  For internal use only:
 
    procedure PO_Do_Or_Queue
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Object     : Entries.Protection_Entries_Access;
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean);
@@ -194,7 +194,7 @@ package System.Tasking.Protected_Objects.Operations is
 
 private
    type Communication_Block is record
-      Self      : Task_ID;
+      Self      : Task_Id;
       Enqueued  : Boolean := True;
       Cancelled : Boolean := False;
    end record;

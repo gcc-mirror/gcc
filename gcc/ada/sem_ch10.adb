@@ -3352,7 +3352,9 @@ package body Sem_Ch10 is
       --  view because the full view of X supersedes its limited view.
 
       if Analyzed (Cunit (Unum))
-        and then Is_Immediately_Visible (P)
+        and then (Is_Immediately_Visible (P)
+                   or else (Is_Child_Package
+                             and then Is_Visible_Child_Unit (P)))
       then
          return;
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,9 +81,9 @@ package body System.Tasking.Protected_Objects.Entries is
 
    procedure Finalize (Object : in out Protection_Entries) is
       Entry_Call        : Entry_Call_Link;
-      Caller            : Task_ID;
+      Caller            : Task_Id;
       Ceiling_Violation : Boolean;
-      Self_ID           : constant Task_ID := STPO.Self;
+      Self_ID           : constant Task_Id := STPO.Self;
       Old_Base_Priority : System.Any_Priority;
 
    begin
@@ -179,7 +179,7 @@ package body System.Tasking.Protected_Objects.Entries is
       Find_Body_Index   : Find_Body_Index_Access)
    is
       Init_Priority : Integer := Ceiling_Priority;
-      Self_ID       : constant Task_ID := STPO.Self;
+      Self_ID       : constant Task_Id := STPO.Self;
 
    begin
       if Init_Priority = Unspecified_Priority then

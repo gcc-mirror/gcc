@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,7 @@ package System.Tasking.Entry_Calls is
    --  Check_Exception must be called after calling this procedure.
 
    procedure Wait_Until_Abortable
-     (Self_ID : Task_ID;
+     (Self_ID : Task_Id;
       Call    : Entry_Call_Link);
    --  This procedure suspends the calling task until the specified entry
    --  call is queued abortably or completes.
@@ -75,7 +75,7 @@ package System.Tasking.Entry_Calls is
    --  On return, the call is off-queue and the ATC level is reduced by one.
 
    procedure Reset_Priority
-     (Acceptor               : Task_ID;
+     (Acceptor               : Task_Id;
       Acceptor_Prev_Priority : Rendezvous_Priority);
    pragma Inline (Reset_Priority);
    --  Reset the priority of a task completing an accept statement to
@@ -83,7 +83,7 @@ package System.Tasking.Entry_Calls is
    --  Acceptor should always be equal to Self.
 
    procedure Check_Exception
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link);
    pragma Inline (Check_Exception);
    --  Raise any pending exception from the Entry_Call.

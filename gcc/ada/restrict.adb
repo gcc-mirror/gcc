@@ -32,6 +32,7 @@ with Fname.UF; use Fname.UF;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Sinput;   use Sinput;
+with Snames;   use Snames;
 with Uname;    use Uname;
 
 package body Restrict is
@@ -352,6 +353,36 @@ package body Restrict is
    begin
       return Restrictions.Set (No_Exception_Handlers);
    end No_Exception_Handlers_Set;
+
+   ----------------------------------
+   -- Process_Restriction_Synonyms --
+   ----------------------------------
+
+   --  Note: body of this function must be coordinated with list of
+   --  renaming declarations in System.Rident.
+
+   function Process_Restriction_Synonyms (Id : Name_Id) return Name_Id is
+   begin
+      case Id is
+         when Name_Boolean_Entry_Barriers =>
+            return Name_Simple_Barriers;
+
+         when Name_Max_Entry_Queue_Depth =>
+            return Name_Max_Entry_Queue_Length;
+
+         when Name_No_Dynamic_Interrupts =>
+            return Name_No_Dynamic_Attachment;
+
+         when Name_No_Requeue =>
+            return Name_No_Requeue_Statements;
+
+         when Name_No_Task_Attributes =>
+            return Name_No_Task_Attributes_Package;
+
+         when others =>
+            return Id;
+      end case;
+   end Process_Restriction_Synonyms;
 
    ------------------------
    -- Restricted_Profile --

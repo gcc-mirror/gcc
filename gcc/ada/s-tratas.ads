@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,23 +50,23 @@ package System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id         : Trace_T;
-      Task_Name2 : ST.Task_ID);
+      Task_Name2 : ST.Task_Id);
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Task_Name2   : ST.Task_ID;
+      Task_Name2   : ST.Task_Id;
       Entry_Number : ST.Entry_Index);
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Task_Name    : ST.Task_ID;
-      Task_Name2   : ST.Task_ID;
+      Task_Name    : ST.Task_Id;
+      Task_Name2   : ST.Task_Id;
       Entry_Number : ST.Entry_Index);
 
    procedure Send_Trace_Info
      (Id         : Trace_T;
-      Task_Name  : ST.Task_ID;
-      Task_Name2 : ST.Task_ID);
+      Task_Name  : ST.Task_Id;
+      Task_Name2 : ST.Task_Id);
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
@@ -74,7 +74,7 @@ package System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Acceptor     : ST.Task_ID;
+      Acceptor     : ST.Task_Id;
       Entry_Number : ST.Entry_Index;
       Timeout      : Duration);
 
@@ -85,12 +85,12 @@ package System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id         : Trace_T;
-      Task_Name  : ST.Task_ID;
+      Task_Name  : ST.Task_Id;
       Number     : Integer);
 
    procedure Send_Trace_Info
      (Id         : Trace_T;
-      Task_Name  : ST.Task_ID;
+      Task_Name  : ST.Task_Id;
       Number     : Integer;
       Timeout    : Duration);
 end System.Traces.Tasking;

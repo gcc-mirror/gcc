@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ with Unchecked_Conversion;
 package System.Tasking.Utilities is
 
    function ATCB_To_Address is new
-     Unchecked_Conversion (Task_ID, System.Address);
+     Unchecked_Conversion (Task_Id, System.Address);
 
    ---------------------------------
    -- Task_Stage Related routines --
@@ -76,17 +76,17 @@ package System.Tasking.Utilities is
    -- Task Abortion related routines --
    ------------------------------------
 
-   procedure Cancel_Queued_Entry_Calls (T : Task_ID);
+   procedure Cancel_Queued_Entry_Calls (T : Task_Id);
    --  Cancel any entry calls queued on target task.
    --  Call this while holding T's lock (or RTS_Lock in Single_Lock mode).
 
-   procedure Exit_One_ATC_Level (Self_ID : Task_ID);
+   procedure Exit_One_ATC_Level (Self_ID : Task_Id);
    pragma Inline (Exit_One_ATC_Level);
    --  Call only with abort deferred and holding lock of Self_ID.
    --  This is a bit of common code for all entry calls.
    --  The effect is to exit one level of ATC nesting.
 
-   procedure Abort_One_Task (Self_ID : Task_ID; T : Task_ID);
+   procedure Abort_One_Task (Self_ID : Task_Id; T : Task_Id);
    --  Similar to Locked_Abort_To_Level (Self_ID, T, 0), but:
    --    (1) caller should be holding no locks
    --    (2) may be called for tasks that have not yet been activated
@@ -96,7 +96,7 @@ package System.Tasking.Utilities is
    --  Abort_Tasks is called to initiate abortion, however, the actual
    --  abortion is done by abortee by means of Abort_Handler
 
-   procedure Make_Passive (Self_ID : Task_ID; Task_Completed : Boolean);
+   procedure Make_Passive (Self_ID : Task_Id; Task_Completed : Boolean);
    --  Update counts to indicate current task is either terminated
    --  or accepting on a terminate alternative.
    --  Call holding no locks except Global_Task_Lock when calling from

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,7 +62,7 @@ with System.OS_Primitives;
 --  used for Max_Sensible_Delay
 
 with Ada.Task_Identification;
---  used for Task_ID type
+--  used for Task_Id type
 
 with System.Parameters;
 --  used for Single_Lock
@@ -86,9 +86,9 @@ package body System.Tasking.Async_Delays is
    use System.Traces.Tasking;
 
    function To_System is new Unchecked_Conversion
-     (Ada.Task_Identification.Task_Id, Task_ID);
+     (Ada.Task_Identification.Task_Id, Task_Id);
 
-   Timer_Server_ID : ST.Task_ID;
+   Timer_Server_ID : ST.Task_Id;
 
    Timer_Attention : Boolean := False;
    pragma Atomic (Timer_Attention);
@@ -214,10 +214,10 @@ package body System.Tasking.Async_Delays is
      (T : Duration;
       D : Delay_Block_Access)
    is
-      Self_Id : constant Task_ID  := STPO.Self;
+      Self_Id : constant Task_Id  := STPO.Self;
       Q       : Delay_Block_Access;
 
-      use type ST.Task_ID;
+      use type ST.Task_Id;
       --  for visibility of operator "="
 
    begin
@@ -319,7 +319,7 @@ package body System.Tasking.Async_Delays is
       Yielded          : Boolean;
       Now              : Duration;
       Dequeued         : Delay_Block_Access;
-      Dequeued_Task    : Task_ID;
+      Dequeued_Task    : Task_Id;
 
    begin
       Timer_Server_ID := STPO.Self;

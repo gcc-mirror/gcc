@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -131,7 +131,7 @@ package System.Tasking.Restricted.Stages is
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
       Task_Image    : String;
-      Created_Task  : out Task_ID);
+      Created_Task  : out Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task.
    --
@@ -189,7 +189,7 @@ package System.Tasking.Restricted.Stages is
    --  If the current task have not completed activation, this should be done
    --  now in order to wake up the activator (the environment task).
 
-   function Restricted_Terminated (T : Task_ID) return Boolean;
+   function Restricted_Terminated (T : Task_Id) return Boolean;
    --  Compiler interface only. Do not call from within the RTS.
    --  This is called by the compiler to implement the 'Terminated attribute.
    --

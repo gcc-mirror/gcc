@@ -270,7 +270,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --  Return the number of entry calls on Object (0 or 1).
 
    function Protected_Single_Entry_Caller (Object : Protection_Entry)
-     return Task_ID;
+     return Task_Id;
    --  Return value of E'Caller, where E is the protected entry currently
    --  being handled. This will only work if called from within an
    --  entry body, as required by the LRM (C.7.1(14)).

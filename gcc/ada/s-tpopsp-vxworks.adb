@@ -50,7 +50,7 @@ package body Specific is
    -- Set --
    ---------
 
-   procedure Set (Self_Id : Task_ID) is
+   procedure Set (Self_Id : Task_Id) is
       Result : STATUS;
 
    begin
@@ -66,9 +66,9 @@ package body Specific is
    -- Self --
    ----------
 
-   function Self return Task_ID is
+   function Self return Task_Id is
    begin
-      return To_Task_ID (ATCB_Key);
+      return To_Task_Id (ATCB_Key);
    end Self;
 
 end Specific;

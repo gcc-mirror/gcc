@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -221,8 +221,8 @@ package System.Soft_Links is
 
    function  Get_Exc_Stack_Addr_NT return Address;
    procedure Set_Exc_Stack_Addr_NT (Self_ID : Address; Addr : Address);
-   --  Self_ID is a Task_ID, but in the non-tasking case there is no
-   --  Task_ID type available, so make do with Address.
+   --  Self_ID is a Task_Id, but in the non-tasking case there is no
+   --  Task_Id type available, so make do with Address.
 
    Get_Exc_Stack_Addr : Get_Address_Call := Get_Exc_Stack_Addr_NT'Access;
    Set_Exc_Stack_Addr : Set_Address_Call2 := Set_Exc_Stack_Addr_NT'Access;

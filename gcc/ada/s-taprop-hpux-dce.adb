@@ -65,7 +65,7 @@ with System.Task_Primitives.Interrupt_Operations;
 
 with System.Tasking;
 --  used for Ada_Task_Control_Block
---           Task_ID
+--           Task_Id
 
 with System.Soft_Links;
 --  used for Defer/Undefer_Abort
@@ -106,10 +106,10 @@ package body System.Task_Primitives.Operations is
    --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
    ATCB_Key : aliased pthread_key_t;
-   --  Key used to find the Ada Task_ID associated with a thread
+   --  Key used to find the Ada Task_Id associated with a thread
 
-   Environment_Task_ID : Task_ID;
-   --  A variable to hold Task_ID for the environment task.
+   Environment_Task_Id : Task_Id;
+   --  A variable to hold Task_Id for the environment task.
 
    Unblocked_Signal_Mask : aliased sigset_t;
    --  The set of signals that should unblocked in all tasks
@@ -136,7 +136,7 @@ package body System.Task_Primitives.Operations is
 
    package Specific is
 
-      procedure Initialize (Environment_Task : Task_ID);
+      procedure Initialize (Environment_Task : Task_Id);
       pragma Inline (Initialize);
       --  Initialize various data needed by this package.
 
@@ -144,11 +144,11 @@ package body System.Task_Primitives.Operations is
       pragma Inline (Is_Valid_Task);
       --  Does the executing thread have a TCB?
 
-      procedure Set (Self_Id : Task_ID);
+      procedure Set (Self_Id : Task_Id);
       pragma Inline (Set);
       --  Set the self id for the current task.
 
-      function Self return Task_ID;
+      function Self return Task_Id;
       pragma Inline (Self);
       --  Return a pointer to the Ada Task Control Block of the calling task.
 
@@ -161,11 +161,11 @@ package body System.Task_Primitives.Operations is
    -- Support for foreign threads --
    ---------------------------------
 
-   function Register_Foreign_Thread (Thread : Thread_Id) return Task_ID;
+   function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id;
    --  Allocate and Initialize a new ATCB for the current Thread.
 
    function Register_Foreign_Thread
-     (Thread : Thread_Id) return Task_ID is separate;
+     (Thread : Thread_Id) return Task_Id is separate;
 
    -----------------------
    -- Local Subprograms --
@@ -173,7 +173,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Handler (Sig : Signal);
 
-   function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
+   function To_Address is new Unchecked_Conversion (Task_Id, System.Address);
 
    -------------------
    -- Abort_Handler --
@@ -182,7 +182,7 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Handler (Sig : Signal) is
       pragma Unreferenced (Sig);
 
-      Self_Id : constant Task_ID := Self;
+      Self_Id : constant Task_Id := Self;
       Result  : Interfaces.C.int;
       Old_Set : aliased sigset_t;
 
@@ -211,7 +211,7 @@ package body System.Task_Primitives.Operations is
    --  bottom of a thread stack, so nothing is needed.
    --  ??? Check the comment above
 
-   procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+   procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
       pragma Unreferenced (T, On);
    begin
       null;
@@ -221,7 +221,7 @@ package body System.Task_Primitives.Operations is
    -- Get_Thread_Id --
    -------------------
 
-   function Get_Thread_Id (T : ST.Task_ID) return OSI.Thread_Id is
+   function Get_Thread_Id (T : ST.Task_Id) return OSI.Thread_Id is
    begin
       return T.Common.LL.Thread;
    end Get_Thread_Id;
@@ -230,7 +230,7 @@ package body System.Task_Primitives.Operations is
    -- Self --
    ----------
 
-   function Self return Task_ID renames Specific.Self;
+   function Self return Task_Id renames Specific.Self;
 
    ---------------------
    -- Initialize_Lock --
@@ -347,7 +347,7 @@ package body System.Task_Primitives.Operations is
       end if;
    end Write_Lock;
 
-   procedure Write_Lock (T : Task_ID) is
+   procedure Write_Lock (T : Task_Id) is
       Result : Interfaces.C.int;
 
    begin
@@ -387,7 +387,7 @@ package body System.Task_Primitives.Operations is
       end if;
    end Unlock;
 
-   procedure Unlock (T : Task_ID) is
+   procedure Unlock (T : Task_Id) is
       Result : Interfaces.C.int;
 
    begin
@@ -402,7 +402,7 @@ package body System.Task_Primitives.Operations is
    -----------
 
    procedure Sleep
-     (Self_ID : Task_ID;
+     (Self_ID : Task_Id;
       Reason  : System.Tasking.Task_States)
    is
       pragma Unreferenced (Reason);
@@ -426,7 +426,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Timed_Sleep
-     (Self_ID  : Task_ID;
+     (Self_ID  : Task_Id;
       Time     : Duration;
       Mode     : ST.Delay_Modes;
       Reason   : System.Tasking.Task_States;
@@ -488,7 +488,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Timed_Delay
-     (Self_ID  : Task_ID;
+     (Self_ID  : Task_Id;
       Time     : Duration;
       Mode     : ST.Delay_Modes)
    is
@@ -584,7 +584,7 @@ package body System.Task_Primitives.Operations is
    -- Wakeup --
    ------------
 
-   procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
+   procedure Wakeup (T : Task_Id; Reason : System.Tasking.Task_States) is
       pragma Unreferenced (Reason);
 
       Result : Interfaces.C.int;
@@ -622,7 +622,7 @@ package body System.Task_Primitives.Operations is
    --  scheduling.
 
    procedure Set_Priority
-     (T                   : Task_ID;
+     (T                   : Task_Id;
       Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
@@ -684,7 +684,7 @@ package body System.Task_Primitives.Operations is
    -- Get_Priority --
    ------------------
 
-   function Get_Priority (T : Task_ID) return System.Any_Priority is
+   function Get_Priority (T : Task_Id) return System.Any_Priority is
    begin
       return T.Common.Current_Priority;
    end Get_Priority;
@@ -693,7 +693,7 @@ package body System.Task_Primitives.Operations is
    -- Enter_Task --
    ----------------
 
-   procedure Enter_Task (Self_ID : Task_ID) is
+   procedure Enter_Task (Self_ID : Task_Id) is
    begin
       Self_ID.Common.LL.Thread := pthread_self;
       Specific.Set (Self_ID);
@@ -715,7 +715,7 @@ package body System.Task_Primitives.Operations is
    -- New_ATCB --
    --------------
 
-   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_ID is
+   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_Id is
    begin
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
@@ -730,7 +730,7 @@ package body System.Task_Primitives.Operations is
    -- Register_Foreign_Thread --
    -----------------------------
 
-   function Register_Foreign_Thread return Task_ID is
+   function Register_Foreign_Thread return Task_Id is
    begin
       if Is_Valid_Task then
          return Self;
@@ -743,7 +743,7 @@ package body System.Task_Primitives.Operations is
    -- Initialize_TCB --
    --------------------
 
-   procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
+   procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
       Mutex_Attr : aliased pthread_mutexattr_t;
       Result     : Interfaces.C.int;
       Cond_Attr  : aliased pthread_condattr_t;
@@ -797,7 +797,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Create_Task
-     (T          : Task_ID;
+     (T          : Task_Id;
       Wrapper    : System.Address;
       Stack_Size : System.Parameters.Size_Type;
       Priority   : System.Any_Priority;
@@ -861,13 +861,13 @@ package body System.Task_Primitives.Operations is
    -- Finalize_TCB --
    ------------------
 
-   procedure Finalize_TCB (T : Task_ID) is
+   procedure Finalize_TCB (T : Task_Id) is
       Result  : Interfaces.C.int;
-      Tmp     : Task_ID := T;
+      Tmp     : Task_Id := T;
       Is_Self : constant Boolean := T = Self;
 
       procedure Free is new
-        Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
+        Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
 
    begin
       if not Single_Lock then
@@ -902,7 +902,7 @@ package body System.Task_Primitives.Operations is
    -- Abort_Task --
    ----------------
 
-   procedure Abort_Task (T : Task_ID) is
+   procedure Abort_Task (T : Task_Id) is
    begin
       --
       --  Interrupt Server_Tasks may be waiting on an "event" flag (signal)
@@ -921,7 +921,7 @@ package body System.Task_Primitives.Operations is
    --  Dummy versions.  The only currently working versions is for solaris
    --  (native).
 
-   function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
+   function Check_Exit (Self_ID : ST.Task_Id) return Boolean is
       pragma Unreferenced (Self_ID);
    begin
       return True;
@@ -931,7 +931,7 @@ package body System.Task_Primitives.Operations is
    -- Check_No_Locks --
    --------------------
 
-   function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
+   function Check_No_Locks (Self_ID : ST.Task_Id) return Boolean is
       pragma Unreferenced (Self_ID);
    begin
       return True;
@@ -941,9 +941,9 @@ package body System.Task_Primitives.Operations is
    -- Environment_Task --
    ----------------------
 
-   function Environment_Task return Task_ID is
+   function Environment_Task return Task_Id is
    begin
-      return Environment_Task_ID;
+      return Environment_Task_Id;
    end Environment_Task;
 
    --------------
@@ -969,7 +969,7 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    function Suspend_Task
-     (T           : ST.Task_ID;
+     (T           : ST.Task_Id;
       Thread_Self : Thread_Id)
       return        Boolean
    is
@@ -985,7 +985,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    function Resume_Task
-     (T           : ST.Task_ID;
+     (T           : ST.Task_Id;
       Thread_Self : Thread_Id)
       return        Boolean
    is
@@ -1000,7 +1000,7 @@ package body System.Task_Primitives.Operations is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Environment_Task : Task_ID) is
+   procedure Initialize (Environment_Task : Task_Id) is
       act       : aliased struct_sigaction;
       old_act   : aliased struct_sigaction;
       Tmp_Set   : aliased sigset_t;
@@ -1021,7 +1021,7 @@ package body System.Task_Primitives.Operations is
       --           system handler)
 
    begin
-      Environment_Task_ID := Environment_Task;
+      Environment_Task_Id := Environment_Task;
 
       --  Initialize the lock used to synchronize chain of all ATCBs.
 

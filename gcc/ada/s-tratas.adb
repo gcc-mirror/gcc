@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,14 +39,14 @@ package body System.Traces.Tasking is
    -- Send_Trace_Info --
    ---------------------
 
-   procedure Send_Trace_Info (Id : Trace_T; Task_Name2 : ST.Task_ID) is
+   procedure Send_Trace_Info (Id : Trace_T; Task_Name2 : ST.Task_Id) is
    begin
       null;
    end Send_Trace_Info;
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Task_Name2   : ST.Task_ID;
+      Task_Name2   : ST.Task_Id;
       Entry_Number : ST.Entry_Index)
    is
    begin
@@ -55,8 +55,8 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Task_Name    : ST.Task_ID;
-      Task_Name2   : ST.Task_ID;
+      Task_Name    : ST.Task_Id;
+      Task_Name2   : ST.Task_Id;
       Entry_Number : ST.Entry_Index)
    is
    begin
@@ -65,8 +65,8 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id         : Trace_T;
-      Task_Name  : ST.Task_ID;
-      Task_Name2 : ST.Task_ID)
+      Task_Name  : ST.Task_Id;
+      Task_Name2 : ST.Task_Id)
    is
    begin
       null;
@@ -82,7 +82,7 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Acceptor     : ST.Task_ID;
+      Acceptor     : ST.Task_Id;
       Entry_Number : ST.Entry_Index;
       Timeout      : Duration)
    is
@@ -101,7 +101,7 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id        : Trace_T;
-      Task_Name : ST.Task_ID;
+      Task_Name : ST.Task_Id;
       Number    : Integer)
    is
    begin
@@ -110,7 +110,7 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id        : Trace_T;
-      Task_Name : ST.Task_ID;
+      Task_Name : ST.Task_Id;
       Number    : Integer;
       Timeout   : Duration)
    is

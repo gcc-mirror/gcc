@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1997-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package System.Tasking.Debug is
    --  Write information about current task, in hexadecimal, as one line, to
    --  the standard error file.
 
-   procedure Print_Task_Info (T : Task_ID);
+   procedure Print_Task_Info (T : Task_Id);
    --  Similar to Print_Current_Task, for a given task.
 
    procedure Set_User_State (Value : Long_Integer);
@@ -66,7 +66,7 @@ package System.Tasking.Debug is
    -- General GDB support --
    -------------------------
 
-   Known_Tasks : array (0 .. 999) of Task_ID;
+   Known_Tasks : array (0 .. 999) of Task_Id;
    --  Global array of tasks read by gdb, and updated by
    --  Create_Task and Finalize_TCB
 
@@ -99,10 +99,10 @@ package System.Tasking.Debug is
    -------------------------------
 
    procedure Trace
-     (Self_Id  : Task_ID;
+     (Self_Id  : Task_Id;
       Msg      : String;
       Flag     : Character;
-      Other_Id : Task_ID := null);
+      Other_Id : Task_Id := null);
    --  If traces for Flag are enabled, display on Standard_Error a given
    --  message for the current task. Other_Id is an optional second task id
    --  to display.

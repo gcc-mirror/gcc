@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package body System.Task_Primitives.Interrupt_Operations is
    --  this array, but due to elaboration problems, it can't with this
    --  package directly, so we export this variable for now.
 
-   Interrupt_ID_Map : array (IM.Interrupt_ID) of ST.Task_ID;
+   Interrupt_ID_Map : array (IM.Interrupt_ID) of ST.Task_Id;
    pragma Export (Ada, Interrupt_ID_Map,
      "system__task_primitives__interrupt_operations__interrupt_id_map");
 
@@ -46,8 +46,8 @@ package body System.Task_Primitives.Interrupt_Operations is
    -- Get_Interrupt_ID --
    ----------------------
 
-   function Get_Interrupt_ID (T : ST.Task_ID) return IM.Interrupt_ID is
-      use type ST.Task_ID;
+   function Get_Interrupt_ID (T : ST.Task_Id) return IM.Interrupt_ID is
+      use type ST.Task_Id;
 
    begin
       for Interrupt in IM.Interrupt_ID loop
@@ -60,19 +60,19 @@ package body System.Task_Primitives.Interrupt_Operations is
    end Get_Interrupt_ID;
 
    -----------------
-   -- Get_Task_ID --
+   -- Get_Task_Id --
    -----------------
 
-   function Get_Task_ID (Interrupt : IM.Interrupt_ID) return ST.Task_ID is
+   function Get_Task_Id (Interrupt : IM.Interrupt_ID) return ST.Task_Id is
    begin
       return Interrupt_ID_Map (Interrupt);
-   end Get_Task_ID;
+   end Get_Task_Id;
 
    ----------------------
    -- Set_Interrupt_ID --
    ----------------------
 
-   procedure Set_Interrupt_ID (Interrupt : IM.Interrupt_ID; T : ST.Task_ID) is
+   procedure Set_Interrupt_ID (Interrupt : IM.Interrupt_ID; T : ST.Task_Id) is
    begin
       Interrupt_ID_Map (Interrupt) := T;
    end Set_Interrupt_ID;

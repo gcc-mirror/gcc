@@ -2090,7 +2090,7 @@ package body Sem_Attr is
             end if;
          end loop;
 
-         Set_Etype (N, RTE (RO_AT_Task_ID));
+         Set_Etype (N, RTE (RO_AT_Task_Id));
       end Caller;
 
       -------------
@@ -2627,7 +2627,7 @@ package body Sem_Attr is
               and then Is_Task_Type (Designated_Type (Etype (P))))
          then
             Resolve (P);
-            Set_Etype (N, RTE (RO_AT_Task_ID));
+            Set_Etype (N, RTE (RO_AT_Task_Id));
 
          else
             Error_Attr ("prefix of % attribute must be a task or an "

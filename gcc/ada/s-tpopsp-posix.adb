@@ -40,7 +40,7 @@ package body Specific is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Environment_Task : Task_ID) is
+   procedure Initialize (Environment_Task : Task_Id) is
       pragma Warnings (Off, Environment_Task);
       Result : Interfaces.C.int;
    begin
@@ -61,7 +61,7 @@ package body Specific is
    -- Set --
    ---------
 
-   procedure Set (Self_Id : Task_ID) is
+   procedure Set (Self_Id : Task_Id) is
       Result : Interfaces.C.int;
    begin
       Result := pthread_setspecific (ATCB_Key, To_Address (Self_Id));
@@ -72,9 +72,9 @@ package body Specific is
    -- Self --
    ----------
 
-   function Self return Task_ID is
+   function Self return Task_Id is
    begin
-      return To_Task_ID (pthread_getspecific (ATCB_Key));
+      return To_Task_Id (pthread_getspecific (ATCB_Key));
    end Self;
 
 end Specific;

@@ -1,3 +1,136 @@
+2004-05-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	Part of function-at-a-time conversion
+
+	* misc.c (adjust_decl_rtl): Deleted.
+	(LANG_HOOKS_PUSHLEVEL, LANG_HOOKS_POPLEVEL, LANG_HOOKS_SET_BLOCK):
+	Define.
+
+	* gigi.h: (adjust_decl_rtl, kept_level_p, set_block): Deleted.
+	(add_decl_stmt, add_stmt, block_has_vars): New functions.
+	(gnat_pushlevel, gnat_poplevel): Renamed from pushlevel and poplevel.
+
+	* decl.c (elaborate_expression, maybe_pad_type): Call add_decl_stmt
+	when making a decl.
+	(gnat_to_gnu_entity): Likewise.
+	Use add_stmt to update setjmp buffer.
+	Set TREE_ADDRESSABLE instead of calling put_var_into_stack and
+	flush_addressof.
+	No longer call adjust_decl_rtl.
+	(DECL_INIT_BY_ASSIGN_P): New macro.
+	(DECL_STMT_VAR): Likewise.
+
+	* trans.c (gigi): Call start_block_stmt to make the outermost
+	BLOCK_STMT.
+	(gnat_to_code, gnu_to_gnu, tree_transform, process_decls, process_type):
+	Call start_block_stmt and end_block_stmt temporarily.
+	Use gnat_expand_stmt instead of expand_expr_stmt.
+	(add_decl_stmt): New function.
+	(tree_transform): Call it.
+	(add_stmt): Also emit initializing assignment for DECL_STMT if needed.
+	(end_block_stmt): Set type and NULL_STMT.
+	(gnat_expand_stmt): Make recursize call instead of calling
+	expand_expr_stmt.
+	(gnat_expand_stmt, case DECL_STMT): New case.
+	(set_lineno_from_sloc): Do nothing if global.
+	(gnu_block_stmt_node, gnu_block_stmt_free_list): New variables.
+	(start_block_stmt, add_stmt, end_block_stmt): New functions.
+	(build_block_stmt): Call them.
+	(gnat_to_code): Don't expand NULL_STMT.
+	(build_unit_elab): Rename pushlevel and poplevel to gnat_* and change
+	args.
+	(tree_transform): Likewise.
+	(tree_transform, case N_Null_Statement): Return NULL_STMT.
+	(gnat_expand_stmt, case NULL_STMT): New case.
+	(gnat_expand_stmt, case IF_STMT): Allow nested IF_STMT to have no
+	IF_STMT_TRUE.
+
+	* utils2.c (gnat_mark_addressable, case VAR_DECL): Do not set
+	TREE_ADDRESSABLE.
+
+	* utils.c (create_var_decl): Do not call expand_decl or
+	expand_decl_init.
+	Set TREE_ADDRESSABLE instead of calling gnat_mark_addressable.
+	Set DECL_INIT_BY_ASSIGN_P when needed and do not generate MODIFY_EXPR
+	here.
+	(struct e_stack): Add chain_next to GTY.
+	(struct binding_level): Deleted.
+	(struct ada_binding_level): New struct.
+	(free_block_chain): New.
+	(global_binding_level, clear_binding_level): Deleted.
+	(global_bindings_p): Rework to see if no chain.
+	(kept_level_p, set_block): Deleted.
+	(gnat_pushlevel): Renamed from pushlevel and extensive reworked to use
+	new data structure and work directly on BLOCK node.
+	(gnat_poplevel): Similarly.
+	(get_decls): Look at BLOCK_VARS.
+	(insert_block): Work directly on BLOCK node.
+	(block_has_var): New function.
+	(pushdecl): Rework for new binding structures.
+	(gnat_init_decl_processing): Rename and rework calls to pushlevel and
+	poplevel.
+	(build_subprog_body): Likewise.
+	(end_subprog_body): Likewise; also set up BLOCK in DECL_INITIAL.
+
+	* ada-tree.def (DECL_STMT, NULL_STMT): New codes.
+
+	* ada-tree.h: (DECL_INIT_BY_ASSIGN_P): New macro.
+	(DECL_STMT_VAR): Likewise.
+
+2004-05-17  Robert Dewar  <dewar@gnat.com>
+
+	* restrict.ads, restrict.adb (Process_Restriction_Synonym): New
+	procedure
+
+	* sem_prag.adb (Analyze_Pragma, case Restrictions): Cleanup handling
+	of restriction synonyums by using
+	Restrict.Process_Restriction_Synonyms.
+
+	* snames.ads, snames.adb: Add entries for Process_Restriction_Synonym
+
+	* s-restri.ads (Tasking_Allowed): Correct missing comment
+
+	* s-rident.ads: Add entries for restriction synonyms
+
+	* ali.adb: Fix some problems with badly formatted ALI files that can
+	result in infinite loops.
+
+	* s-taprop-lynxos.adb, s-tpopsp-lynxos.adb, s-taprop-tru64.adb,
+	s-tpopsp-posix-foreign.adb, s-taprop-irix.adb, s-interr-sigaction.adb,
+	s-taprop-irix-athread.adb, s-taprop-hpux-dce.adb, s-taprop-linux.adb,
+	s-taprop-dummy.adb, s-interr-dummy.adb, s-taprop-os2.adb,
+	s-taprop-solaris.adb, s-tpopsp-solaris.adb, s-asthan-vms.adb,
+	s-inmaop-vms.adb, s-interr-vms.adb, s-taprop-vms.adb,
+	s-tpopde-vms.adb, s-taprop-mingw.adb, s-interr-vxworks.adb,
+	s-taprop-vxworks.adb, s-tpopsp-vxworks.adb, s-taprop-posix.adb,
+	s-tpopsp-posix.adb, s-tratas-default.adb, a-dynpri.adb,
+	a-tasatt.adb, a-taside.adb, a-taside.ads, exp_attr.adb,
+	exp_ch9.adb, g-thread.adb, rtsfind.ads, sem_attr.adb,
+	s-interr.adb, s-interr.ads, s-soflin.ads, s-taasde.adb,
+	s-taasde.ads, s-taenca.adb, s-taenca.ads, s-taprop.ads,
+	s-tarest.adb, s-tarest.ads, s-tasdeb.adb, s-tasdeb.ads,
+	s-tasini.adb, s-tasini.ads, s-taskin.adb, s-taskin.ads,
+	s-tasque.adb, s-tasque.ads, s-tasren.adb, s-tasren.ads,
+	s-tassta.adb, s-tassta.ads, s-tasuti.adb, s-tasuti.ads,
+	s-tataat.adb, s-tataat.ads, s-tpinop.adb, s-tpinop.ads,
+	s-tpoben.adb, s-tpobop.adb, s-tpobop.ads, s-tporft.adb,
+	s-tposen.adb, s-tposen.ads, s-tratas.adb, s-tratas.ads: Change Task_ID
+	to Task_Id (minor cleanup).
+
+2004-05-17  Vincent Celier  <celier@gnat.com>
+
+	* g-os_lib.adb (Normalize_Pathname.Final_Value): Remove trailing
+	directory separator.
+
+	* prj-proc.adb (Recursive_Process): Inherit attribute Languages from
+	project being extended, if Languages is not declared in extending
+	project.
+
+2004-05-17  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch10.adb (Install_Limited_Withed_Unit): Do not install the
+	limited view of a visible sibling.
+
 2004-05-14  Robert Dewar  <dewar@gnat.com>
 
 	* gnat_ugn.texi: Minor change to -gnatS documentation

@@ -72,7 +72,7 @@ with System.OS_Interface; use System.OS_Interface;
 with Interfaces.VxWorks;
 
 with Ada.Task_Identification;
---  used for Task_ID type
+--  used for Task_Id type
 
 with Ada.Exceptions;
 --  used for Raise_Exception
@@ -94,7 +94,7 @@ with System.Storage_Elements;
 --           Integer_Address
 
 with System.Tasking;
---  used for Task_ID
+--  used for Task_Id
 --           Task_Entry_Index
 --           Null_Task
 --           Self
@@ -115,10 +115,10 @@ package body System.Interrupts is
    package POP renames System.Task_Primitives.Operations;
 
    function To_Ada is new Unchecked_Conversion
-     (System.Tasking.Task_ID, Ada.Task_Identification.Task_Id);
+     (System.Tasking.Task_Id, Ada.Task_Identification.Task_Id);
 
    function To_System is new Unchecked_Conversion
-     (Ada.Task_Identification.Task_Id, Task_ID);
+     (Ada.Task_Identification.Task_Id, Task_Id);
 
    -----------------
    -- Local Tasks --
@@ -129,7 +129,7 @@ package body System.Interrupts is
    --  nizing it.
 
    task Interrupt_Manager is
-      entry Detach_Interrupt_Entries (T : Task_ID);
+      entry Detach_Interrupt_Entries (T : Task_Id);
 
       entry Attach_Handler
         (New_Handler : Parameterless_Handler;
@@ -148,7 +148,7 @@ package body System.Interrupts is
          Static    : Boolean);
 
       entry Bind_Interrupt_To_Entry
-        (T         : Task_ID;
+        (T         : Task_Id;
          E         : Task_Entry_Index;
          Interrupt : Interrupt_ID);
 
@@ -168,7 +168,7 @@ package body System.Interrupts is
    -------------------------------
 
    type Entry_Assoc is record
-      T : Task_ID;
+      T : Task_Id;
       E : Task_Entry_Index;
    end record;
 
@@ -204,11 +204,11 @@ package body System.Interrupts is
    Registered_Handler_Head : R_Link := null;
    Registered_Handler_Tail : R_Link := null;
 
-   Server_ID : array (Interrupt_ID) of System.Tasking.Task_ID :=
+   Server_ID : array (Interrupt_ID) of System.Tasking.Task_Id :=
      (others => System.Tasking.Null_Task);
    pragma Atomic_Components (Server_ID);
-   --  Holds the Task_ID of the Server_Task for each interrupt / signal.
-   --  Task_ID is needed to accomplish locking per interrupt base. Also
+   --  Holds the Task_Id of the Server_Task for each interrupt / signal.
+   --  Task_Id is needed to accomplish locking per interrupt base. Also
    --  is needed to determine whether to create a new Server_Task.
 
    Semaphore_ID_Map : array
@@ -290,7 +290,7 @@ package body System.Interrupts is
    --  already bound.
 
    procedure Bind_Interrupt_To_Entry
-     (T       : Task_ID;
+     (T       : Task_Id;
       E       : Task_Entry_Index;
       Int_Ref : System.Address)
    is
@@ -365,7 +365,7 @@ package body System.Interrupts is
    -- Detach_Interrupt_Entries --
    ------------------------------
 
-   procedure Detach_Interrupt_Entries (T : Task_ID) is
+   procedure Detach_Interrupt_Entries (T : Task_Id) is
    begin
       Interrupt_Manager.Detach_Interrupt_Entries (T);
    end Detach_Interrupt_Entries;
@@ -727,7 +727,7 @@ package body System.Interrupts is
    ------------------
 
    function Unblocked_By
-     (Interrupt : Interrupt_ID) return System.Tasking.Task_ID is
+     (Interrupt : Interrupt_ID) return System.Tasking.Task_Id is
    begin
       Unimplemented ("Unblocked_By");
       return Null_Task;
@@ -918,7 +918,7 @@ package body System.Interrupts is
          end if;
 
          --  Invoke a corresponding Server_Task if not yet created.
-         --  Place Task_ID info in Server_ID array.
+         --  Place Task_Id info in Server_ID array.
 
          if New_Handler /= null
            and then
@@ -992,7 +992,7 @@ package body System.Interrupts is
                end Detach_Handler;
             or
                accept Bind_Interrupt_To_Entry
-                 (T       : Task_ID;
+                 (T       : Task_Id;
                   E       : Task_Entry_Index;
                   Interrupt : Interrupt_ID)
                do
@@ -1017,7 +1017,7 @@ package body System.Interrupts is
                   T.Interrupt_Entry := True;
 
                   --  Invoke a corresponding Server_Task if not yet created.
-                  --  Place Task_ID info in Server_ID array.
+                  --  Place Task_Id info in Server_ID array.
 
                   if Server_ID (Interrupt) = Null_Task
                     or else
@@ -1034,7 +1034,7 @@ package body System.Interrupts is
                end Bind_Interrupt_To_Entry;
 
             or
-               accept Detach_Interrupt_Entries (T : Task_ID) do
+               accept Detach_Interrupt_Entries (T : Task_Id) do
                   for Int in Interrupt_ID'Range loop
                      if not Is_Reserved (Int) then
                         if User_Entry (Int).T = T then
@@ -1079,9 +1079,9 @@ package body System.Interrupts is
    --  Server task for vectored hardware interrupt handling
 
    task body Interrupt_Server_Task is
-      Self_Id         : constant Task_ID := Self;
+      Self_Id         : constant Task_Id := Self;
       Tmp_Handler     : Parameterless_Handler;
-      Tmp_ID          : Task_ID;
+      Tmp_ID          : Task_Id;
       Tmp_Entry_Index : Task_Entry_Index;
       S               : STATUS;
 

@@ -960,6 +960,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      = create_var_decl (create_concat_name (gnat_entity, "ALIGN"),
 				 NULL_TREE, gnu_new_type, gnu_expr,
 				 0, 0, 0, 0, 0);
+	    add_decl_stmt (gnu_new_var, gnat_entity);
 
 	    if (gnu_expr != 0)
 	      expand_expr_stmt
@@ -1041,6 +1042,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Present (Address_Clause (gnat_entity)) && used_by_ref)
 	  DECL_POINTER_ALIAS_SET (gnu_decl) = 0;
 
+	add_decl_stmt (gnu_decl, gnat_entity);
+
 	if (definition && DECL_SIZE (gnu_decl) != 0
 	    && gnu_block_stack != 0
 	    && TREE_VALUE (gnu_block_stack) != 0
@@ -1048,11 +1051,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		|| (flag_stack_check && ! STACK_CHECK_BUILTIN
 		    && 0 < compare_tree_int (DECL_SIZE_UNIT (gnu_decl),
 					     STACK_CHECK_MAX_VAR_SIZE))))
-	  expand_expr_stmt
-	    (build_call_1_expr (update_setjmp_buf_decl,
-				build_unary_op
-				(ADDR_EXPR, NULL_TREE,
-				 TREE_VALUE (gnu_block_stack))));
+	  {
+	    tree gnu_stmt
+	      = build_nt (EXPR_STMT,
+			  (build_call_1_expr
+			   (update_setjmp_buf_decl,
+			    build_unary_op
+			    (ADDR_EXPR, NULL_TREE,
+			     TREE_VALUE (gnu_block_stack)))));
+
+	    TREE_SLOC (gnu_stmt) = Sloc (gnat_entity);
+	    TREE_TYPE (gnu_stmt) = void_type_node;
+	    add_stmt (gnu_stmt);
+	  }
 
 	/* If this is a public constant or we're not optimizing and we're not
 	   making a VAR_DECL for it, make one just for export or debugger
@@ -1064,21 +1075,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
 		|| Is_Aliased (Etype (gnat_entity))))
-	  SET_DECL_CONST_CORRESPONDING_VAR
-	    (gnu_decl,
-	     create_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
-			      gnu_expr, 0, Is_Public (gnat_entity), 0,
-			      static_p, 0));
+	  {
+	    tree gnu_corr_var
+	      = create_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
+				 gnu_expr, 0, Is_Public (gnat_entity), 0,
+				 static_p, 0);
+
+	    add_decl_stmt (gnu_corr_var, gnat_entity);
+	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
+	  }
 
 	/* If this is declared in a block that contains an block with an
 	   exception handler, we must force this variable in memory to
 	   suppress an invalid optimization.  */
 	if (Has_Nested_Block_With_Handler (Scope (gnat_entity))
 	    && Exception_Mechanism != GCC_ZCX)
-	  {
-	    gnat_mark_addressable (gnu_decl);
-	    flush_addressof (gnu_decl);
-	  }
+	  TREE_ADDRESSABLE (gnu_decl) = 1;
 
 	/* Back-annotate the Alignment of the object if not already in the
 	   tree.  Likewise for Esize if the object is of a constant size.
@@ -1152,6 +1164,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      = create_var_decl (get_entity_name (gnat_literal),
 				 0, gnu_type, gnu_value, 1, 0, 0, 0, 0);
 
+	    add_decl_stmt (gnu_literal, gnat_literal);
 	    save_gnu_tree (gnat_literal, gnu_literal, 0);
 	    gnu_literal_list = tree_cons (DECL_NAME (gnu_literal),
 					  gnu_value, gnu_literal_list);
@@ -3604,6 +3617,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				 gnu_address, 0, Is_Public (gnat_entity),
 				 extern_flag, 0, 0);
 	    DECL_BY_REF_P (gnu_decl) = 1;
+	    add_decl_stmt (gnu_decl, gnat_entity);
 	  }
 
 	else if (kind == E_Subprogram_Type)
@@ -3898,6 +3912,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
       else
 	TREE_TYPE (gnu_decl) = gnu_type;
+
+      add_decl_stmt (gnu_decl, gnat_entity);
     }
 
   if (IN (kind, Type_Kind) && ! TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl)))
@@ -3958,10 +3974,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   if (! debug_info_p && DECL_P (gnu_decl)
       && TREE_CODE (gnu_decl) != FUNCTION_DECL)
     DECL_IGNORED_P (gnu_decl) = 1;
-
-  /* If this decl is really indirect, adjust it.  */
-  if (TREE_CODE (gnu_decl) == VAR_DECL)
-    adjust_decl_rtl (gnu_decl);
 
   /* If we haven't already, associate the ..._DECL node that we just made with
      the input GNAT entity node. */
@@ -4534,6 +4546,7 @@ elaborate_expression_1 (Node_Id gnat_expr,
 					       IDENTIFIER_POINTER (gnu_name)),
 			   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr, 1,
 			   Is_Public (gnat_entity), ! definition, 0, 0);
+      add_decl_stmt (gnu_decl, gnat_entity);
     }
 
   /* We only need to use this variable if we are in global context since GCC
@@ -4679,14 +4692,9 @@ make_packable_type (tree type)
    type.  */
 
 static tree
-maybe_pad_type (tree type,
-                tree size,
-                unsigned int align,
-                Entity_Id gnat_entity,
-                const char *name_trailer,
-                int is_user_type,
-                int definition,
-                int same_rm_size)
+maybe_pad_type (tree type, tree size, unsigned int align,
+                Entity_Id gnat_entity, const char *name_trailer,
+                int is_user_type, int definition, int same_rm_size)
 {
   tree orig_size = TYPE_SIZE (type);
   tree record;
@@ -4812,9 +4820,13 @@ maybe_pad_type (tree type,
 			  0, 0);
 
       if (size != 0 && TREE_CODE (size) != INTEGER_CST && definition)
-	create_var_decl (concat_id_with_name (name, "XVZ"), NULL_TREE,
-			 sizetype, TYPE_SIZE (record), 0, 0, 0, 0,
-			 0);
+	{
+	  tree gnu_xvz
+	    = create_var_decl (concat_id_with_name (name, "XVZ"), NULL_TREE,
+			       sizetype, TYPE_SIZE (record), 0, 0, 0, 0, 0);
+
+	  add_decl_stmt (gnu_xvz, gnat_entity);
+	}
     }
 
   type = record;

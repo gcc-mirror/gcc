@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2001-2002 Free Software Foundation, Inc.         --
+--           Copyright (C) 2001-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package body System.Traces.Tasking is
 
    package SSL renames System.Soft_Links;
 
-   function Extract_Accepts (Task_Name : Task_ID) return String_Trace;
+   function Extract_Accepts (Task_Name : Task_Id) return String_Trace;
    --  This function is used to extract data joined with
    --  W_Select, WT_Select, W_Accept events
 
@@ -53,7 +53,7 @@ package body System.Traces.Tasking is
    -- Send_Trace_Info --
    ---------------------
 
-   procedure Send_Trace_Info (Id : Trace_T; Task_Name2 : Task_ID) is
+   procedure Send_Trace_Info (Id : Trace_T; Task_Name2 : Task_Id) is
       Task_S  : constant String := SSL.Task_Name.all;
       Task2_S : constant String :=
                   Task_Name2.Common.Task_Image
@@ -101,7 +101,7 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Task_Name2   : Task_ID;
+      Task_Name2   : Task_Id;
       Entry_Number : Entry_Index)
    is
       Task_S  : constant String := SSL.Task_Name.all;
@@ -146,8 +146,8 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Task_Name    : Task_ID;
-      Task_Name2   : Task_ID;
+      Task_Name    : Task_Id;
+      Task_Name2   : Task_Id;
       Entry_Number : Entry_Index)
    is
       Task_S  : constant String :=
@@ -201,8 +201,8 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id         : Trace_T;
-      Task_Name  : Task_ID;
-      Task_Name2 : Task_ID)
+      Task_Name  : Task_Id;
+      Task_Name2 : Task_Id)
    is
       Task_S  : constant String :=
                   Task_Name.Common.Task_Image
@@ -226,7 +226,7 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id           : Trace_T;
-      Acceptor     : Task_ID;
+      Acceptor     : Task_Id;
       Entry_Number : Entry_Index;
       Timeout      : Duration)
    is
@@ -285,7 +285,7 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id        : Trace_T;
-      Task_Name : Task_ID;
+      Task_Name : Task_Id;
       Number    : Integer)
    is
       Task_S    : String := SSL.Task_Name.all;
@@ -311,7 +311,7 @@ package body System.Traces.Tasking is
 
    procedure Send_Trace_Info
      (Id        : Trace_T;
-      Task_Name : Task_ID;
+      Task_Name : Task_Id;
       Number    : Integer;
       Timeout   : Duration)
    is
@@ -347,7 +347,7 @@ package body System.Traces.Tasking is
    --  This function returns a string in which all opened
    --  Accepts or Selects are given, separated by semi-colons.
 
-   function Extract_Accepts (Task_Name : Task_ID) return String_Trace is
+   function Extract_Accepts (Task_Name : Task_Id) return String_Trace is
       Info_Annex : String_Trace := (ASCII.NUL, others => ' ');
 
    begin

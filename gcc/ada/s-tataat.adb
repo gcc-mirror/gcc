@@ -100,7 +100,7 @@ package body System.Tasking.Task_Attributes is
          --  Deallocation does finalization, if necessary.
 
          declare
-            C : System.Tasking.Task_ID := All_Tasks_List;
+            C : System.Tasking.Task_Id := All_Tasks_List;
             P : Access_Node;
 
          begin
@@ -158,7 +158,7 @@ package body System.Tasking.Task_Attributes is
    --  This is to be called just before the ATCB is deallocated.
    --  It relies on the caller holding T.L write-lock on entry.
 
-   procedure Finalize_Attributes (T : Task_ID) is
+   procedure Finalize_Attributes (T : Task_Id) is
       P : Access_Node;
       Q : Access_Node := To_Access_Node (T.Indirect_Attributes);
 
@@ -185,7 +185,7 @@ package body System.Tasking.Task_Attributes is
 
    --  This is to be called by System.Tasking.Stages.Create_Task.
 
-   procedure Initialize_Attributes (T : Task_ID) is
+   procedure Initialize_Attributes (T : Task_Id) is
       P : Access_Instance;
    begin
       Defer_Abortion;

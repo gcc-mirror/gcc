@@ -83,7 +83,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -----------------------
 
    procedure Send_Program_Error
-     (Self_Id    : Task_ID;
+     (Self_Id    : Task_Id;
       Entry_Call : Entry_Call_Link);
    pragma Inline (Send_Program_Error);
    --  Raise Program_Error in the caller of the specified entry call
@@ -93,7 +93,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --------------------------
 
    procedure Wakeup_Entry_Caller
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link;
       New_State  : Entry_Call_State);
    pragma Inline (Wakeup_Entry_Caller);
@@ -121,7 +121,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --  specified in Wakeup_Time as well.
 
    procedure Check_Exception
-     (Self_ID : Task_ID;
+     (Self_ID : Task_Id;
       Entry_Call : Entry_Call_Link);
    pragma Inline (Check_Exception);
    --  Raise any pending exception from the Entry_Call.
@@ -130,7 +130,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --  The caller should not be holding any locks, or there will be deadlock.
 
    procedure PO_Do_Or_Queue
-     (Self_Id    : Task_ID;
+     (Self_Id    : Task_Id;
       Object     : Protection_Entry_Access;
       Entry_Call : Entry_Call_Link);
    --  This procedure executes or queues an entry call, depending
@@ -142,7 +142,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    ---------------------
 
    procedure Check_Exception
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link)
    is
       pragma Warnings (Off, Self_ID);
@@ -166,10 +166,10 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    ------------------------
 
    procedure Send_Program_Error
-     (Self_Id    : Task_ID;
+     (Self_Id    : Task_Id;
       Entry_Call : Entry_Call_Link)
    is
-      Caller : constant Task_ID := Entry_Call.Self;
+      Caller : constant Task_Id := Entry_Call.Self;
    begin
       Entry_Call.Exception_To_Raise := Program_Error'Identity;
 
@@ -191,7 +191,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -------------------------
 
    procedure Wait_For_Completion (Entry_Call : Entry_Call_Link) is
-      Self_Id : constant Task_ID := Entry_Call.Self;
+      Self_Id : constant Task_Id := Entry_Call.Self;
    begin
       Self_Id.Common.State := Entry_Caller_Sleep;
       STPO.Sleep (Self_Id, Entry_Caller_Sleep);
@@ -207,7 +207,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Wakeup_Time : Duration;
       Mode        : Delay_Modes)
    is
-      Self_Id  : constant Task_ID := Entry_Call.Self;
+      Self_Id  : constant Task_Id := Entry_Call.Self;
       Timedout : Boolean;
       Yielded  : Boolean;
 
@@ -267,13 +267,13 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --    to complete.
 
    procedure Wakeup_Entry_Caller
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link;
       New_State  : Entry_Call_State)
    is
       pragma Warnings (Off, Self_ID);
 
-      Caller : constant Task_ID := Entry_Call.Self;
+      Caller : constant Task_Id := Entry_Call.Self;
 
    begin
       pragma Assert (New_State = Done or else New_State = Cancelled);
@@ -377,7 +377,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --------------------
 
    procedure PO_Do_Or_Queue
-     (Self_Id    : Task_ID;
+     (Self_Id    : Task_Id;
       Object     : Protection_Entry_Access;
       Entry_Call : Entry_Call_Link)
    is
@@ -460,7 +460,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Uninterpreted_Data : System.Address;
       Mode               : Call_Modes)
    is
-      Self_Id           : constant Task_ID := STPO.Self;
+      Self_Id           : constant Task_Id := STPO.Self;
       Entry_Call        : Entry_Call_Record renames Self_Id.Entry_Calls (1);
       Ceiling_Violation : Boolean;
 
@@ -506,7 +506,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -----------------------------------
 
    function Protected_Single_Entry_Caller
-     (Object : Protection_Entry) return Task_ID is
+     (Object : Protection_Entry) return Task_Id is
    begin
       return Object.Call_In_Progress.Self;
    end Protected_Single_Entry_Caller;
@@ -516,9 +516,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -------------------
 
    procedure Service_Entry (Object : Protection_Entry_Access) is
-      Self_Id       : constant Task_ID := STPO.Self;
+      Self_Id       : constant Task_Id := STPO.Self;
       Entry_Call    : constant Entry_Call_Link := Object.Entry_Queue;
-      Caller        : Task_ID;
+      Caller        : Task_Id;
 
    begin
       if Entry_Call /= null then
@@ -574,7 +574,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Mode                  : Delay_Modes;
       Entry_Call_Successful : out Boolean)
    is
-      Self_Id           : constant Task_ID  := STPO.Self;
+      Self_Id           : constant Task_Id  := STPO.Self;
       Entry_Call        : Entry_Call_Record renames Self_Id.Entry_Calls (1);
       Ceiling_Violation : Boolean;
 

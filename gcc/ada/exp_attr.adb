@@ -1012,7 +1012,7 @@ package body Exp_Attr is
       --  Task_Entry_Caller or the Protected_Entry_Caller function.
 
       when Attribute_Caller => Caller : declare
-         Id_Kind    : constant Entity_Id := RTE (RO_AT_Task_ID);
+         Id_Kind    : constant Entity_Id := RTE (RO_AT_Task_Id);
          Ent        : constant Entity_Id := Entity (Pref);
          Conctype   : constant Entity_Id := Scope (Ent);
          Nest_Depth : Integer := 0;
@@ -1662,7 +1662,7 @@ package body Exp_Attr is
       --  For a task it returns a reference to the _task_id component of
       --  corresponding record:
 
-      --    taskV!(Prefix)._Task_Id, converted to the type Task_ID defined
+      --    taskV!(Prefix)._Task_Id, converted to the type Task_Id defined
 
       --  in Ada.Task_Identification.
 
@@ -1680,7 +1680,7 @@ package body Exp_Attr is
             Rewrite (N,
               Unchecked_Convert_To (Id_Kind, Make_Reference (Loc, Pref)));
          else
-            Id_Kind := RTE (RO_AT_Task_ID);
+            Id_Kind := RTE (RO_AT_Task_Id);
 
             Rewrite (N,
               Unchecked_Convert_To (Id_Kind, Concurrent_Ref (Pref)));

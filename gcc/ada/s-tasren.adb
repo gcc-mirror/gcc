@@ -130,10 +130,10 @@ package body System.Tasking.Rendezvous is
    -- Local Subprograms --
    -----------------------
 
-   procedure Local_Defer_Abort (Self_Id : Task_ID) renames
+   procedure Local_Defer_Abort (Self_Id : Task_Id) renames
      System.Tasking.Initialization.Defer_Abort_Nestable;
 
-   procedure Local_Undefer_Abort (Self_Id : Task_ID) renames
+   procedure Local_Undefer_Abort (Self_Id : Task_Id) renames
      System.Tasking.Initialization.Undefer_Abort_Nestable;
 
    --  Florist defers abort around critical sections that
@@ -147,12 +147,12 @@ package body System.Tasking.Rendezvous is
    --  an earlier abort deferral. Thus, for debugging it may be
    --  wise to modify the above renamings to the non-nestable forms.
 
-   procedure Boost_Priority (Call : Entry_Call_Link; Acceptor : Task_ID);
+   procedure Boost_Priority (Call : Entry_Call_Link; Acceptor : Task_Id);
    pragma Inline (Boost_Priority);
    --  Call this only with abort deferred and holding lock of Acceptor.
 
    procedure Call_Synchronous
-     (Acceptor              : Task_ID;
+     (Acceptor              : Task_Id;
       E                     : Task_Entry_Index;
       Uninterpreted_Data    : System.Address;
       Mode                  : Call_Modes;
@@ -163,7 +163,7 @@ package body System.Tasking.Rendezvous is
 
    procedure Setup_For_Rendezvous_With_Body
      (Entry_Call : Entry_Call_Link;
-      Acceptor   : Task_ID);
+      Acceptor   : Task_Id);
    pragma Inline (Setup_For_Rendezvous_With_Body);
    --  Call this only with abort deferred and holding lock of Acceptor.
    --  When a rendezvous selected (ready for rendezvous) we need to save
@@ -171,7 +171,7 @@ package body System.Tasking.Rendezvous is
    --  this call not Abortable (Cancellable) since the rendezvous has
    --  already been started.
 
-   procedure Wait_For_Call (Self_Id : Task_ID);
+   procedure Wait_For_Call (Self_Id : Task_Id);
    pragma Inline (Wait_For_Call);
    --  Call this only with abort deferred and holding lock of Self_Id.
    --  An accepting task goes into Sleep by calling this routine
@@ -186,8 +186,8 @@ package body System.Tasking.Rendezvous is
      (E                  : Task_Entry_Index;
       Uninterpreted_Data : out System.Address)
    is
-      Self_Id      : constant Task_ID := STPO.Self;
-      Caller       : Task_ID := null;
+      Self_Id      : constant Task_Id := STPO.Self;
+      Caller       : Task_Id := null;
       Open_Accepts : aliased Accept_List (1 .. 1);
       Entry_Call   : Entry_Call_Link;
 
@@ -277,8 +277,8 @@ package body System.Tasking.Rendezvous is
    --------------------
 
    procedure Accept_Trivial (E : Task_Entry_Index) is
-      Self_Id      : constant Task_ID := STPO.Self;
-      Caller       : Task_ID := null;
+      Self_Id      : constant Task_Id := STPO.Self;
+      Caller       : Task_Id := null;
       Open_Accepts : aliased Accept_List (1 .. 1);
       Entry_Call   : Entry_Call_Link;
 
@@ -366,8 +366,8 @@ package body System.Tasking.Rendezvous is
    -- Boost_Priority --
    --------------------
 
-   procedure Boost_Priority (Call : Entry_Call_Link; Acceptor : Task_ID) is
-      Caller        : constant Task_ID := Call.Self;
+   procedure Boost_Priority (Call : Entry_Call_Link; Acceptor : Task_Id) is
+      Caller        : constant Task_Id := Call.Self;
       Caller_Prio   : constant System.Any_Priority := Get_Priority (Caller);
       Acceptor_Prio : constant System.Any_Priority := Get_Priority (Acceptor);
 
@@ -386,7 +386,7 @@ package body System.Tasking.Rendezvous is
    -----------------
 
    procedure Call_Simple
-     (Acceptor           : Task_ID;
+     (Acceptor           : Task_Id;
       E                  : Task_Entry_Index;
       Uninterpreted_Data : System.Address)
    is
@@ -401,13 +401,13 @@ package body System.Tasking.Rendezvous is
    ----------------------
 
    procedure Call_Synchronous
-     (Acceptor              : Task_ID;
+     (Acceptor              : Task_Id;
       E                     : Task_Entry_Index;
       Uninterpreted_Data    : System.Address;
       Mode                  : Call_Modes;
       Rendezvous_Successful : out Boolean)
    is
-      Self_Id    : constant Task_ID := STPO.Self;
+      Self_Id    : constant Task_Id := STPO.Self;
       Level      : ATC_Level;
       Entry_Call : Entry_Call_Link;
 
@@ -490,9 +490,9 @@ package body System.Tasking.Rendezvous is
    -- Callable --
    --------------
 
-   function Callable (T : Task_ID) return Boolean is
+   function Callable (T : Task_Id) return Boolean is
       Result  : Boolean;
-      Self_Id : constant Task_ID := STPO.Self;
+      Self_Id : constant Task_Id := STPO.Self;
 
    begin
       Initialization.Defer_Abort (Self_Id);
@@ -538,9 +538,9 @@ package body System.Tasking.Rendezvous is
    procedure Exceptional_Complete_Rendezvous
      (Ex : Ada.Exceptions.Exception_Id)
    is
-      Self_Id    : constant Task_ID := STPO.Self;
+      Self_Id    : constant Task_Id := STPO.Self;
       Entry_Call : Entry_Call_Link := Self_Id.Common.Call;
-      Caller     : Task_ID;
+      Caller     : Task_Id;
       Called_PO  : STPE.Protection_Entries_Access;
 
       Exception_To_Raise : Ada.Exceptions.Exception_Id := Ex;
@@ -732,7 +732,7 @@ package body System.Tasking.Rendezvous is
 
    procedure Requeue_Protected_To_Task_Entry
      (Object     : STPE.Protection_Entries_Access;
-      Acceptor   : Task_ID;
+      Acceptor   : Task_Id;
       E          : Task_Entry_Index;
       With_Abort : Boolean)
    is
@@ -752,11 +752,11 @@ package body System.Tasking.Rendezvous is
    ------------------------
 
    procedure Requeue_Task_Entry
-     (Acceptor   : Task_ID;
+     (Acceptor   : Task_Id;
       E          : Task_Entry_Index;
       With_Abort : Boolean)
    is
-      Self_Id    : constant Task_ID := STPO.Self;
+      Self_Id    : constant Task_Id := STPO.Self;
       Entry_Call : constant Entry_Call_Link := Self_Id.Common.Call;
 
    begin
@@ -778,10 +778,10 @@ package body System.Tasking.Rendezvous is
       Uninterpreted_Data : out System.Address;
       Index              : out Select_Index)
    is
-      Self_Id          : constant Task_ID := STPO.Self;
+      Self_Id          : constant Task_Id := STPO.Self;
       Entry_Call       : Entry_Call_Link;
       Treatment        : Select_Treatment;
-      Caller           : Task_ID;
+      Caller           : Task_Id;
       Selection        : Select_Index;
       Open_Alternative : Boolean;
 
@@ -1035,7 +1035,7 @@ package body System.Tasking.Rendezvous is
 
    procedure Setup_For_Rendezvous_With_Body
      (Entry_Call : Entry_Call_Link;
-      Acceptor   : Task_ID) is
+      Acceptor   : Task_Id) is
    begin
       Entry_Call.Acceptor_Prev_Call := Acceptor.Common.Call;
       Acceptor.Common.Call := Entry_Call;
@@ -1052,7 +1052,7 @@ package body System.Tasking.Rendezvous is
    ----------------
 
    function Task_Count (E : Task_Entry_Index) return Natural is
-      Self_Id      : constant Task_ID := STPO.Self;
+      Self_Id      : constant Task_Id := STPO.Self;
       Return_Count : Natural;
 
    begin
@@ -1079,15 +1079,15 @@ package body System.Tasking.Rendezvous is
    ----------------------
 
    function Task_Do_Or_Queue
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean) return Boolean
    is
       E             : constant Task_Entry_Index :=
         Task_Entry_Index (Entry_Call.E);
       Old_State     : constant Entry_Call_State := Entry_Call.State;
-      Acceptor      : constant Task_ID := Entry_Call.Called_Task;
-      Parent        : constant Task_ID := Acceptor.Common.Parent;
+      Acceptor      : constant Task_Id := Entry_Call.Called_Task;
+      Parent        : constant Task_Id := Acceptor.Common.Parent;
       Parent_Locked : Boolean := False;
       Null_Body     : Boolean;
 
@@ -1299,13 +1299,13 @@ package body System.Tasking.Rendezvous is
    ---------------------
 
    procedure Task_Entry_Call
-     (Acceptor              : Task_ID;
+     (Acceptor              : Task_Id;
       E                     : Task_Entry_Index;
       Uninterpreted_Data    : System.Address;
       Mode                  : Call_Modes;
       Rendezvous_Successful : out Boolean)
    is
-      Self_Id    : constant Task_ID := STPO.Self;
+      Self_Id    : constant Task_Id := STPO.Self;
       Entry_Call : Entry_Call_Link;
 
    begin
@@ -1391,8 +1391,8 @@ package body System.Tasking.Rendezvous is
    -- Task_Entry_Caller --
    -----------------------
 
-   function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_ID is
-      Self_Id    : constant Task_ID := STPO.Self;
+   function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id is
+      Self_Id    : constant Task_Id := STPO.Self;
       Entry_Call : Entry_Call_Link;
 
    begin
@@ -1418,10 +1418,10 @@ package body System.Tasking.Rendezvous is
       Mode               : Delay_Modes;
       Index              : out Select_Index)
    is
-      Self_Id          : constant Task_ID := STPO.Self;
+      Self_Id          : constant Task_Id := STPO.Self;
       Treatment        : Select_Treatment;
       Entry_Call       : Entry_Call_Link;
-      Caller           : Task_ID;
+      Caller           : Task_Id;
       Selection        : Select_Index;
       Open_Alternative : Boolean;
       Timedout         : Boolean := False;
@@ -1655,14 +1655,14 @@ package body System.Tasking.Rendezvous is
    ---------------------------
 
    procedure Timed_Task_Entry_Call
-     (Acceptor              : Task_ID;
+     (Acceptor              : Task_Id;
       E                     : Task_Entry_Index;
       Uninterpreted_Data    : System.Address;
       Timeout               : Duration;
       Mode                  : Delay_Modes;
       Rendezvous_Successful : out Boolean)
    is
-      Self_Id    : constant Task_ID := STPO.Self;
+      Self_Id    : constant Task_Id := STPO.Self;
       Level      : ATC_Level;
       Entry_Call : Entry_Call_Link;
       Yielded    : Boolean;
@@ -1747,7 +1747,7 @@ package body System.Tasking.Rendezvous is
    -- Wait_For_Call --
    -------------------
 
-   procedure Wait_For_Call (Self_Id : Task_ID) is
+   procedure Wait_For_Call (Self_Id : Task_Id) is
    begin
       --  Try to remove calls to Sleep in the loop below by letting the caller
       --  a chance of getting ready immediately, using Unlock & Yield.
