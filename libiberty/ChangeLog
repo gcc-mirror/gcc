@@ -1,5 +1,10 @@
 2000-09-04  Alex Samuel  <samuel@codesourcery.com>
 
+	* cp-demangle.c (demangle_template_arg): Eat an `E' after an
+	<expression>. 
+	
+2000-09-04  Alex Samuel  <samuel@codesourcery.com>
+
 	* cp-demangle.c (demangle_type_ptr): Increment position past
 	pointer and reference characters.
 
