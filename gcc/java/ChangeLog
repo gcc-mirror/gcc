@@ -1,3 +1,10 @@
+Tue Nov  9 12:12:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (source_end_java_method): Resume permanent allocation,
+ 	reversing Apr 27 1998 patch.
+	(patch_string_cst): Pop obstacks after having pushed the permanent
+ 	ones.
+
 1999-11-05  Tom Tromey  <tromey@cygnus.com>
 
 	* class.c (finish_class): Emit inlined methods if any native
