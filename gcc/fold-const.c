@@ -89,8 +89,6 @@ static tree negate_expr (tree);
 static tree split_tree (tree, enum tree_code, tree *, tree *, tree *, int);
 static tree associate_trees (tree, tree, enum tree_code, tree);
 static tree const_binop (enum tree_code, tree, tree, int);
-static tree build_zero_vector (tree);
-static tree fold_convert_const (enum tree_code, tree, tree);
 static enum tree_code invert_tree_comparison (enum tree_code, bool);
 static enum comparison_code comparison_to_compcode (enum tree_code);
 static enum tree_code compcode_to_comparison (enum comparison_code);
@@ -225,7 +223,7 @@ force_fit_type (tree t, int overflowable,
 
   /* First clear all bits that are beyond the type's precision.  */
 
-  if (prec == 2 * HOST_BITS_PER_WIDE_INT)
+  if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
     high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
@@ -238,7 +236,7 @@ force_fit_type (tree t, int overflowable,
 
   if (!sign_extended_type)
     /* No sign extension */;
-  else if (prec == 2 * HOST_BITS_PER_WIDE_INT)
+  else if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
     /* Correct width already.  */;
   else if (prec > HOST_BITS_PER_WIDE_INT)
     {
@@ -1686,6 +1684,177 @@ size_diffop (tree arg0, tree arg1)
 							arg1, arg0)));
 }
 
+/* A subroutine of fold_convert_const handling conversions of an
+   INTEGER_CST to another integer type.  */
+
+static tree
+fold_convert_const_int_from_int (tree type, tree arg1)
+{
+  tree t;
+
+  /* Given an integer constant, make new constant with new type,
+     appropriately sign-extended or truncated.  */
+  t = build_int_cst_wide (type, TREE_INT_CST_LOW (arg1),
+			  TREE_INT_CST_HIGH (arg1));
+
+  t = force_fit_type (t,
+		      /* Don't set the overflow when
+		      	 converting a pointer  */
+		      !POINTER_TYPE_P (TREE_TYPE (arg1)),
+		      (TREE_INT_CST_HIGH (arg1) < 0
+		       && (TYPE_UNSIGNED (type)
+			   < TYPE_UNSIGNED (TREE_TYPE (arg1))))
+		      | TREE_OVERFLOW (arg1),
+		      TREE_CONSTANT_OVERFLOW (arg1));
+
+  return t;
+}
+
+/* A subroutine of fold_convert_const handling conversions a REAL_CST
+   to an integer type.  */
+
+static tree
+fold_convert_const_int_from_real (enum tree_code code, tree type, tree arg1)
+{
+  int overflow = 0;
+  tree t;
+
+  /* The following code implements the floating point to integer
+     conversion rules required by the Java Language Specification,
+     that IEEE NaNs are mapped to zero and values that overflow
+     the target precision saturate, i.e. values greater than
+     INT_MAX are mapped to INT_MAX, and values less than INT_MIN
+     are mapped to INT_MIN.  These semantics are allowed by the
+     C and C++ standards that simply state that the behavior of
+     FP-to-integer conversion is unspecified upon overflow.  */
+
+  HOST_WIDE_INT high, low;
+  REAL_VALUE_TYPE r;
+  REAL_VALUE_TYPE x = TREE_REAL_CST (arg1);
+
+  switch (code)
+    {
+    case FIX_TRUNC_EXPR:
+      real_trunc (&r, VOIDmode, &x);
+      break;
+
+    case FIX_CEIL_EXPR:
+      real_ceil (&r, VOIDmode, &x);
+      break;
+
+    case FIX_FLOOR_EXPR:
+      real_floor (&r, VOIDmode, &x);
+      break;
+
+    case FIX_ROUND_EXPR:
+      real_round (&r, VOIDmode, &x);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* If R is NaN, return zero and show we have an overflow.  */
+  if (REAL_VALUE_ISNAN (r))
+    {
+      overflow = 1;
+      high = 0;
+      low = 0;
+    }
+
+  /* See if R is less than the lower bound or greater than the
+     upper bound.  */
+
+  if (! overflow)
+    {
+      tree lt = TYPE_MIN_VALUE (type);
+      REAL_VALUE_TYPE l = real_value_from_int_cst (NULL_TREE, lt);
+      if (REAL_VALUES_LESS (r, l))
+	{
+	  overflow = 1;
+	  high = TREE_INT_CST_HIGH (lt);
+	  low = TREE_INT_CST_LOW (lt);
+	}
+    }
+
+  if (! overflow)
+    {
+      tree ut = TYPE_MAX_VALUE (type);
+      if (ut)
+	{
+	  REAL_VALUE_TYPE u = real_value_from_int_cst (NULL_TREE, ut);
+	  if (REAL_VALUES_LESS (u, r))
+	    {
+	      overflow = 1;
+	      high = TREE_INT_CST_HIGH (ut);
+	      low = TREE_INT_CST_LOW (ut);
+	    }
+	}
+    }
+
+  if (! overflow)
+    REAL_VALUE_TO_INT (&low, &high, r);
+
+  t = build_int_cst_wide (type, low, high);
+
+  t = force_fit_type (t, -1, overflow | TREE_OVERFLOW (arg1),
+		      TREE_CONSTANT_OVERFLOW (arg1));
+  return t;
+}
+
+/* A subroutine of fold_convert_const handling conversions a REAL_CST
+   to another floating point type.  */
+
+static tree
+fold_convert_const_real_from_real (tree type, tree arg1)
+{
+  tree t;
+
+  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
+    {
+      /* We make a copy of ARG1 so that we don't modify an
+	 existing constant tree.  */
+      t = copy_node (arg1);
+      TREE_TYPE (t) = type;
+      return t;
+    }
+
+  t = build_real (type,
+		  real_value_truncate (TYPE_MODE (type),
+				       TREE_REAL_CST (arg1)));
+
+  TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1);
+  TREE_CONSTANT_OVERFLOW (t)
+    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
+  return t;
+}
+
+/* Attempt to fold type conversion operation CODE of expression ARG1 to
+   type TYPE.  If no simplification can be done return NULL_TREE.  */
+
+static tree
+fold_convert_const (enum tree_code code, tree type, tree arg1)
+{
+  if (TREE_TYPE (arg1) == type)
+    return arg1;
+
+  if (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type))
+    {
+      if (TREE_CODE (arg1) == INTEGER_CST)
+	return fold_convert_const_int_from_int (type, arg1);
+      else if (TREE_CODE (arg1) == REAL_CST)
+	return fold_convert_const_int_from_real (code, type, arg1);
+    }
+  else if (TREE_CODE (type) == REAL_TYPE)
+    {
+      if (TREE_CODE (arg1) == INTEGER_CST)
+	return build_real_from_int_cst (type, arg1);
+      if (TREE_CODE (arg1) == REAL_CST)
+	return fold_convert_const_real_from_real (type, arg1);
+    }
+  return NULL_TREE;
+}
+
 /* Construct a vector of zero elements of vector type TYPE.  */
 
 static tree
@@ -1696,162 +1865,11 @@ build_zero_vector (tree type)
 
   elem = fold_convert_const (NOP_EXPR, TREE_TYPE (type), integer_zero_node);
   units = TYPE_VECTOR_SUBPARTS (type);
-
+  
   list = NULL_TREE;
   for (i = 0; i < units; i++)
     list = tree_cons (NULL_TREE, elem, list);
   return build_vector (type, list);
-}
-
-
-/* Attempt to fold type conversion operation CODE of expression ARG1 to
-   type TYPE.  If no simplification can be done return NULL_TREE.  */
-
-static tree
-fold_convert_const (enum tree_code code, tree type, tree arg1)
-{
-  int overflow = 0;
-  tree t;
-
-  if (TREE_TYPE (arg1) == type)
-    return arg1;
-
-  if (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type))
-    {
-      if (TREE_CODE (arg1) == INTEGER_CST)
-	{
-	  /* If we would build a constant wider than GCC supports,
-	     leave the conversion unfolded.  */
-	  if (TYPE_PRECISION (type) > 2 * HOST_BITS_PER_WIDE_INT)
-	    return NULL_TREE;
-
-	  /* Given an integer constant, make new constant with new type,
-	     appropriately sign-extended or truncated.  */
-	  t = build_int_cst_wide (type, TREE_INT_CST_LOW (arg1),
-				  TREE_INT_CST_HIGH (arg1));
-
-	  t = force_fit_type (t,
-			      /* Don't set the overflow when
-			      	 converting a pointer  */
-			      !POINTER_TYPE_P (TREE_TYPE (arg1)),
-			      (TREE_INT_CST_HIGH (arg1) < 0
-			       && (TYPE_UNSIGNED (type)
-				   < TYPE_UNSIGNED (TREE_TYPE (arg1))))
-			      | TREE_OVERFLOW (arg1),
-			      TREE_CONSTANT_OVERFLOW (arg1));
-	  return t;
-	}
-      else if (TREE_CODE (arg1) == REAL_CST)
-	{
-	  /* The following code implements the floating point to integer
-	     conversion rules required by the Java Language Specification,
-	     that IEEE NaNs are mapped to zero and values that overflow
-	     the target precision saturate, i.e. values greater than
-	     INT_MAX are mapped to INT_MAX, and values less than INT_MIN
-	     are mapped to INT_MIN.  These semantics are allowed by the
-	     C and C++ standards that simply state that the behavior of
-	     FP-to-integer conversion is unspecified upon overflow.  */
-
-	  HOST_WIDE_INT high, low;
-	  REAL_VALUE_TYPE r;
-	  REAL_VALUE_TYPE x = TREE_REAL_CST (arg1);
-
-	  switch (code)
-	    {
-	    case FIX_TRUNC_EXPR:
-	      real_trunc (&r, VOIDmode, &x);
-	      break;
-
-	    case FIX_CEIL_EXPR:
-	      real_ceil (&r, VOIDmode, &x);
-	      break;
-
-	    case FIX_FLOOR_EXPR:
-	      real_floor (&r, VOIDmode, &x);
-	      break;
-
-	    case FIX_ROUND_EXPR:
-	      real_round (&r, VOIDmode, &x);
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-
-	  /* If R is NaN, return zero and show we have an overflow.  */
-	  if (REAL_VALUE_ISNAN (r))
-	    {
-	      overflow = 1;
-	      high = 0;
-	      low = 0;
-	    }
-
-	  /* See if R is less than the lower bound or greater than the
-	     upper bound.  */
-
-	  if (! overflow)
-	    {
-	      tree lt = TYPE_MIN_VALUE (type);
-	      REAL_VALUE_TYPE l = real_value_from_int_cst (NULL_TREE, lt);
-	      if (REAL_VALUES_LESS (r, l))
-		{
-		  overflow = 1;
-		  high = TREE_INT_CST_HIGH (lt);
-		  low = TREE_INT_CST_LOW (lt);
-		}
-	    }
-
-	  if (! overflow)
-	    {
-	      tree ut = TYPE_MAX_VALUE (type);
-	      if (ut)
-		{
-		  REAL_VALUE_TYPE u = real_value_from_int_cst (NULL_TREE, ut);
-		  if (REAL_VALUES_LESS (u, r))
-		    {
-		      overflow = 1;
-		      high = TREE_INT_CST_HIGH (ut);
-		      low = TREE_INT_CST_LOW (ut);
-		    }
-		}
-	    }
-
-	  if (! overflow)
-	    REAL_VALUE_TO_INT (&low, &high, r);
-
-	  t = build_int_cst_wide (type, low, high);
-
-	  t = force_fit_type (t, -1, overflow | TREE_OVERFLOW (arg1),
-			      TREE_CONSTANT_OVERFLOW (arg1));
-	  return t;
-	}
-    }
-  else if (TREE_CODE (type) == REAL_TYPE)
-    {
-      if (TREE_CODE (arg1) == INTEGER_CST)
-	return build_real_from_int_cst (type, arg1);
-      if (TREE_CODE (arg1) == REAL_CST)
-	{
-	  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
-	    {
-	      /* We make a copy of ARG1 so that we don't modify an
-		 existing constant tree.  */
-	      t = copy_node (arg1);
-	      TREE_TYPE (t) = type;
-	      return t;
-	    }
-
-	  t = build_real (type,
-			  real_value_truncate (TYPE_MODE (type),
-					       TREE_REAL_CST (arg1)));
-
-	  TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1);
-	  TREE_CONSTANT_OVERFLOW (t)
-	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
-	  return t;
-	}
-    }
-  return NULL_TREE;
 }
 
 /* Convert expression ARG to type TYPE.  Used by the middle-end for
