@@ -1961,10 +1961,14 @@ machine_dependent_reorg (first)
 		  if (mode == SImode && hi_const (src))
 		    {
 		      /* This is an HI source, clobber the dest to get the mode right too */
+		      int offset = 0;
 		      mode = HImode;
 		      while (GET_CODE (dst) == SUBREG)
-			dst = SUBREG_REG (dst);
-		      dst = gen_rtx (REG, HImode, REGNO (dst));
+			{
+			  offset += SUBREG_WORD (dst);
+			  dst = SUBREG_REG (dst);
+			}
+		      dst = gen_rtx (REG, HImode, REGNO (dst) + offset);
 		    }
 		  lab = add_constant (src, mode);
 		  newsrc = gen_rtx (MEM, mode,
