@@ -2400,6 +2400,7 @@ finish_id_expression (tree id_expression,
       if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX)
 	decl = TEMPLATE_PARM_DECL (decl);
       if (integral_constant_expression_p 
+	  && !dependent_type_p (TREE_TYPE (decl))
 	  && !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))) 
 	{
 	  if (!allow_non_integral_constant_expression_p)

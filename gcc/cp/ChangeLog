@@ -1,5 +1,12 @@
 2003-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/13289
+	* semantics.c (finish_id_expression): Only check if the type of
+	a template argument is integral or enumeration when it is not
+	dependent.
+
+2003-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/12403
 	* parser.c (cp_parser_template_declaration_after_export): Set up
 	template specialization scope in case of explicit specialization.
