@@ -121,19 +121,19 @@ static void *thread_local_storage = NULL;
 
 /* Initialize the threads subsystem.  */
 static inline int
-__gthread_objc_init_thread_system(void)
+__gthread_objc_init_thread_system (void)
 {
   if (__gthread_active_p ())
     {
       /* Initialize the thread storage key */
-      if (pthread_key_create(&_objc_thread_storage, NULL) == 0)
+      if (pthread_key_create (&_objc_thread_storage, NULL) == 0)
 	{
 	  /* The normal default detach state for threads is
 	   * PTHREAD_CREATE_JOINABLE which causes threads to not die
 	   * when you think they should.  */
-	  if (pthread_attr_init(&_objc_thread_attribs) == 0
-	      && pthread_attr_setdetachstate(&_objc_thread_attribs,
-					     PTHREAD_CREATE_DETACHED) == 0)
+	  if (pthread_attr_init (&_objc_thread_attribs) == 0
+	      && pthread_attr_setdetachstate (&_objc_thread_attribs,
+					      PTHREAD_CREATE_DETACHED) == 0)
 	    return 0;
 	}
     }
@@ -143,11 +143,11 @@ __gthread_objc_init_thread_system(void)
 
 /* Close the threads subsystem.  */
 static inline int
-__gthread_objc_close_thread_system(void)
+__gthread_objc_close_thread_system (void)
 {
   if (__gthread_active_p ()
-      && pthread_key_delete(_objc_thread_storage) == 0
-      && pthread_attr_destroy(&_objc_thread_attribs) == 0)
+      && pthread_key_delete (_objc_thread_storage) == 0
+      && pthread_attr_destroy (&_objc_thread_attribs) == 0)
     return 0;
 
   return -1;
@@ -157,7 +157,7 @@ __gthread_objc_close_thread_system(void)
 
 /* Create a new thread of execution.  */
 static inline objc_thread_t
-__gthread_objc_thread_detach(void (*func)(void *), void *arg)
+__gthread_objc_thread_detach (void (*func)(void *), void *arg)
 {
   objc_thread_t thread_id;
   pthread_t new_thread_handle;
@@ -165,7 +165,7 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
   if (!__gthread_active_p ())
     return NULL;
 
-  if ( !(pthread_create(&new_thread_handle, NULL, (void *)func, arg)) )
+  if (!(pthread_create (&new_thread_handle, NULL, (void *) func, arg)))
     thread_id = (objc_thread_t) new_thread_handle;
   else
     thread_id = NULL;
@@ -175,47 +175,48 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
 
 /* Set the current thread's priority.  */
 static inline int
-__gthread_objc_thread_set_priority(int priority)
+__gthread_objc_thread_set_priority (int priority)
 {
-  if (!__gthread_active_p())
+  if (!__gthread_active_p ())
     return -1;
-  else {
+  else
+    {
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
-    pthread_t thread_id = pthread_self();
-    int policy;
-    struct sched_param params;
-    int priority_min, priority_max;
+      pthread_t thread_id = pthread_self ();
+      int policy;
+      struct sched_param params;
+      int priority_min, priority_max;
 
-    if (pthread_getschedparam(thread_id, &policy, &params) == 0)
-      {
-	if ((priority_max = sched_get_priority_max(policy)) == -1)
-	  return -1;
+      if (pthread_getschedparam (thread_id, &policy, &params) == 0)
+	{
+	  if ((priority_max = sched_get_priority_max (policy)) == -1)
+	    return -1;
 
-	if ((priority_min = sched_get_priority_min(policy)) == -1)
-	  return -1;
+	  if ((priority_min = sched_get_priority_min (policy)) == -1)
+	    return -1;
 
-	if (priority > priority_max)
-	  priority = priority_max;
-	else if (priority < priority_min)
-	  priority = priority_min;
-	params.sched_priority = priority;
+	  if (priority > priority_max)
+	    priority = priority_max;
+	  else if (priority < priority_min)
+	    priority = priority_min;
+	  params.sched_priority = priority;
 
-	/*
-	 * The solaris 7 and several other man pages incorrectly state that
-	 * this should be a pointer to policy but pthread.h is universally
-	 * at odds with this.
-	 */
-	if (pthread_setschedparam(thread_id, policy, &params) == 0)
-	  return 0;
-      }
+	  /*
+	   * The solaris 7 and several other man pages incorrectly state that
+	   * this should be a pointer to policy but pthread.h is universally
+	   * at odds with this.
+	   */
+	  if (pthread_setschedparam (thread_id, policy, &params) == 0)
+	    return 0;
+	}
 #endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
-    return -1;
-  }
+      return -1;
+    }
 }
 
 /* Return the current thread's priority.  */
 static inline int
-__gthread_objc_thread_get_priority(void)
+__gthread_objc_thread_get_priority (void)
 {
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
   if (__gthread_active_p ())
@@ -223,7 +224,7 @@ __gthread_objc_thread_get_priority(void)
       int policy;
       struct sched_param params;
 
-      if (pthread_getschedparam(pthread_self(), &policy, &params) == 0)
+      if (pthread_getschedparam (pthread_self (), &policy, &params) == 0)
 	return params.sched_priority;
       else
 	return -1;
@@ -235,19 +236,19 @@ __gthread_objc_thread_get_priority(void)
 
 /* Yield our process time to another thread.  */
 static inline void
-__gthread_objc_thread_yield(void)
+__gthread_objc_thread_yield (void)
 {
   if (__gthread_active_p ())
-    sched_yield();
+    sched_yield ();
 }
 
 /* Terminate the current thread.  */
 static inline int
-__gthread_objc_thread_exit(void)
+__gthread_objc_thread_exit (void)
 {
   if (__gthread_active_p ())
     /* exit the thread */
-    pthread_exit(&__objc_thread_exit_status);
+    pthread_exit (&__objc_thread_exit_status);
 
   /* Failed if we reached here */
   return -1;
@@ -255,20 +256,20 @@ __gthread_objc_thread_exit(void)
 
 /* Returns an integer value which uniquely describes a thread.  */
 static inline objc_thread_t
-__gthread_objc_thread_id(void)
+__gthread_objc_thread_id (void)
 {
   if (__gthread_active_p ())
-    return (objc_thread_t) pthread_self();
+    return (objc_thread_t) pthread_self ();
   else
     return (objc_thread_t) 1;
 }
 
 /* Sets the thread's local storage pointer.  */
 static inline int
-__gthread_objc_thread_set_data(void *value)
+__gthread_objc_thread_set_data (void *value)
 {
   if (__gthread_active_p ())
-    return pthread_setspecific(_objc_thread_storage, value);
+    return pthread_setspecific (_objc_thread_storage, value);
   else
     {
       thread_local_storage = value;
@@ -278,10 +279,10 @@ __gthread_objc_thread_set_data(void *value)
 
 /* Returns the thread's local storage pointer.  */
 static inline void *
-__gthread_objc_thread_get_data(void)
+__gthread_objc_thread_get_data (void)
 {
   if (__gthread_active_p ())
-    return pthread_getspecific(_objc_thread_storage);
+    return pthread_getspecific (_objc_thread_storage);
   else
     return thread_local_storage;
 }
@@ -290,15 +291,15 @@ __gthread_objc_thread_get_data(void)
 
 /* Allocate a mutex.  */
 static inline int
-__gthread_objc_mutex_allocate(objc_mutex_t mutex)
+__gthread_objc_mutex_allocate (objc_mutex_t mutex)
 {
   if (__gthread_active_p ())
     {
-      mutex->backend = objc_malloc(sizeof(pthread_mutex_t));
+      mutex->backend = objc_malloc (sizeof (pthread_mutex_t));
 
-      if (pthread_mutex_init((pthread_mutex_t *)mutex->backend, NULL))
+      if (pthread_mutex_init ((pthread_mutex_t *) mutex->backend, NULL))
 	{
-	  objc_free(mutex->backend);
+	  objc_free (mutex->backend);
 	  mutex->backend = NULL;
 	  return -1;
 	}
@@ -309,7 +310,7 @@ __gthread_objc_mutex_allocate(objc_mutex_t mutex)
 
 /* Deallocate a mutex.  */
 static inline int
-__gthread_objc_mutex_deallocate(objc_mutex_t mutex)
+__gthread_objc_mutex_deallocate (objc_mutex_t mutex)
 {
   if (__gthread_active_p ())
     {
@@ -322,16 +323,16 @@ __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
 
       do
 	{
-	  count = pthread_mutex_unlock((pthread_mutex_t *)mutex->backend);
+	  count = pthread_mutex_unlock ((pthread_mutex_t *) mutex->backend);
 	  if (count < 0)
 	    return -1;
 	}
       while (count);
 
-      if (pthread_mutex_destroy((pthread_mutex_t *)mutex->backend))
+      if (pthread_mutex_destroy ((pthread_mutex_t *) mutex->backend))
 	return -1;
 
-      objc_free(mutex->backend);
+      objc_free (mutex->backend);
       mutex->backend = NULL;
     }
   return 0;
@@ -339,10 +340,10 @@ __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
 
 /* Grab a lock on a mutex.  */
 static inline int
-__gthread_objc_mutex_lock(objc_mutex_t mutex)
+__gthread_objc_mutex_lock (objc_mutex_t mutex)
 {
   if (__gthread_active_p ()
-      && pthread_mutex_lock((pthread_mutex_t *)mutex->backend) != 0)
+      && pthread_mutex_lock ((pthread_mutex_t *) mutex->backend) != 0)
     {
       return -1;
     }
@@ -352,10 +353,10 @@ __gthread_objc_mutex_lock(objc_mutex_t mutex)
 
 /* Try to grab a lock on a mutex.  */
 static inline int
-__gthread_objc_mutex_trylock(objc_mutex_t mutex)
+__gthread_objc_mutex_trylock (objc_mutex_t mutex)
 {
   if (__gthread_active_p ()
-      && pthread_mutex_trylock((pthread_mutex_t *)mutex->backend) != 0)
+      && pthread_mutex_trylock ((pthread_mutex_t *) mutex->backend) != 0)
     {
       return -1;
     }
@@ -365,10 +366,10 @@ __gthread_objc_mutex_trylock(objc_mutex_t mutex)
 
 /* Unlock the mutex */
 static inline int
-__gthread_objc_mutex_unlock(objc_mutex_t mutex)
+__gthread_objc_mutex_unlock (objc_mutex_t mutex)
 {
   if (__gthread_active_p ()
-      && pthread_mutex_unlock((pthread_mutex_t *)mutex->backend) != 0)
+      && pthread_mutex_unlock ((pthread_mutex_t *) mutex->backend) != 0)
     {
       return -1;
     }
@@ -380,15 +381,15 @@ __gthread_objc_mutex_unlock(objc_mutex_t mutex)
 
 /* Allocate a condition.  */
 static inline int
-__gthread_objc_condition_allocate(objc_condition_t condition)
+__gthread_objc_condition_allocate (objc_condition_t condition)
 {
   if (__gthread_active_p ())
     {
-      condition->backend = objc_malloc(sizeof(pthread_cond_t));
+      condition->backend = objc_malloc (sizeof (pthread_cond_t));
 
-      if (pthread_cond_init((pthread_cond_t *)condition->backend, NULL))
+      if (pthread_cond_init ((pthread_cond_t *) condition->backend, NULL))
 	{
-	  objc_free(condition->backend);
+	  objc_free (condition->backend);
 	  condition->backend = NULL;
 	  return -1;
 	}
@@ -399,14 +400,14 @@ __gthread_objc_condition_allocate(objc_condition_t condition)
 
 /* Deallocate a condition.  */
 static inline int
-__gthread_objc_condition_deallocate(objc_condition_t condition)
+__gthread_objc_condition_deallocate (objc_condition_t condition)
 {
   if (__gthread_active_p ())
     {
-      if (pthread_cond_destroy((pthread_cond_t *)condition->backend))
+      if (pthread_cond_destroy ((pthread_cond_t *) condition->backend))
 	return -1;
 
-      objc_free(condition->backend);
+      objc_free (condition->backend);
       condition->backend = NULL;
     }
   return 0;
@@ -414,31 +415,31 @@ __gthread_objc_condition_deallocate(objc_condition_t condition)
 
 /* Wait on the condition */
 static inline int
-__gthread_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
+__gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
 {
   if (__gthread_active_p ())
-    return pthread_cond_wait((pthread_cond_t *)condition->backend,
-			   (pthread_mutex_t *)mutex->backend);
+    return pthread_cond_wait ((pthread_cond_t *) condition->backend,
+			      (pthread_mutex_t *) mutex->backend);
   else
     return 0;
 }
 
 /* Wake up all threads waiting on this condition.  */
 static inline int
-__gthread_objc_condition_broadcast(objc_condition_t condition)
+__gthread_objc_condition_broadcast (objc_condition_t condition)
 {
   if (__gthread_active_p ())
-    return pthread_cond_broadcast((pthread_cond_t *)condition->backend);
+    return pthread_cond_broadcast ((pthread_cond_t *) condition->backend);
   else
     return 0;
 }
 
 /* Wake up one thread waiting on this condition.  */
 static inline int
-__gthread_objc_condition_signal(objc_condition_t condition)
+__gthread_objc_condition_signal (objc_condition_t condition)
 {
   if (__gthread_active_p ())
-    return pthread_cond_signal((pthread_cond_t *)condition->backend);
+    return pthread_cond_signal ((pthread_cond_t *) condition->backend);
   else
     return 0;
 }
