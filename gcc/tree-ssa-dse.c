@@ -259,6 +259,10 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
      not also a function call, then record it into our table.  */
   if (get_call_expr_in (stmt))
     return;
+
+  if (ann->has_volatile_ops)
+    return;
+
   if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
       dataflow_t df = get_immediate_uses (stmt);

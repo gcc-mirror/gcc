@@ -1,3 +1,11 @@
+2005-01-08  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/pr18241-1.c: New test.
+	* gcc.dg/pr18241-2.c: New test.
+	* gcc.dg/pr18241-3.c: New test.
+	* gcc.dg/pr18241-4.c: New test.
+	* gcc.dg/pr18241-5.c: New test.
+
 2005-01-08  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/select_2.f90, gfortran.dg/select_3.f90,

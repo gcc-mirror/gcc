@@ -154,6 +154,7 @@ tree_nrv (void)
 	  /* The returned value must be a local automatic variable of the
 	     same type and alignment as the function's result.  */
 	  if (TREE_CODE (found) != VAR_DECL
+	      || TREE_THIS_VOLATILE (found)
 	      || DECL_CONTEXT (found) != current_function_decl
 	      || TREE_STATIC (found)
 	      || TREE_ADDRESSABLE (found)
