@@ -1242,7 +1242,7 @@ static void
 maybe_fix_stack_asms ()
 {
 #ifdef STACK_REGS
-  char *constraints[MAX_RECOG_OPERANDS];
+  const char *constraints[MAX_RECOG_OPERANDS];
   enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
   struct insn_chain *chain;
 

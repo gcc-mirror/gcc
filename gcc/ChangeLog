@@ -1,3 +1,8 @@
+Tue Aug  3 10:36:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c (maybe_fix_stack_asms): Declare CONSTRAINTS as
+	"const char *".
+
 Mon Aug  2 23:45:45 1999  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* dwarf2out.c (add_location_or_const_value_attribute): Correct
