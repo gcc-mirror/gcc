@@ -1197,6 +1197,112 @@ assemble_string (p, size)
 }
 
 
+#if defined  ASM_OUTPUT_ALIGNED_DECL_LOCAL
+#define ASM_EMIT_LOCAL(decl, name, size, rounded) \
+  ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name, size, DECL_ALIGN (decl))
+#else
+#if defined  ASM_OUTPUT_ALIGNED_LOCAL
+#define ASM_EMIT_LOCAL(decl, name, size, rounded) \
+  ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, DECL_ALIGN (decl))
+#else
+#define ASM_EMIT_LOCAL(decl, name, size, rounded) \
+  ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded)
+#endif
+#endif
+
+#if defined ASM_OUTPUT_ALIGNED_BSS
+#define ASM_EMIT_BSS(decl, name, size, rounded) \
+  ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size, DECL_ALIGN (decl))
+#else
+#if defined ASM_OUTPUT_BSS
+#define ASM_EMIT_BSS(decl, name, size, rounded) \
+  ASM_OUTPUT_BSS (asm_out_file, decl, name, size, rounded)
+#else
+#undef  ASM_EMIT_BSS
+#endif
+#endif
+
+#if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
+#define ASM_EMIT_COMMON(decl, name, size, rounded) \
+  ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, decl, name, size, DECL_ALIGN (decl))
+#else
+#if defined ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_EMIT_COMMON(decl, name, size, rounded) \
+  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, name, size, DECL_ALIGN (decl))
+#else
+#define ASM_EMIT_COMMON(decl, name, size, rounded) \
+  ASM_OUTPUT_COMMON (asm_out_file, name, size, rounded)
+#endif
+#endif
+
+static void
+asm_emit_uninitialised (decl, name, size, rounded)
+     tree decl;
+     char * name;
+     int size;
+     int rounded;
+{
+  enum {
+    asm_dest_common,
+    asm_dest_bss,
+    asm_dest_local
+  }
+  destination = asm_dest_local;
+  
+  if (TREE_PUBLIC (decl))
+    {
+#if defined ASM_EMIT_BSS
+      if (! DECL_COMMON (decl))
+	destination = asm_dest_bss;
+      else
+#endif      
+	destination = asm_dest_common;
+    }
+
+  if (flag_shared_data)
+    {
+      switch (destination)
+	{
+#ifdef ASM_OUTPUT_SHARED_BSS
+	case asm_dest_bss:
+	  ASM_OUTPUT_SHARED_BSS (asm_out_file, decl, name, size, rounded);
+	  return;
+#endif
+#ifdef ASM_OUTPUT_SHARED_COMMON
+	case asm_dest_common:
+	  ASM_OUTPUT_SHARED_COMMON (asm_out_file, name, size, rounded);
+	  return;
+#endif
+#ifdef ASM_OUTPUT_SHARED_LOCAL
+	case asm_dest_local:
+	  ASM_OUTPUT_SHARED_LOCAL (asm_out_file, name, size, rounded);
+	  return;
+#endif
+	default:
+	  break;
+	}
+    }
+
+  switch (destination)
+    {
+#ifdef ASM_EMIT_BSS
+    case asm_dest_bss:
+      ASM_EMIT_BSS (decl, name, size, rounded);
+      break;
+#endif
+    case asm_dest_common:
+      ASM_EMIT_COMMON (decl, name, size, rounded);
+      break;
+    case asm_dest_local:
+      ASM_EMIT_LOCAL (decl, name, size, rounded);
+      break;
+    default:
+      abort ();
+    }
+
+  return;
+}
+
 /* Assemble everything that is needed for a variable or function declaration.
    Not used for automatic variables, and not used for function definitions.
    Should not be called for variables of incomplete structure type.
@@ -1386,7 +1492,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node)
       /* If the target can't output uninitialized but not common global data
 	 in .bss, then we have to use .data.  */
-#if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
+#if ! defined ASM_EMIT_BSS
       && DECL_COMMON (decl)
 #endif
       && DECL_SECTION_NAME (decl) == 0
@@ -1436,71 +1542,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       if (flag_shared_data)
 	data_section ();
 #endif
+      asm_emit_uninitialised (decl, name, size, rounded);
 
-      if (TREE_PUBLIC (decl)
-#if defined (ASM_OUTPUT_BSS) || defined (ASM_OUTPUT_ALIGNED_BSS)
-	  && DECL_COMMON (decl)
-#endif
-	  )
-	{
-#ifdef ASM_OUTPUT_SHARED_COMMON
-	  if (flag_shared_data)
-	    ASM_OUTPUT_SHARED_COMMON (asm_out_file, name, size, rounded);
-	  else
-#endif
-	      {
-#ifdef ASM_OUTPUT_ALIGNED_DECL_COMMON
-		ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, decl, name, size,
-						   DECL_ALIGN (decl));
-#else
-#ifdef ASM_OUTPUT_ALIGNED_COMMON
-		ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, name, size,
-					   DECL_ALIGN (decl));
-#else
-		ASM_OUTPUT_COMMON (asm_out_file, name, size, rounded);
-#endif
-#endif
-	      }
-	}
-#if defined (ASM_OUTPUT_BSS) || defined (ASM_OUTPUT_ALIGNED_BSS)
-      else if (TREE_PUBLIC (decl))
-	{
-#ifdef ASM_OUTPUT_SHARED_BSS
-	  if (flag_shared_data)
-	    ASM_OUTPUT_SHARED_BSS (asm_out_file, decl, name, size, rounded);
-	  else
-#endif
-	      {
-#ifdef ASM_OUTPUT_ALIGNED_BSS
-		ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size,
-					DECL_ALIGN (decl));
-#else
-		ASM_OUTPUT_BSS (asm_out_file, decl, name, size, rounded);
-#endif
-	      }
-	}
-#endif /* ASM_OUTPUT_BSS || ASM_OUTPUT_ALIGNED_BSS */
-      else
-	{
-#ifdef ASM_OUTPUT_SHARED_LOCAL
-	  if (flag_shared_data)
-	    ASM_OUTPUT_SHARED_LOCAL (asm_out_file, name, size, rounded);
-	  else
-#endif
-	      {
-#ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
-		ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name, size,
-						  DECL_ALIGN (decl));
-#else
-#ifdef ASM_OUTPUT_ALIGNED_LOCAL
-		ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size,
-					  DECL_ALIGN (decl));
-#else
-		ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
-#endif
-#endif
-	      }
-	}
       goto finish;
     }
 
