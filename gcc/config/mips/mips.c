@@ -7657,29 +7657,13 @@ mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
    nonzero when an argument must be passed by reference.  */
 
 int
-function_arg_pass_by_reference (const CUMULATIVE_ARGS *cum,
+function_arg_pass_by_reference (const CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 				enum machine_mode mode, tree type,
 				int named ATTRIBUTE_UNUSED)
 {
   int size;
 
-  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
-    return 0;
-
-  /* We must pass by reference if we would be both passing in registers
-     and the stack.  This is because any subsequent partial arg would be
-     handled incorrectly in this case.
-
-     ??? This is really a kludge.  We should either fix GCC so that such
-     a situation causes an abort and then do something in the MIPS port
-     to prevent it, or add code to function.c to properly handle the case.  */
-  /* ??? cum can be NULL when called from mips_va_arg.  The problem handled
-     here hopefully is not relevant to mips_va_arg.  */
-  if (cum && MUST_PASS_IN_STACK (mode, type)
-      && FUNCTION_ARG (*cum, mode, type, named) != 0)
-    return 1;
-
-  /* Otherwise, we only do this if EABI is selected.  */
+  /* The EABI is the only one to pass args by reference.  */
   if (mips_abi != ABI_EABI)
     return 0;
 
