@@ -1,3 +1,15 @@
+2005-01-04 Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/19158
+	* tree-sra.c (generate_one_element_init): Just
+	call gimplify_and_add.
+	(generate_element_init): Record the
+	new referenced variables and mark them for renaming
+	and split out to ...
+	(generate_element_init_1): This.
+	(scalarize_init): Don't call push_gimplify_context/
+	pop_gimplify_context.
+
 2005-01-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* toplev.c (get_src_pwd): Handle failure of getpwd().
