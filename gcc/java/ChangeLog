@@ -1,3 +1,8 @@
+2001-05-01  Per Bothner  <per@bothner.com>
+
+	* parse.y (java_pop_parser_context):  The TREE_VALUE of a link in the
+	import_list contains the name, not the TREE_PURPOSE.
+
 2001-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-io.c (read_zip_member): Cast to long in comparison with
