@@ -796,7 +796,22 @@ make_node (code)
 	 even though we may make them before the function turns
 	 on temporary allocation.  */
       else if (code == PARM_DECL)
-	obstack = function_maybepermanent_obstack;
+	{
+	  tree context = 0;
+	  if (current_function_decl)
+	    context = decl_function_context (current_function_decl);
+	  /* If this is a nested function, then we must allocate the PARM_DECL
+	     on the parent's saveable_obstack, so that they will live to the
+	     end of the parent's closing brace.  This is neccesary in case we
+	     try to inline the function into its parent.  */
+	  if (context)
+	    {
+	      struct function *p = find_function_data (context);
+	      obstack = p->function_maybepermanent_obstack;
+	    }
+	  else
+	    obstack = function_maybepermanent_obstack;
+	}
       break;
 
     case 't':  /* a type node */
