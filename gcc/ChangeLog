@@ -1,3 +1,11 @@
+2001-07-09  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* expr.h: Adjust prototypes for have_add2_insn, have_sub2_insn.
+	* optabs.c (have_add2_insn): Check whether the add insn chosen
+	really accepts the operands.  (have_sub2_insn): Ditto for sub insn.
+	* reload1.c (reload_cse_move2add): Adjust calls of have_add2_insn.
+
+*************** extern rtx gen_add2_insn PARAMS ((rtx, r
 Mon Jul  9 13:26:40 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (OBJS): Add ssa-ccp.o

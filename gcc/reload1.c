@@ -9161,7 +9161,7 @@ reload_cse_move2add (first)
 		  if (new_src == const0_rtx)
 		    success = validate_change (insn, &SET_SRC (pat), reg, 0);
 		  else if (rtx_cost (new_src, PLUS) < rtx_cost (src, SET)
-			   && have_add2_insn (GET_MODE (reg)))
+			   && have_add2_insn (reg, new_src))
 		    success = validate_change (insn, &PATTERN (insn),
 					       gen_add2_insn (reg, new_src), 0);
 		  reg_set_luid[regno] = move2add_luid;
@@ -9212,7 +9212,7 @@ reload_cse_move2add (first)
 			  = validate_change (next, &SET_SRC (set), reg, 0);
 		      else if ((rtx_cost (new_src, PLUS)
 				< COSTS_N_INSNS (1) + rtx_cost (src3, SET))
-			       && have_add2_insn (GET_MODE (reg)))
+			       && have_add2_insn (reg, new_src))
 			success
 			  = validate_change (next, &PATTERN (next),
 					     gen_add2_insn (reg, new_src), 0);

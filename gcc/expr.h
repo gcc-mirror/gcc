@@ -841,8 +841,8 @@ int can_conditionally_move_p PARAMS ((enum machine_mode mode));
 extern rtx gen_add2_insn PARAMS ((rtx, rtx));
 extern rtx gen_sub2_insn PARAMS ((rtx, rtx));
 extern rtx gen_move_insn PARAMS ((rtx, rtx));
-extern int have_add2_insn PARAMS ((enum machine_mode));
-extern int have_sub2_insn PARAMS ((enum machine_mode));
+extern int have_add2_insn PARAMS ((rtx, rtx));
+extern int have_sub2_insn PARAMS ((rtx, rtx));
 
 /* Return the INSN_CODE to use for an extend operation.  */
 extern enum insn_code can_extend_p PARAMS ((enum machine_mode,
