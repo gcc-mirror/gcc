@@ -3527,7 +3527,13 @@ safe_from_p (x, exp)
   rtx exp_rtl = 0;
   int i, nops;
 
-  if (x == 0)
+  if (x == 0
+      /* If EXP has varying size, we MUST use a target since we currently
+	 have no way of allocating temporaries of variable size.  So we
+	 assume here that something at a higher level has prevented a
+	 clash.  This is somewhat bogus, but the best we can do.  */
+      || (TREE_TYPE (exp) != 0 &&
+	  TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST))
     return 1;
 
   /* If this is a subreg of a hard register, declare it unsafe, otherwise,
@@ -8316,7 +8322,9 @@ preexpand_calls (exp)
       /* Do nothing to built-in functions.  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) != ADDR_EXPR
 	  || TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) != FUNCTION_DECL
-	  || ! DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
+	  || ! DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+	  /* Do nothing if the call returns a variable-sized object.  */
+	  || TREE_CODE (TYPE_SIZE (TREE_TYPE(exp))) != INTEGER_CST)
 	CALL_EXPR_RTL (exp) = expand_call (exp, NULL_RTX, 0);
       return;
 
