@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -27,6 +27,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Tss;  use Exp_Tss;
@@ -67,14 +68,6 @@ package body Sem_Ch13 is
    --  The purpose is to deal with the situation where an aligment has been
    --  inherited from a derived type that is no longer appropriate for the
    --  new Esize value. In this case, we reset the Alignment to unknown.
-
-   procedure Check_Address_Alignment (E : Entity_Id; Expr : Node_Id);
-   --  Given an object entity E, for which the alignment is known, checks
-   --  to see if Expr (the expression from an Address clause) is a known
-   --  at compile time value, and if so posts a warning if the value is
-   --  not consistent with the known alignment requirement. This is not
-   --  an error, but rather leads to erroneous behavior, but we certainly
-   --  may as well give a warning if we detect this situation.
 
    procedure Check_Component_Overlap (C1_Ent, C2_Ent : Entity_Id);
    --  Given two entities for record components or discriminants, checks
@@ -315,7 +308,7 @@ package body Sem_Ch13 is
 
                Check_Constant_Address_Clause (Expr, U_Ent);
 
-            --  Case of address clause for variable or constant
+            --  Case of address clause for an object
 
             elsif
               Ekind (U_Ent) = E_Variable
@@ -398,10 +391,12 @@ package body Sem_Ch13 is
                      Warn_Overlay (Expr, Typ, Nam);
                   end if;
 
-                  --  Check for bad alignment
+                  --  If entity has delayed freeze then we will generate
+                  --  an alignment check at the freeze point. If there is
+                  --  no delayed freeze we can do it right now.
 
-                  if Known_Alignment (U_Ent) then
-                     Check_Address_Alignment (U_Ent, Expr);
+                  if not Has_Delayed_Freeze (U_Ent) then
+                     Apply_Alignment_Check (U_Ent, N);
                   end if;
 
                   --  Kill the size check code, since we are not allocating
@@ -2319,41 +2314,6 @@ package body Sem_Ch13 is
       end if;
 
    end Analyze_Record_Representation_Clause;
-
-   -----------------------------
-   -- Check_Address_Alignment --
-   -----------------------------
-
-   procedure Check_Address_Alignment (E : Entity_Id; Expr : Node_Id) is
-      Arg : Node_Id;
-
-   begin
-      if Nkind (Expr) = N_Unchecked_Type_Conversion then
-         Arg := Expression (Expr);
-
-      elsif Nkind (Expr) = N_Function_Call
-        and then Is_RTE (Entity (Name (Expr)), RE_To_Address)
-      then
-         Arg := First (Parameter_Associations (Expr));
-
-         if Nkind (Arg) = N_Parameter_Association then
-            Arg := Explicit_Actual_Parameter (Arg);
-         end if;
-
-      else
-         return;
-      end if;
-
-      --  Here Arg is the address value
-
-      if Compile_Time_Known_Value (Arg) then
-         if Expr_Value (Arg) mod Alignment (E) /= 0 then
-            Error_Msg_NE
-              ("?specified address for& not consistent with alignment",
-               Arg, E);
-         end if;
-      end if;
-   end Check_Address_Alignment;
 
    -----------------------------
    -- Check_Component_Overlap --

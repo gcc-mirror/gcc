@@ -7306,7 +7306,7 @@ package body Sem_Ch3 is
       Suffix_Index : Nat)
    is
       Def_Id     : Entity_Id;
-      R          : Node_Id;
+      R          : Node_Id := Empty;
       Checks_Off : Boolean := False;
       T          : constant Entity_Id := Etype (Index);
 
@@ -7407,8 +7407,6 @@ package body Sem_Ch3 is
       Set_Size_Info      (Def_Id,                (T));
       Set_RM_Size        (Def_Id, RM_Size        (T));
       Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
-
-      --  ??? ??? is R always initialized, not at all obvious why?
 
       Set_Scalar_Range   (Def_Id, R);
 
@@ -10333,12 +10331,8 @@ package body Sem_Ch3 is
 
          --  The parser guarantees that the attribute is a RANGE attribute
 
-         --  Is order critical here (setting T before Resolve). If so,
-         --  document why, if not use Analyze_And_Resolve and get T after???
-
-         Analyze (I);
+         Analyze_And_Resolve (I);
          T := Etype (I);
-         Resolve (I, T);
          R := I;
 
       --  If none of the above, must be a subtype. We convert this to a
