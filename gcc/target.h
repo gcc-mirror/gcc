@@ -233,7 +233,7 @@ struct gcc_target
     rtx (* dfa_post_cycle_insn) (void);
     /* The following member value is a pointer to a function returning value
        which defines how many insns in queue `ready' will we try for
-       multi-pass scheduling.  if the member value is nonzero and the
+       multi-pass scheduling.  If the member value is nonzero and the
        function returns positive value, the DFA based scheduler will make
        multi-pass scheduling for the first cycle.  In other words, we will
        try to choose ready insn which permits to start maximum number of

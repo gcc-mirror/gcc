@@ -57,9 +57,6 @@ enum m32r_model m32r_model;
 const char * m32r_sdata_string = M32R_SDATA_DEFAULT;
 enum m32r_sdata m32r_sdata;
 
-/* Scheduler support */
-static int m32r_sched_odd_word_p;
-
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_MODEL_SHIFT		SYMBOL_FLAG_MACH_DEP_SHIFT
 #define SYMBOL_REF_MODEL(X) \
@@ -92,11 +89,7 @@ static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
 
 static void  m32r_file_start (void);
 
-static int    m32r_adjust_cost (rtx, rtx, rtx, int);
 static int    m32r_adjust_priority (rtx, int);
-static void   m32r_sched_init (FILE *, int, int);
-static int    m32r_sched_reorder (FILE *, int, rtx *, int *, int);
-static int    m32r_variable_issue (FILE *, int, rtx, int);
 static int    m32r_issue_rate (void);
 
 static void m32r_encode_section_info (tree, rtx, int);
@@ -124,18 +117,12 @@ static bool m32r_rtx_costs (rtx, int, int, int *);
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START m32r_file_start
 
-#undef  TARGET_SCHED_ADJUST_COST
-#define TARGET_SCHED_ADJUST_COST m32r_adjust_cost
 #undef  TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY m32r_adjust_priority
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE m32r_issue_rate
-#undef  TARGET_SCHED_VARIABLE_ISSUE
-#define TARGET_SCHED_VARIABLE_ISSUE m32r_variable_issue
-#undef  TARGET_SCHED_INIT
-#define TARGET_SCHED_INIT m32r_sched_init
-#undef  TARGET_SCHED_REORDER
-#define TARGET_SCHED_REORDER m32r_sched_reorder
+#undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
@@ -1464,14 +1451,6 @@ m32r_va_arg (tree valist, tree type)
   return addr_rtx;
 }
 
-static int
-m32r_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link ATTRIBUTE_UNUSED,
-		  rtx dep_insn ATTRIBUTE_UNUSED, int cost)
-{
-  return cost;
-}
-
-
 /* Return true if INSN is real instruction bearing insn.  */
 
 static int
@@ -1497,124 +1476,6 @@ m32r_adjust_priority (rtx insn, int priority)
 }
 
 
-/* Initialize for scheduling a group of instructions.  */
-
-static void
-m32r_sched_init (FILE * stream ATTRIBUTE_UNUSED,
-		 int verbose ATTRIBUTE_UNUSED,
-		 int max_ready ATTRIBUTE_UNUSED)
-{
-  m32r_sched_odd_word_p = FALSE;
-}
-
-
-/* Reorder the schedulers priority list if needed */
-
-static int
-m32r_sched_reorder (FILE * stream, int verbose, rtx * ready,
-		    int *n_readyp, int clock ATTRIBUTE_UNUSED)
-{
-  int n_ready = *n_readyp;
-
-  if (TARGET_DEBUG)
-    return m32r_issue_rate ();
-
-  if (verbose <= 7)
-    stream = (FILE *)0;
-
-  if (stream)
-    fprintf (stream,
-	     ";;\t\t::: Looking at %d insn(s) on ready list, boundary is %s word\n",
-	     n_ready,
-	     (m32r_sched_odd_word_p) ? "odd" : "even");
-
-  if (n_ready > 1)
-    {
-      rtx * long_head = alloca (sizeof (rtx) * n_ready);
-      rtx * long_tail = long_head;
-      rtx * short_head = alloca (sizeof (rtx) * n_ready);
-      rtx * short_tail = short_head;
-      rtx * new_head = alloca (sizeof (rtx) * n_ready);
-      rtx * new_tail = new_head + (n_ready - 1);
-      int   i;
-
-      /* Loop through the instructions, classifying them as short/long.  Try
-	 to keep 2 short together and/or 1 long.  Note, the ready list is
-	 actually ordered backwards, so keep it in that manner.  */
-      for (i = n_ready-1; i >= 0; i--)
-	{
-	  rtx insn = ready[i];
-
-	  if (! m32r_is_insn (insn))
-	    {
-	      /* Dump all current short/long insns just in case.  */
-	      while (long_head != long_tail)
-		*new_tail-- = *long_head++;
-
-	      while (short_head != short_tail)
-		*new_tail-- = *short_head++;
-
-	      *new_tail-- = insn;
-	      if (stream)
-		fprintf (stream,
-			 ";;\t\t::: Skipping non instruction %d\n",
-			 INSN_UID (insn));
-
-	    }
-
-	  else
-	    {
-	      if (get_attr_insn_size (insn) != INSN_SIZE_SHORT)
-		*long_tail++ = insn;
-
-	      else
-		*short_tail++ = insn;
-	    }
-	}
-
-      /* If we are on an odd word, emit a single short instruction if
-	 we can.  */
-      if (m32r_sched_odd_word_p && short_head != short_tail)
-	*new_tail-- = *short_head++;
-
-      /* Now dump out all of the long instructions.  */
-      while (long_head != long_tail)
-	*new_tail-- = *long_head++;
-
-      /* Now dump out all of the short instructions.  */
-      while (short_head != short_tail)
-	*new_tail-- = *short_head++;
-
-      if (new_tail + 1 != new_head)
-	abort ();
-
-      memcpy (ready, new_head, sizeof (rtx) * n_ready);
-      if (stream)
-	{
-	  int i;
-	  fprintf (stream, ";;\t\t::: New ready list:               ");
-	  for (i = 0; i < n_ready; i++)
-	    {
-	      rtx insn = ready[i];
-
-	      fprintf (stream, " %d", INSN_UID (ready[i]));
-
-	      if (! m32r_is_insn (insn))
-		fputs ("(?)", stream);
-
-	      else if (get_attr_insn_size (insn) != INSN_SIZE_SHORT)
-		fputs ("(l)", stream);
-
-	      else
-		fputs ("(s)", stream);
-	    }
-
-	  fprintf (stream, "\n");
-	}
-    }
-  return m32r_issue_rate ();
-}
-
 /* Indicate how many instructions can be issued at the same time.
    This is sort of a lie.  The m32r can issue only 1 long insn at
    once, but it can issue 2 short insns.  The default therefore is
@@ -1625,45 +1486,6 @@ static int
 m32r_issue_rate (void)
 {
   return ((TARGET_LOW_ISSUE_RATE) ? 1 : 2);
-}
-
-/* If we have a machine that can issue a variable # of instructions
-   per cycle, indicate how many more instructions can be issued
-   after the current one.  */
-
-static int
-m32r_variable_issue (FILE * stream, int verbose, rtx insn, int how_many)
-{
-  int orig_odd_word_p = m32r_sched_odd_word_p;
-  int short_p = FALSE;
-
-  how_many--;
-  if (how_many > 0 && !TARGET_DEBUG)
-    {
-      if (! m32r_is_insn (insn))
-	how_many++;
-
-      else if (get_attr_insn_size (insn) != INSN_SIZE_SHORT)
-	{
-	  how_many = 0;
-	  m32r_sched_odd_word_p = 0;
-	}
-      else
-	{
-	  m32r_sched_odd_word_p = !m32r_sched_odd_word_p;
-	  short_p = TRUE;
-	}
-    }
-
-  if (verbose > 7 && stream)
-    fprintf (stream,
-	     ";;\t\t::: %s insn %d starts on an %s word, can emit %d more instruction(s)\n",
-	     short_p ? "short" : "long",
-	     INSN_UID (insn),
-	     orig_odd_word_p ? "odd" : "even",
-	     how_many);
-
-  return how_many;
 }
 
 /* Cost functions.  */
