@@ -36,7 +36,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 # Determine the noncanonical target name, for directory use.
-_GCC_TOPLEV_NONCANONICAL_TARGET
+ACX_NONCANONICAL_TARGET
 
 # Determine the target- and build-specific subdirectories
 GCC_TOPLEV_SUBDIRS
@@ -3199,7 +3199,6 @@ AC_SUBST(tm_p_include_list)
 AC_SUBST(xm_file_list)
 AC_SUBST(xm_include_list)
 AC_SUBST(xm_defines)
-AC_SUBST(target_noncanonical)
 AC_SUBST(c_target_objs)
 AC_SUBST(cxx_target_objs)
 AC_SUBST(target_cpu_default)
