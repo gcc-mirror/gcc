@@ -1,3 +1,9 @@
+2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/17907
+	* semantics.c (add_decl_expr): If the decl has a size which
+	has side effects then the decl expression needs a cleanup point.
+
 2004-10-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17393
