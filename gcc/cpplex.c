@@ -509,7 +509,7 @@ parse_identifier (pfile, c)
   /* $ is not a identifier character in the standard, but is commonly
      accepted as an extension.  Don't warn about it in skipped
      conditional blocks.  */
-  if (saw_dollar && CPP_PEDANTIC (pfile) && ! pfile->skipping)
+  if (saw_dollar && CPP_PEDANTIC (pfile) && ! pfile->state.skipping)
     cpp_pedwarn (pfile, "'$' character(s) in identifier");
 
   /* Identifiers are null-terminated.  */
@@ -521,7 +521,7 @@ parse_identifier (pfile, c)
     ht_lookup (pfile->hash_table, obstack_finish (stack), len, HT_ALLOCED);
 
   /* Some identifiers require diagnostics when lexed.  */
-  if (result->flags & NODE_DIAGNOSTIC && !pfile->skipping)
+  if (result->flags & NODE_DIAGNOSTIC && !pfile->state.skipping)
     {
       /* It is allowed to poison the same identifier twice.  */
       if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
@@ -888,7 +888,7 @@ _cpp_lex_token (pfile, result)
       if (pfile->lexer_pos.col != 0 && !bol && !buffer->from_stage3)
 	cpp_pedwarn (pfile, "no newline at end of file");
       pfile->state.next_bol = 1;
-      pfile->skipping = 0;	/* In case missing #endif.  */
+      pfile->state.skipping = 0;	/* In case missing #endif.  */
       result->type = CPP_EOF;
       /* Don't do MI optimisation.  */
       return;
@@ -915,7 +915,7 @@ _cpp_lex_token (pfile, result)
       buffer->read_ahead = c;
       pfile->state.next_bol = 1;
       result->type = CPP_EOF;
-      /* Don't break; pfile->skipping might be true.  */
+      /* Don't break; pfile->state.skipping might be true.  */
       return;
 
     case '?':
@@ -1261,7 +1261,7 @@ _cpp_lex_token (pfile, result)
       break;
     }
 
-  if (pfile->skipping)
+  if (!pfile->state.in_directive && pfile->state.skipping)
     goto skip;
 
   /* If not in a directive, this token invalidates controlling macros.  */

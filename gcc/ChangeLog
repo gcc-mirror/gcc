@@ -1,3 +1,17 @@
+2001-07-26  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cpphash.h (struct_lexer_state): Delete was_skipping.
+	Move skipping here from struct cpp_reader.
+	* cpplex.c (parse_identifier): Update.
+	(_cpp_lex_token): Don't skip tokens in a directive.
+	* cpplib.c (struct if_stack): Update.
+	(start_directive, end_directive): Don't change skipping state.
+	(_cpp_handle_directive): Update.
+	(do_ifdef, do_ifndef, do_if, do_elif): Similarly.
+	(do_else, do_endif): Update; only check for excess tokens if not
+	in a skipped conditional block.
+	(push_conditional): Update for new struct if_stack.
+
 2001-07-26  Graham Stott  <grahams@redhat.com>
 
 	* function.c (locate_and_pad_parm): Also pad initial offset

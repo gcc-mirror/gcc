@@ -126,6 +126,9 @@ struct lexer_state
   /* Nonzero if first token on line is CPP_HASH.  */
   unsigned char in_directive;
 
+  /* True if we are skipping a failed conditional group.  */
+  unsigned char skipping;
+
   /* Nonzero if in a directive that takes angle-bracketed headers.  */
   unsigned char angled_headers;
 
@@ -215,9 +218,6 @@ struct cpp_buffer
      for preprocessed input, command line directives, and _Pragma
      buffers.  */
   unsigned char from_stage3;
-
-  /* Temporary storage for pfile->skipping whilst in a directive.  */
-  unsigned char was_skipping;
 
   /* 1 = system header file, 2 = C system header file used for C++.  */
   unsigned char sysp;
@@ -341,9 +341,6 @@ struct cpp_reader
 
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
-
-  /* True if we are skipping a failed conditional group.  */
-  unsigned char skipping;
 
   /* Whether to print our version number.  Done this way so
      we don't get it twice for -v -version.  */
