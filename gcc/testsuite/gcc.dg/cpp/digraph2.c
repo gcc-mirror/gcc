@@ -9,7 +9,7 @@
 int main (int argc, char *argv[])
 {
   return 0;
-%>				/* { dg-error "(parse|syntax) error" } */
+%>				/* { dg-error "parse error|syntax error|expected" } */
 
 /* Place this after main () so we get to test both the compiler above
    and the preprocessor below.  */

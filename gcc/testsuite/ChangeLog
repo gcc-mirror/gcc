@@ -1,3 +1,11 @@
+2004-11-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/20040910-1.c, gcc.dg/cpp/digraph2.c,
+	gcc.dg/cpp/direct2.c, gcc.dg/cpp/direct2s.c,
+	gcc.dg/cpp/separate-1.c, gcc.dg/noncompile/951123-1.c,
+	gcc.dg/noncompile/971104-1.c, gcc.dg/noncompile/990416-1.c: Adjust
+	expected messages for new parser.
+
 2004-11-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/g++.dg/ext/visibility/symbian1.C: New test.
