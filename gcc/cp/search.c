@@ -1190,6 +1190,7 @@ template_self_reference_p (type, decl)
      tree decl;
 {
   return  (CLASSTYPE_USE_TEMPLATE (type)
+	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
 	   && TREE_CODE (decl) == TYPE_DECL
 	   && DECL_ARTIFICIAL (decl)
 	   && DECL_NAME (decl) == constructor_name (type));

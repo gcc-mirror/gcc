@@ -1,3 +1,12 @@
+1999-04-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* search.c (template_self_reference_p): Tweak.
+
+1999-04-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (build_offset_ref): Don't build yet another weird data
+	structure to describe overloaded functions.
+
 1999-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (BASELINK_P): New macro.
