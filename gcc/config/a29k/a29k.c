@@ -282,6 +282,22 @@ srcb_operand (op, mode)
   return gpc_reg_operand (op, mode);
 }
 
+int
+cmplsrcb_operand (op, mode)
+      register rtx op;
+      enum machine_mode mode;
+{
+  if (GET_CODE (op) == CONST_INT
+      && (mode == QImode
+	  || (INTVAL (op) & 0xffffff00) == 0xffffff00))
+    return 1;
+
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return 0;
+
+  return gpc_reg_operand (op, mode);
+}
+
 /* Return 1 if OP is either an immediate or a general register.  This is used
    for the input operand of mtsr/mtrsim.  */
 
