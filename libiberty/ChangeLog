@@ -1,3 +1,9 @@
+2004-06-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-demangle.h: Declare cplus_demangle_operators,
+	cplus_demangle_builtin_types, cplus_demangle_mangled_name, and
+	cplus_demangle_type as static if IN_GLIBCPP_V3.
+
 2004-06-28  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR other/16240
@@ -604,7 +610,7 @@
 
 2003-08-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-        * cp-demangle.c: Clarify what package(s) this is part of.
+	* cp-demangle.c: Clarify what package(s) this is part of.
 
 2003-07-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
