@@ -963,9 +963,9 @@ execute with the same effect regardless.
 @findex __CHAR_UNSIGNED__
 This macro is defined if and only if the data type @code{char} is
 unsigned on the target machine.  It exists to cause the standard
-header file @file{limit.h} to work correctly.  It is bad practice
+header file @file{limits.h} to work correctly.  It is bad practice
 to refer to this macro yourself; instead, refer to the standard
-macros defined in @file{limit.h}.  The preprocessor uses
+macros defined in @file{limits.h}.  The preprocessor uses
 this macro to determine whether or not to sign-extend large character
 constants written in octal; see @ref{#if Directive,,The @samp{#if} Directive}.
 
