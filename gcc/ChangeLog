@@ -1,3 +1,8 @@
+2002-01-23  Janis Johnson  <janis187@us.ibm.com>
+
+	* toplev.c (process_options): Disable -fprefetch-loop-arrays with
+	-Os and issue a warning.
+
 2002-01-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/fragments.texi, doc/hostconfig.texi: Update to reflect
@@ -119,7 +124,7 @@
 2002-01-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* Makefile.in (loop.o): Depend on OPTABS_H.
-	* loop.c (expand_builtin_prefetch): Check the prefetch operand
+	* loop.c (emit_prefetch_instructions): Check the prefetch operand
 	against the predicate.
 
 	PR target/5379
