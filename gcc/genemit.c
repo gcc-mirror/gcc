@@ -172,8 +172,11 @@ gen_exp (x)
       return;
 
     case MATCH_OP_DUP:
-      printf ("gen_rtx (GET_CODE (operand%d), GET_MODE (operand%d)",
-	      XINT (x, 0), XINT (x, 0));
+      printf ("gen_rtx (GET_CODE (operand%d), ", XINT (x, 0));
+      if (GET_MODE (x) == VOIDmode)
+	printf ("GET_MODE (operand%d)", XINT (x, 0));
+      else
+	printf ("%smode", GET_MODE_NAME (GET_MODE (x)));
       for (i = 0; i < XVECLEN (x, 1); i++)
 	{
 	  printf (",\n\t\t");
