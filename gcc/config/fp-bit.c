@@ -113,7 +113,8 @@ Boston, MA 02111-1307, USA.  */
      US Software goFast library.  If this is not defined, the entry points use
      the same names as libgcc1.c.
    _DEBUG_BITFLOAT: This makes debugging the code a little easier, by adding
-     two integers to the FLO_union_type.  
+     two integers to the FLO_union_type.
+   NO_DENORMALS: Disable handling of denormals.
    NO_NANS: Disable nan and infinity handling
    SMALL_MACHINE: Useful when operations on QIs and HIs are faster
      than on an SI */
@@ -615,7 +616,11 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
   if (exp == 0)
     {
       /* Hmm.  Looks like 0 */
-      if (fraction == 0)
+      if (fraction == 0
+#ifdef NO_DENORMALS
+	  || 1
+#endif
+	  )
 	{
 	  /* tastes like zero */
 	  dst->class = CLASS_ZERO;

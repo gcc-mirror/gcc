@@ -1,5 +1,8 @@
 2000-03-16  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* fp-bit.c (_unpack_d): If NO_DENORMALS is defined, anything that
+	has exponent 0 is a zero.
+
 	* simplify-rtx.c (hash_rtx, case MEM/REG): Take into account that
 	HASH may already be nonzero.  Add code/mode into hash value
 	immediately after repeat label.
