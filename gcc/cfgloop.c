@@ -101,7 +101,8 @@ flow_loop_nested_p (const struct loop *outer, const struct loop *loop)
 	 && loop->pred[outer->depth] == outer;
 }
 
-/* Returns superloop of LOOP at given DEPTH.  */
+/* Returns the loop such that LOOP is nested DEPTH (indexed from zero)
+   loops within LOOP.  */
 
 struct loop *
 superloop_at_depth (struct loop *loop, unsigned depth)
