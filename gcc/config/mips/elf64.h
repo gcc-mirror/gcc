@@ -173,7 +173,7 @@ do {									 \
    mips-elf gas supports .weak, but not .weakext.
    mips-elf gas has been changed to support both .weak and .weakext,
    but until that support is generally available, the 'if' below
-   should serve. */
+   should serve.  */
 
 #undef ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)

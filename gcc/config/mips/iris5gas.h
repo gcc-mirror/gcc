@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  Irix version 5 with gas. */
+/* Definitions of target machine for GNU compiler.  Irix version 5 with gas.  */
 
 /* Enable debugging.  */
 #define DBX_DEBUGGING_INFO

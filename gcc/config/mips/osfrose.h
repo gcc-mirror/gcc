@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define this macro meaning that `gcc' should find the library
    `libgcc.a' by hand, rather than passing the argument `-lgcc' to
-   tell the linker to do the search. */
+   tell the linker to do the search.  */
 
 #define LINK_LIBGCC_SPECIAL 1
 

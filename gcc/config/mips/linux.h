@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
    specified as the number of bits.
 
    Try to use function `asm_output_aligned_bss' defined in file
-   `varasm.c' when defining this macro. */
+   `varasm.c' when defining this macro.  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
 do {								\
   ASM_GLOBALIZE_LABEL (FILE, NAME);				\
@@ -149,7 +149,7 @@ void FN ()							\
 /* Required to keep collect2.c happy */
 #undef OBJECT_FORMAT_COFF
 
-/* If we don't set MASK_ABICALLS, we can't default to PIC. */
+/* If we don't set MASK_ABICALLS, we can't default to PIC.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_ABICALLS|MASK_GAS)
 

@@ -80,7 +80,7 @@ enum processor_type {
    value at preprocessing time.
 
    ABI_32 (original 32, or o32), ABI_N32 (n32), ABI_64 (n64) are all
-   defined by SGI.  ABI_O64 is o32 extended to work on a 64 bit machine. */
+   defined by SGI.  ABI_O64 is o32 extended to work on a 64 bit machine.  */
 
 #define ABI_32  0
 #define ABI_N32 1
@@ -96,7 +96,7 @@ enum processor_type {
    Currently MIPS is calling their EABI "the" MIPS EABI, and Cygnus'
    EABI the legacy EABI.  In the end we may end up calling both ABI's
    EABI but give them different version numbers, but for now I'm going
-   with different names. */
+   with different names.  */
 #define ABI_MEABI 5
 
 
@@ -127,7 +127,7 @@ enum block_move_type {
   BLOCK_MOVE_LAST			/* generate just the last store */
 };
 
-extern char mips_reg_names[][8];	/* register names (a0 vs. $4). */
+extern char mips_reg_names[][8];	/* register names (a0 vs. $4).  */
 extern char mips_print_operand_punct[];	/* print_operand punctuation chars */
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
@@ -245,7 +245,7 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_DEBUG	0		/* unused */
 #define MASK_DEBUG_A	0		/* don't allow <label>($reg) addrs */
 #define MASK_DEBUG_B	0		/* GO_IF_LEGITIMATE_ADDRESS debug */
-#define MASK_DEBUG_C	0		/* don't expand seq, etc. */
+#define MASK_DEBUG_C	0		/* don't expand seq, etc.  */
 #define MASK_DEBUG_D	0		/* don't do define_split's */
 #define MASK_DEBUG_E	0		/* function_arg debug */
 #define MASK_DEBUG_F	0		/* ??? */
@@ -317,7 +317,7 @@ extern void		sbss_section PARAMS ((void));
 
 					/* always store uninitialized const
 					   variables in rodata, requires
-					   TARGET_EMBEDDED_DATA. */
+					   TARGET_EMBEDDED_DATA.  */
 #define TARGET_UNINIT_CONST_IN_RODATA	(target_flags & MASK_UNINIT_CONST_IN_RODATA)
 
 					/* generate big endian code.  */
@@ -648,18 +648,18 @@ extern void		sbss_section PARAMS ((void));
 #define BRANCH_LIKELY_P()	GENERATE_BRANCHLIKELY
 #define HAVE_SQRT_P()		(mips_isa != 1)
 
-/* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3). */
+/* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3).  */
 #define ISA_HAS_64BIT_REGS	(mips_isa == 3          \
 				 || mips_isa == 4 	\
                                  || mips_isa == 64)
 
-/* ISA has branch likely instructions (eg. mips2). */
+/* ISA has branch likely instructions (eg. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
    been generated up to this point.  */
 #define ISA_HAS_BRANCHLIKELY	(mips_isa != 1                          \
 				 /* || TARGET_MIPS3900 */)
 
-/* ISA has the conditional move instructions introduced in mips4. */
+/* ISA has the conditional move instructions introduced in mips4.  */
 #define ISA_HAS_CONDMOVE        (mips_isa == 4				\
 				 || mips_isa == 32                      \
 				 || mips_isa == 64)
@@ -670,7 +670,7 @@ extern void		sbss_section PARAMS ((void));
 
 
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
-   branch on CC, and move (both FP and non-FP) on CC. */
+   branch on CC, and move (both FP and non-FP) on CC.  */
 #define ISA_HAS_8CC		(mips_isa == 4				\
                          	 || mips_isa == 32                      \
 				 || mips_isa == 64)
@@ -1005,7 +1005,7 @@ while (0)
 
 /* Redefinition of libraries used.  Mips doesn't support normal
    UNIX style profiling via calling _mcount.  It does offer
-   profiling that samples the PC, so do what we can... */
+   profiling that samples the PC, so do what we can...  */
 
 #ifndef LIB_SPEC
 #define LIB_SPEC "%{pg:-lprof1} %{p:-lprof1} -lc"
@@ -1220,14 +1220,14 @@ while (0)
 
 /* Local compiler-generated symbols must have a prefix that the assembler
    understands.   By default, this is $, although some targets (e.g.,
-   NetBSD-ELF) need to override this. */
+   NetBSD-ELF) need to override this.  */
 
 #ifndef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"$"
 #endif
 
 /* By default on the mips, external symbols do not have an underscore
-   prepended, but some targets (e.g., NetBSD) require this. */
+   prepended, but some targets (e.g., NetBSD) require this.  */
 
 #ifndef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX	""
@@ -1244,7 +1244,7 @@ while (0)
 #undef DBX_CONTIN_LENGTH
 #define DBX_CONTIN_LENGTH 1500
 
-/* How to renumber registers for dbx and gdb. */
+/* How to renumber registers for dbx and gdb.  */
 #define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.
@@ -1443,10 +1443,10 @@ do {							\
 */
 #define BITS_BIG_ENDIAN 0
 
-/* Define this if most significant byte of a word is the lowest numbered. */
+/* Define this if most significant byte of a word is the lowest numbered.  */
 #define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
-/* Define this if most significant word of a multiword number is the lowest. */
+/* Define this if most significant word of a multiword number is the lowest.  */
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
 /* Define this to set the endianness to use in libgcc2.c, which can
@@ -1621,7 +1621,7 @@ do {							\
 /* Define this macro if an argument declared as `char' or `short' in a
    prototype should actually be passed as an `int'.  In addition to
    avoiding errors in certain cases of mismatch, it also makes for
-   better code on certain machines. */
+   better code on certain machines.  */
 
 #define PROMOTE_PROTOTYPES 1
 
@@ -2015,7 +2015,7 @@ extern const enum reg_class mips_regno_to_class[];
 /* When SMALL_REGISTER_CLASSES is nonzero, the compiler allows
    registers explicitly used in the rtl to be used as spill registers
    but prevents the compiler from extending the lifetime of these
-   registers. */
+   registers.  */
 
 #define SMALL_REGISTER_CLASSES (TARGET_MIPS16)
 
@@ -2678,7 +2678,7 @@ typedef struct mips_args {
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero. */
+   For args passed entirely in registers or entirely in memory, zero.  */
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
@@ -3319,7 +3319,7 @@ while (0)
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE (TARGET_MIPS16)
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -3357,7 +3357,7 @@ while (0)
 #define SLOW_ZERO_EXTEND
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. */
+   few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
@@ -3375,7 +3375,7 @@ while (0)
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.
 
-   For MIPS we make pointers are the smaller of longs and gp-registers. */
+   For MIPS we make pointers are the smaller of longs and gp-registers.  */
 
 #ifndef Pmode
 #define Pmode ((TARGET_LONG64 && TARGET_64BIT) ? DImode : SImode)
@@ -3494,7 +3494,7 @@ while (0)
       if (GET_CODE (symref) != SYMBOL_REF)				\
 	return COSTS_N_INSNS (4);					\
 									\
-      /* let's be paranoid.... */					\
+      /* let's be paranoid....  */					\
       if (INTVAL (offset) < -32768 || INTVAL (offset) > 32767)		\
 	return COSTS_N_INSNS (2);					\
 									\
@@ -3733,7 +3733,7 @@ while (0)
    different numbers of registers on machines with lots of registers.
 
    This macro will normally either not be defined or be defined as
-   a constant. */
+   a constant.  */
 
 #define ADDRESS_COST(ADDR) (REG_P (ADDR) ? 1 : mips_address_cost (ADDR))
 
@@ -3766,7 +3766,7 @@ while (0)
    all values except -1.  We could handle that case by using a signed
    divide, e.g.  -1 / 2 (or maybe 1 / -2?).  We'd have to emit a
    compare/branch to test the input value to see which instruction we
-   need to use.  This gets pretty messy, but it is feasible. */
+   need to use.  This gets pretty messy, but it is feasible.  */
 
 #define REGISTER_MOVE_COST(MODE, FROM, TO)	\
   ((FROM) == M16_REGS && GR_REG_CLASS_P (TO) ? 2			\
@@ -4233,7 +4233,7 @@ while (0)
 	$Lb[0-9]+	Begin blocks for MIPS debug support
 	$Lc[0-9]+	Label for use in s<xx> operation.
 	$Le[0-9]+	End blocks for MIPS debug support
-	$Lp\..+		Half-pic labels. */
+	$Lp\..+		Half-pic labels.  */
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.
@@ -4543,7 +4543,7 @@ do {									\
    address with faster (gp) register relative addressing, which can
    only get at sdata and sbss items (there is no stext !!)  However,
    if the constant is too large for sdata, and it's readonly, it
-   will go into the .rdata section. */
+   will go into the .rdata section.  */
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
@@ -4632,7 +4632,7 @@ while (0)
    and mips-tdump.c to print them out.
 
    These must match the corresponding definitions in gdb/mipsread.c.
-   Unfortunately, gcc and gdb do not currently share any directories. */
+   Unfortunately, gcc and gdb do not currently share any directories.  */
 
 #define CODE_MASK 0x8F300
 #define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)

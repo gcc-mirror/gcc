@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_MEM_FUNCTIONS
 
 /* Work around assembler forward label references generated in exception
-   handling code. */
+   handling code.  */
 #define DWARF2_UNWIND_INFO 0
 
 /* INITIALIZE_TRAMPOLINE calls this library function to flush

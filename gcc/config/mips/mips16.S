@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 /* This file contains 32 bit assembly code.  */
 	.set nomips16
 
-/* Start a function. */
+/* Start a function.  */
 
 #define STARTFN(NAME) .globl NAME; .ent NAME; NAME:
 

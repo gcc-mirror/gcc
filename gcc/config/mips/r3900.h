@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   %e-msingle-float and -msoft-float can not both be specified.}}"
 
 /* The following is needed because -mips3 and -mips4 set gp64 which in
-   combination with abi=eabi, causes long64 to be set. */
+   combination with abi=eabi, causes long64 to be set.  */
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mips3:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
 %{mips4:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* For the 'preferred' cases ("gN" and "ggdbN") we need to tell the 
-   gnu assembler not to generate debugging information. */
+   gnu assembler not to generate debugging information.  */
    
 #define SUBTARGET_ASM_DEBUGGING_SPEC "\
 %{!mmips-as: \

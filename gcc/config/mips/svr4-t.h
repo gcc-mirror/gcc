@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  Tandem S2 w/ NonStop UX. */
+/* Definitions of target machine for GNU compiler.  Tandem S2 w/ NonStop UX.  */
 
 /* Use the default value for this.  */
 #undef STANDARD_INCLUDE_DIR

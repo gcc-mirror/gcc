@@ -64,7 +64,7 @@ extern tree   lookup_name PARAMS ((tree));
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
-   of EQ, NE, etc. */
+   of EQ, NE, etc.  */
 
 enum internal_test {
     ITEST_EQ,
@@ -145,7 +145,7 @@ int num_source_filenames = 0;
    start and end boundaries).  */
 int sdb_label_count = 0;
 
-/* Next label # for each statement for Silicon Graphics IRIS systems. */
+/* Next label # for each statement for Silicon Graphics IRIS systems.  */
 int sym_lineno = 0;
 
 /* Non-zero if inside of a function, because the stupid MIPS asm can't
@@ -248,7 +248,7 @@ const char *mips_no_mips16_string;
 
 /* This is only used to determine if an type size setting option was
    explicitly specified (-mlong64, -mint64, -mlong32).  The specs
-   set this option if such an option is used. */
+   set this option if such an option is used.  */
 const char *mips_explicit_type_size_string;
 
 /* Whether we are generating mips16 hard float code.  In mips16 mode
@@ -582,7 +582,7 @@ reg_or_0_operand (op, mode)
 }
 
 /* Return truth value of whether OP is a register or the constant 0,
-   even in mips16 mode. */
+   even in mips16 mode.  */
 
 int
 true_reg_or_0_operand (op, mode)
@@ -797,7 +797,7 @@ simple_memory_operand (op, mode)
 	if (GET_CODE (op) != SYMBOL_REF)
 	  return 0;
 
-	/* let's be paranoid.... */
+	/* let's be paranoid....  */
 	if (! SMALL_INT (offset))
 	  return 0;
       }
@@ -902,7 +902,7 @@ double_memory_operand (op, mode)
 	    return 1;
 
 	  /* Similarly, we accept a case where the memory address is
-             itself on the stack, and will be reloaded. */
+             itself on the stack, and will be reloaded.  */
 	  if (GET_CODE (addr) == MEM)
 	    {
 	      rtx maddr;
@@ -1294,7 +1294,7 @@ mips_legitimate_address_p (mode, xinsn, strict)
     }
 
   /* Check for constant before stripping off SUBREG, so that we don't
-     accept (subreg (const_int)) which will fail to reload. */
+     accept (subreg (const_int)) which will fail to reload.  */
   if (CONSTANT_ADDRESS_P (xinsn)
       && ! (mips_split_addresses && mips_check_split (xinsn, mode))
       && (! TARGET_MIPS16 || mips16_constant (xinsn, mode, 1, 0)))
@@ -2729,7 +2729,7 @@ mips_address_cost (addr)
 	  return 2;
       }
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case SYMBOL_REF:
       return SYMBOL_REF_FLAG (addr) ? 1 : 2;
@@ -3482,7 +3482,7 @@ expand_block_move (operands)
    The block move type can be one of the following:
 	BLOCK_MOVE_NORMAL	Do all of the block move.
 	BLOCK_MOVE_NOT_LAST	Do all but the last store.
-	BLOCK_MOVE_LAST		Do just the last store. */
+	BLOCK_MOVE_LAST		Do just the last store.  */
 
 const char *
 output_block_move (insn, operands, num_regs, move_type)
@@ -3859,7 +3859,7 @@ init_cumulative_args (cum, fntype, libname)
   /* Determine if this function has variable arguments.  This is
      indicated by the last argument being 'void_type_mode' if there
      are no variable arguments.  The standard MIPS calling sequence
-     passes all arguments in the general purpose registers in this case. */
+     passes all arguments in the general purpose registers in this case.  */
 
   for (param = fntype ? TYPE_ARG_TYPES (fntype) : 0;
        param != 0; param = next_param)
@@ -4288,7 +4288,7 @@ function_arg_partial_nregs (cum, mode, type, named)
    Note that the GPR save area is not constant size, due to optimization
      in the prologue.  Hence, we can't use a design with two pointers
      and two offsets, although we could have designed this with two pointers
-     and three offsets. */
+     and three offsets.  */
 
 
 tree
@@ -4351,7 +4351,7 @@ mips_va_start (stdarg_p, valist, nextarg)
   if (mips_abi == ABI_EABI)
     {
       int gpr_save_area_size;
-      /* Note UNITS_PER_WORD is 4 bytes or 8, depending on TARGET_64BIT. */
+      /* Note UNITS_PER_WORD is 4 bytes or 8, depending on TARGET_64BIT.  */
       if (int_arg_words < 8 )
 	/* Adjust for the prologue's economy measure */
 	gpr_save_area_size = (8 - int_arg_words) * UNITS_PER_WORD;
@@ -4387,7 +4387,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  /* Emit code setting a pointer into the overflow (shared-stack) area.
 	     If there were more than 8 non-float formals, or more than 8
 	     float formals, then this pointer isn't to the base of the area.
-	     In that case, it must point to where the first vararg is. */
+	     In that case, it must point to where the first vararg is.  */
 	  size_excess = 0;
 	  if (float_formals > floats_passed_in_regs)
 	    size_excess += (float_formals-floats_passed_in_regs) * 8;
@@ -4401,7 +4401,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 	     take into account the exact sequence of floats and non-floats
 	     which make up the excess.  That calculation should be rolled
 	     into the code which sets the current_function_args_info struct.
-	     The above then reduces to a fetch from that struct. */
+	     The above then reduces to a fetch from that struct.  */
 
 
 	  t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
@@ -4411,7 +4411,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
  	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code setting a ptr to the base of the overflow area. */
+	  /* Emit code setting a ptr to the base of the overflow area.  */
 	  t = make_tree (TREE_TYPE (gtop), virtual_incoming_args_rtx);
 	  t = build (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
  	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -4421,7 +4421,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 	     If mips4, this is gpr_save_area_size below the overflow area.
 	     If mips2, also round down to an 8-byte boundary, since the FPR
 	     save area is 8-byte aligned, and GPR is 4-byte-aligned.
-	     Therefore there can be a 4-byte gap between the save areas. */
+	     Therefore there can be a 4-byte gap between the save areas.  */
 	  gprv = make_tree (TREE_TYPE (ftop), virtual_incoming_args_rtx);
 	  fpr_save_offset = gpr_save_area_size;
 	  if (!TARGET_64BIT)
@@ -4463,7 +4463,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  /* TARGET_SOFT_FLOAT or TARGET_SINGLE_FLOAT */
 
 	  /* Everything is in the GPR save area, or in the overflow
-	     area which is contiguous with it. */
+	     area which is contiguous with it.  */
 
 	  int offset = -gpr_save_area_size;
 	  if (gpr_save_area_size == 0)
@@ -4530,7 +4530,7 @@ mips_va_arg (valist, type)
       if (TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT)
 	{
 	  /* Case of all args in a merged stack. No need to check bounds,
-	     just advance valist along the stack. */
+	     just advance valist along the stack.  */
 
 	  tree gpr = valist;
       	  if (! indirect
@@ -4568,7 +4568,7 @@ mips_va_arg (valist, type)
       	  return addr_rtx;
 	}
 
-      /* Not a simple merged stack.  Need ptrs and indexes left by va_start. */
+      /* Not a simple merged stack.  Need ptrs and indexes left by va_start.  */
 
       f_ovfl  = TYPE_FIELDS (va_list_type_node);
       f_gtop = TREE_CHAIN (f_ovfl);
@@ -4588,7 +4588,7 @@ mips_va_arg (valist, type)
       if (TREE_CODE (type) == REAL_TYPE)
         {
 
-	  /* Emit code to branch if foff == 0. */
+	  /* Emit code to branch if foff == 0.  */
           r = expand_expr (foff, NULL_RTX, TYPE_MODE (TREE_TYPE (foff)),
 	     	EXPAND_NORMAL);
           emit_cmp_and_jump_insns (r, const0_rtx, EQ,
@@ -4616,7 +4616,7 @@ mips_va_arg (valist, type)
 	      /* For mips2, the overflow area contains mixed size items.
 		 If a 4-byte int is followed by an 8-byte float, then
 		 natural alignment causes a 4 byte gap.
-		 So, dynamically adjust ovfl up to a multiple of 8. */
+		 So, dynamically adjust ovfl up to a multiple of 8.  */
 	      t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), ovfl,
 			build_int_2 (7, 0));
 	      t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, t);
@@ -4625,7 +4625,7 @@ mips_va_arg (valist, type)
 	    }
 
           /* Emit code for addr_rtx = the ovfl pointer into overflow area.
-	     Regardless of mips2, postincrement the ovfl pointer by 8. */
+	     Regardless of mips2, postincrement the ovfl pointer by 8.  */
           t = build (POSTINCREMENT_EXPR, TREE_TYPE(ovfl), ovfl,
 		size_int (8));
           r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
@@ -4648,33 +4648,33 @@ mips_va_arg (valist, type)
 	      /* In mips2, int takes 32 bits of the GPR save area, but
 		 longlong takes an aligned 64 bits.  So, emit code
 		 to zero the low order bits of goff, thus aligning
-		 the later calculation of (gtop-goff) upwards. */
+		 the later calculation of (gtop-goff) upwards.  */
 	       t = build (BIT_AND_EXPR, TREE_TYPE (goff), goff,
 			build_int_2 (-8, -1));
 	       t = build (MODIFY_EXPR, TREE_TYPE (goff), goff, t);
 	       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	    }
 
-	  /* Emit code to branch if goff == 0. */
+	  /* Emit code to branch if goff == 0.  */
           r = expand_expr (goff, NULL_RTX, TYPE_MODE (TREE_TYPE (goff)),
 	     	EXPAND_NORMAL);
           emit_cmp_and_jump_insns (r, const0_rtx, EQ,
 		const1_rtx, GET_MODE (r), 1, 1, lab_false);
 
-          /* Emit code for addr_rtx = gtop - goff. */
+          /* Emit code for addr_rtx = gtop - goff.  */
           t = build (MINUS_EXPR, TREE_TYPE (gtop), gtop, goff);
           r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
           if (r != addr_rtx)
       	    emit_move_insn (addr_rtx, r);
 
-	  /* Note that mips2 int is 32 bit, but mips2 longlong is 64. */
+	  /* Note that mips2 int is 32 bit, but mips2 longlong is 64.  */
 	  if (! TARGET_64BIT && TYPE_PRECISION (type) == 64)
 	    step_size = 8;
 	  else
 	    step_size = UNITS_PER_WORD;
 
           /* Emit code for goff = goff - step_size.
-      	     Advances the offset up GPR save area over the item. */
+      	     Advances the offset up GPR save area over the item.  */
           t = build (MINUS_EXPR, TREE_TYPE (goff), goff,
 		build_int_2 (step_size, 0));
           t = build (MODIFY_EXPR, TREE_TYPE (goff), goff, t);
@@ -4711,7 +4711,7 @@ mips_va_arg (valist, type)
     }
   else
     {
-      /* Not EABI. */
+      /* Not EABI.  */
       int align;
 
       /* ??? The original va-mips.h did always align, despite the fact
@@ -4769,7 +4769,7 @@ override_options ()
   /* If both single-float and soft-float are set, then clear the one that
      was set by TARGET_DEFAULT, leaving the one that was set by the
      user.  We assume here that the specs prevent both being set by the
-     user. */
+     user.  */
 #ifdef TARGET_DEFAULT
   if (TARGET_SINGLE_FLOAT && TARGET_SOFT_FLOAT)
     target_flags &= ~((TARGET_DEFAULT) & (MASK_SOFT_FLOAT | MASK_SINGLE_FLOAT));
@@ -4815,7 +4815,7 @@ override_options ()
     }
 
 #ifdef MIPS_ABI_DEFAULT
-  /* Get the ABI to use. */
+  /* Get the ABI to use.  */
   if (mips_abi_string == (char *) 0)
     mips_abi = MIPS_ABI_DEFAULT;
   else if (! strcmp (mips_abi_string, "32"))
@@ -7017,7 +7017,7 @@ mips_output_function_prologue (file, size)
 
       /* Require:
 	 OLD_SP == *FRAMEREG + FRAMESIZE => can find old_sp from nominated FP reg.
-	 HIGHEST_GP_SAVED == *FRAMEREG + FRAMESIZE + GPOFFSET => can find saved regs. */
+	 HIGHEST_GP_SAVED == *FRAMEREG + FRAMESIZE + GPOFFSET => can find saved regs.  */
     }
 
   if (mips_entry && ! mips_can_use_return_insn ())
@@ -7194,7 +7194,7 @@ mips_expand_prologue ()
      the varargs special argument, and treat it as part of the
      variable arguments.
 
-     This is only needed if store_args_on_stack is true. */
+     This is only needed if store_args_on_stack is true.  */
 
   INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, 0);
   regno = GP_ARG_FIRST;
@@ -7297,7 +7297,7 @@ mips_expand_prologue ()
       int offset = (regno - GP_ARG_FIRST) * UNITS_PER_WORD;
       rtx ptr = stack_pointer_rtx;
 
-      /* If we are doing svr4-abi, sp has already been decremented by tsize. */
+      /* If we are doing svr4-abi, sp has already been decremented by tsize.  */
       if (TARGET_ABICALLS)
 	offset += tsize;
 
@@ -7515,7 +7515,7 @@ mips_expand_prologue ()
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
-   and regs. */
+   and regs.  */
 
 #define RA_MASK BITMASK_HIGH	/* 1 << 31 */
 #define PIC_OFFSET_TABLE_MASK (1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
@@ -8055,7 +8055,7 @@ function_arg_pass_by_reference (cum, mode, type, named)
      {
        /* Don't pass the actual CUM to FUNCTION_ARG, because we would
 	  get double copies of any offsets generated for small structs
-	  passed in registers. */
+	  passed in registers.  */
        CUMULATIVE_ARGS temp;
        temp = *cum;
        if (FUNCTION_ARG (temp, mode, type, named) != 0)
@@ -8808,7 +8808,7 @@ build_mips16_call_stub (retval, fnmem, arg_size, fp_code)
 
       /* We build the stub code by hand.  That's the only way we can
 	 do it, since we can't generate 32 bit code during a 16 bit
-	 compilation. */
+	 compilation.  */
 
       /* We don't want the assembler to insert any nops here.  */
       fprintf (asm_out_file, "\t.set\tnoreorder\n");
@@ -9476,7 +9476,7 @@ machine_dependent_reorg (first)
 	{
 	  /* If we haven't had a barrier within 0x8000 bytes of a
              constant reference or we are at the end of the function,
-             emit a barrier now. */
+             emit a barrier now.  */
 
 	  rtx label, jump, barrier;
 
@@ -9621,7 +9621,7 @@ mips_output_conditional_branch (insn,
 	  break;
 
 	case LTU:
-	  /* A condition which will always be false. */
+	  /* A condition which will always be false.  */
 	  code = NE;
 	  op1 = "%.";
 	  break;

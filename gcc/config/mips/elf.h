@@ -114,7 +114,7 @@ do {						\
    specified as the number of bits.
 
    Try to use function `asm_output_aligned_bss' defined in file
-   `varasm.c' when defining this macro. */
+   `varasm.c' when defining this macro.  */
 #ifndef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
 do {									\
@@ -194,7 +194,7 @@ do {									 \
    mips-elf gas supports .weak, but not .weakext.
    mips-elf gas has been changed to support both .weak and .weakext,
    but until that support is generally available, the 'if' below
-   should serve. */
+   should serve.  */
 
 #undef ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)

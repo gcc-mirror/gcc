@@ -1,3 +1,23 @@
+2001-10-30  Kazu Hirata  <kazu@hxi.com>
+
+	* config/elf.h: Fix comment formatting.
+	* config/elf64.h: Likewise.
+	* config/iris5.h: Likewise.
+	* config/iris5gas.h: Likewise.
+	* config/iris6.h: Likewise.
+	* config/isa3264.h: Likewise.
+	* config/linux.h: Likewise.
+	* config/mips.c: Likewise.
+	* config/mips.h: Likewise.
+	* config/mips.md: Likewise.
+	* config/mips16.S: Likewise.
+	* config/netbsd.h: Likewise.
+	* config/osfrose.h: Likewise.
+	* config/r3900.h: Likewise.
+	* config/sni-svr4.h: Likewise.
+	* config/svr4-t.h: Likewise.
+	* config/ultrix.h: Likewise.
+
 2001-10-30  Daniel Berlin  <dan@cgsoftware.com>
 
 	* bitmap.c (bitmap_element_free): Don't forget to update head->indx
