@@ -1,4 +1,39 @@
-2003-10-10  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2003-10-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* genmodes.c, mode-classes.def: New files.
+	* machmode.def: Rewritten to genmodes.c interface.
+	* Makefile.in (extra_modes_file): New substitution variable.
+	(MACHMODE_H): No longer includes machmode.def or
+	@extra_modes_file@; instead, mode-classes.def and insn-modes.h.
+	(BUILD_RTL): Add $(BUILD_PREFIX)insn-modes.o.
+	(OBJS-common): Add insn-modes.o.
+	(STAGESTUFF): Add insn-modes.c, insn-modes.h, s-modes, and
+	genmodes$(build_exeext).
+	(insn-modes.o, insn-modes.c, insn-modes.h, s-modes, genmodes.o,
+	genmodes$(build_exeext), $(BUILD_PREFIX_1)insn-modes.o): New targets.
+	(s-genrtl): Don't depend on $(RTL_BASE_H).
+	(gengenrtl.o): Don't depend on coretypes.h, $(GTM_H), real.h,
+	or $(RTL_BASE_H); just rtl.def.
+	* gengenrtl.c: Don't include coretypes.h, tm.h, rtl.h, or
+	real.h.  Give fake definition of CONST_DOUBLE_FORMAT and
+	substitute definition of NUM_RTX_CODE.  Add casts to avoid
+	warnings.
+	* machmode.h: Include insn-modes.h, not machmode.def.  Include
+	mode-classes.def to define enum mode_class.  Tweak definitions
+	of GET_MODE_CLASS, GET_MODE_SIZE, GET_MODE_BITSIZE, GET_MODE_MASK,
+	GET_MODE_INNER, GET_MODE_WIDER_MODE, GET_CLASS_NARROWEST_MODE.
+	(inner_mode_array): Renamed mode_inner.
+	(mode_base_align): New.
+	* rtl.c (mode_name, mode_class, mode_bitsize, mode_size,
+	mode_unit_size, mode_wider_mode, mode_mask_array,
+	inner_mode_array, class_narrowest_mode): Delete definitions.
+	* stor-layout.c (get_mode_alignment): Use mode_base_align.
+	* real.h: Use MIN_MODE_FLOAT and MAX_MODE_FLOAT, not QFmode
+	and TFmode, in real_format_for_mode and REAL_MODE_FORMAT.
+
+	* config/ip2k/ip2k.h, config/iq2000/iq2000.h:
+	No need to define BITS_PER_UNIT.
+
 
 	* stor-layout.c (compute_record_mode): Don't force BLKmode if
 	field is zero-length BLKmode.
@@ -6,6 +41,8 @@
 	zero-size references.
 
 	* combine.c (distribute_links): Properly test for REG being set.
+
+2003-10-10  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c (alpha_expand_block_mode): Don't use
 	gen_lowpart and company except for REG.
@@ -59,7 +96,7 @@
 2003-10-09  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* haifa-sched.c (ok_for_early_schedule): New function.
-	(early_queue_to_ready): New function. 
+	(early_queue_to_ready): New function.
 	(schedule_block): Allow early removal of insns from Q.
 	(schedule_insn): Update INSN_TICK in case of premature
 	issue.
@@ -74,15 +111,15 @@
 	* config/rs6000/rs6000.h: (rs6000_sched_costly_dep):
 	Support new flag -msched-costly-dep.
 	(DEFAULT_SCHED_COSTLY_DEP): Define.
-	* config/rs6000/rs6000.c: 	
+	* config/rs6000/rs6000.c:
 	(rs6000_is_costly_dependence): New function.
 	(is_load_insn, is_store_insn): New functions.
-	(is_load_insn1, is_store_insn1, is_mem_ref): New 
+	(is_load_insn1, is_store_insn1, is_mem_ref): New
 	functions.
 	* doc/invoke.texi (-fsched-stalled-insns-dep)
 	(-fsched-stalled-insns, -msched-costly-dep): Document
 	options.
-	* doc/tm.texi (is_costly_dependence): Define new 
+	* doc/tm.texi (is_costly_dependence): Define new
 	scheduler target hook.
 
 2003-10-09  Jason Merrill  <jason@redhat.com>
@@ -154,7 +191,7 @@
 	which loads the SYMBOL_REF address.
 
 2003-10-08  Timo Kokkonen  <tjko@iki.fi>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR bootstrap/12490
 	* scan-decls.c (MAX_EXTERN_C_BRACES): New preprocessor constant
