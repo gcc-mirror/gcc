@@ -2703,10 +2703,8 @@ update_rethrow_references ()
   if (!flag_new_exceptions)
     return;
 
-  saw_region = (int *) alloca (current_func_eh_entry * sizeof (int));
-  saw_rethrow = (int *) alloca (current_func_eh_entry * sizeof (int));
-  bzero ((char *) saw_region, (current_func_eh_entry * sizeof (int)));
-  bzero ((char *) saw_rethrow, (current_func_eh_entry * sizeof (int)));
+  saw_region = (int *) xcalloc (current_func_eh_entry, sizeof (int));
+  saw_rethrow = (int *) xcalloc (current_func_eh_entry, sizeof (int));
 
   /* Determine what regions exist, and whether there are any rethrows
      to those regions or not.  */
@@ -2735,6 +2733,10 @@ update_rethrow_references ()
   for (x = 0; x < current_func_eh_entry; x++)
     if (saw_region[x])
       function_eh_regions[x].rethrow_ref = saw_rethrow[x];
+
+  /* Clean up.  */
+  free (saw_region);
+  free (saw_rethrow);
 }
 
 /* Various hooks for the DWARF 2 __throw routine.  */
@@ -3155,9 +3157,7 @@ init_eh_nesting_info ()
 
   info = (eh_nesting_info *) xmalloc (sizeof (eh_nesting_info));
   info->region_index = (int *) xcalloc ((max_label_num () + 1), sizeof (int));
-
-  nested_eh_region = (int *) alloca ((max_label_num () + 1) * sizeof (int));
-  bzero ((char *) nested_eh_region, (max_label_num () + 1) * sizeof (int));
+  nested_eh_region = (int *) xcalloc (max_label_num () + 1, sizeof (int));
 
   /* Create the nested_eh_region list.  If indexed with a block number, it 
      returns the block number of the next outermost region, if any. 
@@ -3189,6 +3189,7 @@ init_eh_nesting_info ()
     {
       free (info->region_index);
       free (info);
+      free (nested_eh_region);
       return NULL;
     }
 
@@ -3205,6 +3206,10 @@ init_eh_nesting_info ()
 	process_nestinfo (x, info, nested_eh_region);
     }
   info->region_count = region_count;
+
+  /* Clean up.  */
+  free (nested_eh_region);
+
   return info;
 }
 

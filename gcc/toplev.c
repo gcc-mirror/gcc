@@ -3240,7 +3240,7 @@ compile_file (name)
 
   {
     int len = list_length (globals);
-    tree *vec = (tree *) alloca (sizeof (tree) * len);
+    tree *vec = (tree *) xmalloc (sizeof (tree) * len);
     int i;
     tree decl;
 
@@ -3267,6 +3267,9 @@ compile_file (name)
     output_exception_table ();
 
     check_global_declarations (vec, len);
+
+    /* Clean up.  */
+    free (vec);
   }
 
   /* Write out any pending weak symbol declarations.  */
@@ -5288,18 +5291,6 @@ main (argc, argv)
 	 )
     --p;
   progname = p;
-
-#if defined (RLIMIT_STACK) && defined (HAVE_GETRLIMIT) && defined (HAVE_SETRLIMIT)
-  /* Get rid of any avoidable limit on stack size.  */
-  {
-    struct rlimit rlim;
-
-    /* Set the stack limit huge so that alloca does not fail.  */
-    getrlimit (RLIMIT_STACK, &rlim);
-    rlim.rlim_cur = rlim.rlim_max;
-    setrlimit (RLIMIT_STACK, &rlim);
-  }
-#endif
 
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");

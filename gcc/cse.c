@@ -7364,7 +7364,7 @@ delete_trivially_dead_insns (insns, nreg)
      rtx insns;
      int nreg;
 {
-  int *counts = (int *) alloca (nreg * sizeof (int));
+  int *counts;
   rtx insn, prev;
 #ifdef HAVE_cc0
   rtx tem;
@@ -7373,7 +7373,7 @@ delete_trivially_dead_insns (insns, nreg)
   int in_libcall = 0, dead_libcall = 0;
 
   /* First count the number of times each register is used.  */
-  bzero ((char *) counts, sizeof (int) * nreg);
+  counts = (int *) xcalloc (nreg, sizeof (int));
   for (insn = next_real_insn (insns); insn; insn = next_real_insn (insn))
     count_reg_usage (insn, counts, NULL_RTX, 1);
 
@@ -7508,4 +7508,7 @@ delete_trivially_dead_insns (insns, nreg)
 	  dead_libcall = 0;
 	}
     }
+
+  /* Clean up.  */
+  free (counts);
 }

@@ -965,7 +965,7 @@ regclass (f, nregs)
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
-  in_inc_dec = (char *) alloca (nregs);
+  in_inc_dec = (char *) xmalloc (nregs);
 
   /* Initialize information about which register classes can be used for
      pseudos that are auto-incremented or auto-decremented.  It would
@@ -1109,6 +1109,9 @@ regclass (f, nregs)
 	}
     }
 
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+  free (in_inc_dec);
+#endif
   free (costs);
 }
 

@@ -1449,7 +1449,7 @@ combine_movables (movables, nregs)
      int nregs;
 {
   register struct movable *m;
-  char *matched_regs = (char *) alloca (nregs);
+  char *matched_regs = (char *) xmalloc (nregs);
   enum machine_mode mode;
 
   /* Regs that are set more than once are not allowed to match
@@ -1552,6 +1552,9 @@ combine_movables (movables, nregs)
 	  overlap: ;
 	  }
     }
+
+  /* Clean up.  */
+  free (matched_regs);
 }
 
 /* Return 1 if regs X and Y will become the same if moved.  */
@@ -1753,11 +1756,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
   /* Map of pseudo-register replacements to handle combining
      when we move several insns that load the same value
      into different pseudo-registers.  */
-  rtx *reg_map = (rtx *) alloca (nregs * sizeof (rtx));
-  char *already_moved = (char *) alloca (nregs);
-
-  bzero (already_moved, nregs);
-  bzero ((char *) reg_map, nregs * sizeof (rtx));
+  rtx *reg_map = (rtx *) xcalloc (nregs, sizeof (rtx));
+  char *already_moved = (char *) xcalloc (nregs, sizeof (char));
 
   num_movables = 0;
 
@@ -2240,6 +2240,10 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 	replace_regs (REG_NOTES (p), reg_map, nregs, 0);
 	INSN_CODE (p) = -1;
       }
+
+  /* Clean up.  */
+  free (reg_map);
+  free (already_moved);
 }
 
 #if 0
@@ -3580,11 +3584,10 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
      int *count_ptr;
      int nregs;
 {
-  register rtx *last_set = (rtx *) alloca (nregs * sizeof (rtx));
+  register rtx *last_set = (rtx *) xcalloc (nregs, sizeof (rtx));
   register rtx insn;
   register int count = 0;
 
-  bzero ((char *) last_set, nregs * sizeof (rtx));
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
@@ -3614,6 +3617,9 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 	bzero ((char *) last_set, nregs * sizeof (rtx));
     }
   *count_ptr = count;
+
+  /* Clean up.  */
+  free (last_set);
 }
 
 /* Given a loop that is bounded by LOOP_START and LOOP_END
@@ -3770,7 +3776,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   /* ??? could set this to last value of threshold in move_movables */
   int threshold = (loop_info->has_call ? 1 : 2) * (3 + n_non_fixed_regs);
   /* Map of pseudo-register replacements.  */
-  rtx *reg_map;
+  rtx *reg_map = NULL;
   int reg_map_size;
   int call_seen;
   rtx test;
@@ -3787,9 +3793,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   VARRAY_INT_INIT (reg_iv_type, max_reg_before_loop, "reg_iv_type");
   VARRAY_GENERIC_PTR_INIT (reg_iv_info, max_reg_before_loop, "reg_iv_info");
   reg_biv_class = (struct iv_class **)
-    alloca (max_reg_before_loop * sizeof (struct iv_class *));
-  bzero ((char *) reg_biv_class, (max_reg_before_loop
-				  * sizeof (struct iv_class *)));
+    xcalloc (max_reg_before_loop, sizeof (struct iv_class *));
 
   loop_iv_list = 0;
   addr_placeholder = gen_reg_rtx (Pmode);
@@ -4676,8 +4680,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      Some givs might have been made from biv increments, so look at
      reg_iv_type for a suitable size.  */
   reg_map_size = reg_iv_type->num_elements;
-  reg_map = (rtx *) alloca (reg_map_size * sizeof (rtx));
-  bzero ((char *) reg_map, reg_map_size * sizeof (rtx));
+  reg_map = (rtx *) xcalloc (reg_map_size, sizeof (rtx));
 
   /* Examine each iv class for feasibility of strength reduction/induction
      variable elimination.  */
@@ -5300,6 +5303,9 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 egress:
   VARRAY_FREE (reg_iv_type);
   VARRAY_FREE (reg_iv_info);
+  free (reg_biv_class);
+  if (reg_map)
+    free (reg_map);
 }
 
 /* Return 1 if X is a valid source for an initial value (or as value being
