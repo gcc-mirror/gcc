@@ -1,3 +1,12 @@
+2005-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (get_pointer_alignment, gimplify_va_arg_expr,
+	expand_builtin_printf, expand_builtin_fprintf,
+	expand_builtin_sprintf): Use POINTER_TYPE_P instead TREE_CODE
+	checking against POINTER_TYPE.
+	(validate_arglist): Handle POINTER_TYPE code by checking
+	POINTER_TYPE_P.
+
 2005-01-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* rtlanal.c (non_rtx_starting_operands, for_each_rtx_1,
