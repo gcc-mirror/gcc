@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986, 87, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-7, 1998 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -3969,7 +3969,6 @@ do_ident (pfile, keyword, buf, limit)
      U_CHAR *buf, *limit;
 {
 /*  long old_written = CPP_WRITTEN (pfile);*/
-  int len;
 
   /* Allow #ident in system headers, since that's not user's fault.  */
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
@@ -4289,14 +4288,13 @@ skip_if_group (pfile, any)
      int any;
 {
   int c;
-  int at_beg_of_line = 1;
   struct directive *kt;
   IF_STACK_FRAME *save_if_stack = pfile->if_stack; /* don't pop past here */
 #if 0
   U_CHAR *beg_of_line = bp;
 #endif
   register int ident_length;
-  U_CHAR *ident, *after_ident;
+  U_CHAR *ident;
   struct parse_marker line_start_mark;
 
   parse_set_mark (&line_start_mark, pfile);
@@ -4655,7 +4653,6 @@ cpp_get_token (pfile)
 	  if (opts->put_out_comments)
 	    {
 	      cpp_buffer *pbuf = CPP_BUFFER (pfile);
-	      long dummy;
 	      U_CHAR *start = pbuf->buf + start_mark.position;
 	      int len = pbuf->cur - start;
 	      CPP_RESERVE(pfile, 1 + len);

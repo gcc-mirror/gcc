@@ -1198,7 +1198,7 @@ debug_control_flow ()
 static int
 build_control_flow ()
 {
-  int i, j;
+  int i;
   int_list_ptr *s_preds;
   int_list_ptr *s_succs;
   int_list_ptr succ;

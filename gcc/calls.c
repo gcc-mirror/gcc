@@ -358,7 +358,9 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
   rtx stack_size_rtx = GEN_INT (stack_size);
   rtx struct_value_size_rtx = GEN_INT (struct_value_size);
   rtx call_insn;
+#ifndef ACCUMULATE_OUTGOING_ARGS
   int already_popped = 0;
+#endif
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
      and we don't want to load it into a register as an optimization,

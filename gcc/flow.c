@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -675,10 +675,6 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	    && GET_CODE (basic_block_head[i]) == CODE_LABEL
 	    && LABEL_REFS (basic_block_head[i]) == basic_block_head[i])
 	  abort ();
-
-      /* Now delete the code for any basic blocks that can't be reached.
-	 They can occur because jump_optimize does not recognize
-
 
       /* Now delete the code for any basic blocks that can't be reached.
 	 They can occur because jump_optimize does not recognize

@@ -427,7 +427,9 @@ static rtx round_trampoline_addr PROTO((rtx));
 static tree blocks_nreverse	PROTO((tree));
 static int all_blocks		PROTO((tree, tree *));
 static int *record_insns	PROTO((rtx));
+#if defined (HAVE_prologue) || defined (HAVE_epilogue)
 static int contains		PROTO((rtx, int *));
+#endif /* HAVE_prologue || HAVE_epilogue */
 static void put_addressof_into_stack PROTO((rtx));
 static void purge_addressof_1	PROTO((rtx *, rtx, int));
 
@@ -2057,7 +2059,6 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		enum machine_mode wanted_mode
 		  = insn_operand_mode[(int) CODE_FOR_insv][0];
 		enum machine_mode is_mode = GET_MODE (tem);
-		int width = INTVAL (XEXP (outerdest, 1));
 		int pos = INTVAL (XEXP (outerdest, 2));
 
 		/* If we have a narrower mode, we can do something.  */
@@ -5873,6 +5874,7 @@ record_insns (insns)
 
 /* Determine how many INSN_UIDs in VEC are part of INSN.  */
 
+#if defined (HAVE_prologue) || defined (HAVE_epilogue)
 static int
 contains (insn, vec)
      rtx insn;
@@ -5898,6 +5900,7 @@ contains (insn, vec)
     }
   return 0;
 }
+#endif /* HAVE_prologue || HAVE_epilogue */
 
 /* Generate the prologue and epilogue RTL if the machine supports it.  Thread
    this into place with notes indicating where the prologue ends and where

@@ -1,5 +1,5 @@
 /* fix-header.c - Make C header file suitable for C++.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94-97, 1998 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -26,7 +26,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    an argument list), and it is a "standard" function listed in
    the file sys-protos.h (and with a non-empty argument list), then
    the declaration is converted to a complete prototype by replacing
-   the empty parameter list with the argument lust from sys-protos.h.
+   the empty parameter list with the argument list from sys-protos.h.
 
    * The program can be given a list of (names of) required standard
    functions (such as fclose for stdio.h).  If a required function
@@ -898,7 +898,7 @@ inf_skip_spaces (c)
 	  c = INF_GET ();
 	  if (c != '*')
 	    {
-	      INF_UNGET (c);
+	      (void) INF_UNGET (c);
 	      return '/';
 	    }
 	  c = INF_GET ();
@@ -999,7 +999,7 @@ check_protection (ifndef_line, endif_line)
     return 0;
   protect_name = xstrdup (buf.base);
 
-  INF_UNGET (c);
+  (void) INF_UNGET (c);
   c = inf_read_upto (&buf, '\n');
   if (c == EOF)
     return 0;
@@ -1268,7 +1268,7 @@ main (argc, argv)
 	  if (isalpha (c) || c == '_')
 	    {
 	      c = inf_scan_ident (&buf, c);
-	      INF_UNGET (c);
+	      (void) INF_UNGET (c);
 	      fputs (buf.base, outf);
 	      fn = lookup_std_proto (buf.base, strlen (buf.base));
 	      /* We only want to edit the declaration matching the one
@@ -1289,7 +1289,7 @@ main (argc, argv)
 		      else
 			{
 			  putc ('(', outf);
-			  INF_UNGET (c);
+			  (void) INF_UNGET (c);
 			}
 		    }
 		  else

@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 95-97, 1998 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -7205,7 +7205,9 @@ add_subscript_info (type_die, type)
      register dw_die_ref type_die;
      register tree type;
 {
+#ifndef MIPS_DEBUGGING_INFO
   register unsigned dimension_number;
+#endif
   register tree lower, upper;
   register dw_die_ref subrange_die;
 

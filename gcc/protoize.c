@@ -167,10 +167,12 @@ typedef char * const_pointer_type;
 
 #else /* !defined(POSIX) */
 
+#ifndef F_OK
 #define R_OK    4       /* Test for Read permission */
 #define W_OK    2       /* Test for Write permission */
 #define X_OK    1       /* Test for eXecute permission */
 #define F_OK    0       /* Test for existence of File */
+#endif
 
 #ifndef O_RDONLY
 #define O_RDONLY        0
