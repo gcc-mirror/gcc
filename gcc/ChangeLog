@@ -1,3 +1,14 @@
+2001-01-04  Daniel Berlin  <dan@cgsoftware.com>
+
+	* lcm.c: Include df.h.
+	Add available_transfer_function prototype.
+	(compute_available): Rework to use iterative dataflow framework.
+	(struct bb_info): s/bb_info/lcm_bb_info/g to avoid conflict
+	with bb_info in df.h
+	(available_transfer_function): New function.
+
+	* Makefile.in (lcm.o): add df.h to dependencies.
+
 2002-01-04  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (some_operand): Accept HIGH.
