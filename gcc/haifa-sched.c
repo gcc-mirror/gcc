@@ -594,7 +594,7 @@ static int bitlst_table_size;
 static int *bitlst_table;
 
 static char bitset_member PROTO ((bitset, int, int));
-static void extract_bitlst PROTO ((bitset, int, bitlst *));
+static void extract_bitlst PROTO ((bitset, int, int, bitlst *));
 
 /* Target info declarations.
 
@@ -679,6 +679,9 @@ static int *rgn_edges;
 
 /* Number of words in an edgeset.  */
 static int edgeset_size;
+
+/* Number of bits in an edgeset.  */
+static int edgeset_bitsize;
 
 /* Mapping from each edge in the graph to its number in the rgn.  */
 static int *edge_to_bit;
@@ -1216,7 +1219,7 @@ bitset_member (set, index, len)
 /* Translate a bit-set SET to a list BL of the bit-set members.  */
 
 static void
-extract_bitlst (set, len, bl)
+extract_bitlst (set, len, bitlen, bl)
      bitset set;
      int len;
      bitlst *bl;
@@ -1230,11 +1233,15 @@ extract_bitlst (set, len, bl)
   bl->first_member = &bitlst_table[bitlst_table_last];
   bl->nr_members = 0;
 
+  /* Iterate over each word in the bitset.  */
   for (i = 0; i < len; i++)
     {
       word = set[i];
       offset = i * HOST_BITS_PER_WIDE_INT;
-      for (j = 0; word; j++)
+
+      /* Iterate over each bit in the word, but do not
+	 go beyond the end of the defined bits.  */
+      for (j = 0; offset < bitlen && word; j++)
 	{
 	  if (word & 1)
 	    {
@@ -1884,12 +1891,12 @@ split_edges (bb_src, bb_trg, bl)
      edgelst *bl;
 {
   int es = edgeset_size;
-  edgeset src = (edgeset) xmalloc (es * sizeof (HOST_WIDE_INT));
+  edgeset src = (edgeset) xcalloc (es, sizeof (HOST_WIDE_INT));
 
   while (es--)
     src[es] = (pot_split[bb_src])[es];
   BITSET_DIFFER (src, pot_split[bb_trg], edgeset_size);
-  extract_bitlst (src, edgeset_size, bl);
+  extract_bitlst (src, es, edgeset_bitsize, bl);
   free (src);
 }
 
@@ -6673,6 +6680,7 @@ schedule_region (rgn)
 
       /* Split edges.  */
       edgeset_size = rgn_nr_edges / HOST_BITS_PER_WIDE_INT + 1;
+      edgeset_bitsize = rgn_nr_edges;
       pot_split = (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));
       ancestor_edges 
 	= (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));

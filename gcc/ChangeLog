@@ -1,3 +1,12 @@
+Tue Jan 11 05:49:01 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* Band-aid until haifa's bitset implementation is nuked.
+	* haifa-sched.c (extract_bitlst): New parameter for size of the
+	bitset in bits.  All callers changed.  Avoid looking at undefined
+	bits in the bitset.
+	(edgeset_bitsize): New variable.
+	(schedule_region): Initialize edgeset_bitsize.
+
 2000-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (optabs.o): Depend on real.h
