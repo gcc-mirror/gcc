@@ -194,42 +194,32 @@ namespace std
   // necessary.
   template<typename _CharT, typename _Traits>
     streamsize
-    __copy_streambufs(basic_ios<_CharT, _Traits>& __ios,
+    __copy_streambufs(basic_ios<_CharT, _Traits>&,
 		      basic_streambuf<_CharT, _Traits>* __sbin,
 		      basic_streambuf<_CharT, _Traits>* __sbout) 
   {
     streamsize __ret = 0;
-    try 
+    typename _Traits::int_type __c = __sbin->sgetc();
+    while (!_Traits::eq_int_type(__c, _Traits::eof()))
       {
-	typename _Traits::int_type __c = __sbin->sgetc();
-	while (!_Traits::eq_int_type(__c, _Traits::eof()))
+	const size_t __n = __sbin->_M_in_end - __sbin->_M_in_cur;
+	if (__n > 1)
 	  {
-	    const size_t __n = __sbin->_M_in_end - __sbin->_M_in_cur;
-	    if (__n > 1)
-	      {
-		const size_t __wrote = __sbout->sputn(__sbin->_M_in_cur,
-						      __n);
-		__sbin->_M_in_cur_move(__wrote);
-		__ret += __wrote;
-		if (__wrote < __n)
-		  break;
-		__c = __sbin->underflow();
-	      }
-	    else 
-	      {
-		__c = __sbout->sputc(_Traits::to_char_type(__c));
-		if (_Traits::eq_int_type(__c, _Traits::eof()))
-		  break;
-		++__ret;
-		__c = __sbin->snextc();
-	      }
+	    const size_t __wrote = __sbout->sputn(__sbin->_M_in_cur, __n);
+	    __sbin->_M_in_cur_move(__wrote);
+	    __ret += __wrote;
+	    if (__wrote < __n)
+	      break;
+	    __c = __sbin->underflow();
 	  }
-      }
-    catch(exception& __fail) 
-      {
-	__ios.setstate(ios_base::failbit);
-	if ((__ios.exceptions() & ios_base::failbit) != 0)
-	  __throw_exception_again;
+	else 
+	  {
+	    __c = __sbout->sputc(_Traits::to_char_type(__c));
+	    if (_Traits::eq_int_type(__c, _Traits::eof()))
+	      break;
+	    ++__ret;
+	    __c = __sbin->snextc();
+	  }
       }
     return __ret;
   }

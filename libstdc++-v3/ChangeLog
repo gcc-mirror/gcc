@@ -1,3 +1,34 @@
+2003-12-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_ios.h (basic_ios::setstate): Revert.
+	* include/bits/istream.tcc: Only call setstate if __err != goodbit.
+	* include/bits/ostream.tcc: Same.
+	* testsuite/27_io/basic_ios/exceptions/char/2.cc: New.
+
+2003-12-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/9371
+	PR libstdc++/9546
+	PR libstdc++/10093
+	PR libstdc++/10095
+	* include/bits/basic_ios.h (basic_ios::setstate): Elide if goodbit.
+	(basic_ios::_M_setstate): Consolidate common error handling code.
+	* include/bits/basic_ios.tcc: Tweak.
+	* include/bits/fstream.tcc: Tweak.
+	* include/bits/istream.tcc: Use _M_setstate for common exception
+	handling. Move setstate calls after catch. 
+	(basic_istream::tellg): Check for exceptions thrown by streambuf
+	virtual functions.
+	(basic_istream::seekg): Same.
+	* include/bits/ostream.tcc: Same, but for ostream.
+	(basic_ostream::flush): Check for exceptions thrown by streambuf
+	virtual functions.
+	(basic_istream::tellp): Same.	
+	(basic_istream::seekp): Same.
+	* include/bits/locale_facets.tcc: Tweak.
+	* include/bits/streambuf.tcc: Tweak.
+	(__copy_streambufs): Propagate exceptions.
+
 2003-11-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/12297

@@ -136,9 +136,7 @@ namespace std
 #endif
 	    }
 	  catch(...)
-	    {
-	      __testfail = true;
-	    }
+	    { __testfail = true; }
 
 	  // NB: Do this here so that re-opened filebufs will be cool...
 	  this->_M_mode = ios_base::openmode(0);
