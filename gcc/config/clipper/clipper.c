@@ -616,7 +616,7 @@ clipper_va_arg (valist, type)
 					    OPTAB_LIB_WIDEN),
 			       GEN_INT (2), GE, const0_rtx,
 			       TYPE_MODE (TREE_TYPE (num_field)),
-			       TREE_UNSIGNED (num_field), 0, false_label);
+			       TREE_UNSIGNED (num_field), false_label);
 
       inreg = fold (build (MULT_EXPR, integer_type_node, num_field,
 			   build_int_2 (2, 0)));

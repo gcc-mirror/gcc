@@ -2839,8 +2839,8 @@ expand_a_rotate (code, operands)
 
       /* If the rotate amount is less than or equal to 0,
 	 we go out of the loop.  */
-      emit_cmp_and_jump_insns (rotate_amount, GEN_INT (0),
-			       LE, NULL_RTX, QImode, 0, 0, end_label);
+      emit_cmp_and_jump_insns (rotate_amount, GEN_INT (0), LE, NULL_RTX,
+			       QImode, 0, end_label);
 
       /* Initialize the loop counter.  */
       emit_move_insn (counter, rotate_amount);
@@ -2857,8 +2857,8 @@ expand_a_rotate (code, operands)
 
       /* If the loop counter is non-zero, we go back to the beginning
 	 of the loop.  */
-      emit_cmp_and_jump_insns (counter, GEN_INT (0),
-			       NE, NULL_RTX, QImode, 1, 0, start_label);
+      emit_cmp_and_jump_insns (counter, GEN_INT (0), NE, NULL_RTX, QImode, 1,
+			       start_label);
 
       emit_label (end_label);
     }

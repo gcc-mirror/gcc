@@ -2444,7 +2444,7 @@ ix86_va_arg (valist, type)
 				   (gpr, NULL_RTX, SImode, EXPAND_NORMAL),
 				   GEN_INT ((REGPARM_MAX - needed_intregs +
 					     1) * 8), GE, const1_rtx, SImode,
-				   1, 1, lab_false);
+				   1, lab_false);
 	}
       if (needed_sseregs)
 	{
@@ -2453,7 +2453,7 @@ ix86_va_arg (valist, type)
 				   GEN_INT ((SSE_REGPARM_MAX -
 					     needed_sseregs + 1) * 16 +
 					    REGPARM_MAX * 8), GE, const1_rtx,
-				   SImode, 1, 1, lab_false);
+				   SImode, 1, lab_false);
 	}
 
       /* Compute index to start of area used for integer regs.  */
@@ -8971,7 +8971,7 @@ ix86_expand_aligntest (variable, value)
   else
     emit_insn (gen_andsi3 (tmpcount, variable, GEN_INT (value)));
   emit_cmp_and_jump_insns (tmpcount, const0_rtx, EQ, 0, GET_MODE (variable),
-			   1, 0, label);
+			   1, label);
   return label;
 }
 
@@ -9138,7 +9138,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
 	{
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (countreg, GEN_INT (UNITS_PER_WORD - 1),
-				   LEU, 0, counter_mode, 1, 0, label);
+				   LEU, 0, counter_mode, 1, label);
 	}
       if (align <= 1)
 	{
@@ -9334,7 +9334,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 	{
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (countreg, GEN_INT (UNITS_PER_WORD - 1),
-				   LEU, 0, counter_mode, 1, 0, label);
+				   LEU, 0, counter_mode, 1, label);
 	}
       if (align <= 1)
 	{
@@ -9540,11 +9540,11 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
 	  emit_cmp_and_jump_insns (align_rtx, const0_rtx, EQ, NULL,
-				   Pmode, 1, 0, align_4_label);
+				   Pmode, 1, align_4_label);
 	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), EQ, NULL,
-				   Pmode, 1, 0, align_2_label);
+				   Pmode, 1, align_2_label);
 	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), GTU, NULL,
-				   Pmode, 1, 0, align_3_label);
+				   Pmode, 1, align_3_label);
 	}
       else
         {
@@ -9555,7 +9555,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
 	  emit_cmp_and_jump_insns (align_rtx, const0_rtx, EQ, NULL,
-				   Pmode, 1, 0, align_4_label);
+				   Pmode, 1, align_4_label);
         }
 
       mem = gen_rtx_MEM (QImode, out);
@@ -9564,7 +9564,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
 
       /* Compare the first n unaligned byte on a byte per byte basis.  */
       emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL,
-			       QImode, 1, 0, end_0_label);
+			       QImode, 1, end_0_label);
 
       /* Increment the address.  */
       if (TARGET_64BIT)
@@ -9577,8 +9577,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
 	{
 	  emit_label (align_2_label);
 
-	  emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL,
-				   QImode, 1, 0, end_0_label);
+	  emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL, QImode, 1,
+				   end_0_label);
 
 	  if (TARGET_64BIT)
 	    emit_insn (gen_adddi3 (out, out, const1_rtx));
@@ -9588,8 +9588,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
 	  emit_label (align_3_label);
 	}
 
-      emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL,
-			       QImode, 1, 0, end_0_label);
+      emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL, QImode, 1,
+			       end_0_label);
 
       if (TARGET_64BIT)
 	emit_insn (gen_adddi3 (out, out, const1_rtx));
@@ -9618,8 +9618,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
   emit_insn (gen_andsi3 (tmpreg, tmpreg,
 			 GEN_INT (trunc_int_for_mode
 				  (0x80808080, SImode))));
-  emit_cmp_and_jump_insns (tmpreg, const0_rtx, EQ, 0,
-			   SImode, 1, 0, align_4_label);
+  emit_cmp_and_jump_insns (tmpreg, const0_rtx, EQ, 0, SImode, 1,
+			   align_4_label);
 
   if (TARGET_CMOVE)
     {

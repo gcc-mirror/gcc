@@ -4329,7 +4329,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       last = get_last_insn ();
 
       comparison
-	= compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX, 0);
+	= compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX);
       if (GET_CODE (comparison) == CONST_INT)
 	return (comparison == const0_rtx ? const0_rtx
 		: normalizep == 1 ? const1_rtx
@@ -4629,7 +4629,7 @@ emit_store_flag_force (target, code, op0, op1, mode, unsignedp, normalizep)
 
   emit_move_insn (target, const1_rtx);
   label = gen_label_rtx ();
-  do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, NULL_RTX, 0,
+  do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, NULL_RTX,
 			   NULL_RTX, label);
 
   emit_move_insn (target, const0_rtx);
@@ -4704,7 +4704,5 @@ do_cmp_and_jump (arg1, arg2, op, mode, label)
       emit_label (label2);
     }
   else
-    {
-      emit_cmp_and_jump_insns (arg1, arg2, op, NULL_RTX, mode, 0, 0, label);
-    }
+    emit_cmp_and_jump_insns (arg1, arg2, op, NULL_RTX, mode, 0, label);
 }
