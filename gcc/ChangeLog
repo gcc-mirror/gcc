@@ -1,5 +1,13 @@
 2005-03-16  Roger Sayle  <roger@eyesopen.com>
 
+	PR rtl-optimization/17825
+	Backport from mainline
+	2004-11-27  Jakub Jelinek  <jakub@redhat.com>
+	* combine.c (subst): Ignore STRICT_LOW_PART no matter if REG_P (new)
+	or not.
+
+2005-03-16  Roger Sayle  <roger@eyesopen.com>
+
 	PR target/18371
 	Backport from mainline
 	2004-12-19  Steven Bosscher  <stevenb@suse.de>
