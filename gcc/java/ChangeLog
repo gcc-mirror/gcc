@@ -1,3 +1,11 @@
+2002-01-16  Tom Tromey  <tromey@redhat.com>
+
+	More for PR java/5365:
+	* gjavah.c (print_stub_or_jni): Cause exception to be thrown by
+	default.
+	(process_file): Generate include for
+	java.lang.UnsupportedOperationExceptions.
+
 2002-01-15  Andreas Jaeger  <aj@suse.de>
 
 	* .cvsignore: Add man pages.
