@@ -3563,6 +3563,7 @@ build_base_field (record_layout_info rli, tree binfo,
       DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
       DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
       DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
+      DECL_MODE (decl) = TYPE_MODE (basetype);
       DECL_IGNORED_P (decl) = 1;
       DECL_FIELD_IS_BASE (decl) = 1;
 
