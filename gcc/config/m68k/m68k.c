@@ -1077,11 +1077,14 @@ output_move_double (operands)
   if (optype0 == REGOP
       && (optype1 == OFFSOP || optype1 == MEMOP))
     {
-      if (reg_overlap_mentioned_p (operands[0], XEXP (operands[1], 0))
+      rtx testlow = gen_rtx (REG, SImode, REGNO (operands[0]));
+
+      if (reg_overlap_mentioned_p (testlow, XEXP (operands[1], 0))
 	  && reg_overlap_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
 	{
 	  /* If both halves of dest are used in the src memory address,
-	     compute the address into latehalf of dest.  */
+	     compute the address into latehalf of dest.
+	     Note that this can't happen if the dest is two data regs.  */
 compadr:
 	  xops[0] = latehalf[0];
 	  xops[1] = XEXP (operands[1], 0);
@@ -1102,8 +1105,13 @@ compadr:
 	       && reg_overlap_mentioned_p (middlehalf[0],
 					   XEXP (operands[1], 0)))
 	{
-	  /* Check for two regs used by both source and dest. */
-	  if (reg_overlap_mentioned_p (operands[0], XEXP (operands[1], 0))
+	  /* Check for two regs used by both source and dest.
+	     Note that this can't happen if the dest is all data regs.
+	     It can happen if the dest is d6, d7, a0.
+	     But in that case, latehalf is an addr reg, so
+	     the code at compadr does ok.  */
+
+	  if (reg_overlap_mentioned_p (testlow, XEXP (operands[1], 0))
 	      || reg_overlap_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
 	    goto compadr;
 
