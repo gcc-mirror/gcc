@@ -73,7 +73,7 @@ jcf_open_exact_case (const char* filename, int oflag);
 #endif /* WIN32 */
 
 struct JCF;
-typedef int (*jcf_filbuf_t) PARAMS ((struct JCF*, int needed));
+typedef int (*jcf_filbuf_t) (struct JCF*, int needed);
 
 union cpool_entry GTY(()) {
   jword GTY ((tag ("0"))) w;

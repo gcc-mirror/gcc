@@ -1,3 +1,7 @@
+2003-10-03  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* builtins.c, jcf.h, jvspec.c: Remove PARAMS macros.
+
 2003-10-01  Andrew Haley  <aph@redhat.com>
 
 	* jcf-parse.c (java_parse_file): Write otable and atable.
