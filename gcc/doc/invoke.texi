@@ -5615,6 +5615,12 @@ interblock scheduling.  The default value is 10.
 The maximum number of insns in a region to be considered for
 interblock scheduling.  The default value is 100.
 
+@item max-last-value-rtl
+
+The maximum size measured as number of RTLs that can be recorded in an expression
+in combiner for a pseudo register as last known value of that register.  The default
+is 10000.
+
 @item integer-share-limit
 Small integer constants can use a shared data structure, reducing the
 compiler's memory usage and increasing its speed.  This sets the maximum
