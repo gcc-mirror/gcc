@@ -1,3 +1,20 @@
+2003-04-16  Roger Sayle  <roger@eyesopen.com>
+
+	* c-semantics.c (find_reachable_label): New function to find a
+	potentially reachable label in an expression.
+	(expand_unreachable_if_stmt): Similar to expand_if_stmt but
+	assumes the start of the IF_STMT is unreachable (dead) code.
+	(expand_unreachable_stmt): Similar to expand_stmt but assumes
+	the start of the statement list is unreachable (dead) code.
+	(genrtl_if_stmt):  If the controlling expression of the IF
+	is constant, use expand_unreachable_stmt for the THEN or ELSE
+	clause as appropriate.
+	(genrtl_switch_stmt):  Use expand_unreachable_stmt to expand
+	the body of a SWITCH statement.
+	(expand_stmt): The code immediately following a "return",
+	"break", "continue" or "goto" is unreachable.
+	* Makefile.in (c-semantics.o): Depend upon tree-inline.h.
+
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
 	* rtl.h (MEM_ALIAS_SET): Update documentation.
