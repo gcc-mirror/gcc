@@ -4433,7 +4433,7 @@ assign_parms (fndecl, second_time)
 	 0 as it was the previous time.  */
 
       pretend_named = named_arg || PRETEND_OUTGOING_VARARGS_NAMED;
-      locate_and_pad_parm (nominal_mode, passed_type,
+      locate_and_pad_parm (promoted_mode, passed_type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			   1,
 #else
@@ -4454,9 +4454,9 @@ assign_parms (fndecl, second_time)
 	  rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
 
 	  if (offset_rtx == const0_rtx)
-	    stack_parm = gen_rtx_MEM (nominal_mode, internal_arg_pointer);
+	    stack_parm = gen_rtx_MEM (promoted_mode, internal_arg_pointer);
 	  else
-	    stack_parm = gen_rtx_MEM (nominal_mode,
+	    stack_parm = gen_rtx_MEM (promoted_mode,
 				      gen_rtx_PLUS (Pmode,
 						    internal_arg_pointer,
 						    offset_rtx));
