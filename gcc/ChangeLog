@@ -1,3 +1,17 @@
+2002-02-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (altivec_init_builtins): Handle
+        __builtin_altivec_abs*.
+        (bdesc_abs): New.
+
+        * config/rs6000/rs6000.h (rs6000_builtins): Add
+        ALTIVEC_BUILTIN_ABS*.
+
+        * config/rs6000/altivec.h: Use const char for builtins expecting
+        literals.
+        (vec_abs): New versions for C and C++.
+        (vec_abss): Same.
+
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h (INITIALIZE_TRAMPOLINE): Simplify by
