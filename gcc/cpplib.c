@@ -178,6 +178,8 @@ DIRECTIVE_TABLE
 #undef D
 #undef DIRECTIVE_TABLE
 
+#define SEEN_EOL() (pfile->lexer_pos.output_line > pfile->line)
+
 /* Skip any remaining tokens in a directive.  */
 static void
 skip_rest_of_line (pfile)
@@ -194,7 +196,7 @@ skip_rest_of_line (pfile)
     _cpp_pop_context (pfile);
 
   /* Sweep up all tokens remaining on the line.  */
-  while (!pfile->state.next_bol)
+  while (! SEEN_EOL ())
     _cpp_lex_token (pfile, &token);
 }
 
@@ -203,7 +205,7 @@ static void
 check_eol (pfile)
      cpp_reader *pfile;
 {
-  if (!pfile->state.next_bol)
+  if (! SEEN_EOL ())
     {
       cpp_token token;
 
@@ -240,7 +242,11 @@ end_directive (pfile, skip_line)
 {
   /* We don't skip for an assembler #.  */
   if (skip_line)
-    skip_rest_of_line (pfile);
+    {
+      skip_rest_of_line (pfile);
+      /*  "Accept" the newline now.  */
+      pfile->line++;
+    }
 
   /* Restore state.  */
   pfile->la_write = pfile->la_saved;
@@ -395,19 +401,9 @@ run_directive (pfile, dir_no, type, buf, count)
      const char *buf;
      size_t count;
 {
-  unsigned int output_line = pfile->lexer_pos.output_line;
   cpp_buffer *buffer;
 
   buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count, type, 0, 1);
-
-  if (dir_no == T_PRAGMA)
-    {
-      /* A kludge to avoid line markers for _Pragma.  */
-      pfile->lexer_pos.output_line = output_line;
-      /* Avoid interpretation of directives in a _Pragma string.  */
-      pfile->state.next_bol = 0;
-    }
-
   start_directive (pfile);
   pfile->state.prevent_expansion++;
   pfile->directive = &dtable[dir_no];
@@ -779,8 +775,11 @@ do_line (pfile)
 	  else if (reason == LC_LEAVE)
 	    {
 	      if (buffer->type != BUF_FAKE)
-		cpp_warning (pfile, "file \"%s\" left but not entered",
-			     buffer->nominal_fname);
+		{
+		  cpp_warning (pfile, "file \"%s\" left but not entered",
+			       buffer->nominal_fname);
+		  reason = LC_RENAME;
+		}
 	      else
 		{
 		  _cpp_pop_buffer (pfile);
@@ -789,9 +788,6 @@ do_line (pfile)
 		  if (strcmp (buffer->nominal_fname, fname))
 		    cpp_warning (pfile, "expected to return to file \"%s\"",
 				 buffer->nominal_fname);
-		  if (buffer->lineno + 1 != new_lineno)
-		    cpp_warning (pfile, "expected to return to line number %u",
-				 buffer->lineno + 1);
 		  if (buffer->sysp != sysp)
 		    cpp_warning (pfile, "header flags for \"%s\" have changed",
 				 buffer->nominal_fname);
@@ -810,30 +806,29 @@ do_line (pfile)
     }
 
   end_directive (pfile, 1);
-  buffer->lineno = new_lineno - 1;
-  _cpp_do_file_change (pfile, reason);
+  _cpp_do_file_change (pfile, reason, new_lineno);
 }
 
-/* Arrange the file_change callback.  It is assumed that the next line
-   is given by incrementing buffer->lineno and pfile->line.  */
+/* Arrange the file_change callback.  pfile->line has changed to
+   FILE_LINE of the current buffer, for reason REASON.  */
 void
-_cpp_do_file_change (pfile, reason)
+_cpp_do_file_change (pfile, reason, file_line)
      cpp_reader *pfile;
      enum lc_reason reason;
+     unsigned int file_line;
 {
   cpp_buffer *buffer;
-  struct line_map *map;
 
   buffer = pfile->buffer;
-  map = add_line_map (&pfile->line_maps, reason,
-		      pfile->line + 1, buffer->nominal_fname, buffer->lineno + 1);
+  pfile->map = add_line_map (&pfile->line_maps, reason,
+			     pfile->line, buffer->nominal_fname, file_line);
 
   if (pfile->cb.file_change)
     {
       cpp_file_change fc;
       
-      fc.map = map;
-      fc.line = pfile->line + 1;
+      fc.map = pfile->map;
+      fc.line = pfile->line;
       fc.reason = reason;
       fc.sysp = buffer->sysp;
       fc.externc = CPP_OPTION (pfile, cplusplus) && buffer->sysp == 2;
@@ -1195,16 +1190,19 @@ _cpp_do__Pragma (pfile)
   cpp_token string;
   unsigned char *buffer;
   unsigned int len;
+  cpp_lexer_pos orig_pos;
 
+  orig_pos = pfile->lexer_pos;
   if (get__Pragma_string (pfile, &string))
+    cpp_error (pfile, "_Pragma takes a parenthesized string literal");
+  else
     {
-      cpp_error (pfile, "_Pragma takes a parenthesized string literal");
-      return;
+      buffer = destringize (&string.val.str, &len);
+      run_directive (pfile, T_PRAGMA, BUF_PRAGMA, (char *) buffer, len);
+      free ((PTR) buffer);
+      pfile->lexer_pos = orig_pos;
+      pfile->line = pfile->lexer_pos.line;
     }
-
-  buffer = destringize (&string.val.str, &len);
-  run_directive (pfile, T_PRAGMA, BUF_PRAGMA, (char *) buffer, len);
-  free ((PTR) buffer);
 }
 
 /* Just ignore #sccs, on systems where we define it at all.  */
@@ -1815,8 +1813,6 @@ cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
       /* Preprocessed files, builtins, _Pragma and command line
 	 options don't do trigraph and escaped newline processing.  */
       new->from_stage3 = type != BUF_FILE || CPP_OPTION (pfile, preprocessed);
-
-      pfile->lexer_pos.output_line = 1;
     }
 
   if (*filename == '\0')
@@ -1827,7 +1823,6 @@ cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
   new->prev = pfile->buffer;
   new->pfile = pfile;
   new->include_stack_listed = 0;
-  new->lineno = 1;
   new->return_at_eof = return_at_eof;
 
   pfile->state.next_bol = 1;
@@ -1857,7 +1852,11 @@ _cpp_pop_buffer (pfile)
 			     "unterminated #%s", dtable[ifs->type].name);
 
       if (buffer->type == BUF_FAKE)
-	buffer->prev->cur = buffer->cur;
+	{
+	  buffer->prev->cur = buffer->cur;
+	  buffer->prev->line_base = buffer->line_base;
+	  buffer->prev->read_ahead = buffer->read_ahead;
+	}
       else if (buffer->type == BUF_FILE)
 	_cpp_pop_file_buffer (pfile, buffer);
 
@@ -1877,8 +1876,7 @@ _cpp_pop_buffer (pfile)
       if (pfile->directive == &dtable[T_LINE])
 	break;
 
-      pfile->line--;		/* We have a '\n' at the end of #include.  */
-      _cpp_do_file_change (pfile, LC_LEAVE);
+      _cpp_do_file_change (pfile, LC_LEAVE, pfile->buffer->return_to_line);
       if (pfile->buffer->type == BUF_FILE)
 	break;
 
@@ -1888,7 +1886,12 @@ _cpp_pop_buffer (pfile)
 
   obstack_free (&pfile->buffer_ob, buffer);
 
-  pfile->state.skipping = 0;	/* In case missing #endif.  */
+  /* The output line can fall out of sync if we missed the final
+     newline from the previous buffer, for example because of an
+     unterminated comment.  Similarly, skipping needs to be cleared in
+     case of a missing #endif.  */
+  pfile->lexer_pos.output_line = pfile->line;
+  pfile->state.skipping = 0;
 }
 
 void

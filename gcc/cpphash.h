@@ -35,7 +35,6 @@ struct directive;		/* Deliberately incomplete.  */
 
 #define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
-#define CPP_BUF_LINE(BUF) ((BUF)->lineno)
 #define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base + (BUF)->col_adjust)
 #define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
 
@@ -194,8 +193,10 @@ struct cpp_buffer
   /* Token column position adjustment owing to tabs in whitespace.  */
   unsigned int col_adjust;
 
-  /* Line number at line_base (above). */
-  unsigned int lineno;
+  /* The line of the buffer that we return to after a #include.
+     Strictly this is redundant, since it can be calculated from the
+     line maps, but it is clearest to save it here.  */
+  unsigned int return_to_line;
 
   /* Contains PREV_WHITE and/or AVOID_LPASTE.  */
   unsigned char saved_flags;
@@ -251,12 +252,10 @@ struct cpp_reader
   /* Lexer state.  */
   struct lexer_state state;
 
-  /* Source line tracking.  Subtract pseudo_newlines from the actual
-     line number to get the line number of preprocessed output.  Used
-     for escaped newlines and macro args that cross multiple lines.  */
+  /* Source line tracking.  */
   struct line_maps line_maps;
+  struct line_map *map;
   unsigned int line;
-  unsigned int pseudo_newlines;
 
   /* The position of the last lexed token and last lexed directive.  */
   cpp_lexer_pos lexer_pos;
@@ -446,7 +445,8 @@ extern void _cpp_define_builtin	PARAMS ((cpp_reader *, const char *));
 extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
 extern void _cpp_init_directives PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
-extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason));
+extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason,
+					 unsigned int));
 extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */

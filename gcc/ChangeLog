@@ -1,3 +1,55 @@
+2001-08-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR preprocessor/3081
+	* c-lex.c (map): New.
+	(cb_file_change): Update map and use it.
+	(cb_def_pragma, cb_define, cb_undef): Use map and line.
+	(c_lex): Update to use map.
+	* cpperror.c (print_location): Move to using logical line numbers.
+	* cppfiles.c (stack_include_file): Update for new _cpp_do_file_change.
+	(cpp_make_system_header): Similarly.
+	(_cpp_execute_include): Stop line numbering hacks.  Store the
+	line we will return to.
+	* cpphash.h (CPP_BUF_LINE): Remove.
+	(struct cpp_buffer): Remove lineno and pseudo_newlines.
+	Add map and return_to_line.
+	(_cpp_do_file_change): Update.
+	* cppinit.c (cpp_start_read): Update line kludge.
+	* cpplex.c (handle_newline): Don't update lineno and pseudo_newlines.
+	(trigraph_ok): Use logical line numbers for diagnostics.
+	(skip_block_comment): Likewise.
+	(skip_whitespace): Likewise.
+	(skip_line_comment): Use pfile->line instead.
+	(_cpp_lex_token): Update to use logical line numbering exclusively.
+	Handle BOL locally.  Accept new lines in directives, but keep
+	pfile->line decremented.  Diagnostics use logical lines.  Update
+	directive handling.
+	* cpplib.c (SEEN_EOL): New.
+	(skip_rest_of_line, check_eol): Use it.
+	(end_directive): Increase line number when accepting the newline
+	at the end of a directive.
+	(run_directive): Simplify.
+	(do_line): Bad LC_LEAVEs become LC_RENAMEs.  Update.
+	(_cpp_do_file_change): Update to take buffer line number as an
+	argument, and store the current map in the cpp_reader.  Remove
+	line number kludges.
+	(_cpp_do__Pragma): Restore output position after a _Pragma.
+	(cpp_push_buffer): Don't set output line or lineno.
+	(_cpp_pop_buffer): Transfer more info from a faked buffer.
+	Remove line kludge.  Set output_line.
+	* cppmacro.c (builtin_macro): Update handling of __LINE__.
+	(parse_arg): Use logical lines.
+	(save_lookahead_token): Save EOFs too now.
+	* cppmain.c (struct printer): Fix comments.
+	(printer_init): Simplify, let caller do errors.
+	(scan_translation_unit, check_multiline_token, dump_macro): Update.
+	(maybe_print_line): Simplify.
+	(print_line): Don't print a linemarker if -P.
+	(cb_define, cb_undef, cb_def_pragma, cb_ident, cb_include): Update.
+	(cb_file_change): Simplify.
+	* line-map.h (LAST_SOURCE_LINE): Fix.
+	(CURRENT_LINE_MAP): New.
+
 2001-08-05  Bernd Schmidt  <bernds@redhat.com>
 
 	* doloop.c (doloop_modify_runtime): Properly compute number of

@@ -30,12 +30,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    cpp_get_token back into a text file.  */
 struct printer
 {
-  FILE *outf;			/* stream to write to.  */
-  const char *last_fname;	/* previous file name.  */
-  const char *syshdr_flags;	/* system header flags, if any.  */
-  unsigned int lineno;		/* line currently being written.  */
-  unsigned char printed;	/* nonzero if something output at lineno.  */
-  struct line_map *map;		/* logical to physical line mappings.  */
+  FILE *outf;			/* Stream to write to.  */
+  const char *filename;		/* Name of current file.  */
+  const char *syshdr_flags;	/* System header flags, if any.  */
+  unsigned int line;		/* Line currently being written.  */
+  unsigned char printed;	/* Nonzero if something output at line.  */
+  struct line_map *map;		/* Logical to physical line mappings.  */
 };
 
 int main		PARAMS ((int, char **));
@@ -46,10 +46,10 @@ static void setup_callbacks PARAMS ((void));
 /* General output routines.  */
 static void scan_translation_unit PARAMS ((cpp_reader *));
 static void check_multiline_token PARAMS ((cpp_string *));
-static int printer_init PARAMS ((cpp_reader *));
+static void printer_init PARAMS ((void));
 static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
-static void print_line PARAMS ((const char *));
+static void print_line PARAMS ((unsigned int, const char *));
 static void maybe_print_line PARAMS ((unsigned int));
 
 /* Callback routines for the parser.   Most of these are active only
@@ -144,8 +144,12 @@ do_preprocessing (argc, argv)
   /* Open the output now.  We must do so even if no_output is on,
      because there may be other output than from the actual
      preprocessing (e.g. from -dM).  */
-  if (printer_init (pfile))
-    return;
+  printer_init ();
+  if (print.outf == NULL)
+    {
+      cpp_notice_from_errno (pfile, options->out_fname);
+      return;
+    }
 
   setup_callbacks ();
 
@@ -216,7 +220,7 @@ scan_translation_unit (pfile)
 	break;
 
       line = cpp_get_line (pfile)->output_line;
-      if (print.lineno != line)
+      if (print.line != line)
 	{
 	  unsigned int col = cpp_get_line (pfile)->col;
 
@@ -253,7 +257,7 @@ scan_translation_unit (pfile)
     }
 }
 
-/* Adjust print.lineno for newlines embedded in tokens.  */
+/* Adjust print.line for newlines embedded in tokens.  */
 static void
 check_multiline_token (str)
      cpp_string *str;
@@ -262,85 +266,69 @@ check_multiline_token (str)
 
   for (i = 0; i < str->len; i++)
     if (str->text[i] == '\n')
-      print.lineno++;
+      print.line++;
 }
 
 /* Initialize a cpp_printer structure.  As a side effect, open the
-   output file.  */
-static int
-printer_init (pfile)
-     cpp_reader *pfile;
+   output file.  If print.outf is NULL an error occurred.  */
+static void
+printer_init ()
 {
-  print.last_fname = 0;
-  print.lineno = 0;
+  /* Setting print.line to -1 here guarantees that the first token of
+     the file will cause a linemarker to be output by maybe_print_line.  */
+  print.line = (unsigned int) -1;
   print.printed = 0;
+  print.map = 0;
 
   if (options->out_fname[0] == '\0')
     print.outf = stdout;
   else
-    {
-      print.outf = fopen (options->out_fname, "w");
-      if (! print.outf)
-	{
-	  cpp_notice_from_errno (pfile, options->out_fname);
-	  return 1;
-	}
-    }
-
-  return 0;
+    print.outf = fopen (options->out_fname, "w");
 }
 
-/* Newline-terminate any output line currently in progress.  If
-   appropriate, write the current line number to the output, or pad
-   with newlines so the output line matches the current line.  */
+/* If the token read on logical line LINE needs to be output on a
+   different line to the current one, output the required newlines or
+   a line marker, and return 1.  Otherwise return 0.  */
+
 static void
 maybe_print_line (line)
      unsigned int line;
 {
-  /* End the previous line of text (probably only needed until we get
-     multi-line tokens fixed).  */
+  /* End the previous line of text.  */
   if (print.printed)
     {
       putc ('\n', print.outf);
-      print.lineno++;
+      print.line++;
       print.printed = 0;
     }
 
-  if (options->no_line_commands)
+  if (line >= print.line && line < print.line + 8)
     {
-      print.lineno = line;
-      return;
-    }
-
-  /* print.lineno is zero if this is the first token of the file.  We
-     handle this specially, so that a first line of "# 1 "foo.c" in
-     file foo.i outputs just the foo.c line, and not a foo.i line.  */
-  if (line >= print.lineno && line < print.lineno + 8 && print.lineno)
-    {
-      while (line > print.lineno)
+      while (line > print.line)
 	{
 	  putc ('\n', print.outf);
-	  print.lineno++;
+	  print.line++;
 	}
     }
   else
-    {
-      print.lineno = line;
-      print_line ("");
-    }
+    print_line (line, "");
 }
 
 static void
-print_line (special_flags)
-  const char *special_flags;
+print_line (line, special_flags)
+     unsigned int line;
+     const char *special_flags;
 {
   /* End any previous line of text.  */
   if (print.printed)
     putc ('\n', print.outf);
   print.printed = 0;
 
-  fprintf (print.outf, "# %u \"%s\"%s%s\n",
-	   print.lineno, print.last_fname, special_flags, print.syshdr_flags);
+  print.line = line;
+  if (! options->no_line_commands)
+    fprintf (print.outf, "# %u \"%s\"%s%s\n",
+	     SOURCE_LINE (print.map, print.line),
+	     print.filename, special_flags, print.syshdr_flags);
 }
 
 /* Callbacks.  */
@@ -348,21 +336,21 @@ print_line (special_flags)
 static void
 cb_ident (pfile, line, str)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int line;
      const cpp_string * str;
 {
-  maybe_print_line (cpp_get_line (pfile)->output_line);
+  maybe_print_line (line);
   fprintf (print.outf, "#ident \"%s\"\n", str->text);
-  print.lineno++;
+  print.line++;
 }
 
 static void
 cb_define (pfile, line, node)
      cpp_reader *pfile;
-     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int line;
      cpp_hashnode *node;
 {
-  maybe_print_line (cpp_get_line (pfile)->output_line);
+  maybe_print_line (line);
   fputs ("#define ", print.outf);
 
   /* -dD command line option.  */
@@ -372,30 +360,30 @@ cb_define (pfile, line, node)
     fputs ((const char *) NODE_NAME (node), print.outf);
 
   putc ('\n', print.outf);
-  print.lineno++;
+  print.line++;
 }
 
 static void
 cb_undef (pfile, line, node)
-     cpp_reader *pfile;
-     unsigned int line ATTRIBUTE_UNUSED;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     unsigned int line;
      cpp_hashnode *node;
 {
-  maybe_print_line (cpp_get_line (pfile)->output_line);
+  maybe_print_line (line);
   fprintf (print.outf, "#undef %s\n", NODE_NAME (node));
-  print.lineno++;
+  print.line++;
 }
 
 static void
 cb_include (pfile, line, dir, header)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     unsigned int line ATTRIBUTE_UNUSED;
+     cpp_reader *pfile;
+     unsigned int line;
      const unsigned char *dir;
      const cpp_token *header;
 {
-  maybe_print_line (cpp_get_line (pfile)->output_line);
+  maybe_print_line (line);
   fprintf (print.outf, "#%s %s\n", dir, cpp_token_as_text (pfile, header));
-  print.lineno++;
+  print.line++;
 }
 
 static void
@@ -403,12 +391,16 @@ cb_file_change (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {
-  /* Bring current file to correct line (except first file).  */
-  if (fc->reason == LC_ENTER && !MAIN_FILE_P (fc->map))
-    maybe_print_line (SOURCE_LINE (fc->map - 1, fc->line - 1));
+  bool first_time = print.map == NULL;
+
+  /* Bring current file to correct line.  We handle the first file
+     change callback specially, so that a first line of "# 1 "foo.c"
+     in file foo.i outputs just the foo.c line, and not a foo.i line.  */
+  if (fc->reason == LC_ENTER && !first_time)
+    maybe_print_line (fc->line - 1);
 
   print.map = fc->map;
-  print.last_fname = fc->map->to_file;
+  print.filename = fc->map->to_file;
   if (fc->externc)
     print.syshdr_flags = " 3 4";
   else if (fc->sysp)
@@ -416,18 +408,16 @@ cb_file_change (pfile, fc)
   else
     print.syshdr_flags = "";
 
-  if (print.lineno)
+  if (!first_time)
     {
       const char *flags = "";
 
-      print.lineno = SOURCE_LINE (fc->map, fc->line);
       if (fc->reason == LC_ENTER)
 	flags = " 1";
       else if (fc->reason == LC_LEAVE)
 	flags = " 2";
 
-      if (! options->no_line_commands)
-	print_line (flags);
+      print_line (fc->line, flags);
     }
 }
 
@@ -436,12 +426,12 @@ cb_file_change (pfile, fc)
 static void
 cb_def_pragma (pfile, line)
      cpp_reader *pfile;
-     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int line;
 {
-  maybe_print_line (cpp_get_line (pfile)->output_line);
+  maybe_print_line (line);
   fputs ("#pragma ", print.outf);
   cpp_output_line (pfile, print.outf);
-  print.lineno++;
+  print.line++;
 }
 
 /* Dump out the hash table.  */
@@ -456,7 +446,7 @@ dump_macro (pfile, node, v)
       fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
       putc ('\n', print.outf);
-      print.lineno++;
+      print.line++;
     }
 
   return 1;
