@@ -1171,6 +1171,8 @@ const_binop (code, arg1, arg2, notrunc)
 	     and saves time.  */
 	  if (int2h == 0 && int2l > 0
 	      && TREE_TYPE (arg1) == sizetype
+	      && ! TREE_CONSTANT_OVERFLOW (arg1)
+	      && ! TREE_CONSTANT_OVERFLOW (arg2)
 	      && int1h == 0 && int1l >= 0)
 	    {
 	      if (code == CEIL_DIV_EXPR)
@@ -1445,18 +1447,14 @@ size_binop (code, arg0, arg1)
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
     {
       /* And some specific cases even faster than that.  */
-      if (code == PLUS_EXPR
-	  && TREE_INT_CST_LOW (arg0) == 0
-	  && TREE_INT_CST_HIGH (arg0) == 0)
+      if (code == PLUS_EXPR && integer_zerop (arg0))
 	return arg1;
-      if (code == MINUS_EXPR
-	  && TREE_INT_CST_LOW (arg1) == 0
-	  && TREE_INT_CST_HIGH (arg1) == 0)
+      else if ((code == MINUS_EXPR || code == PLUS_EXPR)
+	       && integer_zerop (arg1))
 	return arg0;
-      if (code == MULT_EXPR
-	  && TREE_INT_CST_LOW (arg0) == 1
-	  && TREE_INT_CST_HIGH (arg0) == 0)
+      else if (code == MULT_EXPR && integer_onep (arg0))
 	return arg1;
+
       /* Handle general case of two integer constants.  */
       return const_binop (code, arg0, arg1, 0);
     }
