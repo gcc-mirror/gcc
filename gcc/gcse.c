@@ -510,112 +510,112 @@ static sbitmap *rd_kill, *rd_gen, *reaching_defs, *rd_out;
 /* for available exprs */
 static sbitmap *ae_kill, *ae_gen, *ae_in, *ae_out;
 
-static void compute_can_copy          PROTO ((void));
+static void compute_can_copy	  PROTO ((void));
 
-static char *gmalloc                  PROTO ((unsigned int));
-static char *grealloc                 PROTO ((char *, unsigned int));
-static char *gcse_alloc               PROTO ((unsigned long));
-static void alloc_gcse_mem            PROTO ((rtx));
-static void free_gcse_mem             PROTO ((void));
-extern void dump_cuid_table           PROTO ((FILE *));
+static char *gmalloc		  PROTO ((unsigned int));
+static char *grealloc		 PROTO ((char *, unsigned int));
+static char *gcse_alloc	       PROTO ((unsigned long));
+static void alloc_gcse_mem	    PROTO ((rtx));
+static void free_gcse_mem	     PROTO ((void));
+extern void dump_cuid_table	   PROTO ((FILE *));
 
-static void alloc_reg_set_mem         PROTO ((int));
-static void free_reg_set_mem          PROTO ((void));
-static void record_one_set            PROTO ((int, rtx));
-static void record_set_info           PROTO ((rtx, rtx));
-static void compute_sets              PROTO ((rtx));
+static void alloc_reg_set_mem	 PROTO ((int));
+static void free_reg_set_mem	  PROTO ((void));
+static void record_one_set	    PROTO ((int, rtx));
+static void record_set_info	   PROTO ((rtx, rtx));
+static void compute_sets	      PROTO ((rtx));
 
-static void hash_scan_insn            PROTO ((rtx, int, int));
-static void hash_scan_set             PROTO ((rtx, rtx, int));
-static void hash_scan_clobber         PROTO ((rtx, rtx));
-static void hash_scan_call            PROTO ((rtx, rtx));
-static void maybe_set_rd_gen          PROTO ((int, rtx));
-static int want_to_gcse_p             PROTO ((rtx));
-static int oprs_unchanged_p           PROTO ((rtx, rtx, int));
+static void hash_scan_insn	    PROTO ((rtx, int, int));
+static void hash_scan_set	     PROTO ((rtx, rtx, int));
+static void hash_scan_clobber	 PROTO ((rtx, rtx));
+static void hash_scan_call	    PROTO ((rtx, rtx));
+static void maybe_set_rd_gen	  PROTO ((int, rtx));
+static int want_to_gcse_p	     PROTO ((rtx));
+static int oprs_unchanged_p	   PROTO ((rtx, rtx, int));
 static int oprs_anticipatable_p       PROTO ((rtx, rtx));
-static int oprs_available_p           PROTO ((rtx, rtx));
+static int oprs_available_p	   PROTO ((rtx, rtx));
 static void insert_expr_in_table      PROTO ((rtx, enum machine_mode, rtx, int, int));
 static void insert_set_in_table       PROTO ((rtx, rtx));
-static unsigned int hash_expr         PROTO ((rtx, enum machine_mode, int *, int));
+static unsigned int hash_expr	 PROTO ((rtx, enum machine_mode, int *, int));
 static unsigned int hash_expr_1       PROTO ((rtx, enum machine_mode, int *));
-static unsigned int hash_set          PROTO ((int, int));
-static int expr_equiv_p               PROTO ((rtx, rtx));
+static unsigned int hash_set	  PROTO ((int, int));
+static int expr_equiv_p	       PROTO ((rtx, rtx));
 static void record_last_reg_set_info  PROTO ((rtx, int));
 static void record_last_mem_set_info  PROTO ((rtx));
 static void record_last_set_info      PROTO ((rtx, rtx));
-static void compute_hash_table        PROTO ((rtx, int));
+static void compute_hash_table	PROTO ((rtx, int));
 static void alloc_set_hash_table      PROTO ((int));
 static void free_set_hash_table       PROTO ((void));
 static void compute_set_hash_table    PROTO ((rtx));
 static void alloc_expr_hash_table     PROTO ((int));
 static void free_expr_hash_table      PROTO ((void));
 static void compute_expr_hash_table   PROTO ((rtx));
-static void dump_hash_table           PROTO ((FILE *, const char *, struct expr **, int, int));
+static void dump_hash_table	   PROTO ((FILE *, const char *, struct expr **, int, int));
 static struct expr *lookup_expr       PROTO ((rtx));
-static struct expr *lookup_set        PROTO ((int, rtx));
-static struct expr *next_set          PROTO ((int, struct expr *));
+static struct expr *lookup_set	PROTO ((int, rtx));
+static struct expr *next_set	  PROTO ((int, struct expr *));
 static void reset_opr_set_tables      PROTO ((void));
-static int oprs_not_set_p             PROTO ((rtx, rtx));
-static void mark_call                 PROTO ((rtx, rtx));
-static void mark_set                  PROTO ((rtx, rtx));
-static void mark_clobber              PROTO ((rtx, rtx));
-static void mark_oprs_set             PROTO ((rtx));
+static int oprs_not_set_p	     PROTO ((rtx, rtx));
+static void mark_call		 PROTO ((rtx, rtx));
+static void mark_set		  PROTO ((rtx, rtx));
+static void mark_clobber	      PROTO ((rtx, rtx));
+static void mark_oprs_set	     PROTO ((rtx));
 
-static void alloc_rd_mem              PROTO ((int, int));
-static void free_rd_mem               PROTO ((void));
-static void compute_kill_rd           PROTO ((void));
-static void handle_rd_kill_set        PROTO ((rtx, int, int));
-static void compute_rd                PROTO ((void));
-extern void dump_rd_table             PROTO ((FILE *, char *, sbitmap *));
+static void alloc_rd_mem	      PROTO ((int, int));
+static void free_rd_mem	       PROTO ((void));
+static void compute_kill_rd	   PROTO ((void));
+static void handle_rd_kill_set	PROTO ((rtx, int, int));
+static void compute_rd		PROTO ((void));
+extern void dump_rd_table	     PROTO ((FILE *, char *, sbitmap *));
 
 static void alloc_avail_expr_mem      PROTO ((int, int));
 static void free_avail_expr_mem       PROTO ((void));
-static void compute_ae_gen            PROTO ((void));
-static void compute_ae_kill           PROTO ((void));
-static int expr_killed_p              PROTO ((rtx, int));
-static void compute_available         PROTO ((void));
+static void compute_ae_gen	    PROTO ((void));
+static void compute_ae_kill	   PROTO ((void));
+static int expr_killed_p	      PROTO ((rtx, int));
+static void compute_available	 PROTO ((void));
 
-static int expr_reaches_here_p        PROTO ((struct occr *, struct expr *,
+static int expr_reaches_here_p	PROTO ((struct occr *, struct expr *,
 					      int, int, char *));
-static rtx computing_insn             PROTO ((struct expr *, rtx));
-static int def_reaches_here_p         PROTO ((rtx, rtx));
+static rtx computing_insn	     PROTO ((struct expr *, rtx));
+static int def_reaches_here_p	 PROTO ((rtx, rtx));
 static int can_disregard_other_sets   PROTO ((struct reg_set **, rtx, int));
-static int handle_avail_expr          PROTO ((rtx, struct expr *));
-static int classic_gcse               PROTO ((void));
+static int handle_avail_expr	  PROTO ((rtx, struct expr *));
+static int classic_gcse	       PROTO ((void));
 static int one_classic_gcse_pass      PROTO ((rtx, int));
 
-static void alloc_cprop_mem           PROTO ((int, int));
-static void free_cprop_mem            PROTO ((void));
-extern void dump_cprop_data           PROTO ((FILE *));
-static void compute_transp            PROTO ((rtx, int, sbitmap *, int));
+static void alloc_cprop_mem	   PROTO ((int, int));
+static void free_cprop_mem	    PROTO ((void));
+extern void dump_cprop_data	   PROTO ((FILE *));
+static void compute_transp	    PROTO ((rtx, int, sbitmap *, int));
 static void compute_cprop_local_properties PROTO ((void));
 static void compute_cprop_avinout     PROTO ((void));
-static void compute_cprop_data        PROTO ((void));
-static void find_used_regs            PROTO ((rtx));
-static int try_replace_reg            PROTO ((rtx, rtx, rtx));
+static void compute_cprop_data	PROTO ((void));
+static void find_used_regs	    PROTO ((rtx));
+static int try_replace_reg	    PROTO ((rtx, rtx, rtx));
 static struct expr *find_avail_set    PROTO ((int, rtx));
-static int cprop_insn                 PROTO ((rtx));
-static int cprop                      PROTO ((void));
-static int one_cprop_pass             PROTO ((rtx, int));
+static int cprop_insn		 PROTO ((rtx));
+static int cprop		      PROTO ((void));
+static int one_cprop_pass	     PROTO ((rtx, int));
 
-static void alloc_pre_mem             PROTO ((int, int));
-static void free_pre_mem              PROTO ((void));
-extern void dump_pre_data             PROTO ((FILE *));
+static void alloc_pre_mem	     PROTO ((int, int));
+static void free_pre_mem	      PROTO ((void));
+extern void dump_pre_data	     PROTO ((FILE *));
 static void compute_pre_local_properties PROTO ((void));
 static void compute_pre_avinout       PROTO ((void));
 static void compute_pre_antinout      PROTO ((void));
 static void compute_pre_pavinout      PROTO ((void));
 static void compute_pre_ppinout       PROTO ((void));
-static void compute_pre_data          PROTO ((void));
+static void compute_pre_data	  PROTO ((void));
 static int pre_expr_reaches_here_p    PROTO ((struct occr *, struct expr *,
 					      int, char *));
-static void pre_insert_insn           PROTO ((struct expr *, int));
-static void pre_insert                PROTO ((struct expr **));
+static void pre_insert_insn	   PROTO ((struct expr *, int));
+static void pre_insert		PROTO ((struct expr **));
 static void pre_insert_copy_insn      PROTO ((struct expr *, rtx));
-static void pre_insert_copies         PROTO ((void));
-static int pre_delete                 PROTO ((void));
-static int pre_gcse                   PROTO ((void));
-static int one_pre_gcse_pass          PROTO ((rtx, int));
+static void pre_insert_copies	 PROTO ((void));
+static int pre_delete		 PROTO ((void));
+static int pre_gcse		   PROTO ((void));
+static int one_pre_gcse_pass	  PROTO ((rtx, int));
 
 static void add_label_notes	      PROTO ((rtx, rtx));
 
@@ -2515,12 +2515,12 @@ compute_kill_rd ()
 
   /* For each block
        For each set bit in `gen' of the block (i.e each insn which
-           generates a definition in the block)
-         Call the reg set by the insn corresponding to that bit regx
-         Look at the linked list starting at reg_set_table[regx]
-         For each setting of regx in the linked list, which is not in
-             this block
-           Set the bit in `kill' corresponding to that insn
+	   generates a definition in the block)
+	 Call the reg set by the insn corresponding to that bit regx
+	 Look at the linked list starting at reg_set_table[regx]
+	 For each setting of regx in the linked list, which is not in
+	     this block
+	   Set the bit in `kill' corresponding to that insn
     */
 
   for (bb = 0; bb < n_basic_blocks; bb++)
@@ -2528,16 +2528,16 @@ compute_kill_rd ()
       for (cuid = 0; cuid < max_cuid; cuid++)
 	{
 	  if (TEST_BIT (rd_gen[bb], cuid))
-            {
+	    {
 	      rtx insn = CUID_INSN (cuid);
 	      rtx pat = PATTERN (insn);
 
 	      if (GET_CODE (insn) == CALL_INSN)
-                {
+		{
 		  int regno;
 
 		  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-                    {
+		    {
 		      if ((call_used_regs[regno]
 			   && regno != STACK_POINTER_REGNUM
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
@@ -2553,8 +2553,8 @@ compute_kill_rd ()
 			   && regno != FRAME_POINTER_REGNUM)
 			  || global_regs[regno])
 			handle_rd_kill_set (insn, regno, bb);
-                    }
-                }
+		    }
+		}
 
 	      if (GET_CODE (pat) == PARALLEL)
 		{
@@ -2579,9 +2579,9 @@ compute_kill_rd ()
 			 must be marked in the set of kills in this block.  */
 		      handle_rd_kill_set (insn, REGNO (SET_DEST (pat)), bb);
 		    }
-                }
+		}
 	      /* FIXME: CLOBBER? */
-            }
+	    }
 	}
     }
 }
@@ -2605,12 +2605,12 @@ compute_rd ()
     {
       changed = 0;
       for (bb = 0; bb < n_basic_blocks; bb++)
-        {
+	{
 	  sbitmap_union_of_predecessors (reaching_defs[bb], rd_out,
 					 bb, s_preds);
 	  changed |= sbitmap_union_of_diff (rd_out[bb], rd_gen[bb],
 					    reaching_defs[bb], rd_kill[bb]);
-        }
+	}
       passes++;
     }
 
@@ -2858,20 +2858,20 @@ expr_reaches_here_p (occr, expr, bb, check_self_loop, visited)
       int pred_bb = INT_LIST_VAL (pred);
 
       if (visited[pred_bb])
-        {
+	{
 	  /* This predecessor has already been visited.
 	     Nothing to do.  */
 	  ;
 	}
       else if (pred_bb == bb)
-        {
+	{
 	  /* BB loops on itself.  */
 	  if (check_self_loop
 	      && TEST_BIT (ae_gen[pred_bb], expr->bitmap_index)
 	      && BLOCK_NUM (occr->insn) == pred_bb)
 	    return 1;
 	  visited[pred_bb] = 1;
-        }
+	}
       /* Ignore this predecessor if it kills the expression.  */
       else if (TEST_BIT (ae_kill[pred_bb], expr->bitmap_index))
 	visited[pred_bb] = 1;
@@ -2887,11 +2887,11 @@ expr_reaches_here_p (occr, expr, bb, check_self_loop, visited)
 	}
       /* Neither gen nor kill.  */
       else
-        {
+	{
 	  visited[pred_bb] = 1;
 	  if (expr_reaches_here_p (occr, expr, pred_bb, check_self_loop, visited))
 	    return 1;
-        }
+	}
     }
 
   /* All paths have been checked.  */
@@ -2983,7 +2983,7 @@ def_reaches_here_p (insn, def_insn)
   if (BLOCK_NUM (insn) == BLOCK_NUM (def_insn))
     {
       if (INSN_CUID (def_insn) < INSN_CUID (insn))
-        {
+	{
 	  if (GET_CODE (PATTERN (def_insn)) == PARALLEL)
 	    return 1;
 	  if (GET_CODE (PATTERN (def_insn)) == CLOBBER)
@@ -3166,13 +3166,13 @@ handle_avail_expr (insn, expr)
 
       gcse_create_count++;
       if (gcse_file != NULL)
-        {
+	{
 	  fprintf (gcse_file, "GCSE: Creating insn %d to copy value of reg %d, computed in insn %d,\n",
 		   INSN_UID (NEXT_INSN (insn_computes_expr)),
 		   REGNO (SET_SRC (PATTERN (NEXT_INSN (insn_computes_expr)))),
 		   INSN_UID (insn_computes_expr));
 	  fprintf (gcse_file, "      into newly allocated reg %d\n", REGNO (to));
-        }
+	}
 
       pat = PATTERN (insn);
 
@@ -3252,7 +3252,7 @@ classic_gcse ()
 	  /* ??? Need to be careful w.r.t. mods done to INSN.  */
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    mark_oprs_set (insn);
-        }
+	}
     }
 
   return changed;
@@ -3534,7 +3534,7 @@ compute_cprop_avinout ()
     {
       changed = 0;
       for (bb = 0; bb < n_basic_blocks; bb++)
-        {
+	{
 	  if (bb != 0)
 	    sbitmap_intersect_of_predecessors (cprop_avin[bb], cprop_avout,
 					       bb, s_preds);
@@ -3906,7 +3906,7 @@ cprop ()
 	      /* ??? Need to be careful w.r.t. mods done to INSN.  */
 	      mark_oprs_set (insn);
 	    }
-        }
+	}
     }
 
   if (gcse_file != NULL)
@@ -4152,7 +4152,7 @@ compute_pre_avinout ()
     {
       changed = 0;
       for (bb = 0; bb < n_basic_blocks; bb++)
-        {
+	{
 	  if (bb != 0)
 	    sbitmap_intersect_of_predecessors (pre_avin[bb], pre_avout,
 					       bb, s_preds);
@@ -4184,7 +4184,7 @@ compute_pre_antinout ()
       /* We scan the blocks in the reverse order to speed up
 	 the convergence.  */
       for (bb = n_basic_blocks - 1; bb >= 0; bb--)
-        {
+	{
 	  if (bb != n_basic_blocks - 1)
 	    sbitmap_intersect_of_successors (pre_antout[bb], pre_antin,
 					     bb, s_succs);
@@ -4215,7 +4215,7 @@ compute_pre_pavinout ()
     {
       changed = 0;
       for (bb = 0; bb < n_basic_blocks; bb++)
-        {
+	{
 	  if (bb != 0)
 	    sbitmap_union_of_predecessors (pre_pavin[bb], pre_pavout,
 					   bb, s_preds);
@@ -4447,7 +4447,7 @@ pre_expr_reaches_here_p (occr, expr, bb, visited)
       if (pred_bb == ENTRY_BLOCK
 	  /* Has predecessor has already been visited?  */
 	  || visited[pred_bb])
-        {
+	{
 	  /* Nothing to do.  */
 	}
       /* Does this predecessor generate this expression?  */
@@ -4465,11 +4465,11 @@ pre_expr_reaches_here_p (occr, expr, bb, visited)
 	visited[pred_bb] = 1;
       /* Neither gen nor kill.  */
       else
-        {
+	{
 	  visited[pred_bb] = 1;
 	  if (pre_expr_reaches_here_p (occr, expr, pred_bb, visited))
 	    return 1;
-        }
+	}
     }
 
   /* All paths have been checked.  */
@@ -4943,10 +4943,10 @@ add_label_notes (x, insn)
   if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
     {
       /* This code used to ignore labels that referred to dispatch tables to
-         avoid flow generating (slighly) worse code.
+	 avoid flow generating (slighly) worse code.
 
-         We no longer ignore such label references (see LABEL_REF handling in
-         mark_jump_label for additional information).  */
+	 We no longer ignore such label references (see LABEL_REF handling in
+	 mark_jump_label for additional information).  */
       REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
 					    REG_NOTES (insn));
       return;
