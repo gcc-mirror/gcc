@@ -1,3 +1,8 @@
+1999-09-23  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (lang_specific_driver): Don't read spec file if
+	-fsyntax-only given.
+
 1999-09-22  Tom Tromey  <tromey@cygnus.com>
 
 	* lang-specs.h: Added `%(jc1)' to the jc1 spec.

@@ -287,6 +287,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  else if (strcmp (argv[i], "-fsyntax-only") == 0
 		   || strcmp (argv[i], "--syntax-only") == 0)
 	    {
+	      want_spec_file = 0;
 	      library = 0;
 	      will_link = 0;
 	      continue;
