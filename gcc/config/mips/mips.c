@@ -3208,7 +3208,9 @@ function_arg (cum, mode, type, named)
 		    % BITS_PER_WORD == 0))
 	      break;
 
-	  if (! field)
+	  /* If the whole struct fits a DFmode register,
+	     we don't need the PARALLEL.  */
+	  if (! field || mode == DFmode)
 	    ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
 	  else
 	    {
@@ -3221,11 +3223,6 @@ function_arg (cum, mode, type, named)
 
 	      /* ??? If this is a packed structure, then the last hunk won't
 		 be 64 bits.  */
-
-	      /* ??? If this is a structure with a single double field,
-		 it would be more convenient to return (REG:DI %fX) than
-		 a parallel.  However, we would have to modify the mips
-		 backend to allow DImode values in fp registers.  */
 
 	      chunks = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_WORD;
 	      if (chunks + *arg_words + bias > MAX_ARGS_IN_REGISTERS)
