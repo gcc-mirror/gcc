@@ -1,3 +1,13 @@
+2001-10-21  Robert Lipe  <robertlipe@usa.net>
+
+	* config/i386/i386.c (sco_asm_named_section): Delete.
+	(sco_asm_out_constructor): Delete.
+	* config/i386/sco5.h (ASM_QUAD): Undo damage from att.h.
+	(ASM_OUTPUT_DOUBLE_INT): Likewise.
+	(TARGET_ASM_CONSTRUCTOR): Delete.  Use default.
+	(TARGET_ASM_NAMED_SECTION): Use default for ELF.
+	(EXCEPTION_SECTION): Delete EH scn renaming hack.
+
 2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-format.c (maybe_read_dollar_number): Use safe-ctype macros

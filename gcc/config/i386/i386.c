@@ -695,10 +695,7 @@ static tree ix86_handle_regparm_attribute PARAMS ((tree *, tree, tree, int, bool
 #ifdef DO_GLOBAL_CTORS_BODY
 static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
-#if defined(TARGET_ELF) && defined(TARGET_COFF)
-static void sco_asm_named_section PARAMS ((const char *, unsigned int));
-static void sco_asm_out_constructor PARAMS ((rtx, int));
-#endif
+
 /* Register class used for passing given 64bit part of the argument.
    These represent classes as documented by the PS ABI, with the exception
    of SSESF, SSEDF classes, that are basically SSE class, just gcc will
@@ -12454,29 +12451,5 @@ ix86_svr3_asm_out_constructor (symbol, priority)
   fputs ("\tpushl $", asm_out_file);
   assemble_name (asm_out_file, XSTR (symbol, 0));
   fputc ('\n', asm_out_file);
-}
-#endif
-
-#if defined(TARGET_ELF) && defined(TARGET_COFF)
-static void
-sco_asm_named_section (name, flags)
-     const char *name;
-     unsigned int flags;
-{
-  if (TARGET_ELF)
-    default_elf_asm_named_section (name, flags);
-  else
-    default_coff_asm_named_section (name, flags);
-}
-
-static void
-sco_asm_out_constructor (symbol, priority)
-     rtx symbol;
-     int priority;
-{
-  if (TARGET_ELF)
-    default_named_section_asm_out_constrctor (symbol, priority);
-  else
-    ix86_svr3_asm_out_constructor (symbol, priority);
 }
 #endif
