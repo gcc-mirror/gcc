@@ -1,3 +1,11 @@
+2000-11-26  Ulrich Drepper  <drepper@redhat.com>
+
+	* dwarf2out.c (output_file_names): New function.  Compute minimal
+	combination of directory and file name table and emit them.
+	(output_line_info): Remove code to emit directory and file name
+	table and call output_file_names instead.
+	(file_info_cmp): Helper function to sort directory names.
+
 2000-11-26  Neil Booth  <neilb@earthling.net>
 
         * cpplib.h (struct cpp_reader): Remove lang_asm.

@@ -529,10 +529,10 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 /* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
    newline is produced.  When flag_debug_asm is asserted, we add commentary
    at the end of the line, so we must avoid output of a newline here.  */
-#ifndef ASM_OUTPUT_DWARF_STRING
-#define ASM_OUTPUT_DWARF_STRING(FILE,P) \
+#ifndef ASM_OUTPUT_DWARF_NSTRING
+#define ASM_OUTPUT_DWARF_NSTRING(FILE,P,SLEN) \
   do {									      \
-    register int slen = strlen(P);                                            \
+    register int slen = (SLEN);                                               \
     register const char *p = (P);  	                                      \
     register int i;					                      \
     fprintf (FILE, "\t.ascii \"");				              \
@@ -552,6 +552,8 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
   }									      \
   while (0)
 #endif
+#define ASM_OUTPUT_DWARF_STRING(FILE,P) \
+  ASM_OUTPUT_DWARF_NSTRING (FILE, P, strlen (P))
 
 /* The DWARF 2 CFA column which tracks the return address.  Normally this
    is the column for PC, or the first column after all of the hard
@@ -1207,7 +1209,7 @@ dwarf2out_stack_adjust (insn)
     }
   else
     return;
-  
+
   if (offset == 0)
     return;
 
@@ -3440,6 +3442,7 @@ static void output_pubnames		PARAMS ((void));
 static void add_arange			PARAMS ((tree, dw_die_ref));
 static void output_aranges		PARAMS ((void));
 static void output_line_info		PARAMS ((void));
+static void output_file_names           PARAMS ((void));
 static dw_die_ref base_type_die		PARAMS ((tree));
 static tree root_type			PARAMS ((tree));
 static int is_base_type			PARAMS ((tree));
@@ -4645,7 +4648,7 @@ free_AT (a)
     case dw_val_class_float:
       free (a->dw_attr_val.v.val_float.array);
       break;
-      
+
     default:
       break;
     }
@@ -5392,7 +5395,7 @@ break_out_includes (die)
 
 #if 0
   /* We can only use this in debugging, since the frontend doesn't check
-     to make sure that we leave every include file we enter.  */     
+     to make sure that we leave every include file we enter.  */
   if (unit != NULL)
     abort ();
 #endif
@@ -6393,6 +6396,314 @@ output_aranges ()
   fputc ('\n', asm_out_file);
 }
 
+
+/* Data structure containing information about input files.  */
+struct file_info
+{
+  char *path;		/* Complete file name.  */
+  char *fname;		/* File name part.  */
+  int length;		/* Length of entire string.  */
+  int file_idx;		/* Index in input file table.  */
+  int dir_idx;		/* Index in directory table.  */
+};
+
+/* Data structure containing information about directories with source
+   files.  */
+struct dir_info
+{
+  char *path;		/* Path including directory name.  */
+  int length;		/* Path length.  */
+  int prefix;		/* Index of directory entry which is a prefix.  */
+  int nbytes;		/* Total number of bytes in all file names excluding
+			   paths.  */
+  int count;		/* Number of files in this directory.  */
+  int dir_idx;		/* Index of directory used as base.  */
+  int used;		/* Used in the end?  */
+};
+
+/* Callback function for file_info comparison.  We sort by looking at
+   the directories in the path.  */
+static int
+file_info_cmp (p1, p2)
+     const void *p1;
+     const void *p2;
+{
+  const struct file_info *s1 = p1;
+  const struct file_info *s2 = p2;
+  unsigned char *cp1;
+  unsigned char *cp2;
+
+  /* Take care of file names without directories.  */
+  if (s1->path == s1->fname)
+    return -1;
+  else if (s2->path == s2->fname)
+    return 1;
+
+  cp1 = (unsigned char *) s1->path;
+  cp2 = (unsigned char *) s2->path;
+
+  while (1)
+    {
+      ++cp1;
+      ++cp2;
+      /* Reached the end of the first path?  */
+      if (cp1 == (unsigned char *) s1->fname)
+	/* It doesn't really matter in which order files from the
+	   same directory are sorted in.  Therefore don't test for
+	   the second path reaching the end.  */
+	return -1;
+      else if (cp2 == (unsigned char *) s2->fname)
+	return 1;
+
+      /* Character of current path component the same?  */
+      if (*cp1 != *cp2)
+	return *cp1 - *cp2;
+    }
+}
+
+/* Output the directory table and the file name table.  We try to minimize
+   the total amount of memory needed.  A heuristic is used to avoid large
+   slowdowns with many input files.  */
+static void
+output_file_names ()
+{
+  struct file_info *files;
+  struct dir_info *dirs;
+  int *saved;
+  int *savehere;
+  int *backmap;
+  int ndirs;
+  int idx_offset;
+  int i;
+  int idx;
+
+  /* Allocate the various arrays we need.  */
+  files = (struct file_info *) alloca (line_file_table.in_use
+				       * sizeof (struct file_info));
+  dirs = (struct dir_info *) alloca (line_file_table.in_use
+				     * sizeof (struct dir_info));
+
+  /* Sort the file names.  */
+   for (i = 1; i < (int) line_file_table.in_use; ++i)
+    {
+      char *f;
+
+      /* Skip all leading "./".  */
+      f = line_file_table.table[i];
+      while (f[0] == '.' && f[1] == '/')
+	f += 2;
+
+      /* Create a new array entry.  */
+      files[i].path = f;
+      files[i].length = strlen (f);
+      files[i].file_idx = i;
+
+      /* Search for the file name part.  */
+      f = strrchr (f, '/');
+      files[i].fname = f == NULL ? files[i].path : f + 1;
+    }
+  qsort (files + 1, line_file_table.in_use - 1, sizeof (files[0]),
+	 file_info_cmp);
+
+  /* Find all the different directories used.  */
+  dirs[0].path = files[1].path;
+  dirs[0].length = files[1].fname - files[1].path;
+  dirs[0].prefix = -1;
+  dirs[0].nbytes = files[1].length - dirs[1].length + 1;
+  dirs[0].count = 1;
+  dirs[0].dir_idx = 0;
+  dirs[0].used = 0;
+  files[1].dir_idx = 0;
+  ndirs = 1;
+
+  for (i = 2; i < (int) line_file_table.in_use; ++i)
+    if (files[i].fname - files[i].path == dirs[ndirs - 1].length
+	&& memcmp (dirs[ndirs - 1].path, files[i].path,
+		   dirs[ndirs - 1].length) == 0)
+      {
+	/* Same directory as last entry.  */
+	files[i].dir_idx = ndirs - 1;
+	dirs[ndirs - 1].nbytes += files[i].length - dirs[ndirs - 1].length + 1;
+	++dirs[ndirs - 1].count;
+      }
+    else
+      {
+	int j;
+
+	/* This is a new directory.  */
+	dirs[ndirs].path = files[i].path;
+	dirs[ndirs].length = files[i].fname - files[i].path;
+	dirs[ndirs].nbytes = files[i].length - dirs[i].length + 1;
+	dirs[ndirs].count = 1;
+	dirs[ndirs].dir_idx = ndirs;
+	dirs[ndirs].used = 0;
+	files[i].dir_idx = ndirs;
+
+	/* Search for a prefix.  */
+	dirs[ndirs].prefix = -1;
+	for (j = 0; j < ndirs; ++j)
+	  if (dirs[j].length < dirs[ndirs].length
+	      && dirs[j].length != 0
+	      && memcmp (dirs[j].path, dirs[ndirs].path, dirs[j].length) == 0)
+	    dirs[ndirs].prefix = j;
+
+	++ndirs;
+      }
+
+  /* Now to the actual work.  We have to find a subset of the
+     directories which allow expressing the file name using references
+     to the directory table with the least amount of characters.  We
+     do not do an exhaustive search where we would have to check out
+     every combination of every single possible prefix.  Instead we
+     use a heuristic which provides nearly optimal results in most
+     cases and never is much off.  */
+  saved = (int *) alloca (ndirs * sizeof (int));
+  savehere = (int *) alloca (ndirs * sizeof (int));
+
+  memset (saved, '\0', ndirs * sizeof (saved[0]));
+  for (i = 0; i < ndirs; ++i)
+    {
+      int j;
+      int total;
+
+      /* We can always safe some space for the current directory.  But
+	 this does not mean it will be enough to justify adding the
+	 directory.  */
+      savehere[i] = dirs[i].length;
+      total = (savehere[i] - saved[i]) * dirs[i].count;
+
+      for (j = i + 1; j < ndirs; ++j)
+	{
+	  savehere[j] = 0;
+
+	  if (saved[j] < dirs[i].length)
+	    {
+	      /* Determine whether the dirs[i] path is a prefix of the
+		 dirs[j] path.  */
+	      int k;
+
+	       k = dirs[j].prefix;
+	       while (k != -1 && k != i)
+		 k = dirs[k].prefix;
+
+	       if (k == i)
+		 {
+		   /* Yes it is.  We can possibly safe some memory but
+		      writing the filenames in dirs[j] relative to
+		      dirs[i].  */
+		   savehere[j] = dirs[i].length;
+		   total += (savehere[j] - saved[j]) * dirs[j].count;
+		 }
+	    }
+	}
+
+      /* Check whether we can safe enough to justify adding the dirs[i]
+	 directory.  */
+      if (total > dirs[i].length + 1)
+	{
+	   /* It's worthwhile adding.  */
+          for (j = i; j < ndirs; ++j)
+	    if (savehere[j] > 0)
+	      {
+		/* Remember how much we saved for this directory so far.  */
+		saved[j] = savehere[j];
+
+		/* Remember the prefix directory.  */
+		dirs[j].dir_idx = i;
+	      }
+	}
+    }
+
+  /* We have to emit them in the order they appear in the line_file_table
+     array since the index is used in the debug info generation.  To
+     do this efficiently we generate a back-mapping of the indices
+     first.  */
+  backmap = (int *) alloca (line_file_table.in_use * sizeof (int));
+  for (i = 1; i < (int) line_file_table.in_use; ++i)
+    {
+      backmap[files[i].file_idx] = i;
+      /* Mark this directory as used.  */
+      dirs[dirs[files[i].dir_idx].dir_idx].used = 1;
+    }
+
+  /* That was it.  We are ready to emit the information.  First the
+     directory name table.  Here we have to make sure that the first
+     actually emitted directory name has the index one.  Zero is
+     reserved for the current working directory.  Make sure we do not
+     confuse these indices with the one for the constructed table
+     (even though most of the time they are identical).  */
+  idx = 1;
+  idx_offset = dirs[0].path[0] == '/' ? 1 : 0;
+  for (i = 1 - idx_offset; i < ndirs; ++i)
+    if (dirs[i].used != 0)
+      {
+	dirs[i].used = idx++;
+
+	if (flag_debug_asm)
+	  {
+	    ASM_OUTPUT_DWARF_NSTRING (asm_out_file,
+				      dirs[i].path, dirs[i].length - 1);
+	    fprintf (asm_out_file, "%s Directory Entry: 0x%x\n",
+		     ASM_COMMENT_START, dirs[i].used);
+	  }
+	else
+	  {
+	    ASM_OUTPUT_ASCII (asm_out_file, dirs[i].path, dirs[i].length - 1);
+	    ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+	    fputc ('\n', asm_out_file);
+	  }
+      }
+  /* Correct the index for the current working directory entry if it
+     exists.  */
+  if (idx_offset == 0)
+    dirs[0].used = 0;
+  /* Terminate the directory name array.  */
+  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+  if (flag_debug_asm)
+    fprintf (asm_out_file, "\t%s End directory table", ASM_COMMENT_START);
+  fputc ('\n', asm_out_file);
+
+  /* Now write all the file names.  */
+  for (i = 1; i < (int) line_file_table.in_use; ++i)
+    {
+      int file_idx = backmap[i];
+      int dir_idx = dirs[files[file_idx].dir_idx].dir_idx;
+
+      if (flag_debug_asm)
+	{
+	  ASM_OUTPUT_DWARF_STRING (asm_out_file,
+				   files[file_idx].path
+				   + dirs[dir_idx].length);
+	  fprintf (asm_out_file, "%s File Entry: 0x%x\n",
+		   ASM_COMMENT_START, i);
+	}
+      else
+	ASM_OUTPUT_ASCII (asm_out_file,
+			  files[file_idx].path + dirs[dir_idx].length,
+			  (files[file_idx].length
+			   - dirs[dir_idx].length) + 1);
+
+      /* Include directory index.  */
+      output_uleb128 (dirs[dir_idx].used);
+      fputc ('\n', asm_out_file);
+
+      /* Modification time.  */
+      output_uleb128 (0);
+      fputc ('\n', asm_out_file);
+
+      /* File length in bytes.  */
+      output_uleb128 (0);
+      fputc ('\n', asm_out_file);
+    }
+
+  /* Terminate the file name table */
+  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+  if (flag_debug_asm)
+    fprintf (asm_out_file, "\t%s End file name table", ASM_COMMENT_START);
+  fputc ('\n', asm_out_file);
+}
+
+
 /* Output the source line number correspondence information.  This
    information goes into the .debug_line section.  */
 
@@ -6403,7 +6714,6 @@ output_line_info ()
   char prev_line_label[MAX_ARTIFICIAL_LABEL_BYTES];
   register unsigned opc;
   register unsigned n_op_args;
-  register unsigned long ft_index;
   register unsigned long lt_index;
   register unsigned long current_line;
   register long line_offset;
@@ -6479,49 +6789,8 @@ output_line_info ()
       fputc ('\n', asm_out_file);
     }
 
-  if (flag_debug_asm)
-    fprintf (asm_out_file, "%s Include Directory Table\n", ASM_COMMENT_START);
-
-  /* Include directory table is empty, at present */
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-  fputc ('\n', asm_out_file);
-  if (flag_debug_asm)
-    fprintf (asm_out_file, "%s File Name Table\n", ASM_COMMENT_START);
-
-  for (ft_index = 1; ft_index < line_file_table.in_use; ++ft_index)
-    {
-      if (flag_debug_asm)
-	{
-	  ASM_OUTPUT_DWARF_STRING (asm_out_file,
-				   line_file_table.table[ft_index]);
-	  fprintf (asm_out_file, "%s File Entry: 0x%lx",
-		   ASM_COMMENT_START, ft_index);
-	}
-      else
-	{
-	  ASM_OUTPUT_ASCII (asm_out_file,
-			    line_file_table.table[ft_index],
-			    (int) strlen (line_file_table.table[ft_index]) + 1);
-	}
-
-      fputc ('\n', asm_out_file);
-
-      /* Include directory index */
-      output_uleb128 (0);
-      fputc ('\n', asm_out_file);
-
-      /* Modification time */
-      output_uleb128 (0);
-      fputc ('\n', asm_out_file);
-
-      /* File length in bytes */
-      output_uleb128 (0);
-      fputc ('\n', asm_out_file);
-    }
-
-  /* Terminate the file name table */
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-  fputc ('\n', asm_out_file);
+  /* Write out the information about the files we use.  */
+  output_file_names ();
 
   /* We used to set the address register to the first location in the text
      section here, but that didn't accomplish anything since we already
@@ -8349,7 +8618,7 @@ tree_add_const_value_attribute (var_die, decl)
     default:;
     }
 }
-     
+
 /* Generate an DW_AT_name attribute given some string value to be included as
    the value of the attribute.  */
 
@@ -8463,7 +8732,7 @@ add_bound_info (subrange_die, bound_attr, bound)
 	/* ??? Can this happen, or should the variable have been bound
 	   first?  Probably it can, since I imagine that we try to create
 	   the types of parameters in the order in which they exist in
-	   the list, and won't have created a forward reference to a 
+	   the list, and won't have created a forward reference to a
 	   later parameter.  */
 	if (decl_die != NULL)
 	  add_AT_die_ref (subrange_die, bound_attr, decl_die);
@@ -11053,7 +11322,7 @@ dwarf2out_line (filename, line)
 
 	  /* Emit the .file and .loc directives understood by GNU as.  */
 #if 0
-	  /* ??? As of 2000-11-25, gas has a bug in which it doesn't 
+	  /* ??? As of 2000-11-25, gas has a bug in which it doesn't
 	     actually use the file number argument.  It merely remembers
 	     the last .file directive emitted.  */
 	  if (file_num >= old_in_use)
@@ -11158,7 +11427,7 @@ dwarf2out_end_source_file ()
     {
       /* Record the end of the file for break_out_includes.  */
       new_die (DW_TAG_GNU_EINCL, comp_unit_die);
-    }      
+    }
 }
 
 /* Called from check_newline in c-parse.y.  The `buffer' parameter contains
