@@ -98,6 +98,7 @@ static void arc_file_start (void);
 static void arc_internal_label (FILE *, const char *, unsigned long);
 static bool arc_rtx_costs (rtx, int, int, int *);
 static int arc_address_cost (rtx);
+static bool arc_return_in_memory (tree, tree);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -122,6 +123,18 @@ static int arc_address_cost (rtx);
 #define TARGET_RTX_COSTS arc_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST arc_address_cost
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY arc_return_in_memory
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2350,4 +2363,12 @@ arc_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
 {
   arc_ccfsm_at_label (prefix, labelno);
   default_internal_label (stream, prefix, labelno);
+}
+
+static bool
+arc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return (AGGREGATE_TYPE_P (type)
+	  || int_size_in_bytes (type) > 8
+	  || TREE_ADDRESSABLE (type));
 }
