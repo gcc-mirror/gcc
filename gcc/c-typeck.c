@@ -651,7 +651,8 @@ type_lists_compatible_p (args1, args2)
 	  if (simple_type_promotes_to (TREE_VALUE (args1)) != NULL_TREE)
 	    return 0;
 	}
-      else if (! (newval = comptypes (TREE_VALUE (args1), TREE_VALUE (args2))))
+      else if (! (newval = comptypes (TYPE_MAIN_VARIANT (TREE_VALUE (args1)), 
+				      TYPE_MAIN_VARIANT (TREE_VALUE (args2)))))
 	{
 	  /* Allow  wait (union {union wait *u; int *i} *)
 	     and  wait (union wait *)  to be compatible.  */

@@ -1,3 +1,10 @@
+2001-06-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-decl.c (grokdeclarator): Make the TREE_TYPE for declarations
+	accurately reflect its cv-qualification.
+	* c-typeck.c (type_lists_compatible_p): Ignore the top-levl
+	cv-qualifiers on function types.
+
 2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/alpha/elf.h (MAKE_DECL_ONE_ONLY): Copy definition

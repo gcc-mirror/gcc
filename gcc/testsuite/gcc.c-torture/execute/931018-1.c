@@ -1,5 +1,5 @@
 unsigned int a[0x1000];
-extern unsigned long v;
+extern const unsigned long v;
 
 main ()
 {
