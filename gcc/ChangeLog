@@ -1,5 +1,16 @@
 2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/arm/arm.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
+	(TARGET_PROMOTE_PROTOTYPES): Likewise.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(arm_struct_value_rtx): Likewise.
+	* config/arm/arm.h (PROMOTE_FUNCTION_ARGS): Remove.
+	(STRUCT_VALUE): Likewise.
+	(STRUCT_VALUE_REGNUM): Likewise.
+	(PROMOTE_PROTOTYPES): Likewise.
+
+2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/ia64/ia64-protos.h: Remove the prototype for
 	ia64_setup_incoming_varargs and ia64_return_in_memory.
 	* config/ia64/ia64.c (TARGET_STRUCT_VALUE_RTX): New.

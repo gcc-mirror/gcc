@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -709,11 +709,6 @@ extern int arm_is_6_or_7;
       (MODE) = SImode;				\
     }
 
-/* Define this macro if the promotion described by `PROMOTE_MODE'
-   should also be done for outgoing function arguments.  */
-/* This is required to ensure that push insns always push a word.  */
-#define PROMOTE_FUNCTION_ARGS
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN  0
@@ -1050,20 +1045,6 @@ extern const char * structure_size_string;
 
 /* Return the register number of the N'th (integer) argument.  */
 #define ARG_REGISTER(N) 	(N - 1)
-
-#if 0 /* FIXME: The ARM backend has special code to handle structure
-	 returns, and will reserve its own hidden first argument.  So
-	 if this macro is enabled a *second* hidden argument will be
-	 reserved, which will break binary compatibility with old
-	 toolchains and also thunk handling.  One day this should be
-	 fixed.  */
-/* RTX for structure returns.  NULL means use a hidden first argument.  */
-#define STRUCT_VALUE		0
-#else
-/* Register in which address to store a structure value
-   is passed to a function.  */
-#define STRUCT_VALUE_REGNUM	ARG_REGISTER (1)
-#endif
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -2348,9 +2329,6 @@ do {							\
 
 /* Calling from registers is a massive pain.  */
 #define NO_FUNCTION_CSE 1
-
-/* Chars and shorts should be passed as ints.  */
-#define PROMOTE_PROTOTYPES 1
 
 /* The machine modes of pointers and functions */
 #define Pmode  SImode

@@ -150,6 +150,7 @@ static void aof_dump_pic_table (FILE *);
 static void aof_file_start (void);
 static void aof_file_end (void);
 #endif
+static rtx arm_struct_value_rtx (tree, int);
 
 
 /* Initialize the GCC target structure.  */
@@ -232,6 +233,14 @@ static void aof_file_end (void);
 #define TARGET_INIT_BUILTINS  arm_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN arm_expand_builtin
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX arm_struct_value_rtx
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13321,4 +13330,23 @@ arm_output_load_gr (rtx *operands)
   output_asm_insn ("ldr%?\t%0, [sp], #4\t@ End of GR load expansion", & reg);
 
   return "";
+}
+
+static rtx
+arm_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		      int incoming ATTRIBUTE_UNUSED)
+{
+#if 0
+  /* FIXME: The ARM backend has special code to handle structure
+	 returns, and will reserve its own hidden first argument.  So
+	 if this macro is enabled a *second* hidden argument will be
+	 reserved, which will break binary compatibility with old
+	 toolchains and also thunk handling.  One day this should be
+	 fixed.  */
+  return 0;
+#else
+  /* Register in which address to store a structure value
+     is passed to a function.  */
+  return gen_rtx_REG (Pmode, ARG_REGISTER (1));
+#endif
 }
