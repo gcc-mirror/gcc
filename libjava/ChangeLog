@@ -1,5 +1,14 @@
 1999-05-07  Tom Tromey  <tromey@cygnus.com>
 
+	* acconfig.h (GCJVERSION): New undef.
+	* java/lang/natSystem.cc (init_properties): Define java.version,
+	java.class.version, os.name, os.arch, os.version.
+	Include <sys/utsname.h> if required.
+	* configure: Rebuilt.
+	* configure.in: Compute and define GCJVERSION.
+
+	* java/lang/natSystem.cc (default_file_encoding): Now static.
+
 	* java/lang/natCharacter.cc (isLowerCase): Use a binary search.
 
 	* libtool-version: New file.

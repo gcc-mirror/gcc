@@ -34,6 +34,10 @@ details.  */
 #endif
 #include <errno.h>
 
+#ifdef HAVE_UNAME
+#include <sys/utsname.h>
+#endif
+
 #include <cni.h>
 #include <jvm.h>
 #include <java/lang/System.h>
@@ -220,7 +224,7 @@ java::lang::System::identityHashCode (jobject obj)
 #ifndef DEFAULT_FILE_ENCODING
 #define DEFAULT_FILE_ENCODING "8859_1"
 #endif
-char *default_file_encoding = DEFAULT_FILE_ENCODING;
+static char *default_file_encoding = DEFAULT_FILE_ENCODING;
 
 void
 java::lang::System::init_properties (void)
@@ -237,16 +241,15 @@ java::lang::System::init_properties (void)
   // A convenience define.
 #define SET(Prop,Val) \
 	properties->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
-  SET ("java.version", "FIXME");
+  SET ("java.version", VERSION);
   SET ("java.vendor", "Cygnus Solutions");
   SET ("java.vendor.url", "http://www.cygnus.com/");
+  SET ("java.class.version", GCJVERSION);
+  // FIXME: how to set these given location-independence?
   // SET ("java.home", "FIXME");
-  // SET ("java.class.version", "FIXME");
   // SET ("java.class.path", "FIXME");
-  SET ("os.name", "FIXME");
-  SET ("os.arch", "FIXME");
-  SET ("os.version", "FIXME");
   SET ("file.encoding", default_file_encoding);
+
 #ifdef WIN32
   SET ("file.separator", "\\");
   SET ("path.separator", ";");
@@ -257,6 +260,22 @@ java::lang::System::init_properties (void)
   SET ("path.separator", ":");
   SET ("line.separator", "\n");
 #endif
+
+#ifdef HAVE_UNAME
+  struct utsname u;
+  if (! uname (&u))
+    {
+      SET ("os.name", u.sysname);
+      SET ("os.arch", u.machine);
+      SET ("os.version", u.release);
+    }
+  else
+    {
+      SET ("os.name", "unknown");
+      SET ("os.arch", "unknown");
+      SET ("os.version", "unknown");
+    }
+#endif /* HAVE_UNAME */
 
 #ifdef HAVE_PWD_H
   uid_t user_id = getuid ();

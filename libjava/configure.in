@@ -255,6 +255,9 @@ if test -n "${with_cross_host}"; then
    if test "$build" != "$with_cross_host"; then
       CANADIAN=yes
       EH_COMMON_INCLUDE=
+      GCJ="${target_alias}/gcj"
+   else
+      GCJ=
    fi
 else
    # Some POSIX thread systems don't have pthread_mutexattr_settype.
@@ -314,17 +317,34 @@ else
       AC_MSG_ERROR([memcpy is required])
    fi
 
-   test -d "$libgcj_basedir/../gcc/java" || {
+   if test -d "$libgcj_basedir/../gcc/java"; then
+      GCJ=
+   else
       CANADIAN=yes
       NULL_TARGET=yes
-   }
+      GCJ=gcj
+   fi
 fi
 
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$CANADIAN" = no || test "$NULL_TARGET" = yes)
-
 AC_SUBST(EH_COMMON_INCLUDE)
+
+# Determine gcj version number.
+if test "$GCJ" = ""; then
+   if test -z "${with_multisubdir}"; then
+      builddotdot=.
+   else
+      builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
+   fi
+   dir="`cd ${builddotdot}/../../gcc && pwd`"
+   GCJ="$dir/gcj -B$dir/"
+fi
+changequote(<<,>>)
+gcjvers="`$GCJ -v 2>&1 | sed -n 's/^.*version \([^ ]*\).*$/\1/p'`"
+changequote([,])
+AC_DEFINE_UNQUOTED(GCJVERSION, "$gcjvers")
 
 AC_SUBST(AM_RUNTESTFLAGS)
 

@@ -76,6 +76,9 @@
 /* Define if global `timezone' exists.  */
 #undef HAVE_TIMEZONE
 
+/* Define to version of GCJ in use.  */
+#undef GCJVERSION
+
 /* Define if you have the appropriate function.  */
 #undef HAVE_ACCESS
 #undef HAVE_STAT
