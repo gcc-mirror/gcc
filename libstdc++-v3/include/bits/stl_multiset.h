@@ -69,15 +69,17 @@ namespace __gnu_norm
   // Forward declaration of operators < and ==, needed for friend declaration.
   template <class _Key, class _Compare = less<_Key>,
 	    class _Alloc = allocator<_Key> >
-  class multiset;
+    class multiset;
 
   template <class _Key, class _Compare, class _Alloc>
-  inline bool operator==(const multiset<_Key,_Compare,_Alloc>& __x, 
-			 const multiset<_Key,_Compare,_Alloc>& __y);
+    inline bool
+    operator==(const multiset<_Key,_Compare,_Alloc>& __x, 
+	       const multiset<_Key,_Compare,_Alloc>& __y);
 
   template <class _Key, class _Compare, class _Alloc>
-  inline bool operator<(const multiset<_Key,_Compare,_Alloc>& __x, 
-			const multiset<_Key,_Compare,_Alloc>& __y);
+    inline bool
+    operator<(const multiset<_Key,_Compare,_Alloc>& __x, 
+	      const multiset<_Key,_Compare,_Alloc>& __y);
 
   /**
    *  @brief A standard container made up of elements, which can be retrieved

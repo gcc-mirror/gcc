@@ -82,7 +82,7 @@ namespace std
    *  @ingroup SGIextensions
   */
   template<typename _Tp>
-  inline const _Tp&
+    inline const _Tp&
     __median(const _Tp& __a, const _Tp& __b, const _Tp& __c)
     {
       // concept requirements
@@ -167,8 +167,7 @@ namespace std
   template<typename _InputIterator, typename _Tp>
     inline _InputIterator
     find(_InputIterator __first, _InputIterator __last,
-	 const _Tp& __val,
-	 input_iterator_tag)
+	 const _Tp& __val, input_iterator_tag)
     {
       while (__first != __last && !(*__first == __val))
 	++__first;
@@ -183,8 +182,7 @@ namespace std
   template<typename _InputIterator, typename _Predicate>
     inline _InputIterator
     find_if(_InputIterator __first, _InputIterator __last,
-	    _Predicate __pred,
-	    input_iterator_tag)
+	    _Predicate __pred, input_iterator_tag)
     {
       while (__first != __last && !__pred(*__first))
 	++__first;
@@ -199,8 +197,7 @@ namespace std
   template<typename _RandomAccessIterator, typename _Tp>
     _RandomAccessIterator
     find(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	 const _Tp& __val,
-	 random_access_iterator_tag)
+	 const _Tp& __val, random_access_iterator_tag)
     {
       typename iterator_traits<_RandomAccessIterator>::difference_type
 	__trip_count = (__last - __first) >> 2;
@@ -252,8 +249,7 @@ namespace std
   template<typename _RandomAccessIterator, typename _Predicate>
     _RandomAccessIterator
     find_if(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	    _Predicate __pred,
-	    random_access_iterator_tag)
+	    _Predicate __pred, random_access_iterator_tag)
     {
       typename iterator_traits<_RandomAccessIterator>::difference_type
 	__trip_count = (__last - __first) >> 2;

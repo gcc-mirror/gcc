@@ -70,15 +70,17 @@ namespace __gnu_norm
   template <typename _Key, typename _Tp,
             typename _Compare = less<_Key>,
             typename _Alloc = allocator<pair<const _Key, _Tp> > >
-  class multimap;
+    class multimap;
   
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
-  inline bool operator==(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
-                         const multimap<_Key,_Tp,_Compare,_Alloc>& __y);
+    inline bool
+    operator==(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
+	       const multimap<_Key,_Tp,_Compare,_Alloc>& __y);
   
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
-  inline bool operator<(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
-                        const multimap<_Key,_Tp,_Compare,_Alloc>& __y);
+    inline bool
+    operator<(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
+	      const multimap<_Key,_Tp,_Compare,_Alloc>& __y);
   
   /**
    *  @brief A standard container made up of (key,value) pairs, which can be
@@ -123,7 +125,7 @@ namespace __gnu_norm
 	_Compare comp;
 	
 	value_compare(_Compare __c)
-	  : comp(__c) { }
+	: comp(__c) { }
 	
       public:
 	bool operator()(const value_type& __x, const value_type& __y) const

@@ -1,5 +1,14 @@
 2004-02-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algo.h: Additional minor tweaks.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+
+2004-02-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/vector.tcc (vector::_M_insert_aux(iterator)):
 	Remove, unused.
 
