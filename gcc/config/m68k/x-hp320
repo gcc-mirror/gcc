@@ -1,0 +1,11 @@
+# Make assignments for compilation on HPUX with their C compiler.
+CC=cc -Wc,-Nw2000 -Wc,-Ns2000 -Wc,-Ne700 -Wc,-Np300
+OLDCC=cc -Wc,-Nw2000 -Wc,-Ns2000 -Wc,-Ne700 -Wc,-Np300
+ALLOCA=alloca.o
+# For CCLIBFLAGS you might want to specify the switch that
+# forces only 68000 instructions to be used.
+
+# Version 5 of HPUX had a compiler bug that made it crash with -g.
+# You must set CFLAGS to empty on version 5.
+
+# You must get alloca.c from GNU Emacs.
