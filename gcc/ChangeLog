@@ -1,3 +1,9 @@
+2004-06-15  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (synth_mult): Mask bits of the multiplier to the
+	machine mode of the multiplication.  Don't consider shifts
+	by more than (or equal to) the width of the operation's mode.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/install.texi: Yet another update for autoconf

@@ -2191,6 +2191,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   struct algorithm *alg_in, *best_alg;
   int cost;
   unsigned HOST_WIDE_INT q;
+  int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
 
   /* Indicate that no algorithm is yet found.  If no algorithm
      is found, this value will be returned and indicate failure.  */
@@ -2198,6 +2199,9 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 
   if (cost_limit <= 0)
     return;
+
+  /* Restrict the bits of "t" to the multiplication's mode.  */
+  t &= GET_MODE_MASK (mode);
 
   /* t == 1 can be done in zero cost.  */
   if (t == 1)
@@ -2234,7 +2238,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   if ((t & 1) == 0)
     {
       m = floor_log2 (t & -t);	/* m = number of low zero bits */
-      if (m < BITS_PER_WORD)
+      if (m < maxm)
 	{
 	  q = t >> m;
 	  cost = shift_cost[mode][m];
@@ -2319,7 +2323,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       unsigned HOST_WIDE_INT d;
 
       d = ((unsigned HOST_WIDE_INT) 1 << m) + 1;
-      if (t % d == 0 && t > d && m < BITS_PER_WORD)
+      if (t % d == 0 && t > d && m < maxm)
 	{
 	  cost = add_cost[mode] + shift_cost[mode][m];
 	  if (shiftadd_cost[mode][m] < cost)
@@ -2340,7 +2344,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	}
 
       d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
-      if (t % d == 0 && t > d && m < BITS_PER_WORD)
+      if (t % d == 0 && t > d && m < maxm)
 	{
 	  cost = add_cost[mode] + shift_cost[mode][m];
 	  if (shiftsub_cost[mode][m] < cost)
@@ -2367,7 +2371,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       q = t - 1;
       q = q & -q;
       m = exact_log2 (q);
-      if (m >= 0 && m < BITS_PER_WORD)
+      if (m >= 0 && m < maxm)
 	{
 	  cost = shiftadd_cost[mode][m];
 	  synth_mult (alg_in, (t - 1) >> m, cost_limit - cost, mode);
@@ -2386,7 +2390,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       q = t + 1;
       q = q & -q;
       m = exact_log2 (q);
-      if (m >= 0 && m < BITS_PER_WORD)
+      if (m >= 0 && m < maxm)
 	{
 	  cost = shiftsub_cost[mode][m];
 	  synth_mult (alg_in, (t + 1) >> m, cost_limit - cost, mode);
