@@ -646,7 +646,7 @@ gcov.c
 ../libiberty/getopt.c
 ../include/getopt.h
 ../libiberty/getopt1.c
-getpwd.c
+../libiberty/getpwd.c
 ginclude/iso646.h
 ginclude/math-3300.h
 ginclude/math-68881.h
