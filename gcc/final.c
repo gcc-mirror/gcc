@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3220,11 +3220,16 @@ only_leaf_regs_used ()
   int i;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      if ((regs_ever_live[i] || global_regs[i])
-	  && ! permitted_reg_in_leaf_functions[i])
-	return 0;
-    }
+    if ((regs_ever_live[i] || global_regs[i])
+	&& ! permitted_reg_in_leaf_functions[i])
+      return 0;
+
+  if (current_function_uses_pic_offset_table
+      && pic_offset_table_rtx != 0
+      && GET_CODE (pic_offset_table_rtx) == REG
+      && ! permitted_reg_in_leaf_functions[REGNO (pic_offset_table_rtx)])
+    return 0;
+
   return 1;
 }
 
