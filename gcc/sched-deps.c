@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "sched-int.h"
 #include "params.h"
 #include "cselib.h"
+#include "df.h"
 
 extern char *reg_known_equiv_p;
 extern rtx *reg_known_value;
@@ -468,6 +469,19 @@ sched_analyze_1 (deps, x, insn)
   while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SUBREG
 	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
     {
+      if (GET_CODE (dest) == STRICT_LOW_PART
+	 || GET_CODE (dest) == ZERO_EXTRACT
+	 || GET_CODE (dest) == SIGN_EXTRACT
+	 || read_modify_subreg_p (dest))
+        {
+	  /* These both read and modify the result.  We must handle 
+             them as writes to get proper dependencies for following
+             instructions.  We must handle them as reads to get proper
+             dependencies from this to previous instructions.
+             Thus we need to call sched_analyze_2. */
+
+	  sched_analyze_2 (deps, XEXP (dest, 0), insn);  
+	}
       if (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
 	{
 	  /* The second and third arguments are values read by this insn.  */
