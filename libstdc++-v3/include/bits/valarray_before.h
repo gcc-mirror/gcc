@@ -1,6 +1,7 @@
 // The template and inlines for the -*- C++ -*- internal _Meta class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,85 +67,99 @@ namespace std
   struct __abs
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return abs(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return abs(__t); }
   };
 
   struct __cos
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return cos(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return cos(__t); }
   };
 
   struct __acos
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return acos(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return acos(__t); }
   };
 
   struct __cosh
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return cosh(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return cosh(__t); }
   };
 
   struct __sin
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return sin(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return sin(__t); }
   };
 
   struct __asin
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return asin(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return asin(__t); }
   };
 
   struct __sinh
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return sinh(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return sinh(__t); }
   };
 
   struct __tan
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return tan(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return tan(__t); }
   };
 
   struct __atan
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return atan(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return atan(__t); }
   };
 
   struct __tanh
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return tanh(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return tanh(__t); }
   };
 
   struct __exp
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return exp(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return exp(__t); }
   };
 
   struct __log
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return log(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return log(__t); }
   };
 
   struct __log10
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return log10(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return log10(__t); }
   };
 
   struct __sqrt
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return sqrt(__t); }
+      _Tp operator()(const _Tp& __t) const
+      { return sqrt(__t); }
   };
 
   // In the past, we used to tailor operator applications semantics
@@ -154,19 +169,22 @@ namespace std
   struct __unary_plus
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return +__t; }
+      _Tp operator()(const _Tp& __t) const
+      { return +__t; }
   };
 
   struct __negate
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return -__t; }
+      _Tp operator()(const _Tp& __t) const
+      { return -__t; }
   };
 
   struct __bitwise_not
   {
     template<typename _Tp>
-      _Tp operator()(const _Tp& __t) const { return ~__t; }
+      _Tp operator()(const _Tp& __t) const
+      { return ~__t; }
   };
 
   struct __plus
@@ -381,9 +399,9 @@ namespace std
       typedef bool result_type;
     };
 
-    //
-    // Apply function taking a value/const reference closure
-    //
+  //
+  // Apply function taking a value/const reference closure
+  //
 
   template<typename _Dom, typename _Arg>
     class _FunBase
@@ -392,7 +410,7 @@ namespace std
       typedef typename _Dom::value_type value_type;
 
       _FunBase(const _Dom& __e, value_type __f(_Arg))
-	: _M_expr(__e), _M_func(__f) {}
+      : _M_expr(__e), _M_func(__f) {}
 
       value_type operator[](size_t __i) const
       { return _M_func (_M_expr[__i]); }
@@ -400,8 +418,8 @@ namespace std
       size_t size() const { return _M_expr.size ();}
 
     private:
-        const _Dom& _M_expr;
-        value_type (*_M_func)(_Arg);
+      const _Dom& _M_expr;
+      value_type (*_M_func)(_Arg);
     };
 
   template<class _Dom>
@@ -424,25 +442,26 @@ namespace std
     };
 
   template<class _Dom>
-    struct _RefFunClos<_Expr,_Dom> :
-        _FunBase<_Dom, const typename _Dom::value_type&>
+    struct _RefFunClos<_Expr, _Dom>
+    : _FunBase<_Dom, const typename _Dom::value_type&>
     {
       typedef _FunBase<_Dom, const typename _Dom::value_type&> _Base;
       typedef typename _Base::value_type value_type;
       typedef value_type _Tp;
 
       _RefFunClos(const _Dom& __e, _Tp __f(const _Tp&))
-	: _Base(__e, __f) {}
+      : _Base(__e, __f) {}
     };
 
   template<typename _Tp>
-    struct _RefFunClos<_ValArray,_Tp> : _FunBase<valarray<_Tp>, const _Tp&>
+    struct _RefFunClos<_ValArray, _Tp>
+    : _FunBase<valarray<_Tp>, const _Tp&>
     {
       typedef _FunBase<valarray<_Tp>, const _Tp&> _Base;
       typedef _Tp value_type;
 
       _RefFunClos(const valarray<_Tp>& __v, _Tp __f(const _Tp&))
-	: _Base(__v, __f) {}
+      : _Base(__v, __f) {}
     };
 
   //
@@ -462,13 +481,14 @@ namespace std
       { return _Oper()(_M_expr[__i]); }
 
       size_t size() const { return _M_expr.size(); }
-
+      
     private:
       const _Arg& _M_expr;
     };
 
   template<class _Oper, class _Dom>
-    struct _UnClos<_Oper, _Expr, _Dom> :  _UnBase<_Oper, _Dom>
+    struct _UnClos<_Oper, _Expr, _Dom>
+    : _UnBase<_Oper, _Dom>
     {
       typedef _Dom _Arg;
       typedef _UnBase<_Oper, _Dom> _Base;
@@ -478,7 +498,8 @@ namespace std
     };
 
   template<class _Oper, typename _Tp>
-    struct _UnClos<_Oper, _ValArray, _Tp> : _UnBase<_Oper, valarray<_Tp> >
+    struct _UnClos<_Oper, _ValArray, _Tp>
+    : _UnBase<_Oper, valarray<_Tp> >
     {
       typedef valarray<_Tp> _Arg;
       typedef _UnBase<_Oper, valarray<_Tp> > _Base;
@@ -496,11 +517,11 @@ namespace std
     class _BinBase
     {
     public:
-        typedef typename _FirstArg::value_type _Vt;
-        typedef typename __fun<_Oper, _Vt>::result_type value_type;
+      typedef typename _FirstArg::value_type _Vt;
+      typedef typename __fun<_Oper, _Vt>::result_type value_type;
 
       _BinBase(const _FirstArg& __e1, const _SecondArg& __e2)
-	: _M_expr1(__e1), _M_expr2(__e2) {}
+      : _M_expr1(__e1), _M_expr2(__e2) {}
 
       value_type operator[](size_t __i) const
       { return _Oper()(_M_expr1[__i], _M_expr2[__i]); }
@@ -521,7 +542,7 @@ namespace std
       typedef typename __fun<_Oper, _Vt>::result_type value_type;
 
       _BinBase2(const _Clos& __e, const _Vt& __t)
-	: _M_expr1(__e), _M_expr2(__t) {}
+      : _M_expr1(__e), _M_expr2(__t) {}
 
       value_type operator[](size_t __i) const
       { return _Oper()(_M_expr1[__i], _M_expr2); }
@@ -541,7 +562,7 @@ namespace std
       typedef typename __fun<_Oper, _Vt>::result_type value_type;
 
       _BinBase1(const _Vt& __t, const _Clos& __e)
-	: _M_expr1(__t), _M_expr2(__e) {}
+      : _M_expr1(__t), _M_expr2(__e) {}
 
       value_type operator[](size_t __i) const
       { return _Oper()(_M_expr1, _M_expr2[__i]); }
@@ -555,52 +576,52 @@ namespace std
 
   template<class _Oper, class _Dom1, class _Dom2>
     struct _BinClos<_Oper, _Expr, _Expr, _Dom1, _Dom2>
-        : _BinBase<_Oper,_Dom1,_Dom2>
+    : _BinBase<_Oper, _Dom1, _Dom2>
     {
-      typedef _BinBase<_Oper,_Dom1,_Dom2> _Base;
+      typedef _BinBase<_Oper, _Dom1, _Dom2> _Base;
       typedef typename _Base::value_type value_type;
 
       _BinClos(const _Dom1& __e1, const _Dom2& __e2) : _Base(__e1, __e2) {}
     };
 
   template<class _Oper, typename _Tp>
-    struct _BinClos<_Oper,_ValArray,_ValArray,_Tp,_Tp>
-      : _BinBase<_Oper,valarray<_Tp>,valarray<_Tp> >
+    struct _BinClos<_Oper,_ValArray, _ValArray, _Tp, _Tp>
+    : _BinBase<_Oper, valarray<_Tp>, valarray<_Tp> >
     {
-      typedef _BinBase<_Oper,valarray<_Tp>,valarray<_Tp> > _Base;
+      typedef _BinBase<_Oper, valarray<_Tp>, valarray<_Tp> > _Base;
       typedef _Tp value_type;
 
       _BinClos(const valarray<_Tp>& __v, const valarray<_Tp>& __w)
-	: _Base(__v, __w) {}
+      : _Base(__v, __w) {}
     };
 
   template<class _Oper, class _Dom>
-    struct _BinClos<_Oper,_Expr,_ValArray,_Dom,typename _Dom::value_type>
-      : _BinBase<_Oper,_Dom,valarray<typename _Dom::value_type> >
+    struct _BinClos<_Oper, _Expr, _ValArray, _Dom, typename _Dom::value_type>
+    : _BinBase<_Oper, _Dom, valarray<typename _Dom::value_type> >
     {
       typedef typename _Dom::value_type _Tp;
       typedef _BinBase<_Oper,_Dom,valarray<_Tp> > _Base;
       typedef typename _Base::value_type value_type;
 
       _BinClos(const _Dom& __e1, const valarray<_Tp>& __e2)
-	: _Base(__e1, __e2) {}
+      : _Base(__e1, __e2) {}
     };
 
   template<class _Oper, class _Dom>
-    struct  _BinClos<_Oper,_ValArray,_Expr,typename _Dom::value_type,_Dom>
-      : _BinBase<_Oper,valarray<typename _Dom::value_type>,_Dom>
+    struct _BinClos<_Oper, _ValArray, _Expr, typename _Dom::value_type, _Dom>
+    : _BinBase<_Oper, valarray<typename _Dom::value_type>,_Dom>
     {
       typedef typename _Dom::value_type _Tp;
-      typedef _BinBase<_Oper,valarray<_Tp>,_Dom> _Base;
+      typedef _BinBase<_Oper, valarray<_Tp>, _Dom> _Base;
       typedef typename _Base::value_type value_type;
 
       _BinClos(const valarray<_Tp>& __e1, const _Dom& __e2)
-	: _Base(__e1, __e2) {}
+      : _Base(__e1, __e2) {}
     };
 
   template<class _Oper, class _Dom>
-    struct _BinClos<_Oper,_Expr,_Constant,_Dom,typename _Dom::value_type>
-      : _BinBase2<_Oper,_Dom>
+    struct _BinClos<_Oper, _Expr, _Constant, _Dom, typename _Dom::value_type>
+    : _BinBase2<_Oper, _Dom>
     {
       typedef typename _Dom::value_type _Tp;
       typedef _BinBase2<_Oper,_Dom> _Base;
@@ -610,19 +631,19 @@ namespace std
     };
 
   template<class _Oper, class _Dom>
-    struct _BinClos<_Oper,_Constant,_Expr,typename _Dom::value_type,_Dom>
-      : _BinBase1<_Oper,_Dom>
+    struct _BinClos<_Oper, _Constant, _Expr, typename _Dom::value_type, _Dom>
+    : _BinBase1<_Oper, _Dom>
     {
       typedef typename _Dom::value_type _Tp;
-      typedef _BinBase1<_Oper,_Dom> _Base;
+      typedef _BinBase1<_Oper, _Dom> _Base;
       typedef typename _Base::value_type value_type;
 
       _BinClos(const _Tp& __e1, const _Dom& __e2) : _Base(__e1, __e2) {}
     };
 
   template<class _Oper, typename _Tp>
-    struct _BinClos<_Oper,_ValArray,_Constant,_Tp,_Tp>
-      : _BinBase2<_Oper,valarray<_Tp> >
+    struct _BinClos<_Oper, _ValArray, _Constant, _Tp, _Tp>
+    : _BinBase2<_Oper, valarray<_Tp> >
     {
       typedef _BinBase2<_Oper,valarray<_Tp> > _Base;
       typedef typename _Base::value_type value_type;
@@ -631,68 +652,85 @@ namespace std
     };
 
   template<class _Oper, typename _Tp>
-    struct _BinClos<_Oper,_Constant,_ValArray,_Tp,_Tp>
-      : _BinBase1<_Oper,valarray<_Tp> >
+    struct _BinClos<_Oper, _Constant, _ValArray, _Tp, _Tp>
+    : _BinBase1<_Oper, valarray<_Tp> >
     {
-      typedef _BinBase1<_Oper,valarray<_Tp> > _Base;
+      typedef _BinBase1<_Oper, valarray<_Tp> > _Base;
       typedef typename _Base::value_type value_type;
 
       _BinClos(const _Tp& __t, const valarray<_Tp>& __v) : _Base(__t, __v) {}
     };
 
-
     //
     // slice_array closure.
     //
-    template<typename _Dom>  class _SBase {
+  template<typename _Dom> 
+    class _SBase
+    {
     public:
-        typedef typename _Dom::value_type value_type;
-
-        _SBase (const _Dom& __e, const slice& __s)
-                : _M_expr (__e), _M_slice (__s) {}
-        value_type operator[] (size_t __i) const
-        { return _M_expr[_M_slice.start () + __i * _M_slice.stride ()]; }
-        size_t size() const { return _M_slice.size (); }
+      typedef typename _Dom::value_type value_type;
+      
+      _SBase (const _Dom& __e, const slice& __s)
+      : _M_expr (__e), _M_slice (__s) {}
+        
+      value_type
+      operator[] (size_t __i) const
+      { return _M_expr[_M_slice.start () + __i * _M_slice.stride ()]; }
+        
+      size_t
+      size() const
+      { return _M_slice.size (); }
 
     private:
-        const _Dom& _M_expr;
-        const slice& _M_slice;
+      const _Dom& _M_expr;
+      const slice& _M_slice;
     };
 
-    template<typename _Tp> class _SBase<_Array<_Tp> > {
+  template<typename _Tp>
+    class _SBase<_Array<_Tp> >
+    {
     public:
-        typedef _Tp value_type;
-
-        _SBase (_Array<_Tp> __a, const slice& __s)
-                : _M_array (__a._M_data+__s.start()), _M_size (__s.size()),
-                  _M_stride (__s.stride()) {}
-        value_type operator[] (size_t __i) const
-        { return _M_array._M_data[__i * _M_stride]; }
-        size_t size() const { return _M_size; }
+      typedef _Tp value_type;
+      
+      _SBase (_Array<_Tp> __a, const slice& __s)
+      : _M_array (__a._M_data+__s.start()), _M_size (__s.size()),
+	_M_stride (__s.stride()) {}
+        
+      value_type
+      operator[] (size_t __i) const
+      { return _M_array._M_data[__i * _M_stride]; }
+      
+      size_t
+      size() const
+      { return _M_size; }
 
     private:
-        const _Array<_Tp> _M_array;
-        const size_t _M_size;
-        const size_t _M_stride;
+      const _Array<_Tp> _M_array;
+      const size_t _M_size;
+      const size_t _M_stride;
     };
 
-    template<class _Dom> struct  _SClos<_Expr,_Dom> : _SBase<_Dom> {
-        typedef _SBase<_Dom> _Base;
-        typedef typename _Base::value_type value_type;
-
-        _SClos (const _Dom& __e, const slice& __s) : _Base (__e, __s) {}
+  template<class _Dom>
+    struct _SClos<_Expr, _Dom>
+    : _SBase<_Dom>
+    {
+      typedef _SBase<_Dom> _Base;
+      typedef typename _Base::value_type value_type;
+      
+      _SClos (const _Dom& __e, const slice& __s) : _Base (__e, __s) {}
     };
 
-    template<typename _Tp>
-    struct _SClos<_ValArray,_Tp> : _SBase<_Array<_Tp> > {
-        typedef  _SBase<_Array<_Tp> > _Base;
-        typedef _Tp value_type;
-
-        _SClos (_Array<_Tp> __a, const slice& __s) : _Base (__a, __s) {}
+  template<typename _Tp>
+    struct _SClos<_ValArray, _Tp>
+    : _SBase<_Array<_Tp> >
+    {
+      typedef  _SBase<_Array<_Tp> > _Base;
+      typedef _Tp value_type;
+      
+      _SClos (_Array<_Tp> __a, const slice& __s) : _Base (__a, __s) {}
     };
 
 } // std::
-
 
 #endif /* _CPP_VALARRAY_BEFORE_H */
 

@@ -40,8 +40,8 @@
 
 #pragma GCC system_header
 
-namespace std {
-
+namespace std
+{
   /**
    *  @brief  Reference to selected subset of an array.
    *
@@ -128,12 +128,11 @@ namespace std {
 
       const size_t       _M_sz;
       const _Array<bool> _M_mask;
-      const _Array<_Tp>   _M_array;
+      const _Array<_Tp>  _M_array;
 
       // not implemented
       mask_array();
     };
-
 
   template<typename _Tp>
     inline mask_array<_Tp>::mask_array(const mask_array<_Tp>& a)

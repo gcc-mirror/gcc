@@ -90,7 +90,7 @@ namespace std
 
   inline
   slice::slice(size_t __o, size_t __d, size_t __s)
-    : _M_off(__o), _M_sz(__d), _M_st(__s) {}
+  : _M_off(__o), _M_sz(__d), _M_st(__s) {}
 
   inline size_t
   slice::start() const
@@ -160,34 +160,34 @@ namespace std
       //        ~slice_array ();
 
       template<class _Dom>
-	void operator=(const _Expr<_Dom,_Tp>&) const;
+        void operator=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator*=(const _Expr<_Dom,_Tp>&) const;
+	void operator*=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator/=(const _Expr<_Dom,_Tp>&) const;
+	void operator/=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator%=(const _Expr<_Dom,_Tp>&) const;
+	void operator%=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator+=(const _Expr<_Dom,_Tp>&) const;
+	void operator+=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator-=(const _Expr<_Dom,_Tp>&) const;
+	void operator-=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator^=(const _Expr<_Dom,_Tp>&) const;
+	void operator^=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator&=(const _Expr<_Dom,_Tp>&) const;
+	void operator&=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator|=(const _Expr<_Dom,_Tp>&) const;
+	void operator|=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator<<=(const _Expr<_Dom,_Tp>&) const;
+	void operator<<=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-	void operator>>=(const _Expr<_Dom,_Tp>&) const;
+	void operator>>=(const _Expr<_Dom, _Tp>&) const;
 
     private:
       friend class valarray<_Tp>;
       slice_array(_Array<_Tp>, const slice&);
 
-      const size_t     _M_sz;
-      const size_t     _M_stride;
+      const size_t      _M_sz;
+      const size_t      _M_stride;
       const _Array<_Tp> _M_array;
 
       // not implemented

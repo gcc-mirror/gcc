@@ -156,7 +156,6 @@ namespace std
        return *this;
      }
 
-
   template<typename _Tp>
      inline void
      indirect_array<_Tp>::operator=(const _Tp& __t) const
