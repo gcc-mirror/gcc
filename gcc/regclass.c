@@ -375,19 +375,11 @@ init_reg_sets_1 ()
   CLEAR_HARD_REG_SET (call_fixed_reg_set);
 
   bcopy (fixed_regs, call_fixed_regs, sizeof call_fixed_regs);
-#ifdef STRUCT_VALUE_REGNUM
-  call_fixed_regs[STRUCT_VALUE_REGNUM] = 1;
-#endif
-#ifdef STATIC_CHAIN_REGNUM
-  call_fixed_regs[STATIC_CHAIN_REGNUM] = 1;
-#endif
 
   n_non_fixed_regs = 0;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (FUNCTION_VALUE_REGNO_P (i))
-	call_fixed_regs[i] = 1;
       if (fixed_regs[i])
 	SET_HARD_REG_BIT (fixed_reg_set, i);
       else
