@@ -4482,7 +4482,7 @@ provided they are of the same size (in fact, you can also cast vectors
 to and from other datatypes of the same size).
 
 You cannot operate between vectors of different lengths or different
-signness without a cast.
+signedness without a cast.
 
 A port that supports hardware vector operations, usually provides a set
 of built-in functions that can be used to operate on vectors.  For

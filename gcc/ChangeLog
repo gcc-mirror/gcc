@@ -6,6 +6,10 @@
 
 2003-01-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* doc/extend.texi: Fix typo.
+
+2003-01-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* doc/cppopts.texi: Fix typo.
 	* doc/objc.texi: Likewise.
 	* doc/passes.texi: Likewise.
