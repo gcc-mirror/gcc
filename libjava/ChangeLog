@@ -1,3 +1,16 @@
+2003-08-21  Scott Gilbertson  <scottg@mantatest.com>
+            Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (gtk_awt_peer_sources): Add
+	gnu/java/awt/peer/GLightweightPeer.java.  Remove
+	gnu/java/awt/GLightweightPeer.java.
+	* gnu/java/awt/GLightweightPeer.java: Remove file.
+	* gnu/java/awt/peer/GLightweightPeer.java: New file.
+	* java/awt/Component.java (getToolkit): Add comment about
+	lightweight components.
+	* java/awt/Toolkit.java (createComponent): Return
+	gnu.java.awt.peer.GLightweightPeer.
+
 2003-08-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.in: Fix detection of gcj when building with newlib.

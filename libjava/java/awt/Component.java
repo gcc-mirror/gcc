@@ -677,6 +677,7 @@ public abstract class Component
         if (tk != null)
           return tk;
       }
+    // Get toolkit for lightweight component.
     if (parent != null)
       return parent.getToolkit();
     return Toolkit.getDefaultToolkit();
