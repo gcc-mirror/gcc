@@ -51,23 +51,23 @@
    <inttypes.h>.  Ugh.
 
    <inttypes.h> defines a variety of things, some of which we 
-   probably do not want.  So we just provide prototypes for
-   the functions we care about here.
+   probably do not want.  So we don't want to include it here.
 
-   However, to do that, we must include <sys/_inttypes.h> to get
-   intmax_t and uintmax_t.  Luckily <sys/_inttypes.h> looks a
-   lot cleaner as far as namespace pollution is concerned. 
+   Luckily we can just declare strtoll and strtoull with the
+   __asm extension which effectively renames calls at the
+   source level without namespace pollution.
+
+   Also note that the compiler defines _INCLUDE_LONGLONG for C++
+   unconditionally, which makes intmax_t and uintmax_t long long
+   types.
 
    We also force _GLIBCPP_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
-#include <sys/_inttypes.h>
 namespace std {
   extern "C" long long strtoll (const char *, char **, int)
     __asm  ("__strtoll");
-  extern "C" long long strtoull (const char *, char **, int)
+  extern "C" unsigned long long strtoull (const char *, char **, int)
     __asm  ("__strtoull");
 }
-extern intmax_t __strtoll (const char *, char**, int);
-extern uintmax_t __strtoull (const char *, char**, int);
 #define _GLIBCPP_USE_LONG_LONG 1
 #endif

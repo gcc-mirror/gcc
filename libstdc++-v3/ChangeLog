@@ -1,3 +1,9 @@
+Sun Dec 23 18:47:24 2001  Jeffrey A Law  (law@redhat.com)
+
+	* config/os/hpux/bits/os_defines.h: Do not include <_sys/inttypes.h>.
+	Twiddle return types for strtoll and strtoull to avoid using
+	intmax_t and uintmax-t.
+
 2001-12-22  Richard Henderson  <rth@redhat.com>
 
 	* configure.target (CPULIMITSH): Fix typo in alpha case.
