@@ -39,7 +39,7 @@ if [ ! -d $LIB ]; then
     exit 1
   }
 else
-  ( \cd $LIB && touch DONE && rm DONE ) || {
+  ( cd $LIB && touch DONE && rm DONE ) || {
     echo fixincludes:  output dir '`'$LIB"' is an invalid directory"
     exit 1
   }
