@@ -38,50 +38,17 @@
  * if necessary without impacting performances.
  */
 
-@ This selects the minimum architecture level required.
-#undef __ARM_ARCH__
-#define __ARM_ARCH__ 3
-
-#if defined(__ARM_ARCH_3M__) || defined(__ARM_ARCH_4__) \
-	|| defined(__ARM_ARCH_4T__)
-#undef __ARM_ARCH__
-/* We use __ARM_ARCH__ set to 4 here, but in reality it's any processor with
-   long multiply instructions.  That includes v3M.  */
-#define __ARM_ARCH__ 4
-#endif
+#ifdef L_negsf2
 	
-#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
-	|| defined(__ARM_ARCH_5TE__)
-#undef __ARM_ARCH__
-#define __ARM_ARCH__ 5
-#endif
-
-#if (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
-#undef RET
-#undef RETc
-#define RET	bx	lr
-#define RETc(x) bx##x	lr
-#if (__ARM_ARCH__ == 4) && (defined(__thumb__) || defined(__THUMB_INTERWORK__))
-#define __FP_INTERWORKING__
-#endif
-#endif
-
-#if defined(__thumb__) && !defined(__THUMB_INTERWORK__)
-.macro	ARM_FUNC_START name
-	FUNC_START \name
-	bx	pc
-	nop
-	.arm
-.endm
-#else
-.macro	ARM_FUNC_START name
-	FUNC_START \name
-.endm
-#endif
-
 ARM_FUNC_START negsf2
 	eor	r0, r0, #0x80000000	@ flip sign bit
 	RET
+
+	FUNC_END negsf2
+
+#endif
+
+#ifdef L_addsubsf3
 
 ARM_FUNC_START subsf3
 	eor	r1, r1, #0x80000000	@ flip sign bit of second arg
@@ -291,6 +258,8 @@ LSYM(Lad_i):
 	orrne	r0, r3, #0x00400000	@ NAN
 	RET
 
+	FUNC_END addsf3
+	FUNC_END subsf3
 
 ARM_FUNC_START floatunsisf
 	mov	r3, #0
@@ -321,6 +290,12 @@ ARM_FUNC_START floatsisf
 	add	r2, r2, #(2 << 23)
 	b	LSYM(Lad_p)
 
+	FUNC_END floatsisf
+	FUNC_END floatunsisf
+
+#endif /* L_addsubsf3 */
+
+#ifdef L_muldivsf3
 
 ARM_FUNC_START mulsf3
 
@@ -509,6 +484,7 @@ LSYM(Lml_n):
 	orr	r0, r0, #0x00c00000
 	RET
 
+	FUNC_END mulsf3
 
 ARM_FUNC_START divsf3
 
@@ -659,6 +635,11 @@ LSYM(Ldv_s):
 	bne	LSYM(Lml_z)		@ 0 / <non_zero> -> 0
 	b	LSYM(Lml_n)		@ 0 / 0 -> NAN
 
+	FUNC_END divsf3
+
+#endif /* L_muldivsf3 */
+
+#ifdef L_cmpsf2
 
 FUNC_START gesf2
 ARM_FUNC_START gtsf2
@@ -723,6 +704,17 @@ ARM_FUNC_START cmpsf2
 5:	mov	r0, r3			@ return unordered code from r3.
 	RET
 
+	FUNC_END gesf2
+	FUNC_END gtsf2
+	FUNC_END lesf2
+	FUNC_END ltsf2
+	FUNC_END nesf2
+	FUNC_END eqsf2
+	FUNC_END cmpsf2
+
+#endif /* L_cmpsf2 */
+
+#ifdef L_unordsf2
 
 ARM_FUNC_START unordsf2
 	mov	ip, #0xff000000
@@ -741,16 +733,17 @@ ARM_FUNC_START unordsf2
 3:	mov	r0, #1			@ arguments are unordered.
 	RET
 
+	FUNC_END unordsf2
+
+#endif /* L_unordsf2 */
+
+#ifdef L_fixsfsi
 
 ARM_FUNC_START fixsfsi
 	movs	r0, r0, lsl #1
 	RETc(eq)			@ value is 0.
-	@ preserve C flag (the actual sign)
-#ifdef __APCS_26__
-	mov	r1, pc
-#else
-	mrs	r1, cpsr
-#endif
+
+	mov	r1, r1, rrx		@ preserve C flag (the actual sign)
 
 	@ check exponent range.
 	and	r2, r0, #0xff000000
@@ -764,8 +757,8 @@ ARM_FUNC_START fixsfsi
 	orr	r0, r0, #0x80000000
 	mov	r2, r2, lsr #24
 	rsb	r2, r2, #(127 + 31)
+	tst	r1, #0x80000000		@ the sign bit
 	mov	r0, r0, lsr r2
-	tst	r1, #0x20000000		@ the sign bit
 	rsbne	r0, r0, #0
 	RET
 
@@ -773,20 +766,24 @@ ARM_FUNC_START fixsfsi
 	bne	2f
 	movs	r0, r0, lsl #8
 	bne	3f			@ r0 is NAN.
-2:	tst	r1, #0x20000000		@ the sign bit
+2:	ands	r0, r1, #0x80000000	@ the sign bit
 	moveq	r0, #0x7fffffff		@ the maximum signed positive si
-	movne	r0, #0x80000000		@ the maximum signed negative si
 	RET
 
 3:	mov	r0, #0			@ What should we convert NAN to?
 	RET
 
+	FUNC_END fixsfsi
+
+#endif /* L_fixsfsi */
+
+#ifdef L_fixunssfsi
 
 ARM_FUNC_START fixunssfsi
 	movs	r0, r0, lsl #1
-	RETc(eq)			@ value is 0.
-	movcs	r0, #0
-	RETc(cs)			@ value is negative.
+	movcss	r0, #0			@ value is negative...
+	RETc(eq)			@ ... or 0.
+
 
 	@ check exponent range.
 	and	r2, r0, #0xff000000
@@ -806,8 +803,13 @@ ARM_FUNC_START fixunssfsi
 1:	teq	r2, #0xff000000
 	bne	2f
 	movs	r0, r0, lsl #8
-	bne	3b			@ r0 is NAN.
+	bne	3f			@ r0 is NAN.
 2:	mov	r0, #0xffffffff		@ maximum unsigned si
 	RET
 
+3:	mov	r0, #0			@ What should we convert NAN to?
+	RET
 
+	FUNC_END fixunssfsi
+
+#endif /* L_fixunssfsi */

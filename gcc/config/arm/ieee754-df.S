@@ -40,33 +40,6 @@
  * if necessary without impacting performances.
  */
 
-@ This selects the minimum architecture level required.
-#undef __ARM_ARCH__
-#define __ARM_ARCH__ 3
-
-#if defined(__ARM_ARCH_3M__) || defined(__ARM_ARCH_4__) \
-	|| defined(__ARM_ARCH_4T__)
-#undef __ARM_ARCH__
-/* We use __ARM_ARCH__ set to 4 here, but in reality it's any processor with
-   long multiply instructions.  That includes v3M.  */
-#define __ARM_ARCH__ 4
-#endif
-	
-#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
-	|| defined(__ARM_ARCH_5TE__)
-#undef __ARM_ARCH__
-#define __ARM_ARCH__ 5
-#endif
-
-#if (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
-#undef RET
-#undef RETc
-#define RET	bx	lr
-#define RETc(x) bx##x	lr
-#if (__ARM_ARCH__ == 4) && (defined(__thumb__) || defined(__THUMB_INTERWORK__))
-#define __FP_INTERWORKING__
-#endif
-#endif
 
 @ For FPA, float words are always big-endian.
 @ For VFP, floats words follow the memory system mode.
@@ -83,23 +56,18 @@
 #endif
 
 
-#if defined(__thumb__) && !defined(__THUMB_INTERWORK__)
-.macro	ARM_FUNC_START name
-	FUNC_START \name
-	bx	pc
-	nop
-	.arm
-.endm
-#else
-.macro	ARM_FUNC_START name
-	FUNC_START \name
-.endm
-#endif
+#ifdef L_negdf2
 
 ARM_FUNC_START negdf2
 	@ flip sign bit
 	eor	xh, xh, #0x80000000
 	RET
+
+	FUNC_END negdf2
+
+#endif
+
+#ifdef L_addsubdf3
 
 ARM_FUNC_START subdf3
 	@ flip sign bit of second arg
@@ -155,12 +123,7 @@ ARM_FUNC_START adddf3
 	@ already in xh-xl.  We need up to 54 bit to handle proper rounding
 	@ of 0x1p54 - 1.1.
 	cmp	r5, #(54 << 20)
-#ifdef __FP_INTERWORKING__
-	ldmhifd	sp!, {r4, r5, lr}
-	bxhi	lr
-#else
-	ldmhifd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5" hi
 
 	@ Convert mantissa to signed integer.
 	tst	xh, #0x80000000
@@ -227,9 +190,9 @@ LSYM(Lad_x):
 LSYM(Lad_p):
 	cmp	xh, #0x00100000
 	bcc	LSYM(Lad_l)
-	cmp	r0, #0x00200000
+	cmp	xh, #0x00200000
 	bcc	LSYM(Lad_r0)
-	cmp	r0, #0x00400000
+	cmp	xh, #0x00400000
 	bcc	LSYM(Lad_r1)
 
 	@ Result needs to be shifted right.
@@ -268,14 +231,10 @@ LSYM(Lad_e):
 	bic	xh, xh, #0x00300000
 	orr	xh, xh, r4
 	orr	xh, xh, r5
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
-LSYM(Lad_l):	@ Result must be shifted left and exponent adjusted.
+LSYM(Lad_l):
+	@ Result must be shifted left and exponent adjusted.
 	@ No rounding necessary since ip will always be 0.
 #if __ARM_ARCH__ < 5
 
@@ -351,12 +310,7 @@ LSYM(Lad_l):	@ Result must be shifted left and exponent adjusted.
 	mov	xl, xl, lsr r4
 	orr	xl, xl, xh, lsl r2
 	orr	xh, r5, xh, lsr r4
-#ifdef __FP_INTERWORKING
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
 	@ shift result right of 21 to 31 bits, or left 11 to 1 bits after
 	@ a register switch from xh to xl.
@@ -365,23 +319,13 @@ LSYM(Lad_l):	@ Result must be shifted left and exponent adjusted.
 	mov	xl, xl, lsr r2
 	orr	xl, xl, xh, lsl r4
 	mov	xh, r5
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
 	@ Shift value right of 32 to 64 bits, or 0 to 32 bits after a switch
 	@ from xh to xl.
 2:	mov	xl, xh, lsr r4
 	mov	xh, r5
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
 	@ Adjust exponents for denormalized arguments.
 LSYM(Lad_d):
@@ -407,12 +351,7 @@ LSYM(Lad_o):
 	orr	xh, r5, #0x7f000000
 	orr	xh, xh, #0x00f00000
 	mov	xl, #0
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
 	@ At least one of x or y is INF/NAN.
 	@   if xh-xl != INF/NAN: return yh-yl (which is INF/NAN)
@@ -425,24 +364,17 @@ LSYM(Lad_i):
 	movne	xh, yh
 	movne	xl, yl
 	teqeq	r5, ip
-#ifdef __FP_INTERWORKING__
-	ldmnefd	sp!, {r4, r5, lr}
-	bxne	lr
-#else
-	ldmnefd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5" ne
+
 	orrs	r4, xl, xh, lsl #12
 	orreqs	r4, yl, yh, lsl #12
 	teqeq	xh, yh
 	orrne	xh, r5, #0x00080000
 	movne	xl, #0
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
+	FUNC_END subdf3
+	FUNC_END adddf3
 
 ARM_FUNC_START floatunsidf
 	teq	r0, #0
@@ -456,6 +388,7 @@ ARM_FUNC_START floatunsidf
 	mov	xh, #0
 	b	LSYM(Lad_l)
 
+	FUNC_END floatunsidf
 
 ARM_FUNC_START floatsidf
 	teq	r0, #0
@@ -470,6 +403,7 @@ ARM_FUNC_START floatsidf
 	mov	xh, #0
 	b	LSYM(Lad_l)
 
+	FUNC_END floatsidf
 
 ARM_FUNC_START extendsfdf2
 	movs	r2, r0, lsl #1
@@ -495,6 +429,11 @@ ARM_FUNC_START extendsfdf2
 	bic	xh, xh, #0x80000000
 	b	LSYM(Lad_l)
 
+	FUNC_END extendsfdf2
+
+#endif /* L_addsubdf3 */
+
+#ifdef L_muldivdf3
 
 ARM_FUNC_START muldf3
 
@@ -656,12 +595,7 @@ LSYM(Lml_x):
 	@ Add final exponent.
 	bic	xh, xh, #0x00300000
 	orr	xh, xh, r4, lsl #1
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
 	@ Result is 0, but determine sign anyway.
 LSYM(Lml_z):
@@ -669,23 +603,14 @@ LSYM(Lml_z):
 LSYM(Ldv_z):
 	bic	xh, xh, #0x7fffffff
 	mov	xl, #0
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
 	@ Check if denormalized result is possible, otherwise return signed 0.
 LSYM(Lml_u):
 	cmn	r4, #(53 << 19)
 	movle	xl, #0
-#ifdef __FP_INTERWORKING__
-	ldmlefd	sp!, {r4, r5, r6, lr}
-	bxle	lr
-#else
-	ldmlefd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	bicle	xh, xh, #0x7fffffff
+	RETLDM	"r4, r5, r6" le
 
 	@ Find out proper shift value.
 LSYM(Lml_r):
@@ -709,12 +634,7 @@ LSYM(Lml_r):
 	teq	lr, #0
 	teqeq	r3, #0x80000000
 	biceq	xl, xl, #1
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
 	@ shift result right of 21 to 31 bits, or left 11 to 1 bits after
 	@ a register switch from xh to xl. Then round.
@@ -729,12 +649,7 @@ LSYM(Lml_r):
 	teq	lr, #0
 	teqeq	r3, #0x80000000
 	biceq	xl, xl, #1
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
 	@ Shift value right of 32 to 64 bits, or 0 to 32 bits after a switch
 	@ from xh to xl.  Leftover bits are in r3-r6-lr for rounding.
@@ -749,12 +664,7 @@ LSYM(Lml_r):
 	orrs	r6, r6, lr
 	teqeq	r3, #0x80000000
 	biceq	xl, xl, #1
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
 	@ One or both arguments are denormalized.
 	@ Scale them leftwards and preserve sign bit.
@@ -804,24 +714,15 @@ LSYM(Lml_o):
 	orr	xh, xh, #0x7f000000
 	orr	xh, xh, #0x00f00000
 	mov	xl, #0
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
 	@ Return NAN.
 LSYM(Lml_n):
 	mov	xh, #0x7f000000
 	orr	xh, xh, #0x00f80000
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
+	FUNC_END muldf3
 
 ARM_FUNC_START divdf3
 
@@ -961,12 +862,7 @@ LSYM(Ldv_x):
 	@ Add exponent to result.
 	bic	xh, xh, #0x00100000
 	orr	xh, xh, r4, lsl #1
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, r6, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6"
 
 	@ Division by 0x1p*: shortcut a lot of code.
 LSYM(Ldv_1):
@@ -978,12 +874,8 @@ LSYM(Ldv_1):
 	bge	LSYM(Lml_o)
 	cmp	r4, #0
 	orrgt	xh, xh, r4, lsl #1
-#ifdef __FP_INTERWORKING__
-	ldmgtfd	sp!, {r4, r5, r6, lr}
-	bxgt	lr
-#else
-	ldmgtfd	sp!, {r4, r5, r6, pc}RETCOND
-#endif
+	RETLDM	"r4, r5, r6" gt
+
 	cmn	r4, #(53 << 19)
 	ble	LSYM(Ldv_z)
 	orr	xh, xh, #0x00100000
@@ -1042,6 +934,11 @@ LSYM(Ldv_s):
 	bne	LSYM(Lml_z)		@ 0 / <non_zero> -> 0
 	b	LSYM(Lml_n)		@ 0 / 0 -> NAN
 
+	FUNC_END divdf3
+
+#endif /* L_muldivdf3 */
+
+#ifdef L_cmpdf2
 
 FUNC_START gedf2
 ARM_FUNC_START gtdf2
@@ -1076,23 +973,13 @@ ARM_FUNC_START cmpdf2
 	teqne	xh, yh			@ or xh == yh
 	teqeq	xl, yl			@ and xl == yl
 	moveq	r0, #0			@ then equal.
-#ifdef __FP_INTERWORKING__
-	ldmeqfd	sp!, {r4, r5, lr}
-	bxeq	lr
-#else
-	ldmeqfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5" eq
 
 	@ Check for sign difference.
 	teq	xh, yh
 	movmi	r0, xh, asr #31
 	orrmi	r0, r0, #1
-#ifdef __FP_INTERWORKING__
-	ldmmifd	sp!, {r4, r5, lr}
-	bxmi	lr
-#else
-	ldmmifd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5" mi
 
 	@ Compare exponents.
 	cmp	r4, r5
@@ -1104,12 +991,7 @@ ARM_FUNC_START cmpdf2
 	movcs	r0, yh, asr #31
 	mvncc	r0, yh, asr #31
 	orr	r0, r0, #1
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
 	@ Look for a NAN.
 3:	teq	r4, lr
@@ -1121,13 +1003,19 @@ ARM_FUNC_START cmpdf2
 	orrs	yl, yl, yh, lsl #12
 	beq	2b			@ y is not NAN
 5:	mov	r0, ip			@ return unordered code from ip
-#ifdef __FP_INTERWORKING__
-	ldmfd	sp!, {r4, r5, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r4, r5, pc}RETCOND
-#endif
+	RETLDM	"r4, r5"
 
+	FUNC_END gedf2
+	FUNC_END gtdf2
+	FUNC_END ledf2
+	FUNC_END ltdf2
+	FUNC_END nedf2
+	FUNC_END eqdf2
+	FUNC_END cmpdf2
+
+#endif /* L_cmpdf2 */
+
+#ifdef L_unorddf2
 
 ARM_FUNC_START unorddf2
 	str	lr, [sp, #-4]!
@@ -1144,35 +1032,22 @@ ARM_FUNC_START unorddf2
 	orrs	yl, yl, yh, lsl #12
 	bne	3f			@ y is NAN
 2:	mov	r0, #0			@ arguments are ordered.
-#ifdef __FP_INTERWORKING__
-	ldr	lr, [sp], #4
-	bx	lr
-#elif defined (__APCS_26__)
-	ldmia	sp!, {pc}^
-#else
-	ldr	pc, [sp], #4
-#endif
-3:	mov	r0, #1			@ arguments are unordered.
-#ifdef __FP_INTERWORKING__
-	ldr	lr, [sp], #4
-	bx	lr
-#elif defined (__APCS_26__)
-	ldmia	sp!, {pc}^
-#else
-	ldr	pc, [sp], #4
-#endif
+	RETLDM
 
+3:	mov	r0, #1			@ arguments are unordered.
+	RETLDM
+
+	FUNC_END unorddf2
+
+#endif /* L_unorddf2 */
+
+#ifdef L_fixdfsi
 
 ARM_FUNC_START fixdfsi
 	orrs	ip, xl, xh, lsl #1
 	beq	1f			@ value is 0.
 
-	@ preserve C flag (the actual sign)
-#ifdef __APCS_26__
-	mov	r3, pc
-#else
-	mrs	r3, cpsr
-#endif
+	mov	r3, r3, rrx		@ preserve C flag (the actual sign)
 
 	@ check exponent range.
 	mov	ip, #0x7f000000
@@ -1192,8 +1067,8 @@ ARM_FUNC_START fixdfsi
 	orr	ip, ip, #0x80000000
 	orr	ip, ip, xl, lsr #21
 	mov	r2, r2, lsr #20
+	tst	r3, #0x80000000		@ the sign bit
 	mov	r0, ip, lsr r2
-	tst	r3, #0x20000000		@ the sign bit
 	rsbne	r0, r0, #0
 	RET
 
@@ -1202,18 +1077,19 @@ ARM_FUNC_START fixdfsi
 
 2:	orrs	xl, xl, xh, lsl #12
 	bne	4f			@ r0 is NAN.
-3:	tst	r3, #0x20000000		@ the sign bit
+3:	ands	r0, r3, #0x80000000	@ the sign bit
 	moveq	r0, #0x7fffffff		@ maximum signed positive si
-	movne	r0, #0x80000000		@ maximum signed negative si
 	RET
 
 4:	mov	r0, #0			@ How should we convert NAN?
 	RET
 
+	FUNC_END fixdfsi
+
 ARM_FUNC_START fixunsdfsi
 	orrs	ip, xl, xh, lsl #1
-	beq	1b			@ value is 0
-	bcs	1b			@ value is negative
+	movcss	r0, #0			@ value is negative
+	RETc(eq)			@ or 0 (xl, xh overlap r0)
 
 	@ check exponent range.
 	mov	ip, #0x7f000000
@@ -1241,6 +1117,11 @@ ARM_FUNC_START fixunsdfsi
 2:	mov	r0, #0xffffffff		@ maximum unsigned si
 	RET
 
+	FUNC_END fixunsdfsi
+
+#endif /* L_fixunsdfdi */
+
+#ifdef L_truncdfsf2
 
 ARM_FUNC_START truncdfsf2
 	orrs	r2, xl, xh, lsl #1
@@ -1328,4 +1209,6 @@ ARM_FUNC_START truncdfsf2
 	and	xh, xh, #0x80000000
 	b	5b
 
+	FUNC_END truncdfsf2
 
+#endif /* L_truncdfsf2 */

@@ -61,66 +61,107 @@ Boston, MA 02111-1307, USA.  */
 
 /* Function end macros.  Variants for 26 bit APCS and interworking.  */
 
-#ifdef __APCS_26__
-# define RET		movs	pc, lr
-# define RETc(x)	mov##x##s	pc, lr
-# define RETCOND 	^
-.macro ARM_LDIV0
-LSYM(Ldiv0):
-	str	lr, [sp, #-4]!
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ About as wrong as it could be.
-	ldmia	sp!, {pc}^
-.endm
-#else
-# ifdef __THUMB_INTERWORK__
-#  define RET		bx	lr
-#  define RETc(x)	bx##x	lr
-.macro THUMB_LDIV0
-LSYM(Ldiv0):
-	push	{ lr }
-	bl	SYM (__div0)
-	mov	r0, #0			@ About as wrong as it could be.
-	pop	{ r1 }
-	bx	r1
-.endm
-.macro ARM_LDIV0
-LSYM(Ldiv0):
-	str	lr, [sp, #-4]!
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ About as wrong as it could be.
-	ldr	lr, [sp], #4
-	bx	lr
-.endm	
-# else
-#  define RET		mov	pc, lr
-#  define RETc(x)	mov##x	pc, lr
-.macro THUMB_LDIV0
-LSYM(Ldiv0):
-	push	{ lr }
-	bl	SYM (__div0)
-	mov	r0, #0			@ About as wrong as it could be.
-	pop	{ pc }
-.endm
-.macro ARM_LDIV0
-LSYM(Ldiv0):
-	str	lr, [sp, #-4]!
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ About as wrong as it could be.
-	ldmia	sp!, {pc}
-.endm	
-# endif
-# define RETCOND
+@ This selects the minimum architecture level required.
+#define __ARM_ARCH__ 3
+
+#if defined(__ARM_ARCH_3M__) || defined(__ARM_ARCH_4__) \
+	|| defined(__ARM_ARCH_4T__)
+/* We use __ARM_ARCH__ set to 4 here, but in reality it's any processor with
+   long multiply instructions.  That includes v3M.  */
+# undef __ARM_ARCH__
+# define __ARM_ARCH__ 4
+#endif
+	
+#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
+	|| defined(__ARM_ARCH_5TE__)
+# undef __ARM_ARCH__
+# define __ARM_ARCH__ 5
 #endif
 
+/* How to return from a function call depends on the architecture variant.  */
+
+#ifdef __APCS_26__
+
+# define RET		movs	pc, lr
+# define RETc(x)	mov##x##s	pc, lr
+
+#elif (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
+
+# define RET		bx	lr
+# define RETc(x)	bx##x	lr
+
+# if (__ARM_ARCH__ == 4) \
+	&& (defined(__thumb__) || defined(__THUMB_INTERWORK__))
+#  define __INTERWORKING__
+# endif
+
+#else
+
+# define RET		mov	pc, lr
+# define RETc(x)	mov##x	pc, lr
+
+#endif
+
+/* Don't pass dirn, it's there just to get token pasting right.  */
+
+.macro	RETLDM	regs=, cond=, dirn=ia
+#ifdef __APCS_26__
+	.ifc "\regs",""
+	ldm\cond\dirn	sp!, {pc}^
+	.else
+	ldm\cond\dirn	sp!, {\regs, pc}^
+	.endif
+#elif defined (__INTERWORKING__)
+	.ifc "\regs",""
+	ldr\cond	lr, [sp], #4
+	.else
+	ldm\cond\dirn	sp!, {\regs, lr}
+	.endif
+	bx\cond	lr
+#else
+	.ifc "\regs",""
+	ldr\cond	pc, [sp], #4
+	.else
+	ldm\cond\dirn	sp!, {\regs, pc}
+	.endif
+#endif
+.endm
+
+
+.macro ARM_LDIV0
+LSYM(Ldiv0):
+	str	lr, [sp, #-4]!
+	bl	SYM (__div0) __PLT__
+	mov	r0, #0			@ About as wrong as it could be.
+	RETLDM
+.endm
+
+
+.macro THUMB_LDIV0
+LSYM(Ldiv0):
+	push	{ lr }
+	bl	SYM (__div0)
+	mov	r0, #0			@ About as wrong as it could be.
+#if defined (__INTERWORKING__)
+	pop	{ r1 }
+	bx	r1
+#else
+	pop	{ pc }
+#endif
+.endm
+
 .macro FUNC_END name
+	SIZE (__\name)
+.endm
+
+.macro DIV_FUNC_END name
 LSYM(Ldiv0):
 #ifdef __thumb__
 	THUMB_LDIV0
 #else
 	ARM_LDIV0
 #endif
-	SIZE (__\name)	
+	FUNC_END \name
 .endm
 
 .macro THUMB_FUNC_START name
@@ -149,7 +190,24 @@ SYM (\name):
 	THUMB_FUNC
 SYM (__\name):
 .endm
-		
+
+/* Special function that will always be coded in ARM assembly, even if
+   in Thumb-only compilation.  */
+
+#if defined(__thumb__) && !defined(__THUMB_INTERWORK__)
+.macro	ARM_FUNC_START name
+	FUNC_START \name
+	bx	pc
+	nop
+	.arm
+_L__\name:		/* A hook to tell gdb that we've switched to ARM */
+.endm
+#else
+.macro	ARM_FUNC_START name
+	FUNC_START \name
+.endm
+#endif
+
 /* Register aliases.  */
 
 work		.req	r4	@ XXXX is this safe ?
@@ -452,7 +510,7 @@ LSYM(Lgot_result):
 
 #endif /* ARM version */
 
-	FUNC_END udivsi3
+	DIV_FUNC_END udivsi3
 
 #endif /* L_udivsi3 */
 /* ------------------------------------------------------------------------ */
@@ -493,7 +551,7 @@ LSYM(Lover10):
 
 #endif /* ARM version.  */
 	
-	FUNC_END umodsi3
+	DIV_FUNC_END umodsi3
 
 #endif /* L_umodsi3 */
 /* ------------------------------------------------------------------------ */
@@ -555,7 +613,7 @@ LSYM(Lover12):
 
 #endif /* ARM version */
 	
-	FUNC_END divsi3
+	DIV_FUNC_END divsi3
 
 #endif /* L_divsi3 */
 /* ------------------------------------------------------------------------ */
@@ -616,7 +674,7 @@ LSYM(Lover12):
 
 #endif /* ARM version */
 	
-	FUNC_END modsi3
+	DIV_FUNC_END modsi3
 
 #endif /* L_modsi3 */
 /* ------------------------------------------------------------------------ */
@@ -626,7 +684,7 @@ LSYM(Lover12):
 
 	RET
 
-	SIZE	(__div0)
+	FUNC_END div0
 	
 #endif /* L_divmodsi_tools */
 /* ------------------------------------------------------------------------ */
@@ -639,22 +697,18 @@ LSYM(Lover12):
 #define __NR_getpid			(__NR_SYSCALL_BASE+ 20)
 #define __NR_kill			(__NR_SYSCALL_BASE+ 37)
 
+	.code	32
 	FUNC_START div0
 
 	stmfd	sp!, {r1, lr}
 	swi	__NR_getpid
 	cmn	r0, #1000
-	ldmhsfd	sp!, {r1, pc}RETCOND	@ not much we can do
+	RETLDM	r1 hs
 	mov	r1, #SIGFPE
 	swi	__NR_kill
-#ifdef __THUMB_INTERWORK__
-	ldmfd	sp!, {r1, lr}
-	bx	lr
-#else
-	ldmfd	sp!, {r1, pc}RETCOND
-#endif
+	RETLDM	r1
 
-	SIZE 	(__div0)
+	FUNC_END div0
 	
 #endif /* L_dvmd_lnx */
 /* ------------------------------------------------------------------------ */
@@ -723,24 +777,23 @@ LSYM(Lover12):
 
 	.code   32
 	.globl _arm_return
-_arm_return:		
-	ldmia 	r13!, {r12}
-	bx 	r12
+_arm_return:
+	RETLDM
 	.code   16
 
-.macro interwork register					
-	.code   16
+.macro interwork register
+	.code	16
 
 	THUMB_FUNC_START _interwork_call_via_\register
 
-	bx 	pc
+	bx	pc
 	nop
-	
-	.code   32
-	.globl .Lchange_\register
-.Lchange_\register:
+
+	.code	32
+	.globl LSYM(Lchange_\register)
+LSYM(Lchange_\register):
 	tst	\register, #1
-	stmeqdb	r13!, {lr}
+	streq	lr, [sp, #-4]!
 	adreq	lr, _arm_return
 	bx	\register
 
@@ -783,16 +836,6 @@ _arm_return:
 	
 #endif /* L_interwork_call_via_rX */
 
-#ifdef L_ieee754_dp
-	/* These functions are coded in ARM state, even when called from
-	   Thumb.  */
-	.arm
 #include "ieee754-df.S"
-#endif
-
-#ifdef L_ieee754_sp
-	/* These functions are coded in ARM state, even when called from
-	   Thumb.  */
-	.arm
 #include "ieee754-sf.S"
-#endif
+
