@@ -1,3 +1,9 @@
+2004-03-01  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* testsuite/lib/libstdc++.exp (v3-list-tests): Use 
+	testsuite_files from correct multilib blddir when running
+	testsuite.
+
 2004-02-29  Phil Edwards  <phil@codesourcery.com>
 
 	* testsuite/Makefile.am (check-abi, check-abi-verbose):  Copy
