@@ -1,3 +1,9 @@
+Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
+	HANDLE_GENERIC_PRAGMAS.
+	(handle_generic_pragma): New function: Parse generic pragmas.
+	
 Wed Sep 30 20:22:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.c (emit_label): Fix return-type of prototype.

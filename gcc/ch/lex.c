@@ -1480,6 +1480,49 @@ pragma_ungetc (arg)
 }
 #endif /* HANDLE_PRAGMA */
 
+#ifdef HANDLE_GENERIC_PRAGMAS
+/* Handle a generic #pragma directive.
+   BUFFER contains the text we read after `#pragma'.  Processes the entire input
+   line and return non-zero iff the pragma was successfully processed.  */
+
+static int
+handle_generic_pragma (buffer)
+     char * buffer;
+{
+  register int c;
+
+  for (;;)
+    {
+      char * buff;
+      
+      handle_pragma_token (buffer, NULL);
+
+      c = getc (finput);
+
+      while (c == ' ' || c == '\t')
+	c = getc (finput);
+      ungetc (c, finput);
+      
+      if (c == '\n' || c == EOF)
+	return handle_pragma_token (NULL, NULL);
+
+      /* Read the next word of the pragma into the buffer.  */
+      buff = buffer;
+      do
+	{
+	  * buff ++ = c;
+	  c = getc (finput);
+	}
+      while (c != EOF && isascii (c) && ! isspace (c) && c != '\n'
+	     && buff < buffer + 128); /* XXX shared knowledge about size of buffer.  */
+      
+      ungetc (c, finput);
+      
+      * -- buff = 0;
+    }
+}
+#endif /* HANDLE_GENERIC_PRAGMAS */
+
 /* At the beginning of a line, increment the line number and process
    any #-directive on this line.  If the line is a #-directive, read
    the entire line and return a newline.  Otherwise, return the line's
@@ -1557,8 +1600,15 @@ check_newline ()
 		
 	      * -- buff = 0;
 	      
-	      (void) HANDLE_PRAGMA (pragma_getc, pragma_ungetc, buffer);
+	      if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc, buffer))
+		goto skipline;
 #endif /* HANDLE_PRAGMA */
+	      
+#ifdef HANDLE_GENERIC_PRAGMAS
+	      if (handle_generic_pragma (buffer))
+		goto skipline;
+#endif /* HANDLE_GENERIC_PRAGMAS */
+	      
 	      goto skipline;
 	    }
 	}
