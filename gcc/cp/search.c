@@ -377,6 +377,7 @@ pop_memoized_context (use_old)
     type_stack = (struct type_level *)type_stack->base.prev;
 }
 
+#if 0				/* unused */
 /* This is the newer recursive depth first search routine. */
 /* Return non-zero if PARENT is directly derived from TYPE.  By directly
    we mean it's only one step up the inheritance lattice.  We check this
@@ -402,6 +403,7 @@ immediately_derived (parent, type)
     }
   return 0;
 }
+#endif
 
 /* Check whether the type given in BINFO is derived from PARENT.  If
    it isn't, return 0.  If it is, but the derivation is MI-ambiguous
@@ -459,7 +461,7 @@ get_binfo (parent, binfo, protect)
 }
 
 /* This is the newer depth first get_base_distance routine.  */
-static
+static int
 get_base_distance_recursive (binfo, depth, is_private, basetype_path, rval,
 			     rval_private_ptr, new_binfo_ptr, parent, path_ptr,
 			     protect, via_virtual_ptr, via_virtual)
@@ -583,10 +585,7 @@ get_base_distance (parent, binfo, protect, path_ptr)
      int protect;
      tree *path_ptr;
 {
-  int head, tail;
-  int is_private = 0;
   int rval;
-  int depth = 0;
   int rval_private = 0;
   tree type;
   tree new_binfo = NULL_TREE;
@@ -1966,54 +1965,31 @@ get_first_matching_virtual (binfo, fndecl, dtorp)
     }
 }
 
-/* Return the list of virtual functions which are abstract in type TYPE.
-   This information is cached, and so must be built on a
-   non-temporary obstack.  */
-tree
-get_abstract_virtuals (type)
-     tree type;
+/* Return the list of virtual functions which are abstract in type TYPE
+   that come from non virtual base classes.  See init_vtbl_ptrs for
+   the style of search we do.  */
+static tree
+get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
+     tree binfo, abstract_virtuals;
+     int do_self;
 {
-  /* For each layer of base class (i.e., the first base class, and each
-     virtual base class from that one), modify the virtual function table
-     of the derived class to contain the new virtual function.
-     A class has as many vfields as it has virtual base classes (total).  */
-  tree vfields, vbases, base, tmp;
-  tree vfield = CLASSTYPE_VFIELD (type);
-  tree fcontext = vfield ? DECL_FCONTEXT (vfield) : NULL_TREE;
-  tree abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (type);
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
-  for (vfields = CLASSTYPE_VFIELDS (type); vfields; vfields = TREE_CHAIN (vfields))
+  for (i = 0; i < n_baselinks; i++)
     {
-      int normal;
-
-      /* This code is most likely wrong, and probably only works for single
-	 inheritance or by accident. */
-
-      /* Find the right base class for this derived class, call it BASE.  */
-      base = VF_BASETYPE_VALUE (vfields);
-      if (base == type)
-	continue;
-
-      /* We call this case NORMAL iff this virtual function table
-	 pointer field has its storage reserved in this class.
-	 This is normally the case without virtual baseclasses
-	 or off-center multiple baseclasses.  */
-      normal = (base == fcontext
-		&& (VF_BINFO_VALUE (vfields) == NULL_TREE
-		    || ! TREE_VIA_VIRTUAL (VF_BINFO_VALUE (vfields))));
-
-      if (normal)
-	tmp = TREE_CHAIN (TYPE_BINFO_VIRTUALS (type));
-      else
-	{
-	  /* n.b.: VF_BASETYPE_VALUE (vfields) is the first basetype
-	     that provides the virtual function table, whereas
-	     VF_DERIVED_VALUE (vfields) is an immediate base type of TYPE
-	     that dominates VF_BASETYPE_VALUE (vfields).  The list of
-	     vfields we want lies between these two values.  */
-	  tree binfo = get_binfo (VF_NORMAL_VALUE (vfields), type, 0);
-	  tmp = TREE_CHAIN (BINFO_VIRTUALS (binfo));
-	}
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      int is_not_base_vtable =
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      if (! TREE_VIA_VIRTUAL (base_binfo))
+	abstract_virtuals
+	  = get_abstract_virtuals_1 (base_binfo, is_not_base_vtable,
+				     abstract_virtuals);
+    }
+  /* Should we use something besides CLASSTYPE_VFIELDS? */
+  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      tree tmp = TREE_CHAIN (BINFO_VIRTUALS (binfo));
 
       /* Get around dossier entry if there is one.  */
       if (flag_dossier)
@@ -2028,6 +2004,23 @@ get_abstract_virtuals (type)
 	  tmp = TREE_CHAIN (tmp);
 	}
     }
+  return abstract_virtuals;
+}
+
+/* Return the list of virtual functions which are abstract in type TYPE.
+   This information is cached, and so must be built on a
+   non-temporary obstack.  */
+tree
+get_abstract_virtuals (type)
+     tree type;
+{
+  tree vbases, tmp;
+  tree abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (type);
+
+  /* First get all from non-virtual bases. */
+  abstract_virtuals
+    = get_abstract_virtuals_1 (TYPE_BINFO (type), 1, abstract_virtuals);
+					       
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases; vbases = TREE_CHAIN (vbases))
     {
       if (! BINFO_VIRTUALS (vbases))
@@ -2414,8 +2407,7 @@ dfs_init_vbase_pointers (binfo)
 {
   tree type = BINFO_TYPE (binfo);
   tree fields = TYPE_FIELDS (type);
-  tree path, this_vbase_ptr;
-  int distance;
+  tree this_vbase_ptr;
 
   CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
 
@@ -2500,9 +2492,9 @@ init_vbase_pointers (type, decl_ptr)
    offsets are valid to store vtables.  When zero, we must store new
    vtables through virtual baseclass pointers.  */
 
-tree
-build_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
-			  use_computed_offsets)
+void
+expand_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
+			   use_computed_offsets)
      tree main_binfo, binfo;
      tree true_exp, decl_ptr;
      int use_computed_offsets;
@@ -2512,7 +2504,6 @@ build_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       int old_flag = flag_this_is_variable;
-      tree vtable_init_result = NULL_TREE;
       tree vbases = CLASSTYPE_VBASECLASSES (type);
 
       vbase_types = CLASSTYPE_VBASECLASSES (for_type);
@@ -2538,7 +2529,7 @@ build_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
 	      tree addr;
 	      tree vtbl = BINFO_VTABLE (vbases);
 	      tree init = build_unary_op (ADDR_EXPR, vtbl, 0);
-	      if (!flag_vtable_hack)
+	      if (!flag_vtable_thunks)
 		assemble_external (vtbl);
 	      TREE_USED (vtbl) = 1;
 
@@ -2552,8 +2543,7 @@ build_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
 		  tree ref = build_vfield_ref (build_indirect_ref (addr, NULL_PTR),
 					       BINFO_TYPE (vbases));
 		  init = convert_force (TREE_TYPE (ref), init);
-		  vtable_init_result = tree_cons (NULL_TREE, build_modify_expr (ref, NOP_EXPR, init),
-						  vtable_init_result);
+		  expand_expr_stmt (build_modify_expr (ref, NOP_EXPR, init));
 		}
 	    }
 	  vbases = TREE_CHAIN (vbases);
@@ -2562,10 +2552,7 @@ build_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
       dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep);
 
       flag_this_is_variable = old_flag;
-      if (vtable_init_result)
-	return build_compound_expr (vtable_init_result);
     }
-  return error_mark_node;
 }
 
 void
@@ -2586,7 +2573,7 @@ dfs_get_vbase_types (binfo)
 {
   if (TREE_VIA_VIRTUAL (binfo) && ! BINFO_VBASE_MARKED (binfo))
     {
-      vbase_types = make_binfo (integer_zero_node, BINFO_TYPE (binfo),
+      vbase_types = make_binfo (integer_zero_node, binfo,
 				BINFO_VTABLE (binfo),
 				BINFO_VIRTUALS (binfo), vbase_types);
       TREE_VIA_VIRTUAL (vbase_types) = 1;

@@ -371,35 +371,67 @@ tree
 build_vtable_entry (delta, pfn)
      tree delta, pfn;
 {
-  extern int flag_huge_objects;
-  tree elems = tree_cons (NULL_TREE, delta,
-			  tree_cons (NULL_TREE, integer_zero_node,
-				     build_tree_list (NULL_TREE, pfn)));
-  tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
+  extern tree abort_fndecl;
+  if (TREE_CODE (pfn) == ADDR_EXPR)
+    {
+      tree fndecl = TREE_OPERAND (pfn, 0);
+      if (TREE_CODE(fndecl) == FUNCTION_DECL
+	  && DECL_ABSTRACT_VIRTUAL_P(fndecl))
+	{
+	  tree d = copy_node (fndecl);
+	  DECL_RTL (d) = DECL_RTL (abort_fndecl);
+	  TREE_OPERAND (pfn, 0) = d;
+	}
+    }
 
-  /* DELTA is constructed by `size_int', which means it may be an
-     unsigned quantity on some platforms.  Therefore, we cannot use
-     `int_fits_type_p', because when DELTA is really negative,
-     `force_fit_type' will make it look like a very large number.  */
+  if (flag_vtable_thunks)
+    {
+      HOST_WIDE_INT idelta = TREE_INT_CST_LOW (delta);
+      extern tree make_thunk ();
+      if (idelta)
+	{
+	  pfn = build1 (ADDR_EXPR, ptr_type_node,
+			make_thunk (pfn, idelta));
+	  TREE_READONLY (pfn) = 1;
+	  TREE_CONSTANT (pfn) = 1;
+	}
+#ifdef GATHER_STATISTICS
+      n_vtable_entries += 1;
+#endif
+      return pfn;
+    }
+  else
+    {
+      extern int flag_huge_objects;
+      tree elems = tree_cons (NULL_TREE, delta,
+			      tree_cons (NULL_TREE, integer_zero_node,
+					 build_tree_list (NULL_TREE, pfn)));
+      tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
 
-  if ((TREE_INT_CST_LOW (TYPE_MAX_VALUE (delta_type_node))
-       < TREE_INT_CST_LOW (delta))
-      || (TREE_INT_CST_LOW (delta)
-	  < TREE_INT_CST_LOW (TYPE_MIN_VALUE (delta_type_node))))
-    if (flag_huge_objects)
-      sorry ("object size exceeds built-in limit for virtual function table implementation");
-    else
-      sorry ("object size exceeds normal limit for virtual function table implementation, recompile all source and use -fhuge-objects");
+      /* DELTA is constructed by `size_int', which means it may be an
+	 unsigned quantity on some platforms.  Therefore, we cannot use
+	 `int_fits_type_p', because when DELTA is really negative,
+	 `force_fit_type' will make it look like a very large number.  */
 
-  TREE_CONSTANT (entry) = 1;
-  TREE_STATIC (entry) = 1;
-  TREE_READONLY (entry) = 1;
+      if ((TREE_INT_CST_LOW (TYPE_MAX_VALUE (delta_type_node))
+	   < TREE_INT_CST_LOW (delta))
+	  || (TREE_INT_CST_LOW (delta)
+	      < TREE_INT_CST_LOW (TYPE_MIN_VALUE (delta_type_node))))
+	if (flag_huge_objects)
+	  sorry ("object size exceeds built-in limit for virtual function table implementation");
+	else
+	  sorry ("object size exceeds normal limit for virtual function table implementation, recompile all source and use -fhuge-objects");
+
+      TREE_CONSTANT (entry) = 1;
+      TREE_STATIC (entry) = 1;
+      TREE_READONLY (entry) = 1;
 
 #ifdef GATHER_STATISTICS
-  n_vtable_entries += 1;
+      n_vtable_entries += 1;
 #endif
 
-  return entry;
+      return entry;
+    }
 }
 
 /* Given an object INSTANCE, return an expression which yields the
@@ -471,7 +503,7 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
 	vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
 				   NULL_PTR);
     }
-  if (!flag_vtable_hack)
+  if (!flag_vtable_thunks)
     assemble_external (vtbl);
   aref = build_array_ref (vtbl, idx);
 
@@ -480,12 +512,17 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
   if (!building_cleanup && TREE_CODE (aref) == INDIRECT_REF)
     TREE_OPERAND (aref, 0) = save_expr (TREE_OPERAND (aref, 0));
 
-  *ptr_to_instptr
-    = build (PLUS_EXPR, TREE_TYPE (*ptr_to_instptr),
-	     *ptr_to_instptr,
-	     convert (ptrdiff_type_node,
-		      build_component_ref (aref, delta_identifier, 0, 0)));
-  return build_component_ref (aref, pfn_identifier, 0, 0);
+  if (flag_vtable_thunks)
+    return aref;
+  else
+    {
+      *ptr_to_instptr
+	= build (PLUS_EXPR, TREE_TYPE (*ptr_to_instptr),
+		 *ptr_to_instptr,
+		 convert (ptrdiff_type_node,
+			  build_component_ref (aref, delta_identifier, 0, 0)));
+      return build_component_ref (aref, pfn_identifier, 0, 0);
+    }
 }
 
 /* Set TREE_PUBLIC and/or TREE_EXTERN on the vtable DECL,
@@ -828,18 +865,14 @@ modify_vtable_entry (old_entry_in_list, new_entry, fndecl)
     DECL_VINDEX (fndecl) = vindex;
   else
     {
-      if (! tree_int_cst_equal (DECL_VINDEX (fndecl), vindex))
+      if (! tree_int_cst_equal (DECL_VINDEX (fndecl), vindex)
+	  && ! doing_hard_virtuals)
 	{
-	  tree elts = CONSTRUCTOR_ELTS (new_entry);
-
-	  if (! doing_hard_virtuals)
-	    {
-	      pending_hard_virtuals
-		= tree_cons (fndecl, FNADDR_FROM_VTABLE_ENTRY (new_entry),
-			     pending_hard_virtuals);
-	      TREE_TYPE (pending_hard_virtuals) = TREE_OPERAND (base_pfn, 0);
-	      return;
-	    }
+	  pending_hard_virtuals
+	    = tree_cons (fndecl, FNADDR_FROM_VTABLE_ENTRY (new_entry),
+			 pending_hard_virtuals);
+	  TREE_TYPE (pending_hard_virtuals) = TREE_OPERAND (base_pfn, 0);
+	  return;
 	}
     }
 }
@@ -972,7 +1005,6 @@ static int
 is_normal (binfo, t)
      tree t, binfo;
 {
-  tree binfo2;
   int i = CLASSTYPE_VFIELD_PARENT (t);
   if (i != -1)
     {
@@ -992,10 +1024,13 @@ modify_other_vtable_entries (t, binfo, fndecl, base_fndecl, pfn)
      tree t, binfo;
      tree fndecl, base_fndecl, pfn;
 {
-  tree vfields, virtuals;
+  tree virtuals;
   tree binfos;
   int i, n_baselinks;
   unsigned HOST_WIDE_INT n;
+#if 0
+  tree vfields;
+#endif
   
   virtuals = BINFO_VIRTUALS (binfo);
   n = 0;
@@ -1173,7 +1208,10 @@ modify_vtable_entries (t, fndecl, base_fndecl, pfn)
 		  DECL_ASSEMBLER_NAME(fndecl));
     }
 #endif
+#if 0
+  /* this is wrong, see p4736a.C testcase */
   DECL_CONTEXT (fndecl) = DECL_CONTEXT (base_fndecl);
+#endif
 
   offset = integer_zero_node;
   if (context != t && TYPE_USES_COMPLEX_INHERITANCE (t))
@@ -1377,7 +1415,7 @@ add_virtual_function (pending_virtuals, has_virtual, x, t)
   TREE_CONSTANT (vfn) = 1;
 
   /* current_class_type may be NULL_TREE in case of error.  */
-  if (current_class_type)
+  if (current_class_type && !flag_vtable_thunks)
     TREE_ADDRESSABLE (x) = CLASSTYPE_VTABLE_NEEDS_WRITING (current_class_type);
 
   /* If the virtual function is a redefinition of a prior one,
@@ -1386,7 +1424,7 @@ add_virtual_function (pending_virtuals, has_virtual, x, t)
      to hold that entry.  */
   if (DECL_VINDEX (x) == error_mark_node)
     {
-      tree entry = build_vtable_entry (integer_zero_node, vfn);
+      tree entry;
 
       if (flag_dossier && *has_virtual == 0)
 	{
@@ -1416,6 +1454,7 @@ add_virtual_function (pending_virtuals, has_virtual, x, t)
 	DECL_VINDEX (x) = index;
       }
 #endif
+      entry = build_vtable_entry (integer_zero_node, vfn);
       pending_virtuals = tree_cons (DECL_VINDEX (x), entry, pending_virtuals);
     }
   /* Happens if declared twice in class or we're not in a class definition.
@@ -2041,7 +2080,7 @@ finish_base_struct (t, b, t_binfo)
 	      if (! TREE_VIA_VIRTUAL (base_base_binfo))
 		TREE_VEC_ELT (base_binfos, j)
 		  = make_binfo (BINFO_OFFSET (base_base_binfo),
-				BINFO_TYPE (base_base_binfo),
+				base_base_binfo,
 				BINFO_VTABLE (base_base_binfo),
 				BINFO_VIRTUALS (base_base_binfo),
 				chain);
@@ -2773,7 +2812,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   int any_default_members = 0;
   int const_sans_init = 0;
   int ref_sans_init = 0;
-  int do_mem_init = 0;
   int nonprivate_method = 0;
   tree t_binfo = TYPE_BINFO (t);
   tree access_decls = 0;
@@ -3005,10 +3043,10 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      if (DECL_VINDEX (x)
 		  || (all_virtual == 1 && ! DECL_CONSTRUCTOR_P (x)))
 		{
-		  pending_virtuals = add_virtual_function (pending_virtuals,
-							   &has_virtual, x, t);
-		  if (DECL_ABSTRACT_VIRTUAL_P (x))
-		    abstract_virtuals = tree_cons (NULL_TREE, x, abstract_virtuals);
+                  pending_virtuals = add_virtual_function (pending_virtuals,
+                                                           &has_virtual, x, t);
+                  if (DECL_ABSTRACT_VIRTUAL_P (x))
+                    abstract_virtuals = tree_cons (NULL_TREE, x, abstract_virtuals);
 		}
 	      continue;
 	    }
@@ -3772,8 +3810,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      if (! SAME_FN (decl, base_fndecl))
 		{
 		  tree base_context = DECL_CLASS_CONTEXT (base_fndecl);
-		  tree binfo = NULL_TREE, these_virtuals;
+		  tree binfo = NULL_TREE;
 #if 0
+		  tree these_virtuals;
 		  unsigned HOST_WIDE_INT i
 		    = (TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl))
 		       & (((unsigned HOST_WIDE_INT)1<<(BITS_PER_WORD-1))-1));

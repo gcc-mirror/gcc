@@ -40,10 +40,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   */
 
 %{
-#if defined(GATHER_STATISTICS) || defined(SPEW_DEBUG)
-#undef YYDEBUG
+/* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
-#endif
 
 #include "config.h"
 
@@ -73,8 +71,6 @@ void yyerror ();
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
-
-static void position_after_white_space ();
 
 /* Contains the statement keyword (if/while/do) to include in an
    error message if the user supplies an empty conditional expression.  */
@@ -338,6 +334,8 @@ asm_keyword:
 lang_extdef:
 	  { if (pending_lang_change) do_pending_lang_change(); }
 	  extdef
+	  { if (! global_bindings_p () && ! pseudo_global_level_p())
+	      pop_everything (); }
 	;
 
 extdef:
@@ -1226,9 +1224,11 @@ unary_expr:
 		  $$ = build_new ($2, typename, NULL_TREE, $$ != NULL_TREE);
 		}
 	| .scope new '(' type_id ')'
-		{ $$ = build_new ($2, $4, NULL_TREE, $$ != NULL_TREE); }
+		{ $$ = build_new ($2, groktypename ($4), NULL_TREE,
+				  $$ != NULL_TREE); }
 	| .scope new '(' nonnull_exprlist ')' '(' type_id ')'
-		{ $$ = build_new ($4, $7, NULL_TREE, $$ != NULL_TREE); }
+		{ $$ = build_new ($4, groktypename ($7), NULL_TREE,
+				  $$ != NULL_TREE); }
 	/* Unswallow a ':' which is probably meant for ?: expression.  */
 	| .scope new TYPENAME_COLON
 		{ yyungetc (':', 1); $$ = build_new ($2, $3, NULL_TREE, $$ != NULL_TREE); }
@@ -1347,8 +1347,8 @@ expr_no_commas:
 		{ $$ = build_modify_expr ($$, NOP_EXPR, $3); }
 	| expr_no_commas ASSIGN expr_no_commas
 		{ register tree rval;
-		  if (rval = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL, $$, $3,
-					     make_node ($2)))
+		  if ((rval = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL, $$, $3,
+					     make_node ($2))))
 		    $$ = rval;
 		  else
 		    $$ = build_modify_expr ($$, $2, $3); }
@@ -1473,8 +1473,7 @@ primary:
 		    $$ = require_complete_type ($$);
                 }
 	| primary '[' expr ']'
-		{ do_array:
-		    $$ = grok_array_decl ($$, $3); }
+		{ $$ = grok_array_decl ($$, $3); }
 	| object identifier_or_opname  %prec UNARY
 		{ $$ = build_component_ref ($$, $2, NULL_TREE, 1); }
 	| object id_scope identifier_or_opname %prec UNARY
@@ -1570,10 +1569,6 @@ primary:
 	| TYPEID '(' type_id ')'
 		{ tree type = groktypename ($3);
 		  $$ = get_typeid (type); }
-	| SCOPE typespec '(' nonnull_exprlist ')'
-		{ $$ = build_functional_cast ($2, $4); }
-	| SCOPE typespec LEFT_RIGHT
-		{ $$ = build_functional_cast ($2, NULL_TREE); }
 	| SCOPE IDENTIFIER
 		{
 		do_scoped_id:
@@ -1617,7 +1612,6 @@ primary:
 		{
 		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    goto do_scoped_id;
-		do_scoped_operator:
 		  $$ = $2;
 		}
 	| id_scope identifier_or_opname  %prec HYPERUNARY
@@ -2040,6 +2034,13 @@ initdcl0:
 		{ current_declspecs = $<ttype>0;
 		  if (TREE_CODE (current_declspecs) != TREE_LIST)
 		    current_declspecs = get_decl_list (current_declspecs);
+		  if (have_extern_spec && !used_extern_spec)
+		    {
+		      current_declspecs = decl_tree_cons
+			(NULL_TREE, get_identifier ("extern"), 
+			 current_declspecs);
+		      used_extern_spec = 1;
+		    }
 		  $<itype>5 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1, $2);
 		  cplus_decl_attributes ($<ttype>$, $4); }
@@ -2052,6 +2053,13 @@ initdcl0:
 		  current_declspecs = $<ttype>0;
 		  if (TREE_CODE (current_declspecs) != TREE_LIST)
 		    current_declspecs = get_decl_list (current_declspecs);
+		  if (have_extern_spec && !used_extern_spec)
+		    {
+		      current_declspecs = decl_tree_cons
+			(NULL_TREE, get_identifier ("extern"), 
+			 current_declspecs);
+		      used_extern_spec = 1;
+		    }
 		  $$ = suspend_momentary ();
 		  d = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes (d, $4);

@@ -47,7 +47,9 @@ tree pending_vtables;
    an initializer, and then initialized, staticly, outside the class.  */
 tree pending_statics;
 
-extern tree pending_addressable_inlines;
+/* A list of functions which were declared inline, but which we
+   may need to emit outline anyway. */
+static tree saved_inlines;
 
 /* Used to help generate temporary names which are unique within
    a function.  Reset to 0 by start_function.  */
@@ -129,9 +131,12 @@ int warn_implicit = 1;
 
 int warn_ctor_dtor_privacy = 1;
 
-/* True if we want output of vtables to be controlled by whether
+/* True if we want to implement vtbvales using "thunks".
+   The default is off now, but will be on later.
+
+   Also causes output of vtables to be controlled by whether
    we seen the class's first non-inline virtual function. */
-int flag_vtable_hack = 0;
+int flag_vtable_thunks = 0;
 
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
@@ -364,7 +369,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"ansi-overloading", &flag_ansi_overloading, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
-  {"vtable-hack", &flag_vtable_hack, 1},
+  {"vtable-thunks", &flag_vtable_thunks, 1},
 };
 
 /* Decode the string P as a language-specific option.
@@ -609,6 +614,7 @@ grok_method_quals (ctype, function, quals)
   return ctype;
 }
 
+#if 0				/* Not used. */
 /* This routine replaces cryptic DECL_NAMEs with readable DECL_NAMEs.
    It leaves DECL_ASSEMBLER_NAMEs with the correct value.  */
 /* This does not yet work with user defined conversion operators
@@ -625,6 +631,7 @@ substitute_nice_name (decl)
       DECL_NAME (decl) = get_identifier (n);
     }
 }
+#endif
 
 /* Warn when -fexternal-templates is used and #pragma
    interface/implementation is not used all the times it should be,
@@ -1071,7 +1078,10 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   if (doing_vec
       && TREE_CODE (type) == POINTER_TYPE
       && !TYPE_HAS_DESTRUCTOR (TREE_TYPE (type)))
-    doing_vec = 0;
+    {
+      doing_vec = 0;
+      use_global_delete = 1;
+    }
 
   if (doing_vec)
     return build_vec_delete (t, maxindex, elt_size, NULL_TREE,
@@ -1093,7 +1103,6 @@ check_classfn (ctype, cname, function)
 {
   tree fn_name = DECL_NAME (function);
   tree fndecl;
-  int need_quotes = 0;
   tree method_vec = CLASSTYPE_METHOD_VEC (ctype);
   tree *methods = 0;
   tree *end = 0;
@@ -1241,12 +1250,14 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	}
       else if (pedantic)
 	{
+#if 0
+	  /* Already warned in grokdeclarator.  */
 	  if (DECL_NAME (value))
 	    pedwarn ("ANSI C++ forbids initialization of member `%s'",
 		     IDENTIFIER_POINTER (DECL_NAME (value)));
 	  else
 	    pedwarn ("ANSI C++ forbids initialization of fields");
-
+#endif
 	  init = NULL_TREE;
 	}
       else
@@ -1675,7 +1686,6 @@ grok_function_init (decl, init)
   /* An initializer for a function tells how this function should
      be inherited.  */
   tree type = TREE_TYPE (decl);
-  extern tree abort_fndecl;
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
     cp_error ("initializer specified for non-member function `%D'", decl);
@@ -1683,14 +1693,19 @@ grok_function_init (decl, init)
     cp_error ("initializer specified for non-virtual method `%D'", decl);
   else if (integer_zerop (init))
     {
+#if 0
       /* Mark this function as being "defined".  */
       DECL_INITIAL (decl) = error_mark_node;
       /* pure virtual destructors must be defined. */
+      /* pure virtual needs to be defined (as abort) only when put in 
+	 vtbl. For wellformed call, it should be itself. pr4737 */
       if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)))
 	{
+	  extern tree abort_fndecl;
 	  /* Give this node rtl from `abort'.  */
 	  DECL_RTL (decl) = DECL_RTL (abort_fndecl);
 	}
+#endif
       DECL_ABSTRACT_VIRTUAL_P (decl) = 1;
     }
   else if (TREE_CODE (init) == OFFSET_REF
@@ -1791,7 +1806,6 @@ tree
 constructor_name_full (thing)
      tree thing;
 {
-  tree t;
   if (TREE_CODE (thing) == UNINSTANTIATED_P_TYPE)
     return DECL_NAME (UPT_TEMPLATE (thing));
   if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
@@ -1898,6 +1912,9 @@ void
 mark_inline_for_output (decl)
      tree decl;
 {
+  if (DECL_SAVED_INLINE (decl))
+    return;
+  DECL_SAVED_INLINE (decl) = 1;
   if (DECL_PENDING_INLINE_INFO (decl) != 0
       && ! DECL_PENDING_INLINE_INFO (decl)->deja_vu)
     {
@@ -1917,8 +1934,7 @@ mark_inline_for_output (decl)
 	}
       DECL_PENDING_INLINE_INFO (decl) = 0;
     }
-  pending_addressable_inlines = perm_tree_cons (NULL_TREE, decl,
-						pending_addressable_inlines);
+  saved_inlines = perm_tree_cons (NULL_TREE, decl, saved_inlines);
 }
 
 void
@@ -2275,7 +2291,7 @@ coerce_delete_type (type)
 }
 
 static void
-write_vtable_entries (decl)
+mark_vtable_entries (decl)
      tree decl;
 {
   tree entries = TREE_CHAIN (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)));
@@ -2287,43 +2303,8 @@ write_vtable_entries (decl)
     {
       tree fnaddr = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries));
       tree fn = TREE_OPERAND (fnaddr, 0);
-      if (! DECL_EXTERNAL (fn) && ! TREE_ASM_WRITTEN (fn)
-	  && DECL_SAVED_INSNS (fn))
-	{
-	  if (TREE_PUBLIC (DECL_CLASS_CONTEXT (fn)))
-	    TREE_PUBLIC (fn) = 1;
-	  TREE_ADDRESSABLE (fn) = 1;
-	  temporary_allocation ();
-	  output_inline_function (fn);
-	  permanent_allocation (1);
-	}
-      else
-	assemble_external (fn);
+      TREE_ADDRESSABLE (fn) = 1;
     }
-}
-
-/* Note even though prev is never used in here, walk_vtables
-   expects this to have two arguments, so concede.  */
-static void
-finish_vtable_typedecl (prev, vars)
-     tree prev, vars;
-{
-  tree decl = TYPE_BINFO_VTABLE (TREE_TYPE (vars));
-
-  /* If we are controlled by `+e2', obey.  */
-  if (write_virtuals == 2)
-    {
-      tree binfo = value_member (DECL_NAME (vars), pending_vtables);
-      if (binfo)
-	TREE_PURPOSE (binfo) = void_type_node;
-      else
-	decl = NULL_TREE;
-    }
-  /* If this type has inline virtual functions, then
-     write those functions out now.  */
-  if (decl && write_virtuals >= 0
-      && ! DECL_EXTERNAL (decl) && (TREE_PUBLIC (decl) || TREE_USED (decl)))
-    write_vtable_entries (decl);
 }
 
 static void
@@ -2331,7 +2312,7 @@ finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   tree ctype = DECL_CONTEXT (vars);
-  if (flag_vtable_hack && !CLASSTYPE_INTERFACE_KNOWN (ctype))
+  if (flag_vtable_thunks && !CLASSTYPE_INTERFACE_KNOWN (ctype))
     {
       tree method;
       for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
@@ -2339,6 +2320,8 @@ finish_vtable_vardecl (prev, vars)
 	{
 	  if (DECL_VINDEX (method) != NULL_TREE && !DECL_SAVED_INSNS (method))
 	    {
+	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
+	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
 	      TREE_PUBLIC (vars) = 1;
 	      DECL_EXTERNAL (vars) = DECL_EXTERNAL (method);
 	      break;
@@ -2354,15 +2337,32 @@ finish_vtable_vardecl (prev, vars)
       /* Stuff this virtual function table's size into
 	 `pfn' slot of `the_null_vtable_entry'.  */
       tree nelts = array_type_nelts (TREE_TYPE (vars));
-      SET_FNADDR_FROM_VTABLE_ENTRY (the_null_vtable_entry, nelts);
+      if (flag_vtable_thunks)
+	TREE_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (vars))) = nelts;
+      else
+	SET_FNADDR_FROM_VTABLE_ENTRY (the_null_vtable_entry, nelts);
       /* Kick out the dossier before writing out the vtable.  */
       if (flag_dossier)
 	rest_of_decl_compilation (TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (TREE_CHAIN (CONSTRUCTOR_ELTS (DECL_INITIAL (vars))))), 0), 0, 1, 1);
 
       /* Write it out.  */
-      write_vtable_entries (vars);
+      mark_vtable_entries (vars);
       if (TREE_TYPE (DECL_INITIAL (vars)) == 0)
-	store_init_value (vars, DECL_INITIAL (vars));
+	  store_init_value (vars, DECL_INITIAL (vars));
+      if (flag_vtable_thunks)
+	{
+	  tree list = CONSTRUCTOR_ELTS (DECL_INITIAL (vars));
+	  for (; list; list = TREE_CHAIN (list))
+	    {
+	      tree vfunc = TREE_VALUE (list);
+	      if (TREE_CODE (vfunc) == ADDR_EXPR)
+		{
+		  vfunc = TREE_OPERAND (vfunc, 0);
+		  if (TREE_CODE (vfunc) == THUNK_DECL)
+		    emit_thunk (vfunc);
+		}
+	    }
+	}
 
 #ifdef DWARF_DEBUGGING_INFO
       if (write_symbols == DWARF_DEBUG)
@@ -2394,7 +2394,7 @@ finish_vtable_vardecl (prev, vars)
 
       rest_of_decl_compilation (vars, 0, 1, 1);
     }
-  else if (TREE_USED (vars) && flag_vtable_hack)
+  else if (TREE_USED (vars) && flag_vtable_thunks)
     assemble_external (vars);
   /* We know that PREV must be non-zero here.  */
   TREE_CHAIN (prev) = TREE_CHAIN (vars);
@@ -2679,23 +2679,6 @@ finish_file ()
   parse_time -= this_time - start_time;
   varconst_time += this_time - start_time;
 
-  /* Now write out inline functions which had their addresses taken
-     and which were not declared virtual and which were not declared
-     `extern inline'.  */
-  while (pending_addressable_inlines)
-    {
-      tree decl = TREE_VALUE (pending_addressable_inlines);
-      if (! TREE_ASM_WRITTEN (decl)
-	  && ! DECL_EXTERNAL (decl)
-	  && DECL_SAVED_INSNS (decl))
-	{
-	  temporary_allocation ();
-	  output_inline_function (decl);
-	  permanent_allocation (1);
-	}
-      pending_addressable_inlines = TREE_CHAIN (pending_addressable_inlines);
-    }
-
   start_time = get_run_time ();
 
   /* Now delete from the chain of variables all virtual function tables.
@@ -2726,7 +2709,38 @@ finish_file ()
   pushdecl (vars);
 #endif
 
-  walk_vtables (finish_vtable_typedecl, finish_vtable_vardecl);
+  walk_vtables ((void (*)())0, finish_vtable_vardecl);
+
+  /* Now write out inline functions which had their addresses taken
+     and which were not declared virtual and which were not declared
+     `extern inline'.  */
+  while (saved_inlines)
+    {
+      tree decl = TREE_VALUE (saved_inlines);
+      saved_inlines = TREE_CHAIN (saved_inlines);
+      if (TREE_ASM_WRITTEN (decl))
+	continue;
+      if (DECL_FUNCTION_MEMBER_P (decl) && !TREE_PUBLIC (decl))
+	{
+	  tree ctype = DECL_CLASS_CONTEXT (decl);
+	  if (CLASSTYPE_INTERFACE_KNOWN (ctype))
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_EXTERNAL (decl) = CLASSTYPE_INTERFACE_ONLY (ctype);
+	    }
+	}
+      if (TREE_PUBLIC (decl) || TREE_ADDRESSABLE (decl))
+	{
+	  if (DECL_EXTERNAL (decl))
+	    assemble_external (decl);
+	  else
+	    {	
+	      temporary_allocation ();
+	      output_inline_function (decl);
+	      permanent_allocation (1);
+	    }
+	}
+    }
 
   if (write_virtuals == 2)
     {
@@ -2839,8 +2853,11 @@ reparse_decl_as_expr1 (decl)
     case BIT_NOT_EXPR:
       return build_x_unary_op (BIT_NOT_EXPR,
 			       reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)));
+
+    default:
+      my_friendly_abort (5);
+      return NULL_TREE;
     }
-  my_friendly_abort (5);
 }
 
 /* This is something of the form `int (*a)++' that has turned out to be an
@@ -2865,6 +2882,8 @@ tree
 finish_decl_parsing (decl)
      tree decl;
 {
+  extern int current_class_depth;
+  
   switch (TREE_CODE (decl))
     {
     case IDENTIFIER_NODE:
@@ -2878,5 +2897,12 @@ finish_decl_parsing (decl)
     case BIT_NOT_EXPR:
       TREE_OPERAND (decl, 0) = finish_decl_parsing (TREE_OPERAND (decl, 0));
       return decl;
+    case SCOPE_REF:
+      push_nested_class (TREE_OPERAND (decl, 0), 3);
+      TREE_COMPLEXITY (decl) = current_class_depth;
+      return decl;
+    default:
+      my_friendly_abort (5);
+      return NULL_TREE;
     }
 }

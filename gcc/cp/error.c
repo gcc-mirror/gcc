@@ -92,9 +92,6 @@ init_error ()
   scratch_firstobj = (char *)obstack_alloc (&scratch_obstack, 0);
 }
 
-/* Counter to help build parameter names in case they were omitted.  */
-static int dummy_name;
-
 enum pad { none, before, after };
 
 static void
@@ -505,8 +502,9 @@ ident_fndecl (t)
   else if (TREE_CODE (n) == TREE_LIST
 	   && TREE_CODE (TREE_VALUE (n)) == FUNCTION_DECL)
     return TREE_VALUE (n);
-  else
-    my_friendly_abort (66);
+
+  my_friendly_abort (66);
+  return NULL_TREE;
 }
 
 #ifndef NO_DOLLAR_IN_LABEL
@@ -715,7 +713,6 @@ dump_function_decl (t, v)
   tree fntype = TREE_TYPE (t);
   tree parmtypes = TYPE_ARG_TYPES (fntype);
   tree cname = NULL_TREE;
-  int spaces = 0;
 
   /* Friends have DECL_CLASS_CONTEXT set, but not DECL_CONTEXT.  */
   if (DECL_CONTEXT (t))
@@ -1335,6 +1332,7 @@ code_as_string (c, v)
 char *
 language_as_string (c, v)
      enum languages c;
+     int v;
 {
   switch (c)
     {
@@ -1346,13 +1344,14 @@ language_as_string (c, v)
 
     default:
       my_friendly_abort (355);
+      return 0;
     }
 }
 
 /* Return the proper printed version of a parameter to a C++ function.  */
 char *
 parm_as_string (p, v)
-     int p;
+     int p, v;
 {
   if (p < 0)
     return "`this'";
@@ -1364,6 +1363,7 @@ parm_as_string (p, v)
 char *
 op_as_string (p, v)
      enum tree_code p;
+     int v;
 {
   static char buf[] = "operator                ";
 
