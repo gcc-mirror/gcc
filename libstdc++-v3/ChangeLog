@@ -1,3 +1,8 @@
+2002-01-17  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/std/std_limits.h (__glibcpp_float_has_quiet_NaN,
+	__glibcpp_double_has_quiet_NaN): Correct mispelling.
+
 2002-01-17  Andreas Tobler  <toa@pop.agri.ch>
 
 	* config/os/solaris/solaris2.6/bits/ctype_noninline.h: Fix.
