@@ -248,6 +248,7 @@ static int comp_def_part ();
 static void error_from_errno ();
 static void error_with_line ();
 void pedwarn ();
+void pedwarn_with_line ();
 static void pedwarn_with_file_and_line ();
 static void fatal ();
 void fancy_abort ();
