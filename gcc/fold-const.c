@@ -72,6 +72,8 @@ static int size_htab_eq		PARAMS ((const void *, const void *));
 static tree fold_convert	PARAMS ((tree, tree));
 static enum tree_code invert_tree_comparison PARAMS ((enum tree_code));
 static enum tree_code swap_tree_comparison PARAMS ((enum tree_code));
+static int comparison_to_compcode PARAMS ((enum tree_code));
+static enum tree_code compcode_to_comparison PARAMS ((int));
 static int truth_value_p	PARAMS ((enum tree_code));
 static int operand_equal_for_comparison_p PARAMS ((tree, tree, tree));
 static int twoval_comparison_p	PARAMS ((tree, tree *, tree *, int *));
@@ -114,6 +116,18 @@ static bool fold_real_zero_addition_p	PARAMS ((tree, tree, int));
 #else
 #define CHARMASK 0x7f
 #endif
+
+/* The following constants represent a bit based encoding of GCC's
+   comparison operators.  This encoding simplifies transformations
+   on relational comparison operators, such as AND and OR.  */
+#define COMPCODE_FALSE   0
+#define COMPCODE_LT      1
+#define COMPCODE_EQ      2
+#define COMPCODE_LE      3
+#define COMPCODE_GT      4
+#define COMPCODE_NE      5
+#define COMPCODE_GE      6
+#define COMPCODE_TRUE    7
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
@@ -1703,6 +1717,61 @@ swap_tree_comparison (code)
     case LT_EXPR:
       return GT_EXPR;
     case LE_EXPR:
+      return GE_EXPR;
+    default:
+      abort ();
+    }
+}
+
+
+/* Convert a comparison tree code from an enum tree_code representation
+   into a compcode bit-based encoding.  This function is the inverse of
+   compcode_to_comparison.  */
+
+static int
+comparison_to_compcode (code)
+     enum tree_code code;
+{
+  switch (code)
+    {
+    case LT_EXPR:
+      return COMPCODE_LT;
+    case EQ_EXPR:
+      return COMPCODE_EQ;
+    case LE_EXPR:
+      return COMPCODE_LE;
+    case GT_EXPR:
+      return COMPCODE_GT;
+    case NE_EXPR:
+      return COMPCODE_NE;
+    case GE_EXPR:
+      return COMPCODE_GE;
+    default:
+      abort ();
+    }
+}
+
+/* Convert a compcode bit-based encoding of a comparison operator back
+   to GCC's enum tree_code representation.  This function is the
+   inverse of comparison_to_compcode.  */
+
+static enum tree_code
+compcode_to_comparison (code)
+     int code;
+{
+  switch (code)
+    {
+    case COMPCODE_LT:
+      return LT_EXPR;
+    case COMPCODE_EQ:
+      return EQ_EXPR;
+    case COMPCODE_LE:
+      return LE_EXPR;
+    case COMPCODE_GT:
+      return GT_EXPR;
+    case COMPCODE_NE:
+      return NE_EXPR;
+    case COMPCODE_GE:
       return GE_EXPR;
     default:
       abort ();
@@ -3497,6 +3566,48 @@ fold_truthop (code, truth_type, lhs, rhs)
   lr_arg = TREE_OPERAND (lhs, 1);
   rl_arg = TREE_OPERAND (rhs, 0);
   rr_arg = TREE_OPERAND (rhs, 1);
+
+  /* Simplify (x<y) && (x==y) into (x<=y) and related optimizations.  */
+  if (simple_operand_p (ll_arg)
+      && simple_operand_p (lr_arg)
+      && !FLOAT_TYPE_P (TREE_TYPE (ll_arg)))
+    {
+      int compcode;
+
+      if (operand_equal_p (ll_arg, rl_arg, 0)
+          && operand_equal_p (lr_arg, rr_arg, 0))
+        {
+          int lcompcode, rcompcode;
+
+          lcompcode = comparison_to_compcode (lcode);
+          rcompcode = comparison_to_compcode (rcode);
+          compcode = (code == TRUTH_AND_EXPR)
+                     ? lcompcode & rcompcode
+                     : lcompcode | rcompcode;
+        }
+      else if (operand_equal_p (ll_arg, rr_arg, 0)
+               && operand_equal_p (lr_arg, rl_arg, 0))
+        {
+          int lcompcode, rcompcode;
+
+          rcode = swap_tree_comparison (rcode);
+          lcompcode = comparison_to_compcode (lcode);
+          rcompcode = comparison_to_compcode (rcode);
+          compcode = (code == TRUTH_AND_EXPR)
+                     ? lcompcode & rcompcode
+                     : lcompcode | rcompcode;
+        }
+      else
+	compcode = -1;
+
+      if (compcode == COMPCODE_TRUE)
+	return convert (truth_type, integer_one_node);
+      else if (compcode == COMPCODE_FALSE)
+	return convert (truth_type, integer_zero_node);
+      else if (compcode != -1)
+	return build (compcode_to_comparison (compcode),
+		      truth_type, ll_arg, lr_arg);
+    }
 
   /* If the RHS can be evaluated unconditionally and its operands are
      simple, it wins to evaluate the RHS unconditionally on machines

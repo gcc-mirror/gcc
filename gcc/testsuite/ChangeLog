@@ -1,3 +1,9 @@
+2002-06-15  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-tortuture/execute/compare-1.c: New test case.
+	* gcc.c-tortuture/execute/compare-2.c: New test case.
+	* gcc.c-tortuture/execute/compare-3.c: New test case.
+
 2002-06-13  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.abi/vtable2.C (INC_VDATA): New.  Define for

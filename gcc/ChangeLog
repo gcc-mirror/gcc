@@ -1,3 +1,12 @@
+2002-06-15  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (comparison_to_compcode): New function to convert
+	an comparison TREE CODE into a bit-based representation.
+	(compcode_to_comparison): New function to convert from this bit
+	based representation back to a comparison TREE CODE.
+	(fold_truthop): Simplify (x<y) && (x==y) and related composite
+	comparisons.
+
 2002-06-15  Aldy Hernandez  <aldyh@redhat.com>
 
         * tm.texi (MEMBER_TYPE_FORCES_BLK): Document MODE argument.
