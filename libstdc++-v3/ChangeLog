@@ -1,3 +1,17 @@
+2003-04-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/9555
+	* include/bits/ostream.tcc: Catch all exceptions for formatted
+	output, instead of std::exception and derivatives.
+	* include/bits/istream.tcc: Same.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/9555-oa.cc:
+	* testsuite/27_io/basic_ostream/inserters_character/char/9555-oc.cc:
+	* testsuite/27_io/basic_ostream/inserters_other/char/9555-oo.cc:
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/9555-ia.cc:
+	* testsuite/27_io/basic_istream/extractors_character/char/9555-ic.cc:
+	* testsuite/27_io/basic_istream/extractors_other/char/9555-io.cc:
+	New.
+
 2003-04-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/c++config:  Minor cosmetic tweaks.
