@@ -1,3 +1,9 @@
+2005-02-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_lexer_start_debugging): Avoid arithmetic operations
+	on boolean variables.
+	(cp_lexer_stop_debugging): Likewise.
+
 2005-02-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/17401
