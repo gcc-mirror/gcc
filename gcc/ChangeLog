@@ -1,3 +1,8 @@
+2002-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* expr.c (expand_expr) [PLUS]: Don't use simplify_binary_operation;
+	check for zero operands explicitly.
+
 2002-10-21  Dale Johannesen  <dalej@apple.com>
 
 	PR target/7133
