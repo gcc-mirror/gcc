@@ -515,12 +515,12 @@ have_amp:
 	      iva += dn0->delta;
 	      if (f__lcount > 0)
 		{
-		  no1 = (ivae - iva) / size;
-		  if (no1 > f__lcount)
-		    no1 = f__lcount;
-		  if ((k = l_read (&no1, vaddr + iva, size, type)))
+		  ftnint no2 = (ivae - iva) / size;
+		  if (no2 > f__lcount)
+		    no2 = f__lcount;
+		  if ((k = l_read (&no2, vaddr + iva, size, type)))
 		    return k;
-		  iva += no1 * dn0->delta;
+		  iva += no2 * dn0->delta;
 		}
 	    }
 	mustend:
