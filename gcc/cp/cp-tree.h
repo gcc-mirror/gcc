@@ -3682,6 +3682,7 @@ extern void expand_static_init			PARAMS ((tree, tree));
 extern tree start_handler_parms                 PARAMS ((tree, tree));
 extern int complete_array_type			PARAMS ((tree, tree, int));
 extern tree build_ptrmemfunc_type		PARAMS ((tree));
+extern tree build_ptrmem_type                   (tree, tree);
 /* the grokdeclarator prototype is in decl.h */
 extern int parmlist_is_exprlist			PARAMS ((tree));
 extern int copy_fn_p				PARAMS ((tree));
@@ -4056,7 +4057,8 @@ extern tree find_vbase_instance                 PARAMS ((tree, tree));
 extern tree binfo_for_vbase                     PARAMS ((tree, tree));
 extern tree binfo_via_virtual                   PARAMS ((tree, tree));
 extern tree build_baselink                      (tree, tree, tree, tree);
-
+extern tree adjust_result_of_qualified_name_lookup
+                                                (tree, tree, tree);
 /* in semantics.c */
 extern void init_cp_semantics                   PARAMS ((void));
 extern tree finish_expr_stmt                    PARAMS ((tree));

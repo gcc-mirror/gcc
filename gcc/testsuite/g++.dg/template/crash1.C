@@ -1,7 +1,7 @@
 // { dg-do compile }
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
-// Contributed by Nathan Sidwell 29 Dec 2001 <nathan@nathan@codesourcery.com>
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Contributed by Nathan Sidwell 29 Dec 2001 <nathan@codesourcery.com>
 
 // PR 5125. ICE
 
@@ -13,5 +13,5 @@ class S
 
 template <class I>
 void S::Foo(int (*f)(TYPO&o) )
-{ // { dg-error "template definition of non-template|prototype" "" }
+{ // { dg-error "template definition|variable declaration|prototype" "" }
 }

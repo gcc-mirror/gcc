@@ -1640,6 +1640,50 @@ lookup_fnfields_1 (type, name)
 
   return -1;
 }
+
+/* DECL is the result of a qualified name lookup.  QUALIFYING_CLASS
+   was the class used to qualify the name.  CONTEXT_CLASS is the class
+   corresponding to the object in which DECL will be used.  Return a
+   possibly modified version of DECL that takes into account the
+   CONTEXT_CLASS.
+
+   In particular, consider an expression like `B::m' in the context of
+   a derived class `D'.  If `B::m' has been resolved to a BASELINK,
+   then the most derived class indicated by the BASELINK_BINFO will be
+   `B', not `D'.  This function makes that adjustment.  */
+
+tree
+adjust_result_of_qualified_name_lookup (tree decl, 
+					tree qualifying_class,
+					tree context_class)
+{
+  my_friendly_assert (CLASS_TYPE_P (qualifying_class), 20020808);
+  my_friendly_assert (CLASS_TYPE_P (context_class), 20020808);
+
+  if (BASELINK_P (decl) 
+      && DERIVED_FROM_P (qualifying_class, context_class))
+    {
+      tree base;
+
+      /* Look for the QUALIFYING_CLASS as a base of the
+	 CONTEXT_CLASS.  If QUALIFYING_CLASS is ambiguous, we cannot
+	 be sure yet than an error has occurred; perhaps the function
+	 chosen by overload resolution will be static.  */
+      base = lookup_base (context_class, qualifying_class,
+			  ba_ignore | ba_quiet, NULL);
+      if (base)
+	{
+	  BASELINK_ACCESS_BINFO (decl) = base;
+	  BASELINK_BINFO (decl) 
+	    = lookup_base (base, BINFO_TYPE (BASELINK_BINFO (decl)),
+			   ba_ignore | ba_quiet,
+			   NULL);
+	}
+    }
+
+  return decl;
+}
+
 
 /* Walk the class hierarchy dominated by TYPE.  FN is called for each
    type in the hierarchy, in a breadth-first preorder traversal.
