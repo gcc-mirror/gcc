@@ -6201,7 +6201,13 @@ ip2k_unsigned_comparison_operator (rtx op, enum machine_mode mode)
 static bool
 ip2k_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
-  return (TYPE_MODE (type) == BLKmode) ? int_size_in_bytes (type) > 8 : 0;
+  if (TYPE_MODE (type) == BLKmode)
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (type);
+      return (size == -1 || size > 8);
+    }
+  else
+    return false;
 }
 
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */

@@ -2170,10 +2170,13 @@ xstormy16_expand_builtin(tree exp, rtx target,
   return retval;
 }
 
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+
 static bool
 xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
-  return int_size_in_bytes (type) > UNITS_PER_WORD * NUM_ARGUMENT_REGISTERS;
+  HOST_WIDE_INT size = int_size_in_bytes (type);
+  return (size == -1 || size > UNITS_PER_WORD * NUM_ARGUMENT_REGISTERS);
 }
 
 #undef TARGET_ASM_ALIGNED_HI_OP

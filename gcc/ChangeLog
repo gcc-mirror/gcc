@@ -1,5 +1,19 @@
 2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/arc/arc.c (arc_return_in_memory): Check the return
+	value of int_size_in_bytes against -1.  Don't check
+	TREE_ADDRESSABLE.
+	* config/avr/avr.c (avr_return_in_memory): Check the return
+	value of int_size_in_bytes against -1.
+	* config/ip2k/ip2k.c (ip2k_return_in_memory): Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_return_in_memory):
+	Likewise.
+	* config/mcore/mcore.c (mcore_return_in_memory): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_return_in_memory):
+	Likewise.
+
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/frv/frv-protos.h: Remove the prototype for
 	frv_setup_incoming_varargs.
 	* config/frv/frv.c (TARGET_SETUP_INCOMING_VARARGS): New.

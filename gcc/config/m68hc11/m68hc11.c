@@ -5550,9 +5550,13 @@ m68hc11_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 static bool
 m68hc11_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
-  return ((TYPE_MODE (type) == BLKmode)
-	  ? (int_size_in_bytes (type) > 4)
-	  : (GET_MODE_SIZE (TYPE_MODE (type)) > 4));
+  if (TYPE_MODE (type) == BLKmode)
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (type);
+      return (size == -1 || size > 4);
+    }
+  else
+    return GET_MODE_SIZE (TYPE_MODE (type)) > 4;
 }
 
 #include "gt-m68hc11.h"
