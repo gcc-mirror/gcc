@@ -1133,7 +1133,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 
       for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
         if (INSN_P (p) && p != succ && volatile_refs_p (PATTERN (p)))
-  	return 0;
+	return 0;
     }
 
   /* If INSN is an asm, and DEST is a hard register, reject, since it has
@@ -1245,7 +1245,7 @@ sets_function_arg_p (pat)
    This is NOT equivalent to:
 
          (parallel [(set (subreg:SI (reg:DI 100) 0) <foo>)
-	 	    (set (reg:DI 101) (reg:DI 100))])
+		    (set (reg:DI 101) (reg:DI 100))])
 
    Not only does this modify 100 (in which case it might still be valid
    if 100 were dead in I2), it sets 101 to the ORIGINAL value of 100.
@@ -1421,7 +1421,7 @@ cant_combine_insn_p (insn)
 {
   rtx set;
   rtx src, dest;
-  
+
   /* If this isn't really an insn, we can't do anything.
      This can occur when flow deletes an insn that it has merged into an
      auto-increment address.  */
@@ -1771,7 +1771,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
   /* If I3 has an inc, then give up if I1 or I2 uses the reg that is inc'd.
      We used to do this EXCEPT in one case: I3 has a post-inc in an
      output operand.  However, that exception can give rise to insns like
-     	mov r3,(r3)+
+	mov r3,(r3)+
      which is a famous insn on the PDP-11 where the value of r3 used as the
      source was model-dependent.  Avoid this sort of thing.  */
 
@@ -2136,7 +2136,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  insn_code_number = recog_for_combine (&m_split, i3, &new_i3_notes);
 	  if (insn_code_number >= 0)
 	    newpat = m_split;
-	} 
+	}
       else if (m_split && GET_CODE (m_split) == SEQUENCE
 	       && XVECLEN (m_split, 0) == 2
 	       && (next_real_insn (i2) == i3
@@ -3786,7 +3786,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       {
 	rtx temp;
 	temp = simplify_subreg (mode, SUBREG_REG (x), op0_mode,
-		       		SUBREG_BYTE (x));
+				SUBREG_BYTE (x));
 	if (temp)
 	  return temp;
       }
@@ -3861,12 +3861,12 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	return gen_rtx_GE (mode, XEXP (XEXP (x, 0), 0), const0_rtx);
 
       /* Apply De Morgan's laws to reduce number of patterns for machines
- 	 with negating logical insns (and-not, nand, etc.).  If result has
- 	 only one NOT, put it first, since that is how the patterns are
- 	 coded.  */
+	 with negating logical insns (and-not, nand, etc.).  If result has
+	 only one NOT, put it first, since that is how the patterns are
+	 coded.  */
 
       if (GET_CODE (XEXP (x, 0)) == IOR || GET_CODE (XEXP (x, 0)) == AND)
- 	{
+	{
 	  rtx in1 = XEXP (XEXP (x, 0), 0), in2 = XEXP (XEXP (x, 0), 1);
 	  enum machine_mode op_mode;
 
@@ -3931,7 +3931,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       temp = expand_compound_operation (XEXP (x, 0));
 
       /* For C equal to the width of MODE minus 1, (neg (ashiftrt X C)) can be
- 	 replaced by (lshiftrt X C).  This will convert
+	 replaced by (lshiftrt X C).  This will convert
 	 (neg (sign_extract X 1 Y)) to (zero_extract X 1 Y).  */
 
       if (GET_CODE (temp) == ASHIFTRT
@@ -4015,7 +4015,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
 	     >= GET_MODE_BITSIZE (mode) + 1
 	  && ! (GET_CODE (XEXP (x, 0)) == LSHIFTRT
- 		&& GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT))
+		&& GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT))
 	return gen_lowpart_for_combine (mode, XEXP (x, 0));
 
       /* A truncate of a comparison can be replaced with a subreg if
@@ -4250,8 +4250,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
     case GT:  case GTU:  case GE:  case GEU:
     case LT:  case LTU:  case LE:  case LEU:
     case UNEQ:  case LTGT:
-    case UNGT:  case UNGE:  
-    case UNLT:  case UNLE:  
+    case UNGT:  case UNGE:
+    case UNLT:  case UNLE:
     case UNORDERED: case ORDERED:
       /* If the first operand is a condition code, we can't do anything
 	 with it.  */
@@ -4527,7 +4527,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       }
 
       break;
-      
+
     default:
       break;
     }
@@ -5579,7 +5579,7 @@ expand_compound_operation (x)
 	  && GET_RTX_CLASS (GET_CODE (XEXP (XEXP (x, 0), 0))) == '<'
 	  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
 	      <= HOST_BITS_PER_WIDE_INT)
- 	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE
+	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE
 	      & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
 	return XEXP (XEXP (x, 0), 0);
 
@@ -5922,9 +5922,9 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
 	      new = gen_rtx_SUBREG (tmode, inner, final_word);
 	    }
-  	  else
-  	    new = inner;
-  	}
+	  else
+	    new = inner;
+	}
       else
 	new = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
@@ -7418,7 +7418,7 @@ known_cond (x, cond, reg, val)
 	      /* Do not reverse the condition when it is NE or EQ.
 		 This is because we cannot conclude anything about
 		 the value of 'SMAX (x, y)' when x is not equal to y,
-		 but we can when x equals y.  */ 
+		 but we can when x equals y.  */
 	      if ((code == SMAX || code == UMAX)
 		  && ! (cond == EQ || cond == NE))
 		cond = reverse_condition (cond);
@@ -9717,7 +9717,6 @@ gen_lowpart_for_combine (mode, x)
   if (GET_CODE (x) == MEM)
     {
       register int offset = 0;
-      rtx new;
 
       /* Refuse to work on a volatile memory ref or one with a mode-dependent
 	 address.  */
@@ -10530,7 +10529,7 @@ simplify_comparison (code, pop0, pop1)
 		new_code = GET_CODE (op0);
 	      else
 		new_code = combine_reversed_comparison_code (op0);
-	  
+
 	      if (new_code != UNKNOWN)
 		{
 		  code = new_code;
