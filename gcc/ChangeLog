@@ -1,3 +1,17 @@
+2001-10-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (handle_newline, skip_escaped_newlines,
+	get_effective_char, skip_block_comment, skip_line_comment,
+	parse_identifier_slow, parse_number, parse_string,
+	_cpp_lex_direct): Update to do more stepping back.
+	(trigraph_ok): Similarly.  Rename trigraph_p.
+	(SAVE_STATE, RESTORE_STATE): Remove.
+	(BUFF_SIZE_UPPER_BOUND): Tweak.  Add sanity check.
+
+	* cpplib.c (destringize): Rename destringize_and_run, and
+	call run_directive directly.
+	(_cpp_do__Pragma): Simplify.
+
 2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pe.c (arm_pe_unique_section): Const-ify.

@@ -20,20 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-/* This lexer works with a single pass of the file.  Recently I
-   re-wrote it to minimize the places where we step backwards in the
-   input stream, to make future changes to support multi-byte
-   character sets fairly straight-forward.
-
-   There is now only one routine where we do step backwards:
-   skip_escaped_newlines.  This routine could probably also be changed
-   so that it doesn't need to step back.  One possibility is to use a
-   trick similar to that used in lex_period and lex_percent.  Two
-   extra characters might be needed, but skip_escaped_newlines itself
-   would probably be the only place that needs to be aware of that,
-   and changes to the remaining routines would probably only be needed
-   if they process a backslash.  */
-
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
@@ -81,8 +67,8 @@ static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 #define TOKEN_SPELL(token) (token_spellings[(token)->type].category)
 #define TOKEN_NAME(token) (token_spellings[(token)->type].name)
 
-static cppchar_t handle_newline PARAMS ((cpp_reader *, cppchar_t));
-static cppchar_t skip_escaped_newlines PARAMS ((cpp_reader *, cppchar_t));
+static void handle_newline PARAMS ((cpp_reader *));
+static cppchar_t skip_escaped_newlines PARAMS ((cpp_reader *));
 static cppchar_t get_effective_char PARAMS ((cpp_reader *));
 
 static int skip_block_comment PARAMS ((cpp_reader *));
@@ -96,7 +82,7 @@ static void parse_number PARAMS ((cpp_reader *, cpp_string *, cppchar_t, int));
 static int unescaped_terminator_p PARAMS ((cpp_reader *, const U_CHAR *));
 static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static void unterminated PARAMS ((cpp_reader *, int));
-static int trigraph_ok PARAMS ((cpp_reader *, cppchar_t));
+static bool trigraph_p PARAMS ((cpp_reader *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
 static void lex_percent PARAMS ((cpp_reader *, cpp_token *));
 static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
@@ -124,58 +110,53 @@ cpp_ideq (token, string)
   return !ustrcmp (NODE_NAME (token->val.node), (const U_CHAR *) string);
 }
 
-/* Call when meeting a newline.  Returns the character after the newline
-   (or carriage-return newline combination), or EOF.  */
-static cppchar_t
-handle_newline (pfile, newline_char)
+/* Call when meeting a newline, assumed to be in buffer->cur[-1].
+   Returns with buffer->cur pointing to the character immediately
+   following the newline (combination).  */
+static void
+handle_newline (pfile)
      cpp_reader *pfile;
-     cppchar_t newline_char;
 {
-  cpp_buffer *buffer;
-  cppchar_t next = EOF;
+  cpp_buffer *buffer = pfile->buffer;
 
-  pfile->line++;
-  buffer = pfile->buffer;
-  buffer->col_adjust = 0;
+  /* Handle CR-LF and LF-CR.  Most other implementations (e.g. java)
+     only accept CR-LF; maybe we should fall back to that behaviour?
+
+     NOTE: the EOF case in _cpp_lex_direct currently requires the
+     buffer->cur != buffer->rlimit test here for 0-length files.  */
+  if (buffer->cur != buffer->rlimit
+      && buffer->cur[-1] + buffer->cur[0] == '\r' + '\n')
+    buffer->cur++;
+
   buffer->line_base = buffer->cur;
-
-  /* Handle CR-LF and LF-CR combinations, get the next character.  */
-  if (buffer->cur < buffer->rlimit)
-    {
-      next = *buffer->cur++;
-      if (next + newline_char == '\r' + '\n')
-	{
-	  buffer->line_base = buffer->cur;
-	  if (buffer->cur < buffer->rlimit)
-	    next = *buffer->cur++;
-	  else
-	    next = EOF;
-	}
-    }
-
-  buffer->read_ahead = next;
-  return next;
+  buffer->col_adjust = 0;
+  pfile->line++;
 }
 
-/* Subroutine of skip_escaped_newlines; called when a trigraph is
-   encountered.  It warns if necessary, and returns true if the
-   trigraph should be honoured.  FROM_CHAR is the third character of a
-   trigraph, and presumed to be the previous character for position
-   reporting.  */
-static int
-trigraph_ok (pfile, from_char)
+/* Subroutine of skip_escaped_newlines; called when a 3-character
+   sequence beginning with "??" is encountered.  buffer->cur points to
+   the second '?'.
+
+   Warn if necessary, and returns true if the sequence forms a
+   trigraph and the trigraph should be honoured.  */
+static bool
+trigraph_p (pfile)
      cpp_reader *pfile;
-     cppchar_t from_char;
 {
-  int accept = CPP_OPTION (pfile, trigraphs);
-  
+  cpp_buffer *buffer = pfile->buffer;
+  cppchar_t from_char = buffer->cur[1];
+  bool accept;
+
+  if (!_cpp_trigraph_map[from_char])
+    return false;
+
+  accept = CPP_OPTION (pfile, trigraphs);
+
   /* Don't warn about trigraphs in comments.  */
   if (CPP_OPTION (pfile, warn_trigraphs) && !pfile->state.lexing_comment)
     {
-      cpp_buffer *buffer = pfile->buffer;
-
       if (accept)
-	cpp_warning_with_line (pfile, pfile->line, CPP_BUF_COL (buffer) - 2,
+	cpp_warning_with_line (pfile, pfile->line, CPP_BUF_COL (buffer) - 1,
 			       "trigraph ??%c converted to %c",
 			       (int) from_char,
 			       (int) _cpp_trigraph_map[from_char]);
@@ -183,7 +164,7 @@ trigraph_ok (pfile, from_char)
 	{
 	  buffer->last_Wtrigraphs = buffer->cur;
 	  cpp_warning_with_line (pfile, pfile->line,
-				 CPP_BUF_COL (buffer) - 2,
+				 CPP_BUF_COL (buffer) - 1,
 				 "trigraph ??%c ignored", (int) from_char);
 	}
     }
@@ -195,96 +176,79 @@ trigraph_ok (pfile, from_char)
 #define ACCEPT_CHAR(t) \
   do { result->type = t; buffer->read_ahead = EOF; } while (0)
 
-/* When we move to multibyte character sets, add to these something
-   that saves and restores the state of the multibyte conversion
-   library.  This probably involves saving and restoring a "cookie".
-   In the case of glibc it is an 8-byte structure, so is not a high
-   overhead operation.  In any case, it's out of the fast path.  */
-#define SAVE_STATE() do { saved_cur = buffer->cur; } while (0)
-#define RESTORE_STATE() do { buffer->cur = saved_cur; } while (0)
-
-/* Skips any escaped newlines introduced by NEXT, which is either a
-   '?' or a '\\'.  Returns the next character, which will also have
-   been placed in buffer->read_ahead.  This routine performs
-   preprocessing stages 1 and 2 of the ISO C standard.  */
+/* Skips any escaped newlines introduced by '?' or a '\\', assumed to
+   lie in buffer->cur[-1].  Returns the next character, which will
+   then be in buffer->cur[-1].  This routine performs preprocessing
+   stages 1 and 2 of the ISO C standard.  */
 static cppchar_t
-skip_escaped_newlines (pfile, next)
+skip_escaped_newlines (pfile)
      cpp_reader *pfile;
-     cppchar_t next;
 {
   cpp_buffer *buffer = pfile->buffer;
+  cppchar_t next = buffer->cur[-1];
 
   /* Only do this if we apply stages 1 and 2.  */
   if (!buffer->from_stage3)
     {
-      cppchar_t next1;
       const unsigned char *saved_cur;
-      int space;
+      cppchar_t next1;
 
       do
 	{
 	  if (buffer->cur == buffer->rlimit)
 	    break;
       
-	  SAVE_STATE ();
 	  if (next == '?')
 	    {
-	      next1 = *buffer->cur++;
-	      if (next1 != '?' || buffer->cur == buffer->rlimit)
-		{
-		  RESTORE_STATE ();
-		  break;
-		}
+	      if (buffer->cur[0] != '?' || buffer->cur + 1 == buffer->rlimit)
+		break;
 
-	      next1 = *buffer->cur++;
-	      if (!_cpp_trigraph_map[next1]
-		  || !trigraph_ok (pfile, next1))
-		{
-		  RESTORE_STATE ();
-		  break;
-		}
+	      if (!trigraph_p (pfile))
+		break;
 
-	      /* We have a full trigraph here.  */
-	      next = _cpp_trigraph_map[next1];
+	      /* Translate the trigraph.  */
+	      next = _cpp_trigraph_map[buffer->cur[1]];
+	      buffer->cur += 2;
 	      if (next != '\\' || buffer->cur == buffer->rlimit)
 		break;
-	      SAVE_STATE ();
 	    }
 
-	  /* We have a backslash, and room for at least one more character.  */
-	  space = 0;
+	  /* We have a backslash, and room for at least one more
+	     character.  Skip horizontal whitespace.  */
+	  saved_cur = buffer->cur;
 	  do
-	    {
-	      next1 = *buffer->cur++;
-	      if (!is_nvspace (next1))
-		break;
-	      space = 1;
-	    }
-	  while (buffer->cur < buffer->rlimit);
+	    next1 = *buffer->cur++;
+	  while (is_nvspace (next1) && buffer->cur < buffer->rlimit);
 
 	  if (!is_vspace (next1))
 	    {
-	      RESTORE_STATE ();
+	      buffer->cur = saved_cur;
 	      break;
 	    }
 
-	  if (space && !pfile->state.lexing_comment)
+	  if (saved_cur != buffer->cur - 1
+	      && !pfile->state.lexing_comment)
 	    cpp_warning (pfile, "backslash and newline separated by space");
 
-	  next = handle_newline (pfile, next1);
-	  if (next == EOF)
-	    cpp_pedwarn (pfile, "backslash-newline at end of file");
+	  handle_newline (pfile);
+	  if (buffer->cur == buffer->rlimit)
+	    {
+	      cpp_pedwarn (pfile, "backslash-newline at end of file");
+	      next = EOF;
+	    }
+	  else
+	    next = *buffer->cur++;
 	}
       while (next == '\\' || next == '?');
     }
 
-  buffer->read_ahead = next;
   return next;
 }
 
 /* Obtain the next character, after trigraph conversion and skipping
-   an arbitrary string of escaped newlines.  The common case of no
-   trigraphs or escaped newlines falls through quickly.  */
+   an arbitrarily long string of escaped newlines.  The common case of
+   no trigraphs or escaped newlines falls through quickly.  On return,
+   buffer->cur points after the returned character.  */
 static cppchar_t
 get_effective_char (pfile)
      cpp_reader *pfile;
@@ -301,7 +265,7 @@ get_effective_char (pfile)
 	 UCNs, which, depending upon lexer state, we will handle in
 	 the future.  */
       if (next == '?' || next == '\\')
-	next = skip_escaped_newlines (pfile, next);
+	next = skip_escaped_newlines (pfile);
     }
 
   buffer->read_ahead = next;
@@ -323,11 +287,10 @@ skip_block_comment (pfile)
     {
       prevc = c, c = *buffer->cur++;
 
-    next_char:
       /* FIXME: For speed, create a new character class of characters
 	 of interest inside block comments.  */
       if (c == '?' || c == '\\')
-	c = skip_escaped_newlines (pfile, c);
+	c = skip_escaped_newlines (pfile);
 
       /* People like decorating comments with '*', so check for '/'
 	 instead for efficiency.  */
@@ -340,25 +303,14 @@ skip_block_comment (pfile)
 	     comes immediately before the true comment delimeter.
 	     Don't bother to get it right across escaped newlines.  */
 	  if (CPP_OPTION (pfile, warn_comments)
-	      && buffer->cur != buffer->rlimit)
-	    {
-	      prevc = c, c = *buffer->cur++;
-	      if (c == '*' && buffer->cur != buffer->rlimit)
-		{
-		  prevc = c, c = *buffer->cur++;
-		  if (c != '/') 
-		    cpp_warning_with_line (pfile, pfile->line,
-					   CPP_BUF_COL (buffer) - 2,
-					   "\"/*\" within comment");
-		}
-	      goto next_char;
-	    }
+	      && buffer->cur + 1 < buffer->rlimit
+	      && buffer->cur[0] == '*' && buffer->cur[1] != '/')
+	    cpp_warning_with_line (pfile,
+				   pfile->line, CPP_BUF_COL (buffer),
+				   "\"/*\" within comment");
 	}
       else if (is_vspace (c))
-	{
-	  prevc = c, c = handle_newline (pfile, c);
-	  goto next_char;
-	}
+	handle_newline (pfile);
       else if (c == '\t')
 	adjust_column (pfile);
     }
@@ -388,7 +340,7 @@ skip_line_comment (pfile)
 
       c = *buffer->cur++;
       if (c == '?' || c == '\\')
-	c = skip_escaped_newlines (pfile, c);
+	c = skip_escaped_newlines (pfile);
     }
   while (!is_vspace (c));
 
@@ -568,7 +520,7 @@ parse_identifier_slow (pfile, cur)
       /* Potential escaped newline?  */
       if (c != '?' && c != '\\')
         break;
-      c = skip_escaped_newlines (pfile, c);
+      c = skip_escaped_newlines (pfile);
     }
   while (is_idchar (c));
 
@@ -640,7 +592,7 @@ parse_number (pfile, number, c, leading_period)
       /* Potential escaped newline?  */
       if (c != '?' && c != '\\')
 	break;
-      c = skip_escaped_newlines (pfile, c);
+      c = skip_escaped_newlines (pfile);
     }
   while (is_numchar (c) || c == '.' || VALID_SIGN (c, dest[-1]));
 
@@ -697,8 +649,10 @@ unescaped_terminator_p (pfile, dest)
    name.  Handles embedded trigraphs and escaped newlines.  The stored
    string is guaranteed NUL-terminated, but it is not guaranteed that
    this is the first NUL since embedded NULs are preserved.
+   Multi-line strings are allowed, but they are deprecated.
 
-   Multi-line strings are allowed, but they are deprecated.  */
+   When this function returns, buffer->cur points to the next
+   character to be processed.  */
 static void
 parse_string (pfile, token, terminator)
      cpp_reader *pfile;
@@ -715,13 +669,7 @@ parse_string (pfile, token, terminator)
 
   for (;;)
     {
-      if (buffer->cur == buffer->rlimit)
-	c = EOF;
-      else
-	c = *buffer->cur++;
-
-    have_char:
-      /* We need space for the terminating NUL.  */
+      /* We need room for another char, possibly the terminating NUL.  */
       if ((size_t) (limit - dest) < 1)
 	{
 	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
@@ -730,20 +678,21 @@ parse_string (pfile, token, terminator)
 	  limit = BUFF_LIMIT (pfile->u_buff);
 	}
 
-      if (c == EOF)
+      if (buffer->cur == buffer->rlimit)
 	{
 	  unterminated (pfile, terminator);
 	  break;
 	}
 
       /* Handle trigraphs, escaped newlines etc.  */
+      c = *buffer->cur++;
       if (c == '?' || c == '\\')
-	c = skip_escaped_newlines (pfile, c);
+	c = skip_escaped_newlines (pfile);
 
-      if (c == terminator && unescaped_terminator_p (pfile, dest))
+      if (c == terminator)
 	{
-	  c = EOF;
-	  break;
+	  if (unescaped_terminator_p (pfile, dest))
+	    break;
 	}
       else if (is_vspace (c))
 	{
@@ -751,7 +700,10 @@ parse_string (pfile, token, terminator)
 	     character literals at end of line.  This is a kludge
 	     around not knowing where comments are.  */
 	  if (CPP_OPTION (pfile, lang) == CLK_ASM && terminator != '>')
-	    break;
+	    {
+	      buffer->cur--;
+	      break;
+	    }
 
 	  /* Character constants and header names may not extend over
 	     multiple lines.  In Standard C, neither may strings.
@@ -760,6 +712,7 @@ parse_string (pfile, token, terminator)
 	  if (terminator != '"' || pfile->state.angled_headers)
 	    {
 	      unterminated (pfile, terminator);
+	      buffer->cur--;
 	      break;
 	    }
 
@@ -775,9 +728,8 @@ parse_string (pfile, token, terminator)
 	      pfile->mls_col = token->col;
 	    }
 	      
-	  c = handle_newline (pfile, c);
-	  *dest++ = '\n';
-	  goto have_char;
+	  handle_newline (pfile);
+	  c = '\n';
 	}
       else if (c == '\0' && !warned_nulls)
 	{
@@ -788,8 +740,7 @@ parse_string (pfile, token, terminator)
       *dest++ = c;
     }
 
-  /* Remember the next character.  */
-  buffer->read_ahead = c;
+  buffer->read_ahead = EOF;
   *dest = '\0';
 
   token->val.str.text = BUFF_FRONT (pfile->u_buff);
@@ -1066,7 +1017,7 @@ _cpp_lex_direct (pfile)
 		 for command line and _Pragma buffers.  */
 	      if (!buffer->from_stage3)
 		cpp_pedwarn (pfile, "no newline at end of file");
-	      handle_newline (pfile, '\n');
+	      handle_newline (pfile);
 	    }
 
 	  /* Don't pop the last buffer.  */
@@ -1088,7 +1039,7 @@ _cpp_lex_direct (pfile)
       goto skipped_white;
 
     case '\n': case '\r':
-      handle_newline (pfile, c);
+      handle_newline (pfile);
       buffer->saved_flags = BOL;
       if (! pfile->state.in_directive)
 	{
@@ -1112,12 +1063,14 @@ _cpp_lex_direct (pfile)
       {
 	unsigned int line = pfile->line;
 
-	c = skip_escaped_newlines (pfile, c);
+	c = skip_escaped_newlines (pfile);
 	if (line != pfile->line)
-	  /* We had at least one escaped newline of some sort, and the
-	     next character is in buffer->read_ahead.  Update the
-	     token's line and column.  */
+	  {
+	    buffer->read_ahead = c;
+	    /* We had at least one escaped newline of some sort.
+	       Update the token's line and column.  */
 	    goto update_tokens_line;
+	  }
 
 	/* We are either the original '?' or '\\', or a trigraph.  */
 	result->type = CPP_QUERY;
@@ -2045,9 +1998,13 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
    expansion.  Also check the change in peak memory usage (NJAMD is a
    good tool for this).  */
 #define MIN_BUFF_SIZE 8000
-#define BUFF_SIZE_UPPER_BOUND(MIN_SIZE) (8000 + (MIN_SIZE) * 3 / 2)
+#define BUFF_SIZE_UPPER_BOUND(MIN_SIZE) (MIN_BUFF_SIZE + (MIN_SIZE) * 3 / 2)
 #define EXTENDED_BUFF_SIZE(BUFF, MIN_EXTRA) \
 	(MIN_EXTRA + ((BUFF)->limit - (BUFF)->cur) * 2)
+
+#if MIN_BUFF_SIZE > BUFF_SIZE_UPPER_BOUND (0)
+  #error BUFF_SIZE_UPPER_BOUND must be at least as large as MIN_BUFF_SIZE!
+#endif
 
 struct dummy
 {
@@ -2199,7 +2156,16 @@ _cpp_unaligned_alloc (pfile, len)
   return result;
 }
 
-/* Allocate permanent, unaligned storage of length LEN.  */
+/* Allocate permanent, unaligned storage of length LEN from a_buff.
+   That buffer is used for growing allocations when saving macro
+   replacement lists in a #define, and when parsing an answer to an
+   assertion in #assert, #unassert or #if (and therefore possibly
+   whilst expanding macros).  It therefore must not be used by any
+   code that they might call: specifically the lexer and the guts of
+   the macro expander.
+
+   All existing other uses clearly fit this restriction: storing
+   registered pragmas during initialization.  */
 unsigned char *
 _cpp_aligned_alloc (pfile, len)
      cpp_reader *pfile;
