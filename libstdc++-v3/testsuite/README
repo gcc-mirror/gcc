@@ -1,10 +1,24 @@
-We're in the process of converting the existing testsuite machinery to
-use the new style DejaGnu framework.  Eventually, we'll abandon
+   We're in the process of converting the existing testsuite machinery
+to use the new style DejaGnu framework.  Eventually, we'll abandon
 ../mkcheck.in in favor of this new testsuite framework.  
 
-  Basically, a testcase contains dg-keywords (see dg.exp) indicating
+Basically, a testcase contains dg-keywords (see dg.exp) indicating
 what to do and what kinds of behaviour are to be expected.  New
 testcases should be written with the new style DejaGnu framework in mind.
+Currently supported dg-keywords include:
+
+  * dg-prms-id
+    Syntax:  dg-prms-id N
+    Synopsis:  Assign prms-id `N' to current testcase.
+
+  * dg-options
+    Syntax:  dg-options <options> [{ target selector }]
+    Synopis: Instruct the framework to pass <options> (a double-quoted
+             string) to the compiler.  The optional target-selector
+             pair 
+
+
+
 
   The V3 testing framework supports additional keywords for the purpose
 of easing the job of writing testcases.  All V3-keywords are of the

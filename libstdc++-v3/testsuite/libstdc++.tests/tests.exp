@@ -21,7 +21,17 @@
 
 load_lib libstdc++.exp
 
+## Initialize the framework.
 libstdc++-dg-init
+
+## Set ulimits.  This should normally be handled on test-by-test
+## basis through @xxx@-keywords.
+set maximum-memory-usage 16384
+set shell-ulimit-command ulimit
+remote_exec host ${shell-ulimit-command} "-d ${maximum-memory-usage}"
+remote_exec host ${shell-ulimit-command} "-v ${maximum-memory-usage}"
+
+## Now, do the work directory by directory
 libstdc++_runtest [glob -nocomplain $srcdir/*]
 dg-finish
 
