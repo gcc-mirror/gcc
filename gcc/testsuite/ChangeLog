@@ -1,3 +1,15 @@
+1999-06-29  Nick Clifton  <nickc@cygnus.com>
+
+	* lib/file-format.exp: New file: Move definition of proc 
+	gcc_target_object_format to here from
+	gcc.dg/special/ecos.exp.
+
+	* lib/c-torture.exp: Include lib file-format.exp.
+	* lib/gcc-dg.exp: Include lib file-format.exp.
+
+	* gcc.dg/special/ecos.exp: Remove definition of proc
+	gcc_target_object_format.
+	
 Mon Jun 28 08:20:51 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990628-1.c: New test.
