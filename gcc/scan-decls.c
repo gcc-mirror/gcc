@@ -1,5 +1,5 @@
 /* scan-decls.c - Extracts declarations from cpp output.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -81,6 +81,7 @@ scan_decls (pfile, argc, argv)
      char **argv;
 {
   int saw_extern, saw_inline;
+  int start_written;
   int old_written;
   /* If declarator_start is non-zero, it marks the start of the current
      declarator.  If it is zero, we are either still parsing the
@@ -91,6 +92,7 @@ scan_decls (pfile, argc, argv)
 
  new_statement:
   CPP_SET_WRITTEN (pfile, 0);
+  start_written = 0;
   token = cpp_get_token (pfile);
 
  handle_statement:
@@ -122,9 +124,6 @@ scan_decls (pfile, argc, argv)
   declarator_start = 0;
   for (;;)
     {
-      int start_written = CPP_WRITTEN (pfile);
-      token = cpp_get_token (pfile);
-    handle_token:
       switch (token)
 	{
 	case CPP_LPAREN:
@@ -225,7 +224,7 @@ scan_decls (pfile, argc, argv)
 		    }
 		}
 	      else
-		goto handle_token;
+		continue;
 	      break;
 	    }
 	  /* This may be the name of a variable or function.  */
@@ -248,5 +247,8 @@ scan_decls (pfile, argc, argv)
 	 default:
 	  prev_id_start = 0;
 	}
+
+      start_written = CPP_WRITTEN (pfile);
+      token = cpp_get_token (pfile);
     }
 }
