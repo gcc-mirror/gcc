@@ -1013,6 +1013,17 @@ aux-output.o : aux-output.c $(CONFIG_H) \
    $(RTL_H) regs.h hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h
 
+# Build auxiliary files that support ecoff format.
+mips-tfile: mips-tfile.o version.o $(LIBDEPS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o mips-tfile mips-tfile.o version.o $(LIBS)
+
+mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H)
+
+mips-tdump: mips-tdump.o version.o $(LIBDEPS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o mips-tdump mips-tdump.o version.o $(LIBS)
+
+mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H)
+
 # Normally this target is not used; but it is used if you
 # define ALLOCA=alloca.o.  In that case, you must get a suitable alloca.c
 # from the GNU Emacs distribution.
