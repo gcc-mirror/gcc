@@ -4133,7 +4133,13 @@ parse_finish_call_expr (tree fn, tree args, int koenig)
 	    fn = lookup_namespace_name (scope, name);
 	  else
 	    {
-	      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	      if (!COMPLETE_TYPE_P (scope) && !TYPE_BEING_DEFINED (scope))
+		{
+		  error ("incomplete type '%T' cannot be used to name a scope",
+			 scope);
+		  return error_mark_node;
+		}
+	      else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 		{
 		  template_id = name;
 		  template_args = TREE_OPERAND (name, 1);

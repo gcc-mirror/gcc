@@ -1,3 +1,9 @@
+2002-08-15  Gabriel Dos Reis  <gdr@nerim.net>
+
+	Fix PR/7504
+	* parse.y (parse_finish_call_expr): Handle incomplete
+	type used to name a scope.
+
 2002-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/7598
