@@ -420,13 +420,22 @@ __atomic_add (_Atomic_word* __mem, int __val)
 @node Libtool
 @chapter Libtool
 
-The C++ library is linked with libtool.  Explaining the full workings of
-libtool is beyond the scope of this document, but there is one
-particular bit that should be explained here.  The C++ run-time library
-contains initialization code that needs to be run as the library is
-loaded.  Often, that requires linking in special object files when the
-C++ library is built as a shared library, or taking other
-system-specific actions.
+The C++ library is compiled, archived and linked with libtool.
+Explaining the full workings of libtool is beyond the scope of this
+document, but there are a few, particular bits that are necessary for
+porting.
+
+Some parts of the libstdc++-v3 library are compiled with the libtool
+@code{--tags CXX} option (the C++ definitions for libtool).  Therefore,
+@file{ltcf-cxx.sh} in the top-level directory needs to have the correct
+logic to compile and archive objects equivalent to the C version of libtool,
+@file{ltcf-c.sh}.  Some libtool targets have definitions for C but not
+for C++, or C++ definitions which have not been kept up to date.
+
+The C++ run-time library contains initialization code that needs to be
+run as the library is loaded.  Often, that requires linking in special
+object files when the C++ library is built as a shared library, or
+taking other system-specific actions.
 
 The libstdc++-v3 library is linked with the C version of libtool, even though it
 is a C++ library.  Therefore, the C version of libtool needs to ensure
