@@ -257,6 +257,7 @@ static tree do_unary_numeric_promotion PROTO ((tree));
 static char * operator_string PROTO ((tree));
 static tree do_merge_string_cste PROTO ((tree, const char *, int, int));
 static tree merge_string_cste PROTO ((tree, tree, int));
+static tree java_refold PROTO ((tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -287,6 +288,10 @@ static enum tree_code binop_lookup[19] =
 #define BINOP_LOOKUP(VALUE) 						\
   binop_lookup [((VALUE) - PLUS_TK)%					\
 		(sizeof (binop_lookup) / sizeof (binop_lookup[0]))]
+
+/* This is the end index for binary operators that can also be used
+   in compound assignements. */
+#define BINOP_COMPOUND_CANDIDATES 11
 
 /* Fake WFL used to report error message. It is initialized once if
    needed and reused with it's location information is overriden.  */
@@ -7879,8 +7884,7 @@ java_stabilize_reference (node)
       TREE_OPERAND (node, 1) = java_stabilize_reference (op1);
       return node;
     }
-  else
-    return stabilize_reference (node);
+  return stabilize_reference (node);
 }
 
 /* Patch tree nodes in a function body. When a BLOCK is found, push
@@ -8330,14 +8334,17 @@ java_complete_lhs (node)
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
 
-      if (COMPOUND_ASSIGN_P (wfl_op2))
+      flag = COMPOUND_ASSIGN_P (wfl_op2);
+      if (flag)
 	{
 	  tree lvalue = java_stabilize_reference (TREE_OPERAND (node, 0)); 
 
 	  /* Hand stablize the lhs on both places */
 	  TREE_OPERAND (node, 0) = lvalue;
-	  TREE_OPERAND (TREE_OPERAND (node, 1), 0) = lvalue;
+	  TREE_OPERAND (TREE_OPERAND (node, 1), 0) = 
+	    (flag_emit_class_files ? lvalue : save_expr (lvalue));
 
+	  /* 15.25.2.a: Left hand is not an array access. FIXME */
 	  /* Now complete the RHS. We write it back later on. */
 	  nn = java_complete_tree (TREE_OPERAND (node, 1));
 
@@ -8348,6 +8355,8 @@ java_complete_lhs (node)
 	     E1 = (T)(E1 op E2), with T being the type of E1. */
 	  nn = java_complete_tree (build_cast (EXPR_WFL_LINECOL (wfl_op2), 
 					       TREE_TYPE (lvalue), nn));
+
+	  /* 15.25.2.b: Left hand is an array access. FIXME */
 	}
 
       /* If we're about to patch a NEW_ARRAY_INIT, we call a special
@@ -8371,6 +8380,10 @@ java_complete_lhs (node)
       if ((nn = patch_string (TREE_OPERAND (node, 1))))
 	TREE_OPERAND (node, 1) = nn;
       node = patch_assignment (node, wfl_op1, wfl_op2);
+      /* Reorganize the tree if necessary. */
+      if (flag && (!JREFERENCE_TYPE_P (TREE_TYPE (node)) 
+		   || JSTRING_P (TREE_TYPE (node))))
+	node = java_refold (node);
       CAN_COMPLETE_NORMALLY (node) = 1;
       return node;
 
@@ -9379,6 +9392,81 @@ operator_string (node)
 #undef BUILD_OPERATOR_STRING
 }
 
+/* Return 1 if VAR_ACCESS1 is equivalent to VAR_ACCESS2.  */
+
+static int
+java_decl_equiv (var_acc1, var_acc2)
+     tree var_acc1, var_acc2;
+{
+  if (JDECL_P (var_acc1))
+    return (var_acc1 == var_acc2);
+  
+  return (TREE_CODE (var_acc1) == COMPONENT_REF
+	  && TREE_CODE (var_acc2) == COMPONENT_REF
+	  && TREE_OPERAND (TREE_OPERAND (var_acc1, 0), 0)
+	     == TREE_OPERAND (TREE_OPERAND (var_acc2, 0), 0)
+	  && TREE_OPERAND (var_acc1, 1) == TREE_OPERAND (var_acc2, 1));
+}
+
+/* Return a non zero value if CODE is one of the operators that can be
+   used in conjunction with the `=' operator in a compound assignment.  */
+
+static int
+binop_compound_p (code)
+    enum tree_code code;
+{
+  int i;
+  for (i = 0; i < BINOP_COMPOUND_CANDIDATES; i++)
+    if (binop_lookup [i] == code)
+      break;
+
+  return i < BINOP_COMPOUND_CANDIDATES;
+}
+
+/* Reorganize after a fold to get SAVE_EXPR to generate what we want.  */
+
+static tree
+java_refold (t)
+     tree t;
+{
+  tree c, b, ns, decl;
+
+  if (TREE_CODE (t) != MODIFY_EXPR)
+    return t;
+
+  c = TREE_OPERAND (t, 1);
+  if (! (c && TREE_CODE (c) == COMPOUND_EXPR
+	 && TREE_CODE (TREE_OPERAND (c, 0)) == MODIFY_EXPR
+	 && binop_compound_p (TREE_CODE (TREE_OPERAND (c, 1)))))
+    return t;
+
+  /* Now the left branch of the binary operator. */
+  b = TREE_OPERAND (TREE_OPERAND (c, 1), 0);
+  if (! (b && TREE_CODE (b) == NOP_EXPR 
+	 && TREE_CODE (TREE_OPERAND (b, 0)) == SAVE_EXPR))
+    return t;
+
+  ns = TREE_OPERAND (TREE_OPERAND (b, 0), 0);
+  if (! (ns && TREE_CODE (ns) == NOP_EXPR
+	 && TREE_CODE (TREE_OPERAND (ns, 0)) == SAVE_EXPR))
+    return t;
+
+  decl = TREE_OPERAND (TREE_OPERAND (ns, 0), 0);
+  if ((JDECL_P (decl) || TREE_CODE (decl) == COMPONENT_REF)
+      /* It's got to be the an equivalent decl */
+      && java_decl_equiv (decl, TREE_OPERAND (TREE_OPERAND (c, 0), 0)))
+    {
+      /* Shorten the NOP_EXPR/SAVE_EXPR path. */
+      TREE_OPERAND (TREE_OPERAND (c, 1), 0) = TREE_OPERAND (ns, 0);
+      /* Substitute the COMPOUND_EXPR by the BINOP_EXPR */
+      TREE_OPERAND (t, 1) = TREE_OPERAND (c, 1);
+      /* Change the right part of the BINOP_EXPR */
+      TREE_OPERAND (TREE_OPERAND (t, 1), 1) = TREE_OPERAND (c, 0);
+    }
+
+  return t;
+}
+
 /* Binary operators (15.16 up to 15.18). We return error_mark_node on
    errors but we modify NODE so that it contains the type computed
    according to the expression, when it's fixed. Otherwise, we write
@@ -10043,7 +10131,7 @@ patch_unaryop (node, wfl_op)
     case PREINCREMENT_EXPR:
       /* 15.14.2 Prefix Decrement Operator -- */
     case PREDECREMENT_EXPR:
-      decl = strip_out_static_field_access_decl (op);
+      op = decl = strip_out_static_field_access_decl (op);
       /* We really should have a JAVA_ARRAY_EXPR to avoid this */
       if (!JDECL_P (decl) 
 	  && TREE_CODE (decl) != COMPONENT_REF
@@ -10082,15 +10170,28 @@ patch_unaryop (node, wfl_op)
       else
 	{
 	  /* Before the addition, binary numeric promotion is performed on
-	     both operands */
-	  value = build_int_2 (1, 0);
-	  TREE_TYPE (node) = 
-	    binary_numeric_promotion (op_type, TREE_TYPE (value), &op, &value);
-	  /* And write the promoted incremented and increment */
+	     both operands, if really necessary */
+	  if (JINTEGRAL_TYPE_P (op_type))
+	    {
+	      value = build_int_2 (1, 0);
+	      TREE_TYPE (value) = TREE_TYPE (node) = op_type;
+	    }
+	  else
+	    {
+	      value = build_int_2 (1, 0);
+	      TREE_TYPE (node) = 
+		binary_numeric_promotion (op_type, 
+					  TREE_TYPE (value), &op, &value);
+	    }
+	  /* And write back into the node. */
 	  TREE_OPERAND (node, 0) = op;
 	  TREE_OPERAND (node, 1) = value;
-	  /* Convert the overall back into its original type. */
-	  return fold (convert (op_type, node));
+	  /* Convert the overall back into its original type, if
+             necessary, and return */
+	  if (JINTEGRAL_TYPE_P (op_type))
+	    return fold (node);
+	  else
+	    return fold (convert (op_type, node));
 	}
       break;
 
@@ -10948,6 +11049,54 @@ finish_for_loop (location, condition, update, body)
   return loop;
 }
 
+/* Try to find the loop a block might be related to. This comprises
+   the case where the LOOP_EXPR is found as the second operand of a
+   COMPOUND_EXPR, because the loop happens to have an initialization
+   part, then expressed as the first operand of the COMPOUND_EXPR. If
+   the search finds something, 1 is returned. Otherwise, 0 is
+   returned. The search is assumed to start from a
+   LABELED_BLOCK_EXPR's block.  */
+
+static tree
+search_loop (statement)
+    tree statement;
+{
+  if (TREE_CODE (statement) == LOOP_EXPR)
+    return statement;
+
+  if (TREE_CODE (statement) == BLOCK)
+    statement = BLOCK_SUBBLOCKS (statement);
+  else
+    return NULL_TREE;
+
+  if (statement && TREE_CODE (statement) == COMPOUND_EXPR)
+    while (statement && TREE_CODE (statement) == COMPOUND_EXPR)
+      statement = TREE_OPERAND (statement, 1);
+
+  return (TREE_CODE (statement) == LOOP_EXPR
+	  && IS_FOR_LOOP_P (statement) ? statement : NULL_TREE);
+}
+
+/* Return 1 if LOOP can be found in the labeled block BLOCK. 0 is
+   returned otherwise.  */
+
+static int
+labeled_block_contains_loop_p (block, loop)
+    tree block, loop;
+{
+  if (!block)
+    return 0;
+
+  if (LABELED_BLOCK_BODY (block) == loop)
+    return 1;
+
+  if (IS_FOR_LOOP_P (loop) 
+      && search_loop (LABELED_BLOCK_BODY (block)) == loop)
+    return 1;
+
+  return 0;
+}
+
 /* If the loop isn't surrounded by a labeled statement, create one and
    insert LOOP as its body.  */
 
@@ -10956,33 +11105,17 @@ patch_loop_statement (loop)
      tree loop;
 {
   tree loop_label;
-  tree block = ctxp->current_labeled_block;
+
   TREE_TYPE (loop) = void_type_node;
-  if (block != NULL_TREE)
-    {
-      tree block_body = LABELED_BLOCK_BODY (block);
-      if (IS_FOR_LOOP_P (loop))
-	{
-	  if (TREE_CODE (block_body) == BLOCK)
-	    {
-	      block_body = BLOCK_EXPR_BODY (block_body);
-	      if (block_body == loop
-		  || (TREE_CODE (block_body) == COMPOUND_EXPR
-		      && TREE_OPERAND (block_body, 1) == loop))
-		return loop;
-	    }
-	}
-      else
-	{
-	  if (block_body == loop)
-	    return loop;
-	}
-    }
+  if (labeled_block_contains_loop_p (ctxp->current_labeled_block, loop))
+    return loop;
+
   loop_label = build_labeled_block (0, NULL_TREE);
+  /* LOOP is an EXPR node, so it should have a valid EXPR_WFL_LINECOL
+     that LOOP_LABEL could enquire about, for a better accuracy. FIXME */
   LABELED_BLOCK_BODY (loop_label) = loop;
   PUSH_LABELED_BLOCK (loop_label);
-  loop = loop_label;
-  return loop;
+  return loop_label;
 }
 
 /* 14.13, 14.14: break and continue Statements */
@@ -11074,7 +11207,7 @@ patch_bc_statement (node)
 	    }
 	  target_stmt = LABELED_BLOCK_BODY (labeled_block);
 	  if (TREE_CODE (target_stmt) == SWITCH_EXPR
-	      || TREE_CODE (target_stmt) == LOOP_EXPR)
+	      || search_loop (target_stmt))
 	    {
 	      bc_label = labeled_block;
 	      break;
@@ -11088,7 +11221,7 @@ patch_bc_statement (node)
   /* Our break/continue don't return values. */
   TREE_TYPE (node) = void_type_node;
   /* Encapsulate the break within a compound statement so that it's
-     expanded all the times by expand_expr (and not clobered
+     expanded all the times by expand_expr (and not clobbered
      sometimes, like after a if statement) */
   node = add_stmt_to_compound (NULL_TREE, void_type_node, node);
   TREE_SIDE_EFFECTS (node) = 1;
