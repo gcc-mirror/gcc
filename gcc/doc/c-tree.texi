@@ -372,7 +372,7 @@ the type.  (Note this macro does @emph{not} return a
 @code{IDENTIFIER_NODE}, as you might expect, given its name!)  You can
 look at the @code{DECL_NAME} of the @code{TYPE_DECL} to obtain the
 actual name of the type.  The @code{TYPE_NAME} will be @code{NULL_TREE}
-for a type that is not a builtin type, the result of a typedef, or a
+for a type that is not a built-in type, the result of a typedef, or a
 named class type.
 
 @item CP_INTEGRAL_TYPE
@@ -387,7 +387,7 @@ or a floating point type.
 This predicate holds for a class-type.
 
 @item TYPE_BUILT_IN
-This predicate holds for a builtin type.
+This predicate holds for a built-in type.
 
 @item TYPE_PTRMEM_P
 This predicate holds if the type is a pointer to data member.
@@ -450,7 +450,7 @@ double} types.  The number of bits in the floating-point representation
 is given by @code{TYPE_PRECISION}, as in the @code{INTEGER_TYPE} case.
 
 @item COMPLEX_TYPE
-Used to represent GCC builtin @code{__complex__} data types.  The
+Used to represent GCC built-in @code{__complex__} data types.  The
 @code{TREE_TYPE} is the type of the real and imaginary parts.
 
 @item ENUMERAL_TYPE
@@ -967,7 +967,7 @@ These nodes represent non-static data members.  The @code{DECL_SIZE} and
 @code{INTEGER_CST}.  These values are indexed from zero, where zero
 indicates the first bit in the object.
 
-If @code{DECL_C_BIT_FIELD} holds, this field is a bitfield.
+If @code{DECL_C_BIT_FIELD} holds, this field is a bit-field.
 
 @item NAMESPACE_DECL
 @xref{Namespaces}.
@@ -976,7 +976,7 @@ If @code{DECL_C_BIT_FIELD} holds, this field is a bitfield.
 
 These nodes are used to represent class, function, and variable (static
 data member) templates.  The @code{DECL_TEMPLATE_SPECIALIZATIONS} are a
-@code{TREE_LIST}.  The @code{TREE_VALUE} of each node in the lst is a
+@code{TREE_LIST}.  The @code{TREE_VALUE} of each node in the list is a
 @code{TEMPLATE_DECL}s or @code{FUNCTION_DECL}s representing
 specializations (including instantiations) of this template.  Back-ends
 can safely ignore @code{TEMPLATE_DECL}s, but should examine
@@ -1540,7 +1540,7 @@ Used to represent an @code{if} statement.  The @code{IF_COND} is the
 expression.
 
 If the condition is a @code{TREE_LIST}, then the @code{TREE_PURPOSE} is
-a statement (usually a @code{DECL_STMT}).  Each time the coondition is
+a statement (usually a @code{DECL_STMT}).  Each time the condition is
 evaluated, the statement should be executed.  Then, the
 @code{TREE_VALUE} should be used as the conditional expression itself.
 This representation is used to handle C++ code like this:
@@ -2039,7 +2039,7 @@ will be a @code{VAR_DECL}, @code{INDIRECT_REF}, @code{COMPONENT_REF}, or
 other lvalue.
 
 These nodes are used to represent not only assignment with @samp{=} but
-also compount assignments (like @samp{+=}), by reduction to @samp{=}
+also compound assignments (like @samp{+=}), by reduction to @samp{=}
 assignment.  In other words, the representation for @samp{i += 3} looks
 just like that for @samp{i = i + 3}.
 

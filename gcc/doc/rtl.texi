@@ -21,7 +21,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 
 @menu
 * RTL Objects::       Expressions vs vectors vs strings vs integers.
-* RTL Classes::       Categories of RTL expresion objects, and their structure.
+* RTL Classes::       Categories of RTL expression objects, and their structure.
 * Accessors::         Macros to access expression operands or vector elts.
 * Flags::             Other flags in an RTL expression.
 * Machine Modes::     Describing the size and format of a datum.
@@ -29,7 +29,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 * Regs and Memory::   Expressions representing register contents or memory.
 * Arithmetic::        Expressions representing arithmetic on other expressions.
 * Comparisons::       Expressions representing comparison of expressions.
-* Bit Fields::        Expressions representing bitfields in memory or reg.
+* Bit-Fields::        Expressions representing bit-fields in memory or reg.
 * Vector Operations:: Expressions involving vector datatypes.
 * Conversions::       Extending, truncating, floating or fixing.
 * RTL Declarations::  Declaring volatility, constancy, etc.
@@ -149,10 +149,10 @@ An RTX code for a non-commutative binary operation, such as @code{MINUS},
 @code{DIV}, or @code{ASHIFTRT}.
 
 @item b
-An RTX code for a bitfield operation.  Currently only
+An RTX code for a bit-field operation.  Currently only
 @code{ZERO_EXTRACT} and @code{SIGN_EXTRACT}.  These have three inputs
-and are lvalues (so they can be used for insertion as well).  @xref{Bit
-Fields}.
+and are lvalues (so they can be used for insertion as well).
+@xref{Bit-Fields}.
 
 @item 3
 An RTX code for other three input operations.  Currently only
@@ -338,7 +338,7 @@ to access them.
 @section Flags in an RTL Expression
 @cindex flags in RTL expression
 
-RTL expressions contain several flags (one-bit bitfields) and other
+RTL expressions contain several flags (one-bit bit-fields) and other
 values that are used in certain types of expression.  Most often they
 are accessed with the following macros:
 
@@ -1721,21 +1721,21 @@ This is currently not valid for instruction patterns and is supported only
 for insn attributes.  @xref{Insn Attributes}.
 @end table
 
-@node Bit Fields
-@section Bit Fields
-@cindex bit fields
+@node Bit-Fields
+@section Bit-Fields
+@cindex bit-fields
 
-Special expression codes exist to represent bitfield instructions.
+Special expression codes exist to represent bit-field instructions.
 These types of expressions are lvalues in RTL; they may appear
 on the left side of an assignment, indicating insertion of a value
-into the specified bit field.
+into the specified bit-field.
 
 @table @code
 @findex sign_extract
 @cindex @code{BITS_BIG_ENDIAN}, effect on @code{sign_extract}
 @item (sign_extract:@var{m} @var{loc} @var{size} @var{pos})
-This represents a reference to a sign-extended bit field contained or
-starting in @var{loc} (a memory or register reference).  The bit field
+This represents a reference to a sign-extended bit-field contained or
+starting in @var{loc} (a memory or register reference).  The bit-field
 is @var{size} bits wide and starts at bit @var{pos}.  The compilation
 option @code{BITS_BIG_ENDIAN} says which end of the memory unit
 @var{pos} counts from.
@@ -1755,7 +1755,7 @@ The mode @var{m} is the same as the mode that would be used for
 @findex zero_extract
 @item (zero_extract:@var{m} @var{loc} @var{size} @var{pos})
 Like @code{sign_extract} but refers to an unsigned or zero-extended
-bit field.  The same sequence of bits are extracted, but they
+bit-field.  The same sequence of bits are extracted, but they
 are filled to an entire word with zeros instead of by sign-extension.
 @end table
 
@@ -1978,7 +1978,7 @@ Use the former expression to save space during the compilation.
 
 If @var{lval} is a @code{parallel}, it is used to represent the case of
 a function returning a structure in multiple registers.  Each element
-of the @code{paralllel} is an @code{expr_list} whose first operand is a
+of the @code{parallel} is an @code{expr_list} whose first operand is a
 @code{reg} and whose second operand is a @code{const_int} representing the
 offset (in bytes) into the structure at which the data in that register
 corresponds.  The first element may be null to indicate that the structure
@@ -2662,7 +2662,7 @@ The second Haifa scheduling pass, for targets that can multiple issue,
 sets the mode of an insn to @code{TImode} when it is believed that the
 instruction begins an issue group.  That is, when the instruction
 cannot issue simultaneously with the previous.  This may be relied on
-by later passes, in particular machine-dependant reorg.
+by later passes, in particular machine-dependent reorg.
 
 Here is a table of the extra fields of @code{insn}, @code{jump_insn}
 and @code{call_insn} insns:

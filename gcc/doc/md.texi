@@ -2332,7 +2332,7 @@ point.
 
 @cindex @code{extv} instruction pattern
 @item @samp{extv}
-Extract a bit field from operand 1 (a register or memory operand), where
+Extract a bit-field from operand 1 (a register or memory operand), where
 operand 2 specifies the width in bits and operand 3 the starting bit,
 and store it in operand 0.  Operand 0 must have mode @code{word_mode}.
 Operand 1 may have mode @code{byte_mode} or @code{word_mode}; often
@@ -2351,8 +2351,8 @@ Like @samp{extv} except that the bit-field value is zero-extended.
 
 @cindex @code{insv} instruction pattern
 @item @samp{insv}
-Store operand 3 (which must be valid for @code{word_mode}) into a bit
-field in operand 0, where operand 1 specifies the width in bits and
+Store operand 3 (which must be valid for @code{word_mode}) into a
+bit-field in operand 0, where operand 1 specifies the width in bits and
 operand 2 the starting bit.  Operand 0 may have mode @code{byte_mode} or
 @code{word_mode}; often @code{word_mode} is allowed only for registers.
 Operands 1 and 2 must be valid for @code{word_mode}.
@@ -2812,7 +2812,7 @@ the first three are normally used by the generic mechanism.
 @cindex @code{builtin_setjmp_receiver} instruction pattern
 @item @samp{builtin_setjmp_receiver}
 This pattern, if defined, contains code needed at the site of an
-builtin setjmp that isn't needed at the site of a nonlocal goto.  You
+built-in setjmp that isn't needed at the site of a nonlocal goto.  You
 will not normally need to define this pattern.  A typical reason why you
 might need this pattern is if some value, such as a pointer to a global
 table, must be restored.  It takes one argument, which is the label
@@ -2883,7 +2883,7 @@ function.
 @item @samp{trap}
 This pattern, if defined, signals an error, typically by causing some
 kind of signal to be raised.  Among other places, it is used by the Java
-frontend to signal `invalid array index' exceptions.
+front end to signal `invalid array index' exceptions.
 
 @cindex @code{conditional_trap} instruction pattern
 @item @samp{conditional_trap}
@@ -3141,7 +3141,7 @@ provide low-overhead loop support.  For example, the TI TMS320C3x/C4x
 DSPs have a block repeat instruction that loads special registers to
 mark the top and end of a loop and to count the number of loop
 iterations.  This avoids the need for fetching and executing a
-@samp{dbra}-like instruction and avoids pipeline stalls asociated with
+@samp{dbra}-like instruction and avoids pipeline stalls associated with
 the jump.
 
 GNU CC has three special named patterns to support low overhead looping,
@@ -3446,7 +3446,7 @@ that the pattern was not truly available.  The calling routines in the
 compiler will try other strategies for code generation using other patterns.
 
 Failure is currently supported only for binary (addition, multiplication,
-shifting, etc.) and bitfield (@code{extv}, @code{extzv}, and @code{insv})
+shifting, etc.) and bit-field (@code{extv}, @code{extzv}, and @code{insv})
 operations.
 @end table
 
@@ -3558,7 +3558,7 @@ on this machine.  So it must be copied into a register with
 @end smallexample
 
 @strong{Note:} If the @code{define_expand} is used to serve a
-standard binary or unary arithmetic operation or a bitfield operation,
+standard binary or unary arithmetic operation or a bit-field operation,
 then the last insn it generates must not be a @code{code_label},
 @code{barrier} or @code{note}.  It must be an @code{insn},
 @code{jump_insn} or @code{call_insn}.  If you don't need a real insn

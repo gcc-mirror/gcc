@@ -34,14 +34,20 @@
 @c -item/itemx, text after all (sub/sub)section titles, etc..
 @c -consider putting the lists of options on pp 17--> etc in columns or
 @c  some such.
-@c -spellcheck
-@c -continuity of phrasing; ie, bit-field vs bitfield in rtl.texi
 @c -overfulls.  do a search for "mew" in the files, and you will see
 @c   overfulls that i noted but could not deal with.
 @c -have to add text:  beginning of chapter 8
 
 @c
 @c anything else?                       --mew 10feb93
+
+@c For consistency, use the following:
+@c - "bit-field" not "bitfield" or "bit field" (following the C and C++
+@c   standards).
+@c - "built-in" as an adjective ("built-in function"), or sometimes
+@c   "built in", not "builtin" (which isn't a word).
+@c - "front end" as a noun, "front-end" as an adjective (not yet
+@c   consistently followed).
 
 @macro gcctabopt{body}
 @code{\body\}
@@ -1417,13 +1423,13 @@ being incompatible with ISO C just to avoid an error for the example
 shown above.
 
 @item
-Accesses to bitfields even in volatile objects works by accessing larger
+Accesses to bit-fields even in volatile objects works by accessing larger
 objects, such as a byte or a word.  You cannot rely on what size of
-object is accessed in order to read or write the bitfield; it may even
-vary for a given bitfield according to the precise usage.
+object is accessed in order to read or write the bit-field; it may even
+vary for a given bit-field according to the precise usage.
 
 If you care about controlling the amount of memory that is accessed, use
-volatile but do not use bitfields.
+volatile but do not use bit-fields.
 
 @item
 GCC comes with shell scripts to fix certain known problems in system
@@ -1772,10 +1778,10 @@ the enumeration-valued object is inside a structure, and in that case
 you can specify a field width explicitly.
 
 @item
-Making bitfields unsigned by default on particular machines where ``the
+Making bit-fields unsigned by default on particular machines where ``the
 ABI standard'' says to do so.
 
-The ISO C standard leaves it up to the implementation whether a bitfield
+The ISO C standard leaves it up to the implementation whether a bit-field
 declared plain @code{int} is signed or not.  This in effect creates two
 alternative dialects of C.
 
@@ -1786,19 +1792,19 @@ dialect with @option{-fsigned-bitfields} and the unsigned dialect with
 @option{-funsigned-bitfields}.  However, this leaves open the question of
 which dialect to use by default.
 
-Currently, the preferred dialect makes plain bitfields signed, because
+Currently, the preferred dialect makes plain bit-fields signed, because
 this is simplest.  Since @code{int} is the same as @code{signed int} in
-every other context, it is cleanest for them to be the same in bitfields
+every other context, it is cleanest for them to be the same in bit-fields
 as well.
 
 Some computer manufacturers have published Application Binary Interface
-standards which specify that plain bitfields should be unsigned.  It is
+standards which specify that plain bit-fields should be unsigned.  It is
 a mistake, however, to say anything about this issue in an ABI.  This is
-because the handling of plain bitfields distinguishes two dialects of C.
+because the handling of plain bit-fields distinguishes two dialects of C.
 Both dialects are meaningful on every type of machine.  Whether a
-particular object file was compiled using signed bitfields or unsigned
+particular object file was compiled using signed bit-fields or unsigned
 is of no concern to other object files, even if they access the same
-bitfields in the same data structures.
+bit-fields in the same data structures.
 
 A given program is written in one or the other of these two dialects.
 The program stands a chance to work on most any machine if it is
@@ -1807,7 +1813,7 @@ compiled with the wrong dialect.
 
 Many users appreciate the GNU C compiler because it provides an
 environment that is uniform across machines.  These users would be
-inconvenienced if the compiler treated plain bitfields differently on
+inconvenienced if the compiler treated plain bit-fields differently on
 certain machines.
 
 Occasionally users write programs intended only for a particular machine
@@ -1817,16 +1823,16 @@ that machine.  But such applications are rare.  And users writing a
 program to run on more than one type of machine cannot possibly benefit
 from this kind of compatibility.
 
-This is why GCC does and will treat plain bitfields in the same
+This is why GCC does and will treat plain bit-fields in the same
 fashion on all types of machines (by default).
 
-There are some arguments for making bitfields unsigned by default on all
+There are some arguments for making bit-fields unsigned by default on all
 machines.  If, for example, this becomes a universal de facto standard,
 it would make sense for GCC to go along with it.  This is something
 to be considered in the future.
 
 (Of course, users strongly concerned about portability should indicate
-explicitly in each bitfield whether it is signed or not.  In this way,
+explicitly in each bit-field whether it is signed or not.  In this way,
 they write programs which have the same meaning in both C dialects.)
 
 @item
@@ -2937,7 +2943,7 @@ they're no longer needed.  This saves disk space.
 @item bubblestrap
 Once bootstrapped, this incrementally rebuilds each of the three stages,
 one at a time.  It does this by ``bubbling'' the stages up from their
-stubdirectories, rebuilding them, and copying them back to their
+subdirectories, rebuilding them, and copying them back to their
 subdirectories.  This will allow you to, for example, quickly rebuild a
 bootstrapped compiler after changing the sources, without having to do a
 full bootstrap.
@@ -3822,7 +3828,7 @@ machine.
 @findex ONLY_INT_FIELDS
 @item ONLY_INT_FIELDS
 Define this macro to indicate that the host compiler only supports
-@code{int} bit fields, rather than other integral types, including
+@code{int} bit-fields, rather than other integral types, including
 @code{enum}, as do most C compilers.
 
 @findex OBSTACK_CHUNK_SIZE

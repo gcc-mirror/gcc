@@ -117,7 +117,7 @@ than C.  If you do not define this macro, then the value of
 
 @findex NO_BUILTIN_SIZE_TYPE
 @item NO_BUILTIN_SIZE_TYPE
-If this macro is defined, the preprocessor will not define the builtin macro
+If this macro is defined, the preprocessor will not define the built-in macro
 @code{__SIZE_TYPE__}.  The macro @code{__SIZE_TYPE__} must then be defined
 by @code{CPP_SPEC} instead.
 
@@ -127,7 +127,7 @@ be defined.
 
 @findex NO_BUILTIN_PTRDIFF_TYPE
 @item NO_BUILTIN_PTRDIFF_TYPE
-If this macro is defined, the preprocessor will not define the builtin macro
+If this macro is defined, the preprocessor will not define the built-in macro
 @code{__PTRDIFF_TYPE__}.  The macro @code{__PTRDIFF_TYPE__} must then be
 defined by @code{CPP_SPEC} instead.
 
@@ -137,7 +137,7 @@ be defined.
 
 @findex NO_BUILTIN_WCHAR_TYPE
 @item NO_BUILTIN_WCHAR_TYPE
-If this macro is defined, the preprocessor will not define the builtin macro
+If this macro is defined, the preprocessor will not define the built-in macro
 @code{__WCHAR_TYPE__}.  The macro @code{__WCHAR_TYPE__} must then be
 defined by @code{CPP_SPEC} instead.
 
@@ -147,7 +147,7 @@ be defined.
 
 @findex NO_BUILTIN_WINT_TYPE
 @item NO_BUILTIN_WINT_TYPE
-If this macro is defined, the preprocessor will not define the builtin macro
+If this macro is defined, the preprocessor will not define the built-in macro
 @code{__WINT_TYPE__}.  The macro @code{__WINT_TYPE__} must then be
 defined by @code{CPP_SPEC} instead.
 
@@ -792,7 +792,7 @@ pointer is non-NULL it will be called once per function, before function
 compilation starts, in order to allow the target to perform any target
 specific initialisation of the @code{struct function} structure.  It is
 intended that this would be used to initialise the @code{machine} of
-that struture.
+that structure.
 
 @findex free_machine_status
 @item   free_machine_status
@@ -1052,7 +1052,7 @@ make it all fit in fewer cache lines.
 
 @findex EMPTY_FIELD_BOUNDARY
 @item EMPTY_FIELD_BOUNDARY
-Alignment in bits to be given to a structure bit field that follows an
+Alignment in bits to be given to a structure bit-field that follows an
 empty field such as @code{int : 0;}.
 
 Note that @code{PCC_BITFIELD_TYPE_MATTERS} also affects the alignment
@@ -1075,16 +1075,16 @@ go slower in that case, define this macro as 0.
 @findex PCC_BITFIELD_TYPE_MATTERS
 @item PCC_BITFIELD_TYPE_MATTERS
 Define this if you wish to imitate the way many other C compilers handle
-alignment of bitfields and the structures that contain them.
+alignment of bit-fields and the structures that contain them.
 
-The behavior is that the type written for a bitfield (@code{int},
+The behavior is that the type written for a bit-field (@code{int},
 @code{short}, or other integer type) imposes an alignment for the
 entire structure, as if the structure really did contain an ordinary
-field of that type.  In addition, the bitfield is placed within the
+field of that type.  In addition, the bit-field is placed within the
 structure so that it would fit within such a field, not crossing a
 boundary for it.
 
-Thus, on most machines, a bitfield whose type is written as @code{int}
+Thus, on most machines, a bit-field whose type is written as @code{int}
 would not cross a four-byte boundary, and would force four-byte
 alignment for the whole structure.  (The alignment used may not be four
 bytes; it is controlled by the other alignment parameters.)
@@ -1093,20 +1093,20 @@ If the macro is defined, its definition should be a C expression;
 a nonzero value for the expression enables this behavior.
 
 Note that if this macro is not defined, or its value is zero, some
-bitfields may cross more than one alignment boundary.  The compiler can
+bit-fields may cross more than one alignment boundary.  The compiler can
 support such references if there are @samp{insv}, @samp{extv}, and
 @samp{extzv} insns that can directly reference memory.
 
-The other known way of making bitfields work is to define
+The other known way of making bit-fields work is to define
 @code{STRUCTURE_SIZE_BOUNDARY} as large as @code{BIGGEST_ALIGNMENT}.
 Then every structure can be accessed with fullwords.
 
-Unless the machine has bitfield instructions or you define
+Unless the machine has bit-field instructions or you define
 @code{STRUCTURE_SIZE_BOUNDARY} that way, you must define
 @code{PCC_BITFIELD_TYPE_MATTERS} to have a nonzero value.
 
 If your aim is to make GCC use the same conventions for laying out
-bitfields as are used by another compiler, here is how to investigate
+bit-fields as are used by another compiler, here is how to investigate
 what the other compiler does.  Compile and run this program:
 
 @example
@@ -1140,7 +1140,7 @@ get from @code{PCC_BITFIELD_TYPE_MATTERS}.
 @findex BITFIELD_NBYTES_LIMITED
 @item BITFIELD_NBYTES_LIMITED
 Like PCC_BITFIELD_TYPE_MATTERS except that its effect is limited to
-aligning a bitfield within the structure.
+aligning a bit-field within the structure.
 
 @findex STRUCT_FORCE_BLK
 @item STRUCT_FORCE_BLK (@var{field})
@@ -2646,7 +2646,7 @@ to be emitted.
 @findex SMALL_STACK
 @item SMALL_STACK
 Define this macro if the stack size for the target is very small.  This
-has the effect of disabling gcc's builtin @samp{alloca}, though
+has the effect of disabling gcc's built-in @samp{alloca}, though
 @samp{__builtin_alloca} is not affected.
 @end table
 
@@ -3638,7 +3638,7 @@ arguments.  But usually, on such machines, nothing else has been pushed
 yet, because the function prologue itself does all the pushing.)  This
 region is used on machines where an argument may be passed partly in
 registers and partly in memory, and, in some cases to support the
-features in @file{varargs.h} and @file{stdargs.h}.
+features in @file{varargs.h} and @file{stdarg.h}.
 
 @item
 An area of memory used to save certain registers used by the function.
@@ -3793,7 +3793,7 @@ have already been extracted from it.)  It might possibly be useful on
 some targets, but probably not.
 
 If you do not define this macro, the target-independent code in the C++
-frontend will generate a less efficient heavyweight thunk that calls
+front end will generate a less efficient heavyweight thunk that calls
 @var{function} instead of jumping to it.  The generic approach does
 not support varargs.
 @end table
@@ -4844,7 +4844,7 @@ the address has become legitimate.
 If you want to change only a part of @var{x}, one standard way of doing
 this is to use @code{copy_rtx}.  Note, however, that is unshares only a
 single level of rtl.  Thus, if the part to be changed is not at the
-top level, you'll need to replace first the top leve
+top level, you'll need to replace first the top level.
 It is not necessary for this macro to come up with a legitimate
 address;  but often a machine-dependent strategy can generate better code.
 
@@ -5030,7 +5030,7 @@ like:
 
 @smallexample
 #define REVERSE_CONDITION(CODE, MODE) \
-   ((MODE) != CCFPmode ? reverse_condtion (CODE) \
+   ((MODE) != CCFPmode ? reverse_condition (CODE) \
     : reverse_condition_maybe_unordered (CODE))
 @end smallexample
 
@@ -5296,7 +5296,7 @@ thing to use for a given mode.  Defaults to the value of
 
 @findex USE_STORE_POST_DECREMENT
 @item USE_STORE_POST_DECREMENT (@var{mode})
-A C expression used to determine whether a store postdeccrement is a good
+A C expression used to determine whether a store postdecrement is a good
 thing to use for a given mode.  Defaults to the value of
 @code{HAVE_POST_DECREMENT}.
 
@@ -5517,7 +5517,7 @@ STRING_CST node, and assign it to @samp{DECL_SECTION_NAME (@var{decl})}.
 @var{reloc} indicates whether the initial value of @var{exp} requires
 link-time relocations.  If you do not define this macro, GCC will use
 the symbol name prefixed by @samp{.} as the section name.  Note - this
-macro can now be called for unitialised data items as well as
+macro can now be called for uninitialised data items as well as
 initialised data and functions.
 @end table
 
@@ -7400,7 +7400,7 @@ Here is another way of finding a particular type:
 @findex NO_DBX_FUNCTION_END
 @item NO_DBX_FUNCTION_END
 Some stabs encapsulation formats (in particular ECOFF), cannot handle the
-@code{.stabs "",N_FUN,,0,0,Lscope-function-1} gdb dbx extention construct.
+@code{.stabs "",N_FUN,,0,0,Lscope-function-1} gdb dbx extension construct.
 On those machines, define this macro to turn this feature off without
 disturbing the rest of the gdb extensions.
 
@@ -7952,18 +7952,18 @@ of bits needed to represent the size of the object being shifted.  When
 this macro is non-zero, the compiler will assume that it is safe to omit
 a sign-extend, zero-extend, and certain bitwise `and' instructions that
 truncates the count of a shift operation.  On machines that have
-instructions that act on bitfields at variable positions, which may
+instructions that act on bit-fields at variable positions, which may
 include `bit test' instructions, a nonzero @code{SHIFT_COUNT_TRUNCATED}
 also enables deletion of truncations of the values that serve as
-arguments to bitfield instructions.
+arguments to bit-field instructions.
 
 If both types of instructions truncate the count (for shifts) and
-position (for bitfield operations), or if no variable-position bitfield
+position (for bit-field operations), or if no variable-position bit-field
 instructions exist, you should define this macro.
 
 However, on some machines, such as the 80386 and the 680x0, truncation
 only applies to shift operations and not the (real or pretended)
-bitfield operations.  Define @code{SHIFT_COUNT_TRUNCATED} to be zero on
+bit-field operations.  Define @code{SHIFT_COUNT_TRUNCATED} to be zero on
 such machines.  Instead, add patterns to the @file{md} file that include
 the implied truncation of the shift instructions.
 
@@ -8189,7 +8189,7 @@ Note that the use of @code{c_lex} is specific to the C and C++
 compilers.  It will not work in the Java or Fortran compilers, or any
 other language compilers for that matter.  Thus if @code{c_lex} is going
 to be called from target-specific code, it must only be done so when
-building hte C and C++ compilers.  This can be done by defining the
+building the C and C++ compilers.  This can be done by defining the
 variables @code{c_target_objs} and @code{cxx_target_objs} in the
 target entry in the @code{config.gcc} file.  These variables should name
 the target-specific, language-specific object file which contains the
@@ -8281,7 +8281,7 @@ definition.
 @findex INSERT_ATTRIBUTES
 @item INSERT_ATTRIBUTES (@var{node}, @var{attr_ptr}, @var{prefix_ptr})
 Define this macro if you want to be able to add attributes to a decl
-when it is being created.  This is normally useful for backends which
+when it is being created.  This is normally useful for back ends which
 wish to implement a pragma by using the attributes which correspond to
 the pragma's effect.  The @var{node} argument is the decl which is being
 created.  The @var{attr_ptr} argument is a pointer to the attribute list
@@ -8500,7 +8500,7 @@ conditional execution instructions instead of a branch.  A value of
 @findex IFCVT_MODIFY_TESTS
 @item IFCVT_MODIFY_TESTS
 A C expression to modify the tests in @code{TRUE_EXPR}, and
-@code{FALSE_EXPPR} for use in converting insns in @code{TEST_BB},
+@code{FALSE_EXPR} for use in converting insns in @code{TEST_BB},
 @code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB} basic blocks to
 conditional execution.  Set either @code{TRUE_EXPR} or @code{FALSE_EXPR}
 to a null pointer if the tests cannot be converted.
@@ -8524,30 +8524,30 @@ converting code to conditional execution in the basic blocks
 
 @findex MD_INIT_BUILTINS
 @item MD_INIT_BUILTINS
-Define this macro if you have any machine-specific builtin functions that
+Define this macro if you have any machine-specific built-in functions that
 need to be defined.  It should be a C expression that performs the
 necessary setup.
 
-Machine specific builtins can be useful to expand special machine
+Machine specific built-in functions can be useful to expand special machine
 instructions that would otherwise not normally be generated because
 they have no equivalent in the source language (for example, SIMD vector
 instructions or prefetch instructions).
 
-To create a builtin function, call the function @code{builtin_function}
-which is defined by the language frontend.  You can use any type nodes set
+To create a built-in function, call the function @code{builtin_function}
+which is defined by the language front end.  You can use any type nodes set
 up by @code{build_common_tree_nodes} and @code{build_common_tree_nodes_2};
-only language frontends that use these two functions will use
+only language front ends that use these two functions will use
 @samp{MD_INIT_BUILTINS}.
 
 @findex MD_EXPAND_BUILTIN
 @item MD_EXPAND_BUILTIN(@var{exp}, @var{target}, @var{subtarget}, @var{mode}, @var{ignore})
 
-Expand a call to a machine specific builtin that was set up by
+Expand a call to a machine specific built-in function that was set up by
 @samp{MD_INIT_BUILTINS}.  @var{exp} is the expression for the function call;
 the result should go to @var{target} if that is convenient, and have mode
 @var{mode} if that is convenient.  @var{subtarget} may be used as the target
 for computing one of @var{exp}'s operands. @var{ignore} is nonzero if the value
 is to be ignored.
-This macro should return the result of the call to the builtin.
+This macro should return the result of the call to the built-in function.
 
 @end table

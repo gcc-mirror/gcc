@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.22 2001/06/13 07:12:54 aoliva Exp $
+@comment $Id: install.texi,v 1.1.2.23 2001/06/13 13:08:32 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -475,7 +475,7 @@ Generic MACH thread support, known to work on NEXTSTEP.
 @item os2
 IBM OS/2 thread support.
 @item posix
-Generix POSIX thread support.
+Generic POSIX thread support.
 @item pthreads
 Same as @samp{posix}.
 @item single
@@ -605,7 +605,7 @@ English. Native Language Support is enabled by default if not doing a
 canadian cross build. The @option{--disable-nls} option disables NLS.
 
 @item --with-included-gettext
-If NLS is enbled, the @option{--with-included-gettext} option causes the build
+If NLS is enabled, the @option{--with-included-gettext} option causes the build
 procedure to prefer its copy of GNU @code{gettext}.
 
 @item --with-catgets
@@ -2173,7 +2173,7 @@ use NLS to support locale-specific representations of various data
 formats including floating-point numbers (e.g., @samp{.}  vs @samp{,} for
 separating decimal fractions).  There have been problems reported where
 GCC does not produce the same floating-point formats that the assembler
-expects.  If one encouters this problem, set the @env{LANG}
+expects.  If one encounters this problem, set the @env{LANG}
 environment variable to @samp{C} or @samp{En_US}.
 
 By default, GCC for AIX 4.1 and above produces code that can be used on
