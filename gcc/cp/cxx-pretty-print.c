@@ -1100,6 +1100,8 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
     case OFFSET_TYPE:
       if (TYPE_PTR_TO_MEMBER_P (t))
         {
+          if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+            pp_cxx_left_paren (pp);
           pp_cxx_nested_name_specifier (pp, TYPE_PTRMEM_CLASS_TYPE (t));
           pp_star (pp);
           pp_cxx_cv_qualifier_seq (pp, t);
