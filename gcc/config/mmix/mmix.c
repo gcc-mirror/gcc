@@ -70,7 +70,7 @@ rtx mmix_compare_op1;
 /* We ignore some options with arguments.  They are passed to the linker,
    but also ends up here because they start with "-m".  We tell the driver
    to store them in a variable we don't inspect.  */
-char *mmix_cc1_ignored_option;
+const char *mmix_cc1_ignored_option;
 
 /* Declarations of locals.  */
 
@@ -143,7 +143,7 @@ mmix_init_expanders ()
 
 /* Set the per-function data.  */
 
-void
+static void
 mmix_init_machine_status (f)
      struct function *f;
 {
@@ -1769,7 +1769,7 @@ mmix_unique_section (decl, reloc)
   const char *name;
   char *string;
   const char *prefix;
-  static const char *prefixes[4][2] =
+  static const char *const prefixes[4][2] =
   {
     { ".text.",   ".gnu.linkonce.t." },
     { ".rodata.", ".gnu.linkonce.r." },
@@ -1857,7 +1857,7 @@ mmix_output_quoted_string (stream, string, length)
      int length;
 {
   const char * string_end = string + length;
-  const char unwanted_chars[] = "\"[]\\";
+  static const char *const unwanted_chars = "\"[]\\";
 
   /* Output "any character except newline and double quote character".  We
      play it safe and avoid all control characters too.  We also do not
@@ -2569,7 +2569,7 @@ mmix_output_register_setting (stream, regno, value, do_begin_end)
   else
     {
       /* The generic case.  2..4 insns.  */
-      const char *const higher_parts[] = {"L", "ML", "MH", "H"};
+      static const char *const higher_parts[] = {"L", "ML", "MH", "H"};
       const char *op = "SET";
       const char *line_begin = "";
       int i;
@@ -2871,7 +2871,7 @@ mmix_output_shiftvalue_op_from_str (stream, mainop, value)
      const char *mainop;
      HOST_WIDEST_INT value;
 {
-  const char *const op_part[] = {"L", "ML", "MH", "H"};
+  static const char *const op_part[] = {"L", "ML", "MH", "H"};
   int i;
 
   if (! mmix_shiftable_wyde_value (value))

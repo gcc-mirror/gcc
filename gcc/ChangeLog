@@ -1,3 +1,17 @@
+2001-11-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mmix.c (mmix_cc1_ignored_option): Const-ify.
+	(mmix_init_machine_status): Make static to match declaration.
+	(mmix_unique_section): Const-ify.
+	(mmix_output_quoted_string): Avoid automatic aggregate
+	initialization.
+	(mmix_output_register_setting): Likewise.
+	(mmix_output_shiftvalue_op_from_str): Likewise.
+
+	* mmix.h (mmix_cc1_ignored_option): Const-ify.
+	(ASM_OUTPUT_BYTE): Fix format specifier warning.
+	(ASM_GENERATE_INTERNAL_LABEL): Likewise.
+
 2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR c/4448
