@@ -5333,8 +5333,9 @@ create_definition (buf, limit, op)
     }
 
     ++bp;			/* skip paren */
-    /* Skip exactly one space or tab if any.  */
-    if (bp < limit && (*bp == ' ' || *bp == '\t')) ++bp;
+    /* Skip spaces and tabs if any.  */
+    while (bp < limit && (*bp == ' ' || *bp == '\t'))
+      ++bp;
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, argno, arg_ptrs);
     defn->rest_args = rest_args;
@@ -5357,10 +5358,12 @@ create_definition (buf, limit, op)
       defn->args.argnames[i] = 0;
     }
   } else {
-    /* simple expansion or empty definition; gobble it */
-    if (is_hor_space[*bp])
-      ++bp;		/* skip exactly one blank/tab char */
-    /* now everything from bp before limit is the definition. */
+    /* Simple expansion or empty definition.  */
+
+    /* Skip spaces and tabs if any.  */
+    while (bp < limit && (*bp == ' ' || *bp == '\t'))
+      ++bp;
+    /* Now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, -1, NULL_PTR);
     defn->args.argnames = (U_CHAR *) "";
   }
@@ -5816,20 +5819,6 @@ collect_expansion (buf, end, nargs, arglist)
 	  error ("`#' operator should be followed by a macro argument name");
       }
     }
-  }
-
-  if (limit < end) {
-    /* Convert trailing whitespace to Newline-markers.  */
-    while (limit < end && is_space[*limit]) {
-      *exp_p++ = '\n';
-      *exp_p++ = *limit++;
-    }
-  } else if (!traditional && expected_delimiter == 0) {
-    /* There is no trailing whitespace, so invent some in ANSI mode.
-       But not if "inside a string" (which in ANSI mode
-       happens only for -D option).  */
-    *exp_p++ = '\n';
-    *exp_p++ = ' ';
   }
 
   *exp_p = '\0';
