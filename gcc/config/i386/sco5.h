@@ -283,6 +283,14 @@ do {									\
    }									\
 } while (0)
 
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
 #undef ESCAPES
 #define ESCAPES \
 "\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
@@ -569,6 +577,7 @@ do {									\
 
 #define DWARF_DEBUGGING_INFO 1
 #define SDB_DEBUGGING_INFO   1
+#define DBX_DEBUGGING_INFO   1
 #define PREFERRED_DEBUGGING_TYPE					\
   ((TARGET_ELF) ? DWARF_DEBUG: SDB_DEBUG)
 
@@ -918,7 +927,6 @@ compiler at the end of the day. Onward we go ...
 
 # if defined (_SCO_ELF)
 #  define OBJECT_FORMAT_ELF
-#  define HAVE_ATEXIT
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_ELF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
