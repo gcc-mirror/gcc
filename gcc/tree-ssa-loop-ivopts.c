@@ -1400,6 +1400,37 @@ idx_record_use (tree base, tree *idx,
   return true;
 }
 
+/* Returns true if memory reference REF may be unaligned.  */
+
+static bool
+may_be_unaligned_p (tree ref)
+{
+  tree base;
+  tree base_type;
+  HOST_WIDE_INT bitsize;
+  HOST_WIDE_INT bitpos;
+  tree toffset;
+  enum machine_mode mode;
+  int unsignedp, volatilep;
+  unsigned base_align;
+
+  /* The test below is basically copy of what expr.c:normal_inner_ref
+     does to check whether the object must be loaded by parts when
+     STRICT_ALIGNMENT is true.  */
+  base = get_inner_reference (ref, &bitsize, &bitpos, &toffset, &mode,
+			      &unsignedp, &volatilep, true);
+  base_type = TREE_TYPE (base);
+  base_align = TYPE_ALIGN (base_type);
+
+  if (mode != BLKmode
+      && (base_align < GET_MODE_ALIGNMENT (mode)
+	  || bitpos % GET_MODE_ALIGNMENT (mode) != 0
+	  || bitpos % BITS_PER_UNIT != 0))
+    return true;
+
+  return false;
+}
+
 /* Finds addresses in *OP_P inside STMT.  */
 
 static void
@@ -1413,6 +1444,10 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
      to handle.  TODO.  */
   if (TREE_CODE (base) == COMPONENT_REF
       && DECL_NONADDRESSABLE_P (TREE_OPERAND (base, 1)))
+    goto fail;
+
+  if (STRICT_ALIGNMENT
+      && may_be_unaligned_p (base))
     goto fail;
 
   ifs_ivopts_data.ivopts_data = data;
