@@ -1886,6 +1886,7 @@ LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o cppfiles.o \
 
 libcpp.a: $(LIBCPP_OBJS)
 	$(AR) $(ARFLAGS) libcpp.a $(LIBCPP_OBJS)
+	$(RANLIB) libcpp.a
 
 cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \

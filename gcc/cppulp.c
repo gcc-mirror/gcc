@@ -24,4 +24,4 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "gansidecl.h"
 #include "output.h"
 
-char *user_label_prefix;
+char *user_label_prefix = 0;

@@ -1,3 +1,14 @@
+Wed Nov  4 19:15:37 1998  "Melissa O'Neill" <oneill@cs.sfu.ca>
+
+	* Makefile.in (libcpp.a): Ranlib libcpp.a
+
+	* cppulp.c (user_label_prefix): Initialize.
+	
+Wed Nov  4 19:07:08 1998   John Wehle  (john@feith.com)
+
+        * flow.c (mark_regs_live_at_end): Mark the stack pointer as live
+        at a RETURN if current_function_sp_is_unchanging is set.
+
 Wed Nov  4 18:16:29 1998 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl> 
 
 	* emit-rtl.c (try_split): Fixed error in Oct 10 patch.
