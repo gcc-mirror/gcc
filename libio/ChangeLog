@@ -22,7 +22,7 @@ Sun Feb  1 13:29:47 1998  H.J. Lu  (hjl@gnu.org)
 	* libioP.h (_IO_file_open): New declaration.
 
 	* libio.h (_IO_FILE, _IO_stdin_, _IO_stdout_, _IO_stderr_,
-	_IO_seekoff, _IO_seekpos): Add support for libio in egcs 2.1.
+	_IO_seekoff, _IO_seekpos): Add support for libio in glibc 2.1.
 	* libioP.h (_IO_seekoff_t, _IO_seekpos_t, _IO_seek_t,
 	_IO_seekoff, _IO_seekpos, _IO_default_seekoff,
 	_IO_default_seekpos, _IO_default_seek, _IO_file_seekoff,
