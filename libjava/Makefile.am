@@ -364,9 +364,11 @@ org/ietf/jgss/GSSName.java \
 org/ietf/jgss/MessageProp.java \
 org/ietf/jgss/Oid.java
 
-lib_org_ietf_jgss_la_DEPENDENCIES= $(jgss_propertyo_files)
+lib_org_ietf_jgss_la_DEPENDENCIES= $(jgss_propertyo_files) \
+	libgcj-@gcc_version@.jar libgcj.la libgcj.spec
 ## See jv_convert_LDADD.
-lib_org_ietf_jgss_la_LIBADD = -L$(here)/.libs  $(jgss_propertyo_files)
+lib_org_ietf_jgss_la_LIBADD = -L$(here)/.libs  $(jgss_propertyo_files) \
+	libgcj.la
 
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_org_ietf_jgss_la_LDFLAGS = -rpath $(toolexeclibdir) \
