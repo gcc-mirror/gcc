@@ -54,7 +54,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the m68k running svr4.  __svr4__ is our extension.  */
 
 #define CPP_PREDEFINES \
-  "-Dm68k -Dunix -D__svr4__ -Asystem(unix) -Acpu(m68k) -Amachine(m68k)"
+  "-Dm68k -Dunix -D__svr4__ -D__motorola__ \
+ -Asystem(unix) -Acpu(m68k) -Amachine(m68k)"
 
 /* Test to see if the target includes a 68881 by default, and use CPP_SPEC
    to control whether or not __HAVE_68881__ is defined by default or not.
