@@ -1,5 +1,5 @@
 /* Util.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,15 +38,13 @@ exception statement from your version. */
 
 package javax.rmi.CORBA;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.lang.Object;
-import java.io.*;
-//import org.omg.CORBA.*;
-//import org.omg.CORBA.portable.InputStream;
-//import org.omg.CORBA.portable.OutputStream;
 import gnu.javax.rmi.CORBA.DelegateFactory;
 import gnu.javax.rmi.CORBA.GetDelegateInstanceException;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public class Util
 {

@@ -38,9 +38,10 @@ exception statement from your version. */
 
 package javax.rmi.CORBA;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.io.*;
 //import org.omg.CORBA.ORB;
 //import org.omg.CORBA.SystemException;
 //import org.omg.CORBA.portable.InputStream;

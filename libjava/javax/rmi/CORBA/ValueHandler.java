@@ -1,5 +1,5 @@
 /* ValueHandler.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package javax.rmi.CORBA;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 //import org.omg.CORBA.portable.InputStream;
 //import org.omg.CORBA.portable.OutputStream;
 //import org.omg.SendingContext.RunTime;
