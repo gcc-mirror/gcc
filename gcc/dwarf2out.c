@@ -1951,7 +1951,7 @@ dwarf2out_frame_finish ()
 /* And now, the support for symbolic debugging information.  */
 #ifdef DWARF2_DEBUGGING_INFO
 
-extern char *getpwd ();
+extern char *getpwd PROTO((void));
 
 /* NOTE: In the comments in this file, many references are made to
    "Debugging Information Entries".  This term is abbreviated as `DIE'
