@@ -1,3 +1,8 @@
+Thu Mar 11 14:00:58 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (HARD_REGNO_MODE_OK): Disallow QI/HImode in fp regs.
+	(MODES_TIEABLE_P): Update.
+
 Thu Mar 11 13:55:52 1999  Richard Henderson  <rth@cygnus.com>
 
 	* machmode.h (smallest_mode_for_size): Prototype.
