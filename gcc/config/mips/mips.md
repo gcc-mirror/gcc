@@ -8823,7 +8823,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(gtu:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "reg_or_0_operand" "dJ")))]
-  ""
+  "!TARGET_MIPS16"
   "sltu\\t%0,%z2,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")])
@@ -8832,7 +8832,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=t")
 	(gtu:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "register_operand" "d")))]
-  ""
+  "TARGET_MIPS16"
   "sltu\\t%2,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")])
@@ -8841,7 +8841,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(gtu:DI (match_operand:DI 1 "se_register_operand" "d")
 		(match_operand:DI 2 "se_reg_or_0_operand" "dJ")))]
-  "TARGET_64BIT"
+  "TARGET_64BIT && !TARGET_MIPS16"
   "sltu\\t%0,%z2,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
@@ -8850,7 +8850,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "=t")
 	(gtu:DI (match_operand:DI 1 "se_register_operand" "d")
 		(match_operand:DI 2 "se_register_operand" "d")))]
-  "TARGET_64BIT"
+  "TARGET_64BIT && TARGET_MIPS16"
   "sltu\\t%2,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
