@@ -238,6 +238,9 @@ extern tree void_ftype_ptr_ptr_int;
 extern tree void_type_node;
 extern tree wchar_array_type_node;
 extern tree wchar_type_node;
+extern tree boolean_type_node;
+extern tree boolean_true_node;
+extern tree boolean_false_node;
 
 extern tree build_enumerator                    PROTO((tree, tree));
 /* Declare a predefined function.  Return the declaration.  */
