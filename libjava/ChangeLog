@@ -1,3 +1,7 @@
+Sun Jul 25 01:43:34 1999  Anthony Green  <green@cygnus.com>
+
+	* mauve-libgcj: Disable Object Serialization tests.
+
 1999-07-19  Tom Tromey  <tromey@cygnus.com>
 
 	* include/stamp-h.in: New file.
