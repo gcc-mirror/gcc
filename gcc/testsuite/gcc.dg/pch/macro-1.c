@@ -1,4 +1,4 @@
-#include "macro-1.hp"
+#include "macro-1.h"
 
 int main(void) 
 {

@@ -1,6 +1,6 @@
 #define DEFINED_VALUE_2 3
 
-#include "macro-2.hp"
+#include "macro-2.h"
 
 int main(void) 
 {

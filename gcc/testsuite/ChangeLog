@@ -1,3 +1,10 @@
+2003-01-16  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/pch/pch.exp: Copy test header to the working directory
+	before using it either for precompilation or direct use.
+	* gcc.dg/pch/*.hs: Rename from gcc.dg/pch/*.h.
+	* gcc.dg/pch/*.c: Include foo.h, not foo.hp.
+
 2003-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc/testsuite/g++.dg/ext/typename1.C: Add typename keyword.
