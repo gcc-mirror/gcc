@@ -1,3 +1,9 @@
+2004-06-29  Per Bothner  <per@bothner.com>
+
+	* jni.cc (_Jv_JNI_NewGlobalRef, JNICALL _Jv_JNI_DeleteGlobalRef,
+	etc etc):  Remove needless parenthesis, which causes __stdcall__
+	attribute on MinGW to get ignored.
+
 2004-06-29  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.compile/PR16249.java: New test case. PR gcc/16249.
