@@ -91,14 +91,18 @@ proc c-torture-compile { src option } {
 #
 # c-torture-execute -- utility to compile and execute a testcase
 #
-# SRC is the full pathname of the testcase.
+# SOURCES is a list of full pathnames to the test source files.
+# The first filename in this list forms the "testcase".
 #
 # If the testcase has an associated .x file, we source that to run the
 # test instead.  We use .x so that we don't lengthen the existing filename
 # to more than 14 chars.
 #
-proc c-torture-execute { src args } {
+proc c-torture-execute { sources args } {
     global tmpdir tool srcdir output compiler_conditional_xfail_data
+
+    # Use the first source filename given as the filename under test.
+    set src [lindex $sources 0]
 
     if { [llength $args] > 0 } {
 	set additional_flags [lindex $args 0];
@@ -164,7 +168,7 @@ proc c-torture-execute { src args } {
 	if { $additional_flags != "" } {
 	    lappend options "additional_flags=$additional_flags";
 	}
-	set comp_output [gcc_target_compile "$src" "${execname}" executable $options];
+	set comp_output [gcc_target_compile "$sources" "${execname}" executable $options];
 
 	if ![gcc_check_compile "$testcase compilation" $option $execname $comp_output] {
 	    unresolved "$testcase execution, $option"
