@@ -29,11 +29,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #ifndef STDIO_PROTO
-#ifdef BUFSIZ
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
+#ifndef BUFSIZ
+#include <stdio.h>
 #endif
+
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
 #endif
 
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
