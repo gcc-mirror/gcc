@@ -46,11 +46,20 @@ class LongViewBufferImpl extends LongBuffer
   private boolean readOnly;
   private ByteOrder endian;
   
+  LongViewBufferImpl (ByteBuffer bb, int capacity)
+  {
+    super (capacity, capacity, 0, -1);
+    this.bb = bb;
+    this.offset = bb.position();
+    this.readOnly = bb.isReadOnly();
+    this.endian = bb.order();
+  }
+  
   public LongViewBufferImpl (ByteBuffer bb, int offset, int capacity,
 			     int limit, int position, int mark,
 			     boolean readOnly, ByteOrder endian)
   {
-    super (limit >> 3, limit >> 3, position >> 3, mark >> 3);
+    super (capacity, limit, position, mark);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
