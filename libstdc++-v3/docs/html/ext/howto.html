@@ -119,7 +119,7 @@
          <a href="sgiexts.html">their own page</a>.  Since the SGI STL is no
          longer actively maintained, we will try and keep this code working
          ourselves.</li>
-     <li><code>filebuf</code>s have another ctor with this signature:<br>
+     <li>3.0.x <code>filebuf</code>s have another ctor with this signature:<br>
 <code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);</code>
          <br>This comes in very handy in a number of places, such as
          attaching Unix sockets, pipes, and anything else which uses file
@@ -143,6 +143,10 @@
          library cannot track what you do on your own with a file descriptor,
          so if you perform any I/O directly, don't expect the library to be
          aware of it.
+     <li>Beginning with 3.1, the extra <code>filebuf</code> constructor and
+         the <code>fd()</code> function were removed from the standard
+         filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
+         a derived class called <code>__gnu_cxx::stdio_filebuf</code>.
     </ul>
    </p>
    <p>Return <a href="#top">to top of page</a> or
@@ -226,7 +230,7 @@
       (If you decide to be unportable, then you're free do do what you want,
       but it's not our fault if stuff breaks.)  They are presented here for
       information for maintainers and contributors in addition to users, but
-      we will probably make them available for users in 3.1 somehow.
+      we will probably make them available for users in 3.2 somehow.
    </p>
    <p>These classes are always available:
      <ul>
