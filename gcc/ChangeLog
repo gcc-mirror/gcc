@@ -1,3 +1,11 @@
+2000-08-25  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.h (struct machine_function): Add n_varargs.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Use it.
+	(ia64_expand_prologue): Likewise.
+	(ia64_setup_incoming_varargs): Set it.  Properly skip the current
+	argument for stdargs.
+
 2000-08-25  Jason Merrill  <jason@redhat.com>
 
 	* integrate.c (expand_inline_function): Pull out the original decl.
