@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+;; Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -5076,8 +5076,13 @@
 
 (define_insn "builtin_setjmp_receiver"
   [(unspec_volatile [(match_operand 0 "" "")] 2)]
-  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT && TARGET_AS_CAN_SUBTRACT_LABELS"
   "\\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)")
+
+(define_insn ""
+  [(unspec_volatile [(match_operand 0 "" "")] 2)]
+  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  "br $27,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($27)")
 
 (define_expand "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 1)

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on OSF/1.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -19,6 +19,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* As of OSF 4.0, as can subtract adjacent labels.  */
+
+#undef TARGET_AS_CAN_SUBTRACT_LABELS
+#define TARGET_AS_CAN_SUBTRACT_LABELS 1
 
 /* Names to predefine in the preprocessor for this target machine.  */
 

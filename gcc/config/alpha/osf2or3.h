@@ -22,3 +22,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} %{a:-lprof2} -lc"
+
+/* As of OSF 3.2, as still can't subtract adjacent labels.  */
+
+#undef TARGET_AS_CAN_SUBTRACT_LABELS
+#define TARGET_AS_CAN_SUBTRACT_LABELS 0
+

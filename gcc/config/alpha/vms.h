@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -75,7 +75,10 @@ Boston, MA 02111-1307, USA.  */
 #define DOLLARS_IN_IDENTIFIERS 2
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_FP|MASK_FPREGS|MASK_GAS|MASK_OPEN_VMS)
+#define TARGET_DEFAULT (MASK_FP|MASK_FPREGS|MASK_GAS)
+#undef TARGET_OPEN_VMS
+#define TARGET_OPEN_VMS 1
+
 #undef TARGET_NAME   
 #define TARGET_NAME "OpenVMS/Alpha"
 #undef TARGET_VERSION
