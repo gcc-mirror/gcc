@@ -1227,6 +1227,7 @@ build_complex (real, imag)
   register tree t = make_node (COMPLEX_CST);
   TREE_REALPART (t) = real;
   TREE_IMAGPART (t) = imag;
+  TREE_TYPE (t) = build_complex_type (TREE_TYPE (real));
   return t;
 }
 
