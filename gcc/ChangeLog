@@ -1,3 +1,9 @@
+2004-01-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c: Don't include obstack.h.
+
+	* pa.md: Correct constraint in pattern for loading PIC label address.
+
 2004-01-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): Undefine
