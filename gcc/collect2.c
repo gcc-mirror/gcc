@@ -1753,7 +1753,7 @@ extract_init_priority (name)
   pos += 10; /* strlen ("GLOBAL__X_") */
 
   /* Extract init_p number from ctor/dtor name. */
-  return strtoul(name + pos, NULL, 10);
+  return atoi (name + pos);
 }
 
 /* Insertion sort the ids from ctor/dtor list HEAD_PTR in descending order.

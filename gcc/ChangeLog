@@ -1,3 +1,7 @@
+Wed Aug 19 13:06:47 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* collect2.c (extract_init_priority): Use atoi instead of strtoul.
+
 Wed Aug 19 13:51:35 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* tm.texi (Misc): Fix typo "teh".
