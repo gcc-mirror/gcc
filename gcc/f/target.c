@@ -69,7 +69,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Include files. */
 
 #include "proj.h"
-#include "glimits.h"
 #include "target.h"
 #include "diagnostic.h"
 #include "bad.h"
