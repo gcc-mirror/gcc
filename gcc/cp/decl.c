@@ -5770,7 +5770,7 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
   intTI_type_node = make_signed_type (GET_MODE_BITSIZE (TImode));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intTI_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("__int128_t"), intTI_type_node));
 #endif
   unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));
@@ -5782,7 +5782,7 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
   unsigned_intTI_type_node = make_unsigned_type (GET_MODE_BITSIZE (TImode));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intTI_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("__uint128_t"), unsigned_intTI_type_node));
 #endif
 
   float_type_node = make_node (REAL_TYPE);
