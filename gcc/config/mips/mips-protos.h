@@ -53,6 +53,7 @@ extern int		mips_output_external_libcall PARAMS ((FILE *, const char *));
 
 
 #ifdef TREE_CODE
+extern unsigned int	mips_hard_regno_nregs PARAMS ((int, enum machine_mode));
 extern struct rtx_def *	function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern void		function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern int		function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));

@@ -1383,7 +1383,7 @@ mips_legitimate_address_p (mode, xinsn, strict)
 	         (set (blah:DI) (plus x y)).  */
 	      && (!TARGET_64BIT
 		  || (code1 == CONST_INT
-		      && trunc_int_for_mode (INTVAL (xplus1), 
+		      && trunc_int_for_mode (INTVAL (xplus1),
 					     SImode) == INTVAL (xplus1)))
 	      && !TARGET_MIPS16)
 	    return 1;
@@ -3536,7 +3536,9 @@ output_block_move (insn, operands, num_regs, move_type)
      constant addresses into registers when generating N32/N64 code, just
      in case we might emit an unaligned load instruction.  */
   if (num_regs > 2 && (bytes > 2 * align || move_type != BLOCK_MOVE_NORMAL
-		       || mips_abi == ABI_N32 || mips_abi == ABI_64))
+		       || mips_abi == ABI_MEABI
+		       || mips_abi == ABI_N32
+		       || mips_abi == ABI_64))
     {
       if (CONSTANT_P (src_reg))
 	{
@@ -3994,6 +3996,11 @@ function_arg (cum, mode, type, named)
 	  arg_words = &cum->fp_arg_words;
 	  regbase = FP_ARG_FIRST;
 	}
+      /* The MIPS eabi says only structures containing doubles get passed in a
+         fp register, so force a structure containing a float to be passed in
+         the integer registers.  */
+      else if (mips_abi == ABI_MEABI && struct_p)
+	regbase = GP_ARG_FIRST;
       else
 	regbase = (TARGET_SOFT_FLOAT || ! named ? GP_ARG_FIRST : FP_ARG_FIRST);
       break;
@@ -4063,11 +4070,30 @@ function_arg (cum, mode, type, named)
       if (regbase == -1)
 	abort ();
 
-      if (! type || TREE_CODE (type) != RECORD_TYPE || mips_abi == ABI_32
-	  || mips_abi == ABI_EABI || mips_abi == ABI_O64 || ! named
+      if (! type || TREE_CODE (type) != RECORD_TYPE
+	  || mips_abi == ABI_32  || mips_abi == ABI_EABI
+	  || mips_abi == ABI_O64 || mips_abi == ABI_MEABI
+	  || ! named
 	  || ! TYPE_SIZE_UNIT (type)
 	  || ! host_integerp (TYPE_SIZE_UNIT (type), 1))
-	ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
+	{
+
+	  unsigned int arg_reg = (regbase + *arg_words + bias);
+	  ret = gen_rtx_REG (mode, arg_reg);
+	  if (mips_abi == ABI_MEABI
+	      && regbase == FP_ARG_FIRST
+	      && ! cum->prototype)
+	    {
+              /* To make K&R varargs work we need to pass floating
+                 point arguments in both integer and FP registers.  */
+              ret = gen_rtx_PARALLEL (mode,
+				      gen_rtvec (2,
+						 gen_rtx_EXPR_LIST (VOIDmode,
+								    gen_rtx_REG (mode,
+										 arg_reg + GP_ARG_FIRST - FP_ARG_FIRST),
+								    const0_rtx),                                                gen_rtx_EXPR_LIST (VOIDmode, ret, const0_rtx)));
+            }
+	}
       else
 	{
 	  /* The Irix 6 n32/n64 ABIs say that if any 64 bit chunk of the
@@ -4124,6 +4150,7 @@ function_arg (cum, mode, type, named)
 		  if (field
 		      && int_bit_position (field) == bitpos
 		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		      && !TARGET_SOFT_FLOAT
 		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
 		    reg = gen_rtx_REG (DFmode,
 				       regno + FP_ARG_FIRST - GP_ARG_FIRST);
@@ -4164,7 +4191,9 @@ function_arg (cum, mode, type, named)
 	 calling convention for now.  */
 
       if (struct_p && int_size_in_bytes (type) < UNITS_PER_WORD
-	  && ! TARGET_64BIT && mips_abi != ABI_EABI)
+	  && ! TARGET_64BIT
+	  && mips_abi != ABI_EABI
+	  && mips_abi != ABI_MEABI)
 	{
 	  rtx amount = GEN_INT (BITS_PER_WORD
 				- int_size_in_bytes (type) * BITS_PER_UNIT);
@@ -4454,6 +4483,8 @@ mips_va_start (stdarg_p, valist, nextarg)
 	     and both iris5.h and iris6.h define _MIPS_SIM.  */
 	  if (mips_abi == ABI_N32 || mips_abi == ABI_64)
  	    ofs = (int_arg_words >= 8 ? -UNITS_PER_WORD : 0);
+	  else if (mips_abi == ABI_MEABI)
+	    ofs = (int_arg_words >= 8 ? -UNITS_PER_WORD : 0);
 	  else
 	    ofs = -UNITS_PER_WORD;
 	}
@@ -4764,7 +4795,10 @@ override_options ()
 	      mips_isa = MIPS_ISA_DEFAULT;
 	    }
 	}
-      else if (mips_isa < 1 || mips_isa > 4)
+      else if (mips_isa < 1
+	       || (mips_isa > 4
+		   && mips_isa != 32
+		   && mips_isa != 64))
 	{
 	  error ("-mips%d not supported", mips_isa);
 	  mips_isa = 1;
@@ -4791,17 +4825,26 @@ override_options ()
     mips_abi = ABI_64;
   else if (! strcmp (mips_abi_string, "eabi"))
     mips_abi = ABI_EABI;
+  else if (! strcmp (mips_abi_string, "meabi"))
+    mips_abi = ABI_MEABI;
   else
     error ("bad value (%s) for -mabi= switch", mips_abi_string);
 
   /* A specified ISA defaults the ABI if it was not specified.  */
   if (mips_abi_string == 0 && mips_isa_string
-      && mips_abi != ABI_EABI && mips_abi != ABI_O64)
+      && mips_abi != ABI_EABI
+      && mips_abi != ABI_O64
+      && mips_abi != ABI_MEABI)
     {
-      if (! ISA_HAS_64BIT_REGS)
-	mips_abi = ABI_32;
+      if (mips_isa == 64)
+	mips_abi = ABI_O64;
       else
-	mips_abi = ABI_64;
+	{
+	  if (! ISA_HAS_64BIT_REGS)
+	    mips_abi = ABI_32;
+	  else
+	    mips_abi = ABI_64;
+	}
     }
 
 #ifdef MIPS_CPU_STRING_DEFAULT
@@ -4894,6 +4937,14 @@ override_options ()
 	  mips_arch_string = "8000";
 	  mips_arch = PROCESSOR_R8000;
 	  break;
+	case 32:
+          mips_arch_string = "4kc";
+          mips_arch = PROCESSOR_R4KC;
+          break;
+        case 64:
+          mips_arch_string = "5kc";
+          mips_arch = PROCESSOR_R5KC;
+          break;
 	}
     }
   else
@@ -4930,6 +4981,14 @@ override_options ()
 	  mips_tune_string = "8000";
 	  mips_tune = PROCESSOR_R8000;
 	  break;
+	case 32:
+	  mips_arch_string = "4kc";
+	  mips_arch = PROCESSOR_R4KC;
+	  break;
+	case 64:
+	  mips_arch_string = "5kc";
+	  mips_arch = PROCESSOR_R5KC;
+	  break;
 	}
 
     }
@@ -4943,16 +5002,22 @@ override_options ()
 	}
     }
 
-   /* Handle processor configuration based on architecture.  */
-   if (TARGET_MIPS4100 || TARGET_MIPS3900)
-     target_flags |= MASK_SOFT_FLOAT;
+  /* Handle processor configuration based on architecture.  */
+  if (TARGET_MIPS4100
+      || TARGET_MIPS3900
+      || TARGET_MIPS4KC
+      || TARGET_MIPS5KC)
+    target_flags |= MASK_SOFT_FLOAT;
 
 
   if ((mips_arch == PROCESSOR_R3000 && (mips_isa != 1))
+      || (mips_arch == PROCESSOR_R4KC && mips_isa != 32)
+      || ((mips_arch == PROCESSOR_R5KC
+	   || mips_arch == PROCESSOR_R20KC) && mips_isa != 64)
       || (mips_arch == PROCESSOR_R6000 && mips_isa != 1 && mips_isa != 2)
       || ((mips_arch == PROCESSOR_R4000
-           || mips_arch == PROCESSOR_R4100
-           || mips_arch == PROCESSOR_R4300
+	   || mips_arch == PROCESSOR_R4100
+	   || mips_arch == PROCESSOR_R4300
 	   || mips_arch == PROCESSOR_R4600
 	   || mips_arch == PROCESSOR_R4650)
 	  && mips_isa != 1 && mips_isa != 2 && mips_isa != 3))
@@ -5160,7 +5225,14 @@ override_options ()
 	    temp = ((regno & 1) == 0 || size <= UNITS_PER_WORD);
 
 	  else if (FP_REG_P (regno))
-	    temp = ((TARGET_FLOAT64 || ((regno & 1) == 0))
+	    temp = ((TARGET_FLOAT64 || ((regno & 1) == 0)
+		      /* I think this change is OK regardless of abi, but
+                        I'm being cautions untill I can test this more.
+                        HARD_REGNO_MODE_OK is about whether or not you
+                        can move to and from a register without changing
+                        the value, not about whether math works on the
+                        register.  */
+                     || (mips_abi == ABI_MEABI && size <= 4))
 		    && (class == MODE_FLOAT
 			|| class == MODE_COMPLEX_FLOAT
 			|| (TARGET_DEBUG_H_MODE && class == MODE_INT))
@@ -5866,7 +5938,6 @@ mips_output_lineno (stream, line)
 	       LOCAL_LABEL_PREFIX, sym_lineno, ASM_STABN_OP, N_SLINE, line,
 	       LOCAL_LABEL_PREFIX, sym_lineno);
     }
-
   else
     {
       fprintf (stream, "\n\t%s.loc\t%d %d\n",
@@ -6021,6 +6092,8 @@ void
 mips_asm_file_start (stream)
      FILE *stream;
 {
+  const char * abi_string = NULL;
+
   ASM_OUTPUT_SOURCE_FILENAME (stream, main_input_filename);
 
   /* Versions of the MIPS assembler before 2.20 generate errors if a branch
@@ -6030,6 +6103,35 @@ mips_asm_file_start (stream)
 
   if (TARGET_MIPS_AS && optimize && flag_delayed_branch)
     fprintf (stream, "\t.set\tnobopt\n");
+
+#ifdef OBJECT_FORMAT_ELF
+  /* Generate a special section to describe the ABI switches used to produce
+     the resultant binary.  This used to be done by the assembler setting bits
+     in the ELF header's flags field, but we have run out of bits.  GDB needs
+     this information in order to be able to correctly debug these binaries.
+     See the function mips_gdbarch_init() in gdb/mips-tdep.c.  */
+  switch (mips_abi)
+    {
+    case ABI_32:   abi_string = "abi32"; break;
+    case ABI_N32:  abi_string = "abiN32"; break;
+    case ABI_64:   abi_string = "abi64"; break;
+    case ABI_O64:  abi_string = "abiO64"; break;
+    case ABI_EABI: abi_string = TARGET_64BIT ? "eabi64" : "eabi32"; break;
+    case ABI_MEABI:abi_string = TARGET_64BIT ? "meabi64" : "meabi32"; break;
+    default:
+      abort ();
+    }
+  /* Note - we use fprintf directly rather than called named_section()
+     because in this way we can avoid creating an allocated section.  We
+     do not want this section to take up any space in the running
+     executable.  */
+  fprintf (stream, "\t.section .mdebug.%s\n", abi_string);
+
+  /* Restore the default section.  */
+  fprintf (stream, "\t.previous\n");
+#endif
+
+
 
   /* Generate the pseudo ops that System V.4 wants.  */
 #ifndef ABICALLS_ASM_OP
@@ -6115,7 +6217,6 @@ copy_file_data (to, from)
 {
   char buffer[8192];
   size_t len;
-
   rewind (from);
   if (ferror (from))
     fatal_io_error ("can't rewind temp file");
@@ -7910,7 +8011,8 @@ function_arg_pass_by_reference (cum, mode, type, named)
      to prevent it, or add code to function.c to properly handle the case.  */
   /* ??? cum can be NULL when called from mips_va_arg.  The problem handled
      here hopefully is not relevant to mips_va_arg.  */
-  if (cum && MUST_PASS_IN_STACK (mode, type))
+  if (cum && MUST_PASS_IN_STACK (mode, type)
+      && mips_abi != ABI_MEABI)
      {
        /* Don't pass the actual CUM to FUNCTION_ARG, because we would
 	  get double copies of any offsets generated for small structs
@@ -9714,6 +9816,8 @@ mips_parse_cpu (cpu_string)
     case '2':
       if (!strcmp (p, "2000") || !strcmp (p, "2k") || !strcmp (p, "2K"))
 	cpu = PROCESSOR_R3000;
+      else if (!strcmp (p, "20kc") || !strcmp (p, "20Kc") )
+        cpu = PROCESSOR_R20KC;
       break;
 
     case '3':
@@ -9742,11 +9846,20 @@ mips_parse_cpu (cpu_string)
 	cpu = PROCESSOR_R4600;
       else if (!strcmp (p, "4650"))
 	cpu = PROCESSOR_R4650;
+      /* The 4kc and 4kp processor cores are the same for
+	 scheduling purposes; they both implement the MIPS32
+	 ISA and only differ in their memory management
+	 methods.  */
+      else if (!strcmp (p, "4kc") || !strcmp (p, "4Kc")
+               || !strcmp (p, "4kp") || !strcmp (p, "4Kp") )
+	cpu = PROCESSOR_R4KC;
       break;
 
     case '5':
       if (!strcmp (p, "5000") || !strcmp (p, "5k") || !strcmp (p, "5K"))
 	cpu = PROCESSOR_R5000;
+      else if (!strcmp (p, "5kc") || !strcmp (p, "5Kc") )
+          cpu = PROCESSOR_R5KC;
       break;
 
     case '6':
@@ -9864,6 +9977,17 @@ mips_unique_section (decl, reloc)
   DECL_SECTION_NAME (decl) = build_string (len, string);
 }
 
+unsigned int
+mips_hard_regno_nregs (regno, mode)
+    int regno;
+    enum machine_mode mode;
+{
+  if (! FP_REG_P (regno))
+    return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
+  else
+    return ((GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG);
+}
+
 
 #ifdef TARGET_IRIX6
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
@@ -9887,7 +10011,6 @@ iris6_asm_named_section_1 (name, flags, align)
     sh_flags |= 0x10000000; /* SHF_MIPS_GPREL */
   if (strcmp (name, ".debug_frame") == 0)
     sh_flags |= 0x08000000; /* SHF_MIPS_NOSTRIP */
-
   if (flags & SECTION_DEBUG)
     sh_type = 0x7000001e; /* SHT_MIPS_DWARF */
   else if (flags & SECTION_BSS)
@@ -9980,7 +10103,7 @@ iris6_asm_output_align (file, log)
    but takes it from the first .section directive seen.  Play yet more
    file switching games so that we can emit a .section directive at the
    beginning of the file with the proper alignment attached.  */
-   
+
 void
 iris6_asm_file_start (stream)
      FILE *stream;

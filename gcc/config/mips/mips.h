@@ -67,7 +67,10 @@ enum processor_type {
   PROCESSOR_R4600,
   PROCESSOR_R4650,
   PROCESSOR_R5000,
-  PROCESSOR_R8000
+  PROCESSOR_R8000,
+  PROCESSOR_R4KC,
+  PROCESSOR_R5KC,
+  PROCESSOR_R20KC
 };
 
 /* Recast the cpu class to be the cpu attribute.  */
@@ -84,6 +87,18 @@ enum processor_type {
 #define ABI_64  2
 #define ABI_EABI 3
 #define ABI_O64  4
+/* MEABI is gcc's internal name for MIPS' new EABI (defined by MIPS)
+   which is not the same as the above EABI (defined by Cygnus,
+   Greenhills, and Toshiba?).  MEABI is not yet complete or published,
+   but at this point it looks like N32 as far as calling conventions go,
+   but allows for either 32 or 64 bit registers.
+
+   Currently MIPS is calling their EABI "the" MIPS EABI, and Cygnus'
+   EABI the legacy EABI.  In the end we may end up calling both ABI's
+   EABI but give them different version numbers, but for now I'm going
+   with different names. */
+#define ABI_MEABI 5
+
 
 #ifndef MIPS_ABI_DEFAULT
 /* We define this away so that there is no extra runtime cost if the target
@@ -339,6 +354,8 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_MIPS4000             (mips_arch == PROCESSOR_R4000)
 #define TARGET_MIPS4100             (mips_arch == PROCESSOR_R4100)
 #define TARGET_MIPS4300             (mips_arch == PROCESSOR_R4300)
+#define TARGET_MIPS4KC              (mips_arch == PROCESSOR_R4KC)
+#define TARGET_MIPS5KC              (mips_arch == PROCESSOR_R5KC)
 
 /* Scheduling target defines.  */
 #define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
@@ -542,8 +559,16 @@ extern void		sbss_section PARAMS ((void));
 #        if MIPS_ISA_DEFAULT == 4
 #          define MULTILIB_ISA_DEFAULT "mips4"
 #        else
+#          if MIPS_ISA_DEFAULT == 32
+#            define MULTILIB_ISA_DEFAULT "mips32"
+#          else
+#            if MIPS_ISA_DEFAULT == 64
+#              define MULTILIB_ISA_DEFAULT "mips64"
+#            else
 #          define MULTILIB_ISA_DEFAULT "mips1"
+#         endif
 #        endif
+#       endif
 #      endif
 #    endif
 #  endif
@@ -607,9 +632,15 @@ extern void		sbss_section PARAMS ((void));
 
 #define GENERATE_BRANCHLIKELY  (!TARGET_MIPS16 && ISA_HAS_BRANCHLIKELY)
 
-/* Generate three-operand multiply instructions for both SImode and DImode.  */
-#define GENERATE_MULT3         (TARGET_MIPS3900				\
-				&& !TARGET_MIPS16)
+/* Generate three-operand multiply instructions for SImode.  */
+#define GENERATE_MULT3_SI       ((TARGET_MIPS3900                       \
+                                  || mips_isa == 32                     \
+                                  || mips_isa == 64)                    \
+                                 && !TARGET_MIPS16)
+
+/* Generate three-operand multiply instructions for DImode.  */
+#define GENERATE_MULT3_DI       ((TARGET_MIPS3900)                      \
+				 && !TARGET_MIPS16)
 
 /* Macros to decide whether certain features are available or not,
    depending on the instruction set architecture level.  */
@@ -618,8 +649,9 @@ extern void		sbss_section PARAMS ((void));
 #define HAVE_SQRT_P()		(mips_isa != 1)
 
 /* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3). */
-#define ISA_HAS_64BIT_REGS	(mips_isa == 3 || mips_isa == 4 	\
-                                )
+#define ISA_HAS_64BIT_REGS	(mips_isa == 3          \
+				 || mips_isa == 4 	\
+                                 || mips_isa == 64)
 
 /* ISA has branch likely instructions (eg. mips2). */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
@@ -629,7 +661,8 @@ extern void		sbss_section PARAMS ((void));
 
 /* ISA has the conditional move instructions introduced in mips4. */
 #define ISA_HAS_CONDMOVE        (mips_isa == 4				\
-				 )
+				 || mips_isa == 32                      \
+				 || mips_isa == 64)
 
 /* ISA has just the integer condition move instructions (movn,movz) */
 #define ISA_HAS_INT_CONDMOVE     0
@@ -639,7 +672,8 @@ extern void		sbss_section PARAMS ((void));
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
    branch on CC, and move (both FP and non-FP) on CC. */
 #define ISA_HAS_8CC		(mips_isa == 4				\
-				)
+                         	 || mips_isa == 32                      \
+				 || mips_isa == 64)
 
 
 /* This is a catch all for the other new mips4 instructions: indexed load and
@@ -651,9 +685,24 @@ extern void		sbss_section PARAMS ((void));
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(mips_isa >= 2)
 
+/* ISA has multiply-accumulate instructions, madd and msub.  */
+#define ISA_HAS_MADD_MSUB       (mips_isa == 32                         \
+                                || mips_isa == 64                       \
+                                )
+
 /* ISA has nmadd and nmsub instructions.  */
 #define ISA_HAS_NMADD_NMSUB	(mips_isa == 4				\
 				)
+
+/* ISA has count leading zeroes/ones instruction (not implemented).  */
+#define ISA_HAS_CLZ_CLO         (mips_isa == 32                         \
+                                || mips_isa == 64                       \
+                                )
+
+/* ISA has double-word count leading zeroes/ones instruction (not
+   implemented).  */
+#define ISA_HAS_DCLZ_DCLO       (mips_isa == 64)
+
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
@@ -670,10 +719,7 @@ extern void		sbss_section PARAMS ((void));
 
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 
-#ifdef SWITCH_TAKES_ARG
-#undef SWITCH_TAKES_ARG
-#endif
-
+#undef  SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR)						\
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
@@ -822,7 +868,39 @@ while (0)
 /* GAS_ASM_SPEC is passed when using gas, rather than the MIPS
    assembler.  */
 
-#define GAS_ASM_SPEC "%{march=*} %{mtune=*} %{mcpu=*} %{m4650} %{mmad:-m4650} %{m3900} %{v} %{mgp32} %{mgp64}"
+#define GAS_ASM_SPEC "%{march=*} %{mtune=*} %{mcpu=*} %{m4650} %{mmad:-m4650} %{m3900} %{v} %{mgp32} %{mgp64} %(abi_gas_asm_spec) %{mabi=32:%{!mips*:-mips2}}"
+
+#ifndef MIPS_ABI_DEFAULT
+#define ABI_GAS_ASM_SPEC "\
+%{mabi=*} \
+%{!mabi=*:%{mips1|mips2|mips32:-mabi=32} %{!mips1:%{!mips2:%{!mips32:-mabi=64}}}}"
+
+#elif MIPS_ABI_DEFAULT == ABI_32
+#define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=32}"
+
+#elif MIPS_ABI_DEFAULT == ABI_N32
+#define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=n32}"
+
+#elif MIPS_ABI_DEFAULT == ABI_64
+#define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=64}"
+
+#elif MIPS_ABI_DEFAULT == ABI_EABI
+#define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=eabi}"
+
+#elif MIPS_ABI_DEFAULT == ABI_O64
+#define ABI_GAS_ASM_SPEC "\
+%{mabi=*} \
+%{!mabi=*:%{mips1|mips2|mips32:-mabi=32} %{!mips1:%{!mips2:%{!mips32:-mabi=o64}}}}"
+
+#elif MIPS_ABI_DEFAULT == ABI_MEABI
+#define ABI_GAS_ASM_SPEC "\
+%{mabi=*} \
+%{!mabi=*:-mabi=meabi }"
+
+#else
+ #error "Unhandled MIPS_ABI_DEFAULT"
+#endif
+
 
 /* TARGET_ASM_SPEC is used to select either MIPS_AS_ASM_SPEC or
    GAS_ASM_SPEC as the default, depending upon the value of
@@ -873,12 +951,11 @@ while (0)
 
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{!membedded-pic:%{G*}} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} \
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64}\
 %{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
 %{membedded-pic} \
-%{mfix7000} \
 %{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
 %(target_asm_spec) \
 %(subtarget_asm_spec)"
@@ -929,9 +1006,10 @@ while (0)
 #ifndef LINK_SPEC
 #define LINK_SPEC "\
 %(endian_spec) \
-%{G*} %{mips1} %{mips2} %{mips3} %{mips4} \
+%{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
 %{bestGnum} %{shared} %{non_shared}"
-#endif	/* LINK_SPEC defined */
+#endif  /* LINK_SPEC defined */
+
 
 /* Specs for the compiler proper */
 
@@ -962,6 +1040,8 @@ while (0)
 %{mips1:-mfp32 -mgp32} %{mips2:-mfp32 -mgp32}\
 %{mips3:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
 %{mips4:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
+%{mips32:-mfp32 -mgp32} \
+%{mips64:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
 %{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
 %{mfp64:%{m4650:%emay not use both -mfp64 and -m4650}} \
 %{mint64|mlong64|mlong32:-mexplicit-type-size }\
@@ -983,7 +1063,7 @@ while (0)
 
 #ifndef SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
-%{mlong64:%{!mips1:%{!mips2:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
+%{mlong64:%{!mips1:%{!mips2:%{!mips32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}} \
 %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}"
 #endif
 
@@ -1029,6 +1109,8 @@ while (0)
 %(subtarget_cpp_size_spec) \
 %{mips3:-U__mips -D__mips=3 -D__mips64} \
 %{mips4:-U__mips -D__mips=4 -D__mips64} \
+%{mips32:-U__mips -D__mips=32} \
+%{mips64:-U__mips -D__mips=64 -D__mips64} \
 %{mgp32:-U__mips64} %{mgp64:-D__mips64} \
 %{mfp32:-D__mips_fpr=32} %{mfp64:-D__mips_fpr=64} %{!mfp32: %{!mfp64: %{mgp32:-D__mips_fpr=32} %{!mgp32: %(cpp_fpr_spec)}}} \
 %{msingle-float:%{!msoft-float:-D__mips_single_float}} \
@@ -1061,6 +1143,7 @@ while (0)
   { "cpp_fpr_spec", CPP_FPR_SPEC },					\
   { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
   { "gas_asm_spec", GAS_ASM_SPEC },					\
+  { "abi_gas_asm_spec", ABI_GAS_ASM_SPEC },                             \
   { "target_asm_spec", TARGET_ASM_SPEC },				\
   { "subtarget_mips_as_asm_spec", SUBTARGET_MIPS_AS_ASM_SPEC }, 	\
   { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
@@ -1519,7 +1602,9 @@ do {							\
 
 /* Force right-alignment for small varargs in 32 bit little_endian mode */
 
-#define PAD_VARARGS_DOWN (TARGET_64BIT ? BYTES_BIG_ENDIAN : !BYTES_BIG_ENDIAN)
+#define PAD_VARARGS_DOWN (TARGET_64BIT                                  \
+			  || mips_abi == ABI_MEABI                      \
+			     ? BYTES_BIG_ENDIAN : !BYTES_BIG_ENDIAN)
 
 /* Define this macro if an argument declared as `char' or `short' in a
    prototype should actually be passed as an `int'.  In addition to
@@ -1674,10 +1759,7 @@ do {							\
    the R4000 with the FR bit set, the floating point uses register
    pairs, with the second register not being allocable.  */
 
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (! FP_REG_P (REGNO)							\
-	? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD) \
-	: ((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG))
+#define HARD_REGNO_NREGS(REGNO, MODE) mips_hard_regno_nregs (REGNO, MODE)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
    MODE.  In 32 bit mode, require that DImode and DFmode be in even
@@ -2546,6 +2628,7 @@ typedef struct mips_args {
 				/* ??? The size is doubled to work around a
 				   bug in the code that sets the adjustments
 				   in function_arg.  */
+  int prototype;                /* True if the function has a prototype.  */
   struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS*2];
 } CUMULATIVE_ARGS;
 
@@ -4411,8 +4494,8 @@ do {									\
 /* Handle certain cpp directives used in header files on sysV.  */
 #define SCCS_DIRECTIVE
 
-#ifndef ASM_OUTPUT_IDENT
 /* Output #ident as a in the read-only data section.  */
+#undef  ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, STRING)					\
 {									\
   const char *p = STRING;						\
@@ -4420,7 +4503,6 @@ do {									\
   rdata_section ();							\
   assemble_string (p, size);						\
 }
-#endif
 
 /* Default to -G 8 */
 #ifndef MIPS_DEFAULT_GVALUE
