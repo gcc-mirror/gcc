@@ -415,10 +415,6 @@
    for this architecture. */
 #undef EXTRA_MODES_FILE
 
-/* Define if the target architecture needs extra machine modes to represent
-   the results of comparisons. */
-#undef EXTRA_CC_MODES
-
 /* Define to 1 if translation of program messages to the 
   user's native language is requested. */
 #undef ENABLE_NLS

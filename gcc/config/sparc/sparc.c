@@ -3954,16 +3954,13 @@ sparc_init_modes (void)
 	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_CC:
-	default:
-	  /* mode_class hasn't been initialized yet for EXTRA_CC_MODES, so
-	     we must explicitly check for them here.  */
 	  if (i == (int) CCFPmode || i == (int) CCFPEmode)
 	    sparc_mode_class[i] = 1 << (int) CCFP_MODE;
-	  else if (i == (int) CCmode || i == (int) CC_NOOVmode
-		   || i == (int) CCXmode || i == (int) CCX_NOOVmode)
-	    sparc_mode_class[i] = 1 << (int) CC_MODE;
 	  else
-	    sparc_mode_class[i] = 0;
+	    sparc_mode_class[i] = 1 << (int) CC_MODE;
+	  break;
+	default:
+	  sparc_mode_class[i] = 0;
 	  break;
 	}
     }

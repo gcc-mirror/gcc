@@ -743,8 +743,6 @@ extern char sh_register_names[][MAX_REGISTER_NAME_LENGTH + 1];
   "rap"									\
 }
 
-#define DEBUG_REGISTER_NAMES SH_REGISTER_NAMES_INITIALIZER
-
 #define REGNAMES_ARR_INDEX_1(index) \
   (sh_register_names[index])
 #define REGNAMES_ARR_INDEX_2(index) \

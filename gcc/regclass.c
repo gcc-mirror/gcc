@@ -179,12 +179,9 @@ enum reg_class reg_class_subunion[N_REG_CLASSES][N_REG_CLASSES];
 
 enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
 
-/* Array containing all of the register names.  Unless
-   DEBUG_REGISTER_NAMES is defined, use the copy in print-rtl.c.  */
+/* Array containing all of the register names.  */
 
-#ifdef DEBUG_REGISTER_NAMES
 const char * reg_names[] = REGISTER_NAMES;
-#endif
 
 /* For each hard register, the widest mode object that it can contain.
    This will be a MODE_INT mode if the register can hold integers.  Otherwise

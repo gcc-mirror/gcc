@@ -1,5 +1,5 @@
-/* Definitions of target machine for GNU compiler for FRV.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* MIPS extra machine modes. 
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,13 +18,10 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* On the FRV, the CC modes used are:
+/* MIPS has a quirky almost-IEEE format for all its
+   floating point.  */
+RESET_FLOAT_FORMAT (SF, mips_single_format);
+RESET_FLOAT_FORMAT (DF, mips_double_format);
 
-   CCmode	set ICC's from comparing signed integers
-   CC_UNSmode	set ICC's from comparing unsigned integers
-   CC_FPmode	set FCC's from comparing floating point
-   CC_CCRmode	set CCR's to do conditional execution */
-
-CC_MODE (CC_UNS);
-CC_MODE (CC_FP);
-CC_MODE (CC_CCR);
+/* Irix6 will override this via MIPS_TFMODE_FORMAT.  */
+FLOAT_MODE (TF, 16, mips_quad_format);

@@ -1111,11 +1111,6 @@ override_options (void)
 
   int const pta_size = ARRAY_SIZE (processor_alias_table);
 
-  /* By default our XFmode is the 80-bit extended format.  If we have
-     use TFmode instead, it's also the 80-bit format, but with padding.  */
-  REAL_MODE_FORMAT (XFmode) = &ieee_extended_intel_96_format;
-  REAL_MODE_FORMAT (TFmode) = &ieee_extended_intel_128_format;
-
   /* Set the default values for switches whose default depends on TARGET_64BIT
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT)

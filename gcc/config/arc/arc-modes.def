@@ -21,5 +21,5 @@ Boston, MA 02111-1307, USA.  */
 /* Some insns set all condition code flags, some only set the ZNC flags, and
    some only set the ZN flags.  */
 
-CC (CCZNC)
-CC (CCZN)
+CC_MODE (CCZNC);
+CC_MODE (CCZN);

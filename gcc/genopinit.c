@@ -230,7 +230,7 @@ gen_insn (rtx insn)
 	      case 'b':
 		/* This loop will stop at the first prefix match, so
                    look through the modes in reverse order, in case
-                   EXTRA_CC_MODES was used and CC is a prefix of the
+                   there are extra CC modes and CC is a prefix of the
                    CC modes (as it should be).  */
 		for (i = (MAX_MACHINE_MODE) - 1; i >= 0; i--)
 		  {

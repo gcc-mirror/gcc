@@ -21,6 +21,14 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+/* C4x wants 1- and 2-word float modes, in its own peculiar format.
+   FIXME: Give this port a way to get rid of SFmode, DFmode, and all
+   the other modes it doesn't use.  */
+FLOAT_MODE (QF, 1, c4x_single_format);
+FLOAT_MODE (HF, 2, c4x_extended_format);
+RESET_FLOAT_FORMAT (SF, 0);  /* not used */
+RESET_FLOAT_FORMAT (DF, 0);  /* not used */
+
 /* Add any extra modes needed to represent the condition code.
 
    On the C4x, we have a "no-overflow" mode which is used when an ADD,
@@ -98,5 +106,4 @@
    load instructions after an add, subtract, neg, abs or multiply.
    We must emit a compare insn to check the result against 0.  */
 
-CC (CC_NOOV)
-
+CC_MODE (CC_NOOV);

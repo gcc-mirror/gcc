@@ -4856,12 +4856,8 @@ override_options (void)
       flag_delayed_branch = 0;
     }
 
-  REAL_MODE_FORMAT (SFmode) = &mips_single_format;
-  REAL_MODE_FORMAT (DFmode) = &mips_double_format;
 #ifdef MIPS_TFMODE_FORMAT
   REAL_MODE_FORMAT (TFmode) = &MIPS_TFMODE_FORMAT;
-#else
-  REAL_MODE_FORMAT (TFmode) = &mips_quad_format;
 #endif
 
   mips_print_operand_punct['?'] = 1;

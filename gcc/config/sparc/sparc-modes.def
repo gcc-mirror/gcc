@@ -21,6 +21,9 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* 128-bit floating point */
+FLOAT_MODE (TF, 16, ieee_quad_format);
+
 /* Add any extra modes needed to represent the condition code.
 
    On the SPARC, we have a "no-overflow" mode which is used when an add or
@@ -34,9 +37,8 @@ Boston, MA 02111-1307, USA.  */
 
    CCXmode and CCX_NOOVmode are only used by v9.  */
 
-CC (CCX)
-CC (CC_NOOV)
-CC (CCX_NOOV)
-CC (CCFP)
-CC (CCFPE)
-
+CC_MODE (CCX);
+CC_MODE (CC_NOOV);
+CC_MODE (CCX_NOOV);
+CC_MODE (CCFP);
+CC_MODE (CCFPE);

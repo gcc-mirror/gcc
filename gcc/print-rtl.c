@@ -34,23 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
-
-/* How to print out a register name.
-   We don't use PRINT_REG because some definitions of PRINT_REG
-   don't work here.  */
-#ifndef DEBUG_PRINT_REG
-#define DEBUG_PRINT_REG(RTX, CODE, FILE) \
-  fprintf ((FILE), "%d %s", REGNO (RTX), reg_names[REGNO (RTX)])
-#endif
-
-/* Array containing all of the register names */
-
-#ifdef DEBUG_REGISTER_NAMES
-static const char * const debug_reg_names[] = DEBUG_REGISTER_NAMES;
-#define reg_names debug_reg_names
-#else
-const char * reg_names[] = REGISTER_NAMES;
-#endif
+#include "tm_p.h"
 
 static FILE *outfile;
 
@@ -398,10 +382,11 @@ print_rtx (rtx in_rtx)
 	    int value = XINT (in_rtx, i);
 	    const char *name;
 
+#ifndef GENERATOR_FILE
 	    if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
 	      {
 		fputc (' ', outfile);
-		DEBUG_PRINT_REG (in_rtx, 0, outfile);
+		PRINT_REG (in_rtx, 0, outfile);
 	      }
 	    else if (GET_CODE (in_rtx) == REG
 		     && value <= LAST_VIRTUAL_REGISTER)
@@ -420,7 +405,9 @@ print_rtx (rtx in_rtx)
 		  fprintf (outfile, " %d virtual-reg-%d", value,
 			   value-FIRST_VIRTUAL_REGISTER);
 	      }
-	    else if (flag_dump_unnumbered
+	    else
+#endif
+	      if (flag_dump_unnumbered
 		     && (is_insn || GET_CODE (in_rtx) == NOTE))
 	      fputc ('#', outfile);
 	    else

@@ -320,13 +320,10 @@ arc_init_reg_tables ()
 	    arc_mode_class[i] = 0;
 	  break;
 	case MODE_CC:
+	  arc_mode_class[i] = 1 << (int) C_MODE;
+	  break;
 	default:
-	  /* mode_class hasn't been initialized yet for EXTRA_CC_MODES, so
-	     we must explicitly check for them here.  */
-	  if (i == (int) CCmode || i == (int) CCZNmode || i == (int) CCZNCmode)
-	    arc_mode_class[i] = 1 << (int) C_MODE;
-	  else
-	    arc_mode_class[i] = 0;
+	  arc_mode_class[i] = 0;
 	  break;
 	}
     }

@@ -4416,24 +4416,6 @@ const struct real_format real_internal_format =
     true
   };
 
-/* Set up default mode to format mapping for IEEE.  Everyone else has
-   to set these values in OVERRIDE_OPTIONS.  */
-
-const struct real_format *real_format_for_mode[TFmode - QFmode + 1] =
-{
-  NULL,				/* QFmode */
-  NULL,				/* HFmode */
-  NULL,				/* TQFmode */
-  &ieee_single_format,		/* SFmode */
-  &ieee_double_format,		/* DFmode */
-
-  /* We explicitly don't handle XFmode.  There are two formats,
-     pretty much equally common.  Choose one in OVERRIDE_OPTIONS.  */
-  NULL,				/* XFmode */
-  &ieee_quad_format		/* TFmode */
-};
-
-
 /* Calculate the square root of X in mode MODE, and store the result
    in R.  Return TRUE if the operation does not raise an exception.
    For details see "High Precision Division and Square Root",

@@ -203,12 +203,15 @@ hard_regno_mode_ok (regno, mode)
 	 modes.  */
       
     case HFmode:
+    case HImode:
+#if 0 /* ??? These modes do not appear in the machine description nor
+         are there library routines for them.  */
     case SFmode:
     case DFmode:
     case XFmode:
-    case HImode:
     case SImode:
     case DImode:
+#endif
       if (regno == REG_A0 || regno == REG_A1 || regno == REG_Y || regno == REG_PROD
 	  || (IS_YBASE_REGISTER_WINDOW(regno) && ((regno & 1) == 0)))
 	return 1;
