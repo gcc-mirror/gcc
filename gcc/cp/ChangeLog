@@ -1,3 +1,28 @@
+2004-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18073
+	PR c++/10841
+	* cp-tree.h (convert_to_base): Change prototype.
+	(build_ptrmemfunc): Likewise.
+	(convert_ptrmem): New function.
+	* call.c (struct conversion): Adjust documentation for base_p.
+	(standard_conversion): Set base_p for ck_pmem conversions as
+	appropriate.
+	(convert_like_real): Use convert_to_base for ck_pmem and ck_ptr
+	conversions.
+	* class.c (convert_to_base): Handle both pointers and objects.
+	Add nonnull parameter.
+	(build_vfield_ref): Adjust call to convert_to_base.
+	* cvt.c (cp_convert_to_pointer): Adjust call to build_ptrmemfunc.
+	(convert_force): Likewise.
+	* typeck.c (build_unary_op): Likewise.
+	(convert_ptrmem): New function.
+	(build_static_cast_1): Use it.
+	(build_reinterpret_cast): Allow conversions to vector types.
+	(get_delta_difference): Add c_cast_p parameter.
+	(build_ptrmemfunc): Likewise.  Adjust calls to
+	get_delta_difference.
+
 2004-10-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/13560

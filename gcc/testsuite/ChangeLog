@@ -1,3 +1,9 @@
+2004-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10841
+	* g++.dg/conversion/cast1.C: New test.
+	* g++.dg/overload/pmf1.C: Adjust error marker.
+
 2004-10-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/17923

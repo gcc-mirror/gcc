@@ -92,8 +92,8 @@ struct conversion {
      copy constructor must be accessible, even though it is not being
      used.  */
   BOOL_BITFIELD check_copy_constructor_p : 1;
-  /* If KIND is ck_ptr, true to indicate that a conversion from a
-     pointer-to-derived to pointer-to-base is being performed.  */
+  /* If KIND is ck_ptr or ck_pmem, true to indicate that a conversion
+     from a pointer-to-derived to pointer-to-base is being performed.  */ 
   BOOL_BITFIELD base_p : 1;
   /* The type of the expression resulting from the conversion.  */
   tree type;
@@ -779,6 +779,7 @@ standard_conversion (tree to, tree from, tree expr)
 					 TREE_CHAIN (TYPE_ARG_TYPES (fromfn)));
       from = build_ptrmemfunc_type (build_pointer_type (from));
       conv = build_conv (ck_pmem, from, conv);
+      conv->base_p = true;
     }
   else if (tcode == BOOLEAN_TYPE)
     {
@@ -4270,8 +4271,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    check_constructor_callable (TREE_TYPE (expr), expr);
 	  /* Build an expression for `*((base*) &expr)'.  */
 	  expr = build_unary_op (ADDR_EXPR, expr, 0);
-	  expr = perform_implicit_conversion (build_pointer_type (totype), 
-					      expr);
+	  expr = convert_to_base (expr, build_pointer_type (totype),
+				  !c_cast_p, /*nonnull=*/true);
 	  expr = build_indirect_ref (expr, "implicit conversion");
 	  return expr;
 	}
@@ -4338,18 +4339,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
     case ck_ptr:
       if (convs->base_p)
-	{
-	  tree binfo;
-
-	  binfo = lookup_base (TREE_TYPE (TREE_TYPE (expr)),
-			       TREE_TYPE (totype), 
-			       c_cast_p ? ba_unique : ba_check,
-			       NULL);
-	  if (binfo == error_mark_node)
-	    return error_mark_node;
-	  expr = build_base_path (PLUS_EXPR, expr, binfo, /*nonnull=*/0);
-	}
+	expr = convert_to_base (expr, totype, !c_cast_p,
+				/*nonnull=*/false);
       return build_nop (totype, expr);
+
+    case ck_pmem:
+      return convert_ptrmem (totype, expr, /*allow_inverse_p=*/false,
+			     c_cast_p);
 
     default:
       break;

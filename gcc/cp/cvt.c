@@ -217,7 +217,8 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
       return build_nop (type, expr);
     }
   else if (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype))
-    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0);
+    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
+			     /*c_cast_p=*/false);
   else if (TYPE_PTRMEMFUNC_P (intype))
     {
       if (!warn_pmf2ptr)
@@ -241,7 +242,8 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
   if (integer_zerop (expr))
     {
       if (TYPE_PTRMEMFUNC_P (type))
-	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0);
+	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
+				 /*c_cast_p=*/false);
 
       if (TYPE_PTRMEM_P (type))
 	{
@@ -960,10 +962,9 @@ convert_force (tree type, tree expr, int convtype)
        || integer_zerop (e)
        || TYPE_PTRMEMFUNC_P (TREE_TYPE (e)))
       && TYPE_PTRMEMFUNC_P (type))
-    {
-      /* compatible pointer to member functions.  */
-      return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1);
-    }
+    /* compatible pointer to member functions.  */
+    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1,
+			     /*c_cast_p=*/1);
 
   return ocp_convert (type, e, CONV_C_CAST|convtype, LOOKUP_NORMAL);
 }

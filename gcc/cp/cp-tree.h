@@ -3594,7 +3594,7 @@ extern void validate_conversion_obstack (void);
 
 /* in class.c */
 extern tree build_base_path			(enum tree_code, tree, tree, int);
-extern tree convert_to_base                     (tree, tree, bool);
+extern tree convert_to_base                     (tree, tree, bool, bool);
 extern tree convert_to_base_statically (tree, tree);
 extern tree build_vtbl_ref			(tree, tree);
 extern tree build_vfn_ref			(tree, tree);
@@ -4267,7 +4267,7 @@ extern tree dubious_conversion_warnings         (tree, tree, const char *, tree,
 extern tree convert_for_initialization		(tree, tree, tree, int, const char *, tree, int);
 extern int comp_ptr_ttypes			(tree, tree);
 extern int ptr_reasonably_similar		(tree, tree);
-extern tree build_ptrmemfunc			(tree, tree, int);
+extern tree build_ptrmemfunc			(tree, tree, int, bool);
 extern int cp_type_quals                        (tree);
 extern bool cp_has_mutable_p                     (tree);
 extern bool at_least_as_qualified_p              (tree, tree);
@@ -4291,6 +4291,7 @@ extern tree non_reference                       (tree);
 extern tree lookup_anon_field                   (tree, tree);
 extern bool invalid_nonstatic_memfn_p           (tree);
 extern tree convert_member_func_to_ptr          (tree, tree);
+extern tree convert_ptrmem                      (tree, tree, bool, bool);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
