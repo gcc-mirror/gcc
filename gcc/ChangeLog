@@ -1,3 +1,7 @@
+2000-03-09  Robert Lipe  <robertl@sco.com>
+
+	* config/ia64/ia64.c: Include system.h.
+
 2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
 
 	* except.c (nothrow_function_p): If -fno-exceptions, just return.
