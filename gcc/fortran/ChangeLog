@@ -38,6 +38,68 @@
 	* trans-expr.c (gfc_conv_unary_op, gfc_conv_power_op,
 	gfc_conv_concat_op, gfc_conv_expr_op): Likewise.
 
+	* gfortran.h (gfc_component, gfc_actual_arglist, gfc_user_op): Make
+	'name' a 'const char *'.
+	(gfc_symbol): Likewise, also for 'module'.
+	(gfc_symtree): Make 'name' a 'const char *'.
+	(gfc_intrinsic_sym): Likewise, also for 'lib_name'.
+	(gfc_get_gsymbol, gfc_find_gsymbol): Add 'const' qualifier to
+	'char *' argument.
+	(gfc_intrinsic_symbol): Use 'gfc_get_string' instead of 'strcpy' to
+	initialize 'SYM->module'.
+	* check.c (gfc_check_minloc_maxloc, check_reduction): Check for NULL
+	pointer instead of empty string.
+	* dump-parse-tree.c (gfc_show_actual_arglist): Likewise.
+	* interface.c (gfc_compare_types): Adapt check to account for possible
+	NULL pointer.
+	(compare_actual_formal): Check for NULL pointer instead of empty
+	string.
+	* intrinsic.c (gfc_current_intrinsic, gfc_current_intrinsic_arg):
+	Add 'const' qualifier.	
+	(conv_name): Return a heap allocated string.
+	(find_conv): Add 'const' qualifier to 'target'.
+	(add_sym): Use 'gfc_get_string' instead of 'strcpy'.
+	(make_generic): Check for NULL pointer instead of empty	string.
+	(make_alias): Use 'gfc_get_string' instead of 'strcpy'.
+	(add_conv): No need to strcpy result from 'conv_name'.
+	(sort_actual): Check for NULL pointer instead of empty	string.
+	* intrinsic.h (gfc_current_intrinsic, gfc_current_intrinsic_arg):
+	Adapt prototype.
+	* module.c (compare_true_names): Compare pointers instead of strings
+	for 'module' member.
+	(find_true_name): Initialize string fields with gfc_get_string.
+	(mio_pool_string): New function.
+	(mio_internal_string): Adapt comment.
+	(mio_component_ref, mio_component, mio_actual_arg): Use
+	'mio_pool_string' instead of 'mio_internal_string'.
+	(mio_symbol_interface): Add 'const' qualifier to string arguments.
+	Add level of indirection. Use 'mio_pool_string' instead of
+	'mio_internal_string'.
+	(load_needed, read_module): Use 'gfc_get_string' instead of 'strcpy'.
+	(write_common, write_symbol): Use 'mio_pool_string' instead of
+	'mio_internal_string'.
+	(write_symbol0, write_symbol1): Likewise, also check for NULL pointer
+	instead of empty string.
+	(write_operator, write_generic): Pass correct type variable to
+	'mio_symbol_interface'.
+	(write_symtree): Use 'mio_pool_string' instead of
+	'mio_internal_string'.
+	* primary.c (match_keyword_arg): Adapt check to possible
+	case of NULL pointer.  Use 'gfc_get_string' instead of 'strcpy'.
+	* symbol.c (gfc_add_component, gfc_new_symtree, delete_symtree,
+	gfc_get_uop, gfc_new_symbol): Use 'gfc_get_string' instead of
+	'strcpy'.
+	(ambiguous_symbol): Check for NULL pointer instead of empty string.
+	(gfc_find_gsymbol, gfc_get_gsymbol): Add 'const' qualifier on string
+	arguments.
+	* trans-array.c (gfc_trans_auto_array_allocation): Check for NULL
+	pointer instead of empty string.
+	* trans-decl.c (gfc_sym_mangled_identifier,
+	gfc_sym_mangled_function_id, gfc_finish_var_decl, gfc_get_symbol_decl,
+	gfc_get_symbol_decl): Likewise.
+	* trans-io.c (gfc_new_nml_name_expr): Add 'const' qualifier to
+	argument.  Copy string instead of pointing to it.
+
 2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* intrinsic.h, st.c: Update copyright.

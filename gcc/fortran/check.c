@@ -1214,7 +1214,7 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
   m = ap->next->next->expr;
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
-      && ap->next->name[0] == '\0')
+      && ap->next->name == NULL)
     {
       m = d;
       d = NULL;
@@ -1259,7 +1259,7 @@ check_reduction (gfc_actual_arglist * ap)
   m = ap->next->next->expr;
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
-      && ap->next->name[0] == '\0')
+      && ap->next->name == NULL)
     {
       m = d;
       d = NULL;
