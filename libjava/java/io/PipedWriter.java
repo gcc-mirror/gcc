@@ -1,5 +1,5 @@
 /* PipedWriter.java -- Write portion of piped character streams.
-   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -166,7 +166,7 @@ public class PipedWriter extends Writer
     *
     * @exception IOException If an error occurs
     */
-  public void close()
+  public void close() throws IOException
   {
     // A close call on an unconnected PipedWriter has no effect.
     if (sink != null)
