@@ -249,6 +249,9 @@
   switch (which_alternative)
     {
     case 0: /* mov r,r */
+      if (TARGET_ENHANCED)
+	return (AS2 (movw,%0,%1));  /* FIXME: length = 2 -> 1 */
+
       if (true_regnum (operands[0]) > true_regnum (operands[1]))
         return (AS2 (mov,%B0,%B1) CR_TAB
 	        AS2 (mov,%A0,%A1));
@@ -652,6 +655,57 @@
 	subi %A0,lo8(%2)\;sbci %B0,hi8(%2)\;sbci %C0,hlo8(%2)\;sbci %D0,hhi8(%2)"
   [(set_attr "length" "4,4")
    (set_attr "cc" "set_czn,set_czn")])
+
+;******************************************************************************
+; mul
+
+(define_insn "mulqi3"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(mult:QI (match_operand:QI 1 "register_operand" "r")
+		 (match_operand:QI 2 "register_operand" "r")))]
+  "TARGET_ENHANCED"
+  "mul %1,%2
+	mov %0,r0
+	clr r1"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "mulqihi3"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(mult:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "d"))
+		 (sign_extend:HI (match_operand:QI 2 "register_operand" "d"))))]
+  "TARGET_ENHANCED"
+  "muls %1,%2
+	movw %0,r0
+	clr r1"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "umulqihi3"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+		 (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
+  "TARGET_ENHANCED"
+  "mul %1,%2
+	movw %0,r0
+	clr r1"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "mulhi3"
+  [(set (match_operand:HI 0 "register_operand" "=&r")
+	(mult:HI (match_operand:HI 1 "register_operand" "r")
+		 (match_operand:HI 2 "register_operand" "r")))]
+  "TARGET_ENHANCED"
+  "mul %A1,%A2
+	movw %0,r0
+	mul %A1,%B2
+	add %B0,r0
+	mul %B1,%A2
+	add %B0,r0
+	clr r1"
+  [(set_attr "length" "7")
+   (set_attr "cc" "clobber")])
 
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ; and
@@ -1604,9 +1658,15 @@
   if (which_alternative==0)
      return \"icall\";
   else if (which_alternative==1)
-     return (AS2 (mov, r30,%A0) CR_TAB
-	     AS2 (mov, r31,%B0) CR_TAB
-	     \"icall\");
+    {
+      if (TARGET_ENHANCED)
+	return (AS2 (movw, r30, %0) CR_TAB
+		\"icall\");
+      else
+	return (AS2 (mov, r30, %A0) CR_TAB
+		AS2 (mov, r31, %B0) CR_TAB
+		\"icall\");
+    }
   else if (!AVR_MEGA)
      return AS1(rcall,%c0);   
   return AS1(call,%c0);
@@ -1634,9 +1694,15 @@
   if (which_alternative==0)
      return \"icall\";
   else if (which_alternative==1)
-     return (AS2 (mov, r30,%A1) CR_TAB
-	     AS2 (mov, r31,%B1) CR_TAB
-	     \"icall\");
+    {
+      if (TARGET_ENHANCED)
+	return (AS2 (movw, r30, %1) CR_TAB
+		\"icall\");
+      else
+	return (AS2 (mov, r30, %A1) CR_TAB
+		AS2 (mov, r31, %B1) CR_TAB
+		\"icall\");
+    }
   else if (!AVR_MEGA)
      return AS1(rcall,%c1);   
   return AS1(call,%c1);
@@ -1676,6 +1742,21 @@
   "optimize"
   "")
 
+(define_insn "*tablejump_enh"
+   [(set (pc) (mem:HI
+	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
+			(label_ref (match_operand 2 "" "")))))
+    (use (label_ref (match_operand 1 "" "")))]
+  "TARGET_ENHANCED"
+  "subi r30,lo8(-(%2))
+	sbci r31,hi8(-(%2))
+	lpm __tmp_reg__,Z+
+	lpm r31,Z
+	mov r30,__tmp_reg__
+	ijmp"
+  [(set_attr "length" "6")
+   (set_attr "cc" "clobber")])
+
 (define_insn "*tablejump"
    [(set (pc) (mem:HI
 	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
@@ -1686,10 +1767,10 @@
 	sbci r31,hi8(-(%2))
 	lpm
 	push r0
-        adiw r30,1
+	adiw r30,1
 	lpm
 	push r0
-        ret"
+	ret"
   [(set_attr "length" "8")
    (set_attr "cc" "clobber")])
 

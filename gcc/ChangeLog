@@ -1,3 +1,36 @@
+2000-07-01  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (out_adj_frame_ptr): Make "frame pointer
+	change too big for -mtiny-stack" a warning, if larger than 63.
+	(out_set_stack_ptr): Change the logic so -mno-interrupts is
+	always safe to use on possible future devices.
+	(function_prologue): Write SPH before SPL, for consistency.
+	If interrupt_func_p true, we know we have enabled interrupts.
+	(avr_num_arg_regs): New function.  Round up to even number of
+	bytes if no -mpack-args or if calling a libgcc function.
+	(function_arg, function_arg_advance): Use it.
+	(output_movsisf, ashlsi3_out, ashrsi3_out, lshrsi3_out):
+	Output "movw" if available.
+	(out_tsthi, out_tstsi, ashlqi3_out, lshrqi3_out): Change uses
+	of TEST_HARD_REG_CLASS macro to test_hard_reg_class function.
+	(asm_output_section_name): Add blanks for consistent output.
+	(encode_section_info): Set TREE_READONLY for progmem data to
+	avoid gas warnings about changed section attributes.
+	(avr_hard_regno_mode_ok): Force non-QImode data to start in
+	even numbered registers on devices with "movw".
+	* config/avr/avr.h (MASK_*): Define bits for target_flags.
+	(TARGET_SWITCHES): Mark help strings for translation.
+	Add new -mpack-args and -menhanced switches.
+	(TARGET_OPTIONS): Mark help strings for translation.
+	(progmem_section): Add section attributes.
+	* config/avr/avr.md (*movhi, call_insn, call_value_insn):
+	Output "movw" if available.
+	(mulqi3, mulqihi3, umulqihi3, mulhi3, *tablejump_enh):
+	New patterns.
+	* config/avr/libgcc.S (_mulqi3, _divqi3): Update to the new
+	call convention (arguments aligned on even registers).
+	(_cleanup, _exit): Make weak symbols libc can override.
+
 2000-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fp-bit.h: New file.

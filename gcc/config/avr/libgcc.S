@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 *******************************************************/
 #if defined (Lmulqi3)
 
-#define	r_arg2	r25		/* multiplicand */
+#define	r_arg2	r22		/* multiplicand */
 #define	r_arg1 	r24		/* multiplier */
 #define r_res	__tmp_reg__	/* result */
 
@@ -201,8 +201,8 @@ __mulsi3_exit:
        Division 8 / 8 => (result + remainder)
 *******************************************************/
 #define	r_rem	r26	/* remainder */
-#define	r_arg1	r25	/* dividend */
-#define	r_arg2	r24	/* divisor */
+#define	r_arg1	r24	/* dividend */
+#define	r_arg2	r22	/* divisor */
 #define	r_cnt	r27	/* loop count */
 
 #if defined (Lumodqi3)
@@ -272,8 +272,7 @@ __divqi3_1:
 	sbrc	__tmp_reg__,7
 	neg	r_arg1		; correct result sign
 __divqi3_exit:
-	mov	r24,r_arg1	; put result to return register
-	ret
+	ret			; result already in r24 (r_arg1)
 .endfunc
 #endif /* defined (Ldivqi3) */
 
@@ -434,8 +433,6 @@ _umodsi3_ret:
 	mov	r24,r_remHL
 	mov	r23,r_remH
 	mov	r22,r_remL
-	.global	_cleanup
-_cleanup:
 	ret
 .endfunc
 #endif /* defined (Lumodsi3) */
@@ -630,9 +627,12 @@ __epilogue_restores__:
 #endif /* defined (Lepilogue) */
 
 #ifdef L__exit
-	.global	_exit
+	.weak	_exit
 	.func	_exit
 _exit:
 	rjmp	_exit
+	.weak	_cleanup
+_cleanup:
+	ret
 .endfunc
 #endif

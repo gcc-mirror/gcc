@@ -49,6 +49,7 @@ static int    signal_function_p    PARAMS ((tree));
 static int    sequent_regs_live    PARAMS ((void));
 static char * ptrreg_to_str        PARAMS ((int));
 static char * cond_string          PARAMS ((enum rtx_code));
+static int    avr_num_arg_regs     PARAMS ((enum machine_mode, tree));
 static int    out_adj_frame_ptr    PARAMS ((FILE *, int));
 static int    out_set_stack_ptr    PARAMS ((FILE *, int, int));
 
@@ -347,30 +348,23 @@ out_adj_frame_ptr (file, adj)
 
   if (adj)
     {
-      /* For -mtiny-stack, the high byte (r29) does not change -
-	 prefer "subi" (1 cycle) over "sbiw" (2 cycles).  */
-
-      if (adj < -63 || adj > 63 || TARGET_TINY_STACK)
+      if (TARGET_TINY_STACK)
 	{
-	  fprintf (file, (AS2 (subi, r28, lo8(%d)) CR_TAB), adj);
+	  if (adj < -63 || adj > 63)
+	    warning ("large frame pointer change (%d) with -mtiny-stack", adj);
+
+	  /* The high byte (r29) doesn't change - prefer "subi" (1 cycle)
+	     over "sbiw" (2 cycles, same size).  */
+
+	  fprintf (file, (AS2 (subi, r28, %d) CR_TAB), adj);
 	  size++;
-
-	  if (TARGET_TINY_STACK)
-	    {
-	      /* In addition to any local data, each level of function calls
-		 needs at least 4 more bytes of stack space for the saved
-		 frame pointer and return address.  So, (255 - 16) leaves
-		 room for 4 levels of function calls.  */
-
-	      if (adj < -(255 - 16) || adj > (255 - 16))
-		fatal ("Frame pointer change (%d) too big for -mtiny-stack",
-		       adj);
-	    }
-	  else
-	    {
-	      fprintf (file, (AS2 (sbci, r29, hi8(%d)) CR_TAB), adj);
-	      size++;
-	    }
+	}
+      else if (adj < -63 || adj > 63)
+	{
+	  fprintf (file, (AS2 (subi, r28, lo8(%d)) CR_TAB
+			  AS2 (sbci, r29, hi8(%d)) CR_TAB),
+			 adj, adj);
+	  size += 2;
 	}
       else if (adj < 0)
 	{
@@ -398,17 +392,18 @@ out_set_stack_ptr (file, before, after)
      int before;
      int after;
 {
-  int do_sph, do_cli, do_save, size;
+  int do_sph, do_cli, do_save, do_sei, lock_sph, size;
 
-  if (TARGET_NO_INTERRUPTS)
-    {
-      before = 0;
-      after = 0;
-    }
+  /* The logic here is so that -mno-interrupts actually means
+     "it is safe to write SPH in one instruction, then SPL in the
+     next instruction, without disabling interrupts first".
+     The after != -1 case (interrupt/signal) is not affected.  */
 
   do_sph = !TARGET_TINY_STACK;
-  do_cli = (before != 0 && (after == 0 || do_sph));
-  do_save = (before == -1 && after == -1 && do_cli);
+  lock_sph = do_sph && !TARGET_NO_INTERRUPTS;
+  do_cli = (before != 0 && (after == 0 || lock_sph));
+  do_save = (do_cli && before == -1 && after == -1);
+  do_sei = ((do_cli || before != 1) && after == 1);
   size = 1;
 
   if (do_save)
@@ -424,8 +419,8 @@ out_set_stack_ptr (file, before, after)
     }
 
   /* Do SPH first - maybe this will disable interrupts for one instruction
-     someday, much like x86 does when changing SS (a suggestion has been
-     sent to avr@atmel.com for consideration in future devices).  */
+     someday (a suggestion has been sent to avr@atmel.com for consideration
+     in future devices - that would make -mno-interrupts always safe).  */
   if (do_sph)
     {
       fprintf (file, AS2 (out, __SP_H__, r29) CR_TAB);
@@ -440,7 +435,7 @@ out_set_stack_ptr (file, before, after)
       fprintf (file, AS2 (out, __SREG__, __tmp_reg__) CR_TAB);
       size++;
     }
-  else if (after == 1 && (before != 1 || do_cli))
+  else if (do_sei)
     {
       fprintf (file, "sei" CR_TAB);
       size++;
@@ -503,8 +498,8 @@ function_prologue (FILE *file, int size)
       fprintf (file, ("\t" 
 		      AS2 (ldi, r28, lo8(%s - %d)) CR_TAB
 		      AS2 (ldi, r29, hi8(%s - %d)) CR_TAB
-		      AS2 (out,__SP_L__,r28)       CR_TAB
-		      AS2 (out,__SP_H__,r29) "\n"),
+		      AS2 (out, __SP_H__, r29)     CR_TAB
+		      AS2 (out, __SP_L__, r28) "\n"),
 	       initial_stack, size, initial_stack, size);
       
       prologue_size += 4;
@@ -569,7 +564,7 @@ function_prologue (FILE *file, int size)
 
 		if (interrupt_func_p)
 		  {
-		    prologue_size += out_set_stack_ptr (file, -1, 1);
+		    prologue_size += out_set_stack_ptr (file, 1, 1);
 		  }
 		else if (signal_func_p)
 		  {
@@ -1288,6 +1283,33 @@ init_cumulative_args (cum, fntype, libname, indirect)
     }
 }
 
+/* Returns the number of registers to allocate for a function argument.  */
+
+static int
+avr_num_arg_regs (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+  int size;
+
+  if (mode == BLKmode)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
+
+  /* Align all function arguments to start in even-numbered registers,
+     for "movw" on the enhanced core (to keep call conventions the same
+     on all devices, do it even if "movw" is not available).  Odd-sized
+     arguments leave holes above them - registers still available for
+     other uses.  Use -mpack-args for compatibility with old asm code
+     (the new convention will still be used for libgcc calls).  */
+
+  if (!(type && TARGET_PACK_ARGS))
+    size += size & 1;
+
+  return size;
+}
+
 /* Controls whether a function argument is passed
    in a register, and which register. */
 
@@ -1298,12 +1320,11 @@ function_arg (cum, mode, type, named)
      tree type;
      int named ATTRIBUTE_UNUSED;
 {
-  int bytes;
-
-  bytes = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int bytes = avr_num_arg_regs (mode, type);
 
   if (cum->nregs && bytes <= cum->nregs)
     return gen_rtx (REG, mode, cum->regno - bytes);
+
   return NULL_RTX;
 }
 
@@ -1317,9 +1338,8 @@ function_arg_advance (cum, mode, type, named)
      tree type;                 /* type of the argument or 0 if lib support */
      int named ATTRIBUTE_UNUSED; /* whether or not the argument was named */
 {
-  int bytes;
+  int bytes = avr_num_arg_regs (mode, type);
 
-  bytes = (mode == BLKmode ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
   cum->nregs -= bytes;
   cum->regno -= bytes;
 
@@ -1328,8 +1348,6 @@ function_arg_advance (cum, mode, type, named)
       cum->nregs = 0;
       cum->regno = FIRST_CUM_REG;
     }
-
-  return;
 }
 
 /***********************************************************************
@@ -1788,16 +1806,33 @@ output_movsisf(insn, operands, which_alternative)
     {
     case 0: /* mov r,r */
       if (true_regnum (operands[0]) > true_regnum (operands[1]))
-        return (AS2 (mov,%D0,%D1) CR_TAB
-	        AS2 (mov,%C0,%C1) CR_TAB
-		AS2 (mov,%B0,%B1) CR_TAB
-		AS2 (mov,%A0,%A1));
+	{
+	  if (TARGET_ENHANCED)
+	    return (AS2 (movw,%C0,%C1) CR_TAB
+		    AS2 (movw,%A0,%A1));  /* FIXME: length = 4 -> 2 */
+	  else
+	    return (AS2 (mov,%D0,%D1) CR_TAB
+		    AS2 (mov,%C0,%C1) CR_TAB
+		    AS2 (mov,%B0,%B1) CR_TAB
+		    AS2 (mov,%A0,%A1));
+	}
       else
-        return (AS2 (mov,%A0,%A1) CR_TAB
-	        AS2 (mov,%B0,%B1) CR_TAB
-		AS2 (mov,%C0,%C1) CR_TAB
-		AS2 (mov,%D0,%D1));
+	{
+	  if (TARGET_ENHANCED)
+	    return (AS2 (movw,%A0,%A1) CR_TAB
+		    AS2 (movw,%C0,%C1));  /* FIXME: length = 4 -> 2 */
+	  else
+	    return (AS2 (mov,%A0,%A1) CR_TAB
+		    AS2 (mov,%B0,%B1) CR_TAB
+		    AS2 (mov,%C0,%C1) CR_TAB
+		    AS2 (mov,%D0,%D1));
+	}
     case 1:  /* mov r,L */
+      if (TARGET_ENHANCED)
+	return (AS1 (clr,%A0) CR_TAB
+		AS1 (clr,%B0) CR_TAB
+		AS2 (movw,%C0,%A0));  /* FIXME: length = 4 -> 3 */
+
       return (AS1 (clr,%A0) CR_TAB
 	      AS1 (clr,%B0) CR_TAB
 	      AS1 (clr,%C0) CR_TAB
@@ -2052,7 +2087,7 @@ out_tsthi (insn,l)
       if (l) *l = 1;
       return AS1 (tst,%B0);
     }
-  if (TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (SET_SRC (PATTERN (insn)))))
+  if (test_hard_reg_class (ADDW_REGS, SET_SRC (PATTERN (insn))))
     {
       if (l) *l = 1;
       return AS2 (sbiw,%0,0);
@@ -2080,7 +2115,7 @@ out_tstsi (insn,l)
       if (l) *l = 1;
       return AS1 (tst,%D0);
     }
-  if (TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (SET_SRC (PATTERN (insn)))))
+  if (test_hard_reg_class (ADDW_REGS, SET_SRC (PATTERN (insn))))
     {
       if (l) *l = 3;
       return (AS2 (sbiw,%A0,0) CR_TAB
@@ -2142,7 +2177,7 @@ out_shift_with_cnt (template,insn,operands,len)
 	  *len = mov_len + 1;
 	}
     }
-  else if (register_operand (operands[2],QImode))
+  else if (register_operand (operands[2], QImode))
     {
       if (reg_unused_after (insn, operands[2]))
 	op[3] = op[2];
@@ -2211,7 +2246,7 @@ ashlqi3_out (insn,operands,len)
 		  AS1 (lsl,%0));
 
 	case 4:
-	  if (TEST_HARD_REG_CLASS (LD_REGS, true_regnum (operands[0])))
+	  if (test_hard_reg_class (LD_REGS, operands[0]))
 	    {
 	      *len = 2;
 	      return (AS1 (swap,%0) CR_TAB
@@ -2224,7 +2259,7 @@ ashlqi3_out (insn,operands,len)
 		  AS1 (lsl,%0));
 
 	case 5:
-	  if (TEST_HARD_REG_CLASS (LD_REGS, true_regnum (operands[0])))
+	  if (test_hard_reg_class (LD_REGS, operands[0]))
 	    {
 	      *len = 3;
 	      return (AS1 (swap,%0) CR_TAB
@@ -2239,7 +2274,7 @@ ashlqi3_out (insn,operands,len)
 		  AS1 (lsl,%0));
 
 	case 6:
-	  if (TEST_HARD_REG_CLASS (LD_REGS, true_regnum (operands[0])))
+	  if (test_hard_reg_class (LD_REGS, operands[0]))
 	    {
 	      *len = 4;
 	      return (AS1 (swap,%0) CR_TAB
@@ -2376,6 +2411,13 @@ ashlsi3_out (insn,operands,len)
 	    int reg0 = true_regnum (operands[0]);
 	    int reg1 = true_regnum (operands[1]);
 	    *len = 4;
+	    if (TARGET_ENHANCED && (reg0 + 2 != reg1))
+	      {
+		*len = 3;
+		return (AS2 (movw,%C0,%A1) CR_TAB
+			AS1 (clr,%B0)      CR_TAB
+			AS1 (clr,%A0));
+	      }
 	    if (reg0 + 1 >= reg1)
 	      return (AS2 (mov,%D0,%B1)  CR_TAB
 		      AS2 (mov,%C0,%A1)  CR_TAB
@@ -2610,6 +2652,15 @@ ashrsi3_out (insn,operands,len)
 	    int reg0 = true_regnum (operands[0]);
 	    int reg1 = true_regnum (operands[1]);
 	    *len=6;
+	    if (TARGET_ENHANCED && (reg0 != reg1 + 2))
+	      {
+		*len = 5;
+		return (AS2 (movw,%A0,%C1) CR_TAB
+			AS1 (clr,%D0)      CR_TAB
+			AS2 (sbrc,%B0,7)   CR_TAB
+			AS1 (com,%D0)      CR_TAB
+			AS2 (mov,%C0,%D0));
+	      }
 	    if (reg0 <= reg1 + 1)
 	      return (AS2 (mov,%A0,%C1) CR_TAB
 		      AS2 (mov,%B0,%D1) CR_TAB
@@ -2693,7 +2744,7 @@ lshrqi3_out (insn,operands,len)
 		  AS1 (lsr,%0));
 	  
 	case 4:
-	  if (TEST_HARD_REG_CLASS (LD_REGS, true_regnum (operands[0])))
+	  if (test_hard_reg_class (LD_REGS, operands[0]))
 	    {
 	      *len=2;
 	      return (AS1 (swap,%0) CR_TAB
@@ -2706,7 +2757,7 @@ lshrqi3_out (insn,operands,len)
 		  AS1 (lsr,%0));
 	  
 	case 5:
-	  if (TEST_HARD_REG_CLASS (LD_REGS, true_regnum (operands[0])))
+	  if (test_hard_reg_class (LD_REGS, operands[0]))
 	    {
 	      *len = 3;
 	      return (AS1 (swap,%0) CR_TAB
@@ -2721,7 +2772,7 @@ lshrqi3_out (insn,operands,len)
 		  AS1 (lsr,%0));
 	  
 	case 6:
-	  if (TEST_HARD_REG_CLASS (LD_REGS, true_regnum (operands[0])))
+	  if (test_hard_reg_class (LD_REGS, operands[0]))
 	    {
 	      *len = 4;
 	      return (AS1 (swap,%0) CR_TAB
@@ -2860,6 +2911,13 @@ lshrsi3_out (insn,operands,len)
 	    int reg0 = true_regnum (operands[0]);
 	    int reg1 = true_regnum (operands[1]);
 	    *len = 4;
+	    if (TARGET_ENHANCED && (reg0 != reg1 + 2))
+	      {
+		*len = 3;
+		return (AS2 (movw,%A0,%C1) CR_TAB
+			AS1 (clr,%C0)      CR_TAB
+			AS1 (clr,%D0));
+	      }
 	    if (reg0 <= reg1 + 1)
 	      return (AS2 (mov,%A0,%C1) CR_TAB
 		      AS2 (mov,%B0,%D1) CR_TAB
@@ -3275,7 +3333,7 @@ asm_output_section_name(file, decl, name, reloc)
      const char *name;
      int reloc ATTRIBUTE_UNUSED;
 {
-  fprintf (file, ".section\t%s,\"%s\",@progbits\n", name, \
+  fprintf (file, ".section %s, \"%s\", @progbits\n", name,
 	   decl && TREE_CODE (decl) == FUNCTION_DECL ? "ax" :
 	   decl && TREE_READONLY (decl) ? "a" : "aw");
 }
@@ -3407,9 +3465,9 @@ valid_machine_type_attribute(type, attributes, identifier, args)
    Valid attributes:
    progmem - put data to program memory;
    signal - make a function to be hardware interrupt. After function
-   epilogue interrupts are disabled;
+   prologue interrupts are disabled;
    interrupt - make a function to be hardware interrupt. After function
-   epilogue interrupts are enabled;
+   prologue interrupts are enabled;
    naked     - don't generate function prologue/epilogue and `ret' command.  */
 
 int
@@ -3440,7 +3498,7 @@ valid_machine_decl_attribute (decl, attributes, attr, args)
 
 
 /* Look for attribute `progmem' in DECL
-   founded - 1 otherwise 0 */
+   if found return 1, otherwise 0.  */
 
 int
 avr_progmem_p (decl)
@@ -3481,6 +3539,7 @@ encode_section_info (decl)
     {
       char * dsec = ".progmem.data";
       DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
+      TREE_READONLY (decl) = 1;
     }
 }   
 
@@ -3864,7 +3923,7 @@ avr_function_value (type,func)
   return gen_rtx (REG, BLKmode, RET_REGISTER + 2 - offs);
 }
 
-/* Returns non-zero if number MASK have only one setted bit */
+/* Returns non-zero if the number MASK has only one bit set.  */
 
 int
 mask_one_bit_p (mask)
@@ -3892,7 +3951,7 @@ mask_one_bit_p (mask)
    in class CLASS.  */
 
 enum reg_class
-preferred_reload_class(x,class)
+preferred_reload_class (x, class)
      rtx x;
      enum reg_class class;
 {
@@ -3908,7 +3967,7 @@ preferred_reload_class(x,class)
 }
 
 int
-test_hard_reg_class(class, x)
+test_hard_reg_class (class, x)
      enum reg_class class;
      rtx x;
 {
@@ -3946,9 +4005,9 @@ jump_over_one_insn_p (insn, dest)
 }
 
 /* Returns 1 if a value of mode MODE can be stored starting with hard
-   register number REGNO.  On the enhanced core, it should be a win to
-   align modes larger than QI on even register numbers (even if < 24).
-   so that the "movw" instruction can be used on them.  */
+   register number REGNO.  On the enhanced core, anything larger than
+   1 byte must start in even numbered register for "movw" to work
+   (this way we don't have to check for odd registers everywhere).  */
 
 int
 avr_hard_regno_mode_ok (regno, mode)
@@ -3957,7 +4016,7 @@ avr_hard_regno_mode_ok (regno, mode)
 {
   if (mode == QImode)
     return 1;
-  if (regno < 24 /* && !TARGET_ENHANCED */ )
+  if (regno < 24 && !TARGET_ENHANCED)
     return 1;
   return !(regno & 1);
 }
