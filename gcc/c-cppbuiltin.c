@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "except.h"		/* For USING_SJLJ_EXCEPTIONS.  */
 #include "toplev.h"
+#include "tm_p.h"		/* Target prototypes.  */
 
 #ifndef REGISTER_PREFIX
 #define REGISTER_PREFIX ""
