@@ -373,15 +373,15 @@ enum
 typedef struct
 {
   /* Name of the single-character length modifier.  */
-  const char *const name;
+  const char *name;
   /* Index into a format_char_info.types array.  */
-  const enum format_lengths index;
+  enum format_lengths index;
   /* Standard version this length appears in.  */
-  const enum format_std_version std;
+  enum format_std_version std;
   /* Same, if the modifier can be repeated, or NULL if it can't.  */
-  const char *const double_name;
-  const enum format_lengths double_index;
-  const enum format_std_version double_std;
+  const char *double_name;
+  enum format_lengths double_index;
+  enum format_std_version double_std;
 } format_length_info;
 
 
@@ -410,18 +410,18 @@ typedef struct
    which act identically), and the length modifiers used with it.  */
 typedef struct
 {
-  const char *const format_chars;
-  const int pointer_count;
-  const enum format_std_version std;
+  const char *format_chars;
+  int pointer_count;
+  enum format_std_version std;
   /* Types accepted for each length modifier.  */
-  const format_type_detail types[FMT_LEN_MAX];
+  format_type_detail types[FMT_LEN_MAX];
   /* List of other modifier characters allowed with these specifiers.
      This lists flags, and additionally "w" for width, "p" for precision
      (right precision, for strfmon), "#" for left precision (strfmon),
      "a" for scanf "a" allocation extension (not applicable in C99 mode),
      "*" for scanf suppression, and "E" and "O" for those strftime
      modifiers.  */
-  const char *const flag_chars;
+  const char *flag_chars;
   /* List of additional flags describing these conversion specifiers.
      "c" for generic character pointers being allowed, "2" for strftime
      two digit year formats, "3" for strftime formats giving two digit
@@ -431,7 +431,7 @@ typedef struct
      "R" if the argument is a pointer which is dereferenced and read from,
      "i" for printf integer formats where the '0' flag is ignored with
      precision, and "[" for the starting character of a scanf scanset.  */
-  const char *const flags2;
+  const char *flags2;
 } format_char_info;
 
 
@@ -439,7 +439,7 @@ typedef struct
 typedef struct
 {
   /* The flag character in question (0 for end of array).  */
-  const int flag_char;
+  int flag_char;
   /* Zero if this entry describes the flag character in general, or a
      nonzero character that may be found in flags2 if it describes the
      flag when used with certain formats only.  If the latter, only
@@ -448,18 +448,18 @@ typedef struct
      will be used, if non-NULL and the standard version is higher than
      the unpredicated one, for any pedantic warning.  For example, 'o'
      for strftime formats (meaning 'O' is an extension over C99).  */
-  const int predicate;
+  int predicate;
   /* Nonzero if the next character after this flag in the format should
      be skipped ('=' in strfmon), zero otherwise.  */
-  const int skip_next_char;
+  int skip_next_char;
   /* The name to use for this flag in diagnostic messages.  For example,
      N_("`0' flag"), N_("field width").  */
-  const char *const name;
+  const char *name;
   /* Long name for this flag in diagnostic messages; currently only used for
      "ISO C does not support ...".  For example, N_("the `I' printf flag").  */
-  const char *const long_name;
+  const char *long_name;
   /* The standard version in which it appeared.  */
-  const enum format_std_version std;
+  enum format_std_version std;
 } format_flag_spec;
 
 
@@ -468,16 +468,16 @@ typedef struct
 typedef struct
 {
   /* The first flag character in question (0 for end of array).  */
-  const int flag_char1;
+  int flag_char1;
   /* The second flag character.  */
-  const int flag_char2;
+  int flag_char2;
   /* Nonzero if the message should say that the first flag is ignored with
      the second, zero if the combination should simply be objected to.  */
-  const int ignored;
+  int ignored;
   /* Zero if this entry applies whenever this flag combination occurs,
      a nonzero character from flags2 if it only applies in some
      circumstances (e.g. 'i' for printf formats ignoring 0 with precision).  */
-  const int predicate;
+  int predicate;
 } format_flag_pair;
 
 
@@ -486,43 +486,43 @@ typedef struct
 {
   /* The name of this kind of format, for use in diagnostics.  Also
      the name of the attribute (without preceding and following __).  */
-  const char *const name;
+  const char *name;
   /* Specifications of the length modifiers accepted; possibly NULL.  */
-  const format_length_info *const length_char_specs;
+  const format_length_info *length_char_specs;
   /* Details of the conversion specification characters accepted.  */
-  const format_char_info *const conversion_specs;
+  const format_char_info *conversion_specs;
   /* String listing the flag characters that are accepted.  */
-  const char *const flag_chars;
+  const char *flag_chars;
   /* String listing modifier characters (strftime) accepted.  May be NULL.  */
-  const char *const modifier_chars;
+  const char *modifier_chars;
   /* Details of the flag characters, including pseudo-flags.  */
-  const format_flag_spec *const flag_specs;
+  const format_flag_spec *flag_specs;
   /* Details of bad combinations of flags.  */
-  const format_flag_pair *const bad_flag_pairs;
+  const format_flag_pair *bad_flag_pairs;
   /* Flags applicable to this kind of format.  */
-  const int flags;
+  int flags;
   /* Flag character to treat a width as, or 0 if width not used.  */
-  const int width_char;
+  int width_char;
   /* Flag character to treat a left precision (strfmon) as,
      or 0 if left precision not used.  */
-  const int left_precision_char;
+  int left_precision_char;
   /* Flag character to treat a precision (for strfmon, right precision) as,
      or 0 if precision not used.  */
-  const int precision_char;
+  int precision_char;
   /* If a flag character has the effect of suppressing the conversion of
      an argument ('*' in scanf), that flag character, otherwise 0.  */
-  const int suppression_char;
+  int suppression_char;
   /* Flag character to treat a length modifier as (ignored if length
      modifiers not used).  Need not be placed in flag_chars for conversion
      specifiers, but is used to check for bad combinations such as length
      modifier with assignment suppression in scanf.  */
-  const int length_code_char;
+  int length_code_char;
   /* Pointer to type of argument expected if '*' is used for a width,
      or NULL if '*' not used for widths.  */
-  tree *const width_type;
+  tree *width_type;
   /* Pointer to type of argument expected if '*' is used for a precision,
      or NULL if '*' not used for precisions.  */
-  tree *const precision_type;
+  tree *precision_type;
 } format_kind_info;
 
 
