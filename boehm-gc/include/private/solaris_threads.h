@@ -1,4 +1,4 @@
-#ifdef SOLARIS_THREADS
+#ifdef GC_SOLARIS_THREADS
 
 /* The set of all known threads.  We intercept thread creation and     */
 /* joins.  We never actually create detached threads.  We allocate all */
@@ -30,5 +30,5 @@
   extern size_t GC_page_sz;
   extern void GC_thr_init(void);
 
-# endif /* SOLARIS_THREADS */
+# endif /* GC_SOLARIS_THREADS */
 
