@@ -1,3 +1,17 @@
+2004-05-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* parse.y (check_pkg_class_access): Add new argument
+	and use it when cl is NULL to call lookup_cl on it.
+	(parser_check_super_interface): Do not call lookup_cl.
+	Pass this_decl to check_pkg_class_access and NULL
+	instead of lookup_cl.
+	(parser_check_super): Update for change in
+	check_pkg_class_access.
+	(do_resolve_class): Likewise.
+	(process_imports): Likewise.
+	(find_in_imports_on_demand): Likewise.
+	(resolve_qualified_expression_name): Likewise.
+
 2004-05-06  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Fixes PR java/9685, PR java/15073
