@@ -4708,6 +4708,7 @@ reload_reg_free_before_p (regno, opnum, type)
 
       return (! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno)
 	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno)
+	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno)
 	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno));
 				   
     case RELOAD_FOR_OUTPUT:
