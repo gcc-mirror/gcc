@@ -1,3 +1,11 @@
+2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.texi, doc/invoke.texi: Add index of command line
+	options.  Use @opindex to index them rather than other indexing
+	commands.  Use @var{...} instead of <...>.  Avoid spaces in names
+	inside @var.  Don't use @kindex to index escape sequences in
+	source code.
+
 2001-06-08  Jason Merrill  <jason_merrill@redhat.com>
 
 	* dbxout.c (dbxout_symbol): Use DECL_RTL_SET_P.
