@@ -399,6 +399,7 @@ static rtx expand_compound_operation  PROTO((rtx));
 static rtx expand_field_assignment  PROTO((rtx));
 static rtx make_extraction	PROTO((enum machine_mode, rtx, int, rtx, int,
 				       int, int, int));
+static rtx extract_left_shift	PROTO((rtx, int));
 static rtx make_compound_operation  PROTO((rtx, enum rtx_code));
 static int get_pos_from_mask	PROTO((unsigned HOST_WIDE_INT, int *));
 static rtx force_to_mode	PROTO((rtx, enum machine_mode,
@@ -3620,24 +3621,6 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  if (GET_CODE (x) != MULT)
 	    return x;
 	}
-
-      /* If this is multiplication by a power of two and its first operand is
-	 a shift, treat the multiply as a shift to allow the shifts to
-	 possibly combine.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && (i = exact_log2 (INTVAL (XEXP (x, 1)))) >= 0
-	  && (GET_CODE (XEXP (x, 0)) == ASHIFT
-	      || GET_CODE (XEXP (x, 0)) == LSHIFTRT
-	      || GET_CODE (XEXP (x, 0)) == ASHIFTRT
-	      || GET_CODE (XEXP (x, 0)) == ROTATE
-	      || GET_CODE (XEXP (x, 0)) == ROTATERT))
-	return simplify_shift_const (NULL_RTX, ASHIFT, mode, XEXP (x, 0), i);
-
-      /* Convert (mult (ashift (const_int 1) A) B) to (ashift B A).  */
-      if (GET_CODE (XEXP (x, 0)) == ASHIFT
-	  && XEXP (XEXP (x, 0), 0) == const1_rtx)
-	return gen_rtx_combine (ASHIFT, mode, XEXP (x, 1),
-				XEXP (XEXP (x, 0), 1));
       break;
 
     case UDIV:
@@ -4613,6 +4596,28 @@ simplify_logical (x, last)
 			(GET_CODE (op0) == ASHIFT
 			 ? XEXP (op0, 1) : XEXP (op1, 1)));
 
+      /* If OP0 is (ashiftrt (plus ...) C), it might actually be
+	 a (sign_extend (plus ...)).  If so, OP1 is a CONST_INT, and the PLUS
+	 does not affect any of the bits in OP1, it can really be done
+	 as a PLUS and we can associate.  We do this by seeing if OP1
+	 can be safely shifted left C bits.  */
+      if (GET_CODE (op1) == CONST_INT && GET_CODE (op0) == ASHIFTRT
+	  && GET_CODE (XEXP (op0, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
+	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	  && INTVAL (XEXP (op0, 1)) < HOST_BITS_PER_WIDE_INT)
+	{
+	  int count = INTVAL (XEXP (op0, 1));
+	  HOST_WIDE_INT mask = INTVAL (op1) << count;
+
+	  if (mask >> count == INTVAL (op1)
+	      && (mask & nonzero_bits (XEXP (op0, 0), mode)) == 0)
+	    {
+	      SUBST (XEXP (XEXP (op0, 0), 1),
+		     GEN_INT (INTVAL (XEXP (XEXP (op0, 0), 1)) | mask));
+	      return op0;
+	    }
+	}
       break;
 
     case XOR:
@@ -5251,6 +5256,51 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   return new;
 }
 
+/* See if X contains an ASHIFT of COUNT or more bits that can be commuted
+   with any other operations in X.  Return X without that shift if so.  */
+
+static rtx
+extract_left_shift (x, count)
+     rtx x;
+     int count;
+{
+  enum rtx_code code = GET_CODE (x);
+  enum machine_mode mode = GET_MODE (x);
+  rtx tem;
+
+  switch (code)
+    {
+    case ASHIFT:
+      /* This is the shift itself.  If it is wide enough, we will return
+	 either the value being shifted if the shift count is equal to
+	 COUNT or a shift for the difference.  */
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) >= count)
+	return simplify_shift_const (NULL_RTX, ASHIFT, mode, XEXP (x, 0),
+				     INTVAL (XEXP (x, 1)) - count);
+      break;
+
+    case NEG:  case NOT:
+      if ((tem = extract_left_shift (XEXP (x, 0), count)) != 0)
+	return gen_unary (code, mode, tem);
+
+      break;
+
+    case PLUS:  case IOR:  case XOR:  case AND:
+      /* If we can safely shift this constant and we find the inner shift,
+	 make a new operation.  */
+      if (GET_CODE (XEXP (x,1)) == CONST_INT
+	  && (INTVAL (XEXP (x, 1)) & (((HOST_WIDE_INT) 1 << count)) - 1) == 0
+	  && (tem = extract_left_shift (XEXP (x, 0), count)) != 0)
+	return gen_binary (code, mode, tem, 
+			   GEN_INT (INTVAL (XEXP (x, 1)) >> count));
+
+      break;
+    }
+
+  return 0;
+}
+
 /* Look at the expression rooted at X.  Look for expressions
    equivalent to ZERO_EXTRACT, SIGN_EXTRACT, ZERO_EXTEND, SIGN_EXTEND.
    Form these expressions.
@@ -5277,6 +5327,7 @@ make_compound_operation (x, in_code)
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
   int mode_width = GET_MODE_BITSIZE (mode);
+  rtx rhs, lhs;
   enum rtx_code next_code;
   int i;
   rtx new = 0;
@@ -5432,81 +5483,38 @@ make_compound_operation (x, in_code)
       /* ... fall through ... */
 
     case ASHIFTRT:
+      lhs = XEXP (x, 0);
+      rhs = XEXP (x, 1);
+
       /* If we have (ashiftrt (ashift foo C1) C2) with C2 >= C1,
 	 this is a SIGN_EXTRACT.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && GET_CODE (XEXP (x, 0)) == ASHIFT
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) >= INTVAL (XEXP (XEXP (x, 0), 1)))
+      if (GET_CODE (rhs) == CONST_INT
+	  && GET_CODE (lhs) == ASHIFT
+	  && GET_CODE (XEXP (lhs, 1)) == CONST_INT
+	  && INTVAL (rhs) >= INTVAL (XEXP (lhs, 1)))
 	{
-	  new = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
+	  new = make_compound_operation (XEXP (lhs, 0), next_code);
 	  new = make_extraction (mode, new,
-				 (INTVAL (XEXP (x, 1))
-				  - INTVAL (XEXP (XEXP (x, 0), 1))),
-				 NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
+				 INTVAL (rhs) - INTVAL (XEXP (lhs, 1)),
+				 NULL_RTX, mode_width - INTVAL (rhs),
 				 code == LSHIFTRT, 0, in_code == COMPARE);
 	}
 
-      /* Similarly if we have (ashifrt (OP (ashift foo C1) C3) C2).  In these
-	 cases, we are better off returning a SIGN_EXTEND of the operation.  */
-
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && (GET_CODE (XEXP (x, 0)) == IOR || GET_CODE (XEXP (x, 0)) == AND
-	      || GET_CODE (XEXP (x, 0)) == XOR
-	      || GET_CODE (XEXP (x, 0)) == PLUS)
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
-	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
-	  && INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)) < HOST_BITS_PER_WIDE_INT
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && 0 == (INTVAL (XEXP (XEXP (x, 0), 1))
-		   & (((HOST_WIDE_INT) 1
-		       << (MIN (INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)),
-				INTVAL (XEXP (x, 1)))
-			   - 1)))))
-	{
-	  rtx c1 = XEXP (XEXP (XEXP (x, 0), 0), 1);
-	  rtx c2 = XEXP (x, 1);
-	  rtx c3 = XEXP (XEXP (x, 0), 1);
-	  HOST_WIDE_INT newop1;
-	  rtx inner = XEXP (XEXP (XEXP (x, 0), 0), 0);
-
-	  /* If C1 > C2, INNER needs to have the shift performed on it
-	     for C1-C2 bits.  */
-	  if (INTVAL (c1) > INTVAL (c2))
-	    {
-	      inner = gen_binary (ASHIFT, mode, inner,
-				  GEN_INT (INTVAL (c1) - INTVAL (c2)));
-	      c1 = c2;
-	    }
-
-	  newop1 = INTVAL (c3) >> INTVAL (c1);
-	  new = make_compound_operation (inner,
-					 GET_CODE (XEXP (x, 0)) == PLUS
-					 ? MEM : GET_CODE (XEXP (x, 0)));
-	  new = make_extraction (mode,
-				 gen_binary (GET_CODE (XEXP (x, 0)), mode, new,
-					     GEN_INT (newop1)),
-				 INTVAL (c2) - INTVAL (c1),
-				 NULL_RTX, mode_width - INTVAL (c2),
-				 code == LSHIFTRT, 0, in_code == COMPARE);
-	}
-
-      /* Similarly for (ashiftrt (neg (ashift FOO C1)) C2).  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && GET_CODE (XEXP (x, 0)) == NEG
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
-	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) >= INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)))
-	{
-	  new = make_compound_operation (XEXP (XEXP (XEXP (x, 0), 0), 0),
-					 next_code);
-	  new = make_extraction (mode,
-				 gen_unary (GET_CODE (XEXP (x, 0)), mode, new),
-				 (INTVAL (XEXP (x, 1))
-				  - INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))),
-				 NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
-				 code == LSHIFTRT, 0, in_code == COMPARE);
-	}
+      /* See if we have operations between an ASHIFTRT and an ASHIFT.
+	 If so, try to merge the shifts into a SIGN_EXTEND.  We could
+	 also do this for some cases of SIGN_EXTRACT, but it doesn't
+	 seem worth the effort; the case checked for occurs on Alpha.  */
+      
+      if (GET_RTX_CLASS (GET_CODE (lhs)) != 'o'
+	  && ! (GET_CODE (lhs) == SUBREG
+		&& (GET_RTX_CLASS (GET_CODE (SUBREG_REG (lhs))) == 'o'))
+	  && GET_CODE (rhs) == CONST_INT
+	  && INTVAL (rhs) < HOST_BITS_PER_WIDE_INT
+	  && (new = extract_left_shift (lhs, INTVAL (rhs))) != 0)
+	new = make_extraction (mode, make_compound_operation (new, next_code),
+			       0, NULL_RTX, mode_width - INTVAL (rhs),
+			       code == LSHIFTRT, 0, in_code == COMPARE);
+	
       break;
 
     case SUBREG:
@@ -5662,9 +5670,9 @@ force_to_mode (x, mode, mask, reg, just_select)
   if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
     return gen_lowpart_for_combine (mode, x);
 
-  /* If we aren't changing the mode and all zero bits in MASK are already
-     known to be zero in X, we need not do anything.  */
-  if (GET_MODE (x) == mode && (~ mask & nonzero) == 0)
+  /* If we aren't changing the mode, X is not a SUBREG, and all zero bits in
+     MASK are already known to be zero in X, we need not do anything.  */
+  if (GET_MODE (x) == mode && code != SUBREG && (~ mask & nonzero) == 0)
     return x;
 
   switch (code)
@@ -5727,12 +5735,36 @@ force_to_mode (x, mode, mask, reg, just_select)
 				      mask & INTVAL (XEXP (x, 1)));
 
 	  /* If X is still an AND, see if it is an AND with a mask that
-	     is just some low-order bits.  If so, and it is BITS wide (it
-	     can't be wider), we don't need it.  */
+	     is just some low-order bits.  If so, and it is MASK, we don't
+	     need it.  */
 
 	  if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT
 	      && INTVAL (XEXP (x, 1)) == mask)
 	    x = XEXP (x, 0);
+
+	  /* If it remains an AND, try making another AND with the bits
+	     in the mode mask that aren't in MASK turned on.  If the
+	     constant in the AND is wide enough, this might make a
+	     cheaper constant.  */
+
+	  if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT
+	      && GET_MODE_MASK (GET_MODE (x)) != mask)
+	    {
+	      HOST_WIDE_INT cval = (INTVAL (XEXP (x, 1))
+				    | (GET_MODE_MASK (GET_MODE (x)) & ~ mask));
+	      int width = GET_MODE_BITSIZE (GET_MODE (x));
+	      rtx y;
+
+	      /* If MODE is narrower that HOST_WIDE_INT and CVAL is a negative
+		 number, sign extend it.  */
+	      if (width > 0 && width < HOST_BITS_PER_WIDE_INT
+		  && (cval & ((HOST_WIDE_INT) 1 << (width - 1))) != 0)
+		cval |= (HOST_WIDE_INT) -1 << width;
+
+	      y = gen_binary (AND, GET_MODE (x), XEXP (x, 0), GEN_INT (cval));
+	      if (rtx_cost (y, SET) < rtx_cost (x, SET))
+		x = y;
+	    }
 
 	  break;
 	}
