@@ -1,3 +1,7 @@
+Tue Aug	10 00:28:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* jvgenmain.c (main): NUL-terminate name_obstack.
+
 1999-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* check-init.c (check_bool2_init, done_alternative): Add static
