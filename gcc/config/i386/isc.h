@@ -60,3 +60,25 @@
    80-bit XFmode insns, so don't generate them.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
+
+/* The ISC assembler does not like a .file directive with a name
+   longer than 14 characters.  Truncating it will not permit
+   debugging to work properly, but at least we won't get an error
+   message.  */
+
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE)                     \
+  do {                                           \
+   char c;                                       \
+   int max = 0;                                  \
+   char *string = dump_base_name;                \
+                                                 \
+    fputs ("\t.file\t\"", FILE);				 \
+                                                 \
+    while ((c = *string++) != 0 && max++ < 14) { \
+       if (c == '\"' || c == '\\')               \
+         putc ('\\', FILE);                      \
+       putc (c, FILE);                           \
+    }                                            \
+    fputs ("\"\n", FILE);                        \
+  } while (0)
