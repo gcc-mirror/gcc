@@ -1,5 +1,8 @@
 2000-07-24  Alexandre Oliva  <aoliva@redhat.com>
 
+	* configure.in (THREADS): Don't --enable-threads on IRIX <= 5.*.
+	* configure: Rebuilt.
+
 	* dyn_load.c (GC_scratch_last_end_ptr): Don't declare a #define.
 
 2000-06-20  Bryce McKinlay  <bryce@albatross.co.nz>

@@ -2072,6 +2072,10 @@ if test "$THREADS" = yes; then
     *-*-win*)
        THREADS=win32
        ;;
+    *-*-irix[1-5].*)
+       # No built-in threads library on IRIX 5.* and older.
+       THREADS=none
+       ;;
     *-*-irix*)
        # FIXME: for now, choose POSIX, because we implement that.
        # Later, choose irix threads.
