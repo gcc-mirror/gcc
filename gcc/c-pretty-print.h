@@ -119,8 +119,8 @@ struct c_pretty_print_info
 #define pp_initializer(PPI, E)            (*(PPI)->initializer) (PPI, E)
 #define pp_multiplicative_expression(PPI, E)\
    (*(PPI)->multiplicative_expression) (PPI, E)
-#define pp_conditional_expession(PPI, E)  \
-   (*(PPI)->conditional_expression (PPI, E))
+#define pp_conditional_expression(PPI, E)  \
+   (*(PPI)->conditional_expression) (PPI, E)
 #define pp_assignment_expression(PPI, E)  \
    (*(PPI)->assignment_expression) (PPI, E)
 
@@ -131,7 +131,8 @@ void pp_c_parameter_declaration_clause PARAMS ((c_pretty_print_info *, tree));
 void pp_c_declaration PARAMS ((c_pretty_print_info *, tree));
 void pp_c_statement PARAMS ((c_pretty_print_info *, tree));
 void pp_c_expression PARAMS ((c_pretty_print_info *, tree));
-
+/* Statements.  */
+void pp_c_statement PARAMS ((c_pretty_print_info *, tree));
 /* Expressions.  */
 void pp_c_expression PARAMS ((c_pretty_print_info *, tree));
 void pp_c_logical_or_expression PARAMS ((c_pretty_print_info *, tree));
