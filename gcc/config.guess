@@ -497,7 +497,7 @@ main(argc, argv)
    printf ("%s-${VENDOR}-linux-gnulibc1\n", argv[1]);
 # endif
 #else
-  printf ("%s-pc-linux-gnuaout\n", argv[1]);
+  printf ("%s-${VENDOR}-linux-gnuaout\n", argv[1]);
 #endif
   return 0;
 }
