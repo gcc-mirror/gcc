@@ -4277,7 +4277,7 @@ rtx_needs_barrier (x, flags, pred)
 						     pred);
 		}
 	    }
-	  else if (GET_CODE (pat) == CLOBBER)
+	  else if (GET_CODE (pat) == CLOBBER || GET_CODE (pat) == RETURN)
 	    need_barrier |= rtx_needs_barrier (pat, flags, pred);
 	}
       break;
