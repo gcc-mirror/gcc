@@ -244,6 +244,14 @@ do {									\
 	     rs6000_abi_name);						\
     }									\
 									\
+  if (flag_pic > 1 &&							\
+      (rs6000_current_abi == ABI_AIX || rs6000_current_abi == ABI_NT))	\
+    {									\
+      flag_pic = 0;							\
+      error ("-fPIC and -mcall-%s are incompatible.",			\
+	     rs6000_abi_name);						\
+    }									\
+									\
   if (rs6000_current_abi == ABI_AIX && TARGET_LITTLE_ENDIAN)		\
     {									\
       target_flags &= ~MASK_LITTLE_ENDIAN;				\
@@ -258,7 +266,7 @@ do {									\
 									\
   /* Treat -fPIC the same as -mrelocatable */				\
   if (flag_pic > 1)							\
-    target_flags |= MASK_RELOCATABLE;					\
+    target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC; \
 									\
   else if (TARGET_RELOCATABLE)						\
     flag_pic = 2;							\
@@ -954,7 +962,7 @@ do {									\
 #undef ASM_SPEC
 #define ASM_SPEC "%(asm_cpu) %{mregnames} %{mno-regnames} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-%{mrelocatable} %{mrelocatable-lib} \
+%{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} \
 %{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \

@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define RS6000_ABI_NAME "solaris"
 
 #undef ASM_CPU_SPEC
-#define ASM_CPU_SPEC "%{fpic:-K PIC} %{fPIC:-K PIC} -le -s"
+#define ASM_CPU_SPEC "-le -s"
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | \
