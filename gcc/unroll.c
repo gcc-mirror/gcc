@@ -3538,6 +3538,7 @@ loop_iterations (struct loop *loop)
       unsigned_p = 1;
     case GT:
       compare_dir = -1;
+      break;
     case NE:
       compare_dir = 0;
       break;
