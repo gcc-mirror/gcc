@@ -50,7 +50,9 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #define ASM_SPEC "-marm7tdmi %{mthumb-interwork:-mthumb-interwork} %{mbig-endian:-EB}"
+#ifndef LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} -X"
+#endif
 
 #define TARGET_VERSION  fputs (" (ARM/THUMB:generic)", stderr);
 
@@ -1237,8 +1239,6 @@ extern int making_const_table;
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
 /* Specific options for DBX Output */
-
-#define DBX_DEBUGGING_INFO 1
 
 #define DEFAULT_GDB_EXTENSIONS 1
 
