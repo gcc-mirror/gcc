@@ -1,3 +1,8 @@
+2002-06-11  Roger Sayle  <roger@eyesopen.com>
+	    Andreas Jaeger <aj@suse.de>
+
+	* cfgbuild.c: Update copyright years.
+
 2002-06-11  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.h (PREDICATE_CODES): Define. 
