@@ -303,7 +303,7 @@ stack_regs_mentioned (insn)
   unsigned int uid, max;
   int test;
 
-  if (! INSN_P (insn))
+  if (! INSN_P (insn) || !stack_regs_mentioned_data)
     return 0;
 
   uid = INSN_UID (insn);
@@ -419,6 +419,13 @@ reg_to_stack (first, file)
   int max_uid;
   block_info bi;
 
+  /* Clean up previous run.  */
+  if (stack_regs_mentioned_data)
+    {
+      VARRAY_FREE (stack_regs_mentioned_data);
+      stack_regs_mentioned_data = 0;
+    }
+
   if (!optimize)
     split_all_insns (0);
 
@@ -479,11 +486,8 @@ reg_to_stack (first, file)
   VARRAY_CHAR_INIT (stack_regs_mentioned_data, max_uid + 1,
 		    "stack_regs_mentioned cache");
 
-  if (convert_regs (file) && optimize)
-    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_CROSSJUMP | CLEANUP_POST_REGSTACK);
+  convert_regs (file);
 
-  /* Clean up.  */
-  VARRAY_FREE (stack_regs_mentioned_data);
   free (bi);
 }
 

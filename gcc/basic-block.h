@@ -540,6 +540,8 @@ enum update_life_extent
 #define CLEANUP_CROSSJUMP	2	/* Do crossjumping.  */
 #define CLEANUP_POST_REGSTACK	4	/* We run after reg-stack and need
 					   to care REG_DEAD notes.  */
+#define CLEANUP_PRE_SIBCALL	8	/* Do not get confused by code hidden
+					   inside call_placeholders..  */
 /* Flags for loop discovery.  */
 
 #define LOOP_TREE		1 	/* Build loop hierarchy tree.  */

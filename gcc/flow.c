@@ -135,6 +135,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "ssa.h"
+#include "timevar.h"
 
 #include "obstack.h"
 #include "splay-tree.h"
@@ -499,6 +500,7 @@ find_basic_blocks (f, nregs, file)
      FILE *file ATTRIBUTE_UNUSED;
 {
   int max_uid;
+  timevar_push (TV_CFG);
 
   /* Flush out existing data.  */
   if (basic_block_info != NULL)
@@ -556,6 +558,7 @@ find_basic_blocks (f, nregs, file)
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
+  timevar_pop (TV_CFG);
 }
 
 void
@@ -1002,6 +1005,7 @@ void
 cleanup_cfg (mode)
      int mode;
 {
+  timevar_push (TV_CLEANUP_CFG);
   delete_unreachable_blocks ();
   if (try_optimize_cfg (mode))
     delete_unreachable_blocks ();
@@ -1010,6 +1014,7 @@ cleanup_cfg (mode)
   /* Kill the data we won't maintain.  */
   free_EXPR_LIST_list (&label_value_list);
   free_EXPR_LIST_list (&tail_recursion_label_list);
+  timevar_pop (TV_CLEANUP_CFG);
 }
 
 /* Create a new basic block consisting of the instructions between
@@ -2960,6 +2965,14 @@ merge_blocks (e, b, c, mode)
       int c_has_outgoing_fallthru;
       int b_has_incoming_fallthru;
 
+      /* Avoid overactive code motion, as the forwarder blocks should eb
+         eliminated by the edge redirection instead. Only exception is the
+	 case b is an forwarder block and c has no fallthru edge, but no
+	 optimizers should be confused by this extra jump and we are about
+	 to kill the jump in bb_reorder pass instead.  */
+      if (forwarder_block_p (b) || forwarder_block_p (c))
+	return 0;
+
       /* We must make sure to not munge nesting of exception regions,
 	 lexical blocks, and loop notes.
 
@@ -3686,6 +3699,26 @@ try_optimize_cfg (mode)
 	      flow_delete_block (b);
 	      changed = 1;
 	      b = c;
+	    }
+
+	  /* Remove code labels no longer used.  
+	     Don't do the optimization before sibling calls are discovered,
+	     as some branches may be hidden inside CALL_PLACEHOLDERs.  */
+	  if (!(mode & CLEANUP_PRE_SIBCALL)
+	      && b->pred->pred_next == NULL
+	      && (b->pred->flags & EDGE_FALLTHRU)
+	      && GET_CODE (b->head) == CODE_LABEL
+	      /* If previous block does end with condjump jumping to next BB,
+	         we can't delete the label.  */
+	      && (b->pred->src == ENTRY_BLOCK_PTR
+		  || !reg_mentioned_p (b->head, b->pred->src->end)))
+	    {
+	      rtx label = b->head;
+	      b->head = NEXT_INSN (b->head);
+	      flow_delete_insn_chain (label, label);
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file, "Deleted label in block %i.\n",
+			 b->index);
 	    }
 
 	  /* A loop because chains of blocks might be combineable.  */

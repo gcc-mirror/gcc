@@ -427,6 +427,13 @@ save_for_inline (fndecl)
 
   argvec = initialize_for_inline (fndecl);
 
+  /* Delete basic block notes created by early run of find_basic_block.
+     The notes would be later used by find_basic_blocks to reuse the memory
+     for basic_block structures on already freed obstack.  */
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
+      delete_insn (insn);
+
   /* If there are insns that copy parms from the stack into pseudo registers,
      those insns are not copied.  `expand_inline_function' must
      emit the correct code to handle such things.  */
@@ -1552,17 +1559,11 @@ copy_insn_list (insns, map, static_chain_value)
 	     discarded because it is important to have only one of
 	     each in the current function.
 
-	     NOTE_INSN_DELETED notes aren't useful.
-
-	     NOTE_INSN_BASIC_BLOCK is discarded because the saved bb
-	     pointer (which will soon be dangling) confuses flow's
-	     attempts to preserve bb structures during the compilation
-	     of a function.  */
+	     NOTE_INSN_DELETED notes aren't useful.  */
 
 	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_BEG
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
 	    {
 	      copy = emit_note (NOTE_SOURCE_FILE (insn),
 				NOTE_LINE_NUMBER (insn));

@@ -689,6 +689,9 @@ static struct cse_reg_info * get_cse_reg_info PARAMS ((unsigned int));
 static int check_dependence	PARAMS ((rtx *, void *));
 
 static void flush_hash_table	PARAMS ((void));
+static bool insn_live_p		PARAMS ((rtx, int *));
+static bool set_live_p		PARAMS ((rtx, int *));
+static bool dead_libcall_p	PARAMS ((rtx, int *));
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
@@ -7481,6 +7484,98 @@ count_reg_usage (x, counts, dest, incr)
     }
 }
 
+/* Return true if set is live.  */
+static bool
+set_live_p (set, counts)
+     rtx set;
+     int *counts;
+{
+#ifdef HAVE_cc0
+  rtx tem;
+#endif
+
+  if (set_noop_p (set))
+    ;
+
+#ifdef HAVE_cc0
+  else if (GET_CODE (SET_DEST (set)) == CC0
+	   && !side_effects_p (SET_SRC (set))
+	   && ((tem = next_nonnote_insn (insn)) == 0
+	       || !INSN_P (tem)
+	       || !reg_referenced_p (cc0_rtx, PATTERN (tem))))
+    return false;
+#endif
+  else if (GET_CODE (SET_DEST (set)) != REG
+	   || REGNO (SET_DEST (set)) < FIRST_PSEUDO_REGISTER
+	   || counts[REGNO (SET_DEST (set))] != 0
+	   || side_effects_p (SET_SRC (set))
+	   /* An ADDRESSOF expression can turn into a use of the
+	      internal arg pointer, so always consider the
+	      internal arg pointer live.  If it is truly dead,
+	      flow will delete the initializing insn.  */
+	   || (SET_DEST (set) == current_function_internal_arg_pointer))
+    return true;
+  return false;
+}
+
+/* Return true if insn is live.  */
+
+static bool
+insn_live_p (insn, counts)
+     rtx insn;
+     int *counts;
+{
+  int i;
+  if (GET_CODE (PATTERN (insn)) == SET)
+    return set_live_p (PATTERN (insn), counts);
+  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
+    for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+      {
+	rtx elt = XVECEXP (PATTERN (insn), 0, i);
+
+	if (GET_CODE (elt) == SET)
+	  {
+	    if (set_live_p (elt, counts))
+	      return true;
+	  }
+	else if (GET_CODE (elt) != CLOBBER && GET_CODE (elt) != USE)
+	  return true;
+      }
+  else
+    return true;
+}
+
+/* Return true if libcall is dead as a whole.  */
+
+static bool
+dead_libcall_p (insn, counts)
+     rtx insn;
+     int *counts;
+{
+  rtx note;
+  /* See if there's a REG_EQUAL note on this insn and try to
+     replace the source with the REG_EQUAL expression.
+
+     We assume that insns with REG_RETVALs can only be reg->reg
+     copies at this point.  */
+  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+  if (note)
+    {
+      rtx set = single_set (insn);
+      rtx new = simplify_rtx (XEXP (note, 0));
+
+      if (!new)
+	new = XEXP (note, 0);
+
+      if (set && validate_change (insn, &SET_SRC (set), new, 0))
+	{
+	  remove_note (insn, find_reg_note (insn, REG_RETVAL, NULL_RTX));
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Scan all the insns and delete any that are dead; i.e., they store a register
    that is never used or they copy a register to itself.
 
@@ -7490,17 +7585,16 @@ count_reg_usage (x, counts, dest, incr)
    remaining passes of the compilation are also sped up.  */
 
 void
-delete_trivially_dead_insns (insns, nreg)
+delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
      rtx insns;
      int nreg;
+     int preserve_basic_blocks;
 {
   int *counts;
   rtx insn, prev;
-#ifdef HAVE_cc0
-  rtx tem;
-#endif
   int i;
   int in_libcall = 0, dead_libcall = 0;
+  basic_block bb;
 
   /* First count the number of times each register is used.  */
   counts = (int *) xcalloc (nreg, sizeof (int));
@@ -7518,124 +7612,89 @@ delete_trivially_dead_insns (insns, nreg)
   if (! INSN_P (insn))
     insn = prev_real_insn (insn);
 
-  for (; insn; insn = prev)
-    {
-      int live_insn = 0;
-      rtx note;
+  if (!preserve_basic_blocks)
+    for (; insn; insn = prev)
+      {
+	int live_insn = 0;
+	rtx note;
 
-      prev = prev_real_insn (insn);
+	prev = prev_real_insn (insn);
 
-      /* Don't delete any insns that are part of a libcall block unless
-	 we can delete the whole libcall block.
+	/* Don't delete any insns that are part of a libcall block unless
+	   we can delete the whole libcall block.
 
-	 Flow or loop might get confused if we did that.  Remember
-	 that we are scanning backwards.  */
-      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	   Flow or loop might get confused if we did that.  Remember
+	   that we are scanning backwards.  */
+	if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	  {
+	    in_libcall = 1;
+	    live_insn = 1;
+	    dead_libcall = dead_libcall_p (insn, counts);
+	  }
+	else if (in_libcall)
+	  live_insn = ! dead_libcall;
+	else
+	  live_insn = insn_live_p (insn, counts);
+
+	/* If this is a dead insn, delete it and show registers in it aren't
+	   being used.  */
+
+	if (! live_insn)
+	  {
+	    count_reg_usage (insn, counts, NULL_RTX, -1);
+	    delete_insn (insn);
+	  }
+
+	if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	  {
+	    in_libcall = 0;
+	    dead_libcall = 0;
+	  }
+      }
+  else
+    for (i = 0; i < n_basic_blocks; i++)
+      for (bb = BASIC_BLOCK (i), insn = bb->end; insn != bb->head; insn = prev)
 	{
-	  in_libcall = 1;
-	  live_insn = 1;
-	  dead_libcall = 0;
+	  int live_insn = 0;
+	  rtx note;
 
-	  /* See if there's a REG_EQUAL note on this insn and try to
-	     replace the source with the REG_EQUAL expression.
+	  prev = PREV_INSN (insn);
+	  if (!INSN_P (insn))
+	    continue;
 
-	     We assume that insns with REG_RETVALs can only be reg->reg
-	     copies at this point.  */
-	  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-	  if (note)
+	  /* Don't delete any insns that are part of a libcall block unless
+	     we can delete the whole libcall block.
+
+	     Flow or loop might get confused if we did that.  Remember
+	     that we are scanning backwards.  */
+	  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	    {
-	      rtx set = single_set (insn);
-	      rtx new = simplify_rtx (XEXP (note, 0));
+	      in_libcall = 1;
+	      live_insn = 1;
+	      dead_libcall = dead_libcall_p (insn, counts);
+	    }
+	  else if (in_libcall)
+	    live_insn = ! dead_libcall;
+	  else
+	    live_insn = insn_live_p (insn, counts);
 
-	      if (!new)
-		new = XEXP (note, 0);
+	  /* If this is a dead insn, delete it and show registers in it aren't
+	     being used.  */
 
-	      if (set && validate_change (insn, &SET_SRC (set), new, 0))
-		{
-		  remove_note (insn,
-			       find_reg_note (insn, REG_RETVAL, NULL_RTX));
-		  dead_libcall = 1;
-		}
+	  if (! live_insn)
+	    {
+	      count_reg_usage (insn, counts, NULL_RTX, -1);
+	      if (insn == bb->end)
+		bb->end = PREV_INSN (insn);
+	      flow_delete_insn (insn);
+	    }
+
+	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	    {
+	      in_libcall = 0;
+	      dead_libcall = 0;
 	    }
 	}
-      else if (in_libcall)
-	live_insn = ! dead_libcall;
-      else if (GET_CODE (PATTERN (insn)) == SET)
-	{
-	  if (set_noop_p (PATTERN (insn)))
-	    ;
-
-#ifdef HAVE_cc0
-	  else if (GET_CODE (SET_DEST (PATTERN (insn))) == CC0
-		   && ! side_effects_p (SET_SRC (PATTERN (insn)))
-		   && ((tem = next_nonnote_insn (insn)) == 0
-		       || ! INSN_P (tem)
-		       || ! reg_referenced_p (cc0_rtx, PATTERN (tem))))
-	    ;
-#endif
-	  else if (GET_CODE (SET_DEST (PATTERN (insn))) != REG
-		   || REGNO (SET_DEST (PATTERN (insn))) < FIRST_PSEUDO_REGISTER
-		   || counts[REGNO (SET_DEST (PATTERN (insn)))] != 0
-		   || side_effects_p (SET_SRC (PATTERN (insn)))
-		   /* An ADDRESSOF expression can turn into a use of the
-		      internal arg pointer, so always consider the
-		      internal arg pointer live.  If it is truly dead,
-		      flow will delete the initializing insn.  */
-		   || (SET_DEST (PATTERN (insn))
-		       == current_function_internal_arg_pointer))
-	    live_insn = 1;
-	}
-      else if (GET_CODE (PATTERN (insn)) == PARALLEL)
-	for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	  {
-	    rtx elt = XVECEXP (PATTERN (insn), 0, i);
-
-	    if (GET_CODE (elt) == SET)
-	      {
-		if (set_noop_p (elt))
-		  ;
-
-#ifdef HAVE_cc0
-		else if (GET_CODE (SET_DEST (elt)) == CC0
-			 && ! side_effects_p (SET_SRC (elt))
-			 && ((tem = next_nonnote_insn (insn)) == 0
-			     || ! INSN_P (tem)
-			     || ! reg_referenced_p (cc0_rtx, PATTERN (tem))))
-		  ;
-#endif
-		else if (GET_CODE (SET_DEST (elt)) != REG
-			 || REGNO (SET_DEST (elt)) < FIRST_PSEUDO_REGISTER
-			 || counts[REGNO (SET_DEST (elt))] != 0
-			 || side_effects_p (SET_SRC (elt))
-			 /* An ADDRESSOF expression can turn into a use of the
-			    internal arg pointer, so always consider the
-			    internal arg pointer live.  If it is truly dead,
-			    flow will delete the initializing insn.  */
-			 || (SET_DEST (elt)
-			     == current_function_internal_arg_pointer))
-		  live_insn = 1;
-	      }
-	    else if (GET_CODE (elt) != CLOBBER && GET_CODE (elt) != USE)
-	      live_insn = 1;
-	  }
-      else
-	live_insn = 1;
-
-      /* If this is a dead insn, delete it and show registers in it aren't
-	 being used.  */
-
-      if (! live_insn)
-	{
-	  count_reg_usage (insn, counts, NULL_RTX, -1);
-	  delete_insn (insn);
-	}
-
-      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	{
-	  in_libcall = 0;
-	  dead_libcall = 0;
-	}
-    }
 
   /* Clean up.  */
   free (counts);

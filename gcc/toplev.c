@@ -2827,17 +2827,18 @@ rest_of_compilation (decl)
       if (DECL_DEFER_OUTPUT (decl))
 	{
 	  /* If -Wreturn-type, we have to do a bit of compilation.  We just
-	     want to call jump_optimize to figure out whether or not we can
+	     want to call cleanup the cfg to figure out whether or not we can
 	     fall off the end of the function; we do the minimum amount of
-	     work necessary to make that safe.  And, we set optimize to zero
-	     to keep jump_optimize from working too hard.  */
+	     work necessary to make that safe.  */
 	  if (warn_return_type)
 	    {
 	      int saved_optimize = optimize;
 
 	      optimize = 0;
+	      rebuild_jump_labels (insns);
 	      find_exception_handler_labels ();
-	      jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	      cleanup_cfg (CLEANUP_PRE_SIBCALL);
 	      optimize = saved_optimize;
 	    }
 
@@ -3092,7 +3093,7 @@ rest_of_compilation (decl)
 
       /* Run this after jump optmizations remove all the unreachable code
 	 so that unreachable code will not keep values live.  */
-      delete_trivially_dead_insns (insns, max_reg_num ());
+      delete_trivially_dead_insns (insns, max_reg_num (), 0);
 
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks)
@@ -3195,7 +3196,7 @@ rest_of_compilation (decl)
 	     trivially dead.  We delete those instructions now in the
 	     hope that doing so will make the heuristics in loop work
 	     better and possibly speed up compilation.  */
-	  delete_trivially_dead_insns (insns, max_reg_num ());
+	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
 
 	  /* The regscan pass is currently necessary as the alias
 		  analysis code depends on this information.  */
@@ -3228,7 +3229,7 @@ rest_of_compilation (decl)
 	     trivially dead.  We delete those instructions now in the
 	     hope that doing so will make the heuristics in jump work
 	     better and possibly speed up compilation.  */
-	  delete_trivially_dead_insns (insns, max_reg_num ());
+	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
 
 	  reg_scan (insns, max_reg_num (), 0);
 	  jump_optimize (insns, !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
@@ -3672,15 +3673,22 @@ rest_of_compilation (decl)
 
   ggc_collect ();
 #endif
-  if (optimize > 0 && flag_reorder_blocks)
+  if (optimize > 0)
     {
       timevar_push (TV_REORDER_BLOCKS);
       open_dump_file (DFI_bbro, decl);
 
-      reorder_basic_blocks ();
+      /* Last attempt to optimize CFG, as life analyzis possibly removed
+	 some instructions.  */
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
+		   | CLEANUP_CROSSJUMP);
+      if (flag_reorder_blocks)
+	{
+	  reorder_basic_blocks ();
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
+	}
 
       close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
       timevar_pop (TV_REORDER_BLOCKS);
     }
 
