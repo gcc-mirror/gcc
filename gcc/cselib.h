@@ -49,7 +49,6 @@ struct elt_loc_list GTY(())
   struct elt_loc_list *next;
   /* An rtl expression that holds the value.  */
   rtx loc;
-  rtx canon_loc;
   /* The insn that made the equivalence.  */
   rtx setting_insn;
   /* True when setting insn is inside libcall.  */

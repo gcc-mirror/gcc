@@ -1,3 +1,10 @@
+2004-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* cselib.h (struct elt_loc_list): Remove canon_loc field.
+	* cselib.c (new_elt_loc_list): Remove canon_loc initialization.
+	(cselib_invalidate_mem): Remove all canon_loc and canon_x
+	traces.
+
 2004-04-22  Josef Zlomek  <zlomekj@suse.cz>
 
 	Revert
