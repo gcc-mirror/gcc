@@ -3736,9 +3736,14 @@ simplify_binary_operation (code, mode, op0, op1)
 	case DIV:
 	  if (op1 == CONST1_RTX (mode))
 	    return op0;
-	  else if (op0 == CONST0_RTX (mode)
-		   && ! side_effects_p (op1))
+
+	  /* In IEEE floating point, 0/x is not always 0.  */
+	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+	       || GET_MODE_CLASS (mode) == MODE_INT)
+	      && op0 == CONST0_RTX (mode)
+	      && ! side_effects_p (op1))
 	    return op0;
+
 #if 0 /* Turned off till an expert says this is a safe thing to do.  */
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
 	  /* Change division by a constant into multiplication.  */
