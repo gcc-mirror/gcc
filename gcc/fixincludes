@@ -189,7 +189,11 @@ while [ $# != 0 ]; do
     echo Fixing directory $1 into $2
 # Check .h files which are symlinks as well as those which are files.
 # A link to a header file will not be processed by anything but this.
-    files=`find . -name '*.h' \( -type f -o -type l \) -print`
+    if $LINKS; then
+      files=`find . -name '*.h' \( -type f -o -type l \) -print`
+    else
+      files=`find . -name '*.h' -type f -print`
+    fi
     echo Checking header files
   fi
 # Note that BSD43_* are used on recent MIPS systems.
