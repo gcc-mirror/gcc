@@ -38,7 +38,9 @@ set additional_flags "";
 if [istarget "i\[34567\]86-*-*"] then {
   lappend additional_flags "-ffloat-store"
 }
-
+if [istarget "m68k-*-*"] then {
+  lappend additional_flags "-ffloat-store"
+}
 if { [istarget "alpha*-*-*"] 
      || [istarget "sh-*-*"] } then {
   lappend additional_flags "-mieee"
