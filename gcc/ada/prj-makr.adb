@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,14 +44,13 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Regexp;               use GNAT.Regexp;
 
 with System.Case_Util;          use System.Case_Util;
+with System.CRTL;
 
 package body Prj.Makr is
 
    function Dup (Fd : File_Descriptor) return File_Descriptor;
-   pragma Import (C, Dup);
 
    procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
-   pragma Import (C, Dup2);
 
    Gcc : constant String := "gcc";
    Gcc_Path : String_Access := null;
@@ -64,11 +63,11 @@ package body Prj.Makr is
    Naming_File_Suffix      : constant String := "_naming";
    Source_List_File_Suffix : constant String := "_source_list.txt";
 
-   Output_FD   : File_Descriptor;
-   --  To save the project file and its naming project file.
+   Output_FD : File_Descriptor;
+   --  To save the project file and its naming project file
 
    procedure Write_Eol;
-   --  Output an empty line.
+   --  Output an empty line
 
    procedure Write_A_Char (C : Character);
    --  Write one character to Output_FD
@@ -83,6 +82,26 @@ package body Prj.Makr is
       Table_Initial        => 10,
       Table_Increment      => 10,
       Table_Name           => "Prj.Makr.Processed_Directories");
+
+   ---------
+   -- Dup --
+   ---------
+
+   function Dup  (Fd : File_Descriptor) return File_Descriptor is
+   begin
+      return File_Descriptor (System.CRTL.dup (Integer (Fd)));
+   end Dup;
+
+   ----------
+   -- Dup2 --
+   ----------
+
+   procedure Dup2 (Old_Fd, New_Fd : File_Descriptor) is
+      Fd : Integer;
+      pragma Warnings (Off, Fd);
+   begin
+      Fd := System.CRTL.dup2 (Integer (Old_Fd), Integer (New_Fd));
+   end Dup2;
 
    ----------
    -- Make --
@@ -160,19 +179,17 @@ package body Prj.Makr is
       -----------------------
 
       procedure Process_Directory (Dir_Name : String; Recursively : Boolean) is
-         Matched  : Matched_Type := False;
-         Str      : String (1 .. 2_000);
-         Last     : Natural;
-         Dir      : Dir_Type;
-         Process  : Boolean := True;
+         Matched : Matched_Type := False;
+         Str     : String (1 .. 2_000);
+         Canon   : String (1 .. 2_000);
+         Last    : Natural;
+         Dir     : Dir_Type;
+         Process : Boolean := True;
 
-         Temp_File_Name : String_Access := null;
-
+         Temp_File_Name         : String_Access := null;
          Save_Last_Pragma_Index : Natural := 0;
-
-         File_Name_Id : Name_Id := No_Name;
-
-         SFN_Prag : SFN_Pragma;
+         File_Name_Id           : Name_Id := No_Name;
+         SFN_Prag               : SFN_Pragma;
 
       begin
          --  Avoid processing the same directory more than once
@@ -195,12 +212,11 @@ package body Prj.Makr is
             Processed_Directories.Table (Processed_Directories.Last) :=
               new String'(Dir_Name);
 
-            --  Get the source file names from the directory.
-            --  Fails if the directory does not exist.
+            --  Get the source file names from the directory. Fails if the
+            --  directory does not exist.
 
             begin
                Open (Dir, Dir_Name);
-
             exception
                when Directory_Error =>
                   Prj.Com.Fail ("cannot open directory """, Dir_Name, """");
@@ -211,6 +227,13 @@ package body Prj.Makr is
             File_Loop : loop
                Read (Dir, Str, Last);
                exit File_Loop when Last = 0;
+
+               --  Copy the file name and put it in canonical case to match
+               --  against the patterns that have themselves already been put
+               --  in canonical case.
+
+               Canon (1 .. Last) := Str (1 .. Last);
+               Canonical_Case_File_Name (Canon (1 .. Last));
 
                if Is_Regular_File
                  (Dir_Name & Directory_Separator & Str (1 .. Last))
@@ -226,7 +249,7 @@ package body Prj.Makr is
 
                   for Index in Excluded_Expressions'Range loop
                      if
-                       Match (Str (1 .. Last), Excluded_Expressions (Index))
+                       Match (Canon (1 .. Last), Excluded_Expressions (Index))
                      then
                         Matched := Excluded;
                         exit;
@@ -242,7 +265,8 @@ package body Prj.Makr is
 
                      for Index in Regular_Expressions'Range loop
                         if
-                          Match (Str (1 .. Last), Regular_Expressions (Index))
+                          Match
+                            (Canon (1 .. Last), Regular_Expressions (Index))
                         then
                            Matched := True;
                            exit;
@@ -270,10 +294,18 @@ package body Prj.Makr is
 
                      begin
                         --  If we don't have the path of the compiler yet,
-                        --  get it now.
+                        --  get it now. The compiler name may have a prefix,
+                        --  so we get the potentially prefixed name.
 
                         if Gcc_Path = null then
-                           Gcc_Path := Locate_Exec_On_Path (Gcc);
+                           declare
+                              Prefix_Gcc : String_Access :=
+                                             Program_Name (Gcc);
+                           begin
+                              Gcc_Path :=
+                                Locate_Exec_On_Path (Prefix_Gcc.all);
+                              Free (Prefix_Gcc);
+                           end;
 
                            if Gcc_Path = null then
                               Prj.Com.Fail ("could not locate " & Gcc);
@@ -538,7 +570,7 @@ package body Prj.Makr is
 
                      if Matched /= Excluded then
                         for Index in Foreign_Expressions'Range loop
-                           if Match (Str (1 .. Last),
+                           if Match (Canon (1 .. Last),
                                      Foreign_Expressions (Index))
                            then
                               Matched := True;
