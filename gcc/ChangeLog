@@ -1,3 +1,18 @@
+2004-09-01  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.h (lookup_interface): Remove prototype.
+	(is_class_name): Rename to objc_is_class_name.
+	(lookup_objc_ivar): Rename to objc_lookup_ivar.
+	(get_current_scope): Rename to objc_get_current_scope.
+	* c-decl.c (get_current_scope): Rename to objc_get_current_scope.
+	* c-parse.in (parmlist_or_identifiers_1): Get rid of unused variable.
+	(yylexname): Call objc_is_class_name() instead of is_class_name().
+	* c-typeck.c (build_external_ref): Call objc_lookup_ivar()
+	instead of lookup_objc_ivar().
+	* stub-objc.c (lookup_interface): Remove stub.
+	(is_class_name): Rename to objc_is_class_name.
+	(lookup_objc_ivar): Rename to objc_lookup_ivar.
+
 2004-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* config.gcc (arm*-*-symbianelf*): Do not include t-bpabi.

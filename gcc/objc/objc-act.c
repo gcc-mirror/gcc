@@ -132,7 +132,7 @@ static tree build_objc_method_call (int, tree, tree, tree, tree);
 static void generate_strings (void);
 static tree get_proto_encoding (tree);
 static void build_selector_translation_table (void);
-
+static tree lookup_interface (tree);
 static tree objc_add_static_instance (tree, tree);
 
 static void build_objc_exception_stuff (void);
@@ -961,7 +961,7 @@ objc_check_decl (tree decl)
 
   if (TREE_CODE (type) != RECORD_TYPE)
     return;
-  if (TYPE_NAME (type) && (type = is_class_name (TYPE_NAME (type))))
+  if (TYPE_NAME (type) && (type = objc_is_class_name (TYPE_NAME (type))))
     error ("statically allocated instance of Objective-C class `%s'",
 	   IDENTIFIER_POINTER (type));
 }
@@ -2351,7 +2351,7 @@ get_class_reference (tree ident)
 #endif
   orig_ident = ident;
 
-  if (!(ident = is_class_name (ident)))
+  if (!(ident = objc_is_class_name (ident)))
     {
       error ("`%s' is not an Objective-C class name or alias",
 	     IDENTIFIER_POINTER (orig_ident));
@@ -2468,9 +2468,9 @@ objc_declare_alias (tree alias_ident, tree class_ident)
   }
 #endif /* OBJCPLUS */
 
-  if (!(underlying_class = is_class_name (class_ident)))
+  if (!(underlying_class = objc_is_class_name (class_ident)))
     warning ("cannot find class `%s'", IDENTIFIER_POINTER (class_ident));
-  else if (is_class_name (alias_ident))
+  else if (objc_is_class_name (alias_ident))
     warning ("class `%s' already exists", IDENTIFIER_POINTER (alias_ident));
   else
     alias_chain = tree_cons (underlying_class, alias_ident, alias_chain);
@@ -2490,7 +2490,7 @@ objc_declare_class (tree ident_list)
     {
       tree ident = TREE_VALUE (list);
 
-      if (! is_class_name (ident))
+      if (! objc_is_class_name (ident))
 	{
 	  tree record = lookup_name (ident);
 	
@@ -2510,7 +2510,7 @@ objc_declare_class (tree ident_list)
 }
 
 tree
-is_class_name (tree ident)
+objc_is_class_name (tree ident)
 {
   tree chain;
 
@@ -2563,10 +2563,10 @@ objc_is_object_ptr (tree type)
       && (IS_ID (type)
 	  || TREE_TYPE (type) == TREE_TYPE (objc_class_type)))
     return type;
-  return is_class_name (OBJC_TYPE_NAME (TREE_TYPE (type)));
+  return objc_is_class_name (OBJC_TYPE_NAME (TREE_TYPE (type)));
 }
 
-tree
+static tree
 lookup_interface (tree ident)
 {
   tree chain;
@@ -6766,7 +6766,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
   CLASS_SUPER_NAME (class) = super_name;
   CLASS_CLS_METHODS (class) = NULL_TREE;
 
-  if (! is_class_name (class_name)
+  if (! objc_is_class_name (class_name)
       && (decl = lookup_name (class_name)))
     {
       error ("`%s' redeclared as different kind of symbol",
@@ -7853,7 +7853,7 @@ get_super_receiver (void)
 	TREE_USED (UOBJC_SUPER_decl) = 1;
 	DECL_ARTIFICIAL (UOBJC_SUPER_decl) = 1;
 
-	UOBJC_SUPER_scope = get_current_scope ();
+	UOBJC_SUPER_scope = objc_get_current_scope ();
       }
 
       /* Set receiver to self.  */
@@ -7951,7 +7951,7 @@ void
 objc_clear_super_receiver (void)
 {
   if (objc_method_context
-      && UOBJC_SUPER_scope == get_current_scope ()) {
+      && UOBJC_SUPER_scope == objc_get_current_scope ()) {
     UOBJC_SUPER_decl = 0;
     UOBJC_SUPER_scope = 0;
   }
@@ -9053,7 +9053,7 @@ generate_objc_image_info (void)
 /* Look up ID as an instance variable.  */
 
 tree
-lookup_objc_ivar (tree id)
+objc_lookup_ivar (tree id)
 {
   tree decl;
 

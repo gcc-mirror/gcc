@@ -533,7 +533,7 @@ c_finish_incomplete_decl (tree decl)
 /* The Objective-C front-end often needs to determine the current scope.  */
 
 void *
-get_current_scope (void)
+objc_get_current_scope (void)
 {
   return current_scope;
 }

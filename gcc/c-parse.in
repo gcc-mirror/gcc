@@ -2601,8 +2601,7 @@ parmlist_or_identifiers:
 parmlist_or_identifiers_1:
 	  parmlist_1
 	| identifiers ')'
-		{ tree t;
-		  $$ = tree_cons (NULL_TREE, NULL_TREE, $1);
+		{ $$ = tree_cons (NULL_TREE, NULL_TREE, $1);
 
 		  /* Make sure we have a parmlist after attributes.  */
 		  if ($<ttype>-1 != 0)
@@ -3516,7 +3515,7 @@ yylexname (void)
 @@ifobjc
   else
     {
-      tree objc_interface_decl = is_class_name (yylval.ttype);
+      tree objc_interface_decl = objc_is_class_name (yylval.ttype);
       /* ObjC class names are in the same namespace as variables and
 	 typedefs, and hence are shadowed by local declarations.  */
       if (objc_interface_decl

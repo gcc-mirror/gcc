@@ -28,13 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-common.h"
 
 tree
-lookup_interface (tree ARG_UNUSED (arg))
-{
-  return 0;
-}
-
-tree
-is_class_name (tree ARG_UNUSED (arg))
+objc_is_class_name (tree ARG_UNUSED (arg))
 {
   return 0;
 }
@@ -46,7 +40,7 @@ objc_is_object_ptr (tree ARG_UNUSED (arg))
 }
 
 tree
-lookup_objc_ivar (tree ARG_UNUSED (arg))
+objc_lookup_ivar (tree ARG_UNUSED (arg))
 {
   return 0;
 }
