@@ -1366,15 +1366,6 @@ arc_eligible_for_epilogue_delay (trial, slot)
 
 /* PIC */
 
-/* Set up PIC-specific rtl.  This should not cause any insns
-   to be emitted.  */
-
-void
-arc_initialize_pic ()
-{
-  /* nothing to do */
-}
-
 /* Emit special PIC prologues and epilogues.  */
 
 void

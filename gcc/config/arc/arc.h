@@ -1242,7 +1242,6 @@ do {							\
    included in functions which used inline functions and were compiled to
    assembly language.)  */
 
-#define INITIALIZE_PIC arc_initialize_pic ()
 #define FINALIZE_PIC arc_finalize_pic ()
 
 /* A C expression that is nonzero if X is a legitimate immediate

@@ -102,7 +102,6 @@ static char *frame_base_name;
 static int frame_base_offset;
 
 static rtx pic_setup_code	PROTO((void));
-static rtx find_addr_reg	PROTO((rtx));
 static void sparc_init_modes	PROTO((void));
 static int save_regs		PROTO((FILE *, int, int, char *,
 				       int, int, int));
@@ -2434,14 +2433,6 @@ legitimize_pic_address (orig, mode, reg)
   return orig;
 }
 
-/* Set up PIC-specific rtl.  This should not cause any insns
-   to be emitted.  */
-
-void
-initialize_pic ()
-{
-}
-
 /* Return the RTX for insns to set the PIC register.  */
 
 static rtx
@@ -2584,36 +2575,6 @@ mem_min_alignment (mem, desired)
   return 0;
 }
 
-
-/* Return a REG that occurs in ADDR with coefficient 1.
-   ADDR can be effectively incremented by incrementing REG.  */
-
-static rtx
-find_addr_reg (addr)
-     rtx addr;
-{
-  while (GET_CODE (addr) == PLUS)
-    {
-      /* We absolutely can not fudge the frame pointer here, because the
-	 frame pointer must always be 8 byte aligned.  It also confuses
-	 debuggers.  */
-      if (GET_CODE (XEXP (addr, 0)) == REG
-	  && REGNO (XEXP (addr, 0)) != FRAME_POINTER_REGNUM)
-	addr = XEXP (addr, 0);
-      else if (GET_CODE (XEXP (addr, 1)) == REG
-	       && REGNO (XEXP (addr, 1)) != FRAME_POINTER_REGNUM)
-	addr = XEXP (addr, 1);
-      else if (CONSTANT_P (XEXP (addr, 0)))
-	addr = XEXP (addr, 1);
-      else if (CONSTANT_P (XEXP (addr, 1)))
-	addr = XEXP (addr, 0);
-      else
-	abort ();
-    }
-  if (GET_CODE (addr) == REG)
-    return addr;
-  abort ();
-}
 
 /* Vectors to keep interesting information about registers where it can easily
    be got.  We use to use the actual mode value as the bit number, but there

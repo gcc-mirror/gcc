@@ -1,3 +1,14 @@
+Sun Aug 23 09:39:09 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/arc/arc.c (arc_initialize_pic): Remove.
+	* config/arc/arc.h (INITIALIZE_PIC): Similarly, this routine does
+	nothing on any platform and is invoked by no-one, it does not even
+	appear in the documentation.
+	* config/sparc/sparc.h (INITIALIZE_PIC): Likewise.
+	* config/sparc/sparc.c (initialize_pic): Likewise.
+	(find_addr_reg): Remove this as well, no longer referenced after
+	my rewrite.
+
 Sun Aug 23 00:17:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* recog.c (validate_replace_rtx_group): New function.
