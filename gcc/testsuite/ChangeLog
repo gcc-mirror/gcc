@@ -1,6 +1,6 @@
 2004-05-10  Eric Christopher  <echristo@redhat.com>
 
-	* gcc.dg/sibcall-3.c: Remove xfail for mips.
+	* gcc.dg/sibcall-3.c: Remove xfail for mips*-*-elf.
 	* gcc.dg/sibcall-4.c: Ditto.
 
 2004-05-10  Ziemowit Laski  <zlaski@apple.com>
