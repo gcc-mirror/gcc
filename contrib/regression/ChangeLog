@@ -1,3 +1,8 @@
+2002-10-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* objs-gcc.sh: Don't install GDB testsuite if GDB was not built.
+	* btest-gcc.sh: Don't run GDB testsuite if it doesn't exist.
+
 2002-10-09  Phil Edwards  <pme@gcc.gnu.org>
 
 	* btest-gcc.sh, objs-gcc.sh:  Update TARGET comments.
