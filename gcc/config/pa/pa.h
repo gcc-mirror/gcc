@@ -715,12 +715,21 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
    and about the args processed so far, enough to enable macros
    such as FUNCTION_ARG to determine where the next arg should go.
 
-   On the HP-PA, this is a single integer, which is a number of words
+   On the HP-PA, the WORDS field holds the number of words
    of arguments scanned so far (including the invisible argument,
-   if any, which holds the structure-value-address).
-   Thus 4 or more means all following args should go on the stack.  */
+   if any, which holds the structure-value-address).  Thus, 4 or
+   more means all following args should go on the stack.
+   
+   The INCOMING field tracks whether this is an "incoming" or
+   "outgoing" argument.
+   
+   The INDIRECT field indicates whether this is is an indirect
+   call or not.
+   
+   The NARGS_PROTOTYPE field indicates that an argument does not
+   have a prototype when it less than or equal to 0.  */
 
-struct hppa_args {int words, nargs_prototype, indirect; };
+struct hppa_args {int words, nargs_prototype, incoming, indirect; };
 
 #define CUMULATIVE_ARGS struct hppa_args
 
@@ -730,6 +739,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
   (CUM).words = 0, 							\
+  (CUM).incoming = 0,							\
   (CUM).indirect = INDIRECT,						\
   (CUM).nargs_prototype = (FNTYPE && TYPE_ARG_TYPES (FNTYPE)		\
 			   ? (list_length (TYPE_ARG_TYPES (FNTYPE)) - 1	\
@@ -744,6 +754,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,IGNORE) \
   (CUM).words = 0,				\
+  (CUM).incoming = 1,				\
   (CUM).indirect = 0,				\
   (CUM).nargs_prototype = 1000
 
@@ -817,10 +828,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
    tempted to try and simply it, but I worry about breaking something.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (&CUM, MODE, TYPE, NAMED, 0)
-
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (&CUM, MODE, TYPE, NAMED, 1)
+  function_arg (&CUM, MODE, TYPE, NAMED)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
