@@ -1,5 +1,8 @@
 2003-09-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc (c4x-*, tic4x-*, d30v-*, mmix-knuth-mmixware):
+	Disable fixproto.
+
 	* config.gcc: Clean up and reindent $with_cpu=yes|no clause and
 	the section giving $with_cpu defaults by target.
 
