@@ -2200,18 +2200,13 @@ small_data_operand (rtx op ATTRIBUTE_UNUSED,
 #endif
 }
 
-/* Return 1 for all valid move insn operand combination involving altivec      
-   vectors in gprs.  */
+/* Return true if either operand is a general purpose register.  */
 
-int
-altivec_in_gprs_p (rtx op0, rtx op1)
+bool
+gpr_or_gpr_p (rtx op0, rtx op1)
 {
-  if (REG_P (op0) && REGNO_REG_CLASS (REGNO (op0)) == GENERAL_REGS)
-    return 1;
-
-  if (REG_P (op1) && REGNO_REG_CLASS (REGNO (op1)) == GENERAL_REGS) 
-    return 1;
-  return 0;
+  return ((REG_P (op0) && INT_REGNO_P (REGNO (op0)))
+	  || (REG_P (op1) && INT_REGNO_P (REGNO (op1))));
 }
 
 
@@ -9462,14 +9457,16 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
     emit_move_insn (dest, target);
 }
 
-/* Called by altivec splitter.
+/* Called by splitter for multireg moves.
    Input: 
           operands[0] : Destination of move
           operands[1] : Source of move
-	  noperands   : Size of operands vector
+
    Output:
-	  operands[2-5] ([2-3] in 64 bit) : Destination slots
-	  operands[6-9] ([4-5] in 64 bit) : Source slots
+	  operands[2-n] : Destination slots
+	  operands[n-m] : Source slots
+   where n = 2 + HARD_REGNO_NREGS (reg, GET_MODE (operands[0]))
+         m = 2 + 2 * HARD_REGNO_NREGS (reg, GET_MODE (operands[0])) - 1
 
    Splits the move of operands[1] to operands[0].
    This is done, if GPRs are one of the operands.  In this case
@@ -9479,10 +9476,13 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 */
 	  
 void
-rs6000_split_altivec_in_gprs (rtx *operands)
+rs6000_split_multireg_move (rtx *operands)
 {
-    int nregs, reg, i, j;
+  int nregs, reg, i, j, used_update = 0;
   enum machine_mode mode; 
+  rtx dst = operands[0];
+  rtx src = operands[1];
+  rtx insn = 0;
 
   /* Calculate number to move (2/4 for 32/64 bit mode).  */ 
 
@@ -9500,8 +9500,8 @@ rs6000_split_altivec_in_gprs (rtx *operands)
       for (i = 0; i < nregs; i++)
         {
           j--;
-          operands[i + 2] = operand_subword (operands[0], j, 0, mode);
-          operands[i + 2 + nregs] = 
+          operands[i+2] = operand_subword (operands[0], j, 0, mode);
+          operands[i+2+nregs] = 
             operand_subword (operands[1], j, 0, mode);   
         }
     }     
@@ -9512,29 +9512,87 @@ rs6000_split_altivec_in_gprs (rtx *operands)
       if (GET_CODE (operands[1]) == MEM)
         {
           rtx breg;
-          /* We have offsettable addresses only. If we use one of the
-             registers to address memory, we have change that register last.  */            
-          breg = GET_CODE (XEXP (operands[1], 0)) == PLUS ?
-              XEXP (XEXP (operands[1], 0), 0) :
-              XEXP (operands[1], 0);
 
-          if (REGNO (breg) >= REGNO (operands[0]) 
-              && REGNO (breg) < REGNO (operands[0]) + nregs)
-              j = REGNO (breg) - REGNO (operands[0]);
+	  if (GET_CODE (XEXP (operands[1], 0)) == PRE_INC
+	      || GET_CODE (XEXP (operands[1], 0)) == PRE_DEC)
+	    {
+	      rtx delta_rtx;
+	      breg = XEXP (XEXP (operands[1], 0), 0);
+	      delta_rtx =  GET_CODE (XEXP (operands[1], 0)) == PRE_INC 
+		  ? GEN_INT (GET_MODE_SIZE (GET_MODE (operands[1]))) 
+		  : GEN_INT (-GET_MODE_SIZE (GET_MODE (operands[1]))); 
+	      insn = emit_insn (TARGET_32BIT
+				? gen_addsi3 (breg, breg, delta_rtx)
+				: gen_adddi3 (breg, breg, delta_rtx));
+	      src = gen_rtx_MEM (mode, breg);
+	    }
+
+	  /* We have now address involving an base register only.
+	     If we use one of the registers to address memory, 
+	     we have change that register last.  */
+
+	  breg = (GET_CODE (XEXP (src, 0)) == PLUS
+		  ? XEXP (XEXP (src, 0), 0)
+		  : XEXP (src, 0));
+
+	  if (!REG_P (breg))
+	      abort();
+
+	  if (REGNO (breg) >= REGNO (dst) 
+	      && REGNO (breg) < REGNO (dst) + nregs)
+	    j = REGNO (breg) - REGNO (dst);
         }
+
+      if (GET_CODE (operands[0]) == MEM)
+	{
+	  rtx breg;
+
+	  if (GET_CODE (XEXP (operands[0], 0)) == PRE_INC
+	      || GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
+	    {
+	      rtx delta_rtx;
+	      breg = XEXP (XEXP (operands[0], 0), 0);
+	      delta_rtx = GET_CODE (XEXP (operands[0], 0)) == PRE_INC 
+		? GEN_INT (GET_MODE_SIZE (GET_MODE (operands[0]))) 
+		: GEN_INT (-GET_MODE_SIZE (GET_MODE (operands[0]))); 
+
+	      /* We have to update the breg before doing the store.
+		 Use store with update, if available.  */
+
+	      if (TARGET_UPDATE)
+		{
+		  insn = emit_insn (TARGET_32BIT
+				    ? gen_movsi_update (breg, breg, delta_rtx, 
+					operand_subword (src, 0, 0, mode))
+				    : gen_movdi_update (breg, breg, delta_rtx,
+					operand_subword (src, 0, 0, mode)));
+		  used_update = 1;
+		}
+	      else
+		  insn = emit_insn (TARGET_32BIT
+				    ? gen_addsi3 (breg, breg, delta_rtx)
+				    : gen_adddi3 (breg, breg, delta_rtx));
+	      dst = gen_rtx_MEM (mode, breg);
+	    }
+	}
 
       for (i = 0; i < nregs; i++)
-        { 
-          /* Calculate index to next subword.  */
-          j++;
-          if (j == nregs) 
-            j = 0;
+	{  
+	  /* Calculate index to next subword.  */
+	  ++j;
+	  if (j == nregs) 
+	    j = 0;
 
-          operands[i + 2] = operand_subword (operands[0], j, 0, mode);
-          operands[i + 2 + nregs] = 
-            operand_subword (operands[1], j, 0, mode);
+	  operands[i+2] = operand_subword (dst, j, 0, mode);
+	  operands[i+2+nregs] = operand_subword (src, j, 0, mode);
 
-        }
+	  if (j == 0 && used_update)
+	    {
+	      /* Already emited move of first word by 
+		 store with update -> emit dead insn instead (r := r).  */
+	      operands[i+2] = operands[i+2+nregs];
+	    }
+	}
     }
 }
 
