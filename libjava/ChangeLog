@@ -1,3 +1,8 @@
+2000-02-16  Anthony Green  <green@redhat.com>
+
+	* configure.host: Use the same options for i386 and i486 as we do
+	for i586 and i686.
+
 2000-02-12  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/File.java (createTempFile): Use low bits from counter,
