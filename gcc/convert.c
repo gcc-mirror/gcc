@@ -121,6 +121,14 @@ convert_to_integer (type, expr)
   int inprec = TYPE_PRECISION (intype);
   int outprec = TYPE_PRECISION (type);
 
+  /* An INTEGER_TYPE cannot be incomplete, but an ENUMERAL_TYPE can
+     be.  Consider `enum E = { a, b = (enum E) 3 };'.  */
+  if (!TYPE_SIZE (type))
+    {
+      error ("conversion to incomplete type");
+      return error_mark_node;
+    }
+
   switch (TREE_CODE (intype))
     {
     case POINTER_TYPE:
