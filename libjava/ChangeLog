@@ -1,3 +1,9 @@
+2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/18444
+	* configure.ac (threading): Accept 'posix95'.
+	* configure: Regenerate.
+
 2004-11-22  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/SocketChannelImpl.java
