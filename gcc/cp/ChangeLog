@@ -1,3 +1,8 @@
+2003-07-11  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR c++/11437
+	* operators.def: Add definitions for __imag__, __real__.
+
 2003-07-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11050
