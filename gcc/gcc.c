@@ -3577,9 +3577,9 @@ process_command (argc, argv)
 			      have_c = 1;
 			      break;
 			    }
-			  else if (skip = SWITCH_TAKES_ARG (argv[j][1]))
+			  else if ((skip = SWITCH_TAKES_ARG (argv[j][1])))
 			    j += skip - (argv[j][2] != 0);
-			  else if (skip = WORD_SWITCH_TAKES_ARG (argv[j] + 1))
+			  else if ((skip = WORD_SWITCH_TAKES_ARG (argv[j] + 1)))
 			    j += skip;
 			}
 		      j++;
