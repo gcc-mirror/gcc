@@ -1,3 +1,8 @@
+2000-05-12  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.c (struct shadow_summary): Define
+	bitfields as type unsigned int.
+
 Sat May 13 00:09:59 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/t-avr: Added definition of FLOAT while generates
