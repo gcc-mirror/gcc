@@ -1,3 +1,8 @@
+2000-02-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/File.java (File(String, String)): For dirPath, treat an
+	empty String the same as `null'.
+
 2000-02-26  Anthony Green  <green@cygnus.com>
 
 	* gnu/gcj/io/MimeTypes.java: Test for null.
