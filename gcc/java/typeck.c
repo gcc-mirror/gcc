@@ -733,7 +733,7 @@ lookup_java_method (tree searched_class, tree method_name,
 		    method_signature, build_java_signature);
 }
 
-/* Return true iff CLASS (or its ancestors) has a method METHOD_NAME.  */
+/* Return true iff CLASS (or its ancestors) has a method METHOD_NAME.  */
 int
 has_method (tree class, tree method_name)
 {
