@@ -48,6 +48,15 @@ details.  */
 #define _Jv_platform_solib_suffix ".so"
 #endif
 
+// Some POSIX systems don't have O_SYNC and O_DYSNC so we define them here.
+// Needed in java/io/natFileDescriptorPosix.cc.
+#if !defined (O_SYNC) && defined (O_FSYNC)
+#define O_SYNC O_FSYNC
+#endif
+#if !defined (O_DSYNC) && defined (O_FSYNC)
+#define O_DSYNC O_FSYNC
+#endif
+
 // Separator for file name components.
 #define _Jv_platform_file_separator ((jchar) '/')
 // Separator for path components.
