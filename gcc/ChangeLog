@@ -1,3 +1,8 @@
+2000-07-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-parse.in (string): For -Wtraditional, warn about string
+	concatenation only once per line.
+
 Thu Jul 27 09:25:17 2000  Akiko Matsushita  <matusita@sra.co.jp>
 
 	* pa/x-pa-hpux: Add -D_HIUX_SOURCE to FIXPROTO_DEFINES

@@ -733,10 +733,21 @@ end ifobjc
 string:
 	  STRING
 	| string STRING
-		{ $$ = chainon ($1, $2);
+		{
 ifc
-		  if (warn_traditional && !in_system_header)
-		    warning ("Use of ANSI string concatenation");
+                  static int last_lineno = 0;
+                  static const char *last_input_filename = 0;
+end ifc
+                  $$ = chainon ($1, $2);
+ifc
+		  if (warn_traditional && !in_system_header
+		      && (lineno != last_lineno || !last_input_filename ||
+			  strcmp (last_input_filename, input_filename)))
+		    {
+		      warning ("traditional C rejects string concatenation");
+		      last_lineno = lineno;
+		      last_input_filename = input_filename;
+		    }
 end ifc
 		}
 	;
