@@ -1,5 +1,7 @@
 Sun Mar 29 12:45:23 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* local-alloc.c (reg_classes_overlap_p): Delete dead function.
+
 	* tree.h (lang_print_xnode): Provide prototype.
 
 Sat Mar 28 23:50:44 PST 1998 Jeff Law  (law@cygnus.com)
