@@ -1,5 +1,6 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -476,7 +477,8 @@ extern int target_flags;
 
 #define UNITS_PER_WORD 4
 
-/* A combination of defining PROMOTE_MODE, PROMOTE_FUNCTION_ARGS,
+/* A combination of defining PROMOTE_MODE,
+   TARGET_PROMOTE_FUNCTION_ARGS that always returns true,
    PROMOTE_FOR_CALL_ONLY and *not* defining PROMOTE_PROTOTYPES gives the
    best code size and speed for gcc, ipps and products in gcc-2.7.2.  */
 #define CRIS_PROMOTED_MODE(MODE, UNSIGNEDP, TYPE) \
@@ -486,14 +488,12 @@ extern int target_flags;
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)  \
   (MODE) = CRIS_PROMOTED_MODE (MODE, UNSIGNEDP, TYPE)
 
-#define PROMOTE_FUNCTION_ARGS
-
 /* Defining PROMOTE_FUNCTION_RETURN in gcc-2.7.2 uncovers bug 981110 (even
    if defining FUNCTION_VALUE with MODE as PROMOTED_MODE ;-)
 
    FIXME: Report this when cris.h is part of GCC, so others can easily
    see the problem.  Maybe check other systems that define
-   PROMOTE_FUNCTION_RETURN.  */
+   TARGET_PROMOTE_FUNCTION_RETURN that always returns true.  */
 #define PROMOTE_FOR_CALL_ONLY
 
 /* We will be using prototype promotion, so they will be 32 bit.  */
@@ -832,7 +832,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
   (IN_RANGE ((N), 0, 3) ? (CRIS_FIRST_ARG_REG + 3 - (N)) : INVALID_REGNUM)
 
 /* Store the stack adjustment in the structure-return-address register.  */
-#define CRIS_STACKADJ_REG STRUCT_VALUE_REGNUM
+#define CRIS_STACKADJ_REG CRIS_STRUCT_VALUE_REGNUM
 #define EH_RETURN_STACKADJ_RTX gen_rtx_REG (SImode, CRIS_STACKADJ_REG)
 
 #define EH_RETURN_HANDLER_RTX \
@@ -897,8 +897,9 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 /* Node: Stack Arguments */
 
 /* Since many parameters take up one register each in any case,
-   PROMOTE_PROTOTYPES would seem like a good idea, but measurements
-   indicate that a combination using PROMOTE_MODE is better.  */
+   defining TARGET_PROMOTE_PROTOTYPES that always returns true would
+   seem like a good idea, but measurements indicate that a combination
+   using PROMOTE_MODE is better.  */
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 
@@ -992,7 +993,7 @@ struct cum_args {int regs;};
  ((unsigned) int_size_in_bytes (TYPE) > CRIS_MAX_ARGS_IN_REGS * UNITS_PER_WORD)
 #endif
 
-#define STRUCT_VALUE_REGNUM ((CRIS_FIRST_ARG_REG) - 1)
+#define CRIS_STRUCT_VALUE_REGNUM ((CRIS_FIRST_ARG_REG) - 1)
 
 
 /* Node: Caller Saves */

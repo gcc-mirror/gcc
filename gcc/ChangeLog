@@ -1,3 +1,13 @@
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/cris/cris.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(cris_struct_value_rtx): Likewise.
+	* config/cris/cris.h (PROMOTE_FUNCTION_ARGS): Remove.
+	(CRIS_STACKADJ_REG): Use CRIS_STRUCT_VALUE_REGNUM instead of
+	STRUCT_VALUE_REGNUM.
+	(STRUCT_VALUE_REGNUM): Rename to CRIS_STRUCT_VALUE_REGNUM.
+
 2004-01-24  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR bootstrap/13848
