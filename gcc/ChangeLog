@@ -1,5 +1,34 @@
 2001-11-15  Andreas Schwab  <schwab@suse.de>
 
+	* config.gcc: Set STMP_FIXPROTO and FIXPROTO_DEFINES in target
+	makefile frag, not host makefile frag.
+	(m88k-dg-dguxbcs*): Add m88k/t-dgux to tmake_file.
+	(hppa*): Add pa/t-bsd to tmake_file where no special xmake_file is
+	used.
+        (hppa*-*-openbsd*): Don't use nonexitent pa/t-openbsd.
+	* config/m88k/t-dguxbcs: Remove definitions already in t-dgux.
+	* config/m88k/t-dgux (STMP_FIXPROTO): Define.
+	* config/i386/t-cygwin (STMP_FIXPROTO): Define.
+	* config/i386/t-dgux (STMP_FIXPROTO): Define.
+	* config/x-interix: Don't define STMP_FIXPROTO and
+	FIXPROTO_DEFINES.
+	* config/t-interix: New file, define STMP_FIXPROTO.
+	* config/i386/x-beos (STMP_FIXPROTO): Don't define here.
+	* config/i386/t-beos (STMP_FIXPROTO): Define here instead.
+	* config/t-svr4 (FIXPROTO_DEFINES): Define.
+	* config/arm/t-riscix (FIXPROTO_DEFINES): Define.
+	* config/i386/t-sco5 (FIXPROTO_DEFINES): Define.
+	* config/i386/t-sco5gas (FIXPROTO_DEFINES): Define.
+	* config/m68k/t-hp3200: Renamed from x-hp3200.
+	* config/i370/t-oe: Renamed from x-oe.
+	* config/mips/t-iris: Renamed from x-iris.
+	* config/pa/t-bsd: Renamed from x-pa.
+	* config/pa/t-pa-hpux: Renamed from x-pa-hpux.
+	* config/x-linux, config/i386/x-cygwin, config/i386/x-dgux,
+	config/m88k/x-dgux, config/x-svr4, config/arm/x-riscix,
+	config/i386/x-sco5, config/m68k/x-hp320g, config/mips/x-iris6,
+	config/rs6000/x-cygwin: Remove files.
+
 	* configure.in: Check for target objdump and use that in eh_frame
 	optimization test.
 	* configure: Regenerated.
