@@ -9617,6 +9617,27 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       TREE_VEC_ELT (targs, idx) = arg;
       return 0;
 
+    case PTRMEM_CST:
+     {
+        /* A pointer-to-member constant can be unified only with
+         another constant.  */
+      if (TREE_CODE (arg) != PTRMEM_CST)
+        return 1;
+
+      /* Just unify the class member. It would be useless (and possibly
+         wrong, depending on the strict flags) to unify also
+         PTRMEM_CST_CLASS, because we want to be sure that both parm and
+         arg refer to the same variable, even if through different
+         classes. For instance:
+
+         struct A { int x; };
+         struct B : A { };
+
+         Unification of &A::x and &B::x must succeed.  */
+      return unify (tparms, targs, PTRMEM_CST_MEMBER (parm),
+                    PTRMEM_CST_MEMBER (arg), strict);
+     }
+
     case POINTER_TYPE:
       {
 	if (TREE_CODE (arg) != POINTER_TYPE)
@@ -9805,6 +9826,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	return 1;
       return 0;
 
+    case FIELD_DECL:
     case TEMPLATE_DECL:
       /* Matched cases are handled by the ARG == PARM test above.  */
       return 1;
