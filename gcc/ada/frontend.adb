@@ -33,6 +33,7 @@ with Debug;    use Debug;
 with Elists;
 with Exp_Ch11;
 with Exp_Dbug;
+with Fmap;
 with Fname.UF;
 with Hostparm; use Hostparm;
 with Inline;   use Inline;
@@ -182,6 +183,13 @@ begin
          Opt.Suppress_Options := Scope_Suppress;
       end;
 
+   end if;
+
+   --  If there was a -gnatem switch, initialize the mappings of unit names to
+   --  file names and of file names to path names from the mapping file.
+
+   if Mapping_File_Name /= null then
+      Fmap.Initialize (Mapping_File_Name.all);
    end if;
 
    --  We have now processed the command line switches, and the gnat.adc

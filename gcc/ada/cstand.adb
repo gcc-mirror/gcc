@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1003,14 +1003,27 @@ package body CStand is
 
       --  Create type declaration for Duration, using a 64-bit size.
       --  Delta is 1 nanosecond.
+      --  Except on 32 bits machine in No_Run_Time mode, in which case Duration
+      --  is a 32 bits value whose delta is 10E-4 seconds.
 
       Build_Duration : declare
-         Dlo : constant Uint := Intval (Type_Low_Bound (Standard_Integer_64));
-         Dhi : constant Uint := Intval (Type_High_Bound (Standard_Integer_64));
-
-         Delta_Val : constant Ureal := UR_From_Components (Uint_1, Uint_9, 10);
+         Dlo         : Uint;
+         Dhi         : Uint;
+         Delta_Val   : Ureal;
+         Use_32_Bits : constant Boolean :=
+           No_Run_Time and then System_Word_Size = 32;
 
       begin
+         if Use_32_Bits then
+            Dlo := Intval (Type_Low_Bound (Standard_Integer_32));
+            Dhi := Intval (Type_High_Bound (Standard_Integer_32));
+            Delta_Val := UR_From_Components (Uint_1, Uint_4, 10);
+         else
+            Dlo := Intval (Type_Low_Bound (Standard_Integer_64));
+            Dhi := Intval (Type_High_Bound (Standard_Integer_64));
+            Delta_Val := UR_From_Components (Uint_1, Uint_9, 10);
+         end if;
+
          Decl :=
            Make_Full_Type_Declaration (Stloc,
              Defining_Identifier => Standard_Duration,
@@ -1024,9 +1037,15 @@ package body CStand is
                      High_Bound => Make_Real_Literal (Stloc,
                        Realval => Dhi * Delta_Val))));
 
-         Set_Ekind          (Standard_Duration, E_Ordinary_Fixed_Point_Type);
-         Set_Etype          (Standard_Duration, Standard_Duration);
-         Init_Size          (Standard_Duration, 64);
+         Set_Ekind (Standard_Duration, E_Ordinary_Fixed_Point_Type);
+         Set_Etype (Standard_Duration, Standard_Duration);
+
+         if Use_32_Bits then
+            Init_Size (Standard_Duration, 32);
+         else
+            Init_Size (Standard_Duration, 64);
+         end if;
+
          Set_Prim_Alignment (Standard_Duration);
          Set_Delta_Value    (Standard_Duration, Delta_Val);
          Set_Small_Value    (Standard_Duration, Delta_Val);

@@ -299,7 +299,8 @@ package Prj.Tree is
    function First_Choice_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
-   --  Only valid for N_Case_Item nodes
+   --  Return the first choice in a N_Case_Item, or Empty_Node if
+   --  this is when others.
 
    function Next_Case_Item
      (Node  : Project_Node_Id)
@@ -708,7 +709,8 @@ package Prj.Tree is
       --    --  Name:      not used
       --    --  Path_Name: not used
       --    --  Expr_Kind: not used
-      --    --  Field1:    first choice (literal string)
+      --    --  Field1:    first choice (literal string), or Empty_Node
+      --    --             for when others
       --    --  Field2:    first declarative item
       --    --  Field3:    next case item
       --    --  Value:     not used

@@ -45,6 +45,7 @@
 #include "expr.h"
 #include "ggc.h"
 #include "flags.h"
+#include "insn-codes.h"
 #include "insn-flags.h"
 #include "insn-config.h"
 #include "optabs.h"

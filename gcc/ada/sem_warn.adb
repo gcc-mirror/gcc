@@ -643,6 +643,15 @@ package body Sem_Warn is
 
          if not In_Extended_Main_Source_Unit (Cnode) then
             return;
+
+         --  In No_Run_Time_Mode, we remove the bodies of non-
+         --  inlined subprograms, which may lead to spurious
+         --  warnings, clearly undesirable.
+
+         elsif No_Run_Time
+           and then Is_Predefined_File_Name (Unit_File_Name (Unit))
+         then
+            return;
          end if;
 
          --  Loop through context items in this unit
@@ -673,15 +682,6 @@ package body Sem_Warn is
 
                      if Unit = Spec_Unit then
                         Set_Unreferenced_In_Spec (Item);
-
-                     --  In No_Run_Time_Mode, we remove the bodies of non-
-                     --  inlined subprograms, which may lead to spurious
-                     --  warnings, clearly undesirable.
-
-                     elsif No_Run_Time
-                       and then Is_Predefined_File_Name (Unit_File_Name (Unit))
-                     then
-                        null;
 
                      --  Otherwise simple unreferenced message
 

@@ -378,6 +378,7 @@ package Rtsfind is
 
    OK_To_Use_In_No_Run_Time_Mode : array (RTU_Id) of Boolean :=
      (Ada_Tags                => True,
+      Ada_Exceptions          => True,
       Interfaces              => True,
       System                  => True,
       System_Fat_Flt          => True,
@@ -387,11 +388,27 @@ package Rtsfind is
       System_Machine_Code     => True,
       System_Storage_Elements => True,
       System_Unsigned_Types   => True,
+      System_Secondary_Stack  => True,
       others                  => False);
    --  This array defines the set of packages that can legitimately be
    --  accessed by Rtsfind in No_Run_Time mode. Any attempt to load
    --  any other package in this mode will result in a message noting
    --  use of a feature not supported in high integrity mode.
+
+   OK_To_Use_In_Ravenscar_Mode : array (RTU_Id) of Boolean :=
+     (System_Interrupts                             => True,
+      System_Tasking                                => True,
+      System_Tasking_Protected_Objects              => True,
+      System_Tasking_Restricted_Stages              => True,
+      System_Tasking_Protected_Objects_Single_Entry => True,
+      System_Task_Info                              => True,
+      System_Parameters                             => True,
+      Ada_Real_Time                                 => True,
+      Ada_Real_Time_Delays                          => True,
+      others                                        => False);
+   --  This array defines the set of packages that can legitimately be
+   --  accessed by Rtsfind in Ravenscar mode, in addition to the
+   --  No_Run_Time units which are also allowed.
 
    --------------------------
    -- Runtime Entity Table --
@@ -1032,7 +1049,6 @@ package Rtsfind is
      RE_Shared_Var_WOpen,                -- System.Shared_Storage
 
      RE_Abort_Undefer_Direct,            -- System.Standard_Library
-     RE_Exception_Data,                  -- System.Standard_Library
      RE_Exception_Data_Ptr,              -- System.Standard_Library
 
      RE_Integer_Address,                 -- System.Storage_Elements
@@ -1953,7 +1969,6 @@ package Rtsfind is
      RE_Shared_Var_WOpen                 => System_Shared_Storage,
 
      RE_Abort_Undefer_Direct             => System_Standard_Library,
-     RE_Exception_Data                   => System_Standard_Library,
      RE_Exception_Data_Ptr               => System_Standard_Library,
 
      RE_Integer_Address                  => System_Storage_Elements,

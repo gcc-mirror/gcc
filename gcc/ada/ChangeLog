@@ -1,3 +1,117 @@
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* sem_res.adb (Resolve_Selected_Component): do not generate a 
+	discriminant check if the selected component is a component of 
+	the argument of an initialization procedure.
+
+	* trans.c (tree_transform, case of arithmetic operators): If result 
+	type is private, the gnu_type is the base type of the full view, 
+	given that the full view itself may be a subtype.
+	
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* sem_res.adb: Minor reformatting
+	
+	* trans.c (tree_transform, case N_Real_Literal): Add missing third 
+	parameter in call to Machine (unknown horrible effects from this 
+	omission).
+	
+	* urealp.h: Add definition of Round_Even for call to Machine
+	Add third parameter for Machine
+	
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* sem_warn.adb (Check_One_Unit): Suppress warnings completely on 
+	predefined units in No_Run_Time mode.
+	
+2001-12-17  Richard Kenner <kenner@gnat.com>
+
+	* misc.c (insn-codes.h): Now include.
+	
+2001-12-17  Olivier Hainque <hainque@gnat.com>
+
+	* a-except.adb: Preparation work for future integration of the GCC 3 
+	exception handling mechanism
+	(Notify_Handled_Exception, Notify_Unhandled_Exception): New routines
+	to factorize previous code sequences and make them externally callable,
+	e.g. for the Ada personality routine when the GCC 3 mechanism is used.
+	(Propagate_Exception, Raise_Current_Excep, Raise_From_Signal_Handler):
+	Use the new notification routines.
+	
+2001-12-17  Emmanuel Briot <briot@gnat.com>
+
+	* prj-tree.ads (First_Choice_Of): Document the when others case
+	
+2001-12-17  Arnaud Charlet <charlet@gnat.com>
+
+	* bindgen.adb (Gen_Ada_Init_*): Set priority of environment task in 
+	HI-E mode, in order to support Ravenscar profile properly.
+	
+	* cstand.adb (Create_Standard): Duration is a 32 bit type in HI-E 
+	mode on 32 bits targets.
+	
+2001-12-17  Vincent Celier <celier@gnat.com>
+
+	* fmap.adb: Initial version.
+	
+	* fmap.ads: Initial version.
+	
+	* fname-uf.adb (Get_File_Name): Use mapping if unit name mapped.
+	If search is successfully done, add to mapping.
+	
+	* frontend.adb: Initialize the mapping if a -gnatem switch was used.
+	
+	* make.adb:
+	(Gnatmake): Add new local variable Mapping_File_Name.
+	 Create mapping file when using project file(s).
+	 Delete mapping file before exiting.
+	
+	* opt.ads (Mapping_File_Name): New variable
+	
+	* osint.adb (Find_File): Use path name found in mapping, if any.
+	
+	* prj-env.adb (Create_Mapping_File): New procedure
+	
+	* prj-env.ads (Create_Mapping_File): New procedure.
+	
+	* switch.adb (Scan_Front_End_Switches): Add processing for -gnatem 
+	(Mapping_File)
+	
+	* usage.adb: Add entry for new switch -gnatem.
+	
+	* Makefile.in: Add dependencies for fmap.o.
+	
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): Retrieve proper entity when unit 
+	is a package instantiation rewritten as a package body.
+	(Install_Withed_Unit): Undo previous change, now redundant.
+	
+2001-12-17  Gary Dismukes <dismukes@gnat.com>
+
+	* layout.adb:
+	(Compute_Length): Move conversion to Unsigned to callers.
+	(Get_Max_Size): Convert Len expression to Unsigned after calls to
+	Compute_Length and Determine_Range.
+	(Layout_Array_Type): Convert Len expression to Unsigned after calls to
+	Compute_Length and Determine_Range.
+	Above changes fix problem with length computation for supernull arrays
+	where Max (Len, 0) wasn't getting applied due to the Unsigned 
+	conversion used by Compute_Length.
+	
+2001-12-17  Arnaud Charlet <charlet@gnat.com>
+
+	* rtsfind.ads:
+	(OK_To_Use_In_No_Run_Time_Mode): Allow Ada.Exceptions and
+	 System.Secondary_Stack.
+	(OK_To_Use_In_Ravenscar_Mode): New table needed to implement Ravenscar
+	 in HI-E mode.
+	Remove unused entity RE_Exception_Data.
+	
+	* rtsfind.adb (RTE): Allow Ravenscar Profile in HI mode.
+	
+	* rident.ads (No_Secondary_Stack): New restriction.
+
 2001-12-17  Joel Brobecker <brobecke@gnat.com>
 
 	* gnat_rm.texi: Fix minor typos. Found while reading the section 

@@ -524,13 +524,12 @@ package body Layout is
       end if;
 
       return
-        Convert_To (Standard_Unsigned,
-          Assoc_Add (Loc,
-            Left_Opnd =>
-              Assoc_Subtract (Loc,
-                Left_Opnd  => Hi_Op,
-                Right_Opnd => Lo_Op),
-            Right_Opnd => Make_Integer_Literal (Loc, 1)));
+        Assoc_Add (Loc,
+          Left_Opnd =>
+            Assoc_Subtract (Loc,
+              Left_Opnd  => Hi_Op,
+              Right_Opnd => Lo_Op),
+          Right_Opnd => Make_Integer_Literal (Loc, 1));
    end Compute_Length;
 
    ----------------------
@@ -748,6 +747,8 @@ package body Layout is
             begin
                Set_Parent (Len, E);
                Determine_Range (Len, OK, LLo, LHi);
+
+               Len := Convert_To (Standard_Unsigned, Len);
 
                --  If we cannot verify that range cannot be super-flat,
                --  we need a max with zero, since length must be non-neg.
@@ -1058,6 +1059,8 @@ package body Layout is
             begin
                Set_Parent (Len, E);
                Determine_Range (Len, OK, LLo, LHi);
+
+               Len := Convert_To (Standard_Unsigned, Len);
 
                --  If range definitely flat or superflat, result size is zero
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -5033,6 +5033,25 @@ package body Sem_Res is
       It1   : Interp;
       Found : Boolean;
 
+      function Init_Component return Boolean;
+      --  Check whether this is the initialization of a component within an
+      --  init_proc (by assignment or call to another init_proc). If true,
+      --  there is no need for a discriminant check.
+
+      --------------------
+      -- Init_Component --
+      --------------------
+
+      function Init_Component return Boolean is
+      begin
+         return Inside_Init_Proc
+           and then Nkind (Prefix (N)) = N_Identifier
+           and then Chars (Prefix (N)) = Name_uInit
+           and then Nkind (Parent (Parent (N))) = N_Case_Statement_Alternative;
+      end Init_Component;
+
+   --  Start of processing for Resolve_Selected_Component
+
    begin
       if Is_Overloaded (P) then
 
@@ -5128,6 +5147,7 @@ package body Sem_Res is
         and then Present (Discriminant_Checking_Func
                            (Original_Record_Component (Entity (S))))
         and then not Discriminant_Checks_Suppressed (T)
+        and then not Init_Component
       then
          Set_Do_Discriminant_Check (N);
       end if;

@@ -470,6 +470,11 @@ package Opt is
    --  When True we are allowed to look in the primary directory to locate
    --  other source or library files.
 
+   Mapping_File_Name : String_Ptr := null;
+   --  GNAT
+   --  File name of mapping between unit names, file names and path names.
+   --  (given by switch -gnatem)
+
    Maximum_Errors : Int := 9999;
    --  GNAT, GNATBIND
    --  Maximum number of errors before compilation is terminated

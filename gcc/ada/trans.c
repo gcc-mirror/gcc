@@ -585,9 +585,9 @@ tree_transform (gnat_node)
 	  else
 	    {
 	      if (! Is_Machine_Number (gnat_node))
-		ur_realval =
-                   Machine (Base_Type (Underlying_Type (Etype (gnat_node))),
-				      ur_realval);
+		ur_realval
+		  = Machine (Base_Type (Underlying_Type (Etype (gnat_node))),
+			     ur_realval, Round_Even);
 
 	      gnu_result
 		= UI_To_gnu (Numerator (ur_realval), gnu_result_type);
@@ -1857,6 +1857,13 @@ tree_transform (gnat_node)
 	    gnu_lhs = maybe_unconstrained_array (gnu_lhs);
 	    gnu_rhs = maybe_unconstrained_array (gnu_rhs);
 	  }
+
+	/* If the result type is a private type, its full view may be a
+	   numeric subtype. The representation we need is that of its base
+	   type, given that it is the result of an arithmetic operation.  */
+        else if (Is_Private_Type (Etype (gnat_node))) 
+	  gnu_type = gnu_result_type
+	    = get_unpadded_type (Base_Type (Full_View (Etype (gnat_node))));
 
 	/* If this is a shift whose count is not guaranteed to be correct,
 	   we need to adjust the shift count.  */
