@@ -2,7 +2,7 @@
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
    Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -172,7 +172,7 @@ DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
 DEFTREECODE (USING_DECL, "using_decl", 'd', 0)
 
 /* An un-parsed default argument.  Looks like an IDENTIFIER_NODE.  */
-DEFTREECODE (DEFAULT_ARG, "default_arg", 'c', 2)
+DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 2)
 
 /* A template-id, like foo<int>.  The first operand is the template.
    The second is the TREE_LIST or TREE_VEC of explicitly specified
