@@ -2805,12 +2805,12 @@ split_all_insns (upd_life)
      int upd_life;
 {
   sbitmap blocks;
-  int changed;
+  bool changed;
   basic_block bb;
 
   blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (blocks);
-  changed = 0;
+  changed = false;
 
   FOR_EACH_BB_REVERSE (bb)
     {
@@ -2835,7 +2835,7 @@ split_all_insns (upd_life)
 	      while (GET_CODE (last) == BARRIER)
 		last = PREV_INSN (last);
 	      SET_BIT (blocks, bb->index);
-	      changed = 1;
+	      changed = true;
 	      insn = last;
 	    }
 	}
@@ -2843,14 +2843,18 @@ split_all_insns (upd_life)
 
   if (changed)
     {
+      int old_last_basic_block = last_basic_block;
+
       find_many_sub_basic_blocks (blocks);
+
+      if (old_last_basic_block != last_basic_block && upd_life)
+	blocks = sbitmap_resize (blocks, last_basic_block, 1);
     }
 
   if (changed && upd_life)
-    {
-      count_or_remove_death_notes (blocks, 1);
-      update_life_info (blocks, UPDATE_LIFE_LOCAL, PROP_DEATH_NOTES);
-    }
+    update_life_info (blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
+		      PROP_DEATH_NOTES | PROP_REG_INFO);
+
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif

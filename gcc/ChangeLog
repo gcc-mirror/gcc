@@ -1,3 +1,23 @@
+2003-03-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR bootstrap/9994
+	Backport from mainline:
+
+	2003-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	* sbitmap.c (sbitmap_resize): New function.
+	* sbitmap.h (sbitmap_resize): Prototype here.
+	* recog.c (split_all_insns): Use sbitmap_resize.
+
+	Mon Feb 17 16:16:54 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (split_all_insns):  Fix memory overflow.
+
+	2003-02-15  Richard Henderson  <rth@redhat.com>
+
+	* recog.c (split_all_insns): Include new blocks in life update;
+	do a global life update.
+
 2003-03-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/cris/cris.md: Remove lingering EGCS reference.
