@@ -1796,6 +1796,8 @@ sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 	esac
 	case $machine in
 	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
+	esac
+	case $machine in
 	sh*-*-kaos*) tm_file="${tm_file} kaos.h sh/kaos-sh.h" ;;
 	esac
 	;;
