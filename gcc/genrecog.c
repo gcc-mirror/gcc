@@ -456,6 +456,19 @@ add_to_sequence (pattern, last, position)
       goto restart;
 
     case SET:
+      /* The operands of a SET must have the same mode unless one is VOIDmode.  */
+      if (GET_MODE (SET_SRC (pattern)) != VOIDmode
+	  && GET_MODE (SET_DEST (pattern)) != VOIDmode
+	  && GET_MODE (SET_SRC (pattern)) != GET_MODE (SET_DEST (pattern))
+	  /* The mode of an ADDRESS_OPERAND is the mode of the memory reference,
+	     not the mode of the address.  */
+	  && ! (GET_CODE (SET_SRC (pattern)) == MATCH_OPERAND
+		&& ! strcmp (XSTR (SET_SRC (pattern), 1), "address_operand")))
+	{
+	  print_rtl (stderr, pattern);
+	  fputc ('\n', stderr);
+	  fatal ("mode mismatch in SET");
+	}
       newpos[depth] = '0';
       new = add_to_sequence (SET_DEST (pattern), &new->success, newpos);
       this->success.first->enforce_mode = 1;
