@@ -436,8 +436,18 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   if (! uname (&u))
     {
       SET ("os.name", u.sysname);
-      SET ("os.arch", u.machine);
       SET ("os.version", u.release);
+
+      // Normalize x86 architecture names to "i386" (except on Windows, which 
+      // is handled in win32.cc).
+      if (u.machine[0] == 'i'
+	  && u.machine[1] != 0
+	  && u.machine[2] == '8'
+	  && u.machine[3] == '6'
+	  && u.machine[4] == 0)
+	SET ("os.arch", "i386");
+      else
+	SET ("os.arch", u.machine);
     }
   else
     {

@@ -1,5 +1,11 @@
 2005-02-18  Anthony Green  <green@redhat.com>
 
+	* java/lang/natRuntime.cc (insertSystemProperties): Normalize x86
+	architecture names to "i386" for compatibility reasons.  Win32
+	still uses "x86".
+
+2005-02-18  Anthony Green  <green@redhat.com>
+
 	* gij.cc (version): Change year for '--version' to 2005.
 	* gnu/gcj/convert/Convert.java: Ditto.
 	* gnu/java/rmi/rmic/RMIC.java: Ditto.
