@@ -11,4 +11,4 @@
 @set which-gcc GCC
 
 @set email-burley craig@@jcb-sc.com
-@set www-burley http://world.std.com/%7Eburley
+@set www-burley http://world.std.com/%7Eburley/

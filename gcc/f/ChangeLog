@@ -1,3 +1,20 @@
+2004-03-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* g77.texi (Aligned Data): Remove obsolete paragraph including a
+	broken link.
+	(Floating-point Errors): Remove links to http://www.validgh.com/
+	which was "hijacked".
+	(Language): Fix link to Fortran books.
+	(Projects): Remove obsolete paragraph including a broken link to
+	ftp://alpha.gnu.org/gnu/g77/projects/.
+	(Trouble): Remove obsolete paragraph including a broken link to
+	ftp://alpha.gnu.org/g77.plan.
+	
+	* invoke.texi (Overall Options): Remove broken reference to
+	rat7.uue (which was of dubious copyright status anyways).
+
+	* root.texi (www-burley): Fix URL.
+	
 2004-02-14  Release Manager
 
 	* GCC 3.3.3 Released.
