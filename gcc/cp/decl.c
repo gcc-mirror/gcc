@@ -14319,8 +14319,7 @@ finish_function (flags)
 	     the function so we know that their lifetime always ends with a
 	     return; see g++.dg/opt/nrv6.C.  We could be more flexible if
 	     we were to do this optimization in tree-ssa.  */
-	  /* Skip the artificial function body block.  */
-	  && (outer = BLOCK_SUBBLOCKS (BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl))),
+	  && (outer = BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl)),
 	      chain_member (r, BLOCK_VARS (outer))))
 	{
 	  
