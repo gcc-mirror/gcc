@@ -36,9 +36,8 @@
 #include "unwind-dw2.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/types.h>
 #include <signal.h>
-#include <ucontext.h>
-#include <mach/thread_status.h>
 
 typedef unsigned long reg_unit;
 
@@ -225,6 +224,11 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
     }
 }
 
+/* We used to include <ucontext.h> and <mach/thread_status.h>,
+   but they change so much between different Darwin system versions
+   that it's much easier to just write the structures involved here
+   directly.  */
+
 /* These defines are from the kernel's bsd/dev/ppc/unix_signal.c.  */
 #define UC_TRAD                 1
 #define UC_TRAD_VEC             6
@@ -236,6 +240,44 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
 #define UC_FLAVOR64_VEC         45
 #define UC_DUAL                 50
 #define UC_DUAL_VEC             55
+
+struct gcc_ucontext 
+{
+  int onstack;
+  sigset_t sigmask;
+  void * stack_sp;
+  size_t stack_sz;
+  int stack_flags;
+  struct gcc_ucontext *link;
+  size_t mcsize;
+  struct gcc_mcontext32 *mcontext;
+};
+
+struct gcc_float_vector_state 
+{
+  double fpregs[32];
+  uint32_t fpscr_pad;
+  uint32_t fpscr;
+  uint32_t save_vr[32][4];
+  uint32_t save_vscr[4];
+};
+
+struct gcc_mcontext32 {
+  uint32_t dar;
+  uint32_t dsisr;
+  uint32_t exception;
+  uint32_t padding1[5];
+  uint32_t srr0;
+  uint32_t srr1;
+  uint32_t gpr[32];
+  uint32_t cr;
+  uint32_t xer;
+  uint32_t lr;
+  uint32_t ctr;
+  uint32_t mq;
+  uint32_t vrsave;
+  struct gcc_float_vector_state fvs;
+};
 
 /* These are based on /usr/include/ppc/ucontext.h and
    /usr/include/mach/ppc/thread_status.h, but rewritten to be more
@@ -256,17 +298,16 @@ struct gcc_mcontext64 {
   uint32_t lr[2];
   uint32_t ctr[2];
   uint32_t vrsave;
-  ppc_float_state_t fs;
-  ppc_vector_state_t vs;
+  struct gcc_float_vector_state fvs;
 };
 
 #define UC_FLAVOR_SIZE \
-  (sizeof (struct mcontext) - sizeof (ppc_vector_state_t))
+  (sizeof (struct gcc_mcontext32) - 33*16)
 
-#define UC_FLAVOR_VEC_SIZE (sizeof (struct mcontext))
+#define UC_FLAVOR_VEC_SIZE (sizeof (struct gcc_mcontext32))
 
 #define UC_FLAVOR64_SIZE \
-  (sizeof (struct gcc_mcontext64) - sizeof (ppc_vector_state_t))
+  (sizeof (struct gcc_mcontext64) - 33*16)
 
 #define UC_FLAVOR64_VEC_SIZE (sizeof (struct gcc_mcontext64))
 
@@ -278,10 +319,9 @@ static bool
 handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
 		_Unwind_Ptr old_cfa)
 {
-  ucontext_t *uctx;
+  struct gcc_ucontext *uctx;
   bool is_64, is_vector;
-  ppc_float_state_t *float_state;
-  ppc_vector_state_t *vector_state;
+  struct gcc_float_vector_state * float_vector_state;
   _Unwind_Ptr new_cfa;
   int i;
   static _Unwind_Ptr return_addr;
@@ -293,16 +333,16 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   
   if (gprs[0] == 0x67 /* SYS_SIGRETURN */)
     {
-      uctx = (ucontext_t *) gprs[3];
-      is_vector = (uctx->uc_mcsize == UC_FLAVOR64_VEC_SIZE
-		   || uctx->uc_mcsize == UC_FLAVOR_VEC_SIZE);
-      is_64 = (uctx->uc_mcsize == UC_FLAVOR64_VEC_SIZE
-	       || uctx->uc_mcsize == UC_FLAVOR64_SIZE);
+      uctx = (struct gcc_ucontext *) gprs[3];
+      is_vector = (uctx->mcsize == UC_FLAVOR64_VEC_SIZE
+		   || uctx->mcsize == UC_FLAVOR_VEC_SIZE);
+      is_64 = (uctx->mcsize == UC_FLAVOR64_VEC_SIZE
+	       || uctx->mcsize == UC_FLAVOR64_SIZE);
     }
   else if (gprs[0] == 0 && gprs[3] == 184)
     {
       int ctxstyle = gprs[5];
-      uctx = (ucontext_t *) gprs[4];
+      uctx = (struct gcc_ucontext *) gprs[4];
       is_vector = (ctxstyle == UC_FLAVOR_VEC || ctxstyle == UC_FLAVOR64_VEC
 		   || ctxstyle == UC_TRAD_VEC || ctxstyle == UC_TRAD64_VEC);
       is_64 = (ctxstyle == UC_FLAVOR64_VEC || ctxstyle == UC_TRAD64_VEC
@@ -325,11 +365,10 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
       /* The context is 64-bit, but it doesn't carry any extra information
 	 for us because only the low 32 bits of the registers are
 	 call-saved.  */
-      struct gcc_mcontext64 *m64 = (struct gcc_mcontext64 *)uctx->uc_mcontext;
+      struct gcc_mcontext64 *m64 = (struct gcc_mcontext64 *)uctx->mcontext;
       int i;
 
-      float_state = &m64->fs;
-      vector_state = &m64->vs;
+      float_vector_state = &m64->fvs;
 
       new_cfa = m64->gpr[1][1];
       
@@ -354,33 +393,32 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
     }
   else
     {
-      struct mcontext *m = uctx->uc_mcontext;
+      struct gcc_mcontext32 *m = uctx->mcontext;
       int i;
 
-      float_state = &m->fs;
-      vector_state = &m->vs;
+      float_vector_state = &m->fvs;
       
-      new_cfa = m->ss.r1;
+      new_cfa = m->gpr[1];
 
-      set_offset (CR2_REGNO, &m->ss.cr);
+      set_offset (CR2_REGNO, &m->cr);
       for (i = 0; i < 32; i++)
-	set_offset (i, &m->ss.r0 + i);
-      set_offset (XER_REGNO, &m->ss.xer);
-      set_offset (LINK_REGISTER_REGNUM, &m->ss.lr);
-      set_offset (COUNT_REGISTER_REGNUM, &m->ss.ctr);
+	set_offset (i, m->gpr + i);
+      set_offset (XER_REGNO, &m->xer);
+      set_offset (LINK_REGISTER_REGNUM, &m->lr);
+      set_offset (COUNT_REGISTER_REGNUM, &m->ctr);
 
       if (is_vector)
-	set_offset (VRSAVE_REGNO, &m->ss.vrsave);
+	set_offset (VRSAVE_REGNO, &m->vrsave);
 
       /* Sometimes, srr0 points to the instruction that caused the exception,
 	 and sometimes to the next instruction to be executed; we want
 	 the latter.  */
-      if (m->es.exception == 3 || m->es.exception == 4
-	  || m->es.exception == 6
-	  || (m->es.exception == 7 && !(m->ss.srr1 & 0x10000)))
-	return_addr = m->ss.srr0 + 4;
+      if (m->exception == 3 || m->exception == 4
+	  || m->exception == 6
+	  || (m->exception == 7 && !(m->srr1 & 0x10000)))
+	return_addr = m->srr0 + 4;
       else
-	return_addr = m->ss.srr0;
+	return_addr = m->srr0;
     }
 
   fs->cfa_how = CFA_REG_OFFSET;
@@ -399,14 +437,14 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   set_offset (ARG_POINTER_REGNUM, &return_addr);
 
   for (i = 0; i < 32; i++)
-    set_offset (32 + i, float_state->fpregs + i);
-  set_offset (SPEFSCR_REGNO, &float_state->fpscr);
+    set_offset (32 + i, float_vector_state->fpregs + i);
+  set_offset (SPEFSCR_REGNO, &float_vector_state->fpscr);
   
   if (is_vector)
     {
       for (i = 0; i < 32; i++)
-	set_offset (FIRST_ALTIVEC_REGNO + i, vector_state->save_vr + i);
-      set_offset (VSCR_REGNO, vector_state->save_vscr);
+	set_offset (FIRST_ALTIVEC_REGNO + i, float_vector_state->save_vr + i);
+      set_offset (VSCR_REGNO, float_vector_state->save_vscr);
     }
 
   return true;
