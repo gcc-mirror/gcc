@@ -4076,6 +4076,57 @@
    ftoit %1,%0"
   [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
 
+;; Subregs suck for register allocation.  Pretend we can move TFmode
+;; data between general registers until after reload.
+(define_insn ""
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
+	(match_operand:TF 1 "input_operand" "ro,r"))]
+  "register_operand (operands[0], TFmode)
+   || reg_or_fp0_operand (operands[1], TFmode)"
+  "#")
+
+(define_split
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(match_operand:TF 1 "input_operand" ""))]
+  "reload_completed"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 1) (match_dup 3))]
+  "
+{
+  if (GET_CODE (operands[1]) == REG)
+    {
+      operands[3] = gen_rtx_REG (DImode, REGNO (operands[1]) + 1);
+      operands[2] = gen_rtx_REG (DImode, REGNO (operands[1]));
+    }
+  else if (GET_CODE (operands[1]) == MEM)
+    {
+      operands[3] = change_address (operands[1], DImode,
+				    plus_constant (XEXP (operands[1], 0), 8));
+      operands[2] = change_address (operands[1], DImode, NULL_RTX);
+    }
+
+  if (GET_CODE (operands[0]) == REG)
+    {
+      operands[1] = gen_rtx_REG (DImode, REGNO (operands[0]) + 1);
+      operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+    }
+  else if (GET_CODE (operands[0]) == MEM)
+    {
+      operands[1] = change_address (operands[0], DImode,
+				    plus_constant (XEXP (operands[0], 0), 8));
+      operands[0] = change_address (operands[0], DImode, NULL_RTX);
+    }
+
+  if (rtx_equal_p (operands[0], operands[3]))
+    {
+      rtx tmp;
+      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
+      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
+    }
+}")
+
+
+
 (define_expand "movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "")
 	(match_operand:SF 1 "general_operand" ""))]
@@ -4096,6 +4147,17 @@
   if (GET_CODE (operands[0]) == MEM
       && ! reg_or_fp0_operand (operands[1], DFmode))
     operands[1] = force_reg (DFmode, operands[1]);
+}")
+
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(match_operand:TF 1 "general_operand" ""))]
+  ""
+  "
+{
+  if (GET_CODE (operands[0]) == MEM
+      && ! reg_or_fp0_operand (operands[1], TFmode))
+    operands[1] = force_reg (TFmode, operands[1]);
 }")
 
 (define_insn ""
