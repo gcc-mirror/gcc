@@ -1,8 +1,8 @@
 2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4:  Uniform formatting.
-	* configure.in:  x
-	* configure.target:  x
+	* configure.in:  Warn when generic atomicity.h is used.
+	* configure.target:  Fix comment.
 	* aclocal.m4, configure:  Regenerate.
 
 2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
