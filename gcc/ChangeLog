@@ -1,3 +1,11 @@
+2004-05-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac (gcc_cv_ld): Prefer in-tree ld over whatever the
+	top-level detects, except when in-tree ld is being cross-built.
+	(gcc_cv_as): Likewise for as.  Use AS_FOR_TARGET otherwise, and
+	then AS only if target is host.
+	* configure: Rebuilt.
+
 2004-05-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* global.c (global_alloc): Call make_accurate_live_analysis.
