@@ -225,7 +225,7 @@ do {                                                                    \
 
 #define ASM_SPEC   " %| %{fpic:-k} %{fPIC:-k}"
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} %{assert*}"
+  "%{!nostartfiles:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} %{assert*}"
 
 /* This is defined when gcc is compiled in the BSD-directory-tree, and must
  * make up for the gap to all the stuff done in the GNU-makefiles.

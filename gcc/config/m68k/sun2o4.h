@@ -93,7 +93,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic}"
+  "%{!nostartfiles:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic}"
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
