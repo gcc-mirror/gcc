@@ -1,3 +1,7 @@
+2003-12-01  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* builtins.c (expand_builtin_longjmp): Added two memory clobbers.
+
 2003-12-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads_address): Split addresses of type
