@@ -1,3 +1,12 @@
+2000-06-01  Richard Henderson  <rth@cygnus.com>
+
+	* i960.c (i960_br_predict_opcode): Remove.
+	(i960_print_operand) [+]: Emit branch prediction hints.
+	(i960_function_arg): Return early for VOIDmode.
+	(i960_round_align): Return early for incomplete types.
+	* i960.h (PRINT_OPERAND_PUNCT_VALID_P): New.
+	* i960.md (all conditional branches): Add "%+".
+
 Thu Jun  1 12:24:21 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (get_alias_set): Don't call language-specific routine more
@@ -22,7 +31,7 @@ Thu Jun  1 09:37:35 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* Makefile.in (c-decl.o): Depend on $(EXPR_H), not expr.h.
 
-        * c-decl.c (init_decl_processing): Set lang_get_alias_set first thing.
+	* c-decl.c (init_decl_processing): Set lang_get_alias_set first thing.
 
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 

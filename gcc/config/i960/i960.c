@@ -1755,40 +1755,6 @@ i960_output_ret_insn (insn)
   return "ret";
 }
 
-#if 0
-/* Return a character string representing the branch prediction
-   opcode to be tacked on an instruction.  This must at least
-   return a null string.  */
-
-const char *
-i960_br_predict_opcode (lab_ref, insn)
-     rtx lab_ref, insn;
-{
-  if (TARGET_BRANCH_PREDICT)
-    {
-      unsigned long label_uid;
-      
-      if (GET_CODE (lab_ref) == CODE_LABEL)
-	label_uid = INSN_UID (lab_ref);
-      else if (GET_CODE (lab_ref) == LABEL_REF)
-	label_uid = INSN_UID (XEXP (lab_ref, 0));
-      else
-	return ".f";
-
-      /* If not optimizing, then the insn_addresses array will not be
-	 valid.  In this case, always return ".t" since most branches
-	 are taken.  If optimizing, return .t for backward branches
-	 and .f for forward branches.  */
-      if (! optimize
-	  || insn_addresses[label_uid] < insn_addresses[INSN_UID (insn)])
-	return ".t";
-      return ".f";
-    }
-    
-  return "";
-}
-#endif
-
 /* Print the operand represented by rtx X formatted by code CODE.  */
 
 void
@@ -1797,7 +1763,7 @@ i960_print_operand (file, x, code)
      rtx x;
      int code;
 {
-  enum rtx_code rtxcode = GET_CODE (x);
+  enum rtx_code rtxcode = x ? GET_CODE (x) : NIL;
 
   if (rtxcode == REG)
     {
@@ -1916,6 +1882,19 @@ i960_print_operand (file, x, code)
       else if (rtxcode == LE)  { fputs ("le", file); return; }
       else if (rtxcode == LEU) { fputs ("le", file); return; }
       else abort ();
+      break;
+
+    case '+':
+      /* For conditional branches, substitute ".t" or ".f".  */
+      if (TARGET_BRANCH_PREDICT)
+	{
+	  x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
+	  if (x)
+	    {
+	      int pred_val = INTVAL (XEXP (x, 0));
+	      fputs ((pred_val < REG_BR_PROB_BASE / 2 ? ".f" : ".t"), file);
+	    }
+	}
       break;
 
     case 0:
@@ -2509,6 +2488,9 @@ i960_function_arg (cum, mode, type, named)
   rtx ret;
   int size, align;
 
+  if (mode == VOIDmode)
+    return 0;
+
   i960_arg_size_and_align (mode, type, &size, &align);
 
   if (size > 4 || cum->ca_nstackparms != 0
@@ -2601,7 +2583,7 @@ i960_round_align (align, tsize)
 {
   int new_align;
 
-  if (TREE_CODE (tsize) != INTEGER_CST)
+  if (! tsize || TREE_CODE (tsize) != INTEGER_CST)
     return align;
 
   new_align = i960_object_bytes_bitalign (TREE_INT_CST_LOW (tsize)
