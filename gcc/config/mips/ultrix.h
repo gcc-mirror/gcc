@@ -66,7 +66,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 /* For compatibility with types.h.  */
-#ifndef STARTFILE_SPEC
+#ifndef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
 #endif
 
