@@ -1,5 +1,13 @@
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/Buffer.java
+	(cap): Made package-private.
+	(pos): Likewise.
+	(limit): Likewise.
+	(mark): Likewise.
+
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/SocketImpl.java
 	(shutdownInput): Made it non-abstract method throwing an exception
 	like in SUNs JRE.

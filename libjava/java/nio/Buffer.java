@@ -35,14 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.nio;
 
 public abstract class Buffer
 {
-  private int cap = 0;
-  private int limit = 0;
-  private int pos = 0;
-  private int mark = -1;
+  int cap = 0;
+  int limit = 0;
+  int pos = 0;
+  int mark = -1;
 
   // Creates a new Buffer.
   //
