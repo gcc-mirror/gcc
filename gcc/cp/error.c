@@ -1547,7 +1547,13 @@ dump_expr (t, nop)
       break;
 
     case CONVERT_EXPR:
-      dump_unary_op ("+", t, nop);
+      if (same_type_p (TREE_TYPE (t), void_type_node))
+	{
+	  OB_PUTS ("(void)");
+	  dump_expr (TREE_OPERAND (t, 0), 0);
+	}
+      else
+	dump_unary_op ("+", t, nop);
       break;
 
     case ADDR_EXPR:

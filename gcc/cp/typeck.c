@@ -5734,12 +5734,22 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* Produce (a ? (b = rhs) : (c = rhs))
 	   except that the RHS goes through a save-expr
 	   so the code to compute it is only emitted once.  */
-	tree cond
-	  = build_conditional_expr (TREE_OPERAND (lhs, 0),
-				    build_modify_expr (cp_convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 1)),
-						       modifycode, rhs),
-				    build_modify_expr (cp_convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 2)),
-						       modifycode, rhs));
+	tree cond;
+
+	/* Check this here to avoid odd errors when trying to convert
+	   a throw to the type of the COND_EXPR.  */
+	if (!lvalue_or_else (lhs, "assignment"))
+	  return error_mark_node;
+
+	cond = build_conditional_expr
+	  (TREE_OPERAND (lhs, 0),
+	   build_modify_expr (cp_convert (TREE_TYPE (lhs),
+					  TREE_OPERAND (lhs, 1)),
+			      modifycode, rhs),
+	   build_modify_expr (cp_convert (TREE_TYPE (lhs),
+					  TREE_OPERAND (lhs, 2)),
+			      modifycode, rhs));
+
 	if (cond == error_mark_node)
 	  return cond;
 	/* Make sure the code to compute the rhs comes out

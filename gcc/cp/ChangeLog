@@ -1,3 +1,11 @@
+1999-08-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_conditional_expr): Fix typo.
+	* typeck.c (build_modify_expr, COND_EXPR): Make sure we've got an
+	lvalue before trying to mess with the sides.
+
+	* error.c (dump_expr, CONVERT_EXPR): Handle (void) properly.
+
 Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* g++spec.c (lang_specific_driver): Add room for NULL in arglist.
