@@ -3765,8 +3765,11 @@ build_c_cast (type, expr)
 		    get_alias_set (TREE_TYPE (type))))
 	    warning ("dereferencing type-punned pointer will break strict-aliasing rules");
 	}
-      
+
       ovalue = value;
+      /* Replace a nonvolatile const static variable with its value.  */
+      if (optimize && TREE_CODE (value) == VAR_DECL)
+	value = decl_constant_value (value);
       value = convert (type, value);
 
       /* Ignore any integer overflow caused by the cast.  */

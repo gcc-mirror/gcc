@@ -1,3 +1,8 @@
+Sun Feb 16 23:07:52 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* c-typeck.c (build_c_cast):  Fold constant variables into
+	initial values.
+
 2003-02-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): Fix link for m68k-att-sysv.
