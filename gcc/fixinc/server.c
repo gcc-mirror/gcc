@@ -114,6 +114,7 @@ load_data (fp)
   size_t text_size;
   char *pz_scan;
   char z_line[1024];
+  t_bool got_done = BOOL_FALSE;
 
   text_size = sizeof (z_line) * 2;
   pz_scan = pz_text = malloc (text_size);
@@ -131,7 +132,10 @@ load_data (fp)
         break;
 
       if (strncmp (z_line, z_done, sizeof (z_done) - 1) == 0)
-        break;
+	{
+	  got_done = BOOL_TRUE;
+	  break;
+	}
 
       strcpy (pz_scan, z_line);
       pz_scan += strlen (z_line);
@@ -157,7 +161,7 @@ load_data (fp)
     }
 
   alarm (0);
-  if (read_pipe_timeout)
+  if (read_pipe_timeout || ! got_done)
     {
       free ((void *) pz_text);
       return (char *) NULL;
@@ -255,6 +259,9 @@ char *
 run_shell (pz_cmd)
      const char *pz_cmd;
 {
+  t_bool retry = BOOL_TRUE;
+
+ do_retry:
   /*  IF the shell server process is not running yet,
       THEN try to start it.  */
   if (server_id == NULLPROCESS)
@@ -299,9 +306,16 @@ run_shell (pz_cmd)
     
     if (pz == (char *) NULL)
       {
+	close_server ();
+
+	if (retry)
+	  {
+	    retry = BOOL_FALSE;
+	    goto do_retry;
+	  }
+
         fprintf (stderr, "CLOSING SHELL SERVER - command failure:\n\t%s\n",
                  pz_cmd);
-        close_server ();
         pz = (char *) malloc (1);
         if (pz != (char *) NULL)
           *pz = '\0';
