@@ -1,3 +1,7 @@
+Wed Feb 16 01:27:52 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (mulsi3_highpart): Add REG_EQUAL note to last insn.
+
 Wed Feb 16 00:58:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (udivsi3_i1, divsi3_i1, umulhisi3_i, mulhisi3_i): Name.
