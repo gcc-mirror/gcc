@@ -86,6 +86,7 @@ xtensa port		Bob Wilson		bob.wilson@acm.org
 darwin port		Stan Shebs		shebs@apple.com
 netbsd			Jason Thorpe		thorpej@wasabisystems.com
 sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
+sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 
 			Various Maintainers
 
@@ -197,7 +198,6 @@ Brendan Kehoe					brendan@zen.org
 Mumit Khan					khan@xraylith.wisc.edu
 Matthias Klose					doko@debian.org
 Jeff Knaggs					jknaggs@redhat.com
-Kaz Kojima					kkojima@gcc.gnu.org
 Paul Koning					ni1d@arrl.net
 Matt Kraai					kraai@alumni.cmu.edu
 Ziemowit Laski					zlaski@apple.com
