@@ -1336,8 +1336,9 @@ emit_move_sequence (operands, mode, scratch_reg)
       return 1;
     }
   /* Handle secondary reloads for SAR.  These occur when trying to load
-     the SAR from memory a FP register, or with a constant.  */
+     the SAR from memory, FP register, or with a constant.  */
   else if (GET_CODE (operand0) == REG
+	   && REGNO (operand0) < FIRST_PSEUDO_REGISTER
 	   && REGNO_REG_CLASS (REGNO (operand0)) == SHIFT_REGS
 	   && (GET_CODE (operand1) == MEM
 	       || GET_CODE (operand1) == CONST_INT
