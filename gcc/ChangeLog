@@ -1,3 +1,8 @@
+2003-06-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/11183
+	* arm.h (CANNOT_CHANGE_MODE_CLASS): Define.
+
 2003-06-14  Roger Sayle  <roger@eyesopen.com>
 
 	* opts.sh: Work around a mysterious feature in cygwin's gawk
