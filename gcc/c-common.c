@@ -357,7 +357,7 @@ decl_attributes (decl, attributes)
 #define T_C	&char_type_node
 #define T_V	&void_type_node
 #define T_W	&wchar_type_node
-#define T_ST    &size_type
+#define T_ST    &sizetype
 
 typedef struct {
   char *format_chars;
