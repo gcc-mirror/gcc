@@ -8,6 +8,9 @@ Sun Apr  5 16:53:37 1998  Don Bowman <don@pixsci.com>
 
 Sat Apr 4 23:34:32 PST 1998 Jeff Law  (law@cygnus.com)
 
+	* expmed.c (synth_mult): The value -1, has no zeros, so it can
+	never have the form ...011.
+
 	* version.c: Bump for snapshot.
 
 Sat Apr  4 20:16:46 1998  Richard Henderson  <rth@cygnus.com>
