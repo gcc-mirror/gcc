@@ -67,7 +67,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time target specifications */
 
-#define CPP_PREDEFINES "-Dxstormy16 -Amachine=xstormy16"
+#define TARGET_CPU_CPP_BUILTINS() do {	\
+  builtin_define_std ("xstormy16");	\
+  builtin_assert ("machine=xstormy16");	\
+} while (0)
 
 /* This declaration should be present.  */
 extern int target_flags;
