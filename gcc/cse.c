@@ -5189,8 +5189,18 @@ cse_insn (insn, libcall_insn)
 
 		trial = gen_rtx_LABEL_REF (Pmode, get_label_after (trial));
 
-	      SET_SRC (sets[i].rtl) = trial;
- 	      cse_jumps_altered = 1;
+	      if (trial == pc_rtx)
+		{
+		  SET_SRC (sets[i].rtl) = trial;
+		  cse_jumps_altered = 1;
+		  break;
+		}
+
+	      /* We must actually validate the change.  Consider a target
+		 where unconditional jumps are more complex than
+		 (set (pc) (label_ref)) such as the fr30.  */
+	      if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
+		cse_jumps_altered = 1;
 	      break;
 	    }
 	   
