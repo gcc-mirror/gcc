@@ -1,6 +1,6 @@
 // InflaterInputStream.java - Input stream filter for decompressing.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -28,6 +28,8 @@ public class InflaterInputStream extends FilterInputStream
 {
   protected void fill () throws IOException
   {
+    if (inf == null)
+      throw new IOException ("stream closed");
     len = in.read(buf, 0, buf.length);
     if (len != -1)
       inf.setInput(buf, 0, len);
@@ -61,6 +63,8 @@ public class InflaterInputStream extends FilterInputStream
 
   public int read (byte[] buf, int off, int len) throws IOException
   {
+    if (inf == null)
+      throw new IOException ("stream closed");
     if (inf.finished())
       return -1;
     if (inf.needsInput())
@@ -79,8 +83,26 @@ public class InflaterInputStream extends FilterInputStream
       }
   }
 
+  public void close () throws IOException
+  {
+    inf = null;
+    super.close ();
+  }
+
+  public int available () throws IOException
+  {
+    // According to the JDK 1.2 docs, this should only ever return 0
+    // or 1 and should not be relied upon by Java programs.
+    if (inf == null)
+      throw new IOException ("stream closed");
+    return inf.finished () ? 0 : 1;
+  }
+
   public long skip (long n) throws IOException
   {
+    if (inf == null)
+      throw new IOException ("stream closed");
+
     if (n == 0)
       return 0;
 

@@ -13,6 +13,7 @@ package java.text;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Comparator;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -23,7 +24,7 @@ import java.util.ResourceBundle;
  * Status: Mostly complete, but parts stubbed out.  Look for FIXME.
  */
 
-public abstract class Collator implements Cloneable
+public abstract class Collator implements Comparator, Cloneable
 {
   public static final int NO_DECOMPOSITION = 0;
   public static final int CANONICAL_DECOMPOSITION = 1;
@@ -41,6 +42,11 @@ public abstract class Collator implements Cloneable
   }
 
   public abstract int compare (String source, String target);
+
+  public int compare (Object o1, Object o2)
+  {
+    return compare ((String) o1, (String) o2);
+  }
 
   public boolean equals (Object obj)
   {
