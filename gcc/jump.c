@@ -661,6 +661,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	  /* Detect jump to following insn.  */
 	  if (reallabelprev == insn && condjump_p (insn))
 	    {
+	      next = next_real_insn (JUMP_LABEL (insn));
 	      delete_jump (insn);
 	      changed = 1;
 	      continue;
@@ -2202,10 +2203,10 @@ duplicate_loop_exit_test (loop_start)
       emit_barrier_before (loop_start);
     }
 
-  delete_insn (next_nonnote_insn (loop_start));
-
   /* Mark the exit code as the virtual top of the converted loop.  */
   emit_note_before (NOTE_INSN_LOOP_VTOP, exitcode);
+
+  delete_insn (next_nonnote_insn (loop_start));
 
   return 1;
 }
