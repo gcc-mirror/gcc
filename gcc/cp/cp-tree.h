@@ -319,6 +319,11 @@ extern int name_mangling_version;
 /* Nonzero means that guiding declarations are allowed.  */
 extern int flag_guiding_decls;
 
+/* Nonzero if squashed mangling is to be performed. 
+   This uses the B and K codes to reference previously seen class types 
+   and class qualifiers.       */
+extern int flag_do_squangling;
+
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
