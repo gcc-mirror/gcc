@@ -766,8 +766,8 @@
   [(set (match_operand:SI 0 "register_operand" "")
 	(if_then_else:SI
 	 (match_operator 1 "comparison_operator"
-	    [(match_operand:SI 4 "register_operand" "")
-	     (match_operand:SI 5 "arith11_operand" "")])
+	    [(match_dup 4)
+	     (match_dup 5)])
 	 (match_operand:SI 2 "reg_or_cint_move_operand" "")
 	 (match_operand:SI 3 "reg_or_cint_move_operand" "")))]
   ""
