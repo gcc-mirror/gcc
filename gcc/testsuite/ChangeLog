@@ -1,3 +1,12 @@
+2004-12-02  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.target/xstormy16: New test directory.
+	* gcc.target/xstormy16/xstormy16.exp: Run the new tests.
+	* gcc.target/xstormy16/bp.c: Check the generation of bp
+	instructions.
+	* gcc.target/xstormy16/below_100.c: Check the generation of bp and
+	bn instructions and the BELOW100 attribute.
+
 2004-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/16952
