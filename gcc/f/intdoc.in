@@ -1058,7 +1058,7 @@ DEFDOC (DATE, "Get current date as dd-Mon-yy.", "\
 Returns @var{@1@} in the form @samp{@var{dd}-@var{mmm}-@var{yy}},
 representing the numeric day of the month @var{dd}, a three-character
 abbreviation of the month name @var{mmm} and the last two digits of
-the year @var{yy}, e.g.@ @samp{25-Nov-96}.
+the year @var{yy}, e.g.@: @samp{25-Nov-96}.
 
 This intrinsic is not recommended, due to the year 2000 approaching.
 @xref{CTime Intrinsic (subroutine)}, for information on obtaining more digits
@@ -2057,6 +2057,10 @@ DEFDOC (HOSTNM_func, "Get host name.", "\
 Fills @var{@1@} with the system's host name returned by
 @code{gethostname(2)}, returning 0 on success or a non-zero error code
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
+
+On some systems (specifically SCO) it may be necessary to link the
+`socket' library if you call this routine, i.e.@: add @samp{-lsocket}
+to the @code{g77} arguments.
 ")
 
 DEFDOC (HOSTNM_subr, "Get host name.", "\
@@ -2069,9 +2073,11 @@ If the @var{@2@} argument is supplied, it contains
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{@2@} argument.
-")
 
-/* Fixme: stream I/O */
+On some systems (specifically SCO) it may be necessary to link the
+`socket' library if you call this routine, i.e.@: add @samp{-lsocket}
+to the @code{g77} arguments.
+")
 
 DEFDOC (FLUSH, "Flush buffered output.", "\
 Flushes Fortran unit(s) currently open for output.
@@ -2428,7 +2434,7 @@ Zeros are shifted in from the opposite end.
 DEFDOC (ISHFTC, "Circular bit shift.", "\
 The rightmost @var{@3@} bits of the argument @var{@1@}
 are shifted circularly @var{@2@}
-places, i.e.@ the bits shifted out of one end are shifted into 
+places, i.e.@: the bits shifted out of one end are shifted into 
 the opposite end.
 No bits are lost.
 The unshifted bits of the result are the same as
@@ -2479,7 +2485,7 @@ The time in the form @samp{@var{hhmmss.ss}}: hours, minutes, seconds
 and milliseconds;
 @item @3@
 The difference between local time and UTC (GMT) in the form @var{Shhmm}:
-sign, hours and minutes, e.g.@ @samp{-0500} (winter in New York);
+sign, hours and minutes, e.g.@: @samp{-0500} (winter in New York);
 @item @4@
 The year, month of the year, day of the month, time difference in
 minutes from UTC, hour of the day, minutes of the hour and milliseconds

@@ -2964,7 +2964,7 @@ Description:
 Returns @var{Date} in the form @samp{@var{dd}-@var{mmm}-@var{yy}},
 representing the numeric day of the month @var{dd}, a three-character
 abbreviation of the month name @var{mmm} and the last two digits of
-the year @var{yy}, e.g.@ @samp{25-Nov-96}.
+the year @var{yy}, e.g.@: @samp{25-Nov-96}.
 
 This intrinsic is not recommended, due to the year 2000 approaching.
 @xref{CTime Intrinsic (subroutine)}, for information on obtaining more digits
@@ -2979,14 +2979,14 @@ for the current (or any) date.
 
 @noindent
 @example
-CALL Date_and_Time(@var{Date}, @var{Ftime}, @var{Zone}, @var{Values})
+CALL Date_and_Time(@var{Date}, @var{Time}, @var{Zone}, @var{Values})
 @end example
 
 @noindent
 @var{Date}: @code{CHARACTER}; scalar; INTENT(OUT).
 
 @noindent
-@var{Ftime}: @code{CHARACTER}; OPTIONAL; scalar; INTENT(OUT).
+@var{Time}: @code{CHARACTER}; OPTIONAL; scalar; INTENT(OUT).
 
 @noindent
 @var{Zone}: @code{CHARACTER}; OPTIONAL; scalar; INTENT(OUT).
@@ -3000,21 +3000,22 @@ Intrinsic groups: @code{f90}.
 @noindent
 Description:
 
-Returns
+Returns:
 @table @var
 @item Date
 The date in the form @var{ccyymmdd}: century, year, month and day;
-@item Ftime
+@item Time
 The time in the form @samp{@var{hhmmss.ss}}: hours, minutes, seconds
 and milliseconds;
 @item Zone
 The difference between local time and UTC (GMT) in the form @var{Shhmm}:
-sign, hours and minutes, e.g.@ @samp{-0500} (winter in New York);
+sign, hours and minutes, e.g.@: @samp{-0500} (winter in New York);
 @item Values
 The year, month of the year, day of the month, time difference in
 minutes from UTC, hour of the day, minutes of the hour and milliseconds
 of the second in successive values of the array.
 @end table
+
 On systems where a millisecond timer isn't available, the millisecond
 value is returned as zero.
 
@@ -5453,6 +5454,10 @@ Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{Status} argument.
 
+On some systems (specifically SCO) it may be necessary to link the
+`socket' library if you call this routine, i.e.@: add @samp{-lsocket}
+to the @code{g77} arguments.
+
 For information on other intrinsics with the same name:
 @xref{HostNm Intrinsic (function)}.
 
@@ -5481,6 +5486,10 @@ Description:
 Fills @var{Name} with the system's host name returned by
 @code{gethostname(2)}, returning 0 on success or a non-zero error code
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
+
+On some systems (specifically SCO) it may be necessary to link the
+`socket' library if you call this routine, i.e.@: add @samp{-lsocket}
+to the @code{g77} arguments.
 
 For information on other intrinsics with the same name:
 @xref{HostNm Intrinsic (subroutine)}.
@@ -6625,7 +6634,7 @@ Description:
 
 The rightmost @var{Size} bits of the argument @var{I}
 are shifted circularly @var{Shift}
-places, i.e.@ the bits shifted out of one end are shifted into 
+places, i.e.@: the bits shifted out of one end are shifted into 
 the opposite end.
 No bits are lost.
 The unshifted bits of the result are the same as
