@@ -5968,6 +5968,21 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	is_mode = GET_MODE (SUBREG_REG (inner));
       inner = SUBREG_REG (inner);
     }
+  else if (GET_CODE (inner) == ASHIFT
+	   && GET_CODE (XEXP (inner, 1)) == CONST_INT
+	   && pos_rtx == 0 && pos == 0
+	   && len > INTVAL (XEXP (inner, 1)))
+    {
+      /* We're extracting the least significant bits of an rtx
+	 (ashift X (const_int C)), where LEN > C.  Extract the
+	 least significant (LEN - C) bits of X, giving an rtx
+	 whose mode is MODE, then shift it left C times.  */
+      new = make_extraction (mode, XEXP (inner, 0),
+			     0, 0, len - INTVAL (XEXP (inner, 1)),
+			     unsignedp, in_dest, in_compare);
+      if (new != 0)
+	return gen_rtx_ASHIFT (mode, new, XEXP (inner, 1));
+    }
 
   inner_mode = GET_MODE (inner);
 

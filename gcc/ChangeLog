@@ -1,3 +1,7 @@
+2002-06-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* combine.c (make_extraction): Reapply to the argument of an ASHIFT.
+
 2002-06-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/sparc/t-crtfm (crtfastmath.o): Prefix with $(T) for
