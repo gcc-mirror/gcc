@@ -29,18 +29,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "input.h"
+#include "obstack.h"
 
 extern char * rindex ();
 extern char * getenv ();
 
 static tree pending_repo;
+static tree original_repo;
 static char repo_name[1024];
 static FILE *repo_file;
 
 extern int flag_use_repository;
 extern int errorcount, sorrycount;
-
-static int repo_changed;
 
 #define IDENTIFIER_REPO_USED(NODE)   (TREE_LANG_FLAG_3 (NODE))
 #define IDENTIFIER_REPO_CHOSEN(NODE) (TREE_LANG_FLAG_4 (NODE))
@@ -93,7 +93,10 @@ repo_template_used (t)
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
     {
-      id = DECL_ASSEMBLER_NAME (TYPE_MAIN_DECL (t));
+      id = TYPE_BINFO_VTABLE (t);
+      if (id == NULL_TREE)
+	return;
+      id = DECL_ASSEMBLER_NAME (id);
       if (IDENTIFIER_REPO_CHOSEN (id))
 	mark_class_instantiated (t, 0);
     }
@@ -108,10 +111,9 @@ repo_template_used (t)
 
   if (! IDENTIFIER_REPO_USED (id))
     {
-      repo_changed = 1;
       IDENTIFIER_REPO_USED (id) = 1;
+      pending_repo = perm_tree_cons (NULL_TREE, id, pending_repo);
     }
-  pending_repo = perm_tree_cons (NULL_TREE, t, pending_repo);
 }
 
 /* Note that the vtable for a class has been used, and offer to emit it.  */
@@ -160,11 +162,8 @@ save_string (s, len)
      char *s;
      int len;
 {
-  register char *result = xmalloc (len + 1);
-
-  bcopy (s, result, len);
-  result[len] = 0;
-  return result;
+  extern struct obstack temporary_obstack;
+  return obstack_copy0 (&temporary_obstack, s, len);
 }
 
 static char *
@@ -201,7 +200,18 @@ get_base_filename (filename)
   if (compiling && output)
     return output;
 
-  return save_string (filename, strlen (filename));
+  if (p && ! compiling)
+    {
+      warning ("-frepo must be used with -c");
+      flag_use_repository = 0;
+      return NULL;
+    }
+
+  p = rindex (filename, '/');
+  if (p)
+    return p+1;
+  else
+    return filename;
 }        
 
 static void
@@ -210,7 +220,12 @@ open_repo_file (filename)
 {
   register char *p, *q;
   char *file = get_base_filename (filename);
-  char *s = rindex (file, '/');
+  char *s;
+
+  if (file == NULL)
+    return;
+
+  s = rindex (file, '/');
   if (s == NULL)
     s = file;
   else
@@ -218,16 +233,15 @@ open_repo_file (filename)
 
   for (p = repo_name, q = file; q < s; )
     *p++ = *q++;
-  *p++ = '.';
+/*  *p++ = '.'; */
   if ((s = rindex (q, '.')) == NULL)
     strcpy (p, q);
   else
     for (; q < s;)
       *p++ = *q++;
-  strcat (p, ".repo");
+  strcat (p, ".rpo");
 
   repo_file = fopen (repo_name, "r");
-  free (file);
 }
 
 void
@@ -239,18 +253,13 @@ init_repo (filename)
   if (! flag_use_repository)
     return;
 
-  open_repo_file ();
+  open_repo_file (filename);
 
   if (repo_file == 0)
     return;
 
   while (fgets (buf, 1024, repo_file))
     {
-      int len = strlen (buf) - 1;
-      if (buf[len] != '\n')
-	error ("repository info line too long in %s", repo_name);
-      buf[len] = '\0';
-
       switch (buf[0])
 	{
 	case 'A':
@@ -260,10 +269,16 @@ init_repo (filename)
 	case 'C':
 	case 'O':
 	  {
-	    tree id = get_identifier (&buf[2]);
-	    IDENTIFIER_REPO_USED (id) = 1;
+	    char *q;
+	    tree id;
+
+	    for (q = &buf[2]; *q && *q != ' ' && *q != '\n'; ++q) ;
+	    q = save_string (&buf[2], q - &buf[2]);
+	    id = get_identifier (q);
+
 	    if (buf[0] == 'C')
 	      IDENTIFIER_REPO_CHOSEN (id) = 1;
+	    original_repo = perm_tree_cons (NULL_TREE, id, original_repo);
 	  }
 	  break;
 	default:
@@ -293,11 +308,36 @@ finish_repo ()
 {
   tree t;
   char *p;
+  int repo_changed = 0;
 
   if (! flag_use_repository)
     return;
 
   /* Do we have to write out a new info file?  */
+
+  /* Are there any old templates that aren't used any longer?  */
+  
+  for (t = original_repo; t; t = TREE_CHAIN (t))
+    {
+      if (! IDENTIFIER_REPO_USED (TREE_VALUE (t)))
+	{
+	  repo_changed = 1;
+	  break;
+	}
+      IDENTIFIER_REPO_USED (TREE_VALUE (t)) = 0;
+    }
+
+  /* Are there any templates that are newly used?  */
+  
+  if (! repo_changed)
+    for (t = pending_repo; t; t = TREE_CHAIN (t))
+      {
+	if (IDENTIFIER_REPO_USED (TREE_VALUE (t)))
+	  {
+	    repo_changed = 1;
+	    break;
+	  }
+      }
 
   if (! repo_changed || errorcount || sorrycount)
     goto out;
@@ -320,19 +360,11 @@ finish_repo ()
   for (t = pending_repo; t; t = TREE_CHAIN (t))
     {
       tree val = TREE_VALUE (t);
-      char type;
+      char type = IDENTIFIER_REPO_CHOSEN (val) ? 'C' : 'O';
 
-      if (TREE_CODE_CLASS (TREE_CODE (val)) == 't')
-	val = TYPE_MAIN_DECL (val);
-      val = DECL_ASSEMBLER_NAME (val);
-
-      if (! IDENTIFIER_REPO_USED (val))
-	continue;
-      IDENTIFIER_REPO_USED (val) = 0;
-
-      type = IDENTIFIER_REPO_CHOSEN (val) ? 'C' : 'O';
-
-      fprintf (repo_file, "%c %s\n", type, IDENTIFIER_POINTER (val));
+      fprintf (repo_file, "%c %s ", type, IDENTIFIER_POINTER (val));
+      ASM_OUTPUT_LABELREF (repo_file, IDENTIFIER_POINTER (val));
+      putc ('\n', repo_file);
     }
 
  out:
