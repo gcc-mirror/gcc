@@ -1,5 +1,10 @@
 2003-08-29  Richard Henderson  <rth@redhat.com>
 
+	* builtins.c (expand_builtin_constant_p): Check cse_not_expected here,
+	(fold_builtin_constant_p) ... not here.
+
+2003-08-29  Richard Henderson  <rth@redhat.com>
+
 	* c-tree.h (C_DECL_FILE_SCOPE): Move ...
 	* tree.h (DECL_FILE_SCOPE_P): ... here, and rename.
 	* c-decl.c, c-objc-common.c, c-typeck.c: Update to match.
