@@ -328,6 +328,12 @@ dump_type_real (t, v, canonical_name)
       OB_PUTID (TYPE_IDENTIFIER (t));
       break;
 
+    case TYPEOF_TYPE:
+      OB_PUTS ("__typeof (");
+      dump_expr (TYPE_FIELDS (t), 1);
+      OB_PUTC (')');
+      break;
+
     default:
       sorry ("`%s' not supported by dump_type",
 	     tree_code_name[(int) TREE_CODE (t)]);

@@ -1,3 +1,13 @@
+1998-10-26  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.def (TYPEOF_TYPE): New code.
+	* error.c (dump_type_real): Handle it.
+	* pt.c (tsubst): Likewise.
+	* tree.c (search_tree): Likewise.
+	* semantics.c (finish_typeof): New fn.
+	* parse.y (typespec): Use it.
+	* cp-tree.h: Declare it.
+
 1998-10-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* cp-tree.h (FORMAT_VBASE_NAME): Make definition unconditional.

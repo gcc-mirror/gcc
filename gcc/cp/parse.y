@@ -1789,7 +1789,7 @@ typespec:
 	| complete_type_name
 		{ $$.t = $1; $$.new_type_flag = 0; }
 	| TYPEOF '(' expr ')'
-		{ $$.t = TREE_TYPE ($3);
+		{ $$.t = finish_typeof ($3);
 		  $$.new_type_flag = 0; }
 	| TYPEOF '(' type_id ')'
 		{ $$.t = groktypename ($3.t);

@@ -1686,6 +1686,7 @@ search_tree (t, func)
     case TYPENAME_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
+    case TYPEOF_TYPE:
       break;
 
     case POINTER_TYPE:

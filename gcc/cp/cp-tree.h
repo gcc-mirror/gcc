@@ -3033,6 +3033,7 @@ extern void enter_scope_of                      PROTO((tree));
 extern tree finish_base_specifier               PROTO((tree, tree, int));
 extern void finish_member_declaration           PROTO((tree));
 extern void check_multiple_declarators          PROTO((void));
+extern tree finish_typeof			PROTO((tree));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree));
