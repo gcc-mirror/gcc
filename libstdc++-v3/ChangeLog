@@ -1,3 +1,12 @@
+2001-05-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/sbuf_iter.h (istreambuf_iterator): Correct.
+	* testsuite/24_iterators/istreambuf_iterator.cc (test02): Add test.
+
+	* include/bits/std_sstream.h (stringbuf): Leak
+	copied string.
+	* testsuite/24_iterators/ostreambuf_iterator.cc: Correct.
+	
 2001-05-01  Tom Browder  <tbrowder@home.com>
 
 	* docs/html/ext/howto.html:  Fix typo.

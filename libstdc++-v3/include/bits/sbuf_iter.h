@@ -141,18 +141,15 @@ namespace std
 	return *this; 
       }
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-      // 14882 says return a proxy object. It should be a const
-      // proxy object, but since this class is not mandated, it
-      // should allow this signature:
-      const __istreambufiter_type
+      __istreambufiter_type
       operator++(int)
       {
+	__istreambufiter_type __old = *this;
 	if (_M_sbuf)
-	  _M_c = _M_sbuf->sbumpc();
-	return *this; 
+	  __old._M_c = _M_sbuf->sbumpc();
+	_M_c = -2;
+	return __old; 
       }
-#endif
 
       bool 
       equal(const __istreambufiter_type& __b)
@@ -205,3 +202,6 @@ namespace std
 } // namespace std
 
 #endif
+
+
+
