@@ -2572,7 +2572,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 				   temp, ptr_mode,
 			 	   GEN_INT (INTVAL(size) - used),
 				   TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW), QImode);
+				   GEN_INT (MEMORY_USE_RW),
+				   TYPE_MODE (integer_type_node));
 	      in_check_memory_usage = 0;
 	    }
 	}
@@ -2625,7 +2626,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	        emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 				   target, ptr_mode,
 			 	   size, TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW), QImode);
+				   GEN_INT (MEMORY_USE_RW),
+				   TYPE_MODE (integer_type_node));
 	      in_check_memory_usage = 0;
 	    }
 
@@ -2838,7 +2840,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			       target, ptr_mode,
 			       GEN_INT (GET_MODE_SIZE (mode)),
 			       TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_RW), QImode);
+			       GEN_INT (MEMORY_USE_RW),
+			       TYPE_MODE (integer_type_node));
 	  in_check_memory_usage = 0;
 	}
     }
@@ -2988,7 +2991,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			       to_addr, ptr_mode,
 			       GEN_INT (size), TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_WO), QImode);
+			       GEN_INT (MEMORY_USE_WO),
+			       TYPE_MODE (integer_type_node));
 	}
 
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,
@@ -3319,7 +3323,8 @@ store_expr (exp, target, want_value)
         emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			   XEXP (target, 0), ptr_mode, 
 			   expr_size (exp), TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_WO), QImode);
+			   GEN_INT (MEMORY_USE_WO), 
+			   TYPE_MODE (integer_type_node));
     }
 
   /* If value was not generated in the target, store it there.
@@ -3410,7 +3415,8 @@ store_expr (exp, target, want_value)
 		    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 				       addr, ptr_mode,
 				       size, TYPE_MODE (sizetype),
- 				       GEN_INT (MEMORY_USE_WO), QImode);
+ 				       GEN_INT (MEMORY_USE_WO), 
+				       TYPE_MODE (integer_type_node));
 #ifdef TARGET_MEM_FUNCTIONS
 		  emit_library_call (memset_libfunc, 0, VOIDmode, 3,
 				     addr, ptr_mode,
@@ -5026,7 +5032,8 @@ expand_expr (exp, target, tmode, modifier)
 			       XEXP (DECL_RTL (exp), 0), ptr_mode,
 			       GEN_INT (int_size_in_bytes (type)),
 			       TYPE_MODE (sizetype),
-			       GEN_INT (memory_usage), QImode);
+			       GEN_INT (memory_usage),
+			       TYPE_MODE (integer_type_node));
 	}
 
       /* ... fall through ...  */
@@ -5481,7 +5488,8 @@ expand_expr (exp, target, tmode, modifier)
 				 op0, ptr_mode,
 				 GEN_INT (int_size_in_bytes (type)),
 				 TYPE_MODE (sizetype),
-				 GEN_INT (memory_usage), QImode);
+				 GEN_INT (memory_usage),
+				 TYPE_MODE (integer_type_node));
 	  }
 
 	temp = gen_rtx (MEM, mode, op0);
@@ -5735,7 +5743,8 @@ expand_expr (exp, target, tmode, modifier)
 				     to, ptr_mode,
 				     GEN_INT (size / BITS_PER_UNIT),
 				     TYPE_MODE (sizetype),
-				     GEN_INT (memory_usage), QImode);
+				     GEN_INT (memory_usage), 
+				     TYPE_MODE (integer_type_node));
 	      }
 	  }
 
@@ -8861,7 +8870,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  if (flag_check_memory_usage)
 	    emit_library_call (chkr_check_str_libfunc, 1, VOIDmode, 2,
 			       src_rtx, ptr_mode,
-			       GEN_INT (MEMORY_USE_RO), QImode);
+			       GEN_INT (MEMORY_USE_RO),
+			       TYPE_MODE (integer_type_node));
 
 	  char_rtx = const0_rtx;
 	  char_mode = insn_operand_mode[(int)icode][2];
@@ -9030,7 +9040,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			       dest_rtx, ptr_mode,
 			       len_rtx, TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_WO), QImode);
+			       GEN_INT (MEMORY_USE_WO),
+			       TYPE_MODE (integer_type_node));
 
 
 	  /* There could be a void* cast on top of the object.  */
