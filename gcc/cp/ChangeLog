@@ -1,3 +1,7 @@
+2002-07-29  Alan Modra  <amodra@bigpond.net.au>
+
+	* cp-tree.h: Comment typo fix.
+
 2002-07-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* spew.c (space_for_token): Allocate zeroed memory for a new token
