@@ -1,3 +1,16 @@
+2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* consistency.vlad/vlad.exp, g++.old-deja/g++.mike/p784.C,
+	g++.old-deja/old-deja.exp, g77.f-torture/compile/compile.exp,
+	g77.f-torture/execute/execute.exp,
+	g77.f-torture/noncompile/noncompile.exp,
+	gcc.c-torture/compile/compile.exp,
+	gcc.c-torture/execute/execute.exp,
+	gcc.c-torture/execute/ieee/ieee.exp,
+	gcc.c-torture/execute/memcheck/memcheck.exp,
+	gcc.c-torture/unsorted/unsorted.exp, gcc.misc-tests/linkage.exp,
+	objc/execute/execute.exp: Update FSF address.
+
 2001-10-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/cmdlne-C.c: Update.

@@ -1,3 +1,8 @@
+2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* 4gintnam.ads, Make-lang.in, Makefile.in, config-lang.in: Update
+	FSF address.
+
 2001-10-08  Geert Bosch  <bosch@gnat.com>
 
 	* Makefile.in (treeprs.ads, einfo.h, sinfo.h, nmake.adb, nmake.ads):

@@ -18,7 +18,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the GNU Library General Public License for more details.
 You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -40,7 +40,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the GNU Library General Public License for more details.
 You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -66,7 +66,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the GNU Library General Public License for more details.
 You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -100,7 +100,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the GNU Library General Public License for more details.
 You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -150,7 +150,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the GNU Library General Public License for more details.
 You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -183,7 +183,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
 
@@ -208,7 +208,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
 
@@ -826,7 +826,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the GNU Library General Public License for more details.
 You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -2194,7 +2194,7 @@ inline SubString String::_substr(int first, int l)
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
 
@@ -2217,7 +2217,7 @@ inline SubString String::_substr(int first, int l)
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 //# 210 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/iostream.h"
 
@@ -2581,7 +2581,7 @@ extern const char *stringify(bool b);
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 //# 210 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/iostream.h"
 
@@ -2631,7 +2631,7 @@ extern const char *stringify(unit u);
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 //# 210 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/iostream.h"
 
@@ -2895,7 +2895,7 @@ protected:
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 //# 210 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/iostream.h"
 
@@ -2958,7 +2958,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the GNU Library General Public License for more details.
 You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -2982,7 +2982,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 //# 210 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/iostream.h"
 
@@ -3279,7 +3279,7 @@ private:
 //
 //    You should have received a copy of the GNU Library General Public
 //    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 //# 210 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/iostream.h"
 
