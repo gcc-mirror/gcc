@@ -1,3 +1,41 @@
+2004-05-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/21_strings/basic_string/inserters_extractors/char/10.cc:
+	New.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/10.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/getline/char/5.cc: Likewise.
+
+2004-05-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/15002 (continued again)
+	* include/bits/istream.tcc (getline(basic_istream<>&,
+	basic_string<>&, _CharT)): Use a temporary buffer, thus
+	avoiding reallocation for common case.
+
+	* include/bits/basic_string.tcc (_S_construct(_InIterator,
+	_InIterator, const _Alloc&, input_iterator_tag)): Tweak size
+	of temporary buffer to a power of two.
+
+	* testsuite/27_io/basic_istream/getline/char/4.cc: Add comment.
+
+2004-05-09  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/15002 (continued)
+	* include/bits/istream.tcc (basic_istream<>::getline(char_type*,
+	streamsize, char_type)): Use traits::find/copy in a loop to speed
+	up greatly the function in the common case (I/O buffer size >> 1).
+
+2004-05-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/getline/char/4.cc: New.	
+
+	* include/bits/istream.tcc (getline(basic_istream<>&,
+	basic_string<>&, _CharT)): Change to use sgetc()/snextc() instead
+	of sbumpc(), consistently with the other functions, thus also
+	dealing correctly with the case of exceeded string::max_size().
+
 2004-05-06  Matthias Klose  <doko@debian.org>
 
 	* include/backward/iterator.h: 	Add GPL copyright info,

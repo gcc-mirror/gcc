@@ -91,7 +91,7 @@ namespace std
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 	// Avoid reallocation for common case.
-	_CharT __buf[100];
+	_CharT __buf[128];
 	size_type __len = 0;
 	while (__beg != __end && __len < sizeof(__buf) / sizeof(_CharT))
 	  {

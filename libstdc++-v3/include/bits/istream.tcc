@@ -1,6 +1,6 @@
 // istream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -592,27 +592,45 @@ namespace std
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
-
-	      while (_M_gcount + 1 < __n
+	      --__n;
+	      
+	      while (_M_gcount < __n
 		     && !traits_type::eq_int_type(__c, __eof)
 		     && !traits_type::eq_int_type(__c, __idelim))
 		{
-		  *__s++ = traits_type::to_char_type(__c);
-		  __c = __sb->snextc();
-		  ++_M_gcount;
-		}
-	      if (traits_type::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
-	      else
-		{
-		  if (traits_type::eq_int_type(__c, __idelim))
+		  streamsize __size = std::min(streamsize(__sb->egptr()
+							  - __sb->gptr()),
+					       __n - _M_gcount);
+		  if (__size > 1)
 		    {
-		      __sb->sbumpc();
-		      ++_M_gcount;
+		      const char_type* __p = traits_type::find(__sb->gptr(),
+							       __size,
+							       __delim);
+		      if (__p)
+			__size = __p - __sb->gptr();
+		      traits_type::copy(__s, __sb->gptr(), __size);
+		      __s += __size;
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
 		    }
 		  else
-		    __err |= ios_base::failbit;
+		    {
+		      *__s++ = traits_type::to_char_type(__c);
+		      __c = __sb->snextc();
+		      ++_M_gcount;
+		    }
 		}
+
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	      else if (traits_type::eq_int_type(__c, __idelim))
+		{
+		  __sb->sbumpc();
+		  ++_M_gcount;
+		}
+	      else
+		__err |= ios_base::failbit;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -1084,23 +1102,39 @@ namespace std
 	{
 	  try
 	    {
+	      // Avoid reallocation for common case.	      
 	      __str.erase();
-	      __int_type __idelim = _Traits::to_int_type(__delim);
-	      __streambuf_type* __sb = __in.rdbuf();
-	      __int_type __c = __sb->sbumpc();
+	      _CharT __buf[128];
+	      __size_type __len = 0;
+	      const __int_type __idelim = _Traits::to_int_type(__delim);
 	      const __int_type __eof = _Traits::eof();
-	      __testdelim = _Traits::eq_int_type(__c, __idelim);
+	      __streambuf_type* __sb = __in.rdbuf();
+	      __int_type __c = __sb->sgetc();
 
-	      while (!_Traits::eq_int_type(__c, __eof) && !__testdelim
-		     && __extracted < __n)
+	      while (__extracted < __n
+		     && !_Traits::eq_int_type(__c, __eof)
+		     && !_Traits::eq_int_type(__c, __idelim))
 		{
-		  __str += _Traits::to_char_type(__c);
+		  if (__len == sizeof(__buf) / sizeof(_CharT))
+		    {
+		      __str.append(__buf, sizeof(__buf) / sizeof(_CharT));
+		      __len = 0;
+		    }
+		  __buf[__len++] = _Traits::to_char_type(__c);
 		  ++__extracted;
-		  __c = __sb->sbumpc();
-		  __testdelim = _Traits::eq_int_type(__c, __idelim);
+		  __c = __sb->snextc();
 		}
+	      __str.append(__buf, __len);
+
 	      if (_Traits::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
+	      else if (_Traits::eq_int_type(__c, __idelim))
+		{
+		  __sb->sbumpc();
+		  ++__extracted;
+		}
+	      else
+		__err |= ios_base::failbit;
 	    }
 	  catch(...)
 	    {
@@ -1110,7 +1144,7 @@ namespace std
 	      __in._M_setstate(ios_base::badbit);
 	    }
 	}
-      if ((!__extracted && !__testdelim) || __extracted == __n)
+      if (!__extracted)
 	__err |= ios_base::failbit;
       if (__err)
 	__in.setstate(__err);
