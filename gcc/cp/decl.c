@@ -6455,6 +6455,35 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       flags |= LOOKUP_COMPLAIN;
     }
 
+  /* Conversion operators are handled specially because ordinary
+     unqualified name lookup will not find template conversion
+     operators.  */
+  if (IDENTIFIER_TYPENAME_P (name)) 
+    {
+      struct cp_binding_level *level;
+
+      for (level = current_binding_level; 
+	   level && !level->namespace_p; 
+	   level = level->level_chain)
+	{
+	  tree class_type;
+	  tree operators;
+	  
+	  /* A conversion operator can only be declared in a class 
+	     scope.  */
+	  if (level->parm_flag != 2)
+	    continue;
+	  
+	  /* Lookup the conversion operator in the class.  */
+	  class_type = level->this_class;
+	  operators = lookup_fnfields (class_type, name, /*protect=*/0);
+	  if (operators)
+	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, operators);
+	}
+
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
+    }
+
   /* First, look in non-namespace scopes.  */
 
   if (current_class_type == NULL_TREE)

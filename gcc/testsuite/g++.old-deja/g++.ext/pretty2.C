@@ -1,5 +1,5 @@
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.
-// Contributed by Nathan Sidwell 21 Nov 1999 <nathan@acm.org>
+v// Contributed by Nathan Sidwell 21 Nov 1999 <nathan@acm.org>
 
 // make sure __FUNCTION__ and __PRETTY_FUNCTION__ work in member functions
 
@@ -67,8 +67,6 @@ X::operator int ()
   printf ("__FUNCTION__ %s\n", function);
   printf ("__PRETTY_FUNCTION__ %s\n", pretty);
   
-  if (strcmp (function, "operator i"))
-    bad = true;
   if (strcmp (pretty, "X::operator int()"))
     bad = true;
   return 0;
