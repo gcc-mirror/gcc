@@ -3166,7 +3166,7 @@ typedef struct mips_args {
 
 
 /* The cost of loading values from the constant pool.  It should be
-   larger than the cost of any constant we want to synthesise in-line.  */
+   larger than the cost of any constant we want to synthesize in-line.  */
 
 #define CONSTANT_POOL_COST COSTS_N_INSNS (8)
 

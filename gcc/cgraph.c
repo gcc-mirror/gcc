@@ -373,7 +373,7 @@ cgraph_varpool_hash_node (const PTR p)
 		       (((struct cgraph_varpool_node *) p)->decl));
 }
 
-/* Returns non-zero if P1 and P2 are equal.  */
+/* Returns nonzero if P1 and P2 are equal.  */
 
 static int
 eq_cgraph_varpool_node (const PTR p1, const PTR p2)

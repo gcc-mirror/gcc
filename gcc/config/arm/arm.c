@@ -2094,7 +2094,7 @@ arm_va_arg (tree valist, tree type)
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-      /* This is to stop the combine pass optimising
+      /* This is to stop the combine pass optimizing
 	 away the alignment adjustment.  */
       mark_reg_pointer (arg_pointer_rtx, PARM_BOUNDARY);
     }

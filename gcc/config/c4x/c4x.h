@@ -775,7 +775,7 @@ enum reg_class
    is defined since the MPY|ADD insns require the classes R0R1_REGS and
    R2R3_REGS which are used by the function return registers (R0,R1) and
    the register arguments (R2,R3), respectively.  I'm reluctant to define
-   this macro since it stomps on many potential optimisations.  Ideally
+   this macro since it stomps on many potential optimizations.  Ideally
    it should have a register class argument so that not all the register
    classes gets penalised for the sake of a naughty few...  For long
    double arithmetic we need two additional registers that we can use as

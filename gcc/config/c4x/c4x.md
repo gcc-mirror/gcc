@@ -3127,9 +3127,9 @@
 ; Unfortunately the C40 doesn't allow cmpi3 7, *ar0++ so the next best
 ; thing would be to get the small constant loaded into a register (say r0)
 ; so that it could be hoisted out of the loop so that we only
-; would need to do cmpi3 *ar0++, r0.  Now the loop optimisation pass
+; would need to do cmpi3 *ar0++, r0.  Now the loop optimization pass
 ; comes before the flow pass (which finds autoincrements) so we're stuck.
-; Ideally, GCC requires another loop optimisation pass (preferably after
+; Ideally, GCC requires another loop optimization pass (preferably after
 ; reload) so that it can hoist invariants out of loops.
 ; The current solution modifies legitimize_operands () so that small
 ; constants are forced into a pseudo register.

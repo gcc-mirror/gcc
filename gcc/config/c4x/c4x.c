@@ -1692,7 +1692,7 @@ c4x_legitimize_address (orig, mode)
 
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  
-   This is used in cse and loop optimisation to determine
+   This is used in cse and loop optimization to determine
    if it is worthwhile storing a common address into a register. 
    Unfortunately, the C4x address cost depends on other operands.  */
 
@@ -2437,7 +2437,7 @@ c4x_rptb_insert (insn)
 
 /* We need to use direct addressing for large constants and addresses
    that cannot fit within an instruction.  We must check for these
-   after after the final jump optimisation pass, since this may
+   after after the final jump optimization pass, since this may
    introduce a local_move insn for a SYMBOL_REF.  This pass
    must come before delayed branch slot filling since it can generate
    additional instructions.
@@ -3642,7 +3642,7 @@ c4x_address_conflict (op0, op1, store0, store1)
 	 cause problems except when writing to a hardware device such
 	 as a FIFO since the second write will be lost.  The user
 	 should flag the hardware location as being volatile so that
-	 we don't do this optimisation.  While it is unlikely that we
+	 we don't do this optimization.  While it is unlikely that we
 	 have an aliased address if both locations are not marked
 	 volatile, it is probably safer to flag a potential conflict
 	 if either location is volatile.  */
@@ -4034,7 +4034,7 @@ legitimize_operands (code, operands, mode)
       /* During RTL generation, force constants into pseudos so that
 	 they can get hoisted out of loops.  This will tie up an extra
 	 register but can save an extra cycle.  Only do this if loop
-	 optimisation enabled.  (We cannot pull this trick for add and
+	 optimization enabled.  (We cannot pull this trick for add and
 	 sub instructions since the flow pass won't find
 	 autoincrements etc.)  This allows us to generate compare
 	 instructions like CMPI R0, *AR0++ where R0 = 42, say, instead
