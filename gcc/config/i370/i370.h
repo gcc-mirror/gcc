@@ -565,6 +565,7 @@ enum reg_class
   fprintf (FILE, "\tL\t15,72(,13)\n");					\
   fprintf (FILE, "\tSTM\t15,0,72(2)\n");				\
   fprintf (FILE, "\tMVI\t0(2),X'10'\n");				\
+  fprintf (FILE, "\tST\t2,8(,13)\n ");                                  \
   fprintf (FILE, "\tST\t13,4(,2)\n ");					\
   fprintf (FILE, "\tLR\t13,2\n");					\
   fprintf (FILE, "\tDROP\t15\n");					\
