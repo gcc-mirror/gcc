@@ -1,6 +1,7 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +45,7 @@
 #include <ostream>
 #include <iomanip>
 
-// NB: unnecessary if the .h headers include these
+// NB: Unnecessary if the .h headers already include these.
 #ifndef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
 #include <bits/sstream.tcc>
 #include <bits/fstream.tcc>
@@ -55,46 +56,31 @@
 
 namespace std
 {
-
-  //
   // streambuf
-  // 
   template class basic_streambuf<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_streambuf<wchar_t>;
 #endif
 
-
-  //
-  // stringstream
-  //
+  // stringbuf
   template class basic_stringbuf<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_stringbuf<wchar_t>;
 #endif
 
-
-  //
-  // fstream
-  //
+  // filebuf
   template class basic_filebuf<char, char_traits<char> >;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_filebuf<wchar_t, char_traits<wchar_t> >;
 #endif
 
-
-  //
   // basic_ios
-  //
   template class basic_ios<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_ios<wchar_t>;
 #endif
 
-
-  //
   // iomanip
-  //
   template class _Setfill<char>;
   template _Setfill<char> setfill(char);
 #ifdef _GLIBCPP_USE_WCHAR_T
@@ -102,10 +88,7 @@ namespace std
   template _Setfill<wchar_t> setfill(wchar_t);
 #endif
 
-
-  //
   // istream
-  //
   template class basic_istream<char>;
   template istream& ws(istream&);
   template istream& operator>>(istream&, char&);
@@ -115,10 +98,10 @@ namespace std
   template istream& operator>>(istream&, unsigned char*);
   template istream& operator>>(istream&, signed char*);
 
+  template istream& operator>>(istream&, _Setfill<char>);
   template istream& operator>>(istream&, _Setiosflags);
   template istream& operator>>(istream&, _Resetiosflags);
   template istream& operator>>(istream&, _Setbase);
-  template istream& operator>>(istream&, _Setfill<char>);
   template istream& operator>>(istream&, _Setprecision);
   template istream& operator>>(istream&, _Setw);
 
@@ -127,13 +110,16 @@ namespace std
   template wistream& ws(wistream&);
   template wistream& operator>>(wistream&, wchar_t&);
   template wistream& operator>>(wistream&, wchar_t*);
+
   template wistream& operator>>(wistream&, _Setfill<wchar_t>);
+  template wistream& operator>>(wistream&, _Setiosflags);
+  template wistream& operator>>(wistream&, _Resetiosflags);
+  template wistream& operator>>(wistream&, _Setbase);
+  template wistream& operator>>(wistream&, _Setprecision);
+  template wistream& operator>>(wistream&, _Setw);
 #endif
 
-
-  //
   // ostream
-  //
   template class basic_ostream<char>;
   template ostream& endl(ostream&);
   template ostream& ends(ostream&);
@@ -145,10 +131,10 @@ namespace std
   template ostream& operator<<(ostream&, const unsigned char*);
   template ostream& operator<<(ostream&, const signed char*);
 
+  template ostream& operator<<(ostream&, _Setfill<char>);
   template ostream& operator<<(ostream&, _Setiosflags);
   template ostream& operator<<(ostream&, _Resetiosflags);
   template ostream& operator<<(ostream&, _Setbase);
-  template ostream& operator<<(ostream&, _Setfill<char>);
   template ostream& operator<<(ostream&, _Setprecision);
   template ostream& operator<<(ostream&, _Setw);
 
@@ -161,58 +147,59 @@ namespace std
   template wostream& operator<<(wostream&, char);
   template wostream& operator<<(wostream&, const wchar_t*);
   template wostream& operator<<(wostream&, const char*);
+
   template wostream& operator<<(wostream&, _Setfill<wchar_t>);
+  template wostream& operator<<(wostream&, _Setiosflags);
+  template wostream& operator<<(wostream&, _Resetiosflags);
+  template wostream& operator<<(wostream&, _Setbase);
+  template wostream& operator<<(wostream&, _Setprecision);
+  template wostream& operator<<(wostream&, _Setw);
 #endif
   
 
-  //
   // iostream
-  //
   template class basic_iostream<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_iostream<wchar_t>; 
 #endif
 
-
-  //
   // ifstream
-  //
   template class basic_ifstream<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_ifstream<wchar_t>;
 #endif
 
-
-  //
   // ofstream
-  //
   template class basic_ofstream<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_ofstream<wchar_t>;
 #endif
 
+  // fstream
+  template class basic_fstream<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class basic_fstream<wchar_t>;
+#endif
 
-  //
   // istringstream
-  //
   template class basic_istringstream<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_istringstream<wchar_t>; 
 #endif
 
-
-  //
   // ostringstream
-  //
   template class basic_ostringstream<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_ostringstream<wchar_t>; 
 #endif
 
+  // stringstream
+  template class basic_stringstream<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class basic_stringstream<wchar_t>; 
+#endif
 
-  //
   // string related to iostreams
-  //
   template 
     basic_istream<char>& 
     operator>>(basic_istream<char>&, string&);
@@ -240,9 +227,7 @@ namespace std
     getline(basic_istream<wchar_t>&, wstring&);
 #endif
 
-  //
   // algorithm
-  //
   typedef  _Char_traits_match<char, char_traits<char> > char_match;
 
   template 

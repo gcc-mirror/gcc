@@ -518,21 +518,21 @@ namespace std
 #endif
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-    // Side effect of DR 50.
+    // Side effect of DR 50. 
     private:
-      basic_streambuf(const __streambuf_type&);
+      basic_streambuf(const __streambuf_type&) { }; 
 
       __streambuf_type& 
-      operator=(const __streambuf_type&);
+      operator=(const __streambuf_type&) { };
 #endif
     };
 } // namespace std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 # define export
+#endif
 #ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
 #include <bits/streambuf.tcc>
-#endif
 #endif
 
 #endif	

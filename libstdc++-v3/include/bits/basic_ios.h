@@ -78,57 +78,49 @@ namespace std
       const __numget_type* 		_M_fnumget;
 
     public:
-      inline const __ctype_type*	
+      const __ctype_type*	
       _M_get_fctype_ios(void)
       { return _M_ios_fctype; }
 
       operator void*() const 
       { return this->fail() ? 0 : const_cast<basic_ios*>(this); }
 
-      inline bool 
+      bool 
       operator!() const 
       { return this->fail(); }
 
-      inline iostate 
+      iostate 
       rdstate() const 
       { return _M_streambuf_state; }
 
-      inline void 
-      clear(iostate __state = goodbit)
-      { 
-	if (this->rdbuf())
-	  _M_streambuf_state = __state;
-	else
-	  _M_streambuf_state = __state | badbit;
-	if ((this->rdstate() & this->exceptions()))
-	  __throw_ios_failure("basic_ios::clear(iostate) caused exception");
-      }
+      void 
+      clear(iostate __state = goodbit);
 
-      inline void 
+      void 
       setstate(iostate __state) 
       { this->clear(this->rdstate() | __state); }
 
-      inline bool 
+      bool 
       good() const 
       { return this->rdstate() == 0; }
 
-      inline bool 
+      bool 
       eof() const 
       { return (this->rdstate() & eofbit) != 0; }
 
-      inline bool 
+      bool 
       fail() const 
       { return (this->rdstate() & (badbit | failbit)) != 0; }
 
-      inline bool 
+      bool 
       bad() const 
       { return (this->rdstate() & badbit) != 0; }
 
-      inline iostate 
+      iostate 
       exceptions() const 
       { return _M_exception; }
 
-      inline void 
+      void 
       exceptions(iostate __except) 
       { 
 	_M_exception = __except; 
@@ -144,11 +136,11 @@ namespace std
       ~basic_ios() { }
       
       // Members:
-      inline basic_ostream<_CharT, _Traits>*
+      basic_ostream<_CharT, _Traits>*
       tie() const      
       { return _M_tie; }
 
-      inline basic_ostream<_CharT, _Traits>*
+      basic_ostream<_CharT, _Traits>*
       tie(basic_ostream<_CharT, _Traits>* __tiestr)
       {
 	basic_ostream<_CharT, _Traits>* __old = _M_tie;
@@ -156,7 +148,7 @@ namespace std
 	return __old;
       }
 
-      inline basic_streambuf<_CharT, _Traits>*
+      basic_streambuf<_CharT, _Traits>*
       rdbuf() const    
       { return _M_streambuf; }
 
@@ -166,11 +158,11 @@ namespace std
       basic_ios&
       copyfmt(const basic_ios& __rhs);
 
-      inline char_type 
+      char_type 
       fill() const 
       { return _M_fill; }
 
-      inline char_type 
+      char_type 
       fill(char_type __ch)
       {
 	char_type __old = this->fill();
@@ -215,5 +207,3 @@ namespace std
 #endif
 
 #endif /* _CPP_BITS_BASICIOS_H */
-
-
