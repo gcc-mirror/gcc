@@ -1,3 +1,7 @@
+2000-12-06      Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+
+	* thr-rtems.c: New file. Stub to compile. 
+
 2000-09-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt with new libtool.m4.
