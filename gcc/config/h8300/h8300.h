@@ -1014,7 +1014,14 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 /* The assembler op to get a word, 2 bytes for the H8/300, 4 for H8/300H.  */
 #define ASM_WORD_OP	(TARGET_H8300 ? ".word" : ".long")
 
-/* Output before read-only data.  */
+/* We define a readonly data section solely to remove readonly data
+   from the instruction stream.  This can improve relaxing in two significant
+   ways.  First it's more likely that references to readonly data
+   can be done with a 16bit absolute address since they'll be in low
+   memory.  Second, it's more likely that jsr instructions can be
+   turned into bsr instructions since read-only data is not in the
+   instruction stream.  */
+#define READONLY_DATA_SECTION readonly_data
 
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 #define DATA_SECTION_ASM_OP "\t.section .data"
@@ -1022,8 +1029,9 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 #define INIT_SECTION_ASM_OP "\t.section .init"
 #define CTORS_SECTION_ASM_OP "\t.section .ctors"
 #define DTORS_SECTION_ASM_OP "\t.section .dtors"
+#define READONLY_DATA_SECTION_ASM_OP "\t.section .rodata"
 
-#define EXTRA_SECTIONS in_ctors, in_dtors
+#define EXTRA_SECTIONS in_ctors, in_dtors, in_readonly_data
 
 #define EXTRA_SECTION_FUNCTIONS					\
 								\
@@ -1046,6 +1054,18 @@ dtors_section() 						\
       in_section = in_dtors;					\
     }								\
 }								\
+								\
+void								\
+readonly_data() 						\
+{								\
+  if (in_section != in_readonly_data)				\
+    {								\
+      fprintf (asm_out_file, "%s\n", READONLY_DATA_SECTION_ASM_OP);\
+      in_section = in_readonly_data;				\
+    }								\
+}
+
+
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do { ctors_section();				\
