@@ -1,3 +1,7 @@
+2002-05-05  Tim Josling  <tej@melbpc.org.au>
+
+	* treelang; New directory for new sample language treelang. 
+
 2002-05-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (c-lex.o): Update.
