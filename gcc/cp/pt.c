@@ -3371,6 +3371,11 @@ instantiate_class_template (type)
        value that results in a specialization being used.  */
     return type;
 
+  /* We must copy the arguments to the permanent obstack since
+     during the tsubst'ing below they may wind up in the
+     DECL_TI_ARGS of some instantiated member template.  */
+  args = copy_to_permanent (args);
+
   TYPE_BEING_DEFINED (type) = 1;
 
   if (! push_tinst_level (type))
@@ -4254,6 +4259,7 @@ tsubst (t, args, in_decl)
 	TREE_CHAIN (r) = NULL_TREE;
 	DECL_CHAIN (r) = NULL_TREE;
 	DECL_PENDING_INLINE_INFO (r) = 0;
+	TREE_USED (r) = 0;
 
 	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
@@ -4868,13 +4874,9 @@ tsubst_copy (t, args, in_decl)
 	       inside them.  Instead, it simply calls
 	       build_expr_from_tree.  So, we need to expand the
 	       BIND_EXPR here.  */ 
-	    tree rtl_exp = expand_start_stmt_expr();
+	    tree rtl_expr = begin_stmt_expr ();
 	    tree block = tsubst_expr (TREE_OPERAND (r, 1), args, in_decl);
-	    rtl_exp = expand_end_stmt_expr (rtl_exp);
-	    TREE_SIDE_EFFECTS (rtl_exp) = 1;
-	    r = build (BIND_EXPR, TREE_TYPE (rtl_exp), 
-		       NULL_TREE, rtl_exp, block);
-	    delete_block (block);
+	    r = finish_stmt_expr (rtl_expr, block);
 	  }
 
 	return r;
@@ -5907,11 +5909,8 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
 	    return 1;
 	}
       else
-	{
-	  sorry ("use of `%s' in template type unification",
-		 tree_code_name [(int) TREE_CODE (parm)]);
-	  break;
-	}
+	sorry ("use of `%s' in template type unification",
+	       tree_code_name [(int) TREE_CODE (parm)]);
 
       return 1;
     }

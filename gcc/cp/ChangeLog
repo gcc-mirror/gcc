@@ -1,3 +1,21 @@
+Sat Mar 28 17:43:52 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (tsubst): Clear TREE_USED for new FUNCTION_DECLs.
+
+	* pt.c (instantiate_class_template): Make sure template
+	arguments are permanent.
+	* init.c (resolve_offset_ref): Don't go looking around in
+	template types.
+
+	* semantics.c: Add routines to handle expressions, and some
+	declaration processing.
+	* parse.y: Use them.
+	(current_class_depth): Move declaration to cp-tree.h.
+	* parse.c: Regenerated.
+	* cp-tree.h: Use them.
+	(current_class_depth): Declare.
+	* pt.c (tsubst_copy): Use begin_stmt_expr and finish_stmt_expr.
+
 Fri Mar 27 20:23:18 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* error.c (dump_decl): Be a bit more explicit with template

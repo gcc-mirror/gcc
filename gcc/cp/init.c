@@ -1625,7 +1625,7 @@ build_offset_ref (type, name)
   if (type == std_node)
     return do_scoped_id (name, 0);
 
-  if (processing_template_decl)
+  if (processing_template_decl || uses_template_parms (type))
     return build_min_nt (SCOPE_REF, type, name);
 
   /* Handle namespace names fully here.  */

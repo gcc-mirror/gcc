@@ -55,7 +55,6 @@ extern int errno;
 #endif
 
 extern int end_of_file;
-extern int current_class_depth;
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
@@ -237,7 +236,7 @@ empty_parms ()
 %token <ttype> TYPENAME_ELLIPSIS PTYPENAME
 %token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
 %token <ttype> PRE_PARSED_CLASS_DECL DEFARG DEFARG_MARKER
-%type <ttype> fn.def1 /* Not really! */ component_constructor_declarator
+%type <ttype> component_constructor_declarator
 %type <ttype> fn.def2 return_id fn.defpen constructor_declarator
 %type <itype> ctor_initializer_opt
 %type <ttype> named_class_head named_class_head_sans_basetype
@@ -479,36 +478,14 @@ maybe_identifier:
 
 template_type_parm:
 	  aggr maybe_identifier
-		{ 
-		  $$ = build_tree_list ($1, $2);
-		  if (TREE_PURPOSE ($$) == signature_type_node)
-		    sorry ("signature as template type parameter");
-		  else if (TREE_PURPOSE ($$) != class_type_node)
-		    {
-		      pedwarn ("template type parameters must use the keyword `class'");
-		      TREE_PURPOSE ($$) = class_type_node;
-		    }
-		}
+                { $$ = finish_template_type_parm ($1, $2); }
 	| TYPENAME_KEYWORD maybe_identifier
-		{ $$ = build_tree_list (class_type_node, $2); }
+                { $$ = finish_template_type_parm (class_type_node, $2); }
 	;
 
 template_template_parm:
 	  template_header aggr maybe_identifier
-		{
-		  tree decl = build_decl (TYPE_DECL, $3, NULL_TREE);
-		  tree tmpl = build_lang_decl (TEMPLATE_DECL, $3, NULL_TREE);
-		  DECL_TEMPLATE_PARMS (tmpl) = current_template_parms;
-		  DECL_TEMPLATE_RESULT (tmpl) = decl;
-		  SET_DECL_ARTIFICIAL (decl);
-		  end_template_decl ();
-
-		  if ($2 == signature_type_node)
-		    sorry ("signature as template template parameter");
-		  else if ($2 != class_type_node)
-		    pedwarn ("template template parameters must use the keyword `class'");
-		  $$ = build_tree_list (class_type_node, tmpl);
-		}
+                { $$ = finish_template_template_parm ($2, $3); }
 	;
 
 template_parm:
@@ -613,123 +590,55 @@ fndef:
 
 constructor_declarator:
 	  nested_name_specifier SELFNAME '(' 
-		{
-		  $$ = build_parse_node (SCOPE_REF, $1, $2);
-		  if ($1 != current_class_type)
-		    {
-		      push_nested_class ($1, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
-		}
+                { $$ = begin_constructor_declarator ($1, $2); }
 	  parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>4, $5, $7, $8); }
 	| nested_name_specifier SELFNAME LEFT_RIGHT cv_qualifiers exception_specification_opt
-		{
-		  $$ = build_parse_node (SCOPE_REF, $1, $2);
-		  if ($1 != current_class_type)
-		    {
-		      push_nested_class ($1, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
+                { $$ = begin_constructor_declarator ($1, $2); 
 		  $$ = make_call_declarator ($$, empty_parms (), $4, $5);
 		}
 	| global_scope nested_name_specifier SELFNAME '(' 
-		{
-		  $$ = build_parse_node (SCOPE_REF, $2, $3);
-		  if ($2 != current_class_type)
-		    {
-		      push_nested_class ($2, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
-		}
+                { $$ = begin_constructor_declarator ($2, $3); }
 	 parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>5, $6, $8, $9); }
 	| global_scope nested_name_specifier SELFNAME LEFT_RIGHT cv_qualifiers exception_specification_opt
-		{
-		  $$ = build_parse_node (SCOPE_REF, $2, $3);
-		  if ($2 != current_class_type)
-		    {
-		      push_nested_class ($2, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
+		{ $$ = begin_constructor_declarator ($2, $3);
 		  $$ = make_call_declarator ($$, empty_parms (), $5, $6);
 		}
 	| nested_name_specifier self_template_type '(' 
-		{
-		  $$ = build_parse_node (SCOPE_REF, $1, $2);
-		  if ($1 != current_class_type)
-		    {
-		      push_nested_class ($1, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
-		}
+                { $$ = begin_constructor_declarator ($1, $2); }
 	  parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>4, $5, $7, $8); }
 	| nested_name_specifier self_template_type LEFT_RIGHT cv_qualifiers exception_specification_opt
-		{
-		  $$ = build_parse_node (SCOPE_REF, $1, $2);
-		  if ($1 != current_class_type)
-		    {
-		      push_nested_class ($1, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
+		{ $$ = begin_constructor_declarator ($1, $2);
 		  $$ = make_call_declarator ($$, empty_parms (), $4, $5);
 		}
 	| global_scope nested_name_specifier self_template_type '(' 
-		{
-		  $$ = build_parse_node (SCOPE_REF, $2, $3);
-		  if ($2 != current_class_type)
-		    {
-		      push_nested_class ($2, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
-		}
+                { $$ = begin_constructor_declarator ($2, $3); }
 	 parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>5, $6, $8, $9); }
 	| global_scope nested_name_specifier self_template_type LEFT_RIGHT cv_qualifiers exception_specification_opt
-		{
-		  $$ = build_parse_node (SCOPE_REF, $2, $3);
-		  if ($2 != current_class_type)
-		    {
-		      push_nested_class ($2, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
+		{ $$ = begin_constructor_declarator ($2, $3); 
 		  $$ = make_call_declarator ($$, empty_parms (), $5, $6);
 		}
 	;
 
 fn.def1:
 	  typed_declspecs declarator
-		{ tree specs, attrs;
-		  split_specs_attrs ($1.t, &specs, &attrs);
-		  if (! start_function (specs, $2, attrs, 0))
-		    YYERROR1;
-		  reinit_parse_for_function ();
-		  $$ = NULL_TREE; }
+		{ if (!begin_function_definition ($1.t, $2))
+		    YYERROR1; }
 	| declmods notype_declarator
-		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
-		  if (! start_function (specs, $2, attrs, 0))
-		    YYERROR1;
-		  reinit_parse_for_function ();
-		  $$ = NULL_TREE; }
+		{ if (!begin_function_definition ($1, $2))
+		    YYERROR1; }
 	| notype_declarator
-		{ if (! start_function (NULL_TREE, $$, NULL_TREE, 0))
-		    YYERROR1;
-		  reinit_parse_for_function ();
-		  $$ = NULL_TREE; }
+		{ if (!begin_function_definition (NULL_TREE, $1))
+		    YYERROR1; }
 	| declmods constructor_declarator
-		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
-		  if (! start_function (specs, $2, attrs, 0))
-		    YYERROR1;
-		  reinit_parse_for_function ();
-		  $$ = NULL_TREE; }
+		{ if (!begin_function_definition ($1, $2))
+		    YYERROR1; }
 	| constructor_declarator
-		{ if (! start_function (NULL_TREE, $$, NULL_TREE, 0))
-		    YYERROR1;
-		  reinit_parse_for_function ();
-		  $$ = NULL_TREE; }
+		{ if (!begin_function_definition (NULL_TREE, $1))
+		    YYERROR1; }
 	;
 
 component_constructor_declarator:
@@ -1109,18 +1018,9 @@ unary_expr:
 		}
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
-		{ tree label = lookup_label ($2);
-		  if (pedantic)
+		{ if (pedantic)
 		    pedwarn ("ANSI C++ forbids `&&'");
-		  if (label == NULL_TREE)
-		    $$ = null_pointer_node;
-		  else
-		    {
-		      TREE_USED (label) = 1;
-		      $$ = build1 (ADDR_EXPR, ptr_type_node, label);
-		      TREE_CONSTANT ($$) = 1;
-		    }
-		}
+  		  $$ = finish_label_address_expr ($2); }
 	| SIZEOF unary_expr  %prec UNARY
 		{ $$ = expr_sizeof ($2); }
 	| SIZEOF '(' type_id ')'  %prec HYPERUNARY
@@ -1389,21 +1289,10 @@ primary:
 		    pop_obstacks ();
 		}
 	| '(' expr ')'
-		{ char class;
-		  $$ = $2;
-		  class = TREE_CODE_CLASS (TREE_CODE ($$));
-		  if (class == 'e' || class == '1'
-		      || class == '2' || class == '<')
-                    /* This inhibits warnings in truthvalue_conversion.  */
-		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
+		{ $$ = finish_parenthesized_expr ($2); }
 	| '(' expr_or_declarator ')'
-		{ char class;
-		  $$ = reparse_decl_as_expr (NULL_TREE, $2);
-		  class = TREE_CODE_CLASS (TREE_CODE ($$));
-		  if (class == 'e' || class == '1'
-		      || class == '2' || class == '<')
-                    /* This inhibits warnings in truthvalue_conversion.  */
-		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
+		{ $2 = reparse_decl_as_expr (NULL_TREE, $2);
+		  $$ = finish_parenthesized_expr ($2); }
 	| '(' error ')'
 		{ $$ = error_mark_node; }
 	| '('
@@ -1412,95 +1301,25 @@ primary:
 		      error ("braced-group within expression allowed only inside a function");
 		      YYERROR;
 		    }
-		  keep_next_level ();
-		  if (!processing_template_decl)
-		    $<ttype>$ = expand_start_stmt_expr (); 
-		  else
-		    $<ttype>$ = NULL_TREE;
+		  if (pedantic)
+		    pedwarn ("ANSI C++ forbids braced-groups within expressions");  
+		  $<ttype>$ = begin_stmt_expr (); 
 		}
 	  compstmt ')'
-		{ tree rtl_exp;
-		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
-		  if (!processing_template_decl)
-		    {
-		      rtl_exp = expand_end_stmt_expr ($<ttype>2);
-		      /* The statements have side effects, so the
-			 group does.  */ 
-		      TREE_SIDE_EFFECTS (rtl_exp) = 1;
-		    }
-
-		  if (TREE_CODE ($3) == BLOCK)
-		    {
-		      /* Make a BIND_EXPR for the BLOCK already made.  */
-		      if (processing_template_decl)
-			$$ = build (BIND_EXPR, NULL_TREE,
-				    NULL_TREE, last_tree, $3);
-		      else
-			$$ = build (BIND_EXPR, TREE_TYPE (rtl_exp),
-				    NULL_TREE, rtl_exp, $3);
-
-		      /* Remove the block from the tree at this point.
-			 It gets put back at the proper place
-			 when the BIND_EXPR is expanded.  */
-		      delete_block ($3);
-		    }
-		  else
-		    $$ = $3;
-		}
+               { $$ = finish_stmt_expr ($<ttype>2, $3); }
 	| primary '(' nonnull_exprlist ')'
-                {
-                  $$ = build_x_function_call ($1, $3, current_class_ref); 
-                  if (TREE_CODE ($$) == CALL_EXPR
-                      && TREE_TYPE ($$) != void_type_node)
-	            $$ = require_complete_type ($$);
-                }
+               { $$ = finish_call_expr ($1, $3); }
 	| primary LEFT_RIGHT
-                {
-		  $$ = build_x_function_call ($$, NULL_TREE, current_class_ref);
-		  if (TREE_CODE ($$) == CALL_EXPR
-		      && TREE_TYPE ($$) != void_type_node)
-		    $$ = require_complete_type ($$);
-                }
+               { $$ = finish_call_expr ($1, NULL_TREE); }
 	| primary '[' expr ']'
 		{ $$ = grok_array_decl ($$, $3); }
 	| primary PLUSPLUS
-		{ /* If we get an OFFSET_REF, turn it into what it really
-		     means (e.g., a COMPONENT_REF).  This way if we've got,
-		     say, a reference to a static member that's being operated
-		     on, we don't end up trying to find a member operator for
-		     the class it's in.  */
-		  if (TREE_CODE ($$) == OFFSET_REF)
-		    $$ = resolve_offset_ref ($$);
-		  $$ = build_x_unary_op (POSTINCREMENT_EXPR, $$); }
+		{ $$ = finish_increment_expr ($1, POSTINCREMENT_EXPR); }
 	| primary MINUSMINUS
-		{ if (TREE_CODE ($$) == OFFSET_REF)
-		    $$ = resolve_offset_ref ($$);
-		  $$ = build_x_unary_op (POSTDECREMENT_EXPR, $$); }
+		{ $$ = finish_increment_expr ($1, POSTDECREMENT_EXPR); }
 	/* C++ extensions */
 	| THIS
-		{ if (current_class_ptr)
-		    {
-#ifdef WARNING_ABOUT_CCD
-		      TREE_USED (current_class_ptr) = 1;
-#endif
-		      $$ = current_class_ptr;
-		    }
-		  else if (current_function_decl
-			   && DECL_STATIC_FUNCTION_P (current_function_decl))
-		    {
-		      error ("`this' is unavailable for static member functions");
-		      $$ = error_mark_node;
-		    }
-		  else
-		    {
-		      if (current_function_decl)
-			error ("invalid use of `this' in non-member function");
-		      else
-			error ("invalid use of `this' at top level");
-		      $$ = error_mark_node;
-		    }
-		}
+		{ $$ = finish_this_expr (); }
 	| CV_QUALIFIER '(' nonnull_exprlist ')'
 		{
 		  tree type = NULL_TREE;
@@ -1581,30 +1400,17 @@ primary:
 	| overqualified_id  %prec HYPERUNARY
 		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$)); }
 	| overqualified_id '(' nonnull_exprlist ')'
-		{ if (processing_template_decl)
-		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), $3, NULL_TREE);
-		  else
-		    $$ = build_member_call (OP0 ($$), OP1 ($$), $3); }
+                { $$ = finish_globally_qualified_member_call_expr ($1, $3); }
 	| overqualified_id LEFT_RIGHT
-		{ if (processing_template_decl)
-		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), 
-				       NULL_TREE, NULL_TREE);
-		  else
-		    $$ = build_member_call (OP0 ($$), OP1 ($$), NULL_TREE); }
+		{ $$ = finish_globally_qualified_member_call_expr ($1, NULL_TREE); }
         | object object_template_id %prec UNARY
                 { 
 		  $$ = build_x_component_ref ($$, $2, NULL_TREE, 1); 
 		}
         | object object_template_id '(' nonnull_exprlist ')'
-                {
-		  $$ = build_method_call ($1, $2, $4, 
-					  NULL_TREE, LOOKUP_NORMAL); 
-                }
+                { $$ = finish_object_call_expr ($2, $1, $4); }
 	| object object_template_id LEFT_RIGHT
-                {
-		  $$ = build_method_call ($1, $2, NULL_TREE,
-					  NULL_TREE, LOOKUP_NORMAL); 
-                }
+                { $$ = finish_object_call_expr ($2, $1, NULL_TREE); }
 	| object unqualified_id  %prec UNARY
 		{ $$ = build_x_component_ref ($$, $2, NULL_TREE, 1); }
 	| object overqualified_id  %prec UNARY
@@ -1613,75 +1419,18 @@ primary:
 		  else
 		    $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
 	| object unqualified_id '(' nonnull_exprlist ')'
-		{
-#if 0
-		  /* This is a future direction of this code, but because
-		     build_x_function_call cannot always undo what is done
-		     in build_component_ref entirely yet, we cannot do this.  */
-		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), $4, current_class_ref);
-		  if (TREE_CODE ($$) == CALL_EXPR
-		      && TREE_TYPE ($$) != void_type_node)
-		    $$ = require_complete_type ($$);
-#else
-		  $$ = build_method_call ($$, $2, $4, NULL_TREE,
-					  LOOKUP_NORMAL);
-#endif
-		}
+                { $$ = finish_object_call_expr ($2, $1, $4); }
 	| object unqualified_id LEFT_RIGHT
-		{
-#if 0
-		  /* This is a future direction of this code, but because
-		     build_x_function_call cannot always undo what is done
-		     in build_component_ref entirely yet, we cannot do this.  */
-		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), NULL_TREE, current_class_ref);
-		  if (TREE_CODE ($$) == CALL_EXPR
-		      && TREE_TYPE ($$) != void_type_node)
-		    $$ = require_complete_type ($$);
-#else
-		  $$ = build_method_call ($$, $2, NULL_TREE, NULL_TREE,
-					  LOOKUP_NORMAL);
-#endif
-		}
+                { $$ = finish_object_call_expr ($2, $1, NULL_TREE); }
 	| object overqualified_id '(' nonnull_exprlist ')'
-		{
-		  if (IS_SIGNATURE (OP0 ($2)))
-		    {
-		      warning ("signature name in scope resolution ignored");
-		      $$ = build_method_call ($$, OP1 ($2), $4, NULL_TREE,
-					      LOOKUP_NORMAL);
-		    }
-		  else
-		    $$ = build_scoped_method_call ($$, OP0 ($2), OP1 ($2), $4);
-		}
+                { $$ = finish_qualified_object_call_expr ($2, $1, $4); }
 	| object overqualified_id LEFT_RIGHT
-		{
-		  if (IS_SIGNATURE (OP0 ($2)))
-		    {
-		      warning ("signature name in scope resolution ignored");
-		      $$ = build_method_call ($$, OP1 ($2), NULL_TREE, NULL_TREE,
-					      LOOKUP_NORMAL);
-		    }
-		  else
-		    $$ = build_scoped_method_call ($$, OP0 ($2), OP1 ($2), NULL_TREE);
-		}
+                { $$ = finish_qualified_object_call_expr ($2, $1, NULL_TREE); }
 	/* p->int::~int() is valid -- 12.4 */
 	| object '~' TYPESPEC LEFT_RIGHT
-		{
-		  if (IDENTIFIER_GLOBAL_VALUE ($3)
-		      && (TREE_CODE (TREE_TYPE ($1)) 
-			  != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($3)))))
-		    cp_error ("`%E' is not of type `%T'", $1, $3);
-		  $$ = cp_convert (void_type_node, $1);
-		}
+		{ $$ = finish_pseudo_destructor_call_expr ($1, NULL_TREE, $3); }
 	| object TYPESPEC SCOPE '~' TYPESPEC LEFT_RIGHT
-		{
-		  if ($2 != $5)
-		    cp_error ("destructor specifier `%T::~%T()' must have matching names", $2, $5);
-		  if (TREE_CODE (TREE_TYPE ($1))
-		      != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($2))))
-		    cp_error ("`%E' is not of type `%T'", $1, $2);
-		  $$ = cp_convert (void_type_node, $1);
-		}
+		{ $$ = finish_pseudo_destructor_call_expr ($1, $2, $5); }
 	| object error
 		{
 		  $$ = error_mark_node;

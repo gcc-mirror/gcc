@@ -747,3 +747,310 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
       finish_stmt ();
     }
 }
+
+/* Finish a parenthesized expression EXPR.  */
+
+tree
+finish_parenthesized_expr (expr)
+     tree expr;
+{
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expr))))
+    /* This inhibits warnings in truthvalue_conversion.  */
+    C_SET_EXP_ORIGINAL_CODE (expr, ERROR_MARK); 
+
+  return expr;
+}
+
+/* Begin a statement-expression.  Returns a new RTL_EXPR if
+   appropriate. */
+
+tree 
+begin_stmt_expr ()
+{
+  keep_next_level ();
+  return processing_template_decl ? NULL_TREE : expand_start_stmt_expr(); 
+}
+
+/* Finish a statement-expression.  RTL_EXPR should be the value
+   returned by the previous begin_stmt_expr; EXPR is the
+   statement-expression.  Returns an expression representing the
+   statement-expression.  */
+
+tree 
+finish_stmt_expr (rtl_expr, expr)
+     tree rtl_expr;
+     tree expr;
+{
+  tree result;
+
+  if (!processing_template_decl)
+    {
+      rtl_expr = expand_end_stmt_expr (rtl_expr);
+      /* The statements have side effects, so the group does.  */
+      TREE_SIDE_EFFECTS (rtl_expr) = 1;
+    }
+
+  if (TREE_CODE (expr) == BLOCK)
+    {
+      /* Make a BIND_EXPR for the BLOCK already made.  */
+      if (processing_template_decl)
+	result = build (BIND_EXPR, NULL_TREE,
+			NULL_TREE, last_tree, expr);
+      else
+	result = build (BIND_EXPR, TREE_TYPE (rtl_expr),
+			NULL_TREE, rtl_expr, expr);
+      
+      /* Remove the block from the tree at this point.
+	 It gets put back at the proper place
+	 when the BIND_EXPR is expanded.  */
+      delete_block (expr);
+    }
+  else
+    result = expr;
+  
+  return result;
+}
+
+/* Finish a call to FN with ARGS.  Returns a representation of the
+   call.  */
+
+tree 
+finish_call_expr (fn, args)
+     tree fn;
+     tree args;
+{
+  tree result = build_x_function_call (fn, args, current_class_ref);
+
+  if (TREE_CODE (result) == CALL_EXPR
+      && TREE_TYPE (result) != void_type_node)
+    result = require_complete_type (result);
+
+  return result;
+}
+
+/* Finish a call to a postfix increment or decrement or EXPR.  (Which
+   is indicated by CODE, which should be POSTINCREMENT_EXPR or
+   POSTDECREMENT_EXPR.)  */
+
+tree 
+finish_increment_expr (expr, code)
+     tree expr;
+     enum tree_code code;
+{
+  /* If we get an OFFSET_REF, turn it into what it really means (e.g.,
+     a COMPONENT_REF).  This way if we've got, say, a reference to a
+     static member that's being operated on, we don't end up trying to
+     find a member operator for the class it's in.  */
+
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
+  return build_x_unary_op (code, expr);  
+}
+
+/* Finish a use of `this'.  Returns an expression for `this'.  */
+
+tree 
+finish_this_expr ()
+{
+  tree result;
+
+  if (current_class_ptr)
+    {
+#ifdef WARNING_ABOUT_CCD
+      TREE_USED (current_class_ptr) = 1;
+#endif
+      result = current_class_ptr;
+    }
+  else if (current_function_decl
+	   && DECL_STATIC_FUNCTION_P (current_function_decl))
+    {
+      error ("`this' is unavailable for static member functions");
+      result = error_mark_node;
+    }
+  else
+    {
+      if (current_function_decl)
+	error ("invalid use of `this' in non-member function");
+      else
+	error ("invalid use of `this' at top level");
+      result = error_mark_node;
+    }
+
+  return result;
+}
+
+/* Finish a member function call using OBJECT and ARGS as arguments to
+   FN.  Returns an expression for the call.  */
+
+tree 
+finish_object_call_expr (fn, object, args)
+     tree fn;
+     tree object;
+     tree args;
+{
+#if 0
+  /* This is a future direction of this code, but because
+     build_x_function_call cannot always undo what is done in
+     build_component_ref entirely yet, we cannot do this.  */
+
+  tree real_fn = build_component_ref (object, fn, NULL_TREE, 1);
+  return finish_call_expr (real_fn, args);
+#else
+  return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
+#endif
+}
+
+/* Finish a qualified member function call using OBJECT and ARGS as
+   arguments to FN.  Returns an expressino for the call.  */
+
+tree 
+finish_qualified_object_call_expr (fn, object, args)
+     tree fn;
+     tree object;
+     tree args;
+{
+  if (IS_SIGNATURE (TREE_OPERAND (fn, 0)))
+    {
+      warning ("signature name in scope resolution ignored");
+      return finish_object_call_expr (TREE_OPERAND (fn, 1), object, args);
+    }
+  else
+    return build_scoped_method_call (object, TREE_OPERAND (fn, 0),
+				     TREE_OPERAND (fn, 1), args);
+}
+
+/* Finish a pseudo-destructor call expression of OBJECT, with SCOPE
+   being the scope, if any, of DESTRUCTOR.  Returns an expression for
+   the call.  */
+
+tree 
+finish_pseudo_destructor_call_expr (object, scope, destructor)
+     tree object;
+     tree scope;
+     tree destructor;
+{
+  if (scope && scope != destructor)
+    cp_error ("destructor specifier `%T::~%T()' must have matching names", 
+	      scope, destructor);
+
+  if ((scope == NULL_TREE || IDENTIFIER_GLOBAL_VALUE (destructor))
+      && (TREE_CODE (TREE_TYPE (object)) !=
+	  TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (destructor)))))
+    cp_error ("`%E' is not of type `%T'", object, destructor);
+
+  return cp_convert (void_type_node, object);
+}
+
+/* Finish a call to a globally qualified member function FN using
+   ARGS.  Returns an expression for the call.  */
+
+tree 
+finish_globally_qualified_member_call_expr (fn, args)
+     tree fn;
+     tree args;
+{
+  if (processing_template_decl)
+    return build_min_nt (CALL_EXPR, copy_to_permanent (fn), args,
+			 NULL_TREE);
+  else
+    return build_member_call (TREE_OPERAND (fn, 0),
+			      TREE_OPERAND (fn, 1),
+			      args);
+}
+
+/* Finish an expression taking the address of LABEL.  Returns an
+   expression for the address.  */
+
+tree 
+finish_label_address_expr (label)
+     tree label;
+{
+  tree result;
+
+  label = lookup_label (label);
+  if (label == NULL_TREE)
+    result = null_pointer_node;
+  else
+    {
+      TREE_USED (label) = 1;
+      result = build1 (ADDR_EXPR, ptr_type_node, label);
+      TREE_CONSTANT (result) = 1;
+    }
+
+  return result;
+}
+
+/* Begin a function defniition declared with DECL_SPECS and
+   DECLARATOR.  Returns non-zero if the function-declaration is
+   legal.  */
+
+int
+begin_function_definition (decl_specs, declarator)
+     tree decl_specs;
+     tree declarator;
+{
+  tree specs;
+  tree attrs;
+  split_specs_attrs (decl_specs, &specs, &attrs);
+  if (!start_function (specs, declarator, attrs, 0))
+    return 0;
+  
+  reinit_parse_for_function ();
+  return 1;
+}
+
+/* Begin a constructor declarator of the form `SCOPE::NAME'.  Returns
+   a SCOPE_REF.  */
+
+tree 
+begin_constructor_declarator (scope, name)
+     tree scope;
+     tree name;
+{
+  tree result = build_parse_node (SCOPE_REF, scope, name);
+
+  if (scope != current_class_type)
+    {
+      push_nested_class (scope, 3);
+      TREE_COMPLEXITY (result) = current_class_depth;
+    }
+
+  return result;
+}
+
+/* Finish a template type parameter, specified as AGGR IDENTIFIER.
+   Returns the parameter.  */
+
+tree 
+finish_template_type_parm (aggr, identifier)
+     tree aggr;
+     tree identifier;
+{
+  if (aggr == signature_type_node)
+    sorry ("signature as template type parameter");
+  else if (aggr != class_type_node)
+    {
+      pedwarn ("template type parameters must use the keyword `class' or `typename'");
+      aggr = class_type_node;
+    }
+
+  return build_tree_list (aggr, identifier);
+}
+
+/* Finish a template template parameter, specified as AGGR IDENTIFIER.
+   Returns the parameter.  */
+
+tree 
+finish_template_template_parm (aggr, identifier)
+     tree aggr;
+     tree identifier;
+{
+  tree decl = build_decl (TYPE_DECL, identifier, NULL_TREE);
+  tree tmpl = build_lang_decl (TEMPLATE_DECL, identifier, NULL_TREE);
+  DECL_TEMPLATE_PARMS (tmpl) = current_template_parms;
+  DECL_TEMPLATE_RESULT (tmpl) = decl;
+  SET_DECL_ARTIFICIAL (decl);
+  end_template_decl ();
+
+  return finish_template_type_parm (aggr, tmpl);
+}
