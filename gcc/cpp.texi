@@ -2,15 +2,12 @@
 @setfilename cpp.info
 @settitle The C Preprocessor
 
-@ignore
 @ifinfo
-@format
-START-INFO-DIR-ENTRY
-* Cpp: (cpp).			The C preprocessor.
-END-INFO-DIR-ENTRY
-@end format
+@dircategory Programming
+@direntry
+* Cpp: (cpp).		       The GNU C preprocessor.
+@end direntry
 @end ifinfo
-@end ignore
 
 @c @smallbook
 @c @cropmarks

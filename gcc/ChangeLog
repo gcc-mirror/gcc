@@ -1,3 +1,8 @@
+Tue Jun 23 09:30:58 1998  Dave Love  <d.love@dl.ac.uk>
+
+	* cpp.texi, gcc.texi: Add @dircategory, @direntry meant to
+	accompany previous Makefile.in (install-info) change.
+
 Tue Jun 23 10:06:07 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
 
 	* eh-common.h (struct __eh_info): Remove coerced value field.
