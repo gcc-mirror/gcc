@@ -945,6 +945,7 @@ compiler at the end of the day. Onward we go ...
 
 # if defined (_SCO_ELF)
 #  define OBJECT_FORMAT_ELF
+#  define HAVE_ATEXIT 1
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_ELF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
