@@ -1,3 +1,13 @@
+Fri Jul  2 00:46:47 1999  Richard Henderson  <rth@cygnus.com>
+                          Jeff Law <law@cygnus.com>
+
+	* except.c: Include intl.h.
+	(expand_eh_return): Set current_function_cannot_inline.
+	(save_eh_status, restore_eh_status): Twiddle eh_return_stub_label.
+	* function.h (struct function): Add eh_return_stub_label.
+	* flow.c (delete_unreachable_blocks): Don't merge across EH edges.
+	* Makefile.in (except.o): Depend on intl.h.
+
 Fri Jul  2 00:04:23 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movdf_hardfloat32): Handle PRE_INC and PRE_DEC the
