@@ -1,3 +1,10 @@
+2003-07-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in, configure, configure.in: Remove handling of
+	lang-options.h and options_.h.
+	* toplev.c (struct lang_opt, documented_lang_options): Remove.
+	(display_help): Don't use documented_lang_options.
+
 2003-07-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (pushdecl_function_level): Make static, return nothing.

@@ -1,3 +1,8 @@
+2003-07-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang-options.h: Remove.
+	* lang.opt: Add help text.
+
 2003-07-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c: Remove the last argument to expand_assignment().

@@ -27,17 +27,21 @@ Ada
 
 I
 Ada Joined Separate
+; Documented for C
 
 Wall
 Ada
+; Documented for C
 
 fRTS
 Ada RejectNegative
 
 gant
-Ada Joined
+Ada Joined Undocumented
+; Catches typos
 
 gnat
 Ada Joined
+-gnat<option>	Specify options to GNAT
 
 ; This comment is to ensure we retain the blank line above.

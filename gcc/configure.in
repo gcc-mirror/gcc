@@ -2661,7 +2661,6 @@ AC_SUBST(MAINT)dnl
 
 lang_opt_files=
 lang_specs_files=
-lang_options_files=
 lang_tree_files=
 for subdir in . $subdirs
 do
@@ -2670,9 +2669,6 @@ do
 	fi
 	if test -f $srcdir/$subdir/lang-specs.h; then
 	    lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
-	fi
-	if test -f $srcdir/$subdir/lang-options.h; then
-	    lang_options_files="$lang_options_files $srcdir/$subdir/lang-options.h"
 	fi
 	if test -f $srcdir/$subdir/$subdir-tree.def; then
 	    lang_tree_files="$lang_tree_files $srcdir/$subdir/$subdir-tree.def"
@@ -2912,7 +2908,6 @@ AC_SUBST(host_xm_defines)
 AC_SUBST(out_host_hook_obj)
 AC_SUBST(install)
 AC_SUBST(lang_opt_files)
-AC_SUBST(lang_options_files)
 AC_SUBST(lang_specs_files)
 AC_SUBST(lang_tree_files)
 AC_SUBST(local_prefix)
