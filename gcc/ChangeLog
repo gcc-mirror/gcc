@@ -1,3 +1,42 @@
+2001-07-10  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* regmove.c (replace_in_call_usage): Fix warnings.
+	* sched-deps.c (add_dependence): Fix warnings.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	Return NULL_RTX instead of NULL.
+
+	* reg-stack.c (emit_swap_insn): Eliminate warnings.
+	(subst_asm_stack_regs): Likewise.
+
+	* combine.c (num_sign_bit_copies): Cast bitwidth to int to avoid
+	warnings.
+
+	* dwarf2out.c (output_call_frame_info): Declare i as int.
+	(build_abbrev_table): Declare n_alloc as int.
+	(dwarf2out_finish): Initialize die.
+	* except.c: Declare sjlj_funcdef_number as unsigned.
+	(connect_post_landing_pads): Declare j as unsigned.
+	(convert_to_eh_region_ranges): Initialize call_site.
+	(output_function_exception_table): Initialize tt_format_size.
+	* expr.c (move_by_pieces_1): Initialize to1.
+	(store_constructor): Initialize minelt and maxelt.
+	* flow.c (mark_regs_live_at_end): Declare i as unsigned.
+	* function.c (instantiate_decls): Avoid signed/unsigned warning.
+
+	* c-decl.c (combine_parm_decls): Unused, remove.
+	* c-tree.h: Remove prototype for combine_parm_decls.
+
+	* reload.c (push_reload): Fix warning.
+	(regno_clobbered_p): Likewise.
+	* reload1.c (replace_pseudos_in_call_usage): Likewise.
+	(reload_combine): Likewise.
+
+	* bitmap.c: Rename bitmap_zero to bitmap_zero_bits to fix warnings.
+	* bitmap.h: Rename bitmap_zero to bitmap_zero_bits to fix
+	warnings.
+	* bitmap.c (bitmap_operation): Change user.
+	* bitmap.h (EXECUTE_IF_AND_COMPL_IN_BITMAP): Likewise.
+
 2001-07-10  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (override_options): Fix typo.

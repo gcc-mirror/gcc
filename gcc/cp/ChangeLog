@@ -1,4 +1,11 @@
-2001-07-09  Erik Rozendaal  <dlr@acm.org>
+2001-07-10  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* call.c (build_op_delete_call): Initialize fn.
+	(convert_like_real): Delete conditional.
+	(joust): Initialize *w and *l.
+	* class.c: Add prototype for binfo_ctor_vtable.
+	(get_primary_binfo): Initialize result.
+	* init.c (build_java_class_ref): Initialize name.
 
 	* typeck.c (unary_complex_lvalue): Do not duplicate the
 	argument to modify, pre-, or post-increment when used as an
@@ -186,14 +193,14 @@
 	* Make-lang.in (cp/call.o): Depend on diagnostic.h
 	(cp/typeck.o): Depend on diagnostic.h
 	(cp/typeck2.o): Depend on diagnostic.h
-	(cp/repo.o): Depend on dignostic.h	
+	(cp/repo.o): Depend on dignostic.h
 	* typeck.c: #include diagnostic.h
 	(convert_for_initialization): Remove extern declaration for
 	warningcount and errorcount.
 
 	* call.c: #include diagnostic.h
 	(convert_like_real): Remove extern declaration for warnincount and
-	errorcount. 
+	errorcount.
 
 	* repo.c: #include diagnostic.h
 	* typeck2.c: #include diagnostic.h
@@ -244,9 +251,9 @@
 	* method.c (make_thunk, build_vtable_entry): Adjust.
 	* class.c (update_vtable_entry_for_fn): Only look as far as the
 	first defining class.
-	(build_vtbl_initializer): Put nothing in the slot for a function only 
+	(build_vtbl_initializer): Put nothing in the slot for a function only
 	defined in a lost primary virtual base.
-	(add_vcall_offset_vtbl_entries_1): Use the same code for 
+	(add_vcall_offset_vtbl_entries_1): Use the same code for
 	the lost primary case and the normal case.
 	(dfs_unshared_virtual_bases): Don't lose a non-virtual primary base.
 	(get_vfield_offset, get_derived_offset): Lose.
@@ -443,7 +450,7 @@
 2001-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (cp_protect_cleanup_actions): New function.
-	(init_exception_processing): Don't set protect_cleanup_actions 
+	(init_exception_processing): Don't set protect_cleanup_actions
 	here.  Do set lang_protect_cleanup_actions.
 
 2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
@@ -509,7 +516,7 @@
 	pfn_vflag_identifier.
 	(build_ptrmemfunc_type): When FUNCTION_BOUNDARY < 16, add
 	an extra field to the type.
-	* expr.c (cplus_expand_constant): Pass 'flag' between 
+	* expr.c (cplus_expand_constant): Pass 'flag' between
 	expand_ptrmemfunc_cst and build_ptrmemfunc1.
 	* typeck.c (get_member_function_from_ptrfunc): When
 	FUNCTION_BOUNDARY < 16, look at additional field to determine
