@@ -1,5 +1,8 @@
 2003-08-31  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Remove uses of "for x in .. ${foo}" idiom.
+	* configure: Regenerate.
+
 	* config.gcc:  Remove references to install_headers_dir, now unused
 	since introduction of config.build.
 	* config.gcc (i860-*-sysv4*): Don't set unused USG, SVR3 defines.
