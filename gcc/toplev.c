@@ -2392,6 +2392,9 @@ compile_file (name)
 
   lang_finish ();
 
+  if (output_bytecode)
+    bc_write_file (asm_out_file);
+
   /* Close the dump files.  */
 
   if (flag_gen_aux_info)
@@ -3746,7 +3749,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
     {
 #ifndef TARGET_SUPPORTS_BYTECODE
       /* Just die with a fatal error if not supported */
-      fatal ("-fbytecode can not be used for this target");
+      fatal ("-fbytecode not supporter for this target");
 #else
       bc_initialize ();
 #endif
@@ -3829,9 +3832,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
     init_reg_sets_1 ();
 
   compile_file (filename);
-
-  if (output_bytecode)
-    bc_write_file (stdout);
 
 #ifndef OS2
 #ifndef VMS
