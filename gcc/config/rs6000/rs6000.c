@@ -7249,14 +7249,10 @@ rs6000_init_builtins (void)
      types, especially in C++ land.  Similarly, 'vector pixel' is distinct from
      'vector unsigned short'.  */
 
-  bool_char_type_node = copy_node (unsigned_intQI_type_node);
-  TYPE_MAIN_VARIANT (bool_char_type_node) = bool_char_type_node;
-  bool_short_type_node = copy_node (unsigned_intHI_type_node);
-  TYPE_MAIN_VARIANT (bool_short_type_node) = bool_short_type_node;
-  bool_int_type_node = copy_node (unsigned_intSI_type_node);
-  TYPE_MAIN_VARIANT (bool_int_type_node) = bool_int_type_node;
-  pixel_type_node = copy_node (unsigned_intHI_type_node);
-  TYPE_MAIN_VARIANT (pixel_type_node) = pixel_type_node;
+  bool_char_type_node = build_distinct_type_copy (unsigned_intQI_type_node);
+  bool_short_type_node = build_distinct_type_copy (unsigned_intHI_type_node);
+  bool_int_type_node = build_distinct_type_copy (unsigned_intSI_type_node);
+  pixel_type_node = build_distinct_type_copy (unsigned_intHI_type_node);
 
   (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
 					    get_identifier ("__bool char"),

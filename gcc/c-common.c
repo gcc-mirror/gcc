@@ -2997,7 +2997,7 @@ c_common_nodes_and_builtins (void)
   if (c_dialect_cxx ())
     /* For C++, make fileptr_type_node a distinct void * type until
        FILE type is defined.  */
-    fileptr_type_node = build_type_copy (ptr_type_node);
+    fileptr_type_node = build_variant_type_copy (ptr_type_node);
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
@@ -3925,7 +3925,7 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   if (TYPE_P (*node))
     {
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	*node = build_type_copy (*node);
+	*node = build_variant_type_copy (*node);
       TYPE_PACKED (*node) = 1;
       if (TYPE_MAIN_VARIANT (*node) == *node)
 	{
@@ -4114,7 +4114,7 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   else
     {
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	*node = build_type_copy (*node);
+	*node = build_variant_type_copy (*node);
       TREE_USED (*node) = 1;
     }
 
@@ -4176,7 +4176,7 @@ handle_transparent_union_attribute (tree *node, tree name,
 	      && TYPE_MODE (*type) == DECL_MODE (TYPE_FIELDS (*type)))))
     {
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	*type = build_type_copy (*type);
+	*type = build_variant_type_copy (*type);
       TYPE_TRANSPARENT_UNION (*type) = 1;
     }
   else if (decl != 0 && TREE_CODE (decl) == PARM_DECL
@@ -4451,14 +4451,14 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	  && DECL_ORIGINAL_TYPE (decl) == NULL_TREE)
 	{
 	  tree tt = TREE_TYPE (decl);
-	  *type = build_type_copy (*type);
+	  *type = build_variant_type_copy (*type);
 	  DECL_ORIGINAL_TYPE (decl) = tt;
 	  TYPE_NAME (*type) = decl;
 	  TREE_USED (*type) = TREE_USED (decl);
 	  TREE_TYPE (decl) = *type;
 	}
       else if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	*type = build_type_copy (*type);
+	*type = build_variant_type_copy (*type);
 
       TYPE_ALIGN (*type) = (1 << i) * BITS_PER_UNIT;
       TYPE_USER_ALIGN (*type) = 1;
@@ -4805,7 +4805,7 @@ handle_deprecated_attribute (tree *node, tree name,
   else if (TYPE_P (*node))
     {
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	*node = build_type_copy (*node);
+	*node = build_variant_type_copy (*node);
       TREE_DEPRECATED (*node) = 1;
       type = *node;
     }

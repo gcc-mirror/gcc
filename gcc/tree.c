@@ -3126,22 +3126,21 @@ build_qualified_type (tree type, int type_quals)
   /* If not, build it.  */
   if (!t)
     {
-      t = build_type_copy (type);
+      t = build_variant_type_copy (type);
       set_type_quals (t, type_quals);
     }
 
   return t;
 }
 
-/* Create a new variant of TYPE, equivalent but distinct.
-   This is so the caller can modify it.  */
+/* Create a new distinct copy of TYPE.  The new type is made its own
+   MAIN_VARIANT.  */
 
 tree
-build_type_copy (tree type)
+build_distinct_type_copy (tree type)
 {
-  tree t, m = TYPE_MAIN_VARIANT (type);
-
-  t = copy_node (type);
+  tree t = copy_node (type);
+  
   if (TYPE_CACHED_VALUES_P(t))
     {
       /* Do not copy the values cache.  */
@@ -3154,9 +3153,27 @@ build_type_copy (tree type)
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;
 
-  /* Add this type to the chain of variants of TYPE.  */
+  /* Make it its own variant.  */
+  TYPE_MAIN_VARIANT (t) = t;
+  TYPE_NEXT_VARIANT (t) = 0;
+  
+  return t;
+}
+
+/* Create a new variant of TYPE, equivalent but distinct.
+   This is so the caller can modify it.  */
+
+tree
+build_variant_type_copy (tree type)
+{
+  tree t, m = TYPE_MAIN_VARIANT (type);
+
+  t = build_distinct_type_copy (type);
+  
+  /* Add the new type to the chain of variants of TYPE.  */
   TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
   TYPE_NEXT_VARIANT (m) = t;
+  TYPE_MAIN_VARIANT (t) = m;
 
   return t;
 }
@@ -5494,7 +5511,7 @@ build_common_tree_nodes_2 (int short_double)
        don't copy record types and let c_common_nodes_and_builtins()
        declare the type to be __builtin_va_list.  */
     if (TREE_CODE (t) != RECORD_TYPE)
-      t = build_type_copy (t);
+      t = build_variant_type_copy (t);
 
     va_list_type_node = t;
   }

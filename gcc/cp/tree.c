@@ -465,7 +465,7 @@ cp_build_qualified_type_real (tree type,
 	{
 	  /* Make a new array type, just like the old one, but with the
 	     appropriately qualified element type.  */
-	  t = build_type_copy (type);
+	  t = build_variant_type_copy (type);
 	  TREE_TYPE (t) = element_type;
 	}
 
@@ -942,7 +942,7 @@ build_exception_variant (tree type, tree raises)
       return v;
 
   /* Need to build a new variant.  */
-  v = build_type_copy (type);
+  v = build_variant_type_copy (type);
   TYPE_RAISES_EXCEPTIONS (v) = raises;
   return v;
 }
@@ -1776,7 +1776,7 @@ handle_java_interface_attribute (tree* node,
       return NULL_TREE;
     }
   if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-    *node = build_type_copy (*node);
+    *node = build_variant_type_copy (*node);
   TYPE_JAVA_INTERFACE (*node) = 1;
 
   return NULL_TREE;
