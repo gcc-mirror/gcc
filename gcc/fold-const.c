@@ -5044,7 +5044,7 @@ fold (expr)
       /* Pull arithmetic ops out of the CLEANUP_POINT_EXPR where
          appropriate.  */
     case CLEANUP_POINT_EXPR:
-      if (! TREE_SIDE_EFFECTS (arg0))
+      if (! TREE_SIDE_EFFECTS (arg0) && type == TREE_TYPE (arg0))
 	return arg0;
 
       {
