@@ -2152,7 +2152,7 @@
    ld\\t%1, %0
    st\\t%r1, %0
    st\\t%1, %0
-   fzero\\t%0"
+   fzeros\\t%0"
   [(set_attr "type" "move,fpmove,move,move,load,fpload,store,fpstore,fpmove")
    (set_attr "length" "1")])
 
@@ -2369,8 +2369,8 @@
    (set_attr "length" "1")])
 
 (define_insn "*movdi_insn_sp64"
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,m,?e,?e,?m")
-        (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e"))]
+  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,m,?e,?e,?m,b")
+        (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e,J"))]
   "TARGET_ARCH64 &&
    (register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))"
@@ -2382,8 +2382,9 @@
    stx\\t%r1, %0
    fmovd\\t%1, %0
    ldd\\t%1, %0
-   std\\t%1, %0"
-  [(set_attr "type" "move,move,move,load,store,fpmove,fpload,fpstore")
+   std\\t%1, %0
+   fzero\\t%0"
+  [(set_attr "type" "move,move,move,load,store,fpmove,fpload,fpstore,fpmove")
    (set_attr "length" "1")])
 
 ;; ??? revisit this...
@@ -2731,6 +2732,17 @@
 
 ;; Floating point move insns
 
+(define_insn "*clear_sf"
+  [(set (match_operand:SF 0 "general_operand" "=f")
+        (match_operand:SF 1 "" ""))]
+  "TARGET_VIS
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && GET_CODE (operands[0]) == REG
+   && fp_zero_operand (operands[1])"
+  "fzeros\\t%0"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "1")])
+
 (define_insn "*movsf_const_intreg"
   [(set (match_operand:SF 0 "general_operand" "=f,r")
         (match_operand:SF 1 ""                 "m,F"))]
@@ -2809,6 +2821,11 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
+      if (TARGET_VIS
+          && GET_CODE (operands[1]) == CONST_DOUBLE
+	  && fp_zero_operand (operands[1]))
+	goto movsf_is_ok;
+
       /* emit_group_store will send such bogosity to us when it is
          not storing directly into memory.  So fix this up to avoid
          crashes in output_constant_pool.  */
@@ -2885,10 +2902,37 @@
   [(set_attr "type" "move,load,store")
    (set_attr "length" "1")])
 
-(define_insn "*movdf_const_intreg"
+(define_insn "*clear_df"
+  [(set (match_operand:DF 0 "general_operand" "=e")
+        (match_operand:DF 1 "" ""))]
+  "TARGET_VIS
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && GET_CODE (operands[0]) == REG
+   && fp_zero_operand (operands[1])"
+  "fzero\\t%0"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "1")])
+
+(define_insn "*movdf_const_intreg_sp32"
   [(set (match_operand:DF 0 "general_operand" "=e,e,r")
         (match_operand:DF 1 ""                 "T,o,F"))]
-  "TARGET_FPU
+  "TARGET_FPU && ! TARGET_ARCH64
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && GET_CODE (operands[0]) == REG"
+  "*
+{
+  if (which_alternative == 0)
+    return \"ldd\\t%1, %0\";
+  else
+    return \"#\";
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "*movdf_const_intreg_sp64"
+  [(set (match_operand:DF 0 "general_operand" "=e,e,r")
+        (match_operand:DF 1 ""                 "m,o,F"))]
+  "TARGET_FPU && TARGET_ARCH64
    && GET_CODE (operands[1]) == CONST_DOUBLE
    && GET_CODE (operands[0]) == REG"
   "*
@@ -2951,6 +2995,11 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
+      if (TARGET_VIS
+          && GET_CODE (operands[1]) == CONST_DOUBLE
+	  && fp_zero_operand (operands[1]))
+	goto movdf_is_ok;
+
       /* emit_group_store will send such bogosity to us when it is
          not storing directly into memory.  So fix this up to avoid
          crashes in output_constant_pool.  */
@@ -6321,11 +6370,13 @@
    operands[5] = gen_lowpart (SImode, operands[1]);")
 
 (define_insn "*one_cmpldi2_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(not:DI (match_operand:DI 1 "arith_double_operand" "rHI")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,b")
+	(not:DI (match_operand:DI 1 "arith_double_operand" "rHI,b")))]
   "TARGET_ARCH64"
-  "xnor\\t%%g0, %1, %0"
-  [(set_attr "type" "unary")
+  "@
+   xnor\\t%%g0, %1, %0
+   fnot1\\t%1, %0"
+  [(set_attr "type" "unary,fp")
    (set_attr "length" "1")])
 
 (define_expand "one_cmplsi2"
