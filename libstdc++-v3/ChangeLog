@@ -1,3 +1,22 @@
+2004-10-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acconfig.h: Add _GLIBCXX_USE___CXA_ATEXIT.
+	* acinclude.m4 (GLIBCXX_ENABLE_CXA_ATEXIT): New.
+	* configure.ac: Call GLIBCXX_ENABLE_CXA_EXIT.
+	* configure: Regenerate.
+	* src/mt_allocator.cc (__pool::~__pool): Make conditional on
+	_GLIBCXX_USE___CXA_ATEXIT macro.
+	* docs/html/ext/mt_allocator.html: Add note about deallocation.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Guard checks
+	with _GLIBCXX_USE___CXA_ATEXIT.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global-2.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Same.
+	
 2004-10-07  Phil Edwards  <phil@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp:  Update list of undefined functions.

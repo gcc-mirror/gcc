@@ -31,8 +31,10 @@ struct count_check
   count_check() {}
   ~count_check()
   {
+#ifdef _GLIBCXX_USE___CXA_ATEXIT
     if (count != 0)
       throw std::exception();
+#endif
   }
 };
  

@@ -265,14 +265,26 @@ The _S_initialize() function:
     I.e. _S_bin[ n ].free[ n ] = 0;
 </p>
 <p>
-  - Initialize the mutex of each bin_record:
-    The bin_record-&gt;mutex is used to protect the global freelist. This concept
-    of a global freelist is explained in more detail in the section
-    "A multi threaded example", but basically this mutex is locked whenever 
-    a block of memory is retrieved or returned to the global freelist for this
-    specific bin. This only occurs when a number of blocks are grabbed from the
-    global list to a thread specific list or when a thread decides to return 
-    some blocks to the global freelist.
+  - Initialize the mutex of each bin_record: The bin_record-&gt;mutex
+    is used to protect the global freelist. This concept of a global
+    freelist is explained in more detail in the section "A multi
+    threaded example", but basically this mutex is locked whenever a
+    block of memory is retrieved or returned to the global freelist
+    for this specific bin. This only occurs when a number of blocks
+    are grabbed from the global list to a thread specific list or when
+    a thread decides to return some blocks to the global freelist.
+</p>
+
+<p> Notes about deallocation. On systems with the function
+<code>__cxa_atexit</code>, the allocator will free all memory
+allocated before program termination. However, because this relies on
+the precise and exactly-conforming ordering of static destructors,
+including those of a static local <code>__pool</code> object, it is
+not available on systems that don't have the necessary underlying
+support. On those systems, memory debugging programs like valgrind or
+purify may notice leaks: sorry about this inconvenience. However, most
+operating systems actually reclaim this memory at program termination
+anyway.
 </p>
 
 <h3 class="left">
