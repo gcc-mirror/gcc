@@ -29,3 +29,11 @@ Boston, MA 02111-1307, USA.  */
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
 {"live-g0", MASK_LIVE_G0},
+
+/* Require the user to supply crt0.o.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC ""
+
+/* Don't need any special link spec.  */
+#undef LINK_SPEC
+#define LINK_SPEC ""
