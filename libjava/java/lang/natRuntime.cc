@@ -108,9 +108,18 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
   using namespace java::lang;
 #ifdef USE_LTDL
   jint len = _Jv_GetStringUTFLength (path);
-  char buf[len + 1];
-  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  buf[total] = '\0';
+  char buf[len + 1 + 3];
+  int offset = 0;
+#ifndef WIN32
+  // On Unix boxes, prefix library name with `lib', for loadLibrary.
+  if (do_search)
+    {
+      strcpy (buf, "lib");
+      offset = 3;
+    }
+#endif
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), &buf[offset]);
+  buf[offset + total] = '\0';
   // FIXME: make sure path is absolute.
   lt_dlhandle h = do_search ? lt_dlopenext (buf) : lt_dlopen (buf);
   if (h == NULL)
