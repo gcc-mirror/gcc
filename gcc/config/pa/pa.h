@@ -506,10 +506,22 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 #define STRUCT_VALUE_REGNUM 28
 
 /* Describe how we implement __builtin_eh_return.  */
+/* FIXME: What's a good choice for the EH data registers on TARGET_64BIT?  */
 #define EH_RETURN_DATA_REGNO(N)	\
-  ((N) < 3 ? (N) + 20 : (N) == 4 ? 31 : INVALID_REGNUM)
+  (TARGET_64BIT								\
+   ? ((N) < 4 ? (N) + 4 : INVALID_REGNUM)				\
+   : ((N) < 3 ? (N) + 20 : (N) == 4 ? 31 : INVALID_REGNUM))
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 29)
-#define EH_RETURN_HANDLER_RTX	gen_rtx_REG (Pmode, 2)
+#define EH_RETURN_HANDLER_RTX \
+  gen_rtx_MEM (word_mode,						\
+	       gen_rtx_PLUS (word_mode, frame_pointer_rtx,		\
+			     TARGET_64BIT ? GEN_INT (-16) : GEN_INT (-20)))
+			  	
+
+/* Offset from the argument pointer register value to the top of
+   stack.  This is different from FIRST_PARM_OFFSET because of the
+   frame marker.  */
+#define ARG_POINTER_CFA_OFFSET(FNDECL) 0
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.

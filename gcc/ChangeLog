@@ -1,3 +1,44 @@
+2002-04-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa-linux.h (INCOMING_RETURN_ADDR_RTX): Move.
+	(DWARF_FRAME_RETURN_COLUMN): Move.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Define.
+	* pa.c (except.h, predict.h): Include.
+	(FRP): Delete.
+	(store_reg_modify, set_reg_plus_d): Revise prototypes.
+	(output_ascii): Add cast.
+	(store_reg_modify): Revise to add frame notes.
+	(set_reg_plus_d): Likewise.
+	(compute_frame_size): Include space for eh data registers in frame if
+	the current function calls eh_return.
+	(hppa_expand_prologue):  Ensure register %r2 is saved if the current
+	function calls eh_return.  Save eh data registers if the current
+	function calls eh_return.  Fix code to add frame notes.  Emit
+	blockage to prevent insns with frame notes being scheduled in the
+	delay slot of calls.
+	(hppa_expand_epilogue): Restore eh data registers and do final stack
+	adjustment if the current function calls eh_return.  Don't add frame
+	notes.
+	(output_call): Revise for change in length of call insn.  Don't do
+	return pointer adjustment for an unconditional jump in the delay slot
+	of a call when using frame notes.
+	* pa.h (EH_RETURN_DATA_REGNO): Revise for TARGET_64BIT compatibility.
+	(EH_RETURN_HANDLER_RTX): Use saved value on stack.
+	(ARG_POINTER_CFA_OFFSET): Define.
+	* pa.md (return_external_pic): New pattern.
+	(prologue): Correct formatting.  Use return_external_pic if current
+	function calls eh_return.
+	(call_internal_symref, call_value_internal_symref,
+	sibcall_internal_symref, sibcall_value_internal_symref): Change default
+	lengths of short, long non-pic, and long pic calls to 8, 68, and 84,
+	respectively.
+	(exception_receiver): Use hppa_pic_save_rtx () to restore pic register.
+
+	* configure.in ("assembler dwarf2 debug_line support"): Add hppa*-*-* to
+	list of targets to check using "nop" insn.
+	* configure: Rebuilt.
+
 2002-04-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/t-linux64 (EXTRA_MULTILIB_PARTS): Define.
