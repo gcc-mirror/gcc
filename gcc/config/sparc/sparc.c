@@ -946,18 +946,15 @@ singlemove_string (operands)
     return "ld %1,%0";
   else if (GET_CODE (operands[1]) == CONST_DOUBLE)
     {
-      int i;
-      union real_extract u;
-      union float_extract { float f; int i; } v;
+      REAL_VALUE_TYPE r;
+      long i;
 
       /* Must be SFmode, otherwise this doesn't make sense.  */
       if (GET_MODE (operands[1]) != SFmode)
 	abort ();
 
-      bcopy (&CONST_DOUBLE_LOW (operands[1]), &u, sizeof u);
-      v.f = REAL_VALUE_TRUNCATE (SFmode, u.d);
-      i = v.i;
-
+      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
       operands[1] = gen_rtx (CONST_INT, VOIDmode, i);
 
       if (CONST_OK_FOR_LETTER_P (i, 'I'))
