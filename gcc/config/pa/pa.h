@@ -1378,13 +1378,16 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS(ARGLIST) hppa_builtin_saveregs (ARGLIST)
 
 
-/* Addressing modes, and classification of registers for them.  */
+/* Addressing modes, and classification of registers for them. 
 
-#define HAVE_POST_INCREMENT 1
-#define HAVE_POST_DECREMENT 1
+   Using autoincrement addressing modes on PA8000 class machines is
+   not profitable.  */
 
-#define HAVE_PRE_DECREMENT 1
-#define HAVE_PRE_INCREMENT 1
+#define HAVE_POST_INCREMENT (pa_cpu < 8000)
+#define HAVE_POST_DECREMENT (pa_cpu < 8000)
+
+#define HAVE_PRE_DECREMENT (pa_cpu < 8000)
+#define HAVE_PRE_INCREMENT (pa_cpu < 8000)
 
 /* Macros to check register numbers against specific register classes.  */
 
