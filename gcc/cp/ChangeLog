@@ -1,5 +1,10 @@
 2000-01-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (build_vbase_pointer): Relocate.
+	(build_vbase_pointer_fields): Likewise.
+	(dfs_build_vbase_offset_vtbl_entries): Likewise.
+	(build_vbase_offset_vtbl_entries): Likewise.
+
 	* decl.c (init_decl_processing): Complain if -fnew-abi
 	-fno-vtable-thunks is used.
 

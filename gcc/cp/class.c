@@ -160,7 +160,191 @@ int n_build_method_call = 0;
 int n_inner_fields_searched = 0;
 #endif
 
-/* Virtual baseclass things.  */
+/* Virtual base class layout.  */
+
+/* Returns a list of virtual base class pointers as a chain of
+   FIELD_DECLS.  */
+
+static tree
+build_vbase_pointer_fields (rec, empty_p)
+     tree rec;
+     int *empty_p;
+{
+  /* Chain to hold all the new FIELD_DECLs which point at virtual
+     base classes.  */
+  tree vbase_decls = NULL_TREE;
+  tree binfos = TYPE_BINFO_BASETYPES (rec);
+  int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
+  tree decl;
+  int i;
+
+  /* Handle basetypes almost like fields, but record their
+     offsets differently.  */
+
+  for (i = 0; i < n_baseclasses; i++)
+    {
+      register tree base_binfo = TREE_VEC_ELT (binfos, i);
+      register tree basetype = BINFO_TYPE (base_binfo);
+
+      if (TYPE_SIZE (basetype) == 0)
+	/* This error is now reported in xref_tag, thus giving better
+	   location information.  */
+	continue;
+
+      /* All basetypes are recorded in the association list of the
+	 derived type.  */
+
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	{
+	  int j;
+	  const char *name;
+
+	  /* The offset for a virtual base class is only used in computing
+	     virtual function tables and for initializing virtual base
+	     pointers.  It is built once `get_vbase_types' is called.  */
+
+	  /* If this basetype can come from another vbase pointer
+	     without an additional indirection, we will share
+	     that pointer.  If an indirection is involved, we
+	     make our own pointer.  */
+	  for (j = 0; j < n_baseclasses; j++)
+	    {
+	      tree other_base_binfo = TREE_VEC_ELT (binfos, j);
+	      if (! TREE_VIA_VIRTUAL (other_base_binfo)
+		  && BINFO_FOR_VBASE (basetype, BINFO_TYPE (other_base_binfo)))
+		goto got_it;
+	    }
+	  FORMAT_VBASE_NAME (name, basetype);
+	  decl = build_vtbl_or_vbase_field (get_identifier (name), 
+					    get_identifier (VTABLE_BASE),
+					    build_pointer_type (basetype),
+					    rec,
+					    empty_p);
+	  BINFO_VPTR_FIELD (base_binfo) = decl;
+	  TREE_CHAIN (decl) = vbase_decls;
+	  vbase_decls = decl;
+	  *empty_p = 0;
+
+	got_it:
+	  /* The space this decl occupies has already been accounted for.  */
+	  ;
+	}
+    }
+
+  return vbase_decls;
+}
+
+/* Called from build_vbase_offset_vtbl_entries via dfs_walk.  */
+
+static tree
+dfs_build_vbase_offset_vtbl_entries (binfo, data)
+     tree binfo;
+     void *data;
+{
+  tree list = (tree) data;
+
+  if (TREE_TYPE (list) == binfo)
+    /* The TREE_TYPE of LIST is the base class from which we started
+       walking.  If that BINFO is virtual it's not a virtual baseclass
+       of itself.  */
+    ;
+  else if (TREE_VIA_VIRTUAL (binfo))
+    {
+      tree init;
+
+      init = BINFO_OFFSET (binfo);
+      init = build1 (NOP_EXPR, vtable_entry_type, init);
+      TREE_VALUE (list) = tree_cons (NULL_TREE, init, TREE_VALUE (list));
+    }
+
+  SET_BINFO_VTABLE_PATH_MARKED (binfo);
+  
+  return NULL_TREE;
+}
+
+/* Returns the initializers for the vbase offset entries in the
+   vtable, in reverse order.  */
+
+static tree
+build_vbase_offset_vtbl_entries (binfo)
+     tree binfo;
+{
+  tree type;
+  tree inits;
+  tree init;
+
+  /* Under the old ABI, pointers to virtual bases are stored in each
+     object.  */
+  if (!flag_new_abi)
+    return NULL_TREE;
+
+  /* If there are no virtual baseclasses, then there is nothing to
+     do.  */
+  type = BINFO_TYPE (binfo);
+  if (!TYPE_USES_VIRTUAL_BASECLASSES (type))
+    return NULL_TREE;
+
+  inits = NULL_TREE;
+
+  /* Under the new ABI, the vtable contains offsets to all virtual
+     bases.  The ABI specifies different layouts depending on whether
+     or not *all* of the bases of this type are virtual.  */
+  if (CLASSTYPE_N_BASECLASSES (type) 
+      == list_length (CLASSTYPE_VBASECLASSES (type)))
+    {
+      /* In this case, the offsets are allocated from right to left of
+	 the declaration order in which the virtual bases appear.  */
+      int i;
+
+      for (i = 0; i < BINFO_N_BASETYPES (binfo); ++i)
+	{
+	  tree vbase = BINFO_BASETYPE (binfo, i);
+	  init = BINFO_OFFSET (vbase);
+	  init = build1 (NOP_EXPR, vtable_entry_type, init);
+	  inits = tree_cons (NULL_TREE, init, inits);
+	}
+    }
+  else
+    {
+      tree list;
+
+      /* While in this case, the offsets are allocated in the reverse
+	 order of a depth-first left-to-right traversal of the
+	 hierarchy.  We use BINFO_VTABLE_PATH_MARKED because we are
+	 ourselves during a dfs_walk, and so BINFO_MARKED is already
+	 in use.  */
+      list = build_tree_list (type, NULL_TREE);
+      TREE_TYPE (list) = binfo;
+      dfs_walk (binfo,
+		dfs_build_vbase_offset_vtbl_entries,
+		dfs_vtable_path_unmarked_real_bases_queue_p,
+		list);
+      dfs_walk (binfo,
+		dfs_vtable_path_unmark,
+		dfs_vtable_path_marked_real_bases_queue_p,
+		list);
+      inits = nreverse (TREE_VALUE (list));
+    }
+
+  /* We've now got offsets in the right oder.  However, the offsets
+     we've stored are offsets from the beginning of the complete
+     object, and we need offsets from this BINFO.  */
+  for (init = inits; init; init = TREE_CHAIN (init))
+    {
+      tree exp = TREE_VALUE (init);
+
+      exp = ssize_binop (MINUS_EXPR, exp, BINFO_OFFSET (binfo));
+      exp = build1 (NOP_EXPR, vtable_entry_type, TREE_VALUE (init));
+      exp = fold (exp);
+      TREE_CONSTANT (exp) = 1;
+      TREE_VALUE (init) = exp;
+    }
+
+  return inits;
+}
+
+/* Returns a pointer to the virtual base class of EXP that has the
+   indicated TYPE.  */
 
 static tree
 build_vbase_pointer (exp, type)
@@ -171,54 +355,6 @@ build_vbase_pointer (exp, type)
 
   return build_component_ref (exp, get_identifier (name), NULL_TREE, 0);
 }
-
-#if 0
-/* Is the type of the EXPR, the complete type of the object?
-   If we are going to be wrong, we must be conservative, and return 0.  */
-
-static int
-complete_type_p (expr)
-     tree expr;
-{
-  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (expr));
-  while (1)
-    {
-      switch (TREE_CODE (expr))
-	{
-	case SAVE_EXPR:
-	case INDIRECT_REF:
-	case ADDR_EXPR:
-	case NOP_EXPR:
-	case CONVERT_EXPR:
-	  expr = TREE_OPERAND (expr, 0);
-	  continue;
-
-	case CALL_EXPR: 
-	  if (! TREE_HAS_CONSTRUCTOR (expr))
-	    break;
-	  /* fall through...  */
-	case VAR_DECL:
-	case FIELD_DECL:
-	  if (TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-	      && IS_AGGR_TYPE (TREE_TYPE (TREE_TYPE (expr)))
-	      && TYPE_MAIN_VARIANT (TREE_TYPE (expr)) == type)
-	    return 1;
-	  /* fall through...  */
-	case TARGET_EXPR:
-	case PARM_DECL:
-	  if (IS_AGGR_TYPE (TREE_TYPE (expr))
-	      && TYPE_MAIN_VARIANT (TREE_TYPE (expr)) == type)
-	    return 1;
-	  /* fall through...  */
-	case PLUS_EXPR:
-	default:
-	  break;
-	}
-      break;
-    }
-  return 0;
-}
-#endif
 
 /* Build multi-level access to EXPR using hierarchy path PATH.
    CODE is PLUS_EXPR if we are going with the grain,
@@ -377,6 +513,7 @@ build_vbase_path (code, type, expr, path, nonnull)
     return build1 (NOP_EXPR, type, expr);
 }
 
+
 /* Virtual function things.  */
 
 /* Build an entry in the virtual function table.
@@ -2180,108 +2317,6 @@ size_extra_vtbl_entries (binfo)
   return fold (offset);
 }
 
-/* Called from build_vbase_offset_vtbl_entries via dfs_walk.  */
-
-static tree
-dfs_build_vbase_offset_vtbl_entries (binfo, data)
-     tree binfo;
-     void *data;
-{
-  tree list = (tree) data;
-
-  if (TREE_TYPE (list) == binfo)
-    /* The TREE_TYPE of LIST is the base class from which we started
-       walking.  If that BINFO is virtual it's not a virtual baseclass
-       of itself.  */
-    ;
-  else if (TREE_VIA_VIRTUAL (binfo))
-    {
-      tree init;
-
-      init = BINFO_OFFSET (binfo);
-      init = build1 (NOP_EXPR, vtable_entry_type, init);
-      TREE_VALUE (list) = tree_cons (NULL_TREE, init, TREE_VALUE (list));
-    }
-
-  SET_BINFO_VTABLE_PATH_MARKED (binfo);
-  
-  return NULL_TREE;
-}
-
-/* Returns the initializers for the vbase offset entries in the
-   vtable, in reverse order.  */
-
-static tree
-build_vbase_offset_vtbl_entries (binfo)
-     tree binfo;
-{
-  tree type;
-  tree inits;
-  tree init;
-
-  type = BINFO_TYPE (binfo);
-  if (!TYPE_USES_VIRTUAL_BASECLASSES (type))
-    return NULL_TREE;
-
-  inits = NULL_TREE;
-
-  /* Under the new ABI, the vtable contains offsets to all virtual
-     bases.  The ABI specifies different layouts depending on whether
-     or not *all* of the bases of this type are virtual.  */
-  if (CLASSTYPE_N_BASECLASSES (type) 
-      == list_length (CLASSTYPE_VBASECLASSES (type)))
-    {
-      /* In this case, the offsets are allocated from right to left of
-	 the declaration order in which the virtual bases appear.  */
-      int i;
-
-      for (i = 0; i < BINFO_N_BASETYPES (binfo); ++i)
-	{
-	  tree vbase = BINFO_BASETYPE (binfo, i);
-	  init = BINFO_OFFSET (vbase);
-	  init = build1 (NOP_EXPR, vtable_entry_type, init);
-	  inits = tree_cons (NULL_TREE, init, inits);
-	}
-    }
-  else
-    {
-      tree list;
-
-      /* While in this case, the offsets are allocated in the reverse
-	 order of a depth-first left-to-right traversal of the
-	 hierarchy.  We use BINFO_VTABLE_PATH_MARKED because we are
-	 ourselves during a dfs_walk, and so BINFO_MARKED is already
-	 in use.  */
-      list = build_tree_list (type, NULL_TREE);
-      TREE_TYPE (list) = binfo;
-      dfs_walk (binfo,
-		dfs_build_vbase_offset_vtbl_entries,
-		dfs_vtable_path_unmarked_real_bases_queue_p,
-		list);
-      dfs_walk (binfo,
-		dfs_vtable_path_unmark,
-		dfs_vtable_path_marked_real_bases_queue_p,
-		list);
-      inits = nreverse (TREE_VALUE (list));
-    }
-
-  /* We've now got offsets in the right oder.  However, the offsets
-     we've stored are offsets from the beginning of the complete
-     object, and we need offsets from this BINFO.  */
-  for (init = inits; init; init = TREE_CHAIN (init))
-    {
-      tree exp = TREE_VALUE (init);
-
-      exp = ssize_binop (MINUS_EXPR, exp, BINFO_OFFSET (binfo));
-      exp = build1 (NOP_EXPR, vtable_entry_type, TREE_VALUE (init));
-      exp = fold (exp);
-      TREE_CONSTANT (exp) = 1;
-      TREE_VALUE (init) = exp;
-    }
-
-  return inits;
-}
-
 /* Construct the initializer for BINFOs virtual function table.  */
 
 static tree
@@ -2292,8 +2327,8 @@ build_vtbl_initializer (binfo)
   tree inits = NULL_TREE;
   tree type = BINFO_TYPE (binfo);
 
-  if (flag_new_abi)
-    inits = build_vbase_offset_vtbl_entries (binfo);
+  /* Add entries to the vtable for offsets to our virtual bases.  */
+  inits = build_vbase_offset_vtbl_entries (binfo);
 
   /* Process the RTTI stuff at the head of the list.  If we're not
      using vtable thunks, then the RTTI entry is just an ordinary
@@ -3797,77 +3832,6 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type,
 
   /* Return it.  */
   return field;
-}
-
-/* Returns list of virtual base class pointers in a FIELD_DECL chain.  */
-
-static tree
-build_vbase_pointer_fields (rec, empty_p)
-     tree rec;
-     int *empty_p;
-{
-  /* Chain to hold all the new FIELD_DECLs which point at virtual
-     base classes.  */
-  tree vbase_decls = NULL_TREE;
-  tree binfos = TYPE_BINFO_BASETYPES (rec);
-  int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
-  tree decl;
-  int i;
-
-  /* Handle basetypes almost like fields, but record their
-     offsets differently.  */
-
-  for (i = 0; i < n_baseclasses; i++)
-    {
-      register tree base_binfo = TREE_VEC_ELT (binfos, i);
-      register tree basetype = BINFO_TYPE (base_binfo);
-
-      if (TYPE_SIZE (basetype) == 0)
-	/* This error is now reported in xref_tag, thus giving better
-	   location information.  */
-	continue;
-
-      /* All basetypes are recorded in the association list of the
-	 derived type.  */
-
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	{
-	  int j;
-	  const char *name;
-
-	  /* The offset for a virtual base class is only used in computing
-	     virtual function tables and for initializing virtual base
-	     pointers.  It is built once `get_vbase_types' is called.  */
-
-	  /* If this basetype can come from another vbase pointer
-	     without an additional indirection, we will share
-	     that pointer.  If an indirection is involved, we
-	     make our own pointer.  */
-	  for (j = 0; j < n_baseclasses; j++)
-	    {
-	      tree other_base_binfo = TREE_VEC_ELT (binfos, j);
-	      if (! TREE_VIA_VIRTUAL (other_base_binfo)
-		  && BINFO_FOR_VBASE (basetype, BINFO_TYPE (other_base_binfo)))
-		goto got_it;
-	    }
-	  FORMAT_VBASE_NAME (name, basetype);
-	  decl = build_vtbl_or_vbase_field (get_identifier (name), 
-					    get_identifier (VTABLE_BASE),
-					    build_pointer_type (basetype),
-					    rec,
-					    empty_p);
-	  BINFO_VPTR_FIELD (base_binfo) = decl;
-	  TREE_CHAIN (decl) = vbase_decls;
-	  vbase_decls = decl;
-	  *empty_p = 0;
-
-	got_it:
-	  /* The space this decl occupies has already been accounted for.  */
-	  ;
-	}
-    }
-
-  return vbase_decls;
 }
 
 /* If the empty base field in DECL overlaps with a base of the same type in
