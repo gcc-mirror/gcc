@@ -1,3 +1,11 @@
+Sun Jul 30 20:58:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (*lea_general_[123]) New insns and splits.
+	(addsi3 to lea splitter): Handle other modes too.
+	(shlsi3 to lea splitter): Likewise.
+	(addhi_1_lea, shlhi_1_lea): New patterns.
+	(addhi_1, shlhi_1): Conditionize by PARTIAL_REG_STALL.
+
 Sun Jul 30 20:51:25 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (general_operand, nonimmediate_operand): Accept
