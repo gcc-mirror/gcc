@@ -1,5 +1,6 @@
 /* ResourceBundle -- aids in loading resource bundles
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -292,7 +293,7 @@ public abstract class ResourceBundle
       catch (CloneNotSupportedException x) {}
       
       return clone;
-    }
+    }    
   }
   
   /** A cache lookup key. This avoids having to a new one for every
@@ -395,6 +396,7 @@ public abstract class ResourceBundle
     
     Object obj = bundleCache.get(lookupKey);
     ResourceBundle rb = null;
+    
     if (obj instanceof ResourceBundle)
       {
         return (ResourceBundle) obj;
@@ -516,7 +518,7 @@ public abstract class ResourceBundle
    * Tries to load a the bundle for a given locale, also loads the backup
    * locales with the same language.
    *
-   * @param name the name
+   * @param baseName the raw bundle name, without locale qualifiers
    * @param locale the locale
    * @param classloader the classloader
    * @param bundle the backup (parent) bundle
