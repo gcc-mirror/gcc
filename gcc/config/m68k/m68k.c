@@ -569,13 +569,8 @@ valid_dbcc_comparison_p (x, mode)
      rtx x;
      enum machine_mode mode;
 {
-  /* We could add support for these in the future */
-  if (cc_prev_status.flags & CC_IN_68881)
-    return 0;
-
   switch (GET_CODE (x))
     {
-
       case EQ: case NE: case GTU: case LTU:
       case GEU: case LEU:
         return 1;
@@ -589,16 +584,23 @@ valid_dbcc_comparison_p (x, mode)
     }
 }
 
+/* Return non-zero if flags are currently in the 68881 flag register.  */
+int
+flags_in_68881 ()
+{
+  /* We could add support for these in the future */
+  return cc_status.flags & CC_IN_68881;
+}
+
 /* Output a dbCC; jCC sequence.  Note we do not handle the 
    floating point version of this sequence (Fdbcc).  We also
    do not handle alternative conditions when CC_NO_OVERFLOW is
-   set.  It is assumed that valid_dbcc_comparison_p will kick
-   those out before we get here.  */
+   set.  It is assumed that valid_dbcc_comparison_p and flags_in_68881 will
+   kick those out before we get here.  */
 
 output_dbcc_and_branch (operands)
      rtx *operands;
 {
- 
   switch (GET_CODE (operands[3]))
     {
       case EQ:
