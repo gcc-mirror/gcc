@@ -6018,7 +6018,7 @@ fold (tree expr)
 				    arg0));
 	    }
 
-	  /* Fold (A & ~B) - (A & B) into (A ^ B) - B, , where B is
+	  /* Fold (A & ~B) - (A & B) into (A ^ B) - B, where B is
 	     any power of 2 minus 1.  */
 	  if (TREE_CODE (arg0) == BIT_AND_EXPR
 	      && TREE_CODE (arg1) == BIT_AND_EXPR
