@@ -1,3 +1,18 @@
+2003-09-29  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/10596:
+	* include/jvm.h (_Jv_FinalizeString,
+	_Jv_RegisterStringFinalizer): Declare.
+	* java/lang/natString.cc (_Jv_FinalizeString): Renamed from
+	unintern.
+	(intern): Updated.
+	(_Jv_NewStringUtf8Const): Likewise.
+	* java/lang/ref/natReference.cc (finalize_referred_to_object):
+	Add special case when finalizing a String.
+	(in_hash): New function.
+	(_Jv_RegisterStringFinalizer): Likewise.
+	(maybe_add_finalize): Likewise.
+
 2003-09-29  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java:

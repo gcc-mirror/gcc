@@ -159,6 +159,19 @@ remove_from_hash (jobject obj)
     }
 }
 
+// Return list head if object is in hash, NULL otherwise.
+object_list *
+in_hash (jobject obj)
+{
+  // The hash table might not yet be initialized.
+  if (hash == NULL)
+    return NULL;
+  object_list *head = find_slot (obj);
+  if (head->reference != obj)
+    return NULL;
+  return head;
+}
+
 // FIXME what happens if an object's finalizer creates a Reference to
 // the object, and the object has never before been added to the hash?
 // Madness!
@@ -212,6 +225,29 @@ add_to_hash (java::lang::ref::Reference *the_reference)
   *link = n;
 }
 
+// Add a FINALIZE entry if one doesn't exist.
+static void
+maybe_add_finalize (object_list *entry, jobject obj)
+{
+  object_list **link = &entry->next;
+  object_list *iter = *link;
+  while (iter && iter->weight < FINALIZE)
+    {
+      link = &iter->next;
+      iter = *link;
+    }
+
+  // We want at most one FINALIZE entry in the queue.
+  if (iter && iter->weight == FINALIZE)
+    return;
+
+  object_list *n = (object_list *) _Jv_Malloc (sizeof (object_list));
+  n->reference = obj;
+  n->weight = FINALIZE;
+  n->next = *link;
+  *link = n;
+}
+
 // This is called when an object is ready to be finalized.  This
 // actually implements the appropriate Reference semantics.
 static void
@@ -236,16 +272,21 @@ finalize_referred_to_object (jobject obj)
   enum weight w = head->weight;
   if (w == FINALIZE)
     {
+      // Update the list first, as _Jv_FinalizeString might end up
+      // looking at this data structure.
+      list->next = head->next;
+      _Jv_Free (head);
+
       // If we have a Reference A to a Reference B, and B is
       // finalized, then we have to take special care to make sure
       // that B is properly deregistered.  This is super gross.  FIXME
       // will it fail if B's finalizer resurrects B?
       if (java::lang::ref::Reference::class$.isInstance (obj))
 	finalize_reference (obj);
+      else if (obj->getClass() == &java::lang::String::class$)
+	_Jv_FinalizeString (obj);
       else
 	_Jv_FinalizeObject (obj);
-      list->next = head->next;
-      _Jv_Free (head);
     }
   else if (w != SOFT || _Jv_GCCanReclaimSoftReference (obj))
     {
@@ -284,6 +325,23 @@ finalize_reference (jobject ref)
   remove_from_hash (ref);
   // The user might have a subclass of Reference with a finalizer.
   _Jv_FinalizeObject (ref);
+}
+
+void
+_Jv_RegisterStringFinalizer (jobject str)
+{
+  // This function might be called before any other Reference method,
+  // so we must ensure the class is initialized.
+  _Jv_InitClass (&java::lang::ref::Reference::class$);
+  JvSynchronize sync (java::lang::ref::Reference::lock);
+  // If the object is in our hash table, then we might need to add a
+  // new FINALIZE entry.  Otherwise, we just register an ordinary
+  // finalizer.
+  object_list *entry = in_hash (str);
+  if (entry)
+    maybe_add_finalize (entry, str);
+  else
+    _Jv_RegisterFinalizer ((void *) str, _Jv_FinalizeString);
 }
 
 void

@@ -31,7 +31,6 @@ details.  */
 #include <gnu/gcj/runtime/StringBuffer.h>
 #include <jvm.h>
 
-static void unintern (jobject);
 static jstring* strhash = NULL;
 static int strhash_count = 0;  /* Number of slots used in strhash. */
 static int strhash_size = 0;  /* Number of slots available in strhash.
@@ -173,28 +172,38 @@ java::lang::String::intern()
   jstring* ptr = _Jv_StringGetSlot(this);
   if (*ptr != NULL && *ptr != DELETED_STRING)
     {
-      // See description in unintern() to understand this.
+      // See description in _Jv_FinalizeString() to understand this.
       *ptr = (jstring) MASK_PTR (*ptr);
       return (jstring) UNMASK_PTR (*ptr);
     }
-  jstring str = this->data == this ? this
-    : _Jv_NewString(JvGetStringChars(this), this->length());
+  jstring str = (this->data == this
+		 ? this
+		 : _Jv_NewString(JvGetStringChars(this), this->length()));
   SET_STRING_IS_INTERNED(str);
   strhash_count++;
   *ptr = str;
   // When string is GC'd, clear the slot in the hash table.
-  _Jv_RegisterFinalizer ((void *) str, unintern);
+  _Jv_RegisterStringFinalizer (str);
   return str;
 }
 
-/* Called by String fake finalizer. */
-static void
-unintern (jobject obj)
+// The fake String finalizer.  This is only used when the String has
+// been intern()d.  However, we must check this case, as it might be
+// called by the Reference code for any String.
+void
+_Jv_FinalizeString (jobject obj)
 {
   JvSynchronize sync (&StringClass);
+
+  // We might not actually have intern()d any strings at all, if
+  // we're being called from Reference.
+  if (! strhash)
+    return;
+
   jstring str = reinterpret_cast<jstring> (obj);
-  jstring* ptr = _Jv_StringGetSlot(str);
-  if (*ptr == NULL || *ptr == DELETED_STRING)
+  jstring *ptr = _Jv_StringGetSlot(str);
+  if (*ptr == NULL || *ptr == DELETED_STRING
+      || (jobject) UNMASK_PTR (*ptr) != obj)
     return;
 
   // We assume the lowest bit of the pointer is free for our nefarious
@@ -202,21 +211,21 @@ unintern (jobject obj)
   // interning the String.  If we subsequently re-intern the same
   // String, then we set the bit.  When finalizing, if the bit is set
   // then we clear it and re-register the finalizer.  We know this is
-  // a safe approach because both intern() and unintern() acquire
-  // the class lock; this bit can't be manipulated when the lock is
-  // not held.  So if we are finalizing and the bit is clear then we
-  // know all references are gone and we can clear the entry in the
-  // hash table.  The naive approach of simply clearing the pointer
-  // here fails in the case where a request to intern a new string
-  // with the same contents is made between the time the intern()d
-  // string is found to be unreachable and when the finalizer is
-  // actually run.  In this case we could clear a pointer to a valid
-  // string, and future intern() calls for that particular value would
-  // spuriously fail.
+  // a safe approach because both intern() and _Jv_FinalizeString()
+  // acquire the class lock; this bit can't be manipulated when the
+  // lock is not held.  So if we are finalizing and the bit is clear
+  // then we know all references are gone and we can clear the entry
+  // in the hash table.  The naive approach of simply clearing the
+  // pointer here fails in the case where a request to intern a new
+  // string with the same contents is made between the time the
+  // intern()d string is found to be unreachable and when the
+  // finalizer is actually run.  In this case we could clear a pointer
+  // to a valid string, and future intern() calls for that particular
+  // value would spuriously fail.
   if (PTR_MASKED (*ptr))
     {
       *ptr = (jstring) UNMASK_PTR (*ptr);
-      _Jv_RegisterFinalizer ((void *) obj, unintern);
+      _Jv_RegisterStringFinalizer (obj);
     }
   else
     {
@@ -292,8 +301,10 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
   jstr->cachedHashCode = hash;
   *ptr = jstr;
   SET_STRING_IS_INTERNED(jstr);
-  // When string is GC'd, clear the slot in the hash table.
-  _Jv_RegisterFinalizer ((void *) jstr, unintern);
+  // When string is GC'd, clear the slot in the hash table.  Note that
+  // we don't have to call _Jv_RegisterStringFinalizer here, as we
+  // know the new object cannot be referred to by a Reference.
+  _Jv_RegisterFinalizer ((void *) jstr, _Jv_FinalizeString);
   return jstr;
 }
 
