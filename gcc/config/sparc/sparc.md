@@ -5243,6 +5243,12 @@
   [(set_attr "type" "fp")
    (set_attr "fptype" "double")])
 
+(define_expand "floatunsdisf2"
+  [(use (match_operand:SF 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))]
+  "TARGET_ARCH64 && TARGET_FPU"
+  "sparc_emit_floatunsdi (operands); DONE;")
+
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(float:DF (match_operand:DI 1 "register_operand" "e")))]
@@ -5250,6 +5256,12 @@
   "fxtod\\t%1, %0"
   [(set_attr "type" "fp")
    (set_attr "fptype" "double")])
+
+(define_expand "floatunsdidf2"
+  [(use (match_operand:DF 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))]
+  "TARGET_ARCH64 && TARGET_FPU"
+  "sparc_emit_floatunsdi (operands); DONE;")
 
 (define_expand "floatditf2"
   [(set (match_operand:TF 0 "register_operand" "=e")
