@@ -1,3 +1,7 @@
+2001-03-22  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.am (gctest_LDFLAGS): Use -shared-libgcc.
+
 2001-03-19  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

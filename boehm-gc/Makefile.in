@@ -138,7 +138,7 @@ AM_CFLAGS = @BOEHM_GC_CFLAGS@
 check_PROGRAMS = gctest
 gctest_SOURCES = test.c
 gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(EXTRA_TEST_LIBS)
-gctest_LDFLAGS = -shared-gcc
+gctest_LDFLAGS = -shared-libgcc
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
 TESTS = gctest
 
