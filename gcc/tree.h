@@ -1958,7 +1958,7 @@ extern void layout_type			PARAMS ((tree));
    fields.  Then, call finish_record_layout.  See layout_type for the
    default way in which these functions are used.  */
 
-typedef struct record_layout_info
+typedef struct record_layout_info_s
 {
   /* The RECORD_TYPE that we are laying out.  */
   tree t;

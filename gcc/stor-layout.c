@@ -410,7 +410,7 @@ start_record_layout (t)
      tree t;
 {
   record_layout_info rli 
-    = (record_layout_info) xmalloc (sizeof (struct record_layout_info));
+    = (record_layout_info) xmalloc (sizeof (struct record_layout_info_s));
 
   rli->t = t;
 
