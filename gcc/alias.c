@@ -526,6 +526,13 @@ get_alias_set (t)
 	    return 0;
 	}
 
+      /* If we've already determined the alias set for this decl, just
+	 return it.  This is necessary for C++ anonymous unions, whose
+	 component variables don't look like union members (boo!).  */
+      if (TREE_CODE (t) == VAR_DECL
+	  && DECL_RTL_SET_P (t) && GET_CODE (DECL_RTL (t)) == MEM)
+	return MEM_ALIAS_SET (DECL_RTL (t));
+
       /* Give the language another chance to do something special.  */
       if (orig_t != t
 	  && (set = lang_get_alias_set (t)) != -1)
