@@ -87,6 +87,7 @@ typedef int _Unwind_Action;
 #define _UA_CLEANUP_PHASE	2
 #define _UA_HANDLER_FRAME	4
 #define _UA_FORCE_UNWIND	8
+#define _UA_END_OF_STACK	16
 
 /* This is an opaque type used to refer to a system-specific data
    structure used by the system unwinder. This context is created and
