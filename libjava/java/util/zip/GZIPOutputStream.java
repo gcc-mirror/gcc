@@ -1,5 +1,5 @@
 /* GZIPOutputStream.java - Create a file in gzip format
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,6 +76,12 @@ public class GZIPOutputStream extends DeflaterOutputStream
     out.write (255);
 
     crc = new CRC32 ();
+  }
+
+  public synchronized void write (int bval) throws IOException
+  {
+    super.write (bval);
+    crc.update (bval);
   }
 
   public synchronized void write (byte[] buf) throws IOException
