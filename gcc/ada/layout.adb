@@ -39,7 +39,6 @@ with Repinfo;  use Repinfo;
 with Sem;      use Sem;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
---  with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
