@@ -1,3 +1,7 @@
+2005-03-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/vmx/darwin-abi-3.c: Delete.
+
 2005-04-06  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/pr15754.f90: Change annotations to dg-error.
