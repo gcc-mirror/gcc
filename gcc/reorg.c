@@ -766,7 +766,7 @@ add_to_delay_list (insn, delay_list)
 {
   /* If we have an empty list, just make a new list element.  */
   if (delay_list == 0)
-    return gen_rtx (INSN_LIST, VOIDmode, insn, 0);
+    return gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
 
   /* Otherwise this must be an INSN_LIST.  Add INSN to the end of the
      list.  */
@@ -845,14 +845,14 @@ delete_scheduled_jump (insn)
 #ifdef HAVE_cc0
   if (reg_mentioned_p (cc0_rtx, insn))
     {
-      rtx note = find_reg_note (insn, REG_CC_SETTER, 0);
+      rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
 
       /* If a reg-note was found, it points to an insn to set CC0.  This
 	 insn is in the delay list of some other insn.  So delete it from
 	 the delay list it was in.  */
       if (note)
 	{
-	  if (! FIND_REG_INC_NOTE (XEXP (note, 0), 0)
+	  if (! FIND_REG_INC_NOTE (XEXP (note, 0), NULL_RTX)
 	      && sets_cc0_p (PATTERN (XEXP (note, 0))) == 1)
 	    delete_from_delay_slot (XEXP (note, 0));
 	}
@@ -972,7 +972,7 @@ optimize_skip (insn)
 	    return 0;
 	}
 
-      delay_list = add_to_delay_list (trial, 0);
+      delay_list = add_to_delay_list (trial, NULL_RTX);
       next_trial = next_active_insn (trial);
       update_block (trial, trial);
       delete_insn (trial);
@@ -1201,7 +1201,7 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
 #ifdef HAVE_cc0
 	  /* If TRIAL sets CC0, we can't copy it, so we can't steal this
 	     delay list.  */
-	  || find_reg_note (trial, REG_CC_USER, 0)
+	  || find_reg_note (trial, REG_CC_USER, NULL_RTX)
 #endif
 	  /* If TRIAL is from the fallthrough code of an annulled branch insn
 	     in SEQ, we cannot use it.  */
@@ -1942,7 +1942,8 @@ mark_target_live_regs (target, res)
   if (b != -1)
     {
       regset regs_live = basic_block_live_at_start[b];
-      int offset, bit, j;
+      int offset, j;
+      REGSET_ELT_TYPE bit;
       int regno;
       rtx start_insn, stop_insn;
 
@@ -1959,7 +1960,7 @@ mark_target_live_regs (target, res)
       for (offset = 0, i = 0; offset < regset_size; offset++)
 	{
 	  if (regs_live[offset] == 0)
-	    i += HOST_BITS_PER_INT;
+	    i += REGSET_ELT_BITS;
 	  else
 	    for (bit = 1; bit && i < max_regno; bit <<= 1, i++)
 	      if ((regs_live[offset] & bit)
@@ -2901,7 +2902,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  if (thread_if_true)
 	    INSN_FROM_TARGET_P (ninsn) = 1;
 
-	  delay_list = add_to_delay_list (ninsn, 0);
+	  delay_list = add_to_delay_list (ninsn, NULL_RTX);
 	  (*pslots_filled)++;
 	}
     }
@@ -2998,7 +2999,7 @@ fill_eager_delay_slots (first)
       else
 	{
 	  fallthrough_insn = next_active_insn (insn);
-	  own_fallthrough = own_thread_p (NEXT_INSN (insn), 0, 1);
+	  own_fallthrough = own_thread_p (NEXT_INSN (insn), NULL_RTX, 1);
 	  prediction = mostly_true_jump (insn, condition);
 	}
 
@@ -3248,7 +3249,7 @@ relax_delay_slots (first)
 	     put it back where it belonged and delete the register notes,
 	     but it doesn't seem worthwhile in this uncommon case.  */
 	  && ! find_reg_note (XVECEXP (pat, 0, XVECLEN (pat, 0) - 1),
-			      REG_CC_USER, 0)
+			      REG_CC_USER, NULL_RTX)
 #endif
 	  )
 	{
@@ -3369,7 +3370,7 @@ make_return_insns (first)
 
       /* If we can't make the jump into a RETURN, redirect it to the best
 	 RETURN and go on to the next insn.  */
-      if (! redirect_jump (jump_insn, 0))
+      if (! redirect_jump (jump_insn, NULL_RTX))
 	{
 	  redirect_jump (jump_insn, real_return_label);
 	  continue;
