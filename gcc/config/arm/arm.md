@@ -449,7 +449,7 @@
     {
       arm_split_constant (PLUS, SImode, NULL_RTX,
 	                  INTVAL (operands[2]), operands[0], operands[1],
-			  (no_new_pseudos ? 0 : preserve_subexpressions_p ()));
+			  optimize && !no_new_pseudos);
       DONE;
     }
   "
@@ -935,9 +935,7 @@
         {
           arm_split_constant (MINUS, SImode, NULL_RTX,
 	                      INTVAL (operands[1]), operands[0],
-	  		      operands[2],
-			      (no_new_pseudos ? 0
-			       :  preserve_subexpressions_p ()));
+	  		      operands[2], optimize && !no_new_pseudos);
           DONE;
 	}
       else /* TARGET_THUMB */
@@ -1512,9 +1510,8 @@
         {
           arm_split_constant (AND, SImode, NULL_RTX,
 	                      INTVAL (operands[2]), operands[0],
-			      operands[1],
-			      (no_new_pseudos
-			       ? 0 : preserve_subexpressions_p ()));
+			      operands[1], optimize && !no_new_pseudos);
+
           DONE;
         }
     }
@@ -2167,8 +2164,7 @@
         {
           arm_split_constant (IOR, SImode, NULL_RTX,
 	                      INTVAL (operands[2]), operands[0], operands[1],
-			      (no_new_pseudos
-			      ? 0 : preserve_subexpressions_p ()));
+			      optimize && !no_new_pseudos);
           DONE;
 	}
       else /* TARGET_THUMB */
@@ -4256,8 +4252,7 @@
         {
            arm_split_constant (SET, SImode, NULL_RTX,
 	                       INTVAL (operands[1]), operands[0], NULL_RTX,
-			      (no_new_pseudos ? 0
-			       : preserve_subexpressions_p ()));
+			       optimize && !no_new_pseudos);
           DONE;
         }
     }
@@ -4653,7 +4648,7 @@
 	      emit_insn (gen_movsi (reg, GEN_INT (val)));
 	      operands[1] = gen_lowpart (HImode, reg);
 	    }
-	  else if (arm_arch4 && !no_new_pseudos && optimize > 0
+	  else if (arm_arch4 && optimize && !no_new_pseudos
 		   && GET_CODE (operands[1]) == MEM)
 	    {
 	      rtx reg = gen_reg_rtx (SImode);

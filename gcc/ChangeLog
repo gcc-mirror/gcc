@@ -1,3 +1,8 @@
+2004-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (addsi3, subsi3, andsi3, iorsi3, movsi, movhi): Rework to
+	avoid use of preserve_subexpressions_p.
+
 2004-08-17  Richard Henderson  <rth@redhat.com>
 
 	PR 17051
