@@ -1,5 +1,15 @@
 2002-11-24  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config.gcc (*-*-netbsd*1.[7-9]*, *-*-netbsd*[2-9]*): Set
+	extra_parts to "crtbegin.o crtend.o crtbeginS.o crtendS.o
+	crtbeginT.o".
+	(arm*-*-netbsd*, i[34567]86-*-netbsd*, m68k*-*-netbsd*)
+	(ns32k-*-netbsd*, sparc-*-netbsd*, vax-*-netbsd*): Set extra_parts
+	to "" for a.out configurations.
+	* config/t-netbsd (CRTSTUFF_T_CFLAGS): Set to "-fPIC".
+
+2002-11-24  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/alpha/netbsd.h (CPP_SUBTARGET_SPEC): Just use
 	NETBSD_CPP_SPEC directly. 
 	(SUBTARGET_EXTRA_SPECS): Remove netbsd_cpp_spec.  Add

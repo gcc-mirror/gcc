@@ -370,6 +370,15 @@ case $machine in
 		tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
 		;;
 	esac
+
+	# NetBSD 1.7 and later are set up to use GCC's crtstuff for
+	# ELF configurations.  We will clear extra_parts in the
+	# a.out configurations.
+	case $machine in
+	*-*-netbsd*1.[7-9]* | *-*-netbsd*[2-9]*)
+		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
+		;;
+	esac
 	;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
 	# This is the place-holder for the generic a.out configuration
@@ -623,6 +632,7 @@ arm*-*-netbsdelf*)
 arm*-*-netbsd*)
 	tm_file="arm/aout.h arm/arm.h netbsd.h netbsd-aout.h arm/netbsd.h"
 	tmake_file="t-netbsd arm/t-netbsd"
+	extra_parts=""
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
@@ -1068,6 +1078,7 @@ i[34567]86-*-netbsdelf*)
 i[34567]86-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h netbsd.h netbsd-aout.h i386/netbsd.h"
 	tmake_file=t-netbsd
+	extra_parts=""
 	use_collect2=yes
 	;;
 x86_64-*-netbsd*)
@@ -1631,6 +1642,7 @@ m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 m68k*-*-netbsd*)
 	tm_file=m68k/netbsd.h
 	tmake_file=t-netbsd
+	extra_parts=""
 	use_collect2=yes
 	;;
 m68k*-*-openbsd*)
@@ -1928,6 +1940,7 @@ ns32k-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
 	# On NetBSD, the headers are already okay, except for math.h.
 	tmake_file="t-netbsd ns32k/t-ns32k"
+	extra_parts=""
 	use_collect2=yes
 	;;
 pdp11-*-bsd)
@@ -2320,6 +2333,7 @@ sparc-*-netbsdelf*)
 sparc-*-netbsd*)
 	tm_file="${tm_file} sparc/aout.h netbsd.h netbsd-aout.h sparc/netbsd.h"
 	tmake_file=t-netbsd
+	extra_parts=""
 	use_collect2=yes
 	;;
 sparc-*-openbsd*)
@@ -2638,6 +2652,7 @@ vax-*-netbsdelf*)
 vax-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h vax/netbsd.h"
 	tmake_file=t-netbsd
+	extra_parts=""
 	use_collect2=yes
 	;;
 vax-*-openbsd*)
