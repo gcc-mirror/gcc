@@ -2925,7 +2925,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 		abort ();
 	      val = arg0;
 	    }
-	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_INT)
+	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT)
 	    {
 	      val
 		= arg0 & ~((HOST_WIDE_INT) (-1) << GET_MODE_BITSIZE (op_mode));
