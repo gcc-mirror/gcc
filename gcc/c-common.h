@@ -435,6 +435,8 @@ extern int warn_conversion;
 
 extern tree (*make_fname_decl)                  PARAMS ((tree, const char *, int));
 
+extern tree identifier_global_value		PARAMS ((tree));
+
 extern void declare_function_name		PARAMS ((void));
 extern void decl_attributes			PARAMS ((tree, tree, tree));
 extern void init_function_format_info		PARAMS ((void));

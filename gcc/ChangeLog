@@ -1,3 +1,19 @@
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c: Include "defaults.h".
+	(WINT_TYPE, INTMAX_TYPE, UINTMAX_TYPE): Define.
+	(c_common_nodes_and_builtins): Create string_type_node,
+	const_string_type_node, wint_type_node, intmax_type_node,
+	uintmax_type_node, default_function_type, ptrdiff_type_node and
+	unsigned_ptrdiff_type_node.
+	* c-common.h (identifier_global_value): Declare.
+	* c-decl.c (WINT_TYPE, INTMAX_TYPE, UINTMAX_TYPE): Don't define.
+	(init_decl_processing): Don't create string_type_node,
+	const_string_type_node, wint_type_node, intmax_type_node,
+	uintmax_type_node, default_function_type, ptrdiff_type_node and
+	unsigned_ptrdiff_type_node.
+	(identifier_global_value): New function.
+
 2000-12-01  Neil Booth  <neilb@earthling.net>
 
         * cppinit.c (initialize): Forgotten prototype.
