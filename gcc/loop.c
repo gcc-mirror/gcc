@@ -6857,8 +6857,12 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 
 	      add_val = INTVAL (bl->biv->add_val);
 	      comparison_value = XEXP (comparison, 1);
-	      comparison_const_width
-		= GET_MODE_BITSIZE (GET_MODE (XEXP (comparison, 1)));
+	      if (GET_MODE (comparison_value) == VOIDmode)
+		comparison_const_width
+		  = GET_MODE_BITSIZE (GET_MODE (XEXP (comparison, 0)));
+	      else
+		comparison_const_width
+		  = GET_MODE_BITSIZE (GET_MODE (comparison_value));
 	      if (comparison_const_width > HOST_BITS_PER_WIDE_INT)
 		comparison_const_width = HOST_BITS_PER_WIDE_INT;
 	      comparison_sign_mask

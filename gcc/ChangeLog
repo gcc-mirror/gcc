@@ -1,3 +1,9 @@
+1998-12-30  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* loop.c (check_dbra_loop): While reversing the loop, if the
+	comparison value has a VOID mode use the mode of the other operand
+	to compute the mask.
+
 Wed Dec 30 22:24:00 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.md ({save,restore}_stack_function): Take 2 operands to
