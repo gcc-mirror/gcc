@@ -122,13 +122,9 @@ namespace std
   // collate
   template class collate<char>;
   template class collate_byname<char>;
-  template class _Weekdaynames<char, int>;
-  template class _Monthnames<char, int>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class collate<wchar_t>;
   template class collate_byname<wchar_t>;
-  template class _Weekdaynames<wchar_t, int>;
-  template class _Monthnames<wchar_t, int>;
 #endif
     
   // use_facet
@@ -243,30 +239,17 @@ namespace std
 		   const vec_pfacet::value_type&);
 
 
+  //
+  // locale
+  //
   typedef istreambuf_iterator<char, char_traits<char> > istreambuf_iter;
   typedef ostreambuf_iterator<char, char_traits<char> > ostreambuf_iter;
-
-
-  template 
-    istreambuf_iter 
-    __match_parallel<istreambuf_iter, char>
-    (istreambuf_iter, istreambuf_iter, int, const string*, int*, int&, bool&);
-
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   typedef istreambuf_iterator<wchar_t,char_traits<wchar_t> > wistreambuf_iter;
   typedef ostreambuf_iterator<wchar_t,char_traits<wchar_t> > wostreambuf_iter;
-
-  template 
-    wistreambuf_iter 
-    __match_parallel<wistreambuf_iter, wchar_t>
-   (wistreambuf_iter, wistreambuf_iter, int, const wstring*, int*, int&, bool&);
 #endif
 
-
-  //
-  // locale
-  //
   template 
     bool
     locale::operator()(const string&, const string&) const;

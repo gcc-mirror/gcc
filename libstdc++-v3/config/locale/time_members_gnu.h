@@ -36,9 +36,9 @@
 
   template<typename _CharT>
     void
-    __timepunct<_CharT>::_M_put_helper(char* __s, size_t __maxlen, 
-				       const char* __format, 
-				       const tm* __tm) const
+    __timepunct<_CharT>::
+    _M_put_helper(char* __s, size_t __maxlen, const char* __format, 
+		  const tm* __tm) const
     {
 #if 0
       // Requires glibc 2.3
@@ -49,5 +49,22 @@
 #else
       setlocale(LC_ALL, _M_name_timepunct);
       strftime(__s, __maxlen, __format, __tm);
+#endif
+    }
+
+  template<typename _CharT>
+    void
+    __timepunct<_CharT>::
+    _M_get_helper(const char* __s, const char* __format, tm* __tm) const
+    {
+#if 0
+      // Requires glibc 2.3
+      if (_M_c_locale_timepunct)
+	__strptime_l(__s, _M_c_locale_timepunct, __format, __tm);
+      else
+	strptime(__s, __format, __tm);
+#else
+      setlocale(LC_ALL, _M_name_timepunct);
+      strptime(__s, __format, __tm);
 #endif
     }

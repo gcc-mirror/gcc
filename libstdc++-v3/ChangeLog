@@ -1,3 +1,24 @@
+2001-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/time_members_gnu.h (__timepunct::_M_get_helper): Add.
+	(__timepunct::_M_put_helper): Add.
+	* config/locale/time_members_generic.h: Same.
+	* include/bits/locale_facets.h (__match_parallel): Remove. Format.
+	(__timepunct): Add data members.
+	(__timepunct::_M_days): Add.
+	(__timepunct::_M_days_abbreviated): Add.
+	(__timepunct::_M_months): Add.
+	(__timepunct::_M_months_abbreviated): Add.
+	(__timepunct::_M_initialize_timepunct): Add.
+	* include/bits/locale_facets.tcc: Same. 
+	* src/locale-inst.cc: Remove instantiations for __match_parallel.
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add CTIME_CC.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/22_locale/time_put_members_char.cc: Mark XFAIL.
+	* testsuite/22_locale/time_put_members_char.cc (test01): New file.
+	* testsuite/22_locale/time_get.cc: New file.
+
 2001-09-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use
