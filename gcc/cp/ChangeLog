@@ -1,5 +1,10 @@
 2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* call.c (build_new_op): Convert args from reference here.
+	(build_conditional_expr): Don't convert here.
+
+2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* spew.c (last_token_id): New static variable.
 	(read_token): Set it here.
 	(yyerror): Use it here.
