@@ -609,7 +609,7 @@ _Jv_ThisExecutable (const char *name)
 {
   if (name)
     {
-      _Jv_execName = new char[strlen (name) + 1];
+      _Jv_execName = (char *) _Jv_Malloc (strlen (name) + 1);
       strcpy (_Jv_execName, name);
     }
 }
