@@ -189,7 +189,6 @@ while [ $# != 0 ]; do
 	' $2/$file > $2/$file.sed
 	mv $2/$file.sed $2/$file
 	if cmp $file $2/$file >/dev/null 2>&1; then
-	   echo Deleting $2/$file\; no fixes were needed.
 	   rm $2/$file
 	fi
       fi
@@ -214,7 +213,7 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   sed -e 's/getcwd(char \*, int)/getcwd(char *, size_t)/' $file_to_fix > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -243,7 +242,7 @@ if [ \! -z "$file_to_fix" ]; then
   sed -e 's/getcwd(char \*, int)/getcwd(char *, size_t)/' $file_to_fix \
     | sed -e 's/profil(unsigned short \*, unsigned int, unsigned int, unsigned int)/profil(unsigned short *, size_t, int, unsigned)/' > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -286,7 +285,7 @@ if [ \! -z "$file_to_fix" ]; then
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -326,7 +325,7 @@ if [ \! -z "$file_to_fix" ]; then
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -368,7 +367,7 @@ if [ \! -z "$file_to_fix" ]; then
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -407,7 +406,7 @@ extern caddr_t mmap ();
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No changed needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -468,7 +467,7 @@ extern
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -511,7 +510,7 @@ static int getrnge ();
     wq
 EOF
     if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-      No change needed in $file_to_fix
+      true
     else
       echo Fixed $file_to_fix
       rm -f ${LIB}/$file
@@ -546,7 +545,7 @@ if [ \! -z "$file_to_fix" ]; then
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -583,7 +582,7 @@ struct  sigaction  {
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -632,7 +631,7 @@ static minor_t minor();
   wq
 EOF
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -659,7 +658,7 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   sed 's/\[NMSZ\]/\[RFS_NMSZ\]/g' $file_to_fix > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -688,7 +687,7 @@ if [ \! -z "$file_to_fix" ]; then
   sed 's/NC_NPI_RAW/NC_TPI_RAW/g' $file_to_fix \
     | sed 's/NC_/(unsigned long) NC_/' > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -714,7 +713,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -743,7 +742,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -772,7 +771,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -801,7 +800,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -830,7 +829,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -859,7 +858,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -888,7 +887,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -917,7 +916,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     echo '#ifdef _KERNEL' > /tmp/$base
     cat $file_to_fix >> /tmp/$base
@@ -946,7 +945,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep _KERNEL $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     sed -e '/#ifdef INKERNEL/i\
 #ifdef _KERNEL' \
@@ -974,7 +973,7 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   if grep __GNUC__ $file_to_fix > /dev/null; then
-    echo No change needed in $file_to_fix
+    true
   else
     sed -e '/#	ifdef	__STDC__/i\
 #   if !defined (__GNUC__) && !defined (__GNUG__)' \
@@ -1009,7 +1008,7 @@ fi
 #    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
 #    echo Fixed $file_to_fix
 #  else
-#    echo No change needed in $file_to_fix
+#    true
 #  fi
 #fi
 
@@ -1034,7 +1033,7 @@ if [ \! -z "$file_to_fix" ]; then
     s/extern struct strevent;/struct strevent;/g
   ' $file_to_fix > /tmp/$base 
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -1064,7 +1063,7 @@ if [ \! -z "$file_to_fix" ]; then
     s/extern struct proc;/struct proc;/g
   ' $file_to_fix > /tmp/$base 
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
@@ -1161,7 +1160,7 @@ if [ -x /bin/sony ]; then
       ' /tmp/$base > /tmp/$base.sed
       mv /tmp/$base.sed /tmp/$base
       if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then
-        echo No change needed in $file_to_fix
+        true
       else
         echo Fixed $file_to_fix
         rm -f ${LIB}/$file
@@ -1193,7 +1192,7 @@ if [ -x /bin/sony ]; then
       ' /tmp/$base > /tmp/$base.sed
       mv /tmp/$base.sed /tmp/$base
       if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then
-        echo No change needed in $file_to_fix
+        true
       else
         echo Fixed $file_to_fix
         rm -f ${LIB}/$file
@@ -1247,7 +1246,7 @@ if [ \! -z "$file_to_fix" ]; then
       -e '/[ 	]DBL_DIG[ 	]/a\
 #endif' $file_to_fix > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
+    true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
