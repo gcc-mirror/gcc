@@ -1,3 +1,10 @@
+2001-04-11  Jason Merrill  <jason_merrill@redhat.com>
+
+	* collect2.c (is_ctor_dtor): Always use '_' in the file fn names,
+	not '.' or '$'.
+	* tree.c (FILE_FUNCTION_FORMAT): Likewise.
+	* varasm.c (CHKR_PREFIX): Likewise.
+
 2001-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpplex.c (_cpp_lex_token): Only warn if -Wcomment.

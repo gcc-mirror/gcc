@@ -589,21 +589,9 @@ is_ctor_dtor (s)
   register const char *orig_s = s;
 
   static struct names special[] = {
-#ifdef NO_DOLLAR_IN_LABEL
-#ifdef NO_DOT_IN_LABEL
     { "GLOBAL__I_", sizeof ("GLOBAL__I_")-1, 1, 0 },
     { "GLOBAL__D_", sizeof ("GLOBAL__D_")-1, 2, 0 },
     { "GLOBAL__F_", sizeof ("GLOBAL__F_")-1, 5, 0 },
-#else
-    { "GLOBAL_.I.", sizeof ("GLOBAL_.I.")-1, 1, 0 },
-    { "GLOBAL_.D.", sizeof ("GLOBAL_.D.")-1, 2, 0 },
-    { "GLOBAL_.F.", sizeof ("GLOBAL_.F.")-1, 5, 0 },
-#endif
-#else
-    { "GLOBAL_$I$", sizeof ("GLOBAL_$I$")-1, 1, 0 },
-    { "GLOBAL_$D$", sizeof ("GLOBAL_$D$")-1, 2, 0 },
-    { "GLOBAL_$F$", sizeof ("GLOBAL_$F$")-1, 5, 0 },
-#endif
     { "GLOBAL__FI_", sizeof ("GLOBAL__FI_")-1, 3, 0 },
     { "GLOBAL__FD_", sizeof ("GLOBAL__FD_")-1, 4, 0 },
 #ifdef CFRONT_LOSSAGE /* Do not collect cfront initialization functions.

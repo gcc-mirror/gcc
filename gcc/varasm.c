@@ -61,15 +61,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Define the prefix to use when check_memory_usage_flag is enable.  */
-#ifdef NO_DOLLAR_IN_LABEL
-#ifdef NO_DOT_IN_LABEL
-#define CHKR_PREFIX "chkr_prefix_"
-#else /* !NO_DOT_IN_LABEL */
-#define CHKR_PREFIX "chkr."
-#endif 
-#else /* !NO_DOLLAR_IN_LABEL */
-#define CHKR_PREFIX "chkr$"
-#endif
+#define CHKR_PREFIX "_CHKR_"
 #define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)
 
 /* File in which assembler code is being written.  */

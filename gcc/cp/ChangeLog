@@ -1,3 +1,7 @@
+2001-04-11  Jason Merrill  <jason_merrill@redhat.com>
+
+	* error.c (GLOBAL_THING): Always use '__'.
+
 2001-04-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* method.c (implicitly_declare_fn): Commonize code for copy ctor
