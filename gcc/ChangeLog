@@ -1,3 +1,8 @@
+2001-10-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (cr_logical): Swap order of CODE and
+	MODE arguments to gen_rtx and compare operand with const0_rtx.
+
 2001-10-26  Christopher Faylor  <cgf@redhat.com>
 
         * config/i386/cygwin.h: Search target specfic include directory, if
