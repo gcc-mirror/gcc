@@ -350,10 +350,11 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 /* Given an expression as a tree, strip any NON_LVALUE_EXPRs and NOP_EXPRs
    that don't change the machine mode.  */
 
-#define STRIP_NOPS(EXP) \
+#define STRIP_NOPS(EXP)						\
   while ((TREE_CODE (EXP) == NOP_EXPR				\
 	  || TREE_CODE (EXP) == CONVERT_EXPR			\
 	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
+	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0)))))	\
     (EXP) = TREE_OPERAND (EXP, 0);
@@ -364,6 +365,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
   while ((TREE_CODE (EXP) == NOP_EXPR				\
 	  || TREE_CODE (EXP) == CONVERT_EXPR			\
 	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
+	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))	\
 	 && (TREE_UNSIGNED (TREE_TYPE (EXP))			\
@@ -376,6 +378,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
   while ((TREE_CODE (EXP) == NOP_EXPR				\
 	  || TREE_CODE (EXP) == CONVERT_EXPR			\
 	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
+	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TREE_TYPE (EXP)					\
 	     == TREE_TYPE (TREE_OPERAND (EXP, 0))))		\
     (EXP) = TREE_OPERAND (EXP, 0);
@@ -2532,52 +2535,6 @@ extern tree invert_truthvalue	PARAMS ((tree));
 
 extern tree (*lang_type_promotes_to)	PARAMS ((tree));
 
-/* Interface of the DWARF2 unwind info support.  */
-
-/* Decide whether we want to emit frame unwind information for the current
-   translation unit.  */
-
-extern int dwarf2out_do_frame		PARAMS ((void));
-
-/* Generate a new label for the CFI info to refer to.  */
-
-extern char *dwarf2out_cfi_label	PARAMS ((void));
-
-/* Entry point to update the canonical frame address (CFA).  */
-
-extern void dwarf2out_def_cfa		PARAMS ((const char *, unsigned, long));
-
-/* Add the CFI for saving a register window.  */
-
-extern void dwarf2out_window_save	PARAMS ((const char *));
-
-/* Add a CFI to update the running total of the size of arguments pushed
-   onto the stack.  */
-
-extern void dwarf2out_args_size		PARAMS ((const char *, long));
-
-/* Entry point for saving a register to the stack.  */
-
-extern void dwarf2out_reg_save		PARAMS ((const char *, unsigned, long));
-
-/* Entry point for saving the return address in the stack.  */
-
-extern void dwarf2out_return_save	PARAMS ((const char *, long));
-
-/* Entry point for saving the return address in a register.  */
-
-extern void dwarf2out_return_reg	PARAMS ((const char *, unsigned));
-
-/* Output a marker (i.e. a label) for the beginning of a function, before
-   the prologue.  */
-
-extern void dwarf2out_begin_prologue	PARAMS ((void));
-
-/* Output a marker (i.e. a label) for the absolute end of the generated
-   code for a function definition.  */
-
-extern void dwarf2out_end_epilogue	PARAMS ((void));
-
 /* The language front-end must define these functions.  */
 
 /* Function of no arguments for initializing options.  */
@@ -2910,7 +2867,7 @@ extern void dwarf2out_begin_prologue	PARAMS ((void));
    code for a function definition.  */
 
 extern void dwarf2out_end_epilogue	PARAMS ((void));
-
+
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic
    is duplicated in rtl.h and tree.h because every file that needs the
