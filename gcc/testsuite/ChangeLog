@@ -1,3 +1,7 @@
+2002-02-07  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/debug/dwarf2-1.c (foo): Return a value.
+
 2002-02-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* lib/prune.exp: Remove "In (program|subroutine"block-data)"
