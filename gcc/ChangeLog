@@ -1,3 +1,9 @@
+2004-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/17825
+	* combine.c (subst): Ignore STRICT_LOW_PART no matter if REG_P (new)
+	or not.
+
 2004-11-27  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/12769
