@@ -330,17 +330,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
       return;
 
     case COND_EXPR:
-      if (GOTO_DESTINATION (COND_EXPR_THEN (stmt))
-	  == GOTO_DESTINATION (COND_EXPR_ELSE (stmt)))
-	{
-	  /* A COND_EXPR is obviously dead if the target labels are the same.
-	     We cannot kill the statement at this point, so to prevent the
-	     statement from being marked necessary, we replace the condition
-	     with a constant.  The stmt is killed later on in cfg_cleanup.  */
-	  COND_EXPR_COND (stmt) = integer_zero_node;
-	  modify_stmt (stmt);
-	  return;
-	}
+      gcc_assert (EDGE_COUNT (bb_for_stmt (stmt)->succs) == 2);
       /* Fall through.  */
 
     case SWITCH_EXPR:
