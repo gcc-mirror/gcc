@@ -664,6 +664,22 @@ java/awt/event/MouseWheelEvent.java \
 java/awt/event/MouseWheelListener.java \
 java/awt/event/WindowFocusListener.java \
 java/awt/event/WindowStateListener.java \
+java/awt/font/FontRenderContext.java \
+java/awt/font/ShapeGraphicAttribute.java \
+java/awt/font/MultipleMaster.java \
+java/awt/font/TransformAttribute.java \
+java/awt/font/GlyphJustificationInfo.java \
+java/awt/font/LineBreakMeasurer.java \
+java/awt/font/TextMeasurer.java \
+java/awt/font/TextLayout.java \
+java/awt/font/LineMetrics.java \
+java/awt/font/TextAttribute.java \
+java/awt/font/GlyphMetrics.java \
+java/awt/font/OpenType.java \
+java/awt/font/GlyphVector.java \
+java/awt/font/GraphicAttribute.java \
+java/awt/font/ImageGraphicAttribute.java \
+java/awt/font/NumericShaper.java \
 java/awt/geom/AffineTransform.java \
 java/awt/geom/Dimension2D.java \
 java/awt/geom/Ellipse2D.java \
@@ -3059,10 +3075,21 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/event/WindowFocusListener.P \
 .deps/java/awt/event/WindowListener.P \
 .deps/java/awt/event/WindowStateListener.P \
-.deps/java/awt/font/TextHitInfo.P .deps/java/awt/geom/AffineTransform.P \
-.deps/java/awt/geom/Arc2D.P .deps/java/awt/geom/Area.P \
-.deps/java/awt/geom/CubicCurve2D.P .deps/java/awt/geom/Dimension2D.P \
-.deps/java/awt/geom/Ellipse2D.P \
+.deps/java/awt/font/FontRenderContext.P \
+.deps/java/awt/font/GlyphJustificationInfo.P \
+.deps/java/awt/font/GlyphMetrics.P .deps/java/awt/font/GlyphVector.P \
+.deps/java/awt/font/GraphicAttribute.P \
+.deps/java/awt/font/ImageGraphicAttribute.P \
+.deps/java/awt/font/LineBreakMeasurer.P \
+.deps/java/awt/font/LineMetrics.P .deps/java/awt/font/MultipleMaster.P \
+.deps/java/awt/font/NumericShaper.P .deps/java/awt/font/OpenType.P \
+.deps/java/awt/font/ShapeGraphicAttribute.P \
+.deps/java/awt/font/TextAttribute.P .deps/java/awt/font/TextHitInfo.P \
+.deps/java/awt/font/TextLayout.P .deps/java/awt/font/TextMeasurer.P \
+.deps/java/awt/font/TransformAttribute.P \
+.deps/java/awt/geom/AffineTransform.P .deps/java/awt/geom/Arc2D.P \
+.deps/java/awt/geom/Area.P .deps/java/awt/geom/CubicCurve2D.P \
+.deps/java/awt/geom/Dimension2D.P .deps/java/awt/geom/Ellipse2D.P \
 .deps/java/awt/geom/FlatteningPathIterator.P \
 .deps/java/awt/geom/GeneralPath.P \
 .deps/java/awt/geom/IllegalPathStateException.P \
