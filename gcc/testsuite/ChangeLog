@@ -1,3 +1,8 @@
+2003-12-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/11634
+	* gcc.dg/20031201-2.c: New test case.
+
 2003-12-01  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 11433
