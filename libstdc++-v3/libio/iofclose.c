@@ -32,6 +32,7 @@
 # include <shlib-compat.h>
 #else
 # define SHLIB_COMPAT(a, b, c) 0
+# define _IO_new_fclose fclose
 #endif
 
 int
@@ -63,7 +64,7 @@ _IO_new_fclose (fp)
 #if _LIBC
       /* This stream has a wide orientation.  This means we have to free
 	 the conversion functions.  */
-      struct _IO_codecvt *cc = &fp->_wide_data->_codecvt;
+      struct _IO_codecvt *cc = fp->_codecvt;
 
       if (cc->__cd_in.__cd.__steps->__shlib_handle != NULL)
 	{
@@ -93,6 +94,4 @@ _IO_new_fclose (fp)
 versioned_symbol (libc, _IO_new_fclose, _IO_fclose, GLIBC_2_1);
 strong_alias (_IO_new_fclose, __new_fclose)
 versioned_symbol (libc, __new_fclose, fclose, GLIBC_2_1);
-#else
-int fclose (_IO_FILE *) __attribute__ ((alias("_IO_new_fclose")));
 #endif

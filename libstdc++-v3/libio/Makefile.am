@@ -1,6 +1,6 @@
 ## Makefile for the libio subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1999, 2000 Cygnus Solutions
+## Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -64,14 +64,14 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(CFLAGS) $(AM_CFLAGS) $(LDFLAGS) -o $@
 
-#includes = 
 
 libio_headers = \
         libio.h libioP.h iolibio.h
 
 if GLIBCPP_NEED_LIBIO
 LIBIO_SRCS = \
-	filedoalloc.c genops.c fileops.c stdfiles.c cleanup.c c_codecvt.c
+	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c
+#	filedoalloc.c genops.c fileops.c stdfiles.c cleanup.c c_codecvt.c
 else
 LIBIO_SRCS =
 endif

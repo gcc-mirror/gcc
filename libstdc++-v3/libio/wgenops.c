@@ -39,6 +39,7 @@
 # define __wmemcpy(dst, src, n) wmemcpy (dst, src, n)
 #endif
 
+
 static int save_for_wbackup __P ((_IO_FILE *fp, wchar_t *end_p))
 #ifdef _LIBC
      internal_function

@@ -69,13 +69,13 @@ extern "C" {
 # define _IO_JUMPS_OFFSET 1
 #endif
 
-#define _IO_JUMPS(THIS) ((struct _IO_FILE_plus *) (THIS))->vtable
+#define _IO_JUMPS(THIS) (THIS)->vtable
 #define _IO_WIDE_JUMPS(THIS) ((struct _IO_FILE *) (THIS))->_wide_data->_wide_vtable
 #define _IO_CHECK_WIDE(THIS) (((struct _IO_FILE *) (THIS))->_wide_data != NULL)
 
 #if _IO_JUMPS_OFFSET
 # define _IO_JUMPS_FUNC(THIS) \
- (*(struct _IO_jump_t **) ((char *) &_IO_JUMPS ((struct _IO_FILE_plus *) (THIS)) \
+ (*(struct _IO_jump_t **) ((void *) &_IO_JUMPS ((struct _IO_FILE_plus *) (THIS)) \
 			   + (THIS)->_vtable_offset))
 #else
 # define _IO_JUMPS_FUNC(THIS) _IO_JUMPS ((struct _IO_FILE_plus *) (THIS))
@@ -714,19 +714,19 @@ extern int _IO_vscanf __P ((const char *, _IO_va_list));
 # ifdef _IO_USE_OLD_IO_FILE
 #  define FILEBUF_LITERAL(CHAIN, FLAGS, FD, WDP) \
        { _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+FLAGS, \
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  (_IO_FILE *) CHAIN, FD, \
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (_IO_FILE *) CHAIN, FD, \
 	 0, _IO_pos_BAD, 0, 0, { 0 }, &_IO_stdfile_##FD##_lock }
 # else
 #  if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
 #   define FILEBUF_LITERAL(CHAIN, FLAGS, FD, WDP) \
        { _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+FLAGS, \
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  (_IO_FILE *) CHAIN, FD, \
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (_IO_FILE *) CHAIN, FD, \
 	 0, _IO_pos_BAD, 0, 0, { 0 }, &_IO_stdfile_##FD##_lock, _IO_pos_BAD,\
 	 NULL, WDP, 0 }
 #  else
 #   define FILEBUF_LITERAL(CHAIN, FLAGS, FD, WDP) \
        { _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+FLAGS, \
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  (_IO_FILE *) CHAIN, FD, \
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (_IO_FILE *) CHAIN, FD, \
 	 0, _IO_pos_BAD, 0, 0, { 0 }, &_IO_stdfile_##FD##_lock, _IO_pos_BAD,\
 	 0 }
 #  endif
@@ -741,13 +741,13 @@ extern int _IO_vscanf __P ((const char *, _IO_va_list));
 #  if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
 #   define FILEBUF_LITERAL(CHAIN, FLAGS, FD, WDP) \
        { _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+FLAGS, \
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (_IO_FILE *) CHAIN, FD, \
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (_IO_FILE *) CHAIN, FD, \
 	 0, _IO_pos_BAD, 0, 0, { 0 }, 0, _IO_pos_BAD, \
 	 NULL, WDP, 0 }
 #  else
 #   define FILEBUF_LITERAL(CHAIN, FLAGS, FD, WDP) \
        { _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+FLAGS, \
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (_IO_FILE *) CHAIN, FD, \
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (_IO_FILE *) CHAIN, FD, \
 	 0, _IO_pos_BAD, 0, 0, { 0 }, 0, _IO_pos_BAD, \
 	 0 }
 #  endif

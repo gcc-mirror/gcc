@@ -758,8 +758,9 @@ _IO_flush_all ()
 #if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
 	 || (fp->_vtable_offset == 0
 	     && fp->_mode > 0 && (fp->_wide_data->_IO_write_ptr
-				  > fp->_wide_data->_IO_write_base)))
+				  > fp->_wide_data->_IO_write_base))
 #endif
+	 )
 	&& _IO_OVERFLOW (fp, EOF) == EOF)
       result = EOF;
   return result;
@@ -983,9 +984,11 @@ _IO_default_pbackfail (fp, c)
 	  new_buf = (char *) malloc (new_size);
 	  if (new_buf == NULL)
 	    return EOF;
-	  memcpy (new_buf + old_size, fp->_IO_read_base, old_size);
+	  memcpy (new_buf + (new_size - old_size), fp->_IO_read_base,
+		  old_size);
 	  free (fp->_IO_read_base);
-	  _IO_setg (fp, new_buf, new_buf + old_size, new_buf + new_size);
+	  _IO_setg (fp, new_buf, new_buf + (new_size - old_size),
+		    new_buf + new_size);
 	  fp->_IO_backup_base = fp->_IO_read_ptr;
 	}
 

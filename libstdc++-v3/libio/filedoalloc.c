@@ -75,15 +75,6 @@ _IO_file_doallocate (fp)
   char *p;
   struct _G_stat64 st;
 
-#ifndef _LIBC
-  /* If _IO_cleanup_registration_needed is non-zero, we should call the
-     function it points to.  This is to make sure _IO_cleanup gets called
-     on exit.  We call it from _IO_file_doallocate, since that is likely
-     to get called by any program that does buffered I/O. */
-  if (_IO_cleanup_registration_needed)
-    (*_IO_cleanup_registration_needed) ();
-#endif
-
   if (fp->_fileno < 0 || _IO_SYSSTAT (fp, &st) < 0)
     {
       couldbetty = 0;
