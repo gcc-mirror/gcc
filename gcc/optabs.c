@@ -83,32 +83,32 @@ enum insn_code setcc_gen_code[NUM_RTX_CODE];
 enum insn_code movcc_gen_code[NUM_MACHINE_MODES];
 #endif
 
-static int add_equal_note	PROTO((rtx, rtx, enum rtx_code, rtx, rtx));
-static rtx widen_operand	PROTO((rtx, enum machine_mode,
+static int add_equal_note	PARAMS ((rtx, rtx, enum rtx_code, rtx, rtx));
+static rtx widen_operand	PARAMS ((rtx, enum machine_mode,
 				       enum machine_mode, int, int));
-static int expand_cmplxdiv_straight PROTO((rtx, rtx, rtx, rtx,
+static int expand_cmplxdiv_straight PARAMS ((rtx, rtx, rtx, rtx,
 					   rtx, rtx, enum machine_mode,
 					   int, enum optab_methods,
 					   enum mode_class, optab));
-static int expand_cmplxdiv_wide PROTO((rtx, rtx, rtx, rtx,
+static int expand_cmplxdiv_wide PARAMS ((rtx, rtx, rtx, rtx,
 				       rtx, rtx, enum machine_mode,
 				       int, enum optab_methods,
 				       enum mode_class, optab));
-static enum insn_code can_fix_p	PROTO((enum machine_mode, enum machine_mode,
+static enum insn_code can_fix_p	PARAMS ((enum machine_mode, enum machine_mode,
 				       int, int *));
-static enum insn_code can_float_p PROTO((enum machine_mode, enum machine_mode,
+static enum insn_code can_float_p PARAMS ((enum machine_mode, enum machine_mode,
 					 int));
-static rtx ftruncify	PROTO((rtx));
-static optab init_optab	PROTO((enum rtx_code));
-static void init_libfuncs PROTO((optab, int, int, const char *, int));
-static void init_integral_libfuncs PROTO((optab, const char *, int));
-static void init_floating_libfuncs PROTO((optab, const char *, int));
+static rtx ftruncify	PARAMS ((rtx));
+static optab init_optab	PARAMS ((enum rtx_code));
+static void init_libfuncs PARAMS ((optab, int, int, const char *, int));
+static void init_integral_libfuncs PARAMS ((optab, const char *, int));
+static void init_floating_libfuncs PARAMS ((optab, const char *, int));
 #ifdef HAVE_conditional_trap
-static void init_traps PROTO((void));
+static void init_traps PARAMS ((void));
 #endif
-static void emit_cmp_and_jump_insn_1 PROTO((rtx, rtx, enum machine_mode,
+static void emit_cmp_and_jump_insn_1 PARAMS ((rtx, rtx, enum machine_mode,
 					    enum rtx_code, int, rtx));
-static void prepare_float_lib_cmp PROTO((rtx *, rtx *, enum rtx_code *,
+static void prepare_float_lib_cmp PARAMS ((rtx *, rtx *, enum rtx_code *,
 					 enum machine_mode *, int *));
 
 /* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to

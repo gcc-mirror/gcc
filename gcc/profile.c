@@ -150,16 +150,16 @@ static int total_num_never_executed;
 static int total_num_branches;
 
 /* Forward declarations.  */
-static void init_arc PROTO((struct adj_list *, int, int, rtx));
-static void find_spanning_tree PROTO((int));
-static void expand_spanning_tree PROTO((int));
-static void fill_spanning_tree PROTO((int));
-static void init_arc_profiler PROTO((void));
-static void output_arc_profiler PROTO((int, rtx));
-static void instrument_arcs PROTO((rtx, int, FILE *));
-static void output_gcov_string PROTO((const char *, long));
-static int tablejump_entry_p PROTO((rtx, rtx));
-static void compute_branch_probabilities PROTO((int, FILE *));
+static void init_arc PARAMS ((struct adj_list *, int, int, rtx));
+static void find_spanning_tree PARAMS ((int));
+static void expand_spanning_tree PARAMS ((int));
+static void fill_spanning_tree PARAMS ((int));
+static void init_arc_profiler PARAMS ((void));
+static void output_arc_profiler PARAMS ((int, rtx));
+static void instrument_arcs PARAMS ((rtx, int, FILE *));
+static void output_gcov_string PARAMS ((const char *, long));
+static int tablejump_entry_p PARAMS ((rtx, rtx));
+static void compute_branch_probabilities PARAMS ((int, FILE *));
 
 #ifndef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE BITS_PER_WORD
