@@ -37,21 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "ggc.h"
 
-/* In some circumstances we have to save EH data around a nested
-   exception.  The EXC_PTR_EXPR and FILTER_EXPR values are saved
-   into these _DECL nodes.
-
-   We lazily create this pair of _DECL nodes once per function rather
-   than creating a new pair of _DECLs each time we need to save the
-   EXEC_PTR and FILTER.  This can save us literally thousands of _DECL
-   nodes when we have many inline destructors with an embedded try block.  
-
-   This is safe as we know the lifetime of the values in these _DECL nodes.
-   Their lifetimes also ensure that globbing these uses into a single
-   pair of _DECL nodes requires no additional PHI_NODEs or SSA_NAMEs when
-   compared to having a pair of _DECL nodes per inline destructor with
-   an embedded try block.  */
-static tree save_eptr, save_filt;
 
 /* Nonzero if we are using EH to handle cleanups.  */
 static int using_eh_for_cleanups_p = 0;
@@ -822,13 +807,10 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
      we never fallthru from this copy of the finally block.  */
   if (finally_may_fallthru)
     {
-      /* If we have not created _DECLs for saving the EXC_PTR
-	 and FILTER_EXPR, create them now.  */
-      if (!save_eptr)
-	{
-	  save_eptr = create_tmp_var (ptr_type_node, "save_eptr");
-	  save_filt = create_tmp_var (integer_type_node, "save_filt");
-	}
+      tree save_eptr, save_filt;
+
+      save_eptr = create_tmp_var (ptr_type_node, "save_eptr");
+      save_filt = create_tmp_var (integer_type_node, "save_filt");
 
       i = tsi_start (finally);
       x = build (EXC_PTR_EXPR, ptr_type_node);
@@ -1662,11 +1644,6 @@ lower_eh_constructs (void)
   htab_delete (finally_tree);
 
   collect_eh_region_array ();
-
-  /* Wipe the DECLs we use for saving the EXC_PTR and FILTER_EXPR
-     to ensure we create new ones for the next function.  */
-  save_eptr = NULL;
-  save_filt = NULL;
 }
 
 struct tree_opt_pass pass_lower_eh =
