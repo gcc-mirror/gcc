@@ -1,3 +1,9 @@
+2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gnat_rm.texi, gnat_ug.texi: Update to GFDL 1.2.
+	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
+	gnat_ug_wnt.texi: Regenerate.
+
 2003-01-29  Laurent Guerby <guerby@acm.org>
 
         PR ada/8344

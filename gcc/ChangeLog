@@ -1,3 +1,9 @@
+2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/gcc.texi, doc/gccint.texi, doc/gcov.texi,
+	doc/include/fdl.texi, doc/invoke.texi: Update to GFDL 1.2.
+	* doc/install.texi: Update copyright dates.  Update to GFDL 1.2.
+
 2003-02-03  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (order_regs_for_local_alloc): Order the

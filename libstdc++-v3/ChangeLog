@@ -1,3 +1,8 @@
+2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* docs/html/17_intro/porting.texi: Update to GFDL 1.2.
+	* docs/html/17_intro/porting.html: Regenerate.
+
 2003-02-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR libstdc++/9234
