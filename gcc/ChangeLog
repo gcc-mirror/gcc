@@ -1,3 +1,9 @@
+2000-10-05  Jim Wilson  <wilson@cygnus.com>
+
+	* function.c (fixup_var_refs_1, case SET): When gen_move_insn returns a
+	SEQUENCE, call emit_insn_before, copy PATTERN and REG_NOTES of last
+	sequence insn to INSN, and delete last sequence insn.
+
 2000-10-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* gcc.c (main): Include generated configargs.h header
