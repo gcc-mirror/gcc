@@ -913,6 +913,14 @@ package body Sem_Elab is
    --  Start of processing for Check_Elab_Call
 
    begin
+      --  If the call does not come from the main unit, there is nothing to
+      --  check. Elaboration call from units in the context of the main unit
+      --  will lead to semantic dependencies when those units are compiled.
+
+      if not In_Extended_Main_Code_Unit (N) then
+         return;
+      end if;
+
       --  For an entry call, check relevant restriction
 
       if Nkind (N) = N_Entry_Call_Statement
