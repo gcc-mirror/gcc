@@ -1,3 +1,8 @@
+2005-02-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/ishft.f90:  Remove kind suffix from BOZ constant
+	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90: ditto
+
 2005-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20101
