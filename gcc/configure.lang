@@ -137,73 +137,6 @@ do
 	# but rather than introduce another level of nesting, we leave them
 	# as is.
 
-	# Set EXTRA_HEADERS according to extra_headers.
-	# This substitutes for lots of t-* files.
-	extra_headers_list=
-	if [ "x$extra_headers" = x ]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s|^EXTRA_HEADERS =|EXTRA_HEADERS = ${extra_headers_list}|" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_PASSES according to extra_passes.
-	# This substitutes for lots of t-* files.
-	if [ "x$extra_passes" = x ]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s/^EXTRA_PASSES =/EXTRA_PASSES = $extra_passes/" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_PARTS according to extra_parts.
-	# This substitutes for lots of t-* files.
-	if [ "x$extra_parts" = x ]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s/^EXTRA_PARTS =/EXTRA_PARTS = $extra_parts/" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_PROGRAMS according to extra_programs.
-	if [ "x$extra_programs" = x ]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s/^EXTRA_PROGRAMS =/EXTRA_PROGRAMS = $extra_programs/" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_OBJS according to extra_objs.
-	# This substitutes for lots of t-* files.
-	if [ "x$extra_objs" = x ]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s|^EXTRA_OBJS =|EXTRA_OBJS = $extra_objs|" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_GCC_OBJS according to host_extra_gcc_objs.
-	# This substitutes for lots of x-* files.
-	if [ "x$host_extra_gcc_objs" = x ]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s|^EXTRA_GCC_OBJS =|EXTRA_GCC_OBJS = $host_extra_gcc_objs|"
-Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
 	# Add a definition of USE_COLLECT2 if system wants one.
 	# Also tell toplev.c what to do.
 	# This substitutes for lots of t-* files.
@@ -212,25 +145,6 @@ Makefile.tem > Makefile.xx
 		rm -f Makefile.xx
 		(echo "USE_COLLECT2 = ld"; echo "MAYBE_USE_COLLECT2 = -DUSE_COLLECT2")\
 	 	   | cat - Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set MD_DEPS if the real md file is in md.pre-cpp.
-	# Set MD_CPP to the cpp to pass the md file through.  Md files use ';'
-	# for line oriented comments, so we must always use a GNU cpp.  If
-	# building gcc with a cross compiler, use the cross compiler just
-	# built.  Otherwise, we can use the cpp just built.
-	if [ "x$md_cppflags" != x ]
-	then
-		rm -f Makefile.xx
-	  	(if [ x$host = x$build ] ; then
-			echo "MD_DEPS = $(md_file) cpp" ; echo "MD_CPP = ./cpp"
-		else
-			echo "MD_DEPS = md.pre-cpp" ; echo "MD_CPP = \$(HOST_CC) -x c -E"
-		fi
-		echo "MD_CPPFLAGS = $md_cppflags") | \
-		  cat - Makefile.tem | sed -e "s|^MD_FILE[ 	]*=.*|MD_FILE = md|" > Makefile.xx
 		rm -f Makefile.tem
 		mv Makefile.xx Makefile.tem
 	fi
@@ -371,7 +285,6 @@ $program_transform_name/" \
 	echo "s|^target_alias=.*$|target_alias=${target}|" >> Makefile.sed
 	echo "s|^xmake_file=.*$|xmake_file=${dep_host_xmake_file}|" >> Makefile.sed
 	echo "s|^tmake_file=.*$|tmake_file=${dep_tmake_file}|" >> Makefile.sed
-	echo "s|^version=.*$|version=${version}|" >> Makefile.sed
 	echo "s|^version=.*$|version=${version}|" >> Makefile.sed
 	echo "s|^out_file=.*$|out_file=${srcdir}/config/${out_file}|" >> Makefile.sed
 	echo "s|^out_object_file=.*$|out_object_file=${out_object_file}|" >> Makefile.sed
