@@ -5059,6 +5059,13 @@ override_options ()
   if (!TARGET_EXPLICIT_RELOCS && !TARGET_GAS)
     mips_section_threshold = 0;
 
+  /* We switch to small data sections using ".section", which the native
+     o32 irix assemblers don't understand.  Disable -G accordingly.
+     We must do this regardless of command-line options since otherwise
+     the compiler would abort.  */
+  if (!targetm.have_named_sections)
+    mips_section_threshold = 0;
+
   /* -membedded-pic is a form of PIC code suitable for embedded
      systems.  All calls are made using PC relative addressing, and
      all data is addressed using the $gp register.  This requires gas,
@@ -7879,8 +7886,11 @@ mips_select_section (decl, reloc, align)
        For mips16 code, put strings in the text section so that a PC
        relative load instruction can be used to get their address.  */
     text_section ();
-  else
+  else if (targetm.have_named_sections)
     default_elf_select_section (decl, reloc, align);
+  else
+    /* The native irix o32 assembler doesn't support named sections.  */
+    default_select_section (decl, reloc, align);
 }
 
 
