@@ -4348,8 +4348,6 @@ simplify_set (x)
     }
 #endif
 
-#ifndef HAVE_conditional_move
-
   /* If we don't have a conditional move, SET_SRC is an IF_THEN_ELSE, and we
      are comparing an item known to be 0 or -1 against 0, use a logical
      operation instead. Check for one of the arms being an IOR of the other
@@ -4358,6 +4356,9 @@ simplify_set (x)
 
   if (GET_CODE (dest) != PC
       && GET_CODE (src) == IF_THEN_ELSE
+#ifdef HAVE_conditional_move
+      && ! HAVE_conditional_move
+#endif
       && (GET_CODE (XEXP (src, 0)) == EQ || GET_CODE (XEXP (src, 0)) == NE)
       && XEXP (XEXP (src, 0), 1) == const0_rtx
       && (num_sign_bit_copies (XEXP (XEXP (src, 0), 0),
@@ -4396,7 +4397,6 @@ simplify_set (x)
 
       src = SET_SRC (x);
     }
-#endif
 
   /* If either SRC or DEST is a CLOBBER of (const_int 0), make this
      whole thing fail.  */
