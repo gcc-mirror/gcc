@@ -1,3 +1,29 @@
+2004-10-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (_Rep::_M_is_safe, _M_check_length,
+	_M_move, _M_copy, _M_assign): New, use througout.
+	(operator+=(_CharT)): Define in terms of push_back.
+	(append(const basic_string&)): Define here, inline, and simplify,
+	don't use the full _M_replace_safe.
+	(append(size_type, _CharT)): Likewise, don't use _M_replace_aux.
+	(push_back): Likewise.
+	(assign(const basic_string&)): Define here, inline.
+	* include/bits/basic_string.tcc (append(const _CharT* s, size_type):
+	Fix: when s points inside the _Rep, upon reallocation (reserve) we
+	were copying from deallocated memory.
+	(append(const basic_string&, size_type, size_type)): Simplify,
+	don't use _M_replace_safe.
+	(replace(size_type, size_type, const _CharT*, size_type)): Slightly
+	tweak.
+	(reserve): Likewise.
+	* testsuite/21_strings/basic_string/append/char/2.cc: New.
+	* testsuite/21_strings/basic_string/append/char/3.cc: Likewise.
+	* testsuite/21_strings/basic_string/append/wchar_t/2.cc: Likewise.
+	* testsuite/21_strings/basic_string/append/wchar_t/3.cc: Likewise.
+
+	* testsuite/21_strings/basic_string/assign/char/3.cc: Remove junk.
+	* testsuite/21_strings/basic_string/assign/wchar_t/3.cc: Likewise.
+
 2004-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* testsuite/ext/mt_allocator/deallocate_global-2.c:

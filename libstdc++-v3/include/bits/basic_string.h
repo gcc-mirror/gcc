@@ -185,6 +185,14 @@ namespace std
 	_M_is_shared() const
         { return this->_M_refcount > 0; }
 
+	// True if source and destination do not overlap.
+	bool
+	_M_is_safe(const _CharT* __data, const _CharT* __s) const
+	{
+	  return (less<const _CharT*>()(__s, __data)
+		  || less<const _CharT*>()(__data + this->_M_length, __s));
+	}
+
         void
 	_M_set_leaked()
         { this->_M_refcount = -1; }
@@ -302,12 +310,48 @@ namespace std
 	return __pos;
       }
 
+      void
+      _M_check_length(size_type __n1, size_type __n2, const char* __s) const
+      {
+	if (this->max_size() - (this->size() - __n1) < __n2)
+	  __throw_length_error(__N(__s));
+      }
+
       // NB: _M_limit doesn't check for a bad __pos value.
       size_type
       _M_limit(size_type __pos, size_type __off) const
       {
 	const bool __testoff =  __off < this->size() - __pos;
 	return __testoff ? __off : this->size() - __pos;
+      }
+
+      // When __n = 1 way faster than the general multichar
+      // traits_type::copy/move/assign.
+      static void
+      _M_copy(_CharT* __d, const _CharT* __s, size_type __n)
+      {
+	if (__n == 1)
+	  traits_type::assign(*__d, *__s);
+	else
+	  traits_type::copy(__d, __s, __n);
+      }
+
+      static void
+      _M_move(_CharT* __d, const _CharT* __s, size_type __n)
+      {
+	if (__n == 1)
+	  traits_type::assign(*__d, *__s);
+	else
+	  traits_type::move(__d, __s, __n);	  
+      }
+
+      static void
+      _M_assign(_CharT* __d, size_type __n, _CharT __c)
+      {
+	if (__n == 1)
+	  traits_type::assign(*__d, __c);
+	else
+	  traits_type::assign(__d, __n, __c);	  
       }
 
       // _S_copy_chars is a separate template to permit specialization
@@ -330,11 +374,11 @@ namespace std
 
       static void
       _S_copy_chars(_CharT* __p, _CharT* __k1, _CharT* __k2)
-      { traits_type::copy(__p, __k1, __k2 - __k1); }
+      { _M_copy(__p, __k1, __k2 - __k1); }
 
       static void
       _S_copy_chars(_CharT* __p, const _CharT* __k1, const _CharT* __k2)
-      { traits_type::copy(__p, __k1, __k2 - __k1); }
+      { _M_copy(__p, __k1, __k2 - __k1); }
 
       void
       _M_mutate(size_type __pos, size_type __len1, size_type __len2);
@@ -721,7 +765,10 @@ namespace std
        */
       basic_string&
       operator+=(_CharT __c)
-      { return this->append(size_type(1), __c); }
+      { 
+	this->push_back(__c);
+	return *this;
+      }
 
       /**
        *  @brief  Append a string to this string.
@@ -729,7 +776,19 @@ namespace std
        *  @return  Reference to this string.
        */
       basic_string&
-      append(const basic_string& __str);
+      append(const basic_string& __str)
+      {
+	const size_type __size = __str.size();
+	if (__size)
+	  {
+	    const size_type __len = __size + this->size();
+	    if (__len > this->capacity() || _M_rep()->_M_is_shared())
+	      this->reserve(__len);
+	    _M_copy(_M_data() + this->size(), __str._M_data(), __size);
+	    _M_rep()->_M_set_length_and_sharable(__len);
+	  }
+	return *this;
+      }
 
       /**
        *  @brief  Append a substring.
@@ -777,7 +836,18 @@ namespace std
        */
       basic_string&
       append(size_type __n, _CharT __c)
-      { return _M_replace_aux(this->size(), size_type(0), __n, __c); }
+      {
+	if (__n)
+	  {
+	    _M_check_length(size_type(0), __n, "basic_string::append");	  
+	    const size_type __len = __n + this->size();
+	    if (__len > this->capacity() || _M_rep()->_M_is_shared())
+	      this->reserve(__len);
+	    _M_assign(_M_data() + this->size(), __n, __c);
+	    _M_rep()->_M_set_length_and_sharable(__len);
+	  }
+	return *this;
+      }
 
       /**
        *  @brief  Append a range of characters.
@@ -798,7 +868,13 @@ namespace std
        */
       void
       push_back(_CharT __c)
-      { _M_replace_aux(this->size(), size_type(0), size_type(1), __c); }
+      { 
+	const size_type __len = 1 + this->size();
+	if (__len > this->capacity() || _M_rep()->_M_is_shared())
+	  this->reserve(__len);
+	traits_type::assign(_M_data()[this->size()], __c);
+	_M_rep()->_M_set_length_and_sharable(__len);
+      }
 
       /**
        *  @brief  Set value to contents of another string.
@@ -806,7 +882,18 @@ namespace std
        *  @return  Reference to this string.
        */
       basic_string&
-      assign(const basic_string& __str);
+      assign(const basic_string& __str)
+      {
+	if (_M_rep() != __str._M_rep())
+	  {
+	    // XXX MT
+	    const allocator_type __a = this->get_allocator();
+	    _CharT* __tmp = __str._M_rep()->_M_grab(__a, __str.get_allocator());
+	    _M_rep()->_M_dispose(__a);
+	    _M_data(__tmp);
+	  }
+	return *this;
+      }
 
       /**
        *  @brief  Set value to a substring of a string.
@@ -909,7 +996,8 @@ namespace std
        *  of the string doesn't change if an error is thrown.
       */
       template<class _InputIterator>
-        void insert(iterator __p, _InputIterator __beg, _InputIterator __end)
+        void
+        insert(iterator __p, _InputIterator __beg, _InputIterator __end)
         { this->replace(__p, __p, __beg, __end); }
 
       /**
@@ -1370,13 +1458,10 @@ namespace std
       _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
 		     _CharT __c)
       {
-	if (this->max_size() - (this->size() - __n1) < __n2)
-	  __throw_length_error(__N("basic_string::_M_replace_aux"));
+	_M_check_length(__n1, __n2, "basic_string::_M_replace_aux");
 	_M_mutate(__pos1, __n1, __n2);
-	if (__n2 == 1)
-	  _M_data()[__pos1] = __c;
-	else if (__n2)
-	  traits_type::assign(_M_data() + __pos1, __n2, __c);
+	if (__n2)
+	  _M_assign(_M_data() + __pos1, __n2, __c);
 	return *this;
       }
 
@@ -1385,10 +1470,8 @@ namespace std
 		      size_type __n2)
       {
 	_M_mutate(__pos1, __n1, __n2);
-	if (__n2 == 1)
-	  _M_data()[__pos1] = *__s;
-	else if (__n2)
-	  traits_type::copy(_M_data() + __pos1, __s, __n2);
+	if (__n2)
+	  _M_copy(_M_data() + __pos1, __s, __n2);
 	return *this;
       }
 

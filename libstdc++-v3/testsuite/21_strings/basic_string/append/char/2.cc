@@ -1,6 +1,6 @@
-// 2001-10-30 Benjamin Kosnik  <bkoz@redhat.com>
+// 2004-25-10  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,10 +23,10 @@
 #include <string>
 #include <testsuite_hooks.h>
 
-// assign(const _CharT* __s, size_type __n)
-// assign(const _CharT* __s)
+// append(const _CharT* __s, size_type __n)
+// append(const _CharT* __s)
 void
-test03()
+test02()
 {
   bool test __attribute__((unused)) = true;
 
@@ -34,26 +34,34 @@ test03()
  
   string one; 
   string two;
-  const char * source = "Selling England by the pound";
+  string three;
+  const char * source = "Written in your eyes";
 
-  one.assign(source);
-  VERIFY( one == "Selling England by the pound" );
+  one.append(source);
+  VERIFY( one == "Written in your eyes" );
 
-  one.assign(source, 28);
-  VERIFY( one == "Selling England by the pound" );
+  two.append(source, 20);
+  VERIFY( two == "Written in your eyes" );
 
-  two.assign(source, 7);
-  VERIFY( two == "Selling" );
+  three.append(source, 7);
+  VERIFY( three == "Written" );
   
-  one.assign(one.c_str() + 8, 20);
-  VERIFY( one == "England by the pound" );
+  three.clear();
+  three.append(source + 8, 2);
+  VERIFY( three == "in" );
 
-  one.assign(one.c_str() + 8, 6);
-  VERIFY( one == "by the" );
+  one.append(one.c_str(), 20);
+  VERIFY( one == "Written in your eyesWritten in your eyes" );
+
+  two.append(two.c_str() + 16, 4);
+  VERIFY( two == "Written in your eyeseyes" );
+
+  two.append(two.c_str(), 3);
+  VERIFY( two == "Written in your eyeseyesWri" );
 }
 
 int main()
 { 
-  test03();
+  test02();
   return 0;
 }

@@ -1,6 +1,6 @@
 // 2001-10-30 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,6 @@
 // 21.3.5 string modifiers
 
 #include <string>
-#include <cstdio>
 #include <testsuite_hooks.h>
 
 // assign(const _CharT* __s, size_type __n)
@@ -35,7 +34,6 @@ test03()
  
   wstring one; 
   wstring two;
-  wstring three = two;
   const wchar_t* source = L"Selling England by the pound";
 
   one.assign(source);
