@@ -4493,7 +4493,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 		len = strlen (multilib_dir);
 		obstack_blank (&obstack, len + 1);
-		p = obstack_next_free (&obstack) - len;
+		p = obstack_next_free (&obstack) - (len + 1);
 
 		*p++ = '_';
 		for (q = multilib_dir; *q ; ++q, ++p)
