@@ -4544,7 +4544,7 @@ expand_main_function ()
       /* The zero below avoids a possible parse error */
       0;
 #if !defined (INIT_SECTION_ASM_OP) || defined (INVOKE__main)
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__main"), 0,
+      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, NAME__MAIN), 0,
 			 VOIDmode, 0);
 #endif /* not INIT_SECTION_ASM_OP or INVOKE__main */
     }
