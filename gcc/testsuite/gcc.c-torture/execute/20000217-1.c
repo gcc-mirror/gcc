@@ -10,7 +10,7 @@ int main()
         unsigned short int y = 10;
 
         if (showbug(&x, &y) != 0)
-	  abort (0);
+	  abort ();
 
 	exit (0);
 }

@@ -549,16 +549,16 @@ DEF_UNUSED_BUILTIN(BUILT_IN_VEC_DELETE)
 DEF_BUILTIN (BUILT_IN_ABORT,
 	     "__builtin_abort",
 	     NOT_BUILT_IN,
-	     (c_language == clk_cplusplus ? BT_FN_VOID : BT_FN_VOID_VAR),
-	     (c_language == clk_cplusplus ? BT_FN_VOID : BT_FN_VOID_VAR),
+	     BT_FN_VOID,
+	     BT_FN_VOID,
 	     1, 0, 0,
 	     ATTR_NORETURN_NOTHROW_LIST)
 
 DEF_BUILTIN (BUILT_IN_EXIT,
 	     "__builtin_exit",
 	     NOT_BUILT_IN,
-	     (c_language == clk_cplusplus ? BT_FN_VOID_INT : BT_FN_VOID_VAR),
-	     (c_language == clk_cplusplus ? BT_FN_VOID_INT : BT_FN_VOID_VAR),
+	     BT_FN_VOID_INT,
+	     BT_FN_VOID_INT,
 	     1, 0, 0,
 	     ATTR_NORETURN_NOTHROW_LIST)
 

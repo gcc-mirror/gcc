@@ -1,10 +1,16 @@
+2002-07-10  Roger Sayle  <roger@eyesopen.com>
+	    Zack Weinberg <zack@codesourcery.com>
+
+	* builtins.c (initialize_builtins): Remove defines that
+	handled C/C++ specific junk hereby removed from builtins.def.
+
 2002-07-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.c (java_post_options): Update prototype.
 
 2002-07-05  Roger Sayle  <roger@eyesopen.com>
 
-	* java/builtins.c (initialize_builtins): Ignore the additional
+	* builtins.c (initialize_builtins): Ignore the additional
 	parameter to DEF_BUILTIN.  Handle more C/C++ specific junk in
 	the builtins.def file.
 

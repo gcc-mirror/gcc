@@ -284,8 +284,6 @@ initialize_builtins ()
 #define va_list_ref_type_node NULL_TREE
 #define va_list_arg_type_node NULL_TREE
 #define flag_isoc99 0
-#define c_language 0
-#define clk_cplusplus 0
 
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE)					      \
   builtin_types[(int) ENUM] = VALUE;
