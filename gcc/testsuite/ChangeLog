@@ -1,3 +1,8 @@
+2004-01-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13592
+	* g++.dg/template/call2.C: New test.
+
 2004-01-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/tls/alias-1.c: Add dg-warning for unsupported visibility
