@@ -680,7 +680,7 @@ enum reg_class {
 
 #define MODE_BASE_REG_CLASS(MODE) ((MODE) == QImode ? PTR_REGS : DP_SP_REGS)
 /* This is a variation of the BASE_REG_CLASS macro which allows
-   the selection of a base register in a mode depenedent manner.
+   the selection of a base register in a mode dependent manner.
    If MODE is VOIDmode then it should return the same value as
    BASE_REG_CLASS.  */
 

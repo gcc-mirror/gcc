@@ -3079,7 +3079,7 @@ register_and_not_any_fp_reg_operand (op, mode)
   return register_operand (op, mode) && !ANY_FP_REG_P (op);
 }
 
-/* Return nonzero of OP is a register operand other than an
+/* Return nonzero if OP is a register operand other than an
    i387 fp register.  */
 int
 register_and_not_fp_reg_operand (op, mode)

@@ -1,3 +1,9 @@
+2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/fr30/fr30.md: Fix a comment typo.
+	* config/i386/i386.c: Likewise.
+	* config/ip2k/ip2k.h: Likewise.
+
 2002-12-20  Jim Wilson  <wilson@redhat.com>
 
 	* config/rs6000/spe.h (__ev_subifw): Reverse arguments.
