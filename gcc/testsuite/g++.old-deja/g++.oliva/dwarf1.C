@@ -5,7 +5,7 @@
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // based on bug report by Chris McKay <chris.mckay@solipsys.com>
 
-// Special g++ Options: -gdwarf
+// Used to fail with dwarf debugging.
 // crash test
 
 template <class T = void>

@@ -5,8 +5,8 @@
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // based on bug report by Andreas Stolcke <stolcke@speech.sri.com>
 
-// Special g++ Options: -gdwarf
-// crash test - XFAIL *-*-*
+// Fails with dwarf debugging.
+// crash test - XFAIL i386-pc-solaris*
 
 template <class T = void> struct foo {
   int data[1];
