@@ -56,7 +56,8 @@ all:
 	cd ..; $(MAKE) sublibobjc.a
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
-         selector.o objects.o misc.o NXConstStr.o Object.o Protocol.o thr.o
+         selector.o objects.o misc.o NXConstStr.o Object.o Protocol.o \
+	 nil_method.o thr.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
@@ -99,4 +100,4 @@ NXConstStr.o: NXConstStr.m
 Object.o: Object.m
 Protocol.o: Protocol.m
 thr.o: thr.h thr.c thr-solaris.c thr-irix.c thr-win32.c thr-single.c
-
+nil_method.o: nil_method.c
