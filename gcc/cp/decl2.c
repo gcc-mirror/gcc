@@ -5226,18 +5226,23 @@ do_using_directive (namespace)
 {
   if (namespace == fake_std_node)
     return;
+  if (building_stmt_tree ())
+    add_stmt (build_stmt (USING_STMT, namespace));
+  
   /* using namespace A::B::C; */
   if (TREE_CODE (namespace) == SCOPE_REF)
       namespace = TREE_OPERAND (namespace, 1);
   if (TREE_CODE (namespace) == IDENTIFIER_NODE)
     {
       /* Lookup in lexer did not find a namespace. */
-      cp_error ("namespace `%T' undeclared", namespace);
+      if (!processing_template_decl)
+	cp_error ("namespace `%T' undeclared", namespace);
       return;
     }
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
-      cp_error ("`%T' is not a namespace", namespace);
+      if (!processing_template_decl)
+	cp_error ("`%T' is not a namespace", namespace);
       return;
     }
   namespace = ORIGINAL_NAMESPACE (namespace);

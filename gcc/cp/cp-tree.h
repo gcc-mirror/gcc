@@ -3075,13 +3075,14 @@ extern int flag_new_for_scope;
 #define TRY_STMTS(NODE)         TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 0)
 #define TRY_HANDLERS(NODE)      TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 1)
 
+#define USING_STMT_NAMESPACE(NODE) TREE_OPERAND (USING_STMT_CHECK (NODE), 0)
+
 /* Nonzero if this try block is a function try block.  */
 #define FN_TRY_BLOCK_P(NODE)    TREE_LANG_FLAG_3 (TRY_BLOCK_CHECK (NODE))
 #define HANDLER_PARMS(NODE)     TREE_OPERAND (HANDLER_CHECK (NODE), 0)
 #define HANDLER_BODY(NODE)      TREE_OPERAND (HANDLER_CHECK (NODE), 1)
 #define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (SUBOBJECT_CHECK (NODE), 0)
 #define START_CATCH_TYPE(NODE)  TREE_TYPE (START_CATCH_STMT_CHECK (NODE))
-
 
 /* Nonzero if this CTOR_STMT is for the beginning of a constructor.  */
 #define CTOR_BEGIN_P(NODE) \
