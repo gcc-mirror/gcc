@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "function.h"
 #include "flags.h"
+#include "ggc.h"
 
 char *text_seg_name;
 char *rsect_text;
@@ -1529,7 +1530,32 @@ override_options ()
 	  flag_inline_functions = 1;
 	}
     }
+
+  /* Mark our global variables for GC.  */
+  ggc_add_rtx (&dsp16xx_addhf3_libcall, 1);
+  ggc_add_rtx (dsp16xx_addhf3_libcall, 1);
+  ggc_add_rtx (dsp16xx_subhf3_libcall, 1);
+  ggc_add_rtx (dsp16xx_mulhf3_libcall, 1);
+  ggc_add_rtx (dsp16xx_divhf3_libcall, 1);
+  ggc_add_rtx (dsp16xx_cmphf3_libcall, 1);
+  ggc_add_rtx (dsp16xx_fixhfhi2_libcall, 1);
+  ggc_add_rtx (dsp16xx_floathihf2_libcall, 1);
+  ggc_add_rtx (dsp16xx_neghf2_libcall, 1);
+  ggc_add_rtx (dsp16xx_mulhi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_udivqi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_udivhi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_divqi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_divhi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_modqi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_modhi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_umodqi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_umodhi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_ashrhi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_ashlhi3_libcall, 1);
+  ggc_add_rtx (dsp16xx_ucmphi2_libcall, 1);
+  ggc_add_rtx (dsp16xx_lshrhi3_libcall, 1);
 }
+
 
 enum rtx_code
 next_cc_user_code (insn)

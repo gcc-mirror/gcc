@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "function.h"
 #include "obstack.h"
+#include "ggc.h"
 
 /* Global registers known to hold the value zero.
 
@@ -72,6 +73,8 @@ asm_file_start (file)
   else
     fprintf (file, "\n\n");
   output_file_directive (file, main_input_filename);
+  ggc_add_rtx (&zero_dreg, 1);
+  ggc_add_rtx (&zero_areg, 1);
 }
 
 /* Print operand X using operand code CODE to assembly language output file
