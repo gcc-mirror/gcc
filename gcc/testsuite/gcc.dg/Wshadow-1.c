@@ -10,7 +10,7 @@ void foo (double decl1)		/* { dg-warning "shadows a global decl" } */
 {				
 }
 
-void foo1 (int d)
+void foo1 (int d)		/* { dg-warning "shadowed declaration" } */
 {
   double d;	 /* { dg-bogus "warning" "warning in place of error" } */
   /* { dg-error "shadows a parameter" "" { target *-*-* } 15 } */
