@@ -1,6 +1,6 @@
 # Top level makefile fragment for TREELANG For GCC. -*- makefile -*-
 
-#   Copyright (C) 1994, 1995, 1997, 1998, 1999 2000, 2001, 2002 Free
+#   Copyright (C) 1994, 1995, 1997, 1998, 1999 2000, 2001, 2002, 2003 Free
 #   Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -293,7 +293,7 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 
 # copy the output files from the current test to source ie say the new results are OK
 treelang.check.fix: force
-	srcdir=`cd ${srcdir}; ${PWD}` ; export srcdir ; 
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; 
 	-cp testsuite/treelang/*.out* t
 	-cp testsuite/treelang/*runpgm* t
 	-rm -f t/*nofilename

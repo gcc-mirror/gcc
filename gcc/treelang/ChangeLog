@@ -1,3 +1,8 @@
+2003-07-08  Andreas Schwab  <schwab@suse.de>
+
+	* Make-lang.in (treelang.check.fix): Replace one leftover PWD
+	with PWD_COMMAND.
+
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
 	* Make-lang.in: Replace PWD with PWD_COMMAND.

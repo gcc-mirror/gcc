@@ -1,3 +1,7 @@
+Tue Jul  8 15:18:14 2003  Andreas Schwab  <schwab@suse.de>
+
+	* Make-lang.in (f/g77.dvi): Replace PWD with PWD_COMMAND.
+
 2003-07-05  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR Fortran/11301
