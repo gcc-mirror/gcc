@@ -34,6 +34,17 @@ definitions file, ``inclhack.def''.  Please also send relevant
 information to gcc-bugs@gcc.gnu.org, gcc-patches@gcc.gnu.org and,
 please, to me:  bkorb@gnu.org.
 
+Once you have made your fix, it is necessary to have at least one
+test for it.  Specify the test with a "test_text" entry.  Run
+"make check" in the fixinc directory to verify both that your fix
+works (by correctly altering your test text) and that your fix
+does not suppress the work of other fixes.  You should readily
+be able to verify this as the "make check" process will print out
+context diffs of fixed files.  If everything looks fine, you can
+either use the diffs for a patch to the baseline files, or simply
+copy the result files (in the "tests/res/" subdirectory) into the
+baseline directory ("tests/base").
+
 Here are the rules for making fixes in the inclhack.def file:
 
 0.  If you are not the fixincludes maintainer, please send that
