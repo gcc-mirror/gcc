@@ -25,11 +25,12 @@ typedef int _Atomic_word;
 template <int __inst>
 struct __Atomicity_lock
 {
-  static volatile int __attribute__ ((aligned (16))) _S_atomicity_lock;
+  static volatile int _S_atomicity_lock;
 };
 
 template <int __inst>
-volatile int __Atomicity_lock<__inst>::_S_atomicity_lock = 1;
+volatile int
+__Atomicity_lock<__inst>::_S_atomicity_lock __attribute__ ((aligned (16))) = 1;
 
 /* Because of the lack of weak support when using the hpux
    som linker, we explicitly instantiate the atomicity lock
@@ -58,8 +59,9 @@ __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 
   result = *__mem;
   *__mem = result + __val;
-  __asm__ __volatile__("");
-  lock = tmp;
+  /* Reset lock with PA 2.0 "ordered" store.  */
+  __asm__ __volatile__ ("stw,ma %1,0(%0)"
+			: : "r" (&lock), "r" (tmp) : "memory");
   return result;
 }
 
@@ -80,8 +82,9 @@ __atomic_add (_Atomic_word* __mem, int __val)
 			: "r" (&lock));
 
   *__mem += __val;
-  __asm__ __volatile__("");
-  lock = tmp;
+  /* Reset lock with PA 2.0 "ordered" store.  */
+  __asm__ __volatile__ ("stw,ma %1,0(%0)"
+			: : "r" (&lock), "r" (tmp) : "memory");
 }
 
 #endif
