@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS R4000 version with
    GOFAST floating point library.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -48,7 +48,8 @@ Boston, MA 02111-1307, USA.  */
 %{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
 %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
 %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{!mips1:%{!mips2:-U__mips -D__mips=3}}"
+%{!mips1:%{!mips2:-U__mips -D__mips=3 -D__mips64}} \
+%{mgp32:-U__mips64} %{mgp64:-D__mips64}"
 
 /* Use memcpy, et. al., rather than bcopy.  */
 #define TARGET_MEM_FUNCTIONS

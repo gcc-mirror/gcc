@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    DECstation (OSF/1 reference port with OSF/rose) version.
-   Copyright (C) 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -81,7 +81,8 @@ Boston, MA 02111-1307, USA.  */
 %{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
 %{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
 %{!mlong64:-D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3} \
+%{mips3:-U__mips -D__mips=3 -D__mips64} \
+%{mgp32:-U__mips64} %{mgp64:-D__mips64} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
 %{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
 

@@ -1,5 +1,5 @@
 /* Definitions for DECstation running BSD as target machine for GNU compiler.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -87,7 +87,8 @@ Boston, MA 02111-1307, USA.  */
 %{posix:-D_POSIX_SOURCE} \
 %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
 %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3}"
+%{mips3:-U__mips -D__mips=3 -D__mips64}"
+%{mgp32:-U__mips64} %{mgp64:-D__mips64} \
 #endif
 
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"

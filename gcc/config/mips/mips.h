@@ -699,8 +699,9 @@ while (0)
 %{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
 %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
 %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3} \
-%{mips4:-U__mips -D__mips=4} \
+%{mips3:-U__mips -D__mips=3 -D__mips64} \
+%{mips4:-U__mips -D__mips=4 -D__mips64} \
+%{mgp32:-U__mips64} %{mgp64:-D__mips64} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
 %{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
 #endif
