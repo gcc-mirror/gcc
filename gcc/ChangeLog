@@ -1,3 +1,9 @@
+Thu Jan 29 10:12:27 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Check for atoq and atoll.
+	* rtl.c (read_rtx): Use HAVE_ATOLL and HAVE_ATOQ to select the
+	proper routine for converting ascii into long long values.
+
 Thu Jan 29 01:28:14 1998  Klaus Kaempf  <kkaempf@progis.de>
 
 	* cccp.c (SYS$SEARCH, SYS$PARSE): Write as upper-case.

@@ -2631,14 +2631,124 @@ else
 fi
 done
 
+for ac_func in atoll
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:2638: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2643 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2666: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in atoq
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:2693: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2698 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2721: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
 
 echo $ac_n "checking whether malloc must be declared""... $ac_c" 1>&6
-echo "configure:2637: checking whether malloc must be declared" >&5
+echo "configure:2747: checking whether malloc must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_malloc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2642 "configure"
+#line 2752 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2665,7 +2775,7 @@ int main() {
 char *(*pfn) = (char *(*)) malloc
 ; return 0; }
 EOF
-if { (eval echo configure:2669: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2779: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_malloc=no
 else
@@ -2687,12 +2797,12 @@ EOF
 fi
 
 echo $ac_n "checking whether realloc must be declared""... $ac_c" 1>&6
-echo "configure:2691: checking whether realloc must be declared" >&5
+echo "configure:2801: checking whether realloc must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_realloc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2696 "configure"
+#line 2806 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2719,7 +2829,7 @@ int main() {
 char *(*pfn) = (char *(*)) realloc
 ; return 0; }
 EOF
-if { (eval echo configure:2723: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2833: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_realloc=no
 else
@@ -2741,12 +2851,12 @@ EOF
 fi
 
 echo $ac_n "checking whether calloc must be declared""... $ac_c" 1>&6
-echo "configure:2745: checking whether calloc must be declared" >&5
+echo "configure:2855: checking whether calloc must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_calloc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2750 "configure"
+#line 2860 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2773,7 +2883,7 @@ int main() {
 char *(*pfn) = (char *(*)) calloc
 ; return 0; }
 EOF
-if { (eval echo configure:2777: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2887: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_calloc=no
 else
@@ -2795,12 +2905,12 @@ EOF
 fi
 
 echo $ac_n "checking whether free must be declared""... $ac_c" 1>&6
-echo "configure:2799: checking whether free must be declared" >&5
+echo "configure:2909: checking whether free must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_free'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2804 "configure"
+#line 2914 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2827,7 +2937,7 @@ int main() {
 char *(*pfn) = (char *(*)) free
 ; return 0; }
 EOF
-if { (eval echo configure:2831: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2941: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_free=no
 else
@@ -2849,12 +2959,12 @@ EOF
 fi
 
 echo $ac_n "checking whether index must be declared""... $ac_c" 1>&6
-echo "configure:2853: checking whether index must be declared" >&5
+echo "configure:2963: checking whether index must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_index'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2858 "configure"
+#line 2968 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2881,7 +2991,7 @@ int main() {
 char *(*pfn) = (char *(*)) index
 ; return 0; }
 EOF
-if { (eval echo configure:2885: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2995: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_index=no
 else
@@ -2903,12 +3013,12 @@ EOF
 fi
 
 echo $ac_n "checking whether rindex must be declared""... $ac_c" 1>&6
-echo "configure:2907: checking whether rindex must be declared" >&5
+echo "configure:3017: checking whether rindex must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_rindex'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2912 "configure"
+#line 3022 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2935,7 +3045,7 @@ int main() {
 char *(*pfn) = (char *(*)) rindex
 ; return 0; }
 EOF
-if { (eval echo configure:2939: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3049: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_rindex=no
 else
@@ -2957,12 +3067,12 @@ EOF
 fi
 
 echo $ac_n "checking whether getenv must be declared""... $ac_c" 1>&6
-echo "configure:2961: checking whether getenv must be declared" >&5
+echo "configure:3071: checking whether getenv must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_getenv'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2966 "configure"
+#line 3076 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2989,7 +3099,7 @@ int main() {
 char *(*pfn) = (char *(*)) getenv
 ; return 0; }
 EOF
-if { (eval echo configure:2993: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3103: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_getenv=no
 else
@@ -3011,12 +3121,12 @@ EOF
 fi
 
 echo $ac_n "checking whether atol must be declared""... $ac_c" 1>&6
-echo "configure:3015: checking whether atol must be declared" >&5
+echo "configure:3125: checking whether atol must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_atol'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3020 "configure"
+#line 3130 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -3043,7 +3153,7 @@ int main() {
 char *(*pfn) = (char *(*)) atol
 ; return 0; }
 EOF
-if { (eval echo configure:3047: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3157: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_atol=no
 else
@@ -3065,12 +3175,12 @@ EOF
 fi
 
 echo $ac_n "checking whether sbrk must be declared""... $ac_c" 1>&6
-echo "configure:3069: checking whether sbrk must be declared" >&5
+echo "configure:3179: checking whether sbrk must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_sbrk'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3074 "configure"
+#line 3184 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -3097,7 +3207,7 @@ int main() {
 char *(*pfn) = (char *(*)) sbrk
 ; return 0; }
 EOF
-if { (eval echo configure:3101: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3211: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   gcc_cv_decl_needed_sbrk=no
 else
@@ -3120,12 +3230,12 @@ fi
 
 
 echo $ac_n "checking for sys_siglist declaration in signal.h or unistd.h""... $ac_c" 1>&6
-echo "configure:3124: checking for sys_siglist declaration in signal.h or unistd.h" >&5
+echo "configure:3234: checking for sys_siglist declaration in signal.h or unistd.h" >&5
 if eval "test \"`echo '$''{'ac_cv_decl_sys_siglist'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3129 "configure"
+#line 3239 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <signal.h>
@@ -3137,7 +3247,7 @@ int main() {
 char *msg = *(sys_siglist + 1);
 ; return 0; }
 EOF
-if { (eval echo configure:3141: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3251: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_decl_sys_siglist=yes
 else
