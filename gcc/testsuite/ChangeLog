@@ -1,3 +1,11 @@
+2000-05-18  Michael Meissner  <meissner@redhat.com>
+
+	* gcc.c-torture/compile/920501-1.c: Remove CYGNUS LOCAL markers.
+	* gcc.c-torture/execute/920415-1.c: Ditto.
+	* gcc.c-torture/execute/920501-1.c: Ditto.
+	* gcc.c-torture/execute/conversion.c: Ditto.
+	* gcc.c-torture/execute/cvt-1.c: Ditto.
+
 Thu May 18 16:03:29 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000518-1.c: New test.
