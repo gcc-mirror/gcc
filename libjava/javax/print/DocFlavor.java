@@ -88,6 +88,9 @@ public class DocFlavor implements Cloneable, Serializable
   {
     private static final long serialVersionUID = -8720590903724405128L;
     
+    public static final DocFlavor.CHAR_ARRAY TEXT_HTML = new CHAR_ARRAY("text/html; charset=utf-16");
+    public static final DocFlavor.CHAR_ARRAY TEXT_PLAIN = new CHAR_ARRAY("text/plain; charset=utf-16");
+
     public CHAR_ARRAY(String mimeType)
     {
       super(mimeType, "[C");
@@ -133,6 +136,9 @@ public class DocFlavor implements Cloneable, Serializable
     extends DocFlavor
   {
     private static final long serialVersionUID = 7100295812579351567L;
+
+    public static final DocFlavor.READER TEXT_HTML = new READER("text/html; charset=utf-16");
+    public static final DocFlavor.READER TEXT_PLAIN = new READER("text/plain; charset=utf-16");
     
     public READER(String mimeType)
     {
@@ -147,6 +153,10 @@ public class DocFlavor implements Cloneable, Serializable
     extends DocFlavor
   {
     private static final long serialVersionUID = 6181337766266637256L;
+
+    public static final DocFlavor.SERVICE_FORMATTED PAGEABLE = new SERVICE_FORMATTED("java.awt.print.Pageable");
+    public static final DocFlavor.SERVICE_FORMATTED PRINTABLE = new SERVICE_FORMATTED("java.awt.print.Printable");
+    public static final DocFlavor.SERVICE_FORMATTED RENDERABLE_IMAGE = new SERVICE_FORMATTED("java.awt.image.renderable.RenderableImage");
     
     public SERVICE_FORMATTED(String className)
     {
@@ -161,6 +171,9 @@ public class DocFlavor implements Cloneable, Serializable
     extends DocFlavor
   {
     private static final long serialVersionUID = 4414407504887034035L;
+
+    public static final DocFlavor.STRING TEXT_HTML = new STRING("text/html; charset=utf-16");
+    public static final DocFlavor.STRING TEXT_PLAIN = new STRING("text/plain; charset=utf-16");
     
     public STRING(String mimeType)
     {
@@ -175,6 +188,26 @@ public class DocFlavor implements Cloneable, Serializable
     extends DocFlavor
   {
     private static final long serialVersionUID = 2936725788144902062L;
+
+    public static final DocFlavor.URL AUTOSENSE = new URL("application/octet-stream");
+    public static final DocFlavor.URL GIF = new URL("image/gif");
+    public static final DocFlavor.URL JPEG = new URL("image/jpeg");
+    public static final DocFlavor.URL PCL = new URL("application/vnd.hp-PCL");
+    public static final DocFlavor.URL PDF = new URL("application/pdf");
+    public static final DocFlavor.URL PNG = new URL("image/png");
+    public static final DocFlavor.URL POSTSCRIPT = new URL("application/postscript");
+    public static final DocFlavor.URL TEXT_HTML_HOST = new URL("text/html");
+    public static final DocFlavor.URL TEXT_HTML_US_ASCII = new URL("text/html; charset=us-ascii");
+    public static final DocFlavor.URL TEXT_HTML_UTF_16 = new URL("text/html; charset=utf-16");
+    public static final DocFlavor.URL TEXT_HTML_UTF_16BE = new URL("text/html; charset=utf-16be");
+    public static final DocFlavor.URL TEXT_HTML_UTF_16LE = new URL("text/html; charset=utf-16le");
+    public static final DocFlavor.URL TEXT_HTML_UTF_8 = new URL("text/html; charset=utf-8");
+    public static final DocFlavor.URL TEXT_PLAIN_HOST = new URL("text/plain");
+    public static final DocFlavor.URL TEXT_PLAIN_US_ASCII = new URL("text/plain; charset=us-ascii");
+    public static final DocFlavor.URL TEXT_PLAIN_UTF_16 = new URL("text/plain; charset=utf-16");
+    public static final DocFlavor.URL TEXT_PLAIN_UTF_16BE = new URL("text/plain; charset=utf-16be");
+    public static final DocFlavor.URL TEXT_PLAIN_UTF_16LE = new URL("text/plain; charset=utf-16le");
+    public static final DocFlavor.URL TEXT_PLAIN_UTF_8 = new URL("text/plain; charset=utf-8");
     
     public URL(String mimeType)
     {

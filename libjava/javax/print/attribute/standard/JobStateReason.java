@@ -49,7 +49,35 @@ public class JobStateReason extends EnumSyntax
 {
   private static final long serialVersionUID = -8765894420449009168L;
 
-  public static final JobStateReason ABORTED_BY_SYSTEM = new JobStateReason(1);
+  public static final JobStateReason JOB_INCOMING = new JobStateReason(0);
+  public static final JobStateReason JOB_DATA_INSUFFICIENT = new JobStateReason(1);
+  public static final JobStateReason DOCUMENT_ACCESS_ERROR = new JobStateReason(2);
+  public static final JobStateReason SUBMISSION_INTERRUPTED = new JobStateReason(3);
+  public static final JobStateReason JOB_OUTGOING = new JobStateReason(4);
+  public static final JobStateReason JOB_HOLD_UNTIL_SPECIFIED = new JobStateReason(5);
+  public static final JobStateReason RESOURCES_ARE_NOT_READY = new JobStateReason(6);
+  public static final JobStateReason PRINTER_STOPPED_PARTLY = new JobStateReason(7);
+  public static final JobStateReason PRINTER_STOPPED = new JobStateReason(8);
+  public static final JobStateReason JOB_INTERPRETING = new JobStateReason(9);
+  public static final JobStateReason JOB_QUEUED = new JobStateReason(10);
+  public static final JobStateReason JOB_TRANSFORMING = new JobStateReason(11);
+  public static final JobStateReason JOB_QUEUED_FOR_MARKER = new JobStateReason(12);
+  public static final JobStateReason JOB_PRINTING = new JobStateReason(13);
+  public static final JobStateReason JOB_CANCELED_BY_USER = new JobStateReason(14);
+  public static final JobStateReason JOB_CANCELED_BY_OPERATOR = new JobStateReason(15);
+  public static final JobStateReason JOB_CANCELED_AT_DEVICE = new JobStateReason(16);
+  public static final JobStateReason ABORTED_BY_SYSTEM = new JobStateReason(17);
+  public static final JobStateReason UNSUPPORTED_COMPRESSION = new JobStateReason(18);
+  public static final JobStateReason COMPRESSION_ERROR = new JobStateReason(19);
+  public static final JobStateReason UNSUPPORTED_DOCUMENT_FORMAT = new JobStateReason(20);
+  public static final JobStateReason DOCUMENT_FORMAT_ERROR = new JobStateReason(21);
+  public static final JobStateReason PROCESSING_TO_STOP_POINT = new JobStateReason(22);
+  public static final JobStateReason SERVICE_OFF_LINE = new JobStateReason(23);
+  public static final JobStateReason JOB_COMPLETED_SUCCESSFULLY = new JobStateReason(24);
+  public static final JobStateReason JOB_COMPLETED_WITH_WARNINGS = new JobStateReason(25);
+  public static final JobStateReason JOB_COMPLETED_WITH_ERRORS = new JobStateReason(26);
+  public static final JobStateReason JOB_RESTARTABLE = new JobStateReason(27);
+  public static final JobStateReason QUEUED_IN_DEVICE = new JobStateReason(28);
 
   /**
    * Constructs a <code>JobStateReason</code> object.

@@ -50,12 +50,18 @@ public class MultipleDocumentHandling extends EnumSyntax
 {
   private static final long serialVersionUID = 8098326460746413466L;
 
+  public static final MultipleDocumentHandling SINGLE_DOCUMENT =
+    new MultipleDocumentHandling(0);
+  public static final MultipleDocumentHandling SEPARATE_DOCUMENTS_UNCOLLATED_COPIES =
+    new MultipleDocumentHandling(1);
   public static final MultipleDocumentHandling SEPARATE_DOCUMENTS_COLLATED_COPIES =
     new MultipleDocumentHandling(2);
+  public static final MultipleDocumentHandling SINGLE_DOCUMENT_NEW_SHEET =
+    new MultipleDocumentHandling(3);
 
-    /**
-     * Constructs a <code>MultipleDocumentHandling</code> object.
-     */
+  /**
+   * Constructs a <code>MultipleDocumentHandling</code> object.
+   */
   protected MultipleDocumentHandling(int value)
   {
     super(value);
