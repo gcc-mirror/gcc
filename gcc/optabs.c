@@ -117,6 +117,13 @@ rtx bcmp_libfunc;
 rtx memset_libfunc;
 rtx bzero_libfunc;
 
+rtx eqhf2_libfunc;
+rtx nehf2_libfunc;
+rtx gthf2_libfunc;
+rtx gehf2_libfunc;
+rtx lthf2_libfunc;
+rtx lehf2_libfunc;
+
 rtx eqsf2_libfunc;
 rtx nesf2_libfunc;
 rtx gtsf2_libfunc;
@@ -2762,7 +2769,34 @@ emit_float_lib_cmp (x, y, comparison)
   enum machine_mode mode = GET_MODE (x);
   rtx libfunc = 0;
 
-  if (mode == SFmode)
+  if (mode == HFmode)
+    switch (comparison)
+      {
+      case EQ:
+	libfunc = eqhf2_libfunc;
+	break;
+
+      case NE:
+	libfunc = nehf2_libfunc;
+	break;
+
+      case GT:
+	libfunc = gthf2_libfunc;
+	break;
+
+      case GE:
+	libfunc = gehf2_libfunc;
+	break;
+
+      case LT:
+	libfunc = lthf2_libfunc;
+	break;
+
+      case LE:
+	libfunc = lehf2_libfunc;
+	break;
+      }
+  else if (mode == SFmode)
     switch (comparison)
       {
       case EQ:
@@ -3964,6 +3998,13 @@ init_optabs ()
   bcmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__gcc_bcmp");
   memset_libfunc = gen_rtx (SYMBOL_REF, Pmode, "memset");
   bzero_libfunc = gen_rtx (SYMBOL_REF, Pmode, "bzero");
+
+  eqhf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__eqhf2");
+  nehf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__nehf2");
+  gthf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__gthf2");
+  gehf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__gehf2");
+  lthf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__lthf2");
+  lehf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__lehf2");
 
   eqsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__eqsf2");
   nesf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__nesf2");
