@@ -144,7 +144,7 @@ z_cos.o: z_cos.c
 z_div.o: z_div.c
 z_exp.o: z_exp.c
 z_log.o: z_log.c
-	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) -ffloat-store $<
+	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) -ffloat-store $(srcdir)/z_log.c
 z_sin.o: z_sin.c
 z_sqrt.o: z_sqrt.c
 r_abs.o: r_abs.c

@@ -1,5 +1,9 @@
 2001-11-25  Toon Moene  <toon@moene.indiv.nluug.nl>
 
+	* libF77/Makefile.in: Fix non-portable use of `$<' in z_log.c's rule.
+
+2001-11-25  Toon Moene  <toon@moene.indiv.nluug.nl>
+
 	PR libf2c/4930
 	* libF77/Makefile.in: Compile z_log.c with -ffloat-store.
 
