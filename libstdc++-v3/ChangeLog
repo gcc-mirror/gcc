@@ -1,3 +1,9 @@
+2002-08-01  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	
+	* config/linker-map.gnu: Change CXXABI_1 to CXXABI_1.2,
+	GLIBCPP_3.1 to GLIBCPP_3.2.
+
 2002-07-31  Benjamin Kosnik  <bkoz@redhat.com>
             Mark Mitchell  <mark@codesourcery.com>
 
@@ -105,7 +111,7 @@
 
 2002-07-26  Phil Edwards  <pme@gcc.gnu.org>
 
-	* libsupc++/new (placement delete):  Remove unused paramater names.
+	* libsupc++/new (placement delete):  Remove unused parameter names.
 
 2002-07-25  Benjamin Kosnik  <bkoz@redhat.com>
 
