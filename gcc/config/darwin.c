@@ -1116,7 +1116,7 @@ machopic_output_possible_stub_label (FILE *file, const char *name)
       const char *sym_name;
 
       sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-      if (sym_name[0] == '!' && sym_name[1] == 'T'
+      if (sym_name[0] == '!' && (sym_name[1] == 'T' || sym_name[1] == 't')
 	  && ! strcmp (name+2, sym_name+2))
 	{
 	  ASM_OUTPUT_LABEL (file, IDENTIFIER_POINTER (TREE_PURPOSE (temp)));

@@ -1,3 +1,9 @@
+2003-11-13  Andrew Pinski <apinski@apple.com>
+
+	* config/darwin.c (machopic_output_possible_stub_label): 
+	Allow stub symbol be not defined when outputting possible 
+	stub label.
+
 2003-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (___udivsi3): Jump to reti
