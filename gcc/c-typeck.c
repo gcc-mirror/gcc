@@ -1625,7 +1625,7 @@ check_format (info, params)
 	}
       if (fci->format_chars == 0)
 	{
-	  if (format_char >= 040 && format_char <= 0177)
+	  if (format_char >= 040 && format_char < 0177)
 	    sprintf (message,
 		     "unknown conversion type character `%c' in format",
 		     format_char);
