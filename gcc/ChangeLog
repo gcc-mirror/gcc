@@ -1,3 +1,57 @@
+2005-01-09  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (bdesc_2arg): Update names for mmx_ prefixes.
+	(ix86_expand_builtin): Likewise.  Frob MASKMOVQ wrt the input mem
+	just like MASKMOVDQU.  Return plain zero for MMX_ZERO.
+	* config/i386/i386.md (MMXMODEI, mov<MMXMODEI>,
+	mov<MMXMODEI>_internal_rex64, mov<MMXMODEI>_internal, movv2sf,
+	movv2sf_internal_rex64, movv2sf_internal, MMXMODE,
+	movmisalign<MMXMODE>, mmx_pmovmskb, mmx_maskmovq, mmx_maskmovq_rex,
+	sse_movntdi, addv8qi3, addv4hi3, addv2si3, mmx_adddi3, ssaddv8qi3,
+	ssaddv4hi3, usaddv8qi3, usaddv4hi3, subv8qi3, subv4hi3, subv2si3,
+	mmx_subdi3, sssubv8qi3, sssubv4hi3, ussubv8qi3, ussubv4hi3,
+	mulv4hi3, smulv4hi3_highpart, umulv4hi3_highpart, mmx_pmaddwd,
+	sse2_umulsidi3, mmx_iordi3, mmx_xordi3, mmx_anddi3, mmx_nanddi3,
+	mmx_uavgv8qi3, mmx_uavgv4hi3, mmx_psadbw, mmx_pinsrw, mmx_pinsrw,
+	mmx_pextrw, mmx_pshufw, eqv8qi3, eqv4hi3, eqv2si3, gtv8qi3, gtv4hi3,
+	gtv2si3, umaxv8qi3, smaxv4hi3, uminv8qi3, sminv4hi3, ashrv4hi3,
+	ashrv2si3, lshrv4hi3, lshrv2si3, mmx_lshrdi3, ashlv4hi3, ashlv2si3,
+	mmx_ashldi3, mmx_packsswb, mmx_packssdw, mmx_packuswb, mmx_punpckhbw,
+	mmx_punpckhwd, mmx_punpckhdq, mmx_punpcklbw, mmx_punpcklwd, 
+	mmx_punpckldq, emms, addv2sf3, subv2sf3, subrv2sf3, gtv2sf3, gev2sf3,
+	eqv2sf3, pfmaxv2sf3, pfminv2sf3, mulv2sf3, femms, pf2id, pf2iw,
+	pfacc, pfnacc, pfpnacc, pi2fw, floatv2si2, pfrcpv2sf2, pfrcpit1v2sf3,
+	pfrcpit2v2sf3, pfrsqrtv2sf2, pfrsqit1v2sf3, pmulhrwv4hi3, pswapdv2si2,
+	pswapdv2sf2): Move to mmx.md; rename as necessary with leading
+	mmx_ prefix.
+	(mmx_clrdi, pavgusb): Remove.
+	(ldmxcsr, stmxcsr, sfence, sfence_insn): Move to sse.md; rename 
+	with leading sse_ prefix.
+	* config/i386/sse.md: Receive them.
+	* config/i386/mmx.md: New file.
+	(MMXMODE12, MMXMODE24, mmxvecsize): New.
+	(subrv2sf3): Turn into expander for normal subtraction.
+	(mmx_addv2sf3, mmx_mulv2sf3, mmx_smaxv2sf3, mmx_sminv2sf3,
+	mmx_eqv2sf3, mmx_mulv4hi3, mmx_smulv4hi3_highpart,
+	mmx_umulv4hi3_highpart, mmx_pmaddwd, mmx_pmulhrwv4hi3, sse2_umulsidi3,
+	mmx_umaxv8qi3, mmx_smaxv4hi3, mmx_uminv8qi3, mmx_sminv4hi3): Mark
+	commutative; use ix86_binary_operator_ok.
+	(mmx_add<MMXMODEI>3, mmx_ssadd<MMXMODE12>3, mmx_usadd<MMXMODE12>3,
+	mmx_sub<MMXMODEI>3, mmx_sssub<MMXMODE12>3, mmx_ussub<MMXMODE12>3
+	mmx_ashr<MMXMODE24>3, mmx_lshr<MMXMODE23>3, mmx_ashl<MMXMODE24>3
+	mmx_eq<MMXMODEI>3, mmx_gt<MMXMODEI>3, mmx_and<MMXMODEI>3, 
+	mmx_nand<MMXMODEI>3, mmx_ior<MMXMODEI>3, mmx_xor<MMXMODEI>3):
+	Macroize from existing patterns; use ix86_binary_operator_ok.
+	(mmx_packsswb, mmx_packssdw, mmx_packuswb): Add memory alternative.
+	(mmx_punpckhbw, mmx_punpcklbw, mmx_punpckhwd, mmx_punpcklwd,
+	mmx_punpckhdq, mmx_punpckhdq, mmx_punpckldq): Likewise.  Model
+	with vec_select+vec_concat.
+	(mmx_pshufw, mmx_pshufw_1): Likewise.
+	(mmx_uavgv8qi3): Merge pavgusb.  Model correcty.
+	(mmx_uavgv4hi3): Model correctly.
+	* config/i386/mmintrin.h (_mm_and_si64, _mm_andnot_si64, _mm_or_si64,
+	_mm_xor_si64): Remove casts.
+
 2005-01-09  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/19224

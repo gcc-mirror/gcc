@@ -687,7 +687,7 @@ _m_psrlqi (__m64 __m, int __count)
 static __inline __m64
 _mm_and_si64 (__m64 __m1, __m64 __m2)
 {
-  return (__m64) __builtin_ia32_pand ((long long)__m1, (long long)__m2);
+  return __builtin_ia32_pand (__m1, __m2);
 }
 
 static __inline __m64
@@ -701,7 +701,7 @@ _m_pand (__m64 __m1, __m64 __m2)
 static __inline __m64
 _mm_andnot_si64 (__m64 __m1, __m64 __m2)
 {
-  return (__m64) __builtin_ia32_pandn ((long long)__m1, (long long)__m2);
+  return __builtin_ia32_pandn (__m1, __m2);
 }
 
 static __inline __m64
@@ -714,7 +714,7 @@ _m_pandn (__m64 __m1, __m64 __m2)
 static __inline __m64
 _mm_or_si64 (__m64 __m1, __m64 __m2)
 {
-  return (__m64)__builtin_ia32_por ((long long)__m1, (long long)__m2);
+  return __builtin_ia32_por (__m1, __m2);
 }
 
 static __inline __m64
@@ -727,7 +727,7 @@ _m_por (__m64 __m1, __m64 __m2)
 static __inline __m64
 _mm_xor_si64 (__m64 __m1, __m64 __m2)
 {
-  return (__m64)__builtin_ia32_pxor ((long long)__m1, (long long)__m2);
+  return __builtin_ia32_pxor (__m1, __m2);
 }
 
 static __inline __m64

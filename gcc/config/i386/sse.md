@@ -3051,6 +3051,39 @@
   [(set_attr "type" "ssecvt")
    (set_attr "mode" "TI")])
 
+(define_insn "sse_ldmxcsr"
+  [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")]
+		    UNSPECV_LDMXCSR)]
+  "TARGET_SSE"
+  "ldmxcsr\t%0"
+  [(set_attr "type" "sse")
+   (set_attr "memory" "load")])
+
+(define_insn "sse_stmxcsr"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_STMXCSR))]
+  "TARGET_SSE"
+  "stmxcsr\t%0"
+  [(set_attr "type" "sse")
+   (set_attr "memory" "store")])
+
+(define_expand "sse_sfence"
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
+  "TARGET_SSE || TARGET_3DNOW_A"
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "*sse_sfence"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_SFENCE))]
+  "TARGET_SSE || TARGET_3DNOW_A"
+  "sfence"
+  [(set_attr "type" "sse")
+   (set_attr "memory" "unknown")])
+
 (define_insn "sse2_clflush"
   [(unspec_volatile [(match_operand 0 "address_operand" "p")]
 		    UNSPECV_CLFLUSH)]
