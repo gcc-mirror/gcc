@@ -1,3 +1,9 @@
+2004-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/18984
+	* pointer-set.c (pointer_set_contains): Add back.
+	* pointer-set.h (pointer_set_contains): Add back.
+
 2004-12-21  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (eval_save_expr): New.

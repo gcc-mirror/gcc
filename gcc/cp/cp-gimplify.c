@@ -291,7 +291,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     }
 
   /* Other than invisiref parms, don't walk the same tree twice.  */
-  if (pointer_set_insert (p_set, stmt))
+  if (pointer_set_contains (p_set, stmt))
     {
       *walk_subtrees = 0;
       return NULL_TREE;
@@ -315,14 +315,13 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
      to lower this construct before scanning it, so we need to lower these
      before doing anything else.  */
   else if (TREE_CODE (stmt) == CLEANUP_STMT)
-    {
-      *stmt_p = build2 (CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR
-					       : TRY_FINALLY_EXPR,
-			void_type_node,
-			CLEANUP_BODY (stmt),
-			CLEANUP_EXPR (stmt));
-      pointer_set_insert (p_set, *stmt_p);
-    }
+    *stmt_p = build2 (CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR
+					     : TRY_FINALLY_EXPR,
+		      void_type_node,
+		      CLEANUP_BODY (stmt),
+		      CLEANUP_EXPR (stmt));
+
+  pointer_set_insert (p_set, *stmt_p);
   
   return NULL;
 }

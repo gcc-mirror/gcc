@@ -1,3 +1,8 @@
+2004-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/18984
+	* g++.dg/eh/ctor3.C: New test.
+
 2004-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* objc.dg/stabs-1.m: Allow section name to be quoted and
