@@ -5032,7 +5032,7 @@ fold (tree expr)
 	   do arithmetic on them.  */
 	wins = 0;
     }
-  else if (IS_EXPR_CODE_CLASS (kind) || kind == 'r')
+  else if (IS_EXPR_CODE_CLASS (kind))
     {
       int len = first_rtl_op (code);
       int i;

@@ -1661,15 +1661,11 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
     }
 
   /* Handle common cases up front.  */
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
-      || TREE_CODE_CLASS (code) == 'r'
-      || TREE_CODE_CLASS (code) == 's')
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
 #else /* INLINER_FOR_JAVA */
   if (code != EXIT_BLOCK_EXPR
       && code != SAVE_EXPR
-      && (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
-	  || TREE_CODE_CLASS (code) == 'r'
-	  || TREE_CODE_CLASS (code) == 's'))
+      && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
 #endif /* INLINER_FOR_JAVA */
     {
       int i, len;
@@ -1862,9 +1858,7 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
   /* We make copies of most nodes.  */
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
-      || TREE_CODE_CLASS (code) == 'r'
       || TREE_CODE_CLASS (code) == 'c'
-      || TREE_CODE_CLASS (code) == 's'
       || code == TREE_LIST
       || code == TREE_VEC
       || (*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp))

@@ -262,8 +262,8 @@ calls_function_1 (tree exp, int which)
       break;
     }
 
-  /* Only expressions, references, and blocks can contain calls.  */
-  if (! IS_EXPR_CODE_CLASS (class) && class != 'r' && class != 'b')
+  /* Only expressions and blocks can contain calls.  */
+  if (! IS_EXPR_CODE_CLASS (class) && class != 'b')
     return 0;
 
   for (i = 0; i < length; i++)

@@ -57,7 +57,8 @@ extern const char tree_code_type[];
    expression.  */
 
 #define IS_EXPR_CODE_CLASS(CLASS) \
-  ((CLASS) == '<' || (CLASS) == '1' || (CLASS) == '2' || (CLASS) == 'e')
+  ((CLASS) == '<' || (CLASS) == '1' || (CLASS) == '2' || (CLASS) == 'e' \
+   || (CLASS) == 'r' || (CLASS) == 's')
 
 /* Number of argument-words in each kind of tree-node.  */
 
@@ -291,7 +292,7 @@ struct tree_common GTY(())
 #define EXPR_CHECK(T) __extension__					\
 ({  const tree __t = (T);						\
     char const __c = TREE_CODE_CLASS (TREE_CODE (__t));			\
-    if (!IS_EXPR_CODE_CLASS (__c) && __c != 'r' && __c != 's')		\
+    if (!IS_EXPR_CODE_CLASS (__c))					\
       tree_class_check_failed (__t, 'e', __FILE__, __LINE__,		\
 			       __FUNCTION__);				\
     __t; })
