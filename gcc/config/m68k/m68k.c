@@ -212,7 +212,7 @@ override_options (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 
   /* Tell the compiler which flavor of XFmode we're using.  */
-  real_format_for_mode[XFmode - QFmode] = &ieee_extended_motorola_format;
+  REAL_MODE_FORMAT (XFmode) = &ieee_extended_motorola_format;
 }
 
 /* Structure describing stack frame layout. */

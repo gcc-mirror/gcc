@@ -169,7 +169,7 @@ i960_initialize ()
     }
 
   /* Tell the compiler which flavor of TFmode we're using.  */
-  real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
+  REAL_MODE_FORMAT (TFmode) = &ieee_extended_intel_128_format;
 }
 
 /* Return true if OP can be used as the source of an fp move insn.  */

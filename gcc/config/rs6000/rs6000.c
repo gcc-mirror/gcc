@@ -845,7 +845,7 @@ rs6000_override_options (const char *default_cpu)
 
   if (TARGET_LONG_DOUBLE_128
       && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN))
-    real_format_for_mode[TFmode - QFmode] = &ibm_extended_format;
+    REAL_MODE_FORMAT (TFmode) = &ibm_extended_format;
 
   /* Allocate an alias set for register saves & restores from stack.  */
   rs6000_sr_alias_set = new_alias_set ();

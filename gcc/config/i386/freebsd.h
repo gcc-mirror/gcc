@@ -137,9 +137,9 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_OVERRIDE_OPTIONS			\
   do {							\
     if (!TARGET_64BIT) {				\
-      real_format_for_mode[XFmode - QFmode]		\
+      REAL_MODE_FORMAT (XFmode)				\
 	= &ieee_extended_intel_96_round_53_format;	\
-      real_format_for_mode[TFmode - QFmode]		\
+      REAL_MODE_FORMAT (TFmode)				\
 	= &ieee_extended_intel_96_round_53_format;	\
     }							\
   } while (0)

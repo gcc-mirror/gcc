@@ -2582,7 +2582,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
   if (unoptab->code == NEG && class == MODE_FLOAT
       && GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
     {
-      const struct real_format *fmt = real_format_for_mode[mode - QFmode];
+      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
       enum machine_mode imode = int_mode_for_mode (mode);
       int bitpos = (fmt != 0) ? fmt->signbit : -1;
 
@@ -2756,7 +2756,7 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
     {
-      const struct real_format *fmt = real_format_for_mode[mode - QFmode];
+      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
       enum machine_mode imode = int_mode_for_mode (mode);
       int bitpos = (fmt != 0) ? fmt->signbit : -1;
 

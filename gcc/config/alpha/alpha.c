@@ -472,9 +472,9 @@ override_options (void)
   /* Tell the compiler when we're using VAX floating point.  */
   if (TARGET_FLOAT_VAX)
     {
-      real_format_for_mode[SFmode - QFmode] = &vax_f_format;
-      real_format_for_mode[DFmode - QFmode] = &vax_g_format;
-      real_format_for_mode[TFmode - QFmode] = NULL;
+      REAL_MODE_FORMAT (SFmode) = &vax_f_format;
+      REAL_MODE_FORMAT (DFmode) = &vax_g_format;
+      REAL_MODE_FORMAT (TFmode) = NULL;
     }
 }
 

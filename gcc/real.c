@@ -2105,7 +2105,7 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
 {
   const struct real_format *fmt;
 
-  fmt = real_format_for_mode[mode - QFmode];
+  fmt = REAL_MODE_FORMAT (mode);
   if (fmt == NULL)
     abort ();
 
@@ -2195,7 +2195,7 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
   const struct real_format *fmt;
   int np2;
 
-  fmt = real_format_for_mode[mode - QFmode];
+  fmt = REAL_MODE_FORMAT (mode);
   if (fmt == NULL)
     abort ();
 
@@ -2368,7 +2368,7 @@ real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode,
 {
   const struct real_format *fmt;
 
-  fmt = real_format_for_mode[mode - QFmode];
+  fmt = REAL_MODE_FORMAT (mode);
   if (fmt == NULL)
     abort ();
 
@@ -2430,7 +2430,7 @@ real_to_target (long *buf, const REAL_VALUE_TYPE *r, enum machine_mode mode)
 {
   const struct real_format *fmt;
 
-  fmt = real_format_for_mode[mode - QFmode];
+  fmt = REAL_MODE_FORMAT (mode);
   if (fmt == NULL)
     abort ();
 
@@ -2455,7 +2455,7 @@ real_from_target (REAL_VALUE_TYPE *r, const long *buf, enum machine_mode mode)
 {
   const struct real_format *fmt;
 
-  fmt = real_format_for_mode[mode - QFmode];
+  fmt = REAL_MODE_FORMAT (mode);
   if (fmt == NULL)
     abort ();
 
@@ -2470,7 +2470,7 @@ significand_size (enum machine_mode mode)
 {
   const struct real_format *fmt;
 
-  fmt = real_format_for_mode[mode - QFmode];
+  fmt = REAL_MODE_FORMAT (mode);
   if (fmt == NULL)
     return 0;
 
