@@ -1,5 +1,5 @@
 ;;- Machine description for ROMP chip for GNU C compiler
-;;   Copyright (C) 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
+;;   Copyright (C) 1988, 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
 ;;   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -1660,13 +1660,14 @@
 ;;
 ;; Operand 1 (2 for `call_value') is the number of arguments and is not used.
 (define_expand "call"
-  [(use (reg:SI 0))
-   (parallel [(call (mem:SI (match_operand:SI 0 "address_operand" ""))
-		    (match_operand 1 "" ""))
-	      (clobber (reg:SI 15))])]
+  [(use (match_operand:SI 0 "address_operand" ""))
+   (use (match_operand 1 "" ""))]
   ""
   "
 {
+  rtx reg0 = gen_rtx (REG, SImode, 0);
+  rtx call_insn;
+
   if (GET_CODE (operands[0]) != MEM || GET_CODE (operands[1]) != CONST_INT)
     abort();
 
@@ -1678,8 +1679,7 @@
 		(char *) alloca (strlen (XSTR (operands[0], 0)) + 2);
 
       /* Copy the data area address to r0.  */
-      emit_move_insn (gen_rtx (REG, SImode, 0),
-		      force_reg (SImode, operands[0]));
+      emit_move_insn (reg0, force_reg (SImode, operands[0]));
       strcpy (real_fcnname, \".\");
       strcat (real_fcnname, XSTR (operands[0], 0));
       operands[0] = get_symref (real_fcnname);
@@ -1688,15 +1688,18 @@
     {
       rtx data_access;
 
-      emit_move_insn (gen_rtx (REG, SImode, 0),
-		      force_reg (SImode, operands[0]));
+      emit_move_insn (reg0, force_reg (SImode, operands[0]));
       data_access = gen_rtx (MEM, SImode, operands[0]);
       RTX_UNCHANGING_P (data_access) = 1;
       operands[0] = copy_to_reg (data_access);
     }
+
+  call_insn = emit_call_insn (gen_call_internal (operands[0], operands[1]));
+  use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), reg0);
+  DONE;
 }")
 
-(define_insn ""
+(define_insn "call_internal"
   [(call (mem:SI (match_operand:SI 0 "register_operand" "b"))
 	 (match_operand 1 "" "g"))
    (clobber (reg:SI 15))]
@@ -1715,14 +1718,15 @@
 
 ;; Call a function and return a value.
 (define_expand "call_value"
-  [(use (reg:SI 0))
-   (parallel [(set (match_operand 0 "" "=fg")
-		   (call (mem:SI (match_operand:SI 1 "address_operand" ""))
-			 (match_operand 2 "" "")))
-	      (clobber (reg:SI 15))])]
+  [(use (match_operand 0 "" ""))
+   (use (match_operand:SI 1 "address_operand" ""))
+   (use (match_operand 2 "" ""))]
   ""
   "
 {
+  rtx reg0 = gen_rtx (REG, SImode, 0);
+  rtx call_insn;
+
   if (GET_CODE (operands[1]) != MEM || GET_CODE (operands[2]) != CONST_INT)
     abort();
 
@@ -1734,8 +1738,7 @@
 		(char *) alloca (strlen (XSTR (operands[1], 0)) + 2);
 
       /* Copy the data area address to r0.  */
-      emit_move_insn (gen_rtx (REG, SImode, 0),
-		      force_reg (SImode, operands[1]));
+      emit_move_insn (reg0,force_reg (SImode, operands[1]));
       strcpy (real_fcnname, \".\");
       strcat (real_fcnname, XSTR (operands[1], 0));
       operands[1] = get_symref (real_fcnname);
@@ -1744,15 +1747,20 @@
     {
       rtx data_access;
 
-      emit_move_insn (gen_rtx (REG, SImode, 0),
-		      force_reg (SImode, operands[1]));
+      emit_move_insn (reg0,force_reg (SImode, operands[1]));
       data_access = gen_rtx (MEM, SImode, operands[1]);
       RTX_UNCHANGING_P (data_access) = 1;
       operands[1] = copy_to_reg (data_access);
     }
+
+  call_insn = emit_call_insn (gen_call_value_internal (operands[0],
+						       operands[1],
+						       operands[2]));
+  use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), reg0);
+  DONE;
 }")
 
-(define_insn ""
+(define_insn "call_value_internal"
   [(set (match_operand 0 "" "=fg")
 	(call (mem:SI (match_operand:SI 1 "register_operand" "b"))
 	      (match_operand 2 "" "g")))
