@@ -2473,7 +2473,7 @@ else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  LIBDATASTARTSPEC="-lgcjdata"
+  LIBDATASTARTSPEC="-u data_start -lgcjdata"
    NEEDS_DATA_START=yes	
    echo "$ac_t""missing" 1>&6
 fi

@@ -1,3 +1,9 @@
+1999-12-23  Anthony Green  <green@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in (LIBDATASTARTSPEC): Force data_start in with
+	linker trick.
+
 1999-12-19  Anthony Green  <green@cygnus.com>
 
 	* libgcjdata.c: New file.

@@ -992,6 +992,7 @@
                the start of the data segment.  So libgcj defines
                data_start on its own (in libgcjdata.a).  */
             extern int data_start;
+#           define DATASTART &data_start
 #           define DYNAMIC_LOADING
 #       else
 #           define DATASTART ((ptr_t) 0x140000000)

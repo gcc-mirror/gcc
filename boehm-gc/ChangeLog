@@ -1,3 +1,7 @@
+1999-12-19  Jeff Sturm  <jsturm@sigma6.com>
+
+        * gcconfig.h: Define DATASTART for Alpha Linux.
+
 1999-12-19  Anthony Green  <green@cygnus.com>
 
 	* gcconfig.h: Use libgcj hack for Alpha Linux.  
