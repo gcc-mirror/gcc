@@ -224,6 +224,7 @@ while [ $# != 0 ]; do
 	cp $file $2/$file >/dev/null 2>&1	\
 	|| echo "Can't copy $file"
 	chmod +w $2/$file
+	chmod a+r $2/$file
 # Following two lines removed.
 #	  s%^\([ 	]*#[ 	]*endif[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
 #	  s%^\([ 	]*#[ 	]*else[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
@@ -274,6 +275,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/sundev 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -293,6 +295,7 @@ file=sys/stdtypes.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -339,6 +342,7 @@ file=sys/types.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -368,6 +372,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/rpcsvc 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -386,6 +391,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/rpcsvc 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -407,6 +413,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/netdnet 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -426,6 +433,7 @@ file=sys/file.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -447,6 +455,7 @@ fi
 #if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
 #  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
 #  chmod +w ${LIB}/$file 2>/dev/null
+#  chmod a+r ${LIB}/$file 2>/dev/null
 #fi
 #
 #if [ -r ${LIB}/$file ]; then
@@ -465,6 +474,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/machine 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -492,6 +502,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/X11 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -517,6 +528,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/X11/Xmu 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -541,6 +553,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/netinet 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -559,6 +572,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/pixrect 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -583,6 +597,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/rpcsvc 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -600,6 +615,7 @@ file=stdlib.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -622,6 +638,7 @@ file=malloc.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -642,6 +659,7 @@ file=locale.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -660,6 +678,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/hsfs 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -679,6 +698,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/hsfs 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -698,6 +718,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/hsfs 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -717,6 +738,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/machine 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -736,6 +758,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/sys 2>/dev/null
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -759,6 +782,7 @@ if egrep '/\*	@\(#\)memory\.h 1\.[2-4] 8./../.. SMI; from S5R2 1\.2	\*/' $file >
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
     chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
   fi
   if [ -r ${LIB}/$file ]; then
     echo Replacing $file
@@ -791,6 +815,7 @@ file=stdio.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -816,6 +841,7 @@ file=stdio.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then
@@ -853,6 +879,7 @@ file=math.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
 fi
 
 if [ -r ${LIB}/$file ]; then

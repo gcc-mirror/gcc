@@ -145,6 +145,7 @@ while [ $# != 0 ]; do
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1 || echo "Can't copy $file"
 	chmod +w $2/$file
+	chmod a+r $2/$file
 
 # The following have been removed from the sed command below
 # because it is more useful to leave these things in.
@@ -218,6 +219,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -246,6 +248,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -268,6 +271,7 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
+  chmod a+r /tmp/$base
   ex /tmp/$base <<EOF
   /^#define[ 	]*NULL[ 	]*0$/c
 #ifndef NULL
@@ -287,6 +291,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -326,6 +331,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -367,6 +373,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -405,6 +412,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -465,6 +473,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -507,6 +516,7 @@ EOF
       echo Fixed $file_to_fix
       rm -f ${LIB}/$file
       cp /tmp/$base ${LIB}/$file
+      chmod a+r ${LIB}/$file
     fi
   fi
   rm -f /tmp/$base
@@ -541,6 +551,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -577,6 +588,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -625,6 +637,7 @@ EOF
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -651,6 +664,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -679,6 +693,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -707,6 +722,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -735,6 +751,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -763,6 +780,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -791,6 +809,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -819,6 +838,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -847,6 +867,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -875,6 +896,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -903,6 +925,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
     rm -f /tmp/$base
   fi
 fi
@@ -1016,6 +1039,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -1045,6 +1069,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
@@ -1103,6 +1128,7 @@ EOF
   echo Fixed $file_to_fix
   rm -f ${LIB}/$file
   cp /tmp/$base ${LIB}/$file
+  chmod a+r ${LIB}/$file
   rm -f /tmp/$base
 fi
 
@@ -1140,6 +1166,7 @@ if [ -x /bin/sony ]; then
         echo Fixed $file_to_fix
         rm -f ${LIB}/$file
         cp /tmp/$base ${LIB}/$file
+        chmod a+r ${LIB}/$file
       fi
       rm -f /tmp/$base
     fi
@@ -1171,6 +1198,7 @@ if [ -x /bin/sony ]; then
         echo Fixed $file_to_fix
         rm -f ${LIB}/$file
         cp /tmp/$base ${LIB}/$file
+        chmod a+r ${LIB}/$file
       fi
       rm -f /tmp/$base
     fi
@@ -1224,6 +1252,7 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
   fi
   rm -f /tmp/$base
 fi
