@@ -1,3 +1,7 @@
+2000-08-04  Kazu Hirata  <kazu@hxi.com>
+
+	* cse.c: Fix a comment typo. Fix formatting.
+
 2000-08-03  Richard Henderson  <rth@cygnus.com>
 
         * config/i386/i386.md (return_indirect_internal): New.
