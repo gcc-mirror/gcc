@@ -1,3 +1,7 @@
+2003-06-25  Wolfgang Bangerth  <bangerth@dealii.org>
+
+	* gccbug.in: Add PCH to list of categories.
+
 2003-06-25 Martin Schaffner <schaffner@gmx.li>
 
 	* cppfiles.c: Clarify comments.
