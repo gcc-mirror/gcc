@@ -248,6 +248,7 @@
 	scale_bbs_frequencies_int.
 	* tree-ssa-loop-ch.c (copy_loop_headers): Fix profiling info.
 
+>>>>>>> 2.7929
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r-protos.h: Remove the prototypes for
