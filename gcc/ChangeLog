@@ -1,3 +1,9 @@
+2004-10-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (pushdecl): When an extern declaration at block scope
+	refers to a visible entity with internal linkage, use the old DECL
+	rather than the new one.
+
 2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (cleanup_tree_cfg): Remove extra parentheses in
