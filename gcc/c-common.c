@@ -201,7 +201,7 @@ decl_attributes (decl, attributes)
 	else if (TREE_CODE (decl) == VAR_DECL)
 	  {
 	    DECL_PACKED (decl) = 1;
-	    DECL_ALIGN (decl) = BITS_PER_UNION;
+	    DECL_ALIGN (decl) = BITS_PER_UNIT;
 	  }
       }
     else if (TREE_VALUE (a) != 0
