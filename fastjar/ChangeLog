@@ -1,3 +1,8 @@
+2002-10-15  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* configure, config.h.in: Rebuilt.
+	* configure.in: Call gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG.
+
 2002-09-11  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
