@@ -39,7 +39,7 @@ import java.io.IOException;
  * Comparator object, or by the natural ordering of the keys.
  *
  * The algorithms are adopted from Corman, Leiserson,
- * and Rivest's <i>Introduction to Algorithms.<i>  In other words,
+ * and Rivest's <i>Introduction to Algorithms.</i>  In other words,
  * I cribbed from the same pseudocode as Sun.  <em>Any similarity
  * between my code and Sun's (if there is any -- I have never looked
  * at Sun's) is a result of this fact.</em>
@@ -56,7 +56,6 @@ import java.io.IOException;
  *
  * @author           Jon Zeppieri
  * @author	     Bryce McKinlay
- * @modified         $Id: TreeMap.java,v 1.4 2001/02/16 02:25:24 bryce Exp $
  */
 public class TreeMap extends AbstractMap
   implements SortedMap, Cloneable, Serializable
@@ -777,9 +776,7 @@ public class TreeMap extends AbstractMap
 
   private void writeObject(ObjectOutputStream out) throws IOException
   {
-    ObjectOutputStream.PutField fields = out.putFields();
-    fields.put("comparator", comparator);
-    out.writeFields();
+    out.defaultWriteObject();
 
     Node node = firstNode();
     out.writeInt(size);
@@ -795,8 +792,7 @@ public class TreeMap extends AbstractMap
   private void readObject(ObjectInputStream in)
     throws IOException, ClassNotFoundException
   {
-    ObjectInputStream.GetField fields = in.readFields();
-    comparator = (Comparator) fields.get("comparator", null);
+    in.defaultReadObject();
     int size = in.readInt();
     putFromObjStream(in, size, true);
   }
