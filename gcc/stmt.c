@@ -2692,8 +2692,8 @@ expand_value_return (val)
 
   if (return_reg != val)
     {
-#ifdef PROMOTE_FUNCTION_RETURN
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
+#ifdef PROMOTE_FUNCTION_RETURN
       int unsignedp = TREE_UNSIGNED (type);
       enum machine_mode old_mode
 	= DECL_MODE (DECL_RESULT (current_function_decl));
