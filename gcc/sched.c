@@ -46,12 +46,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    predecessors in the list according to their priority order.  We
    consider this insn scheduled by setting the pointer to the "end" of
    the list to point to the previous insn.  When an insn has no
-   predecessors, we also add it to the ready list.  When all insns down
-   to the lowest priority have been scheduled, the critical path of the
-   basic block has been made as short as possible.  The remaining insns
-   are then scheduled in remaining slots.
+   predecessors, we either queue it until sufficient time has elapsed
+   or add it to the ready list.  As the instructions are scheduled or
+   when stalls are introduced, the queue advances and dumps insns into
+   the ready list.  When all insns down to the lowest priority have
+   been scheduled, the critical path of the basic block has been made
+   as short as possible.  The remaining insns are then scheduled in
+   remaining slots.
 
-   The following list shows the order in which we want to break ties:
+   Function unit conflicts are resolved during reverse list scheduling
+   by tracking the time when each insn is committed to the schedule
+   and from that, the time the function units it uses must be free.
+   As insns on the ready list are considered for scheduling, those
+   that would result in a blockage of the already committed insns are
+   queued until no blockage will result.  Among the remaining insns on
+   the ready list to be considered, the first one with the largest
+   potential for causing a subsequent blockage is chosen.
+
+   The following list shows the order in which we want to break ties
+   among insns in the ready list:
 
 	1.  choose insn with lowest conflict cost, ties broken by
 	2.  choose insn with the longest path to end of bb, ties broken by
@@ -140,6 +153,30 @@ static int *insn_priority;
 static short *insn_costs;
 #define INSN_COST(INSN)	insn_costs[INSN_UID (INSN)]
 
+/* Vector indexed by INSN_UID giving an encoding of the function units
+   used.  */
+static short *insn_units;
+#define INSN_UNIT(INSN)	insn_units[INSN_UID (INSN)]
+
+/* Vector indexed by INSN_UID giving an encoding of the blockage range
+   function.  The unit and the range are encoded.  */
+static unsigned int *insn_blockage;
+#define INSN_BLOCKAGE(INSN) insn_blockage[INSN_UID (INSN)]
+#define UNIT_BITS 5
+#define BLOCKAGE_MASK ((1 << BLOCKAGE_BITS) - 1)
+#define ENCODE_BLOCKAGE(U,R)				\
+  ((((U) << UNIT_BITS) << BLOCKAGE_BITS			\
+    | MIN_BLOCKAGE_COST (R)) << BLOCKAGE_BITS		\
+   | MAX_BLOCKAGE_COST (R))
+#define UNIT_BLOCKED(B) ((B) >> (2 * BLOCKAGE_BITS))
+#define BLOCKAGE_RANGE(B) \
+  (((((B) >> BLOCKAGE_BITS) & BLOCKAGE_MASK) << (HOST_BITS_PER_INT / 2)) \
+   | (B) & BLOCKAGE_MASK)
+
+/* Encodings of the `<name>_unit_blockage_range' function.  */
+#define MIN_BLOCKAGE_COST(R) ((R) >> (HOST_BITS_PER_INT / 2))
+#define MAX_BLOCKAGE_COST(R) ((R) & ((1 << (HOST_BITS_PER_INT / 2)) - 1))
+
 #define DONE_PRIORITY	-1
 #define MAX_PRIORITY	0x7fffffff
 #define TAIL_PRIORITY	0x7ffffffe
@@ -188,34 +225,59 @@ static rtx dead_notes;
 /* An instruction is ready to be scheduled when all insns following it
    have already been scheduled.  It is important to ensure that all
    insns which use its result will not be executed until its result
-   has been computed.  We maintain three lists (conceptually):
+   has been computed.  An insn is maintained in one of four structures:
 
-   (1) a "Ready" list of unscheduled, uncommitted insns
-   (2) a "Scheduled" list of scheduled insns
-   (3) a "Pending" list of insns which can be scheduled, but
-       for stalls.
+   (P) the "Pending" set of insns which cannot be scheduled until
+   their dependencies have been satisfied.
+   (Q) the "Queued" set of insns that can be scheduled when sufficient
+   time has passed.
+   (R) the "Ready" list of unscheduled, uncommitted insns.
+   (S) the "Scheduled" list of insns.
 
-   Insns move from the "Ready" list to the "Pending" list when
-   all insns following them have been scheduled.
+   Initially, all insns are either "Pending" or "Ready" depending on
+   whether their dependencies are satisfied.
 
-   Insns move from the "Pending" list to the "Scheduled" list
-   when there is sufficient space in the pipeline to prevent
-   stalls between the insn and scheduled insns which use it.
+   Insns move from the "Ready" list to the "Scheduled" list as they
+   are committed to the schedule.  As this occurs, the insns in the
+   "Pending" list have their dependencies satisfied and move to either
+   the "Ready" list or the "Queued" set depending on whether
+   sufficient time has passed to make them ready.  As time passes,
+   insns move from the "Queued" set to the "Ready" list.  Insns may
+   move from the "Ready" list to the "Queued" set if they are blocked
+   due to a function unit conflict.
 
-   The "Pending" list acts as a buffer to prevent insns
-   from avalanching.
+   The "Pending" list (P) are the insns in the LOG_LINKS of the unscheduled
+   insns, i.e., those that are ready, queued, and pending.
+   The "Queued" set (Q) is implemented by the variable `insn_queue'.
+   The "Ready" list (R) is implemented by the variables `ready' and
+   `n_ready'.
+   The "Scheduled" list (S) is the new insn chain built by this pass.
 
-   The "Ready" list is implemented by the variable `ready'.
-   The "Pending" list are the insns in the LOG_LINKS of ready insns.
-   The "Scheduled" list is the new insn chain built by this pass.  */
+   The transition (R->S) is implemented in the scheduling loop in
+   `schedule_block' when the best insn to schedule is chosen.
+   The transition (R->Q) is implemented in `schedule_select' when an
+   insn is found to to have a function unit conflict with the already
+   committed insns.
+   The transitions (P->R and P->Q) are implemented in `schedule_insn' as
+   insns move from the ready list to the scheduled list.
+   The transition (Q->R) is implemented at the top of the scheduling
+   loop in `schedule_block' as time passes or stalls are introduced.  */
 
-/* Implement a circular buffer from which instructions are issued.  */
-#define Q_SIZE 128
-static rtx insn_queue[Q_SIZE];
+/* Implement a circular buffer to delay instructions until sufficient
+   time has passed.  INSN_QUEUE_SIZE is a power of two larger than
+   MAX_BLOCKAGE and MAX_READY_COST computed by genattr.c.  This is the
+   longest time an isnsn may be queued.  */
+static rtx insn_queue[INSN_QUEUE_SIZE];
 static int q_ptr = 0;
 static int q_size = 0;
-#define NEXT_Q(X) (((X)+1) & (Q_SIZE-1))
-#define NEXT_Q_AFTER(X,C) (((X)+C) & (Q_SIZE-1))
+#define NEXT_Q(X) (((X)+1) & (INSN_QUEUE_SIZE-1))
+#define NEXT_Q_AFTER(X,C) (((X)+C) & (INSN_QUEUE_SIZE-1))
+
+/* Vector indexed by INSN_UID giving the minimum clock tick at which
+   the insn becomes ready.  This is used to note timing constraints for
+   insns in the pending list.  */
+static int *insn_tick;
+#define INSN_TICK(INSN) (insn_tick[INSN_UID (INSN)])
 
 /* Forward declarations.  */
 static void sched_analyze_2 ();
@@ -908,38 +970,339 @@ find_insn_list (insn, list)
   return 0;
 }
 
-/* Compute cost of executing INSN.  This is the number of virtual
-   cycles taken between instruction issue and instruction results.  */
+/* Compute the function units used by INSN.  This caches the value
+   returned by function_units_used.  A function unit is encoded as the
+   unit number if the value is non-negative and the compliment of a
+   mask if the value is negative.  A function unit index is the
+   non-negative encoding.  */
 
 __inline static int
-insn_cost (insn)
+insn_unit (insn)
      rtx insn;
 {
-  register int cost;
+  register int unit = INSN_UNIT (insn);
 
-  if (INSN_COST (insn))
-    return INSN_COST (insn);
-
-  recog_memoized (insn);
-
-  /* A USE insn, or something else we don't need to understand.
-     We can't pass these directly to result_ready_cost because it will trigger
-     a fatal error for unrecognizable insns.  */
-  if (INSN_CODE (insn) < 0)
+  if (unit == 0)
     {
-      INSN_COST (insn) = 1;
-      return 1;
+      recog_memoized (insn);
+
+      /* A USE insn, or something else we don't need to understand.
+	 We can't pass these directly to function_units_used because it will
+	 trigger a fatal error for unrecognizable insns.  */
+      if (INSN_CODE (insn) < 0)
+	unit = -1;
+      else
+	{
+	  unit = function_units_used (insn);
+	  /* Increment non-negative values so we can cache zero.  */
+	  if (unit >= 0) unit++;
+	}
+      /* We only cache 16 bits of the result, so if the value is out of
+	 range, don't cache it.  */
+      if (FUNCTION_UNITS_SIZE < HOST_BITS_PER_SHORT
+	  || unit >= 0
+	  || (~unit & ((1 << (HOST_BITS_PER_SHORT - 1)) - 1)) == 0)
+      INSN_UNIT (insn) = unit;
+    }
+  return (unit > 0 ? unit - 1 : unit);
+}
+
+/* Compute the blockage range for executing INSN on UNIT.  This caches
+   the value returned by the blockage_range_function for the unit.
+   These values are encoded in an int where the upper half gives the
+   minimum value and the lower half gives the maximum value.  */
+
+__inline static unsigned int
+blockage_range (unit, insn)
+     int unit;
+     rtx insn;
+{
+  unsigned int blockage = INSN_BLOCKAGE (insn);
+  unsigned int range;
+
+  if (UNIT_BLOCKED (blockage) != unit + 1)
+    {
+      range = function_units[unit].blockage_range_function (insn);
+      /* We only cache the blockage range for one unit and then only if
+	 the values fit.  */
+      if (HOST_BITS_PER_INT >= UNIT_BITS + 2 * BLOCKAGE_BITS)
+	INSN_BLOCKAGE (insn) = ENCODE_BLOCKAGE (unit + 1, range);
     }
   else
+    range = BLOCKAGE_RANGE (blockage);
+
+  return range;
+}
+
+/* A vector indexed by function unit instance giving the last insn to use
+   the unit.  The value of the function unit instance index for unit U
+   instance I is (U + I * FUNCTION_UNITS_SIZE).  */
+static rtx unit_last_insn[FUNCTION_UNITS_SIZE * MAX_MULTIPLICITY];
+
+/* A vector indexed by function unit instance giving the minimum time when
+   the unit will unblock based on the maximum blockage cost.  */
+static int unit_tick[FUNCTION_UNITS_SIZE * MAX_MULTIPLICITY];
+
+/* A vector indexed by function unit number giving the number of insns
+   that remain to use the unit.  */
+static int unit_n_insns[FUNCTION_UNITS_SIZE];
+
+/* Reset the function unit state to the null state.  */
+
+static void
+clear_units ()
+{
+  int unit;
+
+  bzero (unit_last_insn, sizeof (unit_last_insn));
+  bzero (unit_tick, sizeof (unit_tick));
+  bzero (unit_n_insns, sizeof (unit_n_insns));
+}
+
+/* Record an insn as one that will use the units encoded by UNIT.  */
+
+__inline static void
+prepare_unit (unit)
+     int unit;
+{
+  int i;
+
+  if (unit >= 0)
+    unit_n_insns[unit]++;
+  else
+    for (i = 0, unit = ~unit; unit; i++, unit >>= 1)
+      if ((unit & 1) != 0)
+	prepare_unit (i);
+}
+
+/* Return the actual hazard cost of executing INSN on the unit UNIT,
+   instance INSTANCE at time CLOCK if the previous actual hazard cost
+   was COST.  */
+
+__inline static int
+actual_hazard_this_instance (unit, instance, insn, clock, cost)
+     int unit, instance, clock, cost;
+     rtx insn;
+{
+  int i;
+  int tick = unit_tick[instance];
+
+  if (tick - clock > cost)
     {
-      cost = result_ready_cost (insn);
+      /* The scheduler is operating in reverse, so INSN is the executing
+	 insn and the unit's last insn is the candidate insn.  We want a
+	 more exact measure of the blockage if we execute INSN at CLOCK
+	 given when we committed the execution of the unit's last insn.
 
-      if (cost < 1)
-	cost = 1;
+	 The blockage value is given by either the unit's max blockage
+	 constant, blockage range function, or blockage function.  Use
+	 the most exact form for the given unit.  */
 
-      INSN_COST (insn) = cost;
-      return cost;
+      if (function_units[unit].blockage_range_function)
+	{
+	  if (function_units[unit].blockage_function)
+	    tick += (function_units[unit].blockage_function
+		     (insn, unit_last_insn[instance])
+		     - function_units[unit].max_blockage);
+	  else
+	    tick += ((int) MAX_BLOCKAGE_COST (blockage_range (unit, insn))
+		     - function_units[unit].max_blockage);
+	}
+      if (tick - clock > cost)
+	cost = tick - clock;
     }
+  return cost;
+}
+
+/* Record INSN as having begun execution on the units encoded by UNIT at
+   time CLOCK.  */
+
+__inline static void
+schedule_unit (unit, insn, clock)
+     int unit, clock;
+     rtx insn;
+{
+  int i;
+
+  if (unit >= 0)
+    {
+      int instance = unit;
+#if MAX_MULTIPLICITY > 1
+      /* Find the first free instance of the function unit and use that
+	 one.  We assume that one is free.  */
+      for (i = function_units[unit].multiplicity - 1; i > 0; i--)
+	{
+	  if (! actual_hazard_this_instance (unit, instance, insn, clock, 0))
+	    break;
+	  instance += FUNCTION_UNITS_SIZE;
+	}
+#endif
+      unit_last_insn[instance] = insn;
+      unit_tick[instance] = (clock + function_units[unit].max_blockage);
+    }
+  else
+    for (i = 0, unit = ~unit; unit; i++, unit >>= 1)
+      if ((unit & 1) != 0)
+	schedule_unit (i, insn, clock);
+}
+
+/* Return the actual hazard cost of executing INSN on the units encoded by
+   UNIT at time CLOCK if the previous actual hazard cost was COST.  */
+
+__inline static int
+actual_hazard (unit, insn, clock, cost)
+     int unit, clock, cost;
+     rtx insn;
+{
+  int i;
+
+  if (unit >= 0)
+    {
+      /* Find the instance of the function unit with the minimum hazard.  */
+      int instance = unit;
+      int best = instance;
+      int best_cost = actual_hazard_this_instance (unit, instance, insn,
+						   clock, cost);
+      int this_cost;
+
+#if MAX_MULTIPLICITY > 1
+      if (best_cost > cost)
+	{
+	  for (i = function_units[unit].multiplicity - 1; i > 0; i--)
+	    {
+	      instance += FUNCTION_UNITS_SIZE;
+	      this_cost = actual_hazard_this_instance (unit, instance, insn,
+						       clock, cost);
+	      if (this_cost < best_cost)
+		{
+		  best = instance;
+		  best_cost = this_cost;
+		  if (this_cost <= cost)
+		    break;
+		}
+	    }
+	}
+#endif
+      cost = MAX (cost, best_cost);
+    }
+  else
+    for (i = 0, unit = ~unit; unit; i++, unit >>= 1)
+      if ((unit & 1) != 0)
+	cost = actual_hazard (i, insn, clock, cost);
+
+  return cost;
+}
+
+/* Return the potential hazard cost of executing an instruction on the
+   units encoded by UNIT if the previous potential hazard cost was COST.
+   An insn with a large blockage time is chosen in preference to one
+   with a smaller time; an insn that uses a unit that is more likely
+   to be used is chosen in preference to one with a unit that is less
+   used.  We are trying to minimize a subsequent actual hazard.  */
+
+__inline static int
+potential_hazard (unit, insn, cost)
+     int unit, cost;
+     rtx insn;
+{
+  int i, ncost;
+  unsigned int minb, maxb;
+
+  if (unit >= 0)
+    {
+      minb = maxb = function_units[unit].max_blockage;
+      if (maxb > 1)
+	{
+	  if (function_units[unit].blockage_range_function)
+	    {
+	      maxb = minb = blockage_range (unit, insn);
+	      maxb = MAX_BLOCKAGE_COST (maxb);
+	      minb = MIN_BLOCKAGE_COST (minb);
+	    }
+
+	  if (maxb > 1)
+	    {
+	      /* Make the number of instructions left dominate.  Make the
+		 minimum delay dominate the maximum delay.  If all these
+		 are the same, use the unit number to add an arbitrary
+		 ordering.  Other terms can be added.  */
+	      ncost = minb * 0x40 + maxb;
+	      ncost *= (unit_n_insns[unit] - 1) * 0x1000 + unit;
+	      if (ncost > cost)
+		cost = ncost;
+	    }
+	}
+    }
+  else
+    for (i = 0, unit = ~unit; unit; i++, unit >>= 1)
+      if ((unit & 1) != 0)
+	cost = potential_hazard (i, insn, cost);
+
+  return cost;
+}
+
+/* Compute cost of executing INSN given the dependence LINK on the insn USED.
+   This is the number of virtual cycles taken between instruction issue and
+   instruction results.  */
+
+__inline static int
+insn_cost (insn, link, used)
+     rtx insn, link, used;
+{
+  register int cost = INSN_COST (insn);
+
+  if (cost == 0)
+    {
+      recog_memoized (insn);
+
+      /* A USE insn, or something else we don't need to understand.
+	 We can't pass these directly to result_ready_cost because it will
+	 trigger a fatal error for unrecognizable insns.  */
+      if (INSN_CODE (insn) < 0)
+	{
+	  INSN_COST (insn) = 1;
+	  return 1;
+	}
+      else
+	{
+	  cost = result_ready_cost (insn);
+
+	  if (cost < 1)
+	    cost = 1;
+
+	  INSN_COST (insn) = cost;
+	}
+    }
+
+  /* A USE insn should never require the value used to be computed.  This
+     allows the computation of a function's result and parameter values to
+     overlap the return and call.  */
+  recog_memoized (used);
+  if (INSN_CODE (used) < 0)
+    LINK_COST_FREE (link) = 1;
+
+  /* If some dependencies vary the cost, compute the adjustment.  Most
+     commonly, the adjustment is complete: either the cost is ignored
+     (in the case of an output- or anti-dependence), or the cost is
+     unchanged.  These values are cached in the link as LINK_COST_FREE
+     and LINK_COST_ZERO.  */
+
+  if (LINK_COST_FREE (link))
+    cost = 1;
+#ifdef ADJUST_COST
+  else if (! LINK_COST_ZERO (link))
+    {
+      int ncost = cost;
+
+      ADJUST_COST (used, link, insn, ncost);
+      if (ncost <= 1)
+	LINK_COST_FREE (link) = ncost = 1;
+      if (cost == ncost)
+	LINK_COST_ZERO (link) = 1;
+      cost = ncost;
+    }
+#endif
+  return cost;
 }
 
 /* Compute the priority number for INSN.  */
@@ -985,6 +1348,12 @@ priority (insn)
 	      continue;
 	    }
 
+	  /* Clear the link cost adjustment bits.  */
+	  LINK_COST_FREE (prev) = 0;
+#ifdef ADJUST_COST
+	  LINK_COST_ZERO (prev) = 0;
+#endif
+
 	  /* This priority calculation was chosen because it results in the
 	     least instruction movement, and does not hurt the performance
 	     of the resulting code compared to the old algorithm.
@@ -1003,7 +1372,7 @@ priority (insn)
 
 	  if (REG_NOTE_KIND (prev) == 0)
 	    /* Data dependence.  */
-	    prev_priority = priority (x) + insn_cost (x) - 1;
+	    prev_priority = priority (x) + insn_cost (x, prev, insn) - 1;
 	  else
 	    /* Anti or output dependence.  Don't add the latency of this
 	       insn's result, because it isn't being used.  */
@@ -1014,6 +1383,7 @@ priority (insn)
 	  INSN_REF_COUNT (x) += 1;
 	}
 
+      prepare_unit (insn_unit (insn));
       INSN_PRIORITY (insn) = max_priority;
       return INSN_PRIORITY (insn);
     }
@@ -1753,7 +2123,7 @@ rank_for_schedule (x, y)
 {
   rtx tmp = *y;
   rtx tmp2 = *x;
-  rtx tmp_dep, tmp2_dep;
+  rtx link;
   int tmp_class, tmp2_class;
   int value;
 
@@ -1768,18 +2138,18 @@ rank_for_schedule (x, y)
 	 2) Anti/Output dependent on last scheduled insn.
 	 3) Independent of last scheduled insn, or has latency of one.
 	 Choose the insn from the highest numbered class if different.  */
-      tmp_dep = find_insn_list (tmp, LOG_LINKS (last_scheduled_insn));
-      if (tmp_dep == 0 || insn_cost (tmp) == 1)
+      link = find_insn_list (tmp, LOG_LINKS (last_scheduled_insn));
+      if (link == 0 || insn_cost (tmp, link, last_scheduled_insn) == 1)
 	tmp_class = 3;
-      else if (REG_NOTE_KIND (tmp_dep) == 0)
+      else if (REG_NOTE_KIND (link) == 0) /* Data dependence.  */
 	tmp_class = 1;
       else
 	tmp_class = 2;
 
-      tmp2_dep = find_insn_list (tmp2, LOG_LINKS (last_scheduled_insn));
-      if (tmp2_dep == 0 || insn_cost (tmp2) == 1)
+      link = find_insn_list (tmp2, LOG_LINKS (last_scheduled_insn));
+      if (link == 0 || insn_cost (tmp2, link, last_scheduled_insn) == 1)
 	tmp2_class = 3;
-      else if (REG_NOTE_KIND (tmp2_dep) == 0)
+      else if (REG_NOTE_KIND (link) == 0) /* Data dependence.  */
 	tmp2_class = 1;
       else
 	tmp2_class = 2;
@@ -1866,25 +2236,20 @@ birthing_insn_p (pat)
   return 0;
 }
 
-/* If PREV is an insn which is immediately ready to execute, return 1,
-   otherwise return 0.  We may adjust its priority if that will help shorten
-   register lifetimes.  */
+/* PREV is an insn that is ready to execute.  Adjust its priority if that
+   will help shorten register lifetimes.  */
 
-static int
-launch_link (prev)
+__inline static void
+adjust_priority (prev)
      rtx prev;
 {
-  rtx pat = PATTERN (prev);
-  rtx note;
-  /* MAX of (a) number of cycles needed by prev
-	    (b) number of cycles before needed resources are free.  */
-  int n_cycles = insn_cost (prev);
-  int n_deaths = 0;
-
   /* Trying to shorten register lives after reload has completed
      is useless and wrong.  It gives inaccurate schedules.  */
   if (reload_completed == 0)
     {
+      rtx note;
+      int n_deaths = 0;
+
       for (note = REG_NOTES (prev); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_DEAD)
 	  n_deaths += 1;
@@ -1905,7 +2270,7 @@ launch_link (prev)
 	  INSN_PRIORITY (prev) >>= 1;
 	  break;
 	case 0:
-	  if (birthing_insn_p (pat))
+	  if (birthing_insn_p (PATTERN (prev)))
 	    {
 	      int max = max_priority;
 
@@ -1915,31 +2280,30 @@ launch_link (prev)
 	  break;
 	}
     }
-
-  if (n_cycles <= 1)
-    return 1;
-  queue_insn (prev, n_cycles);
-  return 0;
 }
 
 /* INSN is the "currently executing insn".  Launch each insn which was
    waiting on INSN (in the backwards dataflow sense).  READY is a
    vector of insns which are ready to fire.  N_READY is the number of
-   elements in READY.  */
+   elements in READY.  CLOCK is the current virtual cycle.  */
 
 static int
-launch_links (insn, ready, n_ready)
+schedule_insn (insn, ready, n_ready, clock)
      rtx insn;
      rtx *ready;
      int n_ready;
+     int clock;
 {
   rtx link;
   int new_ready = n_ready;
 
+  if (MAX_BLOCKAGE > 1)
+    schedule_unit (insn_unit (insn), insn, clock);
+
   if (LOG_LINKS (insn) == 0)
     return n_ready;
 
-  /* This is used by the function launch_link above.  */
+  /* This is used by the function adjust_priority above.  */
   if (n_ready > 0)
     max_priority = MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn));
   else
@@ -1948,10 +2312,127 @@ launch_links (insn, ready, n_ready)
   for (link = LOG_LINKS (insn); link != 0; link = XEXP (link, 1))
     {
       rtx prev = XEXP (link, 0);
+      int cost = insn_cost (prev, link, insn);
 
-      if ((INSN_REF_COUNT (prev) -= 1) == 0 && launch_link (prev))
-	ready[new_ready++] = prev;
+      if ((INSN_REF_COUNT (prev) -= 1) != 0)
+	{
+	  /* We satisfied one requirement to fire PREV.  Record the earliest
+	     time when PREV can fire.  No need to do this if the cost is 1,
+	     because PREV can fire no sooner than the next cycle.  */
+	  if (cost > 1)
+	    INSN_TICK (prev) = MAX (INSN_TICK (prev), clock + cost);
+	}
+      else
+	{
+	  /* We satisfied the last requirement to fire PREV.  Ensure that all
+	     timing requirements are satisfied.  */
+	  if (INSN_TICK (prev) - clock > cost)
+	    cost = INSN_TICK (prev) - clock;
+
+	  /* Adjust the priority of PREV and either put it on the ready
+	     list or queue it.  */
+	  adjust_priority (prev);
+	  if (cost <= 1)
+	    ready[new_ready++] = prev;
+	  else
+	    queue_insn (prev, cost);
+	}
     }
+
+  return new_ready;
+}
+
+/* Given N_READY insns in the ready list READY at time CLOCK, queue
+   those that are blocked due to function unit hazards and rearrange
+   the remaining ones to minimize subsequent function unit hazards.  */
+
+static int
+schedule_select (ready, n_ready, clock, file)
+     rtx *ready;
+     int n_ready, clock;
+     FILE *file;
+{
+  int pri = INSN_PRIORITY (ready[0]);
+  int i, j, k, q, cost, best_cost, best_insn = 0, new_ready = n_ready;
+  rtx insn;
+
+  /* Work down the ready list in groups of instructions with the same
+     priority value.  Queue insns in the group that are blocked and
+     select among those that remain for the one with the largest
+     potential hazard.  */
+  for (i = 0; i < n_ready; i = j)
+    {
+      int opri = pri;
+      for (j = i + 1; j < n_ready; j++)
+	if ((pri = INSN_PRIORITY (ready[j])) != opri)
+	  break;
+
+      /* Queue insns in the group that are blocked.  */
+      for (k = i, q = 0; k < j; k++)
+	{
+	  insn = ready[k];
+	  if ((cost = actual_hazard (insn_unit (insn), insn, clock, 0)) != 0)
+	    {
+	      q++;
+	      ready[k] = 0;
+	      queue_insn (insn, cost);
+	      if (file)
+		fprintf (file, "\n;; blocking insn %d for %d cycles",
+			 INSN_UID (insn), cost);
+	    }
+	}
+      new_ready -= q;
+
+      /* Check the next group if all insns were queued.  */
+      if (j - i - q == 0)
+	continue;
+
+      /* If more than one remains, select the first one with the largest
+	 potential hazard.  */
+      else if (j - i - q > 1)
+	{
+	  best_cost = -1;
+	  for (k = i; k < j; k++)
+	    {
+	      if ((insn = ready[k]) == 0)
+		continue;
+	      if ((cost = potential_hazard (insn_unit (insn), insn, 0))
+		  > best_cost)
+		{
+		  best_cost = cost;
+		  best_insn = k;
+		}
+	    }
+	}
+      /* We have found a suitable insn to schedule.  */
+      break;
+    }
+
+  /* Move the best insn to be front of the ready list.  */
+  if (best_insn != 0)
+    {
+      if (file)
+	{
+	  fprintf (file, ", now");
+	  for (i = 0; i < n_ready; i++)
+	    if (ready[i])
+	      fprintf (file, " %d", INSN_UID (ready[i]));
+	  fprintf (file, "\n;; insn %d has a greater potential hazard",
+		   INSN_UID (ready[best_insn]));
+	}
+      for (i = best_insn; i > 0; i--)
+	{
+	  insn = ready[i-1];
+	  ready[i-1] = ready[i];
+	  ready[i] = insn;
+	}
+    }
+
+  /* Compact the ready list.  */
+  if (new_ready < n_ready)
+    for (i = j = 0; i < n_ready; i++)
+      if (ready[i])
+	ready[j++] = ready[i];
 
   return new_ready;
 }
@@ -2310,6 +2791,7 @@ schedule_block (b, file)
   rtx *ready, link;
   int i, j, n_ready = 0, new_ready, n_insns = 0;
   int sched_n_insns = 0;
+  int clock;
 #define NEED_NOTHING	0
 #define NEED_HEAD	1
 #define NEED_TAIL	2
@@ -2338,6 +2820,7 @@ schedule_block (b, file)
   bzero (reg_last_uses, i * sizeof (rtx));
   reg_last_sets = (rtx *) alloca (i * sizeof (rtx));
   bzero (reg_last_sets, i * sizeof (rtx));
+  clear_units ();
 
   /* Remove certain insns at the beginning from scheduling,
      by advancing HEAD.  */
@@ -2438,14 +2921,15 @@ schedule_block (b, file)
   insn = tail;
 
   /* For all branches, calls, uses, and cc0 setters, force them to remain
-     in order at the end of the block by giving them high priorities.
-     There may be notes present, and prev_head may also be a note.
+     in order at the end of the block by adding dependencies and giving
+     the last a high priority.  There may be notes present, and prev_head
+     may also be a note.
 
      Branches must obviously remain at the end.  Calls should remain at the
      end since moving them results in worse register allocation.  Uses remain
      at the end to ensure proper register allocation.  cc0 setters remaim
      at the end because they can't be moved away from their cc0 user.  */
-  i = 0;
+  last = 0;
   while (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
 	 || (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
 #ifdef HAVE_cc0
@@ -2456,10 +2940,18 @@ schedule_block (b, file)
       if (GET_CODE (insn) != NOTE)
 	{
 	  priority (insn);
-	  ready[n_ready++] = insn;
-	  INSN_PRIORITY (insn) = TAIL_PRIORITY - i;
-	  i++;
-	  INSN_REF_COUNT (insn) = 0;
+	  if (last == 0)
+	    {
+	      ready[n_ready++] = insn;
+	      INSN_PRIORITY (insn) = TAIL_PRIORITY - i;
+	      INSN_REF_COUNT (insn) = 0;
+	    }
+	  else if (! find_insn_list (insn, LOG_LINKS (last)))
+	    {
+	      add_dependence (last, insn, REG_DEP_ANTI);
+	      INSN_REF_COUNT (insn)++;
+	    }
+	  last = insn;
 
 	  /* Skip over insns that are part of a group.  */
 	  while (SCHED_GROUP_P (insn))
@@ -2488,7 +2980,17 @@ schedule_block (b, file)
 	{
 	  priority (insn);
 	  if (INSN_REF_COUNT (insn) == 0)
-	    ready[n_ready++] = insn;
+	    {
+	      if (last == 0)
+		ready[n_ready++] = insn;
+	      else
+		{
+		  /* Make this dependent on the last of the instructions
+		     that must remain in order at the end of the block.  */
+		  add_dependence (last, insn, REG_DEP_ANTI);
+		  INSN_REF_COUNT (insn) = 1;
+		}
+	    }
 	  if (SCHED_GROUP_P (insn))
 	    {
 	      while (SCHED_GROUP_P (insn))
@@ -2788,10 +3290,10 @@ schedule_block (b, file)
 
   /* Now HEAD and TAIL are going to become disconnected
      entirely from the insn chain.  */
-  tail = ready[0];
+  tail = 0;
 
   /* Q_SIZE will always be zero here.  */
-  q_ptr = 0;
+  q_ptr = 0; clock = 0;
   bzero (insn_queue, sizeof (insn_queue));
 
   /* Now, perform list scheduling.  */
@@ -2807,15 +3309,15 @@ schedule_block (b, file)
   new_ready = n_ready;
   while (sched_n_insns < n_insns)
     {
-      q_ptr = NEXT_Q (q_ptr);
+      q_ptr = NEXT_Q (q_ptr); clock++;
 
       /* Add all pending insns that can be scheduled without stalls to the
 	 ready list.  */
       for (insn = insn_queue[q_ptr]; insn; insn = NEXT_INSN (insn))
 	{
 	  if (file)
-	    fprintf (file, ";; launching %d before %d with no stalls\n",
-		     INSN_UID (insn), INSN_UID (last));
+	    fprintf (file, ";; launching %d before %d with no stalls at T-%d\n",
+		     INSN_UID (insn), INSN_UID (last), clock);
 	  ready[new_ready++] = insn;
 	  q_size -= 1;
 	}
@@ -2827,14 +3329,14 @@ schedule_block (b, file)
 	{
 	  register int stalls;
 
-	  for (stalls = 1; stalls < Q_SIZE; stalls++)
+	  for (stalls = 1; stalls < INSN_QUEUE_SIZE; stalls++)
 	    if (insn = insn_queue[NEXT_Q_AFTER (q_ptr, stalls)])
 	      {
 		for (; insn; insn = NEXT_INSN (insn))
 		  {
 		    if (file)
-		      fprintf (file, ";; issue insn %d before %d with %d stalls\n",
-			       INSN_UID (insn), INSN_UID (last), stalls);
+		      fprintf (file, ";; launching %d before %d with %d stalls at T-%d\n",
+			       INSN_UID (insn), INSN_UID (last), stalls, clock);
 		    ready[new_ready++] = insn;
 		    q_size -= 1;
 		  }
@@ -2842,24 +3344,54 @@ schedule_block (b, file)
 		break;
 	      }
 
-#if 0
-	  /* This looks logically correct, but on the SPEC benchmark set on
-	     the SPARC, I get better code without it.  */
-	  q_ptr = NEXT_Q_AFTER (q_ptr, stalls);
-#endif
+	  q_ptr = NEXT_Q_AFTER (q_ptr, stalls); clock += stalls;
 	}
 
       /* There should be some instructions waiting to fire.  */
       if (new_ready == 0)
 	abort ();
 
-      /* Sort the ready list and choose the best insn to schedule.
+      if (file)
+	{
+	  fprintf (file, ";; ready list at T-%d:", clock);
+	  for (i = 0; i < new_ready; i++)
+	    fprintf (file, " %d (%x)",
+		     INSN_UID (ready[i]), INSN_PRIORITY (ready[i]));
+	}
+
+      /* Sort the ready list and choose the best insn to schedule.  Select
+	 which insn should issue in this cycle and queue those that are
+	 blocked by function unit hazards.
+
 	 N_READY holds the number of items that were scheduled the last time,
 	 minus the one instruction scheduled on the last loop iteration; it
 	 is not modified for any other reason in this loop.  */
+
       SCHED_SORT (ready, new_ready, n_ready);
+      if (MAX_BLOCKAGE > 1)
+	{
+	  new_ready = schedule_select (ready, new_ready, clock, file);
+	  if (new_ready == 0)
+	    {
+	      if (file)
+		fprintf (file, "\n");
+	      continue;
+	    }
+	}
       n_ready = new_ready;
       last_scheduled_insn = insn = ready[0];
+
+      /* The first insn scheduled becomes the new tail.  */
+      if (tail == 0)
+	tail = insn;
+
+      if (file)
+	{
+	  fprintf (file, ", now");
+	  for (i = 0; i < n_ready; i++)
+	    fprintf (file, " %d", INSN_UID (ready[i]));
+	  fprintf (file, "\n");
+	}
 
       if (DONE_PRIORITY_P (insn))
 	abort ();
@@ -3000,7 +3532,7 @@ schedule_block (b, file)
 	 ahead of all others.  Mark INSN as scheduled by changing its
 	 priority to -1.  */
       INSN_PRIORITY (insn) = LAUNCH_PRIORITY;
-      new_ready = launch_links (insn, ready, n_ready);
+      new_ready = schedule_insn (insn, ready, n_ready, clock);
       INSN_PRIORITY (insn) = DONE_PRIORITY;
 
       /* Schedule all prior insns that must not be moved.  */
@@ -3019,7 +3551,7 @@ schedule_block (b, file)
 	  while (SCHED_GROUP_P (insn))
 	    {
 	      insn = PREV_INSN (insn);
-	      new_ready = launch_links (insn, ready, new_ready);
+	      new_ready = schedule_insn (insn, ready, new_ready, clock);
 	      INSN_PRIORITY (insn) = DONE_PRIORITY;
 
 	      sched_n_insns += 1;
@@ -3128,8 +3660,8 @@ schedule_block (b, file)
 
   if (file)
     {
-      fprintf (file, ";; new basic block head = %d\n;; new basic block end = %d\n\n",
-	       INSN_UID (basic_block_head[b]), INSN_UID (basic_block_end[b]));
+      fprintf (file, ";; total time = %d\n;; new basic block head = %d\n;; new basic block end = %d\n\n",
+	       clock, INSN_UID (basic_block_head[b]), INSN_UID (basic_block_end[b]));
     }
 
   /* Yow! We're done!  */
@@ -3789,7 +4321,10 @@ schedule_insns (dump_file)
      for what these vectors do.  */
   insn_luid = (int *) alloca (max_uid * sizeof (int));
   insn_priority = (int *) alloca (max_uid * sizeof (int));
+  insn_tick = (int *) alloca (max_uid * sizeof (int));
   insn_costs = (short *) alloca (max_uid * sizeof (short));
+  insn_units = (short *) alloca (max_uid * sizeof (short));
+  insn_blockage = (unsigned int *) alloca (max_uid * sizeof (unsigned int));
   insn_ref_count = (int *) alloca (max_uid * sizeof (int));
 
   if (reload_completed == 0)
@@ -3840,7 +4375,10 @@ schedule_insns (dump_file)
 
   bzero (insn_luid, max_uid * sizeof (int));
   bzero (insn_priority, max_uid * sizeof (int));
+  bzero (insn_tick, max_uid * sizeof (int));
   bzero (insn_costs, max_uid * sizeof (short));
+  bzero (insn_units, max_uid * sizeof (short));
+  bzero (insn_blockage, max_uid * sizeof (unsigned int));
   bzero (insn_ref_count, max_uid * sizeof (int));
 
   /* Schedule each basic block, block by block.  */
