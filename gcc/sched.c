@@ -4174,8 +4174,28 @@ update_flow_info (notes, first, last, orig_insn)
 	}
       else if (! found_orig_dest)
 	{
-	  /* This should never happen.  */
-	  abort ();
+	  int i, regno;
+
+	  /* Should never reach here for a pseudo reg.  */
+	  if (REGNO (orig_dest) >= FIRST_PSEUDO_REGISTER)
+	    abort ();
+
+	  /* This can happen for a hard register, if the splitter
+	     does not bother to emit instructions which would be no-ops.
+	     We try to verify that this is the case by checking to see if
+	     the original instruction uses all of the registers that it
+	     set.  This case is OK, because deleting a no-op can not affect
+	     REG_DEAD notes on other insns.  If this is not the case, then
+	     abort.  */
+	  
+	  regno = REGNO (orig_dest);
+	  for (i = HARD_REGNO_NREGS (regno, GET_MODE (orig_dest)) - 1;
+	       i >= 0; i--)
+	    if (! refers_to_regno_p (regno + i, regno + i + 1, orig_insn,
+				     NULL_PTR))
+	      break;
+	  if (i >= 0)
+	    abort ();
 	}
     }
 

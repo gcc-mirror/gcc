@@ -1,3 +1,9 @@
+Thu Oct 29 19:05:17 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* sched.c (update_flow_info): Add code to ! found_orig_dest case to
+	handle deleted no-op moves of hard registers.
+	* haifa-sched.c (update_flow_info): Likewise.
+
 Thu Oct 29 18:07:47 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.md (reload_{in,out}{si,di}): Emit a USE of HILO at the end
