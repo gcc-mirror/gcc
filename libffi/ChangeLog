@@ -1,3 +1,8 @@
+2003-09-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libffi-dg.exp (libffi_target_compile): Search in
+	srcdir for ffi_mips.h.
+
 2003-09-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* src/prep_cif.c (initialize_aggregate): Include tail padding in
