@@ -49,6 +49,13 @@ Boston, MA 02111-1307, USA.  */
 	   to be defined for <math.h>.  */		\
         if (LONG_DOUBLE_TYPE_SIZE == 128)		\
           builtin_define ("__X_FLOAT");			\
+							\
+	/* Tru64 UNIX V4/V5 provide several ISO C94	\
+	   features protected by the corresponding	\
+	   __STDC_VERSION__ macro.  libstdc++ v3	\
+	   needs them as well.  */			\
+	if (c_dialect_cxx ())				\
+	  builtin_define ("__STDC_VERSION__=199409L");	\
     } while (0)
 
 /* Accept DEC C flags for multithreaded programs.  We use _PTHREAD_USE_D4

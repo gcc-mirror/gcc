@@ -1,3 +1,12 @@
+2003-12-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/alpha/osf.h (TARGET_OS_CPP_BUILTINS): Define
+	__STDC_VERSION__ to ISO C94 for C++.
+
+	* fixinc/inclhack.def (alpha_wchar): New fix.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/wchar.h: New file.
+
 2003-12-11  David Mosberger  <davidm@hpl.hp.com>
 
 	* unwind-libunwind.c (_Unwind_SetGR): Clear the NaT bit as
