@@ -245,6 +245,11 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   insv_bitsize = GET_MODE_BITSIZE (op_mode);
 #endif
 
+  /* It is wrong to have align==0, since every object is aligned at
+     least at a bit boundary.  This usually means a bug elsewhere.  */
+  if (align == 0)
+    abort ();
+
   /* Discount the part of the structure before the desired byte.
      We need to know how many bytes are safe to reference after it.  */
   if (total_size >= 0)
