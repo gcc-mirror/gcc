@@ -1540,10 +1540,11 @@ expand_call (exp, target, ignore)
 	/* If we are to promote the function arg to a wider mode,
 	   do it now.  */
 
-	if (GET_MODE (args[i].value) != VOIDmode
-	    && GET_MODE (args[i].value) != args[i].mode)
-	  args[i].value = convert_to_mode (args[i].mode, args[i].value,
-					   args[i].unsignedp);
+	if (args[i].mode != TYPE_MODE (TREE_TYPE (args[i].tree_value)))
+	  args[i].value
+	    = convert_modes (args[i].mode,
+			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+			     args[i].value, args[i].unsignedp);
       }
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
