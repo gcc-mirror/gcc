@@ -6801,7 +6801,7 @@ num_sign_bit_copies (x, mode)
     return 1;
 
   nonzero = nonzero_bits (x, mode);
-  return (nonzero == GET_MODE_MASK (mode)
+  return (nonzero & ((HOST_WIDE_INT) 1 << (bitwidth - 1))
 	  ? 1 : bitwidth - floor_log2 (nonzero) - 1);
 }
 
