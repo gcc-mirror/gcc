@@ -13093,10 +13093,6 @@ start_function (declspecs, declarator, attrs, flags)
   if (! hack_decl_function_context (decl1))
     temporary_allocation ();
   
-  /* Make sure that we always have a momntary obstack while we're in a
-     function body.  */
-  push_momentary ();
-
   ++function_depth;
 
   if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl1))
@@ -13675,9 +13671,6 @@ finish_function (lineno, flags)
   /* Set the BLOCK_SUPERCONTEXT of the outermost function scope to point
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
-
-  /* Undo the call to push_momentary in start_function.  */
-  pop_momentary ();
 
   /* Save away current state, if appropriate.  */
   if (!expanding_p && !processing_template_decl)

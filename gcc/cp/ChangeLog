@@ -1,5 +1,38 @@
 1999-10-27  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (make_temp_vec): Remove.
+	(make_scratch_vec): Likewise.
+	* call.c (add_function_candidate): Use make_tree_vec.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(add_template_candidate_real): Likewise.
+	* class.c (resolve_address_of_overloaded_function): Likewise.
+	* decl.c (start_function): Don't fool with the momentary obstack.
+	(finish_function): Likewise.
+	* init.c (expand_direct_vtbls_init): Likewise.
+	(begin_init_stmts): Likewise.
+	(finish_init_stmts): Likewise.
+	* pt.c (add_to_template_args): Use make_tree_vec.
+	(check_explicit_specialization): Likewise.
+	(coerce_template_parms): Likewise.
+	(lookup_template_class): Don't fool with the momentary obstack.
+	(instantiate_class_template): Likewise.
+	(tsubst_template_arg_vector): Use make_tree_vec.
+	(tsubst_aggr_type): Don't fool with the momentary obstack.
+	(tsubst_decl): Likewise.  Use make_tree_vec.
+	(try_one_overload): Likewise.
+	(try_class_unification):  Don't fool with the momentary obstack.
+	(get_bindings_real): Use make_tree_vec.
+	(set_mangled_name_for_template_decl): Likewise.
+	* rtti.c (synthesize_tinfo_fn): Don't fool with the momentary obstack.
+	* semantics.c (finish_expr_stmt): Likewise.
+	(finish_do_stmt): Likewise.
+	(finish_for_expr): Likewise.
+	(finish_switch_cond): Likewise.
+	(do_pushlevel): Likewise.
+	(do_poplevel): Likewise.
+	* tree.c (make_temp_vec): Remove.
+	
 	* dump.c (dequeue_and_dump): Dump HANDLERs and SAVE_EXPRs.  Dump
 	CLEANUP_P for a TRY_BLOCK.
 	* ir.texi: Document SAVE_EXPR.

@@ -105,7 +105,6 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = real_binfos ? TREE_VEC_LENGTH (real_binfos) : 0;
 
-  push_momentary ();
   for (i = 0; i < n_baselinks; i++)
     {
       tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
@@ -127,7 +126,6 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
       tree base_ptr = convert_pointer_to_real (binfo, addr);
       expand_virtual_init (real_binfo, base_ptr);
     }
-  pop_momentary ();
 }
 
 /* 348 - 351 */
@@ -975,7 +973,6 @@ begin_init_stmts (stmt_expr_p, compound_stmt_p)
      tree *stmt_expr_p;
      tree *compound_stmt_p;
 {
-  push_momentary ();
   *stmt_expr_p = begin_stmt_expr ();
   *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
 }
@@ -988,7 +985,6 @@ finish_init_stmts (stmt_expr, compound_stmt)
      tree stmt_expr;
      tree compound_stmt;
 {
-  pop_momentary ();
   finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
   stmt_expr = finish_stmt_expr (stmt_expr);
 
