@@ -5,6 +5,8 @@ Sat Jul 11 02:59:08 1998  Richard Earnshaw  <rearnsha@arm.com>
 	(splits for sign-extended HI & QI mode from memory):  Also propagate 
 	the volatile flag.
 
+	* configure.in (thumb-*-coff*): Don't cause fixincludes to be run.
+
 Fri Jul 10 19:06:59 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* varray.h: Include system.h if it hasn't already been included
