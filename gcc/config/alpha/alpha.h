@@ -560,6 +560,9 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
    On the Alpha, they trap.  */
 
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
+
+/* Our SIMD is all done on single integer registers.  */
+#define UNITS_PER_SIMD_WORD UNITS_PER_WORD
 
 /* Standard register usage.  */
 

@@ -1,3 +1,12 @@
+2004-09-24  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.h (UNITS_PER_SIMD_WORD): New.
+	* config/alpha/alpha.c (alpha_vector_mode_supported_p): Don't depend
+	on TARGET_MAX.
+	(alpha_expand_mov): Allow unaligned vectors.
+	(alpha_expand_unaligned_store): Use CONST0_RTX.
+	(TARGET_VECTORIZE_MISALIGNED_MEM_OK): New.
+
 2004-09-24 Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (dom_opt_finalize_block): Fix violation of strict
