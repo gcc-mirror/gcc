@@ -1,5 +1,15 @@
 2004-07-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	
+	* gimplify.c (gimplify_conversion): Remove stripping useless
+	conversions from here.
+	(gimplify_expr): Put it here, in place of call to STRIP_MAIN_TYPE_NOPS.
+	(gimplify_modify_expr_to_memcpy, gimplify_variable_sized_compare):
+	Unshare before substituting PLACEHOLDER_EXPR.
+	(gimplify_modify_expr_to_memset): Likewise.
+	Pass address of TO to memset, not TO itself.
+	(gimplify_init_constructor): Make copy of OBJECT so we have it each
+	time we make an expression (to match a PLACEHOLDER_EXPR).
+
 	* tree-ssa.c (tree_ssa_useless_type_conversion): Also look at
 	VIEW_CONVERT_EXPR and NON_LVALUE_EXPR.
 	* tree-ssa-ccp.c (fold_stmt): Call just STRIP_USELESS_TYPE_CONVERSION.

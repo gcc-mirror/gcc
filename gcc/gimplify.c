@@ -1422,10 +1422,6 @@ canonicalize_addr_expr (tree *expr_p)
 static enum gimplify_status
 gimplify_conversion (tree *expr_p)
 {  
-  /* Strip away as many useless type conversions as possible
-     at the toplevel.  */
-  STRIP_USELESS_TYPE_CONVERSION (*expr_p);
-
   /* If we still have a conversion at the toplevel, then strip
      away all but the outermost conversion.  */
   if (TREE_CODE (*expr_p) == NOP_EXPR || TREE_CODE (*expr_p) == CONVERT_EXPR)
@@ -2326,9 +2322,9 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, bool want_value)
   from = TREE_OPERAND (*expr_p, 1);
 
   t = TYPE_SIZE_UNIT (TREE_TYPE (to));
+  t = unshare_expr (t);
   t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, to);
   t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, from);
-  t = unshare_expr (t);
   args = tree_cons (NULL, t, NULL);
 
   t = build_fold_addr_expr (from);
@@ -2361,14 +2357,14 @@ gimplify_modify_expr_to_memset (tree *expr_p, bool want_value)
   to = TREE_OPERAND (*expr_p, 0);
 
   t = TYPE_SIZE_UNIT (TREE_TYPE (to));
-  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, to);
   t = unshare_expr (t);
+  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, to);
   args = tree_cons (NULL, t, NULL);
 
   args = tree_cons (NULL, integer_zero_node, args);
 
   to_ptr = build_fold_addr_expr (to);
-  args = tree_cons (NULL, to, args);
+  args = tree_cons (NULL, to_ptr, args);
   t = implicit_built_in_decls[BUILT_IN_MEMSET];
   t = build_function_call_expr (t, args);
 
@@ -2539,8 +2535,11 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	  {
 	    /* Zap the CONSTRUCTOR element list, which simplifies this case.
 	       Note that we still have to gimplify, in order to handle the
-	       case of variable sized types.  */
+	       case of variable sized types.  Make an unshared copy of
+	       OBJECT before that so we can match a PLACEHOLDER_EXPR to it
+	       later, if needed.  */
 	    CONSTRUCTOR_ELTS (ctor) = NULL_TREE;
+	    object = unshare_expr (TREE_OPERAND (*expr_p, 0));
 	    gimplify_stmt (expr_p);
 	    append_to_statement_list (*expr_p, pre_p);
 	  }
@@ -2568,12 +2567,12 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 		if (TREE_CODE (purpose) == RANGE_EXPR)
 		  abort ();
 
-		cref = build (ARRAY_REF, t, object, purpose,
+		cref = build (ARRAY_REF, t, unshare_expr (object), purpose,
 			      NULL_TREE, NULL_TREE);
 	      }
 	    else
-	      cref = build (COMPONENT_REF, TREE_TYPE (purpose), object,
-			    purpose, NULL_TREE);
+	      cref = build (COMPONENT_REF, TREE_TYPE (purpose),
+			    unshare_expr (object), purpose, NULL_TREE);
 
 	    init = build (MODIFY_EXPR, TREE_TYPE (purpose), cref, value);
 
@@ -2845,8 +2844,8 @@ gimplify_variable_sized_compare (tree *expr_p)
   tree args, t, dest;
 
   t = TYPE_SIZE_UNIT (TREE_TYPE (op0));
-  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, op0);
   t = unshare_expr (t);
+  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, op0);
   args = tree_cons (NULL, t, NULL);
   t = build_fold_addr_expr (op1);
   args = tree_cons (NULL, t, args);
@@ -3463,8 +3462,9 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
      remains the same.  */
   do
     {
-      /* Strip any uselessness.  */
-      STRIP_MAIN_TYPE_NOPS (*expr_p);
+      /* Strip away as many useless type conversions as possible
+	 at the toplevel.  */
+      STRIP_USELESS_TYPE_CONVERSION (*expr_p);
 
       /* Remember the expr.  */
       save_expr = *expr_p;
