@@ -1,3 +1,7 @@
+Thu Jun  4 01:39:24 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/980604-1.c: New test.
+
 Tue Jun  2 20:51:43 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980602-1.c: New test.
