@@ -266,6 +266,7 @@ extern jmethodID postFocusEventID;
 extern jmethodID postAdjustmentEventID;
 extern jmethodID postItemEventID;
 extern jmethodID postListItemEventID;
+extern jmethodID postTextEventID;
 extern jmethodID syncAttrsID;
 extern jclass gdkColor;
 extern jmethodID gdkColorID;

@@ -205,7 +205,7 @@ public class ActionEvent extends AWTEvent
     StringBuffer s = new StringBuffer(id == ACTION_PERFORMED
                                       ? "ACTION_PERFORMED,cmd="
                                       : "unknown type,cmd=");
-    s.append(actionCommand).append(",when=").append(when).append("modifiers");
+    s.append(actionCommand).append(",when=").append(when).append(",modifiers");
     int len = s.length();
     s.setLength(len + 1);
     if ((modifiers & META_MASK) != 0)
