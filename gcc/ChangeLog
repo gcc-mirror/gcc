@@ -1,3 +1,9 @@
+Mon Oct  5 18:08:31 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* rs6000.c (rs6000_stack_info): Remove extra paren.
+	(print_operand): Cast -1 to HOST_WIDE_INT before shifting it.
+	* optabs.c (init_optabs): Create Checker symbols in Pmode.
+
 Mon Oct  5 06:23:27 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (purge_addressof_1): Add new parm IN_DEST.
