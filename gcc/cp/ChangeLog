@@ -1,3 +1,9 @@
+Tue May 19 15:13:39 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (saveable_obstack): Declare.
+	(pushdecl): Copy TYPE_DECLs to the same obstack as the type they
+	declare, if necessary.
+
 Tue May 19 14:50:27 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* call.c (compare_qual): Remove.
