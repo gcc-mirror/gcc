@@ -3463,8 +3463,10 @@ assign_parms (fndecl, second_time)
 					   internal_arg_pointer, offset_rtx));
 
 	  /* If this is a memory ref that contains aggregate components,
-	     mark it as such for cse and loop optimize.  */
+	     mark it as such for cse and loop optimize.  Likewise if it
+	     is readonly.  */
 	  MEM_IN_STRUCT_P (stack_parm) = aggregate;
+	  RTX_UNCHANGING_P (stack_parm) = TREE_READONLY (parm);
 	}
 
       /* If this parameter was passed both in registers and in the stack,
