@@ -1,5 +1,9 @@
 2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.dg/bitfld-5.c: New test.
+
+2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
+
 	* gcc.c-torture/execute/20021120-3.c: New test.
 
 2002-11-20  Richard Sandiford  <rsandifo@redhat.com>

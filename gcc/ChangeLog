@@ -1,5 +1,10 @@
 2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
 
+	* stor-layout.c (place_field): Update rli->offset as well as
+	rli->bitpos.
+
+2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
+
 	* sched-deps.c (sched_analyze): Check HARD_REGNO_CALL_PART_CLOBBERED.
 
 2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
