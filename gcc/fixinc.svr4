@@ -812,6 +812,77 @@ if [ \! -z "$file_to_fix" ]; then
   fi
 fi
 
+# Sony NEWSOS 5.0 does not support the complete ANSI C standard.
+
+if [ -x /bin/sony ]; then
+  if /bin/sony; then
+
+    # Change <stdio.h> to not define __filbuf, __flsbuf, and __iob
+
+    file=stdio.h
+    base=`basename $file`
+    if [ -r ${LIB}/$file ]; then
+      file_to_fix=${LIB}/$file
+    else
+      if [ -r ${INPUT}/$file ]; then
+        file_to_fix=${INPUT}/$file
+      else
+        file_to_fix=""
+      fi
+    fi
+    if [ \! -z "$file_to_fix" ]; then
+      echo Checking $file_to_fix
+      cp $file_to_fix /tmp/$base
+      chmod +w /tmp/$base
+      sed -e '
+        s/__filbuf/_filbuf/g
+        s/__flsbuf/_flsbuf/g
+        s/__iob/_iob/g
+      ' /tmp/$base > /tmp/$base.sed
+      mv /tmp/$base.sed /tmp/$base
+      if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then
+        echo No change needed in $file_to_fix
+      else
+        echo Fixed $file_to_fix
+        rm -f ${LIB}/$file
+        cp /tmp/$base ${LIB}/$file
+      fi
+      rm -f /tmp/$base
+    fi
+
+    # Change <ctype.h> to not define __ctype
+
+    file=ctype.h
+    base=`basename $file`
+    if [ -r ${LIB}/$file ]; then
+      file_to_fix=${LIB}/$file
+    else
+      if [ -r ${INPUT}/$file ]; then
+        file_to_fix=${INPUT}/$file
+      else
+        file_to_fix=""
+      fi
+    fi
+    if [ \! -z "$file_to_fix" ]; then
+      echo Checking $file_to_fix
+      cp $file_to_fix /tmp/$base
+      chmod +w /tmp/$base
+      sed -e '
+        s/__ctype/_ctype/g
+      ' /tmp/$base > /tmp/$base.sed
+      mv /tmp/$base.sed /tmp/$base
+      if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then
+        echo No change needed in $file_to_fix
+      else
+        echo Fixed $file_to_fix
+        rm -f ${LIB}/$file
+        cp /tmp/$base ${LIB}/$file
+      fi
+      rm -f /tmp/$base
+    fi
+  fi
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
