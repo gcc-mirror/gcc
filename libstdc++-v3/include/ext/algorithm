@@ -56,6 +56,7 @@
 #ifndef _EXT_ALGORITHM
 #define _EXT_ALGORITHM
 
+#pragma GCC system_header
 #include <bits/std_algorithm.h>
 
 namespace __gnu_cxx
