@@ -58,6 +58,8 @@ Boston, MA 02111-1307, USA.  */
 static unsigned long higher_prime_number PARAMS ((unsigned long));
 static hashval_t hash_pointer PARAMS ((const void *));
 static int eq_pointer PARAMS ((const void *, const void *));
+static void htab_expand PARAMS ((htab_t));
+static void **find_empty_slot_for_expand  PARAMS ((htab_t, hashval_t));
 
 /* At some point, we could make these be NULL, and modify the
    hash-table routines to handle NULL specially; that would avoid
