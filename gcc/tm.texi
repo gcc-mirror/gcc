@@ -6830,7 +6830,9 @@ elements of a jump-table should have.
 
 @findex CASE_VECTOR_PC_RELATIVE
 @item CASE_VECTOR_PC_RELATIVE
-Define this macro if jump-tables should contain relative addresses.
+Define this macro to be a C expression to indicate when jump-tables
+should contain relative addresses.  If jump-tables never contain
+relative addresses, then you need not define this macro.
 
 @findex CASE_DROPS_THROUGH
 @item CASE_DROPS_THROUGH

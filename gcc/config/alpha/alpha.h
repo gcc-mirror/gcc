@@ -1502,13 +1502,14 @@ extern void alpha_init_expanders ();
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE SImode
 
-/* Define this if the tablejump instruction expects the table
-   to contain offsets from the address of the table.
-   Do not define this if the table should contain absolute addresses.
+/* Define as C expression which evaluates to nonzero if the tablejump
+   instruction expects the table to contain offsets from the address of the
+   table.
+   Do not define this if the table should contain absolute addresses. */
    On the Alpha, the table is really GP-relative, not relative to the PC
    of the table, but we pretend that it is PC-relative; this should be OK,
    but we should try to find some better way sometime.  */
-#define CASE_VECTOR_PC_RELATIVE
+#define CASE_VECTOR_PC_RELATIVE 1
 
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR

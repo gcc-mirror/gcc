@@ -1317,10 +1317,11 @@ do { char dstr[30];					\
    jumps to the default label instead.  */
 /* #define CASE_DROPS_THROUGH */
 
-/* We must use a PC relative entry for small tables.  It would be more
-   efficient to use an absolute entry for big tables, but this is not
-   a runtime choice yet.  */
-#define CASE_VECTOR_PC_RELATIVE
+/* Define as C expression which evaluates to nonzero if the tablejump
+   instruction expects the table to contain offsets from the address of the
+   table.
+   Do not define this if the table should contain absolute addresses. */
+#define CASE_VECTOR_PC_RELATIVE 1
 
 /* The switch instruction requires that the jump table immediately follow
    it. */

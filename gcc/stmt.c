@@ -63,6 +63,11 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_free free
 struct obstack stmt_obstack;
 
+/* Assume that case vectors are not pc-relative.  */
+#ifndef CASE_VECTOR_PC_RELATIVE
+#define CASE_VECTOR_PC_RELATIVE 0
+#endif
+
 /* Filename and line number of last line-number note,
    whether we actually emitted it or not.  */
 char *emit_filename;
@@ -5700,13 +5705,7 @@ expand_end_case (orig_index)
 	  /* Output the table */
 	  emit_label (table_label);
 
-	  /* This would be a lot nicer if CASE_VECTOR_PC_RELATIVE
-	     were an expression, instead of an #ifdef/#ifndef.  */
-	  if (
-#ifdef CASE_VECTOR_PC_RELATIVE
-	      1 ||
-#endif
-	      flag_pic)
+	  if (CASE_VECTOR_PC_RELATIVE || flag_pic)
 	    emit_jump_insn (gen_rtx (ADDR_DIFF_VEC, CASE_VECTOR_MODE,
 				     gen_rtx (LABEL_REF, Pmode, table_label),
 				     gen_rtvec_v (ncases, labelvec)));

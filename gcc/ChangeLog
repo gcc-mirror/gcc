@@ -1,3 +1,12 @@
+Fri Dec 19 17:31:11 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+	* expr.c (do_tablejump): Let CASE_VECTOR_PC_RELATIVE be an
+	expression.
+	* stmt.c (expand_end_case): Likewise.
+	* alpha.h (CASE_VECTOR_PC_RELATIVE): Update.
+	* fx80.h, gmicro.h, m68k.h, m88k.h, ns32k.h: Likewise.
+	* rs6000.h, sh.h, tahoe.h, v850.h vax.h z8k.h: Likewise.
+
 Tue Dec 16 15:14:09 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* objc/Make-lang.in: Create runtime-info.h and libobjc_entry.o in
