@@ -81,6 +81,9 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604: -D_ARCH_PPC} \
 %{mcpu=604e: -D_ARCH_PPC} \
 %{mcpu=620: -D_ARCH_PPC} \
+%{mcpu=740: -D_ARCH_PPC} \
+%{mcpu=750: -D_ARCH_PPC} \
+%{mcpu=801: -D_ARCH_PPC} \
 %{mcpu=821: -D_ARCH_PPC} \
 %{mcpu=823: -D_ARCH_PPC} \
 %{mcpu=860: -D_ARCH_PPC}"
@@ -134,6 +137,9 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604: -mppc} \
 %{mcpu=604e: -mppc} \
 %{mcpu=620: -mppc} \
+%{mcpu=740: -mppc} \
+%{mcpu=750: -mppc} \
+%{mcpu=801: -mppc} \
 %{mcpu=821: -mppc} \
 %{mcpu=823: -mppc} \
 %{mcpu=860: -mppc}"
@@ -391,15 +397,18 @@ extern int target_flags;
 
 /* Processor type.  Order must match cpu attribute in MD file.  */
 enum processor_type
- {PROCESSOR_RIOS1,
-  PROCESSOR_RIOS2,
-  PROCESSOR_MPCCORE,
-  PROCESSOR_PPC403,
-  PROCESSOR_PPC601,
-  PROCESSOR_PPC603,
-  PROCESSOR_PPC604,
-  PROCESSOR_PPC604e,
-  PROCESSOR_PPC620};
+ {
+   PROCESSOR_RIOS1,
+   PROCESSOR_RIOS2,
+   PROCESSOR_MPCCORE,
+   PROCESSOR_PPC403,
+   PROCESSOR_PPC601,
+   PROCESSOR_PPC603,
+   PROCESSOR_PPC604,
+   PROCESSOR_PPC604e,
+   PROCESSOR_PPC620,
+   PROCESSOR_PPC750
+};
 
 extern enum processor_type rs6000_cpu;
 
@@ -854,6 +863,14 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 #define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
   (COST) = rs6000_adjust_cost (INSN,LINK,DEP_INSN,COST)
+
+/* A C statement (sans semicolon) to update the integer scheduling priority
+   INSN_PRIORITY (INSN).  Reduce the priority to execute the INSN earlier,
+   increase the priority to execute INSN later.  Do not define this macro if
+   you do not need to adjust the scheduling priorities of insns.  */
+
+#define ADJUST_PRIORITY(INSN)						\
+  INSN_PRIORITY (INSN) = rs6000_adjust_priority (INSN, INSN_PRIORITY (INSN))
 
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
@@ -2280,6 +2297,7 @@ do {                                                                    \
       case PROCESSOR_PPC601:						\
         return COSTS_N_INSNS (5);					\
       case PROCESSOR_PPC603:						\
+      case PROCESSOR_PPC750:						\
         return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
 		? COSTS_N_INSNS (5)					\
 		: INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
@@ -2315,6 +2333,8 @@ do {                                                                    \
       case PROCESSOR_PPC604e:						\
       case PROCESSOR_PPC620:						\
 	return COSTS_N_INSNS (20);					\
+      case PROCESSOR_PPC750:						\
+        return COSTS_N_INSNS (19);					\
       }									\
   case FFS:								\
     return COSTS_N_INSNS (4);						\
@@ -3306,6 +3326,7 @@ extern void output_ascii ();
 extern void rs6000_gen_section_name ();
 extern void output_function_profiler ();
 extern int rs6000_adjust_cost ();
+extern int rs6000_adjust_priority ();
 extern void rs6000_trampoline_template ();
 extern int rs6000_trampoline_size ();
 extern void rs6000_initialize_trampoline ();
