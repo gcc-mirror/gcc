@@ -1,5 +1,8 @@
 2005-02-11  Ian Lance Taylor  <ian@airs.com>
 
+	* read-rtl.c (read_rtx_1): Give fatal error if we see a vector
+	with no elements.
+
 	* tree.c (build_function_type_list): Work correctly if there are
 	no arguments.
 
