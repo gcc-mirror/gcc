@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES " -Dvax -Dunix -Dultrix -Dbsd4_2 -D__vax -D__unix -D__ultrix -D__bsd4_2 -Asystem=unix -Asystem=bsd -Acpu=vax -Amachine=vax"
 
 /* These are as defined in /usr/include/sys/stdtypes.h.
-   These values are for ultrix 4.2 on the vax.  */
+   These values are for ultrix 4.2 on the VAX.  */
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 #define WCHAR_TYPE "unsigned int"

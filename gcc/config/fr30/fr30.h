@@ -297,7 +297,7 @@ extern int target_flags;
         there is no need to define this macro when the format is IEEE.
 
    VAX_FLOAT_FORMAT'
-        This code indicates the peculiar format used on the Vax.
+        This code indicates the peculiar format used on the VAX.
 
    UNKNOWN_FLOAT_FORMAT'
         This code indicates any other format.
@@ -842,7 +842,7 @@ enum reg_class
    variable number of bytes is passed, it is zero, and argument popping will
    always be the responsibility of the calling function.
 
-   On the Vax, all functions always pop their arguments, so the definition of
+   On the VAX, all functions always pop their arguments, so the definition of
    this macro is STACK-SIZE.  On the 68000, using the standard calling
    convention, no functions pop their arguments, so the value of the macro is
    always 0 in this case.  But an alternative calling convention is available

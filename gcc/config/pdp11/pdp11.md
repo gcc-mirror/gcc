@@ -1148,7 +1148,7 @@
   [(set_attr "length" "1,2,2,3")])
 
 ;;;;- and instructions
-;; Bit-and on the pdp (like on the vax) is done with a clear-bits insn.
+;; Bit-and on the pdp (like on the VAX) is done with a clear-bits insn.
 (define_expand "andsi3"
   [(set (match_operand:SI 0 "general_operand" "=g")
 	(and:SI (match_operand:SI 1 "general_operand" "0")

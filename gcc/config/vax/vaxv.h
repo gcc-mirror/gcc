@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  Vax sysV version.
+/* Definitions of target machine for GNU compiler.  VAX sysV version.
    Copyright (C) 1988, 1993, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

@@ -2314,7 +2314,7 @@ extern struct mips_frame_info current_frame_info;
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
-   On the vax, sp@- in a byte insn really pushes a word.  */
+   On the VAX, sp@- in a byte insn really pushes a word.  */
 
 /* #define PUSH_ROUNDING(BYTES) 0 */
 

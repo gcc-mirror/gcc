@@ -1620,7 +1620,7 @@ Represents the result of arithmetically shifting @var{x} left by @var{c}
 places.  @var{x} have mode @var{m}, a fixed-point machine mode.  @var{c}
 be a fixed-point mode or be a constant with mode @code{VOIDmode}; which
 mode is determined by the mode called for in the machine description
-entry for the left-shift instruction.  For example, on the Vax, the mode
+entry for the left-shift instruction.  For example, on the VAX, the mode
 of @var{c} is @code{QImode} regardless of @var{m}.
 
 @findex lshiftrt
@@ -2070,7 +2070,7 @@ valid for the mode of @var{lval}.
 @item (return)
 As the sole expression in a pattern, represents a return from the
 current function, on machines where this can be done with one
-instruction, such as Vaxes.  On machines where a multi-instruction
+instruction, such as VAXen.  On machines where a multi-instruction
 ``epilogue'' must be executed in order to return from the function,
 returning is done by jumping to a label which precedes the epilogue, and
 the @code{return} expression code is never used.

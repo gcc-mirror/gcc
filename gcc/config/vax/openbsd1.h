@@ -1,4 +1,4 @@
-/* Configuration fragment for a vax OpenBSD target.
+/* Configuration fragment for a VAX OpenBSD target.
    Copyright (C) 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

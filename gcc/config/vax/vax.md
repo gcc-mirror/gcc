@@ -1,4 +1,4 @@
-;; Machine description for GNU compiler, Vax Version
+;; Machine description for GNU compiler, VAX Version
 ;; Copyright (C) 1987, 1988, 1991, 1994, 1995, 1996, 1998, 1999, 2000, 2001
 ;; Free Software Foundation, Inc.
 
@@ -122,7 +122,7 @@
   ""
   "bitb %0,%1")
 
-;; The vax has no sCOND insns.  It does have add/subtract with carry
+;; The VAX has no sCOND insns.  It does have add/subtract with carry
 ;; which could be used to implement the sltu and sgeu patterns.  However,
 ;; to do this properly requires a complete rewrite of the compare insns
 ;; to keep them together with the sltu/sgeu insns until after the
@@ -146,7 +146,7 @@
    clrf %0
    movf %1,%0")
 
-;; Some vaxes don't support this instruction.
+;; Some VAXen don't support this instruction.
 ;;(define_insn "movti"
 ;;  [(set (match_operand:TI 0 "general_operand" "=g")
 ;;	(match_operand:TI 1 "general_operand" "g"))]
@@ -161,7 +161,7 @@
    clrq %0
    movq %D1,%0")
 
-;; The VAX move instructions have space-time tradeoffs.  On a microVAX
+;; The VAX move instructions have space-time tradeoffs.  On a MicroVAX
 ;; register-register mov instructions take 3 bytes and 2 CPU cycles.  clrl
 ;; takes 2 bytes and 3 cycles.  mov from constant to register takes 2 cycles
 ;; if the constant is smaller than 4 bytes, 3 cycles for a longword
@@ -525,7 +525,7 @@
    but it not faster on other models.
 
    "movab #(r1),r2" is usually shorter than "addl3 #,r1,r2", and is
-   faster on a VAX 3, but some VAXes (e.g. VAX 9000) will stall if
+   faster on a VAX 3, but some VAXen (e.g. VAX 9000) will stall if
    a register is used in an address too soon after it is set.
    Compromise by using movab only when it is shorter than the add
    or the base register in the address is one of sp, ap, and fp,
@@ -920,7 +920,7 @@
 ;  ""
 ;  "ediv %2,%1,%0,%3")
 
-;; Bit-and on the vax is done with a clear-bits insn.
+;; Bit-and on the VAX is done with a clear-bits insn.
 (define_expand "andsi3"
   [(set (match_operand:SI 0 "general_operand" "=g")
 	(and:SI (not:SI (match_operand:SI 1 "general_operand" "g"))
@@ -1159,7 +1159,7 @@
   ""
   "mcomb %1,%0")
 
-;; Arithmetic right shift on the vax works by negating the shift count,
+;; Arithmetic right shift on the VAX works by negating the shift count,
 ;; then emitting a right shift with the shift count negated.  This means
 ;; that all actual shift counts in the RTL will be positive.  This 
 ;; prevents converting shifts to ZERO_EXTRACTs with negative positions,
@@ -1212,7 +1212,7 @@
   return \"ashl %2,%1,%0\";
 }")
 
-;; Arithmetic right shift on the vax works by negating the shift count.
+;; Arithmetic right shift on the VAX works by negating the shift count.
 (define_expand "ashrdi3"
   [(set (match_operand:DI 0 "general_operand" "=g")
 	(ashiftrt:DI (match_operand:DI 1 "general_operand" "g")
@@ -1257,7 +1257,7 @@
   operands[4] = gen_lowpart (QImode, operands[2]);
 }")
 
-;; Rotate right on the vax works by negating the shift count.
+;; Rotate right on the VAX works by negating the shift count.
 (define_expand "rotrsi3"
   [(set (match_operand:SI 0 "general_operand" "=g")
 	(rotatert:SI (match_operand:SI 1 "general_operand" "g")

@@ -6266,7 +6266,7 @@ extract_left_shift (x, count)
 
    Return the new rtx, usually just X.
 
-   Also, for machines like the Vax that don't have logical shift insns,
+   Also, for machines like the VAX that don't have logical shift insns,
    try to convert logical to arithmetic shift operations in cases where
    they are equivalent.  This undoes the canonicalizations to logical
    shifts done elsewhere.
@@ -8954,7 +8954,7 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
       /* We simplify the tests below and elsewhere by converting
 	 ASHIFTRT to LSHIFTRT if we know the sign bit is clear.
 	 `make_compound_operation' will convert it to a ASHIFTRT for
-	 those machines (such as Vax) that don't have a LSHIFTRT.  */
+	 those machines (such as VAX) that don't have a LSHIFTRT.  */
       if (GET_MODE_BITSIZE (shift_mode) <= HOST_BITS_PER_WIDE_INT
 	  && code == ASHIFTRT
 	  && ((nonzero_bits (varop, shift_mode)
