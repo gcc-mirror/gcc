@@ -1177,7 +1177,7 @@ if [ -r ${LIB}/$file ] \
 fi
 
 # Don't use or define the name va_list in stdio.h.
-# This is for ANSI and also to interoperate properly with gvarargs.h.
+# This is for ANSI and also to interoperate properly with gcc's varargs.h.
 file=stdio.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
