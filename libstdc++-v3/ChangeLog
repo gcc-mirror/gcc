@@ -25,6 +25,8 @@
 	(basic_ios::_M_fill_init): New.
 	(basic_ios::fill()): Delay dealing with _M_fill.
 	Adjust comment. 
+	* ios.cc (ios_base::ios_base()): Initialize _M_callbacks, _M_words.
+	(ios_base::_M_call_callbacks): Adjust.
 	* testsuite/27_io/ios_init.cc (test02): Adjust testcase.
 
 2002-02-28  Loren Rittle  <ljrittle@acm.org>
