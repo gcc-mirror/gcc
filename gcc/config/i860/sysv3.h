@@ -125,9 +125,9 @@ extern char *current_function_original_name;
 
 
 #undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\"\n"
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\""
 #undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"x\"\n"
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"x\""
 
 /* Add definitions to support the .tdesc section as specified in the svr4
    ABI for the i860.  */
