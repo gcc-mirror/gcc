@@ -1,3 +1,27 @@
+Sat Oct 31 10:53:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* warn_summary (longLineFilter): New shell function to encapsulate
+ 	this functionality.  It is off by default, only active if -llf
+ 	flag is specified.
+  	(subdirectoryFilter): Fix bug in filtering which made some
+ 	subdirectory warnings erroneously appear in the toplevel set.
+  	(stageNfilter): Renamed from `stageNwarns'.  Updated to collect
+ 	warnings from stage1 as well as stage0, which means warnings from
+ 	outside the bootstrap directory.  Eg, the libraries, etc.
+  	(warningFilter): New shell function to encapsulate this
+ 	functionality.
+	(keywordFilter): New shell function to encapsulate this
+ 	functionality.
+
+	Store data in a temp file rather than calculating it 3x.  Arrange
+	to remove it on exit and signals.
+
+	Add -pass/-wpass flags to do "pass through" (i.e. manual
+ 	inspection) of bootstrap output from a particular stageN as well
+ 	as language subdirs.
+
+	Add better comments/documentation.	
+
 Sat Oct 31 16:39:31 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* egcs_update: Add comment about keeping the FAQ synchronized.
