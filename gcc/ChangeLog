@@ -1,3 +1,7 @@
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md: Remove mips16 define_peepholes.
+
 2004-07-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (init_pre): Connect infinite loops to exit.
