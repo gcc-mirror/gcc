@@ -1,3 +1,10 @@
+2002-05-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md: Name the unspecs with define_constant.
+	(*HILO_delay): Rename to 'hilo_delay' (no star).
+	(reload_indi): Replace gen_rtx_UNSPEC with gen_hilo_delay.
+	(reload_outdi, reload_outsi): Likewise.
+
 2002-05-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* toplev.c: Fix formatting.
