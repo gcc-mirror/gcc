@@ -100,9 +100,9 @@
 ;; store, fpstore: 3, no D-cache operations should be scheduled.
 ;; fpload: 3 (really 2 for flops, but I don't think we can specify that).
 
-(define_function_unit "memory" 1 1 (eq_attr "type" "load") 2 0)
-(define_function_unit "memory" 1 1 (eq_attr "type" "store,fpstore") 3 0)
-(define_function_unit "memory" 1 1 (eq_attr "type" "fpload") 3 0)
+(define_function_unit "memory" 1 0 (eq_attr "type" "load") 2 0)
+(define_function_unit "memory" 1 0 (eq_attr "type" "store,fpstore") 3 3)
+(define_function_unit "memory" 1 0 (eq_attr "type" "fpload") 2 0)
 
 ;; The Timex has two floating-point units: ALU, and MUL/DIV/SQRT unit.
 ;; Timings:
@@ -367,83 +367,126 @@
 ;; is the reverse of what we want.
 
 (define_insn "scc"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operator:SI 3 "comparison_operator"
-			   [(match_operand:SI 1 "register_operand" "r,r")
-			    (match_operand:SI 2  "arith11_operand" "r,I")]))]
+			   [(match_operand:SI 1 "register_operand" "r")
+			    (match_operand:SI 2  "arith11_operand" "rI")]))]
   ""
-  "*
-{
-  if (which_alternative == 0)
-    return \"comclr,%N3 %1,%2,%0\;ldi 1,%0\";
-  else
-    {
-      if (!(GET_CODE (operands[3]) == EQ || GET_CODE (operands[3]) == NE))
-	PUT_CODE (operands[3], reverse_relop (GET_CODE (operands[3])));
-      return \"comiclr,%N3 %2,%1,%0\;ldi 1,%0\";
-    }
-}"
-  [(set_attr "type" "binary,binary")
-   (set_attr "length" "2,2")])
+  "com%I2clr,%B3 %2,%1,%0\;ldi 1,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
 
 ;; Combiner patterns for common operations performed with the output
 ;; from an scc insn (negscc and incscc).  
 (define_insn "negscc"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg (match_operator:SI 3 "comparison_operator"
-	       [(match_operand:SI 1 "register_operand" "r,r")
-		(match_operand:SI 2  "arith11_operand" "r,I")])))]
+	       [(match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2  "arith11_operand" "rI")])))]
   ""
-  "*
-{
-  if (which_alternative == 0)
-    return \"comclr,%N3 %1,%2,%0\;ldi -1,%0\";
-  else
-    {
-      if (!(GET_CODE (operands[3]) == EQ || GET_CODE (operands[3]) == NE))
-	PUT_CODE (operands[3], reverse_relop (GET_CODE (operands[3])));
-      return \"comiclr,%N3 %2,%1,%0\;ldi -1,%0\";
-    }
-}"
+  "com%I2clr,%B3 %2,%1,%0\;ldi -1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "2")])
 
-;; add/sub the output from an scc with another operand.  This simply
-;; adds or subtracts 1 from the other operand.
+;; Patterns for adding/subtracting the result of a boolean expression from
+;; a register.  First we have special patterns that make use of the carry
+;; bit, and output only two instructions.  For the cases we can't in
+;; general do in two instructions, the incscc pattern at the end outputs
+;; two or three instructions.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (leu:SI (match_operand:SI 2 "register_operand" "r")
+			 (match_operand:SI 3 "arith11_operand" "rI"))
+		 (match_operand:SI 1 "register_operand" "r")))]
+  ""
+  "sub%I3 %3,%2,0\;addc 0,%1,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
+
+; This need only accept registers for op3, since canonicalization
+; replaces geu with gtu when op3 is an integer.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (geu:SI (match_operand:SI 2 "register_operand" "r")
+			 (match_operand:SI 3 "register_operand" "r"))
+		 (match_operand:SI 1 "register_operand" "r")))]
+  ""
+  "sub %2,%3,0\;addc 0,%1,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
+
+; Match only integers for op3 here.  This is used as canonical form of the
+; geu pattern when op3 is an integer.  Don't match registers since we can't
+; make better code than the general incscc pattern.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (gtu:SI (match_operand:SI 2 "register_operand" "r")
+			 (match_operand:SI 3 "int11_operand" "I"))
+		 (match_operand:SI 1 "register_operand" "r")))]
+  ""
+  "addi %k3,%2,0\;addc 0,%1,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
+
 (define_insn "incscc"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
- 	(match_operator 5 "incscc_operator"
- 	  [(match_operand:SI 1 "register_operand" "0,r")
- 	   (match_operator:SI 4 "comparison_operator"
- 	     [(match_operand:SI 2 "register_operand" "r,r")
- 	      (match_operand:SI 3 "arith11_operand" "rI,rI")])]))]
- 	     
-   ""
-   "*
- {
-   if (GET_CODE (operands[3]) != CONST_INT)
-     output_asm_insn (\"comclr,%N4 %2,%3,0\", operands);
-   else
-     {
-       if (! (GET_CODE (operands[4]) == EQ || GET_CODE (operands[4]) == NE))
- 	PUT_CODE (operands[4], reverse_relop (GET_CODE (operands[4])));
-       output_asm_insn (\"comiclr,%N4 %3,%2,0\", operands);
-     }
-   if (which_alternative == 0)
-     {
-      if (GET_CODE (operands[5]) == MINUS)
-	return \"addi -1,%0,%0\";
-      else
-	return \"addi 1,%0,%0\";
-     }
-   else
-     {
-      if (GET_CODE (operands[5]) == MINUS)
-	return \"addi,tr -1,%1,%0\;copy %1,%0\";
-      else
-	return \"addi,tr 1,%1,%0\;copy %1,%0\";
-     }
- }"
+ 	(plus:SI (match_operator:SI 4 "comparison_operator"
+		    [(match_operand:SI 2 "register_operand" "r,r")
+		     (match_operand:SI 3 "arith11_operand" "rI,rI")])
+		 (match_operand:SI 1 "register_operand" "0,?r")))]
+  ""
+  "@
+   com%I3clr,%B4 %3,%2,0\;addi 1,%0,%0
+   com%I3clr,%B4 %3,%2,0\;addi,tr 1,%1,%0\;copy %1,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "2,3")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (match_operand:SI 1 "register_operand" "r")
+		  (gtu:SI (match_operand:SI 2 "register_operand" "r")
+			  (match_operand:SI 3 "arith11_operand" "rI"))))]
+  ""
+  "sub%I3 %3,%2,0\;subb %1,0,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
+
+; This need only accept registers for op3, since canonicalization
+; replaces ltu with leu when op3 is an integer.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (match_operand:SI 1 "register_operand" "r")
+		  (ltu:SI (match_operand:SI 2 "register_operand" "r")
+			  (match_operand:SI 3 "register_operand" "r"))))]
+  ""
+  "sub %2,%3,0\;subb %1,0,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
+
+; Match only integers for op3 here.  This is used as canonical form of the
+; ltu pattern when op3 is an integer.  Don't match registers since we can't
+; make better code than the general incscc pattern.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (match_operand:SI 1 "register_operand" "r")
+		  (leu:SI (match_operand:SI 2 "register_operand" "r")
+			  (match_operand:SI 3 "int11_operand" "I"))))]
+  ""
+  "addi %k3,%2,0\;subb %1,0,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
+
+(define_insn "decscc"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(minus:SI (match_operand:SI 1 "register_operand" "0,?r")
+		  (match_operator:SI 4 "comparison_operator"
+		     [(match_operand:SI 2 "register_operand" "r,r")
+		      (match_operand:SI 3 "arith11_operand" "rI,rI")])))]
+  ""
+  "@
+   com%I3clr,%B4 %3,%2,0\;addi -1,%0,%0
+   com%I3clr,%B4 %3,%2,0\;addi,tr -1,%1,%0\;copy %1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "2,3")])
 
@@ -460,29 +503,21 @@
   ""
   "*
 {
-  if (GET_CODE (operands[4]) == CONST_INT)
-    {
-      if (! (GET_CODE (operands[5]) == EQ || GET_CODE (operands[5]) == NE))
-	PUT_CODE (operands[5], reverse_relop (GET_CODE (operands[5])));
-      output_asm_insn (\"comiclr,%C5 %4,%3,0\", operands);
-    }
-  else
-    output_asm_insn (\"comclr,%C5 %3,%4,0\", operands);
+  output_asm_insn (\"com%I4clr,%S5 %4,%3,0\", operands);
   if (which_alternative == 0)
     {
       if (GET_CODE (operands[2]) == CONST_INT)
-	output_asm_insn (\"ldi %2,%0\", operands);
+	return \"ldi %2,%0\";
       else 
-	output_asm_insn (\"copy %2,%0\", operands);
+	return \"copy %2,%0\";
     }
   else
     {
       if (GET_CODE (operands[1]) == CONST_INT)
-	output_asm_insn (\"ldi %1,%0\", operands);
+	return \"ldi %1,%0\";
       else 
-	output_asm_insn (\"copy %1,%0\", operands);
+	return \"copy %1,%0\";
     }
-  return \"\";
 }"
   [(set_attr "type" "multi,multi")
    (set_attr "length" "2,2")])
@@ -668,25 +703,15 @@
   ""
   "*
 {
-  if (which_alternative == 0)
-    return (get_attr_length (insn) == 1
-	    ? \"comb,%C3 %1,%2,%0%#\" : \"comclr,%N3 %1,%2,0\;bl %0,0%#\");
-    {
-      enum rtx_code comp_code = GET_CODE (operands[3]);
-      if (!(comp_code == EQ || comp_code == NE))
-	PUT_CODE (operands[3], reverse_relop (comp_code));
-      if (get_attr_length (insn) == 1)
-	return \"comib,%C3 %2,%1,%0%#\";
-      else
-	return \"comiclr,%N3 %2,%1,0\;bl %0,0%#\";
-    }
+  return (get_attr_length (insn) == 1
+	  ? \"com%I2b,%S3 %2,%1,%0%#\" : \"com%I2clr,%B3 %2,%1,0\;bl %0,0%#\");
 }"
-[(set_attr "type" "cbranch")
- (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
-						    (plus (pc) (const_int 2))))
-					(const_int 1023))
-				    (const_int 1)
-				    (const_int 2)))])
+  [(set_attr "type" "cbranch")
+   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
+						      (plus (pc) (const_int 2))))
+					  (const_int 1023))
+				      (const_int 1)
+				      (const_int 2)))])
 
 ;; Match the negated branch.
 
@@ -701,25 +726,15 @@
   ""
   "*
 {
-  if (which_alternative == 0)
-    return (get_attr_length (insn) == 1
-	    ? \"comb,%N3 %1,%2,%0%#\" : \"comclr,%C3 %1,%2,0\;bl %0,0%#\");
-    {
-      enum rtx_code comp_code = GET_CODE (operands[3]);
-      if (!(comp_code == EQ || comp_code == NE))
-	PUT_CODE (operands[3], reverse_relop (comp_code));
-      if (get_attr_length (insn) == 1)
-	return \"comib,%N3 %2,%1,%0%#\";
-      else
-	return \"comiclr,%C3 %2,%1,0%#\;bl %0,0%#\";
-    }
+  return (get_attr_length (insn) == 1
+	  ? \"com%I2b,%B3 %2,%1,%0%#\" : \"com%I2clr,%S3 %2,%1,0%#\;bl %0,0%#\");
 }"
-[(set_attr "type" "cbranch")
- (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
-						    (plus (pc) (const_int 2))))
-					(const_int 1023))
-				    (const_int 1)
-				    (const_int 2)))])
+  [(set_attr "type" "cbranch")
+   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
+						      (plus (pc) (const_int 2))))
+					  (const_int 1023))
+				      (const_int 1)
+				      (const_int 2)))])
 
 ;; Floating point branches
 
@@ -833,13 +848,13 @@
   "@
    copy %r1,%0
    ldi %1,%0
-   ldil l'%1,%0
+   ldil L'%1,%0
    zdepi %Z1,%0
    ldw%M1 %1,%0
    stw%M0 %r1,%0
    mtsar %r1
-   fstws %1,-16(30)\;ldw -16(30),%0
-   stw %1,-16(30)\;fldws -16(30),%0
+   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
+   stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fcpy,sgl %1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
    (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
@@ -968,7 +983,7 @@
 		   (match_operand:SI 2 "function_label_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" "=r"))]
   "TARGET_SHARED_LIBS"
-  "ldo RP'%G2(%1),%0\;extru,= %0,31,1,%3\;ldw -4(%%r27),%3\;add %0,%3,%0"
+  "ldo RP'%G2(%1),%0\;extru,= %0,31,1,%3\;ldw -4(0,%%r27),%3\;add %0,%3,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "4")])
 
@@ -998,13 +1013,13 @@
   "@
    copy %r1,%0
    ldi %1,%0
-   ldil l'%1,%0
+   ldil L'%1,%0
    zdepi %Z1,%0
    ldh%M1 %1,%0
    sth%M0 %r1,%0
    mtsar %r1
-   fstws %1,-16(30)\;ldw -16(30),%0
-   stw %1,-16(30)\;fldws -16(30),%0
+   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
+   stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fcpy,sgl %1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
    (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
@@ -1075,13 +1090,13 @@
   "@
    copy %r1,%0
    ldi %1,%0
-   ldil l'%1,%0
+   ldil L'%1,%0
    zdepi %Z1,%0
    ldb%M1 %1,%0
    stb%M0 %r1,%0
    mtsar %r1
-   fstws %1,-16(30)\;ldw -16(30),%0
-   stw %1,-16(30)\;fldws -16(30),%0
+   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
+   stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fcpy,sgl %1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
    (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
@@ -1384,8 +1399,8 @@
   "@
    fcpy,sgl %1,%0
    copy %1,%0
-   fstws %1,-16(0,30)\;ldw -16(0,30),%0
-   stw %r1,-16(0,30)\;fldws -16(0,30),%0
+   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
+   stw %r1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fldws%F1 %1,%0
    ldw%M1 %1,%0
    fstws%F0 %r1,%0
@@ -1415,28 +1430,7 @@
 
 ;;- zero extension instructions
 
-;; Note that the one starting from HImode comes before those for QImode
-;; so that a constant operand will match HImode, not QImode.
-
-(define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI
-	 (match_operand:HI 1 "general_operand" "")))]
-  ""
-  "
-{
-  if (GET_CODE (operand1) == MEM
-      && symbolic_operand (XEXP (operand1, 0), Pmode))
-    {
-      rtx temp = copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode,
-						   XEXP (operand1, 0)));
-      operands[1] = gen_rtx (MEM, HImode,
-			     gen_rtx (LO_SUM, Pmode,
-				      temp, XEXP (operand1, 0)));
-    }
-}")
-
-(define_insn ""
+(define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(zero_extend:SI
 	 (match_operand:HI 1 "reg_or_nonsymb_mem_operand" "r,Q")))]
@@ -1446,25 +1440,7 @@
    ldh%M1 %1,%0"
   [(set_attr "type" "unary,load")])
 
-(define_expand "zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "")
-	(zero_extend:HI
-	 (match_operand:QI 1 "general_operand" "")))]
-  ""
-  "
-{
-  if (GET_CODE (operand1) == MEM
-      && symbolic_operand (XEXP (operand1, 0), Pmode))
-    {
-      rtx temp = copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode,
-						   XEXP (operand1, 0)));
-      operands[1] = gen_rtx (MEM, QImode,
-			     gen_rtx (LO_SUM, Pmode,
-				      temp, XEXP (operand1, 0)));
-    }
-}")
-
-(define_insn ""
+(define_insn "zero_extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(zero_extend:HI
 	 (match_operand:QI 1 "reg_or_nonsymb_mem_operand" "r,Q")))]
@@ -1475,28 +1451,7 @@
   [(set_attr "type" "unary,load")
    (set_attr "length" "1,1")])
 
-(define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI
-	 (match_operand:QI 1 "general_operand" "")))]
-  ""
-  "
-{
-  if (GET_CODE (operand1) == MEM
-      && symbolic_operand (XEXP (operand1, 0), Pmode))
-    {
-      rtx temp = copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode,
-						   XEXP (operand1, 0)));
-      operand1 = gen_rtx (MEM, QImode,
-			  gen_rtx (LO_SUM, Pmode,
-				   temp, XEXP (operand1, 0)));
-      emit_insn (gen_rtx (SET, VOIDmode, operand0,
-			  gen_rtx (ZERO_EXTEND, SImode, operand1)));
-      DONE;
-    }
-}")
-
-(define_insn ""
+(define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(zero_extend:SI
 	 (match_operand:QI 1 "reg_or_nonsymb_mem_operand" "r,Q")))]
@@ -1506,10 +1461,8 @@
    ldb%M1 %1,%0"
   [(set_attr "type" "unary,load")
    (set_attr "length" "1,1")])
-
+
 ;;- sign extension instructions
-;; Note that the one starting from HImode comes before those for QImode
-;; so that a constant operand will match HImode, not QImode.
 
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1649,7 +1602,7 @@
    (clobber (match_scratch:SI 2 "=&fx,X"))]
   ""
   "@
-   fcnvfxt,sgl,sgl %1,%2\;fstws %2,-16(30)\;ldw -16(30),%0
+   fcnvfxt,sgl,sgl %1,%2\;fstws %2,-16(0,%%r30)\;ldw -16(0,%%r30),%0
    fcnvfxt,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu,fpalu")
    (set_attr "length" "3,1")])
@@ -1660,7 +1613,7 @@
    (clobber (match_scratch:SI 2 "=&fx,X"))]
   ""
   "@
-   fcnvfxt,dbl,sgl %1,%2\;fstws %2,-16(30)\;ldw -16(30),%0
+   fcnvfxt,dbl,sgl %1,%2\;fstws %2,-16(0,%%r30)\;ldw -16(0,%%r30),%0
    fcnvfxt,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu,fpalu")
    (set_attr "length" "3,1")])
@@ -2259,9 +2212,7 @@
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       rtx temp = gen_reg_rtx (SImode);
-      emit_insn (gen_subsi3 (temp,
-			     gen_rtx (CONST_INT, VOIDmode, 31),
-			     operands[2]));
+      emit_insn (gen_subsi3 (temp, GEN_INT (31), operands[2]));
       emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
       DONE;
     }
@@ -2277,10 +2228,8 @@
   rtx xoperands[4];
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
-  xoperands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  31 - (INTVAL (operands[2]) & 31));
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode,
-			  32 - (INTVAL (operands[2]) & 31));
+  xoperands[2] = GEN_INT (31 - (INTVAL (operands[2]) & 31));
+  xoperands[3] = GEN_INT (32 - (INTVAL (operands[2]) & 31));
   output_asm_insn (\"zdep %1,%2,%3,%0\", xoperands);
   return \"\";
 }")
@@ -2303,9 +2252,7 @@
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       rtx temp = gen_reg_rtx (SImode);
-      emit_insn (gen_subsi3 (temp,
-			     gen_rtx (CONST_INT, VOIDmode, 31),
-			     operands[2]));
+      emit_insn (gen_subsi3 (temp, GEN_INT (31), operands[2]));
       emit_insn (gen_vextrs32 (operands[0], operands[1], temp));
       DONE;
     }
@@ -2321,10 +2268,8 @@
   rtx xoperands[4];
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
-  xoperands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  31 - (INTVAL (operands[2]) & 31));
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode,
-			  32 - (INTVAL (operands[2]) & 31));
+  xoperands[2] = GEN_INT (31 - (INTVAL (operands[2]) & 31));
+  xoperands[3] = GEN_INT (32 - (INTVAL (operands[2]) & 31));
   output_asm_insn (\"extrs %1,%2,%3,%0\", xoperands);
   return \"\";
 }")
@@ -2346,10 +2291,8 @@
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     {
-      operands[3] = gen_rtx (CONST_INT, VOIDmode,
-			     32 - (INTVAL (operands[2]) & 31));
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     31 - (INTVAL (operands[2]) & 31));
+      operands[3] = GEN_INT (32 - (INTVAL (operands[2]) & 31));
+      operands[2] = GEN_INT (31 - (INTVAL (operands[2]) & 31));
       return \"extru %1,%2,%3,%0\";
     }
   else
@@ -2376,7 +2319,7 @@
   ""
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (32 - INTVAL (operands[2])) & 31);
+  operands[2] = GEN_INT ((32 - INTVAL (operands[2])) & 31);
   return \"shd %1,%1,%2,%0\";
 }")
 
@@ -2435,7 +2378,7 @@
     {
       rtx reg = gen_reg_rtx (SImode);
 
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, -INTVAL (operands[1]));
+      operands[1] = GEN_INT (-INTVAL (operands[1]));
       if (!INT_14_BITS (operands[1]))
 	operands[1] = force_reg (SImode, operands[1]);
       emit_insn (gen_addsi3 (reg, operands[0], operands[1]));
@@ -2464,7 +2407,7 @@
 {
   if (GET_CODE (operands[1]) == CONST_INT)
     {
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[1]));
+      operands[1] = GEN_INT (~INTVAL (operands[1]));
       return \"addi,uv %1,%0,0\;blr,n %0,0\;b,n %l3\";
     }
   else
@@ -2619,7 +2562,7 @@
    (~INTVAL (operands[3]) & (1L << INTVAL (operands[1])) - 1 & ~0xf) == 0"
   "*
 {
-  operands[3] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[3]) & 0xf) - 0x10);
+  operands[3] = GEN_INT ((INTVAL (operands[3]) & 0xf) - 0x10);
   return \"depi %3,%2+%1-1,%1,%0\";
 }")
 
