@@ -1,3 +1,8 @@
+2001-11-14  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Update to use `@command', `@option.
+	* invoke.texi: Ditto
+
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in: Change all uses of $(manext) to $(man1ext).
