@@ -1,3 +1,23 @@
+Mon Apr 12 02:37:02 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* reg-stack.c: Update comment, include varray.h.
+	(stack_regs_mentioned_data): New global variable.
+	(check_stack_regs_mentioned): New function.
+	(stack_regs_mentioned): New function.
+	(reg_to_stack): Initialize and free stack_regs_mentioned_data,
+	use stack_regs_mentioned.
+	(record_asm_reg_life): Change insn type cache for changed insn.
+	(record_reg_life): Do not change the insn mode.
+	(emit_pop_insn): Likewise.
+	(emit_swap_insn): Likewise.
+	(move_for_stack_reg): Likewise.
+	(stack_reg_life_analysis): Use stack_regs_mentioned.
+	(emit_swap_insn): Likewise.
+	(subst_stack_regs): Likewise.
+	(convert_regs): Likewise.
+	* jump.c (find_cross_jump): Use stack_regs_mentioned.
+	* rtl.h (stack_regs_mentioned): Declare.
+
 Mon Apr 12 00:57:10 1999 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr> 
 
 	* integrate.c (INTEGRATE_THRESHOLD): Sync it with the comment.

@@ -1623,4 +1623,8 @@ extern void record_base_value		PROTO ((int, rtx, int));
 extern void record_alias_subset         PROTO ((int, int));
 extern rtx addr_side_effect_eval	PROTO ((rtx, int, int));
 
+#ifdef STACK_REGS
+extern int stack_regs_mentioned		PROTO((rtx insn));
+#endif
+
 #endif /* _RTL_H */
