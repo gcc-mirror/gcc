@@ -1,3 +1,7 @@
+2004-09-09  Mike Stump  <mrs@apple.com>
+
+	* version.c (version_string): Bump to 4.0.0.
+
 2004-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/extend.texi (nothrow attribute): The attribute is not
