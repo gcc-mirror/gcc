@@ -620,6 +620,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   map = (struct inline_remap *) alloca (sizeof (struct inline_remap));
 
+  map->integrating = 0;
+
   /* Allocate the label map.  */
 
   if (max_labelno > 0)
