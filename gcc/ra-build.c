@@ -1054,7 +1054,9 @@ livethrough_conflicts_bb (basic_block bb)
 
   /* And now, if we have found anything, make all live_through
      uses conflict with all defs, and update their other members.  */
-  if (deaths > 0 || bitmap_first_set_bit (all_defs) >= 0)
+  if (deaths > 0
+      || contains_call
+      || bitmap_first_set_bit (all_defs) >= 0)
     EXECUTE_IF_SET_IN_BITMAP (info->live_throughout, first, use_id,
       {
         struct web_part *wp = &web_parts[df->def_id + use_id];
