@@ -249,7 +249,8 @@ for code in ALL STD ; do
 	    pwd.h)
 	      required_list="getpwnam getpwuid" ;;
 	    setjmp.h)
-	      required_list="longjmp setjmp siglongjmp sigsetjmp" ;;
+	      # Left out siglongjmp sigsetjmp - these depend on sigjmp_buf.
+	      required_list="longjmp setjmp" ;;
 	    signal.h)
 	      # Left out signal() - its prototype is too complex for us!
 	      # Also left out "sigaction sigaddset sigdelset sigemptyset
