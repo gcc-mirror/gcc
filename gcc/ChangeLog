@@ -1,5 +1,8 @@
 Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (init_expr_once): Free all RTL we generate here.
+	* expmed.c (init_expmed): Allocate all RTX in memory we'll free.
+
 	* genemit.c (main): Generate #include "reload.h".
 
 	* expr.c (expand_expr, case INDIRECT_EXPR): A dereference of
