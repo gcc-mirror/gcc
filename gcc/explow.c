@@ -321,7 +321,9 @@ convert_memory_address (to_mode, x)
       return x;
 
     case LABEL_REF:
-      return gen_rtx (LABEL_REF, to_mode, XEXP (x, 0));
+      temp = gen_rtx (LABEL_REF, to_mode, XEXP (x, 0));
+      LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
+      return temp;
 
     case SYMBOL_REF:
       temp = gen_rtx (SYMBOL_REF, to_mode, XSTR (x, 0));
