@@ -1275,28 +1275,6 @@ simplify_binary_operation (code, mode, op0, op1)
 	       return simplify_gen_binary (AND, mode, op0,
 					   gen_rtx_NOT (mode, XEXP (op1, 0)));
 	   }
-
-	  /* Simplify operations with constants containing embedded offsets.  */
-	  if (GET_CODE (op0) == CONST)
-	    {
-	      tem = simplify_binary_operation (code, mode, XEXP (op0, 0), op1);
-	      if (tem)
-		{
-		  if (CONSTANT_P (op1) && ! CONSTANT_P (tem))
-		    tem = gen_rtx_CONST (mode, tem);
-		  return tem;
-		}
-	    }
-	  if (GET_CODE (op1) == CONST)
-	    {
-	      tem = simplify_binary_operation (code, mode, op0, XEXP (op1, 0));
-	      if (tem)
-		{
-		  if (CONSTANT_P (op0) && ! CONSTANT_P (tem))
-		    tem = gen_rtx_CONST (mode, tem);
-		  return tem;
-		}
-	    }
 	  break;
 
 	case MULT:
