@@ -4967,7 +4967,6 @@ override_options (void)
   mips_print_operand_punct['~'] = 1;
 
   mips_char_to_class['d'] = TARGET_MIPS16 ? M16_REGS : GR_REGS;
-  mips_char_to_class['e'] = M16_NA_REGS;
   mips_char_to_class['t'] = T_REG;
   mips_char_to_class['f'] = (TARGET_HARD_FLOAT ? FP_REGS : NO_REGS);
   mips_char_to_class['h'] = HI_REG;
