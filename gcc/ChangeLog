@@ -1,5 +1,13 @@
 2004-09-25  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (struct mips_args): Clarify comments.
+	* config/mips/mips.c (struct mips_arg_info): Likewise.
+	(mips_arg_info): Don't allow fpr_p to affect the register or
+	stack alignment.  Remove o64 silliness.
+	(function_arg): Deal with the o32 float,float case specially.
+
+2004-09-25  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (loadx, storex): Define for V2SF.
 
 2004-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
