@@ -28,6 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "version.h"
 #include "mkdeps.h"
+#include "cppdefault.h"
 
 /* Predefined symbols, built-in macros, and the default include path. */
 
@@ -45,116 +46,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #else
 #define INO_T_EQ(a, b) ((a) == (b))
 #endif
-
-#ifndef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/include"
-#endif
-
-/* We let tm.h override the types used here, to handle trivial differences
-   such as the choice of unsigned int or long unsigned int for size_t.
-   When machines start needing nontrivial differences in the size type,
-   it would be best to do something here to figure out automatically
-   from other information what type to use.  */
-
-/* The string value for __SIZE_TYPE__.  */
-
-#ifndef SIZE_TYPE
-#define SIZE_TYPE "long unsigned int"
-#endif
-
-/* The string value for __PTRDIFF_TYPE__.  */
-
-#ifndef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "long int"
-#endif
-
-/* The string value for __WCHAR_TYPE__.  */
-
-#ifndef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-#endif
-
-/* The string value for __USER_LABEL_PREFIX__ */
-
-#ifndef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
-#endif
-
-/* The string value for __REGISTER_PREFIX__ */
-
-#ifndef REGISTER_PREFIX
-#define REGISTER_PREFIX ""
-#endif
-
-/* This is the default list of directories to search for include files.
-   It may be overridden by the various -I and -ixxx options.
-
-   #include "file" looks in the same directory as the current file,
-   then this list.
-   #include <file> just looks in this list.
-
-   All these directories are treated as `system' include directories
-   (they are not subject to pedantic warnings in some cases).  */
-
-struct default_include
-{
-  const char *fname;		/* The name of the directory.  */
-  const char *component;	/* The component containing the directory
-				   (see update_path in prefix.c) */
-  int cplusplus;		/* Only look here if we're compiling C++.  */
-  int cxx_aware;		/* Includes in this directory don't need to
-				   be wrapped in extern "C" when compiling
-				   C++.  */
-};
-
-#ifndef STANDARD_INCLUDE_COMPONENT
-#define STANDARD_INCLUDE_COMPONENT 0
-#endif
-
-#ifdef CROSS_COMPILE
-#undef LOCAL_INCLUDE_DIR
-#undef SYSTEM_INCLUDE_DIR
-#undef STANDARD_INCLUDE_DIR
-#else
-#undef CROSS_INCLUDE_DIR
-#endif
-
-static const struct default_include include_defaults_array[]
-#ifdef INCLUDE_DEFAULTS
-= INCLUDE_DEFAULTS;
-#else
-= {
-#ifdef GPLUSPLUS_INCLUDE_DIR
-    /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
-#endif
-#ifdef LOCAL_INCLUDE_DIR
-    /* /usr/local/include comes before the fixincluded header files.  */
-    { LOCAL_INCLUDE_DIR, 0, 0, 1 },
-#endif
-#ifdef GCC_INCLUDE_DIR
-    /* This is the dir for fixincludes and for gcc's private headers.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
-#endif
-#ifdef CROSS_INCLUDE_DIR
-    /* One place the target system's headers might be.  */
-    { CROSS_INCLUDE_DIR, "GCC", 0, 0 },
-#endif
-#ifdef TOOL_INCLUDE_DIR
-    /* Another place the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1 },
-#endif
-#ifdef SYSTEM_INCLUDE_DIR
-    /* Some systems have an extra dir of include files.  */
-    { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
-#endif
-#ifdef STANDARD_INCLUDE_DIR
-    /* /usr/include comes dead last.  */
-    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 },
-#endif
-    { 0, 0, 0, 0 }
-  };
-#endif /* no INCLUDE_DEFAULTS */
 
 /* Internal structures and prototypes. */
 
@@ -785,18 +676,18 @@ initialize_standard_includes (pfile)
 
   /* Search "translated" versions of GNU directories.
      These have /usr/local/lib/gcc... replaced by specd_prefix.  */
-  if (specd_prefix != 0)
+  if (specd_prefix != 0 && cpp_GCC_INCLUDE_DIR_len)
     {
-      char *default_prefix = (char *) alloca (sizeof GCC_INCLUDE_DIR - 7);
       /* Remove the `include' from /usr/local/lib/gcc.../include.
 	 GCC_INCLUDE_DIR will always end in /include. */
-      int default_len = sizeof GCC_INCLUDE_DIR - 8;
+      int default_len = cpp_GCC_INCLUDE_DIR_len;
+      char *default_prefix = (char *) alloca (default_len + 1);
       int specd_len = strlen (specd_prefix);
 
-      memcpy (default_prefix, GCC_INCLUDE_DIR, default_len);
+      memcpy (default_prefix, cpp_GCC_INCLUDE_DIR, default_len);
       default_prefix[default_len] = '\0';
 
-      for (p = include_defaults_array; p->fname; p++)
+      for (p = cpp_include_defaults; p->fname; p++)
 	{
 	  /* Some standard dirs are only for C++.  */
 	  if (!p->cplusplus
@@ -823,7 +714,7 @@ initialize_standard_includes (pfile)
     }
 
   /* Search ordinary names for GNU include directories.  */
-  for (p = include_defaults_array; p->fname; p++)
+  for (p = cpp_include_defaults; p->fname; p++)
     {
       /* Some standard dirs are only for C++.  */
       if (!p->cplusplus
@@ -1697,12 +1588,14 @@ handle_option (pfile, argc, argv)
 		memcpy (fname, CPP_OPTION (pfile, include_prefix), ipl);
 		memcpy (fname + ipl, arg, len + 1);
 	      }
-	    else
+	    else if (cpp_GCC_INCLUDE_DIR_len)
 	      {
-		fname = xmalloc (sizeof GCC_INCLUDE_DIR - 8 + len);
-		memcpy (fname, GCC_INCLUDE_DIR, sizeof GCC_INCLUDE_DIR - 9);
-		memcpy (fname + sizeof GCC_INCLUDE_DIR - 9, arg, len + 1);
+		fname = xmalloc (cpp_GCC_INCLUDE_DIR_len + len + 1);
+		memcpy (fname, cpp_GCC_INCLUDE_DIR, cpp_GCC_INCLUDE_DIR_len);
+		memcpy (fname + cpp_GCC_INCLUDE_DIR_len, arg, len + 1);
 	      }
+	    else
+	      fname = xstrdup (arg);
 
 	    append_include_chain (pfile, CPP_OPTION (pfile, pending), fname,
 			  opt_code == OPT_iwithprefix ? SYSTEM: BRACKET, 0);
