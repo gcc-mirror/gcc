@@ -888,8 +888,8 @@
 {
   if (GET_CODE (operands[1]) == CONST_INT
       && INTVAL (operands[1]) >-9 && INTVAL(operands[1]) < 8)
-    return \"addqw %1,%0\";
-  return \"addw %1,%0\";
+    return \"addqw %2,%0\";
+  return \"addw %2,%0\";
 }")
 
 (define_insn "addqi3"
@@ -916,8 +916,8 @@
 {
   if (GET_CODE (operands[1]) == CONST_INT
       && INTVAL (operands[1]) >-9 && INTVAL(operands[1]) < 8)
-    return \"addqb %1,%0\";
-  return \"addb %1,%0\";
+    return \"addqb %2,%0\";
+  return \"addb %2,%0\";
 }")
 
 ;;- All kinds of subtract instructions.
@@ -990,8 +990,8 @@
 {
   if (GET_CODE (operands[1]) == CONST_INT
       && INTVAL (operands[1]) >-8 && INTVAL(operands[1]) < 9)
-    return \"addqw %$%n1,%0\";
-  return \"subw %1,%0\";
+    return \"addqw %$%n2,%0\";
+  return \"subw %2,%0\";
 }")
 
 (define_insn "subqi3"
@@ -1019,8 +1019,8 @@
 {
   if (GET_CODE (operands[1]) == CONST_INT
       && INTVAL (operands[1]) >-8 && INTVAL(operands[1]) < 9)
-    return \"addqb %$%n1,%0\";
-  return \"subb %1,%0\";
+    return \"addqb %$%n2,%0\";
+  return \"subb %2,%0\";
 }")
 
 ;;- Multiply instructions.
