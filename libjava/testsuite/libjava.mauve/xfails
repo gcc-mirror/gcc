@@ -140,3 +140,4 @@ FAIL: gnu.testlet.java.net.URLConnection.URLConnectionTest: Error in test_getHea
 FAIL: gnu.testlet.java.net.URL.URLTest: openStream (number 1)
 FAIL: gnu.testlet.java.net.URL.URLTest:  Error in test_toString  - 5  exception should not be thrown here (number 1)
 FAIL: gnu.testlet.java.net.MulticastSocket.MulticastSocketTest: joinGroup() twice. (number 1)
+FAIL: gnu.testlet.java.util.SimpleTimeZone.check12 (number 22)

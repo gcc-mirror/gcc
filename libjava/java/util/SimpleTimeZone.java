@@ -234,7 +234,7 @@ public class SimpleTimeZone extends TimeZone
    * @serial
    * @since JDK1.1.4 
    */
-  private int serialVersionOnStream = 1;
+  private int serialVersionOnStream = 2;
 
   private static final long serialVersionUID = -403250971215465050L;
 
@@ -477,9 +477,7 @@ public class SimpleTimeZone extends TimeZone
   {
     this.startMode = checkRule(month, day, dayOfWeek);
     this.startMonth = month;
-    // FIXME: XXX: JDK 1.2 allows negative values and has 2 new variations
-    // of this method.
-    this.startDay = Math.abs(day);
+    this.startDay = day;
     this.startDayOfWeek = Math.abs(dayOfWeek);
     if (this.startTimeMode == WALL_TIME || this.startTimeMode == STANDARD_TIME)
       this.startTime = time;
@@ -570,9 +568,7 @@ public class SimpleTimeZone extends TimeZone
   {
     this.endMode = checkRule(month, day, dayOfWeek);
     this.endMonth = month;
-    // FIXME: XXX: JDK 1.2 allows negative values and has 2 new variations
-    // of this method.
-    this.endDay = Math.abs(day);
+    this.endDay = day;
     this.endDayOfWeek = Math.abs(dayOfWeek);
     if (this.endTimeMode == WALL_TIME)
       this.endTime = time;
@@ -660,21 +656,33 @@ public class SimpleTimeZone extends TimeZone
    * <code>offset = cal.get(Calendar.ZONE_OFFSET)
    * + cal.get(Calendar.DST_OFFSET);</code>
    *
-   * You could also use in
-   *
    * This version doesn't suffer this inaccuracy.
+   *
+   * The arguments don't follow the approach for setting start and end rules.
+   * The day must be a positive number and dayOfWeek must be a positive value
+   * from Calendar.  dayOfWeek is redundant, but must match the other values
+   * or an inaccurate result may be returned.
    *
    * @param era the era of the given date
    * @param year the year of the given date
    * @param month the month of the given date, 0 for January.
    * @param day the day of month
-   * @param dayOfWeek the day of week; this must be matching the
-   * other fields.
+   * @param dayOfWeek the day of week; this must match the other fields.
    * @param millis the millis in the day (in local standard time)
-   * @return the time zone offset in milliseconds.  */
+   * @return the time zone offset in milliseconds.
+   * @throws IllegalArgumentException if arguments are incorrect.
+   */
   public int getOffset(int era, int year, int month,
 		       int day, int dayOfWeek, int millis)
   {
+    int daysInMonth = getDaysInMonth(month, 1);
+    if (day < 1 || day > daysInMonth)
+      throw new IllegalArgumentException("day out of range");
+    if (dayOfWeek < Calendar.SUNDAY || dayOfWeek > Calendar.SATURDAY)
+      throw new IllegalArgumentException("dayOfWeek out of range");
+    if (month < Calendar.JANUARY || month > Calendar.DECEMBER)
+      throw new IllegalArgumentException("month out of range");
+
     // This method is called by Calendar, so we mustn't use that class.
     int daylightSavings = 0;
     if (useDaylight && era == GregorianCalendar.AD && year >= startYear)
@@ -785,7 +793,7 @@ public class SimpleTimeZone extends TimeZone
   /**
    * Checks if the date given in calXXXX, is before the change between
    * dst and standard time.
-   * @param calYear the year of the date to check (for leap day cheking).
+   * @param calYear the year of the date to check (for leap day checking).
    * @param calMonth the month of the date to check.
    * @param calDay the day of month of the date to check.
    * @param calDayOfWeek the day of week of the date to check.
@@ -870,7 +878,7 @@ public class SimpleTimeZone extends TimeZone
       case DOW_LE_DOM_MODE:
 	// The greatest sunday before or equal December, 12
 	// is the same as smallest sunday after or equal December, 6.
-	day -= 6;
+	day = Math.abs(day) - 6;
 
       case DOW_GE_DOM_MODE:
 
@@ -931,10 +939,12 @@ public class SimpleTimeZone extends TimeZone
 	    && startDay == zone.startDay
 	    && startDayOfWeek == zone.startDayOfWeek
 	    && startTime == zone.startTime
+	    && startTimeMode == zone.startTimeMode
 	    && endMonth == zone.endMonth
 	    && endDay == zone.endDay
 	    && endDayOfWeek == zone.endDayOfWeek
-	    && endTime == zone.endTime);
+	    && endTime == zone.endTime
+	    && endTimeMode == zone.endTimeMode);
   }
 
   /**
@@ -962,9 +972,12 @@ public class SimpleTimeZone extends TimeZone
 	    && startDay == zone.startDay
 	    && startDayOfWeek == zone.startDayOfWeek
 	    && startTime == zone.startTime
+	    && startTimeMode == zone.startTimeMode
 	    && endMonth == zone.endMonth
 	    && endDay == zone.endDay
-	    && endDayOfWeek == zone.endDayOfWeek && endTime == zone.endTime);
+	    && endDayOfWeek == zone.endDayOfWeek
+	    && endTime == zone.endTime
+	    && endTimeMode == zone.endTimeMode);
   }
 
   /**
@@ -987,11 +1000,14 @@ public class SimpleTimeZone extends TimeZone
 	 + ",startDay=" + startDay
 	 + ",startDayOfWeek=" + startDayOfWeek
 	 + ",startTime=" + startTime
+	 + ",startTimeMode=" + startTimeMode
 	 + ",endMode=" + endMode
 	 + ",endMonth=" + endMonth
 	 + ",endDay=" + endDay
 	 + ",endDayOfWeek=" + endDayOfWeek
-	 + ",endTime=" + endTime : "") + "]";
+	 + ",endTime=" + endTime
+	 + ",endTimeMode=" + endTimeMode
+	 : "") + "]";
   }
 
   /**
@@ -1008,7 +1024,9 @@ public class SimpleTimeZone extends TimeZone
 	dstSavings = 60 * 60 * 1000;
 	endMode = DOW_IN_MONTH_MODE;
 	startMode = DOW_IN_MONTH_MODE;
-	serialVersionOnStream = 1;
+	startTimeMode = WALL_TIME;
+	endTimeMode = WALL_TIME;
+	serialVersionOnStream = 2;
       }
     else
       {
