@@ -1,3 +1,19 @@
+2003-09-18  Andreas Tobler  <a.tobler@schweiz.ch>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* src/types.c (double): Add AIX and Darwin to the right TYPEDEF.
+	* src/powerpc/aix_closure.S: Remove the pointer to the outgoing
+	parameter stack.
+	* src/powerpc/darwin_closure.S: Likewise.
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Handle structures
+	according to the Darwin/AIX ABI.
+	(ffi_prep_cif_machdep): Likewise.
+	(ffi_closure_helper_DARWIN): Likewise.
+	Remove the outgoing parameter stack logic. Simplify the evaluation
+	of the different CASE types.
+	(ffi_prep_clousure): Avoid the casts on lvalues. Change the branch
+	statement in the trampoline code.
+
 2003-09-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (ffi_prep_args): Take account into the alignement

@@ -105,8 +105,8 @@ ffi_closure_ASM:
 	
 	/* 24 Bytes (Linkage Area) */
 	/* 32 Bytes (params) */
-	/* 104 Bytes (13*8 from FPR) */ 
-	/* 8 Bytes (result)
+	/* 104 Bytes (13*8 from FPR) */
+	/* 8 Bytes (result) */
 	/* 168 Bytes */
 	
 	stwu r1,-176(r1)	/* skip over caller save area
@@ -144,20 +144,16 @@ ffi_closure_ASM:
 	/* set up registers for the routine that actually does the work */
 	/* get the context pointer from the trampoline */
 	mr r3,r11
-	
+
 	/* now load up the pointer to the result storage */
 	addi r4,r1,160
-	
+
 	/* now load up the pointer to the saved gpr registers */
 	addi r5,r1,200
 
 	/* now load up the pointer to the saved fpr registers */
 	addi r6,r1,56
 
-	/* now load up the pointer to the outgoing parameter  */
-	/* stack in the previous frame */
-	addi r7,r1,232
-	
 	/* make the call */
 	bl .ffi_closure_helper_DARWIN
 	nop

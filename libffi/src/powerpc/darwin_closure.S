@@ -31,7 +31,7 @@
 .text
 	.align 2	
 .globl _ffi_closure_ASM
-	
+
 .text
 	.align 2
 _ffi_closure_ASM:
@@ -44,13 +44,13 @@ LCFI0:
 	   104 Bytes (13*8 from FPR)	
 	   8 Bytes (result)
 	   168 Bytes  */
-	
+
 	stwu	r1,-176(r1)	/* skip over caller save area
 				keep stack aligned to 16  */
 LCFI1:		
 	/* we want to build up an area for the parameters passed
 	in registers (both floating point and integer)  */
-	
+
 	/* we store gpr 3 to gpr 10 (aligned to 4)
 	in the parents outgoing area  */
 	stw   r3, 200(r1)
@@ -80,23 +80,19 @@ LCFI1:
 	/* set up registers for the routine that actually does the work */
 	/* get the context pointer from the trampoline */
 	mr r3,r11
-	
+
 	/* now load up the pointer to the result storage */
 	addi r4,r1,160
-	
+
 	/* now load up the pointer to the saved gpr registers  */
 	addi r5,r1,200
 
 	/* now load up the pointer to the saved fpr registers */
 	addi r6,r1,56
 
-	/* now load up the pointer to the outgoing parameter
-	stack in the previous frame  */
-	addi r7,r1,232
-	
 	/* make the call */
 	bl	Lffi_closure_helper_DARWIN$stub
-	
+
 	/* now r3 contains the return type */
 	/* so use it to look up in a table */
 	/* so we know how to deal with each type */
@@ -114,7 +110,7 @@ LFE1:
 /* Each of the ret_typeX code fragments has to be exactly 16 bytes long  */
 /* (4 instructions). For cache effectiveness we align to a 16 byte boundary  */
 /* first.  */
-	
+
 	.align 4
 
 	nop
@@ -234,7 +230,7 @@ Lfinish:
 	lwz	r0,8(r1)		/* get return address  */
 	mtlr	r0			/* reset link register  */
 	blr
-		
+	
 /* END(ffi_closure_ASM)  */	
 
 .data
