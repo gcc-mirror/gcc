@@ -2866,8 +2866,8 @@ rs6000_va_arg (valist, type)
   addr_rtx = gen_reg_rtx (Pmode);
 
   emit_cmp_and_jump_insns (expand_expr (reg, NULL_RTX, QImode, EXPAND_NORMAL),
-			   GEN_INT (8 - n_reg + 1),
-			   GE, const1_rtx, QImode, 1, 1, lab_false);
+			   GEN_INT (8 - n_reg + 1), GE, const1_rtx, QImode, 1,
+			   lab_false);
 
   /* Long long is aligned in the registers.  */
   if (n_reg > 1)

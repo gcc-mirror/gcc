@@ -1289,6 +1289,8 @@ extern rtx assign_stack_local		PARAMS ((enum machine_mode,
 					       HOST_WIDE_INT, int));
 extern rtx assign_stack_temp		PARAMS ((enum machine_mode,
 					       HOST_WIDE_INT, int));
+extern rtx assign_stack_temp_for_type	PARAMS ((enum machine_mode,
+						 HOST_WIDE_INT, int, tree));
 extern rtx assign_temp			PARAMS ((tree, int, int, int));
 /* In emit-rtl.c */
 extern rtx emit_insn_before		PARAMS ((rtx, rtx));
@@ -1681,6 +1683,15 @@ extern rtx gen_lowpart_SUBREG PARAMS ((enum machine_mode, rtx));
 #define VIRTUAL_CFA_REGNUM		((FIRST_VIRTUAL_REGISTER) + 4)
 
 #define LAST_VIRTUAL_REGISTER		((FIRST_VIRTUAL_REGISTER) + 4)
+
+/* Nonzero if REGNUM is a pointer into the stack frame.  */
+#define REGNO_PTR_FRAME_P(REGNUM) 		\
+  ((REGNUM) == STACK_POINTER_REGNUM		\
+   || (REGNUM) == FRAME_POINTER_REGNUM		\
+   || (REGNUM) == HARD_FRAME_POINTER_REGNUM	\
+   || (REGNUM) == ARG_POINTER_REGNUM		\
+   || ((REGNUM) >= FIRST_VIRTUAL_REGISTER	\
+       && (REGNUM) <= LAST_VIRTUAL_REGISTER))
 
 /* REGNUM never really appearing in the INSN stream.  */
 #define INVALID_REGNUM			(~(unsigned int)0)

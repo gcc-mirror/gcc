@@ -3025,7 +3025,6 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
   enum machine_mode lmode, rmode, nmode;
   int lunsignedp, runsignedp;
   int lvolatilep = 0, rvolatilep = 0;
-  unsigned int alignment;
   tree linner, rinner = NULL_TREE;
   tree mask;
   tree offset;
@@ -3036,7 +3035,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
      do anything if the inner expression is a PLACEHOLDER_EXPR since we
      then will no longer be able to replace it.  */
   linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &offset, &lmode,
-				&lunsignedp, &lvolatilep, &alignment);
+				&lunsignedp, &lvolatilep);
   if (linner == lhs || lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
       || offset != 0 || TREE_CODE (linner) == PLACEHOLDER_EXPR)
     return 0;
@@ -3046,7 +3045,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
      /* If this is not a constant, we can only do something if bit positions,
 	sizes, and signedness are the same.  */
      rinner = get_inner_reference (rhs, &rbitsize, &rbitpos, &offset, &rmode,
-				   &runsignedp, &rvolatilep, &alignment);
+				   &runsignedp, &rvolatilep);
 
      if (rinner == rhs || lbitpos != rbitpos || lbitsize != rbitsize
 	 || lunsignedp != runsignedp || offset != 0
@@ -3204,7 +3203,6 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
   tree mask, inner, offset;
   tree unsigned_type;
   unsigned int precision;
-  unsigned int alignment;
 
   /* All the optimizations using this function assume integer fields.
      There are problems with FP fields since the type_for_size call
@@ -3224,7 +3222,7 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
     }
 
   inner = get_inner_reference (exp, pbitsize, pbitpos, &offset, pmode,
-			       punsignedp, pvolatilep, &alignment);
+			       punsignedp, pvolatilep);
   if ((inner == exp && and_mask == 0)
       || *pbitsize < 0 || offset != 0
       || TREE_CODE (inner) == PLACEHOLDER_EXPR)

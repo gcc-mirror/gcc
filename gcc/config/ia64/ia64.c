@@ -7398,7 +7398,7 @@ ia64_expand_fetch_and_op (binoptab, mode, arglist, target)
     insn = gen_cmpxchg_acq_di (tmp, mem, tmp, ccv);
   emit_insn (insn);
 
-  emit_cmp_and_jump_insns (tmp, ret, NE, 0, mode, 1, 0, label);
+  emit_cmp_and_jump_insns (tmp, ret, NE, 0, mode, 1, label);
 
   return ret;
 }
@@ -7463,7 +7463,7 @@ ia64_expand_op_and_fetch (binoptab, mode, arglist, target)
     insn = gen_cmpxchg_acq_di (tmp, mem, ret, ccv);
   emit_insn (insn);
 
-  emit_cmp_and_jump_insns (tmp, old, NE, 0, mode, 1, 0, label);
+  emit_cmp_and_jump_insns (tmp, old, NE, 0, mode, 1, label);
 
   return ret;
 }

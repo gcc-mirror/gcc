@@ -7941,10 +7941,9 @@ loc_descriptor_from_tree (loc, addressp)
 	HOST_WIDE_INT bitsize, bitpos, bytepos;
 	enum machine_mode mode;
 	int volatilep;
-	unsigned int alignment;
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &volatilep, &alignment);
+				   &unsignedp, &volatilep);
 
 	if (obj == loc)
 	  return 0;

@@ -302,8 +302,7 @@ extern int have_sub2_insn PARAMS ((rtx, rtx));
 /* Emit a pair of rtl insns to compare two rtx's and to jump 
    to a label if the comparison is true.  */
 extern void emit_cmp_and_jump_insns PARAMS ((rtx, rtx, enum rtx_code, rtx,
-					     enum machine_mode, int,
-					     unsigned int, rtx));
+					     enum machine_mode, int, rtx));
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump PARAMS ((rtx));
@@ -542,10 +541,10 @@ extern void do_jump PARAMS ((tree, rtx, rtx));
 
 /* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
 extern rtx compare_from_rtx PARAMS ((rtx, rtx, enum rtx_code, int,
-				     enum machine_mode, rtx, unsigned int));
+				     enum machine_mode, rtx));
 extern void do_compare_rtx_and_jump PARAMS ((rtx, rtx, enum rtx_code, int,
 					     enum machine_mode, rtx,
-					     unsigned int, rtx, rtx));
+					     rtx, rtx));
 
 /* Two different ways of generating switch statements.  */
 extern int try_casesi    PARAMS ((tree, tree, tree, tree, rtx, rtx));

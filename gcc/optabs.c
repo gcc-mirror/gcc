@@ -96,10 +96,14 @@ static int expand_cmplxdiv_wide PARAMS ((rtx, rtx, rtx, rtx,
 				       rtx, rtx, enum machine_mode,
 				       int, enum optab_methods,
 				       enum mode_class, optab));
+static void prepare_cmp_insn PARAMS ((rtx *, rtx *, enum rtx_code *, rtx,
+				      enum machine_mode *, int *,
+				      enum can_compare_purpose));
 static enum insn_code can_fix_p	PARAMS ((enum machine_mode, enum machine_mode,
 				       int, int *));
-static enum insn_code can_float_p PARAMS ((enum machine_mode, enum machine_mode,
-					 int));
+static enum insn_code can_float_p PARAMS ((enum machine_mode,
+					   enum machine_mode,
+					   int));
 static rtx ftruncify	PARAMS ((rtx));
 static optab new_optab	PARAMS ((void));
 static inline optab init_optab	PARAMS ((enum rtx_code));
@@ -352,7 +356,6 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
   rtx real_t, imag_t;
   rtx temp1, temp2, lab1, lab2;
   enum machine_mode mode;
-  int align;
   rtx res;
   optab this_add_optab = add_optab;
   optab this_sub_optab = sub_optab;
@@ -392,10 +395,9 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
     return 0;
 
   mode = GET_MODE (temp1);
-  align = GET_MODE_ALIGNMENT (mode);
   lab1 = gen_label_rtx ();
   emit_cmp_and_jump_insns (temp1, temp2, LT, NULL_RTX,
-			   mode, unsignedp, align, lab1);
+			   mode, unsignedp, lab1);
 
   /* |c| >= |d|; use ratio d/c to scale dividend and divisor.  */
 
@@ -2419,7 +2421,7 @@ expand_abs (mode, op0, target, result_unsignedp, safe)
 				  NULL_RTX, op1);
   else
     do_compare_rtx_and_jump (target, CONST0_RTX (mode), GE, 0, mode,
-			     NULL_RTX, 0, NULL_RTX, op1);
+			     NULL_RTX, NULL_RTX, op1);
 
   op0 = expand_unop (mode, result_unsignedp ? neg_optab : negv_optab,
                      target, target, 0);
@@ -3035,8 +3037,7 @@ can_compare_p (code, mode, purpose)
    *PUNSIGNEDP nonzero says that the operands are unsigned;
    this matters if they need to be widened.
 
-   If they have mode BLKmode, then SIZE specifies the size of both operands,
-   and ALIGN specifies the known shared alignment of the operands.
+   If they have mode BLKmode, then SIZE specifies the size of both operands.
 
    This function performs all the setup necessary so that the caller only has
    to emit a single comparison insn.  This setup can involve doing a BLKmode
@@ -3045,22 +3046,19 @@ can_compare_p (code, mode, purpose)
    The values which are passed in through pointers can be modified; the caller
    should perform the comparison on the modified values.  */
 
-void
-prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
-		  purpose)
+static void
+prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, purpose)
      rtx *px, *py;
      enum rtx_code *pcomparison;
      rtx size;
      enum machine_mode *pmode;
      int *punsignedp;
-     int align ATTRIBUTE_UNUSED;
      enum can_compare_purpose purpose;
 {
   enum machine_mode mode = *pmode;
   rtx x = *px, y = *py;
   int unsignedp = *punsignedp;
   enum mode_class class;
-  rtx opalign ATTRIBUTE_UNUSED = GEN_INT (align / BITS_PER_UNIT);;
 
   class = GET_MODE_CLASS (mode);
 
@@ -3103,6 +3101,8 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
     {
       rtx result;
       enum machine_mode result_mode;
+      unsigned int opalign ATTRIBUTE_UNUSED
+	= (MIN (MEM_ALIGN (x), MEM_ALIGN (y)) / BITS_PER_UNIT);
 
       emit_queue ();
       x = protect_from_queue (x, 0);
@@ -3193,8 +3193,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
       if (unsignedp && ucmp_optab->handlers[(int) mode].libfunc)
 	libfunc = ucmp_optab->handlers[(int) mode].libfunc;
 
-      emit_library_call (libfunc, 1,
-			 word_mode, 2, x, mode, y, mode);
+      emit_library_call (libfunc, 1, word_mode, 2, x, mode, y, mode);
 
       /* Immediately move the result of the libcall into a pseudo
 	 register so reload doesn't clobber the value if it needs
@@ -3322,8 +3321,7 @@ emit_cmp_and_jump_insn_1 (x, y, mode, comparison, unsignedp, label)
    need to be widened by emit_cmp_insn.  UNSIGNEDP is also used to select
    the proper branch condition code.
 
-   If X and Y have mode BLKmode, then SIZE specifies the size of both X and Y,
-   and ALIGN specifies the known shared alignment of X and Y. 
+   If X and Y have mode BLKmode, then SIZE specifies the size of both X and Y.
 
    MODE is the mode of the inputs (in case they are const_int).
 
@@ -3332,13 +3330,12 @@ emit_cmp_and_jump_insn_1 (x, y, mode, comparison, unsignedp, label)
    unsigned variant based on UNSIGNEDP to select a proper jump instruction.  */
 
 void
-emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
+emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, label)
      rtx x, y;
      enum rtx_code comparison;
      rtx size;
      enum machine_mode mode;
      int unsignedp;
-     unsigned int align;
      rtx label;
 {
   rtx op0 = x, op1 = y;
@@ -3366,7 +3363,8 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
   emit_queue ();
   if (unsignedp)
     comparison = unsigned_condition (comparison);
-  prepare_cmp_insn (&op0, &op1, &comparison, size, &mode, &unsignedp, align,
+
+  prepare_cmp_insn (&op0, &op1, &comparison, size, &mode, &unsignedp,
 		    ccp_jump);
   emit_cmp_and_jump_insn_1 (op0, op1, mode, comparison, unsignedp, label);
 }
@@ -3374,15 +3372,14 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
 /* Like emit_cmp_and_jump_insns, but generate only the comparison.  */
 
 void
-emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
+emit_cmp_insn (x, y, comparison, size, mode, unsignedp)
      rtx x, y;
      enum rtx_code comparison;
      rtx size;
      enum machine_mode mode;
      int unsignedp;
-     unsigned int align;
 {
-  emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, 0);
+  emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, 0);
 }
 
 /* Emit a library call comparison between floating point X and Y.
@@ -3738,7 +3735,7 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
      and then the conditional move.  */
 
   comparison 
-    = compare_from_rtx (op0, op1, code, unsignedp, cmode, NULL_RTX, 0);
+    = compare_from_rtx (op0, op1, code, unsignedp, cmode, NULL_RTX);
 
   /* ??? Watch for const0_rtx (nop) and const_true_rtx (unconditional)?  */
   /* We can get const0_rtx or const_true_rtx in some circumstances.  Just
@@ -4169,7 +4166,7 @@ expand_float (to, from, unsignedp)
 
 	      /* Test whether the sign bit is set.  */
 	      emit_cmp_and_jump_insns (from, const0_rtx, LT, NULL_RTX, imode,
-				       0, 0, neglabel);
+				       0, neglabel);
 
 	      /* The sign bit is not set.  Convert as signed.  */
 	      expand_float (target, from, 0);
@@ -4217,7 +4214,7 @@ expand_float (to, from, unsignedp)
 
       do_pending_stack_adjust ();
       emit_cmp_and_jump_insns (from, const0_rtx, GE, NULL_RTX, GET_MODE (from),
-			        0, 0, label);
+			       0, label);
 
       /* On SCO 3.2.1, ldexp rejects values outside [0.5, 1).
 	 Rather than setting up a dconst_dot_5, let's hope SCO
@@ -4425,7 +4422,7 @@ expand_fix (to, from, unsignedp)
 	  /* See if we need to do the subtraction.  */
 	  do_pending_stack_adjust ();
 	  emit_cmp_and_jump_insns (from, limit, GE, NULL_RTX, GET_MODE (from),
-				   0, 0, lab1);
+				   0, lab1);
 
 	  /* If not, do the signed "fix" and branch around fixup code.  */
 	  expand_fix (to, from, 0);

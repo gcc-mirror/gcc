@@ -2577,7 +2577,7 @@ extern tree maybe_build_cleanup		PARAMS ((tree));
 extern tree get_inner_reference		PARAMS ((tree, HOST_WIDE_INT *,
 						 HOST_WIDE_INT *, tree *,
 						 enum machine_mode *, int *,
-						 int *, unsigned int *));
+						 int *));
 
 /* Given a DECL or TYPE, return the scope in which it was declared, or
    NUL_TREE if there is no containing scope.  */

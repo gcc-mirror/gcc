@@ -1,5 +1,5 @@
 /* Definitions of target machine for Mitsubishi D30V.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GNU CC.
@@ -2290,7 +2290,7 @@ d30v_expand_builtin_va_arg(valist, type)
 		 build_int_2 (1, 0));
 
       emit_cmp_and_jump_insns (expand_expr (t, NULL_RTX, QImode, EXPAND_NORMAL),
-			       GEN_INT (0), EQ, const1_rtx, QImode, 1, 1,
+			       GEN_INT (0), EQ, const1_rtx, QImode, 1,
 			       lab_false);
 
       t = build (POSTINCREMENT_EXPR, TREE_TYPE (arg_num), arg_num,

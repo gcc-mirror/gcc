@@ -1806,9 +1806,9 @@ nonoverlapping_memrefs_p (x, y)
   if (! rtx_equal_p (basex, basey))
       return ((CONSTANT_P (basex) && CONSTANT_P (basey))
 	      || (CONSTANT_P (basex) && REG_P (basey)
-		  && REGNO (basey) <= LAST_VIRTUAL_REGISTER)
+		  && REGNO_PTR_FRAME_P (REGNO (basey)))
 	      || (CONSTANT_P (basey) && REG_P (basex)
-		  && REGNO (basex) <= LAST_VIRTUAL_REGISTER));
+		  && REGNO_PTR_FRAME_P (REGNO (basex))));
 
   sizex = (GET_CODE (rtlx) != MEM ? GET_MODE_SIZE (GET_MODE (rtlx))
 	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
