@@ -43,9 +43,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern int xmalloc ();
-extern void free ();
-
 /* Tree nodes of permanent duration are allocated in this obstack.
    They are the identifier nodes, and everything outside of
    the bodies and parameters of function definitions.  */

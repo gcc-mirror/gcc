@@ -526,6 +526,8 @@ extern char *note_insn_name[];
 
 /* Generally useful functions.  */
 
+extern char *xmalloc ();
+extern void free ();
 extern rtx rtx_alloc ();
 extern rtvec rtvec_alloc ();
 extern rtx find_reg_note ();

@@ -1161,11 +1161,11 @@ botch (s)
 
 /* Same as `malloc' but report error if no memory available.  */
 
-int
+char *
 xmalloc (size)
      unsigned size;
 {
-  register int value = (int) malloc (size);
+  register char *value = (char *) malloc (size);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;
@@ -1173,12 +1173,12 @@ xmalloc (size)
 
 /* Same as `realloc' but report error if no memory available.  */
 
-int
+char *
 xrealloc (ptr, size)
      char *ptr;
      int size;
 {
-  int result = realloc (ptr, size);
+  char *result = (char *) realloc (ptr, size);
   if (!result)
     fatal ("virtual memory exhausted");
   return result;

@@ -2782,6 +2782,12 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	  else
 	    op0 = subtarget;
 
+	  /* If we want to keep subexpressions around, don't reuse our
+	     last target.  */
+
+	  if (preserve_subexpressions_p ())
+	    subtarget = 0;
+
 	  /* Now normalize to the proper value in COMPARE_MODE.  Sometimes
 	     we don't have to do anything.  */
 	  if (normalizep == 0 || normalizep == STORE_FLAG_VALUE)

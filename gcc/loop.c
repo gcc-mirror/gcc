@@ -193,8 +193,6 @@ extern struct obstack *rtl_obstack;
 #define obstack_chunk_free free
 
 extern char *oballoc ();
-extern int xmalloc ();
-extern void free ();
 
 /* During the analysis of a loop, a chain of `struct movable's
    is made to record all the movable insns found.
