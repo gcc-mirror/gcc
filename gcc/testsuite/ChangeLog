@@ -1,5 +1,9 @@
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/crash68.C: New test.
+
+2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/crash42.C: New test.
 
 2001-07-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>

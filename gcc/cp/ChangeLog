@@ -1,5 +1,13 @@
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/3624
+	* call.c (resolve_args): Simplify, call
+	convert_from_reference.
+	(build_new_op): Resolve and convert from reference ARG1
+	earlier. Adjust ARG2 & ARG3 resolve and conversion.
+
+2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/3152
 	* decl.c (grokdeclarator): Detect when a function typedef is
 	declaring a function, and create last_function_parms correctly.

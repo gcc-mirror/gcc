@@ -2546,15 +2546,19 @@ resolve_args (args)
   tree t;
   for (t = args; t; t = TREE_CHAIN (t))
     {
-      if (TREE_VALUE (t) == error_mark_node)
+      tree arg = TREE_VALUE (t);
+      
+      if (arg == error_mark_node)
 	return error_mark_node;
-      else if (TREE_CODE (TREE_TYPE (TREE_VALUE (t))) == VOID_TYPE)
+      else if (VOID_TYPE_P (TREE_TYPE (arg)))
 	{
 	  error ("invalid use of void expression");
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (TREE_VALUE (t)) == OFFSET_REF)
-	TREE_VALUE (t) = resolve_offset_ref (TREE_VALUE (t));
+      else if (TREE_CODE (arg) == OFFSET_REF)
+	arg = resolve_offset_ref (arg);
+      arg = convert_from_reference (arg);
+      TREE_VALUE (t) = arg;
     }
   return args;
 }
@@ -3210,6 +3214,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
   else
     fnname = ansi_opname (code);
 
+  if (TREE_CODE (arg1) == OFFSET_REF)
+    arg1 = resolve_offset_ref (arg1);
+  arg1 = convert_from_reference (arg1);
+  
   switch (code)
     {
     case NEW_EXPR:
@@ -3226,19 +3234,18 @@ build_new_op (code, flags, arg1, arg2, arg3)
       break;
     }
 
-  /* The comma operator can have void args.  */
-  if (TREE_CODE (arg1) == OFFSET_REF)
-    arg1 = resolve_offset_ref (arg1);
-  if (arg2 && TREE_CODE (arg2) == OFFSET_REF)
-    arg2 = resolve_offset_ref (arg2);
-  if (arg3 && TREE_CODE (arg3) == OFFSET_REF)
-    arg3 = resolve_offset_ref (arg3);
-
-  arg1 = convert_from_reference (arg1);
   if (arg2)
-    arg2 = convert_from_reference (arg2);
+    {
+      if (TREE_CODE (arg2) == OFFSET_REF)
+	arg2 = resolve_offset_ref (arg2);
+      arg2 = convert_from_reference (arg2);
+    }
   if (arg3)
-    arg3 = convert_from_reference (arg3);
+    {
+      if (TREE_CODE (arg3) == OFFSET_REF)
+	arg3 = resolve_offset_ref (arg3);
+      arg3 = convert_from_reference (arg3);
+    }
   
   if (code == COND_EXPR)
     {
