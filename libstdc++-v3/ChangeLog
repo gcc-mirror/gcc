@@ -1,3 +1,15 @@
+2003-02-13  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9320
+	* include/ext/stdio_filebuf.h
+	(stdio_filebuf(int, std::ios_base::openmode, bool, int_type),
+	stdio_filebuf(std::__c_file*, std::ios_base::openmode, int_type)):
+	Change to take a __size parameter of type size_t, not
+	of type (template parameter dependent) int_type.
+	* src/ios.cc (ios_base::Init::_S_ios_create): Change type of
+	size vars to size_t.
+	* testsuite/ext/stdio_filebuf.cc: Add.
+
 2003-02-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9563

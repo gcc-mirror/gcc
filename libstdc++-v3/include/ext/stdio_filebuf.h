@@ -58,6 +58,7 @@ namespace __gnu_cxx
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
+      typedef std::size_t                               size_t;
       
     protected:
       // Stack-based buffer for unbuffered input.
@@ -75,7 +76,7 @@ namespace __gnu_cxx
        *  file will be closed when the stdio_filebuf is closed/destroyed.
       */
       stdio_filebuf(int __fd, std::ios_base::openmode __mode, bool __del, 
-		    int_type __size);
+		    size_t __size);
 
       /**
        *  @param  f  An open @c FILE*.
@@ -88,7 +89,7 @@ namespace __gnu_cxx
        *  stdio_filebuf is closed/destroyed.
       */
       stdio_filebuf(std::__c_file* __f, std::ios_base::openmode __mode, 
-		    int_type __size = static_cast<int_type>(BUFSIZ));
+		    size_t __size = static_cast<size_t>(BUFSIZ));
 
       /**
        *  Possibly closes the external data stream, in the case of the file
@@ -117,7 +118,7 @@ namespace __gnu_cxx
   template<typename _CharT, typename _Traits>
     stdio_filebuf<_CharT, _Traits>::
     stdio_filebuf(int __fd, std::ios_base::openmode __mode, bool __del, 
-		  int_type __size)
+		  size_t __size)
     {
       _M_file.sys_open(__fd, __mode, __del);
       if (this->is_open())
@@ -142,7 +143,7 @@ namespace __gnu_cxx
   template<typename _CharT, typename _Traits>
     stdio_filebuf<_CharT, _Traits>::
     stdio_filebuf(std::__c_file* __f, std::ios_base::openmode __mode, 
-		  int_type __size)
+		  size_t __size)
     {
       _M_file.sys_open(__f, __mode);
       if (this->is_open())
