@@ -22,8 +22,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "i386.h"
 
+#ifdef YES_UNDERSCORES
 /* Define this now, because bsd386.h tests it.  */
 #define NO_UNDERSCORES
+#endif
 
 /* Use the bsd assembler syntax.  */
 /* we need to do this because gas is really a bsd style assembler,
