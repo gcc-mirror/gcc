@@ -1,3 +1,7 @@
+2000-05-11  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c: Revert both 05-09 patches.
+
 2000-05-11  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.c (print_operand): Print FP constants in
