@@ -43,13 +43,9 @@ Boston, MA 02111-1307, USA.  */
 #define LOCAL(X) L_##X
 #endif
 
-#ifdef __linux__
-#define GLOBAL(X) __##X
-#endif
-
-#ifndef GLOBAL
-#define GLOBAL(X) ___##X
-#endif
+#define	CONCAT(A,B)	A##B
+#define	GLOBAL0(U,X)	CONCAT(U,__##X)
+#define	GLOBAL(X)	GLOBAL0(__USER_LABEL_PREFIX__,X)
 
 #if defined __SH5__ && ! defined __SH4_NOFPU__
 #define FMOVD_WORKS
