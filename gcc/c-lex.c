@@ -457,19 +457,10 @@ process_directive ()
 
       if (!strcmp (name, "pragma"))
 	{
+#ifdef HANDLE_GENERIC_PRAGMAS
 	  dispatch_pragma ();
-	  goto skipline;
-
-#if 0
-#ifdef HANDLE_PRAGMA
-	  /* We invoke HANDLE_PRAGMA before HANDLE_GENERIC_PRAGMAS
-	     (if both are defined), in order to give the back
-	     end a chance to override the interpretation of
-	     SYSV style pragmas.  */
-	  if (HANDLE_PRAGMA (getch, put_back, IDENTIFIER_POINTER (value)))
-	    goto skipline;
-#endif /* HANDLE_PRAGMA */
 #endif
+	  goto skipline;
 	}
       else if (!strcmp (name, "define"))
 	{
