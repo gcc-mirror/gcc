@@ -70,7 +70,6 @@ static tree const_binop (enum tree_code, tree, tree, int);
 static hashval_t size_htab_hash (const void *);
 static int size_htab_eq (const void *, const void *);
 static tree fold_convert_const (enum tree_code, tree, tree);
-static tree fold_convert (tree, tree);
 static enum tree_code invert_tree_comparison (enum tree_code);
 static enum tree_code swap_tree_comparison (enum tree_code);
 static int comparison_to_compcode (enum tree_code);
@@ -1875,7 +1874,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 /* Convert expression ARG to type TYPE.  Used by the middle-end for
    simple conversions in preference to calling the front-end's convert.  */
 
-static tree
+tree
 fold_convert (tree type, tree arg)
 {
   tree orig = TREE_TYPE (arg);

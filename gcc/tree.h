@@ -2940,6 +2940,7 @@ extern void using_eh_for_cleanups (void);
 
 extern tree fold (tree);
 extern tree fold_initializer (tree);
+extern tree fold_convert (tree, tree);
 extern tree fold_single_bit_test (enum tree_code, tree, tree, tree);
 
 extern int force_fit_type (tree, int);

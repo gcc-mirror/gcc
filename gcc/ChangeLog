@@ -1,3 +1,19 @@
+2004-04-19  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_convert): Make function extern/public.
+	* tree.h (fold_convert): Prototype here.
+	* builtins.c (expand_builtin_strstr, expand_builtin_strchr,
+	expand_builtin_strrchr, expand_builtin_strpbrk,
+	expand_builtin_mempcpy, expand_builtin_bcopy,
+	expand_builtin_bzero, expand_builtin_memcmp,
+	expand_builtin_strcmp, expand_builtin_strncmp,
+	stabilize_va_list, expand_builtin_sprintf,
+	fold_trunc_transparent_mathfn, fold_builtin_logarithm,
+	fold_builtin_exponent, fold_builtin_mempcpy,
+	fold_builtin_strcpy, fold_builtin_strcmp, fold_builtin_strncmp,
+	fold_builtin_signbit, fold_builtin_isdigit, fold_builtin): Prefer
+	fold_convert to "convert" or "fold (build1 (NOP_EXPR, ...))".
+
 2004-04-19  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.md (UNSPEC_MV_CR_GT): New constant.
