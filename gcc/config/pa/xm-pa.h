@@ -23,6 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <magic.h>
 #if defined(SHL_MAGIC)
 #define hpux8 1
+#define HAVE_VPRINTF
 #endif
 
 #define USG
