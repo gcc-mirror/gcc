@@ -1,3 +1,22 @@
+2003-02-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (host_hook_obj): New.
+	(OBJS): Add $(host_hook_obj).
+	(host_default.o): New rule.
+	* config.gcc (host_hook_obj): New, default to host-default.o.
+	(powerpc-*-darwin*): Use host-darwin.o.
+	(out_host_hook_obj): New.
+	* configure: Regenerate.
+	* configure.in: Print information about out_host_hook_obj, substitute
+	into output files.
+	* host-default.c: New file.
+	* hosthooks.h: New file.
+	* toplev.c (general_init): Call host_hooks.extra_signals.
+	* config/rs6000/host-darwin.c: New file.
+	* config/rs6000/x-darwin: New file.
+	* doc/hostconfig.texi: Add documentation for new host hook.
+	Rearrange existing documentation.
+
 2003-02-05  Roger Sayle  <roger@eyesopen.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Replace ASM_SIMPLIFY_DWARF_ADDR

@@ -1,0 +1,4 @@
+host-darwin.o : $(srcdir)/config/rs6000/host-darwin.c $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h hosthooks.h hosthooks-def.h toplev.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/rs6000/host-darwin.c
