@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1930,7 +1930,11 @@ compile_file (name)
 	    && (TREE_ADDRESSABLE (decl)
 		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
 	    && ! DECL_EXTERNAL (decl))
-	  output_inline_function (decl);
+	  {
+	    temporary_allocation ();
+	    output_inline_function (decl);
+	    permanent_allocation ();
+	  }
 
 	/* Warn about any function
 	   declared static but not defined.
