@@ -3255,6 +3255,8 @@ build_array_from_name (type, type_wfl, name, ret_name)
   /* If we have, then craft a new type for this variable */
   if (more_dims)
     {
+      tree save = type;
+
       name = get_identifier (&string [more_dims]);
 
       /* If we have a pointer, use its type */
@@ -3273,7 +3275,14 @@ build_array_from_name (type, type_wfl, name, ret_name)
          is already an array on an unresolved type, and we just keep
          on adding dimensions) */
       else if (type_wfl)
-	type = type_wfl;
+	{
+	  int i = 0;
+	  type = type_wfl;
+	  string = IDENTIFIER_POINTER (TYPE_NAME (save));
+	  while (string[i]  == '[')
+	    ++i;
+	  more_dims += i;
+	}
 
       /* Add all the dimensions */
       while (more_dims--)
@@ -3313,8 +3322,10 @@ build_unresolved_array_type (type_or_wfl)
 		 IDENTIFIER_POINTER (EXPR_WFL_NODE (type_or_wfl)),
 		 IDENTIFIER_LENGTH (EXPR_WFL_NODE (type_or_wfl)));
   ptr = obstack_finish (&temporary_obstack);
-  EXPR_WFL_NODE (type_or_wfl) = get_identifier (ptr);
-  return type_or_wfl;
+  return build_expr_wfl (get_identifier (ptr),
+			 EXPR_WFL_FILENAME (type_or_wfl),
+			 EXPR_WFL_LINENO (type_or_wfl),
+			 EXPR_WFL_COLNO (type_or_wfl));
 }
 
 static void

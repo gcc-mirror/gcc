@@ -1,4 +1,12 @@
 2001-04-06  Tom Tromey  <tromey@redhat.com>
+	    Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	Fix for PR gcj/1404 and PR gcj/2332:
+	* parse.y (build_array_from_name): If we use the type_wfl then
+	accumulate dimensions from the original type as well.
+	(build_unresolved_array_type): Don't modify TYPE_OR_WFL in place.
+
+2001-04-06  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (analyze_clinit_body): Return true if the second operand
 	of a METHOD_EXPR is nonzero.
