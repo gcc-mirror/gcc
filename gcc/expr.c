@@ -5574,7 +5574,17 @@ expand_expr (exp, target, tmode, modifier)
 	    || TREE_CODE (TREE_TYPE (exp1)) == REFERENCE_TYPE
 	    || (TREE_CODE (exp1) == ADDR_EXPR
 		&& (exp2 = TREE_OPERAND (exp1, 0))
-		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
+		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2)))
+	    /* This may have been an array reference to the first element
+	       that was optimized away from being an addition.  */
+	    || (TREE_CODE (exp1) == NOP_EXPR
+		&& ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
+		     == REFERENCE_TYPE)
+		    || ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
+			 == POINTER_TYPE)
+			&& (AGGREGATE_TYPE_P
+			    (TREE_TYPE (TREE_TYPE
+					(TREE_OPERAND (exp1, 0)))))))))
 	  MEM_IN_STRUCT_P (temp) = 1;
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
 
