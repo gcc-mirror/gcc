@@ -1,3 +1,14 @@
+Tue Nov 23 01:03:29 1999  Hans-Peter Nilsson  <hp@axis.com>
+
+	* Makefile.in (gencheck.o): Depend on gencheck.h.
+	(insn-emit.o): Depend on flags.h, hard-reg-set.h and resource.h.
+	(insn-peep.o): Depend on except.h and function.h.
+	(insn-attrtab.o): Depend on RECOG_H.
+	(insn-output.o): Depend on toplev.h and flags.h.
+	(gengenrtl.o): Depend on real.h.
+	(gen-protos.o): Depend on cpplib.h and cpphash.h.
+	Unify all dependencies to be on RECOG_H rather than recog.h.
+
 Tue Nov 23 00:57:10 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	From Casper H.S. Dik on comp.unix.solaris, 23 Oct 1998:
