@@ -22,27 +22,37 @@
 #line 27 "cexp.y"
 
 #include "config.h"
+#if defined (__STDC__) && defined (HAVE_VPRINTF)
+# include <stdarg.h>
+# define VA_START(va_list, var) va_start (va_list, var)
+# define PRINTF_ALIST(msg) char *msg, ...
+# define PRINTF_DCL(msg)
+# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
+#else
+# include <varargs.h>
+# define VA_START(va_list, var) va_start (va_list)
+# define PRINTF_ALIST(msg) msg, va_alist
+# define PRINTF_DCL(msg) char *msg; va_dcl
+# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
+# define vfprintf(file, msg, args) \
+    { \
+      char *a0 = va_arg(args, char *); \
+      char *a1 = va_arg(args, char *); \
+      char *a2 = va_arg(args, char *); \
+      char *a3 = va_arg(args, char *); \
+      fprintf (file, msg, a0, a1, a2, a3); \
+    }
+#endif
+
+#define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
+
+#include "system.h"
 #include <setjmp.h>
 /* #define YYDEBUG 1 */
-
-
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
-
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
 
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif
-
-#include <stdio.h>
 
 typedef unsigned char U_CHAR;
 
@@ -116,30 +126,6 @@ struct arglist {
 #  define PROTO(ARGS) ()
 # endif
 #endif
-
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
-# include <stdarg.h>
-# define VA_START(va_list, var) va_start (va_list, var)
-# define PRINTF_ALIST(msg) char *msg, ...
-# define PRINTF_DCL(msg)
-# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
-#else
-# include <varargs.h>
-# define VA_START(va_list, var) va_start (va_list)
-# define PRINTF_ALIST(msg) msg, va_alist
-# define PRINTF_DCL(msg) char *msg; va_dcl
-# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
-# define vfprintf(file, msg, args) \
-    { \
-      char *a0 = va_arg(args, char *); \
-      char *a1 = va_arg(args, char *); \
-      char *a2 = va_arg(args, char *); \
-      char *a3 = va_arg(args, char *); \
-      fprintf (file, msg, a0, a1, a2, a3); \
-    }
-#endif
-
-#define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 
 HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 

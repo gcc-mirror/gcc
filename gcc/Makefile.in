@@ -1223,7 +1223,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 # C language specific files.
 
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
-    $(srcdir)/c-parse.h c-tree.h input.h flags.h
+    $(srcdir)/c-parse.h c-tree.h input.h flags.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 $(srcdir)/c-parse.h: $(srcdir)/c-parse.c
 $(srcdir)/c-parse.c: $(srcdir)/c-parse.y
@@ -1751,12 +1751,12 @@ cpp$(exeext): $(CCCP)$(exeext)
 cccp$(exeext): cccp.o cexp.o version.o prefix.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o prefix.o \
 	  version.o $(LIBS)
-cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
+cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
-cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
+cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1808,7 +1808,7 @@ unprotoize$(exeext): unprotoize.o getopt.o getopt1.o getpwd.o version.o \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
 	  pexecute.o choose-temp.o $(LIBS)
 
-protoize.o: protoize.c getopt.h $(CONFIG_H)
+protoize.o: protoize.c getopt.h $(CONFIG_H) system.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1818,7 +1818,7 @@ protoize.o: protoize.c getopt.h $(CONFIG_H)
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
 
-unprotoize.o: unprotoize.c protoize.c getopt.h $(CONFIG_H)
+unprotoize.o: unprotoize.c protoize.c getopt.h $(CONFIG_H) system.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \

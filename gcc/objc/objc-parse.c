@@ -68,9 +68,7 @@
 #line 33 "objc-parse.y"
 
 #include "config.h"
-
-#include <stdio.h>
-#include <errno.h>
+#include "system.h"
 #include <setjmp.h>
 
 #include "tree.h"
@@ -81,7 +79,6 @@
 #include "output.h"
 
 #ifdef MULTIBYTE_CHARS
-#include <stdlib.h>
 #include <locale.h>
 #endif
 
@@ -90,10 +87,6 @@
 /* Since parsers are distinct for each language, put the language string
    definition here.  */
 char *language_string = "GNU Obj-C";
-
-#ifndef errno
-extern int errno;
-#endif
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }

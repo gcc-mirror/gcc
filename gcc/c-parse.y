@@ -55,9 +55,7 @@ State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)  */
 
 %{
 #include "config.h"
-
-#include <stdio.h>
-#include <errno.h>
+#include "system.h"
 #include <setjmp.h>
 
 #include "tree.h"
@@ -68,7 +66,6 @@ State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)  */
 #include "output.h"
 
 #ifdef MULTIBYTE_CHARS
-#include <stdlib.h>
 #include <locale.h>
 #endif
 
@@ -76,10 +73,6 @@ State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)  */
 /* Since parsers are distinct for each language, put the language string
    definition here.  */
 char *language_string = "GNU C";
-
-#ifndef errno
-extern int errno;
-#endif
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }

@@ -1,3 +1,15 @@
+Mon Apr  6 16:08:04 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * c-parse.in: Include system.h, and remove stuff now made redundant.
+        * cccp.c: Likewise.
+        * cexp.y: Likewise.
+        * protoize.c: Likewise.  Properly check for cpp stringification.
+
+        * Makefile.in (c-parse.o, cccp.o, cexp.o, protoize.o, unprotoize.o):
+	Depend on system.h.  
+
+	* objc/Make-lang.in (objc-parse.o): Likewise.
+
 Mon Apr  6 14:59:58 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * gansidecl.h: Check if compiler supports __attribute__.  Provide
