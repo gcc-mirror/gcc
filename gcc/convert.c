@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GNU C.
-   Copyright (C) 1987, 1988, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU C.
 
@@ -143,13 +143,27 @@ convert_to_integer (type, expr)
       /* If we are widening the type, put in an explicit conversion.
 	 Similarly if we are not changing the width.  However, if this is
 	 a logical operation that just returns 0 or 1, we can change the
-	 type of the expression (see below).  */
+	 type of the expression.  For logical operations, we must
+	 also change the types of the operands to maintain type
+	 correctness.  */
 
-      if (TREE_CODE_CLASS (ex_form) == '<'
-	  || ex_form == TRUTH_AND_EXPR || ex_form == TRUTH_ANDIF_EXPR
-	  || ex_form == TRUTH_OR_EXPR || ex_form == TRUTH_ORIF_EXPR
-	  || ex_form == TRUTH_XOR_EXPR || ex_form == TRUTH_NOT_EXPR)
+      if (TREE_CODE_CLASS (ex_form) == '<')
 	{
+	  TREE_TYPE (expr) = type;
+	  return expr;
+	}
+      else if (ex_form == TRUTH_AND_EXPR || ex_form == TRUTH_ANDIF_EXPR
+	       || ex_form == TRUTH_OR_EXPR || ex_form == TRUTH_ORIF_EXPR
+	       || ex_form == TRUTH_XOR_EXPR)
+	{
+	  TREE_OPERAND (expr, 0) = convert (type, TREE_OPERAND (expr, 0));
+	  TREE_OPERAND (expr, 1) = convert (type, TREE_OPERAND (expr, 1));
+	  TREE_TYPE (expr) = type;
+	  return expr;
+	}
+      else if (ex_form == TRUTH_NOT_EXPR)
+	{
+	  TREE_OPERAND (expr, 0) = convert (type, TREE_OPERAND (expr, 0));
 	  TREE_TYPE (expr) = type;
 	  return expr;
 	}
