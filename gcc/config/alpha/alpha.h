@@ -1716,6 +1716,14 @@ extern void final_prescan_insn ();
 
 /* Control the assembler format that we output.  */
 
+/* Emit the .arch pseudo op.  This is separated out, because versions of
+   OSF before 4.0 do not support it.  */
+
+#define ARCH_ASM_FILE_START(FILE)				\
+  fprintf (FILE, "\t.arch %s\n",				\
+	   (TARGET_BYTE_OPS ? "ev56"				\
+	    : alpha_cpu == PROCESSOR_EV4 ? "ev4" : "ev5"));
+
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE)					\
@@ -1724,9 +1732,7 @@ extern void final_prescan_insn ();
   fprintf (FILE, "\t.set noreorder\n");				\
   fprintf (FILE, "\t.set volatile\n");                          \
   fprintf (FILE, "\t.set noat\n");				\
-  fprintf (FILE, "\t.arch %s\n",				\
-	   (TARGET_BYTE_OPS ? "ev56"				\
-	    : alpha_cpu == PROCESSOR_EV4 ? "ev4" : "ev5"));	\
+  ARCH_ASM_FILE_START (FILE);					\
   ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
 }
 

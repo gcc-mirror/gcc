@@ -21,4 +21,8 @@ Boston, MA 02111-1307, USA.  */
 /* In OSF 2 or 3, linking with -lprof1 doesn't require -lpdf.  */
 
 #undef LIB_SPEC
+
+/* The .arch pseudo op is not supported.  */
+#undef ARCH_ASM_FILE_START
+#define ARCH_ASM_FILE_START(FILE)
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} %{a:-lprof2} -lc"
