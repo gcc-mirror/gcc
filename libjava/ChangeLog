@@ -1,3 +1,8 @@
+2001-12-29 Andreas Tobler <a.tobler@schweiz.ch>
+
+	* libjava/java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN for
+	Darwin.
+
 2001-12-21  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/ObjectInputStream.java (enableResolveObject): Use
