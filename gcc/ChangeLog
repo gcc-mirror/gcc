@@ -1,3 +1,9 @@
+2004-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16405
+	* gimplify.c (gimplify_modify_expr_rhs): Handle
+	INDIRECT_REF/ADDR_EXPR combinations.
+
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_mov): Split out ...

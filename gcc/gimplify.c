@@ -2801,6 +2801,33 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
   while (ret != GS_UNHANDLED)
     switch (TREE_CODE (*from_p))
       {
+      case INDIRECT_REF:
+	{
+	  /* If we have code like 
+
+	        *(const A*)(A*)&x
+
+	     where the type of "x" is a (possibly cv-qualified variant
+	     of "A"), treat the entire expression as identical to "x".
+	     This kind of code arises in C++ when an object is bound
+	     to a const reference, and if "x" is a TARGET_EXPR we want
+	     to take advantage of the optimization below.  */
+	  tree pointer;
+
+	  pointer = TREE_OPERAND (*from_p, 0);
+	  STRIP_NOPS (pointer);
+	  if (TREE_CODE (pointer) == ADDR_EXPR
+	      && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (pointer, 0)))
+		  == TYPE_MAIN_VARIANT (TREE_TYPE (*from_p))))
+	    {
+	      *from_p = TREE_OPERAND (pointer, 0); 
+	      ret = GS_OK;
+	    }
+	  else
+	    ret = GS_UNHANDLED;
+	  break;
+	}
+
       case TARGET_EXPR:
 	{
 	  /* If we are initializing something from a TARGET_EXPR, strip the

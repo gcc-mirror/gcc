@@ -1,3 +1,8 @@
+2004-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16405
+	* g++.dg/opt/temp1.C: New test.
+
 2004-12-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/18733
