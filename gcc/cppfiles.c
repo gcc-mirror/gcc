@@ -293,6 +293,13 @@ validate_pch (pfile, filename, pchname)
     return NULL;
   if ((file->pch & 2) == 0)
     file->pch = pfile->cb.valid_pch (pfile, pchname, file->fd);
+  if (CPP_OPTION (pfile, print_include_names))
+    {
+      unsigned int i;
+      for (i = 1; i < pfile->line_maps.depth; i++)
+	putc ('.', stderr);
+      fprintf (stderr, "%c %s\n", INCLUDE_PCH_P (file) ? '!' : 'x', pchname);
+    }
   if (INCLUDE_PCH_P (file))
     {
       char *f = xstrdup (filename);

@@ -1,3 +1,11 @@
+2003-05-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/cppopts.texi (-undef): Fix texinfo warning.
+
+	* doc/cppopts.texi (-H): Document that -H works for PCH files too.
+	* cppfiles.c (validate_pch): When -H is used, print some information
+	about PCH files found.
+
 2003-05-16  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/mips/t-elf: Remove obsolete rules adding dependencies on tm.h.
