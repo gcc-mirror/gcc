@@ -363,6 +363,7 @@ java/awt/Frame.java \
 java/awt/Graphics.java \
 java/awt/Graphics2D.java \
 java/awt/GraphicsConfiguration.java \
+java/awt/GridBagConstraints.java \
 java/awt/GridLayout.java \
 java/awt/IllegalComponentStateException.java \
 java/awt/Image.java \
@@ -1329,7 +1330,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/FlowLayout.P .deps/java/awt/Font.P \
 .deps/java/awt/FontMetrics.P .deps/java/awt/Frame.P \
 .deps/java/awt/Graphics.P .deps/java/awt/Graphics2D.P \
-.deps/java/awt/GraphicsConfiguration.P .deps/java/awt/GridLayout.P \
+.deps/java/awt/GraphicsConfiguration.P \
+.deps/java/awt/GridBagConstraints.P .deps/java/awt/GridLayout.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
 .deps/java/awt/Insets.P .deps/java/awt/ItemSelectable.P \
 .deps/java/awt/Label.P .deps/java/awt/LayoutManager.P \

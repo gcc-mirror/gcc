@@ -1,3 +1,9 @@
+2000-12-06  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new file.
+	* java/awt/GridBagConstraints.java: New file.
+
 2000-12-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/Collator.java (decomposeCharacter, decmp, strength):
