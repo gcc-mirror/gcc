@@ -1178,33 +1178,12 @@ output_fp_move_double (operands)
       if (FP_REG_P (operands[1]) 
 	  || operands[1] == CONST0_RTX (GET_MODE (operands[0])))
 	output_asm_insn ("fcpy,dbl %r1,%0", operands);
-      else if (GET_CODE (operands[1]) == REG)
-	{
-	  rtx xoperands[3];
-	  xoperands[0] = operands[0];
-	  xoperands[1] = operands[1];
-	  xoperands[2] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
-	  output_asm_insn
-	    ("stw %1,-16(0,%%r30)\n\tstw %2,-12(0,%%r30)\n\tfldds -16(0,%%r30),%0",
-			   xoperands);
-	}
       else 
 	output_asm_insn ("fldds%F1 %1,%0", operands);
     }
   else if (FP_REG_P (operands[1]))
     {
-      if (GET_CODE (operands[0]) == REG)
-	{
-	  rtx xoperands[3];
-	  xoperands[2] = operands[1];
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-	  xoperands[0] = operands[0];
-	  output_asm_insn
-	    ("fstds %2,-16(0,%%r30)\n\tldw -12(0,%%r30),%1\n\tldw -16(0,%%r30),%0",
-	     xoperands);
-	}
-      else
-	output_asm_insn ("fstds%F0 %1,%0", operands);
+      output_asm_insn ("fstds%F0 %1,%0", operands);
     }
   else if (operands[1] == CONST0_RTX (GET_MODE (operands[0])))
     {
