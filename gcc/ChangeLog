@@ -1,5 +1,12 @@
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-decl.c (store_parm_decls): When comparing types in an
+	old-style function declaration with those from a previous
+	prototype, compare the unqualified versions of parameter types.
+	Fixes PR c/3116.
+
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/objc.texi: Use more logical markup.  Use TeX dashes.
 
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
