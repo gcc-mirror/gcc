@@ -1,3 +1,8 @@
+2001-01-25  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/stormy16/stormy16.md (tablejump_pcrel): Use a MEM
+	to help folding.
+
 2002-01-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (prefetch): Make address V4SI mode so that the address

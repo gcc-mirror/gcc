@@ -904,7 +904,8 @@
 }")
 
 (define_insn "tablejump_pcrel"
-  [(set (pc) (plus:HI (pc) (match_operand:HI 0 "register_operand" "r")))
+  [(set (pc) (mem:HI (plus:HI (pc) 
+			      (match_operand:HI 0 "register_operand" "r"))))
    (use (label_ref:SI (match_operand 1 "" "")))]
   ""
   "br %0"
