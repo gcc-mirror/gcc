@@ -1,3 +1,8 @@
+2000-11-22  Loren J. Rittle  <ljrittle@acm.org>
+
+	* src/Makefile.am (base_headers): Add missing backwards headers.
+	* src/Makefile.in: Regenerate.
+
 2000-11-21  scott snyder  <snyder@fnal.gov>
 
         * config/c_io_stdio.cc (seekoff): Fix return value.

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.48 2000/11/16 01:44:03 mmitchel Exp $
+## $Id: Makefile.am,v 1.49 2000/11/22 00:05:16 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -93,6 +93,8 @@ base_headers = \
 	bits/locale_facets.h bits/locale_facets.tcc bits/localefwd.h \
 	bits/stl_pthread_alloc.h bits/pthread_allocimpl.h \
 	bits/stl_threads.h bits/stl_iterator_base.h \
+	backward/complex.h backward/iomanip.h backward/istream.h \
+	backward/ostream.h backward/stream.h backward/streambuf.h \
 	backward/algo.h backward/algobase.h backward/alloc.h \
 	backward/bvector.h backward/defalloc.h backward/deque.h \
 	backward/function.h backward/hash_map.h backward/hash_set.h \
