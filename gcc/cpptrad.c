@@ -284,7 +284,7 @@ skip_whitespace (pfile, cur, skip_comments)
       out--;
       if (c == '\\' && is_vspace (*cur))
 	{
-	  cur = skip_escaped_newlines (pfile, cur);
+	  cur = skip_escaped_newlines (pfile, cur - 1);
 	  continue;
 	}
 
