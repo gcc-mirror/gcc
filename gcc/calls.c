@@ -536,14 +536,8 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 #endif
     abort ();
 
-  /* Find the CALL insn we just emitted.  */
-  for (call_insn = get_last_insn ();
-       call_insn && GET_CODE (call_insn) != CALL_INSN;
-       call_insn = PREV_INSN (call_insn))
-    ;
-
-  if (! call_insn)
-    abort ();
+  /* Find the call we just emitted.  */
+  call_insn = last_call_insn ();
 
   /* Mark memory as used for "pure" function call.  */
   if (ecf_flags & ECF_PURE)
@@ -554,20 +548,8 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 		      gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode))),
 	 call_fusage);
 
-  /* Put the register usage information on the CALL.  If there is already
-     some usage information, put ours at the end.  */
-  if (CALL_INSN_FUNCTION_USAGE (call_insn))
-    {
-      rtx link;
-
-      for (link = CALL_INSN_FUNCTION_USAGE (call_insn); XEXP (link, 1) != 0;
-	   link = XEXP (link, 1))
-	;
-
-      XEXP (link, 1) = call_fusage;
-    }
-  else
-    CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
+  /* Put the register usage information there.  */
+  add_function_usage_to (call_insn, call_fusage);
 
   /* If this is a const call, then set the insn's unchanging bit.  */
   if (ecf_flags & (ECF_CONST | ECF_PURE))
@@ -3166,14 +3148,6 @@ expand_call (exp, target, ignore)
       if (flags & ECF_LONGJMP)
 	current_function_calls_longjmp = 1;
 
-      /* If this function is returning into a memory location marked as
-	 readonly, it means it is initializing that location.  But we normally
-	 treat functions as not clobbering such locations, so we need to
-	 specify that this one does.  */
-      if (target != 0 && GET_CODE (target) == MEM
-	  && structure_value_addr != 0 && RTX_UNCHANGING_P (target))
-	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
-
       /* If value type not void, return an rtx for the value.  */
 
       /* If there are cleanups to be called, don't use a hard reg as target.
@@ -3355,6 +3329,22 @@ expand_call (exp, target, ignore)
 	  expand_end_target_temps ();
 	}
 
+      /* If this function is returning into a memory location marked as
+	 readonly, it means it is initializing that location. We normally treat
+	 functions as not clobbering such locations, so we need to specify that
+	 this one does. We do this by adding the appropriate CLOBBER to the
+	 CALL_INSN function usage list.  This cannot be done by emitting a
+	 standalone CLOBBER after the call because the latter would be ignored
+	 by at least the delay slot scheduling pass. We do this now instead of
+	 adding to call_fusage before the call to emit_call_1 because TARGET
+	 may be modified in the meantime.  */
+      if (structure_value_addr != 0 && target != 0 
+	  && GET_CODE (target) == MEM && RTX_UNCHANGING_P (target))
+	add_function_usage_to
+	  (last_call_insn (),
+	   gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_CLOBBER (VOIDmode, target),
+			      NULL_RTX));
+      
       insns = get_insns ();
       end_sequence ();
 

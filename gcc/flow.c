@@ -1832,13 +1832,14 @@ propagate_one_insn (pbi, insn)
 	  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
 	    cond = COND_EXEC_TEST (PATTERN (insn));
 
-	  /* Calls use their arguments.  */
+	  /* Calls use their arguments, and may clobber memory which
+	     address involves some register.  */
 	  for (note = CALL_INSN_FUNCTION_USAGE (insn);
 	       note;
 	       note = XEXP (note, 1))
-	    if (GET_CODE (XEXP (note, 0)) == USE)
-	      mark_used_regs (pbi, XEXP (XEXP (note, 0), 0),
-			      cond, insn);
+	    /* We find USE or CLOBBER entities in a FUNCTION_USAGE list: both
+	       of which mark_used_regs knows how to handle.  */
+	    mark_used_regs (pbi, XEXP (XEXP (note, 0), 0), cond, insn);
 
 	  /* The stack ptr is used (honorarily) by a CALL insn.  */
 	  SET_REGNO_REG_SET (pbi->reg_live, STACK_POINTER_REGNUM);

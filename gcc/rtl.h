@@ -1538,6 +1538,8 @@ extern rtx emit_line_note		PARAMS ((const char *, int));
 extern rtx emit_note			PARAMS ((const char *, int));
 extern rtx emit_line_note_force		PARAMS ((const char *, int));
 extern rtx make_insn_raw		PARAMS ((rtx));
+extern void add_function_usage_to       PARAMS ((rtx, rtx));
+extern rtx last_call_insn               PARAMS ((void));
 extern rtx previous_insn		PARAMS ((rtx));
 extern rtx next_insn			PARAMS ((rtx));
 extern rtx prev_nonnote_insn		PARAMS ((rtx));

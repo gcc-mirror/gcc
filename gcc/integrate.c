@@ -2463,6 +2463,14 @@ try_constants (insn, map)
   apply_change_group ();
   subst_constants (&PATTERN (insn), insn, map, 0);
   apply_change_group ();
+  
+  /* Enforce consistency between the addresses in the regular insn flow
+     and the ones in CALL_INSN_FUNCTION_USAGE lists, if any.  */
+  if (GET_CODE (insn) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (insn))
+    {
+      subst_constants (&CALL_INSN_FUNCTION_USAGE (insn), insn, map, 1);
+      apply_change_group ();
+    }
 
   /* Show we don't know the value of anything stored or clobbered.  */
   note_stores (PATTERN (insn), mark_stores, NULL);
