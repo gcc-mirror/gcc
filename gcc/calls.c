@@ -2552,6 +2552,8 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 	  
   /* Push the args that need to be pushed.  */
 
+  /* ARGNUM indexes the ARGVEC array in the order in which the arguments
+     are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
       register enum machine_mode mode = argvec[argnum].mode;
@@ -2569,11 +2571,11 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 #ifdef ARGS_GROW_DOWNWARD
 	  /* stack_slot is negative, but we want to index stack_usage_map
 	     with positive values.  */
-	  upper_bound = -argvec[count].offset.constant + 1;
-	  lower_bound = upper_bound - argvec[count].size.constant;
+	  upper_bound = -argvec[argnum].offset.constant + 1;
+	  lower_bound = upper_bound - argvec[argnum].size.constant;
 #else
-	  lower_bound = argvec[count].offset.constant;
-	  upper_bound = lower_bound + argvec[count].size.constant;
+	  lower_bound = argvec[argnum].offset.constant;
+	  upper_bound = lower_bound + argvec[argnum].size.constant;
 #endif
 
 	  for (i = lower_bound; i < upper_bound; i++)
@@ -2590,18 +2592,18 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 	    {
 	      /* We need to make a save area.  See what mode we can make it.  */
 	      enum machine_mode save_mode
-		= mode_for_size (argvec[count].size.constant * BITS_PER_UNIT,
+		= mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
 				 MODE_INT, 1);
 	      rtx stack_area
 		= gen_rtx (MEM, save_mode,
 			   memory_address (save_mode, plus_constant (argblock,
-					   argvec[count].offset.constant)));
-	      argvec[count].save_area = gen_reg_rtx (save_mode);
-	      emit_move_insn (argvec[count].save_area, stack_area);
+					   argvec[argnum].offset.constant)));
+	      argvec[argnum].save_area = gen_reg_rtx (save_mode);
+	      emit_move_insn (argvec[argnum].save_area, stack_area);
 	    }
 #endif
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
-			  argblock, GEN_INT (argvec[count].offset.constant));
+			  argblock, GEN_INT (argvec[argnum].offset.constant));
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
@@ -2633,6 +2635,8 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   /* Now load any reg parms into their regs.  */
 
+  /* ARGNUM indexes the ARGVEC array in the order in which the arguments
+     are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
       register enum machine_mode mode = argvec[argnum].mode;
@@ -3117,6 +3121,8 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	  
   /* Push the args that need to be pushed.  */
 
+  /* ARGNUM indexes the ARGVEC array in the order in which the arguments
+     are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
       register enum machine_mode mode = argvec[argnum].mode;
@@ -3134,11 +3140,11 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 #ifdef ARGS_GROW_DOWNWARD
 	  /* stack_slot is negative, but we want to index stack_usage_map
 	     with positive values.  */
-	  upper_bound = -argvec[count].offset.constant + 1;
-	  lower_bound = upper_bound - argvec[count].size.constant;
+	  upper_bound = -argvec[argnum].offset.constant + 1;
+	  lower_bound = upper_bound - argvec[argnum].size.constant;
 #else
-	  lower_bound = argvec[count].offset.constant;
-	  upper_bound = lower_bound + argvec[count].size.constant;
+	  lower_bound = argvec[argnum].offset.constant;
+	  upper_bound = lower_bound + argvec[argnum].size.constant;
 #endif
 
 	  for (i = lower_bound; i < upper_bound; i++)
@@ -3155,18 +3161,18 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	    {
 	      /* We need to make a save area.  See what mode we can make it.  */
 	      enum machine_mode save_mode
-		= mode_for_size (argvec[count].size.constant * BITS_PER_UNIT,
+		= mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
 				 MODE_INT, 1);
 	      rtx stack_area
 		= gen_rtx (MEM, save_mode,
 			   memory_address (save_mode, plus_constant (argblock,
-					   argvec[count].offset.constant)));
-	      argvec[count].save_area = gen_reg_rtx (save_mode);
-	      emit_move_insn (argvec[count].save_area, stack_area);
+					   argvec[argnum].offset.constant)));
+	      argvec[argnum].save_area = gen_reg_rtx (save_mode);
+	      emit_move_insn (argvec[argnum].save_area, stack_area);
 	    }
 #endif
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
-			  argblock, GEN_INT (argvec[count].offset.constant));
+			  argblock, GEN_INT (argvec[argnum].offset.constant));
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
@@ -3198,6 +3204,8 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 
   /* Now load any reg parms into their regs.  */
 
+  /* ARGNUM indexes the ARGVEC array in the order in which the arguments
+     are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
       register enum machine_mode mode = argvec[argnum].mode;
