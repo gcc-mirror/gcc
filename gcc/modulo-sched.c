@@ -155,8 +155,6 @@ static ps_insn_ptr ps_add_node_check_conflicts (partial_schedule_ptr,
 						sbitmap must_precede,
 						sbitmap must_follow);
 static void rotate_partial_schedule (partial_schedule_ptr, int);
-void set_row_column_for_ps (partial_schedule_ptr);
-
 
 /* This page defines constants and structures for the modulo scheduling
    driver.  */
