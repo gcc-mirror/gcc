@@ -1,3 +1,8 @@
+2001-01-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (barrier_align): Recognize branch around far
+	branch and redundant insn.
+
 2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * invoke.texi: Restore documentation of the drivers' switches -MD

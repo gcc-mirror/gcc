@@ -2862,7 +2862,11 @@ barrier_align (barrier_or_label)
       if (prev
 	  && GET_CODE (prev) == JUMP_INSN
 	  && JUMP_LABEL (prev)
-	  && (jump_to_next || next_real_insn (JUMP_LABEL (prev)) == next))
+	  && (jump_to_next || next_real_insn (JUMP_LABEL (prev)) == next
+	      /* If relax_delay_slots() decides NEXT was redundant
+		 with some previous instruction, it will have
+		 redirected PREV's jump to the following insn.  */
+	      || JUMP_LABEL (prev) == next_nonnote_insn (next)))
 	{
 	  rtx pat = PATTERN (prev);
 	  if (GET_CODE (pat) == PARALLEL)
