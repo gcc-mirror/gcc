@@ -77,8 +77,8 @@ namespace std
 	{
 	  _M_ok = false;
 	  __err |= ios_base::failbit;
+	  __in.setstate(__err);
 	}
-      __in.setstate(__err);
     }
 
   template<typename _CharT, typename _Traits>
@@ -121,7 +121,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -151,7 +152,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -172,7 +174,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -202,7 +205,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -223,7 +227,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -244,7 +249,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -265,7 +271,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -287,7 +294,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -308,7 +316,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -330,7 +339,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -351,7 +361,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -372,7 +383,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -393,7 +405,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -417,7 +430,8 @@ namespace std
 	}
       else if (!__sbout)
 	__err |= ios_base::failbit;
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -447,7 +461,8 @@ namespace std
 	}
       if (!_M_gcount)
 	__err |= ios_base::failbit;
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return __c;
     }
 
@@ -478,7 +493,8 @@ namespace std
 	}
       if (!_M_gcount)
 	__err |= ios_base::failbit;
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -516,7 +532,8 @@ namespace std
       *__s = char_type();
       if (!_M_gcount)
 	__err |= ios_base::failbit;
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -554,7 +571,8 @@ namespace std
 	}
       if (!_M_gcount)
 	__err |= ios_base::failbit;
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -602,7 +620,8 @@ namespace std
       *__s = char_type();
       if (!_M_gcount)
 	__err |= ios_base::failbit;
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
   
@@ -635,7 +654,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -659,7 +679,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	} 
       return __c;
     }
@@ -682,7 +703,8 @@ namespace std
 	    }	    
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -712,7 +734,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return _M_gcount;
     }
@@ -739,7 +762,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -766,7 +790,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -796,7 +821,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return __ret;
     }
@@ -841,7 +867,8 @@ namespace std
 	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -868,7 +895,8 @@ namespace std
 	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -892,7 +920,8 @@ namespace std
 	    }
 	  catch(...)
 	    { __in._M_setstate(ios_base::badbit); }
-	  __in.setstate(__err);
+	  if (__err)
+	    __in.setstate(__err);
 	}
       return __in;
     }
@@ -947,7 +976,8 @@ namespace std
 	}
       if (!__extracted)
 	__err |= ios_base::failbit;
-      __in.setstate(__err);
+      if (__err)
+	__in.setstate(__err);
       return __in;
     }
 
@@ -1028,7 +1058,8 @@ namespace std
       // 211.  operator>>(istream&, string&) doesn't set failbit
       if (!__extracted)
 	__err |= ios_base::failbit;
-      __in.setstate(__err);
+      if (__err)
+	__in.setstate(__err);
       return __in;
     }
 
@@ -1081,7 +1112,8 @@ namespace std
 	}
       if ((!__extracted && !__testdelim) || __extracted == __n)
 	__err |= ios_base::failbit;
-      __in.setstate(__err);
+      if (__err)
+	__in.setstate(__err);
       return __in;
     }
 

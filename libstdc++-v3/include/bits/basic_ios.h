@@ -141,10 +141,7 @@ namespace std
       */
       void 
       setstate(iostate __state) 
-      {
-	if (__state != ios_base::goodbit)
-	  this->clear(this->rdstate() | __state); 
-      }
+      { this->clear(this->rdstate() | __state); }
 
       // Flip the internal state on for the proper state bits, then re
       // throws the propagated exception if bit also set in
