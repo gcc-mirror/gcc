@@ -369,59 +369,174 @@ to access them.
 @section Flags in an RTL Expression
 @cindex flags in RTL expression
 
-RTL expressions contain several flags (one-bit bit-fields) and other
-values that are used in certain types of expression.  Most often they
-are accessed with the following macros:
+RTL expressions contain several flags (one-bit bit-fields)
+that are used in certain types of expression.  Most often they
+are accessed with the following macros, which expand into lvalues:
 
 @table @code
-@findex MEM_VOLATILE_P
-@cindex @code{mem} and @samp{/v}
-@cindex @code{volatil}, in @code{mem}
-@cindex @samp{/v} in RTL dump
-@item MEM_VOLATILE_P (@var{x})
-In @code{mem} expressions, nonzero for volatile memory references.
+@findex CONSTANT_POOL_ADDRESS_P
+@cindex @code{symbol_ref} and @samp{/u}
+@cindex @code{unchanging}, in @code{symbol_ref}
+@item CONSTANT_POOL_ADDRESS_P (@var{x})
+Nonzero in a @code{symbol_ref} if it refers to part of the current
+function's constant pool.  For most targets these addresses are in a
+@code{.rodata} section entirely separate from the function, but for
+some targets the addresses are close to the beginning of the function.
+In either case GCC assumes these addresses can be addressed directly,
+perhaps with the help of base registers.
+Stored in the @code{unchanging} field and printed as @samp{/u}.
+
+@findex CONST_OR_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/u}
+@cindex @code{unchanging}, in @code{call_insn}
+@item CONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn}, @code{note}, or an @code{expr_list} for notes,
+indicates that the insn represents a call to a const or pure function.
+Stored in the @code{unchanging} field and printed as @samp{/u}.
+
+@findex INSN_ANNULLED_BRANCH_P
+@cindex @code{insn} and @samp{/u}
+@cindex @code{unchanging}, in @code{insn}
+@item INSN_ANNULLED_BRANCH_P (@var{x})
+In an @code{insn} in the delay slot of a branch insn, indicates that an
+annulling branch should be used.  See the discussion under
+@code{sequence} below.  Stored in the @code{unchanging} field and printed
+as @samp{/u}.
+
+@findex INSN_DEAD_CODE_P
+@cindex @code{insn} and @samp{/s}
+@cindex @code{in_struct}, in @code{insn}
+@item INSN_DEAD_CODE_P (@var{x})
+In an @code{insn} during the dead-code elimination pass, nonzero if the
+insn is dead.
+Stored in the @code{in_struct} field and printed as @samp{/s}.
+
+@findex INSN_DELETED_P
+@cindex @code{insn} and @samp{/v}
+@cindex @code{volatil}, in @code{insn}
+@item INSN_DELETED_P (@var{x})
+In an @code{insn}, nonzero if the insn has been deleted.  Stored in the
+@code{volatil} field and printed as @samp{/v}.
+
+@findex INSN_FROM_TARGET_P
+@cindex @code{insn} and @samp{/s}
+@cindex @code{in_struct}, in @code{insn}
+@item INSN_FROM_TARGET_P (@var{x})
+In an @code{insn} in a delay slot of a branch, indicates that the insn
+is from the target of the branch.  If the branch insn has
+@code{INSN_ANNULLED_BRANCH_P} set, this insn will only be executed if
+the branch is taken.  For annulled branches with
+@code{INSN_FROM_TARGET_P} clear, the insn will be executed only if the
+branch is not taken.  When @code{INSN_ANNULLED_BRANCH_P} is not set,
+this insn will always be executed.  Stored in the @code{in_struct}
+field and printed as @samp{/s}.
+
+@findex LABEL_OUTSIDE_LOOP_P
+@cindex @code{label_ref} and @samp{/s}
+@cindex @code{in_struct}, in @code{label_ref}
+@item LABEL_OUTSIDE_LOOP_P (@var{x})
+In @code{label_ref} expressions, nonzero if this is a reference to a
+label that is outside the innermost loop containing the reference to the
+label.  Stored in the @code{in_struct} field and printed as @samp{/s}.
+
+@findex LABEL_PRESERVE_P
+@cindex @code{code_label} and @samp{/i}
+@cindex @code{in_struct}, in @code{code_label}
+@item LABEL_PRESERVE_P (@var{x})
+In a @code{code_label}, indicates that the label is referenced by
+code or data not visible to the RTL of a given function.
+Labels referenced by a non-local goto will have this bit set.  Stored
+in the @code{in_struct} field and printed as @samp{/s}.
+
+@findex LABEL_REF_NONLOCAL_P
+@cindex @code{label_ref} and @samp{/v}
+@cindex @code{volatil}, in @code{label_ref}
+@item LABEL_REF_NONLOCAL_P (@var{x})
+In @code{label_ref} and @code{reg_label} expressions, nonzero if this is
+a reference to a non-local label.
 Stored in the @code{volatil} field and printed as @samp{/v}.
+
+@findex LINK_COST_FREE
+@cindex @code{insn_list} and @samp{/c}
+@cindex @code{call}, in @code{insn_list}
+@item LINK_COST_FREE (@var{x})
+In the @code{LOG_LINKS} @code{insn_list} during scheduling, nonzero when
+the cost of executing an instruction through the link is zero, i.e., the
+link makes the cost free.  Stored in the @code{call} field and printed
+as @samp{/c}.
+
+@findex LINK_COST_ZERO
+@cindex @code{insn_list} and @samp{/j}
+@cindex @code{jump}, in @code{insn_list}
+@item LINK_COST_ZERO (@var{x})
+In the @code{LOG_LINKS} @code{insn_list} during scheduling, nonzero when
+the cost of executing an instruction through the link varies and is
+unchanged, i.e., the link has zero additional cost.
+Stored in the @code{jump} field and printed as @samp{/j}.
 
 @findex MEM_IN_STRUCT_P
 @cindex @code{mem} and @samp{/s}
 @cindex @code{in_struct}, in @code{mem}
-@cindex @samp{/s} in RTL dump
 @item MEM_IN_STRUCT_P (@var{x})
 In @code{mem} expressions, nonzero for reference to an entire structure,
 union or array, or to a component of one.  Zero for references to a
-scalar variable or through a pointer to a scalar.  Stored in the
-@code{in_struct} field and printed as @samp{/s}.  If both this flag and
-MEM_SCALAR_P are clear, then we don't know whether this MEM is in a
-structure or not.  Both flags should never be simultaneously set.
+scalar variable or through a pointer to a scalar.  If both this flag and
+@code{MEM_SCALAR_P} are clear, then we don't know whether this @code{mem}
+is in a structure or not.  Both flags should never be simultaneously set.
+Stored in the @code{in_struct} field and printed as @samp{/s}.
+
+@findex MEM_KEEP_ALIAS_SET_P
+@cindex @code{mem} and @samp{/j}
+@cindex @code{jump}, in @code{mem}
+@item MEM_KEEP_ALIAS_SET_P (@var{x})
+In @code{mem} expressions, 1 if we should keep the alias set for this
+mem unchanged when we access a component.  Set to 1, for example, when we
+are already in a non-addressable component of an aggregate.
+Stored in the @code{jump} field and printed as @samp{/j}.
 
 @findex MEM_SCALAR_P
 @cindex @code{mem} and @samp{/f}
-@cindex @code{frame_related}, in@code{mem}
-@cindex @samp{/f} in RTL dump
+@cindex @code{frame_related}, in @code{mem}
 @item MEM_SCALAR_P (@var{x})
 In @code{mem} expressions, nonzero for reference to a scalar known not
 to be a member of a structure, union, or array.  Zero for such
 references and for indirections through pointers, even pointers pointing
-to scalar types.  If both this flag and MEM_STRUCT_P are clear, then we
-don't know whether this MEM is in a structure or not.  Both flags should
+to scalar types.  If both this flag and @code{MEM_STRUCT_P} are clear, then we
+don't know whether this @code{mem} is in a structure or not.  Both flags should
 never be simultaneously set.
+Stored in the @code{frame_related} field and printed as @samp{/f}.
 
-@findex MEM_ALIAS_SET
-@item MEM_ALIAS_SET (@var{x})
-In @code{mem} expressions, the alias set to which @var{x} belongs.  If
-zero, @var{x} is not in any alias set, and may alias anything.  If
-nonzero, @var{x} may only alias objects in the same alias set.  This
-value is set (in a language-specific manner) by the front end.  This
-field is not a bit-field; it is in an integer, found as the second
-argument to the @code{mem}.
+@findex MEM_VOLATILE_P
+@cindex @code{mem} and @samp{/v}
+@cindex @code{volatil}, in @code{mem}
+@item MEM_VOLATILE_P (@var{x})
+In @code{mem} and @code{asm_operands} expressions, nonzero for volatile
+memory references.
+Stored in the @code{volatil} field and printed as @samp{/v}.
+
+@findex REG_FUNCTION_VALUE_P
+@cindex @code{reg} and @samp{/i}
+@cindex @code{integrated}, in @code{reg}
+@item REG_FUNCTION_VALUE_P (@var{x})
+Nonzero in a @code{reg} if it is the place in which this function's
+value is going to be returned.  (This happens only in a hard
+register.)  Stored in the @code{integrated} field and printed as
+@samp{/i}.
 
 @findex REG_LOOP_TEST_P
 @cindex @code{reg} and @samp{/s}
 @cindex @code{in_struct}, in @code{reg}
-@item REG_LOOP_TEST_P
+@item REG_LOOP_TEST_P (@var{x})
 In @code{reg} expressions, nonzero if this register's entire life is
 contained in the exit test code for some loop.  Stored in the
 @code{in_struct} field and printed as @samp{/s}.
+
+@findex REG_POINTER
+@cindex @code{reg} and @samp{/f}
+@cindex @code{frame_related}, in @code{reg}
+@item REG_POINTER (@var{x})
+Nonzero in a @code{reg} if the register holds a pointer.  Stored in the
+@code{frame_related} field and printed as @samp{/f}.
 
 @findex REG_USERVAR_P
 @cindex @code{reg} and @samp{/v}
@@ -432,75 +547,19 @@ the user's source code.  Zero for temporaries generated internally by
 the compiler.  Stored in the @code{volatil} field and printed as
 @samp{/v}.
 
-@cindex @samp{/i} in RTL dump
-@findex REG_FUNCTION_VALUE_P
-@cindex @code{reg} and @samp{/i}
-@cindex @code{integrated}, in @code{reg}
-@item REG_FUNCTION_VALUE_P (@var{x})
-Nonzero in a @code{reg} if it is the place in which this function's
-value is going to be returned.  (This happens only in a hard
-register.)  Stored in the @code{integrated} field and printed as
-@samp{/i}.
-
 The same hard register may be used also for collecting the values of
 functions called by this one, but @code{REG_FUNCTION_VALUE_P} is zero
 in this kind of use.
 
-@cindex @samp{/f} in RTL dump
-@findex REG_POINTER
-@cindex @code{reg} and @samp{/f}
-@cindex @code{frame_related}, in @code{reg}
-@item REG_POINTER (@var{x})
-Nonzero in a @code{reg} if the register holds a pointer.  Stored in the
-@code{frame_related} field and printed as @samp{/f}.
-
-@findex SUBREG_PROMOTED_VAR_P
-@cindex @code{subreg} and @samp{/s}
-@cindex @code{in_struct}, in @code{subreg}
-@item SUBREG_PROMOTED_VAR_P
-Nonzero in a @code{subreg} if it was made when accessing an object that
-was promoted to a wider mode in accord with the @code{PROMOTED_MODE} machine
-description macro (@pxref{Storage Layout}).  In this case, the mode of
-the @code{subreg} is the declared mode of the object and the mode of
-@code{SUBREG_REG} is the mode of the register that holds the object.
-Promoted variables are always either sign- or zero-extended to the wider
-mode on every assignment.  Stored in the @code{in_struct} field and
-printed as @samp{/s}.
-
-@findex SUBREG_PROMOTED_UNSIGNED_P
-@cindex @code{subreg} and @samp{/u}
-@cindex @code{unchanging}, in @code{subreg}
-@item SUBREG_PROMOTED_UNSIGNED_P
-Nonzero in a @code{subreg} that has @code{SUBREG_PROMOTED_VAR_P} nonzero
-if the object being referenced is kept zero-extended and zero if it
-is kept sign-extended.  Stored in the @code{unchanging} field and
-printed as @samp{/u}.
-
-@findex RTX_UNCHANGING_P
-@cindex @code{reg} and @samp{/u}
-@cindex @code{mem} and @samp{/u}
-@cindex @code{unchanging}, in @code{reg} and @code{mem}
-@cindex @samp{/u} in RTL dump
-@item RTX_UNCHANGING_P (@var{x})
-Nonzero in a @code{reg} or @code{mem} if the value is not changed.
-(This flag is not set for memory references via pointers to constants.
-Such pointers only guarantee that the object will not be changed
-explicitly by the current function.  The object might be changed by
-other functions or by aliasing.)  Stored in the
-@code{unchanging} field and printed as @samp{/u}.
-
-@findex RTX_INTEGRATED_P
-@cindex @code{integrated}, in @code{insn}
-@item RTX_INTEGRATED_P (@var{insn})
-Nonzero in an insn if it resulted from an in-line function call.
-Stored in the @code{integrated} field and printed as @samp{/i}.
-
 @findex RTX_FRAME_RELATED_P
+@cindex @code{insn} and @samp{/f}
+@cindex @code{frame_related}, in @code{insn}
 @item RTX_FRAME_RELATED_P (@var{x})
-Nonzero in an insn or expression which is part of a function prologue
+Nonzero in an @code{insn} or @code{set} which is part of a function prologue
 and sets the stack pointer, sets the frame pointer, or saves a register.
 This flag should also be set on an instruction that sets up a temporary
 register to use in place of the frame pointer.
+Stored in the @code{frame_related} field and printed as @samp{/f}.
 
 In particular, on RISC targets where there are limits on the sizes of
 immediate constants, it is sometimes impossible to reach the register
@@ -521,12 +580,77 @@ computation performed by this instruction, i.e., one that
 This flag is required for exception handling support on targets with RTL
 prologues.
 
-@findex SYMBOL_REF_USED
-@cindex @code{used}, in @code{symbol_ref}
-@item SYMBOL_REF_USED (@var{x})
-In a @code{symbol_ref}, indicates that @var{x} has been used.  This is
-normally only used to ensure that @var{x} is only declared external
-once.  Stored in the @code{used} field.
+@findex RTX_INTEGRATED_P
+@cindex @code{insn} and @samp{/i}
+@cindex @code{integrated}, in @code{insn}
+@item RTX_INTEGRATED_P (@var{x})
+Nonzero in an @code{insn}, @code{insn_list}, or @code{const} if it
+resulted from an in-line function call.
+Stored in the @code{integrated} field and printed as @samp{/i}.
+
+@findex RTX_UNCHANGING_P
+@cindex @code{reg} and @samp{/u}
+@cindex @code{mem} and @samp{/u}
+@cindex @code{unchanging}, in @code{reg} and @code{mem}
+@item RTX_UNCHANGING_P (@var{x})
+Nonzero in a @code{reg} or @code{mem} if the memory is set at most once,
+anywhere.  This does not mean that it is function invariant.
+Stored in the @code{unchanging} field and printed as @samp{/u}.
+
+@findex SCHED_GROUP_P
+@cindex @code{insn} and @samp{/i}
+@cindex @code{in_struct}, in @code{insn}
+@item SCHED_GROUP_P (@var{x})
+During instruction scheduling, in an @code{insn}, indicates that the
+previous insn must be scheduled together with this insn.  This is used to
+ensure that certain groups of instructions will not be split up by the
+instruction scheduling pass, for example, @code{use} insns before
+a @code{call_insn} may not be separated from the @code{call_insn}.
+Stored in the @code{in_struct} field and printed as @samp{/s}.
+
+@findex SET_IS_RETURN_P
+@cindex @code{insn} and @samp{/j}
+@cindex @code{jump}, in @code{insn}
+@item SET_IS_RETURN_P (@var{x})
+For a @code{set}, nonzero if it is for a return.
+Stored in the @code{jump} field and printed as @samp{/j}.
+
+@findex SIBLING_CALL_P
+@cindex @code{call_insn} and @samp{/j}
+@cindex @code{jump}, in @code{call_insn}
+@item SIBLING_CALL_P (@var{x})
+For a @code{call_insn}, nonzero if the insn is a sibling call.
+Stored in the @code{jump} field and printed as @samp{/j}.
+
+@findex STRING_POOL_ADDRESS_P
+@cindex @code{symbol_ref} and @samp{/f}
+@cindex @code{frame_related}, in @code{symbol_ref}
+@item STRING_POOL_ADDRESS_P (@var{x})
+For a @code{symbol_ref} expression, nonzero if it addresses this function's
+string constant pool.
+Stored in the @code{frame_related} field and printed as @samp{/f}.
+
+@findex SUBREG_PROMOTED_UNSIGNED_P
+@cindex @code{subreg} and @samp{/u}
+@cindex @code{unchanging}, in @code{subreg}
+@item SUBREG_PROMOTED_UNSIGNED_P (@var{x})
+Nonzero in a @code{subreg} that has @code{SUBREG_PROMOTED_VAR_P} nonzero
+if the object being referenced is kept zero-extended and zero if it
+is kept sign-extended.  Stored in the @code{unchanging} field and
+printed as @samp{/u}.
+
+@findex SUBREG_PROMOTED_VAR_P
+@cindex @code{subreg} and @samp{/s}
+@cindex @code{in_struct}, in @code{subreg}
+@item SUBREG_PROMOTED_VAR_P (@var{x})
+Nonzero in a @code{subreg} if it was made when accessing an object that
+was promoted to a wider mode in accord with the @code{PROMOTED_MODE} machine
+description macro (@pxref{Storage Layout}).  In this case, the mode of
+the @code{subreg} is the declared mode of the object and the mode of
+@code{SUBREG_REG} is the mode of the register that holds the object.
+Promoted variables are always either sign- or zero-extended to the wider
+mode on every assignment.  Stored in the @code{in_struct} field and
+printed as @samp{/s}.
 
 @findex SYMBOL_REF_FLAG
 @cindex @code{symbol_ref} and @samp{/v}
@@ -535,134 +659,57 @@ once.  Stored in the @code{used} field.
 In a @code{symbol_ref}, this is used as a flag for machine-specific purposes.
 Stored in the @code{volatil} field and printed as @samp{/v}.
 
+@findex SYMBOL_REF_USED
+@cindex @code{used}, in @code{symbol_ref}
+@item SYMBOL_REF_USED (@var{x})
+In a @code{symbol_ref}, indicates that @var{x} has been used.  This is
+normally only used to ensure that @var{x} is only declared external
+once.  Stored in the @code{used} field.
+
 @findex SYMBOL_REF_WEAK
 @cindex @code{symbol_ref} and @samp{/i}
 @cindex @code{integrated}, in @code{symbol_ref}
 @item SYMBOL_REF_WEAK (@var{x})
 In a @code{symbol_ref}, indicates that @var{x} has been declared weak.
 Stored in the @code{integrated} field and printed as @samp{/i}.
-
-@findex LABEL_OUTSIDE_LOOP_P
-@cindex @code{label_ref} and @samp{/s}
-@cindex @code{in_struct}, in @code{label_ref}
-@item LABEL_OUTSIDE_LOOP_P
-In @code{label_ref} expressions, nonzero if this is a reference to a
-label that is outside the innermost loop containing the reference to the
-label.  Stored in the @code{in_struct} field and printed as @samp{/s}.
-
-@findex INSN_DELETED_P
-@cindex @code{volatil}, in @code{insn}
-@item INSN_DELETED_P (@var{insn})
-In an insn, nonzero if the insn has been deleted.  Stored in the
-@code{volatil} field and printed as @samp{/v}.
-
-@findex INSN_ANNULLED_BRANCH_P
-@cindex @code{insn} and @samp{/u}
-@cindex @code{unchanging}, in @code{insn}
-@item INSN_ANNULLED_BRANCH_P (@var{insn})
-In an @code{insn} in the delay slot of a branch insn, indicates that an
-annulling branch should be used.  See the discussion under
-@code{sequence} below.  Stored in the @code{unchanging} field and printed
-as @samp{/u}.
-
-@findex INSN_FROM_TARGET_P
-@cindex @code{insn} and @samp{/s}
-@cindex @code{in_struct}, in @code{insn}
-@cindex @samp{/s} in RTL dump
-@item INSN_FROM_TARGET_P (@var{insn})
-In an @code{insn} in a delay slot of a branch, indicates that the insn
-is from the target of the branch.  If the branch insn has
-@code{INSN_ANNULLED_BRANCH_P} set, this insn will only be executed if
-the branch is taken.  For annulled branches with
-@code{INSN_FROM_TARGET_P} clear, the insn will be executed only if the
-branch is not taken.  When @code{INSN_ANNULLED_BRANCH_P} is not set,
-this insn will always be executed.  Stored in the @code{in_struct}
-field and printed as @samp{/s}.
-
-@findex CONSTANT_POOL_ADDRESS_P
-@cindex @code{symbol_ref} and @samp{/u}
-@cindex @code{unchanging}, in @code{symbol_ref}
-@item CONSTANT_POOL_ADDRESS_P (@var{x})
-Nonzero in a @code{symbol_ref} if it refers to part of the current
-function's ``constants pool''.  These are addresses close to the
-beginning of the function, and GCC assumes they can be addressed
-directly (perhaps with the help of base registers).  Stored in the
-@code{unchanging} field and printed as @samp{/u}.
-
-@findex CONST_CALL_P
-@cindex @code{call_insn} and @samp{/u}
-@cindex @code{unchanging}, in @code{call_insn}
-@item CONST_CALL_P (@var{x})
-In a @code{call_insn}, indicates that the insn represents a call to a const
-function.  Stored in the @code{unchanging} field and printed as @samp{/u}.
-
-@findex LABEL_PRESERVE_P
-@cindex @code{code_label} and @samp{/i}
-@cindex @code{in_struct}, in @code{code_label}
-@item LABEL_PRESERVE_P (@var{x})
-In a @code{code_label}, indicates that the label can never be deleted.
-Labels referenced by a non-local goto will have this bit set.  Stored
-in the @code{in_struct} field and printed as @samp{/s}.
-
-@findex SCHED_GROUP_P
-@cindex @code{insn} and @samp{/i}
-@cindex @code{in_struct}, in @code{insn}
-@item SCHED_GROUP_P (@var{insn})
-During instruction scheduling, in an insn, indicates that the previous insn
-must be scheduled together with this insn.  This is used to ensure that
-certain groups of instructions will not be split up by the instruction
-scheduling pass, for example, @code{use} insns before a @code{call_insn} may
-not be separated from the @code{call_insn}.  Stored in the @code{in_struct}
-field and printed as @samp{/s}.
 @end table
 
-These are the fields which the above macros refer to:
+These are the fields to which the above macros refer:
 
 @table @code
-@findex used
-@item used
-Normally, this flag is used only momentarily, at the end of RTL
-generation for a function, to count the number of times an expression
-appears in insns.  Expressions that appear more than once are copied,
-according to the rules for shared structure (@pxref{Sharing}).
+@findex call
+@cindex @samp{/c} in RTL dump
+@item call
+In the @code{LOG_LINKS} of an @code{insn_list} during scheduling, 1 means that
+the cost of executing an instruction through the link is zero.
 
-In a @code{symbol_ref}, it indicates that an external declaration for
-the symbol has already been written.
+In an RTL dump, this flag is represented as @samp{/c}.
 
-In a @code{reg}, it is used by the leaf register renumbering code to ensure
-that each register is only renumbered once.
+@findex frame_related
+@cindex @samp{/f} in RTL dump
+@item frame_related
+In an @code{insn} or @code{set} expression, 1 means that it is part of
+a function prologue and sets the stack pointer, sets the frame pointer,
+saves a register, or sets up a temporary register to use in place of the
+frame pointer.
 
-@findex volatil
-@item volatil
-This flag is used in @code{mem}, @code{symbol_ref} and @code{reg}
-expressions and in insns.  In RTL dump files, it is printed as
-@samp{/v}.
+In @code{reg} expressions, 1 means that the register holds a pointer.
 
-@cindex volatile memory references
-In a @code{mem} expression, it is 1 if the memory reference is volatile.
-Volatile memory references may not be deleted, reordered or combined.
+In @code{symbol_ref} expressions, 1 means that the reference addresses
+this function's string constant pool.
 
-In a @code{symbol_ref} expression, it is used for machine-specific
-purposes.
+In @code{mem} expressions, 1 means that the reference is to a scalar.
 
-In a @code{reg} expression, it is 1 if the value is a user-level variable.
-0 indicates an internal compiler temporary.
-
-In an insn, 1 means the insn has been deleted.
+In an RTL dump, this flag is represented as @samp{/f}.
 
 @findex in_struct
+@cindex @samp{/s} in RTL dump
 @item in_struct
 In @code{mem} expressions, it is 1 if the memory datum referred to is
 all or part of a structure or array; 0 if it is (or might be) a scalar
 variable.  A reference through a C pointer has 0 because the pointer
 might point to a scalar variable.  This information allows the compiler
 to determine something about possible cases of aliasing.
-
-In an insn in the delay slot of a branch, 1 means that this insn is from
-the target of the branch.
-
-During instruction scheduling, in an insn, 1 means that this insn must be
-scheduled as part of a group together with the previous insn.
 
 In @code{reg} expressions, it is 1 if the register has its entire life
 contained within the test expression of some loop.
@@ -679,9 +726,50 @@ This is used for labels which are the target of non-local gotos.  Such a
 label that would have been deleted is replaced with a @code{note} of type
 @code{NOTE_INSN_DELETED_LABEL}.
 
+In an @code{insn} during dead-code elimination, 1 means that the insn is
+dead code.
+
+In an @code{insn} during reorg for an insn in the delay slot of a branch,
+1 means that this insn is from the target of the branch.
+
+In an @code{insn} during instruction scheduling, 1 means that this insn
+must be scheduled as part of a group together with the previous insn.
+
 In an RTL dump, this flag is represented as @samp{/s}.
 
+@findex integrated
+@cindex @samp{/i} in RTL dump
+@item integrated
+In an @code{insn}, @code{insn_list}, or @code{const}, 1 means the RTL was
+produced by procedure integration.
+
+In @code{reg} expressions, 1 means the register contains
+the value to be returned by the current function.  On
+machines that pass parameters in registers, the same register number
+may be used for parameters as well, but this flag is not set on such
+uses.
+
+In @code{symbol_ref} expressions, 1 means the referenced symbol is weak.
+
+In an RTL dump, this flag is represented as @samp{/i}.
+
+@findex jump
+@cindex @samp{/j} in RTL dump
+@item jump
+In a @code{mem} expression, 1 means we should keep the alias set for this
+mem unchanged when we access a component.
+
+In a @code{set}, 1 means it is for a return.
+
+In a @code{call_insn}, 1 means it is a sibling call.
+
+In the @code{LOG_LINKS} of an @code{insn_list} during scheduling, 1 means the
+cost of executing an instruction through the link varies and is unchanging.
+
+In an RTL dump, this flag is represented as @samp{/j}.
+
 @findex unchanging
+@cindex @samp{/u} in RTL dump
 @item unchanging
 In @code{reg} and @code{mem} expressions, 1 means
 that the value of the expression never changes.
@@ -689,26 +777,50 @@ that the value of the expression never changes.
 In @code{subreg} expressions, it is 1 if the @code{subreg} references an
 unsigned object whose mode has been promoted to a wider mode.
 
-In an insn, 1 means that this is an annulling branch.
+In an @code{insn}, 1 means that this is an annulling branch.
 
 In a @code{symbol_ref} expression, 1 means that this symbol addresses
-something in the per-function constants pool.
+something in the per-function constant pool.
 
-In a @code{call_insn}, 1 means that this instruction is a call to a
-const function.
+In a @code{call_insn}, @code{note}, or an @code{expr_list} of notes,
+1 means that this instruction is a call to a const or pure function.
 
 In an RTL dump, this flag is represented as @samp{/u}.
 
-@findex integrated
-@item integrated
-In some kinds of expressions, including insns, this flag means the
-rtl was produced by procedure integration.
+@findex used
+@item used
+This flag is used directly (without an access macro) at the end of RTL
+generation for a function, to count the number of times an expression
+appears in insns.  Expressions that appear more than once are copied,
+according to the rules for shared structure (@pxref{Sharing}).
 
-In a @code{reg} expression, this flag indicates the register
-containing the value to be returned by the current function.  On
-machines that pass parameters in registers, the same register number
-may be used for parameters as well, but this flag is not set on such
-uses.
+For a @code{reg}, it is used directly (without an access macro) by the
+leaf register renumbering code to ensure that each register is only
+renumbered once.
+
+In a @code{symbol_ref}, it indicates that an external declaration for
+the symbol has already been written.
+
+@findex volatil
+@cindex @samp{/v} in RTL dump
+@item volatil
+@cindex volatile memory references
+In a @code{mem} or @code{asm_operands} expression, it is 1 if the memory
+reference is volatile.  Volatile memory references may not be deleted,
+reordered or combined.
+
+In a @code{symbol_ref} expression, it is used for machine-specific
+purposes.
+
+In a @code{reg} expression, it is 1 if the value is a user-level variable.
+0 indicates an internal compiler temporary.
+
+In an @code{insn}, 1 means the insn has been deleted.
+
+In @code{label_ref} and @code{reg_label} expressions, 1 means a reference
+to a non-local label.
+
+In an RTL dump, this flag is represented as @samp{/v}.
 @end table
 
 @node Machine Modes

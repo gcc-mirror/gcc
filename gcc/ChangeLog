@@ -1,3 +1,7 @@
+2002-01-07  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/rtl.texi (Flags): Clean up documentation of RTL flags
+
 2002-01-07  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (avr_mcu_types): Add new MCU types.
