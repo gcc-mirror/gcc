@@ -426,14 +426,14 @@ maybe_end_member_template_processing ()
      template <class T> class C { template <class U> void f(U); }
 
    then neither C<int>::f<char> nor C<T>::f<double> is considered
-   to be a member template.  */
+   to be a member template.  But, `template <class U> void
+   C<int>::f(U)' is considered a member template.  */
 
 int
 is_member_template (t)
      tree t;
 {
-  if (TREE_CODE (t) != FUNCTION_DECL
-      && !DECL_FUNCTION_TEMPLATE_P (t))
+  if (!DECL_FUNCTION_TEMPLATE_P (t))
     /* Anything that isn't a function or a template function is
        certainly not a member template.  */
     return 0;
@@ -442,31 +442,12 @@ is_member_template (t)
   if (hack_decl_function_context (t))
     return 0;
 
-  if ((DECL_FUNCTION_MEMBER_P (t) 
-       && !DECL_TEMPLATE_SPECIALIZATION (t))
-      || (TREE_CODE (t) == TEMPLATE_DECL 
-	  && DECL_FUNCTION_MEMBER_P (DECL_TEMPLATE_RESULT (t))))
-    {
-      tree tmpl;
-
-      if (DECL_FUNCTION_TEMPLATE_P (t))
-	tmpl = t;
-      else if (DECL_TEMPLATE_INFO (t) 
-	       && DECL_FUNCTION_TEMPLATE_P (DECL_TI_TEMPLATE (t)))
-	tmpl = DECL_TI_TEMPLATE (t);
-      else
-	tmpl = NULL_TREE;
-
-      if (tmpl
+  return (DECL_FUNCTION_MEMBER_P (DECL_TEMPLATE_RESULT (t))
 	  /* If there are more levels of template parameters than
 	     there are template classes surrounding the declaration,
 	     then we have a member template.  */
-	  && (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl)) > 
-	      template_class_depth (DECL_CLASS_CONTEXT (t))))
-	return 1;
-    }
-
-  return 0;
+	  && (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (t)) > 
+	      template_class_depth (DECL_CLASS_CONTEXT (t))));
 }
 
 #if 0 /* UNUSED */
@@ -1487,28 +1468,27 @@ int comp_template_parms (parms1, parms2)
 }
 
 
-/* Returns 1 iff old_id is a template parameter. OLD_DECL is the decl
-   from IDENTIFIER_LOCAL_VALUE (new identifier). */
+/* Returns 1 iff DECL is a template parameter.  */
 
-int decl_template_parm_p (old_decl)
-     tree old_decl;
+int decl_template_parm_p (decl)
+     tree decl;
 {
   /* For template template parms. */
-  if (TREE_CODE (old_decl) == TEMPLATE_DECL
-      && TREE_TYPE (old_decl)
-      && TREE_CODE (TREE_TYPE (old_decl)) == TEMPLATE_TEMPLATE_PARM)
+  if (TREE_CODE (decl) == TEMPLATE_DECL
+      && TREE_TYPE (decl)
+      && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
     return 1;
 
   /* For template type parms. */
-  if (TREE_CODE (old_decl) == TYPE_DECL
-      && TREE_TYPE (old_decl)
-      && TREE_CODE (TREE_TYPE (old_decl)) == TEMPLATE_TYPE_PARM)
+  if (TREE_CODE (decl) == TYPE_DECL
+      && TREE_TYPE (decl)
+      && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TYPE_PARM)
     return 1;
 
   /* For template non-type parms. */
-  if (TREE_CODE (old_decl) == CONST_DECL
-      && DECL_INITIAL (old_decl) 
-      && TREE_CODE (DECL_INITIAL (old_decl)) == TEMPLATE_PARM_INDEX)
+  if (TREE_CODE (decl) == CONST_DECL
+      && DECL_INITIAL (decl) 
+      && TREE_CODE (DECL_INITIAL (decl)) == TEMPLATE_PARM_INDEX)
     return 1;
 
   return 0;
@@ -1523,11 +1503,10 @@ void
 check_template_shadow (decl)
      tree decl;
 {
-  if (current_template_parms 
-      && IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl)))
-    {
-      tree olddecl = IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl));
+  tree olddecl = IDENTIFIER_VALUE (DECL_NAME (decl));
 
+  if (current_template_parms && olddecl)
+    {
       /* We check for decl != olddecl to avoid bogus errors for using a
 	 name inside a class.  We check TPFI to avoid duplicate errors for
 	 inline member templates.  */
@@ -3423,9 +3402,9 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
-      if (IDENTIFIER_LOCAL_VALUE (d1) 
-	  && DECL_TEMPLATE_TEMPLATE_PARM_P (IDENTIFIER_LOCAL_VALUE (d1)))
-	template = IDENTIFIER_LOCAL_VALUE (d1);
+      if (IDENTIFIER_VALUE (d1) 
+	  && DECL_TEMPLATE_TEMPLATE_PARM_P (IDENTIFIER_VALUE (d1)))
+	template = IDENTIFIER_VALUE (d1);
       else
 	{
 	  if (context)
@@ -3468,9 +3447,10 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
     my_friendly_abort (272);
 
   /* With something like `template <class T> class X class X { ... };'
-     we could end up with D1 having nothing but an IDENTIFIER_LOCAL_VALUE.
-     We don't want to do that, but we have to deal with the situation, so
-     let's give them some syntax errors to chew on instead of a crash.  */
+     we could end up with D1 having nothing but an IDENTIFIER_VALUE.
+     We don't want to do that, but we have to deal with the situation,
+     so let's give them some syntax errors to chew on instead of a
+     crash.  */
   if (! template)
     {
       cp_error ("`%T' is not a template", d1);
@@ -5434,11 +5414,9 @@ tsubst_decl (t, args, type, in_decl)
 	if (member && !strncmp (OPERATOR_TYPENAME_FORMAT,
 				IDENTIFIER_POINTER (DECL_NAME (r)),
 				sizeof (OPERATOR_TYPENAME_FORMAT) - 1))
-	  {
-	    /* Type-conversion operator.  Reconstruct the name, in
-	       case it's the name of one of the template's parameters.  */
-	    DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));
-	  }
+	  /* Type-conversion operator.  Reconstruct the name, in
+	     case it's the name of one of the template's parameters.  */
+	  DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));
 
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args, t);
 	DECL_MAIN_VARIANT (r) = r;
@@ -5452,14 +5430,6 @@ tsubst_decl (t, args, type, in_decl)
 	TREE_CHAIN (r) = NULL_TREE;
 	DECL_PENDING_INLINE_INFO (r) = 0;
 	TREE_USED (r) = 0;
-
-	if (DECL_CONSTRUCTOR_P (r))
-	  {
-	    maybe_retrofit_in_chrg (r);
-	    grok_ctor_properties (ctx, r);
-	  }
-	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
-	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
 
 	/* Set up the DECL_TEMPLATE_INFO for R and compute its mangled
 	   name.  There's no need to do this in the special friend
@@ -5507,6 +5477,14 @@ tsubst_decl (t, args, type, in_decl)
 		    == NULL_TREE))
 	      SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r), r);
 	  }
+
+	if (DECL_CONSTRUCTOR_P (r))
+	  {
+	    maybe_retrofit_in_chrg (r);
+	    grok_ctor_properties (ctx, r);
+	  }
+	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
+	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
       }
       break;
 
@@ -7688,11 +7666,12 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
       }
 
     case RECORD_TYPE:
+    case UNION_TYPE:
       if (TYPE_PTRMEMFUNC_FLAG (parm))
 	return unify (tparms, targs, TYPE_PTRMEMFUNC_FN_TYPE (parm),
 		      arg, strict, explicit_mask);
 
-      if (TREE_CODE (arg) != RECORD_TYPE)
+      if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
   
       if (CLASSTYPE_TEMPLATE_INFO (parm) && uses_template_parms (parm))

@@ -4829,7 +4829,7 @@ do_local_using_decl (decl)
   do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
 
   if (newval)
-    set_identifier_local_value (name, newval);
+    push_local_binding (name, newval);
   if (newtype)
     set_identifier_type_value (name, newtype);
 }

@@ -1,5 +1,5 @@
 // Build don't link:
-// excess errors test - XFAIL *-*-*
+// excess errors test 
 
 // This testcase won't fail if class ::foo is forward-declared in the
 // global namespace, nor if class bar is not a template class.

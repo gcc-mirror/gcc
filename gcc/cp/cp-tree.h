@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
       LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
       TREE_NEGATED_INT (in INTEGER_CST).
       IDENTIFIER_MARKED (used by search routines).
+      LOCAL_BINDING_P (in CPLUS_BINDING)
    1:  IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -92,7 +93,8 @@ Boston, MA 02111-1307, USA.  */
 struct lang_identifier
 {
   struct tree_identifier ignore;
-  tree namespace_bindings, local_value;
+  tree namespace_bindings;
+  tree bindings;
   tree class_value;
   tree class_template_info;
   struct lang_id2 *x;
@@ -127,15 +129,24 @@ typedef struct ptrmem_cst
   tree member;
 }* ptrmem_cst_t;
 
-/* For a binding between a name and an entity, defines the scope
-   where the binding is declared. Currently always points to a
-   namespace declaration.  */
-#define BINDING_SCOPE(NODE)    (((struct tree_binding*)NODE)->scope)
+/* Nonzero if this binding is for a local scope, as opposed to a class
+   or namespace scope.  */
+#define LOCAL_BINDING_P(NODE) TREE_LANG_FLAG_0(NODE)
+
+/* For a binding between a name and an entity at a non-local scope,
+   defines the scope where the binding is declared.  (Either a class
+   _TYPE node, or a NAMESPACE_DECL.)  This macro should be used only
+   for namespace-level bindings; on the IDENTIFIER_BINDING list
+   BINDING_LEVEL is used instead.  */
+#define BINDING_SCOPE(NODE) ((tree) ((struct tree_binding*)NODE)->scope)
+
 /* This is the declaration bound to the name. Possible values:
    variable, overloaded function, namespace, template, enumerator.  */
 #define BINDING_VALUE(NODE)    (((struct tree_binding*)NODE)->value)
+
 /* If name is bound to a type, this is the type (struct, union, enum).  */
 #define BINDING_TYPE(NODE)     TREE_TYPE(NODE)
+
 #define IDENTIFIER_GLOBAL_VALUE(NODE) \
   namespace_binding (NODE, global_namespace)
 #define SET_IDENTIFIER_GLOBAL_VALUE(NODE, VAL) \
@@ -148,7 +159,7 @@ typedef struct ptrmem_cst
 struct tree_binding
 {
   char common[sizeof (struct tree_common)];
-  tree scope;
+  void* scope;
   tree value;
 };
 
@@ -200,12 +211,42 @@ struct tree_srcloc
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
   (((struct lang_identifier *)(NODE))->namespace_bindings)
-#define IDENTIFIER_CLASS_VALUE(NODE)	\
-  (((struct lang_identifier *)(NODE))->class_value)
-#define IDENTIFIER_LOCAL_VALUE(NODE)	\
-  (((struct lang_identifier *)(NODE))->local_value)
 #define IDENTIFIER_TEMPLATE(NODE)	\
   (((struct lang_identifier *)(NODE))->class_template_info)
+
+/* The IDENTIFIER_BINDING is the innermost CPLUS_BINDING for the
+    identifier.  It's TREE_CHAIN is the next outermost binding.  Each
+    BINDING_VALUE is a DECL for the associated declaration.  Thus,
+    name lookup consists simply of pulling off the node at the front
+    of the list (modulo oddities for looking up the names of types,
+    and such.)  You can use BINDING_SCOPE or BINDING_LEVEL to
+    determine the scope that bound the name.  */
+#define IDENTIFIER_BINDING(NODE) \
+  (((struct lang_identifier*) (NODE))->bindings)
+
+/* The IDENTIFIER_VALUE is the value of the IDENTIFIER_BINDING, or
+   NULL_TREE if there is no binding.  */
+#define IDENTIFIER_VALUE(NODE)			\
+  (IDENTIFIER_BINDING (NODE) 			\
+   ? BINDING_VALUE (IDENTIFIER_BINDING (NODE))	\
+   : NULL_TREE)
+
+/* If we are currently in class scope, then IDENTIFIER_CLASS_VALUE
+   indicates the class-scoped binding of NODE.  This is just a pointer
+   to the BINDING_VALUE of one of the bindings in the
+   IDENTIFIER_BINDINGs list, so any time that this is set so is
+   IDENTIFIER_BINDING.  */
+#define IDENTIFIER_CLASS_VALUE(NODE) \
+  (((struct lang_identifier *) (NODE))->class_value)
+
+/* The amount of time used by the file whose special "time identifier"
+   is NODE, represented as an INTEGER_CST.  See get_time_identifier.  */
+#define TIME_IDENTIFIER_TIME(NODE) IDENTIFIER_BINDING(NODE)
+
+/* For a "time identifier" this is a INTEGER_CST.  The
+   TREE_INT_CST_LOW is 1 if the corresponding file is "interface only".
+   The TRE_INT_CST_HIGH is 1 if it is "interface unknown".  */
+#define TIME_IDENTIFIER_FILEINFO(NODE) IDENTIFIER_CLASS_VALUE (NODE)
 
 /* TREE_TYPE only indicates on local and class scope the current
    type. For namespace scope, the presence of a type in any namespace
@@ -1444,6 +1485,10 @@ struct lang_decl
    TEMPLATE_ID_EXPR if we had something like `typename X::Y<T>'.  */
 #define TYPENAME_TYPE_FULLNAME(NODE) TYPE_BINFO (NODE)
 
+/* Nonzero if NODE is an implicit typename.  */
+#define IMPLICIT_TYPENAME_P(NODE) \
+  (TREE_CODE (NODE) == TYPENAME_TYPE && TREE_TYPE (NODE))
+
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */
 #define TREE_NEGATED_INT(NODE) (TREE_LANG_FLAG_0 (NODE))
@@ -2665,7 +2710,6 @@ extern void push_to_top_level			PROTO((void));
 extern void pop_from_top_level			PROTO((void));
 extern tree identifier_type_value		PROTO((tree));
 extern void set_identifier_type_value		PROTO((tree, tree));
-extern void set_identifier_local_value		PROTO((tree, tree));
 extern void pop_everything			PROTO((void));
 extern void pushtag				PROTO((tree, tree, int));
 extern tree make_anon_name			PROTO((void));
@@ -2761,6 +2805,8 @@ extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
 extern void cat_namespace_levels                PROTO((void));
 extern void fixup_anonymous_union               PROTO((tree));
 extern int check_static_variable_definition     PROTO((tree, tree));
+extern void push_local_binding                  PROTO((tree, tree));
+extern void push_class_binding                  PROTO((tree, tree));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));

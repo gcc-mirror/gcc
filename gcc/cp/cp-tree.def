@@ -178,9 +178,9 @@ DEFTREECODE (DEFAULT_ARG, "default_arg", 'c', 2)
    the template may be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
-/* An association between namespace and entity. Parameters are the
-   scope and the (non-type) value.
-   TREE_TYPE indicates the type bound to the name. */
+/* An association between name and entity. Parameters are the scope
+   and the (non-type) value.  TREE_TYPE indicates the type bound to
+   the name. */
 DEFTREECODE (CPLUS_BINDING, "binding", 'x', 2)
 
 /* A list-like node for chaining overloading candidates. TREE_TYPE is 

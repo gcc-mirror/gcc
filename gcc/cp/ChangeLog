@@ -1,3 +1,84 @@
+1998-12-13  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.def (CPLUS_BINDING): Update documentation.
+	* cp-tree.h (LOCAL_BINDING_P): New macro.
+	(lang_identifier): Rename local_value to bindings.
+	(tree_binding): Make `scope' of type `void*', not `tree'.
+	(BINDING_SCOPE): Update documentation.
+	(IDENTIFIER_LOCAL_VALUE): Remove.
+	(IDENTIFIER_CLASS_VALUE): Document.
+	(IDENTIFIER_BINDING): New macro.
+	(IDENTIFIER_VALUE): Likewise.
+	(TIME_IDENTIFIER_TIME): Likewise.
+	(TIME_IDENTIFIER_FILEINFO): Likewise.
+	(IMPLICIT_TYPENAME_P): Likewise.
+	(set_identifier_local_value): Remove.
+	(push_local_binding): New function.
+	(push_class_binding): Likewise.
+	* class.c (pushclass): Update comments; use push_class_binding.
+	* decl.c (set_identifier_local_value_with_scope): Remove.
+	(set_identifier_local_value): Likewise.
+	(push_binding): New function.
+	(pop_binding): Likewise.
+	(binding_level): Update documentation.  Remove shadowed.
+	(BINDING_LEVEL): New macro.
+	(free_binding_nodes): New variable.
+	(poplevel): Adjust for new name-lookup scheme.  Don't mess up
+	BLOCK_VARs when doing for-scope extension.  Remove effectively
+	dead code.
+	(pushlevel_class): Tweak formatting.
+	(poplevel_class): Adjust for new name-lookup scheme.
+	(print_binding_level): Likewise.
+	(store_bindings): Likewise.
+	(pushdecl): Likewise.
+	(pushdecl_class_level): Likewise.
+	(push_class_level_binding): Likewise.
+	(push_overloaded_decl): Update comments.  Adjust for new
+	name-lookup scheme.
+	(lookup_name_real): Likewise.
+	(lookup_name_current_level): Likewise.
+	(cp_finish_decl): Likewise.
+	(require_complete_types_for_parms): Likewise.  Remove misleading
+	#if 0'd code. 
+	(grok_parms): Likewise.  Don't call
+	require_complete_types_for_parms here.
+	(grok_ctor_properties): Don't treat templates as copy
+	constructors. 
+	(grop_op_properties): Or as assignment operators.
+	(start_function): Document.  Adjust for new name-lookup scheme.
+	(finish_function): Likewise.
+	* decl2.c (do_local_using_decl): Use push_local_binding.
+	* lex.c (begin_definition_of_inclass_inline): New function, split
+	out from ...
+	(do_pending_inlines): Here, and ...
+	(process_next_inline): Here.
+	(get_time_identifier): Use TIME_IDENTIFIER_* macros.
+	(init_filename_times): Likewise.
+	(extract_interface_info): Likewise.
+	(ste_typedecl_interface_info): Likewise.
+	(check_newline): Likewise.
+	(dump_time_statistics): Likewise.
+	(handle_cp_pragma): Likewise.
+	(do_identifier): Adjust for new name-lookup scheme.
+	* parse.y (function_try_block): Return ctor_initializer_opt value.
+	(fndef): Use it.
+	(fn.defpen): Pass appropriate values to start_function.
+	(pending_inline): Use functor_try_block value, and pass
+	appropriate values to finish_function.
+	* pt.c (is_member_template): Update documentation; remove handling
+	of FUNCTION_DECLs.  As per name, this function should deal only in
+	TEMPLATE_DECLs. 
+	(decl_template_parm_p): Change name of olddecl parameter to decl.
+	(check_template_shadow): Adjust for new name-lookup scheme.
+	(lookup_template_class): Likewise.
+	(tsubst_decl): Tweak so as not to confuse member templates with
+	copy constructors and assignment operators.
+	(unify): Handle UNION_TYPEs.
+	* ptree.c (print_lang_identifier): Adjust for new name-lookup scheme.
+	(lang_print_xnode): Adjust for new name-lookup scheme.
+	* typeck.c (mark_addressable): Likewise.
+	(c_expand_return): Likewise.
+	
 1998-12-08  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokdeclarator): Allow field with same name as class

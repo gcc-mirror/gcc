@@ -236,7 +236,7 @@ empty_parms ()
 %token <ttype> PRE_PARSED_CLASS_DECL DEFARG DEFARG_MARKER
 %type <ttype> component_constructor_declarator
 %type <ttype> fn.def2 return_id fn.defpen constructor_declarator
-%type <itype> ctor_initializer_opt
+%type <itype> ctor_initializer_opt function_try_block
 %type <ttype> named_class_head named_class_head_sans_basetype
 %type <ttype> named_complex_class_head_sans_basetype
 %type <ttype> unnamed_class_head
@@ -639,7 +639,11 @@ fndef:
 	  fn.def1 maybe_return_init ctor_initializer_opt compstmt_or_error
 		{ finish_function (lineno, (int)$3, 0); }
 	| fn.def1 maybe_return_init function_try_block
-		{ }
+		{ 
+		  int nested = (hack_decl_function_context
+				(current_function_decl) != NULL_TREE);
+		  finish_function (lineno, (int)$3, nested); 
+		}
 	| fn.def1 maybe_return_init error
 		{ }
 	;
@@ -2037,7 +2041,7 @@ initlist:
 fn.defpen:
 	PRE_PARSED_FUNCTION_DECL
 		{ start_function (NULL_TREE, TREE_VALUE ($1),
-				  NULL_TREE, 1);
+				  NULL_TREE, 2);
 		  reinit_parse_for_function (); }
 
 pending_inline:
@@ -2045,11 +2049,16 @@ pending_inline:
 		{
 		  int nested = (hack_decl_function_context
 				(current_function_decl) != NULL_TREE);
-		  finish_function (lineno, (int)$3, nested);
+		  finish_function (lineno, (int)$3 | 2, nested);
 		  process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init function_try_block
-		{ process_next_inline ($1); }
+		{ 
+		  int nested = (hack_decl_function_context
+				(current_function_decl) != NULL_TREE);
+		  finish_function (lineno, (int)$3 | 2, nested); 
+                  process_next_inline ($1);
+		}
 	| fn.defpen maybe_return_init error
 		{ process_next_inline ($1); }
 	;
@@ -3339,10 +3348,8 @@ function_try_block:
                 }
 	  handler_seq
 		{
-		  int nested = (hack_decl_function_context
-				(current_function_decl) != NULL_TREE);
 		  expand_end_all_catch ();
-		  finish_function (lineno, (int)$3, nested);
+		  $$ = $3;
 		}
 	;
 

@@ -84,6 +84,7 @@ static int reduce_cmp PROTO((int *, int *));
 static int token_cmp PROTO((int *, int *));
 #endif
 #endif
+static void begin_definition_of_inclass_inline PROTO((struct pending_inline*));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
@@ -322,12 +323,13 @@ get_time_identifier (name)
   bcopy (name, buf+5, len);
   buf[len+5] = '\0';
   time_identifier = get_identifier (buf);
-  if (IDENTIFIER_LOCAL_VALUE (time_identifier) == NULL_TREE)
+  if (TIME_IDENTIFIER_TIME (time_identifier) == NULL_TREE)
     {
       push_obstacks_nochange ();
       end_temporary_allocation ();
-      IDENTIFIER_LOCAL_VALUE (time_identifier) = build_int_2 (0, 0);
-      IDENTIFIER_CLASS_VALUE (time_identifier) = build_int_2 (0, 1);
+      TIME_IDENTIFIER_TIME (time_identifier) = build_int_2 (0, 0);
+      TIME_IDENTIFIER_FILEINFO (time_identifier) 
+	= build_int_2 (0, 1);
       SET_IDENTIFIER_GLOBAL_VALUE (time_identifier, filename_times);
       filename_times = time_identifier;
       pop_obstacks ();
@@ -435,7 +437,8 @@ init_filename_times ()
     {
       header_time = 0;
       body_time = my_get_run_time ();
-      TREE_INT_CST_LOW (IDENTIFIER_LOCAL_VALUE (this_filename_time)) = body_time;
+      TREE_INT_CST_LOW (TIME_IDENTIFIER_TIME (this_filename_time)) 
+	= body_time;
     }
 }
 
@@ -1145,7 +1148,7 @@ extract_interface_info ()
     }
   if (!fileinfo)
     fileinfo = get_time_identifier (input_filename);
-  fileinfo = IDENTIFIER_CLASS_VALUE (fileinfo);
+  fileinfo = TIME_IDENTIFIER_FILEINFO (fileinfo);
   interface_only = TREE_INT_CST_LOW (fileinfo);
   interface_unknown = TREE_INT_CST_HIGH (fileinfo);
 }
@@ -1196,7 +1199,7 @@ set_typedecl_interface_info (prev, vars)
      tree prev ATTRIBUTE_UNUSED, vars;
 {
   tree id = get_time_identifier (DECL_SOURCE_FILE (vars));
-  tree fileinfo = IDENTIFIER_CLASS_VALUE (id);
+  tree fileinfo = TIME_IDENTIFIER_FILEINFO (id);
   tree type = TREE_TYPE (vars);
 
   CLASSTYPE_INTERFACE_ONLY (type) = TREE_INT_CST_LOW (fileinfo)
@@ -1222,6 +1225,37 @@ set_vardecl_interface_info (prev, vars)
   return 0;
 }
 
+/* Set up the state required to correctly handle the definition of the
+   inline function whose preparsed state has been saved in PI.  */
+
+static void
+begin_definition_of_inclass_inline (pi)
+     struct pending_inline* pi;
+{
+  tree context;
+
+  if (!pi->fndecl)
+    return;
+
+  /* If this is an inline function in a local class, we must make sure
+     that we save all pertinent information about the function
+     surrounding the local class.  */
+  context = hack_decl_function_context (pi->fndecl);
+  if (context)
+    push_cp_function_context (context);
+
+  feed_input (pi->buf, pi->len);
+  lineno = pi->lineno;
+  input_filename = pi->filename;
+  yychar = PRE_PARSED_FUNCTION_DECL;
+  yylval.ttype = build_tree_list ((tree) pi, pi->fndecl);
+  /* Pass back a handle to the rest of the inline functions, so that they
+     can be processed later.  */
+  DECL_PENDING_INLINE_INFO (pi->fndecl) = 0;
+  interface_unknown = pi->interface == 1;
+  interface_only  = pi->interface == 0;
+}
+
 /* Called from the top level: if there are any pending inlines to
    do, set up to process them now.  This function sets up the first function
    to be parsed; after it has been, the rule for fndef in parse.y will
@@ -1231,7 +1265,6 @@ void
 do_pending_inlines ()
 {
   struct pending_inline *t;
-  tree context;
 
   /* Oops, we're still dealing with the last batch.  */
   if (yychar == PRE_PARSED_FUNCTION_DECL)
@@ -1258,32 +1291,7 @@ do_pending_inlines ()
     return;
 	    
   /* Now start processing the first inline function.  */
-  context = hack_decl_function_context (t->fndecl);
-  if (context)
-    push_cp_function_context (context);
-  maybe_begin_member_template_processing (t->fndecl);
-  if (t->len > 0)
-    {
-      feed_input (t->buf, t->len);
-      lineno = t->lineno;
-#if 0
-      if (input_filename != t->filename)
-	{
-	  input_filename = t->filename;
-	  /* Get interface/implementation back in sync.  */
-	  extract_interface_info ();
-	}
-#else
-      input_filename = t->filename;
-      interface_unknown = t->interface == 1;
-      interface_only = t->interface == 0;
-#endif
-      yychar = PRE_PARSED_FUNCTION_DECL;
-    }
-  /* Pass back a handle on the rest of the inline functions, so that they
-     can be processed later.  */
-  yylval.ttype = build_tree_list ((tree) t, t->fndecl);
-  DECL_PENDING_INLINE_INFO (t->fndecl) = 0;
+  begin_definition_of_inclass_inline (t);
 }
 
 static int nextchar = -1;
@@ -1299,7 +1307,6 @@ process_next_inline (t)
   tree context;
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
   context = hack_decl_function_context (i->fndecl);  
-  maybe_end_member_template_processing ();
   if (context)
     pop_cp_function_context (context);
   i = i->next;
@@ -1317,24 +1324,8 @@ process_next_inline (t)
     }
   yychar = YYEMPTY;
   end_input ();
-  if (i && i->fndecl != NULL_TREE)
-    {
-      context = hack_decl_function_context (i->fndecl);
-      if (context)
-	push_cp_function_context (context);
-      maybe_begin_member_template_processing (i->fndecl);
-      feed_input (i->buf, i->len);
-      lineno = i->lineno;
-      input_filename = i->filename;
-      yychar = PRE_PARSED_FUNCTION_DECL;
-      yylval.ttype = build_tree_list ((tree) i, i->fndecl);
-      DECL_PENDING_INLINE_INFO (i->fndecl) = 0;
-    }
   if (i)
-    {
-      interface_unknown = i->interface == 1;
-      interface_only = i->interface == 0;
-    }
+    begin_definition_of_inclass_inline (i);
   else
     extract_interface_info ();
 }
@@ -2507,7 +2498,7 @@ linenum:
 	  int this_time = my_get_run_time ();
 	  tree time_identifier = get_time_identifier (TREE_STRING_POINTER (yylval.ttype));
 	  header_time += this_time - body_time;
-	  TREE_INT_CST_LOW (IDENTIFIER_LOCAL_VALUE (this_filename_time))
+	  TREE_INT_CST_LOW (TIME_IDENTIFIER_TIME (this_filename_time))
 	    += this_time - body_time;
 	  this_filename_time = time_identifier;
 	  body_time = this_time;
@@ -2943,11 +2934,9 @@ do_identifier (token, parsing, args)
   /* Do Koenig lookup if appropriate (inside templates we build lookup
      expressions instead).  */
   if (args && !current_template_parms && (!id || is_global (id)))
-    {
-      /* If we have arguments and we only found global names,
-         do Koenig lookup. */
-      id = lookup_arg_dependent (token, id, args);
-    }
+    /* If we have arguments and we only found global names, do Koenig
+         lookup. */
+    id = lookup_arg_dependent (token, id, args);
 
   /* Remember that this name has been used in the class definition, as per
      [class.scope0] */
@@ -3183,16 +3172,20 @@ identifier_typedecl_value (node)
   type = IDENTIFIER_TYPE_VALUE (node);
   if (type == NULL_TREE)
     return NULL_TREE;
-#define do(X) \
-  { \
-    t = (X); \
-    if (t && TREE_CODE (t) == TYPE_DECL && TREE_TYPE (t) == type) \
-      return t; \
-  }
-  do (IDENTIFIER_LOCAL_VALUE (node));
-  do (IDENTIFIER_CLASS_VALUE (node));
-  do (IDENTIFIER_NAMESPACE_VALUE (node));
-#undef do
+
+  if (IDENTIFIER_BINDING (node))
+    {
+      t = IDENTIFIER_VALUE (node);
+      if (t && TREE_CODE (t) == TYPE_DECL && TREE_TYPE (t) == type)
+	return t;
+    }
+  if (IDENTIFIER_NAMESPACE_VALUE (node))
+    {
+      t = IDENTIFIER_NAMESPACE_VALUE (node);
+      if (t && TREE_CODE (t) == TYPE_DECL && TREE_TYPE (t) == type)
+	return t;
+    }
+
   /* Will this one ever happen?  */
   if (TYPE_MAIN_DECL (type))
     return TYPE_MAIN_DECL (type);
@@ -4737,7 +4730,7 @@ dump_time_statistics ()
 {
   register tree prev = 0, decl, next;
   int this_time = my_get_run_time ();
-  TREE_INT_CST_LOW (IDENTIFIER_LOCAL_VALUE (this_filename_time))
+  TREE_INT_CST_LOW (TIME_IDENTIFIER_TIME (this_filename_time))
     += this_time - body_time;
 
   fprintf (stderr, "\n******\n");
@@ -4756,7 +4749,7 @@ dump_time_statistics ()
 
   for (decl = prev; decl; decl = IDENTIFIER_GLOBAL_VALUE (decl))
     print_time (IDENTIFIER_POINTER (decl),
-		TREE_INT_CST_LOW (IDENTIFIER_LOCAL_VALUE (decl)));
+		TREE_INT_CST_LOW (TIME_IDENTIFIER_TIME (decl)));
 }
 
 void
@@ -4847,7 +4840,8 @@ handle_cp_pragma (pname)
     }
   else if (! strcmp (pname, "interface"))
     {
-      tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
+      tree fileinfo 
+	= TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
       char *main_filename = input_filename;
 
       main_filename = file_name_nondirectory (main_filename);
@@ -4882,7 +4876,7 @@ handle_cp_pragma (pname)
 #ifdef AUTO_IMPLEMENT
 	  filename = file_name_nondirectory (main_input_filename);
 	  fi = get_time_identifier (filename);
-	  fi = IDENTIFIER_CLASS_VALUE (fi);
+	  fi = TIME_IDENTIFIER_FILEINFO (fi);
 	  TREE_INT_CST_LOW (fi) = 0;
 	  TREE_INT_CST_HIGH (fi) = 1;
 	  /* Get default.  */
@@ -4902,7 +4896,8 @@ handle_cp_pragma (pname)
     }
   else if (! strcmp (pname, "implementation"))
     {
-      tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
+      tree fileinfo 
+	= TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
       char *main_filename = main_input_filename ? main_input_filename : input_filename;
 
       main_filename = file_name_nondirectory (main_filename);
