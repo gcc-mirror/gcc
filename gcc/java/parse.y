@@ -5678,11 +5678,11 @@ resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
   return resolved_type_decl;
 }
 
-/* Effectively perform the resolution of class CLASS_TYPE. DECL or CL
-   are used to report error messages. Do not try to replace TYPE_NAME
-   (class_type) by a variable, since it is changed by
-   find_in_imports{_on_demand} and (but it doesn't really matter)
-   qualify_and_find.  */
+/* Effectively perform the resolution of class CLASS_TYPE.  DECL or CL
+   are used to report error messages; CL must either be NULL_TREE or a
+   WFL wrapping a class.  Do not try to replace TYPE_NAME (class_type)
+   by a variable, since it is changed by find_in_imports{_on_demand}
+   and (but it doesn't really matter) qualify_and_find.  */
 
 tree
 do_resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
