@@ -12619,7 +12619,6 @@ information that makes for fixing the bug.
 * Criteria: Bug Criteria.    Have you really found a bug?
 * Where: Bug Lists.          Where to send your bug report.
 * Reporting: Bug Reporting.  How to report a bug effectively.
-* Patches: Sending Patches.  How to send a patch for GNU Fortran.
 @end menu
 
 @xref{Trouble,,Known Causes of Trouble with GNU Fortran},
@@ -13134,7 +13133,8 @@ And if we can't understand what bug you are trying to fix, or why your
 patch should be an improvement, we won't install it.  A test case will
 help us to understand.
 
-@xref{Sending Patches}, for guidelines on how to make it easy for us to
+See @uref{http://gcc.gnu.org/contribute.html}
+for guidelines on how to make it easy for us to
 understand and install your patches.
 
 @item
@@ -13149,124 +13149,6 @@ A core dump file.
 We have no way of examining a core dump for your type of machine
 unless we have an identical system---and if we do have one,
 we should be able to reproduce the crash ourselves.
-@end itemize
-
-@node Sending Patches
-@section Sending Patches for GNU Fortran
-
-If you would like to write bug fixes or improvements for the GNU Fortran
-compiler, that is very helpful.
-Send suggested fixes to the mailing list for patches,
-@email{@value{email-patch}}.
-
-Please follow these guidelines so we can study your patches efficiently.
-If you don't follow these guidelines, your information might still be
-useful, but using it will take extra work.  Maintaining GNU Fortran is a lot
-of work in the best of circumstances, and we can't keep up unless you do
-your best to help.
-
-@itemize @bullet
-@item
-Send an explanation with your changes of what problem they fix or what
-improvement they bring about.  For a bug fix, just include a copy of the
-bug report, and explain why the change fixes the bug.
-
-(Referring to a bug report is not as good as including it, because then
-we will have to look it up, and we have probably already deleted it if
-we've already fixed the bug.)
-
-@item
-Always include a proper bug report for the problem you think you have
-fixed.  We need to convince ourselves that the change is right before
-installing it.  Even if it is right, we might have trouble judging it if
-we don't have a way to reproduce the problem.
-
-@item
-Include all the comments that are appropriate to help people reading the
-source in the future understand why this change was needed.
-
-@item
-Don't mix together changes made for different reasons.
-Send them @emph{individually}.
-
-If you make two changes for separate reasons, then we might not want to
-install them both.  We might want to install just one.  If you send them
-all jumbled together in a single set of diffs, we have to do extra work
-to disentangle them---to figure out which parts of the change serve
-which purpose.  If we don't have time for this, we might have to ignore
-your changes entirely.
-
-If you send each change as soon as you have written it, with its own
-explanation, then the two changes never get tangled up, and we can
-consider each one properly without any extra work to disentangle them.
-
-Ideally, each change you send should be impossible to subdivide into
-parts that we might want to consider separately, because each of its
-parts gets its motivation from the other parts.
-
-@item
-Send each change as soon as that change is finished.  Sometimes people
-think they are helping us by accumulating many changes to send them all
-together.  As explained above, this is absolutely the worst thing you
-could do.
-
-Since you should send each change separately, you might as well send it
-right away.  That gives us the option of installing it immediately if it
-is important.
-
-@item
-Use @samp{diff -c} to make your diffs.  Diffs without context are hard
-for us to install reliably.  More than that, they make it hard for us to
-study the diffs to decide whether we want to install them.  Unidiff
-format is better than contextless diffs, but not as easy to read as
-@samp{-c} format.
-
-If you have GNU @code{diff}, use @samp{diff -cp}, which shows the name of the
-function that each change occurs in.
-(The maintainer of GNU Fortran currently uses @samp{diff -rcp2N}.)
-
-@item
-Write the change log entries for your changes.  We get lots of changes,
-and we don't have time to do all the change log writing ourselves.
-
-Read the @file{ChangeLog} file to see what sorts of information to put
-in, and to learn the style that we use.  The purpose of the change log
-is to show people where to find what was changed.  So you need to be
-specific about what functions you changed; in large functions, it's
-often helpful to indicate where within the function the change was.
-
-On the other hand, once you have shown people where to find the change,
-you need not explain its purpose.  Thus, if you add a new function, all
-you need to say about it is that it is new.  If you feel that the
-purpose needs explaining, it probably does---but the explanation will be
-much more useful if you put it in comments in the code.
-
-If you would like your name to appear in the header line for who made
-the change, send us the header line.
-
-@item
-When you write the fix, keep in mind that we can't install a change that
-would break other systems.
-
-People often suggest fixing a problem by changing machine-independent
-files such as @file{toplev.c} to do something special that a particular
-system needs.  Sometimes it is totally obvious that such changes would
-break GNU Fortran for almost all users.  We can't possibly make a change like
-that.  At best it might tell us how to write another patch that would
-solve the problem acceptably.
-
-Sometimes people send fixes that @emph{might} be an improvement in
-general---but it is hard to be sure of this.  It's hard to install
-such changes because we have to study them very carefully.  Of course,
-a good explanation of the reasoning by which you concluded the change
-was correct can help convince us.
-
-The safest changes are changes to the configuration files for a
-particular machine.  These are safe because they can't create new bugs
-on other machines.
-
-Please help us keep up with the workload by designing the patch in a
-form that is good to install.
 @end itemize
 
 @node Service

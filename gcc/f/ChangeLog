@@ -1,3 +1,7 @@
+2001-10-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi (Sending Patches): Remove.
+
 2001-10-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in (f/intdoc): Depend on safe-ctype.o.
