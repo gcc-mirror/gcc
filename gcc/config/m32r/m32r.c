@@ -1,21 +1,21 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
+along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
@@ -2248,7 +2248,7 @@ m32r_print_operand (file, x, code)
   switch (code)
     {
       /* The 's' and 'p' codes are used by output_block_move() to
-	 indicate post-increment 's'tores and 'p're-increment loads.  */
+ 	 indicate pre-increment 's'tores and 'p'ost-increment loads.  */
     case 's':
       if (GET_CODE (x) == REG)
 	fprintf (file, "@+%s", reg_names [REGNO (x)]);
@@ -2833,7 +2833,21 @@ m32r_expand_block_move (operands)
     }
 
   if (leftover)
-    emit_insn (gen_movstrsi_internal (dst_reg, src_reg, GEN_INT (leftover)));
+    {
+      HOST_WIDE_INT bytes = leftover;
+
+      leftover = bytes % 4;
+      bytes   -= leftover;
+
+      if (bytes)
+	{
+	  emit_insn (gen_movstrsi_internal (dst_reg, src_reg, GEN_INT (bytes)));
+	  emit_insn (gen_addsi3 (dst_reg, dst_reg, GEN_INT (4)));
+	}
+
+      if (leftover)
+	emit_insn (gen_movstrsi_small_internal (dst_reg, src_reg, GEN_INT (leftover)));
+    }
 }
 
 
@@ -2963,6 +2977,7 @@ m32r_output_block_move (insn, operands)
 
 /* Return true if op is an integer constant, less than or equal to
    MAX_MOVE_BYTES.  */
+
 int
 m32r_block_immediate_operand (op, mode)
      rtx op;
@@ -2970,6 +2985,19 @@ m32r_block_immediate_operand (op, mode)
 {
   if (GET_CODE (op) != CONST_INT
       || INTVAL (op) > MAX_MOVE_BYTES
+      || INTVAL (op) <= 0)
+    return 0;
+
+  return 1;
+}
+
+int
+m32r_block_small_immediate_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  if (GET_CODE (op) != CONST_INT
+      || INTVAL (op) > 4
       || INTVAL (op) <= 0)
     return 0;
 
