@@ -46,4 +46,11 @@ enum rid
   RID_MAX
 };
 
+#define NORID RID_UNUSED
+
 #define RID_FIRST_MODIFIER RID_UNSIGNED
+
+/* The elements of `ridpointers' are identifier nodes
+   for the reserved type names and storage classes.
+   It is indexed by a RID_... value.  */
+extern tree ridpointers[(int) RID_MAX];
