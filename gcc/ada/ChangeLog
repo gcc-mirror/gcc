@@ -1,3 +1,8 @@
+2002-03-23  Florian Weimer  <fw@deneb.enyo.de>
+
+	* gnat_rm.texi: Sync with ACT version. 
+          (From Ben Brosgol <brosgol@gnat.com>)
+
 2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
