@@ -1,3 +1,6 @@
+#define LIBFFI_ASM
+#include <ffi.h>
+
 	.file	"linux64_closure.S"
 
 #ifdef __powerpc64__
@@ -174,7 +177,7 @@ ffi_closure_LINUX64:
 	.byte	0,12,0,1,128,0,0,0
 	.size	.ffi_closure_LINUX64,.-.ffi_closure_LINUX64
 
-	.section	.eh_frame,"aw",@progbits
+	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe1:
 	.4byte	.LECIE1-.LSCIE1	 # Length of Common Information Entry
 .LSCIE1:

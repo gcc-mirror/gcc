@@ -183,7 +183,15 @@ extern "C" {
 #endif
 #endif
 
-#ifndef LIBFFI_ASM
+#ifdef LIBFFI_ASM
+
+#ifdef HAVE_RO_EH_FRAME
+#define EH_FRAME_FLAGS "a"
+#else
+#define EH_FRAME_FLAGS "aw"
+#endif
+
+#else
 
 /* ---- Generic type definitions ----------------------------------------- */
 

@@ -1,3 +1,23 @@
+2003-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (HAVE_RO_EH_FRAME): Check whether .eh_frame section
+	should be read-only.
+	* configure: Rebuilt.
+	* fficonfig.h.in: Rebuilt.
+	* include/ffi.h.in (EH_FRAME_FLAGS): Define.
+	* src/alpha/osf.S: Use EH_FRAME_FLAGS.
+	* src/powerpc/linux64.S: Likewise.
+	* src/powerpc/linux64_closure.S: Likewise.  Include ffi.h.
+	* src/powerpc/sysv.S: Use EH_FRAME_FLAGS.  Use pcrel encoding
+	if -fpic/-fPIC/-mrelocatable.
+	* src/powerpc/powerpc_closure.S: Likewise.
+	* src/sparc/v8.S: If HAVE_RO_EH_FRAME is defined, don't include
+	#write in .eh_frame flags.
+	* src/sparc/v9.S: Likewise.
+	* src/x86/unix64.S: Use EH_FRAME_FLAGS.
+	* src/x86/sysv.S: Likewise.  Use pcrel encoding if -fpic/-fPIC.
+	* src/s390/sysv.S: Use EH_FRAME_FLAGS.  Include ffi.h.
+
 2003-05-07  Jeff Sturm  <jsturm@one-point.com>
 
 	Fixes PR bootstrap/10656

@@ -197,36 +197,51 @@ ENTRY(ffi_closure_SYSV)
 	blr
 END(ffi_closure_SYSV)
 
-	.section	".eh_frame","aw"
-__FRAME_BEGIN__:
+	.section	".eh_frame",EH_FRAME_FLAGS,@progbits
+.Lframe1:
 	.4byte	.LECIE1-.LSCIE1	 # Length of Common Information Entry
 .LSCIE1:
 	.4byte	0x0	 # CIE Identifier Tag
 	.byte	0x1	 # CIE Version
+#if defined _RELOCATABLE || defined __PIC__
+	.ascii "zR\0"	 # CIE Augmentation
+#else
 	.ascii "\0"	 # CIE Augmentation
-	.byte	0x1	 # uleb128 0x1; CIE Code Alignment Factor
-	.byte	0x7c	 # sleb128 -4; CIE Data Alignment Factor
+#endif
+	.uleb128 0x1	 # CIE Code Alignment Factor
+	.sleb128 -4	 # CIE Data Alignment Factor
 	.byte	0x41	 # CIE RA Column
+#if defined _RELOCATABLE || defined __PIC__
+	.uleb128 0x1	 # Augmentation size
+	.byte	0x1b	 # FDE Encoding (pcrel sdata4)
+#endif
 	.byte	0xc	 # DW_CFA_def_cfa
-	.byte	0x1	 # uleb128 0x1
-	.byte	0x0	 # uleb128 0x0
+	.uleb128 0x1
+	.uleb128 0x0
 	.align 2
 .LECIE1:
 .LSFDE1:
 	.4byte	.LEFDE1-.LASFDE1	 # FDE Length
 .LASFDE1:
-	.4byte	.LASFDE1-__FRAME_BEGIN__	 # FDE CIE offset
+	.4byte	.LASFDE1-.Lframe1	 # FDE CIE offset
+#if defined _RELOCATABLE || defined __PIC__
+	.4byte	.LFB1-.	 # FDE initial location
+#else
 	.4byte	.LFB1	 # FDE initial location
+#endif
 	.4byte	.LFE1-.LFB1	 # FDE address range
+#if defined _RELOCATABLE || defined __PIC__
+	.uleb128 0x0	 # Augmentation size
+#endif
 	.byte	0x4	 # DW_CFA_advance_loc4
 	.4byte	.LCFI0-.LFB1
 	.byte	0xe	 # DW_CFA_def_cfa_offset
-	.byte	144,1	 # uleb128 144
+	.uleb128 144
 	.byte	0x4	 # DW_CFA_advance_loc4
 	.4byte	.LCFI1-.LCFI0
 	.byte	0x2f	 # DW_CFA_GNU_negative_offset_extended
-	.byte	0x41	 # uleb128 0x41
-	.byte	0x1	 # uleb128 0x1
+	.uleb128 0x41
+	.uleb128 0x1
 	.align 2
 .LEFDE1:
 
