@@ -1831,7 +1831,7 @@ notice_update_cc (body, insn)
    greater than 2.  */
 
 int
-const_le_2_operand (x, mode)
+const_int_le_2_operand (x, mode)
      rtx x;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -1843,7 +1843,7 @@ const_le_2_operand (x, mode)
    greater than 6.  */
 
 int
-const_le_6_operand (x, mode)
+const_int_le_6_operand (x, mode)
      rtx x;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {

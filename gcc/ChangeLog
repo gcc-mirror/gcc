@@ -1,3 +1,12 @@
+2002-12-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Update the prototypes.
+	* config/h8300/h8300.c (const_le_2_operand): Change to
+	const_int_le_2_operand.
+	(const_int_le_6_operand): Change to const_int_le_6_operand.
+	* config/h8300/h8300.md (two peepholes): Update the function
+	names.
+
 2002-12-31  Tom Tromey  <tromey@redhat.com>
 
 	* doc/install.texi (Testing): Fixed typo.
