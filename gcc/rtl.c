@@ -1251,7 +1251,6 @@ fancy_abort (file, line, function)
   fatal (
 "Internal compiler error in `%s', at %s:%d\n\
 Please submit a full bug report.\n\
-See <URL:http://www.gnu.org/software/gcc/faq.html#bugreport> \
-for instructions.",
-	 function, trim_filename (file), line);
+See %s for instructions.",
+	 function, trim_filename (file), line, GCCBUGURL);
 }

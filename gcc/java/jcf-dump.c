@@ -779,7 +779,7 @@ help ()
   printf ("  -v, --verbose           Print extra information while running\n");
   printf ("\n");
   printf ("For bug reporting instructions, please see:\n");
-  printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>.\n");
+  printf ("%s.\n", GCCBUGURL);
   exit (0);
 }
 
