@@ -1,3 +1,7 @@
+2003-07-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* decl.c (finish_enum): Initialize underlying_type.
+
 2003-07-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9447
