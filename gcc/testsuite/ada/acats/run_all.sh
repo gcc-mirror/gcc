@@ -18,6 +18,18 @@ $*
 
 # End of customization section.
 
+display_noeol () {
+  printf "$@"
+  printf "$@" >> $dir/acats.sum
+  printf "$@" >> $dir/acats.log
+}
+
+display () {
+  echo "$@"
+  echo "$@" >> $dir/acats.sum
+  echo "$@" >> $dir/acats.log
+}
+
 dir=`pwd`
 
 if [ "$testdir" = "" ]; then
@@ -45,21 +57,20 @@ clean_dir () {
 EXTERNAL_OBJECTS=""
 # Global variable to communicate external objects to link with.
 
-echo ""
-echo ==== CONFIGURATION ==== `date`
+rm -f $dir/acats.sum $dir/acats.log
 
-type gcc
-gcc -v 2>&1
-echo host=`host_gcc -dumpmachine`
-echo target=`gcc -dumpmachine`
-type gnatmake
-gnatls -v
-echo acats src=$testdir
-echo acats obj=$dir
-echo ""
+display "	=== CONFIGURATION ==="
 
-echo ==== SUPPORT ==== `date`
-printf "Generating support files..."
+display `type gcc`
+display `gcc -v 2>&1`
+display host=`host_gcc -dumpmachine`
+display target=`gcc -dumpmachine`
+display `type gnatmake`
+gnatls -v >> $dir/acats.log
+display ""
+
+display "	=== SUPPORT ==="
+display_noeol "Generating support files..."
 
 rm -rf $dir/support
 mkdir -p $dir/support
@@ -93,7 +104,7 @@ done
 
 host_gnatmake -q -gnatws macrosub
 if [ $? -ne 0 ]; then
-   echo "**** Failed to compile macrosub"
+   display "**** Failed to compile macrosub"
    exit 1
 fi
 ./macrosub > macrosub.out 2>&1
@@ -101,22 +112,22 @@ fi
 host_gcc -c cd300051.c
 host_gnatmake -q -gnatws widechr
 if [ $? -ne 0 ]; then
-   echo "**** Failed to compile widechr"
+   display "**** Failed to compile widechr"
    exit 1
 fi
 ./widechr > widechr.out 2>&1
 
 rm -f $dir/support/{macrosub,widechr,*.ali,*.o}
 
-echo " done."
+display " done."
 
 # From here, all compilations will be made by the target compiler
 
-printf "Compiling support files..."
+display_noeol "Compiling support files..."
 
 target_gcc -c *.c
 if [ $? -ne 0 ]; then
-   echo "**** Failed to compile C code"
+   display "**** Failed to compile C code"
    exit 1
 fi
 
@@ -125,9 +136,9 @@ gnatchop *.adt > gnatchop.out 2>&1
 target_gnatmake -c -gnato -gnatE *.ads > /dev/null 2>&1
 target_gnatmake -c -gnato -gnatE *.adb
 
-echo " done."
-echo ""
-echo ==== TESTS ==== `date`
+display " done."
+display ""
+display "	=== ACATS tests ==="
 
 if [ $# -eq 0 ]; then
    chapters=`cd $dir/tests; echo *`
@@ -139,11 +150,11 @@ glob_countn=0
 glob_countok=0
 
 for chapter in $chapters; do
-   echo ==== CHAPTER $chapter ==== `date`
+   display Running chapter $chapter ...
 
    if [ ! -d $dir/tests/$chapter ]; then
-      echo "**** CHAPTER $chapter does not exist, skipping."
-      echo ""
+      display "*** CHAPTER $chapter does not exist, skipping."
+      display ""
       continue
    fi
 
@@ -156,9 +167,6 @@ for chapter in $chapters; do
    counti=0
    for i in `cat $dir/tests/$chapter/${chapter}.lst`; do 
       counti=`expr $counti + 1`
-      echo ""
-      echo "" 
-      echo ==== $i === `date` === $counti / $countn
       extraflags=""
       grep $i $testdir/overflow.lst > /dev/null 2>&1
       if [ $? -eq 0 ]; then
@@ -176,7 +184,7 @@ for chapter in $chapters; do
       ls ${i}.adb >> ${i}.lst 2> /dev/null
       main=`tail -1 ${i}.lst`
       binmain=`echo $main | sed -e 's/\(.*\)\..*/\1/g'`
-      echo "BUILD $main"
+      echo "BUILD $main" >> $dir/acats.log
       EXTERNAL_OBJECTS=""
       case $i in
         cxb30*) EXTERNAL_OBJECTS="$dir/support/cxb30040.o $dir/support/cxb30060.o $dir/support/cxb30130.o $dir/support/cxb30131.o";;
@@ -185,7 +193,7 @@ for chapter in $chapters; do
         cxh1001) extraflags="-a -f"; echo "pragma Normalize_Scalars;" > gnat.adc
       esac
       if [ "$main" = "" ]; then
-         echo "**** SCRIPT-MAIN FAILED $i"
+         display "FAIL:	$i"
          failed="${failed}${i} "
          clean_dir
          continue
@@ -193,39 +201,38 @@ for chapter in $chapters; do
 
       target_gnatmake $extraflags -I$dir/support $main
       if [ $? -ne 0 ]; then
-         echo "**** SCRIPT-BUILD FAILED $i"
+         display "FAIL:	$i"
          failed="${failed}${i} "
          clean_dir
          continue
       fi
 
-      echo "RUN $binmain"
+      echo "RUN $binmain" >> $dir/acats.log
       cd $dir/run
-      target_run $dir/tests/$chapter/$i/$binmain | tee $dir/tests/$chapter/$i/${i}.log 2>&1
+      target_run $dir/tests/$chapter/$i/$binmain > $dir/tests/$chapter/$i/${i}.log 2>&1
       cd $dir/tests/$chapter/$i
+      cat ${i}.log >> $dir/acats.log
       egrep -e '(==== |\+\+\+\+ |\!\!\!\! )' ${i}.log > /dev/null 2>&1
       if [ $? -ne 0 ]; then
-         echo "**** SCRIPT-RUN FAILED $i"
+         display "FAIL:	$i"
          failed="${failed}${i} "
       else
+         display "PASS:	$i"
          countok=`expr $countok + 1`
       fi
       clean_dir
    done
 
-   echo ""
-   echo ==== CHAPTER $chapter results: $countok / $countn
-   echo ""
    glob_countok=`expr $glob_countok + $countok`
    glob_countn=`expr $glob_countn + $countn`
 done
 
-echo ==== ACATS results: $glob_countok / $glob_countn
+display "	=== ACATS Summary ==="
+display "# of expected passes $glob_countok"
+display "# of unexpected failures `expr $glob_countn - $glob_countok`"
 
 if [ $glob_countok -ne $glob_countn ]; then
-   echo "**** FAILURES: $failed"
+   display "*** FAILURES: $failed"
 fi
-
-echo "#### ACATS done. #### `date`"
 
 exit 0
