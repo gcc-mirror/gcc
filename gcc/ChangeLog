@@ -1,5 +1,9 @@
 2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * cppmain.c: Update print.lineno with -P.
+
+2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * c-lex.c: s/change_file/file_change.
         * cpplib.h: Similarly.
         * cppmain.c: Similarly.
