@@ -90,7 +90,7 @@ BUILD_CONFIGDIRS = libiberty
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
-BUILD_CONFIGARGS = @build_configargs@
+BUILD_CONFIGARGS = @build_configargs@ --with-build-subdir="$(BUILD_SUBDIR)"
 
 # This is the list of variables to export in the environment when
 # configuring any subdirectory.  It must also be exported whenever
@@ -175,7 +175,7 @@ TARGET_CONFIGDIRS = @target_configdirs@
 TARGET_SUBDIR = @target_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
-TARGET_CONFIGARGS = @target_configargs@
+TARGET_CONFIGARGS = @target_configargs@ --with-target-subdir="$(TARGET_SUBDIR)"
 # This is the list of variables to export in the environment when
 # configuring subdirectories for the host system.
 BASE_TARGET_EXPORTS = \
@@ -2185,15 +2185,24 @@ etags tags: TAGS
 # built are.
 TAGS: do-TAGS
 
+# ------------------------------------
+# Macros for configure and all targets
+# ------------------------------------
+
+
+
+
+
 # --------------------------------------
 # Modules which run on the build machine
 # --------------------------------------
+
 
 .PHONY: configure-build-libiberty maybe-configure-build-libiberty
 maybe-configure-build-libiberty:
 @if build-libiberty
 maybe-configure-build-libiberty: configure-build-libiberty
-configure-build-libiberty:
+configure-build-libiberty: 
 	@test ! -f $(BUILD_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/libiberty ; \
 	r=`${PWD_COMMAND}`; export r; \
@@ -2210,10 +2219,11 @@ configure-build-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif build-libiberty
+
+
 
 .PHONY: all-build-libiberty maybe-all-build-libiberty
 maybe-all-build-libiberty:
@@ -2225,14 +2235,16 @@ all-build-libiberty: configure-build-libiberty
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/libiberty && \
-	  $(MAKE)  $(TARGET-build-libiberty))
+	  $(MAKE)   $(TARGET-build-libiberty))
 @endif build-libiberty
+
+
 
 .PHONY: configure-build-bison maybe-configure-build-bison
 maybe-configure-build-bison:
 @if build-bison
 maybe-configure-build-bison: configure-build-bison
-configure-build-bison:
+configure-build-bison: 
 	@test ! -f $(BUILD_SUBDIR)/bison/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/bison ; \
 	r=`${PWD_COMMAND}`; export r; \
@@ -2249,10 +2261,11 @@ configure-build-bison:
 	libsrcdir="$$s/bison"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif build-bison
+
+
 
 .PHONY: all-build-bison maybe-all-build-bison
 maybe-all-build-bison:
@@ -2264,14 +2277,16 @@ all-build-bison: configure-build-bison
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/bison && \
-	  $(MAKE)  $(TARGET-build-bison))
+	  $(MAKE)   $(TARGET-build-bison))
 @endif build-bison
+
+
 
 .PHONY: configure-build-byacc maybe-configure-build-byacc
 maybe-configure-build-byacc:
 @if build-byacc
 maybe-configure-build-byacc: configure-build-byacc
-configure-build-byacc:
+configure-build-byacc: 
 	@test ! -f $(BUILD_SUBDIR)/byacc/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/byacc ; \
 	r=`${PWD_COMMAND}`; export r; \
@@ -2288,10 +2303,11 @@ configure-build-byacc:
 	libsrcdir="$$s/byacc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif build-byacc
+
+
 
 .PHONY: all-build-byacc maybe-all-build-byacc
 maybe-all-build-byacc:
@@ -2303,14 +2319,16 @@ all-build-byacc: configure-build-byacc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/byacc && \
-	  $(MAKE)  $(TARGET-build-byacc))
+	  $(MAKE)   $(TARGET-build-byacc))
 @endif build-byacc
+
+
 
 .PHONY: configure-build-flex maybe-configure-build-flex
 maybe-configure-build-flex:
 @if build-flex
 maybe-configure-build-flex: configure-build-flex
-configure-build-flex:
+configure-build-flex: 
 	@test ! -f $(BUILD_SUBDIR)/flex/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/flex ; \
 	r=`${PWD_COMMAND}`; export r; \
@@ -2327,10 +2345,11 @@ configure-build-flex:
 	libsrcdir="$$s/flex"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif build-flex
+
+
 
 .PHONY: all-build-flex maybe-all-build-flex
 maybe-all-build-flex:
@@ -2342,14 +2361,16 @@ all-build-flex: configure-build-flex
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/flex && \
-	  $(MAKE)  $(TARGET-build-flex))
+	  $(MAKE)   $(TARGET-build-flex))
 @endif build-flex
+
+
 
 .PHONY: configure-build-m4 maybe-configure-build-m4
 maybe-configure-build-m4:
 @if build-m4
 maybe-configure-build-m4: configure-build-m4
-configure-build-m4:
+configure-build-m4: 
 	@test ! -f $(BUILD_SUBDIR)/m4/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/m4 ; \
 	r=`${PWD_COMMAND}`; export r; \
@@ -2366,10 +2387,11 @@ configure-build-m4:
 	libsrcdir="$$s/m4"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif build-m4
+
+
 
 .PHONY: all-build-m4 maybe-all-build-m4
 maybe-all-build-m4:
@@ -2381,14 +2403,16 @@ all-build-m4: configure-build-m4
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/m4 && \
-	  $(MAKE)  $(TARGET-build-m4))
+	  $(MAKE)   $(TARGET-build-m4))
 @endif build-m4
+
+
 
 .PHONY: configure-build-texinfo maybe-configure-build-texinfo
 maybe-configure-build-texinfo:
 @if build-texinfo
 maybe-configure-build-texinfo: configure-build-texinfo
-configure-build-texinfo:
+configure-build-texinfo: 
 	@test ! -f $(BUILD_SUBDIR)/texinfo/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/texinfo ; \
 	r=`${PWD_COMMAND}`; export r; \
@@ -2405,10 +2429,11 @@ configure-build-texinfo:
 	libsrcdir="$$s/texinfo"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif build-texinfo
+
+
 
 .PHONY: all-build-texinfo maybe-all-build-texinfo
 maybe-all-build-texinfo:
@@ -2420,14 +2445,16 @@ all-build-texinfo: configure-build-texinfo
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/texinfo && \
-	  $(MAKE)  $(TARGET-build-texinfo))
+	  $(MAKE)   $(TARGET-build-texinfo))
 @endif build-texinfo
+
+
 
 .PHONY: configure-build-fixincludes maybe-configure-build-fixincludes
 maybe-configure-build-fixincludes:
 @if build-fixincludes
 maybe-configure-build-fixincludes: configure-build-fixincludes
-configure-build-fixincludes:
+configure-build-fixincludes: 
 	@test ! -f $(BUILD_SUBDIR)/fixincludes/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/fixincludes ; \
 	r=`${PWD_COMMAND}`; export r; \
@@ -2444,10 +2471,11 @@ configure-build-fixincludes:
 	libsrcdir="$$s/fixincludes"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)"  \
+	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif build-fixincludes
+
+
 
 .PHONY: all-build-fixincludes maybe-all-build-fixincludes
 maybe-all-build-fixincludes:
@@ -2459,26 +2487,28 @@ all-build-fixincludes: configure-build-fixincludes
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/fixincludes && \
-	  $(MAKE)  $(TARGET-build-fixincludes))
+	  $(MAKE)   $(TARGET-build-fixincludes))
 @endif build-fixincludes
+
 
 
 # --------------------------------------
 # Modules which run on the host machine
 # --------------------------------------
 
+
 .PHONY: configure-ash maybe-configure-ash
 maybe-configure-ash:
 @if ash
 maybe-configure-ash: configure-ash
-configure-ash:
+configure-ash: 
 	@test ! -f $(HOST_SUBDIR)/ash/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ash ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in ash; \
-	cd $(HOST_SUBDIR)/ash || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/ash; \
+	cd "$(HOST_SUBDIR)/ash" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/ash/ | \
@@ -2490,6 +2520,8 @@ configure-ash:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif ash
+
+
 
 .PHONY: all-ash maybe-all-ash
 maybe-all-ash:
@@ -2503,6 +2535,7 @@ all-ash: configure-ash
 	(cd $(HOST_SUBDIR)/ash && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-ash))
 @endif ash
+
 
 .PHONY: check-ash maybe-check-ash
 maybe-check-ash:
@@ -2782,18 +2815,19 @@ maintainer-clean-ash:
 @endif ash
 
 
+
 .PHONY: configure-autoconf maybe-configure-autoconf
 maybe-configure-autoconf:
 @if autoconf
 maybe-configure-autoconf: configure-autoconf
-configure-autoconf:
+configure-autoconf: 
 	@test ! -f $(HOST_SUBDIR)/autoconf/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/autoconf ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in autoconf; \
-	cd $(HOST_SUBDIR)/autoconf || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/autoconf; \
+	cd "$(HOST_SUBDIR)/autoconf" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/autoconf/ | \
@@ -2805,6 +2839,8 @@ configure-autoconf:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif autoconf
+
+
 
 .PHONY: all-autoconf maybe-all-autoconf
 maybe-all-autoconf:
@@ -2818,6 +2854,7 @@ all-autoconf: configure-autoconf
 	(cd $(HOST_SUBDIR)/autoconf && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-autoconf))
 @endif autoconf
+
 
 .PHONY: check-autoconf maybe-check-autoconf
 maybe-check-autoconf:
@@ -3097,18 +3134,19 @@ maintainer-clean-autoconf:
 @endif autoconf
 
 
+
 .PHONY: configure-automake maybe-configure-automake
 maybe-configure-automake:
 @if automake
 maybe-configure-automake: configure-automake
-configure-automake:
+configure-automake: 
 	@test ! -f $(HOST_SUBDIR)/automake/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/automake ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in automake; \
-	cd $(HOST_SUBDIR)/automake || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/automake; \
+	cd "$(HOST_SUBDIR)/automake" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/automake/ | \
@@ -3120,6 +3158,8 @@ configure-automake:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif automake
+
+
 
 .PHONY: all-automake maybe-all-automake
 maybe-all-automake:
@@ -3133,6 +3173,7 @@ all-automake: configure-automake
 	(cd $(HOST_SUBDIR)/automake && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-automake))
 @endif automake
+
 
 .PHONY: check-automake maybe-check-automake
 maybe-check-automake:
@@ -3412,18 +3453,19 @@ maintainer-clean-automake:
 @endif automake
 
 
+
 .PHONY: configure-bash maybe-configure-bash
 maybe-configure-bash:
 @if bash
 maybe-configure-bash: configure-bash
-configure-bash:
+configure-bash: 
 	@test ! -f $(HOST_SUBDIR)/bash/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bash ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in bash; \
-	cd $(HOST_SUBDIR)/bash || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/bash; \
+	cd "$(HOST_SUBDIR)/bash" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/bash/ | \
@@ -3435,6 +3477,8 @@ configure-bash:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif bash
+
+
 
 .PHONY: all-bash maybe-all-bash
 maybe-all-bash:
@@ -3448,6 +3492,7 @@ all-bash: configure-bash
 	(cd $(HOST_SUBDIR)/bash && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-bash))
 @endif bash
+
 
 .PHONY: check-bash maybe-check-bash
 maybe-check-bash:
@@ -3727,19 +3772,20 @@ maintainer-clean-bash:
 @endif bash
 
 
+
 .PHONY: configure-bfd maybe-configure-bfd
 maybe-configure-bfd:
 @if bfd
 maybe-configure-bfd: configure-bfd
-configure-bfd:
+configure-bfd: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in bfd; \
-	cd $(HOST_SUBDIR)/bfd || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/bfd; \
+	cd "$(HOST_SUBDIR)/bfd" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
@@ -3751,6 +3797,8 @@ configure-bfd:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif bfd
+
+
 
 .PHONY: all-bfd maybe-all-bfd
 maybe-all-bfd:
@@ -3765,6 +3813,7 @@ all-bfd: configure-bfd
 	(cd $(HOST_SUBDIR)/bfd && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-bfd))
 @endif bfd
+
 
 .PHONY: check-bfd maybe-check-bfd
 maybe-check-bfd:
@@ -4044,19 +4093,20 @@ maintainer-clean-bfd:
 @endif bfd
 
 
+
 .PHONY: configure-opcodes maybe-configure-opcodes
 maybe-configure-opcodes:
 @if opcodes
 maybe-configure-opcodes: configure-opcodes
-configure-opcodes:
+configure-opcodes: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in opcodes; \
-	cd $(HOST_SUBDIR)/opcodes || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/opcodes; \
+	cd "$(HOST_SUBDIR)/opcodes" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
@@ -4068,6 +4118,8 @@ configure-opcodes:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif opcodes
+
+
 
 .PHONY: all-opcodes maybe-all-opcodes
 maybe-all-opcodes:
@@ -4082,6 +4134,7 @@ all-opcodes: configure-opcodes
 	(cd $(HOST_SUBDIR)/opcodes && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-opcodes))
 @endif opcodes
+
 
 .PHONY: check-opcodes maybe-check-opcodes
 maybe-check-opcodes:
@@ -4361,19 +4414,20 @@ maintainer-clean-opcodes:
 @endif opcodes
 
 
+
 .PHONY: configure-binutils maybe-configure-binutils
 maybe-configure-binutils:
 @if binutils
 maybe-configure-binutils: configure-binutils
-configure-binutils:
+configure-binutils: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in binutils; \
-	cd $(HOST_SUBDIR)/binutils || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/binutils; \
+	cd "$(HOST_SUBDIR)/binutils" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
@@ -4385,6 +4439,8 @@ configure-binutils:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif binutils
+
+
 
 .PHONY: all-binutils maybe-all-binutils
 maybe-all-binutils:
@@ -4399,6 +4455,7 @@ all-binutils: configure-binutils
 	(cd $(HOST_SUBDIR)/binutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-binutils))
 @endif binutils
+
 
 .PHONY: check-binutils maybe-check-binutils
 maybe-check-binutils:
@@ -4678,18 +4735,19 @@ maintainer-clean-binutils:
 @endif binutils
 
 
+
 .PHONY: configure-bison maybe-configure-bison
 maybe-configure-bison:
 @if bison
 maybe-configure-bison: configure-bison
-configure-bison:
+configure-bison: 
 	@test ! -f $(HOST_SUBDIR)/bison/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bison ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in bison; \
-	cd $(HOST_SUBDIR)/bison || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/bison; \
+	cd "$(HOST_SUBDIR)/bison" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/bison/ | \
@@ -4701,6 +4759,8 @@ configure-bison:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif bison
+
+
 
 .PHONY: all-bison maybe-all-bison
 maybe-all-bison:
@@ -4714,6 +4774,7 @@ all-bison: configure-bison
 	(cd $(HOST_SUBDIR)/bison && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-bison))
 @endif bison
+
 
 .PHONY: check-bison maybe-check-bison
 maybe-check-bison:
@@ -4996,18 +5057,19 @@ maintainer-clean-bison:
 @endif bison
 
 
+
 .PHONY: configure-byacc maybe-configure-byacc
 maybe-configure-byacc:
 @if byacc
 maybe-configure-byacc: configure-byacc
-configure-byacc:
+configure-byacc: 
 	@test ! -f $(HOST_SUBDIR)/byacc/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/byacc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in byacc; \
-	cd $(HOST_SUBDIR)/byacc || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/byacc; \
+	cd "$(HOST_SUBDIR)/byacc" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/byacc/ | \
@@ -5019,6 +5081,8 @@ configure-byacc:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif byacc
+
+
 
 .PHONY: all-byacc maybe-all-byacc
 maybe-all-byacc:
@@ -5032,6 +5096,7 @@ all-byacc: configure-byacc
 	(cd $(HOST_SUBDIR)/byacc && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-byacc))
 @endif byacc
+
 
 .PHONY: check-byacc maybe-check-byacc
 maybe-check-byacc:
@@ -5314,18 +5379,19 @@ maintainer-clean-byacc:
 @endif byacc
 
 
+
 .PHONY: configure-bzip2 maybe-configure-bzip2
 maybe-configure-bzip2:
 @if bzip2
 maybe-configure-bzip2: configure-bzip2
-configure-bzip2:
+configure-bzip2: 
 	@test ! -f $(HOST_SUBDIR)/bzip2/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bzip2 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in bzip2; \
-	cd $(HOST_SUBDIR)/bzip2 || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/bzip2; \
+	cd "$(HOST_SUBDIR)/bzip2" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/bzip2/ | \
@@ -5337,6 +5403,8 @@ configure-bzip2:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif bzip2
+
+
 
 .PHONY: all-bzip2 maybe-all-bzip2
 maybe-all-bzip2:
@@ -5350,6 +5418,7 @@ all-bzip2: configure-bzip2
 	(cd $(HOST_SUBDIR)/bzip2 && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-bzip2))
 @endif bzip2
+
 
 .PHONY: check-bzip2 maybe-check-bzip2
 maybe-check-bzip2:
@@ -5629,18 +5698,19 @@ maintainer-clean-bzip2:
 @endif bzip2
 
 
+
 .PHONY: configure-dejagnu maybe-configure-dejagnu
 maybe-configure-dejagnu:
 @if dejagnu
 maybe-configure-dejagnu: configure-dejagnu
-configure-dejagnu:
+configure-dejagnu: 
 	@test ! -f $(HOST_SUBDIR)/dejagnu/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/dejagnu ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in dejagnu; \
-	cd $(HOST_SUBDIR)/dejagnu || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/dejagnu; \
+	cd "$(HOST_SUBDIR)/dejagnu" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/dejagnu/ | \
@@ -5652,6 +5722,8 @@ configure-dejagnu:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif dejagnu
+
+
 
 .PHONY: all-dejagnu maybe-all-dejagnu
 maybe-all-dejagnu:
@@ -5665,6 +5737,7 @@ all-dejagnu: configure-dejagnu
 	(cd $(HOST_SUBDIR)/dejagnu && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-dejagnu))
 @endif dejagnu
+
 
 .PHONY: check-dejagnu maybe-check-dejagnu
 maybe-check-dejagnu:
@@ -5944,18 +6017,19 @@ maintainer-clean-dejagnu:
 @endif dejagnu
 
 
+
 .PHONY: configure-diff maybe-configure-diff
 maybe-configure-diff:
 @if diff
 maybe-configure-diff: configure-diff
-configure-diff:
+configure-diff: 
 	@test ! -f $(HOST_SUBDIR)/diff/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/diff ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in diff; \
-	cd $(HOST_SUBDIR)/diff || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/diff; \
+	cd "$(HOST_SUBDIR)/diff" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/diff/ | \
@@ -5967,6 +6041,8 @@ configure-diff:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif diff
+
+
 
 .PHONY: all-diff maybe-all-diff
 maybe-all-diff:
@@ -5980,6 +6056,7 @@ all-diff: configure-diff
 	(cd $(HOST_SUBDIR)/diff && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-diff))
 @endif diff
+
 
 .PHONY: check-diff maybe-check-diff
 maybe-check-diff:
@@ -6259,18 +6336,19 @@ maintainer-clean-diff:
 @endif diff
 
 
+
 .PHONY: configure-dosutils maybe-configure-dosutils
 maybe-configure-dosutils:
 @if dosutils
 maybe-configure-dosutils: configure-dosutils
-configure-dosutils:
+configure-dosutils: 
 	@test ! -f $(HOST_SUBDIR)/dosutils/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/dosutils ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in dosutils; \
-	cd $(HOST_SUBDIR)/dosutils || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/dosutils; \
+	cd "$(HOST_SUBDIR)/dosutils" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/dosutils/ | \
@@ -6282,6 +6360,8 @@ configure-dosutils:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif dosutils
+
+
 
 .PHONY: all-dosutils maybe-all-dosutils
 maybe-all-dosutils:
@@ -6295,6 +6375,7 @@ all-dosutils: configure-dosutils
 	(cd $(HOST_SUBDIR)/dosutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-dosutils))
 @endif dosutils
+
 
 .PHONY: check-dosutils maybe-check-dosutils
 maybe-check-dosutils:
@@ -6569,18 +6650,19 @@ maintainer-clean-dosutils:
 @endif dosutils
 
 
+
 .PHONY: configure-etc maybe-configure-etc
 maybe-configure-etc:
 @if etc
 maybe-configure-etc: configure-etc
-configure-etc:
+configure-etc: 
 	@test ! -f $(HOST_SUBDIR)/etc/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/etc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in etc; \
-	cd $(HOST_SUBDIR)/etc || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/etc; \
+	cd "$(HOST_SUBDIR)/etc" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/etc/ | \
@@ -6592,6 +6674,8 @@ configure-etc:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif etc
+
+
 
 .PHONY: all-etc maybe-all-etc
 maybe-all-etc:
@@ -6605,6 +6689,7 @@ all-etc: configure-etc
 	(cd $(HOST_SUBDIR)/etc && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-etc))
 @endif etc
+
 
 .PHONY: check-etc maybe-check-etc
 maybe-check-etc:
@@ -6884,18 +6969,19 @@ maintainer-clean-etc:
 @endif etc
 
 
+
 .PHONY: configure-fastjar maybe-configure-fastjar
 maybe-configure-fastjar:
 @if fastjar
 maybe-configure-fastjar: configure-fastjar
-configure-fastjar:
+configure-fastjar: 
 	@test ! -f $(HOST_SUBDIR)/fastjar/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fastjar ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in fastjar; \
-	cd $(HOST_SUBDIR)/fastjar || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/fastjar; \
+	cd "$(HOST_SUBDIR)/fastjar" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/fastjar/ | \
@@ -6907,6 +6993,8 @@ configure-fastjar:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif fastjar
+
+
 
 .PHONY: all-fastjar maybe-all-fastjar
 maybe-all-fastjar:
@@ -6920,6 +7008,7 @@ all-fastjar: configure-fastjar
 	(cd $(HOST_SUBDIR)/fastjar && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-fastjar))
 @endif fastjar
+
 
 .PHONY: check-fastjar maybe-check-fastjar
 maybe-check-fastjar:
@@ -7202,18 +7291,19 @@ maintainer-clean-fastjar:
 @endif fastjar
 
 
+
 .PHONY: configure-fileutils maybe-configure-fileutils
 maybe-configure-fileutils:
 @if fileutils
 maybe-configure-fileutils: configure-fileutils
-configure-fileutils:
+configure-fileutils: 
 	@test ! -f $(HOST_SUBDIR)/fileutils/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fileutils ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in fileutils; \
-	cd $(HOST_SUBDIR)/fileutils || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/fileutils; \
+	cd "$(HOST_SUBDIR)/fileutils" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/fileutils/ | \
@@ -7225,6 +7315,8 @@ configure-fileutils:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif fileutils
+
+
 
 .PHONY: all-fileutils maybe-all-fileutils
 maybe-all-fileutils:
@@ -7238,6 +7330,7 @@ all-fileutils: configure-fileutils
 	(cd $(HOST_SUBDIR)/fileutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-fileutils))
 @endif fileutils
+
 
 .PHONY: check-fileutils maybe-check-fileutils
 maybe-check-fileutils:
@@ -7517,18 +7610,19 @@ maintainer-clean-fileutils:
 @endif fileutils
 
 
+
 .PHONY: configure-findutils maybe-configure-findutils
 maybe-configure-findutils:
 @if findutils
 maybe-configure-findutils: configure-findutils
-configure-findutils:
+configure-findutils: 
 	@test ! -f $(HOST_SUBDIR)/findutils/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/findutils ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in findutils; \
-	cd $(HOST_SUBDIR)/findutils || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/findutils; \
+	cd "$(HOST_SUBDIR)/findutils" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/findutils/ | \
@@ -7540,6 +7634,8 @@ configure-findutils:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif findutils
+
+
 
 .PHONY: all-findutils maybe-all-findutils
 maybe-all-findutils:
@@ -7553,6 +7649,7 @@ all-findutils: configure-findutils
 	(cd $(HOST_SUBDIR)/findutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-findutils))
 @endif findutils
+
 
 .PHONY: check-findutils maybe-check-findutils
 maybe-check-findutils:
@@ -7832,18 +7929,19 @@ maintainer-clean-findutils:
 @endif findutils
 
 
+
 .PHONY: configure-find maybe-configure-find
 maybe-configure-find:
 @if find
 maybe-configure-find: configure-find
-configure-find:
+configure-find: 
 	@test ! -f $(HOST_SUBDIR)/find/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/find ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in find; \
-	cd $(HOST_SUBDIR)/find || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/find; \
+	cd "$(HOST_SUBDIR)/find" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/find/ | \
@@ -7855,6 +7953,8 @@ configure-find:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif find
+
+
 
 .PHONY: all-find maybe-all-find
 maybe-all-find:
@@ -7868,6 +7968,7 @@ all-find: configure-find
 	(cd $(HOST_SUBDIR)/find && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-find))
 @endif find
+
 
 .PHONY: check-find maybe-check-find
 maybe-check-find:
@@ -8147,18 +8248,19 @@ maintainer-clean-find:
 @endif find
 
 
+
 .PHONY: configure-fixincludes maybe-configure-fixincludes
 maybe-configure-fixincludes:
 @if fixincludes
 maybe-configure-fixincludes: configure-fixincludes
-configure-fixincludes:
+configure-fixincludes: 
 	@test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in fixincludes; \
-	cd $(HOST_SUBDIR)/fixincludes || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/fixincludes; \
+	cd "$(HOST_SUBDIR)/fixincludes" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
@@ -8170,6 +8272,8 @@ configure-fixincludes:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif fixincludes
+
+
 
 .PHONY: all-fixincludes maybe-all-fixincludes
 maybe-all-fixincludes:
@@ -8183,6 +8287,7 @@ all-fixincludes: configure-fixincludes
 	(cd $(HOST_SUBDIR)/fixincludes && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-fixincludes))
 @endif fixincludes
+
 
 .PHONY: check-fixincludes maybe-check-fixincludes
 maybe-check-fixincludes:
@@ -8386,18 +8491,19 @@ maintainer-clean-fixincludes:
 @endif fixincludes
 
 
+
 .PHONY: configure-flex maybe-configure-flex
 maybe-configure-flex:
 @if flex
 maybe-configure-flex: configure-flex
-configure-flex:
+configure-flex: 
 	@test ! -f $(HOST_SUBDIR)/flex/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/flex ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in flex; \
-	cd $(HOST_SUBDIR)/flex || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/flex; \
+	cd "$(HOST_SUBDIR)/flex" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/flex/ | \
@@ -8409,6 +8515,8 @@ configure-flex:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif flex
+
+
 
 .PHONY: all-flex maybe-all-flex
 maybe-all-flex:
@@ -8422,6 +8530,7 @@ all-flex: configure-flex
 	(cd $(HOST_SUBDIR)/flex && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-flex))
 @endif flex
+
 
 .PHONY: check-flex maybe-check-flex
 maybe-check-flex:
@@ -8704,19 +8813,20 @@ maintainer-clean-flex:
 @endif flex
 
 
+
 .PHONY: configure-gas maybe-configure-gas
 maybe-configure-gas:
 @if gas
 maybe-configure-gas: configure-gas
-configure-gas:
+configure-gas: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gas; \
-	cd $(HOST_SUBDIR)/gas || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gas; \
+	cd "$(HOST_SUBDIR)/gas" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
@@ -8728,6 +8838,8 @@ configure-gas:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gas
+
+
 
 .PHONY: all-gas maybe-all-gas
 maybe-all-gas:
@@ -8742,6 +8854,7 @@ all-gas: configure-gas
 	(cd $(HOST_SUBDIR)/gas && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gas))
 @endif gas
+
 
 .PHONY: check-gas maybe-check-gas
 maybe-check-gas:
@@ -9021,19 +9134,20 @@ maintainer-clean-gas:
 @endif gas
 
 
+
 .PHONY: configure-gcc maybe-configure-gcc
 maybe-configure-gcc:
 @if gcc
 maybe-configure-gcc: configure-gcc
-configure-gcc:
+configure-gcc: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gcc; \
-	cd $(HOST_SUBDIR)/gcc || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gcc; \
+	cd "$(HOST_SUBDIR)/gcc" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
@@ -9045,6 +9159,8 @@ configure-gcc:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gcc
+
+
 
 .PHONY: all-gcc maybe-all-gcc
 maybe-all-gcc:
@@ -9059,6 +9175,7 @@ all-gcc: configure-gcc
 	(cd $(HOST_SUBDIR)/gcc && \
 	  $(MAKE) $(FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) $(TARGET-gcc))
 @endif gcc
+
 
 .PHONY: check-gcc maybe-check-gcc
 maybe-check-gcc:
@@ -9338,18 +9455,19 @@ maintainer-clean-gcc:
 @endif gcc
 
 
+
 .PHONY: configure-gawk maybe-configure-gawk
 maybe-configure-gawk:
 @if gawk
 maybe-configure-gawk: configure-gawk
-configure-gawk:
+configure-gawk: 
 	@test ! -f $(HOST_SUBDIR)/gawk/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gawk ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gawk; \
-	cd $(HOST_SUBDIR)/gawk || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gawk; \
+	cd "$(HOST_SUBDIR)/gawk" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gawk/ | \
@@ -9361,6 +9479,8 @@ configure-gawk:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gawk
+
+
 
 .PHONY: all-gawk maybe-all-gawk
 maybe-all-gawk:
@@ -9374,6 +9494,7 @@ all-gawk: configure-gawk
 	(cd $(HOST_SUBDIR)/gawk && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gawk))
 @endif gawk
+
 
 .PHONY: check-gawk maybe-check-gawk
 maybe-check-gawk:
@@ -9653,18 +9774,19 @@ maintainer-clean-gawk:
 @endif gawk
 
 
+
 .PHONY: configure-gettext maybe-configure-gettext
 maybe-configure-gettext:
 @if gettext
 maybe-configure-gettext: configure-gettext
-configure-gettext:
+configure-gettext: 
 	@test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gettext; \
-	cd $(HOST_SUBDIR)/gettext || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gettext; \
+	cd "$(HOST_SUBDIR)/gettext" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
@@ -9676,6 +9798,8 @@ configure-gettext:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gettext
+
+
 
 .PHONY: all-gettext maybe-all-gettext
 maybe-all-gettext:
@@ -9689,6 +9813,7 @@ all-gettext: configure-gettext
 	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gettext))
 @endif gettext
+
 
 .PHONY: check-gettext maybe-check-gettext
 maybe-check-gettext:
@@ -9968,18 +10093,19 @@ maintainer-clean-gettext:
 @endif gettext
 
 
+
 .PHONY: configure-gnuserv maybe-configure-gnuserv
 maybe-configure-gnuserv:
 @if gnuserv
 maybe-configure-gnuserv: configure-gnuserv
-configure-gnuserv:
+configure-gnuserv: 
 	@test ! -f $(HOST_SUBDIR)/gnuserv/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gnuserv ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gnuserv; \
-	cd $(HOST_SUBDIR)/gnuserv || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gnuserv; \
+	cd "$(HOST_SUBDIR)/gnuserv" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gnuserv/ | \
@@ -9991,6 +10117,8 @@ configure-gnuserv:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gnuserv
+
+
 
 .PHONY: all-gnuserv maybe-all-gnuserv
 maybe-all-gnuserv:
@@ -10004,6 +10132,7 @@ all-gnuserv: configure-gnuserv
 	(cd $(HOST_SUBDIR)/gnuserv && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gnuserv))
 @endif gnuserv
+
 
 .PHONY: check-gnuserv maybe-check-gnuserv
 maybe-check-gnuserv:
@@ -10283,18 +10412,19 @@ maintainer-clean-gnuserv:
 @endif gnuserv
 
 
+
 .PHONY: configure-gprof maybe-configure-gprof
 maybe-configure-gprof:
 @if gprof
 maybe-configure-gprof: configure-gprof
-configure-gprof:
+configure-gprof: 
 	@test ! -f $(HOST_SUBDIR)/gprof/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gprof ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gprof; \
-	cd $(HOST_SUBDIR)/gprof || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gprof; \
+	cd "$(HOST_SUBDIR)/gprof" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gprof/ | \
@@ -10306,6 +10436,8 @@ configure-gprof:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gprof
+
+
 
 .PHONY: all-gprof maybe-all-gprof
 maybe-all-gprof:
@@ -10319,6 +10451,7 @@ all-gprof: configure-gprof
 	(cd $(HOST_SUBDIR)/gprof && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gprof))
 @endif gprof
+
 
 .PHONY: check-gprof maybe-check-gprof
 maybe-check-gprof:
@@ -10598,18 +10731,19 @@ maintainer-clean-gprof:
 @endif gprof
 
 
+
 .PHONY: configure-gzip maybe-configure-gzip
 maybe-configure-gzip:
 @if gzip
 maybe-configure-gzip: configure-gzip
-configure-gzip:
+configure-gzip: 
 	@test ! -f $(HOST_SUBDIR)/gzip/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gzip ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gzip; \
-	cd $(HOST_SUBDIR)/gzip || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gzip; \
+	cd "$(HOST_SUBDIR)/gzip" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gzip/ | \
@@ -10621,6 +10755,8 @@ configure-gzip:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gzip
+
+
 
 .PHONY: all-gzip maybe-all-gzip
 maybe-all-gzip:
@@ -10634,6 +10770,7 @@ all-gzip: configure-gzip
 	(cd $(HOST_SUBDIR)/gzip && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gzip))
 @endif gzip
+
 
 .PHONY: check-gzip maybe-check-gzip
 maybe-check-gzip:
@@ -10913,18 +11050,19 @@ maintainer-clean-gzip:
 @endif gzip
 
 
+
 .PHONY: configure-hello maybe-configure-hello
 maybe-configure-hello:
 @if hello
 maybe-configure-hello: configure-hello
-configure-hello:
+configure-hello: 
 	@test ! -f $(HOST_SUBDIR)/hello/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/hello ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in hello; \
-	cd $(HOST_SUBDIR)/hello || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/hello; \
+	cd "$(HOST_SUBDIR)/hello" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/hello/ | \
@@ -10936,6 +11074,8 @@ configure-hello:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif hello
+
+
 
 .PHONY: all-hello maybe-all-hello
 maybe-all-hello:
@@ -10949,6 +11089,7 @@ all-hello: configure-hello
 	(cd $(HOST_SUBDIR)/hello && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-hello))
 @endif hello
+
 
 .PHONY: check-hello maybe-check-hello
 maybe-check-hello:
@@ -11228,18 +11369,19 @@ maintainer-clean-hello:
 @endif hello
 
 
+
 .PHONY: configure-indent maybe-configure-indent
 maybe-configure-indent:
 @if indent
 maybe-configure-indent: configure-indent
-configure-indent:
+configure-indent: 
 	@test ! -f $(HOST_SUBDIR)/indent/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/indent ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in indent; \
-	cd $(HOST_SUBDIR)/indent || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/indent; \
+	cd "$(HOST_SUBDIR)/indent" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/indent/ | \
@@ -11251,6 +11393,8 @@ configure-indent:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif indent
+
+
 
 .PHONY: all-indent maybe-all-indent
 maybe-all-indent:
@@ -11264,6 +11408,7 @@ all-indent: configure-indent
 	(cd $(HOST_SUBDIR)/indent && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-indent))
 @endif indent
+
 
 .PHONY: check-indent maybe-check-indent
 maybe-check-indent:
@@ -11543,19 +11688,20 @@ maintainer-clean-indent:
 @endif indent
 
 
+
 .PHONY: configure-intl maybe-configure-intl
 maybe-configure-intl:
 @if intl
 maybe-configure-intl: configure-intl
-configure-intl:
+configure-intl: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/intl; \
+	cd "$(HOST_SUBDIR)/intl" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
@@ -11567,6 +11713,8 @@ configure-intl:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif intl
+
+
 
 .PHONY: all-intl maybe-all-intl
 maybe-all-intl:
@@ -11581,6 +11729,7 @@ all-intl: configure-intl
 	(cd $(HOST_SUBDIR)/intl && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-intl))
 @endif intl
+
 
 .PHONY: check-intl maybe-check-intl
 maybe-check-intl:
@@ -11860,18 +12009,19 @@ maintainer-clean-intl:
 @endif intl
 
 
+
 .PHONY: configure-tcl maybe-configure-tcl
 maybe-configure-tcl:
 @if tcl
 maybe-configure-tcl: configure-tcl
-configure-tcl:
+configure-tcl: 
 	@test ! -f $(HOST_SUBDIR)/tcl/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/tcl ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in tcl; \
-	cd $(HOST_SUBDIR)/tcl || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/tcl; \
+	cd "$(HOST_SUBDIR)/tcl" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/tcl/ | \
@@ -11883,6 +12033,8 @@ configure-tcl:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif tcl
+
+
 
 .PHONY: all-tcl maybe-all-tcl
 maybe-all-tcl:
@@ -11896,6 +12048,7 @@ all-tcl: configure-tcl
 	(cd $(HOST_SUBDIR)/tcl && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-tcl))
 @endif tcl
+
 
 .PHONY: check-tcl maybe-check-tcl
 maybe-check-tcl:
@@ -12161,18 +12314,19 @@ maintainer-clean-tcl:
 @endif tcl
 
 
+
 .PHONY: configure-itcl maybe-configure-itcl
 maybe-configure-itcl:
 @if itcl
 maybe-configure-itcl: configure-itcl
-configure-itcl:
+configure-itcl: 
 	@test ! -f $(HOST_SUBDIR)/itcl/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/itcl ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in itcl; \
-	cd $(HOST_SUBDIR)/itcl || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/itcl; \
+	cd "$(HOST_SUBDIR)/itcl" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/itcl/ | \
@@ -12184,6 +12338,8 @@ configure-itcl:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif itcl
+
+
 
 .PHONY: all-itcl maybe-all-itcl
 maybe-all-itcl:
@@ -12197,6 +12353,7 @@ all-itcl: configure-itcl
 	(cd $(HOST_SUBDIR)/itcl && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-itcl))
 @endif itcl
+
 
 .PHONY: check-itcl maybe-check-itcl
 maybe-check-itcl:
@@ -12476,19 +12633,20 @@ maintainer-clean-itcl:
 @endif itcl
 
 
+
 .PHONY: configure-ld maybe-configure-ld
 maybe-configure-ld:
 @if ld
 maybe-configure-ld: configure-ld
-configure-ld:
+configure-ld: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in ld; \
-	cd $(HOST_SUBDIR)/ld || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/ld; \
+	cd "$(HOST_SUBDIR)/ld" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
@@ -12500,6 +12658,8 @@ configure-ld:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif ld
+
+
 
 .PHONY: all-ld maybe-all-ld
 maybe-all-ld:
@@ -12514,6 +12674,7 @@ all-ld: configure-ld
 	(cd $(HOST_SUBDIR)/ld && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-ld))
 @endif ld
+
 
 .PHONY: check-ld maybe-check-ld
 maybe-check-ld:
@@ -12793,19 +12954,20 @@ maintainer-clean-ld:
 @endif ld
 
 
+
 .PHONY: configure-libcpp maybe-configure-libcpp
 maybe-configure-libcpp:
 @if libcpp
 maybe-configure-libcpp: configure-libcpp
-configure-libcpp:
+configure-libcpp: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in libcpp; \
-	cd $(HOST_SUBDIR)/libcpp || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/libcpp; \
+	cd "$(HOST_SUBDIR)/libcpp" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
@@ -12817,6 +12979,8 @@ configure-libcpp:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif libcpp
+
+
 
 .PHONY: all-libcpp maybe-all-libcpp
 maybe-all-libcpp:
@@ -12831,6 +12995,7 @@ all-libcpp: configure-libcpp
 	(cd $(HOST_SUBDIR)/libcpp && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-libcpp))
 @endif libcpp
+
 
 .PHONY: check-libcpp maybe-check-libcpp
 maybe-check-libcpp:
@@ -13110,18 +13275,19 @@ maintainer-clean-libcpp:
 @endif libcpp
 
 
+
 .PHONY: configure-libgui maybe-configure-libgui
 maybe-configure-libgui:
 @if libgui
 maybe-configure-libgui: configure-libgui
-configure-libgui:
+configure-libgui: 
 	@test ! -f $(HOST_SUBDIR)/libgui/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgui ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in libgui; \
-	cd $(HOST_SUBDIR)/libgui || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/libgui; \
+	cd "$(HOST_SUBDIR)/libgui" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/libgui/ | \
@@ -13133,6 +13299,8 @@ configure-libgui:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif libgui
+
+
 
 .PHONY: all-libgui maybe-all-libgui
 maybe-all-libgui:
@@ -13146,6 +13314,7 @@ all-libgui: configure-libgui
 	(cd $(HOST_SUBDIR)/libgui && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-libgui))
 @endif libgui
+
 
 .PHONY: check-libgui maybe-check-libgui
 maybe-check-libgui:
@@ -13425,19 +13594,20 @@ maintainer-clean-libgui:
 @endif libgui
 
 
+
 .PHONY: configure-libiberty maybe-configure-libiberty
 maybe-configure-libiberty:
 @if libiberty
 maybe-configure-libiberty: configure-libiberty
-configure-libiberty:
+configure-libiberty: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in libiberty; \
-	cd $(HOST_SUBDIR)/libiberty || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/libiberty; \
+	cd "$(HOST_SUBDIR)/libiberty" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
@@ -13449,6 +13619,8 @@ configure-libiberty:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif libiberty
+
+
 
 .PHONY: all-libiberty maybe-all-libiberty
 maybe-all-libiberty:
@@ -13463,6 +13635,7 @@ all-libiberty: configure-libiberty
 	(cd $(HOST_SUBDIR)/libiberty && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-libiberty))
 @endif libiberty
+
 
 .PHONY: check-libiberty maybe-check-libiberty
 maybe-check-libiberty:
@@ -13742,18 +13915,19 @@ maintainer-clean-libiberty:
 @endif libiberty
 
 
+
 .PHONY: configure-libtool maybe-configure-libtool
 maybe-configure-libtool:
 @if libtool
 maybe-configure-libtool: configure-libtool
-configure-libtool:
+configure-libtool: 
 	@test ! -f $(HOST_SUBDIR)/libtool/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libtool ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in libtool; \
-	cd $(HOST_SUBDIR)/libtool || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/libtool; \
+	cd "$(HOST_SUBDIR)/libtool" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/libtool/ | \
@@ -13765,6 +13939,8 @@ configure-libtool:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif libtool
+
+
 
 .PHONY: all-libtool maybe-all-libtool
 maybe-all-libtool:
@@ -13778,6 +13954,7 @@ all-libtool: configure-libtool
 	(cd $(HOST_SUBDIR)/libtool && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-libtool))
 @endif libtool
+
 
 .PHONY: check-libtool maybe-check-libtool
 maybe-check-libtool:
@@ -14057,18 +14234,19 @@ maintainer-clean-libtool:
 @endif libtool
 
 
+
 .PHONY: configure-m4 maybe-configure-m4
 maybe-configure-m4:
 @if m4
 maybe-configure-m4: configure-m4
-configure-m4:
+configure-m4: 
 	@test ! -f $(HOST_SUBDIR)/m4/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/m4 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in m4; \
-	cd $(HOST_SUBDIR)/m4 || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/m4; \
+	cd "$(HOST_SUBDIR)/m4" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/m4/ | \
@@ -14080,6 +14258,8 @@ configure-m4:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif m4
+
+
 
 .PHONY: all-m4 maybe-all-m4
 maybe-all-m4:
@@ -14093,6 +14273,7 @@ all-m4: configure-m4
 	(cd $(HOST_SUBDIR)/m4 && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-m4))
 @endif m4
+
 
 .PHONY: check-m4 maybe-check-m4
 maybe-check-m4:
@@ -14372,18 +14553,19 @@ maintainer-clean-m4:
 @endif m4
 
 
+
 .PHONY: configure-make maybe-configure-make
 maybe-configure-make:
 @if make
 maybe-configure-make: configure-make
-configure-make:
+configure-make: 
 	@test ! -f $(HOST_SUBDIR)/make/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/make ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in make; \
-	cd $(HOST_SUBDIR)/make || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/make; \
+	cd "$(HOST_SUBDIR)/make" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/make/ | \
@@ -14395,6 +14577,8 @@ configure-make:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif make
+
+
 
 .PHONY: all-make maybe-all-make
 maybe-all-make:
@@ -14408,6 +14592,7 @@ all-make: configure-make
 	(cd $(HOST_SUBDIR)/make && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-make))
 @endif make
+
 
 .PHONY: check-make maybe-check-make
 maybe-check-make:
@@ -14687,18 +14872,19 @@ maintainer-clean-make:
 @endif make
 
 
+
 .PHONY: configure-mmalloc maybe-configure-mmalloc
 maybe-configure-mmalloc:
 @if mmalloc
 maybe-configure-mmalloc: configure-mmalloc
-configure-mmalloc:
+configure-mmalloc: 
 	@test ! -f $(HOST_SUBDIR)/mmalloc/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mmalloc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in mmalloc; \
-	cd $(HOST_SUBDIR)/mmalloc || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/mmalloc; \
+	cd "$(HOST_SUBDIR)/mmalloc" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/mmalloc/ | \
@@ -14710,6 +14896,8 @@ configure-mmalloc:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif mmalloc
+
+
 
 .PHONY: all-mmalloc maybe-all-mmalloc
 maybe-all-mmalloc:
@@ -14723,6 +14911,7 @@ all-mmalloc: configure-mmalloc
 	(cd $(HOST_SUBDIR)/mmalloc && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-mmalloc))
 @endif mmalloc
+
 
 .PHONY: check-mmalloc maybe-check-mmalloc
 maybe-check-mmalloc:
@@ -14997,18 +15186,19 @@ maintainer-clean-mmalloc:
 @endif mmalloc
 
 
+
 .PHONY: configure-patch maybe-configure-patch
 maybe-configure-patch:
 @if patch
 maybe-configure-patch: configure-patch
-configure-patch:
+configure-patch: 
 	@test ! -f $(HOST_SUBDIR)/patch/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/patch ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in patch; \
-	cd $(HOST_SUBDIR)/patch || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/patch; \
+	cd "$(HOST_SUBDIR)/patch" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/patch/ | \
@@ -15020,6 +15210,8 @@ configure-patch:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif patch
+
+
 
 .PHONY: all-patch maybe-all-patch
 maybe-all-patch:
@@ -15033,6 +15225,7 @@ all-patch: configure-patch
 	(cd $(HOST_SUBDIR)/patch && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-patch))
 @endif patch
+
 
 .PHONY: check-patch maybe-check-patch
 maybe-check-patch:
@@ -15312,18 +15505,19 @@ maintainer-clean-patch:
 @endif patch
 
 
+
 .PHONY: configure-perl maybe-configure-perl
 maybe-configure-perl:
 @if perl
 maybe-configure-perl: configure-perl
-configure-perl:
+configure-perl: 
 	@test ! -f $(HOST_SUBDIR)/perl/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/perl ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in perl; \
-	cd $(HOST_SUBDIR)/perl || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/perl; \
+	cd "$(HOST_SUBDIR)/perl" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/perl/ | \
@@ -15335,6 +15529,8 @@ configure-perl:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif perl
+
+
 
 .PHONY: all-perl maybe-all-perl
 maybe-all-perl:
@@ -15348,6 +15544,7 @@ all-perl: configure-perl
 	(cd $(HOST_SUBDIR)/perl && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-perl))
 @endif perl
+
 
 .PHONY: check-perl maybe-check-perl
 maybe-check-perl:
@@ -15627,18 +15824,19 @@ maintainer-clean-perl:
 @endif perl
 
 
+
 .PHONY: configure-prms maybe-configure-prms
 maybe-configure-prms:
 @if prms
 maybe-configure-prms: configure-prms
-configure-prms:
+configure-prms: 
 	@test ! -f $(HOST_SUBDIR)/prms/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/prms ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in prms; \
-	cd $(HOST_SUBDIR)/prms || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/prms; \
+	cd "$(HOST_SUBDIR)/prms" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/prms/ | \
@@ -15650,6 +15848,8 @@ configure-prms:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif prms
+
+
 
 .PHONY: all-prms maybe-all-prms
 maybe-all-prms:
@@ -15663,6 +15863,7 @@ all-prms: configure-prms
 	(cd $(HOST_SUBDIR)/prms && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-prms))
 @endif prms
+
 
 .PHONY: check-prms maybe-check-prms
 maybe-check-prms:
@@ -15942,18 +16143,19 @@ maintainer-clean-prms:
 @endif prms
 
 
+
 .PHONY: configure-rcs maybe-configure-rcs
 maybe-configure-rcs:
 @if rcs
 maybe-configure-rcs: configure-rcs
-configure-rcs:
+configure-rcs: 
 	@test ! -f $(HOST_SUBDIR)/rcs/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/rcs ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in rcs; \
-	cd $(HOST_SUBDIR)/rcs || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/rcs; \
+	cd "$(HOST_SUBDIR)/rcs" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/rcs/ | \
@@ -15965,6 +16167,8 @@ configure-rcs:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif rcs
+
+
 
 .PHONY: all-rcs maybe-all-rcs
 maybe-all-rcs:
@@ -15978,6 +16182,7 @@ all-rcs: configure-rcs
 	(cd $(HOST_SUBDIR)/rcs && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-rcs))
 @endif rcs
+
 
 .PHONY: check-rcs maybe-check-rcs
 maybe-check-rcs:
@@ -16257,18 +16462,19 @@ maintainer-clean-rcs:
 @endif rcs
 
 
+
 .PHONY: configure-readline maybe-configure-readline
 maybe-configure-readline:
 @if readline
 maybe-configure-readline: configure-readline
-configure-readline:
+configure-readline: 
 	@test ! -f $(HOST_SUBDIR)/readline/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/readline ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in readline; \
-	cd $(HOST_SUBDIR)/readline || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/readline; \
+	cd "$(HOST_SUBDIR)/readline" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/readline/ | \
@@ -16280,6 +16486,8 @@ configure-readline:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif readline
+
+
 
 .PHONY: all-readline maybe-all-readline
 maybe-all-readline:
@@ -16293,6 +16501,7 @@ all-readline: configure-readline
 	(cd $(HOST_SUBDIR)/readline && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-readline))
 @endif readline
+
 
 .PHONY: check-readline maybe-check-readline
 maybe-check-readline:
@@ -16572,18 +16781,19 @@ maintainer-clean-readline:
 @endif readline
 
 
+
 .PHONY: configure-release maybe-configure-release
 maybe-configure-release:
 @if release
 maybe-configure-release: configure-release
-configure-release:
+configure-release: 
 	@test ! -f $(HOST_SUBDIR)/release/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/release ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in release; \
-	cd $(HOST_SUBDIR)/release || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/release; \
+	cd "$(HOST_SUBDIR)/release" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/release/ | \
@@ -16595,6 +16805,8 @@ configure-release:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif release
+
+
 
 .PHONY: all-release maybe-all-release
 maybe-all-release:
@@ -16608,6 +16820,7 @@ all-release: configure-release
 	(cd $(HOST_SUBDIR)/release && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-release))
 @endif release
+
 
 .PHONY: check-release maybe-check-release
 maybe-check-release:
@@ -16877,18 +17090,19 @@ maintainer-clean-release:
 @endif release
 
 
+
 .PHONY: configure-recode maybe-configure-recode
 maybe-configure-recode:
 @if recode
 maybe-configure-recode: configure-recode
-configure-recode:
+configure-recode: 
 	@test ! -f $(HOST_SUBDIR)/recode/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/recode ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in recode; \
-	cd $(HOST_SUBDIR)/recode || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/recode; \
+	cd "$(HOST_SUBDIR)/recode" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/recode/ | \
@@ -16900,6 +17114,8 @@ configure-recode:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif recode
+
+
 
 .PHONY: all-recode maybe-all-recode
 maybe-all-recode:
@@ -16913,6 +17129,7 @@ all-recode: configure-recode
 	(cd $(HOST_SUBDIR)/recode && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-recode))
 @endif recode
+
 
 .PHONY: check-recode maybe-check-recode
 maybe-check-recode:
@@ -17192,18 +17409,19 @@ maintainer-clean-recode:
 @endif recode
 
 
+
 .PHONY: configure-sed maybe-configure-sed
 maybe-configure-sed:
 @if sed
 maybe-configure-sed: configure-sed
-configure-sed:
+configure-sed: 
 	@test ! -f $(HOST_SUBDIR)/sed/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/sed ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in sed; \
-	cd $(HOST_SUBDIR)/sed || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/sed; \
+	cd "$(HOST_SUBDIR)/sed" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/sed/ | \
@@ -17215,6 +17433,8 @@ configure-sed:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif sed
+
+
 
 .PHONY: all-sed maybe-all-sed
 maybe-all-sed:
@@ -17228,6 +17448,7 @@ all-sed: configure-sed
 	(cd $(HOST_SUBDIR)/sed && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-sed))
 @endif sed
+
 
 .PHONY: check-sed maybe-check-sed
 maybe-check-sed:
@@ -17507,18 +17728,19 @@ maintainer-clean-sed:
 @endif sed
 
 
+
 .PHONY: configure-send-pr maybe-configure-send-pr
 maybe-configure-send-pr:
 @if send-pr
 maybe-configure-send-pr: configure-send-pr
-configure-send-pr:
+configure-send-pr: 
 	@test ! -f $(HOST_SUBDIR)/send-pr/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/send-pr ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in send-pr; \
-	cd $(HOST_SUBDIR)/send-pr || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/send-pr; \
+	cd "$(HOST_SUBDIR)/send-pr" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/send-pr/ | \
@@ -17530,6 +17752,8 @@ configure-send-pr:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif send-pr
+
+
 
 .PHONY: all-send-pr maybe-all-send-pr
 maybe-all-send-pr:
@@ -17543,6 +17767,7 @@ all-send-pr: configure-send-pr
 	(cd $(HOST_SUBDIR)/send-pr && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-send-pr))
 @endif send-pr
+
 
 .PHONY: check-send-pr maybe-check-send-pr
 maybe-check-send-pr:
@@ -17822,18 +18047,19 @@ maintainer-clean-send-pr:
 @endif send-pr
 
 
+
 .PHONY: configure-shellutils maybe-configure-shellutils
 maybe-configure-shellutils:
 @if shellutils
 maybe-configure-shellutils: configure-shellutils
-configure-shellutils:
+configure-shellutils: 
 	@test ! -f $(HOST_SUBDIR)/shellutils/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/shellutils ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in shellutils; \
-	cd $(HOST_SUBDIR)/shellutils || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/shellutils; \
+	cd "$(HOST_SUBDIR)/shellutils" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/shellutils/ | \
@@ -17845,6 +18071,8 @@ configure-shellutils:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif shellutils
+
+
 
 .PHONY: all-shellutils maybe-all-shellutils
 maybe-all-shellutils:
@@ -17858,6 +18086,7 @@ all-shellutils: configure-shellutils
 	(cd $(HOST_SUBDIR)/shellutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-shellutils))
 @endif shellutils
+
 
 .PHONY: check-shellutils maybe-check-shellutils
 maybe-check-shellutils:
@@ -18137,18 +18366,19 @@ maintainer-clean-shellutils:
 @endif shellutils
 
 
+
 .PHONY: configure-sid maybe-configure-sid
 maybe-configure-sid:
 @if sid
 maybe-configure-sid: configure-sid
-configure-sid:
+configure-sid: 
 	@test ! -f $(HOST_SUBDIR)/sid/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/sid ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in sid; \
-	cd $(HOST_SUBDIR)/sid || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/sid; \
+	cd "$(HOST_SUBDIR)/sid" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/sid/ | \
@@ -18160,6 +18390,8 @@ configure-sid:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif sid
+
+
 
 .PHONY: all-sid maybe-all-sid
 maybe-all-sid:
@@ -18173,6 +18405,7 @@ all-sid: configure-sid
 	(cd $(HOST_SUBDIR)/sid && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-sid))
 @endif sid
+
 
 .PHONY: check-sid maybe-check-sid
 maybe-check-sid:
@@ -18452,18 +18685,19 @@ maintainer-clean-sid:
 @endif sid
 
 
+
 .PHONY: configure-sim maybe-configure-sim
 maybe-configure-sim:
 @if sim
 maybe-configure-sim: configure-sim
-configure-sim:
+configure-sim: 
 	@test ! -f $(HOST_SUBDIR)/sim/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/sim ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in sim; \
-	cd $(HOST_SUBDIR)/sim || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/sim; \
+	cd "$(HOST_SUBDIR)/sim" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/sim/ | \
@@ -18475,6 +18709,8 @@ configure-sim:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif sim
+
+
 
 .PHONY: all-sim maybe-all-sim
 maybe-all-sim:
@@ -18488,6 +18724,7 @@ all-sim: configure-sim
 	(cd $(HOST_SUBDIR)/sim && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-sim))
 @endif sim
+
 
 .PHONY: check-sim maybe-check-sim
 maybe-check-sim:
@@ -18767,18 +19004,19 @@ maintainer-clean-sim:
 @endif sim
 
 
+
 .PHONY: configure-tar maybe-configure-tar
 maybe-configure-tar:
 @if tar
 maybe-configure-tar: configure-tar
-configure-tar:
+configure-tar: 
 	@test ! -f $(HOST_SUBDIR)/tar/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/tar ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in tar; \
-	cd $(HOST_SUBDIR)/tar || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/tar; \
+	cd "$(HOST_SUBDIR)/tar" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/tar/ | \
@@ -18790,6 +19028,8 @@ configure-tar:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif tar
+
+
 
 .PHONY: all-tar maybe-all-tar
 maybe-all-tar:
@@ -18803,6 +19043,7 @@ all-tar: configure-tar
 	(cd $(HOST_SUBDIR)/tar && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-tar))
 @endif tar
+
 
 .PHONY: check-tar maybe-check-tar
 maybe-check-tar:
@@ -19082,18 +19323,19 @@ maintainer-clean-tar:
 @endif tar
 
 
+
 .PHONY: configure-texinfo maybe-configure-texinfo
 maybe-configure-texinfo:
 @if texinfo
 maybe-configure-texinfo: configure-texinfo
-configure-texinfo:
+configure-texinfo: 
 	@test ! -f $(HOST_SUBDIR)/texinfo/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/texinfo ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in texinfo; \
-	cd $(HOST_SUBDIR)/texinfo || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/texinfo; \
+	cd "$(HOST_SUBDIR)/texinfo" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/texinfo/ | \
@@ -19105,6 +19347,8 @@ configure-texinfo:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif texinfo
+
+
 
 .PHONY: all-texinfo maybe-all-texinfo
 maybe-all-texinfo:
@@ -19118,6 +19362,7 @@ all-texinfo: configure-texinfo
 	(cd $(HOST_SUBDIR)/texinfo && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-texinfo))
 @endif texinfo
+
 
 .PHONY: check-texinfo maybe-check-texinfo
 maybe-check-texinfo:
@@ -19392,18 +19637,19 @@ maintainer-clean-texinfo:
 @endif texinfo
 
 
+
 .PHONY: configure-textutils maybe-configure-textutils
 maybe-configure-textutils:
 @if textutils
 maybe-configure-textutils: configure-textutils
-configure-textutils:
+configure-textutils: 
 	@test ! -f $(HOST_SUBDIR)/textutils/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/textutils ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in textutils; \
-	cd $(HOST_SUBDIR)/textutils || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/textutils; \
+	cd "$(HOST_SUBDIR)/textutils" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/textutils/ | \
@@ -19415,6 +19661,8 @@ configure-textutils:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif textutils
+
+
 
 .PHONY: all-textutils maybe-all-textutils
 maybe-all-textutils:
@@ -19428,6 +19676,7 @@ all-textutils: configure-textutils
 	(cd $(HOST_SUBDIR)/textutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-textutils))
 @endif textutils
+
 
 .PHONY: check-textutils maybe-check-textutils
 maybe-check-textutils:
@@ -19707,18 +19956,19 @@ maintainer-clean-textutils:
 @endif textutils
 
 
+
 .PHONY: configure-time maybe-configure-time
 maybe-configure-time:
 @if time
 maybe-configure-time: configure-time
-configure-time:
+configure-time: 
 	@test ! -f $(HOST_SUBDIR)/time/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/time ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in time; \
-	cd $(HOST_SUBDIR)/time || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/time; \
+	cd "$(HOST_SUBDIR)/time" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/time/ | \
@@ -19730,6 +19980,8 @@ configure-time:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif time
+
+
 
 .PHONY: all-time maybe-all-time
 maybe-all-time:
@@ -19743,6 +19995,7 @@ all-time: configure-time
 	(cd $(HOST_SUBDIR)/time && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-time))
 @endif time
+
 
 .PHONY: check-time maybe-check-time
 maybe-check-time:
@@ -20022,18 +20275,19 @@ maintainer-clean-time:
 @endif time
 
 
+
 .PHONY: configure-uudecode maybe-configure-uudecode
 maybe-configure-uudecode:
 @if uudecode
 maybe-configure-uudecode: configure-uudecode
-configure-uudecode:
+configure-uudecode: 
 	@test ! -f $(HOST_SUBDIR)/uudecode/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/uudecode ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in uudecode; \
-	cd $(HOST_SUBDIR)/uudecode || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/uudecode; \
+	cd "$(HOST_SUBDIR)/uudecode" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/uudecode/ | \
@@ -20045,6 +20299,8 @@ configure-uudecode:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif uudecode
+
+
 
 .PHONY: all-uudecode maybe-all-uudecode
 maybe-all-uudecode:
@@ -20058,6 +20314,7 @@ all-uudecode: configure-uudecode
 	(cd $(HOST_SUBDIR)/uudecode && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-uudecode))
 @endif uudecode
+
 
 .PHONY: check-uudecode maybe-check-uudecode
 maybe-check-uudecode:
@@ -20337,18 +20594,19 @@ maintainer-clean-uudecode:
 @endif uudecode
 
 
+
 .PHONY: configure-wdiff maybe-configure-wdiff
 maybe-configure-wdiff:
 @if wdiff
 maybe-configure-wdiff: configure-wdiff
-configure-wdiff:
+configure-wdiff: 
 	@test ! -f $(HOST_SUBDIR)/wdiff/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/wdiff ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in wdiff; \
-	cd $(HOST_SUBDIR)/wdiff || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/wdiff; \
+	cd "$(HOST_SUBDIR)/wdiff" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/wdiff/ | \
@@ -20360,6 +20618,8 @@ configure-wdiff:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif wdiff
+
+
 
 .PHONY: all-wdiff maybe-all-wdiff
 maybe-all-wdiff:
@@ -20373,6 +20633,7 @@ all-wdiff: configure-wdiff
 	(cd $(HOST_SUBDIR)/wdiff && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-wdiff))
 @endif wdiff
+
 
 .PHONY: check-wdiff maybe-check-wdiff
 maybe-check-wdiff:
@@ -20652,18 +20913,19 @@ maintainer-clean-wdiff:
 @endif wdiff
 
 
+
 .PHONY: configure-zip maybe-configure-zip
 maybe-configure-zip:
 @if zip
 maybe-configure-zip: configure-zip
-configure-zip:
+configure-zip: 
 	@test ! -f $(HOST_SUBDIR)/zip/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zip ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in zip; \
-	cd $(HOST_SUBDIR)/zip || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/zip; \
+	cd "$(HOST_SUBDIR)/zip" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/zip/ | \
@@ -20675,6 +20937,8 @@ configure-zip:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif zip
+
+
 
 .PHONY: all-zip maybe-all-zip
 maybe-all-zip:
@@ -20688,6 +20952,7 @@ all-zip: configure-zip
 	(cd $(HOST_SUBDIR)/zip && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-zip))
 @endif zip
+
 
 .PHONY: check-zip maybe-check-zip
 maybe-check-zip:
@@ -20970,19 +21235,20 @@ maintainer-clean-zip:
 @endif zip
 
 
+
 .PHONY: configure-zlib maybe-configure-zlib
 maybe-configure-zlib:
 @if zlib
 maybe-configure-zlib: configure-zlib
-configure-zlib:
+configure-zlib: 
 	@test -f stage_last && exit 0; \
 	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in zlib; \
-	cd $(HOST_SUBDIR)/zlib || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/zlib; \
+	cd "$(HOST_SUBDIR)/zlib" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
@@ -20994,6 +21260,8 @@ configure-zlib:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif zlib
+
+
 
 .PHONY: all-zlib maybe-all-zlib
 maybe-all-zlib:
@@ -21008,6 +21276,7 @@ all-zlib: configure-zlib
 	(cd $(HOST_SUBDIR)/zlib && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-zlib))
 @endif zlib
+
 
 .PHONY: check-zlib maybe-check-zlib
 maybe-check-zlib:
@@ -21277,18 +21546,19 @@ maintainer-clean-zlib:
 @endif zlib
 
 
+
 .PHONY: configure-gdb maybe-configure-gdb
 maybe-configure-gdb:
 @if gdb
 maybe-configure-gdb: configure-gdb
-configure-gdb:
+configure-gdb: 
 	@test ! -f $(HOST_SUBDIR)/gdb/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gdb ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gdb; \
-	cd $(HOST_SUBDIR)/gdb || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gdb; \
+	cd "$(HOST_SUBDIR)/gdb" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gdb/ | \
@@ -21300,6 +21570,8 @@ configure-gdb:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gdb
+
+
 
 .PHONY: all-gdb maybe-all-gdb
 maybe-all-gdb:
@@ -21313,6 +21585,7 @@ all-gdb: configure-gdb
 	(cd $(HOST_SUBDIR)/gdb && \
 	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) $(TARGET-gdb))
 @endif gdb
+
 
 .PHONY: check-gdb maybe-check-gdb
 maybe-check-gdb:
@@ -21592,18 +21865,19 @@ maintainer-clean-gdb:
 @endif gdb
 
 
+
 .PHONY: configure-expect maybe-configure-expect
 maybe-configure-expect:
 @if expect
 maybe-configure-expect: configure-expect
-configure-expect:
+configure-expect: 
 	@test ! -f $(HOST_SUBDIR)/expect/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/expect ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in expect; \
-	cd $(HOST_SUBDIR)/expect || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/expect; \
+	cd "$(HOST_SUBDIR)/expect" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/expect/ | \
@@ -21615,6 +21889,8 @@ configure-expect:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif expect
+
+
 
 .PHONY: all-expect maybe-all-expect
 maybe-all-expect:
@@ -21628,6 +21904,7 @@ all-expect: configure-expect
 	(cd $(HOST_SUBDIR)/expect && \
 	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) $(TARGET-expect))
 @endif expect
+
 
 .PHONY: check-expect maybe-check-expect
 maybe-check-expect:
@@ -21907,18 +22184,19 @@ maintainer-clean-expect:
 @endif expect
 
 
+
 .PHONY: configure-guile maybe-configure-guile
 maybe-configure-guile:
 @if guile
 maybe-configure-guile: configure-guile
-configure-guile:
+configure-guile: 
 	@test ! -f $(HOST_SUBDIR)/guile/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/guile ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in guile; \
-	cd $(HOST_SUBDIR)/guile || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/guile; \
+	cd "$(HOST_SUBDIR)/guile" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/guile/ | \
@@ -21930,6 +22208,8 @@ configure-guile:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif guile
+
+
 
 .PHONY: all-guile maybe-all-guile
 maybe-all-guile:
@@ -21943,6 +22223,7 @@ all-guile: configure-guile
 	(cd $(HOST_SUBDIR)/guile && \
 	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) $(TARGET-guile))
 @endif guile
+
 
 .PHONY: check-guile maybe-check-guile
 maybe-check-guile:
@@ -22222,18 +22503,19 @@ maintainer-clean-guile:
 @endif guile
 
 
+
 .PHONY: configure-tk maybe-configure-tk
 maybe-configure-tk:
 @if tk
 maybe-configure-tk: configure-tk
-configure-tk:
+configure-tk: 
 	@test ! -f $(HOST_SUBDIR)/tk/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/tk ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in tk; \
-	cd $(HOST_SUBDIR)/tk || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/tk; \
+	cd "$(HOST_SUBDIR)/tk" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/tk/ | \
@@ -22245,6 +22527,8 @@ configure-tk:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif tk
+
+
 
 .PHONY: all-tk maybe-all-tk
 maybe-all-tk:
@@ -22258,6 +22542,7 @@ all-tk: configure-tk
 	(cd $(HOST_SUBDIR)/tk && \
 	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) $(TARGET-tk))
 @endif tk
+
 
 .PHONY: check-tk maybe-check-tk
 maybe-check-tk:
@@ -22537,18 +22822,19 @@ maintainer-clean-tk:
 @endif tk
 
 
+
 .PHONY: configure-libtermcap maybe-configure-libtermcap
 maybe-configure-libtermcap:
 @if libtermcap
 maybe-configure-libtermcap: configure-libtermcap
-configure-libtermcap:
+configure-libtermcap: 
 	@test ! -f $(HOST_SUBDIR)/libtermcap/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libtermcap ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in libtermcap; \
-	cd $(HOST_SUBDIR)/libtermcap || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/libtermcap; \
+	cd "$(HOST_SUBDIR)/libtermcap" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/libtermcap/ | \
@@ -22560,6 +22846,8 @@ configure-libtermcap:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif libtermcap
+
+
 
 .PHONY: all-libtermcap maybe-all-libtermcap
 maybe-all-libtermcap:
@@ -22573,6 +22861,7 @@ all-libtermcap: configure-libtermcap
 	(cd $(HOST_SUBDIR)/libtermcap && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-libtermcap))
 @endif libtermcap
+
 
 .PHONY: check-libtermcap maybe-check-libtermcap
 maybe-check-libtermcap:
@@ -22791,18 +23080,19 @@ maintainer-clean-libtermcap:
 @endif libtermcap
 
 
+
 .PHONY: configure-utils maybe-configure-utils
 maybe-configure-utils:
 @if utils
 maybe-configure-utils: configure-utils
-configure-utils:
+configure-utils: 
 	@test ! -f $(HOST_SUBDIR)/utils/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/utils ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in utils; \
-	cd $(HOST_SUBDIR)/utils || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/utils; \
+	cd "$(HOST_SUBDIR)/utils" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/utils/ | \
@@ -22814,6 +23104,8 @@ configure-utils:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif utils
+
+
 
 .PHONY: all-utils maybe-all-utils
 maybe-all-utils:
@@ -22827,6 +23119,7 @@ all-utils: configure-utils
 	(cd $(HOST_SUBDIR)/utils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-utils))
 @endif utils
+
 
 .PHONY: check-utils maybe-check-utils
 maybe-check-utils:
@@ -23101,18 +23394,19 @@ maintainer-clean-utils:
 @endif utils
 
 
+
 .PHONY: configure-gnattools maybe-configure-gnattools
 maybe-configure-gnattools:
 @if gnattools
 maybe-configure-gnattools: configure-gnattools
-configure-gnattools:
+configure-gnattools: 
 	@test ! -f $(HOST_SUBDIR)/gnattools/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gnattools ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	echo Configuring in gnattools; \
-	cd $(HOST_SUBDIR)/gnattools || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gnattools; \
+	cd "$(HOST_SUBDIR)/gnattools" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
 	  *) topdir=`echo $(HOST_SUBDIR)/gnattools/ | \
@@ -23124,6 +23418,8 @@ configure-gnattools:
 	  $(HOST_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif gnattools
+
+
 
 .PHONY: all-gnattools maybe-all-gnattools
 maybe-all-gnattools:
@@ -23137,6 +23433,7 @@ all-gnattools: configure-gnattools
 	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gnattools))
 @endif gnattools
+
 
 .PHONY: check-gnattools maybe-check-gnattools
 maybe-check-gnattools:
@@ -23421,17 +23718,21 @@ maintainer-clean-gnattools:
 # Modules which run on the target machine
 # ---------------------------------------
 
-.PHONY: configure-target-libstdc++-v3 maybe-configure-target-libstdc++-v3
-maybe-configure-target-libstdc++-v3:
-@if target-libstdc++-v3
-maybe-configure-target-libstdc++-v3: configure-target-libstdc++-v3
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libstdc++-v3
 $(TARGET_SUBDIR)/libstdc++-v3/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libstdc++-v3 ; \
 	rm -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
+@endif target-libstdc++-v3
 
+
+
+.PHONY: configure-target-libstdc++-v3 maybe-configure-target-libstdc++-v3
+maybe-configure-target-libstdc++-v3:
+@if target-libstdc++-v3
+maybe-configure-target-libstdc++-v3: configure-target-libstdc++-v3
 configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libstdc++-v3 ; \
@@ -23449,10 +23750,11 @@ configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 	libsrcdir="$$s/libstdc++-v3"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libstdc++-v3
+
+
 
 .PHONY: all-target-libstdc++-v3 maybe-all-target-libstdc++-v3
 maybe-all-target-libstdc++-v3:
@@ -23464,8 +23766,10 @@ all-target-libstdc++-v3: configure-target-libstdc++-v3
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(RAW_CXX_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   $(TARGET-target-libstdc++-v3))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  $(TARGET-target-libstdc++-v3))
 @endif target-libstdc++-v3
+
+
 
 .PHONY: check-target-libstdc++-v3 maybe-check-target-libstdc++-v3
 maybe-check-target-libstdc++-v3:
@@ -23745,17 +24049,21 @@ maintainer-clean-target-libstdc++-v3:
 @endif target-libstdc++-v3
 
 
-.PHONY: configure-target-libmudflap maybe-configure-target-libmudflap
-maybe-configure-target-libmudflap:
-@if target-libmudflap
-maybe-configure-target-libmudflap: configure-target-libmudflap
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libmudflap
 $(TARGET_SUBDIR)/libmudflap/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmudflap ; \
 	rm -f $(TARGET_SUBDIR)/libmudflap/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libmudflap/multilib.out
+@endif target-libmudflap
 
+
+
+.PHONY: configure-target-libmudflap maybe-configure-target-libmudflap
+maybe-configure-target-libmudflap:
+@if target-libmudflap
+maybe-configure-target-libmudflap: configure-target-libmudflap
 configure-target-libmudflap: $(TARGET_SUBDIR)/libmudflap/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libmudflap/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmudflap ; \
@@ -23773,10 +24081,11 @@ configure-target-libmudflap: $(TARGET_SUBDIR)/libmudflap/multilib.out
 	libsrcdir="$$s/libmudflap"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libmudflap
+
+
 
 .PHONY: all-target-libmudflap maybe-all-target-libmudflap
 maybe-all-target-libmudflap:
@@ -23788,8 +24097,10 @@ all-target-libmudflap: configure-target-libmudflap
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libmudflap))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libmudflap))
 @endif target-libmudflap
+
+
 
 .PHONY: check-target-libmudflap maybe-check-target-libmudflap
 maybe-check-target-libmudflap:
@@ -24069,17 +24380,21 @@ maintainer-clean-target-libmudflap:
 @endif target-libmudflap
 
 
-.PHONY: configure-target-newlib maybe-configure-target-newlib
-maybe-configure-target-newlib:
-@if target-newlib
-maybe-configure-target-newlib: configure-target-newlib
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-newlib
 $(TARGET_SUBDIR)/newlib/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/newlib ; \
 	rm -f $(TARGET_SUBDIR)/newlib/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/newlib/multilib.out
+@endif target-newlib
 
+
+
+.PHONY: configure-target-newlib maybe-configure-target-newlib
+maybe-configure-target-newlib:
+@if target-newlib
+maybe-configure-target-newlib: configure-target-newlib
 configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/newlib/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/newlib ; \
@@ -24097,10 +24412,11 @@ configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
 	libsrcdir="$$s/newlib"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-newlib
+
+
 
 .PHONY: all-target-newlib maybe-all-target-newlib
 maybe-all-target-newlib:
@@ -24112,8 +24428,10 @@ all-target-newlib: configure-target-newlib
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/newlib && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-newlib))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-newlib))
 @endif target-newlib
+
+
 
 .PHONY: check-target-newlib maybe-check-target-newlib
 maybe-check-target-newlib:
@@ -24393,17 +24711,21 @@ maintainer-clean-target-newlib:
 @endif target-newlib
 
 
-.PHONY: configure-target-libgfortran maybe-configure-target-libgfortran
-maybe-configure-target-libgfortran:
-@if target-libgfortran
-maybe-configure-target-libgfortran: configure-target-libgfortran
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libgfortran
 $(TARGET_SUBDIR)/libgfortran/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgfortran ; \
 	rm -f $(TARGET_SUBDIR)/libgfortran/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libgfortran/multilib.out
+@endif target-libgfortran
 
+
+
+.PHONY: configure-target-libgfortran maybe-configure-target-libgfortran
+maybe-configure-target-libgfortran:
+@if target-libgfortran
+maybe-configure-target-libgfortran: configure-target-libgfortran
 configure-target-libgfortran: $(TARGET_SUBDIR)/libgfortran/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libgfortran/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgfortran ; \
@@ -24421,10 +24743,11 @@ configure-target-libgfortran: $(TARGET_SUBDIR)/libgfortran/multilib.out
 	libsrcdir="$$s/libgfortran"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libgfortran
+
+
 
 .PHONY: all-target-libgfortran maybe-all-target-libgfortran
 maybe-all-target-libgfortran:
@@ -24436,8 +24759,10 @@ all-target-libgfortran: configure-target-libgfortran
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libgfortran && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libgfortran))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libgfortran))
 @endif target-libgfortran
+
+
 
 .PHONY: check-target-libgfortran maybe-check-target-libgfortran
 maybe-check-target-libgfortran:
@@ -24717,17 +25042,21 @@ maintainer-clean-target-libgfortran:
 @endif target-libgfortran
 
 
-.PHONY: configure-target-libobjc maybe-configure-target-libobjc
-maybe-configure-target-libobjc:
-@if target-libobjc
-maybe-configure-target-libobjc: configure-target-libobjc
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libobjc
 $(TARGET_SUBDIR)/libobjc/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libobjc ; \
 	rm -f $(TARGET_SUBDIR)/libobjc/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libobjc/multilib.out
+@endif target-libobjc
 
+
+
+.PHONY: configure-target-libobjc maybe-configure-target-libobjc
+maybe-configure-target-libobjc:
+@if target-libobjc
+maybe-configure-target-libobjc: configure-target-libobjc
 configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libobjc/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libobjc ; \
@@ -24745,10 +25074,11 @@ configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
 	libsrcdir="$$s/libobjc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libobjc
+
+
 
 .PHONY: all-target-libobjc maybe-all-target-libobjc
 maybe-all-target-libobjc:
@@ -24760,8 +25090,10 @@ all-target-libobjc: configure-target-libobjc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libobjc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libobjc))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libobjc))
 @endif target-libobjc
+
+
 
 .PHONY: check-target-libobjc maybe-check-target-libobjc
 maybe-check-target-libobjc:
@@ -25041,17 +25373,21 @@ maintainer-clean-target-libobjc:
 @endif target-libobjc
 
 
-.PHONY: configure-target-libtermcap maybe-configure-target-libtermcap
-maybe-configure-target-libtermcap:
-@if target-libtermcap
-maybe-configure-target-libtermcap: configure-target-libtermcap
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libtermcap
 $(TARGET_SUBDIR)/libtermcap/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libtermcap ; \
 	rm -f $(TARGET_SUBDIR)/libtermcap/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libtermcap/multilib.out
+@endif target-libtermcap
 
+
+
+.PHONY: configure-target-libtermcap maybe-configure-target-libtermcap
+maybe-configure-target-libtermcap:
+@if target-libtermcap
+maybe-configure-target-libtermcap: configure-target-libtermcap
 configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libtermcap/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libtermcap ; \
@@ -25069,10 +25405,11 @@ configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/multilib.out
 	libsrcdir="$$s/libtermcap"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libtermcap
+
+
 
 .PHONY: all-target-libtermcap maybe-all-target-libtermcap
 maybe-all-target-libtermcap:
@@ -25084,8 +25421,10 @@ all-target-libtermcap: configure-target-libtermcap
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libtermcap && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libtermcap))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libtermcap))
 @endif target-libtermcap
+
+
 
 .PHONY: check-target-libtermcap maybe-check-target-libtermcap
 maybe-check-target-libtermcap:
@@ -25305,17 +25644,21 @@ maintainer-clean-target-libtermcap:
 @endif target-libtermcap
 
 
-.PHONY: configure-target-winsup maybe-configure-target-winsup
-maybe-configure-target-winsup:
-@if target-winsup
-maybe-configure-target-winsup: configure-target-winsup
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-winsup
 $(TARGET_SUBDIR)/winsup/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/winsup ; \
 	rm -f $(TARGET_SUBDIR)/winsup/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/winsup/multilib.out
+@endif target-winsup
 
+
+
+.PHONY: configure-target-winsup maybe-configure-target-winsup
+maybe-configure-target-winsup:
+@if target-winsup
+maybe-configure-target-winsup: configure-target-winsup
 configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/winsup/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/winsup ; \
@@ -25333,10 +25676,11 @@ configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
 	libsrcdir="$$s/winsup"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-winsup
+
+
 
 .PHONY: all-target-winsup maybe-all-target-winsup
 maybe-all-target-winsup:
@@ -25348,8 +25692,10 @@ all-target-winsup: configure-target-winsup
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/winsup && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-winsup))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-winsup))
 @endif target-winsup
+
+
 
 .PHONY: check-target-winsup maybe-check-target-winsup
 maybe-check-target-winsup:
@@ -25629,17 +25975,21 @@ maintainer-clean-target-winsup:
 @endif target-winsup
 
 
-.PHONY: configure-target-libgloss maybe-configure-target-libgloss
-maybe-configure-target-libgloss:
-@if target-libgloss
-maybe-configure-target-libgloss: configure-target-libgloss
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libgloss
 $(TARGET_SUBDIR)/libgloss/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgloss ; \
 	rm -f $(TARGET_SUBDIR)/libgloss/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libgloss/multilib.out
+@endif target-libgloss
 
+
+
+.PHONY: configure-target-libgloss maybe-configure-target-libgloss
+maybe-configure-target-libgloss:
+@if target-libgloss
+maybe-configure-target-libgloss: configure-target-libgloss
 configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libgloss/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgloss ; \
@@ -25657,10 +26007,11 @@ configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
 	libsrcdir="$$s/libgloss"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libgloss
+
+
 
 .PHONY: all-target-libgloss maybe-all-target-libgloss
 maybe-all-target-libgloss:
@@ -25672,8 +26023,10 @@ all-target-libgloss: configure-target-libgloss
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libgloss && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libgloss))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libgloss))
 @endif target-libgloss
+
+
 
 .PHONY: check-target-libgloss maybe-check-target-libgloss
 maybe-check-target-libgloss:
@@ -25949,17 +26302,21 @@ maintainer-clean-target-libgloss:
 @endif target-libgloss
 
 
-.PHONY: configure-target-libiberty maybe-configure-target-libiberty
-maybe-configure-target-libiberty:
-@if target-libiberty
-maybe-configure-target-libiberty: configure-target-libiberty
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libiberty
 $(TARGET_SUBDIR)/libiberty/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libiberty ; \
 	rm -f $(TARGET_SUBDIR)/libiberty/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libiberty/multilib.out
+@endif target-libiberty
 
+
+
+.PHONY: configure-target-libiberty maybe-configure-target-libiberty
+maybe-configure-target-libiberty:
+@if target-libiberty
+maybe-configure-target-libiberty: configure-target-libiberty
 configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libiberty ; \
@@ -25977,10 +26334,11 @@ configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
 	libsrcdir="$$s/libiberty"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libiberty
+
+
 
 .PHONY: all-target-libiberty maybe-all-target-libiberty
 maybe-all-target-libiberty:
@@ -25992,8 +26350,10 @@ all-target-libiberty: configure-target-libiberty
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libiberty))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libiberty))
 @endif target-libiberty
+
+
 
 .PHONY: check-target-libiberty maybe-check-target-libiberty
 maybe-check-target-libiberty:
@@ -26273,17 +26633,21 @@ maintainer-clean-target-libiberty:
 @endif target-libiberty
 
 
-.PHONY: configure-target-gperf maybe-configure-target-gperf
-maybe-configure-target-gperf:
-@if target-gperf
-maybe-configure-target-gperf: configure-target-gperf
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-gperf
 $(TARGET_SUBDIR)/gperf/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/gperf ; \
 	rm -f $(TARGET_SUBDIR)/gperf/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/gperf/multilib.out
+@endif target-gperf
 
+
+
+.PHONY: configure-target-gperf maybe-configure-target-gperf
+maybe-configure-target-gperf:
+@if target-gperf
+maybe-configure-target-gperf: configure-target-gperf
 configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/gperf/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/gperf ; \
@@ -26301,10 +26665,11 @@ configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
 	libsrcdir="$$s/gperf"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-gperf
+
+
 
 .PHONY: all-target-gperf maybe-all-target-gperf
 maybe-all-target-gperf:
@@ -26316,8 +26681,10 @@ all-target-gperf: configure-target-gperf
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/gperf && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-gperf))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-gperf))
 @endif target-gperf
+
+
 
 .PHONY: check-target-gperf maybe-check-target-gperf
 maybe-check-target-gperf:
@@ -26597,17 +26964,21 @@ maintainer-clean-target-gperf:
 @endif target-gperf
 
 
-.PHONY: configure-target-examples maybe-configure-target-examples
-maybe-configure-target-examples:
-@if target-examples
-maybe-configure-target-examples: configure-target-examples
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-examples
 $(TARGET_SUBDIR)/examples/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/examples ; \
 	rm -f $(TARGET_SUBDIR)/examples/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/examples/multilib.out
+@endif target-examples
 
+
+
+.PHONY: configure-target-examples maybe-configure-target-examples
+maybe-configure-target-examples:
+@if target-examples
+maybe-configure-target-examples: configure-target-examples
 configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/examples/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/examples ; \
@@ -26625,10 +26996,11 @@ configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
 	libsrcdir="$$s/examples"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-examples
+
+
 
 .PHONY: all-target-examples maybe-all-target-examples
 maybe-all-target-examples:
@@ -26640,8 +27012,10 @@ all-target-examples: configure-target-examples
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/examples && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-examples))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-examples))
 @endif target-examples
+
+
 
 .PHONY: check-target-examples maybe-check-target-examples
 maybe-check-target-examples:
@@ -26913,17 +27287,21 @@ maintainer-clean-target-examples:
 @endif target-examples
 
 
-.PHONY: configure-target-libffi maybe-configure-target-libffi
-maybe-configure-target-libffi:
-@if target-libffi
-maybe-configure-target-libffi: configure-target-libffi
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libffi
 $(TARGET_SUBDIR)/libffi/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi ; \
 	rm -f $(TARGET_SUBDIR)/libffi/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libffi/multilib.out
+@endif target-libffi
 
+
+
+.PHONY: configure-target-libffi maybe-configure-target-libffi
+maybe-configure-target-libffi:
+@if target-libffi
+maybe-configure-target-libffi: configure-target-libffi
 configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi ; \
@@ -26941,10 +27319,11 @@ configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
 	libsrcdir="$$s/libffi"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libffi
+
+
 
 .PHONY: all-target-libffi maybe-all-target-libffi
 maybe-all-target-libffi:
@@ -26956,8 +27335,10 @@ all-target-libffi: configure-target-libffi
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libffi && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libffi))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libffi))
 @endif target-libffi
+
+
 
 .PHONY: check-target-libffi maybe-check-target-libffi
 maybe-check-target-libffi:
@@ -27237,17 +27618,21 @@ maintainer-clean-target-libffi:
 @endif target-libffi
 
 
-.PHONY: configure-target-libjava maybe-configure-target-libjava
-maybe-configure-target-libjava:
-@if target-libjava
-maybe-configure-target-libjava: configure-target-libjava
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libjava
 $(TARGET_SUBDIR)/libjava/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libjava ; \
 	rm -f $(TARGET_SUBDIR)/libjava/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libjava/multilib.out
+@endif target-libjava
 
+
+
+.PHONY: configure-target-libjava maybe-configure-target-libjava
+maybe-configure-target-libjava:
+@if target-libjava
+maybe-configure-target-libjava: configure-target-libjava
 configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libjava/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libjava ; \
@@ -27265,10 +27650,11 @@ configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
 	libsrcdir="$$s/libjava"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libjava
+
+
 
 .PHONY: all-target-libjava maybe-all-target-libjava
 maybe-all-target-libjava:
@@ -27280,8 +27666,10 @@ all-target-libjava: configure-target-libjava
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(RAW_CXX_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   $(TARGET-target-libjava))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  $(TARGET-target-libjava))
 @endif target-libjava
+
+
 
 .PHONY: check-target-libjava maybe-check-target-libjava
 maybe-check-target-libjava:
@@ -27561,17 +27949,21 @@ maintainer-clean-target-libjava:
 @endif target-libjava
 
 
-.PHONY: configure-target-zlib maybe-configure-target-zlib
-maybe-configure-target-zlib:
-@if target-zlib
-maybe-configure-target-zlib: configure-target-zlib
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-zlib
 $(TARGET_SUBDIR)/zlib/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/zlib ; \
 	rm -f $(TARGET_SUBDIR)/zlib/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/zlib/multilib.out
+@endif target-zlib
 
+
+
+.PHONY: configure-target-zlib maybe-configure-target-zlib
+maybe-configure-target-zlib:
+@if target-zlib
+maybe-configure-target-zlib: configure-target-zlib
 configure-target-zlib: $(TARGET_SUBDIR)/zlib/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/zlib/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/zlib ; \
@@ -27589,10 +27981,11 @@ configure-target-zlib: $(TARGET_SUBDIR)/zlib/multilib.out
 	libsrcdir="$$s/zlib"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-zlib
+
+
 
 .PHONY: all-target-zlib maybe-all-target-zlib
 maybe-all-target-zlib:
@@ -27604,8 +27997,10 @@ all-target-zlib: configure-target-zlib
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/zlib && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-zlib))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-zlib))
 @endif target-zlib
+
+
 
 .PHONY: check-target-zlib maybe-check-target-zlib
 maybe-check-target-zlib:
@@ -27885,17 +28280,21 @@ maintainer-clean-target-zlib:
 @endif target-zlib
 
 
-.PHONY: configure-target-boehm-gc maybe-configure-target-boehm-gc
-maybe-configure-target-boehm-gc:
-@if target-boehm-gc
-maybe-configure-target-boehm-gc: configure-target-boehm-gc
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-boehm-gc
 $(TARGET_SUBDIR)/boehm-gc/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc ; \
 	rm -f $(TARGET_SUBDIR)/boehm-gc/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/boehm-gc/multilib.out
+@endif target-boehm-gc
 
+
+
+.PHONY: configure-target-boehm-gc maybe-configure-target-boehm-gc
+maybe-configure-target-boehm-gc:
+@if target-boehm-gc
+maybe-configure-target-boehm-gc: configure-target-boehm-gc
 configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/boehm-gc/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc ; \
@@ -27913,10 +28312,11 @@ configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
 	libsrcdir="$$s/boehm-gc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-boehm-gc
+
+
 
 .PHONY: all-target-boehm-gc maybe-all-target-boehm-gc
 maybe-all-target-boehm-gc:
@@ -27928,8 +28328,10 @@ all-target-boehm-gc: configure-target-boehm-gc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-boehm-gc))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-boehm-gc))
 @endif target-boehm-gc
+
+
 
 .PHONY: check-target-boehm-gc maybe-check-target-boehm-gc
 maybe-check-target-boehm-gc:
@@ -28209,17 +28611,21 @@ maintainer-clean-target-boehm-gc:
 @endif target-boehm-gc
 
 
-.PHONY: configure-target-qthreads maybe-configure-target-qthreads
-maybe-configure-target-qthreads:
-@if target-qthreads
-maybe-configure-target-qthreads: configure-target-qthreads
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-qthreads
 $(TARGET_SUBDIR)/qthreads/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/qthreads ; \
 	rm -f $(TARGET_SUBDIR)/qthreads/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/qthreads/multilib.out
+@endif target-qthreads
 
+
+
+.PHONY: configure-target-qthreads maybe-configure-target-qthreads
+maybe-configure-target-qthreads:
+@if target-qthreads
+maybe-configure-target-qthreads: configure-target-qthreads
 configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/qthreads/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/qthreads ; \
@@ -28237,10 +28643,11 @@ configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
 	libsrcdir="$$s/qthreads"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-qthreads
+
+
 
 .PHONY: all-target-qthreads maybe-all-target-qthreads
 maybe-all-target-qthreads:
@@ -28252,8 +28659,10 @@ all-target-qthreads: configure-target-qthreads
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/qthreads && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-qthreads))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-qthreads))
 @endif target-qthreads
+
+
 
 .PHONY: check-target-qthreads maybe-check-target-qthreads
 maybe-check-target-qthreads:
@@ -28533,17 +28942,21 @@ maintainer-clean-target-qthreads:
 @endif target-qthreads
 
 
-.PHONY: configure-target-rda maybe-configure-target-rda
-maybe-configure-target-rda:
-@if target-rda
-maybe-configure-target-rda: configure-target-rda
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-rda
 $(TARGET_SUBDIR)/rda/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/rda ; \
 	rm -f $(TARGET_SUBDIR)/rda/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/rda/multilib.out
+@endif target-rda
 
+
+
+.PHONY: configure-target-rda maybe-configure-target-rda
+maybe-configure-target-rda:
+@if target-rda
+maybe-configure-target-rda: configure-target-rda
 configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/rda/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/rda ; \
@@ -28561,10 +28974,11 @@ configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
 	libsrcdir="$$s/rda"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-rda
+
+
 
 .PHONY: all-target-rda maybe-all-target-rda
 maybe-all-target-rda:
@@ -28576,8 +28990,10 @@ all-target-rda: configure-target-rda
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/rda && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-rda))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-rda))
 @endif target-rda
+
+
 
 .PHONY: check-target-rda maybe-check-target-rda
 maybe-check-target-rda:
@@ -28857,17 +29273,21 @@ maintainer-clean-target-rda:
 @endif target-rda
 
 
-.PHONY: configure-target-libada maybe-configure-target-libada
-maybe-configure-target-libada:
-@if target-libada
-maybe-configure-target-libada: configure-target-libada
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libada
 $(TARGET_SUBDIR)/libada/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libada ; \
 	rm -f $(TARGET_SUBDIR)/libada/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libada/multilib.out
+@endif target-libada
 
+
+
+.PHONY: configure-target-libada maybe-configure-target-libada
+maybe-configure-target-libada:
+@if target-libada
+maybe-configure-target-libada: configure-target-libada
 configure-target-libada: $(TARGET_SUBDIR)/libada/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libada/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libada ; \
@@ -28885,10 +29305,11 @@ configure-target-libada: $(TARGET_SUBDIR)/libada/multilib.out
 	libsrcdir="$$s/libada"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)"  \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
 	  || exit 1
 @endif target-libada
+
+
 
 .PHONY: all-target-libada maybe-all-target-libada
 maybe-all-target-libada:
@@ -28900,8 +29321,10 @@ all-target-libada: configure-target-libada
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libada && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   $(TARGET-target-libada))
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libada))
 @endif target-libada
+
+
 
 .PHONY: check-target-libada maybe-check-target-libada
 maybe-check-target-libada:
