@@ -1,5 +1,5 @@
 /* Bytecode definitions for GNU C-compiler.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
