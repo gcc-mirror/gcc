@@ -1540,7 +1540,7 @@ CUMULATIVE_ARGS;
    On the C4x we use this to indicate if a symbol is in text or
    data space.  */
 
-#define ENCODE_SECTION_INFO(DECL) c4x_encode_section_info (DECL);
+#define ENCODE_SECTION_INFO(DECL, FIRST) c4x_encode_section_info (DECL, FIRST);
 
 /* Descripting Relative Cost of Operations.  */
 

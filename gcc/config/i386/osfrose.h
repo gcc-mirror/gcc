@@ -449,21 +449,23 @@ while (0)
    `PRINT_OPERAND_ADDRESS'.  */
 
 #undef	ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL)					\
-do									\
-  {									\
-   if (HALF_PIC_P ())							\
-      HALF_PIC_ENCODE (DECL);						\
-									\
-   else if (flag_pic)							\
-     {									\
-       rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
-		  ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
-       SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
-	 = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
-	    || ! TREE_PUBLIC (DECL));					\
-      }									\
-  }									\
+#define ENCODE_SECTION_INFO(DECL, FIRST)			\
+do								\
+  {								\
+    if (HALF_PIC_P ())						\
+      {								\
+	if (FIRST)						\
+	  HALF_PIC_ENCODE (DECL);				\
+      }								\
+    else if (flag_pic)						\
+      {								\
+	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'	\
+		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));	\
+	SYMBOL_REF_FLAG (XEXP (rtl, 0))				\
+	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
+	     || ! TREE_PUBLIC (DECL));				\
+      }								\
+  }								\
 while (0)
 
 

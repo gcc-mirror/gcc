@@ -1446,7 +1446,7 @@ struct cum_args {int regs;};
 
 /* We need to code in PIC-specific flags into SYMBOL_REF_FLAG.  */
 
-#define ENCODE_SECTION_INFO(EXP) cris_encode_section_info (EXP)
+#define ENCODE_SECTION_INFO(EXP, FIRST) cris_encode_section_info (EXP, FIRST)
 
 /* We pull a little trick to register the _fini function with atexit,
    after (presumably) registering the eh frame info, since we don't handle

@@ -1764,16 +1764,7 @@ do {									\
    depending on something about the variable or function named by the symbol
    (such as what section it is in).  */
 
-#define ENCODE_SECTION_INFO(DECL) ia64_encode_section_info (DECL)
-
-/* If a variable is weakened, made one only or moved into a different
-   section, it may be necessary to redo the section info to move the
-   variable out of sdata.  */
-
-#define REDO_SECTION_INFO_P(DECL)					\
-   ((TREE_CODE (DECL) == VAR_DECL)					\
-    && (DECL_ONE_ONLY (DECL) || DECL_WEAK (DECL) || DECL_COMMON (DECL)	\
-	|| DECL_SECTION_NAME (DECL) != 0))
+#define ENCODE_SECTION_INFO(DECL, FIRST) ia64_encode_section_info (DECL, FIRST)
 
 #define SDATA_NAME_FLAG_CHAR '@'
 

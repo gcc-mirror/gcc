@@ -208,7 +208,7 @@ do { text_section ();							\
     if ((TREE_STATIC (DECL)                                             \
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
         || DECL_INITIAL (DECL))                                         \
-      ENCODE_SECTION_INFO (DECL);  \
+      ENCODE_SECTION_INFO (DECL, false);				\
     ASM_OUTPUT_LABEL (FILE, xname);                                     \
   } while (0)
 
@@ -224,7 +224,7 @@ do { text_section ();							\
     if ((TREE_STATIC (DECL)                                             \
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
         || DECL_INITIAL (DECL))                                         \
-      ENCODE_SECTION_INFO (DECL);					\
+      ENCODE_SECTION_INFO (DECL, false);				\
     ASM_OUTPUT_LABEL (FILE, xname);                                     \
     /* Avoid generating stubs for functions we've just defined by	\
        outputting any required stub name label now.  */			\
@@ -270,19 +270,20 @@ do { text_section ();							\
 /* Ensure correct alignment of bss data.  */
 
 #undef	ASM_OUTPUT_ALIGNED_DECL_LOCAL
-#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
-  do {  \
-    fputs (".lcomm ", (FILE));				\
-    assemble_name ((FILE), (NAME));			\
-    fprintf ((FILE), ",%u,%u\n", (SIZE), floor_log2 ((ALIGN) / BITS_PER_UNIT)); \
-    if ((DECL) && ((TREE_STATIC (DECL)                                             \
-	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
-        || DECL_INITIAL (DECL)))                                         \
-      ENCODE_SECTION_INFO (DECL);  \
-    if ((DECL) && ((TREE_STATIC (DECL)                                             \
-	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
-        || DECL_INITIAL (DECL)))                                         \
-      machopic_define_name (NAME);                                     \
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
+  do {									\
+    fputs (".lcomm ", (FILE));						\
+    assemble_name ((FILE), (NAME));					\
+    fprintf ((FILE), ",%u,%u\n", (SIZE),				\
+	     floor_log2 ((ALIGN) / BITS_PER_UNIT));			\
+    if ((DECL) && ((TREE_STATIC (DECL)					\
+	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
+        || DECL_INITIAL (DECL)))					\
+      ENCODE_SECTION_INFO (DECL, false);				\
+    if ((DECL) && ((TREE_STATIC (DECL)					\
+	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
+        || DECL_INITIAL (DECL)))					\
+      machopic_define_name (NAME);					\
   } while (0)
 
 /* Output nothing for #ident.  */
@@ -716,12 +717,8 @@ enum machopic_addr_class {
 #define MACHOPIC_JUST_INDIRECT (flag_pic == 1)
 #define MACHOPIC_PURE          (flag_pic == 2)
 
-#define ENCODE_SECTION_INFO(DECL)  \
-  darwin_encode_section_info (DECL)
-
-/* Be conservative and always redo the encoding.  */
-
-#define REDO_SECTION_INFO_P(DECL) (1)
+#define ENCODE_SECTION_INFO(DECL, FIRST) \
+  darwin_encode_section_info (DECL, FIRST)
 
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)  \
   ((VAR) = ((SYMBOL_NAME[0] == '!') ? (SYMBOL_NAME) + 4 : (SYMBOL_NAME)))

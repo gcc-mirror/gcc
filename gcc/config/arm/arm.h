@@ -1912,7 +1912,7 @@ typedef struct
 /* This doesn't work with AOF syntax, since the string table may be in
    a different AREA.  */
 #ifndef AOF_ASSEMBLER
-#define ENCODE_SECTION_INFO(decl)					\
+#define ENCODE_SECTION_INFO(decl, first)				\
 {									\
   if (optimize > 0 && TREE_CONSTANT (decl)				\
       && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))	\
@@ -1921,12 +1921,14 @@ typedef struct
                  ? TREE_CST_RTL (decl) : DECL_RTL (decl));		\
       SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;				\
     }									\
-  ARM_ENCODE_CALL_TYPE (decl)						\
+  if (first)								\
+    ARM_ENCODE_CALL_TYPE (decl)						\
 }
 #else
-#define ENCODE_SECTION_INFO(decl)					\
+#define ENCODE_SECTION_INFO(decl, first)				\
 {									\
-  ARM_ENCODE_CALL_TYPE (decl)						\
+  if (first)								\
+    ARM_ENCODE_CALL_TYPE (decl)						\
 }
 #endif
 

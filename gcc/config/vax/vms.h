@@ -88,7 +88,7 @@ Boston, MA 02111-1307, USA.  */
    addressed.  Under VMS there is some brain damage in the linker that requires
    us to do this.  */
 
-#define ENCODE_SECTION_INFO(decl)  				\
+#define ENCODE_SECTION_INFO(decl, FIRST)  			\
   if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)) 		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1; 
 

@@ -816,7 +816,8 @@ extern int fixuplabelno;
    to read the prefixes.  */
 
 #undef	ENCODE_SECTION_INFO
-#define	ENCODE_SECTION_INFO(DECL) rs6000_encode_section_info (DECL)
+#define	ENCODE_SECTION_INFO(DECL, FIRST) \
+  rs6000_encode_section_info (DECL, FIRST)
 
 /* The ELF version doesn't encode [DS] or whatever at the end of symbols.  */
 

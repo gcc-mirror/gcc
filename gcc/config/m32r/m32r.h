@@ -1644,7 +1644,7 @@ sbss_section ()								\
  || MEDIUM_NAME_P (SYMBOL_NAME) \
  || LARGE_NAME_P (SYMBOL_NAME))
 
-#define ENCODE_SECTION_INFO(DECL) m32r_encode_section_info (DECL)
+#define ENCODE_SECTION_INFO(DECL, FIRST) m32r_encode_section_info (DECL, FIRST)
 
 /* Decode SYM_NAME and store the real name part in VAR, sans
    the characters that encode section info.  Define this macro if

@@ -3416,8 +3416,9 @@ mcore_dllimport_p (decl)
 
 /* Cover function to implement ENCODE_SECTION_INFO.  */
 void
-mcore_encode_section_info (decl)
+mcore_encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   /* This bit is copied from arm.h.  */
   if (optimize > 0

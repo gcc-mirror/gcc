@@ -1486,9 +1486,9 @@ do { 									\
 
 #define FUNCTION_NAME_P(NAME)  (*(NAME) == '@')
 
-#define ENCODE_SECTION_INFO(DECL)\
+#define ENCODE_SECTION_INFO(DECL, FIRST)		\
 do							\
-  { if (TEXT_SPACE_P (DECL))				\
+  { if (FIRST && TEXT_SPACE_P (DECL))			\
       {	rtx _rtl;					\
 	if (TREE_CODE (DECL) == FUNCTION_DECL		\
 	    || TREE_CODE (DECL) == VAR_DECL)		\

@@ -6857,8 +6857,9 @@ const struct attribute_spec ia64_attribute_table[] =
 extern struct obstack * saveable_obstack;
 
 void
-ia64_encode_section_info (decl)
+ia64_encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   const char *symbol_str;
 

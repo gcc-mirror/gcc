@@ -44,7 +44,7 @@ extern void   gas_output_ascii          PARAMS ((FILE *file, const char *str,
 extern void   asm_output_external          PARAMS ((FILE *file, tree decl,
 						   char *name));
 extern void   unique_section               PARAMS ((tree decl, int reloc));
-extern void   encode_section_info          PARAMS ((tree decl));
+extern void   encode_section_info          PARAMS ((tree decl, int));
 extern int    avr_progmem_p                PARAMS ((tree decl));
 
 

@@ -189,19 +189,6 @@ Boston, MA 02111-1307, USA.  */
 
 union tree_node;
 #define TREE union tree_node *
-
-/* Used to implement dllexport overriding dllimport semantics.  It's also used
-   to handle vtables - the first pass won't do anything because
-   DECL_CONTEXT (DECL) will be 0 so i386_pe_dll{ex,im}port_p will return 0.
-   It's also used to handle dllimport override semantics.  */
-#if 0
-#define REDO_SECTION_INFO_P(DECL) \
-  ((DECL_ATTRIBUTES (DECL) != NULL_TREE) \
-   || (TREE_CODE (DECL) == VAR_DECL && DECL_VIRTUAL_P (DECL)))
-#else
-#define REDO_SECTION_INFO_P(DECL) 1
-#endif
-
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_drectve
@@ -277,12 +264,11 @@ do {									\
    section and we need to set DECL_SECTION_NAME so we do that here.
    Note that we can be called twice on the same decl.  */
 
-extern void i386_pe_encode_section_info PARAMS ((TREE));
+extern void i386_pe_encode_section_info PARAMS ((TREE, int));
 
-#ifdef ENCODE_SECTION_INFO
 #undef ENCODE_SECTION_INFO
-#endif
-#define ENCODE_SECTION_INFO(DECL) i386_pe_encode_section_info (DECL)
+#define ENCODE_SECTION_INFO(DECL, FIRST) \
+  i386_pe_encode_section_info (DECL, FIRST)
 
 /* Utility used only in this file.  */
 #define I386_PE_STRIP_ENCODING(SYM_NAME) \

@@ -2414,7 +2414,7 @@ sdata_section ()							\
    rtl will be a `mem' whose address is a `symbol_ref'.
 
    For the m88k, determine if the item should go in the global pool.  */
-#define ENCODE_SECTION_INFO(DECL)					\
+#define ENCODE_SECTION_INFO(DECL, FIRST)				\
   do {									\
     if (m88k_gp_threshold > 0)						\
     {									\

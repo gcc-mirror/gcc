@@ -207,7 +207,7 @@ toc_section ()						\
    that we can branch to this function without emitting a no-op after the
    call.  Do not set this flag if the function is weakly defined.  */
 
-#define ENCODE_SECTION_INFO(DECL)			\
+#define ENCODE_SECTION_INFO(DECL, FIRST)		\
   if (TREE_CODE (DECL) == FUNCTION_DECL			\
       && !TREE_PUBLIC (DECL)				\
       && !DECL_WEAK (DECL))				\

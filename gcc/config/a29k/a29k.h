@@ -1366,7 +1366,7 @@ literal_section ()						\
    that we can branch to this function without emitting a no-op after the
    call.  */
 
-#define ENCODE_SECTION_INFO(DECL)  \
+#define ENCODE_SECTION_INFO(DECL, FIRST)  \
   if (TREE_CODE (DECL) == FUNCTION_DECL			\
       && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))) \
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;

@@ -116,7 +116,7 @@ extern void ia64_function_arg_advance PARAMS((CUMULATIVE_ARGS *,
 extern int ia64_return_in_memory PARAMS((tree));
 extern void ia64_asm_output_external PARAMS((FILE *, tree, const char *));
 
-extern void ia64_encode_section_info PARAMS((tree));
+extern void ia64_encode_section_info PARAMS((tree, int));
 #endif /* TREE_CODE */
 
 extern int ia64_register_move_cost PARAMS((enum machine_mode, enum reg_class,

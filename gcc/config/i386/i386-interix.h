@@ -354,7 +354,7 @@ union tree_node;
 const char *gen_stdcall_suffix PARAMS ((union tree_node *));
 
 #undef ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL) 					\
+#define ENCODE_SECTION_INFO(DECL, FIRST)				\
 do 									\
   {									\
     if (flag_pic)							\
@@ -365,7 +365,7 @@ do 									\
 	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
 	     || ! TREE_PUBLIC (DECL));					\
       }									\
-    if (TREE_CODE (DECL) == FUNCTION_DECL) 				\
+    if ((FIRST) && TREE_CODE (DECL) == FUNCTION_DECL) 			\
       if (lookup_attribute ("stdcall",					\
 			    TYPE_ATTRIBUTES (TREE_TYPE (DECL))))	\
         XEXP (DECL_RTL (DECL), 0) = 					\

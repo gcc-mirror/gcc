@@ -3343,12 +3343,12 @@ typedef struct mips_args {
    If you are changing this macro, you should look at
    mips_select_section and see if it needs a similar change.  */
 
-#define ENCODE_SECTION_INFO(DECL)					\
+#define ENCODE_SECTION_INFO(DECL, FIRST)				\
 do									\
   {									\
     if (TARGET_MIPS16)							\
       {									\
-	if (TREE_CODE (DECL) == STRING_CST				\
+	if ((FIRST) && TREE_CODE (DECL) == STRING_CST			\
 	    && ! flag_writable_strings					\
 	    /* If this string is from a function, and the function will	\
 	       go in a gnu linkonce section, then we can't directly	\
@@ -3415,7 +3415,8 @@ do									\
 									\
     else if (HALF_PIC_P ())						\
       {									\
-        HALF_PIC_ENCODE (DECL);						\
+	if (FIRST)							\
+          HALF_PIC_ENCODE (DECL);					\
       }									\
   }									\
 while (0)

@@ -1261,7 +1261,7 @@ typedef struct xtensa_args {
 
 /* If we are referencing a function that is static, make the SYMBOL_REF
    special so that we can generate direct calls to it even with -fpic.  */
-#define ENCODE_SECTION_INFO(DECL)					\
+#define ENCODE_SECTION_INFO(DECL, FIRST)				\
   do {									\
     if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL))	\
       SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;			\

@@ -34,7 +34,7 @@ extern void   m32r_asm_file_start		PARAMS ((FILE *));
 extern int    direct_return 			PARAMS ((void));
 #ifdef TREE_CODE
 extern void   m32r_select_section		PARAMS ((tree, int));
-extern void   m32r_encode_section_info		PARAMS ((tree));
+extern void   m32r_encode_section_info		PARAMS ((tree, int));
 extern enum m32r_function_type m32r_compute_function_type PARAMS ((tree));
 extern void   m32r_select_section 		PARAMS ((tree, int));
 

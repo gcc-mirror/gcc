@@ -952,8 +952,9 @@ machopic_operand_p (op)
    use later.  */
 
 void
-darwin_encode_section_info (decl)
+darwin_encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   char code = '\0';
   int defined = 0;

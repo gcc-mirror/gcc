@@ -1479,16 +1479,12 @@ c4x_emit_libcall_mulhi (libcall, code, mode, operands)
 /* Set the SYMBOL_REF_FLAG for a function decl.  However, wo do not
    yet use this info.  */
 void
-c4x_encode_section_info (decl)
-  tree decl;
+c4x_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
-#if 0
-  if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)   
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-#else
   if (TREE_CODE (decl) == FUNCTION_DECL)   
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-#endif
 }
 
 
