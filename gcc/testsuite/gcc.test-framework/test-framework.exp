@@ -46,8 +46,12 @@ global dg-do-what-default
 set save-dg-do-what-default ${dg-do-what-default}
 set dg-do-what-default compile
 
-# Generate the tests.
+dg-init
 
+# Run tests from the source directory.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dg-*.c]] "" ""
+
+# Generate additional tests.
 set tstobjdir "$tmpdir/gcc.test-framework"
 set generator "$srcdir/$subdir/gen_directive_tests"
 file delete -force $tstobjdir
@@ -55,12 +59,11 @@ file mkdir $tstobjdir
 set status [remote_exec host "$generator $tstobjdir"]
 set status [lindex $status 0]
 if { $status == 0 } {
-    # Run the tests.
-    dg-init
+    # Run the generated tests.
     dg-runtest [lsort [find $tstobjdir *.c]] "" "-DY1 -DY2"
-    dg-finish
 } else {
     warning "Could not generate test framework tests"
 }
 
+dg-finish
 set dg-do-what-default ${save-dg-do-what-default}

@@ -1,4 +1,4 @@
-/* Test the tester.  */
+/* Test the tester; previously part of gcc.misc-tests/dg-9.c.  */
 /* { dg-prms-id 42 } */
 /* { dg-options "-Wall" } */
 
@@ -8,8 +8,4 @@ f ()
 
 main (int argc, char *argv[])
 {		/* { dg-warning "return type" "warning test" } */
-  +;		/* { dg-error "parse" "error test" } */
-		/* { dg-bogus "foobar" "bogus fail test" } */
-
-  return a;	/* { dg-bogus "undeclared|identifier|appears" "bogus pass test" { xfail *-*-* } } */
 }		/* { dg-warning "control reaches end" "warning test" } */

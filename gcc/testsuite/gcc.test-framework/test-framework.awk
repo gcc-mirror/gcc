@@ -47,6 +47,10 @@ BEGIN			{ skip = 1; passes = 0; fails = 0; }
 /^PASS.*dox.*(test for excess errors)/ { ignore(); next }
 # Ignore lines that begin with comma.
 /^,/			{ ignore(); next }
+# For tests of dg-output, ignore successful compilation.
+/^PASS.*dg-output.*(test for excess error)/	{ ignore(); next }
+# For tests of dg-output, ignore successful execution.
+/^PASS.*dg-output.*execution test/	{ ignore(); next }
 /^PASS/			{ if (match ($0, "exp-P")) { pass(); next } }
 /^FAIL/			{ if (match ($0, "exp-F")) { pass(); next } }
 /^XPASS/		{ if (match ($0, "exp-XP")) { pass(); next } }
