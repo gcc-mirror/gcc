@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -185,9 +185,7 @@ gen_insn (insn)
 
 		    /* We have to be concerned about matching "gt" and
 		       missing "gtu", e.g., so verify we have reached the
-		       end of thing we are to match.  We do not have this
-		       problem with modes since no mode is a prefix of
-		       another.  */
+		       end of thing we are to match.  */
 		    if (*p == 0 && *q == 0 && rtx_class[op] == '<')
 		      break;
 		  }
@@ -199,7 +197,11 @@ gen_insn (insn)
 		break;
 	      case 'a':
 	      case 'b':
-		for (i = 0; i < (int) MAX_MACHINE_MODE; i++)
+		/* This loop will stop at the first prefix match, so
+                   look through the modes in reverse order, in case
+                   EXTRA_CC_MODES was used and CC is a prefix of the
+                   CC modes (as it should be).  */
+		for (i = ((int) MAX_MACHINE_MODE) - 1; i >= 0; i--)
 		  {
 		    for (p = mode_name[i], q = np; *p; p++, q++)
 		      if (tolower (*p) != *q)
@@ -211,7 +213,7 @@ gen_insn (insn)
 		      break;
 		  }
 
-		if (i == (int) MAX_MACHINE_MODE)
+		if (i < 0)
 		  matches = 0;
 		else if (*pp == 'a')
 		  m1 = i, np += strlen (mode_name[i]);
