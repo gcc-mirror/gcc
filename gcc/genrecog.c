@@ -67,7 +67,7 @@ static char **insn_name_ptr = 0;
 static int insn_name_ptr_size = 0;
 
 /* A listhead of decision trees.  The alternatives to a node are kept
-   in a doublely-linked list so we can easily add nodes to the proper
+   in a doubly-linked list so we can easily add nodes to the proper
    place when merging.  */
 
 struct decision_head
@@ -1968,7 +1968,7 @@ write_switch (start, depth)
     }
   else
     {
-      /* None of the other tests are ameanable.  */
+      /* None of the other tests are amenable.  */
       return p;
     }
 }

@@ -560,7 +560,7 @@ extern int flag_instrument_function_entry_exit;
 /* Perform a peephole pass before sched2.  */
 extern int flag_peephole2;
 
-/* Try to guess branch probablities.  */
+/* Try to guess branch probabilities.  */
 extern int flag_guess_branch_prob;
 
 /* -fcheck-bounds causes gcc to generate array bounds checks.
@@ -676,7 +676,7 @@ extern int flag_signaling_nans;
   (MODE_HAS_INFINITIES (MODE) && !flag_finite_math_only)
 
 /* Like HONOR_NANS, but true if the given mode distinguishes between
-   postive and negative zero, and the sign of zero is important.  */
+   positive and negative zero, and the sign of zero is important.  */
 #define HONOR_SIGNED_ZEROS(MODE) \
   (MODE_HAS_SIGNED_ZEROS (MODE) && !flag_unsafe_math_optimizations)
 

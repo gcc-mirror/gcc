@@ -1,4 +1,4 @@
-/* RTEMS threads compatibily routines for libgcc2 and libobjc.
+/* RTEMS threads compatibility routines for libgcc2 and libobjc.
    by: Rosimildo da Silva( rdasilva@connecttel.com ) */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
@@ -39,7 +39,7 @@ extern "C" {
 #define __GTHREAD_ONCE_INIT  0
 #define __GTHREAD_MUTEX_INIT_FUNCTION  rtems_gxx_mutex_init
 
-/* avoid depedency on rtems specific headers */
+/* Avoid dependency on rtems specific headers.  */
 typedef void *__gthread_key_t;
 typedef int   __gthread_once_t;
 typedef void *__gthread_mutex_t;

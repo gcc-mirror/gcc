@@ -6503,7 +6503,7 @@ expand_expr (exp, target, tmode, modifier)
 
 #ifdef MAX_INTEGER_COMPUTATION_MODE
   /* Only check stuff here if the mode we want is different from the mode
-     of the expression; if it's the same, check_max_integer_computiation_mode
+     of the expression; if it's the same, check_max_integer_computation_mode
      will handle it.  Do we really need to check this stuff at all?  */
 
   if (target

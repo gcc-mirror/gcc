@@ -814,7 +814,7 @@ adjust_field_type (t, opt)
 }
 
 /* Create a union for YYSTYPE, as yacc would do it, given a fieldlist FIELDS
-   and information about the correspondance between token types and fields
+   and information about the correspondence between token types and fields
    in TYPEINFO.  POS is used for error messages.  */
 
 void

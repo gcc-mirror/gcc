@@ -105,7 +105,7 @@ find_rightmost_node (occ)
 }
 
 
-/* Operation splay for splay tree structure representing ocuurences.  */
+/* Operation splay for splay tree structure representing occurrences.  */
 static et_forest_occurrence_t
 splay (node)
      et_forest_occurrence_t node;
@@ -337,7 +337,7 @@ splay (node)
   return node;
 }
 
-/* Remove all occurences of the given node before destroying the node.  */
+/* Remove all occurrences of the given node before destroying the node.  */
 static void
 remove_all_occurrences (forest, forest_node)
      et_forest_t forest;
@@ -371,7 +371,7 @@ remove_all_occurrences (forest, forest_node)
 
       prev_node = splay (find_rightmost_node (first->left));
       next_node = splay (find_leftmost_node (last->right));
-      /* prev_node and next_node are consecutive occurencies
+      /* prev_node and next_node are consecutive occurrences
 	 of the same node.  */
       if (prev_node->next != next_node)
 	abort ();
@@ -487,7 +487,7 @@ et_forest_add_node (forest, value)
   return node;
 }
 
-/* Add new edge to the tree, return 1 if succesfull.
+/* Add new edge to the tree, return 1 if successful.
    0 indicates that creation of the edge will close the cycle in graph.  */
 int
 et_forest_add_edge (forest, parent_node, child_node)
@@ -545,7 +545,7 @@ et_forest_remove_node (forest, node)
   pool_free (forest->node_pool, node);
 }
 
-/* Remove edge from the tree, return 1 if sucesfull,
+/* Remove edge from the tree, return 1 if successful,
    0 indicates nonexisting edge.  */
 int
 et_forest_remove_edge (forest, parent_node, child_node)
@@ -672,7 +672,7 @@ et_forest_enumerate_sons (forest, node, array)
   et_forest_occurrence_t occ = node->first, stop = node->last, occ1;
 
   /* Parent is the rightmost node of the left successor.
-     Look for all occurences having no right succesor
+     Look for all occurrences having no right successor
      and lookup the sons.  */
   while (occ != stop)
     {

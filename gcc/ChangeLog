@@ -1,3 +1,20 @@
+2003-01-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* et-forest.c: Fix comment typos.
+	* et-forest.h: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* flags.h: Likewise.
+	* flow.c: Likewise.
+	* gcc.c: Likewise.
+	* gcse.c: Likewise.
+	* genattrtab.c: Likewise.
+	* genautomata.c: Likewise.
+	* gengtype.c: Likewise.
+	* genrecog.c: Likewise.
+	* global.c: Likewise.
+	* gthr-rtems.h: Likewise.
+
 2003-01-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* i386.c (x86_function_profiler): Fix format specifier.

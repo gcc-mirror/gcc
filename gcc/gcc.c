@@ -2539,7 +2539,7 @@ enum path_prefix_priority
   PREFIX_PRIORITY_LAST
 };
 
-/* Add an entry for PREFIX in PLIST.  The PLIST is kept in assending
+/* Add an entry for PREFIX in PLIST.  The PLIST is kept in ascending
    order according to PRIORITY.  Within each PRIORITY, new entries are
    appended.
 
@@ -2735,7 +2735,7 @@ execute ()
     }
 
 #ifdef ENABLE_VALGRIND_CHECKING
-  /* Run the each command through valgrind.  To simplifiy prepending the
+  /* Run the each command through valgrind.  To simplify prepending the
      path to valgrind and the option "-q" (for quiet operation unless
      something triggers), we allocate a separate argv array.  */
 

@@ -2693,7 +2693,7 @@ reachable_next_level (region, type_thrown, info)
       return RNL_MAYBE_CAUGHT;
 
     case ERT_CATCH:
-      /* Catch regions are handled by their controling try region.  */
+      /* Catch regions are handled by their controlling try region.  */
       return RNL_NOT_CAUGHT;
 
     case ERT_MUST_NOT_THROW:

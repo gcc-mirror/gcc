@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /* This package implements ET forest data structure. Each tree in 
    the structure maintains a tree structure and offers logarithmic time
    for tree operations (insertion and removal of nodes and edges) and
-   poly-logarithmic time for nearest common ancesto.
+   poly-logarithmic time for nearest common ancestor.
  
    ET tree strores its structue as a sequence of symbols obtained 
    by dfs(root)
