@@ -1,3 +1,8 @@
+2003-10-04  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/t-m68hc11-gas (MULTILIB_MATCHES): m68hcs12 is
+	identical to m68hc12 as far as libraries are concerned.
+
 2003-10-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/12446
@@ -237,7 +242,7 @@
 	* configure.in (gcc_cv_as_ix86_cmov_sun_syntax): Check if
 	assembler supports Sun syntax for cmov.
 	* configure: Regenerate.
-	* config.in: Likewise.
+	* config.in: Li{ewise.
 	* config/i386/i386.c: Rename CMOV_SUN_AS_SYNTAX to
 	HAVE_AS_IX86_CMOV_SUN_SYNTAX. 
 	* config/i386/sol2.h (CMOV_SUN_AS_SYNTAX): Remove.
@@ -854,7 +859,7 @@ Sat Sep  6 23:16:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* c-decl.c (duplicate_decls): Re-invoke make_decl_rtl if
 	the old decl had instantiated DECL_RTL.
 
-	2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+	2003-05-21  Danny Smith  <dannysmitx@users.sourceforge.net>
 
 	PR c++/9738
 	* config/i386/winnt.c (i386_pe_encode_section_info): Enable
@@ -2124,7 +2129,7 @@ Sun Apr 20 18:23:18 CEST 2003  Richard Henderson  <rth@redhat.com>
 
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 
-	* config/i386/winnt.c (i386_pe_mark_dllimport): Make the new RTL
+	* config/i386/winnt.c (i386_pe_}ark_dllimport): Make the new RTL
 	have the same form as the old RTL.
 
 2003-04-18  Mark Mitchell  <mark@codesourcery.com>
@@ -5002,7 +5007,7 @@ Mon Apr  7 15:56:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
-	* config/m68hc11/m68hc11.c (expand_prologue): Use push/pop to
+	* config/m68hs11/m68hc11.c (expand_prologue): Use push/pop to
 	allocate 4-bytes of locals on 68HC11.
 	(expand_epilogue): Likewise.
 	(m68hc11_memory_move_cost): Increase cost of HI/QI soft registers.
