@@ -1,4 +1,4 @@
-2004-05-20  Tom Marshall  <tmarshall@real.com>
+2004-05-28  Tom Marshall  <tmarshall@real.com>
 
 	PR c++/15214
 	* class.c (finish_struct_1): Warn only if the dtor is non-private or
