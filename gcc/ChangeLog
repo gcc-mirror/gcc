@@ -1,5 +1,8 @@
 2001-08-18  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_sched_reorder2): Also skip past
+	pred_rel_mutex when searching for insn_group_barrier.
+
 	* config/ia64/ia64.c (ia64_internal_sched_reorder): Emit stop
 	bit before asm as needed.
 

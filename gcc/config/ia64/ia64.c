@@ -6211,30 +6211,43 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 	   && (sched_data.types[2] == TYPE_I || sched_data.types[2] == TYPE_A)
 	   && (sched_data.types[3] != TYPE_M && sched_data.types[3] != TYPE_A))
 	  || (sched_data.cur == 3
-	      && (sched_data.types[1] == TYPE_M || sched_data.types[1] == TYPE_A)
-	      && (sched_data.types[2] != TYPE_M && sched_data.types[2] != TYPE_I
+	      && (sched_data.types[1] == TYPE_M
+		  || sched_data.types[1] == TYPE_A)
+	      && (sched_data.types[2] != TYPE_M
+		  && sched_data.types[2] != TYPE_I
 		  && sched_data.types[2] != TYPE_A))))
       
     {
       int i, best;
-      rtx stop = PREV_INSN (sched_data.insns[1]);
-      rtx pat;
+      rtx stop = sched_data.insns[1];
+
+      /* Search backward for the stop bit that must be there.  */
+      while (1)
+	{
+	  int insn_code;
+
+	  stop = PREV_INSN (stop);
+	  if (GET_CODE (stop) != INSN)
+	    abort ();
+	  insn_code = recog_memoized (stop);
+
+	  /* Ignore cycle displays and .pred.rel.mutex.  */
+	  if (insn_code == CODE_FOR_cycle_display
+	      || insn_code == CODE_FOR_pred_rel_mutex)
+	    continue;
+
+	  if (insn_code == CODE_FOR_insn_group_barrier)
+	    break;
+	  abort ();
+	}
+
+      /* Adjust the stop bit's slot selector.  */
+      if (INTVAL (XVECEXP (PATTERN (stop), 0, 0)) != 1)
+	abort ();
+      XVECEXP (PATTERN (stop), 0, 0) = GEN_INT (3);
 
       sched_data.stopbit[0] = 0;
       sched_data.stopbit[2] = 1;
-      if (GET_CODE (stop) != INSN)
-	abort ();
-
-      pat = PATTERN (stop);
-      /* Ignore cycle displays.  */
-      if (GET_CODE (pat) == UNSPEC && XINT (pat, 1) == 23)
-	stop = PREV_INSN (stop);
-      pat = PATTERN (stop);
-      if (GET_CODE (pat) != UNSPEC_VOLATILE
-	  || XINT (pat, 1) != 2
-	  || INTVAL (XVECEXP (pat, 0, 0)) != 1)
-	abort ();
-      XVECEXP (pat, 0, 0) = GEN_INT (3);
 
       sched_data.types[5] = sched_data.types[3];
       sched_data.types[4] = sched_data.types[2];
