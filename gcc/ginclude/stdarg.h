@@ -119,6 +119,9 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
    have no conflict with that.  */
 #ifndef _VA_LIST_
 #define _VA_LIST_
+#ifdef __i860__
+#define _VA_LIST va_list
+#endif
 typedef __gnuc_va_list va_list;
 #endif /* _VA_LIST_ */
 #else /* not __svr4__ */
