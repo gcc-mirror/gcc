@@ -1,3 +1,65 @@
+2004-08-24  David Daney  <daney@avtrex.com>
+
+	* testsuite/libffi.call/closure_fn0.c: Xfail mips64* instead of mips*.
+	* testsuite/libffi.call/closure_fn1.c: Likewise.
+	* testsuite/libffi.call/closure_fn2.c  Likewise.
+	* testsuite/libffi.call/closure_fn3.c: Likewise.
+	* testsuite/libffi.call/closure_fn4.c: Likewise.
+	* testsuite/libffi.call/closure_fn5.c: Likewise.
+	* testsuite/libffi.call/cls_18byte.c: Likewise.
+	* testsuite/libffi.call/cls_19byte.c: Likewise.
+	* testsuite/libffi.call/cls_1_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_20byte.c: Likewise.
+	* testsuite/libffi.call/cls_20byte1.c: Likewise.
+	* testsuite/libffi.call/cls_24byte.c: Likewise.
+	* testsuite/libffi.call/cls_2byte.c: Likewise.
+	* testsuite/libffi.call/cls_3_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_3byte1.c: Likewise.
+	* testsuite/libffi.call/cls_3byte2.c: Likewise.
+	* testsuite/libffi.call/cls_4_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_4byte.c: Likewise.
+	* testsuite/libffi.call/cls_64byte.c: Likewise.
+	* testsuite/libffi.call/cls_6byte.c: Likewise.
+	* testsuite/libffi.call/cls_7byte.c: Likewise.
+	* testsuite/libffi.call/cls_8byte.c: Likewise.
+	* testsuite/libffi.call/cls_9byte1.c: Likewise.
+	* testsuite/libffi.call/cls_9byte2.c: Likewise.
+	* testsuite/libffi.call/cls_align_double.c: Likewise.
+	* testsuite/libffi.call/cls_align_float.c: Likewise.
+	* testsuite/libffi.call/cls_align_longdouble.c: Likewise.
+	* testsuite/libffi.call/cls_align_pointer.c: Likewise.
+	* testsuite/libffi.call/cls_align_sint16.c: Likewise.
+	* testsuite/libffi.call/cls_align_sint32.c: Likewise.
+	* testsuite/libffi.call/cls_align_sint64.c: Likewise.
+	* testsuite/libffi.call/cls_align_uint16.c: Likewise.
+	* testsuite/libffi.call/cls_align_uint32.c: Likewise.
+	* testsuite/libffi.call/cls_align_uint64.c: Likewise.
+	* testsuite/libffi.call/cls_double.c: Likewise.
+	* testsuite/libffi.call/cls_float.c: Likewise.
+	* testsuite/libffi.call/cls_multi_schar.c: Likewise.
+	* testsuite/libffi.call/cls_multi_sshort.c: Likewise.
+	* testsuite/libffi.call/cls_multi_sshortchar.c: Likewise.
+	* testsuite/libffi.call/cls_multi_uchar.c: Likewise.
+	* testsuite/libffi.call/cls_multi_ushort.c: Likewise.
+	* testsuite/libffi.call/cls_multi_ushortchar.c: Likewise.
+	* testsuite/libffi.call/cls_schar.c: Likewise.
+	* testsuite/libffi.call/cls_sint.c: Likewise.
+	* testsuite/libffi.call/cls_sshort.c: Likewise.
+	* testsuite/libffi.call/cls_uchar.c: Likewise.
+	* testsuite/libffi.call/cls_uint.c: Likewise.
+	* testsuite/libffi.call/cls_ulonglong.c: Likewise.
+	* testsuite/libffi.call/cls_ushort.c: Likewise.
+	* testsuite/libffi.call/nested_struct.c: Likewise.
+	* testsuite/libffi.call/nested_struct1.c: Likewise.
+	* testsuite/libffi.call/nested_struct2.c: Likewise.
+	* testsuite/libffi.call/nested_struct3.c: Likewise.
+	* testsuite/libffi.call/problem1.c: Likewise.
+	* testsuite/libffi.special/unwindtest.cc: Likewise.
+	* testsuite/libffi.call/cls_12byte.c: Likewise and set return value
+	to zero.
+	* testsuite/libffi.call/cls_16byte.c: Likewise.
+	* testsuite/libffi.call/cls_5byte.c: Likewise.
+
 2004-08-23  David Daney <daney@avtrex.com>
 
 	PR libgcj/13141

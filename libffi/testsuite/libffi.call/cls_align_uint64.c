@@ -4,7 +4,7 @@
    PR:		none.
    Originator:	<hos@tamanegi.org> 20031203	 */
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_align {

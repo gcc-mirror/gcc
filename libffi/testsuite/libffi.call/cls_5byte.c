@@ -5,7 +5,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_5byte {
@@ -67,7 +67,7 @@ int main (void)
 
   struct cls_struct_5byte g_dbl = { 127, 120, 1 };
   struct cls_struct_5byte f_dbl = { 12, 128, 9 };
-  struct cls_struct_5byte res_dbl;
+  struct cls_struct_5byte res_dbl = { 0, 0, 0 };
 
   cls_struct_fields[0] = &ffi_type_ushort;
   cls_struct_fields[1] = &ffi_type_ushort;
@@ -89,6 +89,10 @@ int main (void)
   /* { dg-output "127 120 1 12 128 9: 139 248 10" } */
   printf("res: %d %d %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 139 248 10" } */
+
+  res_dbl.a = 0;
+  res_dbl.b = 0;
+  res_dbl.c = 0;
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_5byte_gn, NULL) == FFI_OK);
 
