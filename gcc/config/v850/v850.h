@@ -474,17 +474,18 @@ enum reg_class {
 
 #define INT_7_BITS(VALUE) ((unsigned) (VALUE) + 0x40 < 0x80)
 #define INT_8_BITS(VALUE) ((unsigned) (VALUE) + 0x80 < 0x100)
-/* 0 bits */
+/* zero */
 #define CONST_OK_FOR_I(VALUE) ((VALUE) == 0)
-/* 4 bits */
+/* 5 bit signed immediate */
 #define CONST_OK_FOR_J(VALUE) ((unsigned) (VALUE) + 0x10 < 0x20)
-/* 15 bits */
+/* 16 bit signed immediate */
 #define CONST_OK_FOR_K(VALUE) ((unsigned) (VALUE) + 0x8000 < 0x10000)
+/* valid constant for movhi instruction.  */
 #define CONST_OK_FOR_L(VALUE) \
   (((unsigned) ((int) (VALUE) >> 16) + 0x8000 < 0x10000) \
    && CONST_OK_FOR_I ((VALUE & 0xffff)))
-/* 16 bits */
-#define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000
+/* 16 bit unsigned immediate */
+#define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000)
 /* 5 bit unsigned immediate in shift instructions */
 #define CONST_OK_FOR_N(VALUE) ((unsigned) (VALUE) <= 31)
 
@@ -806,6 +807,9 @@ extern int current_function_anonymous_args;
 
 /* 1 if X is an rtx for a constant that is a valid address.  */
 
+/* ??? This seems too exclusive.  May get better code by accepting more
+   possibilities here, in particular, should accept ZDA_NAME SYMBOL_REFs.  */
+
 #define CONSTANT_ADDRESS_P(X)   \
   (GET_CODE (X) == CONST_INT				\
    && CONST_OK_FOR_K (INTVAL (X)))
@@ -871,7 +875,11 @@ extern int current_function_anonymous_args;
   : (C) == 'R' ? special_symbolref_operand (OP, VOIDmode)		\
   : (C) == 'S' ? (GET_CODE (OP) == SYMBOL_REF && ! ZDA_NAME_P (XSTR (OP, 0))) \
   : (C) == 'T' ? 0							\
-  : (C) == 'U' ? 0                                                      \
+  : (C) == 'U' ? ((GET_CODE (OP) == SYMBOL_REF && ZDA_NAME_P (XSTR (OP, 0))) \
+		  || (GET_CODE (OP) == CONST				\
+		      && GET_CODE (XEXP (OP, 0)) == PLUS		\
+		      && GET_CODE (XEXP (XEXP (OP, 0), 0)) == SYMBOL_REF \
+		      && ZDA_NAME_P (XSTR (XEXP (XEXP (OP, 0), 0), 0)))) \
   : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
