@@ -1293,6 +1293,12 @@ of zero-length arrays, @code{sizeof} evaluates to zero.
 @item
 Flexible array members may only appear as the last member of a
 @code{struct} that is otherwise non-empty.
+
+@item
+A structure containing a flexible array member, or a union containing
+such a structure (possibly recursively), may not be a member of a
+structure or an element of an array.  (However, these uses are
+permitted by GCC as extensions.)
 @end itemize
 
 GCC versions before 3.0 allowed zero-length arrays to be statically
