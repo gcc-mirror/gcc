@@ -4865,7 +4865,7 @@
 (define_peephole
   [(set (match_operand 0 "register_operand" "fr")
 	(match_operand 1 "reg_or_nonsymb_mem_operand" ""))
-   (set (match_operand 2 "register_operand" "fr)
+   (set (match_operand 2 "register_operand" "fr")
 	(match_dup 1))]
   "! TARGET_SOFT_FLOAT
    && GET_CODE (operands[1]) == MEM
