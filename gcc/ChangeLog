@@ -1,3 +1,8 @@
+Wed Sep 30 18:03:22 1998  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (purge_addressof_1): Use bitfield manipulation
+	routines to handle mem mode < reg mode.
+
 Wed Sep 30 18:43:32 1998  Herman ten Brugge <Haj.Ten.Brugge@net.HCC.nl> 
 
 	* reorg.c (try_merge_delay_insns): Account for resources referenced
