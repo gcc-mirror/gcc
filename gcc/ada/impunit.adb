@@ -250,6 +250,7 @@ package body Impunit is
      "g-thread",    -- GNAT.Threads
      "g-traceb",    -- GNAT.Traceback
      "g-trasym",    -- GNAT.Traceback.Symbolic
+     "g-utf_32",    -- GNAT.UTF_32
      "g-wistsp",    -- GNAT.Wide_String_Split
 
    -----------------------------------------------------
