@@ -15,12 +15,14 @@ struct vtable {
 struct vtable mtable = {
   malloc,
   free
-}; /* { dg-warning "missing initializer for `mtable._realloc'" "warning regression" } */
+}; /* { dg-warning "missing initializer" "warning regression" { target native } {18} } */
+   /* { dg-warning "initialization for `mtable._realloc'" "warning regression" { target native } {18} } */
 
 struct vtable mtable2 = {
   ._malloc = malloc,
   ._realloc = realloc
-}; /* { dg-warning "missing initializer for `mtable2._free'" "warning regression" } */
+}; /* { dg-warning "missing initializer" "warning regression" { target native } {24} } */
+   /* { dg-warning "initialization for `mtable2._free'" "warning regression" { target native } {24} } */
 
 struct vtable mtable3 = {
   ._free = free,
