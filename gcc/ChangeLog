@@ -1,3 +1,9 @@
+2000-03-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rs6000/t-aix41: New file.
+
+	* configure.in ({rs6000,powerpc}-ibm-aix4.[12]*): Use it.
+
 Sun Mar 19 13:27:30 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* tm.texi (Driver): Fix typos and tweak entry for
