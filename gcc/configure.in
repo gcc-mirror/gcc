@@ -2568,7 +2568,7 @@ for machine in $build $host $target; do
 				
 		if [[ x$gas = xyes ]]
 		then
-			if [[ x$target_cpu_default2 = x ]]
+			if [[ "$target_cpu_default2" = "" ]]
 			then
 				target_cpu_default2="MASK_GAS"
 			else
@@ -2669,9 +2669,9 @@ for machine in $build $host $target; do
 		;;
 	esac
 
-	if [[ x$target_cpu_default2 != x ]]
+	if [[ "$target_cpu_default2" != "" ]]
 	then
-		if [[ x$target_cpu_default != x ]]
+		if [[ "$target_cpu_default" != "" ]]
 		then
 			target_cpu_default="(${target_cpu_default}|${target_cpu_default2})"
 		else
@@ -2822,7 +2822,7 @@ do
 
 	# Define TARGET_CPU_DEFAULT if the system wants one.
 	# This substitutes for lots of *.h files.
-	if [[ x$target_cpu_default != x -a $link = tm.h ]]
+	if [[ "$target_cpu_default" != "" -a $link = tm.h ]]
 	then
 		echo "#define TARGET_CPU_DEFAULT ($target_cpu_default)" >>$link
 	fi

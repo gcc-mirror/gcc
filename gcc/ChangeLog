@@ -1,3 +1,9 @@
+Tue Jan 13 17:50:55 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (target_cpu_default, target_cpu_default2): Use double
+	quotes around them when testing their value.
+	* configure: Rebuilt.
+	
 Tue Jan 13 09:07:44 1998  John Carr  <jfc@mit.edu>
 
 	* gengenrtl.c (gencode): Emit new function obstack_alloc_rtx
