@@ -3592,7 +3592,7 @@ static dw_loc_descr_ref loc_descriptor_from_tree PARAMS ((tree, int));
 static HOST_WIDE_INT ceiling		PARAMS ((HOST_WIDE_INT, unsigned int));
 static tree field_type			PARAMS ((tree));
 static unsigned int simple_type_align_in_bits PARAMS ((tree));
-static unsigned int simple_decl_align_in_bits PARAMS ((tree));
+static unsigned int simple_field_decl_align_in_bits PARAMS ((tree));
 static unsigned HOST_WIDE_INT simple_type_size_in_bits PARAMS ((tree));
 static HOST_WIDE_INT field_byte_offset	PARAMS ((tree));
 static void add_AT_location_description	PARAMS ((dw_die_ref,
@@ -8355,10 +8355,28 @@ simple_type_align_in_bits (type)
 }
 
 static inline unsigned
-simple_decl_align_in_bits (decl)
-     tree decl;
+simple_field_decl_align_in_bits (field)
+     tree field;
 {
-  return (TREE_CODE (decl) != ERROR_MARK) ? DECL_ALIGN (decl) : BITS_PER_WORD;
+  unsigned align;
+
+  if (TREE_CODE (field) == ERROR_MARK)
+    return BITS_PER_WORD;
+
+  align = DECL_ALIGN (field);
+
+#ifdef BIGGEST_FIELD_ALIGNMENT
+  /* Some targets (i.e. i386) limit union field alignment
+     to a lower boundary than alignment of variables unless
+     it was overridden by attribute aligned.  */
+  if (! DECL_USER_ALIGN (field))
+    align = MIN (align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
+#endif
+
+#ifdef ADJUST_FIELD_ALIGN
+  align = ADJUST_FIELD_ALIGN (field, align);
+#endif
+  return align;                          
 }
 
 /* Given a pointer to a tree node, assumed to be some kind of a ..._TYPE
@@ -8432,7 +8450,7 @@ field_byte_offset (decl)
 
   type_size_in_bits = simple_type_size_in_bits (type);
   type_align_in_bits = simple_type_align_in_bits (type);
-  decl_align_in_bits = simple_decl_align_in_bits (decl);
+  decl_align_in_bits = simple_field_decl_align_in_bits (decl);
 
   /* The GCC front-end doesn't make any attempt to keep track of the starting
      bit offset (relative to the start of the containing structure type) of the

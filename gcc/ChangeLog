@@ -1,3 +1,10 @@
+2002-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/6522
+	* dwarf2out.c (simple_decl_align_in_bits): Renamed to...
+	(simple_field_decl_align_in_bits): this.  Apply
+	BIGGEST_FIELD_ALIGNMENT and ADJUST_FIELD_ALIGN if defined.
+
 2002-05-03  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6534
