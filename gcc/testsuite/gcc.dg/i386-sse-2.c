@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O0 -msse" } */
 
 /* Test that the intrinsics compile without optimization.  All of them are
