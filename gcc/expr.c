@@ -2935,11 +2935,27 @@ expand_expr (exp, target, tmode, modifier)
   switch (code)
     {
     case LABEL_DECL:
-      if (modifier == EXPAND_INITIALIZER)
-	forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
-				 label_rtx (exp), forced_labels);
-      return gen_rtx (MEM, FUNCTION_MODE,
-		      gen_rtx (LABEL_REF, Pmode, label_rtx (exp)));
+      {
+	tree function = decl_function_context (exp);
+	/* Handle using a label in a containing function.  */
+	if (function != current_function_decl && function != 0)
+	  {
+	    struct function *p = find_function_data (function);
+	    /* Allocate in the memory associated with the function
+	       that the label is in.  */
+	    push_obstacks (p->function_obstack,
+			   p->function_maybepermanent_obstack);
+
+	    p->forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
+					label_rtx (exp), p->forced_labels);
+	    pop_obstacks ();
+	  }
+	else if (modifier == EXPAND_INITIALIZER)
+	  forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
+				   label_rtx (exp), forced_labels);
+	return gen_rtx (MEM, FUNCTION_MODE,
+			gen_rtx (LABEL_REF, Pmode, label_rtx (exp)));
+      }
 
     case PARM_DECL:
       if (DECL_RTL (exp) == 0)
@@ -3148,8 +3164,11 @@ expand_expr (exp, target, tmode, modifier)
       if (TREE_STATIC (exp) && (mode == BLKmode || TREE_ADDRESSABLE (exp)))
 	{
 	  rtx constructor = output_constant_def (exp);
-	  if (! memory_address_p (GET_MODE (constructor),
-				  XEXP (constructor, 0)))
+	  if (modifier != EXPAND_CONST_ADDRESS
+	      && modifier != EXPAND_INITIALIZER
+	      && modifier != EXPAND_SUM
+	      && !memory_address_p (GET_MODE (constructor),
+				    XEXP (constructor, 0)))
 	    constructor = change_address (constructor, VOIDmode,
 					  XEXP (constructor, 0));
 	  return constructor;
