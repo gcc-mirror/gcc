@@ -1,3 +1,8 @@
+2003-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9829
+	* g++.dg/parse/namespace6.C: New test.
+	
 2003-02-25  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR target/9732
