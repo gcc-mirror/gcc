@@ -117,12 +117,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define OBJC_FORWARDING_STACK_OFFSET 8
 #define OBJC_FORWARDING_MIN_OFFSET 8
 
-/* Compensate for botch in dbxout_init/dbxout_source_file which
-   unconditionally drops the first character from ltext_label_name */
+/* We do not want a dot in internal labels.  */
 
 #undef	ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), "*.%s%d", (PREFIX), (NUMBER))
+    sprintf ((BUF), "*%s%d", (PREFIX), (NUMBER))
+
+#undef ASM_OUTPUT_INTERNAL_LABEL
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
+  fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
