@@ -1,3 +1,9 @@
+2000-12-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* function.c (adjust_trampoline_addr): New function.
+	(trampoline_address): Call it instead of round_trampoline_addr().
+	* tm.texi (TRAMPOLINE_ADJUST_ADDRESS): Document it.
+
 2000-12-14  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* cppfiles.c (hack_vms_include_specification): Delete function
