@@ -3003,7 +3003,7 @@ eliminate_regs_in_insn (insn, replace)
 
       /* Don't copy an asm_operands because (1) there's no need and (2)
 	 copy_rtx can't do it properly when there are multiple outputs.  */
-      if (! replace && asm_noperands (new_body) < 0)
+      if (! replace && asm_noperands (old_body) < 0)
 	new_body = copy_rtx (new_body);
 
       /* If we had a move insn but now we don't, rerecognize it.  */
