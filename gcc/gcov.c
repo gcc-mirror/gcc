@@ -748,7 +748,7 @@ read_files ()
   stat (bb_file_name, &buf);
   bb_data_size = buf.st_size / 4;
 
-  bb_data = (char *) xmalloc (buf.st_size);
+  bb_data = (char *) xmalloc ((unsigned) buf.st_size);
   fread (bb_data, sizeof (char), buf.st_size, bb_file);
   
   fclose (bb_file);
