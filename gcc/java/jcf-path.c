@@ -158,7 +158,7 @@ add_entry (entp, filename, is_system)
      work more easily.  Eww.  */
   if (filename[len - 1] != '/' && filename[len - 1] != DIR_SEPARATOR)
     {
-      char *f2 = (char *) alloca (len + 1);
+      char *f2 = (char *) alloca (len + 2);
       strcpy (f2, filename);
       f2[len] = DIR_SEPARATOR;
       f2[len + 1] = '\0';
