@@ -1,3 +1,8 @@
+2002-04-25  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (FUNCTION_OK_FOR_SIBCALL): Add back check
+	for DECL being NULL.
+
 2002-04-25  Steve Christiansen  <smc@us.ibm.com>
 
 	* doc/md.texi (Machine Constraints): Add IA-64 constraints.
