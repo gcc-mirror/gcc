@@ -1,3 +1,13 @@
+1999-01-13  Andrew Haley  <aph@cygnus.com>
+
+	* expr.c (generate_name): Name prefix changed to avoid clashes
+	with assembler temp labels.
+
+	* parse.y (patch_synchronized_statement): Set TREE_SIDE_EFFECTS on
+	MODIFY_EXPR.  Without this, code for the assignement may not be
+	generated at all and the synchronized statement will read an
+	uninitialized variable.
+  	
 Wed Jan 13 01:24:54 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (maybe_layout_super_class): Fixed returned value.

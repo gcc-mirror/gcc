@@ -1186,7 +1186,7 @@ generate_name ()
 {
   static int l_number = 0;
   char buff [20];
-  sprintf (buff, "$L%d", l_number++);
+  sprintf (buff, "$LJv%d", l_number++);
   return get_identifier (buff);
 }
 
