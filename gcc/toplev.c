@@ -4590,20 +4590,6 @@ general_init (char *argv0)
   init_stringpool ();
   init_ttree ();
 
-  /* APPLE LOCAL setrlimit */
-#ifdef RLIMIT_STACK
-  /* Get rid of any avoidable limit on stack size.  */
-  {
-    struct rlimit rlim;
-
-    /* Set the stack limit huge.  (Compiles normally work within
-       a megabyte of stack, but the normal limit on OSX is 512K for
-       some reason.) */
-    getrlimit (RLIMIT_STACK, &rlim);
-    rlim.rlim_cur = rlim.rlim_max;
-    setrlimit (RLIMIT_STACK, &rlim);
-  }
-#endif /* RLIMIT_STACK defined */
 }
 
 /* Parse command line options and set default flag values, called
