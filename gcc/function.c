@@ -3897,7 +3897,7 @@ assign_parms (fndecl, second_time)
 	 In this case, we call FUNCTION_ARG with NAMED set to 1 instead of
 	 0 as it was the previous time.  */
 
-      locate_and_pad_parm (nominal_mode, passed_type,
+      locate_and_pad_parm (promoted_mode, passed_type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			   1,
 #else
@@ -3919,9 +3919,9 @@ assign_parms (fndecl, second_time)
 	  rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
 
 	  if (offset_rtx == const0_rtx)
-	    stack_parm = gen_rtx (MEM, nominal_mode, internal_arg_pointer);
+	    stack_parm = gen_rtx (MEM, promoted_mode, internal_arg_pointer);
 	  else
-	    stack_parm = gen_rtx (MEM, nominal_mode,
+	    stack_parm = gen_rtx (MEM, promoted_mode,
 				  gen_rtx (PLUS, Pmode,
 					   internal_arg_pointer, offset_rtx));
 
