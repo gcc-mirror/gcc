@@ -1,5 +1,7 @@
 1999-11-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (grokfndecl): Remove dead code.
+
 	* dump.c (dequeue_and_dump): Fix thinko for catch-clauses.
 
 1999-11-02  Scott Snyder  <snyder@fnal.gov>
