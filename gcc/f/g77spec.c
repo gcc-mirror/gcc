@@ -427,8 +427,8 @@ code-generation methodology, and so on.\n\
 For more information on g77 and gcc, type the commands `info -f g77'\n\
 and `info -f gcc' to read the Info documentation.\n\
 \n\
-Report bugs to <egcs-bugs@egcs.cygnus.com>.\n\
-See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.\n");
+For bug reporting instructions, please see:\n\
+<URL:http://gcc.gnu.org/faq.html#bugreport>.\n");
 	  exit (0);
 	  break;
 #endif
