@@ -1103,8 +1103,17 @@ extern int mips_abi;
 %{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
 %{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{!gdwarf*:-mdebug} %{gdwarf*:-no-mdebug}"
+%(mdebug_asm_spec)"
 #endif
+
+/* Beginning with gas 2.13, -mdebug must be passed to correctly handle COFF
+   and stabs debugging info.  */
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
+/* GAS */
+#define MDEBUG_ASM_SPEC "%{!gdwarf*:-mdebug} %{gdwarf*:-no-mdebug}"
+#else /* not GAS */
+#define MDEBUG_ASM_SPEC ""
+#endif /* not GAS */
 
 /* SUBTARGET_ASM_SPEC is always passed to the assembler.  It may be
    overridden by subtargets.  */
@@ -1234,6 +1243,7 @@ extern int mips_abi;
   { "subtarget_mips_as_asm_spec", SUBTARGET_MIPS_AS_ASM_SPEC }, 	\
   { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
   { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
+  { "mdebug_asm_spec", MDEBUG_ASM_SPEC },				\
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
   { "asm_abi_default_spec", ASM_ABI_DEFAULT_SPEC },			\
   { "endian_spec", ENDIAN_SPEC },					\
