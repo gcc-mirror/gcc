@@ -1,3 +1,8 @@
+2000-04-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* libjava.compile/MethodFailure4.java: New file.
+	* libjava.compile/MethodFailure4.out: New file.
+
 2000-04-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* libjava.compile/block.java: New file.
