@@ -43,6 +43,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  
 /* #undef HAVE_ATEXIT */
 
+#define I860_STRICT_ABI_PROLOGUES
+
 /* Most of the Alliant-specific definitions here are to get stab info that
    Alliant's dbx can understand. */
 
@@ -212,9 +214,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     assemble_name (file, name);		\
     fprintf (file, ",0x%x,0,%d\n", N_RBRAC, depth); }
 
-#define DBX_OUTPUT_ENUM(file)					\
+#define DBX_OUTPUT_ENUM(file,type)				\
   fprintf (file, "e3");						\
-  CHARS(2)							\
+  CHARS(2);							\
   for (tem = TYPE_VALUES (type); tem; tem = TREE_CHAIN (tem))	\
     {								\
       fprintf (asmfile, "%s:%d,",				\
@@ -264,6 +266,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef I860_REG_PREFIX
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "//"
+
+/* Use definitions of ASM_OUTPUT_{DOUBLE,FLOAT} as given in i860.h */
+
+#undef ASM_OUTPUT_DOUBLE
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE) \
+  fprintf(FILE, "\t.double %.20e\n", (VALUE))
+#undef ASM_OUTPUT_FLOAT
+#define ASM_OUTPUT_FLOAT(FILE,VALUE) \
+  fprintf(FILE, "\t.float %.12e\n", (VALUE))
+
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)
 #undef ASM_OUTPUT_FUNCTION_PREFIX
@@ -279,6 +291,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_SPEC
 #undef ASM_FINAL_SPEC
 #undef MD_STARTFILE_PREFIX
+#undef MD_EXEC_PREFIX
 
 /* Generate an error message if -p option is selected. Concentrix 2.x
    does not support prof format profiling, only gprof is supported. */
