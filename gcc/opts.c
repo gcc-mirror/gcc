@@ -594,6 +594,15 @@ decode_options (unsigned int argc, const char **argv)
       flag_reorder_blocks = 0;
     }
 
+  if (optimize_size)
+    {
+      /* Inlining of very small functions usually reduces total size.  */
+      set_param_value ("max-inline-insns-single", 5);
+      set_param_value ("max-inline-insns-auto", 5);
+      set_param_value ("max-inline-insns-rtl", 10);
+      flag_inline_functions = 1;
+    }
+
   /* Initialize whether `char' is signed.  */
   flag_signed_char = DEFAULT_SIGNED_CHAR;
   /* Initialize how much space enums occupy, by default.  */
