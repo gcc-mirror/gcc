@@ -1,5 +1,5 @@
 /* Thread and mutex controls for Objective C.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
 
 This file is part of GNU CC.
@@ -53,27 +53,34 @@ extern int __objc_thread_exit_status;      /* Global exit status.   */
 #define OBJC_THREAD_BACKGROUND_PRIORITY         1
 #define OBJC_THREAD_LOW_PRIORITY                0
 
-typedef struct _objc_mutex *_objc_mutex_t;
-typedef void * _objc_thread_t;
+typedef void * objc_thread_t;
+typedef struct objc_mutex *objc_mutex_t;
+typedef struct objc_condition *objc_condition_t;
 
-_objc_mutex_t objc_mutex_allocate(void);
-int     objc_mutex_deallocate(_objc_mutex_t mutex);
-int     objc_mutex_lock(_objc_mutex_t mutex);
-int     objc_mutex_unlock(_objc_mutex_t mutex);
-int     objc_mutex_trylock(_objc_mutex_t mutex);
+objc_mutex_t objc_mutex_allocate(void);
+int     objc_mutex_deallocate(objc_mutex_t mutex);
+int     objc_mutex_lock(objc_mutex_t mutex);
+int     objc_mutex_unlock(objc_mutex_t mutex);
+int     objc_mutex_trylock(objc_mutex_t mutex);
 
-_objc_thread_t objc_thread_create(void (*func)(void *arg), void *arg);
+objc_condition_t objc_condition_allocate(void);
+int     objc_condition_deallocate(objc_condition_t condition);
+int     objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex);
+int     objc_condition_signal(objc_condition_t condition);
+int     objc_condition_broadcast(objc_condition_t condition);
+
+objc_thread_t objc_thread_create(void (*func)(void *arg), void *arg);
 void    objc_thread_yield(void);
 int     objc_thread_exit(void);
 int     objc_thread_set_priority(int priority);
 int     objc_thread_get_priority(void);
 void *  objc_thread_get_data(void);
 int     objc_thread_set_data(void *value);
-_objc_thread_t objc_thread_id(void);
+objc_thread_t objc_thread_id(void);
 
-_objc_thread_t objc_thread_detach(SEL selector, id object, id argument);
-int     objc_mutex_lock_x(_objc_mutex_t mutex, const char *f, int l);
-int     objc_mutex_unlock_x(_objc_mutex_t mutex, const char *f, int l);
+objc_thread_t objc_thread_detach(SEL selector, id object, id argument);
+int     objc_mutex_lock_x(objc_mutex_t mutex, const char *f, int l);
+int     objc_mutex_unlock_x(objc_mutex_t mutex, const char *f, int l);
 
 /*
   Use this to set the hook function that will be called when the 
