@@ -1,3 +1,8 @@
+2004-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* coverage.c (tree_coverage_counter_ref): Fix computation of the new
+	ARRAY_REF argument.
+
 2004-08-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm-cores.def: Sort by architecture.  Add arm946es, arm966es,
