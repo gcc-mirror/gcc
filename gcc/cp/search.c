@@ -261,17 +261,12 @@ static tree
 my_tree_cons (purpose, value, chain)
      tree purpose, value, chain;
 {
-  tree p = (tree)obstack_alloc (&type_obstack_entries, sizeof (struct tree_list));
+  tree p;
+  struct obstack *ambient_obstack = current_obstack;
+  current_obstack = &type_obstack_entries;
+  p = tree_cons (purpose, value, chain);
+  current_obstack = ambient_obstack;
   ++my_tree_node_counter;
-  TREE_TYPE (p) = NULL_TREE;
-  /* The type of the last on the LHS of this statement must be a pointer
-     to the same type as the bitfields in struct tree_common.  Otherwise
-     we may write beyond our intended area.  */
-  ((unsigned *)p)[2] = 0;
-  TREE_SET_CODE (p, TREE_LIST);
-  TREE_PURPOSE (p) = purpose;
-  TREE_VALUE (p) = value;
-  TREE_CHAIN (p) = chain;
   return p;
 }
 

@@ -79,6 +79,10 @@ Fri Oct  2 02:07:26 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 	* typeck.c (c_expand_return): Handle the case that valtype
 	is wider than the functions return type.
 
+1998-08-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* search.c (my_tree_cons): Reimplement.
+
 1998-08-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (finish_enum): Also set TYPE_SIZE_UNIT.
