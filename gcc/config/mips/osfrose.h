@@ -89,6 +89,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LIB_SPEC "-lc"
 
+/* Define this macro meaning that `gcc' should find the library
+   `libgcc.a' by hand, rather than passing the argument `-lgcc' to
+   tell the linker to do the search. */
+
+#define LINK_LIBGCC_SPECIAL 1
+
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
 #define MACHINE_TYPE "DECstation with OSF/rose objects"
