@@ -2935,7 +2935,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 If we are reloading a SCRATCH, we won't be generating any
 		 insns, just using a register, so it is also preferred. 
 		 So bump REJECT in other cases.  */
-	      if (GET_CODE (operand) != REG && GET_CODE (operand) != SCRATCH)
+	      if (! (GET_CODE (operand) == REG
+		     && REGNO (operand) >= FIRST_PSEUDO_REGISTER)
+		  && GET_CODE (operand) != SCRATCH)
 		reject++;
 	    }
 
