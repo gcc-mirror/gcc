@@ -1,3 +1,8 @@
+2004-04-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* rtlanal.c (find_reg_note): Manually
+	unswitch the loop.
+
 2004-04-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* genemit.c (gen_split): Change prototype of generated code.

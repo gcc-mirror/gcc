@@ -1911,10 +1911,16 @@ find_reg_note (rtx insn, enum reg_note kind, rtx datum)
   /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
   if (! INSN_P (insn))
     return 0;
+  if (datum == 0)
+    {
+      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+	if (REG_NOTE_KIND (link) == kind)
+	  return link;
+      return 0;
+    }
 
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    if (REG_NOTE_KIND (link) == kind
-	&& (datum == 0 || datum == XEXP (link, 0)))
+    if (REG_NOTE_KIND (link) == kind && datum == XEXP (link, 0))
       return link;
   return 0;
 }
