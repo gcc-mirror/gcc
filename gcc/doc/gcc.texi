@@ -48,6 +48,12 @@
 @c - "built-in" as an adjective ("built-in function"), or sometimes
 @c   "built in", not "builtin" (which isn't a word).
 @c - "front end" as a noun, "front-end" as an adjective.
+@c - "GCC" for the GNU Compiler Collection, both generally
+@c   and as the GNU C Compiler in the context of compiling C;
+@c   "G++" for the C++ compiler; "gcc" and "g++" (lowercase),
+@c   marked up with @command, for the commands for compilation when the
+@c   emphasis is on those; "GNU C" and "GNU C++" for language dialects;
+@c   and try to avoid the older term "GNU CC".
 
 @macro gcctabopt{body}
 @code{\body\}
@@ -468,7 +474,7 @@ program using the facilities of an operating system would normally be
 in a hosted implementation.
 
 @opindex ffreestanding
-GNU CC aims towards being usable as a conforming freestanding
+GCC aims towards being usable as a conforming freestanding
 implementation, or as the compiler for a conforming hosted
 implementation.  By default, it will act as the compiler for a hosted
 implementation, defining @code{__STDC_HOSTED__} as @code{1} and
@@ -482,7 +488,7 @@ kernel, you may well still need to make your own arrangements for
 linking and startup.  @xref{C Dialect Options,,Options Controlling C
 Dialect}.
 
-GNU CC does not provide the library facilities required only of hosted
+GCC does not provide the library facilities required only of hosted
 implementations, nor yet all the facilities required by C99 of
 freestanding implementations; to use the facilities of a hosted
 environment, you will need to find them elsewhere (for example, in the
@@ -542,9 +548,9 @@ where people's opinions differ as to what is best.
 			   and with certain linkers, assemblers and debuggers.
 * External Bugs::	Problems compiling certain programs.
 * Incompatibilities::   GCC is incompatible with traditional C.
-* Fixed Headers::       GNU C uses corrected versions of system header files.
+* Fixed Headers::       GCC uses corrected versions of system header files.
                            This is necessary, but doesn't always work smoothly.
-* Standard Libraries::  GNU C uses the system C library, which might not be
+* Standard Libraries::  GCC uses the system C library, which might not be
                            compliant with the ISO C standard.
 * Disappointments::     Regrettable things we can't change, but not quite bugs.
 * C++ Misunderstandings::     Common misunderstandings with GNU C++.
@@ -622,8 +628,8 @@ compile environment.
 @node Interoperation
 @section Interoperation
 
-This section lists various difficulties encountered in using GNU C or
-GNU C++ together with other compilers or with the assemblers, linkers,
+This section lists various difficulties encountered in using GCC
+together with other compilers or with the assemblers, linkers,
 libraries and debuggers on certain systems.
 
 @itemize @bullet
@@ -631,7 +637,7 @@ libraries and debuggers on certain systems.
 Objective-C does not work on the RS/6000.
 
 @item
-GNU C++ does not do name mangling in the same way as other C++
+G++ does not do name mangling in the same way as other C++
 compilers.  This means that object files compiled with one compiler
 cannot be used with another.
 
@@ -724,8 +730,8 @@ argument of type @code{double} and passes this pointer of type
 @code{double *} to a function compiled with GCC, dereferencing the
 pointer may cause a fatal signal.
 
-One way to solve this problem is to compile your entire program with GNU
-CC.  Another solution is to modify the function that is compiled with
+One way to solve this problem is to compile your entire program with GCC.
+Another solution is to modify the function that is compiled with
 Sun CC to copy the argument into a local variable; local variables
 are always properly aligned.  A third solution is to modify the function
 that uses the pointer to dereference it via the following function
@@ -1039,7 +1045,7 @@ MALLOC=gmalloc.o
 There are several noteworthy incompatibilities between GNU C and K&R
 (non-ISO) versions of C.  The @option{-traditional} option
 eliminates many of these incompatibilities, @emph{but not all}, by
-telling GNU C to behave like a K&R C compiler.
+telling GCC to behave like a K&R C compiler.
 
 @itemize @bullet
 @cindex string constants
@@ -1126,7 +1132,7 @@ in it.
 If you use the @option{-W} option with the @option{-O} option, you will
 get a warning when GCC thinks such a problem might be possible.
 
-The @option{-traditional} option directs GNU C to put variables in
+The @option{-traditional} option directs GCC to put variables in
 the stack by default, rather than in registers, in functions that
 call @code{setjmp}.  This results in the behavior found in
 traditional C compilers.
@@ -1162,7 +1168,7 @@ have the same scope as any other declaration in the same place.
 In some other C compilers, a @code{extern} declaration affects all the
 rest of the file even if it happens within a block.
 
-The @option{-traditional} option directs GNU C to treat all @code{extern}
+The @option{-traditional} option directs GCC to treat all @code{extern}
 declarations as global, like traditional compilers.
 
 @item
@@ -1281,11 +1287,11 @@ union returning with the option @option{-fpcc-struct-return}.
 @cindex preprocessing tokens
 @cindex preprocessing numbers
 @item
-GNU C complains about program fragments such as @samp{0x74ae-0x4000}
+GCC complains about program fragments such as @samp{0x74ae-0x4000}
 which appear to be two hexadecimal constants separated by the minus
 operator.  Actually, this string is a single @dfn{preprocessing token}.
 Each such token must correspond to one token in C.  Since this does not,
-GNU C prints an error message.  Although it may appear obvious that what
+GCC prints an error message.  Although it may appear obvious that what
 is meant is an operator and two values, the ISO C standard specifically
 requires that this be treated as erroneous.
 
@@ -2406,7 +2412,7 @@ mailing list, @email{gcc-patches@@gcc.gnu.org}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
-useful, but using it will take extra work.  Maintaining GNU C is a lot
+useful, but using it will take extra work.  Maintaining GCC is a lot
 of work in the best of circumstances, and we can't keep up unless you do
 your best to help.
 
@@ -2845,8 +2851,8 @@ and variables in such libraries using lower case; this will work on VMS,
 but is not portable to other systems.  The compiler option @samp{/NAMES}
 also provides control over global name handling.
 
-Function and variable names are handled somewhat differently with GNU
-C++.  The GNU C++ compiler performs @dfn{name mangling} on function
+Function and variable names are handled somewhat differently with G++.
+The GNU C++ compiler performs @dfn{name mangling} on function
 names, which means that it adds information to the function name to
 describe the data types of the arguments that the function takes.  One
 result of this is that the name of a function can become very long.

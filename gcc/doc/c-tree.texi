@@ -88,7 +88,7 @@ return trees as output.  However, most macros require a certain kinds of
 tree node as input.  In other words, there is a type-system for trees,
 but it is not reflected in the C type-system.
 
-For safety, it is useful to configure G++ with @option{--enable-checking}.
+For safety, it is useful to configure GCC with @option{--enable-checking}.
 Although this results in a significant performance penalty (since all
 tree types are checked at run-time), and is therefore inappropriate in a
 release version, it is extremely helpful during the development process.

@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.32 2001/06/21 19:00:08 pme Exp $
+@comment $Id: install.texi,v 1.33 2001/06/23 23:41:59 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -249,7 +249,7 @@ where @var{srcdir} == @var{objdir} should still work, but doesn't
 get extensive testing; building where @var{objdir} is a subdirectory
 of @var{srcdir} is unsupported.
 
-If you have built GNU CC previously in the same directory for a
+If you have built GCC previously in the same directory for a
 different target machine, do @samp{make distclean} to delete all files
 that might be invalid.  One of the files this deletes is
 @file{Makefile}; if @samp{make distclean} complains that @file{Makefile}
@@ -643,7 +643,7 @@ of tree node types when referencing fields of that node, and some other
 internal consistency checks.  This does not change the generated code,
 but adds error checking within the compiler.  This will slow down the
 compiler and may only work properly if you are building the compiler
-with GNU C.  This is on by default when building from CVS or snapshots,
+with GCC.  This is on by default when building from CVS or snapshots,
 but off for releases.  More control over the checks may be had by
 specifying @var{list}; the categories of checks available are
 @samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl} and @samp{gcac}.  The
@@ -1422,7 +1422,7 @@ not yet implemented for the 1750A.)
 The @code{as1750} assembler requires the file @file{ms1750.inc}, which is
 found in the directory @file{config/1750a}.
 
-GNU CC produced the same sections as the Fairchild F9450 C Compiler,
+GCC produced the same sections as the Fairchild F9450 C Compiler,
 namely:
 
 @table @code
@@ -1442,7 +1442,7 @@ Initialization section (code to copy KREL to SREL).
 The smallest addressable unit is 16 bits (BITS_PER_UNIT is 16).  This
 means that type @code{char} is represented with a 16-bit word per character.
 The 1750A's ``Load/Store Upper/Lower Byte'' instructions are not used by
-GNU CC.
+GCC.
 
 @html
 </p>
@@ -1523,7 +1523,7 @@ or you can use a copy of GCC 2.95.3 or higher built on Tru64 UNIX V4.0:
    % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{target}] [@var{options}]
 @end example
 
-GNU CC writes a @samp{.verstamp} directive to the assembler output file
+GCC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
 the system header file @file{/usr/include/stamp.h}.  If you install a
 new version of DEC Unix, you should rebuild GCC to pick up the new version
@@ -1548,14 +1548,14 @@ unless the comparisons fail without that option.  If you add
 @option{-save-temps}, you will have to manually delete the @samp{.i} and
 @samp{.s} files after each series of compilations.
 
-GNU CC now supports both the native (ECOFF) debugging format used by DBX
+GCC now supports both the native (ECOFF) debugging format used by DBX
 and GDB and an encapsulated STABS format for use only with GDB.  See the
 discussion of the @option{--with-stabs} option of @file{configure} above
 for more information on these formats and how to select them.
 
 There is a bug in DEC's assembler that produces incorrect line numbers
 for ECOFF format when the @samp{.align} directive is used.  To work
-around this problem, GNU CC will not emit such alignment directives
+around this problem, GCC will not emit such alignment directives
 while writing ECOFF format debugging information even if optimization is
 being performed.  Unfortunately, this has the very undesirable
 side-effect that code addresses when @option{-O} is specified are
@@ -1714,7 +1714,7 @@ compilers, you may need to add @option{-Wf,-XNg1500 -Olimit 3000}.
 
 Please have a look at our @uref{binaries.html,,binaries page}.
 
-You cannot install GNU C by itself on MSDOS; it will not compile under
+You cannot install GCC by itself on MSDOS; it will not compile under
 any MSDOS compiler except itself.  You need to get the complete
 compilation package DJGPP, which includes binaries as well as sources,
 and includes all the necessary compilation tools and libraries.
@@ -1732,7 +1732,7 @@ A port to the AT&T DSP1610 family of processors.
 @end html
 @heading @anchor{elxsi-elxsi-bsd}elxsi-elxsi-bsd
 The Elxsi's C compiler has known limitations that prevent it from
-compiling GNU C.  Please contact @email{mrs@@cygnus.com} for more details.
+compiling GCC.  Please contact @email{mrs@@cygnus.com} for more details.
 
 @html
 </p>
@@ -2160,11 +2160,11 @@ These problems don't exist in operating system version 1.1.
 <hr>
 @end html
 @heading @anchor{*-lynx-lynxos}*-lynx-lynxos
-LynxOS 2.2 and earlier comes with GNU CC 1.x already installed as
+LynxOS 2.2 and earlier comes with GCC 1.x already installed as
 @file{/bin/gcc}.  You should compile with this instead of @file{/bin/cc}.
-You can tell GNU CC to use the GNU assembler and linker, by specifying
+You can tell GCC to use the GNU assembler and linker, by specifying
 @samp{--with-gnu-as --with-gnu-ld} when configuring.  These will produce
-COFF format object files and executables;  otherwise GNU CC will use the
+COFF format object files and executables;  otherwise GCC will use the
 installed tools, which produce @file{a.out} format executables.
 
 @html
@@ -2261,8 +2261,8 @@ This configuration is intended for embedded systems.
 @end html
 @heading @anchor{m68000-hp-bsd}m68000-hp-bsd
 HP 9000 series 200 running BSD.  Note that the C compiler that comes
-with this system cannot compile GNU CC; contact @email{law@@cygnus.com}
-to get binaries of GNU CC for bootstrapping.
+with this system cannot compile GCC; contact @email{law@@cygnus.com}
+to get binaries of GCC for bootstrapping.
 
 @html
 </p>
@@ -2296,12 +2296,12 @@ Also, you must fix a kernel bug.  Details in the file @file{README.ALTOS}.
 Apple Macintosh running A/UX.
 You may configure GCC  to use either the system assembler and
 linker or the GNU assembler and linker.  You should use the GNU configuration
-if you can, especially if you also want to use GNU C++.  You enabled
+if you can, especially if you also want to use G++.  You enabled
 that configuration with + the @option{--with-gnu-as} and @option{--with-gnu-ld}
 options to @code{configure}.
 
 Note the C compiler that comes
-with this system cannot compile GNU CC.  You can find binaries of GNU CC
+with this system cannot compile GCC.  You can find binaries of GCC
 for bootstrapping on @code{jagubox.gsfc.nasa.gov}.
 You will also a patched version of @file{/bin/ld} there that
 raises some of the arbitrary limits found in the original.
@@ -2311,7 +2311,7 @@ raises some of the arbitrary limits found in the original.
 <hr>
 @end html
 @heading @anchor{m68k-att-sysv}m68k-att-sysv
-AT&T 3b1, a.k.a. 7300 PC.  This version of GNU CC cannot
+AT&T 3b1, a.k.a. 7300 PC.  This version of GCC cannot
 be compiled with the system C compiler, which is too buggy.
 You will need to get a previous version of GCC and use it to
 bootstrap.  Binaries are available from the OSU-CIS archive, at
@@ -2322,7 +2322,7 @@ bootstrap.  Binaries are available from the OSU-CIS archive, at
 <hr>
 @end html
 @heading @anchor{m68k-bull-sysv}m68k-bull-sysv
-Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01. GNU CC works
+Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01. GCC works
 either with native assembler or GNU assembler. You can use
 GNU assembler with native coff generation by providing @option{--with-gnu-as} to
 the configure script or use GNU assembler with dbx-in-coff encapsulation
@@ -2339,7 +2339,7 @@ Use @samp{configure unos} for building on Unos.
 
 The Unos assembler is named @code{casm} instead of @code{as}.  For some
 strange reason linking @file{/bin/as} to @file{/bin/casm} changes the
-behavior, and does not work.  So, when installing GNU CC, you should
+behavior, and does not work.  So, when installing GCC, you should
 install the following script as @file{as} in the subdirectory where
 the passes of GCC are installed:
 
@@ -2349,12 +2349,12 @@ casm $*
 @end example
 
 The default Unos library is named @file{libunos.a} instead of
-@file{libc.a}.  To allow GNU CC to function, either change all
+@file{libc.a}.  To allow GCC to function, either change all
 references to @option{-lc} in @file{gcc.c} to @option{-lunos} or link
 @file{/lib/libc.a} to @file{/lib/libunos.a}.
 
 @cindex @code{alloca}, for Unos
-When compiling GNU CC with the standard compiler, to overcome bugs in
+When compiling GCC with the standard compiler, to overcome bugs in
 the support of @code{alloca}, do not use @option{-O} when making stage 2.
 Then use the stage 2 compiler with @option{-O} to make the stage 3
 compiler.  This compiler will have the same characteristics as the usual
@@ -2376,7 +2376,7 @@ and linking from that library.
 @end html
 @heading @anchor{m68k-hp-hpux}m68k-hp-hpux
 HP 9000 series 300 or 400 running HP-UX.  HP-UX version 8.0 has a bug in
-the assembler that prevents compilation of GNU CC.  This
+the assembler that prevents compilation of GCC.  This
 bug manifests itself during the first stage of compilation, while
 building @file{libgcc2.a}:
 
@@ -2528,7 +2528,7 @@ compiler.  If the stage 3 and stage 4 object files are identical, this
 suggests you encountered a problem with the standard C compiler; the
 stage 3 and 4 compilers may be usable.
 
-It is best, however, to use an older version of GNU CC for bootstrapping
+It is best, however, to use an older version of GCC for bootstrapping
 if you have one.
 
 @html
@@ -2703,7 +2703,7 @@ inhibit reordering.
 The @option{-noasmopt} option can be useful for testing whether a problem
 is due to erroneous assembler reordering.  Even if a problem does not go
 away with @option{-noasmopt}, it may still be due to assembler
-reordering---perhaps GNU CC itself was miscompiled as a result.
+reordering---perhaps GCC itself was miscompiled as a result.
 
 To enable debugging under Irix 5, you must use GNU as 2.5 or later,
 and use the @option{--with-gnu-as} configure option when configuring gcc.
@@ -2838,8 +2838,8 @@ Go to the Berkeley universe before compiling.
 @end html
 @heading @anchor{ns32k-utek}ns32k-utek
 UTEK ns32000 system (``merlin'').  The C compiler that comes with this
-system cannot compile GNU CC; contact @samp{tektronix!reed!mason} to get
-binaries of GNU CC for bootstrapping.
+system cannot compile GCC; contact @samp{tektronix!reed!mason} to get
+binaries of GCC for bootstrapping.
 
 
 @html
@@ -2942,8 +2942,8 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 @end html
 @heading @anchor{romp-*-aos}romp-*-aos, romp-*-mach
 The only operating systems supported for the IBM RT PC are AOS and
-MACH.  GNU CC does not support AIX running on the RT.  We recommend you
-compile GNU CC with an earlier version of itself; if you compile GNU CC
+MACH.  GCC does not support AIX running on the RT.  We recommend you
+compile GCC with an earlier version of itself; if you compile GCC
 with @code{hc}, the Metaware compiler, it will work, but you will get
 mismatches between the stage 2 and stage 3 compilers in various files.
 These errors are minor differences in some floating-point constants and
@@ -3212,7 +3212,7 @@ system's linker seems to be unable to handle such a large program with
 debugging information.
 
 The system's compiler runs out of capacity when compiling @file{stmt.c}
-in GNU CC.  You can work around this by building @file{cpp} in GNU CC
+in GCC.  You can work around this by building @file{cpp} in GCC
 first, then use that instead of the system's preprocessor with the
 system's C compiler to compile @file{stmt.c}.  Here is how:
 
@@ -3223,7 +3223,7 @@ echo '/lib/cpp.gnu -traditional $@{1+"$@@"@}' > /lib/cpp
 chmod +x /lib/cpp
 @end smallexample
 
-The system's compiler produces bad code for some of the GNU CC
+The system's compiler produces bad code for some of the GCC
 optimization files.  So you must build the stage 2 compiler without
 optimization.  Then build a stage 3 compiler with optimization.
 That executable should work.  Here are the necessary commands:

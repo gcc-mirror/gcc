@@ -904,7 +904,7 @@ programs that might use these names for other things.
 Functions which would normally be built in but do not have semantics
 defined by ISO C (such as @code{alloca} and @code{ffs}) are not built-in
 functions with @option{-ansi} is used.  @xref{Other Builtins,,Other
-built-in functions provided by GNU CC}, for details of the functions
+built-in functions provided by GCC}, for details of the functions
 affected.
 
 @item -std=
@@ -994,7 +994,7 @@ switch only affects the @code{asm} and @code{typeof} keywords, since
 @cindex built-in functions
 Don't recognize built-in functions that do not begin with
 @samp{__builtin_} as prefix.  @xref{Other Builtins,,Other built-in
-functions provided by GNU CC}, for details of the functions affected,
+functions provided by GCC}, for details of the functions affected,
 including those which are not built-in functions when @option{-ansi} or
 @option{-std} options for strict ISO C conformance are used because they
 do not have an ISO standard meaning.
@@ -1934,7 +1934,7 @@ In C, every @code{else} branch belongs to the innermost possible @code{if}
 statement, which in this example is @code{if (b)}.  This is often not
 what the programmer expected, as illustrated in the above example by
 indentation the programmer chose.  When there is the potential for this
-confusion, GNU C will issue a warning when this flag is specified.
+confusion, GCC will issue a warning when this flag is specified.
 To eliminate the warning, add explicit braces around the innermost
 @code{if} statement so there is no way the @code{else} could belong to
 the enclosing @code{if}.  The resulting code would look like this:
@@ -6303,12 +6303,12 @@ references.  In particular, a load instruction may execute before
 a preceding store instruction.  Such reordering violates
 sequential consistency of volatile memory references, when there
 are multiple processors.   When consistency must be guaranteed,
-GNU C generates special instructions, as needed, to force
+GCC generates special instructions, as needed, to force
 execution in the proper order.
 
 The MC88100 processor does not reorder memory references and so
-always provides sequential consistency.  However, by default, GNU
-C generates the special instructions to guarantee consistency
+always provides sequential consistency.  However, by default, GCC
+generates the special instructions to guarantee consistency
 even when you use @option{-m88100}, so that the code may be run on an
 MC88110 processor.  If you intend to run your code only on the
 MC88100 processor, you may use @option{-mno-serialize-volatile}.
@@ -6356,13 +6356,13 @@ zero will be detected.  By default, detection is guaranteed.
 
 Some models of the MC88100 processor fail to trap upon integer
 division by zero under certain conditions.  By default, when
-compiling code that might be run on such a processor, GNU C
+compiling code that might be run on such a processor, GCC
 generates code that explicitly checks for zero-valued divisors
 and traps with exception number 503 when one is detected.  Use of
 mno-check-zero-division suppresses such checking for code
 generated to run on an MC88100 processor.
 
-GNU C assumes that the MC88110 processor correctly detects all
+GCC assumes that the MC88110 processor correctly detects all
 instances of integer division by zero.  When @option{-m88110} is
 specified, both @option{-mcheck-zero-division} and
 @option{-mno-check-zero-division} are ignored, and no explicit checks for
@@ -6378,7 +6378,7 @@ On the MC88100 processor the signed integer division instruction
 div) traps to the operating system on a negative operand.  The
 operating system transparently completes the operation, but at a
 large cost in execution time.  By default, when compiling code
-that might be run on an MC88100 processor, GNU C emulates signed
+that might be run on an MC88100 processor, GCC emulates signed
 integer division using the unsigned integer division instruction
 divu), thereby avoiding the large penalty of a trap to the
 operating system.  Such emulation has its own, smaller, execution
@@ -8925,10 +8925,10 @@ it.
 @item -fexceptions
 @opindex fexceptions
 Enable exception handling. Generates extra code needed to propagate
-exceptions.  For some targets, this implies GNU CC will generate frame
+exceptions.  For some targets, this implies GCC will generate frame
 unwind information for all functions, which can produce significant data
 size overhead, although it does not affect execution.  If you do not
-specify this option, GNU CC will enable it by default for languages like
+specify this option, GCC will enable it by default for languages like
 C++ which normally require exception handling, and disable it for
 languages like C that do not normally require it.  However, you may need
 to enable this option when compiling C code that needs to interoperate
@@ -9158,14 +9158,14 @@ stubs for every function you call, you might have to specify
 @option{-fcheck-memory-usage} without @option{-fprefix-function-name}.
 
 If you specify this option, you can not use the @code{asm} or
-@code{__asm__} keywords in functions with memory checking enabled.  GNU
-CC cannot understand what the @code{asm} statement may do, and therefore
+@code{__asm__} keywords in functions with memory checking enabled.  GCC
+cannot understand what the @code{asm} statement may do, and therefore
 cannot generate the appropriate code, so it will reject it.  However, if
 you specify the function attribute @code{no_check_memory_usage}
-(@pxref{Function Attributes}), GNU CC will disable memory checking within a
+(@pxref{Function Attributes}), GCC will disable memory checking within a
 function; you may use @code{asm} statements inside such functions.  You
 may have an inline expansion of a non-checked function within a checked
-function; in that case GNU CC will not generate checks for the inlined
+function; in that case GCC will not generate checks for the inlined
 function's memory accesses.
 
 If you move your @code{asm} statements to non-checked inline functions
@@ -9385,7 +9385,7 @@ names of the subprograms executed by the compiler.  No slash is added
 when this prefix is combined with the name of a subprogram, but you can
 specify a prefix that ends with a slash if you wish.
 
-If @env{GCC_EXEC_PREFIX} is not set, GNU CC will attempt to figure out
+If @env{GCC_EXEC_PREFIX} is not set, GCC will attempt to figure out
 an appropriate prefix to use based on the pathname it was invoked with.
 
 If GCC cannot find the subprogram using the specified prefix, it
@@ -9484,7 +9484,7 @@ recognize and translate multibyte characters.
 @node Running Protoize
 @section Running Protoize
 
-The program @code{protoize} is an optional part of GNU C.  You can use
+The program @code{protoize} is an optional part of GCC.  You can use
 it to add prototypes to a program, thus converting the program to ISO
 C in one respect.  The companion program @code{unprotoize} does the
 reverse: it removes argument types from any prototypes that are found.
