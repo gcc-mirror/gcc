@@ -1,3 +1,7 @@
+2000-05-03  Robert Lipe <robertlipe@usa.net>
+
+	* gcc.dg/20000503-1.c: New test.
+
 2000-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20000502-1.c: New test.
