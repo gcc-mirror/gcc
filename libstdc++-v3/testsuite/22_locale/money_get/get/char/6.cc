@@ -1,6 +1,6 @@
 // 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,12 +34,6 @@ struct My_money_io : public std::moneypunct<char,false>
   std::string do_negative_sign() const { return "-"; }
   
   int do_frac_digits() const { return 2; }
-
-  pattern do_pos_format() const
-  {
-    pattern pat = { { symbol, none, sign, value } };
-    return pat;
-  }
 
   pattern do_neg_format() const
   {
