@@ -1,3 +1,9 @@
+2003-03-10  Devang Patel  <dpatel@apple.com>
+
+	PR c++/9394
+	* g++.dg/cpp/c++_cmd_1.C: New test.
+	* g++.dg/cpp/c++_cmd_1.h: New file.
+	
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9373
