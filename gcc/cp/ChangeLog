@@ -1,3 +1,7 @@
+2003-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* decl.c (bad_specifiers): Fix parameter order error I introduced.
+
 2003-01-09  Geoffrey Keating  <geoffk@apple.com>
 
 	Merge from pch-branch:
