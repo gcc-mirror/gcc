@@ -390,9 +390,15 @@ unary_expr:
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ tree label = lookup_label ($2);
-		  TREE_USED (label) = 1;
-		  $$ = build1 (ADDR_EXPR, ptr_type_node, label);
-		  TREE_CONSTANT ($$) = 1; }
+		  if (label == 0)
+		    $$ = null_pointer_node;
+		  else
+		    {
+		      TREE_USED (label) = 1;
+		      $$ = build1 (ADDR_EXPR, ptr_type_node, label);
+		      TREE_CONSTANT ($$) = 1;
+		    }
+		}
 /* This seems to be impossible on some machines, so let's turn it off.
    You can use __builtin_next_arg to find the anonymous stack args.
 	| '&' ELLIPSIS
