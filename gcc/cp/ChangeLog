@@ -1,3 +1,8 @@
+2003-04-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (layout_class_type): Correct handling for overlong
+	bit-fields whose width is the same as an integer type.
+
 2003-04-06  Zack Weinberg   <zack@codesourcery.com>
 
 	* cp-tree.def: Make fourth element for all 'c' and 'x' nodes zero.

@@ -4819,6 +4819,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	}
 
       type = TREE_TYPE (field);
+      
+      padding = NULL_TREE;
 
       /* If this field is a bit-field whose width is greater than its
 	 type, then there are some special rules for allocating
@@ -4842,19 +4844,26 @@ layout_class_type (tree t, tree *virtuals_p)
 	     type that fits.  */
 	  integer_type = integer_types[itk - 1];
 
-	  if (abi_version_at_least (2) && TREE_CODE (t) == UNION_TYPE)
-	    /* In a union, the padding field must have the full width
-	       of the bit-field; all fields start at offset zero.  */
-	    padding = DECL_SIZE (field);
-	  else
+	  /* Figure out how much additional padding is required.  GCC
+	     3.2 always created a padding field, even if it had zero
+	     width.  */
+	  if (!abi_version_at_least (2)
+	      || INT_CST_LT (TYPE_SIZE (integer_type), DECL_SIZE (field)))
 	    {
-	      if (warn_abi && TREE_CODE (t) == UNION_TYPE)
-		warning ("size assigned to `%T' may not be "
-			 "ABI-compliant and may change in a future "
-			 "version of GCC", 
-			 t);
-	      padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
-				    TYPE_SIZE (integer_type));
+	      if (abi_version_at_least (2) && TREE_CODE (t) == UNION_TYPE)
+		/* In a union, the padding field must have the full width
+		   of the bit-field; all fields start at offset zero.  */
+		padding = DECL_SIZE (field);
+	      else
+		{
+		  if (warn_abi && TREE_CODE (t) == UNION_TYPE)
+		    warning ("size assigned to `%T' may not be "
+			     "ABI-compliant and may change in a future "
+			     "version of GCC", 
+			     t);
+		  padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
+					TYPE_SIZE (integer_type));
+		}
 	    }
 #ifdef PCC_BITFIELD_TYPE_MATTERS
 	  /* An unnamed bitfield does not normally affect the
@@ -4873,8 +4882,6 @@ layout_class_type (tree t, tree *virtuals_p)
 	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
 	  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (integer_type);
 	}
-      else
-	padding = NULL_TREE;
 
       layout_nonempty_base_or_field (rli, field, NULL_TREE,
 				     empty_base_offsets);
@@ -4924,6 +4931,7 @@ layout_class_type (tree t, tree *virtuals_p)
 				      char_type_node); 
 	  DECL_BIT_FIELD (padding_field) = 1;
 	  DECL_SIZE (padding_field) = padding;
+	  DECL_CONTEXT (padding_field) = t;
 	  layout_nonempty_base_or_field (rli, padding_field,
 					 NULL_TREE, 
 					 empty_base_offsets);

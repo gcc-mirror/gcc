@@ -1,3 +1,7 @@
+2003-04-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/bitfield10.C: New test.
+
 2003-04-09  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/pch/pch.exp: Make testcase names longer.
