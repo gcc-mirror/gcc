@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
 This file is part of GNU CC.
@@ -438,20 +438,23 @@ void FN ()								\
    size_directive_output was set
    by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
 
-#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
-do {									 \
-     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
-     if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
-         && ! AT_END && TOP_LEVEL					 \
-	 && DECL_INITIAL (DECL) == error_mark_node			 \
-	 && !size_directive_output)					 \
-       {								 \
-	 size_directive_output = 1;					 \
-	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
-	 assemble_name (FILE, name);					 \
-	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
-       }								 \
-   } while (0)
+#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	\
+do {									\
+  char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			\
+  if (!flag_inhibit_size_directive && DECL_SIZE (DECL)			\
+      && ! AT_END && TOP_LEVEL						\
+      && DECL_INITIAL (DECL) == error_mark_node				\
+      && !size_directive_output)					\
+    {									\
+      size_directive_output = 1;					\
+      fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
+      assemble_name (FILE, name);					\
+      putc (',', FILE);							\
+      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,				\
+	       int_size_in_bytes (TREE_TYPE (DECL)));			\
+      putc ('\n', FILE);						\
+    }									\
+} while (0)
 
 /* A table of bytes codes used by the ASM_OUTPUT_ASCII and
    ASM_OUTPUT_LIMITED_STRING macros.  Each byte in the table
