@@ -752,6 +752,7 @@ extern rtx gen_beq			PROTO((rtx));
 extern rtx gen_bge			PROTO((rtx));
 extern rtx gen_ble			PROTO((rtx));
 extern rtx eliminate_constant_term	PROTO((rtx, rtx *));
+extern rtx expand_complex_abs		PROTO((enum machine_mode, rtx, rtx, int));
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many togetherm
