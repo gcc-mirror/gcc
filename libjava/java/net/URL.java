@@ -396,6 +396,8 @@ public final class URL implements Serializable
 	    host = context.host;
 	    port = context.port;
 	    file = context.file;
+	    if (file == null || file.length() == 0)
+	      file = "/";
 	    authority = context.authority;
 	  }
       }
@@ -408,6 +410,8 @@ public final class URL implements Serializable
 	host = context.host;
 	port = context.port;
 	file = context.file;
+	if (file == null || file.length() == 0)
+	  file = "/";
         authority = context.authority;
       }
     else	// Protocol NOT specified in spec. and no context available.
