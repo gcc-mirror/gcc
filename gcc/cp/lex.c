@@ -714,10 +714,10 @@ init_parse (filename)
   init_reswords ();
   init_pragma ();
   init_cp_pragma ();
-
   init_spew ();
   init_tree ();
   init_cplus_expand ();
+  init_cp_semantics ();
 
   add_c_tree_codes ();
 

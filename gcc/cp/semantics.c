@@ -50,6 +50,14 @@ static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
 static void deferred_type_access_control PARAMS ((void));
 static void emit_associated_thunks PARAMS ((tree));
+static void genrtl_try_block PARAMS ((tree));
+static void genrtl_handler PARAMS ((tree));
+static void genrtl_catch_block PARAMS ((tree));
+static void genrtl_ctor_stmt PARAMS ((tree));
+static void genrtl_subobject PARAMS ((tree));
+static tree genrtl_do_poplevel PARAMS ((void));
+static void genrtl_named_return_value PARAMS ((void));
+static void cp_expand_stmt PARAMS ((tree));
 
 /* When parsing a template, LAST_TREE contains the last statement
    parsed.  These are chained together through the TREE_CHAIN field,
@@ -592,7 +600,8 @@ finish_case_label (low_value, high_value)
 
 /* Generate the RTL for T, which is a TRY_BLOCK. */
 
-void genrtl_try_block (t)
+static void 
+genrtl_try_block (t)
      tree t;
 {
   if (CLEANUP_P (t))
@@ -731,7 +740,7 @@ finish_function_handler_sequence (try_block)
 
 /* Generate the RTL for T, which is a HANDLER. */
 
-void
+static void
 genrtl_handler (t)
      tree t;
 {
@@ -791,7 +800,7 @@ finish_handler_parms (decl, handler)
 
 /* Generate the RTL for a CATCH_BLOCK. */
 
-void
+static void
 genrtl_catch_block (type)
      tree type;
 {
@@ -825,7 +834,7 @@ finish_handler (blocks, handler)
 
 /* Generate the RTL for T, which is a CTOR_STMT. */
 
-void
+static void
 genrtl_ctor_stmt (t)
      tree t;
 {
@@ -991,7 +1000,7 @@ add_decl_stmt (decl)
 
 /* Generate the RTL for a SUBOBJECT. */
 
-void 
+static void 
 genrtl_subobject (cleanup)
      tree cleanup;
 {
@@ -1022,7 +1031,7 @@ finish_decl_cleanup (decl, cleanup)
 
 /* Generate the RTL for a RETURN_INIT. */
 
-void
+static void
 genrtl_named_return_value ()
 {
   tree decl;
@@ -2216,147 +2225,51 @@ finish_typeof (expr)
   return TREE_TYPE (expr);
 }
 
-/* We're about to expand T, a statement.  Set up appropriate context
-   for the substitution.  */
-
-void
-prep_stmt (t)
-     tree t;
-{
-  if (!STMT_LINENO_FOR_FN_P (t))
-    lineno = STMT_LINENO (t);
-  current_stmt_tree ()->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
-}
-
 /* Generate RTL for the statement T, and its substatements, and any
    other statements at its nesting level.  */
 
-tree
-lang_expand_stmt (t)
+static void
+cp_expand_stmt (t)
      tree t;
 {
-  tree rval = NULL_TREE;
-
-  while (t && t != error_mark_node)
+  switch (TREE_CODE (t))
     {
-      int saved_stmts_are_full_exprs_p;
+    case CLEANUP_STMT:
+      genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
+      break;
 
-      /* Assume we'll have nothing to return.  */
-      rval = NULL_TREE;
+    case START_CATCH_STMT:
+      genrtl_catch_block (TREE_TYPE (t));
+      break;
 
-      /* Set up context appropriately for handling this statement.  */
-      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
-      prep_stmt (t);
+    case CTOR_STMT:
+      genrtl_ctor_stmt (t);
+      break;
 
-      switch (TREE_CODE (t))
-	{
-	case RETURN_STMT:
-	  genrtl_return_stmt (RETURN_EXPR (t));
-	  break;
+    case TRY_BLOCK:
+      genrtl_try_block (t);
+      break;
 
-	case EXPR_STMT:
-	  genrtl_expr_stmt (EXPR_STMT_EXPR (t));
-	  break;
+    case HANDLER:
+      genrtl_handler (t);
+      break;
 
-	case DECL_STMT:
-	  genrtl_decl_stmt (t);
-	  break;
+    case SUBOBJECT:
+      genrtl_subobject (SUBOBJECT_CLEANUP (t));
+      break;
 
-	case CLEANUP_STMT:
-	  genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
-	  break;
+    case SCOPE_STMT:
+      genrtl_scope_stmt (t);
+      break;
 
-	case START_CATCH_STMT:
-	  genrtl_catch_block (TREE_TYPE (t));
-	  break;
+    case RETURN_INIT:
+      genrtl_named_return_value ();
+      break;
 
-	case CTOR_STMT:
-	  genrtl_ctor_stmt (t);
-	  break;
-
-	case FOR_STMT:
-	  genrtl_for_stmt (t);
-	  break;
-
-	case WHILE_STMT:
-	  genrtl_while_stmt (t);
-	  break;
-
-	case DO_STMT:
-	  genrtl_do_stmt (t);
-	  break;
-
-	case IF_STMT:
-	  genrtl_if_stmt (t);
-	  break;
-
-	case COMPOUND_STMT:
-	  genrtl_compound_stmt (t);
-	  break;
-
-	case BREAK_STMT:
-	  genrtl_break_stmt ();
-	  break;
-
-	case CONTINUE_STMT:
-	  genrtl_continue_stmt ();
-	  break;
-
-	case SWITCH_STMT:
-	  genrtl_switch_stmt (t);
-	  break;
-
-	case CASE_LABEL:
-	  genrtl_case_label (CASE_LOW (t), CASE_HIGH (t));
-	  break;
-
-	case LABEL_STMT:
-	  expand_label (LABEL_STMT_LABEL (t));
-	  break;
-
-	case GOTO_STMT:
-	  genrtl_goto_stmt (GOTO_DESTINATION (t));
-	  break;
-
-	case ASM_STMT:
-	  genrtl_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t),
-			   ASM_OUTPUTS (t), ASM_INPUTS (t), ASM_CLOBBERS (t));
-	  break;
-
-	case TRY_BLOCK:
-	  genrtl_try_block (t);
-	  break;
-
-	case HANDLER:
-	  genrtl_handler (t);
-	  break;
-
-	case SUBOBJECT:
-	  genrtl_subobject (SUBOBJECT_CLEANUP (t));
-	  break;
-
-	case SCOPE_STMT:
-	  genrtl_scope_stmt (t);
-	  break;
-
-	case RETURN_INIT:
-	  genrtl_named_return_value ();
-	  break;
-
-	default:
-	  my_friendly_abort (19990810);
-	  break;
-	}
-
-      /* Restore saved state.  */
-      current_stmt_tree ()->stmts_are_full_exprs_p = 
-	saved_stmts_are_full_exprs_p;
-
-      /* Go on to the next statement in this scope.  */
-      t = TREE_CHAIN (t);
+    default:
+      my_friendly_abort (19990810);
+      break;
     }
-
-  return rval;
 }
 
 /* Called from expand_body via walk_tree.  Replace all AGGR_INIT_EXPRs
@@ -2629,4 +2542,12 @@ expand_body (fn)
   extract_interface_info ();
 
   timevar_pop (TV_EXPAND);
+}
+
+/* Perform initialization related to this module.  */
+
+void
+init_cp_semantics ()
+{
+  lang_expand_stmt = cp_expand_stmt;
 }

@@ -1,5 +1,25 @@
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (init_cp_semantics): Declare.
+	(genrtl_try_block): Don't declare.
+	(genrtl_handler): Likewise.
+	(genrtl_catch_block): Likewise.
+	(genrtl_ctor_stmt): Likewise.
+	(genrtl_subobject): Likewise.
+	(genrtl_do_poplevel): Likewise.
+	(genrtl_named_return_value): Likewise.
+	* lex.c (init_parse): Call init_cp_semantics.
+	* semantics.c (genrtl_try_block): Give it internal linkage.
+	(genrtl_handler): Likewise.
+	(genrtl_catch_block): Likewise.
+	(genrtl_ctor_stmt): Likewise.
+	(genrtl_subobject): Likewise.
+	(genrtl_do_poplevel): Likewise.
+	(genrtl_named_return_value): Likewise.
+	(lang_expand_stmt): Rename to ...
+	(cp_expand_stmt): ... this.  Only handle C++-specific nodes.
+	(init_cp_semantics): Define.
+
 	* decl.c (initialize_local_var): Remove RTL-generating code.
 	* semantics.c (genrtl_try_block): Fix formatting.
 

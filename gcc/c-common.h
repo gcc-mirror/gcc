@@ -264,6 +264,9 @@ extern int (*lang_statement_code_p)             PARAMS ((enum tree_code));
 extern tree walk_stmt_tree			PARAMS ((tree *,
 							 walk_tree_fn,
 							 void *));
+extern void prep_stmt                           PARAMS ((tree));
+extern void (*lang_expand_stmt)                 PARAMS ((tree));
+extern void expand_stmt                         PARAMS ((tree));
 
 /* The variant of the C language being processed.  Each C language
    front-end defines this variable.  */
@@ -585,8 +588,6 @@ extern int anon_aggr_type_p                     PARAMS ((tree));
 extern void emit_local_var                      PARAMS ((tree));
 extern void make_rtl_for_local_static           PARAMS ((tree));
 extern tree expand_cond                         PARAMS ((tree));
-extern tree expand_stmt                         PARAMS ((tree));
-extern tree lang_expand_stmt                    PARAMS ((tree));
 extern void c_expand_return			PARAMS ((tree));
 extern tree c_expand_start_case			PARAMS ((tree));
 extern void do_case				PARAMS ((tree, tree));

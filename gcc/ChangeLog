@@ -1,3 +1,12 @@
+2000-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (prep_stmt): Declare.
+	(lang_expand_stmt): Likewise.
+	* c-decl.c (lang_expand_stmt): Remove.
+	* c-semantics.c (lang_expand_stmt): Define.
+	(prep_stmt): New function.
+	(expand_stmt): Handle common statement types here.
+	
 2000-09-07  Niibe Yutaka  <gniibe@m17n.org>, Kaz Kojima  <kkojima@rr.iij4u.or.jp>, Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (sh-*-linux*): Added.
