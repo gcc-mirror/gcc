@@ -1,3 +1,9 @@
+2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* physmem.c (physmem_total, physmem_available): De-ANSI-fy.
+	* configure.in (AC_CHECK_FUNCS): Add pstat_getstatic and
+	pstat_getdynamic.
+
 2003-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (CFILES): Add physmem.c.

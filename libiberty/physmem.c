@@ -31,7 +31,7 @@
 
 /* Return the total amount of physical memory.  */
 double
-physmem_total (void)
+physmem_total ()
 {
 #if defined _SC_PHYS_PAGES && defined _SC_PAGESIZE
   {
@@ -61,7 +61,7 @@ physmem_total (void)
 
 /* Return the amount of physical memory available.  */
 double
-physmem_available (void)
+physmem_available ()
 {
 #if defined _SC_AVPHYS_PAGES && defined _SC_PAGESIZE
   {
