@@ -1,3 +1,12 @@
+2005-03-17  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/20502
+	* jcf-parse.c (duplicate_class_warning): New function.
+	(java_parse_file): Call duplicate_class_warning if 
+	CLASS_FROM_CURRENTLY_COMPILED_P is already set.
+	(parse_zip_file_entries): Likewise. Also set
+	CLASS_FROM_CURRENTLY_COMPILED_P.
+
 2005-03-16  Andrew Haley  <aph@redhat.com>
 
 	* expr.c (expand_java_arrayload): Don't generate a
