@@ -1,3 +1,17 @@
+Mon Jun 21 12:27:17 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
+
+	* config/mips/elf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Add the macros.
+
+	* config/m68k/m68kelf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Ditto.
+
+	* config/sh/sh.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Ditto.
+
+	* config/arm/telf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Ditto.
+
 Mon Jun 21 14:58:42 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h: Add cpp support for ARM920 and ARM920T cpu
