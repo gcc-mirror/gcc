@@ -1,5 +1,8 @@
 2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* gcc.c (used_arg): Skip over a semicolon at the end of the
+	split-up loop; don't break out of it.
+
 	* Makefile.in (WARN_CFLAGS): Add -Wwrite-strings.
 	(tree.o): Depend on output.h.
 
