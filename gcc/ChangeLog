@@ -1,3 +1,8 @@
+2004-06-28  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
+
+	PR target/14041
+	* config/h8300/h8300.h (ASM_OUTPUT_ALIGNED_BSS): Define.
+
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h (tree_check_failed): Make varadic.
