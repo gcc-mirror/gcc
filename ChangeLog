@@ -1,3 +1,8 @@
+2002-12-31  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.def (target_modules) [libffi]: Allow installation.
+
 2002-12-31  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in: Fix use of $program_transform_name.

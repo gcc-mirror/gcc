@@ -81,7 +81,7 @@ target_modules = { module= libgloss; no_check=true; };
 target_modules = { module= libiberty; };
 target_modules = { module= gperf; };
 target_modules = { module= examples; no_check=true; no_install=true; };
-target_modules = { module= libffi; no_install=true; };
+target_modules = { module= libffi; };
 target_modules = { module= libjava; raw_cxx=true; };
 target_modules = { module= zlib; };
 target_modules = { module= boehm-gc; };
