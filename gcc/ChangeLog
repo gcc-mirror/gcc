@@ -1,3 +1,7 @@
+Mon Dec  7 16:15:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (output_far_jump): Emit braf only for TARGET_SH2.
+
 Sun Dec 6 04:19:45 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
