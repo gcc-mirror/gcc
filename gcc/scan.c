@@ -1,5 +1,5 @@
-/* scan.c - Utility functions for scan-decls and fix-header programs.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+/* Utility functions for scan-decls and fix-header programs.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -208,7 +208,6 @@ get_token (fp, s)
   s->ptr = s->base;
  retry:
   c = ' ';
- again:
   c = skip_spaces (fp, c);
   if (c == '\n')
     {
@@ -254,7 +253,6 @@ get_token (fp, s)
     }
   if (c == '\'' || c == '"')
     {
-      int quote = c;
       c = scan_string (fp, s, c);
       ungetc (c, fp);
       return c == '\'' ? CHAR_TOKEN : STRING_TOKEN;
