@@ -127,6 +127,7 @@ static void arm_internal_label (FILE *, const char *, unsigned long);
 static void arm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				 tree);
 static int arm_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
+static bool arm_size_rtx_costs (rtx, int, int, int *);
 static bool arm_slowmul_rtx_costs (rtx, int, int, int *);
 static bool arm_fastmul_rtx_costs (rtx, int, int, int *);
 static bool arm_xscale_rtx_costs (rtx, int, int, int *);
@@ -870,7 +871,10 @@ arm_override_options (void)
     abort ();
   
   tune_flags = all_cores[(int)arm_tune].flags;
-  targetm.rtx_costs = all_cores[(int)arm_tune].rtx_costs;
+  if (optimize_size)
+    targetm.rtx_costs = arm_size_rtx_costs;
+  else
+    targetm.rtx_costs = all_cores[(int)arm_tune].rtx_costs;
 
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
@@ -3935,6 +3939,227 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
       
     default:
       return 99;
+    }
+}
+
+/* RTX costs when optimizing for size.  */
+static bool
+arm_size_rtx_costs (rtx x, int code, int outer_code, int *total)
+{
+  enum machine_mode mode = GET_MODE (x);
+
+  if (TARGET_THUMB)
+    {
+      /* XXX TBD.  For now, use the standard costs.  */
+      *total = thumb_rtx_costs (x, code, outer_code);
+      return true;
+    }
+
+  switch (code)
+    {
+    case MEM:
+      /* A memory access costs 1 insn if the mode is small, or the address is 
+	 a single register, otherwise it costs one insn per word.  */
+      if (REG_P (XEXP (x, 0)))
+	*total = COSTS_N_INSNS (1);
+      else
+	*total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
+      return true;
+
+    case DIV:
+    case MOD:
+    case UDIV:
+    case UMOD:
+      /* Needs a libcall, so it costs about this.  */
+      *total = COSTS_N_INSNS (2);
+      return false;
+
+    case ROTATE:
+      if (mode == SImode && GET_CODE (XEXP (x, 1)) == REG)
+	{
+	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code);
+	  return true;
+	}
+      /* Fall through */
+    case ROTATERT:
+    case ASHIFT:
+    case LSHIFTRT:
+    case ASHIFTRT:
+      if (mode == DImode && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  *total = COSTS_N_INSNS (3) + rtx_cost (XEXP (x, 0), code);
+	  return true;
+	}
+      else if (mode == SImode)
+	{
+	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code);
+	  /* Slightly disparage register shifts, but not by much.  */
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    *total += 1 + rtx_cost (XEXP (x, 1), code);
+	  return true;
+	}
+
+      /* Needs a libcall.  */
+      *total = COSTS_N_INSNS (2);
+      return false;
+
+    case MINUS:
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return false;
+	}
+
+      if (mode == SImode)
+	{
+	  enum rtx_code subcode0 = GET_CODE (XEXP (x, 0));
+	  enum rtx_code subcode1 = GET_CODE (XEXP (x, 1));
+
+	  if (subcode0 == ROTATE || subcode0 == ROTATERT || subcode0 == ASHIFT
+	      || subcode0 == LSHIFTRT || subcode0 == ASHIFTRT
+	      || subcode1 == ROTATE || subcode1 == ROTATERT
+	      || subcode1 == ASHIFT || subcode1 == LSHIFTRT
+	      || subcode1 == ASHIFTRT)
+	    {
+	      /* It's just the cost of the two operands.  */
+	      *total = 0;
+	      return false;
+	    }
+
+	  *total = COSTS_N_INSNS (1);
+	  return false;
+	}
+
+      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
+      return false;
+
+    case PLUS: 
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return false;
+	}
+
+      /* Fall through */
+    case AND: case XOR: case IOR:
+      if (mode == SImode)
+	{
+	  enum rtx_code subcode = GET_CODE (XEXP (x, 0));
+
+	  if (subcode == ROTATE || subcode == ROTATERT || subcode == ASHIFT
+	      || subcode == LSHIFTRT || subcode == ASHIFTRT
+	      || (code == AND && subcode == NOT))
+	    {
+	      /* It's just the cost of the two operands.  */
+	      *total = 0;
+	      return false;
+	    }
+	}
+
+      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
+      return false;
+
+    case MULT:
+      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
+      return false;
+
+    case NEG:
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	*total = COSTS_N_INSNS (1);
+      /* Fall through */
+    case NOT:
+      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
+
+      return false;
+
+    case IF_THEN_ELSE:
+      *total = 0;
+      return false;
+
+    case COMPARE:
+      if (cc_register (XEXP (x, 0), VOIDmode))
+	* total = 0;
+      else
+	*total = COSTS_N_INSNS (1);
+      return false;
+
+    case ABS:
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	*total = COSTS_N_INSNS (1);
+      else
+	*total = COSTS_N_INSNS (1 + ARM_NUM_REGS (mode));
+      return false;
+
+    case SIGN_EXTEND:
+      *total = 0;
+      if (GET_MODE_SIZE (GET_MODE (XEXP (x, 0))) < 4)
+	{
+	  if (!(arm_arch4 && MEM_P (XEXP (x, 0))))
+	    *total += COSTS_N_INSNS (arm_arch6 ? 1 : 2);
+	}
+      if (mode == DImode)
+	*total += COSTS_N_INSNS (1);
+      return false;
+
+    case ZERO_EXTEND:
+      *total = 0;
+      if (!(arm_arch4 && MEM_P (XEXP (x, 0))))
+	{
+	  switch (GET_MODE (XEXP (x, 0)))
+	    {
+	    case QImode:
+	      *total += COSTS_N_INSNS (1);
+	      break;
+
+	    case HImode:
+	      *total += COSTS_N_INSNS (arm_arch6 ? 1 : 2);
+	      
+	    case SImode:
+	      break;
+
+	    default:
+	      *total += COSTS_N_INSNS (2);
+	    }
+	}
+
+      if (mode == DImode)
+	*total += COSTS_N_INSNS (1);
+
+      return false;
+
+    case CONST_INT:						
+      if (const_ok_for_arm (INTVAL (x)))			
+	*total = COSTS_N_INSNS (outer_code == SET ? 1 : 0);
+      else if (const_ok_for_arm (~INTVAL (x)))
+	*total = COSTS_N_INSNS (outer_code == AND ? 0 : 1);
+      else if (const_ok_for_arm (-INTVAL (x)))
+	{
+	  if (outer_code == COMPARE || outer_code == PLUS
+	      || outer_code == MINUS)
+	    *total = 0;
+	  else
+	    *total = COSTS_N_INSNS (1);
+	}
+      else
+	*total = COSTS_N_INSNS (2);
+      return true;
+      
+    case CONST: 							
+    case LABEL_REF:						
+    case SYMBOL_REF:						
+      *total = COSTS_N_INSNS (2);
+      return true;
+      
+    case CONST_DOUBLE:
+      *total = COSTS_N_INSNS (4);
+      return true;
+
+    default:
+      if (mode != VOIDmode)
+	*total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
+      else
+	*total = COSTS_N_INSNS (4); /* How knows?  */
+      return false;
     }
 }
 
@@ -11581,7 +11806,7 @@ arm_final_prescan_insn (rtx insn)
 }
 
 /* Returns true if REGNO is a valid register
-   for holding a quantity of tyoe MODE.  */
+   for holding a quantity of type MODE.  */
 int
 arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 {

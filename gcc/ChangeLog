@@ -1,3 +1,8 @@
+2004-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_size_rtx_costs): New function.
+	(arm_override_options): Use it if optimizing for space.
+
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (gen_const_mem): New.
