@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
@@ -191,7 +191,7 @@
 ; In machine_dependent_reorg, we split all branches that are longer than
 ; 2 bytes.
 
-;; The maximum range used for SImode constant pool entrys is 1018.  A final
+;; The maximum range used for SImode constant pool entries is 1018.  A final
 ;; instruction can add 8 bytes while only being 4 bytes in size, thus we
 ;; can have a total of 1022 bytes in the pool.  Add 4 bytes for a branch
 ;; instruction around the pool table, 2 bytes of alignment before the table,
