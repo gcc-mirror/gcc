@@ -272,7 +272,7 @@ do {									\
 
 /* Define this to set the endianness to use in libgcc2.c, which can
    not depend on target_flags.  */
-#ifndef _LITTLE_ENDIAN
+#if !defined(_LITTLE_ENDIAN) && !defined(__sun__)
 #define LIBGCC2_WORDS_BIG_ENDIAN 1
 #else
 #define LIBGCC2_WORDS_BIG_ENDIAN 0
