@@ -508,7 +508,7 @@ typedef struct {
   /* Type of argument if length modifier `l' is used.
      If NULL, then this modifier is not allowed.  */
   tree *llen;
-  /* Type of argument if length modifier `q' is used.
+  /* Type of argument if length modifier `q' or `ll' is used.
      If NULL, then this modifier is not allowed.  */
   tree *qlen;
   /* Type of argument if length modifier `L' is used.
@@ -519,8 +519,8 @@ typedef struct {
 } format_char_info;
 
 static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_L,	T_LL,	NULL,	"-wp0 +"	},
-  { "oxX",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	NULL,	"-wp0#"		},
+  { "di",	0,	T_I,	T_I,	T_L,	T_LL,	T_LL,	"-wp0 +"	},
+  { "oxX",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	"-wp0#"		},
   { "u",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	NULL,	"-wp0"		},
 /* Two GNU extensions.  */
   { "Z",	0,	T_ST,	NULL,	NULL,	NULL,	NULL,	"-wp0"		},
@@ -536,8 +536,8 @@ static format_char_info print_char_table[] = {
 };
 
 static format_char_info scan_char_table[] = {
-  { "di",	1,	T_I,	T_S,	T_L,	T_LL,	NULL,	"*"	},
-  { "ouxX",	1,	T_UI,	T_US,	T_UL,	T_ULL,	NULL,	"*"	},	
+  { "di",	1,	T_I,	T_S,	T_L,	T_LL,	T_LL,	"*"	},
+  { "ouxX",	1,	T_UI,	T_US,	T_UL,	T_ULL,	T_ULL,	"*"	},	
   { "efgEG",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	"*"	},
   { "sc",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	"*a"	},
   { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	"*a"	},
@@ -895,6 +895,8 @@ check_format_info (info, params)
 	length_char = *format_chars++;
       else
 	length_char = 0;
+      if (length_char == 'l' && *format_chars == 'l')
+	length_char = 'q', format_chars++;
       aflag = 0;
       if (*format_chars == 'a')
 	{
