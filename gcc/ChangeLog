@@ -1,3 +1,10 @@
+Fri Sep  4 02:01:05 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (output_double_int): In all V9 symbolic
+	cases, use xword.
+	(sparc_output_deferred_case_vectors): If no work to do, return.
+	Fix thinko in Sept 1 change.
+
 1998-09-03  SL Baur  <steve@altair.xemacs.org>
 
 	* Makefile.in: add semicolon in BISON definition for portability.

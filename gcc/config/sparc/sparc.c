@@ -5219,9 +5219,7 @@ output_double_int (file, value)
 		|| GET_CODE (value) == CODE_LABEL
 		|| GET_CODE (value) == MINUS)))
     {
-      if (! TARGET_V9
-	  || (TARGET_CM_MEDLOW
-	      && ! flag_pic))
+      if (! TARGET_V9)
 	{
 	  ASM_OUTPUT_INT (file, const0_rtx);
 	  ASM_OUTPUT_INT (file, value);
@@ -7243,12 +7241,16 @@ sparc_output_deferred_case_vectors ()
   rtx t;
   int align;
 
+  if (sparc_addr_list == NULL_RTX
+      && sparc_addr_diff_list == NULL_RTX)
+    return;
+
   /* Align to cache line in the function's code section.  */
   function_section (current_function_decl);
 
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
   if (align > 0)
-    ASM_OUTPUT_ALIGN (asm_out_file, 5);
+    ASM_OUTPUT_ALIGN (asm_out_file, align);
   
   for (t = sparc_addr_list; t ; t = XEXP (t, 1))
     sparc_output_addr_vec (XEXP (t, 0));
