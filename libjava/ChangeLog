@@ -1,3 +1,7 @@
+2001-02-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Timer.java: New version from Classpath.
+
 2001-02-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Double.java (doubleToRawLongBits): Now native.
