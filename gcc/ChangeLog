@@ -1,5 +1,6 @@
 2002-10-25  Mike Stump  <mrs@apple.com>
 
+	Fixes gcc.dg/warn-1.c.
 	* c-typeck.c (warn_for_assignment): Don't print argument number, if zero.
 
 Sat Oct 26 01:44:46 CEST 2002  Jan Hubicka  <jh@suse.cz>
