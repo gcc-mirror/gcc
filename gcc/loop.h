@@ -137,7 +137,7 @@ struct induction
 /* A `struct iv_class' is created for each biv.  */
 
 struct iv_class {
-  int regno;			/* Pseudo reg which is the biv.  */
+  unsigned int regno;		/* Pseudo reg which is the biv.  */
   int biv_count;		/* Number of insns setting this reg.  */
   struct induction *biv;	/* List of all insns that set this reg.  */
   int giv_count;		/* Number of DEST_REG givs computed from this
@@ -211,7 +211,7 @@ enum iv_mode { UNKNOWN_INDUCT, BASIC_INDUCT, NOT_BASIC_INDUCT,
 
 extern int *uid_luid;
 extern int max_uid_for_loop;
-extern int max_reg_before_loop;
+extern unsigned int max_reg_before_loop;
 extern struct loop **uid_loop;
 extern FILE *loop_dump_stream;
 
@@ -226,7 +226,7 @@ extern varray_type reg_iv_info;
 extern struct iv_class **reg_biv_class;
 extern struct iv_class *loop_iv_list;
 
-extern int first_increment_giv, last_increment_giv;
+extern unsigned int first_increment_giv, last_increment_giv;
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */

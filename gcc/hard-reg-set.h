@@ -1,5 +1,5 @@
 /* Sets (bit vectors) of hard registers, and operations on them.
-   Copyright (C) 1987, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1994, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC
 
@@ -445,7 +445,7 @@ extern HARD_REG_SET reg_class_contents[];
 
 /* For each reg class, number of regs it contains.  */
 
-extern int reg_class_size[N_REG_CLASSES];
+extern unsigned int reg_class_size[N_REG_CLASSES];
 
 /* For each reg class, table listing all the containing classes.  */
 

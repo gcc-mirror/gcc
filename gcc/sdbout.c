@@ -1358,7 +1358,6 @@ sdbout_parms (parms)
 	      current_sym_value = 0;
 
 	    if (GET_CODE (DECL_RTL (parms)) == REG
-		&& REGNO (DECL_RTL (parms)) >= 0
 		&& REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	      type = DECL_ARG_TYPE (parms);
 	    else
@@ -1406,8 +1405,7 @@ sdbout_parms (parms)
 	       pretend the parm was passed there.  It would be more consistent
 	       to describe the register where the parm was passed,
 	       but in practice that register usually holds something else.  */
-	    if (REGNO (DECL_RTL (parms)) >= 0
-		&& REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
+	    if (REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	      best_rtl = DECL_RTL (parms);
 	    /* If the parm lives nowhere,
 	       use the register where it was passed.  */
@@ -1469,7 +1467,6 @@ sdbout_reg_parms (parms)
 	/* Report parms that live in registers during the function
 	   but were passed in memory.  */
 	if (GET_CODE (DECL_RTL (parms)) == REG
-	    && REGNO (DECL_RTL (parms)) >= 0
 	    && REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER
 	    && PARM_PASSED_IN_MEMORY (parms))
 	  {

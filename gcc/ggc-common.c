@@ -363,6 +363,10 @@ ggc_mark_tree_children (t)
       ggc_mark_rtx (DECL_INCOMING_RTL (t));
       break;
 
+    case FIELD_DECL:
+      ggc_mark_tree (DECL_FIELD_BIT_OFFSET (t));
+      break;
+
     case IDENTIFIER_NODE:
       ggc_mark_string (IDENTIFIER_POINTER (t));
       lang_mark_tree (t);

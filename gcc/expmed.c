@@ -35,18 +35,24 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "recog.h"
 
-static void store_fixed_bit_field	PARAMS ((rtx, int, int, int, rtx,
+static void store_fixed_bit_field	PARAMS ((rtx, unsigned HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT, rtx,
 						 unsigned int));
-static void store_split_bit_field	PARAMS ((rtx, int, int, rtx,
+static void store_split_bit_field	PARAMS ((rtx, unsigned HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT, rtx,
 						 unsigned int));
-static rtx extract_fixed_bit_field	PARAMS ((enum machine_mode, rtx, int,
-						 int, int, rtx, int,
-						 unsigned int));
+static rtx extract_fixed_bit_field	PARAMS ((enum machine_mode, rtx,
+						 unsigned HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT,
+						 rtx, int, unsigned int));
 static rtx mask_rtx			PARAMS ((enum machine_mode, int,
 						 int, int));
 static rtx lshift_value			PARAMS ((enum machine_mode, rtx,
 						 int, int));
-static rtx extract_split_bit_field	PARAMS ((rtx, int, int, int,
+static rtx extract_split_bit_field	PARAMS ((rtx, unsigned HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT, int,
 						 unsigned int));
 static void do_cmp_and_jump		PARAMS ((rtx, rtx, enum rtx_code,
 						 enum machine_mode, rtx));
@@ -225,19 +231,20 @@ negate_rtx (mode, x)
 rtx
 store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
      rtx str_rtx;
-     register int bitsize;
-     int bitnum;
+     unsigned HOST_WIDE_INT bitsize;
+     unsigned HOST_WIDE_INT bitnum;
      enum machine_mode fieldmode;
      rtx value;
      unsigned int align;
-     int total_size;
+     HOST_WIDE_INT total_size;
 {
-  int unit = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
-  register int offset = bitnum / unit;
-  register int bitpos = bitnum % unit;
+  unsigned int unit
+    = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
+  unsigned HOST_WIDE_INT offset = bitnum / unit;
+  unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   register rtx op0 = str_rtx;
 #ifdef HAVE_insv
-  int insv_bitsize;
+  unsigned HOST_WIDE_INT insv_bitsize;
   enum machine_mode op_mode;
 
   op_mode = insn_data[(int) CODE_FOR_insv].operand[3].mode;
@@ -384,10 +391,9 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	 be less than full.
 	 However, only do that if the value is not BLKmode.  */
 
-      int backwards = WORDS_BIG_ENDIAN && fieldmode != BLKmode;
-
-      int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
-      int i;
+      unsigned int backwards = WORDS_BIG_ENDIAN && fieldmode != BLKmode;
+      unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
+      unsigned int i;
 
       /* This is the mode we must force value to, so that there will be enough
 	 subwords to extract.  Note that fieldmode will often (always?) be
@@ -400,10 +406,13 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	{
 	  /* If I is 0, use the low-order word in both field and target;
 	     if I is 1, use the next to lowest word; and so on.  */
-	  int wordnum = (backwards ? nwords - i - 1 : i);
-	  int bit_offset = (backwards
-			    ? MAX (bitsize - (i + 1) * BITS_PER_WORD, 0)
-			    : i * BITS_PER_WORD);
+	  unsigned int wordnum = (backwards ? nwords - i - 1 : i);
+	  unsigned int bit_offset = (backwards
+			    ? MAX ((int) bitsize - ((int) i + 1)
+				   * BITS_PER_WORD,
+				   0)
+			    : (int) i * BITS_PER_WORD);
+
 	  store_bit_field (op0, MIN (BITS_PER_WORD,
 				     bitsize - i * BITS_PER_WORD),
 			   bitnum + bit_offset, word_mode,
@@ -513,7 +522,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
 	  if (bestmode == VOIDmode
 	      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-		  && GET_MODE_SIZE (bestmode) > (int) align))
+		  && GET_MODE_SIZE (bestmode) > align))
 	    goto insv_loses;
 
 	  /* Adjust address to point to the containing unit of that mode.  */
@@ -626,12 +635,12 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 static void
 store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
      register rtx op0;
-     register int offset, bitsize, bitpos;
+     unsigned HOST_WIDE_INT offset, bitsize, bitpos;
      register rtx value;
      unsigned int struct_align;
 {
   register enum machine_mode mode;
-  int total_bits = BITS_PER_WORD;
+  unsigned int total_bits = BITS_PER_WORD;
   rtx subtarget, temp;
   int all_zero = 0;
   int all_one = 0;
@@ -797,12 +806,12 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
 static void
 store_split_bit_field (op0, bitsize, bitpos, value, align)
      rtx op0;
-     int bitsize, bitpos;
+     unsigned HOST_WIDE_INT bitsize, bitpos;
      rtx value;
      unsigned int align;
 {
-  int unit;
-  int bitsdone = 0;
+  unsigned int unit;
+  unsigned int bitsdone = 0;
 
   /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
      much at a time.  */
@@ -831,10 +840,10 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 
   while (bitsdone < bitsize)
     {
-      int thissize;
+      unsigned HOST_WIDE_INT thissize;
       rtx part, word;
-      int thispos;
-      int offset;
+      unsigned HOST_WIDE_INT thispos;
+      unsigned HOST_WIDE_INT offset;
 
       offset = (bitpos + bitsdone) / unit;
       thispos = (bitpos + bitsdone) % unit;
@@ -951,27 +960,28 @@ rtx
 extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		   target, mode, tmode, align, total_size)
      rtx str_rtx;
-     register int bitsize;
-     int bitnum;
+     unsigned HOST_WIDE_INT bitsize;
+     unsigned HOST_WIDE_INT bitnum;
      int unsignedp;
      rtx target;
      enum machine_mode mode, tmode;
      unsigned int align;
-     int total_size;
+     HOST_WIDE_INT total_size;
 {
-  int unit = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
-  register int offset = bitnum / unit;
-  register int bitpos = bitnum % unit;
+  unsigned int unit
+    = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
+  unsigned HOST_WIDE_INT offset = bitnum / unit;
+  unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   register rtx op0 = str_rtx;
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
   enum machine_mode int_mode;
 #ifdef HAVE_extv
-  int extv_bitsize;
+  unsigned HOST_WIDE_INT extv_bitsize;
   enum machine_mode extv_mode;
 #endif
 #ifdef HAVE_extzv
-  int extzv_bitsize;
+  unsigned HOST_WIDE_INT extzv_bitsize;
   enum machine_mode extzv_mode;
 #endif
 
@@ -1107,8 +1117,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	 This is because the most significant word is the one which may
 	 be less than full.  */
 
-      int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
-      int i;
+      unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
+      unsigned int i;
 
       if (target == 0 || GET_CODE (target) != REG)
 	target = gen_reg_rtx (mode);
@@ -1121,13 +1131,15 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  /* If I is 0, use the low-order word in both field and target;
 	     if I is 1, use the next to lowest word; and so on.  */
 	  /* Word number in TARGET to use.  */
-	  int wordnum = (WORDS_BIG_ENDIAN
-			 ? GET_MODE_SIZE (GET_MODE (target)) / UNITS_PER_WORD - i - 1
-			 : i);
+	  unsigned int wordnum
+	    = (WORDS_BIG_ENDIAN
+	       ? GET_MODE_SIZE (GET_MODE (target)) / UNITS_PER_WORD - i - 1
+	       : i);
 	  /* Offset from start of field in OP0.  */
-	  int bit_offset = (WORDS_BIG_ENDIAN
-			    ? MAX (0, bitsize - (i + 1) * BITS_PER_WORD)
-			    : i * BITS_PER_WORD);
+	  unsigned int bit_offset = (WORDS_BIG_ENDIAN
+				     ? MAX (0, ((int) bitsize - ((int) i + 1)
+						* BITS_PER_WORD))
+				     : (int) i * BITS_PER_WORD);
 	  rtx target_part = operand_subword (target, wordnum, 1, VOIDmode);
 	  rtx result_part
 	    = extract_bit_field (op0, MIN (BITS_PER_WORD,
@@ -1149,7 +1161,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	     need to be zero'd out.  */
 	  if (GET_MODE_SIZE (GET_MODE (target)) > nwords * UNITS_PER_WORD)
 	    {
-	      int i,total_words;
+	      unsigned int i, total_words;
 
 	      total_words = GET_MODE_SIZE (GET_MODE (target)) / UNITS_PER_WORD;
 	      for (i = nwords; i < total_words; i++)
@@ -1215,7 +1227,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
 		&& (bitsize + bitpos > extzv_bitsize)))
 	{
-	  int xbitpos = bitpos, xoffset = offset;
+	  unsigned HOST_WIDE_INT xbitpos = bitpos, xoffset = offset;
 	  rtx bitsize_rtx, bitpos_rtx;
 	  rtx last = get_last_insn ();
 	  rtx xop0 = op0;
@@ -1258,7 +1270,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 		  if (bestmode == VOIDmode
 		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-			  && GET_MODE_SIZE (bestmode) > (int) align))
+			  && GET_MODE_SIZE (bestmode) > align))
 		    goto extzv_loses;
 
 		  /* Compute offset as multiple of this unit,
@@ -1396,7 +1408,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 		  if (bestmode == VOIDmode
 		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-			  && GET_MODE_SIZE (bestmode) > (int) align))
+			  && GET_MODE_SIZE (bestmode) > align))
 		    goto extv_loses;
 
 		  /* Compute offset as multiple of this unit,
@@ -1533,11 +1545,11 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 			 target, unsignedp, align)
      enum machine_mode tmode;
      register rtx op0, target;
-     register int offset, bitsize, bitpos;
+     unsigned HOST_WIDE_INT offset, bitsize, bitpos;
      int unsignedp;
      unsigned int align;
 {
-  int total_bits = BITS_PER_WORD;
+  unsigned int total_bits = BITS_PER_WORD;
   enum machine_mode mode;
 
   if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
@@ -1753,11 +1765,12 @@ lshift_value (mode, value, bitpos, bitsize)
 static rtx
 extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
      rtx op0;
-     int bitsize, bitpos, unsignedp;
+     unsigned HOST_WIDE_INT bitsize, bitpos;
+     int unsignedp;
      unsigned int align;
 {
-  int unit;
-  int bitsdone = 0;
+  unsigned int unit;
+  unsigned int bitsdone = 0;
   rtx result = NULL_RTX;
   int first = 1;
 
@@ -1770,10 +1783,10 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 
   while (bitsdone < bitsize)
     {
-      int thissize;
+      unsigned HOST_WIDE_INT thissize;
       rtx part, word;
-      int thispos;
-      int offset;
+      unsigned HOST_WIDE_INT thispos;
+      unsigned HOST_WIDE_INT offset;
 
       offset = (bitpos + bitsdone) / unit;
       thispos = (bitpos + bitsdone) % unit;

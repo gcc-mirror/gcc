@@ -120,8 +120,8 @@ convert_to_integer (type, expr)
 {
   enum tree_code ex_form = TREE_CODE (expr);
   tree intype = TREE_TYPE (expr);
-  int inprec = TYPE_PRECISION (intype);
-  int outprec = TYPE_PRECISION (type);
+  unsigned int inprec = TYPE_PRECISION (intype);
+  unsigned int outprec = TYPE_PRECISION (type);
 
   /* An INTEGER_TYPE cannot be incomplete, but an ENUMERAL_TYPE can
      be.  Consider `enum E = { a, b = (enum E) 3 };'.  */

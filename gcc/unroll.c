@@ -196,7 +196,7 @@ static int *splittable_regs_updates;
 /* Forward declarations.  */
 
 static void init_reg_map PARAMS ((struct inline_remap *, int));
-static rtx calculate_giv_inc PARAMS ((rtx, rtx, int));
+static rtx calculate_giv_inc PARAMS ((rtx, rtx, unsigned int));
 static rtx initial_reg_note_copy PARAMS ((rtx, struct inline_remap *));
 static void final_reg_note_copy PARAMS ((rtx, struct inline_remap *));
 static void copy_loop_body PARAMS ((rtx, rtx, struct inline_remap *, rtx, int,
@@ -234,6 +234,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
      int strength_reduce_p;
 {
   int i, j;
+  unsigned int r;
   unsigned HOST_WIDE_INT temp;
   int unroll_number = 1;
   rtx copy_start, copy_end;
@@ -243,8 +244,8 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
   struct inline_remap *map;
   char *local_label = NULL;
   char *local_regno;
-  int max_local_regnum;
-  int maxregnum;
+  unsigned int max_local_regnum;
+  unsigned int maxregnum;
   rtx exit_label = 0;
   rtx start_label;
   struct iv_class *bl;
@@ -829,11 +830,11 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	 results in better code.  */
       /* We must limit the generic test to max_reg_before_loop, because only
 	 these pseudo registers have valid regno_first_uid info.  */
-      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
-	if (REGNO_FIRST_UID (j) > 0 && REGNO_FIRST_UID (j) <= max_uid_for_loop
-	    && uid_luid[REGNO_FIRST_UID (j)] >= copy_start_luid
-	    && REGNO_LAST_UID (j) > 0 && REGNO_LAST_UID (j) <= max_uid_for_loop
-	    && uid_luid[REGNO_LAST_UID (j)] <= copy_end_luid)
+      for (r = FIRST_PSEUDO_REGISTER; r < max_reg_before_loop; ++r)
+	if (REGNO_FIRST_UID (r) > 0 && REGNO_FIRST_UID (r) <= max_uid_for_loop
+	    && uid_luid[REGNO_FIRST_UID (r)] >= copy_start_luid
+	    && REGNO_LAST_UID (r) > 0 && REGNO_LAST_UID (r) <= max_uid_for_loop
+	    && uid_luid[REGNO_LAST_UID (r)] <= copy_end_luid)
 	  {
 	    /* However, we must also check for loop-carried dependencies.
 	       If the value the pseudo has at the end of iteration X is
@@ -844,26 +845,26 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	       regno_last_uid.  */
 	    /* ??? This check is simplistic.  We would get better code if
 	       this check was more sophisticated.  */
-	    if (set_dominates_use (j, REGNO_FIRST_UID (j), REGNO_LAST_UID (j),
+	    if (set_dominates_use (r, REGNO_FIRST_UID (r), REGNO_LAST_UID (r),
 				   copy_start, copy_end))
-	      local_regno[j] = 1;
+	      local_regno[r] = 1;
 
 	    if (loop_dump_stream)
 	      {
-		if (local_regno[j])
-		  fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
+		if (local_regno[r])
+		  fprintf (loop_dump_stream, "Marked reg %d as local\n", r);
 		else
 		  fprintf (loop_dump_stream, "Did not mark reg %d as local\n",
-			   j);
+			   r);
 	      }
 	  }
       /* Givs that have been created from multiple biv increments always have
 	 local registers.  */
-      for (j = first_increment_giv; j <= last_increment_giv; j++)
+      for (r = first_increment_giv; r <= last_increment_giv; r++)
 	{
-	  local_regno[j] = 1;
+	  local_regno[r] = 1;
 	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
+	    fprintf (loop_dump_stream, "Marked reg %d as local\n", r);
 	}
     }
 
@@ -1080,12 +1081,13 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 		if (local_label[j])
 		  set_label_in_map (map, j, gen_label_rtx ());
 
-	      for (j = FIRST_PSEUDO_REGISTER; j < max_local_regnum; j++)
-		if (local_regno[j])
+	      for (r = FIRST_PSEUDO_REGISTER; r < max_local_regnum; r++)
+		if (local_regno[r])
 		  {
-		    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
-		    record_base_value (REGNO (map->reg_map[j]),
-				       regno_reg_rtx[j], 0);
+		    map->reg_map[r]
+		      = gen_reg_rtx (GET_MODE (regno_reg_rtx[r]));
+		    record_base_value (REGNO (map->reg_map[r]),
+				       regno_reg_rtx[r], 0);
 		  }
 	      /* The last copy needs the compare/branch insns at the end,
 		 so reset copy_end here if the loop ends with a conditional
@@ -1223,12 +1225,12 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	if (local_label[j])
 	  set_label_in_map (map, j, gen_label_rtx ());
 
-      for (j = FIRST_PSEUDO_REGISTER; j < max_local_regnum; j++)
-	if (local_regno[j])
+      for (r = FIRST_PSEUDO_REGISTER; r < max_local_regnum; r++)
+	if (local_regno[r])
 	  {
-	    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
-	    record_base_value (REGNO (map->reg_map[j]),
-			       regno_reg_rtx[j], 0);
+	    map->reg_map[r] = gen_reg_rtx (GET_MODE (regno_reg_rtx[r]));
+	    record_base_value (REGNO (map->reg_map[r]),
+			       regno_reg_rtx[r], 0);
 	  }
 
       /* If loop starts with a branch to the test, then fix it so that
@@ -1532,7 +1534,7 @@ init_reg_map (map, maxregnum)
 static rtx
 calculate_giv_inc (pattern, src_insn, regno)
      rtx pattern, src_insn;
-     int regno;
+     unsigned int regno;
 {
   rtx increment;
   rtx increment_total = 0;
@@ -1763,7 +1765,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	    {
 	      struct iv_class *bl;
 	      struct induction *v, *tv;
-	      int regno = REGNO (SET_DEST (set));
+	      unsigned int regno = REGNO (SET_DEST (set));
 
 	      v = addr_combined_regs[REGNO (SET_DEST (set))];
 	      bl = reg_biv_class[REGNO (v->src_reg)];
@@ -1856,8 +1858,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      && GET_CODE (SET_DEST (set)) == REG
 	      && splittable_regs[REGNO (SET_DEST (set))])
 	    {
-	      int regno = REGNO (SET_DEST (set));
-	      int src_regno;
+	      unsigned int regno = REGNO (SET_DEST (set));
+	      unsigned int src_regno;
 
 	      dest_reg_was_split = 1;
 

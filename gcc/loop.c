@@ -162,7 +162,7 @@ static int num_mem_sets;
 
 /* Bound on pseudo register number before loop optimization.
    A pseudo has valid regscan info if its number is < max_reg_before_loop.  */
-int max_reg_before_loop;
+unsigned int max_reg_before_loop;
 
 /* The value to pass to the next call of reg_scan_update.  */
 static int loop_max_reg;
@@ -194,7 +194,7 @@ struct movable
 				   of any registers used within the LIBCALL.  */
   int consec;			/* Number of consecutive following insns 
 				   that must be moved with this one.  */
-  int regno;			/* The register it sets */
+  unsigned int regno;		/* The register it sets */
   short lifetime;		/* lifetime of that register;
 				   may be adjusted when matching movables
 				   that load the same value are found.  */
@@ -306,7 +306,7 @@ static int insert_loop_mem PARAMS ((rtx *, void *));
 static int replace_loop_mem PARAMS ((rtx *, void *));
 static int replace_loop_reg PARAMS ((rtx *, void *));
 static void note_reg_stored PARAMS ((rtx, rtx, void *));
-static void try_copy_prop PARAMS ((const struct loop *, rtx, int));
+static void try_copy_prop PARAMS ((const struct loop *, rtx, unsigned int));
 static int replace_label PARAMS ((rtx *, void *));
 
 typedef struct rtx_and_int {
@@ -1536,8 +1536,8 @@ regs_match_p (x, y, movables)
      rtx x, y;
      struct movable *movables;
 {
-  int xn = REGNO (x);
-  int yn = REGNO (y);
+  unsigned int xn = REGNO (x);
+  unsigned int yn = REGNO (y);
   struct movable *mx, *my;
 
   for (mx = movables; mx; mx = mx->next)
@@ -3348,8 +3348,8 @@ consec_sets_invariant_p (loop, reg, n_sets, insn)
      int n_sets;
      rtx reg, insn;
 {
-  register rtx p = insn;
-  register int regno = REGNO (reg);
+  rtx p = insn;
+  unsigned int regno = REGNO (reg);
   rtx temp;
   /* Number of sets we have to insist on finding after INSN.  */
   int count = n_sets - 1;
@@ -3657,7 +3657,7 @@ struct iv_class *loop_iv_list;
 /* Givs made from biv increments are always splittable for loop unrolling.
    Since there is no regscan info for them, we have to keep track of them
    separately.  */
-int first_increment_giv, last_increment_giv;
+unsigned int first_increment_giv, last_increment_giv;
 
 /* Communication with routines called via `note_stores'.  */
 
@@ -4089,7 +4089,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 	      && CONSTANT_P (XEXP (src, 1))
 	      && ((increment = biv_total_increment (bl)) != NULL_RTX))
 	    {
-	      int regno = REGNO (XEXP (src, 0));
+	      unsigned int regno = REGNO (XEXP (src, 0));
 
 	      for (bl2 = loop_iv_list; bl2; bl2 = bl2->next)
 		if (bl2->regno == regno)
@@ -4215,7 +4215,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
      markers.  */
   if (n_extra_increment  && ! loop_info->has_volatile)
     {
-      int nregs = first_increment_giv + n_extra_increment;
+      unsigned int nregs = first_increment_giv + n_extra_increment;
 
       /* Reallocate reg_iv_type and reg_iv_info.  */
       VARRAY_GROW (reg_iv_type, nregs);
@@ -8458,7 +8458,7 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
 
 	      if (set && GET_CODE (SET_DEST (set)) == REG)
 		{
-		  int regno = REGNO (SET_DEST (set));
+		  unsigned int regno = REGNO (SET_DEST (set));
 
 		  if (regno < max_reg_before_loop
 		      && REG_IV_TYPE (regno) == GENERAL_INDUCT
@@ -10064,11 +10064,12 @@ note_reg_stored (x, setter, arg)
    There must be exactly one insn that sets this pseudo; it will be
    deleted if all replacements succeed and we can prove that the register
    is not used after the loop.  */
+
 static void
 try_copy_prop (loop, replacement, regno)
      const struct loop *loop;
      rtx replacement;
-     int regno;
+     unsigned int regno;
 {
   /* This is the reg that we are copying from.  */
   rtx reg_rtx = regno_reg_rtx[regno];

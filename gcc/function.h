@@ -399,7 +399,7 @@ struct function
 
   /* 1 + last pseudo register number possibly used for loading a copy
      of a parameter of this function. */
-  int x_max_parm_reg;
+  unsigned int x_max_parm_reg;
 
   /* Vector indexed by REGNO, containing location on stack in which
      to put the parm which is nominally in pseudo register REGNO,

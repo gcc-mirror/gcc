@@ -4998,7 +4998,8 @@ mark_modified_reg (dest, x, data)
      rtx x ATTRIBUTE_UNUSED;
      void *data ATTRIBUTE_UNUSED;
 {
-  int regno, i;
+  int regno;
+  unsigned int i;
 
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
@@ -5286,7 +5287,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
 	  return 1;
 	}
       else
-	return (same_regs[REGNO (x)] == REGNO (y));
+	return (same_regs[REGNO (x)] == (int) REGNO (y));
 
       break;
 
@@ -5310,7 +5311,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
       if (GET_CODE (SET_DEST (x)) == REG
           && GET_CODE (SET_DEST (y)) == REG)
 	{
-          if (same_regs[REGNO (SET_DEST (x))] == REGNO (SET_DEST (y)))
+          if (same_regs[REGNO (SET_DEST (x))] == (int) REGNO (SET_DEST (y)))
 	    {
 	      same_regs[REGNO (SET_DEST (x))] = -1;
 	      num_same_regs--;

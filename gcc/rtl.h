@@ -87,6 +87,7 @@ typedef union rtunion_def
 {
   HOST_WIDE_INT rtwint;
   int rtint;
+  unsigned int rtuint;
   const char *rtstr;
   struct rtx_def *rtx;
   struct rtvec_def *rtvec;
@@ -338,6 +339,7 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 
 #define XCWINT(RTX, N, C)     (RTL_CHECKC1(RTX, N, C).rtwint)
 #define XCINT(RTX, N, C)      (RTL_CHECKC1(RTX, N, C).rtint)
+#define XCUINT(RTX, N, C)     (RTL_CHECKC1(RTX, N, C).rtuint)
 #define XCSTR(RTX, N, C)      (RTL_CHECKC1(RTX, N, C).rtstr)
 #define XCEXP(RTX, N, C)      (RTL_CHECKC1(RTX, N, C).rtx)
 #define XCVEC(RTX, N, C)      (RTL_CHECKC1(RTX, N, C).rtvec)
@@ -613,7 +615,7 @@ extern const char * const note_insn_name[];
 #define LABEL_ALTERNATE_NAME(RTX) XCSTR(RTX, 7, CODE_LABEL)
 
 /* The original regno this ADDRESSOF was built for.  */
-#define ADDRESSOF_REGNO(RTX) XCINT(RTX, 1, ADDRESSOF)
+#define ADDRESSOF_REGNO(RTX) XCUINT(RTX, 1, ADDRESSOF)
 
 /* The variable in the register we took the address of.  */
 #define ADDRESSOF_DECL(RTX) XCTREE(RTX, 2, ADDRESSOF)
@@ -642,7 +644,7 @@ extern const char * const note_insn_name[];
 
 /* For a REG rtx, REGNO extracts the register number.  */
 
-#define REGNO(RTX) XCINT(RTX, 0, REG)
+#define REGNO(RTX) XCUINT(RTX, 0, REG)
 
 /* For a REG rtx, REG_FUNCTION_VALUE_P is nonzero if the reg
    is the current function's return value.  */
@@ -660,7 +662,7 @@ extern const char * const note_insn_name[];
    SUBREG_WORD extracts the word-number.  */
 
 #define SUBREG_REG(RTX) XCEXP(RTX, 0, SUBREG)
-#define SUBREG_WORD(RTX) XCINT(RTX, 1, SUBREG)
+#define SUBREG_WORD(RTX) XCUINT(RTX, 1, SUBREG)
 
 /* 1 if the REG contained in SUBREG_REG is already known to be
    sign- or zero-extended from the mode of the SUBREG to the mode of
@@ -999,8 +1001,10 @@ extern rtx gen_lowpart_if_possible	PARAMS ((enum machine_mode, rtx));
 extern rtx gen_highpart			PARAMS ((enum machine_mode, rtx));
 extern rtx gen_realpart			PARAMS ((enum machine_mode, rtx));
 extern rtx gen_imagpart			PARAMS ((enum machine_mode, rtx));
-extern rtx operand_subword		PARAMS ((rtx, int, int, enum machine_mode));
-extern rtx operand_subword_force	PARAMS ((rtx, int, enum machine_mode));
+extern rtx operand_subword		PARAMS ((rtx, unsigned int, int,
+						 enum machine_mode));
+extern rtx operand_subword_force	PARAMS ((rtx, unsigned int,
+						 enum machine_mode));
 extern int subreg_lowpart_p		PARAMS ((rtx));
 extern rtx make_safe_from		PARAMS ((rtx, rtx));
 extern rtx convert_memory_address	PARAMS ((enum machine_mode, rtx));
@@ -1101,8 +1105,10 @@ extern rtx gen_bge			PARAMS ((rtx));
 extern rtx gen_ble			PARAMS ((rtx));
 extern rtx gen_mem_addressof		PARAMS ((rtx, union tree_node *));
 extern rtx eliminate_constant_term	PARAMS ((rtx, rtx *));
-extern rtx expand_complex_abs		PARAMS ((enum machine_mode, rtx, rtx, int));
-extern enum machine_mode choose_hard_reg_mode PARAMS ((int, int));
+extern rtx expand_complex_abs		PARAMS ((enum machine_mode, rtx, rtx,
+						 int));
+extern enum machine_mode choose_hard_reg_mode PARAMS ((unsigned int,
+						       unsigned int));
 extern void set_unique_reg_note         PARAMS ((rtx, enum reg_note, rtx));
 
 /* Functions in rtlanal.c */
@@ -1126,16 +1132,21 @@ extern int reg_set_p			PARAMS ((rtx, rtx));
 extern rtx single_set			PARAMS ((rtx));
 extern int multiple_sets		PARAMS ((rtx));
 extern rtx find_last_value		PARAMS ((rtx, rtx *, rtx, int));
-extern int refers_to_regno_p		PARAMS ((int, int, rtx, rtx *));
+extern int refers_to_regno_p		PARAMS ((unsigned int, unsigned int,
+						 rtx, rtx *));
 extern int reg_overlap_mentioned_p	PARAMS ((rtx, rtx));
-extern void note_stores			PARAMS ((rtx, void (*)(rtx, rtx, void *), void *));
+extern void note_stores			PARAMS ((rtx,
+						 void (*) (rtx, rtx, void *),
+						 void *));
 extern rtx reg_set_last			PARAMS ((rtx, rtx));
 extern int dead_or_set_p		PARAMS ((rtx, rtx));
-extern int dead_or_set_regno_p		PARAMS ((rtx, int));
+extern int dead_or_set_regno_p		PARAMS ((rtx, unsigned int));
 extern rtx find_reg_note		PARAMS ((rtx, enum reg_note, rtx));
-extern rtx find_regno_note		PARAMS ((rtx, enum reg_note, int));
+extern rtx find_regno_note		PARAMS ((rtx, enum reg_note,
+						 unsigned int));
 extern int find_reg_fusage		PARAMS ((rtx, enum rtx_code, rtx));
-extern int find_regno_fusage		PARAMS ((rtx, enum rtx_code, int));
+extern int find_regno_fusage		PARAMS ((rtx, enum rtx_code,
+						 unsigned int));
 extern void remove_note			PARAMS ((rtx, rtx));
 extern int side_effects_p		PARAMS ((rtx));
 extern int volatile_refs_p		PARAMS ((rtx));
@@ -1143,11 +1154,12 @@ extern int volatile_insn_p		PARAMS ((rtx));
 extern int may_trap_p			PARAMS ((rtx));
 extern int inequality_comparisons_p	PARAMS ((rtx));
 extern rtx replace_rtx			PARAMS ((rtx, rtx, rtx));
-extern rtx replace_regs			PARAMS ((rtx, rtx *, int, int));
+extern rtx replace_regs			PARAMS ((rtx, rtx *, unsigned int,
+						 int));
 extern int computed_jump_p		PARAMS ((rtx));
 typedef int (*rtx_function)             PARAMS ((rtx *, void *));
 extern int for_each_rtx                 PARAMS ((rtx *, rtx_function, void *));
-extern rtx regno_use_in			PARAMS ((int, rtx));
+extern rtx regno_use_in			PARAMS ((unsigned int, rtx));
 extern int auto_inc_p			PARAMS ((rtx));
 extern void remove_node_from_expr_list	PARAMS ((rtx, rtx *));
 extern int insns_safe_to_move_p         PARAMS ((rtx, rtx, rtx *));
@@ -1486,9 +1498,9 @@ extern void remove_unncessary_notes             PARAMS ((void));
 extern void add_clobbers		PARAMS ((rtx, int));
 
 /* In combine.c */
-extern int combine_instructions	PARAMS ((rtx, int));
-extern int extended_count		PARAMS ((rtx, enum machine_mode, int));
-extern rtx remove_death			PARAMS ((int, rtx));
+extern int combine_instructions		PARAMS ((rtx, unsigned int));
+extern unsigned int extended_count	PARAMS ((rtx, enum machine_mode, int));
+extern rtx remove_death			PARAMS ((unsigned int, rtx));
 #ifdef BUFSIZ
 extern void dump_combine_stats		PARAMS ((FILE *));
 extern void dump_combine_total_stats	PARAMS ((FILE *));
@@ -1585,8 +1597,8 @@ extern void init_reg_sets		PARAMS ((void));
 extern void regset_release_memory	PARAMS ((void));
 extern void regclass_init		PARAMS ((void));
 extern void regclass			PARAMS ((rtx, int, FILE *));
-extern void reg_scan			PARAMS ((rtx, int, int));
-extern void reg_scan_update		PARAMS ((rtx, rtx, int));
+extern void reg_scan			PARAMS ((rtx, unsigned int, int));
+extern void reg_scan_update		PARAMS ((rtx, rtx, unsigned int));
 extern void fix_register		PARAMS ((const char *, int, int));
 
 extern void delete_null_pointer_checks	PARAMS ((rtx));

@@ -541,9 +541,12 @@ struct lang_decl_var
   if (TYPE_LANG_SPECIFIC ((T)) == NULL)					\
     {									\
       TYPE_LANG_SPECIFIC ((T)) = 					\
-	(struct lang_type *)xmalloc (sizeof (struct lang_type));	\
-      bzero (TYPE_LANG_SPECIFIC ((T)), sizeof (struct lang_type));	\
+	(struct lang_type *) xmalloc (sizeof (struct lang_type));	\
+									\
+      bzero ((char *) TYPE_LANG_SPECIFIC ((T)),				\
+	     sizeof (struct lang_type));				\
     }
+
 #define TYPE_FINIT_STMT_LIST(T)  (TYPE_LANG_SPECIFIC(T)->finit_stmt_list)
 #define TYPE_CLINIT_STMT_LIST(T) (TYPE_LANG_SPECIFIC(T)->clinit_stmt_list)
 #define TYPE_II_STMT_LIST(T)     (TYPE_LANG_SPECIFIC(T)->ii_block)

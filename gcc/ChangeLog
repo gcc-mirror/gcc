@@ -1,3 +1,283 @@
+Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Rework fields used to describe positions of bitfields and
+	modify sizes to be unsigned and use HOST_WIDE_INT.
+	* alias.c (reg_known_value_size): Now unsigned.
+	* c-typeck.c (build_unary_op, case ADDR_EXPR): Use byte_position.
+	(really_start_incremental_init): Use bitsize_zero_node.
+	(push_init_level, pop_init_level, output_init_element): Likewise.
+	Use bitsize_unit_node and bitsize_one_node.
+	(output_pending_init_elements, process_init_element): Likewise.
+	* combine.c (combine_max_regno, reg_sign_bit_copies): Now unsigned.
+	(make_extraction): Position and length HOST_WIDE_INT and unsigned
+	HOST_WIDE_INT, respectively.
+	(get_pos_from_mask): Passed in value is unsigned HOST_WIDE_INT.
+	(num_sign_bit_copies): Returns unsigned.
+	BITWIDTH now unsigned; rework arithmetic.
+	Remove recursive call from arg to MAX.
+	(combine_instructions, init_reg_last_arrays): NREGS now unsigned.
+	(setup_incoming_promotions, can_combine_p, try_combine, simplify_set):
+	REGNO now unsigned.
+	(set_nonzero_bit_and_sign_copies): NUM now unsigned.
+	(find_split_point, expand_compound_operation, make_extraction): LEN
+	now unsigned HOST_WIDE_INT, POS now HOST_WIDE_INT.
+	(make_field_assignment): Likewise.
+	(combine_simplify_rtx): Add cast.
+	(expand_compound_operation): MODEWIDTH now unsigned; rework arithmetic.
+	(force_to_mode): WIDTH now unsigned; add cast.
+	(if_then_else_cond): SIZE now unsigned.
+	(nonzero_bits): MODE_WIDTH, RESULT_WIDTH, and WIDTH now unsigned.
+	(extended_count): Now returns unsigned.
+	(simplify_shift_const): COUNT unsigned; arg is now INPUT_COUNT.
+	Add SIGNED_COUNT variable; MODE_WORDS and FIRST_COUNT now unsigned.
+	(simplify_comparison): MODE_WIDTH now unsigned.
+	(update_table_tick): REGNO and ENDREGNO now unsigned; new var R.
+	(mark_used_regs_combine): Likewise; rework arithmetic.
+	(record_value_for_reg): REGNO, ENDREGNO, and I now unsigned.
+	(record_dead_and_set_regs, reg_dead_at_p, distribute_notes): Likewise.
+	(record_promoted_value): REGNO now unsigned.
+	(get_last_value_validate): REGNO, ENDREGNO, and J now unsigned.
+	(get_last_value): REGNO now unsigned.
+	(use_crosses_set_p): REGNO and ENDREGNO now unsigned.
+	(reg_dead_regno, reg_dead_endregno): Now unsigned.
+	(remove_death): Arg REGNO now unsigned.
+	(move_deaths):  REGNO, DEADREGNO, DEADEND, OUREND, and I now unsigned.
+	(reg_bitfield_target_p): REGNO, REGNO, ENDREGNO, and ENDTREGNO
+	now unsigned.
+	* convert.c (convert_to_integer): INPREC and OUTPREC now unsigned.
+	* cse.c (struct qty_table_elem): FIRST_REG and LAST_REG now unsigned.
+	(struct cse_reg_info): REGNO now unsigned.
+	(cached_regno): Now unsigned.
+	(REGNO_QTY_VALID_P): Add cast.
+	(make_new_qty, make_regs_eqv, delete_reg_eqiv): Regno args unsigned.
+	(remove_invalid_regs): Likewise.
+	(remove_invalid_subreg_refs): Likewise; arg WORD also unsigned
+	as are variables END and I.
+	(get_cse_reg_info, insert): Likewise.
+	(mention_regs, invalidate_for_call): REGNO, ENDREGNO, and I unsigned.
+	(canon_hash): Likewise.
+	(insert_regs, lookup_for_remove): REGNO now unsigned.
+	(invalidate): REGNO, ENDREGNO, TREGNO, and TENDREGNO now unsigned.
+	New variable RN.
+	* dbxout.c (dbxout_parms, dbxout_reg_parms): Don't check for REGNO < 0.
+	* dwarf2out.c (dwarf2ou_frame_debug_expr): Remove cast.
+	* emit-rtl.c (subreg_realpart_p): Add cast.
+	(operand_subword): Arg I is now unsigned as is var PARTWORDS.
+	(operand_subword_force): Arg I is now unsigned.
+	* except.c (eh_regs): Variable I is now unsigned.
+	* explow.c (hard_function_value): BYTES is unsigned HOST_WIDE_INT.
+	* expmed.c (store_fixed_bit_field): Position is HOST_WIDE_INT;
+	length is unsigned HOST_WIDE_INT; likewise for internal variables.
+	(store_split_bit_field, extract_fixed_bit_field): Likewise.
+	(extract_split_bit_field, store_bit_field, extract_bit_field):
+	Likewise.
+	* expr.c (store_constructor_fields, store_constructor, store_field):
+	Positions are HOST_WIDE_INT and lengths are unsigned HOST_WIDE_INT.
+	(expand_assignment, expand_expr, expand_expr_unaligned): Likewise.
+	(do_jump): Likewise.
+	(move_by_pieces, move_by_pieces_ninsns, clear_by_pieces):
+	MAX_SIZE is now unsigned.
+	(emit_group_load): BYTEPOS is HOST_WIDE_INT; BYTELEN is unsigned.
+	(emit_group_store): Likewise.
+	(emit_move_insn): I now unsigned.
+	(store_constructor): Use host_integerp, tree_low_cst, and
+	bitsize_unit_node.
+	(get_inner_reference): Return bitpos and bitsize as HOST_WIDE_INT.
+	Rework all calculations to use trees and new fields.
+	* expr.h (promoted_input_arg): Regno now unsigned.
+	(store_bit_field, extract_bit_field): Adjust types of pos and size.
+	(mark_seen_cases): Arg is HOST_WIDE_INT.
+	* flow.c (verify_wide_reg_1): REGNO now unsigned.
+	* fold-const.c (decode_field_reference): Size and pos HOST_WIDE_INT;
+	precisions and alignments are unsigned.
+	(optimize_bit_field_compare, fold_truthop): Likewise.
+	(int_const_binop): Adjust threshold for size_int_type_wide call.
+	(fold_convert): Likewise.
+	(size_int_type_wide): Make table larger and fix thinko that only
+	had half of table used.
+	(all_ones_mask_p, fold): Precisions are unsigned.
+	* function.c (put_reg_info_stack): REGNO is unsigned.
+	(instantiate_decl): Size is HOST_WIDE_INT.
+	(instantiate_virtual_regs): I is unsigned.
+	(assign_parms): REGNO, REGNOI, and REGNOR are unsigned.
+	(promoted_input_arg): REGNO is unsigned.
+	* function.h (struct function): x_max_parm_reg is now unsigned.
+	* gcse.c (max_gcse_regno): Now unsigned.
+	(struct null_pointer_info): min_reg and max_reg now unsigned.
+	(lookup_set, next_set): REGNO arg now unsigned.
+	(compute_hash_table): REGNO and I now unsigned.
+	(handle_avail_expr): regnum_for_replacing now unsigned.
+	(cprop_insn): REGNO now unsigned.
+	(delete_null_pointer_checks_1): BLOCK_REG now pointer to unsigned.
+	* ggc-common.c (ggc_mark_tree_children, case FIELD_DECL): New case.
+	* global.c (set_preference): SRC_REGNO, DEST_REGNO, and I now unsigned.
+	* hard-reg-set.h (reg_class_size): Now unsigned.
+	* integrate.c (mark_stores): LAST_REG and I now unsigned; new UREGNO.
+	* jump.c (mark_modified_reg): I now unsigned; add cast.
+	(rtx_equal_for_thread_p): Add cast.
+	* loop.c (max_reg_before_loop): Now unsigned.
+	(struct_movable): REGNO now unsigned.
+	(try_copy_prop): REGNO arg unsigned.
+	(regs_match_p): XN and YN now unsigned.
+	(consec_sets_invariant_p, maybe_eliminate_biv): REGNO now unsigned.
+	(strength_reduce): Likewise; NREGS also unsigned.
+	(first_increment_giv, last_increment_giv unsigned): Now unsigned.
+	* loop.h (struct iv_class): REGNO now unsigned.
+	(max_reg_before_loop, first_increment_giv, last_increment_giv):
+	Now unsigned.
+	* machmode.h (mode_size, mode_unit_size): Now unsigned.
+	(mode_for_size, smallest_mode_for_size): Pass size as unsigned.
+	* optabs.c (expand_binop): I and NWORDS now unsigned.
+	(expand_unop): I now unsigned.
+	* print-tree.c (print_node): Don't print DECL_FIELD_BITPOS, but do
+	print DECL_FIELD_OFFSET and DECL_FIELD_BIT_OFFSET.
+	* real.c (significand_size): Now returns unsigned.
+	* real.h (significand_size): Likewise.
+	* regclass.c (reg_class_size): Now unsigned.
+	(choose_hard_reg_mode): Both operands now unsigned.
+	(record_reg_classes): REGNO and NR now unsigned.
+	(reg_scan): NREGS now unsigned.
+	(reg_scan_update): old_max_regno now unsigned.
+	(reg_scan_mark_refs): Arg MIN_REGNO and var REGNO now unsigned.
+	* reload.c (find_valid_class): BEST_SIZE now unsigned.
+	(find_dummy_reload): REGNO, NWORDS, and	I now unsigned.
+	(hard_reg_set_here_p): Args BEG_REGNO and END_REGNO now unsigned.
+	Likewise for variable R.
+	(refers_to_regno_for_reload_p): Args REGNO and END_REGNO now unsigned,
+	as are variables INNER_REGNO and INNER_ENDREGNO; add new variable R.
+	(find_equiv_reg): Add casts.
+	(regno_clobbered_p): Arg REGNO now unsigned.
+	* reload.h (struct reload): NREGS now unsigned.
+	(refers_to_regno_for_reload_p): Regno args are unsigned.
+	(regno_clobbered_p): Likewise.
+	* reload1.c (reg_max_ref_width, spill_stack_slot_width): Now unsigned.
+	(compute_use_by_pseudos): REGNO now unsigned.
+	(find_reg): I and J now unsigned, new variable K, and change loop
+	variables accordingly; THIS_NREGS now unsigned.
+	(alter_reg): INHERENT_SIZE and TOTAL_SIZE now unsigned.
+	(spill_hard_reg): REGNO arg now unsigned; add casts.
+	(forget_old_reloads_1): REGNO, NR, and I now unsigned.
+	(mark_reload_reg_in_use): Arg REGNO and vars NREGS and I now unsigned.
+	(clear_reload_reg_in_use): Arg REGNO and vars NREGS, START_REGNO,
+	END_REGNO, CONFLICT_START, and CONFLICT_END now unsigned.
+	(reload_reg_free_p, reload_reg_reaches_end_p): Arg REGNO now unsigned.
+	(choose_reload_regs): MAX_GROUP_SIZE now unsigned.
+	(emit_reload_insns): REGNO now unsigned.
+	(reload_cse_move2add): Add cast.
+	(move2add_note_store): REGNO and I now unsigned; new variable ENDREGNO
+	and rework loop.
+	* resource.c (mark_referenced_resources, mark_set_resources): New
+	variable R; REGNO and LAST_REGNO now unsigned.
+	(mark_target_live_regs): J and REGNO now unsigned.
+	* rtl.c (mode_size, mode_unit_size): Now unsigned.
+	* rtl.h (union rtunion_def): New field rtuint.
+	(XCUINT): New macro.
+	(ADDRESSOF_REGNO, REGNO, SUBREG_WORD): New XCUINT.
+	(operand_subword, operand_subword_force): Word number is unsigned.
+	(choose_hard_reg_mode): Operands are unsigned.
+	(refers_to-regno_p, dead_or_set_regno_p): Regno arg is unsigned.
+	(find_regno_note, find_regno_fusage, replace_regs): Likewise.
+	(regno_use_in, combine_instructions, remove_death): Likewise.
+	(reg_scan, reg_scan_update): Likewise.
+	(extended_count): Return is unsigned.
+	* rtlanal.c (refers_to_regno_p): Args REGNO and ENDREGNO and vars I,
+	INNER_REGNO, and INNER_ENDREGNO now unsigned; new variable X_REGNO.
+	(reg_overlap_mentioned_p): REGNO and ENDREGNO now unsigned.
+	(reg_set_last_first_regno, reg_set_last_last_regno): Now unsigned.
+	(reg_reg_last_1): FIRS and LAST now unsigned.
+	(dead_or_set_p): REGNO, LAST_REGNO, and I now unsigned.
+	(dead_or_set_regno_p): Arg TEST_REGNO and vars REGNO and ENDREGNO
+	now unsigned.
+	(find_regno_note, regno_use_in): Arg REGNO now unsigned.
+	(find_regno_fusage): Likewise; also var REGNOTE now unsigned.
+	(find_reg_fusage): Variables REGNO, END_REGNO, and I now unsigned.
+	(replace_regs): Arg NREGS now unsigned.
+	* sdbout.c (sdbout_parms, sdbout_reg_parms): Don't check REGNO < 0.
+	* simplify-rtx.c (simplify_unary_operation): WIDTH now unsigned.
+	(simplify_binary_operation): Likewise.
+	(cselib_invalidate_regno): Arg REGNO and variables ENDREGNO, I, and
+	THIS_LAST now unsigned.
+	(cselib_record_set): Add cast.
+	* ssa.c (ssa_max_reg_num): Now unsigned.
+	(rename_block): REGNO now unsigned.
+	* stmt.c (expand_return): Bit positions unsigned HOST_WIDE_INT;
+	sizes now unsigned.
+	(all_cases_count): Just return -1 not -2.
+	COUNT, MINVAL, and LASTVAL now HOST_WIDE_INT.
+	Rework tests to use trees whenever possible.
+	Use host_integerp and tree_low_cst.
+	(mark_seen_cases): COUNT arg now HOST_WIDE_INT;
+	Likewise variable NEXT_NODE_OFFSET; XLO now unsigned.
+	(check_for_full_enumeration_handing): BYTES_NEEDED, I to HOST_WIDE_INT.
+	* stor-layout.c (mode_for_size): SIZE arg now unsigned.
+	(smallest_mode_for_size): Likewise.
+	(layout_decl): Simplify handing of a specified DECL_SIZE_UNIT.
+	KNOWN_ALIGN is now an alignment, so simplify code.
+	Don't turn off DECL_BIT_FIELD if field is BLKmode, but not type.
+	(start_record_layout): Renamed from new_record_layout_info.
+	Update to new fields.
+	(debug_rli, normalize_rli, rli_size_unit_so_far, rli_size_so_far):
+	New functions.
+	(place_union_field): Renamed from layout_union_field.
+	Update to use new fields in rli.
+	(place_field): Renamed from layout_field.
+	Major rewrite to use new fields in rli; pass alignment to layout_decl.
+	(finalize_record_size): Rework to use new fields in rli and handle
+	union.
+	(compute_record_mode): Rework to simplify and to use new DECL fields.
+	(finalize_type_size): Make rounding more consistent.
+	(finish_union_layout): Deleted.
+	(layout_type, case VOID_TYPE): Don't set TYPE_SIZE_UNIT either.
+	(layout_type, case RECORD_TYPE): Call new function names.
+	(initialize_sizetypes): Set TYPE_IS_SIZETYPE.
+	(set_sizetype): Set TYPE_IS_SIZETYPE earlier.
+	(get_best_mode): UNIT is now unsigned; remove casts.
+	* tree.c (bit_position): Compute from new fields.
+	(byte_position, int_byte_position): New functions.
+	(print_type_hash_statistics): Cast to remove warning.
+	(build_range_type): Use host_integerp and tree_low_cst to try to hash.
+	(build_index_type): Likewise; make subtype of sizetype.
+	(build_index_2_type): Pass sizetype to build_range_type.
+	(build_common_tree_nodes): Use size_int and bitsize_int to
+	initialize nodes; add bitsize_{zero,one,unit}_node.
+	* tree.h (DECL_FIELD_CONTEXT): Use FIELD_DECL_CHECK.
+	(DECL_BIT_FIELD_TYPE, DECL_QUALIFIER, DECL_FCONTEXT): Likewise.
+	(DECL_PACKED, DECL_BIT_FIELD): Likewise.
+	(DECL_FIELD_BITPOS): Deleted.
+	(DECL_FIELD_OFFSET, DECL_FIELD_BIT_OFFSET): New fields.
+	(DECL_RESULT, DECL_SAVED_INSNS): Use FUNCTION_DECL_CHECK.
+	(DECL_FRAME_SIZE, DECL_FUNCTION_CODE, DECL_NO_STATIC_CHAIN): Likewise.
+	(DECL_INLINE, DECL_BUILT_IN_NONANSI, DECL_IS_MALLOC): Likewise.
+	(DECL_BUILT_IN_CLASS, DECL_STATIC_CONSTRUCTOR): Likewise.
+	(DECL_STATIC_DESTRUCTOR, DECL_NO_CHECK_MEMORY_USAGE): Likewise.
+	(DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT, DECL_NO_LIMIT_STACK) Likewise.
+	(DECL_ORIGINAL_TYPE, TYPE_DECL_SUPPRESS_DEBUG): Use TYPE_DECL_CHECK.
+	(DECL_ARG_TYPE_AS_WRITEN, DECL_ARG_TYPE): Use PARM_DECL_CHECK.
+	(DECL_INCOMING_RTL, DECL_TRANSPARENT_UNION): Likewise.
+	(DECL_ALIGN): Adjust to new field in union.
+	(DECL_OFFSET_ALIGN): New field.
+	(DECL_ERROR_ISSUED, DECL_TOO_LATE): Use LABEL_DECL_CHECK.
+	(DECL_IN_TEXT_SECTION): Use VAR_DECL_CHECK.
+	(union tree_decl): Add struct for both aligns.
+	(enum tree_index): Add TI_BITSIZE_{ZERO,ONE,UNIT}.
+	(bitsize_zero_node, bitsize_one_node, bitsize_unit_node): Added.
+	(struct record_layout_info): Rework fields to have offset
+	alignment and byte and bit position.
+	(start_record_layout, place_field): Renamed from old names.
+	(rli_size_so_far, rli_size_unit_so_far, normalize_rli): New decls.
+	(byte_position, int_byte_position): Likewise.
+	(get_inner_reference): Change types of position and length.
+	* unroll.c (unroll_loop): New variable R; use for some loops.
+	MAX_LOCAL_REGNUM and MAXREGNUM now unsigned.
+	(calculate_giv_inc): Arg REGNO now unsigned.
+	(copy_loop_body): REGNO and SRC_REGNO now unsigned.
+	* varasm.c (assemble_variable): Clean up handling of size using
+	host_integerp and tree_low_cst.
+	(decode_addr_const): Use byte, not bit, position.
+	(output_constructor): bitpos and offsets are HOST_WIDE_INT;
+	use tree_low_cst and int_bit_position.
+	* objc/objc-act.c (build_ivar_list_initializer): Use byte_position.
+	
 Fri Mar 24 20:13:49 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* bb-reorder.c (REORDER_MOVED_BLOCK_END): Removed.

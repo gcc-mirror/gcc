@@ -622,7 +622,7 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
   else if (GET_RTX_LENGTH (code) == 1
 	   && GET_RTX_FORMAT (code)[0] == 's')
     {
-      char * arg0 = va_arg (p, char *);
+      char *arg0 = va_arg (p, char *);
 
       if (code == SYMBOL_REF)
 	arg0 = attr_string (arg0, strlen (arg0));

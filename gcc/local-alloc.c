@@ -1252,9 +1252,10 @@ block_alloc (b)
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    if (REG_NOTE_KIND (link) == REG_DEAD
 		&& GET_CODE (XEXP (link, 0)) == REG
-		&& combined_regno != REGNO (XEXP (link, 0))
-		&& (no_conflict_combined_regno != REGNO (XEXP (link, 0))
-		    || ! find_reg_note (insn, REG_NO_CONFLICT, XEXP (link, 0))))
+		&& combined_regno != (int) REGNO (XEXP (link, 0))
+		&& (no_conflict_combined_regno != (int) REGNO (XEXP (link, 0))
+		    || ! find_reg_note (insn, REG_NO_CONFLICT,
+					XEXP (link, 0))))
 	      wipe_dead_reg (XEXP (link, 0), 0);
 
 	  /* Allocate qty numbers for all registers local to this block

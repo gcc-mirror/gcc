@@ -2579,7 +2579,7 @@ verify_wide_reg_1 (px, pregno)
      void *pregno;
 {
   rtx x = *px;
-  int regno = *(int *) pregno;
+  unsigned int regno = *(int *) pregno;
 
   if (GET_CODE (x) == REG && REGNO (x) == regno)
     {

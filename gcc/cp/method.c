@@ -1228,7 +1228,7 @@ build_mangled_name (parmtypes, begin, end)
 
   if (end) 
     OB_FINISH ();
-  return (char *)obstack_base (&scratch_obstack);
+  return (char *) obstack_base (&scratch_obstack);
 }
 
 /* Emit modifiers such as constant, read-only, and volatile.  */

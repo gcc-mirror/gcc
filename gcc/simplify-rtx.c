@@ -149,7 +149,7 @@ simplify_unary_operation (code, mode, op, op_mode)
      rtx op;
      enum machine_mode op_mode;
 {
-  register int width = GET_MODE_BITSIZE (mode);
+  unsigned int width = GET_MODE_BITSIZE (mode);
 
   /* The order of these tests is critical so that, for example, we don't
      check the wrong mode (input vs. output) for a conversion operation,
@@ -550,7 +550,7 @@ simplify_binary_operation (code, mode, op0, op1)
 {
   register HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
   HOST_WIDE_INT val;
-  int width = GET_MODE_BITSIZE (mode);
+  unsigned int width = GET_MODE_BITSIZE (mode);
   rtx tem;
 
   /* Relational operations don't work here.  We must know the mode
@@ -1975,16 +1975,20 @@ static int discard_useless_locs		PARAMS ((void **, void *));
 static int discard_useless_values	PARAMS ((void **, void *));
 static void remove_useless_values	PARAMS ((void));
 static unsigned int hash_rtx		PARAMS ((rtx, enum machine_mode, int));
-static cselib_val *new_cselib_val	PARAMS ((unsigned int, enum machine_mode));
-static void add_mem_for_addr		PARAMS ((cselib_val *, cselib_val *, rtx));
+static cselib_val *new_cselib_val	PARAMS ((unsigned int,
+						 enum machine_mode));
+static void add_mem_for_addr		PARAMS ((cselib_val *, cselib_val *,
+						 rtx));
 static cselib_val *cselib_lookup_mem	PARAMS ((rtx, int));
 static rtx cselib_subst_to_values	PARAMS ((rtx));
-static void cselib_invalidate_regno	PARAMS ((int, enum machine_mode));
+static void cselib_invalidate_regno	PARAMS ((unsigned int,
+						 enum machine_mode));
 static int cselib_mem_conflict_p	PARAMS ((rtx, rtx));
 static int cselib_invalidate_mem_1	PARAMS ((void **, void *));
 static void cselib_invalidate_mem	PARAMS ((rtx));
 static void cselib_invalidate_rtx	PARAMS ((rtx, rtx, void *));
-static void cselib_record_set		PARAMS ((rtx, cselib_val *, cselib_val *));
+static void cselib_record_set		PARAMS ((rtx, cselib_val *,
+						 cselib_val *));
 static void cselib_record_sets		PARAMS ((rtx));
 
 /* There are three ways in which cselib can look up an rtx:
@@ -2779,13 +2783,14 @@ cselib_lookup (x, mode, create)
    is used to determine how many hard registers are being changed.  If MODE
    is VOIDmode, then only REGNO is being changed; this is used when
    invalidating call clobbered registers across a call.  */
+
 static void
 cselib_invalidate_regno (regno, mode)
-     int regno;
+     unsigned int regno;
      enum machine_mode mode;
 {
-  int endregno;
-  int i;
+  unsigned int endregno;
+  unsigned int i;
 
   /* If we see pseudos after reload, something is _wrong_.  */
   if (reload_completed && regno >= FIRST_PSEUDO_REGISTER
@@ -2810,15 +2815,17 @@ cselib_invalidate_regno (regno, mode)
 	{
 	  cselib_val *v = (*l)->elt;
 	  struct elt_loc_list **p;
-	  int this_last = i;
+	  unsigned int this_last = i;
 
 	  if (i < FIRST_PSEUDO_REGISTER)
 	    this_last += HARD_REGNO_NREGS (i, GET_MODE (v->u.val_rtx)) - 1;
+
 	  if (this_last < regno)
 	    {
 	      l = &(*l)->next;
 	      continue;
 	    }
+
 	  /* We have an overlap.  */
 	  unchain_one_elt_list (l);
 
@@ -2827,6 +2834,7 @@ cselib_invalidate_regno (regno, mode)
 	  for (p = &v->locs; ; p = &(*p)->next)
 	    {
 	      rtx x = (*p)->loc;
+
 	      if (GET_CODE (x) == REG && REGNO (x) == i)
 		{
 		  unchain_one_elt_loc_list (p);
@@ -2986,12 +2994,13 @@ cselib_invalidate_rtx (dest, ignore, data)
 /* Record the result of a SET instruction.  DEST is being set; the source
    contains the value described by SRC_ELT.  If DEST is a MEM, DEST_ADDR_ELT
    describes its address.  */
+
 static void
 cselib_record_set (dest, src_elt, dest_addr_elt)
      rtx dest;
      cselib_val *src_elt, *dest_addr_elt;
 {
-  int dreg = GET_CODE (dest) == REG ? REGNO (dest) : -1;
+  int dreg = GET_CODE (dest) == REG ? (int) REGNO (dest) : -1;
 
   if (src_elt == 0 || side_effects_p (dest))
     return;

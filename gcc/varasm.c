@@ -1331,7 +1331,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 {
   register const char *name;
   unsigned int align;
-  tree size_tree = NULL_TREE;
   int reloc = 0;
   enum in_section saved_in_section;
 
@@ -1423,21 +1422,11 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   app_disable ();
 
-  if (! dont_output_data)
+  if (! dont_output_data
+      && ! host_integerp (DECL_SIZE_UNIT (decl), 1))
     {
-      unsigned int size;
-
-      if (TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST)
-	goto finish;
-
-      size_tree = DECL_SIZE_UNIT (decl);
-      size = TREE_INT_CST_LOW (size_tree);
-
-      if (compare_tree_int (size_tree, size) != 0)
-	{
-	  error_with_decl (decl, "size of variable `%s' is too large");
-	  goto finish;
-	}
+      error_with_decl (decl, "size of variable `%s' is too large");
+      goto finish;
     }
 
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
@@ -1503,12 +1492,14 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       && DECL_SECTION_NAME (decl) == NULL_TREE
       && ! dont_output_data)
     {
-      int size = TREE_INT_CST_LOW (size_tree);
-      int rounded = size;
+      unsigned HOST_WIDE_INT size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+      unsigned HOST_WIDE_INT rounded = size;
 
       /* Don't allocate zero bytes of common,
 	 since that means "undefined external" in the linker.  */
-      if (size == 0) rounded = 1;
+      if (size == 0)
+	rounded = 1;
+
       /* Round size up to multiple of BIGGEST_ALIGNMENT bits
 	 so that each uninitialized object starts on such a boundary.  */
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
@@ -1516,7 +1507,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
       
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
-      if ((DECL_ALIGN (decl) / BITS_PER_UNIT) > (unsigned int) rounded)
+      if (DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
          warning_with_decl 
            (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
 #endif
@@ -1650,10 +1641,11 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     {
       if (DECL_INITIAL (decl))
 	/* Output the actual data.  */
-	output_constant (DECL_INITIAL (decl), TREE_INT_CST_LOW (size_tree));
+	output_constant (DECL_INITIAL (decl),
+			 tree_low_cst (DECL_SIZE_UNIT (decl), 1));
       else
 	/* Leave space for it.  */
-	assemble_zeros (TREE_INT_CST_LOW (size_tree));
+	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
     }
 
  finish:
@@ -2279,22 +2271,16 @@ decode_addr_const (exp, value)
   while (1)
     {
       if (TREE_CODE (target) == COMPONENT_REF
-	  && host_integerp (bit_position (TREE_OPERAND (target, 1)), 0))
+	  && host_integerp (byte_position (TREE_OPERAND (target, 1)), 0))
 
 	{
-	  offset
-	    += int_bit_position (TREE_OPERAND (target, 1)) / BITS_PER_UNIT;
-
+	  offset += int_byte_position (TREE_OPERAND (target, 1));
 	  target = TREE_OPERAND (target, 0);
 	}
       else if (TREE_CODE (target) == ARRAY_REF)
 	{
-	  if (TREE_CODE (TREE_OPERAND (target, 1)) != INTEGER_CST
-	      || TREE_CODE (TYPE_SIZE (TREE_TYPE (target))) != INTEGER_CST)
-	    abort ();
-	  offset += ((TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (target)))
-		      * TREE_INT_CST_LOW (TREE_OPERAND (target, 1)))
-		     / BITS_PER_UNIT);
+	  offset += (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (target)), 1)
+		     * tree_low_cst (TREE_OPERAND (target, 1), 0));
 	  target = TREE_OPERAND (target, 0);
 	}
       else
@@ -4420,13 +4406,12 @@ output_constructor (exp, size)
 	  register int fieldsize;
 	  /* Since this structure is static,
 	     we know the positions are constant.  */
-	  int bitpos = (field ? (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
-				 / BITS_PER_UNIT)
-			: 0);
+	  HOST_WIDE_INT bitpos = field ? int_byte_position (field) : 0;
+
 	  if (index != 0)
-	    bitpos = (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (val)))
-		      / BITS_PER_UNIT
-		      * (TREE_INT_CST_LOW (index) - min_index));
+	    bitpos
+	      = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (val)), 1)
+		* (tree_low_cst (index, 0) - min_index));
 
 	  /* Output any buffered-up bit-fields preceding this element.  */
 	  if (byte_buffer_in_use)
@@ -4472,9 +4457,9 @@ output_constructor (exp, size)
 	{
 	  /* Element that is a bit-field.  */
 
-	  int next_offset = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
-	  int end_offset
-	    = (next_offset + TREE_INT_CST_LOW (DECL_SIZE (field)));
+	  HOST_WIDE_INT next_offset = int_bit_position (field);
+	  HOST_WIDE_INT end_offset
+	    = (next_offset + tree_low_cst (DECL_SIZE (field), 1));
 
 	  if (val == 0)
 	    val = integer_zero_node;
@@ -4572,17 +4557,15 @@ output_constructor (exp, size)
 		     take first the least significant bits of the value
 		     and pack them starting at the least significant
 		     bits of the bytes.  */
-		  shift = (next_offset
-			   - TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)));
+		  shift = next_offset - int_bit_position (field);
+
 		  /* Don't try to take a bunch of bits that cross
 		     the word boundary in the INTEGER_CST. We can
 		     only select bits from the LOW or HIGH part
 		     not from both.  */
 		  if (shift < HOST_BITS_PER_WIDE_INT
 		      && shift + this_time > HOST_BITS_PER_WIDE_INT)
-		    {
-		      this_time = (HOST_BITS_PER_WIDE_INT - shift);
-		    }
+		    this_time = (HOST_BITS_PER_WIDE_INT - shift);
 
 		  /* Now get the bits from the appropriate constant word.  */
 		  if (shift < HOST_BITS_PER_WIDE_INT)
@@ -4594,6 +4577,7 @@ output_constructor (exp, size)
 		    }
 		  else
 		    abort ();
+
 		  /* Get the result. This works only when:
 		     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 		  byte |= (((value >> shift)

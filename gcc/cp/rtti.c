@@ -513,30 +513,23 @@ get_base_offset (binfo, parent)
      tree binfo;
      tree parent;
 {
-  tree offset;
-  
-  if (!TREE_VIA_VIRTUAL (binfo))
-    offset = BINFO_OFFSET (binfo);
-  else if (!vbase_offsets_in_vtable_p ())
+  if (! TREE_VIA_VIRTUAL (binfo))
+    return BINFO_OFFSET (binfo);
+  else if (! vbase_offsets_in_vtable_p ())
     {
-      tree t = BINFO_TYPE (binfo);
       const char *name;
-      tree field;
     
-      FORMAT_VBASE_NAME (name, t);
-      field = lookup_field (parent, get_identifier (name), 0, 0);
-      offset = size_binop (FLOOR_DIV_EXPR, bit_position (field), 
-    		           bitsize_int (BITS_PER_UNIT));
-      offset = convert (sizetype, offset);
+      FORMAT_VBASE_NAME (name, BINFO_TYPE (binfo));
+      return byte_position (lookup_field (parent, get_identifier (name),
+					  0, 0));
     }
   else
-    {
-      /* Under the new ABI, we store the vtable offset at which
-         the virtual base offset can be found.  */
-      tree vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), parent);
-      offset = convert (sizetype, BINFO_VPTR_FIELD (vbase));
-    }
-  return offset;
+    /* Under the new ABI, we store the vtable offset at which
+       the virtual base offset can be found.  */
+    return convert (sizetype,
+		    BINFO_VPTR_FIELD (BINFO_FOR_VBASE (BINFO_TYPE (binfo),
+						       parent)));
+
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
@@ -941,7 +934,7 @@ expand_class_desc (tdecl, type)
 
       fields [2] = build_lang_decl (FIELD_DECL, NULL_TREE, boolean_type_node);
       DECL_BIT_FIELD (fields[2]) = 1;
-      DECL_SIZE (fields[2]) = bitsize_int (1);
+      DECL_SIZE (fields[2]) = bitsize_one_node;
 
       /* Actually enum access */
       fields [3] = build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node);

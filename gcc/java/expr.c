@@ -575,11 +575,8 @@ build_java_ret (location)
 
 /* Array core info access macros */
 
-#define JAVA_ARRAY_LENGTH_OFFSET(A)					   \
-  size_binop (CEIL_DIV_EXPR, 						   \
-	      (DECL_FIELD_BITPOS					   \
-		  (TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (TREE_TYPE (A)))))), \
-              bitsize_int (BITS_PER_UNIT))
+#define JAVA_ARRAY_LENGTH_OFFSET(A) \
+  byte_position (TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (TREE_TYPE (A)))))
 
 tree
 decode_newarray_type (atype)
@@ -690,10 +687,11 @@ java_array_data_offset (array)
 {
   tree array_type = TREE_TYPE (TREE_TYPE (array));
   tree data_fld = TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (array_type)));
+
   if (data_fld == NULL_TREE)
     return size_in_bytes (array_type);
   else
-    return build_int_2 (int_bit_position (data_fld) / BITS_PER_UNIT, 0);
+    return byte_position (data_fld);
 }
 
 /* Implement array indexing (either as l-value or r-value).

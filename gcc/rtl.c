@@ -136,7 +136,7 @@ const enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  SIZE,
 
-const int mode_size[(int) MAX_MACHINE_MODE] = {
+const unsigned int mode_size[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"
 };
 
@@ -147,7 +147,7 @@ const int mode_size[(int) MAX_MACHINE_MODE] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  UNIT,
 
-const int mode_unit_size[(int) MAX_MACHINE_MODE] = {
+const unsigned int mode_unit_size[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 

@@ -1453,7 +1453,8 @@ check_missing_cases (type)
   unsigned char *cases_seen;
   /* The number of possible selector values. */
   HOST_WIDE_INT size = all_cases_count (type, &is_sparse);
-  long bytes_needed = (size+HOST_BITS_PER_CHAR)/HOST_BITS_PER_CHAR;
+  HOST_WIDE_INT bytes_needed
+    = (size + HOST_BITS_PER_CHAR) / HOST_BITS_PER_CHAR;
 
   if (size == -1)
     warning ("CASE selector with variable range");

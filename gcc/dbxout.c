@@ -2370,8 +2370,7 @@ dbxout_parms (parms)
 
 	       If we use DECL_RTL, then we must use the declared type of
 	       the variable, not the type that it arrived in.  */
-	    if (REGNO (DECL_RTL (parms)) >= 0
-		&& REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
+	    if (REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	      {
 		best_rtl = DECL_RTL (parms);
 		parm_type = TREE_TYPE (parms);
@@ -2430,8 +2429,7 @@ dbxout_parms (parms)
 	    /* DECL_RTL looks like (MEM (REG...).  Get the register number.
 	       If it is an unallocated pseudo-reg, then use the register where
 	       it was passed instead.  */
-	    if (REGNO (XEXP (DECL_RTL (parms), 0)) >= 0
-		&& REGNO (XEXP (DECL_RTL (parms), 0)) < FIRST_PSEUDO_REGISTER)
+	    if (REGNO (XEXP (DECL_RTL (parms), 0)) < FIRST_PSEUDO_REGISTER)
 	      current_sym_value = REGNO (XEXP (DECL_RTL (parms), 0));
 	    else
 	      current_sym_value = REGNO (DECL_INCOMING_RTL (parms));
@@ -2558,7 +2556,6 @@ dbxout_reg_parms (parms)
 	/* Report parms that live in registers during the function
 	   but were passed in memory.  */
 	if (GET_CODE (DECL_RTL (parms)) == REG
-	    && REGNO (DECL_RTL (parms)) >= 0
 	    && REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	  dbxout_symbol_location (parms, TREE_TYPE (parms),
 				  0, DECL_RTL (parms));

@@ -1108,7 +1108,8 @@ extern rtx label_rtx PARAMS ((tree));
 #endif
 
 /* Indicate how an input argument register was promoted.  */
-extern rtx promoted_input_arg PARAMS ((int, enum machine_mode *, int *));
+extern rtx promoted_input_arg PARAMS ((unsigned int, enum machine_mode *,
+				       int *));
 
 /* Return an rtx like arg but sans any constant terms.
    Returns the original rtx if it has no constant terms.
@@ -1206,11 +1207,14 @@ extern rtx hard_libcall_value PARAMS ((enum machine_mode));
    of STACK_BOUNDARY / BITS_PER_UNIT.  */
 extern rtx round_push PARAMS ((rtx));
 
-extern rtx store_bit_field PARAMS ((rtx, int, int, enum machine_mode, rtx,
-				    unsigned int, int));
-extern rtx extract_bit_field PARAMS ((rtx, int, int, int, rtx,
+extern rtx store_bit_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
+				    unsigned HOST_WIDE_INT,
+				    enum machine_mode, rtx,
+				    unsigned int, HOST_WIDE_INT));
+extern rtx extract_bit_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
+				      unsigned HOST_WIDE_INT, int, rtx,
 				      enum machine_mode, enum machine_mode,
-				      unsigned int, int));
+				      unsigned int, HOST_WIDE_INT));
 extern rtx expand_mult PARAMS ((enum machine_mode, rtx, rtx, rtx, int));
 extern rtx expand_mult_add PARAMS ((rtx, rtx, rtx, rtx,enum machine_mode, int));
 extern rtx expand_mult_highpart_adjust PARAMS ((enum machine_mode, rtx, rtx, rtx, rtx, int));
@@ -1240,5 +1244,5 @@ extern void do_jump_by_parts_greater_rtx	PARAMS ((enum machine_mode,
 
 #ifdef TREE_CODE   /* Don't lose if tree.h not included.  */
 extern void mark_seen_cases			PARAMS ((tree, unsigned char *,
-							 long, int));
+							 HOST_WIDE_INT, int));
 #endif

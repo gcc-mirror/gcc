@@ -2321,7 +2321,11 @@ tree
 bit_position (field)
      tree field;
 {
-  return DECL_FIELD_BITPOS (field);
+  return size_binop (PLUS_EXPR, DECL_FIELD_BIT_OFFSET (field),
+		     size_binop (MULT_EXPR,
+				 convert (bitsizetype,
+					  DECL_FIELD_OFFSET (field)),
+				 bitsize_unit_node));
 }
 
 /* Likewise, but return as an integer.  Abort if it cannot be represented
@@ -2333,6 +2337,31 @@ int_bit_position (field)
      tree field;
 {
   return tree_low_cst (bit_position (field), 0);
+}
+
+/* Return the byte position of FIELD, in bytes from the start of the record.
+   This is a tree of type sizetype.  */
+
+tree
+byte_position (field)
+     tree field;
+{
+  return size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
+		     convert (sizetype,
+			      size_binop (FLOOR_DIV_EXPR,
+					  DECL_FIELD_BIT_OFFSET (field),
+					  bitsize_unit_node)));
+}
+
+/* Likewise, but return as an integer.  Abort if it cannot be represented
+   in that way (since it could be a signed value, we don't have the option
+   of returning -1 like int_size_in_byte can.  */
+
+HOST_WIDE_INT
+int_byte_position (field)
+     tree field;
+{
+  return tree_low_cst (byte_position (field), 0);
 }
 
 /* Return the strictest alignment, in bits, that T is known to have.  */
@@ -4091,8 +4120,8 @@ type_hash_canon (hashcode, type)
 	obstack_free (TYPE_OBSTACK (type), type);
 
 #ifdef GATHER_STATISTICS
-      tree_node_counts[(int)t_kind]--;
-      tree_node_sizes[(int)t_kind] -= sizeof (struct tree_type);
+      tree_node_counts[(int) t_kind]--;
+      tree_node_sizes[(int) t_kind] -= sizeof (struct tree_type);
 #endif
       return t1;
     }
@@ -4112,7 +4141,9 @@ mark_hash_entry (entry, param)
      void *param ATTRIBUTE_UNUSED;
 {
   struct type_hash *p = *(struct type_hash **)entry;
+
   ggc_mark_tree (p->type);
+
   /* Continue scan.  */
   return 1;
 }
@@ -4124,14 +4155,16 @@ mark_type_hash (arg)
      void *arg;
 {
   htab_t t = *(htab_t *) arg;
+
   htab_traverse (t, mark_hash_entry, 0);
 }
 
 static void
 print_type_hash_statistics ()
 {
-  fprintf (stderr, "Type hash: size %d, %d elements, %f collisions\n",
-	   htab_size (type_hash_table), htab_elements (type_hash_table),
+  fprintf (stderr, "Type hash: size %ld, %ld elements, %f collisions\n",
+	   (long) htab_size (type_hash_table),
+	   (long) htab_elements (type_hash_table),
 	   htab_collisions (type_hash_table));
 }
 
@@ -4594,6 +4627,7 @@ build_index_type (maxval)
 {
   register tree itype = make_node (INTEGER_TYPE);
 
+  TREE_TYPE (itype) = sizetype;
   TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
   TYPE_MIN_VALUE (itype) = size_zero_node;
 
@@ -4605,20 +4639,9 @@ build_index_type (maxval)
   TYPE_SIZE (itype) = TYPE_SIZE (sizetype);
   TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (sizetype);
   TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
-  if (TREE_CODE (maxval) == INTEGER_CST)
-    {
-      int maxint = TREE_INT_CST_LOW (maxval);
 
-      /* If the domain should be empty, make sure the maxval
-	 remains -1 and is not spoiled by truncation.  */
-      if (tree_int_cst_sgn (maxval) < 0)
-	{
-	  TYPE_MAX_VALUE (itype) = build_int_2 (-1, -1);
-	  TREE_TYPE (TYPE_MAX_VALUE (itype)) = sizetype;
-	}
-
-      return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
-    }
+  if (host_integerp (maxval, 1))
+    return type_hash_canon (tree_low_cst (maxval, 1), itype);
   else
     return itype;
 }
@@ -4648,21 +4671,11 @@ build_range_type (type, lowval, highval)
   TYPE_SIZE (itype) = TYPE_SIZE (type);
   TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (type);
   TYPE_ALIGN (itype) = TYPE_ALIGN (type);
-  if (TREE_CODE (lowval) == INTEGER_CST)
-    {
-      HOST_WIDE_INT lowint, highint;
-      int maxint;
 
-      lowint = TREE_INT_CST_LOW (lowval);
-      if (highval && TREE_CODE (highval) == INTEGER_CST)
-	highint = TREE_INT_CST_LOW (highval);
-      else
-	highint = (~(unsigned HOST_WIDE_INT) 0) >> 1;
-
-      maxint = (int) (highint - lowint);
-
-      return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
-    }
+  if (host_integerp (lowval, 0) && highval != 0 && host_integerp (highval, 0))
+    return type_hash_canon (tree_low_cst (highval, 0)
+			    - tree_low_cst (lowval, 0),
+			    itype);
   else
     return itype;
 }
@@ -4674,7 +4687,7 @@ tree
 build_index_2_type (lowval,highval)
      tree lowval, highval;
 {
-  return build_range_type (NULL_TREE, lowval, highval);
+  return build_range_type (sizetype, lowval, highval);
 }
 
 /* Return nonzero iff ITYPE1 and ITYPE2 are equal (in the LISP sense).
@@ -5700,10 +5713,11 @@ build_common_tree_nodes_2 (short_double)
   integer_one_node = build_int_2 (1, 0);
   TREE_TYPE (integer_one_node) = integer_type_node;
 
-  size_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (size_zero_node) = sizetype;
-  size_one_node = build_int_2 (1, 0);
-  TREE_TYPE (size_one_node) = sizetype;
+  size_zero_node = size_int (0);
+  size_one_node = size_int (1);
+  bitsize_zero_node = bitsize_int (0);
+  bitsize_one_node = bitsize_int (1);
+  bitsize_unit_node = bitsize_int (BITS_PER_UNIT);
 
   void_type_node = make_node (VOID_TYPE);
   layout_type (void_type_node);

@@ -421,7 +421,11 @@ print_node (file, prefix, node, indent)
 	fprintf (file, " alias set %d", DECL_POINTER_ALIAS_SET (node));
 
       if (TREE_CODE (node) == FIELD_DECL)
-	print_node (file, "bitpos", DECL_FIELD_BITPOS (node), indent + 4);
+	{
+	  print_node (file, "offset", DECL_FIELD_OFFSET (node), indent + 4);
+	  print_node (file, "bit offset", DECL_FIELD_BIT_OFFSET (node),
+		      indent + 4);
+	}
 
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
       print_node_brief (file, "machine_attributes",

@@ -1071,7 +1071,7 @@ static tree
 make_field_value (fdecl)
   tree fdecl;
 {
-  tree finit, info;
+  tree finit;
   int flags;
   tree type = TREE_TYPE (fdecl);
   int resolved = is_compiled_class (type);
@@ -1083,33 +1083,30 @@ make_field_value (fdecl)
   else
     {
       tree signature = build_java_signature (type);
+
       type = build_utf8_ref (unmangle_classname 
-			     (IDENTIFIER_POINTER(signature),
-			      IDENTIFIER_LENGTH(signature)));
+			     (IDENTIFIER_POINTER (signature),
+			      IDENTIFIER_LENGTH (signature)));
     }
   PUSH_FIELD_VALUE (finit, "type", type);
+
   flags = get_access_flags_from_decl (fdecl);
   if (! resolved)
     flags |= 0x8000 /* FIELD_UNRESOLVED_FLAG */;
 
   PUSH_FIELD_VALUE (finit, "accflags", build_int_2 (flags, 0));
   PUSH_FIELD_VALUE (finit, "bsize", TYPE_SIZE_UNIT (TREE_TYPE (fdecl)));
-  if (FIELD_STATIC (fdecl))
-    {
-      tree cfield = TREE_CHAIN (TYPE_FIELDS (field_info_union_node));
-      tree faddr = build_address_of (build_static_field_ref (fdecl));
 
-      info = build (CONSTRUCTOR, field_info_union_node, NULL_TREE,
-		    build_tree_list (cfield, faddr));
-    }
-  else
-    info = build (CONSTRUCTOR, field_info_union_node, NULL_TREE,
-		  build_tree_list (TYPE_FIELDS (field_info_union_node),
-				   build_int_2 ((int_bit_position (fdecl)
-						 / BITS_PER_UNIT),
-						0)));
-
-  PUSH_FIELD_VALUE (finit, "info", info);
+  PUSH_FIELD_VALUE
+    (finit, "info",
+     build (CONSTRUCTOR, field_info_union_node, NULL_TREE,
+	    build_tree_list
+	    ((FIELD_STATIC (fdecl)
+	      ? TREE_CHAIN (TYPE_FIELDS (field_info_union_node))
+	      : TYPE_FIELDS (field_info_union_node)),
+	     (FIELD_STATIC (fdecl)
+	      ? build_address_of (build_static_field_ref (fdecl))
+	      : byte_position (fdecl)))));
 
   FINISH_RECORD_CONSTRUCTOR (finit);
   return finit;

@@ -218,7 +218,7 @@ static void reg_save			PARAMS ((char *, unsigned, unsigned,
 static void initial_return_save		PARAMS ((rtx));
 static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PARAMS ((int));
-static unsigned reg_number		PARAMS ((rtx));
+static unsigned int reg_number		PARAMS ((rtx));
 static void dwarf2out_stack_adjust	PARAMS ((rtx));
 static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
 
@@ -553,7 +553,7 @@ stripattributes (s)
 
 /* Return the register number described by a given RTL node.  */
 
-static unsigned
+static unsigned int
 reg_number (rtl)
      register rtx rtl;
 {
@@ -1314,7 +1314,7 @@ dwarf2out_frame_debug_expr (expr, label)
 
 	  /* Without an offset.  */
 	case REG:
-	  if (cfa_store_reg != (unsigned) REGNO (XEXP (dest, 0)))
+	  if (cfa_store_reg != REGNO (XEXP (dest, 0)))
 	    abort();
 	  offset = -cfa_store_offset;
 	  break;
@@ -2670,9 +2670,9 @@ static inline int
 is_pseudo_reg (rtl)
      register rtx rtl;
 {
-  return (((GET_CODE (rtl) == REG) && (REGNO (rtl) >= FIRST_PSEUDO_REGISTER))
-	  || ((GET_CODE (rtl) == SUBREG)
-	      && (REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER)));
+  return ((GET_CODE (rtl) == REG && REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
+	  || (GET_CODE (rtl) == SUBREG
+	      && REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER));
 }
 
 /* Return a reference to a type, with its const and volatile qualifiers
