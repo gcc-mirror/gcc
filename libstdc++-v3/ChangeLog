@@ -1,3 +1,7 @@
+2000-11-22  Phil Edwards  <pme@sources.redhat.com>
+
+	* porting.texi:  Minor tweaks to vocabulary.
+
 2000-11-22  Loren J. Rittle  <ljrittle@acm.org>
 
         * include/backward/strstream.h: Reinstate the `using'
