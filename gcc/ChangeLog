@@ -1,3 +1,7 @@
+Thu Oct 22 22:34:42 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* v850/v850.c (v850_reorg): Call alter_subreg.  Delete subreg support.
+
 Fri Oct 23 11:11:56 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* rtl.def (POST_MODIFY, PRE_MODIFY): New generalized operators for
