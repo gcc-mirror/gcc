@@ -54,27 +54,8 @@ do {								\
   ASM_OUTPUT_SKIP (FILE, SIZE ? SIZE : 1);			\
 } while (0)
 
-/* These macros generate the special .type and .size directives which
-   are used to set the corresponding fields of the linker symbol table
-   entries in an ELF object file under SVR4.  These macros also output
-   the starting labels for the relevant functions/objects.  */
-
-/* Write the extra assembler code needed to declare an object properly.  */
-
 #undef ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
-  do {									\
-    HOST_WIDE_INT size;							\
-    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
-    size_directive_output = 0;						\
-    if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
-      {									\
-	size_directive_output = 1;					\
-	size = int_size_in_bytes (TREE_TYPE (DECL));			\
-	ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);			\
-      }									\
-    mips_declare_object (FILE, NAME, "", ":\n", 0);			\
-  } while (0)
+#define ASM_DECLARE_OBJECT_NAME mips_declare_object_name
 
 #undef TARGET_VERSION
 #if TARGET_ENDIAN_DEFAULT == 0

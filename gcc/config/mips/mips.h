@@ -3609,23 +3609,9 @@ while (0)
 	$Lc[0-9]+	Label for use in s<xx> operation.
 	$Le[0-9]+	End blocks for MIPS debug support  */
 
-/* A C statement (sans semicolon) to output to the stdio stream
-   STREAM any text necessary for declaring the name NAME of an
-   initialized variable which is being defined.  This macro must
-   output the label definition (perhaps using `ASM_OUTPUT_LABEL').
-   The argument DECL is the `VAR_DECL' tree node representing the
-   variable.
-
-   If this macro is not defined, then the variable name is defined
-   in the usual manner as a label (by means of `ASM_OUTPUT_LABEL').  */
-
 #undef ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
-do									\
- {									\
-   mips_declare_object (STREAM, NAME, "", ":\n", 0);			\
- }									\
-while (0)
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL) \
+  mips_declare_object (STREAM, NAME, "", ":\n", 0)
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl\t"
