@@ -1,3 +1,9 @@
+2003-03-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6440
+	* g++.dg/template/spec7.C: New test.
+	* g++.dg/template/spec8.C: Likewise.
+
 2003-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20030314-1.c: New test.
