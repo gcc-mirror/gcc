@@ -5805,7 +5805,14 @@ following_call (insn)
    The jump instructions within the table are special; we must be able 
    to identify them during assembly output (if the jumps don't get filled
    we need to emit a nop rather than nullifying the delay slot)).  We
-   identify jumps in switch tables by marking the SET with DImode.  */
+   identify jumps in switch tables by marking the SET with DImode. 
+
+   We also surround the jump table itself with BEGIN_BRTAB and END_BRTAB
+   insns.  This serves two purposes, first it prevents jump.c from
+   noticing that the last N entries in the table jump to the instruction
+   immediately after the table and deleting the jumps.  Second, those
+   insns mark where we should emit .begin_brtab and .end_brtab directives
+   when using GAS (allows for better link time optimizations).  */
 
 pa_reorg (insns)
      rtx insns;
@@ -5832,9 +5839,8 @@ pa_reorg (insns)
 		  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC))
 	    continue;
 
-	  /* If needed, emit marker for the beginning of the branch table.  */
-	  if (TARGET_GAS)
-	    emit_insn_before (gen_begin_brtab (), insn);
+	  /* Emit marker for the beginning of the branch table.  */
+	  emit_insn_before (gen_begin_brtab (), insn);
 
 	  pattern = PATTERN (insn);
 	  location = PREV_INSN (insn);
@@ -5873,19 +5879,16 @@ pa_reorg (insns)
 	      location = NEXT_INSN (location);
 	    }
 
-	  /* If needed, emit marker for the end of the branch table.  */
-	  if (TARGET_GAS)
-	    {
-	      emit_insn_before (gen_end_brtab (), location);
-	      location = NEXT_INSN (location);
-	      emit_barrier_after (location);
-	    }
+	  /* Emit marker for the end of the branch table.  */
+	  emit_insn_before (gen_end_brtab (), location);
+	  location = NEXT_INSN (location);
+	  emit_barrier_after (location);
 
 	  /* Delete the ADDR_VEC or ADDR_DIFF_VEC.  */
 	  delete_insn (insn);
 	}
     }
-  else if (TARGET_GAS)
+  else
     {
       /* Sill need an end_brtab insn.  */
       insns = get_insns ();
