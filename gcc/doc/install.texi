@@ -2078,22 +2078,19 @@ of the configuration used in the stock FreeBSD configuration of GCC.  In
 particular, @option{--enable-threads} is now configured by default.
 However, as a general user, do not attempt to replace the system
 compiler with this release.  Known to bootstrap and check with good
-results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3, 4.4, 4.5-STABLE and 5-CURRENT@.
+results on FreeBSD 4.8-STABLE and 5-CURRENT@.  In the past, known to
+bootstrap and check with good results on FreeBSD 3.0, 3.4, 4.0, 4.2,
+4.3, 4.4, 4.5-STABLE@.
 
 In principle, @option{--enable-threads} is now compatible with
 @option{--enable-libgcj} on FreeBSD@.  However, it has only been built
-and tested on @samp{i386-*-freebsd4.5} and @samp{alpha-*-freebsd5.0}.
+and tested on @samp{i386-*-freebsd[45]} and @samp{alpha-*-freebsd[45]}.
 The static
 library may be incorrectly built (symbols are missing at link time).
 There is a rare timing-based startup hang (probably involves an
 assumption about the thread library).  Multi-threaded boehm-gc (required for
 libjava) exposes severe threaded signal-handling bugs on FreeBSD before
-4.5-RELEASE.  The alpha port may not fully bootstrap without some manual
-intervention: @command{gcjh} will crash with a floating-point exception while
-generating @file{java/lang/Double.h} (just copy the version built on
-@samp{i386-*-freebsd*} and rerun the top-level @command{gmake} with no
-arguments and it
-should properly complete the bootstrap).  Other CPU architectures
+4.5-RELEASE@.  Other CPU architectures
 supported by FreeBSD will require additional configuration tuning in, at
 the very least, both boehm-gc and libffi.
 
