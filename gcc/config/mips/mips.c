@@ -6837,35 +6837,44 @@ mips_callee_copies (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   return mips_abi == ABI_EABI && named;
 }
 
-/* Return the class of registers for which a mode change from FROM to TO
-   is invalid.
-
-   In little-endian mode, the hi-lo registers are numbered backwards,
-   so (subreg:SI (reg:DI hi) 0) gets the high word instead of the low
-   word as intended.
-
-   Similarly, when using paired floating-point registers, the first
-   register holds the low word, regardless of endianness.  So in big
-   endian mode, (subreg:SI (reg:DF $f0) 0) does not get the high word
-   as intended.
-
-   Also, loading a 32-bit value into a 64-bit floating-point register
-   will not sign-extend the value, despite what LOAD_EXTEND_OP says.
-   We can't allow 64-bit float registers to change from a 32-bit
-   mode to a 64-bit mode.  */
+/* Return true if registers of class CLASS cannot change from mode FROM
+   to mode TO.  */
 
 bool
 mips_cannot_change_mode_class (enum machine_mode from,
 			       enum machine_mode to, enum reg_class class)
 {
-  if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
+  if (MIN (GET_MODE_SIZE (from), GET_MODE_SIZE (to)) <= UNITS_PER_WORD
+      && MAX (GET_MODE_SIZE (from), GET_MODE_SIZE (to)) > UNITS_PER_WORD)
     {
       if (TARGET_BIG_ENDIAN)
-	return reg_classes_intersect_p (FP_REGS, class);
-      if (TARGET_FLOAT64)
-	return reg_classes_intersect_p (HI_AND_FP_REGS, class);
-      return reg_classes_intersect_p (HI_REG, class);
+	{
+	  /* When a multi-word value is stored in paired floating-point
+	     registers, the first register always holds the low word.
+	     We therefore can't allow FPRs to change between single-word
+	     and multi-word modes.  */
+	  if (FP_INC > 1 && reg_classes_intersect_p (FP_REGS, class))
+	    return true;
+	}
+      else
+	{
+	  /* LO_REGNO == HI_REGNO + 1, so if a multi-word value is stored
+	     in LO and HI, the high word always comes first.  We therefore
+	     can't allow values stored in HI to change between single-word
+	     and multi-word modes.  */
+	  if (reg_classes_intersect_p (HI_REG, class))
+	    return true;
+	}
     }
+  /* Loading a 32-bit value into a 64-bit floating-point register
+     will not sign-extend the value, despite what LOAD_EXTEND_OP says.
+     We can't allow 64-bit float registers to change from SImode to
+     to a wider mode.  */
+  if (TARGET_FLOAT64
+      && from == SImode
+      && GET_MODE_SIZE (to) >= UNITS_PER_WORD
+      && reg_classes_intersect_p (FP_REGS, class))
+    return true;
   return false;
 }
 
