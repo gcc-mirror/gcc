@@ -363,6 +363,18 @@
 #undef  RS6000_MCOUNT
 #define RS6000_MCOUNT "_mcount"
 
+#ifdef __powerpc64__
+/* _init and _fini functions are built from bits spread across many
+   object files, each potentially with a different TOC pointer.  For
+   that reason, place a nop after the call so that the linker can
+   restore the TOC pointer if a TOC adjusting call stub is needed.  */
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+  asm (SECTION_OP "\n"					\
+"	bl ." #FUNC "\n"				\
+"	nop\n"						\
+"	.previous");
+#endif
+
 /* FP save and restore routines.  */
 #undef  SAVE_FP_PREFIX
 #define SAVE_FP_PREFIX (TARGET_64BIT ? "._savef" : "_savefpr_")
