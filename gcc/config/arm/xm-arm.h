@@ -62,6 +62,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
+/* If we have defined POSIX, but are compiling in the BSD environment, then
+   we need to define getcwd in terms of getwd.  */
+#if defined (POSIX) && defined (_BSD_C)
+#define HAVE_GETWD 1
+#endif
+
 /* EOF xm-arm.h */
 
 
