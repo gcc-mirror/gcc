@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "intl.h"
 #include "defaults.h"
+#include "ggc.h"
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
@@ -4825,7 +4826,8 @@ struct init_node
 /* Tree of pending elements at this constructor level.
    These are elements encountered out of order
    which belong at places we haven't reached yet in actually
-   writing the output.  */
+   writing the output.
+   Will never hold tree nodes across GC runs.  */
 static struct init_node *constructor_pending_elts;
 
 /* The SPELLING_DEPTH of this constructor.  */
@@ -5099,19 +5101,10 @@ really_start_incremental_init (type)
 
   if (constructor_incremental)
     {
-      int momentary = suspend_momentary ();
-      push_obstacks_nochange ();
-      if (TREE_PERMANENT (constructor_decl))
-	end_temporary_allocation ();
       make_decl_rtl (constructor_decl, constructor_asmspec,
 		     constructor_top_level);
       assemble_variable (constructor_decl, constructor_top_level, 0, 1);
-      pop_obstacks ();
-      resume_momentary (momentary);
-    }
 
-  if (constructor_incremental)
-    {
       defer_addressed_constants ();
       constructor_subconstants_deferred = 1;
     }
@@ -5392,29 +5385,15 @@ pop_init_level (implicit)
 	  if (TREE_CODE (constructor_type) == ARRAY_TYPE
 	      && TYPE_DOMAIN (constructor_type) == 0)
 	    {
-	      int failure;
-	      int momentary_p;
-
-	      push_obstacks_nochange ();
-	      if (TREE_PERMANENT (constructor_type))
-		end_temporary_allocation ();
-
-	      momentary_p = suspend_momentary ();
-
 	      /* We shouldn't have an incomplete array type within
 		 some other type.  */
 	      if (constructor_stack->next)
 		abort ();
 
-	      failure
-		= complete_array_type (constructor_type,
-				       constructor, 0);
-	      if (failure)
+	      if (complete_array_type (constructor_type, constructor, 0))
 		abort ();
 
 	      size = int_size_in_bytes (constructor_type);
-	      resume_momentary (momentary_p);
-	      pop_obstacks ();
 	    }
 
 	  output_constant (constructor, size);
@@ -5448,23 +5427,17 @@ pop_init_level (implicit)
 	constructor = error_mark_node;
       else
 	{
-	  int momentary = suspend_momentary ();
-
 	  constructor = build (CONSTRUCTOR, constructor_type, NULL_TREE,
 			       nreverse (constructor_elements));
 	  if (constructor_constant)
 	    TREE_CONSTANT (constructor) = 1;
 	  if (constructor_constant && constructor_simple)
 	    TREE_STATIC (constructor) = 1;
-
-	  resume_momentary (momentary);
 	}
     }
   else
     {
       tree filled;
-      int momentary = suspend_momentary ();
-
       if (TREE_CODE (constructor_type) == RECORD_TYPE
 	  || TREE_CODE (constructor_type) == UNION_TYPE)
 	{
@@ -5485,9 +5458,6 @@ pop_init_level (implicit)
 			      constructor_unfilled_index,
 			      integer_one_node);
 
-	      push_obstacks_nochange ();
-	      if (TREE_PERMANENT (constructor_type))
-		end_temporary_allocation ();
 	      maxindex = copy_node (maxindex);
 	      TYPE_DOMAIN (constructor_type) = build_index_type (maxindex);
 	      TREE_TYPE (maxindex) = TYPE_DOMAIN (constructor_type);
@@ -5502,7 +5472,6 @@ pop_init_level (implicit)
 				 "zero or negative array size `%s'");
 	      layout_type (constructor_type);
 	      size = int_size_in_bytes (constructor_type);
-	      pop_obstacks ();
 	    }
 
 	  filled = size_binop (MULT_EXPR, constructor_unfilled_index,
@@ -5513,8 +5482,6 @@ pop_init_level (implicit)
 
       if (filled != 0)
 	assemble_zeros (size - TREE_INT_CST_LOW (filled));
-
-      resume_momentary (momentary);
     }
 
 	  
@@ -5672,7 +5639,7 @@ add_pending_init (purpose, value)
 	}
     }
 
-  r = (struct init_node *) oballoc (sizeof (struct init_node));
+  r = (struct init_node *) ggc_alloc_obj (sizeof (struct init_node), 0);
   r->purpose = purpose;
   r->value = value;
 
@@ -6550,12 +6517,6 @@ process_init_element (value)
       constructor_fields = 0;
       break;
     }
-
-  /* If the (lexically) previous elments are not now saved,
-     we can discard the storage for them.  */
-  if (constructor_incremental && constructor_pending_elts == 0 && value != 0
-      && constructor_stack == 0)
-    clear_momentary ();
 }
 
 /* Expand an ASM statement with operands, handling output operands

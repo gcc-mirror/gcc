@@ -303,17 +303,8 @@ handle_pragma_token (string, token)
 
 #ifdef HANDLE_PRAGMA_WEAK
     case ps_weak:
-      name = permalloc (strlen (string) + 1);
-      if (name == NULL)
-	{
-	  warning ("Out of memory parsing #pragma weak");
-	  state = ps_bad;
-	}
-      else
-	{
-	  strcpy (name, string);
-	  state = ps_name;
-	}
+      name = xstrdup (string);
+      state = ps_name;
       break;
       
     case ps_name:
@@ -321,17 +312,8 @@ handle_pragma_token (string, token)
       break;
 
     case ps_equals:
-      value = permalloc (strlen (string) + 1);
-      if (value == NULL)
-	{
-	  warning ("Out of memory parsing #pragma weak");
-	  state = ps_bad;
-	}
-      else
-	{
-	  strcpy (value, string);
-	  state = ps_value;
-	}
+      value = xstrdup (string);
+      state = ps_value;
       break;
 
     case ps_value:

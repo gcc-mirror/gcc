@@ -759,14 +759,7 @@ linenum:
       goto skipline;
     }
 
-  if (! ggc_p && !TREE_PERMANENT (yylval.ttype))
-    {
-      input_filename
-	= (char *) permalloc (TREE_STRING_LENGTH (yylval.ttype) + 1);
-      strcpy (input_filename, TREE_STRING_POINTER (yylval.ttype));
-    }
-  else
-    input_filename = TREE_STRING_POINTER (yylval.ttype);
+  input_filename = TREE_STRING_POINTER (yylval.ttype);
 
   if (main_input_filename == 0)
     main_input_filename = input_filename;

@@ -1,3 +1,19 @@
+2000-01-25  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-common.c, c-decl.c, c-lang.c, c-lex.c, c-parse.in, c-pragma.c,
+	c-typeck.c, objc/objc-act.c: Remove all references to obstack
+	functions obsoleted by GC, such as push_obstacks_nochange,
+	end_temporary_allocation, savealloc, saveable_tree_cons, etc.
+	and code which existed only to decide whether or not to call
+	them.  Remove now-unused NESTED argument from start_function;
+	all callers changed.  Do not change behavior based on ggc_p.
+	The use of the ixp_obstack in c-iterate.c and the util_obstack
+	in objc/objc-act.c remain; these are not obsoleted by garbage
+	collection.
+	* c-tree.h: Update prototype for start_function.
+
+	* c-parse.y, c-parse.c, objc/objc-parse.c, objc/objc-parse.y: Rebuild.
+
 2000-01-25  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/mips/mips.md (zero_extendsidi2_internal): Disable for
@@ -1030,7 +1046,7 @@ Thu Jan 13 23:44:03 2000  Richard Henderson  <rth@cygnus.com>
 	Use emit_jump_insn for the return insn.
 
 Thu Jan 13 14:46:03 2000  Jason Eckhardt  <jle@cygnus.com>
-	                  Stan Cox  <scox@cygnus.com>
+			  Stan Cox  <scox@cygnus.com>
 
 	* predict.c: New file. Preliminary infrastructure work for static
 	branch prediction and basic block reordering.
@@ -3991,7 +4007,7 @@ Mon Nov 29 18:09:39 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 1999-11-28  Robert Lipe  <robertl@cygnus.com>
 
 	* i386/sco5.h (FINI_SECTION_ASM_OP_COFF): Move destructor fn
-	table from .fini into .dtor.                                
+	table from .fini into .dtor.				
 
 1999-11-28  Anthony Green  <green@cygnus.com>
 
@@ -4849,7 +4865,7 @@ Wed Nov 10 10:52:42 1999  Tom Tromey  <tromey@cygnus.com>
 	* gcc.c (do_spec_1): Support text between `%u' and `%O'.
 
 Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
-	                  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+			  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppinit.c: Test `GCC_VERSION', not `HAVE_GCC_VERSION'.
 
@@ -7934,7 +7950,7 @@ Thu Oct  7 23:06:50 1999  Richard Henderson  <rth@cygnus.com>
 	before the fctiwz insn.
 
 Thu Oct  7 22:53:00 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
-	                  Mark Mitchell  <mark@codesourcery.com>
+			  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (make_lang_type_fn): New funtion pointer.
 	(make_lang_type): Call it.
@@ -8083,7 +8099,7 @@ Tue Oct  5 11:34:52 1999  Michael Meissner  <meissner@cygnus.com>
 	* ggc-simple.c (toplevel): Ditto.
 
 Mon Oct  4 16:48:16 1999  Diego Novillo <dnovillo@cygnus.com>
-	                  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+			  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* config/mips/mips.c (mips_move_2words): Split doubles if
 	ISA >= 3, !TARGET_64BIT, and destination is not an FP register.
