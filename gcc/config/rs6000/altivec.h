@@ -10977,7 +10977,7 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
     __builtin_altivec_compiletime_error ("vec_any_nlt"))
 
 #define vec_any_numeric(a1) \
-__ch (__unn_args_eq (vector float, (a1)), \
+__ch (__un_args_eq (vector float, (a1)), \
       __builtin_altivec_vcmpeqfp_p (__CR6_EQ_REV, (a1), (a1)), \
     __builtin_altivec_compiletime_error ("vec_any_numeric"))
 

@@ -1,3 +1,8 @@
+2004-04-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/altivec.h (vec_any_numeric): Correct typo in
+	__unn_args_eq.
+
 2004-04-17  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/14715
