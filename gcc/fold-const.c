@@ -1672,6 +1672,19 @@ non_lvalue (x)
   TREE_CONSTANT (result) = TREE_CONSTANT (x);
   return result;
 }
+
+/* When pedantic, return an expr equal to X but certainly not valid as a
+   pedantic lvalue.  Otherwise, return X.  */
+
+tree
+pedantic_non_lvalue (x)
+     tree x;
+{
+  if (pedantic)
+    return non_lvalue (x);
+  else
+    return x;
+}
 
 /* Given a tree comparison code, return the code that is the logical inverse
    of the given code.  It is not safe to do this for floating-point
@@ -4454,10 +4467,13 @@ fold (expr)
       return t1;
 
     case COND_EXPR:
+      /* Pedantic ANSI C says that a conditional expression is never an lvalue,
+	 so all simple results must be passed through pedantic_non_lvalue.  */
       if (TREE_CODE (arg0) == INTEGER_CST)
-	return TREE_OPERAND (t, (integer_zerop (arg0) ? 2 : 1));
+	return pedantic_non_lvalue
+	  (TREE_OPERAND (t, (integer_zerop (arg0) ? 2 : 1)));
       else if (operand_equal_p (arg1, TREE_OPERAND (expr, 2), 0))
-	return omit_one_operand (type, arg1, arg0);
+	return pedantic_non_lvalue (omit_one_operand (type, arg1, arg0));
 
       /* If the second operand is zero, invert the comparison and swap
 	 the second and third operands.  Likewise if the second operand
@@ -4507,16 +4523,19 @@ fold (expr)
 	    switch (comp_code)
 	      {
 	      case EQ_EXPR:
-		return fold (build1 (NEGATE_EXPR, type, arg1));
+		return pedantic_non_lvalue
+		  (fold (build1 (NEGATE_EXPR, type, arg1)));
 	      case NE_EXPR:
-		return convert (type, arg1);
+		return pedantic_non_lvalue (convert (type, arg1));
 	      case GE_EXPR:
 	      case GT_EXPR:
-		return fold (build1 (ABS_EXPR, type, arg1));
+		return pedantic_non_lvalue
+		  (fold (build1 (ABS_EXPR, type, arg1)));
 	      case LE_EXPR:
 	      case LT_EXPR:
-		return fold (build1 (NEGATE_EXPR, type,
-				     fold (build1 (ABS_EXPR, type, arg1))));
+		return pedantic_non_lvalue
+		  (fold (build1 (NEGATE_EXPR, type,
+				 fold (build1 (ABS_EXPR, type, arg1)))));
 	      }
 
 	  /* If this is A != 0 ? A : 0, this is simply A.  For ==, it is
@@ -4525,9 +4544,9 @@ fold (expr)
 	  if (integer_zerop (TREE_OPERAND (arg0, 1)) && integer_zerop (arg2))
 	    {
 	      if (comp_code == NE_EXPR)
-		return convert (type, arg1);
+		return pedantic_non_lvalue (convert (type, arg1));
 	      else if (comp_code == EQ_EXPR)
-		return convert (type, integer_zero_node);
+		return pedantic_non_lvalue (convert (type, integer_zero_node));
 	    }
 
 	  /* If this is A op B ? A : B, this is either A, B, min (A, B),
@@ -4538,15 +4557,17 @@ fold (expr)
 	    switch (comp_code)
 	      {
 	      case EQ_EXPR:
-		return convert (type, arg2);
+		return pedantic_non_lvalue (convert (type, arg2));
 	      case NE_EXPR:
-		return convert (type, arg1);
+		return pedantic_non_lvalue (convert (type, arg1));
 	      case LE_EXPR:
 	      case LT_EXPR:
-		return fold (build (MIN_EXPR, type, arg1, arg2));
+		return pedantic_non_lvalue
+		  (fold (build (MIN_EXPR, type, arg1, arg2)));
 	      case GE_EXPR:
 	      case GT_EXPR:
-		return fold (build (MAX_EXPR, type, arg1, arg2));
+		return pedantic_non_lvalue
+		  (fold (build (MAX_EXPR, type, arg1, arg2)));
 	      }
 
 	  /* If this is A op C1 ? A : C2 with C1 and C2 constant integers,
@@ -4572,7 +4593,8 @@ fold (expr)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (PLUS_EXPR, arg2,
 						     integer_one_node, 0), 1))
-		  return fold (build (MIN_EXPR, type, arg1, arg2));
+		  return pedantic_non_lvalue
+		    (fold (build (MIN_EXPR, type, arg1, arg2)));
 		break;
 
 	      case LE_EXPR:
@@ -4581,7 +4603,8 @@ fold (expr)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (MINUS_EXPR, arg2,
 						     integer_one_node, 0), 1))
-		  return fold (build (MIN_EXPR, type, arg1, arg2));
+		  return pedantic_non_lvalue
+		    (fold (build (MIN_EXPR, type, arg1, arg2)));
 		break;
 
 	      case GT_EXPR:
@@ -4590,7 +4613,8 @@ fold (expr)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (MINUS_EXPR, arg2,
 						     integer_one_node, 0), 1))
-		  return fold (build (MAX_EXPR, type, arg1, arg2));
+		  return pedantic_non_lvalue
+		    (fold (build (MAX_EXPR, type, arg1, arg2)));
 		break;
 
 	      case GE_EXPR:
@@ -4599,7 +4623,8 @@ fold (expr)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (PLUS_EXPR, arg2,
 						     integer_one_node, 0), 1))
-		  return fold (build (MAX_EXPR, type, arg1, arg2));
+		  return pedantic_non_lvalue
+		    (fold (build (MAX_EXPR, type, arg1, arg2)));
 		break;
 	      }
 	}
@@ -4612,7 +4637,7 @@ fold (expr)
 	     a COND, which will recurse.  In that case, the COND_EXPR
 	     is probably the best choice, so leave it alone.  */
 	  && type == TREE_TYPE (arg0))
-	return arg0;
+	return pedantic_non_lvalue (arg0);
 
 
       /* Look for expressions of the form A & 2 ? 2 : 0.  The result of this
@@ -4625,7 +4650,7 @@ fold (expr)
 	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == BIT_AND_EXPR
 	  && operand_equal_p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1),
 			      arg1, 1))
-	return convert (type, TREE_OPERAND (arg0, 0));
+	return pedantic_non_lvalue (convert (type, TREE_OPERAND (arg0, 0)));
 
       return t;
 
