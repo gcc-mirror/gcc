@@ -141,9 +141,9 @@ linker with GNU CC.
 
 This option does not cause the GNU linker to be installed; it just
 modifies the behavior of GNU CC to work with the GNU linker.
-Specifically, it inhibits the installation of @code{collect2}, a program
-which otherwise serves as a front-end for the system's linker on most
-configurations.
+@cSpecifically, it inhibits the installation of @code{collect2}, a program
+@cwhich otherwise serves as a front-end for the system's linker on most
+@cconfigurations.
 
 @item --with-stabs
 On MIPS based systems and on Alphas, you must specify whether you want
@@ -2205,11 +2205,8 @@ available.
 @node Collect2
 @section @code{collect2}
 
-Many target systems do not have support in the assembler and linker for
-``constructors''---initialization functions to be called before the
-official ``start'' of @code{main}.  On such systems, GNU CC uses a
-utility called @code{collect2} to arrange to call these functions at
-start time.
+GNU CC uses a utility called @code{collect2} on nearly all systems to arrange
+to call various initialization functions at start time.
 
 The program @code{collect2} works by linking the program once and
 looking through the linker output file for symbols with particular names
