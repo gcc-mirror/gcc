@@ -1,5 +1,10 @@
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
+	* sem_type.adb (Add_One_Interp): an operator for a type declared in 
+	an extension of System is known to be visible.
+
+2001-10-11  Ed Schonberg <schonber@gnat.com>
+
 	* sem_eval.adb (Compare_Fixup): get the bounds of a String_Literal 
 	properly. Fixes regression on ACATS C34005G.
 
