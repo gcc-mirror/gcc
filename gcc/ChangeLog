@@ -1,3 +1,7 @@
+2003-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* protoize.c (substr): Delete, callers changed to `strstr'.
+
 2003-08-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* config.gcc (iq2000*-*-elf*): Don't set xm_file.
