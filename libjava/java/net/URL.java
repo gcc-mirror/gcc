@@ -125,7 +125,7 @@ import java.util.StringTokenizer;
 public final class URL implements Serializable
 {
   private static final String DEFAULT_SEARCH_PATH =
-    "gnu.java.net.protocol|gnu.inet";
+    "org.metastatic.jessie|gnu.java.net.protocol|gnu.inet";
 
   // Cached System ClassLoader
   private static ClassLoader systemClassLoader;
