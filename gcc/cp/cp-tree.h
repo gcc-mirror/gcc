@@ -930,6 +930,10 @@ extern int name_mangling_version;
 /* Nonzero means that guiding declarations are allowed.  */
 extern int flag_guiding_decls;
 
+/* Nonzero if wchar_t should be `unsigned short' instead of whatever it
+   would normally be, for use with WINE.  */
+extern int flag_short_wchar;
+
 /* Nonzero if squashed mangling is to be performed. 
    This uses the B and K codes to reference previously seen class types 
    and class qualifiers.       */

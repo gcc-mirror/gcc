@@ -1,3 +1,12 @@
+1999-09-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c: Get WCHAR_TYPE_SIZE from wchar_type_node.
+	* lang-specs.h: If -fshort-wchar, override __WCHAR_TYPE__.
+	* decl2.c (lang_f_options): Add -fshort-wchar.
+	* cp-tree.h: Declare flag_short_wchar.
+	* decl.c (init_decl_processing): If -fshort-wchar, use 'short unsigned 
+	int' for wchar_t.
+
 1999-09-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* ir.texi: Fix formatting errors and typos.

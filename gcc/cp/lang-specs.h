@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 	%{!fno-exceptions:-D__EXCEPTIONS}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
       %{!E:%{!M:%{!MM:cc1plus %i %1 %2\
@@ -50,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
                             %{!fno-exceptions:-D__EXCEPTIONS}\
                             %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 			    %{ffast-math:-D__FAST_MATH__}\
+			    %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
                             %{trigraphs}\
 			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
 			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
@@ -71,6 +73,7 @@ Boston, MA 02111-1307, USA.  */
 	%{!fno-exceptions:-D__EXCEPTIONS}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.ii}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
     "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.ii} %1 %2\
