@@ -1,3 +1,7 @@
+2001-08-31  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (*andorhi3): Fix typos.
+
 2001-08-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calls.c (emit_library_call_value): Don't use a fixed
