@@ -1,3 +1,7 @@
+2001-03-16  Brad Lucier  <lucier@math.purdue.edu>
+
+	* Makefile.in (hash.o): Depend on CONFIG_H.
+
 2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cppfiles.c (stack_include_file): Use MAX of sysp.
