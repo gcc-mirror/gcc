@@ -1,3 +1,8 @@
+2001-06-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* contrib.texi: Updated entries for Mark Mitchell, Joseph S. Myers,
+	Gerald Pfeifer, Bernd Schmidt, and Dean Wakerley.
+
 Sat Jun  2 12:23:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (all uses of ext_register_operand): Make sure they are
