@@ -128,6 +128,11 @@ tree float_type_node;
 tree double_type_node;
 tree long_double_type_node;
 
+tree complex_integer_type_node;
+tree complex_float_type_node;
+tree complex_double_type_node;
+tree complex_long_double_type_node;
+
 tree intQI_type_node;
 tree intHI_type_node;
 tree intSI_type_node;
@@ -2663,6 +2668,30 @@ init_decl_processing ()
 			long_double_type_node));
   layout_type (long_double_type_node);
 
+  complex_integer_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
+			complex_integer_type_node));
+  TREE_TYPE (complex_integer_type_node) = integer_type_node;
+  layout_type (complex_integer_type_node);
+
+  complex_float_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
+			complex_float_type_node));
+  TREE_TYPE (complex_float_type_node) = float_type_node;
+  layout_type (complex_float_type_node);
+
+  complex_double_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
+			complex_double_type_node));
+  TREE_TYPE (complex_double_type_node) = double_type_node;
+  layout_type (complex_double_type_node);
+
+  complex_long_double_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
+			complex_long_double_type_node));
+  TREE_TYPE (complex_long_double_type_node) = long_double_type_node;
+  layout_type (complex_long_double_type_node);
+
   wchar_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WCHAR_TYPE)));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
@@ -3616,6 +3645,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   int inlinep;
   int explicit_int = 0;
   int explicit_char = 0;
+  int defaulted_int = 0;
   tree typedef_decl = 0;
   char *name;
   tree typedef_type = 0;
@@ -3759,7 +3789,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   if (type)
     size_varies = C_TYPE_VARIABLE_SIZE (type);
 
-  /* No type at all: default to `int', and set EXPLICIT_INT
+  /* No type at all: default to `int', and set DEFAULTED_INT
      because it was not a user-defined typedef.  */
 
   if (type == 0)
@@ -3768,7 +3798,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  && ! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
 			    | (1 << (int) RID_SIGNED) | (1 << (int) RID_UNSIGNED))))
 	warn_about_return_type = 1;
-      explicit_int = 1;
+      defaulted_int = 1;
       type = integer_type_node;
     }
 
@@ -3810,7 +3840,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else
 	{
 	  ok = 1;
-	  if (!explicit_int && !explicit_char && pedantic)
+	  if (!explicit_int && !defaulted_int && !explicit_char && pedantic)
 	    {
 	      pedwarn ("long, short, signed or unsigned used invalidly for `%s'",
 		       name);
@@ -3835,7 +3865,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       || (bitfield && flag_traditional
 	  && (! explicit_flag_signed_bitfields || !flag_signed_bitfields))
       || (bitfield && ! flag_signed_bitfields
-	  && (explicit_int || explicit_char
+	  && (explicit_int || defaulted_int || explicit_char
 	      /* A typedef for plain `int' without `signed'
 		 can be controlled just like plain `int'.  */
 	      || ! (typedef_decl != 0
@@ -3865,6 +3895,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     type = long_integer_type_node;
   else if (specbits & 1 << (int) RID_SHORT)
     type = short_integer_type_node;
+  else if (specbits & 1 << (int) RID_COMPLEX)
+    {
+      if (defaulted_int)
+	type = complex_double_type_node;
+      else if (type == integer_type_node)
+	type = complex_integer_type_node;
+      else if (type == float_type_node)
+	type = complex_float_type_node;
+      else if (type == double_type_node)
+	type = complex_double_type_node;
+      else if (type == long_double_type_node)
+	type = complex_long_double_type_node;
+      else
+	error ("invalid complex type");
+    }
 
   /* Set CONSTP if this declaration is `const', whether by
      explicit specification or via a typedef.
