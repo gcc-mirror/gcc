@@ -7424,8 +7424,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
   int funcdef_flag = 0;
   enum tree_code innermost_code = ERROR_MARK;
   int bitfield = 0;
+#if 0
+  /* See the code below that used this.  */
   tree decl_machine_attr = NULL_TREE;
-
+#endif
   /* Set this to error_mark_node for FIELD_DECLs we could not handle properly.
      All FIELD_DECLs we build here have `init' put into their DECL_INITIAL.  */
   tree init = NULL_TREE;
@@ -7826,7 +7828,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	  else
 	    {
 	      type = TREE_TYPE (t);
+#if 0
+	      /* See the code below that used this.  */
 	      decl_machine_attr = DECL_MACHINE_ATTRIBUTES (id);
+#endif
 	      typedef_decl = t;
 	    }
 	}
@@ -9276,8 +9281,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 			       funcdef_flag);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
-
+#if 0
+	    /* This clobbers the attrs stored in `decl' from `attrlist'.  */
+	    /* The decl and setting of decl_machine_attr is also turned off.  */
 	    decl = build_decl_attribute_variant (decl, decl_machine_attr);
+#endif
 
 	    if (explicitp == 2)
 	      DECL_NONCONVERTING_P (decl) = 1;
