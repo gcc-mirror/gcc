@@ -208,19 +208,28 @@ namespace std
       try 
 	{
 	  while (__testput && __bufsize != -1)
-	    {
-	      __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
-	      __ret += __xtrct;
-	      __sbin->_M_in_cur_move(__xtrct);
-	      if (__xtrct == __bufsize)
+  	    {
+ 	      if (__bufsize != 0 && __sbin->gptr() != NULL) 
 		{
-		  if (_Traits::eq_int_type(__sbin->sgetc(), _Traits::eof()))
+		  __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
+		  __ret += __xtrct;
+		  __sbin->_M_in_cur_move(__xtrct);
+		  if (__xtrct != __bufsize)
 		    break;
-		  __bufsize = __sbin->in_avail();
 		}
-	      else
-		break;
-	    }
+ 	      else 
+		{
+		  _CharT __buf[256];
+		  streamsize __charsread = __sbin->sgetn(__buf, sizeof(__buf));
+		  __xtrct = __sbout->sputn(__buf, __charsread);
+		  __ret += __xtrct;
+		  if (__xtrct != __charsread)
+		    break;
+		}
+ 	      if (_Traits::eq_int_type(__sbin->sgetc(), _Traits::eof()))
+  		break;
+ 	      __bufsize = __sbin->in_avail();
+  	    }
 	}
       catch(exception& __fail) 
 	{
