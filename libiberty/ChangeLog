@@ -1,3 +1,7 @@
+Sun Apr 25 01:18:21 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* choose-temp.c (DIR_SEPARATOR): Use '\\' only for native windows32.
+
 1999-04-20  Jim Blandy  <jimb@zwingli.cygnus.com>
 
 	Fix from Dale Hawkins:

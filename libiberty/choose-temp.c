@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 extern int mkstemps ();
 
 #ifndef IN_GCC
-#if defined (__MSDOS__) || defined (_WIN32)
+#if defined (__MSDOS__) || (defined (_WIN32) && ! defined (__CYGWIN__) && ! defined (_UWIN))
 #define DIR_SEPARATOR '\\'
 #endif
 #endif
