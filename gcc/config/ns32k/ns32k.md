@@ -945,8 +945,8 @@
 {
   if (GET_CODE(operands[0]) == CONST_INT && INTVAL(operands[0]) < 64
       && INTVAL(operands[0]) > -64 && ! TARGET_32532)
-    return \"adjspb %0\";
-  return \"adjspd %0\";
+    return \"adjspb %$%0\";
+  return \"adjspd %$%0\";
 }")
 
 (define_insn "subsi3"
@@ -2583,3 +2583,31 @@
 	(leu:QI (cc0) (const_int 0)))]
   ""
   "slsb %0")
+
+;; Speed up stack adjust followed by a fullword fixedpoint push.
+
+(define_peephole
+  [(set (reg:SI 17) (plus:SI (reg:SI 17) (const_int 4)))
+   (set (match_operand:SI 0 "push_operand" "=m")
+	(match_operand:SI 1 "general_operand" "g"))]
+  "! reg_mentioned_p (stack_pointer_rtx, operands[1])"
+  "*
+{
+  return \"movd %1,0(sp)\";
+}")
+
+;; Speed up stack adjust followed by two fullword fixedpoint pushes.
+
+(define_peephole
+  [(set (reg:SI 17) (plus:SI (reg:SI 17) (const_int 8)))
+   (set (match_operand:SI 0 "push_operand" "=m")
+	(match_operand:SI 1 "general_operand" "g"))
+   (set (match_operand:SI 2 "push_operand" "=m")
+	(match_operand:SI 3 "general_operand" "g"))]
+  "! reg_mentioned_p (stack_pointer_rtx, operands[1])
+   && ! reg_mentioned_p (stack_pointer_rtx, operands[3])"
+  "*
+{
+  return \"movd %1,4(sp); movd %3,0(sp)\";
+}")
+
