@@ -51,13 +51,13 @@ struct _Unwind_Context {
 static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
-  unw_word_t handler;
+  unw_proc_info_t pi;
 
   if (unw_step (&context->cursor) <= 0)
     return _URC_END_OF_STACK;
 
-  unw_get_reg (&context->cursor, UNW_REG_HANDLER, &handler);
-  fs->personality = (_Unwind_Personality_Fn) handler;
+  unw_get_proc_info(&context->cursor, &pi);
+  fs->personality = (_Unwind_Personality_Fn) pi.handler;
 
   return _URC_NO_REASON;
 }
@@ -137,19 +137,19 @@ _Unwind_SetIP (struct _Unwind_Context *context, _Unwind_Ptr val)
 void *
 _Unwind_GetLanguageSpecificData (struct _Unwind_Context *context)
 {
-  unw_word_t ret;
+  unw_proc_info_t pi;
 
-  unw_get_reg (&context->cursor, UNW_REG_LSDA, &ret);
-  return (void *) ret;
+  unw_get_proc_info(&context->cursor, &pi);
+  return (void *) pi.lsda;
 }
 
 _Unwind_Ptr
 _Unwind_GetRegionStart (struct _Unwind_Context *context)
 {
-  unw_word_t ret;
+  unw_proc_info_t pi;
 
-  unw_get_reg (&context->cursor, UNW_REG_PROC_START, &ret);
-  return (_Unwind_Ptr) ret;
+  unw_get_proc_info(&context->cursor, &pi);
+  return (_Unwind_Ptr) pi.start_ip;
 }
 
 #include "unwind.inc"
