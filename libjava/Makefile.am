@@ -786,6 +786,7 @@ java/beans/beancontext/BeanContextServiceRevokedEvent.java \
 java/beans/beancontext/BeanContextServiceRevokedListener.java \
 java/beans/beancontext/BeanContextServices.java	\
 java/beans/beancontext/BeanContextServicesListener.java	\
+java/beans/AppletInitializer.java \
 java/beans/BeanDescriptor.java \
 java/beans/BeanInfo.java \
 java/beans/Beans.java \
