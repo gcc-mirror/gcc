@@ -68,7 +68,7 @@ esac
 # Here we must recognize all the valid KERNEL-OS combinations.
 maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
-  linux-gnu*)
+  linux-gnu* | gnu-gnu*)
     os=-$maybe_os
     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
     ;;
@@ -678,7 +678,7 @@ case $os in
 	# The portable systems comes first.
 	# Each alternative MUST END IN A *, to match a version number.
 	# -sysv* is not here because it comes later, after sysvr4.
-	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+	-gnu-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]*\
 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aof* | -aos* \
@@ -691,6 +691,9 @@ case $os in
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
 	      | -linux-gnu* | -uxpv*)
 	# Remember, each alternative MUST END IN *, to match a version number.
+		;;
+        -gnu*)
+		os=`echo $os | sed -e 's|gnu|gnu-gnu|'`
 		;;
 	-linux*)
 		os=`echo $os | sed -e 's|linux|linux-gnu|'`
