@@ -1,5 +1,5 @@
 /* Process machine description and calculate constant conditions.
-   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -86,6 +86,9 @@ write_header (void)
 
   puts ("\
 #include \"system.h\"\n\
+#if GCC_VERSION < 3001\n\
+#include \"dummy-conditions.c\"\n\
+#else\n\
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
 #include \"rtl.h\"\n\
@@ -122,14 +125,10 @@ extern rtx operands[];\n");
 
   puts ("\
 /* If we don't have __builtin_constant_p, or it's not acceptable in\n\
-   array initializers, fall back to assuming that all conditions\n\
-   potentially vary at run time.  It works in 3.0.1 and later; 3.0\n\
-   only when not optimizing.  */\n\
-#if (GCC_VERSION >= 3001) || ((GCC_VERSION == 3000) && !__OPTIMIZE__)\n\
-# define MAYBE_EVAL(expr) (__builtin_constant_p(expr) ? (int) (expr) : -1)\n\
-#else\n\
-# define MAYBE_EVAL(expr) -1\n\
-#endif\n");
+   array initializers, fall back (by using dummy-conditions.c above)\n\
+   to assuming that all conditions potentially vary at run time.  It\n\
+   works in 3.0.1 and later; 3.0 only when not optimizing.  */\n\
+#define MAYBE_EVAL(expr) (__builtin_constant_p(expr) ? (int) (expr) : -1)\n");
 }
 
 /* Write out one entry in the conditions table, using the data pointed
@@ -176,7 +175,7 @@ const struct c_test insn_conditions[] = {");
 
   printf ("const size_t n_insn_conditions = %lu;\n",
 	  (unsigned long) htab_elements (condition_table));
-  puts ("const int insn_elision_unavailable = 0;");
+  puts ("const int insn_elision_unavailable = 0;\n#endif");
 }
 
 int
