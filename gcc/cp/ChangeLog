@@ -1,3 +1,9 @@
+2004-05-27  Adam Nemet  <anemet@lnxw.com>
+
+	PR c++/12883
+	* decl.c (complete_array_type): Set TYPE_NEEDS_CONSTRUCTING and
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR based on the underlying type.
+
 2004-05-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* method.c (implicitly_declare_fn): Don't call defer_fn; abort
