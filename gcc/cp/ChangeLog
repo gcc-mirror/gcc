@@ -1,3 +1,9 @@
+2004-06-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/15503
+	* parser.c (cp_parser_mem_initializer_id): Gracefully reject
+	'typename', and accept 'template'.
+
 2004-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15142

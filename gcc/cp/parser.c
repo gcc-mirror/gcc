@@ -7192,8 +7192,16 @@ cp_parser_mem_initializer_id (cp_parser* parser)
 {
   bool global_scope_p;
   bool nested_name_specifier_p;
+  bool template_p = false;
   tree id;
 
+  /* `typename' is not allowed in this context ([temp.res]).  */
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME))
+    {
+      error ("keyword `typename' not allowed in this context (a qualified "
+	     "member initializer is implicitly a type)");
+      cp_lexer_consume_token (parser->lexer);
+    }
   /* Look for the optional `::' operator.  */
   global_scope_p 
     = (cp_parser_global_scope_opt (parser, 
@@ -7218,12 +7226,14 @@ cp_parser_mem_initializer_id (cp_parser* parser)
 					    /*type_p=*/true,
 					    /*is_declaration=*/true)
        != NULL_TREE);
+  if (nested_name_specifier_p)
+    template_p = cp_parser_optional_template_keyword (parser);
   /* If there is a `::' operator or a nested-name-specifier, then we
      are definitely looking for a class-name.  */
   if (global_scope_p || nested_name_specifier_p)
     return cp_parser_class_name (parser,
 				 /*typename_keyword_p=*/true,
-				 /*template_keyword_p=*/false,
+				 /*template_keyword_p=*/template_p,
 				 /*type_p=*/false,
 				 /*check_dependency_p=*/true,
 				 /*class_head_p=*/false,
