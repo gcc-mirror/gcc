@@ -8053,6 +8053,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
        OK_DEFER_POP;
        return temp;
 
+    case VEC_COND_EXPR:
+	target = expand_vec_cond_expr (exp, target);
+	return target;
+
     case MODIFY_EXPR:
       {
 	/* If lhs is complex, expand calls in rhs before computing it.
