@@ -1,3 +1,10 @@
+2002-03-15  Eric Blake  <ebb9@email.byu.edu>
+
+	For PR java/5902:
+	* libjava.compile/PR5902.java: Does not need to execute.
+	For PR java/5913:
+	* libjava.compile/PR5913.java: Ditto.
+
 2002-03-12  Tom Tromey  <tromey@redhat.com>
 
 	Test for PR java/5848:
