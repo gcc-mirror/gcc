@@ -1,3 +1,7 @@
+2003-05-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/200305051.c: Fix triplet.
+
 2003-05-06  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/20021014-1.c: XFAIL for xstormy16 also.
