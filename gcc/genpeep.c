@@ -20,6 +20,10 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include <stdio.h>
+#ifdef __STDC__
+#include <stdarg.h>
+#endif
+
 #include "hconfig.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -48,7 +52,12 @@ struct link
 
 char *xmalloc ();
 static void match_rtx ();
-static void fatal ();
+#ifdef HAVE_VPRINTF
+static void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+static void fatal PROTO(());
+#endif
 void fancy_abort ();
 
 static int max_opno;
@@ -409,6 +418,29 @@ xrealloc (ptr, size)
   return result;
 }
 
+#ifdef HAVE_VPRINTF
+static void
+fatal VPROTO((char *s, ...))
+{
+#ifndef __STDC__
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genpeep: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
 static void
 fatal (s, a1, a2)
      char *s;
@@ -418,6 +450,7 @@ fatal (s, a1, a2)
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */

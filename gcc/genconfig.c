@@ -1,6 +1,6 @@
 /* Generate from machine description:
    - some #define configuration flags.
-   Copyright (C) 1987, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include <stdio.h>
+#ifdef __STDC__
+#include <stdarg.h>
+#endif
 #include "hconfig.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -50,7 +53,12 @@ static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
 char *xmalloc ();
-static void fatal ();
+#ifdef HAVE_VPRINTF
+static void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+static void fatal PROTO(());
+#endif
 void fancy_abort ();
 
 /* RECOG_P will be non-zero if this pattern was seen in a context where it will
@@ -261,6 +269,29 @@ xrealloc (ptr, size)
   return result;
 }
 
+#ifdef HAVE_VPRINTF
+static void
+fatal VPROTO((char *s, ...))
+{
+#ifndef __STDC__
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genconfig: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
 static void
 fatal (s, a1, a2)
      char *s;
@@ -270,6 +301,7 @@ fatal (s, a1, a2)
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */

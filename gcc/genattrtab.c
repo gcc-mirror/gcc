@@ -139,7 +139,12 @@ char **insn_name_ptr = 0;
 extern void free ();
 extern rtx read_rtx ();
 
-static void fatal ();
+#ifdef HAVE_VPRINTF
+static void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+static void fatal PROTO(());
+#endif
 void fancy_abort ();
 
 /* enough space to reserve for printing out ints */
@@ -5526,16 +5531,39 @@ copy_rtx_unchanging (orig)
 #endif
 }
 
+#ifdef HAVE_VPRINTF
+static void
+fatal VPROTO((char *s, ...))
+{
+#ifndef __STDC__
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genattrtab: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
 static void
 fatal (s, a1, a2)
      char *s;
-     char *a1, *a2;
 {
   fprintf (stderr, "genattrtab: ");
   fprintf (stderr, s, a1, a2);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */

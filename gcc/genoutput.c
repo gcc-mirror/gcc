@@ -91,6 +91,10 @@ It would not make an case in output_insn_hairy because the template
 given in the entry is a constant (it does not start with `*').  */
 
 #include <stdio.h>
+#ifdef __STDC__
+#include <stdarg.h>
+#endif
+
 #include "hconfig.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -111,7 +115,12 @@ extern void free ();
 extern rtx read_rtx ();
 
 char *xmalloc ();
-static void fatal ();
+#ifdef HAVE_VPRINTF
+static void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+static void fatal PROTO(());
+#endif
 void fancy_abort ();
 static void error ();
 static void mybcopy ();
@@ -911,6 +920,29 @@ mybcopy (b1, b2, length)
     *b2++ = *b1++;
 }
 
+#ifdef HAVE_VPRINTF
+static void
+fatal VPROTO((char *s, ...))
+{
+#ifndef __STDC__
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genoutput: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
 static void
 fatal (s, a1, a2, a3, a4)
      char *s;
@@ -920,6 +952,7 @@ fatal (s, a1, a2, a3, a4)
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */

@@ -1,5 +1,5 @@
 /* Generate attribute information (insn-attr.h) from machine description.
-   Copyright (C) 1991, 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include <stdio.h>
+#ifdef __STDC__
+#include <stdarg.h>
+#endif
 #include "hconfig.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -35,7 +38,12 @@ extern void free PROTO((void *));
 extern rtx read_rtx PROTO((FILE *));
 
 char *xmalloc PROTO((unsigned));
-static void fatal ();
+#ifdef HAVE_VPRINTF
+static void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+static void fatal PROTO(());
+#endif
 void fancy_abort PROTO((void));
 
 /* A range of values.  */
@@ -213,6 +221,29 @@ xrealloc (ptr, size)
   return result;
 }
 
+#ifdef HAVE_VPRINTF
+static void
+fatal VPROTO((char *s, ...))
+{
+#ifndef __STDC__
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genattr: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
 static void
 fatal (s, a1, a2)
      char *s;
@@ -222,6 +253,7 @@ fatal (s, a1, a2)
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
