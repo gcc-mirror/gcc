@@ -181,8 +181,8 @@ progname=`$echo "X$0" | $Xsed -e 's%^.*/%%'`
 # Constants:
 PROGRAM=ltconfig
 PACKAGE=libtool
-VERSION=1.4a
-TIMESTAMP=" (1.641.2.256 2001/05/28 20:09:07)"
+VERSION=1.4a-GCC3.0
+TIMESTAMP=" (1.641.2.256 2001/05/28 20:09:07 with GCC-local changes)"
 ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
 ac_link='${CC-cc} -o conftest $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
 rm="rm -f"
@@ -791,7 +791,7 @@ else
              = "XX$testring" &&
           new_result=`expr "X$testring" : ".*" 2>&1` &&
           lt_cv_sys_max_cmd_len=$new_result &&
-          test $i != 18 # 1 MB should be enough
+          test $i != 17 # 1/2 MB should be enough
   do
     i=`expr $i + 1`
     testring=$testring$testring

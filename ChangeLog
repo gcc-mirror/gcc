@@ -1,3 +1,9 @@
+2001-07-21  Michael Chastain  <chastain@redhat.com>
+
+	* ltconfig: Set max_cmd_len to a maximum of 512Kb, as it seems some
+	HPUX 11.0 systems have trouble with 1MB.  Mark as gcc-local.
+	* ltmain.sh: Mark as gcc-local.
+
 2001-07-16  Aldy Hernandez  <aldyh@redhat.com>
 
         * config.sub: Fix mips64vr5000el typo in CPU-COMPANY.
