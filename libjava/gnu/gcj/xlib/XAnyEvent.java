@@ -19,14 +19,40 @@ import gnu.gcj.RawData;
 public final class XAnyEvent
 {
   // Must match the definitions in X.h:
-  public static final int TYPE_BUTTON_PRESS     =  4,
-                          TYPE_BUTTON_RELEASE   =  5,
-	                  TYPE_EXPOSE           = 12,
-	                  TYPE_UNMAP_NOTIFY     = 18,
-	                  TYPE_MAP_NOTIFY       = 19,
-	                  TYPE_REPARENT_NOTIFY  = 21,
-	                  TYPE_CONFIGURE_NOTIFY = 22,
-	                  TYPE_CLIENT_MESSAGE   = 33;
+  public static final int 
+                      TYPE_KEY_PRESS          =  2,
+                      TYPE_KEY_RELEASE        =  3,
+                      TYPE_BUTTON_PRESS       =  4,
+                      TYPE_BUTTON_RELEASE     =  5,
+                      TYPE_MOTION_NOTIFY      =  6,
+                      TYPE_ENTER_NOTIFY       =  7,
+                      TYPE_LEAVE_NOTIFY       =  8,
+                      TYPE_FOCUS_IN           =  9,
+                      TYPE_FOCUS_OUT          = 10,
+                      TYPE_KEYMAP_NOTIFY      = 11,
+                      TYPE_EXPOSE             = 12,
+                      TYPE_GRAPHICS_EXPOSE    = 13,
+                      TYPE_NO_EXPOSE          = 14,
+                      TYPE_VISIBILITY_NOTIFY  = 15,
+                      TYPE_CREATE_NOTIFY      = 16,
+                      TYPE_DESTROY_NOTIFY     = 17,
+                      TYPE_UNMAP_NOTIFY       = 18,
+                      TYPE_MAP_NOTIFY         = 19,
+                      TYPE_MAP_REQUEST        = 20,
+                      TYPE_REPARENT_NOTIFY    = 21,
+                      TYPE_CONFIGURE_NOTIFY   = 22,
+                      TYPE_CONFIGURE_REQUEST  = 23,
+                      TYPE_GRAVITY_NOTIFY     = 24,
+                      TYPE_RESIZE_REQUEST     = 25,
+                      TYPE_CIRCULATE_NOTIFY   = 26,
+                      TYPE_CIRCULATE_REQUEST  = 27,
+                      TYPE_PROPERTY_NOTIFY    = 28,
+                      TYPE_SELECTION_CLEAR    = 29,
+                      TYPE_SELECTION_REQUEST  = 30,
+                      TYPE_SELECTION_NOTIFY   = 31,
+                      TYPE_COLORMAP_NOTIFY    = 32,
+                      TYPE_CLIENT_MESSAGE     = 33,
+                      TYPE_MAPPING_NOTIFY     = 34;
     
   // Must match the definitions in X.h:
   public final static long MASK_SUBSTRUCTURE_NOTIFY   = 1L<<19,

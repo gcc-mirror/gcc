@@ -237,3 +237,18 @@ void gnu::gcj::xlib::GC::updateClip()
 		     ordering);
   // no fast fail
 }
+
+void gnu::gcj::xlib::GC::copyArea (gnu::gcj::xlib::Drawable * source, 
+				  jint srcX, jint srcY,
+				  jint destX, jint destY,
+				  jint width, jint height)
+{
+  Display* display = target->getDisplay ();
+  ::Display* dpy = (::Display*) (display->display);
+  ::Drawable drawableXID = target->getXID ();
+  ::GC gc = (::GC) structure;
+  ::Drawable srcXID = source->getXID ();
+
+  XCopyArea (dpy, srcXID, drawableXID, gc, srcX, srcY, width, height,
+    destX, destY);
+}

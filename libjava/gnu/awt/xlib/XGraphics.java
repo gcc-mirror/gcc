@@ -20,6 +20,7 @@ import gnu.gcj.xlib.XImage;
 import gnu.gcj.xlib.Drawable;
 import gnu.gcj.xlib.Window;
 import gnu.gcj.xlib.Drawable;
+import gnu.gcj.xlib.Pixmap;
 import gnu.gcj.xlib.Visual;
 import gnu.awt.j2d.DirectRasterGraphics;
 import gnu.awt.j2d.MappedRaster;
@@ -199,6 +200,16 @@ public class XGraphics implements Cloneable, DirectRasterGraphics
   public boolean drawImage(Image img, int x, int y,
 			   ImageObserver observer)
   {
+    if (img instanceof XOffScreenImage)
+    {
+      // FIXME: have to enforce clip, or is it OK as-is?
+      XGraphicsConfiguration.XOffScreenImage offScreenImage
+        = ((XGraphicsConfiguration.XOffScreenImage)img);
+      Pixmap pixmap = offScreenImage.getPixmap ();
+      context.copyArea (pixmap, 0, 0, x, y,
+        offScreenImage.getWidth (), offScreenImage.getHeight ());
+      return true;
+    }
     if (clipBounds == null)
       return false; // ***FIXME***
 
