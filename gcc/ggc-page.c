@@ -405,7 +405,7 @@ static void poison_pages PARAMS ((void));
 
 void debug_print_page_list PARAMS ((int));
 
-/* Returns non-zero if P was allocated in GC'able memory.  */
+/* Returns nonzero if P was allocated in GC'able memory.  */
 
 static inline int
 ggc_allocated_p (p)
@@ -874,7 +874,7 @@ static unsigned char size_lookup[257] =
   8
 };
 
-/* Allocate a chunk of memory of SIZE bytes.  If ZERO is non-zero, the
+/* Allocate a chunk of memory of SIZE bytes.  If ZERO is nonzero, the
    memory is zeroed; otherwise, its contents are undefined.  */
 
 void *

@@ -238,7 +238,7 @@ static int output_long_names = 0;
 static int output_function_summary = 0;
 
 /* Object directory file prefix.  This is the directory/file
-   where .bb and .bbg files are looked for, if non-zero.  */
+   where .bb and .bbg files are looked for, if nonzero.  */
 
 static char *object_directory = 0;
 
@@ -1055,7 +1055,7 @@ scan_for_source_files ()
 	}
       /* There will be a zero before the first file name, in which case s_ptr
 	 will still be uninitialized.  So, only try to set the maxlineno
-	 field if line_num is non-zero.  */
+	 field if line_num is nonzero.  */
       else if (line_num > 0)
 	{
 	  if (s_ptr->maxlineno <= line_num)

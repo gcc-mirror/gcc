@@ -4222,7 +4222,7 @@ emit_prefetch_instructions (loop)
 
 static rtx note_insn;
 
-/* Dummy register to have non-zero DEST_REG for DEST_ADDR type givs.  */
+/* Dummy register to have nonzero DEST_REG for DEST_ADDR type givs.  */
 
 static rtx addr_placeholder;
 
@@ -4594,7 +4594,7 @@ loop_givs_check (loop)
 }
 
 
-/* Return non-zero if it is possible to eliminate the biv BL provided
+/* Return nonzero if it is possible to eliminate the biv BL provided
    all givs are reduced.  This is possible if either the reg is not
    used outside the loop, or we can compute what its final value will
    be.  */
@@ -6498,7 +6498,7 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, ext_val,
    expression that is neither invariant nor a biv or giv), this routine
    returns 0.
 
-   For a non-zero return, the result will have a code of CONST_INT, USE,
+   For a nonzero return, the result will have a code of CONST_INT, USE,
    REG (for a BIV), PLUS, or MULT.  No other codes will occur.
 
    *BENEFIT will be incremented by the benefit of any sub-giv encountered.  */
@@ -6851,7 +6851,7 @@ simplify_giv_expr (loop, x, ext_val, benefit)
 		      return simplify_giv_expr (loop, m->match->set_dest,
 						ext_val, benefit);
 
-		    /* If consec is non-zero, this is a member of a group of
+		    /* If consec is nonzero, this is a member of a group of
 		       instructions that were moved together.  We handle this
 		       case only to the point of seeking to the last insn and
 		       looking for a REG_EQUAL.  Fail if we don't find one.  */
@@ -8586,7 +8586,7 @@ check_dbra_loop (loop, insn_count)
 /* Verify whether the biv BL appears to be eliminable,
    based on the insns in the loop that refer to it.
 
-   If ELIMINATE_P is non-zero, actually do the elimination.
+   If ELIMINATE_P is nonzero, actually do the elimination.
 
    THRESHOLD and INSN_COUNT are from loop_optimize and are used to
    determine whether invariant insns should be placed inside or at the
@@ -8658,7 +8658,7 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
 }
 
 /* INSN and REFERENCE are instructions in the same insn chain.
-   Return non-zero if INSN is first.  */
+   Return nonzero if INSN is first.  */
 
 int
 loop_insn_first_p (insn, reference)
@@ -8691,7 +8691,7 @@ loop_insn_first_p (insn, reference)
     }
 }
 
-/* We are trying to eliminate BIV in INSN using GIV.  Return non-zero if
+/* We are trying to eliminate BIV in INSN using GIV.  Return nonzero if
    the offset that we have to take into account due to auto-increment /
    div derivation is zero.  */
 static int
@@ -8718,10 +8718,10 @@ biv_elimination_giv_has_0_offset (biv, giv, insn)
 
    If BIV does not appear in X, return 1.
 
-   If ELIMINATE_P is non-zero, actually do the elimination.
+   If ELIMINATE_P is nonzero, actually do the elimination.
    WHERE_INSN/WHERE_BB indicate where extra insns should be added.
    Depending on how many items have been moved out of the loop, it
-   will either be before INSN (when WHERE_INSN is non-zero) or at the
+   will either be before INSN (when WHERE_INSN is nonzero) or at the
    start of the loop (when WHERE_INSN is zero).  */
 
 static int
@@ -9191,14 +9191,14 @@ update_reg_last_use (x, insn)
    If the condition cannot be understood, or is an inequality floating-point
    comparison which needs to be reversed, 0 will be returned.
 
-   If REVERSE is non-zero, then reverse the condition prior to canonizing it.
+   If REVERSE is nonzero, then reverse the condition prior to canonizing it.
 
-   If EARLIEST is non-zero, it is a pointer to a place where the earliest
+   If EARLIEST is nonzero, it is a pointer to a place where the earliest
    insn used in locating the condition was found.  If a replacement test
    of the condition is desired, it should be placed in front of that
    insn and we will be sure that the inputs are still valid.
 
-   If WANT_REG is non-zero, we wish the condition to be relative to that
+   If WANT_REG is nonzero, we wish the condition to be relative to that
    register, if possible.  Therefore, do not canonicalize the condition
    further.  */
 
@@ -9240,7 +9240,7 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 	 && op1 == CONST0_RTX (GET_MODE (op0))
 	 && op0 != want_reg)
     {
-      /* Set non-zero when we find something of interest.  */
+      /* Set nonzero when we find something of interest.  */
       rtx x = 0;
 
 #ifdef HAVE_cc0
@@ -9448,7 +9448,7 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
    inequality floating-point comparison which needs to be reversed, 0 will
    be returned.
 
-   If EARLIEST is non-zero, it is a pointer to a place where the earliest
+   If EARLIEST is nonzero, it is a pointer to a place where the earliest
    insn used in locating the condition was found.  If a replacement test
    of the condition is desired, it should be placed in front of that
    insn and we will be sure that the inputs are still valid.  */
@@ -10448,7 +10448,7 @@ loop_insn_emit_after (loop, where_bb, where_insn, pattern)
 }
 
 
-/* If WHERE_INSN is non-zero emit insn for PATTERN before WHERE_INSN
+/* If WHERE_INSN is nonzero emit insn for PATTERN before WHERE_INSN
    in basic block WHERE_BB (ignored in the interim) within the loop
    otherwise hoist PATTERN into the loop pre-header.  */
 

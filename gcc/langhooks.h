@@ -78,7 +78,7 @@ struct lang_hooks_for_functions
 
 struct lang_hooks_for_tree_dump
 {
-  /* Dump language-specific parts of tree nodes.  Returns non-zero if it
+  /* Dump language-specific parts of tree nodes.  Returns nonzero if it
      does not want the usual dumping of the second argument.  */
   int (*dump_tree) PARAMS ((void *, tree));
 
@@ -142,7 +142,7 @@ struct lang_hooks_for_decls
      FUNCTIONBODY -- nonzero if this level is the body of a function.  */
   tree (*poplevel) PARAMS ((int, int, int));
 
-  /* Returns non-zero if we are in the global binding level.  Ada
+  /* Returns nonzero if we are in the global binding level.  Ada
      returns -1 for an undocumented reason used in stor-layout.c.  */
   int (*global_bindings_p) PARAMS ((void));
 
@@ -201,7 +201,7 @@ struct lang_hooks
      Should return zero unless the compiler back-end does not need to
      be initialized, such as with the -E option.
      
-     If errorcount is non-zero after this call the compiler exits
+     If errorcount is nonzero after this call the compiler exits
      immediately and the finish hook is not called.  */
   bool (*post_options) PARAMS ((void));
 
@@ -216,7 +216,7 @@ struct lang_hooks
   /* Called at the end of compilation, as a finalizer.  */
   void (*finish) PARAMS ((void));
 
-  /* Parses the entire file.  The argument is non-zero to cause bison
+  /* Parses the entire file.  The argument is nonzero to cause bison
      parsers to dump debugging information during parsing.  */
   void (*parse_file) PARAMS ((int));
 

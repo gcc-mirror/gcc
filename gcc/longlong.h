@@ -66,7 +66,7 @@
    is rounded towards 0.
 
    5) count_leading_zeros(count, x) counts the number of zero-bits from the
-   msb to the first non-zero bit in the UWtype X.  This is the number of
+   msb to the first nonzero bit in the UWtype X.  This is the number of
    steps X needs to be shifted left to set the msb.  Undefined for X == 0,
    unless the symbol COUNT_LEADING_ZEROS_0 is defined to some value.
 

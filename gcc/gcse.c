@@ -297,12 +297,12 @@ static FILE *debug_stderr;
 /* An obstack for our working variables.  */
 static struct obstack gcse_obstack;
 
-/* Non-zero for each mode that supports (set (reg) (reg)).
+/* Nonzero for each mode that supports (set (reg) (reg)).
    This is trivially true for integer and floating point values.
    It may or may not be true for condition codes.  */
 static char can_copy_p[(int) NUM_MACHINE_MODES];
 
-/* Non-zero if can_copy_p has been initialized.  */
+/* Nonzero if can_copy_p has been initialized.  */
 static int can_copy_init_p;
 
 struct reg_use {rtx reg_rtx; };
@@ -344,9 +344,9 @@ struct occr
   struct occr *next;
   /* The insn that computes the expression.  */
   rtx insn;
-  /* Non-zero if this [anticipatable] occurrence has been deleted.  */
+  /* Nonzero if this [anticipatable] occurrence has been deleted.  */
   char deleted_p;
-  /* Non-zero if this [available] occurrence has been copied to
+  /* Nonzero if this [available] occurrence has been copied to
      reaching_reg.  */
   /* ??? This is mutually exclusive with deleted_p, so they could share
      the same byte.  */
@@ -1157,7 +1157,7 @@ compute_local_properties (transp, comp, antloc, table)
 	    compute_transp (expr->expr, indx, transp, table->set_p);
 
 	  /* The occurrences recorded in antic_occr are exactly those that
-	     we want to set to non-zero in ANTLOC.  */
+	     we want to set to nonzero in ANTLOC.  */
 	  if (antloc)
 	    for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
 	      {
@@ -1169,7 +1169,7 @@ compute_local_properties (transp, comp, antloc, table)
 	      }
 
 	  /* The occurrences recorded in avail_occr are exactly those that
-	     we want to set to non-zero in COMP.  */
+	     we want to set to nonzero in COMP.  */
 	  if (comp)
 	    for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
 	      {
@@ -1341,7 +1341,7 @@ want_to_gcse_p (x)
 	  && (num_clobbers == 0 || ! added_clobbers_hard_reg_p (icode)));
 }
 
-/* Return non-zero if the operands of expression X are unchanged from the
+/* Return nonzero if the operands of expression X are unchanged from the
    start of INSN's basic block up to but not including INSN (if AVAIL_P == 0),
    or from INSN to the end of INSN's basic block (if AVAIL_P != 0).  */
 
@@ -1524,7 +1524,7 @@ load_killed_in_block_p (bb, uid_limit, x, avail_p)
   return 0;
 }
 
-/* Return non-zero if the operands of expression X are unchanged from
+/* Return nonzero if the operands of expression X are unchanged from
    the start of INSN's basic block up to but not including INSN.  */
 
 static int
@@ -1534,7 +1534,7 @@ oprs_anticipatable_p (x, insn)
   return oprs_unchanged_p (x, insn, 0);
 }
 
-/* Return non-zero if the operands of expression X are unchanged from
+/* Return nonzero if the operands of expression X are unchanged from
    INSN to the end of INSN's basic block.  */
 
 static int
@@ -1787,7 +1787,7 @@ hash_set (regno, hash_table_size)
   return hash % hash_table_size;
 }
 
-/* Return non-zero if exp1 is equivalent to exp2.
+/* Return nonzero if exp1 is equivalent to exp2.
    ??? Borrowed from cse.c.  Might want to remerge with cse.c.  Later.  */
 
 static int
@@ -1937,8 +1937,8 @@ expr_equiv_p (x, y)
    MODE is the mode of the value X is being stored into.
    It is only used if X is a CONST_INT.
 
-   ANTIC_P is non-zero if X is an anticipatable expression.
-   AVAIL_P is non-zero if X is an available expression.  */
+   ANTIC_P is nonzero if X is an anticipatable expression.
+   AVAIL_P is nonzero if X is an available expression.  */
 
 static void
 insert_expr_in_table (x, mode, insn, antic_p, avail_p, table)
@@ -2255,7 +2255,7 @@ hash_scan_call (x, insn, table)
    that isn't dealt with right now.  The trick is handling the CLOBBERs that
    are also in the PARALLEL.  Later.
 
-   If SET_P is non-zero, this is for the assignment hash table,
+   If SET_P is nonzero, this is for the assignment hash table,
    otherwise it is for the expression hash table.
    If IN_LIBCALL_BLOCK nonzero, we are in a libcall block, and should
    not record any expressions.  */
@@ -2740,7 +2740,7 @@ reset_opr_set_tables ()
   clear_modify_mem_tables ();
 }
 
-/* Return non-zero if the operands of X are not set before INSN in
+/* Return nonzero if the operands of X are not set before INSN in
    INSN's basic block.  */
 
 static int
@@ -3068,7 +3068,7 @@ compute_ae_gen (expr_hash_table)
 	SET_BIT (ae_gen[BLOCK_NUM (occr->insn)], expr->bitmap_index);
 }
 
-/* Return non-zero if expression X is killed in BB.  */
+/* Return nonzero if expression X is killed in BB.  */
 
 static int
 expr_killed_p (x, bb)
@@ -3157,9 +3157,9 @@ compute_ae_kill (ae_gen, ae_kill, expr_hash_table)
 
 /* Actually perform the Classic GCSE optimizations.  */
 
-/* Return non-zero if occurrence OCCR of expression EXPR reaches block BB.
+/* Return nonzero if occurrence OCCR of expression EXPR reaches block BB.
 
-   CHECK_SELF_LOOP is non-zero if we should consider a block reaching itself
+   CHECK_SELF_LOOP is nonzero if we should consider a block reaching itself
    as a positive reach.  We want to do this when there are two computations
    of the expression in the block.
 
@@ -3318,7 +3318,7 @@ computing_insn (expr, insn)
     }
 }
 
-/* Return non-zero if the definition in DEF_INSN can reach INSN.
+/* Return nonzero if the definition in DEF_INSN can reach INSN.
    Only called by can_disregard_other_sets.  */
 
 static int
@@ -3352,7 +3352,7 @@ def_reaches_here_p (insn, def_insn)
   return 0;
 }
 
-/* Return non-zero if *ADDR_THIS_REG can only have one value at INSN.  The
+/* Return nonzero if *ADDR_THIS_REG can only have one value at INSN.  The
    value returned is the number of definitions that reach INSN.  Returning a
    value of zero means that [maybe] more than one definition reaches INSN and
    the caller can't perform whatever optimization it is trying.  i.e. it is
@@ -3404,7 +3404,7 @@ can_disregard_other_sets (addr_this_reg, insn, for_combine)
 /* Expression computed by insn is available and the substitution is legal,
    so try to perform the substitution.
 
-   The result is non-zero if any changes were made.  */
+   The result is nonzero if any changes were made.  */
 
 static int
 handle_avail_expr (insn, expr)
@@ -3562,7 +3562,7 @@ handle_avail_expr (insn, expr)
 /* Perform classic GCSE.  This is called by one_classic_gcse_pass after all
    the dataflow analysis has been done.
 
-   The result is non-zero if a change was made.  */
+   The result is nonzero if a change was made.  */
 
 static int
 classic_gcse ()
@@ -3621,7 +3621,7 @@ classic_gcse ()
 
 /* Top level routine to perform one classic GCSE pass.
 
-   Return non-zero if a change was made.  */
+   Return nonzero if a change was made.  */
 
 static int
 one_classic_gcse_pass (pass)
@@ -3917,7 +3917,7 @@ find_used_regs (xptr, data)
 }
 
 /* Try to replace all non-SET_DEST occurrences of FROM in INSN with TO.
-   Returns non-zero is successful.  */
+   Returns nonzero is successful.  */
 
 static int
 try_replace_reg (from, to, insn)
@@ -4146,7 +4146,7 @@ constprop_register (insn, from, to, alter_jumps)
 }
 
 /* Perform constant and copy propagation on INSN.
-   The result is non-zero if a change was made.  */
+   The result is nonzero if a change was made.  */
 
 static int
 cprop_insn (insn, alter_jumps)
@@ -4407,7 +4407,7 @@ local_cprop_pass (alter_jumps)
 }
 
 /* Forward propagate copies.  This includes copies and constants.  Return
-   non-zero if a change was made.  */
+   nonzero if a change was made.  */
 
 static int
 cprop (alter_jumps)
@@ -4838,7 +4838,7 @@ compute_pre_data ()
 
 /* PRE utilities */
 
-/* Return non-zero if an occurrence of expression EXPR in OCCR_BB would reach
+/* Return nonzero if an occurrence of expression EXPR in OCCR_BB would reach
    block BB.
 
    VISITED is a pointer to a working buffer for tracking which BB's have
@@ -5294,7 +5294,7 @@ gcse_emit_move_after (src, dest, insn)
    the expression into the result of the SET.  It is left to later passes
    (cprop, cse2, flow, combine, regmove) to propagate the copy or eliminate it.
 
-   Returns non-zero if a change is made.  */
+   Returns nonzero if a change is made.  */
 
 static int
 pre_delete ()
@@ -5419,7 +5419,7 @@ pre_gcse ()
 
 /* Top level routine to perform one PRE GCSE pass.
 
-   Return non-zero if a change was made.  */
+   Return nonzero if a change was made.  */
 
 static int
 one_pre_gcse_pass (pass)
@@ -6192,7 +6192,7 @@ hoist_code ()
 
 /* Top level routine to perform one code hoisting (aka unification) pass
 
-   Return non-zero if a change was made.  */
+   Return nonzero if a change was made.  */
 
 static int
 one_code_hoisting_pass ()
@@ -6658,7 +6658,7 @@ reg_set_info (dest, setter, data)
     SET_BIT (*regvec, REGNO (dest));
 }
 
-/* Return non-zero if the register operands of expression X are killed
+/* Return nonzero if the register operands of expression X are killed
    anywhere in basic block BB.  */
 
 static int
@@ -7131,7 +7131,7 @@ insert_insn_start_bb (insn, bb)
 }
 
 /* This routine will insert a store on an edge. EXPR is the ldst entry for
-   the memory reference, and E is the edge to insert it on.  Returns non-zero
+   the memory reference, and E is the edge to insert it on.  Returns nonzero
    if an edge insertion was performed.  */
 
 static int

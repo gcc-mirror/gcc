@@ -138,7 +138,7 @@ struct expr_status GTY(())
      since code outside the conditional won't know whether or not the
      arguments need to be popped.)
 
-     When INHIBIT_DEFER_POP is non-zero, however, the compiler does not
+     When INHIBIT_DEFER_POP is nonzero, however, the compiler does not
      attempt to defer pops.  Instead, the stack is popped immediately
      after each call.  Rather then setting this variable directly, use
      NO_DEFER_POP and OK_DEFER_POP.  */
@@ -222,7 +222,7 @@ struct function GTY(())
      used for the current function's args.  */
   CUMULATIVE_ARGS args_info;
 
-  /* If non-zero, an RTL expression for the location at which the current 
+  /* If nonzero, an RTL expression for the location at which the current
      function returns its result.  If the current function returns its
      result in a register, current_function_return_rtx will always be
      the hard register containing the result.  */

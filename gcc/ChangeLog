@@ -1,3 +1,44 @@
+2002-09-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dbxout.c: Follow spelling conventions.
+	* defaults.h: Likewise.
+	* df.c: Likewise.
+	* diagnostic.h: Likewise.
+	* doloop.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* except.c: Likewise.
+	* explow.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* expr.h: Likewise.
+	* flags.h: Likewise.
+	* flow.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* function.h: Likewise.
+	* gcc.c: Likewise.
+	* gcov-io.h: Likewise.
+	* gcov.c: Likewise.
+	* gcse.c: Likewise.
+	* genattrtab.c: Likewise.
+	* genconfig.c: Likewise.
+	* genrecog.c: Likewise.
+	* ggc-page.c: Likewise.
+	* ggc.h: Likewise.
+	* global.c: Likewise.
+	* gthr-win32.h: Likewise.
+	* integrate.c: Likewise.
+	* jump.c: Likewise.
+	* langhooks.c: Likewise.
+	* langhooks.h: Likewise.
+	* line-map.h: Likewise.
+	* local-alloc.c: Likewise.
+	* longlong.h: Likewise.
+	* loop.c: Likewise.
+	* loop.h: Likewise.
+
 Tue Aug 27 22:26:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (BIGGEST_FIELD_ALIGNMENT): Set proper default for x86_64.

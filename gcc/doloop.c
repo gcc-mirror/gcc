@@ -140,7 +140,7 @@ doloop_condition_get (pattern)
 
 /* Return an estimate of the maximum number of loop iterations for the
    loop specified by LOOP or zero if the loop is not normal.
-   MODE is the mode of the iteration count and NONNEG is non-zero if
+   MODE is the mode of the iteration count and NONNEG is nonzero if
    the iteration count has been proved to be non-negative.  */
 static unsigned HOST_WIDE_INT
 doloop_iterations_max (loop_info, mode, nonneg)
@@ -249,7 +249,7 @@ doloop_iterations_max (loop_info, mode, nonneg)
 }
 
 
-/* Return non-zero if the loop specified by LOOP is suitable for
+/* Return nonzero if the loop specified by LOOP is suitable for
    the use of special low-overhead looping instructions.  */
 static int
 doloop_valid_p (loop, jump_insn)
@@ -399,7 +399,7 @@ doloop_valid_p (loop, jump_insn)
    number of loop iterations, ITERATIONS_MAX is a CONST_INT specifying
    the maximum number of loop iterations, and DOLOOP_INSN is the
    low-overhead looping insn to emit at the end of the loop.  This
-   returns non-zero if it was successful.  */
+   returns nonzero if it was successful.  */
 static int
 doloop_modify (loop, iterations, iterations_max,
 	       doloop_seq, start_label, condition)
@@ -539,7 +539,7 @@ doloop_modify (loop, iterations, iterations_max,
    not present, we emit one.  The loop to modify is described by LOOP.
    ITERATIONS_MAX is a CONST_INT specifying the estimated maximum
    number of loop iterations.  DOLOOP_INSN is the low-overhead looping
-   insn to insert.  Returns non-zero if loop successfully modified.  */
+   insn to insert.  Returns nonzero if loop successfully modified.  */
 static int
 doloop_modify_runtime (loop, iterations_max,
 		       doloop_seq, start_label, mode, condition)
@@ -749,7 +749,7 @@ doloop_modify_runtime (loop, iterations_max,
    suitable.  We distinguish between loops with compile-time bounds
    and those with run-time bounds.  Information from LOOP is used to
    compute the number of iterations and to determine whether the loop
-   is a candidate for this optimization.  Returns non-zero if loop
+   is a candidate for this optimization.  Returns nonzero if loop
    successfully modified.  */
 int
 doloop_optimize (loop)

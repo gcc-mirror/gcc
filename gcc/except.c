@@ -353,7 +353,7 @@ static void sjlj_output_call_site_table		PARAMS ((void));
 
 
 /* Routine to see if exception handling is turned on.
-   DO_WARN is non-zero if we want to inform the user that exception
+   DO_WARN is nonzero if we want to inform the user that exception
    handling is turned off.
 
    This is used to ensure that -fexceptions has been specified if the

@@ -962,7 +962,7 @@ signed_condition (code)
     }
 }
 
-/* Return non-zero if CODE1 is more strict than CODE2, i.e., if the
+/* Return nonzero if CODE1 is more strict than CODE2, i.e., if the
    truth of CODE1 implies the truth of CODE2.  */
 
 int
@@ -1255,7 +1255,7 @@ onlyjump_p (insn)
 
 #ifdef HAVE_cc0
 
-/* Return non-zero if X is an RTX that only sets the condition codes
+/* Return nonzero if X is an RTX that only sets the condition codes
    and has no side effects.  */
 
 int

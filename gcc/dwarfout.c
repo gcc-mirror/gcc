@@ -600,7 +600,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   fprintf ((FILE), "%s", reg_names[REGNO (RTX)])
 #endif
 
-/* Define a macro which returns non-zero for any tagged type which is
+/* Define a macro which returns nonzero for any tagged type which is
    used (directly or indirectly) in the specification of either some
    function's return type or some formal parameter of some function.
    We use this macro when we are operating in "terse" mode to help us
@@ -612,12 +612,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    for these nodes.  For now, we have to just fake it.  It it safe for
    us to simply return zero for all complete tagged types (which will
    get forced out anyway if they were used in the specification of some
-   formal or return type) and non-zero for all incomplete tagged types.
+   formal or return type) and nonzero for all incomplete tagged types.
 */
 
 #define TYPE_USED_FOR_FUNCTION(tagged_type) (TYPE_SIZE (tagged_type) == 0)
 
-/* Define a macro which returns non-zero for a TYPE_DECL which was
+/* Define a macro which returns nonzero for a TYPE_DECL which was
    implicitly generated for a tagged type.
 
    Note that unlike the gcc front end (which generates a NULL named
@@ -707,7 +707,7 @@ static unsigned pending_siblings_allocated;
 
 #define PENDING_SIBLINGS_INCREMENT 64
 
-/* Non-zero if we are performing our file-scope finalization pass and if
+/* Nonzero if we are performing our file-scope finalization pass and if
    we should force out Dwarf descriptions of any and all file-scope
    tagged types which are still incomplete types.  */
 
@@ -1325,7 +1325,7 @@ type_main_variant (type)
   return type;
 }
 
-/* Return non-zero if the given type node represents a tagged type.  */
+/* Return nonzero if the given type node represents a tagged type.  */
 
 static inline int
 is_tagged_type (type)
@@ -1950,7 +1950,7 @@ write_modifier_bytes (type, decl_const, decl_volatile)
   write_modifier_bytes_1 (type, decl_const, decl_volatile, 0);
 }
 
-/* Given a pointer to an arbitrary ..._TYPE tree node, return non-zero if the
+/* Given a pointer to an arbitrary ..._TYPE tree node, return nonzero if the
    given input type is a Dwarf "fundamental" type.  Otherwise return zero.  */
 
 static inline int
@@ -4533,7 +4533,7 @@ pend_type (type)
   TREE_ASM_WRITTEN (type) = 1;
 }
 
-/* Return non-zero if it is legitimate to output DIEs to represent a
+/* Return nonzero if it is legitimate to output DIEs to represent a
    given type while we are generating the list of child DIEs for some
    DIE (e.g. a function or lexical block DIE) associated with a given scope.
 

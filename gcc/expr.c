@@ -231,7 +231,7 @@ enum insn_code movstr_optab[NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block clears.  */
 enum insn_code clrstr_optab[NUM_MACHINE_MODES];
 
-/* SLOW_UNALIGNED_ACCESS is non-zero if unaligned accesses are very slow.  */
+/* SLOW_UNALIGNED_ACCESS is nonzero if unaligned accesses are very slow.  */
 
 #ifndef SLOW_UNALIGNED_ACCESS
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
@@ -4653,7 +4653,7 @@ store_constructor_field (target, bitsize, bitpos, mode, exp, type, cleared,
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
       && bitpos % BITS_PER_UNIT == 0
-      /* If we have a non-zero bitpos for a register target, then we just
+      /* If we have a nonzero bitpos for a register target, then we just
 	 let store_field do the bitfield handling.  This is unlikely to
 	 generate unnecessary clear instructions anyways.  */
       && (bitpos == 0 || GET_CODE (target) == MEM))
@@ -9288,7 +9288,7 @@ is_aligning_offset (offset, exp)
 }
 
 /* Return the tree node if an ARG corresponds to a string constant or zero
-   if it doesn't.  If we return non-zero, set *PTR_OFFSET to the offset
+   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the offset
    in bytes within the string that ARG is accessing.  The type of the
    offset will be `sizetype'.  */
 
@@ -9674,7 +9674,7 @@ do_jump (exp, if_false_label, if_true_label)
     case NEGATE_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-      /* These cannot change zero->non-zero or vice versa.  */
+      /* These cannot change zero->nonzero or vice versa.  */
       do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
       break;
 
@@ -9700,7 +9700,7 @@ do_jump (exp, if_false_label, if_true_label)
 #endif
 
     case MINUS_EXPR:
-      /* Non-zero iff operands of minus differ.  */
+      /* Nonzero iff operands of minus differ.  */
       do_compare_and_jump (build (NE_EXPR, TREE_TYPE (exp),
 				  TREE_OPERAND (exp, 0),
 				  TREE_OPERAND (exp, 1)),
@@ -10515,7 +10515,7 @@ do_compare_and_jump (exp, signed_code, unsigned_code, if_false_label,
 
    If TARGET is nonzero, store the result there if convenient.
 
-   If ONLY_CHEAP is non-zero, only do this if it is likely to be very
+   If ONLY_CHEAP is nonzero, only do this if it is likely to be very
    cheap.
 
    Return zero if there is no suitable set-flag instruction

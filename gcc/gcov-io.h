@@ -46,7 +46,7 @@ static int __read_gcov_string PARAMS ((char *, size_t, FILE*, long))
 /* These routines only work for signed values.  */
 
 /* Store a portable representation of VALUE in DEST using BYTES*8-1 bits.
-   Return a non-zero value if VALUE requires more than BYTES*8-1 bits
+   Return a nonzero value if VALUE requires more than BYTES*8-1 bits
    to store.  */
 
 static int
@@ -81,7 +81,7 @@ __store_gcov_type (value, dest, bytes)
 }
 
 /* Retrieve a quantity containing BYTES*8-1 bits from SOURCE and store
-   the result in DEST. Returns a non-zero value if the value in SOURCE
+   the result in DEST. Returns a nonzero value if the value in SOURCE
    will not fit in DEST.  */
 
 static int
@@ -130,7 +130,7 @@ __fetch_long (dest, source, bytes)
   return 0;
 }
 
-/* Write a BYTES*8-bit quantity to FILE, portably. Returns a non-zero
+/* Write a BYTES*8-bit quantity to FILE, portably. Returns a nonzero
    value if the write fails, or if VALUE can't be stored in BYTES*8
    bits.
 
@@ -168,7 +168,7 @@ __write_long (value, file, bytes)
 }
 
 /* Read a quantity containing BYTES bytes from FILE, portably. Return
-   a non-zero value if the read fails or if the value will not fit
+   a nonzero value if the read fails or if the value will not fit
    in DEST.
 
    Note that DEST may not be large enough to hold all of the requested
