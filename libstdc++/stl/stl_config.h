@@ -116,6 +116,10 @@
 #   endif
 #   if !defined(_NOTHREADS) && __GLIBC__ >= 2
 #     define __STL_PTHREADS
+#     ifdef __STRICT_ANSI__
+        /* Work around a bug in the glibc pthread.h.  */
+#       define sigset_t __sigset_t
+#     endif
 #   endif
 #   ifdef __EXCEPTIONS
 #     define __STL_USE_EXCEPTIONS
