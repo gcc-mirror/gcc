@@ -2,6 +2,7 @@
 
 	* builtins.c (fold_builtin_1): Take decomposed arguments of
 	CALL_EXPR.
+	(fold_builtin): Update a call to fold_builtin_1.
 
 2005-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
