@@ -1,3 +1,9 @@
+2000-06-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (expand_block_move): Fix typo in earlier change.
+	(print_operand): Remove unused variables neg and op.
+	(toc_hash_mark_entry): Fix prototype.
+
 2000-06-14  Benjamin Chelf  <chelf@cabriolet.stanford.edu>
 
 	* c-common.h (IF_COND): Moved here from cp/cp-tree.h.
