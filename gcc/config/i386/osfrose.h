@@ -48,13 +48,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    || (CHAR) == 'h' \
    || (CHAR) == 'z')
 
-#define MASK_HALF_PIC     	0x40000000	/* Mask for half-pic code */
-#define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */
-#define MASK_ELF		0x10000000	/* ELF not rose */
-#define MASK_NO_IDENT		0x08000000	/* suppress .ident */
-#define MASK_NO_UNDERSCORES	0x04000000	/* suppress leading _ */
-#define MASK_LARGE_ALIGN	0x02000000	/* align to >word boundaries */
-#define MASK_NO_MCOUNT		0x01000000	/* profiling uses mcount_ptr */
+#define MASK_HALF_PIC     	010000000000	/* Mask for half-pic code */
+#define MASK_HALF_PIC_DEBUG     004000000000	/* Debug flag */
+#define MASK_ELF		002000000000	/* ELF not rose */
+#define MASK_NO_IDENT		001000000000	/* suppress .ident */
+#define MASK_NO_UNDERSCORES	000400000000	/* suppress leading _ */
+#define MASK_LARGE_ALIGN	000200000000	/* align to >word boundaries */
+#define MASK_NO_MCOUNT		000100000000	/* profiling uses mcount_ptr */
 
 #define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
 #define TARGET_DEBUG		(target_flags & MASK_HALF_PIC_DEBUG)
@@ -67,22 +67,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_MCOUNT		((target_flags & MASK_NO_MCOUNT) == 0)
 
 #undef	SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-     { "half-pic",	 MASK_HALF_PIC},				\
-     { "no-half-pic",	-MASK_HALF_PIC},				\
-     { "debug-half-pic", MASK_HALF_PIC_DEBUG},				\
-     { "debugb",	 MASK_HALF_PIC_DEBUG},				\
-     { "elf",		 MASK_ELF},					\
-     { "rose",		-MASK_ELF},					\
-     { "ident",		-MASK_NO_IDENT},				\
-     { "no-ident",	 MASK_NO_IDENT},				\
-     { "underscores",	-MASK_NO_UNDERSCORES},				\
-     { "no-underscores", MASK_NO_UNDERSCORES},				\
-     { "large-align",	 MASK_LARGE_ALIGN},				\
-     { "no-large-align",-MASK_LARGE_ALIGN},				\
-     { "mcount",	-MASK_NO_MCOUNT},				\
-     { "mcount-ptr",	 MASK_NO_MCOUNT},				\
-     { "no-mcount",	 MASK_NO_MCOUNT},
+#define SUBTARGET_SWITCHES						\
+     { "half-pic",		 MASK_HALF_PIC},			\
+     { "no-half-pic",		-MASK_HALF_PIC},			\
+     { "debug-half-pic",	 MASK_HALF_PIC_DEBUG},			\
+     { "debugb",		 MASK_HALF_PIC_DEBUG},			\
+     { "elf",			 MASK_ELF},				\
+     { "rose",			-MASK_ELF},				\
+     { "ident",			-MASK_NO_IDENT},			\
+     { "no-ident",		 MASK_NO_IDENT},			\
+     { "underscores",		-MASK_NO_UNDERSCORES},			\
+     { "no-underscores",	 MASK_NO_UNDERSCORES},			\
+     { "large-align",		 MASK_LARGE_ALIGN},			\
+     { "no-large-align",	-MASK_LARGE_ALIGN},			\
+     { "mcount",		-MASK_NO_MCOUNT},			\
+     { "mcount-ptr",		 MASK_NO_MCOUNT},			\
+     { "no-mcount",		 MASK_NO_MCOUNT},
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -178,8 +178,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WCHAR_TYPE	"unsigned int"
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-/* Temporarily turn off long double being 96 bits.  */
+/* Define this macro if the system header files support C++ as well
+   as C.  This macro inhibits the usual method of using system header
+   files in C++, which is to pretend that the file's contents are
+   enclosed in `extern "C" {...}'. */
+#define NO_IMPLICIT_EXTERN_C
+
+/* Turn off long double being 96 bits.  */
 #undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
@@ -257,7 +264,7 @@ while (0)
    expects to find the address.  The name of this variable is `LP' followed by
    the number LABELNO, so you would generate the name using `LP%d' in a
    `fprintf'.
- 
+
    The details of how the address should be passed to `mcount' are determined
    by your operating system environment, not by GNU CC.  To figure them out,
    compile a small program for profiling using the system's installed C
@@ -530,60 +537,6 @@ while (0)
    || GET_CODE (X) == CONST_INT						\
    || !HALF_PIC_ADDRESS_P (X))
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address. */
-
-#define GO_IF_LEGITIMATE_ADDRESS_ORIG(MODE, X, ADDR)			\
-{									\
-  if (CONSTANT_ADDRESS_P (X)						\
-      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (X)))			\
-    goto ADDR;								\
-  GO_IF_INDEXING (X, ADDR);						\
-  if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))		\
-    {									\
-      rtx x0 = XEXP (X, 0);						\
-      if (! flag_pic || ! SYMBOLIC_CONST (XEXP (X, 1)))			\
-	{ GO_IF_INDEXING (x0, ADDR); }					\
-      else if (x0 == pic_offset_table_rtx)				\
-	goto ADDR;							\
-      else if (GET_CODE (x0) == PLUS)					\
-	{								\
-	  if (XEXP (x0, 0) == pic_offset_table_rtx)			\
-	    { GO_IF_INDEXABLE_BASE (XEXP (x0, 1), ADDR); }		\
-	  if (XEXP (x0, 1) == pic_offset_table_rtx)			\
-	    { GO_IF_INDEXABLE_BASE (XEXP (x0, 0), ADDR); }		\
-	}								\
-    }									\
-}
-
-#undef	GO_IF_LEGITIMATE_ADDRESS
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
-{									\
-  if (! HALF_PIC_P ())							\
-    {									\
-      GO_IF_LEGITIMATE_ADDRESS_ORIG(MODE, X, ADDR);			\
-    }									\
-  else									\
-    {									\
-      if (CONSTANT_P (X) && ! HALF_PIC_ADDRESS_P (X))			\
-	goto ADDR;							\
-									\
-      GO_IF_INDEXING (X, ADDR);						\
-      if (GET_CODE (X) == PLUS)						\
-	{								\
-	  rtx x1 = XEXP (X, 1);						\
-									\
-	  if (CONSTANT_P (x1) && ! HALF_PIC_ADDRESS_P (x1))		\
-	    {								\
-	      rtx x0 = XEXP (X, 0);					\
-	      GO_IF_INDEXING (x0, ADDR);				\
-	    }								\
-	}								\
-    }									\
-}
-
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
@@ -616,7 +569,7 @@ while (0)
    function named by the symbol (such as what section it is in).
 
    The macro definition, if any, is executed immediately after the
-   rtl for DECL has been created and stored in `DECL_RTL (DECL)'. 
+   rtl for DECL has been created and stored in `DECL_RTL (DECL)'.
    The value of the rtl will be a `mem' whose address is a
    `symbol_ref'.
 
@@ -626,7 +579,7 @@ while (0)
    information).
 
    The best way to modify the name string is by adding text to the
-   beginning, with suitable punctuation to prevent any ambiguity. 
+   beginning, with suitable punctuation to prevent any ambiguity.
    Allocate the new name in `saveable_obstack'.  You will have to
    modify `ASM_OUTPUT_LABELREF' to remove and decode the added text
    and output the name accordingly.
@@ -753,7 +706,7 @@ while (0)
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM any text necessary for declaring the name NAME of an
    initialized variable which is being defined.  This macro must
-   output the label definition (perhaps using `ASM_OUTPUT_LABEL'). 
+   output the label definition (perhaps using `ASM_OUTPUT_LABEL').
    The argument DECL is the `VAR_DECL' tree node representing the
    variable.
 
@@ -914,6 +867,12 @@ do									\
 	if (flag_unroll_loops)						\
 	  fprintf ((STREAM), " -funroll-loops");			\
 									\
+	if (flag_schedule_insns)					\
+	  fprintf ((STREAM), " -fschedule-insns");			\
+									\
+	if (flag_schedule_insns_after_reload)				\
+	  fprintf ((STREAM), " -fschedule-insns2");			\
+									\
 	if (flag_force_mem)						\
 	  fprintf ((STREAM), " -fforce-mem");				\
 									\
@@ -947,7 +906,18 @@ do									\
 	if (TARGET_HALF_PIC)						\
 	  fprintf ((STREAM), " -mhalf-pic");				\
 									\
-	fprintf ((STREAM), (TARGET_486) ? " -m486" : " -m386");		\
+	if (!TARGET_MOVE)						\
+	  fprintf ((STREAM), " -mno-move");				\
+									\
+	if (TARGET_386)							\
+	  fprintf ((STREAM), " -m386");					\
+									\
+	else if (TARGET_486)						\
+	  fprintf ((STREAM), " -m486");					\
+									\
+	else								\
+	  fprintf ((STREAM), " -munknown-machine");			\
+									\
 	fprintf ((STREAM), (TARGET_ELF) ? " -melf\"\n" : " -mrose\"\n"); \
       }									\
   }									\
@@ -957,7 +927,6 @@ while (0)
 #define OBJECT_FORMAT_ROSE
 
 /* Tell collect where the appropriate binaries are.  */
-#define REAL_LD_FILE_NAME	"/usr/ccs/gcc/gld"
 #define REAL_NM_FILE_NAME	"/usr/ccs/bin/nm"
 #define REAL_STRIP_FILE_NAME	"/usr/ccs/bin/strip"
 
@@ -984,62 +953,6 @@ while (0)
   if (strcmp (lang_identify (), "c") != 0)				\
     output_lang_identify (STREAM);					\
 }
-
-/* This is how to output an assembler line defining a `double' constant.
-   Use "word" pseudos to avoid printing NaNs, infinity, etc.  */
-
-/* This is how to output an assembler line defining a `double' constant.  */
-#undef	ASM_OUTPUT_DOUBLE
-#define	ASM_OUTPUT_DOUBLE(STREAM, VALUE)				\
-do									\
-  {									\
-    long value_long[2];							\
-    char dstr[30];							\
-    REAL_VALUE_TO_TARGET_DOUBLE (VALUE, value_long);			\
-    REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
-    if (sizeof (int) == sizeof (long))					\
-      fprintf (STREAM, "\t.long\t0x%08x\t\t# %s\n\t.long\t0x%08x\n",	\
-	   value_long[0], dstr, value_long[1]);				\
-     else								\
-      fprintf (STREAM, "\t.long\t0x%08lx\t\t# %s\n\t.long\t0x%08lx\n",	\
-	   value_long[0], dstr, value_long[1]);				\
-  }									\
-while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#undef	ASM_OUTPUT_FLOAT
-#define	ASM_OUTPUT_FLOAT(STREAM, VALUE)					\
-do									\
-  {									\
-    long value_long;							\
-    char dstr[30];							\
-    REAL_VALUE_TO_TARGET_SINGLE (VALUE, value_long);			\
-    REAL_VALUE_TO_DECIMAL (VALUE, "%.12g", dstr);			\
-    if (sizeof (int) == sizeof (long))					\
-      fprintf (STREAM, "\t.long\t0x%08x\t\t# %s (float)\n",		\
-	   value_long, dstr);						\
-    else								\
-      fprintf (STREAM, "\t.long\t0x%08lx\t\t# %s (float)\n",		\
-	   value_long, dstr);						\
-  }									\
-while (0)
-
-/* This is how to output an assembler line for a `long double' constant.  */
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
-do { long l[3];								\
-     char dstr[30];							\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
-     if (sizeof (int) == sizeof (long))					\
-      fprintf (FILE,							\
-      "\t.long\t0x%08x\t\t# %s\n\t.long\t0x%08x\n\t.long\t0x%08x\n",	\
-      l[0], dstr, l[1], l[2]); 						\
-     else								\
-      fprintf (FILE,							\
-      "\t.long\t0x%08lx\t\t# %s\n\t.long\t0x%08lx\n\t.long\t0x%08lx\n",	\
-      l[0], dstr, l[1], l[2]); 						\
-   } while (0)
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS
