@@ -492,7 +492,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    construct the address of this field.  This is used for aliasing
    purposes: see record_component_aliases.
    In CONSTRUCTOR nodes, it means object constructed must be in memory.
-   In LABEL_DECL nodes, it means a goto for this label has been seen 
+   In LABEL_DECL nodes, it means a goto for this label has been seen
    from a place outside all binding contours that restore stack levels.
    In ..._TYPE nodes, it means that objects of this type must
    be fully addressable.  This means that pieces of this
@@ -699,9 +699,9 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
   (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)		\
     < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))		\
    || (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)		\
-        == (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
+	== (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
        && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
- 
+
 struct tree_int_cst
 {
   struct tree_common common;
@@ -926,7 +926,7 @@ struct tree_exp
    One of the logical block fragments is arbitrarily chosen to be
    the ORIGIN.  The other fragments will point to the origin via
    BLOCK_FRAGMENT_ORIGIN; the origin itself will have this pointer
-   be null.  The list of fragments will be chained through 
+   be null.  The list of fragments will be chained through
    BLOCK_FRAGMENT_CHAIN from the origin.  */
 
 #define BLOCK_FRAGMENT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.fragment_origin)
@@ -1277,7 +1277,7 @@ struct tree_type
    from the base of the complete object to the base of the part of the
    object that is allocated on behalf of this `type'.
    This is always 0 except when there is multiple inheritance.  */
-   
+
 #define BINFO_OFFSET(NODE) TREE_VEC_ELT ((NODE), 1)
 #define TYPE_BINFO_OFFSET(NODE) BINFO_OFFSET (TYPE_BINFO (NODE))
 #define BINFO_OFFSET_ZEROP(NODE) (integer_zerop (BINFO_OFFSET (NODE)))
@@ -1375,15 +1375,15 @@ struct tree_type
    DECL_ASSEMBLER_NAME has not yet been set, using this macro will not cause
    the DECL_ASSEMBLER_NAME of either DECL to be set.  In other words, the
    semantics of using this macro, are different than saying:
-     
+
      SET_DECL_ASSEMBLER_NAME(DECL2, DECL_ASSEMBLER_NAME (DECL1))
 
    which will try to set the DECL_ASSEMBLER_NAME for DECL1.  */
 
 #define COPY_DECL_ASSEMBLER_NAME(DECL1, DECL2)				\
   (DECL_ASSEMBLER_NAME_SET_P (DECL1)					\
-   ? (void) SET_DECL_ASSEMBLER_NAME (DECL2, 				\
-                                     DECL_ASSEMBLER_NAME (DECL1))	\
+   ? (void) SET_DECL_ASSEMBLER_NAME (DECL2,				\
+				     DECL_ASSEMBLER_NAME (DECL1))	\
    : (void) 0)
 
 /* Records the section name in a section attribute.  Used to pass
@@ -1470,7 +1470,7 @@ struct tree_type
    PROMOTED_MODE is defined, the mode of this expression may not be same
    as DECL_MODE.  In that case, DECL_MODE contains the mode corresponding
    to the variable's data type, while the mode
-   of DECL_RTL is the mode actually used to contain the data.  
+   of DECL_RTL is the mode actually used to contain the data.
 
    This value can be evaluated lazily for functions, variables with
    static storage duration, and labels.  */
@@ -1578,7 +1578,7 @@ struct tree_type
 
 /* In a TYPE_DECL
    nonzero means the detail info about this type is not dumped into stabs.
-   Instead it will generate cross reference ('x') of names. 
+   Instead it will generate cross reference ('x') of names.
    This uses the same flag as DECL_EXTERNAL.  */
 #define TYPE_DECL_SUPPRESS_DEBUG(NODE) \
   (TYPE_DECL_CHECK (NODE)->decl.external_flag)
@@ -1614,7 +1614,7 @@ struct tree_type
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
 
-/* In a VAR_DECL, nonzero if the data should be allocated from 
+/* In a VAR_DECL, nonzero if the data should be allocated from
    thread-local storage.  */
 #define DECL_THREAD_LOCAL(NODE) (VAR_DECL_CHECK (NODE)->decl.thread_local_flag)
 
@@ -1895,7 +1895,7 @@ enum tree_index
   TI_UINTSI_TYPE,
   TI_UINTDI_TYPE,
   TI_UINTTI_TYPE,
-    
+
   TI_INTEGER_ZERO,
   TI_INTEGER_ONE,
   TI_INTEGER_MINUS_ONE,
@@ -1955,7 +1955,7 @@ enum tree_index
 extern tree global_trees[TI_MAX];
 
 #define error_mark_node			global_trees[TI_ERROR_MARK]
- 
+
 #define intQI_type_node			global_trees[TI_INTQI_TYPE]
 #define intHI_type_node			global_trees[TI_INTHI_TYPE]
 #define intSI_type_node			global_trees[TI_INTSI_TYPE]
@@ -2028,7 +2028,7 @@ extern tree global_trees[TI_MAX];
 
 /* An enumeration of the standard C integer types.  These must be
    ordered so that shorter types appear before longer ones.  */
-enum integer_type_kind 
+enum integer_type_kind
 {
   itk_char,
   itk_signed_char,

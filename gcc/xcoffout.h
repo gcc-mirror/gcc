@@ -1,5 +1,5 @@
 /* XCOFF definitions.  These are needed in dbxout.c, final.c,
-   and xcoffout.h. 
+   and xcoffout.h.
    Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -107,7 +107,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       if (*_p == '*')						\
 	fprintf (asmfile, "%s", _p+1);				\
       else							\
-        for (; *_p != '[' && *_p; _p++)				\
+	for (; *_p != '[' && *_p; _p++)				\
 	  fprintf (asmfile, "%c", *_p);				\
     }								\
   else if (current_sym_addr)					\

@@ -46,7 +46,7 @@ typedef struct dump_queue
   struct dump_queue *next;
 } *dump_queue_p;
 
-/* A dump_info gives information about how we should perform the dump 
+/* A dump_info gives information about how we should perform the dump
    and about the current state of the dump.  */
 
 struct dump_info
@@ -67,7 +67,7 @@ struct dump_info
   dump_queue_p queue_end;
   /* Free queue nodes.  */
   dump_queue_p free_list;
-  /* The tree nodes which we have already written out.  The 
+  /* The tree nodes which we have already written out.  The
      keys are the addresses of the nodes; the values are the integer
      indices we assigned them.  */
   splay_tree nodes;
@@ -79,17 +79,17 @@ struct dump_info
 
 extern void dump_pointer
   PARAMS ((dump_info_p, const char *, void *));
-extern void dump_int 
+extern void dump_int
   PARAMS ((dump_info_p, const char *, int));
-extern void dump_string 
+extern void dump_string
   PARAMS ((dump_info_p, const char *));
-extern void dump_stmt 
+extern void dump_stmt
   PARAMS ((dump_info_p, tree));
-extern void dump_next_stmt 
+extern void dump_next_stmt
   PARAMS ((dump_info_p, tree));
-extern void queue_and_dump_index 
+extern void queue_and_dump_index
   PARAMS ((dump_info_p, const char *, tree, int));
-extern void queue_and_dump_type 
+extern void queue_and_dump_type
   PARAMS ((dump_info_p, tree));
 
 #endif /* ! GCC_TREE_DUMP_H */

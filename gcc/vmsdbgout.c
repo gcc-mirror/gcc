@@ -449,7 +449,7 @@ restart:
       break;
 
     case CONST:
-      /* This used to output parentheses around the expression, but that does 
+      /* This used to output parentheses around the expression, but that does
          not work on the 386 (either ATT or BSD assembler).  */
       addr_const_to_string (buf1, XEXP (x, 0));
       strcat (str, buf1);
@@ -644,7 +644,7 @@ write_debug_data4 (data4, comment, dosizeonly)
 	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
       fputc ('\n', asm_out_file);
     }
-  
+
   return 4;
 }
 
@@ -707,7 +707,7 @@ write_debug_string (string, comment, dosizeonly)
 	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START, comment);
       fputc ('\n', asm_out_file);
     }
-  
+
   return strlen (string);
 }
 
@@ -829,7 +829,7 @@ write_rtnbeg (rtnnum, dosizeonly)
       /* header size - 1st byte + flag byte + STO_LW size
 	 + string count byte + string length */
       header.dst__header_length.dst_w_length
-        = DST_K_DST_HEADER_SIZE - 1 + 1 + 4 + 1 + strlen (go);
+	= DST_K_DST_HEADER_SIZE - 1 + 1 + 4 + 1 + strlen (go);
       header.dst__header_type.dst_w_type = 0x17;
 
       totsize += write_debug_header (&header, "transfer", dosizeonly);
@@ -1133,7 +1133,7 @@ write_srccorr (fileid, file_info_entry, dosizeonly)
     = DST_K_SOURCE;
 
   src_cmdtrlr.dst_b_src_df_libmodname = 0;
-  
+
   totsize += write_debug_header (&src_header.dst_a_source_corr_header,
 				 "source corr", dosizeonly);
   totsize += write_debug_data1 (src_command.dst_b_src_command,
@@ -1153,7 +1153,7 @@ write_srccorr (fileid, file_info_entry, dosizeonly)
   totsize += write_debug_data8
     (src_command.dst_a_src_cmd_fields.dst_a_src_decl_src.dst_q_src_df_rms_cdt,
      "source_corr (creation date)", dosizeonly);
-  
+
   totsize += write_debug_data4
     (src_command.dst_a_src_cmd_fields.dst_a_src_decl_src.dst_l_src_df_rms_ebk,
      "source_corr (EOF block number)", dosizeonly);
@@ -1273,7 +1273,7 @@ write_srccorrs (dosizeonly)
     totsize += write_srccorr (i, file_info_table[i], dosizeonly);
 
   return totsize;
-}     
+}
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
    the prologue.  */
@@ -1508,7 +1508,7 @@ lookup_filename (file_name)
 	}
     }
 
-  /* Prepare to add a new table entry by making sure there is enough space in 
+  /* Prepare to add a new table entry by making sure there is enough space in
      the table to do so.  If not, expand the current table.  */
   if (file_info_table_in_use == file_info_table_allocated)
     {
@@ -1560,7 +1560,7 @@ vmsdbgout_source_line (line, filename)
 	    = (dst_line_info_ref) xrealloc (line_info_table,
 					    (line_info_table_allocated
 					     * sizeof (dst_line_info_entry)));
-	  }
+	}
 
       /* Add the new entry at the end of the line_info_table.  */
       line_info = &line_info_table[line_info_table_in_use++];

@@ -33,8 +33,8 @@ void clone_body PARAMS ((tree, tree, void*));
 void remap_save_expr PARAMS ((tree*, void*, tree, int*));
 
 /* 0 if we should not perform inlining.
-   1 if we should expand functions calls inline at the tree level.  
-   2 if we should consider *all* functions to be inline 
+   1 if we should expand functions calls inline at the tree level.
+   2 if we should consider *all* functions to be inline
    candidates.  */
 
 extern int flag_inline_trees;
