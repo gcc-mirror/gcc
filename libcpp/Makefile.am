@@ -1,6 +1,6 @@
 localedir = $(datadir)/locale
 ACLOCAL_AMFLAGS = -I ../config
-AM_CPPFLAGS = -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/../intl \
+AM_CPPFLAGS = -I$(srcdir)/../include -I$(srcdir) @INCINTL@ \
 	-I$(srcdir)/include -DLOCALEDIR="\"$(localedir)\""
 
 noinst_LIBRARIES = libcpp.a
