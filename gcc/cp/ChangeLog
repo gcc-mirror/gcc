@@ -1,3 +1,8 @@
+2000-04-24  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* decl2.c (finish_file): Remove double setup for accounting
+	compile time.
+
 2000-04-24  Robert Lipe <robertlipe@usa.net>
 
 	* cp-tree.h (lang_type): Member `language' now ENUM_BITFIELD.
