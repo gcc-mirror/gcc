@@ -220,7 +220,19 @@ static const struct optable
   {"sz",          "sizeof ",    DMGL_ANSI}      /* pseudo-ansi */
 };
 
-
+/* These values are used to indicate the various type varieties.
+   They are all non-zero so that they can be used as `success'
+   values.  */
+typedef enum type_kind_t 
+{ 
+  tk_none,
+  tk_pointer,
+  tk_integral, 
+  tk_bool,
+  tk_char, 
+  tk_real
+} type_kind_t;
+			     
 #define STRING_EMPTY(str)	((str) -> b == (str) -> p)
 #define PREPEND_BLANK(str)	{if (!STRING_EMPTY(str)) \
     string_prepend(str, " ");}
@@ -369,8 +381,8 @@ static void
 string_prepends PARAMS ((string *, string *));
 
 static int 
-demangle_template_value_parm PARAMS ((struct work_stuff*, 
-				      const char**, string*)); 
+demangle_template_value_parm PARAMS ((struct work_stuff*, const char**, 
+				      string*, type_kind_t));
 
 /*  Translate count to integer, consuming tokens in the process.
     Conversion terminates on the first non-digit character.
@@ -1179,7 +1191,8 @@ demangle_integral_value (work, mangled, s)
 	  else
 	    need_operator = 1;
 
-	  success = demangle_template_value_parm (work, mangled, s);
+	  success = demangle_template_value_parm (work, mangled, s,
+						  tk_integral);
 	}
 
       if (**mangled != 'W')
@@ -1213,76 +1226,14 @@ demangle_integral_value (work, mangled, s)
 }
 
 static int 
-demangle_template_value_parm (work, mangled, s)
+demangle_template_value_parm (work, mangled, s, tk)
      struct work_stuff *work;
      const char **mangled;
      string* s;
+     type_kind_t tk;
 {
-  const char *old_p = *mangled;
-  int is_pointer = 0;
-  int is_real = 0;
-  int is_integral = 0;
-  int is_char = 0;
-  int is_bool = 0;
-  int done = 0;
   int success = 1;
 
-  while (*old_p && !done)
-    {	
-      switch (*old_p)
-	{
-	case 'P':
-	case 'p':
-	case 'R':
-	  done = is_pointer = 1;
-	  break;
-	case 'C':	/* const */
-	case 'S':	/* explicitly signed [char] */
-	case 'U':	/* unsigned */
-	case 'V':	/* volatile */
-	case 'F':	/* function */
-	case 'M':	/* member function */
-	case 'O':	/* ??? */
-	case 'J':	/* complex */
-	  old_p++;
-	  continue;
-	case 'E':       /* expression */
-	case 'Q':	/* qualified name */
-	case 'K':       /* qualified name */
-	  done = is_integral = 1;
-	  break;
-	case 'B':	/* remembered type */
-	case 'T':	/* remembered type */
-	  abort ();
-	  break;
-	case 'v':	/* void */
-	  abort ();
-	  break;
-	case 'x':	/* long long */
-	case 'l':	/* long */
-	case 'i':	/* int */
-	case 's':	/* short */
-	case 'w':	/* wchar_t */
-	  done = is_integral = 1;
-	  break;
-	case 'b':	/* bool */
-	  done = is_bool = 1;
-	  break;
-	case 'c':	/* char */
-	  done = is_char = 1;
-	  break;
-	case 'r':	/* long double */
-	case 'd':	/* double */
-	case 'f':	/* float */
-	  done = is_real = 1;
-	  break;
-	default:
-	  /* it's probably user defined type, let's assume
-	     it's integral, it seems hard to figure out
-	     what it really is */
-	  done = is_integral = 1;
-	}
-    }
   if (**mangled == 'Y')
     {
       /* The next argument is a template parameter. */
@@ -1303,9 +1254,9 @@ demangle_template_value_parm (work, mangled, s)
 	  string_append (s, buf);
 	}
     }
-  else if (is_integral)
+  else if (tk == tk_integral)
     success = demangle_integral_value (work, mangled, s);
-  else if (is_char)
+  else if (tk == tk_char)
     {
       char tmp[2];
       int val;
@@ -1323,7 +1274,7 @@ demangle_template_value_parm (work, mangled, s)
       string_appendn (s, &tmp[0], 1);
       string_appendn (s, "'", 1);
     }
-  else if (is_bool)
+  else if (tk == tk_bool)
     {
       int val = consume_count (mangled);
       if (val == 0)
@@ -1333,7 +1284,7 @@ demangle_template_value_parm (work, mangled, s)
       else
 	success = 0;
     }
-  else if (is_real)
+  else if (tk == tk_real)
     {
       if (**mangled == 'm')
 	{
@@ -1366,7 +1317,7 @@ demangle_template_value_parm (work, mangled, s)
 	    }
 	}
     }
-  else if (is_pointer)
+  else if (tk == tk_pointer)
     {
       int symbol_len = consume_count (mangled);
       if (symbol_len == 0)
@@ -1542,25 +1493,15 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	{
 	  string  param;
 	  string* s;
+	  const char* start_of_value_parm = *mangled;
 
 	  /* otherwise, value parameter */
 
 	  /* temp is initialized in do_type */
 	  success = do_type (work, mangled, &temp);
-	  /*
-	    if (success)
-	    {
-	    string_appends (s, &temp);
-	    }
-	    */
 	  string_delete(&temp);
 	  if (!success)
-	    {
-	      break;
-	    }
-	  /*
-	    string_append (s, "=");
-	    */
+	    break;
 
 	  if (!is_type)
 	    {
@@ -1570,7 +1511,8 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	  else
 	    s = tname;
 
-	  success = demangle_template_value_parm (work, mangled, s);
+	  success = demangle_template_value_parm (work, mangled, s,
+						  (type_kind_t) success);
 
 	  if (!success)
 	    {
@@ -2490,7 +2432,8 @@ get_count (type, count)
   return (1);
 }
 
-/* result will be initialised here; it will be freed on failure */
+/* RESULT will be initialised here; it will be freed on failure.  The
+   value returned is really a type_kind_t.  */
 
 static int
 do_type (work, mangled, result)
@@ -2506,6 +2449,7 @@ do_type (work, mangled, result)
   int constp;
   int volatilep;
   string btype;
+  type_kind_t tk = tk_none;
 
   string_init (&btype);
   string_init (&decl);
@@ -2524,33 +2468,29 @@ do_type (work, mangled, result)
 	case 'p':
 	  (*mangled)++;
 	  string_prepend (&decl, "*");
+	  if (tk == tk_none)
+	    tk = tk_pointer;
 	  break;
 
 	  /* A reference type */
 	case 'R':
 	  (*mangled)++;
 	  string_prepend (&decl, "&");
+	  if (tk == tk_none)
+	    tk = tk_pointer;
 	  break;
 
 	  /* An array */
 	case 'A':
 	  {
-	    const char *p = ++(*mangled);
-
+	    ++(*mangled);
 	    string_prepend (&decl, "(");
 	    string_append (&decl, ")[");
-	    /* Copy anything up until the next underscore (the size of the
-	       array).  */
-	    while (**mangled && **mangled != '_')
-	      ++(*mangled);
+	    success = demangle_template_value_parm (work, mangled, &decl,
+						    tk_integral);
 	    if (**mangled == '_')
-	      {
-		string_appendn (&decl, p, *mangled - p);
-		string_append (&decl, "]");             
-		*mangled += 1;
-	      }
-	    else
-	      success = 0;
+	      ++(*mangled);
+	    string_append (&decl, "]");
 	    break;
 	  }
 
@@ -2720,9 +2660,7 @@ do_type (work, mangled, result)
       if (!get_count (mangled, &n) || n >= work -> numb)
           success = 0;
       else
-        {
-          string_append (result, work->btypevec[n]);
-        }
+	string_append (result, work->btypevec[n]);
       break;
 
     case 'X':
@@ -2757,6 +2695,8 @@ do_type (work, mangled, result)
 
     default:
       success = demangle_fund_type (work, mangled, result);
+      if (tk == tk_none)
+	tk = (type_kind_t) success;
       break;
     }
 
@@ -2769,11 +2709,14 @@ do_type (work, mangled, result)
 	}
     }
   else
-    {
-      string_delete (result);
-    }
+    string_delete (result);
   string_delete (&decl);
-  return (success);
+
+  if (success)
+    /* Assume an integral type, if we're not sure.  */
+    return (int) ((tk == tk_none) ? tk_integral : tk);
+  else
+    return 0;
 }
 
 /* Given a pointer to a type string that represents a fundamental type
@@ -2787,7 +2730,7 @@ do_type (work, mangled, result)
 	"Sl"	=>	"signed long"
 	"CUs"	=>	"const unsigned short"
 
-   */
+   The value returned is really a type_kind_t.  */
 
 static int
 demangle_fund_type (work, mangled, result)
@@ -2798,6 +2741,8 @@ demangle_fund_type (work, mangled, result)
   int done = 0;
   int success = 1;
   string btype;
+  type_kind_t tk = tk_integral;
+
   string_init (&btype);
 
   /* First pick off any type qualifiers.  There can be more than one.  */
@@ -2879,31 +2824,37 @@ demangle_fund_type (work, mangled, result)
       (*mangled)++;
       APPEND_BLANK (result);
       string_append (result, "bool");
+      tk = tk_bool;
       break;
     case 'c':
       (*mangled)++;
       APPEND_BLANK (result);
       string_append (result, "char");
+      tk = tk_char;
       break;
     case 'w':
       (*mangled)++;
       APPEND_BLANK (result);
       string_append (result, "wchar_t");
+      tk = tk_char;
       break;
     case 'r':
       (*mangled)++;
       APPEND_BLANK (result);
       string_append (result, "long double");
+      tk = tk_real;
       break;
     case 'd':
       (*mangled)++;
       APPEND_BLANK (result);
       string_append (result, "double");
+      tk = tk_real;
       break;
     case 'f':
       (*mangled)++;
       APPEND_BLANK (result);
       string_append (result, "float");
+      tk = tk_real;
       break;
     case 'G':
       (*mangled)++;
@@ -2949,7 +2900,7 @@ demangle_fund_type (work, mangled, result)
       break;
     }
 
-  return (success);
+  return success ? ((int) tk) : 0;
 }
 
 /* Demangle the next argument, given by MANGLED into RESULT, which

@@ -1,3 +1,20 @@
+Tue Jul 28 11:33:09 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* cplus-dem.c (type_kind_t): New type.
+	(demangle_template_value_parm): Add type_kind_t parameter.  Rely
+	on this paramter, rather than demangling the type again.
+	(demangle_integral_value): Pass tk_integral.
+	(demangle_template_: Pass the value returned from do_type.
+	(do_type): Return a type_kind_t.  Pass tk_integral to
+	demangle_template_value_parm for array bounds.
+	(demangle_fund_type): Likewise.
+
+	Also incorporate from GCC version:
+
+	Tue Jul 21 13:28:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cplus-dem.c (do_type): Use demangle_template_value_parm for arrays.
+
 Sun Jul 19 08:23:17 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (demangle_nested_args): Make function definition
