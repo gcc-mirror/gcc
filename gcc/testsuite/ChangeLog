@@ -1,5 +1,8 @@
 2003-07-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/10219
+	* g++.dg/template/error1.C: New.
+	
 	PR c++/9779
 	* g++.dg/template/dependent-expr1.C: New.
 

@@ -1747,7 +1747,10 @@ tree
 error_type (tree arg)
 {
   tree type = TREE_TYPE (arg);
+  
   if (TREE_CODE (type) == ARRAY_TYPE)
+    ;
+  else if (TREE_CODE (type) == ERROR_MARK)
     ;
   else if (real_lvalue_p (arg))
     type = build_reference_type (lvalue_type (arg));
