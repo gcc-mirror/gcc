@@ -1,3 +1,10 @@
+2001-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (STATIC_CHAIN_REGNUM): Change from r13 to r3.
+	(INITIALIZE_TRAMPOLINE): Adjust accordingly.
+	* config/sh/sh.c (sh_expand_prologue): Use r1 as temporary for
+	stack adjusts, instead of r3.
+
 2001-01-09  Michael Hayes  <mhayes@redhat.com>
 
 	* flow.c (flow_loop_scan): Break out of ...
