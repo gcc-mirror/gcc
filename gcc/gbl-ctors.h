@@ -2,7 +2,7 @@
    for getting g++ file-scope static objects constructed.  This file
    will get included either by libgcc2.c (for systems that don't support
    a .init section) or by crtstuff.c (for those that do).
-   Copyright (C) 1991, 1995, 1996, 1998, 1999, 2000
+   Copyright (C) 1991, 1995, 1996, 1998, 1999, 2000, 2003
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com)
 
@@ -37,10 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 	Note that this file should only be compiled with GCC.
 */
-
-#ifdef NEED_ATEXIT
-extern int atexit (void (*) (void));
-#endif
 
 /*  Declare a pointer to void function type.  */
 
