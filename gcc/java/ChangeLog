@@ -1,3 +1,11 @@
+2002-09-11  Per Bothner  <per@bothner.com>
+
+	* parse.y (fold_constant_for_init):  If a VAR_DECL, convert numerical
+	constant to the type of the field.
+	(java_complete_tree):  Remove now-redundant code.
+
+	* parse.y (fold_constant_for_init):  'null' is not a constant expr.
+
 2002-09-03  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	For PR java/5794:

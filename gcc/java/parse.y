@@ -11509,22 +11509,9 @@ java_complete_tree (node)
       && DECL_INITIAL (node) != NULL_TREE
       && !flag_emit_xref)
     {
-      tree value = DECL_INITIAL (node);
-      DECL_INITIAL (node) = NULL_TREE;
-      value = fold_constant_for_init (value, node);
-      DECL_INITIAL (node) = value;
+      tree value = fold_constant_for_init (node, node);
       if (value != NULL_TREE)
-	{
-	  /* fold_constant_for_init sometimes widens the original type
-             of the constant (i.e. byte to int). It's not desirable,
-             especially if NODE is a function argument. */
-	  if ((TREE_CODE (value) == INTEGER_CST
-	       || TREE_CODE (value) == REAL_CST)
-	      && TREE_TYPE (node) != TREE_TYPE (value))
-	    return convert (TREE_TYPE (node), value);
-	  else
-	    return value;
-	}
+	return value;
     }
   return node;
 }
@@ -16010,8 +15997,10 @@ fold_constant_for_init (node, context)
 
   switch (code)
     {
-    case STRING_CST:
     case INTEGER_CST:
+      if (node == null_pointer_node)
+	return NULL_TREE;
+    case STRING_CST:
     case REAL_CST:
       return node;
 
@@ -16084,6 +16073,8 @@ fold_constant_for_init (node, context)
       /* Guard against infinite recursion. */
       DECL_INITIAL (node) = NULL_TREE;
       val = fold_constant_for_init (val, node);
+      if (val != NULL_TREE && TREE_CODE (val) != STRING_CST)
+	val = try_builtin_assignconv (NULL_TREE, TREE_TYPE (node), val);
       DECL_INITIAL (node) = val;
       return val;
 
