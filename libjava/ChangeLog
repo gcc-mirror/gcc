@@ -1,3 +1,11 @@
+2004-01-06  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Package.java
+	(getPackage): Get the current class loader directly.
+	* java/lang/SecurityManager.java
+	(currentLoadedClass): Dont iterate over class contexts.
+	(classLoaderDepth): Don't check class loaders if everything is allowed.
+
 2004-01-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c

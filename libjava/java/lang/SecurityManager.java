@@ -207,11 +207,8 @@ public class SecurityManager
    */
   protected Class currentLoadedClass()
   {
-    Class[] c = getClassContext();
-    for (int i = 0; i < c.length; i++)
-      if (c[i].getClassLoader() != null)
-	return c[i];
-    return null;
+    int i = classLoaderDepth();
+    return i >= 0 ? getClassContext()[i] : null;
   }
 
   /**
@@ -247,10 +244,18 @@ public class SecurityManager
    */
   protected int classLoaderDepth()
   {
-    Class[] c = getClassContext();
-    for (int i = 0; i < c.length; i++)
-      if (c[i].getClassLoader() != null)
-	return i;
+    try
+      {
+        checkPermission(new AllPermission());
+      }
+    catch (SecurityException e)
+      {
+        Class[] c = getClassContext();
+        for (int i = 0; i < c.length; i++)
+          if (c[i].getClassLoader() != null)
+            // XXX Check if c[i] is AccessController, or a system class.
+            return i;
+      }
     return -1;
   }
 
@@ -1016,6 +1021,7 @@ public class SecurityManager
         for (int index = list.indexOf(packageName);
              index != -1; index = list.indexOf(packageName, index + 1))
           {
+            // Exploit package visibility for speed.
 	    int packageNameCount = packageName.length();
             if (index + packageNameCount == list.length()
                 || list.charAt(index + packageNameCount) == ',')

@@ -269,8 +269,7 @@ public class Package
   public static Package getPackage(String name)
   {
     // Get the caller's classloader
-    Class c = VMSecurityManager.getClassContext()[1];
-    ClassLoader cl = c.getClassLoader();
+    ClassLoader cl = VMSecurityManager.currentClassLoader();
     return cl != null ? cl.getPackage(name) : null;
   }
 
