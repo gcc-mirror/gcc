@@ -7,6 +7,12 @@ typedef union {
 } YYSTYPE;
 extern YYSTYPE yylval;
 
+/* DELAY is defined in the standard headers on some platforms like
+   SunOS 4.1.4.  */
+#ifdef DELAY
+#undef DELAY
+#endif
+
 enum terminal
 {
   /*EOF = 0,*/
@@ -29,9 +35,9 @@ enum terminal
   IF, IGNORED_DIRECTIVE, IN, INIT, INOUT, INLINE,
   LC, LOC, LPC, LPRN, LT, LTE,
   MOD, MODULE, MUL, 
-  NAME, NE, NEW, NEWMODE, NONREF, NOT, NUMBER,
+  NAME, NE, NEW, NEWMODE, NONREF, NOPACK, NOT, NUMBER,
   OD, OF, ON, OR, ORIF,
-  PARAMATTR, PERVASIVE, PLUS, POWERSET,
+  PACK, PARAMATTR, PERVASIVE, PLUS, POS, POWERSET,
   PREFIXED, PRIORITY, PROC, PROCESS,
   RANGE, RC, READ, READTEXT, RECEIVE, RECURSIVE, REF, REGION, REM,
   RESULT, RETURN, RETURNS, ROUND, ROW, RPC, RPRN, RPRN_COLON,
@@ -53,18 +59,6 @@ enum terminal
 
   /* These tokens are recognized, and reported as errors, by the lexer. */
   CONTEXT, REMOTE,
-
-  /* These tokens are recognized in the lexer, and completely
-     ignored. They represent unimplemented features in the
-     current version of GNU CHILL. */
-  NOPACK, PACK,
-
-/* These tokens are recognized in the lexer, and returned
-   as reserved tokens, to prevent users from using them
-   accidently (they'll cause a parser syntax error).  They
-   represent unimplemented features in the current version
-   of GNU CHILL. */
-  POS, /*STEP, ROW,*/
 
 /* This token is passed back to the parser when an the main 
    input file (not a seize file) has  reached end-of-file. */

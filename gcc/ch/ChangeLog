@@ -1,3 +1,9 @@
+Tue Sep  7 15:59:56 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* parse.h: Undefine DELAY if it's defined.
+	(PACK,NOPACK,POS): Remove erroneous comments regarding these tokens.
+	Also, move them to their proper place alphabetically.
+
 1999-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (cc1chill): Depend on ggc-callbacks.o.
