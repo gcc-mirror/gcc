@@ -279,6 +279,32 @@ public class XCanvasPeer implements CanvasPeer
 
   public void handleEvent(AWTEvent event)
   {
+    int id = event.getID ();
+    
+    switch (id)
+    {
+      case PaintEvent.PAINT:
+      case PaintEvent.UPDATE:
+      {
+        try
+        {
+          Graphics g = getGraphics ();
+          g.setClip (((PaintEvent)event).getUpdateRect ());
+          
+          if (id == PaintEvent.PAINT)
+            component.paint (g);
+          else
+            component.update (g);
+          
+          g.dispose ();
+        }
+        catch (InternalError e)
+        {
+          System.err.println (e);
+        }
+      }
+      break;
+    }
   }
 
   public boolean isFocusTraversable()
