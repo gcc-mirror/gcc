@@ -64,6 +64,11 @@ public final class DatagramChannelImpl extends DatagramChannel
     super (provider);
     socket = new NIODatagramSocket (new PlainDatagramSocketImpl(), this);
   }
+
+  public int getNativeFD()
+  {
+    return socket.getImpl().getNativeFD();
+  }
     
   public DatagramSocket socket ()
   {

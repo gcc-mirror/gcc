@@ -1,5 +1,5 @@
-/* SelectionKeyImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* SocketChannelSelectionKey.java -- 
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,70 +35,22 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.spi.AbstractSelectionKey;
+import java.nio.channels.spi.AbstractSelectableChannel;
 
-public abstract class SelectionKeyImpl extends AbstractSelectionKey
+public final class SocketChannelSelectionKey
+  extends SelectionKeyImpl
 {
-  private int readyOps;
-  private int interestOps;
-  private SelectorImpl impl;
-  private SelectableChannel ch;
-
-  public SelectionKeyImpl (SelectableChannel ch, SelectorImpl impl)
+  public SocketChannelSelectionKey (AbstractSelectableChannel channel,
+                                    SelectorImpl selector)
   {
-    this.ch  = ch;
-    this.impl = impl;
-  }
-
-  public SelectableChannel channel ()
-  {
-    return ch;
-  }
-
-  public int readyOps ()
-  {
-    if (!isValid())
-      throw new CancelledKeyException();
-    
-    return readyOps;
-  }
-
-  public SelectionKey readyOps (int ops)
-  {
-    if (!isValid())
-      throw new CancelledKeyException();
-    
-    readyOps = ops;
-    return this;
-  }
-
-  public int interestOps ()
-  {
-    if (!isValid())
-      throw new CancelledKeyException();
-    
-    return interestOps;    
-  }
-
-  public SelectionKey interestOps (int ops)
-  {
-    if (!isValid())
-      throw new CancelledKeyException();
-    
-    interestOps = ops;
-    return this;
+    super (channel, selector);
   }
     
-  public Selector selector ()
+  public int getNativeFD()
   {
-    return impl;
+    return ((SocketChannelImpl) ch).getNativeFD();
   }
-
-  public abstract int getNativeFD();
 }

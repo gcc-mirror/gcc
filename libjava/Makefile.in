@@ -1901,6 +1901,7 @@ gnu/java/math/MPN.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
 gnu/java/nio/DatagramChannelImpl.java \
+gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
 gnu/java/nio/NIOConstants.java \
 gnu/java/nio/NIODatagramSocket.java \
@@ -1911,6 +1912,7 @@ gnu/java/nio/SelectorImpl.java \
 gnu/java/nio/SelectorProviderImpl.java \
 gnu/java/nio/ServerSocketChannelImpl.java \
 gnu/java/nio/SocketChannelImpl.java \
+gnu/java/nio/SocketChannelSelectionKey.java \
 gnu/java/nio/charset/ISO_8859_1.java \
 gnu/java/nio/charset/Provider.java \
 gnu/java/nio/charset/US_ASCII.java \
@@ -3026,6 +3028,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/net/natPlainDatagramSocketImpl.P \
 .deps/gnu/java/net/natPlainSocketImpl.P \
 .deps/gnu/java/nio/DatagramChannelImpl.P \
+.deps/gnu/java/nio/DatagramChannelSelectionKey.P \
 .deps/gnu/java/nio/FileLockImpl.P .deps/gnu/java/nio/NIOConstants.P \
 .deps/gnu/java/nio/NIODatagramSocket.P .deps/gnu/java/nio/NIOSocket.P \
 .deps/gnu/java/nio/PipeImpl.P .deps/gnu/java/nio/SelectionKeyImpl.P \
@@ -3033,6 +3036,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/SelectorProviderImpl.P \
 .deps/gnu/java/nio/ServerSocketChannelImpl.P \
 .deps/gnu/java/nio/SocketChannelImpl.P \
+.deps/gnu/java/nio/SocketChannelSelectionKey.P \
 .deps/gnu/java/nio/charset/ISO_8859_1.P \
 .deps/gnu/java/nio/charset/Provider.P \
 .deps/gnu/java/nio/charset/US_ASCII.P \
