@@ -2885,8 +2885,11 @@ attach_deaths_insn (insn)
 	    attach_deaths (XVECEXP (x, 0, i), insn, 0);
 	}
     }
-  /* Flow does not add REG_DEAD notes to registers that die in
-     clobbers, so we can't either.  */
+  /* If this is a CLOBBER, only add REG_DEAD notes to registers inside a
+     MEM being clobbered, just like flow.  */
+  else if (code == CLOBBER && GET_CODE (XEXP (x, 0)) == MEM)
+    attach_deaths (XEXP (XEXP (x, 0), 0), insn, 0);
+  /* Otherwise don't add a death note to things being clobbered.  */
   else if (code != CLOBBER)
     attach_deaths (x, insn, 0);
 }
