@@ -17,7 +17,7 @@ public:
         };
 
 class some_derived : public some_base
-        {
+        {  // { dg-error "" } note
 public:
         class derived_func_args;
         void func(derived_func_args &);
