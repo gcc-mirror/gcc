@@ -1,3 +1,10 @@
+Mon Jun 21 06:19:33 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* fixinc/Makefile.in (gnu-regex.o): Do not define STDC_HEADERS in
+	compiler flags.
+
+	* system.h (WSTOPSIG): New macro.
+
 Mon Jun 21 05:33:15 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* c-pragma.c (push_alignment): Don't ignore alignments greater than
