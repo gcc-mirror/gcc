@@ -1,3 +1,7 @@
+2004-04-07  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* gcc.dg/pch/pch.exp: Add largefile test.
+
 2004-04-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/pch/externc-1.Hs: New.
