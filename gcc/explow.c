@@ -242,8 +242,13 @@ rtx
 expr_size (exp)
      tree exp;
 {
-  return expand_expr (size_in_bytes (TREE_TYPE (exp)),
-		      NULL_RTX, TYPE_MODE (sizetype), 0);
+  tree size = size_in_bytes (TREE_TYPE (exp));
+
+  if (TREE_CODE (size) != INTEGER_CST
+      && contains_placeholder_p (size))
+    size = build (WITH_RECORD_EXPR, sizetype, size, exp);
+
+  return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
 }
 
 /* Return a copy of X in which all memory references
