@@ -1,3 +1,11 @@
+2001-05-19  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4:  Fix --help spacing, correct comments.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+	* mkcheck.in:  Add usage comments.
+	* docs/html/documentation.html:  Point to doxygen'd tarball.
+
 2001-05-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/README: Add notes.
