@@ -3441,12 +3441,12 @@ smash_dummy_type (type)
 	    }
 	  else if (TREE_CODE (origin) == RECORD_TYPE)
 	    {
-	      error ("parameterised structures not implemented");
+	      error ("parameterized structures not implemented");
 	      return error_mark_node;
 	    }
 	  else
 	    {
-	      error ("invalid parameterised type");
+	      error ("invalid parameterized type");
 	      return error_mark_node;
 	    }
 	    

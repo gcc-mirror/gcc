@@ -1056,7 +1056,7 @@ do_decl (name, type, is_static, lifetime_bound, opt_init, opt_external)
 	  if (CH_TYPE_NONVALUE_P (type))
 	    {
 	      error_with_decl (decl,
-			       "no initialisation allowed for `%s'");
+			       "no initialization allowed for `%s'");
 	      temp = NULL_TREE;
 	    }
 	  else if (TREE_CODE (type) == REFERENCE_TYPE)

@@ -1,3 +1,7 @@
+2001-12-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl.c, parse.c, typeck.c: Use American spelling in messages.
+
 2001-12-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* chill.texi: Don't condition menus on @ifinfo.

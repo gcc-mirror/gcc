@@ -961,7 +961,7 @@ parse_loc_declaration (in_spec_module)
       ignoring = save_ignoring;
     }
   if (init_value == NULL_TREE && loc_decl && pass == 1)
-    error ("loc-identity declaration without initialisation");
+    error ("loc-identity declaration without initialization");
   do_decls (names, mode,
 	    is_static || global_bindings_p ()
 	    /* the variable becomes STATIC if all_static_flag is set and

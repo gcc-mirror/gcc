@@ -1,3 +1,7 @@
+2001-12-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* lang-options.h: Use American spelling in messages.
+
 2001-12-13  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (parse.h): Separate rule, just depend on parse.c.
