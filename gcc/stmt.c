@@ -1748,7 +1748,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       val = TREE_VALUE (tail);
       type = TREE_TYPE (val);
-      op = expand_expr (val, NULL_RTX, VOIDmode, 0);
+      op = expand_expr (val, NULL_RTX, VOIDmode,
+			(allows_mem && !allows_reg
+			 ? EXPAND_MEMORY : EXPAND_NORMAL));
 
       /* Never pass a CONCAT to an ASM.  */
       if (GET_CODE (op) == CONCAT)
@@ -1763,38 +1765,35 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  else if (!allows_mem)
 	    warning ("asm operand %d probably doesn't match constraints",
 		     i + noutputs);
-	  else if (CONSTANT_P (op))
-	    {
-	      op = force_const_mem (TYPE_MODE (type), op);
-	      op = validize_mem (op);
-	    }
-	  else if (GET_CODE (op) == REG
-		   || GET_CODE (op) == SUBREG
-		   || GET_CODE (op) == ADDRESSOF
-		   || GET_CODE (op) == CONCAT)
-	    {
-	      tree qual_type = build_qualified_type (type,
-						     (TYPE_QUALS (type)
-						      | TYPE_QUAL_CONST));
-	      rtx memloc = assign_temp (qual_type, 1, 1, 1);
-	      memloc = validize_mem (memloc);
-	      emit_move_insn (memloc, op);
-	      op = memloc;
-	    }
-
 	  else if (GET_CODE (op) == MEM && MEM_VOLATILE_P (op))
 	    {
 	      /* We won't recognize volatile memory as available a
 		 memory_operand at this point.  Ignore it.  */
 	    }
-	  else if (queued_subexp_p (op))
-	    ;
 	  else
-	    /* ??? Leave this only until we have experience with what
-	       happens in combine and elsewhere when constraints are
-	       not satisfied.  */
-	    warning ("asm operand %d probably doesn't match constraints",
-		     i + noutputs);
+	    {
+	      warning ("asm operand %d uses deprecated memory input "
+		       "without lvalue", i + noutputs);
+
+	      if (CONSTANT_P (op))
+		{
+		  op = force_const_mem (TYPE_MODE (type), op);
+		  op = validize_mem (op);
+		}
+	      else if (GET_CODE (op) == REG
+		       || GET_CODE (op) == SUBREG
+		       || GET_CODE (op) == ADDRESSOF
+		       || GET_CODE (op) == CONCAT)
+		{
+		  tree qual_type = build_qualified_type (type,
+							 (TYPE_QUALS (type)
+							  | TYPE_QUAL_CONST));
+		  rtx memloc = assign_temp (qual_type, 1, 1, 1);
+		  memloc = validize_mem (memloc);
+		  emit_move_insn (memloc, op);
+		  op = memloc;
+		}
+	    }
 	}
 
       generating_concat_p = old_generating_concat_p;
