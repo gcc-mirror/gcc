@@ -1,3 +1,7 @@
+1999-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* method.c: Include tm_p.h.
+
 1999-10-7   Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
         * cp-tree.h (cp_make_lake_type): Renamed from make_lang_type.

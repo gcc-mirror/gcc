@@ -1,3 +1,15 @@
+Fri Oct  8 13:08:12 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (insn-recog.o): Depend on hard-reg-set.h and resource.h.
+
+	* alpha.h (ASM_OUTPUT_MI_THUNK): Pass the correct number of
+	arguments to `current_file_function_operand'.
+
+	* genrecog.c: Include hard-reg-set.h and resource.h in the
+	generated output file.
+
+	* real.c: Include tm_p.h.
+
 Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* i386.md (prologue_allocate_stack): Add '=' constraint letter on

@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 /* TREE_LIST of the current inline functions that need to be
    processed.  */

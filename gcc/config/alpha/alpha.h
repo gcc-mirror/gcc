@@ -2229,7 +2229,8 @@ do {									\
   reg = aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))) ? 17 : 16;	\
   fprintf (FILE, "\tlda $%d,%ld($%d)\n", reg, (long)(DELTA), reg);	\
 									\
-  if (current_file_function_operand (XEXP (DECL_RTL (FUNCTION), 0)))	\
+  if (current_file_function_operand (XEXP (DECL_RTL (FUNCTION), 0),	\
+				     VOIDmode))				\
     {									\
       fprintf (FILE, "\tbr $31,$");					\
       assemble_name (FILE, fn_name);					\
