@@ -80,7 +80,7 @@ character other than a member of the basic execution character set (6.2.5).}
 
 @item
 @cite{Which of @code{signed char} or @code{unsigned char} has the same range,
-representation, and behavior as ``plain'' char (6.2.5, 6.3.1.1).}
+representation, and behavior as ``plain'' @code{char} (6.2.5, 6.3.1.1).}
 
 @item
 @cite{The mapping of members of the source character set (in character
@@ -142,7 +142,7 @@ that type (6.3.1.3).}
 @itemize @bullet
 @item
 @cite{The accuracy of the floating-point operations and of the library
-functions in @file{<math.h>} and @file{<complex.h>} that return floating-point
+functions in @code{<math.h>} and @code{<complex.h>} that return floating-point
 results (5.2.4.2.2).}
 
 @item
@@ -319,7 +319,7 @@ of the C library, and are not defined by GCC itself.
 @itemize @bullet
 @item
 @cite{The values or expressions assigned to the macros specified in the
-headers @file{<float.h>}, @file{<limits.h>}, and @file{<stdint.h>}
+headers @code{<float.h>}, @code{<limits.h>}, and @code{<stdint.h>}
 (5.2.4.2, 7.18.2, 7.18.3).}
 
 @item
