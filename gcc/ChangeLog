@@ -1,3 +1,7 @@
+2000-09-06  Graham Stott  <grahams@cygnus.co.uk>
+
+        * config/i386/i386.h (ADDRESS_COST): Fix typo.
+
 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	Integrated preprocessor.
