@@ -5491,7 +5491,7 @@ output_init_element (value, type, field, pending)
 	{
 	  if (! constructor_incremental)
 	    {
-	      if (TREE_CODE (field) == INTEGER_CST)
+	      if (field && TREE_CODE (field) == INTEGER_CST)
 		field = copy_node (field);
 	      constructor_elements
 		= tree_cons (field, digest_init (type, value, 0, 0),
