@@ -6931,6 +6931,10 @@ fold (tree expr)
     case NEGATE_EXPR:
       if (negate_expr_p (arg0))
 	return fold_convert (type, negate_expr (arg0));
+      /* Convert - (~A) to A + 1.  */
+      if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == BIT_NOT_EXPR)
+	return fold (build2 (PLUS_EXPR, type, TREE_OPERAND (arg0, 0),
+			     build_int_cst (type, 1)));
       return t;
 
     case ABS_EXPR:
@@ -6985,6 +6989,17 @@ fold (tree expr)
         return fold_not_const (arg0, type);
       else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
 	return TREE_OPERAND (arg0, 0);
+      /* Convert ~ (-A) to A - 1.  */
+      else if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == NEGATE_EXPR)
+	return fold (build2 (MINUS_EXPR, type, TREE_OPERAND (arg0, 0),
+			     build_int_cst (type, 1)));
+      /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
+      else if (INTEGRAL_TYPE_P (type)
+	       && ((TREE_CODE (arg0) == MINUS_EXPR
+		    && integer_onep (TREE_OPERAND (arg0, 1)))
+		   || (TREE_CODE (arg0) == PLUS_EXPR
+		       && integer_all_onesp (TREE_OPERAND (arg0, 1)))))
+	return fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0)));
       return t;
 
     case PLUS_EXPR:
