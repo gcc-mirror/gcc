@@ -464,7 +464,7 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n"
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
@@ -500,7 +500,7 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n"
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.i} %1 %2\
 		   %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
@@ -545,7 +545,7 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n"
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
 		    %{!pipe:%g.s} %A\n }}}}"},
@@ -3371,13 +3371,13 @@ main (argc, argv)
 	    input_suffix = "";
 
 	  len = 0;
-	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0]; i++)
+	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0] && cp->spec[i]; i++)
 	    len += strlen (cp->spec[i]);
 
 	  p = (char *) xmalloc (len + 1);
 
 	  len = 0;
-	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0]; i++)
+	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0] && cp->spec[i]; i++)
 	    {
 	      strcpy (p + len, cp->spec[i]);
 	      len += strlen (cp->spec[i]);
@@ -3705,7 +3705,7 @@ validate_all_switches ()
   for (comp = compilers; comp->spec[0]; comp++)
     {
       int i;
-      for (i = 0; i < sizeof comp->spec / sizeof comp->spec[0]; i++)
+      for (i = 0; i < sizeof comp->spec / sizeof comp->spec[0] && comp->spec[i]; i++)
 	{
 	  p = comp->spec[i];
 	  while (c = *p++)
