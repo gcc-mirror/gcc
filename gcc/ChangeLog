@@ -1,3 +1,9 @@
+2004-04-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* Makefile.in ($(DESTDIR)$(infodir)/%.info): Don't condition
+	calling install-info on $(DESTDIR)$(infodir)/dir already being
+	present.
+
 2004-04-28  Paul Brook  <paul@codesourcery.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Handle shifts.
