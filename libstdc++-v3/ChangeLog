@@ -1,3 +1,15 @@
+2002-08-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/stdio_filebuf.h (stdio_filebuf): Explicitly set
+	_M_buf_size_opt to zero when unbuffering.
+	* include/bits/fstream.tcc (filebuf::showmanyc): Simplify.
+	Consistency checks for _M_buf_size_opt.
+
+	Revert PR libstdc++/7445
+	* src/locale.cc (locale::classic): Revert.
+	
+	* docs/html/17_intro/TODO: Add.
+	
 2002-08-15  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/documentation.html:  Update doxygen links for 3.2.

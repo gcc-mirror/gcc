@@ -123,16 +123,18 @@ namespace __gnu_cxx
       if (this->is_open())
 	{
 	  _M_mode = __mode;
-	  _M_buf_size_opt = __size;
-	  
 	  if (__size > 0 && __size < 4)
 	    {
+	      // Specify unbuffered.
 	      _M_buf = _M_unbuf;
 	      _M_buf_size = __size;
+	      _M_buf_size_opt = 0;
 	    }
 	  else
-	    _M_allocate_internal_buffer();
-	  
+	    {
+	      _M_buf_size_opt = __size;
+	      _M_allocate_internal_buffer();
+	    }
 	  _M_set_indeterminate();
 	}
     }
@@ -146,16 +148,18 @@ namespace __gnu_cxx
       if (this->is_open())
 	{
 	  _M_mode = __mode;
-	  _M_buf_size_opt = __size;
-	  
 	  if (__size > 0 && __size < 4)
 	    {
+	      // Specify unbuffered.
 	      _M_buf = _M_unbuf;
 	      _M_buf_size = __size;
+	      _M_buf_size_opt = 0;
 	    }
 	  else
-	    _M_allocate_internal_buffer();
-	  
+	    {
+	      _M_buf_size_opt = __size;
+	      _M_allocate_internal_buffer();
+	    }
 	  _M_set_indeterminate();
 	}
     }
