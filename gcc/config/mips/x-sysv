@@ -17,7 +17,8 @@ OLDCC		= cc -Wf,-XNg1500,-XNh2000 -Olimit 3000 $(OPT)
 #BISONFLAGS	= -l
 
 # This enables collect2 to link.
-CLIB= -L/usr/lib/cmplrs/cc2.11 -lmld
+# Some systems use version 2.11 of the compilers.  Some use version 3.11.
+CLIB= -L/usr/lib/cmplrs/cc2.11 -L/usr/lib/cmplrs/cc3.11 -lmld
 
 # Show we need to use the C version of ALLOCA
 # The SVR3 configurations have it, but the SVR4 configurations don't.
