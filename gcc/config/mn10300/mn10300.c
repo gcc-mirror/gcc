@@ -380,7 +380,7 @@ can_use_return_insn ()
 void
 expand_prologue ()
 {
-  unsigned int size;
+  HOST_WIDE_INT size;
 
   /* SIZE includes the fixed stack space needed for function calls.  */
   size = get_frame_size () + current_function_outgoing_args_size;
@@ -421,7 +421,7 @@ expand_prologue ()
 void
 expand_epilogue ()
 {
-  unsigned int size;
+  HOST_WIDE_INT size;
 
   /* SIZE includes the fixed stack space needed for function calls.  */
   size = get_frame_size () + current_function_outgoing_args_size;

@@ -1,3 +1,8 @@
+2000-05-18  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.c (expand_prologue, expand_epilogue):
+	16-bit and 64-bit clean-up.
+
 2000-05-18 Mark Elbrecht <snowball3@bigfoot.com>
 
         * configure.in (*-pc-msdosdjgpp): Set float_format to none.
