@@ -913,6 +913,11 @@ fverbose-asm
 Common Report Var(flag_verbose_asm)
 Add extra commentary to assembler output
 
+fvisibility=
+Common Joined RejectNegative
+-fvisibility=[default|internal|hidden|protected]	Set the default symbol visibility
+
+
 fvpt
 Common Report Var(flag_value_profile_transformations)
 Use expression value profiles in optimizations

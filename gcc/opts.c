@@ -76,6 +76,12 @@ enum debug_info_level debug_info_level = DINFO_LEVEL_NONE;
    write_symbols is set to DBX_DEBUG, XCOFF_DEBUG, or DWARF_DEBUG.  */
 bool use_gnu_debug_info_extensions;
 
+/* The default visibility for all symbols (unless overridden) */
+enum symbol_visibility default_visibility = VISIBILITY_DEFAULT;
+
+/* Global visibility options.  */
+struct visibility_flags visibility_options;
+
 /* Columns of --help display.  */
 static unsigned int columns = 80;
 
@@ -824,6 +830,21 @@ common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fprofile_values:
       flag_profile_values_set = true;
+      break;
+
+    case OPT_fvisibility_:
+      {
+        if (!strcmp(arg, "default"))
+          default_visibility = VISIBILITY_DEFAULT;
+        else if (!strcmp(arg, "internal"))
+          default_visibility = VISIBILITY_INTERNAL;
+        else if (!strcmp(arg, "hidden"))
+          default_visibility = VISIBILITY_HIDDEN;
+        else if (!strcmp(arg, "protected"))
+          default_visibility = VISIBILITY_PROTECTED;
+        else
+          error ("unrecognised visibility value \"%s\"", arg);
+      }
       break;
 
     case OPT_fvpt:

@@ -1367,9 +1367,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
     }
 
   /* warnings */
-  /* All decls must agree on a non-default visibility.  */
-  if (DECL_VISIBILITY (newdecl) != VISIBILITY_DEFAULT
-      && DECL_VISIBILITY (olddecl) != VISIBILITY_DEFAULT
+  /* All decls must agree on a visibility.  */
+  if (DECL_VISIBILITY_SPECIFIED (newdecl) && DECL_VISIBILITY_SPECIFIED (olddecl)
       && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
       warning ("%Jredeclaration of '%D' with different visibility "
@@ -1570,9 +1569,12 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
      Currently, it can only be defined in the prototype.  */
   COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
-  /* If either declaration has a nondefault visibility, use it.  */
-  if (DECL_VISIBILITY (olddecl) != VISIBILITY_DEFAULT)
-    DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
+  /* Use visibility of whichever declaration had it specified */
+  if (DECL_VISIBILITY_SPECIFIED (olddecl))
+    {
+      DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
+      DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
+    }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {

@@ -1,3 +1,26 @@
+2004-07-26  Niall Douglas  <s_fsfeurope2@nedprod.com>
+	    Brian Ryner  <bryner@brianryner.com>
+
+	PR c++/9283
+	PR c++/15000
+	* gcc.dg/visibility-9.c, gcc.dg/visibility-a.c: New tests.
+	* g++.dg/ext/visibility/: New directory.
+	* g++.dg/ext/visibility-1.C, g++.dg/ext/visibility-2.C
+	g++.dg/ext/visibility-3.C, g++.dg/ext/visibility-4.C,
+	g++.dg/ext/visibility-5.C, g++.dg/ext/visibility-6.C,
+	g++.dg/ext/visibility-7.C: Move to g++.dg/ext/visibility/.
+	* g++.dg/ext/visibility/fvisibility.C,
+	g++.dg/ext/visibility/fvisibility-inlines-hidden.C,
+	g++.dg/ext/visibility/fvisibility-override1.C
+	g++.dg/ext/visibility/fvisibility-override2.C
+	g++.dg/ext/visibility/memfuncts.C
+	g++.dg/ext/visibility/noPLT.C
+	g++.dg/ext/visibility/pragma.C
+	g++.dg/ext/visibility/pragma-override1.C
+	g++.dg/ext/visibility/pragma-override2.C
+	g++.dg/ext/visibility/staticmemfuncts.C
+	g++.dg/ext/visibility/virtual.C: New tests.
+
 2004-07-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15360

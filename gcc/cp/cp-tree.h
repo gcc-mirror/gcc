@@ -931,7 +931,12 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) \
   (lookup_base ((TYPE), (PARENT),  ba_not_special | ba_quiet, NULL) \
    != NULL_TREE)
-
+
+/* Gives the visibility specification for a class type.  */
+#define CLASSTYPE_VISIBILITY(TYPE)		DECL_VISIBILITY (TYPE_NAME (TYPE))
+#define CLASSTYPE_VISIBILITY_SPECIFIED(TYPE)	DECL_VISIBILITY_SPECIFIED (TYPE_NAME (TYPE))
+
+
 /* This is a few header flags for 'struct lang_type'.  Actually,
    all but the first are used only for lang_type_class; they
    are put in this structure to save space.  */

@@ -1,3 +1,25 @@
+2004-07-26  Niall Douglas  <s_fsfeurope2@nedprod.com>
+	    Brian Ryner  <bryner@brianryner.com>
+
+	PR c++/15000
+	PR c++/9283
+	* class.c (check_field_decls): Apply hidden visibility if
+	-fvisibility-inlines-hidden and inlined unless otherwise specified
+	(build_vtable): Set vtable visibility to class visibility.
+	(check_field_decls): Default static member visibility to class
+	visibility.
+	(check_methods): Default method visibility to class visibility.
+	* cp-tree.h: Added CLASSTYPE_VISIBILITY and
+	CLASSTYPE_VISIBILITY_SPECIFIED macro.
+	* decl.c (duplicate_decls): New logic for merging definition decls
+	with declaration decls. Added ignore & warning when non default
+	applied to global operator new or delete.
+	* method.c, optimize.c, rtti.c: Added setting of VISIBILITY_SPECIFIED
+	wherever VISIBILITY was changed
+	* rtti.c (get_tinfo_decl): Set typeinfo visibility to class
+	visibility.
+	(tinfo_base_init): Set typeinfo name visibility to class visibility.
+
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
 	* decl.c: Rename all identifiers named `class' to `cl'.

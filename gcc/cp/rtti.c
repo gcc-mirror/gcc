@@ -360,7 +360,11 @@ get_tinfo_decl (tree type)
       pushdecl_top_level_and_finish (d, NULL_TREE);
 
       if (CLASS_TYPE_P (type))
-	CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
+	{
+	  CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
+	  DECL_VISIBILITY (d) = CLASSTYPE_VISIBILITY (type);
+	  DECL_VISIBILITY_SPECIFIED (d) = CLASSTYPE_VISIBILITY_SPECIFIED (type);
+	}
 
       /* Remember the type it is for.  */
       TREE_TYPE (name) = type;
@@ -758,6 +762,11 @@ tinfo_base_init (tree desc, tree target)
     TREE_STATIC (name_decl) = 1;
     DECL_EXTERNAL (name_decl) = 0;
     TREE_PUBLIC (name_decl) = 1;
+    if (CLASS_TYPE_P (target))
+      {
+        DECL_VISIBILITY (name_decl) = CLASSTYPE_VISIBILITY (target);
+        DECL_VISIBILITY_SPECIFIED (name_decl) = CLASSTYPE_VISIBILITY_SPECIFIED (target);
+      }
     import_export_tinfo (name_decl, target, typeinfo_in_lib_p (target));
     /* External name of the string containing the type's name has a
        special name.  */

@@ -616,7 +616,7 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
 			      handle_vector_size_attribute },
-  { "visibility",	      1, 1, true,  false, false,
+  { "visibility",	      1, 1, false, false, false,
 			      handle_visibility_attribute },
   { "tls_model",	      1, 1, true,  false, false,
 			      handle_tls_model_attribute },
@@ -4563,7 +4563,16 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 
   *no_add_attrs = true;
 
-  if (decl_function_context (decl) != 0 || ! TREE_PUBLIC (decl))
+  if (TYPE_P (*node))
+    {
+      if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
+       {
+         warning ("`%s' attribute ignored on non-class types",
+                  IDENTIFIER_POINTER (name));
+         return NULL_TREE;
+       }
+    }
+  else if (decl_function_context (decl) != 0 || ! TREE_PUBLIC (decl))
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
       return NULL_TREE;
@@ -4573,6 +4582,14 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     {
       error ("visibility arg not a string");
       return NULL_TREE;
+    }
+  
+  /*  If this is a type, set the visibility on the type decl.  */
+  if (TYPE_P (decl))
+    {
+      decl = TYPE_NAME (decl);
+      if (! decl)
+        return NULL_TREE;
     }
 
   if (strcmp (TREE_STRING_POINTER (id), "default") == 0)
@@ -4585,6 +4602,14 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;
   else
     error ("visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
+  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+
+  /* For decls only, go ahead and attach the attribute to the node as well.
+     This is needed so we can determine whether we have VISIBILITY_DEFAULT
+     because the visibility was not specified, or because it was explicitly
+     overridden from the class visibility.  */
+  if (DECL_P (*node))
+    *no_add_attrs = false;
 
   return NULL_TREE;
 }
