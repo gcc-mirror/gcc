@@ -1,3 +1,7 @@
+Sat Aug 29 12:39:56 1998  Jeffrey A Law  (law@cygnus.com)
+
+        * NEWS: Various updates.
+
 Fri Aug 28 19:00:44 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (arith_operand, const64_operand,
