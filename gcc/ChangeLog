@@ -1,5 +1,13 @@
 2004-09-09  Roger Sayle  <roger@eyesopen.com>
 
+	* config/i386/i386.c (ix86_expand_ashlsi3_const): New function to
+	expand a left shift by an immediate constant as either an ashl or
+	a sequence of additions.
+	(ix86_split_ashldi): Use new ix86_expand_ashlsi3_const function
+	instead of calling gen_ashlsi3 with a constant directly.
+
+2004-09-09  Roger Sayle  <roger@eyesopen.com>
+
 	* config/i386/i386.c (ix86_split_long_move): When optimizing for
 	size, and the low and high parts of a DImode constant are equal,
 	copy one register to another instead of loading the same immediate
