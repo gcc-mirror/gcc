@@ -631,28 +631,7 @@ namespace std
        */
       iterator
       insert(iterator __position, const value_type& __x);
-  
-#ifdef _GLIBCPP_DEPRECATED
-      /**
-       *  @brief  Inserts an element into the %vector.
-       *  @param  position  An iterator into the %vector.
-       *  @return  An iterator that points to the inserted element.
-       *
-       *  This function will insert a default-constructed element
-       *  before the specified location.  You should consider using
-       *  insert(position,value_type()) instead.  Note that this kind
-       *  of operation could be expensive for a vector and if it is
-       *  frequently used the user should consider using std::list.
-       *
-       *  @note This was deprecated in 3.2 and will be removed in 3.4.
-       *  You must define @c _GLIBCPP_DEPRECATED to make this visible
-       *  in 3.2; see c++config.h.
-       */
-      iterator
-      insert(iterator __position)
-      { return insert(__position, value_type()); }
-#endif
-      
+
       /**
        *  @brief  Inserts a number of copies of given data into the %vector.
        *  @param  position  An iterator into the %vector.
@@ -913,11 +892,6 @@ namespace std
       // Called by insert(p,x)
       void
       _M_insert_aux(iterator __position, const value_type& __x);
-      
-#ifdef _GLIBCPP_DEPRECATED
-      // Unused now (same situation as in deque)
-      void _M_insert_aux(iterator __position);
-#endif
     };
   
   

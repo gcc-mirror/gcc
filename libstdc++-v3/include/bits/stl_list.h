@@ -702,23 +702,6 @@ namespace std
     void
     push_front(const value_type& __x) { this->insert(begin(), __x); }
   
-  #ifdef _GLIBCPP_DEPRECATED
-    /**
-     *  @brief  Add data to the front of the %list.
-     *
-     *  This is a typical stack operation.  The function creates a
-     *  default-constructed element at the front of the %list.  Due to the
-     *  nature of a %list this operation can be done in constant time.  You
-     *  should consider using push_front(value_type()) instead.
-     *
-     *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
-     *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
-     *        c++config.h.
-    */
-    void
-    push_front() { this->insert(begin(), value_type()); }
-  #endif
-  
     /**
      *  @brief  Removes first element.
      *
@@ -744,23 +727,6 @@ namespace std
     */
     void
     push_back(const value_type& __x) { this->insert(end(), __x); }
-  
-  #ifdef _GLIBCPP_DEPRECATED
-    /**
-     *  @brief  Add data to the end of the %list.
-     *
-     *  This is a typical stack operation.  The function creates a
-     *  default-constructed element at the end of the %list.  Due to the nature
-     *  of a %list this operation can be done in constant time.  You should
-     *  consider using push_back(value_type()) instead.
-     *
-     *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
-     *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
-     *        c++config.h.
-    */
-    void
-    push_back() { this->insert(end(), value_type()); }
-  #endif
   
     /**
      *  @brief  Removes last element.
@@ -793,26 +759,6 @@ namespace std
     */
     iterator
     insert(iterator __position, const value_type& __x);
-  
-  #ifdef _GLIBCPP_DEPRECATED
-    /**
-     *  @brief  Inserts an element into the %list.
-     *  @param  position  An iterator into the %list.
-     *  @return  An iterator that points to the inserted element.
-     *
-     *  This function will insert a default-constructed element before the
-     *  specified location.  You should consider using
-     *  insert(position,value_type()) instead.
-     *  Due to the nature of a %list this operation can be done in constant
-     *  time, and does not invalidate iterators and references.
-     *
-     *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
-     *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
-     *        c++config.h.
-    */
-    iterator
-    insert(iterator __position) { return insert(__position, value_type()); }
-  #endif
   
     /**
      *  @brief  Inserts a number of copies of given data into the %list.

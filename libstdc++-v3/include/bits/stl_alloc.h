@@ -74,10 +74,6 @@
  *  into a "standard" one.
  *  @endif
  *
- *  @note The @c reallocate member functions have been deprecated for 3.2
- *        and will be removed in 3.4.  You must define @c _GLIBCPP_DEPRECATED
- *        to make this visible in 3.2; see c++config.h.
- *
  *  The canonical description of these classes is in docs/html/ext/howto.html
  *  or online at http://gcc.gnu.org/onlinedocs/libstdc++/ext/howto.html#3
 */
@@ -129,9 +125,6 @@ namespace std
     {
     private:
       static void* _S_oom_malloc(size_t);
-#ifdef _GLIBCPP_DEPRECATED
-      static void* _S_oom_realloc(void*, size_t);
-#endif
       static void (* __malloc_alloc_oom_handler)();
 
     public:
@@ -147,17 +140,6 @@ namespace std
       static void
       deallocate(void* __p, size_t /* __n */)
       { free(__p); }
-
-#ifdef _GLIBCPP_DEPRECATED
-      static void*
-      reallocate(void* __p, size_t /* old_sz */, size_t __new_sz)
-      {
-        void* __result = realloc(__p, __new_sz);
-        if (__builtin_expect(__result == 0, 0))
-          __result = _S_oom_realloc(__p, __new_sz);
-        return __result;
-      }
-#endif
 
       static void (* __set_malloc_handler(void (*__f)()))()
       {
@@ -190,28 +172,6 @@ namespace std
             return __result;
         }
     }
-
-#ifdef _GLIBCPP_DEPRECATED
-  template<int __inst>
-    void*
-    __malloc_alloc_template<__inst>::
-    _S_oom_realloc(void* __p, size_t __n)
-    {
-      void (* __my_malloc_handler)();
-      void* __result;
-
-      for (;;)
-        {
-          __my_malloc_handler = __malloc_alloc_oom_handler;
-          if (__builtin_expect(__my_malloc_handler == 0, 0))
-            __throw_bad_alloc();
-          (*__my_malloc_handler)();
-          __result = realloc(__p, __n);
-          if (__result)
-            return __result;
-        }
-    }
-#endif
 
   // Should not be referenced within the library anymore.
   typedef __new_alloc                 __mem_interface;
@@ -292,20 +252,6 @@ namespace std
         assert(*(size_t*)__real_p == __n);
         _Alloc::deallocate(__real_p, __n + (int) _S_extra);
       }
-
-#ifdef _GLIBCPP_DEPRECATED
-      static void*
-      reallocate(void* __p, size_t __old_sz, size_t __new_sz)
-      {
-        char* __real_p = (char*)__p - (int) _S_extra;
-        assert(*(size_t*)__real_p == __old_sz);
-        char* __result = (char*) _Alloc::reallocate(__real_p, 
-						    __old_sz + (int) _S_extra,
-						    __new_sz + (int) _S_extra);
-        *(size_t*)__result = __new_sz;
-        return __result + (int) _S_extra;
-      }
-#endif
     };
 
 
@@ -455,11 +401,6 @@ namespace std
 	    *__my_free_list = __q;
 	  }
       }
-
-#ifdef _GLIBCPP_DEPRECATED
-      static void*
-      reallocate(void* __p, size_t __old_sz, size_t __new_sz);
-#endif
     };
 
   template<bool __threads, int __inst> _Atomic_word
@@ -590,27 +531,6 @@ namespace std
       return __result;
     }
 
-
-#ifdef _GLIBCPP_DEPRECATED
-  template<bool threads, int inst>
-    void*
-    __default_alloc_template<threads, inst>::
-    reallocate(void* __p, size_t __old_sz, size_t __new_sz)
-    {
-      void* __result;
-      size_t __copy_sz;
-
-      if (__old_sz > (size_t) _MAX_BYTES && __new_sz > (size_t) _MAX_BYTES)
-        return(realloc(__p, __new_sz));
-      if (_S_round_up(__old_sz) == _S_round_up(__new_sz))
-        return(__p);
-      __result = allocate(__new_sz);
-      __copy_sz = __new_sz > __old_sz? __old_sz : __new_sz;
-      memcpy(__result, __p, __copy_sz);
-      deallocate(__p, __old_sz);
-      return __result;
-    }
-#endif
 
   template<bool __threads, int __inst>
     _STL_mutex_lock
