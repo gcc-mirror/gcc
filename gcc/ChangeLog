@@ -1,5 +1,8 @@
 Sun Apr 12 07:33:46 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-decl.c (grokdeclarator): Don't warn about return type if in
+	system header.
+
 	* reload.c (reload_nongroup): New variable.
 	(push{_secondary,}_reload): Initialize it.
 	(find_reloads): Compute it.
