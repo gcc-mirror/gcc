@@ -1,4 +1,4 @@
-// 2001-08-27 Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-09-09 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation
 //
@@ -27,13 +27,14 @@
 // XXX This test is not working for non-glibc locale models.
 // { dg-do run { xfail *-*-* } }
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 // test string version
 void test01()
 {
   using namespace std;
   typedef money_base::part part;
   typedef money_base::pattern pattern;
-  typedef ostreambuf_iterator<char> iterator_type;
+  typedef ostreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
   string str;
@@ -59,8 +60,8 @@ void test01()
   VERIFY( loc_de != loc_fr );
 
   // cache the moneypunct facets
-  typedef moneypunct<char, true> __money_true;
-  typedef moneypunct<char, false> __money_false;
+  typedef moneypunct<wchar_t, true> __money_true;
+  typedef moneypunct<wchar_t, false> __money_false;
   const __money_true& monpunct_c_t = use_facet<__money_true>(loc_c); 
   const __money_true& monpunct_de_t = use_facet<__money_true>(loc_de); 
   const __money_false& monpunct_c_f = use_facet<__money_false>(loc_c); 
@@ -69,35 +70,35 @@ void test01()
   const __money_false& monpunct_hk_f = use_facet<__money_false>(loc_hk); 
 
   // sanity check the data is correct.
-  const string empty;
+  const wstring empty;
 
   // total EPA budget FY 2002
-  const string digits1("720000000000");
+  const wstring digits1(L"720000000000");
 
   // est. cost, national missle "defense", expressed as a loss in USD 2001
-  const string digits2("-10000000000000");  
+  const wstring digits2(L"-10000000000000");  
 
   // not valid input
-  const string digits3("-A"); 
+  const wstring digits3(L"-A"); 
 
   // input less than frac_digits
-  const string digits4("-1");
+  const wstring digits4(L"-1");
   
 
-  ostringstream oss;
+  wostringstream oss;
   oss.imbue(loc_de);
   // cache the money_put facet
-  const money_put<char>& mon_put = use_facet<money_put<char> >(oss.getloc()); 
+  const money_put<wchar_t>& mon_put = use_facet<money_put<wchar_t> >(oss.getloc()); 
 
 
   iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
-  string result1 = oss.str();
-  VERIFY( result1 == "7.200.000.000,00 ");
+  wstring result1 = oss.str();
+  VERIFY( result1 == L"7.200.000.000,00 ");
 
   oss.str(empty);
   iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
-  string result2 = oss.str();
-  VERIFY( result2 == "7.200.000.000,00 ");
+  wstring result2 = oss.str();
+  VERIFY( result2 == L"7.200.000.000,00 ");
 
   // intl and non-intl versions should be the same.
   VERIFY( result1 == result2 );
@@ -107,13 +108,13 @@ void test01()
 
   oss.str(empty);
   iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
-  string result3 = oss.str();
-  VERIFY( result3 == "7.200.000.000,00 DEM ");
+  wstring result3 = oss.str();
+  VERIFY( result3 == L"7.200.000.000,00 DEM ");
 
   oss.str(empty);
   iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
-  string result4 = oss.str();
-  VERIFY( result4 == "7.200.000.000,00 DM");
+  wstring result4 = oss.str();
+  VERIFY( result4 == L"7.200.000.000,00 DM");
 
   // intl and non-intl versions should be different.
   VERIFY( result3 != result4 );
@@ -124,35 +125,35 @@ void test01()
   oss.imbue(loc_hk);
   oss.str(empty);
   iterator_type os_it05 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
-  string result5 = oss.str();
-  VERIFY( result5 == "HK$7,200,000,000.00");
+  wstring result5 = oss.str();
+  VERIFY( result5 == L"HK$7,200,000,000.00");
 
   oss.str(empty);
   iterator_type os_it06 = mon_put.put(oss.rdbuf(), true, oss, '*', digits2);
-  string result6 = oss.str();
-  VERIFY( result6 == "(HKD 100,000,000,000.00)");
+  wstring result6 = oss.str();
+  VERIFY( result6 == L"(HKD 100,000,000,000.00)");
 
   // test one-digit formats without zero padding
   oss.imbue(loc_c);
   oss.str(empty);
   iterator_type os_it07 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
-  string result7 = oss.str();
-  VERIFY( result7 == "1");
+  wstring result7 = oss.str();
+  VERIFY( result7 == L"1");
 
   // test one-digit formats with zero padding, zero frac widths
   oss.imbue(loc_hk);
   oss.str(empty);
   iterator_type os_it08 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
-  string result8 = oss.str();
-  VERIFY( result8 == "(HKD .01)");
+  wstring result8 = oss.str();
+  VERIFY( result8 == L"(HKD .01)");
 
   oss.unsetf(ios_base::showbase);
 
   // test bunk input
   oss.str(empty);
   iterator_type os_it09 = mon_put.put(oss.rdbuf(), true, oss, '*', digits3);
-  string result9 = oss.str();
-  VERIFY( result9 == "");
+  wstring result9 = oss.str();
+  VERIFY( result9 == L"");
 
   // test io.width() > length
   // test various fill strategies
@@ -161,24 +162,24 @@ void test01()
   oss.str(empty);
   oss.width(20);
   iterator_type os_it10 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
-  string result10 = oss.str();
-  VERIFY( result10 == "***************-,01 ");
+  wstring result10 = oss.str();
+  VERIFY( result10 == L"***************-,01 ");
 
   oss.str(empty);
   oss.width(20);
   oss.setf(ios_base::internal);
   iterator_type os_it11 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
-  string result11 = oss.str();
-  VERIFY( result11 == "-,01****************");
+  wstring result11 = oss.str();
+  VERIFY( result11 == L"-,01****************");
 }
 
-// test double/string versions
+// test double/wstring versions
 void test02()
 {
   using namespace std;
   typedef money_base::part part;
   typedef money_base::pattern pattern;
-  typedef ostreambuf_iterator<char> iterator_type;
+  typedef ostreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
   string str;
@@ -204,8 +205,8 @@ void test02()
   VERIFY( loc_de != loc_fr );
 
   // cache the moneypunct facets
-  typedef moneypunct<char, true> __money_true;
-  typedef moneypunct<char, false> __money_false;
+  typedef moneypunct<wchar_t, true> __money_true;
+  typedef moneypunct<wchar_t, false> __money_false;
   const __money_true& monpunct_c_t = use_facet<__money_true>(loc_c); 
   const __money_true& monpunct_de_t = use_facet<__money_true>(loc_de); 
   const __money_false& monpunct_c_f = use_facet<__money_false>(loc_c); 
@@ -214,7 +215,7 @@ void test02()
   const __money_false& monpunct_hk_f = use_facet<__money_false>(loc_hk); 
 
   // sanity check the data is correct.
-  const string empty;
+  const wstring empty;
 
   // total EPA budget FY 2002
   const long double  digits1 = 720000000000;
@@ -226,20 +227,20 @@ void test02()
   const long double digits4 = -1;
   
 
-  ostringstream oss;
+  wostringstream oss;
   oss.imbue(loc_de);
   // cache the money_put facet
-  const money_put<char>& mon_put = use_facet<money_put<char> >(oss.getloc()); 
+  const money_put<wchar_t>& mon_put = use_facet<money_put<wchar_t> >(oss.getloc()); 
 
 
   iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
-  string result1 = oss.str();
-  VERIFY( result1 == "7.200.000.000,00 ");
+  wstring result1 = oss.str();
+  VERIFY( result1 == L"7.200.000.000,00 ");
 
   oss.str(empty);
   iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
-  string result2 = oss.str();
-  VERIFY( result2 == "7.200.000.000,00 ");
+  wstring result2 = oss.str();
+  VERIFY( result2 == L"7.200.000.000,00 ");
 
   // intl and non-intl versions should be the same.
   VERIFY( result1 == result2 );
@@ -249,23 +250,26 @@ void test02()
 
   oss.str(empty);
  iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, '*', digits1);
-  string result3 = oss.str();
-  VERIFY( result3 == "7.200.000.000,00 DEM ");
+  wstring result3 = oss.str();
+  VERIFY( result3 == L"7.200.000.000,00 DEM ");
 
   oss.str(empty);
   iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, '*', digits1);
-  string result4 = oss.str();
-  VERIFY( result4 == "7.200.000.000,00 DM");
+  wstring result4 = oss.str();
+  VERIFY( result4 == L"7.200.000.000,00 DM");
 
   // intl and non-intl versions should be different.
   VERIFY( result3 != result4 );
   VERIFY( result3 != result1 );
   VERIFY( result4 != result2 );
 }
+#endif
 
 int main()
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+#endif
   return 0;
 }

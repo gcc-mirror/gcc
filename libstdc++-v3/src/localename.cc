@@ -96,7 +96,7 @@ namespace std
     _M_init_facet(new std::ctype<char>);
     _M_init_facet(new codecvt<char, char, mbstate_t>);
     _M_init_facet(new moneypunct<char, false>(__cloc));
-    _M_init_facet(new moneypunct<char,true>(__cloc));
+    _M_init_facet(new moneypunct<char, true>(__cloc));
     _M_init_facet(new money_get<char>);
     _M_init_facet(new money_put<char>);
     _M_init_facet(new numpunct<char>(__cloc));
@@ -111,7 +111,7 @@ namespace std
     _M_init_facet(new std::ctype<wchar_t>);
     _M_init_facet(new codecvt<wchar_t, char, mbstate_t>);
     _M_init_facet(new moneypunct<wchar_t, false>(__cloc));
-    _M_init_facet(new moneypunct<wchar_t,true>(__cloc));
+    _M_init_facet(new moneypunct<wchar_t, true>(__cloc));
     _M_init_facet(new money_get<wchar_t>);
     _M_init_facet(new money_put<wchar_t>);
     _M_init_facet(new numpunct<wchar_t>(__cloc));

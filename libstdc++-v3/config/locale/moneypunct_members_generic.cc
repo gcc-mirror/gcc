@@ -37,9 +37,31 @@
 
 namespace std
 {
+  // Construct and return valid pattern consisting of some combination of:
+  // space none symbol sign value
+  money_base::pattern
+  money_base::_S_construct_pattern(char __preceeds, char __space, char __posn)
+  { return _S_default_pattern; }
+
   template<> 
     void
-    moneypunct<char>::_M_initialize_moneypunct(__c_locale)
+    moneypunct<char, true>::_M_initialize_moneypunct(__c_locale)
+    {
+      // "C" locale
+      _M_decimal_point = '.';
+      _M_thousands_sep = ',';
+      _M_grouping = "";
+      _M_curr_symbol = string_type();
+      _M_positive_sign = string_type();
+      _M_negative_sign = string_type();
+      _M_frac_digits = 0;
+      _M_pos_format = money_base::_S_default_pattern;
+      _M_neg_format = money_base::_S_default_pattern;
+    }
+
+  template<> 
+    void
+    moneypunct<char, false>::_M_initialize_moneypunct(__c_locale)
     {
       // "C" locale
       _M_decimal_point = '.';
@@ -56,7 +78,23 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     void
-    moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale)
+    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale)
+    {
+      // "C" locale
+      _M_decimal_point = L'.';
+      _M_thousands_sep = L',';
+      _M_grouping = "";
+      _M_curr_symbol = string_type();
+      _M_positive_sign = string_type();
+      _M_negative_sign = string_type();
+      _M_frac_digits = 0;
+      _M_pos_format = money_base::_S_default_pattern;
+      _M_neg_format = money_base::_S_default_pattern;
+    }
+
+  template<> 
+    void
+    moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale)
     {
       // "C" locale
       _M_decimal_point = L'.';

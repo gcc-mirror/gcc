@@ -54,10 +54,8 @@ namespace std
   template class moneypunct<char, true>;
   template class moneypunct_byname<char, false>;
   template class moneypunct_byname<char, true>;
-  template class money_get<char, obuf_iterator>;
-  template class money_put<char, obuf_iterator>;
   template class money_get<char, ibuf_iterator>;
-  template class money_put<char, ibuf_iterator>;
+  template class money_put<char, obuf_iterator>;
   template class _Format_cache<char>;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
@@ -65,10 +63,8 @@ namespace std
   template class moneypunct<wchar_t, true>;
   template class moneypunct_byname<wchar_t, false>;
   template class moneypunct_byname<wchar_t, true>;
-  template class money_get<wchar_t, wobuf_iterator>;
-  template class money_put<wchar_t, wobuf_iterator>;
   template class money_get<wchar_t, wibuf_iterator>;
-  template class money_put<wchar_t, wibuf_iterator>;
+  template class money_put<wchar_t, wobuf_iterator>;
   template class _Format_cache<wchar_t>;
 #endif
 
@@ -149,6 +145,12 @@ namespace std
   template
     const collate<char>& 
     use_facet<collate<char> >(const locale&);
+  template
+    const moneypunct<char, true>& 
+    use_facet<moneypunct<char, true> >(const locale&);
+  template
+    const moneypunct<char, false>& 
+    use_facet<moneypunct<char, false> >(const locale&);
 #ifdef _GLIBCPP_USE_WCHAR_T
   template 
     const num_put<wchar_t, wobuf_iterator>& 
@@ -165,6 +167,12 @@ namespace std
   template
     const collate<wchar_t>& 
     use_facet<collate<wchar_t> >(const locale&);
+  template
+    const moneypunct<wchar_t, true>& 
+    use_facet<moneypunct<wchar_t, true> >(const locale&);
+  template
+    const moneypunct<wchar_t, false>& 
+    use_facet<moneypunct<wchar_t, false> >(const locale&);
 #endif
 
   // has_facet
