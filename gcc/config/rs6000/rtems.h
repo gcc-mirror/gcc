@@ -30,6 +30,7 @@
       builtin_assert ("system=rtems");    \
       builtin_assert ("cpu=powerpc");     \
       builtin_assert ("machine=powerpc"); \
+      TARGET_OS_SYSV_CPP_BUILTINS ();     \
     }                                     \
   while (0)
 
