@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-   Copyright (C) 1986, 87, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Written by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
@@ -3290,15 +3290,16 @@ startagain:
 
 	      /* Prevent accidental token-pasting with a character
 		 before the macro call.  */
-	      if (!traditional && obp != op->buf
-		  && (obp[-1] == '-' || obp[1] == '+' || obp[1] == '&'
-		      || obp[-1] == '|' || obp[1] == '<' || obp[1] == '>')) {
-		/* If we are expanding a macro arg, make a newline marker
-		   to separate the tokens.  If we are making real output,
-		   a plain space will do.  */
-		if (output_marks)
-		  *obp++ = '\n';
-		*obp++ = ' ';
+	      if (!traditional && obp != op->buf) {
+		switch (obp[-1]) {
+		case '&': case '+': case '-': case '<': case '>': case '|':
+		  /* If we are expanding a macro arg, make a newline marker
+		     to separate the tokens.  If we are making real output,
+		     a plain space will do.  */
+		  if (output_marks)
+		    *obp++ = '\n';
+		  *obp++ = ' ';
+		}
 	      }
 
 	      /* Expand the macro, reading arguments as needed,
