@@ -1,3 +1,7 @@
+2000-02-25  Geoff Keating  <geoffk@cygnus.com>
+
+	* compile/20000224-1.c: New test.
+
 2000-02-25  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* compile/cpp-2.c: New test.

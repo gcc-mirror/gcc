@@ -5744,22 +5744,31 @@ schedule_block (bb, rgn_n_insns)
      had different notions of what the "head" insn was.  */
   get_bb_head_tail (bb, &head, &tail);
 
-  /* Interblock scheduling could have moved the original head insn from this
-     block into a proceeding block.  This may also cause schedule_block and
-     compute_forward_dependences to have different notions of what the
-     "head" insn was.
+  /* rm_other_notes only removes notes which are _inside_ the
+     block---that is, it won't remove notes before the first real insn
+     or after the last real insn of the block.  So if the first insn
+     has a REG_SAVE_NOTE which would otherwise be emitted before the
+     insn, it is redundant with the note before the start of the
+     block, and so we have to take it out.
 
-     If the interblock movement happened to make this block start with
-     some notes (LOOP, EH or SETJMP) before the first real insn, then
-     HEAD will have various special notes attached to it which must be
-     removed so that we don't end up with extra copies of the notes.  */
+     FIXME: Probably the same thing should be done with REG_SAVE_NOTEs
+     referencing NOTE_INSN_SETJMP at the end of the block.  */
   if (GET_RTX_CLASS (GET_CODE (head)) == 'i')
     {
       rtx note;
 
       for (note = REG_NOTES (head); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
-	  remove_note (head, note);
+	  {
+	    if (INTVAL (XEXP (note, 0)) != NOTE_INSN_SETJMP)
+	      {
+		remove_note (head, note);
+		note = XEXP (note, 1);
+		remove_note (head, note);
+	      }
+	    else
+	      note = XEXP (note, 1);
+	  }
     }
 
   next_tail = NEXT_INSN (tail);
