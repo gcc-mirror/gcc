@@ -965,9 +965,7 @@ fi
 target_gtfiles=
 
 # Collect target-machine-specific information.
-for machine in $target ; do
-	. ${srcdir}/config.gcc
-done
+. ${srcdir}/config.gcc
 
 extra_objs="${host_extra_objs} ${extra_objs}"
 
