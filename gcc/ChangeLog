@@ -1,3 +1,12 @@
+2002-05-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* loop.c: (PREFETCH_EXTREME_DIFFERENCE, PREFETCH_BEFORE_LOOP): New.
+	(PREFETCH_CONDITIONAL): Renamed from PREFETCH_NOT_ALWAYS.
+	(struct prefetch_info): Fix spelling of member bytes_accessed.
+	(emit_prefetch_instructions): Make dump messages more regular;
+	restructure code to add more dump messages; use new macros for
+	heuristics. (There are no code generation changes in any of this).
+
 2002-05-10  David S. Miller  <davem@redhat.com>
 
 	* rtl.h (INSN_ANNULLED_BRANCH_P): Accept INSN too, update comment.
