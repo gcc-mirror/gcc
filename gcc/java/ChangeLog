@@ -1,3 +1,8 @@
+1999-02-20  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf.h (UTF8_GET): Mask first byte of 3-byte encoding with 0x0f,
+	not 0x1f.
+
 Sun Feb 21 14:56:11 1999  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (build_result_decl), java-tree.h:  New method.
