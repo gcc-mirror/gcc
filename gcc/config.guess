@@ -17,7 +17,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #
-# This script attempts to guess a cononical system name similar to
+# This script attempts to guess a canonical system name similar to
 # config.sub. If it succeeds, it prints the system name on stdout, and
 # exits with 0.  Otherwise, it prints an error message on stderr, and
 # exits with 1.
@@ -40,8 +40,14 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     alpha:OSF1:1.*:*)
 	echo alpha-dec-osf${UNAME_RELEASE}
         exit 0 ;;
-    sun4*:SunOS:[5-9].*:*)
-	echo sparc-sun-solaris2
+    sun4*:SunOS:5.*:*)
+	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
+	exit 0 ;;
+    sun4*:SunOS:6*:*)
+	# According to config.sub, this is the proper way to canonicalize
+	# SunOS6.  Hard to guess exactly what SunOS6 will be like, but
+	# it's likely to be more like Solaris than SunOS4.
+	echo sparc-sun-solaris3`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
     sun4*:SunOS:*:*)
 	echo sparc-sun-sunos${UNAME_RELEASE}
@@ -88,6 +94,12 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     9000/8??:HP-UX:*:*)
 	echo hppa1.0-hp-hpux
 	exit 0 ;;
+    9000/8??:4.3bsd:*:* | 9000/8?7:4.3bsd:*:* )
+	echo hppa1.1-hp-bsd
+	exit 0 ;;
+    9000/8??:4.3bsd:*:*)
+	echo hppa1.0-hp-bsd
+	exit 0 ;;
     C1*:ConvexOS:*:*)
 	echo c1-convex-bsd
         exit 0 ;;
@@ -107,7 +119,11 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo ${UNAME_MACHINE}-unknown-linux
 	exit 0 ;;
     i[34]86:UNIX_SV:4.*:*)
-	echo i486-unknown-sysv4
+	if grep Novell /usr/include/link.h >/dev/null 2>/dev/null; then
+		echo ${UNAME_MACHINE}-univel-sysv${UNAME_RELEASE}
+	else
+		echo ${UNAME_MACHINE}-unknown-sysv${UNAME_RELEASE}
+	fi
 	exit 0 ;;
     i[34]86:*:3.2:*)
 	if /bin/uname -X 2>/dev/null >/dev/null ; then
@@ -122,6 +138,8 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	# "miniframe"
 	echo m68010-convergent-sysv
 	exit 0 ;;
+     M680[234]0:*:R3V[567]*:*)
+	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
 esac
 
 echo '(No uname command or uname output not recognized.)' 1>&2
@@ -155,6 +173,19 @@ main()
 
 #if defined(__386BSD__) || (defined(__bsdi__) && defined(__i386__))
   printf("i386-unknown-bsd\n"); exit(0);
+#endif
+
+#if defined(sequent)
+#if defined(i386)
+  printf("i386-sequent-dynix\n"); exit(0);
+#endif
+#if defined (ns32000)
+  printf("ns32k-sequent-dynix\n"); exit(0);
+#endif
+#endif
+
+#if defined(_SEQUENT_)
+  printf("i386-sequent-ptx\n"); exit(0);
 #endif
 
   exit (1);
