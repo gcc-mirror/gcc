@@ -248,6 +248,27 @@ of the same array (6.5.6).}
 @cite{The extent to which suggestions made by using the @code{register}
 storage-class specifier are effective (6.7.1).}
 
+The @code{register} specifier affects code generation only in these ways:
+
+@itemize @bullet
+@item
+When used as part of the register variable extension, see 
+@ref{Explicit Reg Vars}.
+
+@item
+When @option{-O0} is in use, the compiler allocates distinct stack
+memory for all variables that do not have the @code{register}
+storage-class specifier; if @code{register} is specified, the variable
+may have a shorter lifespan than the code would indicate and may never
+be placed in memory.
+
+@item
+On some rare x86 targets, @code{setjmp} doesn't save the registers in
+all circumstances.  In those cases, GCC doesn't allocate any variables
+in registers unless they are marked @code{register}.
+
+@end itemize
+
 @item
 @cite{The extent to which suggestions made by using the inline function
 specifier are effective (6.7.4).}
