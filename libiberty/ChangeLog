@@ -1,3 +1,12 @@
+2004-11-23  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR other/18623
+	* cp-demangle.c (d_call_offset): Remove useless local variables
+	offset and virtual_offset.
+	* cplus-dem.c (ada_demangle): Remove useless local variable
+	at_start_name.
+	(demangle_template): Remove useless local variable start.
+
 2004-11-19  Roger Sayle  <roger@eyesopen.com>
 
 	* objalloc.c, strsignal.c, xstrerror.c: Include "config.h" before
