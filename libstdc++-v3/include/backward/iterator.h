@@ -116,7 +116,7 @@ template<class _Iter>
 
 using std::distance;
 using __gnu_cxx::distance; // 3-parameter extension
-using std::advance; 
+using std::advance;
 
 using std::insert_iterator;
 using std::front_insert_iterator;
@@ -145,7 +145,7 @@ template <class _Tp>
   inline void
   destroy(_Tp* __pointer)
   { std::_Destroy(__pointer); }
-  
+
 template <class _ForwardIterator>
   inline void
   destroy(_ForwardIterator __first, _ForwardIterator __last)

@@ -66,57 +66,57 @@
 #include <ext/numeric>
 
 // Names from <stl_algo.h>
-using std::for_each; 
-using std::find; 
-using std::find_if; 
-using std::adjacent_find; 
-using std::count; 
-using std::count_if; 
-using std::search; 
-using std::search_n; 
-using std::swap_ranges; 
-using std::transform; 
-using std::replace; 
-using std::replace_if; 
-using std::replace_copy; 
-using std::replace_copy_if; 
-using std::generate; 
-using std::generate_n; 
-using std::remove; 
-using std::remove_if; 
-using std::remove_copy; 
-using std::remove_copy_if; 
-using std::unique; 
-using std::unique_copy; 
-using std::reverse; 
-using std::reverse_copy; 
-using std::rotate; 
-using std::rotate_copy; 
-using std::random_shuffle; 
-using std::partition; 
-using std::stable_partition; 
-using std::sort; 
-using std::stable_sort; 
-using std::partial_sort; 
-using std::partial_sort_copy; 
-using std::nth_element; 
-using std::lower_bound; 
-using std::upper_bound; 
-using std::equal_range; 
-using std::binary_search; 
-using std::merge; 
-using std::inplace_merge; 
-using std::includes; 
-using std::set_union; 
-using std::set_intersection; 
-using std::set_difference; 
-using std::set_symmetric_difference; 
-using std::min_element; 
-using std::max_element; 
-using std::next_permutation; 
-using std::prev_permutation; 
-using std::find_first_of; 
-using std::find_end; 
+using std::for_each;
+using std::find;
+using std::find_if;
+using std::adjacent_find;
+using std::count;
+using std::count_if;
+using std::search;
+using std::search_n;
+using std::swap_ranges;
+using std::transform;
+using std::replace;
+using std::replace_if;
+using std::replace_copy;
+using std::replace_copy_if;
+using std::generate;
+using std::generate_n;
+using std::remove;
+using std::remove_if;
+using std::remove_copy;
+using std::remove_copy_if;
+using std::unique;
+using std::unique_copy;
+using std::reverse;
+using std::reverse_copy;
+using std::rotate;
+using std::rotate_copy;
+using std::random_shuffle;
+using std::partition;
+using std::stable_partition;
+using std::sort;
+using std::stable_sort;
+using std::partial_sort;
+using std::partial_sort_copy;
+using std::nth_element;
+using std::lower_bound;
+using std::upper_bound;
+using std::equal_range;
+using std::binary_search;
+using std::merge;
+using std::inplace_merge;
+using std::includes;
+using std::set_union;
+using std::set_intersection;
+using std::set_difference;
+using std::set_symmetric_difference;
+using std::min_element;
+using std::max_element;
+using std::next_permutation;
+using std::prev_permutation;
+using std::find_first_of;
+using std::find_end;
 
 // Names from stl_heap.h
 using std::push_heap;
@@ -125,22 +125,22 @@ using std::make_heap;
 using std::sort_heap;
 
 // Names from stl_numeric.h
-using std::accumulate; 
-using std::inner_product; 
-using std::partial_sum; 
-using std::adjacent_difference; 
+using std::accumulate;
+using std::inner_product;
+using std::partial_sum;
+using std::adjacent_difference;
 
 // Names from ext/algorithm
-using __gnu_cxx::random_sample; 
+using __gnu_cxx::random_sample;
 using __gnu_cxx::random_sample_n;
-using __gnu_cxx::is_sorted; 
+using __gnu_cxx::is_sorted;
 using __gnu_cxx::is_heap;
 using __gnu_cxx::count;   // Extension returning void
 using __gnu_cxx::count_if;   // Extension returning void
 
 // Names from ext/numeric
-using __gnu_cxx::power; 
-using __gnu_cxx::iota; 
+using __gnu_cxx::power;
+using __gnu_cxx::iota;
 
 #endif /* _BACKWARD_ALGO_H */
 

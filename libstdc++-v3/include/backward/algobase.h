@@ -64,17 +64,17 @@
 #include <ext/memory>
 
 // Names from stl_algobase.h
-using std::iter_swap; 
-using std::swap; 
-using std::min; 
-using std::max; 
-using std::copy; 
-using std::copy_backward; 
-using std::fill; 
-using std::fill_n; 
-using std::mismatch; 
-using std::equal; 
-using std::lexicographical_compare; 
+using std::iter_swap;
+using std::swap;
+using std::min;
+using std::max;
+using std::copy;
+using std::copy_backward;
+using std::fill;
+using std::fill_n;
+using std::mismatch;
+using std::equal;
+using std::lexicographical_compare;
 
 // Names from stl_uninitialized.h
 using std::uninitialized_copy;
@@ -82,8 +82,8 @@ using std::uninitialized_fill;
 using std::uninitialized_fill_n;
 
 // Names from ext/algorithm
-using __gnu_cxx::copy_n; 
-using __gnu_cxx::lexicographical_compare_3way; 
+using __gnu_cxx::copy_n;
+using __gnu_cxx::lexicographical_compare_3way;
 
 // Names from ext/memory
 using __gnu_cxx::uninitialized_copy_n;

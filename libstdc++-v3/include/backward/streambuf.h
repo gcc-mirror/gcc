@@ -33,7 +33,7 @@
 
 using std::streambuf;
 
-#endif 
+#endif
 
 // Local Variables:
 // mode:C++

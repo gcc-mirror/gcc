@@ -44,14 +44,14 @@
 #define _BACKWARD_ROPE_H 1
 
 #include "backward_warning.h"
-#include "hashtable.h"   
+#include "hashtable.h"
 #include <ext/rope>
 
-using __gnu_cxx::char_producer; 
-using __gnu_cxx::sequence_buffer; 
-using __gnu_cxx::rope; 
-using __gnu_cxx::crope; 
-using __gnu_cxx::wrope; 
+using __gnu_cxx::char_producer;
+using __gnu_cxx::sequence_buffer;
+using __gnu_cxx::rope;
+using __gnu_cxx::crope;
+using __gnu_cxx::wrope;
 
 #endif /* _BACKWARD_ROPE_H */
 

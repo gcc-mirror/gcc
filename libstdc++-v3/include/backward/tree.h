@@ -49,7 +49,7 @@
 
 using __gnu_cxx::rb_tree;
 
-#endif 
+#endif
 // Local Variables:
 // mode:C++
 // End:

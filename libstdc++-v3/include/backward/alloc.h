@@ -49,11 +49,11 @@
 #include <ext/debug_allocator.h>
 #include <ext/malloc_allocator.h>
 
-using __gnu_cxx::__malloc_alloc; 
-using __gnu_cxx::__debug_alloc; 
-using __gnu_cxx::__pool_alloc; 
-using std::__alloc; 
-using std::__simple_alloc; 
+using __gnu_cxx::__malloc_alloc;
+using __gnu_cxx::__debug_alloc;
+using __gnu_cxx::__pool_alloc;
+using std::__alloc;
+using std::__simple_alloc;
 using std::allocator;
 
-#endif 
+#endif

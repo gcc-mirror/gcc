@@ -61,12 +61,12 @@ namespace std
   // Note that this class is not a template.
   class strstreambuf : public basic_streambuf<char, char_traits<char> >
   {
-  public:                         
+  public:
     // Types.
     typedef char_traits<char>              _Traits;
     typedef basic_streambuf<char, _Traits> _Base;
 
-  public:  
+  public:
     // Constructor, destructor
     explicit strstreambuf(streamsize __initial_capacity = 0);
     strstreambuf(void* (*__alloc)(size_t), void (*__free)(void*));
@@ -97,7 +97,7 @@ namespace std
     virtual pos_type seekpos(pos_type __pos, ios_base::openmode __mode
 			     = ios_base::in | ios_base::out);
 
-  private:  
+  private:
     // Dynamic allocation, possibly using _M_alloc_fun and _M_free_fun.
     char* _M_alloc(size_t);
     void  _M_free(char*);
@@ -105,7 +105,7 @@ namespace std
     // Helper function used in constructors.
     void _M_setup(char* __get, char* __put, streamsize __n);
 
-  private:  
+  private:
     // Data members.
     void* (*_M_alloc_fun)(size_t);
     void  (*_M_free_fun)(void*);
@@ -171,4 +171,4 @@ namespace std
     strstreambuf _M_buf;
   };
 } // namespace std
-#endif 
+#endif

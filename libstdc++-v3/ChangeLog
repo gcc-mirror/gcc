@@ -1,3 +1,15 @@
+2003-12-09  Bernardo Innocenti  <bernie@develer.com>
+
+	* include/backward/algo.h, include/backward/algobase.h,
+	include/backward/alloc.h, include/backward/complex.h,
+	include/backward/defalloc.h, include/backward/function.h,
+	include/backward/iterator.h, include/backward/new.h,
+	include/backward/ostream.h, include/backward/queue.h,
+	include/backward/rope.h, include/backward/stream.h,
+	include/backward/streambuf.h, include/backward/strstream,
+	include/backward/tempbuf.h, include/backward/tree.h,
+	include/backward/vector.h: Remove trailing whitespace.
+
 2003-12-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/generic/c_locale.cc (__convert_to_v(long&),

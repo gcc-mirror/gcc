@@ -32,9 +32,9 @@
 #include <complex>
 
 using std::complex;
-typedef complex<float> 		float_complex;
-typedef complex<double> 	double_complex;
-typedef complex<long double> 	long_double_complex;
+typedef complex<float>		float_complex;
+typedef complex<double>		double_complex;
+typedef complex<long double>	long_double_complex;
 
 #endif
 
