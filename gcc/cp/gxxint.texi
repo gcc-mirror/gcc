@@ -1578,6 +1578,11 @@ we are concerned here about a lower-level interface primarily
 intended for methods written in Java, but that can also be used for C++
 (and less easily C).
 
+Note that on systems that follow BSD tradition, a C identifier @code{var}
+would get "mangled" into the assembler name @samp{_var}.  On such
+systems, all other mangled names are also prefixed by a @samp{_}
+which is not shown in the following examples.
+
 @subsection Method name mangling
 
 C++ mangles a method by emitting the function name, followed by @code{__},
@@ -1646,6 +1651,7 @@ entire mangled method name is followed by a @samp{U}.
 For example, the method @code{X\u0319::M\u002B(int)} is encoded as
 @samp{M_002b__U6X_0319iU}.
 
+
 @subsection Pointer and reference types
 
 A C++ pointer type is mangled as @samp{P} followed by the
@@ -1705,6 +1711,28 @@ Java arrays are objects.  A Java type @code{T[]} is mangled
 as if it were the C++ type @code{JArray<T>}.
 For example @code{java.lang.String[]} is encoded as
 @samp{Pt6JArray1ZPQ34java4lang6String}.
+
+@subsection Static fields
+
+Both C++ and Java classes can have static fields.
+These are allocated statically, and are shared among all instances.
+
+The mangling starts with a prefix (@samp{_} in most systems), which is
+followed by the mangling
+of the class name, followed by the "joiner" and finally the field name.
+The joiner (see @code{JOINER} in @code{cp-tree.h}) is a special
+separator character.  For historical reasons (and idiosyncracies
+of assembler syntax) it can @samp{$} or @samp{.} (or even
+@samp{_} on a few systems).  If the joiner is @samp{_} then the prefix
+is @samp{__static_} instead of just @samp{_}.
+
+For example @code{Foo::Bar::var} (or @code{Foo.Bar.var} in Java syntax)
+would be encoded as @samp{_Q23Foo3Bar$var} or @samp{_Q23Foo3Bar.var}
+(or rarely @samp{__static_Q23Foo3Bar_var}).
+
+If the name of a static variable needs Unicode escapes,
+the Unicode indicator @samp{U} comes before the "joiner".
+This @code{\u1234Foo::var\u3445} becomes @code{_U8_1234FooU.var_3445}.
 
 @subsection Table of demangling code characters
 

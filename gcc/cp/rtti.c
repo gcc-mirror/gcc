@@ -205,7 +205,13 @@ get_tinfo_fn_dynamic (exp)
       tree t;
 
       if (! flag_rtti)
-	warning ("taking dynamic typeid of object without -frtti");
+	{
+	  warning ("taking dynamic typeid of object without -frtti");
+	  push_obstacks (&permanent_obstack, &permanent_obstack);
+	  init_rtti_processing ();
+	  pop_obstacks ();
+	  flag_rtti = 1;
+	}
 
       /* If we don't have rtti stuff, get to a sub-object that does.  */
       if (! CLASSTYPE_VFIELDS (type))
@@ -387,6 +393,15 @@ get_typeid (type)
   if (type == error_mark_node)
     return error_mark_node;
   
+  if (! flag_rtti)
+    {
+      warning ("requesting typeid of object without -frtti");
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      init_rtti_processing ();
+      pop_obstacks ();
+      flag_rtti = 1;
+    }
+
   if (processing_template_decl)
     return build_min_nt (TYPEID_EXPR, type);
 
