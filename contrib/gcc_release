@@ -1,0 +1,363 @@
+#! /bin/sh
+
+########################################################################
+#
+# File:   gcc_build
+# Author: Jeffrey Law, Bernd Schmidt, Mark Mitchell
+# Date:   07/10/2000
+#
+# Contents:
+#   Script to automatically download and build GCC.
+#
+# Copyright (c) 2001 Free Software Foundation.
+#
+# This file is part of GNU CC.
+#
+# GNU CC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# GNU CC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU CC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+########################################################################
+
+########################################################################
+# Notes
+########################################################################
+
+# Here is an example usage of this script, to create the GCC 3.0.2
+# release:
+#
+#   gcc -r 3.0.2
+#
+# This script will automatically use the head of the release branch
+# to generate the release.
+
+########################################################################
+# Functions
+########################################################################
+
+# Issue the error message given by $1 and exit with a non-zero
+# exit code.
+
+error() {
+    echo "gcc_release: error: $1"
+    exit 1
+}
+
+# Issue the informational message given by $1.
+
+inform() {
+    echo "gcc_release: $1"
+}
+
+# Issue a usage message explaining how to use this script.
+
+usage() {
+cat <<EOF
+gcc_release     [-d destination]
+                [-u username]
+		[-r release]
+EOF
+    exit 1
+}
+
+# Change to the directory given by $1.
+
+changedir() {
+  cd $1 || \
+    error "Could not change directory to $1"
+}
+
+# Each of the arguments is a directory name, relative to the top
+# of the source tree.  Return another name for that directory, relative
+# to the working directory.
+
+adjust_dirs() {
+  for x; do
+    echo `basename ${SOURCE_DIRECTORY}`/$x
+  done
+}
+
+# Build the source tree that will be the basis for the release
+# in ${WORKING_DIRECTORY}/gcc-${RELEASE}.
+
+build_sources() {
+  # If the WORKING_DIRECTORY already exists, do not risk destroying it.
+  if [ -e ${WORKING_DIRECTORY} ]; then
+    error "\`${WORKING_DIRECTORY}' already exists"
+  fi
+  # Create the WORKING_DIRECTORY.
+  mkdir "${WORKING_DIRECTORY}" \
+    || error "Could not create \`${WORKING_DIRECTORY}'"
+  changedir "${WORKING_DIRECTORY}"
+
+  # Export the current sources.
+  inform "Retrieving release sources"
+  ${CVS} \
+       -z 9 export -d "`basename ${SOURCE_DIRECTORY}`" \
+       -r ${BRANCH} gcc || \
+    error "Could not retrieve release sources"
+
+  # Run gcc_update on them to set up the timestamps nicely.
+  changedir "gcc-${RELEASE}"
+  contrib/gcc_update --touch
+
+  # Now, we must build the compiler in order to create any generated
+  # files that are supposed to go in the source directory.  This is
+  # also a good sanity check to make sure that the release builds
+  # on at least one platform.
+  inform "Building compiler"
+  contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ../objdir build || \
+    error "Could not rebuild GCC"
+
+  # Create a `.brik' file to use for checking the validity of the
+  # release.
+  changedir "${SOURCE_DIRECTORY}"
+  BRIK_FILE=`mktemp /tmp/gcc_release.XXXXXXX`
+  ((find . -type f | sort > $BRIK_FILE) && \
+       brik -Gb -f ${BRIK_FILE} > .brik && \
+       rm ${BRIK_FILE}) || \
+     error "Could not compute brik checksum"
+}
+
+# Buid a single tarfile.  The first argument is the name of the name
+# of the tarfile to build, without any suffixes.  They will be added
+# automatically.  The rest of the arguments are the files or
+# directories to include.
+
+build_tarfile() {
+  # Get the name of the destination tar file.
+  TARFILE="$1.tar.gz"
+  shift
+
+  # Build the tar file itself.
+  (${TAR} cf - "$@" | ${GZIP} > ${TARFILE}) || \
+    error "Could not build tarfile"
+}
+
+# Build the various tar files for the release.
+
+build_tarfiles() {
+  inform "Building tafiles"
+
+  changedir "${WORKING_DIRECTORY}"
+
+  # Build one huge tarfile for the entire distribution.
+  build_tarfile gcc-${RELEASE} `basename ${SOURCE_DIRECTORY}`
+
+  # Now, build one for each of the languages.
+  build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
+  build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
+  build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
+  build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
+  build_tarfile gcc-testsuite-${RELEASE} ${TESTSUITE_DIRS}
+   
+  # The core is everything else.
+  EXCLUDES=""
+  for x in ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} ${JAVA_DIRS} \
+           ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
+    EXCLUDES="${EXCLUDES} --exclude $x"
+  done
+  build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
+    `basename ${SOURCE_DIRECTORY}`
+}
+
+# Upload the files to the FTP server.
+
+upload_files() {
+  inform "Uploading files"
+
+  changedir "${WORKING_DIRECTORY}"
+
+  # Copy the tar files to the FTP server.
+  for x in "" g++- g77- java- objc- testsuite- core-; do
+    ${SCP} gcc-${x}${RELEASE}.tar.gz ${FTP_PATH} || \
+      error "Could not upload gcc-${x}${RELEASE}.tar.gz"
+  done
+}
+
+########################################################################
+# Initialization
+########################################################################
+
+# Today's date.
+DATE=`date "+%Y%m%d"`
+
+# The CVS server containing the GCC repository.
+CVS_SERVER="gcc.gnu.org"
+# The path to the repository on that server.
+CVS_REPOSITORY="/cvs/gcc"
+# The CVS protocol to use.
+CVS_PROTOCOL="ext"
+# The username to use when connecting to the server.
+CVS_USERNAME="${USER}"
+
+# The path to the directory where the files are uploaded for FTP.
+FTP_PATH="gccadmin@gcc.gnu.org:~ftp/pub/gcc"
+
+# The major number for the release.  For release `3.0.2' this would be 
+# `3'
+RELEASE_MAJOR=""
+# The minor number for the release.  For release `3.0.2' this would be
+# `0'.
+RELEASE_MINOR=""
+# The revision number for the release.  For release `3.0.2' this would
+# be `2'.
+RELEASE_REVISION=""
+# The complete name of the release.
+RELEASE=""
+
+# The name of the branch from which the release should be made.
+BRANCH=""
+
+# The directory that will be used to construct the release.  The
+# release itself will be placed in a subdirectory of this diretory.
+DESTINATION=${HOME}
+# The subdirectory.
+WORKING_DIRECTORY=""
+# The directory that will contain the GCC sources.
+SOURCE_DIRECTORY=""
+
+# The directories that should be part of the various language-specific
+# tar files.  These are all relative to the top of the source tree.
+CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
+FORTRAN_DIRS="gcc/f libf2c"
+JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
+OBJECTIVEC_DIRS="gcc/objc libobjc"
+TESTSUITE_DIRS="gcc/testsuite"
+
+# Non-zero if this is the final release, rather than a prerelease.
+FINAL=0
+
+# Major operation modes.
+MODE_SOURCES=0
+MODE_TARFILES=0
+MODE_UPLOAD=0
+
+# Programs we use.
+
+CVS="${CVS:-cvs -f -Q}"
+GZIP="${GZIP:-gzip --best}"
+SCP="${SCP:-scp}"
+TAR="${TAR:-tar}"
+
+########################################################################
+# Command Line Processing
+########################################################################
+
+# Parse the options.
+while getopts "d:f:r:u:" ARG; do
+    case $ARG in
+    d)    DESTINATION="${OPTARG}";;
+    r)    RELEASE="${OPTARG}";;
+    u)    CVS_USERNAME="${OPTARG}";;
+    f)    FINAL=1;;
+    \?)   usage;;
+    esac
+done
+shift `expr ${OPTIND} - 1`
+
+# Perform consistency checking.
+if [ -z ${CVS_USERNAME} ]; then
+  error "No username specified"
+fi
+
+if [ -z ${RELEASE} ]; then
+  error "No release number specified"
+fi
+
+if [ ! -d ${DESTINATION} ]; then
+  error "\`${DESTINATION}' is not a directory"
+fi
+
+# Compute the major and minor release numbers.
+RELEASE_MAJOR=`echo $RELEASE | awk --assign FS=. '{ print $1; }'`
+RELEASE_MINOR=`echo $RELEASE | awk --assign FS=. '{ print $2; }'`
+RELEASE_REVISION=`echo $RELEASE | awk --assign FS=. '{ print $3; }'`
+
+if [ -z "${RELEASE_MAJOR}" ] || [ -z "${RELEASE_MINOR}" ]; then
+  error "Release number \`${RELEASE}' is invalid"
+fi
+
+if [ -n "${RELEASE_REVISION}" ]; then
+  error "Revision releases are unsupported"
+fi
+
+# Compute the full name of the release.
+if [ -z "${RELEASE_REVISION}" ]; then
+  RELEASE="${RELEASE_MAJOR}.${RELEASE_MINOR}"
+else
+  RELEASE="${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_REVISION}"
+fi
+
+# Compute the name of the branch, which is based solely on the major
+# release number.
+BRANCH="gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+
+# If this is not a final release, set various parameters acordingly.
+if [ ${FINAL} -ne 1 ]; then
+  RELEASE="${RELEASE}-${DATE}"
+  FTP_PATH="${FTP_PATH}/snapshots"
+else
+  FTP_PATH="${FTP_PATH}/releases"
+fi
+
+# Compute the name of the WORKING_DIRECTORY and the SOURCE_DIRECTORY.
+WORKING_DIRECTORY="${DESTINATION}/gcc-${RELEASE}"
+SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
+
+# Recompute the names of all the language-specific directories,
+# relative to the WORKING_DIRECTORY.
+CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
+FORTRAN_DIRS=`adjust_dirs ${FORTRAN_DIRS}`
+JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
+OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
+TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
+
+# Set up CVSROOT.
+CVSROOT=":${CVS_PROTOCOL}:${CVS_USERNAME}@"
+CVSROOT="${CVSROOT}${CVS_SERVER}:${CVS_REPOSITORY}"
+export CVSROOT
+
+########################################################################
+# Main Program
+########################################################################
+
+# Handle the major modes.
+while [ $# -ne 0 ]; do
+    case $1 in
+    sources) MODE_SOURCES=1;;
+    tarfiles) MODE_TARFILES=1;;
+    upload) MODE_UPLOAD=1;;
+    all) MODE_SOURCES=1; MODE_TARFILES=1; MODE_UPLOAD=1; 
+    esac
+    shift
+done
+
+# Build the source directory.
+
+if [ $MODE_SOURCES -ne 0 ]; then
+  build_sources
+fi
+
+# Build the tar files.
+
+if [ $MODE_TARFILES -ne 0 ]; then
+  build_tarfiles
+fi
+
+# Upload them to the FTP server.
+
+if [ $MODE_UPLOAD -ne 0 ]; then
+  upload_files
+fi
