@@ -1,3 +1,11 @@
+2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-inline.c (remap_type): Arrange to have just one pointer type
+	for each type, mode, and 'can alias' value.
+	(setup_one_parameter): Remap type when making VAR_DECL for PARM_DECL.
+	(estimate_num_insns_1): Minor code reformatting.
+	(inline_forbidden_p_1): Likewise; add; missing return statement.
+
 2004-06-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/15825
