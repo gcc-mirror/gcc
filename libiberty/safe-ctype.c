@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
    - Behaves properly for all values in the range of a signed or
      unsigned char.  */
 
+#include "ansidecl.h"
 #include <safe-ctype.h>
 #include <stdio.h>  /* for EOF */
 
