@@ -1,3 +1,8 @@
+2001-08-31  Diego Novillo  <dnovillo@redhat.com>
+
+	* c-decl.c (c_decode_option): Skip '-f' prefix before calling
+	dump_switch_p.
+
 2001-08-31  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/stormy16/stormy16.c (stormy16_asm_out_destructor): New
