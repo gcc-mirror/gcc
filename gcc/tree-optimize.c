@@ -364,6 +364,10 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_ch);
   NEXT_PASS (pass_profile);
   NEXT_PASS (pass_sra);
+  /* FIXME: SRA may generate arbitrary gimple code, exposing new
+     aliased and call-clobbered variables.  As mentioned below,
+     pass_may_alias should be a TODO item.  */
+  NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_rename_ssa_copies);
   NEXT_PASS (pass_dominator);
   NEXT_PASS (pass_redundant_phi);
