@@ -1433,7 +1433,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libstdc++-v3"
     ;;
   mmix-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj} gdb libgloss"
+    noconfigdirs="$noconfigdirs ${libgcj} gdb libgloss target-libgfortran"
     ;;
   mn10200-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
