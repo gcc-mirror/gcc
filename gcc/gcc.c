@@ -691,9 +691,12 @@ static const char *cpp_unique_options =
  %{E|M|MM:%W{o*}}";
 
 /* This contains cpp options which are common with cc1_options and are passed
-   only when preprocessing only to avoid duplication.  */
+   only when preprocessing only to avoid duplication.  We pass the cc1 spec
+   options to the preprocessor so that it the cc1 spec may manipulate
+   options used to set target flags.  Those special target flags settings may
+   in turn cause preprocessor symbols to be defined specially.  */
 static const char *cpp_options =
-"%(cpp_unique_options) %{std*} %{W*&pedantic*} %{w} %{m*} %{f*}\
+"%(cpp_unique_options) %1 %{std*} %{W*&pedantic*} %{w} %{m*} %{f*}\
  %{O*} %{undef}";
 
 /* This contains cpp options which are not passed when the preprocessor
