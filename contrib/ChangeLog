@@ -1,3 +1,7 @@
+2001-06-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* gennews: Set TERM to vt100 for Lynx.
+
 2001-06-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* release: Remove.
