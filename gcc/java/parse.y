@@ -147,7 +147,9 @@ static tree java_complete_tree PARAMS ((tree));
 static tree maybe_generate_pre_expand_clinit PARAMS ((tree));
 static int analyze_clinit_body PARAMS ((tree));
 static int maybe_yank_clinit PARAMS ((tree));
+static void start_complete_expand_method PARAMS ((tree));
 static void java_complete_expand_method PARAMS ((tree));
+static void java_expand_method_bodies PARAMS ((tree));
 static int  unresolved_type_p PARAMS ((tree, tree *));
 static void create_jdep_list PARAMS ((struct parser_ctxt *));
 static tree build_expr_block PARAMS ((tree, tree));
@@ -331,6 +333,12 @@ static tree build_dot_class_method_invocation PARAMS ((tree));
 static void create_new_parser_context PARAMS ((int));
 static void mark_parser_ctxt PARAMS ((void *));
 static tree maybe_build_class_init_for_field PARAMS ((tree, tree));
+
+static bool attach_init_test_initialization_flags PARAMS ((struct hash_entry *,
+							  PTR));
+static bool adjust_init_test_initialization PARAMS ((struct hash_entry *,
+						     PTR));
+static bool emit_test_initialization PARAMS ((struct hash_entry *, PTR));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -7513,12 +7521,17 @@ java_complete_expand_methods (class_decl)
   /* First, do the ordinary methods. */
   for (decl = first_decl; decl; decl = TREE_CHAIN (decl))
     {
+      /* Ctors aren't part of this batch. */
+      if (DECL_CONSTRUCTOR_P (decl) || DECL_CLINIT_P (decl))
+	continue;
+      
       /* Skip abstract or native methods -- but do handle native
  	 methods when generating JNI stubs.  */
-      if (METHOD_ABSTRACT (decl)
- 	  || (! flag_jni && METHOD_NATIVE (decl))
-	  || DECL_CONSTRUCTOR_P (decl) || DECL_CLINIT_P (decl))
-	continue;
+      if (METHOD_ABSTRACT (decl) || (! flag_jni && METHOD_NATIVE (decl)))
+	{
+	  DECL_FUNCTION_BODY (decl) = NULL_TREE;
+	  continue;
+	}
 
       if (METHOD_NATIVE (decl))
  	{
@@ -7751,6 +7764,40 @@ maybe_yank_clinit (mdecl)
   return 1;
 }
 
+/* Install the argument from MDECL. Suitable to completion and
+   expansion of mdecl's body.  */
+
+static void
+start_complete_expand_method (mdecl)
+     tree mdecl;
+{
+  tree tem, *ptr;
+
+  pushlevel (1);		/* Prepare for a parameter push */
+  ptr = &DECL_ARGUMENTS (mdecl);
+  tem  = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
+
+  while (tem)
+    {
+      tree next = TREE_CHAIN (tem);
+      tree type = TREE_TYPE (tem);
+      if (PROMOTE_PROTOTYPES
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	  && INTEGRAL_TYPE_P (type))
+	type = integer_type_node;
+      DECL_ARG_TYPE (tem) = type;
+      layout_decl (tem, 0);
+      pushdecl (tem);
+      *ptr = tem;
+      ptr = &TREE_CHAIN (tem);
+      tem = next;
+    }
+  *ptr = NULL_TREE;
+  pushdecl_force_head (DECL_ARGUMENTS (mdecl));
+  lineno = DECL_SOURCE_LINE_FIRST (mdecl);
+  build_result_decl (mdecl);
+}
+
 
 /* Complete and expand a method.  */
 
@@ -7758,7 +7805,7 @@ static void
 java_complete_expand_method (mdecl)
      tree mdecl;
 {
-  int yank_clinit = 0;
+  tree fbody, block_body, exception_copy;
 
   current_function_decl = mdecl;
   /* Fix constructors before expanding them */
@@ -7766,103 +7813,131 @@ java_complete_expand_method (mdecl)
     fix_constructors (mdecl);
   
   /* Expand functions that have a body */
-  if (DECL_FUNCTION_BODY (mdecl))
+  if (!DECL_FUNCTION_BODY (mdecl))
+    return;
+
+  fbody = DECL_FUNCTION_BODY (mdecl);
+  block_body = BLOCK_EXPR_BODY (fbody);
+  exception_copy = NULL_TREE;
+
+  current_function_decl = mdecl;
+
+  if (! quiet_flag)
+    fprintf (stderr, " [%s.",
+	     lang_printable_name (DECL_CONTEXT (mdecl), 0));
+  announce_function (mdecl);
+  if (! quiet_flag)
+    fprintf (stderr, "]");
+  
+  /* Prepare the function for tree completion */
+  start_complete_expand_method (mdecl);
+
+  /* Install the current this */
+  current_this = (!METHOD_STATIC (mdecl) ? 
+		  BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (mdecl)) : NULL_TREE);
+
+  /* Purge the `throws' list of unchecked exceptions. If we're doing
+     xref, save a copy of the list and re-install it later. */
+  if (flag_emit_xref)
+    exception_copy = copy_list (DECL_FUNCTION_THROWS (mdecl));
+  purge_unchecked_exceptions (mdecl);
+  
+  /* Install exceptions thrown with `throws' */
+  PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
+  
+  if (block_body != NULL_TREE)
     {
-      tree fbody = DECL_FUNCTION_BODY (mdecl);
-      tree block_body = BLOCK_EXPR_BODY (fbody);
-      tree exception_copy = NULL_TREE;
-      tree tem, *ptr;
-
-      current_function_decl = mdecl;
-
-      if (! quiet_flag)
-	fprintf (stderr, " [%s.",
-		 lang_printable_name (DECL_CONTEXT (mdecl), 0));
-      announce_function (mdecl);
-      if (! quiet_flag)
-	fprintf (stderr, "]");
-
-      pushlevel (1);		/* Prepare for a parameter push */
-      ptr = &DECL_ARGUMENTS (mdecl);
-      tem  = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
-      while (tem)
-	{
-	  tree next = TREE_CHAIN (tem);
-	  tree type = TREE_TYPE (tem);
-	  if (PROMOTE_PROTOTYPES
-	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
-	      && INTEGRAL_TYPE_P (type))
-	    type = integer_type_node;
-	  DECL_ARG_TYPE (tem) = type;
-	  layout_decl (tem, 0);
-	  pushdecl (tem);
-	  *ptr = tem;
-	  ptr = &TREE_CHAIN (tem);
-	  tem = next;
-	}
-      *ptr = NULL_TREE;
-      pushdecl_force_head (DECL_ARGUMENTS (mdecl));
-      lineno = DECL_SOURCE_LINE_FIRST (mdecl);
-
-      build_result_decl (mdecl);
-
-      current_this 
-	= (!METHOD_STATIC (mdecl) ? 
-	   BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (mdecl)) : NULL_TREE);
-
-      /* Purge the `throws' list of unchecked exceptions. If we're
-	 doing xref, save a copy of the list and re-install it
-	 later. */
-      if (flag_emit_xref)
-	exception_copy = copy_list (DECL_FUNCTION_THROWS (mdecl));
-
-      purge_unchecked_exceptions (mdecl);
-
-      /* Install exceptions thrown with `throws' */
-      PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
-
-      if (block_body != NULL_TREE)
-	{
-	  block_body = java_complete_tree (block_body);
-
-	  if (! flag_emit_xref && ! METHOD_NATIVE (mdecl))
-	    check_for_initialization (block_body);
-	  ctxp->explicit_constructor_p = 0;
-	}
-
-      BLOCK_EXPR_BODY (fbody) = block_body;
-
-      /* If we saw a return but couldn't evaluate it properly, we'll
-	 have an error_mark_node here. */
-      if (block_body != error_mark_node
-	  && (block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
-	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE
-	  && !flag_emit_xref)
-	missing_return_error (current_function_decl);
-
-      /* Check wether we could just get rid of clinit, now the picture
-         is complete. */
-      if (!(yank_clinit = maybe_yank_clinit (mdecl)))
-	complete_start_java_method (mdecl); 
+      block_body = java_complete_tree (block_body);
       
-      /* Don't go any further if we've found error(s) during the
-	 expansion */
-      if (!java_error_count && !yank_clinit)
-	source_end_java_method ();
-      else
+      /* Before we check initialization, attached all class initialization
+	 variable to the block_body */
+      hash_traverse (&DECL_FUNCTION_INIT_TEST_TABLE (mdecl),
+		     attach_init_test_initialization_flags, block_body);
+      
+      if (! flag_emit_xref && ! METHOD_NATIVE (mdecl))
 	{
-	  if (java_error_count)
-	    pushdecl_force_head (DECL_ARGUMENTS (mdecl));
-	  poplevel (1, 0, 1);
+	  unsigned int state = check_for_initialization (block_body);
+	  
+	  /* Go through all the flags marking the initialization of
+	     static variables and see whether they're definitively
+	     assigned, in which case the type is remembered as
+	     definitively initialized in MDECL. */
+	  if (STATIC_CLASS_INIT_OPT_P ())
+	    {
+	      hash_traverse (&DECL_FUNCTION_INIT_TEST_TABLE (mdecl),
+			     attach_initialized_static_class, (PTR)&state);
+
+	      /* Always register the context as properly initialized in
+		 MDECL. This used with caution helps removing extra
+		 initialization of self. */
+	      if (METHOD_STATIC (mdecl))
+		hash_lookup (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (mdecl),
+			     (hash_table_key) DECL_CONTEXT (mdecl),
+			     TRUE, NULL);
+	    }
 	}
+      ctxp->explicit_constructor_p = 0;
+    }
+  
+  BLOCK_EXPR_BODY (fbody) = block_body;
+  
+  /* If we saw a return but couldn't evaluate it properly, we'll have
+     an error_mark_node here. */
+  if (block_body != error_mark_node
+      && (block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE
+      && !flag_emit_xref)
+    missing_return_error (current_function_decl);
 
-      /* Pop the exceptions and sanity check */
-      POP_EXCEPTIONS();
-      if (currently_caught_type_list)
-	abort ();
+  /* See if we can get rid of <clinit> if MDECL happens to be <clinit> */
+  maybe_yank_clinit (mdecl);
 
-      if (flag_emit_xref)
-	DECL_FUNCTION_THROWS (mdecl) = exception_copy;
+  /* Pop the current level, with special measures if we found errors. */
+  if (java_error_count)
+    pushdecl_force_head (DECL_ARGUMENTS (mdecl));
+  poplevel (1, 0, 1);
+
+  /* Pop the exceptions and sanity check */
+  POP_EXCEPTIONS();
+  if (currently_caught_type_list)
+    abort ();
+
+  /* Restore the copy of the list of exceptions if emitting xrefs. */
+  if (flag_emit_xref)
+    DECL_FUNCTION_THROWS (mdecl) = exception_copy;
+}
+
+/* For with each class for which there's code to generate. */
+
+static void
+java_expand_method_bodies (class)
+     tree class;
+{
+  tree decl;
+  for (decl = TYPE_METHODS (class); decl; decl = TREE_CHAIN (decl))
+    {
+      if (!DECL_FUNCTION_BODY (decl))
+	continue;
+
+      current_function_decl = decl;
+
+      /* It's time to assign the variable flagging static class
+	 initialization based on which classes invoked static methods
+	 are definitely initializing. This should be flagged. */
+      if (STATIC_CLASS_INIT_OPT_P ())
+	hash_traverse (&DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (decl),
+		       adjust_init_test_initialization, NULL);
+
+      /* Prepare the function for RTL expansion */  
+      start_complete_expand_method (decl);
+
+      /* Expand function start, generate initialization flag
+	 assignment, and handle synchronized methods. */
+      complete_start_java_method (decl);
+
+      /* Expand the rest of the function body and terminate
+         expansion. */
+      source_end_java_method ();
     }
 }
 
@@ -8783,7 +8858,10 @@ java_expand_classes ()
 	  if (flag_emit_xref)
 	    expand_xref (current_class);
 	  else if (! flag_syntax_only)
-	    finish_class ();
+	    {
+	      java_expand_method_bodies (current_class);
+	      finish_class ();
+	    }
 	}
     }
 }
@@ -8963,7 +9041,10 @@ resolve_expression_name (id, orig)
 		      static_ref_err (id, DECL_NAME (decl), current_class);
 		      return error_mark_node;
 		    }
-		  return build_outer_field_access (id, decl);
+		  access = build_outer_field_access (id, decl);
+		  if (orig)
+		    *orig = access;
+		  return access;
 		}
 
 	      /* Otherwise build what it takes to access the field */
@@ -10436,6 +10517,30 @@ patch_invoke (patch, method, args)
     {
       patch = build (COMPOUND_EXPR, TREE_TYPE (patch), check, patch);
       TREE_SIDE_EFFECTS (patch) = 1;
+    }
+
+  /* In order to be able to modify PATCH later, we SAVE_EXPR it and
+     put it as the first expression of a COMPOUND_EXPR. The second
+     expression being an empty statement to be later patched if
+     necessary. We remember a TREE_LIST (the PURPOSE is the method,
+     the VALUE is the compound) in a hashtable and return a
+     COMPOUND_EXPR built so that the result of the evaluation of the
+     original PATCH node is returned. */
+  if (STATIC_CLASS_INIT_OPT_P ()
+      && current_function_decl && METHOD_STATIC (method))
+    {
+      tree list;
+      tree fndecl = current_function_decl;
+      tree save = save_expr (patch);
+      tree type = TREE_TYPE (patch);
+
+      patch = build (COMPOUND_EXPR, type, save, empty_stmt_node);
+      list = build_tree_list (method, patch);
+
+      hash_lookup (&DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl),
+		   (const hash_table_key) list, TRUE, NULL);
+
+      patch = build (COMPOUND_EXPR, type, patch, save);
     }
 
   return patch;
@@ -15852,4 +15957,112 @@ init_src_parse ()
 {
   /* Register roots with the garbage collector.  */
   ggc_add_tree_root (src_parse_roots, sizeof (src_parse_roots) / sizeof(tree));
+}
+
+
+
+/* This section deals with the functions that are called when tables
+   recording class initialization information are traversed.  */
+
+/* Attach to PTR (a block) the declaration found in ENTRY. */
+
+static bool
+attach_init_test_initialization_flags (entry, ptr)
+     struct hash_entry *entry;
+     PTR ptr;
+{
+  tree block = (tree)ptr;
+  struct init_test_hash_entry *ite = (struct init_test_hash_entry *) entry;
+  
+  TREE_CHAIN (ite->init_test_decl) = BLOCK_EXPR_DECLS (block);
+  BLOCK_EXPR_DECLS (block) = ite->init_test_decl;
+  return true;
+}
+
+/* This function is called for each statement calling a static
+   function.  ENTRY is a TREE_LIST whose PURPOSE is the called
+   function and VALUE is a compound whose second operand can be
+   patched with static class initialization flag assignments.  */
+
+static bool
+adjust_init_test_initialization (entry, info)
+     struct hash_entry *entry;
+     PTR info ATTRIBUTE_UNUSED;
+{
+  tree list = (tree)(entry->key);
+  tree called_method = TREE_PURPOSE (list);
+  tree compound = TREE_VALUE (list);
+  tree assignment_compound_list = build_tree_list (called_method, NULL);
+
+  /* For each class definitely initialized in CALLED_METHOD, fill
+     ASSIGNMENT_COMPOUND with assignment to the class initialization flag. */
+  hash_traverse (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (called_method),
+		 emit_test_initialization, assignment_compound_list);
+
+  if (TREE_VALUE (assignment_compound_list))
+    TREE_OPERAND (compound, 1) = TREE_VALUE (assignment_compound_list);
+
+  return true;
+}
+
+/* This function is called for each classes that is known definitely
+   assigned when a given static method was called. This function
+   augments a compound expression (INFO) storing all assignment to
+   initialized static class flags if a flag already existed, otherwise
+   a new one is created.  */
+
+static bool
+emit_test_initialization (entry, info)
+     struct hash_entry *entry;
+     PTR info;
+{
+  tree l = (tree) info;
+  tree decl, init;
+
+  struct init_test_hash_entry *ite = (struct init_test_hash_entry *)
+    hash_lookup (&DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl),
+		 entry->key, FALSE, NULL);
+
+  /* If we haven't found a flag and we're dealing with self registered
+     with current_function_decl, then don't do anything. Self is
+     always added as definitely initialized but this information is
+     valid only if used outside the current function. */
+  if (! ite)
+    {
+      if (current_function_decl != TREE_PURPOSE (l))
+	ite = (struct init_test_hash_entry *)
+	  hash_lookup (&DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl),
+		       entry->key, TRUE, NULL);
+      else
+	return true;
+    }
+
+  /* If we don't have a variable, create one and install it. */
+  if (! ite->init_test_decl)
+    {
+      tree block;
+      
+      decl = build_decl (VAR_DECL, NULL_TREE, boolean_type_node);
+      MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+      LOCAL_CLASS_INITIALIZATION_FLAG (decl) = 1;
+      DECL_CONTEXT (decl) = current_function_decl;
+      DECL_INITIAL (decl) = boolean_true_node;
+
+      /* The trick is to find the right context for it. */
+      block = BLOCK_SUBBLOCKS (GET_CURRENT_BLOCK (current_function_decl));
+      TREE_CHAIN (decl) = BLOCK_EXPR_DECLS (block);
+      BLOCK_EXPR_DECLS (block) = decl;
+      ite->init_test_decl = decl;
+    }
+  else
+    decl = ite->init_test_decl;
+
+  /* Now simply augment the compound that holds all the assignments
+     pertaining to this method invocation. */
+  init = build (MODIFY_EXPR, boolean_type_node, decl, boolean_true_node);
+  TREE_SIDE_EFFECTS (init) = 1;
+  TREE_VALUE (l) = add_stmt_to_compound (TREE_VALUE (l), void_type_node, init);
+  TREE_SIDE_EFFECTS (TREE_VALUE (l)) = 1;
+
+  return true;
 }

@@ -673,6 +673,18 @@ add_method_1 (handle_class, access_flags, name, function_type)
 		   init_test_hash_newfunc, java_hash_hash_tree_node, 
 		   java_hash_compare_tree_node);
 
+  /* Initialize the initialized (static) class table. */
+  if (access_flags & ACC_STATIC)
+    hash_table_init (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl),
+		     init_test_hash_newfunc, java_hash_hash_tree_node,
+		     java_hash_compare_tree_node);
+
+  /* Initialize the static method invocation compound table */
+  if (STATIC_CLASS_INIT_OPT_P ())
+    hash_table_init (&DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl),
+		     init_test_hash_newfunc, java_hash_hash_tree_node,
+		     java_hash_compare_tree_node);
+
   TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
   TYPE_METHODS (handle_class) = fndecl;
 
@@ -1484,18 +1496,11 @@ finish_class ()
     {
       if (! TREE_ASM_WRITTEN (method) && DECL_SAVED_INSNS (method) != 0)
 	{
-	  /* It's a deferred inline method.  Decide if we need to emit it. */
-	  if (flag_keep_inline_functions
-	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (method))
-	      || ! METHOD_PRIVATE (method)
-	      || saw_native_method)
-	    {
-	      output_inline_function (method);
-	      /* Scan the list again to see if there are any earlier
-                 methods to emit. */
-	      method = type_methods;
-	      continue;
-	    }
+	  output_inline_function (method);
+	  /* Scan the list again to see if there are any earlier
+	     methods to emit. */
+	  method = type_methods;
+	  continue;
 	}
       method = TREE_CHAIN (method);
     }

@@ -356,6 +356,14 @@ compiling a class with native methods, and these methods are implemented
 using JNI, then you must use @code{-fjni}.  This option causes
 @code{gcj} to generate stubs which will invoke the underlying JNI
 methods.
+
+@item -fno-optimize-static-class-initialization
+When the optimization level is greather or equal to @code{-O2},
+@code{gcj} will try to optimize the way calls into the runtime are made
+to initialize static classes upon their first use (this optimization
+isn't carried out if @code{-C} was specified.) When compiling to native
+code, @code{-fno-optimize-static-class-initialization} will turn this
+optimization off, regardless of the optimization level in use.
 @end table
 
 

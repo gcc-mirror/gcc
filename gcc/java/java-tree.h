@@ -186,6 +186,10 @@ extern int flag_hash_synchronization;
 /* When non zero, generate checks for references to NULL.  */
 extern int flag_check_references;
 
+/* Used through STATIC_CLASS_INIT_OPT_P to check whether static
+   initialization optimization should be performed.  */
+extern int flag_optimize_sci;
+
 /* Encoding used for source files.  */
 extern const char *current_encoding;
 
@@ -704,6 +708,16 @@ struct lang_identifier
    class has been initialized in this function, and FALSE otherwise.  */
 #define DECL_FUNCTION_INIT_TEST_TABLE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->init_test_table)
+/* For each static function decl, itc contains a hash table whose
+   entries are keyed on class named that are definitively initialized
+   in DECL.  */
+#define DECL_FUNCTION_INITIALIZED_CLASS_TABLE(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->ict)
+/* For each static function call, smic contains contains a hash table
+   whose entries are keyed on the compound statement that encapsulate
+   the invocation.  */
+#define DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->smic)
 /* The Number of Artificial Parameters (NAP) DECL contains. this$<n>
    is excluded, because sometimes created as a parameter before the
    function decl exists. */
@@ -815,11 +829,18 @@ struct lang_identifier
   (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->local_final)
 /* True if NODE is a local final. */
 #define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && LOCAL_FINAL (NODE))
-/* True if NODE is a final variable */
+/* True if NODE is a final variable. */
 #define FINAL_VARIABLE_P(NODE) (FIELD_FINAL (NODE) && !FIELD_STATIC (NODE))
-/* True if NODE is a class final variable */
+/* True if NODE is a class final variable. */
 #define CLASS_FINAL_VARIABLE_P(NODE) \
   (FIELD_FINAL (NODE) && FIELD_STATIC (NODE))
+/* True if NODE is a class initialization flag. This macro accesses
+   the flag to read or set it.  */
+#define LOCAL_CLASS_INITIALIZATION_FLAG(NODE) \
+    (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->cif)
+/* True if NODE is a class initialization flag. */
+#define LOCAL_CLASS_INITIALIZATION_FLAG_P(NODE) \
+    (DECL_LANG_SPECIFIC (NODE) && LOCAL_CLASS_INITIALIZATION_FLAG(NODE))
 /* Create a DECL_LANG_SPECIFIC if necessary. */
 #define MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC(T)			\
   if (DECL_LANG_SPECIFIC (T) == NULL)				\
@@ -858,6 +879,8 @@ struct lang_decl
 				   list of other constructor it calls */
   struct hash_table init_test_table;
 				/* Class initialization test variables  */
+  struct hash_table ict;	/* Initialized (static) Class Table */
+  struct hash_table smic;	/* Static method invocation compound */
   tree inner_access;		/* The identifier of the access method
 				   used for invocation from inner classes */
   int nap;			/* Number of artificial parameters */
@@ -888,6 +911,7 @@ struct lang_decl_var
   int final_liic : 1;		/* Final locally initialized in ctors */
   int final_ierr : 1;		/* Initialization error already detected */
   int local_final : 1;		/* True if the decl is a local final */
+  int cif : 1;			/* True: decl is a class initialization flag */
 };
 
 /* Macro to access fields in `struct lang_type'.  */
@@ -1061,7 +1085,7 @@ extern void parse_error_context PARAMS ((tree cl, const char *, ...))
 extern tree build_primtype_type_ref PARAMS ((const char *));
 extern void finish_class PARAMS ((void));
 extern void java_layout_seen_class_methods PARAMS ((void));
-extern void check_for_initialization PARAMS ((tree));
+extern unsigned int check_for_initialization PARAMS ((tree));
 
 extern tree pushdecl_top_level PARAMS ((tree));
 extern int alloc_class_constant PARAMS ((tree));
@@ -1129,6 +1153,8 @@ extern tree get_boehm_type_descriptor PARAMS ((tree));
 extern unsigned long java_hash_hash_tree_node PARAMS ((hash_table_key));
 extern bool java_hash_compare_tree_node PARAMS ((hash_table_key, 
 						    hash_table_key));
+extern bool attach_initialized_static_class PARAMS ((struct hash_entry *,
+						     PTR));
 extern void java_check_methods PARAMS ((tree));
 extern void init_jcf_parse PARAMS((void));
 extern void init_src_parse PARAMS((void));
@@ -1558,6 +1584,10 @@ extern tree *type_map;
 #define IS_UNCHECKED_EXCEPTION_P(TYPE)				\
   (inherits_from_p ((TYPE), runtime_exception_type_node)	\
    || inherits_from_p ((TYPE), error_exception_type_node))
+
+/* True when we can perform static class initialization optimization */
+#define STATIC_CLASS_INIT_OPT_P() \
+  (flag_optimize_sci && (optimize >= 2) && ! flag_emit_class_files)
 
 extern int java_error_count;					\
 

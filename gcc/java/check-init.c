@@ -25,6 +25,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "flags.h" /* Needed for optimize. */
 #include "java-tree.h"
 #include "toplev.h" /* Needed for fatal. */
 
@@ -370,7 +371,12 @@ check_init (exp, before)
       if (! FIELD_STATIC (exp) && DECL_NAME (exp) != NULL_TREE)
 	{
 	  int index = DECL_BIT_INDEX (exp);
-	  if (index >= 0 && ! SET_P (before, index))
+	  /* We don't want to report and mark as non initialized flags
+	     the are, they will be marked initialized later on when
+	     assigned to `true.' */
+	  if ((STATIC_CLASS_INIT_OPT_P ()
+	       && ! LOCAL_CLASS_INITIALIZATION_FLAG_P (exp))
+	      && index >= 0 && ! SET_P (before, index))
 	    {
 	      parse_error_context 
 		(wfl, "Variable `%s' may not have been initialized",
@@ -398,8 +404,13 @@ check_init (exp, before)
 
 	  if (index >= 0)
 	    SET_BIT (before, index);
-	  /* Minor optimization.  See comment for start_current_locals. */
-	  if (index >= start_current_locals
+	  /* Minor optimization.  See comment for start_current_locals.
+	     If we're optimizing for class initialization, we keep
+	     this information to check whether the variable is
+	     definitely assigned when once we checked the whole
+	     function. */
+	  if (! STATIC_CLASS_INIT_OPT_P ()
+	      && index >= start_current_locals
 	      && index == num_current_locals - 1)
 	    {
 	      num_current_locals--;
@@ -732,10 +743,35 @@ check_init (exp, before)
     }
 }
 
-void
+unsigned int
 check_for_initialization (body)
      tree body;
 {
   word before = 0;
   check_init (body, &before);
+  return before;
+}
+
+/* Call for every element in DECL_FUNCTION_INITIALIZED_CLASS_TABLE of
+   a method to consider whether the type indirectly described by ENTRY
+   is definitly initialized and thus remembered as such. */
+
+bool
+attach_initialized_static_class (entry, ptr)
+     struct hash_entry *entry;
+     PTR ptr;
+{
+  struct init_test_hash_entry *ite = (struct init_test_hash_entry *) entry;
+  tree fndecl = DECL_CONTEXT (ite->init_test_decl);
+  int index = DECL_BIT_INDEX (ite->init_test_decl);
+
+  /* If the initializer flag has been definitly assigned (not taking
+     into account its first mandatory assignment which has been
+     already added but escaped analysis.) */
+  if (fndecl && METHOD_STATIC (fndecl)
+      && (DECL_INITIAL (ite->init_test_decl) == boolean_true_node
+	  || (index >= 0 && SET_P (((word *) ptr), index))))
+    hash_lookup (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl),
+		 entry->key, TRUE, NULL);
+  return true;
 }

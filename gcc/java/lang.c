@@ -146,6 +146,10 @@ int flag_extraneous_semicolon;
 /* When non zero, always check for a non gcj generated classes archive.  */
 int flag_force_classes_archive_check;
 
+/* When zero, don't optimize static class initialization. This flag shouldn't
+   be tested alone, use STATIC_CLASS_INITIALIZATION_OPTIMIZATION_P instead.  */
+int flag_optimize_sci = 1;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -291,6 +295,15 @@ java_decode_option (argc, argv)
   if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
     {
       current_encoding = p + sizeof (ARG) - 1;
+      return 1;
+    }
+#undef ARG
+
+#undef ARG
+#define ARG "-fno-optimize-static-class-initialization"
+  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
+    {
+      flag_optimize_sci = 0;
       return 1;
     }
 #undef ARG
