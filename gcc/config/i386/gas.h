@@ -20,7 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Note that i386/seq-gas.h is a GAS configuration that does not use this
    file. */
 
-#include "i386/386.h"
+#include "i386/i386.h"
 
 #ifndef YES_UNDERSCORES
 /* Define this now, because i386/bsd.h tests it.  */
