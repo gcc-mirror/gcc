@@ -27,9 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #define	ONLY_INT_FIELDS
 #endif
 
-/* AIX is a flavor of System V */
-#define	USG
-
 /* Big buffers improve performance.  */
 #define IO_BUFFER_SIZE (0x8000 - 4096)
 

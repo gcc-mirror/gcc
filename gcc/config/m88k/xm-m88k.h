@@ -23,14 +23,6 @@ Boston, MA 02111-1307, USA.  */
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_WORDS_BIG_ENDIAN
 
-/* The 88open BCS (and ABI) environment doesn't support BSD features
-   (vfork, getrusage), so use USG.  The Omron Luna/88k is BSD though.  */
-#ifndef luna88k
-#ifndef USG
-#define USG
-#endif
-#endif
-
 /* For DG/UX, the best size is different.  */
 #ifdef __DGUX__
 #define OBSTACK_CHUNK_SIZE (8192-16)

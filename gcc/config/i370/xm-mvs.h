@@ -25,7 +25,5 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_FLOAT_FORMAT	IBM_FLOAT_FORMAT
 #define HOST_EBCDIC		1
 
-#define USG
-
 /* Arguments to use with `exit'.  */
 #define FATAL_EXIT_CODE		12

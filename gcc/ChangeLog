@@ -1,3 +1,30 @@
+2001-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/i370/xm-mvs.h, config/i370/xm-oe.h,
+	config/i386/xm-beos.h, config/i386/xm-mingw32.h,
+	config/m88k/xm-m88k.h, config/mips/xm-iris6.h,
+	config/mips/xm-openbsd.h, config/pa/xm-pa64hpux.h,
+	config/pa/xm-pahpux.h, config/rs6000/xm-beos.h,
+	config/rs6000/xm-darwin.h, config/rs6000/xm-mach.h,
+	config/rs6000/xm-rs6000.h, config/xm-interix.h: Delete references
+	to the USG macro.
+
+	* config/vax/xm-vaxv.h, config/a29k/xm-unix.h,
+	config/i370/xm-i370.h, config/i386/xm-dgux.h,
+	config/i386/xm-sun.h, config/i386/xm-sysv3.h,
+	config/m68k/xm-tower.h, config/m68k/xm-aux.h,
+	config/m68k/xm-hp320.h, config/m68k/xm-amix.h,
+	config/m68k/xm-altos3068.h, config/m68k/xm-mot3300.h,
+	config/m68k/xm-m68kv.h, config/m88k/xm-openbsd.h,
+	config/mips/xm-nws3250v4.h, config/mips/xm-sysv.h,
+	config/mips/xm-iris3.h, config/mips/xm-iris4.h, config/xm-svr3.h,
+	config/xm-svr4.h, config/sparc/xm-pbd.h, config/clipper/xm-clix.h:
+	Delete unused and/or empty files.
+
+	* config.gcc: Define USG in xm_defines as appropriate.  Define
+	POSIX in lieu of xm-svr4.h.  Delete all references to the SVR3
+	macro.  Remove deleted xm-* files from $xm_files variable.
+
 2001-03-07  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.

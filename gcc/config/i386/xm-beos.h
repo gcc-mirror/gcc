@@ -34,10 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #undef bcopy
 #define bcopy(s,d,n)	memmove((d),(s),(n))
 
-/* BeOS is closer to USG than BSD */
-
-#define USG
-
 /* Define various things that the BeOS host has. */
 
 #ifndef HAVE_VPRINTF
