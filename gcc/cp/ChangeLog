@@ -1,3 +1,7 @@
+2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	Make-lang.in (po-generated):  Delete.
+
 2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c (type_passed_as): Replace PROMOTE_PROTOTYPES with

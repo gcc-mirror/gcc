@@ -1,3 +1,14 @@
+2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR/13485
+	Makefile.in (srcextra):  Add a level of indirection to ...
+	(gcc.srcextra): ... here.
+	(po-generated): Delete.
+	(po/$(PACKAGE).pot: Use srcextra instead of po-generated.  Depend on
+	options.c.
+	(start.encap): Remove superfluous lang.srcextra dependency.
+	objc/Make-lang.in (po-generated):  Delete.
+
 2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/ia64/ia64.c (REG_GP): Remove.
