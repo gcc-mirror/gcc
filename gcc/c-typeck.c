@@ -56,6 +56,8 @@ static void pedantic_lvalue_warning ();
 tree truthvalue_conversion ();
 void incomplete_type_error ();
 void readonly_warning ();
+static tree internal_build_compound_expr ();
+
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -3633,6 +3635,14 @@ tree
 build_compound_expr (list)
      tree list;
 {
+  internal_build_compound_expr (list, TRUE);
+}
+
+static tree
+internal_build_compound_expr (list, first_p)
+     tree list;
+     int first_p;
+{
   register tree rest;
 
   if (TREE_CHAIN (list) == 0)
@@ -3646,7 +3656,7 @@ build_compound_expr (list)
 #endif
 
       /* Don't let (0, 0) be null pointer constant.  */
-      if (integer_zerop (TREE_VALUE (list)))
+      if (!first_p && integer_zerop (TREE_VALUE (list)))
 	return non_lvalue (TREE_VALUE (list));
       return TREE_VALUE (list);
     }
@@ -3659,7 +3669,7 @@ build_compound_expr (list)
 	  = default_conversion (TREE_VALUE (TREE_CHAIN (list)));
     }
 
-  rest = build_compound_expr (TREE_CHAIN (list));
+  rest = internal_build_compound_expr (TREE_CHAIN (list), FALSE);
 
   if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
     return rest;
