@@ -1,3 +1,11 @@
+2003-02-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* inclhack.def (hpux_long_double, hpux10_ctype_declarations1,
+	hpux10_ctype_declarations2, hpux_ctype_macros): New hacks.
+	* fixincl.x: Rebuilt.
+	* tests/base/stdlib.h: Update.
+	* tests/base/ctype.h: New file.
+
 2003-02-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/ppc64-fp.c: New file.
