@@ -1088,7 +1088,7 @@ This option is deprecated.
 @itemx -fno-for-scope
 If -ffor-scope is specified, the scope of variables declared in
 a @i{for-init-statement} is limited to the @samp{for} loop itself,
-as specified by the draft C++ standard.
+as specified by the C++ standard.
 If -fno-for-scope is specified, the scope of variables declared in
 a @i{for-init-statement} extends to the end of the enclosing scope,
 as was the case in old versions of gcc, and other (traditional)

@@ -1036,10 +1036,11 @@ C++.
 
 @item __cplusplus 
 @findex __cplusplus 
-The draft ANSI standard for C++ used to require predefining this
-variable.  Though it is no longer required, GNU C++ continues to define
-it, as do other popular C++ compilers.  You can use @samp{__cplusplus}
-to test whether a header is compiled by a C compiler or a C++ compiler.
+The ISO standard for C++ requires predefining this variable.  You can
+use @samp{__cplusplus} to test whether a header is compiled by a C
+compiler or a C++ compiler. The compiler currently uses a value of
+@samp{1}, instead of the value @samp{199711L}, which would indicate
+full conformance with the standard.
 
 @item __STRICT_ANSI__
 @findex __STRICT_ANSI__
