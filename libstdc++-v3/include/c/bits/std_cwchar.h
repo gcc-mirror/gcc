@@ -44,6 +44,9 @@
 #pragma GCC system_header
 #include_next <wchar.h>
 
+// Get rid of those macros defined in <wchar.h> in lieu of real functions.
+#undef getwchar
+
 namespace std
 {
   using ::wint_t;
