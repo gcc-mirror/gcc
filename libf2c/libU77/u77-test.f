@@ -3,15 +3,17 @@
 *     good squint at what it prints, though detected errors will cause 
 *     starred messages.
 
+      implicit none
       integer i, j, k, ltarray (9), idat (3), count, rate, count_max,
-     +     pid
-      real tarray1(2), tarray2(2), r1, r2, etime
+     +     pid, mask
+      real tarray1(2), tarray2(2), r1, r2, sum
       intrinsic getpid, getuid, getgid, ierrno, gerror,
      +     fnum, isatty, getarg, access, unlink, fstat,
      +     stat, lstat, getcwd, gmtime, hostnm, etime, chmod,
      +     chdir, fgetc, fputc, system_clock, second, idate, secnds,
      +     time, ctime, fdate, ttynam
       external lenstr
+      integer lenstr
       logical l
       character gerr*80, c*1
       character ctim*25, line*80, lognam*20, wd*100, line2*80
@@ -35,20 +37,23 @@
         line = 'and 6 isn''t a tty device (ISATTY)'
       end if
       write (6,'(1X,A)') line(:lenstr(line))
+
       pid = getpid()
       WRITE (6,'(A,I10)') ' Process id (GETPID): ', pid
       WRITE (6,'(A,I10)') ' User id (GETUID): ', GETUID ()
       WRITE (6,'(A,I10)') ' Group id (GETGID): ', GETGID ()
-      WRITE (6,*) 'If you have the `id'' program, the following call of'
-     +     // ' SYSTEM should agree with the above'
+      WRITE (6, *) 'If you have the `id'' program, the following call'
+      write (6, *) 'of SYSTEM should agree with the above:'
       call flush(6)
       CALL SYSTEM ('echo " " `id`')
       call flush
+      lognam = 'blahblahblah'
       call getlog (lognam)
       write (6,*) 'Login name (GETLOG): ', lognam
       call umask(0, mask)
       write(6,*) 'UMASK returns', mask
       call umask(mask)
+
       ctim = fdate()
       write (6,*) 'FDATE returns: ', ctim
       j=time()
@@ -58,23 +63,54 @@
       write (6,'(1x,a,9i4)') 'GMTIME returns:', ltarray
       call system_clock(count, rate, count_max)
       write(6,*) 'SYSTEM_CLOCK returns: ', count, rate, count_max
+
       write (6,*) 'Sleeping for 1 second (SLEEP) ...'
       call sleep (1)
-      write (6,*) 'Looping 10,000,000 times ...'
-      do i=1,10*1000*1000
-      end do
-      r1= etime (tarray1)
-      if (r1.ne.tarray1(1)+tarray1(2))
-     +     write (6,*) '*** ETIME didn''t return sum of the array: ',
-     +     r1, ' /= ', tarray1(1), '+', tarray1(2)
-      r2= dtime (tarray2)
+
+c consistency-check etime vs. dtime for first call
+      r1 = etime (tarray1)
+      r2 = dtime (tarray2)
       if (abs (r1-r2).gt.1.0) write (6,*)
      +     'Results of ETIME and DTIME differ by more than a second:',
-     +     i, j
-      write (6,'(A,3F10.3)')
+     +     r1, r2
+      call sgladd (sum, tarray1(1), tarray1(2))
+      if (r1 .ne. sum)
+     +     write (6,*) '*** ETIME didn''t return sum of the array: ',
+     +     r1, ' /= ', tarray1(1), '+', tarray1(2)
+      call sgladd (sum, tarray2(1), tarray2(2))
+      if (r2 .ne. sum)
+     +     write (6,*) '*** DTIME didn''t return sum of the array: ',
+     +     r2, ' /= ', tarray2(1), '+', tarray2(2)
+      write (6, '(A,3F10.3)')
      +     ' Elapsed total, user, system time (ETIME): ',
      +     r1, tarray1
-      call idate(i,j,k)
+
+c now try to get times to change enough to see in etime/dtime
+      write (6,*) 'Looping until clock ticks at least once...'
+      do i = 1,1000
+      do j = 1,1000
+      end do
+      r2 = dtime (tarray2)
+      if (tarray2(1) .ne. 0. .or. tarray2(2) .ne. 0.) exit
+      end do
+      r1 = etime (tarray1)
+      call sgladd (sum, tarray1(1), tarray1(2))
+      if (r1 .ne. sum)
+     +     write (6,*) '*** ETIME didn''t return sum of the array: ',
+     +     r1, ' /= ', tarray1(1), '+', tarray1(2)
+      call sgladd (sum, tarray2(1), tarray2(2))
+      if (r2 .ne. sum)
+     +     write (6,*) '*** DTIME didn''t return sum of the array: ',
+     +     r2, ' /= ', tarray2(1), '+', tarray2(2)
+      write (6, '(A,3F10.3)')
+     +     ' Differences in total, user, system time (DTIME): ',
+     +     r2, tarray2
+      write (6, '(A,3F10.3)')
+     +     ' Elapsed total, user, system time (ETIME): ',
+     +     r1, tarray1
+      write (6, *) '(Clock-tick detected after ', i, ' 1K loops.)'
+
+      call idate (i,j,k)
       call idate (idat)
       write (6,*) 'IDATE d,m,y: ',idat
       print *,  '... and the VXT version: ', i,j,k
@@ -107,7 +143,8 @@
       call fputc(3, 'c',i)
       call fputc(3, 'd',j)      
       if (i+j.ne.0) write(6,*) '***FPUTC: ', i
-C     why is it necessary to reopen?
+C     why is it necessary to reopen?  (who wrote this?)
+C     the better to test with, my dear!  (-- burley)
       close(3)
       open(3,file='foo',status='old')
       call fseek(3,0,0,*10)
@@ -175,4 +212,10 @@ C     return >0
 * just make sure SECOND() doesn't "magically" work the second time.
       subroutine dumdum(r)
       r = 3.14159
+      end
+* do an add that is most likely to be done in single precision.
+      subroutine sgladd(sum,left,right)
+      implicit none
+      real sum,left,right
+      sum = left+right
       end
