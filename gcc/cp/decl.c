@@ -14173,22 +14173,7 @@ finish_function (flags)
 
       /* Run the optimizers and output the assembler code for this
          function.  */
-      if (DECL_ARTIFICIAL (fndecl))
-	{
-	  /* Do we really *want* to inline this synthesized method?  */
-
-	  int save_fif = flag_inline_functions;
-	  flag_inline_functions = 1;
-
-	  /* Turn off DECL_INLINE for the moment so function_cannot_inline_p
-	     will check our size.  */
-	  DECL_INLINE (fndecl) = 0;
-
-	  rest_of_compilation (fndecl);
-	  flag_inline_functions = save_fif;
-	}
-      else
-	rest_of_compilation (fndecl);
+      rest_of_compilation (fndecl);
 
       /* Undo the call to ggc_push_context above.  */
       if (function_depth > 1)
