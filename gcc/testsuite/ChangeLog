@@ -1,3 +1,10 @@
+2000-06-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/syntax1.C: New test.
+	* g++.old-deja/g++.pt/syntax2.C: New test.
+	* g++.old-deja/g++.other/syntax3.C: New test.
+	* g++.old-deja/g++.other/syntax4.C: New test.
+
 2000-06-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/20000623-1.c: Prototype exit and abort.
