@@ -5092,7 +5092,7 @@ next_member:
 	      else if (*q == '}')
 		count--;
 	      else if (*q == 0)
-		abort ();
+		fatal ("Mismatched braces in specs");
 	      q++;
 	    }
 	  endbody = q;
