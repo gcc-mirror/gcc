@@ -542,7 +542,7 @@ save_for_inline_copying (fndecl)
 
   /* Copy the parm_reg_stack_loc array, and substitute for all of the rtx
      contained in it.  */
-  new2 = savealloc (max_parm_reg * sizeof (rtx));
+  new2 = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
   bcopy ((char *) parm_reg_stack_loc, (char *) new2,
 	 max_parm_reg * sizeof (rtx));
   parm_reg_stack_loc = new2;
