@@ -2574,60 +2574,34 @@ m88k_function_arg (args_so_far, mode, type, named)
 }
 
 /* Do what is necessary for `va_start'.  We look at the current function
-   to determine if stdargs or varargs is used and fill in an initial
-   va_list.  A pointer to this constructor is returned.  */
+   to determine if stdargs or varargs is used and spill as necessary. 
+   We return a pointer to the spill area.  */
 
 struct rtx_def *
 m88k_builtin_saveregs ()
 {
-  rtx block, addr, argsize, dest;
+  rtx addr, dest;
   tree fntype = TREE_TYPE (current_function_decl);
   int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
 		   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 		       != void_type_node)))
 		? -UNITS_PER_WORD : 0) + UNITS_PER_WORD - 1;
   int fixed;
+
   variable_args_p = 1;
 
+  fixed = 0;
   if (CONSTANT_P (current_function_arg_offset_rtx))
     {
       fixed = (XINT (current_function_arg_offset_rtx, 0)
 	       + argadj) / UNITS_PER_WORD;
-      argsize = GEN_INT (fixed);
     }
-  else
-    {
-      fixed = 0;
-      argsize = plus_constant (current_function_arg_offset_rtx, argadj);
-      argsize = expand_shift (RSHIFT_EXPR, Pmode, argsize,
-			      build_int_2 (2, 0), argsize, 0);
-    }
-
-  /* Allocate the va_list constructor */
-  block = assign_stack_local (BLKmode, 3 * UNITS_PER_WORD, BITS_PER_WORD);
-  MEM_SET_IN_STRUCT_P (block, 1);
-  RTX_UNCHANGING_P (block) = 1;
-  RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
-
-  /* Store the argsize as the __va_arg member.  */
-  emit_move_insn (change_address (block, SImode, XEXP (block, 0)),
-		  argsize);
-
-  /* Store the arg pointer in the __va_stk member.  */
-  emit_move_insn (change_address (block, Pmode,
-				  plus_constant (XEXP (block, 0),
-						 UNITS_PER_WORD)),
-		  copy_to_reg (virtual_incoming_args_rtx));
 
   /* Allocate the register space, and store it as the __va_reg member.  */
   addr = assign_stack_local (BLKmode, 8 * UNITS_PER_WORD, -1);
-  MEM_SET_IN_STRUCT_P (addr, 1);
+  MEM_ALIAS_SET (addr) = get_varargs_alias_set ();
   RTX_UNCHANGING_P (addr) = 1;
   RTX_UNCHANGING_P (XEXP (addr, 0)) = 1;
-  emit_move_insn (change_address (block, Pmode,
-				  plus_constant (XEXP (block, 0),
-						 2 * UNITS_PER_WORD)),
-		  copy_to_reg (XEXP (addr, 0)));
 
   /* Now store the incoming registers.  */
   if (fixed < 8)
@@ -2637,28 +2611,164 @@ m88k_builtin_saveregs ()
 					    fixed * UNITS_PER_WORD));
       move_block_from_reg (2 + fixed, dest, 8 - fixed,
 			   UNITS_PER_WORD * (8 - fixed));
+
+      if (current_function_check_memory_usage)
+	{
+	  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			     dest, ptr_mode,
+			     GEN_INT (UNITS_PER_WORD * (8 - fixed)),
+			     TYPE_MODE (sizetype),
+			     GEN_INT (MEMORY_USE_RW),
+			     TYPE_MODE (integer_type_node));
+	}
     }
 
-  if (current_function_check_memory_usage)
-    {
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			 block, ptr_mode,
-			 GEN_INT (3 * UNITS_PER_WORD), TYPE_MODE (sizetype),
-			 GEN_INT (MEMORY_USE_RW),
-			 TYPE_MODE (integer_type_node));
-      if (fixed < 8)
-	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			   dest, ptr_mode,
-			   GEN_INT (UNITS_PER_WORD * (8 - fixed)),
-			   TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_RW),
-			   TYPE_MODE (integer_type_node));
-    }
+  /* Return the address of the save area, but don't put it in a
+     register.  This fails when not optimizing and produces worse code
+     when optimizing.  */
+  return XEXP (addr, 0);
+}
 
-  /* Return the address of the va_list constructor, but don't put it in a
-     register.  This fails when not optimizing and produces worse code when
-     optimizing.  */
-  return XEXP (block, 0);
+/* Define the `__builtin_va_list' type for the ABI.  */
+
+tree
+m88k_build_va_list ()
+{
+  tree field_reg, field_stk, field_arg, int_ptr_type_node, record;
+
+  int_ptr_type_node = build_pointer_type (integer_type_node);
+
+  record = make_node (RECORD_TYPE);
+
+  field_arg = build_decl (FIELD_DECL, get_identifier ("__va_arg"),
+			  integer_type_node);
+  field_stk = build_decl (FIELD_DECL, get_identifier ("__va_stk"),
+			  int_ptr_type_node);
+  field_reg = build_decl (FIELD_DECL, get_identifier ("__va_reg"),
+			  int_ptr_type_node);
+
+  DECL_FIELD_CONTEXT (field_arg) = record;
+  DECL_FIELD_CONTEXT (field_stk) = record;
+  DECL_FIELD_CONTEXT (field_reg) = record;
+
+  TYPE_FIELDS (record) = field_arg;
+  TREE_CHAIN (field_arg) = field_stk;
+  TREE_CHAIN (field_stk) = field_reg;
+
+  layout_type (record);
+  return record;
+}
+
+/* Implement `va_start' for varargs and stdarg.  */
+
+void
+m88k_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg ATTRIBUTE_UNUSED;
+{
+  tree field_reg, field_stk, field_arg;
+  tree reg, stk, arg, t;
+
+  field_arg = TYPE_FIELDS (va_list_type_node);
+  field_stk = TREE_CHAIN (field_arg);
+  field_reg = TREE_CHAIN (field_stk);
+
+  arg = build (COMPONENT_REF, TREE_TYPE (field_arg), valist, field_arg);
+  stk = build (COMPONENT_REF, TREE_TYPE (field_stk), valist, field_stk);
+  reg = build (COMPONENT_REF, TREE_TYPE (field_reg), valist, field_reg);
+
+  /* Fill in the ARG member.  */
+  {
+    tree fntype = TREE_TYPE (current_function_decl);
+    int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
+		     && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+			 != void_type_node)))
+		  ? -UNITS_PER_WORD : 0) + UNITS_PER_WORD - 1;
+    tree argsize;
+
+    if (CONSTANT_P (current_function_arg_offset_rtx))
+      {
+	int fixed = (INTVAL (current_function_arg_offset_rtx)
+		     + argadj) / UNITS_PER_WORD;
+
+	argsize = build_int_2 (fixed, 0);
+      }
+    else
+      {
+	argsize = make_tree (integer_type_node,
+			     current_function_arg_offset_rtx);
+	argsize = fold (build (PLUS_EXPR, integer_type_node, argsize,
+			       build_int_2 (argadj, 0)));
+	argsize = fold (build (RSHIFT_EXPR, integer_type_node, argsize,
+			       build_int_2 (2, 0)));
+      }
+
+    t = build (MODIFY_EXPR, TREE_TYPE (arg), arg, argsize);
+    TREE_SIDE_EFFECTS (t) = 1;
+    expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  }
+
+  /* Store the arg pointer in the __va_stk member.  */
+  t = make_tree (TREE_TYPE (stk), virtual_incoming_args_rtx);
+  t = build (MODIFY_EXPR, TREE_TYPE (stk), stk, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* Tuck the return value from __builtin_saveregs into __va_reg.  */
+  t = make_tree (TREE_TYPE (reg), expand_builtin_saveregs ());
+  t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+}
+
+/* Implement `va_arg'.  */
+
+rtx
+m88k_va_arg (valist, type)
+     tree valist, type;
+{
+  tree field_reg, field_stk, field_arg;
+  tree reg, stk, arg, arg_align, base, t;
+  int size, wsize, align, reg_p;
+  rtx addr_rtx;
+
+  field_arg = TYPE_FIELDS (va_list_type_node);
+  field_stk = TREE_CHAIN (field_arg);
+  field_reg = TREE_CHAIN (field_stk);
+
+  arg = build (COMPONENT_REF, TREE_TYPE (field_arg), valist, field_arg);
+  stk = build (COMPONENT_REF, TREE_TYPE (field_stk), valist, field_stk);
+  reg = build (COMPONENT_REF, TREE_TYPE (field_reg), valist, field_reg);
+
+  size = int_size_in_bytes (type);
+  wsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  align = 1 << ((TYPE_ALIGN (type) / BITS_PER_UNIT) >> 3);
+  reg_p = (AGGREGATE_TYPE_P (type)
+	   ? size == UNITS_PER_WORD && TYPE_ALIGN (type) == BITS_PER_WORD
+	   : size <= 2*UNITS_PER_WORD);
+
+  /* Align __va_arg to the (doubleword?) boundary above.  */
+  t = build (PLUS_EXPR, TREE_TYPE (arg), arg, build_int_2 (align - 1, 0));
+  arg_align = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
+  arg_align = save_expr (arg_align);
+
+  /* Decide if we should read from stack or regs.  */
+  t = build (LT_EXPR, integer_type_node, arg_align, build_int_2 (8, 0));
+  base = build (COND_EXPR, TREE_TYPE (reg), t, reg, stk);
+
+  /* Find the final address.  */
+  t = build (PLUS_EXPR, TREE_TYPE (base), base, arg_align);
+  addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+  addr_rtx = copy_to_reg (addr_rtx);
+
+  /* Increment __va_arg.  */
+  t = build (PLUS_EXPR, TREE_TYPE (arg), arg_align, build_int_2 (wsize, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (arg), arg, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  return addr_rtx;
 }
 
 /* If cmpsi has not been generated, emit code to do the test.  Return the
