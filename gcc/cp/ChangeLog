@@ -1,3 +1,8 @@
+1999-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_NAMESPACE_SCOPE_P): Don't treat template
+	parameters as having namespace scope.
+
 1999-10-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* method.c (PARM_CAN_BE_ARRAY_TYPE): Remove.

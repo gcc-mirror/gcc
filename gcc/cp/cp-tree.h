@@ -1766,9 +1766,9 @@ struct lang_decl
 #define DECL_VIRTUAL_CONTEXT(NODE) DECL_CONTEXT (NODE)
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
-#define DECL_NAMESPACE_SCOPE_P(NODE) \
-  (DECL_CONTEXT (NODE) == NULL_TREE \
-   || TREE_CODE (DECL_CONTEXT (NODE)) == NAMESPACE_DECL)
+#define DECL_NAMESPACE_SCOPE_P(NODE)				\
+  (!DECL_TEMPLATE_PARM_P (NODE)					\
+   && TREE_CODE (CP_DECL_CONTEXT (NODE)) == NAMESPACE_DECL)
 
 /* 1 iff NODE is a class member.  */
 #define DECL_CLASS_SCOPE_P(NODE) \
