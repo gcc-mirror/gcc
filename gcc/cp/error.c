@@ -1474,9 +1474,9 @@ dump_expr (tree t, int flags)
 	        /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
 	           systems?  */
 	        {
-	          static char format[10]; /* "%x%09999x\0" */
+	          static char format[12]; /* "0x%x%09999x\0" */
 	          if (!format[0])
-		    sprintf (format, "%%x%%0%dx", HOST_BITS_PER_INT / 4);
+		    sprintf (format, "0x%%x%%0%dx", HOST_BITS_PER_INT / 4);
 	          sprintf (digit_buffer, format, TREE_INT_CST_HIGH (val),
 		           TREE_INT_CST_LOW (val));
 	          output_add_string (scratch_buffer, digit_buffer);
