@@ -3902,6 +3902,7 @@ that macro, which enables you to change the defaults.
 * NS32K Options::
 * AVR Options::
 * MCore Options::
+* D30V Options::
 @end menu
 
 @node M680x0 Options
@@ -7102,9 +7103,44 @@ Generate code for a little endian target.
 @itemx -m210
 @itemx -m340
 Generate code for the 210 processor.
-
 @end table
 
+@node D30V Options
+@subsection D30V Options
+@cindex D30V Options
+
+These @samp{-m} options are defined for D30V implementations:
+
+@table @code
+@item -mextmem
+Link the @samp{.text}, @samp{.data}, @samp{.bss}, @samp{.strings},
+@samp{.rodata}, @samp{.rodata1}, @samp{.data1} sections into external
+memory, which starts at location @code{0x80000000}.
+
+@item -mextmemory
+Same as the @samp{-mextmem} switch.
+
+@item -monchip
+Link the @samp{.text} section into onchip text memory, which starts at
+location @code{0x0}.  Also link @samp{.data}, @samp{.bss},
+@samp{.strings}, @samp{.rodata}, @samp{.rodata1}, @samp{.data1} sections
+into onchip data memory, which starts at location @code{0x20000000}.
+
+@item -mno-asm-optimize
+@itemx -masm-optimize
+Disable (enable) passing @samp{-O} to the assembler when optimizing.
+The assembler uses the @samp{-O} option to automatically parallelize
+adjacent short instructions where possible.
+
+@item -mbranch-cost=@var{n}
+Increase the internal costs of branches to @var{n}.  Higher costs means
+that the compiler will issue more instructions to avoid doing a branch.
+The default is 2.
+
+@item -mcond-exec=@var{n}
+Specify the maximum number of conditionally executed instructions that
+replace a branch.  The default is 4.
+@end table
 
 @node Code Gen Options
 @section Options for Code Generation Conventions

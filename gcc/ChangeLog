@@ -1,3 +1,7 @@
+2000-07-24  Michael Meissner  <meissner@redhat.com>
+
+	* invoke.texi (D30V Options): Add d30v options.
+
 Mon Jul 24 02:04:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcse.c (alloc_pre_mem): Do not alloc TRANSPOUT, it is not
