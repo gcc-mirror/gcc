@@ -9914,7 +9914,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
     {
       int i;
 
-      emit_call_insn (gen_call (operands[0], const0_rtx, NULL, const0_rtx));
+      emit_call_insn (GEN_CALL (operands[0], const0_rtx, NULL, const0_rtx));
 
       for (i = 0; i < XVECLEN (operands[2], 0); i++)
 	{

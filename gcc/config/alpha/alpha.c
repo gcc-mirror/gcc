@@ -2132,7 +2132,7 @@ alpha_emit_xfloating_libcall (func, target, operands, noperands, equiv)
     }
 
   tmp = gen_rtx_MEM (QImode, gen_rtx_SYMBOL_REF (Pmode, (char *) func));
-  tmp = emit_call_insn (gen_call_value (reg, tmp, const0_rtx,
+  tmp = emit_call_insn (GEN_CALL_VALUE (reg, tmp, const0_rtx,
 					const0_rtx, const0_rtx));
   CALL_INSN_FUNCTION_USAGE (tmp) = usage;
 

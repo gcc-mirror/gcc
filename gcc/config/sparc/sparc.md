@@ -8731,7 +8731,7 @@
 
   /* Pass constm1 to indicate that it may expect a structure value, but
      we don't know what size it is.  */
-  emit_call_insn (gen_call (operands[0], const0_rtx, NULL, constm1_rtx));
+  emit_call_insn (GEN_CALL (operands[0], const0_rtx, NULL, constm1_rtx));
 
   for (i = 0; i < XVECLEN (operands[2], 0); i++)
     {
