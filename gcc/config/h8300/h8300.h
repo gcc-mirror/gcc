@@ -50,16 +50,14 @@ int target_flags;
     {"relax",1024},  \
     { "", TARGET_DEFAULT}}
 
-#define OPTIMIZATION_OPTIONS(OPTIMIZE)          \
-{                                               \
-  obey_regdecls = 0;                            \
-  flag_omit_frame_pointer = (OPTIMIZE > 1);     \
-}
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
-#define OVERRIDE_OPTIONS                        \
-{                                               \
-  flag_no_function_cse = 1;                     \
-}
+/* Define this if addresses of constant functions
+   shouldn't be put through pseudo regs where they can be cse'd.
+   Desirable on machines where ordinary constants are expensive
+   but a CALL with constant address is cheap.  */
+#define NO_FUNCTION_CSE
 
 #define TARGET_INT32 	 (target_flags & 8)
 #define TARGET_LONG16 	 (target_flags & 16)
