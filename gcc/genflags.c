@@ -61,7 +61,7 @@ num_operands (x)
   if (code == MATCH_OPERAND)
     return 1;
 
-  if (code == MATCH_OPERATOR)
+  if (code == MATCH_OPERATOR || code == MATCH_PARALLEL)
     count++;
 
   for (i = 0; i < GET_RTX_LENGTH (code); i++)
