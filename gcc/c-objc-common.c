@@ -293,29 +293,41 @@ static bool
 c_tree_printer (pretty_printer *pp, text_info *text)
 {
   tree t = va_arg (*text->args_ptr, tree);
+  const char *n = "({anonymous})";
 
   switch (*text->format_spec)
     {
     case 'D':
     case 'F':
+      if (DECL_NAME (t))
+	n = (*lang_hooks.decl_printable_name) (t, 2);
+      break;
+
     case 'T':
-      {
-        const char *n = DECL_NAME (t)
-          ? (*lang_hooks.decl_printable_name) (t, 2)
-          : "({anonymous})";
-        pp_string (pp, n);
-      }
-      return true;
+      if (TREE_CODE (t) == TYPE_DECL)
+	{
+	  if (DECL_NAME (t))
+	    n = (*lang_hooks.decl_printable_name) (t, 2);
+	}
+      else
+	{
+	  t = TYPE_NAME (t);
+	  if (t)
+	    n = IDENTIFIER_POINTER (t);
+	}
+      break;
 
     case 'E':
-       if (TREE_CODE (t) == IDENTIFIER_NODE)
-         {
-           pp_string (pp, IDENTIFIER_POINTER (t));
-           return true;
-         }
-       return false;
+      if (TREE_CODE (t) == IDENTIFIER_NODE)
+	n = IDENTIFIER_POINTER (t);
+      else
+        return false;
+      break;
 
     default:
       return false;
     }
+
+  pp_string (pp, n);
+  return true;
 }
