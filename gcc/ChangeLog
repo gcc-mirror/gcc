@@ -1,5 +1,14 @@
 2002-06-10  Eric Christopher  <echristo@redhat.com>
 
+	* config/i386/i386.c (ix86_osf_output_function_prologue): Remove
+	prototype and function.
+	(TARGET_ASM_FUNCTION_PROLOGUE): Remove OSF version.
+	(call_insn_operand): Remove half pic references.
+	(legitimate_address_p): Ditto.
+	* config/i386/i386.h: Remove half pic defines.
+
+2002-06-10  Eric Christopher  <echristo@redhat.com>
+
 	* doc/extend.texi (Return Address): Add note explaining the side-
 	effects of inlining on __builtin_return_address.
 
