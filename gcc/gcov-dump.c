@@ -407,9 +407,6 @@ tag_summary (filename, tag, length)
   printf (", arc_max_one=");
   printf (HOST_WIDEST_INT_PRINT_DEC, 
 	  (HOST_WIDEST_INT)summary.arc_max_one);
-  printf ("\n%s:\t\tmax_sum=", filename);
-  printf (HOST_WIDEST_INT_PRINT_DEC, 
-	  (HOST_WIDEST_INT)summary.arc_max_sum);
   printf (", sum_max=");
   printf (HOST_WIDEST_INT_PRINT_DEC, 
 	  (HOST_WIDEST_INT)summary.arc_sum_max);

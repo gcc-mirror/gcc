@@ -1,5 +1,11 @@
 Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
+	* gcov-dump.c (tag_summary): Remove max_sum
+	* gcov-io.h (gcov_summary, gcov_write_summary, gcov_read_summary): Kill
+	max_sum.
+	* libgcov.c (gcov_exit): Do one pass over the data.  Make error message
+	more verbose.
+
 	* emit-rtl.c (subreg_hard_regno):  Check that register is representable.
 	* reload.c (reload_inner_reg_of_subreg):  When register is not
 	representable, reload the whole thing.

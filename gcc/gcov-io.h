@@ -120,7 +120,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	announce_function: header string:name int32:checksum
 	arc_counts: header int64:count*
 	summary: in32:checksum int32:runs int32:arcs int64:sum int64:max \
-		int64:max_sum int64:sum_max
+		int64:sum_max
 
    The ANNOUNCE_FUNCTION record is the same as that in the BBG file,
    but without the source location.
@@ -220,7 +220,6 @@ struct gcov_summary
   unsigned arcs;	  /* number of instrumented arcs */
   gcov_type arc_sum;      /* sum of all arc counters */
   gcov_type arc_max_one;  /* max counter on any one run */
-  gcov_type arc_max_sum;  /* maximum arc_sum */
   gcov_type arc_sum_max;  /* sum of max_one */
 };
 
@@ -618,7 +617,6 @@ gcov_write_summary (unsigned tag, const struct gcov_summary *summary)
   gcov_write_unsigned (summary->arcs);
   gcov_write_counter (summary->arc_sum);
   gcov_write_counter (summary->arc_max_one);
-  gcov_write_counter (summary->arc_max_sum);
   gcov_write_counter (summary->arc_sum_max);
   gcov_write_length (base);
 }
@@ -718,7 +716,6 @@ gcov_read_summary (struct gcov_summary *summary)
   summary->arcs = gcov_read_unsigned ();
   summary->arc_sum = gcov_read_counter ();
   summary->arc_max_one = gcov_read_counter ();
-  summary->arc_max_sum =  gcov_read_counter ();
   summary->arc_sum_max = gcov_read_counter ();
 }
 
