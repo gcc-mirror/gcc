@@ -67,7 +67,6 @@ extern FILE *asm_out_file;
 /* Number of bytes in a wide character.  */
 #define WCHAR_BYTES (WCHAR_TYPE_SIZE / BITS_PER_UNIT)
 
-int indent_level;        /* Number of { minus number of }.  */
 int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
 
@@ -271,7 +270,6 @@ cb_file_change (pfile, new_map)
 
 	  lineno = included_at;
 	  push_srcloc (new_map->to_file, 1);
-	  input_file_stack->indent_level = indent_level;
 	  (*debug_hooks->start_source_file) (included_at, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
@@ -292,16 +290,6 @@ cb_file_change (pfile, new_map)
 	  if (new_map->sysp == 2)
 	    warning ("badly nested C headers from preprocessor");
 	  --pending_lang_change;
-	}
-#endif
-#if 0
-      if (indent_level != input_file_stack->indent_level)
-	{
-	  warning_with_file_and_line
-	    (input_filename, lineno,
-	     "this file contains more '%c's than '%c's",
-	     indent_level > input_file_stack->indent_level ? '{' : '}',
-	     indent_level > input_file_stack->indent_level ? '}' : '{');
 	}
 #endif
       pop_srcloc ();
@@ -718,9 +706,6 @@ c_lex (value)
   *value = NULL_TREE;
   switch (tok->type)
     {
-    case CPP_OPEN_BRACE:  indent_level++;  break;
-    case CPP_CLOSE_BRACE: indent_level--;  break;
-
     /* Issue this error here, where we can get at tok->val.c.  */
     case CPP_OTHER:
       if (ISGRAPH (tok->val.c))

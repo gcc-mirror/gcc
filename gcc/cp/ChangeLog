@@ -1,3 +1,7 @@
+2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* spew.c (yyungetc, snarf_block): Remove indent_level handling.
+
 2002-05-22  Richard Henderson  <rth@redhat.com>
 
 	* decl.c (obscure_complex_init): Check for VAR_DECL

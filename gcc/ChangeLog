@@ -1,3 +1,11 @@
+2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (indent_level): Remove.
+	(cb_file_change, c_lex): Remove indent level handling.
+	* c-lex.h (indent_level): Remove.
+	* input.h (struct file_stack): Remove indent_level.
+	* toplev.c (push_srcloc): Remove indent_level handling.
+
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/6753
