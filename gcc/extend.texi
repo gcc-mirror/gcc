@@ -3376,6 +3376,7 @@ function as well.
 @findex fabsf
 @findex fabsl
 @findex ffs
+@findex fprintf
 @findex fputs
 @findex imaxabs
 @findex index
@@ -3447,13 +3448,13 @@ corresponding versions prefixed with @code{__builtin_}.
 
 The following ISO C89 functions are recognized as builtins unless
 @samp{-fno-builtin} is specified: @code{abs}, @code{cos}, @code{fabs},
-@code{fputs}, @code{labs}, @code{memcmp}, @code{memcpy}, @code{memset},
-@code{printf}, @code{sin}, @code{sqrt}, @code{strcat}, @code{strchr},
-@code{strcmp}, @code{strcpy}, @code{strcspn}, @code{strlen},
-@code{strncat}, @code{strncmp}, @code{strncpy}, @code{strpbrk},
-@code{strrchr}, @code{strspn}, and @code{strstr}.  All of these
-functions have corresponding versions prefixed with @code{__builtin_},
-except that the version for @code{sqrt} is called
+@code{fprintf}, @code{fputs}, @code{labs}, @code{memcmp}, @code{memcpy},
+@code{memset}, @code{printf}, @code{sin}, @code{sqrt}, @code{strcat},
+@code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
+@code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
+@code{strpbrk}, @code{strrchr}, @code{strspn}, and @code{strstr}.  All
+of these functions have corresponding versions prefixed with
+@code{__builtin_}, except that the version for @code{sqrt} is called
 @code{__builtin_fsqrt}.
 
 GNU CC provides builtin versions of the ISO C99 floating point
