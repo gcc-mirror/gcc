@@ -1,3 +1,8 @@
+2002-05-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* defaults.h (UNIQUE_SECTION): Remove.
+	* system.h (UNIQUE_SECTION, SELECT_SECTION): Poison.
+
 2002-05-17  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (init_expr_once): Don't use start/end_sequence.
