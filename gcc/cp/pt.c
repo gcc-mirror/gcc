@@ -3316,7 +3316,7 @@ for_each_template_parm (t, fn, data)
 	case '<':
 	  {
 	    int i;
-	    for (i = tree_code_length[(int) TREE_CODE (t)]; --i >= 0;)
+	    for (i = first_rtl_op (TREE_CODE (t)); --i >= 0;)
 	      if (for_each_template_parm (TREE_OPERAND (t, i), fn, data))
 		return 1;
 	    return 0;

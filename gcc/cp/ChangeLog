@@ -1,5 +1,7 @@
 1998-06-01  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (for_each_template_parm): Use first_rtl_op.
+
 	* tree.c (build_cplus_array_type_1): Also check index_type for
 	template parms.
 
