@@ -1,3 +1,7 @@
+2001-12-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl2.c (finish_file): Remove back_end_hook.
+
 2001-12-16  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog.1, ChangeLog.2, ChangeLog, NEWS, call.c, class.c,

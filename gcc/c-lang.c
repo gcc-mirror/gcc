@@ -262,9 +262,6 @@ finish_file ()
       finish_cdtor (body);
     }
 
-  if (back_end_hook)
-    (*back_end_hook) (getdecls ());
-  
   {
     int flags;
     FILE *stream = dump_begin (TDI_all, &flags);

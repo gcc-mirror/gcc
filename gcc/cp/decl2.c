@@ -3563,11 +3563,6 @@ finish_file ()
       }
   }
   
-  /* If there's some tool that wants to examine the entire translation
-     unit, let it do so now.  */
-  if (back_end_hook)
-    (*back_end_hook) (global_namespace);
-
   timevar_pop (TV_VARCONST);
 
   if (flag_detailed_statistics)
