@@ -3,6 +3,12 @@
 	* cse.c (max_reg, max_insn_uid): Remove.
 	(cse_main): Don't access max_reg or max_insn_uid.
 
+	* c-common.c (explicit_flag_signed_bitfields,
+	lang_statement_code_p, lang_expand_function_end): Remove.
+	* c-common.h: Remove the corresponding declarations.
+	* c-opts.c (c_common_handle_option): Remove all write access
+	to explicit_flag_signed_bitfields.
+
 2005-01-23  Roger Sayle  <roger@eyesopen.com>
 	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
