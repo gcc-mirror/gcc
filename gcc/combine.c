@@ -1218,6 +1218,17 @@ try_combine (i3, i2, i1)
       || find_reg_note (i3, REG_LIBCALL, NULL_RTX))
     return 0;
 
+  /* If I1 or I2 is an argument set insn, and I3 is the actual
+     CALL_INSN using it as argument, never combine the two.
+     This to prevent the elimination of insns that setup a
+     parameter register for a CALL_INSN.  */
+  if (GET_CODE (i3) == CALL_INSN
+      && (((temp = single_set (i2))
+            && find_reg_fusage (i3, USE, SET_DEST (temp)))
+	  || (i1 && (temp = single_set (i1))
+              && find_reg_fusage (i3, USE, SET_DEST (temp)))))
+    return 0;
+
   combine_attempts++;
 
   undobuf.num_undo = previous_num_undos = 0;
@@ -10423,7 +10434,11 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	     In both cases, we must search to see if we can find a previous
 	     use of A and put the death note there.  */
 
-	  if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
+	  if (from_insn
+	      && GET_CODE (from_insn) == CALL_INSN
+              && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
+	    place = from_insn;
+	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 	    place = i3;
 	  else if (i2 != 0 && next_nonnote_insn (i2) == i3
 		   && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
@@ -10695,6 +10710,12 @@ distribute_links (links)
 	  {
 	    if (reg_referenced_p (reg, PATTERN (insn)))
 	      place = insn;
+	    break;
+	  }
+	else if (GET_CODE (insn) == CALL_INSN
+	      && find_reg_fusage (insn, USE, reg))
+	  {
+	    place = insn;
 	    break;
 	  }
 
