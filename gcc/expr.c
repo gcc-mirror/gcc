@@ -5263,6 +5263,8 @@ expand_expr (exp, target, tmode, modifier)
 			 EXPAND_MEMORY_USE_BAD);
 	  else
 	    store_expr (TREE_OPERAND (exp, 0), temp, 0);
+
+	  TREE_USED (exp) = 1;
 	}
 
       /* If the mode of SAVE_EXPR_RTL does not match that of the expression, it
@@ -7077,6 +7079,7 @@ expand_expr (exp, target, tmode, modifier)
 	/* Mark it as expanded.  */
 	TREE_OPERAND (exp, 1) = NULL_TREE;
 
+	TREE_USED (slot) = 1;
 	store_expr (exp1, target, 0);
 
 	expand_decl_cleanup (NULL_TREE, cleanups);
@@ -9293,6 +9296,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 		     const0_rtx, VOIDmode, 0);
 
 	assemble_external (dummy_decl);
+	TREE_USED (dummy_decl) = 1;
 
 	/* Pick up FP, label, and SP from the block and jump.  This code is
 	   from expand_goto in stmt.c; see there for detailed comments.  */
