@@ -8802,7 +8802,7 @@ load_mems (scan_start, end, loop_top, start)
 
 		  /* Store the memory immediately after END, which is
 		   the NOTE_LOOP_END.  */
-		  set = gen_rtx_SET (GET_MODE (reg), mem, reg); 
+		  set = gen_rtx_SET (GET_MODE (reg), copy_rtx (mem), reg); 
 		  emit_insn_after (set, label);
 		}
 
