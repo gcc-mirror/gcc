@@ -1,4 +1,9 @@
-2001-01-15  David Billinghurst <David.Billinghurst@riotinto.com>
+2001-01-15  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/execute/f90-intrinsic-numeric.f: Fix pasto.
+	* g77.f-torture/execute/f90-intrinsic-mathematical.f: Fix pasto.
+
+2001-01-15  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* g77.f-torture/execute/f90-intrinsic-numeric.f: New test.
 	* g77.f-torture/execute/f90-intrinsic-mathematical.f: New test.
@@ -7,7 +12,7 @@
 
 	* gcc.dg/iftrap-1.c: New.
 
-2001-07-11  David Billinghurst <David.Billinghurst@riotinto.com>
+2001-07-11  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* g77.f-torture/execute/intrinsic77.f: New test.
 

@@ -6,7 +6,7 @@ c
 c Notes:
 c  * g77 does not fully comply with F90.  Noncompliances noted in comments.
 c  * Section 13.12: Specific names for intrinsic functions tested in
-intrinsic77.f
+c intrinsic77.f
 
       logical fail
       integer*2 j, j2, ja
