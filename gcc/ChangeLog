@@ -1,5 +1,8 @@
 2004-03-13  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/rs6000/rs6000.c (rs6000_va_arg): Replace SPLIT_COMPLEX_ARGS
+	with targetm version.
+
 	PR target/14567
 	* config/rs6000/rs6000.h (UNITS_PER_ARG, RS6000_ARG_SIZE): Delete.
 	(HARD_REGNO_MODE_OK): Disallow TFmode for fp31.
