@@ -7844,12 +7844,7 @@ emit_local_var (decl)
    the normal rules.
 
    FLAGS is LOOKUP_ONLYCONVERTING if the = init syntax was used, else 0
-   if the (init) syntax was used.
-
-   For functions that take default parameters, DECL points to its
-   "maximal" instantiation.  `cp_finish_decl' must then also declared its
-   subsequently lower and lower forms of instantiation, checking for
-   ambiguity as it goes.  This can be sped up later.  */
+   if the (init) syntax was used.  */
 
 void
 cp_finish_decl (decl, init, asmspec_tree, flags)
