@@ -1941,7 +1941,8 @@ build_class_member_access_expr (tree object, tree member,
 		       && integer_zerop (TREE_OPERAND (object, 0)));
 
       /* Convert OBJECT to the type of MEMBER.  */
-      if (!same_type_p (object_type, member_scope))
+      if (!same_type_p (TYPE_MAIN_VARIANT (object_type),
+			TYPE_MAIN_VARIANT (member_scope)))
 	{
 	  tree binfo;
 	  base_kind kind;
@@ -1951,7 +1952,7 @@ build_class_member_access_expr (tree object, tree member,
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
 
-	  /* It is invalid to use to try to get to a virtual base of a
+	  /* It is invalid to try to get to a virtual base of a
 	     NULL object.  The most common cause is invalid use of
 	     offsetof macro.  */
 	  if (null_object_p && kind == bk_via_virtual)
