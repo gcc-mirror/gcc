@@ -1,3 +1,22 @@
+2002-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/5854
+	* config/m68hc11/m68hc11.h (CONST_OK_FOR_LETTER_VALUE_P): Use K for 0.
+	Shut up warnings.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Use G for 0.0.
+	(EXTRA_CONSTRAINT): Use S for non-push memory operand.
+	* config/m68hc11/m68hc11.c (m68hc11_split_move): Handle setting from
+	const0 if scratch register was not allocated.
+	(m68hc11_reload_operands, m68hc11_gen_lowpart, m68hc11_gen_highpart,
+	m68hc11_z_replacement): Replace gen_rtx (CONST_INT, VOIDmode, ...)
+	with GEN_INT (...).
+	(m68hc11_reorg): Compute BLOCK_FOR_INSN before reload_cse_regs.
+	* config/m68hc11/m68hc11.md: Replace gen_rtx (CONST_INT, VOIDmode, ...)
+	with GEN_INT (...) everywhere.  Remove constraints in define_split
+	patterns.
+	(movdi_internal, movdf_internal, movsi_internal, movsf_internal): Don't
+	require scratch register for setting 0 into regs/non-pushable memory.
+
 2002-03-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* flow.c (calculate_global_regs_live): Clear aux fields of
