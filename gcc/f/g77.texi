@@ -1635,12 +1635,18 @@ by the @code{g77} and @code{gcc} commands in a GNU Fortran installation:
 @cindex options, -fversion
 @cindex printing version information
 @cindex version information, printing
+@cindex consistency checks
+@cindex internal consistency checks
+@cindex checks, of internal consistency
 @item -fversion
 Ensure that the @code{g77}-specific version of the compiler phase is reported,
-if run.
-(This is supplied automatically when @samp{-v} or @samp{--verbose}
+if run,
+and, starting in @code{egcs} version 1.1,
+that internal consistency checks in the @file{f771} program are run.
+
+This option is supplied automatically when @samp{-v} or @samp{--verbose}
 is specified as a command-line option for @code{g77} or @code{gcc}
-and when the resulting commands compile Fortran source files.)
+and when the resulting commands compile Fortran source files.
 
 @cindex -fset-g77-defaults option
 @cindex options, -fset-g77-defaults
@@ -1648,7 +1654,13 @@ and when the resulting commands compile Fortran source files.)
 @emph{Version info:}
 This option is obsolete in @code{egcs}
 as of version 1.1.
+The effect is instead achieved
+by the @samp{lang_init_options} routine
+in @file{egcs/gcc/f/com.c}.
 
+@cindex consistency checks
+@cindex internal consistency checks
+@cindex checks, of internal consistency
 Set up whatever @code{gcc} options are to apply to Fortran
 compilations, and avoid running internal consistency checks
 that might take some time.
@@ -13585,7 +13597,13 @@ some of which are in @file{gcc/toplev.c}.
 
 You can set different defaults for @emph{Fortran-oriented}
 or @emph{Fortran-reticent} compiler options by changing
-the way @code{f771} handles the @samp{-fset-g77-defaults}
+the source code of @code{g77} and rebuilding.
+How to do this depends on the version of @code{g77}:
+
+@table @code
+@item EGCS-1.0
+@itemx FSF
+Change the way @code{f771} handles the @samp{-fset-g77-defaults}
 option, which is always provided as the first option when
 called by @code{g77} or @code{gcc}.
 
@@ -13608,6 +13626,15 @@ It is in @file{@value{path-g77}/lang-specs.h} that @samp{-fset-g77-defaults},
 even when the user has not explicitly specified them.
 Other ``internal'' options such as @samp{-quiet} also
 are passed via this mechanism.
+
+@item EGCS-1.1
+@itemx EGCS-1.2
+Change the @samp{lang_init_options} routine in @file{egcs/gcc/f/com.c}.
+
+(Note that these versions of @code{g77}
+perform internal consistency checking automatically
+when the @samp{-fversion} option is specified.)
+@end table
 
 @node Projects
 @chapter Projects

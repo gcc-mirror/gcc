@@ -1,3 +1,9 @@
+Sat Apr  3 23:57:56 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Fix up docs for -fset-g77-defaults, and
+	describe how internal consistency checking now happens.
+	(Should have been done for EGCS version 1.1.)
+
 Sat Apr  3 23:29:33 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi, g77.texi, lang-options.h, news.texi, top.c:
