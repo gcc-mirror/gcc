@@ -41,6 +41,7 @@ extern int ix86_aligned_p PARAMS ((rtx));
 extern int standard_80387_constant_p PARAMS ((rtx));
 extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 
+extern int const_int_1_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int pic_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_insn_operand PARAMS ((rtx, enum machine_mode));

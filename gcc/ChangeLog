@@ -1,3 +1,13 @@
+Thu Jun 15 18:56:12 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.md: Create new [right,left] rotate and right shift
+	patterns to optimize shift by 1 bit for certain ia32 processors.
+	Update patterns which perform left shifts to optimize shift by
+	1 bit for certain ia32 processors.
+	* i386.c (const_int_1_operand): New predicate.
+	* i386.h (PREDICATE_CODES): Handle const_int_1_operand.
+	* i386-protos.h (const_int_1_operand): Prototype.
+
 Wed Jun 14 23:46:26 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* mips.c (machine_dependent_reorg): Fix braces for nested if.
