@@ -8552,6 +8552,10 @@ unify (tparms, targs, parm, arg, strict)
      cv-qualification mismatches.  */
   if (TREE_CODE (arg) == TREE_CODE (parm)
       && TYPE_P (arg)
+      /* It is the elements of the array which hold the cv quals of an array
+         type, and the elements might be template type parms. We'll check
+         when we recurse.  */
+      && TREE_CODE (arg) != ARRAY_TYPE
       /* We check the cv-qualifiers when unifying with template type
 	 parameters below.  We want to allow ARG `const T' to unify with
 	 PARM `T' for example, when computing which of two templates
