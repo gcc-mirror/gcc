@@ -1,3 +1,20 @@
+2004-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12226
+	* call.c (CHECK_COPY_CONSTRUCTOR_P): New macro.
+	(reference_binding): Set it when appropriate.
+	(build_temp): New function, split out from ...
+	(convert_like_real): ... here.  Honor CHECK_COPY_CONSTRUCTOR_P.
+	(initialize_reference): Likewise.
+
+	PR c++/13536
+	* parser.c (cp_parser): Add in_type_id_in_expr_p.
+	(cp_parser_new): Initialize it.
+	(cp_parser_postfix_expression): Set it.
+	(cp_parser_sizeof_operand): Likewise.
+	(cp_parser_parameteR_declaration): Do not commit early to tenative
+	parsers when in_type_id_in_expr_p is set.
+
 2004-01-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13094

@@ -31,7 +31,7 @@ void test01()
   typedef std::ostream base_type2;
 
   std::stringbuf buf;
-  const test_type& obj = test_type(&buf);
+  const test_type& obj = *new test_type(&buf);
   const base_type1* base1 __attribute__((unused)) = &obj;
   const base_type2* base2 __attribute__((unused)) = &obj;
 }

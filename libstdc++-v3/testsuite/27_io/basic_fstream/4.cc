@@ -28,7 +28,7 @@ void test01()
   // Check for required base class.
   typedef std::fstream test_type;
   typedef std::iostream base_type;
-  const test_type& obj = test_type();
+  const test_type& obj = *new test_type();
   const base_type* base __attribute__((unused)) = &obj;
 }
 

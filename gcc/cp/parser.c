@@ -1257,6 +1257,11 @@ typedef struct cp_parser GTY(())
      statement.  */
   bool in_switch_statement_p;
 
+  /* TRUE if we are parsing a type-id in an expression context.  In
+     such a situation, both "type (expr)" and "type (type)" are valid
+     alternatives.  */
+  bool in_type_id_in_expr_p;
+
   /* If non-NULL, then we are parsing a construct where new type
      definitions are not permitted.  The string stored here will be
      issued as an error message if a type is defined.  */
@@ -2253,6 +2258,9 @@ cp_parser_new (void)
 
   /* We are not in a switch statement.  */
   parser->in_switch_statement_p = false;
+
+  /* We are not parsing a type-id inside an expression.  */
+  parser->in_type_id_in_expr_p = false;
 
   /* The unparsed function queue is empty.  */
   parser->unparsed_functions_queues = build_tree_list (NULL_TREE, NULL_TREE);
@@ -3468,6 +3476,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
       {
 	tree type;
 	const char *saved_message;
+	bool saved_in_type_id_in_expr_p;
 
 	/* Consume the `typeid' token.  */
 	cp_lexer_consume_token (parser->lexer);
@@ -3481,7 +3490,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	   expression.  */
 	cp_parser_parse_tentatively (parser);
 	/* Try a type-id first.  */
+	saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
+	parser->in_type_id_in_expr_p = true;
 	type = cp_parser_type_id (parser);
+	parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	/* Look for the `)' token.  Otherwise, we can't be sure that
 	   we're not looking at an expression: consider `typeid (int
 	   (3))', for example.  */
@@ -3572,12 +3584,16 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	  {
 	    tree initializer_list = NULL_TREE;
+	    bool saved_in_type_id_in_expr_p;
 
 	    cp_parser_parse_tentatively (parser);
 	    /* Consume the `('.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the type.  */
+	    saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
+	    parser->in_type_id_in_expr_p = true;
 	    type = cp_parser_type_id (parser);
+	    parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	    /* Look for the `)'.  */
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 	    /* Look for the `{'.  */
@@ -4713,10 +4729,13 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p)
 	cp_parser_simulate_error (parser);
       else
 	{
+	  bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
+	  parser->in_type_id_in_expr_p = true;
 	  /* Look for the type-id.  */
 	  type = cp_parser_type_id (parser);
 	  /* Look for the closing `)'.  */
 	  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+	  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	}
 
       /* Restore the saved message.  */
@@ -10955,9 +10974,16 @@ cp_parser_parameter_declaration (cp_parser *parser,
   
       /* After seeing a decl-specifier-seq, if the next token is not a
 	 "(", there is no possibility that the code is a valid
-	 expression initializer.  Therefore, if parsing tentatively,
-	 we commit at this point.  */
+	 expression.  Therefore, if parsing tentatively, we commit at
+	 this point.  */
       if (!parser->in_template_argument_list_p
+	  /* Having seen:
+
+	       (int((char *)...
+
+	     we cannot be sure whether we are looking at a
+	     function-type (taking a */
+	  && !parser->in_type_id_in_expr_p
 	  && cp_parser_parsing_tentatively (parser)
 	  && !cp_parser_committed_to_tentative_parse (parser)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
@@ -14473,6 +14499,7 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
       tree type;
+      bool saved_in_type_id_in_expr_p;
 
       /* We can't be sure yet whether we're looking at a type-id or an
 	 expression.  */
@@ -14480,7 +14507,10 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
       /* Consume the `('.  */
       cp_lexer_consume_token (parser->lexer);
       /* Parse the type-id.  */
+      saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
+      parser->in_type_id_in_expr_p = true;
       type = cp_parser_type_id (parser);
+      parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
       /* Now, look for the trailing `)'.  */
       cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
       /* If all went well, then we're done.  */
