@@ -1,3 +1,9 @@
+Sun Sep  7 09:59:08 1997  Jan-Jaap van der Heijden (J.J.vanderHeijden@student.utwente.nl)
+
+        * configure.in: Make symlink to as-new rather than as.new.  Similarly
+	for ld-new.
+	* configure: Rebuilt.
+
 Fri Sep  5 16:54:55 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* profile.c (output_func_start_profiler): Set DECL_EXTERNAL to zero.
