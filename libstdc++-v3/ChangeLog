@@ -1,3 +1,9 @@
+2003-05-22  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (_M_underflow): simplify:
+	!__testout implies _M_filepos == _M_in_end, therefore
+	the first _M_file.seekoff call is never issued.
+
 2003-05-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in: Sort cross table.
