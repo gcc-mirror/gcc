@@ -8955,13 +8955,19 @@ grokfndecl (tree ctype,
       DECL_NOT_REALLY_EXTERN (decl) = 1;
     }
 
+  DID_INLINE_FUNC (decl) = 0;
   /* If the declaration was declared inline, mark it as such.  */
   if (inlinep)
     DECL_DECLARED_INLINE_P (decl) = 1;
   /* We inline functions that are explicitly declared inline, or, when
      the user explicitly asks us to, all functions.  */
-  if (DECL_DECLARED_INLINE_P (decl) || flag_inline_trees == 2)
+  if (DECL_DECLARED_INLINE_P (decl))
     DECL_INLINE (decl) = 1;
+  if (flag_inline_trees == 2 && !DECL_INLINE (decl))
+    {
+      DID_INLINE_FUNC (decl) = 1;
+      DECL_INLINE (decl) = 1;
+    }
 
   DECL_EXTERNAL (decl) = 1;
   if (quals != NULL_TREE && TREE_CODE (type) == FUNCTION_TYPE)
@@ -14217,6 +14223,7 @@ start_method (tree declspecs, tree declarator, tree attrlist)
 
   DECL_DECLARED_INLINE_P (fndecl) = 1;
 
+  DID_INLINE_FUNC (fndecl) = 0;
   if (flag_default_inline)
     DECL_INLINE (fndecl) = 1;
 

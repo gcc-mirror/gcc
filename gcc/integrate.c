@@ -159,11 +159,13 @@ function_cannot_inline_p (fndecl)
   tree last = tree_last (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
 
   /* For functions marked as inline increase the maximum size to
-     MAX_INLINE_INSNS (-finline-limit-<n>).  For regular functions
-     use the limit given by INTEGRATE_THRESHOLD.  */
+     MAX_INLINE_INSNS_RTL (--param max-inline-insn-rtl=<n>). For
+     regular functions use the limit given by INTEGRATE_THRESHOLD.
+     Note that the RTL inliner is not used by the languages that use
+     the tree inliner (C, C++).  */
 
   int max_insns = (DECL_INLINE (fndecl))
-		   ? (MAX_INLINE_INSNS
+		   ? (MAX_INLINE_INSNS_RTL
 		      + 8 * list_length (DECL_ARGUMENTS (fndecl)))
 		   : INTEGRATE_THRESHOLD (fndecl);
 

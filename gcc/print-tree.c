@@ -330,7 +330,9 @@ print_node (file, prefix, node, indent)
       if (TREE_CODE (node) == TYPE_DECL && TYPE_DECL_SUPPRESS_DEBUG (node))
 	fputs (" suppress-debug", file);
 
-      if (TREE_CODE (node) == FUNCTION_DECL && DECL_INLINE (node))
+      if (TREE_CODE (node) == FUNCTION_DECL && DID_INLINE_FUNC (node))
+	fputs (" autoinline", file);
+      else if (TREE_CODE (node) == FUNCTION_DECL && DECL_INLINE (node))
 	fputs (" inline", file);
       if (TREE_CODE (node) == FUNCTION_DECL && DECL_BUILT_IN (node))
 	fputs (" built-in", file);
