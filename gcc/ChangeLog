@@ -1,3 +1,13 @@
+Sat May  8 01:43:02 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.h (RS6000_VARARGS_OFFSET): Die die die.
+	(CUMULATIVE_ARGS): Remove varargs_offset; update commentary.
+	* rs6000.c (setup_incoming_varargs): Fix typo last change.
+	(init_cumulative_args): Remove varargs_offset references.
+
+	* rs6000/linux.h (NO_IMPLICIT_EXTERN_C): Define.
+	(MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Undefine.
+
 Sat May  8 01:34:19 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* reload1.c (gen_mode_int): New function.

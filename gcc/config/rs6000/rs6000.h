@@ -1282,11 +1282,6 @@ extern int rs6000_sysv_varargs_p;
 #define RS6000_VARARGS_SIZE \
   ((GP_ARG_NUM_REG * (TARGET_32BIT ? 4 : 8)) + (FP_ARG_NUM_REG * 8) + 8)
 
-/* Offset of V.4 varargs area */
-#define RS6000_VARARGS_OFFSET						\
-  (RS6000_ALIGN (current_function_outgoing_args_size, 8)		\
-   + RS6000_SAVE_AREA)
-
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
@@ -1439,9 +1434,8 @@ extern int rs6000_sysv_varargs_p;
    floating-point register number, and the third says how many more args we
    have prototype types for.
 
-   The System V.4 varargs/stdarg support requires that this structure's size
-   be a multiple of sizeof(int), and that WORDS, FREGNO, NARGS_PROTOTYPE,
-   ORIG_NARGS, and VARARGS_OFFSET be the first five ints.  */
+   The varargs/stdarg support requires that this structure's size
+   be a multiple of sizeof(int). */
 
 typedef struct rs6000_args
 {
@@ -1449,7 +1443,6 @@ typedef struct rs6000_args
   int fregno;			/* next available FP register */
   int nargs_prototype;		/* # args left in the current prototype */
   int orig_nargs;		/* Original value of nargs_prototype */
-  int varargs_offset;		/* offset of the varargs save area */
   int prototype;		/* Whether a prototype was defined */
   int call_cookie;		/* Do special things for this call */
 } CUMULATIVE_ARGS;

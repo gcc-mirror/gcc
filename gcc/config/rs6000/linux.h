@@ -22,6 +22,12 @@ Boston, MA 02111-1307, USA.  */
 
 #include "rs6000/sysv4.h"
 
+/* Don't assume anything about the header files. */
+#define NO_IMPLICIT_EXTERN_C
+
+#undef MD_EXEC_PREFIX
+#undef MD_STARTFILE_PREFIX
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
  "-DPPC -D__ELF__ -Dpowerpc -Acpu(powerpc) -Amachine(powerpc)"
