@@ -83,8 +83,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    of an insn added during loop, since these don't have LUIDs.  */
 
 #define INSN_LUID(INSN)			\
-  (INSN_UID (INSN) < max_uid_for_loop ? uid_luid[INSN_UID (INSN)] \
-   : (abort (), -1))
+  (gcc_assert (INSN_UID (INSN) < max_uid_for_loop), uid_luid[INSN_UID (INSN)])
 
 #define REGNO_FIRST_LUID(REGNO)			\
   (REGNO_FIRST_UID (REGNO) < max_uid_for_loop	\
@@ -869,8 +868,7 @@ loop_optimize (rtx f, FILE *dumpfile, int flags)
 
   /* See if we went too far.  Note that get_max_uid already returns
      one more that the maximum uid of all insn.  */
-  if (get_max_uid () > max_uid_for_loop)
-    abort ();
+  gcc_assert (get_max_uid () <= max_uid_for_loop);
   /* Now reset it to the actual size we need.  See above.  */
   max_uid_for_loop = get_max_uid ();
 
@@ -2117,7 +2115,7 @@ rtx_equal_for_loop_p (rtx x, rtx y, struct loop_movables *movables,
 	     contain anything but integers and other rtx's,
 	     except for within LABEL_REFs and SYMBOL_REFs.  */
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return 1;
@@ -2310,21 +2308,26 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 
 		  for (count = m->consec; count >= 0; count--)
 		    {
-		      /* If this is the first insn of a library call sequence,
-			 something is very wrong.  */
-		      if (!NOTE_P (p)
-			  && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
-			abort ();
-
-		      /* If this is the last insn of a libcall sequence, then
-			 delete every insn in the sequence except the last.
-			 The last insn is handled in the normal manner.  */
-		      if (!NOTE_P (p)
-			  && (temp = find_reg_note (p, REG_RETVAL, NULL_RTX)))
+		      if (!NOTE_P (p))
 			{
-			  temp = XEXP (temp, 0);
-			  while (temp != p)
-			    temp = delete_insn (temp);
+			  /* If this is the first insn of a library
+			     call sequence, something is very
+			     wrong.  */
+			  gcc_assert (!find_reg_note
+				      (p, REG_LIBCALL, NULL_RTX));
+
+			  /* If this is the last insn of a libcall
+			     sequence, then delete every insn in the
+			     sequence except the last.  The last insn
+			     is handled in the normal manner.  */
+			  temp = find_reg_note (p, REG_RETVAL, NULL_RTX);
+			  
+			  if (temp)
+			    {
+			      temp = XEXP (temp, 0);
+			      while (temp != p)
+				temp = delete_insn (temp);
+			    }
 			}
 
 		      temp = p;
@@ -2488,8 +2491,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 					<< GET_MODE_BITSIZE (m->savemode)))
 				      - 1),
 			     reg, 1, OPTAB_LIB_WIDEN);
-			  if (tem == 0)
-			    abort ();
+			  gcc_assert (tem);
 			  if (tem != reg)
 			    emit_move_insn (reg, tem);
 			  sequence = get_insns ();
@@ -2777,8 +2779,7 @@ replace_call_address (rtx x, rtx reg, rtx addr)
     case MEM:
       /* If this MEM uses a reg other than the one we expected,
 	 something is wrong.  */
-      if (XEXP (x, 0) != reg)
-	abort ();
+      gcc_assert (XEXP (x, 0) == reg);
       XEXP (x, 0) = addr;
       return;
 
@@ -3091,8 +3092,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 	    break;
 
 	  case NOTE_INSN_LOOP_END:
-	    if (! current_loop)
-	      abort ();
+	    gcc_assert (current_loop);
 
 	    current_loop->end = insn;
 	    current_loop = current_loop->outer;
@@ -3340,8 +3340,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 
 			    /* If we didn't find it, then something is
 			       wrong.  */
-			    if (! r)
-			      abort ();
+			    gcc_assert (r);
 			  }
 
 			/* P is now a jump outside the loop, so it must be put
@@ -4038,7 +4037,7 @@ rtx_equal_for_prefetch_p (rtx x, rtx y)
 	     contain anything but integers and other rtx's,
 	     except for within LABEL_REFs and SYMBOL_REFs.  */
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return 1;
@@ -4964,10 +4963,9 @@ fold_rtx_mult_add (rtx mult1, rtx mult2, rtx add1, enum machine_mode mode)
 
   /* The modes must all be the same.  This should always be true.  For now,
      check to make sure.  */
-  if ((GET_MODE (mult1) != mode && GET_MODE (mult1) != VOIDmode)
-      || (GET_MODE (mult2) != mode && GET_MODE (mult2) != VOIDmode)
-      || (GET_MODE (add1) != mode && GET_MODE (add1) != VOIDmode))
-    abort ();
+  gcc_assert (GET_MODE (mult1) == mode || GET_MODE (mult1) == VOIDmode);
+  gcc_assert (GET_MODE (mult2) == mode || GET_MODE (mult2) == VOIDmode);
+  gcc_assert (GET_MODE (add1) == mode || GET_MODE (add1) == VOIDmode);
 
   /* Ensure that if at least one of mult1/mult2 are constant, then mult2
      will be a constant.  */
@@ -5802,9 +5800,8 @@ loop_iterations (struct loop *loop)
      will propagate a new pseudo into the old iteration register but
      this will be marked by having the REG_USERVAR_P bit set.  */
 
-  if ((unsigned) REGNO (iteration_var) >= ivs->n_regs
-      && ! REG_USERVAR_P (iteration_var))
-    abort ();
+  gcc_assert ((unsigned) REGNO (iteration_var) < ivs->n_regs
+	      || REG_USERVAR_P (iteration_var));
 
   /* Determine the initial value of the iteration variable, and the amount
      that it is incremented each loop.  Use the tables constructed by
@@ -5861,8 +5858,7 @@ loop_iterations (struct loop *loop)
 
   if (REG_IV_TYPE (ivs, REGNO (iteration_var)) == BASIC_INDUCT)
     {
-      if (REGNO (iteration_var) >= ivs->n_regs)
-	abort ();
+      gcc_assert (REGNO (iteration_var) < ivs->n_regs);
 
       /* Grab initial value, only useful if it is a constant.  */
       bl = REG_IV_CLASS (ivs, REGNO (iteration_var));
@@ -5883,8 +5879,7 @@ loop_iterations (struct loop *loop)
       struct induction *v = REG_IV_INFO (ivs, REGNO (iteration_var));
       rtx biv_initial_value;
 
-      if (REGNO (v->src_reg) >= ivs->n_regs)
-	abort ();
+      gcc_assert (REGNO (v->src_reg) < ivs->n_regs);
 
       if (!v->always_executed || v->maybe_multiple)
 	{
@@ -5991,7 +5986,7 @@ loop_iterations (struct loop *loop)
       compare_dir = 0;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* If the comparison value is an invariant register, then try to find
@@ -6243,18 +6238,17 @@ loop_iterations (struct loop *loop)
      unsigned, because they can be as large as 2^n - 1.  */
 
   inc = INTVAL (increment);
+  gcc_assert (inc);
   if (inc > 0)
     {
       abs_diff = INTVAL (final_value) - INTVAL (initial_value);
       abs_inc = inc;
     }
-  else if (inc < 0)
+  else
     {
       abs_diff = INTVAL (initial_value) - INTVAL (final_value);
       abs_inc = -inc;
     }
-  else
-    abort ();
 
   /* Given that iteration_var is going to iterate over its own mode,
      not HOST_WIDE_INT, disregard higher bits that might have come
@@ -6964,19 +6958,15 @@ record_giv (const struct loop *loop, struct induction *v, rtx insn,
   /* Add the giv to the class of givs computed from one biv.  */
 
   bl = REG_IV_CLASS (ivs, REGNO (src_reg));
-  if (bl)
-    {
-      v->next_iv = bl->giv;
-      bl->giv = v;
-      /* Don't count DEST_ADDR.  This is supposed to count the number of
-	 insns that calculate givs.  */
-      if (type == DEST_REG)
-	bl->giv_count++;
-      bl->total_benefit += benefit;
-    }
-  else
-    /* Fatal error, biv missing for this giv?  */
-    abort ();
+  gcc_assert (bl);
+  v->next_iv = bl->giv;
+  bl->giv = v;
+  
+  /* Don't count DEST_ADDR.  This is supposed to count the number of
+     insns that calculate givs.  */
+  if (type == DEST_REG)
+    bl->giv_count++;
+  bl->total_benefit += benefit;
 
   if (type == DEST_ADDR)
     {
@@ -7191,8 +7181,7 @@ final_giv_value (const struct loop *loop, struct induction *v)
     }
 
   /* Replaceable giv's should never reach here.  */
-  if (v->replaceable)
-    abort ();
+  gcc_assert (!v->replaceable);
 
   /* Check to see if the biv is dead at all loop exits.  */
   if (reg_dead_after_loop (loop, v->dest_reg))
@@ -7756,7 +7745,7 @@ general_induction_var (const struct loop *loop, rtx x, rtx *src_reg,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Remove any enclosing USE from ADD_VAL and MULT_VAL (there will be
@@ -7875,7 +7864,7 @@ simplify_giv_expr (const struct loop *loop, rtx x, rtx *ext_val, int *benefit)
 				 ext_val, benefit);
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 
       /* Each argument must be either REG, PLUS, or MULT.  Convert REG to
@@ -8016,7 +8005,7 @@ simplify_giv_expr (const struct loop *loop, rtx x, rtx *ext_val, int *benefit)
 				    ext_val, benefit);
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
     case ASHIFT:
@@ -8775,7 +8764,7 @@ extension_within_bounds_p (const struct loop *loop, struct iv_class *bl,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return ((!signedp || biv_fits_mode_p (loop, bl, incr, mode, false))
@@ -11112,8 +11101,7 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
 	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) == regno)
 	{
-	  if (init_insn)
-	    abort ();
+	  gcc_assert (!init_insn);
 
 	  init_insn = insn;
 	  if (REGNO_FIRST_UID (regno) == INSN_UID (insn))
@@ -11146,8 +11134,7 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
 	    }
 	}
     }
-  if (! init_insn)
-    abort ();
+  gcc_assert (init_insn);
   if (apply_change_group ())
     {
       if (loop_dump_stream)
@@ -11648,7 +11635,7 @@ loop_giv_dump (const struct induction *v, FILE *file, int verbose)
 	  fprintf (file, " ext tr");
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
