@@ -47,6 +47,7 @@ extern void order_regs_for_local_alloc (void);
 extern HOST_WIDE_INT sparc_compute_frame_size (HOST_WIDE_INT, int);
 extern void sparc_expand_prologue (void);
 extern void sparc_expand_epilogue (void);
+extern bool sparc_can_use_return_insn_p (void);
 extern int check_pic (int);
 extern int short_branch (int, int);
 extern void sparc_profile_hook (int);

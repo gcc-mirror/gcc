@@ -1,3 +1,28 @@
+2004-09-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/16532
+	* config/sparc/sparc.c (struct machine_function): New field
+	'leaf_function_p' and 'prologue_data_valid_p'.
+	(sparc_leaf_function_p, sparc_prologue_data_valid_p): New macro
+	to conveniently access the above fields.
+	(TARGET_LATE_RTL_PROLOGUE_EPILOGUE): Delete.
+	(eligible_for_return_delay): Use 'sparc_leaf_function_p' instead
+	of the generic flavor 'current_function_uses_only_leaf_regs'.
+	(eligible_for_sibcall_delay): Likewise.
+	(sparc_expand_prologue): Compute 'sparc_leaf_function_p' and set
+	'sparc_prologue_data_valid_p'.  Use 'sparc_leaf_function_p'.
+	(sparc_asm_function_prologue): Add sanity check for the assumption
+	made in 'sparc_expand_prologue'.  Use 'sparc_leaf_function_p'.
+	(sparc_can_use_return_insn_p): New function.
+	(sparc_expand_epilogue): Use 'sparc_leaf_function_p'.
+	(output_restore): Likewise.
+	(output_sibcall): Likewise.
+	(sparc_output_mi_thunk): Likewise.
+	* config/sparc/sparc-protos.h (sparc_can_use_return_insn_p): Declare.
+	* config/sparc/sparc.md (return): New expander.
+
+	* config/sparc/sparc.h (INITIAL_ELIMINATION_OFFSET): Minor tweak.
+
 2004-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17642
