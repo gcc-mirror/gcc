@@ -1,0 +1,19 @@
+# AIX support 
+
+# Compile crtbeginS.o and crtendS.o with pic.
+CRTSTUFF_T_CFLAGS_S = -fPIC
+# Compile libgcc2.a with pic and defines required by AIX headers
+TARGET_LIBGCC2_CFLAGS = -fPIC -D__64BIT__ -D_LONG_LONG -D_IA64 -D__int128=__size128_t
+LIB2ADDEH += $(srcdir)/config/ia64/unwind-aix.c
+
+# Add crt[in].o to the list defined in t-ia64.  These files provide
+# endpoints for crtbegin/end.
+
+EXTRA_PARTS=crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o
+
+crti.o: $(srcdir)/config/ia64/crti.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crti.o -x assembler $(srcdir)/config/ia64/crti.asm
+crtn.o: $(srcdir)/config/ia64/crtn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/ia64/crtn.asm
+
+# end t-aix
