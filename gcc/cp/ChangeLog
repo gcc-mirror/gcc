@@ -1,3 +1,20 @@
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
+	* decl.c (struct named_label_list): Rename eh_region to
+	in_try_scope, add in_catch_scope.
+	(struct binding_level): Rename eh_region to is_try_scope,
+	add is_catch_scope.
+	(note_level_for_try): Rename from note_level_for_eh.
+	(note_level_for_catch): New.
+	(poplevel): Copy both is_try_scope and is_catch_scope to
+	the named_label_list struct.
+	(check_previous_goto_1): Don't check for catch block via
+	DECL_ARTIFICIAL; use in_try_scope instead.
+	(check_goto): Likewise.
+	* cp-tree.h (note_level_for_try, note_level_for_catch): Declare.
+	* except.c (expand_start_catch_block): Call note_level_for_catch.
+	* semantics.c (begin_compound_stmt): Update for note_level_for_try.
+
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
 	* except.c: Use USING_SJLJ_EXCEPTIONS instead of
@@ -124,7 +141,7 @@
 	* except.c: Don't include it.
 
 2001-03-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-            based on an idea from Joe Buck <jbuck@synopsys.com>
+	    based on an idea from Joe Buck <jbuck@synopsys.com>
 
 	* parse.y (bad_decl, template_arg_list_ignore, arg_list_ignore):
 	New nonterminals.
@@ -1041,8 +1058,8 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-16 Daniel Berlin <dberlin@redhat.com>
 
-        * cvt.c (ocp_convert): Handle vector type conversion
-        * typeck2.c (digest_init): Handle vector type initializations
+	* cvt.c (ocp_convert): Handle vector type conversion
+	* typeck2.c (digest_init): Handle vector type initializations
 
 2001-01-16  Phil Edwards  <pme@sources.redhat.com>
 
@@ -1249,7 +1266,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cp/decl2.c (cxx_post_options): Call cpp_post_options.
+	* cp/decl2.c (cxx_post_options): Call cpp_post_options.
 
 2001-01-05  Nathan Sidwell  <nathan@codesourcery.com>
 

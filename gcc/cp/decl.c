@@ -282,8 +282,9 @@ struct named_label_list
   tree old_value;
   tree label_decl;
   tree bad_decls;
-  int eh_region;
   struct named_label_list *next;
+  unsigned int in_try_scope : 1;
+  unsigned int in_catch_scope : 1;
 };
 
 #define named_labels cp_function_chain->x_named_labels
@@ -456,12 +457,15 @@ struct binding_level
        worry about ambiguous (ARM or ISO) scope rules.  */
     unsigned is_for_scope : 1;
 
-    /* True if this level corresponds to an EH region, as for a try block.
-       Currently this information is only available while building the
-       tree structure.  */
-    unsigned eh_region : 1;
+    /* True if this level corresponds to a TRY block.  Currently this
+       information is only available while building the tree structure.  */
+    unsigned is_try_scope : 1;
 
-    /* Four bits left for this word.  */
+    /* True if this level corresponds to a CATCH block.  Currently this
+       information is only available while building the tree structure.  */
+    unsigned is_catch_scope : 1;
+
+    /* Three bits left for this word.  */
 
 #if defined(DEBUG_CP_BINDING_LEVELS)
     /* Binding depth at which this level began.  */
@@ -920,9 +924,17 @@ note_level_for_for ()
 /* Record that the current binding level represents a try block.  */
 
 void
-note_level_for_eh ()
+note_level_for_try ()
 {
-  current_binding_level->eh_region = 1;
+  current_binding_level->is_try_scope = 1;
+}
+
+/* Record that the current binding level represents a catch block.  */
+
+void
+note_level_for_catch ()
+{
+  current_binding_level->is_catch_scope = 1;
 }
 
 /* For a binding between a name and an entity at a block scope,
@@ -1326,8 +1338,10 @@ poplevel (keep, reverse, functionbody)
 	    if (labels->binding_level == current_binding_level)
 	      {
 		tree decl;
-		if (current_binding_level->eh_region)
-		  labels->eh_region = 1;
+		if (current_binding_level->is_try_scope)
+		  labels->in_try_scope = 1;
+		if (current_binding_level->is_catch_scope)
+		  labels->in_catch_scope = 1;
 		for (decl = labels->names_in_scope; decl;
 		     decl = TREE_CHAIN (decl))
 		  if (decl_jump_unsafe (decl))
@@ -4946,10 +4960,7 @@ check_previous_goto_1 (decl, level, names, file, line)
 	      identified = 1;
 	    }
 
-	  if (problem > 1 && DECL_ARTIFICIAL (new_decls))
-	    /* Can't skip init of __exception_info.  */
-	    cp_error_at ("  enters catch block", new_decls);
-	  else if (problem > 1)
+	  if (problem > 1)
 	    cp_error_at ("  crosses initialization of `%#D'",
 			 new_decls);
 	  else
@@ -4959,7 +4970,7 @@ check_previous_goto_1 (decl, level, names, file, line)
 
       if (b == level)
 	break;
-      if (b->eh_region && ! saw_eh)
+      if ((b->is_try_scope || b->is_catch_scope) && ! saw_eh)
 	{
 	  if (! identified)
 	    {
@@ -4972,7 +4983,10 @@ check_previous_goto_1 (decl, level, names, file, line)
 		pedwarn_with_file_and_line (file, line, "  from here");
 	      identified = 1;
 	    }
-	  error ("  enters try block");
+	  if (b->is_try_scope)
+	    error ("  enters try block");
+	  else
+	    error ("  enters catch block");
 	  saw_eh = 1;
 	}
     }
@@ -5051,7 +5065,8 @@ check_goto (decl)
   if (lab == 0)
     return;
 
-  if ((lab->eh_region || lab->bad_decls) && !identified)
+  if ((lab->in_try_scope || lab->in_catch_scope || lab->bad_decls)
+      && !identified)
     {
       cp_pedwarn_at ("jump to label `%D'", decl);
       pedwarn ("  from here");
@@ -5072,8 +5087,10 @@ check_goto (decl)
 	cp_pedwarn_at ("  enters scope of non-POD `%#D'", b);
     }
 
-  if (lab->eh_region)
+  if (lab->in_try_scope)
     error ("  enters try block");
+  else if (lab->in_catch_scope)
+    error ("  enters catch block");
 }
 
 /* Define a label, specifying the location in the source file.
