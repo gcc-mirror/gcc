@@ -1,3 +1,23 @@
+Wed Jul 25 01:41:27 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (try_simplify_condjump): Avoid duplicated edges.
+	(verify_flow_info): Check for duplicated edges; clarify
+	error reporting.
+
+	* flow.c (block_label): Update basic_block_for_insn.
+	(commit_edge_insertions): Call compute_bb_for_insn.
+
+	* flow.c (purge_dead_edges): Handle conditional jumps and conditional
+	returns too.
+
+	* flow.c (redirect_edge_and_branch,
+	try_optimize_cfg): Use redirect_edge_succ_nodup
+	(redirect_edge_succ_nodup): New.
+	* basic_block.h (redirect_edge_succ_nodup): Declare.
+
+	* toplev.c (rest_of_compilation): Rebuild CFG before cfg_cleanup
+	after gcse.
+
 Wed Jul 25 00:32:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (try_forward_edges): Accept fallthru edge; Update comment.

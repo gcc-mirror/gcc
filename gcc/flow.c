@@ -1592,7 +1592,11 @@ block_label (block)
   if (block == EXIT_BLOCK_PTR)
     return NULL_RTX;
   if (GET_CODE (block->head) != CODE_LABEL)
-    block->head = emit_label_before (gen_label_rtx (), block->head);
+    {
+      block->head = emit_label_before (gen_label_rtx (), block->head);
+      if (basic_block_for_insn)
+	set_block_for_insn (block->head, block);
+    }
   return block->head;
 }
 
@@ -1834,22 +1838,7 @@ redirect_edge_and_branch (e, target)
     fprintf (rtl_dump_file, "Edge %i->%i redirected to %i\n",
 	     e->src->index, e->dest->index, target->index);
   if (e->dest != target)
-    {
-      edge s;
-      /* Check whether the edge is already present.  */
-      for (s = src->succ; s; s=s->succ_next)
-	if (s->dest == target)
-	  break;
-      if (s)
-	{
-	  s->flags |= e->flags;
-	  s->probability += e->probability;
-	  s->count += e->count;
-	  remove_edge (e);
-	}
-      else
-	redirect_edge_succ (e, target);
-    }
+    redirect_edge_succ_nodup (e, target);
   return true;
 }
 
@@ -2293,6 +2282,7 @@ commit_edge_insertions ()
 {
   int i;
   basic_block bb;
+  compute_bb_for_insn (get_max_uid ());
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -3076,8 +3066,8 @@ try_simplify_condjump (cbranch_block)
   /* Success.  Update the CFG to match.  Note that after this point
      the edge variable names appear backwards; the redirection is done
      this way to preserve edge profile data.  */
-  redirect_edge_succ (cbranch_jump_edge, cbranch_dest_block);
-  redirect_edge_succ (cbranch_fallthru_edge, jump_dest_block);
+  redirect_edge_succ_nodup (cbranch_jump_edge, cbranch_dest_block);
+  redirect_edge_succ_nodup (cbranch_fallthru_edge, jump_dest_block);
   cbranch_jump_edge->flags |= EDGE_FALLTHRU;
   cbranch_fallthru_edge->flags &= ~EDGE_FALLTHRU;
   
@@ -3820,7 +3810,7 @@ try_optimize_cfg (mode)
 		fprintf (rtl_dump_file, "Deleting fallthru block %i.\n",
 			 b->index);
 	      c = BASIC_BLOCK (b->index ? b->index - 1 : 1);
-	      redirect_edge_succ (b->pred, b->succ->dest);
+	      redirect_edge_succ_nodup (b->pred, b->succ->dest);
 	      flow_delete_block (b);
 	      changed = true;
 	      b = c;
@@ -7979,11 +7969,13 @@ verify_flow_info ()
   const int max_uid = get_max_uid ();
   const rtx rtx_first = get_insns ();
   rtx last_head = get_last_insn ();
-  basic_block *bb_info;
+  basic_block *bb_info, *last_visited;
   rtx x;
   int i, last_bb_num_seen, num_bb_notes, err = 0;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
+  last_visited = (basic_block *) xcalloc (n_basic_blocks + 2,
+					  sizeof (basic_block));
 
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
@@ -8040,6 +8032,14 @@ verify_flow_info ()
       e = bb->succ;
       while (e)
 	{
+	  if (last_visited [e->dest->index + 2] == bb)
+	    {
+	      error ("verify_flow_info: Duplicate edge %i->%i",
+		     e->src->index, e->dest->index);
+	      err = 1;
+	    }
+	  last_visited [e->dest->index + 2] = bb;
+
 	  if ((e->flags & EDGE_FALLTHRU)
 	      && e->src != ENTRY_BLOCK_PTR
 	      && e->dest != EXIT_BLOCK_PTR
@@ -8166,8 +8166,7 @@ verify_flow_info ()
 	  basic_block bb = NOTE_BASIC_BLOCK (x);
 	  num_bb_notes++;
 	  if (bb->index != last_bb_num_seen + 1)
-	    /* Basic blocks not numbered consecutively.  */
-	    abort ();
+	    internal_error ("Basic blocks not numbered consecutively.");
 	       
 	  last_bb_num_seen = bb->index;
 	}
@@ -8213,10 +8212,11 @@ verify_flow_info ()
        num_bb_notes, n_basic_blocks);
 
   if (err)
-    abort ();
+    internal_error ("verify_flow_info failed.");
 
   /* Clean up.  */
   free (bb_info);
+  free (last_visited);
 }
 
 /* Functions to access an edge list with a vector representation.
@@ -8627,6 +8627,29 @@ redirect_edge_succ (e, new_succ)
   e->pred_next = new_succ->pred;
   new_succ->pred = e;
   e->dest = new_succ;
+}
+
+/* Like previous but avoid possible dupplicate edge.  */
+
+void
+redirect_edge_succ_nodup (e, new_succ)
+     edge e;
+     basic_block new_succ;
+{
+  edge s;
+  /* Check whether the edge is already present.  */
+  for (s = e->src->succ; s; s = s->succ_next)
+    if (s->dest == new_succ && s != e)
+      break;
+  if (s)
+    {
+      s->flags |= e->flags;
+      s->probability += e->probability;
+      s->count += e->count;
+      remove_edge (e);
+    }
+  else
+    redirect_edge_succ (e, new_succ);
 }
 
 /* Redirect an edge's predecessor from one block to another.  */
@@ -9794,21 +9817,56 @@ purge_dead_edges (bb)
     return;
   if (GET_CODE (insn) == JUMP_INSN)
     {
+      int removed = 0;
+      rtx note;
+      edge b,f;
+      /* We do care only about conditional jumps and simplejumps.  */
+      if (!any_condjump_p (insn)
+	  && !returnjump_p (insn)
+	  && !simplejump_p (insn))
+	return;
       for (e = bb->succ; e; e = next)
 	{
 	  next = e->succ_next;
-	  if (e->dest == EXIT_BLOCK_PTR || e->dest->head != JUMP_LABEL (insn))
-	    remove_edge (e);
-	}
-      if (bb->succ && bb->succ->succ_next)
-	abort ();
-      if (!bb->succ)
-	return;
-      bb->succ->probability = REG_BR_PROB_BASE;
-      bb->succ->count = bb->count;
 
+	  /* Check purposes we can have edge.  */
+	  if ((e->flags & EDGE_FALLTHRU)
+	      && any_condjump_p (insn))
+	    continue;
+	  if (e->dest != EXIT_BLOCK_PTR
+	      && e->dest->head == JUMP_LABEL (insn))
+	    continue;
+	  if (e->dest == EXIT_BLOCK_PTR
+	      && returnjump_p (insn))
+	    continue;
+	  removed = 1;
+	  remove_edge (e);
+	}
+      if (!bb->succ || !removed)
+	return;
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Purged edges from bb %i\n", bb->index);
+      if (!optimize)
+	return;
+
+      /* Redistribute probabilities.  */
+      if (!bb->succ->succ_next)
+	{
+	  bb->succ->probability = REG_BR_PROB_BASE;
+	  bb->succ->count = bb->count;
+        }
+      else
+	{
+	  note = find_reg_note (insn, REG_BR_PROB, NULL);
+	  if (!note)
+	    return;
+	  b = BRANCH_EDGE (bb);
+	  f = FALLTHRU_EDGE (bb);
+	  b->probability = INTVAL (XEXP (note, 0));
+	  f->probability = REG_BR_PROB_BASE - b->probability;
+	  b->count = bb->count * b->probability / REG_BR_PROB_BASE;
+	  f->count = bb->count * f->probability / REG_BR_PROB_BASE;
+	}
       return;
     }
   /* If we don't see a jump insn, we don't know exactly why the block would
