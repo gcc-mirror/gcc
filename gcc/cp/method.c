@@ -328,6 +328,10 @@ use_thunk (tree thunk_fndecl, bool emit_p)
        There's no need to process this thunk again.  */
     return;
 
+  if (DECL_THUNK_P (function))
+    /* The target is itself a thunk, process it now.  */
+    use_thunk (function, emit_p);
+  
   /* Thunks are always addressable; they only appear in vtables.  */
   TREE_ADDRESSABLE (thunk_fndecl) = 1;
 
