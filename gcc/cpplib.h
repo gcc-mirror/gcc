@@ -726,7 +726,7 @@ extern int check_macro_name		PARAMS ((cpp_reader *, U_CHAR *, int));
 
 /* Last arg to output_line_command.  */
 enum file_change_code {same_file, enter_file, leave_file};
-extern void output_line_command		PARAMS ((cpp_reader *, int,
+extern void output_line_command		PARAMS ((cpp_reader *,
 						 enum file_change_code));
 
 /* From cpperror.c */

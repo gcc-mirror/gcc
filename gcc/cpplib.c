@@ -896,19 +896,15 @@ cpp_file_buffer (pfile)
 
 /*
  * write out a #line command, for instance, after an #include file.
- * If CONDITIONAL is nonzero, we can omit the #line if it would
- * appear to be a no-op, and we can output a few newlines instead
- * if we want to increase the line number by a small amount.
  * FILE_CHANGE says whether we are entering a file, leaving, or neither.
  */
 
 void
-output_line_command (pfile, conditional, file_change)
+output_line_command (pfile, file_change)
      cpp_reader *pfile;
-     int conditional;
      enum file_change_code file_change;
 {
-  long line, col;
+  long line;
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
   if (ip->fname == NULL)
@@ -918,9 +914,15 @@ output_line_command (pfile, conditional, file_change)
       || CPP_OPTIONS (pfile)->no_output)
     return;
 
-  cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
+  cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, NULL);
 
-  if (conditional)
+  /* If the current file has not changed, we omit the #line if it would
+     appear to be a no-op, and we output a few newlines instead
+     if we want to increase the line number by a small amount.
+     We cannot do this if pfile->lineno is zero, because that means we
+     haven't output any line commands yet.  (The very first line command
+     output is a `same_file' command.)  */
+  if (file_change == same_file && pfile->lineno != 0)
     {
       if (line == pfile->lineno)
 	return;
@@ -1232,7 +1234,7 @@ do_include (pfile, keyword)
 
   if (finclude (pfile, fd, ihash))
     {
-      output_line_command (pfile, 0, enter_file);
+      output_line_command (pfile, enter_file);
       pfile->only_seen_white = 2;
     }
 
@@ -1357,7 +1359,7 @@ do_line (pfile, keyword)
      we must store a line number now that is one less.  */
   ip->lineno = new_lineno - 1;
   CPP_SET_WRITTEN (pfile, old_written);
-  output_line_command (pfile, 0, file_change);
+  output_line_command (pfile, file_change);
   return 0;
 
  bad_line_directive:
@@ -1647,7 +1649,7 @@ do_elif (pfile, keyword)
       skip_if_group (pfile);
     else {
       ++pfile->if_stack->if_succeeded;	/* continue processing input */
-      output_line_command (pfile, 1, same_file);
+      output_line_command (pfile, same_file);
     }
   }
   return 0;
@@ -1786,7 +1788,7 @@ conditional_skip (pfile, skip, type, control_macro)
     return;
   } else {
     ++pfile->if_stack->if_succeeded;
-    output_line_command (pfile, 1, same_file);
+    output_line_command (pfile, same_file);
   }
 }
 
@@ -1881,7 +1883,7 @@ skip_if_group (pfile)
     {
       CPP_PUTS (pfile, "#failed\n", 8);
       pfile->lineno++;
-      output_line_command (pfile, 1, same_file);
+      output_line_command (pfile, same_file);
     }
 
   old_written = CPP_WRITTEN (pfile);
@@ -1986,7 +1988,7 @@ do_else (pfile, keyword)
     skip_if_group (pfile);
   else {
     ++pfile->if_stack->if_succeeded;	/* continue processing input */
-    output_line_command (pfile, 1, same_file);
+    output_line_command (pfile, same_file);
   }
   return 0;
 }
@@ -2041,7 +2043,7 @@ do_endif (pfile, keyword)
 	    }
         }
       free (temp);
-      output_line_command (pfile, 1, same_file);
+      output_line_command (pfile, same_file);
     }
   return 0;
 }
@@ -2101,7 +2103,7 @@ cpp_get_token (pfile)
 	      cpp_buffer *cur_buffer = CPP_BUFFER (pfile);
 	      CPP_BUFFER (pfile) = next_buf;
 	      pfile->input_stack_listing_current = 0;
-	      output_line_command (pfile, 0, leave_file);
+	      output_line_command (pfile, leave_file);
 	      CPP_BUFFER (pfile) = cur_buffer;
 	    }
 	  return CPP_POP;
@@ -2157,7 +2159,7 @@ cpp_get_token (pfile)
 	      /* OK, now bring us back to the state we were in before we entered
 		 this branch.  We need #line because the newline for the pragma
 		 could mess things up.  */
-	      output_line_command (pfile, 0, same_file);
+	      output_line_command (pfile, same_file);
 	      *(obp++) = ' ';	/* just in case, if comments are copied thru */
 	      *(obp++) = '/';
 	    }
@@ -2527,9 +2529,12 @@ cpp_get_token (pfile)
 	  if (pfile->only_seen_white == 0)
 	    pfile->only_seen_white = 1;
 	  CPP_BUMP_LINE (pfile);
-	  pfile->lineno++;
-	  if (CPP_BUFFER (pfile)->lineno != pfile->lineno)
-	    output_line_command (pfile, 1, same_file);
+	  if (! CPP_OPTIONS (pfile)->no_line_commands)
+	    {
+	      pfile->lineno++;
+	      if (CPP_BUFFER (pfile)->lineno != pfile->lineno)
+		output_line_command (pfile, same_file);
+	    }
 	  return CPP_VSPACE;
 
 	case '(': token = CPP_LPAREN;    goto char1;
