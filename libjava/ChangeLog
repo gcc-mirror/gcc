@@ -1,3 +1,7 @@
+2000-01-19  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* NEWS: updated.
+
 2000-01-19  Tom Tromey  <tromey@cygnus.com>
 
 	* interpret.cc (PC_REGISTER_ASM): Removed.
