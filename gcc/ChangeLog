@@ -1,3 +1,8 @@
+Mon Mar 29 20:52:47 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (maybe_eliminate_biv): For libcalls that set a giv, skip to
+	end of libcall.
+
 Mon Mar 29 20:35:49 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (mulsi3): Tag an extra REG_EQUAL note to the middle insn.

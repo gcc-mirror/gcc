@@ -8121,6 +8121,26 @@ maybe_eliminate_biv (bl, loop_start, end, eliminate_p, threshold, insn_count)
       enum rtx_code code = GET_CODE (p);
       rtx where = threshold >= insn_count ? loop_start : p;
 
+      /* If this is a libcall that sets a giv, skip ahead to its end.  */
+      if (GET_RTX_CLASS (code) == 'i')
+	{
+	  rtx note = find_reg_note (p, REG_LIBCALL, NULL_RTX);
+
+	  if (note)
+	    {
+	      rtx last = XEXP (note, 0);
+	      rtx set = single_set (last);
+
+	      if (set && GET_CODE (SET_DEST (set)) == REG)
+		{
+		  int regno = REGNO (SET_DEST (set));
+
+		  if (REG_IV_TYPE (regno) == GENERAL_INDUCT
+		      && REG_IV_INFO (regno)->src_reg == bl->biv->src_reg)
+		    p = last;
+		}
+	    }
+	}
       if ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
 	  && reg_mentioned_p (reg, PATTERN (p))
 	  && ! maybe_eliminate_biv_1 (PATTERN (p), p, bl, eliminate_p, where))
