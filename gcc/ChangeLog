@@ -1,3 +1,8 @@
+Mon Jul  6 09:25:06 1998  Dave Love  <d.love@dl.ac.uk>
+
+	* libgcc2.c (__eprintf): Make args consistent with prototype in
+	assert.h.
+
 Mon Jul  6 00:28:43 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* cse.c (cse_insn): When SETting (MEM (ADDRESSOF (X))) to Y,
