@@ -229,17 +229,17 @@ complete_type_p (expr)
 
    TYPE is the type we want this path to have on exit.
 
-   ALIAS_THIS is non-zero if EXPR in an expression involving `this'.  */
+   NONNULL is non-zero if  we know (for any reason) that EXPR is
+   not, in fact, zero.  */
 
 tree
-build_vbase_path (code, type, expr, path, alias_this)
+build_vbase_path (code, type, expr, path, nonnull)
      enum tree_code code;
      tree type, expr, path;
-     int alias_this;
+     int nonnull;
 {
   register int changed = 0;
   tree last = NULL_TREE, last_virtual = NULL_TREE;
-  int nonnull = 0;
   int fixed_type_p;
   tree null_expr = 0, nonnull_expr;
   tree basetype;
@@ -248,20 +248,16 @@ build_vbase_path (code, type, expr, path, alias_this)
   if (BINFO_INHERITANCE_CHAIN (path) == NULL_TREE)
     return build1 (NOP_EXPR, type, expr);
 
-  if (nonnull == 0 && (alias_this && flag_this_is_variable <= 0))
-    nonnull = 1;
+  /* If -fthis-is-variable, we might have set nonnull incorrectly.  We
+     don't care enough to get this right, so just clear it.  */
+  if (flag_this_is_variable > 0)
+    nonnull = 0;
 
-#if 0
-  /* We need additional logic to convert back to the unconverted type
-     (the static type of the complete object), and then convert back
-     to the type we want.  Until that is done, or until we can
-     recognize when that is, we cannot do the short cut logic. (mrs) */
+  /* We could do better if we had additional logic to convert back to the
+     unconverted type (the static type of the complete object), and then
+     convert back to the type we want.  Until that is done, we only optimize
+     if the complete type is the same type as expr has.  */
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
-#else
-  /* Do this, until we can undo any previous conversions.  See net35.C
-     for a testcase.  */
-  fixed_type_p = complete_type_p (expr);
-#endif
 
   if (!fixed_type_p && TREE_SIDE_EFFECTS (expr))
     expr = save_expr (expr);
@@ -382,12 +378,7 @@ build_vbase_path (code, type, expr, path, alias_this)
       expr = build1 (NOP_EXPR, type, expr);
 #endif
 
-      /* For multiple inheritance: if `this' can be set by any
-	 function, then it could be 0 on entry to any function.
-	 Preserve such zeroness here.  Otherwise, only in the
-	 case of constructors need we worry, and in those cases,
-	 it will be zero, or initialized to some valid value to
-	 which we may add.  */
+      /* If expr might be 0, we need to preserve that zeroness.  */
       if (nonnull == 0)
 	{
 	  if (null_expr)
@@ -4485,15 +4476,15 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
   return t;
 }
 
-/* Return non-zero if the effective type of INSTANCE is static.
+/* Return the dynamic type of INSTANCE, if known.
    Used to determine whether the virtual function table is needed
    or not.
 
    *NONNULL is set iff INSTANCE can be known to be nonnull, regardless
    of our knowledge of its type.  */
 
-int
-resolves_to_fixed_type_p (instance, nonnull)
+tree
+fixed_type_or_null (instance, nonnull)
      tree instance;
      int *nonnull;
 {
@@ -4511,9 +4502,9 @@ resolves_to_fixed_type_p (instance, nonnull)
 	{
 	  if (nonnull)
 	    *nonnull = 1;
-	  return 1;
+	  return TREE_TYPE (instance);
 	}
-      return 0;
+      return NULL_TREE;
 
     case SAVE_EXPR:
       /* This is a call to a constructor, hence it's never zero.  */
@@ -4521,33 +4512,33 @@ resolves_to_fixed_type_p (instance, nonnull)
 	{
 	  if (nonnull)
 	    *nonnull = 1;
-	  return 1;
+	  return TREE_TYPE (instance);
 	}
-      return resolves_to_fixed_type_p (TREE_OPERAND (instance, 0), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
 
     case RTL_EXPR:
-      return 0;
+      return NULL_TREE;
 
     case PLUS_EXPR:
     case MINUS_EXPR:
       if (TREE_CODE (TREE_OPERAND (instance, 1)) == INTEGER_CST)
 	/* Propagate nonnull.  */
-	resolves_to_fixed_type_p (TREE_OPERAND (instance, 0), nonnull);
+	fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
       if (TREE_CODE (TREE_OPERAND (instance, 0)) == ADDR_EXPR)
-	return resolves_to_fixed_type_p (TREE_OPERAND (instance, 0), nonnull);
-      return 0;
+	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
+      return NULL_TREE;
 
     case NOP_EXPR:
     case CONVERT_EXPR:
-      return resolves_to_fixed_type_p (TREE_OPERAND (instance, 0), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
 
     case ADDR_EXPR:
       if (nonnull)
 	*nonnull = 1;
-      return resolves_to_fixed_type_p (TREE_OPERAND (instance, 0), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
 
     case COMPONENT_REF:
-      return resolves_to_fixed_type_p (TREE_OPERAND (instance, 1), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 1), nonnull);
 
     case VAR_DECL:
     case FIELD_DECL:
@@ -4556,7 +4547,7 @@ resolves_to_fixed_type_p (instance, nonnull)
 	{
 	  if (nonnull)
 	    *nonnull = 1;
-	  return 1;
+	  return TREE_TYPE (TREE_TYPE (instance));
 	}
       /* fall through...  */
     case TARGET_EXPR:
@@ -4565,29 +4556,56 @@ resolves_to_fixed_type_p (instance, nonnull)
 	{
 	  if (nonnull)
 	    *nonnull = 1;
-	  return 1;
+	  return TREE_TYPE (instance);
 	}
       else if (nonnull)
 	{
 	  if (instance == current_class_ptr
 	      && flag_this_is_variable <= 0)
 	    {
-	      /* Some people still use `this = 0' inside destructors.  */
-	      *nonnull = ! DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (current_function_decl));
-	      /* In a constructor, we know our type.  */
+	      /* Normally, 'this' must be non-null.  */
+	      if (flag_this_is_variable == 0)
+		*nonnull = 1;
+
+	      /* <0 means we're in a constructor and we know our type.  */
 	      if (flag_this_is_variable < 0)
-		return 1;
+		return TREE_TYPE (TREE_TYPE (instance));
 	    }
 	  else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
 	    /* Reference variables should be references to objects.  */
 	    *nonnull = 1;
 	}
-      return 0;
+      return NULL_TREE;
 
     default:
-      return 0;
+      return NULL_TREE;
     }
 }
+
+/* Return non-zero if the dynamic type of INSTANCE is known, and equivalent
+   to the static type.  We also handle the case where INSTANCE is really
+   a pointer.
+
+   Used to determine whether the virtual function table is needed
+   or not.
+
+   *NONNULL is set iff INSTANCE can be known to be nonnull, regardless
+   of our knowledge of its type.  */
+
+int
+resolves_to_fixed_type_p (instance, nonnull)
+     tree instance;
+     int *nonnull;
+{
+  tree t = TREE_TYPE (instance);
+  tree fixed = fixed_type_or_null (instance, nonnull);
+  if (fixed == NULL_TREE)
+    return 0;
+  if (POINTER_TYPE_P (t))
+    t = TREE_TYPE (t);
+  return comptypes (TYPE_MAIN_VARIANT (t), TYPE_MAIN_VARIANT (fixed), 1);
+}
+
 
 void
 init_class_processing ()

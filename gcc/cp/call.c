@@ -3291,6 +3291,7 @@ build_over_call (cand, args, flags)
     {
       tree parmtype = TREE_VALUE (parm);
       tree argtype = TREE_TYPE (TREE_VALUE (arg));
+      tree t;
       if (ICS_BAD_FLAG (TREE_VEC_ELT (convs, i)))
 	{
 	  int dv = (TYPE_VOLATILE (TREE_TYPE (parmtype))
@@ -3303,9 +3304,18 @@ build_over_call (cand, args, flags)
 	  cp_pedwarn ("passing `%T' as `this' argument of `%#D' discards %s",
 		      TREE_TYPE (argtype), fn, p);
 	}
-      converted_args = expr_tree_cons
-	(NULL_TREE, convert_force (TREE_VALUE (parm), TREE_VALUE (arg), CONV_C_CAST),
-	 converted_args);
+      /* [class.mfct.nonstatic]: If a nonstatic member function of a class
+	 X is called for an object that is not of type X, or of a type
+	 derived from X, the behavior is undefined.
+
+         So we can assume that anything passed as 'this' is non-null, and
+	 optimize accordingly.  */
+      if (TREE_CODE (parmtype) == POINTER_TYPE)
+	t = convert_pointer_to_real (TREE_TYPE (parmtype), TREE_VALUE (arg));
+      else
+	/* This happens with signatures.  */
+	t = convert_force (parmtype, TREE_VALUE (arg), CONV_C_CAST);
+      converted_args = expr_tree_cons (NULL_TREE, t, converted_args);
       parm = TREE_CHAIN (parm);
       arg = TREE_CHAIN (arg);
       ++i;
