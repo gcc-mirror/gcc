@@ -4420,8 +4420,8 @@ move\\t%0,%z4\\n\\
       && !register_operand (operands[0], DImode)
       && !register_operand (operands[1], DImode)
       && (TARGET_MIPS16
-	  || (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
-	      && operands[1] != CONST0_RTX (DImode)))
+	  || ((GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
+	       && operands[1] != CONST0_RTX (DImode))))
     {
       rtx temp = force_reg (DImode, operands[1]);
       emit_move_insn (operands[0], temp);
@@ -5500,8 +5500,8 @@ move\\t%0,%z4\\n\\
       && !register_operand (operands[0], SFmode)
       && !register_operand (operands[1], SFmode)
       && (TARGET_MIPS16
-	  || (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
-	      && operands[1] != CONST0_RTX (SFmode)))
+	  || ((GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
+	       && operands[1] != CONST0_RTX (SFmode))))
     {
       rtx temp = force_reg (SFmode, operands[1]);
       emit_move_insn (operands[0], temp);
@@ -5560,8 +5560,8 @@ move\\t%0,%z4\\n\\
       && !register_operand (operands[0], DFmode)
       && !register_operand (operands[1], DFmode)
       && (TARGET_MIPS16
-	  || (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
-	      && operands[1] != CONST0_RTX (DFmode)))
+	  || ((GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
+	       && operands[1] != CONST0_RTX (DFmode))))
     {
       rtx temp = force_reg (DFmode, operands[1]);
       emit_move_insn (operands[0], temp);
@@ -7140,6 +7140,8 @@ move\\t%0,%z4\\n\\
 	case LEU: return \"%*beq%?\\t%z1,%.,%2\";
 	case GEU: return \"%*j\\t%2\";
 	case LTU: return \"%*bne%?\\t%.,%.,%2\";
+	default:
+	  break;
 	}
 
       return \"%*b%C0z%?\\t%z1,%2\";
@@ -7154,6 +7156,8 @@ move\\t%0,%z4\\n\\
 	case LEU: return \"%*bne%?\\t%z1,%.,%3\";
 	case GEU: return \"%*beq%?\\t%.,%.,%3\";
 	case LTU: return \"%*j\\t%3\";
+	default:
+	  break;
 	}
 
       return \"%*b%N0z%?\\t%z1,%3\";
@@ -7214,6 +7218,8 @@ move\\t%0,%z4\\n\\
 	case LEU: return \"%*beq%?\\t%z1,%.,%2\";
 	case GEU: return \"%*j\\t%2\";
 	case LTU: return \"%*bne%?\\t%.,%.,%2\";
+	default:
+	  break;
 	}
 
       return \"%*b%C0z%?\\t%z1,%2\";
@@ -7228,6 +7234,8 @@ move\\t%0,%z4\\n\\
 	case LEU: return \"%*bne%?\\t%z1,%.,%3\";
 	case GEU: return \"%*beq%?\\t%.,%.,%3\";
 	case LTU: return \"%*j\\t%3\";
+	default:
+	  break;
 	}
 
       return \"%*b%N0z%?\\t%z1,%3\";

@@ -1,3 +1,24 @@
+Thu Mar  5 09:55:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * mips/iris6.h (TARGET_DEFAULT): Parenthesize macro definition.
+	 
+        * mips/mips.c: Include stdlib.h and unistd.h.
+        (mips_asm_file_end): Add braces around empty body in an if-statement.
+        (function_prologue): Wrap variable `fnname' in
+        !FUNCTION_NAME_ALREADY_DECLARED.  Correct format specifier in fprintf.
+        (mips_select_rtx_section, mips_select_section): Declare as void.
+	 
+        * mips/mips.h: Add prototypes for extern functions in mips.c.
+        (FUNCTION_ARG_REGNO_P): Add parentheses around && within ||.
+        (ENCODE_SECTION_INFO): Add braces around empty body in an
+        if-statement.
+	 
+        * mips/mips.md (movdi): Add parentheses around && within ||.
+        (movsf, movdf): Likewise.
+        (branch_zero, branch_zero_di): Add default case in
+	enumeration switch.
+	
+
 Thu Mar  5 02:45:48 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/alpha.h (TARGET_WINDOWS_NT, TARGET_OPEN_VMS): Just make them

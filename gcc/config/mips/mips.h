@@ -164,6 +164,7 @@ extern int		arith32_operand ();
 extern int		arith_operand ();
 extern int		cmp_op ();
 extern long		compute_frame_size ();
+extern int		const_float_1_operand ();
 extern void		expand_block_move ();
 extern int		equality_op ();
 extern void		final_prescan_insn ();
@@ -181,6 +182,7 @@ extern int		large_int ();
 extern int		mips_address_cost ();
 extern void		mips_asm_file_end ();
 extern void		mips_asm_file_start ();
+extern int		mips_can_use_return_insn ();
 extern int		mips_const_double_ok ();
 extern void		mips_count_memory_refs ();
 extern int		mips_debugger_offset ();
@@ -215,19 +217,23 @@ extern void		mips_order_regs_for_local_alloc ();
 extern struct rtx_def *	mips16_gp_pseudo_reg ();
 extern struct rtx_def * mips16_gp_offset ();
 extern int		mips16_gp_offset_p ();
+extern int		mips16_constant ();
 extern int		mips16_constant_after_function_p ();
 extern int		build_mips16_call_stub ();
 
 /* Recognition functions that return if a condition is true.  */
 extern int		address_operand ();
+extern int		call_insn_operand ();
 extern int		const_double_operand ();
 extern int		const_int_operand ();
+extern int		consttable_operand ();
 extern int		general_operand ();
 extern int		immediate_operand ();
 extern int		memory_address_p ();
 extern int		memory_operand ();
 extern int		nonimmediate_operand ();
 extern int		nonmemory_operand ();
+extern int		pic_address_needs_scratch ();
 extern int		register_operand ();
 extern int		scratch_operand ();
 extern int		move_operand ();
@@ -263,6 +269,8 @@ extern void		rdata_section ();
 extern void		readonly_data_section ();
 extern void		sdata_section ();
 extern void		text_section ();
+extern void		mips_select_rtx_section ();
+extern void		mips_select_section ();
 
 /* Stubs for half-pic support if not OSF/1 reference platform.  */
 
@@ -2321,10 +2329,10 @@ extern struct mips_frame_info current_frame_info;
 
 #define FUNCTION_ARG_REGNO_P(N)					\
   (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST)			\
-   || (! TARGET_SOFT_FLOAT					\
+   || ((! TARGET_SOFT_FLOAT					\
        && ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST)		\
        && (TARGET_FLOAT64 || (0 == (N) % 2)))			\
-   && ! fixed_regs[N])
+       && ! fixed_regs[N]))
 
 /* A C expression which can inhibit the returning of certain function
    values in registers, based on the type of value.  A nonzero value says
@@ -3040,7 +3048,9 @@ do									\
       }									\
 									\
     else if (HALF_PIC_P ())						\
-      HALF_PIC_ENCODE (DECL);						\
+      {									\
+        HALF_PIC_ENCODE (DECL);						\
+      }									\
   }									\
 while (0)
 
