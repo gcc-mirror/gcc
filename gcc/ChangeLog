@@ -1,3 +1,11 @@
+2002-10-21  Matthias Klose  <doko@debian.org>
+
+	* Backport, without whitespace change:
+	2002-06-19 Akim Demaille  <akim@epita.fr>
+	* c-parse.in (initelt: identifier ':' initval): Add an empty
+	action to fix a type clash.
+	(aliasdecl, classdef): Add the missing closing `;'.
+
 Sat Oct 19 15:49:14 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* mmintrin.h (__m64): typedef it to v2si.

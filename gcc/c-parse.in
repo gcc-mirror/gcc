@@ -1527,6 +1527,7 @@ initelt:
 		  if (pedantic)
 		    pedwarn ("obsolete use of designated initializer with `:'"); }
 	  initval
+		{}
 	| initval
 	;
 
@@ -2700,12 +2701,14 @@ classdecl:
 		{
 		  objc_declare_class ($2);
 		}
+	;
 
 aliasdecl:
 	  ALIAS identifier identifier ';'
 		{
 		  objc_declare_alias ($2, $3);
 		}
+	;
 
 classdef:
 	  INTERFACE identifier protocolrefs '{'
