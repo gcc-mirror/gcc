@@ -4235,9 +4235,13 @@ case "$target" in
 	echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
 	echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
 	gcc_cv_as_flags64="-xarch=v9"
-	if ! $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+	if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+		:
+	else	      
 		gcc_cv_as_flags64="-64"
-		if ! $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+			:
+		else	      
 			gcc_cv_as_flags64=""
 		fi
 	fi
