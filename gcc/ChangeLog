@@ -1,3 +1,8 @@
+2001-04-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* dwarfout.c (is_pseudo_reg, type_main_variant, is_tagged_type,
+	is_redundant_typedef): Use static inline instead of inline static.
+
 Wed Apr 25 18:21:01 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h: Move W32API search to LINK_SPEC to ensure that
