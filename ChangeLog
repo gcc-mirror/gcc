@@ -1,3 +1,9 @@
+2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure:  For in-source builds, make a subdir and re-exec there.
+	* Makefile:  New file.  Pass targets through to build directory.
+	* .cvsignore:  No longer ignore "Makefile".
+
 2002-06-16  Douglas Rupp  <rupp@gnat.com>
 
 	* MAINTAINERS (Write After Approval): Add self.
