@@ -1,3 +1,8 @@
+1999-09-21  Nick Clifton  <nickc@cygnus.com>
+
+	* special/special.exp: Add FR30 to list of targets for which -fpic
+	is inappropriate.
+
 1999-09-08  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* noncompile/noncompile.exp: Add poison-1.c.
