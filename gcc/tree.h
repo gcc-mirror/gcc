@@ -1194,7 +1194,7 @@ extern tree array_type_nelts		PROTO((tree));
 extern tree value_member		PROTO((tree, tree));
 extern tree purpose_member		PROTO((tree, tree));
 extern tree binfo_member		PROTO((tree, tree));
-extern int attribute_in_list		PROTO((tree, tree));
+extern int attribute_hash_list		PROTO((tree));
 extern int attribute_list_equal		PROTO((tree, tree));
 extern int attribute_list_contained	PROTO((tree, tree));
 extern int tree_int_cst_equal		PROTO((tree, tree));
@@ -1216,6 +1216,20 @@ extern tree make_tree ();
 
 extern tree build_type_attribute_variant PROTO((tree, tree));
 extern tree build_decl_attribute_variant PROTO((tree, tree));
+
+/* Return 1 if an attribute and its arguments are valid for a decl or type.  */
+
+int valid_machine_attribute		PROTO((tree, tree, tree, tree));
+
+/* Given a tree node and a string, return non-zero if the tree node is
+   a valid attribute name for the string.  */
+
+int is_attribute_p			PROTO((char *, tree));
+
+/* Given an attribute name and a list of attributes, return the list element
+   of the attribute or NULL_TREE if not found.  */
+
+tree lookup_attribute			PROTO((char *, tree));
 
 /* Given a type node TYPE, and CONSTP and VOLATILEP, return a type
    for the same kind of data as TYPE describes.
