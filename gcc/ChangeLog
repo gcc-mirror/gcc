@@ -1,3 +1,7 @@
+2003-05-15  Roger Sayle  <roger@eyesopen.com>
+
+	* config/alpha/alpha.h (ASM_OUTPUT_SKIP): Fix typo.
+
 2003-05-15  Eric Christopher  <echristo@redhat.com>
 
 	* cfgcleanup.c (merge_blocks): Fix return value.
