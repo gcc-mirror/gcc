@@ -43,9 +43,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.StringTokenizer;
-
 
 /*
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -119,6 +118,9 @@ import java.util.StringTokenizer;
   */
 public final class URL implements Serializable
 {
+  private static final String DEFAULT_SEARCH_PATH =
+    "gnu.java.net.protocol|sun.net.www.protocol";
+  
   /**
    * The name of the protocol for this URL.
    * The protocol is always stored in lower case.
@@ -174,7 +176,7 @@ public final class URL implements Serializable
    * This a table where we cache protocol handlers to avoid the overhead
    * of looking them up each time.
    */
-  private static Hashtable ph_cache = new Hashtable();
+  private static HashMap ph_cache = new HashMap();
 
   /**
    * Whether or not to cache protocol handlers.
@@ -798,12 +800,16 @@ public final class URL implements Serializable
 	// to it, along with the JDK specified default as a last resort.
 	// Except in very unusual environments the JDK specified one shouldn't
 	// ever be needed (or available).
-	String propVal = System.getProperty("java.protocol.handler.pkgs");
-	propVal = (propVal == null) ? "" : (propVal + "|");
-	propVal = propVal + "gnu.gcj.protocol|sun.net.www.protocol";
+	String ph_search_path = System.getProperty ("java.protocol.handler.pkgs");
+
+	// Tack our default package on at the ends.
+	if (ph_search_path != null)
+          ph_search_path += "|" + DEFAULT_SEARCH_PATH;
+	else
+          ph_search_path = DEFAULT_SEARCH_PATH;
 
 	// Finally loop through our search path looking for a match.
-	StringTokenizer pkgPrefix = new StringTokenizer (propVal, "|");
+	StringTokenizer pkgPrefix = new StringTokenizer (ph_search_path, "|");
         
 	do
           {

@@ -1,5 +1,13 @@
 2003-10-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URL.java
+	(DEFAULT_SEARCH_PATH): New static variable.
+	(ph_cache): Made it a HashMap.
+	(getURLStreamHandler): Rename propVal to ph_search_path and use
+	DEFAULT_SEARCH_PATH.
+
+2003-10-02  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/table/AbstractTableModel.java
 	(findColumnName): Prevent from NullPointerException if argument
 	columnName is null.
