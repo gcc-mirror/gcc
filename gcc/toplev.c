@@ -2339,7 +2339,10 @@ rest_of_compilation (decl)
 			  If we can't make it inline, pretend
 			  it was only declared.  */
 		       if (DECL_EXTERNAL (decl))
-			 goto exit_rest_of_compilation;
+			 {
+			   DECL_INITIAL (decl) = 0;
+			   goto exit_rest_of_compilation;
+			 }
 		     }
 		   else
 		     DECL_INLINE (decl) = 1;
