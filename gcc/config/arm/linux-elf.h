@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 	" %{mapcs-26:-m armelf_linux26} %{!mapcs-26:-m armelf_linux} -p"
 # endif
 # define SUBTARGET_EXTRA_ASM_SPEC	\
-	" %{mapcs-26:-mapcs-26} %(!mapcs-26:-mapcs-32}"
+	" %{mapcs-26:-mapcs-26} %{!mapcs-26:-mapcs-32}"
 # define MULTILIB_DEFAULTS \
 	{ "mlittle-endian", "mhard-float", "mapcs-32", "mno-thumb-interwork" }
 # define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
 	" %{mapcs-32:-m armelf_linux} %{!mapcs-32:-m armelf_linux26} -p"
 # endif
 # define SUBTARGET_EXTRA_ASM_SPEC	\
-	" %{mapcs-32:-mapcs-32} %(!mapcs-32:-mapcs-26}"
+	" %{mapcs-32:-mapcs-32} %{!mapcs-32:-mapcs-26}"
 # define MULTILIB_DEFAULTS \
 	{ "mlittle-endian", "mhard-float", "mapcs-26", "mno-thumb-interwork" }
 #endif
