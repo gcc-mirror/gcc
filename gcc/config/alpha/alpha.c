@@ -1400,6 +1400,14 @@ alpha_emit_set_const_1 (target, mode, c, n)
 				 target, 0, OPTAB_WIDEN);
     }
 
+  /* Next, see if, minus some low bits, we've an easy load of high bits.  */
+
+  new = ((c & 0xffff) ^ 0x8000) - 0x8000;
+  if (new != 0
+      && (temp = alpha_emit_set_const (subtarget, mode, c - new, n - 1)) != 0)
+    return expand_binop (mode, add_optab, temp, GEN_INT (new),
+			 target, 0, OPTAB_WIDEN);
+
   return 0;
 }
 
