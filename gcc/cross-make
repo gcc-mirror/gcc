@@ -9,6 +9,3 @@ SYSTEM_HEADER_DIR = $(CROSS_SYSTEM_HEADER_DIR)
 
 # Don't try to compile the things we can't compile.
 ALL = all.cross
-
-# Don't install assert.h in /usr/local/include.
-assertdir = $(tooldir)/include

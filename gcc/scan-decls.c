@@ -187,8 +187,12 @@ scan_decls (pfile, argc, argv)
 		  skip_to_closing_brace (pfile);
 		  goto new_statement;
 		}
-	      if (token.type == CPP_SEMICOLON)
-		goto new_statement;
+
+	      /* skip a possible __attribute__ or throw expression after the
+		 parameter list */
+	      while (token.type != CPP_SEMICOLON && token.type != CPP_EOF)
+		cpp_get_token (pfile, &token);
+	      goto new_statement;
 	    }
 	  break;
 	case CPP_NAME:

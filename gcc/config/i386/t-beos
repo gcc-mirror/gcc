@@ -6,6 +6,3 @@ CROSS_LIBGCC1 =
 # we are most likely to want to apply any fixes to.
 SYSTEM_HEADER_DIR = /boot/develop/headers/posix
 CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include/posix
-
-# Use the system assert.h
-INSTALL_ASSERT_H =

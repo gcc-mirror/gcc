@@ -107,7 +107,6 @@ GCC_3.0 {
 
   # ??? Symbols that perhaps unused should be nuked.
   __clear_cache
-  __eprintf
   __gcc_bcmp
 
   # EH symbols

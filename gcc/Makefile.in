@@ -172,10 +172,6 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/stdbool.h $(srcdir)/ginclude/iso646.h \
     $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
 
-# Target to use whe installing assert.h.  Some systems may
-# want to set this empty.
-INSTALL_ASSERT_H = install-assert-h
-
 # The GCC to use for compiling libgcc.a, enquire, and libgcc1-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
@@ -320,9 +316,6 @@ build_tooldir = $(exec_prefix)/$(target_alias)
 gcc_gxx_include_dir = @gcc_gxx_include_dir@
 # Directory to search for site-specific includes.
 includedir = $(local_prefix)/include
-# assertdir is overridden in cross-make.
-# (But this currently agrees with what is in cross-make.)
-assertdir = $(gcc_tooldir)/include
 # where the info files go
 infodir = @infodir@
 # Where cpp should go besides $prefix/bin if necessary
@@ -2130,8 +2123,8 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	rm -rf include; mkdir include
 	-chmod a+rx include
 	(TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); pwd`; \
-	INSTALL_ASSERT_H='$(INSTALL_ASSERT_H)'; SHELL='$(SHELL)' ;\
-	export TARGET_MACHINE srcdir INSTALL_ASSERT_H SHELL ; \
+	SHELL='$(SHELL)' ;\
+	export TARGET_MACHINE srcdir SHELL ; \
 	$(SHELL) ./fixinc.sh `pwd`/include $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); \
 	rm -f include/syslimits.h; \
 	if [ -f include/limits.h ]; then \
@@ -2510,7 +2503,6 @@ installdirs:
 	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; chmod a+rx $(bindir) ; fi
 	-if [ -d $(includedir) ] ; then true ; else mkdir $(includedir) ; chmod a+rx $(includedir) ; fi
 	-if [ -d $(gcc_tooldir) ] ; then true ; else mkdir $(gcc_tooldir) ; chmod a+rx $(gcc_tooldir) ; fi
-	-if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; chmod a+rx $(assertdir) ; fi
 	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; chmod a+rx $(infodir) ; fi
 	-if [ -d $(slibdir) ] ; then true ; else mkdir $(slibdir) ; chmod a+rx $(slibdir) ; fi
 # We don't use mkdir -p to create the parents of man1dir,
@@ -2694,7 +2686,7 @@ install-multilib: stmp-multilib installdirs
 	  -f libgcc.mk install
 
 # Install all the header files built in the include subdirectory.
-install-headers: $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)
+install-headers: $(INSTALL_HEADERS_DIR)
 # Fix symlinks to absolute paths in the installed include directory to
 # point to the installed directory, not the build directory.
 # Don't need to use LN_S here since we really do need ln -s and no substitutes.
@@ -2733,29 +2725,6 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # See discussion about the use of `pwd` above
 	cd `pwd`/include ; \
 	find . -print | cpio -pdum $(libsubdir)/include
-
-# Put assert.h where it won't override GNU libc's assert.h.
-# It goes in a dir that is searched after GNU libc's headers;
-# thus, the following conditionals are no longer needed.
-# But it's not worth deleting them now.
-## Don't replace the assert.h already there if it is not from GCC.
-## This code would be simpler if it tested for -f ... && ! grep ...
-## but supposedly the ! operator is missing in sh on some systems.
-install-assert-h: assert.h installdirs
-	if [ -f $(assertdir)/assert.h ]; \
-	then \
-	  if grep "__eprintf" $(assertdir)/assert.h >/dev/null; \
-	    then \
-	    rm -f $(assertdir)/assert.h; \
-	    $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
-	    chmod a-x $(assertdir)/assert.h; \
-	  else true; \
-	  fi; \
-	else \
-	  rm -f $(assertdir)/assert.h; \
-	  $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
-	  chmod a-x $(assertdir)/assert.h; \
-	fi
 
 # Use this target to install the program `collect2' under the name `collect2'.
 install-collect2: collect2 installdirs

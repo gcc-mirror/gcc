@@ -1238,24 +1238,6 @@ __gcc_bcmp (const unsigned char *s1, const unsigned char *s2, size_t size)
 }
 
 #endif
-
-#ifdef L_eprintf
-#ifndef inhibit_libc
-
-#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
-#include <stdio.h>
-/* This is used by the `assert' macro.  */
-void
-__eprintf (const char *string, const char *expression,
-	   unsigned int line, const char *filename)
-{
-  fprintf (stderr, string, expression, line, filename);
-  fflush (stderr);
-  abort ();
-}
-
-#endif
-#endif
 
 #ifdef L_bb
 
