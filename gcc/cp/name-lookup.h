@@ -180,15 +180,15 @@ struct cp_binding_level GTY(())
        VALUE the common ancestor with this binding_level's namespace.  */
     tree using_directives;
 
-    /* If this binding level is the binding level for a class, then
-       class_shadowed is a TREE_LIST.  The TREE_PURPOSE of each node
-       is the name of an entity bound in the class.  The TREE_TYPE is
-       the DECL bound by this name in the class.  */
+    /* For the binding level corresponding to a class, the entities
+       declared in the class or its base classes.  */
     VEC(cp_class_binding) *class_shadowed;
 
     /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
-       is used for all binding levels. In addition the TREE_VALUE is the
-       IDENTIFIER_TYPE_VALUE before we entered the class.  */
+       is used for all binding levels. The TREE_PURPOSE is the name of
+       the entity, the TREE_TYPE is the associated type.  In addition
+       the TREE_VALUE is the IDENTIFIER_TYPE_VALUE before we entered
+       the class.  */
     tree type_shadowed;
 
     /* A TREE_LIST.  Each TREE_VALUE is the LABEL_DECL for a local
