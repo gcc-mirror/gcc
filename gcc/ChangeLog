@@ -1,3 +1,8 @@
+2003-08-22  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/fp-bit.c: Specify config/ dir for include of fp-bit.h.
+	* config/rs6000/ppc64-fp.c: Likewise.
+
 2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgcleanup.c: Fix comment typos.
