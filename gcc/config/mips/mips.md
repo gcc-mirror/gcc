@@ -4871,6 +4871,7 @@ move\\t%0,%z4\\n\\
 
   /* Change the mode to BLKmode for aliasing purposes.  */
   operands[1] = adjust_address (operands[1], BLKmode, 0);
+  set_mem_size (operands[1], GEN_INT (INTVAL (operands[2]) / BITS_PER_UNIT));
 
   /* Otherwise, emit a l[wd]l/l[wd]r pair to load the value.  */
   if (INTVAL (operands[2]) == 64)
@@ -4919,6 +4920,7 @@ move\\t%0,%z4\\n\\
 
   /* Change the mode to BLKmode for aliasing purposes.  */
   operands[1] = adjust_address (operands[1], BLKmode, 0);
+  set_mem_size (operands[1], GEN_INT (INTVAL (operands[2]) / BITS_PER_UNIT));
 
   /* Otherwise, emit a lwl/lwr pair to load the value.  */
   if (INTVAL (operands[2]) == 64)
@@ -4967,6 +4969,7 @@ move\\t%0,%z4\\n\\
 
   /* Change the mode to BLKmode for aliasing purposes.  */
   operands[0] = adjust_address (operands[0], BLKmode, 0);
+  set_mem_size (operands[0], GEN_INT (INTVAL (operands[1]) / BITS_PER_UNIT));
 
   /* Otherwise, emit a s[wd]l/s[wd]r pair to load the value.  */
   if (INTVAL (operands[1]) == 64)
