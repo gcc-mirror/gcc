@@ -68,8 +68,8 @@ static void compute_antinout_edge  PROTO ((sbitmap *, sbitmap *,
 static void compute_earliest  PROTO((struct edge_list *, int, sbitmap *,
 				     sbitmap *, sbitmap *, sbitmap *,
 				     sbitmap *));
-static void compute_laterin  PROTO((struct edge_list *, int, sbitmap *,
-				     sbitmap *, sbitmap *, sbitmap *));
+static void compute_laterin  PROTO((struct edge_list *, sbitmap *,
+				    sbitmap *, sbitmap *, sbitmap *));
 static void compute_insert_delete  PROTO ((struct edge_list *edge_list,
 					   sbitmap *, sbitmap *, sbitmap *,
 					   sbitmap *, sbitmap *));
@@ -78,7 +78,7 @@ static void compute_insert_delete  PROTO ((struct edge_list *edge_list,
 static void compute_farthest	PROTO  ((struct edge_list *, int, sbitmap *,
 					 sbitmap *, sbitmap*, sbitmap *,
 					 sbitmap *));
-static void compute_nearerout	PROTO((struct edge_list *, int, sbitmap *,
+static void compute_nearerout	PROTO((struct edge_list *, sbitmap *,
 				       sbitmap *, sbitmap *, sbitmap *));
 static void compute_rev_insert_delete  PROTO ((struct edge_list *edge_list,
 					       sbitmap *, sbitmap *, sbitmap *,
@@ -98,70 +98,69 @@ compute_antinout_edge (antloc, transp, antin, antout)
      sbitmap *antin;
      sbitmap *antout;
 {
-  int i, changed, passes;
-  sbitmap old_changed, new_changed;
+  int bb;
   edge e;
+  basic_block *worklist, *tos;
 
-  sbitmap_vector_zero (antout, n_basic_blocks);
+  /* Allocate a worklist array/queue.  Entries are only added to the
+     list if they were not already on the list.  So the size is
+     bounded by the number of basic blocks.  */
+  tos = worklist = (basic_block *) xmalloc (sizeof (basic_block)
+					    * n_basic_blocks);
+
+  /* We want a maximal solution, so make an optimistic initialization of
+     ANTIN.  */
   sbitmap_vector_ones (antin, n_basic_blocks);
 
-  old_changed = sbitmap_alloc (n_basic_blocks);
-  new_changed = sbitmap_alloc (n_basic_blocks);
-  sbitmap_ones (old_changed);
-
-  passes = 0;
-  changed = 1;
-  while (changed)
+  /* Put the predecessors of the exit block on the worklist.  */
+  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
     {
-      changed = 0;
-      sbitmap_zero (new_changed);
+      *tos++ = e->src;
 
-      /* We scan the blocks in the reverse order to speed up
-	 the convergence.  */
-      for (i = n_basic_blocks - 1; i >= 0; i--)
-	{
-	  basic_block bb = BASIC_BLOCK (i);
-	  /* If none of the successors of this block have changed,
-	     then this block is not going to change.  */
-	  for (e = bb->succ ; e; e = e->succ_next)
-	    {
-	      if (e->dest == EXIT_BLOCK_PTR)
-		break;
-
-	      if (TEST_BIT (old_changed, e->dest->index)
-		  || TEST_BIT (new_changed, e->dest->index))
-		break;
-	    }
-
-	  if (!e)
-	    continue;
-
-          /* If an Exit blocks is the ONLY successor, its has a zero ANTIN, 
-	     which is the opposite of the default definition for an 
-	     intersection of succs definition.  */
-	  if (e->dest == EXIT_BLOCK_PTR && e->succ_next == NULL 
-	      && e->src->succ == e)
-	    sbitmap_zero (antout[bb->index]);
-	  else
-	    {
-	      sbitmap_intersection_of_succs (antout[bb->index],
-					     antin, 
-					     bb->index);
-	    }
-
- 	  if (sbitmap_a_or_b_and_c (antin[bb->index], antloc[bb->index],
-				    transp[bb->index], antout[bb->index]))
-	    {
-	      changed = 1;
-	      SET_BIT (new_changed, bb->index);
-	    }
-	}
-      sbitmap_copy (old_changed, new_changed);
-      passes++;
+      /* We use the block's aux field to track blocks which are in
+	 the worklist; we also use it to quickly determine which blocks
+	 are predecessors of the EXIT block.  */
+      e->src->aux = EXIT_BLOCK_PTR;
     }
 
-  free (old_changed);
-  free (new_changed);
+  /* Iterate until the worklist is empty.  */
+  while (tos != worklist)
+    {
+      /* Take the first entry off the worklist.  */
+      basic_block b = *--tos;
+      bb = b->index;
+
+      if (b->aux == EXIT_BLOCK_PTR)
+	{
+	  /* Do not clear the aux field for blocks which are
+	     predecessors of the EXIT block.  That way we never
+	     add then to the worklist again.  */
+	  sbitmap_zero (antout[bb]);
+	}
+      else
+	{
+	  /* Clear the aux field of this block so that it can be added to
+	     the worklist again if necessary.  */
+	  b->aux = NULL;
+	  sbitmap_intersection_of_succs (antout[bb], antin, bb);
+	}
+
+      if (sbitmap_a_or_b_and_c (antin[bb], antloc[bb], transp[bb], antout[bb]))
+	{
+	  /* If the in state of this block changed, then we need
+	     to add the predecessors of this block to the worklist
+	     if they are not already on the worklist.  */
+          for (e = b->pred; e; e = e->pred_next)
+	    {
+	      if (!e->src->aux && e->src != ENTRY_BLOCK_PTR)
+	        {
+	          *tos++ = e->src;
+	          e->src->aux = e;
+	        }
+	    }
+	}
+    }
+  free (tos);
 }
 
 /* Compute the earliest vector for edge based lcm.  */
@@ -206,76 +205,119 @@ compute_earliest (edge_list, n_exprs, antin, antout, avout, kill, earliest)
   free (difference);
 }
 
-/* Compute later and laterin vectors for edge based lcm.  */
+/* later(p,s) is dependent on the calculation of laterin(p).
+   laterin(p) is dependent on the calculation of later(p2,p).
+
+     laterin(ENTRY) is defined as all 0's
+     later(ENTRY, succs(ENTRY)) are defined using laterin(ENTRY)
+     laterin(succs(ENTRY)) is defined by later(ENTRY, succs(ENTRY)).
+
+   If we progress in this manner, starting with all basic blocks
+   in the work list, anytime we change later(bb), we need to add
+   succs(bb) to the worklist if they are not already on the worklist.
+
+   Boundary conditions:
+
+     We prime the worklist all the normal basic blocks.   The ENTRY block can
+     never be added to the worklist since it is never the successor of any
+     block.  We explicitly prevent the EXIT block from being added to the
+     worklist.
+
+     We optimistically initialize LATER.  That is the only time this routine
+     will compute LATER for an edge out of the entry block since the entry
+     block is never on the worklist.  Thus, LATERIN is neither used nor
+     computed for the ENTRY block.
+
+     Since the EXIT block is never added to the worklist, we will neither
+     use nor compute LATERIN for the exit block.  Edges which reach the
+     EXIT block are handled in the normal fashion inside the loop.  However,
+     the insertion/deletion computation needs LATERIN(EXIT), so we have
+     to compute it.  */
+ 
 static void
-compute_laterin (edge_list, n_exprs,
-		 earliest, antloc, later, laterin)
+compute_laterin (edge_list, earliest, antloc, later, laterin)
      struct edge_list *edge_list;
-     int n_exprs;
      sbitmap *earliest, *antloc, *later, *laterin;
 {
-  sbitmap difference;
-  int x, num_edges; 
-  basic_block pred, succ;
-  int done = 0;
+  int bb, num_edges, i;
+  edge e;
+  basic_block *worklist, *tos;
 
   num_edges = NUM_EDGES (edge_list);
 
-  /* Laterin has an extra block allocated for the exit block.  */
-  sbitmap_vector_ones (laterin, n_basic_blocks + 1);
-  sbitmap_vector_zero (later, num_edges);
+  /* Allocate a worklist array/queue.  Entries are only added to the
+     list if they were not already on the list.  So the size is
+     bounded by the number of basic blocks.  */
+  tos = worklist = (basic_block *) xmalloc (sizeof (basic_block)
+					    * (n_basic_blocks + 1));
 
-  /* Initialize laterin to the intersection of EARLIEST for all edges
-     from predecessors to this block. */
+  /* Initialize a mapping from each edge to its index.  */
+  for (i = 0; i < num_edges; i++)
+    INDEX_EDGE (edge_list, i)->aux = (void *)i;
 
-  for (x = 0; x < num_edges; x++)
+  /* We want a maximal solution, so initially consider LATER true for
+     all edges.  This allows propagation through a loop since the incoming
+     loop edge will have LATER set, so if all the other incoming edges
+     to the loop are set, then LATERIN will be set for the head of the
+     loop.
+
+     If the optimistic setting of LATER on that edge was incorrect (for
+     example the expression is ANTLOC in a block within the loop) then
+     this algorithm will detect it when we process the block at the head
+     of the optimistic edge.  That will requeue the affected blocks.  */
+  sbitmap_vector_ones (later, num_edges);
+
+  /* Add all the blocks to the worklist.  This prevents an early exit from
+     the loop given our optimistic initialization of LATER above.  */
+  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
     {
-      succ = INDEX_EDGE_SUCC_BB (edge_list, x);
-      pred = INDEX_EDGE_PRED_BB (edge_list, x);
-      if (succ != EXIT_BLOCK_PTR)
-	sbitmap_a_and_b (laterin[succ->index], laterin[succ->index], 
-			 earliest[x]);
-      /* We already know the correct value of later for edges from
-         the entry node, so set it now.  */
-      if (pred == ENTRY_BLOCK_PTR)
-	sbitmap_copy (later[x], earliest[x]);
+      basic_block b = BASIC_BLOCK (bb);
+      *tos++ = b;
+      b->aux = b;
     }
 
-  difference = sbitmap_alloc (n_exprs);
-
-  while (!done)
+  /* Iterate until the worklist is empty.  */
+  while (tos != worklist)
     {
-      done = 1;
-      for (x = 0; x < num_edges; x++)
+      /* Take the first entry off the worklist.  */
+      basic_block b = *--tos;
+      b->aux = NULL;
+
+      /* Compute the intersection of LATERIN for each incoming edge to B.  */
+      bb = b->index;
+      sbitmap_ones (laterin[bb]);
+      for (e = b->pred; e != NULL; e = e->pred_next)
+	sbitmap_a_and_b (laterin[bb], laterin[bb], later[(int)e->aux]);
+
+      /* Calculate LATER for all outgoing edges.  */
+      for (e = b->succ; e != NULL; e = e->succ_next)
 	{
-          pred = INDEX_EDGE_PRED_BB (edge_list, x);
-	  if (pred != ENTRY_BLOCK_PTR)
+	  if (sbitmap_union_of_diff (later[(int)e->aux],
+				     earliest[(int)e->aux],
+				     laterin[e->src->index],
+				     antloc[e->src->index]))
 	    {
-	      sbitmap_difference (difference, laterin[pred->index], 
-	      			  antloc[pred->index]);
-	      if (sbitmap_a_or_b (later[x], difference, earliest[x]))
-		done = 0;
+	      /* If LATER for an outgoing edge was changed, then we need
+		 to add the target of the outgoing edge to the worklist.  */
+	      if (e->dest != EXIT_BLOCK_PTR && e->dest->aux == 0)
+		{
+		  *tos++ = e->dest;
+		  e->dest->aux = e;
+		}
 	    }
-	}
-      if (done)
-        break;
-
-      sbitmap_vector_ones (laterin, n_basic_blocks);
-
-      for (x = 0; x < num_edges; x++)
-	{
-	  succ = INDEX_EDGE_SUCC_BB (edge_list, x);
-	  if (succ != EXIT_BLOCK_PTR)
-	    sbitmap_a_and_b (laterin[succ->index], laterin[succ->index], 
-	    		     later[x]);
-	  else
-	    /* We allocated an extra block for the exit node.  */
-	    sbitmap_a_and_b (laterin[n_basic_blocks], laterin[n_basic_blocks], 
-	    		     later[x]);
-	}
+        }
     }
 
-  free (difference);
+  /* Computation of insertion and deletion points requires computing LATERIN
+     for the EXIT block.  We allocated an extra entry in the LATERIN array
+     for just this purpose.  */
+  sbitmap_ones (laterin[n_basic_blocks]);
+  for (e = EXIT_BLOCK_PTR->pred; e != NULL; e = e->pred_next)
+    sbitmap_a_and_b (laterin[n_basic_blocks],
+		     laterin[n_basic_blocks],
+		     later[(int)e->aux]);
+
+  free (tos);
 }
 
 /* Compute the insertion and deletion points for edge based LCM.  */
@@ -343,6 +385,7 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
   avout = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
   compute_available (avloc, kill, avout, avin);
 
+
   free (avin);
 
   /* Compute global anticipatability.  */
@@ -374,7 +417,8 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
   later = sbitmap_vector_alloc (num_edges, n_exprs);
   /* Allocate an extra element for the exit block in the laterin vector.  */
   laterin = sbitmap_vector_alloc (n_basic_blocks + 1, n_exprs);
-  compute_laterin (edge_list, n_exprs, earliest, antloc, later, laterin);
+  compute_laterin (edge_list, earliest, antloc, later, laterin);
+
 
 #ifdef LCM_DEBUG_INFO
   if (file)
@@ -406,32 +450,75 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
 
 /* Compute the AVIN and AVOUT vectors from the AVLOC and KILL vectors.
    Return the number of passes we performed to iterate to a solution.  */
-int
+void
 compute_available (avloc, kill, avout, avin)
      sbitmap *avloc, *kill, *avout, *avin;  
 {
-  int bb, changed, passes;
+  int bb;
+  edge e;
+  basic_block *worklist, *tos;
 
-  sbitmap_zero (avin[0]);
-  sbitmap_copy (avout[0] /*dst*/, avloc[0] /*src*/);
+  /* Allocate a worklist array/queue.  Entries are only added to the
+     list if they were not already on the list.  So the size is
+     bounded by the number of basic blocks.  */
+  tos = worklist = (basic_block *) xmalloc (sizeof (basic_block)
+					    * n_basic_blocks);
 
-  for (bb = 1; bb < n_basic_blocks; bb++)
-    sbitmap_not (avout[bb], kill[bb]);
-    
-  passes = 0;
-  changed = 1;
-  while (changed)
+  /* We want a maximal solution.  */
+  sbitmap_vector_ones (avout, n_basic_blocks);
+
+  /* Put the successors of the entry block on the worklist.  */
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
     {
-      changed = 0;
-      for (bb = 1; bb < n_basic_blocks; bb++)
-        {
-          sbitmap_intersection_of_preds (avin[bb], avout, bb);
-          changed |= sbitmap_union_of_diff (avout[bb], avloc[bb],
-                                            avin[bb], kill[bb]);
-        }
-      passes++;
+      *tos++ = e->dest;
+
+      /* We use the block's aux field to track blocks which are in
+	 the worklist; we also use it to quickly determine which blocks
+	 are successors of the ENTRY block.  */
+      e->dest->aux = ENTRY_BLOCK_PTR;
     }
-  return passes;
+
+  /* Iterate until the worklist is empty.  */
+  while (tos != worklist)
+    {
+      /* Take the first entry off the worklist.  */
+      basic_block b = *--tos;
+      bb = b->index;
+
+      /* If one of the predecessor blocks is the ENTRY block, then the
+	 intersection of avouts is the null set.  We can identify such blocks
+	 by the special value in the AUX field in the block structure.  */
+      if (b->aux == ENTRY_BLOCK_PTR)
+	{
+	  /* Do not clear the aux field for blocks which are
+	     successors of the ENTRY block.  That way we never
+	     add then to the worklist again.  */
+	  sbitmap_zero (avin[bb]);
+	}
+      else
+	{
+	  /* Clear the aux field of this block so that it can be added to
+	     the worklist again if necessary.  */
+	  b->aux = NULL;
+	  sbitmap_intersection_of_preds (avin[bb], avout, bb);
+	}
+
+      if (sbitmap_union_of_diff (avout[bb], avloc[bb], avin[bb], kill[bb]))
+	{
+	  /* If the out state of this block changed, then we need
+	     to add the successors of this block to the worklist
+	     if they are not already on the worklist.  */
+          for (e = b->succ; e; e = e->succ_next)
+	    {
+	      if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
+	        {
+	          *tos++ = e->dest;
+	          e->dest->aux = e;
+	        }
+	    }
+	}
+    }
+  free (tos);
 }
 
 /* Compute the farthest vector for edge based lcm.  */
@@ -477,78 +564,87 @@ compute_farthest (edge_list, n_exprs, st_avout, st_avin, st_antin,
   free (difference);
 }
 
-/* Compute nearer and nearerout vectors for edge based lcm.  */
+/* Compute nearer and nearerout vectors for edge based lcm.
+
+   This is the mirror of compute_laterin, additional comments on the
+   implementation can be found before compute_laterin.  */
+
 static void
-compute_nearerout (edge_list, n_exprs,
-		   farthest, st_avloc, nearer, nearerout)
+compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
      struct edge_list *edge_list;
-     int n_exprs;
      sbitmap *farthest, *st_avloc, *nearer, *nearerout;
 {
-  sbitmap difference;
-  int x, num_edges; 
-  basic_block pred, succ;
-  int done = 0;
+  int bb, num_edges, i;
+  edge e;
+  basic_block *worklist, *tos;
 
   num_edges = NUM_EDGES (edge_list);
 
-  /* nearout has an extra block allocated for the entry block.  */
-  sbitmap_vector_ones (nearerout, n_basic_blocks + 1);
-  sbitmap_vector_zero (nearer, num_edges);
+  /* Allocate a worklist array/queue.  Entries are only added to the
+     list if they were not already on the list.  So the size is
+     bounded by the number of basic blocks.  */
+  tos = worklist = (basic_block *) xmalloc (sizeof (basic_block)
+					    * (n_basic_blocks + 1));
 
-  /* Initialize nearerout to the intersection of FARTHEST for all edges
-     from predecessors to this block. */
+  /* Initialize NEARER for each edge and build a mapping from an edge to
+     its index.  */
+  for (i = 0; i < num_edges; i++)
+    INDEX_EDGE (edge_list, i)->aux = (void *)i;
 
-  for (x = 0; x < num_edges; x++)
+  /* We want a maximal solution.  */
+  sbitmap_vector_ones (nearer, num_edges);
+
+  /* Add all the blocks to the worklist.  This prevents an early exit
+     from the loop given our optimistic initialization of NEARER.  */
+  for (bb = 0; bb < n_basic_blocks; bb++)
     {
-      succ = INDEX_EDGE_SUCC_BB (edge_list, x);
-      pred = INDEX_EDGE_PRED_BB (edge_list, x);
-      if (pred != ENTRY_BLOCK_PTR)
-        {
-	  sbitmap_a_and_b (nearerout[pred->index], nearerout[pred->index], 
-			   farthest[x]);
-	}
-      /* We already know the correct value of nearer for edges to 
-         the exit node.  */
-      if (succ == EXIT_BLOCK_PTR)
-	sbitmap_copy (nearer[x], farthest[x]);
+      basic_block b = BASIC_BLOCK (bb);
+      *tos++ = b;
+      b->aux = b;
     }
-
-  difference = sbitmap_alloc (n_exprs);
-
-  while (!done)
+ 
+  /* Iterate until the worklist is empty.  */
+  while (tos != worklist)
     {
-      done = 1;
-      for (x = 0; x < num_edges; x++)
+      /* Take the first entry off the worklist.  */
+      basic_block b = *--tos;
+      b->aux = NULL;
+
+      /* Compute the intersection of NEARER for each outgoing edge from B.  */
+      bb = b->index;
+      sbitmap_ones (nearerout[bb]);
+      for (e = b->succ; e != NULL; e = e->succ_next)
+	sbitmap_a_and_b (nearerout[bb], nearerout[bb], nearer[(int)e->aux]);
+
+      /* Calculate NEARER for all incoming edges.  */
+      for (e = b->pred; e != NULL; e = e->pred_next)
 	{
-          succ = INDEX_EDGE_SUCC_BB (edge_list, x);
-	  if (succ != EXIT_BLOCK_PTR)
+	  if (sbitmap_union_of_diff (nearer[(int)e->aux],
+				     farthest[(int)e->aux],
+				     nearerout[e->dest->index],
+				     st_avloc[e->dest->index]))
 	    {
-	      sbitmap_difference (difference, nearerout[succ->index], 
-				  st_avloc[succ->index]);
-	      if (sbitmap_a_or_b (nearer[x], difference, farthest[x]))
-		done = 0;
+	      /* If NEARER for an incoming edge was changed, then we need
+		 to add the source of the incoming edge to the worklist.  */
+	      if (e->src != ENTRY_BLOCK_PTR && e->src->aux == 0)
+		{
+		  *tos++ = e->src;
+		  e->src->aux = e;
+		}
 	    }
-	}
-
-      if (done)
-        break;
-
-      sbitmap_vector_zero (nearerout, n_basic_blocks);
-
-      for (x = 0; x < num_edges; x++)
-	{
-	  pred = INDEX_EDGE_PRED_BB (edge_list, x);
-	  if (pred != ENTRY_BLOCK_PTR)
-	      sbitmap_a_and_b (nearerout[pred->index], 
-			       nearerout[pred->index], nearer[x]);
-	    else
-	      sbitmap_a_and_b (nearerout[n_basic_blocks], 
-			       nearerout[n_basic_blocks], nearer[x]);
-	}
+        }
     }
 
-  free (difference);
+  /* Computation of insertion and deletion points requires computing NEAREROUT
+     for the ENTRY block.  We allocated an extra entry in the NEAREROUT array
+     for just this purpose.  */
+  sbitmap_ones (nearerout[n_basic_blocks]);
+  for (e = ENTRY_BLOCK_PTR->succ; e != NULL; e = e->succ_next)
+    sbitmap_a_and_b (nearerout[n_basic_blocks],
+		     nearerout[n_basic_blocks],
+		     nearer[(int)e->aux]);
+
+  free (tos);
 }
 
 /* Compute the insertion and deletion points for edge based LCM.  */
@@ -649,7 +745,7 @@ pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
   nearer = sbitmap_vector_alloc (num_edges, n_exprs);
   /* Allocate an extra element for the entry block.  */
   nearerout = sbitmap_vector_alloc (n_basic_blocks + 1, n_exprs);
-  compute_nearerout (edge_list, n_exprs, farthest, st_avloc, nearer, nearerout);
+  compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout);
 
 #ifdef LCM_DEBUG_INFO
   if (file)
