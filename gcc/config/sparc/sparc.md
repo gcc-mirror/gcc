@@ -2487,8 +2487,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "fpstore,fpload,fp,move,fpstore,store,fpload,load")
-   (set_attr "length" "1,1,2,2,3,3,3,3")])
+  [(set_attr "type" "fp,fpstore,fpload,fpstore,fpload,move,store,load")
+   (set_attr "length" "2,3,3,1,1,2,2,2")])
 
 ;; Exactly the same as above, except that all `e' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `e' reg
@@ -2614,8 +2614,8 @@
     return output_fp_move_quad (operands);
   return output_move_quad (operands);
 }"
-  [(set_attr "type" "fp,move,fpstore,store,fpload,load")
-   (set_attr "length" "4,4,5,5,5,5")])
+  [(set_attr "type" "fp,fpstore,fpload,move,store,load")
+   (set_attr "length" "5,4,4,5,4,4")])
 
 ;; Exactly the same as above, except that all `e' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `e' reg

@@ -959,6 +959,11 @@ do								\
 	fixed_regs[1] = 1;					\
 	fixed_regs[2] = 1;					\
       }								\
+    if (flag_pic != 0)						\
+      {								\
+        fixed_regs[23] = 1;					\
+        call_used_regs[23] = 1;					\
+      }								\
   }								\
 while (0)
 

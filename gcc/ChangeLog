@@ -1,3 +1,10 @@
+Sat Aug 29 14:52:28 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (movdf_insn, movtf_insn): Fix type and
+	length attributes to match May 3rd changes made here.
+	* config/sparc/sparc.h (CONDITIONAL_REGISTER_USAGE): Fix and make
+	call-used %l7 when generating pic code.
+
 Sat Aug 29 14:59:32 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32.h (ASM_OUTPUT_SECTION_NAME): Don't emit
