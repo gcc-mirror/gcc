@@ -326,6 +326,11 @@ GC_thread GC_lookup_thread(pthread_t id)
     return(p);
 }
 
+/* There seems to be a very rare thread stopping problem.  To help us 	*/
+/* debug that, we save the ids of the stopping thread. 			*/
+pthread_t GC_stopping_thread;
+int GC_stopping_pid;
+
 /* Caller holds allocation lock.	*/
 void GC_stop_world()
 {
@@ -335,6 +340,8 @@ void GC_stop_world()
     register int n_live_threads = 0;
     register int result;
 
+    GC_stopping_thread = my_thread;	/* debugging only.	*/
+    GC_stopping_pid = getpid();		/* debugging only.	*/
     for (i = 0; i < THREAD_TABLE_SZ; i++) {
       for (p = GC_threads[i]; p != 0; p = p -> next) {
         if (p -> id != my_thread) {
@@ -403,6 +410,7 @@ void GC_start_world()
     #if DEBUG_THREADS
       GC_printf0("World started\n");
     #endif
+    GC_stopping_thread = 0;  /* debugging only */
 }
 
 # ifdef IA64

@@ -17,7 +17,7 @@
 # It sets the following shell variables:
 #   boehm_gc_cflags	Special CFLAGS to use when building
 
-boehm_gc_cflags=
+boehm_gc_cflags=-fexceptions
 
 case "${target_optspace}:${host}" in
   yes:*)
