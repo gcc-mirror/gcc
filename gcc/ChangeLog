@@ -1,3 +1,7 @@
+2003-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* expr.c (can_move_by_pieces): align argument may be unused.
+
 2003-06-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* expr.c (convert_move): Handle moves between two CONCATs.

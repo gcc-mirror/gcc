@@ -1470,7 +1470,7 @@ convert_modes (mode, oldmode, x, unsignedp)
 int
 can_move_by_pieces (len, align)
      unsigned HOST_WIDE_INT len;
-     unsigned int align;
+     unsigned int align ATTRIBUTE_UNUSED;
 {
   return MOVE_BY_PIECES_P (len, align);
 }
