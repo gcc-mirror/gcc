@@ -67,6 +67,38 @@
 	* java/lang/Class.h (forName): New method.
 	* java/lang/natClass.cc (forName): New method.
 
+2000-11-24  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/System.java (setProperties): Only call init_properties()
+	if properties is null.	
+	(getProperties): Ditto.
+	(getProperty): Ditto.
+	(setProperty): Call init_properties if properties are null.
+	(prop_init): Remove field.
+	* java/lang/natSystem.cc (init_properties): Synchronize the entire
+	method. Check for null properties after synchronizing instead of 
+	prop_init flag. Set the properties field last for thread safety.
+
+	* java/io/ObjectInputStream.java (ObjectInputStream): If DEBUG is set,
+	test for gcj.dumpobjects property and enable object stream dumping
+	if it is set.
+	(dumpElement): No longer native.
+	(dumpElementln): Ditto.
+	(setDump): Do not define.
+	* java/io/natObjectInputStream.cc (dumpElement): Removed.
+	(dumpElementln): Removed.
+	(setDump): Removed.
+
+2000-11-24  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (built_java_source_files): Add Configuration.java.
+	* configure.in: Add Configuration.java to CONFIG_FILES. Set 
+	LIBGCJDEBUG substitution if --enable-libgcj-debug is specified. 
+	Create `gnu' directory in the build tree.
+	* gnu/classpath/Configuration.java.in: New file.
+
 2000-11-24  Tom Tromey  <tromey@cygnus.com>
 
 	* prims.cc (_Jv_NewObjectArray): Use placement new to create
