@@ -1,3 +1,18 @@
+2001-02-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (builtin_array): Update.
+        (init_builtins): Flag builtins to warn if redefined or
+        undefined.  Define __GXX_WEAK as a normal macro.
+        * cpplib.c (do_undef): Warn if flagged NODE_WARN.
+        * cpplib.h (NODE_WARN): New flag.
+        * cppmacro.c (builtin_macro): Remove handling of __GXX_WEAK__.
+        Handle __STDC__ as a builtin only on Solaris.
+        (warn_of_redefinition): Renamed from check_macro_definition.
+        Reverse sense of test.  Always warn if NODE_WARN.
+        (_cpp_create_definition): Use warn_of_redefinition.  Flag
+        any macro beginning with "__STDC_" to require a mandatory
+        warning if redefined or undefined.
+
 2001-02-24  Zack Weinberg  <zackw@stanford.edu>
 
 	* xm-interix.h, xm-lynx.h, alpha/xm-vms.h, convex/xm-convex.h,
