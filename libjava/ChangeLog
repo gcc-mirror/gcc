@@ -1,5 +1,9 @@
 2002-11-18  Michael Koch <konqueror@gmx.de>
 
+	* java/net/PlainSocketImpl.java: Fix imports.
+
+2002-11-18  Michael Koch <konqueror@gmx.de>
+
 	* java/nio/channels/SelectionKey.java
 	(isValid): Added exception documentation.
 	* java/nio/channels/Selector.java
