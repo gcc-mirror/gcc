@@ -3126,9 +3126,9 @@ duplicate_decls (newdecl, olddecl)
 	  DECL_THIS_STATIC (olddecl) = 1;
 	  TREE_PUBLIC (olddecl) = 0;
 
-	  /* Make the olddeclaration consistent with the new one so that
-	     all remnants of the builtin-ness of this function will be
-	     banished.  */
+	  /* Make the old declaration consistent with the new one so
+	     that all remnants of the builtin-ness of this function
+	     will be banished.  */
 	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
 	  DECL_RTL (olddecl) = DECL_RTL (newdecl);
 	  DECL_ASSEMBLER_NAME (olddecl) = DECL_ASSEMBLER_NAME (newdecl);
@@ -9643,9 +9643,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			  dname);
 		name = IDENTIFIER_POINTER (dname);
 	      }
-	    if (! IDENTIFIER_OPNAME_P (dname)
-		/* GNU/Linux headers use '__op'.  Arrgh.  */
-		|| (IDENTIFIER_TYPENAME_P (dname) && ! TREE_TYPE (dname)))
+	    else if (!IDENTIFIER_OPNAME_P (dname))
 	      name = IDENTIFIER_POINTER (dname);
 	    else
 	      {
@@ -12183,7 +12181,7 @@ grok_op_properties (decl, virtualp, friendp)
 	 an enumeration, or a reference to an enumeration.  13.4.0.6 */
       if (! methodp || DECL_STATIC_FUNCTION_P (decl))
 	{
-	  if (IDENTIFIER_TYPENAME_P (name)
+	  if (DECL_CONV_FN_P (decl)
 	      || name == ansi_opname[(int) CALL_EXPR]
 	      || name == ansi_opname[(int) MODIFY_EXPR]
 	      || name == ansi_opname[(int) COMPONENT_REF]

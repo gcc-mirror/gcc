@@ -64,7 +64,6 @@ static const char *cv_to_string			PARAMS ((tree, int));
 static const char *decl_to_string		PARAMS ((tree, int));
 static const char *expr_to_string		PARAMS ((tree, int));
 static const char *fndecl_to_string		PARAMS ((tree, int));
-static const char *language_to_string		PARAMS ((enum languages, int));
 static const char *op_to_string			PARAMS ((enum tree_code, int));
 static const char *parm_to_string		PARAMS ((int, int));
 static const char *type_to_string		PARAMS ((tree, int));
@@ -2267,7 +2266,7 @@ code_to_string (c, v)
   return tree_code_name [c];
 }
 
-static const char *
+const char *
 language_to_string (c, v)
      enum languages c;
      int v ATTRIBUTE_UNUSED;
