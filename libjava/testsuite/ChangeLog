@@ -1,3 +1,16 @@
+1999-10-02  Anthony Green  <green@cygnus.com>
+
+	* libjava.compile/Case.xfail: Removed.  This test should pass now.
+
+	* libjava.compile/compile.exp: Copied from test.exp.
+	* libjava.compile/test.exp: Removed.
+
+	* libjava.lang/lang.exp: Copied from test.exp.
+	* libjava.lang/test.exp: Removed.
+
+	* libjava.mauve/mauve.exp: Copied from test.exp.
+	* libjava.mauve/test.exp: Removed.
+
 1999-10-01  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/PR56.out: New file.
