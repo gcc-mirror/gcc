@@ -1,3 +1,14 @@
+2004-05-23 Paolo Bonzini <bonzini@gnu.org>
+
+	* gcc.c (struct prefix_list): Add forward declaration.
+	(do_spec_path): New function, extracted from...
+	(do_spec_1) <'D'>: ... here.  Drop support for
+	SPACE_AFTER_L_OPTION.
+	(do_spec_1) <'I'>: Use do_spec_path.
+	(process_command): Do not store the 'include' suffix
+	in include_prefixes.
+	* system.h: Poison SPACE_AFTER_L_OPTION.
+
 2002-05-23  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (non_lvalue): Explicitly list the tree codes that
