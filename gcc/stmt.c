@@ -3999,6 +3999,15 @@ expand_decl (decl)
 	= promote_mode (type, DECL_MODE (decl), &unsignedp, 0);
 
       SET_DECL_RTL (decl, gen_reg_rtx (reg_mode));
+
+      if (GET_CODE (DECL_RTL (decl)) == REG)
+	REGNO_DECL (REGNO (DECL_RTL (decl))) = decl;
+      else if (GET_CODE (DECL_RTL (decl)) == CONCAT)
+	{
+	  REGNO_DECL (REGNO (XEXP (DECL_RTL (decl), 0))) = decl;
+	  REGNO_DECL (REGNO (XEXP (DECL_RTL (decl), 1))) = decl;
+	}
+
       mark_user_reg (DECL_RTL (decl));
 
       if (POINTER_TYPE_P (type))
@@ -4020,6 +4029,7 @@ expand_decl (decl)
       /* Variable of fixed size that goes on the stack.  */
       rtx oldaddr = 0;
       rtx addr;
+      rtx x;
 
       /* If we previously made RTL for this decl, it must be an array
 	 whose size was determined by the initializer.
@@ -4033,13 +4043,14 @@ expand_decl (decl)
 	  oldaddr = XEXP (DECL_RTL (decl), 0);
 	}
 
-      SET_DECL_RTL (decl,
-		    assign_temp (TREE_TYPE (decl), 1, 1, 1));
-
       /* Set alignment we actually gave this decl.  */
       DECL_ALIGN (decl) = (DECL_MODE (decl) == BLKmode ? BIGGEST_ALIGNMENT
 			   : GET_MODE_BITSIZE (DECL_MODE (decl)));
       DECL_USER_ALIGN (decl) = 0;
+
+      x = assign_temp (TREE_TYPE (decl), 1, 1, 1);
+      set_mem_attributes (x, decl, 1);
+      SET_DECL_RTL (decl, x);
 
       if (oldaddr)
 	{

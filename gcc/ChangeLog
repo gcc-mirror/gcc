@@ -1,3 +1,28 @@
+Thu Oct 18 16:07:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (gen_reg_rtx): Also reallocate reg_decl array.
+	(offset_address): New function.
+	(free_emit_status): Free regno_decl.
+	(init_emit): Pass proper number of elements to xcalloc.
+	Allocate regno_decl.
+	(mark_emit_status): Mark regno_decl values.
+	* expr.c (highest_pow2_factor): New function.
+	(expand_assigment): Use it and offset_address.
+	Properly handle ptr_mode vs. Pmode in offset calculation.
+	(store_constructor, expand_expr_unaligned): Likewise.
+	(expand_expr, case COMPONENT_EXPR): Likewise.
+	* expr.h (offset_address): New decl.
+	* function.h (struct emit_status): Add regno_decl.
+	(REGNO_DECL): New macro.
+	* final.c (output_asm_name): Move in file and don't conditionalize
+	on flag_print_asm_name.
+	(output_asm_insn): Only call output_asm_name if flag_print_asm_name.
+	Output names of operands, if known.
+	* function.c (assign_parms): Set REGNO_DECL.
+	* integrate.c (integrate_decl_tree): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	* regclass.c (reg_scan_mark_refs): Propagate REGNO_DECL for copies.
+	
 2001-10-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* attribs.c (handle_noinline_attribute): New function.
