@@ -629,6 +629,7 @@ typedef struct if_stack IF_STACK_FRAME;
 
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer*, long*, long*));
 extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader*));
+extern void cpp_define PARAMS ((cpp_reader*, U_CHAR*));
 
 extern void cpp_error ();
 extern void cpp_warning ();
