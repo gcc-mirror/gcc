@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
 
 This file is part of GNU CC.
@@ -25,9 +25,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES \
  "-DPPC -Dunix -Dlinux -Dpowerpc -Asystem(unix) -Asystem(linux) -Acpu(powerpc) -Amachine(powerpc)"
 
-/* For now, remove most of the System V.4 stuff */
 #undef LINK_SPEC
-#define LINK_SPEC ""
+#define LINK_SPEC "-m elf32ppc %{shared:-shared} \
+  %{!shared: \
+    %{!static: %{rdynamic:-export-dynamic}} \
+    %{static:-static}}"
 
 #undef	LIB_DEFAULT_SPEC
 #define LIB_DEFAULT_SPEC "%(lib_linux)"
