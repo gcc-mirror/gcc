@@ -555,13 +555,6 @@ fini_section ()								\
     }									\
 }
 
-/* Ordinarily, we wouldn't need to define these, since generic code would
-   do the right thing based on knowing that we have named sections.
-   However, -mrelocatable needs to know when we're in [cd]tors sections,
-   and the easiest way to do that is rely on varasm.c defining in_[cd]tors.  */
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
-
 /* A C statement or statements to switch to the appropriate section
    for output of RTX in mode MODE.  You can assume that RTX is some
    kind of constant in RTL.  The argument MODE is redundant except in
@@ -816,6 +809,10 @@ do {									\
 
 extern int fixuplabelno;
 
+/* Handle constructors specially for -mrelocatable.  */
+#define TARGET_ASM_CONSTRUCTOR  rs6000_elf_asm_out_constructor
+#define TARGET_ASM_DESTRUCTOR   rs6000_elf_asm_out_destructor
+
 /* This is how to output an assembler line defining an `int' constant.
    For -mrelocatable, we mark all addresses that need to be fixed up
    in the .fixup section.  */
@@ -827,8 +824,6 @@ do {									\
   if (TARGET_RELOCATABLE						\
       && in_section != in_toc						\
       && in_section != in_text						\
-      && in_section != in_ctors						\
-      && in_section != in_dtors						\
       && !recurse							\
       && GET_CODE (VALUE) != CONST_INT					\
       && GET_CODE (VALUE) != CONST_DOUBLE				\
