@@ -4573,13 +4573,12 @@ get_filename:
 
 		    if (searchptr->fname[0] == 0)
 		      continue;
-		    p = xmalloc (strlen (searchptr->fname)
-				 + strlen (fname) + 2);
+		    p = alloca (strlen (searchptr->fname)
+				+ strlen (fname) + 2);
 		    strcpy (p, searchptr->fname);
 		    strcat (p, "/");
 		    strcat (p, fname);
 		    deps_output (p, ' ');
-		    free (p);
 		    break;
 		  }
 	      }
