@@ -1,3 +1,11 @@
+2004-02-15  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	Backport from mainline:
+
+	2004-02-05  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+	* config/sh/t-linux (SHLIB_INSTALL): Prepend $$(DESTDIR)
+	to $$(slibdir) in the installation commands.
+
 2004-02-15  Roger Sayle  <roger@eyesopen.com>
 
 	Backport from mainline:
