@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
+#include "dwarf2.h"
 
 /* Needed for use_return_insn.  */
 #include "flags.h"
@@ -164,6 +165,7 @@ output_function_prologue (stream, size)
   int num_saved_regs = 0;
   extern char call_used_regs[];
   int fsize = (size + 3) & -4;
+  int cfa_offset = INCOMING_FRAME_SP_OFFSET, cfa_store_offset = cfa_offset;
   
 
   if (frame_pointer_needed)
@@ -211,6 +213,16 @@ output_function_prologue (stream, size)
 	  asm_fprintf (stream, "\tlink %s,%0I0\n\taddl %0I%d,%Rsp\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #endif
+	}
+      if (dwarf2out_do_frame ())
+	{
+	  char *l = dwarf2out_cfi_label ();
+
+	  cfa_store_offset += 4;
+	  cfa_offset = cfa_store_offset;
+	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
+	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_store_offset);
+	  cfa_store_offset += fsize;
 	}
     }
   else if (fsize)
@@ -282,6 +294,12 @@ output_function_prologue (stream, size)
 	  asm_fprintf (stream, "\taddl %0I%d,%Rsp\n", - (fsize + 4));
 #endif
 	}
+      if (dwarf2out_do_frame ())
+	{
+	  cfa_store_offset += fsize;
+	  cfa_offset = cfa_store_offset;
+	  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
+	}
     }
 #ifdef SUPPORT_SUN_FPA
   for (regno = 24; regno < 56; regno++)
@@ -294,13 +312,28 @@ output_function_prologue (stream, size)
 	asm_fprintf (stream, "\tfpmoved %s,%Rsp@-\n",
 		     reg_names[regno]);
 #endif
+	if (dwarf2out_do_frame ())
+	  {
+	    char *l = dwarf2out_cfi_label ();
+
+	    cfa_store_offset += 8;
+	    if (! frame_pointer_needed)
+	      {
+		cfa_offset = cfa_store_offset;
+		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+	      }
+	    dwarf2out_reg_save (l, regno, -cfa_store_offset);
+	  }
       }
 #endif
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
 	if (regs_ever_live[regno] && ! call_used_regs[regno])
-	   mask |= 1 << (regno - 16);
+	  {
+	    mask |= 1 << (regno - 16);
+	    num_saved_regs++;
+	  }
       if ((mask & 0xff) != 0)
 	{
 #ifdef MOTOROLA
@@ -308,8 +341,25 @@ output_function_prologue (stream, size)
 #else
 	  asm_fprintf (stream, "\tfmovem %0I0x%x,%Rsp@-\n", mask & 0xff);
 #endif
+	  if (dwarf2out_do_frame ())
+	    {
+	      char *l = dwarf2out_cfi_label ();
+	      int n_regs;
+
+	      cfa_store_offset += num_saved_regs * 12;
+	      if (! frame_pointer_needed)
+		{
+		  cfa_offset = cfa_store_offset;
+		  dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+		}
+	      for (regno = 16, n_regs = 0; regno < 24; regno++)
+		if (mask & (1 << (regno - 16)))
+		  dwarf2out_reg_save (l, regno,
+				      -cfa_store_offset + n_regs++ * 12);
+	    }
 	}
       mask = 0;
+      num_saved_regs = 0;
     }
   for (regno = 0; regno < 16; regno++)
     if (regs_ever_live[regno] && ! call_used_regs[regno])
@@ -347,13 +397,27 @@ output_function_prologue (stream, size)
       /* Undo the work from above. */
       for (i = 0; i< 16; i++)
         if (mask & (1 << i))
-          asm_fprintf (stream,
+	  {
+	    asm_fprintf (stream,
 #ifdef MOTOROLA
-		       "\t%Omove.l %s,-(%Rsp)\n",
+			 "\t%Omove.l %s,-(%Rsp)\n",
 #else
-		       "\tmovel %s,%Rsp@-\n",
+			 "\tmovel %s,%Rsp@-\n",
 #endif
-		       reg_names[15 - i]);
+			 reg_names[15 - i]);
+	    if (dwarf2out_do_frame ())
+	      {
+		char *l = dwarf2out_cfi_label ();
+
+		cfa_store_offset += 4;
+ 		if (! frame_pointer_needed)
+ 		  {
+ 		    cfa_offset = cfa_store_offset;
+ 		    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+ 		  }
+ 		dwarf2out_reg_save (l, 15 - i, -cfa_store_offset);
+	      }
+	  }
     }
   else if (mask)
     {
@@ -391,6 +455,22 @@ output_function_prologue (stream, size)
 #else
 	  asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@-\n", mask);
 #endif
+	}
+      if (dwarf2out_do_frame ())
+	{
+	  char *l = dwarf2out_cfi_label ();
+	  int n_regs;
+
+	  cfa_store_offset += num_saved_regs * 4;
+	  if (! frame_pointer_needed)
+	    {
+	      cfa_offset = cfa_store_offset;
+	      dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+	    }
+	  for (regno = 0, n_regs = 0; regno < 16; regno++)
+	    if (mask & (1 << (15 - regno)))
+	      dwarf2out_reg_save (l, regno,
+				  -cfa_store_offset + n_regs++ * 4);
 	}
     }
   if (flag_pic && current_function_uses_pic_offset_table)
