@@ -9119,11 +9119,28 @@
 
 ;; Miscellaneous Thumb patterns
 
-(define_insn "tablejump"
+(define_expand "tablejump"
+  [(parallel [(set (pc) (match_operand:SI 0 "register_operand" "l*r"))
+	      (use (label_ref (match_operand 1 "" "")))])]
+  "TARGET_THUMB"
+  "
+  if (flag_pic)
+    {
+      /* Hopefully, CSE will eliminate this copy.  */
+      rtx reg1 = copy_addr_to_reg (gen_rtx_LABEL_REF (Pmode, operands[1]));
+      rtx reg2 = gen_reg_rtx (SImode);
+
+      emit_insn (gen_addsi3 (reg2, operands[0], reg1));
+      operands[0] = reg2;
+    }
+  "
+)
+
+(define_insn "*thumb_tablejump"
   [(set (pc) (match_operand:SI 0 "register_operand" "l*r"))
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_THUMB"
-  "mov	pc, %0"
+  "mov\\t%|pc, %0"
   [(set_attr "length" "2")]
 )
 
