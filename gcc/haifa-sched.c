@@ -4279,6 +4279,9 @@ adjust_priority (prev)
     }
 }
 
+/* Clock at which the previous instruction was issued.  */
+static int last_clock_var;
+
 /* INSN is the "currently executing insn".  Launch each insn which was
    waiting on INSN.  READY is a vector of insns which are ready to fire.
    N_READY is the number of elements in READY.  CLOCK is the current
@@ -4361,6 +4364,17 @@ schedule_insn (insn, ready, n_ready, clock)
 	  else
 	    queue_insn (next, effective_cost);
 	}
+    }
+
+  /* Annotate the instruction with issue information -- TImode 
+     indicates that the instruction is expected not to be able
+     to issue on the same cycle as the previous insn.  A machine
+     may use this information to decide how the instruction should
+     be aligned.  */
+  if (reload_completed && issue_rate > 1)
+    {
+      PUT_MODE (insn, clock > last_clock_var ? TImode : VOIDmode);
+      last_clock_var = clock;
     }
 
   return n_ready;
@@ -6739,6 +6753,7 @@ schedule_block (bb, rgn_n_insns)
   q_ptr = 0;
   q_size = 0;
   clock_var = 0;
+  last_clock_var = 0;
   bzero ((char *) insn_queue, sizeof (insn_queue));
 
   /* We start inserting insns after PREV_HEAD.  */
