@@ -1,36 +1,3 @@
-2005-03-25  Mark Mitchell  <mark@codesourcery.com>
-
-	Backport from 3.4 branch:
-	* gcc.dg/altivec-1.c: Pass -mcpu=7400 along with -maltivec.
-	* gcc.dg/altivec-2.c: Likewise.
-	* gcc.dg/altivec-3.c: Likewise.
-	* gcc.dg/altivec-4.c: Likewise.
-	* gcc.dg/altivec-5.c: Likewise.
-	* gcc.dg/altivec-6.c: Likewise.
-	* gcc.dg/altivec-7.c: Likewise.
-	* gcc.dg/altivec-8.c: Likewise.
-	* gcc.dg/altivec-9.c: Likewise.
-	* gcc.dg/altivec-10.c: Likewise.
-	* gcc.dg/altivec-11.c: Likewise.
-	* gcc.dg/altivec-12.c: Likewise.
-	* gcc.dg/altivec-13.c: Likewise.
-	* gcc.dg/altivec-14.c: Likewise.
-	* gcc.dg/altivec-15.c: Likewise.
-	* gcc.dg/altivec-16.c: Likewise.
-	* gcc.dg/altivec-17.c: Likewise.
-	* g++.dg/ext/altivec-1.C: Likewise.
-	* g++.dg/ext/altivec-2.C: Likewise.
-	* g++.dg/ext/altivec-3.C: Likewise.
-	* g++.dg/ext/altivec-4.C: Likewise.
-	* g++.dg/ext/altivec-5.C: Likewise.
-	* g++.dg/ext/altivec-6.C: Likewise.
-	* g++.dg/ext/altivec-7.C: Likewise.
-	* g++.dg/ext/altivec-8.C: Likewise.
-	* g++.dg/ext/altivec-9.C: Likewise.
-	* g++.dg/ext/altivec-10.C: Likewise.
-	* g++.dg/ext/altivec-11.C: Likewise.
-	* g++.dg/ext/altivec-12.C: Likewise.
-
 2005-03-22  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/14981

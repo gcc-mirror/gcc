@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-options "-mcpu=7400 -maltivec -O2" } */
+/* { dg-options "-maltivec -O2" } */
 
 #define vector __attribute__((vector_size(16)))
 

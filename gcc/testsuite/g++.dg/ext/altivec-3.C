@@ -1,6 +1,6 @@
 /* { dg-do run { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-mcpu=7400 -maltivec" } */
+/* { dg-options "-maltivec" } */
 
 /* Test for correct handling of AltiVec constants passed
    through '...' (va_arg).  */

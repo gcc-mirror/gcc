@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-options "-mcpu=7400 -maltivec" } */
+/* { dg-options "-maltivec" } */
 
 /* Program to test the vector_size attribute.  This needs to run on a
    target that has vectors, so use AltiVec.  */

@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-O2 -mcpu=7400 -maltivec -mabi=altivec" } */
+/* { dg-options "-O2 -maltivec -mabi=altivec" } */
 /* { dg-final { scan-assembler-not "lvx" } } */
 #include <altivec.h>
 

@@ -1,6 +1,6 @@
 /* { dg-do run { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
-/* { dg-options "-mcpu=7400 -maltivec" } */
+/* { dg-options "-maltivec" } */
 
 /* Program to test PowerPC AltiVec instructions.  */
 
