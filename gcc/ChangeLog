@@ -1,3 +1,15 @@
+2004-07-06  Richard Henderson  <rth@redhat.com>
+
+	* langhooks-def.h (LANG_HOOKS_GIMPLE_BEFORE_INLINING): Remove.
+	* langhooks.h (struct lang_hooks): Remove gimple_before_inlining.
+	* tree-inline.c (copy_body_r, setup_one_parameter,
+	initialize_inlined_parameters, expand_call_inline,
+	declare_inline_vars): Don't check it.
+	(expand_calls_inline): Remove old version, rename new version
+	from gimple_expand_calls_inline.
+	* tree-optimize.c (execute_gimple): Remove.
+	(pass_gimple): Don't run anything.
+
 2004-07-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/sourcebuild.texi: Use semicolons instead of commas in
