@@ -95,7 +95,7 @@ extern char *rs6000_abi_name;
 /* Default ABI to use */
 #define RS6000_ABI_NAME "sysv"
 
-#define SUBTARGET_OPTIONS {"call-",  &rs6000_abi_name}
+#define SUBTARGET_OPTIONS {"call-", &rs6000_abi_name}
 
 /* Max # of bytes for variables to automatically be put into the .sdata
    or .sdata2 sections.  */
@@ -148,6 +148,11 @@ do {									\
       rs6000_current_abi = ABI_V4;					\
       error ("Bad value for -mcall-%s", rs6000_abi_name);		\
     }									\
+									\
+  /* CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
+  if (TARGET_SDATA)							\
+    flag_combine_statics = 0;						\
+  /* END CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
 									\
   if (TARGET_RELOCATABLE && TARGET_SDATA)				\
     {									\
@@ -1012,11 +1017,12 @@ do {									\
 #endif
 
 #ifndef	STARTFILE_LINUX_SPEC
-#define	STARTFILE_LINUX_SPEC "crt0.o%s"
-#endif
+#define	STARTFILE_LINUX_SPEC "\
+%{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
+scrti.o%s"
 
 #ifndef	ENDFILE_LINUX_SPEC
-#define	ENDFILE_LINUX_SPEC ""
+#define	ENDFILE_LINUX_SPEC "scrtn.o%s"
 #endif
 
 #ifndef LINK_START_LINUX_SPEC
