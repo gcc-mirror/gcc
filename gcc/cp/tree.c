@@ -1685,10 +1685,19 @@ perm_manip (t)
 {
   if (TREE_PERMANENT (t))
     return t;
+
   /* Support `void f () { extern int i; A<&i> a; }' */
   if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == FUNCTION_DECL)
       && TREE_PUBLIC (t))
-    return copy_node (t);
+    {
+      t = copy_node (t);
+
+      /* copy_rtx won't make a new SYMBOL_REF, so call make_decl_rtl again.  */
+      DECL_RTL (t) = 0;
+      make_decl_rtl (t, NULL_PTR, 1);
+
+      return t;
+    }
   return NULL_TREE;
 }
 
@@ -1699,22 +1708,15 @@ tree
 copy_to_permanent (t)
      tree t;
 {
-  register struct obstack *ambient_obstack = current_obstack;
-  register struct obstack *ambient_saveable_obstack = saveable_obstack;
-  register struct obstack *ambient_expression_obstack = expression_obstack;
-
   if (t == NULL_TREE || TREE_PERMANENT (t))
     return t;
 
-  saveable_obstack = &permanent_obstack;
-  current_obstack = saveable_obstack;
-  expression_obstack = saveable_obstack;
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
 
   t = mapcar (t, perm_manip);
 
-  current_obstack = ambient_obstack;
-  saveable_obstack = ambient_saveable_obstack;
-  expression_obstack = ambient_expression_obstack;
+  pop_obstacks ();
 
   return t;
 }
