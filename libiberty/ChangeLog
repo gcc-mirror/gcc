@@ -1,3 +1,11 @@
+Wed Oct 13 01:16:47 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* basename.c (DIR_SEPARATOR): New macro.
+	(DIR_SEPARATOR_2): Likewise.
+	(HAVE_DOS_BASED_FILESYSTEM): Likewise.
+	(IS_DIR_SEPARATOR): Likewise.
+	(main): Handle MSDOS style pathname.
+
 1999-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cplus-dem.c (do_type): Handle pointer to member types whose
