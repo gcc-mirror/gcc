@@ -1122,6 +1122,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  int win = 0;
 	  char c;
 
+	  /* Initially show we know nothing about the register class.  */
+	  classes[i] = NO_REGS;
+
 	  /* If this operand has no constraints at all, we can conclude 
 	     nothing about it since anything is valid.  */
 
@@ -1212,7 +1215,6 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	     matches any of the constraints.  Collect the valid register
 	     classes and see if this operand accepts memory.  */
 
-	  classes[i] = NO_REGS;
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
