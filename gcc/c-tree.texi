@@ -76,7 +76,7 @@ that you need to ask questions not easily answered by the functions and
 macros available here.  If that situation occurs, it is quite likely
 that GCC already supports the functionality you desire, but that the
 interface is simply not documented here.  In that case, you should ask
-the GCC maintainers (via mail to @url{mailto:gcc@@gcc.gnu.org}) about
+the GCC maintainers (via mail to @email{gcc@@gcc.gnu.org}) about
 documenting the functionality you require.  Similarly, if you find
 yourself writing functions that do not deal directly with your back-end,
 but instead might be useful to other people using the GCC front-end, you

@@ -2230,9 +2230,9 @@ suggestions for improvement of GCC are welcome in any case.
 @cindex bug report mailing lists
 @kindex gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
 Send bug reports for the GNU Compiler Collection to
-@samp{gcc-bugs@@gcc.gnu.org}.  In accordance with the GNU-wide
+@email{gcc-bugs@@gcc.gnu.org}.  In accordance with the GNU-wide
 convention, in which bug reports for tool ``foo'' are sent
-to @samp{bug-foo@@gnu.org}, the address @samp{bug-gcc@@gnu.org}
+to @samp{bug-foo@@gnu.org}, the address @email{bug-gcc@@gnu.org}
 may also be used; it will forward to the address given above.
 
 Please read @uref{http://www.gnu.org/software/gcc/bugs.html} for
@@ -2650,7 +2650,7 @@ The default is @samp{sw-bug}.
 
 If you would like to write bug fixes or improvements for the GNU C
 compiler, that is very helpful.  Send suggested fixes to the patches
-mailing list, @code{gcc-patches@@gcc.gnu.org}.
+mailing list, @email{gcc-patches@@gcc.gnu.org}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -2770,8 +2770,8 @@ ways to find it:
 @itemize @bullet
 @item
 Send a message to a suitable network mailing list.  First try
-@code{gcc-bugs@@gcc.gnu.org} or @code{bug-gcc@@gnu.org}, and if that
-brings no response, try @code{gcc@@gcc.gnu.org}.
+@email{gcc-bugs@@gcc.gnu.org} or @email{bug-gcc@@gnu.org}, and if that
+brings no response, try @email{gcc@@gcc.gnu.org}.
 
 @item
 Look in the service directory for someone who might help you for a fee.
@@ -2784,13 +2784,13 @@ GCC distribution.
 
 If you would like to help pretest GCC releases to assure they work
 well, or if you would like to work on improving GCC, please contact
-the maintainers at @code{gcc@@gcc.gnu.org}.  A pretester should
+the maintainers at @email{gcc@@gcc.gnu.org}.  A pretester should
 be willing to try to investigate bugs as well as report them.
 
 If you'd like to work on improvements, please ask for suggested projects
 or suggest your own ideas.  If you have already written an improvement,
 please tell us about it.  If you have not yet started work, it is useful
-to contact @code{gcc@@gcc.gnu.org} before you start; the
+to contact @email{gcc@@gcc.gnu.org} before you start; the
 maintainers may be able to suggest ways to make your extension fit in
 better with the rest of GCC and with other development plans.
 

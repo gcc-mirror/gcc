@@ -1029,7 +1029,7 @@ compilers, you may need to add @samp{-Wf,-XNg1500 -Olimit 3000}.
 
 @item elxsi-elxsi-bsd
 The Elxsi's C compiler has known limitations that prevent it from
-compiling GNU C.  Please contact @code{mrs@@cygnus.com} for more details.
+compiling GNU C.  Please contact @email{mrs@@cygnus.com} for more details.
 
 @item dsp16xx
 A port to the AT&T DSP1610 family of processors.
@@ -1250,7 +1250,7 @@ This configuration is intended for embedded systems.
 
 @item m68000-hp-bsd
 HP 9000 series 200 running BSD.  Note that the C compiler that comes
-with this system cannot compile GNU CC; contact @code{law@@cygnus.com}
+with this system cannot compile GNU CC; contact @email{law@@cygnus.com}
 to get binaries of GNU CC for bootstrapping.
 
 @item m68k-altos
@@ -1285,7 +1285,7 @@ GNU assembler with native coff generation by providing @samp{--with-gnu-as} to
 the configure script or use GNU assembler with dbx-in-coff encapsulation
 by providing @samp{--with-gnu-as --stabs}. For any problem with native
 assembler or for availability of the DPX/2 port of GAS, contact
-@code{F.Pierresteguy@@frcl.bull.fr}.
+@email{F.Pierresteguy@@frcl.bull.fr}.
 
 @item m68k-crds-unox
 Use @samp{configure unos} for building on Unos.
