@@ -2721,6 +2721,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   optab optab1, optab2;
   int op1_is_constant, op1_is_pow2;
   int max_cost, extra_cost;
+  static HOST_WIDE_INT last_div_const = 0;
 
   op1_is_constant = GET_CODE (op1) == CONST_INT;
   op1_is_pow2 = (op1_is_constant
@@ -2830,8 +2831,15 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   size = GET_MODE_BITSIZE (mode);
 #endif
 
+  /* Only deduct something for a REM if the last divide done was
+     for a different constant.   Then set the constant of the last
+     divide.  */
   max_cost = div_cost[(int) compute_mode]
-    - (rem_flag ? mul_cost[(int) compute_mode] + add_cost : 0);
+    - (rem_flag && ! (last_div_const != 0 && op1_is_constant
+		      && INTVAL (op1) == last_div_const)
+       ? mul_cost[(int) compute_mode] + add_cost : 0);
+
+  last_div_const = ! rem_flag && op1_is_constant ? INTVAL (op1) : 0;
 
   /* Now convert to the best mode to use.  */
   if (compute_mode != mode)
