@@ -1,3 +1,13 @@
+2001-06-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
+	doc/gcc.texi, doc/gcov.texi, doc/install-old.texi,
+	doc/invoke.texi, doc/md.texi, doc/rtl.texi, doc/tm.texi: Use more
+	logical markup.  Use TeX quotes and dashes.  Use @dots{} and
+	@minus{}.  Avoid spaces inside @var.  Update last modification
+	date in gcc.texi.
+	* doc/gcc.1, doc/gcov.1: Regenerate.
+
 Thu Jun 14 12:44:15 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_accumulate_outgoing_args, x86_prologue_using_move,

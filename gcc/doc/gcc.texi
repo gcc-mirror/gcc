@@ -172,7 +172,7 @@ included in the section entitled ``GNU Free Documentation License''.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 9 May 2001
+@center Last updated 14 June 2001
 @sp 1
 @c The version number appears five times more in this file.
 
@@ -905,7 +905,7 @@ lines around the definition of @code{size_t}:
 @smallexample
 #ifndef _SIZE_T
 #define _SIZE_T
-@var{actual typedef here}
+@var{actual-typedef-here}
 #endif
 @end smallexample
 
@@ -1558,9 +1558,9 @@ void
 f ()
 @{
   const char *p = strfunc().c_str();
-  ...
+  @dots{}
   charfunc (p);
-  ...
+  @dots{}
   charfunc (p);
 @}
 @end example
