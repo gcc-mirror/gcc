@@ -55,7 +55,7 @@ void check_cookie (int i)
     exit (i);
 
 #ifdef __ARM_EABI__
-  size_t *sp = ((size_t *) a) - 2;
+  sp = ((size_t *) a) - 2;
   if (*sp != sizeof (T))
     exit (i);
 #endif
@@ -85,7 +85,7 @@ void check_placement_cookie (int i)
     exit (i);
 
 #ifdef __ARM_EABI__
-  size_t *sp = ((size_t *) a) - 2;
+  sp = ((size_t *) a) - 2;
   if (*sp != sizeof (T))
     exit (i);
 #endif
