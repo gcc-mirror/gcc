@@ -1,3 +1,12 @@
+2002-07-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hwint.h (HOST_WIDE_INT_PRINT_DEC_SPACE,
+	HOST_WIDE_INT_PRINT_UNSIGNED_SPACE,
+	HOST_WIDEST_INT_PRINT_DEC_SPACE, HOST_WIDEST_INT_PRINT_DEC_SPACE):
+	New formatting macros.
+
+	* ra-debug.c (dump_static_insn_cost): Avoid string concatenation.
+
 Mon Jul 22 15:27:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* rtlanal.c (subreg_regno_offset): Return correct offset for

@@ -73,13 +73,16 @@
 # if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
 #  define HOST_WIDE_INT_PRINT_DEC "%d"
 #  define HOST_WIDE_INT_PRINT_DEC_C "%d"
+#  define HOST_WIDE_INT_PRINT_DEC_SPACE "% *d"
 # else
 #  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 #   define HOST_WIDE_INT_PRINT_DEC "%ld"
 #   define HOST_WIDE_INT_PRINT_DEC_C "%ldL"
+#   define HOST_WIDE_INT_PRINT_DEC_SPACE "% *ld"
 #  else
 #   define HOST_WIDE_INT_PRINT_DEC "%lld"
 #   define HOST_WIDE_INT_PRINT_DEC_C "%lldLL"
+#   define HOST_WIDE_INT_PRINT_DEC_SPACE "% *lld"
 #  endif
 # endif
 #endif /* ! HOST_WIDE_INT_PRINT_DEC */
@@ -87,11 +90,14 @@
 #ifndef HOST_WIDE_INT_PRINT_UNSIGNED
 # if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
 #  define HOST_WIDE_INT_PRINT_UNSIGNED "%u"
+#  define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *u"
 # else
 #  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 #   define HOST_WIDE_INT_PRINT_UNSIGNED "%lu"
+#   define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *lu"
 #  else
 #   define HOST_WIDE_INT_PRINT_UNSIGNED "%llu"
+#   define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *llu"
 #  endif
 # endif
 #endif /* ! HOST_WIDE_INT_PRINT_UNSIGNED */
@@ -142,13 +148,17 @@
 #   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONGLONG
 #   define HOST_WIDEST_INT long long
 #   define HOST_WIDEST_INT_PRINT_DEC "%lld"
+#   define HOST_WIDEST_INT_PRINT_DEC_SPACE "% *lld"
 #   define HOST_WIDEST_INT_PRINT_UNSIGNED "%llu"
+#   define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE "% *llu"
 #   define HOST_WIDEST_INT_PRINT_HEX "0x%llx"
 #  else
 #   define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONG
 #   define HOST_WIDEST_INT long
 #   define HOST_WIDEST_INT_PRINT_DEC "%ld"
+#   define HOST_WIDEST_INT_PRINT_DEC_SPACE "% *ld"
 #   define HOST_WIDEST_INT_PRINT_UNSIGNED "%lu"
+#   define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE "% *lu"
 #   define HOST_WIDEST_INT_PRINT_HEX "0x%lx"
 # endif /* long long wider than long */
 #endif /* ! HOST_WIDEST_INT */
