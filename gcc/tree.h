@@ -2623,6 +2623,10 @@ extern void rest_of_type_compilation PARAMS ((tree, int));
 /* In alias.c */
 extern void record_component_aliases		PARAMS ((tree));
 extern HOST_WIDE_INT get_alias_set		PARAMS ((tree));
+extern int alias_sets_conflict_p		PARAMS ((HOST_WIDE_INT,
+							 HOST_WIDE_INT));
+extern int readonly_fields_p			PARAMS ((tree));
+extern int objects_must_conflict_p		PARAMS ((tree, tree));
 
 /* In c-common.c */
 extern HOST_WIDE_INT lang_get_alias_set		PARAMS ((tree));

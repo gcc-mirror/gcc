@@ -181,7 +181,6 @@ static tree save_noncopied_parts PARAMS ((tree, tree));
 static tree init_noncopied_parts PARAMS ((tree, tree));
 static int fixed_type_p		PARAMS ((tree));
 static rtx var_rtx		PARAMS ((tree));
-static int readonly_fields_p	PARAMS ((tree));
 static rtx expand_expr_unaligned PARAMS ((tree, unsigned int *));
 static rtx expand_increment	PARAMS ((tree, int, int));
 static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
@@ -2145,8 +2144,10 @@ copy_blkmode_from_reg (tgtblk, srcreg, type)
 
   if (tgtblk == 0)
     {
-      tgtblk = assign_stack_temp (BLKmode, bytes, 0);
-      MEM_SET_IN_STRUCT_P (tgtblk, AGGREGATE_TYPE_P (type));
+      tgtblk = assign_temp (build_qualified_type (type,
+						  (TYPE_QUALS (type)
+						   | TYPE_QUAL_CONST)),
+			    0, 1, 1);
       preserve_temp_slots (tgtblk);
     }
 
@@ -2822,17 +2823,17 @@ emit_move_insn_1 (x, y)
 		  enum mode_class reg_class = ((class == MODE_COMPLEX_FLOAT)
 					       ? MODE_FLOAT : MODE_INT);
 
-		  enum machine_mode reg_mode =
-		    mode_for_size (GET_MODE_BITSIZE (mode), reg_class, 1);
+		  enum machine_mode reg_mode
+		    = mode_for_size (GET_MODE_BITSIZE (mode), reg_class, 1);
 
 		  if (reg_mode != BLKmode)
 		    {
 		      rtx mem = assign_stack_temp (reg_mode,
 						   GET_MODE_SIZE (mode), 0);
-
 		      rtx cmem = change_address (mem, mode, NULL_RTX);
 
-		      cfun->cannot_inline = N_("function using short complex types cannot be inline");
+		      cfun->cannot_inline
+			= N_("function using short complex types cannot be inline");
 
 		      if (packed_dest_p)
 			{
@@ -4921,9 +4922,11 @@ store_constructor (exp, target, align, cleared, size)
 
 	  if (REG_P (target))
 	    {
-	      targetx = assign_stack_temp (GET_MODE (target),
-					   GET_MODE_SIZE (GET_MODE (target)),
-					   0);
+	      targetx
+		= assign_temp
+		  ((build_qualified_type (type_for_mode (GET_MODE (target), 0),
+					  TYPE_QUAL_CONST)),
+		   0, 1, 1);
 	      emit_move_insn (targetx, target);
 	    }
 
@@ -5022,12 +5025,13 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
   if (mode == BLKmode
       && (GET_CODE (target) == REG || GET_CODE (target) == SUBREG))
     {
-      rtx object = assign_stack_temp (GET_MODE (target),
-				      GET_MODE_SIZE (GET_MODE (target)), 0);
+      rtx object
+	= assign_temp
+	  (build_qualified_type (type_for_mode (GET_MODE (target), 0),
+				 TYPE_QUAL_CONST),
+	   0, 1, 1);
       rtx blk_object = copy_rtx (object);
 
-      MEM_SET_IN_STRUCT_P (object, 1);
-      MEM_SET_IN_STRUCT_P (blk_object, 1);
       PUT_MODE (blk_object, BLKmode);
 
       if (bitsize != GET_MODE_BITSIZE (GET_MODE (target)))
@@ -5506,7 +5510,12 @@ save_noncopied_parts (lhs, list)
 	tree part = TREE_VALUE (tail);
 	tree part_type = TREE_TYPE (part);
 	tree to_be_saved = build (COMPONENT_REF, part_type, lhs, part);
-	rtx target = assign_temp (part_type, 0, 1, 1);
+	rtx target
+	  = assign_temp (build_qualified_type (part_type,
+					       (TYPE_QUALS (part_type)
+						| TYPE_QUAL_CONST)),
+			 0, 1, 1);
+
 	if (! memory_address_p (TYPE_MODE (part_type), XEXP (target, 0)))
 	  target = change_address (target, TYPE_MODE (part_type), NULL_RTX);
 	parts = tree_cons (to_be_saved,
@@ -5559,10 +5568,7 @@ safe_from_p (x, exp, top_p)
 {
   rtx exp_rtl = 0;
   int i, nops;
-  static int save_expr_count;
-  static int save_expr_size = 0;
-  static tree *save_expr_rewritten;
-  static tree save_expr_trees[256];
+  static tree save_expr_list;
 
   if (x == 0
       /* If EXP has varying size, we MUST use a target since we currently
@@ -5577,30 +5583,13 @@ safe_from_p (x, exp, top_p)
 	      || TYPE_ARRAY_MAX_SIZE (TREE_TYPE (exp)) == NULL_TREE
 	      || TREE_CODE (TYPE_ARRAY_MAX_SIZE (TREE_TYPE (exp)))
 	      != INTEGER_CST)
-	  && GET_MODE (x) == BLKmode))
+	  && GET_MODE (x) == BLKmode)
+      /* If X is in the outgoing argument area, it is always safe.  */
+      || (GET_CODE (x) == MEM
+	  && (XEXP (x, 0) == virtual_outgoing_args_rtx
+	      || (GET_CODE (XEXP (x, 0)) == PLUS
+		  && XEXP (XEXP (x, 0), 0) == virtual_outgoing_args_rtx))))
     return 1;
-
-  if (top_p && save_expr_size == 0)
-    {
-      int rtn;
-
-      save_expr_count = 0;
-      save_expr_size = ARRAY_SIZE (save_expr_trees);
-      save_expr_rewritten = &save_expr_trees[0];
-
-      rtn = safe_from_p (x, exp, 1);
-
-      for (i = 0; i < save_expr_count; ++i)
-	{
-	  if (TREE_CODE (save_expr_trees[i]) != ERROR_MARK)
-	    abort ();
-	  TREE_SET_CODE (save_expr_trees[i], SAVE_EXPR);
-	}
-
-      save_expr_size = 0;
-
-      return rtn;
-    }
 
   /* If this is a subreg of a hard register, declare it unsafe, otherwise,
      find the underlying pseudo.  */
@@ -5611,13 +5600,31 @@ safe_from_p (x, exp, top_p)
 	return 0;
     }
 
-  /* If X is a location in the outgoing argument area, it is always safe.  */
-  if (GET_CODE (x) == MEM
-      && (XEXP (x, 0) == virtual_outgoing_args_rtx
-	  || (GET_CODE (XEXP (x, 0)) == PLUS
-	      && XEXP (XEXP (x, 0), 0) == virtual_outgoing_args_rtx)))
-    return 1;
+  /* A SAVE_EXPR might appear many times in the expression passed to the
+     top-level safe_from_p call, and if it has a complex subexpression,
+     examining it multiple times could result in a combinatorial explosion.
+     E.g. on an Alpha running at least 200MHz, a Fortran test case compiled
+     with optimization took about 28 minutes to compile -- even though it was
+     only a few lines long.  So we mark each SAVE_EXPR we see with TREE_PRIVATE
+     and turn that off when we are done.  We keep a list of the SAVE_EXPRs
+     we have processed.  Note that the only test of top_p was above.  */
 
+  if (top_p)
+    {
+      int rtn;
+      tree t;
+
+      save_expr_list = 0;
+
+      rtn = safe_from_p (x, exp, 0);
+
+      for (t = save_expr_list; t != 0; t = TREE_CHAIN (t))
+	TREE_PRIVATE (TREE_PURPOSE (t)) = 0;
+
+      return rtn;
+    }
+
+  /* Now look at our tree code and possibly recurse.  */
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
     case 'd':
@@ -5657,11 +5664,13 @@ safe_from_p (x, exp, top_p)
 	{
 	case ADDR_EXPR:
 	  return (staticp (TREE_OPERAND (exp, 0))
-		  || safe_from_p (x, TREE_OPERAND (exp, 0), 0)
-		  || TREE_STATIC (exp));
+		  || TREE_STATIC (exp)
+		  || safe_from_p (x, TREE_OPERAND (exp, 0), 0));
 
 	case INDIRECT_REF:
-	  if (GET_CODE (x) == MEM)
+	  if (GET_CODE (x) == MEM
+	      && alias_sets_conflict_p (MEM_ALIAS_SET (x),
+					get_alias_set (exp)))
 	    return 0;
 	  break;
 
@@ -5695,37 +5704,20 @@ safe_from_p (x, exp, top_p)
 	  if (exp_rtl)
 	    break;
 
-	  /* This SAVE_EXPR might appear many times in the top-level
-	     safe_from_p() expression, and if it has a complex
-	     subexpression, examining it multiple times could result
-	     in a combinatorial explosion.  E.g. on an Alpha
-	     running at least 200MHz, a Fortran test case compiled with
-	     optimization took about 28 minutes to compile -- even though
-	     it was only a few lines long, and the complicated line causing
-	     so much time to be spent in the earlier version of safe_from_p()
-	     had only 293 or so unique nodes.
+	  /* If we've already scanned this, don't do it again.  Otherwise,
+	     show we've scanned it and record for clearing the flag if we're
+	     going on.  */
+	  if (TREE_PRIVATE (exp))
+	    return 1;
 
-	     So, turn this SAVE_EXPR into an ERROR_MARK for now, but remember
-	     where it is so we can turn it back in the top-level safe_from_p()
-	     when we're done.  */
-
-	  /* For now, don't bother re-sizing the array.  */
-	  if (save_expr_count >= save_expr_size)
-	    return 0;
-	  save_expr_rewritten[save_expr_count++] = exp;
-
-	  nops = TREE_CODE_LENGTH (SAVE_EXPR);
-	  for (i = 0; i < nops; i++)
+	  TREE_PRIVATE (exp) = 1;
+	  if (! safe_from_p (x, TREE_OPERAND (exp, 0), 0))
 	    {
-	      tree operand = TREE_OPERAND (exp, i);
-	      if (operand == NULL_TREE)
-		continue;
-	      TREE_SET_CODE (exp, ERROR_MARK);
-	      if (!safe_from_p (x, operand, 0))
-		return 0;
-	      TREE_SET_CODE (exp, SAVE_EXPR);
+	      TREE_PRIVATE (exp) = 0;
+	      return 0;
 	    }
-	  TREE_SET_CODE (exp, ERROR_MARK);
+
+	  save_expr_list = tree_cons (exp, NULL_TREE, save_expr_list);
 	  return 1;
 
 	case BIND_EXPR:
@@ -5772,10 +5764,11 @@ safe_from_p (x, exp, top_p)
 	}
 
       /* If the rtl is X, then it is not safe.  Otherwise, it is unless both
-	 are memory and EXP is not readonly.  */
+	 are memory and they conflict.  */
       return ! (rtx_equal_p (x, exp_rtl)
 		|| (GET_CODE (x) == MEM && GET_CODE (exp_rtl) == MEM
-		    && ! TREE_READONLY (exp)));
+		    && true_dependence (exp_rtl, GET_MODE (x), x,
+					rtx_addr_varies_p)));
     }
 
   /* If we reach here, it is safe.  */
@@ -5869,26 +5862,6 @@ check_max_integer_computation_mode (exp)
     }
 }
 #endif
-
-/* Utility function used by expand_expr to see if TYPE, a RECORD_TYPE,
-   has any readonly fields.  If any of the fields have types that
-   contain readonly fields, return true as well.  */
-
-static int
-readonly_fields_p (type)
-     tree type;
-{
-  tree field;
-
-  for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL
-	&& (TREE_READONLY (field)
-	    || (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
-		&& readonly_fields_p (TREE_TYPE (field)))))
-      return 1;
-
-  return 0;
-}
 
 /* expand_expr: generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
@@ -6350,11 +6323,10 @@ expand_expr (exp, target, tmode, modifier)
 	  if (mode == VOIDmode)
 	    temp = const0_rtx;
 	  else
-	    {
-	      temp = assign_temp (type, 3, 0, 0);
-	      if (GET_CODE (temp) == MEM)
-		RTX_UNCHANGING_P (temp) = 1;
-	    }
+	    temp = assign_temp (build_qualified_type (type,
+						      (TYPE_QUALS (type)
+						       | TYPE_QUAL_CONST)),
+				3, 0, 0);
 
 	  SAVE_EXPR_RTL (exp) = temp;
 	  if (!optimize && GET_CODE (temp) == REG)
@@ -6606,27 +6578,18 @@ expand_expr (exp, target, tmode, modifier)
 					  XEXP (constructor, 0));
 	  return constructor;
 	}
-
       else
 	{
 	  /* Handle calls that pass values in multiple non-contiguous
 	     locations.  The Irix 6 ABI has examples of this.  */
 	  if (target == 0 || ! safe_from_p (target, exp, 1)
 	      || GET_CODE (target) == PARALLEL)
-	    {
-	      if (mode != BLKmode && ! TREE_ADDRESSABLE (exp))
-		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
-	      else
-		target = assign_temp (type, 0, 1, 1);
-	    }
-
-	  if (TREE_READONLY (exp))
-	    {
-	      if (GET_CODE (target) == MEM)
-		target = copy_rtx (target);
-
-	      RTX_UNCHANGING_P (target) = 1;
-	    }
+	    target
+	      = assign_temp (build_qualified_type (type,
+						   (TYPE_QUALS (type)
+						    | (TREE_READONLY (exp)
+						       * TYPE_QUAL_CONST))),
+			     TREE_ADDRESSABLE (exp), 1, 1);
 
 	  store_constructor (exp, target, TYPE_ALIGN (TREE_TYPE (exp)), 0,
 			     int_size_in_bytes (TREE_TYPE (exp)));
@@ -6685,8 +6648,7 @@ expand_expr (exp, target, tmode, modifier)
 	/* If we are writing to this object and its type is a record with
 	   readonly fields, we must mark it as readonly so it will
 	   conflict with readonly references to those fields.  */
-	if (modifier == EXPAND_MEMORY_USE_WO
-	    && TREE_CODE (type) == RECORD_TYPE && readonly_fields_p (type))
+	if (modifier == EXPAND_MEMORY_USE_WO && readonly_fields_p (type))
 	  RTX_UNCHANGING_P (temp) = 1;
 
 	return temp;
@@ -6902,7 +6864,10 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		|| GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF)
 	      {
-		rtx memloc = assign_temp (TREE_TYPE (tem), 1, 1, 1);
+		tree nt = build_qualified_type (TREE_TYPE (tem),
+						(TYPE_QUALS (TREE_TYPE (tem))
+						 | TYPE_QUAL_CONST));
+		rtx memloc = assign_temp (nt, 1, 1, 1);
 
 		mark_temp_addr_taken (memloc);
 		emit_move_insn (memloc, op0);
@@ -7077,13 +7042,13 @@ expand_expr (exp, target, tmode, modifier)
 
 	    if (mode == BLKmode)
 	      {
-		rtx new = assign_stack_temp (ext_mode,
-					     bitsize / BITS_PER_UNIT, 0);
+		tree nt = build_qualified_type (type_for_size (ext_mode, 0),
+						TYPE_QUAL_CONST);
+		rtx new = assign_temp (nt, 0, 1, 1);
 
 		emit_move_insn (new, op0);
 		op0 = copy_rtx (new);
 		PUT_MODE (op0, BLKmode);
-		MEM_SET_IN_STRUCT_P (op0, 1);
 	      }
 
 	    return op0;
@@ -7303,12 +7268,7 @@ expand_expr (exp, target, tmode, modifier)
 				modifier);
 
 	  if (target == 0)
-	    {
-	      if (mode != BLKmode)
-		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
-	      else
-		target = assign_temp (type, 0, 1, 1);
-	    }
+	    target = assign_temp (type, 0, 1, 1);
 
 	  if (GET_CODE (target) == MEM)
 	    /* Store data into beginning of memory target.  */
@@ -8514,7 +8474,10 @@ expand_expr (exp, target, tmode, modifier)
 	      /* If this object is in a register, it must be not
 		 be BLKmode.  */
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	      rtx memloc = assign_temp (inner_type, 1, 1, 1);
+	      tree nt = build_qualified_type (inner_type,
+					      (TYPE_QUALS (inner_type)
+					       | TYPE_QUAL_CONST));
+	      rtx memloc = assign_temp (nt, 1, 1, 1);
 
 	      mark_temp_addr_taken (memloc);
 	      if (GET_CODE (op0) == PARALLEL)
@@ -8914,7 +8877,10 @@ expand_expr_unaligned (exp, palign)
 	    if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		|| GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF)
 	      {
-		rtx memloc = assign_temp (TREE_TYPE (tem), 1, 1, 1);
+		tree nt = build_qualified_type (TREE_TYPE (tem),
+						(TYPE_QUALS (TREE_TYPE (tem))
+						 | TYPE_QUAL_CONST));
+		rtx memloc = assign_temp (nt, 1, 1, 1);
 
 		mark_temp_addr_taken (memloc);
 		emit_move_insn (memloc, op0);
@@ -8996,8 +8962,9 @@ expand_expr_unaligned (exp, palign)
 	      }
 	    else
 	      {
-		rtx new = assign_stack_temp (ext_mode,
-					     bitsize / BITS_PER_UNIT, 0);
+		tree nt = build_qualified_type (type_for_mode (ext_mode, 0),
+						TYPE_QUAL_CONST);
+		rtx new = assign_temp (nt, 0, 1, 1);
 
 		op0 = extract_bit_field (validize_mem (op0), bitsize, bitpos,
 					 unsignedp, NULL_RTX, ext_mode,

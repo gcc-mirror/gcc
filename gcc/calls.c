@@ -2260,16 +2260,11 @@ expand_call (exp, target, ignore)
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {
-	    rtx d;
-
 	    /* For variable-sized objects, we must be called with a target
 	       specified.  If we were to allocate space on the stack here,
 	       we would have no way of knowing when to free it.  */
+	    rtx d = assign_temp (TREE_TYPE (exp), 1, 1, 1);
 
-	    if (struct_value_size < 0)
-	      abort ();
-
-	    d = assign_temp (TREE_TYPE (exp), 1, 1, 1);
 	    mark_temp_addr_taken (d);
 	    structure_value_addr = XEXP (d, 0);
 	    target = 0;
@@ -3230,18 +3225,20 @@ expand_call (exp, target, ignore)
 	 The Irix 6 ABI has examples of this.  */
       else if (GET_CODE (valreg) == PARALLEL)
 	{
-	  int bytes = int_size_in_bytes (TREE_TYPE (exp));
-
 	  if (target == 0)
 	    {
-	      target = assign_stack_temp (TYPE_MODE (TREE_TYPE (exp)),
-					  bytes, 0);
-	      MEM_SET_IN_STRUCT_P (target, AGGREGATE_TYPE_P (TREE_TYPE (exp)));
+	      /* This will only be assigned once, so it can be readonly.  */
+	      tree nt = build_qualified_type (TREE_TYPE (exp),
+					      (TYPE_QUALS (TREE_TYPE (exp))
+					       | TYPE_QUAL_CONST));
+
+	      target = assign_temp (nt, 0, 1, 1);
 	      preserve_temp_slots (target);
 	    }
 
 	  if (! rtx_equal_p (target, valreg))
-	    emit_group_store (target, valreg, bytes,
+	    emit_group_store (target, valreg,
+			      int_size_in_bytes (TREE_TYPE (exp)),
 			      TYPE_ALIGN (TREE_TYPE (exp)));
 
 	  /* We can not support sibling calls for this case.  */
@@ -3562,7 +3559,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
       if (value != 0 && GET_CODE (value) == MEM)
 	mem_value = value;
       else
-	mem_value = assign_stack_temp (outmode, GET_MODE_SIZE (outmode), 0);
+	mem_value = assign_temp (type_for_mode (outmode, 0), 0, 1, 1);
 #endif
 
       /* This call returns a big structure.  */
@@ -3666,7 +3663,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	{
 	  /* We do not support FUNCTION_ARG_CALLEE_COPIES here since it can
 	     be viewed as just an efficiency improvement.  */
-	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+	  rtx slot = assign_temp (type_for_mode (mode, 0), 0, 1, 1);
+
 	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
 					   gen_rtx_USE (VOIDmode, slot),
 					   call_fusage);
@@ -4339,15 +4337,15 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
 	      if (save_mode == BLKmode)
 		{
-		  arg->save_area = assign_stack_temp (BLKmode,
-						      arg->size.constant, 0);
-		  MEM_SET_IN_STRUCT_P (arg->save_area,
-				       AGGREGATE_TYPE_P (TREE_TYPE
-							 (arg->tree_value)));
+		  tree ot = TREE_TYPE (arg->tree_value);
+		  tree nt = build_qualified_type (ot, (TYPE_QUALS (ot)
+						       | TYPE_QUAL_CONST));
+
+		  arg->save_area = assign_temp (nt, 0, 1, 1);
 		  preserve_temp_slots (arg->save_area);
 		  emit_block_move (validize_mem (arg->save_area), stack_area,
-				   GEN_INT (arg->size.constant),
-				   PARM_BOUNDARY);
+				   expr_size (arg->tree_value),
+				   MIN (PARM_BOUNDARY, TYPE_ALIGN (nt)));
 		}
 	      else
 		{
