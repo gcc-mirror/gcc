@@ -1,3 +1,12 @@
+2002-01-07  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* testsuite_flags.in:  Add -fmessage-length=0 to CXXFLAGS
+	testsuite/lib/prune.exp: Delete lines ":In function ..." 
+	from compiler output
+	testsuite/23_containers/map_operators.cc: Remove 
+	dg-excess-errors comment
+	testsuite/23_containers/set_operators.cc: Likewise
+
 2002-01-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_function.h:  Remove two lines of comments;

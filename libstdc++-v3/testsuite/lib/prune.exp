@@ -21,5 +21,9 @@ proc prune_g++_output { text } {
     # Cygwin warns about -ffunction-sections
     regsub -all "(^|\n)\[^\n\]*: -ffunction-sections may affect debugging on some targets\[^\n\]*" $text "" text
 
+    # Remove parts of warnings that refer to location of previous
+    # definitions, etc as these confuse dejagnu
+    regsub -all "(^|\n)\[^\n\]*: In function \[^\n\]*" $text "" text
+
     return $text
 }
