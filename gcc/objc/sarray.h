@@ -213,10 +213,14 @@ static inline void* sarray_get(struct sarray* array, sidx index)
   return array->buckets[x.off.boffset]->elems[x.off.eoffset];
 #endif /* OBJC_SPARSE2 */
 #else /* not PRECOMPUTE_SELECTORS */
+#ifdef OBJC_SPARSE3
   return array->
     indices[index/INDEX_CAPACITY]->
       buckets[(index/BUCKET_SIZE)%INDEX_SIZE]->
 	elems[index%BUCKET_SIZE];
+#else /* OBJC_SPARSE2 */
+  return array->buckets[index/BUCKET_SIZE]->elems[index%BUCKET_SIZE];
+#endif /* not OBJC_SPARSE3 */
 #endif /* not PRECOMPUTE_SELECTORS */
 }
 
