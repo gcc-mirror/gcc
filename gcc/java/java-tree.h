@@ -153,6 +153,10 @@ extern int flag_jni;
 
 extern int flag_extraneous_semicolon;
 
+/* When non zero, always check for a non gcj generated classes archive.  */
+
+extern int flag_force_classes_archive_check;
+
 /* When non zero, we emit xref strings. Values of the flag for xref
    backends are defined in xref.h.  */
 

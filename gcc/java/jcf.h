@@ -88,7 +88,8 @@ typedef struct JCF {
   unsigned char *buffer_end;
   unsigned char *read_ptr;
   unsigned char *read_end;
-  int java_source;
+  int java_source : 1;
+  int right_zip : 1;
   jcf_filbuf_t filbuf;
   void *read_state;
   const char *filename;

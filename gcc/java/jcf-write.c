@@ -346,10 +346,11 @@ static char *make_class_file_name PARAMS ((tree));
 static unsigned char *append_synthetic_attribute PARAMS ((struct jcf_partial *));
 static void append_innerclasses_attribute PARAMS ((struct jcf_partial *, tree));
 static void append_innerclasses_attribute_entry PARAMS ((struct jcf_partial *, tree, tree));
+static void append_gcj_attribute PARAMS ((struct jcf_partial *, tree));
 
 /* Utility macros for appending (big-endian) data to a buffer.
    We assume a local variable 'ptr' points into where we want to
-   write next, and we assume enoygh space has been allocated. */
+   write next, and we assume enough space has been allocated. */
 
 #ifdef ENABLE_JC1_CHECKING
 static int CHECK_PUT PARAMS ((void *, struct jcf_partial *, int));
@@ -3110,8 +3111,11 @@ generate_classfile (clas, state)
     }
   ptr = append_chunk (NULL, 10, state);
 
-  i = ((INNER_CLASS_TYPE_P (clas) 
-	|| DECL_INNER_CLASS_LIST (TYPE_NAME (clas))) ? 2 : 1);
+  i = 1;		/* Source file always exists as an attribute */
+  if (INNER_CLASS_TYPE_P (clas) || DECL_INNER_CLASS_LIST (TYPE_NAME (clas)))
+    i++;
+  if (clas == object_type_node)
+    i++;
   PUT2 (i);			/* attributes_count */
 
   /* generate the SourceFile attribute. */
@@ -3126,6 +3130,7 @@ generate_classfile (clas, state)
   PUT4 (2);
   i = find_utf8_constant (&state->cpool, get_identifier (source_file));
   PUT2 (i);
+  append_gcj_attribute (state, clas);
   append_innerclasses_attribute (state, clas);
 
   /* New finally generate the contents of the constant pool chunk. */
@@ -3155,6 +3160,24 @@ append_synthetic_attribute (state)
   PUT4 (0);		/* Attribute length */
 
   return ptr;
+}
+
+static void
+append_gcj_attribute (state, class)
+     struct jcf_partial *state;
+     tree class;
+{
+  unsigned char *ptr;
+  int i;
+
+  if (class != object_type_node)
+    return;
+
+  ptr = append_chunk (NULL, 6, state); /* 2+4 */
+  i = find_utf8_constant (&state->cpool, 
+			  get_identifier ("gnu.gcj.gcj-compiled"));
+  PUT2 (i);			/* Attribute string index */
+  PUT4 (0);			/* Attribute length */
 }
 
 static void
