@@ -1,3 +1,8 @@
+1998-10-25  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Set DECL_NONCONVERTING_P for all
+	non-converting constructors.
+	
 1998-10-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* gxxint.texi: Correct documentation for n, N, Q, and B.
