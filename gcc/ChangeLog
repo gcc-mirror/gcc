@@ -1,3 +1,9 @@
+Thu Mar 19 09:15:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* regclass.c (memory_move_secondary_cost): Wrap uses of
+	SECONDARY_INPUT_RELOAD_CLASS and SECONDARY_OUTPUT_RELOAD_CLASS
+	with #ifdef tests.
+
 Thu Mar 19 09:06:35 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config/m68k/m68k.md (addqi3): Fix typo gen_INT vs. GEN_INT.
