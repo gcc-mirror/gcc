@@ -1,5 +1,10 @@
 2001-07-16  Richard Henderson  <rth@redhat.com>
 
+	* regclass.c (init_reg_sets): Use only 32 bits per initializer
+	from int_reg_class_contents.
+
+2001-07-16  Richard Henderson  <rth@redhat.com>
+
 	* hard-reg-set.h (regs_invalidated_by_call): Declare.
 	* regclass.c (regs_invalidated_by_call): Move from cse.c.
 	(init_reg_sets_1): Move initialization from cse_main.
