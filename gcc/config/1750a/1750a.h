@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 #define TARGET_SWITCHES  \
-  { {"vaxc-alignment", 2}, \
+  { {"vaxc-alignment", 2, "Use VAX-C alignment"}, \
     { "", TARGET_DEFAULT}}
 
 /* Default target_flags if no switches specified.  */
