@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in the GNU C compiler.
-   Copyright (C) 1987, 1988 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -530,9 +530,9 @@ DEFTREECODE (BIT_NOT_EXPR, "bit_not_expr", "1", 1)
    operand whether its value is needed or not (for side effects).  */
 DEFTREECODE (TRUTH_ANDIF_EXPR, "truth_andif_expr", "e", 2)
 DEFTREECODE (TRUTH_ORIF_EXPR, "truth_orif_expr", "e", 2)
-DEFTREECODE (TRUTH_AND_EXPR, "truth_and_expr", "2", 2)
-DEFTREECODE (TRUTH_OR_EXPR, "truth_or_expr", "2", 2)
-DEFTREECODE (TRUTH_XOR_EXPR, "truth_xor_expr", "2", 2)
+DEFTREECODE (TRUTH_AND_EXPR, "truth_and_expr", "e", 2)
+DEFTREECODE (TRUTH_OR_EXPR, "truth_or_expr", "e", 2)
+DEFTREECODE (TRUTH_XOR_EXPR, "truth_xor_expr", "e", 2)
 DEFTREECODE (TRUTH_NOT_EXPR, "truth_not_expr", "e", 1)
 
 /* Relational operators.
