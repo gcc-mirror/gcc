@@ -4128,7 +4128,7 @@ namespace std
       template<bool _Intl>
         iter_type
         _M_extract(iter_type __s, iter_type __end, ios_base& __io,
-		   ios_base::iostate& __err, string_type& __digits) const;     
+		   ios_base::iostate& __err, string& __digits) const;     
     };
 
   template<typename _CharT, typename _InIter>
