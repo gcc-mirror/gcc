@@ -1,3 +1,8 @@
+Wed Sep 30 09:57:40 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (expand_expr): Handle COMPONENT_REF, BIT_FIELD_REF ARRAY_REF
+	and INDIRECT_REF in code to check MAX_INTEGER_COMPUTATION_MODE.
+
 Wed Sep 30 10:13:39 1998  Catherine Moore  <clm@cygnus.com>
 
         * toplev.c:  Fix last patch.

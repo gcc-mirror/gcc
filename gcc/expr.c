@@ -5394,6 +5394,10 @@ expand_expr (exp, target, tmode, modifier)
   if (target
       && TREE_CODE (exp) != INTEGER_CST
       && TREE_CODE (exp) != PARM_DECL
+      && TREE_CODE (exp) != ARRAY_REF
+      && TREE_CODE (exp) != COMPONENT_REF
+      && TREE_CODE (exp) != BIT_FIELD_REF
+      && TREE_CODE (exp) != INDIRECT_REF
       && TREE_CODE (exp) != VAR_DECL)
     {
       enum machine_mode mode = GET_MODE (target);
@@ -5405,6 +5409,10 @@ expand_expr (exp, target, tmode, modifier)
 
   if (TREE_CODE (exp) != INTEGER_CST
       && TREE_CODE (exp) != PARM_DECL
+      && TREE_CODE (exp) != ARRAY_REF
+      && TREE_CODE (exp) != COMPONENT_REF
+      && TREE_CODE (exp) != BIT_FIELD_REF
+      && TREE_CODE (exp) != INDIRECT_REF
       && TREE_CODE (exp) != VAR_DECL
       && GET_MODE_CLASS (tmode) == MODE_INT
       && tmode > MAX_INTEGER_COMPUTATION_MODE)
