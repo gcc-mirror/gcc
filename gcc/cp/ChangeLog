@@ -1,5 +1,10 @@
 2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (tsubst_expr, DECL_STMT case): Don't process if
+	tsubsting fails.	
+
+2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* spew.c (frob_id): New static function.
 	(frob_opname): Use it.
 	(yylex): Use it.
