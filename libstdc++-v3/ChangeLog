@@ -1,5 +1,10 @@
 2003-02-13  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/ostream.tcc (sentry::sentry): Improve
+	performance-wise the fix for libstdc++/9563.
+
+2003-02-13  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/9320
 	* include/ext/stdio_filebuf.h
 	(stdio_filebuf(int, std::ios_base::openmode, bool, int_type),

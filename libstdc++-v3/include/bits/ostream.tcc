@@ -44,7 +44,7 @@ namespace std
     : _M_os(__os)
     {
       // XXX MT
-      if (__os.good() && __os.tie())
+      if (__os.tie() && __os.good())
 	__os.tie()->flush();
 
       if (__os.good())
