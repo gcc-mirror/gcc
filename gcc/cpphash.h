@@ -256,6 +256,7 @@ extern void _cpp_run_directive		PARAMS ((cpp_reader *,
 						 const char *, size_t));
 extern unsigned int _cpp_get_line	PARAMS ((cpp_reader *,
 						 unsigned int *));
+extern const cpp_token *_cpp_get_token PARAMS ((cpp_reader *));
 extern const cpp_token *_cpp_get_raw_token PARAMS ((cpp_reader *));
 extern void _cpp_push_token PARAMS ((cpp_reader *, const cpp_token*));
 extern const cpp_token *_cpp_glue_header_name PARAMS ((cpp_reader *));

@@ -417,7 +417,7 @@ _cpp_glue_header_name (pfile)
 
   for (;;)
     {
-      t = cpp_get_token (pfile);
+      t = _cpp_get_token (pfile);
       if (t->type == CPP_GREATER || t->type == CPP_EOF)
 	break;
 
@@ -947,7 +947,7 @@ skip_whitespace (pfile, in_directive)
 }
 
 /* Parse (append) an identifier.  */
-static inline const U_CHAR *
+static const U_CHAR *
 parse_name (pfile, tok, cur, rlimit)
      cpp_reader *pfile;
      cpp_token *tok;
@@ -1960,7 +1960,7 @@ struct cpp_context
     const cpp_token **arg;	/* Used for arg contexts only.  */
   } u;
 
-  /* Pushed token to be returned by next call to cpp_get_token.  */
+  /* Pushed token to be returned by next call to get_raw_token.  */
   const cpp_token *pushed_token;
 
   struct macro_args *args;	/* 0 for arguments and object-like macros.  */
@@ -1985,13 +1985,9 @@ static const cpp_token *parse_arg PARAMS ((cpp_reader *, int, unsigned int,
 					   macro_args *, unsigned int *));
 static int parse_args PARAMS ((cpp_reader *, cpp_hashnode *, macro_args *));
 static void save_token PARAMS ((macro_args *, const cpp_token *));
-static const cpp_token *push_arg_context PARAMS ((cpp_reader *,
-						  const cpp_token *));
-static int do_pop_context PARAMS ((cpp_reader *));
-static const cpp_token *pop_context PARAMS ((cpp_reader *));
-static const cpp_token *push_macro_context PARAMS ((cpp_reader *,
-						    cpp_hashnode *,
-						    const cpp_token *));
+static int pop_context PARAMS ((cpp_reader *));
+static int push_macro_context PARAMS ((cpp_reader *, const cpp_token *));
+static void push_arg_context PARAMS ((cpp_reader *, const cpp_token *));
 static void free_macro_args PARAMS ((macro_args *));
 
 /* Free the storage allocated for macro arguments.  */
@@ -2000,7 +1996,7 @@ free_macro_args (args)
      macro_args *args;
 {
   if (args->tokens)
-    free (args->tokens);
+    free ((PTR) args->tokens);
   free (args->ends);
   free (args);
 }
@@ -2069,7 +2065,7 @@ is_macro_disabled (pfile, expansion, token)
 
       prev_nme = pfile->no_expand_level;
       pfile->no_expand_level = context - pfile->contexts;
-      next = cpp_get_token (pfile);
+      next = _cpp_get_token (pfile);
       restore_macro_expansion (pfile, prev_nme);
       if (next->type != CPP_OPEN_PAREN)
 	{
@@ -2096,7 +2092,8 @@ save_token (args, token)
     {
       args->capacity += args->capacity + 100;
       args->tokens = (const cpp_token **)
-	xrealloc (args->tokens, args->capacity * sizeof (const cpp_token *));
+	xrealloc ((PTR) args->tokens,
+		  args->capacity * sizeof (const cpp_token *));
     }
   args->tokens[args->used++] = token;
 }
@@ -2117,7 +2114,7 @@ parse_arg (pfile, var_args, paren_context, args, pcount)
   
   for (count = 0;; count++)
     {
-      token = cpp_get_token (pfile);
+      token = _cpp_get_token (pfile);
 
       switch (token->type)
 	{
@@ -2511,97 +2508,100 @@ maybe_paste_with_next (pfile, token)
   cpp_context *context = CURRENT_CONTEXT (pfile);
 
   /* Is this token on the LHS of ## ? */
-  if (!((context->flags & CONTEXT_PASTEL) && context->posn == context->count)
-      && !(token->flags & PASTE_LEFT))
-    return token;
 
-  /* Prevent recursion, and possibly pushing back more than one token.  */
-  if (pfile->paste_level)
-    return token;
-  
-  /* Suppress macro expansion for next token, but don't conflict with
-     the other method of suppression.  If it is an argument, macro
-     expansion within the argument will still occur.  */
-  pfile->paste_level = pfile->cur_context;
-  second = cpp_get_token (pfile);
-  pfile->paste_level = 0;
-
-  /* Ignore placemarker argument tokens (cannot be from an empty macro
-     since macros are not expanded).  */
-  if (token->type == CPP_PLACEMARKER)
-     pasted = duplicate_token (pfile, second);
-  else if (second->type == CPP_PLACEMARKER)
+  while ((token->flags & PASTE_LEFT)
+	 || ((context->flags & CONTEXT_PASTEL)
+	     && context->posn == context->count))
     {
-      cpp_context *mac_context = CURRENT_CONTEXT (pfile) - 1;
-      /* GCC has special extended semantics for a ## b where b is a
-	 varargs parameter: a disappears if b consists of no tokens.
-	 This extension is deprecated.  */
-      if ((mac_context->u.list->flags & GNU_REST_ARGS)
-	  && (mac_context->u.list->tokens[mac_context->posn - 1].val.aux + 1
-	      == (unsigned) mac_context->u.list->paramc))
+      /* Suppress macro expansion for next token, but don't conflict
+	 with the other method of suppression.  If it is an argument,
+	 macro expansion within the argument will still occur.  */
+      pfile->paste_level = pfile->cur_context;
+      second = _cpp_get_token (pfile);
+      pfile->paste_level = 0;
+
+      /* Ignore placemarker argument tokens (cannot be from an empty
+	 macro since macros are not expanded).  */
+      if (token->type == CPP_PLACEMARKER)
+	pasted = duplicate_token (pfile, second);
+      else if (second->type == CPP_PLACEMARKER)
 	{
-	  cpp_warning (pfile, "deprecated GNU ## extension used");
-	  pasted = duplicate_token (pfile, second);
+	  cpp_context *mac_context = CURRENT_CONTEXT (pfile) - 1;
+	  /* GCC has special extended semantics for a ## b where b is
+	     a varargs parameter: a disappears if b consists of no
+	     tokens.  This extension is deprecated.  */
+	  if ((mac_context->u.list->flags & GNU_REST_ARGS)
+	      && (mac_context->u.list->tokens[mac_context->posn-1].val.aux + 1
+		  == (unsigned) mac_context->u.list->paramc))
+	    {
+	      cpp_warning (pfile, "deprecated GNU ## extension used");
+	      pasted = duplicate_token (pfile, second);
+	    }
+	  else
+	    pasted = duplicate_token (pfile, token);
 	}
       else
-	pasted = duplicate_token (pfile, token);
-    }
-  else
-    {
-      int digraph = 0;
-      enum cpp_ttype type = can_paste (pfile, token, second, &digraph);
-
-      if (type == CPP_EOF)
 	{
-	  if (CPP_OPTION (pfile, warn_paste))
-	    cpp_warning (pfile,
-			 "pasting would not give a valid preprocessing token");
-	  _cpp_push_token (pfile, second);
-	  return token;
-	}
+	  int digraph = 0;
+	  enum cpp_ttype type = can_paste (pfile, token, second, &digraph);
 
-      if (type == CPP_NAME || type == CPP_NUMBER)
-	{
-	  /* Join spellings.  */
-	  U_CHAR *buf, *end;
+	  if (type == CPP_EOF)
+	    {
+	      if (CPP_OPTION (pfile, warn_paste))
+		cpp_warning (pfile,
+			"pasting would not give a valid preprocessing token");
+	      _cpp_push_token (pfile, second);
+	      return token;
+	    }
 
-	  pasted = get_temp_token (pfile);
-	  buf = (U_CHAR *) alloca (TOKEN_LEN (token) + TOKEN_LEN (second));
-	  end = spell_token (pfile, token, buf);
-	  end = spell_token (pfile, second, end);
-	  *end = '\0';
+	  if (type == CPP_NAME || type == CPP_NUMBER)
+	    {
+	      /* Join spellings.  */
+	      U_CHAR *buf, *end;
 
-	  if (type == CPP_NAME)
-	    pasted->val.node = cpp_lookup (pfile, buf, end - buf);
+	      pasted = get_temp_token (pfile);
+	      buf = (U_CHAR *) alloca (TOKEN_LEN (token) + TOKEN_LEN (second));
+	      end = spell_token (pfile, token, buf);
+	      end = spell_token (pfile, second, end);
+	      *end = '\0';
+
+	      if (type == CPP_NAME)
+		pasted->val.node = cpp_lookup (pfile, buf, end - buf);
+	      else
+		{
+		  pasted->val.str.text = uxstrdup (buf);
+		  pasted->val.str.len = end - buf;
+		}
+	    }
+	  else if (type == CPP_WCHAR || type == CPP_WSTRING)
+	    pasted = duplicate_token (pfile, second);
 	  else
 	    {
-	      pasted->val.str.text = uxstrdup (buf);
-	      pasted->val.str.len = end - buf;
+	      pasted = get_temp_token (pfile);
+	      pasted->val.integer = 0;
 	    }
-	}
-      else if (type == CPP_WCHAR || type == CPP_WSTRING)
-	pasted = duplicate_token (pfile, second);
-      else
-	{
-	  pasted = get_temp_token (pfile);
-	  pasted->val.integer = 0;
+
+	  pasted->type = type;
+	  pasted->flags = digraph ? DIGRAPH : 0;
 	}
 
-      pasted->type = type;
-      pasted->flags = digraph ? DIGRAPH : 0;
+      /* The pasted token gets the whitespace flags and position of the
+	 first token, the PASTE_LEFT flag of the second token, plus the
+	 PASTED flag to indicate it is the result of a paste.  However, we
+	 want to preserve the DIGRAPH flag.  */
+      pasted->flags &= ~(PREV_WHITE | BOL | PASTE_LEFT);
+      pasted->flags |= ((token->flags & (PREV_WHITE | BOL))
+			| (second->flags & PASTE_LEFT) | PASTED);
+      pasted->col = token->col;
+      pasted->line = token->line;
+
+      /* See if there is another token to be pasted onto the one we just
+	 constructed.  */
+      token = pasted;
+      context = CURRENT_CONTEXT (pfile);
+      /* and loop */
     }
-
-  /* The pasted token gets the whitespace flags and position of the
-     first token, the PASTE_LEFT flag of the second token, plus the
-     PASTED flag to indicate it is the result of a paste.  However, we
-     want to preserve the DIGRAPH flag.  */
-  pasted->flags &= ~(PREV_WHITE | BOL | PASTE_LEFT);
-  pasted->flags |= ((token->flags & (PREV_WHITE | BOL))
-		    | (second->flags & PASTE_LEFT) | PASTED);
-  pasted->col = token->col;
-  pasted->line = token->line;
-
-  return maybe_paste_with_next (pfile, pasted);
+  return token;
 }
 
 /* Convert a token sequence to a single string token according to the
@@ -2617,13 +2617,14 @@ stringify_arg (pfile, token)
   unsigned int prev_value, backslash_count = 0;
   unsigned int buf_used = 0, whitespace = 0, buf_cap = INIT_SIZE;
 
+  push_arg_context (pfile, token);
   prev_value  = prevent_macro_expansion (pfile);
   main_buf = (unsigned char *) xmalloc (buf_cap);
 
   result = get_temp_token (pfile);
   ASSIGN_FLAGS_AND_POS (result, token);
 
-  for (; (token = cpp_get_token (pfile))->type != CPP_EOF; )
+  for (; (token = _cpp_get_token (pfile))->type != CPP_EOF; )
     {
       int escape;
       unsigned char *buf;
@@ -2690,21 +2691,15 @@ expand_context_stack (pfile)
 
 /* Push the context of macro NODE onto the context stack.  TOKEN is
    the CPP_NAME token invoking the macro.  */
-static const cpp_token *
-push_macro_context (pfile, node, token)
+static int
+push_macro_context (pfile, token)
      cpp_reader *pfile;
-     cpp_hashnode *node;
      const cpp_token *token;
 {
   unsigned char orig_flags;
   macro_args *args;
   cpp_context *context;
-
-  if (pfile->cur_context > CPP_STACK_MAX)
-    {
-      cpp_error (pfile, "infinite macro recursion invoking '%s'", node->name);
-      return token;
-    }
+  cpp_hashnode *node = token->val.node;
 
   /* Token's flags may change when parsing args containing a nested
      invocation of this macro.  */
@@ -2731,7 +2726,7 @@ push_macro_context (pfile, node, token)
       if (error)
 	{
 	  free_macro_args (args);
-	  return token;
+	  return 1;
 	}
     }
 
@@ -2753,12 +2748,12 @@ push_macro_context (pfile, node, token)
      be one, empty macros are a single placemarker token.  */
   MODIFY_FLAGS_AND_POS (&context->u.list->tokens[0], token, orig_flags);
 
-  return cpp_get_token (pfile);
+  return 0;
 }
 
 /* Push an argument to the current macro onto the context stack.
    TOKEN is the MACRO_ARG token representing the argument expansion.  */
-static const cpp_token *
+static void
 push_arg_context (pfile, token)
      cpp_reader *pfile;
      const cpp_token *token;
@@ -2792,15 +2787,10 @@ push_arg_context (pfile, token)
 			  token->flags & (PREV_WHITE | BOL));
   }
 
-  if (token->flags & STRINGIFY_ARG)
-    return stringify_arg (pfile, token);
-
   if (token->flags & PASTE_LEFT)
     context->flags |= CONTEXT_PASTEL;
   if (pfile->paste_level)
     context->flags |= CONTEXT_PASTER;
-
-  return get_raw_token (pfile);
 }
 
 /* "Unget" a token.  It is effectively inserted in the token queue and
@@ -2859,58 +2849,92 @@ cpp_get_token (pfile)
      cpp_reader *pfile;
 {
   const cpp_token *token;
-  cpp_hashnode *node;
-
-  /* Loop till we hit a non-directive, non-skipped, non-placemarker token.  */
+  /* Loop till we hit a non-directive, non-placemarker token.  */
   for (;;)
     {
-      token = get_raw_token (pfile);
-      if (token->flags & BOL && token->type == CPP_HASH
+      token = _cpp_get_token (pfile);
+
+      if (token->type == CPP_PLACEMARKER)
+	continue;
+
+      if (token->type == CPP_HASH && token->flags & BOL
 	  && pfile->token_list.directive)
 	{
 	  process_directive (pfile, token);
 	  continue;
 	}
 
+      return token;
+    }
+}
+
+/* The internal interface to return the next token.  There are two
+   differences between the internal and external interfaces: the
+   internal interface may return a PLACEMARKER token, and it does not
+   process directives.  */
+const cpp_token *
+_cpp_get_token (pfile)
+     cpp_reader *pfile;
+{
+  const cpp_token *token;
+  cpp_hashnode *node;
+
+  /* Loop until we hit a non-macro token.  */
+  for (;;)
+    {
+      token = get_raw_token (pfile);
+
       /* Short circuit EOF. */
       if (token->type == CPP_EOF)
 	return token;
-      
-      if (pfile->skipping && ! pfile->token_list.directive)
+
+      /* If we are skipping... */
+      if (pfile->skipping)
 	{
+	  /* we still have to process directives,  */
+	  if (pfile->token_list.directive)
+	    return token;
+
+	  /* but everything else is ignored.  */
 	  _cpp_skip_rest_of_line (pfile);
 	  continue;
 	}
-      break;
-    }
 
-  /* If there's a potential control macro and we get here, then that
-     #ifndef didn't cover the entire file and its argument shouldn't
-     be taken as a control macro.  */
-  pfile->potential_control_macro = 0;
+      /* If there's a potential control macro and we get here, then that
+	 #ifndef didn't cover the entire file and its argument shouldn't
+	 be taken as a control macro.  */
+      pfile->potential_control_macro = 0;
 
-  token = maybe_paste_with_next (pfile, token);
+      /* See if there's a token to paste with this one.  */
+      if (!pfile->paste_level)
+	token = maybe_paste_with_next (pfile, token);
 
-  if (token->type != CPP_NAME)
-    return token;
+      /* If it isn't a macro, return it now.  */
+      if (token->type != CPP_NAME
+	  || token->val.node->type == T_VOID)
+	return token;
 
-  /* Is macro expansion disabled in general?  */
-  if (pfile->no_expand_level == pfile->cur_context || pfile->paste_level)
-    return token;
+      /* Is macro expansion disabled in general?  */
+      if (pfile->no_expand_level == pfile->cur_context || pfile->paste_level)
+	return token;
  
-  node = token->val.node;
-  if (node->type == T_VOID)
-    return token;
+      node = token->val.node;
+      if (node->type != T_MACRO)
+	return special_symbol (pfile, node, token);
 
-  if (node->type == T_MACRO)
-    {
       if (is_macro_disabled (pfile, node->value.expansion, token))
 	return token;
 
-      return push_macro_context (pfile, node, token);
+      if (pfile->cur_context > CPP_STACK_MAX)
+	{
+	  cpp_error (pfile, "macros nested too deep invoking '%s'", node->name);
+	  return token;
+	}
+
+      if (push_macro_context (pfile, token))
+	return token;
+      /* else loop */
     }
-  else
-    return special_symbol (pfile, node, token);
 }
 
 /* Returns the next raw token, i.e. without performing macro
@@ -2920,33 +2944,45 @@ get_raw_token (pfile)
      cpp_reader *pfile;
 {
   const cpp_token *result;
-  cpp_context *context = CURRENT_CONTEXT (pfile);
+  cpp_context *context;
 
-  if (context->pushed_token)
+  for (;;)
     {
-      result = context->pushed_token;
-      context->pushed_token = 0;
-    }
-  else if (context->posn == context->count)
-    result = pop_context (pfile);
-  else
-    {
-      if (IS_ARG_CONTEXT (context))
+      context = CURRENT_CONTEXT (pfile);
+      if (context->pushed_token)
 	{
-	  result = context->u.arg[context->posn++];
-	  if (result == 0)
-	    {
-	      context->flags ^= CONTEXT_RAW;
-	      result = context->u.arg[context->posn++];
-	    }
-	  return result;	/* Cannot be a CPP_MACRO_ARG */
+	  result = context->pushed_token;
+	  context->pushed_token = 0;
 	}
-      result = &context->u.list->tokens[context->posn++];
-    }
+      else if (context->posn == context->count)
+	{
+	  if (pop_context (pfile))
+	    return &eof_token;
+	  continue;
+	}
+      else
+	{
+	  if (IS_ARG_CONTEXT (context))
+	    {
+	      result = context->u.arg[context->posn++];
+	      if (result == 0)
+		{
+		  context->flags ^= CONTEXT_RAW;
+		  result = context->u.arg[context->posn++];
+		}
+	      return result;	/* Cannot be a CPP_MACRO_ARG */
+	    }
+	  result = &context->u.list->tokens[context->posn++];
+	}
 
-  if (result->type == CPP_MACRO_ARG)
-    result = push_arg_context (pfile, result);
-  return result;
+      if (result->type != CPP_MACRO_ARG)
+	return result;
+
+      if (result->flags & STRINGIFY_ARG)
+	return stringify_arg (pfile, result);
+
+      push_arg_context (pfile, result);
+    }
 }
 
 /* Internal interface to get the token without macro expanding.  */
@@ -2955,7 +2991,7 @@ _cpp_get_raw_token (pfile)
      cpp_reader *pfile;
 {
   int prev_nme = prevent_macro_expansion (pfile);
-  const cpp_token *result = cpp_get_token (pfile);
+  const cpp_token *result = _cpp_get_token (pfile);
   restore_macro_expansion (pfile, prev_nme);
   return result;
 }
@@ -2972,16 +3008,6 @@ lex_next (pfile, clear)
   cpp_toklist *list = &pfile->token_list;
   const cpp_token *old_list = list->tokens;
   unsigned int old_used = list->tokens_used;
-
-  /* If we are currently processing a directive, do not advance.  6.10
-     paragraph 2: A new-line character ends the directive even if it
-     occurs within what would otherwise be an invocation of a
-     function-like macro.
-
-     It is possible that clear == 1 too; e.g. "#if funlike_macro ("
-     since parse_args swallowed the directive's EOF.  */
-  if (list->directive)
-    return 1;
 
   if (clear)
     {
@@ -3034,18 +3060,27 @@ lex_next (pfile, clear)
   return 0;
 }
 
-/* Pops a context of the context stack.  If we're at the bottom, lexes
-   the next logical line.  Returns 1 if we're at the end of the
+/* Pops a context off the context stack.  If we're at the bottom, lexes
+   the next logical line.  Returns EOF if we're at the end of the
    argument list to the # operator, or if it is illegal to "overflow"
    into the rest of the file (e.g. 6.10.3.1.1).  */
 static int
-do_pop_context (pfile)
+pop_context (pfile)
      cpp_reader *pfile;
 {
   cpp_context *context;
 
   if (pfile->cur_context == 0)
-    return lex_next (pfile, pfile->no_expand_level == UINT_MAX);
+    {
+      /* If we are currently processing a directive, do not advance.  6.10
+	 paragraph 2: A new-line character ends the directive even if it
+	 occurs within what would otherwise be an invocation of a
+	 function-like macro.  */
+      if (pfile->token_list.directive)
+	return 1;
+
+      return lex_next (pfile, pfile->no_expand_level == UINT_MAX);
+    }
 
   /* Argument contexts, when parsing args or handling # operator
      return CPP_EOF at the end.  */
@@ -3062,16 +3097,6 @@ do_pop_context (pfile)
   pfile->cur_context--;
 
   return 0;
-}
-
-/* Move down the context stack, and return the next raw token.  */
-static const cpp_token *
-pop_context (pfile)
-     cpp_reader *pfile;
-{
-  if (do_pop_context (pfile))
-    return &eof_token;
-  return get_raw_token (pfile);
 }
 
 /* Turn off macro expansion at the current context level.  */
@@ -3286,18 +3311,26 @@ void
 _cpp_init_input_buffer (pfile)
      cpp_reader *pfile;
 {
+  cpp_context *base;
+
   init_trigraph_map ();
+  _cpp_init_toklist (&pfile->token_list, DUMMY_TOKEN);
+  pfile->no_expand_level = UINT_MAX;
   pfile->context_cap = 20;
+  pfile->cur_context = 0;
+
   pfile->contexts = (cpp_context *)
     xmalloc (pfile->context_cap * sizeof (cpp_context));
-  pfile->cur_context = 0;
-  pfile->contexts[0].u.list = &pfile->token_list;
 
-  pfile->contexts[0].posn = 0;
-  pfile->contexts[0].count = 0;
-  pfile->no_expand_level = UINT_MAX;
-
-  _cpp_init_toklist (&pfile->token_list, DUMMY_TOKEN);
+  /* Clear the base context.  */
+  base = &pfile->contexts[0];
+  base->u.list = &pfile->token_list;
+  base->posn = 0;
+  base->count = 0;
+  base->args = 0;
+  base->level = 0;
+  base->flags = 0;
+  base->pushed_token = 0;
 }
 
 /* Moves to the end of the directive line, popping contexts as
@@ -3306,17 +3339,20 @@ void
 _cpp_skip_rest_of_line (pfile)
      cpp_reader *pfile;
 {
-  /* Get to base context.  Clear parsing args and each contexts flags,
-     since these can cause pop_context to return without popping.  */
-  pfile->no_expand_level = UINT_MAX;
-  while (pfile->cur_context != 0)
-    {
-      pfile->contexts[pfile->cur_context].flags = 0;
-      do_pop_context (pfile);
-    }
+  /* Discard all stacked contexts.  */
+  int i;
+  for (i = pfile->cur_context; i > 0; i--)
+    if (pfile->contexts[i].args)
+      free_macro_args (pfile->contexts[i].args);
 
-  pfile->contexts[pfile->cur_context].count = 0;
-  pfile->contexts[pfile->cur_context].posn = 0;
+  if (pfile->no_expand_level <= pfile->cur_context)
+    pfile->no_expand_level = 0;
+  pfile->cur_context = 0;
+
+  /* Clear the base context, and clear the directive pointer so that
+     get_raw_token will advance to the next line.  */
+  pfile->contexts[0].count = 0;
+  pfile->contexts[0].posn = 0;
   pfile->token_list.directive = 0;
 }
 
@@ -3332,8 +3368,9 @@ _cpp_run_directive (pfile, dir, buf, count)
   if (cpp_push_buffer (pfile, (const U_CHAR *)buf, count) != NULL)
     {
       unsigned int prev_lvl = 0;
-      /* scan the line now, else prevent_macro_expansion won't work */
-      do_pop_context (pfile);
+
+      /* Scan the line now, else prevent_macro_expansion won't work.  */
+      lex_next (pfile, 1);
       if (! (dir->flags & EXPAND))
 	prev_lvl = prevent_macro_expansion (pfile);
 

@@ -1,3 +1,45 @@
+2000-07-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (parse_name): No longer inline (premature optimization).
+	(do_pop_context): Fold into pop_context.
+	(pop_context): Returns int.
+	(lex_next): Hoist test for end of directive into pop_context.
+	(push_macro_context): Returns int; takes just reader and token.
+	Hoist test for excessive nesting to caller.
+	(push_arg_context): Returns void; takes just reader and token.
+	Do not call stringify_arg or get_raw_token.
+	(get_raw_token): Convert tail recursion through	push_arg_context
+	to a loop at this level.  Call stringify_arg here if appropriate.
+	(maybe_paste_with_next): Convert tail recursion to a while loop.
+	Hoist test of paste_level to caller.
+
+	(stringify_arg): Push arg context at beginning.
+	(cpp_get_token): Split out core into _cpp_get_token.  Call
+	process_directive here.  Throw away CPP_PLACEMARKER tokens.
+	(_cpp_get_token): Convert tail recursion through
+	push_macro_context to a loop at this level.
+	(_cpp_glue_header_name, is_macro_disabled, stringify_arg,
+	_cpp_get_raw_token): Use _cpp_get_token.
+	(_cpp_skip_rest_of_line): Drop the context stack directly; do
+	not call pop_context.
+	(_cpp_run_directive): Call lex_next directly.
+
+	* cpphash.h: Prototype _cpp_get_token.
+	* cppexp.c (lex): Use it.
+	* cpphash.c (parse_define): Use it.
+	* cpplib.c (get_define_node, do_undef, parse_include,
+	read_line_number, do_line, do_ident, do_pragma, do_pragma_gcc,
+	do_pragma_implementation, do_pragma_poison, do_pragma_dependency,
+	parse_ifdef, validate_else): Use it.
+	(cpp_push_buffer): Tweak error message; abort if anyone tries
+	to push a buffer while macro expansions are stacked.
+
+2000-07-11  Donn Terry  <donnte@microsoft.com>
+
+	* cpplex.c (free_macro_args, save_token): Cast arg of free
+	and/or xrealloc to PTR.
+	(_cpp_init_input_buffer): Clear all fields of the base context.
+
 Tue Jul 11 15:28:21 CDT 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* gensupport.c (process_rtx): Make rtl checking stop
