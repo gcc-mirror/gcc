@@ -2762,6 +2762,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 				GT, LEU, LTU, GEU, GTU}},		   \
   {"boolean_operator", {AND, IOR, XOR}},				   \
   {"boolean_or_operator", {IOR, XOR}},					   \
+  {"altivec_register_operand", {REG}},	                                   \
   {"min_max_operator", {SMIN, SMAX, UMIN, UMAX}},
 
 /* uncomment for disabling the corresponding default options */
