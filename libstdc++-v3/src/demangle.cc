@@ -28,8 +28,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cxxabi.h>
 #include <bits/demangle.h>
+#include <cxxabi.h>
 
 // __cxa_demangle
 //

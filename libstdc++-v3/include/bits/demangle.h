@@ -54,32 +54,6 @@
 #define _GLIBCXX_DEMANGLER_CWDEBUG 1
 #endif
 
-// The following defines change the behaviour of the demangler.  The
-// default behaviour is that none of these macros is defined.
-
-// _GLIBCXX_DEMANGLER_STYLE_VOID
-// Default behaviour:					int f()
-// Uses (void) instead of ():				int f(void)
-
-// _GLIBCXX_DEMANGLER_STYLE_LITERAL
-// Default behaviour:					(long)13, 
-//							(unsigned long long)19
-// Use extensions 'u', 'l' and 'll' for integral
-// literals (as in template arguments):			13l, 19ull
-
-// _GLIBCXX_DEMANGLER_STYLE_LITERAL_INT
-// Default behaviour:					4
-// Use also an explicit cast for int in literals:	(int)4
-
-// _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
-// Default behaviour:					(i) < (3), sizeof (int)
-// Don't output spaces around operators in expressions:	(i)<(3), sizeof(int)
-
-// _GLIBCXX_DEMANGLER_STYLE_SIZEOF_TYPENAME
-// Default behaviour:					sizeof (X::t)
-// Put 'typename' infront of <nested-name> types
-// inside a 'sizeof':					sizeof (typename X::t)
-
 namespace __gnu_cxx
 {
   namespace demangler
@@ -91,7 +65,7 @@ namespace __gnu_cxx
       template_template_param,
       nested_name_prefix,
       nested_name_template_prefix,
-      unscoped_template_name,
+      unscoped_template_name
     };
 
     struct substitution_st
@@ -312,6 +286,59 @@ namespace __gnu_cxx
 #endif
       };
 
+    struct implementation_details
+    {
+      private:
+        unsigned int M_style;
+
+      public:
+	// The following flags change the behaviour of the demangler.  The
+	// default behaviour is that none of these flags is set.
+
+        static unsigned int const style_void = 1;
+	// Default behaviour:				int f()
+	// Use (void) instead of ():			int f(void)
+
+        static unsigned int const style_literal = 2;
+	// Default behaviour:				(long)13, 
+	//						(unsigned long long)19
+	// Use extensions 'u', 'l' and 'll' for integral
+	// literals (as in template arguments):		13l, 19ull
+
+        static unsigned int const style_literal_int = 4;
+	// Default behaviour:				4
+	// Use also an explicit
+	//   cast for int in literals:			(int)4
+
+        static unsigned int const style_compact_expr_ops = 8;
+	// Default behaviour:				(i) < (3), sizeof (int)
+	// Don't output spaces around
+	//   operators in expressions:			(i)<(3), sizeof(int)
+
+        static unsigned int const style_sizeof_typename = 16;
+	// Default behaviour:				sizeof (X::t)
+	// Put 'typename' infront of <nested-name>
+	// types inside a 'sizeof':			sizeof (typename X::t)
+
+      public:
+	implementation_details(unsigned int style_flags = 0) :
+	    M_style(style_flags) { }
+	virtual ~implementation_details() { }
+	bool get_style_void(void) const
+	    { return (M_style & style_void); }
+	bool get_style_literal(void) const
+	    { return (M_style & style_literal); }
+	bool get_style_literal_int(void) const
+	    { return (M_style & style_literal_int); }
+	bool get_style_compact_expr_ops(void) const
+	    { return (M_style & style_compact_expr_ops); }
+	bool get_style_sizeof_typename(void) const
+	    { return (M_style & style_sizeof_typename); }
+        // This can be overridden by user implementations.
+	virtual bool decode_real(char* output, unsigned long* input,
+                                 size_t size_of_real) const { return false; }
+    };
+
     template<typename Allocator>
       class session
       {
@@ -336,25 +363,29 @@ namespace __gnu_cxx
 	std::vector<int, Allocator> M_template_arg_pos;
 	int M_template_arg_pos_offset;
 	std::vector<substitution_st, Allocator> M_substitutions_pos;
+	implementation_details const& M_implementation_details;
 #if _GLIBCXX_DEMANGLER_CWDEBUG
 	bool M_inside_add_substitution;
 #endif
 
       public:
-	explicit session(char const* in, int len)
+	explicit session(char const* in, int len,
+	    implementation_details const& id = implementation_details())
 	: M_str(in), M_pos(0), M_maxpos(len - 1), M_result(true),
 	  M_inside_template_args(0), M_inside_type(0),
 	  M_inside_substitution(0), M_saw_destructor(false),
 	  M_name_is_cdtor(false), M_name_is_template(false),
 	  M_name_is_conversion_operator(false),
-	  M_template_args_need_space(false), M_template_arg_pos_offset(0)
+	  M_template_args_need_space(false), M_template_arg_pos_offset(0),
+	  M_implementation_details(id)
 #if _GLIBCXX_DEMANGLER_CWDEBUG
 	  , M_inside_add_substitution(false)
 #endif
 	{ }
 
 	static int
-	decode_encoding(string_type& output, char const* input, int len);
+	decode_encoding(string_type& output, char const* input, int len,
+	  implementation_details const& id = implementation_details());
 
 	bool
 	decode_type(string_type& output,
@@ -425,6 +456,7 @@ namespace __gnu_cxx
 	bool decode_unscoped_name(string_type& output);
 	bool decode_non_negative_decimal_integer(string_type& output);
 	bool decode_special_name(string_type& output);
+        bool decode_real(string_type& output, size_t size_of_real);
       };
 
     template<typename Allocator>
@@ -881,6 +913,66 @@ namespace __gnu_cxx
 
     template<typename Allocator>
       bool
+      session<Allocator>::decode_real(string_type& output, size_t size_of_real)
+      {
+	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_real");
+
+	unsigned long words[4];	// 32 bit per long, maximum of 128 bits.
+	unsigned long* word = &words[0];
+
+	int saved_pos;
+	store(saved_pos);
+
+	// The following assumes that leading zeroes are also included in the
+	// mangled name, I am not sure that is conforming to the C++-ABI, but
+	// it is what g++ does.
+	unsigned char nibble, c = current();
+	for(size_t word_cnt = size_of_real / 4; word_cnt > 0; --word_cnt)
+	{
+	  for (int nibble_cnt = 0; nibble_cnt < 8; ++nibble_cnt)
+	  {
+	    // Translate character into nibble.
+	    if (c < '0' || c > 'f')
+	      _GLIBCXX_DEMANGLER_FAILURE;
+	    if (c <= '9')
+	      nibble = c - '0';
+	    else if (c >= 'a')
+	      nibble = c - 'a' + 10;
+	    else
+	      _GLIBCXX_DEMANGLER_FAILURE;
+	    // Write nibble into word array.
+	    if (nibble_cnt == 0)
+	      *word = nibble << 28;
+	    else
+	      *word |= (nibble << (28 - 4 * nibble_cnt));
+	    c = next();
+	  }
+	  ++word;
+	}
+	char buf[24];
+	if (M_implementation_details.decode_real(buf, words, size_of_real))
+	{
+	  output += buf;
+	  _GLIBCXX_DEMANGLER_RETURN;
+	}
+	restore(saved_pos);
+
+	output += '[';
+	c = current();
+	for(size_t nibble_cnt = 0; nibble_cnt < 2 * size_of_real; ++nibble_cnt)
+	{
+	  if (c < '0' || c > 'f' || (c > '9' && c < 'a'))
+	    _GLIBCXX_DEMANGLER_FAILURE;
+	  output += c;
+	  c = next();
+	}
+	output += ']';
+
+	_GLIBCXX_DEMANGLER_RETURN;
+      }
+
+    template<typename Allocator>
+      bool
       session<Allocator>::decode_literal(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_literal");
@@ -891,7 +983,7 @@ namespace __gnu_cxx
 	    _GLIBCXX_DEMANGLER_FAILURE;
 	  eat_current();
 	  if ((M_pos += decode_encoding(output, M_str + M_pos,
-		  M_maxpos - M_pos + 1)) < 0)
+		  M_maxpos - M_pos + 1, M_implementation_details)) < 0)
 	    _GLIBCXX_DEMANGLER_FAILURE;
 	}
 	else
@@ -907,34 +999,39 @@ namespace __gnu_cxx
 	    _GLIBCXX_DEMANGLER_RETURN;
 	  }
 	  char c = current();
-#ifdef _GLIBCXX_DEMANGLER_STYLE_LITERAL
-	  if (c == 'i' || c == 'j' || c == 'l' ||
-	      c == 'm' || c == 'x' || c == 'y')
+	  if ((c == 'i' || c == 'j' || c == 'l' ||
+	       c == 'm' || c == 'x' || c == 'y') &&
+              M_implementation_details.get_style_literal())
+	    eat_current();
+	  else if (c == 'i' &&
+	      !M_implementation_details.get_style_literal_int())
 	    eat_current();
 	  else
-#else
-#ifndef _GLIBCXX_DEMANGLER_STYLE_LITERAL_INT
-	  if (c == 'i')
-	    eat_current();
-	  else
-#endif
-#endif
 	  {
 	    output += '(';
 	    if (!decode_type(output))
 	      _GLIBCXX_DEMANGLER_FAILURE;
 	    output += ')';
 	  }
-	  if (!decode_number(output))
+	  if (c >= 'd' && c <= 'g')
+	  {
+	    size_t size_of_real = (c == 'd') ? sizeof(double) :
+	        ((c == 'f') ? sizeof(float) :
+		(c == 'e') ?  sizeof(long double) : 16);
+	    if (!decode_real(output, size_of_real))
+		_GLIBCXX_DEMANGLER_FAILURE;
+	  }
+	  else if (!decode_number(output))
 	    _GLIBCXX_DEMANGLER_FAILURE;
-#ifdef _GLIBCXX_DEMANGLER_STYLE_LITERAL
-	  if (c == 'j' || c == 'm' || c == 'y')
-	    output += 'u';
-	  if (c == 'l' || c == 'm')
-	    output += 'l';
-	  if (c == 'x' || c == 'y')
-	    output += "ll";
-#endif
+          if (M_implementation_details.get_style_literal())
+	  {
+	    if (c == 'j' || c == 'm' || c == 'y')
+	      output += 'u';
+	    if (c == 'l' || c == 'm')
+	      output += 'l';
+	    if (c == 'x' || c == 'y')
+	      output += "ll";
+	  }
 	}
 	_GLIBCXX_DEMANGLER_RETURN;
       }
@@ -1204,11 +1301,10 @@ namespace __gnu_cxx
 	  if (opcode1 == 't' || opcode1 == 'z')
 	  {
 	    eat_current();
-#ifdef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
-	    output += "sizeof(";
-#else
-	    output += "sizeof (";
-#endif
+	    if (M_implementation_details.get_style_compact_expr_ops())
+	      output += "sizeof(";
+	    else
+	      output += "sizeof (";
 	    if (opcode1 == 't')
 	    {
 	      // I cannot think of a mangled name that is valid for both cases
@@ -1240,21 +1336,22 @@ namespace __gnu_cxx
 	      // This is ambiguity is very unlikely to happen and it is kind
 	      // of fuzzy to detect when adding a 'typename' makes sense.
 	      //
-#ifdef _GLIBCXX_DEMANGLER_STYLE_SIZEOF_TYPENAME
-	      // We can only get here inside a template parameter,
-	      // so this is syntactically correct if the given type is
-	      // a typedef.  The only disadvantage is that it is inconsistent
-	      // with all other places where the 'typename' keyword should be
-	      // used and we don't.
-	      // With this, the above example will demangle as
-	      // void f<5, A>(C<sizeof (typename T::t), sizeof (T::t)>::q)
-	      if (current() == 'N' ||	// <nested-name>
-	      				// This should be a safe bet.
-	          (current() == 'S' &&
-		   next_peek() == 't'))	// std::something, guess that
-		   			// this involves a typedef.
-		output += "typename ";
-#endif
+	      if (M_implementation_details.get_style_sizeof_typename())
+	      {
+		// We can only get here inside a template parameter,
+		// so this is syntactically correct if the given type is
+		// a typedef.  The only disadvantage is that it is inconsistent
+		// with all other places where the 'typename' keyword should be
+		// used and we don't.
+		// With this, the above example will demangle as
+		// void f<5, A>(C<sizeof (typename T::t), sizeof (T::t)>::q)
+		if (current() == 'N' ||	// <nested-name>
+					  // This should be a safe bet.
+		    (current() == 'S' &&
+		     next_peek() == 't'))	// std::something, guess that
+					  // this involves a typedef.
+		  output += "typename ";
+	      }
 	      if (!decode_type(output))
 		_GLIBCXX_DEMANGLER_FAILURE;
 	    }
@@ -1305,32 +1402,33 @@ namespace __gnu_cxx
 		  output += op;
 		bool is_eq = (opcode1 != current());
 		eat_current();
+		if (index == 34 && M_inside_template_args)	// operator>
+		  output += '(';
 		output += '(';
 		if (!decode_expression(output))
 		  _GLIBCXX_DEMANGLER_FAILURE;
 		output += ')';
 		if (entry.type != unary)
 		{
-#ifndef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
-		  output += ' ';
-#endif
+	          if (!M_implementation_details.get_style_compact_expr_ops())
+		    output += ' ';
 		  output += op;
 		  if (is_eq)
 		    output += '=';
-#ifndef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
-		  output += ' ';
-#endif
+	          if (!M_implementation_details.get_style_compact_expr_ops())
+		    output += ' ';
 		  output += '(';
 		  if (!decode_expression(output))
 		    _GLIBCXX_DEMANGLER_FAILURE;
 		  output += ')';
+		  if (index == 34 && M_inside_template_args)
+		    output += ')';
 		  if (entry.type == trinary)
 		  {
-#ifdef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
-		    output += ":(";
-#else
-		    output += " : (";
-#endif
+		    if (M_implementation_details.get_style_compact_expr_ops())
+		      output += ":(";
+		    else
+		      output += " : (";
 		    if (!decode_expression(output))
 		      _GLIBCXX_DEMANGLER_FAILURE;
 		    output += ')';
@@ -1440,8 +1538,7 @@ namespace __gnu_cxx
 	  M_saw_destructor = false;
 	  _GLIBCXX_DEMANGLER_RETURN;
 	}
-#ifndef _GLIBCXX_DEMANGLER_STYLE_VOID
-	if (current() == 'v')
+	if (current() == 'v' && !M_implementation_details.get_style_void())
 	{
 	  eat_current();
 	  if (current() != 'E' && current() != 0)
@@ -1450,7 +1547,6 @@ namespace __gnu_cxx
 	  M_saw_destructor = false;
 	  _GLIBCXX_DEMANGLER_RETURN;
 	}
-#endif
 	output += '(';
 	M_template_args_need_space = false;
 	if (!decode_type(output))	// Must have at least one parameter.
@@ -1508,8 +1604,8 @@ namespace __gnu_cxx
     // <Q>F<R><B>E 	    ==> R (Q)B		"<R>", "<B>" (<B> recursive)
     //                                              and "F<R><B>E".
     //
-    // Note that if <R> has postfix qualifiers (an array), then those
-    // are added AFTER the (member) function type.  For example:
+    // Note that if <R> has postfix qualifiers (an array or function), then
+    // those are added AFTER the (member) function type.  For example:
     // <Q>FPA<R><B>E ==> R (*(Q)B) [], where the PA added the prefix
     // "(*" and the postfix ") []".
     //
@@ -1863,7 +1959,8 @@ namespace __gnu_cxx
 		// Return type.
 		// Constructors, destructors and conversion operators don't
 		// have a return type, but seem to never get here.
-		if (!decode_type_with_postfix(prefix, postfix))
+		string_type return_type_postfix;
+		if (!decode_type_with_postfix(prefix, return_type_postfix))
 		    // substitution: <R> recursive
 		{
 		  failure = true;
@@ -1885,9 +1982,10 @@ namespace __gnu_cxx
 		add_substitution(start_pos, type);
 		// substitution: all qualified types if any.
 		qualifiers->decode_qualifiers(prefix, postfix);
-		prefix += ")";
-		prefix += bare_function_type;
-		prefix += member_function_qualifiers;
+		postfix += ")";
+		postfix += bare_function_type;
+		postfix += member_function_qualifiers;
+		postfix += return_type_postfix;
 		goto decode_type_exit;
 	      }
 	      qualifiers->add_qualifier_start(pointer_to_member, start_pos,
@@ -1929,17 +2027,19 @@ namespace __gnu_cxx
 	      //     substitution: "<R>", "<B>" (<B> recursive) and "F<R><B>E".
 
 	      // Return type.
-	      if (!decode_type_with_postfix(prefix, postfix))
+	      string_type return_type_postfix;
+	      if (!decode_type_with_postfix(prefix, return_type_postfix))
 		  // Substitution: "<R>".
 	      {
 		failure = true;
 		break;
 	      }
-	      // Only array (pointer) types have a postfix.
-	      // In that case we don't want the space but
-	      // expect something like prefix is "int (*"
-	      // and postfix is ") [1]".
-	      if (postfix.size() == 0)
+	      // Only array and function (pointer) types have a postfix.
+	      // In that case we don't want the space but expect something
+	      // like prefix is "int (*" and postfix is ") [1]".
+	      // We do want the space if this pointer is qualified.
+	      if (return_type_postfix.size() == 0 ||
+	          (prefix.size() > 0 && *prefix.rbegin() != '*'))
 		prefix += ' ';
 	      prefix += '(';
 	      string_type bare_function_type;
@@ -1953,10 +2053,11 @@ namespace __gnu_cxx
 	      add_substitution(start_pos, type);  // Substitution: "F<R><B>E".
 	      qualifiers->decode_qualifiers(prefix, postfix);
 		  // substitution: all qualified types, if any.
-	      prefix += ")";
+	      postfix += ")";
 	      if (extern_C)
-	        prefix += " [extern \"C\"] ";
-	      prefix += bare_function_type;
+	        postfix += " [extern \"C\"] ";
+	      postfix += bare_function_type;
+	      postfix += return_type_postfix;
 	      break;
 	    }
 	    case 'T':
@@ -2181,7 +2282,8 @@ namespace __gnu_cxx
 	if (current() != 'Z' || M_pos >= M_maxpos)
 	  _GLIBCXX_DEMANGLER_FAILURE;
 	if ((M_pos += decode_encoding(output, M_str + M_pos + 1,
-		M_maxpos - M_pos) + 1) < 0 || eat_current() != 'E')
+		M_maxpos - M_pos, M_implementation_details) + 1) < 0 ||
+		eat_current() != 'E')
 	  _GLIBCXX_DEMANGLER_FAILURE;
 	output += "::";
 	if (current() == 's')
@@ -2480,7 +2582,7 @@ namespace __gnu_cxx
 	    if (!decode_call_offset(output)
 		|| !decode_call_offset(output)
 		|| (M_pos += decode_encoding(output, M_str + M_pos,
-		    M_maxpos - M_pos + 1)) < 0)
+		    M_maxpos - M_pos + 1, M_implementation_details)) < 0)
 	      _GLIBCXX_DEMANGLER_FAILURE;
 	    _GLIBCXX_DEMANGLER_RETURN;
 	  case 'C':		// GNU extension?
@@ -2507,7 +2609,7 @@ namespace __gnu_cxx
 	      output += "non-virtual thunk to ";
 	    if (!decode_call_offset(output)
 		|| (M_pos += decode_encoding(output, M_str + M_pos,
-		    M_maxpos - M_pos + 1)) < 0)
+		    M_maxpos - M_pos + 1, M_implementation_details)) < 0)
 	      _GLIBCXX_DEMANGLER_FAILURE;
 	    _GLIBCXX_DEMANGLER_RETURN;
 	}
@@ -2522,8 +2624,7 @@ namespace __gnu_cxx
     template<typename Allocator>
       int
       session<Allocator>::decode_encoding(string_type& output,
-					  char const* in,
-					  int len)
+          char const* in, int len, implementation_details const& id)
       {
 #if _GLIBCXX_DEMANGLER_CWDEBUG
 	_GLIBCXX_DEMANGLER_DOUT(dc::demangler,
@@ -2534,7 +2635,7 @@ namespace __gnu_cxx
 #endif
 	if (len <= 0)
 	  return INT_MIN;
-	session<Allocator> demangler_session(in, len);
+	session<Allocator> demangler_session(in, len, id);
 	string_type nested_name_qualifiers;
 	int saved_pos;
 	demangler_session.store(saved_pos);
@@ -2577,8 +2678,10 @@ namespace __gnu_cxx
       typedef Allocator allocator_type;
       typedef std::basic_string<char, std::char_traits<char>, Allocator> 
 	  string_type;
-      static string_type symbol(char const* in);
-      static string_type type(char const* in);
+      static string_type symbol(char const* in,
+                                demangler::implementation_details const& id);
+      static string_type type(char const* in,
+                              demangler::implementation_details const& id);
     };
 
   // demangle::symbol()
@@ -2587,7 +2690,8 @@ namespace __gnu_cxx
   // instance returned by nm(1).
   template<typename Allocator>
     std::basic_string<char, std::char_traits<char>, Allocator>
-    demangle<Allocator>::symbol(char const* input)
+    demangle<Allocator>::symbol(char const* input,
+                                demangler::implementation_details const& id)
     {
       // <mangled-name> ::= _Z <encoding>
       // <mangled-name> ::= _GLOBAL_ _<type>_ <disambiguation part>
@@ -2616,8 +2720,8 @@ namespace __gnu_cxx
 	}
 	else if (input[1] == 'Z')
 	{
-	  int cnt = demangler_type::decode_encoding(result, input + 2,
-						    INT_MAX);
+	  int cnt =
+	      demangler_type::decode_encoding(result, input + 2, INT_MAX, id);
 	  if (cnt < 0 || input[cnt + 2] != 0)
 	    failure = true;
 	}
@@ -2637,14 +2741,15 @@ namespace __gnu_cxx
   // name as for instance returned by std::type_info::name().
   template<typename Allocator>
     std::basic_string<char, std::char_traits<char>, Allocator> 
-    demangle<Allocator>::type(char const* input)
+    demangle<Allocator>::type(char const* input,
+                              demangler::implementation_details const& id)
     {
       std::basic_string<char, std::char_traits<char>, Allocator> result;
       if (input == NULL)
 	result = "(null)";
       else
       {
-	demangler::session<Allocator> demangler_session(input, INT_MAX);
+	demangler::session<Allocator> demangler_session(input, INT_MAX, id);
 	if (!demangler_session.decode_type(result)
 	    || demangler_session.remaining_input_characters())
 	{
