@@ -9482,7 +9482,6 @@ fixup_abnormal_edges ()
 		     on the non-existant edge.  */
 		  if (GET_CODE (PATTERN (insn)) != USE)
 		    {
-		      rtx seq;
 		      /* We're not deleting it, we're moving it.  */
 		      INSN_DELETED_P (insn) = 0;
 		      PREV_INSN (insn) = NULL_RTX;
