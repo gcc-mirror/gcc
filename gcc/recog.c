@@ -934,10 +934,13 @@ general_operand (op, mode)
   if (code == MEM)
     {
       register rtx y = XEXP (op, 0);
+
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
+
       if (GET_CODE (y) == ADDRESSOF)
 	return 1;
+
       /* Use the mem's mode, since it will be reloaded thus.  */
       mode = GET_MODE (op);
       GO_IF_LEGITIMATE_ADDRESS (mode, y, win);
