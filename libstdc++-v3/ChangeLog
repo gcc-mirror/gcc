@@ -1,3 +1,19 @@
+2004-05-13  Simon Marshall <simon.marshall@misys.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/15090
+	* include/bits/locale_facets.h: Fix for -fno-for-scope.
+	* include/debug/safe_sequence.h: Same.
+	* include/debug/safe_iterator.tcc: Same.
+	* src/debug.cc: Same.
+	* src/locale.cc: Same.
+	* src/locale_init.cc: Same.
+	* src/localename.cc: Same.
+	* config/locale/gnu/ctype_members.cc: Same.
+	* config/locale/gnu/numeric_members.cc: Same.
+	* testsuite/testsuite_abi.cc: Same.
+	* testsuite/testsuite_hooks.cc: Same.
+	
 2004-05-13  Jonathan Wakely  <redi@gcc.gnu.org>
 	
 	* docs/html/abi.html: Document effect of -fabi-version on value

@@ -1,6 +1,6 @@
 // Safe sequence implementation  -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -133,10 +133,10 @@ namespace __gnu_debug
           }
         }
 
-        for (_Safe_iterator_base* __iter = _M_const_iterators; __iter; )
+        for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2; )
         {
-          const_iterator* __victim = static_cast<const_iterator*>(__iter);
-          __iter = __iter->_M_next;
+          const_iterator* __victim = static_cast<const_iterator*>(__iter2);
+          __iter2 = __iter2->_M_next;
           if (!__victim->_M_singular())
           {
 	    if (__pred(__victim->base()))
@@ -166,10 +166,11 @@ namespace __gnu_debug
 	    __victim->_M_attach(static_cast<_Sequence*>(this));
         }
 
-        for (_Safe_iterator_base* __iter = __from->_M_const_iterators; __iter;)
+        for (_Safe_iterator_base* __iter2 = __from->_M_const_iterators; 
+	     __iter2;)
         {
-          const_iterator* __victim = static_cast<const_iterator*>(__iter);
-          __iter = __iter->_M_next;
+          const_iterator* __victim = static_cast<const_iterator*>(__iter2);
+          __iter2 = __iter2->_M_next;
           if (!__victim->_M_singular() && __victim->base() == __x.base())
 	    __victim->_M_attach(static_cast<_Sequence*>(this));
         }

@@ -1,6 +1,6 @@
 // Debugging iterator implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -123,11 +123,11 @@ namespace __gnu_debug
 	      if (this->base() == __victim->base())
 		__victim->_M_version = 0;
 	    }
-	  for (_Safe_iterator_base* iter = _M_sequence->_M_const_iterators;
-	       iter; /* increment in loop */)
+	  for (_Safe_iterator_base* iter2 = _M_sequence->_M_const_iterators;
+	       iter2; /* increment in loop */)
 	    {
-	      const_iterator* __victim = static_cast<const_iterator*>(iter);
-	      iter = iter->_M_next;
+	      const_iterator* __victim = static_cast<const_iterator*>(iter2);
+	      iter2 = iter2->_M_next;
 	      if (this->base() == __victim->base())
 		__victim->_M_version = 0;
 	    }

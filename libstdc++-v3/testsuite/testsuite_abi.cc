@@ -328,25 +328,25 @@ compare_symbols(const char* baseline_file, const char* test_file,
   // Check missing names for compatibility.
   typedef pair<symbol, symbol> symbol_pair;
   vector<symbol_pair> incompatible;
-  for (size_t i = 0; i < missing_names.size(); ++i)
+  for (size_t j = 0; j < missing_names.size(); ++j)
     {
-      symbol base = baseline_objects[missing_names[i]];
+      symbol base = baseline_objects[missing_names[j]];
       incompatible.push_back(symbol_pair(base, base));
     }
 
   // Check shared names for compatibility.
-  for (size_t i = 0; i < shared_names.size(); ++i)
+  for (size_t k = 0; k < shared_names.size(); ++k)
     {
-      symbol base = baseline_objects[shared_names[i]];
-      symbol test = test_objects[shared_names[i]];
+      symbol base = baseline_objects[shared_names[k]];
+      symbol test = test_objects[shared_names[k]];
       if (!check_compatible(base, test))
 	incompatible.push_back(symbol_pair(base, test));
     }
 
   // Check added names for compatibility.
-  for (size_t i = 0; i < added_names.size(); ++i)
+  for (size_t l = 0; l < added_names.size(); ++l)
     {
-      symbol test = test_objects[added_names[i]];
+      symbol test = test_objects[added_names[l]];
       if (!check_version(test, true))
 	incompatible.push_back(symbol_pair(test, test));
     }
