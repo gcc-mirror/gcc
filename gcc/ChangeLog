@@ -1,3 +1,9 @@
+Sun Sep 20 19:01:51 1998  Richard Henderson  <rth@cygnus.com>
+
+        * tree.c (new_alias_set): New function.
+        * tree.h (new_alias_set): Declare it.
+        * c-common.c (c_get_alias_set): Use it.
+
 Sun Sep 20 12:35:55 1998  Richard Henderson  <rth@cygnus.com>
 
 	* fold-const.c (fold): Yet another COND_EXPR bug: when folding 

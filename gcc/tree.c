@@ -5061,7 +5061,8 @@ expr_check (node, ignored, file, line, nofatal)
 /* Return the alias set for T, which may be either a type or an
    expression.  */
 
-int get_alias_set (t)
+int
+get_alias_set (t)
      tree t;
 {
   if (!flag_strict_aliasing || !lang_get_alias_set)
@@ -5070,4 +5071,13 @@ int get_alias_set (t)
     return 0;
   else
     return (*lang_get_alias_set) (t);
+}
+
+/* Return a brand-new alias set.  */
+
+int
+new_alias_set ()
+{
+  static int last_alias_set;
+  return ++last_alias_set;
 }

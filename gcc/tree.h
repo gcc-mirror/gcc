@@ -1865,6 +1865,7 @@ extern tree get_set_constructor_bits		PROTO((tree, char *, int));
 extern tree get_set_constructor_bytes		PROTO((tree,
 						       unsigned char *, int));
 extern int get_alias_set                        PROTO((tree));
+extern int new_alias_set			PROTO((void));
 extern int (*lang_get_alias_set)                PROTO((tree));
 
 /* In stmt.c */
