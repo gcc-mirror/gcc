@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 93-99, 2000 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -1620,7 +1620,7 @@
 	(plus:SI (match_operand:SI 1 "register_operand" "r")
 		 (high:SI (match_operand 2 "" ""))))]
   "symbolic_operand (operands[2], Pmode)
-   && ! function_label_operand (operands[2])
+   && ! function_label_operand (operands[2], Pmode)
    && flag_pic == 2"
   "addil LT'%G2,%1"
   [(set_attr "type" "binary")
@@ -1652,8 +1652,8 @@
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(high:SI (match_operand 1 "" "")))]
   "symbolic_operand (operands[1], Pmode)
-   && ! function_label_operand (operands[1])
-   && ! read_only_operand (operands[1])
+   && ! function_label_operand (operands[1], Pmode)
+   && ! read_only_operand (operands[1], Pmode)
    && ! flag_pic"
   "*
 {
@@ -1688,7 +1688,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
-  "(!flag_pic || !symbolic_operand (operands[1]), Pmode)
+  "(!flag_pic || !symbolic_operand (operands[1], Pmode))
     && !is_function_label_plus_const (operands[1])"
   "*
 {
