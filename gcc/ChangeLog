@@ -1,3 +1,9 @@
+1998-02-19  Paul Eggert  <eggert@twinsun.com>
+
+	* config/sparc/sol2-sld.h: New file.
+	* configure.in (sparc-*-solaris2*): Use it when using the
+	system linker.
+
 Thu Feb 19 00:46:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (force_movables): Fix typo.
