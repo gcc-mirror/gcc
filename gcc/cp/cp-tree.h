@@ -1576,9 +1576,6 @@ struct lang_type
 
 /* Get the value of the top-most type dominating the non-`normal' vfields.  */
 #define VF_DERIVED_VALUE(NODE) (VF_BINFO_VALUE (NODE) ? BINFO_TYPE (VF_BINFO_VALUE (NODE)) : NULL_TREE)
-
-/* Get the value of the top-most type that's `normal' for the vfield.  */
-#define VF_NORMAL_VALUE(NODE) TREE_TYPE (NODE)
 
 /* Nonzero for TREE_LIST node means that this list of things
    is a list of parameters, as opposed to a list of expressions.  */
