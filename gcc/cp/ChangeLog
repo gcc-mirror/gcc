@@ -1,3 +1,14 @@
+Tue Jul 29 21:17:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (resolve_args): New fn.
+	(build_new_function_call): Use it.
+	(build_object_call): Likewise.
+	(build_new_method_call): Likewise.
+
+Mon Jul 28 16:02:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): tsubst all default parms from templates.
+
 Wed Jul 23 13:36:25 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (struct cp_function): Add static_labelno.

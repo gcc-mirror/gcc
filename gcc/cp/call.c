@@ -4338,6 +4338,28 @@ build_user_type_conversion (totype, expr, flags)
   return NULL_TREE;
 }
 
+/* Do any initial processing on the arguments to a function call.  */
+
+static tree
+resolve_args (args)
+     tree args;
+{
+  tree t;
+  for (t = args; t; t = TREE_CHAIN (t))
+    {
+      if (TREE_VALUE (t) == error_mark_node)
+	return error_mark_node;
+      else if (TREE_CODE (TREE_TYPE (TREE_VALUE (t))) == VOID_TYPE)
+	{
+	  error ("invalid use of void expression");
+	  return error_mark_node;
+	}
+      else if (TREE_CODE (TREE_VALUE (t)) == OFFSET_REF)
+	TREE_VALUE (t) = resolve_offset_ref (TREE_VALUE (t));
+    }
+  return args;
+}
+      
 tree
 build_new_function_call (fn, args, obj)
      tree fn, args, obj;
@@ -4349,17 +4371,11 @@ build_new_function_call (fn, args, obj)
       tree t;
       tree templates = NULL_TREE;
 
-      for (t = args; t; t = TREE_CHAIN (t))
-	{
-	  if (TREE_VALUE (t) == error_mark_node)
-	    return error_mark_node;
-	  else if (TREE_CODE (TREE_TYPE (TREE_VALUE (t))) == VOID_TYPE)
-	    {
-	      error ("invalid use of void expression");
-	      return error_mark_node;
-	    }
-	}
-	
+      args = resolve_args (args);
+
+      if (args == error_mark_node)
+	return error_mark_node;
+
       for (t = TREE_VALUE (fn); t; t = DECL_CHAIN (t))
 	{
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
@@ -4415,6 +4431,11 @@ build_object_call (obj, args)
   tree type = TREE_TYPE (obj);
 
   fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname [CALL_EXPR], 0);
+
+  args = resolve_args (args);
+
+  if (args == error_mark_node)
+    return error_mark_node;
 
   if (fns)
     {
@@ -5113,7 +5134,7 @@ build_over_call (fn, convs, args, flags)
     {
       tree arg = TREE_PURPOSE (parm);
 
-      if (DECL_TEMPLATE_INFO (fn) && uses_template_parms (arg))
+      if (DECL_TEMPLATE_INFO (fn))
 	/* This came from a template.  Instantiate the default arg here,
 	   not in tsubst.  */
 	arg = tsubst_expr (arg,
@@ -5266,9 +5287,10 @@ build_new_method_call (instance, name, args, basetype_path, flags)
   if (flags & LOOKUP_HAS_IN_CHARGE)
     user_args = TREE_CHAIN (args);
 
-  for (fns = args; fns; fns = TREE_CHAIN (fns))
-    if (TREE_VALUE (fns) == error_mark_node)
-      return error_mark_node;
+  args = resolve_args (args);
+
+  if (args == error_mark_node)
+    return error_mark_node;
 
   if (instance == NULL_TREE)
     basetype = BINFO_TYPE (basetype_path);
