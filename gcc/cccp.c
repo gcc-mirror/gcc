@@ -4084,6 +4084,12 @@ finclude (f, fname, op, system_header_p, dirptr)
   /* Close descriptor now, so nesting does not use lots of descriptors.  */
   close (f);
 
+  /* Must do this before calling trigraph_pcp, so that the correct file name
+     will be printed in warning messages.  */
+
+  indepth++;
+  input_file_stack_tick++;
+
   if (!no_trigraphs)
     trigraph_pcp (fp);
 
@@ -4094,9 +4100,6 @@ finclude (f, fname, op, system_header_p, dirptr)
     missing_newline = 1;
   }
   fp->buf[fp->length] = '\0';
-
-  indepth++;
-  input_file_stack_tick++;
 
   output_line_command (fp, op, 0, enter_file);
   rescan (op, 0);
