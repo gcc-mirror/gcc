@@ -2262,8 +2262,8 @@ applied in the GCC source tree, fixes the compatibility problems.
 Currently Glibc 2.2.3 (and older releases) and GCC 3.0 are out of sync
 since the latest exception handling changes for GCC@.  Compiling glibc
 with GCC 3.0 will give a binary incompatible glibc and therefore cause
-lots of problems and might make your system completly unusable.  This
-will definitly need fixes in glibc but might also need fixes in GCC@.  We
+lots of problems and might make your system completely unusable.  This
+will definitely need fixes in glibc but might also need fixes in GCC@.  We
 strongly advise to wait for glibc 2.2.4 and to read the release notes of
 glibc 2.2.4 whether patches for GCC 3.0 are needed.  You can use glibc
 2.2.3 with GCC 3.0, just do not try to recompile it.
