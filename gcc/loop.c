@@ -310,7 +310,7 @@ static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
 				       int *, int)); 
 static void note_addr_stored PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
-static void scan_loop PROTO((rtx, rtx, int));
+static void scan_loop PROTO((rtx, rtx, int, int));
 #if 0
 static void replace_call_address PROTO((rtx, rtx, rtx));
 #endif
@@ -324,7 +324,7 @@ static int rtx_equal_for_loop_p PROTO((rtx, rtx, struct movable *));
 static void add_label_notes PROTO((rtx, rtx));
 static void move_movables PROTO((struct movable *, int, int, rtx, rtx, int));
 static int count_nonfixed_reads PROTO((rtx));
-static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx, int));
+static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx, int, int));
 static void find_single_use_in_loop PROTO((rtx, rtx, varray_type));
 static int valid_initial_value_p PROTO((rtx, rtx, int, rtx));
 static void find_mem_givs PROTO((rtx, rtx, int, rtx, rtx));
@@ -440,11 +440,11 @@ init_loop ()
    (or 0 if none should be output).  */
 
 void
-loop_optimize (f, dumpfile, unroll_p)
+loop_optimize (f, dumpfile, unroll_p, bct_p)
      /* f is the first instruction of a chain of insns for one function */
      rtx f;
      FILE *dumpfile;
-     int unroll_p;
+     int unroll_p, bct_p;
 {
   register rtx insn;
   register int i;
@@ -589,7 +589,7 @@ loop_optimize (f, dumpfile, unroll_p)
   for (i = max_loop_num-1; i >= 0; i--)
     if (! loop_invalid[i] && loop_number_loop_ends[i])
       scan_loop (loop_number_loop_starts[i], loop_number_loop_ends[i],
-		 unroll_p);
+		 unroll_p, bct_p);
 
   /* If debugging and unrolling loops, we must replicate the tree nodes
      corresponding to the blocks inside the loop, so that the original one
@@ -643,9 +643,9 @@ next_insn_in_loop (insn, start, end, loop_top)
    write, then we can also mark the memory read as invariant.  */
 
 static void
-scan_loop (loop_start, end, unroll_p)
+scan_loop (loop_start, end, unroll_p, bct_p)
      rtx loop_start, end;
-     int unroll_p;
+     int unroll_p, bct_p;
 {
   register int i;
   rtx p;
@@ -1185,7 +1185,7 @@ scan_loop (loop_start, end, unroll_p)
     {
       the_movables = movables;
       strength_reduce (scan_start, end, loop_top,
-		       insn_count, loop_start, end, unroll_p);
+		       insn_count, loop_start, end, unroll_p, bct_p);
     }
 
   VARRAY_FREE (n_times_set);
@@ -3579,14 +3579,14 @@ static rtx addr_placeholder;
 
 static void
 strength_reduce (scan_start, end, loop_top, insn_count,
-		 loop_start, loop_end, unroll_p)
+		 loop_start, loop_end, unroll_p, bct_p)
      rtx scan_start;
      rtx end;
      rtx loop_top;
      int insn_count;
      rtx loop_start;
      rtx loop_end;
-     int unroll_p;
+     int unroll_p, bct_p;
 {
   rtx p;
   rtx set;
@@ -4106,7 +4106,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      the loop.  Unrolling may update part of this information, and the
      correct data will be used for generating the BCT.  */
 #ifdef HAVE_decrement_and_branch_on_count
-  if (HAVE_decrement_and_branch_on_count)
+  if (HAVE_decrement_and_branch_on_count && bct_p)
     analyze_loop_iterations (loop_start, loop_end);
 #endif
 #endif  /* HAIFA */
@@ -4613,7 +4613,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 #ifdef HAIFA
   /* instrument the loop with bct insn */
 #ifdef HAVE_decrement_and_branch_on_count
-  if (HAVE_decrement_and_branch_on_count)
+  if (HAVE_decrement_and_branch_on_count && bct_p)
     insert_bct (loop_start, loop_end);
 #endif
 #endif  /* HAIFA */
@@ -6981,7 +6981,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		  /* If we have a decrement_and_branch_on_count, prefer
 		     the NE test, since this will allow that instruction to
 		     be generated.  */
-#if ! defined (HAVE_decrement_and_branch_on_zero) && defined (HAVE_decrement_and_branch_on_count)
+#if ! defined (HAVE_decrement_and_branch_until_zero) && defined (HAVE_decrement_and_branch_on_count)
 		  && (add_val != 1 || ! vtop)
 #endif
 		  && GET_CODE (comparison_value) == CONST_INT
@@ -8189,7 +8189,7 @@ insert_bct (loop_start, loop_end)
 
   /* the only machine mode we work with - is the integer of the size that the
      machine has */
-  enum machine_mode loop_var_mode = SImode;
+  enum machine_mode loop_var_mode = word_mode;
 
   int loop_num = uid_loop_num [INSN_UID (loop_start)];
 
@@ -8284,7 +8284,8 @@ insert_bct (loop_start, loop_end)
   /* try to instrument the loop.  */
 
   /* Handle the simpler case, where the bounds are known at compile time.  */
-  if (GET_CODE (initial_value) == CONST_INT && GET_CODE (comparison_value) == CONST_INT)
+  if (GET_CODE (initial_value) == CONST_INT
+      && GET_CODE (comparison_value) == CONST_INT)
     {
       int n_iterations;
       int increment_value_abs = INTVAL (increment) * increment_direction;
@@ -8459,15 +8460,15 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
   rtx start_label;
 
   rtx sequence;
-  enum machine_mode loop_var_mode = SImode;
+  enum machine_mode loop_var_mode = word_mode;
 
   if (HAVE_decrement_and_branch_on_count)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream, "Loop: Inserting BCT\n");
 
-      /* eliminate the check on the old variable */
-      delete_insn (PREV_INSN (loop_end));
+      /* Discard original jump to continue loop.  Original compare result
+	 may still be live, so it cannot be discarded explicitly.  */
       delete_insn (PREV_INSN (loop_end));
 
       /* insert the label which will delimit the start of the loop */
@@ -8488,12 +8489,13 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
 
       sequence = gen_sequence ();
       end_sequence ();
-      emit_insn_after (sequence, loop_start);
+      emit_insn_before (sequence, loop_start);
 
       /* insert new comparison on the count register instead of the
 	 old one, generating the needed BCT pattern (that will be
 	 later recognized by assembly generation phase).  */
-      emit_jump_insn_before (gen_decrement_and_branch_on_count (temp_reg2, start_label),
+      emit_jump_insn_before (gen_decrement_and_branch_on_count (temp_reg2,
+								start_label),
 			     loop_end);
       LABEL_NUSES (start_label)++;
     }
@@ -8935,4 +8937,3 @@ replace_label (x, data)
   return 0;
 }
 
-     

@@ -473,9 +473,16 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    defined, is executed once just after all the command options have
    been parsed.
 
+   Don't use this macro to turn on various extra optimizations for
+   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.
+
    On the RS/6000 this is used to define the target cpu type.  */
 
 #define OVERRIDE_OPTIONS rs6000_override_options (TARGET_CPU_DEFAULT)
+
+/* Define this to change the optimizations performed by default.  */
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) optimization_options(LEVEL,SIZE)
+
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
@@ -712,9 +719,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 	fp13 - fp2	(not saved; incoming fp arg registers)
 	fp1		(not saved; return value)
  	fp31 - fp14	(saved; order given to save least number)
-	cr1, cr6, cr7	(not saved or special)
+	cr7, cr6	(not saved or special)
+	cr1		(not saved, but used for FP operations)
 	cr0		(not saved, but used for arithmetic operations)
-	cr2, cr3, cr4	(saved)
+	cr4, cr3, cr2	(saved)
         r0		(not saved; cannot be base reg)
 	r9		(not saved; best for TImode)
 	r11, r10, r8-r4	(not saved; highest used first to make less conflict)
@@ -732,7 +740,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    33,							\
    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51,	\
    50, 49, 48, 47, 46, 					\
-   69, 74, 75, 68, 70, 71, 72,				\
+   75, 74, 69, 68, 72, 71, 70,				\
    0,							\
    9, 11, 10, 8, 7, 6, 5, 4,				\
    3,							\

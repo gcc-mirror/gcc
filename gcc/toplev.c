@@ -3519,7 +3519,7 @@ rest_of_compilation (decl)
 	     {
 	       /* We only want to perform unrolling once.  */
 	       
-	       loop_optimize (insns, rtl_dump_file, 0);
+	       loop_optimize (insns, rtl_dump_file, 0, 0);
 	       
 	
 	       /* The first call to loop_optimize makes some instructions
@@ -3532,7 +3532,7 @@ rest_of_compilation (decl)
 		  analysis code depends on this information.  */
 	       reg_scan (insns, max_reg_num (), 1);
 	     }
-	   loop_optimize (insns, rtl_dump_file, flag_unroll_loops);
+	   loop_optimize (insns, rtl_dump_file, flag_unroll_loops, 1);
 	 });
       
       /* Dump rtl code after loop opt, if we are doing that.  */
