@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -70,6 +70,7 @@ struct function
   int pops_args;
   int returns_struct;
   int returns_pcc_struct;
+  int returns_pointer;
   int needs_context;
   int calls_setjmp;
   int calls_longjmp;
