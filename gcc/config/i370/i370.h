@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for C/370 MVS by Dave Pitts (pitts@mcdata.com)
 
@@ -1169,7 +1169,7 @@ enum reg_class
       else								\
 	{								\
 	  if (j % MVS_ASCII_TEXT_LENGTH == 0)				\
-            fprintf (FILE, "\tDC\tC'%c", c);				\
+            fprintf (FILE, "\tDC\tC'", c);				\
           if ( c == '\'' )                                       	\
 	    fprintf (FILE, "%c%c", c, c);                        	\
 	  else                                                   	\
