@@ -116,12 +116,6 @@ int flag_wall = 0;
 /* When non zero, check for redundant modifier uses.  */
 int flag_redundant = 0;
 
-/* When non zero, warns about overridings that don't occur.  */
-int flag_not_overriding = 0;
-
-/* When non zero, warns that final local are treated as non final.  */
-int flag_static_local_jdk1_1 = 0;
-
 /* When non zero, call a library routine to do integer divisions. */
 int flag_use_divide_subroutine = 1;
 
@@ -171,7 +165,6 @@ lang_f_options[] =
 static struct string_option
 lang_W_options[] =
 {
-  { "unsupported-jdk11", &flag_static_local_jdk1_1, 1 },
   { "redundant-modifiers", &flag_redundant, 1 },
   { "extraneous-semicolon", &flag_extraneous_semicolon, 1 },
   { "out-of-date", &flag_newer, 1 }

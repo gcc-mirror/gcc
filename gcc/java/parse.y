@@ -6195,24 +6195,6 @@ java_check_regular_methods (class_decl)
 	}
 
       aflags = get_access_flags_from_decl (found);
-      /* If the method has default, access in an other package, then
-	 issue a warning that the current method doesn't override the
-	 one that was found elsewhere. Do not issue this warning when
-	 the match was found in java.lang.Object.  */
-      if (DECL_CONTEXT (found) != object_type_node
-	  && ((aflags & ACC_VISIBILITY) == 0)
-	  && !class_in_current_package (DECL_CONTEXT (found))
-	  && !DECL_CLINIT_P (found)
-	  && flag_not_overriding)
-        {
-	  parse_warning_context 
-	    (method_wfl, "Method `%s' in class `%s' does not override the corresponding method in class `%s', which is private to a different package",
-	     lang_printable_name (found, 0),
-	     IDENTIFIER_POINTER (DECL_NAME (class_decl)),
-	     IDENTIFIER_POINTER (DECL_NAME 
-				 (TYPE_NAME (DECL_CONTEXT (found)))));
-	  continue;
-	}
 
       /* Can't override final. Can't override static. */
       if (METHOD_FINAL (found) || METHOD_STATIC (found))
