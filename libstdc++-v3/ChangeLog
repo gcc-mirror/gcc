@@ -1,3 +1,19 @@
+2002-10-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acconfig.h (_GLIBCPP_SYMVER): Add.
+	(_GLIBCPP_ASM_SYMVER): Add.
+	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS): Define _GLIBCPP_SYMVER.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/c++config (_GLIBCPP_AT_AT): Define, as an expedient
+	hack around m4 issues with quoting '@'.
+	* src/locale.cc: Use _GLIBCPP_ASM_SYMVER.
+	* src/globals.cc: Same.
+	
+	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Fix for
+	non-glibc systems.
+
 2002-10-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu (GLIBCPP_3.2.1): Add.

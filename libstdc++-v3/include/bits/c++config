@@ -55,6 +55,9 @@
 // Use corrected code from the committee library group's issues list.
 #define _GLIBCPP_RESOLVE_LIB_DEFECTS 1
 
+// Hopefully temporary workaround to autoconf/m4 issue with quoting '@'.
+#define _GLIBCPP_AT_AT "@@"
+
 // In those parts of the standard C++ library that use a mutex instead
 // of a spin-lock, we now unconditionally use GCC's gthr.h mutex
 // abstraction layer.  All support to directly map to various
