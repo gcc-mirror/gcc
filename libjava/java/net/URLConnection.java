@@ -180,6 +180,7 @@ public abstract class URLConnection
    */
   protected URLConnection(URL url)
   {
+    // Set up all our instance variables
     this.url = url;
     allowUserInteraction = defaultAllowUserInteraction;
     useCaches = defaultUseCaches;
@@ -247,7 +248,7 @@ public abstract class URLConnection
    */
   public long getExpiration()
   {
-    return getHeaderFieldDate("expiration", 0L);
+    return getHeaderFieldDate("expires", 0L);
   }
 
   /**
@@ -276,11 +277,16 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the n-th header field
+   * Return a String representing the header value at the specified index.
+   * This allows the caller to walk the list of header fields.  The analogous
+   * getHeaderFieldKey(int) method allows access to the corresponding key
+   * for this header field
    *
-   * @param num The number of the header field
+   * @param index The index into the header field list to retrieve the value for
+   *
+   * @return The header value or null if index is past the end of the headers
    */
-  public String getHeaderField(int num)
+  public String getHeaderField(int index)
   {
     // Subclasses for specific protocols override this.
     return null;
@@ -290,7 +296,9 @@ public abstract class URLConnection
    * Returns a String representing the value of the header field having
    * the named key.  Returns null if the header field does not exist.
    *
-   * @param name The name of the header field
+   * @param The key of the header field
+   *
+   * @return The value of the header field as a String
    */
   public String getHeaderField(String name)
   {
@@ -310,13 +318,15 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the header filed name as int.
+   * Returns the value of the named header field as an int.  If the field
+   * is not present or cannot be parsed as an integer, the default value
+   * will be returned.
    *
    * @param name The name of the header field
    * @param val The default value
    *
-   * @return Returns the value of the header filed or the default value
-   * if the field is missing or malformed
+   * @return The value of the header field or the default value if the field
+   * is missing or malformed
    */
   public int getHeaderFieldInt(String name, int val)
   {
@@ -334,8 +344,9 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of a header field parsed as date. The result is then
-   * number of milliseconds since January 1st, 1970 GMT.
+   * Returns the value of the named header field as a date.  This date will
+   * be the number of seconds since midnight 1/1/1970 GMT or the default
+   * value if the field is not present or cannot be converted to a date.
    *
    * @param name The name of the header field
    * @param val The dafault date
@@ -367,9 +378,12 @@ public abstract class URLConnection
    * getHeaderField(int) method allows access to the corresponding value for
    * this tag.
    *
-   * @param num The number of the header field
+   * @param index The index into the header field list to retrieve the key for. 
+   *
+   * @return The header field key or null if index is past the end
+   * of the headers.
    */
-  public String getHeaderFieldKey(int num)
+  public String getHeaderFieldKey(int index)
   {
     // Subclasses for specific protocols override this.
     return null;
@@ -432,6 +446,8 @@ public abstract class URLConnection
    * Note that because of items such as HTTP redirects, the permission
    * object returned might be different before and after connecting.
    *
+   * @return A Permission object
+   *
    * @exception IOException If the computation of the permission requires
    * network or file I/O and an exception occurs while computing it
    */
@@ -485,18 +501,20 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets tha value of the doInput field.
-   *
+   * Returns the value of a flag indicating whether or not input is going
+   * to be done for this connection.  This default to true unless the
+   * doOutput flag is set to false, in which case this defaults to false.
+   * 
    * @param doinput The new value of the doInput field
    *
    * @exception IllegalStateException If already connected
    */
-  public void setDoInput(boolean doinput)
+  public void setDoInput(boolean input)
   {
     if (connected)
       throw new IllegalStateException ("Already connected");
 
-    doInput = doinput;
+    doInput = input;
   }
 
   /**
@@ -512,18 +530,20 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets the value of the doOutput field
+   * Returns a boolean flag indicating whether or not output will be done
+   * on this connection.  The default value is false, so this method can
+   * be used to override the default
    *
-   * @param dooutput The new value of the doOutput field
+   * @param output ture if output is to be done, false otherwise
    *
    * @exception IllegalStateException If already connected
    */
-  public void setDoOutput(boolean dooutput)
+  public void setDoOutput(boolean output)
   {
     if (connected)
       throw new IllegalStateException ("Already connected");
 
-    doOutput = dooutput;
+    doOutput = output;
   }
 
   /**
@@ -542,16 +562,13 @@ public abstract class URLConnection
    * allowed for this connection.  (For example, in order to prompt for
    * username and password info.
    *
-   * @param allowed The new value
+   * @param allow true if user interaction should be allowed, false otherwise.
    *
    * @exception IllegalStateException If already connected
    */
-  public void setAllowUserInteraction(boolean allowed)
+  public void setAllowUserInteraction(boolean allow)
   {
-    if (connected)
-      throw new IllegalStateException ("Already connected");
-
-    allowUserInteraction = allowed;
+    allowUserInteraction = allow;
   }
 
   /**
@@ -570,11 +587,11 @@ public abstract class URLConnection
    * Sets the default flag for whether or not interaction with a user
    * is allowed.  This will be used for all connections unless overridden
    *
-   * @param allowed The new default value
+   * @param allow true to allow user interaction, false otherwise
    */
-  public static void setDefaultAllowUserInteraction(boolean allowed)
+  public static void setDefaultAllowUserInteraction(boolean allow)
   {
-    defaultAllowUserInteraction = allowed;
+    defaultAllowUserInteraction = allow;
   }
 
   /**
@@ -661,7 +678,7 @@ public abstract class URLConnection
    * Sets the default value used to determine whether or not caching
    * of documents will be done when possible.
    *
-   * @param defaultusecaches The new default value
+   * @param use true to use caches if possible by default, false otherwise
    */
   public void setDefaultUseCaches(boolean defaultusecaches)
   {
@@ -669,8 +686,9 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets a property specified by key to value.
-   * 
+   * Returns the default value used to determine whether or not caching
+   * of documents will be done when possible.
+   *
    * @param key Key of the property to set
    * @param value Value of the Property to set
    *
@@ -690,9 +708,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets a property specified by key to value. If the property key already
-   * is assigned to a value it does nothing.
-   * 
+   * Sets the value of the named request property
+   *
    * @param key Key of the property to add
    * @param value Value of the Property to add
    *
@@ -716,16 +733,16 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns a property value specified by key.
+   * Returns the value of the named request property.
    *
-   * @param key Key of the property to return
+   * @param key The name of the property
+   *
+   * @return Value of the property
    *
    * @exception IllegalStateException If already connected
    *
    * @see URLConnection#setRequestProperty(String key, String value)
    * @see URLConnection#addRequestProperty(String key, String value)
-   * 
-   * @return Value of the property.
    */
   public String getRequestProperty(String key)
   {
@@ -738,11 +755,13 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns a map that contains all properties of the request
+   * Returns an unmodifiable Map containing the request properties.
+   *
+   * @return The map of properties
    *
    * @exception IllegalStateException If already connected
    *
-   * @return The map of properties
+   * @since 1.4
    */
   public Map getRequestProperties()
   {
@@ -756,8 +775,8 @@ public abstract class URLConnection
    * for all connections unless the value of the property is manually
    * overridden.
    *
-   * @param key The key of the property
-   * @param value The value of the property
+   * @param key The request property name the default is being set for
+   * @param value The value to set the default to
    *
    * @deprecated 1.3 The method setRequestProperty should be used instead
    *
@@ -774,7 +793,7 @@ public abstract class URLConnection
    * for all connections unless the value of the property is manually
    * overridden.
    *
-   * @param key The key of the default property
+   * @param key The request property to return the default value of
    *
    * @return The value of the default property or null if not available
    * 
@@ -794,13 +813,14 @@ public abstract class URLConnection
    * Unlike for other set factory methods, this one does not do a security
    * check prior to setting the factory.
    *
-   * @param fac The ContentHandlerFactory
+   * @param factory The ContentHandlerFactory for this application
    *
    * @exception Error If the factory has already been defined
    * @exception SecurityException If a security manager exists and its
    * checkSetFactory method doesn't allow the operation
    */
-  public static void setContentHandlerFactory(ContentHandlerFactory fac)
+  public static synchronized void setContentHandlerFactory
+                                    (ContentHandlerFactory fac)
   {
     if (factory != null)
       throw new Error("ContentHandlerFactory already set");
@@ -810,42 +830,55 @@ public abstract class URLConnection
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkSetFactory();
+
     factory = fac;
   }
 
   /**
-   * Tries to determine the content type of an object, based on the
-   * specified file name
+   * Returns the MIME type of a file based on the name of the file.  This
+   * works by searching for the file's extension in a list of file extensions
+   * and returning the MIME type associated with it.  If no type is found,
+   * then a MIME type of "application/octet-stream" will be returned.
    *
-   * @param fname The filename to guess the content type from
+   * @param filename The filename to determine the MIME type for
+   *
+   * @return The MIME type String
    *
    * @specnote public since JDK 1.4
    */
-  public static String guessContentTypeFromName(String fname)
+  public static String guessContentTypeFromName(String filename)
   {
-    int dot = fname.lastIndexOf (".");
+    int dot = filename.lastIndexOf (".");
     
     if (dot != -1)
       {
-	if (dot == fname.length())
+	if (dot == filename.length())
 	  return ("application/octet-stream");
 	else
-	  fname = fname.substring (dot + 1);
+	  filename = filename.substring (dot + 1);
       }
     
-    String type = MimeTypes.getMimeTypeFromExtension (fname);
+    String type = MimeTypes.getMimeTypeFromExtension (filename);
     
     if (type == null)
       return("application/octet-stream");
 
-    return(type);
+    return type;
   }
 
   /**
-   * Tries to guess the content type of an object, based on the characters
-   * at the beginning of then input stream
+   * Returns the MIME type of a stream based on the first few characters
+   * at the beginning of the stream.  This routine can be used to determine
+   * the MIME type if a server is believed to be returning an incorrect
+   * MIME type.  This method returns "application/octet-stream" if it 
+   * cannot determine the MIME type.
+   * <p>
+   * NOTE: Overriding MIME types sent from the server can be obnoxious
+   * to user's.  See Internet Exploder 4 if you don't believe me.
    *
-   * @param is The input stream to guess from
+   * @param is The InputStream to determine the MIME type from
+   *
+   * @return The MIME type
    *
    * @exception IOException If an error occurs
    */
@@ -862,6 +895,8 @@ public abstract class URLConnection
    * This method returns the <code>FileNameMap</code> object being used
    * to decode MIME types by file extension.
    *
+   * @return The <code>FileNameMap</code>.
+   *
    * @since 1.2
    */
   public static FileNameMap getFileNameMap()
@@ -870,9 +905,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets a FileNameMap
+   * This method set the <code>FileNameMap</code> object being used
+   * to decode MIME types by file extension.
    *
-   * @param map The new FileNameMap
+   * @param map The <code>FileNameMap</code>.
    *
    * @exception SecurityException If a security manager exists and its
    * checkSetFactory method doesn't allow the operation
