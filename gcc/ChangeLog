@@ -1,3 +1,9 @@
+Wed Oct 10 00:41:29 EDT 2001  John Wehle  (john@feith.com)
+
+	* rs6000.c (rs6000_emit_load_toc_table): Don't
+	strdup the toc label.
+	(create_TOC_reference): Likewise.
+
 2001-10-09  Danny Smith  <danny_r_smith_2001@yahoo.co.nz>
 
 	* config.gcc (i[34567]86-*-mingw32*): Make msvcrt-dependent

@@ -5795,7 +5795,7 @@ rs6000_emit_load_toc_table (fromprolog)
 	      rtx tocsym;
 	      static int reload_toc_labelno = 0;
 
-	      tocsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
+	      tocsym = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
 
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCG", reload_toc_labelno++);
 	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
@@ -5872,7 +5872,7 @@ create_TOC_reference(symbol)
 	   gen_rtx_REG (Pmode, TOC_REGISTER),
 	     gen_rtx_CONST (Pmode, 
 	       gen_rtx_MINUS (Pmode, symbol, 
-		 gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name)))));
+		 gen_rtx_SYMBOL_REF (Pmode, toc_label_name))));
 }
 
 #if TARGET_AIX
