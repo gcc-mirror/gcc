@@ -1,3 +1,13 @@
+2003-12-30  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/io/LineNumberReader.java
+	(countLines): Removed.
+	(fill): New private method.
+	(mark): Changed logic to use and matchedNewLine.
+	(reset): Likewise.
+	(read): Likewise.
+	(skipRedundantLF): Likewise.
+
 2003-12-30  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java
