@@ -412,10 +412,6 @@ int ix86_arch;
 const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
 const char *ix86_arch_string;		/* for -march=<xxx> */
 
-/* Register allocation order */
-const char *ix86_reg_alloc_order;
-static char regs_allocated[FIRST_PSEUDO_REGISTER];
-
 /* # of registers to use to pass arguments.  */
 const char *ix86_regparm_string;
 
@@ -611,39 +607,6 @@ override_options ()
   mark_machine_status = ix86_mark_machine_status;
   free_machine_status = ix86_free_machine_status;
 
-  /* Validate registers in register allocation order.  */
-  if (ix86_reg_alloc_order)
-    {
-      int  ch;
-
-      for (i = 0; (ch = ix86_reg_alloc_order[i]) != '\0'; i++)
-	{
-	  int regno = -1;
-
-	  switch (ch)
-	    {
-	    case 'a':	regno = 0;	break;
-	    case 'd':	regno = 1;	break;
-	    case 'c':	regno = 2;	break;
-	    case 'b':	regno = 3;	break;
-	    case 'S':	regno = 4;	break;
-	    case 'D':	regno = 5;	break;
-	    case 'B':	regno = 6;	break;
-
-	    default:	error ("Register '%c' is unknown", ch);
-	    }
-
-	  if (regno >= 0)
-	    {
-	      if (regs_allocated[regno])
-		error ("Register '%c' already specified in allocation order",
-		       ch);
-
-	      regs_allocated[regno] = 1;
-	    }
-	}
-    }
-
   /* Validate -mregparm= value.  */
   if (ix86_regparm_string)
     {
@@ -724,61 +687,6 @@ override_options ()
      on by -msse.  */
   if (TARGET_SSE)
     target_flags |= MASK_MMX;
-}
-
-/* A C statement (sans semicolon) to choose the order in which to
-   allocate hard registers for pseudo-registers local to a basic
-   block.
-
-   Store the desired register order in the array `reg_alloc_order'.
-   Element 0 should be the register to allocate first; element 1, the
-   next register; and so on.
-
-   The macro body should not assume anything about the contents of
-   `reg_alloc_order' before execution of the macro.
-
-   On most machines, it is not necessary to define this macro.  */
-
-void
-order_regs_for_local_alloc ()
-{
-  int i, ch, order;
-
-  /* User specified the register allocation order.  */
-
-  if (ix86_reg_alloc_order)
-    {
-      for (i = order = 0; (ch = ix86_reg_alloc_order[i]) != '\0'; i++)
-	{
-	  int regno = 0;
-
-	  switch (ch)
-	    {
-	    case 'a':	regno = 0;	break;
-	    case 'd':	regno = 1;	break;
-	    case 'c':	regno = 2;	break;
-	    case 'b':	regno = 3;	break;
-	    case 'S':	regno = 4;	break;
-	    case 'D':	regno = 5;	break;
-	    case 'B':	regno = 6;	break;
-	    }
-
-	  reg_alloc_order[order++] = regno;
-	}
-
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	{
-	  if (! regs_allocated[i])
-	    reg_alloc_order[order++] = i;
-	}
-    }
-
-  /* If user did not specify a register allocation order, use natural order.  */
-  else
-    {
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	reg_alloc_order[i] = i;
-    }
 }
 
 void

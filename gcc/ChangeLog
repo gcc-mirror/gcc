@@ -1,3 +1,15 @@
+Wed Feb 14 12:37:37 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (-mreg-alloc): Nuke.
+	* i386.c (ix86_reg_alloc_order, regs_allocated,
+	order_regs_for_local_alloc): Nuke.
+	(override_options): Kill reg_alloc code.
+	* i386.h (TARGET_OPTIONS): Kill reg-alloc.
+	(REG_ALLOC_ORDER): SSE goes before I387.
+	(ORDER_REGS_FOR_LOCAL_ALLOC): Kill.
+	(ix86_reg_alloc_order): Likewise.
+	* i386-protos.h (ix86_reg_alloc_order): Kill.
+
 2001-02-14  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (f_options): Clarify -fschedule-insns2 documentation.
