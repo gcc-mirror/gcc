@@ -4,7 +4,9 @@
    to, and aborted.  */
 
 /* { dg-do compile { target ia64-*-* } } */
-/* { dg-options "-O2 -mconstant-gp" } */
+/* In ILP32 mode, we get warnings about large integer constants.
+   Those cause spurious FAILs.  */
+/* { dg-options "-w -O2 -mconstant-gp" } */
 
 typedef unsigned long __u64;
 typedef unsigned int __u32;
