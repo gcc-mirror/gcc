@@ -3270,23 +3270,21 @@ simplify_binary_operation (code, mode, op0, op1)
 	  break;
 	      
 	case MINUS:
-	  /* In IEEE floating point, x-0 is not the same as x.  */
+	  /* None of these optimizations can be done for IEEE
+	     floating point.  */
+	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+	      && GET_MODE_CLASS (mode) != MODE_INT)
+	    break;
+
+	  /* We can't assume x-x is 0 even with non-IEEE floating point.  */
 	  if (rtx_equal_p (op0, op1)
 	      && ! side_effects_p (op0)
-	      /* We can't assume x-x is 0
-		 even with non-IEEE floating point.  */
 	      && GET_MODE_CLASS (mode) != MODE_FLOAT)
 	    return const0_rtx;
 
 	  /* Change subtraction from zero into negation.  */
 	  if (op0 == CONST0_RTX (mode))
 	    return gen_rtx (NEG, mode, op1);
-
-	  /* The remainer of these cases cannot be done for IEEE
-	     floating-point.  */
-	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && GET_MODE_CLASS (mode) != MODE_INT)
-	    break;
 
 	  /* Subtracting 0 has no effect.  */
 	  if (op1 == CONST0_RTX (mode))
