@@ -1,3 +1,8 @@
+2001-08-30  Roman Zippel  <zippel@linux-m68k.org>
+
+	* expmed.c (store_bit_field): Update to patch from 2001-08-27:
+	move adjustment of bitpos instead.
+
 2001-08-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* function.c: Remove all_functions.  Make outer_function_chain
