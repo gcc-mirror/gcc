@@ -3054,10 +3054,6 @@ build_compound_expr (tree expr1, tree expr2)
   /* Convert arrays and functions to pointers.  */
   expr2 = default_function_array_conversion (expr2);
 
-  /* Don't let (0, 0) be null pointer constant.  */
-  if (integer_zerop (expr2))
-    expr2 = non_lvalue (expr2);
-
   if (!TREE_SIDE_EFFECTS (expr1))
     {
       /* The left-hand operand of a comma expression is like an expression
@@ -3299,12 +3295,6 @@ build_c_cast (tree type, tree expr)
 	    TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
 	}
     }
-
-  /* Don't let (void *) (FOO *) 0 be a null pointer constant.  */
-  if (TREE_CODE (value) == INTEGER_CST
-      && TREE_CODE (expr) == INTEGER_CST
-      && TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE)
-    value = non_lvalue (value);
 
   /* Don't let a cast be an lvalue.  */
   if (value == expr)
