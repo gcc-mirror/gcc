@@ -1,3 +1,8 @@
+2001-01-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/if-2.c: Comment out occasionally bogus test; we 
+        have an equivalent working one below it.
+	  
 2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* g++.old-deja/g++.ext/instantiate2.C: Add explanatory comment.
