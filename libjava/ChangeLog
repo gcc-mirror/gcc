@@ -1,3 +1,10 @@
+2003-03-03  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (handle_jsr_insn): Don't fail if `jsr' appears at end
+	of bytecode.
+	(handle_ret_insn): Fail if returning to jsr that appears at end of
+	bytecode.
+
 2003-03-03  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am
