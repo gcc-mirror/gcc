@@ -486,7 +486,6 @@ do {									\
 
 #define READONLY_DATA_SECTION() const_section ()
 
-extern void const_section PARAMS ((void));
 #define CONST_SECTION_FUNCTION						\
 void									\
 const_section ()							\

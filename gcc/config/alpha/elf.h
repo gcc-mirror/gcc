@@ -269,7 +269,6 @@ do {									\
 #define READONLY_DATA_SECTION() const_section ()
 
 #define CONST_SECTION_FUNCTION					\
-void const_section PROTO ((void));				\
 void								\
 const_section ()						\
 {								\

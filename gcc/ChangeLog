@@ -1,3 +1,12 @@
+Fri Nov 12 13:45:02 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* output.h (const_section, init_section, fini_section): Add
+	prototypes.
+
+	* alpha/elf.h (const_section): Delete declaration.
+
+	* svr4.h (const_section): Likewise.
+
 Fri Nov 12 08:54:22 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (SAVE_EXPR_PERSISTENT_P): New macro.
