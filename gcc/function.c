@@ -4259,7 +4259,7 @@ assign_parms (tree fndecl)
      the function returns a structure.  */
   tree function_result_decl = 0;
   int varargs_setup = 0;
-  int reg_parm_stack_space = 0;
+  int reg_parm_stack_space ATTRIBUTE_UNUSED = 0;
   rtx conversion_insns = 0;
 
   /* Nonzero if function takes extra anonymous args.
