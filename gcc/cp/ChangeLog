@@ -1,3 +1,16 @@
+2003-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8748
+	* class.c (build_base_path): Take the address before calling save_expr.
+
+	* call.c (build_user_type_conversion_1): Do set ICS_BAD_FLAG if
+	all the ambiguous conversions are bad.
+
+	* class.c (maybe_warn_about_overly_private_class): Don't stop
+	searching when we find a nonprivate method.
+
+	* typeck.c (build_class_member_access_expr): Use unary_complex_lvalue.
+
 2003-01-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (get_arglist_len_in_bytes): Remove.
