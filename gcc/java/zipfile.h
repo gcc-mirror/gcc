@@ -1,6 +1,6 @@
 /* Definitions for using a zipped' archive.
 
-   Copyright (C) 1996  Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-98, 1999  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
