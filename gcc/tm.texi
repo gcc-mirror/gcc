@@ -4880,6 +4880,17 @@ like:
     : reverse_condition_maybe_unordered (CODE))
 @end smallexample
 
+@findex REVERSE_CONDEXEC_PREDICATES_P
+@item REVERSE_CONDEXEC_PREDICATES_P (@var{code1}, @var{code2})
+A C expression that returns true if the conditional execution predicate
+@var{code1} is the inverse of @var{code2} and vice versa.  Define this to
+return 0 if the target has conditional execution predicates that cannot be
+reversed safely.  If none is specified, this macro expands to:
+
+@smallexample
+#define REVERSE_CONDEXEC_PREDICATES_P (x, y) ((x) == reverse_condition (y))
+@end smallexample
+
 @end table
 
 @node Costs

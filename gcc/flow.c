@@ -168,6 +168,12 @@ Boston, MA 02111-1307, USA.  */
 #define EPILOGUE_USES(REGNO)  0
 #endif
 
+#ifdef HAVE_conditional_execution
+#ifndef REVERSE_CONDEXEC_PREDICATES_P
+#define REVERSE_CONDEXEC_PREDICATES_P(x, y) ((x) == reverse_condition (y))
+#endif
+#endif
+
 /* The obstack on which the flow graph components are allocated.  */
 
 struct obstack flow_obstack;
@@ -5137,7 +5143,7 @@ ior_reg_cond (old, x, add)
   if (GET_RTX_CLASS (GET_CODE (old)) == '<')
     {
       if (GET_RTX_CLASS (GET_CODE (x)) == '<'
-	  && GET_CODE (x) == reverse_condition (GET_CODE (old))
+	  && REVERSE_CONDEXEC_PREDICATES_P (GET_CODE (x), GET_CODE (old))
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return const1_rtx;
       if (GET_CODE (x) == GET_CODE (old)
