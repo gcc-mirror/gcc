@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Advanced RISC Machines
    ARM compilation, AOF Assembler.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
 
 This file is part of GNU CC.
@@ -60,12 +60,13 @@ char *aof_text_section ();
 char *aof_data_section ();
 #define DATA_SECTION_ASM_OP aof_data_section ()
 
-#define EXTRA_SECTIONS in_zero_init, in_ctor, in_dtor
+#define EXTRA_SECTIONS in_zero_init, in_ctor, in_dtor, in_common
 
 #define EXTRA_SECTION_FUNCTIONS	\
 ZERO_INIT_SECTION		\
 CTOR_SECTION			\
-DTOR_SECTION
+DTOR_SECTION			\
+COMMON_SECTION
 
 #define ZERO_INIT_SECTION					\
 void								\
@@ -118,6 +119,18 @@ dtor_section ()								\
     }									\
 }
 
+/* Used by ASM_OUTPUT_COMMON (below) to tell varasm.c that we've
+   changed areas.  */
+#define COMMON_SECTION						\
+void								\
+common_section ()						\
+{								\
+  static int common_count = 1;					\
+  if (in_section != in_common)					\
+    {								\
+      in_section = in_common;					\
+    }								\
+}
 #define CTOR_LIST_BEGIN					\
 asm (CTORS_SECTION_ASM_OP);				\
 extern func_ptr __CTOR_END__[1];			\
@@ -277,7 +290,8 @@ do {							\
 /* Output of Uninitialized Variables */
 
 #define ASM_OUTPUT_COMMON(STREAM,NAME,SIZE,ROUNDED)		\
-  (fprintf ((STREAM), "\tAREA "),				\
+  (common_section (),						\
+   fprintf ((STREAM), "\tAREA "),				\
    assemble_name ((STREAM), (NAME)),				\
    fprintf ((STREAM), ", DATA, COMMON\n\t%% %d\t%s size=%d\n",	\
 	    (ROUNDED), ASM_COMMENT_START, SIZE))
