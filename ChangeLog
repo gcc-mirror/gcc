@@ -12,7 +12,7 @@
 2003-07-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.tpl (libsubdir): Use gcc instead of gcc-lib.
-	* Makefine.in: Update.
+	* Makefile.in: Update.
 
 2003-07-30  Andreas Tobler  <a.tobler@schweiz.ch>
 
