@@ -30,10 +30,10 @@ void test01()
 
   const unsigned max_size = 1 << 18;
 
-  wchar_t ref[max_size];
+  static wchar_t ref[max_size];
   wmemset(ref, L'\0', max_size);
 
-  wchar_t src[max_size * 2];
+  static wchar_t src[max_size * 2];
   wmemset(src, L'\1', max_size * 2);
 
   for (unsigned i = 128; i <= max_size; i *= 2)
