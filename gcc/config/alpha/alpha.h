@@ -42,7 +42,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
 
 /* No point in running CPP on our assembler output.  */
-#define ASM_SPEC "-nocpp"
+#define ASM_SPEC "-nocpp %{pg}"
 
 /* Under OSF/1, -p and -pg require -lprof1.  */
 
@@ -911,19 +911,10 @@ extern char *alpha_function_name;
 #define FUNCTION_PROLOGUE(FILE, SIZE)  output_prolog (FILE, SIZE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  Profiling for gprof does not
-   require LABELNO so we don't reference it at all.  This does,
-   however, mean that -p won't work.  But OSF/1 doesn't support the
-   traditional prof anyways, so there is no good reason to be
-   backwards compatible. */
+   for profiling a function entry.  Under OSF/1, profiling is enabled
+   by simply passing -pg to the assember and linker.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)			\
-    do {							\
-	fputs ("\tlda $28,_mcount\n", (FILE));			\
-	fputs ("\tjsr $28,($28),_mcount\n", (FILE));		\
-	fputs ("\tldgp $29,0($27)\n", (FILE));			\
-    } while (0);
-
+#define FUNCTION_PROFILER(FILE, LABELNO)
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.
