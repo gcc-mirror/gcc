@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2046,6 +2046,10 @@ subst_stack_regs_pat (insn, regstack, pat)
 	break;
 
       case IF_THEN_ELSE:
+	/* dest has to be on stack. */
+	if (get_hard_regnum (regstack, *dest) < FIRST_STACK_REG)
+	  abort ();
+
 	/* This insn requires the top of stack to be the destination. */
 
 	/* If the comparison operator is an FP comparison operator,
@@ -2099,9 +2103,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 	      }
 	}
 
-	/* Make dest the top of stack.  Add dest to regstack if not present. */
-	if (get_hard_regnum (regstack, *dest) < FIRST_STACK_REG)
-	  regstack->reg[++regstack->top] = REGNO (*dest);	
+	/* Make dest the top of stack. */
 	SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
 	replace_reg (dest, FIRST_STACK_REG);
 
