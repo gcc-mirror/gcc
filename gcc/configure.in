@@ -2903,6 +2903,8 @@ do
 				compilers=
 				stagestuff=
 				diff_excludes=
+				headers=
+				lib2funcs=
 				. ${mainsrcdir}/$s/config-lang.in
 				if [[ "x$language" = x ]]
 				then
