@@ -1,3 +1,9 @@
+2005-01-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/19258
+	* pt.c (push_access_scope): Handle friend defined in class.
+	(pop_access_scope): Likewise.
+
 2005-01-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19270
