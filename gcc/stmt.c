@@ -2317,7 +2317,7 @@ expand_case (tree exp)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
   rtx default_label = 0;
-  struct case_node *n, *m;
+  struct case_node *n;
   unsigned int count, uniq;
   rtx index;
   rtx table_label;
@@ -2354,6 +2354,7 @@ expand_case (tree exp)
   if (index_type != error_mark_node)
     {
       tree elt;
+      bitmap label_bitmap;
 
       /* cleanup_tree_cfg removes all SWITCH_EXPR with their index
 	 expressions being INTEGER_CST.  */
@@ -2392,6 +2393,7 @@ expand_case (tree exp)
 
       uniq = 0;
       count = 0;
+      label_bitmap = BITMAP_XMALLOC ();
       for (n = case_list; n; n = n->right)
 	{
 	  /* Count the elements and track the largest and smallest
@@ -2412,16 +2414,17 @@ expand_case (tree exp)
 	  if (! tree_int_cst_equal (n->low, n->high))
 	    count++;
 
-	  /* Count the number of unique case node targets.  */
-          uniq++;
+	  /* If we have not seen this label yet, then increase the
+	     number of unique case node targets seen.  */
 	  lab = label_rtx (n->code_label);
-          for (m = case_list; m != n; m = m->right)
-            if (label_rtx (m->code_label) == lab)
-              {
-                uniq--;
-                break;
-              }
+	  if (!bitmap_bit_p (label_bitmap, CODE_LABEL_NUMBER (lab)))
+	    {
+	      bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab));
+	      uniq++;
+	    }
 	}
+
+      BITMAP_XFREE (label_bitmap);
 
       /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
 	 destination, such as one with a default case only.  */
