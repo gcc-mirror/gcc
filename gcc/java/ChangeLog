@@ -1,3 +1,20 @@
+2004-05-06  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Fixes PR java/9685, PR java/15073
+	* parse.y (accessibility_string): New method.
+	(not_accessible_field_error): Use accessibility_string()
+	instead of java_accstring_lookup().
+	(resolve_qualified_expression_name): Check with
+	check_pkg_class_access() before allowing access using
+	qualified names.
+	Fix comment typo.
+	Use check_pkg_class_access() instead of not_accessible_p()
+	for unqualified types.
+	(not_accessible_p): Use DECL_CONTEXT (member) instead of 
+	REFERENCE for package-private access checking.
+	(patch_method_invocation): Use accessibility_string() instead
+	of java_accstring_lookup().
+
 2004-04-30  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Fixes PR java/15133
