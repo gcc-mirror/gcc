@@ -1,3 +1,11 @@
+2000-05-30  Tom Tromey  <tromey@cygnus.com>
+
+	* include/name-finder.h: Include <sys/wait.h>.
+	(_Jv_name_finder::pid): Now of type `pid_t'.
+	(_Jv_name_finder::~_Jv_name_finder): Call waitpid().
+	* java/lang/Throwable.java (CPlusPlusDemangler.close): Call
+	`proc.waitFor()'.
+
 2000-05-24  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/ObjectOutputStream.java (writeObject): Use component type

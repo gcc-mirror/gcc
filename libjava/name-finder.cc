@@ -78,7 +78,7 @@ _Jv_name_finder::_Jv_name_finder (char *executable)
 
   error |= pipe (f_pipe) < 0;
   error |= pipe (b_pipe) < 0;
-      
+
   if (error)
     return;
 
@@ -92,16 +92,16 @@ _Jv_name_finder::_Jv_name_finder (char *executable)
       execvp (argv[0], argv);
       _exit (127);
     }
-      
+
   close (f_pipe [0]);
   close (b_pipe [1]);
-      
+
   if (pid < 0)
     {
       error |= 1; 
       return;
     }
-      
+
   b_pipe_fd = fdopen (b_pipe[0], "r");
   error |= !b_pipe_fd;
 #endif
