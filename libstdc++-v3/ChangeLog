@@ -10,6 +10,19 @@
 	* src/ios.cc (ios_base::failure::~failure): ... here.
 	src/ios.cc (ios::failure::what): Likewise.
 
+2000-11-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Make deprecated strstream header consistent with new and new.h.
+	* include/backward/strstream.h: Add. Use using declarations to
+	scope strstreambuf, istrstream, ostrstream, strstream to global
+	scope.
+	* include/backward/strstream: Remove using declarations.
+	* src/Makefile.am (base_headers): Add strstream.
+	* src/Makefile.in: Regenerate.
+
+	* include/backward/new.h (_CPP_BACKWARD_NEW_H): Change macro guard
+	to be consistent with other headers.
+
 2000-11-22  Richard Henderson  <rth@redhat.com>
 
 	* config/os/bsd/bits/ctype_inline.h (is): Fix order of expressions.

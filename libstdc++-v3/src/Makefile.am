@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.49 2000/11/22 00:05:16 bkoz Exp $
+## $Id: Makefile.am,v 1.50 2000/11/22 17:55:06 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -103,7 +103,7 @@ base_headers = \
 	backward/multiset.h backward/pair.h backward/iostream.h \
 	backward/rope.h backward/set.h backward/slist.h backward/stack.h \
 	backward/tempbuf.h backward/tree.h backward/vector.h \
-	backward/fstream.h backward/strstream.h \
+	backward/fstream.h backward/strstream.h backward/strstream \
 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h \
 	bits/std_iterator.h bits/std_list.h \
 	bits/std_map.h bits/std_memory.h bits/std_numeric.h \
