@@ -14,8 +14,8 @@ extern "C" void *memcpy(void *, const void *, size_t);
 #ifdef STACK_SIZE
 const int arena_size = 256;
 #else
-#if defined(__FreeBSD__) || defined(__sun__)
-// FreeBSD with threads and Solaris with threads require even more
+#if defined(__FreeBSD__) || defined(__sun__) || defined(__hpux__)
+// FreeBSD, Solaris and HP-UX with threads require even more
 // space at initialization time.  FreeBSD 5 now requires over 131072 bytes.
 const int arena_size = 262144;
 #else
