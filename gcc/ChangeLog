@@ -1,3 +1,8 @@
+2004-02-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* dwarf2out.c (loclabel_num): Move into #ifdef 
+	DWARF2_DEBUGGING_INFO.
+
 2004-02-06  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/objc-act.c (build_super_template) the 'class' field of
