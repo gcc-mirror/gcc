@@ -186,6 +186,20 @@ symbolic_operand (op, mode)
   switch (GET_CODE (op))
     {
     case CONST:
+      op = XEXP (op, 0);
+      if (GET_CODE (op) != PLUS)
+	return 0;
+      if (GET_CODE (XEXP (op, 0)) != SYMBOL_REF)
+	return 0;
+      op = XEXP (op, 1);
+      if (GET_CODE (op) != CONST_INT)
+	return 0;
+      /* Force the low 13 bits of the constant to zero so that we do not
+	 use up so many GOT entries.  */
+      if (! TARGET_NO_PIC && ! TARGET_AUTO_PIC && (INTVAL (op) & 0x1fff) != 0)
+	return 0;
+      return 1;
+
     case SYMBOL_REF:
     case LABEL_REF:
       return 1;
@@ -270,7 +284,10 @@ move_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! TARGET_NO_PIC && symbolic_operand (op, mode))
+  if (! TARGET_NO_PIC
+      && (GET_CODE (op) == CONST
+	  || GET_CODE (op) == SYMBOL_REF
+	  || GET_CODE (op) == LABEL_REF))
     return 0;
 
   return general_operand (op, mode);
