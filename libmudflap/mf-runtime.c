@@ -206,7 +206,7 @@ static __mf_object_t *__mf_object_cemetary[__MF_TYPE_MAX_CEM+1][__MF_PERSIST_MAX
 /* ------------------------------------------------------------------------ */
 /* Forward function declarations */
 
-static void __mf_init () CTOR;
+void __mf_init () CTOR;
 static void __mf_sigusr1_respond ();
 static unsigned __mf_find_objects (uintptr_t ptr_low, uintptr_t ptr_high, 
                                    __mf_object_t **objs, unsigned max_objs);
@@ -615,10 +615,14 @@ __mf_object_tree (int type)
 }
 
 
-void
+/* not static */void
 __mf_init ()
 {
   char *ov = 0;
+
+  /* Return if initialization has already been done. */
+  if (LIKELY (__mf_starting_p == 0))
+    return;
 
   /* This initial bootstrap phase requires that __mf_starting_p = 1. */
 #ifdef PIC
