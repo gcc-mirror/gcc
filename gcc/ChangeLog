@@ -1,3 +1,8 @@
+2004-03-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (put_var_into_stack): If old RTL was ADDRESSOF, update
+	the address inside the old RTL.
+
 2004-03-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c: Verify that C_SIZEOF_STRUCT_LANG_IDENTIFIER is correct.
