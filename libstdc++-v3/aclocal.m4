@@ -1154,7 +1154,8 @@ dnl macro names into user-provided C++ code, we first stage into <file>-in
 dnl and process to <file> with an output command.  The reason for a two-
 dnl stage process here is to correctly handle $srcdir!=$objdir without
 dnl having to write complex code (the sed commands to clean the macro
-dnl namespace are complex and fragile enough as it is).
+dnl namespace are complex and fragile enough as it is).  We must also
+dnl add a relative path so that -I- is supported properly.
 dnl
 AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   AC_MSG_CHECKING([for thread model used by GCC])
@@ -1172,7 +1173,8 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   fi
   AC_OUTPUT_COMMANDS([d=include/bits
     rm -f $d/gthr.h $d/gthr-single.h $d/gthr-default.h
-    sed '/^#/s/\([A-Z_][A-Z_]*\)/_GLIBCPP_\1/g' <$d/gthr.h-in >$d/gthr.h
+    sed '/^#/s/\([A-Z_][A-Z_]*\)/_GLIBCPP_\1/g' <$d/gthr.h-in \
+      | sed 's,"gthr-,"bits/gthr-,' >$d/gthr.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-single.h-in \
       | sed 's/\(GCC[A-Z_]*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-default.h-in \

@@ -1,5 +1,13 @@
 2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
 
+	libstdc++/3243
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Add relative path to
+	staged/installed area to support -I-.  Document.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
+
 	libstdc++/2211
 	* src/ios.cc (ios_base::Init::_S_ios_create): Rename __bufsize to
 	__out_bufsize.  Add __in_bufsize, document it and use it.  
