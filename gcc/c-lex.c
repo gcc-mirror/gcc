@@ -438,7 +438,7 @@ process_directive ()
   int action_number, l;
   char *new_file;
 #ifndef NO_IMPLICIT_EXTERN_C
-  int entering_c_header;
+  int entering_c_header = 0;
 #endif
   
   /* Don't read beyond this line.  */
@@ -457,9 +457,7 @@ process_directive ()
 
       if (!strcmp (name, "pragma"))
 	{
-#ifdef HANDLE_GENERIC_PRAGMAS
 	  dispatch_pragma ();
-#endif
 	  goto skipline;
 	}
       else if (!strcmp (name, "define"))

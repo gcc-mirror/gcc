@@ -57,25 +57,11 @@ extern struct weak_syms * weak_decls;
 extern int add_weak PARAMS ((const char *, const char *));
 #endif /* HANDLE_PRAGMA_WEAK */
 
-
-/* Define HANDLE_GENERIC_PRAGMAS if any kind of front-end pragma
-   parsing is to be done.  The code in GCC's generic C source files
-   will only look for the definition of this constant.  They will
-   ignore definitions of HANDLE_PRAGMA_PACK and so on.  */
-#if defined HANDLE_PRAGMA_PACK || defined HANDLE_PRAGMA_WEAK \
-    || defined REGISTER_TARGET_PRAGMAS
-#define HANDLE_GENERIC_PRAGMAS
-#endif
-
-#ifdef HANDLE_GENERIC_PRAGMAS
 extern void init_pragma PARAMS ((void));
 
-# if !USE_CPPLIB
+/* If cpplib is in use, it handles dispatch.  */
+#if !USE_CPPLIB
 extern void dispatch_pragma PARAMS ((void));
-# endif
-
-#else
-# define init_pragma()
 #endif
 
 /* Duplicate prototypes for the register_pragma stuff and the typedef for
