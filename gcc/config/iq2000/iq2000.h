@@ -928,14 +928,11 @@ extern void		sbss_section  (void);
 #undef ASM_SPEC
 
 
-/* The mapping from gcc register number to DWARF 2 CFA column number.
-   This mapping does not allow for tracking register 0, since
-   register 0 is fixed.  */
-#define DWARF_FRAME_REGNUM(REG)				\
-  (REG == GP_REG_FIRST + 31 ? DWARF_FRAME_RETURN_COLUMN : REG)
+/* The mapping from gcc register number to DWARF 2 CFA column number.  */
+#define DWARF_FRAME_REGNUM(REG)        (REG)
 
 /* The DWARF 2 CFA column which tracks the return address.  */
-#define DWARF_FRAME_RETURN_COLUMN ( GP_REG_FIRST + 26)
+#define DWARF_FRAME_RETURN_COLUMN (GP_REG_FIRST + 31)
 
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + GP_ARG_FIRST : INVALID_REGNUM)
