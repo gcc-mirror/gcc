@@ -6320,7 +6320,8 @@ correct for most systems.
 @item ASM_OUTPUT_WEAK_ALIAS (@var{stream}, @var{name}, @var{value})
 A C statement to output to the stdio stream @var{stream} assembler code
 which defines (equates) the weak symbol @var{name} to have the value
-@var{value}.
+@var{value}.  If @var{value} is @code{NULL}, it defines @var{name} as
+an undefined weak symbol.
 
 Define this macro if the target only supports weak aliases; define
 @code{ASM_OUTPUT_DEF} instead if possible.

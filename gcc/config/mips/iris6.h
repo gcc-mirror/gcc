@@ -207,23 +207,6 @@ Boston, MA 02111-1307, USA.  */
 #define TYPE_ASM_OP	"\t.type\t"
 #define SIZE_ASM_OP	"\t.size\t"
 
-/* This is how we tell the assembler that a symbol is weak.  */
-
-#define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
- do {						\
-  ASM_GLOBALIZE_LABEL (FILE, NAME);		\
-  fputs ("\t.weakext\t", FILE);			\
-  assemble_name (FILE, NAME);			\
-  if (VALUE)					\
-    {						\
-      fputc (' ', FILE);			\
-      assemble_name (FILE, VALUE);		\
-    }						\
-  fputc ('\n', FILE);				\
- } while (0)
-
-#define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)
-
 /* Irix assembler does not support the init_priority C++ attribute.  */
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0

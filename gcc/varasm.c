@@ -4777,11 +4777,7 @@ weak_finish ()
       for (t = weak_decls; t; t = t->next)
 	{
 	  if (t->name)
-	    {
-	      ASM_WEAKEN_LABEL (asm_out_file, t->name);
-	      if (t->value)
-		ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
-	    }
+	    ASM_OUTPUT_WEAK_ALIAS (asm_out_file, t->name, t->value);
 	}
     }
 #endif

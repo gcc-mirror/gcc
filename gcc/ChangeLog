@@ -1,3 +1,17 @@
+2001-07-17  H.J. Lu <hjl@gnu.org>
+	    Rainer Orth <ro@TechFak.Uni-Bielefeld.DE>
+
+	* c-pragma.h (HANDLE_PRAGMA_WEAK): Define iff ASM_WEAKEN_LABEL and
+	ASM_OUTPUT_WEAK_ALIAS are defined.
+	* defaults.h (ASM_OUTPUT_WEAK_ALIAS): Define if possible.
+	* config/mips/iris6.h (ASM_OUTPUT_WEAK_ALIAS, ASM_WEAKEN_LABEL):
+	Moved ...
+	* config/mips/iris5.h: ... here.
+	(HANDLE_SYSV_PRAGMA): Defined as 1.
+	* varasm.c (weak_finish): Use ASM_OUTPUT_WEAK_ALIAS.
+	* doc/tm.texi (ASM_OUTPUT_WEAK_ALIAS): Support the undefined weak
+	symbol.
+
 2001-07-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Use CCmode
