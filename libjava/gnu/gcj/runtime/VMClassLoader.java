@@ -34,7 +34,16 @@ final class VMClassLoader extends java.net.URLClassLoader
 	try
 	  {
 	    if (e.endsWith(".jar") || e.endsWith (".zip"))
-	      p.addElement(new URL("jar", "", -1, "file:///"+e+"!/"));
+	      {
+		File archive = new File (e);
+		try {
+		  p.addElement(new URL("jar", "", -1, "file://"
+				       + archive.getCanonicalPath ()
+				       + "!/"));
+		} catch (IOException ex) {
+		  // empty
+		}
+	      }
 	    else if (e.endsWith ("/"))
 	      p.addElement (new URL("file", "", -1, e));
 	    else if (new File (e).isDirectory ())

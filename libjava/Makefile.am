@@ -225,6 +225,7 @@ $(nat_headers): libgcj.zip
 java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
+		-friend 'void _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar);' \
 		$(basename $<)
 
 ## Our internal main program needs to be able to create a FirstThread.

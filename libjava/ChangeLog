@@ -1,3 +1,22 @@
+2000-08-26  Anthony Green  <green@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/ClassLoader.h): Make _Jv_RunMain a
+	friend.
+
+	* prims.cc: Include ClassLoader.h.
+	(_Jv_RunMain): When executing jar files, classpath must be the jar
+	file only.  Lose our reference to the system ClassLoader in order
+	to get a new one with the correct classpath.
+	* java/lang/natSystem.cc (init_properties): When executing a jar
+	file, only use the jar file for java.class.path.
+
+	* gnu/gcj/runtime/VMClassLoader.java: Use the canonical file name
+	for bytecode archives.
+
+	* gnu/gcj/runtime/FirstThread.java: Handle case where manifest
+	exists, but not Main-Class.
+
 2000-08-23  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/zip/InflaterInputStream.java (read(byte[],int,int)):

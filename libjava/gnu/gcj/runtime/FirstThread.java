@@ -55,11 +55,15 @@ final class FirstThread extends Thread
 
       jarMainClassName = a.getValue(Attributes.Name.MAIN_CLASS);
 
+      if (jarMainClassName != null)
+	return;
+
     } catch (Exception e) {
-
-      System.err.println ("Failed to load Main-Class manifest attribute from\n" + args[0]);
-
+      // empty
     }
+
+    System.err.println ("Failed to load Main-Class manifest attribute from\n"
+			+ args[0]);
   }
 
   // If interpreter is invoked with -jar, the main class name is recorded
