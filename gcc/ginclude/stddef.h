@@ -35,9 +35,14 @@
 #ifndef _WCHAR_T_
 #define _WCHAR_T
 #endif
+/* Undef _FOO_T_ if we are supposed to define foo_t.  */
+#if ! defined (__need_wchar_t) && ! defined (__need_size_t)
 #undef _PTRDIFF_T_
-#ifndef __need_ptrdiff_t
+#endif
+#if ! defined (__need_wchar_t) && ! defined (__need_ptrdiff_t)
 #undef _SIZE_T_
+#endif
+#if ! defined (__need_size_t) && ! defined (__need_ptrdiff_t)
 #undef _WCHAR_T_
 #endif
 #endif /* _ANSI_H_ */
@@ -174,18 +179,18 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif /* _STDDEF_H or __need_wchar_t.  */
 
 /*  In 4.3bsd-net2, leave these undefined to indicate that size_t, etc.
-    are already defined.  We need not worry about the case of wanting just
-    one of these types, not on 4.3bsd-net2, because only the GNU libc
-    header files do that.  */
+    are already defined.  */
 #ifdef _ANSI_H_
+#ifdef _GCC_PTRDIFF_T_
 #undef _PTRDIFF_T_
-#ifdef _STDDEF_H /* This is a kludge.
-		    _STDDEF_H is defined when we are using the whole file,
-		    undefined when obstack.h wants just ptrdiff_t.  */
+#endif
+#ifdef _GCC_SIZE_T_
 #undef _SIZE_T_
+#endif
+#ifdef _GCC_WCHAR_T_
 #undef _WCHAR_T_
 #endif
-#endif
+#endif /* _ANSI_H_ */
 
 #endif /* __sys_stdtypes_h */
 
