@@ -146,6 +146,8 @@ c_common_write_pch (void)
       written += size;
     }
   free (buf);
+  /* asm_out_file can be written afterwards, so must be flushed first.  */
+  fflush (asm_out_file);
 
   gt_pch_save (pch_outfile);
   cpp_write_pch_state (parse_in, pch_outfile);
