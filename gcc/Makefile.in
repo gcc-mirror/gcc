@@ -2215,7 +2215,7 @@ cpp.dvi: $(srcdir)/cpp.texi
 	texindex cpp.??
 	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex cpp.texi
 
-generated-manpages: $(srcdir)/gcov.1 $(srcdir)/cpp.1
+generated-manpages: $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
 
 $(srcdir)/gcov.1: $(srcdir)/gcov.texi
 	$(TEXI2POD) < $(srcdir)/gcov.texi > gcov.pod
@@ -2230,6 +2230,13 @@ $(srcdir)/cpp.1: $(srcdir)/cpp.texi
 		mv -f $(srcdir)/cpp.1.T$$$$ $(srcdir)/cpp.1) || \
 		(rm -f $(srcdir)/cpp.1.T$$$$ && exit 1)
 	rm -f cpp.pod
+
+$(srcdir)/gcc.1: $(srcdir)/invoke.texi
+	$(TEXI2POD) < $(srcdir)/invoke.texi > gcc.pod
+	($(POD2MAN) gcc.pod > $(srcdir)/gcc.1.T$$$$ && \
+		mv -f $(srcdir)/gcc.1.T$$$$ $(srcdir)/gcc.1) || \
+		(rm -f $(srcdir)/gcc.1.T$$$$ && exit 1)
+	rm -f gcc.pod
 
 #
 # Deletion of files made during compilation.
@@ -2359,7 +2366,7 @@ maintainer-clean:
 	-rm -f gcc.??s gcc.*aux
 	-rm -f $(srcdir)/cpp.info* $(srcdir)/gcc.info* $(srcdir)/c-tree.info*
 	-rm -f $(srcdir)/cppinternals.info*
-	-rm -f $(srcdir)/gcov.1 $(srcdir)/cpp.1
+	-rm -f $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
 #
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.

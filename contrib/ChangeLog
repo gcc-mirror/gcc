@@ -1,3 +1,11 @@
+2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_update: Add gcc/gcc.1 to generated files.
+	* texi2pod.pl: Handle @r and @gccoptlist.  Handle @gol.  Handle
+	discarding to end of sentence with @xref where the sentence has an
+	interior "." in markup, and handle discarding parentheses around
+	such a sentence.
+
 2001-01-11  Bernd Schmidt  <bernds@redhat.com>
 
 	* gennews: Add gcc-2.95.3.

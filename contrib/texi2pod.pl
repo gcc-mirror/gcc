@@ -249,24 +249,30 @@ sub postprocess
     s/\@value\{([a-zA-Z0-9_-]+)\}/$defs{$1}/g;
 
     # Formatting commands.
+    # Temporary escape for @r.
+    s/\@r\{([^\}]*)\}/R<$1>/g;
     s/\@(?:dfn|var|emph|cite|i)\{([^\}]*)\}/I<$1>/g;
     s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
-    s/\@(?:samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
+    s/\@(?:gccoptlist|samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
     s/\@sc\{([^\}]*)\}/\U$1/g;
     s/\@file\{([^\}]*)\}/F<$1>/g;
     s/\@w\{([^\}]*)\}/S<$1>/g;
     s/\@(?:dmn|math)\{([^\}]*)\}/$1/g;
 
+    # Handle @r inside bold.
+    1 while s/B<((?:[^<>]*|I<[^<>*]*>)*)R<([^>]*)>/B<$1>${2}B</g;
+
     # Cross references are thrown away, as are @noindent and @refill.
     # (@noindent is impossible in .pod, and @refill is unnecessary.)
     # @* is also impossible in .pod; we discard it and any newline that
-    # follows it.
+    # follows it.  Similarly, our macro @gol must be discarded.
 
-    s/\@xref\{(?:[^\}]*)\}[^.]*.//g;
+    s/\(?\@xref\{(?:[^\}]*)\}(?:[^.<]|(?:<[^<>]*>))*\.\)?//g;
     s/\s+\(\@pxref\{(?:[^\}]*)\}\)//g;
     s/;\s+\@pxref\{(?:[^\}]*)\}//g;
     s/\@noindent\s*//g;
     s/\@refill//g;
+    s/\@gol//g;
     s/\@\*\s*\n?//g;
 
     # @uref can take one, two, or three arguments, with different

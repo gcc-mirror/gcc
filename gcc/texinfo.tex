@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2000-11-09.08}
+\def\texinfoversion{2000-12-11.07}
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 2000
 % Free Software Foundation, Inc.
@@ -704,20 +704,35 @@ where each line of input produces a line of output.}
     % if you have multiple lines of stuff to put here, you'll need to
     % make the vbox yourself of the appropriate size.
     \ifx#1l%
-      \llap{#2\hskip\inmarginspacing}%
+      \llap{\ignorespaces #2\hskip\inmarginspacing}%
     \else
-      \rlap{\hskip\hsize\hskip\inmarginspacing#2}%
+      \rlap{\hskip\hsize \hskip\inmarginspacing \ignorespaces #2}%
     \fi
     \null
   }%
 }}
 \def\inleftmargin{\doinmargin l}
 \def\inrightmargin{\doinmargin r}
-\def\inmargin{% not perfect, but better than nothing.
-  \ifodd\pageno
-    \let\temp=\inleftmargin
+%
+% @inmargin{TEXT [, RIGHT-TEXT]}
+% (if RIGHT-TEXT is given, use TEXT for left page, RIGHT-TEXT for right;
+% else use TEXT for both).
+% 
+\def\inmargin#1{\parseinmargin #1,,\finish}
+\def\parseinmargin#1,#2,#3\finish{% not perfect, but better than nothing.
+  \setbox0 = \hbox{\ignorespaces #2}% 
+  \ifdim\wd0 > 0pt
+    \def\lefttext{#1}%  have both texts
+    \def\righttext{#2}%
   \else
-    \let\temp=\inrightmargin
+    \def\lefttext{#1}%  have only one text
+    \def\righttext{#1}%
+  \fi
+  %
+  \ifodd\pageno
+    \def\temp{\inleftmargin\lefttext}%
+  \else
+    \def\temp{\inrightmargin\righttext}%
   \fi
   \temp
 }
@@ -4304,6 +4319,7 @@ width0pt\relax} \fi
   \gobble
 }
 
+
 % @quotation does normal linebreaking (hence we can't use \nonfillstart)
 % and narrows the margins.
 %
@@ -4323,6 +4339,158 @@ width0pt\relax} \fi
     \exdentamount = \lispnarrowing
     \let\nonarrowing = \relax
   \fi
+}
+
+
+% LaTeX-like @verbatim...@end verbatim and @verb{<char>...<char>}
+% If we want to allow any <char> as delimiter, 
+% we need the curly braces so that makeinfo sees the @verb command, eg:
+% `@verbx...x' would look like the '@verbx' command.  --janneke@gnu.org
+%
+% [Knuth]: Donald Ervin Knuth, 1996.  The TeXbook.
+%
+% [Knuth] p. 344; only we need to do '@' too
+\def\dospecials{%
+  \do\ \do\\\do\@\do\{\do\}\do\$\do\&%
+  \do\#\do\^\do\^^K\do\_\do\^^A\do\%\do\~}
+%
+% [Knuth] p. 380
+\def\uncatcodespecials{%
+  \def\do##1{\catcode`##1=12}\dospecials}
+%
+% [Knuth] pp. 380,381,391
+% Disable Spanish ligatures ?` and !` of \tt font
+\begingroup
+  \catcode`\`=\active\gdef`{\relax\lq}
+\endgroup
+%
+% Setup for the @verb command.
+%
+% Eight spaces for a tab
+\begingroup
+  \catcode`\^^I=\active
+  \gdef\tabeightspaces{\catcode`\^^I=\active\def^^I{\ \ \ \ \ \ \ \ }}
+\endgroup
+%
+\def\setupverb{%
+  \tt  % easiest (and conventionally used) font for verbatim
+  \def\par{\leavevmode\endgraf}%
+  \catcode`\`=\active
+  \tabeightspaces
+  % Respect line breaks,
+  % print special symbols as themselves, and
+  % make each space count
+  % must do in this order:
+  \obeylines \uncatcodespecials \sepspaces
+}
+
+% Setup for the @verbatim environment
+%
+% Real tab expansion
+\newdimen\tabw \setbox0=\hbox{\tt\space} \tabw=8\wd0 % tab amount
+%
+\def\starttabbox{\setbox0=\hbox\bgroup}
+\begingroup
+  \catcode`\^^I=\active
+  \gdef\tabexpand{%
+    \catcode`\^^I=\active
+    \def^^I{\leavevmode\egroup
+      \dimen0=\wd0 % the width so far, or since the previous tab
+      \divide\dimen0 by\tabw
+      \multiply\dimen0 by\tabw % compute previous multiple of \tabw
+      \advance\dimen0 by\tabw  % advance to next multiple of \tabw
+      \wd0=\dimen0 \box0 \starttabbox
+    }%
+  }
+\endgroup
+\def\setupverbatim{%
+  % Easiest (and conventionally used) font for verbatim
+  \tt
+  \def\par{\leavevmode\egroup\box0\endgraf}%
+  \catcode`\`=\active
+  \tabexpand
+  % Respect line breaks,
+  % print special symbols as themselves, and
+  % make each space count
+  % must do in this order:
+  \obeylines \uncatcodespecials \sepspaces
+  \everypar{\starttabbox}%
+}
+
+% Do the @verb magic: verbatim text is quoted by unique 
+% delimiter characters.  Before first delimiter expect a 
+% right brace, after last delimiter expect closing brace:
+%
+%    \def\doverb'{'<char>#1<char>'}'{#1}
+%
+% [Knuth] p. 382; only eat outer {}
+\begingroup
+  \catcode`[=1\catcode`]=2\catcode`\{=12\catcode`\}=12
+  \gdef\doverb{#1[\def\next##1#1}[##1\endgroup]\next]
+\endgroup
+%
+\def\verb{\begingroup\setupverb\doverb}
+%
+%
+% Do the @verbatim magic: define the macro \doverbatim so that
+% the (first) argument ends when '@end verbatim' is reached, ie:
+%
+%     \def\doverbatim#1@end verbatim{#1}
+%
+% For Texinfo it's a lot easier than for LaTeX, 
+% because texinfo's \verbatim doesn't stop at '\end{verbatim}':
+% we need not redefine '\', '{' and '}'
+%
+% Inspired by LaTeX's verbatim command set [latex.ltx]
+%% Include LaTeX hack for completeness -- never know
+%% \begingroup
+%% \catcode`|=0 \catcode`[=1
+%% \catcode`]=2\catcode`\{=12\catcode`\}=12\catcode`\ =\active
+%% \catcode`\\=12|gdef|doverbatim#1@end verbatim[
+%% #1|endgroup|def|Everbatim[]|end[verbatim]]
+%% |endgroup
+\begingroup
+  \catcode`\ =\active
+  \gdef\doverbatim#1@end verbatim{#1\end{verbatim}}
+\endgroup
+%
+\def\verbatim{%
+  \def\Everbatim{\nonfillfinish\endgroup}%
+  \begingroup
+    \nonfillstart
+    \advance\leftskip by -\defbodyindent
+    \begingroup\setupverbatim\doverbatim
+}
+
+% @verbatiminclude FILE - insert text of file in verbatim environment.
+%
+% Allow normal characters that we make active in the argument (a file name).
+\def\verbatiminclude{%
+  \begingroup
+    \catcode`\\=12
+    \catcode`~=12
+    \catcode`^=12
+    \catcode`_=12
+    \catcode`|=12
+    \catcode`<=12
+    \catcode`>=12
+    \catcode`+=12
+    \parsearg\doverbatiminclude
+}
+\def\setupverbatiminclude{%
+  \begingroup
+    \nonfillstart
+    \advance\leftskip by -\defbodyindent
+    \begingroup\setupverbatim
+}
+%
+\def\doverbatiminclude#1{%
+     % Restore active chars for included file.
+  \endgroup
+  \begingroup
+  \def\thisfile{#1}%
+  \expandafter\expandafter\setupverbatiminclude\input\thisfile
+  \endgroup\nonfillfinish\endgroup
 }
 
 
