@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 #include "real.h"
 #include "langhooks.h"
+#include "basic-block.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -212,6 +213,8 @@ static const char *sh_strip_name_encoding PARAMS ((const char *));
 static void sh_init_builtins PARAMS ((void));
 static void sh_media_init_builtins PARAMS ((void));
 static rtx sh_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+static void sh_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					HOST_WIDE_INT, tree));
 static int flow_dependent_p PARAMS ((rtx, rtx));
 static void flow_dependent_p_1 PARAMS ((rtx, rtx, void *));
 static int shiftcosts PARAMS ((rtx));
@@ -241,6 +244,12 @@ static int sh_address_cost PARAMS ((rtx));
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK sh_output_mi_thunk
+
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES sh_insert_attributes
@@ -8366,6 +8375,189 @@ sh_register_operand (op, mode)
   if (op == CONST0_RTX (mode) && TARGET_SHMEDIA)
     return 1;
   return register_operand (op, mode);
+}
+
+static rtx emit_load_ptr PARAMS ((rtx, rtx));
+
+static rtx
+emit_load_ptr (reg, addr)
+     rtx reg, addr;
+{
+  rtx mem = gen_rtx_MEM (ptr_mode, addr);
+
+  if (Pmode != ptr_mode)
+    mem = gen_rtx_SIGN_EXTEND (Pmode, mem);
+  return emit_move_insn (reg, mem);
+}
+
+void
+sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
+     FILE *file;
+     tree thunk_fndecl ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset;
+     tree function;
+{
+  CUMULATIVE_ARGS cum;
+  int structure_value_byref = 0;
+  rtx this, this_value, sibcall, insns, funexp;
+  tree funtype = TREE_TYPE (function);
+  int simple_add
+    = (TARGET_SHMEDIA ? CONST_OK_FOR_J (delta) : CONST_OK_FOR_I (delta));
+  int did_load = 0;
+  rtx scratch0, scratch1, scratch2;
+
+  reload_completed = 1;
+  no_new_pseudos = 1;
+  current_function_uses_only_leaf_regs = 1;
+
+  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+
+  /* Find the "this" pointer.  We have such a wide range of ABIs for the
+     SH that it's best to do this completely machine independently.
+     "this" is passed as first argument, unless a structure return pointer 
+     comes first, in which case "this" comes second.  */
+  INIT_CUMULATIVE_ARGS (cum, funtype, NULL_RTX, 0);
+#ifndef PCC_STATIC_STRUCT_RETURN
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+    structure_value_byref = 1;
+#endif /* not PCC_STATIC_STRUCT_RETURN */
+  if (structure_value_byref && struct_value_rtx == 0)
+    { 
+      tree ptype = build_pointer_type (TREE_TYPE (funtype));
+
+      FUNCTION_ARG_ADVANCE (cum, Pmode, ptype, 1);
+    }
+  this = FUNCTION_ARG (cum, Pmode, ptr_type_node, 1);
+
+  /* For SHcompact, we only have r0 for a scratch register: r1 is the
+     static chain pointer (even if you can't have nested virtual functions
+     right now, someone might implement them sometime), and the rest of the
+     registers are used for argument passing, are callee-saved, or reserved.  */
+  scratch0 = scratch1 = scratch2 = gen_rtx_REG (Pmode, 0);
+  if (! TARGET_SH5)
+    {
+      scratch1 = gen_rtx_REG (ptr_mode, 1);
+      /* N.B., if not TARGET_HITACHI, register 2 is used to pass the pointer
+	 pointing where to return struct values.  */
+      scratch2 = gen_rtx_REG (Pmode, 3);
+    }
+  else if (TARGET_SHMEDIA)
+    {
+      scratch1 = gen_rtx_REG (ptr_mode, 21);
+      scratch2 = gen_rtx_REG (Pmode, TR0_REG);
+    }
+
+  this_value = plus_constant (this, delta);
+  if (vcall_offset
+      && (simple_add || scratch0 != scratch1)
+      && strict_memory_address_p (ptr_mode, this_value))
+    {
+      emit_load_ptr (scratch0, this_value);
+      did_load = 1;
+    }
+
+  if (!delta)
+    ; /* Do nothing.  */
+  else if (simple_add)
+    emit_move_insn (this, this_value);
+  else
+    {
+      emit_move_insn (scratch1, GEN_INT (delta));
+      emit_insn (gen_add2_insn (this, scratch1));
+    }
+
+  if (vcall_offset)
+    {
+      rtx offset_addr;
+
+      if (!did_load)
+	emit_load_ptr (scratch0, this);
+
+      offset_addr = plus_constant (scratch0, vcall_offset);
+      if (strict_memory_address_p (ptr_mode, offset_addr))
+	; /* Do nothing.  */
+      else if (! TARGET_SH5)
+	{
+	  /* scratch0 != scratch1, and we have indexed loads.  Get better
+	     schedule by loading the offset into r1 and using an indexed
+	     load - then the load of r1 can issue before the load from
+             (this + delta) finishes.  */
+	  emit_move_insn (scratch1, GEN_INT (vcall_offset));
+	  offset_addr = gen_rtx_PLUS (Pmode, scratch0, scratch1);
+	}
+      else if (TARGET_SHMEDIA
+	       ? CONST_OK_FOR_J (vcall_offset)
+	       : CONST_OK_FOR_I (vcall_offset))
+	{
+	  emit_insn (gen_add2_insn (scratch0, GEN_INT (vcall_offset)));
+	  offset_addr = scratch0;
+	}
+      else if (scratch0 != scratch1)
+	{
+	  emit_move_insn (scratch1, GEN_INT (vcall_offset));
+	  emit_insn (gen_add2_insn (scratch0, scratch1));
+	  offset_addr = scratch0;
+	}
+      else
+	abort (); /* FIXME */
+      emit_load_ptr (scratch0, offset_addr);
+
+     if (Pmode != ptr_mode)
+	scratch0 = gen_rtx_TRUNCATE (ptr_mode, scratch0);
+      emit_insn (gen_add2_insn (this, scratch0));
+    }
+
+  /* Generate a tail call to the target function.  */
+  if (! TREE_USED (function))
+    {
+      assemble_external (function);
+      TREE_USED (function) = 1;
+    }
+  funexp = XEXP (DECL_RTL (function), 0);
+  emit_move_insn (scratch2, funexp);
+  funexp = gen_rtx_MEM (FUNCTION_MODE, scratch2);
+  sibcall = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  SIBLING_CALL_P (sibcall) = 1;
+  use_reg (&CALL_INSN_FUNCTION_USAGE (sibcall), this);
+  emit_barrier ();
+
+    /* Run just enough of rest_of_compilation to do scheduling and get
+     the insns emitted.  Note that use_thunk calls
+     assemble_start_function and assemble_end_function.  */
+  insns = get_insns ();
+
+  if (optimize > 0 && flag_schedule_insns_after_reload)
+    {
+
+      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+      life_analysis (insns, rtl_dump_file, PROP_FINAL);
+
+      split_all_insns (1);
+
+      schedule_insns (rtl_dump_file);
+    }
+
+  MACHINE_DEPENDENT_REORG (insns);
+
+  if (optimize > 0 && flag_delayed_branch)
+      dbr_schedule (insns, rtl_dump_file);
+  shorten_branches (insns);
+  final_start_function (insns, file, 1);
+  final (insns, file, 1, 0);
+  final_end_function ();
+
+  if (optimize > 0 && flag_schedule_insns_after_reload)
+    {
+      /* Release all memory allocated by flow.  */
+      free_basic_block_vars (0);
+
+      /* Release all memory held by regsets now.  */
+      regset_release_memory ();
+    }
+
+  reload_completed = 0;
+  no_new_pseudos = 0;
 }
 
 #include "gt-sh.h"
