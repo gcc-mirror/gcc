@@ -466,6 +466,11 @@ int flag_inline_trees = 0;
 
 int max_tinst_depth = 17;
 
+/* The name-mangling scheme to use.  Must be 1 or greater to support
+   template functions with identical types, but different template
+   arguments.  */
+int name_mangling_version = 2;
+
 /* Nonzero if wchar_t should be `unsigned short' instead of whatever it
    would normally be, for use with WINE.  */
 int flag_short_wchar;
@@ -547,6 +552,7 @@ lang_f_options[] =
   {"permissive", &flag_permissive, 1},
   {"repo", &flag_use_repository, 1},
   {"rtti", &flag_rtti, 1},
+  {"squangle", &flag_do_squangling, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"strict-prototype", &flag_strict_prototype, 1},
   {"use-cxa-atexit", &flag_use_cxa_atexit, 1},
@@ -564,8 +570,7 @@ static const char * const unsupported_options[] = {
   "enum-int-equiv",
   "guiding-decls",
   "nonnull-objects",
-  "squangle",
-  "this-is-variable"
+  "this-is-variable",
 };
 
 /* Compare two option strings, pointed two by P1 and P2, for use with
@@ -660,20 +665,22 @@ lang_decode_option (argc, argv)
       else if (!strcmp (p, "new-abi"))
 	{
 	  flag_new_abi = 1;
+	  flag_do_squangling = 1;
 	  flag_vtable_thunks = 1;
 	}
       else if (!strcmp (p, "no-new-abi"))
-	flag_new_abi = 0;
+	{
+	  flag_new_abi = 0;
+	  flag_do_squangling = 0;
+	}
       else if ((option_value
                 = skip_leading_substring (p, "template-depth-")))
 	max_tinst_depth
 	  = read_integral_parameter (option_value, p - 2, max_tinst_depth);
       else if ((option_value
                 = skip_leading_substring (p, "name-mangling-version-")))
-	{
-	  warning ("-f%s is no longer supported", p);
-	  return 1;
-	}
+	name_mangling_version 
+	  = read_integral_parameter (option_value, p - 2, name_mangling_version);
       else if ((option_value
                 = skip_leading_substring (p, "dump-translation-unit-")))
 	{
@@ -1097,10 +1104,16 @@ grokclassfn (ctype, function, flags, quals)
   if (flags == DTOR_FLAG)
     {
       DECL_DESTRUCTOR_P (function) = 1;
+
+      if (flag_new_abi) 
+	set_mangled_name_for_decl (function);
+      else
+	DECL_ASSEMBLER_NAME (function) = build_destructor_name (ctype);
+
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
-
-  set_mangled_name_for_decl (function);
+  else
+    set_mangled_name_for_decl (function);
 }
 
 /* Work on the expr used by alignof (this is only called by the parser).  */
@@ -1567,7 +1580,11 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
   if (!asmspec && current_class_type)
     {
       DECL_INITIAL (decl) = error_mark_node;
-      DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+      if (flag_new_abi)
+	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+      else
+	DECL_ASSEMBLER_NAME (decl) 
+	  = build_static_name (current_class_type, DECL_NAME (decl));
     }
   if (! processing_template_decl)
     {
@@ -1698,7 +1715,13 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	 name for this TYPE_DECL.  */
       DECL_ASSEMBLER_NAME (value) = DECL_NAME (value);
       if (!uses_template_parms (value)) 
-	DECL_ASSEMBLER_NAME (value) = mangle_type (TREE_TYPE (value));
+	{
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (value) = mangle_type (TREE_TYPE (value));
+	  else
+	    DECL_ASSEMBLER_NAME (value) =
+	      get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
+	}
 
       if (processing_template_decl)
 	value = push_template_decl (value);
@@ -1884,7 +1907,10 @@ grokoptypename (declspecs, declarator)
      tree declspecs, declarator;
 {
   tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL_TREE);
-  return mangle_conv_op_name_for_type (t);
+  if (flag_new_abi)
+    return mangle_conv_op_name_for_type (t);
+  else
+    return build_typename_overload (t);
 }
 
 /* When a function is declared with an initializer,
@@ -2845,7 +2871,10 @@ get_sentry (decl)
   tree sname;
   tree sentry;
 
-  sname = mangle_guard_variable (decl);
+  if (!flag_new_abi)
+    sname = get_id_2 ("__sn", DECL_ASSEMBLER_NAME (decl));
+  else
+    sname = mangle_guard_variable (decl);
 
   /* For struct X foo __attribute__((weak)), there is a counter
      __snfoo. Since base is already an assembler name, sname should

@@ -254,7 +254,9 @@ tree error_mark_list;
 	tree global_delete_fndecl;
 
    Used by RTTI
-	tree type_info_type_node, tinfo_decl_type;
+	tree type_info_type_node, tinfo_decl_id, tinfo_decl_type;
+	tree tinfo_var_id;
+
 */
 
 tree cp_global_trees[CPTI_MAX];
@@ -2890,7 +2892,13 @@ pushtag (name, type, globalize)
 	    VARRAY_PUSH_TREE (local_classes, type);
 
 	  if (!uses_template_parms (type)) 
-	    DECL_ASSEMBLER_NAME (d) = mangle_type (type);
+	    {
+	      if (flag_new_abi)
+		DECL_ASSEMBLER_NAME (d) = mangle_type (type);
+	      else
+		DECL_ASSEMBLER_NAME (d)
+		  = get_identifier (build_overload_name (type, 1, 1));
+	    }
         }
       if (b->parm_flag == 2)
 	{
@@ -7618,7 +7626,8 @@ maybe_commonize_var (decl)
 	     which we can't if it has been initialized.  */
 
 	  if (TREE_PUBLIC (decl))
-	    set_mangled_name_for_decl (decl);
+	    DECL_ASSEMBLER_NAME (decl)
+	      = build_static_name (current_function_decl, DECL_NAME (decl));
 	  else
 	    {
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
@@ -8968,9 +8977,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     add_defarg_fn (decl);
 
   /* Plain overloading: will not be grok'd by grokclassfn.  */
-  if (! ctype && ! processing_template_decl 
+  if (! ctype && ! processing_template_decl
       && !DECL_EXTERN_C_P (decl)
-      && !DECL_USE_TEMPLATE (decl))
+      && (! DECL_USE_TEMPLATE (decl) || name_mangling_version < 1))
     set_mangled_name_for_decl (decl);
 
   if (funcdef_flag)
@@ -9085,7 +9094,13 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       /* DECL_ASSEMBLER_NAME is needed only for full-instantiated
 	 templates.  */
       if (!uses_template_parms (decl))
-	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	{
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	  else
+	    DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype,
+							    declarator);
+	}
     }
   else
     {
@@ -9110,7 +9125,13 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 
       context = DECL_CONTEXT (decl);
       if (declarator && context && current_lang_name != lang_name_c) 
-	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	{
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	  else
+	    DECL_ASSEMBLER_NAME (decl) 
+	      = build_static_name (context, declarator);
+	}
     }
 
   if (in_namespace)
@@ -11145,7 +11166,24 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
 	      = TYPE_IDENTIFIER (type);
 
-	  DECL_ASSEMBLER_NAME (decl) = mangle_type (type);
+	  if (flag_new_abi) 
+	    DECL_ASSEMBLER_NAME (decl) = mangle_type (type);
+	  else
+	    {
+	      /* XXX Temporarily set the scope.
+		 When returning, start_decl expects it as NULL_TREE,
+		 and will then then set it using pushdecl. */
+	      my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 980404);
+	      if (current_class_type)
+		DECL_CONTEXT (decl) = current_class_type;
+	      else
+		DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+	      
+	      DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
+	      DECL_ASSEMBLER_NAME (decl)
+		= get_identifier (build_overload_name (type, 1, 1));
+	      DECL_CONTEXT (decl) = NULL_TREE;
+	    }
 
 	  /* FIXME remangle member functions; member functions of a
 	     type with external linkage have external linkage.  */
@@ -12298,17 +12336,17 @@ grok_op_properties (decl, virtualp, friendp)
   else
     do
       {
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, ASSN_P)	\
-	if (ansi_opname (CODE) == name)				\
-	  {							\
-	    operator_code = CODE;				\
-	    break;						\
-	  }							\
-	else if (ansi_assopname (CODE) == name)			\
-	  {							\
-	    operator_code = CODE;				\
-	    DECL_ASSIGNMENT_OPERATOR_P (decl) = 1;		\
-	    break;						\
+#define DEF_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGING, ARITY, ASSN_P)  \
+	if (ansi_opname (CODE) == name)					    \
+	  {								    \
+	    operator_code = CODE;					    \
+	    break;							    \
+	  }								    \
+	else if (ansi_assopname (CODE) == name)				    \
+	  {								    \
+	    operator_code = CODE;					    \
+	    DECL_ASSIGNMENT_OPERATOR_P (decl) = 1;			    \
+	    break;							    \
 	  }
 
 #include "operators.def"

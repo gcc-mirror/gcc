@@ -143,6 +143,7 @@ static tree tsubst_template_parms PARAMS ((tree, tree, int));
 static void regenerate_decl_from_template PARAMS ((tree, tree));
 static tree most_specialized PARAMS ((tree, tree, tree));
 static tree most_specialized_class PARAMS ((tree, tree));
+static void set_mangled_name_for_template_decl PARAMS ((tree));
 static int template_class_depth_real PARAMS ((tree, int));
 static tree tsubst_aggr_type PARAMS ((tree, tree, int, tree, int));
 static tree tsubst_decl PARAMS ((tree, tree, tree, tree));
@@ -1556,8 +1557,9 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     treatment.  We do this here so that the ordinary,
 	     non-template, name-mangling algorithm will not be used
 	     later.  */
-	  if (is_member_template (tmpl) || ctype == NULL_TREE)
-	    set_mangled_name_for_decl (decl);
+	  if ((is_member_template (tmpl) || ctype == NULL_TREE)
+	      && name_mangling_version >= 1)
+	    set_mangled_name_for_template_decl (decl);
 
 	  if (is_friend && !have_def)
 	    /* This is not really a declaration of a specialization.
@@ -4077,7 +4079,11 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       DECL_ASSEMBLER_NAME (type_decl) = DECL_NAME (type_decl);
       if (!is_partial_instantiation)
 	{
-	  DECL_ASSEMBLER_NAME (type_decl) = mangle_decl (type_decl);
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (type_decl) = mangle_decl (type_decl);
+	  else
+	    DECL_ASSEMBLER_NAME (type_decl)
+	      = get_identifier (build_overload_name (t, 1, 1));
 
 	  /* For backwards compatibility; code that uses
 	     -fexternal-templates expects looking up a template to
@@ -4503,10 +4509,11 @@ tsubst_friend_function (decl, args)
     DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
 
   /* The mangled name for the NEW_FRIEND is incorrect.  The call to
-     tsubst will have resulted in a call to set_mangled_name_for_decl.
-     But, the function is not a template instantiation and should not
-     be mangled like one.  Therefore, we remangle the function name.
-     We don't have to do this if the NEW_FRIEND is a template since
+     tsubst will have resulted in a call to
+     set_mangled_name_for_template_decl.  But, the function is not a
+     template instantiation and should not be mangled like one.
+     Therefore, we remangle the function name.  We don't have to do
+     this if the NEW_FRIEND is a template since
      set_mangled_name_for_template_decl doesn't do anything if the
      function declaration still uses template arguments.  */
   if (TREE_CODE (new_friend) != TEMPLATE_DECL)
@@ -5697,9 +5704,14 @@ tsubst_decl (t, args, type, in_decl)
 			      /*entering_scope=*/1);
 
 	if (member && DECL_CONV_FN_P (r)) 
-	  /* Type-conversion operator.  Reconstruct the name, in
-	     case it's the name of one of the template's parameters.  */
-	  DECL_NAME (r) = mangle_conv_op_name_for_type (TREE_TYPE (type));
+	  {
+	    /* Type-conversion operator.  Reconstruct the name, in
+	       case it's the name of one of the template's parameters.  */
+	    if (flag_new_abi)
+	      DECL_NAME (r) = mangle_conv_op_name_for_type (TREE_TYPE (type));
+	    else
+	      DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));
+	  }
 
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args,
 				     /*complain=*/1, t);
@@ -5733,7 +5745,30 @@ tsubst_decl (t, args, type, in_decl)
 	    register_specialization (r, gen_tmpl, argvec);
 
 	    /* Set the mangled name for R.  */
-	    set_mangled_name_for_decl (r);
+	    if (DECL_DESTRUCTOR_P (t)) 
+	      {
+		if (flag_new_abi)
+		  set_mangled_name_for_decl (r);
+		else
+		  DECL_ASSEMBLER_NAME (r) = build_destructor_name (ctx);
+	      }
+	    else 
+	      {
+		/* Instantiations of template functions must be mangled
+		   specially, in order to conform to 14.5.5.1
+		   [temp.over.link].  */
+		tree tmpl = DECL_TI_TEMPLATE (t);
+		
+		/* TMPL will be NULL if this is a specialization of a
+		   member function of a template class.  */
+		if (name_mangling_version < 1
+		    || tmpl == NULL_TREE
+		    || (member && !is_member_template (tmpl)
+			&& !DECL_TEMPLATE_INFO (tmpl)))
+		  set_mangled_name_for_decl (r);
+		else
+		  set_mangled_name_for_template_decl (r);
+	      }
 	    
 	    DECL_RTL (r) = 0;
 	    make_decl_rtl (r, NULL_PTR, 1);
@@ -7050,7 +7085,10 @@ tsubst_copy (t, args, complain, in_decl)
       if (IDENTIFIER_TYPENAME_P (t))
 	{
 	  tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-	  return mangle_conv_op_name_for_type (new_type);
+	  if (flag_new_abi)
+	    return mangle_conv_op_name_for_type (new_type);
+	  else
+	    return (build_typename_overload (new_type));
 	}
       else
 	return t;
@@ -9961,4 +9999,98 @@ get_mostly_instantiated_function_type (decl, contextp, tparmsp)
     *tparmsp = tparms;
 
   return fn_type;
+}
+
+/* Set the DECL_ASSEMBLER_NAME for DECL, which is a FUNCTION_DECL that
+   is either an instantiation or specialization of a template
+   function.  */
+
+static void
+set_mangled_name_for_template_decl (decl)
+     tree decl;
+{
+  tree context = NULL_TREE;
+  tree fn_type;
+  tree ret_type;
+  tree parm_types;
+  tree tparms;
+  tree targs;
+
+  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL, 0);
+  my_friendly_assert (DECL_TEMPLATE_INFO (decl) != NULL_TREE, 0);
+
+  /* Under the new ABI, we don't need special machinery.  */
+  if (flag_new_abi)
+    {
+      set_mangled_name_for_decl (decl);
+      return;
+    }
+
+  /* The names of template functions must be mangled so as to indicate
+     what template is being specialized with what template arguments.
+     For example, each of the following three functions must get
+     different mangled names:
+
+       void f(int);                  
+       template <> void f<7>(int);
+       template <> void f<8>(int);  */
+
+  targs = DECL_TI_ARGS (decl);
+  if (uses_template_parms (targs))
+    /* This DECL is for a partial instantiation.  There's no need to
+       mangle the name of such an entity.  */
+    return;
+
+  /* We now compute the PARMS and RET_TYPE to give to
+     build_decl_overload_real.  The PARMS and RET_TYPE are the
+     parameter and return types of the template, after all but the
+     innermost template arguments have been substituted, not the
+     parameter and return types of the function DECL.  For example,
+     given:
+
+       template <class T> T f(T);
+
+     both PARMS and RET_TYPE should be `T' even if DECL is `int f(int)'.  
+     A more subtle example is:
+
+       template <class T> struct S { template <class U> void f(T, U); }
+
+     Here, if DECL is `void S<int>::f(int, double)', PARMS should be
+     {int, U}.  Thus, the args that we want to subsitute into the
+     return and parameter type for the function are those in TARGS,
+     with the innermost level omitted.  */
+  fn_type = get_mostly_instantiated_function_type (decl, &context, &tparms);
+
+  /* Now, get the innermost parameters and arguments, and figure out
+     the parameter and return types.  */
+  tparms = INNERMOST_TEMPLATE_PARMS (tparms);
+  targs = INNERMOST_TEMPLATE_ARGS (targs);
+  ret_type = TREE_TYPE (fn_type);
+  parm_types = TYPE_ARG_TYPES (fn_type);
+
+  /* For a static member function, we generate a fake `this' pointer,
+     for the purposes of mangling.  This indicates of which class the
+     function is a member.  Because of:
+
+       [class.static] 
+
+       There shall not be a static and a nonstatic member function
+       with the same name and the same parameter types
+
+     we don't have to worry that this will result in a clash with a
+     non-static member function.  */
+  if (DECL_STATIC_FUNCTION_P (decl))
+    parm_types = hash_tree_chain (build_pointer_type (context), parm_types);
+
+  /* There should be the same number of template parameters as
+     template arguments.  */
+  my_friendly_assert (TREE_VEC_LENGTH (tparms) == TREE_VEC_LENGTH (targs),
+		      0);
+
+  /* Actually set the DECL_ASSEMBLER_NAME.  */
+  DECL_ASSEMBLER_NAME (decl)
+    = build_decl_overload_real (decl, parm_types, ret_type,
+				tparms, targs, 
+				DECL_FUNCTION_MEMBER_P (decl) 
+			        + DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
 }

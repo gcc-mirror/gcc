@@ -436,17 +436,17 @@ __dynamic_cast_2 (const type_info& (*from)(void), const type_info& (*to)(void),
 // must match the mangling in gcc/cp/rtti.c.
 
 #define BUILTIN(mangled)					\
-unsigned char _ZTI##mangled [sizeof (__builtin_type_info)]	\
+unsigned char __ti##mangled [sizeof (__builtin_type_info)]	\
   __attribute__ ((aligned (__alignof__ (void *))));		\
-extern "C" const type_info &_ZTF##mangled (void) {		\
-  if ((*(void **) _ZTI##mangled) == 0)				\
-    new (_ZTI##mangled) __builtin_type_info (#mangled);		\
-  return *(type_info *)_ZTI##mangled;				\
+extern "C" const type_info &__tf##mangled (void) {		\
+  if ((*(void **) __ti##mangled) == 0)				\
+    new (__ti##mangled) __builtin_type_info (#mangled);		\
+  return *(type_info *)__ti##mangled;				\
 }
 
 BUILTIN (v); BUILTIN (x); BUILTIN (l); BUILTIN (i); BUILTIN (s); BUILTIN (b);
-BUILTIN (c); BUILTIN (w); BUILTIN (e); BUILTIN (d); BUILTIN (f);
-BUILTIN (j); BUILTIN (m); BUILTIN (y); BUILTIN (t); BUILTIN (h);
-BUILTIN (a);
+BUILTIN (c); BUILTIN (w); BUILTIN (r); BUILTIN (d); BUILTIN (f);
+BUILTIN (Ui); BUILTIN (Ul); BUILTIN (Ux); BUILTIN (Us); BUILTIN (Uc);
+BUILTIN (Sc);
 
 #endif
