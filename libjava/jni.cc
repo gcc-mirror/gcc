@@ -1545,8 +1545,7 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv, void *args)
   // have been called simply to set the new JNIEnv.
   if (_Jv_ThreadCurrent () == NULL)
     {
-      java::lang::Thread *t = new gnu::gcj::jni::NativeThread (group, name);
-      t = t;			// Avoid compiler warning.  Eww.
+      (void) new gnu::gcj::jni::NativeThread (group, name);
     }
   _Jv_SetCurrentJNIEnv (env);
 
@@ -1707,7 +1706,7 @@ JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
 }
 
 jint
-JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize buf_len, jsize *n_vms)
+JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize /* buf_len */, jsize *n_vms)
 {
   JvAssert (buf_len > 0);
   // We only support a single VM.

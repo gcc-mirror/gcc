@@ -36,7 +36,7 @@ public class MimeTypes
 		  {
 		    // Read the next extension
 		    String e = tokenizer.nextToken ();
-		    if (! e.startsWith ("#"))
+		    if ((e != null) && (! e.startsWith ("#")))
 		      table.put (e, t);
 		    else
 		      break;
