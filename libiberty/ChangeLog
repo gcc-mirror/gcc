@@ -1,3 +1,8 @@
+2001-10-19  H.J. Lu <hjl@gnu.org>
+
+	* Makefile.in ($(TARGETLIB)): Also generate pic/$(TARGETLIB) if
+	necessary.
+
 2001-10-17  DJ Delorie  <dj@redhat.com>
 
 	* argv.c, asprintf.c, choose-temp.c, concat.c, cplus-dem.c,

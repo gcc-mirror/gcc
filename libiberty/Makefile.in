@@ -154,10 +154,17 @@ CONFIGURED_OFILES = asprintf.o atexit.o basename.o bcmp.o bcopy.o	\
 	vsprintf.o waitpid.o
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
-	-rm -f $(TARGETLIB)
+	-rm -f $(TARGETLIB) pic/$(TARGETLIB)
 	$(AR) $(AR_FLAGS) $(TARGETLIB) \
 	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	$(RANLIB) $(TARGETLIB)
+	if [ x"$(PICFLAG)" != x ]; then \
+	  cd pic; \
+	  $(AR) $(AR_FLAGS) $(TARGETLIB) \
+	    $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS); \
+	  $(RANLIB) $(TARGETLIB); \
+	  cd ..; \
+	else true; fi
 
 info: libiberty.info info-subdir
 install-info: install-info-subdir
