@@ -1,5 +1,11 @@
+2003-10-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_pad_arg_upward): Pad floating-point
+	arguments downward for big-endian o64.
+
 2003-10-03  Robert Bowdidge <bowdidge@apple.com>
-        * ggc-page.c: (ggc_pch_write_object) replace fseek() with fwrite() in 
+
+        * ggc-page.c (ggc_pch_write_object): Replace fseek() with fwrite() in 
         PCH generation, avoiding too-frequent flushes when writing to NFS 
         file system.
 
