@@ -1,5 +1,5 @@
 /* JToggleButton.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import javax.swing.plaf.ButtonUI;
 public class JToggleButton extends AbstractButton implements Accessible
 {
 
-  public class ToggleButtonModel extends DefaultButtonModel
+  public static class ToggleButtonModel extends DefaultButtonModel
   {
     public void setPressed(boolean b)  
     {
