@@ -504,7 +504,7 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
     {
       /* step 1.  */
       def = PHI_ARG_DEF_FROM_EDGE (phi_orig, entry_arg_e);
-      add_phi_arg (&phi_new, def, new_loop_entry_e);
+      add_phi_arg (phi_new, def, new_loop_entry_e);
 
       /* step 2.  */
       def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_loop_latch);
@@ -518,7 +518,7 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
 
       /* An ordinary ssa name defined in the loop.  */
       new_ssa_name = *new_name_ptr;
-      add_phi_arg (&phi_new, new_ssa_name, loop_latch_edge (new_loop));
+      add_phi_arg (phi_new, new_ssa_name, loop_latch_edge (new_loop));
 
       /* step 3 (case 1).  */
       if (!after)
@@ -635,8 +635,8 @@ slpeel_update_phi_nodes_for_guard (edge guard_edge,
               loop_arg = orig_def;
             }
         }
-      add_phi_arg (&new_phi, loop_arg, loop->exit_edges[0]);
-      add_phi_arg (&new_phi, guard_arg, guard_edge);
+      add_phi_arg (new_phi, loop_arg, loop->exit_edges[0]);
+      add_phi_arg (new_phi, guard_arg, guard_edge);
 
       /* 3. Update phi in successor block.  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi, e) == loop_arg
@@ -763,7 +763,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
 	  else
 	    new_loop_exit_edge = EDGE_SUCC (new_loop->header, 0);
   
-	  add_phi_arg (&phi, phi_arg, new_loop_exit_edge);	
+	  add_phi_arg (phi, phi_arg, new_loop_exit_edge);	
 	}
     }    
    
@@ -796,7 +796,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
 	{
 	  phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, entry_e);
 	  if (phi_arg)
-	    add_phi_arg (&phi, phi_arg, new_exit_e);	
+	    add_phi_arg (phi, phi_arg, new_exit_e);	
 	}    
 
       redirect_edge_and_branch_force (entry_e, new_loop->header);
@@ -2646,8 +2646,8 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       msq = make_ssa_name (vec_dest, NULL_TREE);
       phi_stmt = create_phi_node (msq, loop->header); /* CHECKME */
       SSA_NAME_DEF_STMT (msq) = phi_stmt;
-      add_phi_arg (&phi_stmt, msq_init, loop_preheader_edge (loop));
-      add_phi_arg (&phi_stmt, lsq, loop_latch_edge (loop));
+      add_phi_arg (phi_stmt, msq_init, loop_preheader_edge (loop));
+      add_phi_arg (phi_stmt, lsq, loop_latch_edge (loop));
 
 
       /* <5> Create <vec_dest = realign_load (msq, lsq, magic)> in loop  */

@@ -3130,7 +3130,7 @@ reinstall_phi_args (edge new_edge, edge old_edge)
 
       gcc_assert (result == PHI_RESULT (phi));
 
-      add_phi_arg (&phi, arg, new_edge);
+      add_phi_arg (phi, arg, new_edge);
     }
 
   PENDING_STMT (old_edge) = NULL;
@@ -3862,7 +3862,7 @@ tree_make_forwarder_block (edge fallthru)
       new_phi = create_phi_node (var, bb);
       SSA_NAME_DEF_STMT (var) = new_phi;
       SET_PHI_RESULT (phi, make_ssa_name (SSA_NAME_VAR (var), phi));
-      add_phi_arg (&new_phi, PHI_RESULT (phi), fallthru);
+      add_phi_arg (new_phi, PHI_RESULT (phi), fallthru);
     }
 
   /* Ensure that the PHI node chain is in the same order.  */
@@ -4040,7 +4040,7 @@ thread_jumps_from_bb (basic_block bb)
 	    {
 	      arg = phi_arg_from_edge (phi, last);
 	      gcc_assert (arg >= 0);
-	      add_phi_arg (&phi, PHI_ARG_DEF (phi, arg), e);
+	      add_phi_arg (phi, PHI_ARG_DEF (phi, arg), e);
 	    }
 	}
 
@@ -4566,7 +4566,7 @@ add_phi_args_after_copy_bb (basic_block bb_copy)
 
 	  gcc_assert (PHI_RESULT (phi) == PHI_RESULT (phi_copy));
 	  def = PHI_ARG_DEF_FROM_EDGE (phi, e);
-	  add_phi_arg (&phi_copy, def, e_copy);
+	  add_phi_arg (phi_copy, def, e_copy);
 	}
     }
 }
@@ -4888,8 +4888,8 @@ tree_duplicate_sese_region (edge entry, edge exit,
       tree name = ssa_name (ver);
 
       phi = create_phi_node (name, exit->dest);
-      add_phi_arg (&phi, name, exit);
-      add_phi_arg (&phi, name, exit_copy);
+      add_phi_arg (phi, name, exit);
+      add_phi_arg (phi, name, exit_copy);
 
       SSA_NAME_DEF_STMT (name) = phi;
     }

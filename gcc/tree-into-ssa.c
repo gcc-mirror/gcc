@@ -797,7 +797,7 @@ rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	    break;
 
 	  currdef = get_reaching_def (SSA_NAME_VAR (PHI_RESULT (phi)));
-	  add_phi_arg (&phi, currdef, e);
+	  add_phi_arg (phi, currdef, e);
 	}
     }
 }
@@ -1071,7 +1071,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, VEC(basic_block) *work_stack)
 	{
 	  edge_iterator ei;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    add_phi_arg (&phi, var, e);
+	    add_phi_arg (phi, var, e);
 	}
     }
 

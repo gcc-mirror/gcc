@@ -4591,7 +4591,7 @@ protect_loop_closed_ssa_form_use (edge exit, use_operand_p op_p)
 
       phi = create_phi_node (new_name, exit->dest);
       SSA_NAME_DEF_STMT (new_name) = phi;
-      add_phi_arg (&phi, use, exit);
+      add_phi_arg (phi, use, exit);
     }
 
   SET_USE (op_p, PHI_RESULT (phi));
