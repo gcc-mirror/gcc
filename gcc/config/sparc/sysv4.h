@@ -225,3 +225,34 @@ do { long value[4];							\
      fprintf((FILE), "\t.long\t0x%x\n", value[2]);			\
      fprintf((FILE), "\t.long\t0x%x\n", value[3]);			\
    } while (0)
+
+/* Output assembler code to FILE to initialize this source file's
+   basic block profiling info, if that has not already been done.  */
+
+#undef FUNCTION_BLOCK_PROFILER
+#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
+  do { \
+    if (TARGET_MEDANY) \
+      fprintf (FILE, "\tsethi %%hi(.LLPBX0),%%o0\n\tor %%0,%%lo(.LLPBX0),%%o0\n\tld [%s+%%o0],%%o1\n\ttst %%o1\n\tbne .LLPY%d\n\tadd %%o0,%s,%%o0\n\tcall __bb_init_func\n\tnop\nLPY%d:\n", \
+	       MEDANY_BASE_REG, (LABELNO), MEDANY_BASE_REG, (LABELNO)); \
+    else \
+      fprintf (FILE, "\tsethi %%hi(.LLPBX0),%%o0\n\tld [%%lo(.LLPBX0)+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%%lo(.LLPBX0),%%o0\n\tcall __bb_init_func\n\tnop\nLPY%d:\n", \
+	       (LABELNO), (LABELNO)); \
+  } while (0)
+
+/* Output assembler code to FILE to increment the entry-count for
+   the BLOCKNO'th basic block in this source file.  */
+
+#undef BLOCK_PROFILER
+#define BLOCK_PROFILER(FILE, BLOCKNO) \
+{ \
+  int blockn = (BLOCKNO); \
+  if (TARGET_MEDANY) \
+    fprintf (FILE, "\tsethi %%hi(.LLPBX2+%d),%%g1\n\tor %%g1,%%lo(.LLPBX2+%d),%%g1\n\tld [%%g1+%s],%%g2\n\tadd %%g2,1,%%g2\n\tst %%g2,[%%g1+%s]\n", \
+	     4 * blockn, 4 * blockn, MEDANY_BASE_REG, MEDANY_BASE_REG); \
+  else \
+    fprintf (FILE, "\tsethi %%hi(.LLPBX2+%d),%%g1\n\tld [%%lo(.LLPBX2+%d)+%%g1],%%g2\n\
+\tadd %%g2,1,%%g2\n\tst %%g2,[%%lo(.LLPBX2+%d)+%%g1]\n", \
+	     4 * blockn, 4 * blockn, 4 * blockn); \
+}
+
