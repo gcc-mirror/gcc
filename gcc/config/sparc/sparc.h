@@ -1172,8 +1172,6 @@ extern struct rtx_def *sparc_builtin_saveregs ();
        && ! symbolic_memory_operand (OP, VOIDmode))	\
       || (reload_in_progress && GET_CODE (OP) == REG	\
 	  && REGNO (OP) >= FIRST_PSEUDO_REGISTER))	\
-   : (C) == 'S'						\
-   ? (CONSTANT_P (OP) || memory_address_p (Pmode, OP))	\
    : (C) == 'T'						\
    ? (mem_aligned_8 (OP))				\
    : (C) == 'U'						\
@@ -1193,10 +1191,6 @@ extern struct rtx_def *sparc_builtin_saveregs ();
       ? (REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
 	 && reg_renumber[REGNO (OP)] < 0)		\
       : GET_CODE (OP) == MEM)				\
-   : (C) == 'S'						\
-   ? (CONSTANT_P (OP)					\
-      || (GET_CODE (OP) == REG && reg_renumber[REGNO (OP)] > 0) \
-      || strict_memory_address_p (Pmode, OP)) 		\
    : (C) == 'T'						\
    ? mem_aligned_8 (OP) && strict_memory_address_p (Pmode, XEXP (OP, 0)) \
    : (C) == 'U'						\
