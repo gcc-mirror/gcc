@@ -93,8 +93,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       target_flags |= TARGET_FLAG_LEAFPROC;	\
       target_flags |= TARGET_FLAG_TAILCALL;	\
     }						\
-  if ((LEVEL) >= 3)				\
-    flag_inline_functions = 1;			\
 }
 
 /* Print subsidiary information on the compiler version in use.  */
