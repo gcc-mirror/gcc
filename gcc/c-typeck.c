@@ -1567,8 +1567,6 @@ convert_arguments (typelist, values, name, fundecl)
 	    }
 	  else
 	    {
-	      tree parmname;
-	      tree type0 = type;
 #ifdef PROMOTE_PROTOTYPES
 	      /* Rather than truncating and then reextending,
 		 convert directly to int, if that's the type we will want.  */
