@@ -1,5 +1,31 @@
 2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_symbolic_p): New function.
+	(m68hc11_indirect_p): New function.
+	(m68hc11_override_options): Must set MASK_NO_DIRECT_MODE for 68HC12.
+	(m68hc11_gen_highpart): Use TARGET_NO_DIRECT_MODE instead of
+	TARGET_M6812.
+	(asm_print_register): Likewise.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_symbolic_p): Declare.
+	(m68hc11_indirect_p): Declare.
+	* config/m68hc11/m68hc11.h (EXTRA_CONSTRAINT): New constraint 'R', 'Q'.
+	(TARGET_NO_DIRECT_MODE, TARGET_RELAX): New.
+	(TARGET_SWITCHES): New option -mrelax.
+	* config/m68hc11/m68hc11.md ("andsi3"): Allow soft register for
+	destination.
+	("iorsi3", "xorsi3"): Likewise.
+	("andhi3", "andqi3", "iorhi3", "iorqi3"): Use a define_expand.
+	("*andhi3_mem"): New to handle destination in memory with bclr
+	and a scratch register.
+	("*andqi3_mem", "*iorhi3_mem", "*iorqi3_mem"): Likewise.
+	("*andhi3_const"): New when operand2 is constant.
+	("*andqi3_const", "*iorhi3_const", "*iorqi3_const"): Likewise.
+	("*andhi3_gen"): Cleanup of the old "andhi3".
+	("*andqi3_gen", "*iorhi3_gen", "*iorqi3_gen"): Likewise.
+	("xorqi3"): Update constraints.
+
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (m68hc11_small_indexed_indirect_p): Look
 	for reg_equiv_memory_loc when the operand is a register that does
 	not get a hard register (stack location).

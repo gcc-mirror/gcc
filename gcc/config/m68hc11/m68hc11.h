@@ -118,12 +118,15 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 #define MASK_AUTO_INC_DEC       0004
 #define MASK_M6811              0010
 #define MASK_M6812              0020
+#define MASK_NO_DIRECT_MODE     0040
 
 #define TARGET_OP_TIME		(optimize && optimize_size == 0)
 #define TARGET_SHORT            (target_flags & MASK_SHORT)
 #define TARGET_M6811            (target_flags & MASK_M6811)
 #define TARGET_M6812            (target_flags & MASK_M6812)
 #define TARGET_AUTO_INC_DEC     (target_flags & MASK_AUTO_INC_DEC)
+#define TARGET_NO_DIRECT_MODE   (target_flags & MASK_NO_DIRECT_MODE)
+#define TARGET_RELAX            (TARGET_NO_DIRECT_MODE)
 
 /* Default target_flags if no switches specified.  */
 #ifndef TARGET_DEFAULT
@@ -156,6 +159,8 @@ extern short *reg_renumber;	/* def in local_alloc.c */
     N_("Auto pre/post decrement increment allowed")},		\
   { "noauto-incdec", - MASK_AUTO_INC_DEC,			\
     N_("Auto pre/post decrement increment not allowed")},	\
+  { "relax", MASK_NO_DIRECT_MODE,                               \
+    N_("Do not use direct addressing mode for soft registers")},\
   { "68hc11", MASK_M6811,					\
     N_("Compile for a 68HC11")},				\
   { "68hc12", MASK_M6812,					\
@@ -847,7 +852,9 @@ extern enum reg_class m68hc11_tmp_regs_class;
 /* 'U' represents certain kind of memory indexed operand for 68HC12.
    and any memory operand for 68HC11.  */
 #define EXTRA_CONSTRAINT(OP, C)                         \
-((C) == 'U' ? m68hc11_small_indexed_indirect_p (OP, GET_MODE (OP)) : 0)
+((C) == 'U' ? m68hc11_small_indexed_indirect_p (OP, GET_MODE (OP)) \
+ : (C) == 'Q' ? m68hc11_symbolic_p (OP, GET_MODE (OP)) \
+ : (C) == 'R' ? m68hc11_indirect_p (OP, GET_MODE (OP)) : 0)
 
 
 

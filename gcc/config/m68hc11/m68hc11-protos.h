@@ -106,6 +106,8 @@ extern void m68hc11_emit_libcall PARAMS((const char*, enum rtx_code,
                                          enum machine_mode, enum machine_mode,
                                          int, rtx*));
 extern int m68hc11_small_indexed_indirect_p PARAMS((rtx, enum machine_mode));
+extern int m68hc11_symbolic_p PARAMS((rtx, enum machine_mode));
+extern int m68hc11_indirect_p PARAMS((rtx, enum machine_mode));
 extern int go_if_legitimate_address2 PARAMS((rtx, enum machine_mode, int));
 
 extern int reg_or_indexed_operand PARAMS((rtx,enum machine_mode));
