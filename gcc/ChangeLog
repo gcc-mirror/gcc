@@ -1,3 +1,8 @@
+Sat May 19 07:53:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* recog.c (general_operand): Modify last change to allow it if reload
+	has completed.
+
 Sat May 19 10:23:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (general_operand): Prohibit nonzero subreg bytes on
