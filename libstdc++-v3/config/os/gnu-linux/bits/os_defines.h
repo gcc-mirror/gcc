@@ -51,6 +51,11 @@ typedef __loff_t __off64_t;
 #undef __THROW
 #define __THROW
 
+// Tell Glibc not to try to provide its own inline versions of
+// some math functions.  Those cause assembly-time clashes with
+// our definitions.
+#define __NO_MATH_INLINES
+
 #endif /* not glibc 2.1 or higher.  */
 
 # if defined __GLIBC__ && __GLIBC__ >= 2
