@@ -1,3 +1,8 @@
+Wed Oct 13 13:10:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (ggc-common.o): Depend on RTL_H not RTL_BASE_H.
+	(ggc-simple.o, ggc-page.o, ggc-none.o, ggc-callbacks.o): Likewise.
+
 1999-10-13  Brendan Kehoe  <brendan@cygnus.com>
 
 	* regmove.c (optimize_reg_copy_3): Make sure P is non-nil as we
