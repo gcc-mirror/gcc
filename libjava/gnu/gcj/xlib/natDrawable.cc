@@ -59,7 +59,7 @@ gnu::gcj::xlib::Drawable::getBounds(java::awt::Rectangle* rv)
   switch (status)
     {
     case BadDrawable:
-      JvThrow(new XException(display, status));
+      throw new XException(display, status);
     default:
       ; // All OK, NOP.
     }

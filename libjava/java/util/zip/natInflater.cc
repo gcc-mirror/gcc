@@ -94,9 +94,9 @@ java::util::zip::Inflater::inflate (jbyteArray buf, jint off, jint len)
   z_streamp s = (z_streamp) zstream;
 
   if (! buf)
-    _Jv_Throw (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if (off < 0 || len < 0 || off + len > buf->length)
-    _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   if (len == 0)
     return 0;
@@ -127,12 +127,12 @@ java::util::zip::Inflater::inflate (jbyteArray buf, jint off, jint len)
       break;
 
     case Z_DATA_ERROR:
-      _Jv_Throw (new java::util::zip::DataFormatException 
-                 (s->msg == NULL ? NULL : JvNewStringLatin1 (s->msg)));
+      throw new java::util::zip::DataFormatException 
+	(s->msg == NULL ? NULL : JvNewStringLatin1 (s->msg));
       break;
 
     case Z_MEM_ERROR:
-      _Jv_Throw (new java::lang::OutOfMemoryError);
+      throw new java::lang::OutOfMemoryError;
       break;
 
     case Z_OK:
@@ -158,9 +158,9 @@ java::util::zip::Inflater::setDictionary (jbyteArray buf, jint off, jint len)
   z_streamp s = (z_streamp) zstream;
 
   if (! buf)
-    _Jv_Throw (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if (off < 0 || len < 0 || off + len > buf->length)
-    _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   // Ignore errors.
   inflateSetDictionary (s, (Bytef *) (elements (buf) + off), len);
@@ -174,9 +174,9 @@ java::util::zip::Inflater::setInput (jbyteArray buf, jint off, jint len)
   z_streamp s = (z_streamp) zstream;
 
   if (! buf)
-    _Jv_Throw (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if (off < 0 || len < 0 || off + len > buf->length)
-    _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   s->next_in = (Bytef *) (elements (buf) + off);
   s->avail_in = len;
@@ -202,7 +202,7 @@ java::util::zip::Inflater::init (jboolean no_header)
       jstring msg = NULL;
       if (stream->msg != NULL)
 	msg = JvNewStringLatin1 (stream->msg);
-      _Jv_Throw (new java::lang::InternalError (msg));
+      throw new java::lang::InternalError (msg);
     }
 
   zstream = reinterpret_cast<gnu::gcj::RawData *> (stream);

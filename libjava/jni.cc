@@ -1746,7 +1746,7 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
       if (function == NULL)
 	{
 	  jstring str = JvNewStringUTF (name->data);
-	  JvThrow (new java::lang::AbstractMethodError (str));
+	  throw new java::lang::AbstractMethodError (str);
 	}
     }
 

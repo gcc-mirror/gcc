@@ -184,5 +184,5 @@ java::lang::Double::parseDouble(jstring str)
       if (endptr == data + blength)
 	return val;
     }
-  _Jv_Throw (new NumberFormatException);
+  throw new NumberFormatException;
 }

@@ -37,9 +37,9 @@ java::util::zip::Deflater::deflate (jbyteArray buf, jint off, jint len)
   z_streamp s = (z_streamp) zstream;
 
   if (! buf)
-    _Jv_Throw (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if (off < 0 || len < 0 || off + len > buf->length)
-    _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   if (len == 0)
     return 0;
@@ -58,7 +58,7 @@ java::util::zip::Deflater::deflate (jbyteArray buf, jint off, jint len)
     case Z_STREAM_ERROR:
     case Z_BUF_ERROR:
       // FIXME?
-      _Jv_Throw (new java::lang::InternalError);
+      throw new java::lang::InternalError;
       break;
 
     case Z_OK:
@@ -134,9 +134,9 @@ java::util::zip::Deflater::setDictionary (jbyteArray buf, jint off, jint len)
   z_streamp s = (z_streamp) zstream;
 
   if (! buf)
-    _Jv_Throw (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if (off < 0 || len < 0 || off + len > buf->length)
-    _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   // Ignore errors.
   deflateSetDictionary (s, (Bytef *) (elements (buf) + off), len);
@@ -149,9 +149,9 @@ java::util::zip::Deflater::setInput (jbyteArray buf, jint off, jint len)
   z_streamp s = (z_streamp) zstream;
 
   if (! buf)
-    _Jv_Throw (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if (off < 0 || len < 0 || off + len > buf->length)
-    _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   s->next_in = (Bytef *) (elements (buf) + off);
   s->avail_in = len;
@@ -205,7 +205,7 @@ java::util::zip::Deflater::init (jint level, jboolean no_header)
       jstring msg = NULL;
       if (stream->msg != NULL)
 	msg = JvNewStringLatin1 (stream->msg);
-      _Jv_Throw (new java::lang::InternalError (msg));
+      throw new java::lang::InternalError (msg);
     }
 
   zstream = reinterpret_cast<gnu::gcj::RawData *> (stream);

@@ -31,7 +31,7 @@ void gnu::gcj::xlib::WindowAttributes::initFromWindow(Window* from)
 
   Status status = XGetWindowAttributes(dpy, win, attributesIn);
   if ((status == BadDrawable) | (status == BadWindow))
-    JvThrow(new XException(display, status));
+    throw new XException(display, status);
 }
 
 

@@ -160,9 +160,9 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
     {
       jclass k = obj ? obj->getClass() : NULL;
       if (! obj)
-	JvThrow (new java::lang::NullPointerException);
+	throw new java::lang::NullPointerException;
       if (! declaringClass->isAssignableFrom(k))
-	JvThrow (new java::lang::IllegalArgumentException);
+	throw new java::lang::IllegalArgumentException;
       // FIXME: access checks.
 
       // Find the possibly overloaded method based on the runtime type
@@ -447,7 +447,7 @@ _Jv_CallAnyMethodA (jobject obj,
       // The JDK accepts this, so we do too.
     }
   else if (parameter_types->length != args->length)
-    JvThrow (new java::lang::IllegalArgumentException);
+    throw new java::lang::IllegalArgumentException;
 
   int param_count = parameter_types->length;
 
@@ -469,7 +469,7 @@ _Jv_CallAnyMethodA (jobject obj,
 	  if (! argelts[i]
 	      || ! k
 	      || ! can_widen (k, paramelts[i]))
-	    JvThrow (new java::lang::IllegalArgumentException);
+	    throw new java::lang::IllegalArgumentException;
 	    
 	  if (paramelts[i] == JvPrimClass (boolean))
 	    COPY (&argvals[i],
@@ -499,7 +499,7 @@ _Jv_CallAnyMethodA (jobject obj,
       else
 	{
 	  if (argelts[i] && ! paramelts[i]->isAssignableFrom (k))
-	    JvThrow (new java::lang::IllegalArgumentException);
+	    throw new java::lang::IllegalArgumentException;
 	  COPY (&argvals[i], argelts[i], jobject);
 	}
     }
@@ -514,7 +514,7 @@ _Jv_CallAnyMethodA (jobject obj,
 						  &ret_value);
 
   if (ex)
-    JvThrow (ex);
+    throw ex;
 
   jobject r;
 #define VAL(Wrapper, Field)  (new Wrapper (ret_value.Field))

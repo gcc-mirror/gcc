@@ -58,7 +58,7 @@ java::lang::ConcreteProcess::exitValue (void)
       if (r == -1)
 	{
 	  jstring x = JvNewStringLatin1 (strerror (errno));
-	  _Jv_Throw (new IllegalThreadStateException (x));
+	  throw new IllegalThreadStateException (x);
 	}
 
       hasExited = true;
@@ -85,7 +85,7 @@ java::lang::ConcreteProcess::waitFor (void)
 	}
 
       if (java::lang::Thread::interrupted())
-	_Jv_Throw (new InterruptedException (JvNewStringLatin1 ("wait interrupted")));
+	throw new InterruptedException (JvNewStringLatin1 ("wait interrupted"));
     }
 
   return status;

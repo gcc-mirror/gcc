@@ -118,7 +118,7 @@ java::io::File::getCanonicalPath (void)
 
 #ifdef HAVE_REALPATH
   if (realpath (buf, buf2) == NULL)
-    _Jv_Throw (new IOException (JvNewStringLatin1 (strerror (errno))));
+    throw new IOException (JvNewStringLatin1 (strerror (errno)));
 
   // FIXME: what encoding to assume for file names?  This affects many
   // calls.

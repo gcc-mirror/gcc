@@ -136,7 +136,7 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
       const char *msg = lt_dlerror ();
       jstring str = path->concat (JvNewStringLatin1 (": "));
       str = str->concat (JvNewStringLatin1 (msg));
-      _Jv_Throw (new UnsatisfiedLinkError (str));
+      throw new UnsatisfiedLinkError (str);
     }
 
   add_library (h);
@@ -154,14 +154,14 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
       if (vers != JNI_VERSION_1_1 && vers != JNI_VERSION_1_2)
 	{
 	  // FIXME: unload the library.
-	  _Jv_Throw (new UnsatisfiedLinkError (JvNewStringLatin1 ("unrecognized version from JNI_OnLoad")));
+	  throw new UnsatisfiedLinkError (JvNewStringLatin1 ("unrecognized version from JNI_OnLoad"));
 	}
     }
 #else
-  _Jv_Throw (new UnknownError
-	     (JvNewStringLatin1 (do_search
-				 ? "Runtime.loadLibrary not implemented"
-				 : "Runtime.load not implemented")));
+  throw new UnknownError
+    (JvNewStringLatin1 (do_search
+			? "Runtime.loadLibrary not implemented"
+			: "Runtime.load not implemented"));
 #endif /* USE_LTDL */
 }
 
