@@ -10,7 +10,7 @@
 #include "i386/perform.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di386 -DMACH -Asystem(unix) -Asystem(mach) -Acpu(i386) -Amachine(i386) -D__GNU__ -D__HURD__ -Asystem(gnu)"
+#define CPP_PREDEFINES GNU_CPP_PREDEFINES("i386")
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
