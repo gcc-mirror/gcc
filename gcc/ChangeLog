@@ -1,3 +1,8 @@
+2003-06-19  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* hooks.h (hook_reg_class_void_no_regs): Only declare if tm.h
+	has been included.
+
 2003-06-18  James A Morrison <ja2morri@student.math.uwaterloo.ca>
 
 	* config/sparc/sparc.c: Update copyright year.

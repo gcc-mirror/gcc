@@ -23,7 +23,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define GCC_HOOKS_H
 
 bool hook_bool_void_false PARAMS ((void));
+
+/* Check if tm.h has been included, since ISO C does not allow forward
+   definitions for enums, and making hooks.h dependent on tm.h would create
+   unnecessary dependencies where no hook declaration involving
+   enum_reg_class is needed.  */
+#ifdef REG_CLASS_CONTENTS
 enum reg_class hook_reg_class_void_no_regs (void);
+#endif
+
 bool hook_bool_bool_false (bool);
 bool hook_bool_tree_false PARAMS ((tree));
 bool hook_bool_tree_hwi_hwi_tree_false
