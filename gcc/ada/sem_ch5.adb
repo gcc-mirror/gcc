@@ -427,7 +427,7 @@ package body Sem_Ch5 is
       end if;
 
       Set_Etype (Ent, Standard_Void_Type);
-      Set_Block_Node (Ent, N);
+      Set_Block_Node (Ent, Identifier (N));
       New_Scope (Ent);
 
       if Present (Decls) then

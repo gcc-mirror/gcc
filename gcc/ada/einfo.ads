@@ -394,7 +394,14 @@ package Einfo is
 --       returns the entity unchanged.
 
 --    Block_Node (Node11)
---       Present in block entities. Points to the Block_Statement itself.
+--       Present in block entities. Points to the identifier in the
+--       Block_Statement itself. Used when retrieving the block construct
+--       for finalization purposes, The block entity has an implicit label
+--       declaration in the enclosing declarative part, and has otherwise
+--       no direct connection in the tree with the block statement.
+--       The link is to the identifier (which is an occurence of the entity)
+--       and not to the block_statement itself, because the statement may
+--       be rewritten, e.g. in the process of removing dead code.
 
 --    Body_Entity (Node19)
 --       Present in package and generic package entities, points to the

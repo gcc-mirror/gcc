@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.55 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -672,7 +672,7 @@ package body Inline is
          end if;
 
          if Ekind (Scop) = E_Block then
-            Decl := Block_Node (Scop);
+            Decl := Parent (Block_Node (Scop));
 
          else
             Decl := Unit_Declaration_Node (Scop);
