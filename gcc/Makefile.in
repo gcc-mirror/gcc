@@ -2432,8 +2432,11 @@ gcov-iov.o: gcov-iov.c version.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) c
 	$(BUILD_CC) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(srcdir)/gcov-iov.c $(OUTPUT_OPTION)
 gcov-iov$(build_exeext): gcov-iov.o
 	$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) gcov-iov.o -o $@
-gcov-iov.h: gcov-iov$(build_exeext)
-	./gcov-iov$(build_exeext) > $@
+gcov-iov.h: s-iov
+s-iov: gcov-iov$(build_exeext) $(srcdir)/move-if-change
+	./gcov-iov$(build_exeext) > tmp-gcov-iov.h
+	$(SHELL) $(srcdir)/move-if-change tmp-gcov-iov.h gcov-iov.h
+	$(STAMP) s-iov
 
 gcov.o: gcov.c gcov-io.h gcov-iov.h intl.h $(SYSTEM_H) coretypes.h $(TM_H) $(CONFIG_H)
 gcov-dump.o: gcov-dump.c gcov-io.h gcov-iov.h $(SYSTEM_H) coretypes.h $(TM_H) $(CONFIG_H)
