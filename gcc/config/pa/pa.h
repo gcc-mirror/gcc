@@ -154,7 +154,7 @@ extern int target_flags;
 #define TARGET_64BIT 0
 #endif
 
-/* Generate code for ELF32 ABI. */
+/* Generate code for ELF32 ABI.  */
 #ifndef TARGET_ELF32
 #define TARGET_ELF32 0
 #endif
@@ -340,7 +340,7 @@ extern int target_flags;
    The definition is be an initializer for an array of structures.  Each
    array element has have three elements: the switch name, one of the
    enumeration codes ADD or DELETE to indicate whether the string should be
-   inserted or deleted, and the string to be inserted or deleted. */
+   inserted or deleted, and the string to be inserted or deleted.  */
 #define MODIFY_TARGET_NAME {{"-32", DELETE, "64"}, {"-64", ADD, "64"}}
 
 /* Make gcc agree with <machine/ansi.h> */
@@ -438,7 +438,7 @@ extern int target_flags;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
 
-/* Get around hp-ux assembler bug, and make strcpy of constants fast. */
+/* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
 #define CONSTANT_ALIGNMENT(CODE, TYPEALIGN) \
   ((TYPEALIGN) < 32 ? 32 : (TYPEALIGN))
 
@@ -653,7 +653,7 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 /* The weird HPPA calling conventions require a minimum of 48 bytes on
    the stack: 16 bytes for register saves, and 32 bytes for magic.
    This is the difference between the logical top of stack and the
-   actual sp. */
+   actual sp.  */
 #define STACK_POINTER_OFFSET \
   (TARGET_64BIT ? -(current_function_outgoing_args_size + 16): -32)
 
@@ -740,7 +740,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
   (CUM).indirect = 0,				\
   (CUM).nargs_prototype = 1000
 
-/* Figure out the size in words of the function argument. */
+/* Figure out the size in words of the function argument.  */
 
 #define FUNCTION_ARG_SIZE(MODE, TYPE)	\
   ((((MODE) != BLKmode \
@@ -820,7 +820,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
    For args passed entirely in registers or entirely in memory, zero.  */
 
 /* For PA32 there are never split arguments. PA64, on the other hand, can
-   pass arguments partially in registers and partially in memory. */
+   pass arguments partially in registers and partially in memory.  */
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   (TARGET_64BIT ? function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED) : 0)
 
@@ -840,7 +840,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 /* Arguments larger than eight bytes are passed by invisible reference */
 
-/* PA64 does not pass anything by invisible reference. */
+/* PA64 does not pass anything by invisible reference.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
   (TARGET_64BIT								\
    ? 0									\
@@ -849,7 +849,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
  
 /* PA64 does not pass anything by invisible reference.
    This should be undef'ed for 64bit, but we'll see if this works. The
-   problem is that we can't test TARGET_64BIT from the preprocessor. */
+   problem is that we can't test TARGET_64BIT from the preprocessor.  */
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) \
   (TARGET_64BIT							\
    ? 0								\
@@ -1004,7 +1004,7 @@ extern int may_call_alloca;
       emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (FNADDR));	\
       start_addr = memory_address (Pmode, plus_constant ((TRAMP), 64));	\
       emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (CXT));		\
-      /* Create a fat pointer for the trampoline. */			\
+      /* Create a fat pointer for the trampoline.  */			\
       end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));	\
       start_addr = memory_address (Pmode, plus_constant ((TRAMP), 16));	\
       emit_move_insn (gen_rtx_MEM (Pmode, start_addr), end_addr);	\
@@ -1470,7 +1470,7 @@ do { 									\
    information).
 
    On the HP-PA we use this to indicate if a symbol is in text or
-   data space.  Also, function labels need special treatment. */
+   data space.  Also, function labels need special treatment.  */
 
 #define TEXT_SPACE_P(DECL)\
   (TREE_CODE (DECL) == FUNCTION_DECL					\
@@ -1569,7 +1569,7 @@ while (0)
 
 /* Add any extra modes needed to represent the condition code.
 
-   HPPA floating comparisons produce condition codes. */
+   HPPA floating comparisons produce condition codes.  */
 #define EXTRA_CC_MODES CC(CCFPmode, "CCFP")
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
@@ -1592,7 +1592,7 @@ while (0)
 #define NO_FUNCTION_CSE
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. */
+   few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
 /* Compute the cost of computing a constant rtl expression RTX

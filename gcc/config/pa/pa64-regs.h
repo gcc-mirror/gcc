@@ -161,7 +161,7 @@ Boston, MA 02111-1307, USA.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0								\
    ? (MODE) == CCmode || (MODE) == CCFPmode				\
-   /* Make wide modes be in aligned registers. */			\
+   /* Make wide modes be in aligned registers.  */			\
    : (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD				\
       || (GET_MODE_SIZE (MODE) <= 2 * UNITS_PER_WORD && ((REGNO) & 1) == 0)))
 
@@ -220,7 +220,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES. Register 0, the "condition code" register,
-   is in no class. */
+   is in no class.  */
 
 #define REG_CLASS_CONTENTS	\
  {{0x00000000, 0x00000000},	/* NO_REGS */			\
