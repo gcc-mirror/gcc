@@ -1,3 +1,13 @@
+Sat Nov 28 19:20:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* *.c, c-parse.in, cexp.y: Include system.h and delete any
+	non-redundant includes, macro definitions, or declarations.
+	* gen*.c, bc-emit.c, calls.c, cccp.c, combine.c, emit-rtl.c:
+	Use ANSI_PROTOTYPES, not __STDC__ to select varargs vs. stdargs.
+	* gcc.c, mips-tfile.c, prefix.c, toplev.c, tree.c: Likewise.
+	* gen*.c (fatal): Fix error in varargs case.
+	* genatttab.c (fatal): Make same as other gen programs.
+
 Sat Nov 28 06:01:525 1998  John F. Carr  <jfc@mit.edu>
 
 	* emit-rtl.c (const_int_rtx): Now array of rtx_def, not rtx.
@@ -18,6 +28,7 @@ Sat Nov 28 05:46:41 1998  Richard Henderson  <rth@cygnus.com>
 	(RTL_H): Contains RTL_BASE_H and genrtl.h
 	(genrtl.o, genrtl.c, s-genrtl, gengenrtl): New rules.
 	* emit-rtl.c (gen_rtx_{CONST_INT,REG,MEM}): New functions.
+	(gen_rtx): Call them.
 	* genemit.c (gen_exp, gen_insn): Call gen_rtx_FOO for constant FOO.
 	* rtl.h (genrtl.h): Include ifndef NO_GENRTL_H.
 	(gen_rtx_{CONST_INT,REG,MEM}): New declarations.
