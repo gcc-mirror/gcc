@@ -646,13 +646,6 @@ store_init_value (decl, init)
 	  else
 	    init = TREE_VALUE (init);
 	}
-      else if (TREE_TYPE (init) != 0
-	       && TREE_CODE (TREE_TYPE (init)) == OFFSET_TYPE)
-	{
-	  /* Use the type of our variable to instantiate
-	     the type of our initializer.  */
-	  init = instantiate_type (type, init, 1);
-	}
       else if (TREE_CODE (init) == TREE_LIST
 	       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	{
