@@ -36,10 +36,7 @@ MULTILIB_OPTIONS    += marm/mthumb
 MULTILIB_DIRNAMES   += arm thumb
 MULTILIB_EXCEPTIONS += *mhard-float/*mthumb*
 
-# CYGNUS LOCAL nickc/redundant multilibs
 MULTILIB_REDUNDANT_DIRS = interwork/thumb=thumb
-# END CYGNUS LOCAL
-
 
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 LIBGCC               = stmp-multilib
