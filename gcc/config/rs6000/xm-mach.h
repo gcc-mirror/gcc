@@ -19,5 +19,5 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#include "xm-rs6000.h"
+#include "rs6000/xm-rs6000.h"
 #undef USG
