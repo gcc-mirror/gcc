@@ -1,3 +1,11 @@
+2003-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (zero_extendqisi2): Change to an
+	expander.
+	(*zero_extendqisi2_h8300): New.
+	(*zero_extendqisi2_h8300hs): New.
+	(two splitters): New.
+
 2003-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fp-bit.h (float_to_usi): Fix condition wrapping prototype.
