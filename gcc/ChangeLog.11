@@ -1,6 +1,7 @@
-Wed Dec 10 18:38:56 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Fri Dec 12 08:01:44 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* Version 2.8.0 released.
+	* integrate.c (initialize_for_inline): In DECL_RTL of a PARM_DECL,
+	look inside a (mem (addressof (mem ...))).
 
 Wed Dec 10 18:38:28 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
