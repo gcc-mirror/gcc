@@ -1,3 +1,8 @@
+2003-08-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc (iq2000*-*-elf*): Don't set xm_file.
+	* config/iq2000/xm-iq2000.h: Delete file.
+
 2003-08-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* gengtype.c (walk_type): Process a subobject before processing
@@ -247,18 +252,18 @@
 
 2003-08-09  Per Bothner  <pbothner@apple.com>
 
-        * cppinit.c (cpp_read_main_file):  Split out source-independent
-        initialization to separate function ...
-        (cpp_post_options):  New function.
-        * cppfiles.c (cpp_stack_file):  Rename public name to ...
-        (_cpp_stack_file):  New internal function name.
-        * cpplib.h:  Update accordingly.
-        * cppinit.c:  (cpp_create_reader):  Initialize cpp_readers line here.
-        (cpp_read_main_file):  Don't initialize line here.
-        * c-opts.c (c_common_post_options):  Call cpp_post_options.
-        (c_common_parse_file):  Call cpp_read_main_file, not cpp_stack_file.
-        * fix-header.c (read_scan_file):  Call cpp_post_options.
-	
+	* cppinit.c (cpp_read_main_file):  Split out source-independent
+	initialization to separate function ...
+	(cpp_post_options):  New function.
+	* cppfiles.c (cpp_stack_file):  Rename public name to ...
+	(_cpp_stack_file):  New internal function name.
+	* cpplib.h:  Update accordingly.
+	* cppinit.c:  (cpp_create_reader):  Initialize cpp_readers line here.
+	(cpp_read_main_file):  Don't initialize line here.
+	* c-opts.c (c_common_post_options):  Call cpp_post_options.
+	(c_common_parse_file):  Call cpp_read_main_file, not cpp_stack_file.
+	* fix-header.c (read_scan_file):  Call cpp_post_options.
+
 2003-08-09  Per Bothner  <per@bothner.com>
 
 	* c-decl.c (SCOPE_LIST_APPEND):  Remove bogus line continuation.
@@ -284,25 +289,25 @@
 
 2003-08-08  Richard Henderson  <rth@redhat.com>
 
-        PR target/11535
-        * config/ia64/ia64.c (ia64_initial_elimination_offset): Remove 
-        RETURN_ADDRESS_POINTER_REGNUM.
-        (ia64_expand_prologue): Don't frob it.
-        (ia64_output_function_epilogue): Likewise.
-        (ia64_return_addr_rtx): New.
-        (ia64_split_return_addr_rtx): New.
-        * config/ia64/ia64-protos.h: Update.
-        * config/ia64/ia64.h (FIRST_PSEUDO_REGISTER): Decrement.
-        (RETURN_ADDRESS_POINTER_REGNUM): Remove.
-        (GENERAL_REGNO_P): Don't check it.
-        (AR_*_REGNUM): Renumber.
-        (FIXED_REGISTERS): Remove RETURN_ADDRESS_POINTER_REGNUM.
-        (CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS): Likewise.
-        (REG_ALLOC_ORDER, REG_CLASS_CONTENTS): Likewise.
-        (ELIMINABLE_REGS, REGISTER_NAMES): Likewise.
-        (RETURN_ADDR_RTX): Use ia64_return_addr_rtx.
-        * config/ia64/ia64.md (UNSPEC_RET_ADDR): New.
-        (movdi_ret_addr): New.
+	PR target/11535
+	* config/ia64/ia64.c (ia64_initial_elimination_offset): Remove
+	RETURN_ADDRESS_POINTER_REGNUM.
+	(ia64_expand_prologue): Don't frob it.
+	(ia64_output_function_epilogue): Likewise.
+	(ia64_return_addr_rtx): New.
+	(ia64_split_return_addr_rtx): New.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.h (FIRST_PSEUDO_REGISTER): Decrement.
+	(RETURN_ADDRESS_POINTER_REGNUM): Remove.
+	(GENERAL_REGNO_P): Don't check it.
+	(AR_*_REGNUM): Renumber.
+	(FIXED_REGISTERS): Remove RETURN_ADDRESS_POINTER_REGNUM.
+	(CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER, REG_CLASS_CONTENTS): Likewise.
+	(ELIMINABLE_REGS, REGISTER_NAMES): Likewise.
+	(RETURN_ADDR_RTX): Use ia64_return_addr_rtx.
+	* config/ia64/ia64.md (UNSPEC_RET_ADDR): New.
+	(movdi_ret_addr): New.
 
 2003-08-08  Geoffrey Keating  <geoffk@apple.com>
 
@@ -354,7 +359,7 @@
 2003-08-08  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* configure.in (gcc_cv_prog_cmp_skip): Flipflop make_compare_target
-	and gcc_cv_prog_cmp_skip. 
+	and gcc_cv_prog_cmp_skip.
 	* configure: Regenerate.
 
 2003-08-08  Stan Cox  <scox@redhat.com>
