@@ -21,10 +21,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
-#include <string.h>
 
 
 /* This flag is set if a an old-style length selector is matched

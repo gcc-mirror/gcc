@@ -21,10 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-
+#include "system.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "match.h"

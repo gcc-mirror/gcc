@@ -25,11 +25,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include <stdio.h>
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
-#include <gmp.h>
 #include <math.h>
 #include "gfortran.h"
 #include "trans.h"

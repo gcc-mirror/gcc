@@ -25,8 +25,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    target.  */
 
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
-#include <string.h>
 
 gfc_code new_st;
 

@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* declare required prototypes: */
 
 #include "config.h"
+#include "system.h"
 #include "ansidecl.h"
 #include "system.h"
 #include "coretypes.h"
@@ -48,8 +49,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
-
-#include <stdio.h>
 
 /* Language-dependent contents of an identifier.  */
 

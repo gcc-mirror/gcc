@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -42,11 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    new characters and do a lot of jumping backwards.  */
 
 #include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-
+#include "system.h"
 #include "gfortran.h"
 
 /* Structure for holding module and include file search path.  */

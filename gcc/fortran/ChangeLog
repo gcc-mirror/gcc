@@ -1,3 +1,37 @@
+2005-01-03  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.c: Add system.h; remove string.h
+	* decl.c: Ditto
+	* matchexp.c: Ditto
+	* parse.c: Ditto
+	* resolve.c: Ditto
+	* st.c: Ditto
+	* check.c: Remove stdlib.h and stdarg.h
+	* error.c: Remove stdlib.h, stdarg.h, stdio.h, string.h
+	* expr.c: Add system.h; remove stdarg.h, stdio.h, and string.h
+	* f95-lang.c: Add system.h; remove stdio.h
+	* interface.c: Add system.h; remove stdlib.h and string.h
+	* intrinsic.c: Remove stdarg.h, stdio.h, and string.h
+	* io.c: Remove string.h
+	* simplify.c: Ditto
+	* match.c: Remove stdarg.h and string.h
+	* misc.c: Update copyright; add system.h; remove stdlib.h,
+	string.h, and sys/stat.h
+	* module.c: Add system.h; remove string.h, stdio.h, errno.h,
+	unistd.h, and time.h
+	* option.c: Remove string.h and stdlib.h
+	* primary.c: Ditto
+	* scanner.c: Update copyright; add system.h; remove stdlib.h,
+	stdio.h, string.h, and strings.h
+	* symbol.c: Add system.h; remove stdlib.h, stdio.h, and string.h
+	* trans-array.c: Remove stdio.h and gmp.h
+	* trans-const.c: Ditto
+	* trans-expr.c: Ditto
+	* trans-io.c: Ditto
+	* trans-stmt.c: Ditto
+	* trans.c: Ditto
+	* trans-intrinsic.c: Remove stdio.h and string.h
+
 2004-12-29  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.h (gfc_case): fix typo in comment.
