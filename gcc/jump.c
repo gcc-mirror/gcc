@@ -2867,7 +2867,7 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 	 indicates whether or not the insn contains any stack-like
 	 regs.  */
 
-      if (!lose && cross_jump_death_matters && GET_MODE (i1) == QImode)
+      if (!lose && cross_jump_death_matters && stack_regs_mentioned (i1))
 	{
 	  /* If register stack conversion has already been done, then
 	     death notes must also be compared before it is certain that

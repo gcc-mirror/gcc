@@ -74,13 +74,6 @@ Boston, MA 02111-1307, USA.  */
    deleted and recreated from scratch.  REG_DEAD is never created for a
    SET_DEST, only REG_UNUSED.
 
-   Before life analysis, the mode of each insn is set based on whether
-   or not any stack registers are mentioned within that insn.  VOIDmode
-   means that no regs are mentioned anyway, and QImode means that at
-   least one pattern within the insn mentions stack registers.  This
-   information is valid until after reg_to_stack returns, and is used
-   from jump_optimize.
-
    * asm_operands:
 
    There are several rules on the usage of stack-like regs in
@@ -168,6 +161,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "recog.h"
 #include "toplev.h"
+#include "varray.h"
 
 #ifdef STACK_REGS
 
@@ -218,6 +212,14 @@ static HARD_REG_SET *block_out_reg_set;
    block.  life_analysis and the stack register conversion process can
    add insns within a block.  */
 static int *block_number;
+
+/* We use this array to cache info about insns, because otherwise we
+   spend too much time in stack_regs_mentioned_p. 
+
+   Indexed by insn UIDs.  A value of zero is uninitialized, one indicates
+   the insn uses stack registers, two indicates the insn does not use
+   stack registers.  */
+static varray_type stack_regs_mentioned_data;
 
 /* This is the register file for all register after conversion */
 static rtx
@@ -283,6 +285,52 @@ static void goto_block_pat		PROTO((rtx, stack, rtx));
 static void convert_regs		PROTO((void));
 static void print_blocks		PROTO((FILE *, rtx, rtx));
 static void dump_stack_info		PROTO((FILE *));
+static int check_stack_regs_mentioned	PROTO((rtx insn));
+
+/* Initialize stack_regs_mentioned_data for INSN (growing the virtual array
+   if needed.  Return nonzero if INSN mentions stacked registers.  */
+
+static int
+check_stack_regs_mentioned (insn)
+     rtx insn;
+{
+  unsigned int uid = INSN_UID (insn);
+  if (uid >= VARRAY_SIZE (stack_regs_mentioned_data))
+    {
+      unsigned int size = VARRAY_SIZE (stack_regs_mentioned_data);
+
+      /* Allocate some extra size to avoid too many reallocs, but
+	 do not grow exponentially.  */
+      size = uid + uid / 20;
+      VARRAY_GROW (stack_regs_mentioned_data, size);
+    }
+  if (stack_regs_mentioned_p (PATTERN (insn)))
+    {
+      VARRAY_CHAR (stack_regs_mentioned_data, uid) = 1;
+      return 1;
+    }
+  else
+    VARRAY_CHAR (stack_regs_mentioned_data, uid) = 2;
+  return 0;
+}
+
+/* Return nonzero if INSN mentions stacked registers, else return
+   zero.  */
+
+int
+stack_regs_mentioned (insn)
+     rtx insn;
+{
+  unsigned int uid;
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    return 0;
+  uid = INSN_UID (insn);
+  if (uid >= VARRAY_SIZE (stack_regs_mentioned_data)
+      || ! VARRAY_CHAR (stack_regs_mentioned_data, uid))
+    return (check_stack_regs_mentioned (insn));
+  return VARRAY_CHAR (stack_regs_mentioned_data, uid) == 1;
+}
+
 
 /* Mark all registers needed for this pattern.  */
 
@@ -412,6 +460,10 @@ reg_to_stack (first, file)
   enum machine_mode mode;
   HARD_REG_SET stackentry;
 
+  max_uid = get_max_uid ();
+  VARRAY_CHAR_INIT (stack_regs_mentioned_data, max_uid + 1,
+		    "stack_regs_mentioned cache");
+
   CLEAR_HARD_REG_SET (stackentry);
 
    {
@@ -472,7 +524,7 @@ reg_to_stack (first, file)
 	    && stack_regs_mentioned_p (PATTERN (insn)))
 	  {
 	    stack_reg_seen = 1;
-	    PUT_MODE (insn, QImode);
+	    VARRAY_CHAR (stack_regs_mentioned_data, INSN_UID (insn)) = 1;
 
 	    /* Note any register passing parameters.  */
 
@@ -482,7 +534,7 @@ reg_to_stack (first, file)
 				   &stackentry, 1);
 	  }
 	else
-	  PUT_MODE (insn, VOIDmode);
+	  VARRAY_CHAR (stack_regs_mentioned_data, INSN_UID (insn)) = 2;
 
 	if (code == CODE_LABEL)
 	  LABEL_REFS (insn) = insn; /* delete old chain */
@@ -496,7 +548,10 @@ reg_to_stack (first, file)
      anything to convert.  */
 
   if (! stack_reg_seen)
-    return;
+    {
+      VARRAY_FREE (stack_regs_mentioned_data);
+      return;
+    }
 
   /* If there are stack registers, there must be at least one block.  */
 
@@ -532,6 +587,8 @@ reg_to_stack (first, file)
 
   if (optimize)
     jump_optimize (first, 2, 0, 0);
+
+  VARRAY_FREE (stack_regs_mentioned_data);
 }
 
 /* Check PAT, which is in INSN, for LABEL_REFs.  Add INSN to the
@@ -661,7 +718,7 @@ record_asm_reg_life (insn, regstack)
       malformed_asm = 1;
       /* Avoid further trouble with this insn.  */
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-      PUT_MODE (insn, VOIDmode);
+      VARRAY_CHAR (stack_regs_mentioned_data, INSN_UID (insn)) = 2;
       return;
     }
 
@@ -794,7 +851,7 @@ record_asm_reg_life (insn, regstack)
     {
       /* Avoid further trouble with this insn.  */
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-      PUT_MODE (insn, VOIDmode);
+      VARRAY_CHAR (stack_regs_mentioned_data, INSN_UID (insn)) = 2;
       return;
     }
 
@@ -1022,7 +1079,6 @@ record_reg_life (insn, block, regstack)
 	        pat = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, DFmode),
 				   CONST0_RTX (DFmode));
 	        init = emit_insn_after (pat, insn);
-	        PUT_MODE (init, QImode);
 
 	        CLEAR_HARD_REG_BIT (regstack->reg_set, reg);
 
@@ -1232,7 +1288,7 @@ stack_reg_life_analysis (first, stackentry)
 	     everything dies.  But otherwise don't process unless there
 	     are some stack regs present.  */
 
-	  if (GET_MODE (insn) == QImode || GET_CODE (insn) == CALL_INSN)
+	  if (stack_regs_mentioned (insn) || GET_CODE (insn) == CALL_INSN)
 	    record_reg_life (insn, block, &regstack);
 
 	} while (insn != block_begin[block]);
@@ -1318,7 +1374,6 @@ stack_reg_life_analysis (first, stackentry)
 	init_rtx = gen_rtx_SET (VOIDmode, FP_MODE_REG(reg, DFmode),
 				CONST0_RTX (DFmode));
 	block_begin[0] = emit_insn_after (init_rtx, first);
-	PUT_MODE (block_begin[0], QImode);
 
 	CLEAR_HARD_REG_BIT (block_stack_in[0].reg_set, reg);
       }
@@ -1444,8 +1499,6 @@ emit_pop_insn (insn, regstack, reg, when)
 			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
 
   pop_insn = (*when) (pop_rtx, insn);
-  /* ??? This used to be VOIDmode, but that seems wrong.  */
-  PUT_MODE (pop_insn, QImode);
 
   REG_NOTES (pop_insn) = gen_rtx_EXPR_LIST (REG_DEAD,
 					    FP_MODE_REG (FIRST_STACK_REG, DFmode),
@@ -1496,7 +1549,7 @@ emit_swap_insn (insn, regstack, reg)
   /* Find the previous insn involving stack regs, but don't go past
      any labels, calls or jumps.  */
   i1 = prev_nonnote_insn (insn);
-  while (i1 && GET_CODE (i1) == INSN && GET_MODE (i1) != QImode)
+  while (i1 && GET_CODE (i1) == INSN && !stack_regs_mentioned (i1))
     i1 = prev_nonnote_insn (i1);
 
   if (i1)
@@ -1534,8 +1587,6 @@ emit_swap_insn (insn, regstack, reg)
   swap_rtx = gen_swapdf (FP_MODE_REG (hard_regno, DFmode),
 			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
   swap_insn = emit_insn_after (swap_rtx, i1);
-  /* ??? This used to be VOIDmode, but that seems wrong.  */
-  PUT_MODE (swap_insn, QImode);
 }
 
 /* Handle a move to or from a stack register in PAT, which is in INSN.
@@ -1652,7 +1703,6 @@ move_for_stack_reg (insn, regstack, pat)
 
 	  push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
 	  push_insn = emit_insn_before (push_rtx, insn);
-	  PUT_MODE (push_insn, QImode);
 	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD, top_stack_reg,
 						REG_NOTES (insn));
 	}
@@ -2469,7 +2519,7 @@ subst_stack_regs (insn, regstack)
      we must check each pattern in a parallel here.  A call_value_pop could
      fail otherwise.  */
 
-  if (GET_MODE (insn) == QImode)
+  if (stack_regs_mentioned (insn))
     {
       int n_operands = asm_noperands (PATTERN (insn));
       if (n_operands >= 0)
@@ -2791,7 +2841,7 @@ convert_regs ()
 	     mentioned or if it's a CALL_INSN (register passing of
 	     floating point values).  */
 
-	  if (GET_MODE (insn) == QImode || GET_CODE (insn) == CALL_INSN)
+	  if (stack_regs_mentioned (insn) || GET_CODE (insn) == CALL_INSN)
 	    subst_stack_regs (insn, &regstack);
 
 	} while (insn != block_end[block]);
