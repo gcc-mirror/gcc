@@ -504,7 +504,7 @@ FileChannelImpl::mapImpl (jchar mmode, jlong position, jint size)
   MappedByteBufferImpl *buf
     = new MappedByteBufferImpl ((RawData *) ((char *) ptr + align),
 				size, mmode == 'r');
-  if (ptr == MAP_FAILED)
+  if (ptr == (void *) MAP_FAILED)
     throw new IOException (JvNewStringLatin1 (strerror (errno)));
   buf->implPtr = reinterpret_cast<RawData*> (ptr);
   buf->implLen = size+align;
