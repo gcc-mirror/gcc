@@ -1,3 +1,7 @@
+2004-05-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* fold-const.c: Remove non-printable character 160.
+
 2004-05-19  Nick Clifton  <nickc@redhat.com>
 
 	* doc/invoke.texi (ARM Options): Fix typo.
