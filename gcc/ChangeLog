@@ -1,3 +1,12 @@
+2003-02-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpplib.c (do_include_common): Move warnings for
+	#include_next and #import out to callers.  Use early-return
+	instead of nested ifs.  Don't do check_eol here.
+	(parse_include): Do check_eol here with the rest of the
+	parsing stuff.
+	(do_include_next, do_import): Now handle warnings.
+
 2003-02-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): Update AVR- and Darwin-related URLs.
@@ -170,10 +179,10 @@ Tue Feb 11 10:02:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 	in add_ext_symbol, and avoid signed/unsigned conditional warning.
 
 2003-02-10  Nick Clifton  <nickc@redhat.com>
-            Aldy Hernandez  <aldyh@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Do not
-        override options which have been specified on the command line.
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Do not
+	override options which have been specified on the command line.
 
 2003-02-10  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -193,7 +202,7 @@ Tue Feb 11 10:02:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-10  Josef Zlomek  <zlomekj@suse.cz>
 
 	* Makefile.in (bb-reorder.o): Add dependency on $(FIBHEAP_H).
-	* bb-reorder.c (make_reorder_chain): Deleted.  
+	* bb-reorder.c (make_reorder_chain): Deleted.
 	(make_reorder_chain_1): Deleted.
 	(find_traces): New function.
 	(rotate_loop): New function.
@@ -216,7 +225,7 @@ Tue Feb 11 10:02:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-09  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* tree.h (struct tree_decl): Remove unused live_range_rtl field.
-	(DECL_LIVE_RANGE_RTL): Remove. 
+	(DECL_LIVE_RANGE_RTL): Remove.
 
 2003-02-10  Nick Clifton  <nickc@redhat.com>
 
@@ -244,7 +253,7 @@ Tue Feb 11 10:02:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 	ctzsi2, paritysi2, and popcountsi2.
 
 2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+	    Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	PR c/7741
 	* c-decl.c (duplicate_decls): Discard the initializer of the
@@ -262,7 +271,7 @@ Tue Feb 11 10:02:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Contributed support for the Cirrus EP9312 "Maverick"
 	floating point co-processor.  Written by Aldy Hernandez
-	<aldyh@redhat.com>. 
+	<aldyh@redhat.com>.
 	(config/arm/arm.c): Add Cirrus support.
 	(config/arm/arm.h): Likewise.
 	(config/arm/aout.h): Likewise.
@@ -286,23 +295,23 @@ Mon Feb 10 11:40:18 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(store_one_arg): Likewise.
 
 2003-02-09  Nick Clifton  <nickc@redhat.com>
-            Aldy Hernandez  <aldyh@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.md: spe_evlhhesplat, spe_evlhhossplat,
-        spe_evlhhousplat, spe_evlwhsplat, spe_evlwwsplat, spe_evldd,
-        spe_evldh, spe_evldw, spe_evlwhe, spe_evlwhos, spe_evlwhou,
-        spe_evstdd, spe_evstdh, spe_evstdw, spe_evstdwx, spe_evstwhe,
-        spe_evstwho, spe_evstwwe, spe_evstwwo: Fix syntax to match newest
-        docs.  Add range test for immediate value.
+	* config/rs6000/spe.md: spe_evlhhesplat, spe_evlhhossplat,
+	spe_evlhhousplat, spe_evlwhsplat, spe_evlwwsplat, spe_evldd,
+	spe_evldh, spe_evldw, spe_evlwhe, spe_evlwhos, spe_evlwhou,
+	spe_evstdd, spe_evstdh, spe_evstdw, spe_evstdwx, spe_evstwhe,
+	spe_evstwho, spe_evstwwe, spe_evstwwo: Fix syntax to match newest
+	docs.  Add range test for immediate value.
 
 2003-02-09  Aldy Hernandez  <aldyh@redhat.com>
 
-        Rename spe_evxor to xorv2si3.
-        (xorv4hi3): New.
-        (xorv1di3): New.
+	Rename spe_evxor to xorv2si3.
+	(xorv4hi3): New.
+	(xorv1di3): New.
 
 2003-02-10  Glen Nakamura  <glen@imodulo.com>
-		
+
 	* doc/extend.texi (C++98 Thread-Local Edits): Add missing @item
 	tag.
 
@@ -460,17 +469,17 @@ Sat Feb  8 00:21:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-07  Richard Henderson  <rth@redhat.com>
 
 	PR 9226
-        * gcse.c (local_cprop_find_used_regs): New.
-        (local_cprop_pass): Use it.
+	* gcse.c (local_cprop_find_used_regs): New.
+	(local_cprop_pass): Use it.
 
 2003-02-07  Fred Fish  <fnf@intrinsity.com>
 
 	* mips-tfile.c (parse_def): Parenthesize assignments to fix
-        precedence bugs.
+	precedence bugs.
 
 2003-02-07  Segher Boessenkool  <segher@koffie.nl>
 
-        * genoutput.c (output_get_insn_name): Handle NOOP_MOVE_INSN_CODE.
+	* genoutput.c (output_get_insn_name): Handle NOOP_MOVE_INSN_CODE.
 
 2003-02-07  Roger Sayle  <roger@eyesopen.com>
 
@@ -569,7 +578,7 @@ Fri Feb  7 02:18:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* combine.c (nonzero_bits): Fix double break.
 
 2003-02-06  Eric Botcazou <ebotcazou@libertysurf.fr>
-            Richard Henderson <rth@redhat.com>
+	    Richard Henderson <rth@redhat.com>
 
 	PR c/9530
 	* config/i386/i386.c (ix86_function_ok_for_sibcall): Forbid sibcalls
@@ -646,8 +655,8 @@ Thu Feb  6 00:18:38 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-05  Richard Henderson  <rth@redhat.com>
 
 	PR c/8602
-        * integrate.c (output_inline_function): Reset input_filename
-        and lineno from the decl before rest_of_compilation.
+	* integrate.c (output_inline_function): Reset input_filename
+	and lineno from the decl before rest_of_compilation.
 
 2003-02-05  Richard Henderson  <rth@redhat.com>
 
