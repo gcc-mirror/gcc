@@ -5384,7 +5384,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 
    If the field describes a variable-sized object, *PMODE is set to
    VOIDmode and *PBITSIZE is set to -1.  An access cannot be made in
-   this case, but the address of the object can be found.   */
+   this case, but the address of the object can be found.  */
 
 tree
 get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
@@ -9197,7 +9197,7 @@ expand_increment (exp, post, ignore)
   /* Compute the operands as RTX.
      Note whether OP0 is the actual lvalue or a copy of it:
      I believe it is a copy iff it is a register or subreg
-     and insns were generated in computing it.   */
+     and insns were generated in computing it.  */
 
   temp = get_last_insn ();
   op0 = expand_expr (incremented, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_RW);

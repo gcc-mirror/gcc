@@ -402,7 +402,7 @@ apply_change_group ()
     }
 }
 
-/* Return the number of changes so far in the current group.   */
+/* Return the number of changes so far in the current group.  */
 
 int
 num_validated_changes ()

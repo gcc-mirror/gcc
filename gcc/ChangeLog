@@ -1,3 +1,40 @@
+2001-10-10  Kazu Hirata  <kazu@hxi.com>
+
+	* calls.c: Fix formatting.
+	* c-decl.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* combine.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cpplib.c: Likewise.
+	* cppmacro.c: Likewise.
+	* crtstuff.c: Likewise.
+	* cse.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* gcse.c: Likewise.
+	* genattrtab.c: Likewise.
+	* ggc-page.c: Likewise.
+	* integrate.c: Likewise.
+	* libgcc2.c: Likewise.
+	* loop.c: Likewise.
+	* optabs.c: Likewise.
+	* profile.c: Likewise.
+	* protoize.c: Likewise.
+	* real.c: Likewise.
+	* recog.c: Likewise.
+	* reload1.c: Likewise.
+	* reload.c: Likewise.
+	* reorg.c: Likewise.
+	* resource.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* sdbout.c: Likewise.
+	* stmt.c: Likewise.
+	* toplev.c: Likewise.
+	* varasm.c: Likewise.
+
 2001-10-10  Janis Johnson  <janis187@us.ibm.com>, Alexandre Oliva  <aoliva@redhat.com>
 
 	* langhooks.c: Include rtl.h, insn-config.h and integrate.h.

@@ -2605,7 +2605,7 @@ __enable_execute_stack (void)
   unsigned long current = (unsigned long) &save_errno & -NBPC;
 
   /* Ignore errno being set. memctl sets errno to EINVAL whenever the
-     address is seen as 'negative'. That is the case with the stack.   */
+     address is seen as 'negative'. That is the case with the stack.  */
 
   save_errno=errno;
   if (lowest > current)

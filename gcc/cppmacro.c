@@ -32,7 +32,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 struct cpp_macro
 {
   cpp_hashnode **params;	/* Parameters, if any.  */
-  cpp_token *expansion;		/* First token of replacement list.   */
+  cpp_token *expansion;		/* First token of replacement list.  */
   unsigned int line;		/* Starting line number.  */
   unsigned int count;		/* Number of tokens in expansion.  */
   unsigned short paramc;	/* Number of parameters.  */
@@ -45,7 +45,7 @@ typedef struct macro_arg macro_arg;
 struct macro_arg
 {
   const cpp_token **first;	/* First token in unexpanded argument.  */
-  const cpp_token **expanded;	/* Macro-expanded argument.   */
+  const cpp_token **expanded;	/* Macro-expanded argument.  */
   const cpp_token *stringified;	/* Stringified argument.  */
   unsigned int count;		/* # of tokens in argument.  */
   unsigned int expanded_count;	/* # of tokens in expanded argument.  */

@@ -244,7 +244,7 @@ do { fprintf (asm_out_file, "\t.tag\t");	\
 #endif
 
 /* Return the sdb tag identifier string for TYPE
-   if TYPE has already been defined; otherwise return a null pointer.   */
+   if TYPE has already been defined; otherwise return a null pointer.  */
 
 #define KNOWN_TYPE_TAG(type)  TYPE_SYMTAB_POINTER (type)
 

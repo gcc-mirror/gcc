@@ -1194,7 +1194,7 @@ free_temps_for_rtl_expr (t)
 	/* If this slot is below the current TEMP_SLOT_LEVEL, then it
 	   needs to be preserved.  This can happen if a temporary in
 	   the RTL_EXPR was addressed; preserve_temp_slots will move
-	   the temporary into a higher level.   */
+	   the temporary into a higher level.  */
 	if (temp_slot_level <= p->level)
 	  p->in_use = 0;
 	else
@@ -4956,7 +4956,7 @@ assign_parms (fndecl)
 
 	  if (promoted_mode != nominal_mode)
 	    {
-	      /* Conversion is required.   */
+	      /* Conversion is required.  */
 	      rtx tempreg = gen_reg_rtx (GET_MODE (entry_parm));
 
 	      emit_move_insn (tempreg, validize_mem (entry_parm));

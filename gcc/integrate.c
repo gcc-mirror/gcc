@@ -1077,7 +1077,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       /* The function returns an object in a register and we use the return
 	 value.  Set up our target for remapping.  */
 
-      /* Machine mode function was declared to return.   */
+      /* Machine mode function was declared to return.  */
       enum machine_mode departing_mode = TYPE_MODE (type);
       /* (Possibly wider) machine mode it actually computes
 	 (for the sake of callers that fail to declare it right).

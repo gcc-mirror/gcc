@@ -110,7 +110,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      1: GC statistics only.
      2: Page-entry allocations/deallocations as well.
      3: Object allocations as well.
-     4: Object marks as well.   */
+     4: Object marks as well.  */
 #define GGC_DEBUG_LEVEL (0)
 
 #ifndef HOST_BITS_PER_PTR

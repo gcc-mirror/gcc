@@ -358,7 +358,7 @@ asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
 /* A routine to invoke all of the global constructors upon entry to the
    program.  We put this into the .init section (for systems that have
    such a thing) so that we can properly perform the construction of
-   file-scope static-storage C++ objects within shared libraries.   */
+   file-scope static-storage C++ objects within shared libraries.  */
 
 static void
 __do_global_ctors_aux (void)	/* prologue goes in .init section */

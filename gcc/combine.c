@@ -6839,7 +6839,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 
     binop:
       /* For most binary operations, just propagate into the operation and
-	 change the mode if we have an operation of that mode.   */
+	 change the mode if we have an operation of that mode.  */
 
       op0 = gen_lowpart_for_combine (op_mode,
 				     force_to_mode (XEXP (x, 0), mode, mask,

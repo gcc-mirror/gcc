@@ -1449,7 +1449,7 @@ int warn_notreached;
 
 int warn_uninitialized;
 
-/* Nonzero means warn about all declarations which shadow others.   */
+/* Nonzero means warn about all declarations which shadow others.  */
 
 int warn_shadow;
 

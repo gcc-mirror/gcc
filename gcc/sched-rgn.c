@@ -2201,7 +2201,7 @@ can_schedule_ready_p (insn)
       while (SCHED_GROUP_P (temp))
 	temp = PREV_INSN (temp);
 
-      /* Update source block boundaries.   */
+      /* Update source block boundaries.  */
       b1 = BLOCK_FOR_INSN (temp);
       if (temp == b1->head && insn == b1->end)
 	{
@@ -3017,7 +3017,7 @@ schedule_insns (dump_file)
 
   /* Update life analysis for the subroutine.  Do single block regions
      first so that we can verify that live_at_start didn't change.  Then
-     do all other blocks.   */
+     do all other blocks.  */
   /* ??? There is an outside possibility that update_life_info, or more
      to the point propagate_block, could get called with non-zero flags
      more than once for one basic block.  This would be kinda bad if it

@@ -853,7 +853,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	    /* For certain integer operations, we need not actually extend
 	       the narrow operands, as long as we will truncate
-	       the results to the same narrowness.   */
+	       the results to the same narrowness.  */
 
 	    if ((binoptab == ior_optab || binoptab == and_optab
 		 || binoptab == xor_optab

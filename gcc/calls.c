@@ -437,7 +437,7 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen, sibcallp)
    We restore `inhibit_defer_pop' to that value.
 
    CALL_FUSAGE is either empty or an EXPR_LIST of USE expressions that
-   denote registers used by the called function.   */
+   denote registers used by the called function.  */
 
 static void
 emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
@@ -2387,7 +2387,7 @@ expand_call (exp, target, ignore)
       /* If this function requires a variable-sized argument list, don't
 	 try to make a cse'able block for this call.  We may be able to
 	 do this eventually, but it is too complicated to keep track of
-	 what insns go in the cse'able block and which don't.   */
+	 what insns go in the cse'able block and which don't.  */
 
       flags &= ~(ECF_CONST | ECF_PURE);
       must_preallocate = 1;
@@ -4405,7 +4405,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
   if (reg != 0 && partial == 0)
     /* Being passed entirely in a register.  We shouldn't be called in
-       this case.   */
+       this case.  */
     abort ();
 
   /* If this arg needs special alignment, don't load the registers

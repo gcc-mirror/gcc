@@ -977,7 +977,7 @@ make_decl_rtl (decl, asmspec)
     }
 
   /* If this variable is to be treated as volatile, show its
-     tree node has side effects.   */
+     tree node has side effects.  */
   if ((flag_volatile_global && TREE_CODE (decl) == VAR_DECL
        && TREE_PUBLIC (decl))
       || ((flag_volatile_static && TREE_CODE (decl) == VAR_DECL
@@ -1070,7 +1070,7 @@ default_named_section_asm_out_destructor (symbol, priority)
   const char *section = ".dtors";
   char buf[16];
 
-  /* ??? This only works reliably with the GNU linker.   */
+  /* ??? This only works reliably with the GNU linker.  */
   if (priority != DEFAULT_INIT_PRIORITY)
     {
       sprintf (buf, ".dtors.%.5u",
@@ -1132,7 +1132,7 @@ default_named_section_asm_out_constructor (symbol, priority)
   const char *section = ".ctors";
   char buf[16];
 
-  /* ??? This only works reliably with the GNU linker.   */
+  /* ??? This only works reliably with the GNU linker.  */
   if (priority != DEFAULT_INIT_PRIORITY)
     {
       sprintf (buf, ".ctors.%.5u",

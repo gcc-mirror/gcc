@@ -2538,7 +2538,7 @@ find_extern_def (head, user)
      code being converted contains its own definition of a function which
      could have been supplied by libc.a.  In such cases, we should avoid
      issuing the normal warning, and defer to the definition given in the
-     user's own code.   */
+     user's own code.  */
 
   for (dd_p = head; dd_p; dd_p = dd_p->next_for_func)
     if (dd_p->is_func_def && !dd_p->is_static)
@@ -3645,7 +3645,7 @@ add_global_decls (file_p, clean_text_p)
   /* Now write out full prototypes for all of the things that had been
      implicitly declared in this file (but only those for which we were
      actually able to find unique matching definitions).  Avoid duplicates
-     by marking things that we write out as we go.   */
+     by marking things that we write out as we go.  */
 
   {
     int some_decls_added = 0;

@@ -261,7 +261,7 @@ directive_diagnostics (pfile, dir, indented)
     }
   else
     {
-      /* Issue -pedantic warnings for extensions.   */
+      /* Issue -pedantic warnings for extensions.  */
       if (CPP_PEDANTIC (pfile)
 	  && ! pfile->state.skipping
 	  && dir->origin == EXTENSION)

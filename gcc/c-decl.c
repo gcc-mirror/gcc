@@ -283,7 +283,7 @@ static void c_expand_body               PARAMS ((tree, int));
 /* C-specific option variables.  */
 
 /* Nonzero means allow type mismatches in conditional expressions;
-   just make their values `void'.   */
+   just make their values `void'.  */
 
 int flag_cond_mismatch;
 
@@ -3520,7 +3520,7 @@ finish_decl (decl, init, asmspec_tree)
   int was_incomplete = (DECL_SIZE (decl) == 0);
   const char *asmspec = 0;
 
-  /* If a name was specified, get the string.   */
+  /* If a name was specified, get the string.  */
   if (asmspec_tree)
     asmspec = TREE_STRING_POINTER (asmspec_tree);
 
@@ -6393,7 +6393,7 @@ store_parm_decls ()
 	      }
 
 	  /* If declaration already marked, we have a duplicate name.
-	     Complain, and don't use this decl twice.   */
+	     Complain, and don't use this decl twice.  */
 	  if (found && DECL_WEAK (found))
 	    {
 	      error_with_decl (found, "multiple parameters named `%s'");
