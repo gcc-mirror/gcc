@@ -3373,7 +3373,9 @@ sets @option{-fno-math-errno}.
 @opindex funsafe-math-optimizations
 Allow optimizations for floating-point arithmetic that (a) assume
 that arguments and results are valid and (b) may violate IEEE or
-ANSI standards.
+ANSI standards.  When used at link-time, it may include libraries
+or startup files that change the default FPU control word or other
+similar optimizations.
 
 This option should never be turned on by any @option{-O} option since
 it can result in incorrect output for programs which depend on
