@@ -1,3 +1,7 @@
+2004-08-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/funcdef-attr-1.c: New test.
+
 2004-08-12 Jan Beulich <jbeulich@novell.com>
 
 	* g++.dg/ext/asm5.C: New.

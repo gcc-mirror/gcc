@@ -3983,7 +3983,17 @@ grokdeclarator (tree declarator, tree declspecs,
 	}
       else if (TREE_CODE (declarator) == CALL_EXPR)
 	{
+	  /* Say it's a definition only for the declarator closest to
+	     the identifier, apart possibly from some attributes.  */
+	  bool really_funcdef = false;
 	  tree arg_types;
+	  if (funcdef_flag)
+	    {
+	      tree t = TREE_OPERAND (declarator, 0);
+	      while (TREE_CODE (t) == TREE_LIST)
+		t = TREE_VALUE (t);
+	      really_funcdef = (TREE_CODE (t) == IDENTIFIER_NODE);
+	    }
 
 	  /* Declaring a function type.
 	     Make sure we have a valid type for the function to return.  */
@@ -4009,11 +4019,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	     inner layer of declarator.  */
 
 	  arg_types = grokparms (TREE_OPERAND (declarator, 1),
-				 funcdef_flag
-				 /* Say it's a definition
-				    only for the CALL_EXPR
-				    closest to the identifier.  */
-				 && TREE_CODE (TREE_OPERAND (declarator, 0)) == IDENTIFIER_NODE);
+				 really_funcdef);
 	  /* Type qualifiers before the return type of the function
 	     qualify the return type, not the function type.  */
 	  if (type_quals)
