@@ -67,7 +67,7 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
 case "${target_os}" in
-  aix4.[[3456789]]* | aix[[56789]]*)
+  aix4.[3456789]* | aix[56789]*)
     os_include_dir="config/os/aix"
     case "$CXX" in
       *pthread*)
