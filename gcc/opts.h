@@ -57,4 +57,8 @@ extern const char **in_fnames;
 
 extern unsigned num_in_fnames;
 
+/* Current input filename index.  */
+
+extern unsigned cur_in_fname;
+
 #endif

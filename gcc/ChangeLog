@@ -1,3 +1,32 @@
+2004-07-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* langhooks.c: Don't include gt-langhooks.h.
+	(var_labelno): Delete.
+	(lhd_set_decl_assembler_name): Do not append a distinguishing
+	number to file-scope internal-linkage declarations for the first
+	input file, even if they have DECL_CONTEXT set.  Use DECL_UID of
+	the declaration itself (if at block scope), or its containing
+	TRANSLATION_UNIT_DECL (if at file scope) for the distinguishing
+	number.
+
+	* opts.c (cur_in_fname): New global.
+	* opts.h: Declare it.
+	* tree.c: Include opts.h.
+	(make_node_stat): If creating a TRANSLATION_UNIT_DECL, give it
+	DECL_UID equal to cur_in_fname.
+	(copy_node_stat): Do not change DECL_UID when copying a
+	TRANSLATION_UNIT_DECL.
+	(build_common_tree_nodes): Adjust next_decl_uid to reserve the
+	range 0 .. num_in_fnames-1 for TRANSLATION_UNIT_DECLs.
+
+	* c-decl.c (c_static_assembler_name): Delete.
+	* c-tree.h (c_static_assembler_name): Delete prototype.
+	* c-lang.c, objc/objc-lang.c: Don't override
+	LANG_HOOKS_SET_DECL_ASSEMBLER_NAME.
+
+	* Makefile.in (tree.o): Update dependencies.
+	(GTFILES): Remove langhooks.c.
+
 2004-07-05  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <TRUNC_MOD_EXPR>: Optimize unsigned modulus
@@ -30,13 +59,13 @@
 	(walk_type_fields): New function.
 	(walk_tree): Use it.
 	* tree-nested.c (create_tmp_var_for): Show seen in BIND_EXPR.
-	
+
 	* tree-sra.c (struct sra_walk_fns): Init function now returns bool.
 	(sra_walk_modify_expr): Allow init function to fail.
 	(scan_init): Now returns bool.
 	(generate_element_init): If can't understand INIT, return false.
 	(scalarize_init): Return false if generate_element_init does.
-	
+
 	* tree-pretty-print.c (dump_generic_node, case ARRAY_TYPE): Properly
 	print bounds.
 
@@ -79,7 +108,7 @@
 	(make_tree_binfo_stat): Declare.
 	(make_tree_binfo): New.
 	(enum tree_node_kind): Add binfo_kind.
-	
+
 	* objc/objc-act.c (start_class, objc_declare_protocols,
 	start_protocols): Use TYPE_LANG_SLOT_1.
 	* objc/objc-act.h (CLASS_BINFO_ELTS, PROTOCOL_BINFO_ELTS): Rename
@@ -123,7 +152,7 @@
 	(struct assign_parm_data_one): New.
 	(assign_parms_initialize_all, assign_parms_augmented_arg_list,
 	assign_parm_find_data_types, assign_parms_setup_varargs,
-	assign_parm_find_entry_rtl, assign_parm_is_stack_parm, 
+	assign_parm_find_entry_rtl, assign_parm_is_stack_parm,
 	assign_parm_find_stack_rtl, assign_parm_adjust_entry_rtl,
 	assign_parm_adjust_stack_rtl, assign_parm_setup_block_p,
 	assign_parm_setup_block, assign_parm_setup_reg,
@@ -137,7 +166,7 @@
 	(bitmap_insert_into_set): No point in inserting the value if
 	it's invariant.
 	(bitmap_set_contains): New function.
-	(bitmap_set_replace_value): Add comment on why we do it 
+	(bitmap_set_replace_value): Add comment on why we do it
 	this way.
 	(set_contains): Removed.
 	(bitmap_set_subtract_from_value_set): New name of
@@ -282,7 +311,7 @@
 	gen_mem_addressof, flush_addressof, put_addressof_into_stack,
 	purge_bitfield_addressof_replacements, purge_addressof_replacements,
 	purge_addressof_1, insns_for_mem_hash, insns_for_mem_comp,
-	struct insns_for_mem_walk_info, insns_for_mem_walk, 
+	struct insns_for_mem_walk_info, insns_for_mem_walk,
 	compute_insns_for_mem, is_addressof, purge_addressof, setjmp_protect,
 	setjmp_protect_args): Remove.
 	(push_function_context_to): Don't handle var_refs_queue.
@@ -344,7 +373,7 @@
 	(walk_tree, case POINTER_TYPE): Deal with mutually recursive pointers.
 
 	* tree-sra.c (generate_element_init): Remove any useless conversions.
-	
+
 	* gimplify.c (gimplify_conversion): Remove stripping useless
 	conversions from here.
 	(gimplify_expr): Put it here, in place of call to STRIP_MAIN_TYPE_NOPS.

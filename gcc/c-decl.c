@@ -6576,22 +6576,6 @@ make_pointer_declarator (tree type_quals_attrs, tree target)
   return build1 (INDIRECT_REF, quals, itarget);
 }
 
-/* A wrapper around lhd_set_decl_assembler_name that gives static
-   variables their C names if they are at file scope and only one
-   translation unit is being compiled, for backwards compatibility
-   with certain bizarre assembler hacks (like crtstuff.c).  */
-
-void
-c_static_assembler_name (tree decl)
-{
-  if (num_in_fnames == 1
-      && !TREE_PUBLIC (decl) && DECL_CONTEXT (decl)
-      && TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL)
-    SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
-  else
-    lhd_set_decl_assembler_name (decl);
-}
-
 /* Perform final processing on file-scope data.  */
 static void
 c_write_global_declarations_1 (tree globals)
