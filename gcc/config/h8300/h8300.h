@@ -283,7 +283,7 @@ extern int target_flags;
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 11
+#define FIRST_PSEUDO_REGISTER 12
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
@@ -363,6 +363,9 @@ extern int target_flags;
 
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM SP_REG
+
+/* Base register for access to local variables of the function.  */
+#define HARD_FRAME_POINTER_REGNUM HFP_REG
 
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM FP_REG
@@ -575,12 +578,13 @@ enum reg_class {
    eliminated; they are replaced with either the stack or frame
    pointer.  */
 
-#define ELIMINABLE_REGS					\
-{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
- { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},\
- { RETURN_ADDRESS_POINTER_REGNUM, FRAME_POINTER_REGNUM},\
- { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+#define ELIMINABLE_REGS						\
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},		\
+ { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
+ { RETURN_ADDRESS_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
@@ -1059,7 +1063,7 @@ struct cum_arg
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap", "rap" }
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap", "rap", "fp" }
 
 #define ADDITIONAL_REGISTER_NAMES \
 { {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \

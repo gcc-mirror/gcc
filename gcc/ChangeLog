@@ -1,5 +1,26 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (WORD_REG_USED): Use
+	HARD_FRAME_POINTER_REGNUM instead of FRAME_POINTER_REGNUM.
+	(compute_saved_regs): Likewise.
+	(h8300_expand_prologue): Likewise.  Allocate locals after
+	saving registers.
+	(h8300_expand_epilogue): Use HARD_FRAME_POINTER_REGNUM instead
+	of FRAME_POINTER_REGNUM.  Deallocate locals before saving
+	registers.
+	(h8300_initial_elimination_offset): Adjust for the new frame
+	layout, which swaps flips the order of locals and saved
+	registers.
+	* config/h8300/h8300.h (FIRST_PSEUDO_REGISTER): Change to 12.
+	(HARD_FRAME_POINTER_REGNUM): New.
+	(ELIMINABLE_REGS): Add an elimination rule from
+	FRAME_POINTER_REGNUM to HARD_FRAME_POINTER_REGNUM.
+	(REGISTER_NAMES): Add fp.
+	* config/h8300/h8300.md (FP_REG): Change to 11.
+	(HFP_REG): New.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* genrecog.c (write_node): Remove a useless local variable.
 
 2004-01-28  Ian Lance Taylor  <ian@wasabisystems.com>
