@@ -337,7 +337,7 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, const char *));
 /* Support for complex CFA locations.  */
 static void output_cfa_loc 		PARAMS ((dw_cfi_ref));
 static void get_cfa_from_loc_descr 	PARAMS ((dw_cfa_location *,
-					        struct dw_loc_descr_struct *));
+						struct dw_loc_descr_struct *));
 static struct dw_loc_descr_struct *build_cfa_loc
 					PARAMS ((dw_cfa_location *));
 static void def_cfa_1		 	PARAMS ((const char *,
@@ -1236,7 +1236,7 @@ static dw_cfa_location cfa_temp;
   Rule 1:
   (set <reg1> <reg2>:cfa.reg)
   effects: cfa.reg = <reg1>
-           cfa.offset unchanged
+	   cfa.offset unchanged
 	   cfa_temp.reg = <reg1>
 	   cfa_temp.offset = cfa.offset
 
@@ -1357,7 +1357,7 @@ dwarf2out_frame_debug_expr (expr, label)
     case REG:
       /* Rule 1 */
       /* Update the CFA rule wrt SP or FP.  Make sure src is
-         relative to the current CFA register.  */
+	 relative to the current CFA register.  */
       switch (GET_CODE (src))
 	{
 	  /* Setting FP from SP.  */
@@ -1620,7 +1620,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	  else
 	    {
 	      /* Otherwise, we'll need to look in the stack to
-                 calculate the CFA.  */
+		 calculate the CFA.  */
 	      rtx x = XEXP (dest, 0);
 
 	      if (GET_CODE (x) != REG)
@@ -2123,13 +2123,13 @@ output_call_frame_info (for_eh)
 	      dw2_asm_output_data_uleb128 (size, "Augmentation size");
 
 	      if (fde->uses_eh_lsda)
-	        {
-	          ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA",
+		{
+		  ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA",
 					       fde->funcdef_number);
-	          dw2_asm_output_encoded_addr_rtx (
+		  dw2_asm_output_encoded_addr_rtx (
 			lsda_encoding, gen_rtx_SYMBOL_REF (Pmode, l1),
 		 	"Language Specific Data Area");
-	        }
+		}
 	      else
 		{
 		  if (lsda_encoding == DW_EH_PE_aligned)
@@ -2151,7 +2151,7 @@ output_call_frame_info (for_eh)
 
       /* Pad the FDE out to an address sized boundary.  */
       ASM_OUTPUT_ALIGN (asm_out_file,
-		        floor_log2 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE)));
+			floor_log2 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE)));
       ASM_OUTPUT_LABEL (asm_out_file, l2);
     }
 
@@ -2953,9 +2953,9 @@ output_loc_operands (loc)
     case DW_OP_skip:
     case DW_OP_bra:
       /* We currently don't make any attempt to make sure these are
-         aligned properly like we do for the main unwind info, so
-         don't support emitting things larger than a byte if we're
-         only doing unwinding.  */
+	 aligned properly like we do for the main unwind info, so
+	 don't support emitting things larger than a byte if we're
+	 only doing unwinding.  */
       abort ();
 #endif
     case DW_OP_const1u:
@@ -3458,6 +3458,7 @@ static GTY(()) limbo_die_node *limbo_die_list;
 
 /* Filenames referenced by this compilation unit.  */
 static GTY(()) varray_type file_table;
+static GTY(()) varray_type file_table_emitted;
 static GTY(()) size_t file_table_last_lookup_index;
 
 /* A pointer to the base of a table of references to DIE's that describe
@@ -3843,6 +3844,14 @@ static void add_loc_descr_to_loc_list   PARAMS ((dw_loc_list_ref *,
 						 const char *, const char *, const char *));
 static void output_loc_list		PARAMS ((dw_loc_list_ref));
 static char *gen_internal_sym 		PARAMS ((const char *));
+
+static void prune_unmark_dies		PARAMS ((dw_die_ref));
+static void prune_unused_types_mark     PARAMS ((dw_die_ref, int));
+static void prune_unused_types_walk     PARAMS ((dw_die_ref));
+static void prune_unused_types_walk_attribs PARAMS ((dw_die_ref));
+static void prune_unused_types_prune    PARAMS ((dw_die_ref));
+static void prune_unused_types          PARAMS ((void));
+static int maybe_emit_file              PARAMS ((int));
 
 /* Section names used to hold DWARF debugging information.  */
 #ifndef DEBUG_INFO_SECTION
@@ -5217,6 +5226,7 @@ splice_child_die (parent, child)
 	break;
       }
 
+  child->die_parent = parent;
   child->die_sib = parent->die_child;
   parent->die_child = child;
 }
@@ -5699,12 +5709,12 @@ same_dw_val_p (v1, v2, mark)
       return v1->v.val_unsigned == v2->v.val_unsigned;
     case dw_val_class_long_long:
       return v1->v.val_long_long.hi == v2->v.val_long_long.hi
-             && v1->v.val_long_long.low == v2->v.val_long_long.low;
+	     && v1->v.val_long_long.low == v2->v.val_long_long.low;
     case dw_val_class_float:
       if (v1->v.val_float.length != v2->v.val_float.length)
 	return 0;
       for (i = 0; i < v1->v.val_float.length; i++)
-        if (v1->v.val_float.array[i] != v2->v.val_float.array[i])
+	if (v1->v.val_float.array[i] != v2->v.val_float.array[i])
 	  return 0;
       return 1;
     case dw_val_class_flag:
@@ -6145,7 +6155,7 @@ break_out_includes (die)
       if (is_dupl)
 	*pnode = node->next;
       else
-        {
+	{
 	  pnode = &node->next;
 	  record_comdat_symbol_number (node->die, cu_hash_table,
 		comdat_symbol_number);
@@ -7078,7 +7088,7 @@ output_aranges ()
   if (DWARF_ARANGES_PAD_SIZE)
     {
       /* Pad using a 2 byte words so that padding is correct for any
-         pointer size.  */
+	 pointer size.  */
       dw2_asm_output_data (2, 0, "Pad to %d byte boundary",
 			   2 * DWARF2_ADDR_SIZE);
       for (i = 2; i < (unsigned) DWARF_ARANGES_PAD_SIZE; i += 2)
@@ -7582,8 +7592,8 @@ output_line_info ()
 	 prologue.  */
 
       /* Don't emit anything for redundant notes.  Just updating the
-         address doesn't accomplish anything, because we already assume
-         that anything after the last address is this line.  */
+	 address doesn't accomplish anything, because we already assume
+	 that anything after the last address is this line.  */
       if (line_info->dw_line_num == current_line
 	  && line_info->dw_file_num == current_file)
 	continue;
@@ -7609,7 +7619,7 @@ output_line_info ()
       else
 	{
 	  /* This can handle any delta.  This takes
-             4+DWARF2_ADDR_SIZE bytes.  */
+	     4+DWARF2_ADDR_SIZE bytes.  */
 	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
 	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
 	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
@@ -7831,9 +7841,9 @@ base_type_die (type)
     {
     case INTEGER_TYPE:
       /* Carefully distinguish the C character types, without messing
-         up if the language is not C. Note that we check only for the names
-         that contain spaces; other names might occur by coincidence in other
-         languages.  */
+	 up if the language is not C. Note that we check only for the names
+	 that contain spaces; other names might occur by coincidence in other
+	 languages.  */
       if (! (TYPE_PRECISION (type) == CHAR_TYPE_SIZE
 	     && (type == char_type_node
 		 || ! strcmp (type_name, "signed char")
@@ -8284,28 +8294,28 @@ mem_loc_descriptor (rtl, mode)
 
     case SUBREG:
       /* The case of a subreg may arise when we have a local (register)
-         variable or a formal (register) parameter which doesn't quite fill
-         up an entire register.  For now, just assume that it is
-         legitimate to make the Dwarf info refer to the whole register which
-         contains the given subreg.  */
+	 variable or a formal (register) parameter which doesn't quite fill
+	 up an entire register.  For now, just assume that it is
+	 legitimate to make the Dwarf info refer to the whole register which
+	 contains the given subreg.  */
       rtl = SUBREG_REG (rtl);
 
       /* ... fall through ...  */
 
     case REG:
       /* Whenever a register number forms a part of the description of the
-         method for calculating the (dynamic) address of a memory resident
-         object, DWARF rules require the register number be referred to as
-         a "base register".  This distinction is not based in any way upon
-         what category of register the hardware believes the given register
-         belongs to.  This is strictly DWARF terminology we're dealing with
-         here. Note that in cases where the location of a memory-resident
-         data object could be expressed as: OP_ADD (OP_BASEREG (basereg),
-         OP_CONST (0)) the actual DWARF location descriptor that we generate
-         may just be OP_BASEREG (basereg).  This may look deceptively like
-         the object in question was allocated to a register (rather than in
-         memory) so DWARF consumers need to be aware of the subtle
-         distinction between OP_REG and OP_BASEREG.  */
+	 method for calculating the (dynamic) address of a memory resident
+	 object, DWARF rules require the register number be referred to as
+	 a "base register".  This distinction is not based in any way upon
+	 what category of register the hardware believes the given register
+	 belongs to.  This is strictly DWARF terminology we're dealing with
+	 here. Note that in cases where the location of a memory-resident
+	 data object could be expressed as: OP_ADD (OP_BASEREG (basereg),
+	 OP_CONST (0)) the actual DWARF location descriptor that we generate
+	 may just be OP_BASEREG (basereg).  This may look deceptively like
+	 the object in question was allocated to a register (rather than in
+	 memory) so DWARF consumers need to be aware of the subtle
+	 distinction between OP_REG and OP_BASEREG.  */
       if (REGNO (rtl) < FIRST_PSEUDO_REGISTER)
 	mem_loc_result = based_loc_descr (reg_number (rtl), 0);
       break;
@@ -8354,7 +8364,7 @@ mem_loc_descriptor (rtl, mode)
 
     case PRE_MODIFY:
       /* Extract the PLUS expression nested inside and fall into
-         PLUS code below.  */
+	 PLUS code below.  */
       rtl = XEXP (rtl, 1);
       goto plus;
 
@@ -8475,10 +8485,10 @@ loc_descriptor (rtl)
     {
     case SUBREG:
       /* The case of a subreg may arise when we have a local (register)
-         variable or a formal (register) parameter which doesn't quite fill
-         up an entire register.  For now, just assume that it is
-         legitimate to make the Dwarf info refer to the whole register which
-         contains the given subreg.  */
+	 variable or a formal (register) parameter which doesn't quite fill
+	 up an entire register.  For now, just assume that it is
+	 legitimate to make the Dwarf info refer to the whole register which
+	 contains the given subreg.  */
       rtl = SUBREG_REG (rtl);
 
       /* ... fall through ...  */
@@ -9199,9 +9209,9 @@ add_const_value_attribute (die, rtl)
 
     case CONST_DOUBLE:
       /* Note that a CONST_DOUBLE rtx could represent either an integer or a
-         floating-point constant.  A CONST_DOUBLE is used whenever the
-         constant requires more than one word in order to be adequately
-         represented.  We output CONST_DOUBLEs as blocks.  */
+	 floating-point constant.  A CONST_DOUBLE is used whenever the
+	 constant requires more than one word in order to be adequately
+	 represented.  We output CONST_DOUBLEs as blocks.  */
       {
 	enum machine_mode mode = GET_MODE (rtl);
 
@@ -9258,16 +9268,16 @@ add_const_value_attribute (die, rtl)
 
     case PLUS:
       /* In cases where an inlined instance of an inline function is passed
-         the address of an `auto' variable (which is local to the caller) we
-         can get a situation where the DECL_RTL of the artificial local
-         variable (for the inlining) which acts as a stand-in for the
-         corresponding formal parameter (of the inline function) will look
-         like (plus:SI (reg:SI FRAME_PTR) (const_int ...)).  This is not
-         exactly a compile-time constant expression, but it isn't the address
-         of the (artificial) local variable either.  Rather, it represents the
-         *value* which the artificial local variable always has during its
-         lifetime.  We currently have no way to represent such quasi-constant
-         values in Dwarf, so for now we just punt and generate nothing.  */
+	 the address of an `auto' variable (which is local to the caller) we
+	 can get a situation where the DECL_RTL of the artificial local
+	 variable (for the inlining) which acts as a stand-in for the
+	 corresponding formal parameter (of the inline function) will look
+	 like (plus:SI (reg:SI FRAME_PTR) (const_int ...)).  This is not
+	 exactly a compile-time constant expression, but it isn't the address
+	 of the (artificial) local variable either.  Rather, it represents the
+	 *value* which the artificial local variable always has during its
+	 lifetime.  We currently have no way to represent such quasi-constant
+	 values in Dwarf, so for now we just punt and generate nothing.  */
       break;
 
     default:
@@ -9366,7 +9376,7 @@ rtl_for_decl_location (decl)
       if (rtl
 	  && (CONSTANT_P (rtl)
 	      || (GET_CODE (rtl) == MEM
-	          && CONSTANT_P (XEXP (rtl, 0)))))
+		  && CONSTANT_P (XEXP (rtl, 0)))))
 	{
 	  rtl = (*targetm.delegitimize_address) (rtl);
 	  return rtl;
@@ -9653,23 +9663,23 @@ add_bound_info (subrange_die, bound_attr, bound)
 
     case SAVE_EXPR:
       /* If optimization is turned on, the SAVE_EXPRs that describe how to
-         access the upper bound values may be bogus.  If they refer to a
-         register, they may only describe how to get at these values at the
-         points in the generated code right after they have just been
-         computed.  Worse yet, in the typical case, the upper bound values
-         will not even *be* computed in the optimized code (though the
-         number of elements will), so these SAVE_EXPRs are entirely
-         bogus. In order to compensate for this fact, we check here to see
-         if optimization is enabled, and if so, we don't add an attribute
-         for the (unknown and unknowable) upper bound.  This should not
-         cause too much trouble for existing (stupid?)  debuggers because
-         they have to deal with empty upper bounds location descriptions
-         anyway in order to be able to deal with incomplete array types.
-         Of course an intelligent debugger (GDB?)  should be able to
-         comprehend that a missing upper bound specification in an array
-         type used for a storage class `auto' local array variable
-         indicates that the upper bound is both unknown (at compile- time)
-         and unknowable (at run-time) due to optimization.
+	 access the upper bound values may be bogus.  If they refer to a
+	 register, they may only describe how to get at these values at the
+	 points in the generated code right after they have just been
+	 computed.  Worse yet, in the typical case, the upper bound values
+	 will not even *be* computed in the optimized code (though the
+	 number of elements will), so these SAVE_EXPRs are entirely
+	 bogus. In order to compensate for this fact, we check here to see
+	 if optimization is enabled, and if so, we don't add an attribute
+	 for the (unknown and unknowable) upper bound.  This should not
+	 cause too much trouble for existing (stupid?)  debuggers because
+	 they have to deal with empty upper bounds location descriptions
+	 anyway in order to be able to deal with incomplete array types.
+	 Of course an intelligent debugger (GDB?)  should be able to
+	 comprehend that a missing upper bound specification in an array
+	 type used for a storage class `auto' local array variable
+	 indicates that the upper bound is both unknown (at compile- time)
+	 and unknowable (at run-time) due to optimization.
 
 	 We assume that a MEM rtx is safe because gcc wouldn't put the
 	 value there unless it was going to be used repeatedly in the
@@ -9790,7 +9800,7 @@ add_subscript_info (type_die, type)
 
       /* Arrays come in three flavors: Unspecified bounds, fixed bounds,
 	 and (in GNU C only) variable bounds.  Handle all three forms
-         here.  */
+	 here.  */
       subrange_die = new_die (DW_TAG_subrange_type, type_die, NULL);
       if (domain)
 	{
@@ -9852,9 +9862,9 @@ add_byte_size_attribute (die, tree_node)
       break;
     case FIELD_DECL:
       /* For a data member of a struct or union, the DW_AT_byte_size is
-         generally given as the number of bytes normally allocated for an
-         object of the *declared* type of the member itself.  This is true
-         even for bit-fields.  */
+	 generally given as the number of bytes normally allocated for an
+	 object of the *declared* type of the member itself.  This is true
+	 even for bit-fields.  */
       size = simple_type_size_in_bits (field_type (tree_node)) / BITS_PER_UNIT;
       break;
     default:
@@ -9979,7 +9989,7 @@ add_abstract_origin_attribute (die, origin)
 	 function, if we're in an exception handler or some such; make
 	 sure that the abstract function has been written out.
 
-         Doing this for nested functions is wrong, however; functions are
+	 Doing this for nested functions is wrong, however; functions are
 	 distinct units, and our context might not even be inline.  */
       tree fn = origin;
 
@@ -10239,8 +10249,8 @@ type_tag (type)
 	t = TYPE_NAME (type);
 
       /* The g++ front end makes the TYPE_NAME of *each* tagged type point to
-         a TYPE_DECL node, regardless of whether or not a `typedef' was
-         involved.  */
+	 a TYPE_DECL node, regardless of whether or not a `typedef' was
+	 involved.  */
       else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	       && ! DECL_IGNORED_P (TYPE_NAME (type)))
 	t = DECL_NAME (TYPE_NAME (type));
@@ -10888,8 +10898,8 @@ gen_subprogram_die (decl, context_die)
 #endif
 
       /* Define the "frame base" location for this routine.  We use the
-         frame pointer or stack pointer registers, since the RTL for local
-         variables is relative to one of them.  */
+	 frame pointer or stack pointer registers, since the RTL for local
+	 variables is relative to one of them.  */
       fp_reg
 	= frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx;
       add_AT_loc (subr_die, DW_AT_frame_base, reg_loc_descriptor (fp_reg));
@@ -10927,7 +10937,7 @@ gen_subprogram_die (decl, context_die)
       tree parm;
 
       /* When generating DIEs, generate the unspecified_parameters DIE
-         instead if we come across the arg "__builtin_va_alist" */
+	 instead if we come across the arg "__builtin_va_alist" */
       for (parm = arg_decls; parm; parm = TREE_CHAIN (parm))
 	if (TREE_CODE (parm) == PARM_DECL)
 	  {
@@ -10940,11 +10950,11 @@ gen_subprogram_die (decl, context_die)
 	  }
 
       /* Decide whether we need an unspecified_parameters DIE at the end.
-         There are 2 more cases to do this for: 1) the ansi ... declaration -
-         this is detectable when the end of the arg list is not a
-         void_type_node 2) an unprototyped function declaration (not a
-         definition).  This just means that we have no info about the
-         parameters at all.  */
+	 There are 2 more cases to do this for: 1) the ansi ... declaration -
+	 this is detectable when the end of the arg list is not a
+	 void_type_node 2) an unprototyped function declaration (not a
+	 definition).  This just means that we have no info about the
+	 parameters at all.  */
       fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
       if (fn_arg_types != NULL)
 	{
@@ -11495,7 +11505,7 @@ gen_struct_or_union_type_die (type, context_die)
   if (complete)
     {
       /* Prevent infinite recursion in cases where the type of some member of
-         this type is expressed in terms of this type itself.  */
+	 this type is expressed in terms of this type itself.  */
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
       if (TYPE_STUB_DECL (type) != NULL_TREE)
@@ -11645,7 +11655,7 @@ gen_type_die (type, context_die)
       TREE_ASM_WRITTEN (type) = 1;
 
       /* For these types, all that is required is that we output a DIE (or a
-         set of DIEs) to represent the "basis" type.  */
+	 set of DIEs) to represent the "basis" type.  */
       gen_type_die (TREE_TYPE (type), context_die);
       break;
 
@@ -11658,7 +11668,7 @@ gen_type_die (type, context_die)
       gen_type_die (TREE_TYPE (type), context_die);
 
       /* Now output a DIE to represent this pointer-to-data-member type
-         itself.  */
+	 itself.  */
       gen_ptr_to_mbr_type_die (type, context_die);
       break;
 
@@ -11703,11 +11713,11 @@ gen_type_die (type, context_die)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       /* If this is a nested type whose containing class hasn't been written
-         out yet, writing it out will cover this one, too.  This does not apply
-         to instantiations of member class templates; they need to be added to
-         the containing class as they are generated.  FIXME: This hurts the
-         idea of combining type decls from multiple TUs, since we can't predict
-         what set of template instantiations we'll get.  */
+	 out yet, writing it out will cover this one, too.  This does not apply
+	 to instantiations of member class templates; they need to be added to
+	 the containing class as they are generated.  FIXME: This hurts the
+	 idea of combining type decls from multiple TUs, since we can't predict
+	 what set of template instantiations we'll get.  */
       if (TYPE_CONTEXT (type)
 	  && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
 	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
@@ -11850,12 +11860,12 @@ gen_block_die (stmt, context_die, depth)
   else
     {
       /* In the case where the current block represents an inlining of the
-         "body block" of an inline function, we must *NOT* output any DIE for
-         this block because we have already output a DIE to represent the whole
-         inlined function scope and the "body block" of any function doesn't
-         really represent a different scope according to ANSI C rules.  So we
-         check here to make sure that this block does not represent a "body
-         block inlining" before trying to set the MUST_OUTPUT_DIE flag.  */
+	 "body block" of an inline function, we must *NOT* output any DIE for
+	 this block because we have already output a DIE to represent the whole
+	 inlined function scope and the "body block" of any function doesn't
+	 really represent a different scope according to ANSI C rules.  So we
+	 check here to make sure that this block does not represent a "body
+	 block inlining" before trying to set the MUST_OUTPUT_DIE flag.  */
       if (! is_body_block (origin ? origin : stmt))
 	{
 	  /* Determine if this block directly contains any "significant"
@@ -11980,7 +11990,7 @@ gen_decl_die (decl, context_die)
 
     case CONST_DECL:
       /* The individual enumerators of an enum type get output when we output
-         the Dwarf representation of the relevant enum type itself.  */
+	 the Dwarf representation of the relevant enum type itself.  */
       break;
 
     case FUNCTION_DECL:
@@ -12030,16 +12040,16 @@ gen_decl_die (decl, context_die)
 
     case TYPE_DECL:
       /* If we are in terse mode, don't generate any DIEs to represent any
-         actual typedefs.  */
+	 actual typedefs.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	break;
 
       /* In the special case of a TYPE_DECL node representing the declaration
-         of some type tag, if the given TYPE_DECL is marked as having been
-         instantiated from some other (original) TYPE_DECL node (e.g. one which
-         was generated within the original definition of an inline function) we
-         have to generate a special (abbreviated) DW_TAG_structure_type,
-         DW_TAG_union_type, or DW_TAG_enumeration_type DIE here.  */
+	 of some type tag, if the given TYPE_DECL is marked as having been
+	 instantiated from some other (original) TYPE_DECL node (e.g. one which
+	 was generated within the original definition of an inline function) we
+	 have to generate a special (abbreviated) DW_TAG_structure_type,
+	 DW_TAG_union_type, or DW_TAG_enumeration_type DIE here.  */
       if (TYPE_DECL_IS_STUB (decl) && decl_ultimate_origin (decl) != NULL_TREE)
 	{
 	  gen_tagged_type_instantiation_die (TREE_TYPE (decl), context_die);
@@ -12060,12 +12070,12 @@ gen_decl_die (decl, context_die)
 
     case VAR_DECL:
       /* If we are in terse mode, don't generate any DIEs to represent any
-         variable declarations or definitions.  */
+	 variable declarations or definitions.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	break;
 
       /* Output any DIEs that are needed to specify the type of this data
-         object.  */
+	 object.  */
       gen_type_die (TREE_TYPE (decl), context_die);
 
       /* And its containing type.  */
@@ -12074,9 +12084,9 @@ gen_decl_die (decl, context_die)
 	gen_type_die_for_member (origin, decl, context_die);
 
       /* Now output the DIE to represent the data object itself.  This gets
-         complicated because of the possibility that the VAR_DECL really
-         represents an inlined instance of a formal parameter for an inline
-         function.  */
+	 complicated because of the possibility that the VAR_DECL really
+	 represents an inlined instance of a formal parameter for an inline
+	 function.  */
       origin = decl_ultimate_origin (decl);
       if (origin != NULL_TREE && TREE_CODE (origin) == PARM_DECL)
 	gen_formal_parameter_die (decl, context_die);
@@ -12163,32 +12173,32 @@ dwarf2out_decl (decl)
 
     case FUNCTION_DECL:
       /* Ignore this FUNCTION_DECL if it refers to a builtin declaration of a
-         builtin function.  Explicit programmer-supplied declarations of
-         these same functions should NOT be ignored however.  */
+	 builtin function.  Explicit programmer-supplied declarations of
+	 these same functions should NOT be ignored however.  */
       if (DECL_EXTERNAL (decl) && DECL_BUILT_IN (decl))
 	return;
 
       /* What we would really like to do here is to filter out all mere
-         file-scope declarations of file-scope functions which are never
-         referenced later within this translation unit (and keep all of ones
-         that *are* referenced later on) but we aren't clairvoyant, so we have
-         no idea which functions will be referenced in the future (i.e. later
-         on within the current translation unit). So here we just ignore all
-         file-scope function declarations which are not also definitions.  If
-         and when the debugger needs to know something about these functions,
-         it will have to hunt around and find the DWARF information associated
-         with the definition of the function.
+	 file-scope declarations of file-scope functions which are never
+	 referenced later within this translation unit (and keep all of ones
+	 that *are* referenced later on) but we aren't clairvoyant, so we have
+	 no idea which functions will be referenced in the future (i.e. later
+	 on within the current translation unit). So here we just ignore all
+	 file-scope function declarations which are not also definitions.  If
+	 and when the debugger needs to know something about these functions,
+	 it will have to hunt around and find the DWARF information associated
+	 with the definition of the function.
 
 	 We can't just check DECL_EXTERNAL to find out which FUNCTION_DECL
-         nodes represent definitions and which ones represent mere
-         declarations.  We have to check DECL_INITIAL instead. That's because
-         the C front-end supports some weird semantics for "extern inline"
-         function definitions.  These can get inlined within the current
-         translation unit (an thus, we need to generate Dwarf info for their
-         abstract instances so that the Dwarf info for the concrete inlined
-         instances can have something to refer to) but the compiler never
-         generates any out-of-lines instances of such things (despite the fact
-         that they *are* definitions).
+	 nodes represent definitions and which ones represent mere
+	 declarations.  We have to check DECL_INITIAL instead. That's because
+	 the C front-end supports some weird semantics for "extern inline"
+	 function definitions.  These can get inlined within the current
+	 translation unit (an thus, we need to generate Dwarf info for their
+	 abstract instances so that the Dwarf info for the concrete inlined
+	 instances can have something to refer to) but the compiler never
+	 generates any out-of-lines instances of such things (despite the fact
+	 that they *are* definitions).
 
 	 The important point is that the C front-end marks these "extern
 	 inline" functions as DECL_EXTERNAL, but we need to generate DWARF for
@@ -12207,18 +12217,18 @@ dwarf2out_decl (decl)
 
     case VAR_DECL:
       /* Ignore this VAR_DECL if it refers to a file-scope extern data object
-         declaration and if the declaration was never even referenced from
-         within this entire compilation unit.  We suppress these DIEs in
-         order to save space in the .debug section (by eliminating entries
-         which are probably useless).  Note that we must not suppress
-         block-local extern declarations (whether used or not) because that
-         would screw-up the debugger's name lookup mechanism and cause it to
-         miss things which really ought to be in scope at a given point.  */
+	 declaration and if the declaration was never even referenced from
+	 within this entire compilation unit.  We suppress these DIEs in
+	 order to save space in the .debug section (by eliminating entries
+	 which are probably useless).  Note that we must not suppress
+	 block-local extern declarations (whether used or not) because that
+	 would screw-up the debugger's name lookup mechanism and cause it to
+	 miss things which really ought to be in scope at a given point.  */
       if (DECL_EXTERNAL (decl) && !TREE_USED (decl))
 	return;
 
       /* If we are in terse mode, don't generate any DIEs to represent any
-         variable declarations or definitions.  */
+	 variable declarations or definitions.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	return;
       break;
@@ -12229,11 +12239,11 @@ dwarf2out_decl (decl)
 	return;
 
       /* Don't bother trying to generate any DIEs to represent any of the
-         normal built-in types for the language we are compiling.  */
+	 normal built-in types for the language we are compiling.  */
       if (DECL_SOURCE_LINE (decl) == 0)
 	{
 	  /* OK, we need to generate one for `bool' so GDB knows what type
-             comparisons have.  */
+	     comparisons have.  */
 	  if ((get_AT_unsigned (comp_unit_die, DW_AT_language)
 	       == DW_LANG_C_plus_plus)
 	      && TREE_CODE (TREE_TYPE (decl)) == BOOLEAN_TYPE
@@ -12336,7 +12346,7 @@ lookup_filename (file_name)
       const char *last
 	= VARRAY_CHAR_PTR (file_table, file_table_last_lookup_index);
       if (strcmp (file_name, last) == 0)
-        return file_table_last_lookup_index;
+	return file_table_last_lookup_index;
     }
 
   /* Didn't match the previous lookup, search the table */
@@ -12352,15 +12362,31 @@ lookup_filename (file_name)
   file_table_last_lookup_index = n;
   save_file_name = (char *) ggc_strdup (file_name);
   VARRAY_PUSH_CHAR_PTR (file_table, save_file_name);
-
-  if (DWARF2_ASM_LINE_DEBUG_INFO)
-    {
-      fprintf (asm_out_file, "\t.file %lu ", (unsigned long) i);
-      output_quoted_string (asm_out_file, file_name);
-      fputc ('\n', asm_out_file);
-    }
+  VARRAY_PUSH_UINT (file_table_emitted, 0);
 
   return i;
+}
+
+static int
+maybe_emit_file (fileno)
+     int fileno;
+{
+  static int emitcount = 0;  
+  if (DWARF2_ASM_LINE_DEBUG_INFO && fileno > 0)
+    {
+      if (!VARRAY_UINT (file_table_emitted, fileno))
+	{
+	  VARRAY_UINT (file_table_emitted, fileno) = ++emitcount;
+	  fprintf (asm_out_file, "\t.file %u ",
+		   VARRAY_UINT (file_table_emitted, fileno));
+	  output_quoted_string (asm_out_file,
+				VARRAY_CHAR_PTR (file_table, fileno));
+	  fputc ('\n', asm_out_file);
+	}
+      return VARRAY_UINT (file_table_emitted, fileno);
+    }
+  else
+    return fileno;
 }
 
 static void
@@ -12368,9 +12394,11 @@ init_file_table ()
 {
   /* Allocate the initial hunk of the file_table.  */
   VARRAY_CHAR_PTR_INIT (file_table, 64, "file_table");
+  VARRAY_UINT_INIT (file_table_emitted, 64, "file_table_emitted");
 
   /* Skip the first entry - file numbers begin at 1.  */
   VARRAY_PUSH_CHAR_PTR (file_table, NULL);
+  VARRAY_PUSH_UINT (file_table_emitted, 0);
   file_table_last_lookup_index = 0;
 }
 
@@ -12395,6 +12423,8 @@ dwarf2out_source_line (line, filename)
       if (DWARF2_ASM_LINE_DEBUG_INFO)
 	{
 	  unsigned file_num = lookup_filename (filename);
+
+	  file_num = maybe_emit_file (file_num);
 
 	  /* Emit the .loc directive understood by GNU as.  */
 	  fprintf (asm_out_file, "\t.loc %d %d 0\n", file_num, line);
@@ -12487,6 +12517,7 @@ dwarf2out_start_source_file (lineno, filename)
       dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
       dw2_asm_output_data_uleb128 (lineno, "Included from line number %d",
 				   lineno);
+      maybe_emit_file (lookup_filename (filename));
       dw2_asm_output_data_uleb128 (lookup_filename (filename),
 				   "Filename we just started");
     }
@@ -12646,6 +12677,215 @@ output_indirect_string (h, v)
   return 1;
 }
 
+
+
+/* Clear the marks for a die and its children.
+   Be cool if the mark isn't set. */
+
+static void
+prune_unmark_dies (die)
+     dw_die_ref die;
+{
+  dw_die_ref c;
+  die->die_mark = 0;
+  for (c = die->die_child; c; c = c->die_sib)
+    prune_unmark_dies (c);
+}
+
+
+/* Given DIE that we're marking as used, find any other dies
+   it references as attributes and mark them as used.  */
+
+static void
+prune_unused_types_walk_attribs (die)
+     dw_die_ref die;
+{
+  dw_attr_ref a;
+
+  for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
+    {
+      if (a->dw_attr_val.val_class == dw_val_class_die_ref)
+	{
+	  /* A reference to another DIE.
+	     Make sure that it will get emitted.  */
+	  prune_unused_types_mark (a->dw_attr_val.v.val_die_ref.die, 1);
+	}
+      else if (a->dw_attr == DW_AT_decl_file)
+	{
+	  /* A reference to a file.  Make sure the file name is emitted.  */
+	  a->dw_attr_val.v.val_unsigned =
+	    maybe_emit_file (a->dw_attr_val.v.val_unsigned);
+	}
+    }
+}
+
+
+/* Mark DIE as being used.  If DOKIDS is true, then walk down
+   to DIE's children.  */
+
+static void
+prune_unused_types_mark (die, dokids)
+     dw_die_ref die;
+     int dokids;
+{
+  dw_die_ref c;
+
+  if (die->die_mark == 0)
+    {
+      /* We haven't done this node yet.  Mark it as used.  */
+      die->die_mark = 1;
+
+      /* We also have to mark its parents as used.
+	 (But we don't want to mark our parents' kids due to this.)  */
+      if (die->die_parent)
+	prune_unused_types_mark (die->die_parent, 0);
+
+      /* Mark any referenced nodes.  */
+      prune_unused_types_walk_attribs (die);
+    }
+
+  if (dokids && die->die_mark != 2)
+    {
+      /* We need to walk the children, but haven't done so yet.
+	 Remember that we've walked the kids.  */
+      die->die_mark = 2;
+
+      /* Walk them.  */
+      for (c = die->die_child; c; c = c->die_sib)
+	{
+	  /* If this is an array type, we need to make sure our
+	     kids get marked, even if they're types. */
+	  if (die->die_tag == DW_TAG_array_type)
+	    prune_unused_types_mark (c, 1);
+	  else
+	    prune_unused_types_walk (c);
+	}
+    }
+}
+
+
+/* Walk the tree DIE and mark types that we actually use.  */
+
+static void
+prune_unused_types_walk (die)
+     dw_die_ref die;
+{
+  dw_die_ref c;
+
+  /* Don't do anything if this node is already marked.  */
+  if (die->die_mark)
+    return;
+
+  switch (die->die_tag) {
+  case DW_TAG_const_type:
+  case DW_TAG_packed_type:
+  case DW_TAG_pointer_type:
+  case DW_TAG_reference_type:
+  case DW_TAG_volatile_type:
+  case DW_TAG_typedef:
+  case DW_TAG_array_type:
+  case DW_TAG_structure_type:
+  case DW_TAG_union_type:
+  case DW_TAG_class_type:
+  case DW_TAG_friend:
+  case DW_TAG_variant_part:
+  case DW_TAG_enumeration_type:
+  case DW_TAG_subroutine_type:
+  case DW_TAG_string_type:
+  case DW_TAG_set_type:
+  case DW_TAG_subrange_type:
+  case DW_TAG_ptr_to_member_type:
+  case DW_TAG_file_type:
+    /* It's a type node --- don't mark it.  */
+    return;
+
+  default:
+    /* Mark everything else.  */
+    break;
+  }
+
+  die->die_mark = 1;
+
+  /* Now, mark any dies referenced from here.  */
+  prune_unused_types_walk_attribs (die);
+
+  /* Mark children.  */
+  for (c = die->die_child; c; c = c->die_sib)
+    prune_unused_types_walk (c);
+}
+
+
+/* Remove from the tree DIE any dies that aren't marked.  */
+
+static void
+prune_unused_types_prune (die)
+     dw_die_ref die;
+{
+  dw_die_ref c, p, n;
+  if (!die->die_mark)
+    abort();
+
+  p = NULL;
+  for (c = die->die_child; c; c = n)
+    {
+      n = c->die_sib;
+      if (c->die_mark)
+	{
+	  prune_unused_types_prune (c);
+	  p = c;
+	}
+      else
+	{
+	  if (p)
+	    p->die_sib = n;
+	  else
+	    die->die_child = n;
+	  free_die (c);
+	}
+    }
+}
+
+
+/* Remove dies representing declarations that we never use.  */
+
+static void
+prune_unused_types ()
+{
+  unsigned int i;
+  limbo_die_node *node;
+
+  /* Clear all the marks.  */
+  prune_unmark_dies (comp_unit_die);
+  for (node = limbo_die_list; node; node = node->next)
+    prune_unmark_dies (node->die);
+
+  /* Set the mark on nodes that are actually used.  */
+  prune_unused_types_walk (comp_unit_die);
+  for (node = limbo_die_list; node; node = node->next)
+    prune_unused_types_walk (node->die);
+
+  /* Also set the mark on nodes referenced from the
+     pubname_table or arange_table.  */
+  for (i=0; i < pubname_table_in_use; i++)
+    {
+      prune_unused_types_mark (pubname_table[i].die, 1);
+    }
+  for (i=0; i < arange_table_in_use; i++)
+    {
+      prune_unused_types_mark (arange_table[i], 1);
+    }
+
+  /* Get rid of nodes that aren't marked.  */
+  prune_unused_types_prune (comp_unit_die);
+  for (node = limbo_die_list; node; node = node->next)
+    prune_unused_types_prune (node->die);
+
+  /* Leave the marks clear.  */
+  prune_unmark_dies (comp_unit_die);
+  for (node = limbo_die_list; node; node = node->next)
+    prune_unmark_dies (node->die);
+}
+
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
@@ -12739,6 +12979,9 @@ dwarf2out_finish (input_filename)
      They will go into limbo_die_list.  */
   if (flag_eliminate_dwarf2_dups)
     break_out_includes (comp_unit_die);
+
+  if (flag_eliminate_unused_debug_types)
+    prune_unused_types ();
 
   /* Traverse the DIE's and add add sibling attributes to those DIE's
      that have children.  */

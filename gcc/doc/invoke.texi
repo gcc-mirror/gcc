@@ -258,6 +258,7 @@ in the following sections.
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
 -print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
+-feliminate-unused-debug-types @gol
 -save-temps  -time}
 
 @item Optimization Options
@@ -3412,6 +3413,18 @@ anything else.
 @opindex dumpspecs
 Print the compiler's built-in specs---and don't do anything else.  (This
 is used when GCC itself is being built.)  @xref{Spec Files}.
+
+@item -feliminate-unused-debug-types
+@opindex feliminate-unused-debug-types
+Normally, when producing DWARF2 output, GCC will emit debugging
+information for all types declared in a compilation
+unit, regardless of whether or not they are actually used
+in that compilation unit.  Sometimes this is useful, such as
+if, in the debugger, you want to cast a value to a type that is
+not actually used in your program (but is declared).  More often,
+however, this results in a significant amount of wasted space.
+With this option, GCC will avoid producing debug symbol output
+for types that are nowhere used in the source file being compiled.
 @end table
 
 @node Optimize Options

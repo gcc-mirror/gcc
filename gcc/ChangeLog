@@ -1,3 +1,29 @@
+2003-02-28  scott snyder  <snyder@fnal.gov>
+
+	* flags.h: Add flag_eliminate_unused_debug_types.
+	* toplev.c: Add flag_eliminate_unused_debug_types.
+	(f_options): Add -feliminate-unused-debug-types.
+	* dwarf2out.c (struct file_table): Add emitted member.
+	(splice_child_die): Fix the parent pointer for the child being
+	spliced.
+	(lookup_filename): Maintain file_table.emitted array.  Don't
+	output .file directive here.
+	(maybe_emit_file): (new)
+	(init_file_table): Set up file_table.emitted.
+	(dwarf2out_source_line): Use maybe_emit_file.
+	(dwarf2out_start_source_file): Use maybe_emit_file.
+	(dwarf2out_init): Use maybe_emit_file.
+	(prune_unused_types_walk_attribs): (new)
+	(prune_unused_types_mark): (new)
+	(prune_unused_types_walk): (new)
+	(prune_unused_types_prune): (new)
+	(prune_unused_types): (new)
+	(dwarf2out_finish): Call prune_unused_types if
+	flag_eliminate_unused_debug_types is set.
+	* doc/invoke.texi (Option Summary): Add
+	-feliminate-unused-debug-types.
+	(Debugging Options): Likewise.
+
 2003-02-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi: Change .pch to .gch.
