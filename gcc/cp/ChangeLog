@@ -1,3 +1,12 @@
+2002-10-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_decl_flags): Remove init_priority.
+	(lang_decl): Add delta.
+	(GLOBAL_INIT_PRIORITY): Remove.
+	(THUNK_DELTA): Revise definition.
+	* decl2.c (start_objects): Don't set GLOBAL_INIT_PRIORITY.
+	* dump.c (cp_dump_tree): Don't dump it.
+
 2002-10-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8160
