@@ -1,3 +1,8 @@
+2005-02-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	* dyn_load.c: On NetBSD, include machine/elf_machdep.h and define
+	ELFSIZE in terms of ARCH_ELFSIZE (back-ported from gc7.0alpha1).
+
 2005-02-15  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/19823
