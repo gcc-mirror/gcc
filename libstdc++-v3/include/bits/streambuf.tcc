@@ -188,8 +188,6 @@ namespace std
       typedef typename _Traits::off_type	off_type;
 
       streamsize __ret = 0;
-      const off_type __buf_size =
-	__sbin->_M_buf_size > 0 ? __sbin->_M_buf_size : 1;
       try 
 	{
 	  for (;;)
@@ -208,10 +206,9 @@ namespace std
  	      else 
 		{
 		  streamsize __charsread;
-		  const off_type __size = std::min(__buf_size,
-						   off_type(__sbout->_M_out_end
-						   - __sbout->_M_out_cur));
-		  if (__size > 1)
+		  const off_type __size = __sbout->_M_out_end
+		                          - __sbout->_M_out_cur;
+		  if (__size)
 		    {
 		      _CharT* __buf =
 			static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
@@ -224,15 +221,15 @@ namespace std
 		  else
 		    {
 		      __xtrct = __charsread = 0;
-		      int_type __c = __sbin->sgetc();
-		      while (!_Traits::eq_int_type(__c, _Traits::eof()))
+		      const int_type __c = __sbin->sgetc();
+		      if (!_Traits::eq_int_type(__c, _Traits::eof()))
 			{
 			  ++__charsread;
-			  if (_Traits::eq_int_type(__sbout->sputc(_Traits::to_char_type(__c)),
+			  if (_Traits::eq_int_type(__sbout->overflow(__c),
 						   _Traits::eof()))
 			    break;
 			  ++__xtrct;
-			  __c = __sbin->snextc();
+			  __sbin->sbumpc();
 			}
 		    }		      
 		  __ret += __xtrct;
