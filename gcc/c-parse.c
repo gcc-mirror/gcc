@@ -1265,7 +1265,7 @@ static const short yycheck[] = {    38,
     51,    52,    53,    54
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/misc/bison.simple"
+#line 3 "/usr/share/bison.simple"
 /* This file comes from bison-1.28.  */
 
 /* Skeleton output parser for bison,
@@ -1479,7 +1479,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/share/misc/bison.simple"
+#line 217 "/usr/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2088,7 +2088,7 @@ case 62:
 		  tree type = yyvsp[-5].ttype;
 		  finish_init ();
 
-		  if (pedantic && ! flag_isoc9x)
+		  if (pedantic && ! flag_isoc99)
 		    pedwarn ("ANSI C forbids constructor expressions");
 		  if (TYPE_NAME (type) != 0)
 		    {
@@ -2833,8 +2833,8 @@ case 224:
 case 225:
 #line 1231 "c-parse.y"
 { yyval.ttype = build_nt (ARRAY_REF, yyvsp[-3].ttype, NULL_TREE);
-		  if (! flag_isoc9x)
-		    error ("`[*]' in parameter declaration only allowed in ISO C 9x");
+		  if (! flag_isoc99)
+		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
 		;
     break;}
 case 226:
@@ -2868,8 +2868,8 @@ case 233:
 case 234:
 #line 1265 "c-parse.y"
 { yyval.ttype = build_nt (ARRAY_REF, yyvsp[-3].ttype, NULL_TREE);
-		  if (! flag_isoc9x)
-		    error ("`[*]' in parameter declaration only allowed in ISO C 9x");
+		  if (! flag_isoc99)
+		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
 		;
     break;}
 case 235:
@@ -2970,7 +2970,7 @@ case 257:
     break;}
 case 261:
 #line 1349 "c-parse.y"
-{ if (pedantic && ! flag_isoc9x)
+{ if (pedantic && ! flag_isoc99)
 		    pedwarn ("comma at end of enumerator list"); ;
     break;}
 case 262:
@@ -3826,7 +3826,7 @@ case 407:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/share/misc/bison.simple"
+#line 543 "/usr/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
