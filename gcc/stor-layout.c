@@ -265,30 +265,17 @@ layout_decl (decl, known_align)
 {
   register tree type = TREE_TYPE (decl);
   register enum tree_code code = TREE_CODE (decl);
-  HOST_WIDE_INT spec_size = 0;
 
   if (code == CONST_DECL)
     return;
-  else if (code == FIELD_DECL)
-    {
-      if (DECL_SIZE (decl) != 0)
-	{
-	  spec_size = TREE_INT_CST_LOW (DECL_SIZE (decl));
-	  DECL_SIZE (decl) = 0;
-	}
-    }
   else if (code != VAR_DECL && code != PARM_DECL && code != RESULT_DECL
-	   && code != TYPE_DECL)
+	   && code != TYPE_DECL && code != FIELD_DECL)
     abort ();
 
   if (type == error_mark_node)
-    {
-      type = void_type_node;
-      spec_size = 0;
-    }
+    type = void_type_node;
 
   /* Usually the size and mode come from the data type without change.  */
-
   DECL_MODE (decl) = TYPE_MODE (type);
   TREE_UNSIGNED (decl) = TREE_UNSIGNED (type);
   if (DECL_SIZE (decl) == 0)
@@ -296,14 +283,23 @@ layout_decl (decl, known_align)
       DECL_SIZE (decl) = TYPE_SIZE (type);
       DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (type);
     }
-
-  if (code == FIELD_DECL && DECL_BIT_FIELD (decl))
+  else if (code == FIELD_DECL)
     {
-      if (spec_size == 0 && DECL_NAME (decl) != 0)
+      HOST_WIDE_INT spec_size;
+
+      /* The front-end may set the explicit width of the field, so its
+	 size may not be the same as the size of its type.  This happens
+	 with bitfields, of course (an `int' bitfield may be only 2 bits,
+	 say), but it also happens with other fields.  For example, the
+	 C++ front-end creates zero-sized fields corresponding to empty
+	 base classes, and depends on layout_type setting
+	 DECL_FIELD_BITPOS correctly for the field.  */
+      if (integer_zerop (DECL_SIZE (decl)) 
+	  && DECL_NAME (decl) != NULL_TREE)
 	abort ();
 
       /* Size is specified in number of bits.  */
-      DECL_SIZE (decl) = bitsize_int (spec_size);
+      spec_size = TREE_INT_CST_LOW (DECL_SIZE (decl));
       if (spec_size % BITS_PER_UNIT == 0)
 	DECL_SIZE_UNIT (decl) = size_int (spec_size / BITS_PER_UNIT);
       else
@@ -313,8 +309,9 @@ layout_decl (decl, known_align)
   /* Force alignment required for the data type.
      But if the decl itself wants greater alignment, don't override that.
      Likewise, if the decl is packed, don't override it.  */
-  else if (DECL_ALIGN (decl) == 0
-	   || (! DECL_PACKED (decl) &&  TYPE_ALIGN (type) > DECL_ALIGN (decl)))
+  if (!(code == FIELD_DECL && DECL_BIT_FIELD (decl))
+      && (DECL_ALIGN (decl) == 0
+	  || (! DECL_PACKED (decl) &&  TYPE_ALIGN (type) > DECL_ALIGN (decl))))
     DECL_ALIGN (decl) = TYPE_ALIGN (type);
 
   /* See if we can use an ordinary integer mode for a bit-field. 

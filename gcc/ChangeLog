@@ -1,3 +1,8 @@
+2000-03-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* stor-layout.c (layout_decl): Allow front-ends to explicitly set
+	the DECL_SIZE for a FIELD_DECL.
+
 2000-03-01  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.tpl: remove unused symlinks
