@@ -143,6 +143,8 @@ static int compare_constant_rtx		PROTO((enum machine_mode, rtx,
 static struct constant_descriptor *record_constant_rtx PROTO((enum machine_mode,
 							      rtx));
 static struct pool_constant *find_pool_constant PROTO((rtx));
+static void mark_constant_pool		PROTO((void));
+static void mark_constants		PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
 static void output_after_function_constants PROTO((void));
 static void bc_assemble_integer		PROTO((tree, int));
@@ -3116,6 +3118,7 @@ struct pool_constant
   int labelno;
   int align;
   int offset;
+  int mark;
 };
 
 /* Pointers to first and last constant in pool.  */
@@ -3483,6 +3486,7 @@ force_const_mem (mode, x)
       pool->labelno = const_labelno;
       pool->align = align;
       pool->offset = pool_offset;
+      pool->mark = 0;
       pool->next = 0;
 
       if (last_pool == 0)
@@ -3596,6 +3600,12 @@ output_constant_pool (fnname, fndecl)
   rtx x;
   union real_extract u;
 
+  /* It is possible for gcc to call force_const_mem and then to later
+     discard the instructions which refer to the constant.  In such a
+     case we do not need to output the constant.  */
+  if (flag_expensive_optimizations)
+    mark_constant_pool ();
+
 #ifdef ASM_OUTPUT_POOL_PROLOGUE
   ASM_OUTPUT_POOL_PROLOGUE (asm_out_file, fnname, fndecl, pool_offset);
 #endif
@@ -3603,6 +3613,9 @@ output_constant_pool (fnname, fndecl)
   for (pool = first_pool; pool; pool = pool->next)
     {
       x = pool->constant;
+
+      if (flag_expensive_optimizations && ! pool->mark)
+	continue;
 
       /* See if X is a LABEL_REF (or a CONST referring to a LABEL_REF)
 	 whose CODE_LABEL has been deleted.  This can occur if a jump table
@@ -3665,6 +3678,89 @@ output_constant_pool (fnname, fndecl)
 
   /* Done with this pool.  */
   first_pool = last_pool = 0;
+}
+
+/* Look through the instructions for this function, and mark all the
+   entries in the constant pool which are actually being used.  */
+
+static void
+mark_constant_pool ()
+{
+  register rtx insn;
+
+  if (first_pool == 0)
+    return;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      mark_constants (PATTERN (insn));
+
+  for (insn = current_function_epilogue_delay_list;
+       insn;
+       insn = XEXP (insn, 1))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      mark_constants (PATTERN (insn));
+}
+
+static void
+mark_constants (x)
+     register rtx x;
+{
+  register int i;
+  register char *format_ptr;
+
+  if (x == 0)
+    return;
+
+  if (GET_CODE (x) == SYMBOL_REF)
+    {
+      if (CONSTANT_POOL_ADDRESS_P (x))
+	find_pool_constant (x)->mark = 1;
+      return;
+    }
+
+  /* Insns may appear inside a SEQUENCE.  Only check the patterns of
+     insns, not any notes that may be attached.  We don't want to mark
+     a constant just because it happens to appear in a REG_EQUIV note.  */
+  if (GET_RTX_CLASS (GET_CODE (x)) == 'i')
+    {
+      mark_constants (PATTERN (x));
+      return;
+    }
+
+  format_ptr = GET_RTX_FORMAT (GET_CODE (x));
+
+  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (x)); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'e':
+	  mark_constants (XEXP (x, i));
+	  break;
+
+	case 'E':
+	  if (XVEC (x, i) != 0)
+	    {
+	      register int j;
+
+	      for (j = 0; j < XVECLEN (x, i); j++)
+		mark_constants (XVECEXP (x, i, j));
+	    }
+	  break;
+
+	case 'S':
+	case 's':
+	case '0':
+	case 'i':
+	case 'w':
+	case 'n':
+	case 'u':
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
 }
 
 /* Find all the constants whose addresses are referenced inside of EXP,
