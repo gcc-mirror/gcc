@@ -1,5 +1,5 @@
-/* PipedReader.java -- Input stream that reads from an output stream
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+/* PipedReader.java -- Read portion of piped character streams.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -24,479 +24,312 @@ resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
-
 package java.io;
 
+// NOTE: This implementation is very similar to that of PipedInputStream. 
+// If you fix a bug in here, chances are you should make a similar change to 
+// the PipedInputStream code.
+
 /**
-  * This class is an input stream that reads its chars from an output stream
-  * to which it is connected. 
+  * An input stream that reads characters from a piped writer to which it is 
+  * connected. 
   * <p>
   * Data is read and written to an internal buffer.  It is highly recommended
   * that the <code>PipedReader</code> and connected <code>PipedWriter</code>
   * be part of different threads.  If they are not, there is a possibility
   * that the read and write operations could deadlock their thread.
   *
-  * @version 0.0
+  * @specnote The JDK implementation appears to have some undocumented 
+  *           functionality where it keeps track of what thread is writing
+  *           to pipe and throws an IOException if that thread susequently
+  *           dies. This behaviour seems dubious and unreliable - we don't
+  *           implement it.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public class PipedReader extends Reader
 {
+  /** PipedWriter to which this is connected. Null only if this 
+    * Reader hasn't been connected yet. */
+  PipedWriter source;
 
-/*************************************************************************/
+  /** Set to true if close() has been called on this Reader. */
+  boolean closed;
 
-/*
- * Class Variables
- */
+  /**
+    * The size of the internal buffer used for input/output.
+    */
+  static final int PIPE_SIZE = 2048;
 
-/**
-  * The size of the internal buffer used for input/output.  Note that this
-  * can be overriden by setting the system property 
-  * <code>gnu.java.io.PipedReader.pipe_size</code> to the desired size shown 
-  * in chars.  This is not a standard part of the class library.  Note that 
-  * since this variable is <code>final</code>, it cannot be changed to refect 
-  * the size specified in the property.
-  * <p>
-  * The value for this variable is 2048.
-  */
-private static final int PIPE_SIZE = 2048;
+  /**
+    * This is the internal circular buffer used for storing chars written
+    * to the pipe and from which chars are read by this stream
+    */
+  char[] buffer = new char[PIPE_SIZE];
 
-/**
-  * This is the real pipe size.  It defaults to PIPE_SIZE, unless overridden
-  * by use of the system property <code>gnu.java.io.PipedReader.pipe_size</code>.
-  */
-private static int pipe_size;
+  /**
+    * The index into buffer where the next char from the connected
+    * <code>PipedWriter</code> will be written. If this variable is 
+    * equal to <code>out</code>, then the buffer is full. If set to < 0,
+    * the buffer is empty.
+    */
+  int in = -1;
 
-static
-{
-  pipe_size =  Integer.getInteger("gnu.java.io.PipedReader.pipe_size",
-                                  PIPE_SIZE).intValue();
-}
+  /**
+    * This index into the buffer where chars will be read from.
+    */
+  int out = 0;
 
-/*************************************************************************/
+  /** Buffer used to implement single-argument read/receive */
+  char[] read_buf = new char[1];
 
-/*
- * Instance Variables
- */
+  /**
+    * Creates a new <code>PipedReader</code> that is not connected to a 
+    * <code>PipedWriter</code>.  It must be connected before chars can 
+    * be read from this stream.
+    */
+  public PipedReader()
+  {
+  }
 
-/**
-  * This is the internal circular buffer used for storing chars written
-  * to the pipe and from which chars are read by this stream
-  */
-private char[] buffer = new char[pipe_size];
+  /**
+    * This constructor creates a new <code>PipedReader</code> and connects
+    * it to the passed in <code>PipedWriter</code>. The stream is then 
+    * ready for reading.
+    *
+    * @param source The <code>PipedWriter</code> to connect this stream to
+    *
+    * @exception IOException If <code>source</code> is already connected.
+    */
+  public PipedReader(PipedWriter source) throws IOException
+  {
+    connect(source);
+  }
 
-/**
-  * The index into buffer where the chars written char the connected
-  * <code>PipedWriter</code> will be written.  If this variables is less
-  * than 0, then the buffer is empty.  If this variable is equal to 
-  * <code>out</code>, then the buffer is full
-  */
-private int in = -1;
+  /**
+    * This method connects this stream to the passed in <code>PipedWriter</code>.
+    * This stream is then ready for reading.  If this stream is already
+    * connected or has been previously closed, then an exception is thrown
+    *
+    * @param src The <code>PipedWriter</code> to connect this stream to
+    *
+    * @exception IOException If this PipedReader or <code>source</code> 
+    *                        has been connected already.
+    */
+  public void connect(PipedWriter source) throws IOException
+  {
+    // The JDK (1.3) does not appear to check for a previously closed 
+    // connection here.
+    
+    if (this.source != null || source.sink != null)
+      throw new IOException ("Already connected");
+    
+    source.sink = this;
+    this.source = source;
+  }
+  
+  /**
+    * This method is used by the connected <code>PipedWriter</code> to
+    * write chars into the buffer.
+    *
+    * @param buf The array containing chars to write to this stream
+    * @param offset The offset into the array to start writing from
+    * @param len The number of chars to write.
+    *
+    * @exception IOException If an error occurs
+    * @specnote This code should be in PipedWriter.write, but we
+    *           put it here in order to support that bizarre recieve(int)
+    *           method.
+    */  
+  synchronized void receive(char[] buf, int offset, int len)
+    throws IOException
+  {
+    if (closed)
+      throw new IOException ("Pipe closed");
 
-/**
-  * This index into the buffer where chars will be read from.
-  */
-private int out = 0;
+    int bufpos = offset;
+    int copylen;
+    
+    while (len > 0)
+      {
+        try
+	  {
+	    while (in == out)
+	      {
+		// The pipe is full. Wake up any readers and wait for them.
+		notifyAll();
+		wait();
+		// The pipe could have been closed while we were waiting.
+	        if (closed)
+		  throw new IOException ("Pipe closed");
+	      }
+	  }
+	catch (InterruptedException ix)
+	  {
+            throw new InterruptedIOException ();
+	  }
 
-/**
-  * This variable is <code>true</code> if this object has ever been connected
-  * to a <code>PipedWriter</code>, and <code>false</code> otherwise.  It is used
-  * to detect an attempt to connect an already connected stream or to
-  * otherwise use the stream before it is connected.
-  */
-private boolean ever_connected = false;
+	if (in < 0) // The pipe is empty.
+	  in = 0;
+	
+	// Figure out how many chars from buf can be copied without 
+	// overrunning out or going past the length of the buffer.
+	if (in < out)
+	  copylen = Math.min (len, out - in);
+	else
+	  copylen = Math.min (len, buffer.length - in);
 
-/**
-  * This variable is set to <code>true</code> if the <code>close()</code> method is
-  * called.  This value is checked prevents a caller from re-opening the
-  * stream.
-  */
-private boolean closed = false;
+	// Copy chars until the pipe is filled, wrapping if neccessary.
+	System.arraycopy(buf, bufpos, buffer, in, copylen);
+	len -= copylen;
+	bufpos += copylen;
+	in += copylen;
+	if (in == buffer.length)
+	  in = 0;
+      }
+    // Notify readers that new data is in the pipe.
+    notifyAll();
+  }
+  
+  /**
+    * This method reads chars from the stream into a caller supplied buffer.
+    * It starts storing chars at position <code>offset</code> into the buffer and
+    * reads a maximum of <cod>>len</code> chars.  Note that this method can actually
+    * read fewer than <code>len</code> chars.  The actual number of chars read is
+    * returned.  A -1 is returned to indicated that no chars can be read
+    * because the end of the stream was reached.  If the stream is already
+    * closed, a -1 will again be returned to indicate the end of the stream.
+    * <p>
+    * This method will block if no chars are available to be read.
+    *
+    * @param buf The buffer into which chars will be stored
+    * @param offset The index into the buffer at which to start writing.
+    * @param len The maximum number of chars to read.
+    */
+  public int read() throws IOException
+  {
+    // Method operates by calling the multichar overloaded read method
+    // Note that read_buf is an internal instance variable.  I allocate it
+    // there to avoid constant reallocation overhead for applications that
+    // call this method in a loop at the cost of some unneeded overhead
+    // if this method is never called.
 
-/**
-  * This variable is the PipedWriter to which this stream is connected.
-  */
-PipedWriter src;
+    int r = read(read_buf, 0, 1);
 
-/*************************************************************************/
+    if (r == -1)
+      return -1;
+    else
+      return read_buf[0];
+  }
+  
+  /**
+    * This method reads characters from the stream into a caller supplied buffer.
+    * It starts storing chars at position <code>offset</code> into the buffer and
+    * reads a maximum of <cod>>len</code> chars.  Note that this method can actually
+    * read fewer than <code>len</code> chars.  The actual number of chars read is
+    * returned.  A -1 is returned to indicated that no chars can be read
+    * because the end of the stream was reached - ie close() was called on the
+    * connected PipedWriter.
+    * <p>
+    * This method will block if no chars are available to be read.
+    *
+    * @param buf The buffer into which chars will be stored
+    * @param offset The index into the buffer at which to start writing.
+    * @param len The maximum number of chars to read.
+    *
+    * @exception IOException If <code>close()/code> was called on this Piped
+    *                        Reader.
+    */  
+  public synchronized int read(char[] buf, int offset, int len)
+    throws IOException
+  {
+    if (source == null)
+      throw new IOException ("Not connected");
+    if (closed)
+      throw new IOException ("Pipe closed");
 
-/*
- * Constructors
- */
+    // If the buffer is empty, wait until there is something in the pipe 
+    // to read.
+    try
+      {
+	while (in < 0)
+	  {
+	    if (source.closed)
+	      return -1;
+	    wait();
+	  }
+      }
+    catch (InterruptedException ix)
+      {
+        throw new InterruptedIOException();
+      }
+    
+    int total = 0;
+    int copylen;
+    
+    while (true)
+      {
+	// Figure out how many chars from the pipe can be copied without 
+	// overrunning in or going past the length of buf.
+	if (out < in)
+	  copylen = Math.min (len, in - out);
+	else
+	  copylen = Math.min (len, buffer.length - out);
 
-/**
-  * This constructor creates a new <code>PipedReader</code> that is not 
-  * connected to a <code>PipedWriter</code>.  It must be connected before
-  * chars can be read from this stream.
-  */
-public
-PipedReader()
-{
-  return;
-}
+        System.arraycopy (buffer, out, buf, offset, copylen);
+	offset += copylen;
+	len -= copylen;
+	out += copylen;
+	total += copylen;
+	
+	if (out == buffer.length)
+	  out = 0;
+	
+	if (out == in)
+	  {
+	    // Pipe is now empty.
+	    in = -1;
+	    out = 0;
+	  }
 
-/*************************************************************************/
-
-/**
-  * This constructor creates a new <code>PipedReader</code> and connects
-  * it to the passed in <code>PipedWriter</code>. The stream is then read
-  * for reading.
-  *
-  * @param src The <code>PipedWriter</code> to connect this stream to
-  *
-  * @exception IOException If an error occurs
-  */
-public
-PipedReader(PipedWriter src) throws IOException
-{
-  connect(src);
-}
-
-/*************************************************************************/
-
-/*
- * Instance Variables
- */
-
-/**
-  * This method connects this stream to the passed in <code>PipedWriter</code>.
-  * This stream is then ready for reading.  If this stream is already
-  * connected or has been previously closed, then an exception is thrown
-  *
-  * @param src The <code>PipedWriter</code> to connect this stream to
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-connect(PipedWriter src) throws IOException
-{
-  if (src == this.src)
-    return;
-
-  if (ever_connected)
-    throw new IOException("Already connected");
-
-  if (closed)
-    throw new IOException("Stream is closed and cannot be reopened");
-
-  synchronized (lock)
-    {
-      src.connect(this);
-
-      ever_connected = true;
-    } // synchronized
-}
-
-/*************************************************************************/
-
-/**
+        // If output buffer is filled or the pipe is empty, we're done.
+	if (len == 0 || in == -1)
+	  {
+	    // Notify any waiting Writer that there is now space
+	    // to write.
+	    notifyAll();
+	    return total;
+	  }
+      }
+  }
+  
+  public synchronized boolean ready() throws IOException
+  {
+    // The JDK 1.3 implementation does not appear to check for the closed or 
+    // unconnected stream conditions here.
+    
+    if (in < 0)
+      return false;
+    
+    int count;
+    if (out < in)
+      count = in - out;
+    else
+      count = (buffer.length - out) - in;
+    
+    return (count > 0);
+  }
+  
+  /**
   * This methods closes the stream so that no more data can be read
   * from it.
   *
   * @exception IOException If an error occurs
   */
-public void
-close() throws IOException
-{
-  synchronized (lock)
-    {
-      closed = true;
-      notifyAll();
-    } // synchronized
+  public synchronized void close() throws IOException
+  {
+    closed = true;
+    // Wake any thread which may be in receive() waiting to write data.
+    notifyAll();
+  }
 }
-
-/*************************************************************************/
-
-/**
-  * This method determines whether or not this stream is ready to be read.
-  * If this metho returns <code>false</code> an attempt to read may (but is
-  * not guaranteed to) block.
-  *
-  * @return <code>true</code> if this stream is ready to be read, <code>false</code> otherwise
-  *
-  * @exception IOException If an error occurs
-  */
-public boolean
-ready() throws IOException
-{
-  if (in == -1)
-    return(false);
-
-  if (out == (in - 1))
-    return(false);
-
-  if ((out == pipe_size) && (in == 0))
-    return(false);
-
-  return(true);
-}
-
-/*************************************************************************/
-
-/**
-  * This method reads a single char from the pipe and returns it as an
-  * <code>int</code>.
-  * <p>
-  * This method will block if no chars are available to be read.
-  *
-  * @return An char read from the pipe, or -1 if the end of stream is 
-  * reached.
-  *
-  * @exception IOException If an error occurs.
-  */
-public int
-read() throws IOException
-{
-  char[] buf = new char[1];
-
-  return(read(buf, 0, buf.length));
-}
-
-/*************************************************************************/
-
-/**
-  * This method reads chars from the stream into a caller supplied buffer.
-  * It starts storing chars at position <code>offset</code> into the buffer and
-  * reads a maximum of <cod>>len</code> chars.  Note that this method can actually
-  * read fewer than <code>len</code> chars.  The actual number of chars read is
-  * returned.  A -1 is returned to indicated that no chars can be read
-  * because the end of the stream was reached.  If the stream is already
-  * closed, a -1 will again be returned to indicate the end of the stream.
-  * <p>
-  * This method will block if no chars are available to be read.
-  *
-  * @param buf The buffer into which chars will be stored
-  * @param offset The index into the buffer at which to start writing.
-  * @param len The maximum number of chars to read.
-  */
-public int
-read(char[] buf, int offset, int len) throws IOException
-{
-  if (!ever_connected)
-    throw new IOException("Not connected"); 
-
-  synchronized (lock)
-    {
-      int chars_read = 0;
-      for (;;)
-	{
-	  // If there are chars, take them
-	  if (in != -1)
-	    {
-	      int desired_chars = len - chars_read;
-
-	      // We are in a "wrap" condition
-	      if (out > in)
-		{
-		  if (desired_chars > (pipe_size - out))
-		    {
-		      if (in == 0)
-			desired_chars = (pipe_size - out) - 1;
-		      else
-			desired_chars = pipe_size - out;
-
-		      System.arraycopy(buffer, out, buf, offset + chars_read,
-				       desired_chars);
-
-		      chars_read += desired_chars;
-		      out += desired_chars;
-		      desired_chars = len - chars_read;
-
-		      if (out == pipe_size)
-			out = 0;
-
-		      notifyAll();
-		    }
-		  else
-		    {
-		      if ((out + desired_chars) == in)
-			--desired_chars;
-
-		      if (((out + desired_chars) == pipe_size) && (in == 0)) 
-			desired_chars = (pipe_size - out) - 1;
-
-		      System.arraycopy(buffer, out, buf, offset + chars_read,
-				       desired_chars); 
-
-		      chars_read += desired_chars;
-		      out += desired_chars;
-		      desired_chars = len - chars_read;
-
-		      if (out == pipe_size)
-			out = 0;
-
-		      notifyAll();
-		    }
-		}
- 
-	      // We are in a "no wrap" or condition (can also be fall through
-	      // from above
-	      if (in > out)
-		{
-		  if (desired_chars >= ((in - out) - 1))
-		    desired_chars = (in - out) - 1;
-
-		  System.arraycopy(buffer, out, buf, offset + chars_read, 
-				   desired_chars);
-
-		  chars_read += desired_chars;
-		  out += desired_chars;
-		  desired_chars = len - chars_read;
-
-		  if (out == pipe_size)
-		    out = 0;
-
-		  notifyAll();
-		}
-	    }
-
-	  // If we are done, return
-	  if (chars_read == len)
-	    return(chars_read);
-
-	  // Return a short count if necessary
-	  if (chars_read > 0 && chars_read < len)
-	    return(chars_read);
-
-	  // Handle the case where the end of stream was encountered.
-	  if (closed)
-	    {
-	      // We never let in == out so there might be one last char
-	      // available that we have not copied yet.
-	      if (in != -1)
-		{
-		  buf[offset + chars_read] = buffer[out];
-		  in = -1;
-		  ++out;
-		  ++chars_read;
-		}
-
-	      if (chars_read != 0)
-		return(chars_read);
-	      else
-		return(-1);
-	    }
-
-	  // Wait for a char to be read
-	  try
-	    {
-	      wait();
-	    }
-	  catch(InterruptedException e) { ; }
-	} 
-    } // synchronized
-}
-
-/*************************************************************************/
-
-/**
-  * This method is used by the connected <code>PipedWriter</code> to
-  * write chars into the buffer.  It uses this method instead of directly
-  * writing the chars in order to obtain ownership of the object's monitor
-  * for the purposes of calling <code>notify</code>.
-  *
-  * @param buf The array containing chars to write to this stream
-  * @param offset The offset into the array to start writing from
-  * @param len The number of chars to write.
-  *
-  * @exception IOException If an error occurs
-  */
-void
-write(char[] buf, int offset, int len) throws IOException
-{
-  if (len <= 0)
-    return;
-
-  synchronized (lock)
-    {
-      int total_written = 0;
-      while (total_written < len)
-	{
-	  // If we are not at the end of the buffer with out = 0
-	  if (!((in == (buffer.length - 1)) && (out == 0)))
-	    {
-	      // This is the "no wrap" situation
-	      if ((in - 1) >= out)
-		{
-		  int chars_written = 0;
-		  if ((buffer.length - in) > (len - total_written))
-		    chars_written = (len - total_written);
-		  else if (out == 0)
-		    chars_written = (buffer.length - in) - 1;
-		  else 
-		    chars_written = (buffer.length - in);
-
-		  if (chars_written > 0) 
-		    System.arraycopy(buf, offset + total_written, buffer, in, 
-				     chars_written);
-		  total_written += chars_written;
-		  in += chars_written;
-
-		  if (in == buffer.length)
-		    in = 0;
-
-		  notifyAll();
-		}
-	      // This is the "wrap" situtation
-	      if ((out > in) && (total_written != len))
-		{
-		  int chars_written = 0;
-
-		  // Do special processing if we are at the beginning
-		  if (in == -1)
-		    {
-		      in = 0;
-
-		      if (buffer.length > len)
-			chars_written = len;
-		      else
-			chars_written = buffer.length - 1;
-		    }
-		  else if (((out - in) - 1) < (len - total_written))
-		    {
-		      chars_written = (out - in) - 1;
-		    }
-		  else
-		    {
-		      chars_written = len - total_written;
-		    }
-
-		  // If the buffer is full, wait for it to empty out
-		  if ((out - 1) == in)
-		    {
-		      try
-			{         
-			  wait(); 
-			}
-		      catch (InterruptedException e) 
-			{ 
-			  continue; 
-			}
-		    }
-
-		  System.arraycopy(buf, offset + total_written, buffer, in,
-				   chars_written);
-		  total_written += chars_written;
-		  in += chars_written;
-
-		  if (in == buffer.length)
-		    in = 0;
-
-		  notifyAll();
-		}
-	    }
-	  // Wait for some reads to occur before we write anything.
-	  else
-	    {
-	      try
-		{
-		  wait();
-		}
-	      catch (InterruptedException e) { ; }
-	    }
-	}
-    } // synchronized
-}
-
-} // class PipedReader
-

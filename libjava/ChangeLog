@@ -2,6 +2,12 @@
 
 	* java/lang/Thread.java: Update comment.
 
+	* java/io/PipedInputStream: Rewrote to be simpler and more correct.
+	* java/io/PipedOutputStream: Updated to match new PipedInputStream.
+	* java/io/PipedReader: New implementation based on new 
+	PipedInputStream.
+	* java/io/PipedWriter: Updated to match new PipedOutputStream.
+
 2001-01-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/ScrollPane.java (setBlockIncrement): Throw error.
