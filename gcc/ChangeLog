@@ -29,6 +29,9 @@ Mon Jul 17 02:37:06 2000  Marc Espie <espie@openbsd.org>
 
 2000-07-17  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c (two_insn_adds_subs_operand): Improve code for detecting
+	profitable adds/subs sequences.
+
 	* fold-const.c: Fix comment typos.
 
 2000-07-16  Laurynas Biveinis  <lauras@softhome.net>
