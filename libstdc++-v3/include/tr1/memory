@@ -27,11 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//  boost/checked_delete.hpp
-//  Copyright (c) 2002, 2003 Peter Dimov
-//  Copyright (c) 2003 Daniel Frey
-//  Copyright (c) 2003 Howard Hinnant
-
 //  boost/shared_count.hpp
 //  Copyright (c) 2001, 2002, 2003 Peter Dimov and Multi Media Ltd.
 
@@ -92,27 +87,15 @@ __throw_bad_weak_ptr()
 }
 
 
-// verify that types are complete for increased safety
-
 template <typename _Tp>
-  inline void
-  checked_delete(_Tp * __x)
-  {
-    // intentionally complex - simplification causes regressions
-    typedef char type_must_be_complete[ sizeof(_Tp)? 1: -1 ];
-    (void) sizeof(type_must_be_complete);
-    delete __x;
-  }
-
-template <typename _Tp>
-  struct checked_deleter
+  struct _Sp_deleter
   {
     typedef void result_type;
     typedef _Tp* argument_type;
 
     void
-    operator()(_Tp * x) const
-    { std::tr1::checked_delete(x); }
+    operator()(_Tp* p) const
+    { delete p; }
   };
 
 
@@ -267,8 +250,8 @@ public:
 
   template <typename _Tp>
     explicit shared_count(std::auto_ptr<_Tp>& __r)
-    : _M_pi(new _Sp_counted_base_impl<_Tp*,checked_deleter<_Tp> >(
-            __r.get(), checked_deleter<_Tp>()
+    : _M_pi(new _Sp_counted_base_impl<_Tp*,_Sp_deleter<_Tp> >(
+            __r.get(), _Sp_deleter<_Tp>()
             ))
     { __r.release(); }
 
@@ -506,7 +489,7 @@ template <typename _Tp>
      */
     template <typename _Tp1>
       explicit shared_ptr(_Tp1* __p)
-      : _M_ptr(__p), _M_refcount(__p, checked_deleter<_Tp1>())
+      : _M_ptr(__p), _M_refcount(__p, _Sp_deleter<_Tp1>())
       {
         __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
         // __glibcxx_function_requires(_CompleteConcept<_Tp1*>)
