@@ -1,3 +1,8 @@
+Thu Aug  8 17:48:16 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
+
+	* decl2.c (import_export_vtable): Delete code that disabled vtable
+ 	heuristic on systems with ASM_OUTPUT_EXTERNAL.
+
 Thu Aug  1 11:53:51 1996  Bob Manson  <manson@charmed.cygnus.com>
 
 	* error.c (dump_decl): Don't explode (or explode more gracefully
