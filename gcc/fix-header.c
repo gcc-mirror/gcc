@@ -643,19 +643,21 @@ read_scan_file (in_fname, argc, argv)
 	  if (argv[i][1] == 'I')
 	    {
 	      if (argv[i][2] != '\0')
-		strings_processed = 1, add_path (argv[i] + 2, BRACKET, false);
-	      else if (i + 1 == argc)
-		strings_processed = 0;
-	      else
-		strings_processed = 2, add_path (argv[i + 1], BRACKET, false);
+		{
+		  strings_processed = 1;
+		  add_path (xstrdup (argv[i] + 2), BRACKET, false);
+		}
+	      else if (i + 1 != argc)
+		{
+		  strings_processed = 2;
+		  add_path (xstrdup (argv[i + 1]), BRACKET, false);
+		}
 	    }
 	  else if (argv[i][1] == 'D')
 	    {
 	      if (argv[i][2] != '\0')
 		strings_processed = 1, cpp_define (scan_in, argv[i] + 2);
-	      else if (i + 1 == argc)
-		strings_processed = 0;
-	      else	
+	      else if (i + 1 != argc)
 		strings_processed = 2, cpp_define (scan_in, argv[i + 1]);
 	    }
 	}
