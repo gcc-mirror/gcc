@@ -241,6 +241,9 @@ make_ssa_name (tree var, tree stmt)
 void
 release_ssa_name (tree var)
 {
+  if (!var)
+    return;
+
   /* Never release the default definition for a symbol.  It's a
      special SSA name that should always exist once it's created.  */
   if (var == var_ann (SSA_NAME_VAR (var))->default_def)

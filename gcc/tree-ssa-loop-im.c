@@ -132,6 +132,8 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	case COMPONENT_REF:
 	case VIEW_CONVERT_EXPR:
 	case ARRAY_RANGE_REF:
+	case REALPART_EXPR:
+	case IMAGPART_EXPR:
 	  nxt = &TREE_OPERAND (*addr_p, 0);
 	  break;
 

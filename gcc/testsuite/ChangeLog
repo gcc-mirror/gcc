@@ -1,3 +1,10 @@
+2004-09-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.dg/tree-ssa/loop-2.c: New test.
+	* gcc.dg/tree-ssa/loop-3.c: New test.
+	* gcc.dg/tree-ssa/loop-4.c: New test.
+	* gcc.dg/tree-ssa/loop-5.c: New test.
+
 2004-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/format/sentinel-1.c: Update for parameter option.

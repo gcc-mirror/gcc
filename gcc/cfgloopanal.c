@@ -497,12 +497,12 @@ seq_cost (rtx seq)
 
 /* The properties of the target.  */
 
-static unsigned avail_regs;	/* Number of available registers.  */
-static unsigned res_regs;	/* Number of reserved registers.  */
-static unsigned small_cost;	/* The cost for register when there is a free one.  */
-static unsigned pres_cost;	/* The cost for register when there are not too many
+unsigned target_avail_regs;	/* Number of available registers.  */
+unsigned target_res_regs;	/* Number of reserved registers.  */
+unsigned target_small_cost;	/* The cost for register when there is a free one.  */
+unsigned target_pres_cost;	/* The cost for register when there are not too many
 				   free ones.  */
-static unsigned spill_cost;	/* The cost for register when we need to spill.  */
+unsigned target_spill_cost;	/* The cost for register when we need to spill.  */
 
 /* Initialize the constants for computing set costs.  */
 
@@ -519,9 +519,9 @@ init_set_costs (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i)
 	&& !fixed_regs[i])
-      avail_regs++;
+      target_avail_regs++;
 
-  res_regs = 3;
+  target_res_regs = 3;
 
   /* These are really just heuristic values.  */
   
@@ -529,15 +529,15 @@ init_set_costs (void)
   emit_move_insn (reg1, reg2);
   seq = get_insns ();
   end_sequence ();
-  small_cost = seq_cost (seq);
-  pres_cost = 2 * small_cost;
+  target_small_cost = seq_cost (seq);
+  target_pres_cost = 2 * target_small_cost;
 
   start_sequence ();
   emit_move_insn (mem, reg1);
   emit_move_insn (reg2, mem);
   seq = get_insns ();
   end_sequence ();
-  spill_cost = seq_cost (seq);
+  target_spill_cost = seq_cost (seq);
 }
 
 /* Calculates cost for having SIZE new loop global variables.  REGS_USED is the
@@ -550,14 +550,14 @@ global_cost_for_size (unsigned size, unsigned regs_used, unsigned n_uses)
   unsigned regs_needed = regs_used + size;
   unsigned cost = 0;
 
-  if (regs_needed + res_regs <= avail_regs)
-    cost += small_cost * size;
-  else if (regs_needed <= avail_regs)
-    cost += pres_cost * size;
+  if (regs_needed + target_res_regs <= target_avail_regs)
+    cost += target_small_cost * size;
+  else if (regs_needed <= target_avail_regs)
+    cost += target_pres_cost * size;
   else
     {
-      cost += pres_cost * size;
-      cost += spill_cost * n_uses * (regs_needed - avail_regs) / regs_needed;
+      cost += target_pres_cost * size;
+      cost += target_spill_cost * n_uses * (regs_needed - target_avail_regs) / regs_needed;
     }
 
   return cost;

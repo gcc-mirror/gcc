@@ -325,6 +325,23 @@ DEFPARAM(PARAM_LIM_EXPENSIVE,
 	 "The minimum cost of an expensive expression in the loop invariant motion",
 	 20)
 
+/* Bound on number of candidates for induction variables below that
+   all candidates are considered for each use in induction variable
+   optimizations.  */
+
+DEFPARAM(PARAM_IV_CONSIDER_ALL_CANDIDATES_BOUND,
+	 "iv-consider-all-candidates-bound",
+	 "Bound on number of candidates below that all candidates are considered in iv optimizations",
+	 30)
+
+/* The induction variable optimizations give up on loops that contain more
+   induction variable uses.  */
+
+DEFPARAM(PARAM_IV_MAX_CONSIDERED_USES,
+	 "iv-max-considered-uses",
+	 "Bound on number of iv uses in loop optimized in iv optimizations",
+	 250)
+
 /* The product of the next two is used to decide whether or not to
    use .GLOBAL_VAR.  See tree-dfa.c.  */
 DEFPARAM(PARAM_GLOBAL_VAR_THRESHOLD,

@@ -50,15 +50,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static struct gimplify_ctx
 {
   tree current_bind_expr;
-  bool save_stack;
   tree temps;
   tree conditional_cleanups;
-  int conditions;
   tree exit_label;
   tree return_temp;
   varray_type case_labels;
   /* The formal temporary table.  Should this be persistent?  */
   htab_t temp_htab;
+  int conditions;
+  bool save_stack;
+  bool into_ssa;
 } *gimplify_ctxp;
 
 
@@ -477,6 +478,12 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
 
   /* gimplify_modify_expr might want to reduce this further.  */
   gimplify_and_add (mod, pre_p);
+
+  /* If we're gimplifying into ssa, gimplify_modify_expr will have
+     given our temporary an ssa name.  Find and return it.  */
+  if (gimplify_ctxp->into_ssa)
+    t = TREE_OPERAND (mod, 0);
+
   return t;
 }
 
@@ -2875,6 +2882,15 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 	}
     }
 
+  if (gimplify_ctxp->into_ssa && is_gimple_reg (*to_p))
+    {
+      /* If we've somehow already got an SSA_NAME on the LHS, then
+	 we're probably modifying it twice.  Not good.  */
+      if (TREE_CODE (*to_p) == SSA_NAME)
+	abort ();
+      *to_p = make_ssa_name (*to_p, *expr_p);
+    }
+
   if (want_value)
     {
       append_to_statement_list (*expr_p, pre_p);
@@ -4048,7 +4064,9 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	*expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
       else
 	*expr_p = get_formal_tmp_var (*expr_p, pre_p);
-      DECL_GIMPLE_FORMAL_TEMP_P (*expr_p) = 1;
+
+      if (TREE_CODE (*expr_p) != SSA_NAME)
+	DECL_GIMPLE_FORMAL_TEMP_P (*expr_p) = 1;
     }
   else if (fallback & fb_mayfail)
     {
@@ -4325,6 +4343,45 @@ gimplify_function_tree (tree fndecl)
     }
 
   current_function_decl = oldfn;
+}
+
+
+/* Expands EXPR to list of gimple statements STMTS.  If SIMPLE is true,
+   force the result to be either ssa_name or an invariant, otherwise
+   just force it to be a rhs expression.  If VAR is not NULL, make the
+   base variable of the final destination be VAR if suitable.  */
+
+tree
+force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
+{
+  tree t;
+  enum gimplify_status ret;
+  gimple_predicate gimple_test_f;
+
+  *stmts = NULL_TREE;
+
+  if (is_gimple_val (expr))
+    return expr;
+
+  gimple_test_f = simple ? is_gimple_val : is_gimple_reg_rhs;
+
+  push_gimplify_context ();
+  gimplify_ctxp->into_ssa = true;
+
+  if (var)
+    expr = build (MODIFY_EXPR, TREE_TYPE (var), var, expr);
+
+  ret = gimplify_expr (&expr, stmts, NULL,
+		       gimple_test_f, fb_rvalue);
+  if (ret == GS_ERROR)
+    abort ();
+
+  for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
+    add_referenced_tmp_var (t);
+
+  pop_gimplify_context (NULL);
+
+  return expr;
 }
 
 #include "gt-gimplify.h"

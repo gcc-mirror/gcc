@@ -381,6 +381,11 @@ loop using it, in case when a complicated analysis is necessary to determine
 the number of iterations.  Later optimizations then may determine the number
 easily.  The pass is implemented in @file{tree-ssa-loop-ivcanon.c}.
 
+Induction variable optimizations.  This pass performs standard induction
+variable optimizations, including strength reduction, induction variable
+merging and induction variable elimination.  The pass is implemented in
+@file{tree-ssa-loop-ivopts.c}.
+
 The optimizations also use various utility functions contained in
 @file{tree-ssa-loop-manip.c}, @file{cfgloop.c}, @file{cfgloopanal.c} and
 @file{cfgloopmanip.c}.

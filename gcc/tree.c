@@ -444,6 +444,41 @@ build_int_cstu (tree type, unsigned HOST_WIDE_INT low)
   return build_int_cst_wide (type, low, 0);
 }
 
+/* Create an INT_CST node with a LOW value zero or sign extended depending
+   on the type.  */
+
+tree
+build_int_cst_type (tree type, HOST_WIDE_INT low)
+{
+  unsigned HOST_WIDE_INT val = (unsigned HOST_WIDE_INT) low;
+  unsigned bits;
+  bool signed_p;
+  bool negative;
+  tree ret;
+
+  if (!type)
+    type = integer_type_node;
+
+  bits = TYPE_PRECISION (type);
+  signed_p = !TYPE_UNSIGNED (type);
+  negative = ((val >> (bits - 1)) & 1) != 0;
+
+  if (signed_p && negative)
+    {
+      if (bits < HOST_BITS_PER_WIDE_INT)
+	val = val | ((~(unsigned HOST_WIDE_INT) 0) << bits);
+      ret = build_int_cst_wide (type, val, ~(unsigned HOST_WIDE_INT) 0);
+    }
+  else
+    {
+      if (bits < HOST_BITS_PER_WIDE_INT)
+	val = val & ~((~(unsigned HOST_WIDE_INT) 0) << bits);
+      ret = build_int_cst_wide (type, val, 0);
+    }
+
+  return ret;
+}
+
 /* Create an INT_CST node of TYPE and value HI:LOW.  If TYPE is NULL,
    integer_type_node is used.  */
 
@@ -530,6 +565,22 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
     TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
 
   return t;
+}
+
+/* Checks that X is integer constant that can be expressed in (unsigned)
+   HOST_WIDE_INT without loss of precision.  */
+
+bool
+cst_and_fits_in_hwi (tree x)
+{
+  if (TREE_CODE (x) != INTEGER_CST)
+    return false;
+
+  if (TYPE_PRECISION (TREE_TYPE (x)) > HOST_BITS_PER_WIDE_INT)
+    return false;
+
+  return (TREE_INT_CST_HIGH (x) == 0
+	  || TREE_INT_CST_HIGH (x) == -1);
 }
 
 /* Return a new VECTOR_CST node whose type is TYPE and whose values

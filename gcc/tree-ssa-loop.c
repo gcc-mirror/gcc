@@ -256,6 +256,39 @@ struct tree_opt_pass pass_complete_unroll =
   TODO_dump_func                	/* todo_flags_finish */
 };
 
+/* Induction variable optimizations.  */
+
+static void
+tree_ssa_loop_ivopts (void)
+{
+  if (!current_loops)
+    return;
+
+  tree_ssa_iv_optimize (current_loops);
+}
+
+static bool
+gate_tree_ssa_loop_ivopts (void)
+{
+  return flag_ivopts != 0;
+}
+
+struct tree_opt_pass pass_iv_optimize =
+{
+  "ivopts",				/* name */
+  gate_tree_ssa_loop_ivopts,		/* gate */
+  tree_ssa_loop_ivopts,		       	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_LOOP_IVOPTS,	  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func                	/* todo_flags_finish */
+};
+
 /* Loop optimizer finalization.  */
 
 static void

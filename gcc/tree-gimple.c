@@ -448,6 +448,9 @@ is_gimple_reg (tree t)
 bool
 is_gimple_formal_tmp_var (tree t)
 {
+  if (TREE_CODE (t) == SSA_NAME)
+    return true;
+
   return TREE_CODE (t) == VAR_DECL && DECL_GIMPLE_FORMAL_TEMP_P (t);
 }
 

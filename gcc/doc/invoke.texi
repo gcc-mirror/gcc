@@ -316,7 +316,7 @@ Objective-C and Objective-C++ Dialects}.
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
--ftree-loop-im -ftree-loop-ivcanon @gol
+-ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
 --param @var{name}=@var{value}
@@ -4503,6 +4503,10 @@ determining number of iterations requires complicated analysis.  Later
 optimizations then may determine the number easily.  Useful especially
 in connection with unrolling.
 
+@item -fivopts
+Perform induction variable optimizations (strength reduction, induction
+variable merging and induction variable elimination) on trees.
+
 @item -ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
 references with scalars to prevent committing structures to memory too
@@ -5307,6 +5311,16 @@ The maximum number of branches unswitched in a single loop.
 
 @item lim-expensive
 The minimum cost of an expensive expression in the loop invariant motion.
+
+@item iv-consider-all-candidates-bound
+Bound on number of candidates for induction variables below that
+all candidates are considered for each use in induction variable
+optimizations.  Only the most relevant candidates are considered
+if there are more candidates, to avoid quadratic time complexity.
+
+@item iv-max-considered-uses
+The induction variable optimizations give up on loops that contain more
+induction variable uses.
 
 @item max-iterations-to-track
 
