@@ -102,11 +102,6 @@ static struct globals
   /* The entity that is being mangled.  */
   tree entity;
 
-  /* We are mangling an internal symbol. It is important to keep those
-     involving template parmeters distinct by distinguishing their level
-     and, for non-type parms, their type.  */
-  bool internal_mangling_p;
-
   /* True if the mangling will be different in a future version of the
      ABI.  */
   bool need_abi_warning;
@@ -1006,7 +1001,7 @@ write_unqualified_name (const tree decl)
 	  type = TREE_TYPE (fn_type);
 	}
       else
-	type = TREE_TYPE (DECL_NAME (decl));
+	type = DECL_CONV_FN_TYPE (decl);
       write_conversion_operator_name (type);
     }
   else if (DECL_OVERLOADED_OPERATOR_P (decl))
@@ -2250,15 +2245,6 @@ write_template_param (const tree parm)
   if (parm_index > 0)
     write_unsigned_number (parm_index - 1);
   write_char ('_');
-  if (G.internal_mangling_p)
-    {
-      if (parm_level > 0)
-	write_unsigned_number (parm_level - 1);
-      write_char ('_');
-      if (parm_type)
-	write_type (parm_type);
-      write_char ('_');
-    }
 }
 
 /*  <template-template-param>
@@ -2600,6 +2586,28 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
   return get_identifier (result);
 }
 
+/* This hash table maps TYPEs to the IDENTIFIER for a conversion
+   operator to TYPE.  The nodes are TREE_LISTs whose TREE_PURPOSE is
+   the TYPE and whose TREE_VALUE is the IDENTIFIER.  */
+
+static GTY ((param_is (union tree_node))) htab_t conv_type_names;
+
+/* Hash a node (VAL1) in the table.  */
+
+static hashval_t
+hash_type (const void *val)
+{
+  return htab_hash_pointer (TREE_PURPOSE (*((tree *) val)));
+}
+
+/* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
+
+static int
+compare_type (const void *val1, const void *val2)
+{
+  return TREE_PURPOSE ((tree) val1) == (tree) val2;
+}
+
 /* Return an identifier for the mangled unqualified name for a
    conversion operator to TYPE.  This mangling is not specified by the
    ABI spec; it is only used internally.  */
@@ -2607,33 +2615,22 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
 tree
 mangle_conv_op_name_for_type (const tree type)
 {
+  void **slot;
   tree identifier;
-  const char *mangled_type;
-  char *op_name;
+  char buffer[64];
 
-  /* Build the internal mangling for TYPE.  */
-  G.internal_mangling_p = true;
-  mangled_type = mangle_type_string (type);
-  G.internal_mangling_p = false;
-  
-  /* Allocate a temporary buffer for the complete name.  */
-  op_name = concat ("operator ", mangled_type, NULL);
-  /* Find or create an identifier.  */
-  identifier = get_identifier (op_name);
-  /* Done with the temporary buffer.  */
-  free (op_name);
+  if (conv_type_names == NULL) 
+    conv_type_names = htab_create_ggc (31, &hash_type, &compare_type, NULL);
 
-  /* It had better be a unique mangling for the type.  */
-  if (IDENTIFIER_TYPENAME_P (identifier)
-      && !same_type_p (type, TREE_TYPE (identifier)))
-    {
-      /* In G++ 3.2, the name mangling scheme was ambiguous.  In later
-	 versions of the ABI, this problem has been fixed.  */
-      if (abi_version_at_least (2))
-	abort ();
-      error ("due to a defect in the G++ 3.2 ABI, G++ has assigned the "
-	     "same mangled name to two different types");
-    }
+  slot = htab_find_slot_with_hash (conv_type_names, type, 
+				   htab_hash_pointer (type), INSERT);
+  if (*slot)
+    return TREE_VALUE ((tree) *slot);
+
+  /* Create a unique name corresponding to TYPE.  */
+  sprintf (buffer, "operator %d\n", htab_elements (conv_type_names));
+  identifier = get_identifier (buffer);
+  *slot = build_tree_list (type, identifier);
   
   /* Set bits on the identifier so we know later it's a conversion.  */
   IDENTIFIER_OPNAME_P (identifier) = 1;

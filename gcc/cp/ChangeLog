@@ -1,3 +1,18 @@
+2003-06-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11105
+	* cp-tree.h (DECL_CONV_FN_TYPE): New method.
+	* mangle.c (struct globals): Remove internal_mangling_p.
+	(write_unqualified_name): Use DECL_CONV_FN_TYPE.
+	(write_template_parm): Don't write out the level number.
+	(conv_type_names): New variable.
+	(hash_type): New function.
+	(compare_type): Likewise.
+	(mangle_conv_op_name_for_type): Don't try to mangle conversion
+	operator names.
+	* search.c (lookup_conversion_operator): New function.
+	(lookup_fnfields_1): Use it.
+
 2003-06-17  Andreas Jaeger  <aj@suse.de>
 
 	* except.c: Remove duplicate declaration of push_eh_cleanup.
