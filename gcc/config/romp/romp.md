@@ -801,7 +801,7 @@
 { operands[2] = XEXP (operands[1], 0);
   operands[3] = operand_subword (operands[0], 0, 0, DFmode);
   operands[4] = gen_rtx (MEM, SImode, gen_rtx (REG, SImode, 15));
-  operands[5] = operand_subword (operands[0], 0, 1, DFmode);
+  operands[5] = operand_subword (operands[0], 1, 0, DFmode);
   operands[6] = gen_rtx (MEM, SImode,
 			 gen_rtx (PLUS, SImode, gen_rtx (REG, SImode, 15),
 				  gen_rtx (CONST_INT, VOIDmode, 4)));
