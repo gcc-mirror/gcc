@@ -3519,11 +3519,16 @@ GCC 3.4 changed the default debugging format from STABS to DWARF-2 for
 assembler, this change apparently runs afoul of Sun bug 4910101, for
 which (as of 2004-05-23) there is no fix.  A symptom of the problem is
 that you cannot compile C++ programs like @command{groff} 1.19.1
-without getting messages like @samp{ld: warning: relocation error:
-R_SPARC_UA32 @dots{} external symbolic relocation against
-non-allocatable section .debug_info; cannot be processed at runtime:
-relocation ignored}.  To work around this problem, compile with
-@option{-gstabs+} instead of plain @option{-g}.
+without getting messages similar to the following:
+
+@smallexample
+ld: warning: relocation error: R_SPARC_UA32: @dots{}
+  external symbolic relocation against non-allocatable section
+  .debug_info cannot be processed at runtime: relocation ignored.
+@end smallexample
+
+To work around this problem, compile with @option{-gstabs+} instead of
+plain @option{-g}.
 
 @html
 <hr />

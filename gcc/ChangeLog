@@ -1,3 +1,7 @@
+2004-09-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/install.texi (sparc-sun-solaris2*): Properly format warning.
+
 2004-09-14  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/17186
