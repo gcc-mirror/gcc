@@ -1241,7 +1241,6 @@ loop_split_edge_with (edge e, rtx insns)
 {
   basic_block src, dest, new_bb;
   struct loop *loop_c;
-  edge new_e;
 
   src = e->src;
   dest = e->dest;
@@ -1252,14 +1251,7 @@ loop_split_edge_with (edge e, rtx insns)
 
   new_bb = split_edge (e);
   add_bb_to_loop (new_bb, loop_c);
-  new_bb->flags = insns ? BB_SUPERBLOCK : 0;
-
-  new_e = EDGE_SUCC (new_bb, 0);
-  if (e->flags & EDGE_IRREDUCIBLE_LOOP)
-    {
-      new_bb->flags |= BB_IRREDUCIBLE_LOOP;
-      new_e->flags |= EDGE_IRREDUCIBLE_LOOP;
-    }
+  new_bb->flags |= (insns ? BB_SUPERBLOCK : 0);
 
   if (insns)
     emit_insn_after (insns, BB_END (new_bb));
