@@ -1296,6 +1296,13 @@ ia64*-*-hpux*)
 ip2k-*-elf)
 	tm_file="elfos.h ${tm_file}"
 	;;
+iq2000*-*-elf*)
+        tm_file="iq2000/iq2000.h"
+        tmake_file=iq2000/t-iq2000
+        out_file=iq2000/iq2000.c
+        xm_file=iq2000/xm-iq2000.h
+        md_file=iq2000/iq2000.md
+        ;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o"

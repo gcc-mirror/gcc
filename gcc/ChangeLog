@@ -1,3 +1,9 @@
+2003-08-08  Stan Cox  <scox@redhat.com>
+
+	* config/iq2000: New port.
+	* config.gcc (iq2000-*-elf): Added.
+	* doc/install.texi (Specific):  Add iq2000 description.
+
 2003-08-08  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in (gcc_cv_as_ia64_ltoffx_ldxmov_relocs): Fix quoting
