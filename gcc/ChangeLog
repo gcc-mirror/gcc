@@ -1,3 +1,12 @@
+2003-09-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*adddi3_carry1_cc", "*adddi3_carry1_cconly",
+	"*adddi3_carry2_cc", "*adddi3_carry2_cconly", "*subdi3_borrow_cc",
+	"*subdi3_borrow_cconly"): New insns.
+	("*addsi3_sub", "*subsi3_sub"): Remove.
+	("*subdi3_cc", *subdi3_cconly"): Use only if TARGET_64BIT.
+	("*subsi3_cc"): Fix op_type attribute.
+
 2003-09-28  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (expand_asm_operands): Take a location_t, instead of
