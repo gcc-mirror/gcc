@@ -2944,19 +2944,15 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
   if (decl != 0
       && VALID_MACHINE_DECL_ATTRIBUTE (decl, decl_attr_list, attr_name))
     {
-      tree attr_list;
-      int in_list = 0;
+      if (! attribute_in_list (new_attr, decl_attr_list))
+	{
+	  decl_attr_list = tree_cons (NULL_TREE, new_attr, decl_attr_list);
 
-      for (attr_list = decl_attr_list; 
-           attr_list;
-           attr_list = TREE_CHAIN (attr_list))
-	if (TREE_VALUE (attr_list) == attr_name)
-	  in_list = 1;
+	  /* Declarations are unique, build_decl_attribute_variant modifies
+	     the existing decl in situ.  */
+	  decl = build_decl_attribute_variant (decl, decl_attr_list);
+	}
 
-      if (! in_list)
-        decl_attr_list = tree_cons (NULL_TREE, attr_name, decl_attr_list);
-
-      decl = build_decl_attribute_variant (decl, decl_attr_list);
       valid = 1;
     }
 #endif
@@ -2964,19 +2960,11 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
   if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name))
     {
-      tree attr_list;
-      int in_list = 0;
-
-      for (attr_list = type_attr_list;
-           attr_list;
-	   attr_list = TREE_CHAIN (attr_list))
-	if (TREE_VALUE (attr_list) == attr_name)
-	  in_list = 1;
-
-      if (! in_list)
-        type_attr_list = tree_cons (NULL_TREE, attr_name, type_attr_list);
-
-      type = build_type_attribute_variant (type, type_attr_list);
+      if (! attribute_in_list (new_attr, type_attr_list))
+	{
+	  type_attr_list = tree_cons (NULL_TREE, new_attr, type_attr_list);
+	  type = build_type_attribute_variant (type, type_attr_list);
+	}
       if (decl != 0)
 	TREE_TYPE (decl) = type;
       valid = 1;
@@ -3208,6 +3196,41 @@ type_hash_canon (hashcode, type)
   return type;
 }
 
+/* Given an attribute and a list of attributes, return true if the attribute
+   is part of the list.  */
+
+int
+attribute_in_list (attribute, list)
+     tree attribute, list;
+{
+  register tree purpose, chain;
+
+  /* Perform a quick check.  */
+  if (value_member (attribute, list))
+     return 1;
+
+  /* If it's not a TREE_LIST, we should have had a match by now.  */
+  if (TREE_CODE (attribute) != TREE_LIST)
+     return 0;
+
+  purpose = TREE_PURPOSE (attribute);
+  chain = TREE_CHAIN (attribute);
+
+  for (; list; list = TREE_CHAIN (list))
+    {
+      register tree value;
+
+      value = TREE_VALUE (list);
+
+      if (TREE_CODE (value) == TREE_LIST
+          && TREE_PURPOSE (value) == purpose
+          && simple_cst_equal (TREE_CHAIN (value), chain) == 1)
+	 return 1;
+    }
+
+  return 0;
+}
+
 /* Given two lists of attributes, return true if list l2 is
    equivalent to l1.  */
 
@@ -3243,8 +3266,9 @@ attribute_list_contained (l1, l2)
      return 1;
 
   for (; t2; t2 = TREE_CHAIN (t2))
-     if (!value_member (l1, t2))
+     if (! attribute_in_list (TREE_VALUE (t2), l1))
 	return 0;
+
   return 1;
 }
 
