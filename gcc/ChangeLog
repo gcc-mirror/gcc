@@ -1,3 +1,21 @@
+2002-08-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov.c (bb_file_time): New static variable.
+	(object_directory): May also be object file.
+	(preserve_paths): New static variable.
+	(print_usage): Adjust.
+	(options): Adjust.
+	(process_args): Adjust.
+	(open_files): Simplify. Cope when OBJECT_DIRECTORY is an object
+	file. Find modification date on bb file.
+	(read_profile): Don't rewind a NULL file.
+	(format_hwint): New static function.
+	(function_summary): Use format_hwint.
+	(output_data): SOURCE_FILE_NAME is never relative to
+	OBJECT_DIRECTORY. Use format_hwint. Adjust gcov file name
+	mangling. Adjust output format to make it more machine readable.
+	* doc/gcov.texi: Document & clarify semantics.
+	
 2002-08-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/include/gcc-common.texi (version-GCC): Increase to 3.3.
