@@ -144,14 +144,14 @@ static const char* apzAab_Fd_Zero_Asm_Posix_Types_HPatch[] = {
 #define __FD_ZERO(fdsetp) \\\n\
   do { \\\n\
     int __d0, __d1; \\\n\
-\t\t__asm__ __volatile__(\"cld ; rep ; stosl\" \\\n\
-\t\t\t: \"=&c\" (__d0), \"=&D\" (__d1) \\\n\
-\t\t\t: \"a\" (0), \"0\" (__FDSET_LONGS), \\\n\
-\t\t\t  \"1\" ((__kernel_fd_set *) (fdsetp)) :\"memory\"); \\\n\
+__asm__ __volatile__(\"cld ; rep ; stosl\" \\\n\
+: \"=&c\" (__d0), \"=&D\" (__d1) \\\n\
+: \"a\" (0), \"0\" (__FDSET_LONGS), \\\n\
+  \"1\" ((__kernel_fd_set *) (fdsetp)) :\"memory\"); \\\n\
   } while (0)\n\
 #endif\n\n\
 #define _POSIX_TYPES_H_WRAPPER\n\
-#endif /* _POSIX_TYPES_H_WRAPPER */\n",
+#endif /* _POSIX_TYPES_H_WRAPPER */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3764,13 +3764,20 @@ tSCC zStrict_Ansi_NotSelect0[] =
        "^([ \t]*#[ \t]*if.*)(!__STDC__|__STDC__[ \t]*==[ \t]*0|__STDC__[ \t]*!=[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)";
 
 /*
+ *  content bypass pattern - skip fix if pattern found
+ */
+tSCC zStrict_Ansi_NotBypass0[] =
+       "GNU and MIPS C compilers define __STDC__ differently";
+
+/*
  *  perform the C function call test
  */
 tSCC zStrict_Ansi_NotFTst0[] = "stdc_0_in_system_headers";
 
-#define    STRICT_ANSI_NOT_TEST_CT  2
+#define    STRICT_ANSI_NOT_TEST_CT  3
 static tTestDesc aStrict_Ansi_NotTests[] = {
   { TT_FUNCTION, zStrict_Ansi_NotFTst0,   0 /* unused */ },
+  { TT_NEGREP,   zStrict_Ansi_NotBypass0, (regex_t*)NULL },
   { TT_EGREP,    zStrict_Ansi_NotSelect0, (regex_t*)NULL }, };
 
 /*
@@ -5428,7 +5435,7 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          146
+#define REGEX_COUNT          147
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            138
 
