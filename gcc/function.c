@@ -4347,11 +4347,7 @@ assign_parms (tree fndecl)
     fnargs = split_complex_args (fnargs);
 
 #ifdef REG_PARM_STACK_SPACE
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
-#else
   reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
-#endif
 #endif
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
@@ -4554,12 +4550,9 @@ assign_parms (tree fndecl)
 	  partial = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, promoted_mode,
 						passed_type, named_arg);
 	  if (partial
-#ifndef MAYBE_REG_PARM_STACK_SPACE
 	      /* The caller might already have allocated stack space
 		 for the register parameters.  */
-	      && reg_parm_stack_space == 0
-#endif
-	      )
+	      && reg_parm_stack_space == 0)
 	    {
 	      /* Part of this argument is passed in registers and part
 		 is passed on the stack.  Ask the prologue code to extend
@@ -4660,16 +4653,10 @@ assign_parms (tree fndecl)
       if (entry_parm == stack_parm
 	  || (GET_CODE (entry_parm) == PARALLEL
 	      && XEXP (XVECEXP (entry_parm, 0, 0), 0) == NULL_RTX)
-#if defined (REG_PARM_STACK_SPACE) && ! defined (MAYBE_REG_PARM_STACK_SPACE)
+#if defined (REG_PARM_STACK_SPACE)
 	  /* On some machines, even if a parm value arrives in a register
-	     there is still an (uninitialized) stack slot allocated for it.
-
-	     ??? When MAYBE_REG_PARM_STACK_SPACE is defined, we can't tell
-	     whether this parameter already has a stack slot allocated,
-	     because an arg block exists only if current_function_args_size
-	     is larger than some threshold, and we haven't calculated that
-	     yet.  So, for now, we just assume that stack slots never exist
-	     in this case.  */
+	     there is still an (uninitialized) stack slot allocated
+	     for it.  */
 	  || REG_PARM_STACK_SPACE (fndecl) > 0
 #endif
 	  )
@@ -5292,10 +5279,8 @@ assign_parms (tree fndecl)
      minimum length.  */
 
 #ifdef REG_PARM_STACK_SPACE
-#ifndef MAYBE_REG_PARM_STACK_SPACE
   current_function_args_size = MAX (current_function_args_size,
 				    REG_PARM_STACK_SPACE (fndecl));
-#endif
 #endif
 
   current_function_args_size
@@ -5490,11 +5475,7 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
   int part_size_in_regs;
 
 #ifdef REG_PARM_STACK_SPACE
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
-#else
   reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
-#endif
 
   /* If we have found a stack parm before we reach the end of the
      area reserved for registers, skip that area.  */

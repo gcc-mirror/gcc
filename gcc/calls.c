@@ -1349,11 +1349,6 @@ compute_argument_block_size (int reg_parm_stack_space,
       args_size->constant = MAX (args_size->constant,
 				 reg_parm_stack_space);
 
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-      if (reg_parm_stack_space == 0)
-	args_size->constant = 0;
-#endif
-
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
       args_size->constant -= reg_parm_stack_space;
 #endif
@@ -1735,11 +1730,7 @@ try_to_integrate (tree fndecl, tree actparms, rtx target, int ignore,
   int reg_parm_stack_space = 0;
 
 #ifdef REG_PARM_STACK_SPACE
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
-#else
   reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
-#endif
 #endif
 
   before_call = get_last_insn ();
@@ -2265,11 +2256,7 @@ expand_call (tree exp, rtx target, int ignore)
     }
 
 #ifdef REG_PARM_STACK_SPACE
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
-#else
   reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
-#endif
 #endif
 
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
@@ -2729,10 +2716,6 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass && (flags & ECF_LIBCALL_BLOCK))
 	NO_DEFER_POP;
 
-#ifdef FINAL_REG_PARM_STACK_SPACE
-      reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
-							 args_size.var);
-#endif
       /* Precompute any arguments as needed.  */
       if (pass)
 	precompute_arguments (flags, num_actuals, args);
@@ -3695,11 +3678,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   rtx struct_value = targetm.calls.struct_value_rtx (0, 0);
 
 #ifdef REG_PARM_STACK_SPACE
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
-#else
   reg_parm_stack_space = REG_PARM_STACK_SPACE ((tree) 0);
-#endif
 #endif
 
   /* By default, library functions can not throw.  */
@@ -3951,10 +3930,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree) 0, 1);
     }
 
-#ifdef FINAL_REG_PARM_STACK_SPACE
-  reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
-						     args_size.var);
-#endif
   /* If this machine requires an external definition for library
      functions, write one out.  */
   assemble_external_libcall (fun);

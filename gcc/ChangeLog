@@ -1,5 +1,15 @@
 2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* calls.c: Don't reference FINAL_REG_PARM_STACK_SPACE or
+	MAYBE_REG_PARM_STACK_SPACE.
+	* function.c: Likewise.
+	* system.h (FINAL_REG_PARM_STACK_SPACE): Poison.
+	(MAYBE_REG_PARM_STACK_SPACE): Likewise.
+	* doc/tm.texi (FINAL_REG_PARM_STACK_SPACE): Remove.
+	(MAYBE_REG_PARM_STACK_SPACE): Likewise.
+
+2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-decl.c (c_expand_deferred_function): Remove.
 	* c-tree.h: Remove the corresponding prototype.
 
