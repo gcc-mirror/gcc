@@ -206,7 +206,7 @@ public abstract class Signature extends SignatureSpi
   {
     if (provider == null || provider.length() == 0)
       throw new IllegalArgumentException("Illegal provider");
-    
+
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
@@ -251,16 +251,16 @@ public abstract class Signature extends SignatureSpi
 
     if (o instanceof SignatureSpi)
       {
-	result = new DummySignature((SignatureSpi) o, algorithm);
+        result = new DummySignature((SignatureSpi) o, algorithm);
       }
     else if (o instanceof Signature)
       {
-	result = (Signature) o;
-	result.algorithm = algorithm;
+        result = (Signature) o;
+        result.algorithm = algorithm;
       }
     else
       {
-	throw new NoSuchAlgorithmException(algorithm);
+        throw new NoSuchAlgorithmException(algorithm);
       }
     result.provider = provider;
     return result;
@@ -313,9 +313,9 @@ public abstract class Signature extends SignatureSpi
     if (certificate.getType().equals("X509"))
       {
         X509Certificate cert = (X509Certificate) certificate;
-	boolean[]array = cert.getKeyUsage();
-	if (array != null && array[0] == false)
-	  throw new InvalidKeyException(
+        boolean[]array = cert.getKeyUsage();
+        if (array != null && array[0] == false)
+          throw new InvalidKeyException(
               "KeyUsage of this Certificate indicates it cannot be used for digital signing");
       }
     this.initVerify(certificate.getPublicKey());
@@ -627,6 +627,6 @@ public abstract class Signature extends SignatureSpi
    */
   public Object clone() throws CloneNotSupportedException
   {
-    throw new CloneNotSupportedException();
+    return super.clone();
   }
 }
