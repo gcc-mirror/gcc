@@ -164,6 +164,9 @@ case "${host}" in
   i[3456]86-*-sco*)
     host_makefile_frag="${host_makefile_frag} config/mh-sco"
     ;;
+  i[3456]86-*-udk*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv5"
+    ;;
   i[3456]86-*-isc*)
     host_makefile_frag="${host_makefile_frag} config/mh-sysv"
     ;;

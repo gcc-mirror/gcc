@@ -1,3 +1,8 @@
+Wed Sep 30 22:20:50 1998  Robert Lipe  <robertl@dgii.com>
+	
+	* config.sub: Add support for i[34567]86-pc-udk.
+	* configure.in: Likewise.
+
 Wed Sep 30 03:00:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (TARGET_CONFIGDIRS): Add libobjc.
