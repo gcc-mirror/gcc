@@ -1770,7 +1770,7 @@ load_register_parameters (args, num_actuals, call_fusage, flags,
 
 	  /* When a parameter is a block, and perhaps in other cases, it is
 	     possible that it did a load from an argument slot that was
-	     already clobbered. */
+	     already clobbered.  */
 	  if (is_sibcall
 	      && check_sibcall_argument_overlap (before_arg, &args[i], 0))
 	    *sibcall_failure = 1;

@@ -3267,7 +3267,7 @@ loop_invariant_p (loop, x)
 
       /* Out-of-range regs can occur when we are called from unrolling.
 	 These have always been created by the unroller and are set in
-	 the loop, hence are never invariant. */
+	 the loop, hence are never invariant.  */
 
       if (REGNO (x) >= (unsigned) regs->num)
 	return 0;

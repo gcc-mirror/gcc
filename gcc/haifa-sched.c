@@ -1543,7 +1543,7 @@ rm_other_notes (head, tail)
 
 /* This function looks for a new register being defined.
    If the destination register is already used by the source,
-   a new register is not needed. */
+   a new register is not needed.  */
 
 static int
 find_set_reg_weight (x)
@@ -2263,7 +2263,7 @@ schedule_block (b, rgn_n_insns)
 
 	  /* Sort the ready list based on priority.  This must be
 	     redone here, as schedule_insn may have readied additional
-	     insns that will not be sorted correctly. */
+	     insns that will not be sorted correctly.  */
 	  if (ready.n_ready > 0)
 	    ready_sort (&ready);
 

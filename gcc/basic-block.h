@@ -117,7 +117,7 @@ do {									\
    64bit.  Although a counter cannot be negative, we use a signed
    type, because erroneous negative counts can be generated when the
    flow graph is manipulated by various optimizations.  A signed type
-   makes those easy to detect. */
+   makes those easy to detect.  */
 typedef HOST_WIDEST_INT gcov_type;
 
 /* Control flow edge information.  */

@@ -74,7 +74,7 @@ struct block_info;
 
 typedef struct arc_info
 {
-  /* source and destination blocks. */
+  /* source and destination blocks.  */
   struct block_info *src;
   struct block_info *dst;
 
@@ -106,11 +106,11 @@ typedef struct block_info
   arc_t *succ;
   arc_t *pred;
 
-  /* Number of unprocessed exit and entry arcs. */
+  /* Number of unprocessed exit and entry arcs.  */
   gcov_type num_succ;
   gcov_type num_pred;
 
-  /* Block execution count. */
+  /* Block execution count.  */
   gcov_type count;
   unsigned count_valid : 1;
   unsigned valid_chain : 1;
@@ -122,7 +122,7 @@ typedef struct block_info
   unsigned *encoding;
   unsigned num_encodings;
 
-  /* Temporary chain for solving graph. */
+  /* Temporary chain for solving graph.  */
   struct block_info *chain;
   
 } block_t;
@@ -171,7 +171,7 @@ typedef struct line_info
 {
   gcov_type count;	   /* execution count */
   arc_t *branches; 	   /* branches from blocks that end on this
-			      line. */
+			      line.  */
   unsigned exists : 1;
 } line_t;
 
@@ -184,7 +184,7 @@ typedef struct source_info
   char *name;
   unsigned index;
 
-  /* Array of line information. */
+  /* Array of line information.  */
   line_t *lines;
   unsigned num_lines;
 
@@ -202,7 +202,7 @@ static function_t *functions;
 
 static source_t *sources;
 
-/* Modification time of graph file. */
+/* Modification time of graph file.  */
 
 static time_t bbg_file_time;
 
@@ -245,7 +245,7 @@ static char *object_directory = 0;
 static int flag_preserve_paths = 0;
 
 /* Output the number of times a branch was taken as opposed to the percentage
-   of times it was taken. */
+   of times it was taken.  */
 
 static int flag_counts = 0;
 
@@ -977,8 +977,8 @@ solve_flow_graph (fn)
   unsigned ix;
   arc_t *arc;
   gcov_type *count_ptr = fn->counts;
-  block_t *valid_blocks = NULL;    /* valid, but unpropagated blocks. */
-  block_t *invalid_blocks = NULL;  /* invalid, but inferable blocks. */
+  block_t *valid_blocks = NULL;    /* valid, but unpropagated blocks.  */
+  block_t *invalid_blocks = NULL;  /* invalid, but inferable blocks.  */
   
   if (fn->num_blocks < 2)
     fnotice (stderr, "%s:`%s' lacks entry and/or exit blocks\n",
@@ -1027,7 +1027,7 @@ solve_flow_graph (fn)
       /* Sort the successor arcs into ascending dst order. profile.c
 	 normally produces arcs in the right order, but sometimes with
 	 one or two out of order.  We're not using a particularly
-	 smart sort. */
+	 smart sort.  */
       if (out_of_order)
 	{
 	  arc_t *start = fn->blocks[ix].succ;
@@ -1380,7 +1380,7 @@ add_line_counts (coverage, fn)
   line_t *line = NULL; /* this is propagated from one iteration to the
 			  next.  */
 
-  /* Scan each basic block. */
+  /* Scan each basic block.  */
   for (ix = 0; ix != fn->num_blocks; ix++)
     {
       const block_t *block = &fn->blocks[ix];
@@ -1434,7 +1434,7 @@ add_line_counts (coverage, fn)
     fnotice (stderr, "%s:no lines for `%s'\n", bbg_file_name, fn->name);
 }
 
-/* Accumulate the line counts of a file. */
+/* Accumulate the line counts of a file.  */
 
 static void
 accumulate_line_counts (src)
@@ -1447,7 +1447,7 @@ accumulate_line_counts (src)
     {
       arc_t *arc, *arc_p, *arc_n;
       
-      /* Total and reverse the branch information. */
+      /* Total and reverse the branch information.  */
       for (arc = line->branches, arc_p = NULL; arc; arc_p = arc, arc = arc_n)
 	{
 	  arc_n = arc->line_next;

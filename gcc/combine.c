@@ -4350,7 +4350,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	}
 
        /* Canonicalize (minus (neg A) (mult B C)) to 
-	  (minus (mult (neg B) C) A). */
+	  (minus (mult (neg B) C) A).  */
       if (GET_CODE (XEXP (x, 1)) == MULT 
 	  && GET_CODE (XEXP (x, 0)) == NEG)
 	{
