@@ -5460,6 +5460,22 @@ handle_spec_function (const char *p)
 static inline bool
 input_suffix_matches (const char *atom, const char *end_atom)
 {
+  /* We special case the semantics of {.s:...} and {.S:...} and their
+     negative variants.  Instead of testing the input filename suffix,
+     we test whether the input source file is an assembler file or an
+     assembler-with-cpp file respectively.  This allows us to correctly
+     handle the -x command line option.  */
+
+  if (atom + 1 == end_atom
+      && input_file_compiler
+      && input_file_compiler->suffix)
+    {
+      if (*atom == 's')
+	return !strcmp (input_file_compiler->suffix, "@assembler");
+      if (*atom == 'S')
+	return !strcmp (input_file_compiler->suffix, "@assembler-with-cpp");
+    }
+
   return (input_suffix
 	  && !strncmp (input_suffix, atom, end_atom - atom)
 	  && input_suffix[end_atom - atom] == '\0');
