@@ -3,7 +3,7 @@
 program main
   type xyz
      integer :: x = 123
-  end
+  end type xyz
 
   type (xyz) :: a  !! ok
   type (xyz) b    !!! not initialized !!!
