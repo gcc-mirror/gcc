@@ -1,3 +1,7 @@
+2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.target/mips/fix-vr4130-[1-4].c: New tests.
+
 2005-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20157

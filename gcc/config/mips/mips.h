@@ -111,6 +111,7 @@ extern const char *mips_tune_string;    /* for -mtune=<xxx> */
 extern const char *mips_isa_string;	/* for -mips{1,2,3,4} */
 extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
+extern const char *mips_fix_vr4130_string;
 extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
@@ -235,6 +236,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 					/* Work around R4400 errata.  */
 #define TARGET_FIX_R4400	((target_flags & MASK_FIX_R4400) != 0)
 #define TARGET_FIX_VR4120	((target_flags & MASK_FIX_VR4120) != 0)
+#define TARGET_FIX_VR4130	(mips_fix_vr4130_string != 0)
 #define TARGET_VR4130_ALIGN	((target_flags & MASK_VR4130_ALIGN) != 0)
 
 #define TARGET_FP_EXCEPTIONS	((target_flags & MASK_FP_EXCEPTIONS) != 0)
@@ -788,6 +790,8 @@ extern const struct mips_cpu_info *mips_tune_info;
       N_("Don't call any cache flush functions"), 0},			\
   { "flush-func=", &mips_cache_flush_func,				\
       N_("Specify cache flush function"), 0},				\
+  { "fix-vr4130", &mips_fix_vr4130_string,				\
+      N_("Work around VR4130 mflo/mfhi errata"), 0},			\
 }
 
 /* This is meant to be redefined in the host dependent files.  */
@@ -932,6 +936,11 @@ extern const struct mips_cpu_info *mips_tune_info;
                                  || TARGET_MIPS5500                     \
                                  || TARGET_SR71K                        \
                                  )
+
+/* ISA has NEC VR-style MACC, MACCHI, DMACC and DMACCHI instructions.  */
+#define ISA_HAS_MACCHI		(!TARGET_MIPS16				\
+				 && (TARGET_MIPS4120			\
+				     || TARGET_MIPS4130))
 
 /* ISA has 32-bit rotate right instruction.  */
 #define ISA_HAS_ROTR_SI         (!TARGET_MIPS16                         \
@@ -1088,7 +1097,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 %{mips32} %{mips32r2} %{mips64} \
 %{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
 %{mips3d:-mips3d} \
-%{mfix-vr4120} \
+%{mfix-vr4120} %{mfix-vr4130} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
 %{mabi=*} %{!mabi*: %(asm_abi_default_spec)} \

@@ -562,6 +562,9 @@ int mips16_hard_float;
 
 const char *mips_cache_flush_func = CACHE_FLUSH_FUNC;
 
+/* Holds string <X> if -mfix-vr4130<X> was passed on the command line.  */
+const char *mips_fix_vr4130_string;
+
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
 
@@ -4134,6 +4137,9 @@ override_options (void)
   /* Deprecate -mint64. Remove after 4.0 branches.  */
   if (TARGET_INT64)
     warning ("-mint64 is a deprecated option");
+
+  if (mips_fix_vr4130_string && mips_fix_vr4130_string[0] != 0)
+    error ("unrecognized option %<-mfix-vr4130%s%>", mips_fix_vr4130_string);
 
   if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
       && (target_flags_explicit & MASK_SOFT_FLOAT) == 0)
@@ -8294,10 +8300,24 @@ mips_avoid_hazards (void)
   cfun->machine->ignore_hazard_length_p = true;
   shorten_branches (get_insns ());
 
-  /* The profiler code uses assembler macros.  -mfix-vr4120 relies on
-     assembler nop insertion.  */
-  cfun->machine->all_noreorder_p = (!current_function_profile
-				    && !TARGET_FIX_VR4120);
+  cfun->machine->all_noreorder_p = true;
+
+  /* Profiled functions can't be all noreorder because the profiler
+     support uses assembler macros.  */
+  if (current_function_profile)
+    cfun->machine->all_noreorder_p = false;
+
+  /* Code compiled with -mfix-vr4120 can't be all noreorder because
+     we rely on the assembler to work around some errata.  */
+  if (TARGET_FIX_VR4120)
+    cfun->machine->all_noreorder_p = false;
+
+  /* The same is true for -mfix-vr4130 if we might generate mflo or
+     mfhi instructions.  Note that we avoid using mflo and mfhi if
+     the VR4130 macc and dmacc instructions are available instead;
+     see the *mfhilo_{si,di}_macc patterns.  */
+  if (TARGET_FIX_VR4130 && !ISA_HAS_MACCHI)
+    cfun->machine->all_noreorder_p = false;
 
   last_insn = 0;
   hilo_delay = 2;

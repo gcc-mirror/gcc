@@ -1,3 +1,26 @@
+2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (mips_fix_vr4130_string): Declare.
+	(TARGET_FIX_VR4130): New macro.
+	(TARGET_OPTIONS): Add -mfix-vr4130.
+	(ISA_HAS_MACCHI): New macro.
+	(ASM_SPEC): Add -mfix-vr4130.
+	* config/mips/mips.c (mips_fix_vr4130_string): New variable.
+	(override_options): Handle mips_fix_vr4130_string.
+	(mips_avoid_hazards): Clear all_noreorder_p
+	if we're working around VR4130 errata and the macc alternatives
+	are not available.
+	* config/mips/mips.md (mfhilo_<mode>): Turn into a define_expand.
+	(*mfhilo_<mode>, *mfhilo_<mode>_macc): New insns.
+	* config/mips/vr.h (DEFAULT_VR_ARCH): Set to mfix-vr4130.
+	(MULTILIB_DEFAULTS): Remove leading "march=".
+	(DRIVER_SELF_SPECS): Likewise.  Make -mfix-vr4130 imply -march=vr4130
+	if no architecture option is given.
+	* config/mips/t-vr (MULTILIB_OPTIONS): Use -mfix-vr4130 for the
+	VR4130 multilibs.
+	(MULTILIB_MATCHES): Map -march=vr4130 to the -mfix-vr4130 multilibs.
+	* doc/invoke.texi: Document -mfix-vr4130.
+
 2005-03-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19331
