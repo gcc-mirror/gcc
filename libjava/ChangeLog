@@ -1,5 +1,17 @@
 2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
 
+	PR libgcj/14751
+	* win32-threads.cc (_Jv_ThreadInitData): Zero out thread
+	handle in newly-allocated _Jv_Thread_t.
+	(_Jv_ThreadDestroyData): Close thread handle.
+	(_Jv_ThreadStart): Remove obsolete comment.
+	Store handle of newly-created thread in _Jv_Thread_t.
+	* include/win32-threads.h: #define WIN32_LEAN_AND_MEAN
+	before including <windows.h>
+	#define _Jv_HaveCondDestroy
+
+2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* java/lang/natThread.cc (finalize_native): Destroy
 	join conditional variable and mutex if these destroy
 	operations are supported.
