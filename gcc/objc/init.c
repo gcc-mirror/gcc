@@ -77,7 +77,7 @@ objc_init_statics ()
 	   *statics_in_module; statics_in_module++)
 	{
 	  struct objc_static_instances *statics = *statics_in_module;
-	  Class *class = objc_lookup_class (statics->class_name);
+	  Class class = objc_lookup_class (statics->class_name);
 
 	  if (!class)
 	    module_initialized = 0;
