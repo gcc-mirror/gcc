@@ -4233,6 +4233,7 @@ rs6000_eliminate_indexed_memrefs (rtx operands[2])
 {
   if (GET_CODE (operands[0]) == MEM
       && GET_CODE (XEXP (operands[0], 0)) != REG
+      && ! legitimate_constant_pool_address_p (XEXP (operands[0], 0))
       && ! reload_in_progress)
     operands[0]
       = replace_equiv_address (operands[0],
@@ -4240,6 +4241,7 @@ rs6000_eliminate_indexed_memrefs (rtx operands[2])
 
   if (GET_CODE (operands[1]) == MEM
       && GET_CODE (XEXP (operands[1], 0)) != REG
+      && ! legitimate_constant_pool_address_p (XEXP (operands[1], 0))
       && ! reload_in_progress)
     operands[1]
       = replace_equiv_address (operands[1],
@@ -4294,7 +4296,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       return;
     }
 
-  if (!no_new_pseudos && GET_CODE (operands[0]) != REG
+  if (!no_new_pseudos && GET_CODE (operands[0]) == MEM
       && !gpc_reg_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
 
