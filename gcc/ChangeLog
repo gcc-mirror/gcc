@@ -1,3 +1,11 @@
+2001-10-07  Dale Johannesen  <dalej@apple.com>
+
+	* reload1.c (reload_reg_free_p): Teach register interference
+	checking that multiple output reloads are emitted in
+	reverse order.
+	reload1.c (reload_reg_reaches_end_p):  Ditto.
+	reload1.c (reloads_conflict):  Ditto.
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/tm.texi: Consistently put NULL and

@@ -4417,11 +4417,13 @@ reload_reg_free_p (regno, opnum, type)
 
     case RELOAD_FOR_OUTPUT_ADDRESS:
       /* Can't use a register if it is used for an output address for this
-	 operand or used as an output in this or a later operand.  */
+	 operand or used as an output in this or a later operand.  Note
+	 that multiple output operands are emitted in reverse order, so
+	 the conflicting ones are those with lower indices.  */
       if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], regno))
 	return 0;
 
-      for (i = opnum; i < reload_n_operands; i++)
+      for (i = 0; i <= opnum; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
@@ -4430,11 +4432,13 @@ reload_reg_free_p (regno, opnum, type)
     case RELOAD_FOR_OUTADDR_ADDRESS:
       /* Can't use a register if it is used for an output address
 	 for this operand or used as an output in this or a
-	 later operand.  */
+	 later operand.  Note that multiple output operands are
+	 emitted in reverse order, so the conflicting ones are
+	 those with lower indices.  */
       if (TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
 	return 0;
 
-      for (i = opnum; i < reload_n_operands; i++)
+      for (i = 0; i <= opnum; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
@@ -4457,7 +4461,9 @@ reload_reg_free_p (regno, opnum, type)
 
     case RELOAD_FOR_OUTPUT:
       /* This cannot share a register with RELOAD_FOR_INSN reloads, other
-	 outputs, or an operand address for this or an earlier output.  */
+	 outputs, or an operand address for this or an earlier output.
+	 Note that multiple output operands are emitted in reverse order,
+	 so the conflicting ones are those with higher indices.  */
       if (TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno))
 	return 0;
 
@@ -4465,7 +4471,7 @@ reload_reg_free_p (regno, opnum, type)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
-      for (i = 0; i <= opnum; i++)
+      for (i = opnum; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno))
 	  return 0;
@@ -4601,7 +4607,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
       /* These conflict with other outputs with RELOAD_OTHER.  So
 	 we need only check for output addresses.  */
 
-      opnum = -1;
+      opnum = reload_n_operands;
 
       /* ... fall through ...  */
 
@@ -4609,8 +4615,10 @@ reload_reg_reaches_end_p (regno, opnum, type)
     case RELOAD_FOR_OUTPUT_ADDRESS:
     case RELOAD_FOR_OUTADDR_ADDRESS:
       /* We already know these can't conflict with a later output.  So the
-	 only thing to check are later output addresses.  */
-      for (i = opnum + 1; i < reload_n_operands; i++)
+	 only thing to check are later output addresses.
+	 Note that multiple output operands are emitted in reverse order,
+	 so the conflicting ones are those with lower indices.  */
+      for (i = 0; i < opnum; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno))
 	  return 0;
@@ -4662,11 +4670,11 @@ reloads_conflict (r1, r2)
 
     case RELOAD_FOR_OUTPUT_ADDRESS:
       return ((r2_type == RELOAD_FOR_OUTPUT_ADDRESS && r2_opnum == r1_opnum)
-	      || (r2_type == RELOAD_FOR_OUTPUT && r2_opnum >= r1_opnum));
+	      || (r2_type == RELOAD_FOR_OUTPUT && r2_opnum <= r1_opnum));
 
     case RELOAD_FOR_OUTADDR_ADDRESS:
       return ((r2_type == RELOAD_FOR_OUTADDR_ADDRESS && r2_opnum == r1_opnum)
-	      || (r2_type == RELOAD_FOR_OUTPUT && r2_opnum >= r1_opnum));
+	      || (r2_type == RELOAD_FOR_OUTPUT && r2_opnum <= r1_opnum));
 
     case RELOAD_FOR_OPERAND_ADDRESS:
       return (r2_type == RELOAD_FOR_INPUT || r2_type == RELOAD_FOR_INSN
@@ -4680,7 +4688,7 @@ reloads_conflict (r1, r2)
       return (r2_type == RELOAD_FOR_INSN || r2_type == RELOAD_FOR_OUTPUT
 	      || ((r2_type == RELOAD_FOR_OUTPUT_ADDRESS
 		   || r2_type == RELOAD_FOR_OUTADDR_ADDRESS)
-		  && r2_opnum <= r1_opnum));
+		  && r2_opnum >= r1_opnum));
 
     case RELOAD_FOR_INSN:
       return (r2_type == RELOAD_FOR_INPUT || r2_type == RELOAD_FOR_OUTPUT
