@@ -476,7 +476,15 @@ print_operand (file, x, code)
     case 'S':
       {
         /* if it's a referance to a TDA variable, use sst/sld vs. st/ld */
-        if (GET_CODE (x) == MEM && ep_memory_operand (x, GET_MODE (x)))
+        if (GET_CODE (x) == MEM && ep_memory_operand (x, GET_MODE (x), FALSE))
+          fputs ("s", file);
+
+        break;
+      }
+    case 'T':
+      {
+	/* Like an 'S' operand above, but for unsigned loads only.  */
+        if (GET_CODE (x) == MEM && ep_memory_operand (x, GET_MODE (x), TRUE))
           fputs ("s", file);
 
         break;
@@ -702,7 +710,9 @@ output_move_single (operands)
       else if (GET_CODE (src) == LABEL_REF
 	       || GET_CODE (src) == SYMBOL_REF
 	       || GET_CODE (src) == CONST)
-	return "movhi hi(%1),%.,%0\n\tmovea lo(%1),%0,%0";
+	{
+	  return "movhi hi(%1),%.,%0\n\tmovea lo(%1),%0,%0";
+	}
 
       else if (GET_CODE (src) == HIGH)
 	return "movhi hi(%1),%.,%0";
@@ -814,9 +824,10 @@ output_move_double (operands)
 /* Return true if OP is a valid short EP memory reference */
 
 int
-ep_memory_operand (op, mode)
+ep_memory_operand (op, mode, unsigned_load)
      rtx op;
      enum machine_mode mode;
+     int unsigned_load;
 {
   rtx addr, op0, op1;
   int max_offset;
@@ -831,18 +842,18 @@ ep_memory_operand (op, mode)
       return FALSE;
 
     case QImode:
-      max_offset = 128;
+	  max_offset = (1 << 7);
       mask = 0;
       break;
 
     case HImode:
-      max_offset = 256;
+	  max_offset = (1 << 8);
       mask = 1;
       break;
 
     case SImode:
     case SFmode:
-      max_offset = 256;
+      max_offset = (1 << 8);
       mask = 3;
       break;
     }
@@ -1218,7 +1229,7 @@ void v850_reorg (start_insn)
 	      else
 		mem = NULL_RTX;
 
-	      if (mem && ep_memory_operand (mem, GET_MODE (mem)))
+	      if (mem && ep_memory_operand (mem, GET_MODE (mem), FALSE))
 		use_ep = TRUE;
 
 	      else if (!use_ep && mem
@@ -1499,15 +1510,18 @@ expand_prologue ()
 	 stack space is allocated.  */
       if (save_func_len < save_normal_len)
 	{
-	  save_all = gen_rtx (PARALLEL, VOIDmode, rtvec_alloc (num_save + 2));
+	  save_all = gen_rtx (PARALLEL, VOIDmode, rtvec_alloc (num_save + (TARGET_V850 ? 2 : 1)));
 	  XVECEXP (save_all, 0, 0) = gen_rtx (SET, VOIDmode,
 					      stack_pointer_rtx,
 					      gen_rtx (PLUS, Pmode,
 						       stack_pointer_rtx,
 						       GEN_INT (-alloc_stack)));
 
-	  XVECEXP (save_all, 0, num_save+1)
-	    = gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, Pmode, 10));
+	  if (TARGET_V850)
+	    {
+	      XVECEXP (save_all, 0, num_save+1)
+		= gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, Pmode, 10));
+	    }
 
 	  offset = - default_stack;
 	  for (i = 0; i < num_save; i++)
@@ -1555,15 +1569,15 @@ expand_prologue ()
 	    init_stack_alloc = compute_register_save_size (NULL);
 	  else
 	    init_stack_alloc = actual_fsize;
-
+	      
 	  /* Save registers at the beginning of the stack frame */
 	  offset = init_stack_alloc - 4;
-
+	  
 	  if (init_stack_alloc)
 	    emit_insn (gen_addsi3 (stack_pointer_rtx,
 				   stack_pointer_rtx,
 				   GEN_INT (-init_stack_alloc)));
-
+	  
 	  /* Save the return pointer first.  */
 	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == 31)
 	    {
@@ -1573,12 +1587,12 @@ expand_prologue ()
 			      save_regs[--num_save]);
 	      offset -= 4;
 	    }
-
+	  
 	  for (i = 0; i < num_save; i++)
 	    {
 	      emit_move_insn (gen_rtx (MEM, SImode,
 				       plus_constant (stack_pointer_rtx,
-				       offset)),
+						      offset)),
 			      save_regs[i]);
 	      offset -= 4;
 	    }
@@ -1940,3 +1954,366 @@ v850_encode_data_area (decl)
      here to make merges easier.  */
   return;
 }
+
+/* Return true if the given RTX is a register which can be restored
+   by a function epilogue.  */
+int
+register_is_ok_for_epilogue (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* The save/restore routines can only cope with registers 2, and 20 - 31 */
+  return (GET_CODE (op) == REG)
+	  && (((REGNO (op) >= 20) && REGNO (op) <= 31)
+	      || REGNO (op) == 2);
+}
+
+/* Return non-zero if the given RTX is suitable for collapsing into
+   jump to a function epilogue.  */
+int
+pattern_is_ok_for_epilogue (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  int count = XVECLEN (op, 0);
+  int i;
+  
+  /* If there are no registers to restore then the function epilogue
+     is not suitable.  */
+  if (count <= 2)
+    return 0;
+
+  /* The pattern matching has already established that we are performing a
+     function epilogue and that we are popping at least one register.  We must
+     now check the remaining entries in the vector to make sure that they are
+     also register pops.  There is no good reason why there should ever be
+     anything else in this vector, but being paranoid always helps...
+
+     The test below performs the C equivalent of this machine description
+     pattern match:
+
+        (set (match_operand:SI n "register_is_ok_for_epilogue" "r")
+	  (mem:SI (plus:SI (reg:SI 3) (match_operand:SI n "immediate_operand" "i"))))
+     */
+
+  for (i = 3; i < count; i++)
+    {
+      rtx vector_element = XVECEXP (op, 0, i);
+      rtx dest;
+      rtx src;
+      rtx plus;
+      
+      if (GET_CODE (vector_element) != SET)
+	return 0;
+      
+      dest = SET_DEST (vector_element);
+      src = SET_SRC (vector_element);
+
+      if (GET_CODE (dest) != REG
+	  || GET_MODE (dest) != SImode
+	  || ! register_is_ok_for_epilogue (dest, SImode)
+	  || GET_CODE (src) != MEM
+	  || GET_MODE (src) != SImode)
+	return 0;
+
+      plus = XEXP (src, 0);
+
+      if (GET_CODE (plus) != PLUS
+	  || GET_CODE (XEXP (plus, 0)) != REG
+	  || GET_MODE (XEXP (plus, 0)) != SImode
+	  || REGNO (XEXP (plus, 0)) != STACK_POINTER_REGNUM
+	  || GET_CODE (XEXP (plus, 1)) != CONST_INT)
+	return 0;
+    }
+
+  return 1;
+}
+
+/* Construct a JR instruction to a routine that will perform the equivalent of
+   the RTL passed in as an argument.  This RTL is a function epilogue that
+   pops registers off the stack and possibly releases some extra stack space
+   as well.  The code has already verified that the RTL matches these
+   requirements.  */
+char *
+construct_restore_jr (op)
+     rtx op;
+{
+  int count = XVECLEN (op, 0);
+  int stack_bytes;
+  unsigned long int mask;
+  unsigned long int first;
+  unsigned long int last;
+  int i;
+  static char buff [100]; /* XXX */
+  
+  if (count <= 2)
+    {
+      error ("Bogus JR construction: %d\n", count);
+      return NULL;
+    }
+
+  /* Work out how many bytes to pop off the stack before retrieving
+     registers.  */
+  if (GET_CODE (XVECEXP (op, 0, 1)) != SET)
+    abort ();
+  if (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) != PLUS)
+    abort ();
+  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1)) != CONST_INT)
+    abort ();
+    
+  stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1));
+
+  /* Each pop will remove 4 bytes from the stack... */
+  stack_bytes -= (count - 2) * 4;
+
+  /* Make sure that the amount we are popping either 0 or 16 bytes.  */
+  if (stack_bytes != 0 && stack_bytes != 16)
+    {
+      error ("Bad amount of stack space removal: %d", stack_bytes);
+      return NULL;
+    }
+
+  /* Now compute the bit mask of registers to push.  */
+  mask = 0;
+  for (i = 2; i < count; i++)
+    {
+      rtx vector_element = XVECEXP (op, 0, i);
+      
+      if (GET_CODE (vector_element) != SET)
+	abort ();
+      if (GET_CODE (SET_DEST (vector_element)) != REG)
+	abort ();
+      if (! register_is_ok_for_epilogue (SET_DEST (vector_element), SImode))
+	abort ();
+      
+      mask |= 1 << REGNO (SET_DEST (vector_element));
+    }
+
+  /* Scan for the first register to pop.  */
+  for (first = 0; first < 32; first++)
+    {
+      if (mask & (1 << first))
+	break;
+    }
+
+  if (first >= 32)
+    abort ();
+
+  /* Discover the last register to pop.  */
+  if (mask & (1 << 31))
+    {
+      if (stack_bytes != 16)
+	abort ();
+      
+      last = 31;
+    }
+  else
+    {
+      if (stack_bytes != 0)
+	abort ();
+      if ((mask & (1 << 29)) == 0)
+	abort ();
+      
+      last = 29;
+    }
+
+  /* Paranoia */
+  for (i = (first == 2 ? 20 : first + 1); i < 29; i++)
+    if ((mask & (1 << i)) == 0)
+      abort ();
+
+  if (first == last)
+    sprintf (buff, "jr __return_%s", reg_names [first]);
+  else
+    sprintf (buff, "jr __return_%s_%s", reg_names [first], reg_names [last]);
+
+  return buff;
+}
+
+
+/* Return non-zero if the given RTX is suitable for collapsing into
+   a jump to a function prologue.  */
+int
+pattern_is_ok_for_prologue (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  int count = XVECLEN (op, 0);
+  int i; 
+  rtx vector_element;
+ 
+  /* If there are no registers to save then the function prologue
+     is not suitable.  */
+  if (count <= 2)
+    return 0;
+
+  /* The pattern matching has already established that we are adjusting the
+     stack and pushing at least one register.  We must now check that the
+     remaining entries in the vector to make sure that they are also register
+     pushes, except for the last entry which should be a CLOBBER of r10.
+
+     The test below performs the C equivalent of this machine description
+     pattern match:
+
+     (set (mem:SI (plus:SI (reg:SI 3)
+      (match_operand:SI 2 "immediate_operand" "i")))
+      (match_operand:SI 3 "register_is_ok_for_epilogue" "r"))
+
+     */
+
+  for (i = 2; i < count - 1; i++)
+    {
+      rtx dest;
+      rtx src;
+      rtx plus;
+      
+      vector_element = XVECEXP (op, 0, i);
+      
+      if (GET_CODE (vector_element) != SET)
+	return 0;
+      
+      dest = SET_DEST (vector_element);
+      src = SET_SRC (vector_element);
+
+      if (GET_CODE (dest) != MEM
+	  || GET_MODE (dest) != SImode
+	  || GET_CODE (src) != REG
+	  || GET_MODE (src) != SImode
+	  || ! register_is_ok_for_epilogue (src, SImode))
+	return 0;
+
+      plus = XEXP (dest, 0);
+
+      if ( GET_CODE (plus) != PLUS
+	  || GET_CODE (XEXP (plus, 0)) != REG
+	  || GET_MODE (XEXP (plus, 0)) != SImode
+	  || REGNO (XEXP (plus, 0)) != STACK_POINTER_REGNUM
+	  || GET_CODE (XEXP (plus, 1)) != CONST_INT)
+	return 0;
+
+      /* If the register is being pushed somewhere other than the stack
+	 space just aquired by the first operand then abandon this quest.
+	 Note: the test is <= becuase both values are negative.	 */
+      if (INTVAL (XEXP (plus, 1))
+	  <= INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)))
+	{
+	  return 0;
+	}
+    }
+
+  /* Make sure that the last entry in the vector is a clobber.  */
+  vector_element = XVECEXP (op, 0, i);
+  
+  if (GET_CODE (vector_element) != CLOBBER
+      || GET_CODE (XEXP (vector_element, 0)) != REG
+      || REGNO (XEXP (vector_element, 0)) != 10)
+    return 0;
+  
+  return 1;
+}
+
+/* Construct a JARL instruction to a routine that will perform the equivalent
+   of the RTL passed as a parameter.  This RTL is a function prologue that
+   saves some of the registers r20 - r31 onto the stack, and possibly acquires
+   some stack space as well.  The code has already verified that the RTL
+   matches these requirements.  */
+char *
+construct_save_jarl (op)
+     rtx op;
+{
+  int count = XVECLEN (op, 0);
+  int stack_bytes;
+  unsigned long int mask;
+  unsigned long int first;
+  unsigned long int last;
+  int i;
+  static char buff [100]; /* XXX */
+  
+  if (count <= 2)
+    {
+      error ("Bogus JARL construction: %d\n", count);
+      return NULL;
+    }
+
+  /* Paranoia.  */
+  if (GET_CODE (XVECEXP (op, 0, 0)) != SET)
+    abort ();
+  if (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != PLUS)
+    abort ();
+  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0)) != REG)
+    abort ();
+  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)) != CONST_INT)
+    abort ();
+    
+  /* Work out how many bytes to push onto the stack after storing the
+     registers.  */
+  stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1));
+
+  /* Each push will put 4 bytes from the stack... */
+  stack_bytes += (count - 2) * 4;
+
+  /* Make sure that the amount we are popping either 0 or 16 bytes.  */
+  if (stack_bytes != 0 && stack_bytes != -16)
+    {
+      error ("Bad amount of stack space removal: %d", stack_bytes);
+      return NULL;
+    }
+
+  /* Now compute the bit mask of registers to push.  */
+  mask = 0;
+  for (i = 0; i < count; i++)
+    {
+      rtx vector_element = XVECEXP (op, 0, i);
+      
+      if (GET_CODE (vector_element) != SET)
+	abort ();
+      if (GET_CODE (SET_SRC (vector_element)) != REG)
+	abort ();
+      if (! register_is_ok_for_epilogue (SET_SRC (vector_element), SImode))
+	abort ();
+      
+      mask |= 1 << REGNO (SET_SRC (vector_element));
+    }
+
+  /* Scan for the first register to push.  */  
+  for (first = 0; first < 32; first++)
+    {
+      if (mask & (1 << first))
+	break;
+    }
+
+  if (first >= 32)
+    abort ();
+
+  /* Discover the last register to push.  */
+  if (mask & (1 << 31))
+    {
+      if (stack_bytes != -16)
+	abort();
+      
+      last = 31;
+    }
+  else
+    {
+      if (stack_bytes != 0)
+	abort ();
+      if ((mask & (1 << 29)) == 0)
+	abort ();
+      
+      last = 29;
+    }
+
+  /* Paranoia */
+  for (i = (first == 2 ? 20 : first + 1); i < 29; i++)
+    if ((mask & (1 << i)) == 0)
+      abort ();
+
+  if (first == last)
+    sprintf (buff, "jarl __save_%s, r10", reg_names [first]);
+  else
+    sprintf (buff, "jarl __save_%s_%s, r10", reg_names [first],
+	     reg_names [last]);
+
+  return buff;
+}
+
