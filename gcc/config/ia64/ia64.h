@@ -1698,12 +1698,6 @@ do {									\
 
 /* Implicit Calls to Library Routines */
 
-/* ??? The ia64 linux kernel requires that we use the standard names for
-   divide and modulo routines.  However, if we aren't careful, lib1funcs.asm
-   will be overridden by libgcc2.c.  We avoid this by using different names
-   for lib1funcs.asm modules, e.g. __divdi3 vs _divdi3.  Since lib1funcs.asm
-   goes into libgcc.a first, the linker will find it first.  */
-
 /* Define this macro if GNU CC should generate calls to the System V (and ANSI
    C) library functions `memcpy' and `memset' rather than the BSD functions
    `bcopy' and `bzero'.  */
