@@ -3,22 +3,22 @@
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
-This file is part of GNU CC.
+   This file is part of GNU CC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GNU CC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GNU CC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GNU CC; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 #ifndef GCC_V850_H
 #define GCC_V850_H
@@ -86,6 +86,7 @@ extern int target_flags;
 #define MASK_BIG_SWITCH		0x00000100
 #define MASK_NO_APP_REGS        0x00000200
 #define MASK_DISABLE_CALLT      0x00000400
+#define MASK_STRICT_ALIGN       0x00000800
 
 #define MASK_US_BIT_SET         0x00001000
 #define MASK_US_MASK_SET        0x00002000
@@ -145,6 +146,8 @@ extern int target_flags;
    and r5 are to be fixed registers (for compatibility with GHS).  */
 #define TARGET_NO_APP_REGS  	(target_flags & MASK_NO_APP_REGS)
 
+#define TARGET_STRICT_ALIGN 	(target_flags & MASK_STRICT_ALIGN)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -182,6 +185,9 @@ extern int target_flags;
    { "app-regs",                -MASK_NO_APP_REGS, ""  },               \
    { "no-app-regs",              MASK_NO_APP_REGS, 			\
        				N_("Do not use registers r2 and r5") }, \
+   { "strict-align",             MASK_STRICT_ALIGN,			\
+				N_("Enfore strict alignment") },        \
+   { "no-strict-align",         -MASK_STRICT_ALIGN, "" },		\
    { "big-switch",		 MASK_BIG_SWITCH, 			\
        				N_("Use 4 byte entries in switch tables") },\
    { "",			 MASK_DEFAULT, ""}}
@@ -255,6 +261,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 {									\
+  target_flags |= MASK_STRICT_ALIGN;					\
   if (LEVEL)								\
     target_flags |= (MASK_EP | MASK_PROLOG_FUNCTION);			\
 }
@@ -314,7 +321,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT  TARGET_STRICT_ALIGN
 
 /* Define this as 1 if `char' should by default be signed; else as 0.
 
@@ -1048,8 +1055,27 @@ do {									\
 #define RTX_COSTS(RTX,CODE,OUTER_CODE)					\
   case MOD:								\
   case DIV:								\
+  case UMOD:								\
+  case UDIV:								\
+    if (TARGET_V850E && optimize_size)					\
+      return 6;								\
     return 60;								\
   case MULT:								\
+    if (TARGET_V850E							\
+	&& (   GET_MODE (RTX) == SImode					\
+	    || GET_MODE (RTX) == HImode					\
+	    || GET_MODE (RTX) == QImode))				\
+      {									\
+	if (GET_CODE (XEXP (RTX, 1)) == REG)				\
+	  return 4;							\
+	else if (GET_CODE (XEXP (RTX, 1)) == CONST_INT)			\
+	  {								\
+	    if (CONST_OK_FOR_O (INTVAL (XEXP (RTX, 1))))		\
+	      return 6;							\
+	    else if (CONST_OK_FOR_K (INTVAL (XEXP (RTX, 1))))		\
+	      return 10;						\
+	  }								\
+      }									\
     return 20;
 
 /* All addressing modes have the same cost on the V850 series.  */
@@ -1360,6 +1386,23 @@ zbss_section ()								\
 
 #define STORE_FLAG_VALUE 1
 
+#define MULDI3_LIBCALL  "__muldi3"
+#define UCMPDI2_LIBCALL "__ucmpdi2"
+#define CMPDI2_LIBCALL  "__cmpdi2"
+#define NEGDI2_LIBCALL  "__negdi2"
+
+#define INIT_TARGET_OPTABS 				\
+  do							\
+    { 							\
+      cmp_optab->handlers[(int) DImode].libfunc		\
+	= init_one_libfunc (CMPDI2_LIBCALL);            \
+      ucmp_optab->handlers[(int) DImode].libfunc        \
+	= init_one_libfunc (UCMPDI2_LIBCALL);           \
+      neg_optab->handlers[(int) DImode].libfunc		\
+	= init_one_libfunc (NEGDI2_LIBCALL);		\
+    }							\
+  while (0)
+
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
@@ -1470,6 +1513,8 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 #define PREDICATE_CODES							\
 { "reg_or_0_operand",		{ REG, SUBREG, CONST_INT, CONST_DOUBLE }}, \
 { "reg_or_int5_operand",	{ REG, SUBREG, CONST_INT }},		\
+{ "reg_or_int9_operand",	{ REG, SUBREG, CONST_INT }},		\
+{ "reg_or_const_operand",       { REG, CONST_INT }},			\
 { "call_address_operand",	{ REG, SYMBOL_REF }},			\
 { "movsi_source_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST, HIGH, MEM,	\
