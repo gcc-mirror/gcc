@@ -18,9 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* If compiled with hc, use the built-in memcpy.
-   These definitions assume hc version 2.  */
+/* hc has a bug converting functions to pointers in arguments.  */
 #ifdef __HIGHC__
-#define bcopy(s,d,l) memcpy(d,s,l)
 #define FUNCTION_CONVERSION_BUG
 #endif
