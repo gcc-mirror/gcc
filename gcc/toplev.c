@@ -74,7 +74,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "cfglayout.h"
-#include "tree-alias-common.h" 
 #include "cfgloop.h"
 #include "hosthooks.h"
 #include "cgraph.h"
@@ -331,9 +330,6 @@ rtx stack_limit_rtx;
    unused UIDs if there are a lot of instructions.  If greater than
    one, unconditionally renumber instruction UIDs.  */
 int flag_renumber_insns = 1;
-
-/* Enable points-to analysis on trees.  */
-enum pta_type flag_tree_points_to = PTA_NONE;
 
 /* Nonzero if we should track variables.  When
    flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING it will be set according

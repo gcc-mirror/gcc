@@ -1085,7 +1085,7 @@ open_base_files (void)
       "function.h", "insn-config.h", "expr.h", "hard-reg-set.h",
       "basic-block.h", "cselib.h", "insn-addr.h", "optabs.h",
       "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
-      "tree-alias-type.h", "tree-flow.h", "reload.h",
+      "tree-flow.h", "reload.h",
       "cpp-id-data.h",
       "tree-chrec.h",
       NULL

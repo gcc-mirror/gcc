@@ -240,14 +240,6 @@ extern enum graph_dump_types graph_dump_format;
    and to print them when we are done.  */
 extern int flag_detailed_statistics;
 
-/* Enable points-to analysis on trees.  */
-enum pta_type
-  {
-    PTA_NONE,
-    PTA_ANDERSEN
-  };
-extern enum pta_type flag_tree_points_to;
-
 extern int flag_web;
 
 /* Nonzero means that we defer emitting functions until they are actually

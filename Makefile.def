@@ -70,7 +70,6 @@ host_modules= { module= itcl; };
 host_modules= { module= ld; bootstrap=true; };
 host_modules= { module= libcpp; bootstrap=true; };
 host_modules= { module= libgui; };
-host_modules= { module= libbanshee; bootstrap=true; no_install=true; };
 host_modules= { module= libiberty; bootstrap=true; };
 host_modules= { module= libtool; };
 host_modules= { module= m4; };
@@ -253,7 +252,6 @@ dependencies = { module=all-gcc; on=all-binutils; };
 dependencies = { module=all-gcc; on=all-gas; };
 dependencies = { module=all-gcc; on=all-ld; };
 dependencies = { module=all-gcc; on=all-zlib; };
-dependencies = { module=all-gcc; on=all-libbanshee; };
 dependencies = { module=all-gcc; on=all-libcpp; hard=true; };
 dependencies = { module=all-gcc; on=all-build-libiberty; };
 

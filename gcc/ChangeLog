@@ -1,3 +1,31 @@
+2004-09-09  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in: Remove libbanshee, tree-alias-*.
+	Remove tree-alias-common.h dependencies.
+	* common.opt: Remove -ftree-points-to.
+	* configure.ac: Remove libbanshee.
+	* flags.h: Remove pta_type, flag_tree_points_to.
+	* gengtype.c (open_base_files): Remove tree-alias-type.h.
+	* opts.c (OPT_ftree_points_to): Remove.
+	* toplev.c: Remove tree-alias-common.h, flag_tree_points_to.
+	* tree-dfa.c: Remove tree-alias-common.h
+	* tree-into-ssa.c: Ditto.
+	* tree-outof-ssa.c: Ditto.
+	* tree-ssa-copyrename.c: Ditto.
+	* tree-ssa-live.c: Ditto.
+	* tree-optimize.c: Ditto.
+	* tree-ssa.c: Ditto.
+	Remove pass_build_pta, pass_del_pta.
+	* tree-pass.h: Ditto.
+	* tree-ssa-alias.c: Remove tree-alias-common.h.
+	(struct alias_stats_d):	Remove pta_queries, pta_resolved.
+	(pass_may_alias): Remove PROP_pta requirement.
+	(may_alias_p): Remove pta_queries, pta_resolved, use of andersens.
+	(get_tmt_for): Ditto.
+	(dump_alias_stats): Ditto.
+	* doc/passes.texi: Remove blurb about points-to analysis.
+	* fortran/Make-lang.in: Remove tree-alias-*.o.
+	
 2004-09-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* genattrtab.c (write_insn_cases): New function, split out from

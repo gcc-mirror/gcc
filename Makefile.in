@@ -104,7 +104,7 @@ REALLY_SET_LIB_PATH = \
   $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # This is the list of directories to be built for the build system.
-BUILD_CONFIGDIRS = libiberty libbanshee
+BUILD_CONFIGDIRS = libiberty
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
@@ -678,7 +678,6 @@ configure-host:  \
     maybe-configure-ld \
     maybe-configure-libcpp \
     maybe-configure-libgui \
-    maybe-configure-libbanshee \
     maybe-configure-libiberty \
     maybe-configure-libtool \
     maybe-configure-m4 \
@@ -780,7 +779,6 @@ all-host:  \
     maybe-all-ld \
     maybe-all-libcpp \
     maybe-all-libgui \
-    maybe-all-libbanshee \
     maybe-all-libiberty \
     maybe-all-libtool \
     maybe-all-m4 \
@@ -877,7 +875,6 @@ info-host:  \
     maybe-info-ld \
     maybe-info-libcpp \
     maybe-info-libgui \
-    maybe-info-libbanshee \
     maybe-info-libiberty \
     maybe-info-libtool \
     maybe-info-m4 \
@@ -970,7 +967,6 @@ dvi-host:  \
     maybe-dvi-ld \
     maybe-dvi-libcpp \
     maybe-dvi-libgui \
-    maybe-dvi-libbanshee \
     maybe-dvi-libiberty \
     maybe-dvi-libtool \
     maybe-dvi-m4 \
@@ -1063,7 +1059,6 @@ TAGS-host:  \
     maybe-TAGS-ld \
     maybe-TAGS-libcpp \
     maybe-TAGS-libgui \
-    maybe-TAGS-libbanshee \
     maybe-TAGS-libiberty \
     maybe-TAGS-libtool \
     maybe-TAGS-m4 \
@@ -1156,7 +1151,6 @@ install-info-host:  \
     maybe-install-info-ld \
     maybe-install-info-libcpp \
     maybe-install-info-libgui \
-    maybe-install-info-libbanshee \
     maybe-install-info-libiberty \
     maybe-install-info-libtool \
     maybe-install-info-m4 \
@@ -1249,7 +1243,6 @@ installcheck-host:  \
     maybe-installcheck-ld \
     maybe-installcheck-libcpp \
     maybe-installcheck-libgui \
-    maybe-installcheck-libbanshee \
     maybe-installcheck-libiberty \
     maybe-installcheck-libtool \
     maybe-installcheck-m4 \
@@ -1342,7 +1335,6 @@ mostlyclean-host:  \
     maybe-mostlyclean-ld \
     maybe-mostlyclean-libcpp \
     maybe-mostlyclean-libgui \
-    maybe-mostlyclean-libbanshee \
     maybe-mostlyclean-libiberty \
     maybe-mostlyclean-libtool \
     maybe-mostlyclean-m4 \
@@ -1435,7 +1427,6 @@ clean-host:  \
     maybe-clean-ld \
     maybe-clean-libcpp \
     maybe-clean-libgui \
-    maybe-clean-libbanshee \
     maybe-clean-libiberty \
     maybe-clean-libtool \
     maybe-clean-m4 \
@@ -1528,7 +1519,6 @@ distclean-host:  \
     maybe-distclean-ld \
     maybe-distclean-libcpp \
     maybe-distclean-libgui \
-    maybe-distclean-libbanshee \
     maybe-distclean-libiberty \
     maybe-distclean-libtool \
     maybe-distclean-m4 \
@@ -1621,7 +1611,6 @@ maintainer-clean-host:  \
     maybe-maintainer-clean-ld \
     maybe-maintainer-clean-libcpp \
     maybe-maintainer-clean-libgui \
-    maybe-maintainer-clean-libbanshee \
     maybe-maintainer-clean-libiberty \
     maybe-maintainer-clean-libtool \
     maybe-maintainer-clean-m4 \
@@ -1771,7 +1760,6 @@ do-check: unstage  \
     maybe-check-ld \
     maybe-check-libcpp \
     maybe-check-libgui \
-    maybe-check-libbanshee \
     maybe-check-libiberty \
     maybe-check-libtool \
     maybe-check-m4 \
@@ -1883,7 +1871,6 @@ install-host-nogcc:  \
     maybe-install-ld \
     maybe-install-libcpp \
     maybe-install-libgui \
-    maybe-install-libbanshee \
     maybe-install-libiberty \
     maybe-install-libtool \
     maybe-install-m4 \
@@ -1952,7 +1939,6 @@ install-host:  \
     maybe-install-ld \
     maybe-install-libcpp \
     maybe-install-libgui \
-    maybe-install-libbanshee \
     maybe-install-libiberty \
     maybe-install-libtool \
     maybe-install-m4 \
@@ -12796,305 +12782,6 @@ maintainer-clean-libgui:
 	  || exit 1
 
 @endif libgui
-
-
-.PHONY: configure-libbanshee maybe-configure-libbanshee
-maybe-configure-libbanshee:
-@if libbanshee
-maybe-configure-libbanshee: configure-libbanshee
-configure-libbanshee:
-	@test -f stage_last && exit 0; \
-	test ! -f libbanshee/Makefile || exit 0; \
-	[ -d libbanshee ] || mkdir libbanshee; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo Configuring in libbanshee; \
-	cd libbanshee || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
-	  || exit 1
-@endif libbanshee
-
-.PHONY: all-libbanshee maybe-all-libbanshee
-maybe-all-libbanshee:
-@if libbanshee
-maybe-all-libbanshee: all-libbanshee
-all-libbanshee: configure-libbanshee
-	@test -f stage_last && exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	(cd libbanshee && $(MAKE) $(FLAGS_TO_PASS)  all)
-@endif libbanshee
-
-.PHONY: check-libbanshee maybe-check-libbanshee
-maybe-check-libbanshee:
-@if libbanshee
-maybe-check-libbanshee: check-libbanshee
-
-check-libbanshee:
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	(cd libbanshee && $(MAKE) $(FLAGS_TO_PASS) check)
-
-@endif libbanshee
-
-.PHONY: install-libbanshee maybe-install-libbanshee
-maybe-install-libbanshee:
-@if libbanshee
-maybe-install-libbanshee: install-libbanshee
-
-install-libbanshee:
-
-@endif libbanshee
-
-# Other targets (info, dvi, etc.)
-
-.PHONY: maybe-info-libbanshee info-libbanshee
-maybe-info-libbanshee:
-@if libbanshee
-maybe-info-libbanshee: info-libbanshee
-
-info-libbanshee: \
-    configure-libbanshee 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          info) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-dvi-libbanshee dvi-libbanshee
-maybe-dvi-libbanshee:
-@if libbanshee
-maybe-dvi-libbanshee: dvi-libbanshee
-
-dvi-libbanshee: \
-    configure-libbanshee 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          dvi) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-TAGS-libbanshee TAGS-libbanshee
-maybe-TAGS-libbanshee:
-@if libbanshee
-maybe-TAGS-libbanshee: TAGS-libbanshee
-
-TAGS-libbanshee: \
-    configure-libbanshee 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          TAGS) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-install-info-libbanshee install-info-libbanshee
-maybe-install-info-libbanshee:
-@if libbanshee
-maybe-install-info-libbanshee: install-info-libbanshee
-
-install-info-libbanshee: \
-    configure-libbanshee \
-    info-libbanshee 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          install-info) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-installcheck-libbanshee installcheck-libbanshee
-maybe-installcheck-libbanshee:
-@if libbanshee
-maybe-installcheck-libbanshee: installcheck-libbanshee
-
-installcheck-libbanshee: \
-    configure-libbanshee 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing installcheck in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          installcheck) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-mostlyclean-libbanshee mostlyclean-libbanshee
-maybe-mostlyclean-libbanshee:
-@if libbanshee
-maybe-mostlyclean-libbanshee: mostlyclean-libbanshee
-
-mostlyclean-libbanshee: 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing mostlyclean in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          mostlyclean) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-clean-libbanshee clean-libbanshee
-maybe-clean-libbanshee:
-@if libbanshee
-maybe-clean-libbanshee: clean-libbanshee
-
-clean-libbanshee: 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing clean in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          clean) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-distclean-libbanshee distclean-libbanshee
-maybe-distclean-libbanshee:
-@if libbanshee
-maybe-distclean-libbanshee: distclean-libbanshee
-
-distclean-libbanshee: 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing distclean in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          distclean) \
-	  || exit 1
-
-@endif libbanshee
-
-.PHONY: maybe-maintainer-clean-libbanshee maintainer-clean-libbanshee
-maybe-maintainer-clean-libbanshee:
-@if libbanshee
-maybe-maintainer-clean-libbanshee: maintainer-clean-libbanshee
-
-maintainer-clean-libbanshee: 
-	@[ -f ./libbanshee/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing maintainer-clean in libbanshee" ; \
-	(cd libbanshee && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          maintainer-clean) \
-	  || exit 1
-
-@endif libbanshee
 
 
 .PHONY: configure-libiberty maybe-configure-libiberty
@@ -28255,10 +27942,6 @@ stage1-start::
 	@[ -d stage1-libcpp ] || mkdir stage1-libcpp; \
 	set stage1-libcpp libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@[ -d stage1-libbanshee ] || mkdir stage1-libbanshee; \
-	set stage1-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@[ -d stage1-libiberty ] || mkdir stage1-libiberty; \
 	set stage1-libiberty libiberty ; @CREATE_LINK_TO_DIR@ 
@@ -28294,9 +27977,6 @@ stage1-end::
 @if libcpp
 	@set libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@set libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@set libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
 @endif libiberty
@@ -28325,7 +28005,6 @@ all-stage1:     \
   maybe-all-stage1-intl   \
   maybe-all-stage1-ld \
   maybe-all-stage1-libcpp  \
-  maybe-all-stage1-libbanshee \
   maybe-all-stage1-libiberty                        \
   maybe-all-stage1-zlib       
 
@@ -28339,7 +28018,6 @@ clean-stage1:     \
   maybe-clean-stage1-intl   \
   maybe-clean-stage1-ld \
   maybe-clean-stage1-libcpp  \
-  maybe-clean-stage1-libbanshee \
   maybe-clean-stage1-libiberty                        \
   maybe-clean-stage1-zlib       
 
@@ -28776,60 +28454,6 @@ clean-stage1-libcpp:
 @endif libcpp-bootstrap
 
 
-.PHONY: configure-stage1-libbanshee maybe-configure-stage1-libbanshee
-.PHONY: all-stage1-libbanshee maybe-all-stage1-libbanshee
-.PHONY: clean-stage1-libbanshee maybe-clean-stage1-libbanshee
-
-maybe-configure-stage1-libbanshee:
-maybe-all-stage1-libbanshee:
-maybe-clean-stage1-libbanshee:
-
-@if libbanshee-bootstrap
-maybe-configure-stage1-libbanshee: configure-stage1-libbanshee
-configure-stage1-libbanshee:
-	@$(MAKE) stage1-start
-	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(HOST_EXPORTS)  \
-	echo Configuring stage 1 in libbanshee ; \
-	cd libbanshee || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
-
-maybe-all-stage1-libbanshee: all-stage1-libbanshee
-all-stage1-libbanshee: configure-stage1-libbanshee
-	@$(MAKE) stage1-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(HOST_EXPORTS)  \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)" 
-
-maybe-clean-stage1-libbanshee: clean-stage1-libbanshee
-clean-stage1-libbanshee:
-	@[ -f libbanshee/Makefile ] || [ -f stage1-libbanshee/Makefile ] \
-	  || exit 0 ; \
-	[ -f libbanshee/Makefile ] || $(MAKE) stage1-start ; \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  clean
-@endif libbanshee-bootstrap
-
-
 .PHONY: configure-stage1-libiberty maybe-configure-stage1-libiberty
 .PHONY: all-stage1-libiberty maybe-all-stage1-libiberty
 .PHONY: clean-stage1-libiberty maybe-clean-stage1-libiberty
@@ -29003,11 +28627,6 @@ stage2-start::
 	set stage2-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@[ -d stage2-libbanshee ] || mkdir stage2-libbanshee; \
-	set stage2-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
-	set stage1-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@[ -d stage2-libiberty ] || mkdir stage2-libiberty; \
 	set stage2-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
@@ -29053,10 +28672,6 @@ stage2-end::
 	@set libcpp stage2-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@set libbanshee stage2-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
-	set prev-libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@set libiberty stage2-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
@@ -29087,7 +28702,6 @@ all-stage2:     \
   maybe-all-stage2-intl   \
   maybe-all-stage2-ld \
   maybe-all-stage2-libcpp  \
-  maybe-all-stage2-libbanshee \
   maybe-all-stage2-libiberty                        \
   maybe-all-stage2-zlib       
 
@@ -29101,7 +28715,6 @@ clean-stage2:     \
   maybe-clean-stage2-intl   \
   maybe-clean-stage2-ld \
   maybe-clean-stage2-libcpp  \
-  maybe-clean-stage2-libbanshee \
   maybe-clean-stage2-libiberty                        \
   maybe-clean-stage2-zlib       
 
@@ -29554,62 +29167,6 @@ clean-stage2-libcpp:
 @endif libcpp-bootstrap
 
 
-.PHONY: configure-stage2-libbanshee maybe-configure-stage2-libbanshee
-.PHONY: all-stage2-libbanshee maybe-all-stage2-libbanshee
-.PHONY: clean-stage2-libbanshee maybe-clean-stage2-libbanshee
-
-maybe-configure-stage2-libbanshee:
-maybe-all-stage2-libbanshee:
-maybe-clean-stage2-libbanshee:
-
-@if libbanshee-bootstrap
-maybe-configure-stage2-libbanshee: configure-stage2-libbanshee
-configure-stage2-libbanshee:
-	@$(MAKE) stage2-start
-	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	echo Configuring stage 2 in libbanshee ; \
-	cd libbanshee || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@ 
-
-maybe-all-stage2-libbanshee: all-stage2-libbanshee
-all-stage2-libbanshee: configure-stage2-libbanshee
-	@$(MAKE) stage2-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 
-
-maybe-clean-stage2-libbanshee: clean-stage2-libbanshee
-clean-stage2-libbanshee:
-	@[ -f libbanshee/Makefile ] || [ -f stage2-libbanshee/Makefile ] \
-	  || exit 0 ; \
-	[ -f libbanshee/Makefile ] || $(MAKE) stage2-start ; \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  clean
-@endif libbanshee-bootstrap
-
-
 .PHONY: configure-stage2-libiberty maybe-configure-stage2-libiberty
 .PHONY: all-stage2-libiberty maybe-all-stage2-libiberty
 .PHONY: clean-stage2-libiberty maybe-clean-stage2-libiberty
@@ -29790,11 +29347,6 @@ stage3-start::
 	set stage3-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@[ -d stage3-libbanshee ] || mkdir stage3-libbanshee; \
-	set stage3-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
-	set stage2-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@[ -d stage3-libiberty ] || mkdir stage3-libiberty; \
 	set stage3-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
@@ -29840,10 +29392,6 @@ stage3-end::
 	@set libcpp stage3-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage2-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@set libbanshee stage3-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
-	set prev-libbanshee stage2-libbanshee ; @UNDO_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@set libiberty stage3-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage2-libiberty ; @UNDO_LINK_TO_DIR@ 
@@ -29875,7 +29423,6 @@ all-stage3:     \
   maybe-all-stage3-intl   \
   maybe-all-stage3-ld \
   maybe-all-stage3-libcpp  \
-  maybe-all-stage3-libbanshee \
   maybe-all-stage3-libiberty                        \
   maybe-all-stage3-zlib       
 
@@ -29889,7 +29436,6 @@ clean-stage3:     \
   maybe-clean-stage3-intl   \
   maybe-clean-stage3-ld \
   maybe-clean-stage3-libcpp  \
-  maybe-clean-stage3-libbanshee \
   maybe-clean-stage3-libiberty                        \
   maybe-clean-stage3-zlib       
 
@@ -30342,62 +29888,6 @@ clean-stage3-libcpp:
 @endif libcpp-bootstrap
 
 
-.PHONY: configure-stage3-libbanshee maybe-configure-stage3-libbanshee
-.PHONY: all-stage3-libbanshee maybe-all-stage3-libbanshee
-.PHONY: clean-stage3-libbanshee maybe-clean-stage3-libbanshee
-
-maybe-configure-stage3-libbanshee:
-maybe-all-stage3-libbanshee:
-maybe-clean-stage3-libbanshee:
-
-@if libbanshee-bootstrap
-maybe-configure-stage3-libbanshee: configure-stage3-libbanshee
-configure-stage3-libbanshee:
-	@$(MAKE) stage3-start
-	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	echo Configuring stage 3 in libbanshee ; \
-	cd libbanshee || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@ 
-
-maybe-all-stage3-libbanshee: all-stage3-libbanshee
-all-stage3-libbanshee: configure-stage3-libbanshee
-	@$(MAKE) stage3-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 
-
-maybe-clean-stage3-libbanshee: clean-stage3-libbanshee
-clean-stage3-libbanshee:
-	@[ -f libbanshee/Makefile ] || [ -f stage3-libbanshee/Makefile ] \
-	  || exit 0 ; \
-	[ -f libbanshee/Makefile ] || $(MAKE) stage3-start ; \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  clean
-@endif libbanshee-bootstrap
-
-
 .PHONY: configure-stage3-libiberty maybe-configure-stage3-libiberty
 .PHONY: all-stage3-libiberty maybe-all-stage3-libiberty
 .PHONY: clean-stage3-libiberty maybe-clean-stage3-libiberty
@@ -30608,11 +30098,6 @@ stage4-start::
 	set stage4-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@[ -d stage4-libbanshee ] || mkdir stage4-libbanshee; \
-	set stage4-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
-	set stage3-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@[ -d stage4-libiberty ] || mkdir stage4-libiberty; \
 	set stage4-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
@@ -30658,10 +30143,6 @@ stage4-end::
 	@set libcpp stage4-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage3-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@set libbanshee stage4-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
-	set prev-libbanshee stage3-libbanshee ; @UNDO_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@set libiberty stage4-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage3-libiberty ; @UNDO_LINK_TO_DIR@ 
@@ -30693,7 +30174,6 @@ all-stage4:     \
   maybe-all-stage4-intl   \
   maybe-all-stage4-ld \
   maybe-all-stage4-libcpp  \
-  maybe-all-stage4-libbanshee \
   maybe-all-stage4-libiberty                        \
   maybe-all-stage4-zlib       
 
@@ -30707,7 +30187,6 @@ clean-stage4:     \
   maybe-clean-stage4-intl   \
   maybe-clean-stage4-ld \
   maybe-clean-stage4-libcpp  \
-  maybe-clean-stage4-libbanshee \
   maybe-clean-stage4-libiberty                        \
   maybe-clean-stage4-zlib       
 
@@ -31160,62 +30639,6 @@ clean-stage4-libcpp:
 @endif libcpp-bootstrap
 
 
-.PHONY: configure-stage4-libbanshee maybe-configure-stage4-libbanshee
-.PHONY: all-stage4-libbanshee maybe-all-stage4-libbanshee
-.PHONY: clean-stage4-libbanshee maybe-clean-stage4-libbanshee
-
-maybe-configure-stage4-libbanshee:
-maybe-all-stage4-libbanshee:
-maybe-clean-stage4-libbanshee:
-
-@if libbanshee-bootstrap
-maybe-configure-stage4-libbanshee: configure-stage4-libbanshee
-configure-stage4-libbanshee:
-	@$(MAKE) stage4-start
-	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	echo Configuring stage 4 in libbanshee ; \
-	cd libbanshee || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@ 
-
-maybe-all-stage4-libbanshee: all-stage4-libbanshee
-all-stage4-libbanshee: configure-stage4-libbanshee
-	@$(MAKE) stage4-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 
-
-maybe-clean-stage4-libbanshee: clean-stage4-libbanshee
-clean-stage4-libbanshee:
-	@[ -f libbanshee/Makefile ] || [ -f stage4-libbanshee/Makefile ] \
-	  || exit 0 ; \
-	[ -f libbanshee/Makefile ] || $(MAKE) stage4-start ; \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  clean
-@endif libbanshee-bootstrap
-
-
 .PHONY: configure-stage4-libiberty maybe-configure-stage4-libiberty
 .PHONY: all-stage4-libiberty maybe-all-stage4-libiberty
 .PHONY: clean-stage4-libiberty maybe-clean-stage4-libiberty
@@ -31423,11 +30846,6 @@ stageprofile-start::
 	set stageprofile-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@[ -d stageprofile-libbanshee ] || mkdir stageprofile-libbanshee; \
-	set stageprofile-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
-	set stage1-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@[ -d stageprofile-libiberty ] || mkdir stageprofile-libiberty; \
 	set stageprofile-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
@@ -31473,10 +30891,6 @@ stageprofile-end::
 	@set libcpp stageprofile-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@set libbanshee stageprofile-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
-	set prev-libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@set libiberty stageprofile-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
@@ -31507,7 +30921,6 @@ all-stageprofile:     \
   maybe-all-stageprofile-intl   \
   maybe-all-stageprofile-ld \
   maybe-all-stageprofile-libcpp  \
-  maybe-all-stageprofile-libbanshee \
   maybe-all-stageprofile-libiberty                        \
   maybe-all-stageprofile-zlib       
 
@@ -31521,7 +30934,6 @@ clean-stageprofile:     \
   maybe-clean-stageprofile-intl   \
   maybe-clean-stageprofile-ld \
   maybe-clean-stageprofile-libcpp  \
-  maybe-clean-stageprofile-libbanshee \
   maybe-clean-stageprofile-libiberty                        \
   maybe-clean-stageprofile-zlib       
 
@@ -31974,62 +31386,6 @@ clean-stageprofile-libcpp:
 @endif libcpp-bootstrap
 
 
-.PHONY: configure-stageprofile-libbanshee maybe-configure-stageprofile-libbanshee
-.PHONY: all-stageprofile-libbanshee maybe-all-stageprofile-libbanshee
-.PHONY: clean-stageprofile-libbanshee maybe-clean-stageprofile-libbanshee
-
-maybe-configure-stageprofile-libbanshee:
-maybe-all-stageprofile-libbanshee:
-maybe-clean-stageprofile-libbanshee:
-
-@if libbanshee-bootstrap
-maybe-configure-stageprofile-libbanshee: configure-stageprofile-libbanshee
-configure-stageprofile-libbanshee:
-	@$(MAKE) stageprofile-start
-	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	echo Configuring stage profile in libbanshee ; \
-	cd libbanshee || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@ 
-
-maybe-all-stageprofile-libbanshee: all-stageprofile-libbanshee
-all-stageprofile-libbanshee: configure-stageprofile-libbanshee
-	@$(MAKE) stageprofile-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
-
-maybe-clean-stageprofile-libbanshee: clean-stageprofile-libbanshee
-clean-stageprofile-libbanshee:
-	@[ -f libbanshee/Makefile ] || [ -f stageprofile-libbanshee/Makefile ] \
-	  || exit 0 ; \
-	[ -f libbanshee/Makefile ] || $(MAKE) stageprofile-start ; \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
-@endif libbanshee-bootstrap
-
-
 .PHONY: configure-stageprofile-libiberty maybe-configure-stageprofile-libiberty
 .PHONY: all-stageprofile-libiberty maybe-all-stageprofile-libiberty
 .PHONY: clean-stageprofile-libiberty maybe-clean-stageprofile-libiberty
@@ -32207,11 +31563,6 @@ stagefeedback-start::
 	set stagefeedback-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@[ -d stagefeedback-libbanshee ] || mkdir stagefeedback-libbanshee; \
-	set stagefeedback-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
-	set stage1-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@[ -d stagefeedback-libiberty ] || mkdir stagefeedback-libiberty; \
 	set stagefeedback-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
@@ -32257,10 +31608,6 @@ stagefeedback-end::
 	@set libcpp stagefeedback-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
-@if libbanshee
-	@set libbanshee stagefeedback-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
-	set prev-libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
-@endif libbanshee
 @if libiberty
 	@set libiberty stagefeedback-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
@@ -32291,7 +31638,6 @@ all-stagefeedback:     \
   maybe-all-stagefeedback-intl   \
   maybe-all-stagefeedback-ld \
   maybe-all-stagefeedback-libcpp  \
-  maybe-all-stagefeedback-libbanshee \
   maybe-all-stagefeedback-libiberty                        \
   maybe-all-stagefeedback-zlib       
 
@@ -32305,7 +31651,6 @@ clean-stagefeedback:     \
   maybe-clean-stagefeedback-intl   \
   maybe-clean-stagefeedback-ld \
   maybe-clean-stagefeedback-libcpp  \
-  maybe-clean-stagefeedback-libbanshee \
   maybe-clean-stagefeedback-libiberty                        \
   maybe-clean-stagefeedback-zlib       
 
@@ -32758,62 +32103,6 @@ clean-stagefeedback-libcpp:
 @endif libcpp-bootstrap
 
 
-.PHONY: configure-stagefeedback-libbanshee maybe-configure-stagefeedback-libbanshee
-.PHONY: all-stagefeedback-libbanshee maybe-all-stagefeedback-libbanshee
-.PHONY: clean-stagefeedback-libbanshee maybe-clean-stagefeedback-libbanshee
-
-maybe-configure-stagefeedback-libbanshee:
-maybe-all-stagefeedback-libbanshee:
-maybe-clean-stagefeedback-libbanshee:
-
-@if libbanshee-bootstrap
-maybe-configure-stagefeedback-libbanshee: configure-stagefeedback-libbanshee
-configure-stagefeedback-libbanshee:
-	@$(MAKE) stagefeedback-start
-	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	echo Configuring stage feedback in libbanshee ; \
-	cd libbanshee || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
-	    libsrcdir="$$s/libbanshee";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@ 
-
-maybe-all-stagefeedback-libbanshee: all-stagefeedback-libbanshee
-all-stagefeedback-libbanshee: configure-stagefeedback-libbanshee
-	@$(MAKE) stagefeedback-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
-	$(STAGE_HOST_EXPORTS)  \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
-
-maybe-clean-stagefeedback-libbanshee: clean-stagefeedback-libbanshee
-clean-stagefeedback-libbanshee:
-	@[ -f libbanshee/Makefile ] || [ -f stagefeedback-libbanshee/Makefile ] \
-	  || exit 0 ; \
-	[ -f libbanshee/Makefile ] || $(MAKE) stagefeedback-start ; \
-	cd libbanshee && \
-	$(MAKE) $(FLAGS_TO_PASS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
-@endif libbanshee-bootstrap
-
-
 .PHONY: configure-stagefeedback-libiberty maybe-configure-stagefeedback-libiberty
 .PHONY: all-stagefeedback-libiberty maybe-all-stagefeedback-libiberty
 .PHONY: clean-stagefeedback-libiberty maybe-clean-stagefeedback-libiberty
@@ -33216,14 +32505,6 @@ all-stage3-gcc: maybe-all-stage3-zlib
 all-stage4-gcc: maybe-all-stage4-zlib
 all-stageprofile-gcc: maybe-all-stageprofile-zlib
 all-stagefeedback-gcc: maybe-all-stagefeedback-zlib
-all-gcc: maybe-all-libbanshee
-
-all-stage1-gcc: maybe-all-stage1-libbanshee
-all-stage2-gcc: maybe-all-stage2-libbanshee
-all-stage3-gcc: maybe-all-stage3-libbanshee
-all-stage4-gcc: maybe-all-stage4-libbanshee
-all-stageprofile-gcc: maybe-all-stageprofile-libbanshee
-all-stagefeedback-gcc: maybe-all-stagefeedback-libbanshee
 all-gcc: all-libcpp
 
 all-stage1-gcc: all-stage1-libcpp
@@ -33582,7 +32863,6 @@ all-prebootstrap: maybe-all-gas
 all-prebootstrap: maybe-all-intl
 all-prebootstrap: maybe-all-ld
 all-prebootstrap: maybe-all-libcpp
-all-prebootstrap: maybe-all-libbanshee
 all-prebootstrap: maybe-all-libiberty
 all-prebootstrap: maybe-all-zlib
 @endif gcc-no-bootstrap

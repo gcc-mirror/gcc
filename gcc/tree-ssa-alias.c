@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-gimple.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
-#include "tree-alias-common.h"
 #include "tree-pass.h"
 #include "convert.h"
 #include "params.h"
@@ -125,8 +124,6 @@ struct alias_stats_d
   unsigned int simple_resolved;
   unsigned int tbaa_queries;
   unsigned int tbaa_resolved;
-  unsigned int pta_queries;
-  unsigned int pta_resolved;
 };
 
 
@@ -354,7 +351,7 @@ struct tree_opt_pass pass_may_alias =
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_MAY_ALIAS,			/* tv_id */
-  PROP_cfg | PROP_ssa | PROP_pta,	/* properties_required */
+  PROP_cfg | PROP_ssa,			/* properties_required */
   PROP_alias,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
@@ -1618,18 +1615,6 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
 	}
     }
 
-  if (flag_tree_points_to != PTA_NONE)
-      alias_stats.pta_queries++;
-
-  /* If -ftree-points-to is given, check if PTR may point to VAR.  */
-  if (flag_tree_points_to == PTA_ANDERSEN
-      && !ptr_may_alias_var (ptr, var))
-    {
-      alias_stats.alias_noalias++;
-      alias_stats.pta_resolved++;
-      return false;
-    }
-
   alias_stats.alias_mayalias++;
   return true;
 }
@@ -2119,9 +2104,7 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   for (i = 0, tag = NULL_TREE; i < ai->num_pointers; i++)
     {
       struct alias_map_d *curr = ai->pointers[i];
-      if (tag_set == curr->set 
-	  && (flag_tree_points_to == PTA_NONE 
-	      || same_points_to_set (curr->var, ptr)))
+      if (tag_set == curr->set)
 	{
 	  tag = var_ann (curr->var)->type_mem_tag;
 	  break;
@@ -2203,10 +2186,6 @@ dump_alias_stats (FILE *file)
 	   alias_stats.tbaa_queries);
   fprintf (file, "Total TBAA resolved:\t%u\n",
 	   alias_stats.tbaa_resolved);
-  fprintf (file, "Total PTA queries:\t%u\n",
-	   alias_stats.pta_queries);
-  fprintf (file, "Total PTA resolved:\t%u\n",
-	   alias_stats.pta_resolved);
 }
   
 

@@ -2973,28 +2973,6 @@ else
 fi
 AC_SUBST(MAINT)dnl
 
-AC_MSG_CHECKING([whether to use libbanshee for points-to alias analysis])
-AC_ARG_WITH(libbanshee,
-[  --with-libbanshee	  enable libbanshee],
-libbanshee="$with_libbanshee",
-libbanshee=no)
-
-if test x"$libbanshee" = xyes; then
-	BANSHEELIB="../libbanshee/points-to/libandersen.a ../libbanshee/engine/libbansheeengine.a ../libbanshee/libcompat/libbansheecompat.a "
-	BANSHEEINC="-I\$(srcdir)/../libbanshee/libcompat -I\$(srcdir)/../libbanshee -I\$(srcdir)/../libbanshee/points-to"
-	ANDER="tree-alias-ander.o"
-	AC_DEFINE(HAVE_BANSHEE, 1, [Define if BANSHEE is available])
-else
-	BANSHEELIB=""
-	BANSHEEINC=""
-	ANDER=""
-fi
-AC_MSG_RESULT($with_libbanshee)
-
-AC_SUBST(ANDER)
-AC_SUBST(BANSHEEINC)
-AC_SUBST(BANSHEELIB)
-
 # --------------
 # Language hooks
 # --------------

@@ -954,22 +954,6 @@ common_handle_option (size_t scode, const char *arg, int value)
       flag_tracer_set = true;
       break;
 
-    case OPT_ftree_points_to_:
-      if (!strcmp (arg, "andersen"))
-#ifdef HAVE_BANSHEE
-        flag_tree_points_to = PTA_ANDERSEN;
-#else
-        warning ("Andersen's PTA not available - libbanshee not compiled.");
-#endif
-      else if (!strcmp (arg, "none"))
-	flag_tree_points_to = PTA_NONE;
-      else
-	{
-	  warning ("`%s`: unknown points-to analysis algorithm", arg);
-	  return 0;
-	}
-      break;
-
     case OPT_funroll_loops:
       flag_unroll_loops_set = true;
       break;
