@@ -1,3 +1,8 @@
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.c (ffelex_hash_): Avoid eating one whole line after
+	#line.
+
 Mon Apr  2 22:38:09 2001  Toon Moene <toon@moene.indiv.nluug.nl>
 
 	* com.c (duplicate_decls): Fix thinko in lazy DECL_RTL patch
