@@ -1,3 +1,9 @@
+1999-01-20  Ulrich Drepper  <drepper@cygnus.com>
+
+	* stl_construct.h (__destroy_aux): Use != instead of < for
+	ForwardIterator comparison.
+	Patch by jmaurer@menuett.rhein-main.de (Jens Maurer).
+
 1999-01-20  Mark Mitchell  <mark@markmitchell.com>
 
 	* stl_config.h (__STL_USE_NAMESPACES): Define.
@@ -17,9 +23,9 @@
 
 	* stl_config.h (__SGI_STL_USE_AUTO_PTR_CONVERSIONS): Define.
 	* memory (auto_ptr::operator auto_ptr_ref<_Tp1>): Fix typo.
-	(auto_ptr::operator auto_ptr<_Tp1>): Add missing 
+	(auto_ptr::operator auto_ptr<_Tp1>): Add missing
 	semicolon.
-	
+
 1998-09-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stl_config.h: Define __STL_HAS_WCHAR_T,
@@ -130,7 +136,7 @@ Fri Jul 04 02:17:15 1997  Ulrich Drepper  <drepper@cygnus.com>
 
 	* tree.h (rb_tree): Reverse order of member initializations
 	to prevent warnings.
-	
+
 Sun Jun 15 18:17:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* *.h: Update to 6/13 SGI release.
@@ -168,7 +174,7 @@ Mon Sep 30 17:56:43 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 Fri Sep 27 19:03:06 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* alloc.h (__default_alloc_template): lock is a friend. 
+	* alloc.h (__default_alloc_template): lock is a friend.
 
 Thu Sep 19 20:10:37 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -306,5 +312,3 @@ Fri Dec 30 16:29:39 1994  Mike Stump  <mrs@cygnus.com>
 Tue Nov 29 15:30:30 1994  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* Initial check-in, based on HP's October 21, 1994.
-
-
