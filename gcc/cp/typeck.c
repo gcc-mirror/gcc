@@ -6487,6 +6487,15 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
       else
 	cp_warning ("%s to `%T' from `%T'", errtype, type, rhstype);
     }
+  /* And warn about assigning non-BOOLEAN_TYPE to BOOLEAN_TYPE.  */
+  else if (coder != BOOLEAN_TYPE && codel == BOOLEAN_TYPE)
+    {
+      if (fndecl)
+	cp_warning ("`%T' used for argument %P of `%D'",
+		    rhstype, parmnum, fndecl);
+      else
+	cp_warning ("%s to `%T' from `%T'", errtype, type, rhstype);
+    }
   /* And warn about assigning a negative value to an unsigned
      variable.  */
   else if (TREE_UNSIGNED (type) && codel != BOOLEAN_TYPE)
