@@ -1,3 +1,8 @@
+Thu Aug 26 20:36:30 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (output_aranges): Check DWARF_OFFSET_SIZE not PTR_SIZE
+	when emitting alignment padding.  Emit padding byte of 0 instead of 4.
+
 Thu Aug 26 18:11:20 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (array_type_nelts): Don't create RTL_EXPRs from
