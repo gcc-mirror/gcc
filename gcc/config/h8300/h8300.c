@@ -1630,8 +1630,7 @@ initial_offset (from, to)
       /* See the comments for get_frame_size.  We need to round it up to
 	 STACK_BOUNDARY.  */
 
-      offset += ((get_frame_size () + STACK_BOUNDARY / BITS_PER_UNIT - 1)
-		 & ~(STACK_BOUNDARY / BITS_PER_UNIT - 1));
+      offset += round_frame_size (get_frame_size ());
 
       if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
 	offset += UNITS_PER_WORD;	/* Skip saved PC */
