@@ -45,11 +45,25 @@ import gnu.java.awt.peer.EmbeddedWindowPeer;
 public class GtkEmbeddedWindowPeer extends GtkFramePeer
   implements EmbeddedWindowPeer
 {
-  native void create(int window_id);
+  native void create (long socket_id);
 
   void create ()
   {
-    create (((EmbeddedWindow) awtComponent).getHandle());
+    create (((EmbeddedWindow) awtComponent).getHandle ());
+  }
+
+  native void construct (long socket_id);
+
+  // FIXME: embed doesn't work right now, though I believe it should.
+  // This means that you can't call setVisible (true) on an
+  // EmbeddedWindow before calling setHandle with a valid handle.  The
+  // problem is that somewhere after the call to
+  // GtkEmbeddedWindow.create and before the call to
+  // GtkEmbeddedWindow.construct, the GtkPlug peer is being realized.
+  // GtkSocket silently fails to embed an already-realized GtkPlug.
+  public void embed (long handle)
+  {
+    construct (handle);
   }
 
   public GtkEmbeddedWindowPeer (EmbeddedWindow w)
