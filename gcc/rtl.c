@@ -665,7 +665,7 @@ read_rtx (infile)
       case 'E':
 	{
 	  register struct rtx_list *next_rtx, *rtx_list_link;
-	  struct rtx_list *list_rtx = NULL_RTX;
+	  struct rtx_list *list_rtx = NULL;
 
 	  c = read_skip_spaces (infile);
 	  if (c != '[')
