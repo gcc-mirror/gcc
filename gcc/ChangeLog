@@ -1,3 +1,8 @@
+2000-07-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* tradcpp.c (initialize_builtins): Honor NO_BUILTIN_SIZE_TYPE
+	and friends.
+
 2000-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (UNION_INIT_ZERO): New macro for initializing union

@@ -4673,9 +4673,15 @@ initialize_builtins ()
   install_spec ("__INCLUDE_LEVEL__", T_INCLUDE_LEVEL);
   install_spec ("__LINE__",          T_SPECLINE);
 
+#ifndef NO_BUILTIN_SIZE_TYPE
   install_value ("__SIZE_TYPE__",         SIZE_TYPE);
+#endif
+#ifndef NO_BUILTIN_PTRDIFF_TYPE
   install_value ("__PTRDIFF_TYPE__",      PTRDIFF_TYPE);
+#endif
+#ifndef NO_BUILTIN_WCHAR_TYPE
   install_value ("__WCHAR_TYPE__",        WCHAR_TYPE);
+#endif
   install_value ("__REGISTER_PREFIX__",   REGISTER_PREFIX);
   install_value ("__USER_LABEL_PREFIX__", user_label_prefix);
 }
