@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with PE obj format.
-   Copyright (C) 1995, 1996, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
    
    This file is part of GCC.
@@ -81,7 +81,9 @@
   0,0,0,0,0,0,0,0,	\
   0,0,0,1,0,1,0,1,	\
   0,0,0,0,0,0,0,0,	\
-  1,1,1			\
+  1,1,1,		\
+  1,1,1,1,1,1,1,1,	\
+  1,1,1,1,1,1,1,1	\
 }
 
 /* Same as arm.h except r10 is call-saved, not fixed.  */
@@ -91,7 +93,9 @@
   1,1,1,1,0,0,0,0,	\
   0,0,0,1,1,1,1,1,	\
   1,1,1,1,0,0,0,0,	\
-  1,1,1			\
+  1,1,1,		\
+  1,1,1,1,1,1,1,1,	\
+  1,1,1,1,1,1,1,1	\
 }
 
 /* Define this macro if in some cases global symbols from one translation
