@@ -1,3 +1,10 @@
+2004-01-16  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc: Moved VMClassLoader methods...
+	* java/lang/natVMClassLoader.cc: ...here.  New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added natVMClassLoader.cc.
+
 2004-01-16  Fernando Nasser  <fnasser@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c (pre_event_handler):
