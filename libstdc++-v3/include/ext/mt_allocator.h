@@ -353,16 +353,8 @@ namespace __gnu_cxx
 		      tmp = __bin.first[0]->next;
 		      block = __bin.first[0];
 
-		      if (__bin.first[__thread_id] == NULL)
-			{
-			  __bin.first[__thread_id] = block;
-			  block->next = NULL;
-			}
-		      else
-			{
-			  block->next = __bin.first[__thread_id];
-			  __bin.first[__thread_id] = block;
-			}
+		      block->next = __bin.first[__thread_id];
+		      __bin.first[__thread_id] = block;		      
 		      
 		      block->thread_id = __thread_id;
 		      __bin.free[__thread_id]++;
@@ -466,16 +458,8 @@ namespace __gnu_cxx
 	      while (remove > 0)
 		{
 		  tmp = __bin.first[thread_id]->next;
-		  if (__bin.first[0] == NULL)
-		    {
-		      __bin.first[0] = __bin.first[thread_id];
-		      __bin.first[0]->next = NULL;
-		    }
-		  else
-		    {
-		      __bin.first[thread_id]->next = __bin.first[0];
-		      __bin.first[0] = __bin.first[thread_id];
-		    }
+		  __bin.first[thread_id]->next = __bin.first[0];
+		  __bin.first[0] = __bin.first[thread_id];
 		  
 		  __bin.first[thread_id] = tmp;
 		  __bin.free[thread_id]--;
@@ -486,41 +470,20 @@ namespace __gnu_cxx
 	  
 	  // Return this block to our list and update counters and
 	  // owner id as needed.
-	  if (__bin.first[thread_id] == NULL)
-	    {
-	      __bin.first[thread_id] = block;
-	      block->next = NULL;
-	    }
-	  else
-	    {
-	      block->next = __bin.first[thread_id];
-	      __bin.first[thread_id] = block;
-	    }
+	  block->next = __bin.first[thread_id];
+	  __bin.first[thread_id] = block;
 	  
 	  __bin.free[thread_id]++;
 	  
-	  if (thread_id == block->thread_id)
-	    __bin.used[thread_id]--;
-	  else
-	    {
-	      __bin.used[block->thread_id]--;
-	      block->thread_id = thread_id;
-	    }
+	  __bin.used[block->thread_id]--;
+	  block->thread_id = thread_id;
 	}
       else
 #endif
 	{
 	  // Single threaded application - return to global pool.
-	  if (__bin.first[0] == NULL)
-	    {
-	      __bin.first[0] = block;
-	      block->next = NULL;
-	    }
-	  else
-	    {
-	      block->next = __bin.first[0];
-	      __bin.first[0] = block;
-	    }
+	  block->next = __bin.first[0];
+	  __bin.first[0] = block;
 	}
     }
   
