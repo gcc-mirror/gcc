@@ -1,3 +1,8 @@
+Tue Oct 20 10:04:51 1998  Graham  <grahams@rcp.co.uk>
+
+	* reload.c (loc_mentioned_in_p): Add missing braces to bind
+	else to correct if.
+
 Mon Oct 19 16:34:05 1998  Tom Tromey  <tromey@cygnus.com>
 
 	* gcc.c (option_map): Added --classpath and --CLASSPATH.
