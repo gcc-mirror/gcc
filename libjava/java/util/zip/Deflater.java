@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,15 +51,41 @@ import gnu.gcj.RawData;
 
 public class Deflater
 {
+  /**
+   * The best and slowest compression level.  This tries to find very
+   * long and distant string repetitions.  
+   */
   public static final int BEST_COMPRESSION = 9;
+  /**
+   * The worst but fastest compression level.  
+   */
   public static final int BEST_SPEED = 1;
+  /**
+   * The default compression level.
+   */
   public static final int DEFAULT_COMPRESSION = -1;
+  /**
+   * This level won't compress at all but output uncompressed blocks.
+   */
   public static final int NO_COMPRESSION = 0;
 
+  /**
+   * The default strategy.
+   */
   public static final int DEFAULT_STRATEGY = 0;
   public static final int FILTERED = 1;
+
+  /** 
+   * This strategy will not look for string repetitions at all.  It
+   * only encodes with Huffman trees (which means, that more common
+   * characters get a smaller encoding.  
+   */
   public static final int HUFFMAN_ONLY = 2;
 
+  /**
+   * The compression method.  This is the only method supported so far.
+   * There is no need to use this constant at all.
+   */
   public static final int DEFLATED = 8;
 
   public int deflate (byte[] buf)

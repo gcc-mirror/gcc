@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,16 +41,22 @@ import java.io.FilterOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 
-/**
- * @author Tom Tromey
- * @date May 17, 1999
- */
-
 /* Written using on-line Java Platform 1.2 API Specification
  * and JCL book.
  * Believed complete and correct.
  */
 
+/**
+ * This is a special FilterOutputStream deflating the bytes that are
+ * written through it.  It uses the Deflater for deflating.
+ *
+ * A special thing to be noted is that flush() doesn't flush
+ * everything in Sun's JDK, but it does so in jazzlib. This is because
+ * Sun's Deflater doesn't have a way to flush() everything, without
+ * finishing the stream.
+ *
+ * @author Tom Tromey, Jochen Hoenicke
+ */
 public class DeflaterOutputStream extends FilterOutputStream
 {
   public void close () throws IOException
