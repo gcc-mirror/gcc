@@ -1,7 +1,18 @@
+2004-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* configure: Regenerated.
+	* builtin-attrs.def (ATTR_SENTINEL, ATTR_SENTINEL_NOTHROW_LIST):
+	New.
+	* builtins.def (BUILT_IN_EXECL, BUILT_IN_EXECLP): Add `sentinel'
+	attribute.
+	* c-common.c (handle_sentinel_attribute, check_function_sentinel):
+	New functions.
+	(c_common_attribute_table): Add `sentinel' attribute.
+	(check_function_arguments): Handle `sentinel' attribute.
+	* doc/extend.texi: Document `sentinel' attribute.
 
 2004-09-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* configure: Regenerated.
 
 	* gimplify.c (internal_get_tmp_var): Remove unused var CLASS.
 

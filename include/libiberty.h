@@ -93,7 +93,7 @@ extern char *lrealpath PARAMS ((const char *));
    the last argument of this function, to terminate the list of
    strings.  Allocates memory using xmalloc.  */
 
-extern char *concat PARAMS ((const char *, ...)) ATTRIBUTE_MALLOC;
+extern char *concat PARAMS ((const char *, ...)) ATTRIBUTE_MALLOC ATTRIBUTE_SENTINEL;
 
 /* Concatenate an arbitrary number of strings.  You must pass NULL as
    the last argument of this function, to terminate the list of
@@ -102,27 +102,27 @@ extern char *concat PARAMS ((const char *, ...)) ATTRIBUTE_MALLOC;
    pointer to be freed after the new string is created, similar to the
    way xrealloc works.  */
 
-extern char *reconcat PARAMS ((char *, const char *, ...)) ATTRIBUTE_MALLOC;
+extern char *reconcat PARAMS ((char *, const char *, ...)) ATTRIBUTE_MALLOC ATTRIBUTE_SENTINEL;
 
 /* Determine the length of concatenating an arbitrary number of
    strings.  You must pass NULL as the last argument of this function,
    to terminate the list of strings.  */
 
-extern unsigned long concat_length PARAMS ((const char *, ...));
+extern unsigned long concat_length PARAMS ((const char *, ...)) ATTRIBUTE_SENTINEL;
 
 /* Concatenate an arbitrary number of strings into a SUPPLIED area of
    memory.  You must pass NULL as the last argument of this function,
    to terminate the list of strings.  The supplied memory is assumed
    to be large enough.  */
 
-extern char *concat_copy PARAMS ((char *, const char *, ...));
+extern char *concat_copy PARAMS ((char *, const char *, ...)) ATTRIBUTE_SENTINEL;
 
 /* Concatenate an arbitrary number of strings into a GLOBAL area of
    memory.  You must pass NULL as the last argument of this function,
    to terminate the list of strings.  The supplied memory is assumed
    to be large enough.  */
 
-extern char *concat_copy2 PARAMS ((const char *, ...));
+extern char *concat_copy2 PARAMS ((const char *, ...)) ATTRIBUTE_SENTINEL;
 
 /* This is the global area used by concat_copy2.  */
 
