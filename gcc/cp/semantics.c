@@ -1073,6 +1073,8 @@ do_poplevel ()
     expand_end_bindings (getdecls (), kept_level_p (), 0);
   if (stmts_are_full_exprs_p)
     t = poplevel (kept_level_p (), 1, 0);
+  else
+    t = NULL_TREE;
   pop_momentary ();
   return t;
 }
