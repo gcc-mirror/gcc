@@ -1,5 +1,7 @@
-// Build don't link:  
-// XFAIL, doesn't.
+// Ambiguous conversion, three candidates:
+// builtin == (int, int), and the two user-defined operators
+// Each one requires a user-defined ICS where another uses builtin conversions,
+// so none is the best viable function.
 
 class MyInt
 {
@@ -9,16 +11,16 @@ public:
 };
 
 bool operator==(const MyInt& a, const int& b)
-{
+{                                               // ERROR - candidate
         return (int)a == b;
 }
 
 bool operator==(const MyInt& a, const MyInt& b)
-{
+{                                               // ERROR - candidate
         return (int)a == (int)b;
 }
 
 bool f()
 {
-        return 3 == MyInt();
-}
+  return 3 == MyInt();                          // ERROR - ambiguous
+}                                               // ERROR - no return value
