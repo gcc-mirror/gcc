@@ -39,10 +39,6 @@ USAGE:
 BUGS/FEATURES:
         remove() isn't written yet.
 
-	we can't change the capacity of a PersistentByteMap.
-
-        0x12345678 is a bad choice for the magic number.
-
         capacity is fixed once the map has been created.
 
         We use linear probing to resolve collisions.  It might be
@@ -51,11 +47,7 @@ BUGS/FEATURES:
         table is half full there are only on average 1.5 probes for a
         successful search and 2.5 probes for an unsuccessful one.
 
-        We don't use unique strings.  This wastes space.
-
-        capacity should probably be prime, but we don't check that.
-
-	we don't do any locking at all: adding to a PersistentByteMap
+	We don't do any locking at all: adding to a PersistentByteMap
 	at runtime is possible, but it requires filesystem locks
 	around get(), put(), and remove().
 */
@@ -67,6 +59,7 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.security.MessageDigest;
+import java.math.BigInteger;
 
 public class PersistentByteMap
 {
@@ -94,11 +87,17 @@ public class PersistentByteMap
 
   private long length;      // the length of the underlying file
 
+  private final File name;  // The name of the underlying file
+
   static private final int UNUSED_ENTRY = -1; 
 
   static public final int KEYS = 0;
   static public final int VALUES = 1;
   static public final int ENTRIES = 2;
+
+  private HashMap values;   // A map of strings in the string table.
+
+  FileChannel fc;           // The underlying file channel.
 
   static final public class AccessMode
   {
@@ -108,10 +107,12 @@ public class PersistentByteMap
     {
       READ_ONLY = new AccessMode(FileChannel.MapMode.READ_ONLY);
       READ_WRITE = new AccessMode(FileChannel.MapMode.READ_WRITE);
+      PRIVATE = new AccessMode(FileChannel.MapMode.PRIVATE);
     }
 
     public static final AccessMode READ_ONLY;
     public static final AccessMode READ_WRITE; 
+    public static final AccessMode PRIVATE;
 
     private AccessMode(FileChannel.MapMode mode)
     {
@@ -119,8 +120,9 @@ public class PersistentByteMap
     }
   }
 
-  private PersistentByteMap()
+  private PersistentByteMap(File name)
   {
+    this.name = name;
   }
 
   public PersistentByteMap(String filename, AccessMode mode)
@@ -132,7 +134,7 @@ public class PersistentByteMap
   public PersistentByteMap(File f, AccessMode mode)
     throws IOException 
   {
-    FileChannel fc;
+    name = f;
 
     if (mode == AccessMode.READ_ONLY)
       {
@@ -149,7 +151,7 @@ public class PersistentByteMap
     buf = fc.map(mode.mapMode, 0, length);
 
     int magic = getWord (MAGIC);
-    if (magic != 0x12345678)
+    if (magic != 0x67636a64) /* "gcjd" */
       throw new IllegalArgumentException(f.getName());
 
     table_base = getWord (TABLE_BASE);
@@ -167,8 +169,27 @@ public class PersistentByteMap
   {
     f.createNewFile();
     RandomAccessFile raf = new RandomAccessFile(f, "rw");
-        
-    this.capacity = capacity;
+
+    {        
+      // The user has explicitly provided a size for the table.
+      // We're going to make that size prime.  This isn't
+      // strictly necessary but it can't hurt.
+      //
+      // We expand the size by 3/2 because the hash table is
+      // intolerably slow when more than 2/3 full.
+      
+      BigInteger size = new BigInteger(Integer.toString(capacity * 3/2));
+      BigInteger two = BigInteger.ONE.add(BigInteger.ONE);
+      
+      if (size.getLowestSetBit() != 0) // A hard way to say isEven()
+	size = size.add(BigInteger.ONE);
+    
+      while (! size.isProbablePrime(10))
+	size = size.add(two);
+      
+      this.capacity = capacity = size.intValue();
+    }
+
     table_base = 64;
     string_base = table_base + capacity * TABLE_ENTRY_SIZE;
     string_size = 0;
@@ -183,13 +204,13 @@ public class PersistentByteMap
     for (long i = 0; i < totalFileSize; i+= 4096)
       raf.write(_4k);
         
-    FileChannel fc = raf.getChannel();
+    fc = raf.getChannel();
     buf = fc.map(FileChannel.MapMode.READ_WRITE, 0, raf.length());
 
     for (int i = 0; i < capacity; i++)
       putKeyPos(UNUSED_ENTRY, i);
         
-    putWord(0x12345678, MAGIC);
+    putWord(0x67636a64, MAGIC);
     putWord(0x01, VERSION);
     putWord(capacity, CAPACITY);
     putWord(table_base, TABLE_BASE);
@@ -197,15 +218,17 @@ public class PersistentByteMap
     putWord(file_size, FILE_SIZE);
     putWord(elements, ELEMENTS);
     buf.force();
+
+    length = fc.size();
+    string_size = 0;
   }     
 
-  static public PersistentByteMap emptyPersistentByteMap(String filename, 
-                                                         int capacity, int strtabSize)
+  static public PersistentByteMap 
+  emptyPersistentByteMap(File name, int capacity, int strtabSize)
     throws IOException 
   {
-    File f = new File(filename);
-    PersistentByteMap m = new PersistentByteMap();
-    m.init(m, f, capacity, strtabSize);
+    PersistentByteMap m = new PersistentByteMap(name);
+    m.init(m, name, capacity, strtabSize);
     return m;
   }     
 
@@ -313,9 +336,7 @@ public class PersistentByteMap
   {
     int hashIndex = hash(digest);
 
-    // With the the table 2/3 full there will be on average 2 probes
-    // for a successful search and 5 probes for an unsuccessful one.
-    if (elements >= capacity * 2/3)
+    if (elements >= capacity())
       throw new IllegalAccessException("Table Full: " + elements);
 
     do
@@ -336,7 +357,7 @@ public class PersistentByteMap
             int newValue = addBytes((byte[])value);
             putValuePos(newValue, hashIndex);
             return;
-          }         
+          }
                 
         hashIndex++;
         hashIndex %= capacity;
@@ -347,6 +368,33 @@ public class PersistentByteMap
   private int addBytes (byte[] data)
     throws IllegalAccessException
   {
+    if (data.length > 16)
+      {
+	// Keep track of long strings in the hope that we will be able
+	// to re-use them.
+	if (values == null)
+	  {
+	    values = new HashMap();
+	
+	    for (int i = 0; i < capacity; i++)
+	      if (getKeyPos(i) != UNUSED_ENTRY)
+		{
+		  int pos = getValuePos(i);
+		  ByteWrapper bytes = new ByteWrapper(getBytes(pos));
+		  values.put(bytes, new Integer(pos));
+		}
+	  }
+
+	{
+	  Object result = values.get(new ByteWrapper(data));
+	  if (result != null)
+	    {
+	      // We already have this value in the string table
+	      return ((Integer)result).intValue();
+	    }
+	}
+      }
+
     if (data.length + INT_SIZE >= this.length)
       throw new IllegalAccessException("String table Full");
 
@@ -363,6 +411,9 @@ public class PersistentByteMap
     file_size = extent;
     putWord (string_size, STRING_SIZE);
     putWord (file_size, FILE_SIZE);
+
+    if (data.length > 16)
+      values.put(new ByteWrapper(data), new Integer(top - string_base));
         
     return top - string_base;
   }
@@ -377,10 +428,67 @@ public class PersistentByteMap
     return elements;
   }
 
+  public int stringTableSize()
+  {
+    return string_size;
+  }
+
   public int capacity()
   {
-    return capacity;
+    // With the the table 2/3 full there will be on average 2 probes
+    // for a successful search and 5 probes for an unsuccessful one.
+    return capacity * 2/3;
   }
+
+  public void force()
+  {
+    buf.force();
+  }
+
+  public File getFile()
+  {
+    return name;
+  }
+
+  // Close the map.  Once this has been done, the map can no longer be
+  // used.
+  public void close()
+  {
+    force();
+    fc.close();
+  }
+
+  public void 
+  putAll(PersistentByteMap t)
+    throws IllegalAccessException
+  {
+    // We can use a fast copy if the size of a map has not changed.
+    if (this.elements == 0 && t.capacity == this.capacity
+	&& t.length == this.length)
+      {
+	this.buf.position(0);
+	t.buf.position(0);
+	this.buf.put(t.buf);
+	this.table_base = t.table_base;
+	this.string_base = t.string_base;
+	this.string_size = t.string_size;
+	this.file_size = t.file_size;
+	this.elements = t.elements;
+	if (t.values != null)
+	  this.values = (HashMap)t.values.clone();
+	return;
+      }
+
+    // Otherwise do it the hard way.
+    Iterator iterator = t.iterator(PersistentByteMap.ENTRIES);
+    while (iterator.hasNext())
+      {
+	PersistentByteMap.MapEntry entry 
+	  = (PersistentByteMap.MapEntry)iterator.next();
+	this.put((byte[])entry.getKey(), (byte[])entry.getValue());
+      }
+  }
+	
 
   private final class HashIterator implements Iterator
   {
@@ -479,6 +587,33 @@ public class PersistentByteMap
     public final int getBucket()
     {
       return bucket;
+    }
+  }
+
+  // A wrapper class for a byte array that allows collections to be
+  // made.
+  private final class ByteWrapper
+  {
+    final byte[] bytes;
+    final int hash;
+
+    public ByteWrapper (byte[] bytes)
+    {
+      int sum = 0;
+      this.bytes = bytes;
+      for (int i = 0; i < bytes.length; i++)
+	sum += bytes[i];
+      hash = sum;
+    }
+
+    public int hashCode()
+    {
+      return hash;
+    }
+  
+    public boolean equals(Object obj)
+    {
+      return Arrays.equals(bytes, ((ByteWrapper)obj).bytes);
     }
   }
 }
