@@ -1,3 +1,8 @@
+2004-02-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13635
+	* g++.dg/template/spec11.C: New test.
+
 2004-02-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14250
