@@ -711,27 +711,69 @@ DEF_GCC_BUILTIN(BUILT_IN_PREFETCH,
 		BT_FN_VOID_CONST_PTR_VAR,
 		ATTR_NULL)
 
-/* Stdio builtins.  */
-DEF_FALLBACK_BUILTIN(BUILT_IN_PUTCHAR,
-		    "__builtin_putchar",
-		     BT_FN_INT_INT,
-		     ATTR_NOTHROW_LIST)
-DEF_FALLBACK_BUILTIN(BUILT_IN_PUTS,
-		     "__builtin_puts",
-		     BT_FN_INT_CONST_STRING,
-		     ATTR_NOTHROW_LIST)
+/* stdio.h builtins (without FILE *).  */
+
 DEF_FRONT_END_LIB_BUILTIN(BUILT_IN_PRINTF,
 			  "__builtin_printf",
 			  BT_FN_INT_CONST_STRING_VAR,
 			  ATTR_FORMAT_PRINTF_1_2)
-DEF_FALLBACK_BUILTIN(BUILT_IN_FPUTC,
-		     "__builtin_fputc",
-		     BT_FN_INT_INT_PTR,
-		     ATTR_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_PUTCHAR,
+		"__builtin_putchar",
+		BT_FN_INT_INT,
+		ATTR_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_PUTS,
+		"__builtin_puts",
+		BT_FN_INT_CONST_STRING,
+		ATTR_NOTHROW_LIST)
+DEF_C99_BUILTIN(BUILT_IN_SNPRINTF,
+		"__builtin_snprintf",
+		BT_FN_INT_STRING_SIZE_CONST_STRING_VAR,
+		ATTR_FORMAT_PRINTF_3_4)
+DEF_LIB_BUILTIN(BUILT_IN_SPRINTF,
+		"__builtin_sprintf",
+		BT_FN_INT_STRING_CONST_STRING_VAR,
+		ATTR_FORMAT_PRINTF_2_3)
+DEF_LIB_BUILTIN(BUILT_IN_SCANF,
+		"__builtin_scanf",
+		BT_FN_INT_CONST_STRING_VAR,
+		ATTR_FORMAT_SCANF_1_2)
+DEF_LIB_BUILTIN(BUILT_IN_SSCANF,
+		"__builtin_sscanf",
+		BT_FN_INT_CONST_STRING_CONST_STRING_VAR,
+		ATTR_FORMAT_SCANF_2_3)
+DEF_LIB_BUILTIN(BUILT_IN_VPRINTF,
+		"__builtin_vprintf",
+		BT_FN_INT_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_PRINTF_1_0)
+DEF_C99_BUILTIN(BUILT_IN_VSCANF,
+		"__builtin_vscanf",
+		BT_FN_INT_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_SCANF_1_0)
+DEF_C99_BUILTIN(BUILT_IN_VSSCANF,
+		"__builtin_vsscanf",
+		BT_FN_INT_CONST_STRING_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_SCANF_2_0)
+DEF_C99_BUILTIN(BUILT_IN_VSNPRINTF,
+		"__builtin_vsnprintf",
+		BT_FN_INT_STRING_SIZE_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_PRINTF_3_0)
+DEF_LIB_BUILTIN(BUILT_IN_VSPRINTF,
+		"__builtin_vsprintf",
+		BT_FN_INT_STRING_CONST_STRING_VALIST_ARG,
+		ATTR_FORMAT_PRINTF_2_0)
+
+
+/* stdio.h builtins (with FILE *).  */
+
 /* Declare the __builtin_ style with arguments and the regular style
    without them.  We rely on stdio.h to supply the arguments for the
    regular style declaration since we had to use void* instead of
    FILE* in the __builtin_ prototype supplied here.  */
+
+DEF_FALLBACK_BUILTIN(BUILT_IN_FPUTC,
+		     "__builtin_fputc",
+		     BT_FN_INT_INT_PTR,
+		     ATTR_NOTHROW_LIST)
 DEF_BUILTIN (BUILT_IN_FPUTS,
 	     "__builtin_fputs",
 	     BUILT_IN_NORMAL,
@@ -747,7 +789,7 @@ DEF_FRONT_END_LIB_BUILTIN(BUILT_IN_FPRINTF,
 			 BT_FN_INT_PTR_CONST_STRING_VAR,
 			 ATTR_FORMAT_PRINTF_2_3)
 
-/* Stdio unlocked builtins.  */
+/* stdio unlocked builtins (without FILE *).  */
 
 DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_PUTCHAR_UNLOCKED,
 			 "__builtin_putchar_unlocked",
@@ -759,13 +801,17 @@ DEF_EXT_FRONT_END_LIB_BUILTIN(BUILT_IN_PRINTF_UNLOCKED,
 			      "__builtin_printf_unlocked",
 			      BT_FN_INT_CONST_STRING_VAR,
 			      ATTR_FORMAT_PRINTF_1_2)
-DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FPUTC_UNLOCKED,
-			 "__builtin_fputc_unlocked",
-			 BT_FN_INT_INT_PTR)
+
+/* stdio unlocked builtins (with FILE *).  */
+
 /* Declare the __builtin_ style with arguments and the regular style
    without them.  We rely on stdio.h to supply the arguments for the
    regular style declaration since we had to use void* instead of
    FILE* in the __builtin_ prototype supplied here.  */
+
+DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FPUTC_UNLOCKED,
+			 "__builtin_fputc_unlocked",
+			 BT_FN_INT_INT_PTR)
 DEF_BUILTIN (BUILT_IN_FPUTS_UNLOCKED,
 	     "__builtin_fputs_unlocked",
 	     BUILT_IN_NORMAL,

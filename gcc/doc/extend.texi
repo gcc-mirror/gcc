@@ -4591,16 +4591,22 @@ v4si f (v4si a, v4si b, v4si c)
 @findex powl
 @findex printf
 @findex printf_unlocked
+@findex putchar
+@findex puts
 @findex rindex
 @findex round
 @findex roundf
 @findex roundl
+@findex scanf
 @findex sin
 @findex sinf
 @findex sinl
+@findex snprintf
+@findex sprintf
 @findex sqrt
 @findex sqrtf
 @findex sqrtl
+@findex sscanf
 @findex strcat
 @findex strchr
 @findex strcmp
@@ -4617,6 +4623,11 @@ v4si f (v4si a, v4si b, v4si c)
 @findex trunc
 @findex truncf
 @findex truncl
+@findex vprintf
+@findex vscanf
+@findex vsnprintf
+@findex vsprintf
+@findex vsscanf
 
 GCC provides a large number of built-in functions other than the ones
 mentioned above.  Some of these are for internal use in the processing
@@ -4648,10 +4659,12 @@ mode.
 
 The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl}, @code{creal},
 @code{crealf}, @code{creall}, @code{cimag}, @code{cimagf}, @code{cimagl},
-@code{_Exit},
-@code{llabs}, @code{imaxabs}, @code{round}, @code{roundf}, @code{roundl},
-@code{trunc}, @code{truncf}, @code{truncl}, @code{nearbyint},
-@code{nearbyintf} and @code{nearbyintl} are handled as built-in functions
+@code{_Exit}, @code{imaxabs}, @code{llabs},
+@code{nearbyint}, @code{nearbyintf}, @code{nearbyintl},
+@code{round}, @code{roundf}, @code{roundl}, @code{snprintf},
+@code{trunc}, @code{truncf}, @code{truncl},
+@code{vscanf}, @code{vsnprintf} and @code{vsscanf}
+are handled as built-in functions
 except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
 
 There are also built-in versions of the ISO C99 functions @code{atan2f},
@@ -4669,10 +4682,13 @@ The ISO C90 functions @code{abort}, @code{abs}, @code{atan2}, @code{ceil},
 @code{exp}, @code{fabs}, @code{floor}, @code{fmod},
 @code{fprintf}, @code{fputs}, @code{labs}, @code{log},
 @code{memcmp}, @code{memcpy}, @code{memset}, @code{pow}, @code{printf},
-@code{sin}, @code{sqrt}, @code{strcat}, @code{strchr}, @code{strcmp},
+@code{putchar}, @code{puts}, @code{scanf}, @code{sin}, @code{snprintf},
+@code{sprintf}, code{sqrt}, @code{sscanf},
+@code{strcat}, @code{strchr}, @code{strcmp},
 @code{strcpy}, @code{strcspn}, @code{strlen}, @code{strncat}, @code{strncmp},
-@code{strncpy}, @code{strpbrk}, @code{strrchr}, @code{strspn}, and
-@code{strstr} are all recognized as built-in functions unless
+@code{strncpy}, @code{strpbrk}, @code{strrchr}, @code{strspn}, @code{strstr},
+@code{vprintf} and @code{vsprintf}
+are all recognized as built-in functions unless
 @option{-fno-builtin} is specified (or @option{-fno-builtin-@var{function}}
 is specified for an individual function).  All of these functions have
 corresponding versions prefixed with @code{__builtin_}.

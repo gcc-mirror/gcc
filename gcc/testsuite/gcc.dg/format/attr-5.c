@@ -11,7 +11,7 @@ static int scanf(const char *restrict, ...);
 
 /* This sscanf declaration doesn't have variable arguments, so isn't
    compatible with a format attribute.  */
-extern int sscanf(const char *restrict, const char *restrict, int *);
+extern int sscanf(const char *restrict, const char *restrict, int *); /* { dg-warning "conflict" "conflict" } */
 
 void
 foo (const char *s, int *p)
