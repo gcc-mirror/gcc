@@ -66,11 +66,6 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define PATH_SEPARATOR ':'
 #endif
 
-/* In case config.h defines these.  */
-#undef bcopy
-#undef bzero
-#undef bcmp
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
