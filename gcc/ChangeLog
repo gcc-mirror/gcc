@@ -1,3 +1,8 @@
+2005-03-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* config.gcc: Remove excess indentation.
+	(powerpc*-*-*, rs6000-*-*): Accept --with-cpu/tune power5 and 8548.
+
 2005-03-13  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	PR target/20288
