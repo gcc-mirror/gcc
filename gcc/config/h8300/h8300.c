@@ -3056,10 +3056,10 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    case SHIFT_ASHIFT:
 	      abort ();
 	    case SHIFT_LSHIFTRT:
-	      info->special = "bld\t#7,%z0\n\tmov.w\t%e0,%f0\n\txor\t%y0,%y0\n\txor\t%z0,%z0\n\trotxl\t%w0,%w0\n\trotxl\t%x0,%x0\n\trotxl\t%y0,%y0";
+	      info->special = "bld\t#7,%z0\n\tmov.w\t%e0,%f0\n\txor\t%y0,%y0\n\txor\t%z0,%z0\n\trotxl\t%w0\n\trotxl\t%x0\n\trotxl\t%y0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      info->special = "bld\t#7,%z0\n\tmov.w\t%e0,%f0\n\trotxl\t%w0,%w0\n\trotxl\t%x0,%x0\n\tsubx\t%y0,%y0\n\tsubx\t%z0,%z0";
+	      info->special = "bld\t#7,%z0\n\tmov.w\t%e0,%f0\n\trotxl\t%w0\n\trotxl\t%x0\n\tsubx\t%y0,%y0\n\tsubx\t%z0,%z0";
 	      goto end;
 	    }
 	}
