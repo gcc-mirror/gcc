@@ -138,12 +138,14 @@ static void layout_class_type PROTO((tree, int *, int *, tree *, tree *));
 static void fixup_pending_inline PROTO((struct pending_inline *));
 static void fixup_inline_methods PROTO((tree));
 static void set_primary_base PROTO((tree, int, int *));
+static void dfs_propagate_binfo_offsets PROTO((tree, tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static void layout_basetypes PROTO((tree));
-static tree dfs_set_offset_for_vbases PROTO((tree, void *));
 static void layout_virtual_bases PROTO((tree));
 static void remove_base_field PROTO((tree, tree, tree *));
 static void remove_base_fields PROTO((tree));
+static void dfs_set_offset_for_shared_vbases PROTO((tree, void *));
+static void dfs_set_offset_for_unshared_vbases PROTO((tree, void *));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -335,16 +337,7 @@ build_vbase_path (code, type, expr, path, nonnull)
 	}
     }
   else
-    {
-      if (last_virtual)
-	{
-	  offset = BINFO_OFFSET (BINFO_FOR_VBASE (last_virtual, 
-						  basetype));
-	  offset = size_binop (PLUS_EXPR, offset, BINFO_OFFSET (last));
-	}
-      else
-	offset = BINFO_OFFSET (last);
-    }
+    offset = BINFO_OFFSET (last);
 
   if (TREE_INT_CST_LOW (offset))
     {
@@ -4142,7 +4135,26 @@ fixup_inline_methods (type)
   CLASSTYPE_INLINE_FRIENDS (type) = NULL_TREE;
 }
 
-/* Add OFFSET to all base types of T.
+/* Called from propagate_binfo_offsets via dfs_walk.  */
+
+static tree
+dfs_propagate_binfo_offsets (binfo, data)
+     tree binfo; 
+     void *data;
+{
+  tree offset = (tree) data;
+
+  /* Update the BINFO_OFFSET for this base.  */
+  BINFO_OFFSET (binfo) 
+    = size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), offset);
+
+  SET_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
+}
+
+/* Add OFFSET to all base types of BINFO which is a base in the
+   hierarchy dominated by T.
 
    OFFSET, which is a type offset, is number of bytes.
 
@@ -4154,87 +4166,14 @@ propagate_binfo_offsets (binfo, offset)
      tree binfo;
      tree offset;
 {
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-  if (flag_new_abi)
-    {
-      for (i = 0; i < n_baselinks; ++i)
-	{
-	  tree base_binfo;
-
-	  /* Figure out which base we're looking at.  */
-	  base_binfo = TREE_VEC_ELT (binfos, i);
-
-	  /* Skip non-primary virtual bases.  Their BINFO_OFFSET
-	     doesn't matter since they are always reached by using
-	     offsets looked up at run-time.  */
-	  if (TREE_VIA_VIRTUAL (base_binfo) 
-	      && i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo)))
-	    continue;
-
-	  /* Whatever offset this class used to have in its immediate
-	     derived class, it is now at OFFSET more bytes in its
-	     final derived class, since the immediate derived class is
-	     already at the indicated OFFSET.  */
-	  BINFO_OFFSET (base_binfo)
-	    = size_binop (PLUS_EXPR, BINFO_OFFSET (base_binfo), offset);
-
-	  propagate_binfo_offsets (base_binfo, offset);
-	}
-    }
-  else
-    {
-      /* This algorithm, used for the old ABI, is neither simple, nor
-	 general.  For example, it mishandles the case of:
-       
-           struct A;
-	   struct B : public A;
-	   struct C : public B;
-	   
-	 if B is at offset zero in C, but A is not in offset zero in
-	 B.  In that case, it sets the BINFO_OFFSET for A to zero.
-	 (This sitution arises in the new ABI if B has virtual
-	 functions, but A does not.)  Rather than change this
-	 algorithm, and risking breaking the old ABI, it is preserved
-	 here.  */
-      for (i = 0; i < n_baselinks; /* note increment is done in the
-				      loop.  */)
-	{
-	  tree base_binfo = TREE_VEC_ELT (binfos, i);
-
-	  if (TREE_VIA_VIRTUAL (base_binfo))
-	    i += 1;
-	  else
-	    {
-	      int j;
-	      tree delta = NULL_TREE;
-
-	      for (j = i+1; j < n_baselinks; j++)
-		if (! TREE_VIA_VIRTUAL (TREE_VEC_ELT (binfos, j)))
-		  {
-		    /* The next basetype offset must take into account
-		       the space between the classes, not just the
-		       size of each class.  */
-		    delta = size_binop (MINUS_EXPR,
-					BINFO_OFFSET (TREE_VEC_ELT (binfos, 
-								    j)),
-					BINFO_OFFSET (base_binfo));
-		    break;
-		  }
-
-	      BINFO_OFFSET (base_binfo) = offset;
-
-	      propagate_binfo_offsets (base_binfo, offset);
-
-	      /* Go to our next class that counts for offset
-                 propagation.  */
-	      i = j;
-	      if (i < n_baselinks)
-		offset = size_binop (PLUS_EXPR, offset, delta);
-	    }
-	}
-    }
+  dfs_walk (binfo, 
+	    dfs_propagate_binfo_offsets, 
+	    dfs_skip_nonprimary_vbases_unmarkedp,
+	    offset);
+  dfs_walk (binfo,
+	    dfs_unmark,
+	    dfs_skip_nonprimary_vbases_markedp,
+	    NULL);
 }
 
 /* Remove *FIELD (which corresponds to the base given by BINFO) from
@@ -4258,7 +4197,6 @@ remove_base_field (t, binfo, field)
   offset
     = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (*field)),
 		      BITS_PER_UNIT));
-  BINFO_OFFSET (binfo) = offset;
   propagate_binfo_offsets (binfo, offset);
 
   /* Remove this field.  */
@@ -4317,27 +4255,47 @@ remove_base_fields (t)
     }
 }
 
-/* Called via dfs_walk from layout_virtual_bases.  */
+/* Called via dfs_walk from layout_virtual bases.  */
 
 static tree
-dfs_set_offset_for_vbases (binfo, data)
+dfs_set_offset_for_shared_vbases (binfo, data)
      tree binfo;
      void *data;
 {
-  /* If this is a primary virtual base that we have not encountered
-     before, give it an offset.  */
-  if (TREE_VIA_VIRTUAL (binfo) 
-      && BINFO_PRIMARY_MARKED_P (binfo)
-      && !BINFO_MARKED (binfo))
+  if (TREE_VIA_VIRTUAL (binfo) && BINFO_PRIMARY_MARKED_P (binfo))
     {
-      tree vbase;
+      /* Update the shared copy.  */
+      tree shared_binfo;
 
-      vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), (tree) data);
-      BINFO_OFFSET (vbase) = BINFO_OFFSET (binfo);
-      SET_BINFO_VBASE_MARKED (binfo);
+      shared_binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), (tree) data);
+      BINFO_OFFSET (shared_binfo) = BINFO_OFFSET (binfo);
     }
 
-  SET_BINFO_MARKED (binfo);
+  return NULL_TREE;
+}
+
+/* Called via dfs_walk from layout_virtual bases.  */
+
+static tree
+dfs_set_offset_for_unshared_vbases (binfo, data)
+     tree binfo;
+     void *data;
+{
+  /* If this is a virtual base, make sure it has the same offset as
+     the shared copy.  If it's a primary base, then we know it's
+     correct.  */
+  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
+    {
+      tree t = (tree) data;
+      tree vbase;
+      tree offset;
+      
+      vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), t);
+      offset = ssize_binop (MINUS_EXPR, 
+			    BINFO_OFFSET (vbase),
+			    BINFO_OFFSET (binfo));
+      propagate_binfo_offsets (binfo, offset);
+    }
 
   return NULL_TREE;
 }
@@ -4357,10 +4315,12 @@ layout_virtual_bases (t)
   /* Make every class have alignment of at least one.  */
   TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), BITS_PER_UNIT);
 
+  /* Go through the virtual bases, allocating space for each virtual
+     base that is not already a primary base class.  */
   for (vbase = CLASSTYPE_VBASECLASSES (t); 
        vbase; 
        vbase = TREE_CHAIN (vbase))
-    if (!BINFO_PRIMARY_MARKED_P (vbase))
+    if (!BINFO_VBASE_PRIMARY_P (vbase))
       {
 	/* This virtual base is not a primary base of any class in the
 	   hierarchy, so we have to add space for it.  */
@@ -4375,12 +4335,29 @@ layout_virtual_bases (t)
 	   appropriately aligned offset.  */
 	dsize = CEIL (dsize, desired_align) * desired_align;
 	/* And compute the offset of the virtual base.  */
-	BINFO_OFFSET (vbase) = size_int (CEIL (dsize, BITS_PER_UNIT));
+	propagate_binfo_offsets (vbase, 
+				 size_int (CEIL (dsize, BITS_PER_UNIT)));
 	/* Every virtual baseclass takes a least a UNIT, so that we can
 	   take it's address and get something different for each base.  */
 	dsize += MAX (BITS_PER_UNIT,
 		      TREE_INT_CST_LOW (CLASSTYPE_SIZE (basetype)));
       }
+
+  /* Make sure that all of the CLASSTYPE_VBASECLASSES have their
+     BINFO_OFFSET set correctly.  Those we just allocated certainly
+     will.  The others are primary baseclasses; we walk the hierarchy
+     to find the primary copies and update the shared copy.  */
+  dfs_walk (TYPE_BINFO (t), 
+	    dfs_set_offset_for_shared_vbases, 
+	    dfs_unmarked_real_bases_queue_p,
+	    t);
+
+  /* Now, go through the TYPE_BINFO hierarchy again, setting the
+     BINFO_OFFSETs correctly for all non-primary copies of the virtual
+     bases and their direct and indirect bases.  The ambiguity checks
+     in get_base_distance depend on the BINFO_OFFSETs being set
+     correctly.  */
+  dfs_walk (TYPE_BINFO (t), dfs_set_offset_for_unshared_vbases, NULL, t);
 
   /* Now, make sure that the total size of the type is a multiple of
      its alignment.  */
@@ -4388,11 +4365,6 @@ layout_virtual_bases (t)
   TYPE_SIZE (t) = size_int (dsize);
   TYPE_SIZE_UNIT (t) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
 				   size_int (BITS_PER_UNIT));
-
-  /* Run through the hierarchy now, setting up all the BINFO_OFFSETs
-     for those virtual base classes that we did not allocate above.  */
-  dfs_walk (TYPE_BINFO (t), dfs_set_offset_for_vbases, unmarkedp, t);
-  dfs_walk (TYPE_BINFO (t), dfs_vbase_unmark, markedp, NULL);
 }
 
 /* Finish the work of layout_record, now taking virtual bases into account.
@@ -4426,17 +4398,13 @@ layout_basetypes (rec)
      the vbase_types are unshared.  */
   for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
        vbase_types = TREE_CHAIN (vbase_types))
-    {
-      propagate_binfo_offsets (vbase_types, BINFO_OFFSET (vbase_types));
-
-      if (extra_warnings)
-	{
-	  tree basetype = BINFO_TYPE (vbase_types);
-	  if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
-	    cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
-			basetype, rec);
-	}
-    }
+    if (extra_warnings)
+      {
+	tree basetype = BINFO_TYPE (vbase_types);
+	if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
+	  cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
+		      basetype, rec);
+      }
 }
 
 /* Calculate the TYPE_SIZE, TYPE_ALIGN, etc for T.  Calculate
