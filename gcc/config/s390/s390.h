@@ -240,7 +240,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    NONLOCAL needs twice Pmode to maintain both backchain and SP.  */
 #define STACK_SAVEAREA_MODE(LEVEL)      \
   (LEVEL == SAVE_FUNCTION ? VOIDmode    \
-  : LEVEL == SAVE_NONLOCAL ? (TARGET_64BIT ? TImode : DImode) : Pmode)
+  : LEVEL == SAVE_NONLOCAL ? (TARGET_64BIT ? OImode : TImode) : Pmode)
 
 /* Define target floating point format.  */
 #define TARGET_FLOAT_FORMAT \
