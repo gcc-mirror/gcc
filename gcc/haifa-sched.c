@@ -3813,6 +3813,10 @@ sched_analyze (head, tail)
     {
       if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
 	{
+	  /* Make each JUMP_INSN a scheduling barrier for memory references.  */
+	  if (GET_CODE (insn) == JUMP_INSN)
+	    last_pending_memory_flush
+	      = alloc_INSN_LIST (insn, last_pending_memory_flush);
 	  sched_analyze_insn (PATTERN (insn), insn, loop_notes);
 	  loop_notes = 0;
 	}
