@@ -1,3 +1,7 @@
+2001-10-23  Release Manager
+
+	* GCC 3.0.2 Released.
+
 2001-10-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* name-finder.cc (_Jv_name_finder::lookup): Check for NULL dli_sname

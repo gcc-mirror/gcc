@@ -1,3 +1,7 @@
+2001-10-23  Release Manager
+
+	* GCC 3.0.2 Released.
+
 2001-08-21  Christopher Faylor <cgf@cygnus.com>
 
 	* configure.in: Set HAVE_SYS_ERRLIST and HAVE_SYS_NERR whenever hosting
