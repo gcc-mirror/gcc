@@ -509,11 +509,6 @@ int current_function_returns_null;
 
 tree current_function_return_value;
 
-/* Set to nonzero by `grokdeclarator' for a function
-   whose return type is defaulted, if warnings for this are desired.  */
-
-static int warn_about_return_type;
-
 /* Nonzero means give `double' the same size as `float'.  */
 
 extern int flag_short_double;
@@ -9117,24 +9112,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
       else
 	{
-	  if (funcdef_flag)
-	    {
-	      if (warn_return_type
-		  && return_type == return_normal)
-		/* Save warning until we know what is really going on.  */
-		warn_about_return_type = 1;
-	    }
-	  else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
-	    pedwarn ("ANSI C++ forbids typedef which does not specify a type");
-	  else if (innermost_code != CALL_EXPR || pedantic
-		   || (warn_return_type && return_type == return_normal))
-	    {
-	      if (innermost_code == CALL_EXPR)
-		cp_pedwarn ("return-type of `%D' defaults to `int'", dname);
-	      else
-		cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",
-			    dname);
-	    }
+	  if (! pedantic && ! warn_return_type
+	      && funcdef_flag
+	      && MAIN_NAME_P (dname)
+	      && ctype == NULL_TREE
+	      && in_namespace == NULL_TREE
+	      && current_namespace == global_namespace)
+	    /* Let `main () { }' slide, since it's so common.  */;
+	  else
+	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",
+			dname);
 	  type = integer_type_node;
 	}
     }
@@ -12482,7 +12469,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   /* Assume, until we see it does.  */
   current_function_returns_value = 0;
   current_function_returns_null = 0;
-  warn_about_return_type = 0;
   named_labels = 0;
   shadowed_labels = 0;
   current_function_assigns_this = 0;
@@ -12597,7 +12583,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 		pedwarn ("return type for `main' changed to `int'");
 	      TREE_TYPE (decl1) = fntype = default_function_type;
 	    }
-	  warn_about_return_type = 0;
 	}
     }
 
@@ -12647,9 +12632,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  && CLASSTYPE_ABSTRACT_VIRTUALS (TREE_TYPE (fntype)))
 	abstract_virtuals_error (decl1, TREE_TYPE (fntype));
     }
-
-  if (warn_about_return_type)
-    pedwarn ("return-type defaults to `int'");
 
   /* Effective C++ rule 15.  See also c_expand_return.  */
   if (warn_ecpp
@@ -14106,7 +14088,6 @@ struct cp_function
 {
   int returns_value;
   int returns_null;
-  int warn_about_return_type;
   int assigns_this;
   int just_assigned_this;
   int parms_stored;
@@ -14153,7 +14134,6 @@ push_cp_function_context (context)
   p->shadowed_labels = shadowed_labels;
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
-  p->warn_about_return_type = warn_about_return_type;
   p->binding_level = current_binding_level;
   p->ctor_label = ctor_label;
   p->dtor_label = dtor_label;
@@ -14196,7 +14176,6 @@ pop_cp_function_context (context)
   shadowed_labels = p->shadowed_labels;
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
-  warn_about_return_type = p->warn_about_return_type;
   current_binding_level = p->binding_level;
   ctor_label = p->ctor_label;
   dtor_label = p->dtor_label;

@@ -1,5 +1,9 @@
 1998-11-22  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c: Lose warn_about_return_type.
+	(grokdeclarator): Always complain about implicit int, except for
+	`main () { ... }'.
+
 	* decl.c (tag_name): New fn.
 	(xref_tag): Complain about using typedef-name after class-key.
 
