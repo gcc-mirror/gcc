@@ -1,6 +1,11 @@
+2004-08-23  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* win32_threads.c: Move GC_WIN32_THREADS check after gc_priv.h include.
+	Reported by Danny Smith.
+
 2004-08-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	misc.c (GC_init): Replace lhs cast with rhs cast.
+	* misc.c (GC_init): Replace lhs cast with rhs cast.
 
 2004-08-16  Bryce McKinlay  <mckinlay@redhat.com>
 
