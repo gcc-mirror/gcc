@@ -1,3 +1,10 @@
+2002-10-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (start_decl): Unconditionally issue error for
+	'typedef foo = bar'.
+	(cp_finish_decl): Remove special case for TYPE_DECL with initializer.
+	(grokdeclarator): Remove redundant error for 'typedef foo = bar'.
+
 2002-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl2.c (prune_vtable_vardecl): Delete unused function.
@@ -84,7 +91,7 @@
 2002-10-02  Matt Austern  <austern@apple.com>
 	* decl.c (walk_vtables_r): Fixed typo that caused result to
 	never get a nonzero value.
-	
+
 2002-10-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/6627
@@ -98,7 +105,7 @@
 
 	* class.c (check_field_decls): Changed warning about const member
 	variables so that it doesn't get issued for a class aggregate.
-	
+
 2002-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (cp_finish_decl): Make sure array types are laid out,
@@ -181,12 +188,12 @@
 	(dfs_unuse_fields): Likewise.
 	* tree.c (pod_type_p): Handle error_mark_node.
 	(zero_init_p): Likewise.
-	* typeck.c (lookup_anon_field): Skip FIELD_DECLs for base 
+	* typeck.c (lookup_anon_field): Skip FIELD_DECLs for base
 	subobjects.
 	* typeck2.c (store_init_value): Remove #if 0'd code.
 	(force_store_init_value): Remove.
 	(process_init_constructor): Use build_zero_init.
-	
+
 2002-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/7788
@@ -214,7 +221,7 @@
 	even number of bytes when computing the size without virtual
 	bases.
 	* cp/cp-tree.h (abi_version_at_least): New macro.
-	
+
 2002-09-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Follow spelling conventions.

@@ -2821,15 +2821,9 @@ start_decl (declarator, declspecs, initialized, attributes)
     switch (TREE_CODE (decl))
       {
       case TYPE_DECL:
-	/* typedef foo = bar  means give foo the same type as bar.
-	   We haven't parsed bar yet, so `finish_decl' will fix that up.
-	   Any other case of an initialization in a TYPE_DECL is an error.  */
-	if (pedantic || list_length (declspecs) > 1)
-	  {
-	    error ("typedef `%s' is initialized",
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
-	    initialized = 0;
-	  }
+	error ("typedef `%s' is initialized",
+	       IDENTIFIER_POINTER (DECL_NAME (decl)));
+	initialized = 0;
 	break;
 
       case FUNCTION_DECL:
@@ -2988,16 +2982,7 @@ finish_decl (decl, init, asmspec_tree)
     init = 0;
 
   if (init)
-    {
-      if (TREE_CODE (decl) != TYPE_DECL)
-	store_init_value (decl, init);
-      else
-	{
-	  /* typedef foo = bar; store the type of bar as the type of foo.  */
-	  TREE_TYPE (decl) = TREE_TYPE (init);
-	  DECL_INITIAL (decl) = init = 0;
-	}
-    }
+    store_init_value (decl, init);
 
   /* Deduce size of array from initialization, if not already known */
   if (TREE_CODE (type) == ARRAY_TYPE
