@@ -1,5 +1,9 @@
 2004-08-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c/14492
+	* dwarf2out.c (loc_descriptor_from_tree): Robustify.
+
+	PR c/16180
 	* jump.c (duplicate_loop_exit_test): If the location reached by
 	the unconditional jump at the top of the loop is outside the loop,
 	then do not treat it as the exit test.

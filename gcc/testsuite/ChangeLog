@@ -1,5 +1,8 @@
 2004-08-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c/14492
+	* gcc.dg/debug/crash1.c: New test.
+
 	PR c/16180
 	* gcc.dg/loop-5.c: New test.
 
