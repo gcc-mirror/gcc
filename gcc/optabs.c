@@ -3511,6 +3511,7 @@ expand_float (to, from, unsignedp)
 	      /* The sign bit is not set.  Convert as signed.  */
 	      expand_float (target, from, 0);
 	      emit_jump_insn (gen_jump (label));
+	      emit_barrier ();
 
 	      /* The sign bit is set.
 		 Convert to a usable (positive signed) value by shifting right
