@@ -711,7 +711,7 @@ tagged_types_tu_compatible_p (tree t1, tree t2, int flags)
         
         for (;tv1 && tv2; tv1 = TREE_CHAIN (tv2), tv2 = TREE_CHAIN (tv2))
           {
-            if (TREE_PURPOSE (tv1) != TREE_PURPOSE (tv1))
+            if (TREE_PURPOSE (tv1) != TREE_PURPOSE (tv2))
               break;
             if (simple_cst_equal (TREE_VALUE (tv1), TREE_VALUE (tv2)) != 1)
               return 0;
