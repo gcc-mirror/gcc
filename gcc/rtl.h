@@ -273,13 +273,6 @@ struct rtvec_def GTY(()) {
 /* Predicate yielding nonzero iff X is a barrier insn.  */
 #define BARRIER_P(X) (GET_CODE (X) == BARRIER)
 
-/* Predicate yielding nonzero iff X is cc0.  */
-#ifdef HAVE_cc0
-#define CC0_P(X) ((X) == cc0_rtx)
-#else
-#define CC0_P(X) 0
-#endif
-
 /* Predicate yielding nonzero iff X is a data for a jump table.  */
 #define JUMP_TABLE_DATA_P(INSN) \
   (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
