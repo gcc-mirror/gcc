@@ -74,7 +74,7 @@ int verbose = 0;
 
 int flag_disassemble_methods = 0;
 int flag_print_class_info = 1;
-int flag_print_constant_pool = 1;
+int flag_print_constant_pool = 0;
 int flag_print_fields = 1;
 int flag_print_methods = 1;
 int flag_print_attributes = 1;
@@ -152,9 +152,7 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
       print_access_flags (out, ACCESS_FLAGS, 'c'); \
       fputc ('\n', out); \
       fprintf (out, "This class: "); \
-      if (flag_print_constant_pool) \
-        fprintf (out, "%d=", THIS); \
-      print_constant_terse (out, jcf, THIS, CONSTANT_Class); \
+      print_constant_terse_with_index (out, jcf, THIS, CONSTANT_Class); \
       if (flag_print_constant_pool || SUPER != 0) \
         fprintf (out, ", super: "); \
       if (flag_print_constant_pool) \
@@ -173,8 +171,8 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
 
 #define HANDLE_CLASS_INTERFACE(INDEX) \
   if (flag_print_class_info) \
-    { fprintf (out, "- Implements: %d=", INDEX); \
-      print_constant_terse (out, jcf, INDEX, CONSTANT_Class); \
+    { fprintf (out, "- Implements: "); \
+      print_constant_terse_with_index (out, jcf, INDEX, CONSTANT_Class); \
       fputc ('\n', out); }
 
 #define HANDLE_START_FIELDS(FIELDS_COUNT) \
@@ -287,9 +285,13 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
     int name_index = JCF_readu2 (jcf); \
     int signature_index = JCF_readu2 (jcf); \
     int slot = JCF_readu2 (jcf); \
-    fprintf (out, "  slot#%d: name: %d=", slot, name_index); \
+    fprintf (out, "  slot#%d: name: ", slot); \
+    if (flag_print_constant_pool) \
+      fprintf (out, "%d=", name_index); \
     print_name (out, jcf, name_index); \
-    fprintf (out, ", type: %d=", signature_index); \
+    fprintf (out, ", type: "); \
+    if (flag_print_constant_pool) \
+      fprintf (out, "%d=", signature_index); \
     print_signature (out, jcf, signature_index, 0); \
     fprintf (out, " (pc: %d length: %d)\n", start_pc, length); }}
 
@@ -317,19 +319,22 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
 									    \
       if (flag_print_class_info)					    \
 	{								    \
-	  fprintf (out, "\n  class: ");					    \
-	  if (flag_print_constant_pool)					    \
-	    fprintf (out, "%d=", inner_class_info_index);		    \
-	  print_constant_terse (out, jcf,				    \
+	  fprintf (out, "\n  inner: ");					    \
+	  print_constant_terse_with_index (out, jcf,			    \
 				inner_class_info_index, CONSTANT_Class);    \
-	  fprintf (out, " (%d=", inner_name_index);			    \
-	  print_constant_terse (out, jcf, inner_name_index, CONSTANT_Utf8); \
-	  fprintf (out, "), access flags: 0x%x", inner_class_access_flags); \
+	  if (inner_name_index == 0)					    \
+	    fprintf (out, " (anonymous)");				    \
+	  else if (verbose || flag_print_constant_pool)			    \
+	    {								    \
+	      fprintf (out, " (");					    \
+	      print_constant_terse_with_index (out, jcf, inner_name_index,  \
+					       CONSTANT_Utf8);		    \
+	      fputc (')', out);						    \
+	    }								    \
+	  fprintf (out, ", access flags: 0x%x", inner_class_access_flags);  \
 	  print_access_flags (out, inner_class_access_flags, 'c');	    \
 	  fprintf (out, ", outer class: ");				    \
-	  if (flag_print_constant_pool)					    \
-	    fprintf (out, "%d=", outer_class_info_index);		    \
-	  print_constant_terse (out, jcf,				    \
+	  print_constant_terse_with_index (out, jcf,			    \
 				outer_class_info_index, CONSTANT_Class);    \
 	}								    \
     }									    \
@@ -350,12 +355,16 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
 static void
 print_constant_ref (FILE *stream, JCF *jcf, int index)
 {
-  fprintf (stream, "#%d=<", index);
   if (index <= 0 || index >= JPOOL_SIZE(jcf))
-    fprintf (stream, "out of range");
+    fprintf (stream, "<out of range>");
   else
-    print_constant (stream, jcf, index, 1);
-  fprintf (stream, ">");
+    {
+      if (flag_print_constant_pool)
+	fprintf (stream, "#%d=", index);
+      fputc ('<', stream);
+      print_constant (stream, jcf, index, 1);
+      fputc ('>', stream);
+    }
 }
 
 /* Print the access flags given by FLAGS.
@@ -412,6 +421,14 @@ print_constant_terse (FILE *out, JCF *jcf, int index, int expected)
     }
   else
     print_constant (out, jcf, index, 0);
+}
+
+static void
+print_constant_terse_with_index (FILE *out, JCF *jcf, int index, int expected)
+{
+  if (flag_print_constant_pool)
+    fprintf (out, "%d=", index);
+  print_constant_terse (out, jcf, index, expected);
 }
 
 /* Print the constant at INDEX in JCF's constant pool.
@@ -775,15 +792,13 @@ print_exception_table (JCF *jcf, const unsigned char *entries, int count)
 	  int end_pc = GET_u2 (ptr+2);
 	  int handler_pc = GET_u2 (ptr+4);
 	  int catch_type = GET_u2 (ptr+6);
-	  fprintf (out, "  start: %d, end: %d, handler: %d, type: %d",
-		   start_pc, end_pc, handler_pc, catch_type);
+	  fprintf (out, "  start: %d, end: %d, handler: %d, type: ",
+		   start_pc, end_pc, handler_pc);
 	  if (catch_type == 0)
-	    fputs (" /* finally */", out);
+	    fputs ("0 /* finally */", out);
 	  else
-	    {
-	      fputc('=', out);
-	      print_constant_terse (out, jcf, catch_type, CONSTANT_Class);
-	    }
+	    print_constant_terse_with_index (out, jcf,
+					     catch_type, CONSTANT_Class);
 	  fputc ('\n', out);
 	}
     }
@@ -975,6 +990,9 @@ main (int argc, char** argv)
 	  usage ();
 	}
     }
+
+  if (verbose && ! flag_javap_compatible)
+    flag_print_constant_pool = 1;
 
   if (optind == argc)
     {
