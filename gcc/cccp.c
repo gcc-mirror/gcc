@@ -4047,7 +4047,7 @@ handle_directive (ip, op)
 	  case '\'':
 	  case '\"':
 	    {
-	      int backslash_newlines_p;
+	      int backslash_newlines_p = 0;
 
 	      register const U_CHAR *bp1
 		= skip_quoted_string (xp - 1, bp, ip->lineno,

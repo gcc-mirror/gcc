@@ -1,3 +1,7 @@
+Tue Mar  7 23:50:31 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* cccp.c (handle_directive): Initialize backslash_newlines_p.
+
 2000-03-07  Philipp Thomas  <pthomas@suse.de>
 
 	* po/POTFILES.in: Remove cppalloc.c from file list.
