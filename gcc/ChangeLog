@@ -1,4 +1,8 @@
 2004-08-14  Roger Sayle  <roger@eyesopen.com>
+
+	* fixinc/tests/base/obstack.h: Backport from mainline.
+
+2004-08-14  Roger Sayle  <roger@eyesopen.com>
 	    David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	PR libgfortran/15930
