@@ -50,7 +50,7 @@ struct const_equiv_data GTY(()) {
      pseudos that contain pointers into the replacement area allocated for
      this inline instance.  These pseudos are then marked as being equivalent
      to the appropriate address and substituted if valid.  */
-  struct rtx_def *rtx;
+  rtx rtx;
 
   /* Record the valid age for each entry.  The entry is invalid if its
      age is less than const_age.  */
@@ -110,11 +110,11 @@ typedef union varray_data_tag GTY (()) {
 				tag ("VARRAY_DATA_GENERIC")))	generic[1];
   char			 *GTY ((length ("%0.num_elements"),
 				tag ("VARRAY_DATA_CPTR")))	cptr[1];
-  struct rtx_def	 *GTY ((length ("%0.num_elements"),
+  rtx			  GTY ((length ("%0.num_elements"),
 				tag ("VARRAY_DATA_RTX")))	rtx[1];
-  struct rtvec_def	 *GTY ((length ("%0.num_elements"),
+  rtvec			  GTY ((length ("%0.num_elements"),
 				tag ("VARRAY_DATA_RTVEC")))	rtvec[1];
-  union tree_node	 *GTY ((length ("%0.num_elements"),
+  tree			  GTY ((length ("%0.num_elements"),
 				tag ("VARRAY_DATA_TREE")))	tree[1];
   struct bitmap_head_def *GTY ((length ("%0.num_elements"),
 				tag ("VARRAY_DATA_BITMAP")))	bitmap[1];

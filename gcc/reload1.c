@@ -281,12 +281,6 @@ static char *reload_insn_firstobj;
    examine.  */
 struct insn_chain *reload_insn_chain;
 
-#ifdef TREE_CODE
-extern tree current_function_decl;
-#else
-extern union tree_node *current_function_decl;
-#endif
-
 /* List of all insns needing reloads.  */
 static struct insn_chain *insns_need_reload;
 

@@ -33,36 +33,31 @@ typedef void (*lang_print_tree_hook) (FILE *, tree, int indent);
 
 struct lang_hooks_for_tree_inlining
 {
-  union tree_node *(*walk_subtrees) (union tree_node **, int *,
-				     union tree_node *(*)
-				     (union tree_node **, int *, void *),
-				     void *, void *);
-  int (*cannot_inline_tree_fn) (union tree_node **);
-  int (*disregard_inline_limits) (union tree_node *);
-  union tree_node *(*add_pending_fn_decls) (void *, union tree_node *);
-  int (*tree_chain_matters_p) (union tree_node *);
-  int (*auto_var_in_fn_p) (union tree_node *, union tree_node *);
-  union tree_node *(*copy_res_decl_for_inlining) (union tree_node *,
-						  union tree_node *,
-						  union tree_node *,
-						  void *, int *, tree);
-  int (*anon_aggr_type_p) (union tree_node *);
-  bool (*var_mod_type_p) (union tree_node *);
-  int (*start_inlining) (union tree_node *);
-  void (*end_inlining) (union tree_node *);
-  union tree_node *(*convert_parm_for_inlining) (union tree_node *,
-						 union tree_node *,
-						 union tree_node *);
-  int (*estimate_num_insns) (union tree_node *);
+  tree (*walk_subtrees) (tree *, int *,
+			 tree (*) (tree *, int *, void *),
+			 void *, void *);
+  int (*cannot_inline_tree_fn) (tree *);
+  int (*disregard_inline_limits) (tree);
+  tree (*add_pending_fn_decls) (void *, tree);
+  int (*tree_chain_matters_p) (tree);
+  int (*auto_var_in_fn_p) (tree, tree);
+  tree (*copy_res_decl_for_inlining) (tree, tree, tree,
+				      void *, int *, tree);
+  int (*anon_aggr_type_p) (tree);
+  bool (*var_mod_type_p) (tree);
+  int (*start_inlining) (tree);
+  void (*end_inlining) (tree);
+  tree (*convert_parm_for_inlining) (tree, tree, tree);
+  int (*estimate_num_insns) (tree);
 };
 
 struct lang_hooks_for_callgraph
 {
   /* Function passed as argument is needed and will be compiled.
      Lower the representation so the calls are explicit.  */
-  void (*lower_function) (union tree_node *);
+  void (*lower_function) (tree);
   /* Produce RTL for function passed as argument.  */
-  void (*expand_function) (union tree_node *);
+  void (*expand_function) (tree);
 };
 
 /* Lang hooks for management of language-specific data or status

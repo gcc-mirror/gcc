@@ -206,7 +206,7 @@ int split_branch_probability = -1;
 static hashval_t
 const_int_htab_hash (const void *x)
 {
-  return (hashval_t) INTVAL ((struct rtx_def *) x);
+  return (hashval_t) INTVAL ((rtx) x);
 }
 
 /* Returns nonzero if the value represented by X (which is really a
