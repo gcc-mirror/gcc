@@ -291,7 +291,7 @@ static void pcstring_used ();
 static int check_macro_name ();
 static int compare_defs ();
 static int compare_token_lists ();
-static int eval_if_expression ();
+static HOST_WIDE_INT eval_if_expression ();
 static int change_newlines ();
 static int line_for_error ();
 extern int hashf ();
@@ -312,6 +312,8 @@ static void skip_if_group ();
 enum file_change_code {same_file, enter_file, leave_file};
 
 /* External declarations.  */
+
+extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader*));
 
 extern char *getenv ();
 extern FILE *fdopen ();
@@ -1696,9 +1698,31 @@ create_definition (buf, limit, pfile, predefinition)
       defn->args.argnames[i] = 0;
     }
   } else {
-    /* simple expansion or empty definition; gobble it */
-    if (is_hor_space[*bp])
-      ++bp;		/* skip exactly one blank/tab char */
+    /* Simple expansion or empty definition.  */
+
+    if (bp < limit)
+      {
+	if (is_hor_space[*bp]) {
+	  bp++;
+	  SKIP_WHITE_SPACE (bp);
+	} else {
+	  switch (*bp) {
+	    case '!':  case '"':  case '#':  case '%':  case '&':  case '\'':
+	    case ')':  case '*':  case '+':  case ',':  case '-':  case '.':
+	    case '/':  case ':':  case ';':  case '<':  case '=':  case '>':
+	    case '?':  case '[':  case '\\': case ']':  case '^':  case '{':
+	    case '|':  case '}':  case '~':
+	      cpp_warning (pfile, "missing white space after `#define %.*s'",
+			   sym_length, symname);
+	      break;
+
+	    default:
+	      cpp_pedwarn (pfile, "missing white space after `#define %.*s'",
+			   sym_length, symname);
+	      break;
+	  }
+	}
+      }
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (pfile, bp, limit, -1, NULL_PTR);
     defn->args.argnames = (U_CHAR *) "";
@@ -3184,7 +3208,7 @@ do_include (pfile, keyword, unused1, unused2)
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   int pcf = -1;
   char *pcfbuf;
-  int pcfbuflimit;
+  char *pcfbuflimit;
   int pcfnum;
   f= -1;			/* JF we iz paranoid! */
 
@@ -3383,6 +3407,11 @@ do_include (pfile, keyword, unused1, unused2)
 	}
       }
 #endif /* VMS */
+      /* ??? There are currently 3 separate mechanisms for avoiding processing
+	 of redundant include files: #import, #pragma once, and
+	 redundant_include_p.  It would be nice if they were unified.  */
+      if (redundant_include_p (pfile, fname))
+	return 0;
       if (importing)
 	f = lookup_import (pfile, fname, searchptr);
       else
@@ -3394,10 +3423,6 @@ do_include (pfile, keyword, unused1, unused2)
 	cpp_warning (pfile, "Header file %s exists, but is not readable",
 		     fname);
 #endif
-      if (redundant_include_p (pfile, fname)) {
-	close (f);
-	return 0;
-      }
       if (f >= 0)
 	break;
     }
@@ -3462,8 +3487,6 @@ do_include (pfile, keyword, unused1, unused2)
 	cpp_error (pfile, "No include path in which to find %s", fname);
     }
   else {
-    struct stat stat_f;
-
     /* Check to see if this include file is a once-only include file.
        If so, give up.  */
 
@@ -3520,34 +3543,39 @@ do_include (pfile, keyword, unused1, unused2)
     pcfbuf = 0;
     pcfnum = 0;
 
-    fstat (f, &stat_f);
-
 #if 0
     if (!no_precomp)
-      do {
-	sprintf (pcftry, "%s%d", fname, pcfnum++);
-	
-	pcf = open (pcftry, O_RDONLY, 0666);
-	if (pcf != -1)
-	  {
-	    struct stat s;
+      {
+	struct stat stat_f;
 
-	    fstat (pcf, &s);
-	    if (bcmp (&stat_f.st_ino, &s.st_ino, sizeof (s.st_ino))
-		|| stat_f.st_dev != s.st_dev)
-	      {
-		pcfbuf = check_precompiled (pcf, fname, &pcfbuflimit);
-		/* Don't need it any more.  */
-		close (pcf);
-	      }
-	    else
-	      {
-		/* Don't need it at all.  */
-		close (pcf);
-		break;
-	      }
-	  }
-      } while (pcf != -1 && !pcfbuf);
+	fstat (f, &stat_f);
+
+	do {
+	  sprintf (pcftry, "%s%d", fname, pcfnum++);
+
+	  pcf = open (pcftry, O_RDONLY, 0666);
+	  if (pcf != -1)
+	    {
+	      struct stat s;
+
+	      fstat (pcf, &s);
+	      if (bcmp ((char *) &stat_f.st_ino, (char *) &s.st_ino,
+			sizeof (s.st_ino))
+		  || stat_f.st_dev != s.st_dev)
+		{
+		  pcfbuf = check_precompiled (pcf, fname, &pcfbuflimit);
+		  /* Don't need it any more.  */
+		  close (pcf);
+		}
+	      else
+		{
+		  /* Don't need it at all.  */
+		  close (pcf);
+		  break;
+		}
+	    }
+	} while (pcf != -1 && !pcfbuf);
+      }
 #endif
     
     /* Actually process the file */
@@ -4123,9 +4151,7 @@ do_if (pfile, keyword, buf, limit)
      struct directive *keyword;
      U_CHAR *buf, *limit;
 {
-  int value;
-
-  value = eval_if_expression (pfile, buf, limit - buf);
+  HOST_WIDE_INT value = eval_if_expression (pfile, buf, limit - buf);
   conditional_skip (pfile, value == 0, T_IF, NULL_PTR);
   return 0;
 }
@@ -4141,8 +4167,6 @@ do_elif (pfile, keyword, buf, limit)
      struct directive *keyword;
      U_CHAR *buf, *limit;
 {
-  int value;
-
   if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack) {
     cpp_error (pfile, "`#elif' not within a conditional");
     return 0;
@@ -4164,7 +4188,7 @@ do_elif (pfile, keyword, buf, limit)
   if (pfile->if_stack->if_succeeded)
     skip_if_group (pfile, 0);
   else {
-    value = eval_if_expression (pfile, buf, limit - buf);
+    HOST_WIDE_INT value = eval_if_expression (pfile, buf, limit - buf);
     if (value == 0)
       skip_if_group (pfile, 0);
     else {
@@ -4179,14 +4203,14 @@ do_elif (pfile, keyword, buf, limit)
  * evaluate a #if expression in BUF, of length LENGTH,
  * then parse the result as a C expression and return the value as an int.
  */
-static int
+static HOST_WIDE_INT
 eval_if_expression (pfile, buf, length)
      cpp_reader *pfile;
      U_CHAR *buf;
      int length;
 {
   HASHNODE *save_defined;
-  int value;
+  HOST_WIDE_INT value;
   long old_written = CPP_WRITTEN (pfile);
 
   save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, 0, -1);
