@@ -2262,8 +2262,13 @@ ffecom_check_size_overflow_ (ffesymbol s, tree type, bool dummy)
   if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     return type;
 
+  /* An array is too large if size is negative or the type_size overflows
+     or its "upper half" is larger than 3 (which would make the signed
+     byte size and offset computations overflow).  */
+
   if ((tree_int_cst_sgn (TYPE_SIZE (type)) < 0)
-      || (!dummy && TREE_OVERFLOW (TYPE_SIZE (type))))
+      || (!dummy && (TREE_INT_CST_HIGH (TYPE_SIZE (type)) > 3
+	             || TREE_OVERFLOW (TYPE_SIZE (type)))))
     {
       ffebad_start (FFEBAD_ARRAY_LARGE);
       ffebad_string (ffesymbol_text (s));
