@@ -1,3 +1,8 @@
+2002-03-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* g++.old-deja/g++.eh/ia64-1.C: Use [ijkl]_[0-9] as variable names. 
+	(A, E): Handle this.
+
 2002-03-20  Jason Merrill  <jason@redhat.com>
 
 	* lib/prune.exp (prune_gcc_output): Ignore Cygwin warning about
