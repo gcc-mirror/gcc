@@ -1,3 +1,196 @@
+2005-04-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Use update_stmt.
+	Use immediate use iterator.
+	(stmt_is_bumper_for_loop): Use immediate use iterator.
+	* predict.c (strip_builtin_expect): Use update_stmt.
+	* tree-cfg.c (update_modified_stmts): New. Call update_stmt_if_modified
+	on all elements of a STATEMENT_LIST.
+	(bsi_insert_before, bsi_insert_after): Call update_modified_stmts.
+	(bsi_remove): Remove imm_use links and mark the stmt as modified.
+	(bsi_replace): Mark stmt as modified and the update it.
+	* tree-complex.c (update_complex_assignment): Call mark_stmt_modified.
+	(expand_complex_libcal): Call update_stmt.
+	(expand_complex_comparison): Call mark_stmt_modified.
+	(expand_complex_operations_1): Call update_stmt_if_modified.
+	(expand_vector_operations_1): Call mark_stmt_modified.
+	* tree-dfa.c (compute_immediate_uses, free_df_for_stmt, free_df,
+	compute_immediate_uses_for_phi, compute_immediate_uses_for_stmt,
+	add_immediate_use, redirect_immediate_use,
+	redirect_immediate_uses, dump_immediate_uses, debug_immediate_uses,
+	dump_immediate_uses_for, debug_immediate_uses_for): Delete.
+	(mark_new_vars_to_rename): Call update_stmt.
+	* tree-dump.c (dump_option_value_in): Add "stmtaddr".
+	* tree-flow-inline.h (modify_stmt): Rename to mark_stmt_modified.  
+	Ignore PHI nodes.
+	(unmodify_stmt): Delete.
+	(update_stmt): New.  Force an update of a stmt.
+	(update_stmt_if_modified): update a stmt if it is out of date.
+	(get_stmt_operands): Verify stmt is NOT modified. 
+	(stmt_modified_p): Update comment.
+	(delink_imm_use): Remove a use node from its immuse list.
+	(link_imm_use_to_list): Link a use node to a specific list.
+	(link_imm_use): Link a node to the correct list.
+	(set_ssa_use_from_ptr): Set a use node to a specific value, and insert
+	it in the correct list, if appropriate.
+	(link_imm_use_stmt): Link a use node, and set the stmt pointer.
+	(relink_imm_use): Link a use node in place of another node in a list.
+	(relink_imm_use_stmt): LInk a node in place of another node, and set
+	the stmt pointer.
+	(end_safe_imm_use_traverse): New.  Terminate a safe immuse iterator.
+	(end_safe_imm_use_p): New.  Check for the end of a safe immuse iterator.
+	(first_safe_imm_use): New.  Initialize a safe immuse iterator.
+	(next_safe_imm_use): New.  Proceed to next safe immuse iterator value.
+	(end_readonly_imm_use_p): New.  Check for end of a fast immuse iterator.
+	(first_readonly_imm_use): New.  Initialize a fast immuse iterator.
+	(next_readonly_imm_use): New.  Get the next fast immuse iterator value.
+	(has_zero_uses): New.  Return true if there are no uses of a var.
+	(has_single_use): New.  Return true if there is only a single use of a
+	variable.
+	(single_imm_use): New.  Return the simgle immediate use.
+	(num_imm_uses): New.  Return the number of immediate uses.
+	(get_v_must_def_ops): Use is now a pointer.
+	(use_operand_p, get_v_may_def_op_ptr, get_vuse_op_ptr,
+	get_v_must_def_kill_ptr, get_phi_arg_def_ptr): Return the address of 
+	the use node.
+	(get_immediate_uses, num_immediate_uses, immediate_use): Delete.
+	(delink_stmt_imm_use): Delink all immuses from a stmt.
+	(phi_arg_index_from_use): New.  Return a phi arg index for a use.
+	* tree-flow.h (struct dataflow_d): Delete.
+	(immediate_use_iterator_d): New.  Immediate use iterator struct.
+	(FOR_EACH_IMM_USE_FAST): New.  Macro for read only immuse iteration.
+	(FOR_EACH_IMM_USE_SAFE): New.  Macro for write-safe immuse iteration.
+	(BREAK_FROM_SAFE_IMM_USE): New.  Macro for earlyu exit from write-safe 
+	iteration.
+	(struct stmt_ann_d): Remove dataflow_t from struct.
+	* tree-if-conv.c (tree_if_conversion).  Don't call free_df.
+	(if_convertible_phi_p): Use FAST immuse iterator.
+	(if_convertible_loop_p): Don't call compute_immediate_uses.
+	(replace_phi_with_cond_modify_expr): Call update_stmt.
+	* tree-into-ssa.c (mark_def_sites, ssa_mark_def_sites): Call 
+	update_stmt_if_modified.
+	(rewrite_all_into_ssa): Initialize ssa operands.
+	* tree-loop-linear.c (linear_transform_loops): Don't call free_df or
+	compute_immediate_uses.
+	* tree-optimize.c (execute_todo): Call verify_ssa whenever the 
+	ssa_property is available.
+	(execute_one_pass):  Change parameters passed to execute_todo.
+	* tree-outof-ssa.c (rewrite_trees): Don't call modify_stmt.
+	(remove_ssa_form): Call fini_ssa_operands.
+	(insert_backedge_copies): Delete call to modify_stmt.
+	* tree-phinodes.c (make_phi_node): Initialize use nodes.
+	(release_phi_node): Delink any use nodes before releasing.
+	(resize_phi_node): Relink any use nodes.
+	(remove_phi_arg_num): Delink the use node.
+	(remove_phi_node): Release the ssa_name AFTER releasing the phi node.
+	(remove_all_phi_nodes_for): Release phi node first.
+	* tree-pretty-print.c (dump_generic_node): Print stmt address.
+	* tree-sra.c (mark_all_v_defs): Call update_stmt_if_modified.
+	(scalarize_use, scalarize_copy): Call update_stmt.
+	* tree-ssa-alias.c (compute_may_aliases): Update all modified stmts.
+	(compute_points_to_and_addr_escape): Call mark_stmt_modified.
+	* tree-ssa-cpp.c (need_imm_uses_for): Delete.
+	(ccp_initialize): Remove call to compute_immediate_uses.
+	(substitute_and_fold, execute_fold_all_builtins): Call update_stmt.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Update all modified 
+	stmts.
+	(simplify_cond_and_lookup_avail_expr): Call mark_stmt_modified.
+	(simplify_switch_and_lookup_avail_expr): Call mark_stmt_modified.
+	(eliminate_redundant_computations): Call mark_stmt_modified.
+	(cprop_operand): Call mark_stmt_modified.
+	(optimize_stmt): Call update_stmt_if_modified and mark_stmt_modified.
+	* tree-ssa-dse.c (fix_phi_uses, fix_stmt_v_may_defs): Delete.
+	(dse_optimize_stmt): Use new immuse interface.
+	(tree_ssa_dse): Remove calls to compute_immediate_uses and free_df.
+	* tree-ssa-forwprop.c (need_imm_uses_for): Delete.
+	(substitute_single_use_vars): Use new immuse interface.
+	(tree_ssa_forward_propagate_single_use_vars): Remove calls to free_df
+	and compute_immediate_uses.
+	* tree-ssa-loop-im.c (single_reachable_address): Use new immuse 
+	interface.
+	(rewrite_mem_refs): Call update_stmt.
+	(determine_lsm): Remove call to compute_imm_uses and free_df.
+	* tree-ssa-loop-ivcanon.c (create_canonical_iv): Call update_stmt.
+	(try_unroll_loop_completely): Call update_stmt.
+	* tree-ssa-loop-ivopts.c (rewrite_address_base): Call update_stmt.
+	(rewrite_use_compare): Call update_stmt.
+	(compute_phi_arg_on_exit): Insert each stmt before trying to process.
+	(rewrite_use) : Call update_stmt.
+	* tree-ssa-loop-manip.c (verify_loop_closed_ssa): Add arg to call.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Call 
+	update_stmt.
+	* tree-ssa-operands.c (NULL_USE_OPERAND_P): Remove declaration.
+	(allocate_use_optype, allocate_vuse_optype): Adjust allocation size.
+	(free_uses, free_vuses, free_v_may_defs, free_v_must_defs): Delink
+	use nodes.
+	(initialize_vuse_operand): New.  Initialize a vuse operand.
+	(initialize_v_may_def_operand): New.  Initialize a maydef operand.
+	(initialize_v_must_def_operand): New.  Initialize a mustdef operand.
+	(finalize_ssa_defs): Use stmt parameter.
+	(correct_use_link): Ensure a use node is in the correct list, and has
+	the correct stmt pointer.
+	(finalize_ssa_uses, finalize_ssa_v_may_defs, finalize_ssa_vuses,
+	finalize_ssa_v_must_defs): Also initialize use nodes.
+	(finalize_ssa_stmt_operands): Pass extra stmt operands.
+	(build_ssa_operands): Seperate parsing from final operand construction.
+	(parse_ssa_operands): New.  Parse entry point for operand building.
+	(swap_tree_operands): New.  Swap 2 tree operands.
+	(update_stmt_operands): Ranamed from get_stmt_operands.  Always builds
+	operands.
+	(get_expr_operands): Call swap_tree_operands when needed.
+	(copy_virtual_operands): Use initialize routines for virtual use ops.
+	(create_ssa_artficial_load_stmt): Add extra stmt parameter.
+	(verify_abort): New.  Issue imm_use error.
+	(verify_imm_links): New Verify imm_use links for a var.
+	(dump_immediate_uses_for): New.  Dump imm_uses for a var to file.
+	(dump_immediate_uses): New.  Dump imm_uses for all vars to file.
+	(debug_immediate_uses): New.  Dump imm_uses for all vars to stderr.
+	(debug_immediate_uses_for): New.  Dump imm_uses for a var to stderr.
+	* tree-ssa-operands.h (struct use_operand_ptr): Delete.
+	(NULL_USE_OPERAND_P) Define.
+	(use_optype_d, v_def_use_operand_type, vuse_optype_d): Add immediate
+	use node.
+	(struct vuse_operand_type): New struct.
+	(SET_USE): Call set_ssa_use_from_ptr.
+	(USE_STMT): Define.
+	(PHI_ARG_INDEX_FROM_USE): Define.
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Set the phi 
+	argument via SET_USE, not PHI_ARG_DEF_TREE.
+	* tree-ssa-pre.c (eliminate): Call update_stmt.
+	* tree-ssa-propagate.c (cfg_blocks_get): Use imm_use iterators.  Don't
+	call free_df.
+	* tree-ssa-sink.c (all_immediate_uses_same_place): Use imm_use iterator.
+	(nearest_common_dominator_of_uses): Use imm_use iterator.
+	(statement_sink_location): Use imm_use iterator and interface.
+	(execute_sink_code): Don't call compute_immediate_uses or free-df.
+	* tree-ssa-threadupdate.c (create_edge_and_update_destination_phis): Use
+	PHI_ARG_DEF, not PHI_ARG_DEF_TREE.
+	* tree-ssa.c (verify_use, verify_phi_args): Verify some imm_use info.
+	(verify_ssa): Ensure no stmt is marked modify after optimization pass
+	if new parameter is true.
+	(init_tree_ssa): Don't initialize operand cache here.
+	(delete_tree_ssa): Don't destroy operand cache here.
+	(propagate_into_addr): Pass in a use pointer, return true if anything
+	was changed.
+	(replace_immediate_uses): Use imm_use iterator, call update_stmt.
+	(check_phi_redundancy): Use imm_use iterator.
+	(kill_redundant_phi_nodes): Don't call compute_immediate_uses or 
+	free_df.
+	* tree-ssanames.c (make_ssa_name): Initialize imm_use node.
+	(release_ssa_name): Delink node and all elements in its imm_use list.
+	* tree-tailcall.c (adjust_return_value): Call update_stmt.
+	* tree-vect-analyze.c (vect_stmt_relevant_p): Use imm_use iterator.
+	* tree-vectorizer.c (need_imm_uses_for): Delete.
+	(vectorize_loops): Dont call compute_immediate_uses or free_df.
+	* tree.h (struct ssa_imm_use_d): Define.
+	(SSA_NAME_IMM_USE_NODE): Define.
+	(struct tree_ssa_name): Add imm_use node.
+	(PHI_DF): Delete.
+	(PHI_ARG_IMM_USE_NODE): Define.
+	(struct phi_arg_d): Add imm_use node.
+	(struct tree_phi_node): Remove struct dataflow_d element.
+	(TDF_STMTADDR): Define.
+
 2005-04-05  Dale Johannesen  <dalej@apple.com>
 
 	* doc/invoke.texi (Optimization Options):  Remove

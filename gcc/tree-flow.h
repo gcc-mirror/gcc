@@ -235,43 +235,33 @@ struct var_ann_d GTY(())
 };
 
 
-struct dataflow_d GTY(())
+typedef struct immediate_use_iterator_d
 {
-  /* Immediate uses.  This is a list of all the statements and PHI nodes
-     that are immediately reached by the definitions made in this
-     statement.  */
-  varray_type immediate_uses;
+  ssa_imm_use_t *imm_use;
+  ssa_imm_use_t *end_p;
+  ssa_imm_use_t iter_node;
+} imm_use_iterator;
 
-  /* Use this array for very small numbers of uses instead of the varray.  */
-  tree uses[2];
 
-  /* Reached uses.  This is a list of all the possible program statements
-     that may be reached directly or indirectly by definitions made in this
-     statement.  Notice that this is a superset of IMMEDIATE_USES.
-     For instance, given the following piece of code:
+/* Use this iterator when simply looking at stmts. Adding, deleteing or
+   modifying stmts will cause this iterator to malfunction.  */
 
-	    1	a1 = 10;
-	    2	if (a1 > 3)
-	    3	  a2 = a1 + 5;
-	    4	a3 = PHI (a1, a2)
-	    5	b1 = a3 - 2;
+#define FOR_EACH_IMM_USE_FAST(DEST, ITER, SSAVAR)			\
+  for ((DEST) = first_readonly_imm_use (&(ITER), (SSAVAR));	\
+       !end_readonly_imm_use_p (&(ITER));			\
+       (DEST) = next_readonly_imm_use (&(ITER)))
+  
 
-     IMMEDIATE_USES for statement #1 are all those statements that use a1
-     directly (i.e., #2, #3 and #4).  REACHED_USES for statement #1 also
-     includes statement #5 because 'a1' could reach 'a3' via the PHI node
-     at statement #4.  The set of REACHED_USES is then the transitive
-     closure over all the PHI nodes in the IMMEDIATE_USES set.  */
+#define FOR_EACH_IMM_USE_SAFE(DEST, ITER, SSAVAR)		\
+  for ((DEST) = first_safe_imm_use (&(ITER), (SSAVAR));		\
+       !end_safe_imm_use_p (&(ITER));				\
+       (DEST) = next_safe_imm_use (&(ITER)))
 
-  /* Reaching definitions.  Similarly to REACHED_USES, the set
-     REACHING_DEFS is the set of all the statements that make definitions
-     that may reach this statement.  Notice that we don't need to have a
-     similar entry for immediate definitions, as these are represented by
-     the SSA_NAME nodes themselves (each SSA_NAME node contains a pointer
-     to the statement that makes that definition).  */
-};
-
-typedef struct dataflow_d *dataflow_t;
-
+#define BREAK_FROM_SAFE_IMM_USE(ITER)				\
+   {								\
+     end_safe_imm_use_traverse (&(ITER));			\
+     break;							\
+   }
 
 struct stmt_ann_d GTY(())
 {
@@ -297,10 +287,8 @@ struct stmt_ann_d GTY(())
   /* Basic block that contains this statement.  */
   basic_block GTY ((skip (""))) bb;
 
+  /* Operand cache for stmt.  */
   struct stmt_operands_d operands;
-
-  /* Dataflow information.  */
-  dataflow_t df;
 
   /* Set of variables that have had their address taken in the statement.  */
   bitmap addresses_taken;
@@ -340,8 +328,7 @@ static inline enum tree_ann_type ann_type (tree_ann_t);
 static inline basic_block bb_for_stmt (tree);
 extern void set_bb_for_stmt (tree, basic_block);
 static inline bool noreturn_call_p (tree);
-static inline void modify_stmt (tree);
-static inline void unmodify_stmt (tree);
+static inline void update_stmt (tree);
 static inline bool stmt_modified_p (tree);
 static inline varray_type may_aliases (tree);
 static inline int get_lineno (tree);
@@ -353,9 +340,6 @@ static inline vuse_optype get_vuse_ops (stmt_ann_t);
 static inline use_optype get_use_ops (stmt_ann_t);
 static inline def_optype get_def_ops (stmt_ann_t);
 static inline bitmap addresses_taken (tree);
-static inline int num_immediate_uses (dataflow_t);
-static inline tree immediate_use (dataflow_t, int);
-static inline dataflow_t get_immediate_uses (tree);
 static inline void set_default_def (tree, tree);
 static inline tree default_def (tree);
 
@@ -434,7 +418,6 @@ extern bool aliases_computed_p;
 #define LABEL(x) ((x) < 1024*10 ? 'b' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
-
 
 /*---------------------------------------------------------------------------
 			      Block iterators
@@ -559,13 +542,6 @@ extern void debug_referenced_vars (void);
 extern void dump_referenced_vars (FILE *);
 extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);
-extern void dump_immediate_uses (FILE *);
-extern void debug_immediate_uses (void);
-extern void dump_immediate_uses_for (FILE *, tree);
-extern void debug_immediate_uses_for (tree);
-extern void compute_immediate_uses (int, bool (*)(tree));
-extern void free_df (void);
-extern void free_df_for_stmt (tree);
 extern tree get_virtual_var (tree);
 extern void add_referenced_tmp_var (tree);
 extern void mark_new_vars_to_rename (tree, bitmap);
@@ -621,7 +597,7 @@ extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern bool tree_ssa_useless_type_conversion_1 (tree, tree);
-extern void verify_ssa (void);
+extern void verify_ssa (bool);
 extern void delete_tree_ssa (void);
 extern void register_new_def (tree, VEC (tree_on_heap) **);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);

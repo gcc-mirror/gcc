@@ -160,7 +160,6 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
 	  ifc_bbs = NULL;
 	}
       free_dominance_info (CDI_POST_DOMINATORS);
-      free_df ();
       return false;
     }
 
@@ -205,7 +204,6 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
   clean_predicate_lists (loop);
   free (ifc_bbs);
   ifc_bbs = NULL;
-  free_df ();
 
   return true;
 }
@@ -343,13 +341,11 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, tree phi)
 
   if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
     {
-      int j;
-      dataflow_t df = get_immediate_uses (phi);
-      int num_uses = num_immediate_uses (df);
-      for (j = 0; j < num_uses; j++)
+      imm_use_iterator imm_iter;
+      use_operand_p use_p;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, PHI_RESULT (phi))
 	{
-	  tree use = immediate_use (df, j);
-	  if (TREE_CODE (use) == PHI_NODE)
+	  if (TREE_CODE (USE_STMT (use_p)) == PHI_NODE)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Difficult to handle this virtual phi.\n");
@@ -558,8 +554,6 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
       if (loop_exit_edge_p (loop, e))
 	return false;
     }
-
-  compute_immediate_uses (TDFA_USE_OPS|TDFA_USE_VOPS, NULL);
 
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
@@ -798,7 +792,7 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, basic_block true_bb,
   bsi_insert_after (bsi, new_stmt, BSI_SAME_STMT);
   bsi_next (bsi);
 
-  modify_stmt (new_stmt);
+  update_stmt (new_stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

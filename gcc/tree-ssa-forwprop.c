@@ -113,21 +113,11 @@ Boston, MA 02111-1307, USA.  */
    by record_single_argument_cond_exprs and tested in need_imm_uses_for.  */
 static bitmap vars;
 
-static bool need_imm_uses_for (tree);
 static void tree_ssa_forward_propagate_single_use_vars (void);
 static void record_single_argument_cond_exprs (varray_type,
 					       varray_type *,
 					       bitmap);
 static void substitute_single_use_vars (varray_type *, varray_type);
-
-/* Function indicating whether we ought to include information for 'var'
-   when calculating immediate uses.  */
-
-static bool
-need_imm_uses_for (tree var)
-{
-  return bitmap_bit_p (vars, SSA_NAME_VERSION (var));
-}
 
 /* Find all COND_EXPRs with a condition that is a naked SSA_NAME or
    an equality comparison against a constant.
@@ -323,27 +313,32 @@ static void
 substitute_single_use_vars (varray_type *cond_worklist,
 			    varray_type vars_worklist)
 {
+  use_operand_p use_p;
   while (VARRAY_ACTIVE_SIZE (vars_worklist) > 0)
     {
       tree test_var = VARRAY_TOP_TREE (vars_worklist);
-      tree def = SSA_NAME_DEF_STMT (test_var);
-      dataflow_t df;
-      int j, num_uses, propagated_uses;
+      tree def_stmt = SSA_NAME_DEF_STMT (test_var);
+      tree def;
+      int num_uses, propagated_uses;
+      imm_use_iterator imm_iter;
 
       VARRAY_POP (vars_worklist);
 
-      /* Now compute the immediate uses of TEST_VAR.  */
-      df = get_immediate_uses (def);
-      num_uses = num_immediate_uses (df);
       propagated_uses = 0;
+      num_uses = 0;
+
+      if (NUM_DEFS (STMT_DEF_OPS (def_stmt)) != 1)
+	continue;
+
+      def = DEF_OP (STMT_DEF_OPS (def_stmt), 0);
 
       /* If TEST_VAR is used more than once and is not a boolean set
 	 via TRUTH_NOT_EXPR with another SSA_NAME as its argument, then
 	 we can not optimize.  */
-      if (num_uses == 1
+      if (has_single_use (def)
 	  || (TREE_CODE (TREE_TYPE (test_var)) == BOOLEAN_TYPE
-	      && TREE_CODE (TREE_OPERAND (def, 1)) == TRUTH_NOT_EXPR
-	      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (def, 1), 0))
+	      && TREE_CODE (TREE_OPERAND (def_stmt, 1)) == TRUTH_NOT_EXPR
+	      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0))
 		  == SSA_NAME)))
 	;
       else
@@ -351,7 +346,7 @@ substitute_single_use_vars (varray_type *cond_worklist,
 
       /* Walk over each use and try to forward propagate the RHS of
 	 DEF into the use.  */
-      for (j = 0; j < num_uses; j++)
+      FOR_EACH_IMM_USE_SAFE (use_p, imm_iter, def)
 	{
 	  tree cond_stmt;
 	  tree cond;
@@ -360,7 +355,8 @@ substitute_single_use_vars (varray_type *cond_worklist,
 	  enum tree_code def_rhs_code;
 	  tree new_cond;
 
-	  cond_stmt = immediate_use (df, j);
+	  cond_stmt = USE_STMT (use_p);
+	  num_uses++;
 
 	  /* For now we can only propagate into COND_EXPRs.  */
 	  if (TREE_CODE (cond_stmt) != COND_EXPR) 
@@ -368,7 +364,7 @@ substitute_single_use_vars (varray_type *cond_worklist,
 
 	  cond = COND_EXPR_COND (cond_stmt);
 	  cond_code = TREE_CODE (cond);
-	  def_rhs = TREE_OPERAND (def, 1);
+	  def_rhs = TREE_OPERAND (def_stmt, 1);
 	  def_rhs_code = TREE_CODE (def_rhs);
 
 	  /* If the definition of the single use variable was from an
@@ -456,7 +452,7 @@ substitute_single_use_vars (varray_type *cond_worklist,
 
 	  /* Replace the condition.  */
 	  COND_EXPR_COND (cond_stmt) = new_cond;
-	  modify_stmt (cond_stmt);
+	  update_stmt (cond_stmt);
 	  propagated_uses++;
 	  VARRAY_PUSH_TREE (*cond_worklist, cond_stmt);
 	}
@@ -466,7 +462,7 @@ substitute_single_use_vars (varray_type *cond_worklist,
 	 whatever block it might be in.  */
       if (num_uses && num_uses == propagated_uses)
 	{
-	  block_stmt_iterator bsi = bsi_for_stmt (def);
+	  block_stmt_iterator bsi = bsi_for_stmt (def_stmt);
 	  bsi_remove (&bsi);
 	}
     }
@@ -502,9 +498,6 @@ tree_ssa_forward_propagate_single_use_vars (void)
 
       if (VARRAY_ACTIVE_SIZE (vars_worklist) > 0)
 	{
-	  /* Now compute immediate uses for all the variables we care about.  */
-	  compute_immediate_uses (TDFA_USE_OPS, need_imm_uses_for);
-
 	  /* We've computed immediate uses, so we can/must clear the VARS
 	     bitmap for the next iteration.  */
 	  bitmap_clear (vars);
@@ -512,12 +505,6 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	  /* And optimize.  This will drain VARS_WORKLIST and initialize
 	     COND_WORKLIST for the next iteration.  */
 	  substitute_single_use_vars (&cond_worklist, vars_worklist);
-
-	  /* We do not incrementally update the dataflow information
-	     so we must free it here and recompute the necessary bits
-	     on the next iteration.  If this turns out to be expensive,
-	     methods for incrementally updating the dataflow are known.  */
-	  free_df ();
 	}
     }
 

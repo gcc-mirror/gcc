@@ -2056,7 +2056,7 @@ eliminate (void)
 		    NECESSARY (SSA_NAME_DEF_STMT (sprime)) = 1;
 		  pre_stats.eliminations++;
 		  propagate_tree_value (rhs_p, sprime);
-		  modify_stmt (stmt);
+		  update_stmt (stmt);
 
 		  /* If we removed EH side effects from the statement, clean
 		     its EH information.  */

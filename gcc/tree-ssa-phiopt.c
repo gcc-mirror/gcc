@@ -313,7 +313,7 @@ replace_phi_edge_with_variable (basic_block cond_block, basic_block bb,
   block_stmt_iterator bsi;
 
   /* Change the PHI argument to new.  */
-  PHI_ARG_DEF_TREE (phi, e->dest_idx) = new;
+  SET_USE (PHI_ARG_DEF_PTR (phi, e->dest_idx), new);
 
   /* Remove the empty basic block.  */
   if (EDGE_SUCC (cond_block, 0)->dest == bb)
