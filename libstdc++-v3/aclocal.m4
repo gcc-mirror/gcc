@@ -1558,8 +1558,10 @@ AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
   # variable is set to the include directory currently in use.
   # set with C_INCLUDE_DIR in GLIBCPP_ENABLE_SHADOW
    
-  # Passed down for cross compilers, canadian crosses.
-  TOPLEVEL_INCLUDES='-I$(includedir)'
+  # Passed down for canadian crosses.
+  if  test x"$CANADIAN" = xyes; then
+    TOPLEVEL_INCLUDES='-I$(includedir)'
+  fi
 
   LIBMATH_INCLUDES='-I$(top_srcdir)/libmath'
 

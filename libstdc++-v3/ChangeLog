@@ -2,7 +2,11 @@
 
 	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPOR): Set LIBS back to
 	initial value.
+	(GLIBCPP_EXPORT_INCLUDES): Only export TOPLEVEL_INCLUDES if
+	building a canadian cross. This should fix the remaining java
+	build issues.
 	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
 	
 	* include/bits/c++config (__GLIBCPP__): Set release version for 2.91.
 
