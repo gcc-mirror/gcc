@@ -818,11 +818,18 @@ put_var_into_stack (decl)
 
   /* Get the current rtl used for this object and it's original mode.  */
   reg = TREE_CODE (decl) == SAVE_EXPR ? SAVE_EXPR_RTL (decl) : DECL_RTL (decl);
-  promoted_mode = GET_MODE (reg);
+
+  /* No need to do anything if decl has no rtx yet
+     since in that case caller is setting TREE_ADDRESSABLE
+     and a stack slot will be assigned when the rtl is made.  */
+  if (reg == 0)
+    return;
 
   /* Get the declared mode for this object.  */
   decl_mode = (TREE_CODE (decl) == SAVE_EXPR ? TYPE_MODE (TREE_TYPE (decl))
 	       : DECL_MODE (decl));
+  /* Get the mode it's actually stored in.  */
+  promoted_mode = GET_MODE (reg);
 
   /* If this variable comes from an outer function,
      find that function's saved context.  */
@@ -830,12 +837,6 @@ put_var_into_stack (decl)
     for (function = outer_function_chain; function; function = function->next)
       if (function->decl == context)
 	break;
-
-  /* No need to do anything if decl has no rtx yet
-     since in that case caller is setting TREE_ADDRESSABLE
-     and a stack slot will be assigned when the rtl is made.  */
-  if (reg == 0)
-    return;
 
   /* If this is a variable-size object with a pseudo to address it,
      put that pseudo into the stack, if the var is nonlocal.  */
