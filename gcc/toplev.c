@@ -894,6 +894,19 @@ char *lang_options[] =
   "-Wno-protocol",
   "-print-objc-runtime-info",
 
+  /* These are for languages with USE_CPPLIB.  */
+  "-A",
+  "-D",
+  "-I",
+  "-iprefix",
+  "-isystem",
+  "-lang-c",
+  "-lang-c89",
+  "-lang-c++",
+  "-nostdinc++",
+  "-U",
+  "-undef",
+
 #include "options.h"
   0
 };
@@ -3853,9 +3866,13 @@ main (argc, argv, envp)
 		      strlen (lang_options[j])))
 	  break;
       if (lang_options[j] != 0)
-	/* If the option is valid for *some* language,
-	   treat it as valid even if this language doesn't understand it.  */
-	lang_decode_option (argv[i]);
+	{
+	  /* If the option is valid for *some* language,
+	     treat it as valid even if this language doesn't understand it.  */
+	  int strings_processed = lang_decode_option (argc - i, argv + i);
+	  if (strings_processed != 0)
+	    i += strings_processed - 1;
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *str = argv[i] + 1;

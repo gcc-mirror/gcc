@@ -35,6 +35,13 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "toplev.h"
 
+#if USE_CPPLIB
+#include "cpplib.h"
+extern cpp_reader  parse_in;
+extern cpp_options parse_options;
+static int cpp_initialized;
+#endif
+
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
 { NORMAL,			/* Ordinary declaration */
@@ -578,13 +585,28 @@ int warn_sign_compare = -1;
 int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
 
 /* Decode the string P as a language-specific option for C.
-   Return 1 if it is recognized (and handle it);
-   return 0 if not recognized.  */
+   Return the number of strings consumed.  */
    
 int
-c_decode_option (p)
-     char *p;
+c_decode_option (argc, argv)
+     int argc;
+     char **argv;
 {
+  int strings_processed;
+  char *p = argv[0];
+#if USE_CPPLIB
+  if (! cpp_initialized)
+    {
+      cpp_reader_init (&parse_in);
+      parse_in.data = &parse_options;
+      cpp_options_init (&parse_options);
+      cpp_initialized = 1;
+    }
+  strings_processed = cpp_handle_option (&parse_in, argc, argv);
+#else
+  strings_processed = 0;
+#endif /* ! USE_CPPLIB */
+
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     {
       flag_traditional = 1;
@@ -799,7 +821,7 @@ c_decode_option (p)
       warn_unknown_pragmas = 1;
     }
   else
-    return 0;
+    return strings_processed;
 
   return 1;
 }

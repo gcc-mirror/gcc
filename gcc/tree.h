@@ -1967,7 +1967,7 @@ extern int yyparse				PROTO((void));
 /* Function called with option as argument
    to decode options starting with -f or -W or +.
    It should return nonzero if it handles the option.  */
-extern int lang_decode_option			PROTO((char *));
+extern int lang_decode_option			PROTO((int, char **));
 
 /* Functions for processing symbol declarations.  */
 /* Function to enter a new lexical scope.

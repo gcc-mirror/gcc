@@ -200,10 +200,6 @@ init_parse (filename)
   yy_cur = "\n";
   yy_lim = yy_cur+1;
 
-  cpp_reader_init (&parse_in);
-  parse_in.data = &parse_options;
-  cpp_options_init (&parse_options);
-  cpp_handle_options (&parse_in, 0, NULL); /* FIXME */
   parse_in.show_column = 1;
   if (! cpp_start_read (&parse_in, filename))
     abort ();
