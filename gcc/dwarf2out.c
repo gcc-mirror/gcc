@@ -7566,7 +7566,7 @@ add_subscript_info (type_die, type)
 	/* We have an array type with an unspecified length.  The DWARF-2
 	     spec does not say how to handle this; let's just leave out the
 	     bounds.  */
-	;
+        {;}
 
 #ifndef MIPS_DEBUGGING_INFO
     }

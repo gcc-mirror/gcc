@@ -1,3 +1,15 @@
+2000-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cse.c (fold_rtx): Avoid empty body in an if-statement.
+	
+	* doloop.c (doloop_iterations_max, doloop_modify): Avoid using the
+	`U' integer constant suffix.
+
+	* dwarf2out.c (add_subscript_info): Avoid empty body in an
+	else-statement.
+
+	* sparc/sol2.h (__enable_execute_stack): Prototype.
+
 2000-08-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c: Remove use of AIX import file.

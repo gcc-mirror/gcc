@@ -197,7 +197,7 @@ doloop_iterations_max (loop_info, mode, nonneg)
 	if (GET_CODE (max_value) == CONST_INT)
 	  umax = INTVAL (max_value);
 	else
-	  umax = (2U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+	  umax = ((unsigned)2 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
 	n_iterations_max = umax - umin;
 	break;
@@ -212,12 +212,12 @@ doloop_iterations_max (loop_info, mode, nonneg)
 	if (GET_CODE (min_value) == CONST_INT)
 	  smin = INTVAL (min_value);
 	else
-	  smin = -(1U << (GET_MODE_BITSIZE (mode) - 1));
+	  smin = -((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1));
 
 	if (GET_CODE (max_value) == CONST_INT)
 	  smax = INTVAL (max_value);
 	else
-	  smax = (1U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+	  smax = ((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
 	n_iterations_max = smax - smin;
 	break;
@@ -230,7 +230,7 @@ doloop_iterations_max (loop_info, mode, nonneg)
       else
 	/* We need to conservatively assume that we might have the maximum
 	   number of iterations without any additional knowledge.  */
-	n_iterations_max = (2U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+	n_iterations_max = ((unsigned)2 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
       break;
 
     default:
@@ -241,8 +241,9 @@ doloop_iterations_max (loop_info, mode, nonneg)
 
   /* If we know that the iteration count is non-negative then adjust
      n_iterations_max if it is so large that it appears negative.  */
-  if (nonneg && n_iterations_max > (1U << (GET_MODE_BITSIZE (mode) - 1)))
-    n_iterations_max = (1U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+  if (nonneg
+      && n_iterations_max > ((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1)))
+    n_iterations_max = ((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
   return n_iterations_max;
 }
@@ -451,7 +452,7 @@ doloop_modify (loop, iterations, iterations_max,
       /* Determine if the iteration counter will be non-negative.
 	 Note that the maximum value loaded is iterations_max - 1.  */
       if ((unsigned HOST_WIDE_INT) INTVAL (iterations_max)
-	  <= (1U << (GET_MODE_BITSIZE (GET_MODE (counter_reg)) - 1)))
+	  <= ((unsigned)1 << (GET_MODE_BITSIZE (GET_MODE (counter_reg)) - 1)))
 	nonneg = 1;
       break;
 
