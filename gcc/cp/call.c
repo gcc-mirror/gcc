@@ -4389,6 +4389,7 @@ tourney (candidates)
 {
   struct z_candidate *champ = candidates, *challenger;
   int fate;
+  int champ_compared_to_predecessor = 0;
 
   /* Walk through the list once, comparing each current champ to the next
      candidate, knocking out a candidate or two with each comparison.  */
@@ -4405,19 +4406,24 @@ tourney (candidates)
 	      champ = challenger->next;
 	      if (champ == 0)
 		return 0;
+	      champ_compared_to_predecessor = 0;
 	    }
 	  else
-	    champ = challenger;
+	    {
+	      champ = challenger;
+	      champ_compared_to_predecessor = 1;
+	    }
 
 	  challenger = champ->next;
 	}
     }
 
   /* Make sure the champ is better than all the candidates it hasn't yet
-     been compared to.  This may do one more comparison than necessary.  Oh
-     well.  */
+     been compared to.  */
 
-  for (challenger = candidates; challenger != champ;
+  for (challenger = candidates; 
+       challenger != champ 
+	 && !(champ_compared_to_predecessor && challenger->next == champ);
        challenger = challenger->next)
     {
       fate = joust (champ, challenger, 0);
