@@ -1,3 +1,10 @@
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR preprocessor/15167
+	* files.c (destroy_cpp_file): New function.
+	(should_stack_file): Make a new file if the
+	compared file is still stacked.
+
 2004-11-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR preprocessor/17610 
