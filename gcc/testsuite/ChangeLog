@@ -1,5 +1,9 @@
 2005-03-21  Paolo Carlini  <pcarlini@suse.de>
 
+	* g++.dg/parse/crash25.C: Fix typo.
+
+2005-03-21  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/20461
 	* g++.dg/parse/crash24.C: New test.
 
