@@ -29,6 +29,13 @@ case "${host}" in
     # autoconfiguration scheme does not work.
     frag=mt-vxworks5
     ;;
+
+  i[3456]86-*-mingw32*)
+    # Mingw32 does not require strerror.o from REQUIRED_OFILES.
+    # Worse: it will not compile it because of an incompatible sys_errlist
+    # definition.
+    frag=mt-mingw32
+    ;;
 esac
 
 # Try to handle funky case of solaris 2 -> sun 4.

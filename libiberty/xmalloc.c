@@ -42,16 +42,22 @@ PTR sbrk PARAMS ((ptrdiff_t));
 /* The program name if set.  */
 static const char *name = "";
 
-/* The initial sbrk, set when the program name is set.  */
+#if ! defined (_WIN32) || defined (__CYGWIN32__)
+/* The initial sbrk, set when the program name is set. Not used for win32
+   ports other than cygwin32.  */
 static char *first_break = NULL;
+#endif
 
 void
 xmalloc_set_program_name (s)
      const char *s;
 {
   name = s;
+#if ! defined (_WIN32) || defined (__CYGWIN32__)
+  /* Win32 ports other than cygwin32 don't have brk() */
   if (first_break == NULL)
     first_break = (char *) sbrk (0);
+#endif /* ! _WIN32 || __CYGWIN32 __ */
 }
 
 PTR
@@ -65,6 +71,7 @@ xmalloc (size)
   newmem = malloc (size);
   if (!newmem)
     {
+#if ! defined (_WIN32) || defined (__CYGWIN32__)
       extern char **environ;
       size_t allocated;
 
@@ -76,6 +83,12 @@ xmalloc (size)
 	       "\n%s%sCan not allocate %lu bytes after allocating %lu bytes\n",
 	       name, *name ? ": " : "",
 	       (unsigned long) size, (unsigned long) allocated);
+#else
+      fprintf (stderr,
+              "\n%s%sCan not allocate %lu bytes\n",
+              name, *name ? ": " : "",
+              (unsigned long) size);
+#endif /* ! _WIN32 || __CYGWIN32 __ */
       xexit (1);
     }
   return (newmem);
@@ -96,6 +109,7 @@ xrealloc (oldmem, size)
     newmem = realloc (oldmem, size);
   if (!newmem)
     {
+#ifndef __MINGW32__
       extern char **environ;
       size_t allocated;
 
@@ -107,6 +121,12 @@ xrealloc (oldmem, size)
 	       "\n%s%sCan not reallocate %lu bytes after allocating %lu bytes\n",
 	       name, *name ? ": " : "",
 	       (unsigned long) size, (unsigned long) allocated);
+#else
+      fprintf (stderr,
+              "\n%s%sCan not reallocate %lu bytes\n",
+              name, *name ? ": " : "",
+              (unsigned long) size);
+#endif /* __MINGW32__ */
       xexit (1);
     }
   return (newmem);
