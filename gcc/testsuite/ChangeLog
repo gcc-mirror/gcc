@@ -1,3 +1,12 @@
+2004-04-05  Paul Brook  <paul@codesourcery.com>
+
+	PR2123
+	* g++.gd/expr/anew1.C: XFAIL and make reproducible.  Call abort on
+	failure and exit(0) on success.
+	* g++.gd/expr/anew2.C: Ditto.
+	* g++.gd/expr/anew3.C: Ditto.
+	* g++.gd/expr/anew4.C: Ditto. 
+
 2004-04-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3518
