@@ -2199,11 +2199,11 @@ extern void default_register_cpp_builtins PARAMS ((struct cpp_reader *));
 
 /* Split a list of declspecs and attributes into two.  */
 
-extern void split_specs_attrs		PARAMS ((tree, tree *, tree *));
+extern void split_specs_attrs (tree, tree *, tree *);
 
 /* Strip attributes from a list of combined specs and attrs.  */
 
-extern tree strip_attrs			PARAMS ((tree));
+extern tree strip_attrs (tree);
 
 /* Return 1 if an attribute and its arguments are valid for a decl or type.  */
 
@@ -2892,7 +2892,7 @@ extern bool alloca_call_p		PARAMS ((tree));
    from tree.h.  Depending on these flags, some attributes may be
    returned to be applied at a later stage (for example, to apply
    a decl attribute to the declaration rather than to its type).  */
-extern tree decl_attributes		PARAMS ((tree *, tree, int));
+extern tree decl_attributes (tree *, tree, int);
 
 /* In integrate.c */
 extern void save_for_inline		PARAMS ((tree));

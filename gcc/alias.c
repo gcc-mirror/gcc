@@ -92,35 +92,34 @@ typedef struct alias_set_entry
   int has_zero_child;
 } *alias_set_entry;
 
-static int rtx_equal_for_memref_p	PARAMS ((rtx, rtx));
-static rtx find_symbolic_term		PARAMS ((rtx));
-rtx get_addr				PARAMS ((rtx));
-static int memrefs_conflict_p		PARAMS ((int, rtx, int, rtx,
-						 HOST_WIDE_INT));
-static void record_set			PARAMS ((rtx, rtx, void *));
-static int base_alias_check		PARAMS ((rtx, rtx, enum machine_mode,
-						 enum machine_mode));
-static rtx find_base_value		PARAMS ((rtx));
-static int mems_in_disjoint_alias_sets_p PARAMS ((rtx, rtx));
-static int insert_subset_children       PARAMS ((splay_tree_node, void*));
-static tree find_base_decl		PARAMS ((tree));
-static alias_set_entry get_alias_set_entry PARAMS ((HOST_WIDE_INT));
-static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
-						      int (*) (rtx, int)));
-static int aliases_everything_p         PARAMS ((rtx));
-static bool nonoverlapping_component_refs_p PARAMS ((tree, tree));
-static tree decl_for_component_ref	PARAMS ((tree));
-static rtx adjust_offset_for_component_ref PARAMS ((tree, rtx));
-static int nonoverlapping_memrefs_p	PARAMS ((rtx, rtx));
-static int write_dependence_p           PARAMS ((rtx, rtx, int));
+static int rtx_equal_for_memref_p (rtx, rtx);
+static rtx find_symbolic_term (rtx);
+rtx get_addr (rtx);
+static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
+static void record_set (rtx, rtx, void *);
+static int base_alias_check (rtx, rtx, enum machine_mode,
+			     enum machine_mode);
+static rtx find_base_value (rtx);
+static int mems_in_disjoint_alias_sets_p (rtx, rtx);
+static int insert_subset_children (splay_tree_node, void*);
+static tree find_base_decl (tree);
+static alias_set_entry get_alias_set_entry (HOST_WIDE_INT);
+static rtx fixed_scalar_and_varying_struct_p (rtx, rtx, rtx, rtx,
+					      int (*) (rtx, int));
+static int aliases_everything_p (rtx);
+static bool nonoverlapping_component_refs_p (tree, tree);
+static tree decl_for_component_ref (tree);
+static rtx adjust_offset_for_component_ref (tree, rtx);
+static int nonoverlapping_memrefs_p (rtx, rtx);
+static int write_dependence_p (rtx, rtx, int);
 
-static int nonlocal_mentioned_p_1       PARAMS ((rtx *, void *));
-static int nonlocal_mentioned_p         PARAMS ((rtx));
-static int nonlocal_referenced_p_1      PARAMS ((rtx *, void *));
-static int nonlocal_referenced_p        PARAMS ((rtx));
-static int nonlocal_set_p_1             PARAMS ((rtx *, void *));
-static int nonlocal_set_p               PARAMS ((rtx));
-static void memory_modified_1		PARAMS ((rtx, rtx, void *));
+static int nonlocal_mentioned_p_1 (rtx *, void *);
+static int nonlocal_mentioned_p (rtx);
+static int nonlocal_referenced_p_1 (rtx *, void *);
+static int nonlocal_referenced_p (rtx);
+static int nonlocal_set_p_1 (rtx *, void *);
+static int nonlocal_set_p (rtx);
+static void memory_modified_1 (rtx, rtx, void *);
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -213,8 +212,7 @@ static splay_tree alias_sets;
    such an entry, or NULL otherwise.  */
 
 static alias_set_entry
-get_alias_set_entry (alias_set)
-     HOST_WIDE_INT alias_set;
+get_alias_set_entry (HOST_WIDE_INT alias_set)
 {
   splay_tree_node sn
     = splay_tree_lookup (alias_sets, (splay_tree_key) alias_set);
@@ -226,9 +224,7 @@ get_alias_set_entry (alias_set)
    the two MEMs cannot alias each other.  */
 
 static int
-mems_in_disjoint_alias_sets_p (mem1, mem2)
-     rtx mem1;
-     rtx mem2;
+mems_in_disjoint_alias_sets_p (rtx mem1, rtx mem2)
 {
 #ifdef ENABLE_CHECKING
 /* Perform a basic sanity check.  Namely, that there are no alias sets
@@ -250,9 +246,7 @@ mems_in_disjoint_alias_sets_p (mem1, mem2)
    record_alias_subset via splay_tree_foreach.  */
 
 static int
-insert_subset_children (node, data)
-     splay_tree_node node;
-     void *data;
+insert_subset_children (splay_tree_node node, void *data)
 {
   splay_tree_insert ((splay_tree) data, node->key, node->value);
 
@@ -262,8 +256,7 @@ insert_subset_children (node, data)
 /* Return 1 if the two specified alias sets may conflict.  */
 
 int
-alias_sets_conflict_p (set1, set2)
-     HOST_WIDE_INT set1, set2;
+alias_sets_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
 {
   alias_set_entry ase;
 
@@ -300,8 +293,7 @@ alias_sets_conflict_p (set1, set2)
    contain readonly fields, return true as well.  */
 
 int
-readonly_fields_p (type)
-     tree type;
+readonly_fields_p (tree type)
 {
   tree field;
 
@@ -324,8 +316,7 @@ readonly_fields_p (type)
    NULL_TREE, it means we know nothing about the storage.  */
 
 int
-objects_must_conflict_p (t1, t2)
-     tree t1, t2;
+objects_must_conflict_p (tree t1, tree t2)
 {
   /* If neither has a type specified, we don't know if they'll conflict
      because we may be using them to store objects of various types, for
@@ -364,8 +355,7 @@ objects_must_conflict_p (t1, t2)
    NULL_TREE is returned.  */
 
 static tree
-find_base_decl (t)
-     tree t;
+find_base_decl (tree t)
 {
   tree d0, d1, d2;
 
@@ -421,8 +411,7 @@ find_base_decl (t)
    get_inner_reference in T are such that we can address the object in T.  */
 
 int
-can_address_p (t)
-     tree t;
+can_address_p (tree t)
 {
   /* If we're at the end, it is vacuously addressable.  */
   if (! handled_component_p (t))
@@ -454,8 +443,7 @@ can_address_p (t)
    expression.  Call language-specific routine for help, if needed.  */
 
 HOST_WIDE_INT
-get_alias_set (t)
-     tree t;
+get_alias_set (tree t)
 {
   HOST_WIDE_INT set;
 
@@ -605,7 +593,7 @@ get_alias_set (t)
 /* Return a brand-new alias set.  */
 
 HOST_WIDE_INT
-new_alias_set ()
+new_alias_set (void)
 {
   static HOST_WIDE_INT last_alias_set;
 
@@ -625,9 +613,7 @@ new_alias_set ()
    subset of alias set zero.  */
 
 void
-record_alias_subset (superset, subset)
-     HOST_WIDE_INT superset;
-     HOST_WIDE_INT subset;
+record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
 {
   alias_set_entry superset_entry;
   alias_set_entry subset_entry;
@@ -684,8 +670,7 @@ record_alias_subset (superset, subset)
    function if the individual component aren't addressable.  */
 
 void
-record_component_aliases (type)
-     tree type;
+record_component_aliases (tree type)
 {
   HOST_WIDE_INT superset = get_alias_set (type);
   tree field;
@@ -732,7 +717,7 @@ record_component_aliases (type)
    spill area.  */
 
 HOST_WIDE_INT
-get_varargs_alias_set ()
+get_varargs_alias_set (void)
 {
   static HOST_WIDE_INT set = -1;
 
@@ -746,7 +731,7 @@ get_varargs_alias_set ()
    save areas.  */
 
 HOST_WIDE_INT
-get_frame_alias_set ()
+get_frame_alias_set (void)
 {
   static HOST_WIDE_INT set = -1;
 
@@ -759,8 +744,7 @@ get_frame_alias_set ()
 /* Inside SRC, the source of a SET, find a base address.  */
 
 static rtx
-find_base_value (src)
-     rtx src;
+find_base_value (rtx src)
 {
   unsigned int regno;
 
@@ -930,9 +914,7 @@ static char *reg_seen;
 static int unique_id;
 
 static void
-record_set (dest, set, data)
-     rtx dest, set;
-     void *data ATTRIBUTE_UNUSED;
+record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
 {
   unsigned regno;
   rtx src;
@@ -1040,10 +1022,7 @@ record_set (dest, set, data)
    are different.  */
 
 void
-record_base_value (regno, val, invariant)
-     unsigned int regno;
-     rtx val;
-     int invariant;
+record_base_value (unsigned int regno, rtx val, int invariant)
 {
   if (regno >= reg_base_value_size)
     return;
@@ -1068,8 +1047,7 @@ record_base_value (regno, val, invariant)
    changes the offset.  */
 
 void
-clear_reg_alias_info (reg)
-     rtx reg;
+clear_reg_alias_info (rtx reg)
 {
   unsigned int regno = REGNO (reg);
 
@@ -1083,8 +1061,7 @@ clear_reg_alias_info (reg)
    whose address is the SYMBOL_REF is returned.)  */
 
 rtx
-canon_rtx (x)
-     rtx x;
+canon_rtx (rtx x)
 {
   /* Recursively look for equivalences.  */
   if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER
@@ -1123,8 +1100,7 @@ canon_rtx (x)
    different numbers are, in fact, equivalent.  */
 
 static int
-rtx_equal_for_memref_p (x, y)
-     rtx x, y;
+rtx_equal_for_memref_p (rtx x, rtx y)
 {
   int i;
   int j;
@@ -1175,7 +1151,7 @@ rtx_equal_for_memref_p (x, y)
     case ADDRESSOF:
       return (XINT (x, 1) == XINT (y, 1)
 	      && rtx_equal_for_memref_p (XEXP (x, 0),
-		      			 XEXP (y, 0)));
+					 XEXP (y, 0)));
 
     default:
       break;
@@ -1203,13 +1179,13 @@ rtx_equal_for_memref_p (x, y)
   else if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == '2')
     {
       return (rtx_equal_for_memref_p (canon_rtx (XEXP (x, 0)),
-	  			      canon_rtx (XEXP (y, 0)))
+				      canon_rtx (XEXP (y, 0)))
 	      && rtx_equal_for_memref_p (canon_rtx (XEXP (x, 1)),
 					 canon_rtx (XEXP (y, 1))));
     }
   else if (GET_RTX_CLASS (code) == '1')
     return rtx_equal_for_memref_p (canon_rtx (XEXP (x, 0)),
-      				   canon_rtx (XEXP (y, 0)));
+				   canon_rtx (XEXP (y, 0)));
 
   /* Compare the elements.  If any pair of corresponding elements
      fail to match, return 0 for the whole things.
@@ -1268,8 +1244,7 @@ rtx_equal_for_memref_p (x, y)
    X and return it, or return 0 if none found.  */
 
 static rtx
-find_symbolic_term (x)
-     rtx x;
+find_symbolic_term (rtx x)
 {
   int i;
   enum rtx_code code;
@@ -1299,8 +1274,7 @@ find_symbolic_term (x)
 }
 
 rtx
-find_base_term (x)
-     rtx x;
+find_base_term (rtx x)
 {
   cselib_val *val;
   struct elt_loc_list *l;
@@ -1432,9 +1406,8 @@ find_base_term (x)
    objects, 1 if they might be pointers to the same object.  */
 
 static int
-base_alias_check (x, y, x_mode, y_mode)
-     rtx x, y;
-     enum machine_mode x_mode, y_mode;
+base_alias_check (rtx x, rtx y, enum machine_mode x_mode,
+		  enum machine_mode y_mode)
 {
   rtx x_base = find_base_term (x);
   rtx y_base = find_base_term (y);
@@ -1513,8 +1486,7 @@ base_alias_check (x, y, x_mode, y_mode)
    a more useful rtx.  */
 
 rtx
-get_addr (x)
-     rtx x;
+get_addr (rtx x)
 {
   cselib_val *v;
   struct elt_loc_list *l;
@@ -1538,10 +1510,7 @@ get_addr (x)
     is not modified by the memory reference then ADDR is returned.  */
 
 rtx
-addr_side_effect_eval (addr, size, n_refs)
-     rtx addr;
-     int size;
-     int n_refs;
+addr_side_effect_eval (rtx addr, int size, int n_refs)
 {
   int offset = 0;
 
@@ -1593,10 +1562,7 @@ addr_side_effect_eval (addr, size, n_refs)
    local variables had their addresses taken, but that's too hard now.  */
 
 static int
-memrefs_conflict_p (xsize, x, ysize, y, c)
-     rtx x, y;
-     int xsize, ysize;
-     HOST_WIDE_INT c;
+memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 {
   if (GET_CODE (x) == VALUE)
     x = get_addr (x);
@@ -1816,9 +1782,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
    only be a dependence here if both reads are volatile.  */
 
 int
-read_dependence (mem, x)
-     rtx mem;
-     rtx x;
+read_dependence (rtx mem, rtx x)
 {
   return MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem);
 }
@@ -1832,10 +1796,9 @@ read_dependence (mem, x)
    MEM1_ADDR and MEM2_ADDR are the addresses of MEM1 and MEM2.  */
 
 static rtx
-fixed_scalar_and_varying_struct_p (mem1, mem2, mem1_addr, mem2_addr, varies_p)
-     rtx mem1, mem2;
-     rtx mem1_addr, mem2_addr;
-     int (*varies_p) PARAMS ((rtx, int));
+fixed_scalar_and_varying_struct_p (rtx mem1, rtx mem2, rtx mem1_addr,
+				   rtx mem2_addr,
+				   int (*varies_p) (rtx, int))
 {
   if (! flag_strict_aliasing)
     return NULL_RTX;
@@ -1859,8 +1822,7 @@ fixed_scalar_and_varying_struct_p (mem1, mem2, mem1_addr, mem2_addr, varies_p)
    indicates that it might well alias *anything*.  */
 
 static int
-aliases_everything_p (mem)
-     rtx mem;
+aliases_everything_p (rtx mem)
 {
   if (GET_CODE (XEXP (mem, 0)) == AND)
     /* If the address is an AND, its very hard to know at what it is
@@ -1874,8 +1836,7 @@ aliases_everything_p (mem)
    overlap for any pair of objects.  */
 
 static bool
-nonoverlapping_component_refs_p (x, y)
-     tree x, y;
+nonoverlapping_component_refs_p (tree x, tree y)
 {
   tree fieldx, fieldy, typex, typey, orig_y;
 
@@ -1931,8 +1892,7 @@ nonoverlapping_component_refs_p (x, y)
 /* Look at the bottom of the COMPONENT_REF list for a DECL, and return it.  */
 
 static tree
-decl_for_component_ref (x)
-     tree x;
+decl_for_component_ref (tree x)
 {
   do
     {
@@ -1947,9 +1907,7 @@ decl_for_component_ref (x)
    offset of the field reference.  */
 
 static rtx
-adjust_offset_for_component_ref (x, offset)
-     tree x;
-     rtx offset;
+adjust_offset_for_component_ref (tree x, rtx offset)
 {
   HOST_WIDE_INT ioffset;
 
@@ -1978,8 +1936,7 @@ adjust_offset_for_component_ref (x, offset)
    X and Y and they do not overlap.  */
 
 static int
-nonoverlapping_memrefs_p (x, y)
-     rtx x, y;
+nonoverlapping_memrefs_p (rtx x, rtx y)
 {
   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
   rtx rtlx, rtly;
@@ -2105,11 +2062,8 @@ nonoverlapping_memrefs_p (x, y)
 /* True dependence: X is read after store in MEM takes place.  */
 
 int
-true_dependence (mem, mem_mode, x, varies)
-     rtx mem;
-     enum machine_mode mem_mode;
-     rtx x;
-     int (*varies) PARAMS ((rtx, int));
+true_dependence (rtx mem, enum machine_mode mem_mode, rtx x,
+		 int (*varies) (rtx, int))
 {
   rtx x_addr, mem_addr;
   rtx base;
@@ -2189,10 +2143,8 @@ true_dependence (mem, mem_mode, x, varies)
    this value prior to canonicalizing.  */
 
 int
-canon_true_dependence (mem, mem_mode, mem_addr, x, varies)
-     rtx mem, mem_addr, x;
-     enum machine_mode mem_mode;
-     int (*varies) PARAMS ((rtx, int));
+canon_true_dependence (rtx mem, enum machine_mode mem_mode, rtx mem_addr,
+		       rtx x, int (*varies) (rtx, int))
 {
   rtx x_addr;
 
@@ -2253,10 +2205,7 @@ canon_true_dependence (mem, mem_mode, mem_addr, x, varies)
    (or, if WRITEP is nonzero, a write to) MEM.  */
 
 static int
-write_dependence_p (mem, x, writep)
-     rtx mem;
-     rtx x;
-     int writep;
+write_dependence_p (rtx mem, rtx x, int writep)
 {
   rtx x_addr, mem_addr;
   rtx fixed_scalar;
@@ -2322,9 +2271,7 @@ write_dependence_p (mem, x, writep)
 /* Anti dependence: X is written after read in MEM takes place.  */
 
 int
-anti_dependence (mem, x)
-     rtx mem;
-     rtx x;
+anti_dependence (rtx mem, rtx x)
 {
   return write_dependence_p (mem, x, /*writep=*/0);
 }
@@ -2332,9 +2279,7 @@ anti_dependence (mem, x)
 /* Output dependence: X is written after store in MEM takes place.  */
 
 int
-output_dependence (mem, x)
-     rtx mem;
-     rtx x;
+output_dependence (rtx mem, rtx x)
 {
   return write_dependence_p (mem, x, /*writep=*/1);
 }
@@ -2343,9 +2288,7 @@ output_dependence (mem, x)
    something which is not local to the function and is not constant.  */
 
 static int
-nonlocal_mentioned_p_1 (loc, data)
-     rtx *loc;
-     void *data ATTRIBUTE_UNUSED;
+nonlocal_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 {
   rtx x = *loc;
   rtx base;
@@ -2443,8 +2386,7 @@ nonlocal_mentioned_p_1 (loc, data)
    local to the function and is not constant.  */
 
 static int
-nonlocal_mentioned_p (x)
-     rtx x;
+nonlocal_mentioned_p (rtx x)
 {
   if (INSN_P (x))
     {
@@ -2467,9 +2409,7 @@ nonlocal_mentioned_p (x)
    something which is not local to the function and is not constant.  */
 
 static int
-nonlocal_referenced_p_1 (loc, data)
-     rtx *loc;
-     void *data ATTRIBUTE_UNUSED;
+nonlocal_referenced_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 {
   rtx x = *loc;
 
@@ -2540,8 +2480,7 @@ nonlocal_referenced_p_1 (loc, data)
    local to the function and is not constant.  */
 
 static int
-nonlocal_referenced_p (x)
-     rtx x;
+nonlocal_referenced_p (rtx x)
 {
   if (INSN_P (x))
     {
@@ -2564,9 +2503,7 @@ nonlocal_referenced_p (x)
    something which is not local to the function and is not constant.  */
 
 static int
-nonlocal_set_p_1 (loc, data)
-     rtx *loc;
-     void *data ATTRIBUTE_UNUSED;
+nonlocal_set_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 {
   rtx x = *loc;
 
@@ -2619,8 +2556,7 @@ nonlocal_set_p_1 (loc, data)
    local to the function and is not constant.  */
 
 static int
-nonlocal_set_p (x)
-     rtx x;
+nonlocal_set_p (rtx x)
 {
   if (INSN_P (x))
     {
@@ -2642,7 +2578,7 @@ nonlocal_set_p (x)
 /* Mark the function if it is pure or constant.  */
 
 void
-mark_constant_function ()
+mark_constant_function (void)
 {
   rtx insn;
   int nonlocal_memory_referenced;
@@ -2697,7 +2633,7 @@ mark_constant_function ()
 
 
 void
-init_alias_once ()
+init_alias_once (void)
 {
   int i;
 
@@ -2731,9 +2667,7 @@ init_alias_once ()
    to be memory reference.  */
 static bool memory_modified;
 static void
-memory_modified_1 (x, pat, data)
-	rtx x, pat ATTRIBUTE_UNUSED;
-	void *data;
+memory_modified_1 (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   if (GET_CODE (x) == MEM)
     {
@@ -2746,8 +2680,7 @@ memory_modified_1 (x, pat, data)
 /* Return true when INSN possibly modify memory contents of MEM
    (ie address can be modified).  */
 bool
-memory_modified_in_insn_p (mem, insn)
-     rtx mem, insn;
+memory_modified_in_insn_p (rtx mem, rtx insn)
 {
   if (!INSN_P (insn))
     return false;
@@ -2760,7 +2693,7 @@ memory_modified_in_insn_p (mem, insn)
    array.  */
 
 void
-init_alias_analysis ()
+init_alias_analysis (void)
 {
   int maxreg = max_reg_num ();
   int changed, pass;
@@ -2979,7 +2912,7 @@ init_alias_analysis ()
 }
 
 void
-end_alias_analysis ()
+end_alias_analysis (void)
 {
   free (reg_known_value + FIRST_PSEUDO_REGISTER);
   reg_known_value = 0;

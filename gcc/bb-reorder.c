@@ -141,29 +141,24 @@ int max_entry_frequency;
 gcov_type max_entry_count;
 
 /* Local function prototypes.  */
-static void find_traces			PARAMS ((int *, struct trace *));
-static basic_block rotate_loop		PARAMS ((edge, struct trace *, int));
-static void mark_bb_visited		PARAMS ((basic_block, int));
-static void find_traces_1_round		PARAMS ((int, int, gcov_type,
-						 struct trace *, int *, int,
-						 fibheap_t *));
-static basic_block copy_bb		PARAMS ((basic_block, edge,
-						 basic_block, int));
-static fibheapkey_t bb_to_key		PARAMS ((basic_block));
-static bool better_edge_p		PARAMS ((basic_block, edge, int, int,
-						 int, int));
-static void connect_traces		PARAMS ((int, struct trace *));
-static bool copy_bb_p			PARAMS ((basic_block, int));
-static int get_uncond_jump_length	PARAMS ((void));
+static void find_traces (int *, struct trace *);
+static basic_block rotate_loop (edge, struct trace *, int);
+static void mark_bb_visited (basic_block, int);
+static void find_traces_1_round (int, int, gcov_type, struct trace *, int *,
+				 int, fibheap_t *);
+static basic_block copy_bb (basic_block, edge, basic_block, int);
+static fibheapkey_t bb_to_key (basic_block);
+static bool better_edge_p (basic_block, edge, int, int, int, int);
+static void connect_traces (int, struct trace *);
+static bool copy_bb_p (basic_block, int);
+static int get_uncond_jump_length (void);
 
 /* Find the traces for Software Trace Cache.  Chain each trace through
    RBI()->next.  Store the number of traces to N_TRACES and description of
    traces to TRACES.  */
 
 static void
-find_traces (n_traces, traces)
-     int *n_traces;
-     struct trace *traces;
+find_traces (int *n_traces, struct trace *traces)
 {
   int i;
   edge e;
@@ -222,10 +217,7 @@ find_traces (n_traces, traces)
    (with sequential number TRACE_N).  */
 
 static basic_block
-rotate_loop (back_edge, trace, trace_n)
-     edge back_edge;
-     struct trace *trace;
-     int trace_n;
+rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 {
   basic_block bb;
 
@@ -339,9 +331,7 @@ rotate_loop (back_edge, trace, trace_n)
 /* This function marks BB that it was visited in trace number TRACE.  */
 
 static void
-mark_bb_visited (bb, trace)
-     basic_block bb;
-     int trace;
+mark_bb_visited (basic_block bb, int trace)
 {
   RBI (bb)->visited = trace;
   if (bbd[bb->index].heap)
@@ -361,15 +351,9 @@ mark_bb_visited (bb, trace)
    *HEAP and stores starting points for the next round into new *HEAP.  */
 
 static void
-find_traces_1_round (branch_th, exec_th, count_th, traces, n_traces, round,
-		     heap)
-     int branch_th;
-     int exec_th;
-     gcov_type count_th;
-     struct trace *traces;
-     int *n_traces;
-     int round;
-     fibheap_t *heap;
+find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
+		     struct trace *traces, int *n_traces, int round,
+		     fibheap_t *heap)
 {
   /* Heap for discarded basic blocks which are possible starting points for
      the next round.  */
@@ -664,11 +648,7 @@ find_traces_1_round (branch_th, exec_th, count_th, traces, n_traces, round,
    (TRACE is a number of trace which OLD_BB is duplicated to).  */
 
 static basic_block
-copy_bb (old_bb, e, bb, trace)
-     basic_block old_bb;
-     edge e;
-     basic_block bb;
-     int trace;
+copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 {
   basic_block new_bb;
 
@@ -716,8 +696,7 @@ copy_bb (old_bb, e, bb, trace)
 /* Compute and return the key (for the heap) of the basic block BB.  */
 
 static fibheapkey_t
-bb_to_key (bb)
-     basic_block bb;
+bb_to_key (basic_block bb)
 {
   edge e;
 
@@ -755,13 +734,8 @@ bb_to_key (bb)
    BEST_PROB; similarly for frequency.  */
 
 static bool
-better_edge_p (bb, e, prob, freq, best_prob, best_freq)
-     basic_block bb;
-     edge e;
-     int prob;
-     int freq;
-     int best_prob;
-     int best_freq;
+better_edge_p (basic_block bb, edge e, int prob, int freq, int best_prob,
+	       int best_freq)
 {
   bool is_better_edge;
 
@@ -798,9 +772,7 @@ better_edge_p (bb, e, prob, freq, best_prob, best_freq)
 /* Connect traces in array TRACES, N_TRACES is the count of traces.  */
 
 static void
-connect_traces (n_traces, traces)
-     int n_traces;
-     struct trace *traces;
+connect_traces (int n_traces, struct trace *traces)
 {
   int i;
   bool *connected;
@@ -1022,9 +994,7 @@ connect_traces (n_traces, traces)
    when code size is allowed to grow by duplication.  */
 
 static bool
-copy_bb_p (bb, code_may_grow)
-     basic_block bb;
-     int code_may_grow;
+copy_bb_p (basic_block bb, int code_may_grow)
 {
   int size = 0;
   int max_size = uncond_jump_length;
@@ -1063,7 +1033,7 @@ copy_bb_p (bb, code_may_grow)
 /* Return the length of unconditional jump instruction.  */
 
 static int
-get_uncond_jump_length ()
+get_uncond_jump_length (void)
 {
   rtx label, jump;
   int length;
@@ -1081,7 +1051,7 @@ get_uncond_jump_length ()
 /* Reorder basic blocks.  The main entry point to this file.  */
 
 void
-reorder_basic_blocks ()
+reorder_basic_blocks (void)
 {
   int n_traces;
   int i;
@@ -1100,7 +1070,7 @@ reorder_basic_blocks ()
 
   /* We are estimating the lenght of uncond jump insn only once since the code
      for getting the insn lenght always returns the minimal length now.  */
-  if (uncond_jump_length == 0) 
+  if (uncond_jump_length == 0)
     uncond_jump_length = get_uncond_jump_length ();
 
   /* We need to know some information for each basic block.  */

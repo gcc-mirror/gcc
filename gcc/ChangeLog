@@ -1,3 +1,19 @@
+2003-06-15  Andreas Jaeger  <aj@suse.de>
+
+	* alloc-pool.c: Convert to ISO C90 prototypes.
+	* alloc-pool.h: Likewise.
+	* alias.c: Likewise.
+	* attribs.c: Likewise.
+	* bb-reorder.c: Likewise.
+	* bitmap.h: Likewise.
+	* bitmap.c: Likewise.
+	* builtins.c: Likewise.
+
+	* tree.h: Convert prototypes of attribs.c to ISO C90.
+	* basic-block.h: Convert prototypes of bb-reorder.c to ISO C90.
+	* rtl.h: Convert prototypes of alias.c and builtins.c to ISO C90.
+	* expr.h: Convert prototypes of builtins.c to ISO C90.
+
 2003-06-15  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.md (expsf2, expdf2, expxf2): New patterns to

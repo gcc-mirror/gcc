@@ -1406,8 +1406,8 @@ extern int ceil_log2			PARAMS ((unsigned HOST_WIDE_INT));
 #define plus_constant(X, C) plus_constant_wide ((X), (HOST_WIDE_INT) (C))
 
 /* In builtins.c */
-extern rtx expand_builtin_expect_jump	PARAMS ((tree, rtx, rtx));
-extern void purge_builtin_constant_p	PARAMS ((void));
+extern rtx expand_builtin_expect_jump (tree, rtx, rtx);
+extern void purge_builtin_constant_p (void);
 
 /* In explow.c */
 extern void set_stack_check_libfunc PARAMS ((rtx));
@@ -1558,8 +1558,8 @@ extern rtx prev_cc0_setter		PARAMS ((rtx));
 
 /* In cfglayout.c  */
 extern tree choose_inner_scope		PARAMS ((tree, tree));
-extern int insn_line 			PARAMS ((rtx));
-extern const char * insn_file 		PARAMS ((rtx));
+extern int insn_line			PARAMS ((rtx));
+extern const char * insn_file		PARAMS ((rtx));
 extern int prologue_locator, epilogue_locator;
 
 /* In jump.c */
@@ -2320,23 +2320,22 @@ extern void fancy_abort PARAMS ((const char *, int, const char *))
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
 /* In alias.c */
-extern void clear_reg_alias_info	PARAMS ((rtx));
-extern rtx canon_rtx                    PARAMS ((rtx));
-extern int true_dependence		PARAMS ((rtx, enum machine_mode, rtx,
-						int (*)(rtx, int)));
-extern rtx get_addr                     PARAMS ((rtx));
-extern int canon_true_dependence        PARAMS ((rtx, enum machine_mode, rtx,
-                                                rtx, int (*)(rtx, int)));
-extern int read_dependence		PARAMS ((rtx, rtx));
-extern int anti_dependence		PARAMS ((rtx, rtx));
-extern int output_dependence		PARAMS ((rtx, rtx));
-extern void mark_constant_function	PARAMS ((void));
-extern void init_alias_once		PARAMS ((void));
-extern void init_alias_analysis		PARAMS ((void));
-extern void end_alias_analysis		PARAMS ((void));
-extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
-extern bool memory_modified_in_insn_p	PARAMS ((rtx, rtx));
-extern rtx find_base_term		PARAMS ((rtx));
+extern void clear_reg_alias_info (rtx);
+extern rtx canon_rtx (rtx);
+extern int true_dependence (rtx, enum machine_mode, rtx, int (*)(rtx, int));
+extern rtx get_addr (rtx);
+extern int canon_true_dependence (rtx, enum machine_mode, rtx, rtx,
+				  int (*)(rtx, int));
+extern int read_dependence (rtx, rtx);
+extern int anti_dependence (rtx, rtx);
+extern int output_dependence (rtx, rtx);
+extern void mark_constant_function (void);
+extern void init_alias_once (void);
+extern void init_alias_analysis (void);
+extern void end_alias_analysis (void);
+extern rtx addr_side_effect_eval (rtx, int, int);
+extern bool memory_modified_in_insn_p (rtx, rtx);
+extern rtx find_base_term (rtx);
 
 /* In sibcall.c */
 typedef enum {

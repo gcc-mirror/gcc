@@ -1,6 +1,6 @@
 /* Functions dealing with attribute handling, used by most front ends.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002 Free Software Foundation, Inc.
+   2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 
-static void init_attributes		PARAMS ((void));
+static void init_attributes (void);
 
 /* Table of the tables of attributes (common, language, format, machine)
    searched.  */
@@ -53,7 +53,7 @@ static const struct attribute_spec empty_attribute_table[] =
    if --enable-checking.  */
 
 static void
-init_attributes ()
+init_attributes (void)
 {
   size_t i;
 
@@ -141,9 +141,7 @@ init_attributes ()
    and ATTR_FLAG_BUILT_IN set.  */
 
 tree
-decl_attributes (node, attributes, flags)
-     tree *node, attributes;
-     int flags;
+decl_attributes (tree *node, tree attributes, int flags)
 {
   tree a;
   tree returned_attrs = NULL_TREE;
@@ -317,9 +315,7 @@ decl_attributes (node, attributes, flags)
    resulting attributes together the way decl_attributes expects them.  */
 
 void
-split_specs_attrs (specs_attrs, declspecs, prefix_attributes)
-     tree specs_attrs;
-     tree *declspecs, *prefix_attributes;
+split_specs_attrs (tree specs_attrs, tree *declspecs, tree *prefix_attributes)
 {
   tree t, s, a, next, specs, attrs;
 
@@ -394,8 +390,7 @@ split_specs_attrs (specs_attrs, declspecs, prefix_attributes)
    A warning is issued for every ignored attribute.  */
 
 tree
-strip_attrs (specs_attrs)
-     tree specs_attrs;
+strip_attrs (tree specs_attrs)
 {
   tree specs, attrs;
 
@@ -410,4 +405,3 @@ strip_attrs (specs_attrs)
 
   return specs;
 }
-

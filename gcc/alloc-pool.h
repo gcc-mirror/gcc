@@ -47,8 +47,8 @@ typedef struct alloc_pool_def
 }
  *alloc_pool;
 
-extern alloc_pool create_alloc_pool PARAMS ((const char *, size_t, size_t));
-extern void free_alloc_pool PARAMS ((alloc_pool));
-extern void *pool_alloc PARAMS ((alloc_pool));
-extern void pool_free PARAMS ((alloc_pool, void *));
+extern alloc_pool create_alloc_pool (const char *, size_t, size_t);
+extern void free_alloc_pool (alloc_pool);
+extern void *pool_alloc (alloc_pool);
+extern void pool_free (alloc_pool, void *);
 #endif

@@ -84,106 +84,82 @@ static bool builtin_dconsts_init = 0;
 static REAL_VALUE_TYPE dconstpi;
 static REAL_VALUE_TYPE dconste;
 
-static int get_pointer_alignment	PARAMS ((tree, unsigned int));
-static tree c_strlen			PARAMS ((tree));
-static const char *c_getstr		PARAMS ((tree));
-static rtx c_readstr			PARAMS ((const char *,
-						 enum machine_mode));
-static int target_char_cast		PARAMS ((tree, char *));
-static rtx get_memory_rtx		PARAMS ((tree));
-static int apply_args_size		PARAMS ((void));
-static int apply_result_size		PARAMS ((void));
+static int get_pointer_alignment (tree, unsigned int);
+static tree c_strlen (tree);
+static const char *c_getstr (tree);
+static rtx c_readstr (const char *, enum machine_mode);
+static int target_char_cast (tree, char *);
+static rtx get_memory_rtx (tree);
+static int apply_args_size (void);
+static int apply_result_size (void);
 #if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
-static rtx result_vector		PARAMS ((int, rtx));
+static rtx result_vector (int, rtx);
 #endif
-static rtx expand_builtin_setjmp	PARAMS ((tree, rtx));
-static void expand_builtin_prefetch	PARAMS ((tree));
-static rtx expand_builtin_apply_args	PARAMS ((void));
-static rtx expand_builtin_apply_args_1	PARAMS ((void));
-static rtx expand_builtin_apply		PARAMS ((rtx, rtx, rtx));
-static void expand_builtin_return	PARAMS ((rtx));
-static enum type_class type_to_class	PARAMS ((tree));
-static rtx expand_builtin_classify_type	PARAMS ((tree));
-static void expand_errno_check		PARAMS ((tree, rtx));
-static rtx expand_builtin_mathfn	PARAMS ((tree, rtx, rtx));
-static rtx expand_builtin_mathfn_2	PARAMS ((tree, rtx, rtx));
-static rtx expand_builtin_constant_p	PARAMS ((tree, enum machine_mode));
-static rtx expand_builtin_args_info	PARAMS ((tree));
-static rtx expand_builtin_next_arg	PARAMS ((tree));
-static rtx expand_builtin_va_start	PARAMS ((tree));
-static rtx expand_builtin_va_end	PARAMS ((tree));
-static rtx expand_builtin_va_copy	PARAMS ((tree));
-static rtx expand_builtin_memcmp	PARAMS ((tree, tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strcmp	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strncmp	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx builtin_memcpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
-						 enum machine_mode));
-static rtx expand_builtin_strcat	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strncat	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strspn	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strcspn	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_memcpy	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_mempcpy	PARAMS ((tree, rtx,
-						 enum machine_mode, int));
-static rtx expand_builtin_memmove	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_bcopy		PARAMS ((tree));
-static rtx expand_builtin_strcpy	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_stpcpy	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx builtin_strncpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
-						 enum machine_mode));
-static rtx expand_builtin_strncpy	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx builtin_memset_read_str	PARAMS ((PTR, HOST_WIDE_INT,
-						 enum machine_mode));
-static rtx builtin_memset_gen_str	PARAMS ((PTR, HOST_WIDE_INT,
-						 enum machine_mode));
-static rtx expand_builtin_memset	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_bzero		PARAMS ((tree));
-static rtx expand_builtin_strlen	PARAMS ((tree, rtx, enum machine_mode));
-static rtx expand_builtin_strstr	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strpbrk	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strchr	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_strrchr	PARAMS ((tree, rtx,
-						 enum machine_mode));
-static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
-static rtx expand_builtin_unop		PARAMS ((enum machine_mode,
-						 tree, rtx, rtx, optab));
-static rtx expand_builtin_frame_address	PARAMS ((tree, tree));
-static rtx expand_builtin_fputs		PARAMS ((tree, int, int));
-static tree stabilize_va_list		PARAMS ((tree, int));
-static rtx expand_builtin_expect	PARAMS ((tree, rtx));
-static tree fold_builtin_constant_p	PARAMS ((tree));
-static tree fold_builtin_classify_type	PARAMS ((tree));
-static tree fold_builtin_inf		PARAMS ((tree, int));
-static tree fold_builtin_nan		PARAMS ((tree, tree, int));
-static int validate_arglist		PARAMS ((tree, ...));
-static tree fold_trunc_transparent_mathfn PARAMS ((tree));
-static bool readonly_data_expr		PARAMS ((tree));
-static rtx expand_builtin_fabs		PARAMS ((tree, rtx, rtx));
-static rtx expand_builtin_cabs		PARAMS ((tree, rtx));
-static void init_builtin_dconsts	PARAMS ((void));
-static tree fold_builtin_cabs		PARAMS ((tree, tree, tree));
+static rtx expand_builtin_setjmp (tree, rtx);
+static void expand_builtin_prefetch (tree);
+static rtx expand_builtin_apply_args (void);
+static rtx expand_builtin_apply_args_1 (void);
+static rtx expand_builtin_apply (rtx, rtx, rtx);
+static void expand_builtin_return (rtx);
+static enum type_class type_to_class (tree);
+static rtx expand_builtin_classify_type (tree);
+static void expand_errno_check (tree, rtx);
+static rtx expand_builtin_mathfn (tree, rtx, rtx);
+static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
+static rtx expand_builtin_constant_p (tree, enum machine_mode);
+static rtx expand_builtin_args_info (tree);
+static rtx expand_builtin_next_arg (tree);
+static rtx expand_builtin_va_start (tree);
+static rtx expand_builtin_va_end (tree);
+static rtx expand_builtin_va_copy (tree);
+static rtx expand_builtin_memcmp (tree, tree, rtx, enum machine_mode);
+static rtx expand_builtin_strcmp (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strncmp (tree, rtx, enum machine_mode);
+static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+static rtx expand_builtin_strcat (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strncat (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strspn (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strcspn (tree, rtx, enum machine_mode);
+static rtx expand_builtin_memcpy (tree, rtx, enum machine_mode);
+static rtx expand_builtin_mempcpy (tree, rtx, enum machine_mode, int);
+static rtx expand_builtin_memmove (tree, rtx, enum machine_mode);
+static rtx expand_builtin_bcopy (tree);
+static rtx expand_builtin_strcpy (tree, rtx, enum machine_mode);
+static rtx expand_builtin_stpcpy (tree, rtx, enum machine_mode);
+static rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+static rtx expand_builtin_strncpy (tree, rtx, enum machine_mode);
+static rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, enum machine_mode);
+static rtx expand_builtin_memset (tree, rtx, enum machine_mode);
+static rtx expand_builtin_bzero (tree);
+static rtx expand_builtin_strlen (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strstr (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strpbrk (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strchr (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strrchr (tree, rtx, enum machine_mode);
+static rtx expand_builtin_alloca (tree, rtx);
+static rtx expand_builtin_unop (enum machine_mode, tree, rtx, rtx, optab);
+static rtx expand_builtin_frame_address (tree, tree);
+static rtx expand_builtin_fputs (tree, int, int);
+static tree stabilize_va_list (tree, int);
+static rtx expand_builtin_expect (tree, rtx);
+static tree fold_builtin_constant_p (tree);
+static tree fold_builtin_classify_type (tree);
+static tree fold_builtin_inf (tree, int);
+static tree fold_builtin_nan (tree, tree, int);
+static int validate_arglist (tree, ...);
+static tree fold_trunc_transparent_mathfn (tree);
+static bool readonly_data_expr (tree);
+static rtx expand_builtin_fabs (tree, rtx, rtx);
+static rtx expand_builtin_cabs (tree, rtx);
+static void init_builtin_dconsts (void);
+static tree fold_builtin_cabs (tree, tree, tree);
 
 /* Initialize mathematical constants for constant folding builtins.
    These constants need to be given to at least 160 bits precision.  */
 
 static void
-init_builtin_dconsts ()
+init_builtin_dconsts (void)
 {
   real_from_string (&dconstpi,
     "3.1415926535897932384626433832795028841971693993751058209749445923078");
@@ -192,7 +168,7 @@ init_builtin_dconsts ()
 
   builtin_dconsts_init = true;
 }
-  
+
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
    The alignment returned is, by default, the alignment of the thing that
@@ -202,9 +178,7 @@ init_builtin_dconsts ()
    expression is actually pointing at an object whose alignment is tighter.  */
 
 static int
-get_pointer_alignment (exp, max_align)
-     tree exp;
-     unsigned int max_align;
+get_pointer_alignment (tree exp, unsigned int max_align)
 {
   unsigned int align, inner;
 
@@ -273,8 +247,7 @@ get_pointer_alignment (exp, max_align)
    arrays with initializers, so neither can we do so here.  */
 
 static tree
-c_strlen (src)
-     tree src;
+c_strlen (tree src)
 {
   tree offset_node;
   HOST_WIDE_INT offset;
@@ -339,8 +312,7 @@ c_strlen (src)
    or sum of string constant and integer constant.  */
 
 static const char *
-c_getstr (src)
-     tree src;
+c_getstr (tree src)
 {
   tree offset_node;
 
@@ -361,9 +333,7 @@ c_getstr (src)
    GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
 
 static rtx
-c_readstr (str, mode)
-     const char *str;
-     enum machine_mode mode;
+c_readstr (const char *str, enum machine_mode mode)
 {
   HOST_WIDE_INT c[2];
   HOST_WIDE_INT ch;
@@ -397,9 +367,7 @@ c_readstr (str, mode)
    P.  */
 
 static int
-target_char_cast (cst, p)
-     tree cst;
-     char *p;
+target_char_cast (tree cst, char *p)
 {
   unsigned HOST_WIDE_INT val, hostval;
 
@@ -427,10 +395,8 @@ target_char_cast (cst, p)
    address located within it (depending on FNDECL_CODE).  */
 
 rtx
-expand_builtin_return_addr (fndecl_code, count, tem)
-     enum built_in_function fndecl_code;
-     int count;
-     rtx tem;
+expand_builtin_return_addr (enum built_in_function fndecl_code, int count,
+			    rtx tem)
 {
   int i;
 
@@ -490,9 +456,7 @@ static HOST_WIDE_INT setjmp_alias_set = -1;
    handling code.  */
 
 void
-expand_builtin_setjmp_setup (buf_addr, receiver_label)
-     rtx buf_addr;
-     rtx receiver_label;
+expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 {
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
   rtx stack_save;
@@ -553,8 +517,7 @@ expand_builtin_setjmp_setup (buf_addr, receiver_label)
    This is used directly by sjlj exception handling code.  */
 
 void
-expand_builtin_setjmp_receiver (receiver_label)
-     rtx receiver_label ATTRIBUTE_UNUSED;
+expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 {
   /* Clobber the FP when we get here, so we have to make sure it's
      marked as used by this function.  */
@@ -626,9 +589,7 @@ expand_builtin_setjmp_receiver (receiver_label)
    them.  */
 
 static rtx
-expand_builtin_setjmp (arglist, target)
-     tree arglist;
-     rtx target;
+expand_builtin_setjmp (tree arglist, rtx target)
 {
   rtx buf_addr, next_lab, cont_lab;
 
@@ -679,8 +640,7 @@ expand_builtin_setjmp (arglist, target)
    them.  */
 
 void
-expand_builtin_longjmp (buf_addr, value)
-     rtx buf_addr, value;
+expand_builtin_longjmp (rtx buf_addr, rtx value)
 {
   rtx fp, lab, stack, insn, last;
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
@@ -769,8 +729,7 @@ expand_builtin_longjmp (buf_addr, value)
    effects.  */
 
 static void
-expand_builtin_prefetch (arglist)
-     tree arglist;
+expand_builtin_prefetch (tree arglist)
 {
   tree arg0, arg1, arg2;
   rtx op0, op1, op2;
@@ -856,8 +815,7 @@ expand_builtin_prefetch (arglist)
    to be used to be used in a string instruction (cmpstrsi, movstrsi, ..).  */
 
 static rtx
-get_memory_rtx (exp)
-     tree exp;
+get_memory_rtx (tree exp)
 {
   rtx addr = expand_expr (exp, NULL_RTX, ptr_mode, EXPAND_SUM);
   rtx mem;
@@ -919,8 +877,7 @@ static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER];
    needed in objc-act.c.  */
 
 int
-apply_args_register_offset (regno)
-     int regno;
+apply_args_register_offset (int regno)
 {
   apply_args_size ();
 
@@ -936,7 +893,7 @@ apply_args_register_offset (regno)
    and initialize apply_args_mode.  */
 
 static int
-apply_args_size ()
+apply_args_size (void)
 {
   static int size = -1;
   int align;
@@ -1016,7 +973,7 @@ apply_args_size ()
    and initialize apply_result_mode.  */
 
 static int
-apply_result_size ()
+apply_result_size (void)
 {
   static int size = -1;
   int align, regno;
@@ -1092,9 +1049,7 @@ apply_result_size ()
    restore the values.  */
 
 static rtx
-result_vector (savep, result)
-     int savep;
-     rtx result;
+result_vector (int savep, rtx result)
 {
   int regno, size, align, nelts;
   enum machine_mode mode;
@@ -1123,7 +1078,7 @@ result_vector (savep, result)
    arguments as were passed to the current function.  */
 
 static rtx
-expand_builtin_apply_args_1 ()
+expand_builtin_apply_args_1 (void)
 {
   rtx registers;
   int size, align, regno;
@@ -1180,7 +1135,7 @@ expand_builtin_apply_args_1 ()
    saved.  */
 
 static rtx
-expand_builtin_apply_args ()
+expand_builtin_apply_args (void)
 {
   /* Don't do __builtin_apply_args more than once in a function.
      Save the result of the first call and reuse it.  */
@@ -1215,8 +1170,7 @@ expand_builtin_apply_args ()
    untyped return of whatever value was returned by the given function.  */
 
 static rtx
-expand_builtin_apply (function, arguments, argsize)
-     rtx function, arguments, argsize;
+expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 {
   int size, align, regno;
   enum machine_mode mode;
@@ -1371,8 +1325,7 @@ expand_builtin_apply (function, arguments, argsize)
 /* Perform an untyped return.  */
 
 static void
-expand_builtin_return (result)
-     rtx result;
+expand_builtin_return (rtx result)
 {
   int size, align, regno;
   enum machine_mode mode;
@@ -1425,8 +1378,7 @@ expand_builtin_return (result)
 /* Used by expand_builtin_classify_type and fold_builtin_classify_type.  */
 
 static enum type_class
-type_to_class (type)
-     tree type;
+type_to_class (tree type)
 {
   switch (TREE_CODE (type))
     {
@@ -1458,8 +1410,7 @@ type_to_class (type)
    ARGLIST.  */
 
 static rtx
-expand_builtin_classify_type (arglist)
-     tree arglist;
+expand_builtin_classify_type (tree arglist)
 {
   if (arglist != 0)
     return GEN_INT (type_to_class (TREE_TYPE (TREE_VALUE (arglist))));
@@ -1469,9 +1420,7 @@ expand_builtin_classify_type (arglist)
 /* Expand expression EXP, which is a call to __builtin_constant_p.  */
 
 static rtx
-expand_builtin_constant_p (arglist, target_mode)
-     tree arglist;
-     enum machine_mode target_mode;
+expand_builtin_constant_p (tree arglist, enum machine_mode target_mode)
 {
   rtx tmp;
 
@@ -1493,9 +1442,7 @@ expand_builtin_constant_p (arglist, target_mode)
 /* Return mathematic function equivalent to FN but operating directly on TYPE,
    if available.  */
 tree
-mathfn_built_in (type, fn)
-     tree type;
-     enum built_in_function fn;
+mathfn_built_in (tree type, enum built_in_function fn)
 {
   enum built_in_function fcode = NOT_BUILT_IN;
   if (TYPE_MODE (type) == TYPE_MODE (double_type_node))
@@ -1704,9 +1651,7 @@ mathfn_built_in (type, fn)
    errno to EDOM.  */
 
 static void
-expand_errno_check (exp, target)
-     tree exp;
-     rtx target;
+expand_errno_check (tree exp, rtx target)
 {
   rtx lab;
 
@@ -1750,9 +1695,7 @@ expand_errno_check (exp, target)
    SUBTARGET may be used as the target for computing one of EXP's operands.  */
 
 static rtx
-expand_builtin_mathfn (exp, target, subtarget)
-     tree exp;
-     rtx target, subtarget;
+expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
   rtx op0, insns;
@@ -1867,9 +1810,7 @@ expand_builtin_mathfn (exp, target, subtarget)
    operands.  */
 
 static rtx
-expand_builtin_mathfn_2 (exp, target, subtarget)
-     tree exp;
-     rtx target, subtarget;
+expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
   rtx op0, op1, insns;
@@ -1962,10 +1903,8 @@ expand_builtin_mathfn_2 (exp, target, subtarget)
    try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strlen (arglist, target, target_mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode target_mode;
+expand_builtin_strlen (tree arglist, rtx target,
+		       enum machine_mode target_mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -2061,10 +2000,7 @@ expand_builtin_strlen (arglist, target, target_mode)
    in TARGET, if convenient (and in mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_strstr (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strstr (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -2117,10 +2053,7 @@ expand_builtin_strstr (arglist, target, mode)
    in TARGET, if convenient (and in mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_strchr (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strchr (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -2163,10 +2096,7 @@ expand_builtin_strchr (arglist, target, mode)
    in TARGET, if convenient (and in mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_strrchr (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strrchr (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -2217,10 +2147,7 @@ expand_builtin_strrchr (arglist, target, mode)
    in TARGET, if convenient (and in mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_strpbrk (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strpbrk (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -2279,10 +2206,8 @@ expand_builtin_strpbrk (arglist, target, mode)
    constant.  */
 
 static rtx
-builtin_memcpy_read_str (data, offset, mode)
-     PTR data;
-     HOST_WIDE_INT offset;
-     enum machine_mode mode;
+builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
+			 enum machine_mode mode)
 {
   const char *str = (const char *) data;
 
@@ -2299,10 +2224,7 @@ builtin_memcpy_read_str (data, offset, mode)
    otherwise try to get the result in TARGET, if convenient (and in
    mode MODE if that's convenient).  */
 static rtx
-expand_builtin_memcpy (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_memcpy (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2388,11 +2310,8 @@ expand_builtin_memcpy (arglist, target, mode)
    stpcpy.  */
 
 static rtx
-expand_builtin_mempcpy (arglist, target, mode, endp)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
-     int endp;
+expand_builtin_mempcpy (tree arglist, rtx target, enum machine_mode mode,
+			int endp)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2488,10 +2407,7 @@ expand_builtin_mempcpy (arglist, target, mode, endp)
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_memmove (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_memmove (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2543,8 +2459,7 @@ expand_builtin_memmove (arglist, target, mode)
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_bcopy (arglist)
-     tree arglist;
+expand_builtin_bcopy (tree arglist)
 {
   tree src, dest, size, newarglist;
 
@@ -2574,10 +2489,7 @@ expand_builtin_bcopy (arglist)
    convenient).  */
 
 static rtx
-expand_builtin_strcpy (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strcpy (tree arglist, rtx target, enum machine_mode mode)
 {
   tree fn, len;
 
@@ -2604,10 +2516,7 @@ expand_builtin_strcpy (arglist, target, mode)
    mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_stpcpy (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -2647,10 +2556,8 @@ expand_builtin_stpcpy (arglist, target, mode)
    constant.  */
 
 static rtx
-builtin_strncpy_read_str (data, offset, mode)
-     PTR data;
-     HOST_WIDE_INT offset;
-     enum machine_mode mode;
+builtin_strncpy_read_str (void *data, HOST_WIDE_INT offset,
+			  enum machine_mode mode)
 {
   const char *str = (const char *) data;
 
@@ -2664,10 +2571,7 @@ builtin_strncpy_read_str (data, offset, mode)
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_strncpy (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strncpy (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2743,10 +2647,8 @@ expand_builtin_strncpy (arglist, target, mode)
    constant.  */
 
 static rtx
-builtin_memset_read_str (data, offset, mode)
-     PTR data;
-     HOST_WIDE_INT offset ATTRIBUTE_UNUSED;
-     enum machine_mode mode;
+builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
+			 enum machine_mode mode)
 {
   const char *c = (const char *) data;
   char *p = alloca (GET_MODE_SIZE (mode));
@@ -2762,10 +2664,8 @@ builtin_memset_read_str (data, offset, mode)
    4 bytes wide, return the RTL for 0x01010101*data.  */
 
 static rtx
-builtin_memset_gen_str (data, offset, mode)
-     PTR data;
-     HOST_WIDE_INT offset ATTRIBUTE_UNUSED;
-     enum machine_mode mode;
+builtin_memset_gen_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
+			enum machine_mode mode)
 {
   rtx target, coeff;
   size_t size;
@@ -2790,10 +2690,7 @@ builtin_memset_gen_str (data, offset, mode)
    convenient).  */
 
 static rtx
-expand_builtin_memset (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2904,8 +2801,7 @@ expand_builtin_memset (arglist, target, mode)
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_bzero (arglist)
-     tree arglist;
+expand_builtin_bzero (tree arglist)
 {
   tree dest, size, newarglist;
 
@@ -2933,11 +2829,8 @@ expand_builtin_bzero (arglist)
    TARGET, if convenient (and in mode MODE, if that's convenient).  */
 
 static rtx
-expand_builtin_memcmp (exp, arglist, target, mode)
-     tree exp ATTRIBUTE_UNUSED;
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
+		       enum machine_mode mode)
 {
   tree arg1, arg2, len;
   const char *p1, *p2;
@@ -3058,10 +2951,7 @@ expand_builtin_memcmp (exp, arglist, target, mode)
    the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strcmp (exp, target, mode)
-     tree exp;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 {
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg1, arg2;
@@ -3189,10 +3079,7 @@ expand_builtin_strcmp (exp, target, mode)
    the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strncmp (exp, target, mode)
-     tree exp;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
 {
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg1, arg2, arg3;
@@ -3342,10 +3229,7 @@ expand_builtin_strncmp (exp, target, mode)
    otherwise try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strcat (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strcat (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -3368,10 +3252,7 @@ expand_builtin_strcat (arglist, target, mode)
    otherwise try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strncat (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strncat (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -3420,10 +3301,7 @@ expand_builtin_strncat (arglist, target, mode)
    otherwise try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strspn (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strspn (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -3457,10 +3335,7 @@ expand_builtin_strspn (arglist, target, mode)
    otherwise try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strcspn (arglist, target, mode)
-     tree arglist;
-     rtx target;
-     enum machine_mode mode;
+expand_builtin_strcspn (tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -3507,7 +3382,7 @@ expand_builtin_strcspn (arglist, target, mode)
    if that's convenient.  */
 
 rtx
-expand_builtin_saveregs ()
+expand_builtin_saveregs (void)
 {
   rtx val, seq;
 
@@ -3558,8 +3433,7 @@ expand_builtin_saveregs ()
    is controlled by the definition of CUMULATIVE_ARGS.  */
 
 static rtx
-expand_builtin_args_info (arglist)
-     tree arglist;
+expand_builtin_args_info (tree arglist)
 {
   int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
   int *word_ptr = (int *) &current_function_args_info;
@@ -3590,8 +3464,7 @@ expand_builtin_args_info (arglist)
 /* Expand ARGLIST, from a call to __builtin_next_arg.  */
 
 static rtx
-expand_builtin_next_arg (arglist)
-     tree arglist;
+expand_builtin_next_arg (tree arglist)
 {
   tree fntype = TREE_TYPE (current_function_decl);
 
@@ -3635,9 +3508,7 @@ expand_builtin_next_arg (arglist)
    from multiple evaluations.  */
 
 static tree
-stabilize_va_list (valist, needs_lvalue)
-     tree valist;
-     int needs_lvalue;
+stabilize_va_list (tree valist, int needs_lvalue)
 {
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {
@@ -3684,9 +3555,7 @@ stabilize_va_list (valist, needs_lvalue)
    the variable.  */
 
 void
-std_expand_builtin_va_start (valist, nextarg)
-     tree valist;
-     rtx nextarg;
+std_expand_builtin_va_start (tree valist, rtx nextarg)
 {
   tree t;
 
@@ -3700,8 +3569,7 @@ std_expand_builtin_va_start (valist, nextarg)
 /* Expand ARGLIST, from a call to __builtin_va_start.  */
 
 static rtx
-expand_builtin_va_start (arglist)
-     tree arglist;
+expand_builtin_va_start (tree arglist)
 {
   rtx nextarg;
   tree chain, valist;
@@ -3727,8 +3595,7 @@ expand_builtin_va_start (arglist)
    current (padded) address and increment by the (padded) size.  */
 
 rtx
-std_expand_builtin_va_arg (valist, type)
-     tree valist, type;
+std_expand_builtin_va_arg (tree valist, tree type)
 {
   tree addr_tree, t, type_size = NULL;
   tree align, alignm1;
@@ -3786,8 +3653,7 @@ std_expand_builtin_va_arg (valist, type)
    a very special sort of operator.  */
 
 rtx
-expand_builtin_va_arg (valist, type)
-     tree valist, type;
+expand_builtin_va_arg (tree valist, tree type)
 {
   rtx addr, result;
   tree promoted_type, want_va_type, have_va_type;
@@ -3887,8 +3753,7 @@ expand_builtin_va_arg (valist, type)
 /* Expand ARGLIST, from a call to __builtin_va_end.  */
 
 static rtx
-expand_builtin_va_end (arglist)
-     tree arglist;
+expand_builtin_va_end (tree arglist)
 {
   tree valist = TREE_VALUE (arglist);
 
@@ -3910,8 +3775,7 @@ expand_builtin_va_end (arglist)
    nastiness of array-type va_list types.  */
 
 static rtx
-expand_builtin_va_copy (arglist)
-     tree arglist;
+expand_builtin_va_copy (tree arglist)
 {
   tree dst, src, t;
 
@@ -3964,8 +3828,7 @@ expand_builtin_va_copy (arglist)
    __builtin_return_address.  */
 
 static rtx
-expand_builtin_frame_address (fndecl, arglist)
-     tree fndecl, arglist;
+expand_builtin_frame_address (tree fndecl, tree arglist)
 {
   /* The argument must be a nonnegative integer constant.
      It counts the number of frames to scan up the stack.
@@ -4014,9 +3877,7 @@ expand_builtin_frame_address (fndecl, arglist)
    the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_alloca (arglist, target)
-     tree arglist;
-     rtx target;
+expand_builtin_alloca (tree arglist, rtx target)
 {
   rtx op0;
   rtx result;
@@ -4044,11 +3905,8 @@ expand_builtin_alloca (arglist, target)
    SUBTARGET may be used as the target for computing one of EXP's operands.  */
 
 static rtx
-expand_builtin_unop (target_mode, arglist, target, subtarget, op_optab)
-     enum machine_mode target_mode;
-     tree arglist;
-     rtx target, subtarget;
-     optab op_optab;
+expand_builtin_unop (enum machine_mode target_mode, tree arglist, rtx target,
+		     rtx subtarget, optab op_optab)
 {
   rtx op0;
   if (!validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
@@ -4070,10 +3928,7 @@ expand_builtin_unop (target_mode, arglist, target, subtarget, op_optab)
    long, we attempt to transform this call into __builtin_fputc().  */
 
 static rtx
-expand_builtin_fputs (arglist, ignore, unlocked)
-     tree arglist;
-     int ignore;
-     int unlocked;
+expand_builtin_fputs (tree arglist, int ignore, int unlocked)
 {
   tree len, fn;
   tree fn_fputc = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
@@ -4154,9 +4009,7 @@ expand_builtin_fputs (arglist, ignore, unlocked)
    a non-jump context.  */
 
 static rtx
-expand_builtin_expect (arglist, target)
-     tree arglist;
-     rtx target;
+expand_builtin_expect (tree arglist, rtx target)
 {
   tree exp, c;
   rtx note, rtx_c;
@@ -4200,10 +4053,7 @@ expand_builtin_expect (arglist, target)
    based on the test being 0/1.  */
 
 rtx
-expand_builtin_expect_jump (exp, if_false_label, if_true_label)
-     tree exp;
-     rtx if_false_label;
-     rtx if_true_label;
+expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 {
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg0 = TREE_VALUE (arglist);
@@ -4314,7 +4164,7 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
 }
 
 void
-expand_builtin_trap ()
+expand_builtin_trap (void)
 {
 #ifdef HAVE_trap
   if (HAVE_trap)
@@ -4332,9 +4182,7 @@ expand_builtin_trap ()
    the operand.  */
 
 static rtx
-expand_builtin_fabs (arglist, target, subtarget)
-     tree arglist;
-     rtx target, subtarget;
+expand_builtin_fabs (tree arglist, rtx target, rtx subtarget)
 {
   enum machine_mode mode;
   tree arg;
@@ -4355,9 +4203,7 @@ expand_builtin_fabs (arglist, target, subtarget)
    in target.  */
 
 static rtx
-expand_builtin_cabs (arglist, target)
-     tree arglist;
-     rtx target;
+expand_builtin_cabs (tree arglist, rtx target)
 {
   enum machine_mode mode;
   tree arg;
@@ -4383,12 +4229,8 @@ expand_builtin_cabs (arglist, target)
    IGNORE is nonzero if the value is to be ignored.  */
 
 rtx
-expand_builtin (exp, target, subtarget, mode, ignore)
-     tree exp;
-     rtx target;
-     rtx subtarget;
-     enum machine_mode mode;
-     int ignore;
+expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
+		int ignore)
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
@@ -4963,10 +4805,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
    taking a single real argument, then the return value is the
    DECL_FUNCTION_CODE of the call, e.g. BUILT_IN_SQRT.  Otherwise
    the return value is END_BUILTINS.  */
-   
+
 enum built_in_function
-builtin_mathfn_code (t)
-     tree t;
+builtin_mathfn_code (tree t)
 {
   tree fndecl, arglist;
 
@@ -5013,8 +4854,7 @@ builtin_mathfn_code (t)
    constant.  ARGLIST is the argument list of the call.  */
 
 static tree
-fold_builtin_constant_p (arglist)
-     tree arglist;
+fold_builtin_constant_p (tree arglist)
 {
   if (arglist == 0)
     return 0;
@@ -5054,8 +4894,7 @@ fold_builtin_constant_p (arglist)
 /* Fold a call to __builtin_classify_type.  */
 
 static tree
-fold_builtin_classify_type (arglist)
-     tree arglist;
+fold_builtin_classify_type (tree arglist)
 {
   if (arglist == 0)
     return build_int_2 (no_type_class, 0);
@@ -5066,9 +4905,7 @@ fold_builtin_classify_type (arglist)
 /* Fold a call to __builtin_inf or __builtin_huge_val.  */
 
 static tree
-fold_builtin_inf (type, warn)
-     tree type;
-     int warn;
+fold_builtin_inf (tree type, int warn)
 {
   REAL_VALUE_TYPE real;
 
@@ -5082,9 +4919,7 @@ fold_builtin_inf (type, warn)
 /* Fold a call to __builtin_nan or __builtin_nans.  */
 
 static tree
-fold_builtin_nan (arglist, type, quiet)
-     tree arglist, type;
-     int quiet;
+fold_builtin_nan (tree arglist, tree type, int quiet)
 {
   REAL_VALUE_TYPE real;
   const char *str;
@@ -5105,8 +4940,7 @@ fold_builtin_nan (arglist, type, quiet)
    across (for instance floor((double)f) == (double)floorf (f).
    Do the transformation.  */
 static tree
-fold_trunc_transparent_mathfn (exp)
-     tree exp;
+fold_trunc_transparent_mathfn (tree exp)
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
@@ -5136,8 +4970,7 @@ fold_trunc_transparent_mathfn (exp)
    type.  Return NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_cabs (fndecl, arglist, type)
-     tree fndecl, arglist, type;
+fold_builtin_cabs (tree fndecl, tree arglist, tree type)
 {
   tree arg;
 
@@ -5221,8 +5054,7 @@ fold_builtin_cabs (fndecl, arglist, type)
    the CALL_EXPR of a call to a builtin function.  */
 
 tree
-fold_builtin (exp)
-     tree exp;
+fold_builtin (tree exp)
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
@@ -5699,8 +5531,7 @@ fold_builtin (exp)
 /* Conveniently construct a function call expression.  */
 
 tree
-build_function_call_expr (fn, arglist)
-     tree fn, arglist;
+build_function_call_expr (tree fn, tree arglist)
 {
   tree call_expr;
 
@@ -5722,7 +5553,7 @@ validate_arglist (tree arglist, ...)
   enum tree_code code;
   int res = 0;
   va_list ap;
-  
+
   va_start (ap, arglist);
 
   do
@@ -5763,19 +5594,18 @@ validate_arglist (tree arglist, ...)
 /* Default version of target-specific builtin setup that does nothing.  */
 
 void
-default_init_builtins ()
+default_init_builtins (void)
 {
 }
 
 /* Default target-specific builtin expander that does nothing.  */
 
 rtx
-default_expand_builtin (exp, target, subtarget, mode, ignore)
-     tree exp ATTRIBUTE_UNUSED;
-     rtx target ATTRIBUTE_UNUSED;
-     rtx subtarget ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     int ignore ATTRIBUTE_UNUSED;
+default_expand_builtin (tree exp ATTRIBUTE_UNUSED,
+			rtx target ATTRIBUTE_UNUSED,
+			rtx subtarget ATTRIBUTE_UNUSED,
+			enum machine_mode mode ATTRIBUTE_UNUSED,
+			int ignore ATTRIBUTE_UNUSED)
 {
   return NULL_RTX;
 }
@@ -5783,7 +5613,7 @@ default_expand_builtin (exp, target, subtarget, mode, ignore)
 /* Instantiate all remaining CONSTANT_P_RTX nodes.  */
 
 void
-purge_builtin_constant_p ()
+purge_builtin_constant_p (void)
 {
   rtx insn, set, arg, new, note;
 
