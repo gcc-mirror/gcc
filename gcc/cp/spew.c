@@ -202,8 +202,10 @@ shift_tokens (n)
 				* sizeof (struct token));
 	  /* This move does not rely on the system being able to handle
 	     overlapping moves.  */
-	  bcopy (nth_token (0), tmp, old_token_count * sizeof (struct token));
-	  bcopy (tmp, nth_token (n), old_token_count * sizeof (struct token));
+	  bcopy ((char *) nth_token (0), tmp,
+		 old_token_count * sizeof (struct token));
+	  bcopy (tmp, (char *) nth_token (n),
+		 old_token_count * sizeof (struct token));
 	}
       first_token = 0;
     }
