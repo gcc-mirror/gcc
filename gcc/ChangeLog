@@ -1,3 +1,12 @@
+Sun Jun  7 14:02:58 1998  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (flag_exceptions): Default to 0.
+	(compile_file): Remove flag_exceptions == 2 hack.
+	(main): Call lang_init_options.
+	* tree.h: Declare it.
+	* c-lang.c: Implement it.
+	* objc/objc-act.c: Likewise.
+	
 Sun Jun  7 12:27:30 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (restore_stack_block): Generate MEM and specify mode.
@@ -1945,7 +1954,7 @@ Sun May  3 23:57:25 1998  Robert Lipe   <robertl@dgii.com>
 	(xm_defines): Add USG so dbxout will build.
 	* configure: Regenerate.
 
-Sun May  3 13:51:34 PDT 1998  Richard Henerson  <rth@cygnus.com>
+Sun May  3 13:51:34 PDT 1998  Richard Henderson  <rth@cygnus.com>
 
 	Support for official Sparc V9 ABI:
 	* sparc.c (sparc_override_options): Force stack bias off for !arch64.

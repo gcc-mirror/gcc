@@ -38,6 +38,11 @@ lang_decode_option (p)
 }
 
 void
+lang_init_options ()
+{
+}
+
+void
 lang_init ()
 {
 #if !USE_CPPLIB

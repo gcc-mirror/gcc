@@ -1942,6 +1942,9 @@ extern void dwarf2out_end_epilogue	PROTO((void));
 
 /* The language front-end must define these functions.  */
 
+/* Function of no arguments for initializing options.  */
+extern void lang_init_options			PROTO((void));
+
 /* Function of no arguments for initializing lexical scanning.  */
 extern void init_lex				PROTO((void));
 /* Function of no arguments for initializing the symbol table.  */
