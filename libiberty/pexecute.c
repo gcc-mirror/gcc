@@ -53,16 +53,7 @@ Boston, MA 02111-1307, USA.  */
                lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
 #endif /* VMS */
 
-#ifdef IN_GCC
-/* ??? Need to find a suitable header file.  */
-#define PEXECUTE_FIRST   1
-#define PEXECUTE_LAST    2
-#define PEXECUTE_ONE     (PEXECUTE_FIRST + PEXECUTE_LAST)
-#define PEXECUTE_SEARCH  4
-#define PEXECUTE_VERBOSE 8
-#else
 #include "libiberty.h"
-#endif
 
 /* stdin file number.  */
 #define STDIN_FILE_NO 0

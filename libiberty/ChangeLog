@@ -1,3 +1,10 @@
+Fri Nov 27 13:26:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* choose-temp.c: Always include libiberty.h.  Avoid redundancies.
+	* cplus-dem.c: Likewise.  Conform to libiberty.h.
+	* pexecute.c: Likewise.
+	* splay-tree.c: Likewise.
+
 1998-11-25  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (splay-tree.o): Add config.h dependency.

@@ -31,11 +31,7 @@
 #include <stdlib.h>
 #endif
 
-#ifndef IN_GCC
 #include "libiberty.h"
-#else /* IN_GCC */
-extern char* xmalloc ();
-#endif /* IN_GCC */
 #include "splay-tree.h"
 
 static void splay_tree_delete_helper    PARAMS((splay_tree, 
