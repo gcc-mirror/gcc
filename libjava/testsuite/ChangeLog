@@ -1,3 +1,7 @@
+Sun Oct  8 19:14:05 2000  Anthony Green  <green@redhat.com>
+
+	* libjava.compile/ArrayClass.java: New file.
+
 2000-08-31  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/abstr.xfail: New file.
