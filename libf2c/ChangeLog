@@ -1,3 +1,7 @@
+2001-01-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* libU77/sys_clock_.c: #include <sys/param.h> for the clock tick rate.
+
 2000-12-09  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	Update to Netlib version 20001205.
