@@ -1,6 +1,7 @@
-2003-08-04  Release Manager
+2003-08-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	* GCC 3.3.1 Released.
+	PR c++/5293
+	* call.c (initialize_reference): Improve diagnostic.
 
 2003-08-04  Release Manager
 
