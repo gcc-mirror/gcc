@@ -1,3 +1,25 @@
+2004-09-18 Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (nonzero_vars_stack, vrp_variables_stack): New
+	global varrays to replace the block local varrays.
+	(struct dom_walk_block_data): Remove, no longer used.
+	(get_eq_expr_value): No longer need to pass around pointers to local
+	varrays.  Callers updated.  Unused markers added to unused parameters.
+	(record_range, record_equivalences_from_stmt): Likewise.
+	(record_equivalences_from_incoming_edge): Likewise.
+	(record_var_is_nonzero): Likewise.  Update now that we have a
+	single global varray of SSA_NAMEs that need restoring.
+	(dom_opt_initialize_block_local_data): Kill, no longer used.
+	(tree_ssa_dominator_optimize): Initialize new global varrays.
+	Update callbacks in dominator walker structure.
+	(dom_opt_initialize_block): Add markers to NONZERO_VAR_STACK and
+	VRP_VARIABLES_STACK.
+	(restore_nonzero_vars_to_original_value): Update now that we have
+	a single global varray of SSA_NAMEs that need restoring.
+	(dom_opt_finalize_block): Similarly for VRP_VARIABLES_STACK.
+	Remove unused variables.
+	(optimize_stmt): Remove unused variable.
+
 2004-09-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.c (thread_jumps):  Fix updating of the profile.

@@ -129,6 +129,13 @@ static varray_type const_and_copies_stack;
    know their exact value.  */
 static bitmap nonzero_vars;
 
+/* Stack of SSA_NAMEs which need their NONZERO_VARS property cleared
+   when the current block is finalized. 
+
+   A NULL entry is used to mark the end of names needing their 
+   entry in NONZERO_VARS cleared during finalization of this block.  */
+static varray_type nonzero_vars_stack;
+
 /* Track whether or not we have changed the control flow graph.  */
 static bool cfg_altered;
 
@@ -201,21 +208,16 @@ static struct opt_stats_d opt_stats;
    by the index, SSA_VERSION.  */
 static varray_type vrp_data;
 
-/* Datastructure for block local data used during the dominator walk.  
-   We maintain a stack of these as we recursively walk down the
-   dominator tree.  */
+/* Array of variables which have their values constrained by operations
+   in this basic block.  We use this during finalization to know
+   which variables need their VRP data updated.  */
 
-struct dom_walk_block_data
-{
-  /* Similarly for the nonzero state of variables that needs to be
-     restored during finalization.  */
-  varray_type nonzero_vars;
+/* Stack of SSA_NAMEs which had their values constrainted by operations
+   in this basic block.  During finalization of this block we use this
+   list to determine which variables need their VRP data updated.
 
-  /* Array of variables which have their values constrained by operations
-     in this basic block.  We use this during finalization to know
-     which variables need their VRP data updated.  */
-  varray_type vrp_variables;
-};
+   A NULL entry marks the end of the SSA_NAMEs associated with this block.  */
+static varray_type vrp_variables_stack;
 
 struct eq_expr_value
 {
@@ -230,8 +232,7 @@ static void optimize_stmt (struct dom_walk_data *,
 static inline tree get_value_for (tree, varray_type table);
 static inline void set_value_for (tree, tree, varray_type table);
 static tree lookup_avail_expr (tree, bool);
-static struct eq_expr_value get_eq_expr_value (tree, int,
-					       basic_block, varray_type *);
+static struct eq_expr_value get_eq_expr_value (tree, int, basic_block);
 static hashval_t avail_expr_hash (const void *);
 static hashval_t real_avail_expr_hash (const void *);
 static int avail_expr_eq (const void *, const void *);
@@ -246,19 +247,16 @@ static tree simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *,
 static tree simplify_cond_and_lookup_avail_expr (tree, stmt_ann_t, int);
 static tree simplify_switch_and_lookup_avail_expr (tree, int);
 static tree find_equivalent_equality_comparison (tree);
-static void record_range (tree, basic_block, varray_type *);
+static void record_range (tree, basic_block);
 static bool extract_range_from_cond (tree, tree *, tree *, int *);
 static void record_equivalences_from_phis (struct dom_walk_data *, basic_block);
 static void record_equivalences_from_incoming_edge (struct dom_walk_data *,
 						    basic_block);
 static bool eliminate_redundant_computations (struct dom_walk_data *,
 					      tree, stmt_ann_t);
-static void record_equivalences_from_stmt (tree, varray_type *,
-					   int, stmt_ann_t);
+static void record_equivalences_from_stmt (tree, int, stmt_ann_t);
 static void thread_across_edge (struct dom_walk_data *, edge);
 static void dom_opt_finalize_block (struct dom_walk_data *, basic_block);
-static void dom_opt_initialize_block_local_data (struct dom_walk_data *,
-						 basic_block, bool);
 static void dom_opt_initialize_block (struct dom_walk_data *, basic_block);
 static void cprop_into_phis (struct dom_walk_data *, basic_block);
 static void remove_local_expressions_from_table (void);
@@ -266,6 +264,7 @@ static void restore_vars_to_original_value (void);
 static void restore_currdefs_to_original_value (void);
 static void register_definitions_for_stmt (tree);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
+static void restore_nonzero_vars_to_original_value (void);
 
 /* Local version of fold that doesn't introduce cruft.  */
 
@@ -324,6 +323,8 @@ tree_ssa_dominator_optimize (void)
   VARRAY_TREE_INIT (block_defs_stack, 20, "Block DEFS stack");
   VARRAY_TREE_INIT (const_and_copies, num_ssa_names, "const_and_copies");
   VARRAY_TREE_INIT (const_and_copies_stack, 20, "Block const_and_copies stack");
+  VARRAY_TREE_INIT (nonzero_vars_stack, 20, "Block nonzero_vars stack");
+  VARRAY_TREE_INIT (vrp_variables_stack, 20, "Block vrp_variables stack");
   nonzero_vars = BITMAP_XMALLOC ();
   VARRAY_GENERIC_PTR_INIT (vrp_data, num_ssa_names, "vrp_data");
   need_eh_cleanup = BITMAP_XMALLOC ();
@@ -332,7 +333,7 @@ tree_ssa_dominator_optimize (void)
   /* Setup callbacks for the generic dominator tree walker.  */
   walk_data.walk_stmts_backward = false;
   walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.initialize_block_local_data = dom_opt_initialize_block_local_data;
+  walk_data.initialize_block_local_data = NULL;
   walk_data.before_dom_children_before_stmts = dom_opt_initialize_block;
   walk_data.before_dom_children_walk_stmts = optimize_stmt;
   walk_data.before_dom_children_after_stmts = cprop_into_phis;
@@ -343,7 +344,7 @@ tree_ssa_dominator_optimize (void)
      When we attach more stuff we'll need to fill this out with a real
      structure.  */
   walk_data.global_data = NULL;
-  walk_data.block_local_data_size = sizeof (struct dom_walk_block_data);
+  walk_data.block_local_data_size = 0;
 
   /* Now initialize the dominator walker.  */
   init_walk_dominator_tree (&walk_data);
@@ -704,45 +705,6 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 }
 
 
-/* Initialize the local stacks.
-     
-   AVAIL_EXPRS stores all the expressions made available in this block.
-
-   CONST_AND_COPIES stores var/value pairs to restore at the end of this
-   block.
-
-   NONZERO_VARS stores the vars which have a nonzero value made in this
-   block.
-
-   STMTS_TO_RESCAN is a list of statements we will rescan for operands.
-
-   VRP_VARIABLES is the list of variables which have had their values
-   constrained by an operation in this block.
-
-   These stacks are cleared in the finalization routine run for each
-   block.  */
-
-static void
-dom_opt_initialize_block_local_data (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-				     basic_block bb ATTRIBUTE_UNUSED,
-				     bool recycled ATTRIBUTE_UNUSED)
-{
-  struct dom_walk_block_data *bd
-    = (struct dom_walk_block_data *)VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
-
-  /* We get cleared memory from the allocator, so if the memory is not
-     cleared, then we are re-using a previously allocated entry.  In
-     that case, we can also re-use the underlying virtual arrays.  Just
-     make sure we clear them before using them!  */
-  if (recycled)
-    {
-      gcc_assert (!bd->nonzero_vars
-		  || VARRAY_ACTIVE_SIZE (bd->nonzero_vars) == 0);
-      gcc_assert (!bd->vrp_variables
-		  || VARRAY_ACTIVE_SIZE (bd->vrp_variables) == 0);
-    }
-}
-
 /* Initialize local stacks for this optimizer and record equivalences
    upon entry to BB.  Equivalences can come from the edge traversed to
    reach BB or they may come from PHI nodes at the start of BB.  */
@@ -758,6 +720,8 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
   VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
   VARRAY_PUSH_TREE (block_defs_stack, NULL_TREE);
   VARRAY_PUSH_TREE (const_and_copies_stack, NULL_TREE);
+  VARRAY_PUSH_TREE (nonzero_vars_stack, NULL_TREE);
+  VARRAY_PUSH_TREE (vrp_variables_stack, NULL_TREE);
 
   record_equivalences_from_incoming_edge (walk_data, bb);
 
@@ -831,18 +795,17 @@ remove_local_expressions_from_table (void)
    state, stopping when there are LIMIT entries left in LOCALs.  */
 
 static void
-restore_nonzero_vars_to_original_value (varray_type locals,
-					unsigned limit,
-					bitmap table)
+restore_nonzero_vars_to_original_value ()
 {
-  if (!locals)
-    return;
-
-  while (VARRAY_ACTIVE_SIZE (locals) > limit)
+  while (VARRAY_ACTIVE_SIZE (nonzero_vars_stack) > 0)
     {
-      tree name = VARRAY_TOP_TREE (locals);
-      VARRAY_POP (locals);
-      bitmap_clear_bit (table, SSA_NAME_VERSION (name));
+      tree name = VARRAY_TOP_TREE (nonzero_vars_stack);
+      VARRAY_POP (nonzero_vars_stack);
+
+      if (name == NULL)
+	break;
+
+      bitmap_clear_bit (nonzero_vars, SSA_NAME_VERSION (name));
     }
 }
 
@@ -912,8 +875,6 @@ restore_currdefs_to_original_value (void)
 static void
 dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 {
-  struct dom_walk_block_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
   tree last;
 
   /* If we are at a leaf node in the dominator graph, see if we can thread
@@ -1006,7 +967,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
     }
 
   remove_local_expressions_from_table ();
-  restore_nonzero_vars_to_original_value (bd->nonzero_vars, 0, nonzero_vars);
+  restore_nonzero_vars_to_original_value ();
   restore_vars_to_original_value ();
   restore_currdefs_to_original_value ();
 
@@ -1016,18 +977,23 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
      To be efficient, we note which variables have had their values
      constrained in this block.  So walk over each variable in the
      VRP_VARIABLEs array.  */
-  while (bd->vrp_variables && VARRAY_ACTIVE_SIZE (bd->vrp_variables) > 0)
+  while (VARRAY_ACTIVE_SIZE (vrp_variables_stack) > 0)
     {
-      tree var = VARRAY_TOP_TREE (bd->vrp_variables);
+      tree var = VARRAY_TOP_TREE (vrp_variables_stack);
 
       /* Each variable has a stack of value range records.  We want to
 	 invalidate those associated with our basic block.  So we walk
 	 the array backwards popping off records associated with our
 	 block.  Once we hit a record not associated with our block
 	 we are done.  */
-      varray_type var_vrp_records = VARRAY_GENERIC_PTR (vrp_data,
-							SSA_NAME_VERSION (var));
+      varray_type var_vrp_records;
 
+      VARRAY_POP (vrp_variables_stack);
+
+      if (var == NULL)
+	break;
+
+      var_vrp_records = VARRAY_GENERIC_PTR (vrp_data, SSA_NAME_VERSION (var));
       while (VARRAY_ACTIVE_SIZE (var_vrp_records) > 0)
 	{
 	  struct vrp_element *element
@@ -1039,7 +1005,6 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	  VARRAY_POP (var_vrp_records);
 	}
 
-      VARRAY_POP (bd->vrp_variables);
     }
 
   /* If we queued any statements to rescan in this block, then
@@ -1165,15 +1130,13 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
    has more than one incoming edge, then no equivalence is created.  */
 
 static void
-record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
+record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 					basic_block bb)
 {
   int edge_flags;
   basic_block parent;
   struct eq_expr_value eq_expr_value;
   tree parent_block_last_stmt = NULL;
-  struct dom_walk_block_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
 
   /* If our parent block ended with a control statment, then we may be
      able to record some equivalences based on which outgoing edge from
@@ -1219,8 +1182,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
       && (edge_flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
     eq_expr_value = get_eq_expr_value (parent_block_last_stmt,
 				       (edge_flags & EDGE_TRUE_VALUE) != 0,
-				       bb,
-				       &bd->vrp_variables);
+				       bb);
   /* Similarly when the parent block ended in a SWITCH_EXPR.
      We can only know the value of the switch's condition if the dominator
      parent is also the only predecessor of this block.  */
@@ -1326,7 +1288,7 @@ htab_statistics (FILE *file, htab_t htab)
    value, then we do nothing.  */
 
 static void
-record_var_is_nonzero (tree var, varray_type *block_nonzero_vars_p)
+record_var_is_nonzero (tree var)
 {
   int indx = SSA_NAME_VERSION (var);
 
@@ -1338,9 +1300,7 @@ record_var_is_nonzero (tree var, varray_type *block_nonzero_vars_p)
 
   /* Record this SSA_NAME so that we can reset the global table
      when we leave this block.  */
-  if (! *block_nonzero_vars_p)
-    VARRAY_TREE_INIT (*block_nonzero_vars_p, 2, "block_nonzero_vars");
-  VARRAY_PUSH_TREE (*block_nonzero_vars_p, var);
+  VARRAY_PUSH_TREE (nonzero_vars_stack, var);
 }
 
 /* Enter a statement into the true/false expression hash table indicating
@@ -2403,7 +2363,6 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
 
 static void
 record_equivalences_from_stmt (tree stmt,
-			       varray_type *block_nonzero_vars_p,
 			       int may_optimize_p,
 			       stmt_ann_t ann)
 {
@@ -2440,14 +2399,14 @@ record_equivalences_from_stmt (tree stmt,
           || (TREE_CODE (rhs) == ADDR_EXPR
 	      && DECL_P (TREE_OPERAND (rhs, 0))
 	      && ! DECL_WEAK (TREE_OPERAND (rhs, 0))))
-	record_var_is_nonzero (lhs, block_nonzero_vars_p);
+	record_var_is_nonzero (lhs);
 
       /* IOR of any value with a nonzero value will result in a nonzero
 	 value.  Even if we do not know the exact result recording that
 	 the result is nonzero is worth the effort.  */
       if (TREE_CODE (rhs) == BIT_IOR_EXPR
 	  && integer_nonzerop (TREE_OPERAND (rhs, 1)))
-	record_var_is_nonzero (lhs, block_nonzero_vars_p);
+	record_var_is_nonzero (lhs);
     }
 
   /* Look at both sides for pointer dereferences.  If we find one, then
@@ -2473,7 +2432,7 @@ record_equivalences_from_stmt (tree stmt,
 	      {
 		tree def = SSA_NAME_DEF_STMT (op);
 
-		record_var_is_nonzero (op, block_nonzero_vars_p);
+		record_var_is_nonzero (op);
 
 		/* And walk up the USE-DEF chains noting other SSA_NAMEs
 		   which are known to have a nonzero value.  */
@@ -2677,8 +2636,6 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
   tree stmt;
   bool may_optimize_p;
   bool may_have_exposed_new_symbols = false;
-  struct dom_walk_block_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
 
   stmt = bsi_stmt (si);
 
@@ -2742,7 +2699,6 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
   /* Record any additional equivalences created by this statement.  */
   if (TREE_CODE (stmt) == MODIFY_EXPR)
     record_equivalences_from_stmt (stmt,
-				   &bd->nonzero_vars,
 				   may_optimize_p,
 				   ann);
 
@@ -3017,7 +2973,7 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
 /* Record a range created by COND for basic block BB.  */
 
 static void
-record_range (tree cond, basic_block bb, varray_type *vrp_variables_p)
+record_range (tree cond, basic_block bb)
 {
   /* We explicitly ignore NE_EXPRs.  They rarely allow for meaningful
      range optimizations and significantly complicate the implementation.  */
@@ -3043,9 +2999,7 @@ record_range (tree cond, basic_block bb, varray_type *vrp_variables_p)
 	}
       
       VARRAY_PUSH_GENERIC_PTR (*vrp_records_p, element);
-      if (! *vrp_variables_p)
-	VARRAY_TREE_INIT (*vrp_variables_p, 2, "vrp_variables");
-      VARRAY_PUSH_TREE (*vrp_variables_p, TREE_OPERAND (cond, 0));
+      VARRAY_PUSH_TREE (vrp_variables_stack, TREE_OPERAND (cond, 0));
     }
 }
 
@@ -3068,8 +3022,7 @@ record_range (tree cond, basic_block bb, varray_type *vrp_variables_p)
 static struct eq_expr_value
 get_eq_expr_value (tree if_stmt,
 		   int true_arm,
-		   basic_block bb,
-		   varray_type *vrp_variables_p)
+		   basic_block bb)
 {
   tree cond;
   struct eq_expr_value retval;
@@ -3138,7 +3091,7 @@ get_eq_expr_value (tree if_stmt,
 	      record_cond (inverted, boolean_false_node);
 
 	      if (TREE_CONSTANT (op1))
-		record_range (cond, bb, vrp_variables_p);
+		record_range (cond, bb);
 
 		/* If the conditional is of the form 'X == Y', return 'X = Y'
 		   for the true arm.  */
@@ -3157,7 +3110,7 @@ get_eq_expr_value (tree if_stmt,
 	      record_cond (cond, boolean_false_node);
 
 	      if (TREE_CONSTANT (op1))
-		record_range (inverted, bb, vrp_variables_p);
+		record_range (inverted, bb);
 
 		/* If the conditional is of the form 'X != Y', return 'X = Y'
 		   for the false arm.  */
