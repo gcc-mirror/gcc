@@ -1,3 +1,10 @@
+2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* io/unit.c: Separate copyright years by ','.
+	(compare, insert_unit, delete_unit, is_internal_unit, close_units):
+	Remove blank line in beginning of function.
+	(get_unit): Simplify code.
+
 2004-08-31  Paul Brook  <paul@codesourcery.com>
 
 	* io/unit.c (get_unit): Remove superfluous if.
