@@ -315,7 +315,7 @@ static void add_insn_mem_dependence	PROTO((rtx *, rtx *, rtx, rtx));
 static void flush_pending_lists		PROTO((rtx));
 static void sched_analyze_1		PROTO((rtx, rtx));
 static void sched_analyze_2		PROTO((rtx, rtx));
-static void sched_analyze_insn		PROTO((rtx, rtx, int));
+static void sched_analyze_insn		PROTO((rtx, rtx, rtx));
 static int sched_analyze		PROTO((rtx, rtx));
 static void sched_note_set		PROTO((int, rtx, int));
 static int rank_for_schedule		PROTO((rtx *, rtx *));
@@ -2013,9 +2013,9 @@ sched_analyze_2 (x, insn)
 /* Analyze an INSN with pattern X to find all dependencies.  */
 
 static void
-sched_analyze_insn (x, insn, loop_note)
+sched_analyze_insn (x, insn, loop_notes)
      rtx x, insn;
-     int loop_note;
+     rtx loop_notes;
 {
   register RTX_CODE code = GET_CODE (x);
   rtx link;
@@ -2054,9 +2054,10 @@ sched_analyze_insn (x, insn, loop_note)
      Otherwise, the reg_n_refs info (which depends on loop_depth) would
      become incorrect.  */
 
-  if (loop_note)
+  if (loop_notes)
     {
       int max_reg = max_reg_num ();
+      rtx link;
 
       for (i = 0; i < max_reg; i++)
 	{
@@ -2071,8 +2072,11 @@ sched_analyze_insn (x, insn, loop_note)
 
       flush_pending_lists (insn);
 
-      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-				       GEN_INT (loop_note), REG_NOTES (insn));
+      link = loop_notes;
+      while (XEXP (link, 1))
+	link = XEXP (link, 1);
+      XEXP (link, 1) = REG_NOTES (insn);
+      REG_NOTES (insn) = loop_notes;
     }
 
   /* After reload, it is possible for an instruction to have a REG_DEAD note
@@ -2163,7 +2167,7 @@ sched_analyze (head, tail)
   register int n_insns = 0;
   register rtx u;
   register int luid = 0;
-  int loop_note = 0;
+  rtx loop_notes = 0;
 
   for (insn = head; ; insn = NEXT_INSN (insn))
     {
@@ -2171,8 +2175,8 @@ sched_analyze (head, tail)
 
       if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
 	{
-	  sched_analyze_insn (PATTERN (insn), insn, loop_note);
-	  loop_note = 0;
+	  sched_analyze_insn (PATTERN (insn), insn, loop_notes);
+	  loop_notes = 0;
 	  n_insns += 1;
 	}
       else if (GET_CODE (insn) == CALL_INSN)
@@ -2238,8 +2242,8 @@ sched_analyze (head, tail)
 	    }
 	  LOG_LINKS (sched_before_next_call) = 0;
 
-	  sched_analyze_insn (PATTERN (insn), insn, loop_note);
-	  loop_note = 0;
+	  sched_analyze_insn (PATTERN (insn), insn, loop_notes);
+	  loop_notes = 0;
 
 	  /* We don't need to flush memory for a function call which does
 	     not involve memory.  */
@@ -2259,7 +2263,8 @@ sched_analyze (head, tail)
       else if (GET_CODE (insn) == NOTE
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
-	loop_note = NOTE_LINE_NUMBER (insn);
+	loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
+			      GEN_INT (NOTE_LINE_NUMBER (insn)), loop_notes);
 
       if (insn == tail)
 	return n_insns;
@@ -3864,7 +3869,7 @@ schedule_block (b, file)
 		if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
 		  emit_note_after (INTVAL (XEXP (note, 0)), insn);
 		else
-		  last = emit_note_before (INTVAL (XEXP (note, 0)), insn);
+		  last = emit_note_before (INTVAL (XEXP (note, 0)), last);
 		remove_note (insn, note);
 	      }
 	  }
