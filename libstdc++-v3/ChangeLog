@@ -1,3 +1,16 @@
+2000-10-08  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/c++config:  Include <bits/os_defines.h>
+	* config/os/aix/bits/os_defines.h:  New file.
+	* config/os/bsd/bits/os_defines.h:  Ditto.
+	* config/os/generic/bits/os_defines.h:  Ditto.
+	* config/os/gnu-linux/bits/os_defines.h:  Ditto.
+	* config/os/irix/bits/os_defines.h:  Ditto.
+	* config/os/newlib/bits/os_defines.h:  Ditto.
+	* config/os/solaris/solaris2.5/bits/os_defines.h:  Ditto.
+	* config/os/solaris/solaris2.6/bits/os_defines.h:  Ditto.
+	* config/os/solaris/solaris2.7/bits/os_defines.h:  Ditto.
+
 2000-10-07  David Edelsohn  <dje@watson.ibm.com> 
 	
 	* config/os/aix/bits/atomicity.h: New file.

@@ -30,6 +30,9 @@
 #ifndef _CPP_CPPCONFIG
 #define _CPP_CPPCONFIG 1
 
+// Pick up any OS-specific definitions.
+#include <bits/os_defines.h>
+
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCPP__ 20000911
 
