@@ -1,3 +1,9 @@
+2002-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (dup_replacements): New function.
+	(find_reloads): Use it to duplicate replacements at the top level
+	of match_dup operands.
+
 2002-09-26  Miles Bader  <miles@gnu.org>
 
 	* v850.md ("length"): Change default value to 4.
