@@ -19,6 +19,21 @@
 	
 2000-01-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (CLASSTYPE_N_BASECLASSES): Use BINFO_N_BASETYPES.
+	(BINFO_PRIMARY_MARKED_P): New macro.
+	(SET_BINFO_PRIMARY_MARKED_P): Likewise.
+	(CLEAR_BINFO_PRIMARY_MARKED_P): Likewise.
+	(mark_primary_bases): New function.
+	(unmark_primary_bases): Likewise.
+	* search.c (get_abstract_virtuals_1): Remove.
+	(dfs_mark_primary_bases): New function.
+	(mark_primary_bases): Likewise.
+	(dfs_unmark_primary_bases): Likewise.
+	(unmark_primary_bases): Likewise.
+	(dfs_get_pure_virtuals): Likewise.
+	
+2000-01-01  Mark Mitchell  <mark@codesourcery.com>
+
 	* cp-tree.h (skip_rtti_stuff): Adjust prototype.
 	* class.c (skip_rtti_stuff): Reorganize parameters and return value.
 	(modify_one_vtable): Adjust.
