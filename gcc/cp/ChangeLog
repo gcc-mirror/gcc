@@ -1,3 +1,8 @@
+Tue Nov  4 13:45:10 1997  Doug Evans  <devans@canuck.cygnus.com>
+
+	* lex.c (MULTIBYTE_CHARS): #undef if cross compiling.
+	(real_yylex): Record wide strings using target endianness, not host.
+
 1997-11-03  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* repo.c (rindex): Add decl unconditionally.
