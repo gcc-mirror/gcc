@@ -1,0 +1,348 @@
+*** inc/X11/Intrinsic.h
+--- res/X11/Intrinsic.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef ARM_NORCROFT_HINT_CHECK
+! ___type p_type mumble;
+  #endif  /* ARM_NORCROFT_HINT_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef ARM_NORCROFT_HINT_CHECK
+! p_type mumble;
+  #endif  /* ARM_NORCROFT_HINT_CHECK */
+*** inc/X11/ShellP.h
+--- res/X11/ShellP.h
+***************
+*** 2,8 ****
+--- 2,12 ----
+  
+  #ifndef X11_CLASS_CHECK
+  struct {
++ #ifdef __cplusplus
++ 	char *c_class;
++ #else
+     char *class;
++ #endif
+  } mumble;
+  
+  #endif  /* X11_CLASS_CHECK */
+*** inc/X11/Xmu.h
+--- res/X11/Xmu.h
+***************
+*** 1,5 ****
+--- 1,7 ----
+  
+  
+  #ifndef X11_SPRINTF_CHECK
++ #ifndef __STDC__
+  extern char *	sprintf();
++ #endif /* !defined __STDC__ */
+  #endif  /* X11_SPRINTF_CHECK */
+*** inc/Xm/BaseClassI.h
+--- res/Xm/BaseClassI.h
+***************
+*** 1,6 ****
+  
+  
+  #ifndef X11_CLASS_USAGE_CHECK
+! extern mumble (int  class);
+  
+  #endif  /* X11_CLASS_USAGE_CHECK */
+--- 1,6 ----
+  
+  
+  #ifndef X11_CLASS_USAGE_CHECK
+! extern mumble (int  c_class);
+  
+  #endif  /* X11_CLASS_USAGE_CHECK */
+*** inc/Xm/Traversal.h
+--- res/Xm/Traversal.h
+***************
+*** 2,8 ****
+  
+  #ifndef X11_NEW_CHECK
+  struct wedge {
+     Widget	old, new; /* fix the new */
+  };
+! extern Wedged( Widget new, Widget old );
+  #endif  /* X11_NEW_CHECK */
+--- 2,12 ----
+  
+  #ifndef X11_NEW_CHECK
+  struct wedge {
++ #ifdef __cplusplus
++ 	Widget	old, c_new;
++ #else
+     Widget	old, new; /* fix the new */
++ #endif
+  };
+! extern Wedged( Widget c_new, Widget old );
+  #endif  /* X11_NEW_CHECK */
+*** inc/assert.h
+--- res/assert.h
+***************
+*** 1,3 ****
+--- 1,7 ----
++ #ifdef __cplusplus
++ #include <stdlib.h>
++ #endif
++ #include <stdio.h>
+  
+  
+  #ifndef BROKEN_ASSERT_STDIO_CHECK
+*** inc/c_asm.h
+--- res/c_asm.h
+***************
+*** 1,9 ****
+--- 1,11 ----
+  
+  
+  #ifndef DEC_INTERN_ASM_CHECK
++ #ifdef __DECC
+  float fasm {
+      ... asm stuff ...
+  };
+  #pragma intrinsic( dasm )
++ #endif
+  /* END ASM TEST*/
+  #endif  /* DEC_INTERN_ASM_CHECK */
+*** inc/curses.h
+--- res/curses.h
+***************
+*** 1,11 ****
+  
+  
+  #ifndef AVOID_BOOL_CHECK
+  # define bool	 char 
+  typedef unsigned int	bool 	; /* bool type */
+  #endif  /* AVOID_BOOL_CHECK */
+  
+  
+  #ifndef BAD_STRUCT_TERM_CHECK
+! typedef struct term;
+  #endif  /* BAD_STRUCT_TERM_CHECK */
+--- 1,15 ----
+  
+  
+  #ifndef AVOID_BOOL_CHECK
++ #ifndef __cplusplus
+  # define bool	 char 
++ #endif
++ #ifndef __cplusplus
+  typedef unsigned int	bool 	; /* bool type */
++ #endif
+  #endif  /* AVOID_BOOL_CHECK */
+  
+  
+  #ifndef BAD_STRUCT_TERM_CHECK
+! struct term;
+  #endif  /* BAD_STRUCT_TERM_CHECK */
+*** inc/math.h
+--- res/math.h
+***************
+*** 2,9 ****
+  
+  #ifndef BROKEN_CABS_CHECK
+  #ifdef __STDC__
+- extern double cabs(struct dbl_hypot);
+  #else
+- extern double cabs();
+  #endif
+  #endif  /* BROKEN_CABS_CHECK */
+--- 2,7 ----
+*** inc/stdio.h
+--- res/stdio.h
+***************
+*** 1,7 ****
+  
+  
+  #ifndef ALPHA_GETOPT_CHECK
+! extern int getopt(int, char *[], char *);
+  #endif  /* ALPHA_GETOPT_CHECK */
+  
+  
+--- 1,9 ----
++ #define __need___va_list
++ #include <stdarg.h>
+  
+  
+  #ifndef ALPHA_GETOPT_CHECK
+! extern int getopt(int, char *const[], const char *);
+  #endif  /* ALPHA_GETOPT_CHECK */
+  
+  
+*** inc/stdlib.h
+--- res/stdlib.h
+***************
+*** 1,7 ****
+  
+  
+  #ifndef ARM_WCHAR_CHECK
+! # ifndef 	 __wchar_t /* we don't have wchar_t yet, ... */
+! #  define  __wchar_t  short
+  # endif /* __wchar_t */
+  #endif  /* ARM_WCHAR_CHECK */
+--- 1,7 ----
+  
+  
+  #ifndef ARM_WCHAR_CHECK
+! # ifndef 	 _GCC_WCHAR_T /* we don't have wchar_t yet, ... */
+! #  define  _GCC_WCHAR_T  short
+  # endif /* __wchar_t */
+  #endif  /* ARM_WCHAR_CHECK */
+*** inc/sundev/vuid_event.h
+--- res/sundev/vuid_event.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef BADQUOTE_CHECK
+! /* doesn't have matched single quotes */
+  #endif  /* BADQUOTE_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef BADQUOTE_CHECK
+! /* does not have matched single quotes */
+  #endif  /* BADQUOTE_CHECK */
+*** inc/sunwindow/win_lock.h
+--- res/sunwindow/win_lock.h
+***************
+*** 1,7 ****
+  
+  
+  #ifndef ECD_CURSOR_CHECK
+! #ifdef ecd.cursor
+  #error bogus
+! #endif /* ecd+cursor */
+  #endif  /* ECD_CURSOR_CHECK */
+--- 1,7 ----
+  
+  
+  #ifndef ECD_CURSOR_CHECK
+! #ifdef ecd_cursor
+  #error bogus
+! #endif /* ecd_cursor */
+  #endif  /* ECD_CURSOR_CHECK */
+*** inc/sym.h
+--- res/sym.h
+***************
+*** 1,7 ****
+  
+  
+  #ifndef ALPHA_PARENS_CHECK
+! #ifndef(__mips64) /* bogus */
+  extern int foo;
+  #endif
+  #endif  /* ALPHA_PARENS_CHECK */
+--- 1,7 ----
+  
+  
+  #ifndef ALPHA_PARENS_CHECK
+! #ifndef __mips64 /* bogus */
+  extern int foo;
+  #endif
+  #endif  /* ALPHA_PARENS_CHECK */
+*** inc/sys/param.h
+--- res/sys/param.h
+***************
+*** 1,11 ****
+  
+  
+  #ifndef AUX_ASM_CHECK
+! #ifndef NOINLINE /* ain't got no inline, so we got it */
+  #endif /* NOINLINE */
+  #endif  /* AUX_ASM_CHECK */
+  
+  
+  #ifndef HPUX_MAXINT_CHECK
+  #define MAXINT 0x7FFFFFFF
+  #endif  /* HPUX_MAXINT_CHECK */
+--- 1,13 ----
+  
+  
+  #ifndef AUX_ASM_CHECK
+! #if !defined(NOINLINE) && !defined(__GNUC__) /* ain't got no inline, so we got it */
+  #endif /* NOINLINE */
+  #endif  /* AUX_ASM_CHECK */
+  
+  
+  #ifndef HPUX_MAXINT_CHECK
++ #ifndef MAXINT
+  #define MAXINT 0x7FFFFFFF
++ #endif
+  #endif  /* HPUX_MAXINT_CHECK */
+*** inc/sys/signal.h
+--- res/sys/signal.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef AIX_VOLATILE_CHECK
+! typedef volatile int sig_atomic_t;
+  #endif  /* AIX_VOLATILE_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef AIX_VOLATILE_CHECK
+! typedef int sig_atomic_t;
+  #endif  /* AIX_VOLATILE_CHECK */
+*** inc/sys/time.h
+--- res/sys/time.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef HPUX_SYSTIME_CHECK
+! extern struct sigevent;
+  #endif  /* HPUX_SYSTIME_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef HPUX_SYSTIME_CHECK
+! struct sigevent;
+  #endif  /* HPUX_SYSTIME_CHECK */
+*** inc/sys/wait.h
+--- res/sys/wait.h
+***************
+*** 2,6 ****
+--- 2,7 ----
+  
+  #ifndef AIX_SYSWAIT_CHECK
+  /* bos325, */
++ struct rusage;
+  extern pid_t wait3();
+  #endif  /* AIX_SYSWAIT_CHECK */
+*** inc/time.h
+--- res/time.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef VXWORKS_NEEDS_VXTYPES_CHECK
+! uint_t	_clocks_per_sec;
+  #endif  /* VXWORKS_NEEDS_VXTYPES_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef VXWORKS_NEEDS_VXTYPES_CHECK
+! unsigned int	_clocks_per_sec;
+  #endif  /* VXWORKS_NEEDS_VXTYPES_CHECK */
+*** inc/unistd.h
+--- res/unistd.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef ALPHA_SBRK_CHECK
+! extern char* sbrk(ptrdiff_t increment);
+  #endif  /* ALPHA_SBRK_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef ALPHA_SBRK_CHECK
+! extern void* sbrk(ptrdiff_t increment);
+  #endif  /* ALPHA_SBRK_CHECK */
