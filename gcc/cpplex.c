@@ -73,8 +73,9 @@ static const unsigned char *backslash_start PARAMS ((cpp_reader *,
 static int skip_block_comment PARAMS ((cpp_reader *));
 static int skip_line_comment PARAMS ((cpp_reader *));
 static void skip_whitespace PARAMS ((cpp_reader *, int));
-static void parse_name PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
-static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
+static const U_CHAR *parse_name PARAMS ((cpp_reader *, cpp_token *,
+				   const U_CHAR *, const U_CHAR *));
+static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_string *));
 static void parse_string PARAMS ((cpp_reader *, cpp_toklist *, cpp_token *,
 				  unsigned int));
 static int trigraph_ok PARAMS ((cpp_reader *, const unsigned char *));
@@ -111,9 +112,9 @@ static void release_temp_tokens		PARAMS ((cpp_reader *));
 static U_CHAR * quote_string PARAMS ((U_CHAR *, const U_CHAR *, unsigned int));
 static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
 
-#define INIT_TOKEN_NAME(list, token) \
-  do {(token)->val.name.len = 0; \
-      (token)->val.name.text = (list)->namebuf + (list)->name_used; \
+#define INIT_TOKEN_STR(list, token) \
+  do {(token)->val.str.len = 0; \
+      (token)->val.str.text = (list)->namebuf + (list)->name_used; \
   } while (0)
 
 #define VALID_SIGN(c, prevc) \
@@ -148,8 +149,12 @@ static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
 
 /* An upper bound on the number of bytes needed to spell a token,
    including preceding whitespace.  */
-#define TOKEN_LEN(token) (5 + (token_spellings[(token)->type].type > \
-		               SPELL_NONE ? (token)->val.name.len: 0))
+#define TOKEN_SPELL(token) token_spellings[(token)->type].type
+#define TOKEN_LEN(token) (5 + (TOKEN_SPELL(token) == SPELL_STRING	\
+			       ? (token)->val.str.len			\
+			       : (TOKEN_SPELL(token) == SPELL_IDENT	\
+				  ? (token)->val.node->length		\
+				  : 0)))
 
 #define T(e, s) {SPELL_OPERATOR, (const U_CHAR *) s},
 #define I(e, s) {SPELL_IDENT, s},
@@ -443,8 +448,8 @@ _cpp_glue_header_name (pfile)
   hdr = get_temp_token (pfile);
   hdr->type = CPP_HEADER_NAME;
   hdr->flags = 0;
-  hdr->val.name.text = buf;
-  hdr->val.name.len = len;
+  hdr->val.str.text = buf;
+  hdr->val.str.len = len;
   return hdr;
 }
 
@@ -469,8 +474,8 @@ _cpp_expand_name_space (list, len)
       unsigned int i;
 
       for (i = 0; i < list->tokens_used; i++)
-	if (token_spellings[list->tokens[i].type].type > SPELL_NONE)
-	  list->tokens[i].val.name.text += (list->namebuf - old_namebuf);
+	if (token_spellings[list->tokens[i].type].type == SPELL_STRING)
+	  list->tokens[i].val.str.text += (list->namebuf - old_namebuf);
     }
 }
 
@@ -583,10 +588,11 @@ _cpp_equiv_tokens (a, b)
       case SPELL_NONE:
 	return a->val.aux == b->val.aux; /* arg_no or character.  */
       case SPELL_IDENT:
+	return a->val.node == b->val.node;
       case SPELL_STRING:
-	return (a->val.name.len == b->val.name.len
-		&& !memcmp (a->val.name.text, b->val.name.text,
-			    a->val.name.len));
+	return (a->val.str.len == b->val.str.len
+		&& !memcmp (a->val.str.text, b->val.str.text,
+			    a->val.str.len));
       }
 
   return 0;
@@ -611,34 +617,19 @@ _cpp_equiv_toklists (a, b)
 }
 
 /* Utility routine:
-   Compares, in the manner of strcmp(3), the token beginning at TOKEN
-   and extending for LEN characters to the NUL-terminated string
-   STRING.  Typical usage:
 
-   if (! cpp_idcmp (pfile->token_buffer + here, CPP_WRITTEN (pfile) - here,
-                 "inline"))
-     { ... }
- */
+   Compares, the token TOKEN to the NUL-terminated string STRING.
+   TOKEN must be a CPP_NAME.  Returns 1 for equal, 0 for unequal.  */
 
 int
-cpp_idcmp (token, len, string)
-     const U_CHAR *token;
-     size_t len;
+cpp_ideq (token, string)
+     const cpp_token *token;
      const char *string;
 {
-  size_t len2 = strlen (string);
-  int r;
-
-  if ((r = memcmp (token, string, MIN (len, len2))))
-    return r;
-
-  /* The longer of the two strings sorts after the shorter.  */
-  if (len == len2)
+  if (token->type != CPP_NAME)
     return 0;
-  else if (len < len2)
-    return -1;
-  else
-    return 1;
+
+  return !ustrcmp (token->val.node->name, (const U_CHAR *)string);
 }
 
 /* Lexing algorithm.
@@ -965,51 +956,43 @@ skip_whitespace (pfile, in_directive)
 }
 
 /* Parse (append) an identifier.  */
-static void
-parse_name (pfile, list, name)
+static inline const U_CHAR *
+parse_name (pfile, tok, cur, rlimit)
      cpp_reader *pfile;
-     cpp_toklist *list;
-     cpp_name *name;
+     cpp_token *tok;
+     const U_CHAR *cur, *rlimit;
 {
-  const unsigned char *name_limit;
-  unsigned char *namebuf;
-  cpp_buffer *buffer = pfile->buffer;
-  register const unsigned char *cur = buffer->cur;
+  const U_CHAR *name = cur;
+  unsigned int len;
 
- expanded:
-  name_limit = list->namebuf + list->name_cap;
-  namebuf = list->namebuf + list->name_used;
-
-  for (; cur < buffer->rlimit && namebuf < name_limit; )
+  while (cur < rlimit)
     {
-      unsigned char c = *namebuf = *cur; /* Copy a single char.  */
-
-      if (! is_idchar(c))
-	goto out;
-      namebuf++;
-      cur++;
+      if (! is_idchar (*cur))
+	break;
       /* $ is not a legal identifier character in the standard, but is
 	 commonly accepted as an extension.  Don't warn about it in
 	 skipped conditional blocks. */
-      if (c == '$' && CPP_PEDANTIC (pfile) && ! pfile->skipping)
+      if (*cur == '$' && CPP_PEDANTIC (pfile) && ! pfile->skipping)
 	{
-	  buffer->cur = cur;
+	  CPP_BUFFER (pfile)->cur = cur;
 	  cpp_pedwarn (pfile, "'$' character in identifier");
 	}
+      cur++;
     }
+  len = cur - name;
 
-  /* Run out of name space?  */
-  if (cur < buffer->rlimit)
+  if (tok->val.node)
     {
-      list->name_used = namebuf - list->namebuf;
-      auto_expand_name_space (list);
-      goto expanded;
+      unsigned int oldlen = tok->val.node->length;
+      U_CHAR *newname = alloca (oldlen + len);
+      memcpy (newname, tok->val.node->name, oldlen);
+      memcpy (newname + oldlen, name, len);
+      len += oldlen;
+      name = newname;
     }
 
- out:
-  buffer->cur = cur;
-  name->len = namebuf - name->text;
-  list->name_used = namebuf - list->namebuf;
+  tok->val.node = cpp_lookup (pfile, name, len);
+  return cur;
 }
 
 /* Parse (append) a number.  */
@@ -1017,7 +1000,7 @@ static void
 parse_number (pfile, list, name)
      cpp_reader *pfile;
      cpp_toklist *list;
-     cpp_name *name;
+     cpp_string *name;
 {
   const unsigned char *name_limit;
   unsigned char *namebuf;
@@ -1057,7 +1040,7 @@ parse_number (pfile, list, name)
 }
 
 /* Places a string terminated by an unescaped TERMINATOR into a
-   cpp_name, which should be expandable and thus at the top of the
+   cpp_string, which should be expandable and thus at the top of the
    list's stack.  Handles embedded trigraphs, if necessary, and
    escaped newlines.
 
@@ -1073,7 +1056,7 @@ parse_string (pfile, list, token, terminator)
      unsigned int terminator;
 {
   cpp_buffer *buffer = pfile->buffer;
-  cpp_name *name = &token->val.name;
+  cpp_string *name = &token->val.str;
   register const unsigned char *cur = buffer->cur;
   const unsigned char *name_limit;
   unsigned char *namebuf;
@@ -1221,9 +1204,9 @@ save_comment (list, token, from, len, type)
   if (list->name_used + len > list->name_cap)
     _cpp_expand_name_space (list, len);
 
-  INIT_TOKEN_NAME (list, token);
+  INIT_TOKEN_STR (list, token);
   token->type = CPP_COMMENT;
-  token->val.name.len = len;
+  token->val.str.len = len;
 
   buffer = list->namebuf + list->name_used;
   list->name_used += len;
@@ -1326,21 +1309,21 @@ lex_line (pfile, list)
 	    prev_dot = PREV_TOKEN_TYPE == CPP_DOT && IMMED_TOKEN ();
 	    if (prev_dot)
 	      cur_token--;
-	    INIT_TOKEN_NAME (list, cur_token);
+	    INIT_TOKEN_STR (list, cur_token);
 	    /* Prepend an immediately previous CPP_DOT token.  */
 	    if (prev_dot)
 	      {
 		if (list->name_cap == list->name_used)
 		  auto_expand_name_space (list);
 
-		cur_token->val.name.len = 1;
+		cur_token->val.str.len = 1;
 		list->namebuf[list->name_used++] = '.';
 	      }
 
 	  continue_number:
 	    cur_token->type = CPP_NUMBER; /* Before parse_number.  */
 	    buffer->cur = cur;
-	    parse_number (pfile, list, &cur_token->val.name);
+	    parse_number (pfile, list, &cur_token->val.str);
 	    cur = buffer->cur;
 	  }
 	  /* Check for # 123 form of #line.  */
@@ -1364,13 +1347,11 @@ lex_line (pfile, list)
 	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
 	  cur--;		     /* Backup character.  */
-	  INIT_TOKEN_NAME (list, cur_token);
+	  cur_token->val.node = 0;
 	  cur_token->type = CPP_NAME; /* Identifier, macro etc.  */
 
 	continue_name:
-	  buffer->cur = cur;
-	  parse_name (pfile, list, &cur_token->val.name);
-	  cur = buffer->cur;
+	  cur = parse_name (pfile, cur_token, cur, buffer->rlimit);
 
 	  if (MIGHT_BE_DIRECTIVE ())
 	    list->directive = _cpp_check_directive (pfile, cur_token,
@@ -1395,18 +1376,15 @@ lex_line (pfile, list)
 	  cur_token->type = c == '\'' ? CPP_CHAR : CPP_STRING;
 	  /* Do we have a wide string?  */
 	  if (cur_token[-1].type == CPP_NAME && IMMED_TOKEN ()
-	      && cur_token[-1].val.name.len == 1
-	      && cur_token[-1].val.name.text[0] == 'L'
+	      && cur_token[-1].val.node == pfile->spec_nodes->n_L
 	      && !CPP_TRADITIONAL (pfile))
 	    {
-	      /* No need for 'L' any more.  */
-	      list->name_used--;
 	      (--cur_token)->type = (c == '\'' ? CPP_WCHAR : CPP_WSTRING);
 	    }
 
 	do_parse_string:
 	  /* Here c is one of ' " or >.  */
-	  INIT_TOKEN_NAME (list, cur_token);
+	  INIT_TOKEN_STR (list, cur_token);
 	  buffer->cur = cur;
 	  parse_string (pfile, list, cur_token, c);
 	  cur = buffer->cur;
@@ -1797,7 +1775,7 @@ lex_line (pfile, list)
     {
       if (first[1].type == CPP_NAME)
 	cpp_error (pfile, "invalid preprocessing directive #%.*s",
-		   (int) first[1].val.name.len, first[1].val.name.text);
+		   (int) first[1].val.node->length, first[1].val.node->name);
       else
 	cpp_error (pfile, "invalid preprocessing directive");
     }
@@ -1900,23 +1878,27 @@ spell_token (pfile, token, buffer)
       break;
 
     case SPELL_IDENT:
-      memcpy (buffer, token->val.name.text, token->val.name.len);
-      buffer += token->val.name.len;
+      memcpy (buffer, token->val.node->name, token->val.node->length);
+      buffer += token->val.node->length;
       break;
 
     case SPELL_STRING:
       {
-	unsigned char c;
-
 	if (token->type == CPP_WSTRING || token->type == CPP_WCHAR)
 	  *buffer++ = 'L';
-	c = '\'';
+
 	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
-	  c = '"';
-	*buffer++ = c;
-	memcpy (buffer, token->val.name.text, token->val.name.len);
-	buffer += token->val.name.len;
-	*buffer++ = c;
+	  *buffer++ = '"';
+	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
+	  *buffer++ = '\'';
+
+	memcpy (buffer, token->val.str.text, token->val.str.len);
+	buffer += token->val.str.len;
+	
+	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
+	  *buffer++ = '"';
+	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
+	  *buffer++ = '\'';
       }
       break;
 
@@ -2096,7 +2078,7 @@ is_macro_disabled (pfile, expansion, token)
 	  if (CPP_OPTION (pfile, warn_traditional))
 	    cpp_warning (pfile,
 	 "function macro %.*s must be used with arguments in traditional C",
-			 (int) token->val.name.len, token->val.name.text);
+			 (int) token->val.node->length, token->val.node->name);
 	  return 1;
 	}
     }
@@ -2314,8 +2296,8 @@ make_string_token (token, text, len)
   buf = (U_CHAR *) xmalloc (len * 4);
   token->type = CPP_STRING;
   token->flags = 0;
-  token->val.name.text = buf;
-  token->val.name.len = quote_string (buf, text, len) - buf;
+  token->val.str.text = buf;
+  token->val.str.len = quote_string (buf, text, len) - buf;
   return token;
 }
 
@@ -2335,8 +2317,8 @@ alloc_number_token (pfile, number)
 
   result->type = CPP_NUMBER;
   result->flags = 0;
-  result->val.name.text = (U_CHAR *) buf;
-  result->val.name.len = strlen (buf);
+  result->val.str.text = (U_CHAR *) buf;
+  result->val.str.len = strlen (buf);
   return result;
 }
 
@@ -2369,10 +2351,10 @@ release_temp_tokens (pfile)
     {
       cpp_token *token = pfile->temp_tokens[--pfile->temp_used];
 
-      if (token_spellings[token->type].type > SPELL_NONE)
+      if (token_spellings[token->type].type == SPELL_STRING)
 	{
-	  free ((char *) token->val.name.text);
-	  token->val.name.text = 0;
+	  free ((char *) token->val.str.text);
+	  token->val.str.text = 0;
 	}
     }
 }
@@ -2394,9 +2376,9 @@ _cpp_free_temp_tokens (pfile)
 
   if (pfile->date)
     {
-      free ((char *) pfile->date->val.name.text);
+      free ((char *) pfile->date->val.str.text);
       free (pfile->date);
-      free ((char *) pfile->time->val.name.text);
+      free ((char *) pfile->time->val.str.text);
       free (pfile->time);
     }
 }
@@ -2410,11 +2392,11 @@ duplicate_token (pfile, token)
   cpp_token *result = get_temp_token (pfile);
 
   *result = *token;
-  if (token_spellings[token->type].type > SPELL_NONE)
+  if (token_spellings[token->type].type == SPELL_STRING)
     {
-      U_CHAR *buff = (U_CHAR *) xmalloc (token->val.name.len);
-      memcpy (buff, token->val.name.text, token->val.name.len);
-      result->val.name.text = buff;
+      U_CHAR *buff = (U_CHAR *) xmalloc (token->val.str.len);
+      memcpy (buff, token->val.str.text, token->val.str.len);
+      result->val.str.text = buff;
     }
   return result;
 }
@@ -2489,13 +2471,11 @@ can_paste (pfile, token1, token2, digraph)
     case CPP_NAME:
       if (b == CPP_NAME)	return CPP_NAME;
       if (b == CPP_NUMBER
-	  && is_numstart(token2->val.name.text[0]))	return CPP_NAME;
+	  && is_numstart(token2->val.str.text[0]))	 return CPP_NAME;
       if (b == CPP_CHAR
-	  && token1->val.name.len == 1
-	  && token1->val.name.text[0] == 'L')	return CPP_WCHAR;
+	  && token1->val.node == pfile->spec_nodes->n_L) return CPP_WCHAR;
       if (b == CPP_STRING
-	  && token1->val.name.len == 1
-	  && token1->val.name.text[0] == 'L')	return CPP_WSTRING;
+	  && token1->val.node == pfile->spec_nodes->n_L) return CPP_WSTRING;
       break;
 
     case CPP_NUMBER:
@@ -2504,7 +2484,7 @@ can_paste (pfile, token1, token2, digraph)
       if (b == CPP_DOT)		return CPP_NUMBER;
       /* Numbers cannot have length zero, so this is safe.  */
       if ((b == CPP_PLUS || b == CPP_MINUS)
-	  && VALID_SIGN ('+', token1->val.name.text[token1->val.name.len - 1]))
+	  && VALID_SIGN ('+', token1->val.str.text[token1->val.str.len - 1]))
 	return CPP_NUMBER;
       break;
 
@@ -2578,15 +2558,21 @@ maybe_paste_with_next (pfile, token)
       if (type == CPP_NAME || type == CPP_NUMBER)
 	{
 	  /* Join spellings.  */
-	  U_CHAR *buff, *buff2;
+	  U_CHAR *buf, *end;
 
 	  pasted = get_temp_token (pfile);
-	  buff = (U_CHAR *) xmalloc (TOKEN_LEN (token) + TOKEN_LEN (second));
-	  buff2 = spell_token (pfile, token, buff);
-	  buff2 = spell_token (pfile, second, buff2);
+	  buf = (U_CHAR *) alloca (TOKEN_LEN (token) + TOKEN_LEN (second));
+	  end = spell_token (pfile, token, buf);
+	  end = spell_token (pfile, second, end);
+	  *end = '\0';
 
-	  pasted->val.name.text = buff;
-	  pasted->val.name.len = buff2 - buff;
+	  if (type == CPP_NAME)
+	    pasted->val.node = cpp_lookup (pfile, buf, end - buf);
+	  else
+	    {
+	      pasted->val.str.text = uxstrdup (buf);
+	      pasted->val.str.len = end - buf;
+	    }
 	}
       else if (type == CPP_WCHAR || type == CPP_WSTRING)
 	pasted = duplicate_token (pfile, second);
@@ -2597,7 +2583,7 @@ maybe_paste_with_next (pfile, token)
 	}
 
       pasted->type = type;
-      pasted->flags = digraph ? DIGRAPH: 0;
+      pasted->flags = digraph ? DIGRAPH : 0;
     }
 
   /* The pasted token gets the whitespace flags and position of the
@@ -2681,8 +2667,8 @@ stringify_arg (pfile, token)
     }
 
   result->type = CPP_STRING;
-  result->val.name.text = main_buf;
-  result->val.name.len = buf_used;
+  result->val.str.text = main_buf;
+  result->val.str.len = buf_used;
   restore_macro_expansion (pfile, prev_value);
   return result;
 }
@@ -2907,7 +2893,7 @@ cpp_get_token (pfile)
   if (pfile->no_expand_level == pfile->cur_context || pfile->paste_level)
     return token;
  
-  node = cpp_lookup (pfile, token->val.name.text, token->val.name.len);
+  node = token->val.node;
   if (node->type == T_VOID)
     return token;
 
@@ -3194,7 +3180,7 @@ special_symbol (pfile, node, token)
 
 #ifdef STDC_0_IN_SYSTEM_HEADERS
 	if (CPP_IN_SYSTEM_HEADER (pfile)
-	    && !cpp_defined (pfile, DSC("__STRICT_ANSI__")))
+	    && pfile->spec_nodes->n__STRICT_ANSI__->type == T_VOID)
 	  stdc = 0;
 #endif
 	result = alloc_number_token (pfile, stdc);
@@ -3217,16 +3203,16 @@ special_symbol (pfile, node, token)
 	  pfile->time = make_string_token
 	    ((cpp_token *) xmalloc (sizeof (cpp_token)), DSC("12:34:56"));
 
-	  sprintf ((char *) pfile->date->val.name.text, "%s %2d %4d",
+	  sprintf ((char *) pfile->date->val.str.text, "%s %2d %4d",
 		   monthnames[tb->tm_mon], tb->tm_mday, tb->tm_year + 1900);
-	  sprintf ((char *) pfile->time->val.name.text, "%02d:%02d:%02d",
+	  sprintf ((char *) pfile->time->val.str.text, "%02d:%02d:%02d",
 		   tb->tm_hour, tb->tm_min, tb->tm_sec);
 	}
       result = node->type == T_DATE ? pfile->date: pfile->time;
       break;
 
     case T_POISON:
-      cpp_error (pfile, "attempt to use poisoned \"%s\".", node->name);
+      cpp_error (pfile, "attempt to use poisoned \"%s\"", node->name);
       return token;
 
     default:

@@ -421,8 +421,8 @@ cpp_reader_init (pfile)
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
 
-  _cpp_init_stacks (pfile);
   _cpp_init_macros (pfile);
+  _cpp_init_stacks (pfile);
   _cpp_init_includes (pfile);
 }
 
@@ -469,10 +469,13 @@ cpp_cleanup (pfile)
   if (pfile->deps)
     deps_free (pfile->deps);
 
+  if (pfile->spec_nodes)
+    free (pfile->spec_nodes);
+
+  _cpp_free_temp_tokens (pfile);
+  _cpp_cleanup_includes (pfile);
   _cpp_cleanup_stacks (pfile);
   _cpp_cleanup_macros (pfile);
-  _cpp_cleanup_includes (pfile);
-  _cpp_free_temp_tokens (pfile);
 }
 
 

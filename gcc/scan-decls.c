@@ -193,18 +193,17 @@ scan_decls (pfile, argc, argv)
 	  break;
 	case CPP_NAME:
 	  /* "inline" and "extern" are recognized but skipped */
-	  if (!cpp_idcmp (token->val.name.text, token->val.name.len, "inline"))
+	  if (cpp_ideq (token, "inline"))
 	    {
 	      saw_inline = 1;
 	    }
-	  else if (!cpp_idcmp (token->val.name.text,
-			       token->val.name.len, "extern"))
+	  else if (cpp_ideq (token, "extern"))
 	    {
 	      saw_extern = 1;
 	      token = cpp_get_token (pfile);
 	      if (token->type == CPP_STRING
-		  && !cpp_idcmp (token->val.name.text,
-				 token->val.name.len, "C"))
+		  && token->val.str.len == 1
+		  && token->val.str.text[0] == 'C')
 		{
 		  current_extern_C = 1;
 		  token = cpp_get_token (pfile);

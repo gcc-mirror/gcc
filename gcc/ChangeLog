@@ -1,3 +1,72 @@
+2000-07-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (struct cpp_name): Now struct cpp_string.
+	(CPP_INT, CPP_FLOAT, CPP_NUMBER, CPP_COMMENT,
+	CPP_HEADER_NAME): Change to type S.
+	(struct cpp_token): Rename 'name' field to 'str'.  Add 'node'
+	field, a cpp_hashnode *.  All references to val.name updated
+	to use val.str or val.node as appropriate.
+	(struct cpp_reader): Add spec_nodes field.
+	(cpp_idcmp): Now cpp_ideq; takes a token * and a char *.
+
+	* cpphash.h (struct spec_nodes): New.
+	(enum spell_type): Reorder.  Only SPELL_STRING tokens use
+	val.str.  All references to 'spelling > SPELL_NONE' updated to
+	match.
+
+	(CPP_IN_SYSTEM_HEADER): Check pfile->buffer and
+	pfile->buffer->inc are not NULL before dereferencing them.
+
+	* cpplex.c (parse_name): Take a pointer to the current token,
+	plus current position and limit as args; return the new
+	position; don't copy the text of a name into the string
+	buffer, instead call cpp_lookup and store the node pointer.
+	If extending a token, copy out the text of the old into a
+	scratch buffer, append the new, look that up and store the new
+	node pointer.  Inline.
+	(maybe_paste_with_next): If the result of paste is a NAME,
+	then look up the pasted text and store its node pointer.
+	(lex_line): Adjust for new parse_name interface.  
+	Check for L"str", L'str' using spec_nodes->n_L.
+	(spell_token): SPELL_IDENT tokens have their spelling in
+	val.node->name.  Handle SPELL_STRING tokens that don't have
+	string delimiters.
+	(_cpp_expand_name_space, 
+	(can_paste): Check for L ## "str" using spec_nodes->n_L.
+	(cpp_get_token, special_symbol): No need to call cpp_lookup.
+	(cpp_idcmp): Now cpp_ideq; take a token * and a const char *;
+	return 1=equal 0=not, not a tristate.
+
+	* cpphash.c (var_args_str): Delete.
+	(find_param): Compare node fields directly.
+	(is__va_args__): Use CPP_PEDANTIC.  Just compare
+	token->val.node with spec_nodes->n__VA_ARGS__.
+	(dump_funlike_macro): Don't use var_args_str.
+
+	* cpplib.c (_cpp_check_directive): Just walk through
+	spec_nodes->dirs comparing pointers.
+	(get_define_node, do_pragma_poison, detect_if_not_defined,
+	parse_ifdef): The identifier has already been looked up.
+	(do_ifdef, do_ifndef): parse_ifdef won't return a poisoned
+	node.
+	(do_if): Only call detect_if_not_defined at beginning of file.
+	(_cpp_parse_assertion): Only copy string pointers for
+	SPELL_STRING tokens.
+	(pragma_dispatch): Take a node pointer and examine its name
+	field.
+	(_cpp_init_stacks): Also initialize the spec_nodes structure.
+
+	* cppinit.c (cpp_reader_init): Call _cpp_init_stacks after
+	_cpp_init_macros. 
+	(cpp_cleanup): Free pfile->spec_nodes.  Call _cpp_cleanup_* in
+	reverse order from the corresponding _cpp_init_* routines.
+
+	* cppexp.c (parse_number, parse_charconst, parse_defined,
+	lex): Check val.node->type instead of calling cpp_defined.
+	Use spec_nodes entries where appropriate.
+
+	* fix-header.c, scan-decls.c: Update for interface changes.
+
 2000-07-08  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Fix conditions for

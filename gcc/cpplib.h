@@ -34,7 +34,7 @@ typedef struct cpp_options cpp_options;
 typedef struct cpp_printer cpp_printer;
 typedef struct cpp_token cpp_token;
 typedef struct cpp_toklist cpp_toklist;
-typedef struct cpp_name cpp_name;
+typedef struct cpp_string cpp_string;
 typedef struct cpp_hashnode cpp_hashnode;
 
 /* The first two groups, apart from '=', can appear in preprocessor
@@ -112,18 +112,18 @@ typedef struct cpp_hashnode cpp_hashnode;
   C(CPP_OTHER,		0)	/* stray punctuation */    \
 \
   I(CPP_NAME,		0)	/* word */	\
-  I(CPP_INT,		0)	/* 23 */	\
-  I(CPP_FLOAT,		0)	/* 3.14159 */	\
-  I(CPP_NUMBER,		0)	/* 34_be+ta  */	\
+  S(CPP_INT,		0)	/* 23 */	\
+  S(CPP_FLOAT,		0)	/* 3.14159 */	\
+  S(CPP_NUMBER,		0)	/* 34_be+ta  */	\
   S(CPP_CHAR,		0)	/* 'char' */	\
   S(CPP_WCHAR,		0)	/* L'char' */	\
   S(CPP_STRING,		0)	/* "string" */	\
   S(CPP_WSTRING,	0)	/* L"string" */	\
 \
-  I(CPP_COMMENT,	0)	/* Only if output comments.  */ \
+  S(CPP_COMMENT,	0)	/* Only if output comments.  */ \
   N(CPP_MACRO_ARG,      0)	/* Macro argument.  */          \
   N(CPP_EOF,		0)	/* End of file.  */		\
-  I(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */
+  S(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */
 
 #define T(e, s) e,
 #define I(e, s) e,
@@ -141,8 +141,8 @@ enum cpp_ttype
 #undef C
 #undef N
 
-/* Payload of a NAME, NUMBER, FLOAT, STRING, or COMMENT token.  */
-struct cpp_name
+/* Payload of a NUMBER, FLOAT, STRING, or COMMENT token.  */
+struct cpp_string
 {
   unsigned int len;
   const unsigned char *text;
@@ -168,7 +168,8 @@ struct cpp_token
   union
   {
     HOST_WIDEST_INT integer;	/* an integer */
-    struct cpp_name name;	/* a string */
+    struct cpp_hashnode *node;	/* an identifier */
+    struct cpp_string str;	/* a string, or number */
     unsigned int aux;		/* argument no. for a CPP_MACRO_ARG, or
 				   character represented by CPP_OTHER.  */
   } val;
@@ -558,6 +559,10 @@ struct cpp_reader
 
   /* True if output_line_command needs to output a newline.  */
   unsigned char need_newline;
+
+  /* Special nodes - identifiers with predefined significance to the
+     preprocessor.  */
+  struct spec_nodes *spec_nodes;
 };
 
 /* struct cpp_printer encapsulates state used to convert the stream of
@@ -693,8 +698,8 @@ extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
 extern cpp_buffer *cpp_pop_buffer	PARAMS ((cpp_reader *));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *, cpp_printer *));
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
-extern int cpp_idcmp			PARAMS ((const unsigned char *,
-						 size_t, const char *));
+extern int cpp_ideq			PARAMS ((const cpp_token *,
+						 const char *));
 
 /* In cpphash.c */
 extern int cpp_defined			PARAMS ((cpp_reader *,

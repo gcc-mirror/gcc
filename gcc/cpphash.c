@@ -61,8 +61,6 @@ static int save_expansion PARAMS((cpp_reader *, cpp_toklist *,
 static unsigned int find_param PARAMS ((const cpp_token *,
 					const cpp_token *));
 
-static const unsigned char var_args_str[] = "__VA_ARGS__";
-
 /* Calculate hash of a string of length LEN.  */
 unsigned int
 _cpp_calc_hash (str, len)
@@ -131,7 +129,7 @@ cpp_lookup (pfile, name, len)
   p = obstack_alloc (pfile->hash_ob, sizeof (cpp_hashnode) + len);
   new = (cpp_hashnode *)p;
   p += offsetof (cpp_hashnode, name);
-  
+
   new->type = T_VOID;
   new->length = len;
   new->hash = hash;
@@ -189,9 +187,7 @@ find_param (first, token)
     if (first->type == CPP_NAME)
       {
 	param++;
-	if (first->val.name.len == token->val.name.len
-	    && !memcmp (first->val.name.text, token->val.name.text,
-			token->val.name.len))
+	if (first->val.node == token->val.node)
 	  return param;
       }
 
@@ -206,15 +202,13 @@ is__va_args__ (pfile, token)
      cpp_reader *pfile;
      const cpp_token *token;
 {
-  if (!CPP_OPTION (pfile, pedantic)
-      || token->val.name.len != sizeof (var_args_str) - 1
-      || ustrncmp (token->val.name.text, var_args_str,
-		   sizeof (var_args_str) - 1))
+  if (!CPP_PEDANTIC (pfile)
+      || token->val.node != pfile->spec_nodes->n__VA_ARGS__)
     return 0;
 
   cpp_pedwarn_with_line (pfile, token->line, token->col,
        "\"%s\" is only valid in the replacement list of a function-like macro",
-		       var_args_str);
+		       token->val.node->name);
   return 1;
 }
 
@@ -257,7 +251,7 @@ count_params (pfile, first, list)
 	  if (is__va_args__ (pfile, token))
 	    goto out;
 
-	  params_len += token->val.name.len + 1;
+	  params_len += token->val.node->length + 1;
 	  prev_ident = 1;
 	  list->paramc++;
 
@@ -265,9 +259,8 @@ count_params (pfile, first, list)
 	  if (find_param (first, token))
 	    {
 	      cpp_error_with_line (pfile, token->line, token->col,
-				   "duplicate macro parameter \"%.*s\"",
-				   (int) token->val.name.len,
-				   token->val.name.text);
+				   "duplicate macro parameter \"%s\"",
+				   token->val.node->name);
 	      goto out;
 	    }
 	  break;
@@ -297,19 +290,16 @@ count_params (pfile, first, list)
 	case CPP_ELLIPSIS:
 	  /* Convert ISO-style var_args to named varargs by changing
 	     the ellipsis into an identifier with name __VA_ARGS__.
-	     This simplifies other handling.  We can safely have its
-	     text outside list->namebuf because there is no reason to
-	     extend the size of the list's namebuf (and thus change
-	     the pointer) in do_define.  */
+	     This simplifies other handling. */
 	  if (!prev_ident)
 	    {
 	      cpp_token *tok = (cpp_token *) token;
 
 	      tok->type = CPP_NAME;
-	      tok->val.name.len = sizeof (var_args_str) - 1;
-	      tok->val.name.text = var_args_str; /* Safe.  */
+	      tok->val.node = pfile->spec_nodes->n__VA_ARGS__;
 	      list->paramc++;
-	  
+	      params_len += tok->val.node->length + 1;
+
 	      if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99))
 		cpp_pedwarn (pfile,
 			     "C89 does not permit anon varargs macros");
@@ -344,9 +334,9 @@ count_params (pfile, first, list)
       for (temp = first; temp <= token; temp++)
 	if (temp->type == CPP_NAME)
 	  {
-	    memcpy (buf, temp->val.name.text, temp->val.name.len);
-	    buf += temp->val.name.len;
-	    *buf++ = '\0';
+	    /* copy null too */
+	    memcpy (buf, temp->val.node->name, temp->val.node->length + 1);
+	    buf += temp->val.node->length + 1;
 	  }
     }
 
@@ -493,8 +483,8 @@ save_expansion (pfile, list, first, first_param)
 	    return 1;
 	}
       ntokens++;
-      if (token_spellings[token->type].type > SPELL_NONE)
-	len += token->val.name.len;
+      if (token_spellings[token->type].type == SPELL_STRING)
+	len += token->val.str.len;
     }
 
   /* Allocate space to hold the tokens.  Empty expansions are stored
@@ -553,11 +543,11 @@ save_expansion (pfile, list, first, first_param)
 
       /* Copy the token.  */
       *dest = *token;
-      if (token_spellings[token->type].type > SPELL_NONE)
+      if (token_spellings[token->type].type == SPELL_STRING)
 	{
-	  memcpy (buf, token->val.name.text, token->val.name.len);
-	  dest->val.name.text = buf;
-	  buf += dest->val.name.len;
+	  memcpy (buf, token->val.str.text, token->val.str.len);
+	  dest->val.str.text = buf;
+	  buf += dest->val.str.len;
 	}
       dest++;
     }
@@ -664,9 +654,9 @@ dump_funlike_macro (pfile, node)
 	CPP_PUTS(pfile, ", ", 2);
       else if (list->flags & VAR_ARGS)
 	{
-	  if (!ustrcmp (param, var_args_str))
-	    pfile->limit -= sizeof (var_args_str) - 1;
-	  CPP_PUTS (pfile, "...", 3);
+	  if (!ustrcmp (param, U"__VA_ARGS__"))
+	    pfile->limit -= sizeof (U"__VA_ARGS__") - 1;
+	  CPP_PUTS_Q (pfile, "...", 3);
 	}
       param += len + 1;
     }
