@@ -35,7 +35,7 @@ enum tree_code {
 #include "tree.def"
 
   LAST_AND_UNUSED_TREE_CODE	/* A convenient way to get a value for
-				   NUM_TREE_CODE.  */
+				   NUM_TREE_CODES.  */
 };
 
 #undef DEFTREECODE
