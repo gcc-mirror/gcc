@@ -1,3 +1,9 @@
+2004-06-17  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-alias-ander.h: Add standard top-of-file comment.
+	* tree-alias-common.h: Likewise.
+	* tree-alias-type.h: Likewise.
+
 2004-06-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (compute_avail): Value number uses as well.
