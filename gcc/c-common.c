@@ -5436,4 +5436,69 @@ c_warn_unused_result (tree *top_p)
     }
 }
 
+/* Build the result of __builtin_offsetof.  EXPR is a nested sequence of
+   component references, with an INDIRECT_REF at the bottom; much like
+   the traditional rendering of offsetof as a macro.  Returns the folded
+   and properly cast result.  */
+
+static tree
+fold_offsetof_1 (tree expr)
+{
+  enum tree_code code = PLUS_EXPR;
+  tree base, off, t;
+
+  switch (TREE_CODE (expr))
+    {
+    case ERROR_MARK:
+      return expr;
+
+    case INDIRECT_REF:
+      return size_zero_node;
+
+    case COMPONENT_REF:
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
+      if (base == error_mark_node)
+	return base;
+
+      t = TREE_OPERAND (expr, 1);
+      if (DECL_C_BIT_FIELD (t))
+	{
+	  error ("attempt to take address of bit-field structure "
+		 "member `%s'", IDENTIFIER_POINTER (DECL_NAME (t)));
+	  return error_mark_node;
+	}
+      off = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (t),
+			size_int (tree_low_cst (DECL_FIELD_BIT_OFFSET (t), 1)
+				  / BITS_PER_UNIT));
+      break;
+
+    case ARRAY_REF:
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
+      if (base == error_mark_node)
+	return base;
+
+      t = TREE_OPERAND (expr, 1);
+      if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)
+	{
+	  code = MINUS_EXPR;
+	  t = fold (build1 (NEGATE_EXPR, TREE_TYPE (t), t));
+	}
+      t = convert (sizetype, t);
+      off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
+      break;
+
+    default:
+      abort ();
+    }
+
+  return size_binop (code, base, off);
+}
+
+tree
+fold_offsetof (tree expr)
+{
+  /* Convert back from the internal sizetype to size_t.  */
+  return convert (size_type_node, fold_offsetof_1 (expr));
+}
+
 #include "gt-c-common.h"

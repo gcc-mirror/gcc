@@ -870,6 +870,8 @@ extern void c_warn_unused_result (tree *);
 
 extern void verify_sequence_points (tree);
 
+extern tree fold_offsetof (tree);
+
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, tree *, tree *);
