@@ -1,5 +1,20 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (any_extend): New code macro.
+	(u, su): New code attributes.
+	({,u}mulsidi3, {,u}mulsidi3_32bit_internal, {,u}mulsidi3_32bit_r4000)
+	({u,s}mulsi3_highpart, {u,s}mulsi3_highpart_internal)
+	({u,s}mulsi3_highpart_mulhi_internal, {s,u}muldi3_highpart)
+	(*{s,u}mul_acc_di): Redefine using any_extend.
+	(*{,u}muls_di, *{s,u}msac_di): Likewise.  Change names of patterns
+	to reflect real insn names.
+	(*mulsidi3_64bit, *mulsidi3_64bit_parts): Replace use of match_operator
+	with an any_extend template.
+	({u,s}mulsi3_highpart_neg_mulhi_internal): Redefine using any_extend.
+	Add '*' to name.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (GENERATE_MULT3_SI): Check TARGET_MAD.
 	* config/mips/mips.md (mul[sd]i3, mul[sd]i3_internal)
 	(mul[sd]i3_r4000): Redefine using :GPR.
