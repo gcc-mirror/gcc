@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -10,7 +10,7 @@ package java.awt.geom;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
- * @date Fenruary, 1999.
+ * @date February, 1999.
  */
 
 /* Written using online API docs for JDK 1.2 beta from http://www.javasoft.com.
@@ -36,5 +36,9 @@ public abstract class Dimension2D implements Cloneable
       return super.clone ();
     } 
     catch (CloneNotSupportedException _) {return null;}
+  }
+
+  protected Dimension2D ()
+  {
   }
 }

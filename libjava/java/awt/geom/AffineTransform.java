@@ -20,16 +20,16 @@ import java.io.Serializable;
 
 public class AffineTransform implements Cloneable, Serializable
 {
-  static final int TYPE_IDENTITY = 0;
-  static final int TYPE_FLIP = 64;
-  static final int TYPE_GENERAL_ROTATION = 16;
-  static final int TYPE_GENERAL_SCALE = 4;
-  static final int TYPE_GENERAL_TRANSFORM = 32;
-  static final int TYPE_MASK_ROTATION = 24;
-  static final int TYPE_MASK_SCALE = 6;
-  static final int TYPE_QUADRANT_ROTATION = 8;
-  static final int TYPE_TRANSLATION = 1;
-  static final int TYPE_UNIFORM_SCALE = 2;
+  public static final int TYPE_IDENTITY = 0;
+  public static final int TYPE_FLIP = 64;
+  public static final int TYPE_GENERAL_ROTATION = 16;
+  public static final int TYPE_GENERAL_SCALE = 4;
+  public static final int TYPE_GENERAL_TRANSFORM = 32;
+  public static final int TYPE_MASK_ROTATION = 24;
+  public static final int TYPE_MASK_SCALE = 6;
+  public static final int TYPE_QUADRANT_ROTATION = 8;
+  public static final int TYPE_TRANSLATION = 1;
+  public static final int TYPE_UNIFORM_SCALE = 2;
 
   public AffineTransform ()
   {
@@ -300,7 +300,7 @@ public class AffineTransform implements Cloneable, Serializable
     this.type = 0;		// FIXME
   }
 
-  public void concatentate (AffineTransform tx)
+  public void concatenate (AffineTransform tx)
   {
     double n00 = m00 * tx.m00 + m01 * tx.m10;
     double n01 = m00 * tx.m01 + m01 * tx.m11;

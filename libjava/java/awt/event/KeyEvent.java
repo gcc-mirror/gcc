@@ -13,7 +13,7 @@ import java.awt.*;
 
 public class KeyEvent extends InputEvent
 {
-  public static char CHAR_UNDEFINED = 0;;
+  public static final char CHAR_UNDEFINED = 0;;
   public static final int KEY_FIRST = 400;
   public static final int KEY_LAST = 402;
   public static final int KEY_PRESSED = 401;

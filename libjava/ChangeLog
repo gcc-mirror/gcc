@@ -1,5 +1,16 @@
 2000-12-03  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/geom/Point2D.java: Added protected constructor.
+	(equals): New method.
+	(Float.setLocation(float,float)): New method.
+	* java/awt/geom/Dimension2D.java: Added protected constructor.
+	* java/awt/geom/AffineTransform.java: Made all constants public.
+	(concatenate): Fixed typo in name.
+	* java/awt/event/WindowAdapter.java: Class now abstract.
+	* java/awt/event/KeyEvent.java (CHAR_UNDEFINED): Now final.
+	* java/awt/event/FocusEvent.java: Extend ComponentEvent, not
+	AWTEvent.
+
 	* java/awt/AWTError.java: Extend Error, not
 	IllegalStateException.
 

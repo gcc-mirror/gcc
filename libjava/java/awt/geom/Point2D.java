@@ -26,6 +26,10 @@ public abstract class Point2D implements Cloneable
 
   public abstract void setLocation (double x, double y);
 
+  protected Point2D ()
+  {
+  }
+
   public void setLocation (Point2D pt)  { setLocation(pt.getX(), pt.getY()); }
 
   static public double distanceSq (double X1, double Y1, double X2, double Y2)
@@ -69,6 +73,14 @@ public abstract class Point2D implements Cloneable
       return super.clone ();
     } 
     catch (CloneNotSupportedException _) {return null;}
+  }
+
+  public boolean equals (Object o)
+  {
+    if (! (o instanceof Point2D))
+      return false;
+    Point2D p = (Point2D) o;
+    return getX () == p.getX () && getY () == p.getY ();
   }
 
   public static class Double extends Point2D
@@ -141,6 +153,12 @@ public abstract class Point2D implements Cloneable
     {
       this.x = (float) x;
       this.y = (float) y;
+    }
+
+    public void setLocation (float x, float y)
+    {
+      this.x = x;
+      this.y = y;
     }
 
     public String toString ()
