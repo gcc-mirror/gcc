@@ -16,10 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.1 1991/10/24 00:45:39 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.2 1991/11/07 22:30:54 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/10/24 00:45:39 $
+  $Date: 1991/11/07 22:30:54 $
   $Log: hash.c,v $
+ * Revision 0.2  1991/11/07  22:30:54  dennisg
+ * added copyleft
+ *
  * Revision 0.1  1991/10/24  00:45:39  dennisg
  * Initial check in.  Preliminary development stage.
  *
@@ -33,18 +36,27 @@
 #include  <libc.h>
 #include  <math.h>
 
+																								/* These two macros determine
+																									when a hash table is full and
+																									by how much it should be 
+																									expanded respectively.
+																									
+																									These equations are 
+																									percentages. */
+#define	FULLNESS		( 100 / 75 )
+#define	EXPANSION		( 135 / 100 )
 
                                                 /* Local forward decl. */
   u_int hashValue( Cache_t, void* );
 
 
-Cache_t hash_new( u_int numberOfBuckets ) {
+Cache_t hash_new( u_int sizeOfHash ) {
 
   Cache_t retCache;
   int     i;
 
 
-  assert( numberOfBuckets );
+  assert( sizeOfHash );
 
                                                 /* Allocate the cache 
                                                   structure.  calloc() insures
@@ -57,16 +69,16 @@ Cache_t hash_new( u_int numberOfBuckets ) {
                                                   buckets for the cache.  
                                                   calloc() initializes all of 
                                                   the pointers to NULL. */
-  retCache->theNodeTable = calloc( numberOfBuckets, sizeof( CacheNode_t ));
+  retCache->theNodeTable = calloc( sizeOfHash, sizeof( CacheNode_t ));
   assert( retCache->theNodeTable );
   
-  retCache->numberOfBuckets = numberOfBuckets;
+  retCache->sizeOfHash = sizeOfHash;
 
                                                 /* Calculate the number of 
                                                   bits required to represent 
                                                   the hash mask. */
   retCache->numberOfMaskBits = 
-    ceil( log( retCache->numberOfBuckets ) / log( 2 ));
+    ceil( log( retCache->sizeOfHash ) / log( 2 ));
 
                                                 /* Form a bit mask for the 
                                                   hash. */
@@ -97,9 +109,9 @@ void hash_delete( Cache_t theCache ) {
 }
 
 
-void hash_add( Cache_t theCache, void* aKey, void* aValue ) {
+void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
-  u_int       indx = hashValue( theCache, aKey );
+  u_int       indx = hashValue( *theCache, aKey );
   CacheNode_t aCacheNode = calloc( 1, sizeof( CacheNode ));
 
 
@@ -108,14 +120,14 @@ void hash_add( Cache_t theCache, void* aKey, void* aValue ) {
                                                 /* Initialize the new node. */
   aCacheNode->theKey    = aKey;
   aCacheNode->theValue  = aValue;
-  aCacheNode->nextNode  = ( *theCache->theNodeTable )[ indx ];
+  aCacheNode->nextNode  = ( *( **theCache ).theNodeTable )[ indx ];
   
                                                 /* Debugging.
                                                 
                                                   Check the list for another 
                                                   key. */
 #ifdef DEBUG
-    { CacheNode_t checkHashNode = ( *theCache->theNodeTable )[ indx ];
+    { CacheNode_t checkHashNode = ( *( **theCache ).theNodeTable )[ indx ];
     
       while( checkHashNode ) {
     
@@ -123,12 +135,46 @@ void hash_add( Cache_t theCache, void* aKey, void* aValue ) {
         checkHashNode = checkHashNode->nextNode;
       }
     }
+#endif
 
                                                 /* Install the node as the
                                                   first element on the list. */
-  ( *theCache->theNodeTable )[ indx ] = aCacheNode;
+  ( *( **theCache ).theNodeTable )[ indx ] = aCacheNode;
 
-#endif
+																								/* Bump the number of entries
+																									in the cache. */
+	++( **theCache ).entriesInHash;
+	
+																								/* Check the hash table's
+																									fullness.   We're going
+																									to expand if it is above
+																									the fullness level. */
+	if(( **theCache ).entriesInHash * FULLNESS ) {
+																								/* The hash table has reached
+																									its fullness level.  Time to
+																									expand it. 
+																									
+																									I'm using a slow method 
+																									here but is built on other
+																									primitive functions thereby
+																									increasing its 
+																									correctness. */
+		Cache_t			newCache = hash_new(( **theCache ).sizeOfHash * EXPANSION );
+		CacheNode_t	aNode = NULL;
+		
+																								/* Copy the nodes from the
+																									first hash table to the
+																									new one. */
+		while( aNode = hash_next( *theCache, aNode ))
+			hash_add( &newCache, aNode->theKey, aNode->theValue );
+
+																								/* Trash the old cache. */
+		hash_delete( *theCache );
+		
+																								/* Return a pointer to the new
+																									hash table. */
+		*theCache = newCache;
+	}
 }
 
 
@@ -165,6 +211,10 @@ void hash_remove( Cache_t theCache, void* aKey ) {
     } while( !removed && aCacheNode );
     assert( removed );
   }
+	
+																								/* Decrement the number of
+																									entries in the hash table. */
+	--theCache->entriesInHash;
 }
 
 
@@ -220,13 +270,13 @@ CacheNode_t hash_next( Cache_t theCache, CacheNode_t aCacheNode ) {
                                                 /* If the list isn't exhausted 
                                                   then search the buckets for 
                                                   other nodes. */
-  if( theCache->lastBucket < theCache->numberOfBuckets ) {
+  if( theCache->lastBucket < theCache->sizeOfHash ) {
                                                 /*  Scan the remainder of the 
                                                   buckets looking for an entry
                                                   at the head of the list.  
                                                   Return the first item 
                                                   found. */
-    while( theCache->lastBucket < theCache->numberOfBuckets )
+    while( theCache->lastBucket < theCache->sizeOfHash )
       if(( *theCache->theNodeTable )[ theCache->lastBucket ])
         return ( *theCache->theNodeTable )[ theCache->lastBucket ];
       else
@@ -250,6 +300,6 @@ u_int hashValue( Cache_t theCache, void* aKey ) {
   for( i = 0; i < ( sizeof( aKey ) * 8 ); i += theCache->numberOfMaskBits )
     hash ^= (( u_int )aKey ) >> i ;
 
-  return ( hash & theCache->mask ) % theCache->numberOfBuckets;
+  return ( hash & theCache->mask ) % theCache->sizeOfHash;
 }
 

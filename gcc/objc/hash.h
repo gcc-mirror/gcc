@@ -21,10 +21,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.1 1991/10/24 00:45:39 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.2 1991/11/07 22:30:54 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/10/24 00:45:39 $
+  $Date: 1991/11/07 22:30:54 $
   $Log: hash.h,v $
+ * Revision 0.2  1991/11/07  22:30:54  dennisg
+ * added copyleft
+ *
  * Revision 0.1  1991/10/24  00:45:39  dennisg
  * Initial check in.  Preliminary development stage.
  *
@@ -79,16 +82,25 @@ typedef struct cache {
    */
   CacheNode_t (* theNodeTable )[];                /* Pointer to an array of
                                                     hash nodes. */
-  u_int       numberOfBuckets,                    /* Number of buckets 
+	/*
+	 * Variables used to track the size of the hash
+	 *	table so to determine when to resize it.
+	 */
+  u_int       sizeOfHash,                         /* Number of buckets 
                                                     allocated for the hash
                                                     table (number of array
                                                     entries allocated for
-                                                    "theCache"). */
-              mask,                               /* Mask used when computing
-                                                    a hash value.  The number
-                                                    of bits set in the mask
-                                                    is contained in the next
-                                                    member variable. */
+                                                    "theNodeTable"). */
+							entriesInHash;											/* Current number of entries
+																										in ther hash table. */
+	/*
+	 * Variables used to compute hash
+	 *	values.
+	 */
+  u_int       mask,                               /* The number of bits set 
+																										in the mask that is
+																										contained in the next 
+																										member variable. */
               numberOfMaskBits;                   /* Number of bits used for
                                                     the mask.  Useful for 
                                                     efficient hash value
@@ -110,16 +122,20 @@ typedef struct cache {
                                                   size taken as a parameter. 
                                                     A value of 0 is not 
                                                   allowed. */ 
-Cache_t hash_new( u_int numberOfBuckets );
+Cache_t hash_new( u_int sizeOfHash );
                                                 /* Deallocate all of the
                                                   hash nodes and the cache
                                                   itself. */
 void hash_delete( Cache_t theCache );
                                                 /* Add the key/value pair
-                                                  to the hash table.  assert()
-                                                  if the key is already in
-                                                  the hash. */
-void hash_add( Cache_t theCache, void* aKey, void* aValue );
+                                                  to the hash table.  If the
+																									hash table reaches a 
+																									level of fullnes then
+																									it will be resized. 
+																									 
+																									assert() if the key is 
+																									already in the hash. */
+void hash_add( Cache_t* theCache, void* aKey, void* aValue );
                                                 /* Remove the key/value pair
                                                   from the hash table.  
                                                   assert() if the key isn't 
