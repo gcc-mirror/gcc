@@ -1,3 +1,7 @@
+1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-lex.c (yylex): We can have a number with no digits.
+
 Fri Aug  6 16:53:55 EDT 1999  John Wehle  (john@feith.com)
 
 	* jump.c (delete_prior_computation): New function, broken

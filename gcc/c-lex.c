@@ -1656,8 +1656,9 @@ yylex ()
 	      }
 	  }
 
+	/* This can happen on input like `int i = 0x;' */
 	if (numdigits == 0)
-	  abort ();
+	  error ("numeric constant with no digits");
 
 	if (largest_digit >= base)
 	  error ("numeric constant contains digits beyond the radix");
