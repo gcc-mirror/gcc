@@ -235,8 +235,7 @@ typedef struct
     } fraction;
 } fp_number_type;
 
-typedef
-union
+typedef union
 {
   FLO_type value;
 #ifdef _DEBUG_BITFLOAT
@@ -245,18 +244,17 @@ union
   struct
     {
 #ifndef FLOAT_BIT_ORDER_MISMATCH
-      unsigned int sign:1;
-      unsigned int exp:EXPBITS;
-      fractype fraction:FRACBITS;
+      unsigned int sign:1 __attribute__ ((packed));
+      unsigned int exp:EXPBITS __attribute__ ((packed));
+      fractype fraction:FRACBITS __attribute__ ((packed));
 #else
-      fractype fraction:FRACBITS;
-      unsigned int exp:EXPBITS;
-      unsigned int sign:1;
+      fractype fraction:FRACBITS __attribute__ ((packed));
+      unsigned int exp:EXPBITS __attribute__ ((packed));
+      unsigned int sign:1 __attribute__ ((packed));
 #endif
     }
   bits;
 }
-
 FLO_union_type;
 
 
