@@ -1,5 +1,8 @@
 1998-10-03  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck.c (build_conditional_expr): Only fold if ifexp is an
+	INTEGER_CST.
+
 	* decl2.c (finish_vtable_vardecl): Check DECL_INTERFACE_KNOWN
 	instead of linkage.
 
