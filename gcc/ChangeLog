@@ -1,5 +1,12 @@
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/alpha/netbsd.h (SUBTARGET_EXTRA_SPECS): Add
+	netbsd_link_spec and netbsd_entry_point.
+	(LINK_SPEC): Use %(netbsd_link_spec).
+	(NETBSD_ENTRY_POINT): Define.
+
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/netbsd-elf.h (LINK_SPEC): Rename to...
 	(NETBSD_LINK_SPEC_ELF): ...this.  Use %(netbsd_entry_point)
 	to specify program entry point.
