@@ -896,14 +896,12 @@ read_graph_file (void)
 	}
       gcov_sync (base, length);
       if (gcov_is_error ())
-	break;
-    }
-  if (!gcov_is_eof ())
-    {
-    corrupt:;
-      fnotice (stderr, "%s:corrupted\n", bbg_file_name);
-      gcov_close ();
-      return 1;
+	{
+	corrupt:;
+	  fnotice (stderr, "%s:corrupted\n", bbg_file_name);
+	  gcov_close ();
+	  return 1;
+	}
     }
   gcov_close ();
 
@@ -1055,14 +1053,11 @@ read_count_file (void)
 	}
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))
-	break;
-    }
-
-  if (!gcov_is_eof ())
-    {
-      fnotice (stderr, error < 0 ? "%s:overflowed\n" : "%s:corrupted\n",
-	       da_file_name);
-      goto cleanup;
+	{
+	  fnotice (stderr, error < 0 ? "%s:overflowed\n" : "%s:corrupted\n",
+		   da_file_name);
+	  goto cleanup;
+	}
     }
 
   gcov_close ();

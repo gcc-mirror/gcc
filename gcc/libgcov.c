@@ -164,6 +164,7 @@ gcov_exit (void)
       int error = 0;
       gcov_unsigned_t tag, length;
       gcov_position_t summary_pos = 0;
+      gcov_position_t eof_pos = 0;
 
       memset (&this_object, 0, sizeof (this_object));
       memset (&object, 0, sizeof (object));
@@ -218,9 +219,7 @@ gcov_exit (void)
 	    {
 	      fprintf (stderr, "profiling:%s:Not a gcov data file\n",
 		       gi_ptr->filename);
-	    read_fatal:;
-	      gcov_close ();
-	      continue;
+	      goto read_fatal;
 	    }
 	  length = gcov_read_unsigned ();
 	  if (!gcov_version (gi_ptr, length))
@@ -228,12 +227,8 @@ gcov_exit (void)
 
 	  length = gcov_read_unsigned ();
 	  if (length != gi_ptr->stamp)
-	    {
-	      /* Read from a different compilation. Overwrite the
-		 file.  */
-	      gcov_truncate ();
-	      goto rewrite;
-	    }
+	    /* Read from a different compilation. Overwrite the file.  */
+	    goto rewrite;
 	  
 	  /* Merge execution counts for each function.  */
 	  for (f_ix = 0; f_ix < gi_ptr->n_functions; f_ix++)
@@ -284,12 +279,13 @@ gcov_exit (void)
 	  /* Check program & object summary */
 	  while (1)
 	    {
-	      gcov_position_t base = gcov_position ();
 	      int is_program;
 	      
+	      eof_pos = gcov_position ();
 	      tag = gcov_read_unsigned ();
 	      if (!tag)
 		break;
+
 	      length = gcov_read_unsigned ();
 	      is_program = tag == GCOV_TAG_PROGRAM_SUMMARY;
 	      if (length != GCOV_TAG_SUMMARY_LENGTH
@@ -300,19 +296,21 @@ gcov_exit (void)
 		goto read_error;
 	      if (is_program && program.checksum == gcov_crc32)
 		{
-		  summary_pos = base;
+		  summary_pos = eof_pos;
 		  goto rewrite;
 		}
 	    }
 	}
+      goto rewrite;
       
-      if (!gcov_is_eof ())
- 	{
- 	read_error:;
- 	  fprintf (stderr, error < 0 ? "profiling:%s:Overflow merging\n"
- 		   : "profiling:%s:Error merging\n", gi_ptr->filename);
- 	  goto read_fatal;
- 	}
+    read_error:;
+      fprintf (stderr, error < 0 ? "profiling:%s:Overflow merging\n"
+	       : "profiling:%s:Error merging\n", gi_ptr->filename);
+	      
+    read_fatal:;
+      gcov_close ();
+      continue;
+
     rewrite:;
       gcov_rewrite ();
       if (!summary_pos)
@@ -414,8 +412,11 @@ gcov_exit (void)
       gcov_write_summary (GCOV_TAG_OBJECT_SUMMARY, &object);
 
       /* Generate whole program statistics.  */
-      gcov_seek (summary_pos);
+      if (eof_pos)
+	gcov_seek (eof_pos);
       gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &program);
+      if (!summary_pos)
+	gcov_write_unsigned (0);
       if ((error = gcov_close ()))
 	  fprintf (stderr, error  < 0 ?
 		   "profiling:%s:Overflow writing\n" :
