@@ -70,6 +70,7 @@ enum alpha_fp_trap_mode alpha_fptm;
 /* Strings decoded into the above options.  */
 
 const char *alpha_cpu_string;	/* -mcpu= */
+const char *alpha_tune_string;	/* -mtune= */
 const char *alpha_tp_string;	/* -mtrap-precision=[p|s|i] */
 const char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
 const char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
@@ -146,6 +147,31 @@ static rtx alpha_emit_xfloating_compare
 void
 override_options ()
 {
+  int i;
+  static struct cpu_table {
+    const char *name;
+    enum processor_type processor;
+    int flags;
+  } cpu_table[] = {
+#define EV5_MASK (MASK_CPU_EV5)
+#define EV6_MASK (MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX)
+    { "ev4",	PROCESSOR_EV4, 0 },
+    { "ev45",	PROCESSOR_EV4, 0 },
+    { "21064",	PROCESSOR_EV4, 0 },
+    { "ev5",	PROCESSOR_EV5, EV5_MASK },
+    { "21164",	PROCESSOR_EV5, EV5_MASK },
+    { "ev56",	PROCESSOR_EV5, EV5_MASK|MASK_BWX },
+    { "21164a",	PROCESSOR_EV5, EV5_MASK|MASK_BWX },
+    { "pca56",	PROCESSOR_EV5, EV5_MASK|MASK_BWX|MASK_MAX },
+    { "21164PC",PROCESSOR_EV5, EV5_MASK|MASK_BWX|MASK_MAX },
+    { "21164pc",PROCESSOR_EV5, EV5_MASK|MASK_BWX|MASK_MAX },
+    { "ev6",	PROCESSOR_EV6, EV6_MASK },
+    { "21264",	PROCESSOR_EV6, EV6_MASK },
+    { "ev67",	PROCESSOR_EV6, EV6_MASK|MASK_CIX },
+    { "21264a",	PROCESSOR_EV6, EV6_MASK|MASK_CIX },
+    { 0, 0, 0 }
+  };
+                  
   alpha_tp = ALPHA_TP_PROG;
   alpha_fprm = ALPHA_FPRM_NORM;
   alpha_fptm = ALPHA_FPTM_N;
@@ -209,61 +235,41 @@ override_options ()
 
   if (alpha_cpu_string)
     {
-      if (! strcmp (alpha_cpu_string, "ev4")
-	  || ! strcmp (alpha_cpu_string, "ev45")
-	  || ! strcmp (alpha_cpu_string, "21064"))
-	{
-	  alpha_cpu = PROCESSOR_EV4;
-	  target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX);
-	}
-      else if (! strcmp (alpha_cpu_string, "ev5")
-	       || ! strcmp (alpha_cpu_string, "21164"))
-	{
-	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX);
-	}
-      else if (! strcmp (alpha_cpu_string, "ev56")
-	       || ! strcmp (alpha_cpu_string, "21164a"))
-	{
-	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags |= MASK_BWX;
-	  target_flags &= ~ (MASK_MAX | MASK_FIX | MASK_CIX);
-	}
-      else if (! strcmp (alpha_cpu_string, "pca56")
-	       || ! strcmp (alpha_cpu_string, "21164PC")
-	       || ! strcmp (alpha_cpu_string, "21164pc"))
-	{
-	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags |= MASK_BWX | MASK_MAX;
-	  target_flags &= ~ (MASK_FIX | MASK_CIX);
-	}
-      else if (! strcmp (alpha_cpu_string, "ev6")
-	       || ! strcmp (alpha_cpu_string, "21264"))
-	{
-	  alpha_cpu = PROCESSOR_EV6;
-	  target_flags |= MASK_BWX | MASK_MAX | MASK_FIX;
-	  target_flags &= ~ (MASK_CIX);
-	}
-      else if (! strcmp (alpha_cpu_string, "ev67")
-	       || ! strcmp (alpha_cpu_string, "21264a"))
-	{
-	  alpha_cpu = PROCESSOR_EV6;
-	  target_flags |= MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX;
-	}
-      else
+      for (i = 0; cpu_table [i].name; i++)
+	if (! strcmp (alpha_cpu_string, cpu_table [i].name))
+	  {
+	    alpha_cpu = cpu_table [i].processor;
+	    target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX
+			       | MASK_CPU_EV5 | MASK_CPU_EV6);
+	    target_flags |= cpu_table [i].flags;
+	    break;
+	  }
+      if (! cpu_table [i].name)
 	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
+    }
+
+  if (alpha_tune_string)
+    {
+      for (i = 0; cpu_table [i].name; i++)
+	if (! strcmp (alpha_tune_string, cpu_table [i].name))
+	  {
+	    alpha_cpu = cpu_table [i].processor;
+	    break;
+	  }
+      if (! cpu_table [i].name)
+	error ("bad value `%s' for -mcpu switch", alpha_tune_string);
     }
 
   /* Do some sanity checks on the above options. */
 
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
-      && alpha_tp != ALPHA_TP_INSN && alpha_cpu != PROCESSOR_EV6)
+      && alpha_tp != ALPHA_TP_INSN && ! TARGET_CPU_EV6)
     {
       warning ("fp software completion requires -mtrap-precision=i");
       alpha_tp = ALPHA_TP_INSN;
     }
 
-  if (alpha_cpu == PROCESSOR_EV6)
+  if (TARGET_CPU_EV6)
     {
       /* Except for EV6 pass 1 (not released), we always have precise
 	 arithmetic traps.  Which means we can do software completion
