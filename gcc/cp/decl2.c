@@ -4349,14 +4349,18 @@ ambiguous_decl (name, old, new, flags)
   return old;
 }
 
-/* Add the bindings of name in used namespaces to val.
-   The using list is defined by usings, and the lookup goes to scope.
+/* Subroutine of unualified_namespace_lookup:
+   Add the bindings of NAME in used namespaces to VAL.
+   We are currently looking for names in namespace SCOPE, so we
+   look through USINGS for using-directives of namespaces
+   which have SCOPE as a common ancestor with the current scope.
    Returns zero on errors. */
 
 int
-lookup_using_namespace (name, val, usings, scope, flags)
+lookup_using_namespace (name, val, usings, scope, flags, spacesp)
      tree name, val, usings, scope;
      int flags;
+     tree *spacesp;
 {
   tree iter;
   tree val1;
@@ -4365,6 +4369,9 @@ lookup_using_namespace (name, val, usings, scope, flags)
   for (iter = usings; iter; iter = TREE_CHAIN (iter))
     if (TREE_VALUE (iter) == scope)
       {
+	if (spacesp)
+	  *spacesp = scratch_tree_cons (TREE_PURPOSE (iter), NULL_TREE,
+					*spacesp);
 	val1 = binding_for_name (name, TREE_PURPOSE (iter));
 	/* Resolve ambiguities. */
 	val = ambiguous_decl (name, val, val1, flags);
@@ -4573,28 +4580,32 @@ add_function (k, fn)
      struct arg_lookup *k;
      tree fn;
 {
-  if (ovl_member (fn, k->functions))
-    return 0;
+  /* We used to check here to see if the function was already in the list,
+     but that's O(n^2), which is just too expensive for function lookup.
+     Now we deal with the occasional duplicate in joust.  In doing this, we
+     assume that the number of duplicates will be small compared to the
+     total number of functions being compared, which should usually be the
+     case.  */
+
   /* We must find only functions, or exactly one non-function. */
   if (k->functions && is_overloaded_fn (k->functions)
       && is_overloaded_fn (fn))
     k->functions = build_overload (fn, k->functions);
-  else 
-    if(k->functions)
-      {
-	tree f1 = OVL_CURRENT (k->functions);
-	tree f2 = fn;
-	if (is_overloaded_fn (f1))
-	  {
-	    fn = f1; f1 = f2; f2 = fn;
-	  }
-	cp_error_at ("`%D' is not a function,", f1);
-	cp_error_at ("  conflict with `%D'", f2);
-	cp_error ("  in call to `%D'", k->name);
-	return 1;
-      }
-    else
-      k->functions = fn;
+  else if (k->functions)
+    {
+      tree f1 = OVL_CURRENT (k->functions);
+      tree f2 = fn;
+      if (is_overloaded_fn (f1))
+	{
+	  fn = f1; f1 = f2; f2 = fn;
+	}
+      cp_error_at ("`%D' is not a function,", f1);
+      cp_error_at ("  conflict with `%D'", f2);
+      cp_error ("  in call to `%D'", k->name);
+      return 1;
+    }
+  else
+    k->functions = fn;
   return 0;
 }
 
@@ -4615,7 +4626,7 @@ arg_assoc_namespace (k, scope)
   value = namespace_binding (k->name, scope);
   if (!value)
     return 0;
-  
+
   for (; value; value = OVL_NEXT (value))
     if (add_function (k, OVL_CURRENT (value)))
       return 1;
@@ -4845,11 +4856,18 @@ lookup_arg_dependent (name, fns, args)
      tree args;
 {
   struct arg_lookup k;
+
   k.name = name;
   k.functions = fns;
-  k.namespaces = NULL_TREE;
   k.classes = NULL_TREE;
-  
+
+  /* Note that we've already looked at some namespaces during normal
+     unqualified lookup, unless we found a decl in function scope.  */
+  if (fns && ! TREE_PERMANENT (OVL_CURRENT (fns)))
+    k.namespaces = NULL_TREE;
+  else
+    unqualified_namespace_lookup (name, 0, &k.namespaces);
+
   push_scratch_obstack ();
   arg_assoc_args (&k, args);
   pop_obstacks ();

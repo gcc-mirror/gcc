@@ -1,3 +1,16 @@
+1999-08-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Speed up Koenig lookup.
+	* decl.c (unqualified_namespace_lookup): Nonstatic.  Add spacep parm
+	to return namespaces we've looked at.
+	* decl2.c (lookup_using_namespace): Likewise.
+	(add_function): Don't call ovl_member.
+	(lookup_arg_dependent): Initialize k.namespaces to the list of 
+	namespaces seen in unqualified lookup.
+	* call.c (equal_functions): Move here from tree.c.
+	(joust): Use it to handle duplicate candidates.
+	* tree.c (ovl_member): Use ==.
+
 1999-08-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (DECL_STMT): Make it smaller.
