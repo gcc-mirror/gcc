@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2003 Ada Core Technologies, Inc.         --
+--              Copyright (C) 2001-2004 Ada Core Technologies, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -399,35 +399,32 @@ package GNAT.Sockets is
    No_Socket : constant Socket_Type;
 
    Socket_Error : exception;
-   --  There is only one exception in this package to deal with an
-   --  error during a socket routine. Once raised, its message
-   --  contains a string describing the error code.
+   --  There is only one exception in this package to deal with an error during
+   --  a socket routine. Once raised, its message contains a string describing
+   --  the error code.
 
    function Image (Socket : Socket_Type) return String;
    --  Return a printable string for Socket
 
    function To_C (Socket : Socket_Type) return Integer;
-   --  Return a file descriptor to be used by external subprograms
-   --  especially the C functions that are not yet interfaced in this
-   --  package.
+   --  Return a file descriptor to be used by external subprograms. This is
+   --  useful for C functions that are not yet interfaced in this package.
 
    type Family_Type is (Family_Inet, Family_Inet6);
-   --  Address family (or protocol family) identifies the
-   --  communication domain and groups protocols with similar address
-   --  formats. IPv6 will soon be supported.
+   --  Address family (or protocol family) identifies the communication domain
+   --  and groups protocols with similar address formats. IPv6 will soon be
+   --  supported.
 
    type Mode_Type is (Socket_Stream, Socket_Datagram);
-   --  Stream sockets provide connection-oriented byte
-   --  streams. Datagram sockets support unreliable connectionless
-   --  message based communication.
+   --  Stream sockets provide connection-oriented byte streams. Datagram
+   --  sockets support unreliable connectionless message based communication.
 
    type Shutmode_Type is (Shut_Read, Shut_Write, Shut_Read_Write);
-   --  When a process closes a socket, the policy is to retain any
-   --  data queued until either a delivery or a timeout expiration (in
-   --  this case, the data are discarded). A finer control is
-   --  available through shutdown. With Shut_Read, no more data can be
-   --  received from the socket. With_Write, no more data can be
-   --  transmitted. Neither transmission nor reception can be
+   --  When a process closes a socket, the policy is to retain any data queued
+   --  until either a delivery or a timeout expiration (in this case, the data
+   --  are discarded). A finer control is available through shutdown. With
+   --  Shut_Read, no more data can be received from the socket. With_Write, no
+   --  more data can be transmitted. Neither transmission nor reception can be
    --  performed with Shut_Read_Write.
 
    type Port_Type is new Natural;
@@ -440,8 +437,8 @@ package GNAT.Sockets is
 
    type Inet_Addr_Type (Family : Family_Type := Family_Inet) is private;
    --  An Internet address depends on an address family (IPv4 contains
-   --  4 octets and Ipv6 contains 16 octets). Any_Inet_Address is a
-   --  special value treated like a wildcard enabling all addresses.
+   --  4 octets and Ipv6 contains 16 octets). Any_Inet_Addr is a special
+   --  value treated like a wildcard enabling all addresses.
    --  No_Inet_Addr provides a special value to denote uninitialized
    --  inet addresses.
 
@@ -488,15 +485,13 @@ package GNAT.Sockets is
    --  Return number of addresses in host entry
 
    function Aliases
-     (E    : Host_Entry_Type;
-      N    : Positive := 1)
-      return String;
+     (E : Host_Entry_Type;
+      N : Positive := 1) return String;
    --  Return N'th aliases in host entry. The first index is 1.
 
    function Addresses
-     (E    : Host_Entry_Type;
-      N    : Positive := 1)
-      return Inet_Addr_Type;
+     (E : Host_Entry_Type;
+      N : Positive := 1) return Inet_Addr_Type;
    --  Return N'th addresses in host entry. The first index is 1.
 
    Host_Error : exception;
@@ -506,24 +501,21 @@ package GNAT.Sockets is
 
    function Get_Host_By_Address
      (Address : Inet_Addr_Type;
-      Family  : Family_Type := Family_Inet)
-      return    Host_Entry_Type;
+      Family  : Family_Type := Family_Inet) return Host_Entry_Type;
    --  Return host entry structure for the given inet address
 
    function Get_Host_By_Name
-     (Name : String)
-      return Host_Entry_Type;
+     (Name : String) return Host_Entry_Type;
    --  Return host entry structure for the given host name. Here name
    --  is either a host name, or an IP address.
 
    function Host_Name return String;
    --  Return the name of the current host
 
+   type Service_Entry_Type (Aliases_Length : Natural) is private;
    --  Service entries provide complete information on a given
    --  service: the official name, an array of alternative names or
    --  aliases and the port number.
-
-   type Service_Entry_Type (Aliases_Length : Natural) is private;
 
    function Official_Name (S : Service_Entry_Type) return String;
    --  Return official name in service entry
@@ -538,31 +530,29 @@ package GNAT.Sockets is
    --  Return number of aliases in service entry
 
    function Aliases
-     (S    : Service_Entry_Type;
-      N    : Positive := 1)
-      return String;
+     (S : Service_Entry_Type;
+      N : Positive := 1) return String;
    --  Return N'th aliases in service entry. The first index is 1.
 
    function Get_Service_By_Name
      (Name     : String;
-      Protocol : String)
-      return     Service_Entry_Type;
+      Protocol : String) return Service_Entry_Type;
    --  Return service entry structure for the given service name
 
    function Get_Service_By_Port
      (Port     : Port_Type;
-      Protocol : String)
-      return     Service_Entry_Type;
+      Protocol : String) return Service_Entry_Type;
    --  Return service entry structure for the given service port number
 
    Service_Error : exception;
+   --  Comment required ???
 
    --  Errors are described by an enumeration type. There is only one
    --  exception Socket_Error in this package to deal with an error
    --  during a socket routine. Once raised, its message contains the
    --  error code between brackets and a string describing the error code.
 
-   --  The name of the enumeration constant documents the error condition.
+   --  The name of the enumeration constant documents the error condition
 
    type Error_Type is
      (Success,
@@ -665,8 +655,8 @@ package GNAT.Sockets is
 
          when Add_Membership  |
               Drop_Membership =>
-            Multiaddr : Inet_Addr_Type;
-            Interface : Inet_Addr_Type;
+            Multicast_Address : Inet_Addr_Type;
+            Local_Interface   : Inet_Addr_Type;
 
          when Multicast_TTL   =>
             Time_To_Live : Natural;
@@ -786,8 +776,7 @@ package GNAT.Sockets is
    function Get_Socket_Option
      (Socket : Socket_Type;
       Level  : Level_Type := Socket_Level;
-      Name   : Option_Name)
-      return   Option_Type;
+      Name   : Option_Name) return Option_Type;
    --  Get the options associated with a socket. Raises Socket_Error
    --  on error.
 
@@ -830,8 +819,7 @@ package GNAT.Sockets is
    --  elements Vector. Count is set to the count of received stream elements.
 
    function Resolve_Exception
-     (Occurrence : Ada.Exceptions.Exception_Occurrence)
-      return       Error_Type;
+     (Occurrence : Ada.Exceptions.Exception_Occurrence) return Error_Type;
    --  When Socket_Error or Host_Error are raised, the exception
    --  message contains the error code between brackets and a string
    --  describing the error code. Resolve_Error extracts the error
@@ -884,24 +872,20 @@ package GNAT.Sockets is
    --  Same interface as Ada.Streams.Stream_IO
 
    function Stream
-     (Socket : Socket_Type)
-      return   Stream_Access;
+     (Socket : Socket_Type) return Stream_Access;
    --  Create a stream associated with a stream-based socket that is
    --  already connected.
 
    function Stream
      (Socket  : Socket_Type;
-      Send_To : Sock_Addr_Type)
-      return    Stream_Access;
+      Send_To : Sock_Addr_Type) return Stream_Access;
    --  Create a stream associated with a datagram-based socket that is
    --  already bound. Send_To is the socket address to which messages are
    --  being sent.
 
    function Get_Address
-     (Stream : Stream_Access)
-      return   Sock_Addr_Type;
-   --  Return the socket address from which the last message was
-   --  received.
+     (Stream : Stream_Access) return Sock_Addr_Type;
+   --  Return the socket address from which the last message was received.
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Ada.Streams.Root_Stream_Type'Class, Stream_Access);
@@ -930,17 +914,15 @@ package GNAT.Sockets is
    --  No_Socket when the set is empty.
 
    function Is_Empty
-     (Item  : Socket_Set_Type)
-      return  Boolean;
-   --  Return True if Item is empty
+     (Item : Socket_Set_Type) return Boolean;
+   --  Return True iff Item is empty
 
    function Is_Set
      (Item   : Socket_Set_Type;
-      Socket : Socket_Type)
-      return   Boolean;
-   --  Return True if Socket is present in Item
+      Socket : Socket_Type) return Boolean;
+   --  Return True iff Socket is present in Item
 
-   procedure Set   (Item : in out Socket_Set_Type; Socket : Socket_Type);
+   procedure Set (Item : in out Socket_Set_Type; Socket : Socket_Type);
    --  Insert Socket into Item
 
    --  C select() waits for a number of file descriptors to change

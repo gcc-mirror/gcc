@@ -137,6 +137,8 @@ package GNAT.Sockets.Constants is
    MSG_PEEK           : constant :=            2; --  Peek at incoming data
    MSG_EOR            : constant :=            8; --  Send end of record
    MSG_WAITALL        : constant :=           64; --  Wait for full reception
+   MSG_NOSIGNAL       : constant :=           -1; --  No SIGPIPE on send
+   MSG_Forced_Flags   : constant :=            0;
 
    --------------------
    -- Socket options --

@@ -1,3 +1,20 @@
+2004-10-04  Thomas Quinot  <quinot@act-europe.fr>
+
+	* g-socket.ads, g-socket.adb, g-socthi.adb, socket.c,
+	g-soccon-aix.ads, g-soccon-irix.ads, g-soccon-hpux.ads, 
+	g-soccon-interix.ads, g-soccon-solaris.ads, g-soccon-vms.adb, 
+	g-soccon-mingw.ads, g-soccon-vxworks.ads, g-soccon-freebsd.ads, 
+	g-soccon.ads, g-soccon-unixware.ads, g-soccon-tru64.ads:  Add new
+	sockets constant MSG_NOSIGNAL (Linux-specific).
+	Add new sockets constant MSG_Forced_Flags, list of flags to be set on
+	all Send operations.
+	For Linux, set MSG_NOSIGNAL on all send operations to prevent them
+	from trigerring SIGPIPE.
+	Rename components to avoid clash with Ada 2005 possible reserved
+	word 'interface'.
+	(Check_Selector): When the select system call returns with an error
+	condition, propagate Socket_Error to the caller.
+
 2004-10-01  Jan Hubicka  <jh@suse.cz>
 
 	* misc.c (gnat_expand_body): Update call of tree_rest_of_compilation.

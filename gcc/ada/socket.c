@@ -64,8 +64,13 @@
 #include "system.h"
 #endif
 
+#if !(defined (VMS) || defined (__MINGW32__))
+# include <sys/socket.h>
+#endif
+
 #include "raise.h"
 
+extern void __gnat_disable_sigpipe (int fd);
 extern void __gnat_free_socket_set (fd_set *);
 extern void __gnat_last_socket_in_set (fd_set *, int *);
 extern void __gnat_get_socket_from_set (fd_set *, int *, int *);
@@ -74,6 +79,16 @@ extern int __gnat_is_socket_in_set (fd_set *, int);
 extern fd_set *__gnat_new_socket_set (fd_set *);
 extern void __gnat_remove_socket_from_set (fd_set *, int);
 
+/* Disable the sending of SIGPIPE for writes on a broken stream */
+void
+__gnat_disable_sigpipe (int fd)
+{
+#ifdef SO_NOSIGPIPE
+  int val = 1;
+  (void) setsockopt (fd, SOL_SOCKET, SO_NOSIGPIPE, &val, sizeof val);
+#endif
+}
+
 /* Free socket set. */
 
 void
