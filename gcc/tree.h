@@ -1229,9 +1229,17 @@ struct tree_vec GTY(())
 
 /* CASE_LABEL_EXPR accessors. These give access to the high and low values
    of a case label, respectively.  */
-#define CASE_LOW(NODE)          TREE_OPERAND ((NODE), 0)
-#define CASE_HIGH(NODE)         TREE_OPERAND ((NODE), 1)
-#define CASE_LABEL(NODE)        TREE_OPERAND ((NODE), 2)
+#define CASE_LOW(NODE)          	TREE_OPERAND ((NODE), 0)
+#define CASE_HIGH(NODE)         	TREE_OPERAND ((NODE), 1)
+
+/* Operand 2 has two uses, it may either be a LABEL_DECL node or a
+   another CASE_LABEL_EXPR node.  This accessor gets direct access
+   to that operand.  Use it when you want to assign a value to
+   operand 2 or when you want to conditionalalize actions based on
+   whether operand 2 is a LABEL_DELC or CASE_LABEL_EXPR.  */
+#define CASE_LEADER_OR_LABEL(NODE)	TREE_OPERAND ((NODE), 2)
+
+#define CASE_LABEL(NODE) get_case_label (NODE)
 
 /* The operands of a BIND_EXPR.  */
 #define BIND_EXPR_VARS(NODE) (TREE_OPERAND (BIND_EXPR_CHECK (NODE), 0))
@@ -3455,6 +3463,7 @@ extern void change_decl_assembler_name (tree, tree);
 extern int type_num_arguments (tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
+extern tree get_case_label (tree);
 
 
 /* In stmt.c */

@@ -6061,4 +6061,17 @@ signed_type_for (tree type)
   return lang_hooks.types.signed_type (type);
 }
 
+/* Return the LABEL_DECL associated with T, which must be a 
+   CASE_LABEL_EXPR.  This will walk through any CASE_LABEL_EXPRs
+   appearing in operand 2 until it finds a CASE_LABEL_EXPR with
+   a LABEL_DECL in operand 2.  */
+
+tree
+get_case_label (tree t)
+{
+  while (TREE_CODE (CASE_LEADER_OR_LABEL (t)) == CASE_LABEL_EXPR)
+    t = CASE_LEADER_OR_LABEL (t);
+  return CASE_LEADER_OR_LABEL (t);
+}
+
 #include "gt-tree.h"
