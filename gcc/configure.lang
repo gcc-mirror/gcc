@@ -381,7 +381,7 @@ $program_transform_name/" \
 	echo "s|^build_xm_file=.*$|build_xm_file=${build_xm_file_sub}|" >> Makefile.sed
 	echo "s|^lang_specs_files=.*$|lang_specs_files=${lang_specs_files}|" >> Makefile.sed
 	echo "s|^lang_options_files=.*$|lang_options_files=${lang_options_files}|" >> Makefile.sed
-	echo "s|^OBJC_THREAD_FILE=.*$|OBJC_THREAD_FILE=thr-${objc_thread_file}|" >> Makefile.sed
+	echo "s|^GCC_THREAD_FILE=.*$|GCC_THREAD_FILE=${thread_file}|" >> Makefile.sed
 	echo "s|^prefix[ 	]*=.*|prefix = $prefix|" >> Makefile.sed
 	echo "s|^local_prefix[ 	]*=.*|local_prefix = $local_prefix|" >> Makefile.sed
 	echo "s|^exec_prefix[ 	]*=.*|exec_prefix = $exec_prefix|" >> Makefile.sed

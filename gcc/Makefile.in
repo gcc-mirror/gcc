@@ -190,7 +190,7 @@ build_xm_file=@build_xm_file_list@
 host_xm_file=@host_xm_file_list@
 lang_specs_files=@lang_specs_files@
 lang_options_files=@lang_options_files@
-OBJC_THREAD_FILE=thr-@objc_thread_file@
+GCC_THREAD_FILE=@thread_file@
 version=@version@
 mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
