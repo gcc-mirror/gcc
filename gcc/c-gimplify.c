@@ -411,10 +411,8 @@ gimplify_for_stmt (tree *stmt_p, tree *pre_p)
   tree stmt = *stmt_p;
 
   if (FOR_INIT_STMT (stmt))
-    {
-      gimplify_stmt (&FOR_INIT_STMT (stmt));
-      append_to_statement_list (FOR_INIT_STMT (stmt), pre_p);
-    }
+    gimplify_and_add (FOR_INIT_STMT (stmt), pre_p);
+
   *stmt_p = gimplify_c_loop (FOR_COND (stmt), FOR_BODY (stmt),
 			     FOR_EXPR (stmt), 1);
 

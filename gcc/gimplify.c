@@ -456,10 +456,9 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
     SET_EXPR_LOCUS (mod, EXPR_LOCUS (val));
   else
     annotate_with_locus (mod, input_location);
-  /* gimplify_modify_expr might want to reduce this further.  */
-  gimplify_stmt (&mod);
-  append_to_statement_list (mod, pre_p);
 
+  /* gimplify_modify_expr might want to reduce this further.  */
+  gimplify_and_add (mod, pre_p);
   return t;
 }
 
@@ -990,8 +989,8 @@ gimplify_return_expr (tree stmt, tree *pre_p)
      Then gimplify the whole thing.  */
   if (result != result_decl)
     TREE_OPERAND (ret_expr, 0) = result;
-  gimplify_stmt (&TREE_OPERAND (stmt, 0));
-  append_to_statement_list (TREE_OPERAND (stmt, 0), pre_p);
+
+  gimplify_and_add (TREE_OPERAND (stmt, 0), pre_p);
 
   /* If we didn't use a temporary, then the result is just the result_decl.
      Otherwise we need a simple copy.  This should already be gimple.  */
@@ -1019,8 +1018,7 @@ gimplify_loop_expr (tree *expr_p, tree *pre_p)
 
   gimplify_ctxp->exit_label = NULL_TREE;
 
-  gimplify_stmt (&LOOP_EXPR_BODY (*expr_p));
-  append_to_statement_list (LOOP_EXPR_BODY (*expr_p), pre_p);
+  gimplify_and_add (LOOP_EXPR_BODY (*expr_p), pre_p);
 
   if (gimplify_ctxp->exit_label)
     {
@@ -1447,9 +1445,9 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 			    purpose, NULL_TREE);
 
 	    init = build (MODIFY_EXPR, TREE_TYPE (purpose), cref, value);
+
 	    /* Each member initialization is a full-expression.  */
-	    gimplify_stmt (&init);
-	    append_to_statement_list (init, pre_p);
+	    gimplify_and_add (init, pre_p);
 	  }
 
 	*expr_p = NULL_TREE;
@@ -2022,8 +2020,7 @@ gimplify_self_mod_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
   if (postfix)
     {
-      gimplify_stmt (&t1);
-      append_to_statement_list (t1, post_p);
+      gimplify_and_add (t1, post_p);
       *expr_p = lhs;
       return GS_ALL_DONE;
     }
@@ -2475,8 +2472,7 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
       recalculate_side_effects (expr);
 
       /* Move the COND_EXPR to the prequeue and use the temp in its place.  */
-      gimplify_stmt (&expr);
-      append_to_statement_list (expr, pre_p);
+      gimplify_and_add (expr, pre_p);
       *expr_p = tmp;
 
       return ret;
