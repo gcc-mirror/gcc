@@ -1483,8 +1483,6 @@ extern rtx gen_lowpart_if_possible (enum machine_mode, rtx);
 /* In emit-rtl.c */
 extern rtx gen_highpart (enum machine_mode, rtx);
 extern rtx gen_highpart_mode (enum machine_mode, enum machine_mode, rtx);
-extern rtx gen_realpart (enum machine_mode, rtx);
-extern rtx gen_imagpart (enum machine_mode, rtx);
 extern rtx operand_subword (rtx, unsigned int, int, enum machine_mode);
 
 /* In emit-rtl.c */
@@ -2055,7 +2053,6 @@ extern void init_emit (void);
 extern void init_emit_once (int);
 extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);
-extern int subreg_realpart_p (rtx);
 extern void reverse_comparison (rtx);
 extern void set_new_first_and_last_insn (rtx, rtx);
 extern void set_new_last_label_num (int);
@@ -2148,6 +2145,8 @@ extern int preserve_subexpressions_p (void);
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
+extern rtx read_complex_part (rtx, bool);
+extern void write_complex_part (rtx, rtx, bool);
 
 /* In flow.c */
 extern void recompute_reg_usage (rtx, int);

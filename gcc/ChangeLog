@@ -1,3 +1,26 @@
+2004-12-02  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/15289
+        * emit-rtl.c (gen_complex_constant_part): Remove.
+        (gen_realpart, gen_imagpart, subreg_realpart_p): Remove.
+        * expr.c (write_complex_part, read_complex_part): New.
+        (emit_move_via_alt_mode, emit_move_via_integer, emit_move_resolve_push,
+        emit_move_complex_push, emit_move_complex, emit_move_ccmode,
+        emit_move_multi_word): Split out from ...
+        (emit_move_insn_1): ... here.
+        (expand_expr_real) <COMPLEX_EXPR>: Use write_complex_part.
+        <REALPART_EXPR, IMAGPART_EXPR>: Use read_complex_part.
+	<CONJ_EXPR>: Likewise.
+	* function.c (assign_parms): Hard-code transformations
+        instead of using gen_realpart/gen_imagpart.
+	* integrate.c (initialize_for_inline): Likewise.
+	* optabs.c (expand_unop): Use read_complex_part/write_complex_part.
+	(expand_complex_abs): Likewise.
+	(expand_binop): Likewise.  Rearrange to build a CONCAT at the end,
+	rather than creating a complex target at the beginning.
+	* rtl.h (gen_realpart, gen_imagpart, subreg_realpart_p): Remove.
+	(read_complex_part, write_complex_part): Declare.
+
 2004-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_assemble_integer): Put back the

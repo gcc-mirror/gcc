@@ -308,8 +308,8 @@ initialize_for_inline (tree fndecl)
 	parmdecl_map[REGNO (p)] = parms;
       else if (GET_CODE (p) == CONCAT)
 	{
-	  rtx preal = gen_realpart (GET_MODE (XEXP (p, 0)), p);
-	  rtx pimag = gen_imagpart (GET_MODE (preal), p);
+	  rtx preal = XEXP (p, 0);
+	  rtx pimag = XEXP (p, 1);
 
 	  if (GET_CODE (preal) == REG)
 	    parmdecl_map[REGNO (preal)] = parms;
@@ -958,12 +958,12 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
 	}
       else if (GET_CODE (loc) == REG)
 	process_reg_param (map, loc, copy);
-      else if (GET_CODE (loc) == CONCAT)
+      else if (GET_CODE (loc) == CONCAT && GET_CODE (copy) == CONCAT)
 	{
-	  rtx locreal = gen_realpart (GET_MODE (XEXP (loc, 0)), loc);
-	  rtx locimag = gen_imagpart (GET_MODE (XEXP (loc, 0)), loc);
-	  rtx copyreal = gen_realpart (GET_MODE (locreal), copy);
-	  rtx copyimag = gen_imagpart (GET_MODE (locimag), copy);
+	  rtx locreal = XEXP (loc, 0);
+	  rtx locimag = XEXP (loc, 1);
+	  rtx copyreal = XEXP (copy, 0);
+	  rtx copyimag = XEXP (copy, 1);
 
 	  process_reg_param (map, locreal, copyreal);
 	  process_reg_param (map, locimag, copyimag);

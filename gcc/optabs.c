@@ -1520,8 +1520,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
     {
       rtx real0 = 0, imag0 = 0;
       rtx real1 = 0, imag1 = 0;
-      rtx realr, imagr, res;
-      rtx seq, result;
+      rtx realr, imagr;
+      rtx seq;
       int ok = 0;
 
       /* Find the correct mode for the real and imaginary parts.  */
@@ -1534,16 +1534,16 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       if (GET_MODE (op0) == mode)
 	{
-	  real0 = gen_realpart (submode, op0);
-	  imag0 = gen_imagpart (submode, op0);
+	  real0 = read_complex_part (op0, false);
+	  imag0 = read_complex_part (op0, true);
 	}
       else
 	real0 = op0;
 
       if (GET_MODE (op1) == mode)
 	{
-	  real1 = gen_realpart (submode, op1);
-	  imag1 = gen_imagpart (submode, op1);
+	  real1 = read_complex_part (op1, false);
+	  imag1 = read_complex_part (op1, true);
 	}
       else
 	real1 = op1;
@@ -1551,47 +1551,37 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       if (real0 == 0 || real1 == 0 || ! (imag0 != 0 || imag1 != 0))
 	abort ();
 
-      result = gen_reg_rtx (mode);
-      realr = gen_realpart (submode, result);
-      imagr = gen_imagpart (submode, result);
-
       switch (binoptab->code)
 	{
 	case PLUS:
 	  /* (a+ib) + (c+id) = (a+c) + i(b+d) */
 	case MINUS:
 	  /* (a+ib) - (c+id) = (a-c) + i(b-d) */
-	  res = expand_binop (submode, binoptab, real0, real1,
-			      realr, unsignedp, methods);
-
-	  if (res == 0)
+	  realr = expand_binop (submode, binoptab, real0, real1,
+				NULL_RTX, unsignedp, methods);
+	  if (realr == 0)
 	    break;
-	  else if (res != realr)
-	    emit_move_insn (realr, res);
 
 	  if (imag0 != 0 && imag1 != 0)
-	    res = expand_binop (submode, binoptab, imag0, imag1,
-				imagr, unsignedp, methods);
+	    imagr = expand_binop (submode, binoptab, imag0, imag1,
+				  NULL_RTX, unsignedp, methods);
 	  else if (imag0 != 0)
-	    res = imag0;
+	    imagr = force_reg (submode, imag0);
 	  else if (binoptab->code == MINUS)
-            res = expand_unop (submode,
-                                binoptab == subv_optab ? negv_optab : neg_optab,
-                                imag1, imagr, unsignedp);
+            imagr = expand_unop (submode,
+                                 (binoptab == subv_optab
+				  ? negv_optab : neg_optab),
+                                 imag1, NULL_RTX, unsignedp);
 	  else
-	    res = imag1;
-
-	  if (res == 0)
+	    imagr = force_reg (submode, imag1);
+	  if (imagr == 0)
 	    break;
-	  else if (res != imagr)
-	    emit_move_insn (imagr, res);
 
 	  ok = 1;
 	  break;
 
 	case MULT:
 	  /* (a+ib) * (c+id) = (ac-bd) + i(ad+cb) */
-
 	  if (imag0 != 0 && imag1 != 0)
 	    {
 	      rtx temp1, temp2;
@@ -1611,15 +1601,12 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      if (temp1 == 0 || temp2 == 0)
 		break;
 
-	      res = (expand_binop
-                     (submode,
-                      binoptab == smulv_optab ? subv_optab : sub_optab,
-                      temp1, temp2, realr, unsignedp, methods));
-
-	      if (res == 0)
+	      realr = (expand_binop
+		       (submode,
+			binoptab == smulv_optab ? subv_optab : sub_optab,
+			temp1, temp2, NULL_RTX, unsignedp, methods));
+	      if (realr == 0)
 		break;
-	      else if (res != realr)
-		emit_move_insn (realr, res);
 
 	      temp1 = expand_binop (submode, binoptab, real0, imag1,
 				    NULL_RTX, unsignedp, methods);
@@ -1635,15 +1622,12 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      if (temp1 == 0 || temp2 == 0)
 		break;
 
-	      res = (expand_binop
-                     (submode,
-                      binoptab == smulv_optab ? addv_optab : add_optab,
-                      temp1, temp2, imagr, unsignedp, methods));
-
-	      if (res == 0)
+	      imagr = (expand_binop
+		       (submode,
+			binoptab == smulv_optab ? addv_optab : add_optab,
+			temp1, temp2, NULL_RTX, unsignedp, methods));
+	      if (imagr == 0)
 		break;
-	      else if (res != imagr)
-		emit_move_insn (imagr, res);
 
 	      ok = 1;
 	    }
@@ -1653,24 +1637,19 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      real0 = force_reg (submode, real0);
 	      real1 = force_reg (submode, real1);
 
-	      res = expand_binop (submode, binoptab, real0, real1,
-				  realr, unsignedp, methods);
-	      if (res == 0)
+	      realr = expand_binop (submode, binoptab, real0, real1,
+				    NULL_RTX, unsignedp, methods);
+	      if (realr == 0)
 		break;
-	      else if (res != realr)
-		emit_move_insn (realr, res);
 
 	      if (imag0 != 0)
-		res = expand_binop (submode, binoptab,
-				    real1, imag0, imagr, unsignedp, methods);
+		imagr = expand_binop (submode, binoptab, real1, imag0,
+				      NULL_RTX, unsignedp, methods);
 	      else
-		res = expand_binop (submode, binoptab,
-				    real0, imag1, imagr, unsignedp, methods);
-
-	      if (res == 0)
+		imagr = expand_binop (submode, binoptab, real0, imag1,
+				      NULL_RTX, unsignedp, methods);
+	      if (imagr == 0)
 		break;
-	      else if (res != imagr)
-		emit_move_insn (imagr, res);
 
 	      ok = 1;
 	    }
@@ -1688,33 +1667,29 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
 	      /* Simply divide the real and imaginary parts by `c' */
 	      if (class == MODE_COMPLEX_FLOAT)
-		res = expand_binop (submode, binoptab, real0, real1,
-				    realr, unsignedp, methods);
+		realr = expand_binop (submode, binoptab, real0, real1,
+				      NULL_RTX, unsignedp, methods);
 	      else
-		res = expand_divmod (0, TRUNC_DIV_EXPR, submode,
-				     real0, real1, realr, unsignedp);
-
-	      if (res == 0)
+		realr = expand_divmod (0, TRUNC_DIV_EXPR, submode,
+				       real0, real1, NULL_RTX, unsignedp);
+	      if (realr == 0)
 		break;
-	      else if (res != realr)
-		emit_move_insn (realr, res);
 
 	      if (class == MODE_COMPLEX_FLOAT)
-		res = expand_binop (submode, binoptab, imag0, real1,
-				    imagr, unsignedp, methods);
+		imagr = expand_binop (submode, binoptab, imag0, real1,
+				      NULL_RTX, unsignedp, methods);
 	      else
-		res = expand_divmod (0, TRUNC_DIV_EXPR, submode,
-				     imag0, real1, imagr, unsignedp);
-
-	      if (res == 0)
+		imagr = expand_divmod (0, TRUNC_DIV_EXPR, submode,
+				       imag0, real1, NULL_RTX, unsignedp);
+	      if (imagr == 0)
 		break;
-	      else if (res != imagr)
-		emit_move_insn (imagr, res);
 
 	      ok = 1;
 	    }
 	  else
 	    {
+	      realr = gen_reg_rtx (submode);
+	      imagr = gen_reg_rtx (submode);
 	      switch (flag_complex_divide_method)
 		{
 		case 0:
@@ -1748,6 +1723,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	{
 	  rtx equiv = gen_rtx_fmt_ee (binoptab->code, mode,
 				      copy_rtx (op0), copy_rtx (op1));
+	  rtx result = gen_rtx_CONCAT (mode, realr, imagr);
 	  emit_no_conflict_block (seq, result, op0, op1, equiv);
 	  return result;
 	}
@@ -2532,9 +2508,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
   else if (unoptab->code == NEG
 	   && (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT))
     {
-      rtx target_piece;
-      rtx x;
-      rtx seq;
+      rtx seq, x;
 
       /* Find the correct mode for the real and imaginary parts.  */
       enum machine_mode submode = GET_MODE_INNER (mode);
@@ -2547,19 +2521,15 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 
       start_sequence ();
 
-      target_piece = gen_imagpart (submode, target);
       x = expand_unop (submode, unoptab,
-		       gen_imagpart (submode, op0),
-		       target_piece, unsignedp);
-      if (target_piece != x)
-	emit_move_insn (target_piece, x);
+		       read_complex_part (op0, true),
+		       NULL_RTX, unsignedp);
+      write_complex_part (target, x, true);
 
-      target_piece = gen_realpart (submode, target);
       x = expand_unop (submode, unoptab,
-		       gen_realpart (submode, op0),
-		       target_piece, unsignedp);
-      if (target_piece != x)
-	emit_move_insn (target_piece, x);
+		       read_complex_part (op0, false),
+		       NULL_RTX, unsignedp);
+      write_complex_part (target, x, false);
 
       seq = get_insns ();
       end_sequence ();
@@ -3017,8 +2987,8 @@ expand_complex_abs (enum machine_mode mode, rtx op0, rtx target,
     {
       rtx real, imag, total;
 
-      real = gen_realpart (submode, op0);
-      imag = gen_imagpart (submode, op0);
+      real = read_complex_part (op0, false);
+      imag = read_complex_part (op0, true);
 
       /* Square both parts.  */
       real = expand_mult (submode, real, real, NULL_RTX, 0);
