@@ -45,8 +45,8 @@ dtime_(float *tarray)
 	static struct tms t0;
 
 	times(&t);
-	tarray[0] = (t.tms_utime - t0.tms_utime) / Hz;
-	tarray[1] = (t.tms_stime - t0.tms_stime) / Hz;
+	tarray[0] = (double)(t.tms_utime - t0.tms_utime) / Hz;
+	tarray[1] = (double)(t.tms_stime - t0.tms_stime) / Hz;
 	t0 = t;
 	return tarray[0] + tarray[1];
 #endif

@@ -302,8 +302,8 @@ x_rsne(cilist *a)
 	Vardesc *v;
 	dimen *dn, *dn0, *dn1;
 	ftnlen *dims, *dims1;
-	ftnlen b, b0, b1, ex, no, no1, nomax, size, span;
-	ftnint type;
+	ftnlen b, b0, b1, ex, no, nomax, size, span;
+	ftnint no1, type;
 	char *vaddr;
 	long iva, ivae;
 	dimen dimens[MAXDIM], substr;
@@ -338,7 +338,7 @@ x_rsne(cilist *a)
 #endif
 		}
  have_amp:
-	if (ch = getname(buf,(int) sizeof(buf)))
+	if (ch = getname(buf,sizeof(buf)))
 		return ch;
 	nl = (Namelist *)a->cifmt;
 	if (strcmp(buf, nl->name))
@@ -393,7 +393,7 @@ x_rsne(cilist *a)
 				if (ch <= ' ' && ch >= 0 || ch == ',')
 					continue;
 				Ungetc(ch,f__cf);
-				if (ch = getname(buf,(int) sizeof(buf)))
+				if (ch = getname(buf,sizeof(buf)))
 					return ch;
 				goto havename;
 			}
