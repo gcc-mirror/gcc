@@ -1,5 +1,14 @@
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
+	* cgraph.c (cgraph_node): Use INSERT instead of 1 in
+	htab_find_slot_with_hash.
+	(cgraph_node_for_identifier): Use NO_INSERT.
+	(cgraph_remove_node): Use NO_INSERT.
+	(cgraph_varpool_node): Use INSERT.
+	(cgraph_varpool_node_for_identifier): Use NO_INSERT.     	
+
+2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
+
 	Waldek Hebisch <hebisch@math.uni.wroc.pl>
 	PR/12072
 	* varasm.c (compare_constant): Fix thinko.
