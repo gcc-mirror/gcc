@@ -1,3 +1,11 @@
+2001-01-09  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove support for using UWIN as a host machine.
+	* configure.in: Issue an error message.
+	* configure: Regenerated.
+	* config.gcc: Remove xm_* UWIN configury.
+	* config/i386/xm-uwin.h: Remove.
+
 2001-01-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (ra_rtx): Delete.

@@ -570,10 +570,9 @@ gcc_AC_FUNC_PRINTF_PTR
 
 case "${host}" in
 *-*-uwin*)
-  # Under some versions of uwin, vfork is notoriously buggy and the test 
-  # can hang configure; on other versions, vfork exists just as a stub.
-  # FIXME: This should be removed once vfork in uwin's runtime is fixed.
-  ac_cv_func_vfork_works=no
+  AC_MSG_ERROR([
+*** UWIN may not be used as a host platform because
+*** linking with posix.dll is not allowed by the GNU GPL])
   ;;
 esac
 AC_FUNC_VFORK
